@@ -384,7 +384,8 @@
           "SharedKernel.Idempotency.EntityFrameworkCore": "[0.1.0-alpha.0, )",
           "SharedKernel.Messaging": "[0.1.0-alpha.0, )",
           "SharedKernel.Messaging.IntegrationEvents": "[0.1.0-alpha.0, )",
-          "SharedKernel.Messaging.IntegrationEvents.CloudEvents": "[0.1.0-alpha.0, )"
+          "SharedKernel.Messaging.IntegrationEvents.CloudEvents": "[0.1.0-alpha.0, )",
+          "SharedKernel.Scheduling": "[0.1.0-alpha.0, )"
         }
       },
       "sharedkernel.observability": {
@@ -411,6 +412,9 @@
         "dependencies": {
           "SharedKernel.Results": "[0.1.0-alpha.0, )"
         }
+      },
+      "sharedkernel.scheduling": {
+        "type": "Project"
       },
       "sharedkernel.testing": {
         "type": "Project"

@@ -19,11 +19,18 @@ This file overrides root guidance where test-specific behavior is needed.
 - Prefer test filters: `--filter-class`, `--filter-method`, `--filter-namespace`, `--filter-trait`.
 - Do not use legacy VSTest filter syntax `--filter "FullyQualifiedName~..."`.
 - Use Arrange/Act/Assert structure in test methods.
+- Keep Arrange, Act, and Assert phases explicit in maintained tests. Do not collapse Act and Assert into
+  one comment when the observable action is distinct from the verification.
+- Tag new maintained tests with the relevant repository traits for category, capability, scope, or area.
 - Before implementing multi-step logic that is **not** the core behavior under test,
   always look for an existing helper method or helper class first.
 - If no suitable helper exists and the logic is repeated or hurts readability,
   prefer creating a helper method/class and then using that helper instead of inlining the plumbing.
 - Do not add helper methods, local helper functions, or nested helper types to xUnit test classes.
+- Do not add helper methods, local helper functions, or nested helper types to files that contain xUnit
+  test classes. Move setup or assertion plumbing to a dedicated helper/scope file.
+- Do not expose raw `ServiceProvider`, `IServiceScope`, or other DI container plumbing from test helpers.
+  Return typed fixtures/scopes with intention-revealing methods instead.
 - Keep truly local test logic visible in the test body, or move reusable plumbing to a dedicated
   helper type near the consuming test project.
 - Before adding new test plumbing, check whether the repository already has a builder,

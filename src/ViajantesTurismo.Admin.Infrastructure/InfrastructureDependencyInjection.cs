@@ -47,6 +47,9 @@ public static class InfrastructureDependencyInjection
             AdminTourCreatedIntegrationEvent.EventType,
             AdminIntegrationEventJsonContext.Default.AdminTourCreatedIntegrationEvent);
         builder.Services.AddIntegrationEventOutbox<AdminWriteDbContext>();
+        builder.Services.AddIntegrationEventOutboxRelay<AdminWriteDbContext>();
+        builder.Services.AddPostgreSqlIntegrationEventOutboxRelayAtomicClaims<AdminWriteDbContext>();
+        builder.Services.AddPostgreSqlIntegrationEventTransportProducer<AdminWriteDbContext>(IntegrationEventConsumerNames.Catalog);
 
         return builder;
     }
@@ -72,6 +75,7 @@ public static class InfrastructureDependencyInjection
             AdminTourCreatedIntegrationEvent.EventType,
             AdminIntegrationEventJsonContext.Default.AdminTourCreatedIntegrationEvent);
         builder.Services.AddIntegrationEventOutbox<AdminWriteDbContext>();
+        builder.Services.AddPostgreSqlIntegrationEventTransportProducer<AdminWriteDbContext>(IntegrationEventConsumerNames.Catalog);
         builder.Services.AddScoped<ISeeder, Seeder>();
 
         return builder;

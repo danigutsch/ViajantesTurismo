@@ -1,16 +1,20 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Diagnostics;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
 using SharedKernel.DomainEvents;
 using SharedKernel.DomainEvents.EntityFrameworkCore;
 using SharedKernel.EntityFrameworkCore;
 using SharedKernel.Messaging;
 using SharedKernel.Messaging.IntegrationEvents;
+using SharedKernel.Messaging.IntegrationEvents.CloudEvents;
 using SharedKernel.Messaging.IntegrationEvents.EntityFrameworkCore;
 using SharedKernel.Testing.Assertions;
 using ViajantesTurismo.Admin.Application;
 using ViajantesTurismo.Admin.Contracts.Tours;
 using ViajantesTurismo.Admin.Infrastructure;
+using ViajantesTurismo.Catalog.Infrastructure;
+using ViajantesTurismo.Resources;
 
 namespace ViajantesTurismo.Admin.UnitTests.Infrastructure;
 
@@ -150,5 +154,58 @@ internal static class AdminWriteDbContextTestFactory
             .Where(service => service.ServiceType == typeof(IIntegrationEventOutboxClaimStrategy<AdminWriteDbContext>))
             .ShouldHaveSingleItem();
     }
+
+    public static ServiceDescriptor GetPostgreSqlTransportConsumerHostedServiceDescriptor()
+    {
+        var services = new ServiceCollection();
+        services.AddPostgreSqlIntegrationEventTransportConsumer<AdminWriteDbContext>(IntegrationEventConsumerNames.Catalog);
+
+        return services
+            .Where(service => service.ServiceType == typeof(IHostedService))
+            .ShouldHaveSingleItem();
+    }
+
+    public static IntegrationEventTransportScenario CreateTransportScenario(TimeProvider? timeProvider = null)
+    {
+        var services = new ServiceCollection();
+        services.AddSingleton(timeProvider ?? TimeProvider.System);
+        services.AddPostgreSqlIntegrationEventTransportProducer<CatalogIntegrationTransportDbContext>(IntegrationEventConsumerNames.Catalog);
+        services.AddDbContext<CatalogIntegrationTransportDbContext>(options =>
+        {
+            options.UseInMemoryDatabase(Guid.NewGuid().ToString("N"));
+            services.ApplyDbContextOptionConfigurations<CatalogIntegrationTransportDbContext>(options);
+        });
+
+        var provider = services.BuildServiceProvider(new ServiceProviderOptions
+        {
+            ValidateOnBuild = true,
+            ValidateScopes = true,
+        });
+
+        try
+        {
+            return new IntegrationEventTransportScenario(provider);
+        }
+        catch
+        {
+            provider.Dispose();
+            throw;
+        }
+    }
+
+    public static EventEnvelope CreateEnvelope(string eventId) => new(
+        CloudEventConstants.Spec,
+        CloudEventConstants.SpecVersion,
+        eventId,
+        new Uri("urn:viajantes:admin"),
+        AdminTourCreatedIntegrationEvent.EventType,
+        AdminTourCreatedIntegrationEvent.EventVersion,
+        new DateTimeOffset(2026, 6, 22, 11, 59, 0, TimeSpan.Zero),
+        "tour-1",
+        "application/json",
+        null,
+        "{}",
+        EventPayloadEncoding.Json,
+        null);
 
 }

@@ -17,6 +17,7 @@ flowchart LR
     catalogApiService[Catalog.ApiService]
     adminDatabase[Database]
     catalogDatabase[Database]
+    IntegrationEventWorker[Integration Event Worker]
     ManagementWeb[Management.Web]
     migrationService[MigrationService]
     ObservabilityStack[Observability Stack]
@@ -24,6 +25,9 @@ flowchart LR
     PublicWeb[Public.Web]
     cache[Redis cache]
     AdminPerformanceSmoke --> apiService
+    IntegrationEventWorker --> adminDatabase
+    IntegrationEventWorker --> catalogDatabase
+    IntegrationEventWorker --> migrationService
     ManagementWeb --> apiService
     ManagementWeb --> cache
     ManagementWeb --> catalogApiService
@@ -31,6 +35,7 @@ flowchart LR
     adminDatabase --> databaseServer
     apiService --> adminDatabase
     apiService --> migrationService
+    catalogApiService --> adminDatabase
     catalogApiService --> catalogDatabase
     catalogApiService --> migrationService
     catalogDatabase --> databaseServer

@@ -28,9 +28,51 @@ public static class InfrastructureDependencyInjection
     {
         ArgumentNullException.ThrowIfNull(builder);
 
+        return AddCatalogInfrastructure(builder, addOutboxRelay: true);
+    }
+
+    /// <summary>
+    /// Adds Catalog integration-event transport consumption for API-hosted delivery mode.
+    /// </summary>
+    /// <param name="builder">The application builder to configure.</param>
+    /// <typeparam name="TApplicationBuilder">The application builder type.</typeparam>
+    /// <returns>The updated application builder.</returns>
+    public static TApplicationBuilder AddCatalogHostedIntegrationEventTransport<TApplicationBuilder>(this TApplicationBuilder builder)
+        where TApplicationBuilder : IHostApplicationBuilder
+    {
+        ArgumentNullException.ThrowIfNull(builder);
+
+        builder.AddCatalogIntegrationEventTransportContext();
+        builder.Services.AddPostgreSqlIntegrationEventTransportConsumer<CatalogIntegrationTransportDbContext>(IntegrationEventConsumerNames.Catalog);
+
+        return builder;
+    }
+
+    /// <summary>
+    /// Adds Catalog infrastructure needed by the standalone integration-event worker.
+    /// </summary>
+    /// <param name="builder">The application builder to configure.</param>
+    /// <typeparam name="TApplicationBuilder">The application builder type.</typeparam>
+    /// <returns>The updated application builder.</returns>
+    public static TApplicationBuilder AddCatalogIntegrationEventWorkerInfrastructure<TApplicationBuilder>(this TApplicationBuilder builder)
+        where TApplicationBuilder : IHostApplicationBuilder
+    {
+        ArgumentNullException.ThrowIfNull(builder);
+
+        AddCatalogInfrastructure(builder, addOutboxRelay: false);
+        builder.AddCatalogHostedIntegrationEventTransport();
+
+        return builder;
+    }
+
+    private static TApplicationBuilder AddCatalogInfrastructure<TApplicationBuilder>(
+        TApplicationBuilder builder,
+        bool addOutboxRelay)
+        where TApplicationBuilder : IHostApplicationBuilder
+    {
         builder.AddNpgsqlDbContext<CatalogDbContext>(
             ResourceNames.CatalogDatabase,
-            configureDbContextOptions: options => ConfigureDevelopmentDatabaseOptions(builder, options));
+            configureDbContextOptions: options => ConfigureDevelopmentDatabaseOptions<CatalogDbContext, TApplicationBuilder>(builder, options));
 
         builder.Services.AddCatalogApplication();
         builder.Services.AddSingleton(TimeProvider.System);
@@ -41,25 +83,37 @@ public static class InfrastructureDependencyInjection
         builder.Services.AddScoped<ICatalogTourReadModelStore>(sp => sp.GetRequiredService<EfCatalogTourReadModelStore>());
         builder.Services.AddScoped<IPublicMediaImageStore, EfPublicMediaImageStore>();
         builder.Services.AddIntegrationEventOutbox<CatalogDbContext>();
-        builder.Services.AddIntegrationEventOutboxRelay<CatalogDbContext>();
-        builder.Services.AddPostgreSqlIntegrationEventOutboxRelayAtomicClaims<CatalogDbContext>();
+        if (addOutboxRelay)
+        {
+            builder.Services.AddIntegrationEventOutboxRelay<CatalogDbContext>();
+            builder.Services.AddPostgreSqlIntegrationEventOutboxRelayAtomicClaims<CatalogDbContext>();
+        }
 
         return builder;
     }
 
-    private static void ConfigureDevelopmentDatabaseOptions<TApplicationBuilder>(
+    private static void AddCatalogIntegrationEventTransportContext<TApplicationBuilder>(this TApplicationBuilder builder)
+        where TApplicationBuilder : IHostApplicationBuilder
+    {
+        builder.AddNpgsqlDbContext<CatalogIntegrationTransportDbContext>(
+            ResourceNames.AdminDatabase,
+            configureDbContextOptions: options => ConfigureDevelopmentDatabaseOptions<CatalogIntegrationTransportDbContext, TApplicationBuilder>(builder, options));
+    }
+
+    private static void ConfigureDevelopmentDatabaseOptions<TContext, TApplicationBuilder>(
         TApplicationBuilder builder,
         DbContextOptionsBuilder options)
+        where TContext : DbContext
         where TApplicationBuilder : IHostApplicationBuilder
     {
         if (!builder.Environment.IsDevelopment())
         {
-            builder.Services.ApplyDbContextOptionConfigurations<CatalogDbContext>(options);
+            builder.Services.ApplyDbContextOptionConfigurations<TContext>(options);
             return;
         }
 
         options.EnableDetailedErrors();
         options.EnableSensitiveDataLogging();
-        builder.Services.ApplyDbContextOptionConfigurations<CatalogDbContext>(options);
+        builder.Services.ApplyDbContextOptionConfigurations<TContext>(options);
     }
 }
