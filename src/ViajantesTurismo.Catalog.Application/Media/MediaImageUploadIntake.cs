@@ -2,6 +2,8 @@ using System.Globalization;
 using System.Security.Cryptography;
 using Microsoft.Extensions.Options;
 using SharedKernel.ImageProcessing;
+using SharedKernel.Messaging.IntegrationEvents;
+using ViajantesTurismo.Catalog.Contracts.Media;
 using SharedKernel.Results;
 using ViajantesTurismo.Catalog.Domain.Media;
 using SharedKernel.BuildingBlocks;
@@ -16,6 +18,7 @@ public sealed class MediaImageUploadIntake(
     IMediaUploadScanner scanner,
     IMediaObjectStore objectStore,
     IPublicMediaImageStore imageStore,
+    IIntegrationEventOutbox outbox,
     IOptions<MediaUploadValidationOptions> validationOptions)
 {
     private const string InvalidUploadMessage = "Media upload is invalid.";
@@ -137,14 +140,14 @@ public sealed class MediaImageUploadIntake(
 
         var image = imageResult.Value;
 
-        await StoreImageAndCompensateObject(image, objectKey, ct).ConfigureAwait(false);
-
         var originalStoredEvent = new MediaImageOriginalStoredIntegrationEvent(
             Guid.CreateVersion7(),
             DateTimeOffset.UtcNow,
             request.MediaImageId,
             objectKey,
             1);
+
+        await StoreImageEventAndCompensateObject(image, originalStoredEvent, objectKey, ct).ConfigureAwait(false);
 
         return Result.Ok(new MediaImageUploadIntakeResult(image, originalStoredEvent, scanResult.Status));
     }
@@ -168,9 +171,17 @@ public sealed class MediaImageUploadIntake(
         }
     }
 
-    private ValueTask StoreImageAndCompensateObject(PublicMediaImage image, string objectKey, CancellationToken ct) =>
+    private ValueTask StoreImageEventAndCompensateObject(
+        PublicMediaImage image,
+        MediaImageOriginalStoredIntegrationEvent originalStoredEvent,
+        string objectKey,
+        CancellationToken ct) =>
         Compensation.CompleteOrCompensate(
-            ct => imageStore.Upsert(image, ct),
+            async ct =>
+            {
+                await outbox.Enqueue(originalStoredEvent, ct).ConfigureAwait(false);
+                await imageStore.Upsert(image, ct).ConfigureAwait(false);
+            },
             ct => objectStore.Delete(objectKey, ct),
             ct);
 

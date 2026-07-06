@@ -1,5 +1,6 @@
 using SharedKernel.Testing.Assertions;
 using ViajantesTurismo.Catalog.Application.Media;
+using ViajantesTurismo.Catalog.Contracts.Media;
 using ViajantesTurismo.Catalog.Domain.Media;
 
 namespace ViajantesTurismo.Catalog.UnitTests;

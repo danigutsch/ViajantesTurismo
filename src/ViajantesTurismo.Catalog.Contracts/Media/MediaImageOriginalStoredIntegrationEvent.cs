@@ -1,6 +1,6 @@
 using SharedKernel.Messaging.IntegrationEvents;
 
-namespace ViajantesTurismo.Catalog.Application.Media;
+namespace ViajantesTurismo.Catalog.Contracts.Media;
 
 /// <summary>
 /// Records that an original Catalog media image object was stored.
@@ -17,13 +17,9 @@ public sealed record MediaImageOriginalStoredIntegrationEvent(
     string SourceObjectKey,
     int ProcessingVersion) : IIntegrationEvent
 {
-    /// <summary>
-    /// Gets the stable event type.
-    /// </summary>
+    /// <inheritdoc />
     public static string EventType => "catalog.media-image.original-stored";
 
-    /// <summary>
-    /// Gets the event contract version.
-    /// </summary>
+    /// <inheritdoc />
     public static int EventVersion => 1;
 }

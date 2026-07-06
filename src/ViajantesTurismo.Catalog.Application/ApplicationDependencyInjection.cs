@@ -4,6 +4,7 @@ using Microsoft.Extensions.Options;
 using SharedKernel.EventSourcing;
 using SharedKernel.Idempotency;
 using SharedKernel.Messaging.IntegrationEvents;
+using ViajantesTurismo.Admin.Contracts;
 using ViajantesTurismo.Admin.Contracts.Tours;
 using ViajantesTurismo.Catalog.Application.IntegrationEvents;
 using ViajantesTurismo.Catalog.Application.Media;
@@ -37,6 +38,9 @@ public static class ApplicationDependencyInjection
                 new AdminTourCreatedIntegrationHandler(sp.GetRequiredService<IEventStore>()),
                 sp.GetRequiredService<IIdempotencyStore>(),
                 sp.GetRequiredService<IOptions<IntegrationEventOptions>>()));
+        services.AddIntegrationEventConsumer(
+            AdminTourCreatedIntegrationEvent.EventType,
+            AdminIntegrationEventJsonContext.Default.AdminTourCreatedIntegrationEvent);
         services.AddCatalogMediaApplication();
 
         return services;

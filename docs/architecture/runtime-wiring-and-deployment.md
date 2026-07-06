@@ -15,24 +15,27 @@ flowchart LR
     AdminPerformanceSmoke[Admin Performance Smoke]
     apiService[Admin.ApiService]
     catalogApiService[Catalog.ApiService]
+    adminDatabase[Database]
+    catalogDatabase[Database]
     ManagementWeb[Management.Web]
     migrationService[MigrationService]
     ObservabilityStack[Observability Stack]
     databaseServer[PostgreSQL server]
     PublicWeb[Public.Web]
     cache[Redis cache]
-    database[database]
     AdminPerformanceSmoke --> apiService
     ManagementWeb --> apiService
     ManagementWeb --> cache
     ManagementWeb --> catalogApiService
     PublicWeb --> catalogApiService
-    apiService --> database
+    adminDatabase --> databaseServer
+    apiService --> adminDatabase
     apiService --> migrationService
-    catalogApiService --> database
+    catalogApiService --> catalogDatabase
     catalogApiService --> migrationService
-    database --> databaseServer
-    migrationService --> database
+    catalogDatabase --> databaseServer
+    migrationService --> adminDatabase
+    migrationService --> catalogDatabase
 ```
 <!-- generated:apphost-resources:end -->
 

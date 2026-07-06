@@ -1,11 +1,12 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using Microsoft.Extensions.DependencyInjection.Extensions;
 using SharedKernel.DomainEvents.EntityFrameworkCore;
 using SharedKernel.EntityFrameworkCore;
 using SharedKernel.Messaging.IntegrationEvents;
 using SharedKernel.Messaging.IntegrationEvents.EntityFrameworkCore;
+using ViajantesTurismo.Admin.Contracts;
+using ViajantesTurismo.Admin.Contracts.Tours;
 using ViajantesTurismo.Admin.Application;
 using ViajantesTurismo.Admin.Domain.Customers;
 using ViajantesTurismo.Resources;
@@ -42,7 +43,9 @@ public static class InfrastructureDependencyInjection
         builder.Services.AddScoped<IQueryService, QueryService>();
         builder.Services.AddScoped<ITourStore, TourStore>();
         builder.Services.AddScoped<ICustomerStore, CustomerStore>();
-        builder.Services.TryAddSingleton<IIntegrationEventSerializer, AdminIntegrationEventSerializer>();
+        builder.Services.AddIntegrationEventContract(
+            AdminTourCreatedIntegrationEvent.EventType,
+            AdminIntegrationEventJsonContext.Default.AdminTourCreatedIntegrationEvent);
         builder.Services.AddIntegrationEventOutbox<AdminWriteDbContext>();
 
         return builder;
@@ -65,7 +68,9 @@ public static class InfrastructureDependencyInjection
         }
 
         builder.AddAdminWriteDbContext();
-        builder.Services.TryAddSingleton<IIntegrationEventSerializer, AdminIntegrationEventSerializer>();
+        builder.Services.AddIntegrationEventContract(
+            AdminTourCreatedIntegrationEvent.EventType,
+            AdminIntegrationEventJsonContext.Default.AdminTourCreatedIntegrationEvent);
         builder.Services.AddIntegrationEventOutbox<AdminWriteDbContext>();
         builder.Services.AddScoped<ISeeder, Seeder>();
 
@@ -90,7 +95,7 @@ public static class InfrastructureDependencyInjection
         builder.Services.AddDomainEventDispatch<AdminWriteDbContext>();
 
         builder.AddNpgsqlDbContext<AdminWriteDbContext>(
-            ResourceNames.Database,
+            ResourceNames.AdminDatabase,
             configureDbContextOptions: options => ConfigureAdminWriteDbContext(builder, options));
     }
 
@@ -98,7 +103,7 @@ public static class InfrastructureDependencyInjection
         where TApplicationBuilder : IHostApplicationBuilder
     {
         builder.AddNpgsqlDbContext<AdminReadDbContext>(
-            ResourceNames.Database,
+            ResourceNames.AdminDatabase,
             configureDbContextOptions: options => ConfigureReadDatabaseOptions(builder, options));
     }
 

@@ -25,6 +25,7 @@ internal sealed class TestDomainEventDispatchScope(
 
         builder.AddApplication();
         builder.Services.AddSingleton<IIntegrationEventOutbox>(_ => outbox);
+        builder.Services.AddSingleton<IDomainEventIntegrationEventOutbox>(_ => outbox);
         builder.Services.AddSingleton<TimeProvider>(new FakeTimeProvider(now));
 
         var serviceProvider = builder.Services.BuildServiceProvider();

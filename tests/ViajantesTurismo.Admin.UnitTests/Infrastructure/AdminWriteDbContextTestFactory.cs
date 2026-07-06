@@ -4,9 +4,12 @@ using Microsoft.Extensions.DependencyInjection;
 using SharedKernel.DomainEvents;
 using SharedKernel.DomainEvents.EntityFrameworkCore;
 using SharedKernel.EntityFrameworkCore;
+using SharedKernel.Messaging;
 using SharedKernel.Messaging.IntegrationEvents;
 using SharedKernel.Messaging.IntegrationEvents.EntityFrameworkCore;
+using SharedKernel.Testing.Assertions;
 using ViajantesTurismo.Admin.Application;
+using ViajantesTurismo.Admin.Contracts.Tours;
 using ViajantesTurismo.Admin.Infrastructure;
 
 namespace ViajantesTurismo.Admin.UnitTests.Infrastructure;
@@ -45,7 +48,7 @@ internal static class AdminWriteDbContextTestFactory
     public static AdminWriteDbContextTestScope CreateWithGeneratedIntegrationEventDispatcher()
     {
         var services = new ServiceCollection();
-        services.AddSingleton<IIntegrationEventSerializer, AdminIntegrationEventSerializer>();
+        services.AddAdminIntegrationEventContract();
         services.AddDomainEventProcessing();
         services.AddDomainEventDispatch<AdminWriteDbContext>();
         services.AddIntegrationEventOutbox<AdminWriteDbContext>();
@@ -69,6 +72,70 @@ internal static class AdminWriteDbContextTestFactory
             provider.Dispose();
             throw;
         }
+    }
+
+    public static ServiceProvider CreateOutboxRelayProvider(
+        IEventEnvelopePublisher publisher,
+        TimeProvider timeProvider,
+        Action<IntegrationEventOutboxRelayOptions>? configureOptions = null,
+        string? databaseName = null)
+    {
+        var services = new ServiceCollection();
+        services.AddLogging();
+        services.AddSingleton(publisher);
+        services.AddSingleton(timeProvider);
+        services.AddAdminIntegrationEventContract();
+        services.AddIntegrationEventOutbox<AdminWriteDbContext>();
+        services.AddIntegrationEventOutboxRelay<AdminWriteDbContext>(configureOptions);
+        var resolvedDatabaseName = databaseName ?? Guid.NewGuid().ToString("N");
+        services.AddDbContext<AdminWriteDbContext>(options =>
+        {
+            options.UseInMemoryDatabase(resolvedDatabaseName);
+            services.ApplyDbContextOptionConfigurations<AdminWriteDbContext>(options);
+        });
+
+        return services.BuildServiceProvider(new ServiceProviderOptions
+        {
+            ValidateOnBuild = true,
+            ValidateScopes = true,
+        });
+    }
+
+    public static async ValueTask EnqueueAdminTourCreatedIntegrationEvent(ServiceProvider provider, string slug)
+    {
+        ArgumentNullException.ThrowIfNull(provider);
+
+        using var scope = provider.CreateScope();
+        var dbContext = scope.ServiceProvider.GetRequiredService<AdminWriteDbContext>();
+        var outbox = scope.ServiceProvider.GetRequiredService<IIntegrationEventOutbox>();
+        await outbox.Enqueue(new AdminTourCreatedIntegrationEvent(
+            Guid.CreateVersion7(),
+            new DateTimeOffset(2026, 6, 22, 11, 59, 0, TimeSpan.Zero),
+            Guid.CreateVersion7(),
+            slug,
+            "Andes Relay 2026"), TestContext.Current.CancellationToken);
+        _ = await dbContext.SaveChangesAsync(TestContext.Current.CancellationToken);
+    }
+
+    public static IntegrationEventOutboxMessage GetSingleOutboxMessage(ServiceProvider provider)
+    {
+        ArgumentNullException.ThrowIfNull(provider);
+
+        using var scope = provider.CreateScope();
+        return scope.ServiceProvider.GetRequiredService<AdminWriteDbContext>()
+            .Set<IntegrationEventOutboxMessage>()
+            .ShouldHaveSingleItem();
+    }
+
+    public static void ClaimSingleOutboxMessage(ServiceProvider provider, DateTimeOffset claimedUntil)
+    {
+        ArgumentNullException.ThrowIfNull(provider);
+
+        using var scope = provider.CreateScope();
+        var dbContext = scope.ServiceProvider.GetRequiredService<AdminWriteDbContext>();
+        var message = dbContext.Set<IntegrationEventOutboxMessage>().ShouldHaveSingleItem();
+        message.MarkClaimed("test-relay", claimedUntil);
+        _ = dbContext.SaveChanges();
     }
 
 }

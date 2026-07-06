@@ -2,17 +2,16 @@ using System.Globalization;
 using System.Text.Json;
 using SharedKernel.Testing.Assertions;
 using ViajantesTurismo.Admin.Contracts.Tours;
-using ViajantesTurismo.Admin.Infrastructure;
 
 namespace ViajantesTurismo.Admin.UnitTests.Infrastructure;
 
-public sealed class AdminIntegrationEventSerializerTests
+public sealed class RegisteredIntegrationEventSerializerTests
 {
     [Fact]
     public void Serialize_writes_admin_tour_created_payload_fields()
     {
         // Arrange
-        var serializer = new AdminIntegrationEventSerializer();
+        var serializer = RegisteredIntegrationEventSerializerTestServices.CreateSerializer();
         var eventId = Guid.CreateVersion7();
         var occurredAt = DateTimeOffset.Parse("2026-07-05T12:30:00+00:00", CultureInfo.InvariantCulture);
         var tourId = Guid.CreateVersion7();
@@ -40,7 +39,7 @@ public sealed class AdminIntegrationEventSerializerTests
     public void Serialize_reports_runtime_type_for_unknown_events()
     {
         // Arrange
-        var serializer = new AdminIntegrationEventSerializer();
+        var serializer = RegisteredIntegrationEventSerializerTestServices.CreateSerializer();
         var integrationEvent = new UnknownAdminIntegrationEvent(Guid.CreateVersion7(), DateTimeOffset.UtcNow);
 
         // Act
