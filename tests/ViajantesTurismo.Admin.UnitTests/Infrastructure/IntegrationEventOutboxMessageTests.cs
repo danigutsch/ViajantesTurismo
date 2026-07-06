@@ -1,7 +1,10 @@
 using System.Diagnostics;
+using Microsoft.Extensions.DependencyInjection;
 using SharedKernel.Messaging;
+using SharedKernel.Messaging.IntegrationEvents;
 using SharedKernel.Messaging.IntegrationEvents.CloudEvents;
 using SharedKernel.Messaging.IntegrationEvents.EntityFrameworkCore;
+using SharedKernel.Testing;
 using SharedKernel.Testing.Assertions;
 using ViajantesTurismo.Admin.Contracts.Tours;
 using ViajantesTurismo.Admin.Infrastructure;
@@ -9,6 +12,8 @@ using ViajantesTurismo.Admin.Testing.Fakes;
 
 namespace ViajantesTurismo.Admin.UnitTests.Infrastructure;
 
+[Trait(SharedKernelTestTraitNames.CategoryName, TestTraits.OutboxCategory)]
+[Trait(SharedKernelTestTraitNames.CapabilityName, TestTraits.IntegrationEventRelayCapability)]
 public sealed class IntegrationEventOutboxMessageTests
 {
     private const string JsonContentType = "application/json";
@@ -113,6 +118,60 @@ public sealed class IntegrationEventOutboxMessageTests
     }
 
     [Fact]
+    public void Relay_options_reject_non_positive_batch_size()
+    {
+        // Arrange
+        var validator = new IntegrationEventOutboxRelayOptionsValidator();
+        var options = new IntegrationEventOutboxRelayOptions
+        {
+            BatchSize = 0
+        };
+
+        // Act
+        var result = validator.Validate(null, options);
+
+        // Assert
+        result.Failed.ShouldBeTrue();
+        result.FailureMessage.ShouldContain("batch size", StringComparison.OrdinalIgnoreCase);
+    }
+
+    [Fact]
+    public void Relay_options_reject_non_positive_poll_interval()
+    {
+        // Arrange
+        var validator = new IntegrationEventOutboxRelayOptionsValidator();
+        var options = new IntegrationEventOutboxRelayOptions
+        {
+            PollInterval = TimeSpan.Zero
+        };
+
+        // Act
+        var result = validator.Validate(null, options);
+
+        // Assert
+        result.Failed.ShouldBeTrue();
+        result.FailureMessage.ShouldContain("poll interval", StringComparison.OrdinalIgnoreCase);
+    }
+
+    [Fact]
+    public void Relay_options_reject_non_positive_claim_lease_duration()
+    {
+        // Arrange
+        var validator = new IntegrationEventOutboxRelayOptionsValidator();
+        var options = new IntegrationEventOutboxRelayOptions
+        {
+            ClaimLeaseDuration = TimeSpan.Zero
+        };
+
+        // Act
+        var result = validator.Validate(null, options);
+
+        // Assert
+        result.Failed.ShouldBeTrue();
+        result.FailureMessage.ShouldContain("claim lease duration", StringComparison.OrdinalIgnoreCase);
+    }
+
+    [Fact]
     public async Task Enqueue_adds_current_trace_extensions_when_activity_exists()
     {
         await using var scope = AdminWriteDbContextTestFactory.CreateWithGeneratedIntegrationEventDispatcher();
@@ -120,7 +179,7 @@ public sealed class IntegrationEventOutboxMessageTests
         var outbox = new EfIntegrationEventOutbox<AdminWriteDbContext>(
             dbContext,
             new FakeTimeProvider(new DateTimeOffset(2026, 6, 22, 12, 0, 0, TimeSpan.Zero)),
-            new AdminIntegrationEventSerializer());
+            RegisteredIntegrationEventSerializerTestServices.CreateSerializer());
         using var activity = new Activity("outbox-test");
         activity.TraceStateString = "vendor=value";
         activity.Start();
@@ -141,21 +200,168 @@ public sealed class IntegrationEventOutboxMessageTests
     }
 
     [Fact]
-    public async Task Enqueue_requires_current_save_changes_context_when_no_context_was_constructed()
+    public async Task Relay_publishes_pending_message_and_marks_it_published()
     {
-        var outbox = new EfIntegrationEventOutbox<AdminWriteDbContext>(
-            new FakeTimeProvider(new DateTimeOffset(2026, 6, 22, 12, 0, 0, TimeSpan.Zero)),
-            new AdminIntegrationEventSerializer());
+        // Arrange
+        var publisher = new RecordingEventEnvelopePublisher();
+        var timeProvider = new FakeTimeProvider(new DateTimeOffset(2026, 6, 22, 12, 0, 0, TimeSpan.Zero));
+        await using var provider = AdminWriteDbContextTestFactory.CreateOutboxRelayProvider(publisher, timeProvider);
+        await AdminWriteDbContextTestFactory.EnqueueAdminTourCreatedIntegrationEvent(provider, "andes-relay-2026");
 
-        Func<Task> enqueue = async () => await outbox.Enqueue(new AdminTourCreatedIntegrationEvent(
-                Guid.CreateVersion7(),
-                new DateTimeOffset(2026, 6, 22, 11, 59, 0, TimeSpan.Zero),
-                Guid.CreateVersion7(),
-                "andes-no-context-2026",
-                "Andes No Context 2026"), CancellationToken.None)
-            .ConfigureAwait(false);
+        // Act
+        var relay = provider.GetRequiredService<EfIntegrationEventOutboxRelay<AdminWriteDbContext>>();
+        var publishedCount = await relay.PublishPending(1, TestContext.Current.CancellationToken);
 
-        var exception = await enqueue.ShouldThrow<InvalidOperationException>();
-        exception.Message.ShouldContain("No current AdminWriteDbContext SaveChanges context", StringComparison.Ordinal);
+        // Assert
+        publishedCount.ShouldBe(1);
+        publisher.Published.Count.ShouldBe(1);
+        var message = AdminWriteDbContextTestFactory.GetSingleOutboxMessage(provider);
+        message.PublishedAt.ShouldBe(timeProvider.GetUtcNow());
+        message.ClaimedBy.ShouldBeNull();
+        message.ClaimedUntil.ShouldBeNull();
+    }
+
+    [Fact]
+    public async Task Relay_records_retry_state_when_publish_fails()
+    {
+        // Arrange
+        var publisher = new RecordingEventEnvelopePublisher
+        {
+            Failure = new InvalidOperationException("transport unavailable")
+        };
+        var timeProvider = new FakeTimeProvider(new DateTimeOffset(2026, 6, 22, 12, 0, 0, TimeSpan.Zero));
+        await using var provider = AdminWriteDbContextTestFactory.CreateOutboxRelayProvider(publisher, timeProvider);
+        await AdminWriteDbContextTestFactory.EnqueueAdminTourCreatedIntegrationEvent(provider, "andes-retry-2026");
+
+        // Act
+        var relay = provider.GetRequiredService<EfIntegrationEventOutboxRelay<AdminWriteDbContext>>();
+        var publishedCount = await relay.PublishPending(1, TestContext.Current.CancellationToken);
+
+        // Assert
+        publishedCount.ShouldBe(1);
+        var message = AdminWriteDbContextTestFactory.GetSingleOutboxMessage(provider);
+        message.PublishedAt.ShouldBeNull();
+        message.PublishAttempts.ShouldBe(1);
+        message.LastPublishError.ShouldContain("transport unavailable", StringComparison.Ordinal);
+        message.ClaimedBy.ShouldBeNull();
+        message.ClaimedUntil.ShouldBeNull();
+        ((IRetryableMessage)message).Attempts.ShouldBe(1);
+    }
+
+    [Fact]
+    public async Task Relay_skips_message_with_active_claim()
+    {
+        // Arrange
+        var publisher = new RecordingEventEnvelopePublisher();
+        var now = new DateTimeOffset(2026, 6, 22, 12, 0, 0, TimeSpan.Zero);
+        var timeProvider = new FakeTimeProvider(now);
+        await using var provider = AdminWriteDbContextTestFactory.CreateOutboxRelayProvider(publisher, timeProvider);
+        await AdminWriteDbContextTestFactory.EnqueueAdminTourCreatedIntegrationEvent(provider, "andes-claimed-2026");
+        AdminWriteDbContextTestFactory.ClaimSingleOutboxMessage(provider, now.AddMinutes(5));
+
+        // Act
+        var relay = provider.GetRequiredService<EfIntegrationEventOutboxRelay<AdminWriteDbContext>>();
+        var publishedCount = await relay.PublishPending(1, TestContext.Current.CancellationToken);
+
+        // Assert
+        publishedCount.ShouldBe(0);
+        publisher.Published.Count.ShouldBe(0);
+        var message = AdminWriteDbContextTestFactory.GetSingleOutboxMessage(provider);
+        message.PublishedAt.ShouldBeNull();
+        message.ClaimedBy.ShouldBe("test-relay");
+        message.ClaimedUntil.ShouldBe(now.AddMinutes(5));
+    }
+
+    [Fact]
+    public async Task Relay_reclaims_message_when_claim_lease_expired()
+    {
+        // Arrange
+        var publisher = new RecordingEventEnvelopePublisher();
+        var now = new DateTimeOffset(2026, 6, 22, 12, 0, 0, TimeSpan.Zero);
+        var timeProvider = new FakeTimeProvider(now);
+        await using var provider = AdminWriteDbContextTestFactory.CreateOutboxRelayProvider(publisher, timeProvider);
+        await AdminWriteDbContextTestFactory.EnqueueAdminTourCreatedIntegrationEvent(provider, "andes-expired-claim-2026");
+        AdminWriteDbContextTestFactory.ClaimSingleOutboxMessage(provider, now.AddSeconds(-1));
+
+        // Act
+        var relay = provider.GetRequiredService<EfIntegrationEventOutboxRelay<AdminWriteDbContext>>();
+        var publishedCount = await relay.PublishPending(1, TestContext.Current.CancellationToken);
+
+        // Assert
+        publishedCount.ShouldBe(1);
+        publisher.Published.Count.ShouldBe(1);
+        var message = AdminWriteDbContextTestFactory.GetSingleOutboxMessage(provider);
+        message.PublishedAt.ShouldBe(now);
+        message.ClaimedBy.ShouldBeNull();
+        message.ClaimedUntil.ShouldBeNull();
+    }
+
+    [Fact]
+    public async Task Relay_uses_configured_batch_size_when_no_explicit_size_is_passed()
+    {
+        // Arrange
+        var publisher = new RecordingEventEnvelopePublisher();
+        var timeProvider = new FakeTimeProvider(new DateTimeOffset(2026, 6, 22, 12, 0, 0, TimeSpan.Zero));
+        await using var provider = AdminWriteDbContextTestFactory.CreateOutboxRelayProvider(
+            publisher,
+            timeProvider,
+            options => options.BatchSize = 1);
+        await AdminWriteDbContextTestFactory.EnqueueAdminTourCreatedIntegrationEvent(provider, "andes-batch-1-2026");
+        await AdminWriteDbContextTestFactory.EnqueueAdminTourCreatedIntegrationEvent(provider, "andes-batch-2-2026");
+
+        // Act
+        var relay = provider.GetRequiredService<EfIntegrationEventOutboxRelay<AdminWriteDbContext>>();
+        var publishedCount = await relay.PublishPending(TestContext.Current.CancellationToken);
+
+        // Assert
+        publishedCount.ShouldBe(1);
+        publisher.Published.Count.ShouldBe(1);
+    }
+
+    [Fact]
+    public async Task Relay_records_exception_type_when_publish_failure_message_is_empty()
+    {
+        // Arrange
+        var publisher = new RecordingEventEnvelopePublisher
+        {
+            Failure = new InvalidOperationException(string.Empty)
+        };
+        var timeProvider = new FakeTimeProvider(new DateTimeOffset(2026, 6, 22, 12, 0, 0, TimeSpan.Zero));
+        await using var provider = AdminWriteDbContextTestFactory.CreateOutboxRelayProvider(publisher, timeProvider);
+        await AdminWriteDbContextTestFactory.EnqueueAdminTourCreatedIntegrationEvent(provider, "andes-empty-error-2026");
+
+        // Act
+        var relay = provider.GetRequiredService<EfIntegrationEventOutboxRelay<AdminWriteDbContext>>();
+        var publishedCount = await relay.PublishPending(1, TestContext.Current.CancellationToken);
+
+        // Assert
+        publishedCount.ShouldBe(1);
+        var message = AdminWriteDbContextTestFactory.GetSingleOutboxMessage(provider);
+        message.PublishAttempts.ShouldBe(1);
+        message.LastPublishError.ShouldBe(typeof(InvalidOperationException).FullName);
+    }
+
+    [Fact]
+    public async Task Relay_truncates_long_publish_failure_message_to_configured_column_length()
+    {
+        // Arrange
+        var publisher = new RecordingEventEnvelopePublisher
+        {
+            Failure = new InvalidOperationException(new string('x', 2_100))
+        };
+        var timeProvider = new FakeTimeProvider(new DateTimeOffset(2026, 6, 22, 12, 0, 0, TimeSpan.Zero));
+        await using var provider = AdminWriteDbContextTestFactory.CreateOutboxRelayProvider(publisher, timeProvider);
+        await AdminWriteDbContextTestFactory.EnqueueAdminTourCreatedIntegrationEvent(provider, "andes-long-error-2026");
+
+        // Act
+        var relay = provider.GetRequiredService<EfIntegrationEventOutboxRelay<AdminWriteDbContext>>();
+        var publishedCount = await relay.PublishPending(1, TestContext.Current.CancellationToken);
+
+        // Assert
+        publishedCount.ShouldBe(1);
+        var message = AdminWriteDbContextTestFactory.GetSingleOutboxMessage(provider);
+        message.PublishAttempts.ShouldBe(1);
+        message.LastPublishError.ShouldNotBeNull();
+        message.LastPublishError.Length.ShouldBe(IntegrationEventOutboxMessage.LastPublishErrorMaxLength);
     }
 }

@@ -1,5 +1,6 @@
 using SharedKernel.Testing.Assertions;
 using ViajantesTurismo.Catalog.Application.Media;
+using ViajantesTurismo.Catalog.Contracts.Media;
 using ViajantesTurismo.Catalog.Domain.Media;
 
 namespace ViajantesTurismo.Catalog.UnitTests;
@@ -70,6 +71,37 @@ public sealed class MediaImageUploadIntakeTests
         result.IsSuccess.ShouldBe(true);
         result.Value.ScanStatus.ShouldBe(MediaUploadScanStatus.Disabled);
         imageStore.Current.Id.ShouldBe(mediaImageId);
+    }
+
+    [Fact]
+    public async Task Accept_enqueues_original_stored_event_with_media_metadata()
+    {
+        // Arrange
+        var mediaImageId = Guid.CreateVersion7();
+        var content = CatalogTestImages.CreateJpeg(320, 160);
+        var outbox = new CapturingIntegrationEventOutbox();
+        var intake = MediaImageUploadIntakeTestFactory.Create(
+            new StubMediaUploadScanner(MediaUploadScanResult.Passed),
+            new InMemoryMediaObjectStore(),
+            new InMemoryPublicMediaImageStore(PublicMediaImageTestFactory.CreatePendingImage(Guid.CreateVersion7(), 1)),
+            outbox);
+        var request = new MediaImageUploadIntakeRequest(
+            mediaImageId,
+            new MemoryStream(content),
+            "photo.jpg",
+            "image/jpeg",
+            content.Length,
+            "Cyclists in the mountains",
+            [new MediaImageTourLink(Guid.CreateVersion7(), 0, true)]);
+
+        // Act
+        var result = await intake.Accept(request, TestContext.Current.CancellationToken);
+
+        // Assert
+        result.IsSuccess.ShouldBeTrue();
+        var integrationEvent = outbox.IntegrationEvent.ShouldBeOfType<MediaImageOriginalStoredIntegrationEvent>();
+        integrationEvent.MediaImageId.ShouldBe(mediaImageId);
+        integrationEvent.SourceObjectKey.ShouldBe(result.Value.OriginalStoredEvent.SourceObjectKey);
     }
 
     [Fact]

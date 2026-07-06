@@ -366,7 +366,8 @@
       "sharedkernel.messaging.integrationevents": {
         "type": "Project",
         "dependencies": {
-          "SharedKernel.Mediator.Abstractions": "[0.1.0-alpha.0, )"
+          "SharedKernel.Mediator.Abstractions": "[0.1.0-alpha.0, )",
+          "SharedKernel.Messaging": "[0.1.0-alpha.0, )"
         }
       },
       "sharedkernel.messaging.integrationevents.cloudevents": {

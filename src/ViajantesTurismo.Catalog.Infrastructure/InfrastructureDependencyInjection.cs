@@ -29,7 +29,7 @@ public static class InfrastructureDependencyInjection
         ArgumentNullException.ThrowIfNull(builder);
 
         builder.AddNpgsqlDbContext<CatalogDbContext>(
-            ResourceNames.Database,
+            ResourceNames.CatalogDatabase,
             configureDbContextOptions: options => ConfigureDevelopmentDatabaseOptions(builder, options));
 
         builder.Services.AddCatalogApplication();
@@ -40,7 +40,8 @@ public static class InfrastructureDependencyInjection
         builder.Services.AddScoped<EfCatalogTourReadModelStore>();
         builder.Services.AddScoped<ICatalogTourReadModelStore>(sp => sp.GetRequiredService<EfCatalogTourReadModelStore>());
         builder.Services.AddScoped<IPublicMediaImageStore, EfPublicMediaImageStore>();
-        builder.Services.AddIntegrationEventInbox<CatalogDbContext>();
+        builder.Services.AddIntegrationEventOutbox<CatalogDbContext>();
+        builder.Services.AddIntegrationEventOutboxRelay<CatalogDbContext>();
 
         return builder;
     }

@@ -9,6 +9,14 @@ internal static class MediaImageUploadIntakeTestFactory
         IMediaUploadScanner scanner,
         IMediaObjectStore objectStore,
         IPublicMediaImageStore imageStore,
+        MediaUploadValidationOptions options) =>
+        Create(scanner, objectStore, imageStore, null, options);
+
+    public static MediaImageUploadIntake Create(
+        IMediaUploadScanner scanner,
+        IMediaObjectStore objectStore,
+        IPublicMediaImageStore imageStore,
+        CapturingIntegrationEventOutbox? outbox = null,
         MediaUploadValidationOptions? options = null)
     {
         var validationOptions = options ?? new MediaUploadValidationOptions();
@@ -18,6 +26,7 @@ internal static class MediaImageUploadIntakeTestFactory
             scanner,
             objectStore,
             imageStore,
+            outbox ?? new CapturingIntegrationEventOutbox(),
             Options.Create(validationOptions));
     }
 }

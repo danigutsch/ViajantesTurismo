@@ -19,8 +19,8 @@ public sealed partial class AppHostOrchestrationTests
 
         // Assert
         Assert.NotEmpty(catalogApiBlock);
-        Assert.Contains("WithReference(database)", catalogApiBlock, StringComparison.Ordinal);
-        Assert.Contains("WaitFor(database)", catalogApiBlock, StringComparison.Ordinal);
+        Assert.Contains("WithReference(catalogDatabase)", catalogApiBlock, StringComparison.Ordinal);
+        Assert.Contains("WaitFor(catalogDatabase)", catalogApiBlock, StringComparison.Ordinal);
         Assert.Contains("WaitForCompletion(migrationService)", catalogApiBlock, StringComparison.Ordinal);
     }
 

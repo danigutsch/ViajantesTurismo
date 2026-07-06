@@ -1,7 +1,7 @@
 using ViajantesTurismo.Catalog.Domain.Media;
+using ViajantesTurismo.Catalog.Contracts.Media;
 
 namespace ViajantesTurismo.Catalog.Application.Media;
-
 /// <summary>
 /// Describes an accepted media image upload and the processing work it created.
 /// </summary>
