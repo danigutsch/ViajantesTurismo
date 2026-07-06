@@ -1,4 +1,5 @@
 using System.Text.Json.Nodes;
+using SharedKernel.Testing.Snapshots;
 
 namespace ViajantesTurismo.Admin.ContractTests;
 
@@ -75,6 +76,39 @@ internal static class AdminOpenApiArtifactDriftGuard
         }
     }
 
+    /// <summary>
+    /// Asserts that a generated boundary artifact matches its committed canonical snapshot.
+    /// </summary>
+    /// <param name="boundaryName">The OpenAPI boundary document name.</param>
+    public static void AssertGeneratedArtifactMatchesCanonicalSnapshot(string boundaryName)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(boundaryName);
+
+        var openApiDirectory = GetOpenApiDirectory();
+        var generatedDirectory = Path.Combine(openApiDirectory, ".generated");
+        var canonicalFileName = $"{boundaryName}{CanonicalArtifactSuffix}";
+        var generatedFileName = $"{GeneratedArtifactPrefix}{boundaryName}.json";
+        var canonicalFilePath = Path.Combine(openApiDirectory, canonicalFileName);
+        var generatedFilePath = Path.Combine(generatedDirectory, generatedFileName);
+
+        EnsureFileExists(
+            canonicalFilePath,
+            $"Canonical Admin OpenAPI snapshot '{canonicalFileName}' was not found under 'src/ViajantesTurismo.Admin.Contracts/OpenApi/'.");
+        EnsureFileExists(
+            generatedFilePath,
+            $"Generated Admin OpenAPI artifact '{generatedFileName}' was not found. Build the solution so 'src/ViajantesTurismo.Admin.Contracts/OpenApi/.generated/' is populated.");
+
+        var canonicalText = SnapshotText.Normalize(File.ReadAllText(canonicalFilePath));
+        var generatedText = SnapshotText.Normalize(File.ReadAllText(generatedFilePath));
+
+        if (!string.Equals(canonicalText, generatedText, StringComparison.Ordinal))
+        {
+            throw new Xunit.Sdk.XunitException(
+                $"Generated Admin OpenAPI artifact '{generatedFileName}' does not match canonical snapshot '{canonicalFileName}'. "
+                + "Regenerate canonical OpenAPI artifacts intentionally when the HTTP contract changes.");
+        }
+    }
+
     private static JsonNode ParseJson(string documentPath)
     {
         var documentText = File.ReadAllText(documentPath);
@@ -117,6 +151,14 @@ internal static class AdminOpenApiArtifactDriftGuard
     private static void EnsureDirectoryExists(string directoryPath, string message)
     {
         if (!Directory.Exists(directoryPath))
+        {
+            throw new Xunit.Sdk.XunitException(message);
+        }
+    }
+
+    private static void EnsureFileExists(string filePath, string message)
+    {
+        if (!File.Exists(filePath))
         {
             throw new Xunit.Sdk.XunitException(message);
         }
