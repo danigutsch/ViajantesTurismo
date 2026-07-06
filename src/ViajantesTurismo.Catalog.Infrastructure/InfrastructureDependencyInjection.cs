@@ -42,6 +42,7 @@ public static class InfrastructureDependencyInjection
         builder.Services.AddScoped<IPublicMediaImageStore, EfPublicMediaImageStore>();
         builder.Services.AddIntegrationEventOutbox<CatalogDbContext>();
         builder.Services.AddIntegrationEventOutboxRelay<CatalogDbContext>();
+        builder.Services.AddPostgreSqlIntegrationEventOutboxRelayAtomicClaims<CatalogDbContext>();
 
         return builder;
     }
