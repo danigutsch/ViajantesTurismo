@@ -9,7 +9,7 @@ internal static class AdminOpenApiArtifactDriftGuard
 {
     private const string CanonicalArtifactSuffix = ".openapi.json";
     private const string GeneratedArtifactPrefix = "ViajantesTurismo.Admin.ApiService_";
-    private const string RefreshHint = "Refresh canonical files under 'src/ViajantesTurismo.Admin.Contracts/OpenApi/' intentionally when the HTTP contract changes.";
+    private const string RefreshHint = "Refresh with `dotnet build src/ViajantesTurismo.Admin.ApiService/ViajantesTurismo.Admin.ApiService.csproj -p:RefreshAdminOpenApiArtifacts=true` when the HTTP contract changes intentionally.";
 
     /// <summary>
     /// Asserts that every canonical boundary artifact has a matching generated artifact and vice versa.
@@ -17,15 +17,6 @@ internal static class AdminOpenApiArtifactDriftGuard
     public static void AssertCanonicalArtifactsMatchGeneratedArtifacts()
     {
         CreateSnapshotSet().AssertCanonicalArtifactsMatchGeneratedArtifacts();
-    }
-
-    /// <summary>
-    /// Asserts that a generated boundary artifact matches its committed canonical snapshot.
-    /// </summary>
-    /// <param name="boundaryName">The OpenAPI boundary document name.</param>
-    public static void AssertGeneratedArtifactMatchesCanonicalSnapshot(string boundaryName)
-    {
-        CreateSnapshotSet().AssertGeneratedArtifactMatchesCanonicalSnapshot(boundaryName);
     }
 
     private static string GetOpenApiDirectory()

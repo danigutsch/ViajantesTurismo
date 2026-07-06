@@ -6,16 +6,11 @@ internal static class CatalogOpenApiSnapshots
 {
     private const string CanonicalArtifactSuffix = ".openapi.json";
     private const string GeneratedArtifactPrefix = "ViajantesTurismo.Catalog.ApiService_";
-    private const string RefreshHint = "Refresh canonical files under 'src/ViajantesTurismo.Catalog.Contracts/OpenApi/' intentionally when the HTTP contract changes.";
+    private const string RefreshHint = "Refresh with `dotnet build src/ViajantesTurismo.Catalog.ApiService/ViajantesTurismo.Catalog.ApiService.csproj -p:RefreshCatalogOpenApiArtifacts=true` when the HTTP contract changes intentionally.";
 
     public static void AssertCanonicalArtifactsMatchGeneratedArtifacts()
     {
         CreateSnapshotSet().AssertCanonicalArtifactsMatchGeneratedArtifacts();
-    }
-
-    public static void AssertGeneratedArtifactMatchesCanonicalSnapshot(string boundaryName)
-    {
-        CreateSnapshotSet().AssertGeneratedArtifactMatchesCanonicalSnapshot(boundaryName);
     }
 
     public static JsonSnapshotArtifactSet CreateSnapshotSet()
