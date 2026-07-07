@@ -8,8 +8,10 @@ namespace ViajantesTurismo.Catalog.Infrastructure;
 internal sealed class CatalogProjectionHostedService(
     IServiceScopeFactory scopeFactory,
     ILogger<CatalogProjectionHostedService> logger)
-    : PollingBackgroundService(logger, "catalog-projections", TimeSpan.FromSeconds(5))
+    : PollingBackgroundService(logger, CatalogProjectionServiceName, TimeSpan.FromSeconds(5))
 {
+    private const string CatalogProjectionServiceName = "catalog-projections";
+
     internal ValueTask<int> RunBatch(CancellationToken stoppingToken) => ExecuteBatch(stoppingToken);
 
     protected override async ValueTask<int> ExecuteBatch(CancellationToken stoppingToken)
