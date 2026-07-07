@@ -3,9 +3,9 @@ using ContractCommandOutcomeKind = SharedKernel.HttpClients.ContractCommandOutco
 
 namespace ViajantesTurismo.Management.WebTests;
 
-[Trait(TestTraits.ScopeName, TestTraits.UnitScope)]
-[Trait(TestTraits.AreaName, TestTraits.ManagementWebArea)]
-[Trait(TestTraits.CategoryName, TestTraits.ApiClientCategory)]
+[Trait(SharedKernel.Testing.TestTraitNames.ScopeName, TestTraits.UnitScope)]
+[Trait(SharedKernel.Testing.TestTraitNames.AreaName, TestTraits.ManagementWebArea)]
+[Trait(SharedKernel.Testing.TestTraitNames.CategoryName, TestTraits.ApiClientCategory)]
 public sealed class ToursApiClientTests
 {
     [Fact]

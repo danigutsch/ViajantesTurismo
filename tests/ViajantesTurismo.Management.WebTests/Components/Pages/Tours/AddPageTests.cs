@@ -236,9 +236,9 @@ public class AddPageTests : BunitContext
     }
 
     [Fact]
-    [Trait(TestTraits.ScopeName, TestTraits.ComponentScope)]
-    [Trait(TestTraits.AreaName, TestTraits.ManagementWebArea)]
-    [Trait(TestTraits.CategoryName, TestTraits.ComponentCategory)]
+    [Trait(SharedKernel.Testing.TestTraitNames.ScopeName, TestTraits.ComponentScope)]
+    [Trait(SharedKernel.Testing.TestTraitNames.AreaName, TestTraits.ManagementWebArea)]
+    [Trait(SharedKernel.Testing.TestTraitNames.CategoryName, TestTraits.ComponentCategory)]
     public async Task Validation_problem_outcome_shows_server_validation_errors()
     {
         // Arrange
