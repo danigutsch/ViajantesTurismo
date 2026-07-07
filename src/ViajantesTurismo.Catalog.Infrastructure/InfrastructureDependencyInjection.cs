@@ -82,12 +82,26 @@ public static class InfrastructureDependencyInjection
 
         builder.Services.AddCatalogApplication();
         builder.Services.AddSingleton(TimeProvider.System);
-        builder.Services.AddLocalMediaObjectStorage();
-        builder.Services.AddScoped<IPublicContentStore, EfPublicContentStore>();
-        builder.Services.AddScoped<IPublicThemeSettingsStore, EfPublicThemeSettingsStore>();
-        builder.Services.AddScoped<EfCatalogTourReadModelStore>();
-        builder.Services.AddScoped<ICatalogTourReadModelStore>(sp => sp.GetRequiredService<EfCatalogTourReadModelStore>());
-        builder.Services.AddScoped<IPublicMediaImageStore, EfPublicMediaImageStore>();
+        AddCatalogStores(builder.Services);
+        AddCatalogEventSourcing(builder);
+        AddCatalogOutbox(builder.Services, addOutboxRelay);
+
+        return builder;
+    }
+
+    private static void AddCatalogStores(IServiceCollection services)
+    {
+        services.AddLocalMediaObjectStorage();
+        services.AddScoped<IPublicContentStore, EfPublicContentStore>();
+        services.AddScoped<IPublicThemeSettingsStore, EfPublicThemeSettingsStore>();
+        services.AddScoped<EfCatalogTourReadModelStore>();
+        services.AddScoped<ICatalogTourReadModelStore>(sp => sp.GetRequiredService<EfCatalogTourReadModelStore>());
+        services.AddScoped<IPublicMediaImageStore, EfPublicMediaImageStore>();
+    }
+
+    private static void AddCatalogEventSourcing<TApplicationBuilder>(TApplicationBuilder builder)
+        where TApplicationBuilder : IHostApplicationBuilder
+    {
         builder.Services.AddSingleton(_ =>
         {
             var connectionString = builder.Configuration.GetConnectionString(ResourceNames.CatalogDatabase)
@@ -104,14 +118,16 @@ public static class InfrastructureDependencyInjection
         builder.Services.AddSingleton<IProjectionCheckpointStore>(sp => sp.GetRequiredService<PostgreSqlProjectionCheckpointStore>());
         builder.Services.AddScoped<IProjection, CatalogTourReadModelProjection>();
         builder.Services.AddScoped<CatalogProjectionRunner>();
-        builder.Services.AddIntegrationEventOutbox<CatalogDbContext>();
+    }
+
+    private static void AddCatalogOutbox(IServiceCollection services, bool addOutboxRelay)
+    {
+        services.AddIntegrationEventOutbox<CatalogDbContext>();
         if (addOutboxRelay)
         {
-            builder.Services.AddIntegrationEventOutboxRelay<CatalogDbContext>();
-            builder.Services.AddPostgreSqlIntegrationEventOutboxRelayAtomicClaims<CatalogDbContext>();
+            services.AddIntegrationEventOutboxRelay<CatalogDbContext>();
+            services.AddPostgreSqlIntegrationEventOutboxRelayAtomicClaims<CatalogDbContext>();
         }
-
-        return builder;
     }
 
     private static void AddCatalogIntegrationEventTransportContext<TApplicationBuilder>(this TApplicationBuilder builder)

@@ -3,7 +3,7 @@ namespace ViajantesTurismo.Catalog.Infrastructure;
 /// <summary>
 /// Configures local filesystem media object storage.
 /// </summary>
-public sealed class LocalMediaObjectStorageOptions
+internal sealed class LocalMediaObjectStorageOptions
 {
     /// <summary>
     /// The configuration section name.
