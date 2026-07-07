@@ -177,11 +177,15 @@ for the localization and review flow.
 
 Current implementation:
 
-- `CatalogTourImageDto` defines public image metadata with required `Uri`, required `AltText`,
-  optional `Caption`, responsive variants, ordering, and cover-image data.
+- `CatalogTourImageDto` defines public image metadata with required `Uri`, reviewed `AltText` or an
+  explicit decorative-image decision, optional `Caption`, responsive variants, ordering, and cover-image
+  data.
 - `CatalogTourDto.Images` is populated on management and public tour responses.
 - `GET /catalog/tours/{id}/images` and `PUT /catalog/media/images/{id}` persist Catalog-owned image
-  metadata and tour associations.
+  metadata, localized accessibility text review state, and tour associations.
+- AI-assisted alt text/caption drafts can be stored as review-required image accessibility text. Public
+  endpoints expose only images whose default accessibility text is reviewed and either non-empty or
+  explicitly decorative.
 
 Planned/evolving:
 
@@ -189,8 +193,8 @@ Planned/evolving:
   treated as rebuildable projections.
 - Binary storage/upload remains an adapter concern outside the Catalog aggregate.
 - Upload processing remains asynchronous future work after original storage.
-- AI-assisted alt text/caption generation remains a separate C# implementation slice; generated text is
-  review-required by default and should be evaluated before publication.
+- Provider-backed AI generation orchestration and quality evaluation remain future work; the Catalog
+  model already enforces review-required generated drafts before publication.
 - Grafana-visible observability for generation, evaluation, review outcomes, and publication blockers
   remains future work.
 - Geolocation policy remains future design work.

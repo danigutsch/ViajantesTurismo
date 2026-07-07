@@ -264,8 +264,9 @@ flowchart LR
 ### Current implementation
 
 Catalog owns customer-facing image metadata and tour associations. Binary storage remains outside the
-Catalog aggregate; Catalog stores safe public URIs, alt text, captions, attribution, tags, ordering,
-cover-image flags, processing status, and responsive variants.
+Catalog aggregate; Catalog stores safe public URIs, reviewed alt text or explicit decorative-image
+decisions, captions, localized accessibility review state, attribution, tags, ordering, cover-image flags,
+processing status, and responsive variants.
 
 ```mermaid
 flowchart LR
@@ -289,9 +290,11 @@ flowchart LR
 Current constraints visible in contracts:
 
 - `Uri` is required.
-- `AltText` is required and length-limited for accessibility.
+- Public images require reviewed default accessibility text: non-empty `AltText` or an explicit
+  decorative-image decision.
 - `Caption` is optional and length-limited.
-- Public tour endpoints filter images to `Ready` processing status.
+- AI-assisted accessibility drafts are review-required by default.
+- Public tour endpoints filter images to `Ready` processing status and reviewed accessibility text.
 
 ### Planned/evolving
 

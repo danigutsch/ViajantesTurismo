@@ -28,8 +28,14 @@ public sealed record CatalogTourImageDto
     /// <summary>
     /// Gets the accessible image description.
     /// </summary>
-    [Required, StringLength(ContractConstants.MaxAltTextLength, MinimumLength = 1)]
+    [Required, StringLength(ContractConstants.MaxAltTextLength)]
     public required string AltText { get; init; }
+
+    /// <summary>
+    /// Gets a value indicating whether this image is intentionally decorative.
+    /// </summary>
+    [Required]
+    public bool IsDecorative { get; init; }
 
     /// <summary>
     /// Gets an optional display caption.

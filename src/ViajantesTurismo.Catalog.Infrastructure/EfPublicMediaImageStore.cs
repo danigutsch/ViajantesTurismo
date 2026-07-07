@@ -22,6 +22,7 @@ internal sealed class EfPublicMediaImageStore(CatalogDbContext dbContext) : IPub
         var existing = await dbContext.PublicMediaImages
             .Include(current => current.ResponsiveVariants)
             .Include(current => current.TourLinks)
+            .Include(current => current.AccessibilityTexts)
             .AsSplitQuery()
             .SingleOrDefaultAsync(current => current.Id == image.Id, ct)
             .ConfigureAwait(false);
@@ -55,6 +56,7 @@ internal sealed class EfPublicMediaImageStore(CatalogDbContext dbContext) : IPub
         var image = await dbContext.PublicMediaImages
             .Include(current => current.ResponsiveVariants)
             .Include(current => current.TourLinks)
+            .Include(current => current.AccessibilityTexts)
             .AsSplitQuery()
             .SingleOrDefaultAsync(current => current.Id == imageId, ct)
             .ConfigureAwait(false);
@@ -67,6 +69,7 @@ internal sealed class EfPublicMediaImageStore(CatalogDbContext dbContext) : IPub
         var images = await dbContext.PublicMediaImages
             .Include(image => image.ResponsiveVariants)
             .Include(image => image.TourLinks)
+            .Include(image => image.AccessibilityTexts)
             .AsSplitQuery()
             .Where(image => image.TourLinks.Any(link => link.CatalogTourId == catalogTourId))
             .ToArrayAsync(ct)
@@ -95,6 +98,7 @@ internal sealed class EfPublicMediaImageStore(CatalogDbContext dbContext) : IPub
         var images = await dbContext.PublicMediaImages
             .Include(image => image.ResponsiveVariants)
             .Include(image => image.TourLinks)
+            .Include(image => image.AccessibilityTexts)
             .AsSplitQuery()
             .Where(image => image.TourLinks.Any(link => requestedIds.Contains(link.CatalogTourId)))
             .ToArrayAsync(ct)
@@ -151,12 +155,16 @@ internal sealed class EfPublicMediaImageStore(CatalogDbContext dbContext) : IPub
                 ProcessingStatus = image.ProcessingStatus,
                 AltText = StringSanitizer.Sanitize(image.AltText) ?? string.Empty,
                 Caption = StringSanitizer.Sanitize(image.Caption),
+                IsDecorative = image.IsDecorative,
+                RequiresHumanReview = image.RequiresHumanReview,
+                IsAiGenerated = image.IsAiGenerated,
                 Attribution = StringSanitizer.Sanitize(image.Attribution),
                 Copyright = StringSanitizer.Sanitize(image.Copyright)
             },
             image.ResponsiveVariants,
             StringSanitizer.SanitizeCollection(image.Tags),
-            [.. image.TourLinks.OrderBy(link => link.DisplayOrder)]);
+            [.. image.TourLinks.OrderBy(link => link.DisplayOrder)],
+            image.AccessibilityTexts);
     }
 
     private static PublicMediaImage ForTour(PublicMediaImage image, Guid catalogTourId)
@@ -180,6 +188,9 @@ internal sealed class EfPublicMediaImageStore(CatalogDbContext dbContext) : IPub
                 ProcessingStatus = sanitizedImage.ProcessingStatus,
                 AltText = sanitizedImage.AltText,
                 Caption = sanitizedImage.Caption,
+                IsDecorative = sanitizedImage.IsDecorative,
+                RequiresHumanReview = sanitizedImage.RequiresHumanReview,
+                IsAiGenerated = sanitizedImage.IsAiGenerated,
                 Attribution = sanitizedImage.Attribution,
                 Copyright = sanitizedImage.Copyright
             },
@@ -187,6 +198,7 @@ internal sealed class EfPublicMediaImageStore(CatalogDbContext dbContext) : IPub
             sanitizedImage.Tags,
             [.. sanitizedImage.TourLinks
                 .Where(link => catalogTourId is null || link.CatalogTourId == catalogTourId.Value)
-                .OrderBy(link => link.DisplayOrder)]);
+                .OrderBy(link => link.DisplayOrder)],
+            sanitizedImage.AccessibilityTexts);
     }
 }

@@ -75,7 +75,7 @@ public sealed record PublicMediaImageDto
     /// <summary>
     /// Gets the accessible image description.
     /// </summary>
-    [Required, StringLength(ContractConstants.MaxAltTextLength, MinimumLength = 1)]
+    [Required, StringLength(ContractConstants.MaxAltTextLength)]
     public required string AltText { get; init; }
 
     /// <summary>
@@ -83,6 +83,30 @@ public sealed record PublicMediaImageDto
     /// </summary>
     [StringLength(ContractConstants.MaxCaptionLength)]
     public string? Caption { get; init; }
+
+    /// <summary>
+    /// Gets a value indicating whether the image is intentionally decorative.
+    /// </summary>
+    [Required]
+    public bool IsDecorative { get; init; }
+
+    /// <summary>
+    /// Gets a value indicating whether accessibility text needs human review before publication.
+    /// </summary>
+    [Required]
+    public bool RequiresHumanReview { get; init; }
+
+    /// <summary>
+    /// Gets a value indicating whether the current accessibility text is an AI-assisted draft.
+    /// </summary>
+    [Required]
+    public bool IsAiGenerated { get; init; }
+
+    /// <summary>
+    /// Gets localized accessibility text for publication review.
+    /// </summary>
+    [Required]
+    public IReadOnlyList<PublicMediaAccessibilityTextDto> AccessibilityTexts { get; init; } = [];
 
     /// <summary>
     /// Gets the optional attribution text.

@@ -51,6 +51,21 @@ public sealed class PublicMediaImageMetadata
     public string? Caption { get; init; }
 
     /// <summary>
+    /// Gets or initializes a value indicating whether the image is intentionally decorative.
+    /// </summary>
+    public bool IsDecorative { get; init; }
+
+    /// <summary>
+    /// Gets or initializes a value indicating whether accessibility text needs human review before publication.
+    /// </summary>
+    public bool RequiresHumanReview { get; init; }
+
+    /// <summary>
+    /// Gets or initializes a value indicating whether the current accessibility text is an AI-assisted draft.
+    /// </summary>
+    public bool IsAiGenerated { get; init; }
+
+    /// <summary>
     /// Gets or initializes the optional attribution text.
     /// </summary>
     public string? Attribution { get; init; }

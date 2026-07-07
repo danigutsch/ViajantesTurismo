@@ -305,6 +305,7 @@
           "isCover",
           "uri",
           "altText",
+          "isDecorative",
           "responsiveVariants"
         ],
         "type": "object",
@@ -328,8 +329,11 @@
           },
           "altText": {
             "maxLength": 256,
-            "minLength": 1,
+            "minLength": 0,
             "type": "string"
+          },
+          "isDecorative": {
+            "type": "boolean"
           },
           "caption": {
             "maxLength": 256,
@@ -521,6 +525,45 @@
           }
         }
       },
+      "PublicMediaAccessibilityTextDto": {
+        "required": [
+          "language",
+          "isDecorative",
+          "requiresHumanReview",
+          "isAiGenerated"
+        ],
+        "type": "object",
+        "properties": {
+          "language": {
+            "$ref": "#/components/schemas/PublicContentLanguageDto"
+          },
+          "altText": {
+            "maxLength": 256,
+            "minLength": 0,
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "caption": {
+            "maxLength": 256,
+            "minLength": 0,
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "isDecorative": {
+            "type": "boolean"
+          },
+          "requiresHumanReview": {
+            "type": "boolean"
+          },
+          "isAiGenerated": {
+            "type": "boolean"
+          }
+        }
+      },
       "PublicMediaImageDto": {
         "required": [
           "id",
@@ -533,7 +576,11 @@
           "responsiveVariants",
           "tags",
           "tourLinks",
-          "altText"
+          "altText",
+          "isDecorative",
+          "requiresHumanReview",
+          "isAiGenerated",
+          "accessibilityTexts"
         ],
         "type": "object",
         "properties": {
@@ -597,7 +644,7 @@
           },
           "altText": {
             "maxLength": 256,
-            "minLength": 1,
+            "minLength": 0,
             "type": "string"
           },
           "caption": {
@@ -607,6 +654,21 @@
               "null",
               "string"
             ]
+          },
+          "isDecorative": {
+            "type": "boolean"
+          },
+          "requiresHumanReview": {
+            "type": "boolean"
+          },
+          "isAiGenerated": {
+            "type": "boolean"
+          },
+          "accessibilityTexts": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/PublicMediaAccessibilityTextDto"
+            }
           },
           "attribution": {
             "maxLength": 256,

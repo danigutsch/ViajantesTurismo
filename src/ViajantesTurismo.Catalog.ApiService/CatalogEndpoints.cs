@@ -347,6 +347,7 @@ internal static class CatalogEndpoints
             IsCover = image.IsCover,
             Uri = GetPublicImageUri(image, objectStore),
             AltText = image.AltText,
+            IsDecorative = image.IsDecorative,
             Caption = image.Caption,
             ResponsiveVariants = image.ResponsiveVariants
                 .OrderBy(variant => variant.Width)
@@ -395,6 +396,11 @@ internal static class CatalogEndpoints
         {
             errors[nameof(PublicMediaImageDto.ResponsiveVariants)] = ["Responsive variants must include absolute HTTP or HTTPS URIs when ObjectKey is not provided."];
         }
+
+        if (image.AccessibilityTexts is not null && image.AccessibilityTexts.Any(text => text is null))
+        {
+            errors[nameof(PublicMediaImageDto.AccessibilityTexts)] = ["Accessibility text entries are required."];
+        }
     }
 
     private static bool IsHttpUri(Uri? uri)
@@ -413,7 +419,7 @@ internal static class CatalogEndpoints
 
     private static Result<PublicMediaImage> ToDomainMediaImage(PublicMediaImageDto image)
     {
-        return PublicMediaImage.Create(
+        var result = PublicMediaImage.Create(
             new PublicMediaImageMetadata
             {
                 Id = image.Id,
@@ -427,12 +433,34 @@ internal static class CatalogEndpoints
                 ProcessingStatus = (MediaImageProcessingStatus)(int)image.ProcessingStatus,
                 AltText = image.AltText ?? string.Empty,
                 Caption = image.Caption,
+                IsDecorative = image.IsDecorative,
+                RequiresHumanReview = image.RequiresHumanReview,
+                IsAiGenerated = image.IsAiGenerated,
                 Attribution = image.Attribution,
                 Copyright = image.Copyright
             },
             image.ResponsiveVariants.Select(ToDomainResponsiveVariant).ToArray(),
             image.Tags,
             image.TourLinks.Select(link => new MediaImageTourLink(link.CatalogTourId, link.DisplayOrder, link.IsCover)).ToArray());
+
+        if (result.IsFailure || image.AccessibilityTexts.Count == 0)
+        {
+            return result;
+        }
+
+        var mediaImage = result.Value;
+        foreach (var text in image.AccessibilityTexts)
+        {
+            var textResult = text.IsAiGenerated
+                ? mediaImage.SetAiDraftAccessibilityText(ToDomainLanguage(text.Language), text.AltText ?? string.Empty, text.Caption)
+                : mediaImage.SetReviewedAccessibilityText(ToDomainLanguage(text.Language), text.AltText, text.Caption, text.IsDecorative);
+            if (textResult.IsFailure)
+            {
+                return Result.Invalid<PublicMediaImage>(textResult.ErrorDetails.Detail, textResult.ErrorDetails.ValidationErrors?.ToDictionary(error => error.Key, error => error.Value.ToArray(), StringComparer.Ordinal) ?? []);
+            }
+        }
+
+        return result;
     }
 
     private static MediaImageResponsiveVariant ToDomainResponsiveVariant(MediaImageResponsiveVariantDto variant)
@@ -469,8 +497,25 @@ internal static class CatalogEndpoints
                 .ToArray(),
             AltText = image.AltText,
             Caption = image.Caption,
+            IsDecorative = image.IsDecorative,
+            RequiresHumanReview = image.RequiresHumanReview,
+            IsAiGenerated = image.IsAiGenerated,
+            AccessibilityTexts = image.AccessibilityTexts.Select(MapAccessibilityText).ToArray(),
             Attribution = image.Attribution,
             Copyright = image.Copyright
+        };
+    }
+
+    private static PublicMediaAccessibilityTextDto MapAccessibilityText(PublicMediaImageAccessibilityText text)
+    {
+        return new PublicMediaAccessibilityTextDto
+        {
+            Language = ToContractLanguage(text.Language),
+            AltText = text.AltText,
+            Caption = text.Caption,
+            IsDecorative = text.IsDecorative,
+            RequiresHumanReview = text.RequiresHumanReview,
+            IsAiGenerated = text.IsAiGenerated
         };
     }
 

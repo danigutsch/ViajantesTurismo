@@ -879,6 +879,47 @@ public sealed class CatalogApiEndpointTests
     }
 
     [Fact]
+    public async Task Public_tour_endpoint_hides_images_with_ai_draft_accessibility_text()
+    {
+        // Arrange
+        var tourId = Guid.CreateVersion7();
+        var tourStore = new TestCatalogTourReadModelStore();
+        await tourStore.UpsertDraft(
+            new CatalogTourDraftReadModel(
+                tourId,
+                Guid.CreateVersion7(),
+                "TOUR-2026",
+                "Published Tour",
+                "published-tour",
+                true,
+                1,
+                DateTimeOffset.UtcNow),
+            TestContext.Current.CancellationToken);
+        var mediaStore = new TestPublicMediaImageStore();
+        var image = PublicMediaImageTestFactory.CreateReadyImage(
+            tourId,
+            "draft-source.jpg",
+            "draft-640.jpg",
+            "sha256:draft",
+            "Draft image",
+            displayOrder: 0,
+            isCover: true);
+        image.SetAiDraftAccessibilityText(PublicContentLanguage.EnUs, "AI draft image", null).IsSuccess.ShouldBeTrue();
+        await mediaStore.Upsert(image, TestContext.Current.CancellationToken);
+        await using var factory = CatalogApiTestHost.Create(tourStore, new TestPublicContentStore(), mediaStore);
+        using var client = factory.CreateClient();
+
+        // Act
+        using var response = await client.GetAsync(new Uri("/public/catalog/tours/published-tour", UriKind.Relative), TestContext.Current.CancellationToken);
+        var tour = await response.Content.ReadFromJsonAsync<CatalogTourDto>(TestContext.Current.CancellationToken);
+
+        // Assert
+        response.StatusCode.ShouldBe(HttpStatusCode.OK);
+        tour.ShouldNotBeNull();
+        tour.Images.ShouldBeEmpty();
+    }
+
+    [Fact]
     public async Task Public_tour_endpoint_orders_cover_image_before_gallery_images()
     {
         // Arrange

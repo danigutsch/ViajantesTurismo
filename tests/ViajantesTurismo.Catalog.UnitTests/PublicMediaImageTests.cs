@@ -1,5 +1,6 @@
 using SharedKernel.Testing.Assertions;
 using ViajantesTurismo.Catalog.Domain.Media;
+using ViajantesTurismo.Catalog.Domain.PublicContent;
 
 namespace ViajantesTurismo.Catalog.UnitTests;
 
@@ -84,6 +85,89 @@ public sealed class PublicMediaImageTests
         // Assert
         readyResult.ShouldBe(true);
         pendingResult.ShouldBe(false);
+    }
+
+    [Fact]
+    public void Ai_generated_accessibility_text_requires_human_review_before_publication()
+    {
+        // Arrange
+        var image = PublicMediaImageTestFactory.CreateImage(Guid.CreateVersion7(), 0, true);
+
+        // Act
+        var result = image.SetAiDraftAccessibilityText(PublicContentLanguage.EnUs, "Cyclists riding near a mountain trail", "Mountain cycling tour");
+
+        // Assert
+        result.IsSuccess.ShouldBeTrue();
+        image.RequiresHumanReview.ShouldBeTrue();
+        image.IsAiGenerated.ShouldBeTrue();
+        image.HasPublicVariants.ShouldBeFalse();
+        var text = image.AccessibilityTexts.ShouldHaveSingleItem();
+        text.RequiresHumanReview.ShouldBeTrue();
+        text.IsAiGenerated.ShouldBeTrue();
+    }
+
+    [Fact]
+    public void Reviewed_accessibility_text_allows_publication()
+    {
+        // Arrange
+        var image = PublicMediaImageTestFactory.CreateImage(Guid.CreateVersion7(), 0, true);
+        image.SetAiDraftAccessibilityText(PublicContentLanguage.EnUs, "Cyclists riding near a mountain trail", null).IsSuccess.ShouldBeTrue();
+
+        // Act
+        var result = image.SetReviewedAccessibilityText(PublicContentLanguage.EnUs, "Cyclists riding near a mountain trail", null, isDecorative: false);
+
+        // Assert
+        result.IsSuccess.ShouldBeTrue();
+        image.RequiresHumanReview.ShouldBeFalse();
+        image.IsAiGenerated.ShouldBeFalse();
+        image.HasPublicVariants.ShouldBeTrue();
+    }
+
+    [Fact]
+    public void Decorative_images_can_publish_without_alt_text_after_review()
+    {
+        // Arrange
+        var image = PublicMediaImageTestFactory.CreateImage(Guid.CreateVersion7(), 0, true);
+
+        // Act
+        var result = image.SetReviewedAccessibilityText(PublicContentLanguage.EnUs, null, null, isDecorative: true);
+
+        // Assert
+        result.IsSuccess.ShouldBeTrue();
+        image.IsDecorative.ShouldBeTrue();
+        image.AltText.ShouldBe(string.Empty);
+        image.HasPublicVariants.ShouldBeTrue();
+    }
+
+    [Fact]
+    public void Reviewed_non_decorative_images_require_alt_text()
+    {
+        // Arrange
+        var image = PublicMediaImageTestFactory.CreateImage(Guid.CreateVersion7(), 0, true);
+
+        // Act
+        var result = image.SetReviewedAccessibilityText(PublicContentLanguage.EnUs, null, null, isDecorative: false);
+
+        // Assert
+        result.IsFailure.ShouldBeTrue();
+        image.HasPublicVariants.ShouldBeTrue();
+    }
+
+    [Fact]
+    public void Accessibility_text_can_be_localized_independently_for_review()
+    {
+        // Arrange
+        var image = PublicMediaImageTestFactory.CreateImage(Guid.CreateVersion7(), 0, true);
+
+        // Act
+        var result = image.SetAiDraftAccessibilityText(PublicContentLanguage.PtBr, "Ciclistas em uma trilha de montanha", "Passeio de bicicleta");
+
+        // Assert
+        result.IsSuccess.ShouldBeTrue();
+        image.AccessibilityTexts.Count.ShouldBe(2);
+        var localized = image.AccessibilityTexts.Single(text => text.Language == PublicContentLanguage.PtBr);
+        localized.RequiresHumanReview.ShouldBeTrue();
+        localized.IsAiGenerated.ShouldBeTrue();
     }
 
     [Fact]
