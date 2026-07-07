@@ -94,8 +94,11 @@ internal sealed class CatalogInfrastructureScenario(ServiceProvider provider) : 
     public void ShouldResolveSingleton<TService>()
         where TService : class
     {
-        var first = provider.GetRequiredService<TService>();
-        var second = provider.GetRequiredService<TService>();
+        using var firstScope = provider.CreateScope();
+        using var secondScope = provider.CreateScope();
+
+        var first = firstScope.ServiceProvider.GetRequiredService<TService>();
+        var second = secondScope.ServiceProvider.GetRequiredService<TService>();
 
         ReferenceEquals(first, second).ShouldBeTrue();
     }
