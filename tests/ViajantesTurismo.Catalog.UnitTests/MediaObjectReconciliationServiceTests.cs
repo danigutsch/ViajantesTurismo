@@ -146,4 +146,19 @@ public sealed class MediaObjectReconciliationServiceTests
         retryReport.FailedDeleteObjectKeys.ShouldBeEmpty();
         objectStore.ObjectKeys.ShouldNotContain("media/retry-orphan.jpg");
     }
+
+    [Fact]
+    public async Task Reconcile_rejects_negative_orphan_grace_period()
+    {
+        // Arrange
+        var image = PublicMediaImageTestFactory.CreatePendingImage(Guid.CreateVersion7(), 1024);
+        var service = new MediaObjectReconciliationService(new InMemoryMediaObjectStore(), new InMemoryPublicMediaImageStore(image));
+
+        // Act
+        var action = () => service.Reconcile(deleteOrphans: true, TimeSpan.FromTicks(-1), TestContext.Current.CancellationToken).AsTask();
+
+        // Assert
+        var exception = await action.ShouldThrow<ArgumentOutOfRangeException>();
+        exception.ParamName.ShouldBe("orphanGracePeriod");
+    }
 }

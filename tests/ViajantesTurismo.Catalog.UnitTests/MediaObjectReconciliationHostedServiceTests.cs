@@ -17,4 +17,31 @@ public sealed class MediaObjectReconciliationHostedServiceTests
         reconciledObjects.ShouldBe(1);
         scenario.ObjectStore.ObjectKeys.ShouldNotContain("media/hosted-orphan.jpg");
     }
+
+    [Fact]
+    public async Task ExecuteBatch_returns_zero_for_recent_orphans_so_polling_drain_stops()
+    {
+        // Arrange
+        await using var scenario = await MediaObjectReconciliationHostedServiceScenario.CreateWithRecentOrphan();
+
+        // Act
+        var reconciledObjects = await scenario.ExecuteBatch(TestContext.Current.CancellationToken);
+
+        // Assert
+        reconciledObjects.ShouldBe(0);
+        scenario.ObjectStore.ObjectKeys.ShouldContain("media/recent-hosted-orphan.jpg");
+    }
+
+    [Fact]
+    public async Task ExecuteBatch_returns_zero_for_missing_references_so_polling_drain_stops()
+    {
+        // Arrange
+        await using var scenario = MediaObjectReconciliationHostedServiceScenario.CreateWithMissingObject();
+
+        // Act
+        var reconciledObjects = await scenario.ExecuteBatch(TestContext.Current.CancellationToken);
+
+        // Assert
+        reconciledObjects.ShouldBe(0);
+    }
 }

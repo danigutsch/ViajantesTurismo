@@ -57,4 +57,95 @@ public sealed class MediaImageAccessibilityDraftServiceTests
         generator.Request.Latitude.ShouldBe(-23.55m);
         generator.Request.Longitude.ShouldBe(-46.63m);
     }
+
+    [Fact]
+    public async Task Generate_draft_returns_not_found_when_image_is_missing()
+    {
+        // Arrange
+        var imageStore = new InMemoryPublicMediaImageStore(PublicMediaImageTestFactory.CreateImage(Guid.CreateVersion7(), 0, true, imageId: Guid.CreateVersion7()));
+        var objectStore = new InMemoryMediaObjectStore();
+        var generator = new StubImageTextGenerator(new ImageTextGenerationResult("Draft alt", null));
+        var service = new MediaImageAccessibilityDraftService(imageStore, objectStore, generator);
+
+        // Act
+        var result = await service.GenerateDraft(
+            Guid.CreateVersion7(),
+            new MediaImageAccessibilityDraftInput { Language = PublicContentLanguage.EnUs },
+            TestContext.Current.CancellationToken);
+
+        // Assert
+        result.Status.ShouldBe(SharedKernel.Results.ResultStatus.NotFound);
+        generator.Request.ShouldBeNull();
+    }
+
+    [Fact]
+    public async Task Generate_draft_returns_invalid_when_location_is_partial()
+    {
+        // Arrange
+        var image = PublicMediaImageTestFactory.CreateImage(Guid.CreateVersion7(), 0, true, imageId: Guid.CreateVersion7());
+        var imageStore = new InMemoryPublicMediaImageStore(image);
+        var objectStore = new InMemoryMediaObjectStore();
+        var generator = new StubImageTextGenerator(new ImageTextGenerationResult("Draft alt", null));
+        var service = new MediaImageAccessibilityDraftService(imageStore, objectStore, generator);
+
+        // Act
+        var result = await service.GenerateDraft(
+            image.Id,
+            new MediaImageAccessibilityDraftInput { Language = PublicContentLanguage.EnUs, Latitude = -23.55m },
+            TestContext.Current.CancellationToken);
+
+        // Assert
+        result.Status.ShouldBe(SharedKernel.Results.ResultStatus.Invalid);
+        generator.Request.ShouldBeNull();
+    }
+
+    [Fact]
+    public async Task Generate_draft_returns_unavailable_when_generator_fails()
+    {
+        // Arrange
+        var image = PublicMediaImageTestFactory.CreateImage(Guid.CreateVersion7(), 0, true, imageId: Guid.CreateVersion7());
+        var imageStore = new InMemoryPublicMediaImageStore(image);
+        var objectStore = new InMemoryMediaObjectStore();
+        await objectStore.Put(
+            new MediaObjectWriteRequest(image.SourceObjectKey, new MemoryStream([1]), "image/jpeg", 1, "sha256:abc"),
+            TestContext.Current.CancellationToken);
+        var generator = new StubImageTextGenerator(new ImageTextGenerationResult("Draft alt", null));
+        generator.Throw(new ImageTextGenerationException("Proxy failed."));
+        var service = new MediaImageAccessibilityDraftService(imageStore, objectStore, generator);
+
+        // Act
+        var result = await service.GenerateDraft(
+            image.Id,
+            new MediaImageAccessibilityDraftInput { Language = PublicContentLanguage.EnUs },
+            TestContext.Current.CancellationToken);
+
+        // Assert
+        result.Status.ShouldBe(SharedKernel.Results.ResultStatus.Unavailable);
+        imageStore.Current.IsAiGenerated.ShouldBeFalse();
+    }
+
+    [Fact]
+    public async Task Generate_draft_uses_pt_br_language_tag()
+    {
+        // Arrange
+        var image = PublicMediaImageTestFactory.CreateImage(Guid.CreateVersion7(), 0, true, imageId: Guid.CreateVersion7());
+        var imageStore = new InMemoryPublicMediaImageStore(image);
+        var objectStore = new InMemoryMediaObjectStore();
+        await objectStore.Put(
+            new MediaObjectWriteRequest(image.SourceObjectKey, new MemoryStream([1]), "image/jpeg", 1, "sha256:abc"),
+            TestContext.Current.CancellationToken);
+        var generator = new StubImageTextGenerator(new ImageTextGenerationResult("Rascunho", null));
+        var service = new MediaImageAccessibilityDraftService(imageStore, objectStore, generator);
+
+        // Act
+        var result = await service.GenerateDraft(
+            image.Id,
+            new MediaImageAccessibilityDraftInput { Language = PublicContentLanguage.PtBr },
+            TestContext.Current.CancellationToken);
+
+        // Assert
+        result.IsSuccess.ShouldBeTrue();
+        generator.Request.ShouldNotBeNull();
+        generator.Request.Language.ShouldBe("pt-BR");
+    }
 }

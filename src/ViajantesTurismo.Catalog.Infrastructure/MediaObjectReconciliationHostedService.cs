@@ -21,6 +21,6 @@ internal sealed class MediaObjectReconciliationHostedService(
         var service = scope.ServiceProvider.GetRequiredService<MediaObjectReconciliationService>();
         var report = await service.Reconcile(deleteOrphans: true, OrphanGracePeriod, stoppingToken).ConfigureAwait(false);
 
-        return report.OrphanObjectKeys.Count + report.MissingObjectKeys.Count + report.FailedDeleteObjectKeys.Count;
+        return report.DeletedOrphanObjectKeys.Count;
     }
 }

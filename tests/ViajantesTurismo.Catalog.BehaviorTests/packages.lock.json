@@ -882,6 +882,7 @@
       "viajantesturismo.catalog.testing": {
         "type": "Project",
         "dependencies": {
+          "SharedKernel.AI": "[0.1.0-alpha.0, )",
           "SharedKernel.InputNormalization": "[0.1.0-alpha.0, )",
           "SharedKernel.Testing.AspNetCore": "[0.1.0-alpha.0, )",
           "ViajantesTurismo.Catalog.ApiService": "[0.1.0-alpha.0, )",

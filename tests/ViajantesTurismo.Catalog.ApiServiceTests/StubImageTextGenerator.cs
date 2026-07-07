@@ -1,6 +1,6 @@
 using SharedKernel.AI;
 
-namespace ViajantesTurismo.Catalog.UnitTests;
+namespace ViajantesTurismo.Catalog.ApiServiceTests;
 
 internal sealed class StubImageTextGenerator(ImageTextGenerationResult result) : IImageTextGenerator
 {

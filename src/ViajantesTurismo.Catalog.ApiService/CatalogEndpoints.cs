@@ -485,9 +485,9 @@ internal static class CatalogEndpoints
         {
             errors[nameof(PublicMediaImageDto.AccessibilityTexts)] = ["Accessibility text languages cannot be duplicated."];
         }
-        else if (image.AccessibilityTexts.Any(static text => text.IsAiGenerated != text.RequiresHumanReview))
+        else if (image.AccessibilityTexts.Any(static text => text.IsAiGenerated && !text.RequiresHumanReview))
         {
-            errors[nameof(PublicMediaImageDto.AccessibilityTexts)] = ["Accessibility text must be either an AI draft requiring review or reviewed editor text."];
+            errors[nameof(PublicMediaImageDto.AccessibilityTexts)] = ["AI-generated accessibility text requires human review."];
         }
         else if (image.AccessibilityTexts.Any(static text => text.IsAiGenerated && text.IsDecorative))
         {
@@ -543,9 +543,21 @@ internal static class CatalogEndpoints
         var mediaImage = result.Value;
         foreach (var text in image.AccessibilityTexts)
         {
-            var textResult = text.IsAiGenerated
-                ? mediaImage.SetAiDraftAccessibilityText(ToDomainLanguage(text.Language), text.AltText ?? string.Empty, text.Caption)
-                : mediaImage.SetReviewedAccessibilityText(ToDomainLanguage(text.Language), text.AltText, text.Caption, text.IsDecorative);
+            var language = ToDomainLanguage(text.Language);
+            Result textResult;
+            if (text.IsAiGenerated)
+            {
+                textResult = mediaImage.SetAiDraftAccessibilityText(language, text.AltText ?? string.Empty, text.Caption);
+            }
+            else if (text.RequiresHumanReview)
+            {
+                textResult = mediaImage.SetDraftAccessibilityText(language, text.AltText ?? string.Empty, text.Caption);
+            }
+            else
+            {
+                textResult = mediaImage.SetReviewedAccessibilityText(language, text.AltText, text.Caption, text.IsDecorative);
+            }
+
             if (textResult.IsFailure)
             {
                 return Result.Invalid<PublicMediaImage>(textResult.ErrorDetails.Detail, textResult.ErrorDetails.ValidationErrors?.ToDictionary(error => error.Key, error => error.Value.ToArray(), StringComparer.Ordinal) ?? []);

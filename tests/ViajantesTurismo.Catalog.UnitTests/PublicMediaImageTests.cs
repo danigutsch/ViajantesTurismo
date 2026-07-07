@@ -187,6 +187,42 @@ public sealed class PublicMediaImageTests
     }
 
     [Fact]
+    public void Manual_draft_accessibility_text_requires_human_review_without_ai_flag()
+    {
+        // Arrange
+        var image = PublicMediaImageTestFactory.CreateImage(Guid.CreateVersion7(), 0, true);
+
+        // Act
+        var result = image.SetDraftAccessibilityText(PublicContentLanguage.EnUs, "Editor draft image description", "Editor draft caption");
+
+        // Assert
+        result.IsSuccess.ShouldBeTrue();
+        image.RequiresHumanReview.ShouldBeTrue();
+        image.IsAiGenerated.ShouldBeFalse();
+        image.HasPublicVariants.ShouldBeFalse();
+        var text = image.AccessibilityTexts.Single(accessibilityText => accessibilityText.Language == PublicContentLanguage.EnUs);
+        text.RequiresHumanReview.ShouldBeTrue();
+        text.IsAiGenerated.ShouldBeFalse();
+    }
+
+    [Fact]
+    public void Pt_br_ai_draft_does_not_replace_default_public_accessibility_text()
+    {
+        // Arrange
+        var image = PublicMediaImageTestFactory.CreateImage(Guid.CreateVersion7(), 0, true, altText: "Reviewed default alt");
+
+        // Act
+        var result = image.SetAiDraftAccessibilityText(PublicContentLanguage.PtBr, "Rascunho em português", null);
+
+        // Assert
+        result.IsSuccess.ShouldBeTrue();
+        image.AltText.ShouldBe("Reviewed default alt");
+        image.RequiresHumanReview.ShouldBeFalse();
+        image.IsAiGenerated.ShouldBeFalse();
+        image.HasPublicVariants.ShouldBeTrue();
+    }
+
+    [Fact]
     public void Accessibility_text_can_be_localized_independently_for_review()
     {
         // Arrange

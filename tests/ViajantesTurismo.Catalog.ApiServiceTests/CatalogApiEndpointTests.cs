@@ -1,8 +1,10 @@
 using System.Net.Http.Json;
 using System.Text;
 using Microsoft.AspNetCore.Http;
+using SharedKernel.AI;
 using TestTraits = ViajantesTurismo.Catalog.ApiServiceTests.Infrastructure.TestTraits;
 using ViajantesTurismo.Catalog.ApiService;
+using ViajantesTurismo.Catalog.Application.Media;
 using ViajantesTurismo.Catalog.Application.Tours;
 using ViajantesTurismo.Catalog.Contracts;
 using ViajantesTurismo.Catalog.Domain.PublicContent;
@@ -930,6 +932,126 @@ public sealed class CatalogApiEndpointTests
         var problem = await response.Content.ReadFromJsonAsync<HttpValidationProblemDetails>(TestContext.Current.CancellationToken);
         problem.ShouldNotBeNull();
         problem.Errors.Keys.ShouldContain(nameof(PublicMediaImageDto.AccessibilityTexts));
+    }
+
+    [Fact]
+    public async Task Catalog_media_image_endpoint_accepts_manual_draft_accessibility_text_requiring_review()
+    {
+        // Arrange
+        var tourId = Guid.CreateVersion7();
+        var tourStore = new TestCatalogTourReadModelStore();
+        await tourStore.UpsertDraft(
+            new CatalogTourDraftReadModel(
+                tourId,
+                Guid.CreateVersion7(),
+                "TOUR-DRAFT",
+                "Draft Tour",
+                "draft-tour",
+                false,
+                1,
+                DateTimeOffset.UtcNow),
+            TestContext.Current.CancellationToken);
+        await using var factory = CatalogApiTestHost.Create(tourStore, new TestPublicContentStore());
+        using var client = factory.CreateClient();
+        var imageId = Guid.CreateVersion7();
+        var request = new PublicMediaImageDto
+        {
+            Id = imageId,
+            SourceUri = new Uri("https://cdn.example/source.jpg"),
+            Checksum = "sha256:abc",
+            ContentType = "image/jpeg",
+            FileSizeBytes = 2048,
+            Dimensions = new MediaImageDimensionsDto { Width = 1200, Height = 800 },
+            ProcessingStatus = MediaImageProcessingStatusDto.Ready,
+            ResponsiveVariants =
+            [
+                new MediaImageResponsiveVariantDto { Uri = new Uri("https://cdn.example/640.jpg"), Width = 640, Height = 427, ContentType = "image/jpeg", FileSizeBytes = 1000 }
+            ],
+            Tags = ["camino"],
+            TourLinks =
+            [
+                new MediaImageTourLinkDto { CatalogTourId = tourId, DisplayOrder = 1, IsCover = true }
+            ],
+            AltText = "Editor draft image",
+            RequiresHumanReview = true,
+            AccessibilityTexts =
+            [
+                new PublicMediaAccessibilityTextDto { Language = PublicContentLanguageDto.EnUs, AltText = "Editor draft image", IsAiGenerated = false, RequiresHumanReview = true }
+            ]
+        };
+
+        // Act
+        using var response = await client.PutAsJsonAsync(
+            new Uri($"/catalog/media/images/{imageId}", UriKind.Relative),
+            request,
+            TestContext.Current.CancellationToken);
+
+        // Assert
+        response.StatusCode.ShouldBe(HttpStatusCode.OK);
+        var image = await response.Content.ReadFromJsonAsync<PublicMediaImageDto>(TestContext.Current.CancellationToken);
+        image.ShouldNotBeNull();
+        image.RequiresHumanReview.ShouldBeTrue();
+        image.IsAiGenerated.ShouldBeFalse();
+        image.AccessibilityTexts.ShouldHaveSingleItem().RequiresHumanReview.ShouldBeTrue();
+    }
+
+    [Fact]
+    public async Task Catalog_media_image_accessibility_draft_endpoint_stores_ai_draft()
+    {
+        // Arrange
+        var mediaStore = new TestPublicMediaImageStore();
+        var objectStore = new TestMediaObjectStore();
+        var generator = new StubImageTextGenerator(new ImageTextGenerationResult("Generated beach alt", "Generated caption"));
+        var image = PublicMediaImageTestFactory.CreateReadyImage(Guid.CreateVersion7(), "draft-source.jpg", "draft-640.jpg", "sha256:abc", "Reviewed alt", 0, true);
+        await mediaStore.Upsert(image, TestContext.Current.CancellationToken);
+        await objectStore.Put(
+            new MediaObjectWriteRequest(image.SourceObjectKey, new MemoryStream([1, 2, 3]), "image/jpeg", 3, "sha256:abc"),
+            TestContext.Current.CancellationToken);
+        await using var factory = CatalogApiTestHost.Create(mediaStore, objectStore, generator);
+        using var client = factory.CreateClient();
+
+        // Act
+        using var response = await client.PostAsJsonAsync(
+            new Uri($"/catalog/media/images/{image.Id}/accessibility-draft", UriKind.Relative),
+            new PublicMediaImageAccessibilityDraftRequest { Language = PublicContentLanguageDto.EnUs, Context = "Hero image" },
+            TestContext.Current.CancellationToken);
+
+        // Assert
+        response.StatusCode.ShouldBe(HttpStatusCode.OK);
+        var updated = await response.Content.ReadFromJsonAsync<PublicMediaImageDto>(TestContext.Current.CancellationToken);
+        updated.ShouldNotBeNull();
+        updated.AltText.ShouldBe("Generated beach alt");
+        updated.Caption.ShouldBe("Generated caption");
+        updated.RequiresHumanReview.ShouldBeTrue();
+        updated.IsAiGenerated.ShouldBeTrue();
+        generator.Request.ShouldNotBeNull();
+        generator.Request.Context.ShouldBe("Hero image");
+    }
+
+    [Fact]
+    public async Task Catalog_media_image_accessibility_draft_endpoint_returns_service_unavailable_when_ai_fails()
+    {
+        // Arrange
+        var mediaStore = new TestPublicMediaImageStore();
+        var objectStore = new TestMediaObjectStore();
+        var generator = new StubImageTextGenerator(new ImageTextGenerationResult("Generated beach alt", null));
+        generator.Throw(new ImageTextGenerationException("Proxy failed."));
+        var image = PublicMediaImageTestFactory.CreateReadyImage(Guid.CreateVersion7(), "draft-source.jpg", "draft-640.jpg", "sha256:abc", "Reviewed alt", 0, true);
+        await mediaStore.Upsert(image, TestContext.Current.CancellationToken);
+        await objectStore.Put(
+            new MediaObjectWriteRequest(image.SourceObjectKey, new MemoryStream([1]), "image/jpeg", 1, "sha256:abc"),
+            TestContext.Current.CancellationToken);
+        await using var factory = CatalogApiTestHost.Create(mediaStore, objectStore, generator);
+        using var client = factory.CreateClient();
+
+        // Act
+        using var response = await client.PostAsJsonAsync(
+            new Uri($"/catalog/media/images/{image.Id}/accessibility-draft", UriKind.Relative),
+            new PublicMediaImageAccessibilityDraftRequest { Language = PublicContentLanguageDto.EnUs },
+            TestContext.Current.CancellationToken);
+
+        // Assert
+        response.StatusCode.ShouldBe(HttpStatusCode.ServiceUnavailable);
     }
 
     [Fact]

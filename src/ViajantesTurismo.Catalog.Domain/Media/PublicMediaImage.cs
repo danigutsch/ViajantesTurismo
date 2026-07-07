@@ -392,6 +392,34 @@ public sealed class PublicMediaImage
     }
 
     /// <summary>
+    /// Adds or replaces editor-entered draft accessibility text for a language.
+    /// </summary>
+    /// <param name="language">The text language.</param>
+    /// <param name="altText">The drafted accessible image description.</param>
+    /// <param name="caption">The optional drafted caption.</param>
+    /// <returns>A result indicating whether the draft was accepted.</returns>
+    public Result SetDraftAccessibilityText(PublicContentLanguage language, string altText, string? caption)
+    {
+        var result = PublicMediaImageAccessibilityText.Create(language, altText, caption, isDecorative: false, requiresHumanReview: true, isAiGenerated: false);
+        if (result.IsFailure)
+        {
+            return Result.Invalid(result.ErrorDetails.Detail, ToValidationDictionary(result.ErrorDetails.ValidationErrors));
+        }
+
+        ReplaceAccessibilityText(result.Value);
+        if (language == PublicContentLanguage.EnUs)
+        {
+            AltText = result.Value.AltText ?? string.Empty;
+            Caption = result.Value.Caption;
+            IsDecorative = result.Value.IsDecorative;
+            RequiresHumanReview = true;
+            IsAiGenerated = false;
+        }
+
+        return Result.Ok();
+    }
+
+    /// <summary>
     /// Adds or replaces editor-reviewed accessibility text for a language.
     /// </summary>
     /// <param name="language">The text language.</param>
