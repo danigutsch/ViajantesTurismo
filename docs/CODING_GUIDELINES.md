@@ -474,7 +474,4 @@ var builder = WebApplication.CreateBuilder(args);
 
 ## Related Documentation
 
-- **[Domain Validation](DOMAIN_VALIDATION.md)** — Domain modeling patterns, factory methods, Result pattern
-- **[Test Guidelines](TEST_GUIDELINES.md)** — Testing patterns and BDD scenarios
-- **[Code Quality](CODE_QUALITY.md)** — Linters, formatters, and tooling configuration
-- **[Architecture Decisions](ARCHITECTURE_DECISIONS.md)** — Core architectural patterns and decisions
+Use the [documentation source-of-truth map](README.md#source-of-truth-map) for related repository guidance.

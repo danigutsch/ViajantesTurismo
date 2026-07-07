@@ -2,15 +2,40 @@
 
 Start here when looking for repository-wide guidance.
 
+## Source-of-truth map
+
+Use this map before adding or changing repository-wide guidance. Keep the canonical page focused, and link to it from
+specialized docs instead of repeating the same policy.
+
+| Topic | Canonical source | Related detail |
+| --- | --- | --- |
+| Setup and tooling | [README](../README.md#getting-started) | [Local tool security](local-tool-security.md), [Dev containers](DEVCONTAINERS.md) |
+| Coding standards | [Coding guidelines](CODING_GUIDELINES.md) | [.editorconfig](../.editorconfig), [Code quality](CODE_QUALITY.md) |
+| Testing | [Test guidelines](TEST_GUIDELINES.md) | [Tests README](../tests/README.md), [BDD guide](../tests/BDD_GUIDE.md) |
+| Architecture and ADRs | [Architecture overview](architecture/README.md) and [Architecture decisions](ARCHITECTURE_DECISIONS.md) | [Bounded contexts](bounded-contexts/Admin.md), [Domain aggregates](domain/AGGREGATES.md) |
+| Domain validation | [Domain validation](DOMAIN_VALIDATION.md) | [Domain aggregates](domain/AGGREGATES.md), [Glossary](domain/GLOSSARY.md) |
+| API and client boundaries | [API client boundaries](API_CLIENT_BOUNDARIES.md) | [API compatibility](API_COMPATIBILITY.md), [API versioning](API_VERSIONING.md) |
+| Configuration and feature flags | [Configuration standards](CONFIGURATION.md) | [OpenTelemetry custom telemetry](OPEN_TELEMETRY.md) |
+| CI, release, and contribution workflow | [Contributing](../CONTRIBUTING.md) | [CI overview](ci/overview.md), [CI governance](ci/governance.md), [Pull request template](pull_request_template.md) |
+
+Deprecated docs: none identified.
+
+Centralized guidance:
+
+- Commit-message policy: [Contributing](../CONTRIBUTING.md#commit-messages).
+- Test taxonomy: [Tests README](../tests/README.md).
+- BDD/Gherkin guidance: [BDD guide](../tests/BDD_GUIDE.md).
+- Generic related-documentation lists: this map.
+- Scoped architecture/domain indexes own their detailed child links.
+
+Mark more pages here only after proving they repeat a canonical source or point contributors to
+outdated behavior.
+
 ## Architecture
 
-- [Architecture overview](architecture/README.md) - current runtime, project, and async-flow maps.
+- [Architecture overview](architecture/README.md) - runtime, project, and async-flow maps.
 - [Architecture decisions](ARCHITECTURE_DECISIONS.md) - ADR index and decision history.
-- [Bounded contexts: Admin](bounded-contexts/Admin.md) - Admin context responsibilities.
-- [Bounded contexts: Catalog](bounded-contexts/Catalog.md) - Catalog context responsibilities.
-- [Domain aggregates](domain/AGGREGATES.md) - aggregate boundaries and invariants.
-- [Events and messaging](domain/EVENTS_AND_MESSAGING.md) - domain events, integration events, and workflow notes.
-- [Glossary](domain/GLOSSARY.md) - repository terminology.
+- [Domain validation](DOMAIN_VALIDATION.md) - validation patterns and links to domain-specific details.
 
 ## Engineering guidance
 
