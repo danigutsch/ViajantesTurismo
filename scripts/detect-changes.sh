@@ -144,8 +144,10 @@ fast_validation_patterns=(
     "src/SharedKernel/SharedKernel.Testing.Analyzers/**"
     "src/SharedKernel/SharedKernel.Testing/**"
     "src/SharedKernel/SharedKernel.Testing.Assertions/**"
+    "src/SharedKernel/SharedKernel.Testing.AspNetCore/**"
     "src/SharedKernel/SharedKernel.Testing.Data/**"
     "src/SharedKernel/SharedKernel.Testing.Http/**"
+    "src/SharedKernel/SharedKernel.Testing.Mediator/**"
     "src/SharedKernel/SharedKernel.Testing.Roslyn/**"
     "src/SharedKernel/SharedKernel.Testing.Snapshots/**"
     "src/SharedKernel/SharedKernel.Testing.Web/**"
@@ -226,11 +228,11 @@ mediator_heavy_patterns=(
     "src/SharedKernel/SharedKernel.Mediator.Analyzers/**"
     "src/SharedKernel/SharedKernel.Mediator.CodeFixes/**"
     "src/SharedKernel/SharedKernel.Mediator.SourceGenerator/**"
+    "src/SharedKernel/SharedKernel.Testing.Mediator/**"
     "tests/SharedKernel.Mediator.Analyzers.Tests/**"
     "tests/SharedKernel.Mediator.CodeFixes.Tests/**"
     "tests/SharedKernel.Mediator.GeneratorTests/**"
     "tests/SharedKernel.Mediator.PackageConsumptionTests/**"
-    "tests/SharedKernel.Mediator.Testing.ReferenceDispatcher/**"
     "tests/SharedKernel.Mediator.Tests/**"
 )
 

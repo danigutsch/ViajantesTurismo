@@ -8,6 +8,7 @@
     <ItemGroup>
         <Using Include="System.Net" />
         <Using Include="SharedKernel.Testing" />
+        <Using Include="SharedKernel.Testing.AspNetCore" />
         <Using Include="ViajantesTurismo.Catalog.Contracts" />
         <Using Include="ViajantesTurismo.Public.Web" />
         <Using Include="ViajantesTurismo.Public.WebTests.Infrastructure" />
@@ -25,7 +26,7 @@
 
     <ItemGroup>
         <ProjectReference Include="..\..\src\ViajantesTurismo.Public.Web\ViajantesTurismo.Public.Web.csproj" />
-        <ProjectReference Include="..\SharedKernel.AspNetCoreTesting\SharedKernel.AspNetCoreTesting.csproj" />
+        <ProjectReference Include="..\..\src\SharedKernel\SharedKernel.Testing.AspNetCore\SharedKernel.Testing.AspNetCore.csproj" />
         <ProjectReference Include="..\..\src\SharedKernel\SharedKernel.Testing\SharedKernel.Testing.csproj" />
         <ProjectReference Include="..\..\src\SharedKernel\SharedKernel.Testing.Assertions\SharedKernel.Testing.Assertions.csproj" />
     </ItemGroup>

@@ -1,6 +1,7 @@
 using System.Runtime.CompilerServices;
+using SharedKernel.Mediator;
 
-namespace SharedKernel.Mediator.Testing.ReferenceDispatcher;
+namespace SharedKernel.Testing.Mediator;
 
 /// <summary>
 /// Provides a test-only mediator implementation used as a correctness oracle for generated dispatch.

@@ -607,12 +607,6 @@
       "sharedkernel.apiversioning": {
         "type": "Project"
       },
-      "sharedkernel.aspnetcoretesting": {
-        "type": "Project",
-        "dependencies": {
-          "Microsoft.AspNetCore.Mvc.Testing": "[10.0.9, )"
-        }
-      },
       "sharedkernel.buildingblocks": {
         "type": "Project",
         "dependencies": {
@@ -720,6 +714,12 @@
       "sharedkernel.testing": {
         "type": "Project"
       },
+      "sharedkernel.testing.aspnetcore": {
+        "type": "Project",
+        "dependencies": {
+          "Microsoft.AspNetCore.Mvc.Testing": "[10.0.9, )"
+        }
+      },
       "sharedkernel.testing.assertions": {
         "type": "Project",
         "dependencies": {
@@ -802,8 +802,8 @@
       "viajantesturismo.catalog.testing": {
         "type": "Project",
         "dependencies": {
-          "SharedKernel.AspNetCoreTesting": "[0.1.0-alpha.0, )",
           "SharedKernel.InputNormalization": "[0.1.0-alpha.0, )",
+          "SharedKernel.Testing.AspNetCore": "[0.1.0-alpha.0, )",
           "ViajantesTurismo.Catalog.ApiService": "[0.1.0-alpha.0, )",
           "ViajantesTurismo.Catalog.Application": "[0.1.0-alpha.0, )",
           "ViajantesTurismo.Catalog.Domain": "[0.1.0-alpha.0, )"

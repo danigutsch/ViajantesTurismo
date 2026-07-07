@@ -2,7 +2,7 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.Extensions.DependencyInjection;
 
-namespace SharedKernel.Testing;
+namespace SharedKernel.Testing.AspNetCore;
 
 /// <summary>
 /// Creates ASP.NET Core test hosts with optional environment and service overrides.
