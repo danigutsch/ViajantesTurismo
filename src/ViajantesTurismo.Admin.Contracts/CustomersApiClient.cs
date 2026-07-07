@@ -2,7 +2,6 @@ using System.Diagnostics;
 using System.Net;
 using System.Net.Http.Json;
 using System.Net.Mime;
-using System.Text.Json;
 using Microsoft.Extensions.Logging;
 using SharedKernel.HttpClients;
 
@@ -60,7 +59,7 @@ public sealed partial class CustomersApiClient(HttpClient httpClient, ILogger<Cu
     }
 
     /// <inheritdoc />
-    public async Task<CustomerCreateOutcomeDto> CreateCustomer(CreateCustomerDto dto, CancellationToken ct)
+    public async Task<ContractCommandOutcomeDto> CreateCustomer(CreateCustomerDto dto, CancellationToken ct)
     {
         ArgumentNullException.ThrowIfNull(dto);
 
@@ -76,21 +75,11 @@ public sealed partial class CustomersApiClient(HttpClient httpClient, ILogger<Cu
             Json.CreateCustomerDto,
             ct).ConfigureAwait(false);
 
-        var outcome = response.StatusCode switch
-        {
-            HttpStatusCode.Created => new CustomerCreateOutcomeDto
-            {
-                Kind = CustomerCreateOutcomeKind.Succeeded,
-                StatusCode = response.StatusCode,
-                Location = response.Headers.Location
-            },
-            HttpStatusCode.BadRequest => await ReadValidationProblem(response, ct).ConfigureAwait(false),
-            _ => CreateStatusOutcome(MapStatusCode(response.StatusCode), response.StatusCode)
-        };
+        var outcome = await ContractCommandOutcome.FromResponse(response, Json.ContractValidationProblemDto, ct).ConfigureAwait(false);
 
         activity?.SetTag(AdminContractsClientTelemetry.StatusCodeTag, (int)outcome.StatusCode);
-        activity?.SetTag(AdminContractsClientTelemetry.OutcomeKindTag, outcome.Kind.ToString());
-        if (outcome.Kind != CustomerCreateOutcomeKind.Succeeded)
+        activity?.SetTag(AdminContractsClientTelemetry.CommandOutcomeKindTag, outcome.Kind.ToString());
+        if (outcome.Kind != ContractCommandOutcomeKind.Succeeded)
         {
             LogCustomerCreateOutcome(logger, outcome.StatusCode, outcome.Kind);
         }
@@ -152,55 +141,7 @@ public sealed partial class CustomersApiClient(HttpClient httpClient, ILogger<Cu
                ?? throw new InvalidOperationException("The import response body was empty.");
     }
 
-    private static async Task<CustomerCreateOutcomeDto> ReadValidationProblem(HttpResponseMessage response, CancellationToken ct)
-    {
-        var content = await response.Content.ReadAsStringAsync(ct).ConfigureAwait(false);
-        if (string.IsNullOrWhiteSpace(content))
-        {
-            return CreateStatusOutcome(CustomerCreateOutcomeKind.EmptyBody, response.StatusCode, "Validation problem response body was empty.");
-        }
-
-        try
-        {
-            var errors = JsonSerializer.Deserialize(content, Json.ContractValidationProblemDto)?.Errors;
-            return errors is null || errors.Count == 0
-                ? CreateStatusOutcome(CustomerCreateOutcomeKind.MalformedBody, response.StatusCode, "Validation problem response body did not contain errors.")
-                : new CustomerCreateOutcomeDto
-                {
-                    Kind = CustomerCreateOutcomeKind.ValidationProblem,
-                    StatusCode = response.StatusCode,
-                    ValidationErrors = new Dictionary<string, string[]>(errors, StringComparer.Ordinal)
-                };
-        }
-        catch (JsonException exception)
-        {
-            return CreateStatusOutcome(CustomerCreateOutcomeKind.MalformedBody, response.StatusCode, exception.Message);
-        }
-    }
-
-    private static CustomerCreateOutcomeDto CreateStatusOutcome(CustomerCreateOutcomeKind kind, HttpStatusCode statusCode, string? message = null)
-    {
-        return new CustomerCreateOutcomeDto
-        {
-            Kind = kind,
-            StatusCode = statusCode,
-            Message = message
-        };
-    }
-
-    private static CustomerCreateOutcomeKind MapStatusCode(HttpStatusCode statusCode)
-    {
-        return statusCode switch
-        {
-            HttpStatusCode.NotFound => CustomerCreateOutcomeKind.NotFound,
-            HttpStatusCode.Unauthorized => CustomerCreateOutcomeKind.Unauthorized,
-            HttpStatusCode.Forbidden => CustomerCreateOutcomeKind.Forbidden,
-            HttpStatusCode.Conflict => CustomerCreateOutcomeKind.Conflict,
-            _ => CustomerCreateOutcomeKind.UnexpectedStatus
-        };
-    }
-
     [LoggerMessage(1, LogLevel.Warning, "Customer create returned {StatusCode} with outcome {OutcomeKind}.")]
-    private static partial void LogCustomerCreateOutcome(ILogger logger, HttpStatusCode statusCode, CustomerCreateOutcomeKind outcomeKind);
+    private static partial void LogCustomerCreateOutcome(ILogger logger, HttpStatusCode statusCode, ContractCommandOutcomeKind outcomeKind);
 
 }

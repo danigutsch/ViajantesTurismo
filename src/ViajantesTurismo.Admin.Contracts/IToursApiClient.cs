@@ -1,3 +1,5 @@
+using SharedKernel.HttpClients;
+
 namespace ViajantesTurismo.Admin.Contracts;
 
 /// <summary>
@@ -26,8 +28,8 @@ public interface IToursApiClient
     /// </summary>
     /// <param name="dto">The tour data to create.</param>
     /// <param name="cancellationToken">Cancellation token for the request.</param>
-    /// <returns>The URI of the newly created tour resource.</returns>
-    Task<Uri> CreateTour(CreateTourDto dto, CancellationToken cancellationToken);
+    /// <returns>The contract-level outcome of the create request.</returns>
+    Task<ContractCommandOutcomeDto> CreateTour(CreateTourDto dto, CancellationToken cancellationToken);
 
     /// <summary>
     /// Updates an existing tour.

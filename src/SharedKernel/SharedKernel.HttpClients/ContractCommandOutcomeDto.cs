@@ -1,16 +1,16 @@
 using System.Net;
 
-namespace ViajantesTurismo.Admin.Contracts;
+namespace SharedKernel.HttpClients;
 
 /// <summary>
-/// Represents the contract-level outcome of a customer creation request.
+/// Represents the contract-level outcome of an HTTP command request.
 /// </summary>
-public sealed record CustomerCreateOutcomeDto
+public sealed record ContractCommandOutcomeDto
 {
     /// <summary>
     /// Gets the outcome kind.
     /// </summary>
-    public required CustomerCreateOutcomeKind Kind { get; init; }
+    public required ContractCommandOutcomeKind Kind { get; init; }
 
     /// <summary>
     /// Gets the HTTP status code returned by the API.

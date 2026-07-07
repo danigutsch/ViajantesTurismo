@@ -1,3 +1,4 @@
+using SharedKernel.HttpClients;
 using Add = ViajantesTurismo.Management.Web.Components.Pages.Tours.Add;
 
 namespace ViajantesTurismo.Management.WebTests.Components.Pages.Tours;
@@ -232,6 +233,41 @@ public class AddPageTests : BunitContext
         var errorAlert = cut.Find(".alert-danger");
         Assert.Contains("We couldn't create the tour right now. Please try again.", errorAlert.TextContent, StringComparison.Ordinal);
         Assert.DoesNotContain("Failed to create tour", errorAlert.TextContent, StringComparison.Ordinal);
+    }
+
+    [Fact]
+    [Trait(SharedKernel.Testing.TestTraitNames.ScopeName, TestTraits.ComponentScope)]
+    [Trait(SharedKernel.Testing.TestTraitNames.AreaName, TestTraits.ManagementWebArea)]
+    [Trait(SharedKernel.Testing.TestTraitNames.CategoryName, TestTraits.ComponentCategory)]
+    public async Task Validation_problem_outcome_shows_server_validation_errors()
+    {
+        // Arrange
+        _fakeToursApi.SetCreateTourOutcome(new ContractCommandOutcomeDto
+        {
+            Kind = ContractCommandOutcomeKind.ValidationProblem,
+            StatusCode = System.Net.HttpStatusCode.BadRequest,
+            ValidationErrors = new Dictionary<string, string[]> { ["Name"] = ["Tour name already exists."] }
+        });
+        var cut = Render<Add>();
+
+        // Act
+        await cut.InvokeAsync(() => cut.Find("input#identifier").Change("CUBA2024"));
+        await cut.InvokeAsync(() => cut.Find("input#name").Change("Cuba Adventure"));
+        await cut.InvokeAsync(() => cut.Find("input#price").Change("1500"));
+        await cut.InvokeAsync(() => cut.Find("input#singleRoom").Change("200"));
+        await cut.InvokeAsync(() => cut.Find("input#regularBike").Change("50"));
+        await cut.InvokeAsync(() => cut.Find("input#eBike").Change("100"));
+        await cut.InvokeAsync(() => cut.Find("textarea#services").Change("Hotel"));
+        await cut.InvokeAsync(() => cut.Find("input#minCustomers").Change("5"));
+        await cut.InvokeAsync(() => cut.Find("input#maxCustomers").Change("15"));
+
+        await cut.InvokeAsync(() => cut.Find("form").Submit());
+
+        // Assert
+        await cut.WaitForStateAsync(() => cut.Markup.Contains("Tour name already exists.", StringComparison.Ordinal), TimeSpan.FromSeconds(2));
+
+        var errorAlert = cut.Find(".alert-danger");
+        errorAlert.TextContent.ShouldContain("Please correct the highlighted fields.", StringComparison.Ordinal);
     }
 
     [Fact]

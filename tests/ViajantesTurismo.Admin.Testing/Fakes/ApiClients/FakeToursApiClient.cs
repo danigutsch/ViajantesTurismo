@@ -1,4 +1,5 @@
 using System.Net;
+using SharedKernel.HttpClients;
 using ViajantesTurismo.Admin.Contracts;
 
 namespace ViajantesTurismo.Admin.Testing.Fakes.ApiClients;
@@ -7,6 +8,7 @@ public sealed class FakeToursApiClient : IToursApiClient
 {
     private readonly List<GetTourDto> _tours = [];
     private Exception? _createTourException;
+    private ContractCommandOutcomeDto? _createTourOutcome;
     private Exception? _getTourByIdException;
     private Exception? _getToursException;
     private Exception? _updateTourException;
@@ -31,13 +33,18 @@ public sealed class FakeToursApiClient : IToursApiClient
         return Task.FromResult(_tours.FirstOrDefault(t => t.Id == id));
     }
 
-    public Task<Uri> CreateTour(CreateTourDto dto, CancellationToken cancellationToken)
+    public Task<ContractCommandOutcomeDto> CreateTour(CreateTourDto dto, CancellationToken cancellationToken)
     {
         ArgumentNullException.ThrowIfNull(dto);
 
         if (_createTourException is not null)
         {
             throw _createTourException;
+        }
+
+        if (_createTourOutcome is not null)
+        {
+            return Task.FromResult(_createTourOutcome);
         }
 
         var newTour = new GetTourDto
@@ -60,7 +67,7 @@ public sealed class FakeToursApiClient : IToursApiClient
 
         _tours.Add(newTour);
 
-        return Task.FromResult(new Uri($"/tours/{newTour.Id}", UriKind.Relative));
+        return Task.FromResult(ContractCommandOutcome.Succeeded(HttpStatusCode.Created, new Uri($"/tours/{newTour.Id}", UriKind.Relative)));
     }
 
     public Task UpdateTour(Guid id, UpdateTourDto dto, CancellationToken cancellationToken)
@@ -102,6 +109,8 @@ public sealed class FakeToursApiClient : IToursApiClient
     public void SetGetToursException(Exception exception) => _getToursException = exception;
 
     public void SetCreateTourException(Exception exception) => _createTourException = exception;
+
+    public void SetCreateTourOutcome(ContractCommandOutcomeDto outcome) => _createTourOutcome = outcome;
 
     public void SetUpdateTourException(Exception exception) => _updateTourException = exception;
 }

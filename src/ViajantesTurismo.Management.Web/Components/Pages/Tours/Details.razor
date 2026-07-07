@@ -261,7 +261,19 @@ else if (_tour != null)
         try
         {
             var createDto = model.ToDto() with { TourId = Id };
-            await BookingsApi.CreateBooking(createDto, CancellationToken.None);
+            var outcome = await BookingsApi.CreateBooking(createDto, CancellationToken.None);
+            if (outcome.Kind == ContractCommandOutcomeKind.ValidationProblem)
+            {
+                ApplyBookingValidationErrors(outcome);
+                return;
+            }
+
+            if (outcome.Kind != ContractCommandOutcomeKind.Succeeded)
+            {
+                _toast.ShowError("Failed to create booking. Please try again.");
+                return;
+            }
+
             _toast.ShowSuccess("Booking created successfully.");
 
             await LoadBookings();
@@ -277,7 +289,7 @@ else if (_tour != null)
         catch (Exception ex)
         {
             Logger.LogError(ex, "Unexpected error while creating booking for tour {TourId}", Id);
-            _toast.ShowError("Failed to create booking. Please check the form for errors.");
+            _toast.ShowError("Failed to create booking. Please try again.");
         }
         finally
         {
@@ -288,6 +300,14 @@ else if (_tour != null)
     private static Task HandleInvalidBookingSubmit(EditContext _)
     {
         return Task.CompletedTask;
+    }
+
+    private void ApplyBookingValidationErrors(ContractCommandOutcomeDto outcome)
+    {
+        if (_bookingCreateFormRef?.EditContext is not null && outcome.ValidationErrors is not null)
+        {
+            EditContextValidationHelper.ApplyValidationErrors(_bookingCreateFormRef.EditContext, outcome.ValidationErrors);
+        }
     }
 
     private static string FormatPrice(decimal price, CurrencyDto currency) => CurrencyFormatter.Format(price, currency);

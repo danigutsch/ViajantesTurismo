@@ -21,6 +21,9 @@ DTOs, response outcome DTOs, and response parsing behavior.
 - Catalog API clients live in `ViajantesTurismo.Catalog.Contracts`.
 - Apps configure base addresses and consume the contract-owned interfaces.
 - UI fallback behavior remains app-local.
+- Response outcome DTOs model caller-visible branches only when callers need stable branching without raw HTTP parsing.
+- Contract clients emit only bounded, non-PII diagnostics for non-success outcomes that callers need to diagnose.
+- Consuming apps keep `IHttpClientFactory` lifetime, cookie, concurrency, and resilience configuration at composition roots.
 - Contract clients use per-client `JsonSerializerContext` types and generated `JsonTypeInfo<T>`
   metadata for AOT-safe JSON.
 - Contract clients use `ContractValidationProblemDto` for validation problem parsing instead of
@@ -34,11 +37,13 @@ DTOs, response outcome DTOs, and response parsing behavior.
 - Validation problem parsing is standardized without taking an ASP.NET dependency in contracts.
 - Contract clients remain AOT-compatible.
 - Focused HTTP seam tests can exercise the same client implementation apps use.
+- App tests can fake the `I*ApiClient` seam with documented outcomes instead of duplicating HTTP parsing.
 
 ### Negative
 
 - Contract projects now reference HTTP client and logging abstractions.
 - Each client needs a small source-generated JSON context.
+- Outcome DTOs add small contract types only where a caller has a real branch to handle.
 
 ## Alternatives
 

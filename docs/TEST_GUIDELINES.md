@@ -39,10 +39,12 @@ integration tests instead.
 API client contracts follow the same boundary rule. Contract-owned API client
 interfaces, DTOs, and outcome shapes should be tested with focused seam tests
 using fake HTTP handlers or in-memory test servers against the contract-owned
-client implementation. Keep app-local fallback
-behavior in component or app tests, not in contract client tests. Fakes should
-implement the contract seam and return documented outcomes; they should not
-duplicate HTTP parsing. See [API Client Boundaries](API_CLIENT_BOUNDARIES.md).
+client implementation. Cover the documented response outcomes that callers rely
+on, including validation problems and malformed or empty bodies when those are
+contract outcomes. Keep app-local fallback behavior in component or app tests,
+not in contract client tests. App-level fakes should implement the contract seam
+and return documented outcomes; they should not duplicate HTTP parsing. See
+[API Client Boundaries](API_CLIENT_BOUNDARIES.md).
 
 ## Recommended Tagging Model
 

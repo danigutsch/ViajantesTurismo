@@ -2,9 +2,13 @@ using System.Net;
 using System.Diagnostics;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
+using ContractCommandOutcomeKind = SharedKernel.HttpClients.ContractCommandOutcomeKind;
 
 namespace ViajantesTurismo.Management.WebTests;
 
+[Trait(SharedKernel.Testing.TestTraitNames.ScopeName, TestTraits.UnitScope)]
+[Trait(SharedKernel.Testing.TestTraitNames.AreaName, TestTraits.ManagementWebArea)]
+[Trait(SharedKernel.Testing.TestTraitNames.CategoryName, TestTraits.ApiClientCategory)]
 public sealed class CustomersApiClientTests
 {
     [Fact]
@@ -125,7 +129,7 @@ public sealed class CustomersApiClientTests
 
         // Assert
         requestPath.ShouldBe("/customers");
-        outcome.Kind.ShouldBe(CustomerCreateOutcomeKind.Succeeded);
+        outcome.Kind.ShouldBe(ContractCommandOutcomeKind.Succeeded);
         outcome.StatusCode.ShouldBe(HttpStatusCode.Created);
         outcome.Location.ShouldBe(new Uri("https://management.example/customers/created", UriKind.Absolute));
     }
@@ -141,7 +145,7 @@ public sealed class CustomersApiClientTests
         var outcome = await sut.CreateCustomer(BuildCreateCustomerDto(), Xunit.TestContext.Current.CancellationToken);
 
         // Assert
-        outcome.Kind.ShouldBe(CustomerCreateOutcomeKind.Succeeded);
+        outcome.Kind.ShouldBe(ContractCommandOutcomeKind.Succeeded);
         outcome.StatusCode.ShouldBe(HttpStatusCode.Created);
         outcome.Location.ShouldBeNull();
     }
@@ -167,7 +171,7 @@ public sealed class CustomersApiClientTests
         var outcome = await sut.CreateCustomer(BuildCreateCustomerDto(), Xunit.TestContext.Current.CancellationToken);
 
         // Assert
-        outcome.Kind.ShouldBe(CustomerCreateOutcomeKind.ValidationProblem);
+        outcome.Kind.ShouldBe(ContractCommandOutcomeKind.ValidationProblem);
         outcome.StatusCode.ShouldBe(HttpStatusCode.BadRequest);
         outcome.ValidationErrors.ShouldNotBeNull();
         outcome.ValidationErrors.ContainsKey("Email").ShouldBeTrue();
@@ -185,7 +189,7 @@ public sealed class CustomersApiClientTests
         var outcome = await sut.CreateCustomer(BuildCreateCustomerDto(), Xunit.TestContext.Current.CancellationToken);
 
         // Assert
-        outcome.Kind.ShouldBe(CustomerCreateOutcomeKind.EmptyBody);
+        outcome.Kind.ShouldBe(ContractCommandOutcomeKind.EmptyBody);
         outcome.StatusCode.ShouldBe(HttpStatusCode.BadRequest);
     }
 
@@ -203,7 +207,7 @@ public sealed class CustomersApiClientTests
         var outcome = await sut.CreateCustomer(BuildCreateCustomerDto(), Xunit.TestContext.Current.CancellationToken);
 
         // Assert
-        outcome.Kind.ShouldBe(CustomerCreateOutcomeKind.MalformedBody);
+        outcome.Kind.ShouldBe(ContractCommandOutcomeKind.MalformedBody);
         outcome.StatusCode.ShouldBe(HttpStatusCode.BadRequest);
     }
 
@@ -220,7 +224,7 @@ public sealed class CustomersApiClientTests
         var outcome = await sut.CreateCustomer(BuildCreateCustomerDto(), Xunit.TestContext.Current.CancellationToken);
 
         // Assert
-        outcome.Kind.ShouldBe(CustomerCreateOutcomeKind.MalformedBody);
+        outcome.Kind.ShouldBe(ContractCommandOutcomeKind.MalformedBody);
         var entry = logger.Entries.ShouldHaveSingleItem();
         entry.LogLevel.ShouldBe(LogLevel.Warning);
         entry.EventId.Id.ShouldBe(1);
@@ -251,28 +255,30 @@ public sealed class CustomersApiClientTests
         var outcome = await sut.CreateCustomer(BuildCreateCustomerDto(), Xunit.TestContext.Current.CancellationToken);
 
         // Assert
-        outcome.Kind.ShouldBe(CustomerCreateOutcomeKind.MalformedBody);
-        var activity = stoppedActivities.ShouldHaveSingleItem();
+        outcome.Kind.ShouldBe(ContractCommandOutcomeKind.MalformedBody);
+        var activity = stoppedActivities
+            .Where(candidate => candidate.DisplayName == "customers.create")
+            .ShouldHaveSingleItem();
         activity.DisplayName.ShouldBe("customers.create");
         activity.Kind.ShouldBe(ActivityKind.Client);
         activity.Tags.ShouldContain(new KeyValuePair<string, string?>("viajantes.api_area", "admin"));
         activity.Tags.ShouldContain(new KeyValuePair<string, string?>("viajantes.operation", "customers.create"));
         activity.TagObjects.ShouldContain(new KeyValuePair<string, object?>("http.response.status_code", 400));
-        activity.Tags.ShouldContain(new KeyValuePair<string, string?>("viajantes.customer_create.outcome", "MalformedBody"));
+        activity.Tags.ShouldContain(new KeyValuePair<string, string?>("viajantes.admin_command.outcome", "MalformedBody"));
         activity.Tags.ShouldNotContain(new KeyValuePair<string, string?>("response.body", "not json alice@example.test"));
     }
 
     [Theory]
-    [InlineData(HttpStatusCode.OK, CustomerCreateOutcomeKind.UnexpectedStatus)]
-    [InlineData(HttpStatusCode.NoContent, CustomerCreateOutcomeKind.UnexpectedStatus)]
-    [InlineData(HttpStatusCode.NotFound, CustomerCreateOutcomeKind.NotFound)]
-    [InlineData(HttpStatusCode.Unauthorized, CustomerCreateOutcomeKind.Unauthorized)]
-    [InlineData(HttpStatusCode.Forbidden, CustomerCreateOutcomeKind.Forbidden)]
-    [InlineData(HttpStatusCode.Conflict, CustomerCreateOutcomeKind.Conflict)]
-    [InlineData(HttpStatusCode.TooManyRequests, CustomerCreateOutcomeKind.UnexpectedStatus)]
+    [InlineData(HttpStatusCode.OK, ContractCommandOutcomeKind.UnexpectedStatus)]
+    [InlineData(HttpStatusCode.NoContent, ContractCommandOutcomeKind.UnexpectedStatus)]
+    [InlineData(HttpStatusCode.NotFound, ContractCommandOutcomeKind.NotFound)]
+    [InlineData(HttpStatusCode.Unauthorized, ContractCommandOutcomeKind.Unauthorized)]
+    [InlineData(HttpStatusCode.Forbidden, ContractCommandOutcomeKind.Forbidden)]
+    [InlineData(HttpStatusCode.Conflict, ContractCommandOutcomeKind.Conflict)]
+    [InlineData(HttpStatusCode.TooManyRequests, ContractCommandOutcomeKind.UnexpectedStatus)]
     public async Task CreateCustomer_returns_status_outcome_for_non_validation_failures(
         HttpStatusCode statusCode,
-        CustomerCreateOutcomeKind expectedKind)
+        ContractCommandOutcomeKind expectedKind)
     {
         // Arrange
         using var httpClient = CatalogToursApiClientTestsHelpers.CreateClient(_ => new HttpResponseMessage(statusCode));

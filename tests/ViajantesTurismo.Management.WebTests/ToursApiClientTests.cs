@@ -1,7 +1,11 @@
 using Microsoft.AspNetCore.Http;
+using ContractCommandOutcomeKind = SharedKernel.HttpClients.ContractCommandOutcomeKind;
 
 namespace ViajantesTurismo.Management.WebTests;
 
+[Trait(SharedKernel.Testing.TestTraitNames.ScopeName, TestTraits.UnitScope)]
+[Trait(SharedKernel.Testing.TestTraitNames.AreaName, TestTraits.ManagementWebArea)]
+[Trait(SharedKernel.Testing.TestTraitNames.CategoryName, TestTraits.ApiClientCategory)]
 public sealed class ToursApiClientTests
 {
     [Fact]
@@ -94,8 +98,9 @@ public sealed class ToursApiClientTests
     }
 
     [Fact]
-    public async Task CreateTour_posts_tour_and_returns_location()
+    public async Task CreateTour_posts_tour_and_returns_success_outcome()
     {
+        // Arrange
         var requestPath = string.Empty;
         var requestMethod = string.Empty;
         using var httpClient = CatalogToursApiClientTestsHelpers.CreateClient(request =>
@@ -109,11 +114,51 @@ public sealed class ToursApiClientTests
         });
         var sut = new ToursApiClient(httpClient);
 
-        var location = await sut.CreateTour(AdminApiClientTestsHelpers.CreateTour(), Xunit.TestContext.Current.CancellationToken);
+        // Act
+        var outcome = await sut.CreateTour(AdminApiClientTestsHelpers.CreateTour(), Xunit.TestContext.Current.CancellationToken);
 
+        // Assert
         requestMethod.ShouldBe(HttpMethods.Post);
         requestPath.ShouldBe("/tours");
-        location.ToString().ShouldBe("/tours/11111111-1111-1111-1111-111111111111");
+        outcome.Kind.ShouldBe(ContractCommandOutcomeKind.Succeeded);
+        outcome.Location.ShouldNotBeNull();
+        outcome.Location.ToString().ShouldBe("/tours/11111111-1111-1111-1111-111111111111");
+    }
+
+    [Fact]
+    public async Task CreateTour_returns_validation_problem_outcome()
+    {
+        // Arrange
+        using var httpClient = CatalogToursApiClientTestsHelpers.CreateClient(_ =>
+            CatalogToursApiClientTestsHelpers.JsonResponse(
+                """
+                {"errors":{"Name":["The Name field is required."]}}
+                """,
+                System.Net.HttpStatusCode.BadRequest));
+        var sut = new ToursApiClient(httpClient);
+
+        // Act
+        var outcome = await sut.CreateTour(AdminApiClientTestsHelpers.CreateTour(), Xunit.TestContext.Current.CancellationToken);
+
+        // Assert
+        outcome.Kind.ShouldBe(ContractCommandOutcomeKind.ValidationProblem);
+        outcome.ValidationErrors.ShouldNotBeNull();
+        outcome.ValidationErrors["Name"][0].ShouldBe("The Name field is required.");
+    }
+
+    [Fact]
+    public async Task CreateTour_returns_status_outcome_for_conflict()
+    {
+        // Arrange
+        using var httpClient = CatalogToursApiClientTestsHelpers.CreateClient(_ => new HttpResponseMessage(System.Net.HttpStatusCode.Conflict));
+        var sut = new ToursApiClient(httpClient);
+
+        // Act
+        var outcome = await sut.CreateTour(AdminApiClientTestsHelpers.CreateTour(), Xunit.TestContext.Current.CancellationToken);
+
+        // Assert
+        outcome.Kind.ShouldBe(ContractCommandOutcomeKind.Conflict);
+        outcome.StatusCode.ShouldBe(System.Net.HttpStatusCode.Conflict);
     }
 
     [Fact]

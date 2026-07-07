@@ -1,4 +1,6 @@
+using System.Net;
 using Microsoft.AspNetCore.Components;
+using SharedKernel.HttpClients;
 using ViajantesTurismo.Management.Web.Components.Pages.Bookings;
 
 namespace ViajantesTurismo.Management.WebTests.Components.Pages.Bookings;
@@ -449,6 +451,39 @@ public sealed class EditPageTests : BunitContext
         {
             Assert.DoesNotContain("Record New Payment", cut.Markup, StringComparison.Ordinal);
             Assert.Contains(cut.FindAll(ButtonSelector), button => button.TextContent.Contains("Record Payment", StringComparison.Ordinal));
+        });
+    }
+
+    [Fact]
+    [Trait(SharedKernel.Testing.TestTraitNames.ScopeName, TestTraits.ComponentScope)]
+    [Trait(SharedKernel.Testing.TestTraitNames.AreaName, TestTraits.ManagementWebArea)]
+    [Trait(SharedKernel.Testing.TestTraitNames.CategoryName, TestTraits.ComponentCategory)]
+    public async Task Record_payment_non_success_outcome_shows_sanitized_error()
+    {
+        // Arrange
+        var booking = BuildBookingDto(status: BookingStatusDto.Pending, remainingBalance: 250m);
+        _fakeBookingsApi.AddBooking(booking);
+        _fakeBookingsApi.SetRecordPaymentOutcome(ContractCommandOutcome.Status(ContractCommandOutcomeKind.Conflict, HttpStatusCode.Conflict));
+
+        var cut = Render<Edit>(parameters => parameters.Add(p => p.Id, booking.Id));
+        await cut.WaitForAssertionAsync(() => cut.Find(HeadingOrAlertSelector));
+
+        // Act
+        var showButton = cut.FindAll(ButtonSelector)
+            .First(button => button.TextContent.Contains("Record Payment", StringComparison.Ordinal));
+        await cut.InvokeAsync(() => showButton.Click());
+        await cut.WaitForAssertionAsync(() => cut.FindComponent<PaymentForm>());
+
+        var form = cut.FindComponent<PaymentForm>();
+        form.Instance.Model.Amount = 100m;
+        form.Instance.Model.Method = PaymentMethodDto.Cash;
+        await cut.InvokeAsync(() => form.Find("form").Submit());
+
+        // Assert
+        await cut.WaitForAssertionAsync(() =>
+        {
+            cut.Markup.ShouldContain("We couldn't record the payment right now. Please try again.", StringComparison.Ordinal);
+            cut.Markup.ShouldContain("Record New Payment", StringComparison.Ordinal);
         });
     }
 

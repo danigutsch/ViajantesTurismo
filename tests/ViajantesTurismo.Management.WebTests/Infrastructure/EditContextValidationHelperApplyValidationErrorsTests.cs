@@ -1,5 +1,5 @@
-using ViajantesTurismo.Management.Web.Helpers;
 using SharedKernel.HttpClients;
+using ViajantesTurismo.Management.Web.Helpers;
 
 namespace ViajantesTurismo.Management.WebTests.Infrastructure;
 
@@ -75,6 +75,32 @@ public class EditContextValidationHelperApplyValidationErrorsTests
         Assert.Equal(["Email is invalid."], emailMessages);
         Assert.Equal(["First name is required."], firstNameMessages);
         Assert.Equal(1, validationStateChangedNotifications);
+    }
+
+    [Fact]
+    public void ApplyValidationErrors_replaces_previous_server_validation_messages()
+    {
+        // Arrange
+        var model = new TestFormModel();
+        var editContext = new EditContext(model);
+        var firstException = new ContractValidationException("Validation failed", new Dictionary<string, string[]>
+        {
+            [nameof(TestFormModel.Email)] = ["Email is invalid."]
+        });
+        var secondException = new ContractValidationException("Validation failed", new Dictionary<string, string[]>
+        {
+            [nameof(TestFormModel.FirstName)] = ["First name is required."]
+        });
+        var emailField = editContext.Field(nameof(TestFormModel.Email));
+        var firstNameField = editContext.Field(nameof(TestFormModel.FirstName));
+
+        // Act
+        EditContextValidationHelper.ApplyValidationErrors(editContext, firstException);
+        EditContextValidationHelper.ApplyValidationErrors(editContext, secondException);
+
+        // Assert
+        editContext.GetValidationMessages(emailField).ShouldBeEmpty();
+        editContext.GetValidationMessages(firstNameField).ShouldBe(["First name is required."]);
     }
 
 }

@@ -1,4 +1,6 @@
-﻿using ViajantesTurismo.Admin.Contracts;
+﻿using System.Net;
+using SharedKernel.HttpClients;
+using ViajantesTurismo.Admin.Contracts;
 using ViajantesTurismo.Admin.Testing.Builders;
 
 namespace ViajantesTurismo.Admin.Testing.Fakes.ApiClients;
@@ -6,7 +8,9 @@ namespace ViajantesTurismo.Admin.Testing.Fakes.ApiClients;
 public sealed class FakeBookingsApiClient : IBookingsApiClient
 {
     private readonly List<GetBookingDto> _bookings = [];
+    private ContractCommandOutcomeDto? _createBookingOutcome;
     private Exception? _getBookingByIdException;
+    private ContractCommandOutcomeDto? _recordPaymentOutcome;
     private Exception? _updateBookingNotesException;
 
     public Task<GetBookingDto[]> GetAllBookings(CancellationToken ct)
@@ -34,9 +38,14 @@ public sealed class FakeBookingsApiClient : IBookingsApiClient
         return Task.FromResult(_bookings.Where(b => b.CustomerId == customerId).ToArray());
     }
 
-    public Task<Uri> CreateBooking(CreateBookingDto dto, CancellationToken ct)
+    public Task<ContractCommandOutcomeDto> CreateBooking(CreateBookingDto dto, CancellationToken ct)
     {
         ArgumentNullException.ThrowIfNull(dto);
+
+        if (_createBookingOutcome is not null)
+        {
+            return Task.FromResult(_createBookingOutcome);
+        }
 
         var newBooking = DtoBuilders.BuildBookingDto(
             tourId: dto.TourId,
@@ -48,7 +57,7 @@ public sealed class FakeBookingsApiClient : IBookingsApiClient
         );
 
         _bookings.Add(newBooking);
-        return Task.FromResult(new Uri($"/bookings/{newBooking.Id}", UriKind.Relative));
+        return Task.FromResult(ContractCommandOutcome.Succeeded(HttpStatusCode.Created, new Uri($"/bookings/{newBooking.Id}", UriKind.Relative)));
     }
 
     public Task UpdateBookingDiscount(Guid id, UpdateBookingDiscountDto dto, CancellationToken ct)
@@ -100,15 +109,24 @@ public sealed class FakeBookingsApiClient : IBookingsApiClient
         return Task.CompletedTask;
     }
 
-    public Task<Uri> RecordPayment(Guid bookingId, CreatePaymentDto dto, CancellationToken ct)
+    public Task<ContractCommandOutcomeDto> RecordPayment(Guid bookingId, CreatePaymentDto dto, CancellationToken ct)
     {
+        if (_recordPaymentOutcome is not null)
+        {
+            return Task.FromResult(_recordPaymentOutcome);
+        }
+
         var paymentId = Guid.NewGuid();
-        return Task.FromResult(new Uri($"/bookings/{bookingId}/payments/{paymentId}", UriKind.Relative));
+        return Task.FromResult(ContractCommandOutcome.Succeeded(HttpStatusCode.Created, new Uri($"/bookings/{bookingId}/payments/{paymentId}", UriKind.Relative)));
     }
 
     public void AddBooking(GetBookingDto booking) => _bookings.Add(booking);
 
+    public void SetCreateBookingOutcome(ContractCommandOutcomeDto outcome) => _createBookingOutcome = outcome;
+
     public void SetGetBookingByIdException(Exception exception) => _getBookingByIdException = exception;
+
+    public void SetRecordPaymentOutcome(ContractCommandOutcomeDto outcome) => _recordPaymentOutcome = outcome;
 
     public void SetUpdateBookingNotesException(Exception exception) => _updateBookingNotesException = exception;
 
