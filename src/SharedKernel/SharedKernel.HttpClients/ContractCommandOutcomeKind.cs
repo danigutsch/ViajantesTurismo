@@ -1,12 +1,12 @@
-namespace ViajantesTurismo.Admin.Contracts;
+namespace SharedKernel.HttpClients;
 
 /// <summary>
-/// Describes the HTTP outcome of a customer creation request without applying UI fallback policy.
+/// Describes the HTTP outcome of a command request without applying caller fallback policy.
 /// </summary>
-public enum CustomerCreateOutcomeKind
+public enum ContractCommandOutcomeKind
 {
     /// <summary>
-    /// The customer was created successfully.
+    /// The command completed successfully.
     /// </summary>
     Succeeded,
 

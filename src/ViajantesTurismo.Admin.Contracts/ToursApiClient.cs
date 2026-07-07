@@ -1,5 +1,7 @@
+using System.Diagnostics;
 using System.Net;
 using System.Net.Http.Json;
+using Microsoft.Extensions.Logging;
 using SharedKernel.HttpClients;
 
 namespace ViajantesTurismo.Admin.Contracts;
@@ -7,7 +9,7 @@ namespace ViajantesTurismo.Admin.Contracts;
 /// <summary>
 /// HTTP client for the Admin tours API.
 /// </summary>
-public sealed class ToursApiClient(HttpClient httpClient) : IToursApiClient
+public sealed partial class ToursApiClient(HttpClient httpClient, ILogger<ToursApiClient>? logger = null) : IToursApiClient
 {
     private static readonly ToursApiClientJsonContext Json = ToursApiClientJsonContext.Default;
 
@@ -55,14 +57,27 @@ public sealed class ToursApiClient(HttpClient httpClient) : IToursApiClient
     }
 
     /// <inheritdoc />
-    public async Task<Uri> CreateTour(CreateTourDto dto, CancellationToken cancellationToken)
+    public async Task<ContractCommandOutcomeDto> CreateTour(CreateTourDto dto, CancellationToken cancellationToken)
     {
         ArgumentNullException.ThrowIfNull(dto);
 
-        using var response = await httpClient.PostAsJsonAsync(new Uri("/tours", UriKind.Relative), dto, Json.CreateTourDto, cancellationToken).ConfigureAwait(false);
-        await ContractHttpValidation.EnsureSuccessOrThrowValidationException(response, Json.ContractValidationProblemDto, cancellationToken).ConfigureAwait(false);
+        using var activity = AdminContractsClientTelemetry.ActivitySource.StartActivity(
+            AdminContractsClientTelemetry.CreateTourActivity,
+            ActivityKind.Client);
+        activity?.SetTag(AdminContractsClientTelemetry.ApiAreaTag, AdminContractsClientTelemetry.AdminApiArea);
+        activity?.SetTag(AdminContractsClientTelemetry.OperationTag, AdminContractsClientTelemetry.CreateTourActivity);
 
-        return response.Headers.Location ?? throw new InvalidOperationException("The Location header is missing in the response.");
+        using var response = await httpClient.PostAsJsonAsync(new Uri("/tours", UriKind.Relative), dto, Json.CreateTourDto, cancellationToken).ConfigureAwait(false);
+        var outcome = await ContractCommandOutcome.FromResponse(response, Json.ContractValidationProblemDto, cancellationToken).ConfigureAwait(false);
+
+        activity?.SetTag(AdminContractsClientTelemetry.StatusCodeTag, (int)outcome.StatusCode);
+        activity?.SetTag(AdminContractsClientTelemetry.CommandOutcomeKindTag, outcome.Kind.ToString());
+        if (outcome.Kind != ContractCommandOutcomeKind.Succeeded && logger is not null)
+        {
+            LogTourCreateOutcome(logger, outcome.StatusCode, outcome.Kind);
+        }
+
+        return outcome;
     }
 
     /// <inheritdoc />
@@ -73,4 +88,7 @@ public sealed class ToursApiClient(HttpClient httpClient) : IToursApiClient
         using var response = await httpClient.PutAsJsonAsync($"/tours/{id}", dto, Json.UpdateTourDto, cancellationToken).ConfigureAwait(false);
         await ContractHttpValidation.EnsureSuccessOrThrowValidationException(response, Json.ContractValidationProblemDto, cancellationToken).ConfigureAwait(false);
     }
+
+    [LoggerMessage(1, LogLevel.Warning, "Tour create returned {StatusCode} with outcome {OutcomeKind}.")]
+    private static partial void LogTourCreateOutcome(ILogger logger, HttpStatusCode statusCode, ContractCommandOutcomeKind outcomeKind);
 }

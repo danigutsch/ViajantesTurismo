@@ -398,7 +398,18 @@ else if (_customer != null)
         {
             model.CustomerId = Id;
             var createDto = model.ToDto();
-            await BookingsApi.CreateBooking(createDto, CancellationToken.None);
+            var outcome = await BookingsApi.CreateBooking(createDto, CancellationToken.None);
+            if (outcome.Kind == ContractCommandOutcomeKind.ValidationProblem)
+            {
+                ApplyBookingValidationErrors(outcome);
+                return;
+            }
+
+            if (outcome.Kind != ContractCommandOutcomeKind.Succeeded)
+            {
+                _toast.ShowError("Failed to create booking. Please check the form for errors.");
+                return;
+            }
 
             await LoadBookings();
             HideBookingForm();
@@ -419,6 +430,15 @@ else if (_customer != null)
         finally
         {
             _isSubmitting = false;
+        }
+    }
+
+    private void ApplyBookingValidationErrors(ContractCommandOutcomeDto outcome)
+    {
+        if (_bookingCreateFormRef?.EditContext is not null && outcome.ValidationErrors is not null)
+        {
+            var exception = new ContractValidationException("Validation failed", outcome.ValidationErrors);
+            EditContextValidationHelper.ApplyValidationErrors(_bookingCreateFormRef.EditContext, exception);
         }
     }
 }

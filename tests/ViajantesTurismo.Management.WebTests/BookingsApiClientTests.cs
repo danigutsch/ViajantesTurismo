@@ -1,7 +1,12 @@
 using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.Logging;
+using ContractCommandOutcomeKind = SharedKernel.HttpClients.ContractCommandOutcomeKind;
 
 namespace ViajantesTurismo.Management.WebTests;
 
+[Trait("Scope", "unit")]
+[Trait("Area", "management-web")]
+[Trait("Category", "api-client")]
 public sealed class BookingsApiClientTests
 {
     [Fact]
@@ -87,8 +92,9 @@ public sealed class BookingsApiClientTests
     }
 
     [Fact]
-    public async Task CreateBooking_posts_booking_and_returns_location()
+    public async Task CreateBooking_posts_booking_and_returns_success_outcome()
     {
+        // Arrange
         var requestPath = string.Empty;
         var requestMethod = string.Empty;
         using var httpClient = CatalogToursApiClientTestsHelpers.CreateClient(request =>
@@ -102,11 +108,51 @@ public sealed class BookingsApiClientTests
         });
         var sut = new BookingsApiClient(httpClient);
 
-        var location = await sut.CreateBooking(AdminApiClientTestsHelpers.CreateBooking(), Xunit.TestContext.Current.CancellationToken);
+        // Act
+        var outcome = await sut.CreateBooking(AdminApiClientTestsHelpers.CreateBooking(), Xunit.TestContext.Current.CancellationToken);
 
+        // Assert
         requestMethod.ShouldBe(HttpMethods.Post);
         requestPath.ShouldBe("/bookings");
-        location.ToString().ShouldBe("/bookings/11111111-1111-1111-1111-111111111111");
+        outcome.Kind.ShouldBe(ContractCommandOutcomeKind.Succeeded);
+        outcome.Location.ShouldNotBeNull();
+        outcome.Location.ToString().ShouldBe("/bookings/11111111-1111-1111-1111-111111111111");
+    }
+
+    [Fact]
+    public async Task CreateBooking_returns_validation_problem_outcome()
+    {
+        // Arrange
+        using var httpClient = CatalogToursApiClientTestsHelpers.CreateClient(_ =>
+            CatalogToursApiClientTestsHelpers.JsonResponse(
+                """
+                {"errors":{"TourId":["The selected tour was not found."]}}
+                """,
+                System.Net.HttpStatusCode.BadRequest));
+        var sut = new BookingsApiClient(httpClient);
+
+        // Act
+        var outcome = await sut.CreateBooking(AdminApiClientTestsHelpers.CreateBooking(), Xunit.TestContext.Current.CancellationToken);
+
+        // Assert
+        outcome.Kind.ShouldBe(ContractCommandOutcomeKind.ValidationProblem);
+        outcome.ValidationErrors.ShouldNotBeNull();
+        outcome.ValidationErrors["TourId"][0].ShouldBe("The selected tour was not found.");
+    }
+
+    [Fact]
+    public async Task CreateBooking_returns_status_outcome_for_conflict()
+    {
+        // Arrange
+        using var httpClient = CatalogToursApiClientTestsHelpers.CreateClient(_ => new HttpResponseMessage(System.Net.HttpStatusCode.Conflict));
+        var sut = new BookingsApiClient(httpClient);
+
+        // Act
+        var outcome = await sut.CreateBooking(AdminApiClientTestsHelpers.CreateBooking(), Xunit.TestContext.Current.CancellationToken);
+
+        // Assert
+        outcome.Kind.ShouldBe(ContractCommandOutcomeKind.Conflict);
+        outcome.StatusCode.ShouldBe(System.Net.HttpStatusCode.Conflict);
     }
 
     [Theory]
@@ -198,8 +244,9 @@ public sealed class BookingsApiClientTests
     }
 
     [Fact]
-    public async Task RecordPayment_posts_payment_and_returns_location()
+    public async Task RecordPayment_posts_payment_and_returns_success_outcome()
     {
+        // Arrange
         var requestPath = string.Empty;
         var requestMethod = string.Empty;
         var bookingId = Guid.Parse("11111111-1111-1111-1111-111111111111");
@@ -214,10 +261,51 @@ public sealed class BookingsApiClientTests
         });
         var sut = new BookingsApiClient(httpClient);
 
-        var location = await sut.RecordPayment(bookingId, AdminApiClientTestsHelpers.CreatePayment(), Xunit.TestContext.Current.CancellationToken);
+        // Act
+        var outcome = await sut.RecordPayment(bookingId, AdminApiClientTestsHelpers.CreatePayment(), Xunit.TestContext.Current.CancellationToken);
 
+        // Assert
         requestMethod.ShouldBe(HttpMethods.Post);
         requestPath.ShouldBe("/bookings/11111111-1111-1111-1111-111111111111/payments");
-        location.ToString().ShouldBe("/bookings/11111111-1111-1111-1111-111111111111/payments/aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa");
+        outcome.Kind.ShouldBe(ContractCommandOutcomeKind.Succeeded);
+        outcome.Location.ShouldNotBeNull();
+        outcome.Location.ToString().ShouldBe("/bookings/11111111-1111-1111-1111-111111111111/payments/aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa");
+    }
+
+    [Fact]
+    public async Task RecordPayment_returns_not_found_outcome()
+    {
+        // Arrange
+        var bookingId = Guid.Parse("11111111-1111-1111-1111-111111111111");
+        using var httpClient = CatalogToursApiClientTestsHelpers.CreateClient(_ => new HttpResponseMessage(System.Net.HttpStatusCode.NotFound));
+        var sut = new BookingsApiClient(httpClient);
+
+        // Act
+        var outcome = await sut.RecordPayment(bookingId, AdminApiClientTestsHelpers.CreatePayment(), Xunit.TestContext.Current.CancellationToken);
+
+        // Assert
+        outcome.Kind.ShouldBe(ContractCommandOutcomeKind.NotFound);
+        outcome.StatusCode.ShouldBe(System.Net.HttpStatusCode.NotFound);
+    }
+
+    [Fact]
+    public async Task CreateBooking_logs_non_success_outcome_without_response_body()
+    {
+        // Arrange
+        var logger = new CollectingLogger<BookingsApiClient>();
+        using var httpClient = CatalogToursApiClientTestsHelpers.CreateClient(_ =>
+            CatalogToursApiClientTestsHelpers.JsonResponse("not json booking@example.test", System.Net.HttpStatusCode.BadRequest));
+        var sut = new BookingsApiClient(httpClient, logger);
+
+        // Act
+        var outcome = await sut.CreateBooking(AdminApiClientTestsHelpers.CreateBooking(), Xunit.TestContext.Current.CancellationToken);
+
+        // Assert
+        outcome.Kind.ShouldBe(ContractCommandOutcomeKind.MalformedBody);
+        var entry = logger.Entries.ShouldHaveSingleItem();
+        entry.LogLevel.ShouldBe(LogLevel.Warning);
+        entry.Message.ShouldBe("Booking create returned BadRequest with outcome MalformedBody.");
+        entry.Message.Contains("booking@example.test", StringComparison.Ordinal).ShouldBeFalse();
+        entry.State.Values.Any(value => value.Contains("booking@example.test", StringComparison.Ordinal)).ShouldBeFalse();
     }
 }

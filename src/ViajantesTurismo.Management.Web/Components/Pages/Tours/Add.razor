@@ -1,5 +1,6 @@
 @page "/addtour"
 @using System.ComponentModel.DataAnnotations
+@using SharedKernel.HttpClients
 @using ViajantesTurismo.Admin.Contracts
 @using ViajantesTurismo.Management.Web.Helpers
 @inject IToursApiClient ToursApi
@@ -159,9 +160,14 @@ Bike rental"/>
                     MaxCustomers = _model.MaxCustomers
             };
 
-            var response = await ToursApi.CreateTour(tour, CancellationToken.None);
+            var outcome = await ToursApi.CreateTour(tour, CancellationToken.None);
+            if (outcome.Kind != ContractCommandOutcomeKind.Succeeded)
+            {
+                _errorMessage = UserFacingErrorMessage.ForOperation("create the tour");
+                return;
+            }
 
-            _createdTourUrl = response.ToString();
+            _createdTourUrl = outcome.Location?.ToString() ?? "/tours";
             _success = true;
         }
         catch (Exception)

@@ -1,3 +1,5 @@
+using SharedKernel.HttpClients;
+
 namespace ViajantesTurismo.Admin.Contracts;
 
 /// <summary>
@@ -41,8 +43,8 @@ public interface IBookingsApiClient
     /// </summary>
     /// <param name="dto">The booking data to create.</param>
     /// <param name="ct">Cancellation token for the request.</param>
-    /// <returns>The URI of the newly created booking resource.</returns>
-    Task<Uri> CreateBooking(CreateBookingDto dto, CancellationToken ct);
+    /// <returns>The contract-level outcome of the create request.</returns>
+    Task<ContractCommandOutcomeDto> CreateBooking(CreateBookingDto dto, CancellationToken ct);
 
     /// <summary>
     /// Updates the discount information for a booking.
@@ -102,6 +104,6 @@ public interface IBookingsApiClient
     /// <param name="bookingId">The unique identifier of the booking.</param>
     /// <param name="dto">The payment data to record.</param>
     /// <param name="ct">Cancellation token for the request.</param>
-    /// <returns>The URI of the newly created payment resource.</returns>
-    Task<Uri> RecordPayment(Guid bookingId, CreatePaymentDto dto, CancellationToken ct);
+    /// <returns>The contract-level outcome of the record-payment request.</returns>
+    Task<ContractCommandOutcomeDto> RecordPayment(Guid bookingId, CreatePaymentDto dto, CancellationToken ct);
 }

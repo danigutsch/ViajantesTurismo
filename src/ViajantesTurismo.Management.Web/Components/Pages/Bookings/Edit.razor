@@ -1,5 +1,6 @@
 @page "/bookings/{id:guid}/edit"
 @implements IAsyncDisposable
+@using SharedKernel.HttpClients
 @using ViajantesTurismo.Admin.Contracts
 @using ViajantesTurismo.Management.Web.Helpers
 @inject IBookingsApiClient BookingsApi
@@ -437,7 +438,13 @@ else
         try
         {
             var createDto = _paymentState.FormModel.ToDto();
-            await BookingsApi.RecordPayment(Id, createDto, CancellationToken.None);
+            var outcome = await BookingsApi.RecordPayment(Id, createDto, CancellationToken.None);
+            if (outcome.Kind != ContractCommandOutcomeKind.Succeeded)
+            {
+                _toast.ShowError(UserFacingErrorMessage.ForOperation("record the payment"));
+                return;
+            }
+
             await RefreshBookingAndSyncModel();
             _toast.ShowSuccess("Payment recorded successfully.");
             HidePaymentForm();

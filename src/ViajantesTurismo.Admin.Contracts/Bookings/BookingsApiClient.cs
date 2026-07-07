@@ -1,5 +1,7 @@
+using System.Diagnostics;
 using System.Net;
 using System.Net.Http.Json;
+using Microsoft.Extensions.Logging;
 using SharedKernel.HttpClients;
 
 namespace ViajantesTurismo.Admin.Contracts;
@@ -7,7 +9,7 @@ namespace ViajantesTurismo.Admin.Contracts;
 /// <summary>
 /// HTTP client for the Admin bookings API.
 /// </summary>
-public sealed class BookingsApiClient(HttpClient httpClient) : IBookingsApiClient
+public sealed partial class BookingsApiClient(HttpClient httpClient, ILogger<BookingsApiClient>? logger = null) : IBookingsApiClient
 {
     private static readonly BookingsApiClientJsonContext Json = BookingsApiClientJsonContext.Default;
 
@@ -38,14 +40,16 @@ public sealed class BookingsApiClient(HttpClient httpClient) : IBookingsApiClien
         await ReadBookings($"/bookings/customer/{customerId}", ct).ConfigureAwait(false);
 
     /// <inheritdoc />
-    public async Task<Uri> CreateBooking(CreateBookingDto dto, CancellationToken ct)
+    public async Task<ContractCommandOutcomeDto> CreateBooking(CreateBookingDto dto, CancellationToken ct)
     {
         ArgumentNullException.ThrowIfNull(dto);
 
+        using var activity = StartActivity(AdminContractsClientTelemetry.CreateBookingActivity);
         using var response = await httpClient.PostAsJsonAsync(new Uri("/bookings", UriKind.Relative), dto, Json.CreateBookingDto, ct).ConfigureAwait(false);
-        await EnsureSuccess(response, ct).ConfigureAwait(false);
+        var outcome = await ContractCommandOutcome.FromResponse(response, Json.ContractValidationProblemDto, ct).ConfigureAwait(false);
 
-        return response.Headers.Location ?? throw new InvalidOperationException("The Location header is missing in the response.");
+        RecordOutcome(activity, outcome, LogBookingCreateOutcome);
+        return outcome;
     }
 
     /// <inheritdoc />
@@ -95,14 +99,16 @@ public sealed class BookingsApiClient(HttpClient httpClient) : IBookingsApiClien
     }
 
     /// <inheritdoc />
-    public async Task<Uri> RecordPayment(Guid bookingId, CreatePaymentDto dto, CancellationToken ct)
+    public async Task<ContractCommandOutcomeDto> RecordPayment(Guid bookingId, CreatePaymentDto dto, CancellationToken ct)
     {
         ArgumentNullException.ThrowIfNull(dto);
 
+        using var activity = StartActivity(AdminContractsClientTelemetry.RecordPaymentActivity);
         using var response = await httpClient.PostAsJsonAsync($"/bookings/{bookingId}/payments", dto, Json.CreatePaymentDto, ct).ConfigureAwait(false);
-        await EnsureSuccess(response, ct).ConfigureAwait(false);
+        var outcome = await ContractCommandOutcome.FromResponse(response, Json.ContractValidationProblemDto, ct).ConfigureAwait(false);
 
-        return response.Headers.Location ?? throw new InvalidOperationException("The Location header is missing in the response.");
+        RecordOutcome(activity, outcome, LogRecordPaymentOutcome);
+        return outcome;
     }
 
     private async Task<GetBookingDto[]> ReadBookings(string requestUri, CancellationToken ct)
@@ -131,4 +137,31 @@ public sealed class BookingsApiClient(HttpClient httpClient) : IBookingsApiClien
 
     private static async Task EnsureSuccess(HttpResponseMessage response, CancellationToken ct) =>
         await ContractHttpValidation.EnsureSuccessOrThrowValidationException(response, Json.ContractValidationProblemDto, ct).ConfigureAwait(false);
+
+    private static Activity? StartActivity(string operation)
+    {
+        var activity = AdminContractsClientTelemetry.ActivitySource.StartActivity(operation, ActivityKind.Client);
+        activity?.SetTag(AdminContractsClientTelemetry.ApiAreaTag, AdminContractsClientTelemetry.AdminApiArea);
+        activity?.SetTag(AdminContractsClientTelemetry.OperationTag, operation);
+        return activity;
+    }
+
+    private void RecordOutcome(
+        Activity? activity,
+        ContractCommandOutcomeDto outcome,
+        Action<ILogger, HttpStatusCode, ContractCommandOutcomeKind> log)
+    {
+        activity?.SetTag(AdminContractsClientTelemetry.StatusCodeTag, (int)outcome.StatusCode);
+        activity?.SetTag(AdminContractsClientTelemetry.CommandOutcomeKindTag, outcome.Kind.ToString());
+        if (outcome.Kind != ContractCommandOutcomeKind.Succeeded && logger is not null)
+        {
+            log(logger, outcome.StatusCode, outcome.Kind);
+        }
+    }
+
+    [LoggerMessage(1, LogLevel.Warning, "Booking create returned {StatusCode} with outcome {OutcomeKind}.")]
+    private static partial void LogBookingCreateOutcome(ILogger logger, HttpStatusCode statusCode, ContractCommandOutcomeKind outcomeKind);
+
+    [LoggerMessage(2, LogLevel.Warning, "Record payment returned {StatusCode} with outcome {OutcomeKind}.")]
+    private static partial void LogRecordPaymentOutcome(ILogger logger, HttpStatusCode statusCode, ContractCommandOutcomeKind outcomeKind);
 }

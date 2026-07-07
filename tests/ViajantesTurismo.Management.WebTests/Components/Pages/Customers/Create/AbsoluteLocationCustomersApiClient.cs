@@ -1,3 +1,6 @@
+using ContractCommandOutcomeDto = SharedKernel.HttpClients.ContractCommandOutcomeDto;
+using ContractCommandOutcomeKind = SharedKernel.HttpClients.ContractCommandOutcomeKind;
+
 namespace ViajantesTurismo.Management.WebTests.Components.Pages.Customers.Create;
 
 internal sealed class AbsoluteLocationCustomersApiClient : ICustomersApiClient
@@ -6,10 +9,10 @@ internal sealed class AbsoluteLocationCustomersApiClient : ICustomersApiClient
 
     public Task<CustomerDetailsDto?> GetCustomerById(Guid id, CancellationToken ct) => throw new NotImplementedException();
 
-    public Task<CustomerCreateOutcomeDto> CreateCustomer(CreateCustomerDto dto, CancellationToken ct) =>
-        Task.FromResult(new CustomerCreateOutcomeDto
+    public Task<ContractCommandOutcomeDto> CreateCustomer(CreateCustomerDto dto, CancellationToken ct) =>
+        Task.FromResult(new ContractCommandOutcomeDto
         {
-            Kind = CustomerCreateOutcomeKind.Succeeded,
+            Kind = ContractCommandOutcomeKind.Succeeded,
             StatusCode = System.Net.HttpStatusCode.Created,
             Location = new Uri("https://example.test/customers/absolute-id?source=review", UriKind.Absolute)
         });

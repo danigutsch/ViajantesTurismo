@@ -1,9 +1,14 @@
 using Microsoft.AspNetCore.Components;
 using ViajantesTurismo.Management.Web;
 using ViajantesTurismo.Management.Web.Components.Pages.Customers.Create;
+using ContractCommandOutcomeDto = SharedKernel.HttpClients.ContractCommandOutcomeDto;
+using ContractCommandOutcomeKind = SharedKernel.HttpClients.ContractCommandOutcomeKind;
 
 namespace ViajantesTurismo.Management.WebTests.Components.Pages.Customers.Create;
 
+[Trait("Scope", "component")]
+[Trait("Area", "management-web")]
+[Trait("Category", "component")]
 public sealed class ReviewPageTests : BunitContext
 {
     private readonly FakeCustomersApiClient _fakeCustomersApi = new();
@@ -43,9 +48,9 @@ public sealed class ReviewPageTests : BunitContext
     {
         // Arrange
         CustomerCreationStateTestHelper.SeedCompletedState(_state);
-        _fakeCustomersApi.SetCreateCustomerOutcome(new CustomerCreateOutcomeDto
+        _fakeCustomersApi.SetCreateCustomerOutcome(new ContractCommandOutcomeDto
         {
-            Kind = CustomerCreateOutcomeKind.Conflict,
+            Kind = ContractCommandOutcomeKind.Conflict,
             StatusCode = System.Net.HttpStatusCode.Conflict,
             Message = "Duplicate email"
         });
@@ -179,9 +184,9 @@ public sealed class ReviewPageTests : BunitContext
     {
         // Arrange
         CustomerCreationStateTestHelper.SeedCompletedState(_state);
-        _fakeCustomersApi.SetCreateCustomerOutcome(new CustomerCreateOutcomeDto
+        _fakeCustomersApi.SetCreateCustomerOutcome(new ContractCommandOutcomeDto
         {
-            Kind = CustomerCreateOutcomeKind.Succeeded,
+            Kind = ContractCommandOutcomeKind.Succeeded,
             StatusCode = System.Net.HttpStatusCode.Created,
             Location = new Uri(location, UriKind.Relative)
         });
@@ -202,9 +207,9 @@ public sealed class ReviewPageTests : BunitContext
     {
         // Arrange
         CustomerCreationStateTestHelper.SeedCompletedState(_state);
-        _fakeCustomersApi.SetCreateCustomerOutcome(new CustomerCreateOutcomeDto
+        _fakeCustomersApi.SetCreateCustomerOutcome(new ContractCommandOutcomeDto
         {
-            Kind = CustomerCreateOutcomeKind.Succeeded,
+            Kind = ContractCommandOutcomeKind.Succeeded,
             StatusCode = System.Net.HttpStatusCode.Created
         });
         var navigationManager = Services.GetRequiredService<NavigationManager>();

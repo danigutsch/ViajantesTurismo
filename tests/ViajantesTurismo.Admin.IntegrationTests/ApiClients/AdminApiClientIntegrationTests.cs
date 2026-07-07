@@ -1,4 +1,5 @@
 using Microsoft.Extensions.Logging.Abstractions;
+using SharedKernel.HttpClients;
 
 namespace ViajantesTurismo.Admin.IntegrationTests.ApiClients;
 
@@ -19,7 +20,7 @@ public sealed class AdminApiClientIntegrationTests(AspireSerialIntegrationTestFi
         var outcome = await sut.CreateCustomer(request, cancellationToken);
 
         // Assert
-        outcome.Kind.ShouldBe(CustomerCreateOutcomeKind.Succeeded);
+        outcome.Kind.ShouldBe(ContractCommandOutcomeKind.Succeeded);
         outcome.StatusCode.ShouldBe(HttpStatusCode.Created);
         outcome.Location.ShouldNotBeNull();
 
@@ -41,10 +42,12 @@ public sealed class AdminApiClientIntegrationTests(AspireSerialIntegrationTestFi
         var createRequest = DtoBuilders.BuildCreateTourDto(name: "Contract Client Tour");
 
         // Act
-        var location = await sut.CreateTour(createRequest, cancellationToken);
+        var outcome = await sut.CreateTour(createRequest, cancellationToken);
 
         // Assert
-        var tourIdText = location.OriginalString.Split('/', StringSplitOptions.RemoveEmptyEntries)[^1];
+        outcome.Kind.ShouldBe(ContractCommandOutcomeKind.Succeeded);
+        outcome.Location.ShouldNotBeNull();
+        var tourIdText = outcome.Location.OriginalString.Split('/', StringSplitOptions.RemoveEmptyEntries)[^1];
         Guid.TryParse(tourIdText, out var tourId).ShouldBeTrue();
 
         var created = await sut.GetTourById(tourId, cancellationToken);
