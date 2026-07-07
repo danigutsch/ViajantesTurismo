@@ -133,6 +133,22 @@ Deployment guidance:
 - keep deployment-time infrastructure choices in deployment parameters
 - avoid promoting local AppHost values unless operators need environment-specific control
 
+## Application container publish boundary
+
+Release workflows own version and registry values. The AppHost owns the resource graph, service
+references, health checks, and local developer-tool wiring; it must not inspect Git tags, parse commit
+history, or become the release-version source.
+
+The release flow should calculate versions with `SharedKernel.Versioning.Tool calculate-release`, then
+pass the computed `package_version` into `aspire publish` as configuration, environment variables, or
+MSBuild properties. Application container resources can then use Aspire publish hooks such as
+`PublishAsDockerFile(...)`, `WithImageTag(...)`, `WithImageRegistry(...)`, and
+`WithImagePushOptions(...)`. Use `WithManifestPublishingCallback(...)` only when deployment metadata is
+not already represented by Aspire resource annotations.
+
+Infrastructure image tags and SHA-256 digests remain pinned independently from application release
+versions.
+
 ## Planned improvements
 
 - Add deployment-environment-specific docs when the target hosting platform is selected.
