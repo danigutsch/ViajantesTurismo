@@ -13,7 +13,9 @@ var migrationService = builder.AddMigrationService(adminDatabase, catalogDatabas
 
 var apiService = builder.AddAdminApi(adminDatabase, migrationService);
 
-var catalogApiService = builder.AddCatalogApi(catalogDatabase, migrationService);
+var catalogApiService = builder.AddCatalogApi(adminDatabase, catalogDatabase, migrationService);
+
+builder.AddIntegrationEventWorker(adminDatabase, catalogDatabase, migrationService);
 
 builder.AddManagementWeb(cache, apiService, catalogApiService);
 

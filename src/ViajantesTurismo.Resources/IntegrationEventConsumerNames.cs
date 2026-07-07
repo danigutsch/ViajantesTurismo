@@ -1,0 +1,12 @@
+namespace ViajantesTurismo.Resources;
+
+/// <summary>
+/// Contains stable integration-event consumer queue names.
+/// </summary>
+public static class IntegrationEventConsumerNames
+{
+    /// <summary>
+    /// Catalog bounded-context consumer queue name.
+    /// </summary>
+    public const string Catalog = "catalog";
+}

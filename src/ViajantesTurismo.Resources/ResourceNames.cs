@@ -36,6 +36,11 @@ public static class ResourceNames
     public const string CatalogApi = "catalog-api";
 
     /// <summary>
+    /// The name of the integration-event worker resource.
+    /// </summary>
+    public const string IntegrationEventWorker = "integration-event-worker";
+
+    /// <summary>
     /// The name of the web application resource.
     /// </summary>
     public const string WebApp = "web-app";
