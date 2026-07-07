@@ -8,6 +8,7 @@ public sealed class FakeToursApiClient : IToursApiClient
 {
     private readonly List<GetTourDto> _tours = [];
     private Exception? _createTourException;
+    private ContractCommandOutcomeDto? _createTourOutcome;
     private Exception? _getTourByIdException;
     private Exception? _getToursException;
     private Exception? _updateTourException;
@@ -39,6 +40,11 @@ public sealed class FakeToursApiClient : IToursApiClient
         if (_createTourException is not null)
         {
             throw _createTourException;
+        }
+
+        if (_createTourOutcome is not null)
+        {
+            return Task.FromResult(_createTourOutcome);
         }
 
         var newTour = new GetTourDto
@@ -103,6 +109,8 @@ public sealed class FakeToursApiClient : IToursApiClient
     public void SetGetToursException(Exception exception) => _getToursException = exception;
 
     public void SetCreateTourException(Exception exception) => _createTourException = exception;
+
+    public void SetCreateTourOutcome(ContractCommandOutcomeDto outcome) => _createTourOutcome = outcome;
 
     public void SetUpdateTourException(Exception exception) => _updateTourException = exception;
 }

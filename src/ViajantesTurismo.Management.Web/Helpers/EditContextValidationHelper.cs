@@ -16,7 +16,12 @@ internal static class EditContextValidationHelper
     public static void ApplyValidationErrors(EditContext editContext, ContractValidationException exception)
         => ApplyValidationErrors(editContext, exception.ValidationErrors);
 
-    private static void ApplyValidationErrors(EditContext editContext, IReadOnlyDictionary<string, string[]> validationErrors)
+    /// <summary>
+    /// Applies validation errors from a contract command outcome to the EditContext.
+    /// </summary>
+    /// <param name="editContext">The EditContext to add field errors to.</param>
+    /// <param name="validationErrors">The field validation errors.</param>
+    public static void ApplyValidationErrors(EditContext editContext, IReadOnlyDictionary<string, string[]> validationErrors)
     {
         if (validationErrors.Count == 0)
         {

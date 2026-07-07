@@ -4,7 +4,7 @@ using SharedKernel.HttpClients;
 
 namespace ViajantesTurismo.Admin.Contracts;
 
-[JsonSourceGenerationOptions(JsonSerializerDefaults.Web, UseStringEnumConverter = true)]
+[JsonSourceGenerationOptions(JsonSerializerDefaults.Web)]
 [JsonSerializable(typeof(ContractValidationProblemDto))]
 [JsonSerializable(typeof(GetBookingDto))]
 [JsonSerializable(typeof(CreateBookingDto))]

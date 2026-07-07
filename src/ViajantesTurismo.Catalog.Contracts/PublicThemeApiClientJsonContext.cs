@@ -4,7 +4,7 @@ using SharedKernel.HttpClients;
 
 namespace ViajantesTurismo.Catalog.Contracts;
 
-[JsonSourceGenerationOptions(JsonSerializerDefaults.Web, UseStringEnumConverter = true)]
+[JsonSourceGenerationOptions(JsonSerializerDefaults.Web)]
 [JsonSerializable(typeof(ContractValidationProblemDto))]
 [JsonSerializable(typeof(PublicThemeSettingsDto))]
 internal sealed partial class PublicThemeApiClientJsonContext : JsonSerializerContext;

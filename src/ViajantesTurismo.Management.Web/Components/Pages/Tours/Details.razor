@@ -270,7 +270,7 @@ else if (_tour != null)
 
             if (outcome.Kind != ContractCommandOutcomeKind.Succeeded)
             {
-                _toast.ShowError("Failed to create booking. Please check the form for errors.");
+                _toast.ShowError("Failed to create booking. Please try again.");
                 return;
             }
 
@@ -289,7 +289,7 @@ else if (_tour != null)
         catch (Exception ex)
         {
             Logger.LogError(ex, "Unexpected error while creating booking for tour {TourId}", Id);
-            _toast.ShowError("Failed to create booking. Please check the form for errors.");
+            _toast.ShowError("Failed to create booking. Please try again.");
         }
         finally
         {

@@ -31,7 +31,7 @@
     </div>
 }
 
-<EditForm Model="@_model" OnValidSubmit="@HandleSubmit" FormName="addTour">
+<EditForm EditContext="@_editContext" OnValidSubmit="@HandleSubmit" FormName="addTour">
     <DataAnnotationsValidator/>
     <ValidationSummary/>
 
@@ -129,10 +129,16 @@ Bike rental"/>
 
 @code {
     private TourFormModel _model = new();
+    private EditContext _editContext;
     private bool _isSubmitting;
     private bool _success;
     private string? _errorMessage;
     private string? _createdTourUrl;
+
+    public Add()
+    {
+        _editContext = new EditContext(_model);
+    }
 
     private async Task HandleSubmit()
     {
@@ -161,6 +167,13 @@ Bike rental"/>
             };
 
             var outcome = await ToursApi.CreateTour(tour, CancellationToken.None);
+            if (outcome.Kind == ContractCommandOutcomeKind.ValidationProblem && outcome.ValidationErrors is not null)
+            {
+                _errorMessage = "Please correct the highlighted fields.";
+                EditContextValidationHelper.ApplyValidationErrors(_editContext, outcome.ValidationErrors);
+                return;
+            }
+
             if (outcome.Kind != ContractCommandOutcomeKind.Succeeded)
             {
                 _errorMessage = UserFacingErrorMessage.ForOperation("create the tour");
@@ -183,6 +196,7 @@ Bike rental"/>
     private void CreateAnother()
     {
         _model = new TourFormModel();
+        _editContext = new EditContext(_model);
         _success = false;
         _createdTourUrl = null;
         _errorMessage = null;
