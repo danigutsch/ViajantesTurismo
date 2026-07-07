@@ -44,7 +44,7 @@ public sealed class PostTransportValidationTests(AspireSystemTestFixture fixture
         var published = await scenario.PublishCatalogTour(catalogTour, title, slug, TestContext.Current.CancellationToken);
 
         // Act
-        await Page.GotoAsync(new Uri(Fixture.PublicWebAppUrl, "/group-bike-tours").ToString(), new PageGotoOptions { WaitUntil = WaitUntilState.NetworkIdle });
+        await NavigateTo(new Uri(Fixture.PublicWebAppUrl, "/group-bike-tours"));
 
         // Assert
         published.IsPublished.ShouldBeTrue();
@@ -66,7 +66,7 @@ public sealed class PostTransportValidationTests(AspireSystemTestFixture fixture
         var adminTour = await scenario.CreateAdminTour(identifier, title);
         var catalogTour = await scenario.WaitForCatalogTour(adminTour.Id, TestContext.Current.CancellationToken);
         var published = await scenario.PublishCatalogTour(catalogTour, title, slug, TestContext.Current.CancellationToken);
-        await Page.GotoAsync(new Uri(Fixture.PublicWebAppUrl, $"/group-bike-tours/{published.Slug}").ToString(), new PageGotoOptions { WaitUntil = WaitUntilState.NetworkIdle });
+        await NavigateTo(new Uri(Fixture.PublicWebAppUrl, $"/group-bike-tours/{published.Slug}"));
 
         // Assert
         published.AdminTourId.ShouldBe(adminTour.Id);
@@ -95,7 +95,7 @@ public sealed class PostTransportValidationTests(AspireSystemTestFixture fixture
         var catalogTours = await Fixture.CatalogTours.GetTours(TestContext.Current.CancellationToken);
         var eventCountAfterDuplicate = await Fixture.CountCatalogTourEvents(adminTour.Id, TestContext.Current.CancellationToken);
         await scenario.PublishCatalogTour(catalogTour, title, slug, TestContext.Current.CancellationToken);
-        await Page.GotoAsync(new Uri(Fixture.PublicWebAppUrl, "/group-bike-tours").ToString(), new PageGotoOptions { WaitUntil = WaitUntilState.NetworkIdle });
+        await NavigateTo(new Uri(Fixture.PublicWebAppUrl, "/group-bike-tours"));
 
         // Assert
         eventCountBeforeDuplicate.ShouldBe(1);

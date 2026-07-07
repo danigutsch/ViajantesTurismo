@@ -132,7 +132,7 @@ public sealed class PublicMediaImageAccessibilityText : ValueObject
             errors[nameof(Language)] = ["Language is required."];
         }
 
-        if (!requiresHumanReview && !isDecorative && string.IsNullOrWhiteSpace(sanitizedAltText))
+        if (!isDecorative && string.IsNullOrWhiteSpace(sanitizedAltText))
         {
             errors[nameof(AltText)] = ["Alt text is required unless the image is decorative."];
         }

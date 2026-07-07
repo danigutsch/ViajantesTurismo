@@ -397,9 +397,25 @@ internal static class CatalogEndpoints
             errors[nameof(PublicMediaImageDto.ResponsiveVariants)] = ["Responsive variants must include absolute HTTP or HTTPS URIs when ObjectKey is not provided."];
         }
 
-        if (image.AccessibilityTexts is not null && image.AccessibilityTexts.Any(text => text is null))
+        if (image.AccessibilityTexts is null)
+        {
+            errors[nameof(PublicMediaImageDto.AccessibilityTexts)] = ["Accessibility texts are required."];
+        }
+        else if (image.AccessibilityTexts.Any(text => text is null))
         {
             errors[nameof(PublicMediaImageDto.AccessibilityTexts)] = ["Accessibility text entries are required."];
+        }
+        else if (image.AccessibilityTexts.Select(text => text.Language).Distinct().Count() != image.AccessibilityTexts.Count)
+        {
+            errors[nameof(PublicMediaImageDto.AccessibilityTexts)] = ["Accessibility text languages cannot be duplicated."];
+        }
+        else if (image.AccessibilityTexts.Any(static text => text.IsAiGenerated != text.RequiresHumanReview))
+        {
+            errors[nameof(PublicMediaImageDto.AccessibilityTexts)] = ["Accessibility text must be either an AI draft requiring review or reviewed editor text."];
+        }
+        else if (image.AccessibilityTexts.Any(static text => text.IsAiGenerated && text.IsDecorative))
+        {
+            errors[nameof(PublicMediaImageDto.AccessibilityTexts)] = ["AI draft accessibility text cannot mark images decorative."];
         }
     }
 
