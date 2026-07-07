@@ -6,9 +6,9 @@ using ContractCommandOutcomeKind = SharedKernel.HttpClients.ContractCommandOutco
 
 namespace ViajantesTurismo.Management.WebTests.Components.Pages.Customers.Create;
 
-[Trait("Scope", "component")]
-[Trait("Area", "management-web")]
-[Trait("Category", "component")]
+[Trait(TestTraits.ScopeName, TestTraits.ComponentScope)]
+[Trait(TestTraits.AreaName, TestTraits.ManagementWebArea)]
+[Trait(TestTraits.CategoryName, TestTraits.ComponentCategory)]
 public sealed class ReviewPageTests : BunitContext
 {
     private readonly FakeCustomersApiClient _fakeCustomersApi = new();

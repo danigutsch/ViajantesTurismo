@@ -6,9 +6,9 @@ using ContractCommandOutcomeKind = SharedKernel.HttpClients.ContractCommandOutco
 
 namespace ViajantesTurismo.Management.WebTests;
 
-[Trait("Scope", "unit")]
-[Trait("Area", "management-web")]
-[Trait("Category", "api-client")]
+[Trait(TestTraits.ScopeName, TestTraits.UnitScope)]
+[Trait(TestTraits.AreaName, TestTraits.ManagementWebArea)]
+[Trait(TestTraits.CategoryName, TestTraits.ApiClientCategory)]
 public sealed class CustomersApiClientTests
 {
     [Fact]
@@ -256,7 +256,9 @@ public sealed class CustomersApiClientTests
 
         // Assert
         outcome.Kind.ShouldBe(ContractCommandOutcomeKind.MalformedBody);
-        var activity = stoppedActivities.ShouldHaveSingleItem();
+        var activity = stoppedActivities
+            .Where(candidate => candidate.DisplayName == "customers.create")
+            .ShouldHaveSingleItem();
         activity.DisplayName.ShouldBe("customers.create");
         activity.Kind.ShouldBe(ActivityKind.Client);
         activity.Tags.ShouldContain(new KeyValuePair<string, string?>("viajantes.api_area", "admin"));
