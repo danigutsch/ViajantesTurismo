@@ -53,4 +53,11 @@ internal sealed class FakeCatalogToursApiClient : ICatalogToursApiClient
         Tours = Tours.Select(current => current.Id == id ? updated : current).ToArray();
         return Task.FromResult<CatalogTourDto?>(updated);
     }
+
+    public Task<PublicMediaImageDto?> GenerateMediaImageAccessibilityDraft(Guid id, PublicMediaImageAccessibilityDraftRequest request, CancellationToken ct)
+    {
+        ct.ThrowIfCancellationRequested();
+
+        return Task.FromResult<PublicMediaImageDto?>(null);
+    }
 }

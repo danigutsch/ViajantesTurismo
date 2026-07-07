@@ -293,7 +293,8 @@ Current constraints visible in contracts:
 - Public images require reviewed default accessibility text: non-empty `AltText` or an explicit
   decorative-image decision.
 - `Caption` is optional and length-limited.
-- AI-assisted accessibility drafts are review-required by default.
+- AI-assisted accessibility drafts are generated through a SharedKernel LiteLLM-compatible adapter and
+  are review-required by default.
 - Public tour endpoints filter images to `Ready` processing status and reviewed accessibility text.
 - Media object reconciliation scans deterministic `media/` object keys, reports missing references and
   orphaned objects, applies a grace period for in-flight work, and retries deletion failures on later runs.
@@ -327,7 +328,7 @@ flowchart TB
     processor[Async image processor planned]
     variants[(Generated variants planned)]
     metadata[Catalog image metadata]
-    ai[AI alt text and caption draft planned]
+    ai[LiteLLM-compatible AI alt text and caption draft]
     eval[AI output evaluation planned]
     telemetry[OpenTelemetry metrics planned]
     grafana[Grafana dashboards planned]
@@ -345,7 +346,7 @@ flowchart TB
     processor -. thumbnails/icons/responsive variants .-> variants
     processor -. processing status + variant metadata .-> metadata
     asset -. public URI .-> metadata
-    metadata -. image + tour context .-> ai
+    metadata -. image + context metadata .-> ai
     ai -. generated draft .-> eval
     eval -. review-required text .-> review
     ai -. generation metrics .-> telemetry
@@ -364,7 +365,7 @@ Open design points for future issues:
 - Image ordering, hero-image selection, and removal behavior.
 - Whether image metadata changes are Catalog tour events or a separate media stream.
 - Final transport for media processing integration events after outbox publication.
-- Whether AI alt text orchestration needs Semantic Kernel or a smaller C# provider adapter.
+- Whether AI alt text orchestration needs Semantic Kernel beyond the smaller LiteLLM-compatible adapter.
 - Evaluation rubric and golden fixture shape for AI-generated accessibility text.
 - Grafana dashboard panels for generation quality, review outcomes, and publication blockers.
 - Accessibility review requirements beyond required `AltText`.

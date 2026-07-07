@@ -19,4 +19,9 @@ public interface ICatalogToursApiClient
     /// Updates catalog tour presentation data.
     /// </summary>
     Task<CatalogTourDto?> UpdatePresentation(Guid id, UpsertCatalogTourPresentationRequest request, CancellationToken ct);
+
+    /// <summary>
+    /// Generates AI-assisted draft accessibility text for a media image.
+    /// </summary>
+    Task<PublicMediaImageDto?> GenerateMediaImageAccessibilityDraft(Guid id, PublicMediaImageAccessibilityDraftRequest request, CancellationToken ct);
 }

@@ -183,9 +183,11 @@ Current implementation:
 - `CatalogTourDto.Images` is populated on management and public tour responses.
 - `GET /catalog/tours/{id}/images` and `PUT /catalog/media/images/{id}` persist Catalog-owned image
   metadata, localized accessibility text review state, and tour associations.
-- AI-assisted alt text/caption drafts can be stored as review-required image accessibility text. Public
-  endpoints expose only images whose default accessibility text is reviewed and either non-empty or
-  explicitly decorative.
+- `POST /catalog/media/images/{id}/accessibility-draft` uses the SharedKernel LiteLLM-compatible image
+  text generator to create review-required alt text/caption drafts from stored image bytes plus optional
+  editorial context and trusted geolocation metadata.
+- Public endpoints expose only images whose default accessibility text is reviewed and either non-empty
+  or explicitly decorative.
 - Media object reconciliation compares deterministic `media/` storage keys with live Catalog metadata,
   reports missing and orphaned objects, preserves recent orphans during a grace period, and deletes
   eligible orphaned objects from the integration-event worker.
@@ -196,11 +198,11 @@ Planned/evolving:
   treated as rebuildable projections.
 - Binary storage/upload remains an adapter concern outside the Catalog aggregate.
 - Upload processing remains asynchronous future work after original storage.
-- Provider-backed AI generation orchestration and quality evaluation remain future work; the Catalog
-  model already enforces review-required generated drafts before publication.
+- Quality evaluation remains future work; the Catalog model already enforces review-required generated
+  drafts before publication.
 - Grafana-visible observability for generation, evaluation, review outcomes, and publication blockers
   remains future work.
-- Geolocation policy remains future design work.
+- Geolocation policy for supplied generation context remains future design work.
 
 See [Architecture flows](../architecture/FLOWS.md#media-gallery-and-image-metadata-flows)
 for the media/gallery flow.

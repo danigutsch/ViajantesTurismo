@@ -17,6 +17,7 @@
 
     <ItemGroup>
         <ProjectReference Include="..\SharedKernel\SharedKernel.Idempotency\SharedKernel.Idempotency.csproj" />
+        <ProjectReference Include="..\SharedKernel\SharedKernel.AI\SharedKernel.AI.csproj" />
         <ProjectReference Include="..\SharedKernel\SharedKernel.EntityFrameworkCore\SharedKernel.EntityFrameworkCore.csproj" />
         <ProjectReference Include="..\SharedKernel\SharedKernel.EventSourcing.Npgsql\SharedKernel.EventSourcing.Npgsql.csproj" />
         <ProjectReference Include="..\SharedKernel\SharedKernel.Messaging.IntegrationEvents.EntityFrameworkCore\SharedKernel.Messaging.IntegrationEvents.EntityFrameworkCore.csproj" />

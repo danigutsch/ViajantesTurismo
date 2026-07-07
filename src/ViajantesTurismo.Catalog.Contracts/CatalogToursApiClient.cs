@@ -61,4 +61,20 @@ public sealed class CatalogToursApiClient(HttpClient httpClient) : ICatalogTours
         return await response.Content.ReadFromJsonAsync(Json.CatalogTourDto, ct).ConfigureAwait(false)
                ?? throw new InvalidOperationException("The catalog tour response body was empty.");
     }
+
+    /// <inheritdoc />
+    public async Task<PublicMediaImageDto?> GenerateMediaImageAccessibilityDraft(Guid id, PublicMediaImageAccessibilityDraftRequest request, CancellationToken ct)
+    {
+        ArgumentNullException.ThrowIfNull(request);
+
+        using var response = await httpClient.PostAsJsonAsync($"/catalog/media/images/{id}/accessibility-draft", request, Json.PublicMediaImageAccessibilityDraftRequest, ct).ConfigureAwait(false);
+        if (response.StatusCode == HttpStatusCode.NotFound)
+        {
+            return null;
+        }
+
+        await ContractHttpValidation.EnsureSuccessOrThrowValidationException(response, Json.ContractValidationProblemDto, ct).ConfigureAwait(false);
+        return await response.Content.ReadFromJsonAsync(Json.PublicMediaImageDto, ct).ConfigureAwait(false)
+               ?? throw new InvalidOperationException("The media image response body was empty.");
+    }
 }
