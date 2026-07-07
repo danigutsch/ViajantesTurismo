@@ -3,7 +3,7 @@ using ViajantesTurismo.Catalog.Application.Media;
 
 namespace ViajantesTurismo.Catalog.UnitTests;
 
-[Trait(SharedKernel.Testing.TestTraitNames.AreaName, "catalog")]
+[Trait(SharedKernel.Testing.TestTraitNames.AreaName, TestTraits.CatalogArea)]
 [Trait(SharedKernel.Testing.SharedKernelTestTraitNames.ScopeName, SharedKernel.Testing.SharedKernelTestTraitNames.UnitScope)]
 [Trait(SharedKernel.Testing.SharedKernelTestTraitNames.CapabilityName, TestTraits.MediaCapability)]
 public sealed class MediaObjectReconciliationServiceTests

@@ -45,15 +45,41 @@ public sealed class MediaImageAccessibilityDraftService(
             return Result.NotFound<PublicMediaImage>("Media image was not found.");
         }
 
-        using var source = await objectStore.OpenRead(image.SourceObjectKey, ct).ConfigureAwait(false);
+        MediaObjectReadResult source;
+        try
+        {
+            source = await objectStore.OpenRead(image.SourceObjectKey, ct).ConfigureAwait(false);
+        }
+        catch (KeyNotFoundException)
+        {
+            return Result.NotFound<PublicMediaImage>("Media image source object was not found.");
+        }
+        catch (FileNotFoundException)
+        {
+            return Result.NotFound<PublicMediaImage>("Media image source object was not found.");
+        }
+        catch (DirectoryNotFoundException)
+        {
+            return Result.NotFound<PublicMediaImage>("Media image source object was not found.");
+        }
+        catch (UnauthorizedAccessException)
+        {
+            return Result.Unavailable<PublicMediaImage>("Media image source object is unavailable.");
+        }
+        catch (IOException)
+        {
+            return Result.Unavailable<PublicMediaImage>("Media image source object is unavailable.");
+        }
+
+        using var readableSource = source;
         ImageTextGenerationResult draft;
         try
         {
             draft = await imageTextGenerator.GenerateImageText(
                 new ImageTextGenerationRequest
                 {
-                    Image = source.Content,
-                    ContentType = source.ContentType,
+                    Image = readableSource.Content,
+                    ContentType = readableSource.ContentType,
                     Language = ToLanguageTag(input.Language),
                     Context = input.Context,
                     Latitude = input.Latitude,

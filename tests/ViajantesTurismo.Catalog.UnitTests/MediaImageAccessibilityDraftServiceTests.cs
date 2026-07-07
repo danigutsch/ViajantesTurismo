@@ -5,7 +5,7 @@ using ViajantesTurismo.Catalog.Domain.PublicContent;
 
 namespace ViajantesTurismo.Catalog.UnitTests;
 
-[Trait(SharedKernel.Testing.TestTraitNames.AreaName, "catalog")]
+[Trait(SharedKernel.Testing.TestTraitNames.AreaName, TestTraits.CatalogArea)]
 [Trait(SharedKernel.Testing.SharedKernelTestTraitNames.ScopeName, SharedKernel.Testing.SharedKernelTestTraitNames.UnitScope)]
 [Trait(SharedKernel.Testing.SharedKernelTestTraitNames.CapabilityName, TestTraits.AiAccessibilityCapability)]
 public sealed class MediaImageAccessibilityDraftServiceTests
@@ -78,6 +78,49 @@ public sealed class MediaImageAccessibilityDraftServiceTests
 
         // Assert
         result.Status.ShouldBe(SharedKernel.Results.ResultStatus.NotFound);
+        generator.Request.ShouldBeNull();
+    }
+
+    [Fact]
+    public async Task Generate_draft_returns_not_found_when_source_object_is_missing()
+    {
+        // Arrange
+        var image = PublicMediaImageTestFactory.CreateImage(Guid.CreateVersion7(), 0, true, imageId: Guid.CreateVersion7());
+        var imageStore = new InMemoryPublicMediaImageStore(image);
+        var objectStore = new InMemoryMediaObjectStore();
+        var generator = new StubImageTextGenerator(new ImageTextGenerationResult("Draft alt", null));
+        var service = new MediaImageAccessibilityDraftService(imageStore, objectStore, generator);
+
+        // Act
+        var result = await service.GenerateDraft(
+            image.Id,
+            new MediaImageAccessibilityDraftInput { Language = PublicContentLanguage.EnUs },
+            TestContext.Current.CancellationToken);
+
+        // Assert
+        result.Status.ShouldBe(SharedKernel.Results.ResultStatus.NotFound);
+        generator.Request.ShouldBeNull();
+    }
+
+    [Fact]
+    public async Task Generate_draft_returns_unavailable_when_source_object_cannot_be_opened()
+    {
+        // Arrange
+        var image = PublicMediaImageTestFactory.CreateImage(Guid.CreateVersion7(), 0, true, imageId: Guid.CreateVersion7());
+        var imageStore = new InMemoryPublicMediaImageStore(image);
+        var objectStore = new InMemoryMediaObjectStore();
+        objectStore.FailNextOpen(new IOException("Source unreadable."));
+        var generator = new StubImageTextGenerator(new ImageTextGenerationResult("Draft alt", null));
+        var service = new MediaImageAccessibilityDraftService(imageStore, objectStore, generator);
+
+        // Act
+        var result = await service.GenerateDraft(
+            image.Id,
+            new MediaImageAccessibilityDraftInput { Language = PublicContentLanguage.EnUs },
+            TestContext.Current.CancellationToken);
+
+        // Assert
+        result.Status.ShouldBe(SharedKernel.Results.ResultStatus.Unavailable);
         generator.Request.ShouldBeNull();
     }
 

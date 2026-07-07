@@ -6,6 +6,7 @@ internal sealed class InMemoryMediaObjectStore : IMediaObjectStore
 {
     private readonly Dictionary<string, StoredMediaObject> objects = [];
     private readonly HashSet<string> failingDeletes = [];
+    private Exception? openReadException;
 
     public IReadOnlyCollection<string> ObjectKeys => objects.Keys;
 
@@ -32,6 +33,13 @@ internal sealed class InMemoryMediaObjectStore : IMediaObjectStore
     public async ValueTask<MediaObjectReadResult> OpenRead(string objectKey, CancellationToken ct)
     {
         ct.ThrowIfCancellationRequested();
+
+        if (openReadException is not null)
+        {
+            var exception = openReadException;
+            openReadException = null;
+            throw exception;
+        }
 
         var request = objects[objectKey].Request;
         request.Content.Position = 0;
@@ -100,6 +108,11 @@ internal sealed class InMemoryMediaObjectStore : IMediaObjectStore
     public void FailNextDelete(string objectKey)
     {
         failingDeletes.Add(objectKey);
+    }
+
+    public void FailNextOpen(Exception exception)
+    {
+        openReadException = exception;
     }
 
     private sealed record StoredMediaObject(MediaObjectWriteRequest Request, DateTimeOffset LastModifiedAt);

@@ -1029,6 +1029,27 @@ public sealed class CatalogApiEndpointTests
     }
 
     [Fact]
+    public async Task Catalog_media_image_accessibility_draft_endpoint_rejects_null_body()
+    {
+        // Arrange
+        var imageId = Guid.CreateVersion7();
+        await using var factory = CatalogApiTestHost.Create();
+        using var client = factory.CreateClient();
+
+        // Act
+        using var response = await client.PostAsJsonAsync<PublicMediaImageAccessibilityDraftRequest?>(
+            new Uri($"/catalog/media/images/{imageId}/accessibility-draft", UriKind.Relative),
+            null,
+            TestContext.Current.CancellationToken);
+
+        // Assert
+        response.StatusCode.ShouldBe(HttpStatusCode.BadRequest);
+        var problem = await response.Content.ReadFromJsonAsync<HttpValidationProblemDetails>(TestContext.Current.CancellationToken);
+        problem.ShouldNotBeNull();
+        problem.Errors.Keys.ShouldContain("request");
+    }
+
+    [Fact]
     public async Task Catalog_media_image_accessibility_draft_endpoint_returns_service_unavailable_when_ai_fails()
     {
         // Arrange
