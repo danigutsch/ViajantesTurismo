@@ -501,6 +501,21 @@ internal static class CatalogEndpoints
         {
             errors[nameof(PublicMediaImageDto.AccessibilityTexts)] = ["AI draft accessibility text cannot mark images decorative."];
         }
+
+        var defaultText = image.AccessibilityTexts?.FirstOrDefault(static text => text.Language == PublicContentLanguageDto.EnUs);
+        if (defaultText is not null && !DefaultAccessibilityTextMatches(image, defaultText))
+        {
+            errors[nameof(PublicMediaImageDto.AccessibilityTexts)] = ["Default-language accessibility text must match the top-level accessibility fields."];
+        }
+    }
+
+    private static bool DefaultAccessibilityTextMatches(PublicMediaImageDto image, PublicMediaAccessibilityTextDto text)
+    {
+        return string.Equals(image.AltText ?? string.Empty, text.AltText ?? string.Empty, StringComparison.Ordinal)
+            && string.Equals(image.Caption, text.Caption, StringComparison.Ordinal)
+            && image.IsDecorative == text.IsDecorative
+            && image.RequiresHumanReview == text.RequiresHumanReview
+            && image.IsAiGenerated == text.IsAiGenerated;
     }
 
     private static bool IsHttpUri(Uri? uri)

@@ -28,7 +28,7 @@ public sealed record CatalogTourImageDto
     /// <summary>
     /// Gets the accessible image description.
     /// </summary>
-    [Required, StringLength(ContractConstants.MaxAltTextLength)]
+    [StringLength(ContractConstants.MaxAltTextLength)]
     public required string AltText { get; init; }
 
     /// <summary>

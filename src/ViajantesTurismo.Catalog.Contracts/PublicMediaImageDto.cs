@@ -75,7 +75,7 @@ public sealed record PublicMediaImageDto
     /// <summary>
     /// Gets the accessible image description.
     /// </summary>
-    [Required, StringLength(ContractConstants.MaxAltTextLength)]
+    [StringLength(ContractConstants.MaxAltTextLength)]
     public required string AltText { get; init; }
 
     /// <summary>

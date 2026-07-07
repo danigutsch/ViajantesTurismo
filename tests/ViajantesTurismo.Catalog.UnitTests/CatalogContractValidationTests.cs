@@ -64,7 +64,7 @@ public sealed class CatalogContractValidationTests
         var image = new CatalogTourImageDto
         {
             Uri = new Uri("https://cdn.example/tour.jpg"),
-            AltText = string.Empty,
+            AltText = new string('a', ContractConstants.MaxAltTextLength + 1),
             Caption = new string('c', ContractConstants.MaxCaptionLength + 1)
         };
 
