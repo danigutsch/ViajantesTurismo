@@ -3,8 +3,12 @@ using ViajantesTurismo.Admin.SystemTests.Infrastructure;
 namespace ViajantesTurismo.Admin.SystemTests.PostTransportValidation;
 
 [Trait(SharedKernel.Testing.TestTraitNames.AreaName, TestTraits.PostTransportArea)]
+[Trait(SharedKernel.Testing.TestTraitNames.CategoryName, TestTraits.IntegrationEventTransportCategory)]
 [Trait(SharedKernel.Testing.TestTraitNames.ScopeName, TestTraits.SystemScope)]
 [Trait(SharedKernel.Testing.TestTraitNames.HostName, TestTraits.AspireHost)]
+[Trait(SharedKernel.Testing.TestTraitNames.SurfaceName, TestTraits.AdminSurface)]
+[Trait(SharedKernel.Testing.TestTraitNames.SurfaceName, TestTraits.CatalogSurface)]
+[Trait(SharedKernel.Testing.TestTraitNames.SurfaceName, TestTraits.PublicWebSurface)]
 public sealed class PostTransportValidationTests(AspireSystemTestFixture fixture) : AspireSystemTestBase<AspireSystemTestFixture>(fixture)
 {
     [Fact]
@@ -49,7 +53,7 @@ public sealed class PostTransportValidationTests(AspireSystemTestFixture fixture
     }
 
     [Fact]
-    public async Task Management_to_public_flow_renders_tour_details_after_transport_projection()
+    public async Task Admin_api_to_public_flow_renders_tour_details_after_transport_projection()
     {
         // Arrange
         var scenario = new PostTransportValidationScenario(ApiClient, Fixture.CatalogTours);
@@ -70,5 +74,34 @@ public sealed class PostTransportValidationTests(AspireSystemTestFixture fixture
         published.Slug.ShouldBe(slug);
         await Expect(Page.GetByRole(AriaRole.Heading, new PageGetByRoleOptions { Name = title })).ToBeVisibleAsync();
         await Expect(Page.GetByText(identifier)).ToBeVisibleAsync();
+    }
+
+    [Fact]
+    public async Task Duplicate_transport_delivery_does_not_duplicate_catalog_result()
+    {
+        // Arrange
+        var scenario = new PostTransportValidationScenario(ApiClient, Fixture.CatalogTours);
+        var unique = Guid.CreateVersion7().ToString("N")[..12];
+        var identifier = $"DUP-{unique}";
+        var title = $"Duplicate Tour {unique}";
+        var slug = $"duplicate-tour-{unique}";
+        var adminTour = await scenario.CreateAdminTour(identifier, title);
+        var catalogTour = await scenario.WaitForCatalogTour(adminTour.Id, TestContext.Current.CancellationToken);
+        var eventCountBeforeDuplicate = await Fixture.CountCatalogTourEvents(adminTour.Id, TestContext.Current.CancellationToken);
+
+        // Act
+        await Fixture.RequeueCatalogTransportMessageForAdminTour(adminTour.Id, TestContext.Current.CancellationToken);
+        await Fixture.WaitForCatalogTransportMessageProcessed(adminTour.Id, TestContext.Current.CancellationToken);
+        var catalogTours = await Fixture.CatalogTours.GetTours(TestContext.Current.CancellationToken);
+        var eventCountAfterDuplicate = await Fixture.CountCatalogTourEvents(adminTour.Id, TestContext.Current.CancellationToken);
+        await scenario.PublishCatalogTour(catalogTour, title, slug, TestContext.Current.CancellationToken);
+        await Page.GotoAsync(new Uri(Fixture.PublicWebAppUrl, "/group-bike-tours").ToString(), new PageGotoOptions { WaitUntil = WaitUntilState.NetworkIdle });
+
+        // Assert
+        eventCountBeforeDuplicate.ShouldBe(1);
+        eventCountAfterDuplicate.ShouldBe(1);
+        var projectedTours = catalogTours.Where(tour => tour.AdminTourId == adminTour.Id).ToArray();
+        projectedTours.ShouldHaveSingleItem().Id.ShouldBe(catalogTour.Id);
+        await Expect(Page.GetByText(title)).ToHaveCountAsync(1);
     }
 }

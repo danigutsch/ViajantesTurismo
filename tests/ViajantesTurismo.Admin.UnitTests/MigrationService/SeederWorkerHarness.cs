@@ -5,6 +5,7 @@ using Microsoft.Extensions.Logging.Abstractions;
 using SharedKernel.EntityFrameworkCore;
 using SharedKernel.Messaging.IntegrationEvents.EntityFrameworkCore;
 using SharedKernel.Testing.Assertions;
+using ViajantesTurismo.Admin.Domain.Tours;
 using ViajantesTurismo.Admin.Infrastructure;
 using ViajantesTurismo.Catalog.Infrastructure;
 using ViajantesTurismo.MigrationService;
@@ -84,9 +85,11 @@ internal sealed class SeederWorkerHarness : IDisposable
         var dbContext = scope.ServiceProvider.GetRequiredService<AdminWriteDbContext>();
         var tourCount = await dbContext.Tours.CountAsync(ct);
         var customerCount = await dbContext.Customers.CountAsync(ct);
+        var bookingCount = await dbContext.Set<Booking>().CountAsync(ct);
 
         tourCount.ShouldBe(5);
         customerCount.ShouldBe(15);
+        bookingCount.ShouldBe(10);
     }
 
     public void Dispose()

@@ -2,6 +2,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using Npgsql;
 using SharedKernel.EntityFrameworkCore;
 using SharedKernel.EventSourcing;
 using SharedKernel.EventSourcing.Npgsql;
@@ -87,22 +88,19 @@ public static class InfrastructureDependencyInjection
         builder.Services.AddScoped<EfCatalogTourReadModelStore>();
         builder.Services.AddScoped<ICatalogTourReadModelStore>(sp => sp.GetRequiredService<EfCatalogTourReadModelStore>());
         builder.Services.AddScoped<IPublicMediaImageStore, EfPublicMediaImageStore>();
-        builder.Services.AddSingleton(sp =>
-        {
-            var connectionString = builder.Configuration.GetConnectionString(ResourceNames.CatalogDatabase)
-                ?? throw new InvalidOperationException($"Connection string '{ResourceNames.CatalogDatabase}' is not configured.");
-
-            return new PostgreSqlEventStore(connectionString, sp.GetRequiredService<IEventSerializer>());
-        });
-        builder.Services.AddSingleton<IEventSerializer, CatalogEventSerializer>();
-        builder.Services.AddSingleton<IEventStore>(sp => sp.GetRequiredService<PostgreSqlEventStore>());
         builder.Services.AddSingleton(_ =>
         {
             var connectionString = builder.Configuration.GetConnectionString(ResourceNames.CatalogDatabase)
                 ?? throw new InvalidOperationException($"Connection string '{ResourceNames.CatalogDatabase}' is not configured.");
 
-            return new PostgreSqlProjectionCheckpointStore(connectionString);
+            return NpgsqlDataSource.Create(connectionString);
         });
+        builder.Services.AddSingleton<IEventSerializer, CatalogEventSerializer>();
+        builder.Services.AddSingleton(sp => new PostgreSqlEventStore(
+            sp.GetRequiredService<NpgsqlDataSource>(),
+            sp.GetRequiredService<IEventSerializer>()));
+        builder.Services.AddSingleton<IEventStore>(sp => sp.GetRequiredService<PostgreSqlEventStore>());
+        builder.Services.AddSingleton(sp => new PostgreSqlProjectionCheckpointStore(sp.GetRequiredService<NpgsqlDataSource>()));
         builder.Services.AddSingleton<IProjectionCheckpointStore>(sp => sp.GetRequiredService<PostgreSqlProjectionCheckpointStore>());
         builder.Services.AddScoped<IProjection, CatalogTourReadModelProjection>();
         builder.Services.AddScoped<CatalogProjectionRunner>();
