@@ -6,7 +6,9 @@ namespace ViajantesTurismo.Catalog.Application.Media;
 /// <param name="MissingObjectKeys">Metadata keys with no stored object.</param>
 /// <param name="OrphanObjectKeys">Stored object keys with no metadata reference.</param>
 /// <param name="DeletedOrphanObjectKeys">Orphan object keys deleted by an explicit cleanup run.</param>
+/// <param name="FailedDeleteObjectKeys">Orphan object keys that could not be deleted during this run.</param>
 public sealed record MediaObjectReconciliationReport(
     IReadOnlyList<string> MissingObjectKeys,
     IReadOnlyList<string> OrphanObjectKeys,
-    IReadOnlyList<string> DeletedOrphanObjectKeys);
+    IReadOnlyList<string> DeletedOrphanObjectKeys,
+    IReadOnlyList<string> FailedDeleteObjectKeys);

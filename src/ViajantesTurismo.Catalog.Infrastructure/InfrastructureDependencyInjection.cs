@@ -65,6 +65,7 @@ public static class InfrastructureDependencyInjection
         AddCatalogInfrastructure(builder, addOutboxRelay: false);
         builder.AddCatalogHostedIntegrationEventTransport();
         builder.Services.AddHostedService<CatalogProjectionHostedService>();
+        builder.Services.AddHostedService<MediaObjectReconciliationHostedService>();
 
         return builder;
     }

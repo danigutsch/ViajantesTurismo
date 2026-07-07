@@ -20,6 +20,12 @@ public sealed class TestMediaObjectStore : IMediaObjectStore
         return ValueTask.FromResult<IReadOnlyList<string>>([]);
     }
 
+    public ValueTask<IReadOnlyList<MediaObjectInventoryItem>> ListObjects(string prefix, CancellationToken ct)
+    {
+        ct.ThrowIfCancellationRequested();
+        return ValueTask.FromResult<IReadOnlyList<MediaObjectInventoryItem>>([]);
+    }
+
     public Uri GetPublicUri(string objectKey) => new($"https://cdn.example/{objectKey}");
 
     public ValueTask<MediaObjectUploadTicket> CreateUploadUrl(MediaObjectUploadRequest request, CancellationToken ct) => throw new NotSupportedException();

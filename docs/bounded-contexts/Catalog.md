@@ -186,6 +186,9 @@ Current implementation:
 - AI-assisted alt text/caption drafts can be stored as review-required image accessibility text. Public
   endpoints expose only images whose default accessibility text is reviewed and either non-empty or
   explicitly decorative.
+- Media object reconciliation compares deterministic `media/` storage keys with live Catalog metadata,
+  reports missing and orphaned objects, preserves recent orphans during a grace period, and deletes
+  eligible orphaned objects from the integration-event worker.
 
 Planned/evolving:
 

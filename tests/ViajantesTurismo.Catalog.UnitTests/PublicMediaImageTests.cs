@@ -168,6 +168,25 @@ public sealed class PublicMediaImageTests
     }
 
     [Fact]
+    public void Ai_draft_accessibility_text_cannot_mark_images_decorative()
+    {
+        // Arrange
+        const PublicContentLanguage language = PublicContentLanguage.EnUs;
+
+        // Act
+        var result = PublicMediaImageAccessibilityText.Create(
+            language,
+            altText: null,
+            caption: null,
+            isDecorative: true,
+            requiresHumanReview: true,
+            isAiGenerated: true);
+
+        // Assert
+        result.IsFailure.ShouldBeTrue();
+    }
+
+    [Fact]
     public void Accessibility_text_can_be_localized_independently_for_review()
     {
         // Arrange

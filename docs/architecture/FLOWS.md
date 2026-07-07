@@ -295,6 +295,8 @@ Current constraints visible in contracts:
 - `Caption` is optional and length-limited.
 - AI-assisted accessibility drafts are review-required by default.
 - Public tour endpoints filter images to `Ready` processing status and reviewed accessibility text.
+- Media object reconciliation scans deterministic `media/` object keys, reports missing references and
+  orphaned objects, applies a grace period for in-flight work, and retries deletion failures on later runs.
 
 ### Planned/evolving
 

@@ -38,6 +38,14 @@ public interface IMediaObjectStore
     ValueTask<IReadOnlyList<string>> ListKeys(string prefix, CancellationToken ct);
 
     /// <summary>
+    /// Lists stored objects below a prefix with cleanup-relevant metadata.
+    /// </summary>
+    /// <param name="prefix">The application-owned key prefix.</param>
+    /// <param name="ct">The cancellation token.</param>
+    /// <returns>The matching objects.</returns>
+    ValueTask<IReadOnlyList<MediaObjectInventoryItem>> ListObjects(string prefix, CancellationToken ct);
+
+    /// <summary>
     /// Derives the public URI for an object key without requiring it to be stored in metadata.
     /// </summary>
     /// <param name="objectKey">The application-owned object key.</param>

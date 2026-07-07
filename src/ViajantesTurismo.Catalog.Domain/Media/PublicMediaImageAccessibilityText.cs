@@ -147,6 +147,11 @@ public sealed class PublicMediaImageAccessibilityText : ValueObject
             errors[nameof(RequiresHumanReview)] = ["AI-generated accessibility text requires human review."];
         }
 
+        if (isAiGenerated && isDecorative)
+        {
+            errors[nameof(IsDecorative)] = ["AI-generated accessibility text cannot mark images decorative."];
+        }
+
         if (sanitizedAltText?.Length > ContractConstants.MaxAltTextLength)
         {
             errors[nameof(AltText)] = [$"Alt text cannot exceed {ContractConstants.MaxAltTextLength} characters."];

@@ -54,6 +54,11 @@ public static class CatalogTelemetry
     public static string MetricProjectionBatch => "catalog.projection.batch";
 
     /// <summary>
+    /// Gets the counter name for media object reconciliation outcomes.
+    /// </summary>
+    public static string MetricMediaObjectReconciliationObject => "catalog.media_object.reconciliation.object";
+
+    /// <summary>
     /// Gets the bounded-context tag name.
     /// </summary>
     public static string TagBoundedContext => "catalog.bounded_context";
@@ -92,6 +97,11 @@ public static class CatalogTelemetry
     /// Gets the checkpoint position tag name.
     /// </summary>
     public static string TagCheckpointPosition => "catalog.checkpoint.position";
+
+    /// <summary>
+    /// Gets the media object reconciliation operation tag name.
+    /// </summary>
+    public static string TagMediaObjectReconciliationOperation => "catalog.media_object.reconciliation.operation";
 
     /// <summary>
     /// Gets the success outcome value.
@@ -146,4 +156,9 @@ public static class CatalogTelemetry
         MetricProjectionBatch,
         unit: "{batch}",
         description: "Number of Catalog projection batches processed.");
+
+    internal static Counter<long> MediaObjectReconciliationObjects { get; } = Meter.CreateCounter<long>(
+        MetricMediaObjectReconciliationObject,
+        unit: "{object}",
+        description: "Number of Catalog media objects found, deleted, or failed during reconciliation.");
 }
