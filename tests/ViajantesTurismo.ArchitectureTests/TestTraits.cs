@@ -19,4 +19,9 @@ public static class TestTraits
     /// Area value for shared architecture coverage.
     /// </summary>
     public const string SharedArea = "shared";
+
+    /// <summary>
+    /// Category value for documentation conformance tests.
+    /// </summary>
+    public const string DocumentationCategory = "documentation";
 }

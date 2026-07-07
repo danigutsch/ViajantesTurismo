@@ -137,7 +137,4 @@ for specific invariants.
 
 ## Related Documentation
 
-- **[Aggregates Documentation](../domain/AGGREGATES.md#admin-bounded-context)** — Detailed invariants and business rules
-- **[Domain Validation](../DOMAIN_VALIDATION.md)** — Factory methods, Result pattern, validation patterns
-- **[Architecture Decisions](../ARCHITECTURE_DECISIONS.md)** — ADRs affecting this context
-- **[Test Guidelines](../TEST_GUIDELINES.md)** — Testing strategy and BDD patterns
+Use the [documentation source-of-truth map](../README.md#source-of-truth-map) for related repository guidance.

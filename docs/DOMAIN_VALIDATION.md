@@ -290,10 +290,4 @@ await unitOfWork.SaveEntities(ct);
 
 ## Related Documentation
 
-- [Architectural Decision Records](ARCHITECTURE_DECISIONS.md) — Core architectural patterns and decisions
-- [Coding Guidelines](CODING_GUIDELINES.md) — C# coding standards and conventions
-- [Test Guidelines](TEST_GUIDELINES.md) — Testing patterns and BDD scenarios
-- [SharedKernel.Results](../src/SharedKernel/SharedKernel.Results/README.md) — Result\<T>
-  and Option\<T> usage
-- [Aggregates](domain/AGGREGATES.md) — Business invariants and domain operations
-- [Glossary](domain/GLOSSARY.md) — Domain terminology and concepts
+Use the [documentation source-of-truth map](README.md#source-of-truth-map) for related repository guidance.

@@ -92,12 +92,12 @@ Immutable SHA pinning is the repository baseline for workflow supply-chain harde
   is moved to later.
 - Inline version comments preserve readability and make review of Dependabot action
   updates straightforward.
-- The workflow surface still stays narrow because the repository uses only official
-  GitHub-maintained actions.
+- The workflow surface stays narrow by following the allowed dependency acquisition patterns in
+  [Security hardening baseline](security-hardening.md#allowed-dependency-acquisition-patterns).
 
 ### Trusted actions
 
-The workflow uses only official GitHub-maintained actions.
+The workflow uses a small reviewed action set.
 
 | Action | Purpose |
 | --- | --- |

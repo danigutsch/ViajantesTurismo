@@ -273,34 +273,8 @@ dotnet test --project tests/ViajantesTurismo.Admin.UnitTests --help
 
 ## Test Project Structure
 
-### Current Projects
-
-- **`SharedKernel.BuildingBlocks.Tests`**, **`SharedKernel.InputNormalization.Tests`**, and
-  **`SharedKernel.HttpClients.Tests`** — shared kernel building blocks, input normalization, and HTTP client helpers. Fast,
-  no external dependencies.
-- **`ViajantesTurismo.Admin.UnitTests`** — Domain logic: entities, aggregates, mappers, business rules. Fast, in-memory
-  only.
-- **`ViajantesTurismo.Management.WebTests`** — Blazor Web components: Razor component rendering, UI state, user interactions.
-  Uses bUnit for fast, in-memory component testing.
-- **`ViajantesTurismo.Admin.IntegrationTests`** — API endpoints with real PostgreSQL database. Slower, tests complete
-  request-response cycle through fixture-owned HTTP clients.
-- **`ViajantesTurismo.Admin.ContractTests`** — Public Admin API compatibility checks. Protects boundary artifacts such
-  as generated OpenAPI shapes or serialized contract slices without turning into a second integration lane.
-- **`ViajantesTurismo.Admin.BehaviorTests`** — Behaviour-driven tests using Gherkin/SpecFlow for backend domain
-  scenarios, written in business language.
-- **`ViajantesTurismo.Admin.SystemTests`** — Playwright-driven UI flows against the real Admin web app and supporting
-  backend resources.
-- **`ViajantesTurismo.Admin.Testing`** — Shared test-only contracts, traits, and reusable helpers; not a runtime
-  host in its own right.
-
-### Suggested Structure (Future Evolution)
-
-- `tests/Admin.Domain.Tests/` — Entities, value objects, aggregates (unit tests)
-- `tests/Admin.Application.Tests/` — Use cases, policies, application services (unit tests)
-- `tests/Management.Web.Tests/` — Blazor components (bUnit tests) ✅ *Already exists as `Management.WebTests`*
-- `tests/Admin.Acceptance.Tests/` — BDD scenarios calling the Application layer
-- `tests/Contract.Tests/` — Public boundary compatibility tests such as OpenAPI, payload, schema, or consumer-provider checks
-- `tests/specs/` — Shared `.feature` files (if not colocated in acceptance tests)
+Use [tests/README.md](../tests/README.md) as the canonical project taxonomy and boundary
+matrix. Keep this file focused on testing practices, examples, and command details.
 
 ## Naming Conventions
 
@@ -333,7 +307,7 @@ payment-recording.feature
 
 ### Behaviour Test Step Definitions
 
-Follow Gherkin/SpecFlow conventions with descriptive method names:
+Follow Gherkin/Reqnroll conventions with descriptive method names:
 
 ```csharp
 [Given(@"a tour exists with minimum (.*) and maximum (.*) customers")]
@@ -698,113 +672,11 @@ System tests should:
 - treat direct service access as fixture-internal plumbing, not as a public test seam
 - keep full-system browser execution on the Aspire-managed path rather than reintroducing hybrid host plumbing
 
-## Behavior Test Patterns
+## Behavior and BDD/Gherkin Patterns
 
-### Context Class Guidelines
-
-Context classes (POCOs) share state between step definitions via Reqnroll's dependency injection. Follow these rules:
-
-**Result Properties:**
-
-- ❌ Never use `object` for result properties (requires casting, loses type safety)
-- ✅ Use specific `Result<T>?` properties for each operation (e.g., `Result<Tour>? CreationResult`)
-- ✅ Nullable result properties are acceptable for optional operations
-- ✅ Name results by operation: `CreationResult`, `UpdateResult`, `DeleteResult`, etc.
-
-**Input Properties:**
-
-- Use `required` modifier for properties that must be set before steps run
-- Initialise collections via field initialisers: `ICollection<string> Items { get; } = [];`
-
-**Dependencies:**
-
-- Initialise Fakes and test doubles via field initialisers
-- Use expression-bodied properties for command handlers: `Handler => new(Store, UnitOfWork);`
-
-**Example (Good Pattern):**
-
-```csharp
-public sealed class TourContext
-{
-    // Input data
-    public required string Identifier { get; set; }
-    public required DateTime StartDate { get; set; }
-
-    // Typed result properties (nullable for optional operations)
-    public Result<Tour>? CreationResult { get; set; }
-    public Result<TourCapacity>? CapacityUpdateResult { get; set; }
-
-    // Dependencies
-    public FakeTourStore TourStore { get; } = new();
-    public CreateTourCommandHandler Handler => new(TourStore, UnitOfWork);
-}
-```
-
-**Anti-Pattern (Avoid):**
-
-```csharp
-// ❌ BAD: Generic object requires casting everywhere
-public required object Result { get; set; }
-
-// ❌ BAD: Leads to if/else type-checking in steps
-if (context.Result is Result<Tour> tourResult) { ... }
-else if (context.Result is Result<TourCapacity> capacityResult) { ... }
-```
-
-### Step Definition Guidelines
-
-**When Steps:**
-
-- Always execute the action and store the result
-- Never check success/failure inside `When` steps
-- Store results in typed context properties
-
-**Then Steps:**
-
-- Check specific typed result properties
-- Avoid `if` statements - use separate steps for different outcomes
-
-**Given Steps:**
-
-- Keep setup logic simple and readable
-- Extract complex loops/switches to helper methods in `EntityBuilders` or dedicated helpers
-
-## BDD/Gherkin Best Practices
-
-### Writing Features
-
-**Principles:**
-
-- Use **declarative** steps that speak the domain language
-- Avoid UI or technical implementation details
-- Keep scenarios short and focused
-- Prefer `Scenario Outline` with `Examples` for tabular variations
-- Group scenarios with `Rule:` blocks per invariant
-- Use `Background` sparingly (only for true prerequisites)
-
-**Example:**
-
-```gherkin
-@BC:TourManagement @Agg:Tour @ADR:20251108-domain-validation-factory-methods
-Feature: Tour Capacity Management
-
-  Rule: Tour cannot accept bookings beyond maximum capacity
-
-    Scenario Outline: Booking when at capacity
-      Given a tour exists with minimum <min> and maximum <max> customers
-      And the tour has <current> confirmed bookings
-      When I attempt to add a new booking
-      Then the booking should <result>
-
-    Examples:
-      | min | max | current | result                    |
-      | 4   | 10  | 9       | succeed                   |
-      | 4   | 10  | 10      | fail with "fully booked"  |
-```
-
-### Tagging Conventions
-
-Use tags to link scenarios to architectural concepts:
+Use [BDD Guide](../tests/BDD_GUIDE.md) as the canonical Reqnroll/Gherkin guide for feature
+organization, tags, step definitions, living documentation, and Gherkin linting. Keep behavior tests
+declarative and domain-focused; do not turn them into UI or infrastructure tests.
 
 ## BDD Coverage & CI
 
@@ -837,38 +709,10 @@ dotnet test --solution ViajantesTurismo.slnx -- --coverage --coverage-output-for
 After a solution-level run, MTP writes one `coverage.cobertura.xml` file per test project under that
 project's `TestResults` folder. Aggregate them with `reportgenerator` using the glob documented above.
 
-### CI/CD Integration (Future)
+### CI integration
 
-When CI is added:
-
-- Fail the build on acceptance/domain test failures
-- Publish coverage reports to the dashboard
-- Run unit tests on every PR
-- Run integration tests on merge to main
-- Run the full test suite on release branches
-  **Pattern:** Match regex and update context objects
-
-```csharp
-[Given(@"a tour exists with minimum (.*) and maximum (.*) customers")]
-public void Given_A_Tour_Exists_With_Min_And_Max_Customers(int min, int max)
-{
-    tourContext.Tour = Tour.Create(/* ... */).Value;
-}
-
-[Then(@"the booking should fail with ""(.*)"" error")]
-public void Then_The_Booking_Should_Fail_With_Error(string expectedError)
-{
-    bookingContext.Result.IsSuccess.ShouldBeFalse();
-    bookingContext.Result.ErrorDetails.Detail.ShouldContain(expectedError);
-}
-```
-
-**Principles:**
-
-- Step definitions call domain/application layer directly (no UI)
-- Use context objects to share state between steps
-
-## Running Tests
+CI runs split test lanes and coverage collection through GitHub Actions. See
+[CI overview](ci/overview.md) for the current workflow and required checks.
 
 ### Running Tests
 
@@ -905,11 +749,7 @@ See [Code Quality](CODE_QUALITY.md#test-coverage-tools) for full coverage tool c
 
 ## Related Documentation
 
-- [BDD Guide](../tests/BDD_GUIDE.md) — Gherkin/BDD-specific guidelines and best practices
-- [Domain Validation](DOMAIN_VALIDATION.md) — Factory methods, Result pattern, validation rules
-- [Code Quality](CODE_QUALITY.md) — Tool configuration, linters, formatters, coverage reporting
-- [Coding Guidelines](CODING_GUIDELINES.md) — C# coding standards and conventions
-- [Architecture Decisions](ARCHITECTURE_DECISIONS.md) — ADRs referenced in test tags
+Use the [documentation source-of-truth map](README.md#source-of-truth-map) for related repository guidance.
 
 ## Summary
 

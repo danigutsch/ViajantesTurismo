@@ -9,18 +9,7 @@ Use nested `AGENTS.md` files for scoped rules.
 
 - Applies to the entire repository.
 - More specific `AGENTS.md` files override this file for their scope.
-- Current scoped guidance includes:
-    - `.github/AGENTS.md`
-    - `src/ViajantesTurismo.Admin.Application/AGENTS.md`
-    - `src/ViajantesTurismo.Admin.Contracts/AGENTS.md`
-    - `src/ViajantesTurismo.Admin.Domain/AGENTS.md`
-    - `src/ViajantesTurismo.Admin.Infrastructure/AGENTS.md`
-    - `src/ViajantesTurismo.Management.Web/AGENTS.md`
-    - `src/ViajantesTurismo.AppHost/AGENTS.md`
-    - `tests/AGENTS.md`
-    - `tests/ViajantesTurismo.Admin.BehaviorTests/AGENTS.md`
-    - `tests/ViajantesTurismo.Admin.SystemTests/AGENTS.md`
-    - `tests/ViajantesTurismo.Admin.IntegrationTests/AGENTS.md`
+- Read the nearest applicable `AGENTS.md` before changing files in a subdirectory.
 
 ## Repository-wide coding rules
 

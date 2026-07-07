@@ -116,6 +116,14 @@ Install-Module -Name PSScriptAnalyzer -Scope CurrentUser
 
 PowerShell script analysis remains optional for local contributors.
 
+The setup scripts detect whether PSScriptAnalyzer is installed and print the optional install command.
+
+**Lint PowerShell script:**
+
+```powershell
+Invoke-ScriptAnalyzer -Path script.ps1 -Settings PSGallery
+```
+
 ## Gherkin/Feature File Linting
 
 ### Configuration
@@ -154,7 +162,8 @@ do not create lint inputs.
 
 ### Tool
 
-- **PSScriptAnalyzer** - Lints PowerShell scripts for best practices, security issues, and code quality
+- **Repository JSON validator** - `scripts/lint-json.py` parses repository JSON and JSONC-style files
+  through `scripts/lint-json.sh`.
 
 ## Link Validation
 
@@ -181,22 +190,6 @@ template, changelog, or test fixture when that file type is the correct home.
 
 Current exclusions are narrow: generated Markdown, repository templates, and issue-specific test
 planning notes are not part of the maintained-docs link policy.
-
-### How to Install
-
-```powershell
-Install-Module -Name PSScriptAnalyzer -Scope CurrentUser
-```
-
-This is automatically installed by `setup-dev.ps1`.
-
-### Commands
-
-**Lint PowerShell script:**
-
-```powershell
-Invoke-ScriptAnalyzer -Path script.ps1 -Settings PSGallery
-```
 
 ## .NET Code Formatting and Analysis
 
@@ -511,41 +504,11 @@ rules and decision diagram.
 
 ## Commit Message Conventions
 
-This repository uses [Conventional Commits](https://www.conventionalcommits.org/en/v1.0.0/) and enforces them with `scripts/validate-commit-message.sh`.
-
-**Required format:**
-
-```text
-<type>[optional scope]: <description>
-```
-
-**Allowed types:**
-
-- `feat`
-- `fix`
-- `docs`
-- `ci`
-- `build`
-- `test`
-- `refactor`
-- `perf`
-- `style`
-- `chore`
-- `revert`
-
-**Examples:**
-
-```text
-ci: add dependency review workflow
-docs(ci): document branch protection requirements
-fix(web): prevent empty booking date submission
-```
-
-**Manual validation:**
+Use [CONTRIBUTING.md](../CONTRIBUTING.md#commit-messages) as the canonical commit-message policy.
+This quality guide only owns the validation command reference:
 
 ```powershell
-printf "%s\n" "ci: add dependency review workflow" > /tmp/commit-msg.txt
-bash scripts/validate-commit-message.sh /tmp/commit-msg.txt
+bash scripts/validate-commit-message.sh <path-to-commit-message-file>
 ```
 
 ### VS Code Integration
@@ -637,10 +600,4 @@ See [Test Guidelines](TEST_GUIDELINES.md#bdd-coverage--ci) for coverage goals an
 
 ## Related Documentation
 
-- [Analyzer Hardening Roadmap](ANALYZER_HARDENING_ROADMAP.md) - Phased analyzer adoption,
-  SharedKernel analyzer family ownership, and rollout guidance
-- [CI Overview](ci/overview.md) - GitHub Actions workflow structure, required checks, and
-  links to maintainer-facing CI operations docs
-- [Test Guidelines](TEST_GUIDELINES.md) - Testing strategy and coverage goals
-- [BDD Guide](../tests/BDD_GUIDE.md) - Behavior-driven development patterns
-- [Coding Guidelines](CODING_GUIDELINES.md) - .NET coding standards
+Use the [documentation source-of-truth map](README.md#source-of-truth-map) for related repository guidance.

@@ -44,19 +44,8 @@ flowchart TB
 ```
 <!-- generated:ci-main-jobs:end -->
 
-Required checks:
-
-- `Fast Validation`
-- `Admin Integration Tests`
-- `Admin System Tests`
-- `Mediator Heavy Tests`
-- `Lint`
-- `Dependency Review`
-- `Secret Scan`
-- `SonarCloud`
-
-Source docs: [CI overview](../ci/overview.md), [main workflow](../ci/main-workflow.md), and
-[governance](../ci/governance.md).
+Required checks and workflow-job mapping: [governance](../ci/governance.md#branch-protection-rules).
+Workflow details: [CI overview](../ci/overview.md) and [main workflow](../ci/main-workflow.md).
 
 ## Fast lanes versus dependency-heavy lanes
 
@@ -142,15 +131,7 @@ flowchart TB
     artifacts --> privileged
 ```
 
-Current rules:
-
-- Build, test, and analysis workflows use `pull_request`, not `pull_request_target`.
-- Fork pull request code must not receive repository secrets or write-scoped tokens.
-- Secret-dependent SonarCloud steps must handle fork pull requests explicitly.
-- Generated artifacts and SARIF are handoffs; privileged upload jobs stay separate from scanners.
-- Same-repository pull requests are the collaborator trust boundary for secret-bearing work.
-
-Source docs: [trust boundaries](../ci/trust-boundaries.md),
+Trust-boundary rules: [trust boundaries](../ci/trust-boundaries.md),
 [security hardening baseline](../ci/security-hardening.md), and
 [telemetry and generated guardrails](../ci/telemetry-generated-guardrails.md).
 

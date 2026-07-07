@@ -49,19 +49,8 @@ current schedules and grouping rules.
 
 ## Required status checks
 
-The required merge-gate checks for `main` are:
-
-- `Fast Validation`
-- `Admin Integration Tests`
-- `Admin System Tests`
-- `Mediator Heavy Tests`
-- `Lint`
-- `Dependency Review`
-- `Secret Scan`
-- `SonarCloud`
-
-See [Governance](governance.md#branch-protection-rules) for the exact mapping to workflow
-jobs.
+See [Governance](governance.md#branch-protection-rules) for the required merge-gate checks and
+their workflow-job mapping.
 
 ## Next required work
 
@@ -74,4 +63,3 @@ and adjust path gates only when measured CI timing or reliability data justifies
 - [README — Continuous Integration](../../README.md#continuous-integration) —
   contributor-facing CI summary
 - [Code Quality Tools](../CODE_QUALITY.md) — CI-owned linting and formatting guidance
-- [Main workflow](main-workflow.md) — maintainer-facing baseline CI rollout details

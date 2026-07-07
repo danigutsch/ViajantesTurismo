@@ -6,73 +6,18 @@ diagram sections are refreshed with `bash scripts/update-architecture-diagrams.s
 
 ## Current runtime resources
 
-The Aspire AppHost is the source of truth for local runtime wiring.
-
-```mermaid
-flowchart LR
-    postgres[(PostgreSQL)]
-    redis[(Redis)]
-    migration[MigrationService]
-    adminApi[Admin.ApiService]
-    catalogApi[Catalog.ApiService]
-    management[Management.Web]
-    publicWeb[Public.Web]
-
-    migration --> postgres
-    adminApi --> postgres
-    adminApi --> migration
-    catalogApi --> postgres
-    catalogApi --> migration
-    management --> redis
-    management --> adminApi
-    management --> catalogApi
-    publicWeb --> catalogApi
-```
-
-Source: `src/ViajantesTurismo.AppHost/AppHost.cs`.
-
-For deployment mapping, service discovery, migration startup, and secret boundaries, see
+The Aspire AppHost is the source of truth for local runtime wiring. For the generated resource graph,
+deployment mapping, service discovery, migration startup, and secret boundaries, see
 [Runtime wiring and deployment mapping](runtime-wiring-and-deployment.md).
 
-## Current project boundary map
-
-```mermaid
-flowchart TB
-    adminDomain[Admin.Domain]
-    adminApp[Admin.Application]
-    adminInfra[Admin.Infrastructure]
-    adminApi[Admin.ApiService]
-    catalogDomain[Catalog.Domain]
-    catalogApp[Catalog.Application]
-    catalogInfra[Catalog.Infrastructure]
-    catalogApi[Catalog.ApiService]
-    management[Management.Web]
-    publicWeb[Public.Web]
-    shared[SharedKernel.*]
-
-    adminApp --> adminDomain
-    adminInfra --> adminApp
-    adminApi --> adminApp
-    adminApi --> adminInfra
-    catalogApp --> catalogDomain
-    catalogInfra --> catalogApp
-    catalogApi --> catalogApp
-    catalogApi --> catalogInfra
-    management --> adminApi
-    management --> catalogApi
-    publicWeb --> catalogApi
-    adminDomain --> shared
-    adminApp --> shared
-    catalogDomain --> shared
-    catalogApp --> shared
-```
+## Project boundary map
 
 Keep business rules in domain projects. Keep provider-specific persistence and external adapters in
 bounded-context infrastructure unless ADR-027's split threshold justifies a reusable
 `SharedKernel.<Capability>.<Provider>` adapter package.
 
-For bounded-context ownership, SharedKernel modules, and allowed or forbidden dependency directions,
-see [Architecture boundaries and dependency flow](boundaries-and-dependencies.md).
+For the generated project reference map, bounded-context ownership, SharedKernel modules, and allowed
+or forbidden dependency directions, see [Architecture boundaries and dependency flow](boundaries-and-dependencies.md).
 
 ## Admin-to-Catalog content workflow
 
