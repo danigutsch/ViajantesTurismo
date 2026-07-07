@@ -116,6 +116,14 @@ Install-Module -Name PSScriptAnalyzer -Scope CurrentUser
 
 PowerShell script analysis remains optional for local contributors.
 
+The setup scripts detect whether PSScriptAnalyzer is installed and print the optional install command.
+
+**Lint PowerShell script:**
+
+```powershell
+Invoke-ScriptAnalyzer -Path script.ps1 -Settings PSGallery
+```
+
 ## Gherkin/Feature File Linting
 
 ### Configuration
@@ -182,22 +190,6 @@ template, changelog, or test fixture when that file type is the correct home.
 
 Current exclusions are narrow: generated Markdown, repository templates, and issue-specific test
 planning notes are not part of the maintained-docs link policy.
-
-### How to Install
-
-```powershell
-Install-Module -Name PSScriptAnalyzer -Scope CurrentUser
-```
-
-The setup scripts detect whether PSScriptAnalyzer is installed and print the optional install command.
-
-### Commands
-
-**Lint PowerShell script:**
-
-```powershell
-Invoke-ScriptAnalyzer -Path script.ps1 -Settings PSGallery
-```
 
 ## .NET Code Formatting and Analysis
 
