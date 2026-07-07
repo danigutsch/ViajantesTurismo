@@ -72,15 +72,7 @@ public sealed partial class MediaObjectReconciliationService(
                 {
                     throw;
                 }
-                catch (IOException exception)
-                {
-                    RecordDeleteFailure(orphan, failed, exception);
-                }
-                catch (UnauthorizedAccessException exception)
-                {
-                    RecordDeleteFailure(orphan, failed, exception);
-                }
-                catch (InvalidOperationException exception)
+                catch (Exception exception) when (exception is IOException or UnauthorizedAccessException or InvalidOperationException)
                 {
                     RecordDeleteFailure(orphan, failed, exception);
                 }

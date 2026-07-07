@@ -93,7 +93,7 @@ internal sealed class LocalMediaObjectStore(IOptions<LocalMediaObjectStorageOpti
         var objects = Directory.EnumerateFiles(root, "*", SearchOption.AllDirectories)
             .Select(path => new MediaObjectInventoryItem(
                 Path.GetRelativePath(root, path).Replace(Path.DirectorySeparatorChar, '/'),
-                File.GetLastWriteTimeUtc(path)))
+                new DateTimeOffset(File.GetLastWriteTimeUtc(path))))
             .Where(item => item.ObjectKey.StartsWith(normalizedPrefix, StringComparison.Ordinal))
             .OrderBy(item => item.ObjectKey, StringComparer.Ordinal)
             .ToArray();

@@ -481,6 +481,11 @@ internal static class CatalogEndpoints
             errors[nameof(PublicMediaImageDto.ResponsiveVariants)] = ["Responsive variants must include absolute HTTP or HTTPS URIs when ObjectKey is not provided."];
         }
 
+        ValidateMediaAccessibilityTexts(errors, image);
+    }
+
+    private static void ValidateMediaAccessibilityTexts(Dictionary<string, string[]> errors, PublicMediaImageDto image)
+    {
         if (image.AccessibilityTexts is null)
         {
             errors[nameof(PublicMediaImageDto.AccessibilityTexts)] = ["Accessibility texts are required."];
