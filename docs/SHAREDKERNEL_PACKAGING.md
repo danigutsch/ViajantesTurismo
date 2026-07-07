@@ -10,6 +10,7 @@ Shared package metadata defaults are centralized in the repository root `Directo
 - MIT license expression
 - repository URL
 - repository URL publishing
+- symbol package generation with `.snupkg`
 
 The `src/Directory.Build.props` file imports the root defaults for source projects. The
 `src/Directory.Build.targets` file adds the source-wide AOT default after project target frameworks
@@ -25,18 +26,32 @@ Each packable project still owns its package-specific identity:
 - `PackageTags`
 - `PackageReadmeFile` when the package includes a README
 
+Packable non-Roslyn `SharedKernel.*` source projects generate symbol packages with
+`IncludeSymbols=true` and `SymbolPackageFormat=snupkg`. Roslyn analyzer, code-fix, and source-generator
+packages keep their analyzer package layout separate. Project READMEs are included in packages with
+`PackageReadmeFile` and a packed `README.md` item when the package has a README.
+
 Reusable testing helper packages live under `src/SharedKernel` and are included in the same local
 pack/restore validation as runtime packages. They opt out of source-wide AOT compatibility because
 test frameworks, Roslyn test infrastructure, and Aspire test hosts are not production runtime
 surfaces.
 
+Package-worthy test helpers use `SharedKernel.Testing.<Capability>` names. Move a helper to
+`src/SharedKernel` only when it exposes reusable behavior with a clear boundary outside this
+repository's test taxonomy and has focused tests for its public behavior.
+
+Current package-worthy testing helper packages:
+
+| Package | Reusable boundary | Test coverage |
+| --- | --- | --- |
+| `SharedKernel.Testing.AspNetCore` | ASP.NET Core `WebApplicationFactory<TEntryPoint>` setup helpers. | Used by Catalog and Public web endpoint tests. |
+| `SharedKernel.Testing.Mediator` | Reference mediator dispatcher used as a correctness oracle. | Covered by `tests/SharedKernel.Mediator.Tests`. |
+
 Repository-only test helpers stay under `tests/` and are explicitly non-packable:
 
 | Helper project | Placement decision |
 | --- | --- |
-| `SharedKernel.AspNetCoreTesting` | Repository-local ASP.NET Core test host support. |
 | `SharedKernel.CodeFixes.Testing` | Repository-local Roslyn code-fix test support. |
-| `SharedKernel.Mediator.Testing.ReferenceDispatcher` | Repository-local mediator test fixture. |
 | `SharedKernel.Testing.Contracts` | Repository-local contract test taxonomy. |
 | `SharedKernel.Testing.Integration` | Repository-local integration test taxonomy. |
 | `SharedKernel.Testing.Packaging` | Repository-local package-test builders. |
@@ -67,6 +82,20 @@ Use analyzer, code-fix, and source-generator suffixes only for Roslyn packages:
 Use `SharedKernel.Testing.<Capability>` for reusable test helpers. Keep repository-only test support
 under `tests/` when it only encodes this repository's test taxonomy or fixtures.
 
+Do not use `SharedKernel.<Capability>.Testing.*` for package-worthy helpers. That shape is reserved
+for old repository-local helpers while they are being reviewed and should migrate to
+`SharedKernel.Testing.<Capability>` before packaging.
+
+Use `SharedKernel.<Capability>` for the primary package in a feature family. Use
+`SharedKernel.<Capability>.<Submodule>` only for an optional surface with a real independent reason to
+exist now, such as a provider adapter, Roslyn component, source generator, integration-specific
+extension, or abstraction package that avoids a concrete implementation dependency.
+
+Use `Abstractions` only when consumers need contracts without the implementation package and at least
+two real consumers or implementations need that split now. Otherwise keep contracts in the primary
+feature package. The primary feature package is the core surface; do not add `Core` packages unless a
+documented migration or compatibility constraint prevents the root package from owning that surface.
+
 Keep package IDs aligned with the root namespace unless a package has a documented compatibility reason
 to differ.
 
@@ -85,6 +114,12 @@ Intentional naming exceptions:
 | --- | --- | --- |
 | `SharedKernel.Mediator.Abstractions` | Root namespace remains `SharedKernel.Mediator`. | The assembly contributes shared mediator contracts under the existing mediator namespace while keeping package identity precise. |
 | `SharedKernel.EventSourcing.Npgsql` | Provider segment uses the provider name `Npgsql`. | Matches the .NET PostgreSQL provider package naming. |
+
+Current deferred package candidates:
+
+| Project | Decision |
+| --- | --- |
+| `tests/SharedKernel.CodeFixes.Testing` | Reusable Roslyn code-fix test workspace exists, but `SharedKernel.Testing.CodeFixes` is already a Roslyn code-fix package name. Extract to a collision-free package only after a dedicated naming/design decision. |
 
 ## Local package artifact layout
 

@@ -26,7 +26,7 @@
         <ProjectReference Include="..\..\src\SharedKernel\SharedKernel.Idempotency.EntityFrameworkCore\SharedKernel.Idempotency.EntityFrameworkCore.csproj" />
         <ProjectReference Include="..\..\src\SharedKernel\SharedKernel.EntityFrameworkCore\SharedKernel.EntityFrameworkCore.csproj" />
         <ProjectReference Include="..\..\src\SharedKernel\SharedKernel.Testing\SharedKernel.Testing.csproj" />
-        <ProjectReference Include="..\SharedKernel.AspNetCoreTesting\SharedKernel.AspNetCoreTesting.csproj" />
+        <ProjectReference Include="..\..\src\SharedKernel\SharedKernel.Testing.AspNetCore\SharedKernel.Testing.AspNetCore.csproj" />
         <ProjectReference Include="..\..\src\SharedKernel\SharedKernel.Testing.Assertions\SharedKernel.Testing.Assertions.csproj" />
         <ProjectReference Include="..\..\src\ViajantesTurismo.Catalog.ApiService\ViajantesTurismo.Catalog.ApiService.csproj" />
         <ProjectReference Include="..\..\src\ViajantesTurismo.Catalog.Application\ViajantesTurismo.Catalog.Application.csproj" />

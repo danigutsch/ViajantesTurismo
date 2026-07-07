@@ -1,5 +1,5 @@
 using Microsoft.Extensions.Diagnostics.HealthChecks;
-using SharedKernel.Testing;
+using SharedKernel.Testing.AspNetCore;
 using ViajantesTurismo.Catalog.ApiService;
 using ViajantesTurismo.Catalog.Application.Media;
 using ViajantesTurismo.Catalog.Application.PublicContent;

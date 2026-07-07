@@ -1,6 +1,6 @@
-# SharedKernel.Mediator.Testing.ReferenceDispatcher
+# SharedKernel.Testing.Mediator
 
-Test-only reference dispatcher support for `SharedKernel.Mediator`.
+Reference dispatcher test support for `SharedKernel.Mediator`.
 
 ## Purpose
 
@@ -20,9 +20,9 @@ The project now exposes `ReferenceDispatcherBuilder` and `ReferenceMediator` for
 
 ## Dependencies
 
-- [SharedKernel.Mediator.Abstractions](../../src/SharedKernel/SharedKernel.Mediator.Abstractions/README.md)
+- [SharedKernel.Mediator.Abstractions](../SharedKernel.Mediator.Abstractions/README.md)
 
 ## See Also
 
-- [SharedKernel.Mediator.Tests](../SharedKernel.Mediator.Tests/README.md)
-- [SharedKernel.Mediator.GeneratorTests](../SharedKernel.Mediator.GeneratorTests/README.md)
+- `tests/SharedKernel.Mediator.Tests`
+- `tests/SharedKernel.Mediator.GeneratorTests`

@@ -1,4 +1,4 @@
-namespace SharedKernel.Mediator.Testing.ReferenceDispatcher;
+namespace SharedKernel.Testing.Mediator;
 
 /// <summary>
 /// Marks the test-only reference-dispatcher assembly.
