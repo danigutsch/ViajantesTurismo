@@ -4,7 +4,13 @@ This page links the current implementation shape to the longer-lived ADR and dom
 show current repository structure unless a section is explicitly marked as planned. Generated
 diagram sections are refreshed with `bash scripts/update-architecture-diagrams.sh`.
 
-## Current runtime resources
+## System map
+
+Start with the [system architecture diagram](system-overview.md) for a single map of users, web apps,
+APIs, workers, data stores, messaging/outbox tables, SharedKernel modules, external dependencies, and
+trust boundaries.
+
+## Runtime resources
 
 The Aspire AppHost is the source of truth for local runtime wiring. For the generated resource graph,
 deployment mapping, service discovery, migration startup, and secret boundaries, see
@@ -60,6 +66,7 @@ transport publisher/consumer path is still evolving. See
 ## Flow references
 
 - [Architecture boundaries and dependency flow](boundaries-and-dependencies.md)
+- [System architecture diagram](system-overview.md)
 - [Multi-store consistency audit](multi-store-consistency-audit.md)
 - [Runtime wiring and deployment mapping](runtime-wiring-and-deployment.md)
 - [CI and local validation flow](ci-validation-flows.md)

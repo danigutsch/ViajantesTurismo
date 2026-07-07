@@ -28,6 +28,7 @@ internal static class DocumentationSourceOfTruthTestsHelpers
     [
         "project-dependencies",
         "sharedkernel-dependencies",
+        "system-overview",
         "apphost-resources",
         "ci-main-jobs",
         "ci-supplemental-workflows"
