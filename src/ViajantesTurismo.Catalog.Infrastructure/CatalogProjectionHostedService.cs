@@ -10,6 +10,8 @@ internal sealed class CatalogProjectionHostedService(
     ILogger<CatalogProjectionHostedService> logger)
     : PollingBackgroundService(logger, "catalog-projections", TimeSpan.FromSeconds(5))
 {
+    internal ValueTask<int> RunBatch(CancellationToken stoppingToken) => ExecuteBatch(stoppingToken);
+
     protected override async ValueTask<int> ExecuteBatch(CancellationToken stoppingToken)
     {
         using var scope = scopeFactory.CreateScope();

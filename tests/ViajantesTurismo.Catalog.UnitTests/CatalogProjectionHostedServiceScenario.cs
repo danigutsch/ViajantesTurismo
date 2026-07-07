@@ -52,7 +52,7 @@ internal sealed class CatalogProjectionHostedServiceScenario : IAsyncDisposable
         return new CatalogProjectionHostedServiceScenario(services.BuildServiceProvider(), readModelStore, checkpointStore);
     }
 
-    public ValueTask<int> ExecuteBatch(CancellationToken ct) => CatalogProjectionHostedServiceInvoker.ExecuteBatch(service, ct);
+    public ValueTask<int> ExecuteBatch(CancellationToken ct) => service.RunBatch(ct);
 
     public void ShouldHaveProjectedDraft() => readModelStore.Draft.ShouldNotBeNull();
 
