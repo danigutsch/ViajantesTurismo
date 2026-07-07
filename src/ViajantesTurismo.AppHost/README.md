@@ -94,12 +94,12 @@ Use these Aspire 13.4 integration points for release work:
   model through container image annotations or resource environment variables.
 
 Container tags for application resources use the versioning tool's `package_version` output. Release
-Prep passes the same computed values as MSBuild properties so deployed assemblies carry
-`InformationalVersion`, which the shared diagnostics emit as OpenTelemetry `service.version` and in
-startup logs. Source SHA and other traceability values are passed as deployment metadata environment
-variables (`VT_DEPLOYMENT_VERSION`, `VT_SOURCE_REVISION`), not in the container tag. Infrastructure
-image tags and SHA-256 digests remain pinned independently and must not be replaced with application
-release versions.
+Prep passes the same computed values as environment variables that MSBuild imports as properties, so
+deployed assemblies carry `InformationalVersion`, which the shared diagnostics emit as OpenTelemetry
+`service.version` and in startup logs. Source SHA and other traceability values are passed as
+deployment metadata environment variables (`VT_DEPLOYMENT_VERSION`, `VT_SOURCE_REVISION`), not in the
+container tag. Infrastructure image tags and SHA-256 digests remain pinned independently and must not
+be replaced with application release versions.
 
 Release workflow inputs consumed by the AppHost:
 
