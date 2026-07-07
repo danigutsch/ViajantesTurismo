@@ -104,17 +104,43 @@ internal static class AppHostResourceExtensions
     /// Adds the Catalog API service.
     /// </summary>
     /// <param name="builder">The distributed application builder.</param>
+    /// <param name="adminDatabase">The Admin database resource that owns integration-event transport.</param>
     /// <param name="catalogDatabase">The Catalog database resource.</param>
     /// <param name="migrationService">The migration service resource.</param>
     /// <returns>The configured Catalog API resource.</returns>
     public static IResourceBuilder<ProjectResource> AddCatalogApi(
         this IDistributedApplicationBuilder builder,
+        IResourceBuilder<PostgresDatabaseResource> adminDatabase,
         IResourceBuilder<PostgresDatabaseResource> catalogDatabase,
         IResourceBuilder<ProjectResource> migrationService)
     {
         return builder.AddDevelopmentAspNetCoreProject<ViajantesTurismo_Catalog_ApiService>(ResourceNames.CatalogApi)
             .WithHttpHealthCheck(EndpointPaths.Health)
+            .WithReference(adminDatabase)
             .WithReference(catalogDatabase)
+            .WaitFor(adminDatabase)
+            .WaitFor(catalogDatabase)
+            .WaitForCompletion(migrationService);
+    }
+
+    /// <summary>
+    /// Adds the standalone integration-event worker.
+    /// </summary>
+    /// <param name="builder">The distributed application builder.</param>
+    /// <param name="adminDatabase">The Admin database resource that owns the transport table.</param>
+    /// <param name="catalogDatabase">The Catalog database resource.</param>
+    /// <param name="migrationService">The migration service resource.</param>
+    /// <returns>The configured integration-event worker resource.</returns>
+    public static IResourceBuilder<ProjectResource> AddIntegrationEventWorker(
+        this IDistributedApplicationBuilder builder,
+        IResourceBuilder<PostgresDatabaseResource> adminDatabase,
+        IResourceBuilder<PostgresDatabaseResource> catalogDatabase,
+        IResourceBuilder<ProjectResource> migrationService)
+    {
+        return builder.AddDevelopmentDotNetProject<ViajantesTurismo_IntegrationEventWorker>(ResourceNames.IntegrationEventWorker)
+            .WithReference(adminDatabase)
+            .WithReference(catalogDatabase)
+            .WaitFor(adminDatabase)
             .WaitFor(catalogDatabase)
             .WaitForCompletion(migrationService);
     }

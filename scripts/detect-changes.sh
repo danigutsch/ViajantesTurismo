@@ -139,6 +139,7 @@ fast_validation_patterns=(
     "src/SharedKernel/SharedKernel.Results/**"
     "src/SharedKernel/SharedKernel.Results.AspNet/**"
     "src/SharedKernel/SharedKernel.Results.SourceGenerator/**"
+    "src/SharedKernel/SharedKernel.Scheduling/**"
     "src/SharedKernel/SharedKernel.Style.Analyzers/**"
     "src/SharedKernel/SharedKernel.Style.CodeFixes/**"
     "src/SharedKernel/SharedKernel.Testing.Analyzers/**"

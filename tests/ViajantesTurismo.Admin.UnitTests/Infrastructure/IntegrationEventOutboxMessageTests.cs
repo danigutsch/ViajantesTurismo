@@ -10,6 +10,7 @@ using SharedKernel.Testing.Assertions;
 using ViajantesTurismo.Admin.Contracts.Tours;
 using ViajantesTurismo.Admin.Infrastructure;
 using ViajantesTurismo.Admin.Testing.Fakes;
+using ViajantesTurismo.Resources;
 
 namespace ViajantesTurismo.Admin.UnitTests.Infrastructure;
 
@@ -360,6 +361,78 @@ public sealed class IntegrationEventOutboxMessageTests
     }
 
     [Fact]
+    public async Task PostgreSql_transport_claim_sql_uses_skip_locked_and_consumer_filter()
+    {
+        // Arrange
+        await using var scenario = AdminWriteDbContextTestFactory.CreateTransportScenario();
+        var dbContext = scenario.DbContext;
+        var entityType = dbContext.Model.FindEntityType(typeof(IntegrationEventTransportMessage));
+        entityType.ShouldNotBeNull();
+
+        // Act
+        var sql = PostgreSqlIntegrationEventTransportClaimSql.CreateClaimSql(entityType);
+
+        // Assert
+        sql.ShouldContain("WITH claimed AS", StringComparison.Ordinal);
+        sql.ShouldContain("UPDATE \"messaging\".\"transport_messages\" AS message", StringComparison.Ordinal);
+        sql.ShouldContain("candidate.\"ConsumerName\" = {0}", StringComparison.Ordinal);
+        sql.ShouldContain("FOR UPDATE SKIP LOCKED", StringComparison.Ordinal);
+        sql.ShouldContain("RETURNING *", StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public async Task Transport_producer_persists_envelope_for_catalog_consumer()
+    {
+        // Arrange
+        var now = new DateTimeOffset(2026, 6, 22, 12, 0, 0, TimeSpan.Zero);
+        await using var scenario = AdminWriteDbContextTestFactory.CreateTransportScenario(new FakeTimeProvider(now));
+        var dbContext = scenario.DbContext;
+        var publisher = scenario.Publisher;
+        var envelope = AdminWriteDbContextTestFactory.CreateEnvelope("transport-producer-event");
+
+        // Act
+        await publisher.Publish(envelope, TestContext.Current.CancellationToken);
+        _ = await dbContext.SaveChangesAsync(TestContext.Current.CancellationToken);
+
+        // Assert
+        var message = dbContext.Set<IntegrationEventTransportMessage>().ShouldHaveSingleItem();
+        message.ConsumerName.ShouldBe(IntegrationEventConsumerNames.Catalog);
+        message.EventId.ShouldBe(envelope.EventId);
+        message.EventType.ShouldBe(envelope.EventType);
+        message.Payload.ShouldBe(envelope.Payload);
+        message.ReceivedAt.ShouldBe(now);
+        message.ProcessedAt.ShouldBeNull();
+    }
+
+    [Fact]
+    public async Task Transport_model_uses_consumer_and_event_id_as_inbox_duplicate_key()
+    {
+        // Arrange
+        await using var scenario = AdminWriteDbContextTestFactory.CreateTransportScenario();
+        var dbContext = scenario.DbContext;
+        var entityType = dbContext.Model.FindEntityType(typeof(IntegrationEventTransportMessage)).ShouldNotBeNull();
+
+        // Act
+        var index = entityType.GetIndexes()
+            .SingleOrDefault(candidate => candidate.Properties.Select(property => property.Name)
+                .SequenceEqual([nameof(IntegrationEventTransportMessage.ConsumerName), nameof(IntegrationEventTransportMessage.EventId)]));
+
+        // Assert
+        index.ShouldNotBeNull();
+        index.IsUnique.ShouldBeTrue();
+    }
+
+    [Fact]
+    public void PostgreSql_transport_consumer_registration_adds_hosted_consumer_service()
+    {
+        // Act
+        var hostedService = AdminWriteDbContextTestFactory.GetPostgreSqlTransportConsumerHostedServiceDescriptor();
+
+        // Assert
+        hostedService.ImplementationType.ShouldBe(typeof(PostgreSqlIntegrationEventTransportConsumerHostedService<AdminWriteDbContext>));
+    }
+
+    [Fact]
     public async Task PostgreSql_atomic_claim_rejects_non_postgresql_provider()
     {
         // Arrange
@@ -460,4 +533,5 @@ public sealed class IntegrationEventOutboxMessageTests
         message.LastPublishError.ShouldNotBeNull();
         message.LastPublishError.Length.ShouldBe(IntegrationEventOutboxMessage.LastPublishErrorMaxLength);
     }
+
 }

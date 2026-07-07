@@ -743,7 +743,8 @@
           "SharedKernel.Idempotency.EntityFrameworkCore": "[0.1.0-alpha.0, )",
           "SharedKernel.Messaging": "[0.1.0-alpha.0, )",
           "SharedKernel.Messaging.IntegrationEvents": "[0.1.0-alpha.0, )",
-          "SharedKernel.Messaging.IntegrationEvents.CloudEvents": "[0.1.0-alpha.0, )"
+          "SharedKernel.Messaging.IntegrationEvents.CloudEvents": "[0.1.0-alpha.0, )",
+          "SharedKernel.Scheduling": "[0.1.0-alpha.0, )"
         }
       },
       "sharedkernel.observability": {
@@ -766,6 +767,13 @@
       },
       "sharedkernel.results": {
         "type": "Project"
+      },
+      "sharedkernel.scheduling": {
+        "type": "Project",
+        "dependencies": {
+          "Microsoft.Extensions.Hosting.Abstractions": "[10.0.9, )",
+          "Microsoft.Extensions.Logging.Abstractions": "[10.0.9, )"
+        }
       },
       "sharedkernel.testing.aspnetcore": {
         "type": "Project",

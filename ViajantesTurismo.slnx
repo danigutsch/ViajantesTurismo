@@ -14,6 +14,7 @@
     <Folder Name="/src/">
         <Project Path="src/ViajantesTurismo.AppHost/ViajantesTurismo.AppHost.csproj" />
         <Project Path="src/ViajantesTurismo.MigrationService/ViajantesTurismo.MigrationService.csproj" />
+        <Project Path="src/ViajantesTurismo.IntegrationEventWorker/ViajantesTurismo.IntegrationEventWorker.csproj" />
         <Project Path="src/ViajantesTurismo.Resources/ViajantesTurismo.Resources.csproj" />
         <Project Path="src/ViajantesTurismo.ServiceDefaults/ViajantesTurismo.ServiceDefaults.csproj" />
     </Folder>
@@ -23,6 +24,7 @@
         <Project Path="src/SharedKernel/SharedKernel.Mediator.CodeFixes/SharedKernel.Mediator.CodeFixes.csproj" />
         <Project Path="src/SharedKernel/SharedKernel.Aspire.Analyzers/SharedKernel.Aspire.Analyzers.csproj" />
         <Project Path="src/SharedKernel/SharedKernel.Aspire.CodeFixes/SharedKernel.Aspire.CodeFixes.csproj" />
+        <Project Path="src/SharedKernel/SharedKernel.Scheduling/SharedKernel.Scheduling.csproj" />
         <Project Path="src/SharedKernel/SharedKernel.Style.Analyzers/SharedKernel.Style.Analyzers.csproj" />
         <Project Path="src/SharedKernel/SharedKernel.Style.CodeFixes/SharedKernel.Style.CodeFixes.csproj" />
         <Project Path="src/SharedKernel/SharedKernel.Testing.Analyzers/SharedKernel.Testing.Analyzers.csproj" />
