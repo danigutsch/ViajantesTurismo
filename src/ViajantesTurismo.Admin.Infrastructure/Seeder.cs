@@ -252,7 +252,10 @@ public sealed class Seeder
     /// <param name="ct">The cancellation token.</param>
     public async Task Seed(CancellationToken ct)
     {
-        await dbContext.Database.MigrateAsync(ct);
+        if (dbContext.Database.IsRelational())
+        {
+            await dbContext.Database.MigrateAsync(ct);
+        }
 
         if (await dbContext.Tours.AnyAsync(ct))
         {

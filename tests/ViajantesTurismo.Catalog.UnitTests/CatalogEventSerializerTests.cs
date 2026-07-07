@@ -95,4 +95,18 @@ public sealed class CatalogEventSerializerTests
         var exception = serialize.ShouldThrow<NotSupportedException>();
         exception.Message.ShouldContain("System.Object", StringComparison.Ordinal);
     }
+
+    [Fact]
+    public void GetEventType_rejects_unregistered_event_payload()
+    {
+        // Arrange
+        var serializer = new CatalogEventSerializer();
+
+        // Act
+        Action getEventType = () => serializer.GetEventType(new object());
+
+        // Assert
+        var exception = getEventType.ShouldThrow<NotSupportedException>();
+        exception.Message.ShouldContain("System.Object", StringComparison.Ordinal);
+    }
 }

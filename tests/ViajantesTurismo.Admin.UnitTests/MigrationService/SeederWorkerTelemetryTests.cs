@@ -104,4 +104,19 @@ public sealed class SeederWorkerTelemetryTests
         Assert.True(seedCalled);
     }
 
+    [Fact]
+    public async Task Default_worker_runs_database_initialization_and_stops_the_host()
+    {
+        // Arrange
+        using var harness = SeederWorkerHarness.CreateWithDefaultInitialization();
+        using var worker = harness.CreateDefaultWorker();
+
+        // Act
+        await SeederWorkerTestHelpers.ExecuteWorker(worker, CancellationToken.None);
+
+        // Assert
+        await harness.ShouldContainSeedData(TestContext.Current.CancellationToken);
+        Assert.True(harness.HostLifetime.StopApplicationCalled);
+    }
+
 }

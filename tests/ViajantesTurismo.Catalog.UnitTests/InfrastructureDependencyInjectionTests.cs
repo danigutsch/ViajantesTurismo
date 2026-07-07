@@ -32,4 +32,16 @@ public sealed class InfrastructureDependencyInjectionTests
         scenario.ShouldResolveEnumerableItemAs<IProjection, CatalogTourReadModelProjection>();
         scenario.ShouldResolve<CatalogProjectionRunner>();
     }
+
+    [Fact]
+    public void AddCatalogInfrastructure_configures_development_catalog_options()
+    {
+        // Arrange
+        using var scenario = CatalogInfrastructureTestServices.CreateDevelopmentScenario();
+
+        // Act
+
+        // Assert
+        scenario.ShouldResolveDbContextOptions<CatalogDbContext>();
+    }
 }

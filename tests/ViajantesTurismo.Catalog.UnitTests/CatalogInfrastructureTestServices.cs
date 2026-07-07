@@ -22,6 +22,22 @@ internal static class CatalogInfrastructureTestServices
         return new CatalogInfrastructureScenario(builder.Services.BuildServiceProvider());
     }
 
+    public static CatalogInfrastructureScenario CreateDevelopmentScenario()
+    {
+        var builder = Host.CreateApplicationBuilder(new HostApplicationBuilderSettings
+        {
+            EnvironmentName = Environments.Development,
+        });
+        builder.Configuration.AddInMemoryCollection(new Dictionary<string, string?>
+        {
+            [$"ConnectionStrings:{ResourceNames.CatalogDatabase}"] = "Host=localhost;Database=viajantes;Username=test;Password=test"
+        });
+
+        builder.AddCatalogInfrastructure();
+
+        return new CatalogInfrastructureScenario(builder.Services.BuildServiceProvider());
+    }
+
     public static CatalogInfrastructureScenario CreateWorkerScenario()
     {
         var builder = Host.CreateApplicationBuilder();
@@ -73,6 +89,12 @@ internal sealed class CatalogInfrastructureScenario(ServiceProvider provider) : 
         where TService : class
     {
         provider.GetRequiredService<TService>().ShouldNotBeNull();
+    }
+
+    public void ShouldResolveDbContextOptions<TContext>()
+        where TContext : Microsoft.EntityFrameworkCore.DbContext
+    {
+        provider.GetRequiredService<Microsoft.EntityFrameworkCore.DbContextOptions<TContext>>().ShouldNotBeNull();
     }
 
     public void ShouldResolveAs<TService, TImplementation>()

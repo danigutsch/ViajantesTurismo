@@ -36,6 +36,18 @@ public sealed class CatalogIntegrationEventTransportRegistrationTests
     }
 
     [Fact]
+    public void Hosted_transport_mode_registers_the_admin_transport_context_options()
+    {
+        // Arrange
+        using var scenario = CatalogInfrastructureTestServices.CreateApiHostedTransportScenario();
+
+        // Act
+
+        // Assert
+        scenario.ShouldResolveDbContextOptions<CatalogIntegrationTransportDbContext>();
+    }
+
+    [Fact]
     public void Standalone_worker_registers_transport_consumer_without_catalog_outbox_relay()
     {
         // Arrange

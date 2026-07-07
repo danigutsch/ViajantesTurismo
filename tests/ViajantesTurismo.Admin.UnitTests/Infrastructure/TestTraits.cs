@@ -4,5 +4,7 @@ internal static class TestTraits
 {
     public const string OutboxCategory = "outbox";
 
+    public const string PersistenceCategory = "persistence";
+
     public const string IntegrationEventRelayCapability = "integration-event-relay";
 }
