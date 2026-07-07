@@ -1060,6 +1060,12 @@
       "sharedkernel.testing": {
         "type": "Project"
       },
+      "sharedkernel.testing.assertions": {
+        "type": "Project",
+        "dependencies": {
+          "xunit.v3.assert": "[3.2.2, )"
+        }
+      },
       "viajantesturismo.admin.application": {
         "type": "Project",
         "dependencies": {
@@ -1112,6 +1118,13 @@
           "Aspire.Hosting.Redis": "[13.4.6, )",
           "SharedKernel.Aspire.Hosting.Grafana": "[0.1.0-alpha.0, )",
           "ViajantesTurismo.Resources": "[0.1.0-alpha.0, )"
+        }
+      },
+      "viajantesturismo.catalog.contracts": {
+        "type": "Project",
+        "dependencies": {
+          "SharedKernel.HttpClients": "[0.1.0-alpha.0, )",
+          "SharedKernel.Messaging.IntegrationEvents": "[0.1.0-alpha.0, )"
         }
       },
       "viajantesturismo.resources": {

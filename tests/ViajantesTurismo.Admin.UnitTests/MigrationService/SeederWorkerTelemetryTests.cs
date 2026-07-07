@@ -11,8 +11,12 @@ public sealed class SeederWorkerTelemetryTests
         // Arrange
         List<Activity> stoppedActivities = [];
         using var listener = SeederWorkerTestHelpers.CreateCapturingListener(stoppedActivities);
-        var seeder = new SuccessfulSeeder();
-        using var harness = SeederWorkerHarness.Create(seeder);
+        var seedCalled = false;
+        using var harness = SeederWorkerHarness.Create(_ =>
+        {
+            seedCalled = true;
+            return Task.CompletedTask;
+        });
         using var worker = harness.CreateWorker();
 
         // Act
@@ -28,7 +32,7 @@ public sealed class SeederWorkerTelemetryTests
         Assert.Contains(activity.Tags, static tag => tag.Key == "worker.type" && tag.Value == "migration");
         Assert.DoesNotContain(activity.Events, static activityEvent => activityEvent.Name == "exception");
         Assert.True(harness.HostLifetime.StopApplicationCalled);
-        Assert.True(seeder.SeedCalled);
+        Assert.True(seedCalled);
     }
 
     [Fact]
@@ -37,8 +41,12 @@ public sealed class SeederWorkerTelemetryTests
         // Arrange
         List<Activity> stoppedActivities = [];
         using var listener = SeederWorkerTestHelpers.CreateCapturingListener(stoppedActivities);
-        var seeder = new FailingSeeder();
-        using var harness = SeederWorkerHarness.Create(seeder);
+        var seedCalled = false;
+        using var harness = SeederWorkerHarness.Create(_ =>
+        {
+            seedCalled = true;
+            throw new InvalidOperationException("boom");
+        });
         using var worker = harness.CreateWorker();
 
         // Act
@@ -63,7 +71,7 @@ public sealed class SeederWorkerTelemetryTests
         Assert.Contains(exceptionTags, static tag =>
             tag.Key == "exception.message" && string.Equals(tag.Value as string, "boom", StringComparison.Ordinal));
         Assert.True(harness.HostLifetime.StopApplicationCalled);
-        Assert.True(seeder.SeedCalled);
+        Assert.True(seedCalled);
     }
 
     [Fact]
@@ -72,8 +80,12 @@ public sealed class SeederWorkerTelemetryTests
         // Arrange
         List<Activity> stoppedActivities = [];
         using var listener = SeederWorkerTestHelpers.CreateCapturingListener(stoppedActivities);
-        var seeder = new CancelledSeeder();
-        using var harness = SeederWorkerHarness.Create(seeder);
+        var seedCalled = false;
+        using var harness = SeederWorkerHarness.Create(_ =>
+        {
+            seedCalled = true;
+            throw new OperationCanceledException();
+        });
         using var worker = harness.CreateWorker();
 
         // Act
@@ -89,7 +101,7 @@ public sealed class SeederWorkerTelemetryTests
         Assert.Contains(activity.Tags, static tag => tag.Key == "worker.type" && tag.Value == "migration");
         Assert.DoesNotContain(activity.Events, static activityEvent => activityEvent.Name == "exception");
         Assert.True(harness.HostLifetime.StopApplicationCalled);
-        Assert.True(seeder.SeedCalled);
+        Assert.True(seedCalled);
     }
 
 }

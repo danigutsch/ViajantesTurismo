@@ -1,13 +1,17 @@
 using Microsoft.EntityFrameworkCore;
-using ViajantesTurismo.Admin.Application;
 using ViajantesTurismo.Admin.Domain.Customers;
 using ViajantesTurismo.Admin.Domain.Shared;
 using ViajantesTurismo.Admin.Domain.Tours;
 
 namespace ViajantesTurismo.Admin.Infrastructure;
 
-internal sealed class Seeder(AdminWriteDbContext dbContext) : ISeeder
+/// <summary>
+/// Seeds the Admin database with development baseline data.
+/// </summary>
+public sealed class Seeder
 {
+    private readonly AdminWriteDbContext dbContext;
+
     private const string BreakfastService = "Breakfast";
     private const string BrazilianNationality = "Brazilian";
     private const string FemaleGender = "Female";
@@ -209,6 +213,17 @@ internal sealed class Seeder(AdminWriteDbContext dbContext) : ISeeder
         )
     ];
 
+    internal Seeder(AdminWriteDbContext dbContext)
+    {
+        ArgumentNullException.ThrowIfNull(dbContext);
+
+        this.dbContext = dbContext;
+    }
+
+    /// <summary>
+    /// Clears all Admin database data while preserving migration history.
+    /// </summary>
+    /// <param name="ct">The cancellation token.</param>
     public async Task ClearDatabase(CancellationToken ct)
     {
         const string sql = """
@@ -231,6 +246,10 @@ internal sealed class Seeder(AdminWriteDbContext dbContext) : ISeeder
         await dbContext.Database.ExecuteSqlRawAsync(sql, ct);
     }
 
+    /// <summary>
+    /// Applies Admin database migrations and inserts baseline development data when empty.
+    /// </summary>
+    /// <param name="ct">The cancellation token.</param>
     public async Task Seed(CancellationToken ct)
     {
         await dbContext.Database.MigrateAsync(ct);

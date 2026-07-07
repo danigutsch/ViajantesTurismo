@@ -83,6 +83,6 @@ internal sealed class CatalogInfrastructureScenario(ServiceProvider provider) : 
 
     public void Dispose()
     {
-        provider.Dispose();
+        provider.DisposeAsync().AsTask().GetAwaiter().GetResult();
     }
 }

@@ -1,10 +1,14 @@
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using SharedKernel.EntityFrameworkCore;
+using SharedKernel.EventSourcing;
+using SharedKernel.EventSourcing.Npgsql;
 using SharedKernel.Messaging.IntegrationEvents.EntityFrameworkCore;
 using ViajantesTurismo.Catalog.Application;
 using ViajantesTurismo.Catalog.Application.Media;
+using ViajantesTurismo.Catalog.Application.Projections;
 using ViajantesTurismo.Catalog.Application.PublicContent;
 using ViajantesTurismo.Catalog.Application.PublicTheme;
 using ViajantesTurismo.Catalog.Application.Tours;
@@ -61,6 +65,7 @@ public static class InfrastructureDependencyInjection
 
         AddCatalogInfrastructure(builder, addOutboxRelay: false);
         builder.AddCatalogHostedIntegrationEventTransport();
+        builder.Services.AddHostedService<CatalogProjectionHostedService>();
 
         return builder;
     }
@@ -82,6 +87,25 @@ public static class InfrastructureDependencyInjection
         builder.Services.AddScoped<EfCatalogTourReadModelStore>();
         builder.Services.AddScoped<ICatalogTourReadModelStore>(sp => sp.GetRequiredService<EfCatalogTourReadModelStore>());
         builder.Services.AddScoped<IPublicMediaImageStore, EfPublicMediaImageStore>();
+        builder.Services.AddSingleton(sp =>
+        {
+            var connectionString = builder.Configuration.GetConnectionString(ResourceNames.CatalogDatabase)
+                ?? throw new InvalidOperationException($"Connection string '{ResourceNames.CatalogDatabase}' is not configured.");
+
+            return new PostgreSqlEventStore(connectionString, sp.GetRequiredService<IEventSerializer>());
+        });
+        builder.Services.AddSingleton<IEventSerializer, CatalogEventSerializer>();
+        builder.Services.AddSingleton<IEventStore>(sp => sp.GetRequiredService<PostgreSqlEventStore>());
+        builder.Services.AddSingleton(_ =>
+        {
+            var connectionString = builder.Configuration.GetConnectionString(ResourceNames.CatalogDatabase)
+                ?? throw new InvalidOperationException($"Connection string '{ResourceNames.CatalogDatabase}' is not configured.");
+
+            return new PostgreSqlProjectionCheckpointStore(connectionString);
+        });
+        builder.Services.AddSingleton<IProjectionCheckpointStore>(sp => sp.GetRequiredService<PostgreSqlProjectionCheckpointStore>());
+        builder.Services.AddScoped<IProjection, CatalogTourReadModelProjection>();
+        builder.Services.AddScoped<CatalogProjectionRunner>();
         builder.Services.AddIntegrationEventOutbox<CatalogDbContext>();
         if (addOutboxRelay)
         {

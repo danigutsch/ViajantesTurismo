@@ -1,16 +1,45 @@
 using System.Diagnostics;
 using System.Reflection;
 using Microsoft.EntityFrameworkCore;
-using ViajantesTurismo.Admin.Application;
+using Npgsql;
+using SharedKernel.EventSourcing.Npgsql;
+using ViajantesTurismo.Admin.Infrastructure;
 using ViajantesTurismo.Catalog.Infrastructure;
+using ViajantesTurismo.Resources;
 
 namespace ViajantesTurismo.MigrationService;
 
-internal sealed class SeederWorker(IServiceScopeFactory scopeFactory, ILogger<SeederWorker> logger, IHostApplicationLifetime host) : BackgroundService
+internal sealed class SeederWorker : BackgroundService
 {
     private const string ActivityOperationName = "DatabaseSeeding";
     public static readonly string ActivitySourceName = typeof(SeederWorker).FullName!;
     private static readonly ActivitySource ActivitySource = new(ActivitySourceName, Assembly.GetAssembly(typeof(SeederWorker))!.GetName().Version?.ToString());
+    private readonly IHostApplicationLifetime host;
+    private readonly ILogger<SeederWorker> logger;
+    private readonly Func<IServiceProvider, CancellationToken, Task> seedOperation;
+    private readonly IServiceScopeFactory scopeFactory;
+
+    public SeederWorker(IServiceScopeFactory scopeFactory, ILogger<SeederWorker> logger, IHostApplicationLifetime host)
+        : this(scopeFactory, logger, host, RunDatabaseInitialization)
+    {
+    }
+
+    internal SeederWorker(
+        IServiceScopeFactory scopeFactory,
+        ILogger<SeederWorker> logger,
+        IHostApplicationLifetime host,
+        Func<IServiceProvider, CancellationToken, Task> seedOperation)
+    {
+        ArgumentNullException.ThrowIfNull(scopeFactory);
+        ArgumentNullException.ThrowIfNull(logger);
+        ArgumentNullException.ThrowIfNull(host);
+        ArgumentNullException.ThrowIfNull(seedOperation);
+
+        this.scopeFactory = scopeFactory;
+        this.logger = logger;
+        this.host = host;
+        this.seedOperation = seedOperation;
+    }
 
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
@@ -24,15 +53,7 @@ internal sealed class SeederWorker(IServiceScopeFactory scopeFactory, ILogger<Se
             logger.SeedingStarted();
 
             using var scope = scopeFactory.CreateScope();
-            var catalogDbContext = scope.ServiceProvider.GetRequiredService<CatalogDbContext>();
-            var seeder = scope.ServiceProvider.GetRequiredService<ISeeder>();
-
-            if (catalogDbContext.Database.IsRelational())
-            {
-                await catalogDbContext.Database.MigrateAsync(stoppingToken);
-            }
-
-            await seeder.Seed(stoppingToken);
+            await seedOperation(scope.ServiceProvider, stoppingToken);
 
             activity?.SetStatus(ActivityStatusCode.Ok);
             logger.SeedingCompleted();
@@ -54,6 +75,30 @@ internal sealed class SeederWorker(IServiceScopeFactory scopeFactory, ILogger<Se
         {
             host.StopApplication();
         }
+    }
+
+    private static async Task RunDatabaseInitialization(IServiceProvider serviceProvider, CancellationToken stoppingToken)
+    {
+        var catalogDbContext = serviceProvider.GetRequiredService<CatalogDbContext>();
+        var seeder = serviceProvider.GetRequiredService<Seeder>();
+
+        if (catalogDbContext.Database.IsRelational())
+        {
+            await catalogDbContext.Database.MigrateAsync(stoppingToken);
+            await InitializeCatalogEventSourcingSchema(serviceProvider, stoppingToken);
+        }
+
+        await seeder.Seed(stoppingToken);
+    }
+
+    private static async ValueTask InitializeCatalogEventSourcingSchema(IServiceProvider serviceProvider, CancellationToken ct)
+    {
+        var configuration = serviceProvider.GetRequiredService<IConfiguration>();
+        var connectionString = configuration.GetConnectionString(ResourceNames.CatalogDatabase)
+            ?? throw new InvalidOperationException($"Connection string '{ResourceNames.CatalogDatabase}' is not configured.");
+
+        await using var dataSource = NpgsqlDataSource.Create(connectionString);
+        await PostgreSqlEventSourcingSchema.Initialize(dataSource, options: null, ct);
     }
 }
 
