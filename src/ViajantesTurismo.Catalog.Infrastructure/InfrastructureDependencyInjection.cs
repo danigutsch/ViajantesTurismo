@@ -1,9 +1,7 @@
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Npgsql;
-using SharedKernel.AI;
 using SharedKernel.EntityFrameworkCore;
 using SharedKernel.EventSourcing;
 using SharedKernel.EventSourcing.Npgsql;
@@ -85,7 +83,7 @@ public static class InfrastructureDependencyInjection
         });
 
         builder.Services.AddCatalogApplication();
-        builder.Services.AddCatalogAiTextGeneration(builder.Configuration);
+        builder.AddCatalogAiTextGeneration();
         builder.Services.AddSingleton(TimeProvider.System);
 
         return builder
@@ -104,35 +102,6 @@ public static class InfrastructureDependencyInjection
         builder.Services.AddScoped<IPublicMediaImageStore, EfPublicMediaImageStore>();
 
         return builder;
-    }
-
-    private static void AddCatalogAiTextGeneration(this IServiceCollection services, IConfiguration configuration)
-    {
-        var section = configuration.GetSection(LiteLlmImageTextGeneratorOptions.SectionName);
-        var endpointValue = section[nameof(LiteLlmImageTextGeneratorOptions.Endpoint)];
-        Uri? endpoint = null;
-        if (!string.IsNullOrWhiteSpace(endpointValue))
-        {
-            Uri.TryCreate(endpointValue, UriKind.Absolute, out endpoint);
-        }
-
-        var options = new LiteLlmImageTextGeneratorOptions
-        {
-            Endpoint = endpoint,
-            ApiKey = section[nameof(LiteLlmImageTextGeneratorOptions.ApiKey)],
-            Model = section[nameof(LiteLlmImageTextGeneratorOptions.Model)],
-            ChatCompletionsPath = section[nameof(LiteLlmImageTextGeneratorOptions.ChatCompletionsPath)] ?? "/v1/chat/completions"
-        };
-
-        services.AddSingleton(options);
-        services.AddHttpClient<IImageTextGenerator, LiteLlmImageTextGenerator>((serviceProvider, client) =>
-        {
-            var configuredOptions = serviceProvider.GetRequiredService<LiteLlmImageTextGeneratorOptions>();
-            if (configuredOptions.Endpoint is not null)
-            {
-                client.BaseAddress = configuredOptions.Endpoint;
-            }
-        });
     }
 
     private static TApplicationBuilder AddCatalogEventStore<TApplicationBuilder>(this TApplicationBuilder builder)
