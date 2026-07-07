@@ -76,6 +76,19 @@ public sealed class CatalogIntegrationEventTransportRegistrationTests
     }
 
     [Fact]
+    public void Standalone_worker_registers_media_object_reconciliation_hosted_service()
+    {
+        // Arrange
+        using var scenario = CatalogInfrastructureTestServices.CreateWorkerScenario();
+
+        // Act
+        var includesReconciliationWorker = scenario.ContainsHostedService<MediaObjectReconciliationHostedService>();
+
+        // Assert
+        includesReconciliationWorker.ShouldBeTrue();
+    }
+
+    [Fact]
     public void Catalog_api_infrastructure_does_not_start_the_catalog_projection_worker()
     {
         // Arrange
@@ -86,5 +99,18 @@ public sealed class CatalogIntegrationEventTransportRegistrationTests
 
         // Assert
         includesProjectionWorker.ShouldBeFalse();
+    }
+
+    [Fact]
+    public void Catalog_api_infrastructure_does_not_start_the_media_object_reconciliation_worker()
+    {
+        // Arrange
+        using var scenario = CatalogInfrastructureTestServices.CreateScenario();
+
+        // Act
+        var includesReconciliationWorker = scenario.ContainsHostedService<MediaObjectReconciliationHostedService>();
+
+        // Assert
+        includesReconciliationWorker.ShouldBeFalse();
     }
 }

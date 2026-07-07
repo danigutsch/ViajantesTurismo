@@ -167,6 +167,30 @@ public sealed class LocalMediaObjectStoreTests
     }
 
     [Fact]
+    public async Task ListObjects_returns_keys_and_last_modified_times_under_prefix()
+    {
+        // Arrange
+        using var directory = TemporaryMediaDirectory.Create();
+        var mediaPath = Path.Combine(directory.Path, "media", "photo.jpg");
+        var otherPath = Path.Combine(directory.Path, "other", "photo.jpg");
+        Directory.CreateDirectory(Path.GetDirectoryName(mediaPath) ?? directory.Path);
+        Directory.CreateDirectory(Path.GetDirectoryName(otherPath) ?? directory.Path);
+        await File.WriteAllBytesAsync(mediaPath, [1], TestContext.Current.CancellationToken);
+        await File.WriteAllBytesAsync(otherPath, [2], TestContext.Current.CancellationToken);
+        var lastModifiedAt = new DateTimeOffset(2026, 7, 7, 10, 0, 0, TimeSpan.Zero);
+        File.SetLastWriteTimeUtc(mediaPath, lastModifiedAt.UtcDateTime);
+        var store = new LocalMediaObjectStore(Options.Create(new LocalMediaObjectStorageOptions { RootPath = directory.Path }));
+
+        // Act
+        var objects = await store.ListObjects("media/", TestContext.Current.CancellationToken);
+
+        // Assert
+        var item = objects.ShouldHaveSingleItem();
+        item.ObjectKey.ShouldBe("media/photo.jpg");
+        item.LastModifiedAt.ShouldBe(lastModifiedAt);
+    }
+
+    [Fact]
     public async Task Delete_rejects_empty_object_key()
     {
         // Arrange
