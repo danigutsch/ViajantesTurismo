@@ -1,5 +1,4 @@
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Npgsql;
@@ -75,13 +74,7 @@ public static class InfrastructureDependencyInjection
         bool addOutboxRelay)
         where TApplicationBuilder : IHostApplicationBuilder
     {
-        builder.Services.AddSingleton(_ =>
-        {
-            var connectionString = builder.Configuration.GetConnectionString(ResourceNames.CatalogDatabase)
-                ?? throw new InvalidOperationException($"Connection string '{ResourceNames.CatalogDatabase}' is not configured.");
-
-            return NpgsqlDataSource.Create(connectionString);
-        });
+        builder.AddNpgsqlDataSource(ResourceNames.CatalogDatabase);
         builder.Services.AddDbContextPool<CatalogDbContext>((serviceProvider, options) =>
         {
             options.UseNpgsql(serviceProvider.GetRequiredService<NpgsqlDataSource>());

@@ -29,6 +29,14 @@
         "resolved": "10.27.0.140913",
         "contentHash": "cxk12QjN9io1SjN36B1QO+9dRf+ek2CGfQGsOWtHBojE35cKchKJod48raxZwe47jHhzmAUO4AJSh7+hF0GS4g=="
       },
+      "AspNetCore.HealthChecks.NpgSql": {
+        "type": "Transitive",
+        "resolved": "9.0.0",
+        "contentHash": "npc58/AD5zuVxERdhCl2Kb7WnL37mwX42SJcXIwvmEig0/dugOLg3SIwtfvvh3TnvTwR/sk5LYNkkPaBdks61A==",
+        "dependencies": {
+          "Npgsql": "8.0.3"
+        }
+      },
       "Magick.NET.Core": {
         "type": "Transitive",
         "resolved": "14.14.0",
@@ -342,6 +350,7 @@
       "viajantesturismo.catalog.infrastructure": {
         "type": "Project",
         "dependencies": {
+          "Aspire.Npgsql": "[13.4.6, )",
           "Aspire.Npgsql.EntityFrameworkCore.PostgreSQL": "[13.4.6, )",
           "SharedKernel.EntityFrameworkCore": "[0.1.0-alpha.0, )",
           "SharedKernel.EventSourcing.Npgsql": "[0.1.0-alpha.0, )",
@@ -371,6 +380,18 @@
           "SharedKernel.Mediator.Abstractions": "[0.1.0-alpha.0, )",
           "SharedKernel.Observability": "[0.1.0-alpha.0, )",
           "ViajantesTurismo.Resources": "[0.1.0-alpha.0, )"
+        }
+      },
+      "Aspire.Npgsql": {
+        "type": "CentralTransitive",
+        "requested": "[13.4.6, )",
+        "resolved": "13.4.6",
+        "contentHash": "7CLWuyj6JZmjrIukGNDAxFuYLB8aEeJfOPv9vhVnvynNSBO0BLsSKgW3Mx2qAVljBGhRwuNDmjlZhzq9POchfQ==",
+        "dependencies": {
+          "AspNetCore.HealthChecks.NpgSql": "9.0.0",
+          "Npgsql.DependencyInjection": "10.0.2",
+          "Npgsql.OpenTelemetry": "10.0.2",
+          "OpenTelemetry.Extensions.Hosting": "1.15.3"
         }
       },
       "Aspire.Npgsql.EntityFrameworkCore.PostgreSQL": {
