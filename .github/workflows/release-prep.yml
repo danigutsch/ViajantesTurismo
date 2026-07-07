@@ -144,7 +144,7 @@ jobs:
       - name: Publish Aspire deployment artifacts
         shell: bash
         env:
-          ComputedSemVer: ${{ steps.version.outputs.package_version }}
+          ComputedSemVer: ${{ steps.version.outputs.sem_ver }}
           ComputedAssemblyVersion: ${{ steps.version.outputs.assembly_version }}
           ComputedFileVersion: ${{ steps.version.outputs.file_version }}
           ComputedInformationalVersion: ${{ steps.version.outputs.informational_version }}
