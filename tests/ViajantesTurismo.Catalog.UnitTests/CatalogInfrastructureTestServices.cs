@@ -91,6 +91,15 @@ internal sealed class CatalogInfrastructureScenario(ServiceProvider provider) : 
         provider.GetRequiredService<TService>().ShouldNotBeNull();
     }
 
+    public void ShouldResolveSingleton<TService>()
+        where TService : class
+    {
+        var first = provider.GetRequiredService<TService>();
+        var second = provider.GetRequiredService<TService>();
+
+        ReferenceEquals(first, second).ShouldBeTrue();
+    }
+
     public void ShouldResolveDbContextOptions<TContext>()
         where TContext : Microsoft.EntityFrameworkCore.DbContext
     {

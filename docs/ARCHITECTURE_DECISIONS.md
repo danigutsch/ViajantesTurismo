@@ -70,6 +70,7 @@ Decisions about application architecture and layer responsibilities.
   and CloudEvents Boundary
 - **[ADR-034](adr/20260705-bounded-context-databases-and-outbox-ownership.md)** — Bounded Context
   Databases and Outbox Ownership
+- **[ADR-035](adr/20260707-postgresql-access-policy.md)** — PostgreSQL Access Policy
 
 ### Versioning & Release
 

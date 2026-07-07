@@ -75,9 +75,18 @@ public static class InfrastructureDependencyInjection
         bool addOutboxRelay)
         where TApplicationBuilder : IHostApplicationBuilder
     {
-        builder.AddNpgsqlDbContext<CatalogDbContext>(
-            ResourceNames.CatalogDatabase,
-            configureDbContextOptions: options => ConfigureDevelopmentDatabaseOptions<CatalogDbContext, TApplicationBuilder>(builder, options));
+        builder.Services.AddSingleton(_ =>
+        {
+            var connectionString = builder.Configuration.GetConnectionString(ResourceNames.CatalogDatabase)
+                ?? throw new InvalidOperationException($"Connection string '{ResourceNames.CatalogDatabase}' is not configured.");
+
+            return NpgsqlDataSource.Create(connectionString);
+        });
+        builder.Services.AddDbContextPool<CatalogDbContext>((serviceProvider, options) =>
+        {
+            options.UseNpgsql(serviceProvider.GetRequiredService<NpgsqlDataSource>());
+            ConfigureDevelopmentDatabaseOptions<CatalogDbContext, TApplicationBuilder>(builder, options);
+        });
 
         builder.Services.AddCatalogApplication();
         builder.Services.AddSingleton(TimeProvider.System);
@@ -103,13 +112,6 @@ public static class InfrastructureDependencyInjection
     private static TApplicationBuilder AddCatalogEventStore<TApplicationBuilder>(this TApplicationBuilder builder)
         where TApplicationBuilder : IHostApplicationBuilder
     {
-        builder.Services.AddSingleton(_ =>
-        {
-            var connectionString = builder.Configuration.GetConnectionString(ResourceNames.CatalogDatabase)
-                ?? throw new InvalidOperationException($"Connection string '{ResourceNames.CatalogDatabase}' is not configured.");
-
-            return NpgsqlDataSource.Create(connectionString);
-        });
         builder.Services.AddSingleton<IEventSerializer, CatalogEventSerializer>();
         builder.Services.AddSingleton<IEventStore, PostgreSqlEventStore>();
         builder.Services.AddSingleton<IProjectionCheckpointStore, PostgreSqlProjectionCheckpointStore>();
