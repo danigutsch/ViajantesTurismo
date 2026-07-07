@@ -1,6 +1,6 @@
 @using ViajantesTurismo.Admin.Contracts
 @using ViajantesTurismo.Management.Web.Helpers
-<EditForm Model="@Model" OnValidSubmit="@HandleValidSubmit">
+<EditForm EditContext="@EditContext" OnValidSubmit="@HandleValidSubmit">
     <DataAnnotationsValidator/>
     <ValidationSummary class="alert alert-danger" role="alert"/>
 

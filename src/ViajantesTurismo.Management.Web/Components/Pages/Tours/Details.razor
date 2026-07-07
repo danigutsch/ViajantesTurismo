@@ -306,8 +306,7 @@ else if (_tour != null)
     {
         if (_bookingCreateFormRef?.EditContext is not null && outcome.ValidationErrors is not null)
         {
-            var exception = new ContractValidationException("Validation failed", outcome.ValidationErrors);
-            EditContextValidationHelper.ApplyValidationErrors(_bookingCreateFormRef.EditContext, exception);
+            EditContextValidationHelper.ApplyValidationErrors(_bookingCreateFormRef.EditContext, outcome.ValidationErrors);
         }
     }
 

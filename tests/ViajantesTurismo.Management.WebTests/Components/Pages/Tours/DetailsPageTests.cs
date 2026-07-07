@@ -1,19 +1,25 @@
 using System.Globalization;
+using System.Net;
+using SharedKernel.HttpClients;
 using ViajantesTurismo.Management.Web.Components.Pages.Tours;
 
 namespace ViajantesTurismo.Management.WebTests.Components.Pages.Tours;
 
 public class DetailsPageTests : BunitContext
 {
+    private readonly FakeBookingsApiClient _fakeBookingsApi;
+    private readonly FakeCustomersApiClient _fakeCustomersApi;
     private readonly FakeToursApiClient _fakeToursApi;
 
     public DetailsPageTests()
     {
+        _fakeBookingsApi = new FakeBookingsApiClient();
+        _fakeCustomersApi = new FakeCustomersApiClient();
         _fakeToursApi = new FakeToursApiClient();
 
         Services.AddSingleton<IToursApiClient>(_fakeToursApi);
-        Services.AddSingleton<IBookingsApiClient>(new FakeBookingsApiClient());
-        Services.AddSingleton<ICustomersApiClient>(new FakeCustomersApiClient());
+        Services.AddSingleton<IBookingsApiClient>(_fakeBookingsApi);
+        Services.AddSingleton<ICustomersApiClient>(_fakeCustomersApi);
     }
 
     [Fact]
@@ -158,6 +164,39 @@ public class DetailsPageTests : BunitContext
         // Assert
         var badge = cut.Find("span.badge.bg-success");
         Assert.Contains("15 spots available", badge.TextContent, StringComparison.Ordinal);
+    }
+
+    [Fact]
+    [Trait(SharedKernel.Testing.TestTraitNames.ScopeName, TestTraits.ComponentScope)]
+    [Trait(SharedKernel.Testing.TestTraitNames.AreaName, TestTraits.ManagementWebArea)]
+    [Trait(SharedKernel.Testing.TestTraitNames.CategoryName, TestTraits.ComponentCategory)]
+    public async Task Create_booking_non_success_outcome_shows_sanitized_error()
+    {
+        // Arrange
+        var tour = BuildTourDto();
+        var customer = BuildCustomerDto();
+        TourDetailsPageTestsHelper.SetupSuccessfulTourLoad(_fakeToursApi, tour);
+        _fakeCustomersApi.AddCustomer(customer);
+        _fakeBookingsApi.SetCreateBookingOutcome(ContractCommandOutcome.Status(ContractCommandOutcomeKind.Conflict, HttpStatusCode.Conflict));
+
+        var cut = Render<Details>(parameters => parameters.Add(p => p.Id, tour.Id));
+        await cut.WaitForAssertionAsync(() => cut.Find("button:contains('Add Booking')"));
+
+        // Act
+        await cut.InvokeAsync(() => cut.Find("button:contains('Add Booking')").Click());
+        await cut.WaitForAssertionAsync(() => cut.FindComponent<BookingCreateForm>());
+
+        var form = cut.FindComponent<BookingCreateForm>();
+        form.Instance.Model.CustomerId = customer.Id;
+        form.Instance.Model.PrincipalBikeType = BikeTypeDto.Regular;
+        await cut.InvokeAsync(() => form.Find("form").Submit());
+
+        // Assert
+        await cut.WaitForAssertionAsync(() =>
+        {
+            cut.Markup.ShouldContain("Failed to create booking. Please try again.", StringComparison.Ordinal);
+            cut.Markup.ShouldContain("Create New Booking", StringComparison.Ordinal);
+        });
     }
 
     [Fact]

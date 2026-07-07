@@ -1,3 +1,5 @@
+using System.Net;
+using SharedKernel.HttpClients;
 using ViajantesTurismo.Management.Web.Components.Pages.Customers;
 
 namespace ViajantesTurismo.Management.WebTests.Components.Pages.Customers;
@@ -407,6 +409,48 @@ public sealed class DetailsPageTests : BunitContext
 
         var addBookingButton = cut.Find("button:contains('Add Booking')");
         Assert.NotNull(addBookingButton);
+    }
+
+    [Fact]
+    [Trait(SharedKernel.Testing.TestTraitNames.ScopeName, TestTraits.ComponentScope)]
+    [Trait(SharedKernel.Testing.TestTraitNames.AreaName, TestTraits.ManagementWebArea)]
+    [Trait(SharedKernel.Testing.TestTraitNames.CategoryName, TestTraits.ComponentCategory)]
+    public async Task Create_booking_validation_problem_shows_server_validation_errors()
+    {
+        // Arrange
+        var customer = BuildCustomerDetailsDto();
+        var tour = BuildTourDto();
+        _fakeCustomersApi.AddCustomerDetails(customer);
+        _fakeCustomersApi.AddCustomer(BuildCustomerDto(id: customer.Id));
+        _fakeToursApi.AddTour(tour);
+        _fakeBookingsApi.SetCreateBookingOutcome(new ContractCommandOutcomeDto
+        {
+            Kind = ContractCommandOutcomeKind.ValidationProblem,
+            StatusCode = HttpStatusCode.BadRequest,
+            ValidationErrors = new Dictionary<string, string[]>
+            {
+                [nameof(CreateBookingDto.TourId)] = ["Select an available tour."]
+            }
+        });
+
+        var cut = Render<Details>(parameters => parameters.Add(p => p.Id, customer.Id));
+        await cut.WaitForAssertionAsync(() => cut.Find("button:contains('Add Booking')"));
+
+        // Act
+        await cut.InvokeAsync(() => cut.Find("button:contains('Add Booking')").Click());
+        await cut.WaitForAssertionAsync(() => cut.FindComponent<CustomerBookingCreateForm>());
+
+        var form = cut.FindComponent<CustomerBookingCreateForm>();
+        form.Instance.Model.TourId = tour.Id;
+        form.Instance.Model.PrincipalBikeType = BikeTypeDto.Regular;
+        await cut.InvokeAsync(() => form.Find("form").Submit());
+
+        // Assert
+        await cut.WaitForAssertionAsync(() =>
+        {
+            cut.Markup.ShouldContain("Select an available tour.", StringComparison.Ordinal);
+            cut.Markup.ShouldContain("Create New Booking", StringComparison.Ordinal);
+        });
     }
 
     [Fact]
