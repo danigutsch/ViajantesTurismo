@@ -5,6 +5,9 @@ name: Release Prep
     paths:
       - .github/workflows/release-prep.yml
       - src/SharedKernel/**
+      - src/ViajantesTurismo.AppHost/**
+      - docs/architecture/runtime-wiring-and-deployment.md
+      - docs/ci/supplemental-workflows.md
       - src/Directory.Build.props
       - src/Directory.Build.targets
       - tools/SharedKernel.Versioning.Tool/**
@@ -138,6 +141,23 @@ jobs:
             --release-impact "${{ steps.version.outputs.release_impact }}" \
             --sha "${{ github.sha }}"
 
+      - name: Publish Aspire deployment artifacts
+        shell: bash
+        env:
+          ComputedSemVer: ${{ steps.version.outputs.package_version }}
+          ComputedAssemblyVersion: ${{ steps.version.outputs.assembly_version }}
+          ComputedFileVersion: ${{ steps.version.outputs.file_version }}
+          ComputedInformationalVersion: ${{ steps.version.outputs.informational_version }}
+          VT_ASPIRE_CONTAINER_IMAGE_TAG: ${{ steps.version.outputs.package_version }}
+          VT_ASPIRE_CONTAINER_REGISTRY: ${{ vars.ASPIRE_CONTAINER_REGISTRY }}
+          VT_ASPIRE_DEPLOYMENT_VERSION: ${{ steps.version.outputs.informational_version }}
+          VT_ASPIRE_SOURCE_REVISION: ${{ github.sha }}
+        run: |
+          dotnet tool run aspire -- publish \
+            --apphost src/ViajantesTurismo.AppHost/ViajantesTurismo.AppHost.csproj \
+            --output-path artifacts/aspire/release-prep \
+            --non-interactive
+
       - name: Upload release prep artifacts
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
         with:
@@ -146,6 +166,7 @@ jobs:
             artifacts/packages/release-prep/${{ steps.version.outputs.package_version }}/*.nupkg
             artifacts/release-prep/**
             artifacts/api-compat/**
+            artifacts/aspire/**
           if-no-files-found: error
           retention-days: 14
 

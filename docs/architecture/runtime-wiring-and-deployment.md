@@ -146,6 +146,11 @@ MSBuild properties. Application container resources can then use Aspire publish 
 `WithImagePushOptions(...)`. Use `WithManifestPublishingCallback(...)` only when deployment metadata is
 not already represented by Aspire resource annotations.
 
+Release Prep passes the computed assembly, file, package, and informational versions to MSBuild during
+`aspire publish`. The application assemblies therefore carry the same `InformationalVersion` that
+SharedKernel observability emits through startup logs and the OpenTelemetry `service.version` resource
+attribute. Source SHA stays in deployment metadata environment values instead of the image tag.
+
 Infrastructure image tags and SHA-256 digests remain pinned independently from application release
 versions.
 

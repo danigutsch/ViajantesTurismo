@@ -163,7 +163,9 @@ publishing by default. It runs on relevant pull-request changes and manual dispa
 4. Run `SharedKernel.Versioning.Tool api-compatibility` to write the package compatibility report.
 5. Run `SharedKernel.Versioning.Tool prepare-release` to generate `release-notes.md`, `CHANGELOG.md`,
    and `release-manifest.json`.
-6. Upload package and release-prep artifacts for review.
+6. Run `aspire publish` with the computed version values in environment/MSBuild inputs so application
+   container artifacts use the same release version.
+7. Upload package, Aspire, and release-prep artifacts for review.
 
 The existing CI workflow remains the build/test gate for pull requests. Release Prep intentionally
 stays focused on release artifact generation so it does not duplicate full-solution validation.
@@ -190,6 +192,8 @@ it to Aspire's container hooks documented in `src/ViajantesTurismo.AppHost/READM
 1. Convert selected project resources with `PublishAsDockerFile(...)` during publish mode.
 2. Apply the computed `package_version` image tag with `WithImageTag(...)`.
 3. Apply workflow-owned registry settings with `WithImageRegistry(...)` or push options when needed.
-4. Use manifest callbacks only for metadata that is not already covered by Aspire resource annotations.
+4. Pass `ComputedInformationalVersion` into the build so diagnostics expose deployed assembly version.
+5. Pass source SHA as deployment metadata environment values, not as a container tag suffix.
+6. Use manifest callbacks only for metadata that is not already covered by Aspire resource annotations.
 
 Keep infrastructure container tags and digest pins independent from app release tags.
