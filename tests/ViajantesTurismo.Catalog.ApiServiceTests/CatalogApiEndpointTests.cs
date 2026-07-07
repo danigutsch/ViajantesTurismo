@@ -935,6 +935,51 @@ public sealed class CatalogApiEndpointTests
     }
 
     [Fact]
+    public async Task Catalog_media_image_endpoint_rejects_ai_decorative_accessibility_text()
+    {
+        // Arrange
+        await using var factory = CatalogApiTestHost.Create();
+        using var client = factory.CreateClient();
+        var imageId = Guid.CreateVersion7();
+        var request = new PublicMediaImageDto
+        {
+            Id = imageId,
+            SourceUri = new Uri("https://cdn.example/source.jpg"),
+            Checksum = "sha256:abc",
+            ContentType = "image/jpeg",
+            FileSizeBytes = 2048,
+            Dimensions = new MediaImageDimensionsDto { Width = 1200, Height = 800 },
+            ProcessingStatus = MediaImageProcessingStatusDto.Pending,
+            ResponsiveVariants = [],
+            Tags = ["camino"],
+            TourLinks =
+            [
+                new MediaImageTourLinkDto { CatalogTourId = Guid.CreateVersion7(), DisplayOrder = 1, IsCover = true }
+            ],
+            AltText = string.Empty,
+            IsDecorative = true,
+            RequiresHumanReview = true,
+            IsAiGenerated = true,
+            AccessibilityTexts =
+            [
+                new PublicMediaAccessibilityTextDto { Language = PublicContentLanguageDto.EnUs, IsDecorative = true, IsAiGenerated = true, RequiresHumanReview = true }
+            ]
+        };
+
+        // Act
+        using var response = await client.PutAsJsonAsync(
+            new Uri($"/catalog/media/images/{imageId}", UriKind.Relative),
+            request,
+            TestContext.Current.CancellationToken);
+
+        // Assert
+        response.StatusCode.ShouldBe(HttpStatusCode.BadRequest);
+        var problem = await response.Content.ReadFromJsonAsync<HttpValidationProblemDetails>(TestContext.Current.CancellationToken);
+        problem.ShouldNotBeNull();
+        problem.Errors.Keys.ShouldContain(nameof(PublicMediaImageDto.AccessibilityTexts));
+    }
+
+    [Fact]
     public async Task Catalog_media_image_endpoint_rejects_default_accessibility_text_mismatch()
     {
         // Arrange
@@ -960,6 +1005,92 @@ public sealed class CatalogApiEndpointTests
             AccessibilityTexts =
             [
                 new PublicMediaAccessibilityTextDto { Language = PublicContentLanguageDto.EnUs, AltText = "Second image", IsAiGenerated = false, RequiresHumanReview = false }
+            ]
+        };
+
+        // Act
+        using var response = await client.PutAsJsonAsync(
+            new Uri($"/catalog/media/images/{imageId}", UriKind.Relative),
+            request,
+            TestContext.Current.CancellationToken);
+
+        // Assert
+        response.StatusCode.ShouldBe(HttpStatusCode.BadRequest);
+        var problem = await response.Content.ReadFromJsonAsync<HttpValidationProblemDetails>(TestContext.Current.CancellationToken);
+        problem.ShouldNotBeNull();
+        problem.Errors.Keys.ShouldContain(nameof(PublicMediaImageDto.AccessibilityTexts));
+    }
+
+    [Fact]
+    public async Task Catalog_media_image_endpoint_rejects_default_accessibility_caption_mismatch()
+    {
+        // Arrange
+        await using var factory = CatalogApiTestHost.Create();
+        using var client = factory.CreateClient();
+        var imageId = Guid.CreateVersion7();
+        var request = new PublicMediaImageDto
+        {
+            Id = imageId,
+            SourceUri = new Uri("https://cdn.example/source.jpg"),
+            Checksum = "sha256:abc",
+            ContentType = "image/jpeg",
+            FileSizeBytes = 2048,
+            Dimensions = new MediaImageDimensionsDto { Width = 1200, Height = 800 },
+            ProcessingStatus = MediaImageProcessingStatusDto.Pending,
+            ResponsiveVariants = [],
+            Tags = ["camino"],
+            TourLinks =
+            [
+                new MediaImageTourLinkDto { CatalogTourId = Guid.CreateVersion7(), DisplayOrder = 1, IsCover = true }
+            ],
+            AltText = "First image",
+            Caption = "Top-level caption",
+            AccessibilityTexts =
+            [
+                new PublicMediaAccessibilityTextDto { Language = PublicContentLanguageDto.EnUs, AltText = "First image", Caption = "Localized caption", IsAiGenerated = false, RequiresHumanReview = false }
+            ]
+        };
+
+        // Act
+        using var response = await client.PutAsJsonAsync(
+            new Uri($"/catalog/media/images/{imageId}", UriKind.Relative),
+            request,
+            TestContext.Current.CancellationToken);
+
+        // Assert
+        response.StatusCode.ShouldBe(HttpStatusCode.BadRequest);
+        var problem = await response.Content.ReadFromJsonAsync<HttpValidationProblemDetails>(TestContext.Current.CancellationToken);
+        problem.ShouldNotBeNull();
+        problem.Errors.Keys.ShouldContain(nameof(PublicMediaImageDto.AccessibilityTexts));
+    }
+
+    [Fact]
+    public async Task Catalog_media_image_endpoint_rejects_default_accessibility_state_mismatch()
+    {
+        // Arrange
+        await using var factory = CatalogApiTestHost.Create();
+        using var client = factory.CreateClient();
+        var imageId = Guid.CreateVersion7();
+        var request = new PublicMediaImageDto
+        {
+            Id = imageId,
+            SourceUri = new Uri("https://cdn.example/source.jpg"),
+            Checksum = "sha256:abc",
+            ContentType = "image/jpeg",
+            FileSizeBytes = 2048,
+            Dimensions = new MediaImageDimensionsDto { Width = 1200, Height = 800 },
+            ProcessingStatus = MediaImageProcessingStatusDto.Pending,
+            ResponsiveVariants = [],
+            Tags = ["camino"],
+            TourLinks =
+            [
+                new MediaImageTourLinkDto { CatalogTourId = Guid.CreateVersion7(), DisplayOrder = 1, IsCover = true }
+            ],
+            AltText = string.Empty,
+            IsDecorative = true,
+            AccessibilityTexts =
+            [
+                new PublicMediaAccessibilityTextDto { Language = PublicContentLanguageDto.EnUs, IsDecorative = false, IsAiGenerated = false, RequiresHumanReview = false }
             ]
         };
 
@@ -1089,6 +1220,71 @@ public sealed class CatalogApiEndpointTests
         var problem = await response.Content.ReadFromJsonAsync<HttpValidationProblemDetails>(TestContext.Current.CancellationToken);
         problem.ShouldNotBeNull();
         problem.Errors.Keys.ShouldContain("request");
+    }
+
+    [Fact]
+    public async Task Catalog_media_image_accessibility_draft_endpoint_rejects_missing_language()
+    {
+        // Arrange
+        var imageId = Guid.CreateVersion7();
+        await using var factory = CatalogApiTestHost.Create();
+        using var client = factory.CreateClient();
+
+        // Act
+        using var response = await client.PostAsJsonAsync(
+            new Uri($"/catalog/media/images/{imageId}/accessibility-draft", UriKind.Relative),
+            new PublicMediaImageAccessibilityDraftRequest { Language = PublicContentLanguageDto.None },
+            TestContext.Current.CancellationToken);
+
+        // Assert
+        response.StatusCode.ShouldBe(HttpStatusCode.BadRequest);
+        var problem = await response.Content.ReadFromJsonAsync<HttpValidationProblemDetails>(TestContext.Current.CancellationToken);
+        problem.ShouldNotBeNull();
+        problem.Errors.Keys.ShouldContain(nameof(PublicMediaImageAccessibilityDraftRequest.Language));
+    }
+
+    [Fact]
+    public async Task Catalog_media_image_accessibility_draft_endpoint_rejects_partial_location()
+    {
+        // Arrange
+        var imageId = Guid.CreateVersion7();
+        await using var factory = CatalogApiTestHost.Create();
+        using var client = factory.CreateClient();
+
+        // Act
+        using var response = await client.PostAsJsonAsync(
+            new Uri($"/catalog/media/images/{imageId}/accessibility-draft", UriKind.Relative),
+            new PublicMediaImageAccessibilityDraftRequest { Language = PublicContentLanguageDto.EnUs, Latitude = -23.55m },
+            TestContext.Current.CancellationToken);
+
+        // Assert
+        response.StatusCode.ShouldBe(HttpStatusCode.BadRequest);
+        var problem = await response.Content.ReadFromJsonAsync<HttpValidationProblemDetails>(TestContext.Current.CancellationToken);
+        problem.ShouldNotBeNull();
+        problem.Errors.Keys.ShouldContain(nameof(PublicMediaImageAccessibilityDraftRequest.Latitude));
+    }
+
+    [Fact]
+    public async Task Catalog_media_image_accessibility_draft_endpoint_returns_not_found_when_source_object_is_missing()
+    {
+        // Arrange
+        var mediaStore = new TestPublicMediaImageStore();
+        var objectStore = new TestMediaObjectStore();
+        var generator = new StubImageTextGenerator(new ImageTextGenerationResult("Generated beach alt", null));
+        var image = PublicMediaImageTestFactory.CreateReadyImage(Guid.CreateVersion7(), "draft-source.jpg", "draft-640.jpg", "sha256:abc", "Reviewed alt", 0, true);
+        await mediaStore.Upsert(image, TestContext.Current.CancellationToken);
+        await using var factory = CatalogApiTestHost.Create(mediaStore, objectStore, generator);
+        using var client = factory.CreateClient();
+
+        // Act
+        using var response = await client.PostAsJsonAsync(
+            new Uri($"/catalog/media/images/{image.Id}/accessibility-draft", UriKind.Relative),
+            new PublicMediaImageAccessibilityDraftRequest { Language = PublicContentLanguageDto.EnUs },
+            TestContext.Current.CancellationToken);
+
+        // Assert
+        response.StatusCode.ShouldBe(HttpStatusCode.NotFound);
+        generator.Request.ShouldBeNull();
     }
 
     [Fact]

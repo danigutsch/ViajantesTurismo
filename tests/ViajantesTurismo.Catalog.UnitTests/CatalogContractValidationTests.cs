@@ -1,3 +1,4 @@
+using SharedKernel.Testing.Assertions;
 using ViajantesTurismo.Catalog.Contracts;
 
 namespace ViajantesTurismo.Catalog.UnitTests;
@@ -14,7 +15,7 @@ public sealed class CatalogContractValidationTests
         var errors = CatalogContractValidationTestsHelpers.Validate(tour);
 
         // Assert
-        Assert.Empty(errors);
+        errors.ShouldBeEmpty();
     }
 
     [Fact]
@@ -32,9 +33,9 @@ public sealed class CatalogContractValidationTests
         var errors = CatalogContractValidationTestsHelpers.Validate(tour);
 
         // Assert
-        Assert.Contains(errors, error => error.MemberNames.Contains(nameof(CatalogTourDto.Identifier)));
-        Assert.Contains(errors, error => error.MemberNames.Contains(nameof(CatalogTourDto.Title)));
-        Assert.Contains(errors, error => error.MemberNames.Contains(nameof(CatalogTourDto.Slug)));
+        errors.ShouldContainErrorFor(nameof(CatalogTourDto.Identifier));
+        errors.ShouldContainErrorFor(nameof(CatalogTourDto.Title));
+        errors.ShouldContainErrorFor(nameof(CatalogTourDto.Slug));
     }
 
     [Fact]
@@ -52,9 +53,9 @@ public sealed class CatalogContractValidationTests
         var errors = CatalogContractValidationTestsHelpers.Validate(tour);
 
         // Assert
-        Assert.Contains(errors, error => error.MemberNames.Contains(nameof(CatalogTourDto.Identifier)));
-        Assert.Contains(errors, error => error.MemberNames.Contains(nameof(CatalogTourDto.Title)));
-        Assert.Contains(errors, error => error.MemberNames.Contains(nameof(CatalogTourDto.Slug)));
+        errors.ShouldContainErrorFor(nameof(CatalogTourDto.Identifier));
+        errors.ShouldContainErrorFor(nameof(CatalogTourDto.Title));
+        errors.ShouldContainErrorFor(nameof(CatalogTourDto.Slug));
     }
 
     [Fact]
@@ -72,7 +73,25 @@ public sealed class CatalogContractValidationTests
         var errors = CatalogContractValidationTestsHelpers.Validate(image);
 
         // Assert
-        Assert.Contains(errors, error => error.MemberNames.Contains(nameof(CatalogTourImageDto.AltText)));
-        Assert.Contains(errors, error => error.MemberNames.Contains(nameof(CatalogTourImageDto.Caption)));
+        errors.ShouldContainErrorFor(nameof(CatalogTourImageDto.AltText));
+        errors.ShouldContainErrorFor(nameof(CatalogTourImageDto.Caption));
+    }
+
+    [Fact]
+    public void CatalogTourImageDto_allows_empty_alt_text_for_decorative_images()
+    {
+        // Arrange
+        var image = new CatalogTourImageDto
+        {
+            Uri = new Uri("https://cdn.example/tour.jpg"),
+            AltText = string.Empty,
+            IsDecorative = true
+        };
+
+        // Act
+        var errors = CatalogContractValidationTestsHelpers.Validate(image);
+
+        // Assert
+        errors.ShouldNotContainErrorFor(nameof(CatalogTourImageDto.AltText));
     }
 }

@@ -190,6 +190,118 @@ public sealed class PublicMediaImageTests
     }
 
     [Fact]
+    public void Accessibility_text_requires_language()
+    {
+        // Arrange
+        const PublicContentLanguage language = PublicContentLanguage.None;
+
+        // Act
+        var result = PublicMediaImageAccessibilityText.Create(
+            language,
+            altText: "Cyclists riding near a mountain trail",
+            caption: null,
+            isDecorative: false,
+            requiresHumanReview: false,
+            isAiGenerated: false);
+
+        // Assert
+        result.IsFailure.ShouldBeTrue();
+    }
+
+    [Fact]
+    public void Accessibility_text_rejects_unknown_language()
+    {
+        // Arrange
+        const PublicContentLanguage language = (PublicContentLanguage)999;
+
+        // Act
+        var result = PublicMediaImageAccessibilityText.Create(
+            language,
+            altText: "Cyclists riding near a mountain trail",
+            caption: null,
+            isDecorative: false,
+            requiresHumanReview: false,
+            isAiGenerated: false);
+
+        // Assert
+        result.IsFailure.ShouldBeTrue();
+    }
+
+    [Fact]
+    public void Decorative_accessibility_text_cannot_publish_alt_text()
+    {
+        // Arrange
+        const PublicContentLanguage language = PublicContentLanguage.EnUs;
+
+        // Act
+        var result = PublicMediaImageAccessibilityText.CreateReviewed(
+            language,
+            altText: "Decorative flourish",
+            caption: null,
+            isDecorative: true);
+
+        // Assert
+        result.IsFailure.ShouldBeTrue();
+    }
+
+    [Fact]
+    public void Ai_generated_accessibility_text_cannot_skip_human_review()
+    {
+        // Arrange
+        const PublicContentLanguage language = PublicContentLanguage.EnUs;
+
+        // Act
+        var result = PublicMediaImageAccessibilityText.Create(
+            language,
+            altText: "Cyclists riding near a mountain trail",
+            caption: null,
+            isDecorative: false,
+            requiresHumanReview: false,
+            isAiGenerated: true);
+
+        // Assert
+        result.IsFailure.ShouldBeTrue();
+    }
+
+    [Fact]
+    public void Accessibility_text_rejects_text_that_exceeds_contract_limits()
+    {
+        // Arrange
+        const PublicContentLanguage language = PublicContentLanguage.EnUs;
+
+        // Act
+        var result = PublicMediaImageAccessibilityText.Create(
+            language,
+            altText: new string('a', Contracts.ContractConstants.MaxAltTextLength + 1),
+            caption: new string('c', Contracts.ContractConstants.MaxCaptionLength + 1),
+            isDecorative: false,
+            requiresHumanReview: false,
+            isAiGenerated: false);
+
+        // Assert
+        result.IsFailure.ShouldBeTrue();
+    }
+
+    [Fact]
+    public void Accessibility_text_publication_state_requires_reviewed_content()
+    {
+        // Arrange
+        var reviewed = PublicMediaImageAccessibilityText.CreateReviewed(PublicContentLanguage.EnUs, "Cyclists riding near a mountain trail", null, isDecorative: false);
+        var decorative = PublicMediaImageAccessibilityText.CreateReviewed(PublicContentLanguage.EnUs, null, null, isDecorative: true);
+        var draft = PublicMediaImageAccessibilityText.Create(PublicContentLanguage.EnUs, "Draft image", null, isDecorative: false, requiresHumanReview: true, isAiGenerated: false);
+
+        // Act
+        var reviewedResult = reviewed.Value.IsReviewedForPublication;
+        var decorativeResult = decorative.Value.IsReviewedForPublication;
+        var draftResult = draft.Value.IsReviewedForPublication;
+
+        // Assert
+        reviewedResult.ShouldBeTrue();
+        decorativeResult.ShouldBeTrue();
+        draftResult.ShouldBeFalse();
+    }
+
+    [Fact]
     public void Manual_draft_accessibility_text_requires_human_review_without_ai_flag()
     {
         // Arrange
