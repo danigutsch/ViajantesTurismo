@@ -76,6 +76,37 @@ code builds or before committing.
 | Tempo | `docker.io/grafana/tempo:2.8.1` | `sha256:bc9245fe3da4e63dc4c6862d9c2dad9bcd8be13d0ba4f7705fa6acda4c904d0e` |
 | Prometheus | `docker.io/prom/prometheus:v3.5.0` | `sha256:63805ebb8d2b3920190daf1cb14a60871b16fd38bed42b857a3182bc621f4996` |
 
+## Release publish integration points
+
+The AppHost must not calculate application versions. Release workflows calculate versions with
+`SharedKernel.Versioning.Tool calculate-release`, then pass the computed values into Aspire publish
+steps as configuration, environment variables, or MSBuild properties.
+Release workflow context lives in [`docs/ci/supplemental-workflows.md`](../../docs/ci/supplemental-workflows.md).
+
+Use these Aspire 13.4 integration points for release work:
+
+- `PublishAsDockerFile(...)` on project resources that should be built as application containers
+  during `aspire publish`.
+- `WithImageTag(...)` on the generated container resource to apply the computed container image tag.
+- `WithImageRegistry(...)` when a release workflow supplies the target registry.
+- `WithImagePushOptions(...)` when publishing needs explicit registry push behavior.
+- `WithManifestPublishingCallback(...)` only for deployment metadata that Aspire does not already
+  model through container image annotations or resource environment variables.
+
+Container tags for application resources should use the versioning tool's `package_version` output.
+Keep source SHA and other traceability values in deployment metadata or labels, not in the container
+tag. Infrastructure image tags and SHA-256 digests remain pinned independently and must not be
+replaced with application release versions.
+
+Reference APIs researched for the pinned `aspire.cli` `13.4.6` toolchain:
+
+- [`ProjectResourceBuilderExtensions.PublishAsDockerFile`](https://github.com/microsoft/aspire/blob/v13.4.6/src/Aspire.Hosting/ProjectResourceBuilderExtensions.cs)
+- [`ContainerResourceBuilderExtensions.WithImageTag`](https://github.com/microsoft/aspire/blob/v13.4.6/src/Aspire.Hosting/ContainerResourceBuilderExtensions.cs)
+- [`ContainerResourceBuilderExtensions.WithImageRegistry`](https://github.com/microsoft/aspire/blob/v13.4.6/src/Aspire.Hosting/ContainerResourceBuilderExtensions.cs)
+- [`ResourceBuilderExtensions.WithImagePushOptions`](https://github.com/microsoft/aspire/blob/v13.4.6/src/Aspire.Hosting/ResourceBuilderExtensions.cs)
+- [`ResourceBuilderExtensions.WithManifestPublishingCallback`](https://github.com/microsoft/aspire/blob/v13.4.6/src/Aspire.Hosting/ResourceBuilderExtensions.cs)
+- [`ContainerImageAnnotation`](https://github.com/microsoft/aspire/blob/v13.4.6/src/Aspire.Hosting/ApplicationModel/ContainerImageAnnotation.cs)
+
 ## Code Organization
 
 - `AppHost.cs`: primary orchestration map, kept short and dependency ordered

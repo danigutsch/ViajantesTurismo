@@ -5,6 +5,56 @@ namespace ViajantesTurismo.ArchitectureTests.Conventions;
 public sealed partial class AppHostOrchestrationTests
 {
     [Fact]
+    public void Aspire_release_docs_keep_versions_out_of_the_apphost()
+    {
+        // Arrange
+        var appHostReadmeText = File.ReadAllText(Path.Combine(
+            GetRepositoryRoot(),
+            "src",
+            "ViajantesTurismo.AppHost",
+            "README.md"));
+
+        var releaseWorkflowDocsText = File.ReadAllText(Path.Combine(
+            GetRepositoryRoot(),
+            "docs",
+            "ci",
+            "supplemental-workflows.md"));
+
+        var releaseWorkflowText = File.ReadAllText(Path.Combine(
+            GetRepositoryRoot(),
+            ".github",
+            "workflows",
+            "release-prep.yml"));
+
+        var deploymentDocsText = File.ReadAllText(Path.Combine(
+            GetRepositoryRoot(),
+            "docs",
+            "architecture",
+            "runtime-wiring-and-deployment.md"));
+
+        // Act
+        var combinedDocsText = string.Join('\n', appHostReadmeText, releaseWorkflowDocsText, deploymentDocsText);
+
+        // Assert
+        appHostReadmeText.ShouldContain("The AppHost must not calculate application versions.", StringComparison.Ordinal);
+        releaseWorkflowDocsText.ShouldContain("AppHost code stays", StringComparison.Ordinal);
+        releaseWorkflowDocsText.ShouldContain("orchestration model", StringComparison.Ordinal);
+        releaseWorkflowDocsText.ShouldContain("src/ViajantesTurismo.AppHost/README.md", StringComparison.Ordinal);
+        appHostReadmeText.ShouldContain("docs/ci/supplemental-workflows.md", StringComparison.Ordinal);
+        deploymentDocsText.ShouldContain("Release workflows own version and registry values", StringComparison.Ordinal);
+        releaseWorkflowText.ShouldContain("calculate-release", StringComparison.Ordinal);
+        releaseWorkflowText.ShouldContain("package_version", StringComparison.Ordinal);
+        combinedDocsText.ShouldContain("SharedKernel.Versioning.Tool calculate-release", StringComparison.Ordinal);
+        combinedDocsText.ShouldContain("PublishAsDockerFile", StringComparison.Ordinal);
+        combinedDocsText.ShouldContain("WithImageTag", StringComparison.Ordinal);
+        combinedDocsText.ShouldContain("WithImageRegistry", StringComparison.Ordinal);
+        combinedDocsText.ShouldContain("WithImagePushOptions", StringComparison.Ordinal);
+        combinedDocsText.ShouldContain("WithManifestPublishingCallback", StringComparison.Ordinal);
+        combinedDocsText.ShouldContain("Infrastructure image tags and SHA-256 digests remain", StringComparison.Ordinal);
+        appHostReadmeText.ShouldNotContain("git describe");
+    }
+
+    [Fact]
     public void Catalog_api_waits_for_database_migrations_when_it_uses_persisted_public_content()
     {
         // Arrange

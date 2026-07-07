@@ -177,3 +177,19 @@ The current release-prep manifest records package file names, SHA-256 hashes, si
 and version metadata. A formal SBOM is not generated yet because the repository does not currently
 have an SBOM generator wired into local or CI tooling. Add SBOM generation as a dedicated follow-up
 when a pinned repository-approved tool is selected.
+
+### Aspire Release Integration Boundary
+
+Release workflows should reuse the same `calculate-release` output. AppHost code stays the
+orchestration model and receives precomputed values from the workflow; it must not inspect Git tags or
+commit history itself.
+
+For application container publishing, pass the computed release version into `aspire publish` and map
+it to Aspire's container hooks documented in `src/ViajantesTurismo.AppHost/README.md`:
+
+1. Convert selected project resources with `PublishAsDockerFile(...)` during publish mode.
+2. Apply the computed `package_version` image tag with `WithImageTag(...)`.
+3. Apply workflow-owned registry settings with `WithImageRegistry(...)` or push options when needed.
+4. Use manifest callbacks only for metadata that is not already covered by Aspire resource annotations.
+
+Keep infrastructure container tags and digest pins independent from app release tags.
