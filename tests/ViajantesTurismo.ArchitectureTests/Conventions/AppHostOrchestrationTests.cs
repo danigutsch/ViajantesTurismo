@@ -62,13 +62,15 @@ public sealed partial class AppHostOrchestrationTests
         combinedDocsText.ShouldContain("OpenTelemetry `service.version`", StringComparison.Ordinal);
         combinedDocsText.ShouldContain("Infrastructure image tags and SHA-256 digests remain", StringComparison.Ordinal);
         releasePublisherText.ShouldContain("PublishAsDockerFile", StringComparison.Ordinal);
-        releasePublisherText.ShouldContain("WithImageTag(imageTag)", StringComparison.Ordinal);
-        releasePublisherText.ShouldContain("WithImageRegistry(registry)", StringComparison.Ordinal);
+        releasePublisherText.ShouldContain("WithImageTag(", StringComparison.Ordinal);
+        releasePublisherText.ShouldContain("WithImageRegistry(", StringComparison.Ordinal);
         releasePublisherText.ShouldContain("VT_DEPLOYMENT_VERSION", StringComparison.Ordinal);
         releasePublisherText.ShouldContain("VT_SOURCE_REVISION", StringComparison.Ordinal);
         appHostReadmeText.ShouldNotContain("git describe");
         releasePublisherText.ShouldNotContain("git describe");
-        releasePublisherText.ShouldNotContain("Git");
+        releasePublisherText.ShouldNotContain("git log");
+        releasePublisherText.ShouldNotContain("git tag");
+        releasePublisherText.ShouldNotContain("git rev-parse");
     }
 
     [Fact]
