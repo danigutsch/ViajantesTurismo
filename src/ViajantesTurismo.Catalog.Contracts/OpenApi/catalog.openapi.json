@@ -139,6 +139,39 @@
         }
       }
     },
+    "/catalog/media/images/{id}/accessibility-draft": {
+      "post": {
+        "tags": [
+          "CatalogEndpoints"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PublicMediaImageAccessibilityDraftRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
     "/catalog/public-content": {
       "get": {
         "tags": [
@@ -305,6 +338,7 @@
           "isCover",
           "uri",
           "altText",
+          "isDecorative",
           "responsiveVariants"
         ],
         "type": "object",
@@ -328,8 +362,11 @@
           },
           "altText": {
             "maxLength": 256,
-            "minLength": 1,
+            "minLength": 0,
             "type": "string"
+          },
+          "isDecorative": {
+            "type": "boolean"
           },
           "caption": {
             "maxLength": 256,
@@ -521,6 +558,86 @@
           }
         }
       },
+      "PublicMediaAccessibilityTextDto": {
+        "required": [
+          "language",
+          "isDecorative",
+          "requiresHumanReview",
+          "isAiGenerated"
+        ],
+        "type": "object",
+        "properties": {
+          "language": {
+            "$ref": "#/components/schemas/PublicContentLanguageDto"
+          },
+          "altText": {
+            "maxLength": 256,
+            "minLength": 0,
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "caption": {
+            "maxLength": 256,
+            "minLength": 0,
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "isDecorative": {
+            "type": "boolean"
+          },
+          "requiresHumanReview": {
+            "type": "boolean"
+          },
+          "isAiGenerated": {
+            "type": "boolean"
+          }
+        }
+      },
+      "PublicMediaImageAccessibilityDraftRequest": {
+        "required": [
+          "language"
+        ],
+        "type": "object",
+        "properties": {
+          "language": {
+            "$ref": "#/components/schemas/PublicContentLanguageDto"
+          },
+          "context": {
+            "maxLength": 1000,
+            "minLength": 0,
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "latitude": {
+            "maximum": 90,
+            "minimum": -90,
+            "pattern": "^-?(?:0|[1-9]\\d*)(?:\\.\\d+)?$",
+            "type": [
+              "null",
+              "number",
+              "string"
+            ],
+            "format": "double"
+          },
+          "longitude": {
+            "maximum": 180,
+            "minimum": -180,
+            "pattern": "^-?(?:0|[1-9]\\d*)(?:\\.\\d+)?$",
+            "type": [
+              "null",
+              "number",
+              "string"
+            ],
+            "format": "double"
+          }
+        }
+      },
       "PublicMediaImageDto": {
         "required": [
           "id",
@@ -533,7 +650,11 @@
           "responsiveVariants",
           "tags",
           "tourLinks",
-          "altText"
+          "altText",
+          "isDecorative",
+          "requiresHumanReview",
+          "isAiGenerated",
+          "accessibilityTexts"
         ],
         "type": "object",
         "properties": {
@@ -597,7 +718,7 @@
           },
           "altText": {
             "maxLength": 256,
-            "minLength": 1,
+            "minLength": 0,
             "type": "string"
           },
           "caption": {
@@ -607,6 +728,21 @@
               "null",
               "string"
             ]
+          },
+          "isDecorative": {
+            "type": "boolean"
+          },
+          "requiresHumanReview": {
+            "type": "boolean"
+          },
+          "isAiGenerated": {
+            "type": "boolean"
+          },
+          "accessibilityTexts": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/PublicMediaAccessibilityTextDto"
+            }
           },
           "attribution": {
             "maxLength": 256,

@@ -8,4 +8,6 @@ namespace ViajantesTurismo.Catalog.Contracts;
 [JsonSerializable(typeof(ContractValidationProblemDto))]
 [JsonSerializable(typeof(CatalogTourDto))]
 [JsonSerializable(typeof(UpsertCatalogTourPresentationRequest))]
+[JsonSerializable(typeof(PublicMediaImageAccessibilityDraftRequest))]
+[JsonSerializable(typeof(PublicMediaImageDto))]
 internal sealed partial class CatalogToursApiClientJsonContext : JsonSerializerContext;

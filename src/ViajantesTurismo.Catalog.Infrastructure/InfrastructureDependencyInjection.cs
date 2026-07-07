@@ -65,6 +65,7 @@ public static class InfrastructureDependencyInjection
         AddCatalogInfrastructure(builder, addOutboxRelay: false);
         builder.AddCatalogHostedIntegrationEventTransport();
         builder.Services.AddHostedService<CatalogProjectionHostedService>();
+        builder.Services.AddHostedService<MediaObjectReconciliationHostedService>();
 
         return builder;
     }
@@ -82,6 +83,7 @@ public static class InfrastructureDependencyInjection
         });
 
         builder.Services.AddCatalogApplication();
+        builder.AddCatalogAiTextGeneration();
         builder.Services.AddSingleton(TimeProvider.System);
 
         return builder

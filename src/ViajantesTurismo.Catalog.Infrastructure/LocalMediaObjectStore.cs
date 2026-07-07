@@ -79,6 +79,28 @@ internal sealed class LocalMediaObjectStore(IOptions<LocalMediaObjectStorageOpti
         return ValueTask.FromResult<IReadOnlyList<string>>(keys);
     }
 
+    public ValueTask<IReadOnlyList<MediaObjectInventoryItem>> ListObjects(string prefix, CancellationToken ct)
+    {
+        ct.ThrowIfCancellationRequested();
+
+        var root = Path.TrimEndingDirectorySeparator(Path.GetFullPath(options.RootPath));
+        if (!Directory.Exists(root))
+        {
+            return ValueTask.FromResult<IReadOnlyList<MediaObjectInventoryItem>>([]);
+        }
+
+        var normalizedPrefix = NormalizePrefix(prefix);
+        var objects = Directory.EnumerateFiles(root, "*", SearchOption.AllDirectories)
+            .Select(path => new MediaObjectInventoryItem(
+                Path.GetRelativePath(root, path).Replace(Path.DirectorySeparatorChar, '/'),
+                new DateTimeOffset(File.GetLastWriteTimeUtc(path))))
+            .Where(item => item.ObjectKey.StartsWith(normalizedPrefix, StringComparison.Ordinal))
+            .OrderBy(item => item.ObjectKey, StringComparer.Ordinal)
+            .ToArray();
+
+        return ValueTask.FromResult<IReadOnlyList<MediaObjectInventoryItem>>(objects);
+    }
+
     public ValueTask<MediaObjectUploadTicket> CreateUploadUrl(MediaObjectUploadRequest request, CancellationToken ct)
     {
         ArgumentNullException.ThrowIfNull(request);

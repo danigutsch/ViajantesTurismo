@@ -35,29 +35,36 @@ public abstract class AspireSystemTestBase<TFixture>(TFixture fixture) : PageTes
 
     protected async Task NavigateTo(string relativePath)
     {
+        await NavigateTo(new Uri(Fixture.WebAppUrl, relativePath));
+    }
+
+    protected async Task NavigateTo(Uri uri)
+    {
+        ArgumentNullException.ThrowIfNull(uri);
+
         const int maxAttempts = 5;
 
         for (var attempt = 1; attempt <= maxAttempts; attempt++)
         {
-            if (await TryNavigate(relativePath, canRetry: attempt < maxAttempts))
+            if (await TryNavigate(uri, canRetry: attempt < maxAttempts))
             {
                 return;
             }
         }
 
-        throw new InvalidOperationException($"Navigation to '{relativePath}' did not complete after {maxAttempts} attempts.");
+        throw new InvalidOperationException($"Navigation to '{uri}' did not complete after {maxAttempts} attempts.");
     }
 
-    private async Task<bool> TryNavigate(string relativePath, bool canRetry)
+    private async Task<bool> TryNavigate(Uri uri, bool canRetry)
     {
         try
         {
-            await Page.GotoAsync(relativePath, new PageGotoOptions { WaitUntil = WaitUntilState.NetworkIdle });
+            await Page.GotoAsync(uri.ToString(), new PageGotoOptions { WaitUntil = WaitUntilState.NetworkIdle });
             return true;
         }
         catch (PlaywrightException exception) when (IsRetryableNavigationFailure(exception))
         {
-            if (IsCurrentRoute(relativePath))
+            if (IsCurrentRoute(uri))
             {
                 return true;
             }
@@ -72,10 +79,11 @@ public abstract class AspireSystemTestBase<TFixture>(TFixture fixture) : PageTes
         }
     }
 
-    private bool IsCurrentRoute(string relativePath)
+    private bool IsCurrentRoute(Uri targetUri)
     {
-        var targetUri = new Uri(Fixture.WebAppUrl, relativePath);
         return Uri.TryCreate(Page.Url, UriKind.Absolute, out var currentUri)
+            && currentUri.Host.Equals(targetUri.Host, StringComparison.OrdinalIgnoreCase)
+            && currentUri.Port == targetUri.Port
             && currentUri.PathAndQuery.Equals(targetUri.PathAndQuery, StringComparison.Ordinal);
     }
 

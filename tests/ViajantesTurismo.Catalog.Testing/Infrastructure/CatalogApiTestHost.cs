@@ -1,4 +1,5 @@
 using Microsoft.Extensions.Diagnostics.HealthChecks;
+using SharedKernel.AI;
 using SharedKernel.Testing.AspNetCore;
 using ViajantesTurismo.Catalog.ApiService;
 using ViajantesTurismo.Catalog.Application.Media;
@@ -12,14 +13,14 @@ internal static class CatalogApiTestHost
 {
     public static WebApplicationFactory<CatalogApiHostEntryPoint> Create(string? environment = null)
     {
-        return Create(environment, null, null, null, null);
+        return Create(environment, null, null, null, null, null, null);
     }
 
     public static WebApplicationFactory<CatalogApiHostEntryPoint> Create(
         TestCatalogTourReadModelStore tourStore,
         TestPublicContentStore publicContentStore)
     {
-        return Create(null, tourStore, publicContentStore, null, null);
+        return Create(null, tourStore, publicContentStore, null, null, null, null);
     }
 
     public static WebApplicationFactory<CatalogApiHostEntryPoint> Create(
@@ -27,12 +28,20 @@ internal static class CatalogApiTestHost
         TestPublicContentStore publicContentStore,
         TestPublicMediaImageStore mediaStore)
     {
-        return Create(null, tourStore, publicContentStore, mediaStore, null);
+        return Create(null, tourStore, publicContentStore, mediaStore, null, null, null);
+    }
+
+    public static WebApplicationFactory<CatalogApiHostEntryPoint> Create(
+        TestPublicMediaImageStore mediaStore,
+        TestMediaObjectStore objectStore,
+        IImageTextGenerator imageTextGenerator)
+    {
+        return Create(null, null, null, mediaStore, null, objectStore, imageTextGenerator);
     }
 
     public static WebApplicationFactory<CatalogApiHostEntryPoint> Create(TestPublicThemeSettingsStore publicThemeStore)
     {
-        return Create(null, null, null, null, publicThemeStore);
+        return Create(null, null, null, null, publicThemeStore, null, null);
     }
 
     private static WebApplicationFactory<CatalogApiHostEntryPoint> Create(
@@ -40,7 +49,9 @@ internal static class CatalogApiTestHost
         TestCatalogTourReadModelStore? tourStore,
         TestPublicContentStore? publicContentStore,
         TestPublicMediaImageStore? mediaStore,
-        TestPublicThemeSettingsStore? publicThemeStore)
+        TestPublicThemeSettingsStore? publicThemeStore,
+        TestMediaObjectStore? objectStore,
+        IImageTextGenerator? imageTextGenerator)
     {
         return WebApplicationTestHost.Create<CatalogApiHostEntryPoint>(
             environment,
@@ -50,7 +61,12 @@ internal static class CatalogApiTestHost
                 services.Replace(ServiceDescriptor.Singleton<IPublicThemeSettingsStore>(publicThemeStore ?? new TestPublicThemeSettingsStore()));
                 services.Replace(ServiceDescriptor.Singleton<ICatalogTourReadModelStore>(tourStore ?? new TestCatalogTourReadModelStore()));
                 services.Replace(ServiceDescriptor.Singleton<IPublicMediaImageStore>(mediaStore ?? new TestPublicMediaImageStore()));
-                services.Replace(ServiceDescriptor.Singleton<IMediaObjectStore>(new TestMediaObjectStore()));
+                services.Replace(ServiceDescriptor.Singleton<IMediaObjectStore>(objectStore ?? new TestMediaObjectStore()));
+                if (imageTextGenerator is not null)
+                {
+                    services.Replace(ServiceDescriptor.Singleton(imageTextGenerator));
+                }
+
                 services.Configure<HealthCheckServiceOptions>(options => options.Registrations.Clear());
             });
     }

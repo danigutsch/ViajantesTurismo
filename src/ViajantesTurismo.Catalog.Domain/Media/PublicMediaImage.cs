@@ -3,6 +3,7 @@ using System.Globalization;
 using SharedKernel.Results;
 using ViajantesTurismo.Catalog.Contracts;
 using SharedKernel.InputNormalization;
+using ViajantesTurismo.Catalog.Domain.PublicContent;
 
 namespace ViajantesTurismo.Catalog.Domain.Media;
 
@@ -14,6 +15,7 @@ public sealed class PublicMediaImage
     private readonly List<MediaImageResponsiveVariant> _responsiveVariants = [];
     private readonly List<MediaImageTourLink> _tourLinks = [];
     private readonly List<string> _tags = [];
+    private readonly List<PublicMediaImageAccessibilityText> _accessibilityTexts = [];
 
     /// <summary>
     /// Initializes a new instance of the <see cref="PublicMediaImage"/> class.
@@ -22,11 +24,13 @@ public sealed class PublicMediaImage
     /// <param name="responsiveVariants">The public responsive renditions.</param>
     /// <param name="tags">The editorial tags for discovery and grouping.</param>
     /// <param name="tourLinks">The tour gallery placements.</param>
+    /// <param name="accessibilityTexts">Optional localized accessibility text review states.</param>
     internal PublicMediaImage(
         PublicMediaImageMetadata metadata,
         IReadOnlyList<MediaImageResponsiveVariant> responsiveVariants,
         IReadOnlyList<string> tags,
-        IReadOnlyList<MediaImageTourLink> tourLinks)
+        IReadOnlyList<MediaImageTourLink> tourLinks,
+        IReadOnlyList<PublicMediaImageAccessibilityText>? accessibilityTexts = null)
     {
         ArgumentNullException.ThrowIfNull(metadata);
         ArgumentNullException.ThrowIfNull(responsiveVariants);
@@ -45,8 +49,14 @@ public sealed class PublicMediaImage
         _tourLinks = [.. tourLinks];
         AltText = metadata.AltText;
         Caption = metadata.Caption;
+        IsDecorative = metadata.IsDecorative;
+        RequiresHumanReview = metadata.RequiresHumanReview;
+        IsAiGenerated = metadata.IsAiGenerated;
         Attribution = metadata.Attribution;
         Copyright = metadata.Copyright;
+        _accessibilityTexts.AddRange(accessibilityTexts is { Count: > 0 }
+            ? accessibilityTexts
+            : CreateDefaultAccessibilityText(metadata));
     }
 
     private PublicMediaImage()
@@ -119,6 +129,26 @@ public sealed class PublicMediaImage
     public string? Caption { get; private set; }
 
     /// <summary>
+    /// Gets a value indicating whether the image is intentionally decorative.
+    /// </summary>
+    public bool IsDecorative { get; private set; }
+
+    /// <summary>
+    /// Gets a value indicating whether accessibility text needs human review before publication.
+    /// </summary>
+    public bool RequiresHumanReview { get; private set; }
+
+    /// <summary>
+    /// Gets a value indicating whether the current accessibility text is an AI-assisted draft.
+    /// </summary>
+    public bool IsAiGenerated { get; private set; }
+
+    /// <summary>
+    /// Gets localized accessibility text for this image.
+    /// </summary>
+    public IReadOnlyList<PublicMediaImageAccessibilityText> AccessibilityTexts => _accessibilityTexts.AsReadOnly();
+
+    /// <summary>
     /// Gets the optional attribution text.
     /// </summary>
     public string? Attribution { get; private set; }
@@ -141,7 +171,12 @@ public sealed class PublicMediaImage
     /// <summary>
     /// Gets a value indicating whether the image has public variants that can be shown in the catalog.
     /// </summary>
-    public bool HasPublicVariants => ProcessingStatus == MediaImageProcessingStatus.Ready && _responsiveVariants.Count > 0;
+    public bool HasPublicVariants => ProcessingStatus == MediaImageProcessingStatus.Ready && _responsiveVariants.Count > 0 && HasReviewedAccessibilityText;
+
+    /// <summary>
+    /// Gets a value indicating whether this image has reviewed public accessibility text.
+    /// </summary>
+    public bool HasReviewedAccessibilityText => !RequiresHumanReview && (IsDecorative || !string.IsNullOrWhiteSpace(AltText));
 
     /// <summary>
     /// Creates a public media image after validating catalog media rules.
@@ -169,7 +204,7 @@ public sealed class PublicMediaImage
             errors[nameof(PublicMediaImageMetadata.SourceObjectKey)] = ["Source object key must be a relative path without empty or dot segments."];
         }
 
-        ValidateRequiredText(errors, nameof(PublicMediaImageMetadata.AltText), metadata.AltText, ContractConstants.MaxAltTextLength, "Alt text is required.", "Alt text");
+        ValidateAccessibilityText(errors, metadata);
         ValidateRequiredText(errors, nameof(PublicMediaImageMetadata.Checksum), metadata.Checksum, ContractConstants.MaxChecksumLength, "Checksum is required.", nameof(PublicMediaImageMetadata.Checksum));
         ValidateRequiredText(errors, nameof(PublicMediaImageMetadata.ContentType), metadata.ContentType, ContractConstants.MaxContentTypeLength, "ContentType is required.", nameof(PublicMediaImageMetadata.ContentType));
         ValidateOptionalText(errors, nameof(PublicMediaImageMetadata.Caption), metadata.Caption, ContractConstants.MaxCaptionLength, nameof(PublicMediaImageMetadata.Caption));
@@ -317,12 +352,100 @@ public sealed class PublicMediaImage
                 ProcessingStatus = status,
                 AltText = AltText,
                 Caption = Caption,
+                IsDecorative = IsDecorative,
+                RequiresHumanReview = RequiresHumanReview,
+                IsAiGenerated = IsAiGenerated,
                 Attribution = Attribution,
                 Copyright = Copyright,
             },
             variants,
             Tags,
             TourLinks);
+    }
+
+    /// <summary>
+    /// Adds or replaces AI-assisted draft accessibility text for a language.
+    /// </summary>
+    /// <param name="language">The text language.</param>
+    /// <param name="altText">The drafted accessible image description.</param>
+    /// <param name="caption">The optional drafted caption.</param>
+    /// <returns>A result indicating whether the draft was accepted.</returns>
+    public Result SetAiDraftAccessibilityText(PublicContentLanguage language, string altText, string? caption)
+    {
+        var result = PublicMediaImageAccessibilityText.CreateAiDraft(language, altText, caption);
+        if (result.IsFailure)
+        {
+            return Result.Invalid(result.ErrorDetails.Detail, ToValidationDictionary(result.ErrorDetails.ValidationErrors));
+        }
+
+        ReplaceAccessibilityText(result.Value);
+        if (language == PublicContentLanguage.EnUs)
+        {
+            AltText = result.Value.AltText ?? string.Empty;
+            Caption = result.Value.Caption;
+            IsDecorative = result.Value.IsDecorative;
+            RequiresHumanReview = true;
+            IsAiGenerated = true;
+        }
+
+        return Result.Ok();
+    }
+
+    /// <summary>
+    /// Adds or replaces editor-entered draft accessibility text for a language.
+    /// </summary>
+    /// <param name="language">The text language.</param>
+    /// <param name="altText">The drafted accessible image description.</param>
+    /// <param name="caption">The optional drafted caption.</param>
+    /// <returns>A result indicating whether the draft was accepted.</returns>
+    public Result SetDraftAccessibilityText(PublicContentLanguage language, string altText, string? caption)
+    {
+        var result = PublicMediaImageAccessibilityText.Create(language, altText, caption, isDecorative: false, requiresHumanReview: true, isAiGenerated: false);
+        if (result.IsFailure)
+        {
+            return Result.Invalid(result.ErrorDetails.Detail, ToValidationDictionary(result.ErrorDetails.ValidationErrors));
+        }
+
+        ReplaceAccessibilityText(result.Value);
+        if (language == PublicContentLanguage.EnUs)
+        {
+            AltText = result.Value.AltText ?? string.Empty;
+            Caption = result.Value.Caption;
+            IsDecorative = result.Value.IsDecorative;
+            RequiresHumanReview = true;
+            IsAiGenerated = false;
+        }
+
+        return Result.Ok();
+    }
+
+    /// <summary>
+    /// Adds or replaces editor-reviewed accessibility text for a language.
+    /// </summary>
+    /// <param name="language">The text language.</param>
+    /// <param name="altText">The approved accessible image description.</param>
+    /// <param name="caption">The optional approved caption.</param>
+    /// <param name="isDecorative">Whether the image is intentionally decorative.</param>
+    /// <returns>A result indicating whether the reviewed text was accepted.</returns>
+    public Result SetReviewedAccessibilityText(PublicContentLanguage language, string? altText, string? caption, bool isDecorative)
+    {
+        var result = PublicMediaImageAccessibilityText.CreateReviewed(language, altText, caption, isDecorative);
+        if (result.IsFailure)
+        {
+            return Result.Invalid(result.ErrorDetails.Detail, ToValidationDictionary(result.ErrorDetails.ValidationErrors));
+        }
+
+        ReplaceAccessibilityText(result.Value);
+        if (language == PublicContentLanguage.EnUs)
+        {
+            AltText = result.Value.AltText ?? string.Empty;
+            Caption = result.Value.Caption;
+            IsDecorative = result.Value.IsDecorative;
+            RequiresHumanReview = false;
+            IsAiGenerated = false;
+        }
+
+        return Result.Ok();
     }
 
     private static PublicMediaImageMetadata SanitizeMetadata(PublicMediaImageMetadata metadata)
@@ -338,6 +461,9 @@ public sealed class PublicMediaImage
             ProcessingStatus = metadata.ProcessingStatus,
             AltText = StringSanitizer.Sanitize(metadata.AltText),
             Caption = StringSanitizer.Sanitize(metadata.Caption),
+            IsDecorative = metadata.IsDecorative,
+            RequiresHumanReview = metadata.RequiresHumanReview,
+            IsAiGenerated = metadata.IsAiGenerated,
             Attribution = StringSanitizer.Sanitize(metadata.Attribution),
             Copyright = StringSanitizer.Sanitize(metadata.Copyright),
         };
@@ -366,6 +492,53 @@ public sealed class PublicMediaImage
         {
             errors[nameof(TourLinks)] = ["Tour links cannot contain duplicate tour ids."];
         }
+    }
+
+    private void ReplaceAccessibilityText(PublicMediaImageAccessibilityText text)
+    {
+        _accessibilityTexts.RemoveAll(item => item.Language == text.Language);
+        _accessibilityTexts.Add(text);
+    }
+
+    private static IReadOnlyList<PublicMediaImageAccessibilityText> CreateDefaultAccessibilityText(PublicMediaImageMetadata metadata)
+    {
+        var result = PublicMediaImageAccessibilityText.Create(
+            PublicContentLanguage.EnUs,
+            metadata.AltText,
+            metadata.Caption,
+            metadata.IsDecorative,
+            metadata.RequiresHumanReview,
+            metadata.IsAiGenerated);
+
+        return result.IsSuccess ? [result.Value] : [];
+    }
+
+    private static void ValidateAccessibilityText(Dictionary<string, string[]> errors, PublicMediaImageMetadata metadata)
+    {
+        var result = PublicMediaImageAccessibilityText.Create(
+            PublicContentLanguage.EnUs,
+            metadata.AltText,
+            metadata.Caption,
+            metadata.IsDecorative,
+            metadata.RequiresHumanReview,
+            metadata.IsAiGenerated);
+
+        if (result.IsFailure && result.ErrorDetails?.ValidationErrors is not null)
+        {
+            foreach (var error in result.ErrorDetails.ValidationErrors)
+            {
+                errors[error.Key] = error.Value.ToArray();
+            }
+        }
+    }
+
+    private static Dictionary<string, string[]> ToValidationDictionary(IReadOnlyDictionary<string, IReadOnlyList<string>>? validationErrors)
+    {
+        return validationErrors?.ToDictionary(error => error.Key, error => error.Value.ToArray(), StringComparer.Ordinal)
+            ?? new Dictionary<string, string[]>(StringComparer.Ordinal)
+            {
+                [nameof(AccessibilityTexts)] = ["Accessibility text is invalid."]
+            };
     }
 
     private static void ValidateResponsiveVariants(

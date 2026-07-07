@@ -157,6 +157,7 @@
           "isCover",
           "uri",
           "altText",
+          "isDecorative",
           "responsiveVariants"
         ],
         "type": "object",
@@ -180,8 +181,11 @@
           },
           "altText": {
             "maxLength": 256,
-            "minLength": 1,
+            "minLength": 0,
             "type": "string"
+          },
+          "isDecorative": {
+            "type": "boolean"
           },
           "caption": {
             "maxLength": 256,

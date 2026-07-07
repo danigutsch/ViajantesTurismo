@@ -32,6 +32,7 @@ public static class MediaDependencyInjection
                 MediaUploadValidationOptionsValidator>());
         services.TryAddSingleton<IMediaUploadValidator>(sp => new MediaUploadValidator(sp.GetRequiredService<IOptions<MediaUploadValidationOptions>>().Value));
         services.TryAddScoped<MediaImageUploadIntake>();
+        services.TryAddScoped<MediaImageAccessibilityDraftService>();
         services.TryAddScoped<MediaObjectReconciliationService>();
         services.TryAddScoped<MediaImageOriginalStoredIntegrationHandler>();
         services.TryAddScoped<IIntegrationEventHandler<MediaImageOriginalStoredIntegrationEvent>>(sp =>

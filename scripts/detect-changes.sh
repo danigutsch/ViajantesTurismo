@@ -109,6 +109,7 @@ low_risk_maintenance_patterns=(
 fast_validation_patterns=(
     "src/SharedKernel/SharedKernel.EventSourcing/**"
     "src/SharedKernel/SharedKernel.BuildingBlocks/**"
+    "src/SharedKernel/SharedKernel.AI/**"
     "src/SharedKernel/SharedKernel.ApiVersioning/**"
     "src/SharedKernel/SharedKernel.ApiVersioning.AspNetCore/**"
     "src/SharedKernel/SharedKernel.Aspire.Hosting.Grafana/**"
@@ -167,6 +168,7 @@ fast_validation_patterns=(
     "src/ViajantesTurismo.Public.Web/**"
     "tests/SharedKernel.EventSourcing.Tests/**"
     "tests/SharedKernel.BuildingBlocks.Tests/**"
+    "tests/SharedKernel.AI.Tests/**"
     "tests/SharedKernel.DomainEvents.Tests/**"
     "tests/SharedKernel.Functional.Tests/**"
     "tests/SharedKernel.Idempotency.Tests/**"

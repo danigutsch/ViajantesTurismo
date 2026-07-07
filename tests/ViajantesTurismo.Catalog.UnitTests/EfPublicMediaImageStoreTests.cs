@@ -1,5 +1,6 @@
 using SharedKernel.Testing.Assertions;
 using ViajantesTurismo.Catalog.Domain.Media;
+using ViajantesTurismo.Catalog.Domain.PublicContent;
 using ViajantesTurismo.Catalog.Infrastructure;
 
 namespace ViajantesTurismo.Catalog.UnitTests;
@@ -78,6 +79,28 @@ public sealed class EfPublicMediaImageStoreTests
         saved.ResponsiveVariants.Count.ShouldBe(2);
         saved.ResponsiveVariants[0].Width.ShouldBe(320);
         saved.ResponsiveVariants[1].Width.ShouldBe(640);
+    }
+
+    [Fact]
+    public async Task Store_persists_accessibility_review_state()
+    {
+        // Arrange
+        await using var dbContext = EfPublicContentStoreTestDbContextFactory.Create();
+        var store = new EfPublicMediaImageStore(dbContext);
+        var image = PublicMediaImageTestFactory.CreateImage(Guid.CreateVersion7(), displayOrder: 0, isCover: true);
+        image.SetAiDraftAccessibilityText(PublicContentLanguage.PtBr, "Ciclistas em uma trilha de montanha", "Passeio de bicicleta").IsSuccess.ShouldBeTrue();
+
+        // Act
+        await store.Upsert(image, TestContext.Current.CancellationToken);
+        var saved = await store.GetImage(image.Id, TestContext.Current.CancellationToken);
+
+        // Assert
+        saved.ShouldNotBeNull();
+        saved.AccessibilityTexts.Count.ShouldBe(2);
+        var localized = saved.AccessibilityTexts.Single(text => text.Language == PublicContentLanguage.PtBr);
+        localized.RequiresHumanReview.ShouldBeTrue();
+        localized.IsAiGenerated.ShouldBeTrue();
+        localized.AltText.ShouldBe("Ciclistas em uma trilha de montanha");
     }
 
     [Fact]

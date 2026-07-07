@@ -1,4 +1,5 @@
 using System.ComponentModel.DataAnnotations;
+using SharedKernel.Testing.Assertions;
 using ViajantesTurismo.Catalog.Contracts;
 
 namespace ViajantesTurismo.Catalog.UnitTests;
@@ -35,5 +36,15 @@ public static class CatalogContractValidationTestsHelpers
         Validator.TryValidateObject(value, context, errors, validateAllProperties: true);
 
         return errors;
+    }
+
+    public static void ShouldContainErrorFor(this IReadOnlyList<ValidationResult> errors, string memberName)
+    {
+        errors.Any(error => error.MemberNames.Contains(memberName)).ShouldBeTrue();
+    }
+
+    public static void ShouldNotContainErrorFor(this IReadOnlyList<ValidationResult> errors, string memberName)
+    {
+        errors.Any(error => error.MemberNames.Contains(memberName)).ShouldBeFalse();
     }
 }

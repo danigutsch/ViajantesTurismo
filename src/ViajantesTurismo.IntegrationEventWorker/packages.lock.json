@@ -474,6 +474,9 @@
         "resolved": "8.0.0",
         "contentHash": "7mu9v0QDv66ar3DpGSZHg9NuNcxDaaAcnMULuZlaTpP9+hwXhrxNGsF5GmLkSHxFdb5bBc1TzeujsRgTrPWi+Q=="
       },
+      "sharedkernel.ai": {
+        "type": "Project"
+      },
       "sharedkernel.buildingblocks": {
         "type": "Project",
         "dependencies": {
@@ -600,6 +603,7 @@
           "Microsoft.Extensions.DependencyInjection.Abstractions": "[10.0.9, )",
           "Microsoft.Extensions.Options": "[10.0.9, )",
           "Microsoft.Extensions.Options.ConfigurationExtensions": "[10.0.9, )",
+          "SharedKernel.AI": "[0.1.0-alpha.0, )",
           "SharedKernel.BuildingBlocks": "[0.1.0-alpha.0, )",
           "SharedKernel.EventSourcing": "[0.1.0-alpha.0, )",
           "SharedKernel.Idempotency": "[0.1.0-alpha.0, )",
@@ -638,6 +642,7 @@
         "dependencies": {
           "Aspire.Npgsql": "[13.4.6, )",
           "Aspire.Npgsql.EntityFrameworkCore.PostgreSQL": "[13.4.6, )",
+          "SharedKernel.AI": "[0.1.0-alpha.0, )",
           "SharedKernel.EntityFrameworkCore": "[0.1.0-alpha.0, )",
           "SharedKernel.EventSourcing.Npgsql": "[0.1.0-alpha.0, )",
           "SharedKernel.Idempotency": "[0.1.0-alpha.0, )",

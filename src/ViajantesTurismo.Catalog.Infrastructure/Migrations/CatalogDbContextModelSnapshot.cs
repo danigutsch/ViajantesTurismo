@@ -188,9 +188,18 @@ namespace ViajantesTurismo.Catalog.Infrastructure.Migrations
                     b.Property<long>("FileSizeBytes")
                         .HasColumnType("bigint");
 
+                    b.Property<bool>("IsAiGenerated")
+                        .HasColumnType("boolean");
+
+                    b.Property<bool>("IsDecorative")
+                        .HasColumnType("boolean");
+
                     b.Property<string>("ProcessingStatus")
                         .IsRequired()
                         .HasColumnType("text");
+
+                    b.Property<bool>("RequiresHumanReview")
+                        .HasColumnType("boolean");
 
                     b.Property<string>("SourceObjectKey")
                         .IsRequired()
@@ -398,6 +407,41 @@ namespace ViajantesTurismo.Catalog.Infrastructure.Migrations
                             b1.WithOwner()
                                 .HasForeignKey("PublicMediaImageId");
                         });
+
+                    b.OwnsMany("ViajantesTurismo.Catalog.Domain.Media.PublicMediaImageAccessibilityText", "AccessibilityTexts", b1 =>
+                        {
+                            b1.Property<Guid>("PublicMediaImageId")
+                                .HasColumnType("uuid");
+
+                            b1.Property<string>("Language")
+                                .HasColumnType("text");
+
+                            b1.Property<string>("AltText")
+                                .HasMaxLength(256)
+                                .HasColumnType("character varying(256)");
+
+                            b1.Property<string>("Caption")
+                                .HasMaxLength(256)
+                                .HasColumnType("character varying(256)");
+
+                            b1.Property<bool>("IsAiGenerated")
+                                .HasColumnType("boolean");
+
+                            b1.Property<bool>("IsDecorative")
+                                .HasColumnType("boolean");
+
+                            b1.Property<bool>("RequiresHumanReview")
+                                .HasColumnType("boolean");
+
+                            b1.HasKey("PublicMediaImageId", "Language");
+
+                            b1.ToTable("PublicMediaImageAccessibilityTexts", (string)null);
+
+                            b1.WithOwner()
+                                .HasForeignKey("PublicMediaImageId");
+                        });
+
+                    b.Navigation("AccessibilityTexts");
 
                     b.Navigation("Dimensions")
                         .IsRequired();

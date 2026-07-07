@@ -21,6 +21,7 @@ internal static class CatalogEndpoints
         app.MapPut("/catalog/tours/{id:guid}/presentation", UpsertTourPresentation);
         app.MapGet("/catalog/tours/{id:guid}/images", ListTourImages);
         app.MapPut("/catalog/media/images/{id:guid}", UpsertMediaImage);
+        app.MapPost("/catalog/media/images/{id:guid}/accessibility-draft", GenerateMediaImageAccessibilityDraft);
 
         app.MapGet("/public/catalog/tours", GetPublishedTours);
         app.MapGet("/public/catalog/tours/{slug}", GetPublishedTour);
@@ -311,6 +312,57 @@ internal static class CatalogEndpoints
         return Results.Ok(MapMediaImage(image.Value, objectStore));
     }
 
+    private static async Task<IResult> GenerateMediaImageAccessibilityDraft(
+        Guid id,
+        PublicMediaImageAccessibilityDraftRequest? request,
+        MediaImageAccessibilityDraftService service,
+        IMediaObjectStore objectStore,
+        CancellationToken ct)
+    {
+        if (id == Guid.Empty)
+        {
+            return Results.BadRequest();
+        }
+
+        if (request is null)
+        {
+            return Results.ValidationProblem(new Dictionary<string, string[]>
+            {
+                [nameof(request)] = ["Request body is required."]
+            });
+        }
+
+        var errors = ValidateAccessibilityDraftRequest(request);
+        if (errors.Count > 0)
+        {
+            return Results.ValidationProblem(errors);
+        }
+
+        var result = await service.GenerateDraft(
+            id,
+            new MediaImageAccessibilityDraftInput
+            {
+                Language = ToDomainLanguage(request.Language),
+                Context = request.Context,
+                Latitude = request.Latitude,
+                Longitude = request.Longitude
+            },
+            ct);
+
+        if (result.IsSuccess)
+        {
+            return Results.Ok(MapMediaImage(result.Value, objectStore));
+        }
+
+        return result.Status switch
+        {
+            ResultStatus.NotFound => Results.NotFound(),
+            ResultStatus.Invalid => ToValidationProblem(result.ErrorDetails),
+            ResultStatus.Unavailable => Results.Problem(result.ErrorDetails.Detail, statusCode: StatusCodes.Status503ServiceUnavailable),
+            _ => Results.Problem(result.ErrorDetails.Detail)
+        };
+    }
+
     private static CatalogTourDto MapTour(CatalogTourDraftReadModel tour, IReadOnlyList<PublicMediaImage>? images, IMediaObjectStore objectStore)
     {
         return new CatalogTourDto
@@ -347,6 +399,7 @@ internal static class CatalogEndpoints
             IsCover = image.IsCover,
             Uri = GetPublicImageUri(image, objectStore),
             AltText = image.AltText,
+            IsDecorative = image.IsDecorative,
             Caption = image.Caption,
             ResponsiveVariants = image.ResponsiveVariants
                 .OrderBy(variant => variant.Width)
@@ -360,6 +413,38 @@ internal static class CatalogEndpoints
         var errors = new Dictionary<string, string[]>();
 
         ValidateMediaShape(errors, image);
+
+        return errors;
+    }
+
+    private static Dictionary<string, string[]> ValidateAccessibilityDraftRequest(PublicMediaImageAccessibilityDraftRequest request)
+    {
+        var errors = new Dictionary<string, string[]>();
+
+        if (request.Language == PublicContentLanguageDto.None || !Enum.IsDefined(request.Language))
+        {
+            errors[nameof(PublicMediaImageAccessibilityDraftRequest.Language)] = ["Language is required."];
+        }
+
+        if (request.Context?.Length > 1_000)
+        {
+            errors[nameof(PublicMediaImageAccessibilityDraftRequest.Context)] = ["Context cannot exceed 1000 characters."];
+        }
+
+        if (request.Latitude is < -90 or > 90)
+        {
+            errors[nameof(PublicMediaImageAccessibilityDraftRequest.Latitude)] = ["Latitude must be between -90 and 90."];
+        }
+
+        if (request.Longitude is < -180 or > 180)
+        {
+            errors[nameof(PublicMediaImageAccessibilityDraftRequest.Longitude)] = ["Longitude must be between -180 and 180."];
+        }
+
+        if ((request.Latitude is null) != (request.Longitude is null))
+        {
+            errors[nameof(PublicMediaImageAccessibilityDraftRequest.Latitude)] = ["Latitude and longitude must be supplied together."];
+        }
 
         return errors;
     }
@@ -395,6 +480,47 @@ internal static class CatalogEndpoints
         {
             errors[nameof(PublicMediaImageDto.ResponsiveVariants)] = ["Responsive variants must include absolute HTTP or HTTPS URIs when ObjectKey is not provided."];
         }
+
+        ValidateMediaAccessibilityTexts(errors, image);
+    }
+
+    private static void ValidateMediaAccessibilityTexts(Dictionary<string, string[]> errors, PublicMediaImageDto image)
+    {
+        if (image.AccessibilityTexts is null)
+        {
+            errors[nameof(PublicMediaImageDto.AccessibilityTexts)] = ["Accessibility texts are required."];
+        }
+        else if (image.AccessibilityTexts.Any(text => text is null))
+        {
+            errors[nameof(PublicMediaImageDto.AccessibilityTexts)] = ["Accessibility text entries are required."];
+        }
+        else if (image.AccessibilityTexts.Select(text => text.Language).Distinct().Count() != image.AccessibilityTexts.Count)
+        {
+            errors[nameof(PublicMediaImageDto.AccessibilityTexts)] = ["Accessibility text languages cannot be duplicated."];
+        }
+        else if (image.AccessibilityTexts.Any(static text => text.IsAiGenerated && !text.RequiresHumanReview))
+        {
+            errors[nameof(PublicMediaImageDto.AccessibilityTexts)] = ["AI-generated accessibility text requires human review."];
+        }
+        else if (image.AccessibilityTexts.Any(static text => text.IsAiGenerated && text.IsDecorative))
+        {
+            errors[nameof(PublicMediaImageDto.AccessibilityTexts)] = ["AI draft accessibility text cannot mark images decorative."];
+        }
+
+        var defaultText = image.AccessibilityTexts?.FirstOrDefault(static text => text.Language == PublicContentLanguageDto.EnUs);
+        if (defaultText is not null && !DefaultAccessibilityTextMatches(image, defaultText))
+        {
+            errors[nameof(PublicMediaImageDto.AccessibilityTexts)] = ["Default-language accessibility text must match the top-level accessibility fields."];
+        }
+    }
+
+    private static bool DefaultAccessibilityTextMatches(PublicMediaImageDto image, PublicMediaAccessibilityTextDto text)
+    {
+        return string.Equals(image.AltText ?? string.Empty, text.AltText ?? string.Empty, StringComparison.Ordinal)
+            && string.Equals(image.Caption, text.Caption, StringComparison.Ordinal)
+            && image.IsDecorative == text.IsDecorative
+            && image.RequiresHumanReview == text.RequiresHumanReview
+            && image.IsAiGenerated == text.IsAiGenerated;
     }
 
     private static bool IsHttpUri(Uri? uri)
@@ -413,7 +539,7 @@ internal static class CatalogEndpoints
 
     private static Result<PublicMediaImage> ToDomainMediaImage(PublicMediaImageDto image)
     {
-        return PublicMediaImage.Create(
+        var result = PublicMediaImage.Create(
             new PublicMediaImageMetadata
             {
                 Id = image.Id,
@@ -427,12 +553,46 @@ internal static class CatalogEndpoints
                 ProcessingStatus = (MediaImageProcessingStatus)(int)image.ProcessingStatus,
                 AltText = image.AltText ?? string.Empty,
                 Caption = image.Caption,
+                IsDecorative = image.IsDecorative,
+                RequiresHumanReview = image.RequiresHumanReview,
+                IsAiGenerated = image.IsAiGenerated,
                 Attribution = image.Attribution,
                 Copyright = image.Copyright
             },
             image.ResponsiveVariants.Select(ToDomainResponsiveVariant).ToArray(),
             image.Tags,
             image.TourLinks.Select(link => new MediaImageTourLink(link.CatalogTourId, link.DisplayOrder, link.IsCover)).ToArray());
+
+        if (result.IsFailure || image.AccessibilityTexts.Count == 0)
+        {
+            return result;
+        }
+
+        var mediaImage = result.Value;
+        foreach (var text in image.AccessibilityTexts)
+        {
+            var language = ToDomainLanguage(text.Language);
+            Result textResult;
+            if (text.IsAiGenerated)
+            {
+                textResult = mediaImage.SetAiDraftAccessibilityText(language, text.AltText ?? string.Empty, text.Caption);
+            }
+            else if (text.RequiresHumanReview)
+            {
+                textResult = mediaImage.SetDraftAccessibilityText(language, text.AltText ?? string.Empty, text.Caption);
+            }
+            else
+            {
+                textResult = mediaImage.SetReviewedAccessibilityText(language, text.AltText, text.Caption, text.IsDecorative);
+            }
+
+            if (textResult.IsFailure)
+            {
+                return Result.Invalid<PublicMediaImage>(textResult.ErrorDetails.Detail, textResult.ErrorDetails.ValidationErrors?.ToDictionary(error => error.Key, error => error.Value.ToArray(), StringComparer.Ordinal) ?? []);
+            }
+        }
+
+        return result;
     }
 
     private static MediaImageResponsiveVariant ToDomainResponsiveVariant(MediaImageResponsiveVariantDto variant)
@@ -469,8 +629,25 @@ internal static class CatalogEndpoints
                 .ToArray(),
             AltText = image.AltText,
             Caption = image.Caption,
+            IsDecorative = image.IsDecorative,
+            RequiresHumanReview = image.RequiresHumanReview,
+            IsAiGenerated = image.IsAiGenerated,
+            AccessibilityTexts = image.AccessibilityTexts.Select(MapAccessibilityText).ToArray(),
             Attribution = image.Attribution,
             Copyright = image.Copyright
+        };
+    }
+
+    private static PublicMediaAccessibilityTextDto MapAccessibilityText(PublicMediaImageAccessibilityText text)
+    {
+        return new PublicMediaAccessibilityTextDto
+        {
+            Language = ToContractLanguage(text.Language),
+            AltText = text.AltText,
+            Caption = text.Caption,
+            IsDecorative = text.IsDecorative,
+            RequiresHumanReview = text.RequiresHumanReview,
+            IsAiGenerated = text.IsAiGenerated
         };
     }
 
