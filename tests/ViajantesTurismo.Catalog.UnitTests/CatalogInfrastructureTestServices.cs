@@ -22,6 +22,22 @@ internal static class CatalogInfrastructureTestServices
         return new CatalogInfrastructureScenario(builder.Services.BuildServiceProvider());
     }
 
+    public static CatalogInfrastructureScenario CreateDevelopmentScenario()
+    {
+        var builder = Host.CreateApplicationBuilder(new HostApplicationBuilderSettings
+        {
+            EnvironmentName = Environments.Development,
+        });
+        builder.Configuration.AddInMemoryCollection(new Dictionary<string, string?>
+        {
+            [$"ConnectionStrings:{ResourceNames.CatalogDatabase}"] = "Host=localhost;Database=viajantes;Username=test;Password=test"
+        });
+
+        builder.AddCatalogInfrastructure();
+
+        return new CatalogInfrastructureScenario(builder.Services.BuildServiceProvider());
+    }
+
     public static CatalogInfrastructureScenario CreateWorkerScenario()
     {
         var builder = Host.CreateApplicationBuilder();
@@ -75,14 +91,27 @@ internal sealed class CatalogInfrastructureScenario(ServiceProvider provider) : 
         provider.GetRequiredService<TService>().ShouldNotBeNull();
     }
 
+    public void ShouldResolveDbContextOptions<TContext>()
+        where TContext : Microsoft.EntityFrameworkCore.DbContext
+    {
+        provider.GetRequiredService<Microsoft.EntityFrameworkCore.DbContextOptions<TContext>>().ShouldNotBeNull();
+    }
+
     public void ShouldResolveAs<TService, TImplementation>()
         where TService : notnull
     {
         provider.GetRequiredService<TService>().ShouldBeOfType<TImplementation>();
     }
 
+    public void ShouldResolveEnumerableItemAs<TService, TImplementation>()
+        where TService : notnull
+    {
+        var service = provider.GetServices<TService>().ShouldHaveSingleItem(item => item?.GetType() == typeof(TImplementation));
+        service.ShouldBeOfType<TImplementation>();
+    }
+
     public void Dispose()
     {
-        provider.Dispose();
+        provider.DisposeAsync().AsTask().GetAwaiter().GetResult();
     }
 }

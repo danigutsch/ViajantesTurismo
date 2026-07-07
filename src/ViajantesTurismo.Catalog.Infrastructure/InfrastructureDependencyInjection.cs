@@ -1,10 +1,15 @@
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using Npgsql;
 using SharedKernel.EntityFrameworkCore;
+using SharedKernel.EventSourcing;
+using SharedKernel.EventSourcing.Npgsql;
 using SharedKernel.Messaging.IntegrationEvents.EntityFrameworkCore;
 using ViajantesTurismo.Catalog.Application;
 using ViajantesTurismo.Catalog.Application.Media;
+using ViajantesTurismo.Catalog.Application.Projections;
 using ViajantesTurismo.Catalog.Application.PublicContent;
 using ViajantesTurismo.Catalog.Application.PublicTheme;
 using ViajantesTurismo.Catalog.Application.Tours;
@@ -42,10 +47,9 @@ public static class InfrastructureDependencyInjection
     {
         ArgumentNullException.ThrowIfNull(builder);
 
-        builder.AddCatalogIntegrationEventTransportContext();
-        builder.Services.AddPostgreSqlIntegrationEventTransportConsumer<CatalogIntegrationTransportDbContext>(IntegrationEventConsumerNames.Catalog);
-
-        return builder;
+        return builder
+            .AddCatalogIntegrationEventTransportContext()
+            .AddCatalogIntegrationEventTransportConsumer();
     }
 
     /// <summary>
@@ -61,6 +65,7 @@ public static class InfrastructureDependencyInjection
 
         AddCatalogInfrastructure(builder, addOutboxRelay: false);
         builder.AddCatalogHostedIntegrationEventTransport();
+        builder.Services.AddHostedService<CatalogProjectionHostedService>();
 
         return builder;
     }
@@ -76,12 +81,47 @@ public static class InfrastructureDependencyInjection
 
         builder.Services.AddCatalogApplication();
         builder.Services.AddSingleton(TimeProvider.System);
+
+        return builder
+            .AddCatalogStoreInfrastructure()
+            .AddCatalogEventStore()
+            .AddCatalogOutbox(addOutboxRelay);
+    }
+
+    private static TApplicationBuilder AddCatalogStoreInfrastructure<TApplicationBuilder>(this TApplicationBuilder builder)
+        where TApplicationBuilder : IHostApplicationBuilder
+    {
         builder.Services.AddLocalMediaObjectStorage();
         builder.Services.AddScoped<IPublicContentStore, EfPublicContentStore>();
         builder.Services.AddScoped<IPublicThemeSettingsStore, EfPublicThemeSettingsStore>();
-        builder.Services.AddScoped<EfCatalogTourReadModelStore>();
-        builder.Services.AddScoped<ICatalogTourReadModelStore>(sp => sp.GetRequiredService<EfCatalogTourReadModelStore>());
+        builder.Services.AddScoped<ICatalogTourReadModelStore, EfCatalogTourReadModelStore>();
         builder.Services.AddScoped<IPublicMediaImageStore, EfPublicMediaImageStore>();
+
+        return builder;
+    }
+
+    private static TApplicationBuilder AddCatalogEventStore<TApplicationBuilder>(this TApplicationBuilder builder)
+        where TApplicationBuilder : IHostApplicationBuilder
+    {
+        builder.Services.AddSingleton(_ =>
+        {
+            var connectionString = builder.Configuration.GetConnectionString(ResourceNames.CatalogDatabase)
+                ?? throw new InvalidOperationException($"Connection string '{ResourceNames.CatalogDatabase}' is not configured.");
+
+            return NpgsqlDataSource.Create(connectionString);
+        });
+        builder.Services.AddSingleton<IEventSerializer, CatalogEventSerializer>();
+        builder.Services.AddSingleton<IEventStore, PostgreSqlEventStore>();
+        builder.Services.AddSingleton<IProjectionCheckpointStore, PostgreSqlProjectionCheckpointStore>();
+        builder.Services.AddScoped<IProjection, CatalogTourReadModelProjection>();
+        builder.Services.AddScoped<CatalogProjectionRunner>();
+
+        return builder;
+    }
+
+    private static TApplicationBuilder AddCatalogOutbox<TApplicationBuilder>(this TApplicationBuilder builder, bool addOutboxRelay)
+        where TApplicationBuilder : IHostApplicationBuilder
+    {
         builder.Services.AddIntegrationEventOutbox<CatalogDbContext>();
         if (addOutboxRelay)
         {
@@ -92,12 +132,22 @@ public static class InfrastructureDependencyInjection
         return builder;
     }
 
-    private static void AddCatalogIntegrationEventTransportContext<TApplicationBuilder>(this TApplicationBuilder builder)
+    private static TApplicationBuilder AddCatalogIntegrationEventTransportContext<TApplicationBuilder>(this TApplicationBuilder builder)
         where TApplicationBuilder : IHostApplicationBuilder
     {
         builder.AddNpgsqlDbContext<CatalogIntegrationTransportDbContext>(
             ResourceNames.AdminDatabase,
             configureDbContextOptions: options => ConfigureDevelopmentDatabaseOptions<CatalogIntegrationTransportDbContext, TApplicationBuilder>(builder, options));
+
+        return builder;
+    }
+
+    private static TApplicationBuilder AddCatalogIntegrationEventTransportConsumer<TApplicationBuilder>(this TApplicationBuilder builder)
+        where TApplicationBuilder : IHostApplicationBuilder
+    {
+        builder.Services.AddPostgreSqlIntegrationEventTransportConsumer<CatalogIntegrationTransportDbContext>(IntegrationEventConsumerNames.Catalog);
+
+        return builder;
     }
 
     private static void ConfigureDevelopmentDatabaseOptions<TContext, TApplicationBuilder>(

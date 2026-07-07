@@ -24,4 +24,29 @@ public static class TestTraits
     /// Host value for Aspire-hosted tests.
     /// </summary>
     public const string AspireHost = "aspire";
+
+    /// <summary>
+    /// Area value for post-transport Catalog and Public Web validation.
+    /// </summary>
+    public const string PostTransportArea = "post-transport";
+
+    /// <summary>
+    /// Category value for integration-event transport validation.
+    /// </summary>
+    public const string IntegrationEventTransportCategory = "integration-event-transport";
+
+    /// <summary>
+    /// Surface value for Admin validation.
+    /// </summary>
+    public const string AdminSurface = "admin";
+
+    /// <summary>
+    /// Surface value for Catalog validation.
+    /// </summary>
+    public const string CatalogSurface = "catalog";
+
+    /// <summary>
+    /// Surface value for Public Web validation.
+    /// </summary>
+    public const string PublicWebSurface = "public-web";
 }

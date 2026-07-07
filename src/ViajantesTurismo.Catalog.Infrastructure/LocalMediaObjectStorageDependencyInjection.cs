@@ -8,7 +8,7 @@ namespace ViajantesTurismo.Catalog.Infrastructure;
 /// <summary>
 /// Provides extension methods for local media object storage.
 /// </summary>
-public static class LocalMediaObjectStorageDependencyInjection
+internal static class LocalMediaObjectStorageDependencyInjection
 {
     /// <summary>
     /// Adds local filesystem media object storage.

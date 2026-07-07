@@ -1,8 +1,13 @@
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
 using SharedKernel.DomainEvents;
 using SharedKernel.Messaging.IntegrationEvents;
+using SharedKernel.Messaging.IntegrationEvents.EntityFrameworkCore;
 using SharedKernel.Testing;
 using SharedKernel.Testing.Assertions;
+using ViajantesTurismo.Admin.Application;
+using ViajantesTurismo.Admin.Domain.Customers;
+using ViajantesTurismo.Admin.Domain.Tours;
 using ViajantesTurismo.Admin.Infrastructure;
 using ViajantesTurismo.Admin.Testing.Fakes;
 using ViajantesTurismo.Admin.UnitTests.Application.IntegrationEvents;
@@ -52,5 +57,45 @@ public sealed class AdminInfrastructureModuleTests
         var registeredOutbox = serviceProvider.GetRequiredService<IIntegrationEventOutbox>();
 
         registeredOutbox.ShouldBeSameAs(outbox);
+    }
+
+    [Fact]
+    public void AddInfrastructure_registers_admin_runtime_services()
+    {
+        // Arrange
+        using var serviceProvider = AdminInfrastructureModuleTestServices.CreateWithInfrastructureModule();
+
+        // Act
+        var unitOfWork = serviceProvider.GetRequiredService<IUnitOfWork>();
+        var queryService = serviceProvider.GetRequiredService<IQueryService>();
+        var tourStore = serviceProvider.GetRequiredService<ITourStore>();
+        var customerStore = serviceProvider.GetRequiredService<ICustomerStore>();
+        var outbox = serviceProvider.GetRequiredService<IIntegrationEventOutbox>();
+        var hostedServices = serviceProvider.GetServices<IHostedService>().ToArray();
+
+        // Assert
+        unitOfWork.ShouldBeOfType<AdminWriteDbContext>();
+        queryService.ShouldBeOfType<QueryService>();
+        tourStore.ShouldBeOfType<TourStore>();
+        customerStore.ShouldBeOfType<CustomerStore>();
+        outbox.ShouldBeOfType<EfIntegrationEventOutbox<AdminWriteDbContext>>();
+        hostedServices.ShouldContain(service => (service is IntegrationEventOutboxRelayHostedService<AdminWriteDbContext>));
+    }
+
+    [Fact]
+    public void AddSeeding_registers_seeder_without_outbox_relay()
+    {
+        // Arrange
+        using var serviceProvider = AdminInfrastructureModuleTestServices.CreateWithSeedingModule();
+
+        // Act
+        var seeder = serviceProvider.GetRequiredService<Seeder>();
+        var outbox = serviceProvider.GetRequiredService<IIntegrationEventOutbox>();
+        var hostedServices = serviceProvider.GetServices<IHostedService>().ToArray();
+
+        // Assert
+        seeder.ShouldNotBeNull();
+        outbox.ShouldBeOfType<EfIntegrationEventOutbox<AdminWriteDbContext>>();
+        hostedServices.ShouldNotContain(service => (service is IntegrationEventOutboxRelayHostedService<AdminWriteDbContext>));
     }
 }

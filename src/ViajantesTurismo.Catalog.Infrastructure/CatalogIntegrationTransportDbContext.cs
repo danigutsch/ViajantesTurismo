@@ -6,7 +6,7 @@ namespace ViajantesTurismo.Catalog.Infrastructure;
 /// <summary>
 /// EF Core context for the shared PostgreSQL integration-event transport table.
 /// </summary>
-public sealed class CatalogIntegrationTransportDbContext(
+internal sealed class CatalogIntegrationTransportDbContext(
     DbContextOptions<CatalogIntegrationTransportDbContext> options,
     IEnumerable<IDbContextConfiguration<CatalogIntegrationTransportDbContext>>? configurations = null) : DbContext(options)
 {

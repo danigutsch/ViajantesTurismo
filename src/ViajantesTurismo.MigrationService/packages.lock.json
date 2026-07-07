@@ -645,6 +645,14 @@
       "sharedkernel.eventsourcing": {
         "type": "Project"
       },
+      "sharedkernel.eventsourcing.npgsql": {
+        "type": "Project",
+        "dependencies": {
+          "Npgsql": "[10.0.3, )",
+          "SharedKernel.BuildingBlocks": "[0.1.0-alpha.0, )",
+          "SharedKernel.EventSourcing": "[0.1.0-alpha.0, )"
+        }
+      },
       "sharedkernel.httpclients": {
         "type": "Project",
         "dependencies": {
@@ -829,9 +837,11 @@
         "dependencies": {
           "Aspire.Npgsql.EntityFrameworkCore.PostgreSQL": "[13.4.6, )",
           "SharedKernel.EntityFrameworkCore": "[0.1.0-alpha.0, )",
+          "SharedKernel.EventSourcing.Npgsql": "[0.1.0-alpha.0, )",
           "SharedKernel.Idempotency": "[0.1.0-alpha.0, )",
           "SharedKernel.InputNormalization": "[0.1.0-alpha.0, )",
           "SharedKernel.Messaging.IntegrationEvents.EntityFrameworkCore": "[0.1.0-alpha.0, )",
+          "SharedKernel.Scheduling": "[0.1.0-alpha.0, )",
           "ViajantesTurismo.Catalog.Application": "[0.1.0-alpha.0, )",
           "ViajantesTurismo.Catalog.Domain": "[0.1.0-alpha.0, )",
           "ViajantesTurismo.Resources": "[0.1.0-alpha.0, )"

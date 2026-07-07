@@ -36,6 +36,18 @@ public sealed class CatalogIntegrationEventTransportRegistrationTests
     }
 
     [Fact]
+    public void Hosted_transport_mode_registers_the_admin_transport_context_options()
+    {
+        // Arrange
+        using var scenario = CatalogInfrastructureTestServices.CreateApiHostedTransportScenario();
+
+        // Act
+
+        // Assert
+        scenario.ShouldResolveDbContextOptions<CatalogIntegrationTransportDbContext>();
+    }
+
+    [Fact]
     public void Standalone_worker_registers_transport_consumer_without_catalog_outbox_relay()
     {
         // Arrange
@@ -48,5 +60,31 @@ public sealed class CatalogIntegrationEventTransportRegistrationTests
         // Assert
         includesTransportConsumer.ShouldBeTrue();
         includesCatalogOutboxRelay.ShouldBeFalse();
+    }
+
+    [Fact]
+    public void Standalone_worker_registers_catalog_projection_hosted_service()
+    {
+        // Arrange
+        using var scenario = CatalogInfrastructureTestServices.CreateWorkerScenario();
+
+        // Act
+        var includesProjectionWorker = scenario.ContainsHostedService<CatalogProjectionHostedService>();
+
+        // Assert
+        includesProjectionWorker.ShouldBeTrue();
+    }
+
+    [Fact]
+    public void Catalog_api_infrastructure_does_not_start_the_catalog_projection_worker()
+    {
+        // Arrange
+        using var scenario = CatalogInfrastructureTestServices.CreateScenario();
+
+        // Act
+        var includesProjectionWorker = scenario.ContainsHostedService<CatalogProjectionHostedService>();
+
+        // Assert
+        includesProjectionWorker.ShouldBeFalse();
     }
 }

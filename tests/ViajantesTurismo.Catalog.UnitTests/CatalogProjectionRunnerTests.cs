@@ -1,4 +1,5 @@
 using SharedKernel.EventSourcing;
+using SharedKernel.Testing.Assertions;
 using ViajantesTurismo.Catalog.Application.Projections;
 using ViajantesTurismo.Catalog.Application.Tours;
 using ViajantesTurismo.Catalog.Domain.Tours;
@@ -29,9 +30,10 @@ public sealed class CatalogProjectionRunnerTests
         eventStore.AddReplayEvent(CatalogProjectionRunnerTestsHelpers.CreateEnvelope(11, draftCreated, recordedAt));
 
         // Act
-        await runner.Project(TestContext.Current.CancellationToken);
+        var projectedEvents = await runner.Project(TestContext.Current.CancellationToken);
 
         // Assert
+        projectedEvents.ShouldBe(1);
         Assert.Equal(10, eventStore.LoadedAfterPosition);
         Assert.NotNull(readModelStore.Draft);
         Assert.Equal(draftCreated.CatalogTourId, readModelStore.Draft.CatalogTourId);
@@ -56,9 +58,10 @@ public sealed class CatalogProjectionRunnerTests
         var runner = new CatalogProjectionRunner(eventStore, checkpointStore, [projection]);
 
         // Act
-        await runner.Project(TestContext.Current.CancellationToken);
+        var projectedEvents = await runner.Project(TestContext.Current.CancellationToken);
 
         // Assert
+        projectedEvents.ShouldBe(0);
         Assert.Equal(0, eventStore.LoadedAfterPosition);
         Assert.Null(readModelStore.Draft);
         Assert.Null(checkpointStore.SavedCheckpoint);
@@ -89,9 +92,10 @@ public sealed class CatalogProjectionRunnerTests
         eventStore.AddReplayEvent(CatalogProjectionRunnerTestsHelpers.CreateEnvelope(11, firstDraftCreated, DateTimeOffset.UtcNow));
 
         // Act
-        await runner.Project(TestContext.Current.CancellationToken);
+        var projectedEvents = await runner.Project(TestContext.Current.CancellationToken);
 
         // Assert
+        projectedEvents.ShouldBe(2);
         Assert.Collection(
             readModelStore.Drafts,
             first => Assert.Equal(11, first.Position),

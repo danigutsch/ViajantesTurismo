@@ -76,21 +76,9 @@ public static class InfrastructureDependencyInjection
             AdminIntegrationEventJsonContext.Default.AdminTourCreatedIntegrationEvent);
         builder.Services.AddIntegrationEventOutbox<AdminWriteDbContext>();
         builder.Services.AddPostgreSqlIntegrationEventTransportProducer<AdminWriteDbContext>(IntegrationEventConsumerNames.Catalog);
-        builder.Services.AddScoped<ISeeder, Seeder>();
+        builder.Services.AddScoped(sp => new Seeder(sp.GetRequiredService<AdminWriteDbContext>()));
 
         return builder;
-    }
-
-    /// <summary>
-    /// Adds the seeding services to the service collection, including the database context and seeder implementation.
-    /// </summary>
-    /// <param name="services">The service collection to configure.</param>
-    /// <returns>The updated service collection.</returns>
-    public static IServiceCollection AddSeeding(this IServiceCollection services)
-    {
-        ArgumentNullException.ThrowIfNull(services);
-
-        return services.AddScoped<ISeeder, Seeder>();
     }
 
     private static void AddAdminWriteDbContext<TApplicationBuilder>(this TApplicationBuilder builder)
