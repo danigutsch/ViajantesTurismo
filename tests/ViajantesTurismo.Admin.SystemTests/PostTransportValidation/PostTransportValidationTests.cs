@@ -2,7 +2,7 @@ using ViajantesTurismo.Admin.SystemTests.Infrastructure;
 
 namespace ViajantesTurismo.Admin.SystemTests.PostTransportValidation;
 
-[Trait(SharedKernel.Testing.TestTraitNames.CategoryName, TestTraits.PostTransportArea)]
+[Trait(SharedKernel.Testing.TestTraitNames.AreaName, TestTraits.PostTransportArea)]
 [Trait(SharedKernel.Testing.TestTraitNames.ScopeName, TestTraits.SystemScope)]
 [Trait(SharedKernel.Testing.TestTraitNames.HostName, TestTraits.AspireHost)]
 public sealed class PostTransportValidationTests(AspireSystemTestFixture fixture) : AspireSystemTestBase<AspireSystemTestFixture>(fixture)

@@ -81,6 +81,13 @@ internal sealed class CatalogInfrastructureScenario(ServiceProvider provider) : 
         provider.GetRequiredService<TService>().ShouldBeOfType<TImplementation>();
     }
 
+    public void ShouldResolveEnumerableItemAs<TService, TImplementation>()
+        where TService : notnull
+    {
+        var service = provider.GetServices<TService>().ShouldHaveSingleItem(item => item?.GetType() == typeof(TImplementation));
+        service.ShouldBeOfType<TImplementation>();
+    }
+
     public void Dispose()
     {
         provider.DisposeAsync().AsTask().GetAwaiter().GetResult();

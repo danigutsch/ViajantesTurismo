@@ -14,8 +14,6 @@ internal sealed class CatalogProjectionHostedService(
     {
         using var scope = scopeFactory.CreateScope();
         var runner = scope.ServiceProvider.GetRequiredService<CatalogProjectionRunner>();
-        await runner.Project(stoppingToken).ConfigureAwait(false);
-
-        return 0;
+        return await runner.Project(stoppingToken).ConfigureAwait(false);
     }
 }

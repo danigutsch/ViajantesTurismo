@@ -18,8 +18,10 @@ public sealed class CatalogProjectionRunner(
     /// Projects one batch of events for each configured projection.
     /// </summary>
     /// <param name="ct">The cancellation token.</param>
-    public async ValueTask Project(CancellationToken ct)
+    /// <returns>The number of projected events.</returns>
+    public async ValueTask<int> Project(CancellationToken ct)
     {
+        var projectedEvents = 0;
         foreach (var projection in projections)
         {
             using var activity = CatalogTelemetry.ActivitySource.StartActivity(
@@ -52,6 +54,7 @@ public sealed class CatalogProjectionRunner(
                 }
 
                 await checkpointStore.Save(new ProjectionCheckpoint(projection.Name, lastPosition), ct);
+                projectedEvents += envelopes.Count;
 
                 activity?.SetTag(CatalogTelemetry.TagCheckpointPosition, lastPosition);
                 SetOutcome(activity, CatalogTelemetry.OutcomeSuccess);
@@ -78,6 +81,8 @@ public sealed class CatalogProjectionRunner(
                 throw;
             }
         }
+
+        return projectedEvents;
     }
 
     private static TagList CreateProjectionTags(string projectionName, string outcome)

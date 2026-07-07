@@ -9,17 +9,27 @@ internal static class Eventually
 
         using var timeoutCts = new CancellationTokenSource(timeout);
         using var linkedCts = CancellationTokenSource.CreateLinkedTokenSource(ct, timeoutCts.Token);
+        ct.ThrowIfCancellationRequested();
 
-        while (!linkedCts.IsCancellationRequested)
+        try
         {
-            var result = await probe(linkedCts.Token);
-            if (result is not null)
+            while (!linkedCts.IsCancellationRequested)
             {
-                return result;
-            }
+                var result = await probe(linkedCts.Token);
+                if (result is not null)
+                {
+                    return result;
+                }
 
-            await Task.Delay(TimeSpan.FromMilliseconds(250), linkedCts.Token);
+                await Task.Delay(TimeSpan.FromMilliseconds(250), linkedCts.Token);
+            }
         }
+        catch (OperationCanceledException) when (!ct.IsCancellationRequested && timeoutCts.IsCancellationRequested)
+        {
+            throw new TimeoutException($"Expected condition was not met within {timeout}.");
+        }
+
+        ct.ThrowIfCancellationRequested();
 
         throw new TimeoutException($"Expected condition was not met within {timeout}.");
     }
