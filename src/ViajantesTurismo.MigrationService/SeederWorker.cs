@@ -5,7 +5,6 @@ using Npgsql;
 using SharedKernel.EventSourcing.Npgsql;
 using ViajantesTurismo.Admin.Infrastructure;
 using ViajantesTurismo.Catalog.Infrastructure;
-using ViajantesTurismo.Resources;
 
 namespace ViajantesTurismo.MigrationService;
 
@@ -93,11 +92,7 @@ internal sealed class SeederWorker : BackgroundService
 
     private static async ValueTask InitializeCatalogEventSourcingSchema(IServiceProvider serviceProvider, CancellationToken ct)
     {
-        var configuration = serviceProvider.GetRequiredService<IConfiguration>();
-        var connectionString = configuration.GetConnectionString(ResourceNames.CatalogDatabase)
-            ?? throw new InvalidOperationException($"Connection string '{ResourceNames.CatalogDatabase}' is not configured.");
-
-        await using var dataSource = NpgsqlDataSource.Create(connectionString);
+        var dataSource = serviceProvider.GetRequiredService<NpgsqlDataSource>();
         await PostgreSqlEventSourcingSchema.Initialize(dataSource, options: null, ct);
     }
 }

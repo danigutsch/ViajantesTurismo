@@ -1,6 +1,7 @@
 using SharedKernel.Testing;
 using SharedKernel.EventSourcing;
 using SharedKernel.EventSourcing.Npgsql;
+using Npgsql;
 using ViajantesTurismo.Catalog.Application.Media;
 using ViajantesTurismo.Catalog.Application.Projections;
 using ViajantesTurismo.Catalog.Application.PublicContent;
@@ -22,6 +23,7 @@ public sealed class InfrastructureDependencyInjectionTests
 
         // Assert
         scenario.ShouldResolve<CatalogDbContext>();
+        scenario.ShouldResolveSingleton<NpgsqlDataSource>();
         scenario.ShouldResolveAs<IPublicContentStore, EfPublicContentStore>();
         scenario.ShouldResolveAs<IMediaObjectStore, LocalMediaObjectStore>();
         scenario.ShouldResolveAs<IMediaUploadScanner, NoOpMediaUploadScanner>();
