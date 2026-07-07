@@ -64,6 +64,7 @@ public sealed partial class AppHostOrchestrationTests
         releasePublisherText.ShouldContain("PublishAsDockerFile", StringComparison.Ordinal);
         releasePublisherText.ShouldContain("WithImageTag(", StringComparison.Ordinal);
         releasePublisherText.ShouldContain("WithImageRegistry(", StringComparison.Ordinal);
+        releasePublisherText.ShouldContain("!HasContainerImageTag(builder)", StringComparison.Ordinal);
         releasePublisherText.ShouldContain("VT_DEPLOYMENT_VERSION", StringComparison.Ordinal);
         releasePublisherText.ShouldContain("VT_SOURCE_REVISION", StringComparison.Ordinal);
         appHostReadmeText.ShouldNotContain("git describe");

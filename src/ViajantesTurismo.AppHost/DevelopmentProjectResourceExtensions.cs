@@ -27,8 +27,13 @@ internal static class DevelopmentProjectResourceExtensions
         string name)
         where TProject : IProjectMetadata, new()
     {
-        return builder.AddProject<TProject>(name, launchProfileName: null)
-            .WithEnvironment(AspNetCoreEnvironmentVariable, DevelopmentEnvironment)
+        var project = builder.AddProject<TProject>(name, launchProfileName: null);
+        if (!HasContainerImageTag(builder))
+        {
+            project.WithEnvironment(AspNetCoreEnvironmentVariable, DevelopmentEnvironment);
+        }
+
+        return project
             .WithReleasePublishing(builder)
             .WithHttpEndpoint()
             .WithHttpsEndpoint();
@@ -46,9 +51,18 @@ internal static class DevelopmentProjectResourceExtensions
         string name)
         where TProject : IProjectMetadata, new()
     {
-        return builder.AddProject<TProject>(name, launchProfileName: null)
-            .WithEnvironment(DotNetEnvironmentVariable, DevelopmentEnvironment)
-            .WithReleasePublishing(builder);
+        var project = builder.AddProject<TProject>(name, launchProfileName: null);
+        if (!HasContainerImageTag(builder))
+        {
+            project.WithEnvironment(DotNetEnvironmentVariable, DevelopmentEnvironment);
+        }
+
+        return project.WithReleasePublishing(builder);
+    }
+
+    private static bool HasContainerImageTag(IDistributedApplicationBuilder builder)
+    {
+        return !string.IsNullOrWhiteSpace(builder.Configuration[ContainerImageTagConfigurationKey]);
     }
 
     private static IResourceBuilder<ProjectResource> WithReleasePublishing(
