@@ -86,17 +86,29 @@ Release workflow context lives in [`docs/ci/supplemental-workflows.md`](../../do
 Use these Aspire 13.4 integration points for release work:
 
 - `PublishAsDockerFile(...)` on project resources that should be built as application containers
-  during `aspire publish`.
+  during `aspire publish`. This is enabled only when `VT_ASPIRE_CONTAINER_IMAGE_TAG` is supplied.
 - `WithImageTag(...)` on the generated container resource to apply the computed container image tag.
 - `WithImageRegistry(...)` when a release workflow supplies the target registry.
 - `WithImagePushOptions(...)` when publishing needs explicit registry push behavior.
 - `WithManifestPublishingCallback(...)` only for deployment metadata that Aspire does not already
   model through container image annotations or resource environment variables.
 
-Container tags for application resources should use the versioning tool's `package_version` output.
-Keep source SHA and other traceability values in deployment metadata or labels, not in the container
-tag. Infrastructure image tags and SHA-256 digests remain pinned independently and must not be
-replaced with application release versions.
+Container tags for application resources use the versioning tool's `package_version` output. Release
+Prep passes the same computed values as environment variables that MSBuild imports as properties, so
+deployed assemblies carry `InformationalVersion`, which the shared diagnostics emit as OpenTelemetry
+`service.version` and in startup logs. Source SHA and other traceability values are passed as
+deployment metadata environment variables (`VT_DEPLOYMENT_VERSION`, `VT_SOURCE_REVISION`), not in the
+container tag. Infrastructure image tags and SHA-256 digests remain pinned independently and must not
+be replaced with application release versions.
+
+Release workflow inputs consumed by the AppHost:
+
+| Configuration key | Source | Purpose |
+| --- | --- | --- |
+| `VT_ASPIRE_CONTAINER_IMAGE_TAG` | `calculate-release` `package_version` | Application container tag |
+| `VT_ASPIRE_CONTAINER_REGISTRY` | optional workflow variable | Target registry for image publish |
+| `VT_ASPIRE_DEPLOYMENT_VERSION` | `calculate-release` `informational_version` | Deployment metadata environment value |
+| `VT_ASPIRE_SOURCE_REVISION` | workflow commit SHA | Deployment traceability metadata |
 
 Reference APIs researched for the pinned `aspire.cli` `13.4.6` toolchain:
 

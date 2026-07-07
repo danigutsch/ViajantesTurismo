@@ -32,6 +32,12 @@ public sealed partial class AppHostOrchestrationTests
             "architecture",
             "runtime-wiring-and-deployment.md"));
 
+        var releasePublisherText = File.ReadAllText(Path.Combine(
+            GetRepositoryRoot(),
+            "src",
+            "ViajantesTurismo.AppHost",
+            "DevelopmentProjectResourceExtensions.cs"));
+
         // Act
         var combinedDocsText = string.Join('\n', appHostReadmeText, releaseWorkflowDocsText, deploymentDocsText);
 
@@ -44,14 +50,28 @@ public sealed partial class AppHostOrchestrationTests
         deploymentDocsText.ShouldContain("Release workflows own version and registry values", StringComparison.Ordinal);
         releaseWorkflowText.ShouldContain("calculate-release", StringComparison.Ordinal);
         releaseWorkflowText.ShouldContain("package_version", StringComparison.Ordinal);
+        releaseWorkflowText.ShouldContain("VT_ASPIRE_CONTAINER_IMAGE_TAG", StringComparison.Ordinal);
+        releaseWorkflowText.ShouldContain("ComputedInformationalVersion", StringComparison.Ordinal);
+        releaseWorkflowText.ShouldContain("dotnet tool run aspire -- publish", StringComparison.Ordinal);
         combinedDocsText.ShouldContain("SharedKernel.Versioning.Tool calculate-release", StringComparison.Ordinal);
         combinedDocsText.ShouldContain("PublishAsDockerFile", StringComparison.Ordinal);
         combinedDocsText.ShouldContain("WithImageTag", StringComparison.Ordinal);
         combinedDocsText.ShouldContain("WithImageRegistry", StringComparison.Ordinal);
         combinedDocsText.ShouldContain("WithImagePushOptions", StringComparison.Ordinal);
         combinedDocsText.ShouldContain("WithManifestPublishingCallback", StringComparison.Ordinal);
+        combinedDocsText.ShouldContain("OpenTelemetry `service.version`", StringComparison.Ordinal);
         combinedDocsText.ShouldContain("Infrastructure image tags and SHA-256 digests remain", StringComparison.Ordinal);
+        releasePublisherText.ShouldContain("PublishAsDockerFile", StringComparison.Ordinal);
+        releasePublisherText.ShouldContain("WithImageTag(", StringComparison.Ordinal);
+        releasePublisherText.ShouldContain("WithImageRegistry(", StringComparison.Ordinal);
+        releasePublisherText.ShouldContain("!HasContainerImageTag(builder)", StringComparison.Ordinal);
+        releasePublisherText.ShouldContain("VT_DEPLOYMENT_VERSION", StringComparison.Ordinal);
+        releasePublisherText.ShouldContain("VT_SOURCE_REVISION", StringComparison.Ordinal);
         appHostReadmeText.ShouldNotContain("git describe");
+        releasePublisherText.ShouldNotContain("git describe");
+        releasePublisherText.ShouldNotContain("git log");
+        releasePublisherText.ShouldNotContain("git tag");
+        releasePublisherText.ShouldNotContain("git rev-parse");
     }
 
     [Fact]

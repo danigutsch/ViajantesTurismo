@@ -8,6 +8,12 @@ internal static class DevelopmentProjectResourceExtensions
     private const string AspNetCoreEnvironmentVariable = "ASPNETCORE_ENVIRONMENT";
     private const string DotNetEnvironmentVariable = "DOTNET_ENVIRONMENT";
     private const string DevelopmentEnvironment = "Development";
+    private const string ContainerImageTagConfigurationKey = "VT_ASPIRE_CONTAINER_IMAGE_TAG";
+    private const string ContainerRegistryConfigurationKey = "VT_ASPIRE_CONTAINER_REGISTRY";
+    private const string DeploymentVersionConfigurationKey = "VT_ASPIRE_DEPLOYMENT_VERSION";
+    private const string SourceRevisionConfigurationKey = "VT_ASPIRE_SOURCE_REVISION";
+    private const string DeploymentVersionEnvironmentVariable = "VT_DEPLOYMENT_VERSION";
+    private const string SourceRevisionEnvironmentVariable = "VT_SOURCE_REVISION";
 
     /// <summary>
     /// Adds an ASP.NET Core project without launch profile endpoints.
@@ -21,8 +27,14 @@ internal static class DevelopmentProjectResourceExtensions
         string name)
         where TProject : IProjectMetadata, new()
     {
-        return builder.AddProject<TProject>(name, launchProfileName: null)
-            .WithEnvironment(AspNetCoreEnvironmentVariable, DevelopmentEnvironment)
+        var project = builder.AddProject<TProject>(name, launchProfileName: null);
+        if (!HasContainerImageTag(builder))
+        {
+            project.WithEnvironment(AspNetCoreEnvironmentVariable, DevelopmentEnvironment);
+        }
+
+        return project
+            .WithReleasePublishing(builder)
             .WithHttpEndpoint()
             .WithHttpsEndpoint();
     }
@@ -39,7 +51,52 @@ internal static class DevelopmentProjectResourceExtensions
         string name)
         where TProject : IProjectMetadata, new()
     {
-        return builder.AddProject<TProject>(name, launchProfileName: null)
-            .WithEnvironment(DotNetEnvironmentVariable, DevelopmentEnvironment);
+        var project = builder.AddProject<TProject>(name, launchProfileName: null);
+        if (!HasContainerImageTag(builder))
+        {
+            project.WithEnvironment(DotNetEnvironmentVariable, DevelopmentEnvironment);
+        }
+
+        return project.WithReleasePublishing(builder);
+    }
+
+    private static bool HasContainerImageTag(IDistributedApplicationBuilder builder)
+    {
+        return !string.IsNullOrWhiteSpace(builder.Configuration[ContainerImageTagConfigurationKey]);
+    }
+
+    private static IResourceBuilder<ProjectResource> WithReleasePublishing(
+        this IResourceBuilder<ProjectResource> project,
+        IDistributedApplicationBuilder builder)
+    {
+        var imageTag = builder.Configuration[ContainerImageTagConfigurationKey];
+        if (string.IsNullOrWhiteSpace(imageTag))
+        {
+            return project;
+        }
+
+        var registry = builder.Configuration[ContainerRegistryConfigurationKey];
+        var deploymentVersion = builder.Configuration[DeploymentVersionConfigurationKey];
+        var sourceRevision = builder.Configuration[SourceRevisionConfigurationKey];
+
+        if (!string.IsNullOrWhiteSpace(deploymentVersion))
+        {
+            project.WithEnvironment(DeploymentVersionEnvironmentVariable, deploymentVersion);
+        }
+
+        if (!string.IsNullOrWhiteSpace(sourceRevision))
+        {
+            project.WithEnvironment(SourceRevisionEnvironmentVariable, sourceRevision);
+        }
+
+        return project.PublishAsDockerFile(container =>
+        {
+            container.WithImageTag(imageTag);
+
+            if (!string.IsNullOrWhiteSpace(registry))
+            {
+                container.WithImageRegistry(registry);
+            }
+        });
     }
 }
