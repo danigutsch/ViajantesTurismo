@@ -220,15 +220,23 @@ gates, release notes, provenance, and support-policy decisions.
 ## Release prep workflow
 
 The `Release Prep` GitHub Actions workflow uses `SharedKernel.Versioning.Tool` to calculate the
-release version, pack the current `SharedKernel.*` projects, generate release notes, write a
-changelog, and create a minimal provenance manifest with package SHA-256 hashes.
+release version, pack the current `SharedKernel.*` projects, validate package metadata, generate release
+notes, write a changelog, and create provenance, attribution, and SBOM artifacts.
 
 Stable release behavior is disabled by default. Creating a `vX.Y.Z` tag, creating a GitHub release,
 or publishing to NuGet requires manual workflow dispatch and the `release` environment approval.
 NuGet publishing also requires `NUGET_API_KEY` to be configured for that approved environment.
 
-Formal SBOM output remains a follow-up because no repository-approved SBOM generator is currently
-wired into local tooling or CI.
+Release prep writes a minimal SPDX 2.3 SBOM from resolved `packages.lock.json` files to
+`artifacts/release-prep/sbom.spdx.json`. It also writes `third-party-attributions.json` and
+`third-party-notices.md` for release review. License fields that cannot be proven from lock files use
+`NOASSERTION` and must be reviewed against NuGet and dependency-review metadata.
+
+Validate package metadata before release work:
+
+```bash
+dotnet run --project tools/SharedKernel.Versioning.Tool -- validate-package-metadata
+```
 
 ## Internal SharedKernel dependency versions
 

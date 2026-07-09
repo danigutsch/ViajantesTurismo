@@ -3,7 +3,11 @@
     <PropertyGroup>
         <EnableRequestDelegateGenerator>true</EnableRequestDelegateGenerator>
         <EnableConfigurationBindingGenerator>true</EnableConfigurationBindingGenerator>
-        <OpenApiGenerateDocuments>true</OpenApiGenerateDocuments>
+        <OpenApiGenerateDocuments>false</OpenApiGenerateDocuments>
+        <OpenApiGenerateDocumentsOnBuild>false</OpenApiGenerateDocumentsOnBuild>
+        <GenerateCatalogOpenApiArtifacts Condition="'$(RefreshCatalogOpenApiArtifacts)' == 'true'">true</GenerateCatalogOpenApiArtifacts>
+        <OpenApiGenerateDocuments Condition="'$(GenerateCatalogOpenApiArtifacts)' == 'true'">true</OpenApiGenerateDocuments>
+        <OpenApiGenerateDocumentsOnBuild Condition="'$(GenerateCatalogOpenApiArtifacts)' == 'true'">true</OpenApiGenerateDocumentsOnBuild>
         <OpenApiDocumentsDirectory>$(MSBuildProjectDirectory)/../ViajantesTurismo.Catalog.Contracts/OpenApi/.generated</OpenApiDocumentsDirectory>
     </PropertyGroup>
 
