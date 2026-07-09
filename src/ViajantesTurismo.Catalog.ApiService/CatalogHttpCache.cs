@@ -1,3 +1,4 @@
+using System.Globalization;
 using System.Security.Cryptography;
 using System.Text;
 using Microsoft.Net.Http.Headers;
@@ -37,7 +38,7 @@ internal static class CatalogHttpCache
             MaxAge = PublicFreshness,
             Extensions = { new NameValueHeaderValue(StaleWhileRevalidateDirective, StaleWhileRevalidateSeconds) }
         };
-        httpContext.Response.Headers.ETag = CreateWeakEtag(etagSeed);
+        httpContext.Response.Headers[HeaderNames.ETag] = CreateWeakEtag(etagSeed);
     }
 
     public static void SetNoStore(HttpContext httpContext)
@@ -53,7 +54,7 @@ internal static class CatalogHttpCache
     public static string CreateToursEtagSeed(IReadOnlyCollection<CatalogTourDto> tours)
     {
         var builder = new StringBuilder();
-        foreach (var tour in tours.OrderBy(tour => tour.Id))
+        foreach (var tour in tours)
         {
             AppendTour(builder, tour);
         }
@@ -70,47 +71,65 @@ internal static class CatalogHttpCache
 
     public static string CreatePublicContentEtagSeed(string key, PublicContentVariantDto variant)
     {
-        return string.Join(
-            '|',
+        var builder = new StringBuilder();
+        AppendFields(
+            builder,
             key,
-            variant.Language,
+            variant.Language.ToString(),
             variant.Title,
             variant.Body,
             variant.SeoTitle,
             variant.MetaDescription,
             variant.ShareSummary,
-            variant.RequiresHumanReview);
+            variant.RequiresHumanReview.ToString());
+        return builder.ToString();
     }
 
     public static string CreateThemeEtagSeed(PublicThemeSettingsDto theme)
     {
-        return string.Join(
-            '|',
+        var builder = new StringBuilder();
+        AppendFields(
+            builder,
             theme.PrimaryColor,
             theme.AccentColor,
             theme.BackgroundColor,
             theme.TextColor,
             theme.HeadingFontFamily,
             theme.BodyFontFamily);
+        return builder.ToString();
     }
 
     private static void AppendTour(StringBuilder builder, CatalogTourDto tour)
     {
         builder
-            .Append(tour.Id).Append('|')
-            .Append(tour.Title).Append('|')
-            .Append(tour.Slug).Append('|')
-            .Append(tour.IsPublished).Append('|')
-            .Append(tour.UpdatedAt.ToUnixTimeMilliseconds()).Append('|');
+            .AppendLengthPrefixed(tour.Id.ToString())
+            .AppendLengthPrefixed(tour.Title)
+            .AppendLengthPrefixed(tour.Slug)
+            .AppendLengthPrefixed(tour.IsPublished.ToString())
+            .AppendLengthPrefixed(tour.UpdatedAt.ToUnixTimeMilliseconds().ToString(CultureInfo.InvariantCulture));
 
         foreach (var image in tour.Images.OrderBy(image => image.SortOrder).ThenBy(image => image.Uri.ToString(), StringComparer.Ordinal))
         {
             builder
-                .Append(image.Uri).Append('|')
-                .Append(image.AltText).Append('|')
-                .Append(image.Caption).Append('|')
-                .Append(image.IsCover).Append('|');
+                .AppendLengthPrefixed(image.Uri.ToString())
+                .AppendLengthPrefixed(image.AltText)
+                .AppendLengthPrefixed(image.Caption)
+                .AppendLengthPrefixed(image.IsCover.ToString());
         }
+    }
+
+    private static void AppendFields(StringBuilder builder, params string?[] values)
+    {
+        foreach (var value in values)
+        {
+            builder.AppendLengthPrefixed(value);
+        }
+    }
+
+    private static StringBuilder AppendLengthPrefixed(this StringBuilder builder, string? value)
+    {
+        value ??= string.Empty;
+        return builder.Append(value.Length).Append(':').Append(value);
     }
 
     private static string CreateWeakEtag(string value)

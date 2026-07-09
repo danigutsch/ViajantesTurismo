@@ -4,8 +4,8 @@ internal static partial class CatalogCacheLog
 {
     [LoggerMessage(
         EventId = 1,
-        EventName = nameof(PublicCatalogCacheInvalidated),
+        EventName = nameof(PublicCacheAreaInvalidated),
         Level = LogLevel.Information,
         Message = "Invalidated public cache area {CacheArea}.")]
-    public static partial void PublicCatalogCacheInvalidated(this ILogger logger, string cacheArea);
+    public static partial void PublicCacheAreaInvalidated(this ILogger logger, string cacheArea);
 }

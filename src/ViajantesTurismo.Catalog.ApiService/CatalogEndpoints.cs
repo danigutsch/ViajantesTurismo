@@ -425,19 +425,19 @@ internal static class CatalogEndpoints
     private static async Task InvalidatePublicCatalogCache(IOutputCacheStore outputCacheStore, ILogger logger, CancellationToken ct)
     {
         await outputCacheStore.EvictByTagAsync(CatalogHttpCache.PublicCatalogTag, ct);
-        logger.PublicCatalogCacheInvalidated(CatalogHttpCache.PublicCatalogArea);
+        logger.PublicCacheAreaInvalidated(CatalogHttpCache.PublicCatalogArea);
     }
 
     private static async Task InvalidatePublicContentCache(IOutputCacheStore outputCacheStore, ILogger logger, CancellationToken ct)
     {
         await outputCacheStore.EvictByTagAsync(CatalogHttpCache.PublicContentTag, ct);
-        logger.PublicCatalogCacheInvalidated(CatalogHttpCache.PublicContentArea);
+        logger.PublicCacheAreaInvalidated(CatalogHttpCache.PublicContentArea);
     }
 
     private static async Task InvalidatePublicThemeCache(IOutputCacheStore outputCacheStore, ILogger logger, CancellationToken ct)
     {
         await outputCacheStore.EvictByTagAsync(CatalogHttpCache.PublicThemeTag, ct);
-        logger.PublicCatalogCacheInvalidated(CatalogHttpCache.PublicThemeArea);
+        logger.PublicCacheAreaInvalidated(CatalogHttpCache.PublicThemeArea);
     }
 
     private static CatalogTourDto MapTour(CatalogTourDraftReadModel tour, IReadOnlyList<PublicMediaImage>? images, IMediaObjectStore objectStore)
@@ -897,4 +897,5 @@ internal static class CatalogEndpoints
 
         return publicContentLanguage != PublicContentLanguage.None;
     }
+
 }
