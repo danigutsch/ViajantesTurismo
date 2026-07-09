@@ -91,6 +91,8 @@ public sealed class AsyncApiContractArtifactTests
         adminMessage.ShouldContain("required:", StringComparison.Ordinal);
         adminMessage.ShouldContain("- eventType", StringComparison.Ordinal);
         adminMessage.ShouldContain("- eventVersion", StringComparison.Ordinal);
+        adminMessage.ShouldContain("consumerNames:", StringComparison.Ordinal);
+        adminMessage.ShouldContain($"- {IntegrationEventConsumerNames.Catalog}", StringComparison.Ordinal);
         adminSchema.ShouldContain("eventId:", StringComparison.Ordinal);
         adminSchema.ShouldContain("occurredAt:", StringComparison.Ordinal);
         adminSchema.ShouldContain("adminTourId:", StringComparison.Ordinal);
@@ -102,6 +104,8 @@ public sealed class AsyncApiContractArtifactTests
         mediaMessage.ShouldContain("required:", StringComparison.Ordinal);
         mediaMessage.ShouldContain("- eventType", StringComparison.Ordinal);
         mediaMessage.ShouldContain("- eventVersion", StringComparison.Ordinal);
+        mediaMessage.ShouldContain("consumerNames:", StringComparison.Ordinal);
+        mediaMessage.ShouldContain($"- {IntegrationEventConsumerNames.Catalog}", StringComparison.Ordinal);
         mediaSchema.ShouldContain("eventId:", StringComparison.Ordinal);
         mediaSchema.ShouldContain("occurredAt:", StringComparison.Ordinal);
         mediaSchema.ShouldContain("mediaImageId:", StringComparison.Ordinal);
