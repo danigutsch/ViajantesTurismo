@@ -107,6 +107,7 @@ public sealed class DocumentationGeneratorTests
         updated.ShouldContain("api --> admin", StringComparison.Ordinal);
         updated.ShouldContain("App[App] --> Lib[Lib]", StringComparison.Ordinal);
         updated.ShouldContain("| `GET` | `/customers` | GetCustomers | management/internal | not declared | `Api/CustomerEndpoints.cs` |", StringComparison.Ordinal);
+        updated.ShouldContain("| `POST` | `/customers` | CreateCustomer | management/internal | required | `Api/CustomerEndpoints.cs` |", StringComparison.Ordinal);
         updated.ShouldContain("| AdminTourCreatedIntegrationEvent | `admin.tour.created` | 1 | `TourIntegrationEventMappings` | `ApplicationDependencyInjection` | `AdminTourCreatedIntegrationHandler` |", StringComparison.Ordinal);
         updated.ShouldContain("trigger --> build", StringComparison.Ordinal);
         updated.ShouldContain("build --> test", StringComparison.Ordinal);

@@ -17,7 +17,9 @@ internal static partial class IntegrationEventMarkdownTable
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(sourcePath);
 
-        var files = SourceFiles(sourcePath).ToArray();
+        var files = SourceFiles(sourcePath)
+            .Select(file => (File: file, Content: File.ReadAllText(file.FullName, Utf8NoBom)))
+            .ToArray();
         var rows = EventContracts(files)
             .OrderBy(row => row.EventName, StringComparer.Ordinal)
             .Select(row => $"| {row.EventName} | `{row.EventType}` | {row.EventVersion} | {Sources(files, row.EventName)} | {Consumers(files, row.EventName)} | {Handlers(files, row.EventName)} |")
@@ -32,11 +34,10 @@ internal static partial class IntegrationEventMarkdownTable
             ]);
     }
 
-    private static IEnumerable<(string EventName, string EventType, string EventVersion)> EventContracts(IReadOnlyCollection<FileInfo> files)
+    private static IEnumerable<(string EventName, string EventType, string EventVersion)> EventContracts(IReadOnlyCollection<(FileInfo File, string Content)> files)
     {
-        foreach (var file in files)
+        foreach (var content in files.Select(static item => item.Content))
         {
-            var content = File.ReadAllText(file.FullName, Utf8NoBom);
             var eventMatch = IntegrationEventRegex().Match(content);
             if (!eventMatch.Success)
             {
@@ -59,7 +60,7 @@ internal static partial class IntegrationEventMarkdownTable
             .Where(static file => !file.FullName.Split(Path.DirectorySeparatorChar).Contains("obj", StringComparer.Ordinal))
             .OrderBy(file => file.FullName, StringComparer.Ordinal);
 
-    private static string Sources(IReadOnlyCollection<FileInfo> files, string eventName)
+    private static string Sources(IReadOnlyCollection<(FileInfo File, string Content)> files, string eventName)
     {
         var producers = FilesContaining(files, $"new {eventName}(")
             .Where(file => !file.Equals(eventName, StringComparison.Ordinal))
@@ -68,21 +69,21 @@ internal static partial class IntegrationEventMarkdownTable
         return FormatList(producers, "not discovered from source");
     }
 
-    private static string Consumers(IReadOnlyCollection<FileInfo> files, string eventName)
+    private static string Consumers(IReadOnlyCollection<(FileInfo File, string Content)> files, string eventName)
     {
         var consumers = files
-            .Where(file => ConsumerRegex(eventName).IsMatch(File.ReadAllText(file.FullName, Utf8NoBom)))
-            .Select(file => Path.GetFileNameWithoutExtension(file.Name));
+            .Where(file => ConsumerRegex(eventName).IsMatch(file.Content))
+            .Select(file => Path.GetFileNameWithoutExtension(file.File.Name));
 
         return FormatList(consumers, "not registered");
     }
 
-    private static string Handlers(IReadOnlyCollection<FileInfo> files, string eventName)
+    private static string Handlers(IReadOnlyCollection<(FileInfo File, string Content)> files, string eventName)
     {
         var handlers = files
-            .Select(file => (File: file, Match: HandlerRegex(eventName).Match(File.ReadAllText(file.FullName, Utf8NoBom))))
-            .Where(item => item.Match.Success)
-            .Select(item => item.Match.Groups[1].Value)
+            .Select(file => HandlerRegex(eventName).Match(file.Content))
+            .Where(match => match.Success)
+            .Select(match => match.Groups[1].Value)
             .Distinct(StringComparer.Ordinal)
             .OrderBy(handler => handler, StringComparer.Ordinal)
             .ToArray();
@@ -90,10 +91,10 @@ internal static partial class IntegrationEventMarkdownTable
         return handlers.Length == 0 ? "not discovered" : string.Join("<br>", handlers.Select(static handler => $"`{handler}`"));
     }
 
-    private static IEnumerable<string> FilesContaining(IReadOnlyCollection<FileInfo> files, string marker) =>
+    private static IEnumerable<string> FilesContaining(IReadOnlyCollection<(FileInfo File, string Content)> files, string marker) =>
         files
-            .Where(file => File.ReadAllText(file.FullName, Utf8NoBom).Contains(marker, StringComparison.Ordinal))
-            .Select(file => Path.GetFileNameWithoutExtension(file.Name))
+            .Where(file => file.Content.Contains(marker, StringComparison.Ordinal))
+            .Select(file => Path.GetFileNameWithoutExtension(file.File.Name))
             .Distinct(StringComparer.Ordinal)
             .Order(StringComparer.Ordinal);
 
