@@ -61,6 +61,7 @@
         <Project Path="src/SharedKernel/SharedKernel.Mediator.EntityFrameworkCore/SharedKernel.Mediator.EntityFrameworkCore.csproj" />
         <Project Path="src/SharedKernel/SharedKernel.Testing.Mediator/SharedKernel.Testing.Mediator.csproj" />
         <Project Path="src/SharedKernel/SharedKernel.Versioning/SharedKernel.Versioning.csproj" />
+        <Project Path="src/SharedKernel/SharedKernel.Documentation/SharedKernel.Documentation.csproj" />
         <Project Path="src/SharedKernel/SharedKernel.ApiVersioning/SharedKernel.ApiVersioning.csproj" />
         <Project Path="src/SharedKernel/SharedKernel.ApiVersioning.AspNetCore/SharedKernel.ApiVersioning.AspNetCore.csproj" />
     </Folder>
@@ -111,6 +112,7 @@
         <Project Path="tests/SharedKernel.AI.Tests/SharedKernel.AI.Tests.csproj" />
         <Project Path="tests/SharedKernel.HttpClients.Tests/SharedKernel.HttpClients.Tests.csproj" />
         <Project Path="tests/SharedKernel.Versioning.Tests/SharedKernel.Versioning.Tests.csproj" />
+        <Project Path="tests/SharedKernel.Documentation.Tests/SharedKernel.Documentation.Tests.csproj" />
         <Project Path="tests/SharedKernel.ApiVersioning.Tests/SharedKernel.ApiVersioning.Tests.csproj" />
         <Project Path="tests/SharedKernel.ApiVersioning.AspNetCore.Tests/SharedKernel.ApiVersioning.AspNetCore.Tests.csproj" />
         <Project Path="tests/ViajantesTurismo.ServiceDefaults.Tests/ViajantesTurismo.ServiceDefaults.Tests.csproj" />
@@ -157,6 +159,7 @@
     <Folder Name="/tools/">
         <Project Path="tools/SharedKernel.Testing.CodeFixRunner/SharedKernel.Testing.CodeFixRunner.csproj" />
         <Project Path="tools/SharedKernel.Versioning.Tool/SharedKernel.Versioning.Tool.csproj" />
+        <Project Path="tools/SharedKernel.Documentation.Tool/SharedKernel.Documentation.Tool.csproj" />
     </Folder>
     <Folder Name="/samples/">
         <Project Path="samples/Mediator/Mediator.Sample/Mediator.Sample.csproj" />

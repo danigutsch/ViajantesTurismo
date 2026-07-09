@@ -1,0 +1,18 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <PackageId>SharedKernel.Documentation</PackageId>
+        <Description>Reusable documentation automation primitives for generated Markdown blocks and Mermaid diagrams.</Description>
+        <RootNamespace>SharedKernel.Documentation</RootNamespace>
+        <PackageReadmeFile>README.md</PackageReadmeFile>
+        <PackageLicenseExpression>MIT</PackageLicenseExpression>
+        <RepositoryUrl>https://github.com/danigutsch/ViajantesTurismo</RepositoryUrl>
+        <PublishRepositoryUrl>true</PublishRepositoryUrl>
+        <PackageTags>documentation;markdown;mermaid;automation;shared-kernel;dotnet</PackageTags>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <None Include="README.md" Pack="true" PackagePath="\" />
+    </ItemGroup>
+
+</Project>

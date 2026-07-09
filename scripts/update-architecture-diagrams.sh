@@ -2,26 +2,14 @@
 
 set -euo pipefail
 
-docker_uid="$(id -u)"
-docker_gid="$(id -g)"
-docker_user="${docker_uid}:${docker_gid}"
+if output="$(dotnet run --project tools/SharedKernel.Documentation.Tool -- generate --config docs/architecture/generated-diagrams.json "$@" 2>&1)"; then
+    printf '%s\n' "${output}"
+else
+    status=$?
+    printf '%s\n' "${output}" >&2
+    if [[ "${output}" == *"Generated documentation is stale:"* ]]; then
+        printf '%s\n' "Run: bash scripts/update-architecture-diagrams.sh" >&2
+    fi
 
-if command -v python3 > /dev/null 2>&1; then
-    python3 scripts/update-architecture-diagrams.py "$@"
-    exit 0
+    exit "${status}"
 fi
-
-if command -v docker > /dev/null 2>&1; then
-    docker run --rm \
-        --user "${docker_user}" \
-        --env HOME=/tmp \
-        --env PYTHONDONTWRITEBYTECODE=1 \
-        --volume "${PWD}:/workspace" \
-        --workdir /workspace \
-        python:3.13-alpine \
-        python3 -B scripts/update-architecture-diagrams.py "$@"
-    exit 0
-fi
-
-echo "update-architecture-diagrams requires either local python3 or docker." >&2
-exit 1

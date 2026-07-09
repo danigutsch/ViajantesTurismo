@@ -27,6 +27,7 @@ tests/SharedKernel.ImageProcessing.Tests/SharedKernel.ImageProcessing.Tests.cspr
 tests/SharedKernel.AI.Tests/SharedKernel.AI.Tests.csproj
 tests/SharedKernel.Observability.Tests/SharedKernel.Observability.Tests.csproj
 tests/SharedKernel.Versioning.Tests/SharedKernel.Versioning.Tests.csproj
+tests/SharedKernel.Documentation.Tests/SharedKernel.Documentation.Tests.csproj
 tests/SharedKernel.Mediator.Tests/SharedKernel.Mediator.Tests.csproj
 tests/SharedKernel.Mediator.Analyzers.Tests/SharedKernel.Mediator.Analyzers.Tests.csproj
 tests/SharedKernel.Aspire.Analyzers.Tests/SharedKernel.Aspire.Analyzers.Tests.csproj
