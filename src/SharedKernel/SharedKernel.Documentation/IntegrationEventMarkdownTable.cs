@@ -63,7 +63,6 @@ internal static partial class IntegrationEventMarkdownTable
     private static string Sources(IReadOnlyCollection<(FileInfo File, string DisplayPath, string Content)> files, string eventName)
     {
         var producers = FilesContaining(files, $"new {eventName}(")
-            .Where(file => !file.Equals(eventName, StringComparison.Ordinal))
             .ToArray();
 
         return FormatList(producers, "not discovered from source");
