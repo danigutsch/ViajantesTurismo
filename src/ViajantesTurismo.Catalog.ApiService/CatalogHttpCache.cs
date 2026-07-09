@@ -1,5 +1,6 @@
 using System.Security.Cryptography;
 using System.Text;
+using Microsoft.Net.Http.Headers;
 using ViajantesTurismo.Catalog.Contracts;
 
 namespace ViajantesTurismo.Catalog.ApiService;
@@ -20,21 +21,33 @@ internal static class CatalogHttpCache
 
     public const string PublicThemeArea = "public-theme";
 
-    private const string PublicCacheControl = "public, max-age=60, stale-while-revalidate=300";
+    private const string StaleWhileRevalidateDirective = "stale-while-revalidate";
 
-    private const string NoStoreCacheControl = "no-store";
+    private const string StaleWhileRevalidateSeconds = "300";
+
+    private const string PragmaNoCache = "no-cache";
+
+    private const string ExpiredAtUnixEpoch = "0";
 
     public static void SetPublicHeaders(HttpContext httpContext, string etagSeed)
     {
-        httpContext.Response.Headers.CacheControl = PublicCacheControl;
+        httpContext.Response.GetTypedHeaders().CacheControl = new CacheControlHeaderValue
+        {
+            Public = true,
+            MaxAge = PublicFreshness,
+            Extensions = { new NameValueHeaderValue(StaleWhileRevalidateDirective, StaleWhileRevalidateSeconds) }
+        };
         httpContext.Response.Headers.ETag = CreateWeakEtag(etagSeed);
     }
 
     public static void SetNoStore(HttpContext httpContext)
     {
-        httpContext.Response.Headers.CacheControl = NoStoreCacheControl;
-        httpContext.Response.Headers.Pragma = "no-cache";
-        httpContext.Response.Headers.Expires = "0";
+        httpContext.Response.GetTypedHeaders().CacheControl = new CacheControlHeaderValue
+        {
+            NoStore = true
+        };
+        httpContext.Response.Headers.Pragma = PragmaNoCache;
+        httpContext.Response.Headers.Expires = ExpiredAtUnixEpoch;
     }
 
     public static string CreateToursEtagSeed(IReadOnlyCollection<CatalogTourDto> tours)

@@ -10,12 +10,7 @@ builder.AddServiceDefaults();
 builder.Services.AddHttpClientDefaults();
 builder.Services.AddHttpClient<IPublicCatalogApiClient, PublicCatalogApiClient>(client => client.BaseAddress = new Uri($"https+http://{ResourceNames.CatalogApi}"));
 builder.Services.AddRazorComponents();
-builder.Services.AddOutputCache(options =>
-{
-    options.AddPolicy(
-        PublicWebHttpCache.PublishedContentPolicy,
-        policy => policy.Expire(PublicWebHttpCache.PublishedContentFreshness).SetVaryByQuery("culture", "language"));
-});
+builder.Services.AddPublicWebOutputCache();
 
 var app = builder.Build();
 

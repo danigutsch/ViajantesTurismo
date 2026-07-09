@@ -6,6 +6,6 @@ internal static partial class CatalogCacheLog
         EventId = 1,
         EventName = nameof(PublicCatalogCacheInvalidated),
         Level = LogLevel.Information,
-        Message = "Invalidated public catalog cache area {CacheArea}.")]
+        Message = "Invalidated public cache area {CacheArea}.")]
     public static partial void PublicCatalogCacheInvalidated(this ILogger logger, string cacheArea);
 }
