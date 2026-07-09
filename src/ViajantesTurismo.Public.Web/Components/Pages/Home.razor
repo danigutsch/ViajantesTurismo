@@ -36,6 +36,9 @@
 </section>
 
 @code {
+    [CascadingParameter]
+    private HttpContext? HttpContext { get; set; }
+
     private CatalogTourDto[]? _tours;
     private PublicContentVariantDto? _hero;
     private bool _loadFailed;
@@ -75,6 +78,7 @@
         }
         catch (HttpRequestException)
         {
+            PublicWebHttpCache.SetServiceUnavailableNoStore(HttpContext);
             _loadFailed = true;
             _tours = [];
         }

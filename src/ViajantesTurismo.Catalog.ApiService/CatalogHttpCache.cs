@@ -181,7 +181,21 @@ internal static class CatalogHttpCache
             }
         }
 
-        queryValues.Add(new KeyValuePair<string, string?>(CultureQueryKey, language.ToString()));
+        if (NormalizeCulture(language.ToString()) is { } culture)
+        {
+            queryValues.Add(new KeyValuePair<string, string?>(CultureQueryKey, culture));
+        }
+
         httpContext.Request.QueryString = QueryString.Create(queryValues);
+    }
+
+    private static string? NormalizeCulture(string? culture)
+    {
+        return culture?.Trim().ToUpperInvariant() switch
+        {
+            "EN-US" or "EN" => "en-US",
+            "PT-BR" or "PT" => "pt-BR",
+            _ => null
+        };
     }
 }

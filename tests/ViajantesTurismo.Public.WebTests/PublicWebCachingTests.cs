@@ -56,6 +56,60 @@ public sealed class PublicWebCachingTests
     }
 
     [Fact]
+    public async Task Public_web_cache_uses_canonical_culture_for_language_alias()
+    {
+        // Arrange
+        var catalogApi = new FakePublicCatalogApiClient();
+        catalogApi.AddTour(PublicWebEndpointTestsHelpers.CreateTour("camino-norte", "Camino Norte"));
+        catalogApi.AddContent("en-US", new PublicContentVariantDto
+        {
+            Language = PublicContentLanguageDto.EnUs,
+            Title = "Original hero",
+            Body = "Original body"
+        });
+        await using var factory = PublicWebEndpointTestsHelpers.CreateFactory(catalogApi);
+        using var client = factory.CreateClient();
+
+        // Act
+        using var firstResponse = await client.GetAsync(new Uri("/?language=EN", UriKind.Relative), TestContext.Current.CancellationToken);
+        var firstContent = await firstResponse.Content.ReadAsStringAsync(TestContext.Current.CancellationToken);
+        catalogApi.AddContent("en-US", new PublicContentVariantDto
+        {
+            Language = PublicContentLanguageDto.EnUs,
+            Title = "Store-only hero",
+            Body = "Store-only body"
+        });
+        using var cachedResponse = await client.GetAsync(new Uri("/?culture=en-US", UriKind.Relative), TestContext.Current.CancellationToken);
+        var cachedContent = await cachedResponse.Content.ReadAsStringAsync(TestContext.Current.CancellationToken);
+
+        // Assert
+        firstResponse.StatusCode.ShouldBe(HttpStatusCode.OK);
+        firstContent.ShouldContain("Original hero", StringComparison.Ordinal);
+        cachedResponse.StatusCode.ShouldBe(HttpStatusCode.OK);
+        cachedContent.ShouldContain("Original hero", StringComparison.Ordinal);
+        cachedContent.ShouldNotContain("Store-only hero");
+    }
+
+    [Fact]
+    public async Task Public_ssr_load_failures_are_not_cacheable()
+    {
+        // Arrange
+        var catalogApi = new FakePublicCatalogApiClient { FailListRequests = true };
+        await using var factory = PublicWebEndpointTestsHelpers.CreateFactory(catalogApi);
+        using var client = factory.CreateClient();
+
+        // Act
+        using var response = await client.GetAsync(new Uri("/group-bike-tours", UriKind.Relative), TestContext.Current.CancellationToken);
+        var content = await response.Content.ReadAsStringAsync(TestContext.Current.CancellationToken);
+
+        // Assert
+        response.StatusCode.ShouldBe(HttpStatusCode.ServiceUnavailable);
+        var cacheControl = response.Headers.CacheControl.ShouldNotBeNull();
+        cacheControl.ToString().ShouldContain("no-store", StringComparison.Ordinal);
+        content.ShouldContain("Tours could not be loaded right now.", StringComparison.Ordinal);
+    }
+
+    [Fact]
     public async Task Error_endpoint_is_not_cacheable()
     {
         // Arrange

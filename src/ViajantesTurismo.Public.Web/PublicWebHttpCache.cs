@@ -72,6 +72,17 @@ internal static class PublicWebHttpCache
         httpContext.Response.Headers[HeaderNames.Expires] = ExpiredAtUnixEpochHttpDate;
     }
 
+    public static void SetServiceUnavailableNoStore(HttpContext? httpContext)
+    {
+        if (httpContext is null || httpContext.Response.HasStarted)
+        {
+            return;
+        }
+
+        httpContext.Response.StatusCode = StatusCodes.Status503ServiceUnavailable;
+        SetNoStore(httpContext);
+    }
+
     private static void SetPublishedContent(HttpContext httpContext)
     {
         httpContext.Response.GetTypedHeaders().CacheControl = new CacheControlHeaderValue
@@ -119,7 +130,11 @@ internal static class PublicWebHttpCache
             }
         }
 
-        queryValues.Add(new KeyValuePair<string, string?>(CultureQueryKey, language.ToString()));
+        if (PublicCultureQuery.NormalizeCulture(language.ToString()) is { } culture)
+        {
+            queryValues.Add(new KeyValuePair<string, string?>(CultureQueryKey, culture));
+        }
+
         httpContext.Request.QueryString = QueryString.Create(queryValues);
     }
 }

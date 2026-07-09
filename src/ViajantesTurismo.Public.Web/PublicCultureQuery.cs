@@ -25,12 +25,12 @@ internal static class PublicCultureQuery
         return NormalizeCulture(requestedCulture);
     }
 
-    private static string? NormalizeCulture(string? culture)
+    public static string? NormalizeCulture(string? culture)
     {
         return culture?.Trim().ToUpperInvariant() switch
         {
-            "EN-US" => "en-US",
-            "PT-BR" => "pt-BR",
+            "EN-US" or "EN" => "en-US",
+            "PT-BR" or "PT" => "pt-BR",
             _ => null
         };
     }

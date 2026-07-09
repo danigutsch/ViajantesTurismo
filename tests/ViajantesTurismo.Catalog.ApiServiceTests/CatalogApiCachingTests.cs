@@ -144,4 +144,30 @@ public sealed class CatalogApiCachingTests
         refreshedContent.ShouldNotBeNull();
         refreshedContent.Title.ShouldBe("Invalidated content");
     }
+
+    [Fact]
+    public async Task Public_content_cache_uses_canonical_culture_for_language_alias()
+    {
+        // Arrange
+        var cancellationToken = TestContext.Current.CancellationToken;
+        var contentStore = new TestPublicContentStore();
+        await contentStore.SaveContent(CatalogApiCachingTestData.CreatePublishedContent("Original content"), cancellationToken);
+        await using var factory = CatalogApiTestHost.Create(new TestCatalogTourReadModelStore(), contentStore);
+        using var client = factory.CreateClient();
+
+        // Act
+        using var firstResponse = await client.GetAsync(new Uri("/public/catalog/content/home.hero?language=EN", UriKind.Relative), cancellationToken);
+        var firstContent = await firstResponse.Content.ReadFromJsonAsync<PublicContentVariantDto>(cancellationToken);
+        await contentStore.SaveContent(CatalogApiCachingTestData.CreatePublishedContent("Store-only content"), cancellationToken);
+        using var cachedResponse = await client.GetAsync(new Uri("/public/catalog/content/home.hero?culture=en-US", UriKind.Relative), cancellationToken);
+        var cachedContent = await cachedResponse.Content.ReadFromJsonAsync<PublicContentVariantDto>(cancellationToken);
+
+        // Assert
+        firstResponse.StatusCode.ShouldBe(HttpStatusCode.OK);
+        firstContent.ShouldNotBeNull();
+        firstContent.Title.ShouldBe("Original content");
+        cachedResponse.StatusCode.ShouldBe(HttpStatusCode.OK);
+        cachedContent.ShouldNotBeNull();
+        cachedContent.Title.ShouldBe("Original content");
+    }
 }
