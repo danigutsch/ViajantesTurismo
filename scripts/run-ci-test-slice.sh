@@ -141,13 +141,13 @@ prepare_openapi_artifacts() {
     done
 
     if [[ "${prepare_admin}" == "true" ]]; then
-        dotnet build --no-restore \
+        dotnet build \
             src/ViajantesTurismo.Admin.ApiService/ViajantesTurismo.Admin.ApiService.csproj \
             -p:GenerateAdminOpenApiArtifacts=true
     fi
 
     if [[ "${prepare_catalog}" == "true" ]]; then
-        dotnet build --no-restore \
+        dotnet build \
             src/ViajantesTurismo.Catalog.ApiService/ViajantesTurismo.Catalog.ApiService.csproj \
             -p:GenerateCatalogOpenApiArtifacts=true
     fi
