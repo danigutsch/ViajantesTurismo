@@ -70,8 +70,9 @@ internal static partial class IntegrationEventMarkdownTable
 
     private static string Consumers(IReadOnlyCollection<(FileInfo File, string DisplayPath, string Content)> files, string eventName)
     {
+        var consumerRegex = ConsumerRegex(eventName);
         var consumers = files
-            .Where(file => ConsumerRegex(eventName).IsMatch(file.Content))
+            .Where(file => consumerRegex.IsMatch(file.Content))
             .Select(file => file.DisplayPath);
 
         return FormatList(consumers, "not registered");
@@ -79,8 +80,9 @@ internal static partial class IntegrationEventMarkdownTable
 
     private static string Handlers(IReadOnlyCollection<(FileInfo File, string DisplayPath, string Content)> files, string eventName)
     {
+        var handlerRegex = HandlerRegex(eventName);
         var handlers = files
-            .Select(file => HandlerRegex(eventName).Match(file.Content))
+            .Select(file => handlerRegex.Match(file.Content))
             .Where(match => match.Success)
             .Select(match => match.Groups[1].Value)
             .Distinct(StringComparer.Ordinal)
