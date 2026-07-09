@@ -75,4 +75,52 @@ public sealed class DocumentationGeneratorTests
         result.ChangedFiles.ShouldBe(["docs/architecture/overview.md"]);
         updated.ShouldContain("newNode[New node]", StringComparison.Ordinal);
     }
+
+    [Fact]
+    public void Run_generates_diagrams_from_repository_source_files()
+    {
+        // Arrange
+        using var workspace = new TemporaryDocumentationWorkspace();
+        workspace.WriteArchitectureDoc("overview.md", DocumentationTestContent.GeneratedBlocksDocument("apphost", "projects", "jobs", "workflows"));
+        workspace.WriteConfig(DocumentationTestContent.RepositorySourcesConfig());
+        workspace.WriteFile("apphost/Program.cs", DocumentationTestContent.AppHostProgram());
+        workspace.WriteFile("src/App/App.csproj", DocumentationTestContent.AppProject());
+        workspace.WriteFile("src/Lib/Lib.csproj", DocumentationTestContent.EmptyProject());
+        workspace.WriteFile(".github/workflows/ci.yml", DocumentationTestContent.CiWorkflow());
+        workspace.WriteFile(".github/workflows/release.yml", DocumentationTestContent.ReleaseWorkflow());
+        workspace.WriteFile(".github/workflows/excluded.yml", DocumentationTestContent.ExcludedWorkflow());
+
+        // Act
+        var result = DocumentationGenerator.Run(workspace.RootPath, "docs/architecture/generated-diagrams.json", checkOnly: false);
+        var updated = workspace.ReadArchitectureDoc("overview.md");
+
+        // Assert
+        result.ChangedFiles.ShouldBe(["docs/architecture/overview.md"]);
+        updated.ShouldContain("admin[Admin database]", StringComparison.Ordinal);
+        updated.ShouldContain("api[API service]", StringComparison.Ordinal);
+        updated.ShouldContain("api --> admin", StringComparison.Ordinal);
+        updated.ShouldContain("App[App] --> Lib[Lib]", StringComparison.Ordinal);
+        updated.ShouldContain("trigger --> build", StringComparison.Ordinal);
+        updated.ShouldContain("build --> test", StringComparison.Ordinal);
+        updated.ShouldContain("test --> deploy", StringComparison.Ordinal);
+        updated.ShouldContain("repo --> ci", StringComparison.Ordinal);
+        updated.ShouldContain("repo --> release", StringComparison.Ordinal);
+        updated.ShouldNotContain("Excluded workflow");
+    }
+
+    [Fact]
+    public void Run_rejects_unknown_project_filter()
+    {
+        // Arrange
+        using var workspace = new TemporaryDocumentationWorkspace();
+        workspace.WriteArchitectureDoc("overview.md", DocumentationTestContent.GeneratedBlocksDocument("projects"));
+        workspace.WriteConfig(DocumentationTestContent.UnknownProjectFilterConfig());
+        Action act = () => DocumentationGenerator.Run(workspace.RootPath, "docs/architecture/generated-diagrams.json", checkOnly: false);
+
+        // Act
+        var exception = act.ShouldThrow<InvalidOperationException>();
+
+        // Assert
+        exception.Message.ShouldContain("Unknown project filter: unknown", StringComparison.Ordinal);
+    }
 }

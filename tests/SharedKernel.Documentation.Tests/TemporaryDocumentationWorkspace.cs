@@ -16,6 +16,18 @@ internal sealed class TemporaryDocumentationWorkspace : IDisposable
     public void WriteConfig(string content) =>
         File.WriteAllText(Path.Combine(RootPath, "docs", "architecture", "generated-diagrams.json"), content);
 
+    public void WriteFile(string relativePath, string content)
+    {
+        var path = Path.Combine(RootPath, relativePath);
+        var directory = Path.GetDirectoryName(path);
+        if (!string.IsNullOrWhiteSpace(directory))
+        {
+            Directory.CreateDirectory(directory);
+        }
+
+        File.WriteAllText(path, content);
+    }
+
     public string ReadArchitectureDoc(string fileName) =>
         File.ReadAllText(Path.Combine(RootPath, "docs", "architecture", fileName));
 

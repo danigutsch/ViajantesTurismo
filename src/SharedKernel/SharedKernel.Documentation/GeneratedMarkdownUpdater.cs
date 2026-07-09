@@ -8,6 +8,7 @@ namespace SharedKernel.Documentation;
 /// </summary>
 internal sealed class GeneratedMarkdownUpdater(string rootPath, string docsRelativePath, string generatorName)
 {
+    private static readonly TimeSpan RegexMatchTimeout = TimeSpan.FromSeconds(1);
     private static readonly UTF8Encoding Utf8NoBom = new(false);
 
     /// <summary>
@@ -57,7 +58,10 @@ internal sealed class GeneratedMarkdownUpdater(string rootPath, string docsRelat
 
     private string ReplaceGeneratedBlock(string text, string name, string replacement)
     {
-        var pattern = new Regex($"<!-- generated:{Regex.Escape(name)}:start -->.*?<!-- generated:{Regex.Escape(name)}:end -->", RegexOptions.Singleline | RegexOptions.CultureInvariant);
+        var pattern = new Regex(
+            $"<!-- generated:{Regex.Escape(name)}:start -->.*?<!-- generated:{Regex.Escape(name)}:end -->",
+            RegexOptions.Singleline | RegexOptions.CultureInvariant,
+            RegexMatchTimeout);
         var block = string.Join(
             '\n',
             $"<!-- generated:{name}:start -->",

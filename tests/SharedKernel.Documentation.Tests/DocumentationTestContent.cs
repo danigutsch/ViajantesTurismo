@@ -31,4 +31,129 @@ internal static class DocumentationTestContent
           ]
         }
         """;
+
+    public static string GeneratedBlocksDocument(params string[] blockNames) =>
+        string.Join(
+            '\n',
+            [
+                "# Overview",
+                string.Empty,
+                .. blockNames.SelectMany(blockName => new[]
+                {
+                    $"<!-- generated:{blockName}:start -->",
+                    "old",
+                    $"<!-- generated:{blockName}:end -->",
+                    string.Empty,
+                }),
+            ]);
+
+    public static string RepositorySourcesConfig() =>
+        """
+        {
+          "docsPath": "docs/architecture",
+          "generatorName": "test-generator",
+          "blocks": [
+            {
+              "name": "apphost",
+              "kind": "apphost-resources",
+              "sourcePath": "apphost/Program.cs",
+              "labels": {
+                "admin": "Admin database",
+                "api": "API service"
+              }
+            },
+            {
+              "name": "projects",
+              "kind": "project-references",
+              "sourcePath": "src",
+              "projectFilter": "src-excluding-sharedkernel"
+            },
+            {
+              "name": "jobs",
+              "kind": "github-actions-jobs",
+              "sourcePath": ".github/workflows/ci.yml",
+              "triggerLabel": "Pull request"
+            },
+            {
+              "name": "workflows",
+              "kind": "github-actions-workflows",
+              "sourcePath": ".github/workflows",
+              "rootLabel": "Repository",
+              "excludedWorkflowFileName": "excluded.yml"
+            }
+          ]
+        }
+        """;
+
+    public static string UnknownProjectFilterConfig() =>
+        """
+        {
+          "docsPath": "docs/architecture",
+          "generatorName": "test-generator",
+          "blocks": [
+            {
+              "name": "projects",
+              "kind": "project-references",
+              "sourcePath": "src",
+              "projectFilter": "unknown"
+            }
+          ]
+        }
+        """;
+
+    public static string AppHostProgram() =>
+        """
+        var builder = DistributedApplication.CreateBuilder(args);
+        var postgres = builder.AddPostgres("postgres");
+        var admin = postgres.AddDatabase("admin");
+        var api = builder.AddProject(api, admin);
+        builder.AddDockerfile(worker, api);
+        """;
+
+    public static string AppProject() =>
+        """
+        <Project Sdk="Microsoft.NET.Sdk">
+            <ItemGroup>
+                <ProjectReference Include="../Lib/Lib.csproj" />
+            </ItemGroup>
+        </Project>
+        """;
+
+    public static string EmptyProject() =>
+        """
+        <Project Sdk="Microsoft.NET.Sdk" />
+        """;
+
+    public static string CiWorkflow() =>
+        """
+        name: CI
+        on: [pull_request]
+        jobs:
+          build:
+            name: Build job
+          test:
+            name: "Test job"
+            needs: build
+          deploy:
+            needs:
+              - test
+        """;
+
+    public static string ReleaseWorkflow() =>
+        """
+        name: Release workflow
+        on: [workflow_dispatch]
+        jobs:
+          release:
+            name: Release job
+        """;
+
+    public static string ExcludedWorkflow() =>
+        """
+        name: Excluded workflow
+        on: [push]
+        jobs:
+          skipped:
+            name: Skipped job
+        """;
 }
