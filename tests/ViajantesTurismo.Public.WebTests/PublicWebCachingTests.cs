@@ -91,6 +91,41 @@ public sealed class PublicWebCachingTests
     }
 
     [Fact]
+    public async Task Public_web_cache_strips_invalid_culture_to_default_key()
+    {
+        // Arrange
+        var catalogApi = new FakePublicCatalogApiClient();
+        catalogApi.AddTour(PublicWebEndpointTestsHelpers.CreateTour("camino-norte", "Camino Norte"));
+        catalogApi.AddContent("en-US", new PublicContentVariantDto
+        {
+            Language = PublicContentLanguageDto.EnUs,
+            Title = "Original hero",
+            Body = "Original body"
+        });
+        await using var factory = PublicWebEndpointTestsHelpers.CreateFactory(catalogApi);
+        using var client = factory.CreateClient();
+
+        // Act
+        using var firstResponse = await client.GetAsync(new Uri("/?culture=ZZ", UriKind.Relative), TestContext.Current.CancellationToken);
+        var firstContent = await firstResponse.Content.ReadAsStringAsync(TestContext.Current.CancellationToken);
+        catalogApi.AddContent("en-US", new PublicContentVariantDto
+        {
+            Language = PublicContentLanguageDto.EnUs,
+            Title = "Store-only hero",
+            Body = "Store-only body"
+        });
+        using var cachedResponse = await client.GetAsync(new Uri("/", UriKind.Relative), TestContext.Current.CancellationToken);
+        var cachedContent = await cachedResponse.Content.ReadAsStringAsync(TestContext.Current.CancellationToken);
+
+        // Assert
+        firstResponse.StatusCode.ShouldBe(HttpStatusCode.OK);
+        firstContent.ShouldContain("Original hero", StringComparison.Ordinal);
+        cachedResponse.StatusCode.ShouldBe(HttpStatusCode.OK);
+        cachedContent.ShouldContain("Original hero", StringComparison.Ordinal);
+        cachedContent.ShouldNotContain("Store-only hero");
+    }
+
+    [Fact]
     public async Task Public_ssr_load_failures_are_not_cacheable()
     {
         // Arrange

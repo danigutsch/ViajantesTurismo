@@ -1,7 +1,7 @@
 using System.Net.Http.Json;
 using TestTraits = ViajantesTurismo.Catalog.ApiServiceTests.Infrastructure.TestTraits;
-using ViajantesTurismo.Catalog.ApiService;
 using ViajantesTurismo.Catalog.Contracts;
+using ViajantesTurismo.Catalog.Domain.PublicTheme;
 
 namespace ViajantesTurismo.Catalog.ApiServiceTests;
 
@@ -36,9 +36,6 @@ public sealed class CatalogApiCachingTests
         var cacheControl = response.Headers.CacheControl.ShouldNotBeNull();
         cacheControl.Public.ShouldBeTrue();
         cacheControl.MaxAge.ShouldBe(TimeSpan.FromSeconds(60));
-        var etag = response.Headers.ETag.ShouldNotBeNull();
-        etag.IsWeak.ShouldBeTrue();
-        etag.Tag.ShouldNotBeNull();
     }
 
     [Fact]
@@ -104,7 +101,6 @@ public sealed class CatalogApiCachingTests
         firstResponse.StatusCode.ShouldBe(HttpStatusCode.OK);
         firstTour.ShouldNotBeNull();
         firstTour.Title.ShouldBe("Original tour");
-        var firstEtag = firstResponse.Headers.ETag.ShouldNotBeNull();
         cachedResponse.StatusCode.ShouldBe(HttpStatusCode.OK);
         cachedTour.ShouldNotBeNull();
         cachedTour.Title.ShouldBe("Original tour");
@@ -112,7 +108,6 @@ public sealed class CatalogApiCachingTests
         refreshedResponse.StatusCode.ShouldBe(HttpStatusCode.OK);
         refreshedTour.ShouldNotBeNull();
         refreshedTour.Title.ShouldBe("Invalidated tour");
-        refreshedResponse.Headers.ETag.ShouldNotBeNull().Tag.ShouldNotBe(firstEtag.Tag);
     }
 
     [Fact]
@@ -142,7 +137,6 @@ public sealed class CatalogApiCachingTests
         firstResponse.StatusCode.ShouldBe(HttpStatusCode.OK);
         firstContent.ShouldNotBeNull();
         firstContent.Title.ShouldBe("Original content");
-        var firstEtag = firstResponse.Headers.ETag.ShouldNotBeNull();
         cachedResponse.StatusCode.ShouldBe(HttpStatusCode.OK);
         cachedContent.ShouldNotBeNull();
         cachedContent.Title.ShouldBe("Original content");
@@ -150,7 +144,54 @@ public sealed class CatalogApiCachingTests
         refreshedResponse.StatusCode.ShouldBe(HttpStatusCode.OK);
         refreshedContent.ShouldNotBeNull();
         refreshedContent.Title.ShouldBe("Invalidated content");
-        refreshedResponse.Headers.ETag.ShouldNotBeNull().Tag.ShouldNotBe(firstEtag.Tag);
+    }
+
+    [Fact]
+    public async Task Public_theme_update_invalidates_cached_public_theme_reads()
+    {
+        // Arrange
+        var cancellationToken = TestContext.Current.CancellationToken;
+        var themeStore = new TestPublicThemeSettingsStore();
+        await themeStore.SaveTheme(
+            PublicThemeSettings.Create("#112233", "#445566", "#FFFFFF", "#000000", "Inter", "Verdana").Value,
+            cancellationToken);
+        await using var factory = CatalogApiTestHost.Create(themeStore);
+        using var client = factory.CreateClient();
+
+        // Act
+        using var firstResponse = await client.GetAsync(new Uri("/public/catalog/theme", UriKind.Relative), cancellationToken);
+        var firstTheme = await firstResponse.Content.ReadFromJsonAsync<PublicThemeSettingsDto>(cancellationToken);
+        await themeStore.SaveTheme(
+            PublicThemeSettings.Create("#334455", "#445566", "#FFFFFF", "#000000", "Inter", "Verdana").Value,
+            cancellationToken);
+        using var cachedResponse = await client.GetAsync(new Uri("/public/catalog/theme", UriKind.Relative), cancellationToken);
+        var cachedTheme = await cachedResponse.Content.ReadFromJsonAsync<PublicThemeSettingsDto>(cancellationToken);
+        using var updateResponse = await client.PutAsJsonAsync(
+            new Uri("/catalog/public-theme", UriKind.Relative),
+            new PublicThemeSettingsDto
+            {
+                PrimaryColor = "#556677",
+                AccentColor = "#445566",
+                BackgroundColor = "#FFFFFF",
+                TextColor = "#000000",
+                HeadingFontFamily = "Inter",
+                BodyFontFamily = "Verdana"
+            },
+            cancellationToken);
+        using var refreshedResponse = await client.GetAsync(new Uri("/public/catalog/theme", UriKind.Relative), cancellationToken);
+        var refreshedTheme = await refreshedResponse.Content.ReadFromJsonAsync<PublicThemeSettingsDto>(cancellationToken);
+
+        // Assert
+        firstResponse.StatusCode.ShouldBe(HttpStatusCode.OK);
+        firstTheme.ShouldNotBeNull();
+        firstTheme.PrimaryColor.ShouldBe("#112233");
+        cachedResponse.StatusCode.ShouldBe(HttpStatusCode.OK);
+        cachedTheme.ShouldNotBeNull();
+        cachedTheme.PrimaryColor.ShouldBe("#112233");
+        updateResponse.StatusCode.ShouldBe(HttpStatusCode.OK);
+        refreshedResponse.StatusCode.ShouldBe(HttpStatusCode.OK);
+        refreshedTheme.ShouldNotBeNull();
+        refreshedTheme.PrimaryColor.ShouldBe("#556677");
     }
 
     [Fact]
@@ -180,33 +221,19 @@ public sealed class CatalogApiCachingTests
     }
 
     [Fact]
-    public void Tour_etag_seed_includes_source_identifiers()
+    public async Task Public_content_cache_preserves_invalid_culture_validation()
     {
         // Arrange
-        var tourId = Guid.CreateVersion7();
-        var updatedAt = DateTimeOffset.UtcNow;
-        var firstTour = new CatalogTourDto
-        {
-            Id = tourId,
-            AdminTourId = Guid.CreateVersion7(),
-            Identifier = "CACHE-TOUR-1",
-            Title = "Camino Norte",
-            Slug = "camino-norte",
-            IsPublished = true,
-            Images = [],
-            UpdatedAt = updatedAt
-        };
-        var secondTour = firstTour with
-        {
-            AdminTourId = Guid.CreateVersion7(),
-            Identifier = "CACHE-TOUR-2"
-        };
+        var cancellationToken = TestContext.Current.CancellationToken;
+        var contentStore = new TestPublicContentStore();
+        await contentStore.SaveContent(CatalogApiCachingTestData.CreatePublishedContent("Original content"), cancellationToken);
+        await using var factory = CatalogApiTestHost.Create(new TestCatalogTourReadModelStore(), contentStore);
+        using var client = factory.CreateClient();
 
         // Act
-        var firstSeed = CatalogHttpCache.CreateTourEtagSeed(firstTour);
-        var secondSeed = CatalogHttpCache.CreateTourEtagSeed(secondTour);
+        using var response = await client.GetAsync(new Uri("/public/catalog/content/home.hero?culture=ZZ", UriKind.Relative), cancellationToken);
 
         // Assert
-        secondSeed.ShouldNotBe(firstSeed);
+        response.StatusCode.ShouldBe(HttpStatusCode.BadRequest);
     }
 }

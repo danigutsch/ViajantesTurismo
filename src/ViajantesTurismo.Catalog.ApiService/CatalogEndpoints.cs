@@ -81,7 +81,7 @@ internal static class CatalogEndpoints
 
         var images = await imageStore.ListByTour(tour.CatalogTourId, ct);
         var dto = MapTour(tour, GetReadyImages(images), objectStore);
-        CatalogHttpCache.SetPublicHeaders(httpContext, CatalogHttpCache.CreateTourEtagSeed(dto));
+        CatalogHttpCache.SetPublicHeaders(httpContext);
         return Results.Ok(dto);
     }
 
@@ -116,7 +116,7 @@ internal static class CatalogEndpoints
         }
 
         var dto = MapVariant(variant);
-        CatalogHttpCache.SetPublicHeaders(httpContext, CatalogHttpCache.CreatePublicContentEtagSeed(content.Key, dto));
+        CatalogHttpCache.SetPublicHeaders(httpContext);
         return Results.Ok(dto);
     }
 
@@ -137,7 +137,7 @@ internal static class CatalogEndpoints
     {
         var theme = await store.GetTheme(ct) ?? PublicThemeSettings.Default();
         var dto = MapTheme(theme);
-        CatalogHttpCache.SetPublicHeaders(httpContext, CatalogHttpCache.CreateThemeEtagSeed(dto));
+        CatalogHttpCache.SetPublicHeaders(httpContext);
         return Results.Ok(dto);
     }
 
@@ -208,7 +208,7 @@ internal static class CatalogEndpoints
         [
             .. publishedTours.Select(tour => MapTour(tour, GetReadyImages(GetImages(imagesByTour, tour.CatalogTourId)), objectStore))
         ];
-        CatalogHttpCache.SetPublicHeaders(httpContext, CatalogHttpCache.CreateToursEtagSeed(result));
+        CatalogHttpCache.SetPublicHeaders(httpContext);
         return result;
     }
 

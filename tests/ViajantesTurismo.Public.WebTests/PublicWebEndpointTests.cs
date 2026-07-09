@@ -387,7 +387,7 @@ public sealed class PublicWebEndpointTests
         var content = await response.Content.ReadAsStringAsync(TestContext.Current.CancellationToken);
 
         // Assert
-        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        Assert.Equal(HttpStatusCode.ServiceUnavailable, response.StatusCode);
         Assert.Contains("Tours could not be loaded right now. Try again later.", content, StringComparison.Ordinal);
     }
 
@@ -447,7 +447,7 @@ public sealed class PublicWebEndpointTests
         var content = await response.Content.ReadAsStringAsync(TestContext.Current.CancellationToken);
 
         // Assert
-        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        Assert.Equal(HttpStatusCode.ServiceUnavailable, response.StatusCode);
         Assert.Contains("Tours could not be loaded right now. Try again later.", content, StringComparison.Ordinal);
     }
 
@@ -488,7 +488,7 @@ public sealed class PublicWebEndpointTests
         var content = await response.Content.ReadAsStringAsync(TestContext.Current.CancellationToken);
 
         // Assert
-        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        Assert.Equal(HttpStatusCode.ServiceUnavailable, response.StatusCode);
         Assert.Contains("<h1>Tour unavailable</h1>", content, StringComparison.Ordinal);
     }
 
