@@ -1,5 +1,6 @@
 using System.Net.Http.Json;
 using TestTraits = ViajantesTurismo.Catalog.ApiServiceTests.Infrastructure.TestTraits;
+using ViajantesTurismo.Catalog.ApiService;
 using ViajantesTurismo.Catalog.Contracts;
 
 namespace ViajantesTurismo.Catalog.ApiServiceTests;
@@ -176,5 +177,36 @@ public sealed class CatalogApiCachingTests
         cachedResponse.StatusCode.ShouldBe(HttpStatusCode.OK);
         cachedContent.ShouldNotBeNull();
         cachedContent.Title.ShouldBe("Original content");
+    }
+
+    [Fact]
+    public void Tour_etag_seed_includes_source_identifiers()
+    {
+        // Arrange
+        var tourId = Guid.CreateVersion7();
+        var updatedAt = DateTimeOffset.UtcNow;
+        var firstTour = new CatalogTourDto
+        {
+            Id = tourId,
+            AdminTourId = Guid.CreateVersion7(),
+            Identifier = "CACHE-TOUR-1",
+            Title = "Camino Norte",
+            Slug = "camino-norte",
+            IsPublished = true,
+            Images = [],
+            UpdatedAt = updatedAt
+        };
+        var secondTour = firstTour with
+        {
+            AdminTourId = Guid.CreateVersion7(),
+            Identifier = "CACHE-TOUR-2"
+        };
+
+        // Act
+        var firstSeed = CatalogHttpCache.CreateTourEtagSeed(firstTour);
+        var secondSeed = CatalogHttpCache.CreateTourEtagSeed(secondTour);
+
+        // Assert
+        secondSeed.ShouldNotBe(firstSeed);
     }
 }

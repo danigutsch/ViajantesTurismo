@@ -124,6 +124,8 @@ internal static class CatalogHttpCache
     {
         builder
             .AppendLengthPrefixed(tour.Id.ToString())
+            .AppendLengthPrefixed(tour.AdminTourId.ToString())
+            .AppendLengthPrefixed(tour.Identifier)
             .AppendLengthPrefixed(tour.Title)
             .AppendLengthPrefixed(tour.Slug)
             .AppendLengthPrefixed(tour.IsPublished.ToString())
