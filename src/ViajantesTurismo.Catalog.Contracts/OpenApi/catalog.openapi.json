@@ -159,17 +159,11 @@
           "content": {
             "application/json": {
               "schema": {
-                "oneOf": [
-                  {
-                    "type": "null"
-                  },
-                  {
-                    "$ref": "#/components/schemas/PublicMediaImageAccessibilityDraftRequest"
-                  }
-                ]
+                "$ref": "#/components/schemas/PublicMediaImageAccessibilityDraftRequest"
               }
             }
-          }
+          },
+          "required": true
         },
         "responses": {
           "200": {

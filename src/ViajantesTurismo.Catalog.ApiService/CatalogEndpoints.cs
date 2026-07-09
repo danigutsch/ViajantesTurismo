@@ -1,3 +1,6 @@
+using System.ComponentModel.DataAnnotations;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.ModelBinding;
 using SharedKernel.Results;
 using ViajantesTurismo.Catalog.Application.Media;
 using ViajantesTurismo.Catalog.Application.PublicContent;
@@ -314,7 +317,7 @@ internal static class CatalogEndpoints
 
     private static async Task<IResult> GenerateMediaImageAccessibilityDraft(
         Guid id,
-        PublicMediaImageAccessibilityDraftRequest? request,
+        [Required, FromBody(EmptyBodyBehavior = EmptyBodyBehavior.Allow)] PublicMediaImageAccessibilityDraftRequest request,
         MediaImageAccessibilityDraftService service,
         IMediaObjectStore objectStore,
         CancellationToken ct)
