@@ -22,7 +22,9 @@ public static class DocumentationGenerator
             ?? throw new InvalidOperationException($"Could not read documentation generator config: {configPath}");
         ValidateConfig(config);
 
-        var replacements = config.Blocks.ToDictionary(block => block.Name, block => GenerateBlock(fullRootPath, block), StringComparer.Ordinal);
+        var replacements = config.Blocks
+            .Select(block => KeyValuePair.Create(block.Name, GenerateBlock(fullRootPath, block)))
+            .ToList();
         var updater = new GeneratedMarkdownUpdater(fullRootPath, config.DocsPath, config.GeneratorName);
         return new DocumentationGenerationResult(updater.Update(checkOnly, replacements));
     }
@@ -42,6 +44,11 @@ public static class DocumentationGenerator
         if (config.Blocks is not { Count: > 0 })
         {
             throw new InvalidOperationException("Missing required blocks.");
+        }
+
+        if (config.Blocks.Select(block => block.Name).Distinct(StringComparer.Ordinal).Count() != config.Blocks.Count)
+        {
+            throw new InvalidOperationException("Generated block names must be unique.");
         }
     }
 

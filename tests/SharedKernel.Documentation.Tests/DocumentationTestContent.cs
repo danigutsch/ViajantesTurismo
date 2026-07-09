@@ -146,6 +146,26 @@ internal static class DocumentationTestContent
         }
         """;
 
+    public static string DuplicateBlockNamesConfig() =>
+        """
+        {
+          "docsPath": "docs/architecture",
+          "generatorName": "test-generator",
+          "blocks": [
+            {
+              "name": "sample",
+              "kind": "mermaid-flowchart",
+              "lines": []
+            },
+            {
+              "name": "sample",
+              "kind": "mermaid-flowchart",
+              "lines": []
+            }
+          ]
+        }
+        """;
+
     public static string AppHostProgram() =>
         """
         var builder = DistributedApplication.CreateBuilder(args);

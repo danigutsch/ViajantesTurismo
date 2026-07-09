@@ -15,9 +15,9 @@ internal sealed class GeneratedMarkdownUpdater(string rootPath, string docsRelat
     /// Updates generated blocks and returns repository-relative files whose content changed.
     /// </summary>
     /// <param name="checkOnly">Whether to detect drift without writing files.</param>
-    /// <param name="replacements">Generated block names and replacement content.</param>
+    /// <param name="replacements">Generated block names and replacement content in deterministic order.</param>
     /// <returns>Repository-relative file paths changed or stale.</returns>
-    public List<string> Update(bool checkOnly, Dictionary<string, string> replacements)
+    public List<string> Update(bool checkOnly, IReadOnlyList<KeyValuePair<string, string>> replacements)
     {
         ArgumentNullException.ThrowIfNull(replacements);
 
@@ -46,7 +46,7 @@ internal sealed class GeneratedMarkdownUpdater(string rootPath, string docsRelat
             .EnumerateFiles("*.md")
             .OrderBy(file => file.FullName, StringComparer.Ordinal);
 
-    private string UpdateText(string text, Dictionary<string, string> replacements)
+    private string UpdateText(string text, IReadOnlyList<KeyValuePair<string, string>> replacements)
     {
         foreach (var (name, replacement) in replacements)
         {

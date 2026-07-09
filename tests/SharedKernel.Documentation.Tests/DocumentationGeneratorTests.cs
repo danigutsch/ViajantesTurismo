@@ -184,4 +184,19 @@ public sealed class DocumentationGeneratorTests
         // Assert
         exception.Message.ShouldContain("Missing required blocks.", StringComparison.Ordinal);
     }
+
+    [Fact]
+    public void Run_rejects_duplicate_block_names()
+    {
+        // Arrange
+        using var workspace = new TemporaryDocumentationWorkspace();
+        workspace.WriteConfig(DocumentationTestContent.DuplicateBlockNamesConfig());
+        Action act = () => DocumentationGenerator.Run(workspace.RootPath, "docs/architecture/generated-diagrams.json", checkOnly: false);
+
+        // Act
+        var exception = act.ShouldThrow<InvalidOperationException>();
+
+        // Assert
+        exception.Message.ShouldContain("Generated block names must be unique.", StringComparison.Ordinal);
+    }
 }
