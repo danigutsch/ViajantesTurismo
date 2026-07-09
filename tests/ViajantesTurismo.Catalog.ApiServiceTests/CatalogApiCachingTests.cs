@@ -66,6 +66,8 @@ public sealed class CatalogApiCachingTests
         response.StatusCode.ShouldBe(HttpStatusCode.OK);
         var cacheControl = response.Headers.CacheControl.ShouldNotBeNull();
         cacheControl.NoStore.ShouldBeTrue();
+        response.Headers.GetValues("Pragma").ShouldHaveSingleItem().ShouldBe("no-cache");
+        response.Content.Headers.GetValues("Expires").ShouldHaveSingleItem().ShouldBe("Thu, 01 Jan 1970 00:00:00 GMT");
     }
 
     [Fact]
@@ -101,6 +103,7 @@ public sealed class CatalogApiCachingTests
         firstResponse.StatusCode.ShouldBe(HttpStatusCode.OK);
         firstTour.ShouldNotBeNull();
         firstTour.Title.ShouldBe("Original tour");
+        var firstEtag = firstResponse.Headers.ETag.ShouldNotBeNull();
         cachedResponse.StatusCode.ShouldBe(HttpStatusCode.OK);
         cachedTour.ShouldNotBeNull();
         cachedTour.Title.ShouldBe("Original tour");
@@ -108,6 +111,7 @@ public sealed class CatalogApiCachingTests
         refreshedResponse.StatusCode.ShouldBe(HttpStatusCode.OK);
         refreshedTour.ShouldNotBeNull();
         refreshedTour.Title.ShouldBe("Invalidated tour");
+        refreshedResponse.Headers.ETag.ShouldNotBeNull().Tag.ShouldNotBe(firstEtag.Tag);
     }
 
     [Fact]
@@ -137,6 +141,7 @@ public sealed class CatalogApiCachingTests
         firstResponse.StatusCode.ShouldBe(HttpStatusCode.OK);
         firstContent.ShouldNotBeNull();
         firstContent.Title.ShouldBe("Original content");
+        var firstEtag = firstResponse.Headers.ETag.ShouldNotBeNull();
         cachedResponse.StatusCode.ShouldBe(HttpStatusCode.OK);
         cachedContent.ShouldNotBeNull();
         cachedContent.Title.ShouldBe("Original content");
@@ -144,6 +149,7 @@ public sealed class CatalogApiCachingTests
         refreshedResponse.StatusCode.ShouldBe(HttpStatusCode.OK);
         refreshedContent.ShouldNotBeNull();
         refreshedContent.Title.ShouldBe("Invalidated content");
+        refreshedResponse.Headers.ETag.ShouldNotBeNull().Tag.ShouldNotBe(firstEtag.Tag);
     }
 
     [Fact]

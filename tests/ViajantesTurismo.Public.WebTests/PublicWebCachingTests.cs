@@ -106,6 +106,8 @@ public sealed class PublicWebCachingTests
         response.StatusCode.ShouldBe(HttpStatusCode.ServiceUnavailable);
         var cacheControl = response.Headers.CacheControl.ShouldNotBeNull();
         cacheControl.NoStore.ShouldBeTrue();
+        response.Headers.GetValues("Pragma").ShouldHaveSingleItem().ShouldBe("no-cache");
+        response.Content.Headers.GetValues("Expires").ShouldHaveSingleItem().ShouldBe("Thu, 01 Jan 1970 00:00:00 GMT");
         content.ShouldContain("Tours could not be loaded right now.", StringComparison.Ordinal);
     }
 
@@ -126,5 +128,7 @@ public sealed class PublicWebCachingTests
         response.StatusCode.ShouldBe(HttpStatusCode.InternalServerError);
         var cacheControl = response.Headers.CacheControl.ShouldNotBeNull();
         cacheControl.NoStore.ShouldBeTrue();
+        response.Headers.GetValues("Pragma").ShouldHaveSingleItem().ShouldBe("no-cache");
+        response.Content.Headers.GetValues("Expires").ShouldHaveSingleItem().ShouldBe("Thu, 01 Jan 1970 00:00:00 GMT");
     }
 }
