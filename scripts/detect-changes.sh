@@ -171,6 +171,7 @@ fast_validation_patterns=(
     "tests/SharedKernel.BuildingBlocks.Tests/**"
     "tests/SharedKernel.AI.Tests/**"
     "tests/SharedKernel.DomainEvents.Tests/**"
+    "tests/SharedKernel.Documentation.Tests/**"
     "tests/SharedKernel.Functional.Tests/**"
     "tests/SharedKernel.Idempotency.Tests/**"
     "tests/SharedKernel.Messaging.IntegrationEvents.Tests/**"

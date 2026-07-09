@@ -13,6 +13,10 @@
     </PropertyGroup>
 
     <ItemGroup>
+        <InternalsVisibleTo Include="SharedKernel.Documentation.Tests" />
+    </ItemGroup>
+
+    <ItemGroup>
         <ProjectReference Include="..\..\src\SharedKernel\SharedKernel.Documentation\SharedKernel.Documentation.csproj" />
     </ItemGroup>
 
