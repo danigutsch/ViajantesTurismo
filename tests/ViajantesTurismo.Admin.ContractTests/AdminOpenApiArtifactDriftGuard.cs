@@ -1,5 +1,7 @@
 using SharedKernel.Testing.Snapshots;
 
+using ViajantesTurismo.Admin.ContractTests.Infrastructure;
+
 namespace ViajantesTurismo.Admin.ContractTests;
 
 /// <summary>
@@ -20,7 +22,7 @@ internal static class AdminOpenApiArtifactDriftGuard
     }
 
     private static string GetOpenApiDirectory()
-        => Path.Combine(GetRepositoryRoot(), "src", "ViajantesTurismo.Admin.Contracts", "OpenApi");
+        => Path.Combine(ContractTestRepository.RootPath, "src", "ViajantesTurismo.Admin.Contracts", "OpenApi");
 
     public static JsonSnapshotArtifactSet CreateSnapshotSet()
     {
@@ -32,23 +34,5 @@ internal static class AdminOpenApiArtifactDriftGuard
             GeneratedArtifactPrefix,
             "Admin OpenAPI",
             RefreshHint);
-    }
-
-    private static string GetRepositoryRoot()
-    {
-        var currentDirectory = new DirectoryInfo(AppContext.BaseDirectory);
-
-        while (currentDirectory is not null)
-        {
-            var candidatePath = Path.Combine(currentDirectory.FullName, "ViajantesTurismo.slnx");
-            if (File.Exists(candidatePath))
-            {
-                return currentDirectory.FullName;
-            }
-
-            currentDirectory = currentDirectory.Parent;
-        }
-
-        throw new InvalidOperationException("Could not locate the repository root for contract test artifacts.");
     }
 }

@@ -23,8 +23,12 @@ public sealed class AsyncApiContractArtifactTests
         var componentsMessagesStart = componentsStart >= 0
             ? artifact.IndexOf("messages:", componentsStart, StringComparison.Ordinal)
             : -1;
-        var adminMessageStart = artifact.IndexOf("AdminTourCreatedV1:", componentsMessagesStart, StringComparison.Ordinal);
-        var mediaMessageStart = artifact.IndexOf("MediaImageOriginalStoredV1:", adminMessageStart, StringComparison.Ordinal);
+        var adminMessageStart = componentsMessagesStart >= 0
+            ? artifact.IndexOf("AdminTourCreatedV1:", componentsMessagesStart, StringComparison.Ordinal)
+            : -1;
+        var mediaMessageStart = adminMessageStart >= 0
+            ? artifact.IndexOf("MediaImageOriginalStoredV1:", adminMessageStart, StringComparison.Ordinal)
+            : -1;
         var schemaStart = artifact.IndexOf("schemas:", StringComparison.Ordinal);
         var adminSchemaStart = artifact.IndexOf("AdminTourCreatedIntegrationEventV1:", StringComparison.Ordinal);
         var mediaSchemaStart = artifact.IndexOf("MediaImageOriginalStoredIntegrationEventV1:", StringComparison.Ordinal);
@@ -90,6 +94,8 @@ public sealed class AsyncApiContractArtifactTests
         adminSchema.ShouldContain("eventId:", StringComparison.Ordinal);
         adminSchema.ShouldContain("occurredAt:", StringComparison.Ordinal);
         adminSchema.ShouldContain("adminTourId:", StringComparison.Ordinal);
+        adminSchema.ShouldContain("identifier:", StringComparison.Ordinal);
+        adminSchema.ShouldContain("name:", StringComparison.Ordinal);
 
         mediaMessage.ShouldContain($"const: {MediaImageOriginalStoredIntegrationEvent.EventType}", StringComparison.Ordinal);
         mediaMessage.ShouldContain($"const: {MediaImageOriginalStoredIntegrationEvent.EventVersion.ToString(CultureInfo.InvariantCulture)}", StringComparison.Ordinal);
@@ -99,5 +105,7 @@ public sealed class AsyncApiContractArtifactTests
         mediaSchema.ShouldContain("eventId:", StringComparison.Ordinal);
         mediaSchema.ShouldContain("occurredAt:", StringComparison.Ordinal);
         mediaSchema.ShouldContain("mediaImageId:", StringComparison.Ordinal);
+        mediaSchema.ShouldContain("sourceObjectKey:", StringComparison.Ordinal);
+        mediaSchema.ShouldContain("processingVersion:", StringComparison.Ordinal);
     }
 }
