@@ -22,21 +22,29 @@ operations:
     action: send
     channel:
       $ref: '#/channels/admin.tour.created'
+    messages:
+      - $ref: '#/components/messages/AdminTourCreatedV1'
     summary: Admin publishes a created-tour event for Catalog projection intake.
   consumeAdminTourCreatedV1:
     action: receive
     channel:
       $ref: '#/channels/admin.tour.created'
+    messages:
+      - $ref: '#/components/messages/AdminTourCreatedV1'
     summary: Catalog consumes Admin tour creation events from the catalog consumer stream.
   publishMediaImageOriginalStoredV1:
     action: send
     channel:
       $ref: '#/channels/catalog.media-image.original-stored'
+    messages:
+      - $ref: '#/components/messages/MediaImageOriginalStoredV1'
     summary: Catalog publishes original media-image storage events for Catalog media processing.
   consumeMediaImageOriginalStoredV1:
     action: receive
     channel:
       $ref: '#/channels/catalog.media-image.original-stored'
+    messages:
+      - $ref: '#/components/messages/MediaImageOriginalStoredV1'
     summary: Catalog consumes original media-image storage events from the catalog consumer stream.
 components:
   messages:

@@ -19,17 +19,29 @@ public sealed class AsyncApiContractArtifactTests
     {
         // Arrange
         var artifact = AsyncApiContractArtifact.Read();
-        var adminMessageStart = artifact.IndexOf("    AdminTourCreatedV1:", StringComparison.Ordinal);
-        var mediaMessageStart = artifact.IndexOf("    MediaImageOriginalStoredV1:", StringComparison.Ordinal);
+        var componentsStart = artifact.IndexOf("components:", StringComparison.Ordinal);
+        var componentsMessagesStart = componentsStart >= 0
+            ? artifact.IndexOf("messages:", componentsStart, StringComparison.Ordinal)
+            : -1;
+        var adminMessageStart = artifact.IndexOf("AdminTourCreatedV1:", componentsMessagesStart, StringComparison.Ordinal);
+        var mediaMessageStart = artifact.IndexOf("MediaImageOriginalStoredV1:", adminMessageStart, StringComparison.Ordinal);
         var schemaStart = artifact.IndexOf("schemas:", StringComparison.Ordinal);
         var adminSchemaStart = artifact.IndexOf("AdminTourCreatedIntegrationEventV1:", StringComparison.Ordinal);
         var mediaSchemaStart = artifact.IndexOf("MediaImageOriginalStoredIntegrationEventV1:", StringComparison.Ordinal);
 
+        componentsStart.ShouldBeGreaterThanOrEqualTo(0);
+        componentsMessagesStart.ShouldBeGreaterThanOrEqualTo(0);
         adminMessageStart.ShouldBeGreaterThanOrEqualTo(0);
         mediaMessageStart.ShouldBeGreaterThanOrEqualTo(0);
         schemaStart.ShouldBeGreaterThanOrEqualTo(0);
         adminSchemaStart.ShouldBeGreaterThanOrEqualTo(0);
         mediaSchemaStart.ShouldBeGreaterThanOrEqualTo(0);
+        componentsStart.ShouldBeLessThan(componentsMessagesStart);
+        componentsMessagesStart.ShouldBeLessThan(adminMessageStart);
+        adminMessageStart.ShouldBeLessThan(mediaMessageStart);
+        mediaMessageStart.ShouldBeLessThan(schemaStart);
+        schemaStart.ShouldBeLessThan(adminSchemaStart);
+        adminSchemaStart.ShouldBeLessThan(mediaSchemaStart);
 
         var adminMessage = artifact[adminMessageStart..mediaMessageStart];
         var mediaMessage = artifact[mediaMessageStart..schemaStart];
