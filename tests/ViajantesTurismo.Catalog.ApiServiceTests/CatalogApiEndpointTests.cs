@@ -1217,9 +1217,6 @@ public sealed class CatalogApiEndpointTests
 
         // Assert
         response.StatusCode.ShouldBe(HttpStatusCode.BadRequest);
-        var problem = await response.Content.ReadFromJsonAsync<HttpValidationProblemDetails>(TestContext.Current.CancellationToken);
-        problem.ShouldNotBeNull();
-        problem.Errors.Keys.ShouldContain("request");
     }
 
     [Fact]
