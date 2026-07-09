@@ -1,4 +1,3 @@
-using System.Reflection;
 using ViajantesTurismo.Admin.ApiService;
 using ViajantesTurismo.Admin.ApiService.Bookings;
 using ViajantesTurismo.Admin.ApiService.Customers;
@@ -22,11 +21,8 @@ builder.Services.ConfigureHttpJsonOptions(options => options.SerializerOptions.T
 
 builder.Services.AddAdminOpenApiDocuments();
 
-if (!IsBuildTimeOpenApiGeneration())
-{
-    builder.AddApplication();
-    builder.AddInfrastructure();
-}
+builder.AddApplication();
+builder.AddInfrastructure();
 
 var app = builder.Build();
 
@@ -46,8 +42,3 @@ app.MapErrorDocumentationEndpoints();
 app.MapDefaultEndpoints();
 
 await app.RunAsync();
-
-static bool IsBuildTimeOpenApiGeneration()
-{
-    return Assembly.GetEntryAssembly()?.GetName().Name is "dotnet-getdocument" or "GetDocument.Insider";
-}

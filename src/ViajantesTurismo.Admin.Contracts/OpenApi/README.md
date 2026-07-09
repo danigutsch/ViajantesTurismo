@@ -11,7 +11,7 @@ Current boundary files:
 Ownership rules:
 
 - Source metadata lives in `src/ViajantesTurismo.Admin.ApiService`.
-- `dotnet build` generates intermediate documents under `OpenApi/.generated/`.
+- The refresh build generates intermediate documents under `OpenApi/.generated/`.
 - Refresh the committed canonical artifacts intentionally with
   `dotnet build src/ViajantesTurismo.Admin.ApiService/ViajantesTurismo.Admin.ApiService.csproj -p:RefreshAdminOpenApiArtifacts=true`.
 - `OpenApi/.generated/` is intermediate output only.
