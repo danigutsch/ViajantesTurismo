@@ -44,6 +44,7 @@ This diagram is generated from source project references.
 
 ```mermaid
 flowchart TB
+    ViajantesTurismo_Admin_ApiService[ViajantesTurismo.Admin.ApiService] --> SharedKernel_AspNetCore[SharedKernel.AspNetCore]
     ViajantesTurismo_Admin_ApiService[ViajantesTurismo.Admin.ApiService] --> SharedKernel_OpenApi[SharedKernel.OpenApi]
     ViajantesTurismo_Admin_ApiService[ViajantesTurismo.Admin.ApiService] --> SharedKernel_Results[SharedKernel.Results]
     ViajantesTurismo_Admin_ApiService[ViajantesTurismo.Admin.ApiService] --> SharedKernel_Results_AspNet[SharedKernel.Results.AspNet]
@@ -89,6 +90,7 @@ flowchart TB
     ViajantesTurismo_AppHost[ViajantesTurismo.AppHost] --> ViajantesTurismo_Public_Web[ViajantesTurismo.Public.Web]
     ViajantesTurismo_AppHost[ViajantesTurismo.AppHost] --> ViajantesTurismo_Resources[ViajantesTurismo.Resources]
     ViajantesTurismo_Catalog_ApiService[ViajantesTurismo.Catalog.ApiService] --> SharedKernel_HttpCaching_AspNetCore[SharedKernel.HttpCaching.AspNetCore]
+    ViajantesTurismo_Catalog_ApiService[ViajantesTurismo.Catalog.ApiService] --> SharedKernel_AspNetCore[SharedKernel.AspNetCore]
     ViajantesTurismo_Catalog_ApiService[ViajantesTurismo.Catalog.ApiService] --> SharedKernel_OpenApi[SharedKernel.OpenApi]
     ViajantesTurismo_Catalog_ApiService[ViajantesTurismo.Catalog.ApiService] --> ViajantesTurismo_Catalog_Application[ViajantesTurismo.Catalog.Application]
     ViajantesTurismo_Catalog_ApiService[ViajantesTurismo.Catalog.ApiService] --> ViajantesTurismo_Catalog_Contracts[ViajantesTurismo.Catalog.Contracts]
@@ -128,6 +130,7 @@ flowchart TB
     ViajantesTurismo_Catalog_Infrastructure[ViajantesTurismo.Catalog.Infrastructure] --> ViajantesTurismo_Resources[ViajantesTurismo.Resources]
     ViajantesTurismo_IntegrationEventWorker[ViajantesTurismo.IntegrationEventWorker] --> ViajantesTurismo_Catalog_Infrastructure[ViajantesTurismo.Catalog.Infrastructure]
     ViajantesTurismo_IntegrationEventWorker[ViajantesTurismo.IntegrationEventWorker] --> ViajantesTurismo_ServiceDefaults[ViajantesTurismo.ServiceDefaults]
+    ViajantesTurismo_Management_Web[ViajantesTurismo.Management.Web] --> SharedKernel_AspNetCore[SharedKernel.AspNetCore]
     ViajantesTurismo_Management_Web[ViajantesTurismo.Management.Web] --> SharedKernel_HttpClients[SharedKernel.HttpClients]
     ViajantesTurismo_Management_Web[ViajantesTurismo.Management.Web] --> ViajantesTurismo_Admin_Contracts[ViajantesTurismo.Admin.Contracts]
     ViajantesTurismo_Management_Web[ViajantesTurismo.Management.Web] --> ViajantesTurismo_Catalog_Contracts[ViajantesTurismo.Catalog.Contracts]
@@ -139,6 +142,7 @@ flowchart TB
     ViajantesTurismo_MigrationService[ViajantesTurismo.MigrationService] --> ViajantesTurismo_Catalog_Infrastructure[ViajantesTurismo.Catalog.Infrastructure]
     ViajantesTurismo_MigrationService[ViajantesTurismo.MigrationService] --> ViajantesTurismo_ServiceDefaults[ViajantesTurismo.ServiceDefaults]
     ViajantesTurismo_Public_Web[ViajantesTurismo.Public.Web] --> SharedKernel_HttpCaching_AspNetCore[SharedKernel.HttpCaching.AspNetCore]
+    ViajantesTurismo_Public_Web[ViajantesTurismo.Public.Web] --> SharedKernel_AspNetCore[SharedKernel.AspNetCore]
     ViajantesTurismo_Public_Web[ViajantesTurismo.Public.Web] --> SharedKernel_HttpClients[SharedKernel.HttpClients]
     ViajantesTurismo_Public_Web[ViajantesTurismo.Public.Web] --> ViajantesTurismo_Catalog_Contracts[ViajantesTurismo.Catalog.Contracts]
     ViajantesTurismo_Public_Web[ViajantesTurismo.Public.Web] --> ViajantesTurismo_Resources[ViajantesTurismo.Resources]

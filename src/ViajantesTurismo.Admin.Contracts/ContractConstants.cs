@@ -94,4 +94,29 @@ public static class ContractConstants
     /// The maximum number of customers allowed for a tour.
     /// </summary>
     public const int MaxTourCustomers = 20;
+
+    /// <summary>
+    /// Standard CSV media type accepted by customer import uploads.
+    /// </summary>
+    public const string CustomerImportTextCsvContentType = "text/csv";
+
+    /// <summary>
+    /// Alternate CSV media type accepted by customer import uploads.
+    /// </summary>
+    public const string CustomerImportApplicationCsvContentType = "application/csv";
+
+    /// <summary>
+    /// Legacy spreadsheet media type commonly used for CSV uploads.
+    /// </summary>
+    public const string CustomerImportExcelCsvContentType = "application/vnd.ms-excel";
+
+    /// <summary>
+    /// Content types accepted by customer import uploads.
+    /// </summary>
+    public static IReadOnlyCollection<string> CustomerImportAllowedContentTypes { get; } =
+    [
+        CustomerImportTextCsvContentType,
+        CustomerImportApplicationCsvContentType,
+        CustomerImportExcelCsvContentType
+    ];
 }

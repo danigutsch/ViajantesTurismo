@@ -296,6 +296,9 @@
       "sharedkernel.apiversioning": {
         "type": "Project"
       },
+      "sharedkernel.aspnetcore": {
+        "type": "Project"
+      },
       "sharedkernel.buildingblocks": {
         "type": "Project",
         "dependencies": {
@@ -434,6 +437,7 @@
         "dependencies": {
           "Microsoft.AspNetCore.OpenApi": "[10.0.9, )",
           "Microsoft.Extensions.ApiDescription.Server": "[10.0.9, )",
+          "SharedKernel.AspNetCore": "[0.1.0-alpha.0, )",
           "SharedKernel.HttpCaching.AspNetCore": "[0.1.0-alpha.0, )",
           "SharedKernel.OpenApi": "[0.1.0-alpha.0, )",
           "ViajantesTurismo.Catalog.Application": "[0.1.0-alpha.0, )",

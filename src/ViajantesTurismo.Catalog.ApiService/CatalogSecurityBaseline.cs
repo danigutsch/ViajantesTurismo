@@ -1,4 +1,4 @@
-using System.Threading.RateLimiting;
+using SharedKernel.AspNetCore;
 
 namespace ViajantesTurismo.Catalog.ApiService;
 
@@ -15,55 +15,16 @@ internal static class CatalogSecurityBaseline
         ArgumentNullException.ThrowIfNull(services);
         ArgumentNullException.ThrowIfNull(configuration);
 
-        var allowedOrigins = GetAllowedOrigins(configuration);
-
-        services.AddCors(options => options.AddPolicy(CorsPolicyName, policy =>
-        {
-            if (allowedOrigins.Length > 0)
-            {
-                policy.WithOrigins(allowedOrigins)
-                    .AllowAnyHeader()
-                    .AllowAnyMethod();
-            }
-            else
-            {
-                policy.SetIsOriginAllowed(_ => false);
-            }
-        }));
+        services.AddCors(options => options.AddConfiguredOriginsPolicy(
+            CorsPolicyName,
+            configuration.GetSection("Security:Cors:AllowedOrigins")));
 
         services.AddRateLimiter(options =>
-        {
-            options.RejectionStatusCode = StatusCodes.Status429TooManyRequests;
-            options.AddPolicy(PublicReadRateLimitPolicy, httpContext => RateLimitPartition.GetFixedWindowLimiter(
-                httpContext.Connection.RemoteIpAddress?.ToString() ?? "local",
-                _ => new FixedWindowRateLimiterOptions
-                {
-                    PermitLimit = 60,
-                    Window = TimeSpan.FromMinutes(1),
-                    QueueLimit = 0,
-                    AutoReplenishment = true
-                }));
-            options.AddPolicy(MutationRateLimitPolicy, httpContext => RateLimitPartition.GetFixedWindowLimiter(
-                httpContext.Connection.RemoteIpAddress?.ToString() ?? "local",
-                _ => new FixedWindowRateLimiterOptions
-                {
-                    PermitLimit = 20,
-                    Window = TimeSpan.FromMinutes(1),
-                    QueueLimit = 0,
-                    AutoReplenishment = true
-                }));
-        });
+            options.AddRemoteIpFixedWindowPolicies([
+                new RemoteIpFixedWindowRateLimitPolicy(PublicReadRateLimitPolicy, 60, TimeSpan.FromMinutes(1)),
+                new RemoteIpFixedWindowRateLimitPolicy(MutationRateLimitPolicy, 20, TimeSpan.FromMinutes(1))
+            ]));
 
         return services;
-    }
-
-    private static string[] GetAllowedOrigins(IConfiguration configuration)
-    {
-        return configuration.GetSection("Security:Cors:AllowedOrigins")
-            .GetChildren()
-            .Select(section => section.Value)
-            .OfType<string>()
-            .Where(origin => !string.IsNullOrWhiteSpace(origin))
-            .ToArray();
     }
 }

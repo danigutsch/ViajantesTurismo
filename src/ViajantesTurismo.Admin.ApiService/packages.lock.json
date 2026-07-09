@@ -167,6 +167,9 @@
       "sharedkernel.apiversioning": {
         "type": "Project"
       },
+      "sharedkernel.aspnetcore": {
+        "type": "Project"
+      },
       "sharedkernel.buildingblocks": {
         "type": "Project",
         "dependencies": {

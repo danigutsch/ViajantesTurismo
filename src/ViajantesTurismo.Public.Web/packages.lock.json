@@ -95,6 +95,9 @@
           "Polly.Core": "8.4.2"
         }
       },
+      "sharedkernel.aspnetcore": {
+        "type": "Project"
+      },
       "sharedkernel.httpcaching.aspnetcore": {
         "type": "Project"
       },
