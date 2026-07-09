@@ -18,7 +18,7 @@ internal static class PublicWebHttpCache
 
     private const string PragmaNoCache = "no-cache";
 
-    private const string ExpiredAtUnixEpoch = "0";
+    private const string ExpiredAtUnixEpochHttpDate = "Thu, 01 Jan 1970 00:00:00 GMT";
 
     public static IServiceCollection AddPublicWebOutputCache(this IServiceCollection services)
     {
@@ -69,7 +69,7 @@ internal static class PublicWebHttpCache
             NoStore = true
         };
         httpContext.Response.Headers[HeaderNames.Pragma] = PragmaNoCache;
-        httpContext.Response.Headers[HeaderNames.Expires] = ExpiredAtUnixEpoch;
+        httpContext.Response.Headers[HeaderNames.Expires] = ExpiredAtUnixEpochHttpDate;
     }
 
     private static void SetPublishedContent(HttpContext httpContext)

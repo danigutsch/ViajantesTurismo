@@ -28,7 +28,7 @@ internal static class CatalogHttpCache
 
     private const string PragmaNoCache = "no-cache";
 
-    private const string ExpiredAtUnixEpoch = "0";
+    private const string ExpiredAtUnixEpochHttpDate = "Thu, 01 Jan 1970 00:00:00 GMT";
 
     private const string CultureQueryKey = "culture";
 
@@ -69,7 +69,7 @@ internal static class CatalogHttpCache
             NoStore = true
         };
         httpContext.Response.Headers[HeaderNames.Pragma] = PragmaNoCache;
-        httpContext.Response.Headers[HeaderNames.Expires] = ExpiredAtUnixEpoch;
+        httpContext.Response.Headers[HeaderNames.Expires] = ExpiredAtUnixEpochHttpDate;
     }
 
     public static string CreateToursEtagSeed(IReadOnlyCollection<CatalogTourDto> tours)
