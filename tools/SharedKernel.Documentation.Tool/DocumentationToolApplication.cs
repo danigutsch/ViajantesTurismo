@@ -73,7 +73,7 @@ internal static class DocumentationToolApplication
                 await error.WriteLineAsync($"- {path}").ConfigureAwait(false);
             }
 
-            await error.WriteLineAsync($"Run: sharedkernel-docs generate --config {configPath}").ConfigureAwait(false);
+            await error.WriteLineAsync("Run without --check to refresh generated documentation.").ConfigureAwait(false);
             return 1;
         }
 

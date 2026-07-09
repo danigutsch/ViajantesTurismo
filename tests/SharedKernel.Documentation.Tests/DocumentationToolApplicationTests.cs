@@ -158,6 +158,7 @@ public sealed class DocumentationToolApplicationTests
         exitCode.ShouldBe(1);
         errorText.ShouldContain("Generated documentation is stale:", StringComparison.Ordinal);
         errorText.ShouldContain("docs/architecture/overview.md", StringComparison.Ordinal);
+        errorText.ShouldContain("Run without --check to refresh generated documentation.", StringComparison.Ordinal);
     }
 
     [Fact]
