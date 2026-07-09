@@ -1,4 +1,3 @@
-using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
 using ViajantesTurismo.Admin.Application.Customers.Import;
 using ViajantesTurismo.Admin.Contracts;
@@ -18,7 +17,8 @@ internal static class CustomerImportEndpoints
     {
         ArgumentNullException.ThrowIfNull(app);
 
-        var importGroup = app.MapCustomerImportsGroup();
+        var importGroup = app.MapCustomerImportsGroup()
+            .RequireRateLimiting(AdminSecurityBaseline.ImportRateLimitPolicy);
 
         importGroup.MapPost("/", ImportCustomers)
             .WithName("ImportCustomers")
@@ -36,23 +36,38 @@ internal static class CustomerImportEndpoints
         return app;
     }
 
-    private static async Task<Ok<ImportResultDto>> ImportCustomers(
+    private static async Task<IResult> ImportCustomers(
         IFormFile file,
         [FromServices] CustomerImportWorkflowService workflow,
         CancellationToken ct)
     {
         ArgumentNullException.ThrowIfNull(file);
+        if (!CustomerImportFileValidation.TryValidate(file, out var problem))
+        {
+            return Results.Problem(
+                detail: problem.Detail,
+                title: problem.Title,
+                statusCode: problem.Status);
+        }
 
         var csvText = await ReadCsv(file, ct);
         var result = await workflow.Import(csvText, ct);
         return TypedResults.Ok(result);
     }
 
-    private static async Task<Ok<ImportResultDto>> CommitImportWithResolutions(
+    private static async Task<IResult> CommitImportWithResolutions(
         [AsParameters] CommitCustomerImportFormDto form,
         [FromServices] CustomerImportWorkflowService workflow,
         CancellationToken ct)
     {
+        if (!CustomerImportFileValidation.TryValidate(form.File, out var problem))
+        {
+            return Results.Problem(
+                detail: problem.Detail,
+                title: problem.Title,
+                statusCode: problem.Status);
+        }
+
         var csvText = await ReadCsv(form.File, ct);
         var parsedConflictResolutions = ConflictResolutionSerialization.Parse(form.ConflictResolutions);
         var result = await workflow.Commit(

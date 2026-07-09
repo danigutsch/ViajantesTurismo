@@ -16,6 +16,7 @@ builder.AddServiceDefaults();
 builder.Services.AddSingleton(TimeProvider.System);
 
 builder.Services.AddProblemDetails();
+builder.Services.AddAdminSecurityBaseline(builder.Configuration);
 
 builder.Services.ConfigureHttpJsonOptions(options => options.SerializerOptions.TypeInfoResolverChain.Insert(0, AppJsonSerializerContext.Default));
 
@@ -32,6 +33,10 @@ if (app.Environment.IsDevelopment())
 {
     app.MapOpenApi();
 }
+
+app.UseCors(AdminSecurityBaseline.CorsPolicyName);
+
+app.UseRateLimiter();
 
 app.MapToursEndpoints();
 app.MapCustomerEndpoints()

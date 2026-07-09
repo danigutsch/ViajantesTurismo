@@ -161,6 +161,7 @@
         <Project Path="tools/SharedKernel.Testing.CodeFixRunner/SharedKernel.Testing.CodeFixRunner.csproj" />
         <Project Path="tools/SharedKernel.Versioning.Tool/SharedKernel.Versioning.Tool.csproj" />
         <Project Path="tools/SharedKernel.Documentation.Tool/SharedKernel.Documentation.Tool.csproj" />
+        <Project Path="tools/ViajantesTurismo.SecurityChecks.Tool/ViajantesTurismo.SecurityChecks.Tool.csproj" />
     </Folder>
     <Folder Name="/samples/">
         <Project Path="samples/Mediator/Mediator.Sample/Mediator.Sample.csproj" />

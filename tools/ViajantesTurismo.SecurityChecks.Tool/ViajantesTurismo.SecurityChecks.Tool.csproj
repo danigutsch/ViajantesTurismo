@@ -1,0 +1,14 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <OutputType>Exe</OutputType>
+        <RootNamespace>ViajantesTurismo.SecurityChecks.Tool</RootNamespace>
+        <PackAsTool>true</PackAsTool>
+        <ToolCommandName>viajantes-security-checks</ToolCommandName>
+        <PackageId>ViajantesTurismo.SecurityChecks.Tool</PackageId>
+        <Description>Security checks for ViajantesTurismo.</Description>
+        <PackageTags>security;baseline;dotnet-tool</PackageTags>
+        <IsAotCompatible>true</IsAotCompatible>
+    </PropertyGroup>
+
+</Project>

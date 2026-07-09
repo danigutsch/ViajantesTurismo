@@ -8,6 +8,7 @@ builder.WebHost.UseKestrelHttpsConfiguration();
 builder.AddServiceDefaults();
 builder.Services.AddCatalogOpenApiDocuments();
 builder.Services.AddOutputCache();
+builder.Services.AddCatalogSecurityBaseline(builder.Configuration);
 builder.AddCatalogInfrastructure();
 
 var app = builder.Build();
@@ -19,7 +20,9 @@ if (app.Environment.IsDevelopment())
 
 app.UsePublicContentLanguageQueryAlias();
 app.UseOutputCache();
+app.UseCors(CatalogSecurityBaseline.CorsPolicyName);
 
+app.UseRateLimiter();
 app.MapCatalogEndpoints();
 
 app.MapDefaultEndpoints();

@@ -37,6 +37,8 @@ app.UseHttpsRedirection();
 
 app.UseAntiforgery();
 
+app.UseManagementWebSecurityHeaders();
+
 app.UseOutputCache();
 
 app.MapManagementWebEndpoints();
