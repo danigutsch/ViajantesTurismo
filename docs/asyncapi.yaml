@@ -1,0 +1,147 @@
+asyncapi: 3.0.0
+info:
+  title: ViajantesTurismo integration events
+  version: 1.0.0
+  description: >-
+    Hand-authored AsyncAPI-compatible contract for current durable integration events. The contract documents
+    event names, payload shape, producers, consumers, and versioning without adding a generator dependency.
+defaultContentType: application/json
+channels:
+  admin.tour.created:
+    address: admin.tour.created
+    messages:
+      adminTourCreatedV1:
+        $ref: '#/components/messages/AdminTourCreatedV1'
+  catalog.media-image.original-stored:
+    address: catalog.media-image.original-stored
+    messages:
+      mediaImageOriginalStoredV1:
+        $ref: '#/components/messages/MediaImageOriginalStoredV1'
+operations:
+  publishAdminTourCreatedV1:
+    action: send
+    channel:
+      $ref: '#/channels/admin.tour.created'
+    summary: Admin publishes a created-tour event for Catalog projection intake.
+  consumeAdminTourCreatedV1:
+    action: receive
+    channel:
+      $ref: '#/channels/admin.tour.created'
+    summary: Catalog consumes Admin tour creation events from the catalog consumer stream.
+  publishMediaImageOriginalStoredV1:
+    action: send
+    channel:
+      $ref: '#/channels/catalog.media-image.original-stored'
+    summary: Catalog publishes original media-image storage events for Catalog media processing.
+  consumeMediaImageOriginalStoredV1:
+    action: receive
+    channel:
+      $ref: '#/channels/catalog.media-image.original-stored'
+    summary: Catalog consumes original media-image storage events from the catalog consumer stream.
+components:
+  messages:
+    AdminTourCreatedV1:
+      name: admin.tour.created
+      title: Admin tour created v1
+      contentType: application/json
+      headers:
+        type: object
+        additionalProperties: false
+        properties:
+          eventType:
+            const: admin.tour.created
+          eventVersion:
+            const: 1
+      payload:
+        $ref: '#/components/schemas/AdminTourCreatedIntegrationEventV1'
+      bindings:
+        x-viajantes:
+          producerContext: Admin
+          consumerContexts:
+            - Catalog
+          consumerNames:
+            - catalog
+          channel: admin.tour.created
+          sourceType: ViajantesTurismo.Admin.Contracts.Tours.AdminTourCreatedIntegrationEvent
+          domainEventMapping: ViajantesTurismo.Admin.Application.Tours.TourIntegrationEventMappings.MapTourCreated
+          outboxOwner: AdminWriteDbContext
+          inboxOwner: CatalogIntegrationTransportDbContext
+          handler: ViajantesTurismo.Catalog.Application.Tours.AdminTourCreatedIntegrationHandler
+    MediaImageOriginalStoredV1:
+      name: catalog.media-image.original-stored
+      title: Catalog media image original stored v1
+      contentType: application/json
+      headers:
+        type: object
+        additionalProperties: false
+        properties:
+          eventType:
+            const: catalog.media-image.original-stored
+          eventVersion:
+            const: 1
+      payload:
+        $ref: '#/components/schemas/MediaImageOriginalStoredIntegrationEventV1'
+      bindings:
+        x-viajantes:
+          producerContext: Catalog
+          consumerContexts:
+            - Catalog
+          consumerNames:
+            - catalog
+          channel: catalog.media-image.original-stored
+          sourceType: ViajantesTurismo.Catalog.Contracts.Media.MediaImageOriginalStoredIntegrationEvent
+          outboxOwner: CatalogDbContext
+          inboxOwner: CatalogIntegrationTransportDbContext
+          handler: ViajantesTurismo.Catalog.Application.Media.MediaImageOriginalStoredIntegrationHandler
+  schemas:
+    AdminTourCreatedIntegrationEventV1:
+      type: object
+      additionalProperties: false
+      required:
+        - eventId
+        - occurredAt
+        - adminTourId
+        - identifier
+        - name
+      properties:
+        eventId:
+          type: string
+          format: uuid
+        occurredAt:
+          type: string
+          format: date-time
+        adminTourId:
+          type: string
+          format: uuid
+        identifier:
+          type: string
+        name:
+          type: string
+    MediaImageOriginalStoredIntegrationEventV1:
+      type: object
+      additionalProperties: false
+      required:
+        - eventId
+        - occurredAt
+        - mediaImageId
+        - sourceObjectKey
+        - processingVersion
+      properties:
+        eventId:
+          type: string
+          format: uuid
+        occurredAt:
+          type: string
+          format: date-time
+        mediaImageId:
+          type: string
+          format: uuid
+        sourceObjectKey:
+          type: string
+        processingVersion:
+          type: integer
+          format: int32
+x-viajantes:
+  scope: Current durable integration events only.
+  versioning: Event type strings are stable names; eventVersion increments on breaking payload changes.
+  workflow: Hand-authored YAML guarded by contract tests; no transient npm tooling.
