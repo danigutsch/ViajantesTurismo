@@ -128,6 +128,7 @@ Local Aspire:
 Deployment guidance:
 
 - use the AppHost model as the resource relationship source
+- use [Production readiness and operations](../operations/production-readiness.md) for promotion, smoke checks, runbooks, and rollback
 - map production options from `docs/CONFIGURATION.md` to deployed services
 - map secrets by boundary and owning platform, not by example values
 - keep deployment-time infrastructure choices in deployment parameters

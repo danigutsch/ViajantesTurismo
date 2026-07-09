@@ -22,6 +22,7 @@ resilience, and service discovery.
 
 - `/health` - Full health check endpoint
 - `/alive` - Liveness probe for orchestration
+- Responses use the default status-text body only; operational guidance lives in `docs/operations/production-readiness.md`.
 
 ### Resilience
 

@@ -17,6 +17,7 @@ specialized docs instead of repeating the same policy.
 | API and client boundaries | [API client boundaries](API_CLIENT_BOUNDARIES.md) | [API compatibility](API_COMPATIBILITY.md), [API versioning](API_VERSIONING.md) |
 | Configuration and feature flags | [Configuration standards](CONFIGURATION.md) | [OpenTelemetry custom telemetry](OPEN_TELEMETRY.md) |
 | CI, release, and contribution workflow | [Contributing](../CONTRIBUTING.md) | [CI overview](ci/overview.md), [CI governance](ci/governance.md), [Pull request template](pull_request_template.md) |
+| Production operations | [Production readiness and operations](operations/production-readiness.md) | [Runtime wiring and deployment mapping](architecture/runtime-wiring-and-deployment.md) |
 
 Deprecated docs: none identified.
 
@@ -53,6 +54,7 @@ outdated behavior.
 
 ## Maintenance notes
 
+- [Production readiness and operations](operations/production-readiness.md)
 - [Analyzer hardening roadmap](ANALYZER_HARDENING_ROADMAP.md)
 - [SharedKernel observability/runtime grouping](SHAREDKERNEL_OBSERVABILITY_RUNTIME_GROUPING.md)
 - [Vertical slice migration plan](vertical-slice-migration-plan.md)

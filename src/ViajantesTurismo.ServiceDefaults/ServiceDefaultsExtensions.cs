@@ -1,6 +1,7 @@
 using JetBrains.Annotations;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Diagnostics.HealthChecks;
+using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Diagnostics.HealthChecks;
 using Microsoft.Extensions.Hosting;
@@ -103,29 +104,36 @@ public static class ServiceDefaultsExtensions
     }
 
     /// <summary>
-    /// Configures default health check endpoints for the application when running in the development environment.
+    /// Configures default health check endpoints for the application.
     /// </summary>
     /// <remarks>
-    /// Exposing health check endpoints in production environments should be evaluated carefully because it can
-    /// disclose infrastructure details. See https://aka.ms/dotnet/aspire/healthchecks for guidance.
+    /// The endpoints return only the health status text by default. They are safe for orchestrator probes and
+    /// smoke checks because they do not include exception details or dependency-specific payloads.
     /// </remarks>
     /// <param name="app">The <see cref="WebApplication"/> instance to configure with default endpoints.</param>
-    /// <returns>The same <see cref="WebApplication"/> instance, with health check endpoints mapped if the environment is
-    /// development.</returns>
+    /// <returns>The same <see cref="WebApplication"/> instance, with health check endpoints mapped.</returns>
     public static WebApplication MapDefaultEndpoints(this WebApplication app)
     {
         ArgumentNullException.ThrowIfNull(app);
 
-        if (app.Environment.IsDevelopment())
-        {
-            app.MapHealthChecks(EndpointPaths.Health);
+        app.MapHealthChecks(EndpointPaths.Health, CreateHealthCheckOptions());
 
-            app.MapHealthChecks(EndpointPaths.Aliveness, new HealthCheckOptions
-            {
-                Predicate = r => r.Tags.Contains("live")
-            });
-        }
+        app.MapHealthChecks(EndpointPaths.Aliveness, CreateHealthCheckOptions(r => r.Tags.Contains("live")));
 
         return app;
+    }
+
+    private static HealthCheckOptions CreateHealthCheckOptions(Func<HealthCheckRegistration, bool>? predicate = null) => new()
+    {
+        AllowCachingResponses = false,
+        Predicate = predicate,
+        ResponseWriter = WriteHealthStatus
+    };
+
+    private static Task WriteHealthStatus(HttpContext context, HealthReport report)
+    {
+        context.Response.ContentType = "text/plain";
+
+        return context.Response.WriteAsync(report.Status.ToString(), context.RequestAborted);
     }
 }

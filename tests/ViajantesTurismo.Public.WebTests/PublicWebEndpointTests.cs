@@ -1,4 +1,5 @@
 using Microsoft.AspNetCore.Mvc.Testing;
+using SharedKernel.Testing.Assertions;
 using TestTraits = ViajantesTurismo.Public.WebTests.Infrastructure.TestTraits;
 
 namespace ViajantesTurismo.Public.WebTests;
@@ -560,7 +561,7 @@ public sealed class PublicWebEndpointTests
     [Theory]
     [InlineData("/health")]
     [InlineData("/alive")]
-    public async Task Production_default_health_endpoint_is_not_exposed(string path)
+    public async Task Production_default_health_endpoint_returns_safe_status_text(string path)
     {
         // Arrange
         await using var factory = PublicWebEndpointTestsHelpers.CreateFactory(environment: "Production");
@@ -571,9 +572,12 @@ public sealed class PublicWebEndpointTests
 
         // Act
         using var response = await client.GetAsync(new Uri(path, UriKind.Relative), TestContext.Current.CancellationToken);
+        var body = await response.Content.ReadAsStringAsync(TestContext.Current.CancellationToken);
 
         // Assert
-        Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
+        response.StatusCode.ShouldBe(HttpStatusCode.OK);
+        response.Content.Headers.ContentType?.MediaType.ShouldBe("text/plain");
+        body.ShouldBe("Healthy");
     }
 
 }
