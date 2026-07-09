@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.Http;
 using SharedKernel.Testing.Assertions;
 using TestTraits = ViajantesTurismo.Admin.UnitTests.Infrastructure.TestTraits;
 using ViajantesTurismo.Admin.ApiService.Customers;
+using ViajantesTurismo.Admin.Contracts;
 
 namespace ViajantesTurismo.Admin.UnitTests.ApiService;
 
@@ -16,7 +17,7 @@ public sealed class CustomerImportFileValidationTests
         var file = new FormFile(stream, 0, stream.Length, "file", "customers.csv")
         {
             Headers = new HeaderDictionary(),
-            ContentType = "text/csv"
+            ContentType = ContractConstants.CustomerImportTextCsvContentType
         };
 
         // Act
@@ -35,7 +36,7 @@ public sealed class CustomerImportFileValidationTests
         var file = new FormFile(stream, 0, 0, "file", "customers.csv")
         {
             Headers = new HeaderDictionary(),
-            ContentType = "text/csv"
+            ContentType = ContractConstants.CustomerImportTextCsvContentType
         };
 
         // Act
@@ -75,7 +76,7 @@ public sealed class CustomerImportFileValidationTests
         var file = new FormFile(stream, 0, CustomerImportFileValidation.MaxFileBytes + 1, "file", "customers.csv")
         {
             Headers = new HeaderDictionary(),
-            ContentType = "text/csv"
+            ContentType = ContractConstants.CustomerImportTextCsvContentType
         };
 
         // Act

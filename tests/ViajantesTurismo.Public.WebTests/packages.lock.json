@@ -653,6 +653,9 @@
           "xunit.v3.runner.common": "[3.2.2]"
         }
       },
+      "sharedkernel.aspnetcore": {
+        "type": "Project"
+      },
       "sharedkernel.httpclients": {
         "type": "Project",
         "dependencies": {
@@ -713,6 +716,7 @@
       "viajantesturismo.public.web": {
         "type": "Project",
         "dependencies": {
+          "SharedKernel.AspNetCore": "[0.1.0-alpha.0, )",
           "SharedKernel.HttpClients": "[0.1.0-alpha.0, )",
           "ViajantesTurismo.Catalog.Contracts": "[0.1.0-alpha.0, )",
           "ViajantesTurismo.Resources": "[0.1.0-alpha.0, )",

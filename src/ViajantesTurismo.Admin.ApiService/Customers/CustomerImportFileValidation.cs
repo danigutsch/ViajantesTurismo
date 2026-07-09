@@ -1,17 +1,11 @@
 using Microsoft.AspNetCore.Mvc;
+using ViajantesTurismo.Admin.Contracts;
 
 namespace ViajantesTurismo.Admin.ApiService.Customers;
 
 internal static class CustomerImportFileValidation
 {
     public const long MaxFileBytes = 1_048_576;
-
-    private static readonly string[] AllowedContentTypes =
-    [
-        "text/csv",
-        "application/csv",
-        "application/vnd.ms-excel"
-    ];
 
     public static bool TryValidate(IFormFile file, out ProblemDetails problem)
     {
@@ -29,8 +23,14 @@ internal static class CustomerImportFileValidation
 
     private static bool IsAllowedCsv(IFormFile file)
     {
-        return AllowedContentTypes.Contains(file.ContentType, StringComparer.OrdinalIgnoreCase)
+        return IsAllowedContentType(file.ContentType)
             && Path.GetExtension(file.FileName).Equals(".csv", StringComparison.OrdinalIgnoreCase);
+    }
+
+    private static bool IsAllowedContentType(string contentType)
+    {
+        return ContractConstants.CustomerImportAllowedContentTypes.Any(allowedContentType =>
+            allowedContentType.Equals(contentType, StringComparison.OrdinalIgnoreCase));
     }
 
     private static ProblemDetails CreateProblem()
