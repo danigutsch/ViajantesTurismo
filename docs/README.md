@@ -15,7 +15,7 @@ specialized docs instead of repeating the same policy.
 | Architecture and ADRs | [Architecture overview](architecture/README.md) and [Architecture decisions](ARCHITECTURE_DECISIONS.md) | [Bounded contexts](bounded-contexts/Admin.md), [Domain aggregates](domain/AGGREGATES.md) |
 | Domain validation | [Domain validation](DOMAIN_VALIDATION.md) | [Domain aggregates](domain/AGGREGATES.md), [Glossary](domain/GLOSSARY.md) |
 | API and client boundaries | [API client boundaries](API_CLIENT_BOUNDARIES.md) | [API compatibility](API_COMPATIBILITY.md), [API versioning](API_VERSIONING.md) |
-| Async integration contracts | [Async contracts](ASYNC_CONTRACTS.md) | [AsyncAPI contract](asyncapi.yaml), [Events and messaging](domain/EVENTS_AND_MESSAGING.md) |
+| Async integration contracts | [Async contracts](ASYNC_CONTRACTS.md) | [AsyncAPI contract](asyncapi.json), [Events and messaging](domain/EVENTS_AND_MESSAGING.md) |
 | Configuration and feature flags | [Configuration standards](CONFIGURATION.md) | [OpenTelemetry custom telemetry](OPEN_TELEMETRY.md) |
 | CI, release, and contribution workflow | [Contributing](../CONTRIBUTING.md) | [CI overview](ci/overview.md), [CI governance](ci/governance.md), [Pull request template](pull_request_template.md) |
 | Production operations | [Production readiness and operations](operations/production-readiness.md) | [Runtime wiring and deployment mapping](architecture/runtime-wiring-and-deployment.md) |
@@ -49,7 +49,7 @@ outdated behavior.
 - [Configuration standards](CONFIGURATION.md)
 - [API versioning](API_VERSIONING.md)
 - [Async contracts](ASYNC_CONTRACTS.md)
-- [AsyncAPI contract](asyncapi.yaml)
+- [AsyncAPI contract](asyncapi.json)
 - [OpenTelemetry custom telemetry](OPEN_TELEMETRY.md)
 - [Mutation testing evaluation](MUTATION_TESTING.md)
 - [Dev containers](DEVCONTAINERS.md)

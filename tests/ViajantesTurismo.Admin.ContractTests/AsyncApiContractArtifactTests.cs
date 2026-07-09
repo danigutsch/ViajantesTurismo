@@ -1,4 +1,5 @@
 using System.Globalization;
+using System.Text.Json;
 
 using ViajantesTurismo.Admin.Contracts.Tours;
 using ViajantesTurismo.Admin.ContractTests.Infrastructure;
@@ -19,22 +20,24 @@ public sealed class AsyncApiContractArtifactTests
     {
         // Arrange
         var artifact = AsyncApiContractArtifact.Read();
-        var infoStart = artifact.IndexOf("info:", StringComparison.Ordinal);
-        var channelsStart = artifact.IndexOf("channels:", StringComparison.Ordinal);
-        var operationsStart = artifact.IndexOf("operations:", StringComparison.Ordinal);
-        var componentsStart = artifact.IndexOf("components:", StringComparison.Ordinal);
+        using var document = JsonDocument.Parse(artifact);
+        var root = document.RootElement;
+        var infoStart = artifact.IndexOf("\"info\":", StringComparison.Ordinal);
+        var channelsStart = artifact.IndexOf("\"channels\":", StringComparison.Ordinal);
+        var operationsStart = artifact.IndexOf("\"operations\":", StringComparison.Ordinal);
+        var componentsStart = artifact.IndexOf("\"components\":", StringComparison.Ordinal);
         var componentsMessagesStart = componentsStart >= 0
-            ? artifact.IndexOf("messages:", componentsStart, StringComparison.Ordinal)
+            ? artifact.IndexOf("\"messages\":", componentsStart, StringComparison.Ordinal)
             : -1;
         var adminMessageStart = componentsMessagesStart >= 0
-            ? artifact.IndexOf("AdminTourCreatedV1:", componentsMessagesStart, StringComparison.Ordinal)
+            ? artifact.IndexOf("\"AdminTourCreatedV1\":", componentsMessagesStart, StringComparison.Ordinal)
             : -1;
         var mediaMessageStart = adminMessageStart >= 0
-            ? artifact.IndexOf("MediaImageOriginalStoredV1:", adminMessageStart, StringComparison.Ordinal)
+            ? artifact.IndexOf("\"MediaImageOriginalStoredV1\":", adminMessageStart, StringComparison.Ordinal)
             : -1;
-        var schemaStart = artifact.IndexOf("schemas:", StringComparison.Ordinal);
-        var adminSchemaStart = artifact.IndexOf("AdminTourCreatedIntegrationEventV1:", StringComparison.Ordinal);
-        var mediaSchemaStart = artifact.IndexOf("MediaImageOriginalStoredIntegrationEventV1:", StringComparison.Ordinal);
+        var schemaStart = artifact.IndexOf("\"schemas\":", StringComparison.Ordinal);
+        var adminSchemaStart = artifact.IndexOf("\"AdminTourCreatedIntegrationEventV1\":", StringComparison.Ordinal);
+        var mediaSchemaStart = artifact.IndexOf("\"MediaImageOriginalStoredIntegrationEventV1\":", StringComparison.Ordinal);
 
         infoStart.ShouldBeGreaterThanOrEqualTo(0);
         channelsStart.ShouldBeGreaterThanOrEqualTo(0);
@@ -66,27 +69,27 @@ public sealed class AsyncApiContractArtifactTests
         {
             AdminTourCreatedIntegrationEvent.EventType,
             AdminTourCreatedIntegrationEvent.EventVersion.ToString(CultureInfo.InvariantCulture),
-            "eventId",
-            "occurredAt",
-            "adminTourId",
-            "identifier",
-            "name",
+            "\"eventId\"",
+            "\"occurredAt\"",
+            "\"adminTourId\"",
+            "\"identifier\"",
+            "\"name\"",
             MediaImageOriginalStoredIntegrationEvent.EventType,
             MediaImageOriginalStoredIntegrationEvent.EventVersion.ToString(CultureInfo.InvariantCulture),
-            "eventId",
-            "occurredAt",
-            "mediaImageId",
-            "sourceObjectKey",
-            "processingVersion",
+            "\"eventId\"",
+            "\"occurredAt\"",
+            "\"mediaImageId\"",
+            "\"sourceObjectKey\"",
+            "\"processingVersion\"",
             IntegrationEventConsumerNames.Catalog,
-            "producerContext",
-            "consumerContexts",
-            "channel",
-            "sourceType",
-            "domainEventMapping",
-            "outboxOwner",
-            "inboxOwner",
-            "handler",
+            "\"producerContext\"",
+            "\"consumerContexts\"",
+            "\"channel\"",
+            "\"sourceType\"",
+            "\"domainEventMapping\"",
+            "\"outboxOwner\"",
+            "\"inboxOwner\"",
+            "\"handler\"",
         };
 
         // Assert
@@ -95,37 +98,42 @@ public sealed class AsyncApiContractArtifactTests
             artifact.ShouldContain(expectedTerm, StringComparison.Ordinal);
         }
 
+        root.TryGetProperty("asyncapi", out _).ShouldBeTrue();
+        root.TryGetProperty("info", out _).ShouldBeTrue();
+        root.TryGetProperty("channels", out _).ShouldBeTrue();
+        root.TryGetProperty("operations", out _).ShouldBeTrue();
+        root.TryGetProperty("components", out _).ShouldBeTrue();
         artifact.ShouldNotContain("\t");
-        artifact.ShouldContain("asyncapi: 3.0.0", StringComparison.Ordinal);
-        artifact.ShouldContain("$ref: '#/components/messages/AdminTourCreatedV1'", StringComparison.Ordinal);
-        artifact.ShouldContain("$ref: '#/components/messages/MediaImageOriginalStoredV1'", StringComparison.Ordinal);
-        artifact.ShouldContain("$ref: '#/components/schemas/AdminTourCreatedIntegrationEventV1'", StringComparison.Ordinal);
-        artifact.ShouldContain("$ref: '#/components/schemas/MediaImageOriginalStoredIntegrationEventV1'", StringComparison.Ordinal);
+        artifact.ShouldContain("\"asyncapi\": \"3.0.0\"", StringComparison.Ordinal);
+        artifact.ShouldContain("\"$ref\": \"#/components/messages/AdminTourCreatedV1\"", StringComparison.Ordinal);
+        artifact.ShouldContain("\"$ref\": \"#/components/messages/MediaImageOriginalStoredV1\"", StringComparison.Ordinal);
+        artifact.ShouldContain("\"$ref\": \"#/components/schemas/AdminTourCreatedIntegrationEventV1\"", StringComparison.Ordinal);
+        artifact.ShouldContain("\"$ref\": \"#/components/schemas/MediaImageOriginalStoredIntegrationEventV1\"", StringComparison.Ordinal);
 
-        adminMessage.ShouldContain($"const: {AdminTourCreatedIntegrationEvent.EventType}", StringComparison.Ordinal);
-        adminMessage.ShouldContain($"const: {AdminTourCreatedIntegrationEvent.EventVersion.ToString(CultureInfo.InvariantCulture)}", StringComparison.Ordinal);
-        adminMessage.ShouldContain("required:", StringComparison.Ordinal);
-        adminMessage.ShouldContain("- eventType", StringComparison.Ordinal);
-        adminMessage.ShouldContain("- eventVersion", StringComparison.Ordinal);
-        adminMessage.ShouldContain("consumerNames:", StringComparison.Ordinal);
-        adminMessage.ShouldContain($"- {IntegrationEventConsumerNames.Catalog}", StringComparison.Ordinal);
-        adminSchema.ShouldContain("eventId:", StringComparison.Ordinal);
-        adminSchema.ShouldContain("occurredAt:", StringComparison.Ordinal);
-        adminSchema.ShouldContain("adminTourId:", StringComparison.Ordinal);
-        adminSchema.ShouldContain("identifier:", StringComparison.Ordinal);
-        adminSchema.ShouldContain("name:", StringComparison.Ordinal);
+        adminMessage.ShouldContain($"\"const\": \"{AdminTourCreatedIntegrationEvent.EventType}\"", StringComparison.Ordinal);
+        adminMessage.ShouldContain($"\"const\": {AdminTourCreatedIntegrationEvent.EventVersion.ToString(CultureInfo.InvariantCulture)}", StringComparison.Ordinal);
+        adminMessage.ShouldContain("\"required\":", StringComparison.Ordinal);
+        adminMessage.ShouldContain("\"eventType\"", StringComparison.Ordinal);
+        adminMessage.ShouldContain("\"eventVersion\"", StringComparison.Ordinal);
+        adminMessage.ShouldContain("\"consumerNames\":", StringComparison.Ordinal);
+        adminMessage.ShouldContain($"\"{IntegrationEventConsumerNames.Catalog}\"", StringComparison.Ordinal);
+        adminSchema.ShouldContain("\"eventId\":", StringComparison.Ordinal);
+        adminSchema.ShouldContain("\"occurredAt\":", StringComparison.Ordinal);
+        adminSchema.ShouldContain("\"adminTourId\":", StringComparison.Ordinal);
+        adminSchema.ShouldContain("\"identifier\":", StringComparison.Ordinal);
+        adminSchema.ShouldContain("\"name\":", StringComparison.Ordinal);
 
-        mediaMessage.ShouldContain($"const: {MediaImageOriginalStoredIntegrationEvent.EventType}", StringComparison.Ordinal);
-        mediaMessage.ShouldContain($"const: {MediaImageOriginalStoredIntegrationEvent.EventVersion.ToString(CultureInfo.InvariantCulture)}", StringComparison.Ordinal);
-        mediaMessage.ShouldContain("required:", StringComparison.Ordinal);
-        mediaMessage.ShouldContain("- eventType", StringComparison.Ordinal);
-        mediaMessage.ShouldContain("- eventVersion", StringComparison.Ordinal);
-        mediaMessage.ShouldContain("consumerNames:", StringComparison.Ordinal);
-        mediaMessage.ShouldContain($"- {IntegrationEventConsumerNames.Catalog}", StringComparison.Ordinal);
-        mediaSchema.ShouldContain("eventId:", StringComparison.Ordinal);
-        mediaSchema.ShouldContain("occurredAt:", StringComparison.Ordinal);
-        mediaSchema.ShouldContain("mediaImageId:", StringComparison.Ordinal);
-        mediaSchema.ShouldContain("sourceObjectKey:", StringComparison.Ordinal);
-        mediaSchema.ShouldContain("processingVersion:", StringComparison.Ordinal);
+        mediaMessage.ShouldContain($"\"const\": \"{MediaImageOriginalStoredIntegrationEvent.EventType}\"", StringComparison.Ordinal);
+        mediaMessage.ShouldContain($"\"const\": {MediaImageOriginalStoredIntegrationEvent.EventVersion.ToString(CultureInfo.InvariantCulture)}", StringComparison.Ordinal);
+        mediaMessage.ShouldContain("\"required\":", StringComparison.Ordinal);
+        mediaMessage.ShouldContain("\"eventType\"", StringComparison.Ordinal);
+        mediaMessage.ShouldContain("\"eventVersion\"", StringComparison.Ordinal);
+        mediaMessage.ShouldContain("\"consumerNames\":", StringComparison.Ordinal);
+        mediaMessage.ShouldContain($"\"{IntegrationEventConsumerNames.Catalog}\"", StringComparison.Ordinal);
+        mediaSchema.ShouldContain("\"eventId\":", StringComparison.Ordinal);
+        mediaSchema.ShouldContain("\"occurredAt\":", StringComparison.Ordinal);
+        mediaSchema.ShouldContain("\"mediaImageId\":", StringComparison.Ordinal);
+        mediaSchema.ShouldContain("\"sourceObjectKey\":", StringComparison.Ordinal);
+        mediaSchema.ShouldContain("\"processingVersion\":", StringComparison.Ordinal);
     }
 }

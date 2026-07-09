@@ -5,7 +5,7 @@ drift guard for Epic #827.
 
 ## Scope
 
-The canonical contract artifact is [`asyncapi.yaml`](asyncapi.yaml). It covers current durable
+The canonical contract artifact is [`asyncapi.json`](asyncapi.json). It covers current durable
 integration events only. Domain events remain local to one bounded context and are documented as
 implementation facts, not as transport contracts.
 
@@ -29,7 +29,7 @@ Current integration-event handlers:
 
 ## Tooling decision
 
-Use a hand-authored AsyncAPI YAML artifact for now.
+Use a hand-authored AsyncAPI JSON artifact for now.
 
 Rejected for this slice:
 
@@ -47,7 +47,7 @@ Local and CI validation path:
 
 ## Topology metadata
 
-`docs/asyncapi.yaml` uses `x-viajantes` metadata to make event topology discoverable without adding a
+`docs/asyncapi.json` uses `x-viajantes` metadata to make event topology discoverable without adding a
 new code abstraction:
 
 - producer context
@@ -60,7 +60,7 @@ new code abstraction:
 - handler or projection responsibility
 
 Future diagram generation should prefer this metadata and then link generated event-flow diagrams back to
-`docs/asyncapi.yaml`.
+`docs/asyncapi.json`.
 
 ## Versioning
 
