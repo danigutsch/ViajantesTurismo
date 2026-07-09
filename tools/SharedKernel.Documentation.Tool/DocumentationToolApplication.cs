@@ -10,8 +10,7 @@ internal static class DocumentationToolApplication
     {
         if (args is not ["generate", .. var commandArgs])
         {
-            await error.WriteLineAsync(args.Length == 0 ? "Missing command." : $"Unknown command: {args[0]}").ConfigureAwait(false);
-            await error.WriteLineAsync(Usage).ConfigureAwait(false);
+            await WriteUsageError(error, args.Length == 0 ? "Missing command." : $"Unknown command: {args[0]}").ConfigureAwait(false);
             return 1;
         }
 
@@ -27,36 +26,31 @@ internal static class DocumentationToolApplication
         while (index < args.Length)
         {
             var arg = args[index];
-            if (arg == "--check")
+            switch (arg)
             {
-                checkOnly = true;
-                index++;
-                continue;
-            }
+                case "--check":
+                    checkOnly = true;
+                    index++;
+                    continue;
 
-            if (arg == "--config")
-            {
-                if (index + 1 >= args.Length || args[index + 1].StartsWith("--", StringComparison.Ordinal))
-                {
-                    await error.WriteLineAsync("Missing required value for --config.").ConfigureAwait(false);
-                    await error.WriteLineAsync(Usage).ConfigureAwait(false);
+                case "--config" when HasConfigValue(args, index):
+                    configPath = args[index + 1];
+                    index += 2;
+                    continue;
+
+                case "--config":
+                    await WriteUsageError(error, "Missing required value for --config.").ConfigureAwait(false);
                     return 1;
-                }
 
-                configPath = args[index + 1];
-                index += 2;
-                continue;
+                default:
+                    await WriteUsageError(error, $"Unknown argument: {arg}").ConfigureAwait(false);
+                    return 1;
             }
-
-            await error.WriteLineAsync($"Unknown argument: {arg}").ConfigureAwait(false);
-            await error.WriteLineAsync(Usage).ConfigureAwait(false);
-            return 1;
         }
 
         if (string.IsNullOrWhiteSpace(configPath))
         {
-            await error.WriteLineAsync("Missing required --config <path>.").ConfigureAwait(false);
-            await error.WriteLineAsync(Usage).ConfigureAwait(false);
+            await WriteUsageError(error, "Missing required --config <path>.").ConfigureAwait(false);
             return 1;
         }
 
@@ -96,5 +90,14 @@ internal static class DocumentationToolApplication
         }
 
         return 0;
+    }
+
+    private static bool HasConfigValue(string[] args, int index) =>
+        index + 1 < args.Length && !args[index + 1].StartsWith("--", StringComparison.Ordinal);
+
+    private static async Task WriteUsageError(TextWriter error, string message)
+    {
+        await error.WriteLineAsync(message).ConfigureAwait(false);
+        await error.WriteLineAsync(Usage).ConfigureAwait(false);
     }
 }
