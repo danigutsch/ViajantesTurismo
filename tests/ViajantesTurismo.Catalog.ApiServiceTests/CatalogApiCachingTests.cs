@@ -33,10 +33,11 @@ public sealed class CatalogApiCachingTests
         // Assert
         response.StatusCode.ShouldBe(HttpStatusCode.OK);
         var cacheControl = response.Headers.CacheControl.ShouldNotBeNull();
-        cacheControl.ToString().ShouldContain("public", StringComparison.Ordinal);
-        cacheControl.ToString().ShouldContain("max-age=60", StringComparison.Ordinal);
+        cacheControl.Public.ShouldBeTrue();
+        cacheControl.MaxAge.ShouldBe(TimeSpan.FromSeconds(60));
         var etag = response.Headers.ETag.ShouldNotBeNull();
-        etag.ToString().ShouldContain("W/\"", StringComparison.Ordinal);
+        etag.IsWeak.ShouldBeTrue();
+        etag.Tag.ShouldNotBeNull();
     }
 
     [Fact]
@@ -64,7 +65,7 @@ public sealed class CatalogApiCachingTests
         // Assert
         response.StatusCode.ShouldBe(HttpStatusCode.OK);
         var cacheControl = response.Headers.CacheControl.ShouldNotBeNull();
-        cacheControl.ToString().ShouldContain("no-store", StringComparison.Ordinal);
+        cacheControl.NoStore.ShouldBeTrue();
     }
 
     [Fact]
@@ -156,7 +157,7 @@ public sealed class CatalogApiCachingTests
         using var client = factory.CreateClient();
 
         // Act
-        using var firstResponse = await client.GetAsync(new Uri("/public/catalog/content/home.hero?culture=EN&language=pt-BR", UriKind.Relative), cancellationToken);
+        using var firstResponse = await client.GetAsync(new Uri("/public/catalog/content/home.hero?language=EN", UriKind.Relative), cancellationToken);
         var firstContent = await firstResponse.Content.ReadFromJsonAsync<PublicContentVariantDto>(cancellationToken);
         await contentStore.SaveContent(CatalogApiCachingTestData.CreatePublishedContent("Store-only content"), cancellationToken);
         using var cachedResponse = await client.GetAsync(new Uri("/public/catalog/content/home.hero?culture=en-US", UriKind.Relative), cancellationToken);

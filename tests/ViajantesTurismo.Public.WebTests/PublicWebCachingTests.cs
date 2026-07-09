@@ -27,8 +27,8 @@ public sealed class PublicWebCachingTests
         // Assert
         response.StatusCode.ShouldBe(HttpStatusCode.OK);
         var cacheControl = response.Headers.CacheControl.ShouldNotBeNull();
-        cacheControl.ToString().ShouldContain("public", StringComparison.Ordinal);
-        cacheControl.ToString().ShouldContain("max-age=60", StringComparison.Ordinal);
+        cacheControl.Public.ShouldBeTrue();
+        cacheControl.MaxAge.ShouldBe(TimeSpan.FromSeconds(60));
     }
 
     [Fact]
@@ -71,7 +71,7 @@ public sealed class PublicWebCachingTests
         using var client = factory.CreateClient();
 
         // Act
-        using var firstResponse = await client.GetAsync(new Uri("/?culture=EN&language=pt-BR", UriKind.Relative), TestContext.Current.CancellationToken);
+        using var firstResponse = await client.GetAsync(new Uri("/?language=EN", UriKind.Relative), TestContext.Current.CancellationToken);
         var firstContent = await firstResponse.Content.ReadAsStringAsync(TestContext.Current.CancellationToken);
         catalogApi.AddContent("en-US", new PublicContentVariantDto
         {
@@ -105,7 +105,7 @@ public sealed class PublicWebCachingTests
         // Assert
         response.StatusCode.ShouldBe(HttpStatusCode.ServiceUnavailable);
         var cacheControl = response.Headers.CacheControl.ShouldNotBeNull();
-        cacheControl.ToString().ShouldContain("no-store", StringComparison.Ordinal);
+        cacheControl.NoStore.ShouldBeTrue();
         content.ShouldContain("Tours could not be loaded right now.", StringComparison.Ordinal);
     }
 
@@ -125,6 +125,6 @@ public sealed class PublicWebCachingTests
         // Assert
         response.StatusCode.ShouldBe(HttpStatusCode.InternalServerError);
         var cacheControl = response.Headers.CacheControl.ShouldNotBeNull();
-        cacheControl.ToString().ShouldContain("no-store", StringComparison.Ordinal);
+        cacheControl.NoStore.ShouldBeTrue();
     }
 }
