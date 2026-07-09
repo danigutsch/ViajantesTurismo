@@ -28,7 +28,9 @@ internal static class PublicWebHttpCache
         {
             options.AddPolicy(
                 PublishedContentPolicy,
-                policy => policy.Expire(PublishedContentFreshness).SetVaryByQuery(CultureQueryKey, LanguageQueryKey));
+                policy => policy
+                    .Expire(PublishedContentFreshness)
+                    .SetVaryByQuery(CultureQueryKey));
         });
     }
 
@@ -38,6 +40,8 @@ internal static class PublicWebHttpCache
 
         return app.Use(static async (httpContext, next) =>
         {
+            NormalizeCultureQueryAlias(httpContext);
+
             httpContext.Response.OnStarting(static state =>
             {
                 var context = (HttpContext)state;
@@ -64,8 +68,8 @@ internal static class PublicWebHttpCache
         {
             NoStore = true
         };
-        httpContext.Response.Headers.Pragma = PragmaNoCache;
-        httpContext.Response.Headers.Expires = ExpiredAtUnixEpoch;
+        httpContext.Response.Headers[HeaderNames.Pragma] = PragmaNoCache;
+        httpContext.Response.Headers[HeaderNames.Expires] = ExpiredAtUnixEpoch;
     }
 
     private static void SetPublishedContent(HttpContext httpContext)
@@ -91,5 +95,31 @@ internal static class PublicWebHttpCache
             && (path == "/"
                 || path.StartsWithSegments("/group-bike-tours", StringComparison.OrdinalIgnoreCase)
                 || path.StartsWithSegments("/gallery", StringComparison.OrdinalIgnoreCase));
+    }
+
+    private static void NormalizeCultureQueryAlias(HttpContext httpContext)
+    {
+        if (!httpContext.Request.Query.TryGetValue(LanguageQueryKey, out var language))
+        {
+            return;
+        }
+
+        var queryValues = new List<KeyValuePair<string, string?>>();
+        foreach (var (key, values) in httpContext.Request.Query)
+        {
+            if (key.Equals(LanguageQueryKey, StringComparison.OrdinalIgnoreCase)
+                || key.Equals(CultureQueryKey, StringComparison.OrdinalIgnoreCase))
+            {
+                continue;
+            }
+
+            foreach (var value in values)
+            {
+                queryValues.Add(new KeyValuePair<string, string?>(key, value));
+            }
+        }
+
+        queryValues.Add(new KeyValuePair<string, string?>(CultureQueryKey, language.ToString()));
+        httpContext.Request.QueryString = QueryString.Create(queryValues);
     }
 }

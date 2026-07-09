@@ -30,6 +30,27 @@ internal static class CatalogHttpCache
 
     private const string ExpiredAtUnixEpoch = "0";
 
+    private const string CultureQueryKey = "culture";
+
+    private const string LanguageQueryKey = "language";
+
+    private const string PublicContentPathPrefix = "/public/catalog/content";
+
+    public static IApplicationBuilder UsePublicContentLanguageQueryAlias(this IApplicationBuilder app)
+    {
+        ArgumentNullException.ThrowIfNull(app);
+
+        return app.Use(static async (httpContext, next) =>
+        {
+            if (httpContext.Request.Path.StartsWithSegments(PublicContentPathPrefix, StringComparison.OrdinalIgnoreCase))
+            {
+                NormalizeCultureQueryAlias(httpContext);
+            }
+
+            await next(httpContext);
+        });
+    }
+
     public static void SetPublicHeaders(HttpContext httpContext, string etagSeed)
     {
         httpContext.Response.GetTypedHeaders().CacheControl = new CacheControlHeaderValue
@@ -47,8 +68,8 @@ internal static class CatalogHttpCache
         {
             NoStore = true
         };
-        httpContext.Response.Headers.Pragma = PragmaNoCache;
-        httpContext.Response.Headers.Expires = ExpiredAtUnixEpoch;
+        httpContext.Response.Headers[HeaderNames.Pragma] = PragmaNoCache;
+        httpContext.Response.Headers[HeaderNames.Expires] = ExpiredAtUnixEpoch;
     }
 
     public static string CreateToursEtagSeed(IReadOnlyCollection<CatalogTourDto> tours)
@@ -136,5 +157,31 @@ internal static class CatalogHttpCache
     {
         var hash = SHA256.HashData(Encoding.UTF8.GetBytes(value));
         return $"W/\"{Convert.ToHexString(hash)}\"";
+    }
+
+    private static void NormalizeCultureQueryAlias(HttpContext httpContext)
+    {
+        if (!httpContext.Request.Query.TryGetValue(LanguageQueryKey, out var language))
+        {
+            return;
+        }
+
+        var queryValues = new List<KeyValuePair<string, string?>>();
+        foreach (var (key, values) in httpContext.Request.Query)
+        {
+            if (key.Equals(LanguageQueryKey, StringComparison.OrdinalIgnoreCase)
+                || key.Equals(CultureQueryKey, StringComparison.OrdinalIgnoreCase))
+            {
+                continue;
+            }
+
+            foreach (var value in values)
+            {
+                queryValues.Add(new KeyValuePair<string, string?>(key, value));
+            }
+        }
+
+        queryValues.Add(new KeyValuePair<string, string?>(CultureQueryKey, language.ToString()));
+        httpContext.Request.QueryString = QueryString.Create(queryValues);
     }
 }

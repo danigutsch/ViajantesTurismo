@@ -10,10 +10,10 @@ documents a narrower safe exception.
 
 | Surface | Policy | Freshness | Invalidation |
 | --- | --- | --- | --- |
-| Catalog API `/public/catalog/tours` and `/public/catalog/tours/{slug}` | Public HTTP metadata plus server output cache | 60 seconds | Catalog presentation and media writes evict `public-catalog` |
-| Catalog API `/public/catalog/content/{key}` | Public HTTP metadata plus server output cache varied by `culture` and `language` | 60 seconds | Public content writes evict `public-content` |
-| Catalog API `/public/catalog/theme` | Public HTTP metadata plus server output cache | 60 seconds | Theme writes evict `public-theme` |
-| Public Web `/`, `/group-bike-tours`, `/group-bike-tours/{slug}`, `/gallery` | Public HTTP metadata plus server output cache varied by `culture` and `language` | 60 seconds | Expires after freshness window; Catalog API invalidation is service-local |
+| Catalog API `/public/catalog/tours` and `/public/catalog/tours/{slug}` | Public HTTP metadata plus server output cache | 60 seconds plus `stale-while-revalidate=300` | Catalog presentation and media writes evict `public-catalog` |
+| Catalog API `/public/catalog/content/{key}` | Public HTTP metadata plus server output cache varied by canonical `culture` | 60 seconds plus `stale-while-revalidate=300` | Public content writes evict `public-content` |
+| Catalog API `/public/catalog/theme` | Public HTTP metadata plus server output cache | 60 seconds plus `stale-while-revalidate=300` | Theme writes evict `public-theme` |
+| Public Web `/`, `/group-bike-tours`, `/group-bike-tours/{slug}`, `/gallery` | Public HTTP metadata plus server output cache varied by canonical `culture` | 60 seconds plus `stale-while-revalidate=300` | Expires after freshness window; Catalog API invalidation is service-local |
 
 ## Non-cacheable responses
 
@@ -26,7 +26,8 @@ documents a narrower safe exception.
 
 Catalog API mutations evict same-process public API output-cache entries before returning success. Public
 Web pages cache rendered HTML in the Public Web process, so catalog changes can remain visible there until
-the 60-second freshness window expires.
+the 60-second freshness window expires. Intermediaries may serve stale public responses for up to another
+300 seconds while they revalidate.
 
 ## Observability and checks
 

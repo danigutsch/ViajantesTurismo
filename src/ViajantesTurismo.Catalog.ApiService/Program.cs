@@ -17,6 +17,7 @@ if (app.Environment.IsDevelopment())
     app.MapOpenApi();
 }
 
+app.UsePublicContentLanguageQueryAlias();
 app.UseOutputCache();
 
 app.MapCatalogEndpoints();
