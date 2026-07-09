@@ -1,6 +1,7 @@
 using System.Diagnostics.CodeAnalysis;
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Net.Http.Headers;
 using ViajantesTurismo.Admin.Application.Customers.Import;
 using ViajantesTurismo.Admin.Contracts;
 
@@ -106,8 +107,12 @@ internal static class CustomerImportEndpoints
 
     private static bool IsAllowedCsv(IFormFile file)
     {
+        var contentType = MediaTypeHeaderValue.TryParse(file.ContentType, out var mediaType)
+            ? mediaType.MediaType.Value
+            : file.ContentType;
+
         return ContractConstants.CustomerImportAllowedContentTypes.Any(allowedContentType =>
-                allowedContentType.Equals(file.ContentType, StringComparison.OrdinalIgnoreCase))
+                allowedContentType.Equals(contentType, StringComparison.OrdinalIgnoreCase))
             && Path.GetExtension(file.FileName).Equals(".csv", StringComparison.OrdinalIgnoreCase);
     }
 

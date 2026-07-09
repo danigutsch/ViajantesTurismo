@@ -64,8 +64,18 @@ internal static class BaselineCheckValidator
     private static string ReadRequired(string repositoryRoot, string relativePath)
     {
         var path = Path.Combine(repositoryRoot, relativePath);
-        return File.Exists(path)
-            ? File.ReadAllText(path)
-            : throw new InvalidOperationException($"Missing required security baseline file: {relativePath}");
+        if (!File.Exists(path))
+        {
+            throw new InvalidOperationException($"Missing required security baseline file: {relativePath}");
+        }
+
+        try
+        {
+            return File.ReadAllText(path);
+        }
+        catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
+        {
+            throw new InvalidOperationException($"Could not read required security baseline file: {relativePath}", ex);
+        }
     }
 }

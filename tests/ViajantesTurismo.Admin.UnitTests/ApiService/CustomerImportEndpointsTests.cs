@@ -29,6 +29,25 @@ public sealed class CustomerImportEndpointsTests
     }
 
     [Fact]
+    public void Accepts_csv_uploads_with_media_type_parameters()
+    {
+        // Arrange
+        using var stream = new MemoryStream("firstName,lastName"u8.ToArray());
+        var file = new FormFile(stream, 0, stream.Length, "file", "customers.csv")
+        {
+            Headers = new HeaderDictionary(),
+            ContentType = "text/csv; charset=utf-8"
+        };
+
+        // Act
+        var isValid = CustomerImportEndpoints.TryValidateImportFile(file, out var problem);
+
+        // Assert
+        isValid.ShouldBeTrue();
+        problem.ShouldBeNull();
+    }
+
+    [Fact]
     public void Rejects_empty_uploads_with_generic_problem_details()
     {
         // Arrange
