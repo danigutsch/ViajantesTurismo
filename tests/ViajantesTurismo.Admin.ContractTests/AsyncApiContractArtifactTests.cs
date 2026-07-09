@@ -36,6 +36,10 @@ public sealed class AsyncApiContractArtifactTests
         var mediaHeaders = mediaMessage.GetProperty("headers");
         var adminMetadata = adminMessage.GetProperty("x-viajantes");
         var mediaMetadata = mediaMessage.GetProperty("x-viajantes");
+        var adminConsumerContexts = adminMetadata.GetProperty("consumerContexts").EnumerateArray().Select(item => item.GetString()).ToArray();
+        var adminConsumerNames = adminMetadata.GetProperty("consumerNames").EnumerateArray().Select(item => item.GetString()).ToArray();
+        var mediaConsumerContexts = mediaMetadata.GetProperty("consumerContexts").EnumerateArray().Select(item => item.GetString()).ToArray();
+        var mediaConsumerNames = mediaMetadata.GetProperty("consumerNames").EnumerateArray().Select(item => item.GetString()).ToArray();
 
         // Act
         var expectedContractTerms = new[]
@@ -88,8 +92,17 @@ public sealed class AsyncApiContractArtifactTests
         adminHeaders.GetProperty("properties").GetProperty("eventVersion").GetProperty("const").GetInt32().ShouldBe(AdminTourCreatedIntegrationEvent.EventVersion);
         adminHeaders.GetProperty("required").EnumerateArray().Select(item => item.GetString()).ShouldContain("eventType");
         adminHeaders.GetProperty("required").EnumerateArray().Select(item => item.GetString()).ShouldContain("eventVersion");
-        adminMetadata.GetProperty("consumerNames").EnumerateArray().Select(item => item.GetString()).ShouldContain(IntegrationEventConsumerNames.Catalog);
+        adminMetadata.GetProperty("producerContext").GetString().ShouldBe("Admin");
+        adminConsumerContexts.Length.ShouldBe(1);
+        adminConsumerContexts.ShouldContain("Catalog");
+        adminConsumerNames.Length.ShouldBe(1);
+        adminConsumerNames.ShouldContain(IntegrationEventConsumerNames.Catalog);
         adminMetadata.GetProperty("channel").GetString().ShouldBe(AdminTourCreatedIntegrationEvent.EventType);
+        adminMetadata.GetProperty("sourceType").GetString().ShouldBe(typeof(AdminTourCreatedIntegrationEvent).FullName);
+        adminMetadata.GetProperty("domainEventMapping").GetString().ShouldBe("ViajantesTurismo.Admin.Application.Tours.TourIntegrationEventMappings.MapTourCreated");
+        adminMetadata.GetProperty("outboxOwner").GetString().ShouldBe("AdminWriteDbContext");
+        adminMetadata.GetProperty("inboxOwner").GetString().ShouldBe("CatalogIntegrationTransportDbContext");
+        adminMetadata.GetProperty("handler").GetString().ShouldBe("ViajantesTurismo.Catalog.Application.Tours.AdminTourCreatedIntegrationHandler");
         adminSchema.GetProperty("properties").TryGetProperty("eventId", out _).ShouldBeTrue();
         adminSchema.GetProperty("properties").TryGetProperty("occurredAt", out _).ShouldBeTrue();
         adminSchema.GetProperty("properties").TryGetProperty("adminTourId", out _).ShouldBeTrue();
@@ -102,8 +115,17 @@ public sealed class AsyncApiContractArtifactTests
         mediaHeaders.GetProperty("properties").GetProperty("eventVersion").GetProperty("const").GetInt32().ShouldBe(MediaImageOriginalStoredIntegrationEvent.EventVersion);
         mediaHeaders.GetProperty("required").EnumerateArray().Select(item => item.GetString()).ShouldContain("eventType");
         mediaHeaders.GetProperty("required").EnumerateArray().Select(item => item.GetString()).ShouldContain("eventVersion");
-        mediaMetadata.GetProperty("consumerNames").EnumerateArray().Select(item => item.GetString()).ShouldContain(IntegrationEventConsumerNames.Catalog);
+        mediaMetadata.GetProperty("producerContext").GetString().ShouldBe("Catalog");
+        mediaConsumerContexts.Length.ShouldBe(1);
+        mediaConsumerContexts.ShouldContain("Catalog");
+        mediaConsumerNames.Length.ShouldBe(1);
+        mediaConsumerNames.ShouldContain(IntegrationEventConsumerNames.Catalog);
         mediaMetadata.GetProperty("channel").GetString().ShouldBe(MediaImageOriginalStoredIntegrationEvent.EventType);
+        mediaMetadata.GetProperty("sourceType").GetString().ShouldBe(typeof(MediaImageOriginalStoredIntegrationEvent).FullName);
+        mediaMetadata.TryGetProperty("domainEventMapping", out _).ShouldBeFalse();
+        mediaMetadata.GetProperty("outboxOwner").GetString().ShouldBe("CatalogDbContext");
+        mediaMetadata.GetProperty("inboxOwner").GetString().ShouldBe("CatalogIntegrationTransportDbContext");
+        mediaMetadata.GetProperty("handler").GetString().ShouldBe("ViajantesTurismo.Catalog.Application.Media.MediaImageOriginalStoredIntegrationHandler");
         mediaSchema.GetProperty("properties").TryGetProperty("eventId", out _).ShouldBeTrue();
         mediaSchema.GetProperty("properties").TryGetProperty("occurredAt", out _).ShouldBeTrue();
         mediaSchema.GetProperty("properties").TryGetProperty("mediaImageId", out _).ShouldBeTrue();
