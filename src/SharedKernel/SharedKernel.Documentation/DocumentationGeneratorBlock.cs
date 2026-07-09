@@ -16,6 +16,8 @@ internal sealed class DocumentationGeneratorBlock
 
     public Dictionary<string, string> Labels { get; set; } = new(StringComparer.Ordinal);
 
+    public Dictionary<string, string> RoutePrefixes { get; set; } = new(StringComparer.Ordinal);
+
     public string TriggerLabel { get; set; } = string.Empty;
 
     public string RootLabel { get; set; } = string.Empty;

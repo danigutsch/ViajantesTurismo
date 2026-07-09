@@ -82,6 +82,18 @@
     { "name": "project-dependencies", "kind": "project-references", "sourcePath": "src", "projectFilter": "src-excluding-sharedkernel" },
     { "name": "sharedkernel-dependencies", "kind": "project-references", "sourcePath": "src", "projectFilter": "sharedkernel" },
     {
+      "name": "api-endpoints",
+      "kind": "endpoint-routes",
+      "sourcePath": "src",
+      "routePrefixes": {
+        "bookingsGroup": "/bookings",
+        "customersGroup": "/customers",
+        "importGroup": "/customers/import",
+        "toursGroup": "/tours"
+      }
+    },
+    { "name": "integration-events", "kind": "integration-events", "sourcePath": "src" },
+    {
       "name": "apphost-resources",
       "kind": "apphost-resources",
       "sourcePath": "src/ViajantesTurismo.AppHost/AppHost.cs",

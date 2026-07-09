@@ -28,8 +28,9 @@ source is discoverable.
 - **System overview**: keep curated in `docs/architecture/generated-diagrams.json` because trust
   boundaries, actors, external dependencies, PII classification, and planned nodes are architectural
   interpretation rather than safe code inference.
-- **Endpoint maps**: generate after endpoint metadata conventions are standardized.
-- **Event-flow maps**: generate after integration-event topology metadata is standardized.
+- **Endpoint maps**: generate from Minimal API route declarations and configured route-group prefixes.
+- **Event-flow maps**: generate from integration-event contracts, source-created events, consumer
+  registrations, and handlers. Missing producers stay explicit instead of inferred.
 - **Data ownership maps**: generate after DbContext/store ownership metadata is standardized.
 
 ## Refresh path

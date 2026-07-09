@@ -69,6 +69,19 @@ internal static class DocumentationTestContent
               "projectFilter": "src-excluding-sharedkernel"
             },
             {
+              "name": "endpoints",
+              "kind": "endpoint-routes",
+              "sourcePath": "src",
+              "routePrefixes": {
+                "customersGroup": "/customers"
+              }
+            },
+            {
+              "name": "events",
+              "kind": "integration-events",
+              "sourcePath": "src"
+            },
+            {
               "name": "jobs",
               "kind": "github-actions-jobs",
               "sourcePath": ".github/workflows/ci.yml",
@@ -187,6 +200,63 @@ internal static class DocumentationTestContent
     public static string EmptyProject() =>
         """
         <Project Sdk="Microsoft.NET.Sdk" />
+        """;
+
+    public static string CustomerEndpoints() =>
+        """
+        internal static class CustomerEndpoints
+        {
+            public static WebApplication MapCustomerEndpoints(this WebApplication app)
+            {
+                var customersGroup = app.MapCustomersGroup();
+                customersGroup.MapGet("/", GetAllCustomers)
+                    .WithName("GetCustomers");
+                customersGroup.MapPost("/", CreateCustomer)
+                    .RequireAuthorization();
+                return app;
+            }
+        }
+        """;
+
+    public static string AdminTourCreatedIntegrationEvent() =>
+        """
+        public sealed record AdminTourCreatedIntegrationEvent(
+            Guid EventId) : IIntegrationEvent
+        {
+            public static string EventType => "admin.tour.created";
+            public static int EventVersion => 1;
+        }
+        """;
+
+    public static string TourIntegrationEventMappings() =>
+        """
+        internal static class TourIntegrationEventMappings
+        {
+            public static AdminTourCreatedIntegrationEvent MapTourCreated(Guid id)
+            {
+                return new AdminTourCreatedIntegrationEvent(id);
+            }
+        }
+        """;
+
+    public static string AdminTourCreatedIntegrationHandler() =>
+        """
+        internal sealed class AdminTourCreatedIntegrationHandler : IIntegrationEventHandler<AdminTourCreatedIntegrationEvent>
+        {
+        }
+        """;
+
+    public static string ApplicationDependencyInjection() =>
+        """
+        public static class ApplicationDependencyInjection
+        {
+            public static void Add(IServiceCollection services)
+            {
+                services.AddIntegrationEventConsumer(
+                    AdminTourCreatedIntegrationEvent.EventType,
+                    AdminIntegrationEventJsonContext.Default.AdminTourCreatedIntegrationEvent);
+            }
+        }
         """;
 
     public static string CiWorkflow() =>
