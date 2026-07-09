@@ -19,6 +19,7 @@ public sealed class DocumentationToolApplicationTests
         // Assert
         exitCode.ShouldBe(1);
         errorText.ShouldContain("Missing required --config <path>.", StringComparison.Ordinal);
+        errorText.ShouldContain("Usage: sharedkernel-docs generate --config <path> [--check]", StringComparison.Ordinal);
     }
 
     [Fact]

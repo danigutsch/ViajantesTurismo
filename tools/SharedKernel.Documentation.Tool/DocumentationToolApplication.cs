@@ -49,6 +49,7 @@ internal static class DocumentationToolApplication
         if (string.IsNullOrWhiteSpace(configPath))
         {
             await error.WriteLineAsync("Missing required --config <path>.").ConfigureAwait(false);
+            await error.WriteLineAsync(Usage).ConfigureAwait(false);
             return 1;
         }
 
