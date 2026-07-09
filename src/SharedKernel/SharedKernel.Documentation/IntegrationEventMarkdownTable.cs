@@ -18,7 +18,7 @@ internal static partial class IntegrationEventMarkdownTable
         ArgumentException.ThrowIfNullOrWhiteSpace(sourcePath);
 
         var files = SourceFiles(sourcePath)
-            .Select(file => (File: file, Content: File.ReadAllText(file.FullName, Utf8NoBom)))
+            .Select(file => (File: file, DisplayPath: DisplayPath(sourcePath, file), Content: File.ReadAllText(file.FullName, Utf8NoBom)))
             .ToArray();
         var rows = EventContracts(files)
             .OrderBy(row => row.EventName, StringComparer.Ordinal)
@@ -34,7 +34,7 @@ internal static partial class IntegrationEventMarkdownTable
             ]);
     }
 
-    private static IEnumerable<(string EventName, string EventType, string EventVersion)> EventContracts(IReadOnlyCollection<(FileInfo File, string Content)> files)
+    private static IEnumerable<(string EventName, string EventType, string EventVersion)> EventContracts(IReadOnlyCollection<(FileInfo File, string DisplayPath, string Content)> files)
     {
         foreach (var content in files.Select(static item => item.Content))
         {
@@ -60,7 +60,7 @@ internal static partial class IntegrationEventMarkdownTable
             .Where(static file => !file.FullName.Split(Path.DirectorySeparatorChar).Contains("obj", StringComparer.Ordinal))
             .OrderBy(file => file.FullName, StringComparer.Ordinal);
 
-    private static string Sources(IReadOnlyCollection<(FileInfo File, string Content)> files, string eventName)
+    private static string Sources(IReadOnlyCollection<(FileInfo File, string DisplayPath, string Content)> files, string eventName)
     {
         var producers = FilesContaining(files, $"new {eventName}(")
             .Where(file => !file.Equals(eventName, StringComparison.Ordinal))
@@ -69,16 +69,16 @@ internal static partial class IntegrationEventMarkdownTable
         return FormatList(producers, "not discovered from source");
     }
 
-    private static string Consumers(IReadOnlyCollection<(FileInfo File, string Content)> files, string eventName)
+    private static string Consumers(IReadOnlyCollection<(FileInfo File, string DisplayPath, string Content)> files, string eventName)
     {
         var consumers = files
             .Where(file => ConsumerRegex(eventName).IsMatch(file.Content))
-            .Select(file => Path.GetFileNameWithoutExtension(file.File.Name));
+            .Select(file => file.DisplayPath);
 
         return FormatList(consumers, "not registered");
     }
 
-    private static string Handlers(IReadOnlyCollection<(FileInfo File, string Content)> files, string eventName)
+    private static string Handlers(IReadOnlyCollection<(FileInfo File, string DisplayPath, string Content)> files, string eventName)
     {
         var handlers = files
             .Select(file => HandlerRegex(eventName).Match(file.Content))
@@ -91,12 +91,19 @@ internal static partial class IntegrationEventMarkdownTable
         return handlers.Length == 0 ? "not discovered" : string.Join("<br>", handlers.Select(static handler => $"`{handler}`"));
     }
 
-    private static IEnumerable<string> FilesContaining(IReadOnlyCollection<(FileInfo File, string Content)> files, string marker) =>
+    private static IEnumerable<string> FilesContaining(IReadOnlyCollection<(FileInfo File, string DisplayPath, string Content)> files, string marker) =>
         files
             .Where(file => file.Content.Contains(marker, StringComparison.Ordinal))
-            .Select(file => Path.GetFileNameWithoutExtension(file.File.Name))
+            .Select(file => file.DisplayPath)
             .Distinct(StringComparer.Ordinal)
             .Order(StringComparer.Ordinal);
+
+    private static string DisplayPath(string sourcePath, FileInfo file)
+    {
+        return Path.GetRelativePath(sourcePath, file.FullName)
+            .Replace(Path.DirectorySeparatorChar, '/')
+            .Replace(Path.AltDirectorySeparatorChar, '/');
+    }
 
     private static string FormatList(IEnumerable<string> values, string emptyValue)
     {
