@@ -1,6 +1,7 @@
 namespace SharedKernel.Documentation.Tests;
 
 [Trait(Testing.SharedKernelTestTraitNames.CapabilityName, TestTraits.DocumentationGenerationCapability)]
+[Trait(Testing.SharedKernelTestTraitNames.CategoryName, TestTraits.CoreBehaviorCategory)]
 public sealed class DocumentationGeneratorTests
 {
     [Fact]

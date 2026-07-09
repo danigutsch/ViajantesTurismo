@@ -3,6 +3,7 @@ using System.Globalization;
 namespace SharedKernel.Documentation.Tests;
 
 [Trait(Testing.SharedKernelTestTraitNames.CapabilityName, TestTraits.CommandLineCapability)]
+[Trait(Testing.SharedKernelTestTraitNames.CategoryName, TestTraits.CommandLineCategory)]
 public sealed class DocumentationToolApplicationTests
 {
     [Fact]
