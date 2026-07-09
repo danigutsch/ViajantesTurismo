@@ -21,7 +21,7 @@ public sealed class CatalogApiSecurityBaselineTests
         var configuration = new ConfigurationBuilder()
             .AddInMemoryCollection(new Dictionary<string, string?>
             {
-                ["Security:Cors:AllowedOrigins:0"] = " https://public.example "
+                ["Security:Cors:AllowedOrigins:0"] = " https://public.example\u0007 "
             })
             .Build();
         using var host = await new HostBuilder()
@@ -122,14 +122,16 @@ public sealed class CatalogApiSecurityBaselineTests
         knownNetwork.PrefixLength.ShouldBe(16);
     }
 
-    [Fact]
-    public void Forwarded_headers_configuration_rejects_invalid_networks()
+    [Theory]
+    [InlineData("not-a-network")]
+    [InlineData("10.0.0.0/999")]
+    public void Forwarded_headers_configuration_rejects_invalid_networks(string network)
     {
         // Arrange
         var configuration = new ConfigurationBuilder()
             .AddInMemoryCollection(new Dictionary<string, string?>
             {
-                ["KnownNetworks:0"] = "not-a-network"
+                ["KnownNetworks:0"] = network
             })
             .Build();
         var options = new ForwardedHeadersOptions();
