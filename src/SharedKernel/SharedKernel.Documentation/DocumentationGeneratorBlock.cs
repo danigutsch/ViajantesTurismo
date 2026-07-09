@@ -1,0 +1,24 @@
+namespace SharedKernel.Documentation;
+
+internal sealed class DocumentationGeneratorBlock
+{
+    public string Name { get; set; } = string.Empty;
+
+    public string Kind { get; set; } = string.Empty;
+
+    public string Flowchart { get; set; } = MermaidDiagram.LeftRight;
+
+    public List<string> Lines { get; set; } = [];
+
+    public string SourcePath { get; set; } = string.Empty;
+
+    public string ProjectFilter { get; set; } = string.Empty;
+
+    public Dictionary<string, string> Labels { get; set; } = new(StringComparer.Ordinal);
+
+    public string TriggerLabel { get; set; } = string.Empty;
+
+    public string RootLabel { get; set; } = string.Empty;
+
+    public string ExcludedWorkflowFileName { get; set; } = string.Empty;
+}

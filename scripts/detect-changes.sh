@@ -117,6 +117,7 @@ fast_validation_patterns=(
     "src/SharedKernel/SharedKernel.Domain.SourceGenerator/**"
     "src/SharedKernel/SharedKernel.DomainEvents/**"
     "src/SharedKernel/SharedKernel.DomainEvents.EntityFrameworkCore/**"
+    "src/SharedKernel/SharedKernel.Documentation/**"
     "src/SharedKernel/SharedKernel.EntityFrameworkCore/**"
     "src/SharedKernel/SharedKernel.Functional/**"
     "src/SharedKernel/SharedKernel.Idempotency/**"

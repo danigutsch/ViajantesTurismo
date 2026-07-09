@@ -412,10 +412,10 @@ Key patterns:
 See [docs/README.md](docs/README.md) for the documentation index,
 [docs/architecture/README.md](docs/architecture/README.md) for the architecture map,
 [docs/architecture/system-overview.md](docs/architecture/system-overview.md) for the top-level system
-diagram and trust boundaries, the
+diagram and trust boundaries,
 Native AOT Compatibility section in [docs/CODING_GUIDELINES.md](docs/CODING_GUIDELINES.md) for
-Native AOT guidance, and [docs/ARCHITECTURE_DECISIONS.md](docs/ARCHITECTURE_DECISIONS.md) for the
-deeper architecture record.
+Native AOT guidance, and [docs/ARCHITECTURE_DECISIONS.md](docs/ARCHITECTURE_DECISIONS.md) for
+architecture decisions.
 
 ## Development
 
