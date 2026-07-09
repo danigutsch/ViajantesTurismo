@@ -123,4 +123,64 @@ public sealed class DocumentationGeneratorTests
         // Assert
         exception.Message.ShouldContain("Unknown project filter: unknown", StringComparison.Ordinal);
     }
+
+    [Fact]
+    public void Run_rejects_missing_docs_path()
+    {
+        // Arrange
+        using var workspace = new TemporaryDocumentationWorkspace();
+        workspace.WriteConfig(DocumentationTestContent.MissingDocsPathConfig());
+        Action act = () => DocumentationGenerator.Run(workspace.RootPath, "docs/architecture/generated-diagrams.json", checkOnly: false);
+
+        // Act
+        var exception = act.ShouldThrow<InvalidOperationException>();
+
+        // Assert
+        exception.Message.ShouldContain("Missing required docsPath.", StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public void Run_rejects_missing_generator_name()
+    {
+        // Arrange
+        using var workspace = new TemporaryDocumentationWorkspace();
+        workspace.WriteConfig(DocumentationTestContent.MissingGeneratorNameConfig());
+        Action act = () => DocumentationGenerator.Run(workspace.RootPath, "docs/architecture/generated-diagrams.json", checkOnly: false);
+
+        // Act
+        var exception = act.ShouldThrow<InvalidOperationException>();
+
+        // Assert
+        exception.Message.ShouldContain("Missing required generatorName.", StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public void Run_rejects_missing_blocks()
+    {
+        // Arrange
+        using var workspace = new TemporaryDocumentationWorkspace();
+        workspace.WriteConfig(DocumentationTestContent.MissingBlocksConfig());
+        Action act = () => DocumentationGenerator.Run(workspace.RootPath, "docs/architecture/generated-diagrams.json", checkOnly: false);
+
+        // Act
+        var exception = act.ShouldThrow<InvalidOperationException>();
+
+        // Assert
+        exception.Message.ShouldContain("Missing required blocks.", StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public void Run_rejects_null_blocks()
+    {
+        // Arrange
+        using var workspace = new TemporaryDocumentationWorkspace();
+        workspace.WriteConfig(DocumentationTestContent.NullBlocksConfig());
+        Action act = () => DocumentationGenerator.Run(workspace.RootPath, "docs/architecture/generated-diagrams.json", checkOnly: false);
+
+        // Act
+        var exception = act.ShouldThrow<InvalidOperationException>();
+
+        // Assert
+        exception.Message.ShouldContain("Missing required blocks.", StringComparison.Ordinal);
+    }
 }

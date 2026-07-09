@@ -94,7 +94,7 @@ flowchart LR
 - **External dependency boundary**: repository automation, package feeds, and observability tooling
   that support delivery or operations but do not own domain data.
 
-High-level PII and booking data is owned by the Admin database. Public content, media metadata,
+High-level PII and booking data are owned by the Admin database. Public content, media metadata,
 event store records, and projections are owned by the Catalog database. Detailed threat and privacy
 findings belong in maintained security or threat-model docs rather than this overview.
 

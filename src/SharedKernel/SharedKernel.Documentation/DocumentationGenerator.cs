@@ -20,10 +20,29 @@ public static class DocumentationGenerator
         var fullConfigPath = Path.GetFullPath(configPath, fullRootPath);
         var config = JsonSerializer.Deserialize(File.ReadAllText(fullConfigPath), DocumentationGeneratorJsonContext.Default.DocumentationGeneratorConfig)
             ?? throw new InvalidOperationException($"Could not read documentation generator config: {configPath}");
+        ValidateConfig(config);
 
         var replacements = config.Blocks.ToDictionary(block => block.Name, block => GenerateBlock(fullRootPath, block), StringComparer.Ordinal);
         var updater = new GeneratedMarkdownUpdater(fullRootPath, config.DocsPath, config.GeneratorName);
         return new DocumentationGenerationResult(updater.Update(checkOnly, replacements));
+    }
+
+    private static void ValidateConfig(DocumentationGeneratorConfig config)
+    {
+        if (string.IsNullOrWhiteSpace(config.DocsPath))
+        {
+            throw new InvalidOperationException("Missing required docsPath.");
+        }
+
+        if (string.IsNullOrWhiteSpace(config.GeneratorName))
+        {
+            throw new InvalidOperationException("Missing required generatorName.");
+        }
+
+        if (config.Blocks is not { Count: > 0 })
+        {
+            throw new InvalidOperationException("Missing required blocks.");
+        }
     }
 
     private static string GenerateBlock(string rootPath, DocumentationGeneratorBlock block) => block.Kind switch

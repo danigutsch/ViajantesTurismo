@@ -101,6 +101,51 @@ internal static class DocumentationTestContent
         }
         """;
 
+    public static string MissingDocsPathConfig() =>
+        """
+        {
+          "generatorName": "test-generator",
+          "blocks": [
+            {
+              "name": "sample",
+              "kind": "mermaid-flowchart",
+              "lines": []
+            }
+          ]
+        }
+        """;
+
+    public static string MissingGeneratorNameConfig() =>
+        """
+        {
+          "docsPath": "docs/architecture",
+          "blocks": [
+            {
+              "name": "sample",
+              "kind": "mermaid-flowchart",
+              "lines": []
+            }
+          ]
+        }
+        """;
+
+    public static string MissingBlocksConfig() =>
+        """
+        {
+          "docsPath": "docs/architecture",
+          "generatorName": "test-generator"
+        }
+        """;
+
+    public static string NullBlocksConfig() =>
+        """
+        {
+          "docsPath": "docs/architecture",
+          "generatorName": "test-generator",
+          "blocks": null
+        }
+        """;
+
     public static string AppHostProgram() =>
         """
         var builder = DistributedApplication.CreateBuilder(args);
