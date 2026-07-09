@@ -1,5 +1,7 @@
 using System.Text.Json;
 
+using ViajantesTurismo.Admin.ContractTests.Infrastructure;
+
 namespace ViajantesTurismo.Admin.ContractTests.Tours;
 
 /// <summary>
@@ -74,26 +76,8 @@ internal static class ToursOpenApiDocumentClient
     }
 
     private static string GetCanonicalDocumentPath()
-        => Path.Combine(GetRepositoryRoot(), "src", "ViajantesTurismo.Admin.Contracts", "OpenApi", "tours.openapi.json");
+        => Path.Combine(ContractTestRepository.RootPath, "src", "ViajantesTurismo.Admin.Contracts", "OpenApi", "tours.openapi.json");
 
     private static string GetGeneratedDocumentPath()
-        => Path.Combine(GetRepositoryRoot(), "src", "ViajantesTurismo.Admin.Contracts", "OpenApi", ".generated", "ViajantesTurismo.Admin.ApiService_tours.json");
-
-    private static string GetRepositoryRoot()
-    {
-        var currentDirectory = new DirectoryInfo(AppContext.BaseDirectory);
-
-        while (currentDirectory is not null)
-        {
-            var candidatePath = Path.Combine(currentDirectory.FullName, "ViajantesTurismo.slnx");
-            if (File.Exists(candidatePath))
-            {
-                return currentDirectory.FullName;
-            }
-
-            currentDirectory = currentDirectory.Parent;
-        }
-
-        throw new InvalidOperationException("Could not locate the repository root for contract test artifacts.");
-    }
+        => Path.Combine(ContractTestRepository.RootPath, "src", "ViajantesTurismo.Admin.Contracts", "OpenApi", ".generated", "ViajantesTurismo.Admin.ApiService_tours.json");
 }
