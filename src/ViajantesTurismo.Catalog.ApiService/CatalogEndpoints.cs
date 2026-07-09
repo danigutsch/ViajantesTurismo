@@ -314,7 +314,7 @@ internal static class CatalogEndpoints
 
     private static async Task<IResult> GenerateMediaImageAccessibilityDraft(
         Guid id,
-        PublicMediaImageAccessibilityDraftRequest? request,
+        PublicMediaImageAccessibilityDraftRequest request,
         MediaImageAccessibilityDraftService service,
         IMediaObjectStore objectStore,
         CancellationToken ct)
@@ -322,14 +322,6 @@ internal static class CatalogEndpoints
         if (id == Guid.Empty)
         {
             return Results.BadRequest();
-        }
-
-        if (request is null)
-        {
-            return Results.ValidationProblem(new Dictionary<string, string[]>
-            {
-                [nameof(request)] = ["Request body is required."]
-            });
         }
 
         var errors = ValidateAccessibilityDraftRequest(request);

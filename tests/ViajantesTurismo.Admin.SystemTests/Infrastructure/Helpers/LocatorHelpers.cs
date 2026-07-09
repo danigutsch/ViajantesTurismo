@@ -85,7 +85,20 @@ internal static class LocatorHelpers
         for (var attempt = 1; attempt <= 3; attempt++)
         {
             await Assertions.Expect(locator).ToBeEditableAsync();
-            await locator.FillAsync(value);
+            var inputType = await locator.GetAttributeAsync("type");
+            if (UsesNativeValueSetter(inputType))
+            {
+                await locator.FillAsync(value);
+            }
+            else
+            {
+                await locator.ClearAsync();
+                if (value.Length > 0)
+                {
+                    await locator.PressSequentiallyAsync(value);
+                }
+            }
+
             await locator.BlurAsync();
 
             try
@@ -103,6 +116,9 @@ internal static class LocatorHelpers
 
         await Assertions.Expect(locator).ToHaveValueAsync(value);
     }
+
+    private static bool UsesNativeValueSetter(string? inputType) =>
+        inputType is "date" or "datetime-local" or "month" or "number" or "time" or "week";
 
     /// <summary>
     /// Cancels the timed redirect affordance when it is present on the page.
