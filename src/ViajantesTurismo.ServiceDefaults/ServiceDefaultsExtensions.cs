@@ -125,6 +125,7 @@ public static class ServiceDefaultsExtensions
 
     private static HealthCheckOptions CreateHealthCheckOptions(Func<HealthCheckRegistration, bool>? predicate = null) => new()
     {
+        AllowCachingResponses = false,
         Predicate = predicate,
         ResponseWriter = WriteHealthStatus
     };
