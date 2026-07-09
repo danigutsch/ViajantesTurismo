@@ -22,6 +22,28 @@ public sealed class DocumentationToolApplicationTests
     }
 
     [Fact]
+    public async Task Run_returns_error_when_config_file_is_missing()
+    {
+        // Arrange
+        using var workspace = new TemporaryDocumentationWorkspace();
+        await using var output = new StringWriter(CultureInfo.InvariantCulture);
+        await using var error = new StringWriter(CultureInfo.InvariantCulture);
+
+        // Act
+        var exitCode = await DocumentationToolApplication.Run(
+            ["generate", "--config", "docs/architecture/generated-diagrams.json"],
+            output,
+            error,
+            workspace.RootPath);
+        var errorText = error.ToString();
+
+        // Assert
+        exitCode.ShouldBe(1);
+        errorText.ShouldContain("Documentation generation failed:", StringComparison.Ordinal);
+        errorText.ShouldContain("generated-diagrams.json", StringComparison.Ordinal);
+    }
+
+    [Fact]
     public async Task Run_check_reports_stale_generated_documentation()
     {
         // Arrange

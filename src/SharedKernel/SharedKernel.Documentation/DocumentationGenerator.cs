@@ -16,12 +16,13 @@ public static class DocumentationGenerator
         ArgumentException.ThrowIfNullOrWhiteSpace(rootPath);
         ArgumentException.ThrowIfNullOrWhiteSpace(configPath);
 
-        var fullConfigPath = Path.GetFullPath(configPath, rootPath);
+        var fullRootPath = Path.GetFullPath(rootPath);
+        var fullConfigPath = Path.GetFullPath(configPath, fullRootPath);
         var config = JsonSerializer.Deserialize(File.ReadAllText(fullConfigPath), DocumentationGeneratorJsonContext.Default.DocumentationGeneratorConfig)
             ?? throw new InvalidOperationException($"Could not read documentation generator config: {configPath}");
 
-        var replacements = config.Blocks.ToDictionary(block => block.Name, block => GenerateBlock(rootPath, block), StringComparer.Ordinal);
-        var updater = new GeneratedMarkdownUpdater(rootPath, config.DocsPath, config.GeneratorName);
+        var replacements = config.Blocks.ToDictionary(block => block.Name, block => GenerateBlock(fullRootPath, block), StringComparer.Ordinal);
+        var updater = new GeneratedMarkdownUpdater(fullRootPath, config.DocsPath, config.GeneratorName);
         return new DocumentationGenerationResult(updater.Update(checkOnly, replacements));
     }
 

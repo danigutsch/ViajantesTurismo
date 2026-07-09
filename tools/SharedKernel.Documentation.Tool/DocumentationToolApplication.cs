@@ -1,3 +1,5 @@
+using System.Text.Json;
+
 namespace SharedKernel.Documentation.Tool;
 
 internal static class DocumentationToolApplication
@@ -50,7 +52,17 @@ internal static class DocumentationToolApplication
             return 1;
         }
 
-        var result = DocumentationGenerator.Run(rootPath, configPath, checkOnly);
+        DocumentationGenerationResult result;
+        try
+        {
+            result = DocumentationGenerator.Run(rootPath, configPath, checkOnly);
+        }
+        catch (Exception exception) when (exception is ArgumentException or IOException or JsonException or UnauthorizedAccessException or InvalidOperationException)
+        {
+            await error.WriteLineAsync($"Documentation generation failed: {exception.Message}").ConfigureAwait(false);
+            return 1;
+        }
+
         if (checkOnly && result.ChangedFiles.Count > 0)
         {
             await error.WriteLineAsync("Generated documentation is stale:").ConfigureAwait(false);

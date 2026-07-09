@@ -57,4 +57,22 @@ public sealed class DocumentationGeneratorTests
         updated.ShouldContain("literal[$&]", StringComparison.Ordinal);
         updated.ShouldNotContain("old[Old]");
     }
+
+    [Fact]
+    public void Run_accepts_relative_root_path()
+    {
+        // Arrange
+        using var workspace = new TemporaryDocumentationWorkspace();
+        workspace.WriteArchitectureDoc("overview.md", DocumentationTestContent.GeneratedBlockDocument("old[Old]"));
+        workspace.WriteConfig(DocumentationTestContent.GeneratorConfig("newNode[New node]"));
+        var relativeRootPath = Path.GetRelativePath(Directory.GetCurrentDirectory(), workspace.RootPath);
+
+        // Act
+        var result = DocumentationGenerator.Run(relativeRootPath, "docs/architecture/generated-diagrams.json", checkOnly: false);
+        var updated = workspace.ReadArchitectureDoc("overview.md");
+
+        // Assert
+        result.ChangedFiles.ShouldBe(["docs/architecture/overview.md"]);
+        updated.ShouldContain("newNode[New node]", StringComparison.Ordinal);
+    }
 }
