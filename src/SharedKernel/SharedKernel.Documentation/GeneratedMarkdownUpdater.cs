@@ -66,6 +66,6 @@ internal sealed class GeneratedMarkdownUpdater(string rootPath, string docsRelat
             replacement.TrimEnd(),
             $"<!-- generated:{name}:end -->");
 
-        return pattern.Replace(text, block);
+        return pattern.Replace(text, _ => block);
     }
 }

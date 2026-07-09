@@ -40,4 +40,21 @@ public sealed class DocumentationGeneratorTests
         unchanged.ShouldContain("old[Old]", StringComparison.Ordinal);
         unchanged.ShouldNotContain("newNode[New node]");
     }
+
+    [Fact]
+    public void Run_preserves_dollar_replacement_tokens_in_generated_block()
+    {
+        // Arrange
+        using var workspace = new TemporaryDocumentationWorkspace();
+        workspace.WriteArchitectureDoc("overview.md", DocumentationTestContent.GeneratedBlockDocument("old[Old]"));
+        workspace.WriteConfig(DocumentationTestContent.GeneratorConfig("literal[$&]"));
+
+        // Act
+        DocumentationGenerator.Run(workspace.RootPath, "docs/architecture/generated-diagrams.json", checkOnly: false);
+        var updated = workspace.ReadArchitectureDoc("overview.md");
+
+        // Assert
+        updated.ShouldContain("literal[$&]", StringComparison.Ordinal);
+        updated.ShouldNotContain("old[Old]");
+    }
 }

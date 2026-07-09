@@ -1,5 +1,4 @@
 using System.Text.Json;
-using System.Text.Json.Serialization;
 
 namespace SharedKernel.Documentation;
 
@@ -43,7 +42,3 @@ public static class DocumentationGenerator
         _ => throw new InvalidOperationException($"Unknown project filter: {value}"),
     };
 }
-
-[JsonSourceGenerationOptions(JsonSerializerDefaults.Web)]
-[JsonSerializable(typeof(DocumentationGeneratorConfig))]
-internal sealed partial class DocumentationGeneratorJsonContext : JsonSerializerContext;
