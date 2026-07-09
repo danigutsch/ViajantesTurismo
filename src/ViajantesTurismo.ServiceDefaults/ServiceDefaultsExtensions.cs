@@ -1,6 +1,7 @@
 using JetBrains.Annotations;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Diagnostics.HealthChecks;
+using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Diagnostics.HealthChecks;
 using Microsoft.Extensions.Hosting;
@@ -115,13 +116,23 @@ public static class ServiceDefaultsExtensions
     {
         ArgumentNullException.ThrowIfNull(app);
 
-        app.MapHealthChecks(EndpointPaths.Health);
+        app.MapHealthChecks(EndpointPaths.Health, CreateHealthCheckOptions());
 
-        app.MapHealthChecks(EndpointPaths.Aliveness, new HealthCheckOptions
-        {
-            Predicate = r => r.Tags.Contains("live")
-        });
+        app.MapHealthChecks(EndpointPaths.Aliveness, CreateHealthCheckOptions(r => r.Tags.Contains("live")));
 
         return app;
+    }
+
+    private static HealthCheckOptions CreateHealthCheckOptions(Func<HealthCheckRegistration, bool>? predicate = null) => new()
+    {
+        Predicate = predicate,
+        ResponseWriter = WriteHealthStatus
+    };
+
+    private static Task WriteHealthStatus(HttpContext context, HealthReport report)
+    {
+        context.Response.ContentType = "text/plain";
+
+        return context.Response.WriteAsync(report.Status.ToString(), context.RequestAborted);
     }
 }

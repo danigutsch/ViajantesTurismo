@@ -6,10 +6,10 @@ using ViajantesTurismo.Resources;
 
 namespace ViajantesTurismo.ServiceDefaults.Tests;
 
-[Trait(SharedKernel.Testing.TestTraitNames.CategoryName, SharedKernel.Testing.TestTraitValues.EndpointCategory)]
-[Trait(SharedKernel.Testing.TestTraitNames.ScopeName, SharedKernel.Testing.TestTraitValues.ApiIntegrationScope)]
-[Trait(SharedKernel.Testing.TestTraitNames.AreaName, "service-defaults")]
-[Trait(SharedKernel.Testing.TestTraitNames.HostName, SharedKernel.Testing.TestTraitValues.TestServerHost)]
+[Trait(SharedKernel.Testing.TestTraitNames.CategoryName, TestTraits.EndpointCategory)]
+[Trait(SharedKernel.Testing.TestTraitNames.ScopeName, TestTraits.ApiIntegrationScope)]
+[Trait(SharedKernel.Testing.TestTraitNames.AreaName, TestTraits.ServiceDefaultsArea)]
+[Trait(SharedKernel.Testing.TestTraitNames.HostName, TestTraits.TestServerHost)]
 public sealed class ServiceDefaultsHealthEndpointTests
 {
     [Fact]
@@ -41,8 +41,10 @@ public sealed class ServiceDefaultsHealthEndpointTests
 
         // Assert
         healthResponse.StatusCode.ShouldBe(HttpStatusCode.OK);
+        healthResponse.Content.Headers.ContentType?.MediaType.ShouldBe("text/plain");
         healthBody.ShouldBe("Healthy");
         aliveResponse.StatusCode.ShouldBe(HttpStatusCode.OK);
+        aliveResponse.Content.Headers.ContentType?.MediaType.ShouldBe("text/plain");
         aliveBody.ShouldBe("Healthy");
     }
 }

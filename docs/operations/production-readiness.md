@@ -93,8 +93,8 @@ Persistent inventory:
 
 | Resource | Current source | Backup scope |
 | --- | --- | --- |
-| Admin database | AppHost PostgreSQL `adminDatabase` | schema, data, migration history |
-| Catalog database | AppHost PostgreSQL `catalogDatabase` | schema, data, migration history |
+| Admin database | AppHost PostgreSQL `admin-database` | schema, data, migration history |
+| Catalog database | AppHost PostgreSQL `catalog-database` | schema, data, migration history |
 | Redis cache | AppHost Redis `cache` | no durable backup expected unless promoted to durable session state |
 | Media assets | Catalog/media application paths | original files, variants, metadata, malware-scan state |
 | Release artifacts | release workflow output | immutable images, tags, digests, SBOM/provenance when available |
