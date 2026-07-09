@@ -22,74 +22,47 @@ public sealed class AsyncApiContractArtifactTests
         var artifact = AsyncApiContractArtifact.Read();
         using var document = JsonDocument.Parse(artifact);
         var root = document.RootElement;
-        var infoStart = artifact.IndexOf("\"info\":", StringComparison.Ordinal);
-        var channelsStart = artifact.IndexOf("\"channels\":", StringComparison.Ordinal);
-        var operationsStart = artifact.IndexOf("\"operations\":", StringComparison.Ordinal);
-        var componentsStart = artifact.IndexOf("\"components\":", StringComparison.Ordinal);
-        var componentsMessagesStart = componentsStart >= 0
-            ? artifact.IndexOf("\"messages\":", componentsStart, StringComparison.Ordinal)
-            : -1;
-        var adminMessageStart = componentsMessagesStart >= 0
-            ? artifact.IndexOf("\"AdminTourCreatedV1\":", componentsMessagesStart, StringComparison.Ordinal)
-            : -1;
-        var mediaMessageStart = adminMessageStart >= 0
-            ? artifact.IndexOf("\"MediaImageOriginalStoredV1\":", adminMessageStart, StringComparison.Ordinal)
-            : -1;
-        var schemaStart = artifact.IndexOf("\"schemas\":", StringComparison.Ordinal);
-        var adminSchemaStart = artifact.IndexOf("\"AdminTourCreatedIntegrationEventV1\":", StringComparison.Ordinal);
-        var mediaSchemaStart = artifact.IndexOf("\"MediaImageOriginalStoredIntegrationEventV1\":", StringComparison.Ordinal);
-
-        infoStart.ShouldBeGreaterThanOrEqualTo(0);
-        channelsStart.ShouldBeGreaterThanOrEqualTo(0);
-        operationsStart.ShouldBeGreaterThanOrEqualTo(0);
-        componentsStart.ShouldBeGreaterThanOrEqualTo(0);
-        componentsMessagesStart.ShouldBeGreaterThanOrEqualTo(0);
-        adminMessageStart.ShouldBeGreaterThanOrEqualTo(0);
-        mediaMessageStart.ShouldBeGreaterThanOrEqualTo(0);
-        schemaStart.ShouldBeGreaterThanOrEqualTo(0);
-        adminSchemaStart.ShouldBeGreaterThanOrEqualTo(0);
-        mediaSchemaStart.ShouldBeGreaterThanOrEqualTo(0);
-        infoStart.ShouldBeLessThan(channelsStart);
-        channelsStart.ShouldBeLessThan(operationsStart);
-        operationsStart.ShouldBeLessThan(componentsStart);
-        componentsStart.ShouldBeLessThan(componentsMessagesStart);
-        componentsMessagesStart.ShouldBeLessThan(adminMessageStart);
-        adminMessageStart.ShouldBeLessThan(mediaMessageStart);
-        mediaMessageStart.ShouldBeLessThan(schemaStart);
-        schemaStart.ShouldBeLessThan(adminSchemaStart);
-        adminSchemaStart.ShouldBeLessThan(mediaSchemaStart);
-
-        var adminMessage = artifact[adminMessageStart..mediaMessageStart];
-        var mediaMessage = artifact[mediaMessageStart..schemaStart];
-        var adminSchema = artifact[adminSchemaStart..mediaSchemaStart];
-        var mediaSchema = artifact[mediaSchemaStart..];
+        var info = root.GetProperty("info");
+        var channels = root.GetProperty("channels");
+        var operations = root.GetProperty("operations");
+        var components = root.GetProperty("components");
+        var messages = components.GetProperty("messages");
+        var schemas = components.GetProperty("schemas");
+        var adminMessage = messages.GetProperty("AdminTourCreatedV1");
+        var mediaMessage = messages.GetProperty("MediaImageOriginalStoredV1");
+        var adminSchema = schemas.GetProperty("AdminTourCreatedIntegrationEventV1");
+        var mediaSchema = schemas.GetProperty("MediaImageOriginalStoredIntegrationEventV1");
+        var adminHeaders = adminMessage.GetProperty("headers");
+        var mediaHeaders = mediaMessage.GetProperty("headers");
+        var adminMetadata = adminMessage.GetProperty("x-viajantes");
+        var mediaMetadata = mediaMessage.GetProperty("x-viajantes");
 
         // Act
         var expectedContractTerms = new[]
         {
             AdminTourCreatedIntegrationEvent.EventType,
             AdminTourCreatedIntegrationEvent.EventVersion.ToString(CultureInfo.InvariantCulture),
-            "\"eventId\"",
-            "\"occurredAt\"",
-            "\"adminTourId\"",
-            "\"identifier\"",
-            "\"name\"",
+            "eventId",
+            "occurredAt",
+            "adminTourId",
+            "identifier",
+            "name",
             MediaImageOriginalStoredIntegrationEvent.EventType,
             MediaImageOriginalStoredIntegrationEvent.EventVersion.ToString(CultureInfo.InvariantCulture),
-            "\"eventId\"",
-            "\"occurredAt\"",
-            "\"mediaImageId\"",
-            "\"sourceObjectKey\"",
-            "\"processingVersion\"",
+            "eventId",
+            "occurredAt",
+            "mediaImageId",
+            "sourceObjectKey",
+            "processingVersion",
             IntegrationEventConsumerNames.Catalog,
-            "\"producerContext\"",
-            "\"consumerContexts\"",
-            "\"channel\"",
-            "\"sourceType\"",
-            "\"domainEventMapping\"",
-            "\"outboxOwner\"",
-            "\"inboxOwner\"",
-            "\"handler\"",
+            "producerContext",
+            "consumerContexts",
+            "channel",
+            "sourceType",
+            "domainEventMapping",
+            "outboxOwner",
+            "inboxOwner",
+            "handler",
         };
 
         // Assert
@@ -99,41 +72,42 @@ public sealed class AsyncApiContractArtifactTests
         }
 
         root.TryGetProperty("asyncapi", out _).ShouldBeTrue();
-        root.TryGetProperty("info", out _).ShouldBeTrue();
-        root.TryGetProperty("channels", out _).ShouldBeTrue();
-        root.TryGetProperty("operations", out _).ShouldBeTrue();
-        root.TryGetProperty("components", out _).ShouldBeTrue();
         artifact.ShouldNotContain("\t");
-        artifact.ShouldContain("\"asyncapi\": \"3.0.0\"", StringComparison.Ordinal);
-        artifact.ShouldContain("\"$ref\": \"#/components/messages/AdminTourCreatedV1\"", StringComparison.Ordinal);
-        artifact.ShouldContain("\"$ref\": \"#/components/messages/MediaImageOriginalStoredV1\"", StringComparison.Ordinal);
-        artifact.ShouldContain("\"$ref\": \"#/components/schemas/AdminTourCreatedIntegrationEventV1\"", StringComparison.Ordinal);
-        artifact.ShouldContain("\"$ref\": \"#/components/schemas/MediaImageOriginalStoredIntegrationEventV1\"", StringComparison.Ordinal);
+        root.GetProperty("asyncapi").GetString().ShouldBe("3.0.0");
+        info.GetProperty("version").GetString().ShouldBe("1.0.0");
+        channels.GetProperty(AdminTourCreatedIntegrationEvent.EventType).GetProperty("address").GetString().ShouldBe(AdminTourCreatedIntegrationEvent.EventType);
+        channels.GetProperty(MediaImageOriginalStoredIntegrationEvent.EventType).GetProperty("address").GetString().ShouldBe(MediaImageOriginalStoredIntegrationEvent.EventType);
+        operations.GetProperty("publishAdminTourCreatedV1").GetProperty("action").GetString().ShouldBe("send");
+        operations.GetProperty("consumeAdminTourCreatedV1").GetProperty("action").GetString().ShouldBe("receive");
+        operations.GetProperty("publishMediaImageOriginalStoredV1").GetProperty("action").GetString().ShouldBe("send");
+        operations.GetProperty("consumeMediaImageOriginalStoredV1").GetProperty("action").GetString().ShouldBe("receive");
 
-        adminMessage.ShouldContain($"\"const\": \"{AdminTourCreatedIntegrationEvent.EventType}\"", StringComparison.Ordinal);
-        adminMessage.ShouldContain($"\"const\": {AdminTourCreatedIntegrationEvent.EventVersion.ToString(CultureInfo.InvariantCulture)}", StringComparison.Ordinal);
-        adminMessage.ShouldContain("\"required\":", StringComparison.Ordinal);
-        adminMessage.ShouldContain("\"eventType\"", StringComparison.Ordinal);
-        adminMessage.ShouldContain("\"eventVersion\"", StringComparison.Ordinal);
-        adminMessage.ShouldContain("\"consumerNames\":", StringComparison.Ordinal);
-        adminMessage.ShouldContain($"\"{IntegrationEventConsumerNames.Catalog}\"", StringComparison.Ordinal);
-        adminSchema.ShouldContain("\"eventId\":", StringComparison.Ordinal);
-        adminSchema.ShouldContain("\"occurredAt\":", StringComparison.Ordinal);
-        adminSchema.ShouldContain("\"adminTourId\":", StringComparison.Ordinal);
-        adminSchema.ShouldContain("\"identifier\":", StringComparison.Ordinal);
-        adminSchema.ShouldContain("\"name\":", StringComparison.Ordinal);
+        adminMessage.GetProperty("name").GetString().ShouldBe(AdminTourCreatedIntegrationEvent.EventType);
+        adminMessage.GetProperty("payload").GetProperty("$ref").GetString().ShouldBe("#/components/schemas/AdminTourCreatedIntegrationEventV1");
+        adminHeaders.GetProperty("properties").GetProperty("eventType").GetProperty("const").GetString().ShouldBe(AdminTourCreatedIntegrationEvent.EventType);
+        adminHeaders.GetProperty("properties").GetProperty("eventVersion").GetProperty("const").GetInt32().ShouldBe(AdminTourCreatedIntegrationEvent.EventVersion);
+        adminHeaders.GetProperty("required").EnumerateArray().Select(item => item.GetString()).ShouldContain("eventType");
+        adminHeaders.GetProperty("required").EnumerateArray().Select(item => item.GetString()).ShouldContain("eventVersion");
+        adminMetadata.GetProperty("consumerNames").EnumerateArray().Select(item => item.GetString()).ShouldContain(IntegrationEventConsumerNames.Catalog);
+        adminMetadata.GetProperty("channel").GetString().ShouldBe(AdminTourCreatedIntegrationEvent.EventType);
+        adminSchema.GetProperty("properties").TryGetProperty("eventId", out _).ShouldBeTrue();
+        adminSchema.GetProperty("properties").TryGetProperty("occurredAt", out _).ShouldBeTrue();
+        adminSchema.GetProperty("properties").TryGetProperty("adminTourId", out _).ShouldBeTrue();
+        adminSchema.GetProperty("properties").TryGetProperty("identifier", out _).ShouldBeTrue();
+        adminSchema.GetProperty("properties").TryGetProperty("name", out _).ShouldBeTrue();
 
-        mediaMessage.ShouldContain($"\"const\": \"{MediaImageOriginalStoredIntegrationEvent.EventType}\"", StringComparison.Ordinal);
-        mediaMessage.ShouldContain($"\"const\": {MediaImageOriginalStoredIntegrationEvent.EventVersion.ToString(CultureInfo.InvariantCulture)}", StringComparison.Ordinal);
-        mediaMessage.ShouldContain("\"required\":", StringComparison.Ordinal);
-        mediaMessage.ShouldContain("\"eventType\"", StringComparison.Ordinal);
-        mediaMessage.ShouldContain("\"eventVersion\"", StringComparison.Ordinal);
-        mediaMessage.ShouldContain("\"consumerNames\":", StringComparison.Ordinal);
-        mediaMessage.ShouldContain($"\"{IntegrationEventConsumerNames.Catalog}\"", StringComparison.Ordinal);
-        mediaSchema.ShouldContain("\"eventId\":", StringComparison.Ordinal);
-        mediaSchema.ShouldContain("\"occurredAt\":", StringComparison.Ordinal);
-        mediaSchema.ShouldContain("\"mediaImageId\":", StringComparison.Ordinal);
-        mediaSchema.ShouldContain("\"sourceObjectKey\":", StringComparison.Ordinal);
-        mediaSchema.ShouldContain("\"processingVersion\":", StringComparison.Ordinal);
+        mediaMessage.GetProperty("name").GetString().ShouldBe(MediaImageOriginalStoredIntegrationEvent.EventType);
+        mediaMessage.GetProperty("payload").GetProperty("$ref").GetString().ShouldBe("#/components/schemas/MediaImageOriginalStoredIntegrationEventV1");
+        mediaHeaders.GetProperty("properties").GetProperty("eventType").GetProperty("const").GetString().ShouldBe(MediaImageOriginalStoredIntegrationEvent.EventType);
+        mediaHeaders.GetProperty("properties").GetProperty("eventVersion").GetProperty("const").GetInt32().ShouldBe(MediaImageOriginalStoredIntegrationEvent.EventVersion);
+        mediaHeaders.GetProperty("required").EnumerateArray().Select(item => item.GetString()).ShouldContain("eventType");
+        mediaHeaders.GetProperty("required").EnumerateArray().Select(item => item.GetString()).ShouldContain("eventVersion");
+        mediaMetadata.GetProperty("consumerNames").EnumerateArray().Select(item => item.GetString()).ShouldContain(IntegrationEventConsumerNames.Catalog);
+        mediaMetadata.GetProperty("channel").GetString().ShouldBe(MediaImageOriginalStoredIntegrationEvent.EventType);
+        mediaSchema.GetProperty("properties").TryGetProperty("eventId", out _).ShouldBeTrue();
+        mediaSchema.GetProperty("properties").TryGetProperty("occurredAt", out _).ShouldBeTrue();
+        mediaSchema.GetProperty("properties").TryGetProperty("mediaImageId", out _).ShouldBeTrue();
+        mediaSchema.GetProperty("properties").TryGetProperty("sourceObjectKey", out _).ShouldBeTrue();
+        mediaSchema.GetProperty("properties").TryGetProperty("processingVersion", out _).ShouldBeTrue();
     }
 }
