@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.OutputCaching;
 using SharedKernel.Results;
 using ViajantesTurismo.Catalog.Application.Media;
 using ViajantesTurismo.Catalog.Application.PublicContent;
@@ -23,26 +24,33 @@ internal static class CatalogEndpoints
         app.MapPut("/catalog/media/images/{id:guid}", UpsertMediaImage);
         app.MapPost("/catalog/media/images/{id:guid}/accessibility-draft", GenerateMediaImageAccessibilityDraft);
 
-        app.MapGet("/public/catalog/tours", GetPublishedTours);
-        app.MapGet("/public/catalog/tours/{slug}", GetPublishedTour);
-        app.MapGet("/public/catalog/content/{**key}", GetPublicContent);
-        app.MapGet("/public/catalog/theme", GetPublicTheme);
+        app.MapGet("/public/catalog/tours", GetPublishedTours)
+            .CacheOutput(policy => policy.Expire(CatalogHttpCache.PublicFreshness).Tag(CatalogHttpCache.PublicCatalogTag));
+        app.MapGet("/public/catalog/tours/{slug}", GetPublishedTour)
+            .CacheOutput(policy => policy.Expire(CatalogHttpCache.PublicFreshness).Tag(CatalogHttpCache.PublicCatalogTag));
+        app.MapGet("/public/catalog/content/{**key}", GetPublicContent)
+            .CacheOutput(policy => policy.Expire(CatalogHttpCache.PublicFreshness).SetVaryByQuery("culture", "language").Tag(CatalogHttpCache.PublicContentTag));
+        app.MapGet("/public/catalog/theme", GetPublicTheme)
+            .CacheOutput(policy => policy.Expire(CatalogHttpCache.PublicFreshness).Tag(CatalogHttpCache.PublicThemeTag));
 
-        app.MapGet("/catalog/public-content", async (IPublicContentStore store, CancellationToken ct) =>
+        app.MapGet("/catalog/public-content", async (IPublicContentStore store, HttpContext httpContext, CancellationToken ct) =>
         {
+            CatalogHttpCache.SetNoStore(httpContext);
             var content = await store.ListContent(ct);
             return content.Select(MapPublicContent);
         });
         app.MapGet("/catalog/public-content/{**key}", GetPublicContentForManagement);
         app.MapPut("/catalog/public-content/{**key}", UpsertPublicContent);
-        app.MapGet("/catalog/public-theme", GetPublicTheme);
+        app.MapGet("/catalog/public-theme", GetPublicThemeForManagement);
         app.MapPut("/catalog/public-theme", UpsertPublicTheme);
 
         return app;
     }
 
-    private static async Task<IResult> GetTour(Guid id, ICatalogTourReadModelStore store, IPublicMediaImageStore imageStore, IMediaObjectStore objectStore, CancellationToken ct)
+    private static async Task<IResult> GetTour(Guid id, ICatalogTourReadModelStore store, IPublicMediaImageStore imageStore, IMediaObjectStore objectStore, HttpContext httpContext, CancellationToken ct)
     {
+        CatalogHttpCache.SetNoStore(httpContext);
+
         if (id == Guid.Empty)
         {
             return Results.BadRequest();
@@ -58,7 +66,7 @@ internal static class CatalogEndpoints
         return Results.Ok(MapTour(tour, images, objectStore));
     }
 
-    private static async Task<IResult> GetPublishedTour(string slug, ICatalogTourReadModelStore store, IPublicMediaImageStore imageStore, IMediaObjectStore objectStore, CancellationToken ct)
+    private static async Task<IResult> GetPublishedTour(string slug, ICatalogTourReadModelStore store, IPublicMediaImageStore imageStore, IMediaObjectStore objectStore, HttpContext httpContext, CancellationToken ct)
     {
         if (string.IsNullOrWhiteSpace(slug))
         {
@@ -72,7 +80,9 @@ internal static class CatalogEndpoints
         }
 
         var images = await imageStore.ListByTour(tour.CatalogTourId, ct);
-        return Results.Ok(MapTour(tour, GetReadyImages(images), objectStore));
+        var dto = MapTour(tour, GetReadyImages(images), objectStore);
+        CatalogHttpCache.SetPublicHeaders(httpContext, CatalogHttpCache.CreateTourEtagSeed(dto));
+        return Results.Ok(dto);
     }
 
     private static async Task<IResult> GetPublicContent(
@@ -80,6 +90,7 @@ internal static class CatalogEndpoints
         string? language,
         string? culture,
         IPublicContentStore store,
+        HttpContext httpContext,
         CancellationToken ct)
     {
         if (string.IsNullOrWhiteSpace(key))
@@ -99,11 +110,20 @@ internal static class CatalogEndpoints
         }
 
         var variant = content.FindPublicVariant(requestedLanguage);
-        return variant is null ? Results.NotFound() : Results.Ok(MapVariant(variant));
+        if (variant is null)
+        {
+            return Results.NotFound();
+        }
+
+        var dto = MapVariant(variant);
+        CatalogHttpCache.SetPublicHeaders(httpContext, CatalogHttpCache.CreatePublicContentEtagSeed(content.Key, dto));
+        return Results.Ok(dto);
     }
 
-    private static async Task<IResult> GetPublicContentForManagement(string key, IPublicContentStore store, CancellationToken ct)
+    private static async Task<IResult> GetPublicContentForManagement(string key, IPublicContentStore store, HttpContext httpContext, CancellationToken ct)
     {
+        CatalogHttpCache.SetNoStore(httpContext);
+
         if (string.IsNullOrWhiteSpace(key))
         {
             return Results.BadRequest();
@@ -113,8 +133,17 @@ internal static class CatalogEndpoints
         return content is null ? Results.NotFound() : Results.Ok(MapPublicContent(content));
     }
 
-    private static async Task<IResult> GetPublicTheme(IPublicThemeSettingsStore store, CancellationToken ct)
+    private static async Task<IResult> GetPublicTheme(IPublicThemeSettingsStore store, HttpContext httpContext, CancellationToken ct)
     {
+        var theme = await store.GetTheme(ct) ?? PublicThemeSettings.Default();
+        var dto = MapTheme(theme);
+        CatalogHttpCache.SetPublicHeaders(httpContext, CatalogHttpCache.CreateThemeEtagSeed(dto));
+        return Results.Ok(dto);
+    }
+
+    private static async Task<IResult> GetPublicThemeForManagement(IPublicThemeSettingsStore store, HttpContext httpContext, CancellationToken ct)
+    {
+        CatalogHttpCache.SetNoStore(httpContext);
         var theme = await store.GetTheme(ct) ?? PublicThemeSettings.Default();
         return Results.Ok(MapTheme(theme));
     }
@@ -122,8 +151,13 @@ internal static class CatalogEndpoints
     private static async Task<IResult> UpsertPublicTheme(
         PublicThemeSettingsDto request,
         IPublicThemeSettingsStore store,
+        IOutputCacheStore outputCacheStore,
+        ILogger<CatalogApiHostEntryPoint> logger,
+        HttpContext httpContext,
         CancellationToken ct)
     {
+        CatalogHttpCache.SetNoStore(httpContext);
+
         var theme = PublicThemeSettings.Create(
             request.PrimaryColor,
             request.AccentColor,
@@ -138,6 +172,7 @@ internal static class CatalogEndpoints
         }
 
         await store.SaveTheme(theme.Value, ct);
+        await InvalidatePublicThemeCache(outputCacheStore, logger, ct);
         return Results.Ok(MapTheme(theme.Value));
     }
 
@@ -145,8 +180,10 @@ internal static class CatalogEndpoints
         ICatalogTourReadModelStore store,
         IPublicMediaImageStore imageStore,
         IMediaObjectStore objectStore,
+        HttpContext httpContext,
         CancellationToken ct)
     {
+        CatalogHttpCache.SetNoStore(httpContext);
         var tours = await store.ListTours(ct);
         var imagesByTour = await imageStore.ListByTours([.. tours.Select(tour => tour.CatalogTourId)], ct);
 
@@ -160,24 +197,32 @@ internal static class CatalogEndpoints
         ICatalogTourReadModelStore store,
         IPublicMediaImageStore imageStore,
         IMediaObjectStore objectStore,
+        HttpContext httpContext,
         CancellationToken ct)
     {
         var tours = await store.ListTours(ct);
         var publishedTours = tours.Where(tour => tour.IsPubliclyVisible).ToArray();
         var imagesByTour = await imageStore.ListByTours([.. publishedTours.Select(tour => tour.CatalogTourId)], ct);
 
-        return
+        CatalogTourDto[] result =
         [
             .. publishedTours.Select(tour => MapTour(tour, GetReadyImages(GetImages(imagesByTour, tour.CatalogTourId)), objectStore))
         ];
+        CatalogHttpCache.SetPublicHeaders(httpContext, CatalogHttpCache.CreateToursEtagSeed(result));
+        return result;
     }
 
     private static async Task<IResult> UpsertPublicContent(
         string key,
         UpsertPublicContentRequest request,
         IPublicContentStore store,
+        IOutputCacheStore outputCacheStore,
+        ILogger<CatalogApiHostEntryPoint> logger,
+        HttpContext httpContext,
         CancellationToken ct)
     {
+        CatalogHttpCache.SetNoStore(httpContext);
+
         if (string.IsNullOrWhiteSpace(key))
         {
             return Results.BadRequest();
@@ -216,6 +261,7 @@ internal static class CatalogEndpoints
         }
 
         await store.SaveContent(content.Value, ct);
+        await InvalidatePublicContentCache(outputCacheStore, logger, ct);
         return Results.Ok(MapPublicContent(content.Value));
     }
 
@@ -225,8 +271,13 @@ internal static class CatalogEndpoints
         ICatalogTourReadModelStore store,
         IPublicMediaImageStore imageStore,
         IMediaObjectStore objectStore,
+        IOutputCacheStore outputCacheStore,
+        ILogger<CatalogApiHostEntryPoint> logger,
+        HttpContext httpContext,
         CancellationToken ct)
     {
+        CatalogHttpCache.SetNoStore(httpContext);
+
         if (id == Guid.Empty)
         {
             return Results.BadRequest();
@@ -249,6 +300,7 @@ internal static class CatalogEndpoints
         }
 
         var images = await imageStore.ListByTour(id, ct);
+        await InvalidatePublicCatalogCache(outputCacheStore, logger, ct);
         return Results.Ok(MapTour(updated, (IReadOnlyList<PublicMediaImage>?)images, objectStore));
     }
 
@@ -257,8 +309,11 @@ internal static class CatalogEndpoints
         ICatalogTourReadModelStore store,
         IPublicMediaImageStore imageStore,
         IMediaObjectStore objectStore,
+        HttpContext httpContext,
         CancellationToken ct)
     {
+        CatalogHttpCache.SetNoStore(httpContext);
+
         if (id == Guid.Empty)
         {
             return Results.BadRequest();
@@ -280,8 +335,13 @@ internal static class CatalogEndpoints
         ICatalogTourReadModelStore store,
         IPublicMediaImageStore imageStore,
         IMediaObjectStore objectStore,
+        IOutputCacheStore outputCacheStore,
+        ILogger<CatalogApiHostEntryPoint> logger,
+        HttpContext httpContext,
         CancellationToken ct)
     {
+        CatalogHttpCache.SetNoStore(httpContext);
+
         if (id == Guid.Empty || id != request.Id)
         {
             return Results.BadRequest();
@@ -309,6 +369,7 @@ internal static class CatalogEndpoints
         }
 
         await imageStore.Upsert(image.Value, ct);
+        await InvalidatePublicCatalogCache(outputCacheStore, logger, ct);
         return Results.Ok(MapMediaImage(image.Value, objectStore));
     }
 
@@ -317,8 +378,13 @@ internal static class CatalogEndpoints
         PublicMediaImageAccessibilityDraftRequest request,
         MediaImageAccessibilityDraftService service,
         IMediaObjectStore objectStore,
+        IOutputCacheStore outputCacheStore,
+        ILogger<CatalogApiHostEntryPoint> logger,
+        HttpContext httpContext,
         CancellationToken ct)
     {
+        CatalogHttpCache.SetNoStore(httpContext);
+
         if (id == Guid.Empty)
         {
             return Results.BadRequest();
@@ -343,6 +409,7 @@ internal static class CatalogEndpoints
 
         if (result.IsSuccess)
         {
+            await InvalidatePublicCatalogCache(outputCacheStore, logger, ct);
             return Results.Ok(MapMediaImage(result.Value, objectStore));
         }
 
@@ -353,6 +420,24 @@ internal static class CatalogEndpoints
             ResultStatus.Unavailable => Results.Problem(result.ErrorDetails.Detail, statusCode: StatusCodes.Status503ServiceUnavailable),
             _ => Results.Problem(result.ErrorDetails.Detail)
         };
+    }
+
+    private static async Task InvalidatePublicCatalogCache(IOutputCacheStore outputCacheStore, ILogger logger, CancellationToken ct)
+    {
+        await outputCacheStore.EvictByTagAsync(CatalogHttpCache.PublicCatalogTag, ct);
+        logger.PublicCatalogCacheInvalidated(CatalogHttpCache.PublicCatalogArea);
+    }
+
+    private static async Task InvalidatePublicContentCache(IOutputCacheStore outputCacheStore, ILogger logger, CancellationToken ct)
+    {
+        await outputCacheStore.EvictByTagAsync(CatalogHttpCache.PublicContentTag, ct);
+        logger.PublicCatalogCacheInvalidated(CatalogHttpCache.PublicContentArea);
+    }
+
+    private static async Task InvalidatePublicThemeCache(IOutputCacheStore outputCacheStore, ILogger logger, CancellationToken ct)
+    {
+        await outputCacheStore.EvictByTagAsync(CatalogHttpCache.PublicThemeTag, ct);
+        logger.PublicCatalogCacheInvalidated(CatalogHttpCache.PublicThemeArea);
     }
 
     private static CatalogTourDto MapTour(CatalogTourDraftReadModel tour, IReadOnlyList<PublicMediaImage>? images, IMediaObjectStore objectStore)

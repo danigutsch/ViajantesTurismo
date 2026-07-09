@@ -10,6 +10,12 @@ builder.AddServiceDefaults();
 builder.Services.AddHttpClientDefaults();
 builder.Services.AddHttpClient<IPublicCatalogApiClient, PublicCatalogApiClient>(client => client.BaseAddress = new Uri($"https+http://{ResourceNames.CatalogApi}"));
 builder.Services.AddRazorComponents();
+builder.Services.AddOutputCache(options =>
+{
+    options.AddPolicy(
+        PublicWebHttpCache.PublishedContentPolicy,
+        policy => policy.Expire(PublicWebHttpCache.PublishedContentFreshness).SetVaryByQuery("culture", "language"));
+});
 
 var app = builder.Build();
 
@@ -22,6 +28,10 @@ if (!app.Environment.IsDevelopment())
 app.UseHttpsRedirection();
 
 app.UseAntiforgery();
+
+app.UsePublicWebCacheHeaders();
+
+app.UseOutputCache();
 
 app.MapPublicWebEndpoints();
 
