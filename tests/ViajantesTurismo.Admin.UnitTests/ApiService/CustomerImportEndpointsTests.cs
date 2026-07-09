@@ -73,7 +73,7 @@ public sealed class CustomerImportEndpointsTests
     {
         // Arrange
         using var stream = new MemoryStream([1]);
-        var file = new FormFile(stream, 0, CustomerImportEndpoints.MaxFileBytes + 1, "file", "customers.csv")
+        var file = new FormFile(stream, 0, ContractConstants.CustomerImportMaxFileBytes + 1, "file", "customers.csv")
         {
             Headers = new HeaderDictionary(),
             ContentType = ContractConstants.CustomerImportTextCsvContentType

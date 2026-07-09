@@ -111,6 +111,16 @@ public static class ContractConstants
     public const string CustomerImportExcelCsvContentType = "application/vnd.ms-excel";
 
     /// <summary>
+    /// Maximum accepted customer import file size in bytes.
+    /// </summary>
+    public const long CustomerImportMaxFileBytes = 1_048_576;
+
+    /// <summary>
+    /// Maximum accepted customer import multipart request size in bytes.
+    /// </summary>
+    public const long CustomerImportMaxRequestBytes = CustomerImportMaxFileBytes + 16_384;
+
+    /// <summary>
     /// Content types accepted by customer import uploads.
     /// </summary>
     public static IReadOnlyCollection<string> CustomerImportAllowedContentTypes { get; } =

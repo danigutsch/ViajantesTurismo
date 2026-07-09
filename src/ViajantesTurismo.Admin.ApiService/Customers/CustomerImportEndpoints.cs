@@ -11,10 +11,6 @@ namespace ViajantesTurismo.Admin.ApiService.Customers;
 /// </summary>
 internal static class CustomerImportEndpoints
 {
-    public const long MaxFileBytes = 1_048_576;
-
-    public const long MaxRequestBytes = MaxFileBytes + 16_384;
-
     /// <summary>
     /// Maps all customer import endpoints to the application.
     /// </summary>
@@ -30,7 +26,7 @@ internal static class CustomerImportEndpoints
             .WithName("ImportCustomers")
             .WithDescription("Imports customers from a CSV file.")
             .WithSummary("Imports customers from a CSV file.")
-            .WithMetadata(new RequestSizeLimitAttribute(MaxRequestBytes))
+            .WithMetadata(new RequestSizeLimitAttribute(ContractConstants.CustomerImportMaxRequestBytes))
             .DisableAntiforgery();
 
         importGroup.MapPost("/commit", CommitImportWithResolutions)
@@ -38,7 +34,7 @@ internal static class CustomerImportEndpoints
             .WithDescription("Commits customer import applying conflict resolutions.")
             .WithSummary("Commits customer import applying conflict resolutions.")
             .Accepts<CommitCustomerImportFormDto>("multipart/form-data")
-            .WithMetadata(new RequestSizeLimitAttribute(MaxRequestBytes))
+            .WithMetadata(new RequestSizeLimitAttribute(ContractConstants.CustomerImportMaxRequestBytes))
             .DisableAntiforgery();
 
         return app;
@@ -98,7 +94,7 @@ internal static class CustomerImportEndpoints
     {
         ArgumentNullException.ThrowIfNull(file);
 
-        if (file.Length <= 0 || file.Length > MaxFileBytes || !IsAllowedCsv(file))
+        if (file.Length <= 0 || file.Length > ContractConstants.CustomerImportMaxFileBytes || !IsAllowedCsv(file))
         {
             problem = CreateImportFileProblem();
             return false;
