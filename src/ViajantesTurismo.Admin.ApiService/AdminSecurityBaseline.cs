@@ -21,7 +21,7 @@ internal static class AdminSecurityBaseline
 
         services.AddRateLimiter(options =>
             options.AddRemoteIpFixedWindowPolicies([
-                new RemoteIpFixedWindowRateLimitPolicy(MutationRateLimitPolicy, 30, TimeSpan.FromMinutes(1)),
+                new RemoteIpFixedWindowRateLimitPolicy(MutationRateLimitPolicy, 300, TimeSpan.FromMinutes(1)),
                 new RemoteIpFixedWindowRateLimitPolicy(ImportRateLimitPolicy, 5, TimeSpan.FromMinutes(1))
             ]));
 
