@@ -82,11 +82,16 @@ public sealed class DocumentationGeneratorTests
     {
         // Arrange
         using var workspace = new TemporaryDocumentationWorkspace();
-        workspace.WriteArchitectureDoc("overview.md", DocumentationTestContent.GeneratedBlocksDocument("apphost", "projects", "jobs", "workflows"));
+        workspace.WriteArchitectureDoc("overview.md", DocumentationTestContent.GeneratedBlocksDocument("apphost", "projects", "endpoints", "events", "jobs", "workflows"));
         workspace.WriteConfig(DocumentationTestContent.RepositorySourcesConfig());
         workspace.WriteFile("apphost/Program.cs", DocumentationTestContent.AppHostProgram());
         workspace.WriteFile("src/App/App.csproj", DocumentationTestContent.AppProject());
         workspace.WriteFile("src/Lib/Lib.csproj", DocumentationTestContent.EmptyProject());
+        workspace.WriteFile("src/Api/CustomerEndpoints.cs", DocumentationTestContent.CustomerEndpoints());
+        workspace.WriteFile("src/Contracts/AdminTourCreatedIntegrationEvent.cs", DocumentationTestContent.AdminTourCreatedIntegrationEvent());
+        workspace.WriteFile("src/Application/TourIntegrationEventMappings.cs", DocumentationTestContent.TourIntegrationEventMappings());
+        workspace.WriteFile("src/Application/AdminTourCreatedIntegrationHandler.cs", DocumentationTestContent.AdminTourCreatedIntegrationHandler());
+        workspace.WriteFile("src/Application/ApplicationDependencyInjection.cs", DocumentationTestContent.ApplicationDependencyInjection());
         workspace.WriteFile(".github/workflows/ci.yml", DocumentationTestContent.CiWorkflow());
         workspace.WriteFile(".github/workflows/release.yml", DocumentationTestContent.ReleaseWorkflow());
         workspace.WriteFile(".github/workflows/excluded.yml", DocumentationTestContent.ExcludedWorkflow());
@@ -101,6 +106,8 @@ public sealed class DocumentationGeneratorTests
         updated.ShouldContain("api[API service]", StringComparison.Ordinal);
         updated.ShouldContain("api --> admin", StringComparison.Ordinal);
         updated.ShouldContain("App[App] --> Lib[Lib]", StringComparison.Ordinal);
+        updated.ShouldContain("| `GET` | `/customers` | GetCustomers | management/internal | not declared | `Api/CustomerEndpoints.cs` |", StringComparison.Ordinal);
+        updated.ShouldContain("| AdminTourCreatedIntegrationEvent | `admin.tour.created` | 1 | `TourIntegrationEventMappings` | `ApplicationDependencyInjection` | `AdminTourCreatedIntegrationHandler` |", StringComparison.Ordinal);
         updated.ShouldContain("trigger --> build", StringComparison.Ordinal);
         updated.ShouldContain("build --> test", StringComparison.Ordinal);
         updated.ShouldContain("test --> deploy", StringComparison.Ordinal);

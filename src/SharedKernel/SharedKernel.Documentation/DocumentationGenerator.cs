@@ -57,6 +57,8 @@ public static class DocumentationGenerator
         "mermaid-flowchart" => MermaidDiagram.Build(block.Flowchart, block.Lines),
         "project-references" => ProjectReferenceMermaidDiagram.Build(rootPath, block.SourcePath, ProjectFilter(block.ProjectFilter)),
         "apphost-resources" => AppHostMermaidDiagram.Build(Path.Combine(rootPath, block.SourcePath), block.Labels),
+        "endpoint-routes" => EndpointRouteMarkdownTable.Build(Path.Combine(rootPath, block.SourcePath), block.RoutePrefixes),
+        "integration-events" => IntegrationEventMarkdownTable.Build(Path.Combine(rootPath, block.SourcePath)),
         "github-actions-jobs" => GitHubActionsMermaidDiagram.BuildJobs(Path.Combine(rootPath, block.SourcePath), block.TriggerLabel),
         "github-actions-workflows" => GitHubActionsMermaidDiagram.BuildWorkflowInventory(Path.Combine(rootPath, block.SourcePath), block.RootLabel, block.ExcludedWorkflowFileName),
         _ => throw new InvalidOperationException($"Unknown generated documentation block kind: {block.Kind}"),
