@@ -19,6 +19,22 @@ public sealed class AsyncApiContractArtifactTests
     {
         // Arrange
         var artifact = AsyncApiContractArtifact.Read();
+        var adminMessageStart = artifact.IndexOf("    AdminTourCreatedV1:", StringComparison.Ordinal);
+        var mediaMessageStart = artifact.IndexOf("    MediaImageOriginalStoredV1:", StringComparison.Ordinal);
+        var schemaStart = artifact.IndexOf("schemas:", StringComparison.Ordinal);
+        var adminSchemaStart = artifact.IndexOf("AdminTourCreatedIntegrationEventV1:", StringComparison.Ordinal);
+        var mediaSchemaStart = artifact.IndexOf("MediaImageOriginalStoredIntegrationEventV1:", StringComparison.Ordinal);
+
+        adminMessageStart.ShouldBeGreaterThanOrEqualTo(0);
+        mediaMessageStart.ShouldBeGreaterThanOrEqualTo(0);
+        schemaStart.ShouldBeGreaterThanOrEqualTo(0);
+        adminSchemaStart.ShouldBeGreaterThanOrEqualTo(0);
+        mediaSchemaStart.ShouldBeGreaterThanOrEqualTo(0);
+
+        var adminMessage = artifact[adminMessageStart..mediaMessageStart];
+        var mediaMessage = artifact[mediaMessageStart..schemaStart];
+        var adminSchema = artifact[adminSchemaStart..mediaSchemaStart];
+        var mediaSchema = artifact[mediaSchemaStart..];
 
         // Act
         var expectedContractTerms = new[]
@@ -53,5 +69,23 @@ public sealed class AsyncApiContractArtifactTests
         {
             artifact.ShouldContain(expectedTerm, StringComparison.Ordinal);
         }
+
+        adminMessage.ShouldContain($"const: {AdminTourCreatedIntegrationEvent.EventType}", StringComparison.Ordinal);
+        adminMessage.ShouldContain($"const: {AdminTourCreatedIntegrationEvent.EventVersion.ToString(CultureInfo.InvariantCulture)}", StringComparison.Ordinal);
+        adminMessage.ShouldContain("required:", StringComparison.Ordinal);
+        adminMessage.ShouldContain("- eventType", StringComparison.Ordinal);
+        adminMessage.ShouldContain("- eventVersion", StringComparison.Ordinal);
+        adminSchema.ShouldContain("eventId:", StringComparison.Ordinal);
+        adminSchema.ShouldContain("occurredAt:", StringComparison.Ordinal);
+        adminSchema.ShouldContain("adminTourId:", StringComparison.Ordinal);
+
+        mediaMessage.ShouldContain($"const: {MediaImageOriginalStoredIntegrationEvent.EventType}", StringComparison.Ordinal);
+        mediaMessage.ShouldContain($"const: {MediaImageOriginalStoredIntegrationEvent.EventVersion.ToString(CultureInfo.InvariantCulture)}", StringComparison.Ordinal);
+        mediaMessage.ShouldContain("required:", StringComparison.Ordinal);
+        mediaMessage.ShouldContain("- eventType", StringComparison.Ordinal);
+        mediaMessage.ShouldContain("- eventVersion", StringComparison.Ordinal);
+        mediaSchema.ShouldContain("eventId:", StringComparison.Ordinal);
+        mediaSchema.ShouldContain("occurredAt:", StringComparison.Ordinal);
+        mediaSchema.ShouldContain("mediaImageId:", StringComparison.Ordinal);
     }
 }
