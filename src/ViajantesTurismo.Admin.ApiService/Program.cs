@@ -1,4 +1,4 @@
-using Microsoft.AspNetCore.HttpOverrides;
+using SharedKernel.AspNetCore;
 using ViajantesTurismo.Admin.ApiService;
 using ViajantesTurismo.Admin.ApiService.Bookings;
 using ViajantesTurismo.Admin.ApiService.Customers;
@@ -17,8 +17,7 @@ builder.AddServiceDefaults();
 builder.Services.AddSingleton(TimeProvider.System);
 
 builder.Services.AddProblemDetails();
-builder.Services.Configure<ForwardedHeadersOptions>(options =>
-    options.ForwardedHeaders = ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedProto);
+builder.Services.AddConfiguredTrustedForwardedHeaders(builder.Configuration.GetSection("Security:ForwardedHeaders"));
 builder.Services.AddAdminSecurityBaseline(builder.Configuration);
 
 builder.Services.ConfigureHttpJsonOptions(options => options.SerializerOptions.TypeInfoResolverChain.Insert(0, AppJsonSerializerContext.Default));

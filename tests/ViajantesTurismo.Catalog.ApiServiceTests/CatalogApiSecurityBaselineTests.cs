@@ -1,8 +1,10 @@
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.HttpOverrides;
 using Microsoft.AspNetCore.TestHost;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Hosting;
+using SharedKernel.AspNetCore;
 using TestTraits = ViajantesTurismo.Catalog.ApiServiceTests.Infrastructure.TestTraits;
 using ViajantesTurismo.Catalog.ApiService;
 
@@ -94,5 +96,82 @@ public sealed class CatalogApiSecurityBaselineTests
 
         // Assert
         limitedResponse.StatusCode.ShouldBe(HttpStatusCode.TooManyRequests);
+    }
+
+    [Fact]
+    public void Forwarded_headers_configuration_uses_trusted_proxy_entries()
+    {
+        // Arrange
+        var configuration = new ConfigurationBuilder()
+            .AddInMemoryCollection(new Dictionary<string, string?>
+            {
+                ["KnownProxies:0"] = "10.0.0.10",
+                ["KnownNetworks:0"] = "10.1.0.0/16"
+            })
+            .Build();
+        var options = new ForwardedHeadersOptions();
+
+        // Act
+        options.ConfigureTrustedForwardedHeaders(configuration);
+
+        // Assert
+        options.ForwardedHeaders.ShouldBe(ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedProto);
+        options.KnownProxies.ShouldHaveSingleItem().ToString().ShouldBe("10.0.0.10");
+        var knownNetwork = options.KnownIPNetworks.ShouldHaveSingleItem();
+        knownNetwork.BaseAddress.ToString().ShouldBe("10.1.0.0");
+        knownNetwork.PrefixLength.ShouldBe(16);
+    }
+
+    [Fact]
+    public void Forwarded_headers_configuration_rejects_invalid_networks()
+    {
+        // Arrange
+        var configuration = new ConfigurationBuilder()
+            .AddInMemoryCollection(new Dictionary<string, string?>
+            {
+                ["KnownNetworks:0"] = "not-a-network"
+            })
+            .Build();
+        var options = new ForwardedHeadersOptions();
+
+        // Act
+        Action action = () => options.ConfigureTrustedForwardedHeaders(configuration);
+
+        var exception = action.ShouldThrow<InvalidOperationException>();
+
+        // Assert
+        exception.Message.ShouldContain("KnownNetworks", StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public async Task Forwarded_headers_apply_trusted_client_ip_before_endpoint_execution()
+    {
+        // Arrange
+        using var host = await new HostBuilder()
+            .ConfigureWebHost(webBuilder => webBuilder
+                .UseTestServer()
+                .ConfigureServices(services => services.Configure<ForwardedHeadersOptions>(options =>
+                {
+                    options.ForwardedHeaders = ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedProto;
+                    options.KnownProxies.Add(IPAddress.Loopback);
+                }))
+                .Configure(app =>
+                {
+                    app.UseForwardedHeaders();
+                    app.Run(static context => context.Response.WriteAsync(context.Connection.RemoteIpAddress?.ToString() ?? "missing"));
+                }))
+            .StartAsync(TestContext.Current.CancellationToken);
+        using var client = host.GetTestClient();
+        using var request = new HttpRequestMessage(HttpMethod.Get, new Uri("/", UriKind.Relative));
+        request.Headers.Add("X-Forwarded-For", "203.0.113.7");
+        request.Headers.Add("X-Forwarded-Proto", "https");
+
+        // Act
+        using var response = await client.SendAsync(request, TestContext.Current.CancellationToken);
+        var body = await response.Content.ReadAsStringAsync(TestContext.Current.CancellationToken);
+
+        // Assert
+        response.StatusCode.ShouldBe(HttpStatusCode.OK);
+        body.ShouldBe("203.0.113.7");
     }
 }
