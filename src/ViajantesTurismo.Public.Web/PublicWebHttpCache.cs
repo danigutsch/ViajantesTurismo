@@ -110,7 +110,18 @@ internal static class PublicWebHttpCache
 
     private static void NormalizeCultureQueryAlias(HttpContext httpContext)
     {
-        if (!httpContext.Request.Query.TryGetValue(LanguageQueryKey, out var language))
+        string? requestedCulture = null;
+        if (httpContext.Request.Query.TryGetValue(LanguageQueryKey, out var language))
+        {
+            requestedCulture = language.ToString();
+        }
+        else if (httpContext.Request.Query.TryGetValue(CultureQueryKey, out var cultureValue))
+        {
+            requestedCulture = cultureValue.ToString();
+        }
+
+        var canonicalCulture = PublicCultureQuery.NormalizeCulture(requestedCulture);
+        if (canonicalCulture is null)
         {
             return;
         }
@@ -130,11 +141,7 @@ internal static class PublicWebHttpCache
             }
         }
 
-        if (PublicCultureQuery.NormalizeCulture(language.ToString()) is { } culture)
-        {
-            queryValues.Add(new KeyValuePair<string, string?>(CultureQueryKey, culture));
-        }
-
+        queryValues.Add(new KeyValuePair<string, string?>(CultureQueryKey, canonicalCulture));
         httpContext.Request.QueryString = QueryString.Create(queryValues);
     }
 }

@@ -30,7 +30,7 @@ Source: `src/**/*.cs` route declarations plus route-group prefixes in
 | `GET` | `/catalog/public-content` | inline | management/internal | not declared | `ViajantesTurismo.Catalog.ApiService/CatalogEndpoints.cs` |
 | `GET` | `/catalog/public-content/{**key}` | GetPublicContentForManagement | management/internal | not declared | `ViajantesTurismo.Catalog.ApiService/CatalogEndpoints.cs` |
 | `PUT` | `/catalog/public-content/{**key}` | UpsertPublicContent | management/internal | not declared | `ViajantesTurismo.Catalog.ApiService/CatalogEndpoints.cs` |
-| `GET` | `/catalog/public-theme` | GetPublicTheme | management/internal | not declared | `ViajantesTurismo.Catalog.ApiService/CatalogEndpoints.cs` |
+| `GET` | `/catalog/public-theme` | GetPublicThemeForManagement | management/internal | not declared | `ViajantesTurismo.Catalog.ApiService/CatalogEndpoints.cs` |
 | `PUT` | `/catalog/public-theme` | UpsertPublicTheme | management/internal | not declared | `ViajantesTurismo.Catalog.ApiService/CatalogEndpoints.cs` |
 | `GET` | `/catalog/tours` | GetTours | management/internal | not declared | `ViajantesTurismo.Catalog.ApiService/CatalogEndpoints.cs` |
 | `GET` | `/catalog/tours/{id:guid}` | GetTour | management/internal | not declared | `ViajantesTurismo.Catalog.ApiService/CatalogEndpoints.cs` |

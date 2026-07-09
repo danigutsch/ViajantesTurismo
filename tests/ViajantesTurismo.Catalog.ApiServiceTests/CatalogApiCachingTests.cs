@@ -156,7 +156,7 @@ public sealed class CatalogApiCachingTests
         using var client = factory.CreateClient();
 
         // Act
-        using var firstResponse = await client.GetAsync(new Uri("/public/catalog/content/home.hero?language=EN", UriKind.Relative), cancellationToken);
+        using var firstResponse = await client.GetAsync(new Uri("/public/catalog/content/home.hero?culture=EN", UriKind.Relative), cancellationToken);
         var firstContent = await firstResponse.Content.ReadFromJsonAsync<PublicContentVariantDto>(cancellationToken);
         await contentStore.SaveContent(CatalogApiCachingTestData.CreatePublishedContent("Store-only content"), cancellationToken);
         using var cachedResponse = await client.GetAsync(new Uri("/public/catalog/content/home.hero?culture=en-US", UriKind.Relative), cancellationToken);

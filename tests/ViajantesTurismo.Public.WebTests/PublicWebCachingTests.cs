@@ -71,7 +71,7 @@ public sealed class PublicWebCachingTests
         using var client = factory.CreateClient();
 
         // Act
-        using var firstResponse = await client.GetAsync(new Uri("/?language=EN", UriKind.Relative), TestContext.Current.CancellationToken);
+        using var firstResponse = await client.GetAsync(new Uri("/?culture=EN", UriKind.Relative), TestContext.Current.CancellationToken);
         var firstContent = await firstResponse.Content.ReadAsStringAsync(TestContext.Current.CancellationToken);
         catalogApi.AddContent("en-US", new PublicContentVariantDto
         {
