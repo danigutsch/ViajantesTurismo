@@ -161,17 +161,16 @@ internal static class CatalogHttpCache
 
     private static void NormalizeCultureQueryAlias(HttpContext httpContext)
     {
-        string? requestedCulture = null;
-        if (httpContext.Request.Query.TryGetValue(CultureQueryKey, out var cultureValue))
+        var canonicalCulture = httpContext.Request.Query.TryGetValue(CultureQueryKey, out var cultureValue)
+            ? NormalizeCulture(cultureValue.ToString())
+            : null;
+
+        if (canonicalCulture is null
+            && httpContext.Request.Query.TryGetValue(LanguageQueryKey, out var language))
         {
-            requestedCulture = cultureValue.ToString();
-        }
-        else if (httpContext.Request.Query.TryGetValue(LanguageQueryKey, out var language))
-        {
-            requestedCulture = language.ToString();
+            canonicalCulture = NormalizeCulture(language.ToString());
         }
 
-        var canonicalCulture = NormalizeCulture(requestedCulture);
         if (canonicalCulture is null)
         {
             return;
