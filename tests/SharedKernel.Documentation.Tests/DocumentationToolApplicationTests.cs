@@ -45,6 +45,23 @@ public sealed class DocumentationToolApplicationTests
     }
 
     [Fact]
+    public async Task Run_returns_error_when_config_value_is_missing()
+    {
+        // Arrange
+        await using var output = new StringWriter(CultureInfo.InvariantCulture);
+        await using var error = new StringWriter(CultureInfo.InvariantCulture);
+
+        // Act
+        var exitCode = await DocumentationToolApplication.Run(["generate", "--config"], output, error, Directory.GetCurrentDirectory());
+        var errorText = error.ToString();
+
+        // Assert
+        exitCode.ShouldBe(1);
+        errorText.ShouldContain("Missing required value for --config.", StringComparison.Ordinal);
+        errorText.ShouldContain("Usage: sharedkernel-docs generate --config <path> [--check]", StringComparison.Ordinal);
+    }
+
+    [Fact]
     public async Task Run_returns_error_when_command_is_unknown()
     {
         // Arrange

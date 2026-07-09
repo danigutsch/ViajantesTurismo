@@ -34,8 +34,15 @@ internal static class DocumentationToolApplication
                 continue;
             }
 
-            if (arg == "--config" && index + 1 < args.Length)
+            if (arg == "--config")
             {
+                if (index + 1 >= args.Length || args[index + 1].StartsWith("--", StringComparison.Ordinal))
+                {
+                    await error.WriteLineAsync("Missing required value for --config.").ConfigureAwait(false);
+                    await error.WriteLineAsync(Usage).ConfigureAwait(false);
+                    return 1;
+                }
+
                 configPath = args[index + 1];
                 index += 2;
                 continue;
