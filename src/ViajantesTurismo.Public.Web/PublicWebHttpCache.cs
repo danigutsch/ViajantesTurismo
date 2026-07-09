@@ -1,3 +1,5 @@
+using Microsoft.Net.Http.Headers;
+
 namespace ViajantesTurismo.Public.Web;
 
 internal static class PublicWebHttpCache
@@ -6,24 +8,51 @@ internal static class PublicWebHttpCache
 
     public const string PublishedContentPolicy = "published-public-content";
 
-    private const string PublicCacheControl = "public, max-age=60, stale-while-revalidate=300";
+    public const string CultureQueryKey = "culture";
 
-    private const string NoStoreCacheControl = "no-store";
+    public const string LanguageQueryKey = "language";
+
+    private const string StaleWhileRevalidateDirective = "stale-while-revalidate";
+
+    private const string StaleWhileRevalidateSeconds = "300";
+
+    private const string PragmaNoCache = "no-cache";
+
+    private const string ExpiredAtUnixEpoch = "0";
+
+    public static IServiceCollection AddPublicWebOutputCache(this IServiceCollection services)
+    {
+        ArgumentNullException.ThrowIfNull(services);
+
+        return services.AddOutputCache(options =>
+        {
+            options.AddPolicy(
+                PublishedContentPolicy,
+                policy => policy.Expire(PublishedContentFreshness).SetVaryByQuery(CultureQueryKey, LanguageQueryKey));
+        });
+    }
 
     public static IApplicationBuilder UsePublicWebCacheHeaders(this IApplicationBuilder app)
     {
         ArgumentNullException.ThrowIfNull(app);
 
-        return app.Use(async (httpContext, next) =>
+        return app.Use(static async (httpContext, next) =>
         {
-            if (IsErrorRequest(httpContext))
+            httpContext.Response.OnStarting(static state =>
             {
-                SetNoStore(httpContext);
-            }
-            else if (IsPublicPageRequest(httpContext))
-            {
-                SetPublishedContent(httpContext);
-            }
+                var context = (HttpContext)state;
+                if (IsErrorRequest(context)
+                    || (IsPublicPageRequest(context) && context.Response.StatusCode >= StatusCodes.Status400BadRequest))
+                {
+                    SetNoStore(context);
+                }
+                else if (IsPublicPageRequest(context))
+                {
+                    SetPublishedContent(context);
+                }
+
+                return Task.CompletedTask;
+            }, httpContext);
 
             await next(httpContext);
         });
@@ -31,14 +60,22 @@ internal static class PublicWebHttpCache
 
     public static void SetNoStore(HttpContext httpContext)
     {
-        httpContext.Response.Headers.CacheControl = NoStoreCacheControl;
-        httpContext.Response.Headers.Pragma = "no-cache";
-        httpContext.Response.Headers.Expires = "0";
+        httpContext.Response.GetTypedHeaders().CacheControl = new CacheControlHeaderValue
+        {
+            NoStore = true
+        };
+        httpContext.Response.Headers.Pragma = PragmaNoCache;
+        httpContext.Response.Headers.Expires = ExpiredAtUnixEpoch;
     }
 
     private static void SetPublishedContent(HttpContext httpContext)
     {
-        httpContext.Response.Headers.CacheControl = PublicCacheControl;
+        httpContext.Response.GetTypedHeaders().CacheControl = new CacheControlHeaderValue
+        {
+            Public = true,
+            MaxAge = PublishedContentFreshness,
+            Extensions = { new NameValueHeaderValue(StaleWhileRevalidateDirective, StaleWhileRevalidateSeconds) }
+        };
     }
 
     private static bool IsErrorRequest(HttpContext httpContext)
