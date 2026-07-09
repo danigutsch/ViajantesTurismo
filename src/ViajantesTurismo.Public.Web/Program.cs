@@ -24,6 +24,8 @@ app.UseHttpsRedirection();
 
 app.UseAntiforgery();
 
+app.UsePublicWebSecurityHeaders();
+
 app.UsePublicWebCacheHeaders();
 
 app.UseOutputCache();

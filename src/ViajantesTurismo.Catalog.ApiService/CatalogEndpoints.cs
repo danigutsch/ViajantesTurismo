@@ -21,16 +21,22 @@ internal static class CatalogEndpoints
         app.MapGet("/catalog/tours/{id:guid}", GetTour);
         app.MapPut("/catalog/tours/{id:guid}/presentation", UpsertTourPresentation);
         app.MapGet("/catalog/tours/{id:guid}/images", ListTourImages);
-        app.MapPut("/catalog/media/images/{id:guid}", UpsertMediaImage);
-        app.MapPost("/catalog/media/images/{id:guid}/accessibility-draft", GenerateMediaImageAccessibilityDraft);
+        app.MapPut("/catalog/media/images/{id:guid}", UpsertMediaImage)
+            .RequireRateLimiting(CatalogSecurityBaseline.MutationRateLimitPolicy);
+        app.MapPost("/catalog/media/images/{id:guid}/accessibility-draft", GenerateMediaImageAccessibilityDraft)
+            .RequireRateLimiting(CatalogSecurityBaseline.MutationRateLimitPolicy);
 
         app.MapGet("/public/catalog/tours", GetPublishedTours)
+            .RequireRateLimiting(CatalogSecurityBaseline.PublicReadRateLimitPolicy)
             .CacheOutput(policy => policy.Expire(CatalogHttpCache.PublicFreshness).Tag(CatalogHttpCache.PublicCatalogTag));
         app.MapGet("/public/catalog/tours/{slug}", GetPublishedTour)
+            .RequireRateLimiting(CatalogSecurityBaseline.PublicReadRateLimitPolicy)
             .CacheOutput(policy => policy.Expire(CatalogHttpCache.PublicFreshness).Tag(CatalogHttpCache.PublicCatalogTag));
         app.MapGet("/public/catalog/content/{**key}", GetPublicContent)
+            .RequireRateLimiting(CatalogSecurityBaseline.PublicReadRateLimitPolicy)
             .CacheOutput(policy => policy.Expire(CatalogHttpCache.PublicFreshness).SetVaryByQuery("culture", "language").Tag(CatalogHttpCache.PublicContentTag));
         app.MapGet("/public/catalog/theme", GetPublicTheme)
+            .RequireRateLimiting(CatalogSecurityBaseline.PublicReadRateLimitPolicy)
             .CacheOutput(policy => policy.Expire(CatalogHttpCache.PublicFreshness).Tag(CatalogHttpCache.PublicThemeTag));
 
         app.MapGet("/catalog/public-content", async (IPublicContentStore store, HttpContext httpContext, CancellationToken ct) =>
@@ -40,9 +46,11 @@ internal static class CatalogEndpoints
             return content.Select(MapPublicContent);
         });
         app.MapGet("/catalog/public-content/{**key}", GetPublicContentForManagement);
-        app.MapPut("/catalog/public-content/{**key}", UpsertPublicContent);
+        app.MapPut("/catalog/public-content/{**key}", UpsertPublicContent)
+            .RequireRateLimiting(CatalogSecurityBaseline.MutationRateLimitPolicy);
         app.MapGet("/catalog/public-theme", GetPublicThemeForManagement);
-        app.MapPut("/catalog/public-theme", UpsertPublicTheme);
+        app.MapPut("/catalog/public-theme", UpsertPublicTheme)
+            .RequireRateLimiting(CatalogSecurityBaseline.MutationRateLimitPolicy);
 
         return app;
     }

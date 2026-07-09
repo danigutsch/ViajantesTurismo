@@ -7,6 +7,7 @@ var builder = WebApplication.CreateSlimBuilder(args);
 builder.WebHost.UseKestrelHttpsConfiguration();
 builder.AddServiceDefaults();
 builder.Services.AddCatalogOpenApiDocuments();
+builder.Services.AddCatalogSecurityBaseline(builder.Configuration);
 builder.Services.AddOutputCache();
 builder.AddCatalogInfrastructure();
 
@@ -16,6 +17,10 @@ if (app.Environment.IsDevelopment())
 {
     app.MapOpenApi();
 }
+
+app.UseCors(CatalogSecurityBaseline.CorsPolicyName);
+
+app.UseRateLimiter();
 
 app.UseOutputCache();
 
