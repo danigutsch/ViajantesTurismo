@@ -39,4 +39,35 @@ public sealed class ManagementWebSecurityHeadersTests
         response.Headers.GetValues("X-Content-Type-Options").ShouldHaveSingleItem().ShouldBe("nosniff");
         response.Headers.GetValues("Permissions-Policy").ShouldHaveSingleItem().ShouldContain("geolocation=()", StringComparison.Ordinal);
     }
+
+    [Fact]
+    public async Task Management_web_security_header_middleware_overwrites_downstream_headers()
+    {
+        // Arrange
+        using var host = await new HostBuilder()
+            .ConfigureWebHost(webBuilder => webBuilder
+                .UseTestServer()
+                .Configure(app =>
+                {
+                    app.UseManagementWebSecurityHeaders();
+                    app.Run(static context =>
+                    {
+                        context.Response.Headers["Content-Security-Policy"] = "default-src 'none'";
+                        context.Response.Headers["X-Frame-Options"] = "SAMEORIGIN";
+                        context.Response.Headers["X-Content-Type-Options"] = "unsafe";
+                        return Results.Ok().ExecuteAsync(context);
+                    });
+                }))
+            .StartAsync(Xunit.TestContext.Current.CancellationToken);
+        using var client = host.GetTestClient();
+
+        // Act
+        using var response = await client.GetAsync(new Uri("/", UriKind.Relative), Xunit.TestContext.Current.CancellationToken);
+
+        // Assert
+        response.StatusCode.ShouldBe(HttpStatusCode.OK);
+        response.Headers.GetValues("Content-Security-Policy").ShouldHaveSingleItem().ShouldContain("connect-src 'self' ws: wss:", StringComparison.Ordinal);
+        response.Headers.GetValues("X-Frame-Options").ShouldHaveSingleItem().ShouldBe("DENY");
+        response.Headers.GetValues("X-Content-Type-Options").ShouldHaveSingleItem().ShouldBe("nosniff");
+    }
 }

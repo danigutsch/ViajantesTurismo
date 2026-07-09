@@ -19,7 +19,7 @@ public sealed class CatalogApiSecurityBaselineTests
         var configuration = new ConfigurationBuilder()
             .AddInMemoryCollection(new Dictionary<string, string?>
             {
-                ["Security:Cors:AllowedOrigins:0"] = "https://public.example"
+                ["Security:Cors:AllowedOrigins:0"] = " https://public.example "
             })
             .Build();
         using var host = await new HostBuilder()
