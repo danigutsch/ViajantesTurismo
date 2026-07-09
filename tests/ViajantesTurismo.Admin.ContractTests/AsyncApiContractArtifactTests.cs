@@ -19,6 +19,9 @@ public sealed class AsyncApiContractArtifactTests
     {
         // Arrange
         var artifact = AsyncApiContractArtifact.Read();
+        var infoStart = artifact.IndexOf("info:", StringComparison.Ordinal);
+        var channelsStart = artifact.IndexOf("channels:", StringComparison.Ordinal);
+        var operationsStart = artifact.IndexOf("operations:", StringComparison.Ordinal);
         var componentsStart = artifact.IndexOf("components:", StringComparison.Ordinal);
         var componentsMessagesStart = componentsStart >= 0
             ? artifact.IndexOf("messages:", componentsStart, StringComparison.Ordinal)
@@ -33,6 +36,9 @@ public sealed class AsyncApiContractArtifactTests
         var adminSchemaStart = artifact.IndexOf("AdminTourCreatedIntegrationEventV1:", StringComparison.Ordinal);
         var mediaSchemaStart = artifact.IndexOf("MediaImageOriginalStoredIntegrationEventV1:", StringComparison.Ordinal);
 
+        infoStart.ShouldBeGreaterThanOrEqualTo(0);
+        channelsStart.ShouldBeGreaterThanOrEqualTo(0);
+        operationsStart.ShouldBeGreaterThanOrEqualTo(0);
         componentsStart.ShouldBeGreaterThanOrEqualTo(0);
         componentsMessagesStart.ShouldBeGreaterThanOrEqualTo(0);
         adminMessageStart.ShouldBeGreaterThanOrEqualTo(0);
@@ -40,6 +46,9 @@ public sealed class AsyncApiContractArtifactTests
         schemaStart.ShouldBeGreaterThanOrEqualTo(0);
         adminSchemaStart.ShouldBeGreaterThanOrEqualTo(0);
         mediaSchemaStart.ShouldBeGreaterThanOrEqualTo(0);
+        infoStart.ShouldBeLessThan(channelsStart);
+        channelsStart.ShouldBeLessThan(operationsStart);
+        operationsStart.ShouldBeLessThan(componentsStart);
         componentsStart.ShouldBeLessThan(componentsMessagesStart);
         componentsMessagesStart.ShouldBeLessThan(adminMessageStart);
         adminMessageStart.ShouldBeLessThan(mediaMessageStart);
@@ -85,6 +94,13 @@ public sealed class AsyncApiContractArtifactTests
         {
             artifact.ShouldContain(expectedTerm, StringComparison.Ordinal);
         }
+
+        artifact.ShouldNotContain("\t");
+        artifact.ShouldContain("asyncapi: 3.0.0", StringComparison.Ordinal);
+        artifact.ShouldContain("$ref: '#/components/messages/AdminTourCreatedV1'", StringComparison.Ordinal);
+        artifact.ShouldContain("$ref: '#/components/messages/MediaImageOriginalStoredV1'", StringComparison.Ordinal);
+        artifact.ShouldContain("$ref: '#/components/schemas/AdminTourCreatedIntegrationEventV1'", StringComparison.Ordinal);
+        artifact.ShouldContain("$ref: '#/components/schemas/MediaImageOriginalStoredIntegrationEventV1'", StringComparison.Ordinal);
 
         adminMessage.ShouldContain($"const: {AdminTourCreatedIntegrationEvent.EventType}", StringComparison.Ordinal);
         adminMessage.ShouldContain($"const: {AdminTourCreatedIntegrationEvent.EventVersion.ToString(CultureInfo.InvariantCulture)}", StringComparison.Ordinal);
