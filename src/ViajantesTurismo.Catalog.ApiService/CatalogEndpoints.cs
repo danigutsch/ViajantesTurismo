@@ -19,7 +19,8 @@ internal static class CatalogEndpoints
 
         app.MapGet("/catalog/tours", GetTours);
         app.MapGet("/catalog/tours/{id:guid}", GetTour);
-        app.MapPut("/catalog/tours/{id:guid}/presentation", UpsertTourPresentation);
+        app.MapPut("/catalog/tours/{id:guid}/presentation", UpsertTourPresentation)
+            .RequireRateLimiting(CatalogSecurityBaseline.MutationRateLimitPolicy);
         app.MapGet("/catalog/tours/{id:guid}/images", ListTourImages);
         app.MapPut("/catalog/media/images/{id:guid}", UpsertMediaImage)
             .RequireRateLimiting(CatalogSecurityBaseline.MutationRateLimitPolicy);
