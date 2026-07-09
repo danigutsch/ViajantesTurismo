@@ -14,6 +14,7 @@ internal static class BookingsCompleteBookingEndpoint
         ArgumentNullException.ThrowIfNull(bookingsGroup);
 
         bookingsGroup.MapPost("/{id:guid}/complete", CompleteBooking)
+            .RequireRateLimiting(AdminSecurityBaseline.MutationRateLimitPolicy)
             .WithAdminMetadata("CompleteBooking", "Completes a booking by transitioning its status to Completed.", "Completes a booking.");
     }
 

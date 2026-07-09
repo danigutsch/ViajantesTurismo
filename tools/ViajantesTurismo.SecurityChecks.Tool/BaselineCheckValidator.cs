@@ -10,7 +10,7 @@ internal static class BaselineCheckValidator
         "src/ViajantesTurismo.Management.Web/ManagementWebSecurityHeaders.cs",
         "src/ViajantesTurismo.Catalog.ApiService/CatalogSecurityBaseline.cs",
         "src/ViajantesTurismo.Admin.ApiService/AdminSecurityBaseline.cs",
-        "src/ViajantesTurismo.Admin.ApiService/Customers/CustomerImportFileValidation.cs"
+        "src/ViajantesTurismo.Admin.ApiService/Customers/CustomerImportEndpoints.cs"
     ];
 
     private static readonly string[] ThreatModelMarkers =
@@ -41,6 +41,8 @@ internal static class BaselineCheckValidator
         RequireContains(repositoryRoot, "docs/security/security-baseline.md", ["Content-Security-Policy", "Rate limiting", "CORS", "Sensitive data logging", "Customer import"]);
         RequireContains(repositoryRoot, "src/ViajantesTurismo.Catalog.ApiService/Program.cs", ["AddCatalogSecurityBaseline", "UseCors", "UseRateLimiter"]);
         RequireContains(repositoryRoot, "src/ViajantesTurismo.Admin.ApiService/Program.cs", ["AddAdminSecurityBaseline", "UseCors", "UseRateLimiter"]);
+        RequireContains(repositoryRoot, "src/ViajantesTurismo.Public.Web/Program.cs", ["UsePublicWebSecurityHeaders"]);
+        RequireContains(repositoryRoot, "src/ViajantesTurismo.Management.Web/Program.cs", ["UseManagementWebSecurityHeaders"]);
 
         var catalogInfrastructure = ReadRequired(repositoryRoot, "src/ViajantesTurismo.Catalog.Infrastructure/InfrastructureDependencyInjection.cs");
         if (catalogInfrastructure.Contains("EnableSensitiveDataLogging", StringComparison.Ordinal) && !catalogInfrastructure.Contains("IsDevelopment", StringComparison.Ordinal))

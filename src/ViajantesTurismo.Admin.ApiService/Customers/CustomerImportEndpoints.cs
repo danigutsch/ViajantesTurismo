@@ -1,3 +1,5 @@
+using System.Diagnostics.CodeAnalysis;
+using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
 using ViajantesTurismo.Admin.Application.Customers.Import;
 using ViajantesTurismo.Admin.Contracts;
@@ -9,6 +11,10 @@ namespace ViajantesTurismo.Admin.ApiService.Customers;
 /// </summary>
 internal static class CustomerImportEndpoints
 {
+    public const long MaxFileBytes = 1_048_576;
+
+    public const long MaxRequestBytes = MaxFileBytes + 16_384;
+
     /// <summary>
     /// Maps all customer import endpoints to the application.
     /// </summary>
@@ -24,6 +30,7 @@ internal static class CustomerImportEndpoints
             .WithName("ImportCustomers")
             .WithDescription("Imports customers from a CSV file.")
             .WithSummary("Imports customers from a CSV file.")
+            .WithMetadata(new RequestSizeLimitAttribute(MaxRequestBytes))
             .DisableAntiforgery();
 
         importGroup.MapPost("/commit", CommitImportWithResolutions)
@@ -31,20 +38,21 @@ internal static class CustomerImportEndpoints
             .WithDescription("Commits customer import applying conflict resolutions.")
             .WithSummary("Commits customer import applying conflict resolutions.")
             .Accepts<CommitCustomerImportFormDto>("multipart/form-data")
+            .WithMetadata(new RequestSizeLimitAttribute(MaxRequestBytes))
             .DisableAntiforgery();
 
         return app;
     }
 
-    private static async Task<IResult> ImportCustomers(
+    private static async Task<Results<Ok<ImportResultDto>, ProblemHttpResult>> ImportCustomers(
         IFormFile file,
         [FromServices] CustomerImportWorkflowService workflow,
         CancellationToken ct)
     {
         ArgumentNullException.ThrowIfNull(file);
-        if (!CustomerImportFileValidation.TryValidate(file, out var problem))
+        if (!TryValidateImportFile(file, out var problem))
         {
-            return Results.Problem(
+            return TypedResults.Problem(
                 detail: problem.Detail,
                 title: problem.Title,
                 statusCode: problem.Status);
@@ -55,14 +63,14 @@ internal static class CustomerImportEndpoints
         return TypedResults.Ok(result);
     }
 
-    private static async Task<IResult> CommitImportWithResolutions(
+    private static async Task<Results<Ok<ImportResultDto>, ProblemHttpResult>> CommitImportWithResolutions(
         [AsParameters] CommitCustomerImportFormDto form,
         [FromServices] CustomerImportWorkflowService workflow,
         CancellationToken ct)
     {
-        if (!CustomerImportFileValidation.TryValidate(form.File, out var problem))
+        if (!TryValidateImportFile(form.File, out var problem))
         {
-            return Results.Problem(
+            return TypedResults.Problem(
                 detail: problem.Detail,
                 title: problem.Title,
                 statusCode: problem.Status);
@@ -84,5 +92,36 @@ internal static class CustomerImportEndpoints
 
         using var reader = new StreamReader(file.OpenReadStream());
         return await reader.ReadToEndAsync(ct);
+    }
+
+    internal static bool TryValidateImportFile(IFormFile file, [NotNullWhen(false)] out ProblemDetails? problem)
+    {
+        ArgumentNullException.ThrowIfNull(file);
+
+        if (file.Length <= 0 || file.Length > MaxFileBytes || !IsAllowedCsv(file))
+        {
+            problem = CreateImportFileProblem();
+            return false;
+        }
+
+        problem = null;
+        return true;
+    }
+
+    private static bool IsAllowedCsv(IFormFile file)
+    {
+        return ContractConstants.CustomerImportAllowedContentTypes.Any(allowedContentType =>
+                allowedContentType.Equals(file.ContentType, StringComparison.OrdinalIgnoreCase))
+            && Path.GetExtension(file.FileName).Equals(".csv", StringComparison.OrdinalIgnoreCase);
+    }
+
+    private static ProblemDetails CreateImportFileProblem()
+    {
+        return new ProblemDetails
+        {
+            Status = StatusCodes.Status400BadRequest,
+            Title = "Invalid customer import file.",
+            Detail = "Upload a CSV file that meets the documented import requirements."
+        };
     }
 }

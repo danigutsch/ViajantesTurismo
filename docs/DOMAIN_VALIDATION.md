@@ -260,6 +260,25 @@ See [ADR-003: Validation Constants in Contracts Project](adr/20251108-validation
 
 ## API Integration
 
+### API Boundary Validation
+
+Keep API boundary validation close to the endpoint or request binding surface unless the rule is a
+domain invariant or application invariant.
+
+- Use DTO `DataAnnotations` and `IValidatableObject` for reusable contract shape rules.
+- Use domain factories/update methods for business invariants and return `Result`/`Result<T>`.
+- Use application handlers/services for persistence-backed checks such as uniqueness.
+- Keep endpoint-only checks, such as upload content type, file extension, and multipart request limits,
+  in the endpoint slice that consumes the request.
+- Prefer typed Minimal API results (`TypedResults` and `Results<T1, TN>`) so OpenAPI metadata stays precise.
+- Return RFC 7807 problem details for API validation failures.
+- Do not create standalone validation classes for a single endpoint; extract only when the same validation has
+  more than one real caller or a stable reusable boundary.
+
+ASP.NET Core Minimal API validation support is evolving. Before adding a global endpoint-filter validation
+pipeline, evaluate built-in `AddValidation`, `IProblemDetailsService` integration, request-size metadata, and
+file-upload limit guidance against the current target framework.
+
 ### Tour Creation
 
 ```csharp

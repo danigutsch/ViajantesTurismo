@@ -11,6 +11,7 @@ internal static class BookingsDeleteBookingEndpoint
         ArgumentNullException.ThrowIfNull(bookingsGroup);
 
         bookingsGroup.MapDelete("/{id:guid}", DeleteBooking)
+            .RequireRateLimiting(AdminSecurityBaseline.MutationRateLimitPolicy)
             .WithAdminMetadata("DeleteBooking", "Deletes a booking.", "Deletes a booking.");
     }
 

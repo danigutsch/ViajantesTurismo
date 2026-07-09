@@ -14,6 +14,7 @@ internal static class BookingsUpdateBookingDetailsEndpoint
         ArgumentNullException.ThrowIfNull(bookingsGroup);
 
         bookingsGroup.MapPut("/{id:guid}/details", UpdateBookingDetails)
+            .RequireRateLimiting(AdminSecurityBaseline.MutationRateLimitPolicy)
             .WithAdminMetadata("UpdateBookingDetails", "Updates booking details (room type, bikes, companion).", "Updates booking details.");
     }
 

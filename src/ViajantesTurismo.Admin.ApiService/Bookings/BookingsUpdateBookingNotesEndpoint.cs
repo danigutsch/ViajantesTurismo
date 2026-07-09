@@ -14,6 +14,7 @@ internal static class BookingsUpdateBookingNotesEndpoint
         ArgumentNullException.ThrowIfNull(bookingsGroup);
 
         bookingsGroup.MapPatch("/{id:guid}/notes", UpdateBookingNotes)
+            .RequireRateLimiting(AdminSecurityBaseline.MutationRateLimitPolicy)
             .WithAdminMetadata("UpdateBookingNotes", "Updates the notes of a booking.", "Updates booking notes.");
     }
 

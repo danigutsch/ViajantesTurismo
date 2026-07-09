@@ -7,7 +7,7 @@ using ViajantesTurismo.Admin.Contracts;
 namespace ViajantesTurismo.Admin.UnitTests.ApiService;
 
 [Trait(SharedKernel.Testing.TestTraitNames.CategoryName, TestTraits.SecurityCategory)]
-public sealed class CustomerImportFileValidationTests
+public sealed class CustomerImportEndpointsTests
 {
     [Fact]
     public void Accepts_small_csv_uploads()
@@ -21,7 +21,7 @@ public sealed class CustomerImportFileValidationTests
         };
 
         // Act
-        var isValid = CustomerImportFileValidation.TryValidate(file, out var problem);
+        var isValid = CustomerImportEndpoints.TryValidateImportFile(file, out var problem);
 
         // Assert
         isValid.ShouldBeTrue();
@@ -40,7 +40,7 @@ public sealed class CustomerImportFileValidationTests
         };
 
         // Act
-        var isValid = CustomerImportFileValidation.TryValidate(file, out var problem);
+        var isValid = CustomerImportEndpoints.TryValidateImportFile(file, out var problem);
 
         // Assert
         isValid.ShouldBeFalse();
@@ -61,7 +61,7 @@ public sealed class CustomerImportFileValidationTests
         };
 
         // Act
-        var isValid = CustomerImportFileValidation.TryValidate(file, out var problem);
+        var isValid = CustomerImportEndpoints.TryValidateImportFile(file, out var problem);
 
         // Assert
         isValid.ShouldBeFalse();
@@ -73,14 +73,14 @@ public sealed class CustomerImportFileValidationTests
     {
         // Arrange
         using var stream = new MemoryStream([1]);
-        var file = new FormFile(stream, 0, CustomerImportFileValidation.MaxFileBytes + 1, "file", "customers.csv")
+        var file = new FormFile(stream, 0, CustomerImportEndpoints.MaxFileBytes + 1, "file", "customers.csv")
         {
             Headers = new HeaderDictionary(),
             ContentType = ContractConstants.CustomerImportTextCsvContentType
         };
 
         // Act
-        var isValid = CustomerImportFileValidation.TryValidate(file, out var problem);
+        var isValid = CustomerImportEndpoints.TryValidateImportFile(file, out var problem);
 
         // Assert
         isValid.ShouldBeFalse();
