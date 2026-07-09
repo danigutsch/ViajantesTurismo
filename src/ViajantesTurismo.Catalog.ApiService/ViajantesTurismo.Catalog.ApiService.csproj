@@ -5,8 +5,9 @@
         <EnableConfigurationBindingGenerator>true</EnableConfigurationBindingGenerator>
         <OpenApiGenerateDocuments>false</OpenApiGenerateDocuments>
         <OpenApiGenerateDocumentsOnBuild>false</OpenApiGenerateDocumentsOnBuild>
-        <OpenApiGenerateDocuments Condition="'$(RefreshCatalogOpenApiArtifacts)' == 'true'">true</OpenApiGenerateDocuments>
-        <OpenApiGenerateDocumentsOnBuild Condition="'$(RefreshCatalogOpenApiArtifacts)' == 'true'">true</OpenApiGenerateDocumentsOnBuild>
+        <GenerateCatalogOpenApiArtifacts Condition="'$(RefreshCatalogOpenApiArtifacts)' == 'true'">true</GenerateCatalogOpenApiArtifacts>
+        <OpenApiGenerateDocuments Condition="'$(GenerateCatalogOpenApiArtifacts)' == 'true'">true</OpenApiGenerateDocuments>
+        <OpenApiGenerateDocumentsOnBuild Condition="'$(GenerateCatalogOpenApiArtifacts)' == 'true'">true</OpenApiGenerateDocumentsOnBuild>
         <OpenApiDocumentsDirectory>$(MSBuildProjectDirectory)/../ViajantesTurismo.Catalog.Contracts/OpenApi/.generated</OpenApiDocumentsDirectory>
     </PropertyGroup>
 

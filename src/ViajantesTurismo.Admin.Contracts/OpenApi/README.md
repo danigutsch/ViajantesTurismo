@@ -12,6 +12,8 @@ Ownership rules:
 
 - Source metadata lives in `src/ViajantesTurismo.Admin.ApiService`.
 - The refresh build generates intermediate documents under `OpenApi/.generated/`.
+- CI drift checks can generate only intermediate documents with
+  `dotnet build src/ViajantesTurismo.Admin.ApiService/ViajantesTurismo.Admin.ApiService.csproj -p:GenerateAdminOpenApiArtifacts=true`.
 - Refresh the committed canonical artifacts intentionally with
   `dotnet build src/ViajantesTurismo.Admin.ApiService/ViajantesTurismo.Admin.ApiService.csproj -p:RefreshAdminOpenApiArtifacts=true`.
 - `OpenApi/.generated/` is intermediate output only.

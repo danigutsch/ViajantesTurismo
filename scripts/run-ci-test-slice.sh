@@ -3,7 +3,7 @@
 set -euo pipefail
 
 usage() {
-    cat >&2 <<'EOF'
+    cat >&2 << 'EOF'
 Usage: bash scripts/run-ci-test-slice.sh --slice-name <name> [--install-playwright] [--projects-file <path>] [<project> ...]
 EOF
 
@@ -75,7 +75,7 @@ run_with_log() {
         "$@" 2>&1 | tee "${log_file}"
         exit_code="${PIPESTATUS[0]}"
     else
-        "$@" >"${log_file}" 2>&1
+        "$@" > "${log_file}" 2>&1
         exit_code="$?"
     fi
 
@@ -119,6 +119,38 @@ build_projects() {
             return 1
         fi
     done
+
+    return 0
+}
+
+prepare_openapi_artifacts() {
+    local project_path
+    local prepare_admin=false
+    local prepare_catalog=false
+
+    for project_path in "$@"; do
+        case "${project_path}" in
+            tests/ViajantesTurismo.Admin.ContractTests/ViajantesTurismo.Admin.ContractTests.csproj)
+                prepare_admin=true
+                ;;
+            tests/ViajantesTurismo.Catalog.ContractTests/ViajantesTurismo.Catalog.ContractTests.csproj)
+                prepare_catalog=true
+                ;;
+            *) ;;
+        esac
+    done
+
+    if [[ "${prepare_admin}" == "true" ]]; then
+        dotnet build --no-restore \
+            src/ViajantesTurismo.Admin.ApiService/ViajantesTurismo.Admin.ApiService.csproj \
+            -p:GenerateAdminOpenApiArtifacts=true
+    fi
+
+    if [[ "${prepare_catalog}" == "true" ]]; then
+        dotnet build --no-restore \
+            src/ViajantesTurismo.Catalog.ApiService/ViajantesTurismo.Catalog.ApiService.csproj \
+            -p:GenerateCatalogOpenApiArtifacts=true
+    fi
 
     return 0
 }
@@ -414,9 +446,22 @@ main() {
         usage
     fi
 
+    local openapi_artifacts_required=false
+    local openapi_project_path
+    for openapi_project_path in "${projects[@]}"; do
+        case "${openapi_project_path}" in
+            tests/ViajantesTurismo.Admin.ContractTests/ViajantesTurismo.Admin.ContractTests.csproj | \
+                tests/ViajantesTurismo.Catalog.ContractTests/ViajantesTurismo.Catalog.ContractTests.csproj)
+                openapi_artifacts_required=true
+                ;;
+            *) ;;
+        esac
+    done
+
     slice_slug="$(printf '%s' "${slice_name}" | tr '[:upper:]' '[:lower:]' | tr ' ' '-')"
 
     build_log="TestResults/${slice_slug}-build.log"
+    openapi_artifacts_log="TestResults/${slice_slug}-openapi-artifacts.log"
     coverage_reports_file="TestResults/${slice_slug}-coverage-reports.txt"
     coverage_collection_log="TestResults/${slice_slug}-coverage-collection.log"
     playwright_install_log="TestResults/${slice_slug}-playwright-install.log"
@@ -442,6 +487,11 @@ main() {
 
     run_with_log "build_projects" "Building ${slice_name} test projects" "${build_log}" \
         build_projects "${projects[@]}"
+
+    if [[ "${openapi_artifacts_required}" == "true" ]]; then
+        run_with_log "prepare_openapi_artifacts" "Preparing ${slice_name} OpenAPI artifacts" "${openapi_artifacts_log}" \
+            prepare_openapi_artifacts "${projects[@]}"
+    fi
 
     if [[ "${install_playwright}" == "true" ]]; then
         local playwright_script
