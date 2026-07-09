@@ -2,7 +2,6 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Npgsql;
-using System.Reflection;
 using SharedKernel.EntityFrameworkCore;
 using SharedKernel.EventSourcing;
 using SharedKernel.EventSourcing.Npgsql;
@@ -33,7 +32,7 @@ public static class InfrastructureDependencyInjection
     {
         ArgumentNullException.ThrowIfNull(builder);
 
-        return AddCatalogInfrastructure(builder, addOutboxRelay: !IsBuildTimeOpenApiGeneration());
+        return AddCatalogInfrastructure(builder, addOutboxRelay: true);
     }
 
     /// <summary>
@@ -128,11 +127,6 @@ public static class InfrastructureDependencyInjection
         }
 
         return builder;
-    }
-
-    private static bool IsBuildTimeOpenApiGeneration()
-    {
-        return Assembly.GetEntryAssembly()?.GetName().Name == "dotnet-getdocument";
     }
 
     private static TApplicationBuilder AddCatalogIntegrationEventTransportContext<TApplicationBuilder>(this TApplicationBuilder builder)
