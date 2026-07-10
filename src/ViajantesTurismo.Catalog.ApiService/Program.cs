@@ -23,10 +23,10 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UsePublicContentLanguageQueryAlias();
-app.UseOutputCache();
 app.UseCors(CatalogSecurityBaseline.CorsPolicyName);
 
 app.UseRateLimiter();
+app.UseOutputCache();
 app.MapCatalogEndpoints();
 
 app.MapDefaultEndpoints();
