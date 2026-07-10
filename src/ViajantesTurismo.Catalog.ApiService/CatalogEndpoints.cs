@@ -29,7 +29,7 @@ internal static class CatalogEndpoints
         app.MapGet("/public/catalog/tours/{slug}", GetPublishedTour)
             .CacheOutput(policy => policy.Expire(CatalogHttpCache.PublicFreshness).Tag(CatalogHttpCache.PublicCatalogTag));
         app.MapGet("/public/catalog/content/{**key}", GetPublicContent)
-            .CacheOutput(policy => policy.Expire(CatalogHttpCache.PublicFreshness).SetVaryByQuery("culture").Tag(CatalogHttpCache.PublicContentTag));
+            .CacheOutput(policy => policy.Expire(CatalogHttpCache.PublicFreshness).SetVaryByQuery(CatalogHttpCache.CultureQueryKey).Tag(CatalogHttpCache.PublicContentTag));
         app.MapGet("/public/catalog/theme", GetPublicTheme)
             .CacheOutput(policy => policy.Expire(CatalogHttpCache.PublicFreshness).Tag(CatalogHttpCache.PublicThemeTag));
 

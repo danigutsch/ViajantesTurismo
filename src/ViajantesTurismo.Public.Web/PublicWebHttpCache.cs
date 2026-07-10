@@ -1,4 +1,4 @@
-using Microsoft.Net.Http.Headers;
+using SharedKernel.HttpCaching.AspNetCore;
 
 namespace ViajantesTurismo.Public.Web;
 
@@ -12,13 +12,7 @@ internal static class PublicWebHttpCache
 
     public const string LanguageQueryKey = "language";
 
-    private const string StaleWhileRevalidateDirective = "stale-while-revalidate";
-
-    private const string StaleWhileRevalidateSeconds = "300";
-
-    private const string PragmaNoCache = "no-cache";
-
-    private const string ExpiredAtUnixEpochHttpDate = "Thu, 01 Jan 1970 00:00:00 GMT";
+    private static readonly TimeSpan StaleWhileRevalidate = TimeSpan.FromSeconds(300);
 
     public static IServiceCollection AddPublicWebOutputCache(this IServiceCollection services)
     {
@@ -64,12 +58,7 @@ internal static class PublicWebHttpCache
 
     public static void SetNoStore(HttpContext httpContext)
     {
-        httpContext.Response.GetTypedHeaders().CacheControl = new CacheControlHeaderValue
-        {
-            NoStore = true
-        };
-        httpContext.Response.Headers[HeaderNames.Pragma] = PragmaNoCache;
-        httpContext.Response.Headers[HeaderNames.Expires] = ExpiredAtUnixEpochHttpDate;
+        HttpCacheHeaders.SetNoStore(httpContext);
     }
 
     public static void SetServiceUnavailableNoStore(HttpContext? httpContext)
@@ -85,12 +74,7 @@ internal static class PublicWebHttpCache
 
     private static void SetPublishedContent(HttpContext httpContext)
     {
-        httpContext.Response.GetTypedHeaders().CacheControl = new CacheControlHeaderValue
-        {
-            Public = true,
-            MaxAge = PublishedContentFreshness,
-            Extensions = { new NameValueHeaderValue(StaleWhileRevalidateDirective, StaleWhileRevalidateSeconds) }
-        };
+        HttpCacheHeaders.SetPublic(httpContext, PublishedContentFreshness, StaleWhileRevalidate);
     }
 
     private static bool IsErrorRequest(HttpContext httpContext)

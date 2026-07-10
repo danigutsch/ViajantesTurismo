@@ -209,6 +209,9 @@
           "SharedKernel.EventSourcing": "[0.1.0-alpha.0, )"
         }
       },
+      "sharedkernel.httpcaching.aspnetcore": {
+        "type": "Project"
+      },
       "sharedkernel.httpclients": {
         "type": "Project",
         "dependencies": {

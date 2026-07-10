@@ -681,6 +681,9 @@
           "SharedKernel.EventSourcing": "[0.1.0-alpha.0, )"
         }
       },
+      "sharedkernel.httpcaching.aspnetcore": {
+        "type": "Project"
+      },
       "sharedkernel.httpclients": {
         "type": "Project",
         "dependencies": {
@@ -796,6 +799,7 @@
         "dependencies": {
           "Microsoft.AspNetCore.OpenApi": "[10.0.9, )",
           "Microsoft.Extensions.ApiDescription.Server": "[10.0.9, )",
+          "SharedKernel.HttpCaching.AspNetCore": "[0.1.0-alpha.0, )",
           "SharedKernel.OpenApi": "[0.1.0-alpha.0, )",
           "ViajantesTurismo.Catalog.Application": "[0.1.0-alpha.0, )",
           "ViajantesTurismo.Catalog.Contracts": "[0.1.0-alpha.0, )",

@@ -1,4 +1,4 @@
-using Microsoft.Net.Http.Headers;
+using SharedKernel.HttpCaching.AspNetCore;
 
 namespace ViajantesTurismo.Catalog.ApiService;
 
@@ -18,15 +18,9 @@ internal static class CatalogHttpCache
 
     public const string PublicThemeArea = "public-theme";
 
-    private const string StaleWhileRevalidateDirective = "stale-while-revalidate";
+    private static readonly TimeSpan StaleWhileRevalidate = TimeSpan.FromSeconds(300);
 
-    private const string StaleWhileRevalidateSeconds = "300";
-
-    private const string PragmaNoCache = "no-cache";
-
-    private const string ExpiredAtUnixEpochHttpDate = "Thu, 01 Jan 1970 00:00:00 GMT";
-
-    private const string CultureQueryKey = "culture";
+    internal const string CultureQueryKey = "culture";
 
     private const string InvalidCultureCacheKey = "invalid";
 
@@ -51,22 +45,12 @@ internal static class CatalogHttpCache
 
     public static void SetPublicHeaders(HttpContext httpContext)
     {
-        httpContext.Response.GetTypedHeaders().CacheControl = new CacheControlHeaderValue
-        {
-            Public = true,
-            MaxAge = PublicFreshness,
-            Extensions = { new NameValueHeaderValue(StaleWhileRevalidateDirective, StaleWhileRevalidateSeconds) }
-        };
+        HttpCacheHeaders.SetPublic(httpContext, PublicFreshness, StaleWhileRevalidate);
     }
 
     public static void SetNoStore(HttpContext httpContext)
     {
-        httpContext.Response.GetTypedHeaders().CacheControl = new CacheControlHeaderValue
-        {
-            NoStore = true
-        };
-        httpContext.Response.Headers[HeaderNames.Pragma] = PragmaNoCache;
-        httpContext.Response.Headers[HeaderNames.Expires] = ExpiredAtUnixEpochHttpDate;
+        HttpCacheHeaders.SetNoStore(httpContext);
     }
 
     private static void NormalizeCultureQueryAlias(HttpContext httpContext)
