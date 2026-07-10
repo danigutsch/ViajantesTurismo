@@ -29,8 +29,10 @@ public sealed partial class Customer : IIdentified<Guid>
 public readonly partial record struct TourCode;
 ```
 
-Value-object generation currently supports explicitly annotated `readonly partial record struct` types.
-The generated shape is intentionally scalar-only and additive:
+Value-object generation supports explicitly annotated `readonly partial record struct` types. Assembly
+defaults can enable optional parsing, JSON, and EF Core generation for those annotated value objects,
+but the value object itself still needs `UnderlyingType` on the type. The generated shape is
+intentionally scalar-only and additive:
 
 - `Value` exposes the underlying scalar.
 - `Create` and `TryCreate` validate before construction.
@@ -43,12 +45,16 @@ The generated shape is intentionally scalar-only and additive:
 Supported underlying scalar types are `string`, `Guid`, `int`, `decimal`, and `DateOnly`.
 
 ```csharp
-[assembly: GenerateModelSupportDefaults(Identity = true)]
+[assembly: GenerateModelSupportDefaults(
+    Identity = true,
+    ValueObjectParsing = true,
+    ValueObjectJson = true,
+    ValueObjectEfCore = true)]
 ```
 
-Per-type attributes override assembly defaults. Defaults stay conservative: no type receives
-generated code unless it opts in directly or an assembly explicitly opts in and the type has a marker
-interface or attribute that makes the target unambiguous.
+Per-type attributes override assembly defaults. Defaults stay conservative: identity support applies
+only to `IIdentified<TId>` models, and value-object defaults apply only to types already annotated
+with `GenerateValueObjectAttribute` and an explicit `UnderlyingType`.
 
 ### Option groups
 
@@ -71,9 +77,10 @@ explicitly enabled or enabled only when the dependency exists and assembly defau
 writes the scalar value directly, avoiding reflection-heavy paths. API-version value objects write the
 route segment form, such as `v1`, while still accepting numeric JSON values for tolerant reads.
 
-`EfCore = true` emits a nested `EfCoreValueConverter` only when EF Core value-converter types are
-available to the consuming compilation. The converter maps the generated value object to its scalar
-`Value` and reconstructs it through `Create`, so validation remains centralized.
+`EfCore = true` emits a nested `EfCoreValueConverter` and a top-level EF Core property-builder
+extension only when EF Core value-converter and property-builder types are available to the consuming
+compilation. The converter maps the generated value object to its scalar `Value` and reconstructs it
+through `Create`, so validation remains centralized.
 
 ### Specialized value-object templates
 
