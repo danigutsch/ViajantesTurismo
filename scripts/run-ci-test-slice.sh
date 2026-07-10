@@ -111,16 +111,46 @@ run_with_log() {
     return "${exit_code}"
 }
 
-build_projects() {
-    local project_path
-
-    for project_path in "$@"; do
-        if ! dotnet build --no-restore "${project_path}"; then
-            return 1
+get_test_project_parallelism() {
+    if [[ -n "${CI_TEST_PROJECT_PARALLELISM:-}" ]]; then
+        if [[ "${CI_TEST_PROJECT_PARALLELISM}" =~ ^[1-9][0-9]*$ ]]; then
+            printf '%s\n' "${CI_TEST_PROJECT_PARALLELISM}"
+            return 0
         fi
-    done
 
-    return 0
+        echo "CI_TEST_PROJECT_PARALLELISM must be a positive integer." >&2
+        return 1
+    fi
+
+    if command -v nproc > /dev/null 2>&1; then
+        nproc
+        return 0
+    fi
+
+    getconf _NPROCESSORS_ONLN 2> /dev/null || printf '2\n'
+}
+
+build_projects() {
+    local max_parallel
+    max_parallel="$(get_test_project_parallelism)"
+
+    if [[ -z "${max_parallel}" ]]; then
+        return 1
+    fi
+
+    local solution_name="${slice_slug}-build"
+    local solution_file="TestResults/${solution_name}.slnx"
+
+    if ! dotnet new sln --name "${solution_name}" --output TestResults --force; then
+        return 1
+    fi
+
+    if ! dotnet sln "${solution_file}" add "$@"; then
+        return 1
+    fi
+
+    echo "Building $# test projects as one MSBuild graph with up to ${max_parallel} node(s)."
+    dotnet build "${solution_file}" --no-restore "-maxcpucount:${max_parallel}"
 }
 
 prepare_openapi_artifacts() {
