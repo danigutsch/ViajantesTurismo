@@ -1,0 +1,21 @@
+<Project Sdk="Microsoft.NET.Sdk">
+    <PropertyGroup>
+        <DefaultItemExcludes>$(DefaultItemExcludes);bin/**;obj/**</DefaultItemExcludes>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <Compile Remove="bin/**/*;obj/**/*;bin\**\*;obj\**\*;$(MSBuildProjectDirectory)/bin/**/*.cs;$(MSBuildProjectDirectory)/obj/**/*.cs;$(MSBuildProjectDirectory)\bin\**\*.cs;$(MSBuildProjectDirectory)\obj\**\*.cs" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <Using Remove="ViajantesTurismo.Admin.Contracts.Application" />
+        <None Include="OpenApi/**/*.openapi.json" Pack="true" PackagePath="OpenApi/" />
+        <None Include="OpenApi/README.md" Pack="true" PackagePath="OpenApi/" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" />
+        <ProjectReference Include="..\SharedKernel\SharedKernel.HttpClients\SharedKernel.HttpClients.csproj" />
+        <ProjectReference Include="..\ViajantesTurismo.Admin.Contracts.Application\ViajantesTurismo.Admin.Contracts.Application.csproj" />
+    </ItemGroup>
+</Project>

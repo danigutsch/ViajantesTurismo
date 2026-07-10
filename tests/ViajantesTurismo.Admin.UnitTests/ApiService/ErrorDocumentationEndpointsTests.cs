@@ -2,7 +2,7 @@ using System.Reflection;
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
 using ViajantesTurismo.Admin.ApiService;
-using ViajantesTurismo.Admin.Contracts;
+using ViajantesTurismo.Admin.Contracts.Http;
 
 namespace ViajantesTurismo.Admin.UnitTests.ApiService;
 

@@ -14,11 +14,12 @@ server-boundary dependencies.
 
 ## Decision
 
-Shared typed API clients belong in the owning contract project with their `I*ApiClient` interface,
-DTOs, response outcome DTOs, and response parsing behavior.
+Shared typed API clients belong in the owning `.Contracts.Http` project with their `I*ApiClient`
+interface, response outcome DTOs, and response parsing behavior. DTOs that are not HTTP-client-specific
+belong in `.Contracts.Application`.
 
-- Admin API clients live in `ViajantesTurismo.Admin.Contracts`.
-- Catalog API clients live in `ViajantesTurismo.Catalog.Contracts`.
+- Admin API clients live in `ViajantesTurismo.Admin.Contracts.Http`.
+- Catalog API clients live in `ViajantesTurismo.Catalog.Contracts.Http`.
 - Apps configure base addresses and consume the contract-owned interfaces.
 - UI fallback behavior remains app-local.
 - Response outcome DTOs model caller-visible branches only when callers need stable branching without raw HTTP parsing.

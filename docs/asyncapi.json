@@ -108,7 +108,7 @@
             "catalog"
           ],
           "channel": "admin.tour.created",
-          "sourceType": "ViajantesTurismo.Admin.Contracts.Tours.AdminTourCreatedIntegrationEvent",
+          "sourceType": "ViajantesTurismo.Admin.Contracts.IntegrationEvents.Tours.AdminTourCreatedIntegrationEvent",
           "domainEventMapping": "ViajantesTurismo.Admin.Application.Tours.TourIntegrationEventMappings.MapTourCreated",
           "outboxOwner": "AdminWriteDbContext",
           "inboxOwner": "CatalogIntegrationTransportDbContext",
@@ -147,7 +147,7 @@
             "catalog"
           ],
           "channel": "catalog.media-image.original-stored",
-          "sourceType": "ViajantesTurismo.Catalog.Contracts.Media.MediaImageOriginalStoredIntegrationEvent",
+          "sourceType": "ViajantesTurismo.Catalog.Contracts.IntegrationEvents.Media.MediaImageOriginalStoredIntegrationEvent",
           "outboxOwner": "CatalogDbContext",
           "inboxOwner": "CatalogIntegrationTransportDbContext",
           "handler": "ViajantesTurismo.Catalog.Application.Media.MediaImageOriginalStoredIntegrationHandler"

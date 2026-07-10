@@ -11,16 +11,24 @@ integration events; Catalog consumes them and builds public read models.
 ```mermaid
 flowchart LR
     admin[Admin bounded context]
-    adminContracts[Admin.Contracts]
+    adminAppContracts[Admin application contracts]
+    adminHttpContracts[Admin HTTP contracts]
+    adminEventContracts[Admin integration-event contracts]
     integration[Integration events]
     catalog[Catalog bounded context]
-    catalogContracts[Catalog.Contracts]
+    catalogAppContracts[Catalog application contracts]
+    catalogHttpContracts[Catalog HTTP contracts]
+    catalogEventContracts[Catalog integration-event contracts]
     publicRead[Public tour presentation]
 
-    admin --> adminContracts
-    admin --> integration
+    admin --> adminAppContracts
+    admin --> adminHttpContracts
+    admin --> adminEventContracts
+    adminEventContracts --> integration
     integration --> catalog
-    catalog --> catalogContracts
+    catalog --> catalogAppContracts
+    catalog --> catalogHttpContracts
+    catalog --> catalogEventContracts
     catalog --> publicRead
 ```
 
@@ -49,7 +57,8 @@ flowchart TB
     ViajantesTurismo_Admin_ApiService[ViajantesTurismo.Admin.ApiService] --> SharedKernel_Results[SharedKernel.Results]
     ViajantesTurismo_Admin_ApiService[ViajantesTurismo.Admin.ApiService] --> SharedKernel_Results_AspNet[SharedKernel.Results.AspNet]
     ViajantesTurismo_Admin_ApiService[ViajantesTurismo.Admin.ApiService] --> ViajantesTurismo_Admin_Application[ViajantesTurismo.Admin.Application]
-    ViajantesTurismo_Admin_ApiService[ViajantesTurismo.Admin.ApiService] --> ViajantesTurismo_Admin_Contracts[ViajantesTurismo.Admin.Contracts]
+    ViajantesTurismo_Admin_ApiService[ViajantesTurismo.Admin.ApiService] --> ViajantesTurismo_Admin_Contracts_Application[ViajantesTurismo.Admin.Contracts.Application]
+    ViajantesTurismo_Admin_ApiService[ViajantesTurismo.Admin.ApiService] --> ViajantesTurismo_Admin_Contracts_Http[ViajantesTurismo.Admin.Contracts.Http]
     ViajantesTurismo_Admin_ApiService[ViajantesTurismo.Admin.ApiService] --> ViajantesTurismo_Admin_Infrastructure[ViajantesTurismo.Admin.Infrastructure]
     ViajantesTurismo_Admin_ApiService[ViajantesTurismo.Admin.ApiService] --> ViajantesTurismo_ServiceDefaults[ViajantesTurismo.ServiceDefaults]
     ViajantesTurismo_Admin_Application[ViajantesTurismo.Admin.Application] --> SharedKernel_BuildingBlocks[SharedKernel.BuildingBlocks]
@@ -60,17 +69,18 @@ flowchart TB
     ViajantesTurismo_Admin_Application[ViajantesTurismo.Admin.Application] --> SharedKernel_Messaging_IntegrationEvents_SourceGenerator[SharedKernel.Messaging.IntegrationEvents.SourceGenerator]
     ViajantesTurismo_Admin_Application[ViajantesTurismo.Admin.Application] --> SharedKernel_Results[SharedKernel.Results]
     ViajantesTurismo_Admin_Application[ViajantesTurismo.Admin.Application] --> SharedKernel_Results_SourceGenerator[SharedKernel.Results.SourceGenerator]
+    ViajantesTurismo_Admin_Application[ViajantesTurismo.Admin.Application] --> ViajantesTurismo_Admin_Contracts_Application[ViajantesTurismo.Admin.Contracts.Application]
+    ViajantesTurismo_Admin_Application[ViajantesTurismo.Admin.Application] --> ViajantesTurismo_Admin_Contracts_IntegrationEvents[ViajantesTurismo.Admin.Contracts.IntegrationEvents]
     ViajantesTurismo_Admin_Application[ViajantesTurismo.Admin.Application] --> ViajantesTurismo_Admin_Domain[ViajantesTurismo.Admin.Domain]
-    ViajantesTurismo_Admin_Contracts[ViajantesTurismo.Admin.Contracts] --> SharedKernel_HttpClients[SharedKernel.HttpClients]
-    ViajantesTurismo_Admin_Contracts[ViajantesTurismo.Admin.Contracts] --> SharedKernel_Mediator_Abstractions[SharedKernel.Mediator.Abstractions]
-    ViajantesTurismo_Admin_Contracts[ViajantesTurismo.Admin.Contracts] --> SharedKernel_Messaging_IntegrationEvents[SharedKernel.Messaging.IntegrationEvents]
+    ViajantesTurismo_Admin_Contracts_Http[ViajantesTurismo.Admin.Contracts.Http] --> SharedKernel_HttpClients[SharedKernel.HttpClients]
+    ViajantesTurismo_Admin_Contracts_Http[ViajantesTurismo.Admin.Contracts.Http] --> ViajantesTurismo_Admin_Contracts_Application[ViajantesTurismo.Admin.Contracts.Application]
+    ViajantesTurismo_Admin_Contracts_IntegrationEvents[ViajantesTurismo.Admin.Contracts.IntegrationEvents] --> SharedKernel_Messaging_IntegrationEvents[SharedKernel.Messaging.IntegrationEvents]
     ViajantesTurismo_Admin_Domain[ViajantesTurismo.Admin.Domain] --> SharedKernel_BuildingBlocks[SharedKernel.BuildingBlocks]
     ViajantesTurismo_Admin_Domain[ViajantesTurismo.Admin.Domain] --> SharedKernel_Domain[SharedKernel.Domain]
     ViajantesTurismo_Admin_Domain[ViajantesTurismo.Admin.Domain] --> SharedKernel_Domain_SourceGenerator[SharedKernel.Domain.SourceGenerator]
     ViajantesTurismo_Admin_Domain[ViajantesTurismo.Admin.Domain] --> SharedKernel_InputNormalization[SharedKernel.InputNormalization]
     ViajantesTurismo_Admin_Domain[ViajantesTurismo.Admin.Domain] --> SharedKernel_Results[SharedKernel.Results]
     ViajantesTurismo_Admin_Domain[ViajantesTurismo.Admin.Domain] --> SharedKernel_Results_SourceGenerator[SharedKernel.Results.SourceGenerator]
-    ViajantesTurismo_Admin_Domain[ViajantesTurismo.Admin.Domain] --> ViajantesTurismo_Admin_Contracts[ViajantesTurismo.Admin.Contracts]
     ViajantesTurismo_Admin_Infrastructure[ViajantesTurismo.Admin.Infrastructure] --> SharedKernel_DomainEvents[SharedKernel.DomainEvents]
     ViajantesTurismo_Admin_Infrastructure[ViajantesTurismo.Admin.Infrastructure] --> SharedKernel_DomainEvents_EntityFrameworkCore[SharedKernel.DomainEvents.EntityFrameworkCore]
     ViajantesTurismo_Admin_Infrastructure[ViajantesTurismo.Admin.Infrastructure] --> SharedKernel_EntityFrameworkCore[SharedKernel.EntityFrameworkCore]
@@ -93,7 +103,8 @@ flowchart TB
     ViajantesTurismo_Catalog_ApiService[ViajantesTurismo.Catalog.ApiService] --> SharedKernel_HttpCaching_AspNetCore[SharedKernel.HttpCaching.AspNetCore]
     ViajantesTurismo_Catalog_ApiService[ViajantesTurismo.Catalog.ApiService] --> SharedKernel_OpenApi[SharedKernel.OpenApi]
     ViajantesTurismo_Catalog_ApiService[ViajantesTurismo.Catalog.ApiService] --> ViajantesTurismo_Catalog_Application[ViajantesTurismo.Catalog.Application]
-    ViajantesTurismo_Catalog_ApiService[ViajantesTurismo.Catalog.ApiService] --> ViajantesTurismo_Catalog_Contracts[ViajantesTurismo.Catalog.Contracts]
+    ViajantesTurismo_Catalog_ApiService[ViajantesTurismo.Catalog.ApiService] --> ViajantesTurismo_Catalog_Contracts_Application[ViajantesTurismo.Catalog.Contracts.Application]
+    ViajantesTurismo_Catalog_ApiService[ViajantesTurismo.Catalog.ApiService] --> ViajantesTurismo_Catalog_Contracts_Http[ViajantesTurismo.Catalog.Contracts.Http]
     ViajantesTurismo_Catalog_ApiService[ViajantesTurismo.Catalog.ApiService] --> ViajantesTurismo_Catalog_Infrastructure[ViajantesTurismo.Catalog.Infrastructure]
     ViajantesTurismo_Catalog_ApiService[ViajantesTurismo.Catalog.ApiService] --> ViajantesTurismo_ServiceDefaults[ViajantesTurismo.ServiceDefaults]
     ViajantesTurismo_Catalog_Application[ViajantesTurismo.Catalog.Application] --> SharedKernel_AI[SharedKernel.AI]
@@ -106,21 +117,23 @@ flowchart TB
     ViajantesTurismo_Catalog_Application[ViajantesTurismo.Catalog.Application] --> SharedKernel_Messaging[SharedKernel.Messaging]
     ViajantesTurismo_Catalog_Application[ViajantesTurismo.Catalog.Application] --> SharedKernel_Messaging_IntegrationEvents[SharedKernel.Messaging.IntegrationEvents]
     ViajantesTurismo_Catalog_Application[ViajantesTurismo.Catalog.Application] --> SharedKernel_Results[SharedKernel.Results]
-    ViajantesTurismo_Catalog_Application[ViajantesTurismo.Catalog.Application] --> ViajantesTurismo_Admin_Contracts[ViajantesTurismo.Admin.Contracts]
-    ViajantesTurismo_Catalog_Application[ViajantesTurismo.Catalog.Application] --> ViajantesTurismo_Catalog_Contracts[ViajantesTurismo.Catalog.Contracts]
+    ViajantesTurismo_Catalog_Application[ViajantesTurismo.Catalog.Application] --> ViajantesTurismo_Admin_Contracts_IntegrationEvents[ViajantesTurismo.Admin.Contracts.IntegrationEvents]
+    ViajantesTurismo_Catalog_Application[ViajantesTurismo.Catalog.Application] --> ViajantesTurismo_Catalog_Contracts_Application[ViajantesTurismo.Catalog.Contracts.Application]
+    ViajantesTurismo_Catalog_Application[ViajantesTurismo.Catalog.Application] --> ViajantesTurismo_Catalog_Contracts_IntegrationEvents[ViajantesTurismo.Catalog.Contracts.IntegrationEvents]
     ViajantesTurismo_Catalog_Application[ViajantesTurismo.Catalog.Application] --> ViajantesTurismo_Catalog_Domain[ViajantesTurismo.Catalog.Domain]
-    ViajantesTurismo_Catalog_Contracts[ViajantesTurismo.Catalog.Contracts] --> SharedKernel_HttpClients[SharedKernel.HttpClients]
-    ViajantesTurismo_Catalog_Contracts[ViajantesTurismo.Catalog.Contracts] --> SharedKernel_Messaging_IntegrationEvents[SharedKernel.Messaging.IntegrationEvents]
+    ViajantesTurismo_Catalog_Contracts_Http[ViajantesTurismo.Catalog.Contracts.Http] --> SharedKernel_HttpClients[SharedKernel.HttpClients]
+    ViajantesTurismo_Catalog_Contracts_Http[ViajantesTurismo.Catalog.Contracts.Http] --> ViajantesTurismo_Catalog_Contracts_Application[ViajantesTurismo.Catalog.Contracts.Application]
+    ViajantesTurismo_Catalog_Contracts_IntegrationEvents[ViajantesTurismo.Catalog.Contracts.IntegrationEvents] --> SharedKernel_Messaging_IntegrationEvents[SharedKernel.Messaging.IntegrationEvents]
     ViajantesTurismo_Catalog_Domain[ViajantesTurismo.Catalog.Domain] --> SharedKernel_BuildingBlocks[SharedKernel.BuildingBlocks]
     ViajantesTurismo_Catalog_Domain[ViajantesTurismo.Catalog.Domain] --> SharedKernel_Domain[SharedKernel.Domain]
     ViajantesTurismo_Catalog_Domain[ViajantesTurismo.Catalog.Domain] --> SharedKernel_Domain_SourceGenerator[SharedKernel.Domain.SourceGenerator]
     ViajantesTurismo_Catalog_Domain[ViajantesTurismo.Catalog.Domain] --> SharedKernel_EventSourcing[SharedKernel.EventSourcing]
     ViajantesTurismo_Catalog_Domain[ViajantesTurismo.Catalog.Domain] --> SharedKernel_InputNormalization[SharedKernel.InputNormalization]
     ViajantesTurismo_Catalog_Domain[ViajantesTurismo.Catalog.Domain] --> SharedKernel_Results[SharedKernel.Results]
-    ViajantesTurismo_Catalog_Domain[ViajantesTurismo.Catalog.Domain] --> ViajantesTurismo_Catalog_Contracts[ViajantesTurismo.Catalog.Contracts]
     ViajantesTurismo_Catalog_Infrastructure[ViajantesTurismo.Catalog.Infrastructure] --> SharedKernel_AI[SharedKernel.AI]
     ViajantesTurismo_Catalog_Infrastructure[ViajantesTurismo.Catalog.Infrastructure] --> SharedKernel_EntityFrameworkCore[SharedKernel.EntityFrameworkCore]
     ViajantesTurismo_Catalog_Infrastructure[ViajantesTurismo.Catalog.Infrastructure] --> SharedKernel_EventSourcing_Npgsql[SharedKernel.EventSourcing.Npgsql]
+    ViajantesTurismo_Catalog_Infrastructure[ViajantesTurismo.Catalog.Infrastructure] --> SharedKernel_HttpClients[SharedKernel.HttpClients]
     ViajantesTurismo_Catalog_Infrastructure[ViajantesTurismo.Catalog.Infrastructure] --> SharedKernel_Idempotency[SharedKernel.Idempotency]
     ViajantesTurismo_Catalog_Infrastructure[ViajantesTurismo.Catalog.Infrastructure] --> SharedKernel_InputNormalization[SharedKernel.InputNormalization]
     ViajantesTurismo_Catalog_Infrastructure[ViajantesTurismo.Catalog.Infrastructure] --> SharedKernel_Messaging_IntegrationEvents_EntityFrameworkCore[SharedKernel.Messaging.IntegrationEvents.EntityFrameworkCore]
@@ -132,8 +145,10 @@ flowchart TB
     ViajantesTurismo_IntegrationEventWorker[ViajantesTurismo.IntegrationEventWorker] --> ViajantesTurismo_ServiceDefaults[ViajantesTurismo.ServiceDefaults]
     ViajantesTurismo_Management_Web[ViajantesTurismo.Management.Web] --> SharedKernel_AspNetCore[SharedKernel.AspNetCore]
     ViajantesTurismo_Management_Web[ViajantesTurismo.Management.Web] --> SharedKernel_HttpClients[SharedKernel.HttpClients]
-    ViajantesTurismo_Management_Web[ViajantesTurismo.Management.Web] --> ViajantesTurismo_Admin_Contracts[ViajantesTurismo.Admin.Contracts]
-    ViajantesTurismo_Management_Web[ViajantesTurismo.Management.Web] --> ViajantesTurismo_Catalog_Contracts[ViajantesTurismo.Catalog.Contracts]
+    ViajantesTurismo_Management_Web[ViajantesTurismo.Management.Web] --> ViajantesTurismo_Admin_Contracts_Application[ViajantesTurismo.Admin.Contracts.Application]
+    ViajantesTurismo_Management_Web[ViajantesTurismo.Management.Web] --> ViajantesTurismo_Admin_Contracts_Http[ViajantesTurismo.Admin.Contracts.Http]
+    ViajantesTurismo_Management_Web[ViajantesTurismo.Management.Web] --> ViajantesTurismo_Catalog_Contracts_Application[ViajantesTurismo.Catalog.Contracts.Application]
+    ViajantesTurismo_Management_Web[ViajantesTurismo.Management.Web] --> ViajantesTurismo_Catalog_Contracts_Http[ViajantesTurismo.Catalog.Contracts.Http]
     ViajantesTurismo_Management_Web[ViajantesTurismo.Management.Web] --> ViajantesTurismo_Resources[ViajantesTurismo.Resources]
     ViajantesTurismo_Management_Web[ViajantesTurismo.Management.Web] --> ViajantesTurismo_ServiceDefaults[ViajantesTurismo.ServiceDefaults]
     ViajantesTurismo_MigrationService[ViajantesTurismo.MigrationService] --> SharedKernel_EventSourcing_Npgsql[SharedKernel.EventSourcing.Npgsql]
@@ -144,7 +159,8 @@ flowchart TB
     ViajantesTurismo_Public_Web[ViajantesTurismo.Public.Web] --> SharedKernel_AspNetCore[SharedKernel.AspNetCore]
     ViajantesTurismo_Public_Web[ViajantesTurismo.Public.Web] --> SharedKernel_HttpCaching_AspNetCore[SharedKernel.HttpCaching.AspNetCore]
     ViajantesTurismo_Public_Web[ViajantesTurismo.Public.Web] --> SharedKernel_HttpClients[SharedKernel.HttpClients]
-    ViajantesTurismo_Public_Web[ViajantesTurismo.Public.Web] --> ViajantesTurismo_Catalog_Contracts[ViajantesTurismo.Catalog.Contracts]
+    ViajantesTurismo_Public_Web[ViajantesTurismo.Public.Web] --> ViajantesTurismo_Catalog_Contracts_Application[ViajantesTurismo.Catalog.Contracts.Application]
+    ViajantesTurismo_Public_Web[ViajantesTurismo.Public.Web] --> ViajantesTurismo_Catalog_Contracts_Http[ViajantesTurismo.Catalog.Contracts.Http]
     ViajantesTurismo_Public_Web[ViajantesTurismo.Public.Web] --> ViajantesTurismo_Resources[ViajantesTurismo.Resources]
     ViajantesTurismo_Public_Web[ViajantesTurismo.Public.Web] --> ViajantesTurismo_ServiceDefaults[ViajantesTurismo.ServiceDefaults]
     ViajantesTurismo_ServiceDefaults[ViajantesTurismo.ServiceDefaults] --> SharedKernel_Mediator_Abstractions[SharedKernel.Mediator.Abstractions]
@@ -162,29 +178,50 @@ flowchart LR
     infra[Infrastructure]
     app[Application]
     domain[Domain]
-    contracts[Contracts]
+    appContracts[Application contracts]
+    httpContracts[HTTP contracts]
+    eventContracts[Integration-event contracts]
     shared[SharedKernel]
 
-    ui --> contracts
+    ui --> appContracts
+    ui --> httpContracts
     api --> app
     api --> infra
-    api --> contracts
+    api --> appContracts
+    api --> httpContracts
     infra --> app
     infra --> domain
     app --> domain
-    domain --> contracts
+    app --> appContracts
+    app --> eventContracts
     domain --> shared
     app --> shared
-    contracts --> shared
+    httpContracts --> appContracts
+    appContracts --> shared
+    eventContracts --> shared
 ```
 
 Forbidden directions:
 
-- Domain must not reference API, infrastructure, web, AppHost, or migration projects.
-- Application must not depend on API, web, AppHost, or migration projects.
+- Domain must not reference application, API, infrastructure, web, AppHost, migration, or contract
+  projects. Domain projects must not reference any `ViajantesTurismo.*.Contracts.*` project.
+- Product contract projects must use `.Contracts.Application`, `.Contracts.Http`, or `.Contracts.IntegrationEvents`.
+- `.Contracts.Application` owns use-case DTOs and validation shape. It must not reference product
+  projects.
+- `.Contracts.Http` owns typed HTTP clients and OpenAPI artifacts. It may reference only the
+  same-context `.Contracts.Application` project among product projects.
+- `.Contracts.IntegrationEvents` owns asynchronous cross-context event contracts. It must not reference
+  product projects.
+- Application must not depend on infrastructure, API, web, AppHost, or migration projects. Application
+  may reference same-context `.Contracts.Application` and any `.Contracts.IntegrationEvents` project.
 - Infrastructure must not depend on API or web projects.
-- Web frontends must not reference domain or infrastructure projects directly.
-- Catalog must not call Admin domain or infrastructure code directly.
+- API services may reference same-context `.Contracts.Application` and `.Contracts.Http` projects.
+- Web frontends may reference `.Contracts.Application` and `.Contracts.Http` projects, but must not
+  reference domain, application, infrastructure, API implementation, or integration-event contract
+  projects directly.
+- Catalog must not call Admin application, domain, infrastructure, API, HTTP contract, or application
+  contract code directly. Cross-context Catalog-to-Admin references are limited to
+  `ViajantesTurismo.Admin.Contracts.IntegrationEvents`.
 - SharedKernel modules must not depend on bounded-context projects.
 
 ## Current SharedKernel module map
@@ -218,7 +255,6 @@ flowchart TB
     SharedKernel_Messaging_IntegrationEvents_EntityFrameworkCore[SharedKernel.Messaging.IntegrationEvents.EntityFrameworkCore] --> SharedKernel_Idempotency_EntityFrameworkCore[SharedKernel.Idempotency.EntityFrameworkCore]
     SharedKernel_Messaging_IntegrationEvents_EntityFrameworkCore[SharedKernel.Messaging.IntegrationEvents.EntityFrameworkCore] --> SharedKernel_Messaging[SharedKernel.Messaging]
     SharedKernel_Messaging_IntegrationEvents_EntityFrameworkCore[SharedKernel.Messaging.IntegrationEvents.EntityFrameworkCore] --> SharedKernel_Messaging_IntegrationEvents[SharedKernel.Messaging.IntegrationEvents]
-    SharedKernel_Messaging_IntegrationEvents_EntityFrameworkCore[SharedKernel.Messaging.IntegrationEvents.EntityFrameworkCore] --> SharedKernel_Messaging_IntegrationEvents_CloudEvents[SharedKernel.Messaging.IntegrationEvents.CloudEvents]
     SharedKernel_Messaging_IntegrationEvents_EntityFrameworkCore[SharedKernel.Messaging.IntegrationEvents.EntityFrameworkCore] --> SharedKernel_Scheduling[SharedKernel.Scheduling]
     SharedKernel_OpenApi[SharedKernel.OpenApi] --> SharedKernel_ApiVersioning[SharedKernel.ApiVersioning]
     SharedKernel_Results[SharedKernel.Results] --> SharedKernel_Results_SourceGenerator[SharedKernel.Results.SourceGenerator]
@@ -244,14 +280,21 @@ Module rules:
 
 Module naming and dependency rules:
 
-- `SharedKernel.<Capability>` is the primary module and core surface for that capability.
-- Do not create `SharedKernel.<Capability>.Core` packages. Add a `Core` package only after an ADR records
-  why the primary module cannot own the core surface.
+- `SharedKernel.<Capability>` is the primary module and core surface for that capability. Capability
+  families may be multi-segment, such as `SharedKernel.Messaging.IntegrationEvents`; the primary module
+  owns shared runtime and core logic for that full family name.
+- Do not create `SharedKernel.<Capability>.Core` packages. Add a `Core` package only after an ADR or
+  compatibility constraint records why the primary module cannot own the core surface.
 - `SharedKernel.<Capability>.<Submodule>` names an optional surface with an independent reason to exist
   now, such as a provider adapter, ASP.NET adapter, CloudEvents adapter, Roslyn component, source
-  generator, or explicit abstraction split.
-- Primary modules must not runtime-reference descendant optional submodules. Optional submodules may
-  reference the primary module, a nearer parent module, or an explicit `Abstractions` module.
+  generator, or explicit abstraction split. Optional/provider/tool suffixes are not allowed to point
+  sideways within the same family.
+- Primary modules must not runtime-reference descendant optional submodules through project or package
+  references. Optional submodules may reference the same-family primary module, a nearer parent module,
+  or an explicit `Abstractions` module.
+- Cross-family SharedKernel references may target stable reusable primary modules, abstraction modules,
+  or explicitly lower-level provider primitives. Do not use arbitrary sideways coupling to borrow
+  runtime details from another family.
 - Non-runtime analyzer, source-generator, code-fix, and packaging references may point from a primary
   package to a tool package only when `ReferenceOutputAssembly="false"` or an analyzer/package output
   item type keeps the tool out of the runtime dependency graph.
@@ -265,8 +308,14 @@ Module naming and dependency rules:
 
 Implemented architecture guardrails:
 
-- SharedKernel project names fail when `Core` is used as a package-name segment.
-- SharedKernel primary modules fail when they runtime-reference descendant optional submodules.
+- SharedKernel project names fail when `Core` is used as a project-name segment.
+- SharedKernel primary modules fail when they runtime-reference descendant optional submodules through
+  project or package references.
+- SharedKernel optional submodules fail when they runtime-reference same-family optional siblings through
+  project or package references.
+- Project references fail when they violate the documented layer directions.
+- Domain projects fail when they reference any product contract project.
+- Product contract projects fail when they use the unsplit `ViajantesTurismo.*.Contracts` project shape.
 - `Abstractions` projects fail when they reference same-family implementations, outward DDD layers,
   implementation/adapters, or adapter packages.
 - Domain/application/contract projects fail when they reference adapter packages.

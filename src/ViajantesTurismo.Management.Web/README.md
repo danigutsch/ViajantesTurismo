@@ -143,7 +143,10 @@ Use this checklist when reviewing `Management.Web` changes:
 ## Dependencies
 
 - **ViajantesTurismo.Admin.ApiService**: Backend API
-- **ViajantesTurismo.Admin.Contracts**: Shared DTOs and contracts
+- **ViajantesTurismo.Admin.Contracts.Application**: Shared Admin DTOs
+- **ViajantesTurismo.Admin.Contracts.Http**: Admin typed HTTP clients
+- **ViajantesTurismo.Catalog.Contracts.Application**: Shared Catalog DTOs
+- **ViajantesTurismo.Catalog.Contracts.Http**: Catalog typed HTTP clients
 - **ViajantesTurismo.Resources**: Shared resource names
 - **ViajantesTurismo.ServiceDefaults**: Service discovery and defaults
 - **Redis**: Output caching

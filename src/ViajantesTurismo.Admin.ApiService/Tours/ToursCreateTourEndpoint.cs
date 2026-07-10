@@ -2,7 +2,7 @@ using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
 using ViajantesTurismo.Admin.Application;
 using ViajantesTurismo.Admin.Application.Tours.CreateTour;
-using ViajantesTurismo.Admin.Contracts;
+using ViajantesTurismo.Admin.Contracts.Application;
 using SharedKernel.Results;
 using ViajantesTurismo.Admin.Domain.Tours;
 

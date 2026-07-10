@@ -1,6 +1,6 @@
 using TestTraits = ViajantesTurismo.Catalog.ApiServiceTests.Infrastructure.TestTraits;
 using ViajantesTurismo.Catalog.Application.Tours;
-using ViajantesTurismo.Catalog.Contracts;
+using ViajantesTurismo.Catalog.Contracts.Application;
 
 namespace ViajantesTurismo.Catalog.ApiServiceTests;
 

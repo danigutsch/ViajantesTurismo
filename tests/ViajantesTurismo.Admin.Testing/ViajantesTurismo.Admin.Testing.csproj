@@ -1,8 +1,14 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
     <ItemGroup>
         <ProjectReference Include="..\..\src\ViajantesTurismo.Admin.Application\ViajantesTurismo.Admin.Application.csproj"/>
-        <ProjectReference Include="..\..\src\ViajantesTurismo.Admin.Contracts\ViajantesTurismo.Admin.Contracts.csproj"/>
+        <ProjectReference Include="..\..\src\ViajantesTurismo.Admin.Contracts.Application\ViajantesTurismo.Admin.Contracts.Application.csproj"/>
+        <ProjectReference Include="..\..\src\ViajantesTurismo.Admin.Contracts.Http\ViajantesTurismo.Admin.Contracts.Http.csproj"/>
+        <ProjectReference Include="..\..\src\ViajantesTurismo.Admin.Contracts.IntegrationEvents\ViajantesTurismo.Admin.Contracts.IntegrationEvents.csproj"/>
         <ProjectReference Include="..\..\src\ViajantesTurismo.Admin.Domain\ViajantesTurismo.Admin.Domain.csproj"/>
         <ProjectReference Include="..\..\src\SharedKernel\SharedKernel.DomainEvents\SharedKernel.DomainEvents.csproj" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <Using Include="ViajantesTurismo.Admin.Contracts.Http" />
     </ItemGroup>
 </Project>

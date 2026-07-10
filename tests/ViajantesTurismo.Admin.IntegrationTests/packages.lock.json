@@ -1008,15 +1008,25 @@
           "SharedKernel.Mediator.Abstractions": "[0.1.0-alpha.0, )",
           "SharedKernel.Messaging.IntegrationEvents": "[0.1.0-alpha.0, )",
           "SharedKernel.Results": "[0.1.0-alpha.0, )",
+          "ViajantesTurismo.Admin.Contracts.Application": "[0.1.0-alpha.0, )",
+          "ViajantesTurismo.Admin.Contracts.IntegrationEvents": "[0.1.0-alpha.0, )",
           "ViajantesTurismo.Admin.Domain": "[0.1.0-alpha.0, )"
         }
       },
-      "viajantesturismo.admin.contracts": {
+      "viajantesturismo.admin.contracts.application": {
+        "type": "Project"
+      },
+      "viajantesturismo.admin.contracts.http": {
         "type": "Project",
         "dependencies": {
           "Microsoft.Extensions.Logging.Abstractions": "[10.0.9, )",
           "SharedKernel.HttpClients": "[0.1.0-alpha.0, )",
-          "SharedKernel.Mediator.Abstractions": "[0.1.0-alpha.0, )",
+          "ViajantesTurismo.Admin.Contracts.Application": "[0.1.0-alpha.0, )"
+        }
+      },
+      "viajantesturismo.admin.contracts.integrationevents": {
+        "type": "Project",
+        "dependencies": {
           "SharedKernel.Messaging.IntegrationEvents": "[0.1.0-alpha.0, )"
         }
       },
@@ -1027,8 +1037,7 @@
           "SharedKernel.BuildingBlocks": "[0.1.0-alpha.0, )",
           "SharedKernel.Domain": "[0.1.0-alpha.0, )",
           "SharedKernel.InputNormalization": "[0.1.0-alpha.0, )",
-          "SharedKernel.Results": "[0.1.0-alpha.0, )",
-          "ViajantesTurismo.Admin.Contracts": "[0.1.0-alpha.0, )"
+          "SharedKernel.Results": "[0.1.0-alpha.0, )"
         }
       },
       "viajantesturismo.admin.testing": {
@@ -1036,7 +1045,9 @@
         "dependencies": {
           "SharedKernel.DomainEvents": "[0.1.0-alpha.0, )",
           "ViajantesTurismo.Admin.Application": "[0.1.0-alpha.0, )",
-          "ViajantesTurismo.Admin.Contracts": "[0.1.0-alpha.0, )",
+          "ViajantesTurismo.Admin.Contracts.Application": "[0.1.0-alpha.0, )",
+          "ViajantesTurismo.Admin.Contracts.Http": "[0.1.0-alpha.0, )",
+          "ViajantesTurismo.Admin.Contracts.IntegrationEvents": "[0.1.0-alpha.0, )",
           "ViajantesTurismo.Admin.Domain": "[0.1.0-alpha.0, )"
         }
       },

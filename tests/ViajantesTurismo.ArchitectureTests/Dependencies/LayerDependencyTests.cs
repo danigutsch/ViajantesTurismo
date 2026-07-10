@@ -70,6 +70,9 @@ public sealed class LayerDependencyTests
             "ViajantesTurismo.Admin.ApiService",
             "ViajantesTurismo.Admin.Application",
             "ViajantesTurismo.Admin.Contracts",
+            "ViajantesTurismo.Admin.Contracts.Application",
+            "ViajantesTurismo.Admin.Contracts.Http",
+            "ViajantesTurismo.Admin.Contracts.IntegrationEvents",
             "ViajantesTurismo.Admin.Domain",
             "ViajantesTurismo.Admin.Infrastructure"
         };
@@ -223,6 +226,58 @@ public sealed class LayerDependencyTests
 
         // Assert
         unexpectedReferences.ShouldBeEmpty();
+    }
+
+    [Fact]
+    public void SharedKernel_optional_submodules_should_not_reference_same_family_optional_siblings_at_runtime()
+    {
+        // Arrange
+        var repositoryRoot = GetRepositoryRoot();
+
+        // Act
+        var unexpectedReferences = FindSharedKernelRuntimeReferencesToSameFamilyOptionalSiblingSubmodules(repositoryRoot);
+
+        // Assert
+        unexpectedReferences.ShouldBeEmpty();
+    }
+
+    [Fact]
+    public void Project_references_should_follow_documented_layer_directions()
+    {
+        // Arrange
+        var repositoryRoot = GetRepositoryRoot();
+
+        // Act
+        var unexpectedReferences = FindLayerProjectReferenceDirectionViolations(repositoryRoot);
+
+        // Assert
+        unexpectedReferences.ShouldBeEmpty();
+    }
+
+    [Fact]
+    public void Domain_projects_should_not_reference_contract_projects()
+    {
+        // Arrange
+        var repositoryRoot = GetRepositoryRoot();
+
+        // Act
+        var unexpectedReferences = FindDomainContractProjectReferences(repositoryRoot);
+
+        // Assert
+        unexpectedReferences.ShouldBeEmpty();
+    }
+
+    [Fact]
+    public void Product_contract_projects_should_use_split_contract_suffixes()
+    {
+        // Arrange
+        var repositoryRoot = GetRepositoryRoot();
+
+        // Act
+        var unexpectedProjects = FindUnsplitProductContractProjects(repositoryRoot);
+
+        // Assert
+        unexpectedProjects.ShouldBeEmpty();
     }
 
     [Fact]

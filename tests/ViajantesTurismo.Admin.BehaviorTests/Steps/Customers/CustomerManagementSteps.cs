@@ -1,5 +1,5 @@
 using ViajantesTurismo.Admin.Application.Customers.CreateCustomer;
-using ViajantesTurismo.Admin.Contracts;
+using ViajantesTurismo.Admin.Contracts.Application;
 
 using ViajantesTurismo.Admin.Domain.Shared;
 

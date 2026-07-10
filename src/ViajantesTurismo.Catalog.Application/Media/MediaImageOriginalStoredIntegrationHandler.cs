@@ -2,7 +2,7 @@ using System.Globalization;
 using SharedKernel.BuildingBlocks;
 using SharedKernel.ImageProcessing;
 using SharedKernel.Messaging.IntegrationEvents;
-using ViajantesTurismo.Catalog.Contracts.Media;
+using ViajantesTurismo.Catalog.Contracts.IntegrationEvents.Media;
 using ViajantesTurismo.Catalog.Domain.Media;
 
 namespace ViajantesTurismo.Catalog.Application.Media;

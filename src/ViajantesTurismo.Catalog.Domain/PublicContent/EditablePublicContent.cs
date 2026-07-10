@@ -2,7 +2,6 @@ using System.Diagnostics.CodeAnalysis;
 using JetBrains.Annotations;
 using SharedKernel.Domain;
 using SharedKernel.Results;
-using ViajantesTurismo.Catalog.Contracts;
 using SharedKernel.InputNormalization;
 
 namespace ViajantesTurismo.Catalog.Domain.PublicContent;
@@ -103,9 +102,9 @@ public sealed partial class EditablePublicContent : IAggregateRoot<Guid>
         {
             errors.Add(PublicContentErrors.EmptyKey());
         }
-        else if (sanitizedKey.Length > ContractConstants.MaxDefaultLength)
+        else if (sanitizedKey.Length > CatalogDomainLimits.MaxDefaultLength)
         {
-            errors.Add(PublicContentErrors.KeyTooLong(ContractConstants.MaxDefaultLength, sanitizedKey.Length));
+            errors.Add(PublicContentErrors.KeyTooLong(CatalogDomainLimits.MaxDefaultLength, sanitizedKey.Length));
         }
 
         ValidateSupportedSourceLanguage(errors, sourceLanguage);

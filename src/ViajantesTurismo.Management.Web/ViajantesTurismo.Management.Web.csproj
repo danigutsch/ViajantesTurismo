@@ -12,10 +12,17 @@
     <ItemGroup>
         <ProjectReference Include="..\SharedKernel\SharedKernel.AspNetCore\SharedKernel.AspNetCore.csproj" />
         <ProjectReference Include="..\SharedKernel\SharedKernel.HttpClients\SharedKernel.HttpClients.csproj" />
-        <ProjectReference Include="..\ViajantesTurismo.Admin.Contracts\ViajantesTurismo.Admin.Contracts.csproj"/>
-        <ProjectReference Include="..\ViajantesTurismo.Catalog.Contracts\ViajantesTurismo.Catalog.Contracts.csproj"/>
+        <ProjectReference Include="..\ViajantesTurismo.Admin.Contracts.Application\ViajantesTurismo.Admin.Contracts.Application.csproj"/>
+        <ProjectReference Include="..\ViajantesTurismo.Admin.Contracts.Http\ViajantesTurismo.Admin.Contracts.Http.csproj"/>
+        <ProjectReference Include="..\ViajantesTurismo.Catalog.Contracts.Application\ViajantesTurismo.Catalog.Contracts.Application.csproj"/>
+        <ProjectReference Include="..\ViajantesTurismo.Catalog.Contracts.Http\ViajantesTurismo.Catalog.Contracts.Http.csproj"/>
         <ProjectReference Include="..\ViajantesTurismo.Resources\ViajantesTurismo.Resources.csproj"/>
         <ProjectReference Include="..\ViajantesTurismo.ServiceDefaults\ViajantesTurismo.ServiceDefaults.csproj"/>
+    </ItemGroup>
+
+    <ItemGroup>
+        <Using Include="ViajantesTurismo.Admin.Contracts.Http" />
+        <Using Include="ViajantesTurismo.Catalog.Contracts.Http" />
     </ItemGroup>
 
     <ItemGroup>

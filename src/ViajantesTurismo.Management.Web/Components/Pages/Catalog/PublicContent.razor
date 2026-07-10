@@ -1,6 +1,6 @@
 @page "/catalog/content"
 @using System.ComponentModel.DataAnnotations
-@using ViajantesTurismo.Catalog.Contracts
+@using ViajantesTurismo.Catalog.Contracts.Application
 @using SharedKernel.HttpClients
 @using ViajantesTurismo.Management.Web.Helpers
 @rendermode InteractiveServer
@@ -329,7 +329,7 @@
     private sealed class PublicContentFormModel : IValidatableObject
     {
         [Required]
-        [StringLength(ContractConstants.MaxDefaultLength)]
+        [StringLength(ViajantesTurismo.Catalog.Contracts.Application.ContractConstants.MaxDefaultLength)]
         public string Key { get; set; } = string.Empty;
 
         public PublicContentLanguageDto SourceLanguage { get; set; } = PublicContentLanguageDto.EnUs;
@@ -412,19 +412,19 @@
     {
         public PublicContentLanguageDto Language { get; set; }
 
-        [StringLength(ContractConstants.MaxNameLength)]
+        [StringLength(ViajantesTurismo.Catalog.Contracts.Application.ContractConstants.MaxNameLength)]
         public string Title { get; set; } = string.Empty;
 
-        [StringLength(ContractConstants.MaxBodyLength)]
+        [StringLength(ViajantesTurismo.Catalog.Contracts.Application.ContractConstants.MaxBodyLength)]
         public string Body { get; set; } = string.Empty;
 
-        [StringLength(ContractConstants.MaxNameLength)]
+        [StringLength(ViajantesTurismo.Catalog.Contracts.Application.ContractConstants.MaxNameLength)]
         public string? SeoTitle { get; set; }
 
-        [StringLength(ContractConstants.MaxCaptionLength)]
+        [StringLength(ViajantesTurismo.Catalog.Contracts.Application.ContractConstants.MaxCaptionLength)]
         public string? MetaDescription { get; set; }
 
-        [StringLength(ContractConstants.MaxCaptionLength)]
+        [StringLength(ViajantesTurismo.Catalog.Contracts.Application.ContractConstants.MaxCaptionLength)]
         public string? ShareSummary { get; set; }
 
         public bool RequiresHumanReview { get; set; }

@@ -4,7 +4,7 @@ using ViajantesTurismo.Catalog.Application.Media;
 using ViajantesTurismo.Catalog.Application.PublicContent;
 using ViajantesTurismo.Catalog.Application.PublicTheme;
 using ViajantesTurismo.Catalog.Application.Tours;
-using ViajantesTurismo.Catalog.Contracts;
+using ViajantesTurismo.Catalog.Contracts.Application;
 using ViajantesTurismo.Catalog.Domain.Media;
 using ViajantesTurismo.Catalog.Domain.PublicContent;
 using ViajantesTurismo.Catalog.Domain.PublicTheme;

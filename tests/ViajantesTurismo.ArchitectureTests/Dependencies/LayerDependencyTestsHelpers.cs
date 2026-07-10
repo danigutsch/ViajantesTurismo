@@ -7,6 +7,24 @@ namespace ViajantesTurismo.ArchitectureTests.Dependencies;
 
 internal static partial class LayerDependencyTestsHelpers
 {
+    private static readonly string[] OptionalSubmoduleSegmentNames =
+    [
+        "Analyzers",
+        "AspNet",
+        "AspNetCore",
+        "Azure",
+        "CloudEvents",
+        "CodeFixes",
+        "Dapper",
+        "EntityFrameworkCore",
+        "Grafana",
+        "Hosting",
+        "Npgsql",
+        "Redis",
+        "SourceGenerator",
+        "Web"
+    ];
+
     public static GivenTypesConjunctionWithDescription TypesInNamespace(string namespaceRoot, string description)
     {
         var pattern = $"^{Regex.Escape(namespaceRoot)}(\\.|$)";
@@ -78,11 +96,43 @@ internal static partial class LayerDependencyTestsHelpers
             .ToArray();
     }
 
+    public static string[] FindSharedKernelRuntimeReferencesToSameFamilyOptionalSiblingSubmodules(string repositoryRoot)
+    {
+        return SharedKernelSourceProjectFiles(repositoryRoot)
+            .SelectMany(filePath => FindRuntimeReferencesToSameFamilyOptionalSiblingSubmodules(repositoryRoot, filePath))
+            .ToArray();
+    }
+
     public static string[] FindAbstractionProjectImplementationReferences(string repositoryRoot)
     {
         return SourceProjectFiles(repositoryRoot)
             .Where(IsAbstractionsProjectFile)
             .SelectMany(filePath => FindImplementationReferencesFromAbstractionProject(repositoryRoot, filePath))
+            .ToArray();
+    }
+
+    public static string[] FindLayerProjectReferenceDirectionViolations(string repositoryRoot)
+    {
+        return SourceProjectFiles(repositoryRoot)
+            .SelectMany(filePath => FindLayerProjectReferenceDirectionViolations(repositoryRoot, filePath))
+            .ToArray();
+    }
+
+    public static string[] FindDomainContractProjectReferences(string repositoryRoot)
+    {
+        return SourceProjectFiles(repositoryRoot)
+            .Where(filePath => IsDomainProjectName(Path.GetFileNameWithoutExtension(filePath)))
+            .SelectMany(filePath => FindDomainContractProjectReferences(repositoryRoot, filePath))
+            .ToArray();
+    }
+
+    public static string[] FindUnsplitProductContractProjects(string repositoryRoot)
+    {
+        return SourceProjectFiles(repositoryRoot)
+            .Where(filePath => IsUnsplitProductContractProjectName(Path.GetFileNameWithoutExtension(filePath)))
+            .Select(filePath =>
+                $"{Path.GetRelativePath(repositoryRoot, filePath).Replace(Path.DirectorySeparatorChar, '/')}: "
+                + $"{Path.GetFileNameWithoutExtension(filePath)} must use .Contracts.Application, .Contracts.Http, or .Contracts.IntegrationEvents")
             .ToArray();
     }
 
@@ -101,16 +151,22 @@ internal static partial class LayerDependencyTestsHelpers
                 Path.Combine("docs", "architecture", "boundaries-and-dependencies.md"),
                 [
                     "`SharedKernel.<Capability>` is the primary module and core surface for that capability.",
-                    "Primary modules must not runtime-reference descendant optional submodules.",
-                    "reference the primary module, a nearer parent module, or an explicit `Abstractions` module.",
+                    "families may be multi-segment",
+                    "runtime-reference descendant optional submodules through project or package",
+                    "Optional/provider/tool suffixes are not allowed",
+                    "Optional submodules may reference the same-family primary module",
+                    "Domain projects must not reference any `ViajantesTurismo.*.Contracts.*` project.",
+                    "Product contract projects must use `.Contracts.Application`, `.Contracts.Http`, or `.Contracts.IntegrationEvents`.",
                     "Abstraction projects must not reference same-family implementation packages, provider adapters, persistence projects, web/API hosts, or adapter packages."
                 ]),
             (
                 Path.Combine("docs", "SHAREDKERNEL_PACKAGING.md"),
                 [
                     "Do not create `SharedKernel.<Capability>.Core` packages.",
+                    "families may be multi-segment",
                     "`Abstractions` modules are dependency-inversion surfaces, not implementation hosts.",
-                    "Primary modules must not runtime-reference descendant optional submodules."
+                    "runtime-reference descendant optional submodules through project or package",
+                    "Optional/provider/tool suffixes are not allowed"
                 ])
         ];
     }
@@ -168,30 +224,12 @@ internal static partial class LayerDependencyTestsHelpers
 
     private static bool IsPrimarySharedKernelProjectName(string projectName)
     {
-        string[] optionalSubmoduleSegmentNames =
-        [
-            "Analyzers",
-            "AspNet",
-            "AspNetCore",
-            "Azure",
-            "CloudEvents",
-            "CodeFixes",
-            "Dapper",
-            "EntityFrameworkCore",
-            "Grafana",
-            "Hosting",
-            "Npgsql",
-            "Redis",
-            "SourceGenerator",
-            "Web"
-        ];
-
         return projectName.StartsWith("SharedKernel.", StringComparison.OrdinalIgnoreCase)
             && !IsAbstractionsProjectName(projectName)
             && !IsSharedKernelTestingSubmodule(projectName)
             && !projectName.Split('.')
                 .Skip(2)
-                .Any(segment => optionalSubmoduleSegmentNames.Contains(segment, StringComparer.OrdinalIgnoreCase));
+                .Any(segment => OptionalSubmoduleSegmentNames.Contains(segment, StringComparer.OrdinalIgnoreCase));
     }
 
     private static bool IsSharedKernelTestingSubmodule(string projectName)
@@ -206,15 +244,8 @@ internal static partial class LayerDependencyTestsHelpers
         var referencingProjectName = Path.GetFileNameWithoutExtension(filePath);
         var relativePath = Path.GetRelativePath(repositoryRoot, filePath)
             .Replace(Path.DirectorySeparatorChar, '/');
-        var document = XDocument.Load(filePath);
 
-        return document.Descendants("ProjectReference")
-            .Select(element => (Element: element, Include: element.Attribute("Include")?.Value))
-            .Where(reference => !string.IsNullOrWhiteSpace(reference.Include))
-            .Select(reference => (
-                reference.Element,
-                reference.Include,
-                ReferencedProjectName: GetReferencedProjectName(filePath, reference.Include)))
+        var projectReferences = RuntimeProjectReferences(filePath)
             .Where(reference => IsRuntimeProjectReference(reference.Element))
             .Where(reference => IsDescendantSharedKernelProjectReference(
                 referencingProjectName,
@@ -223,6 +254,358 @@ internal static partial class LayerDependencyTestsHelpers
             .Select(reference =>
                 $"{relativePath}: {referencingProjectName} -> {reference.ReferencedProjectName}: "
                 + $"ProjectReference Include=\"{reference.Include}\"");
+
+        var packageReferences = PackageReferences(filePath)
+            .Where(reference => IsDescendantSharedKernelProjectReference(
+                referencingProjectName,
+                reference.PackageName))
+            .Where(reference => !IsAbstractionsProjectName(reference.PackageName))
+            .Select(reference =>
+                $"{relativePath}: {referencingProjectName} -> {reference.PackageName}: "
+                + $"PackageReference Include=\"{reference.Include}\"");
+
+        return projectReferences.Concat(packageReferences);
+    }
+
+    private static IEnumerable<string> FindRuntimeReferencesToSameFamilyOptionalSiblingSubmodules(
+        string repositoryRoot,
+        string filePath)
+    {
+        var referencingProjectName = Path.GetFileNameWithoutExtension(filePath);
+        var relativePath = Path.GetRelativePath(repositoryRoot, filePath)
+            .Replace(Path.DirectorySeparatorChar, '/');
+
+        var projectReferences = RuntimeProjectReferences(filePath)
+            .Where(reference => IsRuntimeProjectReference(reference.Element))
+            .Where(reference => IsSameFamilyOptionalSiblingSubmoduleReference(
+                referencingProjectName,
+                reference.ReferencedProjectName))
+            .Select(reference =>
+                $"{relativePath}: {referencingProjectName} -> {reference.ReferencedProjectName}: "
+                + $"ProjectReference Include=\"{reference.Include}\"");
+
+        var packageReferences = PackageReferences(filePath)
+            .Where(reference => IsSameFamilyOptionalSiblingSubmoduleReference(
+                referencingProjectName,
+                reference.PackageName))
+            .Select(reference =>
+                $"{relativePath}: {referencingProjectName} -> {reference.PackageName}: "
+                + $"PackageReference Include=\"{reference.Include}\"");
+
+        return projectReferences.Concat(packageReferences);
+    }
+
+    private static IEnumerable<string> FindLayerProjectReferenceDirectionViolations(
+        string repositoryRoot,
+        string filePath)
+    {
+        var referencingProjectName = Path.GetFileNameWithoutExtension(filePath);
+        var relativePath = Path.GetRelativePath(repositoryRoot, filePath)
+            .Replace(Path.DirectorySeparatorChar, '/');
+
+        return RuntimeProjectReferences(filePath)
+            .Where(reference => IsRuntimeProjectReference(reference.Element))
+            .Where(reference => IsLayerProjectReferenceDirectionViolation(
+                referencingProjectName,
+                reference.ReferencedProjectName))
+            .Select(reference =>
+                $"{relativePath}: {referencingProjectName} -> {reference.ReferencedProjectName}: "
+                + $"ProjectReference Include=\"{reference.Include}\"");
+    }
+
+    private static IEnumerable<string> FindDomainContractProjectReferences(
+        string repositoryRoot,
+        string filePath)
+    {
+        var referencingProjectName = Path.GetFileNameWithoutExtension(filePath);
+        var relativePath = Path.GetRelativePath(repositoryRoot, filePath)
+            .Replace(Path.DirectorySeparatorChar, '/');
+
+        return RuntimeProjectReferences(filePath)
+            .Where(reference => IsRuntimeProjectReference(reference.Element))
+            .Where(reference => IsContractsProjectName(reference.ReferencedProjectName))
+            .Select(reference =>
+                $"{relativePath}: {referencingProjectName} -> {reference.ReferencedProjectName}: "
+                + $"ProjectReference Include=\"{reference.Include}\"");
+    }
+
+    private static IEnumerable<(XElement Element, string Include, string ReferencedProjectName)> RuntimeProjectReferences(
+        string filePath)
+    {
+        var document = XDocument.Load(filePath);
+
+        foreach (var element in document.Descendants("ProjectReference"))
+        {
+            var include = element.Attribute("Include")?.Value;
+            if (string.IsNullOrWhiteSpace(include))
+            {
+                continue;
+            }
+
+            yield return (element, include, GetReferencedProjectName(filePath, include));
+        }
+    }
+
+    private static IEnumerable<(XElement Element, string Include, string PackageName)> PackageReferences(string filePath)
+    {
+        var document = XDocument.Load(filePath);
+
+        foreach (var element in document.Descendants("PackageReference"))
+        {
+            var include = element.Attribute("Include")?.Value;
+            if (string.IsNullOrWhiteSpace(include))
+            {
+                continue;
+            }
+
+            yield return (element, include, include);
+        }
+    }
+
+    private static bool IsSameFamilyOptionalSiblingSubmoduleReference(
+        string referencingProjectName,
+        string referencedProjectName)
+    {
+        if (!IsSharedKernelProjectName(referencingProjectName)
+            || !IsSharedKernelProjectName(referencedProjectName)
+            || !IsOptionalSharedKernelSubmoduleProjectName(referencingProjectName)
+            || !IsOptionalSharedKernelSubmoduleProjectName(referencedProjectName)
+            || IsAbstractionsProjectName(referencedProjectName))
+        {
+            return false;
+        }
+
+        var referencingFamilyName = GetSharedKernelFamilyName(referencingProjectName);
+        var referencedFamilyName = GetSharedKernelFamilyName(referencedProjectName);
+
+        return referencingFamilyName.Equals(referencedFamilyName, StringComparison.OrdinalIgnoreCase)
+            && !IsSameFamilyParentProjectReference(referencingFamilyName, referencingProjectName, referencedProjectName);
+    }
+
+    private static bool IsSameFamilyParentProjectReference(
+        string familyName,
+        string referencingProjectName,
+        string referencedProjectName)
+    {
+        return referencedProjectName.Equals(familyName, StringComparison.OrdinalIgnoreCase)
+            || (referencingProjectName.StartsWith($"{referencedProjectName}.", StringComparison.OrdinalIgnoreCase)
+                && referencedProjectName.StartsWith($"{familyName}.", StringComparison.OrdinalIgnoreCase));
+    }
+
+    private static bool IsOptionalSharedKernelSubmoduleProjectName(string projectName)
+    {
+        return !GetSharedKernelFamilyName(projectName).Equals(projectName, StringComparison.OrdinalIgnoreCase);
+    }
+
+    private static string GetSharedKernelFamilyName(string projectName)
+    {
+        var segments = projectName.Split('.');
+        for (var index = 2; index < segments.Length; index++)
+        {
+            if (OptionalSubmoduleSegmentNames.Contains(segments[index], StringComparer.OrdinalIgnoreCase))
+            {
+                return string.Join('.', segments.Take(index));
+            }
+        }
+
+        return projectName;
+    }
+
+    private static bool IsLayerProjectReferenceDirectionViolation(
+        string referencingProjectName,
+        string referencedProjectName)
+    {
+        if (IsCatalogProjectName(referencingProjectName) && IsAdminProjectName(referencedProjectName))
+        {
+            return !IsContractsIntegrationEventsProjectName(referencedProjectName);
+        }
+
+        if (IsSharedKernelProjectName(referencingProjectName))
+        {
+            return IsProductProjectName(referencedProjectName);
+        }
+
+        if (IsContractsProjectName(referencingProjectName))
+        {
+            return IsProductProjectName(referencedProjectName)
+                && !IsAllowedContractProjectReference(referencingProjectName, referencedProjectName);
+        }
+
+        if (IsDomainProjectName(referencingProjectName))
+        {
+            return IsProductProjectName(referencedProjectName);
+        }
+
+        if (IsApplicationProjectName(referencingProjectName))
+        {
+            return IsProductProjectName(referencedProjectName)
+                && !IsSameContextLayerProjectName(referencingProjectName, referencedProjectName, "Domain")
+                && !IsAllowedApplicationContractReference(referencingProjectName, referencedProjectName);
+        }
+
+        if (IsInfrastructureProjectName(referencingProjectName))
+        {
+            return IsProductProjectName(referencedProjectName)
+                && !IsResourcesProjectName(referencedProjectName)
+                && !IsSameContextLayerProjectName(referencingProjectName, referencedProjectName, "Application")
+                && !IsSameContextLayerProjectName(referencingProjectName, referencedProjectName, "Domain");
+        }
+
+        if (IsApiProjectName(referencingProjectName))
+        {
+            return IsProductProjectName(referencedProjectName)
+                && !IsResourcesProjectName(referencedProjectName)
+                && !IsServiceDefaultsProjectName(referencedProjectName)
+                && !IsSameContextLayerProjectName(referencingProjectName, referencedProjectName, "Application")
+                && !IsAllowedApiContractReference(referencingProjectName, referencedProjectName)
+                && !IsSameContextLayerProjectName(referencingProjectName, referencedProjectName, "Infrastructure");
+        }
+
+        if (IsWebProjectName(referencingProjectName))
+        {
+            return IsProductProjectName(referencedProjectName)
+                && !IsContractsApplicationProjectName(referencedProjectName)
+                && !IsContractsHttpProjectName(referencedProjectName)
+                && !IsResourcesProjectName(referencedProjectName)
+                && !IsServiceDefaultsProjectName(referencedProjectName);
+        }
+
+        return false;
+    }
+
+    private static bool IsAllowedContractProjectReference(string referencingProjectName, string referencedProjectName)
+    {
+        return IsContractsHttpProjectName(referencingProjectName)
+            && IsSameBoundedContextProject(referencingProjectName, referencedProjectName)
+            && IsContractsApplicationProjectName(referencedProjectName);
+    }
+
+    private static bool IsAllowedApplicationContractReference(string referencingProjectName, string referencedProjectName)
+    {
+        return IsContractsApplicationProjectName(referencedProjectName)
+            ? IsSameBoundedContextProject(referencingProjectName, referencedProjectName)
+            : IsContractsIntegrationEventsProjectName(referencedProjectName);
+    }
+
+    private static bool IsAllowedApiContractReference(string referencingProjectName, string referencedProjectName)
+    {
+        return IsSameBoundedContextProject(referencingProjectName, referencedProjectName)
+            && (IsContractsApplicationProjectName(referencedProjectName)
+                || IsContractsHttpProjectName(referencedProjectName));
+    }
+
+    private static bool IsProductProjectName(string projectName)
+    {
+        return projectName.StartsWith("ViajantesTurismo.", StringComparison.OrdinalIgnoreCase);
+    }
+
+    private static bool IsSharedKernelProjectName(string projectName)
+    {
+        return projectName.StartsWith("SharedKernel.", StringComparison.OrdinalIgnoreCase);
+    }
+
+    private static bool IsDomainProjectName(string projectName)
+    {
+        return projectName.EndsWith(".Domain", StringComparison.OrdinalIgnoreCase);
+    }
+
+    private static bool IsApplicationProjectName(string projectName)
+    {
+        return projectName.EndsWith(".Application", StringComparison.OrdinalIgnoreCase);
+    }
+
+    private static bool IsInfrastructureProjectName(string projectName)
+    {
+        return projectName.EndsWith(".Infrastructure", StringComparison.OrdinalIgnoreCase);
+    }
+
+    private static bool IsApiProjectName(string projectName)
+    {
+        return projectName.EndsWith(".ApiService", StringComparison.OrdinalIgnoreCase);
+    }
+
+    private static bool IsWebProjectName(string projectName)
+    {
+        return projectName.EndsWith(".Web", StringComparison.OrdinalIgnoreCase);
+    }
+
+    private static bool IsContractsProjectName(string projectName)
+    {
+        return IsProductProjectName(projectName)
+            && HasProjectNameSegment(projectName, "Contracts");
+    }
+
+    private static bool IsContractsApplicationProjectName(string projectName)
+    {
+        return projectName.Contains(".Contracts.Application", StringComparison.OrdinalIgnoreCase);
+    }
+
+    private static bool IsContractsHttpProjectName(string projectName)
+    {
+        return projectName.Contains(".Contracts.Http", StringComparison.OrdinalIgnoreCase);
+    }
+
+    private static bool IsContractsIntegrationEventsProjectName(string projectName)
+    {
+        return projectName.Contains(".Contracts.IntegrationEvents", StringComparison.OrdinalIgnoreCase);
+    }
+
+    private static bool IsUnsplitProductContractProjectName(string projectName)
+    {
+        return IsProductProjectName(projectName)
+            && projectName.EndsWith(".Contracts", StringComparison.OrdinalIgnoreCase);
+    }
+
+    private static bool IsResourcesProjectName(string projectName)
+    {
+        return projectName.Equals("ViajantesTurismo.Resources", StringComparison.OrdinalIgnoreCase);
+    }
+
+    private static bool IsServiceDefaultsProjectName(string projectName)
+    {
+        return projectName.Equals("ViajantesTurismo.ServiceDefaults", StringComparison.OrdinalIgnoreCase);
+    }
+
+    private static bool IsCatalogProjectName(string projectName)
+    {
+        return projectName.StartsWith("ViajantesTurismo.Catalog.", StringComparison.OrdinalIgnoreCase);
+    }
+
+    private static bool IsAdminProjectName(string projectName)
+    {
+        return projectName.StartsWith("ViajantesTurismo.Admin.", StringComparison.OrdinalIgnoreCase);
+    }
+
+    private static bool IsSameContextLayerProjectName(
+        string referencingProjectName,
+        string referencedProjectName,
+        string layerSegment)
+    {
+        return IsSameBoundedContextProject(referencingProjectName, referencedProjectName)
+            && HasProjectNameSegment(referencedProjectName, layerSegment);
+    }
+
+    private static bool IsSameBoundedContextProject(string firstProjectName, string secondProjectName)
+    {
+        var firstContextName = GetBoundedContextName(firstProjectName);
+        var secondContextName = GetBoundedContextName(secondProjectName);
+
+        return firstContextName is not null
+            && secondContextName is not null
+            && firstContextName.Equals(secondContextName, StringComparison.OrdinalIgnoreCase);
+    }
+
+    private static string? GetBoundedContextName(string projectName)
+    {
+        var segments = projectName.Split('.');
+        if (segments.Length < 2 || !segments[0].Equals("ViajantesTurismo", StringComparison.OrdinalIgnoreCase))
+        {
+            return null;
+        }
+
+        return segments[1] is "Admin" or "Catalog"
+            ? segments[1]
+            : null;
     }
 
     private static bool IsAbstractionsProjectFile(string filePath)
@@ -431,7 +814,7 @@ internal static partial class LayerDependencyTestsHelpers
 
         return fileName.EndsWith(".Domain", StringComparison.OrdinalIgnoreCase)
             || fileName.EndsWith(".Application", StringComparison.OrdinalIgnoreCase)
-            || fileName.EndsWith(".Contracts", StringComparison.OrdinalIgnoreCase);
+            || IsContractsProjectName(fileName);
     }
 
     private static bool IsProviderNeutralSharedKernelProject(string filePath)

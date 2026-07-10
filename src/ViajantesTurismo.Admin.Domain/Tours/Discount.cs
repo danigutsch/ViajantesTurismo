@@ -1,4 +1,3 @@
-using ViajantesTurismo.Admin.Contracts;
 using SharedKernel.Results;
 using SharedKernel.InputNormalization;
 
@@ -83,20 +82,20 @@ public sealed class Discount
             errors.Add(DiscountErrors.NegativeDiscountAmount(sanitizedAmount));
         }
 
-        if (type == DiscountType.Percentage && sanitizedAmount > ContractConstants.MaxDiscountPercentage)
+        if (type == DiscountType.Percentage && sanitizedAmount > AdminDomainLimits.MaxDiscountPercentage)
         {
-            errors.Add(DiscountErrors.PercentageExceedsMaximum(sanitizedAmount, ContractConstants.MaxDiscountPercentage));
+            errors.Add(DiscountErrors.PercentageExceedsMaximum(sanitizedAmount, AdminDomainLimits.MaxDiscountPercentage));
         }
 
         if (!string.IsNullOrWhiteSpace(sanitizedReason))
         {
-            if (sanitizedReason.Length < ContractConstants.MinDiscountReasonLength)
+            if (sanitizedReason.Length < AdminDomainLimits.MinDiscountReasonLength)
             {
-                errors.Add(DiscountErrors.ReasonTooShort(ContractConstants.MinDiscountReasonLength, sanitizedReason.Length));
+                errors.Add(DiscountErrors.ReasonTooShort(AdminDomainLimits.MinDiscountReasonLength, sanitizedReason.Length));
             }
-            else if (sanitizedReason.Length > ContractConstants.MaxDiscountReasonLength)
+            else if (sanitizedReason.Length > AdminDomainLimits.MaxDiscountReasonLength)
             {
-                errors.Add(DiscountErrors.ReasonTooLong(ContractConstants.MaxDiscountReasonLength, sanitizedReason.Length));
+                errors.Add(DiscountErrors.ReasonTooLong(AdminDomainLimits.MaxDiscountReasonLength, sanitizedReason.Length));
             }
         }
 

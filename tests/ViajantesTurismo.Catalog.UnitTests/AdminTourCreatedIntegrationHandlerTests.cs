@@ -2,7 +2,7 @@ using Microsoft.Extensions.Options;
 using SharedKernel.EventSourcing;
 using SharedKernel.Idempotency;
 using SharedKernel.Testing.Assertions;
-using ViajantesTurismo.Admin.Contracts.Tours;
+using ViajantesTurismo.Admin.Contracts.IntegrationEvents.Tours;
 using ViajantesTurismo.Catalog.Application.IntegrationEvents;
 using ViajantesTurismo.Catalog.Application.Tours;
 using ViajantesTurismo.Catalog.Domain.Tours;

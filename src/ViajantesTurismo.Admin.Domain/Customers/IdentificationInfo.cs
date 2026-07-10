@@ -1,5 +1,4 @@
 using JetBrains.Annotations;
-using ViajantesTurismo.Admin.Contracts;
 using SharedKernel.Results;
 using static ViajantesTurismo.Admin.Domain.Customers.CustomerErrors;
 using SharedKernel.InputNormalization;
@@ -53,7 +52,7 @@ public sealed class IdentificationInfo
         {
             errors.Add(EmptyNationalId());
         }
-        else if (sanitizedNationalId.Length > ContractConstants.MaxDefaultLength)
+        else if (sanitizedNationalId.Length > AdminDomainLimits.MaxDefaultLength)
         {
             errors.Add(NationalIdTooLong());
         }
@@ -62,7 +61,7 @@ public sealed class IdentificationInfo
         {
             errors.Add(EmptyIdNationality());
         }
-        else if (sanitizedIdNationality.Length > ContractConstants.MaxDefaultLength)
+        else if (sanitizedIdNationality.Length > AdminDomainLimits.MaxDefaultLength)
         {
             errors.Add(IdNationalityTooLong());
         }

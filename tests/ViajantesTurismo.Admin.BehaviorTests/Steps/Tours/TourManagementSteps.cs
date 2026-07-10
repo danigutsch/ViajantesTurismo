@@ -1,5 +1,5 @@
 using ViajantesTurismo.Admin.Application.Tours.CreateTour;
-using ViajantesTurismo.Admin.Contracts;
+using ViajantesTurismo.Admin.Contracts.Application;
 
 namespace ViajantesTurismo.Admin.BehaviorTests.Steps.Tours;
 

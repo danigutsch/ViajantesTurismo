@@ -9,7 +9,8 @@
         <Using Include="System.Net" />
         <Using Include="SharedKernel.Testing" />
         <Using Include="SharedKernel.Testing.AspNetCore" />
-        <Using Include="ViajantesTurismo.Catalog.Contracts" />
+        <Using Include="ViajantesTurismo.Catalog.Contracts.Application" />
+        <Using Include="ViajantesTurismo.Catalog.Contracts.Http" />
         <Using Include="ViajantesTurismo.Public.Web" />
         <Using Include="ViajantesTurismo.Public.WebTests.Infrastructure" />
         <Using Include="Xunit" />

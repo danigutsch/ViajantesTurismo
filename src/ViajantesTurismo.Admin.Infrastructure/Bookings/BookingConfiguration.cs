@@ -1,7 +1,7 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
-using ViajantesTurismo.Admin.Contracts;
 using ViajantesTurismo.Admin.Domain.Tours;
+using ViajantesTurismo.Admin.Domain;
 
 namespace ViajantesTurismo.Admin.Infrastructure.ModelConfigurations;
 
@@ -20,7 +20,7 @@ internal sealed class BookingConfiguration : IEntityTypeConfiguration<Booking>
         entity.Property(booking => booking.Status).HasConversion<string>().IsRequired();
         entity.Ignore(booking => booking.PaymentStatus);
         entity.Ignore(booking => booking.TotalPrice);
-        entity.Property(booking => booking.Notes).HasMaxLength(ContractConstants.MaxBookingNotesLength);
+        entity.Property(booking => booking.Notes).HasMaxLength(AdminDomainLimits.MaxBookingNotesLength);
 
         entity.OwnsOne(booking => booking.PrincipalCustomer, customer =>
         {
@@ -40,7 +40,7 @@ internal sealed class BookingConfiguration : IEntityTypeConfiguration<Booking>
         {
             discount.Property(d => d.Type).HasConversion<string>().IsRequired();
             discount.Property(d => d.Amount).IsRequired();
-            discount.Property(d => d.Reason).HasMaxLength(ContractConstants.MaxBookingNotesLength);
+            discount.Property(d => d.Reason).HasMaxLength(AdminDomainLimits.MaxBookingNotesLength);
         });
 
         entity.HasMany(booking => booking.Payments)

@@ -119,16 +119,6 @@
       "sharedkernel.mediator.abstractions": {
         "type": "Project"
       },
-      "sharedkernel.messaging": {
-        "type": "Project"
-      },
-      "sharedkernel.messaging.integrationevents": {
-        "type": "Project",
-        "dependencies": {
-          "SharedKernel.Mediator.Abstractions": "[0.1.0-alpha.0, )",
-          "SharedKernel.Messaging": "[0.1.0-alpha.0, )"
-        }
-      },
       "sharedkernel.observability": {
         "type": "Project",
         "dependencies": {
@@ -139,11 +129,14 @@
           "OpenTelemetry.Instrumentation.Runtime": "[1.15.1, )"
         }
       },
-      "viajantesturismo.catalog.contracts": {
+      "viajantesturismo.catalog.contracts.application": {
+        "type": "Project"
+      },
+      "viajantesturismo.catalog.contracts.http": {
         "type": "Project",
         "dependencies": {
           "SharedKernel.HttpClients": "[0.1.0-alpha.0, )",
-          "SharedKernel.Messaging.IntegrationEvents": "[0.1.0-alpha.0, )"
+          "ViajantesTurismo.Catalog.Contracts.Application": "[0.1.0-alpha.0, )"
         }
       },
       "viajantesturismo.resources": {

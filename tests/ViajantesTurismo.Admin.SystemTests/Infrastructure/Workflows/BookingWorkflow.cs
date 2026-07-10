@@ -1,5 +1,5 @@
 using System.Globalization;
-using ViajantesTurismo.Admin.Contracts;
+using ViajantesTurismo.Admin.Contracts.Application;
 using static Microsoft.Playwright.Assertions;
 
 namespace ViajantesTurismo.Admin.SystemTests.Infrastructure.Workflows;

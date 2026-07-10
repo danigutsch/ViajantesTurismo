@@ -1,5 +1,5 @@
 using SharedKernel.Results;
-using ViajantesTurismo.Catalog.Contracts;
+using ViajantesTurismo.Catalog.Contracts.Application;
 using SharedKernel.InputNormalization;
 
 namespace ViajantesTurismo.Catalog.Application.Tours;

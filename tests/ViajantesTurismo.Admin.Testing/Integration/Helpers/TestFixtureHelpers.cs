@@ -1,5 +1,5 @@
 using System.Net.Http.Json;
-using ViajantesTurismo.Admin.Contracts;
+using ViajantesTurismo.Admin.Contracts.Application;
 using ViajantesTurismo.Admin.Testing.Builders;
 
 namespace ViajantesTurismo.Admin.Testing.Integration.Helpers;

@@ -3,7 +3,7 @@ using System.Reflection;
 using SharedKernel.Results;
 using SharedKernel.Results.AspNet;
 using ViajantesTurismo.Admin.Application;
-using ViajantesTurismo.Admin.Contracts;
+using ViajantesTurismo.Admin.Contracts.Http;
 using ViajantesTurismo.Admin.Domain.Tours;
 
 namespace ViajantesTurismo.Admin.ApiService.Errors;

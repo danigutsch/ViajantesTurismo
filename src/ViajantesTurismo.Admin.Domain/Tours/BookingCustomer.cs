@@ -1,5 +1,4 @@
 using JetBrains.Annotations;
-using ViajantesTurismo.Admin.Contracts;
 using ViajantesTurismo.Admin.Domain.Shared;
 using SharedKernel.Results;
 using SharedKernel.InputNormalization;
@@ -75,9 +74,9 @@ public sealed class BookingCustomer
             errors.Add(BookingErrors.NegativeBikePrice(bikePrice));
         }
 
-        if (bikePrice > ContractConstants.MaxPrice)
+        if (bikePrice > AdminDomainLimits.MaxPrice)
         {
-            errors.Add(BookingErrors.BikePriceExceedsMaximum(bikePrice, ContractConstants.MaxPrice));
+            errors.Add(BookingErrors.BikePriceExceedsMaximum(bikePrice, AdminDomainLimits.MaxPrice));
         }
 
         if (errors.HasErrors)

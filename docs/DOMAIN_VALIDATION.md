@@ -102,7 +102,8 @@ its own invariants.
 
 - [Aggregates Documentation](domain/AGGREGATES.md) - Detailed invariants for Tour, Customer, and Booking
 - [Glossary](domain/GLOSSARY.md) - Domain terminology and enum definitions
-- [Contract Constants](../src/ViajantesTurismo.Admin.Contracts/ContractConstants.cs) - Shared validation constants
+- [Admin domain limits](../src/ViajantesTurismo.Admin.Domain/AdminDomainLimits.cs) - Admin domain validation limits
+- [Catalog domain limits](../src/ViajantesTurismo.Catalog.Domain/CatalogDomainLimits.cs) - Catalog domain validation limits
 
 **Example validation in factory method:**
 
@@ -112,7 +113,7 @@ public static Result<Tour> Create(string identifier, string name, ...)
     if (string.IsNullOrWhiteSpace(identifier))
         return TourErrors.EmptyIdentifier();
 
-    if (identifier.Length > ContractConstants.MaxIdentifierLength)
+    if (identifier.Length > AdminDomainLimits.MaxDefaultLength)
         return TourErrors.IdentifierTooLong();
 
     // Additional validations...
@@ -242,21 +243,24 @@ Testing strategy:
 - Behavior tests cover specification scenarios with fakes
 - Integration tests ensure API returns RFC 7807 ValidationProblem responses
 
-## Contract Constants
+## Domain and contract limits
 
-Validation constants live in `ContractConstants.cs`:
+Domain validation and persistence limits live in domain-owned limit types:
 
 ```csharp
-public static class ContractConstants
+public static class AdminDomainLimits
 {
     public const int MaxNameLength = 128;
     public const int MinimumTourDurationDays = 5;
-    public const double MaxPrice = 100_000;
+    public const int MaxPrice = 100_000;
 }
 ```
 
+`ContractConstants` in `.Contracts.Application` describes external DTO/request limits only. Domain
+projects must not reference `ViajantesTurismo.*.Contracts.*` projects.
+
 **Reference:**
-See [ADR-003: Validation Constants in Contracts Project](adr/20251108-validation-constants-contracts-project.md)
+See [ADR-003: Validation Constants in Contracts Project](adr/20251108-validation-constants-contracts-project.md), now superseded for domain dependencies.
 
 ## API Integration
 

@@ -1,5 +1,5 @@
 using System.Reflection;
-using ViajantesTurismo.Admin.Contracts;
+using ViajantesTurismo.Admin.Contracts.Http;
 using ViajantesTurismo.Admin.ApiService;
 
 namespace ViajantesTurismo.Admin.UnitTests.ApiService;

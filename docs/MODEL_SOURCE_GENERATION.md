@@ -109,10 +109,10 @@ Diagnostics should name the attribute option, the affected type, and the smalles
    - `src/ViajantesTurismo.Catalog.Infrastructure/ModelConfigurations/PublicMediaImageConfiguration.cs`
 
 2. Contract DTO metadata and validation shape:
-   - `src/ViajantesTurismo.Admin.Contracts/CreateTourDto.cs`
-   - `src/ViajantesTurismo.Admin.Contracts/UpdateTourDto.cs`
-   - `src/ViajantesTurismo.Admin.Contracts/Bookings/CreateBookingDto.cs`
-   - `src/ViajantesTurismo.Catalog.Contracts/PublicMediaImageDto.cs`
+   - `src/ViajantesTurismo.Admin.Contracts.Application/CreateTourDto.cs`
+   - `src/ViajantesTurismo.Admin.Contracts.Application/UpdateTourDto.cs`
+   - `src/ViajantesTurismo.Admin.Contracts.Application/Bookings/CreateBookingDto.cs`
+   - `src/ViajantesTurismo.Catalog.Contracts.Application/PublicMediaImageDto.cs`
 
 ### Do not generate yet
 

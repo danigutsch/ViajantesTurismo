@@ -1,17 +1,17 @@
 # API Client Boundaries
 
-This repository keeps shared API client interfaces and HTTP implementations in the owning contract
+This repository keeps shared API client interfaces and HTTP implementations in the owning HTTP contract
 project. Apps configure base addresses and keep UI fallback behavior local.
 
 ## Current contract-owned HTTP clients
 
-`ViajantesTurismo.Admin.Contracts` owns these typed HTTP client implementations:
+`ViajantesTurismo.Admin.Contracts.Http` owns these typed HTTP client implementations:
 
 - `BookingsApiClient`
 - `CustomersApiClient`
 - `ToursApiClient`
 
-`ViajantesTurismo.Catalog.Contracts` owns these typed HTTP client implementations:
+`ViajantesTurismo.Catalog.Contracts.Http` owns these typed HTTP client implementations:
 
 - `CatalogToursApiClient`
 - `PublicContentApiClient`
@@ -22,11 +22,11 @@ Contract test projects also contain OpenAPI document clients that are test-local
 
 ## Contract-owned rules
 
-- Put shared `I*ApiClient` interfaces and implementations in the owning contract project when apps or tests consume the seam.
+- Put shared `I*ApiClient` interfaces and implementations in the owning `.Contracts.Http` project when apps or tests consume the seam.
 - A contract project owns a client only for the API surface it also owns. Cross-context or cross-app convenience clients stay in
   the consuming app until the API contract owner accepts the seam.
 - Keep one interface per cohesive API seam. Do not add broad gateway or facade clients just to group unrelated endpoints.
-- Put DTOs and response outcome shapes in the contract project when callers must handle stable API outcomes without
+- Put DTOs and response outcome shapes in `.Contracts.Application` when callers must handle stable API outcomes without
   knowing HTTP implementation details.
 - Keep contract clients AOT-compatible. Use per-client `JsonSerializerContext` types and pass generated
   `JsonTypeInfo<T>` metadata to HTTP JSON calls.
@@ -63,7 +63,7 @@ Contract test projects also contain OpenAPI document clients that are test-local
 
 Use this checklist before adding or moving an API client into a contract project:
 
-- The owning contract project also owns the route, DTO, or published API contract being called.
+- The owning `.Contracts.Http` project also owns the route client or published HTTP contract being called.
 - At least one app or test consumes the seam through an `I*ApiClient` interface.
 - The client behavior is part of the contract boundary, such as validation-problem parsing or documented response branches.
 - The client can stay AOT-compatible without ASP.NET Core MVC dependencies.

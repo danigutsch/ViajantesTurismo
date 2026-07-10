@@ -1,5 +1,4 @@
 using JetBrains.Annotations;
-using ViajantesTurismo.Admin.Contracts;
 using SharedKernel.Results;
 using static ViajantesTurismo.Admin.Domain.Customers.CustomerErrors;
 using SharedKernel.InputNormalization;
@@ -89,12 +88,12 @@ public sealed class Address
         {
             errors.Add(EmptyStreet());
         }
-        else if (sanitizedStreet.Length > ContractConstants.MaxNameLength)
+        else if (sanitizedStreet.Length > AdminDomainLimits.MaxNameLength)
         {
             errors.Add(StreetTooLong());
         }
 
-        if (sanitizedComplement?.Length > ContractConstants.MaxNameLength)
+        if (sanitizedComplement?.Length > AdminDomainLimits.MaxNameLength)
         {
             errors.Add(ComplementTooLong());
         }
@@ -103,7 +102,7 @@ public sealed class Address
         {
             errors.Add(EmptyNeighborhood());
         }
-        else if (sanitizedNeighborhood.Length > ContractConstants.MaxNameLength)
+        else if (sanitizedNeighborhood.Length > AdminDomainLimits.MaxNameLength)
         {
             errors.Add(NeighborhoodTooLong());
         }
@@ -112,7 +111,7 @@ public sealed class Address
         {
             errors.Add(EmptyPostalCode());
         }
-        else if (sanitizedPostalCode.Length > ContractConstants.MaxDefaultLength)
+        else if (sanitizedPostalCode.Length > AdminDomainLimits.MaxDefaultLength)
         {
             errors.Add(PostalCodeTooLong());
         }
@@ -121,7 +120,7 @@ public sealed class Address
         {
             errors.Add(EmptyCity());
         }
-        else if (sanitizedCity.Length > ContractConstants.MaxNameLength)
+        else if (sanitizedCity.Length > AdminDomainLimits.MaxNameLength)
         {
             errors.Add(CityTooLong());
         }
@@ -130,7 +129,7 @@ public sealed class Address
         {
             errors.Add(EmptyState());
         }
-        else if (sanitizedState.Length > ContractConstants.MaxNameLength)
+        else if (sanitizedState.Length > AdminDomainLimits.MaxNameLength)
         {
             errors.Add(StateTooLong());
         }
@@ -139,7 +138,7 @@ public sealed class Address
         {
             errors.Add(EmptyCountry());
         }
-        else if (sanitizedCountry.Length > ContractConstants.MaxNameLength)
+        else if (sanitizedCountry.Length > AdminDomainLimits.MaxNameLength)
         {
             errors.Add(CountryTooLong());
         }

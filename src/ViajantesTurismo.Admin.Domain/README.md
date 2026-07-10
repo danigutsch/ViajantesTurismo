@@ -62,7 +62,7 @@ Cancelled ←───┘
 - **SharedKernel.Results** — Result pattern and option primitives
 - **SharedKernel.BuildingBlocks** — Base value-object types and date ranges
 - **SharedKernel.InputNormalization** — Shared input normalization helpers
-- **ViajantesTurismo.Admin.Contracts** — Validation constants
+- Domain-owned limits in `AdminDomainLimits` — validation and persistence constraints
 
 ## See Also
 

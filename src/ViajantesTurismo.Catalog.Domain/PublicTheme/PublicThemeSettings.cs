@@ -2,7 +2,6 @@ using System.Diagnostics.CodeAnalysis;
 using JetBrains.Annotations;
 using SharedKernel.Domain;
 using SharedKernel.Results;
-using ViajantesTurismo.Catalog.Contracts;
 using SharedKernel.InputNormalization;
 
 namespace ViajantesTurismo.Catalog.Domain.PublicTheme;
@@ -174,7 +173,7 @@ public sealed partial class PublicThemeSettings : IAggregateRoot<Guid>
 
     private static void ValidateColor(ValidationErrors errors, string field, string value)
     {
-        if (value.Length != ContractConstants.MaxCssColorLength || value[0] != '#' || !value[1..].All(Uri.IsHexDigit))
+        if (value.Length != CatalogDomainLimits.MaxCssColorLength || value[0] != '#' || !value[1..].All(Uri.IsHexDigit))
         {
             errors.Add(Result.Invalid($"{field} must be a #RRGGBB color.", field, "Use a safe #RRGGBB hex color."));
         }

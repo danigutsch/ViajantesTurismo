@@ -1,5 +1,5 @@
 using SharedKernel.Testing.Assertions;
-using ViajantesTurismo.Admin.Contracts.Tours;
+using ViajantesTurismo.Admin.Contracts.IntegrationEvents.Tours;
 using ViajantesTurismo.Admin.Domain.Tours;
 
 namespace ViajantesTurismo.Admin.UnitTests.Application.DomainEvents;

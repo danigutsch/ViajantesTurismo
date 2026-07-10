@@ -1,7 +1,7 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
-using ViajantesTurismo.Admin.Contracts;
 using ViajantesTurismo.Admin.Domain.Tours;
+using ViajantesTurismo.Admin.Domain;
 
 namespace ViajantesTurismo.Admin.Infrastructure.ModelConfigurations;
 
@@ -15,8 +15,8 @@ internal sealed class TourConfiguration : IEntityTypeConfiguration<Tour>
         entity.HasIndex(tour => tour.Identifier).IsUnique();
         entity.HasIndex(tour => tour.Name).IsUnique();
 
-        entity.Property(tour => tour.Identifier).IsRequired().HasMaxLength(ContractConstants.MaxDefaultLength);
-        entity.Property(tour => tour.Name).IsRequired().HasMaxLength(ContractConstants.MaxNameLength);
+        entity.Property(tour => tour.Identifier).IsRequired().HasMaxLength(AdminDomainLimits.MaxDefaultLength);
+        entity.Property(tour => tour.Name).IsRequired().HasMaxLength(AdminDomainLimits.MaxNameLength);
 
         entity.OwnsOne(tour => tour.Schedule, schedule =>
         {

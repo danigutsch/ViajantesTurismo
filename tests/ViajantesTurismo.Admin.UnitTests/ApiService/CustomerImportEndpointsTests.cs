@@ -7,7 +7,7 @@ using SharedKernel.Testing.Assertions;
 using ViajantesTurismo.Admin.ApiService;
 using TestTraits = ViajantesTurismo.Admin.UnitTests.Infrastructure.TestTraits;
 using ViajantesTurismo.Admin.ApiService.Customers;
-using ViajantesTurismo.Admin.Contracts;
+using ViajantesTurismo.Admin.Contracts.Application;
 
 namespace ViajantesTurismo.Admin.UnitTests.ApiService;
 

@@ -1,5 +1,4 @@
 using JetBrains.Annotations;
-using ViajantesTurismo.Admin.Contracts;
 using SharedKernel.Results;
 using static ViajantesTurismo.Admin.Domain.Customers.CustomerErrors;
 using SharedKernel.InputNormalization;
@@ -53,7 +52,7 @@ public sealed class EmergencyContact
         {
             errors.Add(EmptyEmergencyContactName());
         }
-        else if (sanitizedName.Length > ContractConstants.MaxNameLength)
+        else if (sanitizedName.Length > AdminDomainLimits.MaxNameLength)
         {
             errors.Add(EmergencyContactNameTooLong());
         }
@@ -62,7 +61,7 @@ public sealed class EmergencyContact
         {
             errors.Add(EmptyEmergencyContactMobile());
         }
-        else if (sanitizedMobile.Length > ContractConstants.MaxDefaultLength)
+        else if (sanitizedMobile.Length > AdminDomainLimits.MaxDefaultLength)
         {
             errors.Add(EmergencyContactMobileTooLong());
         }

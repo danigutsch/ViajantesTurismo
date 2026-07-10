@@ -1,6 +1,6 @@
 ﻿using System.Net;
 using SharedKernel.HttpClients;
-using ViajantesTurismo.Admin.Contracts;
+using ViajantesTurismo.Admin.Contracts.Application;
 using ViajantesTurismo.Admin.Testing.Builders;
 
 namespace ViajantesTurismo.Admin.Testing.Fakes.ApiClients;

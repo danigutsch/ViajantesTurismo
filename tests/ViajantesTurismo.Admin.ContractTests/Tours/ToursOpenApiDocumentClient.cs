@@ -76,8 +76,8 @@ internal static class ToursOpenApiDocumentClient
     }
 
     private static string GetCanonicalDocumentPath()
-        => Path.Combine(ContractTestRepository.RootPath, "src", "ViajantesTurismo.Admin.Contracts", "OpenApi", "tours.openapi.json");
+        => Path.Combine(ContractTestRepository.RootPath, "src", "ViajantesTurismo.Admin.Contracts.Http", "OpenApi", "tours.openapi.json");
 
     private static string GetGeneratedDocumentPath()
-        => Path.Combine(ContractTestRepository.RootPath, "src", "ViajantesTurismo.Admin.Contracts", "OpenApi", ".generated", "ViajantesTurismo.Admin.ApiService_tours.json");
+        => Path.Combine(ContractTestRepository.RootPath, "src", "ViajantesTurismo.Admin.Contracts.Http", "OpenApi", ".generated", "ViajantesTurismo.Admin.ApiService_tours.json");
 }

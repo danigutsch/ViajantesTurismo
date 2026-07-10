@@ -1,5 +1,5 @@
 using ViajantesTurismo.Catalog.Application.Tours;
-using ViajantesTurismo.Catalog.Contracts;
+using ViajantesTurismo.Catalog.Contracts.Application;
 using ViajantesTurismo.Catalog.Domain.PublicContent;
 
 namespace ViajantesTurismo.Catalog.ApiServiceTests;

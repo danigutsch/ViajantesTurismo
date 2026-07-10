@@ -23,7 +23,7 @@ Instructions for files under `src/ViajantesTurismo.Admin.Infrastructure/`.
 ## EF Core configuration
 
 - Keep one `IEntityTypeConfiguration<T>` class per entity/value object mapping concern.
-- Use `ContractConstants` for lengths and constraints.
+- Use domain-owned limit types such as `AdminDomainLimits` for persisted domain lengths and constraints.
 - Configure owned/value objects explicitly.
 - Configure key generation and delete behavior intentionally.
 

@@ -45,12 +45,16 @@ ViajantesTurismo/
 │   ├── ViajantesTurismo.Admin.Domain/              # Domain entities and business logic
 │   ├── ViajantesTurismo.Admin.Application/         # Application layer (mappers, interfaces)
 │   ├── ViajantesTurismo.Admin.Infrastructure/      # Infrastructure (EF Core, DB context, stores)
-│   ├── ViajantesTurismo.Admin.Contracts/           # API contracts and DTOs
+│   ├── ViajantesTurismo.Admin.Contracts.Application/ # Admin DTOs and request validation
+│   ├── ViajantesTurismo.Admin.Contracts.Http/      # Admin HTTP clients and OpenAPI artifacts
+│   ├── ViajantesTurismo.Admin.Contracts.IntegrationEvents/ # Admin integration events
 │   ├── ViajantesTurismo.Admin.ApiService/          # Main API service
 │   ├── ViajantesTurismo.Catalog.Domain/            # Public tour presentation domain
 │   ├── ViajantesTurismo.Catalog.Application/       # Catalog application services and projections
 │   ├── ViajantesTurismo.Catalog.Infrastructure/    # Catalog EF Core persistence and read models
-│   ├── ViajantesTurismo.Catalog.Contracts/         # Catalog public and management DTOs
+│   ├── ViajantesTurismo.Catalog.Contracts.Application/ # Catalog DTOs and request validation
+│   ├── ViajantesTurismo.Catalog.Contracts.Http/    # Catalog HTTP clients and OpenAPI artifacts
+│   ├── ViajantesTurismo.Catalog.Contracts.IntegrationEvents/ # Catalog integration events
 │   ├── ViajantesTurismo.Catalog.ApiService/        # Catalog public content API
 │   ├── ViajantesTurismo.Management.Web/            # Blazor management web frontend
 │   ├── ViajantesTurismo.Public.Web/                # Blazor public website frontend

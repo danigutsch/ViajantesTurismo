@@ -1,5 +1,4 @@
 using JetBrains.Annotations;
-using ViajantesTurismo.Admin.Contracts;
 using ViajantesTurismo.Admin.Domain.Shared;
 using SharedKernel.Results;
 using static ViajantesTurismo.Admin.Domain.Customers.CustomerErrors;
@@ -52,12 +51,12 @@ public sealed class PhysicalInfo
     {
         var errors = new ValidationErrors();
 
-        if (weightKg is < ContractConstants.MinWeightKg or > ContractConstants.MaxWeightKg)
+        if (weightKg is < AdminDomainLimits.MinWeightKg or > AdminDomainLimits.MaxWeightKg)
         {
             errors.Add(InvalidWeight());
         }
 
-        if (heightCentimeters is < ContractConstants.MinHeightCm or > ContractConstants.MaxHeightCm)
+        if (heightCentimeters is < AdminDomainLimits.MinHeightCm or > AdminDomainLimits.MaxHeightCm)
         {
             errors.Add(InvalidHeight());
         }

@@ -1,4 +1,4 @@
-using ViajantesTurismo.Admin.Contracts;
+using ViajantesTurismo.Admin.Contracts.Http;
 
 namespace ViajantesTurismo.Admin.UnitTests.Contracts;
 

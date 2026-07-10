@@ -1,6 +1,10 @@
 # ADR-003: Validation Constants in Contracts Project
 
-**Status**: Accepted — 2025-11-08
+**Status**: Superseded — 2026-07-10
+
+Superseded by the contract split and domain-boundary cleanup. Domain projects now keep domain and
+persistence validation limits in domain-owned types such as `AdminDomainLimits` and
+`CatalogDomainLimits`; they must not reference `ViajantesTurismo.*.Contracts.*` projects.
 
 ## Context
 
@@ -12,9 +16,10 @@ Validation constraints like max lengths, minimum durations, and price limits mus
 
 Duplicating these constants leads to inconsistencies and maintenance burden.
 
-## Decision
+## Original decision
 
-Define all **external validation constraints** in a `ContractConstants` static class within the **Contracts project**:
+Define all **external validation constraints** in a `ContractConstants` static class within the
+Contracts project:
 
 ```csharp
 public static class ContractConstants
@@ -25,7 +30,8 @@ public static class ContractConstants
 }
 ```
 
-Domain, API, and test projects reference these constants for validation and annotations.
+API, Web, and test projects may reference these constants for external DTO validation and annotations.
+Domain projects do not reference contract projects.
 
 ## Consequences
 
@@ -38,7 +44,8 @@ Domain, API, and test projects reference these constants for validation and anno
 
 ### Cons
 
-- Domain layer references Contracts project (acceptable dependency for shared constants).
+- Domain no longer references Contracts projects; duplicated domain-specific limit names are preferred
+  over an outward dependency from Domain to Contracts.
 - Cannot have different constraints for API vs domain (intentional — enforces consistency).
 
 ## Alternatives considered
@@ -49,4 +56,4 @@ Domain, API, and test projects reference these constants for validation and anno
 ## Links
 
 - [Back to ADR Index](../ARCHITECTURE_DECISIONS.md)
-- See `ViajantesTurismo.Admin.Contracts/ContractConstants.cs`
+- See `ViajantesTurismo.Admin.Contracts.Application/ContractConstants.cs`
