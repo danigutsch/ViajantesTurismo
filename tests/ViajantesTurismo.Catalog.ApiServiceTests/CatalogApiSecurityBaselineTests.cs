@@ -79,6 +79,33 @@ public sealed class CatalogApiSecurityBaselineTests
     }
 
     [Fact]
+    public async Task Catalog_api_omits_cors_headers_when_no_origins_are_configured()
+    {
+        // Arrange
+        var configuration = new ConfigurationBuilder().Build();
+        using var host = await new HostBuilder()
+            .ConfigureWebHost(webBuilder => webBuilder
+                .UseTestServer()
+                .ConfigureServices(services => services.AddCatalogSecurityBaseline(configuration))
+                .Configure(app =>
+                {
+                    app.UseCors(CatalogSecurityBaseline.CorsPolicyName);
+                    app.Run(static context => Results.Ok().ExecuteAsync(context));
+                }))
+            .StartAsync(TestContext.Current.CancellationToken);
+        using var client = host.GetTestClient();
+        using var request = new HttpRequestMessage(HttpMethod.Get, new Uri("/", UriKind.Relative));
+        request.Headers.Add("Origin", "https://public.example");
+
+        // Act
+        using var response = await client.SendAsync(request, TestContext.Current.CancellationToken);
+
+        // Assert
+        response.StatusCode.ShouldBe(HttpStatusCode.OK);
+        response.Headers.Contains("Access-Control-Allow-Origin").ShouldBeFalse();
+    }
+
+    [Fact]
     public async Task Catalog_public_reads_return_too_many_requests_after_policy_limit()
     {
         // Arrange
@@ -143,6 +170,27 @@ public sealed class CatalogApiSecurityBaselineTests
 
         // Assert
         exception.Message.ShouldContain("KnownNetworks", StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public void Forwarded_headers_configuration_rejects_invalid_proxies()
+    {
+        // Arrange
+        var configuration = new ConfigurationBuilder()
+            .AddInMemoryCollection(new Dictionary<string, string?>
+            {
+                ["KnownProxies:0"] = "not-an-ip"
+            })
+            .Build();
+        var options = new ForwardedHeadersOptions();
+
+        // Act
+        Action action = () => options.ConfigureTrustedForwardedHeaders(configuration);
+
+        var exception = action.ShouldThrow<InvalidOperationException>();
+
+        // Assert
+        exception.Message.ShouldContain("KnownProxies", StringComparison.Ordinal);
     }
 
     [Fact]
