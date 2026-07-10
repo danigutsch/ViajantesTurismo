@@ -11,6 +11,11 @@ public static class TestTraits
     public const string SmokeCategory = "smoke";
 
     /// <summary>
+    /// Category value for endpoint coverage.
+    /// </summary>
+    public const string EndpointCategory = SharedKernel.Testing.TestTraitValues.EndpointCategory;
+
+    /// <summary>
     /// Scope value for integration tests.
     /// </summary>
     public const string IntegrationScope = "integration";

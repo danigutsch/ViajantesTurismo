@@ -3,6 +3,8 @@ using ViajantesTurismo.Catalog.ApiService;
 using ViajantesTurismo.Catalog.Infrastructure;
 using ViajantesTurismo.ServiceDefaults;
 
+const string ApiRobotsTxt = "User-agent: *\nDisallow: /";
+
 var builder = WebApplication.CreateSlimBuilder(args);
 
 builder.WebHost.UseKestrelHttpsConfiguration();
@@ -28,6 +30,7 @@ app.UseCors(CatalogSecurityBaseline.CorsPolicyName);
 app.UseRateLimiter();
 app.UseOutputCache();
 app.MapCatalogEndpoints();
+app.MapRobotsTxt(ApiRobotsTxt);
 
 app.MapDefaultEndpoints();
 

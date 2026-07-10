@@ -69,6 +69,24 @@ public sealed class CatalogApiEndpointTests
     }
 
     [Fact]
+    public async Task Robots_txt_disallows_catalog_api_crawling()
+    {
+        // Arrange
+        await using var factory = CatalogApiTestHost.Create();
+        using var client = factory.CreateClient();
+
+        // Act
+        using var response = await client.GetAsync(new Uri("/robots.txt", UriKind.Relative), TestContext.Current.CancellationToken);
+        var body = await response.Content.ReadAsStringAsync(TestContext.Current.CancellationToken);
+
+        // Assert
+        response.StatusCode.ShouldBe(HttpStatusCode.OK);
+        response.Content.Headers.ContentType?.MediaType.ShouldBe("text/plain");
+        response.Content.Headers.ContentType?.CharSet.ShouldBe("utf-8");
+        body.ShouldBe("User-agent: *\nDisallow: /");
+    }
+
+    [Fact]
     public async Task Public_content_endpoint_saves_review_required_draft()
     {
         // Arrange
