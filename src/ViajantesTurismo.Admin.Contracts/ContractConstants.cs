@@ -116,9 +116,22 @@ public static class ContractConstants
     public const long CustomerImportMaxFileBytes = 1_048_576;
 
     /// <summary>
+    /// Maximum budget for the serialized customer import conflict-resolution form field in bytes.
+    /// </summary>
+    public const long CustomerImportConflictResolutionsMaxBytes = 16_384;
+
+    /// <summary>
+    /// Additional multipart envelope budget for customer import requests in bytes.
+    /// </summary>
+    public const long CustomerImportMultipartEnvelopeBytes = 16_384;
+
+    /// <summary>
     /// Maximum accepted customer import multipart request size in bytes.
     /// </summary>
-    public const long CustomerImportMaxRequestBytes = CustomerImportMaxFileBytes + 16_384;
+    public const long CustomerImportMaxRequestBytes =
+        CustomerImportMaxFileBytes
+        + CustomerImportConflictResolutionsMaxBytes
+        + CustomerImportMultipartEnvelopeBytes;
 
     /// <summary>
     /// Content types accepted by customer import uploads.

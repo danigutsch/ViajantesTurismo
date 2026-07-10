@@ -127,6 +127,22 @@ public sealed class CustomerImportEndpointsTests
     }
 
     [Fact]
+    public void Request_limit_includes_file_conflict_resolution_and_multipart_budgets()
+    {
+        // Arrange
+        const long expectedBudget =
+            ContractConstants.CustomerImportMaxFileBytes
+            + ContractConstants.CustomerImportConflictResolutionsMaxBytes
+            + ContractConstants.CustomerImportMultipartEnvelopeBytes;
+
+        // Act
+        var requestLimit = ContractConstants.CustomerImportMaxRequestBytes;
+
+        // Assert
+        requestLimit.ShouldBe(expectedBudget);
+    }
+
+    [Fact]
     public async Task Rejects_requests_larger_than_the_import_request_limit()
     {
         // Arrange
