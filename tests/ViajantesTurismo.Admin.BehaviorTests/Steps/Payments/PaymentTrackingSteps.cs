@@ -103,8 +103,8 @@ public sealed class PaymentTrackingSteps(TourContext tourContext, BookingContext
     {
         var payment = bookingContext.Booking.Payments.Last();
         (payment.Notes).ShouldNotBeNull();
-        (payment.Notes).ShouldNotContain("😊");
-        (payment.Notes).ShouldNotContain("👍");
+        (payment.Notes).ShouldNotContain("😊", StringComparison.Ordinal);
+        (payment.Notes).ShouldNotContain("👍", StringComparison.Ordinal);
     }
 
     [When("I record a payment with today's date")]

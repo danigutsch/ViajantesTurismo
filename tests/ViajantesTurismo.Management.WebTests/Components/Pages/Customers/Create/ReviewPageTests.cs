@@ -67,7 +67,7 @@ public sealed class ReviewPageTests : BunitContext
         {
             var alert = cut.Find(".alert.alert-danger");
             alert.TextContent.ShouldContain("We couldn't create the customer right now. Please try again.", StringComparison.Ordinal);
-            alert.TextContent.ShouldNotContain("Duplicate email");
+            alert.TextContent.ShouldNotContain("Duplicate email", StringComparison.Ordinal);
         });
     }
 

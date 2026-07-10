@@ -346,7 +346,7 @@ public sealed class PublicWebEndpointTests
         content.ShouldContain("--vt-color-primary: #0F766E;", StringComparison.Ordinal);
         content.ShouldContain("--vt-font-heading: Georgia;", StringComparison.Ordinal);
         content.Contains("http://cdn.example/logo.svg", StringComparison.Ordinal).ShouldBeFalse();
-        content.ShouldNotContain("javascript:alert(1)");
+        content.ShouldNotContain("javascript:alert(1)", StringComparison.Ordinal);
     }
 
     [Fact]
