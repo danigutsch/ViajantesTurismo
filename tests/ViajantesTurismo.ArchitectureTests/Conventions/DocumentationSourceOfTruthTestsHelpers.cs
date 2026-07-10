@@ -19,10 +19,6 @@ internal static class DocumentationSourceOfTruthTestsHelpers
             + "[API compatibility](API_COMPATIBILITY.md), [API versioning](API_VERSIONING.md) |",
         "| Configuration and feature flags | [Configuration standards](CONFIGURATION.md) | "
             + "[OpenTelemetry custom telemetry](OPEN_TELEMETRY.md) |",
-        "| Platform service integrations | "
-            + "[Platform service integration evaluation](PLATFORM_SERVICE_INTEGRATION_EVALUATION.md) | "
-            + "[Runtime wiring and deployment mapping](architecture/runtime-wiring-and-deployment.md), "
-            + "[AppHost README](../src/ViajantesTurismo.AppHost/README.md) |",
         "| CI, release, and contribution workflow | [Contributing](../CONTRIBUTING.md) | "
             + "[CI overview](ci/overview.md), [CI governance](ci/governance.md), "
             + "[Pull request template](pull_request_template.md) |"
