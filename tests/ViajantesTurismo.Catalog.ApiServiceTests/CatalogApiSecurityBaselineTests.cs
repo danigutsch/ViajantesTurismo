@@ -143,7 +143,7 @@ public sealed class CatalogApiSecurityBaselineTests
 
         // Assert
         options.ForwardedHeaders.ShouldBe(ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedProto);
-        options.ForwardLimit.ShouldBe(2);
+        options.ForwardLimit.ShouldBe(1);
         options.KnownProxies.ShouldHaveSingleItem().ToString().ShouldBe("10.0.0.10");
         var knownNetwork = options.KnownIPNetworks.ShouldHaveSingleItem();
         knownNetwork.BaseAddress.ToString().ShouldBe("10.1.0.0");
