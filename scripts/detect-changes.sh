@@ -136,6 +136,7 @@ fast_validation_patterns=(
     "src/SharedKernel/SharedKernel.Aspire.CodeFixes/**"
     "src/SharedKernel/SharedKernel.OpenApi/**"
     "src/SharedKernel/SharedKernel.Observability/**"
+    "src/SharedKernel/SharedKernel.HttpCaching.AspNetCore/**"
     "src/SharedKernel/SharedKernel.HttpClients/**"
     "src/SharedKernel/SharedKernel.InputNormalization/**"
     "src/SharedKernel/SharedKernel.Results/**"
