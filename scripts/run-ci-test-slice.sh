@@ -153,7 +153,7 @@ build_projects() {
 
     if [[ $# -eq 1 ]]; then
         echo "Building 1 test project as one MSBuild graph with up to ${max_parallel} node(s)."
-        dotnet build "$1" --no-restore "-maxcpucount:${max_parallel}"
+        dotnet build "$1" --no-restore -- "-maxcpucount:${max_parallel}"
         return
     fi
 
@@ -180,7 +180,7 @@ build_projects() {
     fi
 
     echo "Building $# test projects as one MSBuild graph with up to ${max_parallel} node(s)."
-    dotnet build "${solution_file}" --no-restore "-maxcpucount:${max_parallel}"
+    dotnet build "${solution_file}" --no-restore -- "-maxcpucount:${max_parallel}"
 }
 
 prepare_openapi_artifacts() {
