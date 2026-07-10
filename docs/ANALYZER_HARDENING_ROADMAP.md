@@ -103,10 +103,10 @@ The matrix below focuses on the high-value rules and families that matter to rep
 | Area | Rule or family | Source | Current state | Current severity | Exception policy | Next step |
 | --- | --- | --- | --- | --- | --- | --- |
 | Public guard clauses | `CA1062` validate arguments of public methods | Built-in .NET analyzers | Adopted | `error` in production; scoped exceptions only in migrations and Admin BDD step-definition files | Reusable test helpers follow the same guard-clause expectations as production support code; framework-owned step bindings stay on a narrow file-scope exception path | Keep the exception list narrow and avoid reintroducing project-wide suppression |
-| Async naming | `SKSTYLE001` no `Async` suffix | `SharedKernel.Style.Analyzers` | Adopted | `warning` | Overrides and interface implementations allowed through config | Keep active |
-| CancellationToken name | `SKSTYLE002` require `ct` | `SharedKernel.Style.Analyzers` | Adopted | `warning` | Keep narrow scoped exceptions only when external contracts force a different name | Keep active |
-| CancellationToken defaults | `SKSTYLE003` forbid `CancellationToken ct = default` | `SharedKernel.Style.Analyzers` | Adopted | `warning` | Same as above | Keep active |
-| One top-level type per file | `SKSTYLE004` | `SharedKernel.Style.Analyzers` | Adopted with staged exclusions | `warning` | Small explicit allowlist in `.editorconfig` | Reduce allowlist over time |
+| Async naming | `SKSTYLE001` no `Async` suffix | `SharedKernel.Style.Analyzers` | Adopted | package default `warning`; repository staged by `.editorconfig` | Overrides and interface implementations allowed through config | Keep active |
+| CancellationToken name | `SKSTYLE002` require `ct` | `SharedKernel.Style.Analyzers` | Adopted | package default `warning`; repository staged by `.editorconfig` | Keep narrow scoped exceptions only when external contracts force a different name | Keep active |
+| CancellationToken defaults | `SKSTYLE003` forbid `CancellationToken ct = default` | `SharedKernel.Style.Analyzers` | Adopted | package default `warning`; repository staged by `.editorconfig` | Same as above | Keep active |
+| One top-level type per file | `SKSTYLE004` | `SharedKernel.Style.Analyzers` | Adopted with staged exclusions | package default `warning`; repository staged by `.editorconfig` | Small explicit allowlist in `.editorconfig` | Reduce allowlist over time |
 | Domain event suffix | `SKSTYLE008` | `SharedKernel.Style.Analyzers` | Adopted | package default `warning` | Applies only to `IDomainEvent` implementations | Keep active and use rename code fix when safe |
 | Aspire image pins | `SKASPIRE001` require tag and verified digest together | `SharedKernel.Aspire.Analyzers` | Adopted | package default `warning` | Code fix inserts uncompilable placeholders only; placeholders must be replaced before commit/build | Keep active and resolve with registry-verified tag and digest values only |
 | Test pragma suppressions | `SKTEST001` | `SharedKernel.Testing.Analyzers` | Adopted | package default `warning` | Test-only by design | Keep active and narrow |
@@ -191,7 +191,7 @@ Concrete Phase 1 backlog:
    `warning`.
 2. Shrink file-specific `SKSTYLE004` exceptions as grouped top-level-type files are refactored.
 3. Measure remaining repository violations while keeping `SKSTYLE001`, `SKSTYLE002`, and
-   `SKSTYLE003` as warnings when enabled.
+   `SKSTYLE003` descriptors at warning severity.
 4. Keep `CA1062` out of `tests/Directory.Build.props`; use real guards in reusable test support
    code and only narrow file-scoped exceptions where framework-owned binding entrypoints would
    otherwise force low-value boilerplate.
@@ -325,9 +325,9 @@ When adopting or tightening analyzer rules:
 2. Prefer the smallest enforcement mechanism.
    Do not build a new custom analyzer if a built-in rule plus scoped configuration already solves
    the problem.
-3. Stage activation, not repository-owned analyzer severity.
-   Keep repository-owned analyzers at `warning` severity when enabled, then reduce scoped
-   exceptions as the baseline improves.
+3. Stage repository activation, not analyzer descriptor severity.
+   Keep repository-owned analyzer descriptors at `warning` severity, then reduce `.editorconfig`
+   staging as the baseline improves.
 4. Keep exceptions narrow.
    Prefer file-scoped `.editorconfig` exceptions over project-wide `NoWarn` or broad analyzer
    suppression.
