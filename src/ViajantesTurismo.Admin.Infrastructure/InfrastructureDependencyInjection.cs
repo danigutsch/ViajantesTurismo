@@ -60,7 +60,7 @@ public static class InfrastructureDependencyInjection
     /// <param name="builder">The application builder to configure.</param>
     /// <typeparam name="TApplicationBuilder">The type of the application builder, constrained to <see cref="IHostApplicationBuilder"/>.</typeparam>
     /// <returns>The updated application builder.</returns>
-    public static TApplicationBuilder AddSeeding<TApplicationBuilder>(this TApplicationBuilder builder)
+    public static TApplicationBuilder AddAdminSeeding<TApplicationBuilder>(this TApplicationBuilder builder)
         where TApplicationBuilder : IHostApplicationBuilder
     {
         ArgumentNullException.ThrowIfNull(builder);

@@ -35,6 +35,20 @@ public static class InfrastructureDependencyInjection
     }
 
     /// <summary>
+    /// Adds Catalog infrastructure required by the migration service before schemas are fully migrated.
+    /// </summary>
+    /// <param name="builder">The application builder to configure.</param>
+    /// <typeparam name="TApplicationBuilder">The application builder type.</typeparam>
+    /// <returns>The updated application builder.</returns>
+    public static TApplicationBuilder AddCatalogSeeding<TApplicationBuilder>(this TApplicationBuilder builder)
+        where TApplicationBuilder : IHostApplicationBuilder
+    {
+        ArgumentNullException.ThrowIfNull(builder);
+
+        return AddCatalogInfrastructure(builder, addOutboxRelay: false);
+    }
+
+    /// <summary>
     /// Adds Catalog integration-event transport consumption for API-hosted delivery mode.
     /// </summary>
     /// <param name="builder">The application builder to configure.</param>

@@ -63,6 +63,34 @@ public sealed class CatalogIntegrationEventTransportRegistrationTests
     }
 
     [Fact]
+    public void Seeding_infrastructure_does_not_start_catalog_outbox_relay()
+    {
+        // Arrange
+        using var scenario = CatalogInfrastructureTestServices.CreateSeedingScenario();
+
+        // Act
+        var includesCatalogOutboxRelay = scenario.ContainsHostedService<IntegrationEventOutboxRelayHostedService<CatalogDbContext>>();
+
+        // Assert
+        includesCatalogOutboxRelay.ShouldBeFalse();
+    }
+
+    [Fact]
+    public void Seeding_infrastructure_does_not_start_catalog_projection_workers()
+    {
+        // Arrange
+        using var scenario = CatalogInfrastructureTestServices.CreateSeedingScenario();
+
+        // Act
+        var includesProjectionWorker = scenario.ContainsHostedService<CatalogProjectionHostedService>();
+        var includesReconciliationWorker = scenario.ContainsHostedService<MediaObjectReconciliationHostedService>();
+
+        // Assert
+        includesProjectionWorker.ShouldBeFalse();
+        includesReconciliationWorker.ShouldBeFalse();
+    }
+
+    [Fact]
     public void Standalone_worker_registers_catalog_projection_hosted_service()
     {
         // Arrange

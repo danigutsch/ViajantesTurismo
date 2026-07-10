@@ -61,7 +61,7 @@ internal static class AdminInfrastructureModuleTestServices
     public static ServiceProvider CreateWithSeedingModule()
     {
         var builder = CreateConfiguredApplicationBuilder();
-        builder.AddSeeding();
+        builder.AddAdminSeeding();
 
         return builder.Services.BuildServiceProvider();
     }
