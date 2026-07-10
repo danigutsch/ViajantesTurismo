@@ -149,6 +149,43 @@ public class AddPageTests : BunitContext
         Assert.Contains(buttons, b => b.TextContent.Contains("View Tour Details", StringComparison.Ordinal));
         Assert.Contains(buttons, b => b.TextContent.Contains("Create Another Tour", StringComparison.Ordinal));
         Assert.Contains(buttons, b => b.TextContent.Contains("View All Tours", StringComparison.Ordinal));
+        buttons.ShouldContain(b => b.GetAttribute("href")?.StartsWith("/tours/", StringComparison.Ordinal) == true);
+        buttons.ShouldNotContain(b => b.GetAttribute("href")?.StartsWith("/api/v1/", StringComparison.Ordinal) == true);
+    }
+
+    [Theory]
+    [Trait(SharedKernel.Testing.TestTraitNames.ScopeName, TestTraits.ComponentScope)]
+    [Trait(SharedKernel.Testing.TestTraitNames.AreaName, TestTraits.ManagementWebArea)]
+    [Trait(SharedKernel.Testing.TestTraitNames.CategoryName, TestTraits.ComponentCategory)]
+    [InlineData("/api/v1/route")]
+    [InlineData("/api/v1/tours-malformed/relative-id")]
+    public async Task Successful_submission_preserves_api_prefix_when_tours_path_prefix_does_not_match(
+        string location)
+    {
+        // Arrange
+        _fakeToursApi.SetCreateTourOutcome(ContractCommandOutcome.Succeeded(
+            System.Net.HttpStatusCode.Created,
+            new Uri(location, UriKind.Relative)));
+        var cut = Render<Add>();
+
+        // Act
+        await cut.InvokeAsync(() => cut.Find("input#identifier").Change("CUBA2024"));
+        await cut.InvokeAsync(() => cut.Find("input#name").Change("Cuba Adventure"));
+        await cut.InvokeAsync(() => cut.Find("input#price").Change("1500"));
+        await cut.InvokeAsync(() => cut.Find("input#singleRoom").Change("200"));
+        await cut.InvokeAsync(() => cut.Find("input#regularBike").Change("50"));
+        await cut.InvokeAsync(() => cut.Find("input#eBike").Change("100"));
+        await cut.InvokeAsync(() => cut.Find("textarea#services").Change("Hotel"));
+        await cut.InvokeAsync(() => cut.Find("input#minCustomers").Change("5"));
+        await cut.InvokeAsync(() => cut.Find("input#maxCustomers").Change("15"));
+        await cut.InvokeAsync(() => cut.Find("form").Submit());
+
+        // Assert
+        await cut.WaitForStateAsync(() => cut.FindAll(".alert-success").Count > 0, TimeSpan.FromSeconds(2));
+
+        var detailsLink = cut.FindAll("a.btn")
+            .First(link => link.TextContent.Contains("View Tour Details", StringComparison.Ordinal));
+        detailsLink.GetAttribute("href").ShouldBe(location);
     }
 
     [Fact]

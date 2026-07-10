@@ -1,5 +1,4 @@
 using Bunit;
-using SharedKernel.Testing.Assertions;
 using TourCard = ViajantesTurismo.Public.Web.Components.Shared.TourCard;
 using TourGallery = ViajantesTurismo.Public.Web.Components.Shared.TourGallery;
 

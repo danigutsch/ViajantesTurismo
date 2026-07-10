@@ -128,6 +128,8 @@ Bike rental"/>
 </EditForm>
 
 @code {
+    private const string VersionedToursPathPrefix = "/api/v1/tours";
+
     private TourFormModel _model = new();
     private EditContext _editContext;
     private bool _isSubmitting;
@@ -180,7 +182,7 @@ Bike rental"/>
                 return;
             }
 
-            _createdTourUrl = outcome.Location?.ToString() ?? "/tours";
+            _createdTourUrl = GetTourLocation(outcome.Location);
             _success = true;
         }
         catch (Exception)
@@ -201,6 +203,9 @@ Bike rental"/>
         _createdTourUrl = null;
         _errorMessage = null;
     }
+
+    private static string GetTourLocation(Uri? location) =>
+        ApiLocationNormalizer.ToUiRoute(location, "/tours", VersionedToursPathPrefix);
 
     private sealed class TourFormModel : IValidatableObject
     {

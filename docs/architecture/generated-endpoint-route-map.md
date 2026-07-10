@@ -12,46 +12,46 @@ Source: `src/**/*.cs` route declarations plus route-group prefixes in
 | Method | Route | Endpoint | Audience | Auth metadata | Source |
 | --- | --- | --- | --- | --- | --- |
 | `GET` | `/Error` | inline | public web | not declared | `ViajantesTurismo.Public.Web/PublicWebEndpoints.cs` |
-| `GET` | `/bookings` | GetBookings | management/internal | not declared | `ViajantesTurismo.Admin.ApiService/Bookings/BookingEndpoints.cs` |
-| `POST` | `/bookings` | CreateBooking | management/internal | not declared | `ViajantesTurismo.Admin.ApiService/Bookings/BookingsCreateBookingEndpoint.cs` |
-| `GET` | `/bookings/customer/{customerId:guid}` | GetBookingsByCustomerId | management/internal | not declared | `ViajantesTurismo.Admin.ApiService/Bookings/BookingEndpoints.cs` |
-| `GET` | `/bookings/tour/{tourId:guid}` | GetBookingsByTourId | management/internal | not declared | `ViajantesTurismo.Admin.ApiService/Bookings/BookingEndpoints.cs` |
-| `DELETE` | `/bookings/{id:guid}` | DeleteBooking | management/internal | not declared | `ViajantesTurismo.Admin.ApiService/Bookings/BookingsDeleteBookingEndpoint.cs` |
-| `GET` | `/bookings/{id:guid}` | GetBookingById | management/internal | not declared | `ViajantesTurismo.Admin.ApiService/Bookings/BookingEndpoints.cs` |
-| `POST` | `/bookings/{id:guid}/cancel` | CancelBooking | management/internal | not declared | `ViajantesTurismo.Admin.ApiService/Bookings/BookingsCancelBookingEndpoint.cs` |
-| `POST` | `/bookings/{id:guid}/complete` | CompleteBooking | management/internal | not declared | `ViajantesTurismo.Admin.ApiService/Bookings/BookingsCompleteBookingEndpoint.cs` |
-| `POST` | `/bookings/{id:guid}/confirm` | ConfirmBooking | management/internal | not declared | `ViajantesTurismo.Admin.ApiService/Bookings/BookingsConfirmBookingEndpoint.cs` |
-| `PUT` | `/bookings/{id:guid}/details` | UpdateBookingDetails | management/internal | not declared | `ViajantesTurismo.Admin.ApiService/Bookings/BookingsUpdateBookingDetailsEndpoint.cs` |
-| `PUT` | `/bookings/{id:guid}/discount` | UpdateBookingDiscount | management/internal | not declared | `ViajantesTurismo.Admin.ApiService/Bookings/BookingsUpdateBookingDiscountEndpoint.cs` |
-| `PATCH` | `/bookings/{id:guid}/notes` | UpdateBookingNotes | management/internal | not declared | `ViajantesTurismo.Admin.ApiService/Bookings/BookingsUpdateBookingNotesEndpoint.cs` |
-| `POST` | `/bookings/{id:guid}/payments` | RecordPayment | management/internal | not declared | `ViajantesTurismo.Admin.ApiService/Bookings/BookingsRecordPaymentEndpoint.cs` |
-| `PUT` | `/catalog/media/images/{id:guid}` | UpsertMediaImage | management/internal | not declared | `ViajantesTurismo.Catalog.ApiService/CatalogEndpoints.cs` |
-| `POST` | `/catalog/media/images/{id:guid}/accessibility-draft` | GenerateMediaImageAccessibilityDraft | management/internal | not declared | `ViajantesTurismo.Catalog.ApiService/CatalogEndpoints.cs` |
-| `GET` | `/catalog/public-content` | inline | management/internal | not declared | `ViajantesTurismo.Catalog.ApiService/CatalogEndpoints.cs` |
-| `GET` | `/catalog/public-content/{**key}` | GetPublicContentForManagement | management/internal | not declared | `ViajantesTurismo.Catalog.ApiService/CatalogEndpoints.cs` |
-| `PUT` | `/catalog/public-content/{**key}` | UpsertPublicContent | management/internal | not declared | `ViajantesTurismo.Catalog.ApiService/CatalogEndpoints.cs` |
-| `GET` | `/catalog/public-theme` | GetPublicThemeForManagement | management/internal | not declared | `ViajantesTurismo.Catalog.ApiService/CatalogEndpoints.cs` |
-| `PUT` | `/catalog/public-theme` | UpsertPublicTheme | management/internal | not declared | `ViajantesTurismo.Catalog.ApiService/CatalogEndpoints.cs` |
-| `GET` | `/catalog/tours` | GetTours | management/internal | not declared | `ViajantesTurismo.Catalog.ApiService/CatalogEndpoints.cs` |
-| `GET` | `/catalog/tours/{id:guid}` | GetTour | management/internal | not declared | `ViajantesTurismo.Catalog.ApiService/CatalogEndpoints.cs` |
-| `GET` | `/catalog/tours/{id:guid}/images` | ListTourImages | management/internal | not declared | `ViajantesTurismo.Catalog.ApiService/CatalogEndpoints.cs` |
-| `PUT` | `/catalog/tours/{id:guid}/presentation` | UpsertTourPresentation | management/internal | not declared | `ViajantesTurismo.Catalog.ApiService/CatalogEndpoints.cs` |
-| `GET` | `/customers` | GetCustomers | management/internal | not declared | `ViajantesTurismo.Admin.ApiService/Customers/CustomerEndpoints.cs` |
-| `POST` | `/customers` | CreateCustomer | management/internal | not declared | `ViajantesTurismo.Admin.ApiService/Customers/CustomerEndpoints.cs` |
-| `POST` | `/customers/import` | ImportCustomers | management/internal | not declared | `ViajantesTurismo.Admin.ApiService/Customers/CustomerImportEndpoints.cs` |
-| `POST` | `/customers/import/commit` | CommitImportWithResolutions | management/internal | not declared | `ViajantesTurismo.Admin.ApiService/Customers/CustomerImportEndpoints.cs` |
-| `GET` | `/customers/{id:guid}` | GetCustomerById | management/internal | not declared | `ViajantesTurismo.Admin.ApiService/Customers/CustomerEndpoints.cs` |
-| `PUT` | `/customers/{id:guid}` | UpdateCustomer | management/internal | not declared | `ViajantesTurismo.Admin.ApiService/Customers/CustomerEndpoints.cs` |
-| `GET` | `/docs/errors` | GetErrorDocumentation | management/internal | not declared | `ViajantesTurismo.Admin.ApiService/Errors/ErrorDocumentationEndpoints.cs` |
-| `GET` | `/docs/errors/{identifier}` | GetErrorDocumentationByIdentifier | management/internal | not declared | `ViajantesTurismo.Admin.ApiService/Errors/ErrorDocumentationEndpoints.cs` |
-| `GET` | `/public/catalog/content/{**key}` | GetPublicContent | public API | not declared | `ViajantesTurismo.Catalog.ApiService/CatalogEndpoints.cs` |
-| `GET` | `/public/catalog/theme` | GetPublicTheme | public API | not declared | `ViajantesTurismo.Catalog.ApiService/CatalogEndpoints.cs` |
-| `GET` | `/public/catalog/tours` | GetPublishedTours | public API | not declared | `ViajantesTurismo.Catalog.ApiService/CatalogEndpoints.cs` |
-| `GET` | `/public/catalog/tours/{slug}` | GetPublishedTour | public API | not declared | `ViajantesTurismo.Catalog.ApiService/CatalogEndpoints.cs` |
-| `GET` | `/tours` | GetTours | management/internal | not declared | `ViajantesTurismo.Admin.ApiService/Tours/ToursEndpoints.cs` |
-| `POST` | `/tours` | CreateTour | management/internal | not declared | `ViajantesTurismo.Admin.ApiService/Tours/ToursCreateTourEndpoint.cs` |
-| `GET` | `/tours/{id:guid}` | GetTourById | management/internal | not declared | `ViajantesTurismo.Admin.ApiService/Tours/ToursEndpoints.cs` |
-| `PUT` | `/tours/{id:guid}` | UpdateTour | management/internal | not declared | `ViajantesTurismo.Admin.ApiService/Tours/ToursUpdateTourEndpoint.cs` |
+| `GET` | `/api/v1/bookings` | GetBookings | management/internal | not declared | `ViajantesTurismo.Admin.ApiService/Bookings/BookingEndpoints.cs` |
+| `POST` | `/api/v1/bookings` | CreateBooking | management/internal | not declared | `ViajantesTurismo.Admin.ApiService/Bookings/BookingsCreateBookingEndpoint.cs` |
+| `GET` | `/api/v1/bookings/customer/{customerId:guid}` | GetBookingsByCustomerId | management/internal | not declared | `ViajantesTurismo.Admin.ApiService/Bookings/BookingEndpoints.cs` |
+| `GET` | `/api/v1/bookings/tour/{tourId:guid}` | GetBookingsByTourId | management/internal | not declared | `ViajantesTurismo.Admin.ApiService/Bookings/BookingEndpoints.cs` |
+| `DELETE` | `/api/v1/bookings/{id:guid}` | DeleteBooking | management/internal | not declared | `ViajantesTurismo.Admin.ApiService/Bookings/BookingsDeleteBookingEndpoint.cs` |
+| `GET` | `/api/v1/bookings/{id:guid}` | GetBookingById | management/internal | not declared | `ViajantesTurismo.Admin.ApiService/Bookings/BookingEndpoints.cs` |
+| `POST` | `/api/v1/bookings/{id:guid}/cancel` | CancelBooking | management/internal | not declared | `ViajantesTurismo.Admin.ApiService/Bookings/BookingsCancelBookingEndpoint.cs` |
+| `POST` | `/api/v1/bookings/{id:guid}/complete` | CompleteBooking | management/internal | not declared | `ViajantesTurismo.Admin.ApiService/Bookings/BookingsCompleteBookingEndpoint.cs` |
+| `POST` | `/api/v1/bookings/{id:guid}/confirm` | ConfirmBooking | management/internal | not declared | `ViajantesTurismo.Admin.ApiService/Bookings/BookingsConfirmBookingEndpoint.cs` |
+| `PUT` | `/api/v1/bookings/{id:guid}/details` | UpdateBookingDetails | management/internal | not declared | `ViajantesTurismo.Admin.ApiService/Bookings/BookingsUpdateBookingDetailsEndpoint.cs` |
+| `PUT` | `/api/v1/bookings/{id:guid}/discount` | UpdateBookingDiscount | management/internal | not declared | `ViajantesTurismo.Admin.ApiService/Bookings/BookingsUpdateBookingDiscountEndpoint.cs` |
+| `PATCH` | `/api/v1/bookings/{id:guid}/notes` | UpdateBookingNotes | management/internal | not declared | `ViajantesTurismo.Admin.ApiService/Bookings/BookingsUpdateBookingNotesEndpoint.cs` |
+| `POST` | `/api/v1/bookings/{id:guid}/payments` | RecordPayment | management/internal | not declared | `ViajantesTurismo.Admin.ApiService/Bookings/BookingsRecordPaymentEndpoint.cs` |
+| `PUT` | `/api/v1/catalog/media/images/{id:guid}` | UpsertMediaImage | management/internal | not declared | `ViajantesTurismo.Catalog.ApiService/CatalogEndpoints.cs` |
+| `POST` | `/api/v1/catalog/media/images/{id:guid}/accessibility-draft` | GenerateMediaImageAccessibilityDraft | management/internal | not declared | `ViajantesTurismo.Catalog.ApiService/CatalogEndpoints.cs` |
+| `GET` | `/api/v1/catalog/public-content` | inline | management/internal | not declared | `ViajantesTurismo.Catalog.ApiService/CatalogEndpoints.cs` |
+| `GET` | `/api/v1/catalog/public-content/{**key}` | GetPublicContentForManagement | management/internal | not declared | `ViajantesTurismo.Catalog.ApiService/CatalogEndpoints.cs` |
+| `PUT` | `/api/v1/catalog/public-content/{**key}` | UpsertPublicContent | management/internal | not declared | `ViajantesTurismo.Catalog.ApiService/CatalogEndpoints.cs` |
+| `GET` | `/api/v1/catalog/public-theme` | GetPublicThemeForManagement | management/internal | not declared | `ViajantesTurismo.Catalog.ApiService/CatalogEndpoints.cs` |
+| `PUT` | `/api/v1/catalog/public-theme` | UpsertPublicTheme | management/internal | not declared | `ViajantesTurismo.Catalog.ApiService/CatalogEndpoints.cs` |
+| `GET` | `/api/v1/catalog/tours` | GetTours | management/internal | not declared | `ViajantesTurismo.Catalog.ApiService/CatalogEndpoints.cs` |
+| `GET` | `/api/v1/catalog/tours/{id:guid}` | GetTour | management/internal | not declared | `ViajantesTurismo.Catalog.ApiService/CatalogEndpoints.cs` |
+| `GET` | `/api/v1/catalog/tours/{id:guid}/images` | ListTourImages | management/internal | not declared | `ViajantesTurismo.Catalog.ApiService/CatalogEndpoints.cs` |
+| `PUT` | `/api/v1/catalog/tours/{id:guid}/presentation` | UpsertTourPresentation | management/internal | not declared | `ViajantesTurismo.Catalog.ApiService/CatalogEndpoints.cs` |
+| `GET` | `/api/v1/customers` | GetCustomers | management/internal | not declared | `ViajantesTurismo.Admin.ApiService/Customers/CustomerEndpoints.cs` |
+| `POST` | `/api/v1/customers` | CreateCustomer | management/internal | not declared | `ViajantesTurismo.Admin.ApiService/Customers/CustomerEndpoints.cs` |
+| `POST` | `/api/v1/customers/import` | ImportCustomers | management/internal | not declared | `ViajantesTurismo.Admin.ApiService/Customers/CustomerImportEndpoints.cs` |
+| `POST` | `/api/v1/customers/import/commit` | CommitImportWithResolutions | management/internal | not declared | `ViajantesTurismo.Admin.ApiService/Customers/CustomerImportEndpoints.cs` |
+| `GET` | `/api/v1/customers/{id:guid}` | GetCustomerById | management/internal | not declared | `ViajantesTurismo.Admin.ApiService/Customers/CustomerEndpoints.cs` |
+| `PUT` | `/api/v1/customers/{id:guid}` | UpdateCustomer | management/internal | not declared | `ViajantesTurismo.Admin.ApiService/Customers/CustomerEndpoints.cs` |
+| `GET` | `/api/v1/docs/errors` | GetErrorDocumentation | management/internal | not declared | `ViajantesTurismo.Admin.ApiService/Errors/ErrorDocumentationEndpoints.cs` |
+| `GET` | `/api/v1/docs/errors/{identifier}` | GetErrorDocumentationByIdentifier | management/internal | not declared | `ViajantesTurismo.Admin.ApiService/Errors/ErrorDocumentationEndpoints.cs` |
+| `GET` | `/api/v1/public/catalog/content/{**key}` | GetPublicContent | public API | not declared | `ViajantesTurismo.Catalog.ApiService/CatalogEndpoints.cs` |
+| `GET` | `/api/v1/public/catalog/theme` | GetPublicTheme | public API | not declared | `ViajantesTurismo.Catalog.ApiService/CatalogEndpoints.cs` |
+| `GET` | `/api/v1/public/catalog/tours` | GetPublishedTours | public API | not declared | `ViajantesTurismo.Catalog.ApiService/CatalogEndpoints.cs` |
+| `GET` | `/api/v1/public/catalog/tours/{slug}` | GetPublishedTour | public API | not declared | `ViajantesTurismo.Catalog.ApiService/CatalogEndpoints.cs` |
+| `GET` | `/api/v1/tours` | GetTours | management/internal | not declared | `ViajantesTurismo.Admin.ApiService/Tours/ToursEndpoints.cs` |
+| `POST` | `/api/v1/tours` | CreateTour | management/internal | not declared | `ViajantesTurismo.Admin.ApiService/Tours/ToursCreateTourEndpoint.cs` |
+| `GET` | `/api/v1/tours/{id:guid}` | GetTourById | management/internal | not declared | `ViajantesTurismo.Admin.ApiService/Tours/ToursEndpoints.cs` |
+| `PUT` | `/api/v1/tours/{id:guid}` | UpdateTour | management/internal | not declared | `ViajantesTurismo.Admin.ApiService/Tours/ToursUpdateTourEndpoint.cs` |
 <!-- generated:api-endpoints:end -->
 
 ## Notes

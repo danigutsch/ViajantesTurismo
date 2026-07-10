@@ -15,10 +15,11 @@ public sealed class AdminOpenApiDocumentRegistrationTests
             "MapCustomerEndpoints",
             "MapBookingEndpoints");
 
-        document.Paths.Keys.ShouldContain("/tours");
-        document.Paths.Keys.ShouldContain("/tours/{id}");
-        document.Paths.Keys.ShouldNotContain("/customers");
-        document.Paths.Keys.ShouldNotContain("/bookings");
+        document.Paths.Keys.ShouldContain("/api/v1/tours");
+        document.Paths.Keys.ShouldContain("/api/v1/tours/{id}");
+        document.Paths.Keys.ShouldNotContain("/tours");
+        document.Paths.Keys.ShouldNotContain("/api/v1/customers");
+        document.Paths.Keys.ShouldNotContain("/api/v1/bookings");
     }
 
     [Fact]
@@ -31,13 +32,14 @@ public sealed class AdminOpenApiDocumentRegistrationTests
             "MapCustomerImportEndpoints",
             "MapToursEndpoints");
 
-        document.Paths.Keys.ShouldContain("/customers");
-        document.Paths.Keys.ShouldContain("/customers/{id}");
-        document.Paths.Keys.ShouldContain("/customers/import");
-        document.Paths.Keys.ShouldContain("/customers/import/commit");
-        document.Paths.Keys.ShouldNotContain("/tours");
+        document.Paths.Keys.ShouldContain("/api/v1/customers");
+        document.Paths.Keys.ShouldContain("/api/v1/customers/{id}");
+        document.Paths.Keys.ShouldContain("/api/v1/customers/import");
+        document.Paths.Keys.ShouldContain("/api/v1/customers/import/commit");
+        document.Paths.Keys.ShouldNotContain("/customers");
+        document.Paths.Keys.ShouldNotContain("/api/v1/tours");
 
-        var importSchema = AdminOpenApiDocumentRegistrationTestHelpers.GetMultipartSchema(document, "/customers/import/commit");
+        var importSchema = AdminOpenApiDocumentRegistrationTestHelpers.GetMultipartSchema(document, "/api/v1/customers/import/commit");
         importSchema.AllOf.ShouldNotBeNull();
         importSchema.AllOf.ShouldContain(static item => item.Properties?.ContainsKey("file") == true);
         importSchema.AllOf.ShouldContain(static item => item.Properties?.ContainsKey("conflictResolutions") == true);
@@ -55,8 +57,13 @@ public sealed class AdminOpenApiDocumentRegistrationTests
             "MapBookingEndpoints",
             "MapErrorDocumentationEndpoints");
 
-        document.Paths.Keys.ShouldContain("/docs/errors");
-        document.Paths.Keys.ShouldContain("/docs/errors/{identifier}");
+        document.Info.Version.ShouldBe("1.0");
+        document.Paths.Keys.ShouldContain("/api/v1/tours");
+        document.Paths.Keys.ShouldContain("/api/v1/customers");
+        document.Paths.Keys.ShouldContain("/api/v1/bookings");
+        document.Paths.Keys.ShouldContain("/api/v1/docs/errors");
+        document.Paths.Keys.ShouldContain("/api/v1/docs/errors/{identifier}");
+        document.Paths.Keys.ShouldNotContain("/docs/errors");
     }
 
 }

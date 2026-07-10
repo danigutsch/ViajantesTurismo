@@ -33,7 +33,7 @@ public sealed class PublicContentApiClientTests
         var content = await sut.GetContent(Xunit.TestContext.Current.CancellationToken);
 
         // Assert
-        requestPath.ShouldBe("/catalog/public-content");
+        requestPath.ShouldBe("/api/v1/catalog/public-content");
         var entry = content.ShouldHaveSingleItem();
         entry.Key.ShouldBe("home.hero");
     }
@@ -53,9 +53,9 @@ public sealed class PublicContentApiClientTests
     }
 
     [Theory]
-    [InlineData("home/hero", "/catalog/public-content/home/hero")]
-    [InlineData("/home//hero/", "/catalog/public-content/home/hero")]
-    [InlineData("home / hero", "/catalog/public-content/home/hero")]
+    [InlineData("home/hero", "/api/v1/catalog/public-content/home/hero")]
+    [InlineData("/home//hero/", "/api/v1/catalog/public-content/home/hero")]
+    [InlineData("home / hero", "/api/v1/catalog/public-content/home/hero")]
     public async Task GetContent_by_key_normalizes_and_escapes_key_segments(string key, string expectedPath)
     {
         // Arrange
@@ -114,7 +114,7 @@ public sealed class PublicContentApiClientTests
 
         // Assert
         requestMethod.ShouldBe("PUT");
-        requestPath.ShouldBe("/catalog/public-content/home/hero");
+        requestPath.ShouldBe("/api/v1/catalog/public-content/home/hero");
         saved.PublicationState.ShouldBe("ReviewRequired");
     }
 

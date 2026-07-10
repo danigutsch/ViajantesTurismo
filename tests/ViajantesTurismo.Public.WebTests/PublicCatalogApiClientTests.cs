@@ -43,11 +43,10 @@ public sealed class PublicCatalogApiClientTests
         var tours = await sut.GetPublishedTours(TestContext.Current.CancellationToken);
 
         // Assert
-        Assert.Equal("/public/catalog/tours", requestPath);
-        Assert.Collection(
-            tours,
-            tour => Assert.Equal("first-tour", tour.Slug),
-            tour => Assert.Equal("second-tour", tour.Slug));
+        requestPath.ShouldBe("/api/v1/public/catalog/tours");
+        tours.Length.ShouldBe(2);
+        tours[0].Slug.ShouldBe("first-tour");
+        tours[1].Slug.ShouldBe("second-tour");
     }
 
     [Fact]
@@ -85,20 +84,20 @@ public sealed class PublicCatalogApiClientTests
         var tours = await sut.GetPublishedTours(TestContext.Current.CancellationToken);
 
         // Assert
-        var tour = Assert.Single(tours);
-        var image = Assert.Single(tour.Images);
-        Assert.True(image.IsCover);
-        Assert.Equal("https://cdn.example/cover.jpg", image.Uri.ToString());
-        Assert.Equal("Mountain pass", image.Caption);
-        var variant = Assert.Single(image.ResponsiveVariants);
-        Assert.Equal(320, variant.Width);
-        Assert.Equal("https://cdn.example/cover-320.jpg", variant.Uri.ToString());
+        var tour = tours.ShouldHaveSingleItem();
+        var image = tour.Images.ShouldHaveSingleItem();
+        image.IsCover.ShouldBeTrue();
+        image.Uri.ToString().ShouldBe("https://cdn.example/cover.jpg");
+        image.Caption.ShouldBe("Mountain pass");
+        var variant = image.ResponsiveVariants.ShouldHaveSingleItem();
+        variant.Width.ShouldBe(320);
+        variant.Uri.ToString().ShouldBe("https://cdn.example/cover-320.jpg");
     }
 
     [Theory]
-    [InlineData("group tour", "/public/catalog/tours/group%20tour")]
-    [InlineData("camino/norte", "/public/catalog/tours/camino%2Fnorte")]
-    [InlineData("tour?#fragment", "/public/catalog/tours/tour%3F%23fragment")]
+    [InlineData("group tour", "/api/v1/public/catalog/tours/group%20tour")]
+    [InlineData("camino/norte", "/api/v1/public/catalog/tours/camino%2Fnorte")]
+    [InlineData("tour?#fragment", "/api/v1/public/catalog/tours/tour%3F%23fragment")]
     public async Task GetPublishedTourBySlug_escapes_the_slug_route_segment(string slug, string expectedPath)
     {
         // Arrange
@@ -125,8 +124,8 @@ public sealed class PublicCatalogApiClientTests
         var tour = await sut.GetPublishedTourBySlug(slug, TestContext.Current.CancellationToken);
 
         // Assert
-        Assert.NotNull(tour);
-        Assert.Equal(expectedPath, requestPath);
+        tour.ShouldNotBeNull();
+        requestPath.ShouldBe(expectedPath);
     }
 
     [Fact]
@@ -140,7 +139,7 @@ public sealed class PublicCatalogApiClientTests
         var tour = await sut.GetPublishedTourBySlug("missing-tour", TestContext.Current.CancellationToken);
 
         // Assert
-        Assert.Null(tour);
+        tour.ShouldBeNull();
     }
 
     [Fact]
@@ -151,17 +150,17 @@ public sealed class PublicCatalogApiClientTests
         var sut = new PublicCatalogApiClient(httpClient);
 
         // Act
-        var act = sut.GetPublishedTourBySlug("error-tour", TestContext.Current.CancellationToken);
+        Func<Task> act = async () => await sut.GetPublishedTourBySlug("error-tour", TestContext.Current.CancellationToken);
 
         // Assert
-        await Assert.ThrowsAsync<HttpRequestException>(async () => await act);
+        await act.ShouldThrow<HttpRequestException>();
     }
 
     [Theory]
-    [InlineData("home.hero", "pt-BR", "/public/catalog/content/home.hero?culture=pt-BR")]
-    [InlineData("home/hero", "en-US", "/public/catalog/content/home/hero?culture=en-US")]
-    [InlineData("/home//hero/", "en-US", "/public/catalog/content/home/hero?culture=en-US")]
-    [InlineData("home / hero", "en-US", "/public/catalog/content/home/hero?culture=en-US")]
+    [InlineData("home.hero", "pt-BR", "/api/v1/public/catalog/content/home.hero?culture=pt-BR")]
+    [InlineData("home/hero", "en-US", "/api/v1/public/catalog/content/home/hero?culture=en-US")]
+    [InlineData("/home//hero/", "en-US", "/api/v1/public/catalog/content/home/hero?culture=en-US")]
+    [InlineData("home / hero", "en-US", "/api/v1/public/catalog/content/home/hero?culture=en-US")]
     public async Task GetPublicContent_requests_public_content_endpoint(string key, string culture, string expectedPath)
     {
         // Arrange
@@ -187,9 +186,9 @@ public sealed class PublicCatalogApiClientTests
         var content = await sut.GetPublicContent(key, culture, TestContext.Current.CancellationToken);
 
         // Assert
-        Assert.NotNull(content);
-        Assert.Equal(expectedPath, requestPath);
-        Assert.Equal("Bem-vindo", content.Title);
+        content.ShouldNotBeNull();
+        requestPath.ShouldBe(expectedPath);
+        content.Title.ShouldBe("Bem-vindo");
     }
 
     [Fact]
@@ -203,7 +202,7 @@ public sealed class PublicCatalogApiClientTests
         var content = await sut.GetPublicContent("home.hero", "pt-BR", TestContext.Current.CancellationToken);
 
         // Assert
-        Assert.Null(content);
+        content.ShouldBeNull();
     }
 
     [Fact]
@@ -231,9 +230,9 @@ public sealed class PublicCatalogApiClientTests
         var theme = await sut.GetThemeSettings(TestContext.Current.CancellationToken);
 
         // Assert
-        Assert.Equal("/public/catalog/theme", requestPath);
-        Assert.Equal("#112233", theme.PrimaryColor);
-        Assert.Equal("Inter", theme.HeadingFontFamily);
+        requestPath.ShouldBe("/api/v1/public/catalog/theme");
+        theme.PrimaryColor.ShouldBe("#112233");
+        theme.HeadingFontFamily.ShouldBe("Inter");
     }
 
     [Fact]
@@ -244,10 +243,11 @@ public sealed class PublicCatalogApiClientTests
         var sut = new PublicCatalogApiClient(httpClient);
 
         // Act
-        var exception = await Assert.ThrowsAsync<InvalidOperationException>(() => sut.GetThemeSettings(TestContext.Current.CancellationToken));
+        Func<Task> act = async () => await sut.GetThemeSettings(TestContext.Current.CancellationToken);
+        var exception = await act.ShouldThrow<InvalidOperationException>();
 
         // Assert
-        Assert.Equal("Catalog returned an empty public theme response.", exception.Message);
+        exception.Message.ShouldBe("Catalog returned an empty public theme response.");
     }
 
 }

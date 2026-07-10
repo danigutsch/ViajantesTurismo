@@ -86,10 +86,12 @@
       "kind": "endpoint-routes",
       "sourcePath": "src",
       "routePrefixes": {
-        "bookingsGroup": "/bookings",
-        "customersGroup": "/customers",
-        "importGroup": "/customers/import",
-        "toursGroup": "/tours"
+        "bookingsGroup": "/api/v1/bookings",
+        "customersGroup": "/api/v1/customers",
+        "errorDocumentationGroup": "/api/v1/docs/errors",
+        "importGroup": "/api/v1/customers/import",
+        "toursGroup": "/api/v1/tours",
+        "versionedApi": "/api/v1"
       }
     },
     { "name": "integration-events", "kind": "integration-events", "sourcePath": "src" },

@@ -10,14 +10,14 @@ internal static class ErrorDocumentationEndpoints
     {
         ArgumentNullException.ThrowIfNull(app);
 
-        var group = app.MapGroup("/docs/errors");
+        var errorDocumentationGroup = app.MapErrorDocumentationGroup();
 
-        group.MapGet("/", GetAllErrorDocumentation)
+        errorDocumentationGroup.MapGet("/", GetAllErrorDocumentation)
             .WithName("GetErrorDocumentation")
             .WithDescription("Retrieves generated documentation metadata for centralized error providers.")
             .WithSummary("Retrieves generated error documentation metadata.");
 
-        group.MapGet("/{identifier}", GetErrorDocumentationByIdentifier)
+        errorDocumentationGroup.MapGet("/{identifier}", GetErrorDocumentationByIdentifier)
             .WithName("GetErrorDocumentationByIdentifier")
             .WithDescription("Retrieves one generated centralized error documentation entry by identifier.")
             .WithSummary("Retrieves one generated error documentation entry.");

@@ -1,3 +1,6 @@
+using SharedKernel.ApiVersioning;
+using SharedKernel.ApiVersioning.AspNetCore;
+
 namespace ViajantesTurismo.Admin.ApiService;
 
 /// <summary>
@@ -5,6 +8,7 @@ namespace ViajantesTurismo.Admin.ApiService;
 /// </summary>
 internal static class AdminRouteGroupExtensions
 {
+    private static readonly ApiVersionDefinition CurrentApiVersion = new(new ApiVersion(1));
     private const string ToursRoutePrefix = "tours";
     private const string ToursGroupName = "Tours";
     private const string CustomersRoutePrefix = "customers";
@@ -19,7 +23,16 @@ internal static class AdminRouteGroupExtensions
     [
         ToursRoutePrefix,
         CustomersRoutePrefix,
-        BookingsRoutePrefix
+        BookingsRoutePrefix,
+        CurrentApiVersion.OpenApiDocumentName
+    ];
+
+    /// <summary>
+    /// Gets the Admin API's active HTTP contract versions.
+    /// </summary>
+    public static IReadOnlyCollection<ApiVersionDefinition> ApiVersions { get; } =
+    [
+        CurrentApiVersion
     ];
 
     /// <summary>
@@ -62,13 +75,24 @@ internal static class AdminRouteGroupExtensions
         return app.MapRouteGroup(BookingsRoutePrefix, BookingsGroupName);
     }
 
+    /// <summary>
+    /// Maps the API error documentation route group with the current API version prefix.
+    /// </summary>
+    /// <param name="app">The web application to configure.</param>
+    /// <returns>The configured route group builder.</returns>
+    public static RouteGroupBuilder MapErrorDocumentationGroup(this WebApplication app)
+    {
+        return app.MapRouteGroup("docs/errors", "Errors");
+    }
+
     private static RouteGroupBuilder MapRouteGroup(this WebApplication app, string routePrefix, string groupName)
     {
         ArgumentNullException.ThrowIfNull(app);
         ArgumentException.ThrowIfNullOrWhiteSpace(routePrefix);
         ArgumentException.ThrowIfNullOrWhiteSpace(groupName);
 
-        return app.MapGroup($"/{routePrefix}")
+        return app.MapApiVersionGroup(CurrentApiVersion)
+            .MapGroup($"/{routePrefix}")
             .WithGroupName(groupName)
             .WithTags(groupName);
     }

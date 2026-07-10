@@ -280,6 +280,12 @@
       "sharedkernel.apiversioning": {
         "type": "Project"
       },
+      "sharedkernel.apiversioning.aspnetcore": {
+        "type": "Project",
+        "dependencies": {
+          "SharedKernel.ApiVersioning": "[0.1.0-alpha.0, )"
+        }
+      },
       "sharedkernel.aspnetcore": {
         "type": "Project",
         "dependencies": {
@@ -429,6 +435,7 @@
         "dependencies": {
           "Microsoft.AspNetCore.OpenApi": "[10.0.9, )",
           "Microsoft.Extensions.ApiDescription.Server": "[10.0.9, )",
+          "SharedKernel.ApiVersioning.AspNetCore": "[0.1.0-alpha.0, )",
           "SharedKernel.AspNetCore": "[0.1.0-alpha.0, )",
           "SharedKernel.OpenApi": "[0.1.0-alpha.0, )",
           "SharedKernel.Results": "[0.1.0-alpha.0, )",

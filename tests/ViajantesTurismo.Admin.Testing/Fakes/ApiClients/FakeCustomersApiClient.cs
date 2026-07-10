@@ -48,7 +48,7 @@ public sealed class FakeCustomersApiClient : ICustomersApiClient
         }
 
         var customerId = Guid.NewGuid();
-        return Task.FromResult(ContractCommandOutcome.Succeeded(HttpStatusCode.Created, new Uri($"/customers/{customerId}", UriKind.Relative)));
+        return Task.FromResult(ContractCommandOutcome.Succeeded(HttpStatusCode.Created, new Uri($"/api/v1/customers/{customerId}", UriKind.Relative)));
     }
 
     public Task UpdateCustomer(Guid id, UpdateCustomerDto dto, CancellationToken ct)

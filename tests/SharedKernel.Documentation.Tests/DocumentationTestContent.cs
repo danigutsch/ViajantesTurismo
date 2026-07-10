@@ -73,7 +73,8 @@ internal static class DocumentationTestContent
               "kind": "endpoint-routes",
               "sourcePath": "src",
               "routePrefixes": {
-                "customersGroup": "/customers"
+                "customersGroup": "/customers",
+                "publicCatalogGroup": "/api/v1/public/catalog"
               }
             },
             {
@@ -213,6 +214,9 @@ internal static class DocumentationTestContent
                     .WithName("GetCustomers");
                 customersGroup.MapPost("/", CreateCustomer)
                     .RequireAuthorization();
+                var publicCatalogGroup = app.MapPublicCatalogGroup();
+                publicCatalogGroup.MapGet("/theme", GetPublicTheme)
+                    .WithName("GetPublicTheme");
                 return app;
             }
         }

@@ -5,7 +5,7 @@
     "version": "1.0.0"
   },
   "paths": {
-    "/customers": {
+    "/api/v1/customers": {
       "get": {
         "tags": [
           "Customers"
@@ -90,7 +90,7 @@
         }
       }
     },
-    "/customers/{id}": {
+    "/api/v1/customers/{id}": {
       "get": {
         "tags": [
           "Customers"
@@ -187,7 +187,7 @@
         }
       }
     },
-    "/customers/import": {
+    "/api/v1/customers/import": {
       "post": {
         "tags": [
           "Customers"
@@ -237,7 +237,7 @@
         }
       }
     },
-    "/customers/import/commit": {
+    "/api/v1/customers/import/commit": {
       "post": {
         "tags": [
           "Customers"

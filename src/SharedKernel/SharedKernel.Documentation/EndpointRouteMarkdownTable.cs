@@ -137,8 +137,11 @@ internal static partial class EndpointRouteMarkdownTable
             return "public web";
         }
 
-        return path.StartsWith("/public/", StringComparison.Ordinal) ? "public API" : "management/internal";
+        return IsPublicApiPath(path) ? "public API" : "management/internal";
     }
+
+    private static bool IsPublicApiPath(string path) =>
+        path.StartsWith("/public/", StringComparison.Ordinal) || VersionedPublicApiPathRegex().IsMatch(path);
 
     private static string AuthMetadata(string chain)
     {
@@ -163,4 +166,7 @@ internal static partial class EndpointRouteMarkdownTable
 
     [GeneratedRegex(@"\.WithAdminMetadata\(""([^""]+)""", RegexOptions.CultureInvariant)]
     private static partial Regex AdminMetadataRegex();
+
+    [GeneratedRegex(@"^/api/v\d+(?:\.\d+)?/public/", RegexOptions.CultureInvariant)]
+    private static partial Regex VersionedPublicApiPathRegex();
 }

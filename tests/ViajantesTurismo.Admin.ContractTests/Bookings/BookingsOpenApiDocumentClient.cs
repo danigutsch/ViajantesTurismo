@@ -9,6 +9,7 @@ namespace ViajantesTurismo.Admin.ContractTests.Bookings;
 /// </summary>
 internal static class BookingsOpenApiDocumentClient
 {
+    private const string RoutePrefix = "/api/v1/bookings";
     private static readonly JsonSerializerOptions SerializerOptions = new(JsonSerializerDefaults.Web);
 
     /// <summary>
@@ -37,69 +38,69 @@ internal static class BookingsOpenApiDocumentClient
             throw new InvalidOperationException("The bookings OpenAPI document is incomplete.");
         }
 
-        if (!document.Paths.TryGetValue("/bookings", out var bookingsPath) ||
+        if (!document.Paths.TryGetValue(RoutePrefix, out var bookingsPath) ||
             bookingsPath.Get is null ||
             bookingsPath.Post is null)
         {
             throw new InvalidOperationException("The bookings collection path is missing required operations.");
         }
 
-        if (!document.Paths.TryGetValue("/bookings/{id}", out var bookingByIdPath) ||
+        if (!document.Paths.TryGetValue($"{RoutePrefix}/{{id}}", out var bookingByIdPath) ||
             bookingByIdPath.Get is null ||
             bookingByIdPath.Delete is null)
         {
             throw new InvalidOperationException("The bookings item path is missing required operations.");
         }
 
-        if (!document.Paths.TryGetValue("/bookings/tour/{tourId}", out var bookingsByTourPath) ||
+        if (!document.Paths.TryGetValue($"{RoutePrefix}/tour/{{tourId}}", out var bookingsByTourPath) ||
             bookingsByTourPath.Get is null)
         {
             throw new InvalidOperationException("The bookings-by-tour path is missing the required operation.");
         }
 
-        if (!document.Paths.TryGetValue("/bookings/customer/{customerId}", out var bookingsByCustomerPath) ||
+        if (!document.Paths.TryGetValue($"{RoutePrefix}/customer/{{customerId}}", out var bookingsByCustomerPath) ||
             bookingsByCustomerPath.Get is null)
         {
             throw new InvalidOperationException("The bookings-by-customer path is missing the required operation.");
         }
 
-        if (!document.Paths.TryGetValue("/bookings/{id}/discount", out var discountPath) ||
+        if (!document.Paths.TryGetValue($"{RoutePrefix}/{{id}}/discount", out var discountPath) ||
             discountPath.Put is null)
         {
             throw new InvalidOperationException("The booking discount path is missing the required operation.");
         }
 
-        if (!document.Paths.TryGetValue("/bookings/{id}/details", out var detailsPath) ||
+        if (!document.Paths.TryGetValue($"{RoutePrefix}/{{id}}/details", out var detailsPath) ||
             detailsPath.Put is null)
         {
             throw new InvalidOperationException("The booking details path is missing the required operation.");
         }
 
-        if (!document.Paths.TryGetValue("/bookings/{id}/notes", out var notesPath) ||
+        if (!document.Paths.TryGetValue($"{RoutePrefix}/{{id}}/notes", out var notesPath) ||
             notesPath.Patch is null)
         {
             throw new InvalidOperationException("The booking notes path is missing the required operation.");
         }
 
-        if (!document.Paths.TryGetValue("/bookings/{id}/confirm", out var confirmPath) ||
+        if (!document.Paths.TryGetValue($"{RoutePrefix}/{{id}}/confirm", out var confirmPath) ||
             confirmPath.Post is null)
         {
             throw new InvalidOperationException("The booking confirm path is missing the required operation.");
         }
 
-        if (!document.Paths.TryGetValue("/bookings/{id}/cancel", out var cancelPath) ||
+        if (!document.Paths.TryGetValue($"{RoutePrefix}/{{id}}/cancel", out var cancelPath) ||
             cancelPath.Post is null)
         {
             throw new InvalidOperationException("The booking cancel path is missing the required operation.");
         }
 
-        if (!document.Paths.TryGetValue("/bookings/{id}/complete", out var completePath) ||
+        if (!document.Paths.TryGetValue($"{RoutePrefix}/{{id}}/complete", out var completePath) ||
             completePath.Post is null)
         {
             throw new InvalidOperationException("The booking complete path is missing the required operation.");
         }
 
-        if (!document.Paths.TryGetValue("/bookings/{id}/payments", out var paymentsPath) ||
+        if (!document.Paths.TryGetValue($"{RoutePrefix}/{{id}}/payments", out var paymentsPath) ||
             paymentsPath.Post is null)
         {
             throw new InvalidOperationException("The booking payments path is missing the required operation.");

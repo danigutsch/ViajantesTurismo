@@ -169,7 +169,7 @@ public sealed class CustomerImportEndpointsTests
         requestContent.Add(fileContent, "file", "customers.csv");
 
         // Act
-        using var response = await client.PostAsync(new Uri("/customers/import", UriKind.Relative), requestContent, cancellationToken);
+        using var response = await client.PostAsync(new Uri("/api/v1/customers/import", UriKind.Relative), requestContent, cancellationToken);
 
         // Assert
         response.StatusCode.ShouldBe(HttpStatusCode.RequestEntityTooLarge);

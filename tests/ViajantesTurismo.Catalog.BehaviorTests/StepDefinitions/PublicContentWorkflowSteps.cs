@@ -43,9 +43,9 @@ public sealed class PublicContentWorkflowSteps
     [When("I save the public content")]
     public async Task WhenISaveThePublicContent()
     {
-        Assert.NotNull(request);
+        request.ShouldNotBeNull();
         response = await Client.PutAsJsonAsync(
-            new Uri($"/catalog/public-content/{contentKey}", UriKind.Relative),
+            new Uri($"/api/v1/catalog/public-content/{contentKey}", UriKind.Relative),
             request,
             TestContext.Current.CancellationToken);
     }
@@ -53,31 +53,31 @@ public sealed class PublicContentWorkflowSteps
     [Then("the public content should be stored for key {string}")]
     public async Task ThenThePublicContentShouldBeStoredForKey(string expectedKey)
     {
-        Assert.NotNull(response);
-        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        response.ShouldNotBeNull();
+        response.StatusCode.ShouldBe(HttpStatusCode.OK);
 
         var content = await response.Content.ReadFromJsonAsync<PublicContentDto>(TestContext.Current.CancellationToken);
-        Assert.NotNull(content);
-        Assert.Equal(expectedKey, content.Key);
+        content.ShouldNotBeNull();
+        content.Key.ShouldBe(expectedKey);
         savedContent = content;
     }
 
     [Then("the public content should require review before publication")]
     public void ThenThePublicContentShouldRequireReviewBeforePublication()
     {
-        Assert.NotNull(savedContent);
-        Assert.Equal("ReviewRequired", savedContent.PublicationState);
+        savedContent.ShouldNotBeNull();
+        savedContent.PublicationState.ShouldBe("ReviewRequired");
     }
 
     [Then("the public content workflow should report a localization validation problem")]
     public async Task ThenThePublicContentWorkflowShouldReportALocalizationValidationProblem()
     {
-        Assert.NotNull(response);
-        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+        response.ShouldNotBeNull();
+        response.StatusCode.ShouldBe(HttpStatusCode.BadRequest);
 
         var problem = await response.Content.ReadFromJsonAsync<HttpValidationProblemDetails>(TestContext.Current.CancellationToken);
-        Assert.NotNull(problem);
-        Assert.Contains("Variants", problem.Errors.Keys);
+        problem.ShouldNotBeNull();
+        problem.Errors.Keys.ShouldContain("Variants");
     }
 
     private HttpClient Client

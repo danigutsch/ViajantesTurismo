@@ -1,4 +1,5 @@
 using Microsoft.AspNetCore.OutputCaching;
+using SharedKernel.ApiVersioning.AspNetCore;
 using SharedKernel.Results;
 using ViajantesTurismo.Catalog.Application.Media;
 using ViajantesTurismo.Catalog.Application.PublicContent;
@@ -17,39 +18,42 @@ internal static class CatalogEndpoints
     {
         ArgumentNullException.ThrowIfNull(app);
 
-        app.MapGet("/catalog/tours", GetTours);
-        app.MapGet("/catalog/tours/{id:guid}", GetTour);
-        app.MapPut("/catalog/tours/{id:guid}/presentation", UpsertTourPresentation)
+        var versionedApi = app.MapApiVersionGroup(CatalogOpenApiDocuments.CurrentApiVersion);
+
+        versionedApi.MapGet("/catalog/tours", GetTours);
+        versionedApi.MapGet("/catalog/tours/{id:guid}", GetTour);
+        versionedApi.MapPut("/catalog/tours/{id:guid}/presentation", UpsertTourPresentation)
             .RequireRateLimiting(CatalogSecurityBaseline.MutationRateLimitPolicy);
-        app.MapGet("/catalog/tours/{id:guid}/images", ListTourImages);
-        app.MapPut("/catalog/media/images/{id:guid}", UpsertMediaImage)
+        versionedApi.MapGet("/catalog/tours/{id:guid}/images", ListTourImages);
+        versionedApi.MapPut("/catalog/media/images/{id:guid}", UpsertMediaImage)
             .RequireRateLimiting(CatalogSecurityBaseline.MutationRateLimitPolicy);
-        app.MapPost("/catalog/media/images/{id:guid}/accessibility-draft", GenerateMediaImageAccessibilityDraft)
+        versionedApi.MapPost("/catalog/media/images/{id:guid}/accessibility-draft", GenerateMediaImageAccessibilityDraft)
             .RequireRateLimiting(CatalogSecurityBaseline.MutationRateLimitPolicy);
-        app.MapGet("/public/catalog/tours", GetPublishedTours)
+
+        versionedApi.MapGet("/public/catalog/tours", GetPublishedTours)
             .CacheOutput(policy => policy.Expire(CatalogHttpCache.PublicFreshness).Tag(CatalogHttpCache.PublicCatalogTag))
             .RequireRateLimiting(CatalogSecurityBaseline.PublicReadRateLimitPolicy);
-        app.MapGet("/public/catalog/tours/{slug}", GetPublishedTour)
+        versionedApi.MapGet("/public/catalog/tours/{slug}", GetPublishedTour)
             .CacheOutput(policy => policy.Expire(CatalogHttpCache.PublicFreshness).Tag(CatalogHttpCache.PublicCatalogTag))
             .RequireRateLimiting(CatalogSecurityBaseline.PublicReadRateLimitPolicy);
-        app.MapGet("/public/catalog/content/{**key}", GetPublicContent)
+        versionedApi.MapGet("/public/catalog/content/{**key}", GetPublicContent)
             .CacheOutput(policy => policy.Expire(CatalogHttpCache.PublicFreshness).SetVaryByQuery(CatalogHttpCache.CultureQueryKey).Tag(CatalogHttpCache.PublicContentTag))
             .RequireRateLimiting(CatalogSecurityBaseline.PublicReadRateLimitPolicy);
-        app.MapGet("/public/catalog/theme", GetPublicTheme)
+        versionedApi.MapGet("/public/catalog/theme", GetPublicTheme)
             .CacheOutput(policy => policy.Expire(CatalogHttpCache.PublicFreshness).Tag(CatalogHttpCache.PublicThemeTag))
             .RequireRateLimiting(CatalogSecurityBaseline.PublicReadRateLimitPolicy);
 
-        app.MapGet("/catalog/public-content", async (IPublicContentStore store, HttpContext httpContext, CancellationToken ct) =>
+        versionedApi.MapGet("/catalog/public-content", async (IPublicContentStore store, HttpContext httpContext, CancellationToken ct) =>
         {
             CatalogHttpCache.SetNoStore(httpContext);
             var content = await store.ListContent(ct);
             return content.Select(MapPublicContent);
         });
-        app.MapGet("/catalog/public-content/{**key}", GetPublicContentForManagement);
-        app.MapPut("/catalog/public-content/{**key}", UpsertPublicContent)
+        versionedApi.MapGet("/catalog/public-content/{**key}", GetPublicContentForManagement);
+        versionedApi.MapPut("/catalog/public-content/{**key}", UpsertPublicContent)
             .RequireRateLimiting(CatalogSecurityBaseline.MutationRateLimitPolicy);
-        app.MapGet("/catalog/public-theme", GetPublicThemeForManagement);
-        app.MapPut("/catalog/public-theme", UpsertPublicTheme)
+        versionedApi.MapGet("/catalog/public-theme", GetPublicThemeForManagement);
+        versionedApi.MapPut("/catalog/public-theme", UpsertPublicTheme)
             .RequireRateLimiting(CatalogSecurityBaseline.MutationRateLimitPolicy);
 
         return app;

@@ -57,7 +57,7 @@ public sealed class FakeBookingsApiClient : IBookingsApiClient
         );
 
         _bookings.Add(newBooking);
-        return Task.FromResult(ContractCommandOutcome.Succeeded(HttpStatusCode.Created, new Uri($"/bookings/{newBooking.Id}", UriKind.Relative)));
+        return Task.FromResult(ContractCommandOutcome.Succeeded(HttpStatusCode.Created, new Uri($"/api/v1/bookings/{newBooking.Id}", UriKind.Relative)));
     }
 
     public Task UpdateBookingDiscount(Guid id, UpdateBookingDiscountDto dto, CancellationToken ct)
@@ -117,7 +117,7 @@ public sealed class FakeBookingsApiClient : IBookingsApiClient
         }
 
         var paymentId = Guid.NewGuid();
-        return Task.FromResult(ContractCommandOutcome.Succeeded(HttpStatusCode.Created, new Uri($"/bookings/{bookingId}/payments/{paymentId}", UriKind.Relative)));
+        return Task.FromResult(ContractCommandOutcome.Succeeded(HttpStatusCode.Created, new Uri($"/api/v1/bookings/{bookingId}/payments/{paymentId}", UriKind.Relative)));
     }
 
     public void AddBooking(GetBookingDto booking) => _bookings.Add(booking);
