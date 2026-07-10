@@ -242,46 +242,6 @@ namespace ViajantesTurismo.Catalog.Infrastructure.Migrations
                     b.ToTable("PublicContent", (string)null);
                 });
 
-            modelBuilder.Entity("ViajantesTurismo.Catalog.Domain.PublicTheme.PublicThemeSettings", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .HasColumnType("uuid");
-
-                    b.Property<string>("AccentColor")
-                        .IsRequired()
-                        .HasMaxLength(7)
-                        .HasColumnType("character varying(7)");
-
-                    b.Property<string>("BackgroundColor")
-                        .IsRequired()
-                        .HasMaxLength(7)
-                        .HasColumnType("character varying(7)");
-
-                    b.Property<string>("BodyFontFamily")
-                        .IsRequired()
-                        .HasMaxLength(64)
-                        .HasColumnType("character varying(64)");
-
-                    b.Property<string>("HeadingFontFamily")
-                        .IsRequired()
-                        .HasMaxLength(64)
-                        .HasColumnType("character varying(64)");
-
-                    b.Property<string>("PrimaryColor")
-                        .IsRequired()
-                        .HasMaxLength(7)
-                        .HasColumnType("character varying(7)");
-
-                    b.Property<string>("TextColor")
-                        .IsRequired()
-                        .HasMaxLength(7)
-                        .HasColumnType("character varying(7)");
-
-                    b.HasKey("Id");
-
-                    b.ToTable("PublicThemeSettings", (string)null);
-                });
-
             modelBuilder.Entity("ViajantesTurismo.Catalog.Infrastructure.CatalogTourReadModelEntity", b =>
                 {
                     b.Property<Guid>("CatalogTourId")

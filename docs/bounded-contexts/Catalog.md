@@ -3,6 +3,10 @@
 The Catalog bounded context owns customer-facing tour presentation for public discovery and public
 website experiences.
 
+Catalog does not own branding changes. Shared branding rules belong in `SharedKernel.Branding`, and
+the ViajantesTurismo Branding adapter owns app-specific persistence, API routes, defaults, and public
+rendering contracts.
+
 ## Context Overview
 
 **Domain:** Customer-facing tour catalog and publication
@@ -24,6 +28,7 @@ presentation model.
   diagnostics, and projection rebuilds.
 - **Editable public website content** - Own business-editable website text and SEO content for
   English and Brazilian Portuguese variants.
+- **Branding relationship** - Do not add branding behavior to Catalog. Use the Branding adapter.
 
 ## Bounded Context Map
 
@@ -126,7 +131,7 @@ Initial slug rules:
 - Accented Latin letters normalize to their ASCII base letter when practical.
 - Slugs must not exceed the Catalog contract maximum length.
 - Slugs are unique within Catalog published and draft tour records.
-- Slugs should be stable after publication; changes need explicit redirect/compatibility handling.
+- Slugs should be stable after publication; changes need explicit redirect handling.
 
 Keep conventional UI labels and unrelated URL helpers out of this model. If future CMS or media
 features need identical URL-safe identifier rules, create a focused SharedKernel extraction issue
@@ -298,3 +303,4 @@ Initial public endpoints:
 - [ADR-025: Event Source Catalog Tour Presentation](../adr/20260621-event-source-catalog-tour-presentation.md)
 - [ADR-020: Web Frontends by Audience, Not by Bounded Context](../adr/20260523-web-frontends-by-audience-not-by-bounded-context.md)
 - [Events and Messaging](../domain/EVENTS_AND_MESSAGING.md)
+- [Branding](../branding.md)

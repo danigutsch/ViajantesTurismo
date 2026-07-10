@@ -1,18 +1,68 @@
 @inherits LayoutComponentBase
 
-<header>
-    <a href="/" aria-label="Viajantes Turismo home">Viajantes Turismo</a>
-    <nav aria-label="Main navigation">
+<a class="skip-link" href="#content">Skip to content</a>
+
+<header class="public-shell-header">
+    <a class="public-shell-brand" href="/" aria-label="@HomeAriaLabel">
+        @if (LogoUri is not null)
+        {
+            <img class="public-shell-logo" src="@LogoUri" alt="" />
+        }
+        else
+        {
+            <span class="public-shell-brand-mark" aria-hidden="true">@BrandInitials</span>
+        }
+        <span>@BrandName</span>
+    </a>
+    <nav class="public-shell-nav" aria-label="Main navigation">
         <a href="/">Home</a>
         <a href="/group-bike-tours">Bike Tours</a>
         <a href="/gallery">Gallery</a>
     </nav>
 </header>
 
-<main id="content">
+<main class="public-shell-main" id="content">
     @Body
 </main>
 
-<footer>
-    <p>Viajantes Turismo</p>
+<footer class="public-shell-footer">
+    <p>@BrandName</p>
 </footer>
+
+@code {
+    private const string DefaultBrandName = "Viajantes Turismo";
+
+    [CascadingParameter]
+    private BrandingSettingsDto? Branding { get; set; }
+
+    private string BrandName => string.IsNullOrWhiteSpace(Branding?.BrandName) ? DefaultBrandName : Branding.BrandName.Trim();
+
+    private string HomeAriaLabel => $"{BrandName} home";
+
+    private string BrandInitials => string.Concat(BrandName.Split(' ', StringSplitOptions.RemoveEmptyEntries).Take(2).Select(static part => char.ToUpperInvariant(part[0])));
+
+    private string? LogoUri => SafeLogoUri(Branding?.LogoUri);
+
+    private static string? SafeLogoUri(string? logoUri)
+    {
+        var value = logoUri?.Trim();
+        if (string.IsNullOrWhiteSpace(value) || value.Any(char.IsWhiteSpace) || value.Any(char.IsControl) || value.Contains('\\', StringComparison.Ordinal))
+        {
+            return null;
+        }
+
+        if (value[0] == '/')
+        {
+            return !value.StartsWith("//", StringComparison.Ordinal) ? value : null;
+        }
+
+        return Uri.TryCreate(value, UriKind.Absolute, out var uri) && IsHttpsUri(uri) && !string.IsNullOrEmpty(uri.Host) && string.IsNullOrEmpty(uri.UserInfo)
+            ? uri.ToString()
+            : null;
+    }
+
+    private static bool IsHttpsUri(Uri uri)
+    {
+        return string.Equals(uri.Scheme, Uri.UriSchemeHttps, StringComparison.OrdinalIgnoreCase);
+    }
+}

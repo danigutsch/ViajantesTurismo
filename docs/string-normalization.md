@@ -10,15 +10,15 @@
 - Use ordinal or ordinal-ignore-case comparison for normalized invariant keys and allow-list checks.
 - Keep security-sensitive values constrained by allow-lists or narrow formats after normalization. Do
   not treat Unicode normalization as output encoding or HTML/CSS sanitization.
-- Prefer canonical form C for stored display text. Use compatibility forms only when there is a clear
-  domain reason to fold compatibility characters.
+- Prefer canonical form C for stored display text. Use Unicode folding forms only when there is a clear
+  domain reason to fold equivalent characters.
 
 ## Repository rule
 
 Use `StringSanitizer` for domain and contract-adjacent string normalization before applying
 case-folding or allow-list validation. Keep feature-specific validators narrow after normalization; for
-example, public theme colors still require `#RRGGBB`, and font families still must match the contract
-allow-list.
+example, Branding palette colors still require safe tokens such as `#RRGGBB`, and font families still
+must match the `SharedKernel.Branding` contract allow-list.
 
 ## References
 

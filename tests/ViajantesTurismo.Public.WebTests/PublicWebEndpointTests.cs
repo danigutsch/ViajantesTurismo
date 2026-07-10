@@ -19,12 +19,12 @@ public sealed class PublicWebEndpointTests
         var content = await response.Content.ReadAsStringAsync(TestContext.Current.CancellationToken);
 
         // Assert
-        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
-        Assert.Equal("text/html", response.Content.Headers.ContentType?.MediaType);
-        Assert.Contains("<html lang=\"en\">", content, StringComparison.Ordinal);
-        Assert.Contains("Viajantes Turismo", content, StringComparison.Ordinal);
-        Assert.Contains("Cycle tourism around the world!", content, StringComparison.Ordinal);
-        Assert.Contains("New tours will be published soon.", content, StringComparison.Ordinal);
+        response.StatusCode.ShouldBe(HttpStatusCode.OK);
+        response.Content.Headers.ContentType?.MediaType.ShouldBe("text/html");
+        content.ShouldContain("<html lang=\"en\">", StringComparison.Ordinal);
+        content.ShouldContain("Viajantes Turismo", StringComparison.Ordinal);
+        content.ShouldContain("Cycle tourism around the world!", StringComparison.Ordinal);
+        content.ShouldContain("New tours will be published soon.", StringComparison.Ordinal);
     }
 
     [Fact]
@@ -42,8 +42,8 @@ public sealed class PublicWebEndpointTests
         var content = await response.Content.ReadAsStringAsync(TestContext.Current.CancellationToken);
 
         // Assert
-        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
-        Assert.Contains("<h3><a href=\"/group-bike-tours/camino-norte\">Camino Norte</a></h3>", content, StringComparison.Ordinal);
+        response.StatusCode.ShouldBe(HttpStatusCode.OK);
+        content.ShouldContain("<h3><a href=\"/group-bike-tours/camino-norte\">Camino Norte</a></h3>", StringComparison.Ordinal);
     }
 
     [Fact]
@@ -67,11 +67,11 @@ public sealed class PublicWebEndpointTests
         var content = await response.Content.ReadAsStringAsync(TestContext.Current.CancellationToken);
 
         // Assert
-        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
-        Assert.Contains("<html lang=\"pt-BR\">", content, StringComparison.Ordinal);
-        Assert.Contains("<title>Cicloturismo - Viajantes Turismo</title>", content, StringComparison.Ordinal);
-        Assert.Contains("<h1>Cicloturismo pelo mundo!</h1>", content, StringComparison.Ordinal);
-        Assert.Contains("Pedale com cultura", content, StringComparison.Ordinal);
+        response.StatusCode.ShouldBe(HttpStatusCode.OK);
+        content.ShouldContain("<html lang=\"pt-BR\">", StringComparison.Ordinal);
+        content.ShouldContain("<title>Cicloturismo - Viajantes Turismo</title>", StringComparison.Ordinal);
+        content.ShouldContain("<h1 id=\"home-hero-title\">Cicloturismo pelo mundo!</h1>", StringComparison.Ordinal);
+        content.ShouldContain("Pedale com cultura", StringComparison.Ordinal);
     }
 
     [Fact]
@@ -95,9 +95,9 @@ public sealed class PublicWebEndpointTests
         var content = await response.Content.ReadAsStringAsync(TestContext.Current.CancellationToken);
 
         // Assert
-        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
-        Assert.Contains("<html lang=\"pt-BR\">", content, StringComparison.Ordinal);
-        Assert.Contains("<h1>Cicloturismo pelo mundo!</h1>", content, StringComparison.Ordinal);
+        response.StatusCode.ShouldBe(HttpStatusCode.OK);
+        content.ShouldContain("<html lang=\"pt-BR\">", StringComparison.Ordinal);
+        content.ShouldContain("<h1 id=\"home-hero-title\">Cicloturismo pelo mundo!</h1>", StringComparison.Ordinal);
     }
 
     [Fact]
@@ -112,17 +112,19 @@ public sealed class PublicWebEndpointTests
         var content = await response.Content.ReadAsStringAsync(TestContext.Current.CancellationToken);
 
         // Assert
-        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
-        Assert.Contains("<html lang=\"en-US\">", content, StringComparison.Ordinal);
+        response.StatusCode.ShouldBe(HttpStatusCode.OK);
+        content.ShouldContain("<html lang=\"en-US\">", StringComparison.Ordinal);
     }
 
     [Fact]
-    public async Task Root_renders_public_theme_css_variables()
+    public async Task Root_renders_public_branding_css_variables_and_brand_name()
     {
         // Arrange
-        var catalogApi = new FakePublicCatalogApiClient();
-        catalogApi.SetTheme(new PublicThemeSettingsDto
+        var brandingApi = new FakeBrandingApiClient();
+        brandingApi.SetBranding(new BrandingSettingsDto
         {
+            BrandName = "Camino Riders",
+            LogoUri = "https://cdn.example/logo.svg",
             PrimaryColor = "#112233",
             AccentColor = "#445566",
             BackgroundColor = "#FFFFFF",
@@ -131,7 +133,7 @@ public sealed class PublicWebEndpointTests
             BodyFontFamily = "Verdana"
         });
 
-        await using var factory = PublicWebEndpointTestsHelpers.CreateFactory(catalogApi);
+        await using var factory = PublicWebEndpointTestsHelpers.CreateFactory(brandingApiClient: brandingApi);
         using var client = factory.CreateClient();
 
         // Act
@@ -139,22 +141,34 @@ public sealed class PublicWebEndpointTests
         var content = await response.Content.ReadAsStringAsync(TestContext.Current.CancellationToken);
 
         // Assert
-        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
-        Assert.Contains("--vt-color-primary: #112233;", content, StringComparison.Ordinal);
-        Assert.Contains("--vt-font-heading: Inter;", content, StringComparison.Ordinal);
-        Assert.Contains("font-family: var(--vt-font-body);", content, StringComparison.Ordinal);
+        response.StatusCode.ShouldBe(HttpStatusCode.OK);
+        content.ShouldContain("--vt-color-primary: #112233;", StringComparison.Ordinal);
+        content.ShouldContain("--vt-font-heading: Inter;", StringComparison.Ordinal);
+        content.ShouldContain("font-family: var(--vt-font-body);", StringComparison.Ordinal);
+        content.ShouldContain("class=\"public-hero\"", StringComparison.Ordinal);
+        content.ShouldContain("class=\"public-shell-nav\"", StringComparison.Ordinal);
+        content.ShouldContain("Camino Riders", StringComparison.Ordinal);
+        content.ShouldContain("https://cdn.example/logo.svg", StringComparison.Ordinal);
     }
 
     [Fact]
-    public async Task Root_uses_default_theme_when_theme_load_fails()
+    public async Task Root_renders_root_relative_branding_logo_uri()
     {
         // Arrange
-        var catalogApi = new FakePublicCatalogApiClient
+        var brandingApi = new FakeBrandingApiClient();
+        brandingApi.SetBranding(new BrandingSettingsDto
         {
-            FailThemeRequests = true
-        };
+            BrandName = "Camino Riders",
+            LogoUri = "/images/logo.svg",
+            PrimaryColor = "#112233",
+            AccentColor = "#445566",
+            BackgroundColor = "#FFFFFF",
+            TextColor = "#000000",
+            HeadingFontFamily = "Inter",
+            BodyFontFamily = "Verdana"
+        });
 
-        await using var factory = PublicWebEndpointTestsHelpers.CreateFactory(catalogApi);
+        await using var factory = PublicWebEndpointTestsHelpers.CreateFactory(brandingApiClient: brandingApi);
         using var client = factory.CreateClient();
 
         // Act
@@ -162,21 +176,63 @@ public sealed class PublicWebEndpointTests
         var content = await response.Content.ReadAsStringAsync(TestContext.Current.CancellationToken);
 
         // Assert
-        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
-        Assert.Contains("--vt-color-primary: #0F766E;", content, StringComparison.Ordinal);
-        Assert.Contains("--vt-font-body: system-ui;", content, StringComparison.Ordinal);
+        response.StatusCode.ShouldBe(HttpStatusCode.OK);
+        content.ShouldContain("/images/logo.svg", StringComparison.Ordinal);
+    }
+
+    [Theory]
+    [InlineData("/images/\u0001logo.svg")]
+    [InlineData("https://cdn.example/\u0001logo.svg")]
+    [InlineData("/images\\logo.svg")]
+    [InlineData("//cdn.example/logo.svg")]
+    [InlineData("https:///logo.svg")]
+    [InlineData("https://user:pass@cdn.example/logo.svg")]
+    public async Task Root_omits_unsafe_branding_logo_uri(string candidate)
+    {
+        // Arrange
+        var brandingApi = new FakeBrandingApiClient();
+        brandingApi.SetBranding(new BrandingSettingsDto
+        {
+            BrandName = "Camino Riders",
+            LogoUri = candidate,
+            PrimaryColor = "#112233",
+            AccentColor = "#445566",
+            BackgroundColor = "#FFFFFF",
+            TextColor = "#000000",
+            HeadingFontFamily = "Inter",
+            BodyFontFamily = "Verdana"
+        });
+
+        await using var factory = PublicWebEndpointTestsHelpers.CreateFactory(brandingApiClient: brandingApi);
+        using var client = factory.CreateClient();
+
+        // Act
+        using var response = await client.GetAsync(new Uri("/", UriKind.Relative), TestContext.Current.CancellationToken);
+        var content = await response.Content.ReadAsStringAsync(TestContext.Current.CancellationToken);
+
+        // Assert
+        response.StatusCode.ShouldBe(HttpStatusCode.OK);
+        content.Contains("<img class=\"public-shell-logo\"", StringComparison.Ordinal).ShouldBeFalse();
     }
 
     [Fact]
-    public async Task Root_uses_default_theme_when_theme_response_is_empty()
+    public async Task Root_canonicalizes_safe_branding_font_casing()
     {
         // Arrange
-        var catalogApi = new FakePublicCatalogApiClient
+        var brandingApi = new FakeBrandingApiClient();
+        brandingApi.SetBranding(new BrandingSettingsDto
         {
-            ReturnEmptyThemeResponse = true
-        };
+            BrandName = "Camino Riders",
+            LogoUri = null,
+            PrimaryColor = "#112233",
+            AccentColor = "#445566",
+            BackgroundColor = "#FFFFFF",
+            TextColor = "#000000",
+            HeadingFontFamily = "inter",
+            BodyFontFamily = "verdana"
+        });
 
-        await using var factory = PublicWebEndpointTestsHelpers.CreateFactory(catalogApi);
+        await using var factory = PublicWebEndpointTestsHelpers.CreateFactory(brandingApiClient: brandingApi);
         using var client = factory.CreateClient();
 
         // Act
@@ -184,24 +240,69 @@ public sealed class PublicWebEndpointTests
         var content = await response.Content.ReadAsStringAsync(TestContext.Current.CancellationToken);
 
         // Assert
-        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
-        Assert.Contains("--vt-color-primary: #0F766E;", content, StringComparison.Ordinal);
-        Assert.Contains("--vt-font-body: system-ui;", content, StringComparison.Ordinal);
+        response.StatusCode.ShouldBe(HttpStatusCode.OK);
+        content.ShouldContain("--vt-font-heading: Inter;", StringComparison.Ordinal);
+        content.ShouldContain("--vt-font-body: Verdana;", StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public async Task Root_uses_default_branding_when_branding_load_fails()
+    {
+        // Arrange
+        var brandingApi = new FakeBrandingApiClient
+        {
+            FailRequests = true
+        };
+
+        await using var factory = PublicWebEndpointTestsHelpers.CreateFactory(brandingApiClient: brandingApi);
+        using var client = factory.CreateClient();
+
+        // Act
+        using var response = await client.GetAsync(new Uri("/", UriKind.Relative), TestContext.Current.CancellationToken);
+        var content = await response.Content.ReadAsStringAsync(TestContext.Current.CancellationToken);
+
+        // Assert
+        response.StatusCode.ShouldBe(HttpStatusCode.OK);
+        content.ShouldContain("--vt-color-primary: #0F766E;", StringComparison.Ordinal);
+        content.ShouldContain("--vt-font-body: system-ui;", StringComparison.Ordinal);
+        content.ShouldContain("Viajantes Turismo", StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public async Task Root_uses_default_branding_when_branding_response_is_empty()
+    {
+        // Arrange
+        var brandingApi = new FakeBrandingApiClient
+        {
+            ReturnEmptyResponse = true
+        };
+
+        await using var factory = PublicWebEndpointTestsHelpers.CreateFactory(brandingApiClient: brandingApi);
+        using var client = factory.CreateClient();
+
+        // Act
+        using var response = await client.GetAsync(new Uri("/", UriKind.Relative), TestContext.Current.CancellationToken);
+        var content = await response.Content.ReadAsStringAsync(TestContext.Current.CancellationToken);
+
+        // Assert
+        response.StatusCode.ShouldBe(HttpStatusCode.OK);
+        content.ShouldContain("--vt-color-primary: #0F766E;", StringComparison.Ordinal);
+        content.ShouldContain("--vt-font-body: system-ui;", StringComparison.Ordinal);
     }
 
     [Theory]
     [InlineData("malformed")]
     [InlineData("unsupported")]
-    public async Task Root_uses_default_theme_when_theme_response_cannot_be_deserialized(string responseFailure)
+    public async Task Root_uses_default_branding_when_branding_response_cannot_be_deserialized(string responseFailure)
     {
         // Arrange
-        var catalogApi = new FakePublicCatalogApiClient
+        var brandingApi = new FakeBrandingApiClient
         {
-            ReturnMalformedThemeResponse = string.Equals(responseFailure, "malformed", StringComparison.Ordinal),
-            ReturnUnsupportedThemeResponse = string.Equals(responseFailure, "unsupported", StringComparison.Ordinal)
+            ReturnMalformedResponse = string.Equals(responseFailure, "malformed", StringComparison.Ordinal),
+            ReturnUnsupportedResponse = string.Equals(responseFailure, "unsupported", StringComparison.Ordinal)
         };
 
-        await using var factory = PublicWebEndpointTestsHelpers.CreateFactory(catalogApi);
+        await using var factory = PublicWebEndpointTestsHelpers.CreateFactory(brandingApiClient: brandingApi);
         using var client = factory.CreateClient();
 
         // Act
@@ -209,9 +310,41 @@ public sealed class PublicWebEndpointTests
         var content = await response.Content.ReadAsStringAsync(TestContext.Current.CancellationToken);
 
         // Assert
-        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
-        Assert.Contains("--vt-color-primary: #0F766E;", content, StringComparison.Ordinal);
-        Assert.Contains("--vt-font-body: system-ui;", content, StringComparison.Ordinal);
+        response.StatusCode.ShouldBe(HttpStatusCode.OK);
+        content.ShouldContain("--vt-color-primary: #0F766E;", StringComparison.Ordinal);
+        content.ShouldContain("--vt-font-body: system-ui;", StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public async Task Root_rejects_unsafe_branding_values_and_uses_safe_fallbacks()
+    {
+        // Arrange
+        var brandingApi = new FakeBrandingApiClient();
+        brandingApi.SetBranding(new BrandingSettingsDto
+        {
+            BrandName = "Unsafe Brand",
+            LogoUri = "http://cdn.example/logo.svg",
+            PrimaryColor = "url(javascript:alert(1))",
+            AccentColor = "#445566",
+            BackgroundColor = "#FFFFFF",
+            TextColor = "#000000",
+            HeadingFontFamily = "bad;font",
+            BodyFontFamily = "Verdana"
+        });
+
+        await using var factory = PublicWebEndpointTestsHelpers.CreateFactory(brandingApiClient: brandingApi);
+        using var client = factory.CreateClient();
+
+        // Act
+        using var response = await client.GetAsync(new Uri("/", UriKind.Relative), TestContext.Current.CancellationToken);
+        var content = await response.Content.ReadAsStringAsync(TestContext.Current.CancellationToken);
+
+        // Assert
+        response.StatusCode.ShouldBe(HttpStatusCode.OK);
+        content.ShouldContain("--vt-color-primary: #0F766E;", StringComparison.Ordinal);
+        content.ShouldContain("--vt-font-heading: Georgia;", StringComparison.Ordinal);
+        content.Contains("http://cdn.example/logo.svg", StringComparison.Ordinal).ShouldBeFalse();
+        content.ShouldNotContain("javascript:alert(1)");
     }
 
     [Fact]
@@ -235,9 +368,9 @@ public sealed class PublicWebEndpointTests
         var content = await response.Content.ReadAsStringAsync(TestContext.Current.CancellationToken);
 
         // Assert
-        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
-        Assert.Contains("Cycle tourism around the world!", content, StringComparison.Ordinal);
-        Assert.DoesNotContain("Wrong section", content, StringComparison.Ordinal);
+        response.StatusCode.ShouldBe(HttpStatusCode.OK);
+        content.ShouldContain("Cycle tourism around the world!", StringComparison.Ordinal);
+        content.Contains("Wrong section", StringComparison.Ordinal).ShouldBeFalse();
     }
 
     [Fact]
@@ -270,9 +403,9 @@ public sealed class PublicWebEndpointTests
         var content = await response.Content.ReadAsStringAsync(TestContext.Current.CancellationToken);
 
         // Assert
-        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
-        Assert.Contains("Cycle safely", content, StringComparison.Ordinal);
-        Assert.Contains("Camino Norte", content, StringComparison.Ordinal);
+        response.StatusCode.ShouldBe(HttpStatusCode.OK);
+        content.ShouldContain("Cycle safely", StringComparison.Ordinal);
+        content.ShouldContain("Camino Norte", StringComparison.Ordinal);
     }
 
     [Fact]
@@ -289,10 +422,11 @@ public sealed class PublicWebEndpointTests
         };
 
         // Act
-        var exception = Assert.Throws<ArgumentException>(() => catalogApi.AddContent(" ", content));
+        Action act = () => catalogApi.AddContent(" ", content);
+        var exception = act.ShouldThrow<ArgumentException>();
 
         // Assert
-        Assert.Equal("culture", exception.ParamName);
+        exception.ParamName.ShouldBe("culture");
     }
 
     [Fact]
@@ -322,8 +456,8 @@ public sealed class PublicWebEndpointTests
             TestContext.Current.CancellationToken);
 
         // Assert
-        Assert.NotNull(content);
-        Assert.Equal("Newline key", content.Title);
+        content.ShouldNotBeNull();
+        content.Title.ShouldBe("Newline key");
     }
 
     [Fact]
@@ -347,8 +481,8 @@ public sealed class PublicWebEndpointTests
         var content = await response.Content.ReadAsStringAsync(TestContext.Current.CancellationToken);
 
         // Assert
-        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
-        Assert.Contains("<h1>Cycle safely</h1>", content, StringComparison.Ordinal);
+        response.StatusCode.ShouldBe(HttpStatusCode.OK);
+        content.ShouldContain("<h1 id=\"home-hero-title\">Cycle safely</h1>", StringComparison.Ordinal);
     }
 
     [Fact]
@@ -366,10 +500,10 @@ public sealed class PublicWebEndpointTests
         var content = await response.Content.ReadAsStringAsync(TestContext.Current.CancellationToken);
 
         // Assert
-        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
-        Assert.Contains("Cycle tourism around the world!", content, StringComparison.Ordinal);
-        Assert.Contains("<h3><a href=\"/group-bike-tours/camino-norte\">Camino Norte</a></h3>", content, StringComparison.Ordinal);
-        Assert.DoesNotContain("Tours could not be loaded", content, StringComparison.Ordinal);
+        response.StatusCode.ShouldBe(HttpStatusCode.OK);
+        content.ShouldContain("Cycle tourism around the world!", StringComparison.Ordinal);
+        content.ShouldContain("<h3><a href=\"/group-bike-tours/camino-norte\">Camino Norte</a></h3>", StringComparison.Ordinal);
+        content.Contains("Tours could not be loaded", StringComparison.Ordinal).ShouldBeFalse();
     }
 
     [Fact]
@@ -386,8 +520,8 @@ public sealed class PublicWebEndpointTests
         var content = await response.Content.ReadAsStringAsync(TestContext.Current.CancellationToken);
 
         // Assert
-        Assert.Equal(HttpStatusCode.ServiceUnavailable, response.StatusCode);
-        Assert.Contains("Tours could not be loaded right now. Try again later.", content, StringComparison.Ordinal);
+        response.StatusCode.ShouldBe(HttpStatusCode.ServiceUnavailable);
+        content.ShouldContain("Tours could not be loaded right now. Try again later.", StringComparison.Ordinal);
     }
 
     [Theory]
@@ -404,9 +538,9 @@ public sealed class PublicWebEndpointTests
         var content = await response.Content.ReadAsStringAsync(TestContext.Current.CancellationToken);
 
         // Assert
-        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
-        Assert.Equal("text/html", response.Content.Headers.ContentType?.MediaType);
-        Assert.Contains($"<h1>{expectedHeading}</h1>", content, StringComparison.Ordinal);
+        response.StatusCode.ShouldBe(HttpStatusCode.OK);
+        response.Content.Headers.ContentType?.MediaType.ShouldBe("text/html");
+        content.ShouldContain($"<h1>{expectedHeading}</h1>", StringComparison.Ordinal);
     }
 
     [Fact]
@@ -426,8 +560,8 @@ public sealed class PublicWebEndpointTests
         var content = await response.Content.ReadAsStringAsync(TestContext.Current.CancellationToken);
 
         // Assert
-        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
-        Assert.Contains("<h2><a href=\"/group-bike-tours/camino-norte\">Camino Norte</a></h2>", content, StringComparison.Ordinal);
+        response.StatusCode.ShouldBe(HttpStatusCode.OK);
+        content.ShouldContain("<h2><a href=\"/group-bike-tours/camino-norte\">Camino Norte</a></h2>", StringComparison.Ordinal);
     }
 
     [Fact]
@@ -446,8 +580,8 @@ public sealed class PublicWebEndpointTests
         var content = await response.Content.ReadAsStringAsync(TestContext.Current.CancellationToken);
 
         // Assert
-        Assert.Equal(HttpStatusCode.ServiceUnavailable, response.StatusCode);
-        Assert.Contains("Tours could not be loaded right now. Try again later.", content, StringComparison.Ordinal);
+        response.StatusCode.ShouldBe(HttpStatusCode.ServiceUnavailable);
+        content.ShouldContain("Tours could not be loaded right now. Try again later.", StringComparison.Ordinal);
     }
 
     [Fact]
@@ -467,8 +601,8 @@ public sealed class PublicWebEndpointTests
         var content = await response.Content.ReadAsStringAsync(TestContext.Current.CancellationToken);
 
         // Assert
-        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
-        Assert.Contains("<h1>Camino Norte</h1>", content, StringComparison.Ordinal);
+        response.StatusCode.ShouldBe(HttpStatusCode.OK);
+        content.ShouldContain("<h1>Camino Norte</h1>", StringComparison.Ordinal);
     }
 
     [Fact]
@@ -487,8 +621,8 @@ public sealed class PublicWebEndpointTests
         var content = await response.Content.ReadAsStringAsync(TestContext.Current.CancellationToken);
 
         // Assert
-        Assert.Equal(HttpStatusCode.ServiceUnavailable, response.StatusCode);
-        Assert.Contains("<h1>Tour unavailable</h1>", content, StringComparison.Ordinal);
+        response.StatusCode.ShouldBe(HttpStatusCode.ServiceUnavailable);
+        content.ShouldContain("<h1>Tour unavailable</h1>", StringComparison.Ordinal);
     }
 
     [Fact]
@@ -505,8 +639,8 @@ public sealed class PublicWebEndpointTests
         var content = await response.Content.ReadAsStringAsync(TestContext.Current.CancellationToken);
 
         // Assert
-        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
-        Assert.Contains("<h1>Tour not found</h1>", content, StringComparison.Ordinal);
+        response.StatusCode.ShouldBe(HttpStatusCode.OK);
+        content.ShouldContain("<h1>Tour not found</h1>", StringComparison.Ordinal);
     }
 
     [Theory]
@@ -522,7 +656,7 @@ public sealed class PublicWebEndpointTests
         using var response = await client.GetAsync(new Uri(path, UriKind.Relative), TestContext.Current.CancellationToken);
 
         // Assert
-        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        response.StatusCode.ShouldBe(HttpStatusCode.OK);
     }
 
     [Fact]
@@ -539,8 +673,8 @@ public sealed class PublicWebEndpointTests
         using var response = await client.GetAsync(new Uri("/Error", UriKind.Relative), TestContext.Current.CancellationToken);
 
         // Assert
-        Assert.Equal(HttpStatusCode.InternalServerError, response.StatusCode);
-        Assert.Equal("application/problem+json", response.Content.Headers.ContentType?.MediaType);
+        response.StatusCode.ShouldBe(HttpStatusCode.InternalServerError);
+        response.Content.Headers.ContentType?.MediaType.ShouldBe("application/problem+json");
     }
 
     [Fact]
@@ -572,7 +706,7 @@ public sealed class PublicWebEndpointTests
         using var response = await client.GetAsync(new Uri("/", UriKind.Relative), TestContext.Current.CancellationToken);
 
         // Assert
-        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        response.StatusCode.ShouldBe(HttpStatusCode.OK);
     }
 
     [Theory]

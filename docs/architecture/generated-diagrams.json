@@ -90,6 +90,8 @@
         "customersGroup": "/api/v1/customers",
         "errorDocumentationGroup": "/api/v1/docs/errors",
         "importGroup": "/api/v1/customers/import",
+        "managementBranding": "/api/v1/branding/settings",
+        "publicBranding": "/api/v1/public/branding",
         "toursGroup": "/api/v1/tours",
         "versionedApi": "/api/v1"
       }

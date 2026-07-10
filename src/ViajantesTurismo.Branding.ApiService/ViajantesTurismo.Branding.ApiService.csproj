@@ -1,0 +1,29 @@
+<Project Sdk="Microsoft.NET.Sdk.Web">
+
+    <PropertyGroup>
+        <EnableRequestDelegateGenerator>true</EnableRequestDelegateGenerator>
+        <OpenApiGenerateDocuments>false</OpenApiGenerateDocuments>
+        <OpenApiGenerateDocumentsOnBuild>false</OpenApiGenerateDocumentsOnBuild>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <InternalsVisibleTo Include="ViajantesTurismo.Branding.ApiServiceTests" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <ProjectReference Include="..\SharedKernel\SharedKernel.ApiVersioning.AspNetCore\SharedKernel.ApiVersioning.AspNetCore.csproj" />
+        <ProjectReference Include="..\SharedKernel\SharedKernel.AspNetCore\SharedKernel.AspNetCore.csproj" />
+        <ProjectReference Include="..\SharedKernel\SharedKernel.Branding\SharedKernel.Branding.csproj" />
+        <ProjectReference Include="..\SharedKernel\SharedKernel.HttpCaching.AspNetCore\SharedKernel.HttpCaching.AspNetCore.csproj" />
+        <ProjectReference Include="..\SharedKernel\SharedKernel.OpenApi\SharedKernel.OpenApi.csproj" />
+        <ProjectReference Include="..\ViajantesTurismo.Branding.Infrastructure\ViajantesTurismo.Branding.Infrastructure.csproj" />
+        <ProjectReference Include="..\ViajantesTurismo.Resources\ViajantesTurismo.Resources.csproj" />
+        <ProjectReference Include="..\ViajantesTurismo.ServiceDefaults\ViajantesTurismo.ServiceDefaults.csproj" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <PackageReference Include="Microsoft.AspNetCore.OpenApi" />
+        <PackageReference Include="Microsoft.Extensions.ApiDescription.Server" />
+    </ItemGroup>
+
+</Project>

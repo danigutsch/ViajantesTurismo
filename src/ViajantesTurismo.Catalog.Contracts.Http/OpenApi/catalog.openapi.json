@@ -245,38 +245,6 @@
           }
         }
       }
-    },
-    "/api/v1/catalog/public-theme": {
-      "get": {
-        "tags": [
-          "CatalogEndpoints"
-        ],
-        "responses": {
-          "200": {
-            "description": "OK"
-          }
-        }
-      },
-      "put": {
-        "tags": [
-          "CatalogEndpoints"
-        ],
-        "requestBody": {
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/PublicThemeSettingsDto"
-              }
-            }
-          },
-          "required": true
-        },
-        "responses": {
-          "200": {
-            "description": "OK"
-          }
-        }
-      }
     }
   },
   "components": {
@@ -759,29 +727,6 @@
               "null",
               "string"
             ]
-          }
-        }
-      },
-      "PublicThemeSettingsDto": {
-        "type": "object",
-        "properties": {
-          "primaryColor": {
-            "type": "string"
-          },
-          "accentColor": {
-            "type": "string"
-          },
-          "backgroundColor": {
-            "type": "string"
-          },
-          "textColor": {
-            "type": "string"
-          },
-          "headingFontFamily": {
-            "type": "string"
-          },
-          "bodyFontFamily": {
-            "type": "string"
           }
         }
       },

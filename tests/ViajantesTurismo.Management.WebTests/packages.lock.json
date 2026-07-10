@@ -730,6 +730,14 @@
           "SharedKernel.InputNormalization": "[0.1.0-alpha.0, )"
         }
       },
+      "sharedkernel.branding": {
+        "type": "Project",
+        "dependencies": {
+          "SharedKernel.HttpClients": "[0.1.0-alpha.0, )",
+          "SharedKernel.InputNormalization": "[0.1.0-alpha.0, )",
+          "SharedKernel.Results": "[0.1.0-alpha.0, )"
+        }
+      },
       "sharedkernel.buildingblocks": {
         "type": "Project",
         "dependencies": {
@@ -865,6 +873,7 @@
           "Aspire.StackExchange.Redis.OutputCaching": "[13.4.6, )",
           "Microsoft.AspNetCore.Components.QuickGrid": "[10.0.9, )",
           "SharedKernel.AspNetCore": "[0.1.0-alpha.0, )",
+          "SharedKernel.Branding": "[0.1.0-alpha.0, )",
           "SharedKernel.HttpClients": "[0.1.0-alpha.0, )",
           "ViajantesTurismo.Admin.Contracts.Application": "[0.1.0-alpha.0, )",
           "ViajantesTurismo.Admin.Contracts.Http": "[0.1.0-alpha.0, )",

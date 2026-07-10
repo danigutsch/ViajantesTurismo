@@ -610,6 +610,14 @@
           "SharedKernel.InputNormalization": "[0.1.0-alpha.0, )"
         }
       },
+      "sharedkernel.branding": {
+        "type": "Project",
+        "dependencies": {
+          "SharedKernel.HttpClients": "[0.1.0-alpha.0, )",
+          "SharedKernel.InputNormalization": "[0.1.0-alpha.0, )",
+          "SharedKernel.Results": "[0.1.0-alpha.0, )"
+        }
+      },
       "sharedkernel.buildingblocks": {
         "type": "Project",
         "dependencies": {
@@ -856,6 +864,16 @@
           "ViajantesTurismo.Admin.Domain": "[0.1.0-alpha.0, )"
         }
       },
+      "viajantesturismo.branding.infrastructure": {
+        "type": "Project",
+        "dependencies": {
+          "Aspire.Npgsql": "[13.4.6, )",
+          "Aspire.Npgsql.EntityFrameworkCore.PostgreSQL": "[13.4.6, )",
+          "SharedKernel.Branding": "[0.1.0-alpha.0, )",
+          "SharedKernel.EntityFrameworkCore": "[0.1.0-alpha.0, )",
+          "ViajantesTurismo.Resources": "[0.1.0-alpha.0, )"
+        }
+      },
       "viajantesturismo.catalog.application": {
         "type": "Project",
         "dependencies": {
@@ -921,10 +939,13 @@
         "type": "Project",
         "dependencies": {
           "Microsoft.Extensions.Hosting": "[10.0.9, )",
+          "SharedKernel.Branding": "[0.1.0-alpha.0, )",
           "SharedKernel.EventSourcing.Npgsql": "[0.1.0-alpha.0, )",
           "ViajantesTurismo.Admin.Application": "[0.1.0-alpha.0, )",
           "ViajantesTurismo.Admin.Infrastructure": "[0.1.0-alpha.0, )",
+          "ViajantesTurismo.Branding.Infrastructure": "[0.1.0-alpha.0, )",
           "ViajantesTurismo.Catalog.Infrastructure": "[0.1.0-alpha.0, )",
+          "ViajantesTurismo.Resources": "[0.1.0-alpha.0, )",
           "ViajantesTurismo.ServiceDefaults": "[0.1.0-alpha.0, )"
         }
       },

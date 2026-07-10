@@ -40,6 +40,7 @@ outdated behavior.
 - [System architecture diagram](architecture/system-overview.md) - top-level system map with trust boundaries.
 - [Diagram guidance](architecture/diagram-guidance.md) - diagram type selection and generation policy.
 - [Architecture decisions](ARCHITECTURE_DECISIONS.md) - ADR index and decision history.
+- [Branding](branding.md) - SharedKernel Branding rules and ViajantesTurismo adapter boundaries.
 - [Domain validation](DOMAIN_VALIDATION.md) - validation patterns and links to domain-specific details.
 
 ## Engineering guidance

@@ -1,3 +1,4 @@
+using SharedKernel.Branding;
 using SharedKernel.HttpClients;
 using ViajantesTurismo.Public.Web;
 using ViajantesTurismo.Resources;
@@ -8,6 +9,7 @@ var builder = WebApplication.CreateBuilder(args);
 builder.AddServiceDefaults();
 builder.Services.AddHttpClientDefaults();
 builder.Services.AddHttpClient<IPublicCatalogApiClient, PublicCatalogApiClient>(client => client.BaseAddress = new Uri($"https+http://{ResourceNames.CatalogApi}"));
+builder.Services.AddHttpClient<IBrandingApiClient, BrandingApiClient>(client => client.BaseAddress = new Uri($"https+http://{ResourceNames.BrandingApi}"));
 builder.Services.AddRazorComponents();
 
 var app = builder.Build();

@@ -29,8 +29,8 @@ or forbidden dependency directions, see [Architecture boundaries and dependency 
 ## Admin-to-Catalog content workflow
 
 See [Architecture flows](FLOWS.md) for Admin workflows, Catalog event-sourcing/projection flows,
-localized public-content review flows, and media/gallery metadata flows. Those diagrams separate
-current implementation from planned/evolving work.
+localized public-content review flows, media/gallery metadata flows, and Branding adapter flows. Those
+diagrams separate current implementation from planned/evolving work.
 
 ### Planned Admin-to-Catalog publication direction
 
@@ -59,6 +59,7 @@ transport publisher/consumer path is still evolving. See
 ## Domain references
 
 - [Admin bounded context](../bounded-contexts/Admin.md)
+- [Branding](../branding.md)
 - [Catalog bounded context](../bounded-contexts/Catalog.md)
 - [Architecture flows](FLOWS.md)
 - [Domain aggregates](../domain/AGGREGATES.md)
@@ -78,8 +79,8 @@ transport publisher/consumer path is still evolving. See
 
 - Core public website content variants and localization are implemented through Catalog-owned content
   contracts and Public.Web rendering, separate from core Admin CRUD.
-- Configurable public website theme settings are implemented separately from page text content and
-  rendered by Public.Web through safe SSR-friendly CSS variables.
+- Configurable branding now belongs to `SharedKernel.Branding` plus the ViajantesTurismo Branding API
+  adapter. Catalog does not own Branding routes or clients.
 - Media/gallery management is planned under public-web media issues.
 - Adapter package splits should follow ADR-027's capability-first naming, dependency-direction, and
   split-threshold rules.

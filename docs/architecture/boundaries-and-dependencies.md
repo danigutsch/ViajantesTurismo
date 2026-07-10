@@ -5,8 +5,10 @@ separately so diagrams can stay useful as repository structure evolves.
 
 ## Current bounded-context ownership
 
-Admin owns booking and management workflows. Catalog owns public tour presentation. Admin publishes
-integration events; Catalog consumes them and builds public read models.
+Admin owns booking and management workflows. Catalog owns public tour presentation. Branding rules
+live in `SharedKernel.Branding`; the ViajantesTurismo Branding adapter owns app-specific persistence,
+routes, defaults, and cache policy. Admin publishes integration events; Catalog consumes them and builds
+public read models.
 
 ```mermaid
 flowchart LR
@@ -19,6 +21,8 @@ flowchart LR
     catalogAppContracts[Catalog application contracts]
     catalogHttpContracts[Catalog HTTP contracts]
     catalogEventContracts[Catalog integration-event contracts]
+    branding[Branding adapter]
+    brandingCore[SharedKernel.Branding]
     publicRead[Public tour presentation]
 
     admin --> adminAppContracts
@@ -30,17 +34,22 @@ flowchart LR
     catalog --> catalogHttpContracts
     catalog --> catalogEventContracts
     catalog --> publicRead
+    branding --> brandingCore
 ```
 
 Boundary rules:
 
 - Admin business rules stay in `src/ViajantesTurismo.Admin.Domain`.
 - Catalog presentation rules stay in `src/ViajantesTurismo.Catalog.Domain`.
+- Reusable branding validation and public-safe contract rules stay in `SharedKernel.Branding`.
+- ViajantesTurismo Branding API schema, persistence adapter, UI interpretation, and defaults stay outside SharedKernel.
+- Catalog must not receive new branding behavior.
 - Cross-context interaction uses contracts and integration events, not direct domain references.
 - Public web reads Catalog contracts; it does not reference Admin projects.
 
 Related docs: [Admin bounded context](../bounded-contexts/Admin.md),
-[Catalog bounded context](../bounded-contexts/Catalog.md), and
+[Catalog bounded context](../bounded-contexts/Catalog.md),
+[Branding](../branding.md), and
 [events and messaging](../domain/EVENTS_AND_MESSAGING.md).
 
 ## Current project dependency map
@@ -94,12 +103,24 @@ flowchart TB
     ViajantesTurismo_AppHost[ViajantesTurismo.AppHost] --> SharedKernel_Aspire_Analyzers[SharedKernel.Aspire.Analyzers]
     ViajantesTurismo_AppHost[ViajantesTurismo.AppHost] --> SharedKernel_Aspire_Hosting_Grafana[SharedKernel.Aspire.Hosting.Grafana]
     ViajantesTurismo_AppHost[ViajantesTurismo.AppHost] --> ViajantesTurismo_Admin_ApiService[ViajantesTurismo.Admin.ApiService]
+    ViajantesTurismo_AppHost[ViajantesTurismo.AppHost] --> ViajantesTurismo_Branding_ApiService[ViajantesTurismo.Branding.ApiService]
     ViajantesTurismo_AppHost[ViajantesTurismo.AppHost] --> ViajantesTurismo_Catalog_ApiService[ViajantesTurismo.Catalog.ApiService]
     ViajantesTurismo_AppHost[ViajantesTurismo.AppHost] --> ViajantesTurismo_IntegrationEventWorker[ViajantesTurismo.IntegrationEventWorker]
     ViajantesTurismo_AppHost[ViajantesTurismo.AppHost] --> ViajantesTurismo_Management_Web[ViajantesTurismo.Management.Web]
     ViajantesTurismo_AppHost[ViajantesTurismo.AppHost] --> ViajantesTurismo_MigrationService[ViajantesTurismo.MigrationService]
     ViajantesTurismo_AppHost[ViajantesTurismo.AppHost] --> ViajantesTurismo_Public_Web[ViajantesTurismo.Public.Web]
     ViajantesTurismo_AppHost[ViajantesTurismo.AppHost] --> ViajantesTurismo_Resources[ViajantesTurismo.Resources]
+    ViajantesTurismo_Branding_ApiService[ViajantesTurismo.Branding.ApiService] --> SharedKernel_ApiVersioning_AspNetCore[SharedKernel.ApiVersioning.AspNetCore]
+    ViajantesTurismo_Branding_ApiService[ViajantesTurismo.Branding.ApiService] --> SharedKernel_AspNetCore[SharedKernel.AspNetCore]
+    ViajantesTurismo_Branding_ApiService[ViajantesTurismo.Branding.ApiService] --> SharedKernel_Branding[SharedKernel.Branding]
+    ViajantesTurismo_Branding_ApiService[ViajantesTurismo.Branding.ApiService] --> SharedKernel_HttpCaching_AspNetCore[SharedKernel.HttpCaching.AspNetCore]
+    ViajantesTurismo_Branding_ApiService[ViajantesTurismo.Branding.ApiService] --> SharedKernel_OpenApi[SharedKernel.OpenApi]
+    ViajantesTurismo_Branding_ApiService[ViajantesTurismo.Branding.ApiService] --> ViajantesTurismo_Branding_Infrastructure[ViajantesTurismo.Branding.Infrastructure]
+    ViajantesTurismo_Branding_ApiService[ViajantesTurismo.Branding.ApiService] --> ViajantesTurismo_Resources[ViajantesTurismo.Resources]
+    ViajantesTurismo_Branding_ApiService[ViajantesTurismo.Branding.ApiService] --> ViajantesTurismo_ServiceDefaults[ViajantesTurismo.ServiceDefaults]
+    ViajantesTurismo_Branding_Infrastructure[ViajantesTurismo.Branding.Infrastructure] --> SharedKernel_Branding[SharedKernel.Branding]
+    ViajantesTurismo_Branding_Infrastructure[ViajantesTurismo.Branding.Infrastructure] --> SharedKernel_EntityFrameworkCore[SharedKernel.EntityFrameworkCore]
+    ViajantesTurismo_Branding_Infrastructure[ViajantesTurismo.Branding.Infrastructure] --> ViajantesTurismo_Resources[ViajantesTurismo.Resources]
     ViajantesTurismo_Catalog_ApiService[ViajantesTurismo.Catalog.ApiService] --> SharedKernel_ApiVersioning_AspNetCore[SharedKernel.ApiVersioning.AspNetCore]
     ViajantesTurismo_Catalog_ApiService[ViajantesTurismo.Catalog.ApiService] --> SharedKernel_AspNetCore[SharedKernel.AspNetCore]
     ViajantesTurismo_Catalog_ApiService[ViajantesTurismo.Catalog.ApiService] --> SharedKernel_HttpCaching_AspNetCore[SharedKernel.HttpCaching.AspNetCore]
@@ -146,6 +167,7 @@ flowchart TB
     ViajantesTurismo_IntegrationEventWorker[ViajantesTurismo.IntegrationEventWorker] --> ViajantesTurismo_Catalog_Infrastructure[ViajantesTurismo.Catalog.Infrastructure]
     ViajantesTurismo_IntegrationEventWorker[ViajantesTurismo.IntegrationEventWorker] --> ViajantesTurismo_ServiceDefaults[ViajantesTurismo.ServiceDefaults]
     ViajantesTurismo_Management_Web[ViajantesTurismo.Management.Web] --> SharedKernel_AspNetCore[SharedKernel.AspNetCore]
+    ViajantesTurismo_Management_Web[ViajantesTurismo.Management.Web] --> SharedKernel_Branding[SharedKernel.Branding]
     ViajantesTurismo_Management_Web[ViajantesTurismo.Management.Web] --> SharedKernel_HttpClients[SharedKernel.HttpClients]
     ViajantesTurismo_Management_Web[ViajantesTurismo.Management.Web] --> ViajantesTurismo_Admin_Contracts_Application[ViajantesTurismo.Admin.Contracts.Application]
     ViajantesTurismo_Management_Web[ViajantesTurismo.Management.Web] --> ViajantesTurismo_Admin_Contracts_Http[ViajantesTurismo.Admin.Contracts.Http]
@@ -153,12 +175,16 @@ flowchart TB
     ViajantesTurismo_Management_Web[ViajantesTurismo.Management.Web] --> ViajantesTurismo_Catalog_Contracts_Http[ViajantesTurismo.Catalog.Contracts.Http]
     ViajantesTurismo_Management_Web[ViajantesTurismo.Management.Web] --> ViajantesTurismo_Resources[ViajantesTurismo.Resources]
     ViajantesTurismo_Management_Web[ViajantesTurismo.Management.Web] --> ViajantesTurismo_ServiceDefaults[ViajantesTurismo.ServiceDefaults]
+    ViajantesTurismo_MigrationService[ViajantesTurismo.MigrationService] --> SharedKernel_Branding[SharedKernel.Branding]
     ViajantesTurismo_MigrationService[ViajantesTurismo.MigrationService] --> SharedKernel_EventSourcing_Npgsql[SharedKernel.EventSourcing.Npgsql]
     ViajantesTurismo_MigrationService[ViajantesTurismo.MigrationService] --> ViajantesTurismo_Admin_Application[ViajantesTurismo.Admin.Application]
     ViajantesTurismo_MigrationService[ViajantesTurismo.MigrationService] --> ViajantesTurismo_Admin_Infrastructure[ViajantesTurismo.Admin.Infrastructure]
+    ViajantesTurismo_MigrationService[ViajantesTurismo.MigrationService] --> ViajantesTurismo_Branding_Infrastructure[ViajantesTurismo.Branding.Infrastructure]
     ViajantesTurismo_MigrationService[ViajantesTurismo.MigrationService] --> ViajantesTurismo_Catalog_Infrastructure[ViajantesTurismo.Catalog.Infrastructure]
+    ViajantesTurismo_MigrationService[ViajantesTurismo.MigrationService] --> ViajantesTurismo_Resources[ViajantesTurismo.Resources]
     ViajantesTurismo_MigrationService[ViajantesTurismo.MigrationService] --> ViajantesTurismo_ServiceDefaults[ViajantesTurismo.ServiceDefaults]
     ViajantesTurismo_Public_Web[ViajantesTurismo.Public.Web] --> SharedKernel_AspNetCore[SharedKernel.AspNetCore]
+    ViajantesTurismo_Public_Web[ViajantesTurismo.Public.Web] --> SharedKernel_Branding[SharedKernel.Branding]
     ViajantesTurismo_Public_Web[ViajantesTurismo.Public.Web] --> SharedKernel_HttpCaching_AspNetCore[SharedKernel.HttpCaching.AspNetCore]
     ViajantesTurismo_Public_Web[ViajantesTurismo.Public.Web] --> SharedKernel_HttpClients[SharedKernel.HttpClients]
     ViajantesTurismo_Public_Web[ViajantesTurismo.Public.Web] --> ViajantesTurismo_Catalog_Contracts_Application[ViajantesTurismo.Catalog.Contracts.Application]
@@ -237,6 +263,9 @@ This diagram is generated from SharedKernel project references.
 flowchart TB
     SharedKernel_ApiVersioning_AspNetCore[SharedKernel.ApiVersioning.AspNetCore] --> SharedKernel_ApiVersioning[SharedKernel.ApiVersioning]
     SharedKernel_AspNetCore[SharedKernel.AspNetCore] --> SharedKernel_InputNormalization[SharedKernel.InputNormalization]
+    SharedKernel_Branding[SharedKernel.Branding] --> SharedKernel_HttpClients[SharedKernel.HttpClients]
+    SharedKernel_Branding[SharedKernel.Branding] --> SharedKernel_InputNormalization[SharedKernel.InputNormalization]
+    SharedKernel_Branding[SharedKernel.Branding] --> SharedKernel_Results[SharedKernel.Results]
     SharedKernel_BuildingBlocks[SharedKernel.BuildingBlocks] --> SharedKernel_Results[SharedKernel.Results]
     SharedKernel_DomainEvents[SharedKernel.DomainEvents] --> SharedKernel_Domain[SharedKernel.Domain]
     SharedKernel_DomainEvents[SharedKernel.DomainEvents] --> SharedKernel_Mediator_Abstractions[SharedKernel.Mediator.Abstractions]

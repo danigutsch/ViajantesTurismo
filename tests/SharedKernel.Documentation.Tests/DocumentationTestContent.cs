@@ -215,8 +215,8 @@ internal static class DocumentationTestContent
                 customersGroup.MapPost("/", CreateCustomer)
                     .RequireAuthorization();
                 var publicCatalogGroup = app.MapPublicCatalogGroup();
-                publicCatalogGroup.MapGet("/theme", GetPublicTheme)
-                    .WithName("GetPublicTheme");
+                publicCatalogGroup.MapGet("/content/{key}", GetPublicContent)
+                    .WithName("GetPublicContent");
                 return app;
             }
         }

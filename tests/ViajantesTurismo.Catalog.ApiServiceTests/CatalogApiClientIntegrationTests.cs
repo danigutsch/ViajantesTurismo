@@ -76,31 +76,4 @@ public sealed class CatalogApiClientIntegrationTests
         read.Variants.ShouldContain(variant => variant.Language == PublicContentLanguageDto.PtBr && variant.Title == "Bem-vindo");
     }
 
-    [Fact]
-    public async Task Public_theme_client_saves_and_reads_theme_through_api_host()
-    {
-        // Arrange
-        var cancellationToken = TestContext.Current.CancellationToken;
-        await using var factory = CatalogApiTestHost.Create();
-        using var httpClient = factory.CreateClient();
-        var sut = new PublicThemeApiClient(httpClient);
-        var request = new PublicThemeSettingsDto
-        {
-            PrimaryColor = "#112233",
-            AccentColor = "#445566",
-            BackgroundColor = "#FFFFFF",
-            TextColor = "#000000",
-            HeadingFontFamily = "Inter",
-            BodyFontFamily = "Verdana"
-        };
-
-        // Act
-        var saved = await sut.SaveTheme(request, cancellationToken);
-        var read = await sut.GetTheme(cancellationToken);
-
-        // Assert
-        saved.PrimaryColor.ShouldBe("#112233");
-        read.PrimaryColor.ShouldBe("#112233");
-        read.HeadingFontFamily.ShouldBe("Inter");
-    }
 }

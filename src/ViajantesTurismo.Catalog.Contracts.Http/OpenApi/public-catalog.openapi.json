@@ -84,18 +84,6 @@
           }
         }
       }
-    },
-    "/api/v1/public/catalog/theme": {
-      "get": {
-        "tags": [
-          "CatalogEndpoints"
-        ],
-        "responses": {
-          "200": {
-            "description": "OK"
-          }
-        }
-      }
     }
   },
   "components": {

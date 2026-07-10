@@ -895,6 +895,14 @@
           "SharedKernel.InputNormalization": "[0.1.0-alpha.0, )"
         }
       },
+      "sharedkernel.branding": {
+        "type": "Project",
+        "dependencies": {
+          "SharedKernel.HttpClients": "[0.1.0-alpha.0, )",
+          "SharedKernel.InputNormalization": "[0.1.0-alpha.0, )",
+          "SharedKernel.Results": "[0.1.0-alpha.0, )"
+        }
+      },
       "sharedkernel.buildingblocks": {
         "type": "Project",
         "dependencies": {
@@ -1215,6 +1223,7 @@
         "type": "Project",
         "dependencies": {
           "SharedKernel.AspNetCore": "[0.1.0-alpha.0, )",
+          "SharedKernel.Branding": "[0.1.0-alpha.0, )",
           "SharedKernel.HttpCaching.AspNetCore": "[0.1.0-alpha.0, )",
           "SharedKernel.HttpClients": "[0.1.0-alpha.0, )",
           "ViajantesTurismo.Catalog.Contracts.Application": "[0.1.0-alpha.0, )",

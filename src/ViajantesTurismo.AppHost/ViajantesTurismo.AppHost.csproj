@@ -12,6 +12,7 @@
 
     <ItemGroup>
         <ProjectReference Include="..\ViajantesTurismo.Admin.ApiService\ViajantesTurismo.Admin.ApiService.csproj"/>
+        <ProjectReference Include="..\ViajantesTurismo.Branding.ApiService\ViajantesTurismo.Branding.ApiService.csproj"/>
         <ProjectReference Include="..\ViajantesTurismo.Catalog.ApiService\ViajantesTurismo.Catalog.ApiService.csproj"/>
         <ProjectReference Include="..\ViajantesTurismo.IntegrationEventWorker\ViajantesTurismo.IntegrationEventWorker.csproj"/>
         <ProjectReference Include="..\ViajantesTurismo.MigrationService\ViajantesTurismo.MigrationService.csproj"/>

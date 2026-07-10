@@ -1,4 +1,4 @@
-@inject IPublicCatalogApiClient CatalogApi
+@inject IBrandingApiClient BrandingApi
 @inject NavigationManager Navigation
 
 <!doctype html>
@@ -11,43 +11,224 @@
     <HeadOutlet />
 </head>
 <body>
-    <Routes />
+    <CascadingValue Value="@_branding">
+        <Routes />
+    </CascadingValue>
 </body>
 </html>
 
 @code {
-    private PublicThemeSettingsDto _theme = DefaultTheme();
+    private BrandingSettingsDto _branding = DefaultBranding();
 
     private string DocumentLanguage => PublicCultureQuery.GetDocumentLanguage(Navigation.Uri);
 
     private string ThemeCss => $$"""
         :root {
-            --vt-color-primary: {{SafeColor(_theme.PrimaryColor, PublicThemeSettingsDefaults.PrimaryColor)}};
-            --vt-color-accent: {{SafeColor(_theme.AccentColor, PublicThemeSettingsDefaults.AccentColor)}};
-            --vt-color-background: {{SafeColor(_theme.BackgroundColor, PublicThemeSettingsDefaults.BackgroundColor)}};
-            --vt-color-text: {{SafeColor(_theme.TextColor, PublicThemeSettingsDefaults.TextColor)}};
-            --vt-font-heading: {{SafeFont(_theme.HeadingFontFamily, PublicThemeSettingsDefaults.HeadingFontFamily)}};
-            --vt-font-body: {{SafeFont(_theme.BodyFontFamily, PublicThemeSettingsDefaults.BodyFontFamily)}};
+            --vt-color-primary: {{SafeColor(_branding.PrimaryColor, DefaultPrimaryColor)}};
+            --vt-color-accent: {{SafeColor(_branding.AccentColor, DefaultAccentColor)}};
+            --vt-color-background: {{SafeColor(_branding.BackgroundColor, DefaultBackgroundColor)}};
+            --vt-color-text: {{SafeColor(_branding.TextColor, DefaultTextColor)}};
+            --vt-font-heading: {{SafeFont(_branding.HeadingFontFamily, DefaultHeadingFontFamily)}};
+            --vt-font-body: {{SafeFont(_branding.BodyFontFamily, DefaultBodyFontFamily)}};
+            --vt-color-surface: color-mix(in srgb, var(--vt-color-background) 88%, white);
+            --vt-color-primary-soft: color-mix(in srgb, var(--vt-color-primary) 16%, white);
+            --vt-color-accent-soft: color-mix(in srgb, var(--vt-color-accent) 22%, white);
+            --vt-shadow-soft: 0 1.25rem 3rem color-mix(in srgb, var(--vt-color-primary) 18%, transparent);
+        }
+
+        *, *::before, *::after {
+            box-sizing: border-box;
         }
 
         body {
-            background: var(--vt-color-background);
+            background:
+                radial-gradient(circle at top left, var(--vt-color-accent-soft), transparent 26rem),
+                linear-gradient(180deg, var(--vt-color-background), color-mix(in srgb, var(--vt-color-background) 88%, white));
             color: var(--vt-color-text);
             font-family: var(--vt-font-body);
+            line-height: 1.6;
+            margin: 0;
+            min-height: 100vh;
         }
 
         h1, h2, h3 {
             color: var(--vt-color-primary);
             font-family: var(--vt-font-heading);
+            line-height: 1.12;
         }
 
         a {
             color: var(--vt-color-accent);
+            text-decoration-thickness: .08em;
+            text-underline-offset: .18em;
         }
 
         button, .button {
             background: var(--vt-color-primary);
             color: var(--vt-color-background);
+        }
+
+        img {
+            display: block;
+            max-width: 100%;
+        }
+
+        .skip-link {
+            background: var(--vt-color-primary);
+            color: var(--vt-color-background);
+            left: 1rem;
+            padding: .75rem 1rem;
+            position: absolute;
+            top: -4rem;
+            z-index: 10;
+        }
+
+        .skip-link:focus {
+            top: 1rem;
+        }
+
+        .public-shell-header, .public-shell-footer, .public-shell-main {
+            margin-inline: auto;
+            max-width: 72rem;
+            width: min(100% - 2rem, 72rem);
+        }
+
+        .public-shell-header {
+            align-items: center;
+            display: flex;
+            gap: 1rem;
+            justify-content: space-between;
+            padding-block: 1.25rem;
+        }
+
+        .public-shell-brand {
+            align-items: center;
+            color: var(--vt-color-primary);
+            display: inline-flex;
+            font-family: var(--vt-font-heading);
+            font-size: clamp(1.15rem, 2vw, 1.5rem);
+            font-weight: 700;
+            gap: .75rem;
+            text-decoration: none;
+        }
+
+        .public-shell-logo {
+            block-size: 2.5rem;
+            border-radius: .85rem;
+            inline-size: 2.5rem;
+            object-fit: contain;
+        }
+
+        .public-shell-brand-mark {
+            align-items: center;
+            background: linear-gradient(135deg, var(--vt-color-primary), var(--vt-color-accent));
+            block-size: 2.5rem;
+            border-radius: .85rem;
+            color: var(--vt-color-background);
+            display: inline-flex;
+            font-family: var(--vt-font-body);
+            font-size: .9rem;
+            font-weight: 800;
+            inline-size: 2.5rem;
+            justify-content: center;
+        }
+
+        .public-shell-nav {
+            display: flex;
+            flex-wrap: wrap;
+            gap: .5rem;
+            justify-content: flex-end;
+        }
+
+        .public-shell-nav a {
+            border-radius: 999px;
+            color: var(--vt-color-text);
+            padding: .5rem .85rem;
+            text-decoration: none;
+        }
+
+        .public-shell-nav a:hover, .public-shell-nav a:focus-visible {
+            background: var(--vt-color-primary-soft);
+            color: var(--vt-color-primary);
+        }
+
+        .public-shell-main {
+            padding-block: clamp(1rem, 2vw, 2rem) 3rem;
+        }
+
+        .public-hero {
+            background:
+                linear-gradient(135deg, color-mix(in srgb, var(--vt-color-primary) 12%, transparent), transparent),
+                var(--vt-color-surface);
+            border: 1px solid color-mix(in srgb, var(--vt-color-primary) 12%, transparent);
+            border-radius: 2rem;
+            box-shadow: var(--vt-shadow-soft);
+            margin-block-end: clamp(2rem, 5vw, 4rem);
+            overflow: hidden;
+            padding: clamp(2rem, 6vw, 4.5rem);
+            position: relative;
+        }
+
+        .public-hero::after {
+            background: linear-gradient(135deg, var(--vt-color-primary), var(--vt-color-accent));
+            border-radius: 999px;
+            block-size: 11rem;
+            content: "";
+            inline-size: 11rem;
+            opacity: .16;
+            position: absolute;
+            right: -3rem;
+            top: -3rem;
+        }
+
+        .public-hero h1 {
+            font-size: clamp(2.4rem, 8vw, 5rem);
+            margin: 0;
+            max-width: 12ch;
+        }
+
+        .public-hero p {
+            font-size: clamp(1.1rem, 2vw, 1.35rem);
+            max-width: 42rem;
+        }
+
+        .public-section-header {
+            align-items: end;
+            display: flex;
+            gap: 1rem;
+            justify-content: space-between;
+        }
+
+        .tour-list {
+            display: grid;
+            gap: 1.25rem;
+            grid-template-columns: repeat(auto-fit, minmax(min(18rem, 100%), 1fr));
+        }
+
+        .tour-card-shell {
+            background: var(--vt-color-surface);
+            border: 1px solid color-mix(in srgb, var(--vt-color-primary) 10%, transparent);
+            border-radius: 1.25rem;
+            box-shadow: 0 .75rem 2rem color-mix(in srgb, var(--vt-color-primary) 10%, transparent);
+            overflow: hidden;
+            padding: 1rem;
+        }
+
+        .public-shell-footer {
+            border-top: 1px solid color-mix(in srgb, var(--vt-color-primary) 14%, transparent);
+            color: color-mix(in srgb, var(--vt-color-text) 72%, transparent);
+            padding-block: 2rem;
+        }
+
+        @media (max-width: 42rem) {
+            .public-shell-header {
+                align-items: flex-start;
+                flex-direction: column;
+            }
+
+            .public-shell-nav {
+                justify-content: flex-start;
+            }
         }
         """;
 
@@ -56,29 +237,49 @@
     {
         try
         {
-            _theme = await CatalogApi.GetThemeSettings(CancellationToken.None);
+            _branding = await BrandingApi.GetPublicSettings(CancellationToken.None);
         }
         catch (HttpRequestException)
         {
-            _theme = DefaultTheme();
+            _branding = DefaultBranding();
         }
         catch (InvalidOperationException)
         {
-            _theme = DefaultTheme();
+            _branding = DefaultBranding();
         }
         catch (System.Text.Json.JsonException)
         {
-            _theme = DefaultTheme();
+            _branding = DefaultBranding();
         }
         catch (NotSupportedException)
         {
-            _theme = DefaultTheme();
+            _branding = DefaultBranding();
         }
     }
 
-    private static PublicThemeSettingsDto DefaultTheme()
+    private const string DefaultBrandName = "Viajantes Turismo";
+    private const string DefaultPrimaryColor = "#0F766E";
+    private const string DefaultAccentColor = "#F97316";
+    private const string DefaultBackgroundColor = "#FFFBF5";
+    private const string DefaultTextColor = "#1F2937";
+    private const string DefaultHeadingFontFamily = BrandingFontFamilies.DefaultHeading;
+    private const string DefaultBodyFontFamily = BrandingFontFamilies.DefaultBody;
+
+    private static readonly IReadOnlyList<string> AllowedFontFamilies = BrandingFontFamilies.All;
+
+    private static BrandingSettingsDto DefaultBranding()
     {
-        return PublicThemeSettingsDefaults.CreateDto();
+        return new BrandingSettingsDto
+        {
+            BrandName = DefaultBrandName,
+            LogoUri = string.Empty,
+            PrimaryColor = DefaultPrimaryColor,
+            AccentColor = DefaultAccentColor,
+            BackgroundColor = DefaultBackgroundColor,
+            TextColor = DefaultTextColor,
+            HeadingFontFamily = DefaultHeadingFontFamily,
+            BodyFontFamily = DefaultBodyFontFamily
+        };
     }
 
     private static string SafeColor(string? color, string fallback)
@@ -92,6 +293,8 @@
     private static string SafeFont(string? fontFamily, string fallback)
     {
         var value = fontFamily?.Trim();
-        return value is not null && PublicThemeSettingsDefaults.AllowedFontFamilies.Contains(value, StringComparer.Ordinal) ? value : fallback;
+        return value is null
+            ? fallback
+            : AllowedFontFamilies.FirstOrDefault(font => string.Equals(font, value, StringComparison.OrdinalIgnoreCase)) ?? fallback;
     }
 }

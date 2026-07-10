@@ -10,7 +10,8 @@ events, call external side effects, or run asynchronous processing.
 - Catalog integration handling writes the Catalog event store behind a durable idempotency wrapper, but
   broker transport is not wired in the current runtime.
 - Catalog projection processing reads the event store, writes read models, then writes a checkpoint.
-- Public content, public theme, Catalog media metadata API, Admin booking/customer/tour mutations,
+- Public content, Branding settings, Catalog media metadata API, Admin
+  booking/customer/tour mutations,
   and HTTP API clients are single-store or caller-side flows in the current implementation.
 
 ## Inventory
@@ -125,13 +126,14 @@ and connection-resiliency guidance on transaction commit ambiguity:
 - Existing mitigation: validates every tour link before saving metadata.
 - Recommendation: no change.
 
-### Public content and public theme management
+### Public content and Branding settings management
 
-- Trigger: `CatalogEndpoints.UpsertPublicContent`, `CatalogEndpoints.UpsertPublicTheme`.
+- Trigger: `CatalogEndpoints.UpsertPublicContent`.
 - Code: `src/ViajantesTurismo.Catalog.ApiService/CatalogEndpoints.cs`.
 - Systems touched: Catalog database only.
 - Failure window: single durable store.
-- Recommendation: no change.
+- Recommendation: no multi-store pattern. Branding settings persistence belongs to the
+  ViajantesTurismo Branding adapter.
 
 ### Admin customer, booking, tour, and import mutations
 

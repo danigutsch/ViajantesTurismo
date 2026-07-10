@@ -4,6 +4,7 @@ using Microsoft.EntityFrameworkCore;
 using Npgsql;
 using SharedKernel.EventSourcing.Npgsql;
 using ViajantesTurismo.Admin.Infrastructure;
+using ViajantesTurismo.Branding.Infrastructure;
 using ViajantesTurismo.Catalog.Infrastructure;
 
 namespace ViajantesTurismo.MigrationService;
@@ -79,22 +80,29 @@ internal sealed class SeederWorker : BackgroundService
     private static async Task RunDatabaseInitialization(IServiceProvider serviceProvider, CancellationToken stoppingToken)
     {
         var catalogDbContext = serviceProvider.GetRequiredService<CatalogDbContext>();
+        var brandingDbContext = serviceProvider.GetRequiredService<BrandingDbContext>();
         var seeder = serviceProvider.GetRequiredService<Seeder>();
 
         if (catalogDbContext.Database.IsRelational())
         {
+            var catalogDataSource = serviceProvider.GetRequiredService<NpgsqlDataSource>();
             await catalogDbContext.Database.MigrateAsync(stoppingToken);
-            await InitializeCatalogEventSourcingSchema(serviceProvider, stoppingToken);
+            await InitializeCatalogEventSourcingSchema(catalogDataSource, stoppingToken);
+        }
+
+        if (brandingDbContext.Database.IsRelational())
+        {
+            await brandingDbContext.Database.MigrateAsync(stoppingToken);
         }
 
         await seeder.Seed(stoppingToken);
     }
 
-    private static async ValueTask InitializeCatalogEventSourcingSchema(IServiceProvider serviceProvider, CancellationToken ct)
+    private static ValueTask InitializeCatalogEventSourcingSchema(NpgsqlDataSource catalogDataSource, CancellationToken ct)
     {
-        var dataSource = serviceProvider.GetRequiredService<NpgsqlDataSource>();
-        await PostgreSqlEventSourcingSchema.Initialize(dataSource, options: null, ct);
+        return PostgreSqlEventSourcingSchema.Initialize(catalogDataSource, options: null, ct);
     }
+
 }
 
 internal static partial class SeederWorkerLogger
@@ -110,4 +118,5 @@ internal static partial class SeederWorkerLogger
 
     [LoggerMessage(4, LogLevel.Information, "Database seeding cancelled.")]
     public static partial void SeedingCancelled(this ILogger logger);
+
 }

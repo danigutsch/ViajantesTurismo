@@ -1,7 +1,6 @@
 using System.Net.Http.Json;
 using TestTraits = ViajantesTurismo.Catalog.ApiServiceTests.Infrastructure.TestTraits;
 using ViajantesTurismo.Catalog.Contracts.Application;
-using ViajantesTurismo.Catalog.Domain.PublicTheme;
 
 namespace ViajantesTurismo.Catalog.ApiServiceTests;
 
@@ -13,7 +12,6 @@ public sealed class CatalogApiCachingTests
     [InlineData("/api/v1/public/catalog/tours")]
     [InlineData("/api/v1/public/catalog/tours/camino-norte")]
     [InlineData("/api/v1/public/catalog/content/home.hero?culture=en-US")]
-    [InlineData("/api/v1/public/catalog/theme")]
     public async Task Public_catalog_reads_emit_cache_metadata(string path)
     {
         // Arrange
@@ -44,19 +42,11 @@ public sealed class CatalogApiCachingTests
         // Arrange
         await using var factory = CatalogApiTestHost.Create();
         using var client = factory.CreateClient();
-        var request = new PublicThemeSettingsDto
-        {
-            PrimaryColor = "#112233",
-            AccentColor = "#445566",
-            BackgroundColor = "#FFFFFF",
-            TextColor = "#000000",
-            HeadingFontFamily = "Inter",
-            BodyFontFamily = "Verdana"
-        };
+        var request = CatalogApiCachingTestData.CreateContentRequest("No-store content");
 
         // Act
         using var response = await client.PutAsJsonAsync(
-            new Uri("/api/v1/catalog/public-theme", UriKind.Relative),
+            new Uri("/api/v1/catalog/public-content/home.hero", UriKind.Relative),
             request,
             TestContext.Current.CancellationToken);
 
@@ -147,54 +137,6 @@ public sealed class CatalogApiCachingTests
         refreshedResponse.StatusCode.ShouldBe(HttpStatusCode.OK);
         refreshedContent.ShouldNotBeNull();
         refreshedContent.Title.ShouldBe("Invalidated content");
-    }
-
-    [Fact]
-    public async Task Public_theme_update_invalidates_cached_public_theme_reads()
-    {
-        // Arrange
-        var cancellationToken = TestContext.Current.CancellationToken;
-        var themeStore = new TestPublicThemeSettingsStore();
-        await themeStore.SaveTheme(
-            PublicThemeSettings.Create("#112233", "#445566", "#FFFFFF", "#000000", "Inter", "Verdana").Value,
-            cancellationToken);
-        await using var factory = CatalogApiTestHost.Create(themeStore);
-        using var client = factory.CreateClient();
-
-        // Act
-        using var firstResponse = await client.GetAsync(new Uri("/api/v1/public/catalog/theme", UriKind.Relative), cancellationToken);
-        var firstTheme = await firstResponse.Content.ReadFromJsonAsync<PublicThemeSettingsDto>(cancellationToken);
-        await themeStore.SaveTheme(
-            PublicThemeSettings.Create("#334455", "#445566", "#FFFFFF", "#000000", "Inter", "Verdana").Value,
-            cancellationToken);
-        using var cachedResponse = await client.GetAsync(new Uri("/api/v1/public/catalog/theme", UriKind.Relative), cancellationToken);
-        var cachedTheme = await cachedResponse.Content.ReadFromJsonAsync<PublicThemeSettingsDto>(cancellationToken);
-        using var updateResponse = await client.PutAsJsonAsync(
-            new Uri("/api/v1/catalog/public-theme", UriKind.Relative),
-            new PublicThemeSettingsDto
-            {
-                PrimaryColor = "#556677",
-                AccentColor = "#445566",
-                BackgroundColor = "#FFFFFF",
-                TextColor = "#000000",
-                HeadingFontFamily = "Inter",
-                BodyFontFamily = "Verdana"
-            },
-            cancellationToken);
-        using var refreshedResponse = await client.GetAsync(new Uri("/api/v1/public/catalog/theme", UriKind.Relative), cancellationToken);
-        var refreshedTheme = await refreshedResponse.Content.ReadFromJsonAsync<PublicThemeSettingsDto>(cancellationToken);
-
-        // Assert
-        firstResponse.StatusCode.ShouldBe(HttpStatusCode.OK);
-        firstTheme.ShouldNotBeNull();
-        firstTheme.PrimaryColor.ShouldBe("#112233");
-        cachedResponse.StatusCode.ShouldBe(HttpStatusCode.OK);
-        cachedTheme.ShouldNotBeNull();
-        cachedTheme.PrimaryColor.ShouldBe("#112233");
-        updateResponse.StatusCode.ShouldBe(HttpStatusCode.OK);
-        refreshedResponse.StatusCode.ShouldBe(HttpStatusCode.OK);
-        refreshedTheme.ShouldNotBeNull();
-        refreshedTheme.PrimaryColor.ShouldBe("#556677");
     }
 
     [Fact]

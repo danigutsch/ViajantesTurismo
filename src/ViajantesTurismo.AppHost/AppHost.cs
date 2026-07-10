@@ -15,11 +15,13 @@ var apiService = builder.AddAdminApi(adminDatabase, migrationService);
 
 var catalogApiService = builder.AddCatalogApi(adminDatabase, catalogDatabase, migrationService);
 
+var brandingApiService = builder.AddBrandingApi(catalogDatabase, migrationService);
+
 builder.AddIntegrationEventWorker(adminDatabase, catalogDatabase, migrationService);
 
-builder.AddManagementWeb(cache, apiService, catalogApiService);
+builder.AddManagementWeb(cache, apiService, catalogApiService, brandingApiService);
 
-builder.AddPublicWeb(catalogApiService);
+builder.AddPublicWeb(catalogApiService, brandingApiService);
 
 builder.AddAdminPerformanceSmoke(apiService);
 

@@ -124,6 +124,25 @@ internal static class AppHostResourceExtensions
     }
 
     /// <summary>
+    /// Adds the Branding API service.
+    /// </summary>
+    /// <param name="builder">The distributed application builder.</param>
+    /// <param name="catalogDatabase">The Catalog database resource that also stores Branding settings.</param>
+    /// <param name="migrationService">The migration service resource.</param>
+    /// <returns>The configured Branding API resource.</returns>
+    public static IResourceBuilder<ProjectResource> AddBrandingApi(
+        this IDistributedApplicationBuilder builder,
+        IResourceBuilder<PostgresDatabaseResource> catalogDatabase,
+        IResourceBuilder<ProjectResource> migrationService)
+    {
+        return builder.AddDevelopmentAspNetCoreProject<ViajantesTurismo_Branding_ApiService>(ResourceNames.BrandingApi)
+            .WithHttpHealthCheck(EndpointPaths.Health)
+            .WithReference(catalogDatabase)
+            .WaitFor(catalogDatabase)
+            .WaitForCompletion(migrationService);
+    }
+
+    /// <summary>
     /// Adds the standalone integration-event worker.
     /// </summary>
     /// <param name="builder">The distributed application builder.</param>
@@ -152,12 +171,14 @@ internal static class AppHostResourceExtensions
     /// <param name="cache">The cache resource.</param>
     /// <param name="apiService">The Admin API resource.</param>
     /// <param name="catalogApiService">The Catalog API resource.</param>
+    /// <param name="brandingApiService">The Branding API resource.</param>
     /// <returns>The configured management web resource.</returns>
     public static IResourceBuilder<ProjectResource> AddManagementWeb(
         this IDistributedApplicationBuilder builder,
         IResourceBuilder<RedisResource> cache,
         IResourceBuilder<ProjectResource> apiService,
-        IResourceBuilder<ProjectResource> catalogApiService)
+        IResourceBuilder<ProjectResource> catalogApiService,
+        IResourceBuilder<ProjectResource> brandingApiService)
     {
         return builder.AddDevelopmentAspNetCoreProject<ViajantesTurismo_Management_Web>(ResourceNames.WebApp)
             .WithExternalHttpEndpoints()
@@ -167,7 +188,9 @@ internal static class AppHostResourceExtensions
             .WithReference(apiService)
             .WaitFor(apiService)
             .WithReference(catalogApiService)
-            .WaitFor(catalogApiService);
+            .WaitFor(catalogApiService)
+            .WithReference(brandingApiService)
+            .WaitFor(brandingApiService);
     }
 
     /// <summary>
@@ -175,15 +198,19 @@ internal static class AppHostResourceExtensions
     /// </summary>
     /// <param name="builder">The distributed application builder.</param>
     /// <param name="catalogApiService">The Catalog API resource.</param>
+    /// <param name="brandingApiService">The Branding API resource.</param>
     /// <returns>The configured public web resource.</returns>
     public static IResourceBuilder<ProjectResource> AddPublicWeb(
         this IDistributedApplicationBuilder builder,
-        IResourceBuilder<ProjectResource> catalogApiService)
+        IResourceBuilder<ProjectResource> catalogApiService,
+        IResourceBuilder<ProjectResource> brandingApiService)
     {
         return builder.AddDevelopmentAspNetCoreProject<ViajantesTurismo_Public_Web>(ResourceNames.PublicWebApp)
             .WithExternalHttpEndpoints()
             .WithHttpHealthCheck(EndpointPaths.Health)
             .WithReference(catalogApiService)
-            .WaitFor(catalogApiService);
+            .WaitFor(catalogApiService)
+            .WithReference(brandingApiService)
+            .WaitFor(brandingApiService);
     }
 }

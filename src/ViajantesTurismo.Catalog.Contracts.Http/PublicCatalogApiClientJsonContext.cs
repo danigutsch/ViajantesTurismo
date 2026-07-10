@@ -7,5 +7,4 @@ namespace ViajantesTurismo.Catalog.Contracts.Http;
 [JsonSourceGenerationOptions(JsonSerializerDefaults.Web)]
 [JsonSerializable(typeof(CatalogTourDto))]
 [JsonSerializable(typeof(PublicContentVariantDto))]
-[JsonSerializable(typeof(PublicThemeSettingsDto))]
 internal sealed partial class PublicCatalogApiClientJsonContext : JsonSerializerContext;

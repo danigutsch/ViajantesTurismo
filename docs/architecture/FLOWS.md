@@ -259,6 +259,39 @@ flowchart LR
     publicWeb -->|published-only read| published
 ```
 
+## Branding settings rendering flow
+
+Branding uses reusable validation and public-safe contracts from `SharedKernel.Branding`. The
+ViajantesTurismo Branding API adapter owns app-specific persistence, API routes, default values, and
+cache invalidation. It keeps a separate `BrandingDbContext` while storing its tables in the existing
+Catalog physical database.
+
+```mermaid
+sequenceDiagram
+    participant Editor as Management.Web branding editor
+    participant API as Branding API adapter
+    participant Core as SharedKernel.Branding
+    participant Store as Branding settings store
+    participant Public as Public.Web
+
+    Editor->>API: Save Branding settings
+    API->>Core: Validate brand name, palette, typography, logo URI
+    Core-->>API: Valid settings or validation errors
+    API->>Store: Persist ViajantesTurismo Branding settings
+    API-->>Editor: Saved settings or validation problem
+    Public->>API: Read public Branding DTO
+    API-->>Public: Safe brand name, logo URI, CSS-variable values
+```
+
+Current rendering rules:
+
+- `SharedKernel.Branding` owns base identity tokens only: brand name, logo URI, palette, and typography.
+- Management.Web uses the tokens as functional editable configuration; Public.Web uses them for richer
+  customer-facing presentation.
+- No arbitrary user-editable CSS is accepted. Editors choose constrained values; Public.Web renders
+  fixed CSS custom-property names with validated values.
+- Preview, review, scheduled publish, and approval workflows are deferred until implemented.
+
 ## Media, gallery, and image metadata flows
 
 ### Current implementation
