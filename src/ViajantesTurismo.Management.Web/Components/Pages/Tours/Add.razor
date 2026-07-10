@@ -128,6 +128,10 @@ Bike rental"/>
 </EditForm>
 
 @code {
+    private const string VersionedApiPrefix = "/api/v1";
+
+    private const string VersionedToursPathPrefix = "/api/v1/tours";
+
     private TourFormModel _model = new();
     private EditContext _editContext;
     private bool _isSubmitting;
@@ -223,10 +227,13 @@ Bike rental"/>
             localPath = $"/{localPath}";
         }
 
-        return localPath.StartsWith("/api/v1/tours", StringComparison.Ordinal)
-            ? localPath["/api/v1".Length..]
+        return IsExactPathOrSubpath(localPath, VersionedToursPathPrefix)
+            ? localPath[VersionedApiPrefix.Length..]
             : localPath;
     }
+
+    private static bool IsExactPathOrSubpath(string path, string prefix) =>
+        path.Length == prefix.Length || (path.Length > prefix.Length && path[prefix.Length] == '/');
 
     private sealed class TourFormModel : IValidatableObject
     {

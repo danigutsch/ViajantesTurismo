@@ -226,6 +226,10 @@
 </div>
 
 @code {
+    private const string VersionedApiPrefix = "/api/v1";
+
+    private const string VersionedCustomersPathPrefix = "/api/v1/customers";
+
     private bool _isSubmitting;
     private string? _errorMessage;
 
@@ -291,9 +295,12 @@
             localPath = $"/{localPath}";
         }
 
-        return localPath.StartsWith("/api/v1/customers", StringComparison.Ordinal)
-            ? localPath["/api/v1".Length..]
+        return IsExactPathOrSubpath(localPath, VersionedCustomersPathPrefix)
+            ? localPath[VersionedApiPrefix.Length..]
             : localPath;
     }
+
+    private static bool IsExactPathOrSubpath(string path, string prefix) =>
+        path.Length == prefix.Length || (path.Length > prefix.Length && path[prefix.Length] == '/');
 
 }

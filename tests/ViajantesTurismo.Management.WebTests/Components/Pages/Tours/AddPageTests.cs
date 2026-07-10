@@ -154,6 +154,38 @@ public class AddPageTests : BunitContext
     }
 
     [Fact]
+    [Trait(SharedKernel.Testing.TestTraitNames.ScopeName, TestTraits.ComponentScope)]
+    [Trait(SharedKernel.Testing.TestTraitNames.AreaName, TestTraits.ManagementWebArea)]
+    [Trait(SharedKernel.Testing.TestTraitNames.CategoryName, TestTraits.ComponentCategory)]
+    public async Task Successful_submission_preserves_api_prefix_when_tours_path_prefix_is_not_segment_bounded()
+    {
+        // Arrange
+        _fakeToursApi.SetCreateTourOutcome(ContractCommandOutcome.Succeeded(
+            System.Net.HttpStatusCode.Created,
+            new Uri("/api/v1/tours-malformed/relative-id", UriKind.Relative)));
+        var cut = Render<Add>();
+
+        // Act
+        await cut.InvokeAsync(() => cut.Find("input#identifier").Change("CUBA2024"));
+        await cut.InvokeAsync(() => cut.Find("input#name").Change("Cuba Adventure"));
+        await cut.InvokeAsync(() => cut.Find("input#price").Change("1500"));
+        await cut.InvokeAsync(() => cut.Find("input#singleRoom").Change("200"));
+        await cut.InvokeAsync(() => cut.Find("input#regularBike").Change("50"));
+        await cut.InvokeAsync(() => cut.Find("input#eBike").Change("100"));
+        await cut.InvokeAsync(() => cut.Find("textarea#services").Change("Hotel"));
+        await cut.InvokeAsync(() => cut.Find("input#minCustomers").Change("5"));
+        await cut.InvokeAsync(() => cut.Find("input#maxCustomers").Change("15"));
+        await cut.InvokeAsync(() => cut.Find("form").Submit());
+
+        // Assert
+        await cut.WaitForStateAsync(() => cut.FindAll(".alert-success").Count > 0, TimeSpan.FromSeconds(2));
+
+        var detailsLink = cut.FindAll("a.btn")
+            .First(link => link.TextContent.Contains("View Tour Details", StringComparison.Ordinal));
+        detailsLink.GetAttribute("href").ShouldBe("/api/v1/tours-malformed/relative-id");
+    }
+
+    [Fact]
     public async Task Create_another_button_resets_form()
     {
         // Arrange
