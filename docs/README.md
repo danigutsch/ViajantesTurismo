@@ -47,6 +47,8 @@ outdated behavior.
 - [Coding guidelines](CODING_GUIDELINES.md)
 - [Code quality](CODE_QUALITY.md)
 - [Test guidelines](TEST_GUIDELINES.md)
+- [Coverage ownership](COVERAGE_OWNERSHIP.md)
+- [Reusable test helpers](REUSABLE_TEST_HELPERS.md)
 - [Configuration standards](CONFIGURATION.md)
 - [API versioning](API_VERSIONING.md)
 - [Async contracts](ASYNC_CONTRACTS.md)
@@ -61,6 +63,7 @@ outdated behavior.
 
 - [Production readiness and operations](operations/production-readiness.md)
 - [Analyzer hardening roadmap](ANALYZER_HARDENING_ROADMAP.md)
+- [DDD analyzer rule catalog](DDD_ANALYZER_RULE_CATALOG.md)
 - [SharedKernel observability/runtime grouping](SHAREDKERNEL_OBSERVABILITY_RUNTIME_GROUPING.md)
 - [Vertical slice migration plan](vertical-slice-migration-plan.md)
 - [Local tool security](local-tool-security.md)

@@ -70,6 +70,36 @@ public static class SharedKernelPackagingConventionTests
     }
 
     [Fact]
+    public static void SharedKernel_roslyn_packages_use_analyzer_only_layout()
+    {
+        // Arrange
+        var repositoryRoot = SharedKernelPackagingConventionTestFiles.GetRepositoryRoot();
+        (string ProjectPath, string[] AnalyzerDllNames)[] packages =
+        [
+            (
+                Path.Combine(repositoryRoot, "src", "SharedKernel", "SharedKernel.Testing.Analyzers", "SharedKernel.Testing.Analyzers.csproj"),
+                ["SharedKernel.Testing.Analyzers.dll"]),
+            (
+                Path.Combine(repositoryRoot, "src", "SharedKernel", "SharedKernel.Testing.CodeFixes", "SharedKernel.Testing.CodeFixes.csproj"),
+                ["SharedKernel.Testing.Analyzers.dll", "SharedKernel.Testing.CodeFixes.dll"]),
+            (
+                Path.Combine(repositoryRoot, "src", "SharedKernel", "SharedKernel.Style.Analyzers", "SharedKernel.Style.Analyzers.csproj"),
+                ["SharedKernel.Style.Analyzers.dll"]),
+            (
+                Path.Combine(repositoryRoot, "src", "SharedKernel", "SharedKernel.Style.CodeFixes", "SharedKernel.Style.CodeFixes.csproj"),
+                ["SharedKernel.Style.Analyzers.dll", "SharedKernel.Style.CodeFixes.dll"]),
+        ];
+
+        // Act
+        var violations = packages
+            .SelectMany(package => SharedKernelPackagingConventionTestFiles.GetAnalyzerPackageLayoutViolations(package.ProjectPath, package.AnalyzerDllNames))
+            .ToArray();
+
+        // Assert
+        violations.ShouldBe([]);
+    }
+
+    [Fact]
     public static void Samples_benchmarks_and_repository_only_helpers_are_non_packable()
     {
         // Arrange

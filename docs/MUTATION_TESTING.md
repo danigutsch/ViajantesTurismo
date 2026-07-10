@@ -83,6 +83,56 @@ Constraints for any future expansion:
 - do not change repository-wide test runner settings
 - treat any result as non-authoritative until upstream xUnit v3 + MTP support is clearly stable
 
+## Mutation result triage workflow
+
+Use this workflow for local smoke findings and for any future stable adoption. Do not add tests for
+every survivor mechanically.
+
+1. Confirm the run is trustworthy.
+   - Use `test-runner: mtp` for this repository's xUnit v3 + MTP stack.
+   - Re-run a failing or surprising target once before changing code.
+   - Stop and record tool risk when discovery, timeout, or mapping output is inconsistent.
+2. Classify each finding.
+   - **Killed**: no action.
+   - **Survived**: inspect whether the changed behavior is observable and valuable.
+   - **No coverage**: add direct tests only when the target code owns behavior that should be covered.
+   - **Timeout**: first check test determinism, infinite loops, and expensive setup before adding ignores.
+   - **Equivalent**: document why no externally visible behavior changed.
+3. Choose the lowest-value-safe action.
+   - Improve an existing direct test when it already owns the behavior.
+   - Add a new direct test when there is no focused owner.
+   - Delete or rewrite brittle tests when they only mirror implementation details.
+   - Ignore only equivalent, generated, tool-bug, or intentionally unobservable mutations.
+4. Keep ignores narrow.
+   - Prefer a specific mutator, member, or generated-file pattern over a project-wide ignore.
+   - Every ignore needs a short reason near the configuration.
+   - Revisit ignores when Stryker.NET or the affected production code changes.
+
+High-value tests from mutation findings should assert business-visible outcomes, contract shape,
+state transitions, error behavior, or externally observable side effects. Low-value tests usually
+mirror private implementation branches, assert incidental ordering, require excessive setup, or
+become flaky without improving mutation signal.
+
+## Rollout order and thresholds
+
+Roll out mutation testing from the lowest dependency layer upward:
+
+1. Pure SharedKernel libraries and analyzers/source generators with contained test projects.
+2. Domain and application unit tests.
+3. Contract tests for published artifacts.
+4. Infrastructure and API integration tests only after local targets are stable.
+5. Browser/system tests only by explicit exception; mutation testing is usually poor value there.
+
+Threshold policy stays non-gating while Stryker.NET MTP support is preview. When upstream support is
+stable, prefer target-specific baselines:
+
+- 100 percent is reasonable for small deterministic value objects, analyzers, parsers, and pure
+  mapping logic when survivors represent real missed behavior.
+- Lower documented minimums are acceptable for integration adapters, generated glue, defensive
+  framework paths, and code where equivalent mutations are common.
+- Repository-wide line or mutation thresholds are not a substitute for direct ownership by the
+  project that owns the behavior.
+
 ## Revisit conditions
 
 Revisit mutation-testing adoption only when at least one of these becomes true:

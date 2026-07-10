@@ -144,6 +144,12 @@ fixture contract as a repository-wide test abstraction.
 
 Keep tags orthogonal and stable across host-model migration.
 
+Use constants, not string literals, when constants exist. Repository-wide names live in
+`SharedKernel.Testing.TestTraitNames`; cross-project values live in
+`SharedKernel.Testing.TestTraitValues`; SharedKernel package taxonomy lives in
+`SharedKernel.Testing.SharedKernelTestTraitNames`; project-specific values stay in the owning
+project's `TestTraits` type. `SKTEST009` enforces this conservatively.
+
 ### Scope
 
 - `Scope=unit`
@@ -178,6 +184,17 @@ Keep tags orthogonal and stable across host-model migration.
 - `Category=regression`
 - `Category=happy-path`
 - `Category=edge-case`
+
+### Capability and component
+
+SharedKernel package tests may additionally use:
+
+- `TestComponent=<package-or-module>`
+- `TestCapability=<capability>`
+- `TestTheory=<law-or-spec-classification>`
+
+Use these only when they improve filtering or reporting; do not replace scope, area, or category
+with overloaded values.
 
 ### Host
 
