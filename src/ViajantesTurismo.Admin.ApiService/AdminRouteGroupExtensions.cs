@@ -93,7 +93,6 @@ internal static class AdminRouteGroupExtensions
 
         return app.MapApiVersionGroup(CurrentApiVersion)
             .MapGroup($"/{routePrefix}")
-            .WithApiVersion(CurrentApiVersion)
             .WithGroupName(groupName)
             .WithTags(groupName);
     }
