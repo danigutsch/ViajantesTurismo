@@ -80,7 +80,7 @@ internal static partial class LayerDependencyTestsHelpers
     public static string[] FindAbstractionProjectImplementationReferences(string repositoryRoot)
     {
         return SourceProjectFiles(repositoryRoot)
-            .Where(HasAbstractionsProjectPathSuffix)
+            .Where(IsAbstractionsProjectFile)
             .SelectMany(filePath => FindImplementationReferencesFromAbstractionProject(repositoryRoot, filePath))
             .ToArray();
     }
@@ -148,7 +148,7 @@ internal static partial class LayerDependencyTestsHelpers
         var projectName = Path.GetFileNameWithoutExtension(filePath);
 
         return projectName.Split('.')
-            .Any(segment => segment.Equals("Core", StringComparison.Ordinal));
+            .Any(segment => segment.Equals("Core", StringComparison.OrdinalIgnoreCase));
     }
 
     private static IEnumerable<string> FindRuntimeReferencesToDescendantOptionalSubmodules(
@@ -177,7 +177,7 @@ internal static partial class LayerDependencyTestsHelpers
                 + $"ProjectReference Include=\"{reference.Include}\"");
     }
 
-    private static bool HasAbstractionsProjectPathSuffix(string filePath)
+    private static bool IsAbstractionsProjectFile(string filePath)
     {
         var projectName = Path.GetFileNameWithoutExtension(filePath);
 
