@@ -1,4 +1,5 @@
 using System.Diagnostics.CodeAnalysis;
+using System.ComponentModel.DataAnnotations;
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Net.Http.Headers;
@@ -27,6 +28,7 @@ internal static class CustomerImportEndpoints
             .WithName("ImportCustomers")
             .WithDescription("Imports customers from a CSV file.")
             .WithSummary("Imports customers from a CSV file.")
+            .ProducesProblem(StatusCodes.Status400BadRequest)
             .WithMetadata(new RequestSizeLimitAttribute(ContractConstants.CustomerImportMaxRequestBytes))
             .DisableAntiforgery();
 
@@ -35,6 +37,7 @@ internal static class CustomerImportEndpoints
             .WithDescription("Commits customer import applying conflict resolutions.")
             .WithSummary("Commits customer import applying conflict resolutions.")
             .Accepts<CommitCustomerImportFormDto>("multipart/form-data")
+            .ProducesProblem(StatusCodes.Status400BadRequest)
             .WithMetadata(new RequestSizeLimitAttribute(ContractConstants.CustomerImportMaxRequestBytes))
             .DisableAntiforgery();
 
@@ -42,6 +45,7 @@ internal static class CustomerImportEndpoints
     }
 
     private static async Task<Results<Ok<ImportResultDto>, ProblemHttpResult>> ImportCustomers(
+        [Required]
         IFormFile? file,
         [FromServices] CustomerImportWorkflowService workflow,
         CancellationToken ct)

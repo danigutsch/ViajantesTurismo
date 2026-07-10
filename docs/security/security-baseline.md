@@ -28,6 +28,11 @@ Named policies separate endpoint risk:
 - `admin-mutation`: Admin API mutation baseline.
 - `admin-import`: customer CSV import and commit endpoints.
 
+Remote-IP policies depend on trusted forwarded-header configuration when an API runs behind a reverse proxy or
+load balancer. Configure `Security:ForwardedHeaders:KnownProxies` or
+`Security:ForwardedHeaders:KnownNetworks` for the trusted proxy hops before enabling production traffic through
+that proxy; otherwise clients can share the proxy IP rate-limit bucket.
+
 ## Sensitive data logging
 
 Catalog EF sensitive data logging is development-gated. Production and non-development environments must not
