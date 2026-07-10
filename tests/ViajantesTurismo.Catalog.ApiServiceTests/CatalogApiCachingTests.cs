@@ -65,7 +65,10 @@ public sealed class CatalogApiCachingTests
         var cacheControl = response.Headers.CacheControl.ShouldNotBeNull();
         cacheControl.NoStore.ShouldBeTrue();
         response.Headers.GetValues("Pragma").ShouldHaveSingleItem().ShouldBe("no-cache");
-        response.Content.Headers.GetValues("Expires").ShouldHaveSingleItem().ShouldBe("Thu, 01 Jan 1970 00:00:00 GMT");
+        var expires = response.Headers.NonValidated.TryGetValues("Expires", out var values)
+            ? values
+            : response.Content.Headers.NonValidated["Expires"];
+        expires.ShouldHaveSingleItem().ShouldBe("Thu, 01 Jan 1970 00:00:00 GMT");
     }
 
     [Fact]
@@ -238,7 +241,10 @@ public sealed class CatalogApiCachingTests
         var cacheControl = response.Headers.CacheControl.ShouldNotBeNull();
         cacheControl.NoStore.ShouldBeTrue();
         response.Headers.GetValues("Pragma").ShouldHaveSingleItem().ShouldBe("no-cache");
-        response.Content.Headers.GetValues("Expires").ShouldHaveSingleItem().ShouldBe("Thu, 01 Jan 1970 00:00:00 GMT");
+        var expires = response.Headers.NonValidated.TryGetValues("Expires", out var values)
+            ? values
+            : response.Content.Headers.NonValidated["Expires"];
+        expires.ShouldHaveSingleItem().ShouldBe("Thu, 01 Jan 1970 00:00:00 GMT");
     }
 
     [Fact]
@@ -276,7 +282,10 @@ public sealed class CatalogApiCachingTests
         var cacheControl = response.Headers.CacheControl.ShouldNotBeNull();
         cacheControl.NoStore.ShouldBeTrue();
         response.Headers.GetValues("Pragma").ShouldHaveSingleItem().ShouldBe("no-cache");
-        response.Content.Headers.GetValues("Expires").ShouldHaveSingleItem().ShouldBe("Thu, 01 Jan 1970 00:00:00 GMT");
+        var expires = response.Headers.NonValidated.TryGetValues("Expires", out var values)
+            ? values
+            : response.Content.Headers.NonValidated["Expires"];
+        expires.ShouldHaveSingleItem().ShouldBe("Thu, 01 Jan 1970 00:00:00 GMT");
     }
 
     [Theory]
@@ -299,6 +308,9 @@ public sealed class CatalogApiCachingTests
         var cacheControl = response.Headers.CacheControl.ShouldNotBeNull();
         cacheControl.NoStore.ShouldBeTrue();
         response.Headers.GetValues("Pragma").ShouldHaveSingleItem().ShouldBe("no-cache");
-        response.Content.Headers.GetValues("Expires").ShouldHaveSingleItem().ShouldBe("Thu, 01 Jan 1970 00:00:00 GMT");
+        var expires = response.Headers.NonValidated.TryGetValues("Expires", out var values)
+            ? values
+            : response.Content.Headers.NonValidated["Expires"];
+        expires.ShouldHaveSingleItem().ShouldBe("Thu, 01 Jan 1970 00:00:00 GMT");
     }
 }
