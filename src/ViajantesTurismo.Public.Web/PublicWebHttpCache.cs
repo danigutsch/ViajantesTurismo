@@ -81,43 +81,6 @@ internal static class PublicWebHttpCache
 
     private static void NormalizeCultureQueryAlias(HttpContext httpContext)
     {
-        var hasCultureInput = httpContext.Request.Query.ContainsKey(CultureQueryKey)
-            || httpContext.Request.Query.ContainsKey(LanguageQueryKey);
-        if (!hasCultureInput)
-        {
-            return;
-        }
-
-        var canonicalCulture = httpContext.Request.Query.TryGetValue(CultureQueryKey, out var cultureValue)
-            ? PublicCultureQuery.NormalizeCulture(cultureValue.ToString())
-            : null;
-
-        if (canonicalCulture is null
-            && httpContext.Request.Query.TryGetValue(LanguageQueryKey, out var language))
-        {
-            canonicalCulture = PublicCultureQuery.NormalizeCulture(language.ToString());
-        }
-
-        var queryValues = new List<KeyValuePair<string, string?>>();
-        foreach (var (key, values) in httpContext.Request.Query)
-        {
-            if (key.Equals(LanguageQueryKey, StringComparison.OrdinalIgnoreCase)
-                || key.Equals(CultureQueryKey, StringComparison.OrdinalIgnoreCase))
-            {
-                continue;
-            }
-
-            foreach (var value in values)
-            {
-                queryValues.Add(new KeyValuePair<string, string?>(key, value));
-            }
-        }
-
-        if (canonicalCulture is not null)
-        {
-            queryValues.Add(new KeyValuePair<string, string?>(CultureQueryKey, canonicalCulture));
-        }
-
-        httpContext.Request.QueryString = QueryString.Create(queryValues);
+        HttpCacheCultures.NormalizeQueryAliases(httpContext, CultureQueryKey, LanguageQueryKey);
     }
 }
