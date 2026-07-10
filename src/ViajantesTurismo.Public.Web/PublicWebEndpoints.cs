@@ -8,7 +8,11 @@ internal static class PublicWebEndpoints
     {
         ArgumentNullException.ThrowIfNull(app);
 
-        app.MapGet("/Error", () => Results.Problem())
+        app.MapGet("/Error", (HttpContext httpContext) =>
+            {
+                PublicWebHttpCache.SetNoStore(httpContext);
+                return Results.Problem();
+            })
             .ExcludeFromDescription();
 
         app.MapStaticAssets();

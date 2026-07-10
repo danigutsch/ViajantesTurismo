@@ -30,6 +30,9 @@ else
 }
 
 @code {
+    [CascadingParameter]
+    private HttpContext? HttpContext { get; set; }
+
     private CatalogTourDto[]? _tours;
     private bool _loadFailed;
 
@@ -42,6 +45,7 @@ else
         }
         catch (HttpRequestException)
         {
+            PublicWebHttpCache.SetServiceUnavailableNoStore(HttpContext);
             _loadFailed = true;
             _tours = [];
         }
