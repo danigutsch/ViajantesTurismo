@@ -12,9 +12,10 @@ This file overrides root guidance where domain-specific behavior is needed.
 ## Domain modeling rules
 
 - Keep the Domain layer pure: no API, infrastructure, or persistence concerns.
+- Do not reference `ViajantesTurismo.*.Contracts.*` projects from Domain.
 - Keep business rules inside aggregates and value objects.
 - Enforce aggregate boundaries (for example, booking lifecycle flows through `Tour`).
-- Use `ContractConstants` for shared validation limits.
+- Use domain-owned limit types such as `AdminDomainLimits` for domain validation limits.
 
 ## Validation and error handling
 

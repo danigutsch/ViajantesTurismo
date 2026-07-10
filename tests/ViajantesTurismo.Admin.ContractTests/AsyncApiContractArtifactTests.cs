@@ -1,9 +1,9 @@
 using System.Globalization;
 using System.Text.Json;
 
-using ViajantesTurismo.Admin.Contracts.Tours;
+using ViajantesTurismo.Admin.Contracts.IntegrationEvents.Tours;
 using ViajantesTurismo.Admin.ContractTests.Infrastructure;
-using ViajantesTurismo.Catalog.Contracts.Media;
+using ViajantesTurismo.Catalog.Contracts.IntegrationEvents.Media;
 using ViajantesTurismo.Resources;
 
 namespace ViajantesTurismo.Admin.ContractTests;

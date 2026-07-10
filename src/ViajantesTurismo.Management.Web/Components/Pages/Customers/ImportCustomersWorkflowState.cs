@@ -1,4 +1,4 @@
-using ViajantesTurismo.Admin.Contracts;
+using ViajantesTurismo.Admin.Contracts.Application;
 using ViajantesTurismo.Management.Web.Services;
 
 namespace ViajantesTurismo.Management.Web.Components.Pages.Customers;

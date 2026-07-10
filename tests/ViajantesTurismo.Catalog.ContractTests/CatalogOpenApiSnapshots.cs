@@ -30,7 +30,7 @@ internal static class CatalogOpenApiSnapshots
     }
 
     private static string GetOpenApiDirectory()
-        => Path.Combine(GetRepositoryRoot(), "src", "ViajantesTurismo.Catalog.Contracts", "OpenApi");
+        => Path.Combine(GetRepositoryRoot(), "src", "ViajantesTurismo.Catalog.Contracts.Http", "OpenApi");
 
     private static string GetRepositoryRoot()
     {

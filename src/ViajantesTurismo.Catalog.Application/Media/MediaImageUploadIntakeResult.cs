@@ -1,5 +1,5 @@
 using ViajantesTurismo.Catalog.Domain.Media;
-using ViajantesTurismo.Catalog.Contracts.Media;
+using ViajantesTurismo.Catalog.Contracts.IntegrationEvents.Media;
 
 namespace ViajantesTurismo.Catalog.Application.Media;
 /// <summary>

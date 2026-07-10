@@ -82,7 +82,8 @@ var roomType = BookingMapper.MapToRoomType(dto.RoomType);
 ## Dependencies
 
 - **ViajantesTurismo.Admin.Domain**: Domain entities and business logic
-- **ViajantesTurismo.Admin.Contracts**: DTOs and contract definitions
+- **ViajantesTurismo.Admin.Contracts.Application**: DTOs and request-validation contracts
+- **ViajantesTurismo.Admin.Contracts.IntegrationEvents**: Admin integration-event contracts
 
 ## Architecture Position
 

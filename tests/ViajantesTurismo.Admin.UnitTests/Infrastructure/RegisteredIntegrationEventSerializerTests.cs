@@ -1,7 +1,7 @@
 using System.Globalization;
 using System.Text.Json;
 using SharedKernel.Testing.Assertions;
-using ViajantesTurismo.Admin.Contracts.Tours;
+using ViajantesTurismo.Admin.Contracts.IntegrationEvents.Tours;
 
 namespace ViajantesTurismo.Admin.UnitTests.Infrastructure;
 

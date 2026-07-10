@@ -25,11 +25,11 @@ The allowed SUT seam in this project is a published Admin API contract artifact 
 
 For the first real slice, that seam is:
 
-- the canonical `tours.openapi.json` artifact under `src/ViajantesTurismo.Admin.Contracts/OpenApi/`
+- the canonical `tours.openapi.json` artifact under `src/ViajantesTurismo.Admin.Contracts.Http/OpenApi/`
 - consumed as the published contract artifact, not through direct endpoint method calls
 - validated through a consumer-owned contract slice that reads only the fields this consumer depends on
 
-Generated Admin boundary artifacts under `src/ViajantesTurismo.Admin.Contracts/OpenApi/.generated/` are allowed as
+Generated Admin boundary artifacts under `src/ViajantesTurismo.Admin.Contracts.Http/OpenApi/.generated/` are allowed as
 comparison inputs for drift guards, but the committed canonical artifacts remain the published source of truth.
 
 Not allowed for this project:
@@ -47,4 +47,4 @@ Why this slice:
 - it is public and consumer-visible
 - it is narrower and more durable than a full API behavior suite
 - it protects the consumer-owned OpenAPI shape without duplicating integration behavior tests
-- it stays aligned with the committed canonical artifact already packed from `ViajantesTurismo.Admin.Contracts`
+- it stays aligned with the committed canonical artifact already packed from `ViajantesTurismo.Admin.Contracts.Http`

@@ -8,7 +8,7 @@
         <GenerateCatalogOpenApiArtifacts Condition="'$(RefreshCatalogOpenApiArtifacts)' == 'true'">true</GenerateCatalogOpenApiArtifacts>
         <OpenApiGenerateDocuments Condition="'$(GenerateCatalogOpenApiArtifacts)' == 'true'">true</OpenApiGenerateDocuments>
         <OpenApiGenerateDocumentsOnBuild Condition="'$(GenerateCatalogOpenApiArtifacts)' == 'true'">true</OpenApiGenerateDocumentsOnBuild>
-        <OpenApiDocumentsDirectory>$(MSBuildProjectDirectory)/../ViajantesTurismo.Catalog.Contracts/OpenApi/.generated</OpenApiDocumentsDirectory>
+        <OpenApiDocumentsDirectory>$(MSBuildProjectDirectory)/../ViajantesTurismo.Catalog.Contracts.Http/OpenApi/.generated</OpenApiDocumentsDirectory>
     </PropertyGroup>
 
     <ItemGroup>
@@ -17,7 +17,8 @@
 
     <ItemGroup>
         <ProjectReference Include="..\ViajantesTurismo.Catalog.Application\ViajantesTurismo.Catalog.Application.csproj" />
-        <ProjectReference Include="..\ViajantesTurismo.Catalog.Contracts\ViajantesTurismo.Catalog.Contracts.csproj" />
+        <ProjectReference Include="..\ViajantesTurismo.Catalog.Contracts.Application\ViajantesTurismo.Catalog.Contracts.Application.csproj" />
+        <ProjectReference Include="..\ViajantesTurismo.Catalog.Contracts.Http\ViajantesTurismo.Catalog.Contracts.Http.csproj" />
         <ProjectReference Include="..\ViajantesTurismo.Catalog.Infrastructure\ViajantesTurismo.Catalog.Infrastructure.csproj" />
         <ProjectReference Include="..\ViajantesTurismo.ServiceDefaults\ViajantesTurismo.ServiceDefaults.csproj" />
         <ProjectReference Include="..\SharedKernel\SharedKernel.HttpCaching.AspNetCore\SharedKernel.HttpCaching.AspNetCore.csproj" />
@@ -36,16 +37,16 @@
             <CatalogOpenApiArtifact Include="catalog;public-catalog" />
             <GeneratedOpenApiArtifact Include="@(CatalogOpenApiArtifact)">
                 <SourcePath>$(OpenApiDocumentsDirectory)/$(AssemblyName)_%(Identity).json</SourcePath>
-                <TargetPath>$(MSBuildProjectDirectory)/../ViajantesTurismo.Catalog.Contracts/OpenApi/%(Identity).openapi.json</TargetPath>
+                <TargetPath>$(MSBuildProjectDirectory)/../ViajantesTurismo.Catalog.Contracts.Http/OpenApi/%(Identity).openapi.json</TargetPath>
             </GeneratedOpenApiArtifact>
             <GeneratedOpenApiArtifact Include="v1">
                 <!-- The ASP.NET Core generator writes the default v1 document to $(AssemblyName).json. -->
                 <SourcePath>$(OpenApiDocumentsDirectory)/$(AssemblyName).json</SourcePath>
-                <TargetPath>$(MSBuildProjectDirectory)/../ViajantesTurismo.Catalog.Contracts/OpenApi/v1.openapi.json</TargetPath>
+                <TargetPath>$(MSBuildProjectDirectory)/../ViajantesTurismo.Catalog.Contracts.Http/OpenApi/v1.openapi.json</TargetPath>
             </GeneratedOpenApiArtifact>
         </ItemGroup>
 
-        <MakeDir Directories="$(MSBuildProjectDirectory)/../ViajantesTurismo.Catalog.Contracts/OpenApi" />
+        <MakeDir Directories="$(MSBuildProjectDirectory)/../ViajantesTurismo.Catalog.Contracts.Http/OpenApi" />
         <Copy
             SourceFiles="@(GeneratedOpenApiArtifact->'%(SourcePath)')"
             DestinationFiles="@(GeneratedOpenApiArtifact->'%(TargetPath)')"

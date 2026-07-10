@@ -379,12 +379,6 @@
           "SharedKernel.Messaging": "[0.1.0-alpha.0, )"
         }
       },
-      "sharedkernel.messaging.integrationevents.cloudevents": {
-        "type": "Project",
-        "dependencies": {
-          "SharedKernel.Messaging.IntegrationEvents": "[0.1.0-alpha.0, )"
-        }
-      },
       "sharedkernel.messaging.integrationevents.entityframeworkcore": {
         "type": "Project",
         "dependencies": {
@@ -393,7 +387,6 @@
           "SharedKernel.Idempotency.EntityFrameworkCore": "[0.1.0-alpha.0, )",
           "SharedKernel.Messaging": "[0.1.0-alpha.0, )",
           "SharedKernel.Messaging.IntegrationEvents": "[0.1.0-alpha.0, )",
-          "SharedKernel.Messaging.IntegrationEvents.CloudEvents": "[0.1.0-alpha.0, )",
           "SharedKernel.Scheduling": "[0.1.0-alpha.0, )"
         }
       },
@@ -433,11 +426,9 @@
       "sharedkernel.testing.snapshots": {
         "type": "Project"
       },
-      "viajantesturismo.admin.contracts": {
+      "viajantesturismo.admin.contracts.integrationevents": {
         "type": "Project",
         "dependencies": {
-          "SharedKernel.HttpClients": "[0.1.0-alpha.0, )",
-          "SharedKernel.Mediator.Abstractions": "[0.1.0-alpha.0, )",
           "SharedKernel.Messaging.IntegrationEvents": "[0.1.0-alpha.0, )"
         }
       },
@@ -451,7 +442,8 @@
           "SharedKernel.HttpCaching.AspNetCore": "[0.1.0-alpha.0, )",
           "SharedKernel.OpenApi": "[0.1.0-alpha.0, )",
           "ViajantesTurismo.Catalog.Application": "[0.1.0-alpha.0, )",
-          "ViajantesTurismo.Catalog.Contracts": "[0.1.0-alpha.0, )",
+          "ViajantesTurismo.Catalog.Contracts.Application": "[0.1.0-alpha.0, )",
+          "ViajantesTurismo.Catalog.Contracts.Http": "[0.1.0-alpha.0, )",
           "ViajantesTurismo.Catalog.Infrastructure": "[0.1.0-alpha.0, )",
           "ViajantesTurismo.ServiceDefaults": "[0.1.0-alpha.0, )"
         }
@@ -469,15 +461,25 @@
           "SharedKernel.Messaging": "[0.1.0-alpha.0, )",
           "SharedKernel.Messaging.IntegrationEvents": "[0.1.0-alpha.0, )",
           "SharedKernel.Results": "[0.1.0-alpha.0, )",
-          "ViajantesTurismo.Admin.Contracts": "[0.1.0-alpha.0, )",
-          "ViajantesTurismo.Catalog.Contracts": "[0.1.0-alpha.0, )",
+          "ViajantesTurismo.Admin.Contracts.IntegrationEvents": "[0.1.0-alpha.0, )",
+          "ViajantesTurismo.Catalog.Contracts.Application": "[0.1.0-alpha.0, )",
+          "ViajantesTurismo.Catalog.Contracts.IntegrationEvents": "[0.1.0-alpha.0, )",
           "ViajantesTurismo.Catalog.Domain": "[0.1.0-alpha.0, )"
         }
       },
-      "viajantesturismo.catalog.contracts": {
+      "viajantesturismo.catalog.contracts.application": {
+        "type": "Project"
+      },
+      "viajantesturismo.catalog.contracts.http": {
         "type": "Project",
         "dependencies": {
           "SharedKernel.HttpClients": "[0.1.0-alpha.0, )",
+          "ViajantesTurismo.Catalog.Contracts.Application": "[0.1.0-alpha.0, )"
+        }
+      },
+      "viajantesturismo.catalog.contracts.integrationevents": {
+        "type": "Project",
+        "dependencies": {
           "SharedKernel.Messaging.IntegrationEvents": "[0.1.0-alpha.0, )"
         }
       },
@@ -489,8 +491,7 @@
           "SharedKernel.Domain": "[0.1.0-alpha.0, )",
           "SharedKernel.EventSourcing": "[0.1.0-alpha.0, )",
           "SharedKernel.InputNormalization": "[0.1.0-alpha.0, )",
-          "SharedKernel.Results": "[0.1.0-alpha.0, )",
-          "ViajantesTurismo.Catalog.Contracts": "[0.1.0-alpha.0, )"
+          "SharedKernel.Results": "[0.1.0-alpha.0, )"
         }
       },
       "viajantesturismo.catalog.infrastructure": {
@@ -501,6 +502,7 @@
           "SharedKernel.AI": "[0.1.0-alpha.0, )",
           "SharedKernel.EntityFrameworkCore": "[0.1.0-alpha.0, )",
           "SharedKernel.EventSourcing.Npgsql": "[0.1.0-alpha.0, )",
+          "SharedKernel.HttpClients": "[0.1.0-alpha.0, )",
           "SharedKernel.Idempotency": "[0.1.0-alpha.0, )",
           "SharedKernel.InputNormalization": "[0.1.0-alpha.0, )",
           "SharedKernel.Messaging.IntegrationEvents.EntityFrameworkCore": "[0.1.0-alpha.0, )",

@@ -1,4 +1,4 @@
-using ViajantesTurismo.Catalog.Contracts;
+using ViajantesTurismo.Catalog.Contracts.Http;
 
 namespace ViajantesTurismo.Admin.SystemTests.Infrastructure.Fixtures;
 

@@ -1,7 +1,7 @@
 using System.Globalization;
 using System.Text.Json;
-using ViajantesTurismo.Admin.Contracts;
-using ViajantesTurismo.Admin.Contracts.Tours;
+using ViajantesTurismo.Admin.Contracts.IntegrationEvents;
+using ViajantesTurismo.Admin.Contracts.IntegrationEvents.Tours;
 using TestTraits = ViajantesTurismo.Admin.ContractTests.Infrastructure.TestTraits;
 
 namespace ViajantesTurismo.Admin.ContractTests.Tours;

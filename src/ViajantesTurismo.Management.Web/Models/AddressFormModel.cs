@@ -1,5 +1,5 @@
 using System.ComponentModel.DataAnnotations;
-using ViajantesTurismo.Admin.Contracts;
+using ViajantesTurismo.Admin.Contracts.Application;
 
 namespace ViajantesTurismo.Management.Web.Models;
 

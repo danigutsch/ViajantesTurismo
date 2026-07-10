@@ -22,7 +22,7 @@ internal static class AdminOpenApiArtifactDriftGuard
     }
 
     private static string GetOpenApiDirectory()
-        => Path.Combine(ContractTestRepository.RootPath, "src", "ViajantesTurismo.Admin.Contracts", "OpenApi");
+        => Path.Combine(ContractTestRepository.RootPath, "src", "ViajantesTurismo.Admin.Contracts.Http", "OpenApi");
 
     public static JsonSnapshotArtifactSet CreateSnapshotSet()
     {

@@ -1,0 +1,51 @@
+using System.ComponentModel.DataAnnotations;
+
+namespace ViajantesTurismo.Admin.Contracts.Application;
+
+/// <summary>
+/// Data Transfer Object representing the personal information of a customer.
+/// Contains basic personal details with validation attributes for each property.
+/// </summary>
+public sealed record PersonalInfoDto
+{
+    /// <summary>
+    /// The first name of the customer.
+    /// </summary>
+    [Required]
+    [StringLength(ContractConstants.MaxNameLength, MinimumLength = 1)]
+    public required string FirstName { get; init; }
+
+    /// <summary>
+    /// The last name of the customer.
+    /// </summary>
+    [Required]
+    [StringLength(ContractConstants.MaxNameLength, MinimumLength = 1)]
+    public required string LastName { get; init; }
+
+    /// <summary>
+    /// The date of birth of the customer.
+    /// </summary>
+    [Required]
+    public required DateTime BirthDate { get; init; }
+
+    /// <summary>
+    /// The gender of the customer.
+    /// </summary>
+    [Required]
+    [StringLength(ContractConstants.MaxDefaultLength, MinimumLength = 1)]
+    public required string Gender { get; init; }
+
+    /// <summary>
+    /// The nationality of the customer.
+    /// </summary>
+    [Required]
+    [StringLength(ContractConstants.MaxNameLength, MinimumLength = 1)]
+    public required string Nationality { get; init; }
+
+    /// <summary>
+    /// The occupation or occupation of the customer.
+    /// </summary>
+    [Required]
+    [StringLength(ContractConstants.MaxNameLength, MinimumLength = 1)]
+    public required string Occupation { get; init; }
+}

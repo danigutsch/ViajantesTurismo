@@ -1,8 +1,8 @@
 using Npgsql;
 using Projects;
 using SharedKernel.IntegrationTesting;
-using ViajantesTurismo.Admin.Contracts.Tours;
-using ViajantesTurismo.Catalog.Contracts;
+using ViajantesTurismo.Admin.Contracts.IntegrationEvents.Tours;
+using ViajantesTurismo.Catalog.Contracts.Http;
 using ViajantesTurismo.Resources;
 
 namespace ViajantesTurismo.Admin.SystemTests.Infrastructure.Fixtures;
@@ -25,6 +25,8 @@ public sealed class AspireSystemTestFixture : IAspireSystemTestFixture, IAsyncLi
     public Uri PublicWebAppUrl { get; private set; } = null!;
 
     public ICatalogToursApiClient CatalogTours => _catalogTours ?? throw new InvalidOperationException("Fixture is not initialized.");
+
+    ICatalogToursApiClient IAspireSystemTestFixture.CatalogTours => throw new NotImplementedException();
 
     public async ValueTask InitializeAsync()
     {

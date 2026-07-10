@@ -3,7 +3,6 @@ using JetBrains.Annotations;
 using SharedKernel.BuildingBlocks;
 using SharedKernel.InputNormalization;
 using SharedKernel.Results;
-using ViajantesTurismo.Catalog.Contracts;
 using ViajantesTurismo.Catalog.Domain.PublicContent;
 
 namespace ViajantesTurismo.Catalog.Domain.Media;
@@ -152,14 +151,14 @@ public sealed class PublicMediaImageAccessibilityText : ValueObject
             errors[nameof(IsDecorative)] = ["AI-generated accessibility text cannot mark images decorative."];
         }
 
-        if (sanitizedAltText?.Length > ContractConstants.MaxAltTextLength)
+        if (sanitizedAltText?.Length > CatalogDomainLimits.MaxAltTextLength)
         {
-            errors[nameof(AltText)] = [$"Alt text cannot exceed {ContractConstants.MaxAltTextLength} characters."];
+            errors[nameof(AltText)] = [$"Alt text cannot exceed {CatalogDomainLimits.MaxAltTextLength} characters."];
         }
 
-        if (sanitizedCaption?.Length > ContractConstants.MaxCaptionLength)
+        if (sanitizedCaption?.Length > CatalogDomainLimits.MaxCaptionLength)
         {
-            errors[nameof(Caption)] = [$"Caption cannot exceed {ContractConstants.MaxCaptionLength} characters."];
+            errors[nameof(Caption)] = [$"Caption cannot exceed {CatalogDomainLimits.MaxCaptionLength} characters."];
         }
 
         return errors.Count > 0

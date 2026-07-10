@@ -1,5 +1,5 @@
 using System.Globalization;
-using ViajantesTurismo.Admin.Contracts;
+using ViajantesTurismo.Admin.Contracts.Application;
 
 namespace ViajantesTurismo.Management.Web.Helpers;
 

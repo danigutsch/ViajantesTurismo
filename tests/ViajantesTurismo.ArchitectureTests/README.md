@@ -12,7 +12,8 @@ For Admin test taxonomy and seam guidance, treat `tests/README.md` as the canoni
 ## What we verify
 
 - `LayerDependencyTests` — Ensures Domain never depends on Application/Infrastructure/API,
-  Application stays adapter-free, and Infrastructure is not coupled to the transport layer.
+  Application stays adapter-free, Infrastructure is not coupled to transport, and SharedKernel module boundaries stay
+  explicit. Abstraction projects stay separated from implementation and adapter dependencies.
 - `DddConventionsTests` — Guards aggregate patterns: entities stay sealed and live under the
   domain namespaces; value objects remain immutable with no public setters.
 - `NamingConventionTests` — Enforces consistent naming (interfaces start with `I`, contracts end with `Dto`,

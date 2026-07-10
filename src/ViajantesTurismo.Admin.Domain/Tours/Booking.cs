@@ -1,5 +1,4 @@
 using JetBrains.Annotations;
-using ViajantesTurismo.Admin.Contracts;
 using ViajantesTurismo.Admin.Domain.Shared;
 using SharedKernel.Domain;
 using SharedKernel.Results;
@@ -228,9 +227,9 @@ public sealed partial class Booking : IEntity<Guid>
             errors.Add(BookingErrors.ZeroOrNegativeBasePrice(basePrice));
         }
 
-        if (basePrice > ContractConstants.MaxPrice)
+        if (basePrice > AdminDomainLimits.MaxPrice)
         {
-            errors.Add(BookingErrors.BasePriceExceedsMaximum(basePrice, ContractConstants.MaxPrice));
+            errors.Add(BookingErrors.BasePriceExceedsMaximum(basePrice, AdminDomainLimits.MaxPrice));
         }
 
         if (roomAdditionalCost < 0)
@@ -238,14 +237,14 @@ public sealed partial class Booking : IEntity<Guid>
             errors.Add(BookingErrors.NegativeRoomCost(roomAdditionalCost));
         }
 
-        if (roomAdditionalCost > ContractConstants.MaxPrice)
+        if (roomAdditionalCost > AdminDomainLimits.MaxPrice)
         {
-            errors.Add(BookingErrors.RoomCostExceedsMaximum(roomAdditionalCost, ContractConstants.MaxPrice));
+            errors.Add(BookingErrors.RoomCostExceedsMaximum(roomAdditionalCost, AdminDomainLimits.MaxPrice));
         }
 
-        if (notes?.Length > ContractConstants.MaxBookingNotesLength)
+        if (notes?.Length > AdminDomainLimits.MaxBookingNotesLength)
         {
-            errors.Add(BookingErrors.InvalidNotesLength(ContractConstants.MaxBookingNotesLength, notes.Length));
+            errors.Add(BookingErrors.InvalidNotesLength(AdminDomainLimits.MaxBookingNotesLength, notes.Length));
         }
 
         if (companionCustomer is not null && principalCustomer.CustomerId == companionCustomer.CustomerId)
@@ -351,9 +350,9 @@ public sealed partial class Booking : IEntity<Guid>
     {
         notes = StringSanitizer.SanitizeNotes(notes);
 
-        if (notes?.Length > ContractConstants.MaxBookingNotesLength)
+        if (notes?.Length > AdminDomainLimits.MaxBookingNotesLength)
         {
-            return BookingErrors.InvalidNotesLength(ContractConstants.MaxBookingNotesLength, notes.Length);
+            return BookingErrors.InvalidNotesLength(AdminDomainLimits.MaxBookingNotesLength, notes.Length);
         }
 
         Notes = notes;
@@ -417,9 +416,9 @@ public sealed partial class Booking : IEntity<Guid>
             errors.Add(BookingErrors.NegativeRoomCost(roomAdditionalCost));
         }
 
-        if (roomAdditionalCost > ContractConstants.MaxPrice)
+        if (roomAdditionalCost > AdminDomainLimits.MaxPrice)
         {
-            errors.Add(BookingErrors.RoomCostExceedsMaximum(roomAdditionalCost, ContractConstants.MaxPrice));
+            errors.Add(BookingErrors.RoomCostExceedsMaximum(roomAdditionalCost, AdminDomainLimits.MaxPrice));
         }
 
         if (roomType == RoomType.SingleOccupancy && companionCustomer is not null)

@@ -1,6 +1,5 @@
 using System.Text.RegularExpressions;
 using JetBrains.Annotations;
-using ViajantesTurismo.Admin.Contracts;
 using SharedKernel.Results;
 using static ViajantesTurismo.Admin.Domain.Customers.CustomerErrors;
 using SharedKernel.InputNormalization;
@@ -69,7 +68,7 @@ public sealed partial class ContactInfo
         {
             errors.Add(EmptyEmail());
         }
-        else if (email.Length > ContractConstants.MaxNameLength)
+        else if (email.Length > AdminDomainLimits.MaxNameLength)
         {
             errors.Add(EmailTooLong());
         }
@@ -82,7 +81,7 @@ public sealed partial class ContactInfo
         {
             errors.Add(EmptyMobile());
         }
-        else if (mobile.Length > ContractConstants.MaxDefaultLength)
+        else if (mobile.Length > AdminDomainLimits.MaxDefaultLength)
         {
             errors.Add(MobileTooLong());
         }
@@ -91,12 +90,12 @@ public sealed partial class ContactInfo
             errors.Add(InvalidPhoneFormat());
         }
 
-        if (instagram?.Length > ContractConstants.MaxDefaultLength)
+        if (instagram?.Length > AdminDomainLimits.MaxDefaultLength)
         {
             errors.Add(InstagramTooLong());
         }
 
-        if (facebook?.Length > ContractConstants.MaxDefaultLength)
+        if (facebook?.Length > AdminDomainLimits.MaxDefaultLength)
         {
             errors.Add(FacebookTooLong());
         }

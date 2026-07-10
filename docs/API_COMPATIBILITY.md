@@ -5,7 +5,7 @@ This repository protects two public contract surfaces:
 - `SharedKernel.*` package APIs through `PublicAPI.Shipped.txt`, `PublicAPI.Unshipped.txt`,
   and .NET package validation.
 - Admin HTTP contracts through canonical OpenAPI artifacts under
-  `src/ViajantesTurismo.Admin.Contracts/OpenApi/` and contract tests.
+  `src/ViajantesTurismo.Admin.Contracts.Http/OpenApi/` and contract tests.
 
 ## Release phase policy
 

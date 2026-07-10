@@ -1,6 +1,6 @@
 @page "/catalog/tours/{id:guid}/presentation"
 @using System.ComponentModel.DataAnnotations
-@using ViajantesTurismo.Catalog.Contracts
+@using ViajantesTurismo.Catalog.Contracts.Application
 @using SharedKernel.HttpClients
 @using ViajantesTurismo.Management.Web.Helpers
 @inject ICatalogToursApiClient CatalogToursApi
@@ -148,10 +148,10 @@ else
 
     private sealed class CatalogTourPresentationFormModel
     {
-        [Required, StringLength(ContractConstants.MaxNameLength, MinimumLength = 1)]
+        [Required, StringLength(ViajantesTurismo.Catalog.Contracts.Application.ContractConstants.MaxNameLength, MinimumLength = 1)]
         public string Title { get; set; } = string.Empty;
 
-        [Required, StringLength(ContractConstants.MaxSlugLength, MinimumLength = 1)]
+        [Required, StringLength(ViajantesTurismo.Catalog.Contracts.Application.ContractConstants.MaxSlugLength, MinimumLength = 1)]
         public string Slug { get; set; } = string.Empty;
 
         public bool IsPublished { get; set; }

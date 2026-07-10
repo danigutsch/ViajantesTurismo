@@ -1,5 +1,6 @@
-using ViajantesTurismo.Admin.Contracts;
-using ViajantesTurismo.Catalog.Contracts;
+using ViajantesTurismo.Admin.Contracts.Application;
+using ViajantesTurismo.Catalog.Contracts.Application;
+using ViajantesTurismo.Catalog.Contracts.Http;
 
 namespace ViajantesTurismo.Admin.SystemTests.Infrastructure.Helpers;
 

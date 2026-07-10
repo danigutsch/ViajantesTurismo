@@ -1,5 +1,4 @@
 using JetBrains.Annotations;
-using ViajantesTurismo.Admin.Contracts;
 using ViajantesTurismo.Admin.Domain.Shared;
 using SharedKernel.Domain;
 using SharedKernel.Results;
@@ -138,18 +137,18 @@ public sealed partial class Tour : IAggregateRoot<Guid>
         {
             errors.Add(TourErrors.EmptyIdentifier());
         }
-        else if (identifier.Length > ContractConstants.MaxNameLength)
+        else if (identifier.Length > AdminDomainLimits.MaxNameLength)
         {
-            errors.Add(TourErrors.IdentifierTooLong(ContractConstants.MaxNameLength, identifier.Length));
+            errors.Add(TourErrors.IdentifierTooLong(AdminDomainLimits.MaxNameLength, identifier.Length));
         }
 
         if (string.IsNullOrWhiteSpace(name))
         {
             errors.Add(TourErrors.EmptyName());
         }
-        else if (name.Length > ContractConstants.MaxNameLength)
+        else if (name.Length > AdminDomainLimits.MaxNameLength)
         {
-            errors.Add(TourErrors.NameTooLong(ContractConstants.MaxNameLength, name.Length));
+            errors.Add(TourErrors.NameTooLong(AdminDomainLimits.MaxNameLength, name.Length));
         }
 
         var scheduleResult = DateRange.Create(definition.Schedule.StartDate, definition.Schedule.EndDate);
@@ -157,9 +156,9 @@ public sealed partial class Tour : IAggregateRoot<Guid>
         {
             errors.Add(scheduleResult);
         }
-        else if (scheduleResult.Value.DurationDays < ContractConstants.MinimumTourDurationDays)
+        else if (scheduleResult.Value.DurationDays < AdminDomainLimits.MinimumTourDurationDays)
         {
-            errors.Add(TourErrors.DurationTooShort(ContractConstants.MinimumTourDurationDays,
+            errors.Add(TourErrors.DurationTooShort(AdminDomainLimits.MinimumTourDurationDays,
                 scheduleResult.Value.DurationDays));
         }
 
@@ -220,18 +219,18 @@ public sealed partial class Tour : IAggregateRoot<Guid>
         {
             errors.Add(TourErrors.EmptyIdentifier());
         }
-        else if (sanitizedIdentifier.Length > ContractConstants.MaxNameLength)
+        else if (sanitizedIdentifier.Length > AdminDomainLimits.MaxNameLength)
         {
-            errors.Add(TourErrors.IdentifierTooLong(ContractConstants.MaxNameLength, sanitizedIdentifier.Length));
+            errors.Add(TourErrors.IdentifierTooLong(AdminDomainLimits.MaxNameLength, sanitizedIdentifier.Length));
         }
 
         if (string.IsNullOrWhiteSpace(sanitizedName))
         {
             errors.Add(TourErrors.EmptyName());
         }
-        else if (sanitizedName.Length > ContractConstants.MaxNameLength)
+        else if (sanitizedName.Length > AdminDomainLimits.MaxNameLength)
         {
-            errors.Add(TourErrors.NameTooLong(ContractConstants.MaxNameLength, sanitizedName.Length));
+            errors.Add(TourErrors.NameTooLong(AdminDomainLimits.MaxNameLength, sanitizedName.Length));
         }
 
         if (errors.HasErrors)
@@ -258,9 +257,9 @@ public sealed partial class Tour : IAggregateRoot<Guid>
             return scheduleResult.ConvertError();
         }
 
-        if (scheduleResult.Value.DurationDays < ContractConstants.MinimumTourDurationDays)
+        if (scheduleResult.Value.DurationDays < AdminDomainLimits.MinimumTourDurationDays)
         {
-            return TourErrors.DurationTooShort(ContractConstants.MinimumTourDurationDays,
+            return TourErrors.DurationTooShort(AdminDomainLimits.MinimumTourDurationDays,
                 scheduleResult.Value.DurationDays);
         }
 

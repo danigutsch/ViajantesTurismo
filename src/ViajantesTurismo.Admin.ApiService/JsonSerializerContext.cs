@@ -1,5 +1,5 @@
 using System.Text.Json.Serialization;
-using ViajantesTurismo.Admin.Contracts;
+using ViajantesTurismo.Admin.Contracts.Application;
 
 namespace ViajantesTurismo.Admin.ApiService;
 

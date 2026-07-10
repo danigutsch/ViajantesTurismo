@@ -1,7 +1,6 @@
 using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using SharedKernel.Results;
-using ViajantesTurismo.Catalog.Contracts;
 using SharedKernel.InputNormalization;
 using ViajantesTurismo.Catalog.Domain.PublicContent;
 
@@ -205,11 +204,11 @@ public sealed class PublicMediaImage
         }
 
         ValidateAccessibilityText(errors, metadata);
-        ValidateRequiredText(errors, nameof(PublicMediaImageMetadata.Checksum), metadata.Checksum, ContractConstants.MaxChecksumLength, "Checksum is required.", nameof(PublicMediaImageMetadata.Checksum));
-        ValidateRequiredText(errors, nameof(PublicMediaImageMetadata.ContentType), metadata.ContentType, ContractConstants.MaxContentTypeLength, "ContentType is required.", nameof(PublicMediaImageMetadata.ContentType));
-        ValidateOptionalText(errors, nameof(PublicMediaImageMetadata.Caption), metadata.Caption, ContractConstants.MaxCaptionLength, nameof(PublicMediaImageMetadata.Caption));
-        ValidateOptionalText(errors, nameof(PublicMediaImageMetadata.Attribution), metadata.Attribution, ContractConstants.MaxAttributionLength, nameof(PublicMediaImageMetadata.Attribution));
-        ValidateOptionalText(errors, nameof(PublicMediaImageMetadata.Copyright), metadata.Copyright, ContractConstants.MaxCopyrightLength, nameof(PublicMediaImageMetadata.Copyright));
+        ValidateRequiredText(errors, nameof(PublicMediaImageMetadata.Checksum), metadata.Checksum, CatalogDomainLimits.MaxChecksumLength, "Checksum is required.", nameof(PublicMediaImageMetadata.Checksum));
+        ValidateRequiredText(errors, nameof(PublicMediaImageMetadata.ContentType), metadata.ContentType, CatalogDomainLimits.MaxContentTypeLength, "ContentType is required.", nameof(PublicMediaImageMetadata.ContentType));
+        ValidateOptionalText(errors, nameof(PublicMediaImageMetadata.Caption), metadata.Caption, CatalogDomainLimits.MaxCaptionLength, nameof(PublicMediaImageMetadata.Caption));
+        ValidateOptionalText(errors, nameof(PublicMediaImageMetadata.Attribution), metadata.Attribution, CatalogDomainLimits.MaxAttributionLength, nameof(PublicMediaImageMetadata.Attribution));
+        ValidateOptionalText(errors, nameof(PublicMediaImageMetadata.Copyright), metadata.Copyright, CatalogDomainLimits.MaxCopyrightLength, nameof(PublicMediaImageMetadata.Copyright));
 
         if (metadata.FileSizeBytes <= 0)
         {
@@ -564,7 +563,7 @@ public sealed class PublicMediaImage
             || variant.Width <= 0
             || variant.Height <= 0
             || string.IsNullOrWhiteSpace(contentType)
-            || contentType.Length > ContractConstants.MaxContentTypeLength
+            || contentType.Length > CatalogDomainLimits.MaxContentTypeLength
             || variant.FileSizeBytes <= 0;
     }
 

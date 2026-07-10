@@ -1,5 +1,5 @@
 using ViajantesTurismo.Admin.Application.Customers.UpdateCustomer;
-using ViajantesTurismo.Admin.Contracts;
+using ViajantesTurismo.Admin.Contracts.Application;
 using ViajantesTurismo.Admin.Testing.Behavior;
 using ViajantesTurismo.Admin.Testing.Fakes;
 using SharedKernel.Results;

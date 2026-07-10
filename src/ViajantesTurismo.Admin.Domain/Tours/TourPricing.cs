@@ -1,4 +1,3 @@
-using ViajantesTurismo.Admin.Contracts;
 using SharedKernel.Results;
 using SharedKernel.BuildingBlocks;
 
@@ -75,36 +74,36 @@ public sealed class TourPricing : ValueObject
         {
             errors.Add(TourErrors.InvalidPrice("Base price", basePrice));
         }
-        else if (basePrice > ContractConstants.MaxPrice)
+        else if (basePrice > AdminDomainLimits.MaxPrice)
         {
-            errors.Add(TourErrors.PriceTooHigh("Base price", ContractConstants.MaxPrice, basePrice));
+            errors.Add(TourErrors.PriceTooHigh("Base price", AdminDomainLimits.MaxPrice, basePrice));
         }
 
         if (singleRoomSupplementPrice <= 0)
         {
             errors.Add(TourErrors.InvalidPrice("Single room supplement price", singleRoomSupplementPrice));
         }
-        else if (singleRoomSupplementPrice > ContractConstants.MaxPrice)
+        else if (singleRoomSupplementPrice > AdminDomainLimits.MaxPrice)
         {
-            errors.Add(TourErrors.PriceTooHigh("Single room supplement price", ContractConstants.MaxPrice, singleRoomSupplementPrice));
+            errors.Add(TourErrors.PriceTooHigh("Single room supplement price", AdminDomainLimits.MaxPrice, singleRoomSupplementPrice));
         }
 
         if (regularBikePrice <= 0)
         {
             errors.Add(TourErrors.InvalidPrice("Regular bike price", regularBikePrice));
         }
-        else if (regularBikePrice > ContractConstants.MaxPrice)
+        else if (regularBikePrice > AdminDomainLimits.MaxPrice)
         {
-            errors.Add(TourErrors.PriceTooHigh("Regular bike price", ContractConstants.MaxPrice, regularBikePrice));
+            errors.Add(TourErrors.PriceTooHigh("Regular bike price", AdminDomainLimits.MaxPrice, regularBikePrice));
         }
 
         if (eBikePrice <= 0)
         {
             errors.Add(TourErrors.InvalidPrice("E-bike price", eBikePrice));
         }
-        else if (eBikePrice > ContractConstants.MaxPrice)
+        else if (eBikePrice > AdminDomainLimits.MaxPrice)
         {
-            errors.Add(TourErrors.PriceTooHigh("E-bike price", ContractConstants.MaxPrice, eBikePrice));
+            errors.Add(TourErrors.PriceTooHigh("E-bike price", AdminDomainLimits.MaxPrice, eBikePrice));
         }
 
         if (errors.HasErrors)

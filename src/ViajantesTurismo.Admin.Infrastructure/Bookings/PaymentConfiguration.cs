@@ -1,7 +1,7 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
-using ViajantesTurismo.Admin.Contracts;
 using ViajantesTurismo.Admin.Domain.Tours;
+using ViajantesTurismo.Admin.Domain;
 
 namespace ViajantesTurismo.Admin.Infrastructure.ModelConfigurations;
 
@@ -16,8 +16,8 @@ internal sealed class PaymentConfiguration : IEntityTypeConfiguration<Payment>
         entity.Property(payment => payment.Amount).IsRequired();
         entity.Property(payment => payment.PaymentDate).IsRequired();
         entity.Property(payment => payment.Method).HasConversion<string>().IsRequired();
-        entity.Property(payment => payment.ReferenceNumber).HasMaxLength(ContractConstants.MaxReferenceNumberLength);
-        entity.Property(payment => payment.Notes).HasMaxLength(ContractConstants.MaxPaymentNotesLength);
+        entity.Property(payment => payment.ReferenceNumber).HasMaxLength(AdminDomainLimits.MaxReferenceNumberLength);
+        entity.Property(payment => payment.Notes).HasMaxLength(AdminDomainLimits.MaxPaymentNotesLength);
         entity.Property(payment => payment.RecordedAt).IsRequired();
 
         entity.HasIndex(payment => payment.BookingId);

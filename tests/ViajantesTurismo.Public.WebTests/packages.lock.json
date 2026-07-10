@@ -678,17 +678,6 @@
       "sharedkernel.mediator.abstractions": {
         "type": "Project"
       },
-      "sharedkernel.messaging": {
-        "type": "Project"
-      },
-      "sharedkernel.messaging.integrationevents": {
-        "type": "Project",
-        "dependencies": {
-          "Microsoft.Extensions.DependencyInjection.Abstractions": "[10.0.9, )",
-          "SharedKernel.Mediator.Abstractions": "[0.1.0-alpha.0, )",
-          "SharedKernel.Messaging": "[0.1.0-alpha.0, )"
-        }
-      },
       "sharedkernel.observability": {
         "type": "Project",
         "dependencies": {
@@ -715,11 +704,14 @@
           "xunit.v3.assert": "[3.2.2, )"
         }
       },
-      "viajantesturismo.catalog.contracts": {
+      "viajantesturismo.catalog.contracts.application": {
+        "type": "Project"
+      },
+      "viajantesturismo.catalog.contracts.http": {
         "type": "Project",
         "dependencies": {
           "SharedKernel.HttpClients": "[0.1.0-alpha.0, )",
-          "SharedKernel.Messaging.IntegrationEvents": "[0.1.0-alpha.0, )"
+          "ViajantesTurismo.Catalog.Contracts.Application": "[0.1.0-alpha.0, )"
         }
       },
       "viajantesturismo.public.web": {
@@ -728,7 +720,8 @@
           "SharedKernel.AspNetCore": "[0.1.0-alpha.0, )",
           "SharedKernel.HttpCaching.AspNetCore": "[0.1.0-alpha.0, )",
           "SharedKernel.HttpClients": "[0.1.0-alpha.0, )",
-          "ViajantesTurismo.Catalog.Contracts": "[0.1.0-alpha.0, )",
+          "ViajantesTurismo.Catalog.Contracts.Application": "[0.1.0-alpha.0, )",
+          "ViajantesTurismo.Catalog.Contracts.Http": "[0.1.0-alpha.0, )",
           "ViajantesTurismo.Resources": "[0.1.0-alpha.0, )",
           "ViajantesTurismo.ServiceDefaults": "[0.1.0-alpha.0, )"
         }

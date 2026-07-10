@@ -1,7 +1,7 @@
 using Microsoft.Extensions.DependencyInjection;
 using SharedKernel.Messaging.IntegrationEvents;
-using ViajantesTurismo.Admin.Contracts;
-using ViajantesTurismo.Admin.Contracts.Tours;
+using ViajantesTurismo.Admin.Contracts.IntegrationEvents;
+using ViajantesTurismo.Admin.Contracts.IntegrationEvents.Tours;
 
 namespace ViajantesTurismo.Admin.UnitTests.Infrastructure;
 

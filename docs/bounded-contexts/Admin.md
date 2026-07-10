@@ -119,7 +119,8 @@ for specific invariants.
 
 - **Style:** Minimal APIs (ASP.NET Core)
 - **Endpoints:** `/tours`, `/customers`, `/bookings`
-- **Contracts:** Shared via `ViajantesTurismo.Admin.Contracts` project
+- **Contracts:** split across `ViajantesTurismo.Admin.Contracts.Application`,
+  `ViajantesTurismo.Admin.Contracts.Http`, and `ViajantesTurismo.Admin.Contracts.IntegrationEvents`
 
 ## Testing
 

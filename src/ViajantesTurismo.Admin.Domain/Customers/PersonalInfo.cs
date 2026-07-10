@@ -1,4 +1,3 @@
-using ViajantesTurismo.Admin.Contracts;
 using SharedKernel.Results;
 using static ViajantesTurismo.Admin.Domain.Customers.CustomerErrors;
 using SharedKernel.InputNormalization;
@@ -73,7 +72,7 @@ public sealed class PersonalInfo
         {
             errors.Add(EmptyFirstName());
         }
-        else if (firstName.Length > ContractConstants.MaxNameLength)
+        else if (firstName.Length > AdminDomainLimits.MaxNameLength)
         {
             errors.Add(FirstNameTooLong());
         }
@@ -82,7 +81,7 @@ public sealed class PersonalInfo
         {
             errors.Add(EmptyLastName());
         }
-        else if (lastName.Length > ContractConstants.MaxNameLength)
+        else if (lastName.Length > AdminDomainLimits.MaxNameLength)
         {
             errors.Add(LastNameTooLong());
         }
@@ -91,7 +90,7 @@ public sealed class PersonalInfo
         {
             errors.Add(EmptyGender());
         }
-        else if (gender.Length > ContractConstants.MaxDefaultLength)
+        else if (gender.Length > AdminDomainLimits.MaxDefaultLength)
         {
             errors.Add(GenderTooLong());
         }
@@ -100,7 +99,7 @@ public sealed class PersonalInfo
         {
             errors.Add(EmptyNationality());
         }
-        else if (nationality.Length > ContractConstants.MaxNameLength)
+        else if (nationality.Length > AdminDomainLimits.MaxNameLength)
         {
             errors.Add(NationalityTooLong());
         }
@@ -109,7 +108,7 @@ public sealed class PersonalInfo
         {
             errors.Add(EmptyOccupation());
         }
-        else if (occupation.Length > ContractConstants.MaxNameLength)
+        else if (occupation.Length > AdminDomainLimits.MaxNameLength)
         {
             errors.Add(OccupationTooLong());
         }

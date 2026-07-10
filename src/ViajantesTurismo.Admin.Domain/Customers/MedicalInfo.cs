@@ -1,5 +1,4 @@
 using JetBrains.Annotations;
-using ViajantesTurismo.Admin.Contracts;
 using SharedKernel.Results;
 using static ViajantesTurismo.Admin.Domain.Customers.CustomerErrors;
 using SharedKernel.InputNormalization;
@@ -51,12 +50,12 @@ public sealed class MedicalInfo
 
         var errors = new ValidationErrors();
 
-        if (sanitizedAllergies?.Length > ContractConstants.MaxMedicalInfoLength)
+        if (sanitizedAllergies?.Length > AdminDomainLimits.MaxMedicalInfoLength)
         {
             errors.Add(AllergiesTooLong());
         }
 
-        if (sanitizedAdditionalInfo?.Length > ContractConstants.MaxMedicalInfoLength)
+        if (sanitizedAdditionalInfo?.Length > AdminDomainLimits.MaxMedicalInfoLength)
         {
             errors.Add(AdditionalInfoTooLong());
         }

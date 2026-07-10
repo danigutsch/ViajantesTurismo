@@ -10,7 +10,8 @@
         <Using Include="System.Net" />
         <Using Include="System.Net.Http.Json" />
         <Using Include="SharedKernel.Testing.Assertions" />
-        <Using Include="ViajantesTurismo.Admin.Contracts" />
+        <Using Include="ViajantesTurismo.Admin.Contracts.Application" />
+        <Using Include="ViajantesTurismo.Admin.Contracts.Http" />
         <Using Include="ViajantesTurismo.Admin.IntegrationTests.Infrastructure.Bases" />
         <Using Include="ViajantesTurismo.Admin.IntegrationTests.Infrastructure" />
         <Using Include="ViajantesTurismo.Admin.IntegrationTests.Infrastructure.Fixtures" />
@@ -34,6 +35,7 @@
         <ProjectReference Include="..\..\src\SharedKernel\SharedKernel.IntegrationTesting\SharedKernel.IntegrationTesting.csproj" IsAspireProjectResource="false" />
         <ProjectReference Include="..\..\src\SharedKernel\SharedKernel.Testing.Assertions\SharedKernel.Testing.Assertions.csproj" IsAspireProjectResource="false" />
         <ProjectReference Include="..\..\src\SharedKernel\SharedKernel.Testing\SharedKernel.Testing.csproj" IsAspireProjectResource="false" />
+        <ProjectReference Include="..\..\src\ViajantesTurismo.Admin.Contracts.Http\ViajantesTurismo.Admin.Contracts.Http.csproj" IsAspireProjectResource="false" />
         <ProjectReference Include="..\ViajantesTurismo.Admin.Testing\ViajantesTurismo.Admin.Testing.csproj" IsAspireProjectResource="false" />
         <ProjectReference Include="..\..\src\ViajantesTurismo.AppHost\ViajantesTurismo.AppHost.csproj" IsAspireProjectResource="false" />
     </ItemGroup>

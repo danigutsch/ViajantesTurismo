@@ -272,8 +272,8 @@ public sealed class PublicMediaImageTests
         // Act
         var result = PublicMediaImageAccessibilityText.Create(
             language,
-            altText: new string('a', Contracts.ContractConstants.MaxAltTextLength + 1),
-            caption: new string('c', Contracts.ContractConstants.MaxCaptionLength + 1),
+            altText: new string('a', ViajantesTurismo.Catalog.Contracts.Application.ContractConstants.MaxAltTextLength + 1),
+            caption: new string('c', ViajantesTurismo.Catalog.Contracts.Application.ContractConstants.MaxCaptionLength + 1),
             isDecorative: false,
             requiresHumanReview: false,
             isAiGenerated: false);

@@ -71,6 +71,10 @@ Samples and benchmarks are explicitly non-packable:
 
 Use `SharedKernel.<Capability>` for provider-neutral packages.
 
+`SharedKernel.<Capability>` is the primary module and core surface for that capability. Capability
+families may be multi-segment, such as `SharedKernel.Messaging.IntegrationEvents`; the primary package
+owns shared runtime and core logic for that full family name.
+
 Use `SharedKernel.<Capability>.<Provider>` for provider-specific adapters.
 
 Use analyzer, code-fix, and source-generator suffixes only for Roslyn packages:
@@ -91,10 +95,32 @@ Use `SharedKernel.<Capability>` for the primary package in a feature family. Use
 exist now, such as a provider adapter, Roslyn component, source generator, integration-specific
 extension, or abstraction package that avoids a concrete implementation dependency.
 
+Primary packages own the stable runtime API for a feature family. Primary modules must not
+runtime-reference descendant optional submodules through project or package references.
+Optional submodules may reference the same-family primary module, a nearer parent module, or an
+explicit `Abstractions` module.
+Optional/provider/tool suffixes are not allowed to point sideways within the same family.
+Cross-family SharedKernel references may target stable reusable primary modules, abstraction modules, or
+explicitly lower-level provider primitives. Do not use arbitrary sideways coupling to borrow runtime
+details from another family.
+
+Analyzer, code-fix, source-generator, and packaging references may point from a primary package to a
+tool package only when the project reference is non-runtime, for example with
+`ReferenceOutputAssembly="false"` or an analyzer/package output item type.
+
 Use `Abstractions` only when consumers need contracts without the implementation package and at least
 two real consumers or implementations need that split now. Otherwise keep contracts in the primary
 feature package. The primary feature package is the core surface; do not add `Core` packages unless a
 documented migration or compatibility constraint prevents the root package from owning that surface.
+
+`Abstractions` modules are dependency-inversion surfaces, not implementation hosts.
+Abstraction projects must not reference same-family implementation packages, provider adapters, persistence projects, web/API hosts, or adapter packages.
+Domain-facing and application-facing abstractions stay provider-neutral;
+infrastructure, persistence, hosting, web, and provider SDK dependencies belong in infrastructure or
+provider modules.
+
+Do not create `SharedKernel.<Capability>.Core` packages. Add a `Core` package only after an ADR or
+compatibility constraint records why the primary module cannot own the core surface.
 
 Keep package IDs aligned with the root namespace unless a package has a documented compatibility reason
 to differ.

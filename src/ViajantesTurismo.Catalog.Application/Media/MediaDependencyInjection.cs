@@ -3,8 +3,8 @@ using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Options;
 using SharedKernel.Idempotency;
 using SharedKernel.Messaging.IntegrationEvents;
-using ViajantesTurismo.Catalog.Contracts;
-using ViajantesTurismo.Catalog.Contracts.Media;
+using ViajantesTurismo.Catalog.Contracts.IntegrationEvents;
+using ViajantesTurismo.Catalog.Contracts.IntegrationEvents.Media;
 using ViajantesTurismo.Catalog.Application.IntegrationEvents;
 
 namespace ViajantesTurismo.Catalog.Application.Media;

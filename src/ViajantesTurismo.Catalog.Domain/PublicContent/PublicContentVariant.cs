@@ -1,7 +1,6 @@
 using System.Diagnostics.CodeAnalysis;
 using JetBrains.Annotations;
 using SharedKernel.Results;
-using ViajantesTurismo.Catalog.Contracts;
 using SharedKernel.InputNormalization;
 using SharedKernel.BuildingBlocks;
 
@@ -104,11 +103,11 @@ public sealed class PublicContentVariant : ValueObject
         var errors = new ValidationErrors();
 
         ValidateSupportedLanguage(errors, language);
-        ValidateRequiredText(errors, nameof(Title), sanitizedTitle, ContractConstants.MaxNameLength);
-        ValidateRequiredText(errors, nameof(Body), sanitizedBody, ContractConstants.MaxBodyLength);
-        ValidateOptionalText(errors, nameof(SeoTitle), sanitizedSeoTitle, ContractConstants.MaxNameLength);
-        ValidateOptionalText(errors, nameof(MetaDescription), sanitizedMetaDescription, ContractConstants.MaxCaptionLength);
-        ValidateOptionalText(errors, nameof(ShareSummary), sanitizedShareSummary, ContractConstants.MaxCaptionLength);
+        ValidateRequiredText(errors, nameof(Title), sanitizedTitle, CatalogDomainLimits.MaxNameLength);
+        ValidateRequiredText(errors, nameof(Body), sanitizedBody, CatalogDomainLimits.MaxBodyLength);
+        ValidateOptionalText(errors, nameof(SeoTitle), sanitizedSeoTitle, CatalogDomainLimits.MaxNameLength);
+        ValidateOptionalText(errors, nameof(MetaDescription), sanitizedMetaDescription, CatalogDomainLimits.MaxCaptionLength);
+        ValidateOptionalText(errors, nameof(ShareSummary), sanitizedShareSummary, CatalogDomainLimits.MaxCaptionLength);
 
         return errors.HasErrors
             ? errors.ToResult<PublicContentVariant>()
