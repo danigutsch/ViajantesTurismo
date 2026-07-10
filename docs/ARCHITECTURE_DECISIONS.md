@@ -79,6 +79,13 @@ Decisions about package versions, release channels, and compatibility signals.
 - **[ADR-032](adr/20260704-versioning-and-release-governance.md)** — Versioning and Release
   Governance
 
+### Document Generation
+
+Decisions about generated travel documents, editable drafts, final artifacts, and review workflows.
+
+- **[ADR-036](adr/20260710-generated-travel-document-format-and-workflow.md)** — Generated Travel
+  Document Format and Workflow
+
 ### Business Logic & Pricing
 
 Decisions about business rules, pricing calculations, and payment handling.
