@@ -108,8 +108,9 @@ Diagnostics should name the attribute option, the affected type, and the smalles
 
 ### Generated output rules
 
-- Deterministic file names: `<TypeName>.ModelSupport.g.cs`, `<TypeName>.ValueObject.g.cs`,
-  `<TypeName>.EfCore.g.cs`, `<TypeName>.Json.g.cs`.
+- Deterministic file names are based on the type metadata name, including namespace:
+  `<Namespace>.<TypeName>.ModelSupport.g.cs`, `<Namespace>.<TypeName>.ValueObject.g.cs`,
+  `<Namespace>.<TypeName>.EfCore.g.cs`, `<Namespace>.<TypeName>.Json.g.cs`.
 - Generated code under the target type namespace.
 - Public generated APIs documented with XML comments.
 - No generated persistence behavior should replace explicit domain invariants.
