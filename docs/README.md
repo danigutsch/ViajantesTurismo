@@ -17,6 +17,7 @@ specialized docs instead of repeating the same policy.
 | API and client boundaries | [API client boundaries](API_CLIENT_BOUNDARIES.md) | [API compatibility](API_COMPATIBILITY.md), [API versioning](API_VERSIONING.md) |
 | Async integration contracts | [Async contracts](ASYNC_CONTRACTS.md) | [AsyncAPI contract](asyncapi.json), [Events and messaging](domain/EVENTS_AND_MESSAGING.md) |
 | Configuration and feature flags | [Configuration standards](CONFIGURATION.md) | [OpenTelemetry custom telemetry](OPEN_TELEMETRY.md) |
+| Platform service integrations | [Platform service integration evaluation](PLATFORM_SERVICE_INTEGRATION_EVALUATION.md) | [Runtime wiring and deployment mapping](architecture/runtime-wiring-and-deployment.md), [AppHost README](../src/ViajantesTurismo.AppHost/README.md) |
 | CI, release, and contribution workflow | [Contributing](../CONTRIBUTING.md) | [CI overview](ci/overview.md), [CI governance](ci/governance.md), [Pull request template](pull_request_template.md) |
 | FOSS compliance | [FOSS compliance](FOSS_COMPLIANCE.md) | [SharedKernel packaging](SHAREDKERNEL_PACKAGING.md), [Local tool security](local-tool-security.md) |
 | Production operations | [Production readiness and operations](operations/production-readiness.md) | [Runtime wiring and deployment mapping](architecture/runtime-wiring-and-deployment.md) |
@@ -63,5 +64,6 @@ outdated behavior.
 - [Analyzer hardening roadmap](ANALYZER_HARDENING_ROADMAP.md)
 - [SharedKernel observability/runtime grouping](SHAREDKERNEL_OBSERVABILITY_RUNTIME_GROUPING.md)
 - [Vertical slice migration plan](vertical-slice-migration-plan.md)
+- [Platform service integration evaluation](PLATFORM_SERVICE_INTEGRATION_EVALUATION.md)
 - [Local tool security](local-tool-security.md)
 - [Line endings](LINE_ENDINGS.md)

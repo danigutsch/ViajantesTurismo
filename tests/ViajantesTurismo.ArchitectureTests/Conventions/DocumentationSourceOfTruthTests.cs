@@ -27,6 +27,33 @@ public sealed class DocumentationSourceOfTruthTests
     }
 
     [Fact]
+    public void Platform_service_integration_evaluation_should_document_non_adoption_boundary()
+    {
+        // Arrange
+        var repositoryRoot = GetRepositoryRoot();
+        var evaluationPath = Path.Combine(repositoryRoot, "docs", "PLATFORM_SERVICE_INTEGRATION_EVALUATION.md");
+        var appHostReadmePath = Path.Combine(repositoryRoot, "src", "ViajantesTurismo.AppHost", "README.md");
+
+        // Act
+        var evaluationDocExists = File.Exists(evaluationPath);
+
+        // Assert
+        evaluationDocExists.ShouldBeTrue();
+
+        var evaluationText = File.ReadAllText(evaluationPath);
+        var appHostReadmeText = File.ReadAllText(appHostReadmePath);
+
+        evaluationText.ShouldContain("This document records the current evaluation posture for Epic #903.", StringComparison.Ordinal);
+        evaluationText.ShouldContain("No candidate service is adopted by this document.", StringComparison.Ordinal);
+        evaluationText.ShouldContain(
+            "Security, privacy, validation, testing, and operations implications must be documented before implementation.",
+            StringComparison.Ordinal);
+        appHostReadmeText.ShouldContain(
+            "Candidate platform-service integrations tracked under Epic #903 are evaluation-only until separately adopted.",
+            StringComparison.Ordinal);
+    }
+
+    [Fact]
     public void Generated_architecture_diagram_markers_should_exist_once()
     {
         // Arrange

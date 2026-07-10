@@ -32,6 +32,14 @@ projects, and reusable service defaults belong in `ViajantesTurismo.ServiceDefau
 - **Grafana LGTM observability stack**: opt-in local telemetry backend; enabled only when
   `ASPIRE_ENABLE_OBSERVABILITY_STACK=1` is set before AppHost starts
 
+### Candidate Platform Services
+
+Candidate platform-service integrations tracked under Epic #903 are evaluation-only until separately adopted.
+The evaluation lives in [`docs/PLATFORM_SERVICE_INTEGRATION_EVALUATION.md`](../../docs/PLATFORM_SERVICE_INTEGRATION_EVALUATION.md).
+
+Do not add candidate packages, AppHost resources, containers, or service wiring here unless a separate
+adoption issue identifies the current use case, tests, security/privacy rules, and operations model.
+
 ## Service Dependencies
 
 ```text
