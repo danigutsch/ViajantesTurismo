@@ -5,10 +5,7 @@ namespace ViajantesTurismo.Management.Web;
 
 internal static class ManagementWebEndpoints
 {
-    private const string ManagementRobotsTxt = """
-        User-agent: *
-        Disallow: /
-        """;
+    private const string ManagementRobotsTxt = "User-agent: *\nDisallow: /";
 
     internal static IEndpointRouteBuilder MapManagementWebEndpoints(this IEndpointRouteBuilder app)
     {

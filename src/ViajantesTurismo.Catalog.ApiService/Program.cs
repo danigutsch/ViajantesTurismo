@@ -3,10 +3,7 @@ using ViajantesTurismo.Catalog.ApiService;
 using ViajantesTurismo.Catalog.Infrastructure;
 using ViajantesTurismo.ServiceDefaults;
 
-const string ApiRobotsTxt = """
-    User-agent: *
-    Disallow: /
-    """;
+const string ApiRobotsTxt = "User-agent: *\nDisallow: /";
 
 var builder = WebApplication.CreateSlimBuilder(args);
 

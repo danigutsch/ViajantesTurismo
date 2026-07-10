@@ -5,10 +5,7 @@ namespace ViajantesTurismo.Public.Web;
 
 internal static class PublicWebEndpoints
 {
-    private const string PublicRobotsTxt = """
-        User-agent: *
-        Allow: /
-        """;
+    private const string PublicRobotsTxt = "User-agent: *\nAllow: /";
 
     internal static IEndpointRouteBuilder MapPublicWebEndpoints(this IEndpointRouteBuilder app)
     {
