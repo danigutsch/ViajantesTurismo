@@ -236,4 +236,27 @@ public sealed class CatalogApiCachingTests
         // Assert
         response.StatusCode.ShouldBe(HttpStatusCode.BadRequest);
     }
+
+    [Theory]
+    [InlineData("/public/catalog/tours/missing-tour")]
+    [InlineData("/public/catalog/content/missing-content?culture=en-US")]
+    public async Task Missing_public_catalog_reads_are_not_cacheable(string path)
+    {
+        // Arrange
+        var cancellationToken = TestContext.Current.CancellationToken;
+        var contentStore = new TestPublicContentStore();
+        await contentStore.SaveContent(CatalogApiCachingTestData.CreatePublishedContent("Published content"), cancellationToken);
+        await using var factory = CatalogApiTestHost.Create(new TestCatalogTourReadModelStore(), contentStore);
+        using var client = factory.CreateClient();
+
+        // Act
+        using var response = await client.GetAsync(new Uri(path, UriKind.Relative), cancellationToken);
+
+        // Assert
+        response.StatusCode.ShouldBe(HttpStatusCode.NotFound);
+        var cacheControl = response.Headers.CacheControl.ShouldNotBeNull();
+        cacheControl.NoStore.ShouldBeTrue();
+        response.Headers.GetValues("Pragma").ShouldHaveSingleItem().ShouldBe("no-cache");
+        response.Content.Headers.GetValues("Expires").ShouldHaveSingleItem().ShouldBe("Thu, 01 Jan 1970 00:00:00 GMT");
+    }
 }

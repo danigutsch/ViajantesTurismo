@@ -76,6 +76,7 @@ internal static class CatalogEndpoints
         var tour = await store.GetPublishedTourBySlug(slug, ct);
         if (tour is null)
         {
+            CatalogHttpCache.SetNoStore(httpContext);
             return Results.NotFound();
         }
 
@@ -106,12 +107,14 @@ internal static class CatalogEndpoints
         var content = await store.GetContent(key, ct);
         if (content is null || !content.IsPubliclyVisible)
         {
+            CatalogHttpCache.SetNoStore(httpContext);
             return Results.NotFound();
         }
 
         var variant = content.FindPublicVariant(requestedLanguage);
         if (variant is null)
         {
+            CatalogHttpCache.SetNoStore(httpContext);
             return Results.NotFound();
         }
 
