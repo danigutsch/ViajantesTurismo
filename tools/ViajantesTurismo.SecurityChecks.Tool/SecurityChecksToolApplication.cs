@@ -22,27 +22,11 @@ internal static class SecurityChecksToolApplication
             Console.Out.WriteLine(CurrentBaselineMessage);
             return 0;
         }
-        catch (InvalidOperationException error)
-        {
-            Console.Error.WriteLine(ErrorPrefix + error.Message);
-            return 1;
-        }
-        catch (ArgumentException error)
-        {
-            Console.Error.WriteLine(ErrorPrefix + error.Message);
-            return 1;
-        }
-        catch (IOException error)
-        {
-            Console.Error.WriteLine(ErrorPrefix + error.Message);
-            return 1;
-        }
-        catch (NotSupportedException error)
-        {
-            Console.Error.WriteLine(ErrorPrefix + error.Message);
-            return 1;
-        }
-        catch (UnauthorizedAccessException error)
+        catch (Exception error) when (error is InvalidOperationException
+            or ArgumentException
+            or IOException
+            or NotSupportedException
+            or UnauthorizedAccessException)
         {
             Console.Error.WriteLine(ErrorPrefix + error.Message);
             return 1;
