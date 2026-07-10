@@ -147,6 +147,8 @@ build_projects() {
     local solution_name="${slice_slug}-build"
     local solution_file=""
 
+    rm -f "TestResults/${solution_name}.sln" "TestResults/${solution_name}.slnx"
+
     if ! dotnet new sln --name "${solution_name}" --output TestResults --force; then
         return 1
     fi
