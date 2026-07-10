@@ -96,11 +96,13 @@ internal static class CatalogEndpoints
     {
         if (string.IsNullOrWhiteSpace(key))
         {
+            CatalogHttpCache.SetNoStore(httpContext);
             return Results.BadRequest();
         }
 
         if (!TryGetPublicContentLanguage(language, culture, out var requestedLanguage))
         {
+            CatalogHttpCache.SetNoStore(httpContext);
             return Results.BadRequest();
         }
 
