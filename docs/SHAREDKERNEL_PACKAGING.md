@@ -141,6 +141,9 @@ Use `tools/` for repository automation such as release, compatibility, code-fix,
 commands. Use `src/SharedKernel/` only for reusable library APIs that consumers reference at runtime
 or from tests. A command that orchestrates repository files, GitHub Actions artifacts, or `dotnet`
 processes belongs under `tools/`, even when it primarily supports SharedKernel packages.
+Reusable release/versioning rules, package-feed metadata checks, and public API baseline checks belong
+in `src/SharedKernel/SharedKernel.Versioning`; tool projects should delegate to that library after
+parsing CLI arguments and before writing command output.
 
 | Package ID | Command |
 | --- | --- |
