@@ -111,16 +111,76 @@ run_with_log() {
     return "${exit_code}"
 }
 
-build_projects() {
-    local project_path
-
-    for project_path in "$@"; do
-        if ! dotnet build --no-restore "${project_path}"; then
-            return 1
+get_test_project_parallelism() {
+    if [[ -n "${CI_TEST_PROJECT_PARALLELISM:-}" ]]; then
+        if [[ "${CI_TEST_PROJECT_PARALLELISM}" =~ ^[1-9][0-9]*$ ]]; then
+            printf '%s\n' "${CI_TEST_PROJECT_PARALLELISM}"
+            return 0
         fi
-    done
 
-    return 0
+        printf 'CI_TEST_PROJECT_PARALLELISM must be a positive integer; received %q.\n' \
+            "${CI_TEST_PROJECT_PARALLELISM}" >&2
+        return 1
+    fi
+
+    if command -v nproc > /dev/null 2>&1; then
+        nproc
+        return 0
+    fi
+
+    getconf _NPROCESSORS_ONLN 2> /dev/null || printf '2\n'
+}
+
+make_slice_slug() {
+    local value="$1"
+
+    value="$(printf '%s' "${value}" | tr '[:upper:]' '[:lower:]' | tr -c '[:alnum:]-' '-')"
+
+    if [[ -z "${value//-/}" ]]; then
+        value="slice"
+    fi
+
+    printf '%s\n' "${value}"
+}
+
+build_projects() {
+    local max_parallel
+    max_parallel="$(get_test_project_parallelism)"
+
+    if [[ -z "${max_parallel}" ]]; then
+        return 1
+    fi
+
+    if [[ $# -eq 1 ]]; then
+        echo "Building 1 test project as one MSBuild graph with up to ${max_parallel} node(s)."
+        dotnet build "$1" --no-restore -- "-maxcpucount:${max_parallel}"
+        return
+    fi
+
+    local solution_name="${slice_slug}-build"
+    local solution_file=""
+
+    rm -f "TestResults/${solution_name}.sln" "TestResults/${solution_name}.slnx"
+
+    if ! dotnet new sln --name "${solution_name}" --output TestResults --force; then
+        return 1
+    fi
+
+    if [[ -f "TestResults/${solution_name}.slnx" ]]; then
+        solution_file="TestResults/${solution_name}.slnx"
+    elif [[ -f "TestResults/${solution_name}.sln" ]]; then
+        solution_file="TestResults/${solution_name}.sln"
+    else
+        echo "Temporary solution was not created for ${slice_name}." >&2
+        return 1
+    fi
+
+    if ! dotnet sln "${solution_file}" add "$@"; then
+        return 1
+    fi
+
+    echo "Building $# test projects as one MSBuild graph with up to ${max_parallel} node(s)."
+    dotnet build "${solution_file}" --no-restore -- "-maxcpucount:${max_parallel}"
 }
 
 prepare_openapi_artifacts() {
@@ -458,7 +518,7 @@ main() {
         esac
     done
 
-    slice_slug="$(printf '%s' "${slice_name}" | tr '[:upper:]' '[:lower:]' | tr ' ' '-')"
+    slice_slug="$(make_slice_slug "${slice_name}")"
 
     build_log="TestResults/${slice_slug}-build.log"
     openapi_artifacts_log="TestResults/${slice_slug}-openapi-artifacts.log"

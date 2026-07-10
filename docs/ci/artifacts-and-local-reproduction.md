@@ -64,34 +64,17 @@ All CI commands map directly to local developer commands.
 # From repository root
 dotnet restore ViajantesTurismo.slnx
 dotnet tool restore
-dotnet build ViajantesTurismo.slnx --no-restore
-bash scripts/install-playwright.sh
 dotnet dev-certs https --trust || true
 export SSL_CERT_DIR="$HOME/.aspnet/dev-certs/trust"
 bash scripts/run-ci-test-slice.sh \
   --slice-name "Fast Validation" \
-  tests/ViajantesTurismo.Admin.UnitTests/ViajantesTurismo.Admin.UnitTests.csproj \
-  tests/ViajantesTurismo.Admin.ContractTests/ViajantesTurismo.Admin.ContractTests.csproj \
-  tests/ViajantesTurismo.ArchitectureTests/ViajantesTurismo.ArchitectureTests.csproj \
-  tests/SharedKernel.BuildingBlocks.Tests/SharedKernel.BuildingBlocks.Tests.csproj \
-  tests/SharedKernel.InputNormalization.Tests/SharedKernel.InputNormalization.Tests.csproj \
-  tests/SharedKernel.HttpClients.Tests/SharedKernel.HttpClients.Tests.csproj \
-  tests/ViajantesTurismo.ServiceDefaults.Tests/ViajantesTurismo.ServiceDefaults.Tests.csproj \
-  tests/ViajantesTurismo.Management.WebTests/ViajantesTurismo.Management.WebTests.csproj \
-  tests/ViajantesTurismo.Admin.BehaviorTests/ViajantesTurismo.Admin.BehaviorTests.csproj \
-  tests/SharedKernel.Functional.Tests/SharedKernel.Functional.Tests.csproj \
-  tests/SharedKernel.OpenApi.Tests/SharedKernel.OpenApi.Tests.csproj \
-  tests/SharedKernel.Observability.Tests/SharedKernel.Observability.Tests.csproj \
-  tests/SharedKernel.Mediator.Tests/SharedKernel.Mediator.Tests.csproj \
-  tests/SharedKernel.Mediator.Analyzers.Tests/SharedKernel.Mediator.Analyzers.Tests.csproj \
-  tests/SharedKernel.Style.Analyzers.Tests/SharedKernel.Style.Analyzers.Tests.csproj \
-  tests/SharedKernel.Testing.Analyzers.Tests/SharedKernel.Testing.Analyzers.Tests.csproj \
-  tests/SharedKernel.Style.CodeFixes.Tests/SharedKernel.Style.CodeFixes.Tests.csproj
+  --projects-file scripts/ci-test-slices/fast-validation.txt
 ```
 
-`scripts/run-ci-test-slice.sh` is a post-restore helper. It builds only the selected test
-projects, runs them with coverage, and records per-slice timing information. Aggregated
-HTML coverage is generated once later by the `SonarCloud` job.
+`scripts/run-ci-test-slice.sh` is a post-restore helper. It builds single-project slices directly,
+builds multi-project slices through one temporary solution, runs them with coverage, and records
+per-slice timing information. Aggregated HTML coverage is generated once later by the `SonarCloud`
+job.
 
 ### Admin Integration Tests job
 
@@ -99,12 +82,11 @@ HTML coverage is generated once later by the `SonarCloud` job.
 # From repository root
 dotnet restore ViajantesTurismo.slnx
 dotnet tool restore
-dotnet build ViajantesTurismo.slnx --no-restore
 dotnet dev-certs https --trust || true
 export SSL_CERT_DIR="$HOME/.aspnet/dev-certs/trust"
 bash scripts/run-ci-test-slice.sh \
   --slice-name "Admin Integration Tests" \
-  tests/ViajantesTurismo.Admin.IntegrationTests/ViajantesTurismo.Admin.IntegrationTests.csproj
+  --projects-file scripts/ci-test-slices/admin-integration.txt
 ```
 
 ### Admin System Tests job
@@ -113,14 +95,12 @@ bash scripts/run-ci-test-slice.sh \
 # From repository root
 dotnet restore ViajantesTurismo.slnx
 dotnet tool restore
-dotnet build ViajantesTurismo.slnx --no-restore
-bash scripts/install-playwright.sh
 dotnet dev-certs https --trust || true
 export SSL_CERT_DIR="$HOME/.aspnet/dev-certs/trust"
 bash scripts/run-ci-test-slice.sh \
   --slice-name "Admin System Tests" \
   --install-playwright \
-  tests/ViajantesTurismo.Admin.SystemTests/ViajantesTurismo.Admin.SystemTests.csproj
+  --projects-file scripts/ci-test-slices/admin-system.txt
 ```
 
 ### Mediator Heavy Tests job
@@ -129,14 +109,11 @@ bash scripts/run-ci-test-slice.sh \
 # From repository root
 dotnet restore ViajantesTurismo.slnx
 dotnet tool restore
-dotnet build ViajantesTurismo.slnx --no-restore
 dotnet dev-certs https --trust || true
 export SSL_CERT_DIR="$HOME/.aspnet/dev-certs/trust"
 bash scripts/run-ci-test-slice.sh \
   --slice-name "Mediator Heavy Tests" \
-  tests/SharedKernel.Mediator.PackageConsumptionTests/SharedKernel.Mediator.PackageConsumptionTests.csproj \
-  tests/SharedKernel.Mediator.GeneratorTests/SharedKernel.Mediator.GeneratorTests.csproj \
-  tests/SharedKernel.Mediator.CodeFixes.Tests/SharedKernel.Mediator.CodeFixes.Tests.csproj
+  --projects-file scripts/ci-test-slices/mediator-heavy.txt
 ```
 
 To reproduce the SonarCloud analysis flow locally after configuring the required

@@ -140,9 +140,14 @@ Test-slice project membership is now centralized under `scripts/ci-test-slices/*
 restore, build, test, and Sonar coverage inputs for each slice stay aligned instead of
 duplicating project lists in multiple workflow locations.
 
-When a slice contains more than one project, `scripts/collect-test-coverage.sh` runs those
-test projects in parallel up to the runner CPU count. Set `CI_TEST_PROJECT_PARALLELISM` only
-when diagnosing local resource pressure or a runner-specific bottleneck.
+Project order in those slice files is also a scheduling hint for bounded local runs: keep slower
+projects first so the parallel test worker pool does not leave long-running projects until the end.
+
+When a slice contains more than one project, `scripts/run-ci-test-slice.sh` builds the selected
+test projects through one temporary solution so MSBuild owns graph scheduling. It then uses
+`scripts/collect-test-coverage.sh` to run those test projects in parallel up to the runner CPU
+count. Set `CI_TEST_PROJECT_PARALLELISM` only when diagnosing local resource pressure or a
+runner-specific bottleneck.
 
 Lane placement follows [ADR-030: CI Test Lane Selection](../adr/20260629-ci-test-lane-selection.md).
 Benchmark locally with `scripts/benchmark-local-validation.sh` before changing CI slice membership.
