@@ -139,9 +139,18 @@ build_projects() {
     fi
 
     local solution_name="${slice_slug}-build"
-    local solution_file="TestResults/${solution_name}.slnx"
+    local solution_file=""
 
     if ! dotnet new sln --name "${solution_name}" --output TestResults --force; then
+        return 1
+    fi
+
+    if [[ -f "TestResults/${solution_name}.slnx" ]]; then
+        solution_file="TestResults/${solution_name}.slnx"
+    elif [[ -f "TestResults/${solution_name}.sln" ]]; then
+        solution_file="TestResults/${solution_name}.sln"
+    else
+        echo "Temporary solution was not created for ${slice_name}." >&2
         return 1
     fi
 
