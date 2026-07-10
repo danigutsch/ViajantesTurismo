@@ -66,7 +66,7 @@ internal static partial class LayerDependencyTestsHelpers
             .Where(HasCoreProjectNameSegment)
             .Select(filePath =>
                 $"{Path.GetRelativePath(repositoryRoot, filePath).Replace(Path.DirectorySeparatorChar, '/')}: "
-                + $"{Path.GetFileNameWithoutExtension(filePath)} uses Core as a package-name segment")
+                + $"{Path.GetFileNameWithoutExtension(filePath)} uses Core as a project-name segment")
             .ToArray();
     }
 
