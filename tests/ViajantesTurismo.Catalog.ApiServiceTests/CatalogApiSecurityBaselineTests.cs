@@ -115,11 +115,11 @@ public sealed class CatalogApiSecurityBaselineTests
         // Act
         for (var requestNumber = 0; requestNumber < 60; requestNumber++)
         {
-            using var allowedResponse = await client.GetAsync(new Uri("/public/catalog/theme", UriKind.Relative), TestContext.Current.CancellationToken);
+            using var allowedResponse = await client.GetAsync(new Uri("/api/v1/public/catalog/theme", UriKind.Relative), TestContext.Current.CancellationToken);
             allowedResponse.StatusCode.ShouldBe(HttpStatusCode.OK);
         }
 
-        using var limitedResponse = await client.GetAsync(new Uri("/public/catalog/theme", UriKind.Relative), TestContext.Current.CancellationToken);
+        using var limitedResponse = await client.GetAsync(new Uri("/api/v1/public/catalog/theme", UriKind.Relative), TestContext.Current.CancellationToken);
 
         // Assert
         limitedResponse.StatusCode.ShouldBe(HttpStatusCode.TooManyRequests);

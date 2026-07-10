@@ -8,6 +8,7 @@ namespace ViajantesTurismo.Catalog.Contracts;
 /// </summary>
 public sealed class PublicCatalogApiClient(HttpClient httpClient) : IPublicCatalogApiClient
 {
+    private const string RoutePrefix = "/api/v1/public/catalog";
     private static readonly PublicCatalogApiClientJsonContext Json = PublicCatalogApiClientJsonContext.Default;
 
     /// <inheritdoc />
@@ -15,7 +16,7 @@ public sealed class PublicCatalogApiClient(HttpClient httpClient) : IPublicCatal
     {
         List<CatalogTourDto>? tours = null;
 
-        await foreach (var tour in httpClient.GetFromJsonAsAsyncEnumerable("/public/catalog/tours", Json.CatalogTourDto, ct).ConfigureAwait(false))
+        await foreach (var tour in httpClient.GetFromJsonAsAsyncEnumerable($"{RoutePrefix}/tours", Json.CatalogTourDto, ct).ConfigureAwait(false))
         {
             if (tour is null)
             {
@@ -35,7 +36,7 @@ public sealed class PublicCatalogApiClient(HttpClient httpClient) : IPublicCatal
         ArgumentNullException.ThrowIfNull(slug);
 
         var escapedSlug = Uri.EscapeDataString(slug);
-        using var response = await httpClient.GetAsync(new Uri($"/public/catalog/tours/{escapedSlug}", UriKind.Relative), ct).ConfigureAwait(false);
+        using var response = await httpClient.GetAsync(new Uri($"{RoutePrefix}/tours/{escapedSlug}", UriKind.Relative), ct).ConfigureAwait(false);
         if (response.StatusCode == HttpStatusCode.NotFound)
         {
             return null;
@@ -53,7 +54,7 @@ public sealed class PublicCatalogApiClient(HttpClient httpClient) : IPublicCatal
         var escapedKey = EscapePath(key);
         var escapedCulture = string.IsNullOrWhiteSpace(culture) ? "en-US" : Uri.EscapeDataString(culture);
         using var response = await httpClient.GetAsync(
-            new Uri($"/public/catalog/content/{escapedKey}?culture={escapedCulture}", UriKind.Relative),
+            new Uri($"{RoutePrefix}/content/{escapedKey}?culture={escapedCulture}", UriKind.Relative),
             ct).ConfigureAwait(false);
         if (response.StatusCode == HttpStatusCode.NotFound)
         {
@@ -67,7 +68,7 @@ public sealed class PublicCatalogApiClient(HttpClient httpClient) : IPublicCatal
     /// <inheritdoc />
     public async Task<PublicThemeSettingsDto> GetThemeSettings(CancellationToken ct)
     {
-        var theme = await httpClient.GetFromJsonAsync("/public/catalog/theme", Json.PublicThemeSettingsDto, ct).ConfigureAwait(false);
+        var theme = await httpClient.GetFromJsonAsync($"{RoutePrefix}/theme", Json.PublicThemeSettingsDto, ct).ConfigureAwait(false);
         return theme ?? throw new InvalidOperationException("Catalog returned an empty public theme response.");
     }
 

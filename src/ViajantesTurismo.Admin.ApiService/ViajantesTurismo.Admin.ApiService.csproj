@@ -22,6 +22,7 @@
         <ProjectReference Include="..\SharedKernel\SharedKernel.Results\SharedKernel.Results.csproj"/>
         <ProjectReference Include="..\SharedKernel\SharedKernel.Results.AspNet\SharedKernel.Results.AspNet.csproj"/>
         <ProjectReference Include="..\SharedKernel\SharedKernel.AspNetCore\SharedKernel.AspNetCore.csproj"/>
+        <ProjectReference Include="..\SharedKernel\SharedKernel.ApiVersioning.AspNetCore\SharedKernel.ApiVersioning.AspNetCore.csproj"/>
         <ProjectReference Include="..\SharedKernel\SharedKernel.OpenApi\SharedKernel.OpenApi.csproj"/>
     </ItemGroup>
 
@@ -37,12 +38,23 @@
                 <SourcePath>$(OpenApiDocumentsDirectory)/$(AssemblyName)_%(Identity).json</SourcePath>
                 <TargetPath>$(MSBuildProjectDirectory)/../ViajantesTurismo.Admin.Contracts/OpenApi/%(Identity).openapi.json</TargetPath>
             </GeneratedOpenApiArtifact>
+            <GeneratedOpenApiArtifact Include="v1">
+                <SourcePath>$(OpenApiDocumentsDirectory)/$(AssemblyName).json</SourcePath>
+                <TargetPath>$(MSBuildProjectDirectory)/../ViajantesTurismo.Admin.Contracts/OpenApi/v1.openapi.json</TargetPath>
+            </GeneratedOpenApiArtifact>
         </ItemGroup>
 
         <MakeDir Directories="$(MSBuildProjectDirectory)/../ViajantesTurismo.Admin.Contracts/OpenApi" />
         <Copy
             SourceFiles="@(GeneratedOpenApiArtifact->'%(SourcePath)')"
             DestinationFiles="@(GeneratedOpenApiArtifact->'%(TargetPath)')"
+            SkipUnchangedFiles="true" />
+    </Target>
+
+    <Target Name="CopyAdminVersionOpenApiGeneratedAlias" AfterTargets="GenerateOpenApiDocuments" Condition="'$(GenerateAdminOpenApiArtifacts)' == 'true'">
+        <Copy
+            SourceFiles="$(OpenApiDocumentsDirectory)/$(AssemblyName).json"
+            DestinationFiles="$(OpenApiDocumentsDirectory)/$(AssemblyName)_v1.json"
             SkipUnchangedFiles="true" />
     </Target>
 

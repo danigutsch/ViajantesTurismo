@@ -15,6 +15,12 @@ internal static class AdminOpenApiDocuments
     {
         ArgumentNullException.ThrowIfNull(services);
 
-        services.AddBoundaryOpenApiDocuments(AdminRouteGroupExtensions.OpenApiDocumentNames);
+        services.AddBoundaryOpenApiDocuments(
+        [
+            new OpenApiBoundaryDocument("tours", "api/v1/tours"),
+            new OpenApiBoundaryDocument("customers", "api/v1/customers"),
+            new OpenApiBoundaryDocument("bookings", "api/v1/bookings")
+        ]);
+        services.AddApiVersionOpenApiDocuments(AdminRouteGroupExtensions.ApiVersions);
     }
 }

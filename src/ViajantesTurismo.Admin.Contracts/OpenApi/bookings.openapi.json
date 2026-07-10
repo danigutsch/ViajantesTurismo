@@ -5,7 +5,7 @@
     "version": "1.0.0"
   },
   "paths": {
-    "/bookings": {
+    "/api/v1/bookings": {
       "get": {
         "tags": [
           "Bookings"
@@ -90,7 +90,7 @@
         }
       }
     },
-    "/bookings/{id}": {
+    "/api/v1/bookings/{id}": {
       "get": {
         "tags": [
           "Bookings"
@@ -187,7 +187,7 @@
         }
       }
     },
-    "/bookings/tour/{tourId}": {
+    "/api/v1/bookings/tour/{tourId}": {
       "get": {
         "tags": [
           "Bookings"
@@ -223,7 +223,7 @@
         }
       }
     },
-    "/bookings/customer/{customerId}": {
+    "/api/v1/bookings/customer/{customerId}": {
       "get": {
         "tags": [
           "Bookings"
@@ -259,7 +259,7 @@
         }
       }
     },
-    "/bookings/{id}/discount": {
+    "/api/v1/bookings/{id}/discount": {
       "put": {
         "tags": [
           "Bookings"
@@ -332,7 +332,7 @@
         }
       }
     },
-    "/bookings/{id}/details": {
+    "/api/v1/bookings/{id}/details": {
       "put": {
         "tags": [
           "Bookings"
@@ -405,7 +405,7 @@
         }
       }
     },
-    "/bookings/{id}/cancel": {
+    "/api/v1/bookings/{id}/cancel": {
       "post": {
         "tags": [
           "Bookings"
@@ -458,7 +458,7 @@
         }
       }
     },
-    "/bookings/{id}/confirm": {
+    "/api/v1/bookings/{id}/confirm": {
       "post": {
         "tags": [
           "Bookings"
@@ -511,7 +511,7 @@
         }
       }
     },
-    "/bookings/{id}/notes": {
+    "/api/v1/bookings/{id}/notes": {
       "patch": {
         "tags": [
           "Bookings"
@@ -574,7 +574,7 @@
         }
       }
     },
-    "/bookings/{id}/complete": {
+    "/api/v1/bookings/{id}/complete": {
       "post": {
         "tags": [
           "Bookings"
@@ -637,7 +637,7 @@
         }
       }
     },
-    "/bookings/{id}/payments": {
+    "/api/v1/bookings/{id}/payments": {
       "post": {
         "tags": [
           "Bookings"

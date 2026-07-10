@@ -67,7 +67,7 @@ public sealed class FakeToursApiClient : IToursApiClient
 
         _tours.Add(newTour);
 
-        return Task.FromResult(ContractCommandOutcome.Succeeded(HttpStatusCode.Created, new Uri($"/tours/{newTour.Id}", UriKind.Relative)));
+        return Task.FromResult(ContractCommandOutcome.Succeeded(HttpStatusCode.Created, new Uri($"/api/v1/tours/{newTour.Id}", UriKind.Relative)));
     }
 
     public Task UpdateTour(Guid id, UpdateTourDto dto, CancellationToken cancellationToken)

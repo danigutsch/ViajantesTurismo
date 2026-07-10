@@ -9,6 +9,7 @@ namespace ViajantesTurismo.Admin.ContractTests.Tours;
 /// </summary>
 internal static class ToursOpenApiDocumentClient
 {
+    private const string RoutePrefix = "/api/v1/tours";
     private static readonly JsonSerializerOptions SerializerOptions = new(JsonSerializerDefaults.Web);
 
     /// <summary>
@@ -38,14 +39,14 @@ internal static class ToursOpenApiDocumentClient
             throw new InvalidOperationException("The tours OpenAPI document is incomplete.");
         }
 
-        if (!document.Paths.TryGetValue("/tours", out var toursPath) ||
+        if (!document.Paths.TryGetValue(RoutePrefix, out var toursPath) ||
             toursPath.Get is null ||
             toursPath.Post is null)
         {
             throw new InvalidOperationException("The tours collection path is missing required operations.");
         }
 
-        if (!document.Paths.TryGetValue("/tours/{id}", out var tourByIdPath) ||
+        if (!document.Paths.TryGetValue($"{RoutePrefix}/{{id}}", out var tourByIdPath) ||
             tourByIdPath.Get is null ||
             tourByIdPath.Put is null)
         {

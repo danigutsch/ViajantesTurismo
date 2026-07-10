@@ -27,9 +27,9 @@ public sealed class PublicThemeApiClientTests
         var theme = await sut.GetTheme(Xunit.TestContext.Current.CancellationToken);
 
         // Assert
-        Assert.Equal("/catalog/public-theme", requestPath);
-        Assert.Equal("#112233", theme.PrimaryColor);
-        Assert.Equal("Inter", theme.HeadingFontFamily);
+        requestPath.ShouldBe("/api/v1/catalog/public-theme");
+        theme.PrimaryColor.ShouldBe("#112233");
+        theme.HeadingFontFamily.ShouldBe("Inter");
     }
 
     [Fact]
@@ -66,7 +66,7 @@ public sealed class PublicThemeApiClientTests
         var theme = await sut.SaveTheme(request, Xunit.TestContext.Current.CancellationToken);
 
         // Assert
-        Assert.Equal("/catalog/public-theme", requestPath);
-        Assert.Equal("Verdana", theme.BodyFontFamily);
+        requestPath.ShouldBe("/api/v1/catalog/public-theme");
+        theme.BodyFontFamily.ShouldBe("Verdana");
     }
 }

@@ -118,7 +118,7 @@ internal static class CustomerEndpoints
             BikeType = customerDto.PhysicalInfo.BikeType
         };
 
-        return TypedResults.Created($"/customers/{result.Value}", getCustomerDto);
+        return TypedResults.Created($"/api/v1/customers/{result.Value}", getCustomerDto);
     }
 
     private static async Task<Results<NoContent, NotFound<ProblemDetails>, ValidationProblem>> UpdateCustomer(

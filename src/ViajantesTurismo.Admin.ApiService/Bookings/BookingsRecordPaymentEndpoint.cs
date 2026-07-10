@@ -53,7 +53,7 @@ internal static class BookingsRecordPaymentEndpoint
             id,
             paymentId,
             queryService,
-            payment => TypedResults.Created($"/bookings/{id}/payments/{paymentId}", payment),
+            payment => TypedResults.Created($"/api/v1/bookings/{id}/payments/{paymentId}", payment),
             bookingId => BookingErrors.BookingNotFound(bookingId).ToNotFound(),
             missingPaymentId => PaymentErrors.PaymentNotFound(missingPaymentId).ToNotFound(),
             ct);

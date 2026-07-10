@@ -1,3 +1,4 @@
+using SharedKernel.ApiVersioning;
 using SharedKernel.OpenApi;
 
 namespace ViajantesTurismo.Catalog.ApiService;
@@ -8,12 +9,26 @@ namespace ViajantesTurismo.Catalog.ApiService;
 internal static class CatalogOpenApiDocuments
 {
     /// <summary>
+    /// Gets the Catalog API's current HTTP contract version.
+    /// </summary>
+    public static ApiVersionDefinition CurrentApiVersion { get; } = new(new ApiVersion(1));
+
+    /// <summary>
+    /// Gets the Catalog API's active HTTP contract versions.
+    /// </summary>
+    public static IReadOnlyCollection<ApiVersionDefinition> ApiVersions { get; } =
+    [
+        CurrentApiVersion
+    ];
+
+    /// <summary>
     /// Gets the Catalog API's OpenAPI boundary document names.
     /// </summary>
     public static IReadOnlyCollection<string> OpenApiDocumentNames { get; } =
     [
         "catalog",
-        "public-catalog"
+        "public-catalog",
+        CurrentApiVersion.OpenApiDocumentName
     ];
 
     /// <summary>
@@ -26,8 +41,9 @@ internal static class CatalogOpenApiDocuments
 
         services.AddBoundaryOpenApiDocuments(
         [
-            new OpenApiBoundaryDocument("catalog", "catalog"),
-            new OpenApiBoundaryDocument("public-catalog", "public/catalog")
+            new OpenApiBoundaryDocument("catalog", "api/v1/catalog"),
+            new OpenApiBoundaryDocument("public-catalog", "api/v1/public/catalog")
         ]);
+        services.AddApiVersionOpenApiDocuments(ApiVersions);
     }
 }

@@ -9,6 +9,7 @@ namespace ViajantesTurismo.Catalog.Contracts;
 /// </summary>
 public sealed class CatalogToursApiClient(HttpClient httpClient) : ICatalogToursApiClient
 {
+    private const string RoutePrefix = "/api/v1/catalog";
     private static readonly CatalogToursApiClientJsonContext Json = CatalogToursApiClientJsonContext.Default;
 
     /// <inheritdoc />
@@ -16,7 +17,7 @@ public sealed class CatalogToursApiClient(HttpClient httpClient) : ICatalogTours
     {
         List<CatalogTourDto>? tours = null;
 
-        await foreach (var tour in httpClient.GetFromJsonAsAsyncEnumerable("/catalog/tours", Json.CatalogTourDto, ct).ConfigureAwait(false))
+        await foreach (var tour in httpClient.GetFromJsonAsAsyncEnumerable($"{RoutePrefix}/tours", Json.CatalogTourDto, ct).ConfigureAwait(false))
         {
             if (tour is null)
             {
@@ -35,7 +36,7 @@ public sealed class CatalogToursApiClient(HttpClient httpClient) : ICatalogTours
     {
         ArgumentNullException.ThrowIfNull(request);
 
-        using var response = await httpClient.PutAsJsonAsync($"/catalog/tours/{id}/presentation", request, Json.UpsertCatalogTourPresentationRequest, ct).ConfigureAwait(false);
+        using var response = await httpClient.PutAsJsonAsync($"{RoutePrefix}/tours/{id}/presentation", request, Json.UpsertCatalogTourPresentationRequest, ct).ConfigureAwait(false);
 
         if (response.StatusCode == HttpStatusCode.NotFound)
         {
@@ -50,7 +51,7 @@ public sealed class CatalogToursApiClient(HttpClient httpClient) : ICatalogTours
     /// <inheritdoc />
     public async Task<CatalogTourDto?> GetTour(Guid id, CancellationToken ct)
     {
-        using var response = await httpClient.GetAsync(new Uri($"/catalog/tours/{id}", UriKind.Relative), ct).ConfigureAwait(false);
+        using var response = await httpClient.GetAsync(new Uri($"{RoutePrefix}/tours/{id}", UriKind.Relative), ct).ConfigureAwait(false);
 
         if (response.StatusCode == HttpStatusCode.NotFound)
         {
@@ -67,7 +68,7 @@ public sealed class CatalogToursApiClient(HttpClient httpClient) : ICatalogTours
     {
         ArgumentNullException.ThrowIfNull(request);
 
-        using var response = await httpClient.PostAsJsonAsync($"/catalog/media/images/{id}/accessibility-draft", request, Json.PublicMediaImageAccessibilityDraftRequest, ct).ConfigureAwait(false);
+        using var response = await httpClient.PostAsJsonAsync($"{RoutePrefix}/media/images/{id}/accessibility-draft", request, Json.PublicMediaImageAccessibilityDraftRequest, ct).ConfigureAwait(false);
         if (response.StatusCode == HttpStatusCode.NotFound)
         {
             return null;

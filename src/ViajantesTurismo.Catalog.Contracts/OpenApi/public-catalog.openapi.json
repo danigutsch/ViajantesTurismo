@@ -5,7 +5,7 @@
     "version": "1.0.0"
   },
   "paths": {
-    "/public/catalog/tours": {
+    "/api/v1/public/catalog/tours": {
       "get": {
         "tags": [
           "CatalogEndpoints"
@@ -27,7 +27,7 @@
         }
       }
     },
-    "/public/catalog/tours/{slug}": {
+    "/api/v1/public/catalog/tours/{slug}": {
       "get": {
         "tags": [
           "CatalogEndpoints"
@@ -49,7 +49,7 @@
         }
       }
     },
-    "/public/catalog/content/{key}": {
+    "/api/v1/public/catalog/content/{key}": {
       "get": {
         "tags": [
           "CatalogEndpoints"
@@ -85,7 +85,7 @@
         }
       }
     },
-    "/public/catalog/theme": {
+    "/api/v1/public/catalog/theme": {
       "get": {
         "tags": [
           "CatalogEndpoints"

@@ -56,6 +56,10 @@ public sealed class CreateTourOptions
 /// </summary>
 public static class ApiTestExtensions
 {
+    private const string ToursRoutePrefix = "/api/v1/tours";
+    private const string CustomersRoutePrefix = "/api/v1/customers";
+    private const string BookingsRoutePrefix = "/api/v1/bookings";
+
     private static async Task<T> ReadRequiredJson<T>(
         this HttpResponseMessage response,
         HttpStatusCode expectedStatus
@@ -102,7 +106,7 @@ public static class ApiTestExtensions
             MaxCustomers = resolvedOptions.MaxCustomers
         };
 
-        var response = await client.PostAsJsonAsync("/tours", dto);
+        var response = await client.PostAsJsonAsync(ToursRoutePrefix, dto);
         return await response.ReadRequiredJson<GetTourDto>(HttpStatusCode.Created);
     }
 
@@ -175,7 +179,7 @@ public static class ApiTestExtensions
             }
         };
 
-        var response = await client.PostAsJsonAsync("/customers", dto);
+        var response = await client.PostAsJsonAsync(CustomersRoutePrefix, dto);
         return await response.ReadRequiredJson<GetCustomerDto>(HttpStatusCode.Created);
     }
 
@@ -194,7 +198,7 @@ public static class ApiTestExtensions
             RoomType = RoomTypeDto.SingleOccupancy
         };
 
-        var response = await client.PostAsJsonAsync("/bookings", dto);
+        var response = await client.PostAsJsonAsync(BookingsRoutePrefix, dto);
         return await response.ReadRequiredJson<GetBookingDto>(HttpStatusCode.Created);
     }
 
@@ -208,7 +212,7 @@ public static class ApiTestExtensions
     {
         ArgumentNullException.ThrowIfNull(client);
 
-        var response = await client.GetAsync(new Uri($"/bookings/{bookingId}", UriKind.Relative));
+        var response = await client.GetAsync(new Uri($"{BookingsRoutePrefix}/{bookingId}", UriKind.Relative));
         return await response.ReadRequiredJson<GetBookingDto>(HttpStatusCode.OK);
     }
 
@@ -219,7 +223,7 @@ public static class ApiTestExtensions
     {
         ArgumentNullException.ThrowIfNull(client);
 
-        var response = await client.GetAsync(new Uri("/bookings", UriKind.Relative));
+        var response = await client.GetAsync(new Uri(BookingsRoutePrefix, UriKind.Relative));
         return await response.ReadRequiredJson<GetBookingDto[]>(HttpStatusCode.OK);
     }
 
@@ -230,7 +234,7 @@ public static class ApiTestExtensions
     {
         ArgumentNullException.ThrowIfNull(client);
 
-        var response = await client.GetAsync(new Uri("/tours", UriKind.Relative));
+        var response = await client.GetAsync(new Uri(ToursRoutePrefix, UriKind.Relative));
         return await response.ReadRequiredJson<GetTourDto[]>(HttpStatusCode.OK);
     }
 
@@ -242,7 +246,7 @@ public static class ApiTestExtensions
         ArgumentNullException.ThrowIfNull(client);
 
         var response = await client.PostAsync(
-            new Uri($"/bookings/{bookingId}/confirm", UriKind.Relative), null);
+            new Uri($"{BookingsRoutePrefix}/{bookingId}/confirm", UriKind.Relative), null);
         return await response.ReadRequiredJson<GetBookingDto>(HttpStatusCode.OK);
     }
 
@@ -269,7 +273,7 @@ public static class ApiTestExtensions
         ArgumentNullException.ThrowIfNull(client);
 
         var response = await client.PostAsync(
-            new Uri($"/bookings/{bookingId}/cancel", UriKind.Relative), null);
+            new Uri($"{BookingsRoutePrefix}/{bookingId}/cancel", UriKind.Relative), null);
         return await response.ReadRequiredJson<GetBookingDto>(HttpStatusCode.OK);
     }
 
@@ -296,7 +300,7 @@ public static class ApiTestExtensions
         ArgumentNullException.ThrowIfNull(client);
 
         var response = await client.PostAsync(
-            new Uri($"/bookings/{bookingId}/complete", UriKind.Relative), null);
+            new Uri($"{BookingsRoutePrefix}/{bookingId}/complete", UriKind.Relative), null);
         return await response.ReadRequiredJson<GetBookingDto>(HttpStatusCode.OK);
     }
 
@@ -331,7 +335,7 @@ public static class ApiTestExtensions
         };
 
         var response = await client.PostAsJsonAsync(
-            new Uri($"/bookings/{bookingId}/payments", UriKind.Relative), dto);
+            new Uri($"{BookingsRoutePrefix}/{bookingId}/payments", UriKind.Relative), dto);
         response.EnsureSuccessStatusCode();
     }
 

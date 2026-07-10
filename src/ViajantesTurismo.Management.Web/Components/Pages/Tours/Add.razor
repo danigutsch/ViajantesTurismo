@@ -180,7 +180,7 @@ Bike rental"/>
                 return;
             }
 
-            _createdTourUrl = outcome.Location?.ToString() ?? "/tours";
+            _createdTourUrl = GetTourLocation(outcome.Location);
             _success = true;
         }
         catch (Exception)
@@ -200,6 +200,32 @@ Bike rental"/>
         _success = false;
         _createdTourUrl = null;
         _errorMessage = null;
+    }
+
+    private static string GetTourLocation(Uri? location)
+    {
+        if (location is null)
+        {
+            return "/tours";
+        }
+
+        var localPath = location.IsAbsoluteUri
+            ? location.PathAndQuery
+            : location.OriginalString;
+
+        if (localPath.StartsWith("//", StringComparison.Ordinal))
+        {
+            return "/tours";
+        }
+
+        if (!localPath.StartsWith("/", StringComparison.Ordinal))
+        {
+            localPath = $"/{localPath}";
+        }
+
+        return localPath.StartsWith("/api/v1/tours", StringComparison.Ordinal)
+            ? localPath["/api/v1".Length..]
+            : localPath;
     }
 
     private sealed class TourFormModel : IValidatableObject

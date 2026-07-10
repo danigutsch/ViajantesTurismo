@@ -101,7 +101,7 @@ public sealed class CatalogApiEndpointTests
 
         // Act
         using var response = await client.PutAsJsonAsync(
-            new Uri("/catalog/public-content/home.hero", UriKind.Relative),
+            new Uri("/api/v1/catalog/public-content/home.hero", UriKind.Relative),
             request,
             TestContext.Current.CancellationToken);
 
@@ -122,7 +122,7 @@ public sealed class CatalogApiEndpointTests
         using var client = factory.CreateClient();
 
         // Act
-        using var response = await client.GetAsync(new Uri("/public/catalog/theme", UriKind.Relative), TestContext.Current.CancellationToken);
+        using var response = await client.GetAsync(new Uri("/api/v1/public/catalog/theme", UriKind.Relative), TestContext.Current.CancellationToken);
         var theme = await response.Content.ReadFromJsonAsync<PublicThemeSettingsDto>(TestContext.Current.CancellationToken);
 
         // Assert
@@ -151,10 +151,10 @@ public sealed class CatalogApiEndpointTests
 
         // Act
         using var writeResponse = await client.PutAsJsonAsync(
-            new Uri("/catalog/public-theme", UriKind.Relative),
+            new Uri("/api/v1/catalog/public-theme", UriKind.Relative),
             request,
             TestContext.Current.CancellationToken);
-        using var readResponse = await client.GetAsync(new Uri("/public/catalog/theme", UriKind.Relative), TestContext.Current.CancellationToken);
+        using var readResponse = await client.GetAsync(new Uri("/api/v1/public/catalog/theme", UriKind.Relative), TestContext.Current.CancellationToken);
         var theme = await readResponse.Content.ReadFromJsonAsync<PublicThemeSettingsDto>(TestContext.Current.CancellationToken);
 
         // Assert
@@ -183,7 +183,7 @@ public sealed class CatalogApiEndpointTests
 
         // Act
         using var response = await client.PutAsJsonAsync(
-            new Uri("/catalog/public-theme", UriKind.Relative),
+            new Uri("/api/v1/catalog/public-theme", UriKind.Relative),
             request,
             TestContext.Current.CancellationToken);
 
@@ -209,7 +209,7 @@ public sealed class CatalogApiEndpointTests
 
         // Act
         using var response = await client.PutAsJsonAsync(
-            new Uri("/catalog/public-content/home.hero", UriKind.Relative),
+            new Uri("/api/v1/catalog/public-content/home.hero", UriKind.Relative),
             request,
             TestContext.Current.CancellationToken);
 
@@ -235,7 +235,7 @@ public sealed class CatalogApiEndpointTests
 
         // Act
         using var response = await client.PutAsJsonAsync(
-            new Uri("/catalog/public-content/home.hero", UriKind.Relative),
+            new Uri("/api/v1/catalog/public-content/home.hero", UriKind.Relative),
             request,
             TestContext.Current.CancellationToken);
 
@@ -261,7 +261,7 @@ public sealed class CatalogApiEndpointTests
 
         // Act
         using var response = await client.PutAsync(
-            new Uri("/catalog/public-content/home.hero", UriKind.Relative),
+            new Uri("/api/v1/catalog/public-content/home.hero", UriKind.Relative),
             content,
             TestContext.Current.CancellationToken);
 
@@ -293,7 +293,7 @@ public sealed class CatalogApiEndpointTests
 
         // Act
         using var response = await client.PutAsync(
-            new Uri("/catalog/public-content/home.hero", UriKind.Relative),
+            new Uri("/api/v1/catalog/public-content/home.hero", UriKind.Relative),
             content,
             TestContext.Current.CancellationToken);
 
@@ -318,7 +318,7 @@ public sealed class CatalogApiEndpointTests
 
         // Act
         using var response = await client.PutAsJsonAsync(
-            new Uri("/catalog/public-content/home.hero", UriKind.Relative),
+            new Uri("/api/v1/catalog/public-content/home.hero", UriKind.Relative),
             request,
             TestContext.Current.CancellationToken);
 
@@ -363,7 +363,7 @@ public sealed class CatalogApiEndpointTests
 
         // Act
         using var response = await client.GetAsync(
-            new Uri("/public/catalog/content/home.hero?culture=pt-BR", UriKind.Relative),
+            new Uri("/api/v1/public/catalog/content/home.hero?culture=pt-BR", UriKind.Relative),
             TestContext.Current.CancellationToken);
         var variant = await response.Content.ReadFromJsonAsync<PublicContentVariantDto>(TestContext.Current.CancellationToken);
 
@@ -409,7 +409,7 @@ public sealed class CatalogApiEndpointTests
 
         // Act
         using var response = await client.GetAsync(
-            new Uri("/public/catalog/content/home/hero?culture=en-US", UriKind.Relative),
+            new Uri("/api/v1/public/catalog/content/home/hero?culture=en-US", UriKind.Relative),
             TestContext.Current.CancellationToken);
         var variant = await response.Content.ReadFromJsonAsync<PublicContentVariantDto>(TestContext.Current.CancellationToken);
 
@@ -435,11 +435,11 @@ public sealed class CatalogApiEndpointTests
 
         // Act
         using var writeResponse = await client.PutAsJsonAsync(
-            new Uri("/catalog/public-content/home.hero", UriKind.Relative),
+            new Uri("/api/v1/catalog/public-content/home.hero", UriKind.Relative),
             request,
             TestContext.Current.CancellationToken);
         using var response = await client.GetAsync(
-            new Uri("/public/catalog/content/home.hero?culture=pt-BR", UriKind.Relative),
+            new Uri("/api/v1/public/catalog/content/home.hero?culture=pt-BR", UriKind.Relative),
             TestContext.Current.CancellationToken);
         var variant = await response.Content.ReadFromJsonAsync<PublicContentVariantDto>(TestContext.Current.CancellationToken);
 
@@ -467,7 +467,7 @@ public sealed class CatalogApiEndpointTests
 
         // Act
         using var response = await client.PutAsJsonAsync(
-            new Uri($"/catalog/tours/{Guid.CreateVersion7()}/presentation", UriKind.Relative),
+            new Uri($"/api/v1/catalog/tours/{Guid.CreateVersion7()}/presentation", UriKind.Relative),
             request,
             TestContext.Current.CancellationToken);
 
@@ -524,11 +524,11 @@ public sealed class CatalogApiEndpointTests
 
         // Act
         using var upsertResponse = await client.PutAsJsonAsync(
-            new Uri($"/catalog/media/images/{imageId}", UriKind.Relative),
+            new Uri($"/api/v1/catalog/media/images/{imageId}", UriKind.Relative),
             request,
             TestContext.Current.CancellationToken);
         using var tourResponse = await client.GetAsync(
-            new Uri($"/public/catalog/tours/camino-norte", UriKind.Relative),
+            new Uri($"/api/v1/public/catalog/tours/camino-norte", UriKind.Relative),
             TestContext.Current.CancellationToken);
 
         // Assert
@@ -573,7 +573,7 @@ public sealed class CatalogApiEndpointTests
 
         // Act
         using var response = await client.PutAsJsonAsync(
-            new Uri($"/catalog/media/images/{imageId}", UriKind.Relative),
+            new Uri($"/api/v1/catalog/media/images/{imageId}", UriKind.Relative),
             request,
             TestContext.Current.CancellationToken);
 
@@ -616,7 +616,7 @@ public sealed class CatalogApiEndpointTests
 
         // Act
         using var response = await client.PutAsJsonAsync(
-            new Uri($"/catalog/media/images/{imageId}", UriKind.Relative),
+            new Uri($"/api/v1/catalog/media/images/{imageId}", UriKind.Relative),
             request,
             TestContext.Current.CancellationToken);
 
@@ -656,7 +656,7 @@ public sealed class CatalogApiEndpointTests
 
         // Act
         using var response = await client.PutAsync(
-            new Uri($"/catalog/media/images/{imageId}", UriKind.Relative),
+            new Uri($"/api/v1/catalog/media/images/{imageId}", UriKind.Relative),
             content,
             TestContext.Current.CancellationToken);
 
@@ -695,7 +695,7 @@ public sealed class CatalogApiEndpointTests
 
         // Act
         using var response = await client.PutAsync(
-            new Uri($"/catalog/media/images/{imageId}", UriKind.Relative),
+            new Uri($"/api/v1/catalog/media/images/{imageId}", UriKind.Relative),
             content,
             TestContext.Current.CancellationToken);
 
@@ -736,7 +736,7 @@ public sealed class CatalogApiEndpointTests
 
         // Act
         using var response = await client.PutAsJsonAsync(
-            new Uri($"/catalog/media/images/{imageId}", UriKind.Relative),
+            new Uri($"/api/v1/catalog/media/images/{imageId}", UriKind.Relative),
             request,
             TestContext.Current.CancellationToken);
 
@@ -777,7 +777,7 @@ public sealed class CatalogApiEndpointTests
 
         // Act
         using var response = await client.PutAsync(
-            new Uri($"/catalog/media/images/{imageId}", UriKind.Relative),
+            new Uri($"/api/v1/catalog/media/images/{imageId}", UriKind.Relative),
             content,
             TestContext.Current.CancellationToken);
 
@@ -820,7 +820,7 @@ public sealed class CatalogApiEndpointTests
 
         // Act
         using var response = await client.PutAsJsonAsync(
-            new Uri($"/catalog/media/images/{imageId}", UriKind.Relative),
+            new Uri($"/api/v1/catalog/media/images/{imageId}", UriKind.Relative),
             request,
             TestContext.Current.CancellationToken);
 
@@ -859,7 +859,7 @@ public sealed class CatalogApiEndpointTests
 
         // Act
         using var response = await client.PutAsJsonAsync(
-            new Uri($"/catalog/media/images/{imageId}", UriKind.Relative),
+            new Uri($"/api/v1/catalog/media/images/{imageId}", UriKind.Relative),
             request,
             TestContext.Current.CancellationToken);
 
@@ -902,7 +902,7 @@ public sealed class CatalogApiEndpointTests
 
         // Act
         using var response = await client.PutAsJsonAsync(
-            new Uri($"/catalog/media/images/{imageId}", UriKind.Relative),
+            new Uri($"/api/v1/catalog/media/images/{imageId}", UriKind.Relative),
             request,
             TestContext.Current.CancellationToken);
 
@@ -944,7 +944,7 @@ public sealed class CatalogApiEndpointTests
 
         // Act
         using var response = await client.PutAsJsonAsync(
-            new Uri($"/catalog/media/images/{imageId}", UriKind.Relative),
+            new Uri($"/api/v1/catalog/media/images/{imageId}", UriKind.Relative),
             request,
             TestContext.Current.CancellationToken);
 
@@ -989,7 +989,7 @@ public sealed class CatalogApiEndpointTests
 
         // Act
         using var response = await client.PutAsJsonAsync(
-            new Uri($"/catalog/media/images/{imageId}", UriKind.Relative),
+            new Uri($"/api/v1/catalog/media/images/{imageId}", UriKind.Relative),
             request,
             TestContext.Current.CancellationToken);
 
@@ -1031,7 +1031,7 @@ public sealed class CatalogApiEndpointTests
 
         // Act
         using var response = await client.PutAsJsonAsync(
-            new Uri($"/catalog/media/images/{imageId}", UriKind.Relative),
+            new Uri($"/api/v1/catalog/media/images/{imageId}", UriKind.Relative),
             request,
             TestContext.Current.CancellationToken);
 
@@ -1074,7 +1074,7 @@ public sealed class CatalogApiEndpointTests
 
         // Act
         using var response = await client.PutAsJsonAsync(
-            new Uri($"/catalog/media/images/{imageId}", UriKind.Relative),
+            new Uri($"/api/v1/catalog/media/images/{imageId}", UriKind.Relative),
             request,
             TestContext.Current.CancellationToken);
 
@@ -1117,7 +1117,7 @@ public sealed class CatalogApiEndpointTests
 
         // Act
         using var response = await client.PutAsJsonAsync(
-            new Uri($"/catalog/media/images/{imageId}", UriKind.Relative),
+            new Uri($"/api/v1/catalog/media/images/{imageId}", UriKind.Relative),
             request,
             TestContext.Current.CancellationToken);
 
@@ -1176,7 +1176,7 @@ public sealed class CatalogApiEndpointTests
 
         // Act
         using var response = await client.PutAsJsonAsync(
-            new Uri($"/catalog/media/images/{imageId}", UriKind.Relative),
+            new Uri($"/api/v1/catalog/media/images/{imageId}", UriKind.Relative),
             request,
             TestContext.Current.CancellationToken);
 
@@ -1206,7 +1206,7 @@ public sealed class CatalogApiEndpointTests
 
         // Act
         using var response = await client.PostAsJsonAsync(
-            new Uri($"/catalog/media/images/{image.Id}/accessibility-draft", UriKind.Relative),
+            new Uri($"/api/v1/catalog/media/images/{image.Id}/accessibility-draft", UriKind.Relative),
             new PublicMediaImageAccessibilityDraftRequest { Language = PublicContentLanguageDto.EnUs, Context = "Hero image" },
             TestContext.Current.CancellationToken);
 
@@ -1232,7 +1232,7 @@ public sealed class CatalogApiEndpointTests
 
         // Act
         using var response = await client.PostAsJsonAsync<PublicMediaImageAccessibilityDraftRequest?>(
-            new Uri($"/catalog/media/images/{imageId}/accessibility-draft", UriKind.Relative),
+            new Uri($"/api/v1/catalog/media/images/{imageId}/accessibility-draft", UriKind.Relative),
             null,
             TestContext.Current.CancellationToken);
 
@@ -1250,7 +1250,7 @@ public sealed class CatalogApiEndpointTests
 
         // Act
         using var response = await client.PostAsJsonAsync(
-            new Uri($"/catalog/media/images/{imageId}/accessibility-draft", UriKind.Relative),
+            new Uri($"/api/v1/catalog/media/images/{imageId}/accessibility-draft", UriKind.Relative),
             new PublicMediaImageAccessibilityDraftRequest { Language = PublicContentLanguageDto.None },
             TestContext.Current.CancellationToken);
 
@@ -1271,7 +1271,7 @@ public sealed class CatalogApiEndpointTests
 
         // Act
         using var response = await client.PostAsJsonAsync(
-            new Uri($"/catalog/media/images/{imageId}/accessibility-draft", UriKind.Relative),
+            new Uri($"/api/v1/catalog/media/images/{imageId}/accessibility-draft", UriKind.Relative),
             new PublicMediaImageAccessibilityDraftRequest { Language = PublicContentLanguageDto.EnUs, Latitude = -23.55m },
             TestContext.Current.CancellationToken);
 
@@ -1296,7 +1296,7 @@ public sealed class CatalogApiEndpointTests
 
         // Act
         using var response = await client.PostAsJsonAsync(
-            new Uri($"/catalog/media/images/{image.Id}/accessibility-draft", UriKind.Relative),
+            new Uri($"/api/v1/catalog/media/images/{image.Id}/accessibility-draft", UriKind.Relative),
             new PublicMediaImageAccessibilityDraftRequest { Language = PublicContentLanguageDto.EnUs },
             TestContext.Current.CancellationToken);
 
@@ -1323,7 +1323,7 @@ public sealed class CatalogApiEndpointTests
 
         // Act
         using var response = await client.PostAsJsonAsync(
-            new Uri($"/catalog/media/images/{image.Id}/accessibility-draft", UriKind.Relative),
+            new Uri($"/api/v1/catalog/media/images/{image.Id}/accessibility-draft", UriKind.Relative),
             new PublicMediaImageAccessibilityDraftRequest { Language = PublicContentLanguageDto.EnUs },
             TestContext.Current.CancellationToken);
 
@@ -1388,7 +1388,7 @@ public sealed class CatalogApiEndpointTests
         using var client = factory.CreateClient();
 
         // Act
-        using var response = await client.GetAsync(new Uri("/public/catalog/tours", UriKind.Relative), TestContext.Current.CancellationToken);
+        using var response = await client.GetAsync(new Uri("/api/v1/public/catalog/tours", UriKind.Relative), TestContext.Current.CancellationToken);
 
         // Assert
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
@@ -1433,7 +1433,7 @@ public sealed class CatalogApiEndpointTests
         using var client = factory.CreateClient();
 
         // Act
-        using var response = await client.GetAsync(new Uri("/public/catalog/tours/published-tour", UriKind.Relative), TestContext.Current.CancellationToken);
+        using var response = await client.GetAsync(new Uri("/api/v1/public/catalog/tours/published-tour", UriKind.Relative), TestContext.Current.CancellationToken);
         var tour = await response.Content.ReadFromJsonAsync<CatalogTourDto>(TestContext.Current.CancellationToken);
 
         // Assert
@@ -1485,7 +1485,7 @@ public sealed class CatalogApiEndpointTests
 
         // Act
         using var response = await client.GetAsync(
-            new Uri("/public/catalog/tours/camino-norte", UriKind.Relative),
+            new Uri("/api/v1/public/catalog/tours/camino-norte", UriKind.Relative),
             TestContext.Current.CancellationToken);
 
         // Assert
@@ -1549,14 +1549,14 @@ public sealed class CatalogApiEndpointTests
 
         // Act
         using var upsertResponse = await client.PutAsJsonAsync(
-            new Uri($"/catalog/media/images/{imageId}", UriKind.Relative),
+            new Uri($"/api/v1/catalog/media/images/{imageId}", UriKind.Relative),
             request,
             TestContext.Current.CancellationToken);
         using var publicTourResponse = await client.GetAsync(
-            new Uri("/public/catalog/tours/camino-norte", UriKind.Relative),
+            new Uri("/api/v1/public/catalog/tours/camino-norte", UriKind.Relative),
             TestContext.Current.CancellationToken);
         using var managementImagesResponse = await client.GetAsync(
-            new Uri($"/catalog/tours/{tourId}/images", UriKind.Relative),
+            new Uri($"/api/v1/catalog/tours/{tourId}/images", UriKind.Relative),
             TestContext.Current.CancellationToken);
 
         // Assert
@@ -1597,7 +1597,7 @@ public sealed class CatalogApiEndpointTests
 
         // Act
         using var response = await client.PutAsJsonAsync(
-            new Uri($"/catalog/media/images/{imageId}", UriKind.Relative),
+            new Uri($"/api/v1/catalog/media/images/{imageId}", UriKind.Relative),
             request,
             TestContext.Current.CancellationToken);
 

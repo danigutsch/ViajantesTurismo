@@ -48,7 +48,7 @@ public sealed class CustomersApiClientTests
         var customers = await sut.GetCustomers(Xunit.TestContext.Current.CancellationToken, maxItems: 1);
 
         // Assert
-        requestPath.ShouldBe("/customers");
+        requestPath.ShouldBe("/api/v1/customers");
         var customer = customers.ShouldHaveSingleItem();
         customer.FirstName.ShouldBe("Alice");
     }
@@ -90,7 +90,7 @@ public sealed class CustomersApiClientTests
         var customer = await sut.GetCustomerById(customerId, Xunit.TestContext.Current.CancellationToken);
 
         // Assert
-        requestPath.ShouldBe($"/customers/{customerId}");
+        requestPath.ShouldBe($"/api/v1/customers/{customerId}");
         customer.ShouldBeNull();
     }
 
@@ -128,7 +128,7 @@ public sealed class CustomersApiClientTests
         var outcome = await sut.CreateCustomer(BuildCreateCustomerDto(), Xunit.TestContext.Current.CancellationToken);
 
         // Assert
-        requestPath.ShouldBe("/customers");
+        requestPath.ShouldBe("/api/v1/customers");
         outcome.Kind.ShouldBe(ContractCommandOutcomeKind.Succeeded);
         outcome.StatusCode.ShouldBe(HttpStatusCode.Created);
         outcome.Location.ShouldBe(new Uri("https://management.example/customers/created", UriKind.Absolute));
@@ -311,7 +311,7 @@ public sealed class CustomersApiClientTests
         await sut.UpdateCustomer(customerId, BuildUpdateCustomerDto(), Xunit.TestContext.Current.CancellationToken);
 
         // Assert
-        requestPath.ShouldBe($"/customers/{customerId}");
+        requestPath.ShouldBe($"/api/v1/customers/{customerId}");
         requestMethod.ShouldBe(HttpMethods.Put);
     }
 
@@ -333,7 +333,7 @@ public sealed class CustomersApiClientTests
         var result = await sut.ImportCustomers([1, 2, 3], "customers.csv", Xunit.TestContext.Current.CancellationToken);
 
         // Assert
-        requestPath.ShouldBe("/customers/import");
+        requestPath.ShouldBe("/api/v1/customers/import");
         result.SuccessCount.ShouldBe(1);
     }
 
@@ -359,7 +359,7 @@ public sealed class CustomersApiClientTests
             Xunit.TestContext.Current.CancellationToken);
 
         // Assert
-        requestPath.ShouldBe("/customers/import/commit");
+        requestPath.ShouldBe("/api/v1/customers/import/commit");
         result.SuccessCount.ShouldBe(2);
     }
 }

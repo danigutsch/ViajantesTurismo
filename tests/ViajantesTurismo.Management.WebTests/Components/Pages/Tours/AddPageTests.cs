@@ -149,6 +149,8 @@ public class AddPageTests : BunitContext
         Assert.Contains(buttons, b => b.TextContent.Contains("View Tour Details", StringComparison.Ordinal));
         Assert.Contains(buttons, b => b.TextContent.Contains("Create Another Tour", StringComparison.Ordinal));
         Assert.Contains(buttons, b => b.TextContent.Contains("View All Tours", StringComparison.Ordinal));
+        buttons.ShouldContain(b => b.GetAttribute("href")?.StartsWith("/tours/", StringComparison.Ordinal) == true);
+        buttons.ShouldNotContain(b => b.GetAttribute("href")?.StartsWith("/api/v1/", StringComparison.Ordinal) == true);
     }
 
     [Fact]

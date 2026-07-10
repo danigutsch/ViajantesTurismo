@@ -5,7 +5,7 @@
     "version": "1.0.0"
   },
   "paths": {
-    "/tours": {
+    "/api/v1/tours": {
       "post": {
         "tags": [
           "Tours"
@@ -90,7 +90,7 @@
         }
       }
     },
-    "/tours/{id}": {
+    "/api/v1/tours/{id}": {
       "get": {
         "tags": [
           "Tours"

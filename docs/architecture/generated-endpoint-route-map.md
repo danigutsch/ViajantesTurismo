@@ -11,6 +11,7 @@ Source: `src/**/*.cs` route declarations plus route-group prefixes in
 
 | Method | Route | Endpoint | Audience | Auth metadata | Source |
 | --- | --- | --- | --- | --- | --- |
+| `GET` | `/` | GetErrorDocumentation | management/internal | not declared | `ViajantesTurismo.Admin.ApiService/Errors/ErrorDocumentationEndpoints.cs` |
 | `GET` | `/Error` | inline | public web | not declared | `ViajantesTurismo.Public.Web/PublicWebEndpoints.cs` |
 | `GET` | `/bookings` | GetBookings | management/internal | not declared | `ViajantesTurismo.Admin.ApiService/Bookings/BookingEndpoints.cs` |
 | `POST` | `/bookings` | CreateBooking | management/internal | not declared | `ViajantesTurismo.Admin.ApiService/Bookings/BookingsCreateBookingEndpoint.cs` |
@@ -42,8 +43,6 @@ Source: `src/**/*.cs` route declarations plus route-group prefixes in
 | `POST` | `/customers/import/commit` | CommitImportWithResolutions | management/internal | not declared | `ViajantesTurismo.Admin.ApiService/Customers/CustomerImportEndpoints.cs` |
 | `GET` | `/customers/{id:guid}` | GetCustomerById | management/internal | not declared | `ViajantesTurismo.Admin.ApiService/Customers/CustomerEndpoints.cs` |
 | `PUT` | `/customers/{id:guid}` | UpdateCustomer | management/internal | not declared | `ViajantesTurismo.Admin.ApiService/Customers/CustomerEndpoints.cs` |
-| `GET` | `/docs/errors` | GetErrorDocumentation | management/internal | not declared | `ViajantesTurismo.Admin.ApiService/Errors/ErrorDocumentationEndpoints.cs` |
-| `GET` | `/docs/errors/{identifier}` | GetErrorDocumentationByIdentifier | management/internal | not declared | `ViajantesTurismo.Admin.ApiService/Errors/ErrorDocumentationEndpoints.cs` |
 | `GET` | `/public/catalog/content/{**key}` | GetPublicContent | public API | not declared | `ViajantesTurismo.Catalog.ApiService/CatalogEndpoints.cs` |
 | `GET` | `/public/catalog/theme` | GetPublicTheme | public API | not declared | `ViajantesTurismo.Catalog.ApiService/CatalogEndpoints.cs` |
 | `GET` | `/public/catalog/tours` | GetPublishedTours | public API | not declared | `ViajantesTurismo.Catalog.ApiService/CatalogEndpoints.cs` |
@@ -52,6 +51,7 @@ Source: `src/**/*.cs` route declarations plus route-group prefixes in
 | `POST` | `/tours` | CreateTour | management/internal | not declared | `ViajantesTurismo.Admin.ApiService/Tours/ToursCreateTourEndpoint.cs` |
 | `GET` | `/tours/{id:guid}` | GetTourById | management/internal | not declared | `ViajantesTurismo.Admin.ApiService/Tours/ToursEndpoints.cs` |
 | `PUT` | `/tours/{id:guid}` | UpdateTour | management/internal | not declared | `ViajantesTurismo.Admin.ApiService/Tours/ToursUpdateTourEndpoint.cs` |
+| `GET` | `/{identifier}` | GetErrorDocumentationByIdentifier | management/internal | not declared | `ViajantesTurismo.Admin.ApiService/Errors/ErrorDocumentationEndpoints.cs` |
 <!-- generated:api-endpoints:end -->
 
 ## Notes
