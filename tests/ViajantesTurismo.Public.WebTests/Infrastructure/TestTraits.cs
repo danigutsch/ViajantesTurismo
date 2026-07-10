@@ -13,7 +13,7 @@ public static class TestTraits
     /// <summary>
     /// Category value for security-focused tests.
     /// </summary>
-    public const string SecurityCategory = "security";
+    public const string SecurityCategory = TestTraitValues.SecurityCategory;
 
     /// <summary>
     /// Scope value for web integration tests.

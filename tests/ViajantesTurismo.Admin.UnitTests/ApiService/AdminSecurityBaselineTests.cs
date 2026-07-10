@@ -1,6 +1,7 @@
 using System.Net;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Cors.Infrastructure;
+using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -41,6 +42,7 @@ public sealed class AdminSecurityBaselineTests
     {
         // Arrange
         var builder = WebApplication.CreateSlimBuilder();
+        builder.WebHost.UseUrls("http://127.0.0.1:0");
         builder.Services.AddAdminSecurityBaseline(new ConfigurationBuilder().Build());
         await using var app = builder.Build();
         app.UseRateLimiter();

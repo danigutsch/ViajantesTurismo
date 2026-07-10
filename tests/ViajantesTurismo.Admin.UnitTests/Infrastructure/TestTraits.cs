@@ -6,7 +6,7 @@ internal static class TestTraits
 
     public const string PersistenceCategory = "persistence";
 
-    public const string SecurityCategory = "security";
+    public const string SecurityCategory = SharedKernel.Testing.TestTraitValues.SecurityCategory;
 
     public const string IntegrationEventRelayCapability = "integration-event-relay";
 }
