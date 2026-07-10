@@ -128,8 +128,6 @@ Bike rental"/>
 </EditForm>
 
 @code {
-    private const string VersionedApiPrefix = "/api/v1";
-
     private const string VersionedToursPathPrefix = "/api/v1/tours";
 
     private TourFormModel _model = new();
@@ -206,35 +204,8 @@ Bike rental"/>
         _errorMessage = null;
     }
 
-    private static string GetTourLocation(Uri? location)
-    {
-        if (location is null)
-        {
-            return "/tours";
-        }
-
-        var localPath = location.IsAbsoluteUri
-            ? location.PathAndQuery
-            : location.OriginalString;
-
-        if (localPath.StartsWith("//", StringComparison.Ordinal))
-        {
-            return "/tours";
-        }
-
-        if (!localPath.StartsWith("/", StringComparison.Ordinal))
-        {
-            localPath = $"/{localPath}";
-        }
-
-        return IsExactPathOrSubpath(localPath, VersionedToursPathPrefix)
-            ? localPath[VersionedApiPrefix.Length..]
-            : localPath;
-    }
-
-    private static bool IsExactPathOrSubpath(string path, string prefix) =>
-        path.StartsWith(prefix, StringComparison.Ordinal)
-        && (path.Length == prefix.Length || (path.Length > prefix.Length && path[prefix.Length] == '/'));
+    private static string GetTourLocation(Uri? location) =>
+        ApiLocationNormalizer.ToUiRoute(location, "/tours", VersionedToursPathPrefix);
 
     private sealed class TourFormModel : IValidatableObject
     {

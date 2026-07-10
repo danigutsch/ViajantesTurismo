@@ -226,8 +226,6 @@
 </div>
 
 @code {
-    private const string VersionedApiPrefix = "/api/v1";
-
     private const string VersionedCustomersPathPrefix = "/api/v1/customers";
 
     private bool _isSubmitting;
@@ -277,31 +275,7 @@
         Navigation.NavigateTo("/customers/create/medical");
     }
 
-    private static string GetCustomerLocation(Uri location)
-    {
-        ArgumentNullException.ThrowIfNull(location);
-
-        var localPath = location.IsAbsoluteUri
-            ? location.PathAndQuery
-            : location.OriginalString;
-
-        if (localPath.StartsWith("//", StringComparison.Ordinal))
-        {
-            return "/customers";
-        }
-
-        if (!localPath.StartsWith("/", StringComparison.Ordinal))
-        {
-            localPath = $"/{localPath}";
-        }
-
-        return IsExactPathOrSubpath(localPath, VersionedCustomersPathPrefix)
-            ? localPath[VersionedApiPrefix.Length..]
-            : localPath;
-    }
-
-    private static bool IsExactPathOrSubpath(string path, string prefix) =>
-        path.StartsWith(prefix, StringComparison.Ordinal)
-        && (path.Length == prefix.Length || (path.Length > prefix.Length && path[prefix.Length] == '/'));
+    private static string GetCustomerLocation(Uri location) =>
+        ApiLocationNormalizer.ToUiRoute(location, "/customers", VersionedCustomersPathPrefix);
 
 }
