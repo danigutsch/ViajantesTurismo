@@ -8,6 +8,11 @@ using ViajantesTurismo.Admin.Application;
 using ViajantesTurismo.Admin.Infrastructure;
 using ViajantesTurismo.ServiceDefaults;
 
+const string ApiRobotsTxt = """
+    User-agent: *
+    Disallow: /
+    """;
+
 var builder = WebApplication.CreateSlimBuilder(args);
 
 builder.WebHost.UseKestrelHttpsConfiguration();
@@ -47,6 +52,7 @@ app.MapCustomerEndpoints()
     .MapCustomerImportEndpoints();
 app.MapBookingEndpoints();
 app.MapErrorDocumentationEndpoints();
+app.MapRobotsTxt(ApiRobotsTxt);
 
 app.MapDefaultEndpoints();
 

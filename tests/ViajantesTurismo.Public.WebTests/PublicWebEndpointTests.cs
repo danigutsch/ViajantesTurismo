@@ -545,6 +545,24 @@ public sealed class PublicWebEndpointTests
     }
 
     [Fact]
+    public async Task Robots_txt_allows_public_crawling()
+    {
+        // Arrange
+        await using var factory = PublicWebEndpointTestsHelpers.CreateFactory();
+        using var client = factory.CreateClient();
+
+        // Act
+        using var response = await client.GetAsync(new Uri("/robots.txt", UriKind.Relative), TestContext.Current.CancellationToken);
+        var body = await response.Content.ReadAsStringAsync(TestContext.Current.CancellationToken);
+
+        // Assert
+        response.StatusCode.ShouldBe(HttpStatusCode.OK);
+        response.Content.Headers.ContentType?.MediaType.ShouldBe("text/plain");
+        response.Content.Headers.ContentType?.CharSet.ShouldBe("utf-8");
+        body.ShouldBe("User-agent: *\nAllow: /");
+    }
+
+    [Fact]
     public async Task Production_root_returns_public_landing_page()
     {
         // Arrange

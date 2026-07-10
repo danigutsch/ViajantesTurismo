@@ -1,9 +1,15 @@
+using SharedKernel.AspNetCore;
 using ViajantesTurismo.Public.Web.Components;
 
 namespace ViajantesTurismo.Public.Web;
 
 internal static class PublicWebEndpoints
 {
+    private const string PublicRobotsTxt = """
+        User-agent: *
+        Allow: /
+        """;
+
     internal static IEndpointRouteBuilder MapPublicWebEndpoints(this IEndpointRouteBuilder app)
     {
         ArgumentNullException.ThrowIfNull(app);
@@ -14,6 +20,8 @@ internal static class PublicWebEndpoints
                 return Results.Problem();
             })
             .ExcludeFromDescription();
+
+        app.MapRobotsTxt(PublicRobotsTxt);
 
         app.MapStaticAssets();
 
