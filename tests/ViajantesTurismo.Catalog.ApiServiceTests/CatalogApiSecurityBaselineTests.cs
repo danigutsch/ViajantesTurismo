@@ -143,10 +143,31 @@ public sealed class CatalogApiSecurityBaselineTests
 
         // Assert
         options.ForwardedHeaders.ShouldBe(ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedProto);
+        options.ForwardLimit.ShouldBe(2);
         options.KnownProxies.ShouldHaveSingleItem().ToString().ShouldBe("10.0.0.10");
         var knownNetwork = options.KnownIPNetworks.ShouldHaveSingleItem();
         knownNetwork.BaseAddress.ToString().ShouldBe("10.1.0.0");
         knownNetwork.PrefixLength.ShouldBe(16);
+    }
+
+    [Fact]
+    public void Forwarded_headers_configuration_uses_configured_forward_limit()
+    {
+        // Arrange
+        var configuration = new ConfigurationBuilder()
+            .AddInMemoryCollection(new Dictionary<string, string?>
+            {
+                ["KnownNetworks:0"] = "10.1.0.0/16",
+                ["ForwardLimit"] = "3"
+            })
+            .Build();
+        var options = new ForwardedHeadersOptions();
+
+        // Act
+        options.ConfigureTrustedForwardedHeaders(configuration);
+
+        // Assert
+        options.ForwardLimit.ShouldBe(3);
     }
 
     [Theory]

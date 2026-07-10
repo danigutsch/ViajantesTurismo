@@ -31,7 +31,9 @@ Named policies separate endpoint risk:
 Remote-IP policies depend on trusted forwarded-header configuration when an API runs behind a reverse proxy or
 load balancer. Configure `Security:ForwardedHeaders:KnownProxies` or
 `Security:ForwardedHeaders:KnownNetworks` for the trusted proxy hops before enabling production traffic through
-that proxy; otherwise clients can share the proxy IP rate-limit bucket.
+that proxy; otherwise clients can share the proxy IP rate-limit bucket. Set
+`Security:ForwardedHeaders:ForwardLimit` only when the trusted proxy chain has more hops than the configured
+known proxies and networks imply.
 
 ## Sensitive data logging
 

@@ -27,5 +27,25 @@ internal static class SecurityChecksToolApplication
             Console.Error.WriteLine(ErrorPrefix + error.Message);
             return 1;
         }
+        catch (ArgumentException error)
+        {
+            Console.Error.WriteLine(ErrorPrefix + error.Message);
+            return 1;
+        }
+        catch (IOException error)
+        {
+            Console.Error.WriteLine(ErrorPrefix + error.Message);
+            return 1;
+        }
+        catch (NotSupportedException error)
+        {
+            Console.Error.WriteLine(ErrorPrefix + error.Message);
+            return 1;
+        }
+        catch (UnauthorizedAccessException error)
+        {
+            Console.Error.WriteLine(ErrorPrefix + error.Message);
+            return 1;
+        }
     }
 }
