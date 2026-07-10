@@ -62,15 +62,18 @@ internal static class CatalogHttpCache
             return;
         }
 
-        var canonicalCulture = httpContext.Request.Query.TryGetValue(CultureQueryKey, out var cultureValue)
-            ? HttpCacheCultures.Normalize(cultureValue.ToString())
+        var rawCulture = httpContext.Request.Query.TryGetValue(CultureQueryKey, out var cultureValue)
+            ? cultureValue.ToString()
             : null;
+        var hasCultureValue = !string.IsNullOrWhiteSpace(rawCulture);
+        var canonicalCulture = HttpCacheCultures.Normalize(rawCulture);
 
-        if (canonicalCulture is null
-            && httpContext.Request.Query.TryGetValue(LanguageQueryKey, out var language))
-        {
-            canonicalCulture = HttpCacheCultures.Normalize(language.ToString());
-        }
+        var rawLanguage = httpContext.Request.Query.TryGetValue(LanguageQueryKey, out var language)
+            ? language.ToString()
+            : null;
+        var hasLanguageValue = !string.IsNullOrWhiteSpace(rawLanguage);
+
+        canonicalCulture ??= HttpCacheCultures.Normalize(rawLanguage);
 
         var queryValues = new List<KeyValuePair<string, string?>>();
         foreach (var (key, values) in httpContext.Request.Query)
@@ -87,7 +90,15 @@ internal static class CatalogHttpCache
             }
         }
 
-        queryValues.Add(new KeyValuePair<string, string?>(CultureQueryKey, canonicalCulture ?? InvalidCultureCacheKey));
+        if (canonicalCulture is not null)
+        {
+            queryValues.Add(new KeyValuePair<string, string?>(CultureQueryKey, canonicalCulture));
+        }
+        else if (hasCultureValue || hasLanguageValue)
+        {
+            queryValues.Add(new KeyValuePair<string, string?>(CultureQueryKey, InvalidCultureCacheKey));
+        }
+
         httpContext.Request.QueryString = QueryString.Create(queryValues);
     }
 }

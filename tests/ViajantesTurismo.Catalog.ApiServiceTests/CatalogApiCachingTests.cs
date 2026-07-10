@@ -242,6 +242,26 @@ public sealed class CatalogApiCachingTests
     }
 
     [Fact]
+    public async Task Public_content_empty_culture_uses_default_language()
+    {
+        // Arrange
+        var cancellationToken = TestContext.Current.CancellationToken;
+        var contentStore = new TestPublicContentStore();
+        await contentStore.SaveContent(CatalogApiCachingTestData.CreatePublishedContent("Default content"), cancellationToken);
+        await using var factory = CatalogApiTestHost.Create(new TestCatalogTourReadModelStore(), contentStore);
+        using var client = factory.CreateClient();
+
+        // Act
+        using var response = await client.GetAsync(new Uri("/public/catalog/content/home.hero?culture=", UriKind.Relative), cancellationToken);
+        var content = await response.Content.ReadFromJsonAsync<PublicContentVariantDto>(cancellationToken);
+
+        // Assert
+        response.StatusCode.ShouldBe(HttpStatusCode.OK);
+        content.ShouldNotBeNull();
+        content.Title.ShouldBe("Default content");
+    }
+
+    [Fact]
     public async Task Blank_public_content_keys_are_not_cacheable()
     {
         // Arrange
