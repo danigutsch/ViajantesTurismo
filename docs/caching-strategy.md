@@ -13,7 +13,7 @@ documents a narrower safe exception.
 | Catalog API `/public/catalog/tours` and `/public/catalog/tours/{slug}` | Public HTTP metadata plus server output cache | 60 seconds plus `stale-while-revalidate=300` | Catalog presentation and media writes evict `public-catalog` |
 | Catalog API `/public/catalog/content/{key}` | Public HTTP metadata plus server output cache varied by canonical `culture` | 60 seconds plus `stale-while-revalidate=300` | Public content writes evict `public-content` |
 | Catalog API `/public/catalog/theme` | Public HTTP metadata plus server output cache | 60 seconds plus `stale-while-revalidate=300` | Theme writes evict `public-theme` |
-| Public Web `/`, `/group-bike-tours`, `/group-bike-tours/{slug}`, `/gallery` | Public HTTP metadata plus server output cache varied by canonical `culture` | 60 seconds plus `stale-while-revalidate=300` | Expires after freshness window; Catalog API invalidation is service-local |
+| Public Web `/`, `/group-bike-tours`, `/group-bike-tours/{slug}`, `/gallery` | Public HTTP metadata varied by canonical `culture` | 60 seconds plus `stale-while-revalidate=300` | Server output cache is not used because Catalog API invalidation is service-local |
 
 ## Non-cacheable responses
 

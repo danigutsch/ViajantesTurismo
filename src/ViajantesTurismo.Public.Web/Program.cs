@@ -10,7 +10,6 @@ builder.AddServiceDefaults();
 builder.Services.AddHttpClientDefaults();
 builder.Services.AddHttpClient<IPublicCatalogApiClient, PublicCatalogApiClient>(client => client.BaseAddress = new Uri($"https+http://{ResourceNames.CatalogApi}"));
 builder.Services.AddRazorComponents();
-builder.Services.AddPublicWebOutputCache();
 
 var app = builder.Build();
 
@@ -25,8 +24,6 @@ app.UseHttpsRedirection();
 app.UseAntiforgery();
 
 app.UsePublicWebCacheHeaders();
-
-app.UseOutputCache();
 
 app.MapPublicWebEndpoints();
 

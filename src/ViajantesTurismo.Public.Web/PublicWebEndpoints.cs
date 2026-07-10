@@ -17,8 +17,7 @@ internal static class PublicWebEndpoints
 
         app.MapStaticAssets();
 
-        app.MapRazorComponents<App>()
-            .CacheOutput(PublicWebHttpCache.PublishedContentPolicy);
+        app.MapRazorComponents<App>();
 
         return app;
     }

@@ -6,27 +6,11 @@ internal static class PublicWebHttpCache
 {
     public static readonly TimeSpan PublishedContentFreshness = TimeSpan.FromSeconds(60);
 
-    public const string PublishedContentPolicy = "published-public-content";
-
     public const string CultureQueryKey = "culture";
 
     public const string LanguageQueryKey = "language";
 
     private static readonly TimeSpan StaleWhileRevalidate = TimeSpan.FromSeconds(300);
-
-    public static IServiceCollection AddPublicWebOutputCache(this IServiceCollection services)
-    {
-        ArgumentNullException.ThrowIfNull(services);
-
-        return services.AddOutputCache(options =>
-        {
-            options.AddPolicy(
-                PublishedContentPolicy,
-                policy => policy
-                    .Expire(PublishedContentFreshness)
-                    .SetVaryByQuery(CultureQueryKey));
-        });
-    }
 
     public static IApplicationBuilder UsePublicWebCacheHeaders(this IApplicationBuilder app)
     {

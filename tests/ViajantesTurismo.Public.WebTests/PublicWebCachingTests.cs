@@ -32,7 +32,7 @@ public sealed class PublicWebCachingTests
     }
 
     [Fact]
-    public async Task Public_tour_list_uses_output_cache_for_published_content()
+    public async Task Public_tour_list_reflects_catalog_updates()
     {
         // Arrange
         var catalogApi = new FakePublicCatalogApiClient();
@@ -43,16 +43,16 @@ public sealed class PublicWebCachingTests
         // Act
         using var firstResponse = await client.GetAsync(new Uri("/group-bike-tours", UriKind.Relative), TestContext.Current.CancellationToken);
         var firstContent = await firstResponse.Content.ReadAsStringAsync(TestContext.Current.CancellationToken);
-        catalogApi.FailListRequests = true;
-        using var cachedResponse = await client.GetAsync(new Uri("/group-bike-tours", UriKind.Relative), TestContext.Current.CancellationToken);
-        var cachedContent = await cachedResponse.Content.ReadAsStringAsync(TestContext.Current.CancellationToken);
+        catalogApi.AddTour(PublicWebEndpointTestsHelpers.CreateTour("atlantic-way", "Atlantic Way"));
+        using var updatedResponse = await client.GetAsync(new Uri("/group-bike-tours", UriKind.Relative), TestContext.Current.CancellationToken);
+        var updatedContent = await updatedResponse.Content.ReadAsStringAsync(TestContext.Current.CancellationToken);
 
         // Assert
         firstResponse.StatusCode.ShouldBe(HttpStatusCode.OK);
         firstContent.ShouldContain("Camino Norte", StringComparison.Ordinal);
-        cachedResponse.StatusCode.ShouldBe(HttpStatusCode.OK);
-        cachedContent.ShouldContain("Camino Norte", StringComparison.Ordinal);
-        cachedContent.ShouldNotContain("Tours could not be loaded right now.");
+        updatedResponse.StatusCode.ShouldBe(HttpStatusCode.OK);
+        updatedContent.ShouldContain("Camino Norte", StringComparison.Ordinal);
+        updatedContent.ShouldContain("Atlantic Way", StringComparison.Ordinal);
     }
 
     [Fact]
@@ -79,15 +79,14 @@ public sealed class PublicWebCachingTests
             Title = "Store-only hero",
             Body = "Store-only body"
         });
-        using var cachedResponse = await client.GetAsync(new Uri("/?culture=en-US", UriKind.Relative), TestContext.Current.CancellationToken);
-        var cachedContent = await cachedResponse.Content.ReadAsStringAsync(TestContext.Current.CancellationToken);
+        using var updatedResponse = await client.GetAsync(new Uri("/?culture=en-US", UriKind.Relative), TestContext.Current.CancellationToken);
+        var updatedContent = await updatedResponse.Content.ReadAsStringAsync(TestContext.Current.CancellationToken);
 
         // Assert
         firstResponse.StatusCode.ShouldBe(HttpStatusCode.OK);
         firstContent.ShouldContain("Original hero", StringComparison.Ordinal);
-        cachedResponse.StatusCode.ShouldBe(HttpStatusCode.OK);
-        cachedContent.ShouldContain("Original hero", StringComparison.Ordinal);
-        cachedContent.ShouldNotContain("Store-only hero");
+        updatedResponse.StatusCode.ShouldBe(HttpStatusCode.OK);
+        updatedContent.ShouldContain("Store-only hero", StringComparison.Ordinal);
     }
 
     [Fact]
@@ -114,15 +113,14 @@ public sealed class PublicWebCachingTests
             Title = "Store-only hero",
             Body = "Store-only body"
         });
-        using var cachedResponse = await client.GetAsync(new Uri("/", UriKind.Relative), TestContext.Current.CancellationToken);
-        var cachedContent = await cachedResponse.Content.ReadAsStringAsync(TestContext.Current.CancellationToken);
+        using var updatedResponse = await client.GetAsync(new Uri("/", UriKind.Relative), TestContext.Current.CancellationToken);
+        var updatedContent = await updatedResponse.Content.ReadAsStringAsync(TestContext.Current.CancellationToken);
 
         // Assert
         firstResponse.StatusCode.ShouldBe(HttpStatusCode.OK);
         firstContent.ShouldContain("Original hero", StringComparison.Ordinal);
-        cachedResponse.StatusCode.ShouldBe(HttpStatusCode.OK);
-        cachedContent.ShouldContain("Original hero", StringComparison.Ordinal);
-        cachedContent.ShouldNotContain("Store-only hero");
+        updatedResponse.StatusCode.ShouldBe(HttpStatusCode.OK);
+        updatedContent.ShouldContain("Store-only hero", StringComparison.Ordinal);
     }
 
     [Fact]
