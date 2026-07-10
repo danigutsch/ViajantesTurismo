@@ -206,7 +206,6 @@ Models using generated identity support:
 | `Booking` | `src/ViajantesTurismo.Admin.Domain` | `IEntity<Guid>` plus generated identity support | Child entity inside `Tour`; EF key configured with `ValueGeneratedNever()`. |
 | `Payment` | `src/ViajantesTurismo.Admin.Domain` | `IEntity<Guid>` plus generated identity support | Child entity inside `Booking`; immutable after creation; EF key configured with `ValueGeneratedNever()`. |
 | `EditablePublicContent` | `src/ViajantesTurismo.Catalog.Domain` | `IAggregateRoot<Guid>` plus generated identity support | Aggregate root with EF materialization constructor and explicit key generation. |
-| `PublicThemeSettings` | `src/ViajantesTurismo.Catalog.Domain` | `IAggregateRoot<Guid>` plus generated identity support | Singleton aggregate root with fixed `ThemeId`; EF key configured with `ValueGeneratedNever()`. |
 
 - `tests/ViajantesTurismo.ArchitectureTests`: DDD convention helpers identify entity types through
   `IEntity<TId>` and allow both Admin and Catalog domain namespaces.
@@ -233,15 +232,14 @@ Models using generated identity support:
    - Preserve payment immutability and booking payment-status tests.
 4. `EditablePublicContent`.
    - Keep domain-event behavior and EF `ValueGeneratedNever()` covered by Catalog tests.
-5. `PublicThemeSettings` last.
-   - Preserve fixed singleton `ThemeId` and theme replacement behavior.
+5. Remaining Catalog persisted models last.
 
 ### Guardrails
 
 - Do not change equality semantics silently.
 - Keep EF value generation explicit with `ValueGeneratedNever()` unless a migration deliberately
   changes key ownership.
-- Keep architecture or analyzer coverage in place before forbidding old base-class patterns.
+- Keep architecture or analyzer coverage in place before forbidding previous base-class patterns.
 
 ## Recommended follow-up order
 

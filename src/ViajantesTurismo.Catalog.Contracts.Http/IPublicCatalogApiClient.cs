@@ -21,8 +21,4 @@ public interface IPublicCatalogApiClient
     /// </summary>
     Task<PublicContentVariantDto?> GetPublicContent(string key, string? culture, CancellationToken ct);
 
-    /// <summary>
-    /// Gets public theme settings.
-    /// </summary>
-    Task<PublicThemeSettingsDto> GetThemeSettings(CancellationToken ct);
 }

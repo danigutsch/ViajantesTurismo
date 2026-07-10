@@ -1,4 +1,5 @@
 tests/ViajantesTurismo.Management.WebTests/ViajantesTurismo.Management.WebTests.csproj
+tests/SharedKernel.Branding.Tests/SharedKernel.Branding.Tests.csproj
 tests/SharedKernel.Testing.Analyzers.Tests/SharedKernel.Testing.Analyzers.Tests.csproj
 tests/SharedKernel.Versioning.Tests/SharedKernel.Versioning.Tests.csproj
 tests/SharedKernel.Style.Analyzers.Tests/SharedKernel.Style.Analyzers.Tests.csproj
@@ -16,6 +17,7 @@ tests/SharedKernel.Aspire.CodeFixes.Tests/SharedKernel.Aspire.CodeFixes.Tests.cs
 tests/ViajantesTurismo.Catalog.UnitTests/ViajantesTurismo.Catalog.UnitTests.csproj
 tests/SharedKernel.Results.GeneratorTests/SharedKernel.Results.GeneratorTests.csproj
 tests/ViajantesTurismo.Catalog.ApiServiceTests/ViajantesTurismo.Catalog.ApiServiceTests.csproj
+tests/ViajantesTurismo.Branding.ApiServiceTests/ViajantesTurismo.Branding.ApiServiceTests.csproj
 tests/ViajantesTurismo.Admin.BehaviorTests/ViajantesTurismo.Admin.BehaviorTests.csproj
 tests/ViajantesTurismo.Admin.UnitTests/ViajantesTurismo.Admin.UnitTests.csproj
 tests/ViajantesTurismo.Catalog.BehaviorTests/ViajantesTurismo.Catalog.BehaviorTests.csproj

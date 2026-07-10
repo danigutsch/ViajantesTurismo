@@ -1,0 +1,23 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <!-- EF Core DbContext is not Native AOT-compatible. -->
+        <IsAotCompatible>false</IsAotCompatible>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <InternalsVisibleTo Include="ViajantesTurismo.Branding.ApiServiceTests" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <PackageReference Include="Aspire.Npgsql" />
+        <PackageReference Include="Aspire.Npgsql.EntityFrameworkCore.PostgreSQL" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <ProjectReference Include="..\SharedKernel\SharedKernel.Branding\SharedKernel.Branding.csproj" />
+        <ProjectReference Include="..\SharedKernel\SharedKernel.EntityFrameworkCore\SharedKernel.EntityFrameworkCore.csproj" />
+        <ProjectReference Include="..\ViajantesTurismo.Resources\ViajantesTurismo.Resources.csproj" />
+    </ItemGroup>
+
+</Project>

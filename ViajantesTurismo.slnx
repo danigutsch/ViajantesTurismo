@@ -66,6 +66,7 @@
         <Project Path="src/SharedKernel/SharedKernel.Documentation/SharedKernel.Documentation.csproj" />
         <Project Path="src/SharedKernel/SharedKernel.ApiVersioning/SharedKernel.ApiVersioning.csproj" />
         <Project Path="src/SharedKernel/SharedKernel.ApiVersioning.AspNetCore/SharedKernel.ApiVersioning.AspNetCore.csproj" />
+        <Project Path="src/SharedKernel/SharedKernel.Branding/SharedKernel.Branding.csproj" />
     </Folder>
     <Folder Name="/src/Admin/">
         <Project Path="src/ViajantesTurismo.Admin.Contracts.Application/ViajantesTurismo.Admin.Contracts.Application.csproj" />
@@ -85,6 +86,10 @@
         <Project Path="src/ViajantesTurismo.Catalog.Contracts.IntegrationEvents/ViajantesTurismo.Catalog.Contracts.IntegrationEvents.csproj" />
         <Project Path="src/ViajantesTurismo.Catalog.Domain/ViajantesTurismo.Catalog.Domain.csproj" />
         <Project Path="src/ViajantesTurismo.Catalog.Infrastructure/ViajantesTurismo.Catalog.Infrastructure.csproj" />
+    </Folder>
+    <Folder Name="/src/Branding/">
+        <Project Path="src/ViajantesTurismo.Branding.ApiService/ViajantesTurismo.Branding.ApiService.csproj" />
+        <Project Path="src/ViajantesTurismo.Branding.Infrastructure/ViajantesTurismo.Branding.Infrastructure.csproj" />
     </Folder>
     <Folder Name="/src/Public/">
         <Project Path="src/ViajantesTurismo.Public.Web/ViajantesTurismo.Public.Web.csproj" />
@@ -157,6 +162,8 @@
         <Project Path="tests/ViajantesTurismo.Catalog.BehaviorTests/ViajantesTurismo.Catalog.BehaviorTests.csproj" />
         <Project Path="tests/ViajantesTurismo.Catalog.ApiServiceTests/ViajantesTurismo.Catalog.ApiServiceTests.csproj" />
         <Project Path="tests/ViajantesTurismo.Catalog.ContractTests/ViajantesTurismo.Catalog.ContractTests.csproj" />
+        <Project Path="tests/SharedKernel.Branding.Tests/SharedKernel.Branding.Tests.csproj" />
+        <Project Path="tests/ViajantesTurismo.Branding.ApiServiceTests/ViajantesTurismo.Branding.ApiServiceTests.csproj" />
     </Folder>
     <Folder Name="/benchmarks/">
         <Project Path="benchmarks/SharedKernel.Mediator.Benchmarks/SharedKernel.Mediator.Benchmarks.csproj" />

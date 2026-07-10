@@ -1,0 +1,245 @@
+@page "/catalog/theme"
+@page "/branding"
+@using System.ComponentModel.DataAnnotations
+@using SharedKernel.HttpClients
+@using ViajantesTurismo.Management.Web.Helpers
+@rendermode InteractiveServer
+
+@inject IBrandingApiClient BrandingApi
+
+<PageTitle>Branding</PageTitle>
+
+<h1><i class="bi bi-palette" aria-hidden="true"></i> Branding</h1>
+
+<p class="text-muted">Edit customer-facing website brand name, logo, colors, and typography.</p>
+
+@if (_errorMessage is not null)
+{
+    <div class="alert alert-danger" role="alert">@_errorMessage</div>
+}
+
+@if (_successMessage is not null)
+{
+    <div class="alert alert-success" role="status">@_successMessage</div>
+}
+
+@if (_loading)
+{
+    <p><em>Loading...</em></p>
+}
+else
+{
+    <EditForm Model="@_model" OnValidSubmit="@SaveBranding" FormName="brandingEditor">
+        <DataAnnotationsValidator />
+        <ValidationSummary />
+
+        <fieldset class="border rounded p-3 mb-3">
+            <legend class="float-none w-auto px-2 h5">Brand</legend>
+            <div class="mb-3">
+                <label for="branding-brand-name" class="form-label">Brand name</label>
+                <InputText id="branding-brand-name" class="form-control" @bind-Value="_model.BrandName" />
+            </div>
+            <div class="mb-3">
+                <label for="branding-logo-uri" class="form-label">Logo URI</label>
+                <InputText id="branding-logo-uri" class="form-control" @bind-Value="_model.LogoUri" />
+                <div class="form-text">Optional. Use a root-relative path or HTTPS URI.</div>
+            </div>
+        </fieldset>
+
+        <fieldset class="border rounded p-3 mb-3">
+            <legend class="float-none w-auto px-2 h5">Colors</legend>
+            <div class="mb-3">
+                <label for="branding-primary-color" class="form-label">Primary color</label>
+                <InputText id="branding-primary-color" class="form-control" @bind-Value="_model.PrimaryColor" />
+            </div>
+            <div class="mb-3">
+                <label for="branding-accent-color" class="form-label">Accent color</label>
+                <InputText id="branding-accent-color" class="form-control" @bind-Value="_model.AccentColor" />
+            </div>
+            <div class="mb-3">
+                <label for="branding-background-color" class="form-label">Background color</label>
+                <InputText id="branding-background-color" class="form-control" @bind-Value="_model.BackgroundColor" />
+            </div>
+            <div class="mb-3">
+                <label for="branding-text-color" class="form-label">Text color</label>
+                <InputText id="branding-text-color" class="form-control" @bind-Value="_model.TextColor" />
+            </div>
+            <div class="form-text">Colors must use safe #RRGGBB hex values.</div>
+        </fieldset>
+
+        <fieldset class="border rounded p-3 mb-3">
+            <legend class="float-none w-auto px-2 h5">Typography</legend>
+            <div class="mb-3">
+                <label for="branding-heading-font" class="form-label">Heading font</label>
+                <InputSelect id="branding-heading-font" class="form-select" @bind-Value="_model.HeadingFontFamily">
+                    @foreach (var font in AllowedFontFamilies)
+                    {
+                        <option value="@font">@font</option>
+                    }
+                </InputSelect>
+            </div>
+            <div class="mb-3">
+                <label for="branding-body-font" class="form-label">Body font</label>
+                <InputSelect id="branding-body-font" class="form-select" @bind-Value="_model.BodyFontFamily">
+                    @foreach (var font in AllowedFontFamilies)
+                    {
+                        <option value="@font">@font</option>
+                    }
+                </InputSelect>
+            </div>
+        </fieldset>
+
+        <button type="submit" class="btn btn-primary" disabled="@_saving">@(_saving ? "Saving..." : "Save branding")</button>
+    </EditForm>
+}
+
+@code {
+    private static readonly IReadOnlyList<string> AllowedFontFamilies = BrandingFontFamilies.All;
+
+    private BrandingFormModel _model = BrandingFormModel.Default();
+    private bool _loading = true;
+    private bool _saving;
+    private string? _errorMessage;
+    private string? _successMessage;
+
+    /// <inheritdoc />
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            var branding = await BrandingApi.GetSettings(CancellationToken.None);
+            _model = BrandingFormModel.FromDto(branding);
+        }
+        catch (HttpRequestException)
+        {
+            _errorMessage = UserFacingErrorMessage.ForOperation("load branding");
+        }
+        catch (InvalidOperationException)
+        {
+            _errorMessage = UserFacingErrorMessage.ForOperation("load branding");
+        }
+        finally
+        {
+            _loading = false;
+        }
+    }
+
+    private async Task SaveBranding()
+    {
+        _saving = true;
+        _errorMessage = null;
+        _successMessage = null;
+
+        try
+        {
+            var saved = await BrandingApi.SaveSettings(_model.ToDto(), CancellationToken.None);
+            _model = BrandingFormModel.FromDto(saved);
+            _successMessage = "Branding saved.";
+        }
+        catch (ContractValidationException ex)
+        {
+            _errorMessage = ex.ValidationErrors.Count == 0
+                ? UserFacingErrorMessage.ForOperation("save branding")
+                : string.Join(" ", ex.ValidationErrors.SelectMany(error => error.Value));
+        }
+        catch (HttpRequestException)
+        {
+            _errorMessage = UserFacingErrorMessage.ForOperation("save branding");
+        }
+        catch (InvalidOperationException)
+        {
+            _errorMessage = UserFacingErrorMessage.ForOperation("save branding");
+        }
+        finally
+        {
+            _saving = false;
+        }
+    }
+
+    private sealed class BrandingFormModel
+    {
+        [Required]
+        [StringLength(BrandingContractConstants.MaxBrandNameLength)]
+        public string BrandName { get; set; } = string.Empty;
+
+        [StringLength(BrandingContractConstants.MaxLogoUriLength)]
+        [RegularExpression(@"^(|/(?!/)[^\s\\]*|https://(?![^/\s\\]*@)[^/\s\\]+[^\s\\]*)$", ErrorMessage = "Use an optional root-relative path or HTTPS URI without spaces, backslashes, or credentials.")]
+        public string LogoUri { get; set; } = string.Empty;
+
+        [Required]
+        [RegularExpression("^#[0-9A-Fa-f]{6}$", ErrorMessage = "Use a safe #RRGGBB hex color.")]
+        public string PrimaryColor { get; set; } = string.Empty;
+
+        [Required]
+        [RegularExpression("^#[0-9A-Fa-f]{6}$", ErrorMessage = "Use a safe #RRGGBB hex color.")]
+        public string AccentColor { get; set; } = string.Empty;
+
+        [Required]
+        [RegularExpression("^#[0-9A-Fa-f]{6}$", ErrorMessage = "Use a safe #RRGGBB hex color.")]
+        public string BackgroundColor { get; set; } = string.Empty;
+
+        [Required]
+        [RegularExpression("^#[0-9A-Fa-f]{6}$", ErrorMessage = "Use a safe #RRGGBB hex color.")]
+        public string TextColor { get; set; } = string.Empty;
+
+        [Required]
+        [StringLength(BrandingContractConstants.MaxFontFamilyLength)]
+        public string HeadingFontFamily { get; set; } = BrandingFontFamilies.DefaultHeading;
+
+        [Required]
+        [StringLength(BrandingContractConstants.MaxFontFamilyLength)]
+        public string BodyFontFamily { get; set; } = BrandingFontFamilies.DefaultBody;
+
+        public static BrandingFormModel Default()
+        {
+            return FromDto(DefaultBranding());
+        }
+
+        public static BrandingFormModel FromDto(BrandingSettingsDto branding)
+        {
+            return new BrandingFormModel
+            {
+                BrandName = branding.BrandName,
+                LogoUri = branding.LogoUri ?? string.Empty,
+                PrimaryColor = branding.PrimaryColor,
+                AccentColor = branding.AccentColor,
+                BackgroundColor = branding.BackgroundColor,
+                TextColor = branding.TextColor,
+                HeadingFontFamily = branding.HeadingFontFamily,
+                BodyFontFamily = branding.BodyFontFamily
+            };
+        }
+
+        public BrandingSettingsDto ToDto()
+        {
+            var logoUri = LogoUri.Trim();
+
+            return new BrandingSettingsDto
+            {
+                BrandName = BrandName,
+                LogoUri = string.IsNullOrWhiteSpace(logoUri) ? null : logoUri,
+                PrimaryColor = PrimaryColor,
+                AccentColor = AccentColor,
+                BackgroundColor = BackgroundColor,
+                TextColor = TextColor,
+                HeadingFontFamily = HeadingFontFamily,
+                BodyFontFamily = BodyFontFamily
+            };
+        }
+
+        private static BrandingSettingsDto DefaultBranding()
+        {
+            return new BrandingSettingsDto
+            {
+                BrandName = "Viajantes Turismo",
+                LogoUri = string.Empty,
+                PrimaryColor = "#0F766E",
+                AccentColor = "#F97316",
+                BackgroundColor = "#FFFBF5",
+                TextColor = "#1F2937",
+                HeadingFontFamily = BrandingFontFamilies.DefaultHeading,
+                BodyFontFamily = BrandingFontFamilies.DefaultBody
+            };
+        }
+    }
+}

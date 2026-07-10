@@ -23,6 +23,8 @@
         <ProjectReference Include="..\..\src\ViajantesTurismo.Admin.Infrastructure\ViajantesTurismo.Admin.Infrastructure.csproj"/>
         <ProjectReference Include="..\..\src\ViajantesTurismo.Admin.Contracts.Http\ViajantesTurismo.Admin.Contracts.Http.csproj"/>
         <ProjectReference Include="..\..\src\ViajantesTurismo.Admin.Contracts.IntegrationEvents\ViajantesTurismo.Admin.Contracts.IntegrationEvents.csproj"/>
+        <ProjectReference Include="..\..\src\SharedKernel\SharedKernel.Branding\SharedKernel.Branding.csproj" />
+        <ProjectReference Include="..\..\src\ViajantesTurismo.Branding.Infrastructure\ViajantesTurismo.Branding.Infrastructure.csproj" />
         <ProjectReference Include="..\..\src\ViajantesTurismo.Catalog.Infrastructure\ViajantesTurismo.Catalog.Infrastructure.csproj" />
         <ProjectReference Include="..\..\src\ViajantesTurismo.MigrationService\ViajantesTurismo.MigrationService.csproj"/>
         <ProjectReference Include="..\..\src\SharedKernel\SharedKernel.EntityFrameworkCore\SharedKernel.EntityFrameworkCore.csproj" />

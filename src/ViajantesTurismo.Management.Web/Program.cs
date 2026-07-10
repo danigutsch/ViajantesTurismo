@@ -1,3 +1,4 @@
+using SharedKernel.Branding;
 using SharedKernel.HttpClients;
 using ViajantesTurismo.Management.Web;
 using ViajantesTurismo.Management.Web.Services;
@@ -21,7 +22,7 @@ builder.Services.AddHttpClient<ICustomersApiClient, CustomersApiClient>(client =
 builder.Services.AddHttpClient<IBookingsApiClient, BookingsApiClient>(client => client.BaseAddress = new Uri($"https+http://{ResourceNames.Api}"));
 builder.Services.AddHttpClient<ICatalogToursApiClient, CatalogToursApiClient>(client => client.BaseAddress = new Uri($"https+http://{ResourceNames.CatalogApi}"));
 builder.Services.AddHttpClient<IPublicContentApiClient, PublicContentApiClient>(client => client.BaseAddress = new Uri($"https+http://{ResourceNames.CatalogApi}"));
-builder.Services.AddHttpClient<IPublicThemeApiClient, PublicThemeApiClient>(client => client.BaseAddress = new Uri($"https+http://{ResourceNames.CatalogApi}"));
+builder.Services.AddHttpClient<IBrandingApiClient, BrandingApiClient>(client => client.BaseAddress = new Uri($"https+http://{ResourceNames.BrandingApi}"));
 
 var app = builder.Build();
 

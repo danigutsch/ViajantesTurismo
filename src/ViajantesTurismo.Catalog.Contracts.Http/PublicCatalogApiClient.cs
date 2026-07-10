@@ -66,17 +66,11 @@ public sealed class PublicCatalogApiClient(HttpClient httpClient) : IPublicCatal
         return await response.Content.ReadFromJsonAsync(Json.PublicContentVariantDto, ct).ConfigureAwait(false);
     }
 
-    /// <inheritdoc />
-    public async Task<PublicThemeSettingsDto> GetThemeSettings(CancellationToken ct)
-    {
-        var theme = await httpClient.GetFromJsonAsync($"{RoutePrefix}/theme", Json.PublicThemeSettingsDto, ct).ConfigureAwait(false);
-        return theme ?? throw new InvalidOperationException("Catalog returned an empty public theme response.");
-    }
-
     private static string EscapePath(string path)
     {
         return string.Join('/', path
             .Split('/', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
             .Select(Uri.EscapeDataString));
     }
+
 }

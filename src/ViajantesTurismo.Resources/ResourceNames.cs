@@ -36,6 +36,11 @@ public static class ResourceNames
     public const string CatalogApi = "catalog-api";
 
     /// <summary>
+    /// The name of the Branding API service resource.
+    /// </summary>
+    public const string BrandingApi = "branding-api";
+
+    /// <summary>
     /// The name of the integration-event worker resource.
     /// </summary>
     public const string IntegrationEventWorker = "integration-event-worker";

@@ -114,6 +114,7 @@ fast_validation_patterns=(
     "src/SharedKernel/SharedKernel.ApiVersioning.AspNetCore/**"
     "src/SharedKernel/SharedKernel.AspNetCore/**"
     "src/SharedKernel/SharedKernel.Aspire.Hosting.Grafana/**"
+    "src/SharedKernel/SharedKernel.Branding/**"
     "src/SharedKernel/SharedKernel.Domain/**"
     "src/SharedKernel/SharedKernel.Domain.SourceGenerator/**"
     "src/SharedKernel/SharedKernel.DomainEvents/**"

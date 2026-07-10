@@ -10,6 +10,7 @@
         <Using Include="Bunit.TestDoubles"/>
         <Using Include="Microsoft.AspNetCore.Components.Forms"/>
         <Using Include="Microsoft.Extensions.DependencyInjection"/>
+        <Using Include="SharedKernel.Branding"/>
         <Using Include="SharedKernel.Testing.Assertions"/>
         <Using Include="ViajantesTurismo.Admin.Contracts.Application"/>
         <Using Include="ViajantesTurismo.Admin.Contracts.Http"/>

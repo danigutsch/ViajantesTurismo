@@ -12,7 +12,7 @@ public class NavMenuTests : BunitContext
 
         // Assert
         var brand = cut.Find(".navbar-brand");
-        Assert.Equal("ViajantesTurismo", brand.TextContent);
+        brand.TextContent.ShouldBe("ViajantesTurismo");
     }
 
     [Fact]
@@ -24,8 +24,8 @@ public class NavMenuTests : BunitContext
         // Assert
         var homeLinks = cut.FindAll("a.nav-link[href='']");
         var homeLink = homeLinks[0];
-        Assert.Contains("Home", homeLink.TextContent, StringComparison.Ordinal);
-        Assert.Contains("bi-house-door-fill", homeLink.InnerHtml, StringComparison.Ordinal);
+        homeLink.TextContent.ShouldContain("Home", StringComparison.Ordinal);
+        homeLink.InnerHtml.ShouldContain("bi-house-door-fill", StringComparison.Ordinal);
     }
 
     [Fact]
@@ -36,8 +36,8 @@ public class NavMenuTests : BunitContext
 
         // Assert
         var addTourLink = cut.Find("a[href='addtour']");
-        Assert.Contains("Add Tour", addTourLink.TextContent, StringComparison.Ordinal);
-        Assert.Contains("bi-plus-square-fill", addTourLink.InnerHtml, StringComparison.Ordinal);
+        addTourLink.TextContent.ShouldContain("Add Tour", StringComparison.Ordinal);
+        addTourLink.InnerHtml.ShouldContain("bi-plus-square-fill", StringComparison.Ordinal);
     }
 
     [Fact]
@@ -48,8 +48,8 @@ public class NavMenuTests : BunitContext
 
         // Assert
         var toursLink = cut.Find("a[href='tours']");
-        Assert.Contains("Tours", toursLink.TextContent, StringComparison.Ordinal);
-        Assert.Contains("bi-list-nested", toursLink.InnerHtml, StringComparison.Ordinal);
+        toursLink.TextContent.ShouldContain("Tours", StringComparison.Ordinal);
+        toursLink.InnerHtml.ShouldContain("bi-list-nested", StringComparison.Ordinal);
     }
 
     [Fact]
@@ -60,8 +60,8 @@ public class NavMenuTests : BunitContext
 
         // Assert
         var catalogLink = cut.Find("a[href='catalog/tours']");
-        Assert.Contains("Catalog", catalogLink.TextContent, StringComparison.Ordinal);
-        Assert.Contains("bi-card-list", catalogLink.InnerHtml, StringComparison.Ordinal);
+        catalogLink.TextContent.ShouldContain("Catalog", StringComparison.Ordinal);
+        catalogLink.InnerHtml.ShouldContain("bi-card-list", StringComparison.Ordinal);
     }
 
     [Fact]
@@ -72,20 +72,20 @@ public class NavMenuTests : BunitContext
 
         // Assert
         var publicContentLink = cut.Find("a[href='catalog/content']");
-        Assert.Contains("Public Content", publicContentLink.TextContent, StringComparison.Ordinal);
-        Assert.Contains("bi-translate", publicContentLink.InnerHtml, StringComparison.Ordinal);
+        publicContentLink.TextContent.ShouldContain("Public Content", StringComparison.Ordinal);
+        publicContentLink.InnerHtml.ShouldContain("bi-translate", StringComparison.Ordinal);
     }
 
     [Fact]
-    public void Renders_public_theme_NavLink()
+    public void Renders_branding_NavLink()
     {
         // Act
         var cut = Render<NavMenu>();
 
         // Assert
-        var publicThemeLink = cut.Find("a[href='catalog/theme']");
-        Assert.Contains("Public Theme", publicThemeLink.TextContent, StringComparison.Ordinal);
-        Assert.Contains("bi-palette", publicThemeLink.InnerHtml, StringComparison.Ordinal);
+        var brandingLink = cut.Find("a[href='branding']");
+        brandingLink.TextContent.ShouldContain("Branding", StringComparison.Ordinal);
+        brandingLink.InnerHtml.ShouldContain("bi-palette", StringComparison.Ordinal);
     }
 
     [Fact]
@@ -96,8 +96,8 @@ public class NavMenuTests : BunitContext
 
         // Assert
         var bookingsLink = cut.Find("a[href='bookings']");
-        Assert.Contains("Bookings", bookingsLink.TextContent, StringComparison.Ordinal);
-        Assert.Contains("bi-calendar-check", bookingsLink.InnerHtml, StringComparison.Ordinal);
+        bookingsLink.TextContent.ShouldContain("Bookings", StringComparison.Ordinal);
+        bookingsLink.InnerHtml.ShouldContain("bi-calendar-check", StringComparison.Ordinal);
     }
 
     [Fact]
@@ -108,8 +108,8 @@ public class NavMenuTests : BunitContext
 
         // Assert
         var addCustomerLink = cut.Find("a[href='customers/create']");
-        Assert.Contains("Add Customer", addCustomerLink.TextContent, StringComparison.Ordinal);
-        Assert.Contains("bi-person-plus-fill", addCustomerLink.InnerHtml, StringComparison.Ordinal);
+        addCustomerLink.TextContent.ShouldContain("Add Customer", StringComparison.Ordinal);
+        addCustomerLink.InnerHtml.ShouldContain("bi-person-plus-fill", StringComparison.Ordinal);
     }
 
     [Fact]
@@ -120,8 +120,8 @@ public class NavMenuTests : BunitContext
 
         // Assert
         var customersLink = cut.Find("a[href='customers']");
-        Assert.Contains("Customers", customersLink.TextContent, StringComparison.Ordinal);
-        Assert.Contains("bi-people-fill", customersLink.InnerHtml, StringComparison.Ordinal);
+        customersLink.TextContent.ShouldContain("Customers", StringComparison.Ordinal);
+        customersLink.InnerHtml.ShouldContain("bi-people-fill", StringComparison.Ordinal);
     }
 
     [Fact]
@@ -132,7 +132,7 @@ public class NavMenuTests : BunitContext
 
         // Assert
         var navLinks = cut.FindAll(".nav-link");
-        Assert.Equal(9, navLinks.Count);
+        navLinks.Count.ShouldBe(9);
     }
 
     [Fact]
@@ -146,7 +146,7 @@ public class NavMenuTests : BunitContext
         foreach (var link in navLinks)
         {
             var icons = link.QuerySelectorAll("span[aria-hidden='true']");
-            Assert.NotEmpty(icons);
+            icons.ShouldNotBeEmpty();
         }
     }
 
@@ -158,8 +158,8 @@ public class NavMenuTests : BunitContext
 
         // Assert
         var toggler = cut.Find("input[type='checkbox'].navbar-toggler");
-        Assert.NotNull(toggler);
-        Assert.Equal("Navigation menu", toggler.GetAttribute("title"));
+        toggler.ShouldNotBeNull();
+        toggler.GetAttribute("title").ShouldBe("Navigation menu");
     }
 
     [Fact]
@@ -170,7 +170,7 @@ public class NavMenuTests : BunitContext
 
         // Assert
         var scrollable = cut.Find(".nav-scrollable");
-        Assert.NotNull(scrollable);
+        scrollable.ShouldNotBeNull();
     }
 
     [Fact]
@@ -181,7 +181,7 @@ public class NavMenuTests : BunitContext
 
         // Assert
         var nav = cut.Find("nav.nav.flex-column");
-        Assert.NotNull(nav);
+        nav.ShouldNotBeNull();
     }
 
     [Fact]
@@ -192,7 +192,7 @@ public class NavMenuTests : BunitContext
 
         // Assert
         var navItems = cut.FindAll(".nav-item.px-3");
-        Assert.Equal(9, navItems.Count);
+        navItems.Count.ShouldBe(9);
     }
 
     [Fact]
@@ -203,7 +203,7 @@ public class NavMenuTests : BunitContext
 
         // Assert
         var topRow = cut.Find(".top-row.navbar.navbar-dark");
-        Assert.NotNull(topRow);
+        topRow.ShouldNotBeNull();
     }
 
     [Fact]
@@ -214,6 +214,6 @@ public class NavMenuTests : BunitContext
 
         // Assert
         var brand = cut.Find(".navbar-brand");
-        Assert.Equal("", brand.GetAttribute("href"));
+        brand.GetAttribute("href").ShouldBe(string.Empty);
     }
 }

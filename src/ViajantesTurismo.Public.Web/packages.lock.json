@@ -101,6 +101,14 @@
           "SharedKernel.InputNormalization": "[0.1.0-alpha.0, )"
         }
       },
+      "sharedkernel.branding": {
+        "type": "Project",
+        "dependencies": {
+          "SharedKernel.HttpClients": "[0.1.0-alpha.0, )",
+          "SharedKernel.InputNormalization": "[0.1.0-alpha.0, )",
+          "SharedKernel.Results": "[0.1.0-alpha.0, )"
+        }
+      },
       "sharedkernel.httpcaching.aspnetcore": {
         "type": "Project"
       },
@@ -128,6 +136,9 @@
           "OpenTelemetry.Extensions.Hosting": "[1.16.0, )",
           "OpenTelemetry.Instrumentation.Runtime": "[1.15.1, )"
         }
+      },
+      "sharedkernel.results": {
+        "type": "Project"
       },
       "viajantesturismo.catalog.contracts.application": {
         "type": "Project"

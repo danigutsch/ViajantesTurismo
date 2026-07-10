@@ -4,11 +4,15 @@
 
 <PageTitle>@PageTitle</PageTitle>
 
-<h1>@HeroTitle</h1>
-<p>@HeroBody</p>
+<section class="public-hero" aria-labelledby="home-hero-title">
+    <h1 id="home-hero-title">@HeroTitle</h1>
+    <p>@HeroBody</p>
+</section>
 
 <section aria-labelledby="published-tours">
-    <h2 id="published-tours">Our tours</h2>
+    <div class="public-section-header">
+        <h2 id="published-tours">Our tours</h2>
+    </div>
 
     @if (_loadFailed)
     {
@@ -27,7 +31,7 @@
         <div class="tour-list">
             @foreach (var tour in _tours)
             {
-                <article>
+                <article class="tour-card-shell">
                     <TourCard Tour="tour" HeadingLevel="3" />
                 </article>
             }

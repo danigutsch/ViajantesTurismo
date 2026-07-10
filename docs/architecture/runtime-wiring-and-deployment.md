@@ -14,6 +14,7 @@ improvements. Secret values are intentionally omitted.
 flowchart LR
     AdminPerformanceSmoke[Admin Performance Smoke]
     apiService[Admin.ApiService]
+    brandingApiService[Branding Api]
     catalogApiService[Catalog.ApiService]
     adminDatabase[Database]
     catalogDatabase[Database]
@@ -29,12 +30,16 @@ flowchart LR
     IntegrationEventWorker --> catalogDatabase
     IntegrationEventWorker --> migrationService
     ManagementWeb --> apiService
+    ManagementWeb --> brandingApiService
     ManagementWeb --> cache
     ManagementWeb --> catalogApiService
+    PublicWeb --> brandingApiService
     PublicWeb --> catalogApiService
     adminDatabase --> databaseServer
     apiService --> adminDatabase
     apiService --> migrationService
+    brandingApiService --> catalogDatabase
+    brandingApiService --> migrationService
     catalogApiService --> adminDatabase
     catalogApiService --> catalogDatabase
     catalogApiService --> migrationService

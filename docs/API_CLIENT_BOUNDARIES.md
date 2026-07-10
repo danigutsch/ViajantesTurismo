@@ -16,7 +16,11 @@ project. Apps configure base addresses and keep UI fallback behavior local.
 - `CatalogToursApiClient`
 - `PublicContentApiClient`
 - `PublicCatalogApiClient`
-- `PublicThemeApiClient`
+
+Branding client contracts belong with the Branding API surface. `SharedKernel.Branding` owns the
+reusable safe DTO shapes, typed client contract, typed client implementation, and relative route
+segments. The ViajantesTurismo Branding API adapter owns endpoint hosting, API version prefix
+mounting, base-address wiring, defaults, persistence behavior, and cache policy.
 
 Contract test projects also contain OpenAPI document clients that are test-local helpers, not app clients.
 
@@ -25,6 +29,8 @@ Contract test projects also contain OpenAPI document clients that are test-local
 - Put shared `I*ApiClient` interfaces and implementations in the owning `.Contracts.Http` project when apps or tests consume the seam.
 - A contract project owns a client only for the API surface it also owns. Cross-context or cross-app convenience clients stay in
   the consuming app until the API contract owner accepts the seam.
+- Do not add branding operations to Catalog clients. Branding client contracts belong to
+  `SharedKernel.Branding` and the ViajantesTurismo Branding API adapter.
 - Keep one interface per cohesive API seam. Do not add broad gateway or facade clients just to group unrelated endpoints.
 - Put DTOs and response outcome shapes in `.Contracts.Application` when callers must handle stable API outcomes without
   knowing HTTP implementation details.
