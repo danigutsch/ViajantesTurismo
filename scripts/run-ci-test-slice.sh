@@ -118,7 +118,8 @@ get_test_project_parallelism() {
             return 0
         fi
 
-        echo "CI_TEST_PROJECT_PARALLELISM must be a positive integer." >&2
+        printf 'CI_TEST_PROJECT_PARALLELISM must be a positive integer; received %q.\n' \
+            "${CI_TEST_PROJECT_PARALLELISM}" >&2
         return 1
     fi
 
@@ -128,6 +129,18 @@ get_test_project_parallelism() {
     fi
 
     getconf _NPROCESSORS_ONLN 2> /dev/null || printf '2\n'
+}
+
+make_slice_slug() {
+    local value="$1"
+
+    value="$(printf '%s' "${value}" | tr '[:upper:]' '[:lower:]' | tr -c '[:alnum:]-' '-')"
+
+    if [[ -z "${value//-/}" ]]; then
+        value="slice"
+    fi
+
+    printf '%s\n' "${value}"
 }
 
 build_projects() {
@@ -505,7 +518,7 @@ main() {
         esac
     done
 
-    slice_slug="$(printf '%s' "${slice_name}" | tr '[:upper:]' '[:lower:]' | tr ' ' '-')"
+    slice_slug="$(make_slice_slug "${slice_name}")"
 
     build_log="TestResults/${slice_slug}-build.log"
     openapi_artifacts_log="TestResults/${slice_slug}-openapi-artifacts.log"
