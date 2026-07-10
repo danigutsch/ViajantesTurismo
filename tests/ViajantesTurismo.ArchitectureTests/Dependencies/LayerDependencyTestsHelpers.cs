@@ -121,11 +121,18 @@ internal static partial class LayerDependencyTestsHelpers
         string[] snippets)
     {
         var absoluteDocumentPath = Path.Combine(repositoryRoot, documentPath);
+        var normalizedDocumentPath = documentPath.Replace('\\', '/');
+
+        if (!File.Exists(absoluteDocumentPath))
+        {
+            return [$"{normalizedDocumentPath}: document not found"];
+        }
+
         var documentText = File.ReadAllText(absoluteDocumentPath);
 
         return snippets
             .Where(snippet => !documentText.Contains(snippet, StringComparison.Ordinal))
-            .Select(snippet => $"{documentPath}: missing rule snippet: {snippet}");
+            .Select(snippet => $"{normalizedDocumentPath}: missing rule snippet: {snippet}");
     }
 
     private static IEnumerable<string> SourceProjectFiles(string repositoryRoot)
