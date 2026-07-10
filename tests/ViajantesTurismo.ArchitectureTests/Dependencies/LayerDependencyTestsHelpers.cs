@@ -168,27 +168,30 @@ internal static partial class LayerDependencyTestsHelpers
 
     private static bool IsPrimarySharedKernelProjectName(string projectName)
     {
+        string[] optionalSubmoduleSegmentNames =
+        [
+            "Analyzers",
+            "AspNet",
+            "AspNetCore",
+            "Azure",
+            "CloudEvents",
+            "CodeFixes",
+            "Dapper",
+            "EntityFrameworkCore",
+            "Grafana",
+            "Hosting",
+            "Npgsql",
+            "Redis",
+            "SourceGenerator",
+            "Web"
+        ];
+
         return projectName.StartsWith("SharedKernel.", StringComparison.OrdinalIgnoreCase)
             && !IsAbstractionsProjectName(projectName)
             && !IsSharedKernelTestingSubmodule(projectName)
-            && !HasAnyProjectNameSegment(
-                projectName,
-                [
-                    "Analyzers",
-                    "AspNet",
-                    "AspNetCore",
-                    "Azure",
-                    "CloudEvents",
-                    "CodeFixes",
-                    "Dapper",
-                    "EntityFrameworkCore",
-                    "Grafana",
-                    "Hosting",
-                    "Npgsql",
-                    "Redis",
-                    "SourceGenerator",
-                    "Web"
-                ]);
+            && !projectName.Split('.')
+                .Skip(2)
+                .Any(segment => optionalSubmoduleSegmentNames.Contains(segment, StringComparer.OrdinalIgnoreCase));
     }
 
     private static bool IsSharedKernelTestingSubmodule(string projectName)
