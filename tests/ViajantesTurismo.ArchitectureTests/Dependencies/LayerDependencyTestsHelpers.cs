@@ -230,7 +230,7 @@ internal static partial class LayerDependencyTestsHelpers
     }
 
     private static bool IsAbstractionsProjectName(string projectName) =>
-        projectName.EndsWith(".Abstractions", StringComparison.Ordinal);
+        projectName.EndsWith(".Abstractions", StringComparison.OrdinalIgnoreCase);
 
     private static IEnumerable<string> FindImplementationReferencesFromAbstractionProject(
         string repositoryRoot,
@@ -291,7 +291,7 @@ internal static partial class LayerDependencyTestsHelpers
     private static string GetAbstractionFamilyName(string abstractionProjectName)
     {
         const string abstractionsSegment = ".Abstractions";
-        var segmentIndex = abstractionProjectName.IndexOf(abstractionsSegment, StringComparison.Ordinal);
+        var segmentIndex = abstractionProjectName.IndexOf(abstractionsSegment, StringComparison.OrdinalIgnoreCase);
 
         return segmentIndex >= 0
             ? abstractionProjectName[..segmentIndex]
@@ -324,7 +324,7 @@ internal static partial class LayerDependencyTestsHelpers
     {
         var segments = projectName.Split('.');
 
-        return segments.Any(segment => segmentNames.Contains(segment, StringComparer.Ordinal));
+        return segments.Any(segment => segmentNames.Contains(segment, StringComparer.OrdinalIgnoreCase));
     }
 
     private static string GetReferencedProjectName(string referencingProjectPath, string? include)
@@ -372,7 +372,7 @@ internal static partial class LayerDependencyTestsHelpers
     private static bool HasProjectNameSegment(string projectName, string segmentName)
     {
         return projectName.Split('.')
-            .Any(segment => segment.Equals(segmentName, StringComparison.Ordinal));
+            .Any(segment => segment.Equals(segmentName, StringComparison.OrdinalIgnoreCase));
     }
 
     private static bool NamesEntityFrameworkCoreAdapter(string filePath)
