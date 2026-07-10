@@ -136,10 +136,9 @@ public static class ContractConstants
     /// <summary>
     /// Content types accepted by customer import uploads.
     /// </summary>
-    public static IReadOnlyCollection<string> CustomerImportAllowedContentTypes { get; } =
-    [
+    public static IReadOnlyCollection<string> CustomerImportAllowedContentTypes { get; } = Array.AsReadOnly([
         CustomerImportTextCsvContentType,
         CustomerImportApplicationCsvContentType,
         CustomerImportExcelCsvContentType
-    ];
+    ]);
 }
