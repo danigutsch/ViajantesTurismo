@@ -138,6 +138,12 @@ build_projects() {
         return 1
     fi
 
+    if [[ $# -eq 1 ]]; then
+        echo "Building 1 test project as one MSBuild graph with up to ${max_parallel} node(s)."
+        dotnet build "$1" --no-restore "-maxcpucount:${max_parallel}"
+        return
+    fi
+
     local solution_name="${slice_slug}-build"
     local solution_file=""
 

@@ -71,9 +71,10 @@ bash scripts/run-ci-test-slice.sh \
   --projects-file scripts/ci-test-slices/fast-validation.txt
 ```
 
-`scripts/run-ci-test-slice.sh` is a post-restore helper. It builds only the selected test
-projects through one temporary solution, runs them with coverage, and records per-slice timing
-information. Aggregated HTML coverage is generated once later by the `SonarCloud` job.
+`scripts/run-ci-test-slice.sh` is a post-restore helper. It builds single-project slices directly,
+builds multi-project slices through one temporary solution, runs them with coverage, and records
+per-slice timing information. Aggregated HTML coverage is generated once later by the `SonarCloud`
+job.
 
 ### Admin Integration Tests job
 
