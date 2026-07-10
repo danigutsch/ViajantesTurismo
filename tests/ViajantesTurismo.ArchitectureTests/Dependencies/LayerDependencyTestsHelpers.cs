@@ -80,7 +80,7 @@ internal static partial class LayerDependencyTestsHelpers
     public static string[] FindAbstractionProjectImplementationReferences(string repositoryRoot)
     {
         return SourceProjectFiles(repositoryRoot)
-            .Where(HasAbstractionsProjectNameSegment)
+            .Where(HasAbstractionsProjectPathSuffix)
             .SelectMany(filePath => FindImplementationReferencesFromAbstractionProject(repositoryRoot, filePath))
             .ToArray();
     }
@@ -171,18 +171,21 @@ internal static partial class LayerDependencyTestsHelpers
             .Where(reference => IsDescendantSharedKernelProjectReference(
                 referencingProjectName,
                 reference.ReferencedProjectName))
-            .Where(reference => !HasProjectNameSegment(reference.ReferencedProjectName, "Abstractions"))
+            .Where(reference => !IsAbstractionsProjectName(reference.ReferencedProjectName))
             .Select(reference =>
                 $"{relativePath}: {referencingProjectName} -> {reference.ReferencedProjectName}: "
                 + $"ProjectReference Include=\"{reference.Include}\"");
     }
 
-    private static bool HasAbstractionsProjectNameSegment(string filePath)
+    private static bool HasAbstractionsProjectPathSuffix(string filePath)
     {
         var projectName = Path.GetFileNameWithoutExtension(filePath);
 
-        return HasProjectNameSegment(projectName, "Abstractions");
+        return IsAbstractionsProjectName(projectName);
     }
+
+    private static bool IsAbstractionsProjectName(string projectName) =>
+        projectName.EndsWith(".Abstractions", StringComparison.Ordinal);
 
     private static IEnumerable<string> FindImplementationReferencesFromAbstractionProject(
         string repositoryRoot,
