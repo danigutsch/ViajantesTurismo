@@ -168,7 +168,7 @@ internal static partial class LayerDependencyTestsHelpers
 
     private static bool IsPrimarySharedKernelProjectName(string projectName)
     {
-        return projectName.StartsWith("SharedKernel.", StringComparison.Ordinal)
+        return projectName.StartsWith("SharedKernel.", StringComparison.OrdinalIgnoreCase)
             && !IsAbstractionsProjectName(projectName)
             && !IsSharedKernelTestingSubmodule(projectName)
             && !HasAnyProjectNameSegment(
@@ -193,7 +193,7 @@ internal static partial class LayerDependencyTestsHelpers
 
     private static bool IsSharedKernelTestingSubmodule(string projectName)
     {
-        return projectName.StartsWith("SharedKernel.Testing.", StringComparison.Ordinal);
+        return projectName.StartsWith("SharedKernel.Testing.", StringComparison.OrdinalIgnoreCase);
     }
 
     private static IEnumerable<string> FindRuntimeReferencesToDescendantOptionalSubmodules(
@@ -284,8 +284,8 @@ internal static partial class LayerDependencyTestsHelpers
         var abstractionFamilyName = GetAbstractionFamilyName(abstractionProjectName);
 
         return !IsAbstractionsProjectName(referencedProjectName)
-            && (referencedProjectName.Equals(abstractionFamilyName, StringComparison.Ordinal)
-                || referencedProjectName.StartsWith($"{abstractionFamilyName}.", StringComparison.Ordinal));
+            && (referencedProjectName.Equals(abstractionFamilyName, StringComparison.OrdinalIgnoreCase)
+                || referencedProjectName.StartsWith($"{abstractionFamilyName}.", StringComparison.OrdinalIgnoreCase));
     }
 
     private static string GetAbstractionFamilyName(string abstractionProjectName)
@@ -365,8 +365,8 @@ internal static partial class LayerDependencyTestsHelpers
         string referencingProjectName,
         string referencedProjectName)
     {
-        return referencedProjectName.StartsWith("SharedKernel.", StringComparison.Ordinal)
-            && referencedProjectName.StartsWith($"{referencingProjectName}.", StringComparison.Ordinal);
+        return referencedProjectName.StartsWith("SharedKernel.", StringComparison.OrdinalIgnoreCase)
+            && referencedProjectName.StartsWith($"{referencingProjectName}.", StringComparison.OrdinalIgnoreCase);
     }
 
     private static bool HasProjectNameSegment(string projectName, string segmentName)
@@ -379,8 +379,8 @@ internal static partial class LayerDependencyTestsHelpers
     {
         var projectName = Path.GetFileNameWithoutExtension(filePath);
 
-        return projectName.EndsWith(".EntityFrameworkCore", StringComparison.Ordinal)
-            || projectName.Contains(".EntityFrameworkCore.", StringComparison.Ordinal);
+        return projectName.EndsWith(".EntityFrameworkCore", StringComparison.OrdinalIgnoreCase)
+            || projectName.Contains(".EntityFrameworkCore.", StringComparison.OrdinalIgnoreCase);
     }
 
     private static IEnumerable<string> SharedKernelSourceFiles(string repositoryRoot)
@@ -426,23 +426,23 @@ internal static partial class LayerDependencyTestsHelpers
     {
         var fileName = Path.GetFileNameWithoutExtension(filePath);
 
-        return fileName.EndsWith(".Domain", StringComparison.Ordinal)
-            || fileName.EndsWith(".Application", StringComparison.Ordinal)
-            || fileName.EndsWith(".Contracts", StringComparison.Ordinal);
+        return fileName.EndsWith(".Domain", StringComparison.OrdinalIgnoreCase)
+            || fileName.EndsWith(".Application", StringComparison.OrdinalIgnoreCase)
+            || fileName.EndsWith(".Contracts", StringComparison.OrdinalIgnoreCase);
     }
 
     private static bool IsProviderNeutralSharedKernelProject(string filePath)
     {
         var projectName = Path.GetFileNameWithoutExtension(filePath);
 
-        return projectName.StartsWith("SharedKernel.", StringComparison.Ordinal)
-            && !projectName.Contains(".Npgsql", StringComparison.Ordinal)
-            && !projectName.Contains(".EntityFrameworkCore", StringComparison.Ordinal)
-            && !projectName.Contains(".Dapper", StringComparison.Ordinal)
-            && !projectName.Contains(".Azure", StringComparison.Ordinal)
-            && !projectName.Contains(".Redis", StringComparison.Ordinal)
-            && !projectName.Contains(".CloudEvents", StringComparison.Ordinal)
-            && !projectName.Contains(".Aspire.Hosting", StringComparison.Ordinal);
+        return projectName.StartsWith("SharedKernel.", StringComparison.OrdinalIgnoreCase)
+            && !projectName.Contains(".Npgsql", StringComparison.OrdinalIgnoreCase)
+            && !projectName.Contains(".EntityFrameworkCore", StringComparison.OrdinalIgnoreCase)
+            && !projectName.Contains(".Dapper", StringComparison.OrdinalIgnoreCase)
+            && !projectName.Contains(".Azure", StringComparison.OrdinalIgnoreCase)
+            && !projectName.Contains(".Redis", StringComparison.OrdinalIgnoreCase)
+            && !projectName.Contains(".CloudEvents", StringComparison.OrdinalIgnoreCase)
+            && !projectName.Contains(".Aspire.Hosting", StringComparison.OrdinalIgnoreCase);
     }
 
     private static IEnumerable<string> FindAdapterPackageReferences(string repositoryRoot, string filePath)
@@ -464,21 +464,21 @@ internal static partial class LayerDependencyTestsHelpers
 
         return document.Descendants("PackageReference")
             .Select(element => element.Attribute("Include")?.Value)
-            .Any(packageName => packageName is not null && packageName.Contains("EntityFrameworkCore", StringComparison.Ordinal));
+            .Any(packageName => packageName is not null && packageName.Contains("EntityFrameworkCore", StringComparison.OrdinalIgnoreCase));
     }
 
     private static bool IsAdapterPackage(string packageName)
     {
-        return packageName.Equals("Npgsql", StringComparison.Ordinal)
-            || packageName.StartsWith("Npgsql.", StringComparison.Ordinal)
-            || packageName.Contains("EntityFrameworkCore", StringComparison.Ordinal)
-            || packageName.Equals("Dapper", StringComparison.Ordinal)
-            || packageName.StartsWith("Azure.", StringComparison.Ordinal)
-            || packageName.StartsWith("Aspire.Npgsql", StringComparison.Ordinal)
-            || packageName.StartsWith("Aspire.StackExchange.Redis", StringComparison.Ordinal)
-            || packageName.StartsWith("StackExchange.Redis", StringComparison.Ordinal)
-            || packageName.StartsWith("RabbitMQ.", StringComparison.Ordinal)
-            || packageName.StartsWith("MassTransit", StringComparison.Ordinal);
+        return packageName.Equals("Npgsql", StringComparison.OrdinalIgnoreCase)
+            || packageName.StartsWith("Npgsql.", StringComparison.OrdinalIgnoreCase)
+            || packageName.Contains("EntityFrameworkCore", StringComparison.OrdinalIgnoreCase)
+            || packageName.Equals("Dapper", StringComparison.OrdinalIgnoreCase)
+            || packageName.StartsWith("Azure.", StringComparison.OrdinalIgnoreCase)
+            || packageName.StartsWith("Aspire.Npgsql", StringComparison.OrdinalIgnoreCase)
+            || packageName.StartsWith("Aspire.StackExchange.Redis", StringComparison.OrdinalIgnoreCase)
+            || packageName.StartsWith("StackExchange.Redis", StringComparison.OrdinalIgnoreCase)
+            || packageName.StartsWith("RabbitMQ.", StringComparison.OrdinalIgnoreCase)
+            || packageName.StartsWith("MassTransit", StringComparison.OrdinalIgnoreCase);
     }
 
     [GeneratedRegex(@"^\s*(global\s+)?using\s+(?:(static\s+)?(global::)?ViajantesTurismo(\.|;)|[A-Za-z_][A-Za-z0-9_]*\s*=\s*(global::)?ViajantesTurismo(\.|;))")]
