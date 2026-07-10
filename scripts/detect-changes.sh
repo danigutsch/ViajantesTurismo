@@ -112,6 +112,7 @@ fast_validation_patterns=(
     "src/SharedKernel/SharedKernel.AI/**"
     "src/SharedKernel/SharedKernel.ApiVersioning/**"
     "src/SharedKernel/SharedKernel.ApiVersioning.AspNetCore/**"
+    "src/SharedKernel/SharedKernel.AspNetCore/**"
     "src/SharedKernel/SharedKernel.Aspire.Hosting.Grafana/**"
     "src/SharedKernel/SharedKernel.Domain/**"
     "src/SharedKernel/SharedKernel.Domain.SourceGenerator/**"

@@ -94,4 +94,51 @@ public static class ContractConstants
     /// The maximum number of customers allowed for a tour.
     /// </summary>
     public const int MaxTourCustomers = 20;
+
+    /// <summary>
+    /// Standard CSV media type accepted by customer import uploads.
+    /// </summary>
+    public const string CustomerImportTextCsvContentType = "text/csv";
+
+    /// <summary>
+    /// Alternate CSV media type accepted by customer import uploads.
+    /// </summary>
+    public const string CustomerImportApplicationCsvContentType = "application/csv";
+
+    /// <summary>
+    /// Legacy spreadsheet media type commonly used for CSV uploads.
+    /// </summary>
+    public const string CustomerImportExcelCsvContentType = "application/vnd.ms-excel";
+
+    /// <summary>
+    /// Maximum accepted customer import file size in bytes.
+    /// </summary>
+    public const long CustomerImportMaxFileBytes = 1_048_576;
+
+    /// <summary>
+    /// Maximum budget for the serialized customer import conflict-resolution form field in bytes.
+    /// </summary>
+    public const long CustomerImportConflictResolutionsMaxBytes = 16_384;
+
+    /// <summary>
+    /// Additional multipart envelope budget for customer import requests in bytes.
+    /// </summary>
+    public const long CustomerImportMultipartEnvelopeBytes = 16_384;
+
+    /// <summary>
+    /// Maximum accepted customer import multipart request size in bytes.
+    /// </summary>
+    public const long CustomerImportMaxRequestBytes =
+        CustomerImportMaxFileBytes
+        + CustomerImportConflictResolutionsMaxBytes
+        + CustomerImportMultipartEnvelopeBytes;
+
+    /// <summary>
+    /// Content types accepted by customer import uploads.
+    /// </summary>
+    public static IReadOnlyCollection<string> CustomerImportAllowedContentTypes { get; } = Array.AsReadOnly([
+        CustomerImportTextCsvContentType,
+        CustomerImportApplicationCsvContentType,
+        CustomerImportExcelCsvContentType
+    ]);
 }

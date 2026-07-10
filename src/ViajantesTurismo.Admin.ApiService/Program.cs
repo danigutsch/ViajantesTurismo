@@ -1,3 +1,4 @@
+using SharedKernel.AspNetCore;
 using ViajantesTurismo.Admin.ApiService;
 using ViajantesTurismo.Admin.ApiService.Bookings;
 using ViajantesTurismo.Admin.ApiService.Customers;
@@ -16,6 +17,8 @@ builder.AddServiceDefaults();
 builder.Services.AddSingleton(TimeProvider.System);
 
 builder.Services.AddProblemDetails();
+builder.Services.AddConfiguredTrustedForwardedHeaders(builder.Configuration.GetSection("Security:ForwardedHeaders"));
+builder.Services.AddAdminSecurityBaseline(builder.Configuration);
 
 builder.Services.ConfigureHttpJsonOptions(options => options.SerializerOptions.TypeInfoResolverChain.Insert(0, AppJsonSerializerContext.Default));
 
@@ -28,10 +31,16 @@ var app = builder.Build();
 
 app.UseExceptionHandler();
 
+app.UseForwardedHeaders();
+
 if (app.Environment.IsDevelopment())
 {
     app.MapOpenApi();
 }
+
+app.UseCors(AdminSecurityBaseline.CorsPolicyName);
+
+app.UseRateLimiter();
 
 app.MapToursEndpoints();
 app.MapCustomerEndpoints()

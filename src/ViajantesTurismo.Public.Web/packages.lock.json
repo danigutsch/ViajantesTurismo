@@ -95,6 +95,12 @@
           "Polly.Core": "8.4.2"
         }
       },
+      "sharedkernel.aspnetcore": {
+        "type": "Project",
+        "dependencies": {
+          "SharedKernel.InputNormalization": "[0.1.0-alpha.0, )"
+        }
+      },
       "sharedkernel.httpcaching.aspnetcore": {
         "type": "Project"
       },
@@ -106,6 +112,9 @@
           "OpenTelemetry.Extensions.Hosting": "[1.16.0, )",
           "OpenTelemetry.Instrumentation.Http": "[1.16.0, )"
         }
+      },
+      "sharedkernel.inputnormalization": {
+        "type": "Project"
       },
       "sharedkernel.mediator.abstractions": {
         "type": "Project"

@@ -36,11 +36,13 @@ internal static class CustomerEndpoints
             .WithSummary("Retrieves a customer by their ID.");
 
         customersGroup.MapPost("/", CreateCustomer)
+            .RequireRateLimiting(AdminSecurityBaseline.MutationRateLimitPolicy)
             .WithName("CreateCustomer")
             .WithDescription("Creates a new customer with all required information.")
             .WithSummary("Creates a new customer.");
 
         customersGroup.MapPut("/{id:guid}", UpdateCustomer)
+            .RequireRateLimiting(AdminSecurityBaseline.MutationRateLimitPolicy)
             .WithName("UpdateCustomer")
             .WithDescription("Updates an existing customer.")
             .WithSummary("Updates an existing customer.");

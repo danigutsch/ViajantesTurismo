@@ -724,6 +724,12 @@
           "xunit.v3.runner.common": "[3.2.2]"
         }
       },
+      "sharedkernel.aspnetcore": {
+        "type": "Project",
+        "dependencies": {
+          "SharedKernel.InputNormalization": "[0.1.0-alpha.0, )"
+        }
+      },
       "sharedkernel.buildingblocks": {
         "type": "Project",
         "dependencies": {
@@ -844,6 +850,7 @@
         "dependencies": {
           "Aspire.StackExchange.Redis.OutputCaching": "[13.4.6, )",
           "Microsoft.AspNetCore.Components.QuickGrid": "[10.0.9, )",
+          "SharedKernel.AspNetCore": "[0.1.0-alpha.0, )",
           "SharedKernel.HttpClients": "[0.1.0-alpha.0, )",
           "ViajantesTurismo.Admin.Contracts": "[0.1.0-alpha.0, )",
           "ViajantesTurismo.Catalog.Contracts": "[0.1.0-alpha.0, )",

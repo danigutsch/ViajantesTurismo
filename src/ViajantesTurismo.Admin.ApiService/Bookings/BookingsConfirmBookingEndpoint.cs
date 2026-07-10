@@ -14,6 +14,7 @@ internal static class BookingsConfirmBookingEndpoint
         ArgumentNullException.ThrowIfNull(bookingsGroup);
 
         bookingsGroup.MapPost("/{id:guid}/confirm", ConfirmBooking)
+            .RequireRateLimiting(AdminSecurityBaseline.MutationRateLimitPolicy)
             .WithAdminMetadata("ConfirmBooking", "Confirms a booking by transitioning its status to Confirmed.", "Confirms a booking.");
     }
 

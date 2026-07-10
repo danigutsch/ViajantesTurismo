@@ -50,6 +50,7 @@
         <Project Path="src/SharedKernel/SharedKernel.Results.SourceGenerator/SharedKernel.Results.SourceGenerator.csproj" />
         <Project Path="src/SharedKernel/SharedKernel.Results/SharedKernel.Results.csproj" />
         <Project Path="src/SharedKernel/SharedKernel.Results.AspNet/SharedKernel.Results.AspNet.csproj" />
+        <Project Path="src/SharedKernel/SharedKernel.AspNetCore/SharedKernel.AspNetCore.csproj" />
         <Project Path="src/SharedKernel/SharedKernel.Idempotency/SharedKernel.Idempotency.csproj" />
         <Project Path="src/SharedKernel/SharedKernel.Idempotency.EntityFrameworkCore/SharedKernel.Idempotency.EntityFrameworkCore.csproj" />
         <Project Path="src/SharedKernel/SharedKernel.OpenApi/SharedKernel.OpenApi.csproj" />
@@ -161,6 +162,7 @@
         <Project Path="tools/SharedKernel.Testing.CodeFixRunner/SharedKernel.Testing.CodeFixRunner.csproj" />
         <Project Path="tools/SharedKernel.Versioning.Tool/SharedKernel.Versioning.Tool.csproj" />
         <Project Path="tools/SharedKernel.Documentation.Tool/SharedKernel.Documentation.Tool.csproj" />
+        <Project Path="tools/ViajantesTurismo.SecurityChecks.Tool/ViajantesTurismo.SecurityChecks.Tool.csproj" />
     </Folder>
     <Folder Name="/samples/">
         <Project Path="samples/Mediator/Mediator.Sample/Mediator.Sample.csproj" />

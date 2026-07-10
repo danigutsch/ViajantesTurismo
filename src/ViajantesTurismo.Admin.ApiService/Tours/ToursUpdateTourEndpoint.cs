@@ -21,6 +21,7 @@ internal static class ToursUpdateTourEndpoint
         ArgumentNullException.ThrowIfNull(toursGroup);
 
         toursGroup.MapPut("/{id:guid}", UpdateTour)
+            .RequireRateLimiting(AdminSecurityBaseline.MutationRateLimitPolicy)
             .WithAdminMetadata("UpdateTour", "Updates an existing tour.", "Updates an existing tour.");
     }
 

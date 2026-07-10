@@ -14,6 +14,7 @@ internal static class BookingsUpdateBookingDiscountEndpoint
         ArgumentNullException.ThrowIfNull(bookingsGroup);
 
         bookingsGroup.MapPut("/{id:guid}/discount", UpdateBookingDiscount)
+            .RequireRateLimiting(AdminSecurityBaseline.MutationRateLimitPolicy)
             .WithAdminMetadata("UpdateBookingDiscount", "Updates the discount for a booking.", "Updates booking discount.");
     }
 

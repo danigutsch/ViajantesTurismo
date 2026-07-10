@@ -22,6 +22,7 @@ internal static class BookingsCreateBookingEndpoint
         ArgumentNullException.ThrowIfNull(bookingsGroup);
 
         bookingsGroup.MapPost("/", CreateBooking)
+            .RequireRateLimiting(AdminSecurityBaseline.MutationRateLimitPolicy)
             .WithAdminMetadata("CreateBooking", "Creates a new booking for a tour.", "Creates a new booking.");
     }
 

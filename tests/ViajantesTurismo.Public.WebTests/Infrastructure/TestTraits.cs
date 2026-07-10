@@ -11,6 +11,11 @@ public static class TestTraits
     public const string EndpointCategory = TestTraitValues.EndpointCategory;
 
     /// <summary>
+    /// Category value for security-focused tests.
+    /// </summary>
+    public const string SecurityCategory = TestTraitValues.SecurityCategory;
+
+    /// <summary>
     /// Scope value for web integration tests.
     /// </summary>
     public const string WebIntegrationScope = "web-integration";
