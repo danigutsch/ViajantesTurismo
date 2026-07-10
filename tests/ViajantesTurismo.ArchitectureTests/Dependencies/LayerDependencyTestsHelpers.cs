@@ -53,13 +53,228 @@ internal static partial class LayerDependencyTestsHelpers
 
     public static string[] FindSharedKernelEntityFrameworkCoreAdapterNamingViolations(string repositoryRoot)
     {
-        var sharedKernelRoot = Path.Combine(repositoryRoot, "src", "SharedKernel");
-
-        return Directory.EnumerateFiles(sharedKernelRoot, "*.csproj", SearchOption.AllDirectories)
+        return SharedKernelSourceProjectFiles(repositoryRoot)
             .Where(ReferencesEntityFrameworkCorePackage)
             .Where(filePath => !NamesEntityFrameworkCoreAdapter(filePath))
             .Select(filePath => Path.GetRelativePath(repositoryRoot, filePath).Replace(Path.DirectorySeparatorChar, '/'))
             .ToArray();
+    }
+
+    public static string[] FindSharedKernelCoreSegmentProjectNames(string repositoryRoot)
+    {
+        return SharedKernelSourceProjectFiles(repositoryRoot)
+            .Where(HasCoreProjectNameSegment)
+            .Select(filePath => Path.GetRelativePath(repositoryRoot, filePath).Replace(Path.DirectorySeparatorChar, '/'))
+            .ToArray();
+    }
+
+    public static string[] FindSharedKernelRuntimeReferencesToDescendantOptionalSubmodules(string repositoryRoot)
+    {
+        return SharedKernelSourceProjectFiles(repositoryRoot)
+            .SelectMany(filePath => FindRuntimeReferencesToDescendantOptionalSubmodules(repositoryRoot, filePath))
+            .ToArray();
+    }
+
+    public static string[] FindAbstractionProjectImplementationReferences(string repositoryRoot)
+    {
+        return SourceProjectFiles(repositoryRoot)
+            .Where(HasAbstractionsProjectNameSegment)
+            .SelectMany(filePath => FindImplementationReferencesFromAbstractionProject(repositoryRoot, filePath))
+            .ToArray();
+    }
+
+    private static IEnumerable<string> SourceProjectFiles(string repositoryRoot)
+    {
+        var sourceRoot = Path.Combine(repositoryRoot, "src");
+
+        return Directory.EnumerateFiles(sourceRoot, "*.csproj", SearchOption.AllDirectories)
+            .Where(IsSourceFile);
+    }
+
+    private static IEnumerable<string> SharedKernelSourceProjectFiles(string repositoryRoot)
+    {
+        var sharedKernelRoot = Path.Combine(repositoryRoot, "src", "SharedKernel");
+
+        return Directory.EnumerateFiles(sharedKernelRoot, "*.csproj", SearchOption.AllDirectories)
+            .Where(IsSourceFile);
+    }
+
+    private static bool HasCoreProjectNameSegment(string filePath)
+    {
+        var projectName = Path.GetFileNameWithoutExtension(filePath);
+
+        return projectName.Split('.')
+            .Any(segment => segment.Equals("Core", StringComparison.Ordinal));
+    }
+
+    private static IEnumerable<string> FindRuntimeReferencesToDescendantOptionalSubmodules(
+        string repositoryRoot,
+        string filePath)
+    {
+        var referencingProjectName = Path.GetFileNameWithoutExtension(filePath);
+        var relativePath = Path.GetRelativePath(repositoryRoot, filePath)
+            .Replace(Path.DirectorySeparatorChar, '/');
+        var document = XDocument.Load(filePath);
+
+        return document.Descendants("ProjectReference")
+            .Select(element => (Element: element, Include: element.Attribute("Include")?.Value))
+            .Where(reference => !string.IsNullOrWhiteSpace(reference.Include))
+            .Select(reference => (
+                reference.Element,
+                reference.Include,
+                ReferencedProjectName: GetReferencedProjectName(filePath, reference.Include)))
+            .Where(reference => IsRuntimeProjectReference(reference.Element))
+            .Where(reference => IsDescendantSharedKernelProjectReference(
+                referencingProjectName,
+                reference.ReferencedProjectName))
+            .Where(reference => !HasProjectNameSegment(reference.ReferencedProjectName, "Abstractions"))
+            .Select(reference =>
+                $"{relativePath}: {referencingProjectName} -> {reference.ReferencedProjectName}: "
+                + $"ProjectReference Include=\"{reference.Include}\"");
+    }
+
+    private static bool HasAbstractionsProjectNameSegment(string filePath)
+    {
+        var projectName = Path.GetFileNameWithoutExtension(filePath);
+
+        return HasProjectNameSegment(projectName, "Abstractions");
+    }
+
+    private static IEnumerable<string> FindImplementationReferencesFromAbstractionProject(
+        string repositoryRoot,
+        string filePath)
+    {
+        var abstractionProjectName = Path.GetFileNameWithoutExtension(filePath);
+        var relativePath = Path.GetRelativePath(repositoryRoot, filePath)
+            .Replace(Path.DirectorySeparatorChar, '/');
+        var document = XDocument.Load(filePath);
+
+        var projectReferences = document.Descendants("ProjectReference")
+            .Select(element => element.Attribute("Include")?.Value)
+            .Where(include => !string.IsNullOrWhiteSpace(include))
+            .Select(include => (Include: include, ReferencedProjectName: GetReferencedProjectName(filePath, include)))
+            .Where(reference => IsImplementationProjectReference(abstractionProjectName, reference.ReferencedProjectName))
+            .Select(reference =>
+                $"{relativePath}: {abstractionProjectName} -> {reference.ReferencedProjectName}: "
+                + $"ProjectReference Include=\"{reference.Include}\"");
+
+        var packageReferences = document.Descendants("PackageReference")
+            .Select(element => element.Attribute("Include")?.Value)
+            .Where(packageName => packageName is not null && IsAdapterPackage(packageName))
+            .Select(packageName => $"{relativePath}: PackageReference Include=\"{packageName}\"");
+
+        return projectReferences.Concat(packageReferences);
+    }
+
+    private static bool IsImplementationProjectReference(string abstractionProjectName, string referencedProjectName)
+    {
+        return IsSameFamilyImplementationProjectReference(abstractionProjectName, referencedProjectName)
+            || IsLayerDirectionViolation(abstractionProjectName, referencedProjectName)
+            || HasImplementationProjectNameSegment(referencedProjectName);
+    }
+
+    private static bool IsLayerDirectionViolation(string abstractionProjectName, string referencedProjectName)
+    {
+        return HasProjectNameSegment(abstractionProjectName, "Domain")
+            ? HasAnyProjectNameSegment(referencedProjectName, ["Application", "Infrastructure", "ApiService", "Web"])
+            : HasProjectNameSegment(abstractionProjectName, "Application")
+                && HasAnyProjectNameSegment(referencedProjectName, ["Infrastructure", "ApiService", "Web"]);
+    }
+
+    private static bool IsSameFamilyImplementationProjectReference(string abstractionProjectName, string referencedProjectName)
+    {
+        var abstractionFamilyName = GetAbstractionFamilyName(abstractionProjectName);
+
+        return !HasProjectNameSegment(referencedProjectName, "Abstractions")
+            && (referencedProjectName.Equals(abstractionFamilyName, StringComparison.Ordinal)
+                || referencedProjectName.StartsWith($"{abstractionFamilyName}.", StringComparison.Ordinal));
+    }
+
+    private static string GetAbstractionFamilyName(string abstractionProjectName)
+    {
+        const string abstractionsSegment = ".Abstractions";
+        var segmentIndex = abstractionProjectName.IndexOf(abstractionsSegment, StringComparison.Ordinal);
+
+        return segmentIndex >= 0
+            ? abstractionProjectName[..segmentIndex]
+            : abstractionProjectName;
+    }
+
+    private static bool HasImplementationProjectNameSegment(string projectName)
+    {
+        return HasAnyProjectNameSegment(
+            projectName,
+            [
+                "Analyzers",
+                "ApiService",
+                "AspNet",
+                "AspNetCore",
+                "CloudEvents",
+                "CodeFixes",
+                "Dapper",
+                "EntityFrameworkCore",
+                "Hosting",
+                "Infrastructure",
+                "Npgsql",
+                "Persistence",
+                "SourceGenerator",
+                "Web"
+            ]);
+    }
+
+    private static bool HasAnyProjectNameSegment(string projectName, string[] segmentNames)
+    {
+        var segments = projectName.Split('.');
+
+        return segments.Any(segment => segmentNames.Contains(segment, StringComparer.Ordinal));
+    }
+
+    private static string GetReferencedProjectName(string referencingProjectPath, string? include)
+    {
+        if (string.IsNullOrWhiteSpace(include))
+        {
+            throw new InvalidOperationException($"ProjectReference in {referencingProjectPath} is missing Include.");
+        }
+
+        var projectDirectory = Path.GetDirectoryName(referencingProjectPath) ?? throw new InvalidOperationException($"Project path has no directory: {referencingProjectPath}");
+        var referencedProjectPath = Path.GetFullPath(Path.Combine(projectDirectory, include));
+
+        return Path.GetFileNameWithoutExtension(referencedProjectPath);
+    }
+
+    private static bool IsRuntimeProjectReference(XElement element)
+    {
+        return !HasAttributeValue(element, "ReferenceOutputAssembly", "false")
+            && !HasAnalyzerOrPackagingOutputItemType(element);
+    }
+
+    private static bool HasAttributeValue(XElement element, string attributeName, string value)
+    {
+        return element.Attribute(attributeName)?.Value.Equals(value, StringComparison.OrdinalIgnoreCase) == true;
+    }
+
+    private static bool HasAnalyzerOrPackagingOutputItemType(XElement element)
+    {
+        var outputItemType = element.Attribute("OutputItemType")?.Value;
+
+        return outputItemType is not null
+            && (outputItemType.Contains("Analyzer", StringComparison.OrdinalIgnoreCase)
+                || outputItemType.Contains("Pack", StringComparison.OrdinalIgnoreCase)
+                || outputItemType.Contains("Package", StringComparison.OrdinalIgnoreCase));
+    }
+
+    private static bool IsDescendantSharedKernelProjectReference(
+        string referencingProjectName,
+        string referencedProjectName)
+    {
+        return referencedProjectName.StartsWith("SharedKernel.", StringComparison.Ordinal)
+            && referencedProjectName.StartsWith($"{referencingProjectName}.", StringComparison.Ordinal);
+    }
+
+    private static bool HasProjectNameSegment(string projectName, string segmentName)
+    {
+        return projectName.Split('.')
+            .Any(segment => segment.Equals(segmentName, StringComparison.Ordinal));
     }
 
     private static bool NamesEntityFrameworkCoreAdapter(string filePath)

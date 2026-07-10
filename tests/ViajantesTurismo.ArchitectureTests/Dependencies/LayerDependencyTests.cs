@@ -199,4 +199,43 @@ public sealed class LayerDependencyTests
         unexpectedReferences.ShouldBeEmpty();
     }
 
+    [Fact]
+    public void SharedKernel_project_names_should_not_use_core_as_a_module_segment()
+    {
+        // Arrange
+        var repositoryRoot = GetRepositoryRoot();
+
+        // Act
+        var unexpectedProjectNames = FindSharedKernelCoreSegmentProjectNames(repositoryRoot);
+
+        // Assert
+        unexpectedProjectNames.ShouldBeEmpty();
+    }
+
+    [Fact]
+    public void SharedKernel_projects_should_not_reference_descendant_optional_submodules_at_runtime()
+    {
+        // Arrange
+        var repositoryRoot = GetRepositoryRoot();
+
+        // Act
+        var unexpectedReferences = FindSharedKernelRuntimeReferencesToDescendantOptionalSubmodules(repositoryRoot);
+
+        // Assert
+        unexpectedReferences.ShouldBeEmpty();
+    }
+
+    [Fact]
+    public void Abstraction_projects_should_not_reference_implementation_projects_or_adapter_packages()
+    {
+        // Arrange
+        var repositoryRoot = GetRepositoryRoot();
+
+        // Act
+        var unexpectedReferences = FindAbstractionProjectImplementationReferences(repositoryRoot);
+
+        // Assert
+        unexpectedReferences.ShouldBeEmpty();
+    }
+
 }
