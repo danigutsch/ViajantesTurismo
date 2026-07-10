@@ -34,7 +34,10 @@ internal static class PublicWebHttpCache
 
         return app.Use(static async (httpContext, next) =>
         {
-            NormalizeCultureQueryAlias(httpContext);
+            if (IsPublicPageRequest(httpContext))
+            {
+                NormalizeCultureQueryAlias(httpContext);
+            }
 
             httpContext.Response.OnStarting(static state =>
             {
