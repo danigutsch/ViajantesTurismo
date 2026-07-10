@@ -56,6 +56,15 @@ When tags or traits are used, keep them orthogonal:
 - `Category`: smoke, regression, happy-path, edge-case
 - `Host`: in-memory, aspire, browser
 
+Use constants instead of hardcoded trait strings when a constant exists:
+
+- shared trait names: `SharedKernel.Testing.TestTraitNames`
+- shared cross-project values: `SharedKernel.Testing.TestTraitValues`
+- SharedKernel package taxonomy: `SharedKernel.Testing.SharedKernelTestTraitNames`
+- project-specific values: the owning test project's `TestTraits` type
+
+`SKTEST009` reports `Trait` string literals when a canonical constant can be identified safely.
+
 Trait ownership follows the same boundary rules as production code:
 
 - Neutral trait names belong in shared test support only when multiple test areas use them.
@@ -73,6 +82,10 @@ Examples:
 - Architecture tests can use `Scope=architecture` and `Surface=solution`.
 - SharedKernel tests should use neutral SharedKernel values only when the tested behavior is truly
   reusable across bounded contexts.
+
+Coverage thresholds and reporting should follow [Coverage Ownership](COVERAGE_OWNERSHIP.md), so
+transitive coverage from higher-level tests does not replace direct tests owned by the source
+project.
 
 ## Test Platform: MTP + xUnit v3
 
@@ -144,7 +157,8 @@ Official references:
 Mutation-testing note:
 
 - See [Mutation Testing Evaluation](MUTATION_TESTING.md) for the current repository posture on
-  `Stryker.NET` with xUnit v3 + Microsoft.Testing.Platform.
+  `Stryker.NET` with xUnit v3 + Microsoft.Testing.Platform and the triage workflow for survived,
+  no-coverage, timeout, and equivalent mutations.
 - Limited local smoke targets exist for contained unit-test and Roslyn analyzer/source-generator
   projects. Run all configured targets from the repository root:
 

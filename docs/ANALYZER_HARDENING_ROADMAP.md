@@ -34,6 +34,7 @@ The repository already has a stronger analyzer baseline than when this roadmap b
     - `SKSTYLE002` `CancellationToken` parameters must be named `ct`
     - `SKSTYLE003` `CancellationToken` parameters must not declare default values
     - `SKSTYLE004` one top-level type per file, staged as a rollout rule
+    - `SKSTYLE008` domain event types must end with `DomainEvent`
 - `SharedKernel.Style.CodeFixes`
     - safe rename for `SKSTYLE001`
     - safe rename for `SKSTYLE002`
@@ -44,8 +45,11 @@ The repository already has a stronger analyzer baseline than when this roadmap b
 - `SharedKernel.Testing.Analyzers`
     - `SKTEST001` forbid local pragma suppression inside xUnit test methods
     - `SKTEST002` enforce underscore naming for xUnit test methods
+    - `SKTEST009` require canonical trait constants when a safe replacement exists
 - `SharedKernel.Testing.CodeFixes`
     - conservative rename for `SKTEST002`
+    - safe static helper extraction for `SKTEST004`
+    - trait literal replacement for `SKTEST009`
 - `SharedKernel.Mediator.Analyzers`
     - implemented mediator handler, pipeline, and cancellation diagnostics for the current
       mediator contract surface
@@ -99,17 +103,20 @@ The matrix below focuses on the high-value rules and families that matter to rep
 | Area | Rule or family | Source | Current state | Current severity | Exception policy | Next step |
 | --- | --- | --- | --- | --- | --- | --- |
 | Public guard clauses | `CA1062` validate arguments of public methods | Built-in .NET analyzers | Adopted | `error` in production; scoped exceptions only in migrations and Admin BDD step-definition files | Reusable test helpers follow the same guard-clause expectations as production support code; framework-owned step bindings stay on a narrow file-scope exception path | Keep the exception list narrow and avoid reintroducing project-wide suppression |
-| Async naming | `SKSTYLE001` no `Async` suffix | `SharedKernel.Style.Analyzers` | Adopted | `suggestion` | Overrides and interface implementations allowed through config | Raise after remaining cleanup is low-risk |
-| CancellationToken name | `SKSTYLE002` require `ct` | `SharedKernel.Style.Analyzers` | Adopted | `suggestion` | Keep narrow scoped exceptions only when external contracts force a different name | Raise after repo cleanup |
-| CancellationToken defaults | `SKSTYLE003` forbid `CancellationToken ct = default` | `SharedKernel.Style.Analyzers` | Adopted | `suggestion` | Same as above | Raise after repo cleanup |
-| One top-level type per file | `SKSTYLE004` | `SharedKernel.Style.Analyzers` | Adopted with staged exclusions | `suggestion` globally, `none` in tests and explicit file exceptions | Small explicit allowlist in `.editorconfig` | Reduce allowlist over time |
+| Async naming | `SKSTYLE001` no `Async` suffix | `SharedKernel.Style.Analyzers` | Adopted | package default `warning`; repository staged by `.editorconfig` | Overrides and interface implementations allowed through config | Keep active |
+| CancellationToken name | `SKSTYLE002` require `ct` | `SharedKernel.Style.Analyzers` | Adopted | package default `warning`; repository staged by `.editorconfig` | Keep narrow scoped exceptions only when external contracts force a different name | Keep active |
+| CancellationToken defaults | `SKSTYLE003` forbid `CancellationToken ct = default` | `SharedKernel.Style.Analyzers` | Adopted | package default `warning`; repository staged by `.editorconfig` | Same as above | Keep active |
+| One top-level type per file | `SKSTYLE004` | `SharedKernel.Style.Analyzers` | Adopted with staged exclusions | package default `warning`; repository staged by `.editorconfig` | Small explicit allowlist in `.editorconfig` | Reduce allowlist over time |
+| Domain event suffix | `SKSTYLE008` | `SharedKernel.Style.Analyzers` | Adopted | package default `warning` | Applies only to `IDomainEvent` implementations | Keep active and use rename code fix when safe |
 | Aspire image pins | `SKASPIRE001` require tag and verified digest together | `SharedKernel.Aspire.Analyzers` | Adopted | package default `warning` | Code fix inserts uncompilable placeholders only; placeholders must be replaced before commit/build | Keep active and resolve with registry-verified tag and digest values only |
 | Test pragma suppressions | `SKTEST001` | `SharedKernel.Testing.Analyzers` | Adopted | package default `warning` | Test-only by design | Keep active and narrow |
 | Test naming | `SKTEST002` | `SharedKernel.Testing.Analyzers` | Adopted | package default `warning` | Test-only by design | Keep active and use code fix during cleanup |
+| Test trait constants | `SKTEST009` | `SharedKernel.Testing.Analyzers` | Adopted | package default `warning` | Reports only when one safe replacement exists | Keep aligned with `SharedKernel.Testing` constants and project-local `TestTraits` |
+| DDD analyzer catalog | DDD001-DDD005 candidates | Rule catalog | Defined | Not enabled | Avoid DTO/read-model/EF false positives | Implement one rule per follow-up issue after examples/non-examples are proven |
 | Mediator cancellation forwarding | `SKMED006` | `SharedKernel.Mediator.Analyzers` | Adopted | repository-configured `warning` | `.editorconfig`-tunable | Keep active |
-| Stream cancellation semantics | `SKMED007`, `SKMED008` | `SharedKernel.Mediator.Analyzers` | Adopted | `warning` / `info` | `.editorconfig`-tunable | Keep active |
-| CQRS strict handler-to-handler send | `SKMED500` | `SharedKernel.Mediator.Analyzers` | Adopted | `suggestion` | disabled by config if needed | Keep staged |
-| General built-in code style | selected `IDE*` rules such as `IDE0005`, `IDE0028` | Built-in Roslyn style analyzers | Adopted selectively | mixed `warning`/`suggestion` | `.editorconfig`-owned | Keep tuning by signal |
+| Stream cancellation semantics | `SKMED007`, `SKMED008` | `SharedKernel.Mediator.Analyzers` | Adopted | `warning` | `.editorconfig`-tunable | Keep active |
+| CQRS strict handler-to-handler send | `SKMED500` | `SharedKernel.Mediator.Analyzers` | Adopted | `warning` | disabled by config if needed | Keep active |
+| General built-in code style | selected `IDE*` rules such as `IDE0005`, `IDE0028` | Built-in Roslyn style analyzers | Adopted selectively | `.editorconfig`-owned severities | `.editorconfig`-owned | Keep tuning by signal |
 | Sonar repository rules | selected `S*` rules | `SonarAnalyzer.CSharp` | Adopted selectively | mixed | narrow file-scope suppressions in tests/steps | Keep scoped and documented |
 
 ## Fixer-first rollout workflow
@@ -153,6 +160,7 @@ local, deterministic, and safe.
 
 | Candidate | Owning package | Priority | Rationale | Status |
 | --- | --- | --- | --- | --- |
+| `SKTEST004` static helper extraction | `SharedKernel.Testing.CodeFixes` | High | Safe for static helpers that do not use instance state; external runner can apply focused fixes | Adopted for static helper methods only |
 | `SKSTYLE004` split one top-level type per file | `SharedKernel.Style.CodeFixes` | Medium | Repeated staged rollout cleanup; can offer safe file extraction only when names and paths are obvious | Candidate |
 | `CA1062` guard insertion for repository public APIs | None yet | Low | Built-in IDE fixes exist in many cases; custom fixer risks low-value boilerplate | Defer unless recurring non-fixable cases remain |
 | `CS1591` XML documentation generation | None | Low | Existing IDE support is adequate; generated comments are often low-signal | Defer |
@@ -179,11 +187,11 @@ Objectives:
 
 Concrete Phase 1 backlog:
 
-1. Review existing `IDE*`, `CA*`, and `S*` severities for low-noise rules that can move from
-   `suggestion` to `warning`.
+1. Review existing `IDE*`, `CA*`, and `S*` severities for low-noise rules that can move to
+   `warning`.
 2. Shrink file-specific `SKSTYLE004` exceptions as grouped top-level-type files are refactored.
-3. Measure remaining repository violations before raising `SKSTYLE001`, `SKSTYLE002`, or
-   `SKSTYLE003` above `suggestion`.
+3. Measure remaining repository violations while keeping `SKSTYLE001`, `SKSTYLE002`, and
+   `SKSTYLE003` descriptors at warning severity.
 4. Keep `CA1062` out of `tests/Directory.Build.props`; use real guards in reusable test support
    code and only narrow file-scoped exceptions where framework-owned binding entrypoints would
    otherwise force low-value boilerplate.
@@ -317,9 +325,9 @@ When adopting or tightening analyzer rules:
 2. Prefer the smallest enforcement mechanism.
    Do not build a new custom analyzer if a built-in rule plus scoped configuration already solves
    the problem.
-3. Stage severities.
-   Use `suggestion` first for cleanup-heavy rules, then raise to `warning` or `error` after the
-   repository baseline is under control.
+3. Stage repository activation, not analyzer descriptor severity.
+   Keep repository-owned analyzer descriptors at `warning` severity, then reduce `.editorconfig`
+   staging as the baseline improves.
 4. Keep exceptions narrow.
    Prefer file-scoped `.editorconfig` exceptions over project-wide `NoWarn` or broad analyzer
    suppression.
@@ -333,8 +341,8 @@ When adopting or tightening analyzer rules:
 
 1. Audit current `SKSTYLE004` exception files and retire the ones that no longer need grouped
    top-level types.
-2. Measure repository violations for `SKSTYLE001` through `SKSTYLE003` and decide whether any can
-   move from `suggestion` to `warning`.
+2. Measure repository violations for `SKSTYLE001` through `SKSTYLE003` and retire scoped exceptions
+   where the warning baseline is clean.
 3. Remove the broad test-project `CA1062` `NoWarn` suppression and replace it with narrower
    exceptions only where test code still has a justified boundary reason.
 4. Review existing `IDE*` and `CA*` severities for additional high-signal candidates that can be

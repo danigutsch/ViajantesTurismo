@@ -63,6 +63,40 @@ internal static class SharedKernelPackagingConventionTestFiles
         return GetProperty(document, propertyName);
     }
 
+    public static IEnumerable<string> GetAnalyzerPackageLayoutViolations(
+        string projectPath,
+        params string[] expectedAnalyzerDllNames)
+    {
+        var document = XDocument.Load(projectPath);
+        if (!string.Equals(GetProperty(document, "IncludeBuildOutput"), "false", StringComparison.OrdinalIgnoreCase))
+        {
+            yield return $"{projectPath}: analyzer packages must not include build output under lib by default.";
+        }
+
+        if (!HasPackItem(document, "README.md", "\\"))
+        {
+            yield return $"{projectPath}: README.md must be packed at package root.";
+        }
+
+        if (!HasPackItem(document, "_._", "lib/netstandard2.0/"))
+        {
+            yield return $"{projectPath}: analyzer packages must include lib/netstandard2.0/_._ placeholder.";
+        }
+
+        foreach (var expectedAnalyzerDllName in expectedAnalyzerDllNames)
+        {
+            if (!PacksAnalyzerDll(document, expectedAnalyzerDllName))
+            {
+                yield return $"{projectPath}: {expectedAnalyzerDllName} must be packed under analyzers/dotnet/cs.";
+            }
+        }
+
+        foreach (var libDll in GetPackedLibDlls(document))
+        {
+            yield return $"{projectPath}: {libDll} must not be packed under lib.";
+        }
+    }
+
     public static HashSet<string> GetActiveQuotedEntries(string content)
     {
         var entries = new HashSet<string>(StringComparer.Ordinal);
@@ -111,6 +145,41 @@ internal static class SharedKernelPackagingConventionTestFiles
             element.Name.LocalName == "None"
             && element.Attribute("Include")?.Value == "README.md"
             && string.Equals(element.Attribute("Pack")?.Value, "true", StringComparison.OrdinalIgnoreCase));
+    }
+
+    private static bool HasPackItem(XDocument document, string include, string packagePath)
+    {
+        return document.Descendants().Any(element =>
+            element.Name.LocalName == "None"
+            && string.Equals(element.Attribute("Include")?.Value, include, StringComparison.Ordinal)
+            && string.Equals(element.Attribute("Pack")?.Value, "true", StringComparison.OrdinalIgnoreCase)
+            && string.Equals(element.Attribute("PackagePath")?.Value, packagePath, StringComparison.Ordinal));
+    }
+
+    private static bool PacksAnalyzerDll(XDocument document, string expectedAnalyzerDllName)
+    {
+        var selfDllName = GetProperty(document, "AssemblyName") is { Length: > 0 } assemblyName
+            ? assemblyName + ".dll"
+            : GetProperty(document, "PackageId") + ".dll";
+
+        return document.Descendants().Any(element =>
+            element.Name.LocalName == "None"
+            && string.Equals(element.Attribute("Pack")?.Value, "true", StringComparison.OrdinalIgnoreCase)
+            && string.Equals(element.Attribute("PackagePath")?.Value, "analyzers/dotnet/cs", StringComparison.Ordinal)
+            && (string.Equals(element.Attribute("Link")?.Value, expectedAnalyzerDllName, StringComparison.Ordinal)
+                || (element.Attribute("Include")?.Value.EndsWith(expectedAnalyzerDllName, StringComparison.Ordinal) ?? false)
+                || (string.Equals(expectedAnalyzerDllName, selfDllName, StringComparison.Ordinal)
+                    && string.Equals(element.Attribute("Include")?.Value, "$(OutputPath)$(AssemblyName).dll", StringComparison.Ordinal))));
+    }
+
+    private static IEnumerable<string> GetPackedLibDlls(XDocument document)
+    {
+        return document.Descendants()
+            .Where(static element => element.Name.LocalName == "None")
+            .Where(static element => string.Equals(element.Attribute("Pack")?.Value, "true", StringComparison.OrdinalIgnoreCase))
+            .Where(static element => element.Attribute("Include")?.Value.EndsWith(".dll", StringComparison.OrdinalIgnoreCase) ?? false)
+            .Where(static element => element.Attribute("PackagePath")?.Value.StartsWith("lib/", StringComparison.OrdinalIgnoreCase) ?? false)
+            .Select(static element => element.Attribute("Include")?.Value ?? string.Empty);
     }
 
     private static void AddQuotedEntry(HashSet<string> entries, string line, char quote)
