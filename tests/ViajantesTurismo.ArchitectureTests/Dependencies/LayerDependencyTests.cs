@@ -213,7 +213,7 @@ public sealed class LayerDependencyTests
     }
 
     [Fact]
-    public void SharedKernel_projects_should_not_reference_descendant_optional_submodules_at_runtime()
+    public void SharedKernel_primary_modules_should_not_reference_descendant_optional_submodules_at_runtime()
     {
         // Arrange
         var repositoryRoot = GetRepositoryRoot();

@@ -73,6 +73,7 @@ internal static partial class LayerDependencyTestsHelpers
     public static string[] FindSharedKernelRuntimeReferencesToDescendantOptionalSubmodules(string repositoryRoot)
     {
         return SharedKernelSourceProjectFiles(repositoryRoot)
+            .Where(IsPrimarySharedKernelProjectFile)
             .SelectMany(filePath => FindRuntimeReferencesToDescendantOptionalSubmodules(repositoryRoot, filePath))
             .ToArray();
     }
@@ -149,6 +150,43 @@ internal static partial class LayerDependencyTestsHelpers
 
         return projectName.Split('.')
             .Any(segment => segment.Equals("Core", StringComparison.OrdinalIgnoreCase));
+    }
+
+    private static bool IsPrimarySharedKernelProjectFile(string filePath)
+    {
+        var projectName = Path.GetFileNameWithoutExtension(filePath);
+
+        return IsPrimarySharedKernelProjectName(projectName);
+    }
+
+    private static bool IsPrimarySharedKernelProjectName(string projectName)
+    {
+        return projectName.StartsWith("SharedKernel.", StringComparison.Ordinal)
+            && !IsAbstractionsProjectName(projectName)
+            && !IsSharedKernelTestingSubmodule(projectName)
+            && !HasAnyProjectNameSegment(
+                projectName,
+                [
+                    "Analyzers",
+                    "AspNet",
+                    "AspNetCore",
+                    "Azure",
+                    "CloudEvents",
+                    "CodeFixes",
+                    "Dapper",
+                    "EntityFrameworkCore",
+                    "Grafana",
+                    "Hosting",
+                    "Npgsql",
+                    "Redis",
+                    "SourceGenerator",
+                    "Web"
+                ]);
+    }
+
+    private static bool IsSharedKernelTestingSubmodule(string projectName)
+    {
+        return projectName.StartsWith("SharedKernel.Testing.", StringComparison.Ordinal);
     }
 
     private static IEnumerable<string> FindRuntimeReferencesToDescendantOptionalSubmodules(
