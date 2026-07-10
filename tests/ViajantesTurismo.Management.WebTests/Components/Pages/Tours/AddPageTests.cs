@@ -153,16 +153,19 @@ public class AddPageTests : BunitContext
         buttons.ShouldNotContain(b => b.GetAttribute("href")?.StartsWith("/api/v1/", StringComparison.Ordinal) == true);
     }
 
-    [Fact]
+    [Theory]
     [Trait(SharedKernel.Testing.TestTraitNames.ScopeName, TestTraits.ComponentScope)]
     [Trait(SharedKernel.Testing.TestTraitNames.AreaName, TestTraits.ManagementWebArea)]
     [Trait(SharedKernel.Testing.TestTraitNames.CategoryName, TestTraits.ComponentCategory)]
-    public async Task Successful_submission_preserves_api_prefix_when_tours_path_prefix_is_not_segment_bounded()
+    [InlineData("/api/v1/route")]
+    [InlineData("/api/v1/tours-malformed/relative-id")]
+    public async Task Successful_submission_preserves_api_prefix_when_tours_path_prefix_does_not_match(
+        string location)
     {
         // Arrange
         _fakeToursApi.SetCreateTourOutcome(ContractCommandOutcome.Succeeded(
             System.Net.HttpStatusCode.Created,
-            new Uri("/api/v1/tours-malformed/relative-id", UriKind.Relative)));
+            new Uri(location, UriKind.Relative)));
         var cut = Render<Add>();
 
         // Act
@@ -182,7 +185,7 @@ public class AddPageTests : BunitContext
 
         var detailsLink = cut.FindAll("a.btn")
             .First(link => link.TextContent.Contains("View Tour Details", StringComparison.Ordinal));
-        detailsLink.GetAttribute("href").ShouldBe("/api/v1/tours-malformed/relative-id");
+        detailsLink.GetAttribute("href").ShouldBe(location);
     }
 
     [Fact]

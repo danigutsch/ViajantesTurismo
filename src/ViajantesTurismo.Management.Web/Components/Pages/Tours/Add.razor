@@ -233,7 +233,8 @@ Bike rental"/>
     }
 
     private static bool IsExactPathOrSubpath(string path, string prefix) =>
-        path.Length == prefix.Length || (path.Length > prefix.Length && path[prefix.Length] == '/');
+        path.StartsWith(prefix, StringComparison.Ordinal)
+        && (path.Length == prefix.Length || (path.Length > prefix.Length && path[prefix.Length] == '/'));
 
     private sealed class TourFormModel : IValidatableObject
     {

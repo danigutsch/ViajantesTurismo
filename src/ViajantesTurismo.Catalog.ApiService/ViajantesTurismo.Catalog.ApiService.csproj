@@ -39,6 +39,7 @@
                 <TargetPath>$(MSBuildProjectDirectory)/../ViajantesTurismo.Catalog.Contracts/OpenApi/%(Identity).openapi.json</TargetPath>
             </GeneratedOpenApiArtifact>
             <GeneratedOpenApiArtifact Include="v1">
+                <!-- The ASP.NET Core generator writes the default v1 document to $(AssemblyName).json. -->
                 <SourcePath>$(OpenApiDocumentsDirectory)/$(AssemblyName).json</SourcePath>
                 <TargetPath>$(MSBuildProjectDirectory)/../ViajantesTurismo.Catalog.Contracts/OpenApi/v1.openapi.json</TargetPath>
             </GeneratedOpenApiArtifact>
@@ -48,13 +49,6 @@
         <Copy
             SourceFiles="@(GeneratedOpenApiArtifact->'%(SourcePath)')"
             DestinationFiles="@(GeneratedOpenApiArtifact->'%(TargetPath)')"
-            SkipUnchangedFiles="true" />
-    </Target>
-
-    <Target Name="CopyCatalogVersionOpenApiGeneratedAlias" AfterTargets="GenerateOpenApiDocuments" Condition="'$(GenerateCatalogOpenApiArtifacts)' == 'true'">
-        <Copy
-            SourceFiles="$(OpenApiDocumentsDirectory)/$(AssemblyName).json"
-            DestinationFiles="$(OpenApiDocumentsDirectory)/$(AssemblyName)_v1.json"
             SkipUnchangedFiles="true" />
     </Target>
 
