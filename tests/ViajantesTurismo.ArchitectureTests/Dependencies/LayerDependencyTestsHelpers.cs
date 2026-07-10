@@ -238,7 +238,7 @@ internal static partial class LayerDependencyTestsHelpers
     {
         var abstractionFamilyName = GetAbstractionFamilyName(abstractionProjectName);
 
-        return !HasProjectNameSegment(referencedProjectName, "Abstractions")
+        return !IsAbstractionsProjectName(referencedProjectName)
             && (referencedProjectName.Equals(abstractionFamilyName, StringComparison.Ordinal)
                 || referencedProjectName.StartsWith($"{abstractionFamilyName}.", StringComparison.Ordinal));
     }
