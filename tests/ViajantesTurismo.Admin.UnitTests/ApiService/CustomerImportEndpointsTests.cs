@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Hosting;
 using SharedKernel.Testing.Assertions;
+using ViajantesTurismo.Admin.ApiService;
 using TestTraits = ViajantesTurismo.Admin.UnitTests.Infrastructure.TestTraits;
 using ViajantesTurismo.Admin.ApiService.Customers;
 using ViajantesTurismo.Admin.Contracts;
@@ -152,8 +153,9 @@ public sealed class CustomerImportEndpointsTests
             EnvironmentName = Environments.Development
         });
         builder.WebHost.UseKestrel().UseUrls("http://127.0.0.1:0");
-        builder.Services.AddRateLimiter();
+        builder.Services.AddAdminSecurityBaseline(builder.Configuration);
         await using var app = builder.Build();
+        app.UseRateLimiter();
         app.MapCustomerImportEndpoints();
 
         await app.StartAsync(cancellationToken);
