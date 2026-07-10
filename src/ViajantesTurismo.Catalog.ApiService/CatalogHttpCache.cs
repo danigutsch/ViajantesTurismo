@@ -63,13 +63,13 @@ internal static class CatalogHttpCache
         }
 
         var canonicalCulture = httpContext.Request.Query.TryGetValue(CultureQueryKey, out var cultureValue)
-            ? NormalizeCulture(cultureValue.ToString())
+            ? HttpCacheCultures.Normalize(cultureValue.ToString())
             : null;
 
         if (canonicalCulture is null
             && httpContext.Request.Query.TryGetValue(LanguageQueryKey, out var language))
         {
-            canonicalCulture = NormalizeCulture(language.ToString());
+            canonicalCulture = HttpCacheCultures.Normalize(language.ToString());
         }
 
         var queryValues = new List<KeyValuePair<string, string?>>();
@@ -89,15 +89,5 @@ internal static class CatalogHttpCache
 
         queryValues.Add(new KeyValuePair<string, string?>(CultureQueryKey, canonicalCulture ?? InvalidCultureCacheKey));
         httpContext.Request.QueryString = QueryString.Create(queryValues);
-    }
-
-    private static string? NormalizeCulture(string? culture)
-    {
-        return culture?.Trim().ToUpperInvariant() switch
-        {
-            "EN-US" or "EN" => "en-US",
-            "PT-BR" or "PT" => "pt-BR",
-            _ => null
-        };
     }
 }

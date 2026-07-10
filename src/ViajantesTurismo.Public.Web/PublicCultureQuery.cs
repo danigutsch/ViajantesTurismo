@@ -1,4 +1,5 @@
 using Microsoft.AspNetCore.WebUtilities;
+using SharedKernel.HttpCaching.AspNetCore;
 
 namespace ViajantesTurismo.Public.Web;
 
@@ -27,11 +28,6 @@ internal static class PublicCultureQuery
 
     public static string? NormalizeCulture(string? culture)
     {
-        return culture?.Trim().ToUpperInvariant() switch
-        {
-            "EN-US" or "EN" => "en-US",
-            "PT-BR" or "PT" => "pt-BR",
-            _ => null
-        };
+        return HttpCacheCultures.Normalize(culture);
     }
 }
