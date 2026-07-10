@@ -27,8 +27,9 @@ projects, and reusable service defaults belong in `ViajantesTurismo.ServiceDefau
 
 ### Optional Developer Tooling
 
-- **admin-performance-smoke**: opt-in k6 smoke scenario resource; enabled only when
-  `VT_ASPIRE_ENABLE_PERFORMANCE_TESTS=1` is set before AppHost starts
+- **admin-performance-smoke**: opt-in k6 smoke scenario resource through
+  `ViajantesTurismo.Performance.Tool`; enabled only when `VT_ASPIRE_ENABLE_PERFORMANCE_TESTS=1` is set
+  before AppHost starts
 - **Grafana LGTM observability stack**: opt-in local telemetry backend; enabled only when
   `ASPIRE_ENABLE_OBSERVABILITY_STACK=1` is set before AppHost starts
 
@@ -169,8 +170,9 @@ VT_ASPIRE_ENABLE_PERFORMANCE_TESTS=1 dotnet tool run aspire run
 ```
 
 The resource is intentionally disabled by default so regular AppHost runs do not execute load tooling.
-For profiles, thresholds, wrapper behavior, and result output, see
-`tests/performance/README.md` and `tests/performance/k6/README.md`.
+It uses the repository-owned .NET performance tool rather than shell wrappers, so local k6 is the
+default and Docker mode remains explicit opt-in. For profiles, thresholds, security defaults, and result
+output, see `tests/performance/README.md` and `tests/performance/k6/README.md`.
 
 ## Observability Stack Resource
 

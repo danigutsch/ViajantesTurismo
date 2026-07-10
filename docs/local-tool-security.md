@@ -32,6 +32,10 @@ existing `.NET`, Python, shell, or Docker path already covers the same need.
   it does not probe external URLs in PR gating.
 - Optional standalone tools such as `PSScriptAnalyzer`, `pwsh`, and `k6`: install only when
   needed for the specific task, using vendor-documented installation guidance.
+- Local k6 performance runs: prefer a user/system installed `k6` binary from a trusted package manager.
+  Do not vendor or download a repo-local `k6` binary. Docker k6 is explicit opt-in only, must use a
+  digest-pinned image, must not mount the repository read-write, and must not forward host environment
+  variables wholesale.
 - Agent/editor project formatters: limited to repository-approved single-file formatters. They
   reuse `.NET`, repository scripts, Docker-backed shell/markdown wrappers, and optional
   PSScriptAnalyzer instead of adding npm helper packages.
@@ -46,6 +50,8 @@ Do:
 - keep editor/agent format-on-save hooks aligned with repository scripts instead of adding a
   separate formatter stack
 - prefer vendor or OS package installs for optional standalone tools
+- keep k6 scripts on local modules only unless a reviewed exception vendors the dependency
+- keep k6 results under ignored local output folders and avoid response/header debug logging by default
 - accept that some optional checks stay skipped locally when the tool is intentionally not
   installed
 
@@ -58,6 +64,9 @@ Do not:
 - enable broad built-in formatter bundles that can rewrite files without this repository's
   `.editorconfig`, markdownlint, shfmt, and `.NET` rules
 - rely on `curl | sh` bootstrap paths for local lint helpers
+- import remote k6 JavaScript modules at runtime from maintained test scripts
+- pass host system environment variables wholesale into local k6 or Docker k6
+- run k6 against external or production endpoints without explicit documented opt-in
 - require contributors to install optional tooling just to complete ordinary `.NET`
   development and test workflows
 

@@ -71,7 +71,10 @@ ViajantesTurismo/
 │   ├── SharedKernel.HttpClients.Tests/             # Shared HTTP client helper tests
 │   └── ViajantesTurismo.ServiceDefaults.Tests/     # Service defaults telemetry tests
 ├── benchmarks/
-│   └── SharedKernel.Mediator.Benchmarks/           # Source-generator benchmark harness
+│   ├── SharedKernel.Mediator.Benchmarks/           # Source-generator benchmark harness
+│   ├── SharedKernel.Functional.Benchmarks/         # Result/functional benchmark harness
+│   ├── ViajantesTurismo.FileScanning.Benchmarks/   # Local file scan baselines
+│   └── ViajantesTurismo.FileUpload.BenchmarkHost/  # Kestrel upload scan benchmark host
 └── samples/
     └── Mediator/
         └── Mediator.Sample/                        # Generated mediator CQRS sample
@@ -214,6 +217,8 @@ See `setup-dev.ps1` or `setup-dev.sh` for detailed steps.
 
 The repository now has a generic performance testing area under `tests/performance/`.
 The first implementation uses `k6`, but `k6` is an optional external CLI, not a repo-pinned package dependency.
+Do not vendor or download a repo-local `k6` binary; install it at user/system level from a trusted package
+manager, or use the explicit Docker mode for a digest-pinned local run.
 
 Install `k6` only if you plan to run those scenarios:
 
@@ -224,10 +229,13 @@ Install `k6` only if you plan to run those scenarios:
 Example run:
 
 ```bash
-VT_API_BASE_URL=<admin-api-url> scripts/run-admin-performance-smoke.sh
+VT_API_BASE_URL=<admin-api-url> dotnet run --project tools/ViajantesTurismo.Performance.Tool/ViajantesTurismo.Performance.Tool.csproj -- admin-smoke
+dotnet run --project tools/ViajantesTurismo.Performance.Tool/ViajantesTurismo.Performance.Tool.csproj -- file-upload-scan
 ```
 
-Use the Admin API endpoint printed by Aspire or shown in the Aspire dashboard.
+Use the Admin API endpoint printed by Aspire or shown in the Aspire dashboard for the Admin smoke
+scenario. The file upload performance tool starts its own benchmark-only Kestrel host on an
+ephemeral loopback port by default. Docker k6 is explicit opt-in only with a digest-pinned image.
 
 Aspire can also run the same smoke scenario as an opt-in AppHost resource:
 
@@ -235,7 +243,9 @@ Aspire can also run the same smoke scenario as an opt-in AppHost resource:
 VT_ASPIRE_ENABLE_PERFORMANCE_TESTS=1 dotnet tool run aspire run
 ```
 
-See `tests/performance/README.md` for profiles, thresholds, wrapper behavior, and output details.
+See `tests/performance/README.md`, `tests/performance/k6/README.md`, and
+`docs/file-and-stream-benchmark-baselines.md` for profiles, thresholds, tool behavior, security
+defaults, and output details.
 
 When `global.json` changes, CI still expects committed `packages.lock.json` files to stay in sync.
 Dependabot PRs that only bump the SDK now trigger the `SDK Lockfile Maintenance` workflow, which
@@ -308,6 +318,18 @@ recommended fast local paths, and improvement options.
 
 ```powershell
 dotnet run --project benchmarks/SharedKernel.Mediator.Benchmarks/SharedKernel.Mediator.Benchmarks.csproj -c Release -- --filter *DiscoveryBenchmarks*
+```
+
+**Run file scanning benchmarks:**
+
+```powershell
+dotnet run --project benchmarks/ViajantesTurismo.FileScanning.Benchmarks/ViajantesTurismo.FileScanning.Benchmarks.csproj -c Release -- --filter *FileScan*
+```
+
+**Run real Kestrel upload scanning benchmark:**
+
+```powershell
+dotnet run --project tools/ViajantesTurismo.Performance.Tool/ViajantesTurismo.Performance.Tool.csproj -- file-upload-scan
 ```
 
 **Run the SharedKernel mediator sample:**

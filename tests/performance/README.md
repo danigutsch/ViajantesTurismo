@@ -20,6 +20,7 @@ The first thin slice is a smoke scenario for Admin API reliability investigation
 Current implementation path:
 
 - `k6/scenarios/admin-smoke.js`
+- `k6/scenarios/file-upload-scan.js`
 
 Current workload profiles:
 
@@ -27,10 +28,9 @@ Current workload profiles:
 - `average-load`: conservative regular validation profile
 - `stress`: manual stress profile for investigation, not CI gating
 
-Current wrapper:
+Current runners:
 
-- `../../scripts/run-admin-performance-smoke.sh`
-- `../../scripts/run-admin-performance-smoke.ps1`
+- `../../tools/ViajantesTurismo.Performance.Tool`
 
 Current Aspire integration:
 
@@ -45,25 +45,40 @@ This initial slice is for:
 - repeatable local repro support
 - lightweight API-level reliability checks
 - validating the toolchain and conventions before broader profiles are added
+- real Kestrel request-stream upload scan baselines
 
 This is not yet a full load-testing suite.
 
 ## Run
 
-Start the local stack first, then point the wrapper at the Admin API endpoint:
+Start the local stack first, then point the .NET performance tool at the Admin API endpoint:
 
 ```bash
-VT_API_BASE_URL=<admin-api-url> scripts/run-admin-performance-smoke.sh
+VT_API_BASE_URL=<admin-api-url> dotnet run --project tools/ViajantesTurismo.Performance.Tool/ViajantesTurismo.Performance.Tool.csproj -- admin-smoke
 ```
 
 On Windows PowerShell:
 
 ```powershell
 $env:VT_API_BASE_URL = '<admin-api-url>'
-scripts/run-admin-performance-smoke.ps1
+dotnet run --project tools/ViajantesTurismo.Performance.Tool/ViajantesTurismo.Performance.Tool.csproj -- admin-smoke
 ```
 
 Use the Admin API endpoint printed by Aspire or shown in the Aspire dashboard.
+
+For real multipart upload scanning, use the repository-owned .NET performance tool. It starts the
+isolated benchmark host on an ephemeral loopback Kestrel port by default, probes `/health`, and runs k6
+against the real socket:
+
+```bash
+dotnet run --project tools/ViajantesTurismo.Performance.Tool/ViajantesTurismo.Performance.Tool.csproj -- file-upload-scan
+```
+
+Use `VT_UPLOAD_PAYLOAD_BYTES=<bytes>` to change the deterministic multipart payload size. See
+`../../docs/file-and-stream-benchmark-baselines.md` for the design matrix and raw commands.
+The tool prefers a local `k6` install. Docker mode requires explicit `VT_K6_USE_DOCKER=1`, a
+digest-pinned image, read-only scenario mounts, and writes only under the ignored results folder.
+`VT_K6_RESULTS_DIR` must remain under `tests/performance/results`.
 
 ## Run With Aspire
 
@@ -78,13 +93,17 @@ Use `VT_K6_PROFILE=average-load` for conservative broader validation. Keep `stre
 
 The Aspire resource injects `VT_API_BASE_URL` from the Admin API endpoint. It also forwards
 `VT_K6_PROFILE`, `VT_K6_RESULTS_DIR`, `VT_K6_VUS`, `VT_K6_DURATION`, `VT_K6_USE_DOCKER`, and
-`VT_K6_DOCKER_IMAGE` when those values are set before AppHost starts.
+`VT_K6_DOCKER_IMAGE` when those values are set before AppHost starts. Keep Docker explicit and use a
+digest-pinned image when opting in.
 
 ## Results
 
-The wrapper exports k6 summaries to `tests/performance/results/` by default. That folder is ignored
+The runner exports k6 summaries to `tests/performance/results/` by default. That folder is ignored
 by Git so local investigation output does not become source. Override the relative output folder with
-`VT_K6_RESULTS_DIR` when comparing runs or collecting artifacts manually.
+`VT_K6_RESULTS_DIR` only for subfolders under `tests/performance/results`.
+
+The file upload tool also writes benchmark-host logs and the discovered ephemeral base URL under the
+same ignored results tree.
 
 Start with `smoke` for local repro. Use `average-load` for broader pre-release validation after the
 smoke profile is stable. Keep `stress` manual until thresholds and environment assumptions are proven

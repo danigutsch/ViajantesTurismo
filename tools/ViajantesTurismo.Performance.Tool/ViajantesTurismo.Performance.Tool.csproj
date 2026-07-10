@@ -1,0 +1,23 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <OutputType>Exe</OutputType>
+        <RootNamespace>ViajantesTurismo.Performance.Tool</RootNamespace>
+        <PackAsTool>true</PackAsTool>
+        <ToolCommandName>viajantes-performance</ToolCommandName>
+        <PackageId>ViajantesTurismo.Performance.Tool</PackageId>
+        <Description>Performance benchmark automation for ViajantesTurismo.</Description>
+        <PackageTags>performance;k6;benchmark;dotnet-tool</PackageTags>
+        <PackageReadmeFile>README.md</PackageReadmeFile>
+        <IsAotCompatible>true</IsAotCompatible>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <InternalsVisibleTo Include="ViajantesTurismo.Performance.Tool.Tests" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <None Include="README.md" Pack="true" PackagePath="\" />
+    </ItemGroup>
+
+</Project>

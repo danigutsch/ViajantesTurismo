@@ -1,0 +1,28 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <OutputType>Exe</OutputType>
+        <RootNamespace>ViajantesTurismo.Performance.Tool.Tests</RootNamespace>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <Using Include="SharedKernel.Testing" />
+        <Using Include="SharedKernel.Testing.Assertions" />
+        <Using Include="ViajantesTurismo.Performance.Tool" />
+        <Using Include="Xunit" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <PackageReference Include="Microsoft.Testing.Extensions.CodeCoverage">
+            <PrivateAssets>all</PrivateAssets>
+        </PackageReference>
+        <PackageReference Include="xunit.v3.mtp-v2" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <ProjectReference Include="..\..\src\SharedKernel\SharedKernel.Testing\SharedKernel.Testing.csproj" />
+        <ProjectReference Include="..\..\src\SharedKernel\SharedKernel.Testing.Assertions\SharedKernel.Testing.Assertions.csproj" />
+        <ProjectReference Include="..\..\tools\ViajantesTurismo.Performance.Tool\ViajantesTurismo.Performance.Tool.csproj" />
+    </ItemGroup>
+
+</Project>

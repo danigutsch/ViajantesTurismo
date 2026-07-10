@@ -66,6 +66,8 @@ Samples and benchmarks are explicitly non-packable:
 | `samples/Results/BasicResults.Sample` | Consumer-facing sample, not a reusable package. |
 | `benchmarks/SharedKernel.Functional.Benchmarks` | Measurement harness, not a reusable package. |
 | `benchmarks/SharedKernel.Mediator.Benchmarks` | Measurement harness, not a reusable package. |
+| `benchmarks/ViajantesTurismo.FileScanning.Benchmarks` | Measurement harness, not a reusable package. |
+| `benchmarks/ViajantesTurismo.FileUpload.BenchmarkHost` | Benchmark-only Kestrel host, not a reusable package. |
 
 ## Naming
 
@@ -132,7 +134,7 @@ Current package inventory follows these conventions:
 | Runtime and provider packages | `src/SharedKernel/SharedKernel.*` | `PackageId` matches the project file name and folder name. |
 | Roslyn analyzers, code fixes, and source generators | `src/SharedKernel/SharedKernel.*.{Analyzers,CodeFixes,SourceGenerator}` | `netstandard2.0`, Roslyn package suffix, and explicit `IsAotCompatible=false`. |
 | Reusable testing helpers | `src/SharedKernel/SharedKernel.Testing*` | Packable only when intended for reuse outside this repository's test taxonomy. |
-| Repo-owned command tools | `tools/SharedKernel.*` | Pack as .NET tools when useful outside one local `dotnet run --project` invocation. |
+| Repo-owned command tools | `tools/*` | Pack as .NET tools when useful outside one local `dotnet run --project` invocation. |
 
 Intentional naming exceptions:
 
@@ -175,6 +177,8 @@ parsing CLI arguments and before writing command output.
 | --- | --- |
 | `SharedKernel.Versioning.Tool` | `sharedkernel-version` |
 | `SharedKernel.Testing.CodeFixRunner` | `sharedkernel-codefix` |
+| `ViajantesTurismo.SecurityChecks.Tool` | `viajantes-security-checks` |
+| `ViajantesTurismo.Performance.Tool` | `viajantes-performance` |
 
 Pack tools into an ignored local feed with a unique prerelease version:
 
