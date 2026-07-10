@@ -1,11 +1,8 @@
 using System.Net;
 using Microsoft.AspNetCore.Builder;
-using Microsoft.AspNetCore.Cors.Infrastructure;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Options;
 using SharedKernel.Testing.Assertions;
 using TestTraits = ViajantesTurismo.Admin.UnitTests.Infrastructure.TestTraits;
 using ViajantesTurismo.Admin.ApiService;
@@ -25,12 +22,9 @@ public sealed class AdminSecurityBaselineTests
                 ["Security:Cors:AllowedOrigins:0"] = "https://admin.example.com"
             })
             .Build();
-        var services = new ServiceCollection();
 
         // Act
-        services.AddAdminSecurityBaseline(configuration);
-        using var provider = services.BuildServiceProvider();
-        var corsOptions = provider.GetRequiredService<IOptions<CorsOptions>>().Value;
+        var corsOptions = AdminSecurityBaselineTestServices.GetCorsOptions(configuration);
 
         // Assert
         var policy = corsOptions.GetPolicy(AdminSecurityBaseline.CorsPolicyName).ShouldNotBeNull();
