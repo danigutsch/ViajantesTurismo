@@ -69,6 +69,22 @@ public sealed class CustomerImportEndpointsTests
     }
 
     [Fact]
+    public void Rejects_missing_uploads_with_generic_problem_details()
+    {
+        // Arrange
+        IFormFile? file = null;
+
+        // Act
+        var isValid = CustomerImportEndpoints.TryValidateImportFile(file, out var problem);
+
+        // Assert
+        isValid.ShouldBeFalse();
+        problem.ShouldNotBeNull();
+        problem.Title.ShouldBe("Invalid customer import file.");
+        problem.Detail.ShouldBe("Upload a CSV file that meets the documented import requirements.");
+    }
+
+    [Fact]
     public void Rejects_non_csv_uploads()
     {
         // Arrange

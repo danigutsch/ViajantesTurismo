@@ -42,11 +42,10 @@ internal static class CustomerImportEndpoints
     }
 
     private static async Task<Results<Ok<ImportResultDto>, ProblemHttpResult>> ImportCustomers(
-        IFormFile file,
+        IFormFile? file,
         [FromServices] CustomerImportWorkflowService workflow,
         CancellationToken ct)
     {
-        ArgumentNullException.ThrowIfNull(file);
         if (!TryValidateImportFile(file, out var problem))
         {
             return TypedResults.Problem(
@@ -91,11 +90,9 @@ internal static class CustomerImportEndpoints
         return await reader.ReadToEndAsync(ct);
     }
 
-    internal static bool TryValidateImportFile(IFormFile file, [NotNullWhen(false)] out ProblemDetails? problem)
+    internal static bool TryValidateImportFile([NotNullWhen(true)] IFormFile? file, [NotNullWhen(false)] out ProblemDetails? problem)
     {
-        ArgumentNullException.ThrowIfNull(file);
-
-        if (file.Length <= 0 || file.Length > ContractConstants.CustomerImportMaxFileBytes || !IsAllowedCsv(file))
+        if (file is null || file.Length <= 0 || file.Length > ContractConstants.CustomerImportMaxFileBytes || !IsAllowedCsv(file))
         {
             problem = CreateImportFileProblem();
             return false;
