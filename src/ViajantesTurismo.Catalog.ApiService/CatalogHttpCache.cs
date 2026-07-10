@@ -26,7 +26,8 @@ internal static class CatalogHttpCache
 
     private const string LanguageQueryKey = "language";
 
-    private const string PublicContentPathPrefix = "/api/v1/public/catalog/content";
+    private static readonly string PublicContentPathPrefix =
+        $"/api/{CatalogOpenApiDocuments.CurrentApiVersion.RouteSegment}/public/catalog/content";
 
     public static IApplicationBuilder UsePublicContentLanguageQueryAlias(this IApplicationBuilder app)
     {

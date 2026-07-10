@@ -18,8 +18,7 @@ internal static class CatalogEndpoints
     {
         ArgumentNullException.ThrowIfNull(app);
 
-        var versionedApi = app.MapApiVersionGroup(CatalogOpenApiDocuments.CurrentApiVersion)
-            .WithApiVersion(CatalogOpenApiDocuments.CurrentApiVersion);
+        var versionedApi = app.MapApiVersionGroup(CatalogOpenApiDocuments.CurrentApiVersion);
 
         versionedApi.MapGet("/catalog/tours", GetTours);
         versionedApi.MapGet("/catalog/tours/{id:guid}", GetTour);
