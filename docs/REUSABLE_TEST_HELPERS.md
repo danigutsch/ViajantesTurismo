@@ -60,9 +60,3 @@ ordering or every private probe detail.
 - The helper stays in the closest owning test project unless it is host-agnostic and reusable.
 - The helper does not expose raw DI, host, browser, or database plumbing to test bodies.
 - The helper improves adding direct coverage under `docs/COVERAGE_OWNERSHIP.md`.
-
-## Related issues
-
-- #380
-- #901
-- #512

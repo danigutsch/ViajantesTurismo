@@ -66,9 +66,3 @@ Every exception should state:
 
 Broad repository-wide coverage percentages should be treated as trend data, not a merge gate, until
 per-assembly ownership and threshold reporting are proven in CI.
-
-## Related issues
-
-- #380
-- #900
-- #411

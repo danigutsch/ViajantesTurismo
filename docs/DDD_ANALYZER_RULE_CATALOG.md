@@ -20,7 +20,7 @@ false positives.
 | DDD002 | Integration events should end with `IntegrationEvent` | Warning | Rename type when no conflict exists | Applies only to integration-event contracts. |
 | DDD003 | Domain entities should not expose public setters for state | Warning | None initially | Must avoid DTOs, EF models, and serializers. |
 | DDD004 | Aggregate collections should not expose mutable collection types | Warning | None initially | Prefer architecture tests first. |
-| DDD005 | Application layer should not repeat domain invariant checks already named by the domain | Suggestion | None | Requires design judgment; likely docs/review only. |
+| DDD005 | Application layer should not repeat domain invariant checks already named by the domain | Warning | None | Requires design judgment; likely docs/review only. |
 
 ## Rule details
 
@@ -57,9 +57,3 @@ Each implementation issue should include:
 - severity and rollout plan
 - code-fix decision
 - analyzer tests and public API/release-note updates
-
-## Related issues
-
-- #380
-- #911
-- #910

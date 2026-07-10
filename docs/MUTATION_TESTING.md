@@ -27,9 +27,9 @@ Relevant local references:
   Testing Platform support as **preview**.
 - `dotnet-stryker` `4.15.0` can run contained xUnit v3 + MTP smoke targets in this repository
   when `test-runner` is set to `mtp` explicitly.
-- The upstream issue `stryker-mutator/stryker-net#3117` reports that Stryker.NET does not
-  handle xUnit v3 properly even without MTP enabled, producing unexpected test-case warnings
-  and unusable mutation results.
+- Upstream compatibility reports indicate that Stryker.NET can still struggle with xUnit v3
+  even without MTP enabled, producing unexpected test-case warnings and unusable mutation
+  results.
 - This repository uses the stricter combination of xUnit v3 **and** MTP across the suite,
   which increases compatibility risk rather than reducing it.
 
