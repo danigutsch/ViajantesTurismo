@@ -60,11 +60,13 @@ internal static partial class LayerDependencyTestsHelpers
             .ToArray();
     }
 
-    public static string[] FindSharedKernelCoreSegmentProjectNames(string repositoryRoot)
+    public static string[] FindSharedKernelCoreSegmentProjectViolations(string repositoryRoot)
     {
         return SharedKernelSourceProjectFiles(repositoryRoot)
             .Where(HasCoreProjectNameSegment)
-            .Select(filePath => Path.GetRelativePath(repositoryRoot, filePath).Replace(Path.DirectorySeparatorChar, '/'))
+            .Select(filePath =>
+                $"{Path.GetRelativePath(repositoryRoot, filePath).Replace(Path.DirectorySeparatorChar, '/')}: "
+                + $"{Path.GetFileNameWithoutExtension(filePath)} uses Core as a package-name segment")
             .ToArray();
     }
 
@@ -81,6 +83,48 @@ internal static partial class LayerDependencyTestsHelpers
             .Where(HasAbstractionsProjectNameSegment)
             .SelectMany(filePath => FindImplementationReferencesFromAbstractionProject(repositoryRoot, filePath))
             .ToArray();
+    }
+
+    public static string[] FindModuleBoundaryDocumentationRuleGaps(string repositoryRoot)
+    {
+        return RequiredModuleBoundaryDocumentationSnippets()
+            .SelectMany(rule => MissingDocumentationRuleSnippets(repositoryRoot, rule.DocumentPath, rule.Snippets))
+            .ToArray();
+    }
+
+    private static (string DocumentPath, string[] Snippets)[] RequiredModuleBoundaryDocumentationSnippets()
+    {
+        return
+        [
+            (
+                Path.Combine("docs", "architecture", "boundaries-and-dependencies.md"),
+                [
+                    "`SharedKernel.<Capability>` is the primary module and core surface for that capability.",
+                    "Primary modules must not runtime-reference descendant optional submodules.",
+                    "reference the primary module, a nearer parent module, or an explicit `Abstractions` module.",
+                    "Abstraction projects must not reference same-family implementation packages, provider adapters, persistence projects, web/API hosts, or adapter packages."
+                ]),
+            (
+                Path.Combine("docs", "SHAREDKERNEL_PACKAGING.md"),
+                [
+                    "Do not create `SharedKernel.<Capability>.Core` packages.",
+                    "`Abstractions` modules are dependency-inversion surfaces, not implementation hosts.",
+                    "Primary modules must not runtime-reference descendant optional submodules."
+                ])
+        ];
+    }
+
+    private static IEnumerable<string> MissingDocumentationRuleSnippets(
+        string repositoryRoot,
+        string documentPath,
+        string[] snippets)
+    {
+        var absoluteDocumentPath = Path.Combine(repositoryRoot, documentPath);
+        var documentText = File.ReadAllText(absoluteDocumentPath);
+
+        return snippets
+            .Where(snippet => !documentText.Contains(snippet, StringComparison.Ordinal))
+            .Select(snippet => $"{documentPath}: missing rule snippet: {snippet}");
     }
 
     private static IEnumerable<string> SourceProjectFiles(string repositoryRoot)
@@ -160,10 +204,16 @@ internal static partial class LayerDependencyTestsHelpers
 
         var packageReferences = document.Descendants("PackageReference")
             .Select(element => element.Attribute("Include")?.Value)
-            .Where(packageName => packageName is not null && IsAdapterPackage(packageName))
+            .Where(packageName => packageName is not null && IsImplementationPackageReference(abstractionProjectName, packageName))
             .Select(packageName => $"{relativePath}: PackageReference Include=\"{packageName}\"");
 
         return projectReferences.Concat(packageReferences);
+    }
+
+    private static bool IsImplementationPackageReference(string abstractionProjectName, string packageName)
+    {
+        return IsImplementationProjectReference(abstractionProjectName, packageName)
+            || IsAdapterPackage(packageName);
     }
 
     private static bool IsImplementationProjectReference(string abstractionProjectName, string referencedProjectName)

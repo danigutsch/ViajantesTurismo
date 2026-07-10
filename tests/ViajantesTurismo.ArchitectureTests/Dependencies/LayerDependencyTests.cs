@@ -206,10 +206,10 @@ public sealed class LayerDependencyTests
         var repositoryRoot = GetRepositoryRoot();
 
         // Act
-        var unexpectedProjectNames = FindSharedKernelCoreSegmentProjectNames(repositoryRoot);
+        var unexpectedProjects = FindSharedKernelCoreSegmentProjectViolations(repositoryRoot);
 
         // Assert
-        unexpectedProjectNames.ShouldBeEmpty();
+        unexpectedProjects.ShouldBeEmpty();
     }
 
     [Fact]
@@ -236,6 +236,19 @@ public sealed class LayerDependencyTests
 
         // Assert
         unexpectedReferences.ShouldBeEmpty();
+    }
+
+    [Fact]
+    public void Module_boundary_documentation_should_describe_enforced_rules()
+    {
+        // Arrange
+        var repositoryRoot = GetRepositoryRoot();
+
+        // Act
+        var missingRules = FindModuleBoundaryDocumentationRuleGaps(repositoryRoot);
+
+        // Assert
+        missingRules.ShouldBeEmpty();
     }
 
 }

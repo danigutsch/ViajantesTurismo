@@ -242,6 +242,36 @@ Module rules:
   SharedKernel modules.
 - Keep analyzers, source generators, and code fixes in their current tool-specific modules.
 
+Module naming and dependency rules:
+
+- `SharedKernel.<Capability>` is the primary module and core surface for that capability.
+- Do not create `SharedKernel.<Capability>.Core` packages. Add a `Core` package only after an ADR records
+  why the primary module cannot own the core surface.
+- `SharedKernel.<Capability>.<Submodule>` names an optional surface with an independent reason to exist
+  now, such as a provider adapter, ASP.NET adapter, CloudEvents adapter, Roslyn component, source
+  generator, or explicit abstraction split.
+- Primary modules must not runtime-reference descendant optional submodules. Optional submodules may
+  reference the primary module, a nearer parent module, or an explicit `Abstractions` module.
+- Non-runtime analyzer, source-generator, code-fix, and packaging references may point from a primary
+  package to a tool package only when `ReferenceOutputAssembly="false"` or an analyzer/package output
+  item type keeps the tool out of the runtime dependency graph.
+- `Abstractions` modules are dependency-inversion surfaces, not implementation hosts.
+- Abstraction projects must not reference same-family implementation packages, provider adapters, persistence projects, web/API hosts, or adapter packages.
+- Domain-facing and application-facing abstractions stay provider-neutral. Infrastructure, persistence,
+  hosting, web, and provider SDK dependencies belong in infrastructure/provider modules or application
+  composition roots.
+- If a module needs both an abstraction split and a provider split, keep the contract package inward and
+  let provider modules depend on that contract; do not route contract packages through provider modules.
+
+Implemented architecture guardrails:
+
+- SharedKernel project names fail when `Core` is used as a package-name segment.
+- SharedKernel primary modules fail when they runtime-reference descendant optional submodules.
+- `Abstractions` projects fail when they reference same-family implementations, outward DDD layers,
+  implementation/adapters, or adapter packages.
+- Domain/application/contract projects fail when they reference adapter packages.
+- Provider-neutral SharedKernel projects fail when they reference adapter packages.
+
 Related decisions:
 
 - [split SharedKernel domain and building blocks](../adr/20260621-split-sharedkernel-domain-and-building-blocks.md)
@@ -252,7 +282,6 @@ Related decisions:
 
 ## Planned improvements
 
-- Add automated dependency-direction checks only after the stable rules above are accepted.
 - Keep SharedKernel provider packages small and library-shaped so they can move to the future standalone
   SharedKernel repository without application-specific dependencies.
 - Generate diagrams from project, AppHost, or workflow sources when practical. Keep hand-authored
