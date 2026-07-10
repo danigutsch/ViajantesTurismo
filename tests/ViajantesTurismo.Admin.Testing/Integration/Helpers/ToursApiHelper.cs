@@ -8,6 +8,8 @@ namespace ViajantesTurismo.Admin.Testing.Integration.Helpers;
 /// </summary>
 public static class ToursApiHelper
 {
+    private const string RoutePrefix = "/api/v1/tours";
+
     public static async Task<HttpResponseMessage> CreateTour(
         this HttpClient client,
         CreateTourDto request,
@@ -17,7 +19,7 @@ public static class ToursApiHelper
         ArgumentNullException.ThrowIfNull(request);
 
         return await client.PostAsJsonAsync(
-            new Uri("/tours", UriKind.Relative),
+            new Uri(RoutePrefix, UriKind.Relative),
             request,
             cancellationToken);
     }
@@ -29,7 +31,7 @@ public static class ToursApiHelper
         ArgumentNullException.ThrowIfNull(client);
 
         return await client.GetAsync(
-            new Uri("/tours", UriKind.Relative),
+            new Uri(RoutePrefix, UriKind.Relative),
             cancellationToken);
     }
 }

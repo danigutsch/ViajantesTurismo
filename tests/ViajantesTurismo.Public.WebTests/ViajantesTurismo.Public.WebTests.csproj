@@ -8,6 +8,7 @@
     <ItemGroup>
         <Using Include="System.Net" />
         <Using Include="SharedKernel.Testing" />
+        <Using Include="SharedKernel.Testing.Assertions" />
         <Using Include="SharedKernel.Testing.AspNetCore" />
         <Using Include="ViajantesTurismo.Catalog.Contracts.Application" />
         <Using Include="ViajantesTurismo.Catalog.Contracts.Http" />

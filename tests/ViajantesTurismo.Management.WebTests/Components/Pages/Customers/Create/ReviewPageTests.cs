@@ -177,6 +177,9 @@ public sealed class ReviewPageTests : BunitContext
 
     [Theory]
     [InlineData("customers/relative-id", "/customers/relative-id")]
+    [InlineData("/api/v1/customers/relative-id", "/customers/relative-id")]
+    [InlineData("/api/v1/customerz", "/api/v1/customerz")]
+    [InlineData("/api/v1/customers-malformed/relative-id", "/api/v1/customers-malformed/relative-id")]
     [InlineData("//evil.example/customers/relative-id", "/customers")]
     public async Task SubmitCustomer_when_create_succeeds_with_relative_location_navigates_to_app_local_path(
         string location,

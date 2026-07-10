@@ -22,7 +22,7 @@ public sealed class BookingsApiClientTests
 
         var bookings = await sut.GetAllBookings(Xunit.TestContext.Current.CancellationToken);
 
-        requestPath.ShouldBe("/bookings");
+        requestPath.ShouldBe("/api/v1/bookings");
         var booking = bookings.ShouldHaveSingleItem();
         booking.TourIdentifier.ShouldBe("TOUR-1");
     }
@@ -42,7 +42,7 @@ public sealed class BookingsApiClientTests
         var booking = await sut.GetBookingById(bookingId, Xunit.TestContext.Current.CancellationToken);
 
         booking.ShouldNotBeNull();
-        requestPath.ShouldBe("/bookings/11111111-1111-1111-1111-111111111111");
+        requestPath.ShouldBe("/api/v1/bookings/11111111-1111-1111-1111-111111111111");
         booking.CustomerName.ShouldBe("Ada Lovelace");
     }
 
@@ -70,8 +70,8 @@ public sealed class BookingsApiClientTests
     }
 
     [Theory]
-    [InlineData("tour", "/bookings/tour/22222222-2222-2222-2222-222222222222")]
-    [InlineData("customer", "/bookings/customer/22222222-2222-2222-2222-222222222222")]
+    [InlineData("tour", "/api/v1/bookings/tour/22222222-2222-2222-2222-222222222222")]
+    [InlineData("customer", "/api/v1/bookings/customer/22222222-2222-2222-2222-222222222222")]
     public async Task GetBookingsByOwner_requests_expected_endpoint(string ownerKind, string expectedPath)
     {
         var requestPath = string.Empty;
@@ -103,7 +103,7 @@ public sealed class BookingsApiClientTests
             requestMethod = request.Method;
             return new HttpResponseMessage(System.Net.HttpStatusCode.Created)
             {
-                Headers = { Location = new Uri("/bookings/11111111-1111-1111-1111-111111111111", UriKind.Relative) }
+                Headers = { Location = new Uri("/api/v1/bookings/11111111-1111-1111-1111-111111111111", UriKind.Relative) }
             };
         });
         var sut = new BookingsApiClient(httpClient);
@@ -113,10 +113,10 @@ public sealed class BookingsApiClientTests
 
         // Assert
         requestMethod.ShouldBe(HttpMethods.Post);
-        requestPath.ShouldBe("/bookings");
+        requestPath.ShouldBe("/api/v1/bookings");
         outcome.Kind.ShouldBe(ContractCommandOutcomeKind.Succeeded);
         outcome.Location.ShouldNotBeNull();
-        outcome.Location.ToString().ShouldBe("/bookings/11111111-1111-1111-1111-111111111111");
+        outcome.Location.ToString().ShouldBe("/api/v1/bookings/11111111-1111-1111-1111-111111111111");
     }
 
     [Fact]
@@ -156,9 +156,9 @@ public sealed class BookingsApiClientTests
     }
 
     [Theory]
-    [InlineData("discount", "PUT", "/bookings/11111111-1111-1111-1111-111111111111/discount")]
-    [InlineData("details", "PUT", "/bookings/11111111-1111-1111-1111-111111111111/details")]
-    [InlineData("notes", "PATCH", "/bookings/11111111-1111-1111-1111-111111111111/notes")]
+    [InlineData("discount", "PUT", "/api/v1/bookings/11111111-1111-1111-1111-111111111111/discount")]
+    [InlineData("details", "PUT", "/api/v1/bookings/11111111-1111-1111-1111-111111111111/details")]
+    [InlineData("notes", "PATCH", "/api/v1/bookings/11111111-1111-1111-1111-111111111111/notes")]
     public async Task UpdateBooking_sends_expected_request(string updateKind, string expectedMethod, string expectedPath)
     {
         var requestPath = string.Empty;
@@ -190,9 +190,9 @@ public sealed class BookingsApiClientTests
     }
 
     [Theory]
-    [InlineData("cancel", "/bookings/11111111-1111-1111-1111-111111111111/cancel")]
-    [InlineData("confirm", "/bookings/11111111-1111-1111-1111-111111111111/confirm")]
-    [InlineData("complete", "/bookings/11111111-1111-1111-1111-111111111111/complete")]
+    [InlineData("cancel", "/api/v1/bookings/11111111-1111-1111-1111-111111111111/cancel")]
+    [InlineData("confirm", "/api/v1/bookings/11111111-1111-1111-1111-111111111111/confirm")]
+    [InlineData("complete", "/api/v1/bookings/11111111-1111-1111-1111-111111111111/complete")]
     public async Task Booking_command_posts_expected_request(string command, string expectedPath)
     {
         var requestPath = string.Empty;
@@ -240,7 +240,7 @@ public sealed class BookingsApiClientTests
         await sut.DeleteBooking(bookingId, Xunit.TestContext.Current.CancellationToken);
 
         requestMethod.ShouldBe(HttpMethods.Delete);
-        requestPath.ShouldBe("/bookings/11111111-1111-1111-1111-111111111111");
+        requestPath.ShouldBe("/api/v1/bookings/11111111-1111-1111-1111-111111111111");
     }
 
     [Fact]
@@ -256,7 +256,7 @@ public sealed class BookingsApiClientTests
             requestMethod = request.Method;
             return new HttpResponseMessage(System.Net.HttpStatusCode.Created)
             {
-                Headers = { Location = new Uri("/bookings/11111111-1111-1111-1111-111111111111/payments/aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa", UriKind.Relative) }
+                Headers = { Location = new Uri("/api/v1/bookings/11111111-1111-1111-1111-111111111111/payments/aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa", UriKind.Relative) }
             };
         });
         var sut = new BookingsApiClient(httpClient);
@@ -266,10 +266,10 @@ public sealed class BookingsApiClientTests
 
         // Assert
         requestMethod.ShouldBe(HttpMethods.Post);
-        requestPath.ShouldBe("/bookings/11111111-1111-1111-1111-111111111111/payments");
+        requestPath.ShouldBe("/api/v1/bookings/11111111-1111-1111-1111-111111111111/payments");
         outcome.Kind.ShouldBe(ContractCommandOutcomeKind.Succeeded);
         outcome.Location.ShouldNotBeNull();
-        outcome.Location.ToString().ShouldBe("/bookings/11111111-1111-1111-1111-111111111111/payments/aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa");
+        outcome.Location.ToString().ShouldBe("/api/v1/bookings/11111111-1111-1111-1111-111111111111/payments/aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa");
     }
 
     [Fact]

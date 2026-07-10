@@ -21,7 +21,7 @@ public sealed class ToursApiClientTests
 
         var tours = await sut.GetTours(Xunit.TestContext.Current.CancellationToken);
 
-        requestPath.ShouldBe("/tours");
+        requestPath.ShouldBe("/api/v1/tours");
         var tour = tours.ShouldHaveSingleItem();
         tour.Identifier.ShouldBe("TOUR-1");
     }
@@ -70,7 +70,7 @@ public sealed class ToursApiClientTests
         var tour = await sut.GetTourById(tourId, Xunit.TestContext.Current.CancellationToken);
 
         tour.ShouldNotBeNull();
-        requestPath.ShouldBe("/tours/11111111-1111-1111-1111-111111111111");
+        requestPath.ShouldBe("/api/v1/tours/11111111-1111-1111-1111-111111111111");
         tour.Name.ShouldBe("First tour");
     }
 
@@ -109,7 +109,7 @@ public sealed class ToursApiClientTests
             requestMethod = request.Method;
             return new HttpResponseMessage(System.Net.HttpStatusCode.Created)
             {
-                Headers = { Location = new Uri("/tours/11111111-1111-1111-1111-111111111111", UriKind.Relative) }
+                Headers = { Location = new Uri("/api/v1/tours/11111111-1111-1111-1111-111111111111", UriKind.Relative) }
             };
         });
         var sut = new ToursApiClient(httpClient);
@@ -119,10 +119,10 @@ public sealed class ToursApiClientTests
 
         // Assert
         requestMethod.ShouldBe(HttpMethods.Post);
-        requestPath.ShouldBe("/tours");
+        requestPath.ShouldBe("/api/v1/tours");
         outcome.Kind.ShouldBe(ContractCommandOutcomeKind.Succeeded);
         outcome.Location.ShouldNotBeNull();
-        outcome.Location.ToString().ShouldBe("/tours/11111111-1111-1111-1111-111111111111");
+        outcome.Location.ToString().ShouldBe("/api/v1/tours/11111111-1111-1111-1111-111111111111");
     }
 
     [Fact]
@@ -178,6 +178,6 @@ public sealed class ToursApiClientTests
         await sut.UpdateTour(tourId, AdminApiClientTestsHelpers.UpdateTour(), Xunit.TestContext.Current.CancellationToken);
 
         requestMethod.ShouldBe(HttpMethods.Put);
-        requestPath.ShouldBe("/tours/11111111-1111-1111-1111-111111111111");
+        requestPath.ShouldBe("/api/v1/tours/11111111-1111-1111-1111-111111111111");
     }
 }

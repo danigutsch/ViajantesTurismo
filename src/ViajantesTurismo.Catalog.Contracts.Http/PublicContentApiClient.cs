@@ -10,6 +10,7 @@ namespace ViajantesTurismo.Catalog.Contracts.Http;
 /// </summary>
 public sealed class PublicContentApiClient(HttpClient httpClient) : IPublicContentApiClient
 {
+    private const string RoutePrefix = "/api/v1/catalog/public-content";
     private static readonly PublicContentApiClientJsonContext Json = PublicContentApiClientJsonContext.Default;
 
     /// <inheritdoc />
@@ -17,7 +18,7 @@ public sealed class PublicContentApiClient(HttpClient httpClient) : IPublicConte
     {
         List<PublicContentDto>? content = null;
 
-        await foreach (var entry in httpClient.GetFromJsonAsAsyncEnumerable("/catalog/public-content", Json.PublicContentDto, ct).ConfigureAwait(false))
+        await foreach (var entry in httpClient.GetFromJsonAsAsyncEnumerable(RoutePrefix, Json.PublicContentDto, ct).ConfigureAwait(false))
         {
             if (entry is null)
             {
@@ -36,7 +37,7 @@ public sealed class PublicContentApiClient(HttpClient httpClient) : IPublicConte
     {
         ArgumentNullException.ThrowIfNull(key);
 
-        var requestUri = new Uri($"/catalog/public-content/{EscapePath(key)}", UriKind.Relative);
+        var requestUri = new Uri($"{RoutePrefix}/{EscapePath(key)}", UriKind.Relative);
         using var response = await httpClient.GetAsync(requestUri, ct).ConfigureAwait(false);
 
         if (response.StatusCode == HttpStatusCode.NotFound)
@@ -54,7 +55,7 @@ public sealed class PublicContentApiClient(HttpClient httpClient) : IPublicConte
         ArgumentNullException.ThrowIfNull(key);
         ArgumentNullException.ThrowIfNull(request);
 
-        var requestUri = new Uri($"/catalog/public-content/{EscapePath(key)}", UriKind.Relative);
+        var requestUri = new Uri($"{RoutePrefix}/{EscapePath(key)}", UriKind.Relative);
         using var response = await httpClient.PutAsJsonAsync(requestUri, request, Json.UpsertPublicContentRequest, ct).ConfigureAwait(false);
         await ContractHttpValidation.EnsureSuccessOrThrowValidationException(response, Json.ContractValidationProblemDto, ct).ConfigureAwait(false);
 

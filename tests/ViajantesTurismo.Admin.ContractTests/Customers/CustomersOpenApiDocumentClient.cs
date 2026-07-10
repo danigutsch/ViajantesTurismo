@@ -9,6 +9,7 @@ namespace ViajantesTurismo.Admin.ContractTests.Customers;
 /// </summary>
 internal static class CustomersOpenApiDocumentClient
 {
+    private const string RoutePrefix = "/api/v1/customers";
     private static readonly JsonSerializerOptions SerializerOptions = new(JsonSerializerDefaults.Web);
 
     /// <summary>
@@ -37,27 +38,27 @@ internal static class CustomersOpenApiDocumentClient
             throw new InvalidOperationException("The customers OpenAPI document is incomplete.");
         }
 
-        if (!document.Paths.TryGetValue("/customers", out var customersPath) ||
+        if (!document.Paths.TryGetValue(RoutePrefix, out var customersPath) ||
             customersPath.Get is null ||
             customersPath.Post is null)
         {
             throw new InvalidOperationException("The customers collection path is missing required operations.");
         }
 
-        if (!document.Paths.TryGetValue("/customers/{id}", out var customerByIdPath) ||
+        if (!document.Paths.TryGetValue($"{RoutePrefix}/{{id}}", out var customerByIdPath) ||
             customerByIdPath.Get is null ||
             customerByIdPath.Put is null)
         {
             throw new InvalidOperationException("The customers item path is missing required operations.");
         }
 
-        if (!document.Paths.TryGetValue("/customers/import", out var importPath) ||
+        if (!document.Paths.TryGetValue($"{RoutePrefix}/import", out var importPath) ||
             importPath.Post is null)
         {
             throw new InvalidOperationException("The customers import path is missing the required operation.");
         }
 
-        if (!document.Paths.TryGetValue("/customers/import/commit", out var commitImportPath) ||
+        if (!document.Paths.TryGetValue($"{RoutePrefix}/import/commit", out var commitImportPath) ||
             commitImportPath.Post is null)
         {
             throw new InvalidOperationException("The customers import commit path is missing the required operation.");

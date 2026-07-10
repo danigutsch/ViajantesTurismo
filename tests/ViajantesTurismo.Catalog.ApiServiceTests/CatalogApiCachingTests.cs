@@ -10,10 +10,10 @@ namespace ViajantesTurismo.Catalog.ApiServiceTests;
 public sealed class CatalogApiCachingTests
 {
     [Theory]
-    [InlineData("/public/catalog/tours")]
-    [InlineData("/public/catalog/tours/camino-norte")]
-    [InlineData("/public/catalog/content/home.hero?culture=en-US")]
-    [InlineData("/public/catalog/theme")]
+    [InlineData("/api/v1/public/catalog/tours")]
+    [InlineData("/api/v1/public/catalog/tours/camino-norte")]
+    [InlineData("/api/v1/public/catalog/content/home.hero?culture=en-US")]
+    [InlineData("/api/v1/public/catalog/theme")]
     public async Task Public_catalog_reads_emit_cache_metadata(string path)
     {
         // Arrange
@@ -56,7 +56,7 @@ public sealed class CatalogApiCachingTests
 
         // Act
         using var response = await client.PutAsJsonAsync(
-            new Uri("/catalog/public-theme", UriKind.Relative),
+            new Uri("/api/v1/catalog/public-theme", UriKind.Relative),
             request,
             TestContext.Current.CancellationToken);
 
@@ -85,19 +85,19 @@ public sealed class CatalogApiCachingTests
         using var client = factory.CreateClient();
 
         // Act
-        using var firstResponse = await client.GetAsync(new Uri("/public/catalog/tours/camino-norte", UriKind.Relative), cancellationToken);
+        using var firstResponse = await client.GetAsync(new Uri("/api/v1/public/catalog/tours/camino-norte", UriKind.Relative), cancellationToken);
         var firstTour = await firstResponse.Content.ReadFromJsonAsync<CatalogTourDto>(cancellationToken);
         _ = await tourStore.UpdatePresentation(
             tourId,
             CatalogApiCachingTestData.CreatePresentationUpdate("Unpublished store-only change", "camino-norte"),
             cancellationToken);
-        using var cachedResponse = await client.GetAsync(new Uri("/public/catalog/tours/camino-norte", UriKind.Relative), cancellationToken);
+        using var cachedResponse = await client.GetAsync(new Uri("/api/v1/public/catalog/tours/camino-norte", UriKind.Relative), cancellationToken);
         var cachedTour = await cachedResponse.Content.ReadFromJsonAsync<CatalogTourDto>(cancellationToken);
         using var updateResponse = await client.PutAsJsonAsync(
-            new Uri($"/catalog/tours/{tourId}/presentation", UriKind.Relative),
+            new Uri($"/api/v1/catalog/tours/{tourId}/presentation", UriKind.Relative),
             CatalogApiCachingTestData.CreatePresentationRequest("Invalidated tour", "camino-norte"),
             cancellationToken);
-        using var refreshedResponse = await client.GetAsync(new Uri("/public/catalog/tours/camino-norte", UriKind.Relative), cancellationToken);
+        using var refreshedResponse = await client.GetAsync(new Uri("/api/v1/public/catalog/tours/camino-norte", UriKind.Relative), cancellationToken);
         var refreshedTour = await refreshedResponse.Content.ReadFromJsonAsync<CatalogTourDto>(cancellationToken);
 
         // Assert
@@ -124,16 +124,16 @@ public sealed class CatalogApiCachingTests
         using var client = factory.CreateClient();
 
         // Act
-        using var firstResponse = await client.GetAsync(new Uri("/public/catalog/content/home.hero?culture=en-US", UriKind.Relative), cancellationToken);
+        using var firstResponse = await client.GetAsync(new Uri("/api/v1/public/catalog/content/home.hero?culture=en-US", UriKind.Relative), cancellationToken);
         var firstContent = await firstResponse.Content.ReadFromJsonAsync<PublicContentVariantDto>(cancellationToken);
         await contentStore.SaveContent(CatalogApiCachingTestData.CreatePublishedContent("Store-only content"), cancellationToken);
-        using var cachedResponse = await client.GetAsync(new Uri("/public/catalog/content/home.hero?culture=en-US", UriKind.Relative), cancellationToken);
+        using var cachedResponse = await client.GetAsync(new Uri("/api/v1/public/catalog/content/home.hero?culture=en-US", UriKind.Relative), cancellationToken);
         var cachedContent = await cachedResponse.Content.ReadFromJsonAsync<PublicContentVariantDto>(cancellationToken);
         using var updateResponse = await client.PutAsJsonAsync(
-            new Uri("/catalog/public-content/home.hero", UriKind.Relative),
+            new Uri("/api/v1/catalog/public-content/home.hero", UriKind.Relative),
             CatalogApiCachingTestData.CreateContentRequest("Invalidated content"),
             cancellationToken);
-        using var refreshedResponse = await client.GetAsync(new Uri("/public/catalog/content/home.hero?culture=en-US", UriKind.Relative), cancellationToken);
+        using var refreshedResponse = await client.GetAsync(new Uri("/api/v1/public/catalog/content/home.hero?culture=en-US", UriKind.Relative), cancellationToken);
         var refreshedContent = await refreshedResponse.Content.ReadFromJsonAsync<PublicContentVariantDto>(cancellationToken);
 
         // Assert
@@ -162,15 +162,15 @@ public sealed class CatalogApiCachingTests
         using var client = factory.CreateClient();
 
         // Act
-        using var firstResponse = await client.GetAsync(new Uri("/public/catalog/theme", UriKind.Relative), cancellationToken);
+        using var firstResponse = await client.GetAsync(new Uri("/api/v1/public/catalog/theme", UriKind.Relative), cancellationToken);
         var firstTheme = await firstResponse.Content.ReadFromJsonAsync<PublicThemeSettingsDto>(cancellationToken);
         await themeStore.SaveTheme(
             PublicThemeSettings.Create("#334455", "#445566", "#FFFFFF", "#000000", "Inter", "Verdana").Value,
             cancellationToken);
-        using var cachedResponse = await client.GetAsync(new Uri("/public/catalog/theme", UriKind.Relative), cancellationToken);
+        using var cachedResponse = await client.GetAsync(new Uri("/api/v1/public/catalog/theme", UriKind.Relative), cancellationToken);
         var cachedTheme = await cachedResponse.Content.ReadFromJsonAsync<PublicThemeSettingsDto>(cancellationToken);
         using var updateResponse = await client.PutAsJsonAsync(
-            new Uri("/catalog/public-theme", UriKind.Relative),
+            new Uri("/api/v1/catalog/public-theme", UriKind.Relative),
             new PublicThemeSettingsDto
             {
                 PrimaryColor = "#556677",
@@ -181,7 +181,7 @@ public sealed class CatalogApiCachingTests
                 BodyFontFamily = "Verdana"
             },
             cancellationToken);
-        using var refreshedResponse = await client.GetAsync(new Uri("/public/catalog/theme", UriKind.Relative), cancellationToken);
+        using var refreshedResponse = await client.GetAsync(new Uri("/api/v1/public/catalog/theme", UriKind.Relative), cancellationToken);
         var refreshedTheme = await refreshedResponse.Content.ReadFromJsonAsync<PublicThemeSettingsDto>(cancellationToken);
 
         // Assert
@@ -208,10 +208,10 @@ public sealed class CatalogApiCachingTests
         using var client = factory.CreateClient();
 
         // Act
-        using var firstResponse = await client.GetAsync(new Uri("/public/catalog/content/home.hero?culture=ZZ&language=EN", UriKind.Relative), cancellationToken);
+        using var firstResponse = await client.GetAsync(new Uri("/api/v1/public/catalog/content/home.hero?culture=ZZ&language=EN", UriKind.Relative), cancellationToken);
         var firstContent = await firstResponse.Content.ReadFromJsonAsync<PublicContentVariantDto>(cancellationToken);
         await contentStore.SaveContent(CatalogApiCachingTestData.CreatePublishedContent("Store-only content"), cancellationToken);
-        using var cachedResponse = await client.GetAsync(new Uri("/public/catalog/content/home.hero?culture=en-US", UriKind.Relative), cancellationToken);
+        using var cachedResponse = await client.GetAsync(new Uri("/api/v1/public/catalog/content/home.hero?culture=en-US", UriKind.Relative), cancellationToken);
         var cachedContent = await cachedResponse.Content.ReadFromJsonAsync<PublicContentVariantDto>(cancellationToken);
 
         // Assert
@@ -234,7 +234,7 @@ public sealed class CatalogApiCachingTests
         using var client = factory.CreateClient();
 
         // Act
-        using var response = await client.GetAsync(new Uri("/public/catalog/content/home.hero?culture=ZZ", UriKind.Relative), cancellationToken);
+        using var response = await client.GetAsync(new Uri("/api/v1/public/catalog/content/home.hero?culture=ZZ", UriKind.Relative), cancellationToken);
 
         // Assert
         response.StatusCode.ShouldBe(HttpStatusCode.BadRequest);
@@ -258,7 +258,7 @@ public sealed class CatalogApiCachingTests
         using var client = factory.CreateClient();
 
         // Act
-        using var response = await client.GetAsync(new Uri("/public/catalog/content/home.hero?culture=", UriKind.Relative), cancellationToken);
+        using var response = await client.GetAsync(new Uri("/api/v1/public/catalog/content/home.hero?culture=", UriKind.Relative), cancellationToken);
         var content = await response.Content.ReadFromJsonAsync<PublicContentVariantDto>(cancellationToken);
 
         // Assert
@@ -275,7 +275,7 @@ public sealed class CatalogApiCachingTests
         using var client = factory.CreateClient();
 
         // Act
-        using var response = await client.GetAsync(new Uri("/public/catalog/content/%20?culture=en-US", UriKind.Relative), TestContext.Current.CancellationToken);
+        using var response = await client.GetAsync(new Uri("/api/v1/public/catalog/content/%20?culture=en-US", UriKind.Relative), TestContext.Current.CancellationToken);
 
         // Assert
         response.StatusCode.ShouldBe(HttpStatusCode.BadRequest);
@@ -289,8 +289,8 @@ public sealed class CatalogApiCachingTests
     }
 
     [Theory]
-    [InlineData("/public/catalog/tours/missing-tour")]
-    [InlineData("/public/catalog/content/missing-content?culture=en-US")]
+    [InlineData("/api/v1/public/catalog/tours/missing-tour")]
+    [InlineData("/api/v1/public/catalog/content/missing-content?culture=en-US")]
     public async Task Missing_public_catalog_reads_are_not_cacheable(string path)
     {
         // Arrange

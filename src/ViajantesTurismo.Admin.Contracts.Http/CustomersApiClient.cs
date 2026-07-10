@@ -13,6 +13,7 @@ namespace ViajantesTurismo.Admin.Contracts.Http;
 /// </summary>
 public sealed partial class CustomersApiClient(HttpClient httpClient, ILogger<CustomersApiClient> logger) : ICustomersApiClient
 {
+    private const string RoutePrefix = "/api/v1/customers";
     private static readonly CustomersApiClientJsonContext Json = CustomersApiClientJsonContext.Default;
 
     /// <inheritdoc />
@@ -25,7 +26,7 @@ public sealed partial class CustomersApiClient(HttpClient httpClient, ILogger<Cu
 
         List<GetCustomerDto>? customers = null;
 
-        await foreach (var customer in httpClient.GetFromJsonAsAsyncEnumerable("/customers", Json.GetCustomerDto, ct).ConfigureAwait(false))
+        await foreach (var customer in httpClient.GetFromJsonAsAsyncEnumerable(RoutePrefix, Json.GetCustomerDto, ct).ConfigureAwait(false))
         {
             if (customers?.Count >= maxItems)
             {
@@ -47,7 +48,7 @@ public sealed partial class CustomersApiClient(HttpClient httpClient, ILogger<Cu
     /// <inheritdoc />
     public async Task<CustomerDetailsDto?> GetCustomerById(Guid id, CancellationToken ct)
     {
-        using var response = await httpClient.GetAsync(new Uri($"/customers/{id}", UriKind.Relative), ct).ConfigureAwait(false);
+        using var response = await httpClient.GetAsync(new Uri($"{RoutePrefix}/{id}", UriKind.Relative), ct).ConfigureAwait(false);
         if (response.StatusCode == HttpStatusCode.NotFound)
         {
             return null;
@@ -71,7 +72,7 @@ public sealed partial class CustomersApiClient(HttpClient httpClient, ILogger<Cu
         activity?.SetTag(AdminContractsClientTelemetry.OperationTag, AdminContractsClientTelemetry.CreateCustomerActivity);
 
         using var response = await httpClient.PostAsJsonAsync(
-            new Uri("/customers", UriKind.Relative),
+            new Uri(RoutePrefix, UriKind.Relative),
             dto,
             Json.CreateCustomerDto,
             ct).ConfigureAwait(false);
@@ -94,7 +95,7 @@ public sealed partial class CustomersApiClient(HttpClient httpClient, ILogger<Cu
         ArgumentNullException.ThrowIfNull(dto);
 
         using var response = await httpClient.PutAsJsonAsync(
-            $"/customers/{id}",
+            $"{RoutePrefix}/{id}",
             dto,
             Json.UpdateCustomerDto,
             ct).ConfigureAwait(false);
@@ -115,7 +116,7 @@ public sealed partial class CustomersApiClient(HttpClient httpClient, ILogger<Cu
         using var content = new MultipartFormDataContent();
         content.Add(fileBytes, "file", fileName);
 
-        using var response = await httpClient.PostAsync(new Uri("/customers/import", UriKind.Relative), content, ct).ConfigureAwait(false);
+        using var response = await httpClient.PostAsync(new Uri($"{RoutePrefix}/import", UriKind.Relative), content, ct).ConfigureAwait(false);
         response.EnsureSuccessStatusCode();
 
         return await response.Content.ReadFromJsonAsync(Json.ImportResultDto, ct).ConfigureAwait(false)
@@ -135,7 +136,7 @@ public sealed partial class CustomersApiClient(HttpClient httpClient, ILogger<Cu
         content.Add(fileBytes, "file", fileName);
         content.Add(new StringContent(ConflictResolutionSerialization.Serialize(conflictResolutions)), "conflictResolutions");
 
-        using var response = await httpClient.PostAsync(new Uri("/customers/import/commit", UriKind.Relative), content, ct).ConfigureAwait(false);
+        using var response = await httpClient.PostAsync(new Uri($"{RoutePrefix}/import/commit", UriKind.Relative), content, ct).ConfigureAwait(false);
         response.EnsureSuccessStatusCode();
 
         return await response.Content.ReadFromJsonAsync(Json.ImportResultDto, ct).ConfigureAwait(false)

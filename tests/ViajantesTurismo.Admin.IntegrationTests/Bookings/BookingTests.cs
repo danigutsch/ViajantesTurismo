@@ -12,10 +12,10 @@ public class BookingTests(ApiFixture fixture)
         var cancellationToken = TestContext.Current.CancellationToken;
 
         // Act
-        var response = await fixture.Client.GetAsync(new Uri("/bookings", UriKind.Relative), cancellationToken);
+        var response = await fixture.Client.GetAsync(new Uri("/api/v1/bookings", UriKind.Relative), cancellationToken);
 
         // Assert
-        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        response.StatusCode.ShouldBe(HttpStatusCode.OK);
     }
 
     [Fact]
@@ -26,14 +26,14 @@ public class BookingTests(ApiFixture fixture)
 
         // Act
         var baseUri = fixture.BaseUri;
-        var response = await fixture.Client.GetAsync(new Uri("/bookings", UriKind.Relative), cancellationToken);
+        var response = await fixture.Client.GetAsync(new Uri("/api/v1/bookings", UriKind.Relative), cancellationToken);
 
         // Assert
-        Assert.True(baseUri.Scheme == Uri.UriSchemeHttp || baseUri.Scheme == Uri.UriSchemeHttps);
-        Assert.False(string.IsNullOrWhiteSpace(baseUri.Host));
-        Assert.True(baseUri.Port > 0);
+        (baseUri.Scheme == Uri.UriSchemeHttp || baseUri.Scheme == Uri.UriSchemeHttps).ShouldBeTrue();
+        string.IsNullOrWhiteSpace(baseUri.Host).ShouldBeFalse();
+        (baseUri.Port > 0).ShouldBeTrue();
 
-        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        response.StatusCode.ShouldBe(HttpStatusCode.OK);
     }
 
     [Fact]
@@ -46,9 +46,9 @@ public class BookingTests(ApiFixture fixture)
         // Act
         var bookingsAfterSecondRead = await fixture.Client.GetAllBookingsAndRead(cancellationToken);
 
-        Assert.NotEmpty(originalBookings);
+        originalBookings.ShouldNotBeEmpty();
 
         // Assert
-        Assert.Equal(originalBookings.Length, bookingsAfterSecondRead.Length);
+        bookingsAfterSecondRead.Length.ShouldBe(originalBookings.Length);
     }
 }

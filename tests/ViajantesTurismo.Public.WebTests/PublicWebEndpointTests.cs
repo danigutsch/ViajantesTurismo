@@ -1,5 +1,4 @@
 using Microsoft.AspNetCore.Mvc.Testing;
-using SharedKernel.Testing.Assertions;
 using TestTraits = ViajantesTurismo.Public.WebTests.Infrastructure.TestTraits;
 
 namespace ViajantesTurismo.Public.WebTests;

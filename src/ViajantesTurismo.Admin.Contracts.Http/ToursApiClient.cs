@@ -12,6 +12,7 @@ namespace ViajantesTurismo.Admin.Contracts.Http;
 /// </summary>
 public sealed partial class ToursApiClient(HttpClient httpClient, ILogger<ToursApiClient>? logger = null) : IToursApiClient
 {
+    private const string RoutePrefix = "/api/v1/tours";
     private static readonly ToursApiClientJsonContext Json = ToursApiClientJsonContext.Default;
 
     /// <inheritdoc />
@@ -24,7 +25,7 @@ public sealed partial class ToursApiClient(HttpClient httpClient, ILogger<ToursA
 
         List<GetTourDto>? tours = null;
 
-        await foreach (var tour in httpClient.GetFromJsonAsAsyncEnumerable("/tours", Json.GetTourDto, cancellationToken).ConfigureAwait(false))
+        await foreach (var tour in httpClient.GetFromJsonAsAsyncEnumerable(RoutePrefix, Json.GetTourDto, cancellationToken).ConfigureAwait(false))
         {
             if (tours?.Count >= maxItems)
             {
@@ -46,7 +47,7 @@ public sealed partial class ToursApiClient(HttpClient httpClient, ILogger<ToursA
     /// <inheritdoc />
     public async Task<GetTourDto?> GetTourById(Guid id, CancellationToken cancellationToken)
     {
-        using var response = await httpClient.GetAsync(new Uri($"/tours/{id}", UriKind.Relative), cancellationToken).ConfigureAwait(false);
+        using var response = await httpClient.GetAsync(new Uri($"{RoutePrefix}/{id}", UriKind.Relative), cancellationToken).ConfigureAwait(false);
         if (response.StatusCode == HttpStatusCode.NotFound)
         {
             return null;
@@ -68,7 +69,7 @@ public sealed partial class ToursApiClient(HttpClient httpClient, ILogger<ToursA
         activity?.SetTag(AdminContractsClientTelemetry.ApiAreaTag, AdminContractsClientTelemetry.AdminApiArea);
         activity?.SetTag(AdminContractsClientTelemetry.OperationTag, AdminContractsClientTelemetry.CreateTourActivity);
 
-        using var response = await httpClient.PostAsJsonAsync(new Uri("/tours", UriKind.Relative), dto, Json.CreateTourDto, cancellationToken).ConfigureAwait(false);
+        using var response = await httpClient.PostAsJsonAsync(new Uri(RoutePrefix, UriKind.Relative), dto, Json.CreateTourDto, cancellationToken).ConfigureAwait(false);
         var outcome = await ContractCommandOutcome.FromResponse(response, Json.ContractValidationProblemDto, cancellationToken).ConfigureAwait(false);
 
         activity?.SetTag(AdminContractsClientTelemetry.StatusCodeTag, (int)outcome.StatusCode);
@@ -86,7 +87,7 @@ public sealed partial class ToursApiClient(HttpClient httpClient, ILogger<ToursA
     {
         ArgumentNullException.ThrowIfNull(dto);
 
-        using var response = await httpClient.PutAsJsonAsync($"/tours/{id}", dto, Json.UpdateTourDto, cancellationToken).ConfigureAwait(false);
+        using var response = await httpClient.PutAsJsonAsync($"{RoutePrefix}/{id}", dto, Json.UpdateTourDto, cancellationToken).ConfigureAwait(false);
         await ContractHttpValidation.EnsureSuccessOrThrowValidationException(response, Json.ContractValidationProblemDto, cancellationToken).ConfigureAwait(false);
     }
 

@@ -7,6 +7,7 @@ Current boundary files:
 - `tours.openapi.json`
 - `customers.openapi.json`
 - `bookings.openapi.json`
+- `v1.openapi.json`
 
 Ownership rules:
 

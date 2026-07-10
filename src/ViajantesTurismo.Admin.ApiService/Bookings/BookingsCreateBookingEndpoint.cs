@@ -61,7 +61,7 @@ internal static class BookingsCreateBookingEndpoint
         return await AdminEndpointResults.GetBookingResponse<Results<Created<GetBookingDto>, NotFound<ProblemDetails>, Conflict<ProblemDetails>, ValidationProblem>>(
             result.Value,
             queryService,
-            booking => TypedResults.Created($"/bookings/{result.Value}", booking),
+            booking => TypedResults.Created($"/api/v1/bookings/{result.Value}", booking),
             bookingId => BookingErrors.BookingNotFound(bookingId).ToNotFound(),
             ct);
     }

@@ -6,6 +6,7 @@ Current boundary files:
 
 - `catalog.openapi.json`
 - `public-catalog.openapi.json`
+- `v1.openapi.json`
 
 Ownership rules:
 

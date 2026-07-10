@@ -22,7 +22,11 @@ internal static class CatalogOpenApiSnapshots
             CanonicalArtifactSuffix,
             GeneratedArtifactPrefix,
             "Catalog OpenAPI",
-            RefreshHint);
+            RefreshHint,
+            new Dictionary<string, string>(StringComparer.Ordinal)
+            {
+                ["v1"] = "ViajantesTurismo.Catalog.ApiService.json"
+            });
     }
 
     private static string GetOpenApiDirectory()

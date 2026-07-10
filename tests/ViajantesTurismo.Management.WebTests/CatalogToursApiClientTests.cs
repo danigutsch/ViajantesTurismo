@@ -44,7 +44,7 @@ public sealed class CatalogToursApiClientTests
         var tours = await sut.GetTours(Xunit.TestContext.Current.CancellationToken);
 
         // Assert
-        requestPath.ShouldBe("/catalog/tours");
+        requestPath.ShouldBe("/api/v1/catalog/tours");
         tours.Length.ShouldBe(2);
         tours[0].Slug.ShouldBe("first-tour");
         tours[1].Slug.ShouldBe("second-tour");
@@ -104,7 +104,7 @@ public sealed class CatalogToursApiClientTests
         // Assert
         updated.ShouldNotBeNull();
         requestMethod.ShouldBe(HttpMethods.Put);
-        requestPath.ShouldBe("/catalog/tours/11111111-1111-1111-1111-111111111111/presentation");
+        requestPath.ShouldBe("/api/v1/catalog/tours/11111111-1111-1111-1111-111111111111/presentation");
         updated.IsPublished.ShouldBeTrue();
     }
 
@@ -137,7 +137,7 @@ public sealed class CatalogToursApiClientTests
 
         // Assert
         tour.ShouldNotBeNull();
-        requestPath.ShouldBe("/catalog/tours/11111111-1111-1111-1111-111111111111");
+        requestPath.ShouldBe("/api/v1/catalog/tours/11111111-1111-1111-1111-111111111111");
         tour.Slug.ShouldBe("catalog-tour");
     }
 

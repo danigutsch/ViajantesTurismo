@@ -1,5 +1,6 @@
 using System.Net;
 using System.Net.Http.Json;
+using SharedKernel.Testing.Assertions;
 using ViajantesTurismo.Catalog.Contracts.Application;
 
 namespace ViajantesTurismo.Catalog.UnitTests;
@@ -15,16 +16,16 @@ public sealed class CatalogEndpointTests
         using var client = factory.CreateClient();
 
         // Act
-        using var response = await client.GetAsync(new Uri("/catalog/tours", UriKind.Relative), TestContext.Current.CancellationToken);
+        using var response = await client.GetAsync(new Uri("/api/v1/catalog/tours", UriKind.Relative), TestContext.Current.CancellationToken);
         var tours = await response.Content.ReadFromJsonAsync<CatalogTourDto[]>(TestContext.Current.CancellationToken);
 
         // Assert
-        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
-        Assert.NotNull(tours);
-        var tour = Assert.Single(tours);
-        Assert.Equal("Dolomites", tour.Title);
-        Assert.Equal("TOUR-002", tour.Slug);
-        Assert.False(tour.IsPublished);
+        response.StatusCode.ShouldBe(HttpStatusCode.OK);
+        tours.ShouldNotBeNull();
+        var tour = tours.ShouldHaveSingleItem();
+        tour.Title.ShouldBe("Dolomites");
+        tour.Slug.ShouldBe("TOUR-002");
+        tour.IsPublished.ShouldBeFalse();
     }
 
     [Fact]
@@ -38,15 +39,15 @@ public sealed class CatalogEndpointTests
 
         // Act
         using var response = await client.GetAsync(
-            new Uri($"/catalog/tours/{tour.CatalogTourId}", UriKind.Relative),
+            new Uri($"/api/v1/catalog/tours/{tour.CatalogTourId}", UriKind.Relative),
             TestContext.Current.CancellationToken);
         var dto = await response.Content.ReadFromJsonAsync<CatalogTourDto>(TestContext.Current.CancellationToken);
 
         // Assert
-        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
-        Assert.NotNull(dto);
-        Assert.Equal(tour.CatalogTourId, dto.Id);
-        Assert.Equal("Dolomites", dto.Title);
+        response.StatusCode.ShouldBe(HttpStatusCode.OK);
+        dto.ShouldNotBeNull();
+        dto.Id.ShouldBe(tour.CatalogTourId);
+        dto.Title.ShouldBe("Dolomites");
     }
 
     [Fact]
@@ -58,11 +59,11 @@ public sealed class CatalogEndpointTests
 
         // Act
         using var response = await client.GetAsync(
-            new Uri($"/catalog/tours/{Guid.CreateVersion7()}", UriKind.Relative),
+            new Uri($"/api/v1/catalog/tours/{Guid.CreateVersion7()}", UriKind.Relative),
             TestContext.Current.CancellationToken);
 
         // Assert
-        Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
+        response.StatusCode.ShouldBe(HttpStatusCode.NotFound);
     }
 
     [Fact]
@@ -75,14 +76,14 @@ public sealed class CatalogEndpointTests
 
         // Act
         using var response = await client.GetAsync(
-            new Uri("/public/catalog/tours", UriKind.Relative),
+            new Uri("/api/v1/public/catalog/tours", UriKind.Relative),
             TestContext.Current.CancellationToken);
         var tours = await response.Content.ReadFromJsonAsync<CatalogTourDto[]>(TestContext.Current.CancellationToken);
 
         // Assert
-        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
-        Assert.NotNull(tours);
-        Assert.Empty(tours);
+        response.StatusCode.ShouldBe(HttpStatusCode.OK);
+        tours.ShouldNotBeNull();
+        tours.ShouldBeEmpty();
     }
 
     [Fact]
@@ -94,11 +95,11 @@ public sealed class CatalogEndpointTests
 
         // Act
         using var response = await client.GetAsync(
-            new Uri("/public/catalog/tours/missing-tour", UriKind.Relative),
+            new Uri("/api/v1/public/catalog/tours/missing-tour", UriKind.Relative),
             TestContext.Current.CancellationToken);
 
         // Assert
-        Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
+        response.StatusCode.ShouldBe(HttpStatusCode.NotFound);
     }
 
     [Fact]
@@ -110,11 +111,11 @@ public sealed class CatalogEndpointTests
 
         // Act
         using var response = await client.GetAsync(
-            new Uri("/public/catalog/tours/%20", UriKind.Relative),
+            new Uri("/api/v1/public/catalog/tours/%20", UriKind.Relative),
             TestContext.Current.CancellationToken);
 
         // Assert
-        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+        response.StatusCode.ShouldBe(HttpStatusCode.BadRequest);
     }
 
     [Fact]
@@ -128,13 +129,13 @@ public sealed class CatalogEndpointTests
 
         // Act
         using var response = await client.GetAsync(
-            new Uri("/public/catalog/tours/%20published-tour%20", UriKind.Relative),
+            new Uri("/api/v1/public/catalog/tours/%20published-tour%20", UriKind.Relative),
             TestContext.Current.CancellationToken);
         var dto = await response.Content.ReadFromJsonAsync<CatalogTourDto>(TestContext.Current.CancellationToken);
 
         // Assert
-        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
-        Assert.NotNull(dto);
-        Assert.Equal("published-tour", dto.Slug);
+        response.StatusCode.ShouldBe(HttpStatusCode.OK);
+        dto.ShouldNotBeNull();
+        dto.Slug.ShouldBe("published-tour");
     }
 }

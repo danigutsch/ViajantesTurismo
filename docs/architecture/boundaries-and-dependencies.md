@@ -52,6 +52,7 @@ This diagram is generated from source project references.
 
 ```mermaid
 flowchart TB
+    ViajantesTurismo_Admin_ApiService[ViajantesTurismo.Admin.ApiService] --> SharedKernel_ApiVersioning_AspNetCore[SharedKernel.ApiVersioning.AspNetCore]
     ViajantesTurismo_Admin_ApiService[ViajantesTurismo.Admin.ApiService] --> SharedKernel_AspNetCore[SharedKernel.AspNetCore]
     ViajantesTurismo_Admin_ApiService[ViajantesTurismo.Admin.ApiService] --> SharedKernel_OpenApi[SharedKernel.OpenApi]
     ViajantesTurismo_Admin_ApiService[ViajantesTurismo.Admin.ApiService] --> SharedKernel_Results[SharedKernel.Results]
@@ -99,6 +100,7 @@ flowchart TB
     ViajantesTurismo_AppHost[ViajantesTurismo.AppHost] --> ViajantesTurismo_MigrationService[ViajantesTurismo.MigrationService]
     ViajantesTurismo_AppHost[ViajantesTurismo.AppHost] --> ViajantesTurismo_Public_Web[ViajantesTurismo.Public.Web]
     ViajantesTurismo_AppHost[ViajantesTurismo.AppHost] --> ViajantesTurismo_Resources[ViajantesTurismo.Resources]
+    ViajantesTurismo_Catalog_ApiService[ViajantesTurismo.Catalog.ApiService] --> SharedKernel_ApiVersioning_AspNetCore[SharedKernel.ApiVersioning.AspNetCore]
     ViajantesTurismo_Catalog_ApiService[ViajantesTurismo.Catalog.ApiService] --> SharedKernel_AspNetCore[SharedKernel.AspNetCore]
     ViajantesTurismo_Catalog_ApiService[ViajantesTurismo.Catalog.ApiService] --> SharedKernel_HttpCaching_AspNetCore[SharedKernel.HttpCaching.AspNetCore]
     ViajantesTurismo_Catalog_ApiService[ViajantesTurismo.Catalog.ApiService] --> SharedKernel_OpenApi[SharedKernel.OpenApi]

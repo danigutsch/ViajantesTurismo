@@ -33,6 +33,10 @@ internal static class AdminOpenApiArtifactDriftGuard
             CanonicalArtifactSuffix,
             GeneratedArtifactPrefix,
             "Admin OpenAPI",
-            RefreshHint);
+            RefreshHint,
+            new Dictionary<string, string>(StringComparer.Ordinal)
+            {
+                ["v1"] = "ViajantesTurismo.Admin.ApiService.json"
+            });
     }
 }

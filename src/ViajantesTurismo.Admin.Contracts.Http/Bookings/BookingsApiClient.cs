@@ -12,16 +12,17 @@ namespace ViajantesTurismo.Admin.Contracts.Http;
 /// </summary>
 public sealed partial class BookingsApiClient(HttpClient httpClient, ILogger<BookingsApiClient>? logger = null) : IBookingsApiClient
 {
+    private const string RoutePrefix = "/api/v1/bookings";
     private static readonly BookingsApiClientJsonContext Json = BookingsApiClientJsonContext.Default;
 
     /// <inheritdoc />
     public async Task<GetBookingDto[]> GetAllBookings(CancellationToken ct) =>
-        await ReadBookings("/bookings", ct).ConfigureAwait(false);
+        await ReadBookings(RoutePrefix, ct).ConfigureAwait(false);
 
     /// <inheritdoc />
     public async Task<GetBookingDto?> GetBookingById(Guid id, CancellationToken ct)
     {
-        using var response = await httpClient.GetAsync(new Uri($"/bookings/{id}", UriKind.Relative), ct).ConfigureAwait(false);
+        using var response = await httpClient.GetAsync(new Uri($"{RoutePrefix}/{id}", UriKind.Relative), ct).ConfigureAwait(false);
         if (response.StatusCode == HttpStatusCode.NotFound)
         {
             return null;
@@ -34,11 +35,11 @@ public sealed partial class BookingsApiClient(HttpClient httpClient, ILogger<Boo
 
     /// <inheritdoc />
     public async Task<GetBookingDto[]> GetBookingsByTourId(Guid tourId, CancellationToken ct) =>
-        await ReadBookings($"/bookings/tour/{tourId}", ct).ConfigureAwait(false);
+        await ReadBookings($"{RoutePrefix}/tour/{tourId}", ct).ConfigureAwait(false);
 
     /// <inheritdoc />
     public async Task<GetBookingDto[]> GetBookingsByCustomerId(Guid customerId, CancellationToken ct) =>
-        await ReadBookings($"/bookings/customer/{customerId}", ct).ConfigureAwait(false);
+        await ReadBookings($"{RoutePrefix}/customer/{customerId}", ct).ConfigureAwait(false);
 
     /// <inheritdoc />
     public async Task<ContractCommandOutcomeDto> CreateBooking(CreateBookingDto dto, CancellationToken ct)
@@ -46,7 +47,7 @@ public sealed partial class BookingsApiClient(HttpClient httpClient, ILogger<Boo
         ArgumentNullException.ThrowIfNull(dto);
 
         using var activity = StartActivity(AdminContractsClientTelemetry.CreateBookingActivity);
-        using var response = await httpClient.PostAsJsonAsync(new Uri("/bookings", UriKind.Relative), dto, Json.CreateBookingDto, ct).ConfigureAwait(false);
+        using var response = await httpClient.PostAsJsonAsync(new Uri(RoutePrefix, UriKind.Relative), dto, Json.CreateBookingDto, ct).ConfigureAwait(false);
         var outcome = await ContractCommandOutcome.FromResponse(response, Json.ContractValidationProblemDto, ct).ConfigureAwait(false);
 
         RecordOutcome(activity, outcome, LogBookingCreateOutcome);
@@ -58,7 +59,7 @@ public sealed partial class BookingsApiClient(HttpClient httpClient, ILogger<Boo
     {
         ArgumentNullException.ThrowIfNull(dto);
 
-        using var response = await httpClient.PutAsJsonAsync($"/bookings/{id}/discount", dto, Json.UpdateBookingDiscountDto, ct).ConfigureAwait(false);
+        using var response = await httpClient.PutAsJsonAsync($"{RoutePrefix}/{id}/discount", dto, Json.UpdateBookingDiscountDto, ct).ConfigureAwait(false);
         await EnsureSuccess(response, ct).ConfigureAwait(false);
     }
 
@@ -67,7 +68,7 @@ public sealed partial class BookingsApiClient(HttpClient httpClient, ILogger<Boo
     {
         ArgumentNullException.ThrowIfNull(dto);
 
-        using var response = await httpClient.PutAsJsonAsync($"/bookings/{id}/details", dto, Json.UpdateBookingDetailsDto, ct).ConfigureAwait(false);
+        using var response = await httpClient.PutAsJsonAsync($"{RoutePrefix}/{id}/details", dto, Json.UpdateBookingDetailsDto, ct).ConfigureAwait(false);
         await EnsureSuccess(response, ct).ConfigureAwait(false);
     }
 
@@ -76,26 +77,26 @@ public sealed partial class BookingsApiClient(HttpClient httpClient, ILogger<Boo
     {
         ArgumentNullException.ThrowIfNull(dto);
 
-        using var response = await httpClient.PatchAsJsonAsync($"/bookings/{id}/notes", dto, Json.UpdateBookingNotesDto, ct).ConfigureAwait(false);
+        using var response = await httpClient.PatchAsJsonAsync($"{RoutePrefix}/{id}/notes", dto, Json.UpdateBookingNotesDto, ct).ConfigureAwait(false);
         await EnsureSuccess(response, ct).ConfigureAwait(false);
     }
 
     /// <inheritdoc />
     public async Task CancelBooking(Guid id, CancellationToken ct) =>
-        await PostCommand($"/bookings/{id}/cancel", ct).ConfigureAwait(false);
+        await PostCommand($"{RoutePrefix}/{id}/cancel", ct).ConfigureAwait(false);
 
     /// <inheritdoc />
     public async Task ConfirmBooking(Guid id, CancellationToken ct) =>
-        await PostCommand($"/bookings/{id}/confirm", ct).ConfigureAwait(false);
+        await PostCommand($"{RoutePrefix}/{id}/confirm", ct).ConfigureAwait(false);
 
     /// <inheritdoc />
     public async Task CompleteBooking(Guid id, CancellationToken ct) =>
-        await PostCommand($"/bookings/{id}/complete", ct).ConfigureAwait(false);
+        await PostCommand($"{RoutePrefix}/{id}/complete", ct).ConfigureAwait(false);
 
     /// <inheritdoc />
     public async Task DeleteBooking(Guid id, CancellationToken ct)
     {
-        using var response = await httpClient.DeleteAsync(new Uri($"/bookings/{id}", UriKind.Relative), ct).ConfigureAwait(false);
+        using var response = await httpClient.DeleteAsync(new Uri($"{RoutePrefix}/{id}", UriKind.Relative), ct).ConfigureAwait(false);
         await EnsureSuccess(response, ct).ConfigureAwait(false);
     }
 
@@ -105,7 +106,7 @@ public sealed partial class BookingsApiClient(HttpClient httpClient, ILogger<Boo
         ArgumentNullException.ThrowIfNull(dto);
 
         using var activity = StartActivity(AdminContractsClientTelemetry.RecordPaymentActivity);
-        using var response = await httpClient.PostAsJsonAsync($"/bookings/{bookingId}/payments", dto, Json.CreatePaymentDto, ct).ConfigureAwait(false);
+        using var response = await httpClient.PostAsJsonAsync($"{RoutePrefix}/{bookingId}/payments", dto, Json.CreatePaymentDto, ct).ConfigureAwait(false);
         var outcome = await ContractCommandOutcome.FromResponse(response, Json.ContractValidationProblemDto, ct).ConfigureAwait(false);
 
         RecordOutcome(activity, outcome, LogRecordPaymentOutcome);
