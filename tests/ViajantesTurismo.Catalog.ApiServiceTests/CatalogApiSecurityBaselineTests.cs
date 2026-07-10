@@ -152,6 +152,8 @@ public sealed class CatalogApiSecurityBaselineTests
     [Theory]
     [InlineData("not-a-network")]
     [InlineData("10.0.0.0/999")]
+    [InlineData("0.0.0.0/0")]
+    [InlineData("::/0")]
     public void Forwarded_headers_configuration_rejects_invalid_networks(string network)
     {
         // Arrange
