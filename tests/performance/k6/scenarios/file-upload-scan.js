@@ -189,14 +189,9 @@ function getPayloadBytes() {
 
 function createPayload(size) {
   const chunk = '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz-_.~';
-  let output = '';
+  const repetitions = Math.ceil(size / chunk.length);
 
-  while (output.length < size) {
-    const remaining = size - output.length;
-    output += chunk.slice(0, Math.min(remaining, chunk.length));
-  }
-
-  return output;
+  return chunk.repeat(repetitions).slice(0, size);
 }
 
 function createTags(name, endpoint) {
