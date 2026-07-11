@@ -423,6 +423,9 @@
           "xunit.v3.assert": "[3.2.2, )"
         }
       },
+      "sharedkernel.testing.contracts": {
+        "type": "Project"
+      },
       "sharedkernel.testing.snapshots": {
         "type": "Project"
       },

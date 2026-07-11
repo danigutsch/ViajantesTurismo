@@ -3,6 +3,7 @@ namespace ViajantesTurismo.Catalog.ContractTests.Infrastructure;
 internal static class TestTraits
 {
     public const string CatalogArea = "catalog";
+    public const string ContractCategory = "contract";
     public const string ContractScope = "contract";
     public const string DriftGuardCategory = "drift-guard";
     public const string OpenApiSurface = "openapi";

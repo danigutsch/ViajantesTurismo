@@ -3,12 +3,12 @@ using System.Diagnostics;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
 using ContractCommandOutcomeKind = SharedKernel.HttpClients.ContractCommandOutcomeKind;
+using CatalogToursApiClientTestsHelpers = SharedKernel.Testing.Contracts.ContractHttpClientTestHelper;
+using ViajantesTurismo.Admin.Contracts.Http;
 
-namespace ViajantesTurismo.Management.WebTests;
+namespace ViajantesTurismo.Admin.ContractTests.ApiClients;
 
-[Trait(SharedKernel.Testing.TestTraitNames.ScopeName, TestTraits.UnitScope)]
-[Trait(SharedKernel.Testing.TestTraitNames.AreaName, TestTraits.ManagementWebArea)]
-[Trait(SharedKernel.Testing.TestTraitNames.CategoryName, TestTraits.ApiClientCategory)]
+[Trait(SharedKernel.Testing.TestTraitNames.CategoryName, Infrastructure.TestTraits.ContractCategory)]
 public sealed class CustomersApiClientTests
 {
     [Fact]
@@ -18,7 +18,7 @@ public sealed class CustomersApiClientTests
         var requestPath = string.Empty;
         using var httpClient = CatalogToursApiClientTestsHelpers.CreateClient(request =>
         {
-            requestPath = request.Path + request.QueryString.Value;
+            requestPath = request.RequestUri?.PathAndQuery ?? string.Empty;
             return CatalogToursApiClientTestsHelpers.JsonResponse("""
                 [
                   {
@@ -45,7 +45,7 @@ public sealed class CustomersApiClientTests
         var sut = CustomersApiClientTestsHelpers.CreateSut(httpClient);
 
         // Act
-        var customers = await sut.GetCustomers(Xunit.TestContext.Current.CancellationToken, maxItems: 1);
+        var customers = await sut.GetCustomers(TestContext.Current.CancellationToken, maxItems: 1);
 
         // Assert
         requestPath.ShouldBe("/api/v1/customers");
@@ -66,7 +66,7 @@ public sealed class CustomersApiClientTests
         var sut = CustomersApiClientTestsHelpers.CreateSut(httpClient);
 
         // Act
-        var customers = await sut.GetCustomers(Xunit.TestContext.Current.CancellationToken, maxItems: 0);
+        var customers = await sut.GetCustomers(TestContext.Current.CancellationToken, maxItems: 0);
 
         // Assert
         customers.ShouldBeEmpty();
@@ -81,13 +81,13 @@ public sealed class CustomersApiClientTests
         var requestPath = string.Empty;
         using var httpClient = CatalogToursApiClientTestsHelpers.CreateClient(request =>
         {
-            requestPath = request.Path;
+            requestPath = request.RequestUri?.AbsolutePath ?? string.Empty;
             return new HttpResponseMessage(HttpStatusCode.NotFound);
         });
         var sut = CustomersApiClientTestsHelpers.CreateSut(httpClient);
 
         // Act
-        var customer = await sut.GetCustomerById(customerId, Xunit.TestContext.Current.CancellationToken);
+        var customer = await sut.GetCustomerById(customerId, TestContext.Current.CancellationToken);
 
         // Assert
         requestPath.ShouldBe($"/api/v1/customers/{customerId}");
@@ -102,7 +102,7 @@ public sealed class CustomersApiClientTests
         var sut = CustomersApiClientTestsHelpers.CreateSut(httpClient);
 
         // Act
-        Func<Task> act = async () => await sut.GetCustomerById(Guid.CreateVersion7(), Xunit.TestContext.Current.CancellationToken);
+        Func<Task> act = async () => await sut.GetCustomerById(Guid.CreateVersion7(), TestContext.Current.CancellationToken);
 
         // Assert
         var exception = await act.ShouldThrow<InvalidOperationException>();
@@ -116,7 +116,7 @@ public sealed class CustomersApiClientTests
         var requestPath = string.Empty;
         using var httpClient = CatalogToursApiClientTestsHelpers.CreateClient(request =>
         {
-            requestPath = request.Path;
+            requestPath = request.RequestUri?.AbsolutePath ?? string.Empty;
             return new HttpResponseMessage(HttpStatusCode.Created)
             {
                 Headers = { Location = new Uri("https://management.example/customers/created", UriKind.Absolute) }
@@ -125,7 +125,7 @@ public sealed class CustomersApiClientTests
         var sut = CustomersApiClientTestsHelpers.CreateSut(httpClient);
 
         // Act
-        var outcome = await sut.CreateCustomer(BuildCreateCustomerDto(), Xunit.TestContext.Current.CancellationToken);
+        var outcome = await sut.CreateCustomer(BuildCreateCustomerDto(), TestContext.Current.CancellationToken);
 
         // Assert
         requestPath.ShouldBe("/api/v1/customers");
@@ -142,7 +142,7 @@ public sealed class CustomersApiClientTests
         var sut = CustomersApiClientTestsHelpers.CreateSut(httpClient);
 
         // Act
-        var outcome = await sut.CreateCustomer(BuildCreateCustomerDto(), Xunit.TestContext.Current.CancellationToken);
+        var outcome = await sut.CreateCustomer(BuildCreateCustomerDto(), TestContext.Current.CancellationToken);
 
         // Assert
         outcome.Kind.ShouldBe(ContractCommandOutcomeKind.Succeeded);
@@ -168,7 +168,7 @@ public sealed class CustomersApiClientTests
         var sut = CustomersApiClientTestsHelpers.CreateSut(httpClient);
 
         // Act
-        var outcome = await sut.CreateCustomer(BuildCreateCustomerDto(), Xunit.TestContext.Current.CancellationToken);
+        var outcome = await sut.CreateCustomer(BuildCreateCustomerDto(), TestContext.Current.CancellationToken);
 
         // Assert
         outcome.Kind.ShouldBe(ContractCommandOutcomeKind.ValidationProblem);
@@ -186,7 +186,7 @@ public sealed class CustomersApiClientTests
         var sut = CustomersApiClientTestsHelpers.CreateSut(httpClient);
 
         // Act
-        var outcome = await sut.CreateCustomer(BuildCreateCustomerDto(), Xunit.TestContext.Current.CancellationToken);
+        var outcome = await sut.CreateCustomer(BuildCreateCustomerDto(), TestContext.Current.CancellationToken);
 
         // Assert
         outcome.Kind.ShouldBe(ContractCommandOutcomeKind.EmptyBody);
@@ -204,7 +204,7 @@ public sealed class CustomersApiClientTests
         var sut = CustomersApiClientTestsHelpers.CreateSut(httpClient);
 
         // Act
-        var outcome = await sut.CreateCustomer(BuildCreateCustomerDto(), Xunit.TestContext.Current.CancellationToken);
+        var outcome = await sut.CreateCustomer(BuildCreateCustomerDto(), TestContext.Current.CancellationToken);
 
         // Assert
         outcome.Kind.ShouldBe(ContractCommandOutcomeKind.MalformedBody);
@@ -221,7 +221,7 @@ public sealed class CustomersApiClientTests
         var sut = CustomersApiClientTestsHelpers.CreateSut(httpClient, logger);
 
         // Act
-        var outcome = await sut.CreateCustomer(BuildCreateCustomerDto(), Xunit.TestContext.Current.CancellationToken);
+        var outcome = await sut.CreateCustomer(BuildCreateCustomerDto(), TestContext.Current.CancellationToken);
 
         // Assert
         outcome.Kind.ShouldBe(ContractCommandOutcomeKind.MalformedBody);
@@ -239,6 +239,7 @@ public sealed class CustomersApiClientTests
     public async Task CreateCustomer_tags_failure_activity_without_response_body()
     {
         // Arrange
+        const string sensitiveValue = "alice@example.test";
         List<Activity> stoppedActivities = [];
         using var listener = new ActivityListener
         {
@@ -248,11 +249,11 @@ public sealed class CustomersApiClientTests
         };
         ActivitySource.AddActivityListener(listener);
         using var httpClient = CatalogToursApiClientTestsHelpers.CreateClient(_ =>
-            CatalogToursApiClientTestsHelpers.JsonResponse("not json alice@example.test", HttpStatusCode.BadRequest));
+            CatalogToursApiClientTestsHelpers.JsonResponse($"not json {sensitiveValue}", HttpStatusCode.BadRequest));
         var sut = CustomersApiClientTestsHelpers.CreateSut(httpClient);
 
         // Act
-        var outcome = await sut.CreateCustomer(BuildCreateCustomerDto(), Xunit.TestContext.Current.CancellationToken);
+        var outcome = await sut.CreateCustomer(BuildCreateCustomerDto(), TestContext.Current.CancellationToken);
 
         // Assert
         outcome.Kind.ShouldBe(ContractCommandOutcomeKind.MalformedBody);
@@ -265,7 +266,12 @@ public sealed class CustomersApiClientTests
         activity.Tags.ShouldContain(new KeyValuePair<string, string?>("viajantes.operation", "customers.create"));
         activity.TagObjects.ShouldContain(new KeyValuePair<string, object?>("http.response.status_code", 400));
         activity.Tags.ShouldContain(new KeyValuePair<string, string?>("viajantes.admin_command.outcome", "MalformedBody"));
-        activity.Tags.ShouldNotContain(new KeyValuePair<string, string?>("response.body", "not json alice@example.test"));
+        activity.Tags.Any(tag => tag.Value?.Contains(sensitiveValue, StringComparison.Ordinal) == true).ShouldBeFalse();
+        activity.Baggage.Any(item => item.Value?.Contains(sensitiveValue, StringComparison.Ordinal) == true).ShouldBeFalse();
+        activity.Events
+            .SelectMany(@event => @event.Tags)
+            .Any(tag => tag.Value?.ToString()?.Contains(sensitiveValue, StringComparison.Ordinal) == true)
+            .ShouldBeFalse();
     }
 
     [Theory]
@@ -285,7 +291,7 @@ public sealed class CustomersApiClientTests
         var sut = CustomersApiClientTestsHelpers.CreateSut(httpClient);
 
         // Act
-        var outcome = await sut.CreateCustomer(BuildCreateCustomerDto(), Xunit.TestContext.Current.CancellationToken);
+        var outcome = await sut.CreateCustomer(BuildCreateCustomerDto(), TestContext.Current.CancellationToken);
 
         // Assert
         outcome.Kind.ShouldBe(expectedKind);
@@ -301,14 +307,14 @@ public sealed class CustomersApiClientTests
         var requestMethod = string.Empty;
         using var httpClient = CatalogToursApiClientTestsHelpers.CreateClient(request =>
         {
-            requestPath = request.Path;
-            requestMethod = request.Method;
+            requestPath = request.RequestUri?.AbsolutePath ?? string.Empty;
+            requestMethod = request.Method.Method;
             return new HttpResponseMessage(HttpStatusCode.NoContent);
         });
         var sut = CustomersApiClientTestsHelpers.CreateSut(httpClient);
 
         // Act
-        await sut.UpdateCustomer(customerId, BuildUpdateCustomerDto(), Xunit.TestContext.Current.CancellationToken);
+        await sut.UpdateCustomer(customerId, BuildUpdateCustomerDto(), TestContext.Current.CancellationToken);
 
         // Assert
         requestPath.ShouldBe($"/api/v1/customers/{customerId}");
@@ -322,7 +328,7 @@ public sealed class CustomersApiClientTests
         var requestPath = string.Empty;
         using var httpClient = CatalogToursApiClientTestsHelpers.CreateClient(request =>
         {
-            requestPath = request.Path;
+            requestPath = request.RequestUri?.AbsolutePath ?? string.Empty;
             return CatalogToursApiClientTestsHelpers.JsonResponse("""
                 { "successCount": 1, "errorCount": 0 }
                 """);
@@ -330,7 +336,7 @@ public sealed class CustomersApiClientTests
         var sut = CustomersApiClientTestsHelpers.CreateSut(httpClient);
 
         // Act
-        var result = await sut.ImportCustomers([1, 2, 3], "customers.csv", Xunit.TestContext.Current.CancellationToken);
+        var result = await sut.ImportCustomers([1, 2, 3], "customers.csv", TestContext.Current.CancellationToken);
 
         // Assert
         requestPath.ShouldBe("/api/v1/customers/import");
@@ -344,7 +350,7 @@ public sealed class CustomersApiClientTests
         var requestPath = string.Empty;
         using var httpClient = CatalogToursApiClientTestsHelpers.CreateClient(request =>
         {
-            requestPath = request.Path;
+            requestPath = request.RequestUri?.AbsolutePath ?? string.Empty;
             return CatalogToursApiClientTestsHelpers.JsonResponse("""
                 { "successCount": 2, "errorCount": 0 }
                 """);
@@ -356,7 +362,7 @@ public sealed class CustomersApiClientTests
             [1, 2, 3],
             "customers.csv",
             new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase) { ["alice@example.test"] = "overwrite" },
-            Xunit.TestContext.Current.CancellationToken);
+            TestContext.Current.CancellationToken);
 
         // Assert
         requestPath.ShouldBe("/api/v1/customers/import/commit");

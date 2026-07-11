@@ -1,12 +1,13 @@
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
 using ContractCommandOutcomeKind = SharedKernel.HttpClients.ContractCommandOutcomeKind;
+using CatalogToursApiClientTestsHelpers = SharedKernel.Testing.Contracts.ContractHttpClientTestHelper;
+using ViajantesTurismo.Admin.Contracts.Application;
+using ViajantesTurismo.Admin.Contracts.Http;
 
-namespace ViajantesTurismo.Management.WebTests;
+namespace ViajantesTurismo.Admin.ContractTests.ApiClients;
 
-[Trait(SharedKernel.Testing.TestTraitNames.ScopeName, TestTraits.UnitScope)]
-[Trait(SharedKernel.Testing.TestTraitNames.AreaName, TestTraits.ManagementWebArea)]
-[Trait(SharedKernel.Testing.TestTraitNames.CategoryName, TestTraits.ApiClientCategory)]
+[Trait(SharedKernel.Testing.TestTraitNames.CategoryName, Infrastructure.TestTraits.ContractCategory)]
 public sealed class BookingsApiClientTests
 {
     [Fact]
@@ -15,12 +16,12 @@ public sealed class BookingsApiClientTests
         var requestPath = string.Empty;
         using var httpClient = CatalogToursApiClientTestsHelpers.CreateClient(request =>
         {
-            requestPath = request.Path + request.QueryString.Value;
+            requestPath = request.RequestUri?.PathAndQuery ?? string.Empty;
             return CatalogToursApiClientTestsHelpers.JsonResponse($"[{AdminApiClientTestsHelpers.BookingJson}, null]");
         });
         var sut = new BookingsApiClient(httpClient);
 
-        var bookings = await sut.GetAllBookings(Xunit.TestContext.Current.CancellationToken);
+        var bookings = await sut.GetAllBookings(TestContext.Current.CancellationToken);
 
         requestPath.ShouldBe("/api/v1/bookings");
         var booking = bookings.ShouldHaveSingleItem();
@@ -34,12 +35,12 @@ public sealed class BookingsApiClientTests
         var bookingId = Guid.Parse("11111111-1111-1111-1111-111111111111");
         using var httpClient = CatalogToursApiClientTestsHelpers.CreateClient(request =>
         {
-            requestPath = request.Path + request.QueryString.Value;
+            requestPath = request.RequestUri?.PathAndQuery ?? string.Empty;
             return CatalogToursApiClientTestsHelpers.JsonResponse(AdminApiClientTestsHelpers.BookingJson);
         });
         var sut = new BookingsApiClient(httpClient);
 
-        var booking = await sut.GetBookingById(bookingId, Xunit.TestContext.Current.CancellationToken);
+        var booking = await sut.GetBookingById(bookingId, TestContext.Current.CancellationToken);
 
         booking.ShouldNotBeNull();
         requestPath.ShouldBe("/api/v1/bookings/11111111-1111-1111-1111-111111111111");
@@ -52,7 +53,7 @@ public sealed class BookingsApiClientTests
         using var httpClient = CatalogToursApiClientTestsHelpers.CreateClient(_ => new HttpResponseMessage(System.Net.HttpStatusCode.NotFound));
         var sut = new BookingsApiClient(httpClient);
 
-        var booking = await sut.GetBookingById(Guid.CreateVersion7(), Xunit.TestContext.Current.CancellationToken);
+        var booking = await sut.GetBookingById(Guid.CreateVersion7(), TestContext.Current.CancellationToken);
 
         booking.ShouldBeNull();
     }
@@ -63,7 +64,7 @@ public sealed class BookingsApiClientTests
         using var httpClient = CatalogToursApiClientTestsHelpers.CreateClient(_ => CatalogToursApiClientTestsHelpers.JsonResponse("null"));
         var sut = new BookingsApiClient(httpClient);
 
-        Func<Task> act = async () => await sut.GetBookingById(Guid.CreateVersion7(), Xunit.TestContext.Current.CancellationToken);
+        Func<Task> act = async () => await sut.GetBookingById(Guid.CreateVersion7(), TestContext.Current.CancellationToken);
 
         var exception = await act.ShouldThrow<InvalidOperationException>();
         exception.Message.ShouldBe("The booking response body was empty.");
@@ -78,14 +79,14 @@ public sealed class BookingsApiClientTests
         var ownerId = Guid.Parse("22222222-2222-2222-2222-222222222222");
         using var httpClient = CatalogToursApiClientTestsHelpers.CreateClient(request =>
         {
-            requestPath = request.Path + request.QueryString.Value;
+            requestPath = request.RequestUri?.PathAndQuery ?? string.Empty;
             return CatalogToursApiClientTestsHelpers.JsonResponse($"[{AdminApiClientTestsHelpers.BookingJson}]");
         });
         var sut = new BookingsApiClient(httpClient);
 
         var bookings = ownerKind == "tour"
-            ? await sut.GetBookingsByTourId(ownerId, Xunit.TestContext.Current.CancellationToken)
-            : await sut.GetBookingsByCustomerId(ownerId, Xunit.TestContext.Current.CancellationToken);
+            ? await sut.GetBookingsByTourId(ownerId, TestContext.Current.CancellationToken)
+            : await sut.GetBookingsByCustomerId(ownerId, TestContext.Current.CancellationToken);
 
         requestPath.ShouldBe(expectedPath);
         bookings.ShouldHaveSingleItem();
@@ -99,8 +100,8 @@ public sealed class BookingsApiClientTests
         var requestMethod = string.Empty;
         using var httpClient = CatalogToursApiClientTestsHelpers.CreateClient(request =>
         {
-            requestPath = request.Path + request.QueryString.Value;
-            requestMethod = request.Method;
+            requestPath = request.RequestUri?.PathAndQuery ?? string.Empty;
+            requestMethod = request.Method.Method;
             return new HttpResponseMessage(System.Net.HttpStatusCode.Created)
             {
                 Headers = { Location = new Uri("/api/v1/bookings/11111111-1111-1111-1111-111111111111", UriKind.Relative) }
@@ -109,7 +110,7 @@ public sealed class BookingsApiClientTests
         var sut = new BookingsApiClient(httpClient);
 
         // Act
-        var outcome = await sut.CreateBooking(AdminApiClientTestsHelpers.CreateBooking(), Xunit.TestContext.Current.CancellationToken);
+        var outcome = await sut.CreateBooking(AdminApiClientTestsHelpers.CreateBooking(), TestContext.Current.CancellationToken);
 
         // Assert
         requestMethod.ShouldBe(HttpMethods.Post);
@@ -132,7 +133,7 @@ public sealed class BookingsApiClientTests
         var sut = new BookingsApiClient(httpClient);
 
         // Act
-        var outcome = await sut.CreateBooking(AdminApiClientTestsHelpers.CreateBooking(), Xunit.TestContext.Current.CancellationToken);
+        var outcome = await sut.CreateBooking(AdminApiClientTestsHelpers.CreateBooking(), TestContext.Current.CancellationToken);
 
         // Assert
         outcome.Kind.ShouldBe(ContractCommandOutcomeKind.ValidationProblem);
@@ -148,7 +149,7 @@ public sealed class BookingsApiClientTests
         var sut = new BookingsApiClient(httpClient);
 
         // Act
-        var outcome = await sut.CreateBooking(AdminApiClientTestsHelpers.CreateBooking(), Xunit.TestContext.Current.CancellationToken);
+        var outcome = await sut.CreateBooking(AdminApiClientTestsHelpers.CreateBooking(), TestContext.Current.CancellationToken);
 
         // Assert
         outcome.Kind.ShouldBe(ContractCommandOutcomeKind.Conflict);
@@ -166,23 +167,23 @@ public sealed class BookingsApiClientTests
         var bookingId = Guid.Parse("11111111-1111-1111-1111-111111111111");
         using var httpClient = CatalogToursApiClientTestsHelpers.CreateClient(request =>
         {
-            requestPath = request.Path + request.QueryString.Value;
-            requestMethod = request.Method;
+            requestPath = request.RequestUri?.PathAndQuery ?? string.Empty;
+            requestMethod = request.Method.Method;
             return new HttpResponseMessage(System.Net.HttpStatusCode.NoContent);
         });
         var sut = new BookingsApiClient(httpClient);
 
         if (updateKind == "discount")
         {
-            await sut.UpdateBookingDiscount(bookingId, AdminApiClientTestsHelpers.UpdateBookingDiscount(), Xunit.TestContext.Current.CancellationToken);
+            await sut.UpdateBookingDiscount(bookingId, AdminApiClientTestsHelpers.UpdateBookingDiscount(), TestContext.Current.CancellationToken);
         }
         else if (updateKind == "details")
         {
-            await sut.UpdateBookingDetails(bookingId, AdminApiClientTestsHelpers.UpdateBookingDetails(), Xunit.TestContext.Current.CancellationToken);
+            await sut.UpdateBookingDetails(bookingId, AdminApiClientTestsHelpers.UpdateBookingDetails(), TestContext.Current.CancellationToken);
         }
         else
         {
-            await sut.UpdateBookingNotes(bookingId, new UpdateBookingNotesDto { Notes = "Needs window seat" }, Xunit.TestContext.Current.CancellationToken);
+            await sut.UpdateBookingNotes(bookingId, new UpdateBookingNotesDto { Notes = "Needs window seat" }, TestContext.Current.CancellationToken);
         }
 
         requestMethod.ShouldBe(expectedMethod);
@@ -200,23 +201,23 @@ public sealed class BookingsApiClientTests
         var bookingId = Guid.Parse("11111111-1111-1111-1111-111111111111");
         using var httpClient = CatalogToursApiClientTestsHelpers.CreateClient(request =>
         {
-            requestPath = request.Path + request.QueryString.Value;
-            requestMethod = request.Method;
+            requestPath = request.RequestUri?.PathAndQuery ?? string.Empty;
+            requestMethod = request.Method.Method;
             return new HttpResponseMessage(System.Net.HttpStatusCode.NoContent);
         });
         var sut = new BookingsApiClient(httpClient);
 
         if (command == "cancel")
         {
-            await sut.CancelBooking(bookingId, Xunit.TestContext.Current.CancellationToken);
+            await sut.CancelBooking(bookingId, TestContext.Current.CancellationToken);
         }
         else if (command == "confirm")
         {
-            await sut.ConfirmBooking(bookingId, Xunit.TestContext.Current.CancellationToken);
+            await sut.ConfirmBooking(bookingId, TestContext.Current.CancellationToken);
         }
         else
         {
-            await sut.CompleteBooking(bookingId, Xunit.TestContext.Current.CancellationToken);
+            await sut.CompleteBooking(bookingId, TestContext.Current.CancellationToken);
         }
 
         requestMethod.ShouldBe(HttpMethods.Post);
@@ -231,13 +232,13 @@ public sealed class BookingsApiClientTests
         var bookingId = Guid.Parse("11111111-1111-1111-1111-111111111111");
         using var httpClient = CatalogToursApiClientTestsHelpers.CreateClient(request =>
         {
-            requestPath = request.Path + request.QueryString.Value;
-            requestMethod = request.Method;
+            requestPath = request.RequestUri?.PathAndQuery ?? string.Empty;
+            requestMethod = request.Method.Method;
             return new HttpResponseMessage(System.Net.HttpStatusCode.NoContent);
         });
         var sut = new BookingsApiClient(httpClient);
 
-        await sut.DeleteBooking(bookingId, Xunit.TestContext.Current.CancellationToken);
+        await sut.DeleteBooking(bookingId, TestContext.Current.CancellationToken);
 
         requestMethod.ShouldBe(HttpMethods.Delete);
         requestPath.ShouldBe("/api/v1/bookings/11111111-1111-1111-1111-111111111111");
@@ -252,8 +253,8 @@ public sealed class BookingsApiClientTests
         var bookingId = Guid.Parse("11111111-1111-1111-1111-111111111111");
         using var httpClient = CatalogToursApiClientTestsHelpers.CreateClient(request =>
         {
-            requestPath = request.Path + request.QueryString.Value;
-            requestMethod = request.Method;
+            requestPath = request.RequestUri?.PathAndQuery ?? string.Empty;
+            requestMethod = request.Method.Method;
             return new HttpResponseMessage(System.Net.HttpStatusCode.Created)
             {
                 Headers = { Location = new Uri("/api/v1/bookings/11111111-1111-1111-1111-111111111111/payments/aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa", UriKind.Relative) }
@@ -262,7 +263,7 @@ public sealed class BookingsApiClientTests
         var sut = new BookingsApiClient(httpClient);
 
         // Act
-        var outcome = await sut.RecordPayment(bookingId, AdminApiClientTestsHelpers.CreatePayment(), Xunit.TestContext.Current.CancellationToken);
+        var outcome = await sut.RecordPayment(bookingId, AdminApiClientTestsHelpers.CreatePayment(), TestContext.Current.CancellationToken);
 
         // Assert
         requestMethod.ShouldBe(HttpMethods.Post);
@@ -281,7 +282,7 @@ public sealed class BookingsApiClientTests
         var sut = new BookingsApiClient(httpClient);
 
         // Act
-        var outcome = await sut.RecordPayment(bookingId, AdminApiClientTestsHelpers.CreatePayment(), Xunit.TestContext.Current.CancellationToken);
+        var outcome = await sut.RecordPayment(bookingId, AdminApiClientTestsHelpers.CreatePayment(), TestContext.Current.CancellationToken);
 
         // Assert
         outcome.Kind.ShouldBe(ContractCommandOutcomeKind.NotFound);
@@ -298,7 +299,7 @@ public sealed class BookingsApiClientTests
         var sut = new BookingsApiClient(httpClient, logger);
 
         // Act
-        var outcome = await sut.CreateBooking(AdminApiClientTestsHelpers.CreateBooking(), Xunit.TestContext.Current.CancellationToken);
+        var outcome = await sut.CreateBooking(AdminApiClientTestsHelpers.CreateBooking(), TestContext.Current.CancellationToken);
 
         // Assert
         outcome.Kind.ShouldBe(ContractCommandOutcomeKind.MalformedBody);

@@ -2,9 +2,13 @@ using System.Net;
 using System.Net.Http.Json;
 using Microsoft.AspNetCore.Mvc;
 using SharedKernel.HttpClients;
+using CatalogToursApiClientTestsHelpers = SharedKernel.Testing.Contracts.ContractHttpClientTestHelper;
+using ViajantesTurismo.Catalog.Contracts.Application;
+using ViajantesTurismo.Catalog.Contracts.Http;
 
-namespace ViajantesTurismo.Management.WebTests;
+namespace ViajantesTurismo.Catalog.ContractTests.ApiClients;
 
+[Trait(SharedKernel.Testing.TestTraitNames.CategoryName, Infrastructure.TestTraits.ContractCategory)]
 public sealed class PublicContentApiClientTests
 {
     [Fact]
@@ -14,7 +18,7 @@ public sealed class PublicContentApiClientTests
         var requestPath = string.Empty;
         using var httpClient = CatalogToursApiClientTestsHelpers.CreateClient(request =>
         {
-            requestPath = request.Path + request.QueryString.Value;
+            requestPath = request.RequestUri?.PathAndQuery ?? string.Empty;
             return CatalogToursApiClientTestsHelpers.JsonResponse("""
                 [
                   {
@@ -30,7 +34,7 @@ public sealed class PublicContentApiClientTests
         var sut = new PublicContentApiClient(httpClient);
 
         // Act
-        var content = await sut.GetContent(Xunit.TestContext.Current.CancellationToken);
+        var content = await sut.GetContent(TestContext.Current.CancellationToken);
 
         // Assert
         requestPath.ShouldBe("/api/v1/catalog/public-content");
@@ -46,7 +50,7 @@ public sealed class PublicContentApiClientTests
         var sut = new PublicContentApiClient(httpClient);
 
         // Act
-        var content = await sut.GetContent("home.hero", Xunit.TestContext.Current.CancellationToken);
+        var content = await sut.GetContent("home.hero", TestContext.Current.CancellationToken);
 
         // Assert
         content.ShouldBeNull();
@@ -62,7 +66,7 @@ public sealed class PublicContentApiClientTests
         var requestPath = string.Empty;
         using var httpClient = CatalogToursApiClientTestsHelpers.CreateClient(request =>
         {
-            requestPath = request.Path + request.QueryString.Value;
+            requestPath = request.RequestUri?.PathAndQuery ?? string.Empty;
             return CatalogToursApiClientTestsHelpers.JsonResponse("""
                 {
                   "key":"home.hero",
@@ -75,7 +79,7 @@ public sealed class PublicContentApiClientTests
         var sut = new PublicContentApiClient(httpClient);
 
         // Act
-        var content = await sut.GetContent(key, Xunit.TestContext.Current.CancellationToken);
+        var content = await sut.GetContent(key, TestContext.Current.CancellationToken);
 
         // Assert
         content.ShouldNotBeNull();
@@ -90,8 +94,8 @@ public sealed class PublicContentApiClientTests
         var requestMethod = string.Empty;
         using var httpClient = CatalogToursApiClientTestsHelpers.CreateClient(request =>
         {
-            requestPath = request.Path + request.QueryString.Value;
-            requestMethod = request.Method;
+            requestPath = request.RequestUri?.PathAndQuery ?? string.Empty;
+            requestMethod = request.Method.Method;
             return CatalogToursApiClientTestsHelpers.JsonResponse("""
                 {
                   "key":"home.hero",
@@ -110,7 +114,7 @@ public sealed class PublicContentApiClientTests
         request.Variants.Add(new PublicContentVariantDto { Language = PublicContentLanguageDto.PtBr, Title = "Bem-vindo", Body = "Pedale conosco", RequiresHumanReview = true });
 
         // Act
-        var saved = await sut.SaveContent("/home//hero/", request, Xunit.TestContext.Current.CancellationToken);
+        var saved = await sut.SaveContent("/home//hero/", request, TestContext.Current.CancellationToken);
 
         // Assert
         requestMethod.ShouldBe("PUT");
@@ -143,7 +147,7 @@ public sealed class PublicContentApiClientTests
         request.Variants.Add(new PublicContentVariantDto { Language = PublicContentLanguageDto.PtBr, Title = "Bem-vindo", Body = "Pedale conosco" });
 
         // Act
-        Func<Task> act = () => sut.SaveContent("home.hero", request, Xunit.TestContext.Current.CancellationToken);
+        Func<Task> act = () => sut.SaveContent("home.hero", request, TestContext.Current.CancellationToken);
 
         var exception = await act.ShouldThrow<ContractValidationException>();
 

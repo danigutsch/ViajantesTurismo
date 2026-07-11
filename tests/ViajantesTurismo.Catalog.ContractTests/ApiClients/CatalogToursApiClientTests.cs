@@ -1,7 +1,11 @@
 using Microsoft.AspNetCore.Http;
+using CatalogToursApiClientTestsHelpers = SharedKernel.Testing.Contracts.ContractHttpClientTestHelper;
+using ViajantesTurismo.Catalog.Contracts.Application;
+using ViajantesTurismo.Catalog.Contracts.Http;
 
-namespace ViajantesTurismo.Management.WebTests;
+namespace ViajantesTurismo.Catalog.ContractTests.ApiClients;
 
+[Trait(SharedKernel.Testing.TestTraitNames.CategoryName, Infrastructure.TestTraits.ContractCategory)]
 public sealed class CatalogToursApiClientTests
 {
     [Fact]
@@ -11,7 +15,7 @@ public sealed class CatalogToursApiClientTests
         var requestPath = string.Empty;
         using var httpClient = CatalogToursApiClientTestsHelpers.CreateClient(request =>
         {
-            requestPath = request.Path + request.QueryString.Value;
+            requestPath = request.RequestUri?.PathAndQuery ?? string.Empty;
             return CatalogToursApiClientTestsHelpers.JsonResponse("""
                 [
                   {
@@ -41,7 +45,7 @@ public sealed class CatalogToursApiClientTests
         var sut = new CatalogToursApiClient(httpClient);
 
         // Act
-        var tours = await sut.GetTours(Xunit.TestContext.Current.CancellationToken);
+        var tours = await sut.GetTours(TestContext.Current.CancellationToken);
 
         // Assert
         requestPath.ShouldBe("/api/v1/catalog/tours");
@@ -58,7 +62,7 @@ public sealed class CatalogToursApiClientTests
         var sut = new CatalogToursApiClient(httpClient);
 
         // Act
-        var tours = await sut.GetTours(Xunit.TestContext.Current.CancellationToken);
+        var tours = await sut.GetTours(TestContext.Current.CancellationToken);
 
         // Assert
         tours.ShouldBeEmpty();
@@ -73,8 +77,8 @@ public sealed class CatalogToursApiClientTests
         var tourId = Guid.Parse("11111111-1111-1111-1111-111111111111");
         using var httpClient = CatalogToursApiClientTestsHelpers.CreateClient(request =>
         {
-            requestPath = request.Path + request.QueryString.Value;
-            requestMethod = request.Method;
+            requestPath = request.RequestUri?.PathAndQuery ?? string.Empty;
+            requestMethod = request.Method.Method;
             return CatalogToursApiClientTestsHelpers.JsonResponse("""
                 {
                   "id":"11111111-1111-1111-1111-111111111111",
@@ -99,7 +103,7 @@ public sealed class CatalogToursApiClientTests
                 Slug = "updated-tour",
                 IsPublished = true
             },
-            Xunit.TestContext.Current.CancellationToken);
+            TestContext.Current.CancellationToken);
 
         // Assert
         updated.ShouldNotBeNull();
@@ -116,7 +120,7 @@ public sealed class CatalogToursApiClientTests
         var tourId = Guid.Parse("11111111-1111-1111-1111-111111111111");
         using var httpClient = CatalogToursApiClientTestsHelpers.CreateClient(request =>
         {
-            requestPath = request.Path + request.QueryString.Value;
+            requestPath = request.RequestUri?.PathAndQuery ?? string.Empty;
             return CatalogToursApiClientTestsHelpers.JsonResponse("""
                 {
                   "id":"11111111-1111-1111-1111-111111111111",
@@ -133,7 +137,7 @@ public sealed class CatalogToursApiClientTests
         var sut = new CatalogToursApiClient(httpClient);
 
         // Act
-        var tour = await sut.GetTour(tourId, Xunit.TestContext.Current.CancellationToken);
+        var tour = await sut.GetTour(tourId, TestContext.Current.CancellationToken);
 
         // Assert
         tour.ShouldNotBeNull();
@@ -149,7 +153,7 @@ public sealed class CatalogToursApiClientTests
         var sut = new CatalogToursApiClient(httpClient);
 
         // Act
-        var tour = await sut.GetTour(Guid.CreateVersion7(), Xunit.TestContext.Current.CancellationToken);
+        var tour = await sut.GetTour(Guid.CreateVersion7(), TestContext.Current.CancellationToken);
 
         // Assert
         tour.ShouldBeNull();
@@ -163,7 +167,7 @@ public sealed class CatalogToursApiClientTests
         var sut = new CatalogToursApiClient(httpClient);
 
         // Act
-        Func<Task> act = async () => await sut.GetTour(Guid.CreateVersion7(), Xunit.TestContext.Current.CancellationToken);
+        Func<Task> act = async () => await sut.GetTour(Guid.CreateVersion7(), TestContext.Current.CancellationToken);
 
         // Assert
         var exception = await act.ShouldThrow<InvalidOperationException>();
@@ -186,7 +190,7 @@ public sealed class CatalogToursApiClientTests
                 Slug = "missing",
                 IsPublished = true
             },
-            Xunit.TestContext.Current.CancellationToken);
+            TestContext.Current.CancellationToken);
 
         // Assert
         updated.ShouldBeNull();
@@ -208,7 +212,7 @@ public sealed class CatalogToursApiClientTests
                 Slug = "missing",
                 IsPublished = true
             },
-            Xunit.TestContext.Current.CancellationToken);
+            TestContext.Current.CancellationToken);
 
         // Assert
         var exception = await act.ShouldThrow<InvalidOperationException>();

@@ -1,11 +1,11 @@
 using Microsoft.AspNetCore.Http;
 using ContractCommandOutcomeKind = SharedKernel.HttpClients.ContractCommandOutcomeKind;
+using CatalogToursApiClientTestsHelpers = SharedKernel.Testing.Contracts.ContractHttpClientTestHelper;
+using ViajantesTurismo.Admin.Contracts.Http;
 
-namespace ViajantesTurismo.Management.WebTests;
+namespace ViajantesTurismo.Admin.ContractTests.ApiClients;
 
-[Trait(SharedKernel.Testing.TestTraitNames.ScopeName, TestTraits.UnitScope)]
-[Trait(SharedKernel.Testing.TestTraitNames.AreaName, TestTraits.ManagementWebArea)]
-[Trait(SharedKernel.Testing.TestTraitNames.CategoryName, TestTraits.ApiClientCategory)]
+[Trait(SharedKernel.Testing.TestTraitNames.CategoryName, Infrastructure.TestTraits.ContractCategory)]
 public sealed class ToursApiClientTests
 {
     [Fact]
@@ -14,12 +14,12 @@ public sealed class ToursApiClientTests
         var requestPath = string.Empty;
         using var httpClient = CatalogToursApiClientTestsHelpers.CreateClient(request =>
         {
-            requestPath = request.Path + request.QueryString.Value;
+            requestPath = request.RequestUri?.PathAndQuery ?? string.Empty;
             return CatalogToursApiClientTestsHelpers.JsonResponse($"[{AdminApiClientTestsHelpers.TourJson}, null]");
         });
         var sut = new ToursApiClient(httpClient);
 
-        var tours = await sut.GetTours(Xunit.TestContext.Current.CancellationToken);
+        var tours = await sut.GetTours(TestContext.Current.CancellationToken);
 
         requestPath.ShouldBe("/api/v1/tours");
         var tour = tours.ShouldHaveSingleItem();
@@ -33,7 +33,7 @@ public sealed class ToursApiClientTests
             CatalogToursApiClientTestsHelpers.JsonResponse($"[{AdminApiClientTestsHelpers.TourJson}, {AdminApiClientTestsHelpers.TourJson}]"));
         var sut = new ToursApiClient(httpClient);
 
-        var tours = await sut.GetTours(Xunit.TestContext.Current.CancellationToken, maxItems: 1);
+        var tours = await sut.GetTours(TestContext.Current.CancellationToken, maxItems: 1);
 
         tours.ShouldHaveSingleItem();
     }
@@ -49,7 +49,7 @@ public sealed class ToursApiClientTests
         });
         var sut = new ToursApiClient(httpClient);
 
-        var tours = await sut.GetTours(Xunit.TestContext.Current.CancellationToken, maxItems: 0);
+        var tours = await sut.GetTours(TestContext.Current.CancellationToken, maxItems: 0);
 
         tours.ShouldBeEmpty();
         requestCount.ShouldBe(0);
@@ -62,12 +62,12 @@ public sealed class ToursApiClientTests
         var tourId = Guid.Parse("11111111-1111-1111-1111-111111111111");
         using var httpClient = CatalogToursApiClientTestsHelpers.CreateClient(request =>
         {
-            requestPath = request.Path + request.QueryString.Value;
+            requestPath = request.RequestUri?.PathAndQuery ?? string.Empty;
             return CatalogToursApiClientTestsHelpers.JsonResponse(AdminApiClientTestsHelpers.TourJson);
         });
         var sut = new ToursApiClient(httpClient);
 
-        var tour = await sut.GetTourById(tourId, Xunit.TestContext.Current.CancellationToken);
+        var tour = await sut.GetTourById(tourId, TestContext.Current.CancellationToken);
 
         tour.ShouldNotBeNull();
         requestPath.ShouldBe("/api/v1/tours/11111111-1111-1111-1111-111111111111");
@@ -80,7 +80,7 @@ public sealed class ToursApiClientTests
         using var httpClient = CatalogToursApiClientTestsHelpers.CreateClient(_ => new HttpResponseMessage(System.Net.HttpStatusCode.NotFound));
         var sut = new ToursApiClient(httpClient);
 
-        var tour = await sut.GetTourById(Guid.CreateVersion7(), Xunit.TestContext.Current.CancellationToken);
+        var tour = await sut.GetTourById(Guid.CreateVersion7(), TestContext.Current.CancellationToken);
 
         tour.ShouldBeNull();
     }
@@ -91,7 +91,7 @@ public sealed class ToursApiClientTests
         using var httpClient = CatalogToursApiClientTestsHelpers.CreateClient(_ => CatalogToursApiClientTestsHelpers.JsonResponse("null"));
         var sut = new ToursApiClient(httpClient);
 
-        Func<Task> act = async () => await sut.GetTourById(Guid.CreateVersion7(), Xunit.TestContext.Current.CancellationToken);
+        Func<Task> act = async () => await sut.GetTourById(Guid.CreateVersion7(), TestContext.Current.CancellationToken);
 
         var exception = await act.ShouldThrow<InvalidOperationException>();
         exception.Message.ShouldBe("The tour response body was empty.");
@@ -105,8 +105,8 @@ public sealed class ToursApiClientTests
         var requestMethod = string.Empty;
         using var httpClient = CatalogToursApiClientTestsHelpers.CreateClient(request =>
         {
-            requestPath = request.Path + request.QueryString.Value;
-            requestMethod = request.Method;
+            requestPath = request.RequestUri?.PathAndQuery ?? string.Empty;
+            requestMethod = request.Method.Method;
             return new HttpResponseMessage(System.Net.HttpStatusCode.Created)
             {
                 Headers = { Location = new Uri("/api/v1/tours/11111111-1111-1111-1111-111111111111", UriKind.Relative) }
@@ -115,7 +115,7 @@ public sealed class ToursApiClientTests
         var sut = new ToursApiClient(httpClient);
 
         // Act
-        var outcome = await sut.CreateTour(AdminApiClientTestsHelpers.CreateTour(), Xunit.TestContext.Current.CancellationToken);
+        var outcome = await sut.CreateTour(AdminApiClientTestsHelpers.CreateTour(), TestContext.Current.CancellationToken);
 
         // Assert
         requestMethod.ShouldBe(HttpMethods.Post);
@@ -138,7 +138,7 @@ public sealed class ToursApiClientTests
         var sut = new ToursApiClient(httpClient);
 
         // Act
-        var outcome = await sut.CreateTour(AdminApiClientTestsHelpers.CreateTour(), Xunit.TestContext.Current.CancellationToken);
+        var outcome = await sut.CreateTour(AdminApiClientTestsHelpers.CreateTour(), TestContext.Current.CancellationToken);
 
         // Assert
         outcome.Kind.ShouldBe(ContractCommandOutcomeKind.ValidationProblem);
@@ -154,7 +154,7 @@ public sealed class ToursApiClientTests
         var sut = new ToursApiClient(httpClient);
 
         // Act
-        var outcome = await sut.CreateTour(AdminApiClientTestsHelpers.CreateTour(), Xunit.TestContext.Current.CancellationToken);
+        var outcome = await sut.CreateTour(AdminApiClientTestsHelpers.CreateTour(), TestContext.Current.CancellationToken);
 
         // Assert
         outcome.Kind.ShouldBe(ContractCommandOutcomeKind.Conflict);
@@ -169,13 +169,13 @@ public sealed class ToursApiClientTests
         var tourId = Guid.Parse("11111111-1111-1111-1111-111111111111");
         using var httpClient = CatalogToursApiClientTestsHelpers.CreateClient(request =>
         {
-            requestPath = request.Path + request.QueryString.Value;
-            requestMethod = request.Method;
+            requestPath = request.RequestUri?.PathAndQuery ?? string.Empty;
+            requestMethod = request.Method.Method;
             return new HttpResponseMessage(System.Net.HttpStatusCode.NoContent);
         });
         var sut = new ToursApiClient(httpClient);
 
-        await sut.UpdateTour(tourId, AdminApiClientTestsHelpers.UpdateTour(), Xunit.TestContext.Current.CancellationToken);
+        await sut.UpdateTour(tourId, AdminApiClientTestsHelpers.UpdateTour(), TestContext.Current.CancellationToken);
 
         requestMethod.ShouldBe(HttpMethods.Put);
         requestPath.ShouldBe("/api/v1/tours/11111111-1111-1111-1111-111111111111");
