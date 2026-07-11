@@ -6,9 +6,12 @@ internal sealed class FakeDocumentStore : IDocumentStore
 {
     public List<DocumentDraft> AddedDocuments { get; } = [];
 
+    public Dictionary<Guid, DocumentDraft> Documents { get; } = [];
+
     public void Add(DocumentDraft document) => AddedDocuments.Add(document);
 
-    public Task<DocumentDraft?> GetById(Guid id, CancellationToken ct) => Task.FromResult<DocumentDraft?>(null);
+    public Task<DocumentDraft?> GetById(Guid id, CancellationToken ct) =>
+        Task.FromResult(Documents.GetValueOrDefault(id));
 
     public Task<IReadOnlyList<DocumentDraft>> GetExpiredDrafts(DateTime now, CancellationToken ct) =>
         Task.FromResult<IReadOnlyList<DocumentDraft>>([]);
