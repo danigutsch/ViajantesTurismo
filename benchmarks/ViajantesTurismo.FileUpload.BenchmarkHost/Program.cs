@@ -156,12 +156,36 @@ static void WriteReadyFile(WebApplication app, string? readyFilePath)
         return;
     }
 
-    var directory = Path.GetDirectoryName(readyFilePath);
-
-    if (!string.IsNullOrWhiteSpace(directory))
+    try
     {
-        Directory.CreateDirectory(directory);
-    }
+        var directory = Path.GetDirectoryName(readyFilePath);
 
-    File.WriteAllText(readyFilePath, address);
+        if (!string.IsNullOrWhiteSpace(directory))
+        {
+            Directory.CreateDirectory(directory);
+        }
+
+        File.WriteAllText(readyFilePath, address);
+    }
+    catch (IOException exception)
+    {
+        ReportReadyFileWriteFailure(readyFilePath, exception);
+    }
+    catch (UnauthorizedAccessException exception)
+    {
+        ReportReadyFileWriteFailure(readyFilePath, exception);
+    }
+    catch (ArgumentException exception)
+    {
+        ReportReadyFileWriteFailure(readyFilePath, exception);
+    }
+    catch (NotSupportedException exception)
+    {
+        ReportReadyFileWriteFailure(readyFilePath, exception);
+    }
+}
+
+static void ReportReadyFileWriteFailure(string readyFilePath, Exception exception)
+{
+    Console.Error.WriteLine(string.Create(CultureInfo.InvariantCulture, $"Could not write benchmark ready file '{readyFilePath}': {exception.Message}"));
 }
