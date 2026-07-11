@@ -67,6 +67,11 @@ internal sealed class DocumentDraftConfiguration : IEntityTypeConfiguration<Docu
             return uri.Scheme == Uri.UriSchemeHttps && string.IsNullOrEmpty(uri.UserInfo) ? uri : null;
         }
 
-        return value.StartsWith('/') && !value.StartsWith("//", StringComparison.Ordinal) ? uri : null;
+        return value.StartsWith('/')
+            && !value.StartsWith("//", StringComparison.Ordinal)
+            && !value.Contains('\\', StringComparison.Ordinal)
+            && !value.Any(static character => char.IsWhiteSpace(character) || char.IsControl(character))
+            ? uri
+            : null;
     }
 }

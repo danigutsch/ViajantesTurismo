@@ -211,6 +211,7 @@ public sealed class DocumentDraftTests
     [InlineData("http://example.test/logo.svg")]
     [InlineData("https://viewer@example.test/logo.svg")]
     [InlineData("//example.test/logo.svg")]
+    [InlineData("/\\evil.test/logo.svg")]
     public void Create_rejects_unsafe_branding_logo_uris(string logoValue)
     {
         // Arrange
@@ -251,7 +252,7 @@ public sealed class DocumentDraftTests
             fields,
             "BRANDING-VERSION",
             "Viajantes Turismo",
-            new Uri("http://example.test/logo.svg", UriKind.Absolute),
+            new Uri("/\\evil.test/logo.svg", UriKind.Relative),
             now);
 
         // Assert

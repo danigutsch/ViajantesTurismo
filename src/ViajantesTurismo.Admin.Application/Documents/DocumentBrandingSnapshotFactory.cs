@@ -36,6 +36,11 @@ internal static class DocumentBrandingSnapshotFactory
         }
 
         var value = uri.OriginalString;
-        return value.StartsWith('/') && !value.StartsWith("//", StringComparison.Ordinal) ? uri : null;
+        return value.StartsWith('/')
+            && !value.StartsWith("//", StringComparison.Ordinal)
+            && !value.Contains('\\', StringComparison.Ordinal)
+            && !value.Any(static character => char.IsWhiteSpace(character) || char.IsControl(character))
+            ? uri
+            : null;
     }
 }

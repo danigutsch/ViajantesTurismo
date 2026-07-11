@@ -61,7 +61,7 @@ public sealed class GenerateContractDraftCommandHandlerTests
             new GetTourDto { Id = tourId, Identifier = "andes", Name = "Andes", StartDate = DateTime.UtcNow, EndDate = DateTime.UtcNow.AddDays(7), Price = 1200m, SingleRoomSupplementPrice = 0m, RegularBikePrice = 0m, EBikePrice = 0m, Currency = default, IncludedServices = ["Guide"], MinCustomers = 1, MaxCustomers = 10, CurrentCustomerCount = 1 });
         var store = new FakeDocumentStore();
         var unitOfWork = new FakeUnitOfWork();
-        var branding = new BrandingSettingsDto { BrandName = "Viajantes", LogoUri = "http://example.test/logo.svg", PrimaryColor = "#000", AccentColor = "#000", BackgroundColor = "#fff", TextColor = "#000", HeadingFontFamily = "sans", BodyFontFamily = "sans" };
+        var branding = new BrandingSettingsDto { BrandName = "Viajantes", LogoUri = "/\\evil.test/logo.svg", PrimaryColor = "#000", AccentColor = "#000", BackgroundColor = "#fff", TextColor = "#000", HeadingFontFamily = "sans", BodyFontFamily = "sans" };
         var handler = new GenerateContractDraftCommandHandler(queryService, store, new FakeBrandingApiClient(branding), unitOfWork, TimeProvider.System);
 
         // Act

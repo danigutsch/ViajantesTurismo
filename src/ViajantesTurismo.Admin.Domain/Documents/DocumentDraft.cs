@@ -462,6 +462,9 @@ public sealed class DocumentDraft : IEntity<Guid>
         }
 
         var value = logoUri.OriginalString;
-        return value.StartsWith('/') && !value.StartsWith("//", StringComparison.Ordinal);
+        return value.StartsWith('/')
+            && !value.StartsWith("//", StringComparison.Ordinal)
+            && !value.Contains('\\', StringComparison.Ordinal)
+            && !value.Any(static character => char.IsWhiteSpace(character) || char.IsControl(character));
     }
 }
