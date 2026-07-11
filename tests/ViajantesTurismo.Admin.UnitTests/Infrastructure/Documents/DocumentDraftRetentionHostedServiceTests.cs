@@ -9,8 +9,8 @@ using ViajantesTurismo.Admin.UnitTests.Documents;
 
 namespace ViajantesTurismo.Admin.UnitTests.Infrastructure.Documents;
 
-[Trait(SharedKernelTestTraitNames.CategoryName, "core-behavior")]
-[Trait(SharedKernelTestTraitNames.CapabilityName, "generated-documents")]
+[Trait(SharedKernelTestTraitNames.CategoryName, DocumentTestTraits.CoreBehaviorCategory)]
+[Trait(SharedKernelTestTraitNames.CapabilityName, DocumentTestTraits.GeneratedDocumentsCapability)]
 public sealed class DocumentDraftRetentionHostedServiceTests
 {
     [Fact]
