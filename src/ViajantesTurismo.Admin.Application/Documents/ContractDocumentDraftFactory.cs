@@ -24,7 +24,12 @@ internal static class ContractDocumentDraftFactory
         ArgumentNullException.ThrowIfNull(tour);
         ArgumentNullException.ThrowIfNull(branding);
 
-        var fields = CreateFields(booking, tour);
+        var fieldsResult = CreateFields(booking, tour);
+        if (fieldsResult.IsFailure)
+        {
+            return fieldsResult.ConvertError<IReadOnlyList<DocumentField>, DocumentDraft>();
+        }
+
         return DocumentDraft.Create(
             booking.Id,
             DocumentType.BookingConfirmationContract,
@@ -32,7 +37,7 @@ internal static class ContractDocumentDraftFactory
             templateId,
             templateVersion,
             CreateSourceVersion(booking, tour),
-            fields,
+            fieldsResult.Value,
             branding.Version,
             branding.BrandName,
             branding.LogoUri,
@@ -53,38 +58,53 @@ internal static class ContractDocumentDraftFactory
         ArgumentNullException.ThrowIfNull(tour);
         ArgumentNullException.ThrowIfNull(branding);
 
+        var fieldsResult = CreateFields(booking, tour);
+        if (fieldsResult.IsFailure)
+        {
+            return fieldsResult.ConvertError<IReadOnlyList<DocumentField>, DocumentDraft>();
+        }
+
         return current.CreateRevision(
             templateId,
             templateVersion,
             CreateSourceVersion(booking, tour),
-            CreateFields(booking, tour),
+            fieldsResult.Value,
             branding.Version,
             branding.BrandName,
             branding.LogoUri,
             now);
     }
 
-    private static IReadOnlyList<DocumentField> CreateFields(GetBookingDto booking, GetTourDto tour) =>
-    [
-        CreateField("booking-reference", "Booking reference", booking.Id.ToString("N"), DocumentPrivacyClassification.Operational, false),
-        CreateField("customer-name", "Customer", booking.CustomerName, DocumentPrivacyClassification.PersonalData, false),
-        CreateField("companion-name", "Companion", booking.CompanionName ?? string.Empty, DocumentPrivacyClassification.PersonalData, false),
-        CreateField("tour-name", "Tour", tour.Name, DocumentPrivacyClassification.Public, false),
-        CreateField("tour-dates", "Travel dates", $"{tour.StartDate:yyyy-MM-dd} to {tour.EndDate:yyyy-MM-dd}", DocumentPrivacyClassification.Public, false),
-        CreateField("included-services", "Included services", string.Join(", ", tour.IncludedServices), DocumentPrivacyClassification.Public, false),
-        CreateField("total-price", "Total price", $"{booking.Currency} {booking.TotalPrice.ToString("0.00", CultureInfo.InvariantCulture)}", DocumentPrivacyClassification.Operational, false),
-        CreateField("payment-status", "Payment status", booking.PaymentStatus.ToString(), DocumentPrivacyClassification.Operational, false),
-        CreateField("greeting", "Greeting", $"Dear {booking.CustomerName},", DocumentPrivacyClassification.PersonalData, true),
-        CreateField("trip-note", "Trip note", string.Empty, DocumentPrivacyClassification.PersonalData, true),
-        CreateField("support-contact", "Support contact", "Contact Viajantes Turismo support for assistance.", DocumentPrivacyClassification.Public, true)
-    ];
+    private static Result<IReadOnlyList<DocumentField>> CreateFields(GetBookingDto booking, GetTourDto tour)
+    {
+        var definitions = new (string FieldId, string Label, string Value, DocumentPrivacyClassification Classification, bool IsEditable)[]
+        {
+            ("booking-reference", "Booking reference", booking.Id.ToString("N"), DocumentPrivacyClassification.Operational, false),
+            ("customer-name", "Customer", booking.CustomerName, DocumentPrivacyClassification.PersonalData, false),
+            ("companion-name", "Companion", booking.CompanionName ?? string.Empty, DocumentPrivacyClassification.PersonalData, false),
+            ("tour-name", "Tour", tour.Name, DocumentPrivacyClassification.Public, false),
+            ("tour-dates", "Travel dates", $"{tour.StartDate:yyyy-MM-dd} to {tour.EndDate:yyyy-MM-dd}", DocumentPrivacyClassification.Public, false),
+            ("included-services", "Included services", string.Join(", ", tour.IncludedServices), DocumentPrivacyClassification.Public, false),
+            ("total-price", "Total price", $"{booking.Currency} {booking.TotalPrice.ToString("0.00", CultureInfo.InvariantCulture)}", DocumentPrivacyClassification.PersonalData, false),
+            ("payment-status", "Payment status", booking.PaymentStatus.ToString(), DocumentPrivacyClassification.Operational, false),
+            ("greeting", "Greeting", $"Dear {booking.CustomerName},", DocumentPrivacyClassification.PersonalData, true),
+            ("trip-note", "Trip note", string.Empty, DocumentPrivacyClassification.PersonalData, true),
+            ("support-contact", "Support contact", "Contact Viajantes Turismo support for assistance.", DocumentPrivacyClassification.Public, true),
+        };
+        var fields = new List<DocumentField>(definitions.Length);
+        foreach (var definition in definitions)
+        {
+            var fieldResult = DocumentField.Create(definition.FieldId, definition.Label, definition.Value, definition.Classification, definition.IsEditable);
+            if (fieldResult.IsFailure)
+            {
+                return fieldResult.ConvertError<DocumentField, IReadOnlyList<DocumentField>>();
+            }
 
-    private static DocumentField CreateField(
-        string fieldId,
-        string label,
-        string value,
-        DocumentPrivacyClassification classification,
-        bool isEditable) => DocumentField.Create(fieldId, label, value, classification, isEditable).Value;
+            fields.Add(fieldResult.Value);
+        }
+
+        return Result.Ok<IReadOnlyList<DocumentField>>(fields);
+    }
 
     private static string CreateSourceVersion(GetBookingDto booking, GetTourDto tour)
     {

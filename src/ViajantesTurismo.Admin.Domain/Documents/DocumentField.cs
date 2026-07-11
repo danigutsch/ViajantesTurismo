@@ -122,7 +122,8 @@ public sealed class DocumentField
 
     internal DocumentField CopyWithCompatibleOverride(DocumentField previous)
     {
-        if (previous.IsEditable && IsEditable && previous.StaffOverride is not null)
+        if (previous.IsEditable && IsEditable && previous.StaffOverride is not null &&
+            string.Equals(previous.Value, Value, StringComparison.Ordinal))
         {
             StaffOverride = previous.StaffOverride;
         }
