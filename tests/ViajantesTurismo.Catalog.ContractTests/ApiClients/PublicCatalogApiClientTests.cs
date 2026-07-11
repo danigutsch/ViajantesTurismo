@@ -1,6 +1,11 @@
-namespace ViajantesTurismo.Public.WebTests;
+using System.Net;
+using System.Text.Json;
+using PublicCatalogApiClientTestsHelpers = SharedKernel.Testing.Contracts.ContractHttpClientTestHelper;
+using ViajantesTurismo.Catalog.Contracts.Http;
 
-[Trait(TestTraitNames.CategoryName, TestTraits.EndpointCategory)]
+namespace ViajantesTurismo.Catalog.ContractTests.ApiClients;
+
+[Trait(SharedKernel.Testing.TestTraitNames.CategoryName, Infrastructure.TestTraits.ContractCategory)]
 public sealed class PublicCatalogApiClientTests
 {
     [Fact]
@@ -10,7 +15,7 @@ public sealed class PublicCatalogApiClientTests
         var requestPath = string.Empty;
         using var httpClient = PublicCatalogApiClientTestsHelpers.CreateClient(request =>
         {
-            requestPath = request.Path + request.QueryString.Value;
+            requestPath = request.RequestUri?.PathAndQuery ?? string.Empty;
             return PublicCatalogApiClientTestsHelpers.JsonResponse("""
                 [
                   {
@@ -104,7 +109,7 @@ public sealed class PublicCatalogApiClientTests
         var requestPath = string.Empty;
         using var httpClient = PublicCatalogApiClientTestsHelpers.CreateClient(request =>
         {
-            requestPath = request.Path + request.QueryString.Value;
+            requestPath = request.RequestUri?.PathAndQuery ?? string.Empty;
             return PublicCatalogApiClientTestsHelpers.JsonResponse("""
                 {
                   "id":"11111111-1111-1111-1111-111111111111",
@@ -143,6 +148,53 @@ public sealed class PublicCatalogApiClientTests
     }
 
     [Fact]
+    public async Task GetPublishedTourBySlug_respects_cancellation_before_the_response_factory_runs()
+    {
+        // Arrange
+        var responseFactoryWasCalled = false;
+        using var cancellationTokenSource = new CancellationTokenSource();
+        using var httpClient = PublicCatalogApiClientTestsHelpers.CreateClient(_ =>
+        {
+            responseFactoryWasCalled = true;
+            return PublicCatalogApiClientTestsHelpers.JsonResponse("{}");
+        });
+        var sut = new PublicCatalogApiClient(httpClient);
+        await cancellationTokenSource.CancelAsync();
+
+        // Act
+        Func<Task> act = async () => await sut.GetPublishedTourBySlug("cancelled", cancellationTokenSource.Token);
+
+        // Assert
+        await act.ShouldThrow<TaskCanceledException>();
+        responseFactoryWasCalled.ShouldBeFalse();
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task GetPublishedTourBySlug_rejects_success_with_empty_or_null_body(bool jsonNull)
+    {
+        // Arrange
+        using var httpClient = PublicCatalogApiClientTestsHelpers.CreateClient(_ => jsonNull
+            ? PublicCatalogApiClientTestsHelpers.JsonResponse("null")
+            : new HttpResponseMessage(HttpStatusCode.OK));
+        var sut = new PublicCatalogApiClient(httpClient);
+
+        // Act
+        Func<Task> act = async () => await sut.GetPublishedTourBySlug("missing-body", TestContext.Current.CancellationToken);
+
+        // Assert
+        if (jsonNull)
+        {
+            var exception = await act.ShouldThrow<InvalidOperationException>();
+            exception.Message.ShouldBe("The published tour response body was empty.");
+            return;
+        }
+
+        await act.ShouldThrow<JsonException>();
+    }
+
+    [Fact]
     public async Task GetPublishedTourBySlug_throws_when_catalog_returns_unexpected_error()
     {
         // Arrange
@@ -167,7 +219,7 @@ public sealed class PublicCatalogApiClientTests
         var requestPath = string.Empty;
         using var httpClient = PublicCatalogApiClientTestsHelpers.CreateClient(request =>
         {
-            requestPath = request.Path + request.QueryString.Value;
+            requestPath = request.RequestUri?.PathAndQuery ?? string.Empty;
             return PublicCatalogApiClientTestsHelpers.JsonResponse("""
                 {
                   "language":2,
@@ -203,5 +255,30 @@ public sealed class PublicCatalogApiClientTests
 
         // Assert
         content.ShouldBeNull();
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task GetPublicContent_rejects_success_with_empty_or_null_body(bool jsonNull)
+    {
+        // Arrange
+        using var httpClient = PublicCatalogApiClientTestsHelpers.CreateClient(_ => jsonNull
+            ? PublicCatalogApiClientTestsHelpers.JsonResponse("null")
+            : new HttpResponseMessage(HttpStatusCode.OK));
+        var sut = new PublicCatalogApiClient(httpClient);
+
+        // Act
+        Func<Task> act = async () => await sut.GetPublicContent("home.hero", "en-US", TestContext.Current.CancellationToken);
+
+        // Assert
+        if (jsonNull)
+        {
+            var exception = await act.ShouldThrow<InvalidOperationException>();
+            exception.Message.ShouldBe("The public content response body was empty.");
+            return;
+        }
+
+        await act.ShouldThrow<JsonException>();
     }
 }

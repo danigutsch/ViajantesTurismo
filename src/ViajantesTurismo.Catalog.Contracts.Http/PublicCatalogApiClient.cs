@@ -44,7 +44,8 @@ public sealed class PublicCatalogApiClient(HttpClient httpClient) : IPublicCatal
         }
 
         response.EnsureSuccessStatusCode();
-        return await response.Content.ReadFromJsonAsync(Json.CatalogTourDto, ct).ConfigureAwait(false);
+        return await response.Content.ReadFromJsonAsync(Json.CatalogTourDto, ct).ConfigureAwait(false)
+               ?? throw new InvalidOperationException("The published tour response body was empty.");
     }
 
     /// <inheritdoc />
@@ -63,7 +64,8 @@ public sealed class PublicCatalogApiClient(HttpClient httpClient) : IPublicCatal
         }
 
         response.EnsureSuccessStatusCode();
-        return await response.Content.ReadFromJsonAsync(Json.PublicContentVariantDto, ct).ConfigureAwait(false);
+        return await response.Content.ReadFromJsonAsync(Json.PublicContentVariantDto, ct).ConfigureAwait(false)
+               ?? throw new InvalidOperationException("The public content response body was empty.");
     }
 
     private static string EscapePath(string path)

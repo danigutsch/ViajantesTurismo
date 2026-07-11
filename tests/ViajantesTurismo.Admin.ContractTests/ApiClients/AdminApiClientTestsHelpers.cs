@@ -1,4 +1,6 @@
-namespace ViajantesTurismo.Management.WebTests;
+using ViajantesTurismo.Admin.Contracts.Application;
+
+namespace ViajantesTurismo.Admin.ContractTests.ApiClients;
 
 internal static class AdminApiClientTestsHelpers
 {

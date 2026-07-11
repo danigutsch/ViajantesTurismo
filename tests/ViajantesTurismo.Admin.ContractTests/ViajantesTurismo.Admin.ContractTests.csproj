@@ -7,6 +7,7 @@
 
     <ItemGroup>
         <Using Include="SharedKernel.Testing.Assertions" />
+        <Using Include="ViajantesTurismo.Admin.Testing.Builders.DtoBuilders" Static="True" />
         <Using Include="Xunit" />
     </ItemGroup>
 
@@ -33,6 +34,7 @@
         <ProjectReference Include="..\..\src\SharedKernel\SharedKernel.Testing.Snapshots\SharedKernel.Testing.Snapshots.csproj" />
         <ProjectReference Include="..\..\src\SharedKernel\SharedKernel.Testing.Assertions\SharedKernel.Testing.Assertions.csproj" />
         <ProjectReference Include="..\..\src\SharedKernel\SharedKernel.Testing\SharedKernel.Testing.csproj" />
+        <ProjectReference Include="..\ViajantesTurismo.Admin.Testing\ViajantesTurismo.Admin.Testing.csproj" />
         <ProjectReference Include="..\SharedKernel.Testing.Contracts\SharedKernel.Testing.Contracts.csproj" />
     </ItemGroup>
 

@@ -1,6 +1,6 @@
 using Microsoft.Extensions.Logging;
 
-namespace ViajantesTurismo.Management.WebTests;
+namespace ViajantesTurismo.Admin.ContractTests.ApiClients;
 
 internal sealed record CollectedLogEntry(
     LogLevel LogLevel,

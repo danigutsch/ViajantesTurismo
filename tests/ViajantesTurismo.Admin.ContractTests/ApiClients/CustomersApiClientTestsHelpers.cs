@@ -1,7 +1,8 @@
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Logging;
+using ViajantesTurismo.Admin.Contracts.Http;
 
-namespace ViajantesTurismo.Management.WebTests;
+namespace ViajantesTurismo.Admin.ContractTests.ApiClients;
 
 internal static class CustomersApiClientTestsHelpers
 {
