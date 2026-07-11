@@ -3,11 +3,11 @@ using ViajantesTurismo.Admin.Contracts.Application;
 
 namespace ViajantesTurismo.Admin.UnitTests.ApiService;
 
-internal sealed class FakeQueryService(GetBookingDto? booking, IReadOnlyList<GetBookingDto>? bookings = null) : IQueryService
+internal sealed class FakeQueryService(GetBookingDto? booking, GetTourDto? tour = null, IReadOnlyList<GetBookingDto>? bookings = null) : IQueryService
 {
     public Task<IReadOnlyList<GetTourDto>> GetAllTours(CancellationToken ct) => throw new NotSupportedException();
 
-    public Task<GetTourDto?> GetTourById(Guid id, CancellationToken ct) => throw new NotSupportedException();
+    public Task<GetTourDto?> GetTourById(Guid id, CancellationToken ct) => Task.FromResult(tour?.Id == id ? tour : null);
 
     public Task<IReadOnlyList<GetCustomerDto>> GetAllCustomers(CancellationToken ct) => throw new NotSupportedException();
 
