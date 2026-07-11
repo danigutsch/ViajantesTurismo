@@ -6,6 +6,21 @@ namespace ViajantesTurismo.Performance.Tool.Tests;
 public sealed class FileUploadScanCommandTests
 {
     [Theory]
+    [InlineData("http://[::1]:5000", "http://host.docker.internal:5000")]
+    [InlineData("http://[::]:5000", "http://host.docker.internal:5000")]
+    public void Converts_ipv6_loopback_upload_targets_for_docker(string targetText, string expectedText)
+    {
+        // Arrange
+        var target = targetText;
+
+        // Act
+        var dockerTarget = FileUploadScanCommand.ToDockerUrl(target);
+
+        // Assert
+        dockerTarget.ShouldBe(expectedText);
+    }
+
+    [Theory]
     [InlineData("--include-system-env-vars")]
     [InlineData("--include-system-env-vars=false")]
     public void Rejects_system_environment_forwarding(string argument)

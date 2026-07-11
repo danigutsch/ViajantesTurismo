@@ -600,11 +600,12 @@ internal static class FileUploadScanCommand
             .Replace("[::]", "127.0.0.1", StringComparison.OrdinalIgnoreCase);
     }
 
-    private static string ToDockerUrl(string url)
+    internal static string ToDockerUrl(string url)
     {
         return url.Replace("0.0.0.0", "host.docker.internal", StringComparison.OrdinalIgnoreCase)
             .Replace("127.0.0.1", "host.docker.internal", StringComparison.OrdinalIgnoreCase)
             .Replace("localhost", "host.docker.internal", StringComparison.OrdinalIgnoreCase)
+            .Replace("[::1]", "host.docker.internal", StringComparison.OrdinalIgnoreCase)
             .Replace("[::]", "host.docker.internal", StringComparison.OrdinalIgnoreCase);
     }
 

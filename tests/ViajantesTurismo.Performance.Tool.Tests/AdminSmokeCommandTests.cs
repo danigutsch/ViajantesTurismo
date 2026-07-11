@@ -23,6 +23,21 @@ public sealed class AdminSmokeCommandTests
         exception.ShouldBeNull();
     }
 
+    [Theory]
+    [InlineData("http://[::1]:5000", "http://host.docker.internal:5000")]
+    [InlineData("http://[::]:5000", "http://host.docker.internal:5000")]
+    public void Converts_ipv6_loopback_admin_api_targets_for_docker(string targetText, string expectedText)
+    {
+        // Arrange
+        var target = targetText;
+
+        // Act
+        var dockerTarget = AdminSmokeCommand.ToDockerUrl(target);
+
+        // Assert
+        dockerTarget.ShouldBe(expectedText);
+    }
+
     [Fact]
     public void Rejects_admin_api_targets_with_user_information()
     {
