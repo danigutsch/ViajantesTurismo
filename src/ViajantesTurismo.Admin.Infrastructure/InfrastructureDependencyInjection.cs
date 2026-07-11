@@ -46,6 +46,7 @@ public static class InfrastructureDependencyInjection
         builder.Services.AddScoped<ITourStore, TourStore>();
         builder.Services.AddScoped<ICustomerStore, CustomerStore>();
         builder.Services.AddScoped<IDocumentStore, DocumentStore>();
+        builder.Services.AddHostedService<DocumentDraftRetentionHostedService>();
         builder.Services.AddIntegrationEventContract(
             AdminTourCreatedIntegrationEvent.EventType,
             AdminIntegrationEventJsonContext.Default.AdminTourCreatedIntegrationEvent);

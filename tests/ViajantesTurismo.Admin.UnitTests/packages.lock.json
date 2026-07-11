@@ -854,6 +854,7 @@
           "SharedKernel.Mediator.EntityFrameworkCore": "[0.1.0-alpha.0, )",
           "SharedKernel.Messaging.IntegrationEvents": "[0.1.0-alpha.0, )",
           "SharedKernel.Messaging.IntegrationEvents.EntityFrameworkCore": "[0.1.0-alpha.0, )",
+          "SharedKernel.Scheduling": "[0.1.0-alpha.0, )",
           "ViajantesTurismo.Admin.Application": "[0.1.0-alpha.0, )",
           "ViajantesTurismo.Admin.Domain": "[0.1.0-alpha.0, )",
           "ViajantesTurismo.Resources": "[0.1.0-alpha.0, )"

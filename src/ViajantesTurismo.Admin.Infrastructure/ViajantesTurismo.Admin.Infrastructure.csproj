@@ -7,6 +7,7 @@
 
     <ItemGroup>
         <InternalsVisibleTo Include="ViajantesTurismo.Admin.UnitTests" />
+        <InternalsVisibleTo Include="ViajantesTurismo.Admin.Infrastructure.Tests" />
     </ItemGroup>
 
     <ItemGroup>
@@ -23,6 +24,7 @@
         <ProjectReference Include="..\SharedKernel\SharedKernel.Messaging.IntegrationEvents.EntityFrameworkCore\SharedKernel.Messaging.IntegrationEvents.EntityFrameworkCore.csproj" />
         <ProjectReference Include="..\ViajantesTurismo.Resources\ViajantesTurismo.Resources.csproj"/>
         <ProjectReference Include="..\SharedKernel\SharedKernel.DomainEvents\SharedKernel.DomainEvents.csproj" />
+        <ProjectReference Include="..\SharedKernel\SharedKernel.Scheduling\SharedKernel.Scheduling.csproj" />
     </ItemGroup>
 
 </Project>

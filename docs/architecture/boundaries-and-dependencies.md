@@ -100,6 +100,7 @@ flowchart TB
     ViajantesTurismo_Admin_Infrastructure[ViajantesTurismo.Admin.Infrastructure] --> SharedKernel_Mediator_EntityFrameworkCore[SharedKernel.Mediator.EntityFrameworkCore]
     ViajantesTurismo_Admin_Infrastructure[ViajantesTurismo.Admin.Infrastructure] --> SharedKernel_Messaging_IntegrationEvents[SharedKernel.Messaging.IntegrationEvents]
     ViajantesTurismo_Admin_Infrastructure[ViajantesTurismo.Admin.Infrastructure] --> SharedKernel_Messaging_IntegrationEvents_EntityFrameworkCore[SharedKernel.Messaging.IntegrationEvents.EntityFrameworkCore]
+    ViajantesTurismo_Admin_Infrastructure[ViajantesTurismo.Admin.Infrastructure] --> SharedKernel_Scheduling[SharedKernel.Scheduling]
     ViajantesTurismo_Admin_Infrastructure[ViajantesTurismo.Admin.Infrastructure] --> ViajantesTurismo_Admin_Application[ViajantesTurismo.Admin.Application]
     ViajantesTurismo_Admin_Infrastructure[ViajantesTurismo.Admin.Infrastructure] --> ViajantesTurismo_Admin_Domain[ViajantesTurismo.Admin.Domain]
     ViajantesTurismo_Admin_Infrastructure[ViajantesTurismo.Admin.Infrastructure] --> ViajantesTurismo_Resources[ViajantesTurismo.Resources]

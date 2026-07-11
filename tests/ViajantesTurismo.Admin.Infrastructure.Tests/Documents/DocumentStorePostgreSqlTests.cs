@@ -33,11 +33,12 @@ public sealed class DocumentStorePostgreSqlTests : IAsyncLifetime
     {
         // Arrange
         var now = new DateTime(2026, 7, 11, 0, 0, 0, DateTimeKind.Utc);
-        var expired = DocumentDraftInfrastructureTestData.CreateDraft(now.AddDays(-DocumentLimits.DraftRetentionDays));
-        var boundaryExpired = DocumentDraftInfrastructureTestData.CreateDraft(now.AddDays(-DocumentLimits.DraftRetentionDays).AddTicks(1));
+        var expired = DocumentDraftInfrastructureTestData.CreateDraft(now.AddDays(-DocumentLimits.DraftRetentionDays - 1));
+        var boundaryExpired = DocumentDraftInfrastructureTestData.CreateDraft(now.AddDays(-DocumentLimits.DraftRetentionDays));
+        var future = DocumentDraftInfrastructureTestData.CreateDraft(now.AddDays(-DocumentLimits.DraftRetentionDays).AddMinutes(1));
         var current = DocumentDraftInfrastructureTestData.CreateDraft(now);
         var finalized = DocumentDraftInfrastructureTestData.CreateFinalizedDraft(now.AddYears(-DocumentLimits.FinalizedRetentionYears - 1));
-        await Scenario.Seed(expired, boundaryExpired, current, finalized);
+        await Scenario.Seed(expired, boundaryExpired, future, current, finalized);
 
         // Act
         var removedCount = await Scenario.PurgeExpiredDrafts(now, TestContext.Current.CancellationToken);
@@ -45,10 +46,11 @@ public sealed class DocumentStorePostgreSqlTests : IAsyncLifetime
         // Assert
         removedCount.ShouldBe(2);
         var remaining = await Scenario.GetDocuments(TestContext.Current.CancellationToken);
+        remaining.Select(document => document.Id).ShouldContain(future.Id);
         remaining.Select(document => document.Id).ShouldContain(current.Id);
         remaining.Select(document => document.Id).ShouldContain(finalized.Id);
         remaining.Select(document => document.Id).ShouldNotContain(expired.Id);
         remaining.Select(document => document.Id).ShouldNotContain(boundaryExpired.Id);
-        remaining.Sum(document => document.Fields.Count).ShouldBe(4);
+        remaining.Sum(document => document.Fields.Count).ShouldBe(6);
     }
 }
