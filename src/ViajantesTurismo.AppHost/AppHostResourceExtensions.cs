@@ -32,6 +32,9 @@ internal static class AppHostResourceExtensions
     /// <summary>Digest for <c>docker.io/redis/redisinsight:3.6</c>.</summary>
     private const string RedisInsightImageDigest = "aa21bbd198455b4ad964f76782db951155aa0d712321f599972d1525f031f0e6";
 
+    /// <summary>Configuration key for Public Web canonical sitemap URLs.</summary>
+    private const string PublicWebSitemapCanonicalOriginEnvironmentVariable = "PublicWeb__Sitemap__CanonicalOrigin";
+
     /// <summary>
     /// Adds the PostgreSQL server and PgWeb companion resource.
     /// </summary>
@@ -205,8 +208,11 @@ internal static class AppHostResourceExtensions
         IResourceBuilder<ProjectResource> catalogApiService,
         IResourceBuilder<ProjectResource> brandingApiService)
     {
-        return builder.AddDevelopmentAspNetCoreProject<ViajantesTurismo_Public_Web>(ResourceNames.PublicWebApp)
+        var publicWeb = builder.AddDevelopmentAspNetCoreProject<ViajantesTurismo_Public_Web>(ResourceNames.PublicWebApp);
+
+        return publicWeb
             .WithExternalHttpEndpoints()
+            .WithEnvironment(PublicWebSitemapCanonicalOriginEnvironmentVariable, publicWeb.GetEndpoint("https"))
             .WithHttpHealthCheck(EndpointPaths.Health)
             .WithReference(catalogApiService)
             .WaitFor(catalogApiService)

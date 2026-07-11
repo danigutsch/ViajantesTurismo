@@ -11,12 +11,14 @@ overridden per environment.
 | Key | Default | Unit/range | Safe to log | Consumed by | Notes |
 | --- | --- | --- | --- | --- | --- |
 | `CatalogIntegrationEvents:IdempotencyLockDuration` | `00:05:00` | .NET `TimeSpan` round-trip `c` format; greater than zero | Yes | `ViajantesTurismo.Catalog.Application` integration event handlers | Controls how long an idempotency lock is held while processing one integration event. |
+| `PublicWeb:Sitemap:CanonicalOrigin` | None in production | Absolute `http` or `https` origin without path, query, fragment, or userinfo | Yes | `ViajantesTurismo.Public.Web` | Emits canonical absolute URLs in public `/sitemap.xml` and `/robots.txt`. Local AppHost injects its HTTPS endpoint. |
 
 Environment variable form:
 
 | Key | Environment variable |
 | --- | --- |
 | `CatalogIntegrationEvents:IdempotencyLockDuration` | `CatalogIntegrationEvents__IdempotencyLockDuration` |
+| `PublicWeb:Sitemap:CanonicalOrigin` | `PublicWeb__Sitemap__CanonicalOrigin` |
 
 Production configuration rules:
 
@@ -186,6 +188,7 @@ runtime settings unless deployment docs explicitly promote them.
 | Value | Classification | Decision |
 | --- | --- | --- |
 | Resource names such as `cache`, `database`, and `catalog-api` | Aspire/service-discovery identity | Use `ResourceNames`; do not inline strings in AppHost orchestration code. |
+| Public Web sitemap canonical origin | Local AppHost endpoint reference | AppHost injects `PublicWeb__Sitemap__CanonicalOrigin` from the Public Web HTTPS endpoint so local crawler URLs match the active Aspire endpoint. |
 | Container image SHA-256 values | Local orchestration supply-chain pins | Keep as AppHost constants; not runtime configuration. |
 | AppHost performance smoke variables | Local opt-in tooling | Keep as environment variables for the local performance harness. |
 | Launch profile localhost ports | Developer tooling | Keep in `launchSettings.json`; not production runtime configuration. |

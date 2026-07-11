@@ -9,6 +9,8 @@ internal sealed class FakePublicCatalogApiClient : IPublicCatalogApiClient
 
     public bool FailListRequests { get; set; }
 
+    public bool ThrowOperationCanceledExceptionOnListRequests { get; set; }
+
     public bool FailDetailsRequests { get; set; }
 
     public bool FailContentRequests { get; set; }
@@ -50,6 +52,11 @@ internal sealed class FakePublicCatalogApiClient : IPublicCatalogApiClient
         if (ListDelay > TimeSpan.Zero)
         {
             await Task.Delay(ListDelay, ct);
+        }
+
+        if (ThrowOperationCanceledExceptionOnListRequests)
+        {
+            throw new OperationCanceledException("Catalog request canceled upstream.");
         }
 
         return FailListRequests

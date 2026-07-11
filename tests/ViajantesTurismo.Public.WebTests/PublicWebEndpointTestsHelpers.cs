@@ -24,7 +24,8 @@ internal static class PublicWebEndpointTestsHelpers
     public static WebApplicationFactory<IPublicWebAssemblyMarker> CreateFactory(
             IPublicCatalogApiClient? catalogApiClient = null,
             IBrandingApiClient? brandingApiClient = null,
-            string? environment = null)
+            string? environment = null,
+            string? canonicalOrigin = null)
     {
         return WebApplicationTestHost.Create<IPublicWebAssemblyMarker>(
             environment,
@@ -34,6 +35,11 @@ internal static class PublicWebEndpointTestsHelpers
                 services.RemoveAll<IBrandingApiClient>();
                 services.AddSingleton(catalogApiClient ?? new FakePublicCatalogApiClient());
                 services.AddSingleton(brandingApiClient ?? new FakeBrandingApiClient());
+
+                if (canonicalOrigin is not null)
+                {
+                    services.PostConfigure<PublicWebSitemapOptions>(options => options.CanonicalOrigin = canonicalOrigin);
+                }
             });
     }
 }

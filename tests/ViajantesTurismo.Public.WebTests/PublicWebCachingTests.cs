@@ -147,6 +147,28 @@ public sealed class PublicWebCachingTests
     }
 
     [Fact]
+    public async Task Sitemap_xml_failure_is_not_cacheable()
+    {
+        // Arrange
+        var catalogApi = new FakePublicCatalogApiClient { FailListRequests = true };
+        await using var factory = PublicWebEndpointTestsHelpers.CreateFactory(catalogApi);
+        using var client = factory.CreateClient();
+
+        // Act
+        using var response = await client.GetAsync(new Uri("/sitemap.xml", UriKind.Relative), TestContext.Current.CancellationToken);
+
+        // Assert
+        response.StatusCode.ShouldBe(HttpStatusCode.ServiceUnavailable);
+        var cacheControl = response.Headers.CacheControl.ShouldNotBeNull();
+        cacheControl.NoStore.ShouldBeTrue();
+        response.Headers.GetValues("Pragma").ShouldHaveSingleItem().ShouldBe("no-cache");
+        var expires = response.Headers.NonValidated.TryGetValues("Expires", out var values)
+            ? values
+            : response.Content.Headers.NonValidated["Expires"];
+        expires.ShouldHaveSingleItem().ShouldBe("Thu, 01 Jan 1970 00:00:00 GMT");
+    }
+
+    [Fact]
     public async Task Error_endpoint_is_not_cacheable()
     {
         // Arrange
