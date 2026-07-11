@@ -20,6 +20,9 @@ public static class DocumentLimits
     /// <summary>The maximum branding display-name length.</summary>
     public const int MaxBrandingNameLength = 128;
 
+    /// <summary>The maximum branding logo URI length.</summary>
+    public const int MaxBrandingLogoUriLength = 2048;
+
     /// <summary>The maximum field identifier length.</summary>
     public const int MaxFieldIdLength = 64;
 

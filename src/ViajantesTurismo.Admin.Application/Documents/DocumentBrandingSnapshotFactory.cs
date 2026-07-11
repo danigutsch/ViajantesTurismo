@@ -1,6 +1,7 @@
 using System.Security.Cryptography;
 using System.Text;
 using SharedKernel.Branding;
+using ViajantesTurismo.Admin.Domain.Documents;
 
 namespace ViajantesTurismo.Admin.Application.Documents;
 
@@ -14,10 +15,11 @@ internal static class DocumentBrandingSnapshotFactory
         ArgumentNullException.ThrowIfNull(brandingApiClient);
 
         var settings = await brandingApiClient.GetPublicSettings(ct);
-        var source = string.Join("\n", settings.BrandName, settings.LogoUri ?? string.Empty, settings.PrimaryColor,
+        var logoUri = settings.LogoUri is { Length: <= DocumentLimits.MaxBrandingLogoUriLength } value ? value : null;
+        var source = string.Join("\n", settings.BrandName, logoUri ?? string.Empty, settings.PrimaryColor,
             settings.AccentColor, settings.BackgroundColor, settings.TextColor, settings.HeadingFontFamily, settings.BodyFontFamily);
         var version = Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(source)));
-        var logoUri = Uri.TryCreate(settings.LogoUri, UriKind.RelativeOrAbsolute, out var parsedLogoUri) ? parsedLogoUri : null;
-        return new DocumentBrandingSnapshotValues(version, settings.BrandName, logoUri);
+        var parsedLogoUri = Uri.TryCreate(logoUri, UriKind.RelativeOrAbsolute, out var uri) ? uri : null;
+        return new DocumentBrandingSnapshotValues(version, settings.BrandName, parsedLogoUri);
     }
 }
