@@ -16,10 +16,10 @@ internal static class DocumentBrandingSnapshotFactory
 
         var settings = await brandingApiClient.GetPublicSettings(ct);
         var logoUri = settings.LogoUri is { Length: <= DocumentLimits.MaxBrandingLogoUriLength } value ? value : null;
-        var source = string.Join("\n", settings.BrandName, logoUri ?? string.Empty, settings.PrimaryColor,
+        var parsedLogoUri = ToSafeLogoUri(logoUri);
+        var source = string.Join("\n", settings.BrandName, parsedLogoUri?.OriginalString ?? string.Empty, settings.PrimaryColor,
             settings.AccentColor, settings.BackgroundColor, settings.TextColor, settings.HeadingFontFamily, settings.BodyFontFamily);
         var version = Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(source)));
-        var parsedLogoUri = ToSafeLogoUri(logoUri);
         return new DocumentBrandingSnapshotValues(version, settings.BrandName, parsedLogoUri);
     }
 

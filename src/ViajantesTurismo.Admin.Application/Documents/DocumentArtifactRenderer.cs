@@ -1,5 +1,6 @@
 using SharedKernel.DocumentRendering;
 using ViajantesTurismo.Admin.Domain.Documents;
+using DomainPrivacy = ViajantesTurismo.Admin.Domain.Documents.DocumentPrivacyClassification;
 using RenderField = SharedKernel.DocumentRendering.DocumentField;
 using RenderPrivacy = SharedKernel.DocumentRendering.DocumentPrivacyClassification;
 
@@ -30,13 +31,12 @@ internal static class DocumentArtifactRenderer
         return new HtmlDocumentRenderer().Render(request);
     }
 
-    private static RenderPrivacy MapPrivacy(
-        Domain.Documents.DocumentPrivacyClassification classification) => classification switch
-        {
-            Domain.Documents.DocumentPrivacyClassification.Public => RenderPrivacy.Public,
-            Domain.Documents.DocumentPrivacyClassification.Operational => RenderPrivacy.Operational,
-            Domain.Documents.DocumentPrivacyClassification.PersonalData => RenderPrivacy.PersonalData,
-            Domain.Documents.DocumentPrivacyClassification.SensitivePersonalData => RenderPrivacy.SensitivePersonalData,
-            _ => throw new InvalidOperationException($"Unsupported document privacy classification: {classification}."),
-        };
+    private static RenderPrivacy MapPrivacy(DomainPrivacy classification) => classification switch
+    {
+        DomainPrivacy.Public => RenderPrivacy.Public,
+        DomainPrivacy.Operational => RenderPrivacy.Operational,
+        DomainPrivacy.PersonalData => RenderPrivacy.PersonalData,
+        DomainPrivacy.SensitivePersonalData => RenderPrivacy.SensitivePersonalData,
+        _ => throw new InvalidOperationException($"Unsupported document privacy classification: {classification}."),
+    };
 }
