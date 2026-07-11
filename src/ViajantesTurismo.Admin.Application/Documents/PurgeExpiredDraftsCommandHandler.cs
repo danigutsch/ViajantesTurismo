@@ -6,7 +6,6 @@ namespace ViajantesTurismo.Admin.Application.Documents;
 /// <summary>Purges only document revisions eligible under draft retention policy.</summary>
 public sealed class PurgeExpiredDraftsCommandHandler(
     IDocumentStore documentStore,
-    IUnitOfWork unitOfWork,
     TimeProvider timeProvider)
 {
     /// <summary>Removes expired unfinalized drafts and returns the count.</summary>
@@ -16,11 +15,6 @@ public sealed class PurgeExpiredDraftsCommandHandler(
 
         var now = timeProvider.GetUtcNow().UtcDateTime;
         var removedCount = await documentStore.PurgeExpiredDrafts(now, ct);
-
-        if (removedCount > 0)
-        {
-            await unitOfWork.SaveEntities(ct);
-        }
 
         return Result.Ok(removedCount);
     }

@@ -97,10 +97,8 @@ public sealed class DocumentLifecycleCommandHandlerTests
         var store = new FakeDocumentStore();
         store.Documents.Add(expired.Id, expired);
         store.Documents.Add(current.Id, current);
-        var unitOfWork = new FakeUnitOfWork();
-
         // Act
-        var result = await new PurgeExpiredDraftsCommandHandler(store, unitOfWork, new FakeTimeProvider(now))
+        var result = await new PurgeExpiredDraftsCommandHandler(store, new FakeTimeProvider(now))
             .Handle(new PurgeExpiredDraftsCommand(), CancellationToken.None);
 
         // Assert
@@ -108,6 +106,5 @@ public sealed class DocumentLifecycleCommandHandlerTests
         result.Value.ShouldBe(1);
         store.Documents.ContainsKey(expired.Id).ShouldBeFalse();
         store.Documents.ContainsKey(current.Id).ShouldBeTrue();
-        unitOfWork.SaveEntitiesCallCount.ShouldBe(1);
     }
 }
