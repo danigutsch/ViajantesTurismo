@@ -16,6 +16,12 @@ public static class DocumentErrors
         field: "fields",
         message: "Document fields must be classified.");
 
+    /// <summary>Returns a secret-field failure.</summary>
+    public static Result SecretFieldCannotBeRendered(string fieldId) => Result.Invalid(
+        detail: $"Document field '{fieldId}' contains secret material and cannot be rendered.",
+        field: "fields",
+        message: "Secret document fields cannot be rendered.");
+
     /// <summary>Returns a non-editable-field failure.</summary>
     public static Result FieldIsNotEditable(string fieldId) => Result.Conflict(
         detail: $"Document field '{fieldId}' is not editable.");

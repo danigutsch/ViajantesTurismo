@@ -93,6 +93,11 @@ public sealed class DocumentField
             return DocumentErrors.UnclassifiedField(fieldId).ConvertError<DocumentField>();
         }
 
+        if (privacyClassification == DocumentPrivacyClassification.Secret)
+        {
+            return DocumentErrors.SecretFieldCannotBeRendered(fieldId).ConvertError<DocumentField>();
+        }
+
         return Result.Ok(new DocumentField(fieldId, label, value, privacyClassification, isEditable));
     }
 

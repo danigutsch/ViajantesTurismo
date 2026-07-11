@@ -142,6 +142,19 @@ public sealed class DocumentDraftTests
     }
 
     [Fact]
+    public void Create_field_rejects_secret_content()
+    {
+        // Arrange
+        const string value = "credential";
+
+        // Act
+        var result = DocumentField.Create("secret", "Secret", value, DocumentPrivacyClassification.Secret, false);
+
+        // Assert
+        result.IsFailure.ShouldBeTrue();
+    }
+
+    [Fact]
     public void Expired_draft_is_eligible_for_purge_but_finalized_document_is_not()
     {
         // Arrange
