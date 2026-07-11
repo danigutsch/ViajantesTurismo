@@ -139,7 +139,7 @@ Documents move through explicit states:
 2. `InReview`: staff opened the draft for review.
 3. `ChangesRequested`: staff identified source data or document edits that must be corrected.
 4. `Approved`: staff confirmed the content is ready to render.
-5. `Finalized`: a PDF artifact was generated and sealed for distribution or operations.
+5. `Finalized`: an artifact was generated and sealed for distribution or operations.
 6. `Superseded`: a newer finalized revision replaces this one for future use.
 7. `Voided`: staff invalidated the finalized artifact because it must not be used.
 
@@ -150,8 +150,8 @@ Rules:
 - Review must show the source-data timestamp/version used by the draft.
 - Staff edits must be limited to fields declared editable for the document type.
 - High-risk source data changes require updating the source record first, then regenerating.
-- Finalization must be explicit; opening or saving a draft cannot finalize a PDF.
-- Finalized PDFs are immutable. Corrections create a new revision.
+- Finalization must be explicit; opening or saving a draft cannot finalize an artifact.
+- Finalized artifacts are immutable. Corrections create a new revision.
 - Download and view events are audited without logging document content.
 
 ## Storage, retention, audit, and regeneration

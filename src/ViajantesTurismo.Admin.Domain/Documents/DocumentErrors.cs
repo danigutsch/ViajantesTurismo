@@ -56,6 +56,12 @@ public static class DocumentErrors
         field: field,
         message: $"{field} cannot exceed {maxLength} characters.");
 
+    /// <summary>Returns an invalid-value failure.</summary>
+    public static Result InvalidValue(string field) => Result.Invalid(
+        detail: $"{field} has an invalid value.",
+        field: field,
+        message: $"{field} has an invalid value.");
+
     /// <summary>Returns an empty-value validation failure.</summary>
     public static Result ValueRequired(string field) => Result.Invalid(
         detail: $"{field} is required.",

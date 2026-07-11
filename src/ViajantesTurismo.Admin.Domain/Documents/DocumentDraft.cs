@@ -338,12 +338,12 @@ public sealed class DocumentDraft : IEntity<Guid>
 
         if (!Enum.IsDefined(type))
         {
-            return DocumentErrors.ValueRequired("documentType");
+            return DocumentErrors.InvalidValue("documentType");
         }
 
         if (!Enum.IsDefined(audience))
         {
-            return DocumentErrors.ValueRequired("documentAudience");
+            return DocumentErrors.InvalidValue("documentAudience");
         }
 
         if (string.IsNullOrWhiteSpace(templateId))
