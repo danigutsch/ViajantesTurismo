@@ -20,7 +20,7 @@ public sealed class DocumentDraftTests
         // Act
         var finalize = draft.Finalize(artifact, createdAt);
         artifact[0] = 0;
-        var finalizedArtifact = draft.FinalizedArtifactContent;
+        var finalizedArtifact = draft.GetFinalizedArtifactContent();
 
         // Assert
         beginReview.IsSuccess.ShouldBeTrue();
@@ -71,7 +71,7 @@ public sealed class DocumentDraftTests
         finalize.IsSuccess.ShouldBeTrue();
         result.IsSuccess.ShouldBeTrue();
         draft.Status.ShouldBe(DocumentStatus.Voided);
-        draft.FinalizedArtifactContent.ShouldNotBeNull();
+        draft.GetFinalizedArtifactContent().ShouldNotBeNull();
     }
 
     [Fact]

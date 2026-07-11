@@ -27,7 +27,7 @@ internal sealed class DocumentDraftConfiguration : IEntityTypeConfiguration<Docu
             .HasConversion(new ValueConverter<Uri?, string?>(
                 uri => uri == null ? null : uri.OriginalString,
                 value => string.IsNullOrEmpty(value) ? null : new Uri(value, UriKind.RelativeOrAbsolute)))
-            .HasMaxLength(2048);
+            .HasMaxLength(DocumentLimits.MaxBrandingLogoUriLength);
         entity.Property(document => document.Status).HasConversion<string>().IsRequired();
         entity.Property(document => document.CreatedAt).IsRequired();
         entity.Property(document => document.UpdatedAt).IsRequired();

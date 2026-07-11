@@ -113,8 +113,8 @@ public sealed class DocumentDraft : IEntity<Guid>
     /// <summary>Gets the reason recorded when the document was voided.</summary>
     public string? VoidReason { get; private set; }
 
-    /// <summary>Gets the finalized artifact content without exposing its mutable backing buffer.</summary>
-    public ReadOnlyMemory<byte>? FinalizedArtifactContent => _finalizedArtifactContent;
+    /// <summary>Gets a copy of the finalized artifact content.</summary>
+    public ReadOnlyMemory<byte>? GetFinalizedArtifactContent() => _finalizedArtifactContent?.ToArray();
 
     /// <summary>Creates the initial document draft revision.</summary>
     public static Result<DocumentDraft> Create(

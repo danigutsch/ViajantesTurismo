@@ -29,7 +29,7 @@ public sealed class FinalizeDocumentCommandHandlerTests
         // Assert
         result.IsSuccess.ShouldBeTrue();
         document.Status.ShouldBe(DocumentStatus.Finalized);
-        document.FinalizedArtifactContent.ShouldNotBeNull();
+        document.GetFinalizedArtifactContent().ShouldNotBeNull();
         unitOfWork.SaveEntitiesCallCount.ShouldBe(1);
     }
 
