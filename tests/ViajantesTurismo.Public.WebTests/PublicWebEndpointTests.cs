@@ -1,4 +1,6 @@
 using Microsoft.AspNetCore.Mvc.Testing;
+using Microsoft.Extensions.Options;
+using System.Xml.Linq;
 using TestTraits = ViajantesTurismo.Public.WebTests.Infrastructure.TestTraits;
 
 namespace ViajantesTurismo.Public.WebTests;
@@ -682,24 +684,172 @@ public sealed class PublicWebEndpointTests
     {
         // Arrange
         await using var factory = PublicWebEndpointTestsHelpers.CreateFactory();
-        using var client = factory.CreateClient();
+        using var client = factory.CreateClient(new WebApplicationFactoryClientOptions
+        {
+            BaseAddress = new Uri("https://testserver")
+        });
+        using var request = new HttpRequestMessage(HttpMethod.Get, new Uri("/robots.txt", UriKind.Relative));
+        request.Headers.Host = "evil.example.test";
 
         // Act
-        using var response = await client.GetAsync(new Uri("/robots.txt", UriKind.Relative), TestContext.Current.CancellationToken);
+        using var response = await client.SendAsync(request, TestContext.Current.CancellationToken);
         var body = await response.Content.ReadAsStringAsync(TestContext.Current.CancellationToken);
 
         // Assert
         response.StatusCode.ShouldBe(HttpStatusCode.OK);
         response.Content.Headers.ContentType?.MediaType.ShouldBe("text/plain");
         response.Content.Headers.ContentType?.CharSet.ShouldBe("utf-8");
-        body.ShouldBe("User-agent: *\nAllow: /");
+        body.ShouldBe("User-agent: *\nAllow: /\nSitemap: https://localhost:7003/sitemap.xml");
+    }
+
+    [Fact]
+    public async Task Robots_txt_uses_sitemap_canonical_origin_from_configuration()
+    {
+        // Arrange
+        await using var sourceFactory = PublicWebEndpointTestsHelpers.CreateFactory();
+        await using var factory = sourceFactory.WithWebHostBuilder(builder =>
+        {
+            builder.UseSetting("PublicWeb:Sitemap:CanonicalOrigin", "https://public.example.test");
+        });
+        using var client = factory.CreateClient(new WebApplicationFactoryClientOptions
+        {
+            BaseAddress = new Uri("https://testserver")
+        });
+        using var request = new HttpRequestMessage(HttpMethod.Get, new Uri("/robots.txt", UriKind.Relative));
+        request.Headers.Host = "evil.example.test";
+
+        // Act
+        using var response = await client.SendAsync(request, TestContext.Current.CancellationToken);
+        var body = await response.Content.ReadAsStringAsync(TestContext.Current.CancellationToken);
+
+        // Assert
+        response.StatusCode.ShouldBe(HttpStatusCode.OK);
+        body.ShouldBe("User-agent: *\nAllow: /\nSitemap: https://public.example.test/sitemap.xml");
+    }
+
+    [Fact]
+    public async Task Sitemap_xml_includes_only_canonical_public_pages()
+    {
+        // Arrange
+        var catalogApi = new FakePublicCatalogApiClient();
+        var updatedAt = new DateTimeOffset(2026, 7, 11, 9, 30, 0, TimeSpan.Zero);
+        catalogApi.AddTour(PublicWebEndpointTestsHelpers.CreateTour("camino-norte", "Camino Norte") with
+        {
+            UpdatedAt = updatedAt
+        });
+        catalogApi.AddTour(PublicWebEndpointTestsHelpers.CreateTour("missing-date", "Missing date") with
+        {
+            UpdatedAt = default
+        });
+        catalogApi.AddTour(PublicWebEndpointTestsHelpers.CreateTour("invalid/tour", "Invalid tour"));
+        catalogApi.AddTour(PublicWebEndpointTestsHelpers.CreateTour("invalid\\tour", "Invalid tour"));
+        catalogApi.AddTour(PublicWebEndpointTestsHelpers.CreateTour("invalid?tour", "Invalid tour"));
+        catalogApi.AddTour(PublicWebEndpointTestsHelpers.CreateTour("invalid#tour", "Invalid tour"));
+        catalogApi.AddTour(PublicWebEndpointTestsHelpers.CreateTour("\u0001invalid", "Invalid tour"));
+        catalogApi.AddTour(PublicWebEndpointTestsHelpers.CreateTour(".", "Invalid tour"));
+        catalogApi.AddTour(PublicWebEndpointTestsHelpers.CreateTour("..", "Invalid tour"));
+        catalogApi.AddTour(PublicWebEndpointTestsHelpers.CreateTour(" ", "Invalid tour"));
+
+        await using var factory = PublicWebEndpointTestsHelpers.CreateFactory(catalogApi);
+        using var client = factory.CreateClient(new WebApplicationFactoryClientOptions
+        {
+            BaseAddress = new Uri("https://testserver")
+        });
+        using var request = new HttpRequestMessage(HttpMethod.Get, new Uri("/sitemap.xml", UriKind.Relative));
+        request.Headers.Host = "evil.example.test";
+
+        // Act
+        using var response = await client.SendAsync(request, TestContext.Current.CancellationToken);
+        var body = await response.Content.ReadAsStringAsync(TestContext.Current.CancellationToken);
+        var document = XDocument.Parse(body);
+        var sitemapNamespace = XNamespace.Get("http://www.sitemaps.org/schemas/sitemap/0.9");
+        var locations = document.Descendants(sitemapNamespace + "loc").Select(element => element.Value).ToArray();
+        var lastModified = document.Descendants(sitemapNamespace + "lastmod").Select(element => element.Value).ToArray();
+
+        // Assert
+        response.StatusCode.ShouldBe(HttpStatusCode.OK);
+        response.Content.Headers.ContentType?.MediaType.ShouldBe("application/xml");
+        locations.ShouldBe([
+            "https://localhost:7003/",
+            "https://localhost:7003/group-bike-tours",
+            "https://localhost:7003/gallery",
+            "https://localhost:7003/group-bike-tours/camino-norte",
+            "https://localhost:7003/group-bike-tours/missing-date"
+        ]);
+        lastModified.ShouldBe(["2026-07-11T09:30:00Z"]);
+    }
+
+    [Fact]
+    public async Task Sitemap_xml_limits_tours_to_protocol_maximum()
+    {
+        // Arrange
+        var catalogApi = new FakePublicCatalogApiClient();
+        for (var index = 0; index < 49_998; index++)
+        {
+            catalogApi.AddTour(PublicWebEndpointTestsHelpers.CreateTour($"tour-{index}", "Tour"));
+        }
+
+        await using var factory = PublicWebEndpointTestsHelpers.CreateFactory(catalogApi);
+        using var client = factory.CreateClient();
+
+        // Act
+        using var response = await client.GetAsync(new Uri("/sitemap.xml", UriKind.Relative), TestContext.Current.CancellationToken);
+        var body = await response.Content.ReadAsStringAsync(TestContext.Current.CancellationToken);
+        var document = XDocument.Parse(body);
+        var sitemapNamespace = XNamespace.Get("http://www.sitemaps.org/schemas/sitemap/0.9");
+        var locations = document.Descendants(sitemapNamespace + "loc").Select(element => element.Value).ToArray();
+
+        // Assert
+        response.StatusCode.ShouldBe(HttpStatusCode.OK);
+        locations.Length.ShouldBe(50_000);
+        locations[^1].ShouldBe("https://localhost:7003/group-bike-tours/tour-49996");
+        locations.ShouldNotContain("https://localhost:7003/group-bike-tours/tour-49997");
+    }
+
+    [Fact]
+    public async Task Sitemap_xml_returns_service_unavailable_when_catalog_fails()
+    {
+        // Arrange
+        var catalogApi = new FakePublicCatalogApiClient { FailListRequests = true };
+        await using var factory = PublicWebEndpointTestsHelpers.CreateFactory(catalogApi);
+        using var client = factory.CreateClient();
+
+        // Act
+        using var response = await client.GetAsync(new Uri("/sitemap.xml", UriKind.Relative), TestContext.Current.CancellationToken);
+
+        // Assert
+        response.StatusCode.ShouldBe(HttpStatusCode.ServiceUnavailable);
+    }
+
+    [Fact]
+    public async Task Sitemap_xml_returns_non_cacheable_service_unavailable_when_catalog_cancels_upstream()
+    {
+        // Arrange
+        var catalogApi = new FakePublicCatalogApiClient { ThrowOperationCanceledExceptionOnListRequests = true };
+        await using var factory = PublicWebEndpointTestsHelpers.CreateFactory(catalogApi);
+        using var client = factory.CreateClient();
+
+        // Act
+        using var response = await client.GetAsync(new Uri("/sitemap.xml", UriKind.Relative), TestContext.Current.CancellationToken);
+
+        // Assert
+        response.StatusCode.ShouldBe(HttpStatusCode.ServiceUnavailable);
+        var cacheControl = response.Headers.CacheControl.ShouldNotBeNull();
+        cacheControl.NoStore.ShouldBeTrue();
+        response.Headers.GetValues("Pragma").ShouldHaveSingleItem().ShouldBe("no-cache");
+        var expires = response.Headers.NonValidated.TryGetValues("Expires", out var values)
+            ? values
+            : response.Content.Headers.NonValidated["Expires"];
+        expires.ShouldHaveSingleItem().ShouldBe("Thu, 01 Jan 1970 00:00:00 GMT");
     }
 
     [Fact]
     public async Task Production_root_returns_public_landing_page()
     {
         // Arrange
-        await using var factory = PublicWebEndpointTestsHelpers.CreateFactory(environment: "Production");
+        await using var factory = PublicWebEndpointTestsHelpers.CreateFactory(
+            environment: "Production",
+            canonicalOrigin: "https://public.example.test");
         using var client = factory.CreateClient();
 
         // Act
@@ -715,7 +865,9 @@ public sealed class PublicWebEndpointTests
     public async Task Production_default_health_endpoint_returns_safe_status_text(string path)
     {
         // Arrange
-        await using var factory = PublicWebEndpointTestsHelpers.CreateFactory(environment: "Production");
+        await using var factory = PublicWebEndpointTestsHelpers.CreateFactory(
+            environment: "Production",
+            canonicalOrigin: "https://public.example.test");
         using var client = factory.CreateClient(new WebApplicationFactoryClientOptions
         {
             AllowAutoRedirect = false
@@ -729,6 +881,46 @@ public sealed class PublicWebEndpointTests
         response.StatusCode.ShouldBe(HttpStatusCode.OK);
         response.Content.Headers.ContentType?.MediaType.ShouldBe("text/plain");
         body.ShouldBe("Healthy");
+    }
+
+    [Fact]
+    public void Production_host_fails_startup_when_sitemap_canonical_origin_is_missing()
+    {
+        // Arrange
+        using var factory = PublicWebEndpointTestsHelpers.CreateFactory(environment: "Production");
+        Action action = () =>
+        {
+            using var client = factory.CreateClient();
+        };
+
+        // Act
+        var exception = action.ShouldThrow<OptionsValidationException>();
+
+        // Assert
+        exception.Message.ShouldContain(
+            "PublicWeb:Sitemap:CanonicalOrigin must be provided.",
+            StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public void Production_host_fails_startup_when_sitemap_canonical_origin_is_invalid()
+    {
+        // Arrange
+        using var factory = PublicWebEndpointTestsHelpers.CreateFactory(
+            environment: "Production",
+            canonicalOrigin: "https://public.example.test/sitemap.xml");
+        Action action = () =>
+        {
+            using var client = factory.CreateClient();
+        };
+
+        // Act
+        var exception = action.ShouldThrow<OptionsValidationException>();
+
+        // Assert
+        exception.Message.ShouldContain(
+            "PublicWeb:Sitemap:CanonicalOrigin must be an absolute HTTP or HTTPS origin without a path, query, fragment, or userinfo.",
+            StringComparison.Ordinal);
     }
 
 }
