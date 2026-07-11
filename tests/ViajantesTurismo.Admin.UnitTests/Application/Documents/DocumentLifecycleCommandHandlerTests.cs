@@ -107,4 +107,23 @@ public sealed class DocumentLifecycleCommandHandlerTests
         store.Documents.ContainsKey(expired.Id).ShouldBeFalse();
         store.Documents.ContainsKey(current.Id).ShouldBeTrue();
     }
+
+    [Fact]
+    public async Task UpdateField_saves_editable_field_override()
+    {
+        // Arrange
+        var document = DocumentDraftTestData.Create(DateTime.UtcNow);
+        var store = new FakeDocumentStore();
+        store.Documents.Add(document.Id, document);
+        var unitOfWork = new FakeUnitOfWork();
+
+        // Act
+        var result = await new UpdateDocumentFieldCommandHandler(store, unitOfWork, TimeProvider.System)
+            .Handle(new UpdateDocumentFieldCommand(document.Id, "greeting", "Welcome"), CancellationToken.None);
+
+        // Assert
+        result.IsSuccess.ShouldBeTrue();
+        document.Fields.Single(field => field.FieldId == "greeting").RenderedValue.ShouldBe("Welcome");
+        unitOfWork.SaveEntitiesCallCount.ShouldBe(1);
+    }
 }
