@@ -602,11 +602,30 @@ internal static class FileUploadScanCommand
 
     internal static string ToDockerUrl(string url)
     {
-        return url.Replace("0.0.0.0", "host.docker.internal", StringComparison.OrdinalIgnoreCase)
-            .Replace("127.0.0.1", "host.docker.internal", StringComparison.OrdinalIgnoreCase)
-            .Replace("localhost", "host.docker.internal", StringComparison.OrdinalIgnoreCase)
-            .Replace("[::1]", "host.docker.internal", StringComparison.OrdinalIgnoreCase)
-            .Replace("[::]", "host.docker.internal", StringComparison.OrdinalIgnoreCase);
+        var uri = new Uri(url, UriKind.Absolute);
+        if (!IsDockerLoopbackHost(uri.Host))
+        {
+            return url;
+        }
+
+        var builder = new UriBuilder(uri)
+        {
+            Host = "host.docker.internal",
+        };
+
+        var dockerUrl = builder.Uri.AbsoluteUri;
+        return url.EndsWith('/') ? dockerUrl : dockerUrl.TrimEnd('/');
+    }
+
+    private static bool IsDockerLoopbackHost(string host)
+    {
+        return string.Equals(host, "0.0.0.0", StringComparison.OrdinalIgnoreCase)
+            || string.Equals(host, "127.0.0.1", StringComparison.OrdinalIgnoreCase)
+            || string.Equals(host, "localhost", StringComparison.OrdinalIgnoreCase)
+            || string.Equals(host, "::", StringComparison.OrdinalIgnoreCase)
+            || string.Equals(host, "::1", StringComparison.OrdinalIgnoreCase)
+            || string.Equals(host, "[::]", StringComparison.OrdinalIgnoreCase)
+            || string.Equals(host, "[::1]", StringComparison.OrdinalIgnoreCase);
     }
 
     private static string ToPlatformPath(string relativePath)

@@ -24,9 +24,12 @@ public sealed class AdminSmokeCommandTests
     }
 
     [Theory]
+    [InlineData("http://localhost:5000", "http://host.docker.internal:5000")]
+    [InlineData("http://127.0.0.1:5000", "http://host.docker.internal:5000")]
+    [InlineData("http://0.0.0.0:5000", "http://host.docker.internal:5000")]
     [InlineData("http://[::1]:5000", "http://host.docker.internal:5000")]
     [InlineData("http://[::]:5000", "http://host.docker.internal:5000")]
-    public void Converts_ipv6_loopback_admin_api_targets_for_docker(string targetText, string expectedText)
+    public void Converts_loopback_admin_api_targets_for_docker(string targetText, string expectedText)
     {
         // Arrange
         var target = targetText;
@@ -36,6 +39,21 @@ public sealed class AdminSmokeCommandTests
 
         // Assert
         dockerTarget.ShouldBe(expectedText);
+    }
+
+    [Theory]
+    [InlineData("https://mylocalhost.example:8443/path?x=1")]
+    [InlineData("https://127.0.0.1.example:8443/path?x=1")]
+    public void Does_not_rewrite_external_admin_api_hosts_that_contain_loopback_text(string targetText)
+    {
+        // Arrange
+        var target = targetText;
+
+        // Act
+        var dockerTarget = AdminSmokeCommand.ToDockerUrl(target);
+
+        // Assert
+        dockerTarget.ShouldBe(target);
     }
 
     [Fact]
