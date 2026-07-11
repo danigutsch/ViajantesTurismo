@@ -5,7 +5,6 @@ using Microsoft.Extensions.Logging.Abstractions;
 using SharedKernel.EntityFrameworkCore;
 using SharedKernel.Branding;
 using SharedKernel.Messaging.IntegrationEvents.EntityFrameworkCore;
-using SharedKernel.Testing.Assertions;
 using ViajantesTurismo.Admin.Domain.Tours;
 using ViajantesTurismo.Admin.Infrastructure;
 using ViajantesTurismo.Branding.Infrastructure;

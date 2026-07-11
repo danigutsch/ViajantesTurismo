@@ -20,8 +20,8 @@ public class EditContextValidationHelperApplyValidationErrorsTests
         EditContextValidationHelper.ApplyValidationErrors(editContext, serverValidationException);
 
         // Assert
-        Assert.Empty(editContext.GetValidationMessages());
-        Assert.Equal(0, validationStateChangedNotifications);
+        TestAssert.Empty(editContext.GetValidationMessages());
+        TestAssert.Equal(0, validationStateChangedNotifications);
     }
 
     [Fact]
@@ -44,8 +44,8 @@ public class EditContextValidationHelperApplyValidationErrorsTests
 
         // Assert
         var emailMessages = editContext.GetValidationMessages(emailField).ToArray();
-        Assert.Equal(["Email is required.", "Email is invalid."], emailMessages);
-        Assert.Equal(1, validationStateChangedNotifications);
+        TestAssert.Equal(["Email is required.", "Email is invalid."], emailMessages);
+        TestAssert.Equal(1, validationStateChangedNotifications);
     }
 
     [Fact]
@@ -72,9 +72,9 @@ public class EditContextValidationHelperApplyValidationErrorsTests
         var emailMessages = editContext.GetValidationMessages(emailField).ToArray();
         var firstNameMessages = editContext.GetValidationMessages(firstNameField).ToArray();
 
-        Assert.Equal(["Email is invalid."], emailMessages);
-        Assert.Equal(["First name is required."], firstNameMessages);
-        Assert.Equal(1, validationStateChangedNotifications);
+        TestAssert.Equal(["Email is invalid."], emailMessages);
+        TestAssert.Equal(["First name is required."], firstNameMessages);
+        TestAssert.Equal(1, validationStateChangedNotifications);
     }
 
     [Fact]

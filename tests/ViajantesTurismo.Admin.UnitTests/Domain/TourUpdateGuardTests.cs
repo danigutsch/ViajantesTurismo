@@ -15,9 +15,9 @@ public class TourUpdateGuardTests
         var result = tour.UpdateDetails("NEWID", "New Name");
 
         // Assert
-        Assert.True(result.IsSuccess);
-        Assert.Equal("NEWID", tour.Identifier);
-        Assert.Equal("New Name", tour.Name);
+        TestAssert.True(result.IsSuccess);
+        TestAssert.Equal("NEWID", tour.Identifier);
+        TestAssert.Equal("New Name", tour.Name);
     }
 
     [Fact]
@@ -31,8 +31,8 @@ public class TourUpdateGuardTests
         var result = tour.UpdateDetails("NEWID", "New Name");
 
         // Assert
-        Assert.False(result.IsSuccess);
-        Assert.Contains("cannot be changed if bookings exist", result.ErrorDetails!.Detail, StringComparison.Ordinal);
+        TestAssert.False(result.IsSuccess);
+        TestAssert.Contains("cannot be changed if bookings exist", result.ErrorDetails!.Detail, StringComparison.Ordinal);
     }
 
     [Fact]
@@ -46,9 +46,9 @@ public class TourUpdateGuardTests
         var result = tour.UpdateDetails("KEEP2024", "Updated Name");
 
         // Assert
-        Assert.True(result.IsSuccess);
-        Assert.Equal("KEEP2024", tour.Identifier);
-        Assert.Equal("Updated Name", tour.Name);
+        TestAssert.True(result.IsSuccess);
+        TestAssert.Equal("KEEP2024", tour.Identifier);
+        TestAssert.Equal("Updated Name", tour.Name);
     }
 
     [Fact]
@@ -61,8 +61,8 @@ public class TourUpdateGuardTests
         var result = tour.UpdateCurrency(Currency.Euro);
 
         // Assert
-        Assert.True(result.IsSuccess);
-        Assert.Equal(Currency.Euro, tour.Pricing.Currency);
+        TestAssert.True(result.IsSuccess);
+        TestAssert.Equal(Currency.Euro, tour.Pricing.Currency);
     }
 
     [Fact]
@@ -76,7 +76,7 @@ public class TourUpdateGuardTests
         var result = tour.UpdateCurrency(Currency.Euro);
 
         // Assert
-        Assert.False(result.IsSuccess);
-        Assert.Contains("cannot be changed if bookings exist", result.ErrorDetails!.Detail, StringComparison.Ordinal);
+        TestAssert.False(result.IsSuccess);
+        TestAssert.Contains("cannot be changed if bookings exist", result.ErrorDetails!.Detail, StringComparison.Ordinal);
     }
 }

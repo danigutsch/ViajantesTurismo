@@ -1,7 +1,6 @@
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging.Abstractions;
 using SharedKernel.EventSourcing;
-using SharedKernel.Testing.Assertions;
 using ViajantesTurismo.Catalog.Application.Projections;
 using ViajantesTurismo.Catalog.Application.Tours;
 using ViajantesTurismo.Catalog.Domain.Tours;

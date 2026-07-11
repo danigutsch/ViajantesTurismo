@@ -12,8 +12,8 @@ public class HomePageTests : BunitContext
 
         // Assert
         var pageTitle = cut.Find("h1");
-        Assert.Contains("ViajantesTurismo Admin Dashboard", pageTitle.TextContent, StringComparison.Ordinal);
-        Assert.Contains("bi-bicycle", pageTitle.InnerHtml, StringComparison.Ordinal);
+        TestAssert.Contains("ViajantesTurismo Admin Dashboard", pageTitle.TextContent, StringComparison.Ordinal);
+        TestAssert.Contains("bi-bicycle", pageTitle.InnerHtml, StringComparison.Ordinal);
     }
 
     [Fact]
@@ -24,7 +24,7 @@ public class HomePageTests : BunitContext
 
         // Assert
         var lead = cut.Find("p.lead");
-        Assert.Contains("Welcome to the ViajantesTurismo administration system", lead.TextContent, StringComparison.Ordinal);
+        TestAssert.Contains("Welcome to the ViajantesTurismo administration system", lead.TextContent, StringComparison.Ordinal);
     }
 
     [Fact]
@@ -37,8 +37,8 @@ public class HomePageTests : BunitContext
         var cards = cut.FindAll(".card");
         var toursCard = cards.First(c => c.TextContent.Contains("Tours Management", StringComparison.Ordinal));
 
-        Assert.Contains("Create and manage bike tour packages", toursCard.TextContent, StringComparison.Ordinal);
-        Assert.Contains("bi-bicycle", toursCard.InnerHtml, StringComparison.Ordinal);
+        TestAssert.Contains("Create and manage bike tour packages", toursCard.TextContent, StringComparison.Ordinal);
+        TestAssert.Contains("bi-bicycle", toursCard.InnerHtml, StringComparison.Ordinal);
     }
 
     [Fact]
@@ -51,8 +51,8 @@ public class HomePageTests : BunitContext
         var cards = cut.FindAll(".card");
         var customersCard = cards.First(c => c.TextContent.Contains("Customer Management", StringComparison.Ordinal));
 
-        Assert.Contains("Manage customer profiles", customersCard.TextContent, StringComparison.Ordinal);
-        Assert.Contains("bi-people", customersCard.InnerHtml, StringComparison.Ordinal);
+        TestAssert.Contains("Manage customer profiles", customersCard.TextContent, StringComparison.Ordinal);
+        TestAssert.Contains("bi-people", customersCard.InnerHtml, StringComparison.Ordinal);
     }
 
     [Fact]
@@ -65,8 +65,8 @@ public class HomePageTests : BunitContext
         var cards = cut.FindAll(".card");
         var bookingsCard = cards.First(c => c.TextContent.Contains("Bookings Management", StringComparison.Ordinal));
 
-        Assert.Contains("Track and manage customer bookings", bookingsCard.TextContent, StringComparison.Ordinal);
-        Assert.Contains("bi-calendar-check", bookingsCard.InnerHtml, StringComparison.Ordinal);
+        TestAssert.Contains("Track and manage customer bookings", bookingsCard.TextContent, StringComparison.Ordinal);
+        TestAssert.Contains("bi-calendar-check", bookingsCard.InnerHtml, StringComparison.Ordinal);
     }
 
     [Fact]
@@ -77,8 +77,8 @@ public class HomePageTests : BunitContext
 
         // Assert
         var addTourLink = cut.Find("a[href='addtour']");
-        Assert.Contains("Add Tour", addTourLink.TextContent, StringComparison.Ordinal);
-        Assert.Contains("btn-primary", addTourLink.ClassName, StringComparison.Ordinal);
+        TestAssert.Contains("Add Tour", addTourLink.TextContent, StringComparison.Ordinal);
+        TestAssert.Contains("btn-primary", addTourLink.ClassName, StringComparison.Ordinal);
     }
 
     [Fact]
@@ -89,8 +89,8 @@ public class HomePageTests : BunitContext
 
         // Assert
         var viewToursLink = cut.Find("a[href='tours']");
-        Assert.Contains("View All", viewToursLink.TextContent, StringComparison.Ordinal);
-        Assert.Contains("btn-outline-primary", viewToursLink.ClassName, StringComparison.Ordinal);
+        TestAssert.Contains("View All", viewToursLink.TextContent, StringComparison.Ordinal);
+        TestAssert.Contains("btn-outline-primary", viewToursLink.ClassName, StringComparison.Ordinal);
     }
 
     [Fact]
@@ -101,8 +101,8 @@ public class HomePageTests : BunitContext
 
         // Assert
         var addCustomerLink = cut.Find("a[href='customers/create']");
-        Assert.Contains("Add Customer", addCustomerLink.TextContent, StringComparison.Ordinal);
-        Assert.Contains("btn-success", addCustomerLink.ClassName, StringComparison.Ordinal);
+        TestAssert.Contains("Add Customer", addCustomerLink.TextContent, StringComparison.Ordinal);
+        TestAssert.Contains("btn-success", addCustomerLink.ClassName, StringComparison.Ordinal);
     }
 
     [Fact]
@@ -113,8 +113,8 @@ public class HomePageTests : BunitContext
 
         // Assert
         var viewCustomersLink = cut.Find("a[href='customers']");
-        Assert.Contains("View All", viewCustomersLink.TextContent, StringComparison.Ordinal);
-        Assert.Contains("btn-outline-success", viewCustomersLink.ClassName, StringComparison.Ordinal);
+        TestAssert.Contains("View All", viewCustomersLink.TextContent, StringComparison.Ordinal);
+        TestAssert.Contains("btn-outline-success", viewCustomersLink.ClassName, StringComparison.Ordinal);
     }
 
     [Fact]
@@ -125,8 +125,8 @@ public class HomePageTests : BunitContext
 
         // Assert
         var viewBookingsLink = cut.Find("a[href='bookings']");
-        Assert.Contains("View All", viewBookingsLink.TextContent, StringComparison.Ordinal);
-        Assert.Contains("btn-outline-info", viewBookingsLink.ClassName, StringComparison.Ordinal);
+        TestAssert.Contains("View All", viewBookingsLink.TextContent, StringComparison.Ordinal);
+        TestAssert.Contains("btn-outline-info", viewBookingsLink.ClassName, StringComparison.Ordinal);
     }
 
     [Fact]
@@ -139,7 +139,7 @@ public class HomePageTests : BunitContext
         var cards = cut.FindAll(".card");
         var aboutCard = cards.First(c => c.TextContent.Contains("About ViajantesTurismo", StringComparison.Ordinal));
 
-        Assert.Contains("This administrative platform helps you efficiently manage", aboutCard.TextContent, StringComparison.Ordinal);
+        TestAssert.Contains("This administrative platform helps you efficiently manage", aboutCard.TextContent, StringComparison.Ordinal);
     }
 
     [Fact]
@@ -150,7 +150,7 @@ public class HomePageTests : BunitContext
 
         // Assert
         var cards = cut.FindAll(".card.border-primary, .card.border-success, .card.border-info");
-        Assert.Equal(3, cards.Count);
+        TestAssert.Equal(3, cards.Count);
     }
 
     [Fact]
@@ -161,9 +161,9 @@ public class HomePageTests : BunitContext
 
         // Assert
         var containerFluid = cut.Find(".container-fluid");
-        Assert.NotNull(containerFluid);
+        _ = TestAssert.NotNull(containerFluid);
 
         var rows = cut.FindAll(".row");
-        Assert.True(rows.Count >= 3); // At least 3 rows
+        TestAssert.True(rows.Count >= 3); // At least 3 rows
     }
 }

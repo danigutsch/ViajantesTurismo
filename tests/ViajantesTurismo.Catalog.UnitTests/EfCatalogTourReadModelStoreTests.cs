@@ -19,11 +19,11 @@ public sealed class EfCatalogTourReadModelStoreTests
         var tours = await sut.ListTours(TestContext.Current.CancellationToken);
 
         // Assert
-        Assert.Collection(
+        TestAssert.Collection(
             tours,
-            tour => Assert.Equal("Alpha", tour.Title),
-            tour => Assert.Equal("Bravo", tour.Title),
-            tour => Assert.Equal("Zulu", tour.Title));
+            tour => TestAssert.Equal("Alpha", tour.Title),
+            tour => TestAssert.Equal("Bravo", tour.Title),
+            tour => TestAssert.Equal("Zulu", tour.Title));
     }
 
     [Fact]
@@ -39,9 +39,9 @@ public sealed class EfCatalogTourReadModelStoreTests
         var tour = await sut.GetTour(tourId, TestContext.Current.CancellationToken);
 
         // Assert
-        Assert.NotNull(tour);
-        Assert.Equal(tourId, tour.CatalogTourId);
-        Assert.Equal("Draft", tour.Title);
+        _ = TestAssert.NotNull(tour);
+        TestAssert.Equal(tourId, tour.CatalogTourId);
+        TestAssert.Equal("Draft", tour.Title);
     }
 
     [Fact]
@@ -55,7 +55,7 @@ public sealed class EfCatalogTourReadModelStoreTests
         var tour = await sut.GetTour(Guid.CreateVersion7(), TestContext.Current.CancellationToken);
 
         // Assert
-        Assert.Null(tour);
+        TestAssert.Null(tour);
     }
 
     [Fact]
@@ -75,12 +75,12 @@ public sealed class EfCatalogTourReadModelStoreTests
         var published = await sut.GetPublishedTourBySlug("published-tour", TestContext.Current.CancellationToken);
 
         // Assert
-        Assert.NotNull(updated);
-        Assert.Equal("Published Tour", updated.Title);
-        Assert.Equal("published-tour", updated.Slug);
-        Assert.True(updated.IsPublished);
-        Assert.NotNull(published);
-        Assert.Equal(tourId, published.CatalogTourId);
+        _ = TestAssert.NotNull(updated);
+        TestAssert.Equal("Published Tour", updated.Title);
+        TestAssert.Equal("published-tour", updated.Slug);
+        TestAssert.True(updated.IsPublished);
+        _ = TestAssert.NotNull(published);
+        TestAssert.Equal(tourId, published.CatalogTourId);
     }
 
     [Fact]
@@ -99,9 +99,9 @@ public sealed class EfCatalogTourReadModelStoreTests
             TestContext.Current.CancellationToken);
 
         // Assert
-        Assert.NotNull(updated);
-        Assert.Equal("Public Title", updated.Title);
-        Assert.Equal("Mixed-Case-Slug", updated.Slug);
+        _ = TestAssert.NotNull(updated);
+        TestAssert.Equal("Public Title", updated.Title);
+        TestAssert.Equal("Mixed-Case-Slug", updated.Slug);
     }
 
     [Fact]
@@ -118,7 +118,7 @@ public sealed class EfCatalogTourReadModelStoreTests
             TestContext.Current.CancellationToken);
 
         // Assert
-        Assert.Null(updated);
+        TestAssert.Null(updated);
     }
 
     [Fact]
@@ -136,8 +136,8 @@ public sealed class EfCatalogTourReadModelStoreTests
         var tour = await sut.GetTour(tourId, TestContext.Current.CancellationToken);
 
         // Assert
-        Assert.NotNull(tour);
-        Assert.Equal("mixed-slug", tour.Slug);
+        _ = TestAssert.NotNull(tour);
+        TestAssert.Equal("mixed-slug", tour.Slug);
     }
 
     [Fact]
@@ -155,8 +155,8 @@ public sealed class EfCatalogTourReadModelStoreTests
         var tour = await sut.GetPublishedTourBySlug(" mixed-slug ", TestContext.Current.CancellationToken);
 
         // Assert
-        Assert.NotNull(tour);
-        Assert.Equal(tourId, tour.CatalogTourId);
+        _ = TestAssert.NotNull(tour);
+        TestAssert.Equal(tourId, tour.CatalogTourId);
     }
 
     [Fact]
@@ -173,7 +173,7 @@ public sealed class EfCatalogTourReadModelStoreTests
         var tour = await sut.GetPublishedTourBySlug("mixed-slug", TestContext.Current.CancellationToken);
 
         // Assert
-        Assert.Null(tour);
+        TestAssert.Null(tour);
     }
 
     [Fact]
@@ -190,7 +190,7 @@ public sealed class EfCatalogTourReadModelStoreTests
         var tour = await sut.GetPublishedTourBySlug("draft", TestContext.Current.CancellationToken);
 
         // Assert
-        Assert.Null(tour);
+        TestAssert.Null(tour);
     }
 
     [Fact]
@@ -211,10 +211,10 @@ public sealed class EfCatalogTourReadModelStoreTests
         var tours = await sut.ListTours(TestContext.Current.CancellationToken);
 
         // Assert
-        var tour = Assert.Single(tours);
-        Assert.Equal("Public Title", tour.Title);
-        Assert.Equal("public-title", tour.Slug);
-        Assert.True(tour.IsPublished);
+        var tour = TestAssert.ExactlyOne(tours);
+        TestAssert.Equal("Public Title", tour.Title);
+        TestAssert.Equal("public-title", tour.Slug);
+        TestAssert.True(tour.IsPublished);
     }
 
 }

@@ -13,17 +13,17 @@ public class BookingUpdateCompanionTests
         var booking = BookingDomainTestDataFactory.CreateSingleBooking();
         var companionCustomer = BookingDomainTestDataFactory.CreateValidCompanionCustomer();
         var cancelResult = booking.Cancel();
-        Assert.True(cancelResult.IsSuccess);
+        TestAssert.True(cancelResult.IsSuccess);
 
         // Act
         var result = booking.UpdateCompanion(companionCustomer);
 
         // Assert
-        Assert.False(result.IsSuccess);
-        Assert.Equal(ResultStatus.Conflict, result.Status);
-        Assert.NotNull(result.ErrorDetails);
-        Assert.Contains("cannot be modified", result.ErrorDetails.Detail, StringComparison.Ordinal);
-        Assert.Null(booking.CompanionCustomer);
+        TestAssert.False(result.IsSuccess);
+        TestAssert.Equal(ResultStatus.Conflict, result.Status);
+        TestAssert.NotNull(result.ErrorDetails);
+        TestAssert.Contains("cannot be modified", result.ErrorDetails.Detail, StringComparison.Ordinal);
+        TestAssert.Null(booking.CompanionCustomer);
     }
 
     [Fact]
@@ -32,18 +32,18 @@ public class BookingUpdateCompanionTests
         // Arrange
         var booking = BookingDomainTestDataFactory.CreateSingleBooking();
         var companionCustomer = BookingDomainTestDataFactory.CreateValidCompanionCustomer();
-        Assert.True(booking.Confirm().IsSuccess);
-        Assert.True(booking.Complete().IsSuccess);
+        TestAssert.True(booking.Confirm().IsSuccess);
+        TestAssert.True(booking.Complete().IsSuccess);
 
         // Act
         var result = booking.UpdateCompanion(companionCustomer);
 
         // Assert
-        Assert.False(result.IsSuccess);
-        Assert.Equal(ResultStatus.Conflict, result.Status);
-        Assert.NotNull(result.ErrorDetails);
-        Assert.Contains("cannot be modified", result.ErrorDetails.Detail, StringComparison.Ordinal);
-        Assert.Null(booking.CompanionCustomer);
+        TestAssert.False(result.IsSuccess);
+        TestAssert.Equal(ResultStatus.Conflict, result.Status);
+        TestAssert.NotNull(result.ErrorDetails);
+        TestAssert.Contains("cannot be modified", result.ErrorDetails.Detail, StringComparison.Ordinal);
+        TestAssert.Null(booking.CompanionCustomer);
     }
 
     [Fact]
@@ -57,14 +57,14 @@ public class BookingUpdateCompanionTests
         var result = booking.UpdateCompanion(companionCustomer);
 
         // Assert
-        Assert.False(result.IsSuccess);
-        Assert.Equal(ResultStatus.Invalid, result.Status);
-        Assert.NotNull(result.ErrorDetails);
-        Assert.NotNull(result.ErrorDetails.ValidationErrors);
-        Assert.Equal(
+        TestAssert.False(result.IsSuccess);
+        TestAssert.Equal(ResultStatus.Invalid, result.Status);
+        TestAssert.NotNull(result.ErrorDetails);
+        TestAssert.NotNull(result.ErrorDetails.ValidationErrors);
+        TestAssert.Equal(
             ["Principal and companion customers cannot be the same person."],
             result.ErrorDetails.ValidationErrors["companionCustomerId"]);
-        Assert.Null(booking.CompanionCustomer);
+        TestAssert.Null(booking.CompanionCustomer);
     }
 
     [Fact]
@@ -78,14 +78,14 @@ public class BookingUpdateCompanionTests
         var result = booking.UpdateCompanion(companionCustomer);
 
         // Assert
-        Assert.False(result.IsSuccess);
-        Assert.Equal(ResultStatus.Invalid, result.Status);
-        Assert.NotNull(result.ErrorDetails);
-        Assert.NotNull(result.ErrorDetails.ValidationErrors);
-        Assert.Equal(
+        TestAssert.False(result.IsSuccess);
+        TestAssert.Equal(ResultStatus.Invalid, result.Status);
+        TestAssert.NotNull(result.ErrorDetails);
+        TestAssert.NotNull(result.ErrorDetails.ValidationErrors);
+        TestAssert.Equal(
             ["Single room cannot have a companion."],
             result.ErrorDetails.ValidationErrors["companionCustomerId"]);
-        Assert.Null(booking.CompanionCustomer);
+        TestAssert.Null(booking.CompanionCustomer);
     }
 
     [Fact]
@@ -99,20 +99,20 @@ public class BookingUpdateCompanionTests
         var result = booking.UpdateCompanion(companionCustomer);
 
         // Assert
-        Assert.False(result.IsSuccess);
-        Assert.Equal(ResultStatus.Invalid, result.Status);
-        Assert.NotNull(result.ErrorDetails);
-        Assert.Equal("Multiple validation errors occurred.", result.ErrorDetails.Detail);
-        Assert.NotNull(result.ErrorDetails.ValidationErrors);
-        Assert.Single(result.ErrorDetails.ValidationErrors);
-        Assert.Equal(2, result.ErrorDetails.ValidationErrors["companionCustomerId"].Count);
-        Assert.Contains(
+        TestAssert.False(result.IsSuccess);
+        TestAssert.Equal(ResultStatus.Invalid, result.Status);
+        TestAssert.NotNull(result.ErrorDetails);
+        TestAssert.Equal("Multiple validation errors occurred.", result.ErrorDetails.Detail);
+        TestAssert.NotNull(result.ErrorDetails.ValidationErrors);
+        TestAssert.ExactlyOne(result.ErrorDetails.ValidationErrors);
+        TestAssert.Equal(2, result.ErrorDetails.ValidationErrors["companionCustomerId"].Count);
+        TestAssert.Contains(
             "Principal and companion customers cannot be the same person.",
             result.ErrorDetails.ValidationErrors["companionCustomerId"]);
-        Assert.Contains(
+        TestAssert.Contains(
             "Single room cannot have a companion.",
             result.ErrorDetails.ValidationErrors["companionCustomerId"]);
-        Assert.Null(booking.CompanionCustomer);
+        TestAssert.Null(booking.CompanionCustomer);
     }
 
     [Fact]
@@ -126,11 +126,11 @@ public class BookingUpdateCompanionTests
         var result = booking.UpdateCompanion(companionCustomer);
 
         // Assert
-        Assert.True(result.IsSuccess);
-        Assert.NotNull(booking.CompanionCustomer);
-        Assert.Equal(companionCustomer.CustomerId, booking.CompanionCustomer.CustomerId);
-        Assert.Equal(companionCustomer.BikeType, booking.CompanionCustomer.BikeType);
-        Assert.Equal(companionCustomer.BikePrice, booking.CompanionCustomer.BikePrice);
+        TestAssert.True(result.IsSuccess);
+        TestAssert.NotNull(booking.CompanionCustomer);
+        TestAssert.Equal(companionCustomer.CustomerId, booking.CompanionCustomer.CustomerId);
+        TestAssert.Equal(companionCustomer.BikeType, booking.CompanionCustomer.BikeType);
+        TestAssert.Equal(companionCustomer.BikePrice, booking.CompanionCustomer.BikePrice);
     }
 
     [Fact]
@@ -138,14 +138,14 @@ public class BookingUpdateCompanionTests
     {
         // Arrange
         var booking = BookingDomainTestDataFactory.CreateDoubleBooking();
-        Assert.NotNull(booking.CompanionCustomer);
+        TestAssert.NotNull(booking.CompanionCustomer);
 
         // Act
         var result = booking.UpdateCompanion(null);
 
         // Assert
-        Assert.True(result.IsSuccess);
-        Assert.Null(booking.CompanionCustomer);
+        TestAssert.True(result.IsSuccess);
+        TestAssert.Null(booking.CompanionCustomer);
     }
 
 }

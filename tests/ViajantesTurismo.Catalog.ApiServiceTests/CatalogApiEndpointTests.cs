@@ -26,8 +26,8 @@ public sealed class CatalogApiEndpointTests
         var markerAssembly = marker.Assembly;
 
         // Assert
-        Assert.Same(CatalogApiMarker.Assembly, entryPointAssembly);
-        Assert.Same(entryPointAssembly, markerAssembly);
+        TestAssert.Same(CatalogApiMarker.Assembly, entryPointAssembly);
+        TestAssert.Same(entryPointAssembly, markerAssembly);
     }
 
     [Theory]
@@ -43,7 +43,7 @@ public sealed class CatalogApiEndpointTests
         using var response = await client.GetAsync(new Uri(path, UriKind.Relative), TestContext.Current.CancellationToken);
 
         // Assert
-        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        TestAssert.Equal(HttpStatusCode.OK, response.StatusCode);
     }
 
     [Theory]
@@ -106,12 +106,12 @@ public sealed class CatalogApiEndpointTests
             TestContext.Current.CancellationToken);
 
         // Assert
-        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        TestAssert.Equal(HttpStatusCode.OK, response.StatusCode);
         var saved = await response.Content.ReadFromJsonAsync<PublicContentDto>(TestContext.Current.CancellationToken);
-        Assert.NotNull(saved);
-        Assert.Equal("HOME.HERO", saved.Key);
-        Assert.Contains(saved.Variants, variant => variant.Language == PublicContentLanguageDto.PtBr && variant.RequiresHumanReview);
-        Assert.Equal("ReviewRequired", saved.PublicationState);
+        _ = TestAssert.NotNull(saved);
+        TestAssert.Equal("HOME.HERO", saved.Key);
+        TestAssert.Contains(saved.Variants, variant => variant.Language == PublicContentLanguageDto.PtBr && variant.RequiresHumanReview);
+        TestAssert.Equal("ReviewRequired", saved.PublicationState);
     }
 
     [Fact]
@@ -134,10 +134,10 @@ public sealed class CatalogApiEndpointTests
             TestContext.Current.CancellationToken);
 
         // Assert
-        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+        TestAssert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
         var problem = await response.Content.ReadFromJsonAsync<HttpValidationProblemDetails>(TestContext.Current.CancellationToken);
-        Assert.NotNull(problem);
-        Assert.Contains(nameof(PublicContentVariantDto.Title), problem.Errors.Keys);
+        _ = TestAssert.NotNull(problem);
+        TestAssert.Contains(nameof(PublicContentVariantDto.Title), problem.Errors.Keys);
     }
 
     [Fact]
@@ -160,10 +160,10 @@ public sealed class CatalogApiEndpointTests
             TestContext.Current.CancellationToken);
 
         // Assert
-        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+        TestAssert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
         var problem = await response.Content.ReadFromJsonAsync<HttpValidationProblemDetails>(TestContext.Current.CancellationToken);
-        Assert.NotNull(problem);
-        Assert.Contains("Variants", problem.Errors.Keys);
+        _ = TestAssert.NotNull(problem);
+        TestAssert.Contains("Variants", problem.Errors.Keys);
     }
 
     [Fact]
@@ -186,10 +186,10 @@ public sealed class CatalogApiEndpointTests
             TestContext.Current.CancellationToken);
 
         // Assert
-        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+        TestAssert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
         var problem = await response.Content.ReadFromJsonAsync<HttpValidationProblemDetails>(TestContext.Current.CancellationToken);
-        Assert.NotNull(problem);
-        Assert.Contains(nameof(UpsertPublicContentRequest.Variants), problem.Errors.Keys);
+        _ = TestAssert.NotNull(problem);
+        TestAssert.Contains(nameof(UpsertPublicContentRequest.Variants), problem.Errors.Keys);
     }
 
     [Fact]
@@ -218,10 +218,10 @@ public sealed class CatalogApiEndpointTests
             TestContext.Current.CancellationToken);
 
         // Assert
-        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+        TestAssert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
         var problem = await response.Content.ReadFromJsonAsync<HttpValidationProblemDetails>(TestContext.Current.CancellationToken);
-        Assert.NotNull(problem);
-        Assert.Contains(nameof(UpsertPublicContentRequest.Variants), problem.Errors.Keys);
+        _ = TestAssert.NotNull(problem);
+        TestAssert.Contains(nameof(UpsertPublicContentRequest.Variants), problem.Errors.Keys);
     }
 
     [Fact]
@@ -243,10 +243,10 @@ public sealed class CatalogApiEndpointTests
             TestContext.Current.CancellationToken);
 
         // Assert
-        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+        TestAssert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
         var problem = await response.Content.ReadFromJsonAsync<HttpValidationProblemDetails>(TestContext.Current.CancellationToken);
-        Assert.NotNull(problem);
-        Assert.Contains("Variants", problem.Errors.Keys);
+        _ = TestAssert.NotNull(problem);
+        TestAssert.Contains("Variants", problem.Errors.Keys);
     }
 
     [Fact]
@@ -270,12 +270,12 @@ public sealed class CatalogApiEndpointTests
             null,
             null,
             requiresHumanReview: false);
-        Assert.True(enUs.IsSuccess);
-        Assert.True(ptBr.IsSuccess);
+        TestAssert.True(enUs.IsSuccess);
+        TestAssert.True(ptBr.IsSuccess);
         var content = EditablePublicContent.Create("home.hero", PublicContentLanguage.EnUs, [enUs.Value, ptBr.Value]);
-        Assert.True(content.IsSuccess);
+        TestAssert.True(content.IsSuccess);
         var publish = content.Value.Publish();
-        Assert.True(publish.IsSuccess);
+        TestAssert.True(publish.IsSuccess);
         await publicContentStore.SaveContent(content.Value, TestContext.Current.CancellationToken);
 
         await using var factory = CatalogApiTestHost.Create(new TestCatalogTourReadModelStore(), publicContentStore);
@@ -288,11 +288,11 @@ public sealed class CatalogApiEndpointTests
         var variant = await response.Content.ReadFromJsonAsync<PublicContentVariantDto>(TestContext.Current.CancellationToken);
 
         // Assert
-        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
-        Assert.NotNull(variant);
-        Assert.Equal(PublicContentLanguageDto.PtBr, variant.Language);
-        Assert.Equal("Bem-vindo", variant.Title);
-        Assert.False(variant.RequiresHumanReview);
+        TestAssert.Equal(HttpStatusCode.OK, response.StatusCode);
+        _ = TestAssert.NotNull(variant);
+        TestAssert.Equal(PublicContentLanguageDto.PtBr, variant.Language);
+        TestAssert.Equal("Bem-vindo", variant.Title);
+        TestAssert.False(variant.RequiresHumanReview);
     }
 
     [Fact]
@@ -316,12 +316,12 @@ public sealed class CatalogApiEndpointTests
             null,
             null,
             requiresHumanReview: false);
-        Assert.True(enUs.IsSuccess);
-        Assert.True(ptBr.IsSuccess);
+        TestAssert.True(enUs.IsSuccess);
+        TestAssert.True(ptBr.IsSuccess);
         var content = EditablePublicContent.Create("home/hero", PublicContentLanguage.EnUs, [enUs.Value, ptBr.Value]);
-        Assert.True(content.IsSuccess);
+        TestAssert.True(content.IsSuccess);
         var publish = content.Value.Publish();
-        Assert.True(publish.IsSuccess);
+        TestAssert.True(publish.IsSuccess);
         await publicContentStore.SaveContent(content.Value, TestContext.Current.CancellationToken);
 
         await using var factory = CatalogApiTestHost.Create(new TestCatalogTourReadModelStore(), publicContentStore);
@@ -334,9 +334,9 @@ public sealed class CatalogApiEndpointTests
         var variant = await response.Content.ReadFromJsonAsync<PublicContentVariantDto>(TestContext.Current.CancellationToken);
 
         // Assert
-        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
-        Assert.NotNull(variant);
-        Assert.Equal("Welcome", variant.Title);
+        TestAssert.Equal(HttpStatusCode.OK, response.StatusCode);
+        _ = TestAssert.NotNull(variant);
+        TestAssert.Equal("Welcome", variant.Title);
     }
 
     [Fact]
@@ -364,12 +364,12 @@ public sealed class CatalogApiEndpointTests
         var variant = await response.Content.ReadFromJsonAsync<PublicContentVariantDto>(TestContext.Current.CancellationToken);
 
         // Assert
-        Assert.Equal(HttpStatusCode.OK, writeResponse.StatusCode);
-        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
-        Assert.NotNull(variant);
-        Assert.Equal(PublicContentLanguageDto.PtBr, variant.Language);
-        Assert.Equal("Bem-vindo", variant.Title);
-        Assert.False(variant.RequiresHumanReview);
+        TestAssert.Equal(HttpStatusCode.OK, writeResponse.StatusCode);
+        TestAssert.Equal(HttpStatusCode.OK, response.StatusCode);
+        _ = TestAssert.NotNull(variant);
+        TestAssert.Equal(PublicContentLanguageDto.PtBr, variant.Language);
+        TestAssert.Equal("Bem-vindo", variant.Title);
+        TestAssert.False(variant.RequiresHumanReview);
     }
 
     [Fact]
@@ -392,11 +392,11 @@ public sealed class CatalogApiEndpointTests
             TestContext.Current.CancellationToken);
 
         // Assert
-        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+        TestAssert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
         var problem = await response.Content.ReadFromJsonAsync<HttpValidationProblemDetails>(TestContext.Current.CancellationToken);
-        Assert.NotNull(problem);
-        Assert.Contains(nameof(UpsertCatalogTourPresentationRequest.Title), problem.Errors.Keys);
-        Assert.Contains(nameof(UpsertCatalogTourPresentationRequest.Slug), problem.Errors.Keys);
+        _ = TestAssert.NotNull(problem);
+        TestAssert.Contains(nameof(UpsertCatalogTourPresentationRequest.Title), problem.Errors.Keys);
+        TestAssert.Contains(nameof(UpsertCatalogTourPresentationRequest.Slug), problem.Errors.Keys);
     }
 
     [Fact]
@@ -452,14 +452,14 @@ public sealed class CatalogApiEndpointTests
             TestContext.Current.CancellationToken);
 
         // Assert
-        Assert.Equal(HttpStatusCode.OK, upsertResponse.StatusCode);
-        Assert.Equal(HttpStatusCode.OK, tourResponse.StatusCode);
+        TestAssert.Equal(HttpStatusCode.OK, upsertResponse.StatusCode);
+        TestAssert.Equal(HttpStatusCode.OK, tourResponse.StatusCode);
         var tour = await tourResponse.Content.ReadFromJsonAsync<CatalogTourDto>(TestContext.Current.CancellationToken);
-        Assert.NotNull(tour);
-        var image = Assert.Single(tour.Images);
-        Assert.Equal("https://cdn.example/one-640.jpg", image.Uri.ToString());
-        Assert.True(image.IsCover);
-        Assert.Equal([320, 640], image.ResponsiveVariants.Select(variant => variant.Width));
+        _ = TestAssert.NotNull(tour);
+        var image = TestAssert.ExactlyOne(tour.Images);
+        TestAssert.Equal("https://cdn.example/one-640.jpg", image.Uri.ToString());
+        TestAssert.True(image.IsCover);
+        TestAssert.Equal([320, 640], image.ResponsiveVariants.Select(variant => variant.Width));
     }
 
     [Fact]
@@ -498,12 +498,12 @@ public sealed class CatalogApiEndpointTests
             TestContext.Current.CancellationToken);
 
         // Assert
-        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+        TestAssert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
         var problem = await response.Content.ReadFromJsonAsync<HttpValidationProblemDetails>(TestContext.Current.CancellationToken);
-        Assert.NotNull(problem);
-        Assert.Contains(nameof(PublicMediaImageDto.Checksum), problem.Errors.Keys);
-        Assert.Contains(nameof(PublicMediaImageDto.ContentType), problem.Errors.Keys);
-        Assert.Contains(nameof(PublicMediaImageDto.ResponsiveVariants), problem.Errors.Keys);
+        _ = TestAssert.NotNull(problem);
+        TestAssert.Contains(nameof(PublicMediaImageDto.Checksum), problem.Errors.Keys);
+        TestAssert.Contains(nameof(PublicMediaImageDto.ContentType), problem.Errors.Keys);
+        TestAssert.Contains(nameof(PublicMediaImageDto.ResponsiveVariants), problem.Errors.Keys);
     }
 
     [Fact]
@@ -541,11 +541,11 @@ public sealed class CatalogApiEndpointTests
             TestContext.Current.CancellationToken);
 
         // Assert
-        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+        TestAssert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
         var problem = await response.Content.ReadFromJsonAsync<HttpValidationProblemDetails>(TestContext.Current.CancellationToken);
-        Assert.NotNull(problem);
-        Assert.Contains(nameof(PublicMediaImageDto.SourceUri), problem.Errors.Keys);
-        Assert.Contains(nameof(PublicMediaImageDto.ResponsiveVariants), problem.Errors.Keys);
+        _ = TestAssert.NotNull(problem);
+        TestAssert.Contains(nameof(PublicMediaImageDto.SourceUri), problem.Errors.Keys);
+        TestAssert.Contains(nameof(PublicMediaImageDto.ResponsiveVariants), problem.Errors.Keys);
     }
 
     [Fact]
@@ -620,10 +620,10 @@ public sealed class CatalogApiEndpointTests
             TestContext.Current.CancellationToken);
 
         // Assert
-        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+        TestAssert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
         var problem = await response.Content.ReadFromJsonAsync<HttpValidationProblemDetails>(TestContext.Current.CancellationToken);
-        Assert.NotNull(problem);
-        Assert.Contains(nameof(PublicMediaImageDto.ResponsiveVariants), problem.Errors.Keys);
+        _ = TestAssert.NotNull(problem);
+        TestAssert.Contains(nameof(PublicMediaImageDto.ResponsiveVariants), problem.Errors.Keys);
     }
 
     [Fact]
@@ -661,10 +661,10 @@ public sealed class CatalogApiEndpointTests
             TestContext.Current.CancellationToken);
 
         // Assert
-        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+        TestAssert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
         var problem = await response.Content.ReadFromJsonAsync<HttpValidationProblemDetails>(TestContext.Current.CancellationToken);
-        Assert.NotNull(problem);
-        Assert.Contains(nameof(PublicMediaImageDto.Tags), problem.Errors.Keys);
+        _ = TestAssert.NotNull(problem);
+        TestAssert.Contains(nameof(PublicMediaImageDto.Tags), problem.Errors.Keys);
     }
 
     [Fact]
@@ -702,10 +702,10 @@ public sealed class CatalogApiEndpointTests
             TestContext.Current.CancellationToken);
 
         // Assert
-        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+        TestAssert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
         var problem = await response.Content.ReadFromJsonAsync<HttpValidationProblemDetails>(TestContext.Current.CancellationToken);
-        Assert.NotNull(problem);
-        Assert.Contains(nameof(PublicMediaImageDto.TourLinks), problem.Errors.Keys);
+        _ = TestAssert.NotNull(problem);
+        TestAssert.Contains(nameof(PublicMediaImageDto.TourLinks), problem.Errors.Keys);
     }
 
     [Fact]
@@ -745,10 +745,10 @@ public sealed class CatalogApiEndpointTests
             TestContext.Current.CancellationToken);
 
         // Assert
-        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+        TestAssert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
         var problem = await response.Content.ReadFromJsonAsync<HttpValidationProblemDetails>(TestContext.Current.CancellationToken);
-        Assert.NotNull(problem);
-        Assert.Contains(nameof(PublicMediaImageDto.TourLinks), problem.Errors.Keys);
+        _ = TestAssert.NotNull(problem);
+        TestAssert.Contains(nameof(PublicMediaImageDto.TourLinks), problem.Errors.Keys);
     }
 
     [Fact]
@@ -1311,14 +1311,14 @@ public sealed class CatalogApiEndpointTests
         using var response = await client.GetAsync(new Uri("/api/v1/public/catalog/tours", UriKind.Relative), TestContext.Current.CancellationToken);
 
         // Assert
-        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        TestAssert.Equal(HttpStatusCode.OK, response.StatusCode);
         var tours = await response.Content.ReadFromJsonAsync<CatalogTourDto[]>(TestContext.Current.CancellationToken);
-        Assert.NotNull(tours);
-        var tour = Assert.Single(tours);
-        Assert.Equal("camino-norte", tour.Slug);
-        var image = Assert.Single(tour.Images);
-        Assert.Equal("https://cdn.example/published-640.jpg", image.Uri.ToString());
-        Assert.Equal("Published image", image.AltText);
+        _ = TestAssert.NotNull(tours);
+        var tour = TestAssert.ExactlyOne(tours);
+        TestAssert.Equal("camino-norte", tour.Slug);
+        var image = TestAssert.ExactlyOne(tour.Images);
+        TestAssert.Equal("https://cdn.example/published-640.jpg", image.Uri.ToString());
+        TestAssert.Equal("Published image", image.AltText);
     }
 
     [Fact]
@@ -1409,20 +1409,20 @@ public sealed class CatalogApiEndpointTests
             TestContext.Current.CancellationToken);
 
         // Assert
-        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        TestAssert.Equal(HttpStatusCode.OK, response.StatusCode);
         var tour = await response.Content.ReadFromJsonAsync<CatalogTourDto>(TestContext.Current.CancellationToken);
-        Assert.NotNull(tour);
-        Assert.Collection(
+        _ = TestAssert.NotNull(tour);
+        TestAssert.Collection(
             tour.Images,
             image =>
             {
-                Assert.True(image.IsCover);
-                Assert.Equal("https://cdn.example/cover-640.jpg", image.Uri.ToString());
+                TestAssert.True(image.IsCover);
+                TestAssert.Equal("https://cdn.example/cover-640.jpg", image.Uri.ToString());
             },
             image =>
             {
-                Assert.False(image.IsCover);
-                Assert.Equal("https://cdn.example/gallery-640.jpg", image.Uri.ToString());
+                TestAssert.False(image.IsCover);
+                TestAssert.Equal("https://cdn.example/gallery-640.jpg", image.Uri.ToString());
             });
     }
 
@@ -1480,13 +1480,13 @@ public sealed class CatalogApiEndpointTests
             TestContext.Current.CancellationToken);
 
         // Assert
-        Assert.Equal(HttpStatusCode.OK, upsertResponse.StatusCode);
+        TestAssert.Equal(HttpStatusCode.OK, upsertResponse.StatusCode);
         var publicTour = await publicTourResponse.Content.ReadFromJsonAsync<CatalogTourDto>(TestContext.Current.CancellationToken);
-        Assert.NotNull(publicTour);
-        Assert.Empty(publicTour.Images);
+        _ = TestAssert.NotNull(publicTour);
+        TestAssert.Empty(publicTour.Images);
         var managementImages = await managementImagesResponse.Content.ReadFromJsonAsync<CatalogTourImageDto[]>(TestContext.Current.CancellationToken);
-        Assert.NotNull(managementImages);
-        Assert.Single(managementImages);
+        _ = TestAssert.NotNull(managementImages);
+        TestAssert.ExactlyOne(managementImages);
     }
 
     [Fact]

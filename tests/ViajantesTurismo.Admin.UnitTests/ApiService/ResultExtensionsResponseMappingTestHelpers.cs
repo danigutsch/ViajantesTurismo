@@ -9,8 +9,8 @@ internal static class ResultExtensionsResponseMappingTestHelpers
 {
     public static HttpValidationProblemDetails AssertValidationProblemDetails(ValidationProblem result)
     {
-        var valueResult = Assert.IsType<IValueHttpResult<HttpValidationProblemDetails>>(result, exactMatch: false);
-        return Assert.IsType<HttpValidationProblemDetails>(valueResult.Value);
+        var valueResult = TestAssert.IsType<IValueHttpResult<HttpValidationProblemDetails>>(result, exactMatch: false);
+        return TestAssert.IsType<HttpValidationProblemDetails>(valueResult.Value);
     }
 
     public static Result CreateMalformedFailureResult(ResultStatus status, ResultError? error)
@@ -21,7 +21,7 @@ internal static class ResultExtensionsResponseMappingTestHelpers
             types: [typeof(ResultStatus), typeof(ResultError)],
             modifiers: null);
 
-        Assert.NotNull(constructor);
+        _ = TestAssert.NotNull(constructor);
         return (Result)constructor.Invoke([status, error]);
     }
 
@@ -34,7 +34,7 @@ internal static class ResultExtensionsResponseMappingTestHelpers
             types: [typeof(ResultStatus), typeof(T), typeof(ResultError)],
             modifiers: null);
 
-        Assert.NotNull(constructor);
+        _ = TestAssert.NotNull(constructor);
         return (Result<T>)constructor.Invoke([status, value, error]);
     }
 }

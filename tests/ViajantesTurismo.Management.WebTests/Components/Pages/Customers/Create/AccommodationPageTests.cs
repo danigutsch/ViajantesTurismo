@@ -27,7 +27,7 @@ public sealed class AccommodationPageTests : BunitContext
         await cut.InvokeAsync(() => Task.CompletedTask);
 
         // Assert
-        Assert.Empty(cut.FindAll("input[placeholder='Search customers by name or email...']"));
+        TestAssert.Empty(cut.FindAll("input[placeholder='Search customers by name or email...']"));
     }
 
     [Fact]
@@ -52,10 +52,10 @@ public sealed class AccommodationPageTests : BunitContext
         await cut.InvokeAsync(() => Task.CompletedTask);
 
         // Assert
-        Assert.Equal(nameof(RoomTypeDto.SingleOccupancy), cut.Find("#roomType").GetAttribute("value"));
-        Assert.Equal(nameof(BedTypeDto.DoubleBed), cut.Find("#bedType").GetAttribute("value"));
-        Assert.Contains("alice@example.com", cut.Markup, StringComparison.Ordinal);
-        Assert.Equal(6, _state.CurrentStep);
+        TestAssert.Equal(nameof(RoomTypeDto.SingleOccupancy), cut.Find("#roomType").GetAttribute("value"));
+        TestAssert.Equal(nameof(BedTypeDto.DoubleBed), cut.Find("#bedType").GetAttribute("value"));
+        TestAssert.Contains("alice@example.com", cut.Markup, StringComparison.Ordinal);
+        TestAssert.Equal(6, _state.CurrentStep);
     }
 
     [Fact]
@@ -80,12 +80,12 @@ public sealed class AccommodationPageTests : BunitContext
         await cut.InvokeAsync(async () => await cut.Find("form").SubmitAsync());
 
         // Assert
-        await cut.WaitForAssertionAsync(() => Assert.EndsWith("/customers/create/emergency-contact", navigationManager.Uri, StringComparison.Ordinal));
-        Assert.NotNull(_state.AccommodationPreferences);
-        Assert.Equal(RoomTypeDto.DoubleOccupancy, _state.AccommodationPreferences!.RoomType);
-        Assert.Equal(BedTypeDto.SingleBed, _state.AccommodationPreferences.BedType);
-        Assert.Equal(companionId, _state.AccommodationPreferences.CompanionId);
-        Assert.Equal(7, _state.CurrentStep);
+        await cut.WaitForAssertionAsync(() => TestAssert.EndsWith("/customers/create/emergency-contact", navigationManager.Uri, StringComparison.Ordinal));
+        TestAssert.NotNull(_state.AccommodationPreferences);
+        TestAssert.Equal(RoomTypeDto.DoubleOccupancy, _state.AccommodationPreferences!.RoomType);
+        TestAssert.Equal(BedTypeDto.SingleBed, _state.AccommodationPreferences.BedType);
+        TestAssert.Equal(companionId, _state.AccommodationPreferences.CompanionId);
+        TestAssert.Equal(7, _state.CurrentStep);
     }
 
     [Fact]
@@ -101,7 +101,7 @@ public sealed class AccommodationPageTests : BunitContext
         await cut.InvokeAsync(() => backButton.Click());
 
         // Assert
-        await cut.WaitForAssertionAsync(() => Assert.EndsWith("/customers/create/physical", navigationManager.Uri, StringComparison.Ordinal));
-        Assert.Equal(5, _state.CurrentStep);
+        await cut.WaitForAssertionAsync(() => TestAssert.EndsWith("/customers/create/physical", navigationManager.Uri, StringComparison.Ordinal));
+        TestAssert.Equal(5, _state.CurrentStep);
     }
 }

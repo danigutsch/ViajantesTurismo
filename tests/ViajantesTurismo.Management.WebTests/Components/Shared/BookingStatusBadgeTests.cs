@@ -17,7 +17,7 @@ public sealed class BookingStatusBadgeTests : BunitContext
 
         // Assert
         var badge = cut.Find("span.badge");
-        Assert.Contains(expectedCssClass, badge.ClassList);
+        TestAssert.Contains(expectedCssClass, badge.ClassList);
     }
 
     [Fact]
@@ -29,7 +29,7 @@ public sealed class BookingStatusBadgeTests : BunitContext
 
         // Assert
         var badge = cut.Find("span.badge");
-        Assert.Contains("text-dark", badge.ClassList);
+        TestAssert.Contains("text-dark", badge.ClassList);
     }
 
     [Theory]
@@ -47,7 +47,7 @@ public sealed class BookingStatusBadgeTests : BunitContext
 
         // Assert
         var icon = cut.Find("span.badge i");
-        Assert.Contains(expectedIconClass, icon.ClassList);
+        TestAssert.Contains(expectedIconClass, icon.ClassList);
     }
 
     [Theory]
@@ -64,7 +64,7 @@ public sealed class BookingStatusBadgeTests : BunitContext
 
         // Assert
         var badge = cut.Find("span.badge");
-        Assert.Contains(status.ToString(), badge.TextContent, StringComparison.Ordinal);
+        TestAssert.Contains(status.ToString(), badge.TextContent, StringComparison.Ordinal);
     }
 
     [Fact]
@@ -77,7 +77,7 @@ public sealed class BookingStatusBadgeTests : BunitContext
 
         // Assert
         var badge = cut.Find("span");
-        Assert.Contains("badge", badge.ClassList);
+        TestAssert.Contains("badge", badge.ClassList);
     }
 
     [Fact]
@@ -90,7 +90,7 @@ public sealed class BookingStatusBadgeTests : BunitContext
 
         // Assert
         var icon = cut.Find("i");
-        Assert.Contains("bi", icon.ClassList);
+        TestAssert.Contains("bi", icon.ClassList);
     }
 
     [Fact]
@@ -107,7 +107,7 @@ public sealed class BookingStatusBadgeTests : BunitContext
                 .Add(p => p.Status, status));
 
             var badge = cut.Find("span.badge");
-            Assert.NotNull(badge);
+            _ = TestAssert.NotNull(badge);
         }
     }
 
@@ -123,9 +123,9 @@ public sealed class BookingStatusBadgeTests : BunitContext
 
         // Assert
         var badge = cut.Find("span.badge");
-        Assert.Contains("bg-secondary", badge.ClassList);
+        TestAssert.Contains("bg-secondary", badge.ClassList);
 
         var icon = cut.Find("i");
-        Assert.Contains("bi-question-circle", icon.ClassList);
+        TestAssert.Contains("bi-question-circle", icon.ClassList);
     }
 }

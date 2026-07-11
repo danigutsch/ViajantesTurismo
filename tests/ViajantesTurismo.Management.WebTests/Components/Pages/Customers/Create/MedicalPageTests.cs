@@ -31,9 +31,9 @@ public sealed class MedicalPageTests : BunitContext
         var allergiesValue = cut.Find("#allergies").GetAttribute("value") ?? cut.Find("#allergies").TextContent.Trim();
         var additionalInfoValue = cut.Find("#additionalInfo").GetAttribute("value") ?? cut.Find("#additionalInfo").TextContent.Trim();
 
-        Assert.Equal("Peanuts", allergiesValue);
-        Assert.Equal("Carries an epinephrine injector.", additionalInfoValue);
-        Assert.Equal(8, _state.CurrentStep);
+        TestAssert.Equal("Peanuts", allergiesValue);
+        TestAssert.Equal("Carries an epinephrine injector.", additionalInfoValue);
+        TestAssert.Equal(8, _state.CurrentStep);
     }
 
     [Fact]
@@ -49,11 +49,11 @@ public sealed class MedicalPageTests : BunitContext
         await cut.InvokeAsync(async () => await cut.Find("form").SubmitAsync());
 
         // Assert
-        await cut.WaitForAssertionAsync(() => Assert.EndsWith("/customers/create/review", navigationManager.Uri, StringComparison.Ordinal));
-        Assert.NotNull(_state.MedicalInfo);
-        Assert.Equal("Peanuts", _state.MedicalInfo!.Allergies);
-        Assert.Equal("Carries an epinephrine injector.", _state.MedicalInfo.AdditionalInfo);
-        Assert.Equal(8, _state.CurrentStep);
+        await cut.WaitForAssertionAsync(() => TestAssert.EndsWith("/customers/create/review", navigationManager.Uri, StringComparison.Ordinal));
+        TestAssert.NotNull(_state.MedicalInfo);
+        TestAssert.Equal("Peanuts", _state.MedicalInfo!.Allergies);
+        TestAssert.Equal("Carries an epinephrine injector.", _state.MedicalInfo.AdditionalInfo);
+        TestAssert.Equal(8, _state.CurrentStep);
     }
 
     [Fact]
@@ -68,7 +68,7 @@ public sealed class MedicalPageTests : BunitContext
         await cut.InvokeAsync(() => backButton.Click());
 
         // Assert
-        await cut.WaitForAssertionAsync(() => Assert.EndsWith("/customers/create/emergency-contact", navigationManager.Uri, StringComparison.Ordinal));
-        Assert.Equal(7, _state.CurrentStep);
+        await cut.WaitForAssertionAsync(() => TestAssert.EndsWith("/customers/create/emergency-contact", navigationManager.Uri, StringComparison.Ordinal));
+        TestAssert.Equal(7, _state.CurrentStep);
     }
 }

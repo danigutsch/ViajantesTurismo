@@ -1,5 +1,4 @@
 using System.ComponentModel.DataAnnotations;
-using SharedKernel.Testing.Assertions;
 using ViajantesTurismo.Catalog.Contracts.Application;
 
 namespace ViajantesTurismo.Catalog.UnitTests;

@@ -26,9 +26,9 @@ public sealed class CustomerImportCommandHandlerTests
         var result = await _sut.Handle(command, CancellationToken.None);
 
         // Assert
-        Assert.Equal(1, result.SuccessCount);
-        Assert.Equal(0, result.ErrorCount);
-        Assert.Equal(0, _uow.SaveEntitiesCallCount);
+        TestAssert.Equal(1, result.SuccessCount);
+        TestAssert.Equal(0, result.ErrorCount);
+        TestAssert.Equal(0, _uow.SaveEntitiesCallCount);
     }
 
     [Fact]
@@ -41,10 +41,10 @@ public sealed class CustomerImportCommandHandlerTests
         var result = await _sut.Handle(command, CancellationToken.None);
 
         // Assert
-        Assert.Equal(1, result.SuccessCount);
-        Assert.Equal(0, result.ErrorCount);
-        Assert.Equal(1, _uow.SaveEntitiesCallCount);
-        Assert.True(await _fakeCustomerStore.EmailExists("imported@example.com", CancellationToken.None));
+        TestAssert.Equal(1, result.SuccessCount);
+        TestAssert.Equal(0, result.ErrorCount);
+        TestAssert.Equal(1, _uow.SaveEntitiesCallCount);
+        TestAssert.True(await _fakeCustomerStore.EmailExists("imported@example.com", CancellationToken.None));
     }
 
     [Fact]
@@ -63,8 +63,8 @@ public sealed class CustomerImportCommandHandlerTests
         var result = await _sut.Handle(command, CancellationToken.None);
 
         // Assert
-        Assert.Equal(1, result.SuccessCount);
-        Assert.Equal(1, result.ErrorCount);
+        TestAssert.Equal(1, result.SuccessCount);
+        TestAssert.Equal(1, result.ErrorCount);
     }
 
     [Fact]
@@ -81,9 +81,9 @@ public sealed class CustomerImportCommandHandlerTests
         var result = await sut.Handle(command, CancellationToken.None);
 
         // Assert
-        Assert.Equal(0, result.SuccessCount);
-        Assert.Equal(1, result.ErrorCount);
-        Assert.Equal(0, _uow.SaveEntitiesCallCount);
+        TestAssert.Equal(0, result.SuccessCount);
+        TestAssert.Equal(1, result.ErrorCount);
+        TestAssert.Equal(0, _uow.SaveEntitiesCallCount);
     }
 
 }

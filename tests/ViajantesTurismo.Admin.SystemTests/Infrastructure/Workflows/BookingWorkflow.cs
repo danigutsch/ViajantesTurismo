@@ -72,11 +72,11 @@ internal sealed class BookingWorkflow(IPage page, Func<string, Task> navigateTo)
         await createdBookingRow.First.WaitForAsync();
 
         var bookingHref = await createdBookingRow.First.GetLink("View").GetAttributeAsync("href");
-        Assert.NotNull(bookingHref);
+        _ = TestAssert.NotNull(bookingHref);
 
         var bookingHrefSegments = bookingHref.Split('/');
         var bookingIdText = bookingHrefSegments[^1];
-        Assert.True(Guid.TryParse(bookingIdText, out var bookingId));
+        TestAssert.True(Guid.TryParse(bookingIdText, out var bookingId));
 
         return bookingId;
     }
@@ -112,7 +112,7 @@ internal sealed class BookingWorkflow(IPage page, Func<string, Task> navigateTo)
 
         var successAlert = page.Locator(".alert-success");
         await successAlert.WaitForAsync();
-        Assert.Contains("Booking updated successfully!", await successAlert.InnerTextAsync(), StringComparison.Ordinal);
+        TestAssert.Contains("Booking updated successfully!", await successAlert.InnerTextAsync(), StringComparison.Ordinal);
 
         await page.CancelTimedRedirect();
     }

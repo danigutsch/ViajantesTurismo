@@ -38,8 +38,8 @@ public sealed class ReviewPageTests : BunitContext
         await cut.WaitForAssertionAsync(() =>
         {
             var alert = cut.Find(".alert.alert-danger");
-            Assert.Contains("We couldn't create the customer right now. Please try again.", alert.TextContent, StringComparison.Ordinal);
-            Assert.DoesNotContain("Backend is on vacation", alert.TextContent, StringComparison.Ordinal);
+            TestAssert.Contains("We couldn't create the customer right now. Please try again.", alert.TextContent, StringComparison.Ordinal);
+            TestAssert.DoesNotContain("Backend is on vacation", alert.TextContent, StringComparison.Ordinal);
         });
     }
 
@@ -79,7 +79,7 @@ public sealed class ReviewPageTests : BunitContext
         var cut = Render<Review>();
 
         // Assert
-        await cut.WaitForAssertionAsync(() => Assert.Contains("Please complete all steps before submitting.", cut.Markup, StringComparison.Ordinal));
+        await cut.WaitForAssertionAsync(() => TestAssert.Contains("Please complete all steps before submitting.", cut.Markup, StringComparison.Ordinal));
 
         // Act
         var goToStepOneButton = cut.FindAll("button")
@@ -87,7 +87,7 @@ public sealed class ReviewPageTests : BunitContext
         await cut.InvokeAsync(() => goToStepOneButton.Click());
 
         // Assert
-        await cut.WaitForAssertionAsync(() => Assert.EndsWith("/customers/create/personal-info", navigationManager.Uri, StringComparison.Ordinal));
+        await cut.WaitForAssertionAsync(() => TestAssert.EndsWith("/customers/create/personal-info", navigationManager.Uri, StringComparison.Ordinal));
     }
 
     [Fact]
@@ -106,10 +106,10 @@ public sealed class ReviewPageTests : BunitContext
         // Assert
         cut.WaitForAssertion(() =>
         {
-            Assert.Contains("None reported", cut.Markup, StringComparison.Ordinal);
-            Assert.DoesNotContain("Instagram:", cut.Markup, StringComparison.Ordinal);
-            Assert.DoesNotContain("Facebook:", cut.Markup, StringComparison.Ordinal);
-            Assert.DoesNotContain("Companion ID:", cut.Markup, StringComparison.Ordinal);
+            TestAssert.Contains("None reported", cut.Markup, StringComparison.Ordinal);
+            TestAssert.DoesNotContain("Instagram:", cut.Markup, StringComparison.Ordinal);
+            TestAssert.DoesNotContain("Facebook:", cut.Markup, StringComparison.Ordinal);
+            TestAssert.DoesNotContain("Companion ID:", cut.Markup, StringComparison.Ordinal);
         });
     }
 
@@ -129,10 +129,10 @@ public sealed class ReviewPageTests : BunitContext
         // Assert
         cut.WaitForAssertion(() =>
         {
-            Assert.Contains("Instagram:", cut.Markup, StringComparison.Ordinal);
-            Assert.Contains("Facebook:", cut.Markup, StringComparison.Ordinal);
-            Assert.Contains("Companion ID:", cut.Markup, StringComparison.Ordinal);
-            Assert.Contains("11111111-1111-1111-1111-111111111111", cut.Markup, StringComparison.Ordinal);
+            TestAssert.Contains("Instagram:", cut.Markup, StringComparison.Ordinal);
+            TestAssert.Contains("Facebook:", cut.Markup, StringComparison.Ordinal);
+            TestAssert.Contains("Companion ID:", cut.Markup, StringComparison.Ordinal);
+            TestAssert.Contains("11111111-1111-1111-1111-111111111111", cut.Markup, StringComparison.Ordinal);
         });
     }
 
@@ -150,11 +150,11 @@ public sealed class ReviewPageTests : BunitContext
         await cut.InvokeAsync(() => submitButton.Click());
 
         // Assert
-        await cut.WaitForAssertionAsync(() => Assert.Contains("/customers/", navigationManager.Uri, StringComparison.Ordinal));
-        Assert.False(_state.IsComplete());
-        Assert.Equal(1, _state.CurrentStep);
-        Assert.Null(_state.PersonalInfo);
-        Assert.Null(_state.MedicalInfo);
+        await cut.WaitForAssertionAsync(() => TestAssert.Contains("/customers/", navigationManager.Uri, StringComparison.Ordinal));
+        TestAssert.False(_state.IsComplete());
+        TestAssert.Equal(1, _state.CurrentStep);
+        TestAssert.Null(_state.PersonalInfo);
+        TestAssert.Null(_state.MedicalInfo);
     }
 
     [Fact]
@@ -241,8 +241,8 @@ public sealed class ReviewPageTests : BunitContext
         await cut.InvokeAsync(() => backButton.Click());
 
         // Assert
-        await cut.WaitForAssertionAsync(() => Assert.EndsWith("/customers/create/medical", navigationManager.Uri, StringComparison.Ordinal));
-        Assert.Equal(8, _state.CurrentStep);
+        await cut.WaitForAssertionAsync(() => TestAssert.EndsWith("/customers/create/medical", navigationManager.Uri, StringComparison.Ordinal));
+        TestAssert.Equal(8, _state.CurrentStep);
     }
 
 }

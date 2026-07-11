@@ -12,9 +12,9 @@ internal static class SeederWorkerTestHelpers
             "ExecuteAsync",
             BindingFlags.Instance | BindingFlags.NonPublic);
 
-        Assert.NotNull(executeAsync);
+        _ = TestAssert.NotNull(executeAsync);
         var executionTask = (Task?)executeAsync.Invoke(worker, [ct]);
-        Assert.NotNull(executionTask);
+        _ = TestAssert.NotNull(executionTask);
         await executionTask;
     }
 

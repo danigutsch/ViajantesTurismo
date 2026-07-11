@@ -13,8 +13,8 @@ public class ErrorPageTests : BunitContext
 
         // Assert
         var h1 = cut.Find("h1");
-        Assert.Contains("Error", h1.TextContent, StringComparison.Ordinal);
-        Assert.Contains("text-danger", h1.ClassName, StringComparison.Ordinal);
+        TestAssert.Contains("Error", h1.TextContent, StringComparison.Ordinal);
+        TestAssert.Contains("text-danger", h1.ClassName, StringComparison.Ordinal);
     }
 
     [Fact]
@@ -25,8 +25,8 @@ public class ErrorPageTests : BunitContext
 
         // Assert
         var h2 = cut.Find("h2");
-        Assert.Contains("An error occurred while processing your request", h2.TextContent, StringComparison.Ordinal);
-        Assert.Contains("text-danger", h2.ClassName, StringComparison.Ordinal);
+        TestAssert.Contains("An error occurred while processing your request", h2.TextContent, StringComparison.Ordinal);
+        TestAssert.Contains("text-danger", h2.ClassName, StringComparison.Ordinal);
     }
 
     [Fact]
@@ -37,7 +37,7 @@ public class ErrorPageTests : BunitContext
 
         // Assert
         var requestIdElements = cut.FindAll("strong").Where(e => e.TextContent.Contains("Request ID", StringComparison.Ordinal));
-        Assert.Empty(requestIdElements);
+        TestAssert.Empty(requestIdElements);
     }
 
     [Fact]
@@ -55,7 +55,7 @@ public class ErrorPageTests : BunitContext
 
         // Assert
         var code = cut.Find("code");
-        Assert.Equal("test-trace-id-12345", code.TextContent);
+        TestAssert.Equal("test-trace-id-12345", code.TextContent);
     }
 
     [Fact]
@@ -66,7 +66,7 @@ public class ErrorPageTests : BunitContext
 
         // Assert
         var h3 = cut.Find("h3");
-        Assert.Equal("Development Mode", h3.TextContent);
+        TestAssert.Equal("Development Mode", h3.TextContent);
     }
 
     [Fact]
@@ -79,7 +79,7 @@ public class ErrorPageTests : BunitContext
         var paragraphs = cut.FindAll("p");
         var warningParagraph = paragraphs.First(p => p.TextContent.Contains("Development environment shouldn't be enabled", StringComparison.Ordinal));
 
-        Assert.Contains("shouldn't be enabled for deployed applications", warningParagraph.TextContent, StringComparison.Ordinal);
+        TestAssert.Contains("shouldn't be enabled for deployed applications", warningParagraph.TextContent, StringComparison.Ordinal);
     }
 
     [Fact]
@@ -90,8 +90,8 @@ public class ErrorPageTests : BunitContext
 
         // Assert
         var strongs = cut.FindAll("strong");
-        Assert.Contains(strongs, s => s.TextContent == "ASPNETCORE_ENVIRONMENT");
-        Assert.Contains(strongs, s => s.TextContent == "Development");
+        TestAssert.Contains(strongs, s => s.TextContent == "ASPNETCORE_ENVIRONMENT");
+        TestAssert.Contains(strongs, s => s.TextContent == "Development");
     }
 
     [Fact]
@@ -102,9 +102,9 @@ public class ErrorPageTests : BunitContext
 
         // Assert
         var markup = cut.Markup;
-        Assert.Contains("Swapping to", markup, StringComparison.Ordinal);
-        Assert.Contains("Development", markup, StringComparison.Ordinal);
-        Assert.Contains("display more detailed information", markup, StringComparison.Ordinal);
+        TestAssert.Contains("Swapping to", markup, StringComparison.Ordinal);
+        TestAssert.Contains("Development", markup, StringComparison.Ordinal);
+        TestAssert.Contains("display more detailed information", markup, StringComparison.Ordinal);
     }
 
     [Fact]
@@ -115,8 +115,8 @@ public class ErrorPageTests : BunitContext
 
         // Assert
         var markup = cut.Markup;
-        Assert.Contains("sensitive information", markup, StringComparison.Ordinal);
-        Assert.Contains("end users", markup, StringComparison.Ordinal);
+        TestAssert.Contains("sensitive information", markup, StringComparison.Ordinal);
+        TestAssert.Contains("end users", markup, StringComparison.Ordinal);
     }
 
     [Fact]
@@ -129,7 +129,7 @@ public class ErrorPageTests : BunitContext
         var cut = Render<Error>();
 
         // Assert
-        Assert.NotNull(cut);
-        Assert.NotNull(cut.Instance);
+        _ = TestAssert.NotNull(cut);
+        TestAssert.NotNull(cut.Instance);
     }
 }

@@ -36,12 +36,12 @@ public sealed class CustomerImportWorkflowServiceTests
         var result = await sut.Import(csv, CancellationToken.None);
 
         // Assert
-        Assert.NotNull(result.Conflicts);
-        Assert.Equal(2, result.Conflicts.Count);
-        Assert.Contains(result.Conflicts, c => c.Email.Equals(nameDuplicateEmail, StringComparison.OrdinalIgnoreCase));
-        Assert.Contains(result.Conflicts, c => c.Email.Equals(dbDuplicateEmail, StringComparison.OrdinalIgnoreCase));
-        Assert.Equal(0, result.SuccessCount);
-        Assert.Equal(0, result.ErrorCount);
+        TestAssert.NotNull(result.Conflicts);
+        TestAssert.Equal(2, result.Conflicts.Count);
+        TestAssert.Contains(result.Conflicts, c => c.Email.Equals(nameDuplicateEmail, StringComparison.OrdinalIgnoreCase));
+        TestAssert.Contains(result.Conflicts, c => c.Email.Equals(dbDuplicateEmail, StringComparison.OrdinalIgnoreCase));
+        TestAssert.Equal(0, result.SuccessCount);
+        TestAssert.Equal(0, result.ErrorCount);
     }
 
 }

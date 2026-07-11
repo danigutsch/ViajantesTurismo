@@ -1,5 +1,4 @@
 using System.Text.Json;
-using SharedKernel.Testing.Assertions;
 using ViajantesTurismo.Catalog.Domain.Tours;
 using ViajantesTurismo.Catalog.Infrastructure;
 

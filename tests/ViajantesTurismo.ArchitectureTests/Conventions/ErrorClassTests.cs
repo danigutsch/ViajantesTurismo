@@ -13,8 +13,7 @@ public sealed class ErrorClassTests
             .Where(type => !type.IsAbstract || !type.IsSealed)
             .ToArray();
 
-        Assert.False(
-            violatingTypes.Length != 0,
+        (violatingTypes.Length != 0).ShouldBeFalse(
             $"Expected error classes to be static, but found violations: {string.Join(", ", violatingTypes.Select(t => t.FullName))}");
     }
 }

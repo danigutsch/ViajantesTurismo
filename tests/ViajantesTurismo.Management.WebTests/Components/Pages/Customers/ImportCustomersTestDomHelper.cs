@@ -13,7 +13,7 @@ internal static class ImportCustomersTestDomHelper
 
     internal static void WaitForEnabledButton(IRenderedComponent<ImportCustomers> cut, string buttonText)
     {
-        cut.WaitForAssertion(() => Assert.False(FindButtonByText(cut, buttonText).HasAttribute("disabled")));
+        cut.WaitForAssertion(() => TestAssert.False(FindButtonByText(cut, buttonText).HasAttribute("disabled")));
     }
 
     internal static IElement FindRowContainingText(IRenderedComponent<ImportCustomers> cut, string selector, string text)

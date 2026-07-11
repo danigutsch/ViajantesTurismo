@@ -25,8 +25,8 @@ public class DuplicateDetectorTests
         var duplicateLineNumbers = DuplicateDetector.FindDuplicateEmailLineNumbers(document);
 
         // Assert
-        var duplicateLineNumber = Assert.Single(duplicateLineNumbers);
-        Assert.Equal(3, duplicateLineNumber);
+        var duplicateLineNumber = TestAssert.ExactlyOne(duplicateLineNumbers);
+        TestAssert.Equal(3, duplicateLineNumber);
     }
 
     [Fact]
@@ -47,8 +47,8 @@ public class DuplicateDetectorTests
         var duplicateLineNumbers = DuplicateDetector.FindDuplicateNameLineNumbers(document);
 
         // Assert
-        var duplicateLineNumber = Assert.Single(duplicateLineNumbers);
-        Assert.Equal(3, duplicateLineNumber);
+        var duplicateLineNumber = TestAssert.ExactlyOne(duplicateLineNumbers);
+        TestAssert.Equal(3, duplicateLineNumber);
     }
 
     [Fact]
@@ -63,7 +63,7 @@ public class DuplicateDetectorTests
         var conflicts = await detector.FindDatabaseEmailConflicts(csv, CancellationToken.None);
 
         // Assert
-        var conflict = Assert.Single(conflicts);
-        Assert.Equal(new ImportConflictDto("john.doe@example.com"), conflict);
+        var conflict = TestAssert.ExactlyOne(conflicts);
+        TestAssert.Equal(new ImportConflictDto("john.doe@example.com"), conflict);
     }
 }

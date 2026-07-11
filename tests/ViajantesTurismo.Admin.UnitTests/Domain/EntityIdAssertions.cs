@@ -7,17 +7,17 @@ internal static class EntityIdAssertions
     public static void AssertUuidV7(Guid id)
     {
         var guidText = id.ToString("D");
-        Assert.Equal('7', guidText[14]);
+        TestAssert.Equal('7', guidText[14]);
     }
 
     public static void SetId<T>(T entity, Guid id)
     {
         var idProperty = typeof(T).GetProperty("Id", BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic);
-        Assert.NotNull(idProperty);
-        var idSetter = idProperty.GetSetMethod(nonPublic: true);
-        Assert.NotNull(idSetter);
+        var nonNullIdProperty = TestAssert.NotNull(idProperty);
+        var idSetter = nonNullIdProperty.GetSetMethod(nonPublic: true);
+        var nonNullIdSetter = TestAssert.NotNull(idSetter);
 
-        idSetter.Invoke(entity, [id]);
+        nonNullIdSetter.Invoke(entity, [id]);
     }
 
     public static void AssertGeneratedIdentitySemantics<T>(T first, T second, T different)
@@ -29,19 +29,20 @@ internal static class EntityIdAssertions
         SetId(different, Guid.CreateVersion7());
         var set = new HashSet<T> { first };
 
-        Assert.True(first.Equals(first));
-        Assert.True(first.Equals(second));
-        Assert.False(first.Equals(different));
-        Assert.False(first.Equals(new object()));
-        Assert.False(first.Equals(null));
-        Assert.Equal(first.GetHashCode(), second.GetHashCode());
-        Assert.Contains(second, set);
-        Assert.DoesNotContain(different, set);
+        TestAssert.True(EqualityComparer<T>.Default.Equals(first, first));
+        TestAssert.True(EqualityComparer<T>.Default.Equals(first, second));
+        TestAssert.False(EqualityComparer<T>.Default.Equals(first, different));
+        TestAssert.False(EqualityComparer<T>.Default.Equals(first, null));
+        var firstHashCode = first is null ? 0 : first.GetHashCode();
+        var secondHashCode = second is null ? 0 : second.GetHashCode();
+        TestAssert.Equal(firstHashCode, secondHashCode);
+        TestAssert.Contains(second, set);
+        TestAssert.DoesNotContain(different, set);
 
         SetId(second, Guid.Empty);
 
-        Assert.False(first.Equals(second));
-        Assert.False(second.Equals(first));
-        Assert.DoesNotContain(second, set);
+        TestAssert.False(EqualityComparer<T>.Default.Equals(first, second));
+        TestAssert.False(EqualityComparer<T>.Default.Equals(second, first));
+        TestAssert.DoesNotContain(second, set);
     }
 }

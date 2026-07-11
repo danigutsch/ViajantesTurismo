@@ -10,7 +10,7 @@ public sealed class ToastNotificationTests : BunitContext
 
         // Assert
         var toastContainers = cut.FindAll(".toast-container");
-        Assert.Empty(toastContainers);
+        TestAssert.Empty(toastContainers);
     }
 
     [Fact]
@@ -24,10 +24,10 @@ public sealed class ToastNotificationTests : BunitContext
 
         // Assert
         var toastContainer = cut.Find(".toast-container");
-        Assert.NotNull(toastContainer);
-        Assert.Contains("position-fixed", toastContainer.ClassList);
-        Assert.Contains("top-0", toastContainer.ClassList);
-        Assert.Contains("end-0", toastContainer.ClassList);
+        _ = TestAssert.NotNull(toastContainer);
+        TestAssert.Contains("position-fixed", toastContainer.ClassList);
+        TestAssert.Contains("top-0", toastContainer.ClassList);
+        TestAssert.Contains("end-0", toastContainer.ClassList);
     }
 
     [Fact]
@@ -42,7 +42,7 @@ public sealed class ToastNotificationTests : BunitContext
 
         // Assert
         var toastBody = cut.Find(".toast-body");
-        Assert.Equal(successMessage, toastBody.TextContent.Trim());
+        TestAssert.Equal(successMessage, toastBody.TextContent.Trim());
     }
 
     [Fact]
@@ -57,7 +57,7 @@ public sealed class ToastNotificationTests : BunitContext
 
         // Assert
         var toastBody = cut.Find(".toast-body");
-        Assert.Equal(errorMessage, toastBody.TextContent.Trim());
+        TestAssert.Equal(errorMessage, toastBody.TextContent.Trim());
     }
 
     [Fact]
@@ -71,8 +71,8 @@ public sealed class ToastNotificationTests : BunitContext
 
         // Assert
         var toastHeader = cut.Find(".toast-header");
-        Assert.Contains("bg-success", toastHeader.ClassList);
-        Assert.Contains("text-white", toastHeader.ClassList);
+        TestAssert.Contains("bg-success", toastHeader.ClassList);
+        TestAssert.Contains("text-white", toastHeader.ClassList);
     }
 
     [Fact]
@@ -86,8 +86,8 @@ public sealed class ToastNotificationTests : BunitContext
 
         // Assert
         var toastHeader = cut.Find(".toast-header");
-        Assert.Contains("bg-danger", toastHeader.ClassList);
-        Assert.Contains("text-white", toastHeader.ClassList);
+        TestAssert.Contains("bg-danger", toastHeader.ClassList);
+        TestAssert.Contains("text-white", toastHeader.ClassList);
     }
 
     [Fact]
@@ -101,7 +101,7 @@ public sealed class ToastNotificationTests : BunitContext
 
         // Assert
         var icon = cut.Find(".toast-header i");
-        Assert.Contains("bi-check-circle-fill", icon.ClassList);
+        TestAssert.Contains("bi-check-circle-fill", icon.ClassList);
     }
 
     [Fact]
@@ -115,7 +115,7 @@ public sealed class ToastNotificationTests : BunitContext
 
         // Assert
         var icon = cut.Find(".toast-header i");
-        Assert.Contains("bi-exclamation-triangle-fill", icon.ClassList);
+        TestAssert.Contains("bi-exclamation-triangle-fill", icon.ClassList);
     }
 
     [Fact]
@@ -129,7 +129,7 @@ public sealed class ToastNotificationTests : BunitContext
 
         // Assert
         var title = cut.Find(".toast-header strong");
-        Assert.Equal("Success", title.TextContent);
+        TestAssert.Equal("Success", title.TextContent);
     }
 
     [Fact]
@@ -143,7 +143,7 @@ public sealed class ToastNotificationTests : BunitContext
 
         // Assert
         var title = cut.Find(".toast-header strong");
-        Assert.Equal("Error", title.TextContent);
+        TestAssert.Equal("Error", title.TextContent);
     }
 
     [Fact]
@@ -157,7 +157,7 @@ public sealed class ToastNotificationTests : BunitContext
 
         // Assert
         var closeButton = cut.Find(".toast-header .btn-close");
-        Assert.NotNull(closeButton);
+        _ = TestAssert.NotNull(closeButton);
     }
 
     [Fact]
@@ -172,7 +172,7 @@ public sealed class ToastNotificationTests : BunitContext
         closeButton.Click();
 
         // Assert
-        cut.WaitForAssertion(() => Assert.Empty(cut.FindAll(".toast")));
+        cut.WaitForAssertion(() => TestAssert.Empty(cut.FindAll(".toast")));
     }
 
     [Fact]
@@ -190,7 +190,7 @@ public sealed class ToastNotificationTests : BunitContext
 
         // Assert
         var toasts = cut.FindAll(".toast");
-        Assert.Equal(2, toasts.Count);
+        TestAssert.Equal(2, toasts.Count);
     }
 
     [Fact]
@@ -208,8 +208,8 @@ public sealed class ToastNotificationTests : BunitContext
 
         // Assert
         var toastBodies = cut.FindAll(".toast-body");
-        Assert.Equal("First", toastBodies[0].TextContent.Trim());
-        Assert.Equal("Second", toastBodies[1].TextContent.Trim());
+        TestAssert.Equal("First", toastBodies[0].TextContent.Trim());
+        TestAssert.Equal("Second", toastBodies[1].TextContent.Trim());
     }
 
     [Fact]
@@ -220,6 +220,6 @@ public sealed class ToastNotificationTests : BunitContext
         cut.InvokeAsync(() => cut.Instance.ShowSuccess("Message"));
 
         // Assert
-        cut.WaitForAssertion(() => Assert.Empty(cut.FindAll(".toast")), TimeSpan.FromSeconds(6));
+        cut.WaitForAssertion(() => TestAssert.Empty(cut.FindAll(".toast")), TimeSpan.FromSeconds(6));
     }
 }

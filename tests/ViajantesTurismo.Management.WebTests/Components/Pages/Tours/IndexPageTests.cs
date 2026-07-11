@@ -31,9 +31,9 @@ public class IndexPageTests : BunitContext
         cut.WaitForState(() => cut.Markup.Contains("TOUR-2024-001", StringComparison.Ordinal), TimeSpan.FromSeconds(2));
 
         // Assert
-        Assert.Contains("TOUR-2024-001", cut.Markup, StringComparison.Ordinal);
-        Assert.Contains("Amazing Bike Tour", cut.Markup, StringComparison.Ordinal);
-        Assert.Contains("2024", cut.Markup, StringComparison.Ordinal);
+        TestAssert.Contains("TOUR-2024-001", cut.Markup, StringComparison.Ordinal);
+        TestAssert.Contains("Amazing Bike Tour", cut.Markup, StringComparison.Ordinal);
+        TestAssert.Contains("2024", cut.Markup, StringComparison.Ordinal);
     }
 
     [Fact]
@@ -48,10 +48,10 @@ public class IndexPageTests : BunitContext
         cut.WaitForState(() => cut.Markup.Contains("R$", StringComparison.Ordinal), TimeSpan.FromSeconds(2));
 
         // Assert
-        Assert.Contains("R$ 1,500.00", cut.Markup, StringComparison.Ordinal);
-        Assert.Contains("R$ 300.00", cut.Markup, StringComparison.Ordinal);
-        Assert.Contains("R$ 100.00", cut.Markup, StringComparison.Ordinal);
-        Assert.Contains("R$ 250.00", cut.Markup, StringComparison.Ordinal);
+        TestAssert.Contains("R$ 1,500.00", cut.Markup, StringComparison.Ordinal);
+        TestAssert.Contains("R$ 300.00", cut.Markup, StringComparison.Ordinal);
+        TestAssert.Contains("R$ 100.00", cut.Markup, StringComparison.Ordinal);
+        TestAssert.Contains("R$ 250.00", cut.Markup, StringComparison.Ordinal);
     }
 
     [Fact]
@@ -66,7 +66,7 @@ public class IndexPageTests : BunitContext
         cut.WaitForState(() => cut.Markup.Contains('€', StringComparison.Ordinal), TimeSpan.FromSeconds(2));
 
         // Assert
-        Assert.Contains("1,200.00 €", cut.Markup, StringComparison.Ordinal);
+        TestAssert.Contains("1,200.00 €", cut.Markup, StringComparison.Ordinal);
     }
 
     [Fact]
@@ -81,7 +81,7 @@ public class IndexPageTests : BunitContext
         cut.WaitForState(() => cut.Markup.Contains("$ 1,800.00", StringComparison.Ordinal), TimeSpan.FromSeconds(2));
 
         // Assert
-        Assert.Contains("$ 1,800.00", cut.Markup, StringComparison.Ordinal);
+        TestAssert.Contains("$ 1,800.00", cut.Markup, StringComparison.Ordinal);
     }
 
     [Fact]
@@ -102,8 +102,8 @@ public class IndexPageTests : BunitContext
 
         // Assert
         var badge = cut.Find("span.badge.bg-success");
-        Assert.Contains("15 spots", badge.TextContent, StringComparison.Ordinal);
-        Assert.Contains("15 / 30", cut.Markup, StringComparison.Ordinal);
+        TestAssert.Contains("15 spots", badge.TextContent, StringComparison.Ordinal);
+        TestAssert.Contains("15 / 30", cut.Markup, StringComparison.Ordinal);
     }
 
     [Fact]
@@ -123,8 +123,8 @@ public class IndexPageTests : BunitContext
 
         // Assert
         var badge = cut.Find("span.badge.bg-danger");
-        Assert.Contains("Full", badge.TextContent, StringComparison.Ordinal);
-        Assert.Contains("30 / 30", cut.Markup, StringComparison.Ordinal);
+        TestAssert.Contains("Full", badge.TextContent, StringComparison.Ordinal);
+        TestAssert.Contains("30 / 30", cut.Markup, StringComparison.Ordinal);
     }
 
     [Fact]
@@ -145,7 +145,7 @@ public class IndexPageTests : BunitContext
 
         // Assert
         var badge = cut.Find("span.badge.bg-warning");
-        Assert.Contains("Below Min", badge.TextContent, StringComparison.Ordinal);
-        Assert.Contains("5 / 30", cut.Markup, StringComparison.Ordinal);
+        TestAssert.Contains("Below Min", badge.TextContent, StringComparison.Ordinal);
+        TestAssert.Contains("5 / 30", cut.Markup, StringComparison.Ordinal);
     }
 }

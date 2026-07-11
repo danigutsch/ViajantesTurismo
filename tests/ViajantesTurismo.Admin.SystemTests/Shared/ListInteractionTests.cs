@@ -66,8 +66,8 @@ public class ListInteractionTests(AspireSystemTestFixture fixture) : AspireSyste
         var paginationText = paginator.Locator(".pagination-text");
 
         var firstPage = await ListInteractionTestHelpers.ReadPaginationState(paginationText);
-        Assert.Equal(1, firstPage.CurrentPage);
-        Assert.True(firstPage.TotalPages >= 2, $"Expected at least 2 pages, but found {firstPage.TotalPages}.");
+        TestAssert.Equal(1, firstPage.CurrentPage);
+        TestAssert.True(firstPage.TotalPages >= 2, $"Expected at least 2 pages, but found {firstPage.TotalPages}.");
 
         await customersTable.GetButton("Name").ClickAsync();
         await customersTable.GetButton("Name").ClickAsync();
@@ -79,16 +79,16 @@ public class ListInteractionTests(AspireSystemTestFixture fixture) : AspireSyste
         await paginator.Locator("button[aria-label='Go to next page']").ClickAsync();
         await Expect(paginationText).ToContainTextAsync("Page 2 of");
         var secondPage = await ListInteractionTestHelpers.ReadPaginationState(paginationText);
-        Assert.Equal(2, secondPage.CurrentPage);
-        Assert.True(secondPage.TotalPages >= 2, $"Expected at least 2 pages, but found {secondPage.TotalPages}.");
+        TestAssert.Equal(2, secondPage.CurrentPage);
+        TestAssert.True(secondPage.TotalPages >= 2, $"Expected at least 2 pages, but found {secondPage.TotalPages}.");
         await ListInteractionTestHelpers.AssertVisibleCellTextsAreSorted(customerNameCells, descending: true);
         await Expect(customersTable.Locator(DescendingSortSelector)).ToContainTextAsync("Name");
 
         await paginator.Locator("button[aria-label='Go to previous page']").ClickAsync();
         await Expect(paginationText).ToContainTextAsync("Page 1 of");
         var returnedPage = await ListInteractionTestHelpers.ReadPaginationState(paginationText);
-        Assert.Equal(1, returnedPage.CurrentPage);
-        Assert.True(returnedPage.TotalPages >= 2, $"Expected at least 2 pages, but found {returnedPage.TotalPages}.");
+        TestAssert.Equal(1, returnedPage.CurrentPage);
+        TestAssert.True(returnedPage.TotalPages >= 2, $"Expected at least 2 pages, but found {returnedPage.TotalPages}.");
         await ListInteractionTestHelpers.AssertVisibleCellTextsAreSorted(customerNameCells, descending: true);
         await Expect(customersTable.Locator(DescendingSortSelector)).ToContainTextAsync("Name");
     }

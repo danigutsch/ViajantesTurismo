@@ -25,8 +25,7 @@ public sealed partial class NamingConventionTests
             .Where(type => !type.Name.StartsWith('I'))
             .ToArray();
 
-        Assert.False(
-            offendingTypes.Length != 0,
+        (offendingTypes.Length != 0).ShouldBeFalse(
             $"Expected all interfaces to start with 'I', but found: {string.Join(", ", offendingTypes.Select(t => t.FullName))}");
     }
 
@@ -46,8 +45,7 @@ public sealed partial class NamingConventionTests
             .Where(type => !type.Name.EndsWith("Dto", StringComparison.Ordinal))
             .ToArray();
 
-        Assert.False(
-            offendingTypes.Length != 0,
+        (offendingTypes.Length != 0).ShouldBeFalse(
             $"Expected contract types to end with 'Dto', but found: {string.Join(", ", offendingTypes.Select(t => t.FullName))}");
     }
 
@@ -60,8 +58,7 @@ public sealed partial class NamingConventionTests
             .Where(type => !type.Name.EndsWith("Tests", StringComparison.Ordinal))
             .ToArray();
 
-        Assert.False(
-            offendingTypes.Length != 0,
+        (offendingTypes.Length != 0).ShouldBeFalse(
             $"Expected architecture test classes to end with 'Tests', but found: {string.Join(", ", offendingTypes.Select(t => t.FullName))}");
     }
 
@@ -75,8 +72,7 @@ public sealed partial class NamingConventionTests
             .SelectMany(path => FindOffendingXunitMethods(repositoryRoot, path))
             .ToArray();
 
-        Assert.False(
-            offendingMethods.Length != 0,
+        (offendingMethods.Length != 0).ShouldBeFalse(
             $"Expected xUnit test methods to follow the underscore naming convention, but found:{Environment.NewLine}{string.Join(Environment.NewLine, offendingMethods)}");
     }
 
@@ -102,8 +98,7 @@ public sealed partial class NamingConventionTests
             })
             .ToArray();
 
-        Assert.False(
-            offendingFiles.Length != 0,
+        (offendingFiles.Length != 0).ShouldBeFalse(
             $"Expected behavior feature files to use kebab-case or the tracked legacy PascalCase style, but found:{Environment.NewLine}{string.Join(Environment.NewLine, offendingFiles)}");
     }
 
@@ -119,8 +114,7 @@ public sealed partial class NamingConventionTests
             .SelectMany(path => FindOffendingAssertionMethodCalls(repositoryRoot, path))
             .ToArray();
 
-        Assert.False(
-            offendingAssertions.Length != 0,
+        (offendingAssertions.Length != 0).ShouldBeFalse(
             $"Expected mediator tests to assign method-call results to locals before simple assertions, but found:{Environment.NewLine}{string.Join(Environment.NewLine, offendingAssertions)}");
     }
 

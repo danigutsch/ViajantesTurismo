@@ -26,7 +26,7 @@ public sealed class ImportCustomersInteractiveMappingTests : BunitContext
         cut.WaitForAssertion(() =>
         {
             var selects = cut.FindAll("select.form-select-sm");
-            Assert.Equal(CustomerImportHeaderMatcher.Fields.Count, selects.Count);
+            TestAssert.Equal(CustomerImportHeaderMatcher.Fields.Count, selects.Count);
         });
     }
 
@@ -41,12 +41,12 @@ public sealed class ImportCustomersInteractiveMappingTests : BunitContext
         cut.FindComponent<InputFile>().UploadFiles(file);
 
         // Assert
-        cut.WaitForAssertion(() => Assert.Contains("Optional", cut.Markup, StringComparison.Ordinal));
+        cut.WaitForAssertion(() => TestAssert.Contains("Optional", cut.Markup, StringComparison.Ordinal));
         var optionalCount = CustomerImportHeaderMatcher.Fields.Count(f => !f.IsRequired);
         var optionalBadges = cut.FindAll(".badge.bg-secondary")
             .Where(b => b.TextContent.Trim() == "Optional")
             .ToList();
-        Assert.Equal(optionalCount, optionalBadges.Count);
+        TestAssert.Equal(optionalCount, optionalBadges.Count);
     }
 
     [Fact]
@@ -64,8 +64,8 @@ public sealed class ImportCustomersInteractiveMappingTests : BunitContext
         {
             var emailSelect = cut.Find("select[data-field='Email']");
             var selectedOption = emailSelect.QuerySelector("option[selected]");
-            Assert.NotNull(selectedOption);
-            Assert.Equal("Email", selectedOption.GetAttribute("value"));
+            _ = TestAssert.NotNull(selectedOption);
+            TestAssert.Equal("Email", selectedOption.GetAttribute("value"));
         });
     }
 
@@ -82,7 +82,7 @@ public sealed class ImportCustomersInteractiveMappingTests : BunitContext
         cut.Find("select[data-field='Email']").Change("");
 
         // Assert — import disabled because required field is now unassigned
-        Assert.True(ImportCustomersTestDomHelper.FindButtonByText(cut, "Preview").HasAttribute("disabled"));
+        TestAssert.True(ImportCustomersTestDomHelper.FindButtonByText(cut, "Preview").HasAttribute("disabled"));
     }
 
     [Fact]
@@ -99,6 +99,6 @@ public sealed class ImportCustomersInteractiveMappingTests : BunitContext
         cut.Find($"select[data-field='{optionalFieldName}']").Change("");
 
         // Assert — import still enabled (optional field not required)
-        Assert.False(ImportCustomersTestDomHelper.FindButtonByText(cut, "Preview").HasAttribute("disabled"));
+        TestAssert.False(ImportCustomersTestDomHelper.FindButtonByText(cut, "Preview").HasAttribute("disabled"));
     }
 }

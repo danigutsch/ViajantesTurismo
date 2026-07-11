@@ -18,10 +18,10 @@ public class ResultExtensionsResponseMappingTests
         var details = AssertValidationProblemDetails(validationProblem);
 
         // Assert
-        Assert.Equal(StatusCodes.Status400BadRequest, validationProblem.StatusCode);
-        Assert.Equal(StatusCodes.Status400BadRequest, details.Status);
-        Assert.Equal("Validation failed.", details.Detail);
-        Assert.Equal(["Email is invalid."], details.Errors["Email"]);
+        TestAssert.Equal(StatusCodes.Status400BadRequest, validationProblem.StatusCode);
+        TestAssert.Equal(StatusCodes.Status400BadRequest, details.Status);
+        TestAssert.Equal("Validation failed.", details.Detail);
+        TestAssert.Equal(["Email is invalid."], details.Errors["Email"]);
     }
 
     [Fact]
@@ -31,10 +31,10 @@ public class ResultExtensionsResponseMappingTests
         var successfulResult = Result.Ok();
 
         // Act
-        var exception = Assert.Throws<InvalidOperationException>(() => successfulResult.ToValidationProblem());
+        var exception = TestAssert.Throws<InvalidOperationException>(() => successfulResult.ToValidationProblem());
 
         // Assert
-        Assert.Equal("Cannot convert a successful result to a ValidationProblem.", exception.Message);
+        TestAssert.Equal("Cannot convert a successful result to a ValidationProblem.", exception.Message);
     }
 
     [Fact]
@@ -44,10 +44,10 @@ public class ResultExtensionsResponseMappingTests
         var resultWithUnknownStatus = default(Result);
 
         // Act
-        var exception = Assert.Throws<InvalidOperationException>(() => resultWithUnknownStatus.ToValidationProblem());
+        var exception = TestAssert.Throws<InvalidOperationException>(() => resultWithUnknownStatus.ToValidationProblem());
 
         // Assert
-        Assert.Equal("Only results with status 'Invalid' can be converted to a ValidationProblem.", exception.Message);
+        TestAssert.Equal("Only results with status 'Invalid' can be converted to a ValidationProblem.", exception.Message);
     }
 
     [Fact]
@@ -57,10 +57,10 @@ public class ResultExtensionsResponseMappingTests
         var malformedInvalidResult = CreateMalformedFailureResult(ResultStatus.Invalid, null);
 
         // Act
-        var exception = Assert.Throws<InvalidOperationException>(() => malformedInvalidResult.ToValidationProblem());
+        var exception = TestAssert.Throws<InvalidOperationException>(() => malformedInvalidResult.ToValidationProblem());
 
         // Assert
-        Assert.Equal("Error details are required to convert to a ValidationProblem.", exception.Message);
+        TestAssert.Equal("Error details are required to convert to a ValidationProblem.", exception.Message);
     }
 
     [Fact]
@@ -70,10 +70,10 @@ public class ResultExtensionsResponseMappingTests
         var malformedInvalidResult = CreateMalformedFailureResult(ResultStatus.Invalid, new ResultError("Validation failed."));
 
         // Act
-        var exception = Assert.Throws<InvalidOperationException>(() => malformedInvalidResult.ToValidationProblem());
+        var exception = TestAssert.Throws<InvalidOperationException>(() => malformedInvalidResult.ToValidationProblem());
 
         // Assert
-        Assert.Equal("Validation errors are required to convert to a ValidationProblem.", exception.Message);
+        TestAssert.Equal("Validation errors are required to convert to a ValidationProblem.", exception.Message);
     }
 
     [Fact]
@@ -87,10 +87,10 @@ public class ResultExtensionsResponseMappingTests
         var details = AssertValidationProblemDetails(validationProblem);
 
         // Assert
-        Assert.Equal(StatusCodes.Status400BadRequest, validationProblem.StatusCode);
-        Assert.Equal(StatusCodes.Status400BadRequest, details.Status);
-        Assert.Equal("Validation failed.", details.Detail);
-        Assert.Equal(["Email is invalid."], details.Errors["Email"]);
+        TestAssert.Equal(StatusCodes.Status400BadRequest, validationProblem.StatusCode);
+        TestAssert.Equal(StatusCodes.Status400BadRequest, details.Status);
+        TestAssert.Equal("Validation failed.", details.Detail);
+        TestAssert.Equal(["Email is invalid."], details.Errors["Email"]);
     }
 
     [Fact]
@@ -100,10 +100,10 @@ public class ResultExtensionsResponseMappingTests
         var successfulResult = Result.Ok("done");
 
         // Act
-        var exception = Assert.Throws<InvalidOperationException>(() => successfulResult.ToValidationProblem());
+        var exception = TestAssert.Throws<InvalidOperationException>(() => successfulResult.ToValidationProblem());
 
         // Assert
-        Assert.Equal("Cannot convert a successful result to a ValidationProblem.", exception.Message);
+        TestAssert.Equal("Cannot convert a successful result to a ValidationProblem.", exception.Message);
     }
 
     [Fact]
@@ -113,10 +113,10 @@ public class ResultExtensionsResponseMappingTests
         var resultWithUnknownStatus = default(Result<string>);
 
         // Act
-        var exception = Assert.Throws<InvalidOperationException>(() => resultWithUnknownStatus.ToValidationProblem());
+        var exception = TestAssert.Throws<InvalidOperationException>(() => resultWithUnknownStatus.ToValidationProblem());
 
         // Assert
-        Assert.Equal("Only results with status 'Invalid' can be converted to a ValidationProblem.", exception.Message);
+        TestAssert.Equal("Only results with status 'Invalid' can be converted to a ValidationProblem.", exception.Message);
     }
 
     [Fact]
@@ -126,10 +126,10 @@ public class ResultExtensionsResponseMappingTests
         var malformedInvalidResult = CreateMalformedFailureResult<string>(ResultStatus.Invalid, null, null);
 
         // Act
-        var exception = Assert.Throws<InvalidOperationException>(() => malformedInvalidResult.ToValidationProblem());
+        var exception = TestAssert.Throws<InvalidOperationException>(() => malformedInvalidResult.ToValidationProblem());
 
         // Assert
-        Assert.Equal("Error details are required to convert to a ValidationProblem.", exception.Message);
+        TestAssert.Equal("Error details are required to convert to a ValidationProblem.", exception.Message);
     }
 
     [Fact]
@@ -139,10 +139,10 @@ public class ResultExtensionsResponseMappingTests
         var malformedInvalidResult = CreateMalformedFailureResult<string>(ResultStatus.Invalid, null, new ResultError("Validation failed."));
 
         // Act
-        var exception = Assert.Throws<InvalidOperationException>(() => malformedInvalidResult.ToValidationProblem());
+        var exception = TestAssert.Throws<InvalidOperationException>(() => malformedInvalidResult.ToValidationProblem());
 
         // Assert
-        Assert.Equal("Validation errors are required to convert to a ValidationProblem.", exception.Message);
+        TestAssert.Equal("Validation errors are required to convert to a ValidationProblem.", exception.Message);
     }
 
     [Fact]
@@ -155,11 +155,11 @@ public class ResultExtensionsResponseMappingTests
         var notFoundResult = failedResult.ToNotFound();
 
         // Assert
-        Assert.Equal(StatusCodes.Status404NotFound, notFoundResult.StatusCode);
-        Assert.NotNull(notFoundResult.Value);
-        Assert.Equal("Resource Not Found", notFoundResult.Value.Title);
-        Assert.Equal("Customer was not found.", notFoundResult.Value.Detail);
-        Assert.Equal(StatusCodes.Status404NotFound, notFoundResult.Value.Status);
+        TestAssert.Equal(StatusCodes.Status404NotFound, notFoundResult.StatusCode);
+        TestAssert.NotNull(notFoundResult.Value);
+        TestAssert.Equal("Resource Not Found", notFoundResult.Value.Title);
+        TestAssert.Equal("Customer was not found.", notFoundResult.Value.Detail);
+        TestAssert.Equal(StatusCodes.Status404NotFound, notFoundResult.Value.Status);
     }
 
     [Fact]
@@ -169,10 +169,10 @@ public class ResultExtensionsResponseMappingTests
         var successfulResult = Result.Ok();
 
         // Act
-        var exception = Assert.Throws<InvalidOperationException>(() => successfulResult.ToNotFound());
+        var exception = TestAssert.Throws<InvalidOperationException>(() => successfulResult.ToNotFound());
 
         // Assert
-        Assert.Equal("Cannot convert a successful result to NotFound.", exception.Message);
+        TestAssert.Equal("Cannot convert a successful result to NotFound.", exception.Message);
     }
 
     [Fact]
@@ -182,10 +182,10 @@ public class ResultExtensionsResponseMappingTests
         var resultWithUnknownStatus = default(Result);
 
         // Act
-        var exception = Assert.Throws<InvalidOperationException>(() => resultWithUnknownStatus.ToNotFound());
+        var exception = TestAssert.Throws<InvalidOperationException>(() => resultWithUnknownStatus.ToNotFound());
 
         // Assert
-        Assert.Equal("Only results with status 'NotFound' can be converted to NotFound.", exception.Message);
+        TestAssert.Equal("Only results with status 'NotFound' can be converted to NotFound.", exception.Message);
     }
 
     [Fact]
@@ -198,11 +198,11 @@ public class ResultExtensionsResponseMappingTests
         var notFoundResult = failedResult.ToNotFound();
 
         // Assert
-        Assert.Equal(StatusCodes.Status404NotFound, notFoundResult.StatusCode);
-        Assert.NotNull(notFoundResult.Value);
-        Assert.Equal("Resource Not Found", notFoundResult.Value.Title);
-        Assert.Equal("Customer was not found.", notFoundResult.Value.Detail);
-        Assert.Equal(StatusCodes.Status404NotFound, notFoundResult.Value.Status);
+        TestAssert.Equal(StatusCodes.Status404NotFound, notFoundResult.StatusCode);
+        TestAssert.NotNull(notFoundResult.Value);
+        TestAssert.Equal("Resource Not Found", notFoundResult.Value.Title);
+        TestAssert.Equal("Customer was not found.", notFoundResult.Value.Detail);
+        TestAssert.Equal(StatusCodes.Status404NotFound, notFoundResult.Value.Status);
     }
 
     [Fact]
@@ -212,10 +212,10 @@ public class ResultExtensionsResponseMappingTests
         var successfulResult = Result.Ok("done");
 
         // Act
-        var exception = Assert.Throws<InvalidOperationException>(() => successfulResult.ToNotFound());
+        var exception = TestAssert.Throws<InvalidOperationException>(() => successfulResult.ToNotFound());
 
         // Assert
-        Assert.Equal("Cannot convert a successful result to NotFound.", exception.Message);
+        TestAssert.Equal("Cannot convert a successful result to NotFound.", exception.Message);
     }
 
     [Fact]
@@ -225,10 +225,10 @@ public class ResultExtensionsResponseMappingTests
         var resultWithUnknownStatus = default(Result<string>);
 
         // Act
-        var exception = Assert.Throws<InvalidOperationException>(() => resultWithUnknownStatus.ToNotFound());
+        var exception = TestAssert.Throws<InvalidOperationException>(() => resultWithUnknownStatus.ToNotFound());
 
         // Assert
-        Assert.Equal("Only results with status 'NotFound' can be converted to NotFound.", exception.Message);
+        TestAssert.Equal("Only results with status 'NotFound' can be converted to NotFound.", exception.Message);
     }
 
     [Fact]
@@ -241,11 +241,11 @@ public class ResultExtensionsResponseMappingTests
         var conflictResult = failedResult.ToConflict();
 
         // Assert
-        Assert.Equal(StatusCodes.Status409Conflict, conflictResult.StatusCode);
-        Assert.NotNull(conflictResult.Value);
-        Assert.Equal("Conflict", conflictResult.Value.Title);
-        Assert.Equal("Customer already exists.", conflictResult.Value.Detail);
-        Assert.Equal(StatusCodes.Status409Conflict, conflictResult.Value.Status);
+        TestAssert.Equal(StatusCodes.Status409Conflict, conflictResult.StatusCode);
+        TestAssert.NotNull(conflictResult.Value);
+        TestAssert.Equal("Conflict", conflictResult.Value.Title);
+        TestAssert.Equal("Customer already exists.", conflictResult.Value.Detail);
+        TestAssert.Equal(StatusCodes.Status409Conflict, conflictResult.Value.Status);
     }
 
     [Fact]
@@ -255,10 +255,10 @@ public class ResultExtensionsResponseMappingTests
         var successfulResult = Result.Ok();
 
         // Act
-        var exception = Assert.Throws<InvalidOperationException>(() => successfulResult.ToConflict());
+        var exception = TestAssert.Throws<InvalidOperationException>(() => successfulResult.ToConflict());
 
         // Assert
-        Assert.Equal("Cannot convert a successful result to Conflict.", exception.Message);
+        TestAssert.Equal("Cannot convert a successful result to Conflict.", exception.Message);
     }
 
     [Fact]
@@ -268,10 +268,10 @@ public class ResultExtensionsResponseMappingTests
         var resultWithUnknownStatus = default(Result);
 
         // Act
-        var exception = Assert.Throws<InvalidOperationException>(() => resultWithUnknownStatus.ToConflict());
+        var exception = TestAssert.Throws<InvalidOperationException>(() => resultWithUnknownStatus.ToConflict());
 
         // Assert
-        Assert.Equal("Only results with status 'Conflict' can be converted to Conflict.", exception.Message);
+        TestAssert.Equal("Only results with status 'Conflict' can be converted to Conflict.", exception.Message);
     }
 
     [Fact]
@@ -284,11 +284,11 @@ public class ResultExtensionsResponseMappingTests
         var conflictResult = failedResult.ToConflict();
 
         // Assert
-        Assert.Equal(StatusCodes.Status409Conflict, conflictResult.StatusCode);
-        Assert.NotNull(conflictResult.Value);
-        Assert.Equal("Conflict", conflictResult.Value.Title);
-        Assert.Equal("Customer already exists.", conflictResult.Value.Detail);
-        Assert.Equal(StatusCodes.Status409Conflict, conflictResult.Value.Status);
+        TestAssert.Equal(StatusCodes.Status409Conflict, conflictResult.StatusCode);
+        TestAssert.NotNull(conflictResult.Value);
+        TestAssert.Equal("Conflict", conflictResult.Value.Title);
+        TestAssert.Equal("Customer already exists.", conflictResult.Value.Detail);
+        TestAssert.Equal(StatusCodes.Status409Conflict, conflictResult.Value.Status);
     }
 
     [Fact]
@@ -298,10 +298,10 @@ public class ResultExtensionsResponseMappingTests
         var successfulResult = Result.Ok("done");
 
         // Act
-        var exception = Assert.Throws<InvalidOperationException>(() => successfulResult.ToConflict());
+        var exception = TestAssert.Throws<InvalidOperationException>(() => successfulResult.ToConflict());
 
         // Assert
-        Assert.Equal("Cannot convert a successful result to Conflict.", exception.Message);
+        TestAssert.Equal("Cannot convert a successful result to Conflict.", exception.Message);
     }
 
     [Fact]
@@ -311,10 +311,10 @@ public class ResultExtensionsResponseMappingTests
         var resultWithUnknownStatus = default(Result<string>);
 
         // Act
-        var exception = Assert.Throws<InvalidOperationException>(() => resultWithUnknownStatus.ToConflict());
+        var exception = TestAssert.Throws<InvalidOperationException>(() => resultWithUnknownStatus.ToConflict());
 
         // Assert
-        Assert.Equal("Only results with status 'Conflict' can be converted to Conflict.", exception.Message);
+        TestAssert.Equal("Only results with status 'Conflict' can be converted to Conflict.", exception.Message);
     }
 
 }

@@ -31,9 +31,9 @@ public sealed class IdentificationPageTests : BunitContext
         await cut.InvokeAsync(() => Task.CompletedTask);
 
         // Assert
-        Assert.Equal("123456789", cut.Find("#nationalId").GetAttribute("value"));
-        Assert.Contains("Brazil", cut.Markup, StringComparison.Ordinal);
-        Assert.Equal(2, _state.CurrentStep);
+        TestAssert.Equal("123456789", cut.Find("#nationalId").GetAttribute("value"));
+        TestAssert.Contains("Brazil", cut.Markup, StringComparison.Ordinal);
+        TestAssert.Equal(2, _state.CurrentStep);
     }
 
     [Fact]
@@ -51,11 +51,11 @@ public sealed class IdentificationPageTests : BunitContext
         await cut.InvokeAsync(async () => await cut.Find("form").SubmitAsync());
 
         // Assert
-        await cut.WaitForAssertionAsync(() => Assert.EndsWith("/customers/create/contact", navigationManager.Uri, StringComparison.Ordinal));
-        Assert.NotNull(_state.IdentificationInfo);
-        Assert.Equal("123456789", _state.IdentificationInfo!.NationalId);
-        Assert.Equal("Brazil", _state.IdentificationInfo.IdNationality);
-        Assert.Equal(3, _state.CurrentStep);
+        await cut.WaitForAssertionAsync(() => TestAssert.EndsWith("/customers/create/contact", navigationManager.Uri, StringComparison.Ordinal));
+        TestAssert.NotNull(_state.IdentificationInfo);
+        TestAssert.Equal("123456789", _state.IdentificationInfo!.NationalId);
+        TestAssert.Equal("Brazil", _state.IdentificationInfo.IdNationality);
+        TestAssert.Equal(3, _state.CurrentStep);
     }
 
     [Fact]
@@ -71,7 +71,7 @@ public sealed class IdentificationPageTests : BunitContext
         await cut.InvokeAsync(() => backButton.Click());
 
         // Assert
-        await cut.WaitForAssertionAsync(() => Assert.EndsWith("/customers/create/personal-info", navigationManager.Uri, StringComparison.Ordinal));
-        Assert.Equal(1, _state.CurrentStep);
+        await cut.WaitForAssertionAsync(() => TestAssert.EndsWith("/customers/create/personal-info", navigationManager.Uri, StringComparison.Ordinal));
+        TestAssert.Equal(1, _state.CurrentStep);
     }
 }

@@ -14,7 +14,7 @@ internal sealed class UiFeedbackAssertions(IPage page)
     {
         var toast = page.Locator(".toast.show").Filter(new LocatorFilterOptions { HasText = expectedText });
         await toast.First.WaitForAsync();
-        Assert.Contains(expectedText, await toast.First.InnerTextAsync(), StringComparison.Ordinal);
+        TestAssert.Contains(expectedText, await toast.First.InnerTextAsync(), StringComparison.Ordinal);
     }
 
     /// <summary>
@@ -26,7 +26,7 @@ internal sealed class UiFeedbackAssertions(IPage page)
     {
         var toast = page.Locator(".toast").Filter(new LocatorFilterOptions { HasText = expectedText });
         await toast.First.WaitForAsync();
-        Assert.Contains(expectedText, await toast.First.InnerTextAsync(), StringComparison.Ordinal);
+        TestAssert.Contains(expectedText, await toast.First.InnerTextAsync(), StringComparison.Ordinal);
         await toast.First.WaitForAsync(new LocatorWaitForOptions
         {
             State = WaitForSelectorState.Hidden,
@@ -42,7 +42,7 @@ internal sealed class UiFeedbackAssertions(IPage page)
     {
         var redirectAlert = page.Locator(".alert-info").Filter(new LocatorFilterOptions { HasText = "Redirecting" });
         await redirectAlert.WaitForAsync();
-        Assert.Contains(expectedText, await redirectAlert.InnerTextAsync(), StringComparison.Ordinal);
+        TestAssert.Contains(expectedText, await redirectAlert.InnerTextAsync(), StringComparison.Ordinal);
         await redirectAlert.GetButton("Cancel").WaitForAsync();
     }
 }

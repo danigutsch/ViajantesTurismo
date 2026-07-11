@@ -28,9 +28,9 @@ public sealed class EmergencyContactPageTests : BunitContext
         var cut = Render<EmergencyContact>();
 
         // Assert
-        Assert.Equal("Maria Silva", cut.Find("#name").GetAttribute("value"));
-        Assert.Equal("+55 11 98888-8888", cut.Find("#mobile").GetAttribute("value"));
-        Assert.Equal(7, _state.CurrentStep);
+        TestAssert.Equal("Maria Silva", cut.Find("#name").GetAttribute("value"));
+        TestAssert.Equal("+55 11 98888-8888", cut.Find("#mobile").GetAttribute("value"));
+        TestAssert.Equal(7, _state.CurrentStep);
     }
 
     [Fact]
@@ -46,11 +46,11 @@ public sealed class EmergencyContactPageTests : BunitContext
         await cut.InvokeAsync(async () => await cut.Find("form").SubmitAsync());
 
         // Assert
-        await cut.WaitForAssertionAsync(() => Assert.EndsWith("/customers/create/medical", navigationManager.Uri, StringComparison.Ordinal));
-        Assert.NotNull(_state.EmergencyContact);
-        Assert.Equal("Maria Silva", _state.EmergencyContact!.Name);
-        Assert.Equal("+55 11 98888-8888", _state.EmergencyContact.Mobile);
-        Assert.Equal(8, _state.CurrentStep);
+        await cut.WaitForAssertionAsync(() => TestAssert.EndsWith("/customers/create/medical", navigationManager.Uri, StringComparison.Ordinal));
+        TestAssert.NotNull(_state.EmergencyContact);
+        TestAssert.Equal("Maria Silva", _state.EmergencyContact!.Name);
+        TestAssert.Equal("+55 11 98888-8888", _state.EmergencyContact.Mobile);
+        TestAssert.Equal(8, _state.CurrentStep);
     }
 
     [Fact]
@@ -65,7 +65,7 @@ public sealed class EmergencyContactPageTests : BunitContext
         await cut.InvokeAsync(() => backButton.Click());
 
         // Assert
-        await cut.WaitForAssertionAsync(() => Assert.EndsWith("/customers/create/accommodation", navigationManager.Uri, StringComparison.Ordinal));
-        Assert.Equal(6, _state.CurrentStep);
+        await cut.WaitForAssertionAsync(() => TestAssert.EndsWith("/customers/create/accommodation", navigationManager.Uri, StringComparison.Ordinal));
+        TestAssert.Equal(6, _state.CurrentStep);
     }
 }

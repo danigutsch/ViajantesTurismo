@@ -24,7 +24,7 @@ public class EditPageTests : BunitContext
 
         // Assert
         var markup = cut.Markup;
-        Assert.True(markup.Contains("Loading...", StringComparison.Ordinal) || markup.Contains("Tour not found", StringComparison.Ordinal) ||
+        TestAssert.True(markup.Contains("Loading...", StringComparison.Ordinal) || markup.Contains("Tour not found", StringComparison.Ordinal) ||
                     markup.Contains("input#identifier", StringComparison.Ordinal));
     }
 
@@ -41,8 +41,8 @@ public class EditPageTests : BunitContext
         // Assert
         await cut.WaitForStateAsync(() => cut.FindAll("input#identifier").Count > 0, TimeSpan.FromSeconds(2));
 
-        Assert.Equal("CUBA2024", cut.Find("input#identifier").GetAttribute("value"));
-        Assert.Equal("Cuba Adventure", cut.Find("input#name").GetAttribute("value"));
+        TestAssert.Equal("CUBA2024", cut.Find("input#identifier").GetAttribute("value"));
+        TestAssert.Equal("Cuba Adventure", cut.Find("input#name").GetAttribute("value"));
     }
 
     [Fact]
@@ -59,7 +59,7 @@ public class EditPageTests : BunitContext
         await cut.WaitForStateAsync(() => cut.FindAll("h1").Count > 0, TimeSpan.FromSeconds(2));
 
         var title = cut.Find("h1");
-        Assert.Equal("Edit Tour", title.TextContent);
+        TestAssert.Equal("Edit Tour", title.TextContent);
     }
 
     [Fact]
@@ -77,9 +77,9 @@ public class EditPageTests : BunitContext
 
         var markup = cut.Markup;
 
-        Assert.Contains("Hotel", markup, StringComparison.Ordinal);
-        Assert.Contains("Breakfast", markup, StringComparison.Ordinal);
-        Assert.Contains("Lunch", markup, StringComparison.Ordinal);
+        TestAssert.Contains("Hotel", markup, StringComparison.Ordinal);
+        TestAssert.Contains("Breakfast", markup, StringComparison.Ordinal);
+        TestAssert.Contains("Lunch", markup, StringComparison.Ordinal);
     }
 
     [Fact]
@@ -100,7 +100,7 @@ public class EditPageTests : BunitContext
         await cut.WaitForStateAsync(() => cut.FindAll(".alert-info").Count > 0, TimeSpan.FromSeconds(2));
 
         var cancelButton = cut.FindAll("button").First(b => b.TextContent.Contains("Cancel", StringComparison.Ordinal));
-        Assert.NotNull(cancelButton);
+        _ = TestAssert.NotNull(cancelButton);
     }
 
     [Fact]
@@ -128,10 +128,10 @@ public class EditPageTests : BunitContext
             TimeSpan.FromSeconds(2));
 
         var successAlerts = cut.FindAll(".alert-success");
-        Assert.True(successAlerts.Count >= 1, "Should have at least one success alert");
+        TestAssert.True(successAlerts.Count >= 1, "Should have at least one success alert");
 
         var markup = cut.Markup;
-        Assert.Contains("You can go to the details page now", markup, StringComparison.Ordinal);
+        TestAssert.Contains("You can go to the details page now", markup, StringComparison.Ordinal);
     }
 
     [Fact]
@@ -158,7 +158,7 @@ public class EditPageTests : BunitContext
             TimeSpan.FromSeconds(2));
 
         var goToDetailsButton = cut.FindAll("button").First(b => b.TextContent.Contains("Go to Details", StringComparison.Ordinal));
-        Assert.NotNull(goToDetailsButton);
+        _ = TestAssert.NotNull(goToDetailsButton);
     }
 
     [Fact]
@@ -181,8 +181,8 @@ public class EditPageTests : BunitContext
         await cut.WaitForStateAsync(() => cut.FindAll(".alert-danger").Count > 0, TimeSpan.FromSeconds(2));
 
         var errorAlert = cut.Find(".alert-danger");
-        Assert.Contains("We couldn't update the tour right now. Please try again.", errorAlert.TextContent, StringComparison.Ordinal);
-        Assert.DoesNotContain("Failed to update tour", errorAlert.TextContent, StringComparison.Ordinal);
+        TestAssert.Contains("We couldn't update the tour right now. Please try again.", errorAlert.TextContent, StringComparison.Ordinal);
+        TestAssert.DoesNotContain("Failed to update tour", errorAlert.TextContent, StringComparison.Ordinal);
     }
 
     [Fact]
@@ -201,7 +201,7 @@ public class EditPageTests : BunitContext
 
         // Assert
         await cut.WaitForAssertionAsync(() =>
-            Assert.True(
+            TestAssert.True(
                 cut.Find("button[type='submit']").TextContent.Contains("Updating...", StringComparison.Ordinal)
                 || cut.FindAll(".alert-success").Count > 0),
             TimeSpan.FromSeconds(2));
@@ -226,9 +226,9 @@ public class EditPageTests : BunitContext
         await cut.WaitForStateAsync(() => cut.FindAll(".alert-success").Count > 0, TimeSpan.FromSeconds(2));
 
         var updatedTour = await _fakeToursApi.GetTourById(tour.Id, CancellationToken.None);
-        Assert.NotNull(updatedTour);
-        Assert.Equal("Updated Cuba Adventure", updatedTour.Name);
-        Assert.Equal(1750.50m, updatedTour.Price);
+        _ = TestAssert.NotNull(updatedTour);
+        TestAssert.Equal("Updated Cuba Adventure", updatedTour.Name);
+        TestAssert.Equal(1750.50m, updatedTour.Price);
     }
 
     [Fact]
@@ -246,8 +246,8 @@ public class EditPageTests : BunitContext
         await cut.WaitForStateAsync(() => cut.FindAll(".alert-danger").Count > 0, TimeSpan.FromSeconds(2));
 
         var errorAlert = cut.Find(".alert-danger");
-        Assert.Contains("We couldn't load the tour right now. Please try again.", errorAlert.TextContent, StringComparison.Ordinal);
-        Assert.DoesNotContain("Database error", errorAlert.TextContent, StringComparison.Ordinal);
+        TestAssert.Contains("We couldn't load the tour right now. Please try again.", errorAlert.TextContent, StringComparison.Ordinal);
+        TestAssert.DoesNotContain("Database error", errorAlert.TextContent, StringComparison.Ordinal);
     }
 
     [Fact]
@@ -264,7 +264,7 @@ public class EditPageTests : BunitContext
         await cut.WaitForStateAsync(() => cut.FindAll("input#identifier").Count > 0, TimeSpan.FromSeconds(2));
 
         var identifier = cut.Find("input#identifier");
-        Assert.False(identifier.HasAttribute("disabled"));
+        TestAssert.False(identifier.HasAttribute("disabled"));
     }
 
     [Fact]
@@ -281,7 +281,7 @@ public class EditPageTests : BunitContext
         await cut.WaitForStateAsync(() => cut.FindAll("input#identifier").Count > 0, TimeSpan.FromSeconds(2));
 
         var identifier = cut.Find("input#identifier");
-        Assert.True(identifier.HasAttribute("disabled"));
+        TestAssert.True(identifier.HasAttribute("disabled"));
     }
 
     [Fact]
@@ -298,7 +298,7 @@ public class EditPageTests : BunitContext
         await cut.WaitForStateAsync(() => cut.FindAll("select#currency").Count > 0, TimeSpan.FromSeconds(2));
 
         var currency = cut.Find("select#currency");
-        Assert.False(currency.HasAttribute("disabled"));
+        TestAssert.False(currency.HasAttribute("disabled"));
     }
 
     [Fact]
@@ -315,7 +315,7 @@ public class EditPageTests : BunitContext
         await cut.WaitForStateAsync(() => cut.FindAll("select#currency").Count > 0, TimeSpan.FromSeconds(2));
 
         var currency = cut.Find("select#currency");
-        Assert.True(currency.HasAttribute("disabled"));
+        TestAssert.True(currency.HasAttribute("disabled"));
     }
 
 }

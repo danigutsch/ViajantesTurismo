@@ -30,12 +30,12 @@ public sealed class PersonalInfoPageTests : BunitContext
 
         // Assert — inline ValidationMessage elements (rendered as <div>) should be present
         var inlineMessages = cut.FindAll("div.validation-message");
-        Assert.NotEmpty(inlineMessages);
+        TestAssert.NotEmpty(inlineMessages);
 
         // Assert — ValidationSummary (rendered as <ul class="alert alert-danger">)
         // should NOT be present to avoid duplicating the inline messages (BUG-004).
         var validationSummaries = cut.FindAll("ul.alert-danger");
-        Assert.Empty(validationSummaries);
+        TestAssert.Empty(validationSummaries);
     }
 
     [Fact]
@@ -46,13 +46,13 @@ public sealed class PersonalInfoPageTests : BunitContext
         await cut.InvokeAsync(() => Task.CompletedTask);
 
         // Assert
-        Assert.NotNull(cut.Find("input#firstName"));
-        Assert.NotNull(cut.Find("input#lastName"));
-        Assert.NotNull(cut.Find("input#birthDate"));
-        Assert.NotNull(cut.Find("select#gender"));
-        Assert.NotNull(cut.Find("label[for='nationality']"));
-        Assert.NotNull(cut.Find("#nationality"));
-        Assert.NotNull(cut.Find("input#occupation"));
+        TestAssert.NotNull(cut.Find("input#firstName"));
+        TestAssert.NotNull(cut.Find("input#lastName"));
+        TestAssert.NotNull(cut.Find("input#birthDate"));
+        TestAssert.NotNull(cut.Find("select#gender"));
+        TestAssert.NotNull(cut.Find("label[for='nationality']"));
+        TestAssert.NotNull(cut.Find("#nationality"));
+        TestAssert.NotNull(cut.Find("input#occupation"));
     }
 
     [Fact]
@@ -67,8 +67,8 @@ public sealed class PersonalInfoPageTests : BunitContext
 
         // Assert
         var status = cut.Find("[role='status'][aria-live='polite'][aria-busy='true']");
-        Assert.Contains("Loading countries", status.TextContent, StringComparison.Ordinal);
-        Assert.NotNull(status.QuerySelector(".spinner-border[aria-hidden='true']"));
-        Assert.Empty(cut.FindAll("#nationality"));
+        TestAssert.Contains("Loading countries", status.TextContent, StringComparison.Ordinal);
+        TestAssert.NotNull(status.QuerySelector(".spinner-border[aria-hidden='true']"));
+        TestAssert.Empty(cut.FindAll("#nationality"));
     }
 }

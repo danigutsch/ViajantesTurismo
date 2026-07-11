@@ -1,5 +1,4 @@
 using System.Globalization;
-using SharedKernel.Testing.Assertions;
 using ViajantesTurismo.Admin.Application.Tours;
 using ViajantesTurismo.Admin.Domain.Tours;
 

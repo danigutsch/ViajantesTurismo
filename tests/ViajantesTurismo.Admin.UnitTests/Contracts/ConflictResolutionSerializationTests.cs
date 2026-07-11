@@ -14,7 +14,7 @@ public class ConflictResolutionSerializationTests
         var serialized = ConflictResolutionSerialization.Serialize(conflictResolutions);
 
         // Assert
-        Assert.Equal(string.Empty, serialized);
+        TestAssert.Equal(string.Empty, serialized);
     }
 
     [Fact]
@@ -32,8 +32,8 @@ public class ConflictResolutionSerializationTests
         var parsed = ConflictResolutionSerialization.Parse(serialized);
 
         // Assert
-        Assert.Equal("merge & keep", parsed["qa+one@example.com"]);
-        Assert.Equal("replace/overwrite", parsed["qa.two@example.com"]);
+        TestAssert.Equal("merge & keep", parsed["qa+one@example.com"]);
+        TestAssert.Equal("replace/overwrite", parsed["qa.two@example.com"]);
     }
 
     [Theory]
@@ -47,8 +47,8 @@ public class ConflictResolutionSerializationTests
         var parsed = ConflictResolutionSerialization.Parse(serialized);
 
         // Assert
-        Assert.Empty(parsed);
-        Assert.Equal(StringComparer.OrdinalIgnoreCase, parsed.Comparer);
+        TestAssert.Empty(parsed);
+        TestAssert.Equal(StringComparer.OrdinalIgnoreCase, parsed.Comparer);
     }
 
     [Fact]
@@ -61,8 +61,8 @@ public class ConflictResolutionSerializationTests
         var parsed = ConflictResolutionSerialization.Parse(serialized);
 
         // Assert
-        Assert.Single(parsed);
-        Assert.Equal("merge", parsed["valid@example.com"]);
+        TestAssert.ExactlyOne(parsed);
+        TestAssert.Equal("merge", parsed["valid@example.com"]);
     }
 
     [Fact]
@@ -75,8 +75,8 @@ public class ConflictResolutionSerializationTests
         var parsed = ConflictResolutionSerialization.Parse(serialized);
 
         // Assert
-        Assert.Single(parsed);
-        Assert.Equal("keep", parsed["valid@example.com"]);
+        TestAssert.ExactlyOne(parsed);
+        TestAssert.Equal("keep", parsed["valid@example.com"]);
     }
 
     [Fact]
@@ -89,7 +89,7 @@ public class ConflictResolutionSerializationTests
         var parsed = ConflictResolutionSerialization.Parse(serialized);
 
         // Assert
-        Assert.Single(parsed);
-        Assert.Equal("replace", parsed["USER@example.com"]);
+        TestAssert.ExactlyOne(parsed);
+        TestAssert.Equal("replace", parsed["USER@example.com"]);
     }
 }

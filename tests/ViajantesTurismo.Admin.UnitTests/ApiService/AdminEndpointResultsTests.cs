@@ -15,7 +15,7 @@ public class AdminEndpointResultsTests
             () => "not-found",
             () => "conflict");
 
-        Assert.Equal(expected, response);
+        TestAssert.Equal(expected, response);
     }
 
     [Theory]
@@ -28,7 +28,7 @@ public class AdminEndpointResultsTests
             () => "conflict",
             () => "invalid");
 
-        Assert.Equal(expected, response);
+        TestAssert.Equal(expected, response);
     }
 
     [Theory]
@@ -40,7 +40,7 @@ public class AdminEndpointResultsTests
             () => "not-found",
             () => "invalid");
 
-        Assert.Equal(expected, response);
+        TestAssert.Equal(expected, response);
     }
 
     [Theory]
@@ -52,19 +52,19 @@ public class AdminEndpointResultsTests
             () => "conflict",
             () => "invalid");
 
-        Assert.Equal(expected, response);
+        TestAssert.Equal(expected, response);
     }
 
     [Fact]
     public void Match_not_found_conflict_failure_with_unsupported_status_throws()
     {
-        var exception = Assert.Throws<InvalidOperationException>(() =>
+        var exception = TestAssert.Throws<InvalidOperationException>(() =>
             AdminEndpointResults.MatchNotFoundConflictFailure(
                 Result.Ok(),
                 () => "not-found",
                 () => "conflict"));
 
-        Assert.Equal("Unsupported result status 'Ok'.", exception.Message);
+        TestAssert.Equal("Unsupported result status 'Ok'.", exception.Message);
     }
 
     [Fact]
@@ -80,7 +80,7 @@ public class AdminEndpointResultsTests
             _ => "missing",
             CancellationToken.None);
 
-        Assert.Equal(booking.Id.ToString(), response);
+        TestAssert.Equal(booking.Id.ToString(), response);
     }
 
     [Fact]
@@ -96,7 +96,7 @@ public class AdminEndpointResultsTests
             missingBookingId => missingBookingId.ToString(),
             CancellationToken.None);
 
-        Assert.Equal(bookingId.ToString(), response);
+        TestAssert.Equal(bookingId.ToString(), response);
     }
 
     [Fact]
@@ -115,7 +115,7 @@ public class AdminEndpointResultsTests
             _ => "payment",
             CancellationToken.None);
 
-        Assert.Equal(payment.Id.ToString(), response);
+        TestAssert.Equal(payment.Id.ToString(), response);
     }
 
     [Fact]
@@ -134,7 +134,7 @@ public class AdminEndpointResultsTests
             missingPaymentId => missingPaymentId.ToString(),
             CancellationToken.None);
 
-        Assert.Equal(bookingId.ToString(), response);
+        TestAssert.Equal(bookingId.ToString(), response);
     }
 
     [Fact]
@@ -154,7 +154,7 @@ public class AdminEndpointResultsTests
             missingPaymentId => missingPaymentId.ToString(),
             CancellationToken.None);
 
-        Assert.Equal(paymentId.ToString(), response);
+        TestAssert.Equal(paymentId.ToString(), response);
     }
 
     [Fact]
@@ -172,7 +172,7 @@ public class AdminEndpointResultsTests
             () => "conflict",
             CancellationToken.None);
 
-        Assert.Equal(booking.Id.ToString(), response);
+        TestAssert.Equal(booking.Id.ToString(), response);
     }
 
     [Fact]
@@ -191,7 +191,7 @@ public class AdminEndpointResultsTests
             () => "invalid",
             CancellationToken.None);
 
-        Assert.Equal("invalid", response);
+        TestAssert.Equal("invalid", response);
     }
 
     [Fact]
@@ -209,7 +209,7 @@ public class AdminEndpointResultsTests
             () => "invalid",
             CancellationToken.None);
 
-        Assert.Equal("not-found", response);
+        TestAssert.Equal("not-found", response);
     }
 
     public static TheoryData<Result, string> NotFoundConflictFailures =>

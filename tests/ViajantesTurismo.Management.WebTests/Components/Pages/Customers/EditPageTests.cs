@@ -25,7 +25,7 @@ public class EditPageTests : BunitContext
 
         // Assert
         cut.WaitForAssertion(() =>
-            Assert.True(
+            TestAssert.True(
                 cut.Markup.Contains("Loading...", StringComparison.Ordinal)
                 || cut.Markup.Contains("Customer not found.", StringComparison.Ordinal)));
     }
@@ -45,8 +45,8 @@ public class EditPageTests : BunitContext
         await cut.WaitForAssertionAsync(() =>
         {
             var alert = cut.Find(".alert.alert-danger");
-            Assert.Contains("We couldn't load the customer right now. Please try again.", alert.TextContent, StringComparison.Ordinal);
-            Assert.DoesNotContain("Database unavailable", alert.TextContent, StringComparison.Ordinal);
+            TestAssert.Contains("We couldn't load the customer right now. Please try again.", alert.TextContent, StringComparison.Ordinal);
+            TestAssert.DoesNotContain("Database unavailable", alert.TextContent, StringComparison.Ordinal);
         });
     }
 
@@ -70,8 +70,8 @@ public class EditPageTests : BunitContext
         await cut.WaitForAssertionAsync(() =>
         {
             var alert = cut.Find(".alert.alert-danger");
-            Assert.Contains("We couldn't update the customer right now. Please try again.", alert.TextContent, StringComparison.Ordinal);
-            Assert.DoesNotContain("Customer update exploded", alert.TextContent, StringComparison.Ordinal);
+            TestAssert.Contains("We couldn't update the customer right now. Please try again.", alert.TextContent, StringComparison.Ordinal);
+            TestAssert.DoesNotContain("Customer update exploded", alert.TextContent, StringComparison.Ordinal);
         });
     }
 
@@ -91,13 +91,13 @@ public class EditPageTests : BunitContext
         await cut.WaitForAssertionAsync(() =>
         {
             var firstNameInput = cut.Find("input#firstName");
-            Assert.Equal(customer.PersonalInfo.FirstName, firstNameInput.GetAttribute("value"));
+            TestAssert.Equal(customer.PersonalInfo.FirstName, firstNameInput.GetAttribute("value"));
 
             var lastNameInput = cut.Find("input#lastName");
-            Assert.Equal(customer.PersonalInfo.LastName, lastNameInput.GetAttribute("value"));
+            TestAssert.Equal(customer.PersonalInfo.LastName, lastNameInput.GetAttribute("value"));
 
             var emailInput = cut.Find("input#email");
-            Assert.Equal(customer.ContactInfo.Email, emailInput.GetAttribute("value"));
+            TestAssert.Equal(customer.ContactInfo.Email, emailInput.GetAttribute("value"));
         });
     }
 
@@ -117,12 +117,12 @@ public class EditPageTests : BunitContext
         await cut.WaitForAssertionAsync(() =>
         {
             var card = cut.FindAll(".card").First(c => c.TextContent.Contains("Personal Information", StringComparison.Ordinal));
-            Assert.NotNull(card.QuerySelector("input#firstName"));
-            Assert.NotNull(card.QuerySelector("input#lastName"));
-            Assert.NotNull(card.QuerySelector("input#birthDate"));
-            Assert.NotNull(card.QuerySelector("input#gender"));
-            Assert.NotNull(card.QuerySelector("#nationality"));
-            Assert.NotNull(card.QuerySelector("input#occupation"));
+            TestAssert.NotNull(card.QuerySelector("input#firstName"));
+            TestAssert.NotNull(card.QuerySelector("input#lastName"));
+            TestAssert.NotNull(card.QuerySelector("input#birthDate"));
+            TestAssert.NotNull(card.QuerySelector("input#gender"));
+            TestAssert.NotNull(card.QuerySelector("#nationality"));
+            TestAssert.NotNull(card.QuerySelector("input#occupation"));
         });
     }
 
@@ -142,10 +142,10 @@ public class EditPageTests : BunitContext
         await cut.WaitForAssertionAsync(() =>
         {
             var card = cut.FindAll(".card").First(c => c.TextContent.Contains("Contact Information", StringComparison.Ordinal));
-            Assert.NotNull(card.QuerySelector("input#email"));
-            Assert.NotNull(card.QuerySelector("input#mobile"));
-            Assert.NotNull(card.QuerySelector("input#instagram"));
-            Assert.NotNull(card.QuerySelector("input#facebook"));
+            TestAssert.NotNull(card.QuerySelector("input#email"));
+            TestAssert.NotNull(card.QuerySelector("input#mobile"));
+            TestAssert.NotNull(card.QuerySelector("input#instagram"));
+            TestAssert.NotNull(card.QuerySelector("input#facebook"));
         });
     }
 
@@ -165,8 +165,8 @@ public class EditPageTests : BunitContext
         await cut.WaitForAssertionAsync(() =>
         {
             var card = cut.FindAll(".card").First(c => c.TextContent.Contains("Identification", StringComparison.Ordinal));
-            Assert.NotNull(card.QuerySelector("input#nationalId"));
-            Assert.NotNull(card.QuerySelector("#idNationality"));
+            TestAssert.NotNull(card.QuerySelector("input#nationalId"));
+            TestAssert.NotNull(card.QuerySelector("#idNationality"));
         });
     }
 
@@ -186,13 +186,13 @@ public class EditPageTests : BunitContext
         await cut.WaitForAssertionAsync(() =>
         {
             var card = cut.FindAll(".card").First(c => c.TextContent.Contains("Address", StringComparison.Ordinal));
-            Assert.NotNull(card.QuerySelector("input#street"));
-            Assert.NotNull(card.QuerySelector("input#complement"));
-            Assert.NotNull(card.QuerySelector("input#neighborhood"));
-            Assert.NotNull(card.QuerySelector("input#postalCode"));
-            Assert.NotNull(card.QuerySelector("input#city"));
-            Assert.NotNull(card.QuerySelector("input#state"));
-            Assert.NotNull(card.QuerySelector("input#country"));
+            TestAssert.NotNull(card.QuerySelector("input#street"));
+            TestAssert.NotNull(card.QuerySelector("input#complement"));
+            TestAssert.NotNull(card.QuerySelector("input#neighborhood"));
+            TestAssert.NotNull(card.QuerySelector("input#postalCode"));
+            TestAssert.NotNull(card.QuerySelector("input#city"));
+            TestAssert.NotNull(card.QuerySelector("input#state"));
+            TestAssert.NotNull(card.QuerySelector("input#country"));
         });
     }
 
@@ -214,15 +214,15 @@ public class EditPageTests : BunitContext
             var card = cut.FindAll(".card").First(c => c.TextContent.Contains("Physical Information", StringComparison.Ordinal));
 
             var weightInput = card.QuerySelector("input#weight");
-            Assert.NotNull(weightInput);
-            Assert.Contains("Weight (kg)", card.TextContent, StringComparison.Ordinal);
+            _ = TestAssert.NotNull(weightInput);
+            TestAssert.Contains("Weight (kg)", card.TextContent, StringComparison.Ordinal);
 
             var heightInput = card.QuerySelector("input#height");
-            Assert.NotNull(heightInput);
-            Assert.Contains("Height (cm)", card.TextContent, StringComparison.Ordinal);
+            _ = TestAssert.NotNull(heightInput);
+            TestAssert.Contains("Height (cm)", card.TextContent, StringComparison.Ordinal);
 
             var bikeTypeSelect = card.QuerySelector("select#bikeType");
-            Assert.NotNull(bikeTypeSelect);
+            _ = TestAssert.NotNull(bikeTypeSelect);
         });
     }
 
@@ -243,10 +243,10 @@ public class EditPageTests : BunitContext
         {
             var bikeTypeSelect = cut.Find("select#bikeType");
             var options = bikeTypeSelect.QuerySelectorAll("option");
-            Assert.Equal(3, options.Length);
-            Assert.Contains("None", options[0].TextContent, StringComparison.Ordinal);
-            Assert.Contains("Regular", options[1].TextContent, StringComparison.Ordinal);
-            Assert.Contains("E-Bike", options[2].TextContent, StringComparison.Ordinal);
+            TestAssert.Equal(3, options.Length);
+            TestAssert.Contains("None", options[0].TextContent, StringComparison.Ordinal);
+            TestAssert.Contains("Regular", options[1].TextContent, StringComparison.Ordinal);
+            TestAssert.Contains("E-Bike", options[2].TextContent, StringComparison.Ordinal);
         });
     }
 
@@ -266,9 +266,9 @@ public class EditPageTests : BunitContext
         await cut.WaitForAssertionAsync(() =>
         {
             var card = cut.FindAll(".card").First(c => c.TextContent.Contains("Accommodation Preferences", StringComparison.Ordinal));
-            Assert.NotNull(card.QuerySelector("select#roomType"));
-            Assert.NotNull(card.QuerySelector("select#bedType"));
-            Assert.Contains("Companion", card.TextContent, StringComparison.Ordinal);
+            TestAssert.NotNull(card.QuerySelector("select#roomType"));
+            TestAssert.NotNull(card.QuerySelector("select#bedType"));
+            TestAssert.Contains("Companion", card.TextContent, StringComparison.Ordinal);
         });
     }
 
@@ -289,9 +289,9 @@ public class EditPageTests : BunitContext
         {
             var roomTypeSelect = cut.Find("select#roomType");
             var options = roomTypeSelect.QuerySelectorAll("option");
-            Assert.Equal(2, options.Length);
-            Assert.Contains("Double Room", options[0].TextContent, StringComparison.Ordinal);
-            Assert.Contains("Single Room", options[1].TextContent, StringComparison.Ordinal);
+            TestAssert.Equal(2, options.Length);
+            TestAssert.Contains("Double Room", options[0].TextContent, StringComparison.Ordinal);
+            TestAssert.Contains("Single Room", options[1].TextContent, StringComparison.Ordinal);
         });
     }
 
@@ -312,9 +312,9 @@ public class EditPageTests : BunitContext
         {
             var bedTypeSelect = cut.Find("select#bedType");
             var options = bedTypeSelect.QuerySelectorAll("option");
-            Assert.Equal(2, options.Length);
-            Assert.Contains("Single Bed", options[0].TextContent, StringComparison.Ordinal);
-            Assert.Contains("Double Bed", options[1].TextContent, StringComparison.Ordinal);
+            TestAssert.Equal(2, options.Length);
+            TestAssert.Contains("Single Bed", options[0].TextContent, StringComparison.Ordinal);
+            TestAssert.Contains("Double Bed", options[1].TextContent, StringComparison.Ordinal);
         });
     }
 
@@ -334,8 +334,8 @@ public class EditPageTests : BunitContext
         await cut.WaitForAssertionAsync(() =>
         {
             var card = cut.FindAll(".card").First(c => c.TextContent.Contains("Emergency Contact", StringComparison.Ordinal));
-            Assert.NotNull(card.QuerySelector("input#emergencyName"));
-            Assert.NotNull(card.QuerySelector("input#emergencyMobile"));
+            TestAssert.NotNull(card.QuerySelector("input#emergencyName"));
+            TestAssert.NotNull(card.QuerySelector("input#emergencyMobile"));
         });
     }
 
@@ -357,12 +357,12 @@ public class EditPageTests : BunitContext
             var card = cut.FindAll(".card").First(c => c.TextContent.Contains("Medical Information", StringComparison.Ordinal));
 
             var allergiesTextArea = card.QuerySelector("textarea#allergies");
-            Assert.NotNull(allergiesTextArea);
-            Assert.Equal("3", allergiesTextArea.GetAttribute("rows"));
+            _ = TestAssert.NotNull(allergiesTextArea);
+            TestAssert.Equal("3", allergiesTextArea.GetAttribute("rows"));
 
             var additionalInfoTextArea = card.QuerySelector("textarea#additionalInfo");
-            Assert.NotNull(additionalInfoTextArea);
-            Assert.Equal("3", additionalInfoTextArea.GetAttribute("rows"));
+            _ = TestAssert.NotNull(additionalInfoTextArea);
+            TestAssert.Equal("3", additionalInfoTextArea.GetAttribute("rows"));
         });
     }
 
@@ -390,11 +390,11 @@ public class EditPageTests : BunitContext
         {
             var alerts = cut.FindAll(".alert.alert-success");
             var cancelledAlert = alerts.Last(a => a.TextContent.Contains("Customer updated successfully", StringComparison.Ordinal));
-            Assert.Contains("Customer updated successfully", cancelledAlert.TextContent, StringComparison.Ordinal);
+            TestAssert.Contains("Customer updated successfully", cancelledAlert.TextContent, StringComparison.Ordinal);
 
             var goToDetailsButton = cancelledAlert.QuerySelector("button");
-            Assert.NotNull(goToDetailsButton);
-            Assert.Contains("Go to Details", goToDetailsButton.TextContent, StringComparison.Ordinal);
+            _ = TestAssert.NotNull(goToDetailsButton);
+            TestAssert.Contains("Go to Details", goToDetailsButton.TextContent, StringComparison.Ordinal);
         });
     }
 }

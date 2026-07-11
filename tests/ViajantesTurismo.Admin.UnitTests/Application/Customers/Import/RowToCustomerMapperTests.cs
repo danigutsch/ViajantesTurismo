@@ -16,20 +16,20 @@ public class RowToCustomerMapperTests
         var customerResult = RowToCustomerMapper.MapCustomer(document, row, TimeProvider.System);
 
         // Assert
-        Assert.True(customerResult.IsSuccess);
+        TestAssert.True(customerResult.IsSuccess);
 
         var customer = customerResult.Value;
 
-        Assert.Equal("John", customer.PersonalInfo.FirstName);
-        Assert.Equal("Doe", customer.PersonalInfo.LastName);
-        Assert.Equal("123456789", customer.IdentificationInfo.NationalId);
-        Assert.Equal("john.doe@example.com", customer.ContactInfo.Email);
-        Assert.Equal("Main St 123", customer.Address.Street);
-        Assert.Equal(75.5m, customer.PhysicalInfo.WeightKg);
-        Assert.Equal(BikeType.Regular, customer.PhysicalInfo.BikeType);
-        Assert.Equal(RoomType.SingleOccupancy, customer.AccommodationPreferences.RoomType);
-        Assert.Equal("Jane Doe", customer.EmergencyContact.Name);
-        Assert.Equal("Peanuts", customer.MedicalInfo.Allergies);
+        TestAssert.Equal("John", customer.PersonalInfo.FirstName);
+        TestAssert.Equal("Doe", customer.PersonalInfo.LastName);
+        TestAssert.Equal("123456789", customer.IdentificationInfo.NationalId);
+        TestAssert.Equal("john.doe@example.com", customer.ContactInfo.Email);
+        TestAssert.Equal("Main St 123", customer.Address.Street);
+        TestAssert.Equal(75.5m, customer.PhysicalInfo.WeightKg);
+        TestAssert.Equal(BikeType.Regular, customer.PhysicalInfo.BikeType);
+        TestAssert.Equal(RoomType.SingleOccupancy, customer.AccommodationPreferences.RoomType);
+        TestAssert.Equal("Jane Doe", customer.EmergencyContact.Name);
+        TestAssert.Equal("Peanuts", customer.MedicalInfo.Allergies);
     }
 
     [Fact]
@@ -45,11 +45,11 @@ public class RowToCustomerMapperTests
         var customerResult = RowToCustomerMapper.MapCustomer(document, row, TimeProvider.System);
 
         // Assert
-        Assert.True(customerResult.IsFailure);
-        Assert.NotNull(customerResult.ErrorDetails);
-        Assert.Contains("Email", customerResult.ErrorDetails.Detail, StringComparison.Ordinal);
-        Assert.NotNull(customerResult.ErrorDetails.ValidationErrors);
-        Assert.True(customerResult.ErrorDetails.ValidationErrors.ContainsKey("Email"));
+        TestAssert.True(customerResult.IsFailure);
+        TestAssert.NotNull(customerResult.ErrorDetails);
+        TestAssert.Contains("Email", customerResult.ErrorDetails.Detail, StringComparison.Ordinal);
+        TestAssert.NotNull(customerResult.ErrorDetails.ValidationErrors);
+        TestAssert.True(customerResult.ErrorDetails.ValidationErrors.ContainsKey("Email"));
     }
 
     [Theory]
@@ -75,12 +75,12 @@ public class RowToCustomerMapperTests
         var customerResult = RowToCustomerMapper.MapCustomer(document, row, TimeProvider.System);
 
         // Assert
-        Assert.True(customerResult.IsFailure);
-        Assert.NotNull(customerResult.ErrorDetails);
-        Assert.Equal(expectedMessage, customerResult.ErrorDetails.Detail);
-        Assert.NotNull(customerResult.ErrorDetails.ValidationErrors);
-        Assert.True(customerResult.ErrorDetails.ValidationErrors.TryGetValue(field, out var messages));
-        Assert.Equal([expectedMessage], messages);
+        TestAssert.True(customerResult.IsFailure);
+        TestAssert.NotNull(customerResult.ErrorDetails);
+        TestAssert.Equal(expectedMessage, customerResult.ErrorDetails.Detail);
+        TestAssert.NotNull(customerResult.ErrorDetails.ValidationErrors);
+        TestAssert.True(customerResult.ErrorDetails.ValidationErrors.TryGetValue(field, out var messages));
+        TestAssert.Equal([expectedMessage], messages);
     }
 
     [Fact]
@@ -94,12 +94,12 @@ public class RowToCustomerMapperTests
         var customerResult = RowToCustomerMapper.MapCustomer(document, row, TimeProvider.System);
 
         // Assert
-        Assert.True(customerResult.IsFailure);
-        Assert.NotNull(customerResult.ErrorDetails);
-        Assert.Equal(expectedMessage, customerResult.ErrorDetails.Detail);
-        Assert.NotNull(customerResult.ErrorDetails.ValidationErrors);
-        Assert.True(customerResult.ErrorDetails.ValidationErrors.TryGetValue("headers", out var messages));
-        Assert.Equal([expectedMessage], messages);
+        TestAssert.True(customerResult.IsFailure);
+        TestAssert.NotNull(customerResult.ErrorDetails);
+        TestAssert.Equal(expectedMessage, customerResult.ErrorDetails.Detail);
+        TestAssert.NotNull(customerResult.ErrorDetails.ValidationErrors);
+        TestAssert.True(customerResult.ErrorDetails.ValidationErrors.TryGetValue("headers", out var messages));
+        TestAssert.Equal([expectedMessage], messages);
     }
 
     [Fact]
@@ -117,16 +117,16 @@ public class RowToCustomerMapperTests
         var customerResult = RowToCustomerMapper.MapCustomer(document, row, TimeProvider.System);
 
         // Assert
-        Assert.True(customerResult.IsFailure);
-        Assert.NotNull(customerResult.ErrorDetails);
-        Assert.Equal(MultipleValidationErrorsDetailMessage, customerResult.ErrorDetails.Detail);
-        Assert.NotNull(customerResult.ErrorDetails.ValidationErrors);
-        Assert.True(customerResult.ErrorDetails.ValidationErrors.ContainsKey("BirthDate"));
-        Assert.True(customerResult.ErrorDetails.ValidationErrors.ContainsKey("WeightKg"));
-        Assert.True(customerResult.ErrorDetails.ValidationErrors.ContainsKey("CompanionId"));
-        Assert.Contains("BirthDate has invalid format.", customerResult.ErrorDetails.ValidationErrors["BirthDate"]);
-        Assert.Contains("WeightKg has invalid format.", customerResult.ErrorDetails.ValidationErrors["WeightKg"]);
-        Assert.Contains("CompanionId has invalid format.", customerResult.ErrorDetails.ValidationErrors["CompanionId"]);
+        TestAssert.True(customerResult.IsFailure);
+        TestAssert.NotNull(customerResult.ErrorDetails);
+        TestAssert.Equal(MultipleValidationErrorsDetailMessage, customerResult.ErrorDetails.Detail);
+        TestAssert.NotNull(customerResult.ErrorDetails.ValidationErrors);
+        TestAssert.True(customerResult.ErrorDetails.ValidationErrors.ContainsKey("BirthDate"));
+        TestAssert.True(customerResult.ErrorDetails.ValidationErrors.ContainsKey("WeightKg"));
+        TestAssert.True(customerResult.ErrorDetails.ValidationErrors.ContainsKey("CompanionId"));
+        TestAssert.Contains("BirthDate has invalid format.", customerResult.ErrorDetails.ValidationErrors["BirthDate"]);
+        TestAssert.Contains("WeightKg has invalid format.", customerResult.ErrorDetails.ValidationErrors["WeightKg"]);
+        TestAssert.Contains("CompanionId has invalid format.", customerResult.ErrorDetails.ValidationErrors["CompanionId"]);
     }
 
 }

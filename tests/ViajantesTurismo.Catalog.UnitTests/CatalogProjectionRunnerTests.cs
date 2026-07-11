@@ -1,5 +1,4 @@
 using SharedKernel.EventSourcing;
-using SharedKernel.Testing.Assertions;
 using ViajantesTurismo.Catalog.Application.Projections;
 using ViajantesTurismo.Catalog.Application.Tours;
 using ViajantesTurismo.Catalog.Domain.Tours;
@@ -34,17 +33,17 @@ public sealed class CatalogProjectionRunnerTests
 
         // Assert
         projectedEvents.ShouldBe(1);
-        Assert.Equal(10, eventStore.LoadedAfterPosition);
-        Assert.NotNull(readModelStore.Draft);
-        Assert.Equal(draftCreated.CatalogTourId, readModelStore.Draft.CatalogTourId);
-        Assert.Equal(draftCreated.AdminTourId, readModelStore.Draft.AdminTourId);
-        Assert.Equal(draftCreated.Identifier, readModelStore.Draft.Identifier);
-        Assert.Equal(draftCreated.Title, readModelStore.Draft.Title);
-        Assert.Equal(11, readModelStore.Draft.Position);
-        Assert.Equal(recordedAt, readModelStore.Draft.UpdatedAt);
-        Assert.NotNull(checkpointStore.SavedCheckpoint);
-        Assert.Equal(projection.Name, checkpointStore.SavedCheckpoint.ProjectionName);
-        Assert.Equal(11, checkpointStore.SavedCheckpoint.Position);
+        TestAssert.Equal(10, eventStore.LoadedAfterPosition);
+        TestAssert.NotNull(readModelStore.Draft);
+        TestAssert.Equal(draftCreated.CatalogTourId, readModelStore.Draft.CatalogTourId);
+        TestAssert.Equal(draftCreated.AdminTourId, readModelStore.Draft.AdminTourId);
+        TestAssert.Equal(draftCreated.Identifier, readModelStore.Draft.Identifier);
+        TestAssert.Equal(draftCreated.Title, readModelStore.Draft.Title);
+        TestAssert.Equal(11, readModelStore.Draft.Position);
+        TestAssert.Equal(recordedAt, readModelStore.Draft.UpdatedAt);
+        TestAssert.NotNull(checkpointStore.SavedCheckpoint);
+        TestAssert.Equal(projection.Name, checkpointStore.SavedCheckpoint.ProjectionName);
+        TestAssert.Equal(11, checkpointStore.SavedCheckpoint.Position);
     }
 
     [Fact]
@@ -62,9 +61,9 @@ public sealed class CatalogProjectionRunnerTests
 
         // Assert
         projectedEvents.ShouldBe(0);
-        Assert.Equal(0, eventStore.LoadedAfterPosition);
-        Assert.Null(readModelStore.Draft);
-        Assert.Null(checkpointStore.SavedCheckpoint);
+        TestAssert.Equal(0, eventStore.LoadedAfterPosition);
+        TestAssert.Null(readModelStore.Draft);
+        TestAssert.Null(checkpointStore.SavedCheckpoint);
     }
 
     [Fact]
@@ -96,11 +95,11 @@ public sealed class CatalogProjectionRunnerTests
 
         // Assert
         projectedEvents.ShouldBe(2);
-        Assert.Collection(
+        TestAssert.Collection(
             readModelStore.Drafts,
-            first => Assert.Equal(11, first.Position),
-            second => Assert.Equal(12, second.Position));
-        Assert.NotNull(checkpointStore.SavedCheckpoint);
-        Assert.Equal(12, checkpointStore.SavedCheckpoint.Position);
+            first => TestAssert.Equal(11, first.Position),
+            second => TestAssert.Equal(12, second.Position));
+        TestAssert.NotNull(checkpointStore.SavedCheckpoint);
+        TestAssert.Equal(12, checkpointStore.SavedCheckpoint.Position);
     }
 }

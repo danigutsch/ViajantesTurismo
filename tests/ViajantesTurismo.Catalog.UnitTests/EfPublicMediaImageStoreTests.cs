@@ -1,4 +1,3 @@
-using SharedKernel.Testing.Assertions;
 using ViajantesTurismo.Catalog.Domain.Media;
 using ViajantesTurismo.Catalog.Domain.PublicContent;
 using ViajantesTurismo.Catalog.Infrastructure;

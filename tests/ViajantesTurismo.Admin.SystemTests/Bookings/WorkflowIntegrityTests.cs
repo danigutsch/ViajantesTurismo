@@ -23,7 +23,7 @@ public class WorkflowIntegrityTests(AspireSystemTestFixture fixture) : AspireSys
 
         // Assert
         var hasFriendlyValidationFeedback = await WorkflowIntegrityTestHelpers.HasFriendlyValidationFeedback(alert, inlineValidation);
-        Assert.True(hasFriendlyValidationFeedback,
+        TestAssert.True(hasFriendlyValidationFeedback,
             "Expected user-facing validation feedback (e.g., required-field or friendly validation message). ");
 
         await Expect(Page).ToHaveTitleAsync("Tour Details");

@@ -1,4 +1,3 @@
-using SharedKernel.Testing.Assertions;
 using ViajantesTurismo.Catalog.Infrastructure;
 
 namespace ViajantesTurismo.Catalog.UnitTests;

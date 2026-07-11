@@ -76,7 +76,7 @@ internal static class EntityIdTestData
             referenceNumber: "TX-123",
             notes: "Initial payment");
 
-        Assert.True(result.IsSuccess);
+        TestAssert.True(result.IsSuccess);
         return result.Value;
     }
 }

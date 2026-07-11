@@ -16,25 +16,25 @@ public sealed class ErrorDocumentationEndpointsTests
     public void GetAllErrorDocumentation_returns_all_entries()
     {
         var method = EndpointsType.GetMethod("GetAllErrorDocumentation", BindingFlags.Static | BindingFlags.NonPublic);
-        Assert.NotNull(method);
+        _ = TestAssert.NotNull(method);
 
         var result = method.Invoke(null, []);
-        var ok = Assert.IsType<Ok<IReadOnlyList<GetErrorDocumentationDto>>>(result);
-        Assert.NotNull(ok.Value);
-        Assert.NotEmpty(ok.Value);
+        var ok = TestAssert.IsType<Ok<IReadOnlyList<GetErrorDocumentationDto>>>(result);
+        TestAssert.NotNull(ok.Value);
+        TestAssert.NotEmpty(ok.Value);
     }
 
     [Fact]
     public void GetErrorDocumentationByIdentifier_returns_notfound_for_unknown_identifier()
     {
         var method = EndpointsType.GetMethod("GetErrorDocumentationByIdentifier", BindingFlags.Static | BindingFlags.NonPublic);
-        Assert.NotNull(method);
+        _ = TestAssert.NotNull(method);
 
         var result = method.Invoke(null, ["missing-entry"]);
-        var union = Assert.IsType<Results<Ok<GetErrorDocumentationDto>, NotFound<ProblemDetails>>>(result);
-        var notFound = Assert.IsType<NotFound<ProblemDetails>>(ResultUnionHelpers.GetInnerResult(union));
-        Assert.NotNull(notFound.Value);
-        Assert.Equal("Error Documentation Not Found", notFound.Value.Title);
+        var union = TestAssert.IsType<Results<Ok<GetErrorDocumentationDto>, NotFound<ProblemDetails>>>(result);
+        var notFound = TestAssert.IsType<NotFound<ProblemDetails>>(ResultUnionHelpers.GetInnerResult(union));
+        TestAssert.NotNull(notFound.Value);
+        TestAssert.Equal("Error Documentation Not Found", notFound.Value.Title);
     }
 
     [Fact]
@@ -44,20 +44,20 @@ public sealed class ErrorDocumentationEndpointsTests
             .GetType("ViajantesTurismo.Admin.ApiService.Errors.ErrorDocumentationCatalog")?
             .GetMethod("GetEntries", BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic)?
             .Invoke(null, []) as IReadOnlyList<GetErrorDocumentationDto>;
-        Assert.NotNull(entries);
+        _ = TestAssert.NotNull(entries);
 
-        var knownIdentifier = Assert.Single(entries, static entry =>
+        var knownIdentifier = TestAssert.ExactlyOne(entries, static entry =>
             string.Equals(entry.ProviderType, "ViajantesTurismo.Admin.Domain.Tours.TourErrors", StringComparison.Ordinal)
             && string.Equals(entry.MemberName, "TourNotFound", StringComparison.Ordinal)).Identifier;
 
         var method = EndpointsType.GetMethod("GetErrorDocumentationByIdentifier", BindingFlags.Static | BindingFlags.NonPublic);
-        Assert.NotNull(method);
+        _ = TestAssert.NotNull(method);
 
         var result = method.Invoke(null, [knownIdentifier]);
-        var union = Assert.IsType<Results<Ok<GetErrorDocumentationDto>, NotFound<ProblemDetails>>>(result);
-        var ok = Assert.IsType<Ok<GetErrorDocumentationDto>>(ResultUnionHelpers.GetInnerResult(union));
-        Assert.NotNull(ok.Value);
-        Assert.Equal(knownIdentifier, ok.Value.Identifier);
+        var union = TestAssert.IsType<Results<Ok<GetErrorDocumentationDto>, NotFound<ProblemDetails>>>(result);
+        var ok = TestAssert.IsType<Ok<GetErrorDocumentationDto>>(ResultUnionHelpers.GetInnerResult(union));
+        TestAssert.NotNull(ok.Value);
+        TestAssert.Equal(knownIdentifier, ok.Value.Identifier);
     }
 
 }

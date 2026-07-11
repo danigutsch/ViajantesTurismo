@@ -22,10 +22,10 @@ public class TourRecordBookingPaymentTests
             TimeProvider.System);
 
         // Assert
-        Assert.False(result.IsSuccess);
-        Assert.Equal(ResultStatus.NotFound, result.Status);
-        Assert.NotNull(result.ErrorDetails);
-        Assert.Contains("not found in this tour", result.ErrorDetails.Detail, StringComparison.Ordinal);
+        TestAssert.False(result.IsSuccess);
+        TestAssert.Equal(ResultStatus.NotFound, result.Status);
+        TestAssert.NotNull(result.ErrorDetails);
+        TestAssert.Contains("not found in this tour", result.ErrorDetails.Detail, StringComparison.Ordinal);
     }
 
     [Fact]
@@ -45,11 +45,11 @@ public class TourRecordBookingPaymentTests
             TimeProvider.System);
 
         // Assert
-        Assert.False(result.IsSuccess);
-        Assert.Equal(ResultStatus.Invalid, result.Status);
-        Assert.NotNull(result.ErrorDetails);
-        Assert.Contains("exceeds remaining balance", result.ErrorDetails.Detail, StringComparison.Ordinal);
-        Assert.Empty(booking.Payments);
+        TestAssert.False(result.IsSuccess);
+        TestAssert.Equal(ResultStatus.Invalid, result.Status);
+        TestAssert.NotNull(result.ErrorDetails);
+        TestAssert.Contains("exceeds remaining balance", result.ErrorDetails.Detail, StringComparison.Ordinal);
+        TestAssert.Empty(booking.Payments);
     }
 
     [Fact]
@@ -69,11 +69,11 @@ public class TourRecordBookingPaymentTests
             TimeProvider.System);
 
         // Assert
-        Assert.False(result.IsSuccess);
-        Assert.Equal(ResultStatus.Invalid, result.Status);
-        Assert.NotNull(result.ErrorDetails);
-        Assert.Contains("Payment amount must be greater than zero", result.ErrorDetails.Detail, StringComparison.Ordinal);
-        Assert.Empty(booking.Payments);
+        TestAssert.False(result.IsSuccess);
+        TestAssert.Equal(ResultStatus.Invalid, result.Status);
+        TestAssert.NotNull(result.ErrorDetails);
+        TestAssert.Contains("Payment amount must be greater than zero", result.ErrorDetails.Detail, StringComparison.Ordinal);
+        TestAssert.Empty(booking.Payments);
     }
 
     [Fact]
@@ -93,11 +93,11 @@ public class TourRecordBookingPaymentTests
             TimeProvider.System);
 
         // Assert
-        Assert.False(result.IsSuccess);
-        Assert.Equal(ResultStatus.Invalid, result.Status);
-        Assert.NotNull(result.ErrorDetails);
-        Assert.Contains("Invalid payment method", result.ErrorDetails.Detail, StringComparison.Ordinal);
-        Assert.Empty(booking.Payments);
+        TestAssert.False(result.IsSuccess);
+        TestAssert.Equal(ResultStatus.Invalid, result.Status);
+        TestAssert.NotNull(result.ErrorDetails);
+        TestAssert.Contains("Invalid payment method", result.ErrorDetails.Detail, StringComparison.Ordinal);
+        TestAssert.Empty(booking.Payments);
     }
 
     [Fact]
@@ -117,11 +117,11 @@ public class TourRecordBookingPaymentTests
             TimeProvider.System);
 
         // Assert
-        Assert.False(result.IsSuccess);
-        Assert.Equal(ResultStatus.Invalid, result.Status);
-        Assert.NotNull(result.ErrorDetails);
-        Assert.Contains("Payment date cannot be in the future", result.ErrorDetails.Detail, StringComparison.Ordinal);
-        Assert.Empty(booking.Payments);
+        TestAssert.False(result.IsSuccess);
+        TestAssert.Equal(ResultStatus.Invalid, result.Status);
+        TestAssert.NotNull(result.ErrorDetails);
+        TestAssert.Contains("Payment date cannot be in the future", result.ErrorDetails.Detail, StringComparison.Ordinal);
+        TestAssert.Empty(booking.Payments);
     }
 
     [Fact]
@@ -144,14 +144,14 @@ public class TourRecordBookingPaymentTests
             notes: "Paid at reception");
 
         // Assert
-        Assert.True(result.IsSuccess);
-        var payment = Assert.Single(booking.Payments);
-        Assert.Equal(result.Value.Id, payment.Id);
-        Assert.Equal(100m, payment.Amount);
-        Assert.Equal(paymentDate, payment.PaymentDate);
-        Assert.Equal(PaymentMethod.CreditCard, payment.Method);
-        Assert.Equal("TX-123", payment.ReferenceNumber);
-        Assert.Equal("Paid at reception", payment.Notes);
+        TestAssert.True(result.IsSuccess);
+        var payment = TestAssert.ExactlyOne(booking.Payments);
+        TestAssert.Equal(result.Value.Id, payment.Id);
+        TestAssert.Equal(100m, payment.Amount);
+        TestAssert.Equal(paymentDate, payment.PaymentDate);
+        TestAssert.Equal(PaymentMethod.CreditCard, payment.Method);
+        TestAssert.Equal("TX-123", payment.ReferenceNumber);
+        TestAssert.Equal("Paid at reception", payment.Notes);
     }
 
 }

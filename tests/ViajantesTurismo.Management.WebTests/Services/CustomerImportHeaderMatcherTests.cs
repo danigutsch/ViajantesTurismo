@@ -9,8 +9,8 @@ public sealed class CustomerImportHeaderMatcherTests
     {
         var result = CustomerImportHeaderMatcher.AutoMatch(["FirstName", "Email"]);
 
-        Assert.Equal("FirstName", result.First(m => m.Field.Name == "FirstName").MatchedCsvHeader);
-        Assert.Equal("Email", result.First(m => m.Field.Name == "Email").MatchedCsvHeader);
+        TestAssert.Equal("FirstName", result.First(m => m.Field.Name == "FirstName").MatchedCsvHeader);
+        TestAssert.Equal("Email", result.First(m => m.Field.Name == "Email").MatchedCsvHeader);
     }
 
     [Fact]
@@ -18,9 +18,9 @@ public sealed class CustomerImportHeaderMatcherTests
     {
         var result = CustomerImportHeaderMatcher.AutoMatch(["firstname", "LASTNAME", "eMaIl"]);
 
-        Assert.Equal("firstname", result.First(m => m.Field.Name == "FirstName").MatchedCsvHeader);
-        Assert.Equal("LASTNAME", result.First(m => m.Field.Name == "LastName").MatchedCsvHeader);
-        Assert.Equal("eMaIl", result.First(m => m.Field.Name == "Email").MatchedCsvHeader);
+        TestAssert.Equal("firstname", result.First(m => m.Field.Name == "FirstName").MatchedCsvHeader);
+        TestAssert.Equal("LASTNAME", result.First(m => m.Field.Name == "LastName").MatchedCsvHeader);
+        TestAssert.Equal("eMaIl", result.First(m => m.Field.Name == "Email").MatchedCsvHeader);
     }
 
     [Fact]
@@ -28,7 +28,7 @@ public sealed class CustomerImportHeaderMatcherTests
     {
         var result = CustomerImportHeaderMatcher.AutoMatch(["UnknownCol", "AnotherUnknown"]);
 
-        Assert.All(result, m => Assert.Null(m.MatchedCsvHeader));
+        TestAssert.All(result, m => TestAssert.Null(m.MatchedCsvHeader));
     }
 
     [Fact]
@@ -36,7 +36,7 @@ public sealed class CustomerImportHeaderMatcherTests
     {
         var result = CustomerImportHeaderMatcher.AutoMatch([]);
 
-        Assert.Equal(CustomerImportHeaderMatcher.Fields.Count, result.Count);
+        TestAssert.Equal(CustomerImportHeaderMatcher.Fields.Count, result.Count);
     }
 
     [Fact]
@@ -45,7 +45,7 @@ public sealed class CustomerImportHeaderMatcherTests
         var result = CustomerImportHeaderMatcher.AutoMatch(["FirstName"]);
 
         var unmatched = result.Where(m => m.Field.Name != "FirstName");
-        Assert.All(unmatched, m => Assert.False(m.IsAutoMatched));
+        TestAssert.All(unmatched, m => TestAssert.False(m.IsAutoMatched));
     }
 
     [Fact]
@@ -53,7 +53,7 @@ public sealed class CustomerImportHeaderMatcherTests
     {
         var field = CustomerImportHeaderMatcher.Fields.First(f => f.Name == "Email");
 
-        Assert.True(field.IsRequired);
+        TestAssert.True(field.IsRequired);
     }
 
     [Fact]
@@ -61,7 +61,7 @@ public sealed class CustomerImportHeaderMatcherTests
     {
         var field = CustomerImportHeaderMatcher.Fields.First(f => f.Name == "Instagram");
 
-        Assert.False(field.IsRequired);
+        TestAssert.False(field.IsRequired);
     }
 
     [Fact]
@@ -69,7 +69,7 @@ public sealed class CustomerImportHeaderMatcherTests
     {
         var field = CustomerImportHeaderMatcher.Fields.First(f => f.Name == "Allergies");
 
-        Assert.False(field.IsRequired);
+        TestAssert.False(field.IsRequired);
     }
 
     [Fact]
@@ -81,7 +81,7 @@ public sealed class CustomerImportHeaderMatcherTests
         var result = CustomerImportHeaderMatcher.ApplyMapping(bytes, mappings, new Dictionary<string, string?>());
 
         var text = Encoding.UTF8.GetString(result);
-        Assert.StartsWith("FirstName,LastName", text, StringComparison.Ordinal);
+        TestAssert.StartsWith("FirstName,LastName", text, StringComparison.Ordinal);
     }
 
     [Fact]
@@ -98,7 +98,7 @@ public sealed class CustomerImportHeaderMatcherTests
         var result = CustomerImportHeaderMatcher.ApplyMapping(bytes, mappings, userMappings);
 
         var text = Encoding.UTF8.GetString(result);
-        Assert.StartsWith("FirstName,Email", text, StringComparison.Ordinal);
+        TestAssert.StartsWith("FirstName,Email", text, StringComparison.Ordinal);
     }
 
     [Fact]
@@ -110,7 +110,7 @@ public sealed class CustomerImportHeaderMatcherTests
         var result = CustomerImportHeaderMatcher.ApplyMapping(bytes, mappings, new Dictionary<string, string?>());
 
         var text = Encoding.UTF8.GetString(result);
-        Assert.StartsWith("FirstName,SomeExtra,Email", text, StringComparison.Ordinal);
+        TestAssert.StartsWith("FirstName,SomeExtra,Email", text, StringComparison.Ordinal);
     }
 
     [Fact]
@@ -122,8 +122,8 @@ public sealed class CustomerImportHeaderMatcherTests
         var result = CustomerImportHeaderMatcher.ApplyMapping(bytes, mappings, new Dictionary<string, string?>());
 
         var text = Encoding.UTF8.GetString(result);
-        Assert.Contains("john,doe", text, StringComparison.Ordinal);
-        Assert.Contains("jane,smith", text, StringComparison.Ordinal);
+        TestAssert.Contains("john,doe", text, StringComparison.Ordinal);
+        TestAssert.Contains("jane,smith", text, StringComparison.Ordinal);
     }
 
     [Fact]
@@ -135,6 +135,6 @@ public sealed class CustomerImportHeaderMatcherTests
         var result = CustomerImportHeaderMatcher.ApplyMapping(bytes, mappings, new Dictionary<string, string?>());
 
         var text = Encoding.UTF8.GetString(result);
-        Assert.StartsWith("FirstName", text, StringComparison.Ordinal);
+        TestAssert.StartsWith("FirstName", text, StringComparison.Ordinal);
     }
 }

@@ -25,12 +25,12 @@ public class PaymentFormTests : BunitContext
         var notesInput = cut.Find("textarea#notes");
         var submitButton = cut.Find("button[type='submit']");
 
-        Assert.NotNull(amountInput);
-        Assert.NotNull(paymentDateInput);
-        Assert.NotNull(methodSelect);
-        Assert.NotNull(referenceNumberInput);
-        Assert.NotNull(notesInput);
-        Assert.NotNull(submitButton);
+        _ = TestAssert.NotNull(amountInput);
+        _ = TestAssert.NotNull(paymentDateInput);
+        _ = TestAssert.NotNull(methodSelect);
+        _ = TestAssert.NotNull(referenceNumberInput);
+        _ = TestAssert.NotNull(notesInput);
+        _ = TestAssert.NotNull(submitButton);
     }
 
     [Theory]
@@ -51,7 +51,7 @@ public class PaymentFormTests : BunitContext
 
         // Assert
         var currencySymbol = cut.Find(".input-group-text");
-        Assert.Equal(expectedSymbol, currencySymbol.TextContent);
+        TestAssert.Equal(expectedSymbol, currencySymbol.TextContent);
     }
 
     [Fact]
@@ -68,15 +68,15 @@ public class PaymentFormTests : BunitContext
 
         // Assert
         var options = cut.FindAll("select#method option");
-        Assert.Equal(7, options.Count); // Placeholder + 6 payment methods
+        TestAssert.Equal(7, options.Count); // Placeholder + 6 payment methods
 
-        Assert.Contains(options, o => string.IsNullOrEmpty(o.GetAttribute("value")));
-        Assert.Contains(options, o => o.GetAttribute("value") == nameof(PaymentMethodDto.CreditCard));
-        Assert.Contains(options, o => o.GetAttribute("value") == nameof(PaymentMethodDto.BankTransfer));
-        Assert.Contains(options, o => o.GetAttribute("value") == nameof(PaymentMethodDto.Cash));
-        Assert.Contains(options, o => o.GetAttribute("value") == nameof(PaymentMethodDto.Check));
-        Assert.Contains(options, o => o.GetAttribute("value") == nameof(PaymentMethodDto.PayPal));
-        Assert.Contains(options, o => o.GetAttribute("value") == nameof(PaymentMethodDto.Other));
+        TestAssert.Contains(options, o => string.IsNullOrEmpty(o.GetAttribute("value")));
+        TestAssert.Contains(options, o => o.GetAttribute("value") == nameof(PaymentMethodDto.CreditCard));
+        TestAssert.Contains(options, o => o.GetAttribute("value") == nameof(PaymentMethodDto.BankTransfer));
+        TestAssert.Contains(options, o => o.GetAttribute("value") == nameof(PaymentMethodDto.Cash));
+        TestAssert.Contains(options, o => o.GetAttribute("value") == nameof(PaymentMethodDto.Check));
+        TestAssert.Contains(options, o => o.GetAttribute("value") == nameof(PaymentMethodDto.PayPal));
+        TestAssert.Contains(options, o => o.GetAttribute("value") == nameof(PaymentMethodDto.Other));
     }
 
     [Fact]
@@ -95,22 +95,22 @@ public class PaymentFormTests : BunitContext
         var options = cut.FindAll("select#method option");
 
         var creditCardOption = options.First(o => o.GetAttribute("value") == nameof(PaymentMethodDto.CreditCard));
-        Assert.Equal("Credit Card", creditCardOption.TextContent);
+        TestAssert.Equal("Credit Card", creditCardOption.TextContent);
 
         var bankTransferOption = options.First(o => o.GetAttribute("value") == nameof(PaymentMethodDto.BankTransfer));
-        Assert.Equal("Bank Transfer", bankTransferOption.TextContent);
+        TestAssert.Equal("Bank Transfer", bankTransferOption.TextContent);
 
         var cashOption = options.First(o => o.GetAttribute("value") == nameof(PaymentMethodDto.Cash));
-        Assert.Equal("Cash", cashOption.TextContent);
+        TestAssert.Equal("Cash", cashOption.TextContent);
 
         var checkOption = options.First(o => o.GetAttribute("value") == nameof(PaymentMethodDto.Check));
-        Assert.Equal("Check", checkOption.TextContent);
+        TestAssert.Equal("Check", checkOption.TextContent);
 
         var paypalOption = options.First(o => o.GetAttribute("value") == nameof(PaymentMethodDto.PayPal));
-        Assert.Equal("PayPal", paypalOption.TextContent);
+        TestAssert.Equal("PayPal", paypalOption.TextContent);
 
         var otherOption = options.First(o => o.GetAttribute("value") == nameof(PaymentMethodDto.Other));
-        Assert.Equal("Other", otherOption.TextContent);
+        TestAssert.Equal("Other", otherOption.TextContent);
     }
 
     [Fact]
@@ -128,8 +128,8 @@ public class PaymentFormTests : BunitContext
 
         // Assert
         var submitButton = cut.Find("button[type='submit']");
-        Assert.Contains("Record Payment", submitButton.TextContent, StringComparison.Ordinal);
-        Assert.Contains("bi-cash-stack", submitButton.InnerHtml, StringComparison.Ordinal);
+        TestAssert.Contains("Record Payment", submitButton.TextContent, StringComparison.Ordinal);
+        TestAssert.Contains("bi-cash-stack", submitButton.InnerHtml, StringComparison.Ordinal);
     }
 
     [Fact]
@@ -147,8 +147,8 @@ public class PaymentFormTests : BunitContext
 
         // Assert
         var submitButton = cut.Find("button[type='submit']");
-        Assert.Contains("Recording...", submitButton.TextContent, StringComparison.Ordinal);
-        Assert.Contains("spinner-border", submitButton.InnerHtml, StringComparison.Ordinal);
+        TestAssert.Contains("Recording...", submitButton.TextContent, StringComparison.Ordinal);
+        TestAssert.Contains("spinner-border", submitButton.InnerHtml, StringComparison.Ordinal);
     }
 
     [Fact]
@@ -166,7 +166,7 @@ public class PaymentFormTests : BunitContext
 
         // Assert
         var submitButton = cut.Find("button[type='submit']");
-        Assert.True(submitButton.HasAttribute("disabled"));
+        TestAssert.True(submitButton.HasAttribute("disabled"));
     }
 
     [Fact]
@@ -183,7 +183,7 @@ public class PaymentFormTests : BunitContext
 
         // Assert
         var cancelButtons = cut.FindAll("button[type='button']");
-        Assert.Empty(cancelButtons);
+        TestAssert.Empty(cancelButtons);
     }
 
     [Fact]
@@ -202,8 +202,8 @@ public class PaymentFormTests : BunitContext
 
         // Assert
         var cancelButton = cut.Find("button[type='button']");
-        Assert.NotNull(cancelButton);
-        Assert.Contains("Cancel", cancelButton.TextContent, StringComparison.Ordinal);
+        _ = TestAssert.NotNull(cancelButton);
+        TestAssert.Contains("Cancel", cancelButton.TextContent, StringComparison.Ordinal);
     }
 
     [Fact]
@@ -223,7 +223,7 @@ public class PaymentFormTests : BunitContext
 
         // Assert
         var cancelButton = cut.Find("button[type='button']");
-        Assert.True(cancelButton.HasAttribute("disabled"));
+        TestAssert.True(cancelButton.HasAttribute("disabled"));
     }
 
     [Fact]
@@ -243,7 +243,7 @@ public class PaymentFormTests : BunitContext
 
         // Assert
         var validationMessages = cut.FindAll(".validation-message");
-        Assert.Contains(validationMessages, vm => vm.TextContent.Contains("Payment amount is required", StringComparison.Ordinal));
+        TestAssert.Contains(validationMessages, vm => vm.TextContent.Contains("Payment amount is required", StringComparison.Ordinal));
     }
 
     [Fact]
@@ -263,7 +263,7 @@ public class PaymentFormTests : BunitContext
 
         // Assert
         var validationMessages = cut.FindAll(".validation-message");
-        Assert.Contains(validationMessages, vm => vm.TextContent.Contains("Payment amount must be greater than zero", StringComparison.Ordinal));
+        TestAssert.Contains(validationMessages, vm => vm.TextContent.Contains("Payment amount must be greater than zero", StringComparison.Ordinal));
     }
 
     [Fact]
@@ -283,7 +283,7 @@ public class PaymentFormTests : BunitContext
 
         // Assert
         var validationMessages = cut.FindAll(".validation-message");
-        Assert.Contains(validationMessages, vm => vm.TextContent.Contains("Payment date is required", StringComparison.Ordinal));
+        TestAssert.Contains(validationMessages, vm => vm.TextContent.Contains("Payment date is required", StringComparison.Ordinal));
     }
 
     [Fact]
@@ -303,7 +303,7 @@ public class PaymentFormTests : BunitContext
 
         // Assert
         var validationMessages = cut.FindAll(".validation-message");
-        Assert.Contains(validationMessages, vm => vm.TextContent.Contains("Payment method is required", StringComparison.Ordinal));
+        TestAssert.Contains(validationMessages, vm => vm.TextContent.Contains("Payment method is required", StringComparison.Ordinal));
     }
 
     [Fact]
@@ -328,7 +328,7 @@ public class PaymentFormTests : BunitContext
         form.Submit();
 
         // Assert
-        Assert.True(submitCalled);
+        TestAssert.True(submitCalled);
     }
 
     [Fact]
@@ -348,7 +348,7 @@ public class PaymentFormTests : BunitContext
         form.Submit();
 
         // Assert
-        Assert.False(submitCalled);
+        TestAssert.False(submitCalled);
     }
 
     [Fact]
@@ -365,7 +365,7 @@ public class PaymentFormTests : BunitContext
 
         // Assert
         var referenceNumberInput = cut.Find("input#referenceNumber");
-        Assert.Equal("e.g., Transaction ID, Check Number", referenceNumberInput.GetAttribute("placeholder"));
+        TestAssert.Equal("e.g., Transaction ID, Check Number", referenceNumberInput.GetAttribute("placeholder"));
     }
 
     [Fact]
@@ -382,7 +382,7 @@ public class PaymentFormTests : BunitContext
 
         // Assert
         var notesInput = cut.Find("textarea#notes");
-        Assert.Equal("Optional notes about this payment", notesInput.GetAttribute("placeholder"));
+        TestAssert.Equal("Optional notes about this payment", notesInput.GetAttribute("placeholder"));
     }
 
     [Fact]
@@ -399,8 +399,8 @@ public class PaymentFormTests : BunitContext
 
         // Assert
         var requiredIndicators = cut.FindAll("span.text-danger");
-        Assert.Equal(3, requiredIndicators.Count); // Amount, PaymentDate, Method
-        Assert.All(requiredIndicators, indicator => Assert.Equal("*", indicator.TextContent));
+        TestAssert.Equal(3, requiredIndicators.Count); // Amount, PaymentDate, Method
+        TestAssert.All(requiredIndicators, indicator => TestAssert.Equal("*", indicator.TextContent));
     }
 
     [Fact]
@@ -417,7 +417,7 @@ public class PaymentFormTests : BunitContext
 
         // Assert
         var amountInput = cut.Find("input#amount");
-        Assert.Equal("0.01", amountInput.GetAttribute("step"));
+        TestAssert.Equal("0.01", amountInput.GetAttribute("step"));
     }
 
     [Fact]
@@ -434,6 +434,6 @@ public class PaymentFormTests : BunitContext
 
         // Assert
         var notesInput = cut.Find("textarea#notes");
-        Assert.Equal("3", notesInput.GetAttribute("rows"));
+        TestAssert.Equal("3", notesInput.GetAttribute("rows"));
     }
 }

@@ -88,10 +88,10 @@ public sealed partial class AppHostOrchestrationTests
         var catalogApiBlock = CatalogApiResourceRegex().Match(appHostText).Value;
 
         // Assert
-        Assert.NotEmpty(catalogApiBlock);
-        Assert.Contains("WithReference(catalogDatabase)", catalogApiBlock, StringComparison.Ordinal);
-        Assert.Contains("WaitFor(catalogDatabase)", catalogApiBlock, StringComparison.Ordinal);
-        Assert.Contains("WaitForCompletion(migrationService)", catalogApiBlock, StringComparison.Ordinal);
+        catalogApiBlock.ShouldNotBeEmpty();
+        catalogApiBlock.ShouldContain("WithReference(catalogDatabase)", StringComparison.Ordinal);
+        catalogApiBlock.ShouldContain("WaitFor(catalogDatabase)", StringComparison.Ordinal);
+        catalogApiBlock.ShouldContain("WaitForCompletion(migrationService)", StringComparison.Ordinal);
     }
 
     [Fact]
@@ -124,23 +124,23 @@ public sealed partial class AppHostOrchestrationTests
             && appHostText.Contains("AddObservabilityStack", StringComparison.Ordinal);
 
         // Assert
-        Assert.True(hasGate);
-        Assert.Contains("AddGrafanaLgtmStack", appHostText, StringComparison.Ordinal);
-        Assert.DoesNotContain("ViajantesTurismo.Resources", appHostText, StringComparison.Ordinal);
-        Assert.Contains("GrafanaLgtmStackDefaults.ResourceNames", sharedHostingText, StringComparison.Ordinal);
-        Assert.Contains("\"opentelemetry-collector\"", sharedDefaultsText, StringComparison.Ordinal);
-        Assert.Contains("\"grafana\"", sharedDefaultsText, StringComparison.Ordinal);
-        Assert.Contains("\"loki\"", sharedDefaultsText, StringComparison.Ordinal);
-        Assert.Contains("\"tempo\"", sharedDefaultsText, StringComparison.Ordinal);
-        Assert.Contains("\"prometheus\"", sharedDefaultsText, StringComparison.Ordinal);
-        Assert.Contains("AddOpenTelemetryCollector(resourceNames.OpenTelemetryCollector)", sharedHostingText, StringComparison.Ordinal);
-        Assert.Contains("WithAppForwarding()", sharedHostingText, StringComparison.Ordinal);
-        Assert.Equal(5, sharedHostingText.Split("ExcludeFromManifest()").Length - 1);
-        Assert.DoesNotContain("AddContainer(", sharedHostingText, StringComparison.Ordinal);
-        Assert.Contains("AddGrafana(resourceNames.Grafana", sharedHostingText, StringComparison.Ordinal);
-        Assert.Contains("AddLoki(resourceNames.Loki", sharedHostingText, StringComparison.Ordinal);
-        Assert.Contains("AddTempo(resourceNames.Tempo", sharedHostingText, StringComparison.Ordinal);
-        Assert.Contains("AddPrometheus(", sharedHostingText, StringComparison.Ordinal);
+        hasGate.ShouldBeTrue();
+        appHostText.ShouldContain("AddGrafanaLgtmStack", StringComparison.Ordinal);
+        appHostText.ShouldNotContain("ViajantesTurismo.Resources");
+        sharedHostingText.ShouldContain("GrafanaLgtmStackDefaults.ResourceNames", StringComparison.Ordinal);
+        sharedDefaultsText.ShouldContain("\"opentelemetry-collector\"", StringComparison.Ordinal);
+        sharedDefaultsText.ShouldContain("\"grafana\"", StringComparison.Ordinal);
+        sharedDefaultsText.ShouldContain("\"loki\"", StringComparison.Ordinal);
+        sharedDefaultsText.ShouldContain("\"tempo\"", StringComparison.Ordinal);
+        sharedDefaultsText.ShouldContain("\"prometheus\"", StringComparison.Ordinal);
+        sharedHostingText.ShouldContain("AddOpenTelemetryCollector(resourceNames.OpenTelemetryCollector)", StringComparison.Ordinal);
+        sharedHostingText.ShouldContain("WithAppForwarding()", StringComparison.Ordinal);
+        (sharedHostingText.Split("ExcludeFromManifest()").Length - 1).ShouldBe(5);
+        sharedHostingText.ShouldNotContain("AddContainer(");
+        sharedHostingText.ShouldContain("AddGrafana(resourceNames.Grafana", StringComparison.Ordinal);
+        sharedHostingText.ShouldContain("AddLoki(resourceNames.Loki", StringComparison.Ordinal);
+        sharedHostingText.ShouldContain("AddTempo(resourceNames.Tempo", StringComparison.Ordinal);
+        sharedHostingText.ShouldContain("AddPrometheus(", StringComparison.Ordinal);
     }
 
     [Fact]
@@ -158,12 +158,12 @@ public sealed partial class AppHostOrchestrationTests
         var imageDigestCalls = sharedHostingText.Split("WithImageSHA256(").Length - 1;
 
         // Assert
-        Assert.Equal(5, imageDigestCalls);
-        Assert.Contains("OpenTelemetryCollectorImageDigest", sharedHostingText, StringComparison.Ordinal);
-        Assert.Contains("GrafanaImageDigest", sharedHostingText, StringComparison.Ordinal);
-        Assert.Contains("LokiImageDigest", sharedHostingText, StringComparison.Ordinal);
-        Assert.Contains("TempoImageDigest", sharedHostingText, StringComparison.Ordinal);
-        Assert.Contains("PrometheusImageDigest", sharedHostingText, StringComparison.Ordinal);
+        imageDigestCalls.ShouldBe(5);
+        sharedHostingText.ShouldContain("OpenTelemetryCollectorImageDigest", StringComparison.Ordinal);
+        sharedHostingText.ShouldContain("GrafanaImageDigest", StringComparison.Ordinal);
+        sharedHostingText.ShouldContain("LokiImageDigest", StringComparison.Ordinal);
+        sharedHostingText.ShouldContain("TempoImageDigest", StringComparison.Ordinal);
+        sharedHostingText.ShouldContain("PrometheusImageDigest", StringComparison.Ordinal);
     }
 
 }

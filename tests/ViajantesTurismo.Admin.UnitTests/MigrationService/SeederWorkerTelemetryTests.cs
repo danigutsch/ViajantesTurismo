@@ -23,16 +23,16 @@ public sealed class SeederWorkerTelemetryTests
         await SeederWorkerTestHelpers.ExecuteWorker(worker, CancellationToken.None);
 
         // Assert
-        var activity = Assert.Single(stoppedActivities);
-        Assert.Equal("DatabaseSeeding", activity.OperationName);
-        Assert.Equal(SeederWorker.ActivitySourceName, activity.Source.Name);
-        Assert.Equal(ActivityStatusCode.Ok, activity.Status);
-        Assert.Null(activity.StatusDescription);
-        Assert.Contains(activity.Tags, static tag => tag.Key == "operation.type" && tag.Value == "database_seeding");
-        Assert.Contains(activity.Tags, static tag => tag.Key == "worker.type" && tag.Value == "migration");
-        Assert.DoesNotContain(activity.Events, static activityEvent => activityEvent.Name == "exception");
-        Assert.True(harness.HostLifetime.StopApplicationCalled);
-        Assert.True(seedCalled);
+        var activity = TestAssert.ExactlyOne(stoppedActivities);
+        TestAssert.Equal("DatabaseSeeding", activity.OperationName);
+        TestAssert.Equal(SeederWorker.ActivitySourceName, activity.Source.Name);
+        TestAssert.Equal(ActivityStatusCode.Ok, activity.Status);
+        TestAssert.Null(activity.StatusDescription);
+        TestAssert.Contains(activity.Tags, static tag => tag.Key == "operation.type" && tag.Value == "database_seeding");
+        TestAssert.Contains(activity.Tags, static tag => tag.Key == "worker.type" && tag.Value == "migration");
+        TestAssert.DoesNotContain(activity.Events, static activityEvent => activityEvent.Name == "exception");
+        TestAssert.True(harness.HostLifetime.StopApplicationCalled);
+        TestAssert.True(seedCalled);
     }
 
     [Fact]
@@ -50,28 +50,28 @@ public sealed class SeederWorkerTelemetryTests
         using var worker = harness.CreateWorker();
 
         // Act
-        var exception = await Assert.ThrowsAsync<InvalidOperationException>(() => SeederWorkerTestHelpers.ExecuteWorker(worker, CancellationToken.None));
+        var exception = await TestAssert.Throws<InvalidOperationException>(() => SeederWorkerTestHelpers.ExecuteWorker(worker, CancellationToken.None));
 
         // Assert
-        Assert.Equal("boom", exception.Message);
-        var activity = Assert.Single(stoppedActivities);
-        Assert.Equal("DatabaseSeeding", activity.OperationName);
-        Assert.Equal(SeederWorker.ActivitySourceName, activity.Source.Name);
-        Assert.Equal(ActivityStatusCode.Error, activity.Status);
-        Assert.Equal("boom", activity.StatusDescription);
-        Assert.Contains(activity.Tags, static tag => tag.Key == "operation.type" && tag.Value == "database_seeding");
-        Assert.Contains(activity.Tags, static tag => tag.Key == "worker.type" && tag.Value == "migration");
-        Assert.DoesNotContain(activity.Tags, static tag => tag.Key.StartsWith("exception.", StringComparison.Ordinal));
+        TestAssert.Equal("boom", exception.Message);
+        var activity = TestAssert.ExactlyOne(stoppedActivities);
+        TestAssert.Equal("DatabaseSeeding", activity.OperationName);
+        TestAssert.Equal(SeederWorker.ActivitySourceName, activity.Source.Name);
+        TestAssert.Equal(ActivityStatusCode.Error, activity.Status);
+        TestAssert.Equal("boom", activity.StatusDescription);
+        TestAssert.Contains(activity.Tags, static tag => tag.Key == "operation.type" && tag.Value == "database_seeding");
+        TestAssert.Contains(activity.Tags, static tag => tag.Key == "worker.type" && tag.Value == "migration");
+        TestAssert.DoesNotContain(activity.Tags, static tag => tag.Key.StartsWith("exception.", StringComparison.Ordinal));
 
-        var exceptionEvent = Assert.Single(activity.Events, static activityEvent => activityEvent.Name == "exception");
+        var exceptionEvent = TestAssert.ExactlyOne(activity.Events, static activityEvent => activityEvent.Name == "exception");
         var exceptionTags = exceptionEvent.Tags;
-        Assert.NotNull(exceptionTags);
-        Assert.Contains(exceptionTags, static tag =>
+        _ = TestAssert.NotNull(exceptionTags);
+        TestAssert.Contains(exceptionTags, static tag =>
             tag.Key == "exception.type" && string.Equals(tag.Value as string, typeof(InvalidOperationException).FullName, StringComparison.Ordinal));
-        Assert.Contains(exceptionTags, static tag =>
+        TestAssert.Contains(exceptionTags, static tag =>
             tag.Key == "exception.message" && string.Equals(tag.Value as string, "boom", StringComparison.Ordinal));
-        Assert.True(harness.HostLifetime.StopApplicationCalled);
-        Assert.True(seedCalled);
+        TestAssert.True(harness.HostLifetime.StopApplicationCalled);
+        TestAssert.True(seedCalled);
     }
 
     [Fact]
@@ -89,19 +89,19 @@ public sealed class SeederWorkerTelemetryTests
         using var worker = harness.CreateWorker();
 
         // Act
-        await Assert.ThrowsAsync<OperationCanceledException>(() => SeederWorkerTestHelpers.ExecuteWorker(worker, CancellationToken.None));
+        await TestAssert.Throws<OperationCanceledException>(() => SeederWorkerTestHelpers.ExecuteWorker(worker, CancellationToken.None));
 
         // Assert
-        var activity = Assert.Single(stoppedActivities);
-        Assert.Equal("DatabaseSeeding", activity.OperationName);
-        Assert.Equal(SeederWorker.ActivitySourceName, activity.Source.Name);
-        Assert.Equal(ActivityStatusCode.Unset, activity.Status);
-        Assert.Null(activity.StatusDescription);
-        Assert.Contains(activity.Tags, static tag => tag.Key == "operation.type" && tag.Value == "database_seeding");
-        Assert.Contains(activity.Tags, static tag => tag.Key == "worker.type" && tag.Value == "migration");
-        Assert.DoesNotContain(activity.Events, static activityEvent => activityEvent.Name == "exception");
-        Assert.True(harness.HostLifetime.StopApplicationCalled);
-        Assert.True(seedCalled);
+        var activity = TestAssert.ExactlyOne(stoppedActivities);
+        TestAssert.Equal("DatabaseSeeding", activity.OperationName);
+        TestAssert.Equal(SeederWorker.ActivitySourceName, activity.Source.Name);
+        TestAssert.Equal(ActivityStatusCode.Unset, activity.Status);
+        TestAssert.Null(activity.StatusDescription);
+        TestAssert.Contains(activity.Tags, static tag => tag.Key == "operation.type" && tag.Value == "database_seeding");
+        TestAssert.Contains(activity.Tags, static tag => tag.Key == "worker.type" && tag.Value == "migration");
+        TestAssert.DoesNotContain(activity.Events, static activityEvent => activityEvent.Name == "exception");
+        TestAssert.True(harness.HostLifetime.StopApplicationCalled);
+        TestAssert.True(seedCalled);
     }
 
     [Fact]
@@ -116,7 +116,7 @@ public sealed class SeederWorkerTelemetryTests
 
         // Assert
         await harness.ShouldContainSeedData(TestContext.Current.CancellationToken);
-        Assert.True(harness.HostLifetime.StopApplicationCalled);
+        TestAssert.True(harness.HostLifetime.StopApplicationCalled);
     }
 
 }

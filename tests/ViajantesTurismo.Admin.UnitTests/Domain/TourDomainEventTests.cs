@@ -1,4 +1,3 @@
-using SharedKernel.Testing.Assertions;
 using ViajantesTurismo.Admin.Domain.Tours;
 using ViajantesTurismo.Admin.Testing.Behavior;
 

@@ -1,6 +1,5 @@
 using System.Net;
 using System.Net.Http.Json;
-using SharedKernel.Testing.Assertions;
 using ViajantesTurismo.Catalog.Contracts.Application;
 
 namespace ViajantesTurismo.Catalog.UnitTests;
