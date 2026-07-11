@@ -114,6 +114,34 @@ public sealed class DocumentDraftTests
     }
 
     [Fact]
+    public void Create_rejects_invalid_enum_values_and_duplicate_field_identifiers()
+    {
+        // Arrange
+        var now = new DateTime(2026, 7, 11, 0, 0, 0, DateTimeKind.Utc);
+        DocumentField[] duplicateFields =
+        [
+            DocumentField.Create("greeting", "Greeting", "Dear customer", DocumentPrivacyClassification.PersonalData, true).Value,
+            DocumentField.Create("greeting", "Greeting again", "Welcome", DocumentPrivacyClassification.PersonalData, true).Value,
+        ];
+
+        // Act
+        var invalidTypeResult = DocumentDraft.Create(
+            Guid.CreateVersion7(), (DocumentType)99, DocumentAudience.Customer,
+            "tour-service-contract", "1", "SOURCE-VERSION", duplicateFields.Take(1), "BRANDING-VERSION", "Viajantes Turismo", null, now);
+        var invalidAudienceResult = DocumentDraft.Create(
+            Guid.CreateVersion7(), DocumentType.BookingConfirmationContract, (DocumentAudience)99,
+            "tour-service-contract", "1", "SOURCE-VERSION", duplicateFields.Take(1), "BRANDING-VERSION", "Viajantes Turismo", null, now);
+        var duplicateFieldsResult = DocumentDraft.Create(
+            Guid.CreateVersion7(), DocumentType.BookingConfirmationContract, DocumentAudience.Customer,
+            "tour-service-contract", "1", "SOURCE-VERSION", duplicateFields, "BRANDING-VERSION", "Viajantes Turismo", null, now);
+
+        // Assert
+        invalidTypeResult.IsFailure.ShouldBeTrue();
+        invalidAudienceResult.IsFailure.ShouldBeTrue();
+        duplicateFieldsResult.IsFailure.ShouldBeTrue();
+    }
+
+    [Fact]
     public void Expired_draft_is_eligible_for_purge_but_finalized_document_is_not()
     {
         // Arrange

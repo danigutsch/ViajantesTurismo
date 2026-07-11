@@ -24,6 +24,12 @@ public static class DocumentErrors
     public static Result FieldNotFound(string fieldId) => Result.NotFound(
         detail: $"Document field '{fieldId}' was not found.");
 
+    /// <summary>Returns a duplicate-field failure.</summary>
+    public static Result DuplicateFieldId(string fieldId) => Result.Invalid(
+        detail: $"Document field '{fieldId}' is duplicated.",
+        field: "fields",
+        message: "Document field identifiers must be unique.");
+
     /// <summary>Returns an invalid document-state transition failure.</summary>
     public static Result InvalidStatusTransition(DocumentStatus current, DocumentStatus target) => Result.Conflict(
         detail: $"Cannot transition document from {current} to {target}.");

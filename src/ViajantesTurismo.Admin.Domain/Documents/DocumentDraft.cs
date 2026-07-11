@@ -336,9 +336,14 @@ public sealed class DocumentDraft : IEntity<Guid>
             return DocumentErrors.ValueRequired("bookingId");
         }
 
-        if (!Enum.IsDefined(type) || !Enum.IsDefined(audience))
+        if (!Enum.IsDefined(type))
         {
             return DocumentErrors.ValueRequired("documentType");
+        }
+
+        if (!Enum.IsDefined(audience))
+        {
+            return DocumentErrors.ValueRequired("documentAudience");
         }
 
         if (string.IsNullOrWhiteSpace(templateId))
@@ -389,6 +394,14 @@ public sealed class DocumentDraft : IEntity<Guid>
         if (brandingName.Length > DocumentLimits.MaxBrandingNameLength)
         {
             return DocumentErrors.ValueTooLong("brandingName", DocumentLimits.MaxBrandingNameLength);
+        }
+
+        var duplicateField = fields
+            .GroupBy(field => field.FieldId, StringComparer.Ordinal)
+            .FirstOrDefault(group => group.Skip(1).Any());
+        if (duplicateField is not null)
+        {
+            return DocumentErrors.DuplicateFieldId(duplicateField.Key);
         }
 
         if (fields.Count == 0)

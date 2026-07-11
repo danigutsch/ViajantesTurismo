@@ -20,9 +20,9 @@ internal sealed class DocumentDraftConfiguration : IEntityTypeConfiguration<Docu
         entity.Property(document => document.TemplateId).HasMaxLength(DocumentLimits.MaxTemplateIdLength).IsRequired();
         entity.Property(document => document.TemplateVersion).HasMaxLength(DocumentLimits.MaxTemplateVersionLength).IsRequired();
         entity.Property(document => document.Revision).IsRequired();
-        entity.Property(document => document.SourceVersion).HasMaxLength(64).IsRequired();
-        entity.Property(document => document.BrandingVersion).HasMaxLength(64).IsRequired();
-        entity.Property(document => document.BrandingName).HasMaxLength(128).IsRequired();
+        entity.Property(document => document.SourceVersion).HasMaxLength(DocumentLimits.MaxSourceVersionLength).IsRequired();
+        entity.Property(document => document.BrandingVersion).HasMaxLength(DocumentLimits.MaxBrandingVersionLength).IsRequired();
+        entity.Property(document => document.BrandingName).HasMaxLength(DocumentLimits.MaxBrandingNameLength).IsRequired();
         entity.Property(document => document.BrandingLogoUri)
             .HasConversion(new ValueConverter<Uri?, string?>(
                 uri => uri == null ? null : uri.OriginalString,

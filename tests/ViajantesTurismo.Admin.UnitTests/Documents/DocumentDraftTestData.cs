@@ -1,4 +1,5 @@
 using ViajantesTurismo.Admin.Domain.Documents;
+using SharedKernel.Testing.Assertions;
 
 namespace ViajantesTurismo.Admin.UnitTests.Documents;
 
@@ -22,6 +23,7 @@ internal static class DocumentDraftTestData
             new Uri("/logo.svg", UriKind.Relative),
             createdAt);
 
+        result.IsSuccess.ShouldBeTrue();
         return result.Value;
     }
 }
