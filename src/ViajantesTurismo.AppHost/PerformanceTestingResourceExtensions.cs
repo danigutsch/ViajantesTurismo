@@ -47,6 +47,8 @@ internal static class PerformanceTestingResourceExtensions
             "run",
             "--project",
             "tools/ViajantesTurismo.Performance.Tool/ViajantesTurismo.Performance.Tool.csproj",
+            "-c",
+            "Release",
             "--",
             "admin-smoke",
         };
