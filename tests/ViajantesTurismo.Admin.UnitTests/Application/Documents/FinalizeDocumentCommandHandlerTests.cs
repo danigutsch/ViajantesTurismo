@@ -49,4 +49,101 @@ public sealed class FinalizeDocumentCommandHandlerTests
         result.IsFailure.ShouldBeTrue();
         unitOfWork.SaveEntitiesCallCount.ShouldBe(0);
     }
+
+    [Fact]
+    public async Task Handle_returns_not_found_without_saving_when_document_is_missing()
+    {
+        // Arrange
+        var store = new FakeDocumentStore();
+        var unitOfWork = new FakeUnitOfWork();
+        var handler = new FinalizeDocumentCommandHandler(store, unitOfWork, TimeProvider.System);
+
+        // Act
+        var result = await handler.Handle(new FinalizeDocumentCommand(Guid.CreateVersion7()), CancellationToken.None);
+
+        // Assert
+        result.IsFailure.ShouldBeTrue();
+        unitOfWork.SaveEntitiesCallCount.ShouldBe(0);
+    }
+
+    [Fact]
+    public async Task Handle_supersedes_previous_finalized_revision_after_replacement_finalizes()
+    {
+        // Arrange
+        var now = DateTime.UtcNow;
+        var previous = DocumentDraftTestData.Create(now);
+        previous.BeginReview(now).IsSuccess.ShouldBeTrue();
+        previous.Approve(now).IsSuccess.ShouldBeTrue();
+        previous.Finalize("previous"u8.ToArray(), now).IsSuccess.ShouldBeTrue();
+        DocumentField[] replacementFields =
+        [
+            DocumentField.Create("booking-reference", "Booking reference", "ABC123", DocumentPrivacyClassification.Operational, false).Value,
+            DocumentField.Create("greeting", "Greeting", "Dear customer", DocumentPrivacyClassification.PersonalData, true).Value,
+        ];
+        var replacementResult = previous.CreateRevision(
+            "tour-service-contract",
+            "2",
+            "SOURCE-VERSION-2",
+            replacementFields,
+            "BRANDING-VERSION",
+            "Viajantes Turismo",
+            new Uri("/logo.svg", UriKind.Relative),
+            now);
+        replacementResult.IsSuccess.ShouldBeTrue();
+        var replacement = replacementResult.Value;
+        replacement.BeginReview(now).IsSuccess.ShouldBeTrue();
+        replacement.Approve(now).IsSuccess.ShouldBeTrue();
+        var store = new FakeDocumentStore();
+        store.Documents.Add(previous.Id, previous);
+        store.Documents.Add(replacement.Id, replacement);
+        var unitOfWork = new FakeUnitOfWork();
+        var handler = new FinalizeDocumentCommandHandler(store, unitOfWork, TimeProvider.System);
+
+        // Act
+        var result = await handler.Handle(new FinalizeDocumentCommand(replacement.Id), CancellationToken.None);
+
+        // Assert
+        result.IsSuccess.ShouldBeTrue();
+        replacement.Status.ShouldBe(DocumentStatus.Finalized);
+        previous.Status.ShouldBe(DocumentStatus.Superseded);
+        unitOfWork.SaveEntitiesCallCount.ShouldBe(1);
+    }
+
+    [Fact]
+    public async Task Handle_keeps_replacement_finalized_when_previous_revision_is_missing()
+    {
+        // Arrange
+        var now = DateTime.UtcNow;
+        var previous = DocumentDraftTestData.Create(now);
+        DocumentField[] replacementFields =
+        [
+            DocumentField.Create("booking-reference", "Booking reference", "ABC123", DocumentPrivacyClassification.Operational, false).Value,
+            DocumentField.Create("greeting", "Greeting", "Dear customer", DocumentPrivacyClassification.PersonalData, true).Value,
+        ];
+        var replacementResult = previous.CreateRevision(
+            "tour-service-contract",
+            "2",
+            "SOURCE-VERSION-2",
+            replacementFields,
+            "BRANDING-VERSION",
+            "Viajantes Turismo",
+            new Uri("/logo.svg", UriKind.Relative),
+            now);
+        replacementResult.IsSuccess.ShouldBeTrue();
+        var replacement = replacementResult.Value;
+        replacement.BeginReview(now).IsSuccess.ShouldBeTrue();
+        replacement.Approve(now).IsSuccess.ShouldBeTrue();
+        var store = new FakeDocumentStore();
+        store.Documents.Add(replacement.Id, replacement);
+        var unitOfWork = new FakeUnitOfWork();
+        var handler = new FinalizeDocumentCommandHandler(store, unitOfWork, TimeProvider.System);
+
+        // Act
+        var result = await handler.Handle(new FinalizeDocumentCommand(replacement.Id), CancellationToken.None);
+
+        // Assert
+        result.IsSuccess.ShouldBeTrue();
+        replacement.Status.ShouldBe(DocumentStatus.Finalized);
+        unitOfWork.SaveEntitiesCallCount.ShouldBe(1);
+    }
 }
