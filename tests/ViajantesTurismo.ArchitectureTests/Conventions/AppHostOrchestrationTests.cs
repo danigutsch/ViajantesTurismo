@@ -67,11 +67,11 @@ public sealed partial class AppHostOrchestrationTests
         releasePublisherText.ShouldContain("!HasContainerImageTag(builder)", StringComparison.Ordinal);
         releasePublisherText.ShouldContain("VT_DEPLOYMENT_VERSION", StringComparison.Ordinal);
         releasePublisherText.ShouldContain("VT_SOURCE_REVISION", StringComparison.Ordinal);
-        appHostReadmeText.ShouldNotContain("git describe");
-        releasePublisherText.ShouldNotContain("git describe");
-        releasePublisherText.ShouldNotContain("git log");
-        releasePublisherText.ShouldNotContain("git tag");
-        releasePublisherText.ShouldNotContain("git rev-parse");
+        appHostReadmeText.ShouldNotContain("git describe", StringComparison.Ordinal);
+        releasePublisherText.ShouldNotContain("git describe", StringComparison.Ordinal);
+        releasePublisherText.ShouldNotContain("git log", StringComparison.Ordinal);
+        releasePublisherText.ShouldNotContain("git tag", StringComparison.Ordinal);
+        releasePublisherText.ShouldNotContain("git rev-parse", StringComparison.Ordinal);
     }
 
     [Fact]

@@ -56,6 +56,7 @@ outdated behavior.
 - [AsyncAPI contract](asyncapi.json)
 - [OpenTelemetry custom telemetry](OPEN_TELEMETRY.md)
 - [Mutation testing evaluation](MUTATION_TESTING.md)
+- [File and stream benchmark baselines](file-and-stream-benchmark-baselines.md)
 - [Dev containers](DEVCONTAINERS.md)
 - [Configurable model source generation](MODEL_SOURCE_GENERATION.md)
 - [FOSS compliance](FOSS_COMPLIANCE.md)

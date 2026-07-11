@@ -42,12 +42,18 @@ internal static class PerformanceTestingResourceExtensions
         }
 
         var repositoryRoot = Path.GetFullPath(Path.Combine(builder.AppHostDirectory, "..", ".."));
-        var command = OperatingSystem.IsWindows() ? "pwsh" : "bash";
-        var commandArguments = OperatingSystem.IsWindows()
-            ? new[] { "-NoProfile", "-File", "scripts/run-admin-performance-smoke.ps1" }
-            : new[] { "scripts/run-admin-performance-smoke.sh" };
+        var commandArguments = new[]
+        {
+            "run",
+            "--project",
+            "tools/ViajantesTurismo.Performance.Tool/ViajantesTurismo.Performance.Tool.csproj",
+            "-c",
+            "Release",
+            "--",
+            "admin-smoke",
+        };
 
-        var performanceSmoke = builder.AddExecutable(ResourceNames.AdminPerformanceSmoke, command, repositoryRoot, commandArguments)
+        var performanceSmoke = builder.AddExecutable(ResourceNames.AdminPerformanceSmoke, "dotnet", repositoryRoot, commandArguments)
             .WithEnvironment(ApiBaseUrlVariable, adminApi.GetEndpoint("http"))
             .WithEnvironment(ProfileVariable, GetEnvironmentOrDefault(ProfileVariable, "smoke"))
             .WithEnvironment(ResultsDirectoryVariable, GetEnvironmentOrDefault(ResultsDirectoryVariable, "tests/performance/results"))

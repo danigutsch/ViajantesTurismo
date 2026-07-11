@@ -76,7 +76,7 @@ public sealed class AsyncApiContractArtifactTests
         }
 
         root.TryGetProperty("asyncapi", out _).ShouldBeTrue();
-        artifact.ShouldNotContain("\t");
+        artifact.ShouldNotContain("\t", StringComparison.Ordinal);
         root.GetProperty("asyncapi").GetString().ShouldBe("3.0.0");
         info.GetProperty("version").GetString().ShouldBe("1.0.0");
         channels.GetProperty(AdminTourCreatedIntegrationEvent.EventType).GetProperty("address").GetString().ShouldBe(AdminTourCreatedIntegrationEvent.EventType);

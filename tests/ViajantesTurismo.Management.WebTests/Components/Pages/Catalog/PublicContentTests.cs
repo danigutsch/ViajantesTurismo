@@ -61,7 +61,7 @@ public sealed class PublicContentTests : BunitContext
         cut.Find("#pt-br-title").GetAttribute("value").ShouldBe("Welcome");
         cut.Markup.ShouldContain("Starter draft copied from source content", StringComparison.Ordinal);
         cut.Markup.ShouldContain("Review-required text", StringComparison.Ordinal);
-        cut.Markup.ShouldNotContain("AI-assisted");
+        cut.Markup.ShouldNotContain("AI-assisted", StringComparison.Ordinal);
     }
 
     [Fact]
@@ -232,7 +232,7 @@ public sealed class PublicContentTests : BunitContext
 
         // Assert
         cut.WaitForState(() => publicContentApi.SavedRequest is not null, TimeSpan.FromSeconds(2));
-        cut.Markup.ShouldNotContain("Confirm human review");
+        cut.Markup.ShouldNotContain("Confirm human review", StringComparison.Ordinal);
         publicContentApi.SavedRequest.ShouldNotBeNull();
         var portugueseVariant = publicContentApi.SavedRequest.Variants.ShouldHaveSingleItem(variant => variant.Language == PublicContentLanguageDto.PtBr);
         portugueseVariant.RequiresHumanReview.ShouldBeFalse();
