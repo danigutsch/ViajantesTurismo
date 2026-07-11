@@ -52,5 +52,7 @@ public sealed class DocumentStorePostgreSqlTests : IAsyncLifetime
         remaining.Select(document => document.Id).ShouldNotContain(expired.Id);
         remaining.Select(document => document.Id).ShouldNotContain(boundaryExpired.Id);
         remaining.Sum(document => document.Fields.Count).ShouldBe(6);
+        var hasRetentionIndex = await Scenario.HasRetentionIndex(TestContext.Current.CancellationToken);
+        hasRetentionIndex.ShouldBeTrue();
     }
 }

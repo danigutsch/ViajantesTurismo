@@ -1,7 +1,12 @@
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.DependencyInjection;
+using SharedKernel.DomainEvents.EntityFrameworkCore;
+using SharedKernel.EntityFrameworkCore;
 using SharedKernel.IntegrationTesting;
+using SharedKernel.Messaging.IntegrationEvents.EntityFrameworkCore;
 using ViajantesTurismo.Admin.Domain.Documents;
 using ViajantesTurismo.Admin.Infrastructure.Documents;
+using ViajantesTurismo.Resources;
 
 namespace ViajantesTurismo.Admin.Infrastructure.Tests.Documents;
 
@@ -34,7 +39,7 @@ internal sealed class PostgreSqlDocumentStoreScenario : IAsyncDisposable
     public async ValueTask Seed(params DocumentDraft[] documents)
     {
         await using var dbContext = CreateDbContext();
-        await dbContext.Database.EnsureCreatedAsync(TestContext.Current.CancellationToken);
+        await dbContext.Database.MigrateAsync(TestContext.Current.CancellationToken);
         dbContext.DocumentDrafts.AddRange(documents);
         _ = await dbContext.SaveChangesAsync(TestContext.Current.CancellationToken);
     }
@@ -54,14 +59,37 @@ internal sealed class PostgreSqlDocumentStoreScenario : IAsyncDisposable
             .ToArrayAsync(ct);
     }
 
+    public async ValueTask<bool> HasRetentionIndex(CancellationToken ct)
+    {
+        await using var dbContext = CreateDbContext();
+        var count = await dbContext.Database.SqlQueryRaw<int>(
+                """
+                SELECT COUNT(*)::int AS "Value"
+                FROM pg_indexes
+                WHERE schemaname = 'public'
+                  AND tablename = 'DocumentDrafts'
+                  AND indexname = 'IX_DocumentDrafts_RetentionExpiresAt_Unfinalized'
+                  AND indexdef LIKE '%WHERE ("FinalizedAt" IS NULL)%'
+                """)
+            .SingleAsync(ct);
+
+        return count == 1;
+    }
+
     public async ValueTask DisposeAsync() => await app.DisposeAsync();
 
     private AdminWriteDbContext CreateDbContext()
     {
+        var services = new ServiceCollection();
+        services.AddDomainEventDispatch<AdminWriteDbContext>();
+        services.AddIntegrationEventOutbox<AdminWriteDbContext>();
+        services.AddPostgreSqlIntegrationEventTransportProducer<AdminWriteDbContext>(IntegrationEventConsumerNames.Catalog);
+        using var provider = services.BuildServiceProvider();
+        var configurations = provider.GetServices<IDbContextConfiguration<AdminWriteDbContext>>().ToArray();
         var options = new DbContextOptionsBuilder<AdminWriteDbContext>()
             .UseNpgsql(connectionString)
             .Options;
 
-        return new AdminWriteDbContext(options);
+        return new AdminWriteDbContext(options, configurations);
     }
 }
