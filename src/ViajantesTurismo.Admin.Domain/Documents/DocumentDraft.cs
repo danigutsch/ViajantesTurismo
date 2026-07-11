@@ -296,9 +296,9 @@ public sealed class DocumentDraft : IEntity<Guid>
     /// <summary>Voids a document with a non-empty reason.</summary>
     public Result Void(string reason, DateTime now)
     {
-        if (Status is DocumentStatus.Superseded or DocumentStatus.Voided)
+        if (Status != DocumentStatus.Finalized)
         {
-            return DocumentErrors.DocumentIsImmutable(Status);
+            return DocumentErrors.InvalidStatusTransition(Status, DocumentStatus.Voided);
         }
 
         if (string.IsNullOrWhiteSpace(reason))
@@ -366,9 +366,29 @@ public sealed class DocumentDraft : IEntity<Guid>
             return DocumentErrors.ValueRequired("sourceVersion");
         }
 
-        if (string.IsNullOrWhiteSpace(brandingVersion) || string.IsNullOrWhiteSpace(brandingName))
+        if (sourceVersion.Length > DocumentLimits.MaxSourceVersionLength)
         {
-            return DocumentErrors.ValueRequired("brandingSnapshot");
+            return DocumentErrors.ValueTooLong("sourceVersion", DocumentLimits.MaxSourceVersionLength);
+        }
+
+        if (string.IsNullOrWhiteSpace(brandingVersion))
+        {
+            return DocumentErrors.ValueRequired("brandingVersion");
+        }
+
+        if (brandingVersion.Length > DocumentLimits.MaxBrandingVersionLength)
+        {
+            return DocumentErrors.ValueTooLong("brandingVersion", DocumentLimits.MaxBrandingVersionLength);
+        }
+
+        if (string.IsNullOrWhiteSpace(brandingName))
+        {
+            return DocumentErrors.ValueRequired("brandingName");
+        }
+
+        if (brandingName.Length > DocumentLimits.MaxBrandingNameLength)
+        {
+            return DocumentErrors.ValueTooLong("brandingName", DocumentLimits.MaxBrandingNameLength);
         }
 
         if (fields.Count == 0)

@@ -29,8 +29,8 @@ public sealed class DocumentDraftTests
         draft.Status.ShouldBe(DocumentStatus.Finalized);
         draft.BrandingVersion.ShouldBe("BRANDING-VERSION");
         draft.BrandingName.ShouldBe("Viajantes Turismo");
-        finalizedArtifact.ShouldNotBeNull();
-        finalizedArtifact.Value.Span[0].ShouldBe((byte)'<');
+        var artifactContent = finalizedArtifact.ShouldNotBeNull();
+        artifactContent.Span[0].ShouldBe((byte)'<');
         draft.FinalizedArtifactName.ShouldNotContain("customer");
     }
 
@@ -72,6 +72,45 @@ public sealed class DocumentDraftTests
         result.IsSuccess.ShouldBeTrue();
         draft.Status.ShouldBe(DocumentStatus.Voided);
         draft.FinalizedArtifactContent.ShouldNotBeNull();
+    }
+
+    [Fact]
+    public void Void_rejects_a_draft_without_a_finalized_artifact()
+    {
+        // Arrange
+        var now = new DateTime(2026, 7, 11, 0, 0, 0, DateTimeKind.Utc);
+        var draft = DocumentDraftTestData.Create(now);
+
+        // Act
+        var result = draft.Void("customer-cancellation", now);
+
+        // Assert
+        result.IsFailure.ShouldBeTrue();
+        draft.Status.ShouldBe(DocumentStatus.DraftGenerated);
+    }
+
+    [Fact]
+    public void Create_rejects_source_and_branding_values_that_exceed_persistence_limits()
+    {
+        // Arrange
+        var now = new DateTime(2026, 7, 11, 0, 0, 0, DateTimeKind.Utc);
+        DocumentField[] fields = [DocumentField.Create("greeting", "Greeting", "Dear customer", DocumentPrivacyClassification.PersonalData, true).Value];
+
+        // Act
+        var sourceVersionResult = DocumentDraft.Create(
+            Guid.CreateVersion7(), DocumentType.BookingConfirmationContract, DocumentAudience.Customer,
+            "tour-service-contract", "1", new string('s', 65), fields, "BRANDING-VERSION", "Viajantes Turismo", null, now);
+        var brandingVersionResult = DocumentDraft.Create(
+            Guid.CreateVersion7(), DocumentType.BookingConfirmationContract, DocumentAudience.Customer,
+            "tour-service-contract", "1", "SOURCE-VERSION", fields, new string('b', 65), "Viajantes Turismo", null, now);
+        var brandingNameResult = DocumentDraft.Create(
+            Guid.CreateVersion7(), DocumentType.BookingConfirmationContract, DocumentAudience.Customer,
+            "tour-service-contract", "1", "SOURCE-VERSION", fields, "BRANDING-VERSION", new string('n', 129), null, now);
+
+        // Assert
+        sourceVersionResult.IsFailure.ShouldBeTrue();
+        brandingVersionResult.IsFailure.ShouldBeTrue();
+        brandingNameResult.IsFailure.ShouldBeTrue();
     }
 
     [Fact]

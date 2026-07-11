@@ -11,6 +11,15 @@ public static class DocumentLimits
     /// <summary>The maximum template version length.</summary>
     public const int MaxTemplateVersionLength = 64;
 
+    /// <summary>The maximum source-version length.</summary>
+    public const int MaxSourceVersionLength = 64;
+
+    /// <summary>The maximum branding-version length.</summary>
+    public const int MaxBrandingVersionLength = 64;
+
+    /// <summary>The maximum branding display-name length.</summary>
+    public const int MaxBrandingNameLength = 128;
+
     /// <summary>The maximum field identifier length.</summary>
     public const int MaxFieldIdLength = 64;
 

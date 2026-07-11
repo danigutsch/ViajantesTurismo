@@ -1,6 +1,6 @@
 # Generated travel documents
 
-This plan covers the generated travel document epic and the planning scope for issues #723-#728.
+This plan defines the generated travel document scope.
 
 ## Goal
 
@@ -244,12 +244,9 @@ Recommended first slice boundaries:
 - Non-editable fields: booking reference, tour dates, price summary, and payment state.
 - Output: one finalized deterministic HTML artifact payload; PDF rendering follows renderer selection.
 
-## Issue-ready implementation backlog
+## Implementation backlog
 
-This PR does not create GitHub issues because it is limited to worktree documentation changes. The
-items below are issue-ready follow-ups for the first implementation slice. If converted into GitHub
-issues, keep them linked to epic #472 and note that planning issues #723-#728 are satisfied by this
-document and ADR-036.
+The items below remain follow-ups for work beyond this first implementation slice.
 
 ### 1. Define document draft model and privacy classification
 
