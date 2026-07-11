@@ -243,9 +243,9 @@ Recommended first slice boundaries:
 - Non-editable fields: booking reference, tour dates, price summary, and payment state.
 - Output: one finalized deterministic HTML artifact payload; PDF rendering follows renderer selection.
 
-## Implementation backlog
+## Implementation status and follow-up backlog
 
-The items below remain follow-ups for work beyond this first implementation slice.
+The items below track implemented first-slice work and follow-ups beyond this slice.
 
 ### 1. Define document draft model and privacy classification
 

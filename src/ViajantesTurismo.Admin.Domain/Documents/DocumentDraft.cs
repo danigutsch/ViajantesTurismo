@@ -422,6 +422,11 @@ public sealed class DocumentDraft : IEntity<Guid>
             return DocumentErrors.ValueTooLong("brandingLogoUri", DocumentLimits.MaxBrandingLogoUriLength);
         }
 
+        if (!IsSafeBrandingLogoUri(brandingLogoUri))
+        {
+            return DocumentErrors.InvalidValue("brandingLogoUri");
+        }
+
         var duplicateField = fields
             .GroupBy(field => field.FieldId, StringComparer.Ordinal)
             .FirstOrDefault(group => group.Skip(1).Any());
@@ -442,5 +447,21 @@ public sealed class DocumentDraft : IEntity<Guid>
         }
 
         return Result.Ok();
+    }
+
+    private static bool IsSafeBrandingLogoUri(Uri? logoUri)
+    {
+        if (logoUri is null)
+        {
+            return true;
+        }
+
+        if (logoUri.IsAbsoluteUri)
+        {
+            return logoUri.Scheme == Uri.UriSchemeHttps && string.IsNullOrEmpty(logoUri.UserInfo);
+        }
+
+        var value = logoUri.OriginalString;
+        return value.StartsWith('/') && !value.StartsWith("//", StringComparison.Ordinal);
     }
 }

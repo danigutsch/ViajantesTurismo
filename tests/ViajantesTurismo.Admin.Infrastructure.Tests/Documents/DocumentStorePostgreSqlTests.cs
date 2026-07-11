@@ -62,7 +62,7 @@ public sealed class DocumentStorePostgreSqlTests : IAsyncLifetime
         // Arrange
         var document = DocumentDraftInfrastructureTestData.CreateDraft(DateTime.UtcNow);
         await Scenario.Seed(document);
-        await Scenario.SetBrandingLogoUri(document.Id, "http://[invalid", TestContext.Current.CancellationToken);
+        await Scenario.SetBrandingLogoUri(document.Id, "http://example.test/logo.svg", TestContext.Current.CancellationToken);
 
         // Act
         var documents = await Scenario.GetDocuments(TestContext.Current.CancellationToken);

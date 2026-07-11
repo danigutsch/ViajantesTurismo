@@ -207,6 +207,57 @@ public sealed class DocumentDraftTests
         revision.IsFailure.ShouldBeTrue();
     }
 
+    [Theory]
+    [InlineData("http://example.test/logo.svg")]
+    [InlineData("https://viewer@example.test/logo.svg")]
+    [InlineData("//example.test/logo.svg")]
+    public void Create_rejects_unsafe_branding_logo_uris(string logoValue)
+    {
+        // Arrange
+        var now = new DateTime(2026, 7, 11, 0, 0, 0, DateTimeKind.Utc);
+        DocumentField[] fields = [DocumentField.Create("greeting", "Greeting", "Dear customer", DocumentPrivacyClassification.PersonalData, true).Value];
+
+        // Act
+        var result = DocumentDraft.Create(
+            Guid.CreateVersion7(),
+            DocumentType.BookingConfirmationContract,
+            DocumentAudience.Customer,
+            "tour-service-contract",
+            "1",
+            "SOURCE-VERSION",
+            fields,
+            "BRANDING-VERSION",
+            "Viajantes Turismo",
+            new Uri(logoValue, UriKind.RelativeOrAbsolute),
+            now);
+
+        // Assert
+        result.IsFailure.ShouldBeTrue();
+    }
+
+    [Fact]
+    public void CreateRevision_rejects_unsafe_branding_logo_uris()
+    {
+        // Arrange
+        var now = new DateTime(2026, 7, 11, 0, 0, 0, DateTimeKind.Utc);
+        var draft = DocumentDraftTestData.Create(now);
+        DocumentField[] fields = [DocumentField.Create("greeting", "Greeting", "Dear customer", DocumentPrivacyClassification.PersonalData, true).Value];
+
+        // Act
+        var result = draft.CreateRevision(
+            "tour-service-contract",
+            "2",
+            "SOURCE-VERSION-2",
+            fields,
+            "BRANDING-VERSION",
+            "Viajantes Turismo",
+            new Uri("http://example.test/logo.svg", UriKind.Absolute),
+            now);
+
+        // Assert
+        result.IsFailure.ShouldBeTrue();
+    }
+
     [Fact]
     public void Expired_draft_is_eligible_for_purge_but_finalized_document_is_not()
     {

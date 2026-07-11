@@ -26,7 +26,7 @@ internal sealed class DocumentDraftConfiguration : IEntityTypeConfiguration<Docu
         entity.Property(document => document.BrandingLogoUri)
             .HasConversion(new ValueConverter<Uri?, string?>(
                 uri => uri == null ? null : uri.OriginalString,
-                value => TryCreateUri(value)))
+                value => ToSafeLogoUri(value)))
             .HasMaxLength(DocumentLimits.MaxBrandingLogoUriLength);
         entity.Property(document => document.Status).HasConversion<string>().IsRequired();
         entity.Property(document => document.CreatedAt).IsRequired();
@@ -55,6 +55,18 @@ internal sealed class DocumentDraftConfiguration : IEntityTypeConfiguration<Docu
         entity.Navigation(document => document.Fields).UsePropertyAccessMode(PropertyAccessMode.Field);
     }
 
-    private static Uri? TryCreateUri(string? value) =>
-        Uri.TryCreate(value, UriKind.RelativeOrAbsolute, out var uri) ? uri : null;
+    private static Uri? ToSafeLogoUri(string? value)
+    {
+        if (!Uri.TryCreate(value, UriKind.RelativeOrAbsolute, out var uri))
+        {
+            return null;
+        }
+
+        if (uri.IsAbsoluteUri)
+        {
+            return uri.Scheme == Uri.UriSchemeHttps && string.IsNullOrEmpty(uri.UserInfo) ? uri : null;
+        }
+
+        return value.StartsWith('/') && !value.StartsWith("//", StringComparison.Ordinal) ? uri : null;
+    }
 }
