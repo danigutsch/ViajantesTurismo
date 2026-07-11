@@ -147,6 +147,28 @@ public sealed class PublicCatalogApiClientTests
         tour.ShouldBeNull();
     }
 
+    [Fact]
+    public async Task GetPublishedTourBySlug_respects_cancellation_before_the_response_factory_runs()
+    {
+        // Arrange
+        var responseFactoryWasCalled = false;
+        using var cancellationTokenSource = new CancellationTokenSource();
+        using var httpClient = PublicCatalogApiClientTestsHelpers.CreateClient(_ =>
+        {
+            responseFactoryWasCalled = true;
+            return PublicCatalogApiClientTestsHelpers.JsonResponse("{}");
+        });
+        var sut = new PublicCatalogApiClient(httpClient);
+        await cancellationTokenSource.CancelAsync();
+
+        // Act
+        Func<Task> act = async () => await sut.GetPublishedTourBySlug("cancelled", cancellationTokenSource.Token);
+
+        // Assert
+        await act.ShouldThrow<TaskCanceledException>();
+        responseFactoryWasCalled.ShouldBeFalse();
+    }
+
     [Theory]
     [InlineData(false)]
     [InlineData(true)]
