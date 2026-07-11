@@ -163,6 +163,8 @@ Coverage exclusions skip:
   the .NET test coverage pipeline
 - `tests/performance/**` because the current performance/load-testing assets are JavaScript-based tool inputs,
   not .NET code exercised by the repository's MTP coverage pipeline
+- `tools/ViajantesTurismo.Performance.Tool/**` because it is local performance-runner orchestration over
+  external processes; security-sensitive policy is still covered by focused unit tests
 - `src/ViajantesTurismo.AppHost/**` because the AppHost is local orchestration code and is already
   excluded from MTP collection in `coverage.settings.xml`
 - `src/SharedKernel/SharedKernel.Mediator.SourceGenerator/IsExternalInit.cs` because it is a
@@ -174,6 +176,9 @@ be covered with focused `WebApplicationFactory` or equivalent host tests instead
 Duplication exclusions skip:
 
 - `benchmarks/**` because benchmark source factories intentionally repeat controlled variants
+- `tests/performance/**` because k6 scenario setup repeats local workload patterns intentionally
+- `tools/ViajantesTurismo.Performance.Tool/**` because local and Docker runner paths intentionally mirror
+  command construction and guard policy for separate benchmark scenarios
 
 Production source files are not excluded from duplication analysis by default. Repeated analyzer,
 code-fix, source-generator, or building-block code should be refactored or justified with a narrow

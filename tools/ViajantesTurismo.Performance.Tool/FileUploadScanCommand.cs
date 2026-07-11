@@ -53,6 +53,8 @@ internal static class FileUploadScanCommand
         ValidateK6Arguments(k6Arguments.ToArray());
         ValidateDockerImage(dockerK6Image, resolvedUseDocker);
         var runnerPath = ResolveRunnerPath(resolvedUseDocker);
+        var dotnetPath = FindCommandPath("dotnet")
+            ?? throw new InvalidOperationException("dotnet is required to start the file upload benchmark host.");
 
         var timestamp = DateTimeOffset.UtcNow.ToString("yyyyMMdd'T'HHmmss'Z'", CultureInfo.InvariantCulture);
         var runDirectory = Path.Combine(resultsDirectory, "file-upload-scan-" + timestamp);
@@ -67,7 +69,7 @@ internal static class FileUploadScanCommand
 
         await output.WriteLineAsync($"Starting file upload benchmark host. Results: {runDirectory.Replace(Path.DirectorySeparatorChar, '/')}").ConfigureAwait(false);
 
-        using var hostProcess = StartHost(repositoryRoot, absoluteReadyFile, resolvedUseDocker);
+        using var hostProcess = StartHost(dotnetPath, repositoryRoot, absoluteReadyFile, resolvedUseDocker);
         var hostOutputTask = CopyToFile(hostProcess.StandardOutput, hostOutputLog);
         var hostErrorTask = CopyToFile(hostProcess.StandardError, hostErrorLog);
 
@@ -91,9 +93,9 @@ internal static class FileUploadScanCommand
         }
     }
 
-    private static Process StartHost(string repositoryRoot, string readyFile, string useDocker)
+    private static Process StartHost(string dotnetPath, string repositoryRoot, string readyFile, string useDocker)
     {
-        var startInfo = new ProcessStartInfo("dotnet")
+        var startInfo = new ProcessStartInfo(dotnetPath)
         {
             RedirectStandardError = true,
             RedirectStandardOutput = true,
@@ -116,7 +118,7 @@ internal static class FileUploadScanCommand
             "--urls",
             hostUrl);
 
-        return StartProcess(startInfo, "dotnet");
+        return StartProcess(startInfo, dotnetPath);
     }
 
     private static async Task<string> WaitForReadyFile(Process hostProcess, string readyFile, string outputLog, string errorLog)
