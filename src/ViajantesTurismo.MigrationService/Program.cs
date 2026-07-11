@@ -13,9 +13,9 @@ builder.Services.AddOpenTelemetry()
 builder.AddServiceDefaults();
 
 builder.Services.AddDomainEventProcessing();
-builder.AddSeeding();
+builder.AddAdminSeeding();
 builder.AddBrandingInfrastructure();
-builder.AddCatalogInfrastructure();
+builder.AddCatalogSeeding();
 
 builder.Services.AddHostedService<SeederWorker>();
 

@@ -83,7 +83,7 @@ public sealed class AdminInfrastructureModuleTests
     }
 
     [Fact]
-    public void AddSeeding_registers_seeder_without_outbox_relay()
+    public void AddAdminSeeding_registers_seeder_without_outbox_relay()
     {
         // Arrange
         using var serviceProvider = AdminInfrastructureModuleTestServices.CreateWithSeedingModule();

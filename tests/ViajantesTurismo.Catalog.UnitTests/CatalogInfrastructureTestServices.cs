@@ -38,6 +38,19 @@ internal static class CatalogInfrastructureTestServices
         return new CatalogInfrastructureScenario(builder.Services.BuildServiceProvider());
     }
 
+    public static CatalogInfrastructureScenario CreateSeedingScenario()
+    {
+        var builder = Host.CreateApplicationBuilder();
+        builder.Configuration.AddInMemoryCollection(new Dictionary<string, string?>
+        {
+            [$"ConnectionStrings:{ResourceNames.CatalogDatabase}"] = "Host=localhost;Database=viajantes-catalog;Username=test;Password=test"
+        });
+
+        builder.AddCatalogSeeding();
+
+        return new CatalogInfrastructureScenario(builder.Services.BuildServiceProvider());
+    }
+
     public static CatalogInfrastructureScenario CreateWorkerScenario()
     {
         var builder = Host.CreateApplicationBuilder();

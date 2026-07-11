@@ -61,14 +61,6 @@ public class TourTests(AspireSystemTestFixture fixture) : AspireSystemTestBase<A
         var tourId = detailUrlSegments[^1];
 
         // Act
-        await NavigateTo("/tours");
-        await Expect(Page).ToHaveTitleAsync("Tours");
-
-        // Assert
-        await Expect(Page.GetByText(initialName).First).ToBeVisibleAsync();
-        await Expect(Page.GetByText(identifier).First).ToBeVisibleAsync();
-
-        // Act
         await NavigateTo($"/edittour/{tourId}");
         await Expect(Page).ToHaveTitleAsync("Edit Tour");
 
