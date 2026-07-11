@@ -318,7 +318,7 @@ internal static class FileUploadScanCommand
         }
     }
 
-    private static string ResolveUseDocker(string useDocker)
+    internal static string ResolveUseDocker(string useDocker)
     {
         if (useDocker is "0" or "1")
         {
@@ -425,7 +425,7 @@ internal static class FileUploadScanCommand
         return string.IsNullOrWhiteSpace(value) ? defaultValue : value;
     }
 
-    private static string NormalizeResultsDirectory(string resultsDirectory)
+    internal static string NormalizeResultsDirectory(string resultsDirectory)
     {
         if (Path.IsPathRooted(resultsDirectory) || resultsDirectory.Contains(':', StringComparison.Ordinal))
         {
@@ -453,7 +453,7 @@ internal static class FileUploadScanCommand
         return normalized;
     }
 
-    private static void ValidateProfile(string profile)
+    internal static void ValidateProfile(string profile)
     {
         if (profile.Length == 0 || profile.Any(static value => !char.IsAsciiLetterOrDigit(value) && value is not '_' and not '-'))
         {
@@ -461,7 +461,7 @@ internal static class FileUploadScanCommand
         }
     }
 
-    private static void ValidatePayloadBytes(string payloadBytes)
+    internal static void ValidatePayloadBytes(string payloadBytes)
     {
         if (!long.TryParse(payloadBytes, NumberStyles.None, CultureInfo.InvariantCulture, out var value)
             || value <= 0
@@ -471,7 +471,7 @@ internal static class FileUploadScanCommand
         }
     }
 
-    private static void ValidateDockerImage(string dockerK6Image, string useDocker)
+    internal static void ValidateDockerImage(string dockerK6Image, string useDocker)
     {
         if (useDocker == "0")
         {

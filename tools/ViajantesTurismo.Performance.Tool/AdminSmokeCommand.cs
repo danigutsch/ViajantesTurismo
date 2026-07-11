@@ -212,7 +212,7 @@ internal static class AdminSmokeCommand
         }
     }
 
-    private static string ResolveUseDocker(string useDocker)
+    internal static string ResolveUseDocker(string useDocker)
     {
         if (useDocker is "0" or "1")
         {
@@ -322,7 +322,7 @@ internal static class AdminSmokeCommand
         return normalized;
     }
 
-    private static void ValidateProfile(string profile)
+    internal static void ValidateProfile(string profile)
     {
         if (profile.Length == 0 || profile.Any(static value => !char.IsAsciiLetterOrDigit(value) && value is not '_' and not '-'))
         {
