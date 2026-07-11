@@ -24,6 +24,7 @@ tests/ViajantesTurismo.Catalog.BehaviorTests/ViajantesTurismo.Catalog.BehaviorTe
 tests/SharedKernel.InputNormalization.Tests/SharedKernel.InputNormalization.Tests.csproj
 tests/SharedKernel.Testing.Tests/SharedKernel.Testing.Tests.csproj
 tests/ViajantesTurismo.Admin.ContractTests/ViajantesTurismo.Admin.ContractTests.csproj
+tests/ViajantesTurismo.Catalog.ContractTests/ViajantesTurismo.Catalog.ContractTests.csproj
 tests/SharedKernel.Messaging.IntegrationEvents.CloudEvents.Tests/SharedKernel.Messaging.IntegrationEvents.CloudEvents.Tests.csproj
 tests/SharedKernel.Results.AspNet.Tests/SharedKernel.Results.AspNet.Tests.csproj
 tests/ViajantesTurismo.ServiceDefaults.Tests/ViajantesTurismo.ServiceDefaults.Tests.csproj
