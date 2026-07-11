@@ -59,6 +59,16 @@ internal sealed class PostgreSqlDocumentStoreScenario : IAsyncDisposable
             .ToArrayAsync(ct);
     }
 
+    public async ValueTask SetBrandingLogoUri(Guid documentId, string value, CancellationToken ct)
+    {
+        await using var dbContext = CreateDbContext();
+        var rows = await dbContext.Database.ExecuteSqlInterpolatedAsync(
+            $"UPDATE \"DocumentDrafts\" SET \"BrandingLogoUri\" = {value} WHERE \"Id\" = {documentId}",
+            ct);
+
+        rows.ShouldBe(1);
+    }
+
     public async ValueTask<bool> HasRetentionIndex(CancellationToken ct)
     {
         await using var dbContext = CreateDbContext();

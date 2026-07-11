@@ -18,19 +18,18 @@ one path without blocking later document types.
 
 | Document type | Audience | First-slice status | Notes |
 | --- | --- | --- | --- |
-| Customer-facing confirmation packet | Customer | In first slice | Smallest customer-visible path that exercises draft, review, PDF generation, storage, audit, and regeneration. |
+| Customer-facing tour service contract draft | Customer | In first slice | Smallest customer-visible path that exercises structured draft, review, HTML rendering, storage, retention, branding snapshot, and regeneration. |
 | Travel summary | Customer | Later slice | Can reuse the confirmation workflow once itinerary and localization needs are proven. |
 | Itinerary | Customer or staff | Later slice | Needs richer day-by-day tour content and localization review before PDF rendering. |
 | Voucher | Customer or supplier | Later slice | Needs supplier-facing privacy rules and redemption/audit policy. |
-| Contract | Customer and staff | Later slice | Needs legal text ownership, version approval, and stronger retention rules. |
+| Approved legal contract template | Customer and staff | Later slice | Needs legal text ownership, version approval, and stronger retention rules before production use. |
 | Proposal | Customer | Later slice | Needs expiration, pricing validity, and conversion-to-booking rules. |
 | Invoice or receipt | Customer and finance staff | Later slice | Needs accounting ownership, payment/tax policy, and retention confirmation. |
 | Internal operations packet | Staff | Later slice | Needs staff-only audience rules and stricter operational-data authorization. |
 
-### Customer-facing confirmation packet
+### Customer-facing tour service contract draft
 
-Purpose: send a finalized travel packet to the customer after the booking is accepted and the staff
-member has reviewed the generated content.
+Purpose: prepare a reviewed customer-facing tour service contract draft after the booking is accepted.
 
 Expected content:
 
@@ -221,7 +220,7 @@ See also [Privacy classification and redaction](privacy-classification.md).
 
 ## First vertical slice
 
-Implement one customer-facing booking confirmation packet.
+Implement one customer-facing tour service contract draft.
 
 Acceptance target:
 
@@ -237,7 +236,7 @@ Acceptance target:
 
 Recommended first slice boundaries:
 
-- Document type: customer-facing booking confirmation packet.
+- Document type: customer-facing tour service contract draft.
 - Audience: customer.
 - Source: one booking with linked customer, optional companion, tour summary, and payment state.
 - Editable fields: customer-facing greeting, optional trip note, and support contact text.
@@ -261,9 +260,9 @@ Acceptance criteria:
 - Editable and non-editable fields are explicit.
 - Source identifiers are opaque and do not include personal data.
 
-### 2. Generate booking confirmation draft
+### 2. Generate tour service contract draft
 
-- Add a use case that builds a customer-facing booking confirmation draft from one booking.
+- Add a use case that builds a customer-facing tour service contract draft from one booking.
 - Record source version/hash signals and template version.
 - Exclude payment secrets and unnecessary personal data.
 

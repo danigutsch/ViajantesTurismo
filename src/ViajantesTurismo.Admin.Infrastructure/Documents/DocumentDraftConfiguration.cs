@@ -26,7 +26,7 @@ internal sealed class DocumentDraftConfiguration : IEntityTypeConfiguration<Docu
         entity.Property(document => document.BrandingLogoUri)
             .HasConversion(new ValueConverter<Uri?, string?>(
                 uri => uri == null ? null : uri.OriginalString,
-                value => string.IsNullOrEmpty(value) ? null : new Uri(value, UriKind.RelativeOrAbsolute)))
+                value => TryCreateUri(value)))
             .HasMaxLength(DocumentLimits.MaxBrandingLogoUriLength);
         entity.Property(document => document.Status).HasConversion<string>().IsRequired();
         entity.Property(document => document.CreatedAt).IsRequired();
@@ -54,4 +54,7 @@ internal sealed class DocumentDraftConfiguration : IEntityTypeConfiguration<Docu
         entity.Navigation(document => document.Fields).Metadata.SetField("_fields");
         entity.Navigation(document => document.Fields).UsePropertyAccessMode(PropertyAccessMode.Field);
     }
+
+    private static Uri? TryCreateUri(string? value) =>
+        Uri.TryCreate(value, UriKind.RelativeOrAbsolute, out var uri) ? uri : null;
 }

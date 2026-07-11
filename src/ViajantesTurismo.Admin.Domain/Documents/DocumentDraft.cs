@@ -133,7 +133,17 @@ public sealed class DocumentDraft : IEntity<Guid>
         ArgumentNullException.ThrowIfNull(fields);
 
         var fieldList = fields.ToList();
-        var validation = Validate(bookingId, type, audience, templateId, templateVersion, sourceVersion, fieldList, brandingVersion, brandingName);
+        var validation = Validate(
+            bookingId,
+            type,
+            audience,
+            templateId,
+            templateVersion,
+            sourceVersion,
+            fieldList,
+            brandingVersion,
+            brandingName,
+            brandingLogoUri);
         if (validation.IsFailure)
         {
             return validation.ConvertError<DocumentDraft>();
@@ -170,7 +180,17 @@ public sealed class DocumentDraft : IEntity<Guid>
         var fieldList = fields
             .Select(field => field.CopyWithCompatibleOverride(_fields.FirstOrDefault(previous => previous.FieldId == field.FieldId) ?? field))
             .ToList();
-        var validation = Validate(BookingId, Type, Audience, templateId, templateVersion, sourceVersion, fieldList, brandingVersion, brandingName);
+        var validation = Validate(
+            BookingId,
+            Type,
+            Audience,
+            templateId,
+            templateVersion,
+            sourceVersion,
+            fieldList,
+            brandingVersion,
+            brandingName,
+            brandingLogoUri);
         if (validation.IsFailure)
         {
             return validation.ConvertError<DocumentDraft>();
@@ -329,7 +349,8 @@ public sealed class DocumentDraft : IEntity<Guid>
         string sourceVersion,
         List<DocumentField> fields,
         string brandingVersion,
-        string brandingName)
+        string brandingName,
+        Uri? brandingLogoUri)
     {
         if (bookingId == Guid.Empty)
         {
@@ -394,6 +415,11 @@ public sealed class DocumentDraft : IEntity<Guid>
         if (brandingName.Length > DocumentLimits.MaxBrandingNameLength)
         {
             return DocumentErrors.ValueTooLong("brandingName", DocumentLimits.MaxBrandingNameLength);
+        }
+
+        if (brandingLogoUri?.OriginalString.Length > DocumentLimits.MaxBrandingLogoUriLength)
+        {
+            return DocumentErrors.ValueTooLong("brandingLogoUri", DocumentLimits.MaxBrandingLogoUriLength);
         }
 
         var duplicateField = fields

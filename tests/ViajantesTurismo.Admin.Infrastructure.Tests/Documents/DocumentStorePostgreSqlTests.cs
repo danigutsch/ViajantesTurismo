@@ -55,4 +55,19 @@ public sealed class DocumentStorePostgreSqlTests : IAsyncLifetime
         var hasRetentionIndex = await Scenario.HasRetentionIndex(TestContext.Current.CancellationToken);
         hasRetentionIndex.ShouldBeTrue();
     }
+
+    [Fact]
+    public async Task Invalid_branding_logo_uri_materializes_as_missing_snapshot_logo()
+    {
+        // Arrange
+        var document = DocumentDraftInfrastructureTestData.CreateDraft(DateTime.UtcNow);
+        await Scenario.Seed(document);
+        await Scenario.SetBrandingLogoUri(document.Id, "http://[invalid", TestContext.Current.CancellationToken);
+
+        // Act
+        var documents = await Scenario.GetDocuments(TestContext.Current.CancellationToken);
+
+        // Assert
+        documents.ShouldHaveSingleItem().BrandingLogoUri.ShouldBeNull();
+    }
 }

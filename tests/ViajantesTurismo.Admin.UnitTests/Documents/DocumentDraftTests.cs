@@ -105,11 +105,16 @@ public sealed class DocumentDraftTests
         var brandingNameResult = DocumentDraft.Create(
             Guid.CreateVersion7(), DocumentType.BookingConfirmationContract, DocumentAudience.Customer,
             "tour-service-contract", "1", "SOURCE-VERSION", fields, "BRANDING-VERSION", new string('n', 129), null, now);
+        var brandingLogoResult = DocumentDraft.Create(
+            Guid.CreateVersion7(), DocumentType.BookingConfirmationContract, DocumentAudience.Customer,
+            "tour-service-contract", "1", "SOURCE-VERSION", fields, "BRANDING-VERSION", "Viajantes Turismo",
+            new Uri($"/{new string('l', DocumentLimits.MaxBrandingLogoUriLength)}", UriKind.Relative), now);
 
         // Assert
         sourceVersionResult.IsFailure.ShouldBeTrue();
         brandingVersionResult.IsFailure.ShouldBeTrue();
         brandingNameResult.IsFailure.ShouldBeTrue();
+        brandingLogoResult.IsFailure.ShouldBeTrue();
     }
 
     [Fact]
@@ -173,6 +178,33 @@ public sealed class DocumentDraftTests
         update.IsSuccess.ShouldBeTrue();
         revision.IsSuccess.ShouldBeTrue();
         revision.Value.Fields.Single(field => field.FieldId == "greeting").RenderedValue.ShouldBe("Dear Bea,");
+    }
+
+    [Fact]
+    public void CreateRevision_rejects_branding_logo_values_that_exceed_persistence_limits()
+    {
+        // Arrange
+        var now = new DateTime(2026, 7, 11, 0, 0, 0, DateTimeKind.Utc);
+        var draft = DocumentDraftTestData.Create(now);
+        DocumentField[] fields =
+        [
+            DocumentField.Create("booking-reference", "Booking reference", "ABC123", DocumentPrivacyClassification.Operational, false).Value,
+            DocumentField.Create("greeting", "Greeting", "Dear customer", DocumentPrivacyClassification.PersonalData, true).Value,
+        ];
+
+        // Act
+        var revision = draft.CreateRevision(
+            "tour-service-contract",
+            "2",
+            "SOURCE-VERSION-2",
+            fields,
+            "BRANDING-VERSION",
+            "Viajantes Turismo",
+            new Uri($"/{new string('l', DocumentLimits.MaxBrandingLogoUriLength)}", UriKind.Relative),
+            now);
+
+        // Assert
+        revision.IsFailure.ShouldBeTrue();
     }
 
     [Fact]
