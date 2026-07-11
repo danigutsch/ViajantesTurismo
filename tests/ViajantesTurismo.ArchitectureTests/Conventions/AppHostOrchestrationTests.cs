@@ -166,4 +166,40 @@ public sealed partial class AppHostOrchestrationTests
         sharedHostingText.ShouldContain("PrometheusImageDigest", StringComparison.Ordinal);
     }
 
+    [Fact]
+    public void Media_infrastructure_resources_are_private_pinned_and_ready_before_catalog_services()
+    {
+        // Arrange
+        var appHostText = File.ReadAllText(Path.Combine(GetRepositoryRoot(), "src", "ViajantesTurismo.AppHost", "AppHost.cs"));
+        var appHostExtensionsText = File.ReadAllText(Path.Combine(GetRepositoryRoot(), "src", "ViajantesTurismo.AppHost", "AppHostResourceExtensions.cs"));
+        var clamAvText = File.ReadAllText(Path.Combine(GetRepositoryRoot(), "src", "SharedKernel", "SharedKernel.Aspire.Hosting.ClamAv", "ClamAvResourceExtensions.cs"));
+        var clamAvHealthCheckText = File.ReadAllText(Path.Combine(GetRepositoryRoot(), "src", "SharedKernel", "SharedKernel.Aspire.Hosting.ClamAv", "ClamAvPingHealthCheck.cs"));
+        var seaweedFsText = File.ReadAllText(Path.Combine(GetRepositoryRoot(), "src", "SharedKernel", "SharedKernel.Aspire.Hosting.SeaweedFs", "SeaweedFsResourceExtensions.cs"));
+
+        // Act
+        var catalogApiBlock = CatalogApiResourceRegex().Match(appHostExtensionsText).Value;
+
+        // Assert
+        appHostText.ShouldContain("AddClamAv(ResourceNames.ClamAv)", StringComparison.Ordinal);
+        catalogApiBlock.ShouldContain("WithClamAvReference(clamAv)", StringComparison.Ordinal);
+        catalogApiBlock.ShouldContain("WaitFor(clamAv)", StringComparison.Ordinal);
+        clamAvText.ShouldContain("WithImageSHA256", StringComparison.Ordinal);
+        clamAvText.ShouldContain("isExternal: false", StringComparison.Ordinal);
+        clamAvText.ShouldContain("WithVolume", StringComparison.Ordinal);
+        clamAvText.ShouldContain("WithFreshClam", StringComparison.Ordinal);
+        clamAvText.ShouldContain("CLAMAV_NO_FRESHCLAMD", StringComparison.Ordinal);
+        clamAvHealthCheckText.ShouldContain("zPING", StringComparison.Ordinal);
+        seaweedFsText.ShouldContain("WithImageSHA256", StringComparison.Ordinal);
+        seaweedFsText.ShouldContain("isExternal: false", StringComparison.Ordinal);
+        seaweedFsText.ShouldContain("-dir=/data", StringComparison.Ordinal);
+        seaweedFsText.ShouldContain("-webdav=false", StringComparison.Ordinal);
+        seaweedFsText.ShouldContain("-admin.ui=false", StringComparison.Ordinal);
+        seaweedFsText.ShouldContain("WithHttpHealthCheck", StringComparison.Ordinal);
+        seaweedFsText.ShouldContain("SeaweedFsResource", StringComparison.Ordinal);
+        seaweedFsText.ShouldContain("secret: true", StringComparison.Ordinal);
+        seaweedFsText.ShouldContain("persist: true", StringComparison.Ordinal);
+        seaweedFsText.ShouldContain("AWS_ACCESS_KEY_ID", StringComparison.Ordinal);
+        seaweedFsText.ShouldContain("AWS_SECRET_ACCESS_KEY", StringComparison.Ordinal);
+    }
+
 }

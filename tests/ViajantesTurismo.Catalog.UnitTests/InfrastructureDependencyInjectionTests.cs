@@ -26,7 +26,7 @@ public sealed class InfrastructureDependencyInjectionTests
         scenario.ShouldResolveSingleton<NpgsqlDataSource>();
         scenario.ShouldResolveAs<IPublicContentStore, EfPublicContentStore>();
         scenario.ShouldResolveAs<IMediaObjectStore, LocalMediaObjectStore>();
-        scenario.ShouldResolveAs<IMediaUploadScanner, NoOpMediaUploadScanner>();
+        scenario.ShouldResolveAs<IMediaUploadScanner, ClamAvMediaUploadScanner>();
         scenario.ShouldResolveAs<IMediaUploadValidator, MediaUploadValidator>();
         scenario.ShouldResolveAs<IEventSerializer, CatalogEventSerializer>();
         scenario.ShouldResolveAs<IEventStore, PostgreSqlEventStore>();
@@ -45,5 +45,29 @@ public sealed class InfrastructureDependencyInjectionTests
 
         // Assert
         scenario.ShouldResolveDbContextOptions<CatalogDbContext>();
+        scenario.ShouldResolveAs<IMediaUploadScanner, NoOpMediaUploadScanner>();
+    }
+
+    [Fact]
+    public void AddCatalogInfrastructure_uses_clamav_when_development_configures_it()
+    {
+        // Arrange
+        using var scenario = CatalogInfrastructureTestServices.CreateConfiguredDevelopmentScenario();
+
+        // Assert
+        scenario.ShouldResolveAs<IMediaUploadScanner, ClamAvMediaUploadScanner>();
+    }
+
+    [Fact]
+    public void AddCatalogInfrastructure_uses_singleton_seaweedfs_store_when_storage_is_configured()
+    {
+        // Arrange
+        using var scenario = CatalogInfrastructureTestServices.CreateSeaweedFsScenario();
+
+        // Act
+
+        // Assert
+        scenario.ShouldResolveAs<IMediaObjectStore, SeaweedFsMediaObjectStore>();
+        scenario.ShouldResolveSingleton<IMediaObjectStore>();
     }
 }

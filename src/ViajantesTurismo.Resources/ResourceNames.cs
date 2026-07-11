@@ -11,6 +11,17 @@ public static class ResourceNames
     public const string Cache = "cache";
 
     /// <summary>
+    /// The name of the ClamAV malware scanner resource.
+    /// </summary>
+    public const string ClamAv = "clamav";
+
+    /// <summary>
+    /// The name of the SeaweedFS S3-compatible object-storage resource.
+    /// </summary>
+    public const string SeaweedFs = "seaweedfs";
+
+
+    /// <summary>
     /// The name of the database server resource.
     /// </summary>
     public const string DatabaseServer = "database-server";

@@ -16,6 +16,7 @@ flowchart LR
     apiService[Admin.ApiService]
     brandingApiService[Branding Api]
     catalogApiService[Catalog.ApiService]
+    clamAv[ClamAV]
     adminDatabase[Database]
     catalogDatabase[Database]
     IntegrationEventWorker[Integration Event Worker]
@@ -25,10 +26,13 @@ flowchart LR
     databaseServer[PostgreSQL server]
     PublicWeb[Public.Web]
     cache[Redis cache]
+    seaweedFs[SeaweedFS]
     AdminPerformanceSmoke --> apiService
     IntegrationEventWorker --> adminDatabase
     IntegrationEventWorker --> catalogDatabase
+    IntegrationEventWorker --> clamAv
     IntegrationEventWorker --> migrationService
+    IntegrationEventWorker --> seaweedFs
     ManagementWeb --> apiService
     ManagementWeb --> brandingApiService
     ManagementWeb --> cache
@@ -43,7 +47,9 @@ flowchart LR
     brandingApiService --> migrationService
     catalogApiService --> adminDatabase
     catalogApiService --> catalogDatabase
+    catalogApiService --> clamAv
     catalogApiService --> migrationService
+    catalogApiService --> seaweedFs
     catalogDatabase --> databaseServer
     migrationService --> adminDatabase
     migrationService --> catalogDatabase

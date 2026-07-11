@@ -13,7 +13,9 @@ internal static class CatalogInfrastructureTestServices
         var builder = Host.CreateApplicationBuilder();
         builder.Configuration.AddInMemoryCollection(new Dictionary<string, string?>
         {
-            [$"ConnectionStrings:{ResourceNames.CatalogDatabase}"] = "Host=localhost;Database=viajantes;Username=test;Password=test"
+            [$"ConnectionStrings:{ResourceNames.CatalogDatabase}"] = "Host=localhost;Database=viajantes;Username=test;Password=test",
+            [$"{ClamAvMediaUploadScannerOptions.SectionName}:Host"] = "clamav",
+            [$"{ClamAvMediaUploadScannerOptions.SectionName}:Port"] = "3310"
         });
 
         builder.AddCatalogInfrastructure();
@@ -30,6 +32,43 @@ internal static class CatalogInfrastructureTestServices
         builder.Configuration.AddInMemoryCollection(new Dictionary<string, string?>
         {
             [$"ConnectionStrings:{ResourceNames.CatalogDatabase}"] = "Host=localhost;Database=viajantes;Username=test;Password=test"
+        });
+
+        builder.AddCatalogInfrastructure();
+
+        return new CatalogInfrastructureScenario(builder.Services.BuildServiceProvider());
+    }
+
+    public static CatalogInfrastructureScenario CreateConfiguredDevelopmentScenario()
+    {
+        var builder = Host.CreateApplicationBuilder(new HostApplicationBuilderSettings
+        {
+            EnvironmentName = Environments.Development,
+        });
+        builder.Configuration.AddInMemoryCollection(new Dictionary<string, string?>
+        {
+            [$"ConnectionStrings:{ResourceNames.CatalogDatabase}"] = "Host=localhost;Database=viajantes;Username=test;Password=test",
+            [$"{ClamAvMediaUploadScannerOptions.SectionName}:Host"] = "clamav",
+            [$"{ClamAvMediaUploadScannerOptions.SectionName}:Port"] = "3310"
+        });
+
+        builder.AddCatalogInfrastructure();
+
+        return new CatalogInfrastructureScenario(builder.Services.BuildServiceProvider());
+    }
+
+    public static CatalogInfrastructureScenario CreateSeaweedFsScenario()
+    {
+        var builder = Host.CreateApplicationBuilder();
+        builder.Configuration.AddInMemoryCollection(new Dictionary<string, string?>
+        {
+            [$"ConnectionStrings:{ResourceNames.CatalogDatabase}"] = "Host=localhost;Database=viajantes;Username=test;Password=test",
+            [$"{ClamAvMediaUploadScannerOptions.SectionName}:Host"] = "clamav",
+            [$"{ClamAvMediaUploadScannerOptions.SectionName}:Port"] = "3310",
+            [$"{SeaweedFsMediaObjectStorageOptions.SectionName}:Endpoint"] = "https://seaweedfs.example",
+            [$"{SeaweedFsMediaObjectStorageOptions.SectionName}:Bucket"] = "media",
+            [$"{SeaweedFsMediaObjectStorageOptions.SectionName}:AccessKey"] = "access",
+            [$"{SeaweedFsMediaObjectStorageOptions.SectionName}:SecretKey"] = "secret"
         });
 
         builder.AddCatalogInfrastructure();

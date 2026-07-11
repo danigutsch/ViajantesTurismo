@@ -27,8 +27,6 @@ internal static class LocalMediaObjectStorageDependencyInjection
                 IValidateOptions<LocalMediaObjectStorageOptions>,
                 LocalMediaObjectStorageOptionsValidator>());
         services.TryAddScoped<IMediaObjectStore, LocalMediaObjectStore>();
-        services.TryAddSingleton<IMediaUploadScanner, NoOpMediaUploadScanner>();
-
         return services;
     }
 }

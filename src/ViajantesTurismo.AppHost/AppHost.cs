@@ -8,6 +8,8 @@ var adminDatabase = databaseServer.AddDatabase(ResourceNames.AdminDatabase);
 var catalogDatabase = databaseServer.AddDatabase(ResourceNames.CatalogDatabase);
 
 var cache = builder.AddCache();
+var clamAv = builder.AddClamAv(ResourceNames.ClamAv);
+var seaweedFs = builder.AddSeaweedFs(ResourceNames.SeaweedFs);
 
 var migrationService = builder.AddMigrationService(adminDatabase, catalogDatabase);
 
@@ -15,9 +17,9 @@ var brandingApiService = builder.AddBrandingApi(catalogDatabase, migrationServic
 
 var apiService = builder.AddAdminApi(adminDatabase, brandingApiService, migrationService);
 
-var catalogApiService = builder.AddCatalogApi(adminDatabase, catalogDatabase, migrationService);
+var catalogApiService = builder.AddCatalogApi(adminDatabase, catalogDatabase, migrationService, clamAv, seaweedFs);
 
-builder.AddIntegrationEventWorker(adminDatabase, catalogDatabase, migrationService);
+builder.AddIntegrationEventWorker(adminDatabase, catalogDatabase, migrationService, clamAv, seaweedFs);
 
 builder.AddManagementWeb(cache, apiService, catalogApiService, brandingApiService);
 
