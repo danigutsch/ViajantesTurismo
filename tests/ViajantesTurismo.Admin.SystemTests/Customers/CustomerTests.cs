@@ -123,15 +123,17 @@ public class CustomerTests(AspireSystemTestFixture fixture) : AspireSystemTestBa
         var emergencyStep = Page.Locator("article").Filter(new LocatorFilterOptions { HasText = "Step 7 of 8: Emergency Contact" });
         var emergencyNameInput = emergencyStep.Locator("#name");
         var emergencyMobileInput = emergencyStep.Locator("#mobile");
-        var emergencyMobileNumber = "+5511988880001";
+        var emergencyMobileNumber = "+55 11 98888-0001";
         await emergencyNameInput.FillAndExpectValue(emergencyContactName);
         await emergencyMobileInput.FillAndExpectValue(emergencyMobileNumber);
         await emergencyNameInput.FillAndExpectValue(emergencyContactName);
         await Expect(emergencyNameInput).ToHaveValueAsync(emergencyContactName);
         await Expect(emergencyMobileInput).ToHaveValueAsync(emergencyMobileNumber);
+        await Expect(Page.Locator(".validation-message")).ToBeHiddenAsync();
 
         await Page.GetButton("Next").ClickAsync();
 
+        await Expect(Page).ToHaveURLAsync(CustomerTestRegexes.MedicalStep(), new() { Timeout = WizardStepTransitionTimeoutMilliseconds });
         await Expect(Page).ToHaveTitleAsync("Create Customer - Medical Information");
         await Expect(Page.GetByText("Step 8 of 8")).ToBeVisibleAsync();
 

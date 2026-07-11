@@ -9,4 +9,7 @@ public static partial class CustomerTestRegexes
 
     [GeneratedRegex("/customers/create/physical$")]
     public static partial Regex PhysicalStep();
+
+    [GeneratedRegex("/customers/create/medical$")]
+    public static partial Regex MedicalStep();
 }
