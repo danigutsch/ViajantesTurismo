@@ -48,5 +48,7 @@ internal sealed class DocumentDraftConfiguration : IEntityTypeConfiguration<Docu
             field.Property(documentField => documentField.PrivacyClassification).HasConversion<string>().IsRequired();
             field.Property(documentField => documentField.IsEditable).IsRequired();
         });
+        entity.Navigation(document => document.Fields).Metadata.SetField("_fields");
+        entity.Navigation(document => document.Fields).UsePropertyAccessMode(PropertyAccessMode.Field);
     }
 }

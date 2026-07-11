@@ -31,7 +31,7 @@ public sealed class DocumentDraftTests
         draft.BrandingName.ShouldBe("Viajantes Turismo");
         var artifactContent = finalizedArtifact.ShouldNotBeNull();
         artifactContent.Span[0].ShouldBe((byte)'<');
-        draft.FinalizedArtifactName.ShouldNotContain("customer");
+        draft.FinalizedArtifactName.ShouldNotContain("customer", StringComparison.Ordinal);
     }
 
     [Fact]
@@ -152,6 +152,28 @@ public sealed class DocumentDraftTests
 
         // Assert
         result.IsFailure.ShouldBeTrue();
+    }
+
+    [Fact]
+    public void CreateRevision_discards_override_when_the_generated_value_changes()
+    {
+        // Arrange
+        var now = new DateTime(2026, 7, 11, 0, 0, 0, DateTimeKind.Utc);
+        var draft = DocumentDraftTestData.Create(now);
+        var update = draft.UpdateField("greeting", "Dear Ada,", now);
+        DocumentField[] fields =
+        [
+            DocumentField.Create("booking-reference", "Booking reference", "ABC123", DocumentPrivacyClassification.Operational, false).Value,
+            DocumentField.Create("greeting", "Greeting", "Dear Bea,", DocumentPrivacyClassification.PersonalData, true).Value,
+        ];
+
+        // Act
+        var revision = draft.CreateRevision("tour-service-contract", "2", "SOURCE-VERSION-2", fields, "BRANDING-VERSION", "Viajantes Turismo", null, now);
+
+        // Assert
+        update.IsSuccess.ShouldBeTrue();
+        revision.IsSuccess.ShouldBeTrue();
+        revision.Value.Fields.Single(field => field.FieldId == "greeting").RenderedValue.ShouldBe("Dear Bea,");
     }
 
     [Fact]
