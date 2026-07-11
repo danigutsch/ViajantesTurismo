@@ -126,7 +126,7 @@ public sealed partial class AppHostOrchestrationTests
         // Assert
         hasGate.ShouldBeTrue();
         appHostText.ShouldContain("AddGrafanaLgtmStack", StringComparison.Ordinal);
-        appHostText.ShouldNotContain("ViajantesTurismo.Resources");
+        appHostText.ShouldNotContain("ViajantesTurismo.Resources", StringComparison.Ordinal);
         sharedHostingText.ShouldContain("GrafanaLgtmStackDefaults.ResourceNames", StringComparison.Ordinal);
         sharedDefaultsText.ShouldContain("\"opentelemetry-collector\"", StringComparison.Ordinal);
         sharedDefaultsText.ShouldContain("\"grafana\"", StringComparison.Ordinal);
@@ -136,7 +136,7 @@ public sealed partial class AppHostOrchestrationTests
         sharedHostingText.ShouldContain("AddOpenTelemetryCollector(resourceNames.OpenTelemetryCollector)", StringComparison.Ordinal);
         sharedHostingText.ShouldContain("WithAppForwarding()", StringComparison.Ordinal);
         (sharedHostingText.Split("ExcludeFromManifest()").Length - 1).ShouldBe(5);
-        sharedHostingText.ShouldNotContain("AddContainer(");
+        sharedHostingText.ShouldNotContain("AddContainer(", StringComparison.Ordinal);
         sharedHostingText.ShouldContain("AddGrafana(resourceNames.Grafana", StringComparison.Ordinal);
         sharedHostingText.ShouldContain("AddLoki(resourceNames.Loki", StringComparison.Ordinal);
         sharedHostingText.ShouldContain("AddTempo(resourceNames.Tempo", StringComparison.Ordinal);
