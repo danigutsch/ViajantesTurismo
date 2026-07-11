@@ -48,4 +48,19 @@ public sealed class FileUploadScanCommandTests
 
         exception.Message.ShouldBe("--insecure-skip-tls-verify is not allowed for repository k6 runs.");
     }
+
+    [Fact]
+    public void Rejects_summary_export_override()
+    {
+        // Arrange
+        string[] k6Arguments = ["--summary-export=leak.json"];
+
+        // Act
+        Action act = () => FileUploadScanCommand.ValidateK6Arguments(k6Arguments);
+
+        // Assert
+        var exception = act.ShouldThrow<ArgumentException>();
+
+        exception.Message.ShouldBe("--summary-export is controlled by the repository runner. Use VT_K6_RESULTS_DIR to choose the results folder.");
+    }
 }

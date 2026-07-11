@@ -57,7 +57,8 @@ internal static class FileUploadScanCommand
             ?? throw new InvalidOperationException("dotnet is required to start the file upload benchmark host.");
 
         var timestamp = DateTimeOffset.UtcNow.ToString("yyyyMMdd'T'HHmmss'Z'", CultureInfo.InvariantCulture);
-        var runDirectory = Path.Combine(resultsDirectory, "file-upload-scan-" + timestamp);
+        var runId = Guid.NewGuid().ToString("N", CultureInfo.InvariantCulture)[..8];
+        var runDirectory = Path.Combine(resultsDirectory, "file-upload-scan-" + timestamp + "-" + runId);
         var absoluteRunDirectory = Path.Combine(repositoryRoot, ToPlatformPath(runDirectory));
         var relativeReadyFile = Path.Combine(runDirectory, "host.url");
         var absoluteReadyFile = Path.Combine(repositoryRoot, ToPlatformPath(relativeReadyFile));
@@ -365,8 +366,15 @@ internal static class FileUploadScanCommand
             return;
         }
 
-        hostProcess.Kill(entireProcessTree: true);
-        await hostProcess.WaitForExitAsync().ConfigureAwait(false);
+        try
+        {
+            hostProcess.Kill(entireProcessTree: true);
+            await hostProcess.WaitForExitAsync().ConfigureAwait(false);
+        }
+        catch (InvalidOperationException) when (hostProcess.HasExited)
+        {
+            // The benchmark host can exit naturally between the HasExited check and Kill().
+        }
     }
 
     private static async Task CopyToFile(TextReader reader, string filePath)
@@ -497,6 +505,11 @@ internal static class FileUploadScanCommand
             if (!allowRemoteOutput && (IsBlockedFlag(argument, "--out") || argument == "-o" || argument.StartsWith("-o=", StringComparison.Ordinal)))
             {
                 throw new ArgumentException("Custom k6 outputs are disabled by default. Set VT_K6_ALLOW_REMOTE_OUTPUT=1 after reviewing output destination and credentials.");
+            }
+
+            if (IsBlockedFlag(argument, "--summary-export"))
+            {
+                throw new ArgumentException("--summary-export is controlled by the repository runner. Use VT_K6_RESULTS_DIR to choose the results folder.");
             }
 
             if (IsBlockedFlag(argument, "--insecure-skip-tls-verify"))

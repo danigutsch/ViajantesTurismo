@@ -45,7 +45,8 @@ internal static class AdminSmokeCommand
         var runnerPath = ResolveRunnerPath(resolvedUseDocker);
 
         var timestamp = DateTimeOffset.UtcNow.ToString("yyyyMMdd'T'HHmmss'Z'", CultureInfo.InvariantCulture);
-        var runDirectory = Path.Combine(resultsDirectory, "admin-smoke-" + profile + "-" + timestamp);
+        var runId = Guid.NewGuid().ToString("N", CultureInfo.InvariantCulture)[..8];
+        var runDirectory = Path.Combine(resultsDirectory, "admin-smoke-" + profile + "-" + timestamp + "-" + runId);
         var absoluteRunDirectory = Path.Combine(repositoryRoot, ToPlatformPath(runDirectory));
         var summaryFile = Path.Combine(runDirectory, "k6-summary.json").Replace(Path.DirectorySeparatorChar, '/');
 
@@ -363,6 +364,11 @@ internal static class AdminSmokeCommand
             if (!allowRemoteOutput && (IsBlockedFlag(argument, "--out") || argument == "-o" || argument.StartsWith("-o=", StringComparison.Ordinal)))
             {
                 throw new ArgumentException("Custom k6 outputs are disabled by default. Set VT_K6_ALLOW_REMOTE_OUTPUT=1 after reviewing output destination and credentials.");
+            }
+
+            if (IsBlockedFlag(argument, "--summary-export"))
+            {
+                throw new ArgumentException("--summary-export is controlled by the repository runner. Use VT_K6_RESULTS_DIR to choose the results folder.");
             }
 
             if (IsBlockedFlag(argument, "--insecure-skip-tls-verify"))
