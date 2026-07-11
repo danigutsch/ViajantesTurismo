@@ -15,13 +15,7 @@ public sealed class PurgeExpiredDraftsCommandHandler(
         ArgumentNullException.ThrowIfNull(command);
 
         var now = timeProvider.GetUtcNow().UtcDateTime;
-        var expired = await documentStore.GetExpiredDrafts(now, ct);
-        var removedCount = 0;
-        foreach (var document in expired.Where(document => document.IsExpiredDraft(now)))
-        {
-            documentStore.Remove(document);
-            removedCount++;
-        }
+        var removedCount = await documentStore.PurgeExpiredDrafts(now, ct);
 
         if (removedCount > 0)
         {

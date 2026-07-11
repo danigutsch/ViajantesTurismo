@@ -15,10 +15,8 @@ internal sealed class DocumentStore(AdminWriteDbContext dbContext) : IDocumentSt
             .Include(document => document.Fields)
             .FirstOrDefaultAsync(document => document.Id == id, ct);
 
-    public async Task<IReadOnlyList<DocumentDraft>> GetExpiredDrafts(DateTime now, CancellationToken ct) =>
-        await dbContext.DocumentDrafts
+    public Task<int> PurgeExpiredDrafts(DateTime now, CancellationToken ct) =>
+        dbContext.DocumentDrafts
             .Where(document => document.FinalizedAt == null && document.RetentionExpiresAt <= now)
-            .ToListAsync(ct);
-
-    public void Remove(DocumentDraft document) => dbContext.DocumentDrafts.Remove(document);
+            .ExecuteDeleteAsync(ct);
 }
