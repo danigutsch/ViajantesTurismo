@@ -502,7 +502,7 @@ internal static class FileUploadScanCommand
                 throw new ArgumentException("--http-debug can expose request and response data. Set VT_K6_ALLOW_HTTP_DEBUG=1 for explicit local debugging.");
             }
 
-            if (!allowRemoteOutput && (IsBlockedFlag(argument, "--out") || argument == "-o" || argument.StartsWith("-o=", StringComparison.Ordinal)))
+            if (!allowRemoteOutput && IsBlockedOutputArgument(argument))
             {
                 throw new ArgumentException("Custom k6 outputs are disabled by default. Set VT_K6_ALLOW_REMOTE_OUTPUT=1 after reviewing output destination and credentials.");
             }
@@ -528,6 +528,13 @@ internal static class FileUploadScanCommand
     {
         return string.Equals(argument, flag, StringComparison.Ordinal)
             || argument.StartsWith(flag + "=", StringComparison.Ordinal);
+    }
+
+    private static bool IsBlockedOutputArgument(string argument)
+    {
+        return IsBlockedFlag(argument, "--out")
+            || argument == "-o"
+            || argument.StartsWith("-o=", StringComparison.Ordinal);
     }
 
     private static bool DefinesControlledEnvironment(string argument, int index, string[] arguments)
