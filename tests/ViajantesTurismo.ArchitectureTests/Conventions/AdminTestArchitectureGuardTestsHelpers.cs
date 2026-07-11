@@ -44,7 +44,7 @@ internal static partial class AdminTestArchitectureGuardTestsHelpers
     public static void AssertFileDoesNotContain(string filePath, Regex unexpectedPattern)
     {
         var fileContents = File.ReadAllText(filePath);
-        TestAssert.DoesNotMatch(unexpectedPattern, fileContents);
+        (fileContents).ShouldNotMatch(unexpectedPattern);
     }
 
     public static string[] FindGenericServiceProviderReachThrough(string filePath)

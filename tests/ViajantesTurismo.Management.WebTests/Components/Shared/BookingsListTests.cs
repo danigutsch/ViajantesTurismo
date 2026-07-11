@@ -19,7 +19,7 @@ public class BookingsListTests : BunitContext
 
         // Assert
         var alert = cut.Find(".alert.alert-info");
-        TestAssert.Contains("No bookings found", alert.TextContent, StringComparison.Ordinal);
+        (alert.TextContent).ShouldContain("No bookings found", StringComparison.Ordinal);
     }
 
     [Fact]
@@ -32,7 +32,7 @@ public class BookingsListTests : BunitContext
 
         // Assert
         var alert = cut.Find(".alert.alert-info");
-        TestAssert.Contains("No bookings found", alert.TextContent, StringComparison.Ordinal);
+        (alert.TextContent).ShouldContain("No bookings found", StringComparison.Ordinal);
     }
 
     [Fact]
@@ -57,7 +57,7 @@ public class BookingsListTests : BunitContext
 
         // Assert
         var grid = cut.Find("table.table.table-hover");
-        _ = TestAssert.NotNull(grid);
+        _ = (grid).ShouldNotBeNull();
     }
 
     [Fact]
@@ -84,9 +84,9 @@ public class BookingsListTests : BunitContext
 
         // Assert
         var headers = cut.FindAll("th");
-        TestAssert.Contains(headers, h => h.TextContent.Contains("Tour", StringComparison.Ordinal));
-        TestAssert.Contains("Tour 1", cut.Markup, StringComparison.Ordinal);
-        TestAssert.Contains("TOUR-001", cut.Markup, StringComparison.Ordinal);
+        (headers).ShouldContain(h => h.TextContent.Contains("Tour", StringComparison.Ordinal));
+        (cut.Markup).ShouldContain("Tour 1", StringComparison.Ordinal);
+        (cut.Markup).ShouldContain("TOUR-001", StringComparison.Ordinal);
     }
 
     [Fact]
@@ -113,8 +113,8 @@ public class BookingsListTests : BunitContext
 
         // Assert
         var headers = cut.FindAll("th");
-        TestAssert.DoesNotContain(headers, h => h.TextContent.Contains("Tour", StringComparison.Ordinal));
-        TestAssert.DoesNotContain("Tour 1", cut.Markup, StringComparison.Ordinal);
+        (headers).ShouldNotContain(h => h.TextContent.Contains("Tour", StringComparison.Ordinal));
+        (cut.Markup).ShouldNotContain("Tour 1", StringComparison.Ordinal);
     }
 
     [Fact]
@@ -140,8 +140,8 @@ public class BookingsListTests : BunitContext
 
         // Assert
         var headers = cut.FindAll("th");
-        TestAssert.Contains(headers, h => h.TextContent.Contains("Customer", StringComparison.Ordinal));
-        TestAssert.Contains("John Doe", cut.Markup, StringComparison.Ordinal);
+        (headers).ShouldContain(h => h.TextContent.Contains("Customer", StringComparison.Ordinal));
+        (cut.Markup).ShouldContain("John Doe", StringComparison.Ordinal);
     }
 
     [Fact]
@@ -167,8 +167,8 @@ public class BookingsListTests : BunitContext
 
         // Assert
         var headers = cut.FindAll("th");
-        TestAssert.DoesNotContain(headers, h => h.TextContent.Contains("Customer", StringComparison.Ordinal));
-        TestAssert.DoesNotContain("John Doe", cut.Markup, StringComparison.Ordinal);
+        (headers).ShouldNotContain(h => h.TextContent.Contains("Customer", StringComparison.Ordinal));
+        (cut.Markup).ShouldNotContain("John Doe", StringComparison.Ordinal);
     }
 
     [Fact]
@@ -196,7 +196,7 @@ public class BookingsListTests : BunitContext
 
         // Assert
         var companionLink = cut.Find($"a[href='/customers/{companionId}']");
-        TestAssert.Equal("Jane Doe", companionLink.TextContent);
+        (companionLink.TextContent).ShouldBe("Jane Doe");
     }
 
     [Fact]
@@ -220,7 +220,7 @@ public class BookingsListTests : BunitContext
             .Add(p => p.Bookings, bookings));
 
         // Assert
-        TestAssert.Contains("<span class=\"text-muted\">-</span>", cut.Markup, StringComparison.Ordinal);
+        (cut.Markup).ShouldContain("<span class=\"text-muted\">-</span>", StringComparison.Ordinal);
     }
 
     [Fact]
@@ -246,8 +246,8 @@ public class BookingsListTests : BunitContext
 
         // Assert
         var badge = cut.Find(".badge.bg-primary");
-        TestAssert.Contains("15.50%", badge.TextContent, StringComparison.Ordinal);
-        TestAssert.Equal("Percentage Discount: Early Bird", badge.GetAttribute("title"));
+        (badge.TextContent).ShouldContain("15.50%", StringComparison.Ordinal);
+        (badge.GetAttribute("title")).ShouldBe("Percentage Discount: Early Bird");
     }
 
     [Fact]
@@ -274,8 +274,8 @@ public class BookingsListTests : BunitContext
 
         // Assert
         var badge = cut.Find(".badge.bg-warning.text-dark");
-        TestAssert.Contains("100", badge.TextContent, StringComparison.Ordinal); // Currency formatting will include the amount
-        TestAssert.Equal("Absolute Discount: Group Discount", badge.GetAttribute("title"));
+        (badge.TextContent).ShouldContain("100", StringComparison.Ordinal); // Currency formatting will include the amount
+        (badge.GetAttribute("title")).ShouldBe("Absolute Discount: Group Discount");
     }
 
     [Theory]
@@ -304,7 +304,7 @@ public class BookingsListTests : BunitContext
 
         // Assert
         var badge = cut.Find(".badge.bg-warning.text-dark");
-        TestAssert.Contains(expectedSymbol, badge.TextContent, StringComparison.Ordinal);
+        (badge.TextContent).ShouldContain(expectedSymbol, StringComparison.Ordinal);
     }
 
     [Fact]
@@ -329,7 +329,7 @@ public class BookingsListTests : BunitContext
 
         // Assert
         var discountCell = cut.FindAll("td")[5]; // Discount column
-        TestAssert.Contains("-", discountCell.TextContent, StringComparison.Ordinal);
+        (discountCell.TextContent).ShouldContain("-", StringComparison.Ordinal);
     }
 
     [Fact]
@@ -354,7 +354,7 @@ public class BookingsListTests : BunitContext
 
         // Assert
         var statusBadge = cut.FindComponent<BookingStatusBadge>();
-        _ = TestAssert.NotNull(statusBadge);
+        _ = (statusBadge).ShouldNotBeNull();
     }
 
     [Fact]
@@ -379,7 +379,7 @@ public class BookingsListTests : BunitContext
 
         // Assert
         var paymentBadge = cut.FindComponent<PaymentStatusBadge>();
-        _ = TestAssert.NotNull(paymentBadge);
+        _ = (paymentBadge).ShouldNotBeNull();
     }
 
     [Fact]
@@ -405,12 +405,12 @@ public class BookingsListTests : BunitContext
 
         // Assert
         var viewLink = cut.Find($"a[href='/bookings/{bookingId}']");
-        TestAssert.Contains("View", viewLink.TextContent, StringComparison.Ordinal);
-        TestAssert.Contains("bi-eye", viewLink.InnerHtml, StringComparison.Ordinal);
+        (viewLink.TextContent).ShouldContain("View", StringComparison.Ordinal);
+        (viewLink.InnerHtml).ShouldContain("bi-eye", StringComparison.Ordinal);
 
         var editLink = cut.Find($"a[href='/bookings/{bookingId}/edit']");
-        TestAssert.Contains("Edit", editLink.TextContent, StringComparison.Ordinal);
-        TestAssert.Contains("bi-pencil", editLink.InnerHtml, StringComparison.Ordinal);
+        (editLink.TextContent).ShouldContain("Edit", StringComparison.Ordinal);
+        (editLink.InnerHtml).ShouldContain("bi-pencil", StringComparison.Ordinal);
     }
 
     [Fact]
@@ -438,7 +438,7 @@ public class BookingsListTests : BunitContext
 
         // Assert
         var paginators = cut.FindComponents<Paginator>();
-        TestAssert.Empty(paginators);
+        (paginators).ShouldBeEmpty();
     }
 
     [Fact]
@@ -466,7 +466,7 @@ public class BookingsListTests : BunitContext
 
         // Assert
         var paginators = cut.FindComponents<Paginator>();
-        TestAssert.NotEmpty(paginators);
+        (paginators).ShouldNotBeEmpty();
     }
 
     [Fact]
@@ -493,14 +493,14 @@ public class BookingsListTests : BunitContext
 
         // Assert
         var headers = cut.FindAll("th").Select(h => h.TextContent).ToList();
-        TestAssert.Contains(headers, h => h.Contains("Booking Date", StringComparison.Ordinal));
-        TestAssert.Contains(headers, h => h.Contains("Tour", StringComparison.Ordinal));
-        TestAssert.Contains(headers, h => h.Contains("Customer", StringComparison.Ordinal));
-        TestAssert.Contains(headers, h => h.Contains("Companion", StringComparison.Ordinal));
-        TestAssert.Contains(headers, h => h.Contains("Total Price", StringComparison.Ordinal));
-        TestAssert.Contains(headers, h => h.Contains("Discount", StringComparison.Ordinal));
-        TestAssert.Contains(headers, h => h.Contains("Status", StringComparison.Ordinal));
-        TestAssert.Contains(headers, h => h.Contains("Payment", StringComparison.Ordinal));
-        TestAssert.Contains(headers, h => h.Contains("Actions", StringComparison.Ordinal));
+        (headers).ShouldContain(h => h.Contains("Booking Date", StringComparison.Ordinal));
+        (headers).ShouldContain(h => h.Contains("Tour", StringComparison.Ordinal));
+        (headers).ShouldContain(h => h.Contains("Customer", StringComparison.Ordinal));
+        (headers).ShouldContain(h => h.Contains("Companion", StringComparison.Ordinal));
+        (headers).ShouldContain(h => h.Contains("Total Price", StringComparison.Ordinal));
+        (headers).ShouldContain(h => h.Contains("Discount", StringComparison.Ordinal));
+        (headers).ShouldContain(h => h.Contains("Status", StringComparison.Ordinal));
+        (headers).ShouldContain(h => h.Contains("Payment", StringComparison.Ordinal));
+        (headers).ShouldContain(h => h.Contains("Actions", StringComparison.Ordinal));
     }
 }

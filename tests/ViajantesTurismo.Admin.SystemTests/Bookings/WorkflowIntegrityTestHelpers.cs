@@ -45,7 +45,7 @@ public static class WorkflowIntegrityTestHelpers
         {
             foreach (var marker in TechnicalLeakIndicators)
             {
-                TestAssert.DoesNotContain(marker, text, StringComparison.OrdinalIgnoreCase);
+                (text).ShouldNotContain(marker, StringComparison.OrdinalIgnoreCase);
             }
         }
     }

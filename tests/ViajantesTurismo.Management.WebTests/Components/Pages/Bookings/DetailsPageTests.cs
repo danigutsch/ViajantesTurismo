@@ -24,7 +24,7 @@ public sealed class DetailsPageTests : BunitContext
 
         // Assert
         var editLink = cut.FindAll("a").FirstOrDefault(a => a.TextContent.Contains("Edit Booking", StringComparison.Ordinal));
-        _ = TestAssert.NotNull(editLink);
-        TestAssert.Equal($"/bookings/{booking.Id}/edit", editLink.GetAttribute("href"));
+        _ = (editLink).ShouldNotBeNull();
+        (editLink.GetAttribute("href")).ShouldBe($"/bookings/{booking.Id}/edit");
     }
 }

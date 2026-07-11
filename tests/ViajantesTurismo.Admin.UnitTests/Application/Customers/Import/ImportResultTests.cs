@@ -8,9 +8,9 @@ public class ImportResultTests
     public void Create_with_negative_success_count_throws_argumentoutofrangeexception()
     {
         // Act
-        var exception = TestAssert.Throws<ArgumentOutOfRangeException>(() => _ = new ImportResult(-1));
+        var exception = ((Func<object?>)(() => _ = new ImportResult(-1))).ShouldThrow<ArgumentOutOfRangeException>();
 
         // Assert
-        TestAssert.Equal("successCount", exception.ParamName);
+        (exception.ParamName).ShouldBe("successCount");
     }
 }

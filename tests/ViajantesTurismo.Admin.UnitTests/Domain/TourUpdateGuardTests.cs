@@ -15,9 +15,9 @@ public class TourUpdateGuardTests
         var result = tour.UpdateDetails("NEWID", "New Name");
 
         // Assert
-        TestAssert.True(result.IsSuccess);
-        TestAssert.Equal("NEWID", tour.Identifier);
-        TestAssert.Equal("New Name", tour.Name);
+        (result.IsSuccess).ShouldBeTrue();
+        (tour.Identifier).ShouldBe("NEWID");
+        (tour.Name).ShouldBe("New Name");
     }
 
     [Fact]
@@ -31,8 +31,8 @@ public class TourUpdateGuardTests
         var result = tour.UpdateDetails("NEWID", "New Name");
 
         // Assert
-        TestAssert.False(result.IsSuccess);
-        TestAssert.Contains("cannot be changed if bookings exist", result.ErrorDetails!.Detail, StringComparison.Ordinal);
+        (result.IsSuccess).ShouldBeFalse();
+        (result.ErrorDetails!.Detail).ShouldContain("cannot be changed if bookings exist", StringComparison.Ordinal);
     }
 
     [Fact]
@@ -46,9 +46,9 @@ public class TourUpdateGuardTests
         var result = tour.UpdateDetails("KEEP2024", "Updated Name");
 
         // Assert
-        TestAssert.True(result.IsSuccess);
-        TestAssert.Equal("KEEP2024", tour.Identifier);
-        TestAssert.Equal("Updated Name", tour.Name);
+        (result.IsSuccess).ShouldBeTrue();
+        (tour.Identifier).ShouldBe("KEEP2024");
+        (tour.Name).ShouldBe("Updated Name");
     }
 
     [Fact]
@@ -61,8 +61,8 @@ public class TourUpdateGuardTests
         var result = tour.UpdateCurrency(Currency.Euro);
 
         // Assert
-        TestAssert.True(result.IsSuccess);
-        TestAssert.Equal(Currency.Euro, tour.Pricing.Currency);
+        (result.IsSuccess).ShouldBeTrue();
+        (tour.Pricing.Currency).ShouldBe(Currency.Euro);
     }
 
     [Fact]
@@ -76,7 +76,7 @@ public class TourUpdateGuardTests
         var result = tour.UpdateCurrency(Currency.Euro);
 
         // Assert
-        TestAssert.False(result.IsSuccess);
-        TestAssert.Contains("cannot be changed if bookings exist", result.ErrorDetails!.Detail, StringComparison.Ordinal);
+        (result.IsSuccess).ShouldBeFalse();
+        (result.ErrorDetails!.Detail).ShouldContain("cannot be changed if bookings exist", StringComparison.Ordinal);
     }
 }

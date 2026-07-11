@@ -23,8 +23,8 @@ public sealed class ImportCustomersHeaderMappingTests : BunitContext
         cut.FindComponent<InputFile>().UploadFiles(file);
 
         // Assert
-        cut.WaitForAssertion(() => TestAssert.NotEmpty(cut.FindAll(".card-header")));
-        TestAssert.Contains("customers.csv", cut.Markup, StringComparison.Ordinal);
+        cut.WaitForAssertion(() => (cut.FindAll(".card-header")).ShouldNotBeEmpty());
+        (cut.Markup).ShouldContain("customers.csv", StringComparison.Ordinal);
     }
 
     [Fact]
@@ -38,8 +38,8 @@ public sealed class ImportCustomersHeaderMappingTests : BunitContext
         cut.FindComponent<InputFile>().UploadFiles(file);
 
         // Assert
-        cut.WaitForAssertion(() => TestAssert.NotEmpty(cut.FindAll(".alert-success")));
-        TestAssert.Contains("All required columns were automatically matched", cut.Markup, StringComparison.Ordinal);
+        cut.WaitForAssertion(() => (cut.FindAll(".alert-success")).ShouldNotBeEmpty());
+        (cut.Markup).ShouldContain("All required columns were automatically matched", StringComparison.Ordinal);
     }
 
     [Fact]
@@ -53,8 +53,8 @@ public sealed class ImportCustomersHeaderMappingTests : BunitContext
         cut.FindComponent<InputFile>().UploadFiles(file);
 
         // Assert
-        cut.WaitForAssertion(() => TestAssert.NotEmpty(cut.FindAll(".alert-warning")));
-        TestAssert.NotEmpty(cut.FindAll("select.form-select-sm"));
+        cut.WaitForAssertion(() => (cut.FindAll(".alert-warning")).ShouldNotBeEmpty());
+        (cut.FindAll("select.form-select-sm")).ShouldNotBeEmpty();
     }
 
     [Fact]
@@ -68,9 +68,9 @@ public sealed class ImportCustomersHeaderMappingTests : BunitContext
         cut.FindComponent<InputFile>().UploadFiles(file);
 
         // Assert
-        cut.WaitForAssertion(() => TestAssert.NotEmpty(cut.FindAll(".alert-warning")));
+        cut.WaitForAssertion(() => (cut.FindAll(".alert-warning")).ShouldNotBeEmpty());
         var requiredCount = CustomerImportHeaderMatcher.Fields.Count(f => f.IsRequired) - 1; // -1 for Email
-        TestAssert.Contains($"{requiredCount} required column(s) could not be matched", cut.Markup, StringComparison.Ordinal);
+        (cut.Markup).ShouldContain($"{requiredCount} required column(s) could not be matched", StringComparison.Ordinal);
     }
 
     [Fact]
@@ -84,8 +84,8 @@ public sealed class ImportCustomersHeaderMappingTests : BunitContext
         cut.FindComponent<InputFile>().UploadFiles(file);
 
         // Assert
-        cut.WaitForAssertion(() => TestAssert.NotNull(ImportCustomersTestDomHelper.FindButtonByText(cut, "Preview")));
-        TestAssert.True(ImportCustomersTestDomHelper.FindButtonByText(cut, "Preview").HasAttribute("disabled"));
+        cut.WaitForAssertion(() => (ImportCustomersTestDomHelper.FindButtonByText(cut, "Preview")).ShouldNotBeNull());
+        (ImportCustomersTestDomHelper.FindButtonByText(cut, "Preview").HasAttribute("disabled")).ShouldBeTrue();
     }
 
     [Fact]
@@ -99,8 +99,8 @@ public sealed class ImportCustomersHeaderMappingTests : BunitContext
         cut.FindComponent<InputFile>().UploadFiles(file);
 
         // Assert
-        cut.WaitForAssertion(() => TestAssert.NotNull(ImportCustomersTestDomHelper.FindButtonByText(cut, "Preview")));
-        TestAssert.False(ImportCustomersTestDomHelper.FindButtonByText(cut, "Preview").HasAttribute("disabled"));
+        cut.WaitForAssertion(() => (ImportCustomersTestDomHelper.FindButtonByText(cut, "Preview")).ShouldNotBeNull());
+        (ImportCustomersTestDomHelper.FindButtonByText(cut, "Preview").HasAttribute("disabled")).ShouldBeFalse();
     }
 
     [Fact]
@@ -110,13 +110,13 @@ public sealed class ImportCustomersHeaderMappingTests : BunitContext
         var cut = Render<ImportCustomers>();
         var file = InputFileContent.CreateFromText(CustomerImportCsvTestData.AllCanonicalHeaders + "\ndata", "customers.csv");
         cut.FindComponent<InputFile>().UploadFiles(file);
-        cut.WaitForAssertion(() => TestAssert.NotEmpty(cut.FindAll(".card-header")));
+        cut.WaitForAssertion(() => (cut.FindAll(".card-header")).ShouldNotBeEmpty());
 
         // Act
         ImportCustomersTestDomHelper.FindButtonByText(cut, "Choose different file").Click();
 
         // Assert
-        TestAssert.Contains("Drop a CSV file here", cut.Markup, StringComparison.Ordinal);
+        (cut.Markup).ShouldContain("Drop a CSV file here", StringComparison.Ordinal);
     }
 
     [Fact]
@@ -130,8 +130,8 @@ public sealed class ImportCustomersHeaderMappingTests : BunitContext
         cut.FindComponent<InputFile>().UploadFiles(file);
 
         // Assert
-        cut.WaitForAssertion(() => TestAssert.NotEmpty(cut.FindAll(".card-header")));
-        TestAssert.Contains("my-import.csv", cut.Markup, StringComparison.Ordinal);
+        cut.WaitForAssertion(() => (cut.FindAll(".card-header")).ShouldNotBeEmpty());
+        (cut.Markup).ShouldContain("my-import.csv", StringComparison.Ordinal);
     }
 
     [Fact]
@@ -145,8 +145,8 @@ public sealed class ImportCustomersHeaderMappingTests : BunitContext
         cut.FindComponent<InputFile>().UploadFiles(file);
 
         // Assert
-        cut.WaitForAssertion(() => TestAssert.NotEmpty(cut.FindAll(".card-header")));
-        TestAssert.Contains("3 column(s) detected", cut.Markup, StringComparison.Ordinal);
+        cut.WaitForAssertion(() => (cut.FindAll(".card-header")).ShouldNotBeEmpty());
+        (cut.Markup).ShouldContain("3 column(s) detected", StringComparison.Ordinal);
     }
 
     [Fact]
@@ -163,15 +163,15 @@ public sealed class ImportCustomersHeaderMappingTests : BunitContext
         var file = InputFileContent.CreateFromText(headers + "\ndata", "customers.csv");
 
         cut.FindComponent<InputFile>().UploadFiles(file);
-        cut.WaitForAssertion(() => TestAssert.NotEmpty(cut.FindAll("select.form-select-sm")));
+        cut.WaitForAssertion(() => (cut.FindAll("select.form-select-sm")).ShouldNotBeEmpty());
 
         // Import should be disabled before assignment
-        TestAssert.True(ImportCustomersTestDomHelper.FindButtonByText(cut, "Preview").HasAttribute("disabled"));
+        (ImportCustomersTestDomHelper.FindButtonByText(cut, "Preview").HasAttribute("disabled")).ShouldBeTrue();
 
         // Act — assign CustomCol to the unmatched required field
         cut.Find($"select[data-field='{requiredFieldName}']").Change("CustomCol");
 
         // Assert — Import enabled now
-        TestAssert.False(ImportCustomersTestDomHelper.FindButtonByText(cut, "Preview").HasAttribute("disabled"));
+        (ImportCustomersTestDomHelper.FindButtonByText(cut, "Preview").HasAttribute("disabled")).ShouldBeFalse();
     }
 }

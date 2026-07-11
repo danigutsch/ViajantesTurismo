@@ -15,19 +15,19 @@ public class TourAddBookingTests
         var existingBookingResult = BookingTestHelpers.AddSingleCustomerBooking(
             tour,
             new SingleBookingOptions(CustomerId: Guid.CreateVersion7()));
-        TestAssert.True(existingBookingResult.IsSuccess, "Failed to create existing booking for test setup.");
-        TestAssert.True(existingBookingResult.Value.Confirm().IsSuccess);
+        (existingBookingResult.IsSuccess).ShouldBeTrue("Failed to create existing booking for test setup.");
+        (existingBookingResult.Value.Confirm().IsSuccess).ShouldBeTrue();
         var request = BookingDomainTestDataFactory.CreateValidSingleRequest();
 
         // Act
         var result = tour.AddBooking(request);
 
         // Assert
-        TestAssert.False(result.IsSuccess);
-        TestAssert.Equal(ResultStatus.Conflict, result.Status);
-        TestAssert.NotNull(result.ErrorDetails);
-        TestAssert.Contains("Tour is fully booked", result.ErrorDetails.Detail, StringComparison.Ordinal);
-        TestAssert.ExactlyOne(tour.Bookings);
+        (result.IsSuccess).ShouldBeFalse();
+        (result.Status).ShouldBe(ResultStatus.Conflict);
+        (result.ErrorDetails).ShouldNotBeNull();
+        (result.ErrorDetails.Detail).ShouldContain("Tour is fully booked", StringComparison.Ordinal);
+        (tour.Bookings).ShouldHaveSingleItem();
     }
 
     [Fact]
@@ -45,11 +45,11 @@ public class TourAddBookingTests
         var result = tour.AddBooking(request);
 
         // Assert
-        TestAssert.False(result.IsSuccess);
-        TestAssert.Equal(ResultStatus.Invalid, result.Status);
-        TestAssert.NotNull(result.ErrorDetails);
-        TestAssert.Contains("Invalid bike type", result.ErrorDetails.Detail, StringComparison.Ordinal);
-        TestAssert.Empty(tour.Bookings);
+        (result.IsSuccess).ShouldBeFalse();
+        (result.Status).ShouldBe(ResultStatus.Invalid);
+        (result.ErrorDetails).ShouldNotBeNull();
+        (result.ErrorDetails.Detail).ShouldContain("Invalid bike type", StringComparison.Ordinal);
+        (tour.Bookings).ShouldBeEmpty();
     }
 
     [Fact]
@@ -67,11 +67,11 @@ public class TourAddBookingTests
         var result = tour.AddBooking(request);
 
         // Assert
-        TestAssert.False(result.IsSuccess);
-        TestAssert.Equal(ResultStatus.Invalid, result.Status);
-        TestAssert.NotNull(result.ErrorDetails);
-        TestAssert.Contains("Bike type must be selected", result.ErrorDetails.Detail, StringComparison.Ordinal);
-        TestAssert.Empty(tour.Bookings);
+        (result.IsSuccess).ShouldBeFalse();
+        (result.Status).ShouldBe(ResultStatus.Invalid);
+        (result.ErrorDetails).ShouldNotBeNull();
+        (result.ErrorDetails.Detail).ShouldContain("Bike type must be selected", StringComparison.Ordinal);
+        (tour.Bookings).ShouldBeEmpty();
     }
 
     [Fact]
@@ -91,11 +91,11 @@ public class TourAddBookingTests
         var result = tour.AddBooking(request);
 
         // Assert
-        TestAssert.False(result.IsSuccess);
-        TestAssert.Equal(ResultStatus.Invalid, result.Status);
-        TestAssert.NotNull(result.ErrorDetails);
-        TestAssert.Contains("Invalid bike type", result.ErrorDetails.Detail, StringComparison.Ordinal);
-        TestAssert.Empty(tour.Bookings);
+        (result.IsSuccess).ShouldBeFalse();
+        (result.Status).ShouldBe(ResultStatus.Invalid);
+        (result.ErrorDetails).ShouldNotBeNull();
+        (result.ErrorDetails.Detail).ShouldContain("Invalid bike type", StringComparison.Ordinal);
+        (tour.Bookings).ShouldBeEmpty();
     }
 
     [Fact]
@@ -115,11 +115,11 @@ public class TourAddBookingTests
         var result = tour.AddBooking(request);
 
         // Assert
-        TestAssert.False(result.IsSuccess);
-        TestAssert.Equal(ResultStatus.Invalid, result.Status);
-        TestAssert.NotNull(result.ErrorDetails);
-        TestAssert.Contains("Bike type must be selected", result.ErrorDetails.Detail, StringComparison.Ordinal);
-        TestAssert.Empty(tour.Bookings);
+        (result.IsSuccess).ShouldBeFalse();
+        (result.Status).ShouldBe(ResultStatus.Invalid);
+        (result.ErrorDetails).ShouldNotBeNull();
+        (result.ErrorDetails.Detail).ShouldContain("Bike type must be selected", StringComparison.Ordinal);
+        (tour.Bookings).ShouldBeEmpty();
     }
 
     [Fact]
@@ -137,11 +137,11 @@ public class TourAddBookingTests
         var result = tour.AddBooking(request);
 
         // Assert
-        TestAssert.False(result.IsSuccess);
-        TestAssert.Equal(ResultStatus.Invalid, result.Status);
-        TestAssert.NotNull(result.ErrorDetails);
-        TestAssert.Contains("Invalid room type", result.ErrorDetails.Detail, StringComparison.Ordinal);
-        TestAssert.Empty(tour.Bookings);
+        (result.IsSuccess).ShouldBeFalse();
+        (result.Status).ShouldBe(ResultStatus.Invalid);
+        (result.ErrorDetails).ShouldNotBeNull();
+        (result.ErrorDetails.Detail).ShouldContain("Invalid room type", StringComparison.Ordinal);
+        (tour.Bookings).ShouldBeEmpty();
     }
 
     [Fact]
@@ -155,11 +155,11 @@ public class TourAddBookingTests
         var result = tour.AddBooking(request);
 
         // Assert
-        TestAssert.False(result.IsSuccess);
-        TestAssert.Equal(ResultStatus.Invalid, result.Status);
-        TestAssert.NotNull(result.ErrorDetails);
-        TestAssert.Contains("cannot have a companion", result.ErrorDetails.Detail, StringComparison.Ordinal);
-        TestAssert.Empty(tour.Bookings);
+        (result.IsSuccess).ShouldBeFalse();
+        (result.Status).ShouldBe(ResultStatus.Invalid);
+        (result.ErrorDetails).ShouldNotBeNull();
+        (result.ErrorDetails.Detail).ShouldContain("cannot have a companion", StringComparison.Ordinal);
+        (tour.Bookings).ShouldBeEmpty();
     }
 
     [Fact]
@@ -176,11 +176,11 @@ public class TourAddBookingTests
         var result = tour.AddBooking(request);
 
         // Assert
-        TestAssert.False(result.IsSuccess);
-        TestAssert.Equal(ResultStatus.Invalid, result.Status);
-        TestAssert.NotNull(result.ErrorDetails);
-        TestAssert.Contains("cannot be the same person", result.ErrorDetails.Detail, StringComparison.Ordinal);
-        TestAssert.Empty(tour.Bookings);
+        (result.IsSuccess).ShouldBeFalse();
+        (result.Status).ShouldBe(ResultStatus.Invalid);
+        (result.ErrorDetails).ShouldNotBeNull();
+        (result.ErrorDetails.Detail).ShouldContain("cannot be the same person", StringComparison.Ordinal);
+        (tour.Bookings).ShouldBeEmpty();
     }
 
     [Fact]
@@ -198,11 +198,11 @@ public class TourAddBookingTests
         var result = tour.AddBooking(request);
 
         // Assert
-        TestAssert.False(result.IsSuccess);
-        TestAssert.Equal(ResultStatus.Invalid, result.Status);
-        TestAssert.NotNull(result.ErrorDetails);
-        TestAssert.Contains("cannot exceed", result.ErrorDetails.Detail, StringComparison.Ordinal);
-        TestAssert.Empty(tour.Bookings);
+        (result.IsSuccess).ShouldBeFalse();
+        (result.Status).ShouldBe(ResultStatus.Invalid);
+        (result.ErrorDetails).ShouldNotBeNull();
+        (result.ErrorDetails.Detail).ShouldContain("cannot exceed", StringComparison.Ordinal);
+        (tour.Bookings).ShouldBeEmpty();
     }
 
     [Fact]
@@ -220,11 +220,11 @@ public class TourAddBookingTests
         var result = tour.AddBooking(request);
 
         // Assert
-        TestAssert.False(result.IsSuccess);
-        TestAssert.Equal(ResultStatus.Invalid, result.Status);
-        TestAssert.NotNull(result.ErrorDetails);
-        TestAssert.Contains("cannot exceed subtotal", result.ErrorDetails.Detail, StringComparison.Ordinal);
-        TestAssert.Empty(tour.Bookings);
+        (result.IsSuccess).ShouldBeFalse();
+        (result.Status).ShouldBe(ResultStatus.Invalid);
+        (result.ErrorDetails).ShouldNotBeNull();
+        (result.ErrorDetails.Detail).ShouldContain("cannot exceed subtotal", StringComparison.Ordinal);
+        (tour.Bookings).ShouldBeEmpty();
     }
 
     [Fact]
@@ -244,11 +244,11 @@ public class TourAddBookingTests
         var result = tour.AddBooking(request);
 
         // Assert
-        TestAssert.False(result.IsSuccess);
-        TestAssert.Equal(ResultStatus.Invalid, result.Status);
-        TestAssert.NotNull(result.ErrorDetails);
-        TestAssert.Contains("Notes cannot exceed", result.ErrorDetails.Detail, StringComparison.Ordinal);
-        TestAssert.Empty(tour.Bookings);
+        (result.IsSuccess).ShouldBeFalse();
+        (result.Status).ShouldBe(ResultStatus.Invalid);
+        (result.ErrorDetails).ShouldNotBeNull();
+        (result.ErrorDetails.Detail).ShouldContain("Notes cannot exceed", StringComparison.Ordinal);
+        (tour.Bookings).ShouldBeEmpty();
     }
 
     [Fact]
@@ -262,13 +262,13 @@ public class TourAddBookingTests
         var result = tour.AddBooking(request);
 
         // Assert
-        TestAssert.True(result.IsSuccess);
-        var booking = TestAssert.ExactlyOne(tour.Bookings);
-        TestAssert.Equal(result.Value.Id, booking.Id);
-        TestAssert.NotNull(booking.CompanionCustomer);
-        TestAssert.Equal(request.Travelers.PrincipalCustomerId, booking.PrincipalCustomer.CustomerId);
-        TestAssert.Equal(request.Travelers.CompanionCustomerId, booking.CompanionCustomer.CustomerId);
-        TestAssert.Equal(request.RoomType, booking.RoomType);
+        (result.IsSuccess).ShouldBeTrue();
+        var booking = (tour.Bookings).ShouldHaveSingleItem();
+        (booking.Id).ShouldBe(result.Value.Id);
+        (booking.CompanionCustomer).ShouldNotBeNull();
+        (booking.PrincipalCustomer.CustomerId).ShouldBe(request.Travelers.PrincipalCustomerId);
+        (booking.CompanionCustomer.CustomerId).ShouldBe(request.Travelers.CompanionCustomerId);
+        (booking.RoomType).ShouldBe(request.RoomType);
     }
 
 }

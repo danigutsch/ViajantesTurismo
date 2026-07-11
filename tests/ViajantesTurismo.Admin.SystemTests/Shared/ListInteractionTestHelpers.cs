@@ -12,7 +12,7 @@ public static partial class ListInteractionTestHelpers
         var text = await paginationText.InnerTextAsync();
         var match = PaginationStateRegex().Match(text);
 
-        TestAssert.True(match.Success, $"Expected pagination text in 'Page N of M' format, but found '{text}'.");
+        (match.Success).ShouldBeTrue($"Expected pagination text in 'Page N of M' format, but found '{text}'.");
 
         return (int.Parse(match.Groups["current"].Value, CultureInfo.InvariantCulture),
             int.Parse(match.Groups["total"].Value, CultureInfo.InvariantCulture));
@@ -27,13 +27,13 @@ public static partial class ListInteractionTestHelpers
             .Where(text => text.Length > 0)
             .ToArray();
 
-        TestAssert.True(visibleTexts.Length > 1, "Expected at least two visible rows to verify sorting.");
+        (visibleTexts.Length > 1).ShouldBeTrue("Expected at least two visible rows to verify sorting.");
 
         var sortedTexts = descending
             ? visibleTexts.OrderByDescending(text => text, StringComparer.OrdinalIgnoreCase).ToArray()
             : visibleTexts.OrderBy(text => text, StringComparer.OrdinalIgnoreCase).ToArray();
 
-        TestAssert.Equal(sortedTexts, visibleTexts);
+        (visibleTexts).ShouldBe(sortedTexts);
     }
 
     [GeneratedRegex(@"Page\s+(?<current>\d+)\s+of\s+(?<total>\d+)")]

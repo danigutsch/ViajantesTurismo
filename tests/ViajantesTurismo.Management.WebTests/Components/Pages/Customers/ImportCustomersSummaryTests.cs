@@ -19,7 +19,7 @@ public sealed class ImportCustomersSummaryTests : BunitContext
         _fakeCustomersApi.SetCommitImportResult(new ImportResultDto(2, 1));
         var cut = ImportCustomersPreviewTestHelper.GoToPreview(this, CustomerImportCsvTestData.AllCanonicalHeaders + "\n" + CustomerImportCsvTestData.AllCanonicalValues);
         ImportCustomersTestDomHelper.FindButtonByText(cut, "Confirm Import").Click();
-        cut.WaitForAssertion(() => TestAssert.Contains("Resolve Duplicates", cut.Markup, StringComparison.Ordinal));
+        cut.WaitForAssertion(() => (cut.Markup).ShouldContain("Resolve Duplicates", StringComparison.Ordinal));
 
         // Act
         ImportCustomersTestDomHelper.FindRowContainingText(cut, ".duplicate-resolution-table tbody tr", "a@example.com")
@@ -31,10 +31,10 @@ public sealed class ImportCustomersSummaryTests : BunitContext
         // Assert
         cut.WaitForAssertion(() =>
         {
-            TestAssert.Contains("Created: 1", cut.Markup, StringComparison.Ordinal);
-            TestAssert.Contains("Updated: 1", cut.Markup, StringComparison.Ordinal);
-            TestAssert.Contains("Skipped: 1", cut.Markup, StringComparison.Ordinal);
-            TestAssert.Contains("Failed: 1", cut.Markup, StringComparison.Ordinal);
+            (cut.Markup).ShouldContain("Created: 1", StringComparison.Ordinal);
+            (cut.Markup).ShouldContain("Updated: 1", StringComparison.Ordinal);
+            (cut.Markup).ShouldContain("Skipped: 1", StringComparison.Ordinal);
+            (cut.Markup).ShouldContain("Failed: 1", StringComparison.Ordinal);
         });
     }
 
@@ -58,10 +58,10 @@ public sealed class ImportCustomersSummaryTests : BunitContext
         var updatedLink = ImportCustomersSummaryTestsHelpers.FindSuccessSummaryRow(cut, "updated@example.com")
             .QuerySelector("a[data-action='view-customer']");
 
-        _ = TestAssert.NotNull(createdLink);
-        _ = TestAssert.NotNull(updatedLink);
-        TestAssert.Contains($"/customers/{createdId}", createdLink.GetAttribute("href"), StringComparison.OrdinalIgnoreCase);
-        TestAssert.Contains($"/customers/{updatedId}", updatedLink.GetAttribute("href"), StringComparison.OrdinalIgnoreCase);
+        _ = (createdLink).ShouldNotBeNull();
+        _ = (updatedLink).ShouldNotBeNull();
+        (createdLink.GetAttribute("href")).ShouldContain($"/customers/{createdId}", StringComparison.OrdinalIgnoreCase);
+        (updatedLink.GetAttribute("href")).ShouldContain($"/customers/{updatedId}", StringComparison.OrdinalIgnoreCase);
     }
 
     [Fact]
@@ -74,8 +74,8 @@ public sealed class ImportCustomersSummaryTests : BunitContext
                 null,
                 [new ImportSuccessRowDto("created@example.com", "created")]));
 
-        TestAssert.Empty(cut.FindAll("a[data-action='view-customer']"));
-        TestAssert.ExactlyOne(cut.FindAll("[data-action='customer-id-unavailable']"));
+        (cut.FindAll("a[data-action='view-customer']")).ShouldBeEmpty();
+        (cut.FindAll("[data-action='customer-id-unavailable']")).ShouldHaveSingleItem();
     }
 
     [Fact]
@@ -92,8 +92,8 @@ public sealed class ImportCustomersSummaryTests : BunitContext
         var link = ImportCustomersSummaryTestsHelpers.FindSuccessSummaryRow(cut, "created@example.com")
             .QuerySelector("a[data-action='view-customer']");
 
-        _ = TestAssert.NotNull(link);
-        TestAssert.Equal($"/customers/{createdId}", link.GetAttribute("href"));
+        _ = (link).ShouldNotBeNull();
+        (link.GetAttribute("href")).ShouldBe($"/customers/{createdId}");
     }
 
     [Fact]
@@ -112,11 +112,11 @@ public sealed class ImportCustomersSummaryTests : BunitContext
 
         cut.WaitForAssertion(() =>
         {
-            TestAssert.Contains("Failed rows", cut.Markup, StringComparison.Ordinal);
-            TestAssert.Contains("Email is required", cut.Markup, StringComparison.Ordinal);
-            TestAssert.Contains("BirthDate format is invalid", cut.Markup, StringComparison.Ordinal);
-            TestAssert.Contains("bad1@example.com", cut.Markup, StringComparison.Ordinal);
-            TestAssert.Contains("bad2@example.com", cut.Markup, StringComparison.Ordinal);
+            (cut.Markup).ShouldContain("Failed rows", StringComparison.Ordinal);
+            (cut.Markup).ShouldContain("Email is required", StringComparison.Ordinal);
+            (cut.Markup).ShouldContain("BirthDate format is invalid", StringComparison.Ordinal);
+            (cut.Markup).ShouldContain("bad1@example.com", StringComparison.Ordinal);
+            (cut.Markup).ShouldContain("bad2@example.com", StringComparison.Ordinal);
         });
     }
 
@@ -137,10 +137,10 @@ public sealed class ImportCustomersSummaryTests : BunitContext
             "Unknown validation error");
         var cells = row.QuerySelectorAll("td").Select(cell => cell.TextContent.Trim()).ToArray();
 
-        TestAssert.Equal("3", cells[0]);
-        TestAssert.Equal("-", cells[1]);
-        TestAssert.Equal("Unknown validation error", cells[2]);
-        TestAssert.Equal("-", cells[3]);
+        (cells[0]).ShouldBe("3");
+        (cells[1]).ShouldBe("-");
+        (cells[2]).ShouldBe("Unknown validation error");
+        (cells[3]).ShouldBe("-");
     }
 
     [Fact]
@@ -158,9 +158,9 @@ public sealed class ImportCustomersSummaryTests : BunitContext
         var href = downloadLink.GetAttribute("href");
         var download = downloadLink.GetAttribute("download");
 
-        _ = TestAssert.NotNull(href);
-        TestAssert.StartsWith("data:text/csv", href, StringComparison.OrdinalIgnoreCase);
-        TestAssert.Equal("import-errors.csv", download);
+        _ = (href).ShouldNotBeNull();
+        (href).ShouldStartWith("data:text/csv", StringComparison.OrdinalIgnoreCase);
+        (download).ShouldBe("import-errors.csv");
     }
 
     [Fact]
@@ -180,14 +180,14 @@ public sealed class ImportCustomersSummaryTests : BunitContext
         var downloadLink = cut.Find("a[data-action='download-error-report']");
         var href = downloadLink.GetAttribute("href");
 
-        _ = TestAssert.NotNull(href);
+        _ = (href).ShouldNotBeNull();
         var csvPayload = Uri.UnescapeDataString(href.Split(',', 2)[1]);
 
-        TestAssert.Contains("LineNumber,Field,Message,Email", csvPayload, StringComparison.Ordinal);
-        TestAssert.Contains("3,,Unknown validation error,", csvPayload, StringComparison.Ordinal);
-        TestAssert.Contains("\"First,Name", csvPayload, StringComparison.Ordinal);
-        TestAssert.Contains("\"Value \"\"quoted\"\"", csvPayload, StringComparison.Ordinal);
-        TestAssert.Contains("bad@example.com", csvPayload, StringComparison.Ordinal);
+        (csvPayload).ShouldContain("LineNumber,Field,Message,Email", StringComparison.Ordinal);
+        (csvPayload).ShouldContain("3,,Unknown validation error,", StringComparison.Ordinal);
+        (csvPayload).ShouldContain("\"First,Name", StringComparison.Ordinal);
+        (csvPayload).ShouldContain("\"Value \"\"quoted\"\"", StringComparison.Ordinal);
+        (csvPayload).ShouldContain("bad@example.com", StringComparison.Ordinal);
     }
 
     [Fact]
@@ -199,8 +199,8 @@ public sealed class ImportCustomersSummaryTests : BunitContext
 
         cut.WaitForAssertion(() =>
         {
-            TestAssert.Contains("Source Column (CSV)", cut.Markup, StringComparison.Ordinal);
-            TestAssert.Contains("customers.csv", cut.Markup, StringComparison.Ordinal);
+            (cut.Markup).ShouldContain("Source Column (CSV)", StringComparison.Ordinal);
+            (cut.Markup).ShouldContain("customers.csv", StringComparison.Ordinal);
         });
     }
 

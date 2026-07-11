@@ -14,7 +14,7 @@ public sealed class IntegrationEventOptionsValidatorTests
         var result = validator.Validate(null, new IntegrationEventOptions());
 
         // Assert
-        TestAssert.True(result.Succeeded);
+        (result.Succeeded).ShouldBeTrue();
     }
 
     [Theory]
@@ -33,12 +33,9 @@ public sealed class IntegrationEventOptionsValidatorTests
         var result = validator.Validate(null, options);
 
         // Assert
-        TestAssert.False(result.Succeeded);
-        TestAssert.NotNull(result.Failures);
-        TestAssert.Contains(
-            "Catalog integration event idempotency lock duration must be greater than zero.",
-            result.Failures,
-            StringComparer.Ordinal);
+        (result.Succeeded).ShouldBeFalse();
+        (result.Failures).ShouldNotBeNull();
+        (result.Failures).ShouldContain("Catalog integration event idempotency lock duration must be greater than zero.", StringComparer.Ordinal);
     }
 
     [Fact]
@@ -51,6 +48,6 @@ public sealed class IntegrationEventOptionsValidatorTests
         var options = IntegrationEventOptionsTestServices.GetConfiguredOptions(configuredDuration);
 
         // Assert
-        TestAssert.Equal(configuredDuration, options.IdempotencyLockDuration);
+        (options.IdempotencyLockDuration).ShouldBe(configuredDuration);
     }
 }

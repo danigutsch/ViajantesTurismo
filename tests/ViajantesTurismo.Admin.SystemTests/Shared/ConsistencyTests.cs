@@ -19,7 +19,7 @@ public class ConsistencyTests(AspireSystemTestFixture fixture) : AspireSystemTes
         var listText = await tourRow.InnerTextAsync();
 
         // Assert
-        TestAssert.Contains("R$", listText, StringComparison.Ordinal);
+        (listText).ShouldContain("R$", StringComparison.Ordinal);
 
         await tourRow.GetLink("View").ClickAsync();
         await Expect(Page).ToHaveTitleAsync("Tour Details");
@@ -51,10 +51,10 @@ public class ConsistencyTests(AspireSystemTestFixture fixture) : AspireSystemTes
         var paidPaymentFromDetails = await ReadBookingDetailsBadgeText(paidBooking.Id, "Payment Status");
 
         // Assert
-        TestAssert.Equal(pendingStatusFromList, pendingStatusFromDetails);
-        TestAssert.Equal(paidStatusFromList, paidStatusFromDetails);
-        TestAssert.Equal(paidPaymentFromList, paidPaymentFromDetails);
-        TestAssert.Equal("Paid", paidPaymentFromDetails);
+        (pendingStatusFromDetails).ShouldBe(pendingStatusFromList);
+        (paidStatusFromDetails).ShouldBe(paidStatusFromList);
+        (paidPaymentFromDetails).ShouldBe(paidPaymentFromList);
+        (paidPaymentFromDetails).ShouldBe("Paid");
     }
 
     [Theory]

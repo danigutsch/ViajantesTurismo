@@ -16,12 +16,12 @@ public sealed class EditablePublicContentTests
         var result = EditablePublicContent.Create("home.hero", PublicContentLanguage.EnUs, [enUs, ptBr]);
 
         // Assert
-        TestAssert.True(result.IsSuccess);
-        TestAssert.Equal("HOME.HERO", result.Value.Key);
-        TestAssert.Equal(PublicContentLanguage.EnUs, result.Value.SourceLanguage);
-        TestAssert.Contains(enUs, result.Value.Variants);
-        TestAssert.Contains(ptBr, result.Value.Variants);
-        TestAssert.Equal(PublicContentPublicationState.Draft, result.Value.PublicationState);
+        (result.IsSuccess).ShouldBeTrue();
+        (result.Value.Key).ShouldBe("HOME.HERO");
+        (result.Value.SourceLanguage).ShouldBe(PublicContentLanguage.EnUs);
+        (result.Value.Variants).ShouldContain(enUs);
+        (result.Value.Variants).ShouldContain(ptBr);
+        (result.Value.PublicationState).ShouldBe(PublicContentPublicationState.Draft);
     }
 
     [Fact]
@@ -35,8 +35,8 @@ public sealed class EditablePublicContentTests
         var result = EditablePublicContent.Create("home.hero", PublicContentLanguage.EnUs, [enUs, ptBr]);
 
         // Assert
-        TestAssert.True(result.IsSuccess);
-        TestAssert.Equal(PublicContentPublicationState.ReviewRequired, result.Value.PublicationState);
+        (result.IsSuccess).ShouldBeTrue();
+        (result.Value.PublicationState).ShouldBe(PublicContentPublicationState.ReviewRequired);
     }
 
     [Fact]
@@ -50,7 +50,7 @@ public sealed class EditablePublicContentTests
         var result = EditablePublicContent.Create(" ", PublicContentLanguage.EnUs, [enUs, ptBr]);
 
         // Assert
-        TestAssert.True(result.IsFailure);
+        (result.IsFailure).ShouldBeTrue();
     }
 
     [Fact]
@@ -64,8 +64,8 @@ public sealed class EditablePublicContentTests
         var result = EditablePublicContent.Create("  Home.Hero  ", PublicContentLanguage.EnUs, [enUs, ptBr]);
 
         // Assert
-        TestAssert.True(result.IsSuccess);
-        TestAssert.Equal("HOME.HERO", result.Value.Key);
+        (result.IsSuccess).ShouldBeTrue();
+        (result.Value.Key).ShouldBe("HOME.HERO");
     }
 
     [Fact]
@@ -79,7 +79,7 @@ public sealed class EditablePublicContentTests
         var result = EditablePublicContent.Create("home.hero", PublicContentLanguage.None, [enUs, ptBr]);
 
         // Assert
-        TestAssert.True(result.IsFailure);
+        (result.IsFailure).ShouldBeTrue();
     }
 
     [Fact]
@@ -98,7 +98,7 @@ public sealed class EditablePublicContentTests
             [wrongLanguageVariant, ptBr]);
 
         // Assert
-        TestAssert.True(result.IsFailure);
+        (result.IsFailure).ShouldBeTrue();
     }
 
     [Fact]
@@ -114,9 +114,9 @@ public sealed class EditablePublicContentTests
             [enUs]);
 
         // Assert
-        TestAssert.True(result.IsFailure);
-        TestAssert.NotNull(result.ErrorDetails);
-        TestAssert.Contains(nameof(EditablePublicContent.Variants), result.ErrorDetails.ValidationErrors?.Keys ?? []);
+        (result.IsFailure).ShouldBeTrue();
+        (result.ErrorDetails).ShouldNotBeNull();
+        (result.ErrorDetails.ValidationErrors?.Keys ?? []).ShouldContain(nameof(EditablePublicContent.Variants));
     }
 
     [Fact]
@@ -130,9 +130,9 @@ public sealed class EditablePublicContentTests
         var result = content.ReplaceVariants(PublicContentLanguage.EnUs, [enUs]);
 
         // Assert
-        TestAssert.True(result.IsFailure);
-        TestAssert.Equal(PublicContentPublicationState.Draft, content.PublicationState);
-        TestAssert.Contains(content.Variants, variant => variant.Language == PublicContentLanguage.PtBr);
+        (result.IsFailure).ShouldBeTrue();
+        (content.PublicationState).ShouldBe(PublicContentPublicationState.Draft);
+        (content.Variants).ShouldContain(variant => variant.Language == PublicContentLanguage.PtBr);
     }
 
     [Fact]
@@ -145,8 +145,8 @@ public sealed class EditablePublicContentTests
         var result = content.Publish();
 
         // Assert
-        TestAssert.True(result.IsSuccess);
-        TestAssert.Equal(PublicContentPublicationState.Published, content.PublicationState);
+        (result.IsSuccess).ShouldBeTrue();
+        (content.PublicationState).ShouldBe(PublicContentPublicationState.Published);
     }
 
     [Fact]
@@ -159,8 +159,8 @@ public sealed class EditablePublicContentTests
         var result = content.Publish();
 
         // Assert
-        TestAssert.True(result.IsFailure);
-        TestAssert.Equal(PublicContentPublicationState.ReviewRequired, content.PublicationState);
+        (result.IsFailure).ShouldBeTrue();
+        (content.PublicationState).ShouldBe(PublicContentPublicationState.ReviewRequired);
     }
 
     [Fact]
@@ -255,7 +255,7 @@ public sealed class EditablePublicContentTests
             requiresHumanReview: false);
 
         // Assert
-        TestAssert.True(result.IsFailure);
+        (result.IsFailure).ShouldBeTrue();
     }
 
     [Fact]
@@ -272,6 +272,6 @@ public sealed class EditablePublicContentTests
             requiresHumanReview: false);
 
         // Assert
-        TestAssert.True(result.IsFailure);
+        (result.IsFailure).ShouldBeTrue();
     }
 }

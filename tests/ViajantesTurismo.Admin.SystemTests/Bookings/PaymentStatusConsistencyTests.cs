@@ -24,9 +24,9 @@ public class PaymentStatusConsistencyTests(AspireSystemTestFixture fixture) : As
         var unpaidFromDetails = await ReadBookingDetailsBadgeText(unpaidBooking.Id, "Payment Status");
         var partiallyPaidFromDetails = await ReadBookingDetailsBadgeText(partiallyPaidBooking.Id, "Payment Status");
 
-        TestAssert.Equal(unpaidFromList, unpaidFromDetails);
-        TestAssert.Equal(partiallyPaidFromList, partiallyPaidFromDetails);
-        TestAssert.NotEqual("Unpaid", partiallyPaidFromList);
+        (unpaidFromDetails).ShouldBe(unpaidFromList);
+        (partiallyPaidFromDetails).ShouldBe(partiallyPaidFromList);
+        (partiallyPaidFromList).ShouldNotBe("Unpaid");
     }
 
     [Fact]
@@ -57,7 +57,7 @@ public class PaymentStatusConsistencyTests(AspireSystemTestFixture fixture) : As
         var scopedBooking2Status = (await scopedBooking2Row.First.Locator("td .badge").Last.InnerTextAsync()).Trim();
 
         // Assert
-        TestAssert.Equal(expectedBooking1, scopedBooking1Status);
-        TestAssert.Equal(expectedBooking2, scopedBooking2Status);
+        (scopedBooking1Status).ShouldBe(expectedBooking1);
+        (scopedBooking2Status).ShouldBe(expectedBooking2);
     }
 }

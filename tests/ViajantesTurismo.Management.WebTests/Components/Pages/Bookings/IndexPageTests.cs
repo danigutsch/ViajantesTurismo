@@ -31,7 +31,7 @@ public class IndexPageTests : BunitContext
 
         // Assert
         var badges = cut.FindAll("span.badge.bg-secondary");
-        TestAssert.Contains(badges, b => b.TextContent.Contains("Total: 3", StringComparison.Ordinal));
+        (badges).ShouldContain(b => b.TextContent.Contains("Total: 3", StringComparison.Ordinal));
     }
 
     [Fact]
@@ -48,7 +48,7 @@ public class IndexPageTests : BunitContext
 
         // Assert
         var badges = cut.FindAll("span.badge.bg-warning");
-        TestAssert.Contains(badges, b => b.TextContent.Contains("Pending: 2", StringComparison.Ordinal));
+        (badges).ShouldContain(b => b.TextContent.Contains("Pending: 2", StringComparison.Ordinal));
     }
 
     [Fact]
@@ -65,7 +65,7 @@ public class IndexPageTests : BunitContext
 
         // Assert
         var badges = cut.FindAll("span.badge.bg-success");
-        TestAssert.Contains(badges, b => b.TextContent.Contains("Confirmed: 2", StringComparison.Ordinal));
+        (badges).ShouldContain(b => b.TextContent.Contains("Confirmed: 2", StringComparison.Ordinal));
     }
 
     [Fact]
@@ -77,9 +77,9 @@ public class IndexPageTests : BunitContext
         cut.WaitForState(() => cut.FindAll(".card-header").Count > 0, TimeSpan.FromSeconds(2));
 
         // Assert
-        TestAssert.Contains("Total: 0", cut.Markup, StringComparison.Ordinal);
-        TestAssert.Contains("Pending: 0", cut.Markup, StringComparison.Ordinal);
-        TestAssert.Contains("Confirmed: 0", cut.Markup, StringComparison.Ordinal);
+        (cut.Markup).ShouldContain("Total: 0", StringComparison.Ordinal);
+        (cut.Markup).ShouldContain("Pending: 0", StringComparison.Ordinal);
+        (cut.Markup).ShouldContain("Confirmed: 0", StringComparison.Ordinal);
     }
 
 
@@ -97,7 +97,7 @@ public class IndexPageTests : BunitContext
         cut.WaitForState(() => cut.Markup.Contains("Pending: 1", StringComparison.Ordinal), TimeSpan.FromSeconds(2));
 
         // Assert
-        TestAssert.Contains("Pending: 1", cut.Markup, StringComparison.Ordinal);
+        (cut.Markup).ShouldContain("Pending: 1", StringComparison.Ordinal);
     }
 
     [Fact]
@@ -114,7 +114,7 @@ public class IndexPageTests : BunitContext
         cut.WaitForState(() => cut.Markup.Contains("Confirmed: 1", StringComparison.Ordinal), TimeSpan.FromSeconds(2));
 
         // Assert
-        TestAssert.Contains("Confirmed: 1", cut.Markup, StringComparison.Ordinal);
+        (cut.Markup).ShouldContain("Confirmed: 1", StringComparison.Ordinal);
     }
 
     [Fact]
@@ -134,9 +134,9 @@ public class IndexPageTests : BunitContext
         cut.WaitForState(() => cut.Markup.Contains("Total: 7", StringComparison.Ordinal), TimeSpan.FromSeconds(2));
 
         // Assert
-        TestAssert.Contains("Total: 7", cut.Markup, StringComparison.Ordinal);
-        TestAssert.Contains("Pending: 2", cut.Markup, StringComparison.Ordinal);
-        TestAssert.Contains("Confirmed: 3", cut.Markup, StringComparison.Ordinal);
+        (cut.Markup).ShouldContain("Total: 7", StringComparison.Ordinal);
+        (cut.Markup).ShouldContain("Pending: 2", StringComparison.Ordinal);
+        (cut.Markup).ShouldContain("Confirmed: 3", StringComparison.Ordinal);
     }
 
     [Fact]
@@ -152,7 +152,7 @@ public class IndexPageTests : BunitContext
         cut.WaitForState(() => cut.FindAll(".card-header").Count > 0, TimeSpan.FromSeconds(2));
 
         // Assert
-        TestAssert.Contains("Completed: 2", cut.Markup, StringComparison.Ordinal);
-        TestAssert.Contains("Cancelled: 1", cut.Markup, StringComparison.Ordinal);
+        (cut.Markup).ShouldContain("Completed: 2", StringComparison.Ordinal);
+        (cut.Markup).ShouldContain("Cancelled: 1", StringComparison.Ordinal);
     }
 }

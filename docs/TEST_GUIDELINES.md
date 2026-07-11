@@ -362,11 +362,10 @@ add the project reference and a global `<Using Include="SharedKernel.Testing.Ass
 Use extension-style wrapper APIs when they exist, such as `actual.ShouldBe(expected)`,
 `actual.ShouldNotBeNull()`, `items.ShouldContain(expected)`,
 `text.ShouldContain(expected, StringComparison.Ordinal)`, and
-`action.ShouldThrow<InvalidOperationException>()`. Use `TestAssert` only as the low-level
-repository assertion surface when no extension exists yet. The sole `Xunit.Assert` implementation
-boundary is `src/SharedKernel/SharedKernel.Testing.Assertions`, where wrappers delegate to xUnit.
-Add new extension wrappers only for assertion patterns with repeated callers; do not introduce an
-external fluent assertion package.
+`action.ShouldThrow<InvalidOperationException>()`. Use `Should*` assertion extensions exclusively.
+The sole `Xunit.Assert` implementation boundary is `src/SharedKernel/SharedKernel.Testing.Assertions`,
+where wrappers delegate to xUnit. Add new extension wrappers only for assertion patterns with repeated
+callers; do not introduce an external fluent assertion package.
 
 Keep method calls and computed values out of assertion arguments when practical.
 Assign them to local variables first so failures are easier to inspect while debugging.

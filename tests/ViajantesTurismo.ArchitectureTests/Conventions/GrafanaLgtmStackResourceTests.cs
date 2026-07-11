@@ -23,13 +23,7 @@ public sealed class GrafanaLgtmStackResourceTests
 
         // Assert
         GrafanaLgtmStackDefaults.EnableObservabilityStackVariable.ShouldBe("ASPIRE_ENABLE_OBSERVABILITY_STACK");
-        TestAssert.Collection(
-            configuredNames,
-            name => name.ShouldBe("opentelemetry-collector"),
-            name => name.ShouldBe("grafana"),
-            name => name.ShouldBe("loki"),
-            name => name.ShouldBe("tempo"),
-            name => name.ShouldBe("prometheus"));
+        (configuredNames).ShouldMatchCollection(name => name.ShouldBe("opentelemetry-collector"), name => name.ShouldBe("grafana"), name => name.ShouldBe("loki"), name => name.ShouldBe("tempo"), name => name.ShouldBe("prometheus"));
     }
 
     [Fact]

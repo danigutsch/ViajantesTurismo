@@ -10,7 +10,7 @@ internal static class EditablePublicContentTestFactory
         var ptBr = CreateVariant(PublicContentLanguage.PtBr, requiresHumanReview);
         var result = EditablePublicContent.Create(key, PublicContentLanguage.EnUs, [enUs, ptBr]);
 
-        TestAssert.True(result.IsSuccess);
+        (result.IsSuccess).ShouldBeTrue();
         return result.Value;
     }
 
@@ -25,7 +25,7 @@ internal static class EditablePublicContentTestFactory
             "Cycling tours in Brazil",
             requiresHumanReview);
 
-        TestAssert.True(result.IsSuccess);
+        (result.IsSuccess).ShouldBeTrue();
         return result.Value;
     }
 }

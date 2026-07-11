@@ -33,14 +33,14 @@ public sealed class AddressPageTests : BunitContext
         var cut = Render<Address>();
 
         // Assert
-        TestAssert.Equal("Rua das Flores, 123", cut.Find("#street").GetAttribute("value"));
-        TestAssert.Equal("Apt 45", cut.Find("#complement").GetAttribute("value"));
-        TestAssert.Equal("Centro", cut.Find("#neighborhood").GetAttribute("value"));
-        TestAssert.Equal("01000-000", cut.Find("#postalCode").GetAttribute("value"));
-        TestAssert.Equal("São Paulo", cut.Find("#city").GetAttribute("value"));
-        TestAssert.Equal("SP", cut.Find("#state").GetAttribute("value"));
-        TestAssert.Equal("Brazil", cut.Find("#country").GetAttribute("value"));
-        TestAssert.Equal(4, _state.CurrentStep);
+        (cut.Find("#street").GetAttribute("value")).ShouldBe("Rua das Flores, 123");
+        (cut.Find("#complement").GetAttribute("value")).ShouldBe("Apt 45");
+        (cut.Find("#neighborhood").GetAttribute("value")).ShouldBe("Centro");
+        (cut.Find("#postalCode").GetAttribute("value")).ShouldBe("01000-000");
+        (cut.Find("#city").GetAttribute("value")).ShouldBe("São Paulo");
+        (cut.Find("#state").GetAttribute("value")).ShouldBe("SP");
+        (cut.Find("#country").GetAttribute("value")).ShouldBe("Brazil");
+        (_state.CurrentStep).ShouldBe(4);
     }
 
     [Fact]
@@ -61,16 +61,16 @@ public sealed class AddressPageTests : BunitContext
         await cut.InvokeAsync(async () => await cut.Find("form").SubmitAsync());
 
         // Assert
-        await cut.WaitForAssertionAsync(() => TestAssert.EndsWith("/customers/create/physical", navigationManager.Uri, StringComparison.Ordinal));
-        TestAssert.NotNull(_state.Address);
-        TestAssert.Equal("Rua das Flores, 123", _state.Address!.Street);
-        TestAssert.Equal("Apt 45", _state.Address.Complement);
-        TestAssert.Equal("Centro", _state.Address.Neighborhood);
-        TestAssert.Equal("01000-000", _state.Address.PostalCode);
-        TestAssert.Equal("São Paulo", _state.Address.City);
-        TestAssert.Equal("SP", _state.Address.State);
-        TestAssert.Equal("Brazil", _state.Address.Country);
-        TestAssert.Equal(5, _state.CurrentStep);
+        await cut.WaitForAssertionAsync(() => (navigationManager.Uri).ShouldEndWith("/customers/create/physical", StringComparison.Ordinal));
+        (_state.Address).ShouldNotBeNull();
+        (_state.Address!.Street).ShouldBe("Rua das Flores, 123");
+        (_state.Address.Complement).ShouldBe("Apt 45");
+        (_state.Address.Neighborhood).ShouldBe("Centro");
+        (_state.Address.PostalCode).ShouldBe("01000-000");
+        (_state.Address.City).ShouldBe("São Paulo");
+        (_state.Address.State).ShouldBe("SP");
+        (_state.Address.Country).ShouldBe("Brazil");
+        (_state.CurrentStep).ShouldBe(5);
     }
 
     [Fact]
@@ -85,7 +85,7 @@ public sealed class AddressPageTests : BunitContext
         await cut.InvokeAsync(() => backButton.Click());
 
         // Assert
-        await cut.WaitForAssertionAsync(() => TestAssert.EndsWith("/customers/create/contact", navigationManager.Uri, StringComparison.Ordinal));
-        TestAssert.Equal(3, _state.CurrentStep);
+        await cut.WaitForAssertionAsync(() => (navigationManager.Uri).ShouldEndWith("/customers/create/contact", StringComparison.Ordinal));
+        (_state.CurrentStep).ShouldBe(3);
     }
 }

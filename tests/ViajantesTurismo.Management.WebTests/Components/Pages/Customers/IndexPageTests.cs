@@ -24,8 +24,8 @@ public class IndexPageTests : BunitContext
 
         // Assert
         var alert = cut.Find(".alert.alert-info");
-        TestAssert.Contains("No customers found", alert.TextContent, StringComparison.Ordinal);
-        TestAssert.Contains("Create your first customer", alert.TextContent, StringComparison.Ordinal);
+        (alert.TextContent).ShouldContain("No customers found", StringComparison.Ordinal);
+        (alert.TextContent).ShouldContain("Create your first customer", StringComparison.Ordinal);
     }
 
     [Fact]
@@ -46,10 +46,10 @@ public class IndexPageTests : BunitContext
         cut.WaitForState(() => cut.Markup.Contains("John", StringComparison.Ordinal), TimeSpan.FromSeconds(2));
 
         // Assert
-        TestAssert.Contains("John Doe", cut.Markup, StringComparison.Ordinal);
-        TestAssert.Contains("john.doe@example.com", cut.Markup, StringComparison.Ordinal);
-        TestAssert.Contains("+1234567890", cut.Markup, StringComparison.Ordinal);
-        TestAssert.Contains("Brazilian", cut.Markup, StringComparison.Ordinal);
+        (cut.Markup).ShouldContain("John Doe", StringComparison.Ordinal);
+        (cut.Markup).ShouldContain("john.doe@example.com", StringComparison.Ordinal);
+        (cut.Markup).ShouldContain("+1234567890", StringComparison.Ordinal);
+        (cut.Markup).ShouldContain("Brazilian", StringComparison.Ordinal);
     }
 
 
@@ -64,6 +64,6 @@ public class IndexPageTests : BunitContext
         cut.WaitForState(() => cut.Markup.Contains("Jane Doe", StringComparison.Ordinal), TimeSpan.FromSeconds(2));
 
         // Assert
-        TestAssert.Contains("Jane Doe", cut.Markup, StringComparison.Ordinal);
+        (cut.Markup).ShouldContain("Jane Doe", StringComparison.Ordinal);
     }
 }

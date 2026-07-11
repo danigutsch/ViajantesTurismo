@@ -29,10 +29,10 @@ public sealed class PhysicalPageTests : BunitContext
         var cut = Render<Physical>();
 
         // Assert
-        TestAssert.Equal("72.5", cut.Find("#weightKg").GetAttribute("value"));
-        TestAssert.Equal("181", cut.Find("#heightCm").GetAttribute("value"));
-        TestAssert.Equal(nameof(BikeTypeDto.EBike), cut.Find("#bikeType").GetAttribute("value"));
-        TestAssert.Equal(5, _state.CurrentStep);
+        (cut.Find("#weightKg").GetAttribute("value")).ShouldBe("72.5");
+        (cut.Find("#heightCm").GetAttribute("value")).ShouldBe("181");
+        (cut.Find("#bikeType").GetAttribute("value")).ShouldBe(nameof(BikeTypeDto.EBike));
+        (_state.CurrentStep).ShouldBe(5);
     }
 
     [Fact]
@@ -49,12 +49,12 @@ public sealed class PhysicalPageTests : BunitContext
         await cut.InvokeAsync(async () => await cut.Find("form").SubmitAsync());
 
         // Assert
-        await cut.WaitForAssertionAsync(() => TestAssert.EndsWith("/customers/create/accommodation", navigationManager.Uri, StringComparison.Ordinal));
-        TestAssert.NotNull(_state.PhysicalInfo);
-        TestAssert.Equal(68.4m, _state.PhysicalInfo!.WeightKg);
-        TestAssert.Equal(175, _state.PhysicalInfo.HeightCentimeters);
-        TestAssert.Equal(BikeTypeDto.Regular, _state.PhysicalInfo.BikeType);
-        TestAssert.Equal(6, _state.CurrentStep);
+        await cut.WaitForAssertionAsync(() => (navigationManager.Uri).ShouldEndWith("/customers/create/accommodation", StringComparison.Ordinal));
+        (_state.PhysicalInfo).ShouldNotBeNull();
+        (_state.PhysicalInfo!.WeightKg).ShouldBe(68.4m);
+        (_state.PhysicalInfo.HeightCentimeters).ShouldBe(175);
+        (_state.PhysicalInfo.BikeType).ShouldBe(BikeTypeDto.Regular);
+        (_state.CurrentStep).ShouldBe(6);
     }
 
     [Fact]
@@ -69,7 +69,7 @@ public sealed class PhysicalPageTests : BunitContext
         await cut.InvokeAsync(() => backButton.Click());
 
         // Assert
-        await cut.WaitForAssertionAsync(() => TestAssert.EndsWith("/customers/create/address", navigationManager.Uri, StringComparison.Ordinal));
-        TestAssert.Equal(4, _state.CurrentStep);
+        await cut.WaitForAssertionAsync(() => (navigationManager.Uri).ShouldEndWith("/customers/create/address", StringComparison.Ordinal));
+        (_state.CurrentStep).ShouldBe(4);
     }
 }

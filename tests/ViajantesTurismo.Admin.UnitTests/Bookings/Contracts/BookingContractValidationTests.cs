@@ -20,7 +20,7 @@ public class BookingContractValidationTests
                 "DiscountReason")
             .ToArray();
 
-        TestAssert.Empty(results);
+        (results).ShouldBeEmpty();
     }
 
     [Fact]
@@ -36,15 +36,13 @@ public class BookingContractValidationTests
                 "DiscountReason")
             .ToArray();
 
-        TestAssert.Equal(2, results.Length);
-        TestAssert.Contains(results, result =>
+        (results.Length).ShouldBe(2);
+        (results).ShouldContain(result =>
             result.MemberNames.SequenceEqual(["DiscountAmount"]) &&
-            result.ErrorMessage == $"Percentage discount cannot exceed {ContractConstants.MaxDiscountPercentage}%."
-        );
-        TestAssert.Contains(results, result =>
+            result.ErrorMessage == $"Percentage discount cannot exceed {ContractConstants.MaxDiscountPercentage}%.");
+        (results).ShouldContain(result =>
             result.MemberNames.SequenceEqual(["DiscountReason"]) &&
-            result.ErrorMessage == $"Discount reason must be at least {ContractConstants.MinDiscountReasonLength} characters."
-        );
+            result.ErrorMessage == $"Discount reason must be at least {ContractConstants.MinDiscountReasonLength} characters.");
     }
 
     [Fact]
@@ -55,11 +53,9 @@ public class BookingContractValidationTests
             Guid.CreateVersion7(),
             "CompanionCustomerId");
 
-        _ = TestAssert.NotNull(result);
-        TestAssert.Equal(
-            "Single room bookings cannot have a companion. Please select Double Room or remove the companion.",
-            result.ErrorMessage);
-        TestAssert.Equal(["CompanionCustomerId"], result.MemberNames);
+        _ = (result).ShouldNotBeNull();
+        (result.ErrorMessage).ShouldBe("Single room bookings cannot have a companion. Please select Double Room or remove the companion.");
+        (result.MemberNames).ShouldBe(["CompanionCustomerId"]);
     }
 
     [Theory]
@@ -73,7 +69,7 @@ public class BookingContractValidationTests
             companionCustomerId,
             "CompanionCustomerId");
 
-        TestAssert.Null(result);
+        (result).ShouldBeNull();
     }
 
     [Fact]
@@ -84,11 +80,9 @@ public class BookingContractValidationTests
             null,
             CompanionBikeTypeMemberName);
 
-        _ = TestAssert.NotNull(result);
-        TestAssert.Equal(
-            "Companion bike type is required when a companion is selected.",
-            result.ErrorMessage);
-        TestAssert.Equal([CompanionBikeTypeMemberName], result.MemberNames);
+        _ = (result).ShouldNotBeNull();
+        (result.ErrorMessage).ShouldBe("Companion bike type is required when a companion is selected.");
+        (result.MemberNames).ShouldBe([CompanionBikeTypeMemberName]);
     }
 
     [Theory]
@@ -102,7 +96,7 @@ public class BookingContractValidationTests
             companionBikeType,
             CompanionBikeTypeMemberName);
 
-        TestAssert.Null(result);
+        (result).ShouldBeNull();
     }
 
     [Fact]
@@ -110,11 +104,9 @@ public class BookingContractValidationTests
     {
         var result = BookingValidation.ValidatePrincipalBikeType(BikeTypeDto.None, "PrincipalBikeType");
 
-        _ = TestAssert.NotNull(result);
-        TestAssert.Equal(
-            "Principal customer must select a bike type (Regular or E-Bike).",
-            result.ErrorMessage);
-        TestAssert.Equal(["PrincipalBikeType"], result.MemberNames);
+        _ = (result).ShouldNotBeNull();
+        (result.ErrorMessage).ShouldBe("Principal customer must select a bike type (Regular or E-Bike).");
+        (result.MemberNames).ShouldBe(["PrincipalBikeType"]);
     }
 
     [Theory]
@@ -124,7 +116,7 @@ public class BookingContractValidationTests
     {
         var result = BookingValidation.ValidatePrincipalBikeType(principalBikeType, "PrincipalBikeType");
 
-        TestAssert.Null(result);
+        (result).ShouldBeNull();
     }
 
     [Theory]
@@ -135,7 +127,7 @@ public class BookingContractValidationTests
     {
         var result = BookingValidation.ValidateCompanionBikeTypeNotNone(companionBikeType, CompanionBikeTypeMemberName);
 
-        TestAssert.Null(result);
+        (result).ShouldBeNull();
     }
 
     [Fact]
@@ -154,11 +146,11 @@ public class BookingContractValidationTests
 
         var results = dto.Validate(new ValidationContext(dto)).ToArray();
 
-        TestAssert.Equal(2, results.Length);
-        TestAssert.Contains(results, result =>
+        (results.Length).ShouldBe(2);
+        (results).ShouldContain(result =>
             result.MemberNames.SequenceEqual([nameof(CreateBookingDto.DiscountAmount)]) &&
             result.ErrorMessage == "Discount amount must be greater than 0 when a discount is applied.");
-        TestAssert.Contains(results, result =>
+        (results).ShouldContain(result =>
             result.MemberNames.SequenceEqual([nameof(CreateBookingDto.DiscountReason)]) &&
             result.ErrorMessage == "Discount reason is required when applying a discount.");
     }
@@ -176,14 +168,14 @@ public class BookingContractValidationTests
 
         var results = dto.Validate(new ValidationContext(dto)).ToArray();
 
-        TestAssert.Equal(3, results.Length);
-        TestAssert.Contains(results, result =>
+        (results.Length).ShouldBe(3);
+        (results).ShouldContain(result =>
             result.MemberNames.SequenceEqual([nameof(UpdateBookingDetailsDto.CompanionCustomerId)]) &&
             result.ErrorMessage == "Single room bookings cannot have a companion. Please select Double Room or remove the companion.");
-        TestAssert.Contains(results, result =>
+        (results).ShouldContain(result =>
             result.MemberNames.SequenceEqual([nameof(UpdateBookingDetailsDto.PrincipalBikeType)]) &&
             result.ErrorMessage == "Principal customer must select a bike type (Regular or E-Bike).");
-        TestAssert.Contains(results, result =>
+        (results).ShouldContain(result =>
             result.MemberNames.SequenceEqual([nameof(UpdateBookingDetailsDto.CompanionBikeType)]) &&
             result.ErrorMessage == "Companion must select a bike type (Regular or E-Bike).");
     }
@@ -200,11 +192,9 @@ public class BookingContractValidationTests
 
         var results = dto.Validate(new ValidationContext(dto)).ToArray();
 
-        TestAssert.ExactlyOne(results);
-        TestAssert.Equal([nameof(UpdateBookingDiscountDto.DiscountReason)], results[0].MemberNames);
-        TestAssert.Equal(
-            $"Discount reason must be at least {ContractConstants.MinDiscountReasonLength} characters.",
-            results[0].ErrorMessage);
+        (results).ShouldHaveSingleItem();
+        (results[0].MemberNames).ShouldBe([nameof(UpdateBookingDiscountDto.DiscountReason)]);
+        (results[0].ErrorMessage).ShouldBe($"Discount reason must be at least {ContractConstants.MinDiscountReasonLength} characters.");
     }
 
     public static TheoryData<RoomTypeDto, Guid?> AllowedRoomAndCompanionCombinations =>

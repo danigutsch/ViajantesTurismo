@@ -10,7 +10,7 @@ public sealed class ConfirmDialogTests : BunitContext
 
         // Assert
         var modals = cut.FindAll(".modal");
-        TestAssert.Empty(modals);
+        (modals).ShouldBeEmpty();
     }
 
     [Fact]
@@ -24,8 +24,8 @@ public sealed class ConfirmDialogTests : BunitContext
 
         // Assert
         var modal = cut.Find(".modal");
-        _ = TestAssert.NotNull(modal);
-        TestAssert.Contains("show", modal.ClassList);
+        _ = (modal).ShouldNotBeNull();
+        (modal.ClassList).ShouldContain("show");
     }
 
     [Fact]
@@ -40,7 +40,7 @@ public sealed class ConfirmDialogTests : BunitContext
 
         // Assert
         var messageElement = cut.Find(".modal-body p");
-        TestAssert.Equal(customMessage, messageElement.TextContent);
+        (messageElement.TextContent).ShouldBe(customMessage);
     }
 
     [Fact]
@@ -55,7 +55,7 @@ public sealed class ConfirmDialogTests : BunitContext
 
         // Assert
         var titleElement = cut.Find(".modal-title");
-        TestAssert.Equal(customTitle, titleElement.TextContent);
+        (titleElement.TextContent).ShouldBe(customTitle);
     }
 
     [Fact]
@@ -69,7 +69,7 @@ public sealed class ConfirmDialogTests : BunitContext
 
         // Assert
         var titleElement = cut.Find(".modal-title");
-        TestAssert.Equal("Confirm", titleElement.TextContent);
+        (titleElement.TextContent).ShouldBe("Confirm");
     }
 
     [Fact]
@@ -84,7 +84,7 @@ public sealed class ConfirmDialogTests : BunitContext
 
         // Assert
         var confirmButton = cut.Find(".modal-footer .btn-primary");
-        TestAssert.Contains(customConfirmText, confirmButton.TextContent, StringComparison.Ordinal);
+        (confirmButton.TextContent).ShouldContain(customConfirmText, StringComparison.Ordinal);
     }
 
     [Fact]
@@ -99,7 +99,7 @@ public sealed class ConfirmDialogTests : BunitContext
 
         // Assert
         var cancelButton = cut.Find(".modal-footer .btn-secondary");
-        TestAssert.Contains(customCancelText, cancelButton.TextContent, StringComparison.Ordinal);
+        (cancelButton.TextContent).ShouldContain(customCancelText, StringComparison.Ordinal);
     }
 
     [Fact]
@@ -114,7 +114,7 @@ public sealed class ConfirmDialogTests : BunitContext
 
         // Assert
         var confirmButton = cut.Find($".modal-footer .{customButtonClass}");
-        _ = TestAssert.NotNull(confirmButton);
+        _ = (confirmButton).ShouldNotBeNull();
     }
 
     [Fact]
@@ -128,7 +128,7 @@ public sealed class ConfirmDialogTests : BunitContext
 
         // Assert
         var confirmButton = cut.Find(".modal-footer .btn-primary");
-        _ = TestAssert.NotNull(confirmButton);
+        _ = (confirmButton).ShouldNotBeNull();
     }
 
     [Fact]
@@ -142,7 +142,7 @@ public sealed class ConfirmDialogTests : BunitContext
 
         // Assert
         var closeButton = cut.Find(".modal-header .btn-close");
-        _ = TestAssert.NotNull(closeButton);
+        _ = (closeButton).ShouldNotBeNull();
     }
 
     [Fact]
@@ -156,8 +156,8 @@ public sealed class ConfirmDialogTests : BunitContext
 
         // Assert
         var backdrop = cut.Find(".modal-backdrop");
-        _ = TestAssert.NotNull(backdrop);
-        TestAssert.Contains("show", backdrop.ClassList);
+        _ = (backdrop).ShouldNotBeNull();
+        (backdrop.ClassList).ShouldContain("show");
     }
 
     [Fact]
@@ -174,7 +174,7 @@ public sealed class ConfirmDialogTests : BunitContext
 
         // Assert
         var result = await resultTask;
-        TestAssert.True(result);
+        (result).ShouldBeTrue();
     }
 
     [Fact]
@@ -191,7 +191,7 @@ public sealed class ConfirmDialogTests : BunitContext
 
         // Assert
         var result = await resultTask;
-        TestAssert.False(result);
+        (result).ShouldBeFalse();
     }
 
     [Fact]
@@ -208,7 +208,7 @@ public sealed class ConfirmDialogTests : BunitContext
 
         // Assert
         var result = await resultTask;
-        TestAssert.False(result);
+        (result).ShouldBeFalse();
     }
 
     [Fact]
@@ -224,7 +224,7 @@ public sealed class ConfirmDialogTests : BunitContext
         confirmButton.Click();
 
         // Assert
-        cut.WaitForAssertion(() => TestAssert.Empty(cut.FindAll(".modal")));
+        cut.WaitForAssertion(() => (cut.FindAll(".modal")).ShouldBeEmpty());
     }
 
     [Fact]
@@ -240,6 +240,6 @@ public sealed class ConfirmDialogTests : BunitContext
         cancelButton.Click();
 
         // Assert
-        cut.WaitForAssertion(() => TestAssert.Empty(cut.FindAll(".modal")));
+        cut.WaitForAssertion(() => (cut.FindAll(".modal")).ShouldBeEmpty());
     }
 }

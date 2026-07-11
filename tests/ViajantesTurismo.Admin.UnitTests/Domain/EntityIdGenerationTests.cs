@@ -24,7 +24,7 @@ public sealed class EntityIdGenerationTests
             ["Hotel", "Breakfast"]));
 
         // Assert
-        TestAssert.True(result.IsSuccess);
+        (result.IsSuccess).ShouldBeTrue();
         EntityIdAssertions.AssertUuidV7(result.Value.Id);
     }
 
@@ -56,9 +56,9 @@ public sealed class EntityIdGenerationTests
             notes: null);
 
         // Assert
-        TestAssert.True(principalResult.IsSuccess);
-        TestAssert.True(discountResult.IsSuccess);
-        TestAssert.True(result.IsSuccess);
+        (principalResult.IsSuccess).ShouldBeTrue();
+        (discountResult.IsSuccess).ShouldBeTrue();
+        (result.IsSuccess).ShouldBeTrue();
         EntityIdAssertions.AssertUuidV7(result.Value.Id);
     }
 
@@ -76,7 +76,7 @@ public sealed class EntityIdGenerationTests
             notes: "Initial payment");
 
         // Assert
-        TestAssert.True(result.IsSuccess);
+        (result.IsSuccess).ShouldBeTrue();
         EntityIdAssertions.AssertUuidV7(result.Value.Id);
     }
 

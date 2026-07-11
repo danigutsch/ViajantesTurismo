@@ -26,17 +26,17 @@ public sealed class ImportCustomersWorkflowStateTests
         state.SetPendingFile("customers.csv", [1, 2, 3], csvHeaders, fieldMappings);
 
         // Assert
-        TestAssert.Equal("customers.csv", state.PendingFileName);
-        TestAssert.Equal([1, 2, 3], state.PendingFileBytes);
-        TestAssert.Equal(csvHeaders, state.CsvHeaders);
-        TestAssert.Equal(fieldMappings, state.FieldMappings);
-        TestAssert.Empty(state.UserMappings);
-        TestAssert.Empty(state.PreviewRows);
-        TestAssert.Empty(state.ConflictStates);
-        TestAssert.Null(state.Result);
-        TestAssert.Null(state.Error);
-        TestAssert.Null(state.ValidationError);
-        TestAssert.Equal(ImportCustomersWorkflowStep.HeaderMapping, state.Step);
+        (state.PendingFileName).ShouldBe("customers.csv");
+        (state.PendingFileBytes).ShouldBe([1, 2, 3]);
+        (state.CsvHeaders).ShouldBe(csvHeaders);
+        (state.FieldMappings).ShouldBe(fieldMappings);
+        (state.UserMappings).ShouldBeEmpty();
+        (state.PreviewRows).ShouldBeEmpty();
+        (state.ConflictStates).ShouldBeEmpty();
+        (state.Result).ShouldBeNull();
+        (state.Error).ShouldBeNull();
+        (state.ValidationError).ShouldBeNull();
+        (state.Step).ShouldBe(ImportCustomersWorkflowStep.HeaderMapping);
     }
 
     [Fact]
@@ -65,18 +65,18 @@ public sealed class ImportCustomersWorkflowStateTests
         state.ResetToFileSelection();
 
         // Assert
-        TestAssert.Equal(string.Empty, state.PendingFileName);
-        TestAssert.Empty(state.PendingFileBytes);
-        TestAssert.Empty(state.CsvHeaders);
-        TestAssert.Empty(state.FieldMappings);
-        TestAssert.Empty(state.UserMappings);
-        TestAssert.Empty(state.PreviewRows);
-        TestAssert.Empty(state.ConflictStates);
-        TestAssert.Null(state.Result);
-        TestAssert.Null(state.Error);
-        TestAssert.Null(state.ValidationError);
-        TestAssert.False(state.Uploading);
-        TestAssert.Equal(ImportCustomersWorkflowStep.FileSelection, state.Step);
+        (state.PendingFileName).ShouldBe(string.Empty);
+        (state.PendingFileBytes).ShouldBeEmpty();
+        (state.CsvHeaders).ShouldBeEmpty();
+        (state.FieldMappings).ShouldBeEmpty();
+        (state.UserMappings).ShouldBeEmpty();
+        (state.PreviewRows).ShouldBeEmpty();
+        (state.ConflictStates).ShouldBeEmpty();
+        (state.Result).ShouldBeNull();
+        (state.Error).ShouldBeNull();
+        (state.ValidationError).ShouldBeNull();
+        (state.Uploading).ShouldBeFalse();
+        (state.Step).ShouldBe(ImportCustomersWorkflowStep.FileSelection);
     }
 
     [Fact]
@@ -103,15 +103,15 @@ public sealed class ImportCustomersWorkflowStateTests
         state.RetryCurrentFile();
 
         // Assert
-        TestAssert.Equal("customers.csv", state.PendingFileName);
-        TestAssert.NotEmpty(state.PendingFileBytes);
-        TestAssert.Empty(state.PreviewRows);
-        TestAssert.Empty(state.ConflictStates);
-        TestAssert.Null(state.Result);
-        TestAssert.Null(state.Error);
-        TestAssert.Null(state.ValidationError);
-        TestAssert.False(state.Uploading);
-        TestAssert.Equal(ImportCustomersWorkflowStep.HeaderMapping, state.Step);
+        (state.PendingFileName).ShouldBe("customers.csv");
+        (state.PendingFileBytes).ShouldNotBeEmpty();
+        (state.PreviewRows).ShouldBeEmpty();
+        (state.ConflictStates).ShouldBeEmpty();
+        (state.Result).ShouldBeNull();
+        (state.Error).ShouldBeNull();
+        (state.ValidationError).ShouldBeNull();
+        (state.Uploading).ShouldBeFalse();
+        (state.Step).ShouldBe(ImportCustomersWorkflowStep.HeaderMapping);
     }
 
     [Fact]
@@ -135,8 +135,8 @@ public sealed class ImportCustomersWorkflowStateTests
         var decisions = state.BuildConflictDecisions();
 
         // Assert
-        TestAssert.Equal("keep", decisions["keep@example.com"]);
-        TestAssert.Equal("mixed", decisions["MIXED@example.com"]);
-        TestAssert.Equal(string.Empty, decisions["pending@example.com"]);
+        (decisions["keep@example.com"]).ShouldBe("keep");
+        (decisions["MIXED@example.com"]).ShouldBe("mixed");
+        (decisions["pending@example.com"]).ShouldBe(string.Empty);
     }
 }

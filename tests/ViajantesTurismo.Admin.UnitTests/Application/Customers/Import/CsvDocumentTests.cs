@@ -15,18 +15,18 @@ public class CsvDocumentTests
         var documentResult = CsvDocument.Create(headers, rows);
 
         // Assert
-        TestAssert.True(documentResult.IsSuccess);
+        (documentResult.IsSuccess).ShouldBeTrue();
 
         var document = documentResult.Value;
-        TestAssert.Equal(3, document.Headers.Count);
-        TestAssert.Equal("FirstName", document.Headers[0]);
-        TestAssert.Equal("LastName", document.Headers[1]);
-        TestAssert.Equal("Email", document.Headers[2]);
+        (document.Headers.Count).ShouldBe(3);
+        (document.Headers[0]).ShouldBe("FirstName");
+        (document.Headers[1]).ShouldBe("LastName");
+        (document.Headers[2]).ShouldBe("Email");
 
-        var row = TestAssert.ExactlyOne(document.Rows);
-        TestAssert.Equal("John", row[0]);
-        TestAssert.Equal("Doe", row[1]);
-        TestAssert.Equal("john.doe@example.com", row[2]);
+        var row = (document.Rows).ShouldHaveSingleItem();
+        (row[0]).ShouldBe("John");
+        (row[1]).ShouldBe("Doe");
+        (row[2]).ShouldBe("john.doe@example.com");
     }
 
     [Fact]
@@ -39,18 +39,18 @@ public class CsvDocumentTests
         var documentResult = CsvDocument.Parse(csvContent);
 
         // Assert
-        TestAssert.True(documentResult.IsSuccess);
+        (documentResult.IsSuccess).ShouldBeTrue();
 
         var document = documentResult.Value;
-        TestAssert.Equal(3, document.Headers.Count);
-        TestAssert.Equal("FirstName", document.Headers[0]);
-        TestAssert.Equal("LastName", document.Headers[1]);
-        TestAssert.Equal("Email", document.Headers[2]);
+        (document.Headers.Count).ShouldBe(3);
+        (document.Headers[0]).ShouldBe("FirstName");
+        (document.Headers[1]).ShouldBe("LastName");
+        (document.Headers[2]).ShouldBe("Email");
 
-        var row = TestAssert.ExactlyOne(document.Rows);
-        TestAssert.Equal("John", row[0]);
-        TestAssert.Equal("Doe", row[1]);
-        TestAssert.Equal("john.doe@example.com", row[2]);
+        var row = (document.Rows).ShouldHaveSingleItem();
+        (row[0]).ShouldBe("John");
+        (row[1]).ShouldBe("Doe");
+        (row[2]).ShouldBe("john.doe@example.com");
     }
 
     [Fact]
@@ -63,25 +63,25 @@ public class CsvDocumentTests
         var documentResult = CsvDocument.Parse(csvContent);
 
         // Assert
-        TestAssert.True(documentResult.IsSuccess);
+        (documentResult.IsSuccess).ShouldBeTrue();
 
         var document = documentResult.Value;
-        TestAssert.Equal(3, document.Rows.Count);
+        (document.Rows.Count).ShouldBe(3);
 
         var row1 = document.Rows[0];
-        TestAssert.Equal("John", row1[0]);
-        TestAssert.Equal("Doe", row1[1]);
-        TestAssert.Equal("john.doe@example.com", row1[2]);
+        (row1[0]).ShouldBe("John");
+        (row1[1]).ShouldBe("Doe");
+        (row1[2]).ShouldBe("john.doe@example.com");
 
         var row2 = document.Rows[1];
-        TestAssert.Equal("Jane", row2[0]);
-        TestAssert.Equal("Smith", row2[1]);
-        TestAssert.Equal("jane.smith@example.com", row2[2]);
+        (row2[0]).ShouldBe("Jane");
+        (row2[1]).ShouldBe("Smith");
+        (row2[2]).ShouldBe("jane.smith@example.com");
 
         var row3 = document.Rows[2];
-        TestAssert.Equal("Alice", row3[0]);
-        TestAssert.Equal("Johnson", row3[1]);
-        TestAssert.Equal("alice.johnson@example.com", row3[2]);
+        (row3[0]).ShouldBe("Alice");
+        (row3[1]).ShouldBe("Johnson");
+        (row3[2]).ShouldBe("alice.johnson@example.com");
     }
 
     [Fact]
@@ -100,9 +100,9 @@ public class CsvDocumentTests
         var documentResult = CsvDocument.Create(["FirstName", "LastName", "Email"], rows);
 
         // Assert
-        TestAssert.False(documentResult.IsSuccess);
-        TestAssert.NotNull(documentResult.ErrorDetails);
-        TestAssert.Contains("All rows must have the same number of columns", documentResult.ErrorDetails.Detail, StringComparison.Ordinal);
+        (documentResult.IsSuccess).ShouldBeFalse();
+        (documentResult.ErrorDetails).ShouldNotBeNull();
+        (documentResult.ErrorDetails.Detail).ShouldContain("All rows must have the same number of columns", StringComparison.Ordinal);
     }
 
     [Fact]
@@ -116,9 +116,9 @@ public class CsvDocumentTests
         var documentResult = CsvDocument.Create(headers, rows);
 
         // Assert
-        TestAssert.False(documentResult.IsSuccess);
-        TestAssert.NotNull(documentResult.ErrorDetails);
-        TestAssert.Contains("Headers must contain at least one column", documentResult.ErrorDetails.Detail, StringComparison.Ordinal);
+        (documentResult.IsSuccess).ShouldBeFalse();
+        (documentResult.ErrorDetails).ShouldNotBeNull();
+        (documentResult.ErrorDetails.Detail).ShouldContain("Headers must contain at least one column", StringComparison.Ordinal);
     }
 
     [Fact]
@@ -132,9 +132,9 @@ public class CsvDocumentTests
         var documentResult = CsvDocument.Create(headers, rows);
 
         // Assert
-        TestAssert.False(documentResult.IsSuccess);
-        TestAssert.NotNull(documentResult.ErrorDetails);
-        TestAssert.Contains("Header count must match row column count", documentResult.ErrorDetails.Detail, StringComparison.Ordinal);
+        (documentResult.IsSuccess).ShouldBeFalse();
+        (documentResult.ErrorDetails).ShouldNotBeNull();
+        (documentResult.ErrorDetails.Detail).ShouldContain("Header count must match row column count", StringComparison.Ordinal);
     }
 
     [Fact]
@@ -148,9 +148,9 @@ public class CsvDocumentTests
         var documentResult = CsvDocument.Parse(csvContent, requiredHeaders);
 
         // Assert
-        TestAssert.False(documentResult.IsSuccess);
-        TestAssert.NotNull(documentResult.ErrorDetails);
-        TestAssert.Contains("Required header 'CustomerCode' is missing", documentResult.ErrorDetails.Detail, StringComparison.Ordinal);
+        (documentResult.IsSuccess).ShouldBeFalse();
+        (documentResult.ErrorDetails).ShouldNotBeNull();
+        (documentResult.ErrorDetails.Detail).ShouldContain("Required header 'CustomerCode' is missing", StringComparison.Ordinal);
     }
 
     [Fact]
@@ -163,9 +163,9 @@ public class CsvDocumentTests
         var documentResult = CsvDocument.Parse(csvContent);
 
         // Assert
-        TestAssert.False(documentResult.IsSuccess);
-        TestAssert.NotNull(documentResult.ErrorDetails);
-        TestAssert.Contains("Headers must contain at least one column", documentResult.ErrorDetails.Detail, StringComparison.Ordinal);
+        (documentResult.IsSuccess).ShouldBeFalse();
+        (documentResult.ErrorDetails).ShouldNotBeNull();
+        (documentResult.ErrorDetails.Detail).ShouldContain("Headers must contain at least one column", StringComparison.Ordinal);
     }
 
     [Fact]
@@ -179,7 +179,7 @@ public class CsvDocumentTests
         var documentResult = CsvDocument.Parse(csvContent, requiredHeaders);
 
         // Assert
-        TestAssert.True(documentResult.IsSuccess);
+        (documentResult.IsSuccess).ShouldBeTrue();
     }
 
     [Fact]
@@ -192,9 +192,9 @@ public class CsvDocumentTests
         var documentResult = CsvDocument.Parse(csvContent);
 
         // Assert
-        TestAssert.False(documentResult.IsSuccess);
-        TestAssert.NotNull(documentResult.ErrorDetails);
-        TestAssert.Contains("All rows must have the same number of columns", documentResult.ErrorDetails.Detail, StringComparison.Ordinal);
+        (documentResult.IsSuccess).ShouldBeFalse();
+        (documentResult.ErrorDetails).ShouldNotBeNull();
+        (documentResult.ErrorDetails.Detail).ShouldContain("All rows must have the same number of columns", StringComparison.Ordinal);
     }
 
     [Fact]
@@ -208,7 +208,7 @@ public class CsvDocumentTests
         var documentResult = CsvDocument.Parse(csvContent, requiredHeaders);
 
         // Assert
-        TestAssert.True(documentResult.IsSuccess);
+        (documentResult.IsSuccess).ShouldBeTrue();
     }
 
     [Fact]
@@ -225,9 +225,9 @@ public class CsvDocumentTests
         var documentResult = CsvDocument.Create(["FirstName", "LastName", "Email"], rows);
 
         // Assert
-        TestAssert.False(documentResult.IsSuccess);
-        TestAssert.NotNull(documentResult.ErrorDetails);
-        TestAssert.Contains("line 3", documentResult.ErrorDetails.Detail, StringComparison.Ordinal);
+        (documentResult.IsSuccess).ShouldBeFalse();
+        (documentResult.ErrorDetails).ShouldNotBeNull();
+        (documentResult.ErrorDetails.Detail).ShouldContain("line 3", StringComparison.Ordinal);
     }
 
     [Fact]
@@ -246,7 +246,7 @@ public class CsvDocumentTests
         var email = row[document.Headers, "Email"];
 
         // Assert
-        TestAssert.Equal("john.doe@example.com", email);
+        (email).ShouldBe("john.doe@example.com");
     }
 
     [Fact]
@@ -265,7 +265,7 @@ public class CsvDocumentTests
         var success = row.TryGetByHeader(document.Headers, "CustomerCode", out var value);
 
         // Assert
-        TestAssert.False(success);
-        TestAssert.Null(value);
+        (success).ShouldBeFalse();
+        (value).ShouldBeNull();
     }
 }

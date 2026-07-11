@@ -7,9 +7,9 @@ internal static class CatalogIdentityAssertions
     public static void SetId<T>(T entity, Guid id)
     {
         var idProperty = typeof(T).GetProperty("Id", BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic);
-        var nonNullIdProperty = TestAssert.NotNull(idProperty);
+        var nonNullIdProperty = (idProperty).ShouldNotBeNull();
         var idSetter = nonNullIdProperty.GetSetMethod(nonPublic: true);
-        var nonNullIdSetter = TestAssert.NotNull(idSetter);
+        var nonNullIdSetter = (idSetter).ShouldNotBeNull();
 
         nonNullIdSetter.Invoke(entity, [id]);
     }
@@ -23,20 +23,20 @@ internal static class CatalogIdentityAssertions
         SetId(different, Guid.CreateVersion7());
         var set = new HashSet<T> { first };
 
-        TestAssert.True(EqualityComparer<T>.Default.Equals(first, first));
-        TestAssert.True(EqualityComparer<T>.Default.Equals(first, second));
-        TestAssert.False(EqualityComparer<T>.Default.Equals(first, different));
-        TestAssert.False(EqualityComparer<T>.Default.Equals(first, null));
+        (EqualityComparer<T>.Default.Equals(first, first)).ShouldBeTrue();
+        (EqualityComparer<T>.Default.Equals(first, second)).ShouldBeTrue();
+        (EqualityComparer<T>.Default.Equals(first, different)).ShouldBeFalse();
+        (EqualityComparer<T>.Default.Equals(first, null)).ShouldBeFalse();
         var firstHashCode = first is null ? 0 : first.GetHashCode();
         var secondHashCode = second is null ? 0 : second.GetHashCode();
-        TestAssert.Equal(firstHashCode, secondHashCode);
-        TestAssert.Contains(second, set);
-        TestAssert.DoesNotContain(different, set);
+        (secondHashCode).ShouldBe(firstHashCode);
+        (set).ShouldContain(second);
+        (set).ShouldNotContain(different);
 
         SetId(second, Guid.Empty);
 
-        TestAssert.False(EqualityComparer<T>.Default.Equals(first, second));
-        TestAssert.False(EqualityComparer<T>.Default.Equals(second, first));
-        TestAssert.DoesNotContain(second, set);
+        (EqualityComparer<T>.Default.Equals(first, second)).ShouldBeFalse();
+        (EqualityComparer<T>.Default.Equals(second, first)).ShouldBeFalse();
+        (set).ShouldNotContain(second);
     }
 }
