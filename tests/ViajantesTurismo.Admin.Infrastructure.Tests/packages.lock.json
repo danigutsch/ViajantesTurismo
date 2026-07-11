@@ -1110,6 +1110,14 @@
       "viajantesturismo.admin.contracts.application": {
         "type": "Project"
       },
+      "viajantesturismo.admin.contracts.http": {
+        "type": "Project",
+        "dependencies": {
+          "Microsoft.Extensions.Logging.Abstractions": "[10.0.9, )",
+          "SharedKernel.HttpClients": "[0.1.0-alpha.0, )",
+          "ViajantesTurismo.Admin.Contracts.Application": "[0.1.0-alpha.0, )"
+        }
+      },
       "viajantesturismo.admin.contracts.integrationevents": {
         "type": "Project",
         "dependencies": {
@@ -1140,6 +1148,17 @@
           "ViajantesTurismo.Admin.Application": "[0.1.0-alpha.0, )",
           "ViajantesTurismo.Admin.Domain": "[0.1.0-alpha.0, )",
           "ViajantesTurismo.Resources": "[0.1.0-alpha.0, )"
+        }
+      },
+      "viajantesturismo.admin.testing": {
+        "type": "Project",
+        "dependencies": {
+          "SharedKernel.DomainEvents": "[0.1.0-alpha.0, )",
+          "ViajantesTurismo.Admin.Application": "[0.1.0-alpha.0, )",
+          "ViajantesTurismo.Admin.Contracts.Application": "[0.1.0-alpha.0, )",
+          "ViajantesTurismo.Admin.Contracts.Http": "[0.1.0-alpha.0, )",
+          "ViajantesTurismo.Admin.Contracts.IntegrationEvents": "[0.1.0-alpha.0, )",
+          "ViajantesTurismo.Admin.Domain": "[0.1.0-alpha.0, )"
         }
       },
       "viajantesturismo.resources": {

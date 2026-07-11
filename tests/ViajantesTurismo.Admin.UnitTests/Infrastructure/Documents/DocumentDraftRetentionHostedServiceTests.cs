@@ -9,8 +9,8 @@ using ViajantesTurismo.Admin.UnitTests.Documents;
 
 namespace ViajantesTurismo.Admin.UnitTests.Infrastructure.Documents;
 
-[Trait(SharedKernelTestTraitNames.CategoryName, TestTraitValues.CoreBehaviorCategory)]
-[Trait(SharedKernelTestTraitNames.CapabilityName, TestTraitValues.GeneratedDocumentsCapability)]
+[Trait(SharedKernelTestTraitNames.CategoryName, TestTraits.CoreBehaviorCategory)]
+[Trait(SharedKernelTestTraitNames.CapabilityName, global::ViajantesTurismo.Admin.Testing.AdminTestTraitValues.GeneratedDocumentsCapability)]
 public sealed class DocumentDraftRetentionHostedServiceTests
 {
     [Fact]

@@ -10,4 +10,6 @@ internal static class TestTraits
 
     public const string IntegrationEventRelayCapability = "integration-event-relay";
 
+    public const string CoreBehaviorCategory = "core-behavior";
+
 }

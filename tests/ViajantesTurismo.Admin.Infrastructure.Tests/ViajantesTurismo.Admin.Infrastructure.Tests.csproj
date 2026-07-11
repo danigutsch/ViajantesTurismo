@@ -22,6 +22,7 @@
         <ProjectReference Include="..\..\src\SharedKernel\SharedKernel.IntegrationTesting\SharedKernel.IntegrationTesting.csproj" IsAspireProjectResource="false" />
         <ProjectReference Include="..\..\src\SharedKernel\SharedKernel.Testing.Assertions\SharedKernel.Testing.Assertions.csproj" IsAspireProjectResource="false" />
         <ProjectReference Include="..\..\src\SharedKernel\SharedKernel.Testing\SharedKernel.Testing.csproj" IsAspireProjectResource="false" />
+        <ProjectReference Include="..\ViajantesTurismo.Admin.Testing\ViajantesTurismo.Admin.Testing.csproj" IsAspireProjectResource="false" />
     </ItemGroup>
 
 </Project>
