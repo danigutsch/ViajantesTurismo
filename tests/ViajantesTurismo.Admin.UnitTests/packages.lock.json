@@ -624,6 +624,9 @@
           "SharedKernel.Results": "[0.1.0-alpha.0, )"
         }
       },
+      "sharedkernel.documentrendering": {
+        "type": "Project"
+      },
       "sharedkernel.domain": {
         "type": "Project"
       },
@@ -786,6 +789,7 @@
           "Microsoft.Extensions.ApiDescription.Server": "[10.0.9, )",
           "SharedKernel.ApiVersioning.AspNetCore": "[0.1.0-alpha.0, )",
           "SharedKernel.AspNetCore": "[0.1.0-alpha.0, )",
+          "SharedKernel.Branding": "[0.1.0-alpha.0, )",
           "SharedKernel.OpenApi": "[0.1.0-alpha.0, )",
           "SharedKernel.Results": "[0.1.0-alpha.0, )",
           "SharedKernel.Results.AspNet": "[0.1.0-alpha.0, )",
@@ -800,7 +804,9 @@
         "type": "Project",
         "dependencies": {
           "Microsoft.Extensions.Hosting.Abstractions": "[10.0.9, )",
+          "SharedKernel.Branding": "[0.1.0-alpha.0, )",
           "SharedKernel.BuildingBlocks": "[0.1.0-alpha.0, )",
+          "SharedKernel.DocumentRendering": "[0.1.0-alpha.0, )",
           "SharedKernel.DomainEvents": "[0.1.0-alpha.0, )",
           "SharedKernel.InputNormalization": "[0.1.0-alpha.0, )",
           "SharedKernel.Mediator.Abstractions": "[0.1.0-alpha.0, )",

@@ -37,6 +37,7 @@ flowchart LR
     PublicWeb --> catalogApiService
     adminDatabase --> databaseServer
     apiService --> adminDatabase
+    apiService --> brandingApiService
     apiService --> migrationService
     brandingApiService --> catalogDatabase
     brandingApiService --> migrationService

@@ -63,6 +63,7 @@ This diagram is generated from source project references.
 flowchart TB
     ViajantesTurismo_Admin_ApiService[ViajantesTurismo.Admin.ApiService] --> SharedKernel_ApiVersioning_AspNetCore[SharedKernel.ApiVersioning.AspNetCore]
     ViajantesTurismo_Admin_ApiService[ViajantesTurismo.Admin.ApiService] --> SharedKernel_AspNetCore[SharedKernel.AspNetCore]
+    ViajantesTurismo_Admin_ApiService[ViajantesTurismo.Admin.ApiService] --> SharedKernel_Branding[SharedKernel.Branding]
     ViajantesTurismo_Admin_ApiService[ViajantesTurismo.Admin.ApiService] --> SharedKernel_OpenApi[SharedKernel.OpenApi]
     ViajantesTurismo_Admin_ApiService[ViajantesTurismo.Admin.ApiService] --> SharedKernel_Results[SharedKernel.Results]
     ViajantesTurismo_Admin_ApiService[ViajantesTurismo.Admin.ApiService] --> SharedKernel_Results_AspNet[SharedKernel.Results.AspNet]
@@ -71,7 +72,9 @@ flowchart TB
     ViajantesTurismo_Admin_ApiService[ViajantesTurismo.Admin.ApiService] --> ViajantesTurismo_Admin_Contracts_Http[ViajantesTurismo.Admin.Contracts.Http]
     ViajantesTurismo_Admin_ApiService[ViajantesTurismo.Admin.ApiService] --> ViajantesTurismo_Admin_Infrastructure[ViajantesTurismo.Admin.Infrastructure]
     ViajantesTurismo_Admin_ApiService[ViajantesTurismo.Admin.ApiService] --> ViajantesTurismo_ServiceDefaults[ViajantesTurismo.ServiceDefaults]
+    ViajantesTurismo_Admin_Application[ViajantesTurismo.Admin.Application] --> SharedKernel_Branding[SharedKernel.Branding]
     ViajantesTurismo_Admin_Application[ViajantesTurismo.Admin.Application] --> SharedKernel_BuildingBlocks[SharedKernel.BuildingBlocks]
+    ViajantesTurismo_Admin_Application[ViajantesTurismo.Admin.Application] --> SharedKernel_DocumentRendering[SharedKernel.DocumentRendering]
     ViajantesTurismo_Admin_Application[ViajantesTurismo.Admin.Application] --> SharedKernel_DomainEvents[SharedKernel.DomainEvents]
     ViajantesTurismo_Admin_Application[ViajantesTurismo.Admin.Application] --> SharedKernel_InputNormalization[SharedKernel.InputNormalization]
     ViajantesTurismo_Admin_Application[ViajantesTurismo.Admin.Application] --> SharedKernel_Mediator_Abstractions[SharedKernel.Mediator.Abstractions]

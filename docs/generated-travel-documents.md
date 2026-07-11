@@ -125,8 +125,11 @@ Minimum requirements:
 - automated tests for generated HTML or renderer input, plus at least one snapshot or approval test
   for the PDF-generation boundary when a renderer is selected
 
-The first slice may generate one accessible PDF template only. Additional templates should wait until
-the first path proves storage, audit, review, and regeneration behavior.
+The first slice currently emits a deterministic, semantic HTML artifact payload with an opaque `.html`
+object name. The renderer is isolated from draft state so a PDF renderer can replace this payload without
+changing review, finalization, retention, or revision behavior. No PDF library is bundled until a renderer
+is selected and its accessibility boundary is tested. Additional templates should wait until the first path
+proves storage, audit, review, and regeneration behavior.
 
 ## Manual review and finalization workflow
 
@@ -226,7 +229,7 @@ Acceptance target:
 - draft captures template version and source signals
 - staff can edit only approved document fields
 - staff can approve and finalize
-- finalization creates one accessible PDF artifact
+- finalization creates one deterministic accessible HTML artifact payload
 - finalized artifact is immutable
 - regeneration after a source change creates a new draft revision
 - audit records are emitted without document content or PII
@@ -239,7 +242,7 @@ Recommended first slice boundaries:
 - Source: one booking with linked customer, optional companion, tour summary, and payment state.
 - Editable fields: customer-facing greeting, optional trip note, and support contact text.
 - Non-editable fields: booking reference, tour dates, price summary, and payment state.
-- Output: one finalized PDF artifact.
+- Output: one finalized deterministic HTML artifact payload; PDF rendering follows renderer selection.
 
 ## Issue-ready implementation backlog
 

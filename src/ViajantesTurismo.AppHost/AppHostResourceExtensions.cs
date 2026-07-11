@@ -89,17 +89,21 @@ internal static class AppHostResourceExtensions
     /// </summary>
     /// <param name="builder">The distributed application builder.</param>
     /// <param name="adminDatabase">The Admin database resource.</param>
+    /// <param name="brandingApiService">The Branding API resource.</param>
     /// <param name="migrationService">The migration service resource.</param>
     /// <returns>The configured Admin API resource.</returns>
     public static IResourceBuilder<ProjectResource> AddAdminApi(
         this IDistributedApplicationBuilder builder,
         IResourceBuilder<PostgresDatabaseResource> adminDatabase,
+        IResourceBuilder<ProjectResource> brandingApiService,
         IResourceBuilder<ProjectResource> migrationService)
     {
         return builder.AddDevelopmentAspNetCoreProject<ViajantesTurismo_Admin_ApiService>(ResourceNames.Api)
             .WithHttpHealthCheck(EndpointPaths.Health)
             .WithReference(adminDatabase)
+            .WithReference(brandingApiService)
             .WaitFor(adminDatabase)
+            .WaitFor(brandingApiService)
             .WaitForCompletion(migrationService);
     }
 

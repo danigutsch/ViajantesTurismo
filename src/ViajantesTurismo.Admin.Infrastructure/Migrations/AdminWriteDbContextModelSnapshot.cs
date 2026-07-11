@@ -263,6 +263,90 @@ namespace ViajantesTurismo.Admin.Infrastructure.Migrations
                     b.ToTable("Customers");
                 });
 
+            modelBuilder.Entity("ViajantesTurismo.Admin.Domain.Documents.DocumentDraft", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("Audience")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<Guid>("BookingId")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("BrandingLogoUri")
+                        .HasMaxLength(2048)
+                        .HasColumnType("character varying(2048)");
+
+                    b.Property<string>("BrandingName")
+                        .IsRequired()
+                        .HasMaxLength(128)
+                        .HasColumnType("character varying(128)");
+
+                    b.Property<string>("BrandingVersion")
+                        .IsRequired()
+                        .HasMaxLength(64)
+                        .HasColumnType("character varying(64)");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("FinalizedArtifactName")
+                        .HasMaxLength(128)
+                        .HasColumnType("character varying(128)");
+
+                    b.Property<DateTime?>("FinalizedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<Guid?>("ReplacesDocumentId")
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTime>("RetentionExpiresAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<int>("Revision")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("SourceVersion")
+                        .IsRequired()
+                        .HasMaxLength(64)
+                        .HasColumnType("character varying(64)");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("TemplateId")
+                        .IsRequired()
+                        .HasMaxLength(128)
+                        .HasColumnType("character varying(128)");
+
+                    b.Property<string>("TemplateVersion")
+                        .IsRequired()
+                        .HasMaxLength(64)
+                        .HasColumnType("character varying(64)");
+
+                    b.Property<string>("Type")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<DateTime>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("VoidReason")
+                        .HasMaxLength(512)
+                        .HasColumnType("character varying(512)");
+
+                    b.Property<byte[]>("_finalizedArtifactContent")
+                        .HasColumnType("bytea")
+                        .HasColumnName("FinalizedArtifactContent");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("DocumentDrafts");
+                });
+
             modelBuilder.Entity("ViajantesTurismo.Admin.Domain.Tours.Booking", b =>
                 {
                     b.Property<Guid>("Id")
@@ -599,6 +683,49 @@ namespace ViajantesTurismo.Admin.Infrastructure.Migrations
 
                     b.Navigation("PhysicalInfo")
                         .IsRequired();
+                });
+
+            modelBuilder.Entity("ViajantesTurismo.Admin.Domain.Documents.DocumentDraft", b =>
+                {
+                    b.OwnsMany("ViajantesTurismo.Admin.Domain.Documents.DocumentField", "Fields", b1 =>
+                        {
+                            b1.Property<Guid>("DocumentDraftId")
+                                .HasColumnType("uuid");
+
+                            b1.Property<string>("FieldId")
+                                .HasMaxLength(64)
+                                .HasColumnType("character varying(64)");
+
+                            b1.Property<bool>("IsEditable")
+                                .HasColumnType("boolean");
+
+                            b1.Property<string>("Label")
+                                .IsRequired()
+                                .HasMaxLength(128)
+                                .HasColumnType("character varying(128)");
+
+                            b1.Property<string>("PrivacyClassification")
+                                .IsRequired()
+                                .HasColumnType("text");
+
+                            b1.Property<string>("StaffOverride")
+                                .HasMaxLength(4000)
+                                .HasColumnType("character varying(4000)");
+
+                            b1.Property<string>("Value")
+                                .IsRequired()
+                                .HasMaxLength(4000)
+                                .HasColumnType("character varying(4000)");
+
+                            b1.HasKey("DocumentDraftId", "FieldId");
+
+                            b1.ToTable("DocumentDraftFields", (string)null);
+
+                            b1.WithOwner()
+                                .HasForeignKey("DocumentDraftId");
+                        });
+
+                    b.Navigation("Fields");
                 });
 
             modelBuilder.Entity("ViajantesTurismo.Admin.Domain.Tours.Booking", b =>

@@ -11,11 +11,11 @@ var cache = builder.AddCache();
 
 var migrationService = builder.AddMigrationService(adminDatabase, catalogDatabase);
 
-var apiService = builder.AddAdminApi(adminDatabase, migrationService);
+var brandingApiService = builder.AddBrandingApi(catalogDatabase, migrationService);
+
+var apiService = builder.AddAdminApi(adminDatabase, brandingApiService, migrationService);
 
 var catalogApiService = builder.AddCatalogApi(adminDatabase, catalogDatabase, migrationService);
-
-var brandingApiService = builder.AddBrandingApi(catalogDatabase, migrationService);
 
 builder.AddIntegrationEventWorker(adminDatabase, catalogDatabase, migrationService);
 

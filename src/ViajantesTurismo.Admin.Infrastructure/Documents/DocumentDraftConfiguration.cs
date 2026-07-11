@@ -1,0 +1,52 @@
+using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Metadata.Builders;
+using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
+using ViajantesTurismo.Admin.Domain.Documents;
+
+namespace ViajantesTurismo.Admin.Infrastructure.Documents;
+
+/// <summary>
+/// Configures persistence for generated document revisions and their classified fields.
+/// </summary>
+internal sealed class DocumentDraftConfiguration : IEntityTypeConfiguration<DocumentDraft>
+{
+    public void Configure(EntityTypeBuilder<DocumentDraft> entity)
+    {
+        entity.HasKey(document => document.Id);
+        entity.Property(document => document.Id).ValueGeneratedNever();
+        entity.Property(document => document.BookingId).IsRequired();
+        entity.Property(document => document.Type).HasConversion<string>().IsRequired();
+        entity.Property(document => document.Audience).HasConversion<string>().IsRequired();
+        entity.Property(document => document.TemplateId).HasMaxLength(DocumentLimits.MaxTemplateIdLength).IsRequired();
+        entity.Property(document => document.TemplateVersion).HasMaxLength(DocumentLimits.MaxTemplateVersionLength).IsRequired();
+        entity.Property(document => document.Revision).IsRequired();
+        entity.Property(document => document.SourceVersion).HasMaxLength(64).IsRequired();
+        entity.Property(document => document.BrandingVersion).HasMaxLength(64).IsRequired();
+        entity.Property(document => document.BrandingName).HasMaxLength(128).IsRequired();
+        entity.Property(document => document.BrandingLogoUri)
+            .HasConversion(new ValueConverter<Uri?, string?>(
+                uri => uri == null ? null : uri.OriginalString,
+                value => string.IsNullOrEmpty(value) ? null : new Uri(value, UriKind.RelativeOrAbsolute)))
+            .HasMaxLength(2048);
+        entity.Property(document => document.Status).HasConversion<string>().IsRequired();
+        entity.Property(document => document.CreatedAt).IsRequired();
+        entity.Property(document => document.UpdatedAt).IsRequired();
+        entity.Property(document => document.RetentionExpiresAt).IsRequired();
+        entity.Property(document => document.FinalizedArtifactName).HasMaxLength(128);
+        entity.Property(document => document.VoidReason).HasMaxLength(DocumentLimits.MaxVoidReasonLength);
+        entity.Property<byte[]?>("_finalizedArtifactContent").HasColumnName("FinalizedArtifactContent");
+
+        entity.OwnsMany(document => document.Fields, field =>
+        {
+            field.ToTable("DocumentDraftFields");
+            field.WithOwner().HasForeignKey("DocumentDraftId");
+            field.HasKey("DocumentDraftId", nameof(DocumentField.FieldId));
+            field.Property(documentField => documentField.FieldId).HasMaxLength(DocumentLimits.MaxFieldIdLength).IsRequired();
+            field.Property(documentField => documentField.Label).HasMaxLength(DocumentLimits.MaxFieldLabelLength).IsRequired();
+            field.Property(documentField => documentField.Value).HasMaxLength(DocumentLimits.MaxFieldValueLength).IsRequired();
+            field.Property(documentField => documentField.StaffOverride).HasMaxLength(DocumentLimits.MaxFieldValueLength);
+            field.Property(documentField => documentField.PrivacyClassification).HasConversion<string>().IsRequired();
+            field.Property(documentField => documentField.IsEditable).IsRequired();
+        });
+    }
+}
