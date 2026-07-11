@@ -480,6 +480,19 @@ Measured on this worktree on 2026-06-29:
 Low-risk improvement implemented here: local timing can run test slices without coverage collection
 while CI keeps its existing coverage collection and required checks intact.
 
+#### Analyzer and code-fix runner measurements
+
+When measuring analyzer or code-fix runner changes, record the commit SHA, SDK, OS, hardware, power
+mode, command, warm/cold state, exit code, validated diff, median/min/max wall time, and peak RSS.
+Use disposable fixture copies for code-fix runs; never run a bulk code-fix command against a repository
+checkout. The runner opens one workspace, short-circuits on the first fixable diagnostic, and performs
+a complete scan only when reporting terminal unsupported diagnostics. It intentionally does not enable
+Fix All: the code-fix providers retain their rule-specific safety policies.
+
+Use five warm runs per fixture and compare 0, 1, 10, and 100 actionable diagnostics plus a mixed
+unsupported case. Any measured batching or file-scoping regression becomes a separate follow-up rather
+than a speculative runner change.
+
 Recommended fast local path by change type:
 
 | Change type | Fast local path | Full confidence before PR when risk is real |
