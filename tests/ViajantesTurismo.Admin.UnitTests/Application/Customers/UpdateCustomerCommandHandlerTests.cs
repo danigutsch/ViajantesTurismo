@@ -59,11 +59,11 @@ public sealed class UpdateCustomerCommandHandlerTests
         var result = await _sut.Handle(command, CancellationToken.None);
 
         // Assert
-        Assert.True(result.IsSuccess, "Expected successful update.");
+        (result.IsSuccess).ShouldBeTrue("Expected successful update.");
         var updated = await _store.GetById(existing.Id, CancellationToken.None);
-        Assert.NotNull(updated);
-        Assert.Equal("Smith", updated.PersonalInfo.LastName);
-        Assert.Equal("updated@example.com", updated.ContactInfo.Email);
+        _ = (updated).ShouldNotBeNull();
+        (updated.PersonalInfo.LastName).ShouldBe("Smith");
+        (updated.ContactInfo.Email).ShouldBe("updated@example.com");
     }
 
     [Fact]
@@ -105,8 +105,8 @@ public sealed class UpdateCustomerCommandHandlerTests
         var result = await _sut.Handle(command, CancellationToken.None);
 
         // Assert
-        Assert.True(result.IsFailure);
-        Assert.Equal(ResultStatus.NotFound, result.Status);
+        (result.IsFailure).ShouldBeTrue();
+        (result.Status).ShouldBe(ResultStatus.NotFound);
     }
 
     [Fact]
@@ -164,7 +164,7 @@ public sealed class UpdateCustomerCommandHandlerTests
         var result = await _sut.Handle(command, CancellationToken.None);
 
         // Assert
-        Assert.True(result.IsFailure);
-        Assert.Equal(ResultStatus.Conflict, result.Status);
+        (result.IsFailure).ShouldBeTrue();
+        (result.Status).ShouldBe(ResultStatus.Conflict);
     }
 }

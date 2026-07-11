@@ -52,7 +52,7 @@ public sealed class BookingAssertionSteps(BookingContext context, TourContext to
         var result = (context.BookingOperationResult).ShouldNotBeNull();
         (result.IsFailure).ShouldBeTrue();
         var errorDetails = (result.ErrorDetails).ShouldNotBeNull();
-        (errorDetails.Detail).ShouldStartWith(expectedMessagePrefix);
+        (errorDetails.Detail).ShouldStartWith(expectedMessagePrefix, StringComparison.Ordinal);
     }
 
     [Then("the booking room additional cost should be (.*)")]

@@ -56,11 +56,10 @@ This file overrides root guidance where test-specific behavior is needed.
   `actual.ShouldBe(expected)`, `actual.ShouldNotBeNull()`, `items.ShouldContain(expected)`,
   `text.ShouldContain(expected, StringComparison.Ordinal)`, and
   `action.ShouldThrow<InvalidOperationException>()`.
-- Use `TestAssert` only as the low-level repository assertion surface when no extension wrapper exists
-  yet and there is a specific reason not to add one.
-- Direct `Xunit.Assert` is allowed only inside `tests/SharedKernel.Testing.Assertions` wrapper
-  implementation, generated/sample/non-maintained test assets, or a documented temporary migration
-  exception. Do not add new direct `Assert.*` calls to maintained tests.
+- Use `Should*` assertion extensions exclusively. Add an extension only for a current repeated
+  assertion pattern.
+- Direct `Xunit.Assert` is not permitted in test code. The sole implementation boundary is
+  `src/SharedKernel/SharedKernel.Testing.Assertions`, where wrappers delegate to xUnit.
 - Prefer assigning computed values to locals before asserting on them; avoid embedding method calls
   directly inside assertion arguments when that makes debugging harder.
 - Do not use the null-forgiving operator (`!`) in tests to dereference values or feed assertions;

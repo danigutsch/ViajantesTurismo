@@ -17,7 +17,7 @@ public sealed class BookingStatusBadgeTests : BunitContext
 
         // Assert
         var badge = cut.Find("span.badge");
-        Assert.Contains(expectedCssClass, badge.ClassList);
+        (badge.ClassList).ShouldContain(expectedCssClass);
     }
 
     [Fact]
@@ -29,7 +29,7 @@ public sealed class BookingStatusBadgeTests : BunitContext
 
         // Assert
         var badge = cut.Find("span.badge");
-        Assert.Contains("text-dark", badge.ClassList);
+        (badge.ClassList).ShouldContain("text-dark");
     }
 
     [Theory]
@@ -47,7 +47,7 @@ public sealed class BookingStatusBadgeTests : BunitContext
 
         // Assert
         var icon = cut.Find("span.badge i");
-        Assert.Contains(expectedIconClass, icon.ClassList);
+        (icon.ClassList).ShouldContain(expectedIconClass);
     }
 
     [Theory]
@@ -64,7 +64,7 @@ public sealed class BookingStatusBadgeTests : BunitContext
 
         // Assert
         var badge = cut.Find("span.badge");
-        Assert.Contains(status.ToString(), badge.TextContent, StringComparison.Ordinal);
+        (badge.TextContent).ShouldContain(status.ToString(), StringComparison.Ordinal);
     }
 
     [Fact]
@@ -77,7 +77,7 @@ public sealed class BookingStatusBadgeTests : BunitContext
 
         // Assert
         var badge = cut.Find("span");
-        Assert.Contains("badge", badge.ClassList);
+        (badge.ClassList).ShouldContain("badge");
     }
 
     [Fact]
@@ -90,7 +90,7 @@ public sealed class BookingStatusBadgeTests : BunitContext
 
         // Assert
         var icon = cut.Find("i");
-        Assert.Contains("bi", icon.ClassList);
+        (icon.ClassList).ShouldContain("bi");
     }
 
     [Fact]
@@ -107,7 +107,7 @@ public sealed class BookingStatusBadgeTests : BunitContext
                 .Add(p => p.Status, status));
 
             var badge = cut.Find("span.badge");
-            Assert.NotNull(badge);
+            _ = (badge).ShouldNotBeNull();
         }
     }
 
@@ -123,9 +123,9 @@ public sealed class BookingStatusBadgeTests : BunitContext
 
         // Assert
         var badge = cut.Find("span.badge");
-        Assert.Contains("bg-secondary", badge.ClassList);
+        (badge.ClassList).ShouldContain("bg-secondary");
 
         var icon = cut.Find("i");
-        Assert.Contains("bi-question-circle", icon.ClassList);
+        (icon.ClassList).ShouldContain("bi-question-circle");
     }
 }

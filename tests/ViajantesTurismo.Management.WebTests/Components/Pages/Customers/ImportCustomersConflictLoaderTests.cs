@@ -41,11 +41,11 @@ public sealed class ImportCustomersConflictLoaderTests
             mappedFileBytes);
 
         // Assert
-        var conflictState = Assert.Single(conflictStates);
-        Assert.Equal(conflictEmail, conflictState.Email);
-        Assert.Equal(incomingFirstName, conflictState.GetIncomingValue(CustomerImportFieldNames.FirstName));
-        Assert.Equal(existingLastName, conflictState.GetExistingValue(CustomerImportFieldNames.LastName));
-        Assert.Equal(conflictEmail, conflictState.GetExistingValue(CustomerImportFieldNames.Email));
+        var conflictState = (conflictStates).ShouldHaveSingleItem();
+        (conflictState.Email).ShouldBe(conflictEmail);
+        (conflictState.GetIncomingValue(CustomerImportFieldNames.FirstName)).ShouldBe(incomingFirstName);
+        (conflictState.GetExistingValue(CustomerImportFieldNames.LastName)).ShouldBe(existingLastName);
+        (conflictState.GetExistingValue(CustomerImportFieldNames.Email)).ShouldBe(conflictEmail);
     }
 
     [Fact]
@@ -79,9 +79,9 @@ public sealed class ImportCustomersConflictLoaderTests
             mappedFileBytes);
 
         // Assert
-        var conflictState = Assert.Single(conflictStates);
-        Assert.Equal("IncomingFirst", conflictState.GetIncomingValue(CustomerImportFieldNames.FirstName));
-        Assert.Equal(string.Empty, conflictState.GetExistingValue(CustomerImportFieldNames.FirstName));
-        Assert.Equal(string.Empty, conflictState.GetExistingValue(CustomerImportFieldNames.Email));
+        var conflictState = (conflictStates).ShouldHaveSingleItem();
+        (conflictState.GetIncomingValue(CustomerImportFieldNames.FirstName)).ShouldBe("IncomingFirst");
+        (conflictState.GetExistingValue(CustomerImportFieldNames.FirstName)).ShouldBe(string.Empty);
+        (conflictState.GetExistingValue(CustomerImportFieldNames.Email)).ShouldBe(string.Empty);
     }
 }

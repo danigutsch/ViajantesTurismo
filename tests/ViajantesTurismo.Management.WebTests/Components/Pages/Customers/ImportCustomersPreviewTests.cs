@@ -22,7 +22,7 @@ public sealed class ImportCustomersPreviewTests : BunitContext
 
         ImportCustomersTestDomHelper.FindButtonByText(cut, "Preview").Click();
 
-        cut.WaitForAssertion(() => Assert.Contains("Confirm Import", cut.Markup, StringComparison.Ordinal));
+        cut.WaitForAssertion(() => (cut.Markup).ShouldContain("Confirm Import", StringComparison.Ordinal));
     }
 
     [Fact]
@@ -30,7 +30,7 @@ public sealed class ImportCustomersPreviewTests : BunitContext
     {
         var cut = ImportCustomersPreviewTestHelper.GoToPreview(this, CustomerImportCsvTestData.AllCanonicalHeaders + "\n" + CustomerImportCsvTestData.AllCanonicalValues, "my-data.csv");
 
-        Assert.Contains("my-data.csv", cut.Markup, StringComparison.Ordinal);
+        (cut.Markup).ShouldContain("my-data.csv", StringComparison.Ordinal);
     }
 
     [Fact]
@@ -40,7 +40,7 @@ public sealed class ImportCustomersPreviewTests : BunitContext
         var cut = ImportCustomersPreviewTestHelper.GoToPreview(this, csvContent);
 
         var rows = cut.FindAll("table.preview-table tbody tr");
-        Assert.Equal(2, rows.Count);
+        (rows.Count).ShouldBe(2);
     }
 
     [Fact]
@@ -51,7 +51,7 @@ public sealed class ImportCustomersPreviewTests : BunitContext
         var cut = ImportCustomersPreviewTestHelper.GoToPreview(this, csvContent);
 
         var rows = cut.FindAll("table.preview-table tbody tr");
-        Assert.Equal(5, rows.Count);
+        (rows.Count).ShouldBe(5);
     }
 
     [Fact]
@@ -62,7 +62,7 @@ public sealed class ImportCustomersPreviewTests : BunitContext
         var csvContent = CustomerImportCsvTestData.AllCanonicalHeaders + "\n" + rowWithEmptyFirst;
         var cut = ImportCustomersPreviewTestHelper.GoToPreview(this, csvContent);
 
-        Assert.NotEmpty(cut.FindAll("tr.table-warning"));
+        (cut.FindAll("tr.table-warning")).ShouldNotBeEmpty();
     }
 
     [Fact]
@@ -71,7 +71,7 @@ public sealed class ImportCustomersPreviewTests : BunitContext
         var csvContent = CustomerImportCsvTestData.AllCanonicalHeaders + "\n" + CustomerImportCsvTestData.AllCanonicalValues;
         var cut = ImportCustomersPreviewTestHelper.GoToPreview(this, csvContent);
 
-        Assert.Empty(cut.FindAll("tr.table-warning"));
+        (cut.FindAll("tr.table-warning")).ShouldBeEmpty();
     }
 
     [Fact]
@@ -81,8 +81,8 @@ public sealed class ImportCustomersPreviewTests : BunitContext
 
         ImportCustomersTestDomHelper.FindButtonByText(cut, "Back to Mapping").Click();
 
-        Assert.DoesNotContain("Confirm Import", cut.Markup, StringComparison.Ordinal);
-        Assert.Contains("Source Column (CSV)", cut.Markup, StringComparison.Ordinal);
+        (cut.Markup).ShouldNotContain("Confirm Import", StringComparison.Ordinal);
+        (cut.Markup).ShouldContain("Source Column (CSV)", StringComparison.Ordinal);
     }
 
     [Fact]
@@ -94,6 +94,6 @@ public sealed class ImportCustomersPreviewTests : BunitContext
         ImportCustomersTestDomHelper.FindButtonByText(cut, "Confirm Import").Click();
 
         cut.WaitForAssertion(() =>
-            Assert.Contains("1 customer(s) imported successfully", cut.Markup, StringComparison.Ordinal));
+            (cut.Markup).ShouldContain("1 customer(s) imported successfully", StringComparison.Ordinal));
     }
 }

@@ -18,8 +18,8 @@ public class BookingTests(AspireSystemTestFixture fixture) : AspireSystemTestBas
         await BookingWorkflow.NavigateToDetails(createdBookingId);
 
         // Assert
-        Assert.True(ApiBaseUri.IsLoopback);
-        Assert.True(ApiBaseUri.Port > 0);
+        (ApiBaseUri.IsLoopback).ShouldBeTrue();
+        (ApiBaseUri.Port > 0).ShouldBeTrue();
         await Expect(Page.GetByText("Pending").First).ToBeVisibleAsync();
         await Expect(Page.GetByText("Unpaid").First).ToBeVisibleAsync();
         await Expect(Page.GetByText(tour.Name).First).ToBeVisibleAsync();

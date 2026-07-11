@@ -17,11 +17,11 @@ public sealed class EfPublicContentStoreTests
         var saved = await store.GetContent($"  {content.Key}  ", TestContext.Current.CancellationToken);
 
         // Assert
-        Assert.NotNull(saved);
-        Assert.Equal(content.Key, saved.Key);
-        Assert.Equal(content.SourceLanguage, saved.SourceLanguage);
-        Assert.Equal(content.Variants.OrderBy(variant => variant.Language), saved.Variants.OrderBy(variant => variant.Language));
-        Assert.Equal(content.PublicationState, saved.PublicationState);
+        _ = (saved).ShouldNotBeNull();
+        (saved.Key).ShouldBe(content.Key);
+        (saved.SourceLanguage).ShouldBe(content.SourceLanguage);
+        (saved.Variants.OrderBy(variant => variant.Language)).ShouldBe(content.Variants.OrderBy(variant => variant.Language));
+        (saved.PublicationState).ShouldBe(content.PublicationState);
     }
 
     [Fact]
@@ -39,9 +39,9 @@ public sealed class EfPublicContentStoreTests
         var saved = await store.GetContent(replacement.Key, TestContext.Current.CancellationToken);
 
         // Assert
-        Assert.NotNull(saved);
-        Assert.Equal(original.Id, saved.Id);
-        Assert.Equal(replacement.PublicationState, saved.PublicationState);
+        _ = (saved).ShouldNotBeNull();
+        (saved.Id).ShouldBe(original.Id);
+        (saved.PublicationState).ShouldBe(replacement.PublicationState);
     }
 
     [Fact]
@@ -53,7 +53,7 @@ public sealed class EfPublicContentStoreTests
         var original = EditablePublicContentTestFactory.CreateContent(requiresHumanReview: true);
         var replacement = EditablePublicContentTestFactory.CreateContent(requiresHumanReview: false);
         var publish = replacement.Publish();
-        Assert.True(publish.IsSuccess);
+        (publish.IsSuccess).ShouldBeTrue();
 
         // Act
         await store.SaveContent(original, TestContext.Current.CancellationToken);
@@ -61,8 +61,8 @@ public sealed class EfPublicContentStoreTests
         var saved = await store.GetContent(replacement.Key, TestContext.Current.CancellationToken);
 
         // Assert
-        Assert.NotNull(saved);
-        Assert.Equal(replacement.PublicationState, saved.PublicationState);
+        _ = (saved).ShouldNotBeNull();
+        (saved.PublicationState).ShouldBe(replacement.PublicationState);
     }
 
     [Fact]
@@ -78,8 +78,8 @@ public sealed class EfPublicContentStoreTests
         var saved = await store.GetContent("HOME.HERO", TestContext.Current.CancellationToken);
 
         // Assert
-        Assert.NotNull(saved);
-        Assert.Equal(content.Id, saved.Id);
+        _ = (saved).ShouldNotBeNull();
+        (saved.Id).ShouldBe(content.Id);
     }
 
     [Fact]
@@ -97,10 +97,7 @@ public sealed class EfPublicContentStoreTests
         var saved = await store.ListContent(TestContext.Current.CancellationToken);
 
         // Assert
-        Assert.Collection(
-            saved,
-            content => Assert.Equal(first.Key, content.Key),
-            content => Assert.Equal(second.Key, content.Key));
+        (saved).ShouldMatchCollection(content => (content.Key).ShouldBe(first.Key), content => (content.Key).ShouldBe(second.Key));
     }
 
 }

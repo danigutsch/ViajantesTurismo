@@ -9,6 +9,6 @@ internal static class TourUpdateGuardTestHelpers
     {
         var result = BookingTestHelpers.AddSingleCustomerBooking(tour);
 
-        Assert.True(result.IsSuccess, "Failed to add booking to tour for test setup.");
+        (result.IsSuccess).ShouldBeTrue("Failed to add booking to tour for test setup.");
     }
 }

@@ -25,10 +25,10 @@ public sealed class ImportCustomersCsvProcessorTests
         var summary = ImportCustomersCsvProcessor.BuildImportSummary(result, conflictStates);
 
         // Assert
-        Assert.Equal(1, summary.CreatedCount);
-        Assert.Equal(2, summary.UpdatedCount);
-        Assert.Equal(1, summary.SkippedCount);
-        Assert.Equal(2, summary.FailedCount);
+        (summary.CreatedCount).ShouldBe(1);
+        (summary.UpdatedCount).ShouldBe(2);
+        (summary.SkippedCount).ShouldBe(1);
+        (summary.FailedCount).ShouldBe(2);
     }
 
     [Fact]
@@ -44,12 +44,12 @@ public sealed class ImportCustomersCsvProcessorTests
         var dataUri = ImportCustomersCsvProcessor.BuildErrorReportDataUri(errorRows);
 
         // Assert
-        Assert.NotNull(dataUri);
+        _ = (dataUri).ShouldNotBeNull();
         var csvPayload = Uri.UnescapeDataString(dataUri.Split(',', 2)[1]);
-        Assert.Contains("LineNumber,Field,Message,Email", csvPayload, StringComparison.Ordinal);
-        Assert.Contains("\"First,Name\"", csvPayload, StringComparison.Ordinal);
-        Assert.Contains("\"Value \"\"quoted\"\"", csvPayload, StringComparison.Ordinal);
-        Assert.Contains("bad@example.com", csvPayload, StringComparison.Ordinal);
+        (csvPayload).ShouldContain("LineNumber,Field,Message,Email", StringComparison.Ordinal);
+        (csvPayload).ShouldContain("\"First,Name\"", StringComparison.Ordinal);
+        (csvPayload).ShouldContain("\"Value \"\"quoted\"\"", StringComparison.Ordinal);
+        (csvPayload).ShouldContain("bad@example.com", StringComparison.Ordinal);
     }
 
     [Fact]
@@ -87,7 +87,7 @@ public sealed class ImportCustomersCsvProcessorTests
         // Assert
         var committedCsv = Encoding.UTF8.GetString(mergedBytes);
         var committedLines = committedCsv.Split(['\r', '\n'], StringSplitOptions.RemoveEmptyEntries);
-        Assert.Equal(2, committedLines.Length);
+        (committedLines.Length).ShouldBe(2);
 
         var committedHeaders = committedLines[0].Split(',');
         var committedValues = committedLines[1].Split(',');
@@ -95,8 +95,8 @@ public sealed class ImportCustomersCsvProcessorTests
             .Select((header, index) => new { header, index })
             .ToDictionary(item => item.header, item => item.index, StringComparer.Ordinal);
 
-        Assert.Equal("IncomingFirst", committedValues[headerIndexes["FirstName"]]);
-        Assert.Equal("ExistingLast", committedValues[headerIndexes["LastName"]]);
-        Assert.Equal("mixed@example.com", committedValues[headerIndexes["Email"]]);
+        (committedValues[headerIndexes["FirstName"]]).ShouldBe("IncomingFirst");
+        (committedValues[headerIndexes["LastName"]]).ShouldBe("ExistingLast");
+        (committedValues[headerIndexes["Email"]]).ShouldBe("mixed@example.com");
     }
 }

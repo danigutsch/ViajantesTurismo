@@ -11,7 +11,7 @@ internal static class BookingDomainTestDataFactory
         var tour = EntityBuilders.BuildTour();
         var bookingResult = BookingTestHelpers.AddSingleCustomerBooking(tour, options);
 
-        Assert.True(bookingResult.IsSuccess, failureMessage ?? "Failed to create single booking for test setup.");
+        (bookingResult.IsSuccess).ShouldBeTrue(failureMessage ?? "Failed to create single booking for test setup.");
         return bookingResult.Value;
     }
 
@@ -20,7 +20,7 @@ internal static class BookingDomainTestDataFactory
         var tour = EntityBuilders.BuildTour();
         var bookingResult = BookingTestHelpers.AddDoubleCustomerBooking(tour, options);
 
-        Assert.True(bookingResult.IsSuccess, failureMessage ?? "Failed to create double booking for test setup.");
+        (bookingResult.IsSuccess).ShouldBeTrue(failureMessage ?? "Failed to create double booking for test setup.");
         return bookingResult.Value;
     }
 
@@ -29,7 +29,7 @@ internal static class BookingDomainTestDataFactory
         var tour = EntityBuilders.BuildTour();
         var bookingResult = BookingTestHelpers.AddSingleCustomerBooking(tour, options);
 
-        Assert.True(bookingResult.IsSuccess, failureMessage ?? "Failed to create single booking for test setup.");
+        (bookingResult.IsSuccess).ShouldBeTrue(failureMessage ?? "Failed to create single booking for test setup.");
         return (tour, bookingResult.Value);
     }
 
@@ -38,7 +38,7 @@ internal static class BookingDomainTestDataFactory
         var tour = EntityBuilders.BuildTour();
         var bookingResult = BookingTestHelpers.AddDoubleCustomerBooking(tour, options);
 
-        Assert.True(bookingResult.IsSuccess, failureMessage ?? "Failed to create double booking for test setup.");
+        (bookingResult.IsSuccess).ShouldBeTrue(failureMessage ?? "Failed to create double booking for test setup.");
         return (tour, bookingResult.Value);
     }
 
@@ -49,7 +49,7 @@ internal static class BookingDomainTestDataFactory
             BikeType.EBike,
             200m);
 
-        Assert.True(companionCustomerResult.IsSuccess, "Failed to create companion customer for test setup.");
+        (companionCustomerResult.IsSuccess).ShouldBeTrue("Failed to create companion customer for test setup.");
         return companionCustomerResult.Value;
     }
 

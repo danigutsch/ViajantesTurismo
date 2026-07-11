@@ -357,20 +357,15 @@ Use the repository-owned assertion package across maintained tests:
 the policy for maintained test code. If a test project does not already reference the package,
 add the project reference and a global `<Using Include="SharedKernel.Testing.Assertions" />`
 (or a file `using`) rather than adding direct `Xunit.Assert` calls. `SKTEST006` reports direct
-`Xunit.Assert` calls, and new or touched tests must not add them unless there is a specific
-documented reason that the wrapper surface cannot express the assertion.
+`Xunit.Assert` calls, which are not permitted in test code.
 
 Use extension-style wrapper APIs when they exist, such as `actual.ShouldBe(expected)`,
 `actual.ShouldNotBeNull()`, `items.ShouldContain(expected)`,
 `text.ShouldContain(expected, StringComparison.Ordinal)`, and
-`action.ShouldThrow<InvalidOperationException>()`. Use `TestAssert` only as the low-level
-repository assertion surface when no extension exists yet. Direct `Xunit.Assert` is allowed
-inside `src/SharedKernel/SharedKernel.Testing.Assertions` because that project implements the wrappers.
-Generated, sample, or explicitly non-maintained test assets may keep direct assertions until
-they are regenerated or brought under maintenance. A documented temporary migration exception
-may also keep direct assertions while a broader test area is being converted. Add new extension
-wrappers only for assertion patterns with repeated callers; do not introduce an external fluent
-assertion package.
+`action.ShouldThrow<InvalidOperationException>()`. Use `Should*` assertion extensions exclusively.
+The sole `Xunit.Assert` implementation boundary is `src/SharedKernel/SharedKernel.Testing.Assertions`,
+where wrappers delegate to xUnit. Add new extension wrappers only for assertion patterns with repeated
+callers; do not introduce an external fluent assertion package.
 
 Keep method calls and computed values out of assertion arguments when practical.
 Assign them to local variables first so failures are easier to inspect while debugging.

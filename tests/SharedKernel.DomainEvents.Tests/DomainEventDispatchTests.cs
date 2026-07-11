@@ -1,6 +1,5 @@
 using SharedKernel.Domain;
 using SharedKernel.Mediator;
-using SharedKernel.Testing.Assertions;
 
 namespace SharedKernel.DomainEvents.Tests;
 

@@ -31,9 +31,9 @@ public sealed class MedicalPageTests : BunitContext
         var allergiesValue = cut.Find("#allergies").GetAttribute("value") ?? cut.Find("#allergies").TextContent.Trim();
         var additionalInfoValue = cut.Find("#additionalInfo").GetAttribute("value") ?? cut.Find("#additionalInfo").TextContent.Trim();
 
-        Assert.Equal("Peanuts", allergiesValue);
-        Assert.Equal("Carries an epinephrine injector.", additionalInfoValue);
-        Assert.Equal(8, _state.CurrentStep);
+        (allergiesValue).ShouldBe("Peanuts");
+        (additionalInfoValue).ShouldBe("Carries an epinephrine injector.");
+        (_state.CurrentStep).ShouldBe(8);
     }
 
     [Fact]
@@ -49,11 +49,11 @@ public sealed class MedicalPageTests : BunitContext
         await cut.InvokeAsync(async () => await cut.Find("form").SubmitAsync());
 
         // Assert
-        await cut.WaitForAssertionAsync(() => Assert.EndsWith("/customers/create/review", navigationManager.Uri, StringComparison.Ordinal));
-        Assert.NotNull(_state.MedicalInfo);
-        Assert.Equal("Peanuts", _state.MedicalInfo!.Allergies);
-        Assert.Equal("Carries an epinephrine injector.", _state.MedicalInfo.AdditionalInfo);
-        Assert.Equal(8, _state.CurrentStep);
+        await cut.WaitForAssertionAsync(() => (navigationManager.Uri).ShouldEndWith("/customers/create/review", StringComparison.Ordinal));
+        (_state.MedicalInfo).ShouldNotBeNull();
+        (_state.MedicalInfo!.Allergies).ShouldBe("Peanuts");
+        (_state.MedicalInfo.AdditionalInfo).ShouldBe("Carries an epinephrine injector.");
+        (_state.CurrentStep).ShouldBe(8);
     }
 
     [Fact]
@@ -68,7 +68,7 @@ public sealed class MedicalPageTests : BunitContext
         await cut.InvokeAsync(() => backButton.Click());
 
         // Assert
-        await cut.WaitForAssertionAsync(() => Assert.EndsWith("/customers/create/emergency-contact", navigationManager.Uri, StringComparison.Ordinal));
-        Assert.Equal(7, _state.CurrentStep);
+        await cut.WaitForAssertionAsync(() => (navigationManager.Uri).ShouldEndWith("/customers/create/emergency-contact", StringComparison.Ordinal));
+        (_state.CurrentStep).ShouldBe(7);
     }
 }

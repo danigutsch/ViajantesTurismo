@@ -24,8 +24,7 @@ public sealed class DddConventionsTests
     public void Entities_must_be_sealed()
     {
         var violatingTypes = EntityTypes.Where(type => !type.IsSealed).ToArray();
-        Assert.False(
-            violatingTypes.Length != 0,
+        (violatingTypes.Length != 0).ShouldBeFalse(
             $"Expected all entities to be sealed, but found: {string.Join(", ", violatingTypes.Select(t => t.FullName))}");
     }
 
@@ -42,8 +41,7 @@ public sealed class DddConventionsTests
                 type.Namespace.StartsWith(domainNamespace, StringComparison.Ordinal)))
             .ToArray();
 
-        Assert.False(
-            violatingTypes.Length != 0,
+        (violatingTypes.Length != 0).ShouldBeFalse(
             $"Expected all entities to reside in one of [{string.Join(", ", domainNamespaces)}], but found: {string.Join(", ", violatingTypes.Select(t => t.FullName))}");
     }
 
@@ -51,8 +49,7 @@ public sealed class DddConventionsTests
     public void ValueObjects_must_be_sealed()
     {
         var violatingTypes = ValueObjectTypes.Where(type => !type.IsSealed).ToArray();
-        Assert.False(
-            violatingTypes.Length != 0,
+        (violatingTypes.Length != 0).ShouldBeFalse(
             $"Expected all value objects to be sealed, but found: {string.Join(", ", violatingTypes.Select(t => t.FullName))}");
     }
 
@@ -65,8 +62,7 @@ public sealed class DddConventionsTests
             .Select(property => $"{property.DeclaringType!.FullName}.{property.Name}")
             .ToArray();
 
-        Assert.False(
-            violatingTypes.Length != 0,
+        (violatingTypes.Length != 0).ShouldBeFalse(
             $"Expected value objects to expose immutable state, but found public setters on: {string.Join(", ", violatingTypes)}");
     }
 

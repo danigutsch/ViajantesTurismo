@@ -16,6 +16,6 @@ public sealed class BookingBaselineIsolationTests(AspireSerialIntegrationTestFix
         var bookings = await Client.GetAllBookingsAndRead(cancellationToken);
 
         // Assert
-        Assert.Empty(bookings);
+        (bookings).ShouldBeEmpty();
     }
 }

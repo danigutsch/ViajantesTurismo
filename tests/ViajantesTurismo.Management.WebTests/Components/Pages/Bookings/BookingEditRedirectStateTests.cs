@@ -16,8 +16,8 @@ public sealed class BookingEditRedirectStateTests
         await state.Reset();
 
         // Assert
-        Assert.False(state.IsPending);
-        Assert.False(state.IsCancelled);
+        (state.IsPending).ShouldBeFalse();
+        (state.IsCancelled).ShouldBeFalse();
     }
 
     [Fact]
@@ -30,9 +30,9 @@ public sealed class BookingEditRedirectStateTests
         var token = state.BeginPendingRedirect();
 
         // Assert
-        Assert.True(state.IsPending);
-        Assert.False(state.IsCancelled);
-        Assert.True(state.CanNavigate(token));
+        (state.IsPending).ShouldBeTrue();
+        (state.IsCancelled).ShouldBeFalse();
+        (state.CanNavigate(token)).ShouldBeTrue();
     }
 
     [Fact]
@@ -46,8 +46,8 @@ public sealed class BookingEditRedirectStateTests
         await state.CancelPendingRedirect();
 
         // Assert
-        Assert.False(state.IsPending);
-        Assert.True(state.IsCancelled);
-        Assert.False(state.CanNavigate(token));
+        (state.IsPending).ShouldBeFalse();
+        (state.IsCancelled).ShouldBeTrue();
+        (state.CanNavigate(token)).ShouldBeFalse();
     }
 }

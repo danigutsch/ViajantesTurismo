@@ -31,9 +31,9 @@ public sealed class IdentificationPageTests : BunitContext
         await cut.InvokeAsync(() => Task.CompletedTask);
 
         // Assert
-        Assert.Equal("123456789", cut.Find("#nationalId").GetAttribute("value"));
-        Assert.Contains("Brazil", cut.Markup, StringComparison.Ordinal);
-        Assert.Equal(2, _state.CurrentStep);
+        (cut.Find("#nationalId").GetAttribute("value")).ShouldBe("123456789");
+        (cut.Markup).ShouldContain("Brazil", StringComparison.Ordinal);
+        (_state.CurrentStep).ShouldBe(2);
     }
 
     [Fact]
@@ -51,11 +51,11 @@ public sealed class IdentificationPageTests : BunitContext
         await cut.InvokeAsync(async () => await cut.Find("form").SubmitAsync());
 
         // Assert
-        await cut.WaitForAssertionAsync(() => Assert.EndsWith("/customers/create/contact", navigationManager.Uri, StringComparison.Ordinal));
-        Assert.NotNull(_state.IdentificationInfo);
-        Assert.Equal("123456789", _state.IdentificationInfo!.NationalId);
-        Assert.Equal("Brazil", _state.IdentificationInfo.IdNationality);
-        Assert.Equal(3, _state.CurrentStep);
+        await cut.WaitForAssertionAsync(() => (navigationManager.Uri).ShouldEndWith("/customers/create/contact", StringComparison.Ordinal));
+        (_state.IdentificationInfo).ShouldNotBeNull();
+        (_state.IdentificationInfo!.NationalId).ShouldBe("123456789");
+        (_state.IdentificationInfo.IdNationality).ShouldBe("Brazil");
+        (_state.CurrentStep).ShouldBe(3);
     }
 
     [Fact]
@@ -71,7 +71,7 @@ public sealed class IdentificationPageTests : BunitContext
         await cut.InvokeAsync(() => backButton.Click());
 
         // Assert
-        await cut.WaitForAssertionAsync(() => Assert.EndsWith("/customers/create/personal-info", navigationManager.Uri, StringComparison.Ordinal));
-        Assert.Equal(1, _state.CurrentStep);
+        await cut.WaitForAssertionAsync(() => (navigationManager.Uri).ShouldEndWith("/customers/create/personal-info", StringComparison.Ordinal));
+        (_state.CurrentStep).ShouldBe(1);
     }
 }

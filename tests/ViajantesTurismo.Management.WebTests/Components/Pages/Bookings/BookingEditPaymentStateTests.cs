@@ -17,8 +17,8 @@ public sealed class BookingEditPaymentStateTests
         state.ShowForm();
 
         // Assert
-        Assert.True(state.IsFormVisible);
-        Assert.Null(state.FormModel.Amount);
+        (state.IsFormVisible).ShouldBeTrue();
+        (state.FormModel.Amount).ShouldBeNull();
     }
 
     [Fact]
@@ -32,7 +32,7 @@ public sealed class BookingEditPaymentStateTests
         state.HideForm();
 
         // Assert
-        Assert.False(state.IsFormVisible);
+        (state.IsFormVisible).ShouldBeFalse();
     }
 
     [Fact]
@@ -45,12 +45,12 @@ public sealed class BookingEditPaymentStateTests
         state.BeginSubmission();
 
         // Assert
-        Assert.True(state.IsSubmitting);
+        (state.IsSubmitting).ShouldBeTrue();
 
         // Act
         state.EndSubmission();
 
         // Assert
-        Assert.False(state.IsSubmitting);
+        (state.IsSubmitting).ShouldBeFalse();
     }
 }

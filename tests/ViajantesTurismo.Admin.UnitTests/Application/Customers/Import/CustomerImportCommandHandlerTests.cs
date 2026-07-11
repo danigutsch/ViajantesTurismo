@@ -26,9 +26,9 @@ public sealed class CustomerImportCommandHandlerTests
         var result = await _sut.Handle(command, CancellationToken.None);
 
         // Assert
-        Assert.Equal(1, result.SuccessCount);
-        Assert.Equal(0, result.ErrorCount);
-        Assert.Equal(0, _uow.SaveEntitiesCallCount);
+        (result.SuccessCount).ShouldBe(1);
+        (result.ErrorCount).ShouldBe(0);
+        (_uow.SaveEntitiesCallCount).ShouldBe(0);
     }
 
     [Fact]
@@ -41,10 +41,10 @@ public sealed class CustomerImportCommandHandlerTests
         var result = await _sut.Handle(command, CancellationToken.None);
 
         // Assert
-        Assert.Equal(1, result.SuccessCount);
-        Assert.Equal(0, result.ErrorCount);
-        Assert.Equal(1, _uow.SaveEntitiesCallCount);
-        Assert.True(await _fakeCustomerStore.EmailExists("imported@example.com", CancellationToken.None));
+        (result.SuccessCount).ShouldBe(1);
+        (result.ErrorCount).ShouldBe(0);
+        (_uow.SaveEntitiesCallCount).ShouldBe(1);
+        (await _fakeCustomerStore.EmailExists("imported@example.com", CancellationToken.None)).ShouldBeTrue();
     }
 
     [Fact]
@@ -63,8 +63,8 @@ public sealed class CustomerImportCommandHandlerTests
         var result = await _sut.Handle(command, CancellationToken.None);
 
         // Assert
-        Assert.Equal(1, result.SuccessCount);
-        Assert.Equal(1, result.ErrorCount);
+        (result.SuccessCount).ShouldBe(1);
+        (result.ErrorCount).ShouldBe(1);
     }
 
     [Fact]
@@ -81,9 +81,9 @@ public sealed class CustomerImportCommandHandlerTests
         var result = await sut.Handle(command, CancellationToken.None);
 
         // Assert
-        Assert.Equal(0, result.SuccessCount);
-        Assert.Equal(1, result.ErrorCount);
-        Assert.Equal(0, _uow.SaveEntitiesCallCount);
+        (result.SuccessCount).ShouldBe(0);
+        (result.ErrorCount).ShouldBe(1);
+        (_uow.SaveEntitiesCallCount).ShouldBe(0);
     }
 
 }

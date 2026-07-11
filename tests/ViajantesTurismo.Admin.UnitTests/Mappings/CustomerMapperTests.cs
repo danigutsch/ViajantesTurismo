@@ -18,7 +18,7 @@ public class CustomerMapperTests
             var mappedEnum = CustomerMapper.MapToBikeTypeDto(domainValue);
 
             // Assert
-            Assert.True(Enum.IsDefined(mappedEnum));
+            (Enum.IsDefined(mappedEnum)).ShouldBeTrue();
         }
     }
 
@@ -34,7 +34,7 @@ public class CustomerMapperTests
             var mappedEnum = CustomerMapper.MapToBedType(dtoValue);
 
             // Assert
-            Assert.True(Enum.IsDefined(mappedEnum));
+            (Enum.IsDefined(mappedEnum)).ShouldBeTrue();
         }
     }
 
@@ -46,8 +46,8 @@ public class CustomerMapperTests
 
         // Act
         // Assert
-        var exception = Assert.Throws<ArgumentOutOfRangeException>(() => CustomerMapper.MapToBikeTypeDto(invalidValue));
-        Assert.Contains("Invalid bike type value", exception.Message, StringComparison.Ordinal);
+        var exception = ((Func<object?>)(() => CustomerMapper.MapToBikeTypeDto(invalidValue))).ShouldThrow<ArgumentOutOfRangeException>();
+        (exception.Message).ShouldContain("Invalid bike type value", StringComparison.Ordinal);
     }
 
     [Fact]
@@ -58,7 +58,7 @@ public class CustomerMapperTests
 
         // Act
         // Assert
-        var exception = Assert.Throws<ArgumentOutOfRangeException>(() => CustomerMapper.MapToBedType(invalidValue));
-        Assert.Contains("Invalid bed type value", exception.Message, StringComparison.Ordinal);
+        var exception = ((Func<object?>)(() => CustomerMapper.MapToBedType(invalidValue))).ShouldThrow<ArgumentOutOfRangeException>();
+        (exception.Message).ShouldContain("Invalid bed type value", StringComparison.Ordinal);
     }
 }

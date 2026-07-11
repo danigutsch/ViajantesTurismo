@@ -1,5 +1,4 @@
 using SharedKernel.AI;
-using SharedKernel.Testing.Assertions;
 using ViajantesTurismo.Catalog.Application.Media;
 using ViajantesTurismo.Catalog.Domain.PublicContent;
 

@@ -1,4 +1,3 @@
-using SharedKernel.Testing.Assertions;
 using ViajantesTurismo.Catalog.Application.Media;
 
 namespace ViajantesTurismo.Catalog.UnitTests;

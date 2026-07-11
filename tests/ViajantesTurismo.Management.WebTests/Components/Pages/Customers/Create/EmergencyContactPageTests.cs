@@ -28,9 +28,9 @@ public sealed class EmergencyContactPageTests : BunitContext
         var cut = Render<EmergencyContact>();
 
         // Assert
-        Assert.Equal("Maria Silva", cut.Find("#name").GetAttribute("value"));
-        Assert.Equal("+55 11 98888-8888", cut.Find("#mobile").GetAttribute("value"));
-        Assert.Equal(7, _state.CurrentStep);
+        (cut.Find("#name").GetAttribute("value")).ShouldBe("Maria Silva");
+        (cut.Find("#mobile").GetAttribute("value")).ShouldBe("+55 11 98888-8888");
+        (_state.CurrentStep).ShouldBe(7);
     }
 
     [Fact]
@@ -46,11 +46,11 @@ public sealed class EmergencyContactPageTests : BunitContext
         await cut.InvokeAsync(async () => await cut.Find("form").SubmitAsync());
 
         // Assert
-        await cut.WaitForAssertionAsync(() => Assert.EndsWith("/customers/create/medical", navigationManager.Uri, StringComparison.Ordinal));
-        Assert.NotNull(_state.EmergencyContact);
-        Assert.Equal("Maria Silva", _state.EmergencyContact!.Name);
-        Assert.Equal("+55 11 98888-8888", _state.EmergencyContact.Mobile);
-        Assert.Equal(8, _state.CurrentStep);
+        await cut.WaitForAssertionAsync(() => (navigationManager.Uri).ShouldEndWith("/customers/create/medical", StringComparison.Ordinal));
+        (_state.EmergencyContact).ShouldNotBeNull();
+        (_state.EmergencyContact!.Name).ShouldBe("Maria Silva");
+        (_state.EmergencyContact.Mobile).ShouldBe("+55 11 98888-8888");
+        (_state.CurrentStep).ShouldBe(8);
     }
 
     [Fact]
@@ -65,7 +65,7 @@ public sealed class EmergencyContactPageTests : BunitContext
         await cut.InvokeAsync(() => backButton.Click());
 
         // Assert
-        await cut.WaitForAssertionAsync(() => Assert.EndsWith("/customers/create/accommodation", navigationManager.Uri, StringComparison.Ordinal));
-        Assert.Equal(6, _state.CurrentStep);
+        await cut.WaitForAssertionAsync(() => (navigationManager.Uri).ShouldEndWith("/customers/create/accommodation", StringComparison.Ordinal));
+        (_state.CurrentStep).ShouldBe(6);
     }
 }

@@ -59,7 +59,7 @@ internal sealed class BookingsListPage(
             var bookingIndex = FindBookingIndex(allBookings, bookingId);
 
             await navigateTo("/bookings");
-            Assert.Equal("Bookings", await page.TitleAsync());
+            (await page.TitleAsync()).ShouldBe("Bookings");
             await NavigateToPageContaining(bookingIndex);
 
             var row = page.Locator($"table tbody tr:has(a[href='{href}'])");
@@ -109,7 +109,7 @@ internal sealed class BookingsListPage(
         {
             var firstBookingLink = page.Locator("table tbody tr a[href^='/bookings/']").First;
             var previousHref = await firstBookingLink.GetAttributeAsync("href");
-            Assert.NotNull(previousHref);
+            _ = (previousHref).ShouldNotBeNull();
 
             await nextButton.ClickAsync();
             await page.WaitForFunctionAsync(

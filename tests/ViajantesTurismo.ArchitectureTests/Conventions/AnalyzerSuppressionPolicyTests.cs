@@ -21,8 +21,7 @@ public sealed partial class AnalyzerSuppressionPolicyTests
             .SelectMany(path => AnalyzerSuppressionPolicyTestsHelpers.FindNoWarnEntries(repositoryRoot, path))
             .ToArray();
 
-        Assert.True(
-            noWarnEntries.Length == 0,
+        (noWarnEntries.Length == 0).ShouldBeTrue(
             $"Expected project and props files not to use NoWarn entries, but found:{Environment.NewLine}{string.Join(Environment.NewLine, noWarnEntries)}");
     }
 
@@ -37,8 +36,7 @@ public sealed partial class AnalyzerSuppressionPolicyTests
             .Select(path => Path.GetRelativePath(repositoryRoot, path).Replace('\\', '/'))
             .ToArray();
 
-        Assert.True(
-            filesWithPragmas.Length == 0,
+        (filesWithPragmas.Length == 0).ShouldBeTrue(
             $"Expected hand-written source not to use pragma warning suppressions, but found:{Environment.NewLine}{string.Join(Environment.NewLine, filesWithPragmas)}");
     }
 
@@ -53,8 +51,7 @@ public sealed partial class AnalyzerSuppressionPolicyTests
             .Where(path => !ApprovedSuppressMessageFiles.Contains(path))
             .ToArray();
 
-        Assert.True(
-            filesWithSuppressMessage.Length == 0,
+        (filesWithSuppressMessage.Length == 0).ShouldBeTrue(
             $"Expected SuppressMessage attributes to stay on the approved analyzer policy allowlist, but found:{Environment.NewLine}{string.Join(Environment.NewLine, filesWithSuppressMessage)}");
     }
 

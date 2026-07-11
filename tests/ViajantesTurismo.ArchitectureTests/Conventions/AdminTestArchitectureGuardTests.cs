@@ -18,12 +18,12 @@ public sealed partial class AdminTestArchitectureGuardTests
         var uiIntegrationScaffoldTestPath = Path.Combine(repositoryRoot, "tests", "ViajantesTurismo.Admin.UiIntegrationTests", "ScaffoldTests.cs");
         var uiIntegrationScaffoldTestText = File.ReadAllText(uiIntegrationScaffoldTestPath);
 
-        Assert.Contains("This file is the canonical quick-reference for the Admin test taxonomy.", guideText, StringComparison.Ordinal);
-        Assert.Contains("docs/TEST_GUIDELINES.md", guideText, StringComparison.Ordinal);
-        Assert.Contains("AdminTestArchitectureGuardTests", architectureReadmeText, StringComparison.Ordinal);
-        Assert.Contains("tests/README.md", architectureReadmeText, StringComparison.Ordinal);
-        Assert.Contains("Keep it scaffold-only until a concrete Admin route-composition scenario clearly belongs here", uiIntegrationReadmeText, StringComparison.Ordinal);
-        Assert.Contains("Project_remains_a_scaffold_until_a_real_admin_UI_integration_slice_exists", uiIntegrationScaffoldTestText, StringComparison.Ordinal);
+        guideText.ShouldContain("This file is the canonical quick-reference for the Admin test taxonomy.", StringComparison.Ordinal);
+        guideText.ShouldContain("docs/TEST_GUIDELINES.md", StringComparison.Ordinal);
+        architectureReadmeText.ShouldContain("AdminTestArchitectureGuardTests", StringComparison.Ordinal);
+        architectureReadmeText.ShouldContain("tests/README.md", StringComparison.Ordinal);
+        uiIntegrationReadmeText.ShouldContain("Keep it scaffold-only until a concrete Admin route-composition scenario clearly belongs here", StringComparison.Ordinal);
+        uiIntegrationScaffoldTestText.ShouldContain("Project_remains_a_scaffold_until_a_real_admin_UI_integration_slice_exists", StringComparison.Ordinal);
     }
 
     [Fact]
@@ -140,8 +140,7 @@ public sealed partial class AdminTestArchitectureGuardTests
             .Select(path => Path.GetRelativePath(GetRepositoryRoot(), path).Replace('\\', '/'))
             .ToArray();
 
-        Assert.True(
-            violatingFiles.Length == 0,
+        (violatingFiles.Length == 0).ShouldBeTrue(
             $"Expected serial collection ownership to stay in base-class infrastructure, but found direct usage in:{Environment.NewLine}{string.Join(Environment.NewLine, violatingFiles)}");
     }
 
@@ -157,8 +156,7 @@ public sealed partial class AdminTestArchitectureGuardTests
             .SelectMany(FindUndocumentedSerialTests)
             .ToArray();
 
-        Assert.True(
-            undocumentedSerialTests.Length == 0,
+        (undocumentedSerialTests.Length == 0).ShouldBeTrue(
             $"Expected each serial E2E test to declare [SerialE2EReason], but found:{Environment.NewLine}{string.Join(Environment.NewLine, undocumentedSerialTests)}");
     }
 
@@ -174,8 +172,7 @@ public sealed partial class AdminTestArchitectureGuardTests
             .SelectMany(FindUndocumentedSerialCollectionDefinitions)
             .ToArray();
 
-        Assert.True(
-            undocumentedSerialDefinitions.Length == 0,
+        (undocumentedSerialDefinitions.Length == 0).ShouldBeTrue(
             $"Expected every DisableParallelization = true collection definition to include a nearby [SerialTestJustification] attribute, but found:{Environment.NewLine}{string.Join(Environment.NewLine, undocumentedSerialDefinitions)}");
     }
 
@@ -194,8 +191,7 @@ public sealed partial class AdminTestArchitectureGuardTests
             .SelectMany(path => FindGenericServiceProviderReachThrough(path))
             .ToArray();
 
-        Assert.False(
-            offendingMembers.Length != 0,
+        (offendingMembers.Length != 0).ShouldBeFalse(
             $"Expected Admin hosted test infrastructure to avoid public generic service-provider reach-through, but found:{Environment.NewLine}{string.Join(Environment.NewLine, offendingMembers)}");
     }
 
@@ -208,8 +204,7 @@ public sealed partial class AdminTestArchitectureGuardTests
             .SelectMany(FindRawServiceProviderPlumbingInTestMethods)
             .ToArray();
 
-        Assert.False(
-            offendingLines.Length != 0,
+        (offendingLines.Length != 0).ShouldBeFalse(
             $"Expected concrete test methods to use typed helpers instead of raw DI/scope plumbing, but found:{Environment.NewLine}{string.Join(Environment.NewLine, offendingLines)}");
     }
 
@@ -222,8 +217,7 @@ public sealed partial class AdminTestArchitectureGuardTests
             .SelectMany(FindHardcodedCanonicalTraitNames)
             .ToArray();
 
-        Assert.False(
-            offendingLines.Length != 0,
+        (offendingLines.Length != 0).ShouldBeFalse(
             $"Expected reusable trait names to come from canonical constants directly, but found:{Environment.NewLine}{string.Join(Environment.NewLine, offendingLines)}");
     }
 
@@ -236,8 +230,7 @@ public sealed partial class AdminTestArchitectureGuardTests
             .SelectMany(FindProductSpecificSharedKernelTestingCoupling)
             .ToArray();
 
-        Assert.False(
-            offendingLines.Length != 0,
+        (offendingLines.Length != 0).ShouldBeFalse(
             $"Expected SharedKernel.Testing to stay neutral and leave product or area-specific trait values local, but found:{Environment.NewLine}{string.Join(Environment.NewLine, offendingLines)}");
     }
 

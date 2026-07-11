@@ -21,10 +21,10 @@ public class TourUpdateBookingDiscountTests
             "Seasonal sale");
 
         // Assert
-        Assert.False(result.IsSuccess);
-        Assert.Equal(ResultStatus.NotFound, result.Status);
-        Assert.NotNull(result.ErrorDetails);
-        Assert.Contains("not found in this tour", result.ErrorDetails.Detail, StringComparison.Ordinal);
+        (result.IsSuccess).ShouldBeFalse();
+        (result.Status).ShouldBe(ResultStatus.NotFound);
+        (result.ErrorDetails).ShouldNotBeNull();
+        (result.ErrorDetails.Detail).ShouldContain("not found in this tour", StringComparison.Ordinal);
     }
 
     [Fact]
@@ -44,10 +44,10 @@ public class TourUpdateBookingDiscountTests
             "Seasonal sale");
 
         // Assert
-        Assert.False(result.IsSuccess);
-        Assert.Equal(ResultStatus.Invalid, result.Status);
-        Assert.NotNull(result.ErrorDetails);
-        Assert.Contains("Invalid discount type", result.ErrorDetails.Detail, StringComparison.Ordinal);
+        (result.IsSuccess).ShouldBeFalse();
+        (result.Status).ShouldBe(ResultStatus.Invalid);
+        (result.ErrorDetails).ShouldNotBeNull();
+        (result.ErrorDetails.Detail).ShouldContain("Invalid discount type", StringComparison.Ordinal);
     }
 
     [Fact]
@@ -66,10 +66,10 @@ public class TourUpdateBookingDiscountTests
             "Seasonal sale");
 
         // Assert
-        Assert.False(result.IsSuccess);
-        Assert.Equal(ResultStatus.Invalid, result.Status);
-        Assert.NotNull(result.ErrorDetails);
-        Assert.Contains("cannot exceed", result.ErrorDetails.Detail, StringComparison.Ordinal);
+        (result.IsSuccess).ShouldBeFalse();
+        (result.Status).ShouldBe(ResultStatus.Invalid);
+        (result.ErrorDetails).ShouldNotBeNull();
+        (result.ErrorDetails.Detail).ShouldContain("cannot exceed", StringComparison.Ordinal);
     }
 
     [Fact]
@@ -88,10 +88,10 @@ public class TourUpdateBookingDiscountTests
             "short");
 
         // Assert
-        Assert.False(result.IsSuccess);
-        Assert.Equal(ResultStatus.Invalid, result.Status);
-        Assert.NotNull(result.ErrorDetails);
-        Assert.Contains("at least", result.ErrorDetails.Detail, StringComparison.Ordinal);
+        (result.IsSuccess).ShouldBeFalse();
+        (result.Status).ShouldBe(ResultStatus.Invalid);
+        (result.ErrorDetails).ShouldNotBeNull();
+        (result.ErrorDetails.Detail).ShouldContain("at least", StringComparison.Ordinal);
     }
 
     [Fact]
@@ -110,10 +110,10 @@ public class TourUpdateBookingDiscountTests
             "Large manual discount");
 
         // Assert
-        Assert.False(result.IsSuccess);
-        Assert.Equal(ResultStatus.Invalid, result.Status);
-        Assert.NotNull(result.ErrorDetails);
-        Assert.Contains("cannot exceed subtotal", result.ErrorDetails.Detail, StringComparison.Ordinal);
+        (result.IsSuccess).ShouldBeFalse();
+        (result.Status).ShouldBe(ResultStatus.Invalid);
+        (result.ErrorDetails).ShouldNotBeNull();
+        (result.ErrorDetails.Detail).ShouldContain("cannot exceed subtotal", StringComparison.Ordinal);
     }
 
     [Fact]
@@ -123,7 +123,7 @@ public class TourUpdateBookingDiscountTests
         var (tour, booking) = BookingDomainTestDataFactory.CreateTourWithSingleBooking(
             new SingleBookingOptions(BikeType: BikeType.Regular, RoomType: RoomType.DoubleOccupancy),
             "Failed to create booking for discount test setup.");
-        Assert.True(booking.Cancel().IsSuccess);
+        (booking.Cancel().IsSuccess).ShouldBeTrue();
 
         // Act
         var result = tour.UpdateBookingDiscount(
@@ -133,10 +133,10 @@ public class TourUpdateBookingDiscountTests
             "Seasonal sale");
 
         // Assert
-        Assert.False(result.IsSuccess);
-        Assert.Equal(ResultStatus.Conflict, result.Status);
-        Assert.NotNull(result.ErrorDetails);
-        Assert.Contains("cannot be modified", result.ErrorDetails.Detail, StringComparison.Ordinal);
+        (result.IsSuccess).ShouldBeFalse();
+        (result.Status).ShouldBe(ResultStatus.Conflict);
+        (result.ErrorDetails).ShouldNotBeNull();
+        (result.ErrorDetails.Detail).ShouldContain("cannot be modified", StringComparison.Ordinal);
     }
 
     [Fact]
@@ -155,10 +155,10 @@ public class TourUpdateBookingDiscountTests
             "Seasonal sale");
 
         // Assert
-        Assert.True(result.IsSuccess);
-        Assert.Equal(DiscountType.Percentage, booking.Discount.Type);
-        Assert.Equal(10m, booking.Discount.Amount);
-        Assert.Equal("Seasonal sale", booking.Discount.Reason);
+        (result.IsSuccess).ShouldBeTrue();
+        (booking.Discount.Type).ShouldBe(DiscountType.Percentage);
+        (booking.Discount.Amount).ShouldBe(10m);
+        (booking.Discount.Reason).ShouldBe("Seasonal sale");
     }
 
 }

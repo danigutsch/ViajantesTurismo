@@ -25,8 +25,8 @@ public sealed class CatalogAggregateIdentityTests
         content.ClearDomainEvents();
 
         // Assert
-        Assert.Empty(events);
-        Assert.Empty(content.GetDomainEvents());
+        (events).ShouldBeEmpty();
+        (content.GetDomainEvents()).ShouldBeEmpty();
     }
 
 }

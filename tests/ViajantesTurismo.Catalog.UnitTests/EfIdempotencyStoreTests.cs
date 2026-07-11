@@ -1,6 +1,5 @@
 using SharedKernel.Idempotency;
 using SharedKernel.Idempotency.EntityFrameworkCore;
-using SharedKernel.Testing.Assertions;
 using ViajantesTurismo.Catalog.Infrastructure;
 
 namespace ViajantesTurismo.Catalog.UnitTests;

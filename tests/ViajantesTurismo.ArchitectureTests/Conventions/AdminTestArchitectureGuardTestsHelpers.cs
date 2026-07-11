@@ -32,18 +32,19 @@ internal static partial class AdminTestArchitectureGuardTestsHelpers
     public static void AssertFileContains(string filePath, string expectedText)
     {
         var fileContents = File.ReadAllText(filePath);
-        Assert.Contains(expectedText, fileContents, StringComparison.Ordinal);
+        fileContents.ShouldContain(expectedText, StringComparison.Ordinal);
     }
 
     public static void AssertFileDoesNotExist(string filePath)
     {
-        Assert.False(File.Exists(filePath), $"Did not expect file to exist: {filePath}");
+        var fileExists = File.Exists(filePath);
+        fileExists.ShouldBeFalse($"Did not expect file to exist: {filePath}");
     }
 
     public static void AssertFileDoesNotContain(string filePath, Regex unexpectedPattern)
     {
         var fileContents = File.ReadAllText(filePath);
-        Assert.DoesNotMatch(unexpectedPattern, fileContents);
+        (fileContents).ShouldNotMatch(unexpectedPattern);
     }
 
     public static string[] FindGenericServiceProviderReachThrough(string filePath)

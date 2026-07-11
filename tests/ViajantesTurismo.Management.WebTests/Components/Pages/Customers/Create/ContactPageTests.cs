@@ -30,11 +30,11 @@ public sealed class ContactPageTests : BunitContext
         var cut = Render<Contact>();
 
         // Assert
-        Assert.Equal("ana.silva@example.com", cut.Find("#email").GetAttribute("value"));
-        Assert.Equal("+55 11 98765-4321", cut.Find("#mobile").GetAttribute("value"));
-        Assert.Equal("@ana.silva", cut.Find("#instagram").GetAttribute("value"));
-        Assert.Equal("facebook.com/ana.silva", cut.Find("#facebook").GetAttribute("value"));
-        Assert.Equal(3, _state.CurrentStep);
+        (cut.Find("#email").GetAttribute("value")).ShouldBe("ana.silva@example.com");
+        (cut.Find("#mobile").GetAttribute("value")).ShouldBe("+55 11 98765-4321");
+        (cut.Find("#instagram").GetAttribute("value")).ShouldBe("@ana.silva");
+        (cut.Find("#facebook").GetAttribute("value")).ShouldBe("facebook.com/ana.silva");
+        (_state.CurrentStep).ShouldBe(3);
     }
 
     [Fact]
@@ -52,13 +52,13 @@ public sealed class ContactPageTests : BunitContext
         await cut.InvokeAsync(async () => await cut.Find("form").SubmitAsync());
 
         // Assert
-        await cut.WaitForAssertionAsync(() => Assert.EndsWith("/customers/create/address", navigationManager.Uri, StringComparison.Ordinal));
-        Assert.NotNull(_state.ContactInfo);
-        Assert.Equal("ana.silva@example.com", _state.ContactInfo!.Email);
-        Assert.Equal("+55 11 98765-4321", _state.ContactInfo.Mobile);
-        Assert.Equal("@ana.silva", _state.ContactInfo.Instagram);
-        Assert.Equal("facebook.com/ana.silva", _state.ContactInfo.Facebook);
-        Assert.Equal(4, _state.CurrentStep);
+        await cut.WaitForAssertionAsync(() => (navigationManager.Uri).ShouldEndWith("/customers/create/address", StringComparison.Ordinal));
+        (_state.ContactInfo).ShouldNotBeNull();
+        (_state.ContactInfo!.Email).ShouldBe("ana.silva@example.com");
+        (_state.ContactInfo.Mobile).ShouldBe("+55 11 98765-4321");
+        (_state.ContactInfo.Instagram).ShouldBe("@ana.silva");
+        (_state.ContactInfo.Facebook).ShouldBe("facebook.com/ana.silva");
+        (_state.CurrentStep).ShouldBe(4);
     }
 
     [Fact]
@@ -73,7 +73,7 @@ public sealed class ContactPageTests : BunitContext
         await cut.InvokeAsync(() => backButton.Click());
 
         // Assert
-        await cut.WaitForAssertionAsync(() => Assert.EndsWith("/customers/create/identification", navigationManager.Uri, StringComparison.Ordinal));
-        Assert.Equal(2, _state.CurrentStep);
+        await cut.WaitForAssertionAsync(() => (navigationManager.Uri).ShouldEndWith("/customers/create/identification", StringComparison.Ordinal));
+        (_state.CurrentStep).ShouldBe(2);
     }
 }

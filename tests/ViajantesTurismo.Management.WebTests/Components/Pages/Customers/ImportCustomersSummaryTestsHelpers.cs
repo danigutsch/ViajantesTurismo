@@ -13,7 +13,7 @@ internal static class ImportCustomersSummaryTestsHelpers
         fakeCustomersApi.SetImportCustomersResult(result);
         var cut = ImportCustomersPreviewTestHelper.GoToPreview(context, CustomerImportCsvTestData.AllCanonicalHeaders + "\n" + CustomerImportCsvTestData.AllCanonicalValues);
         ImportCustomersTestDomHelper.FindButtonByText(cut, "Confirm Import").Click();
-        cut.WaitForAssertion(() => Assert.Contains("Import complete.", cut.Markup, StringComparison.Ordinal));
+        cut.WaitForAssertion(() => (cut.Markup).ShouldContain("Import complete.", StringComparison.Ordinal));
         return cut;
     }
 

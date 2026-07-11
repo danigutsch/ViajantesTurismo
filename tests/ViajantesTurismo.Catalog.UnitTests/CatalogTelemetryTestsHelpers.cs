@@ -38,7 +38,7 @@ public static class CatalogTelemetryTestsHelpers
             Activity rootActivity,
             string operationName)
     {
-        return Assert.Single(stoppedActivities, activity =>
+        return (stoppedActivities).ShouldHaveSingleItem(activity =>
             activity.TraceId == rootActivity.TraceId
             && string.Equals(activity.OperationName, operationName, StringComparison.Ordinal));
     }

@@ -21,10 +21,10 @@ public class TourUpdateBookingDetailsTests
             null);
 
         // Assert
-        Assert.False(result.IsSuccess);
-        Assert.Equal(ResultStatus.NotFound, result.Status);
-        Assert.NotNull(result.ErrorDetails);
-        Assert.Contains("not found in this tour", result.ErrorDetails.Detail, StringComparison.Ordinal);
+        (result.IsSuccess).ShouldBeFalse();
+        (result.Status).ShouldBe(ResultStatus.NotFound);
+        (result.ErrorDetails).ShouldNotBeNull();
+        (result.ErrorDetails.Detail).ShouldContain("not found in this tour", StringComparison.Ordinal);
     }
 
     [Fact]
@@ -42,10 +42,10 @@ public class TourUpdateBookingDetailsTests
             null);
 
         // Assert
-        Assert.False(result.IsSuccess);
-        Assert.Equal(ResultStatus.Invalid, result.Status);
-        Assert.NotNull(result.ErrorDetails);
-        Assert.Contains("Invalid room type", result.ErrorDetails.Detail, StringComparison.Ordinal);
+        (result.IsSuccess).ShouldBeFalse();
+        (result.Status).ShouldBe(ResultStatus.Invalid);
+        (result.ErrorDetails).ShouldNotBeNull();
+        (result.ErrorDetails.Detail).ShouldContain("Invalid room type", StringComparison.Ordinal);
     }
 
     [Fact]
@@ -63,10 +63,10 @@ public class TourUpdateBookingDetailsTests
             null);
 
         // Assert
-        Assert.False(result.IsSuccess);
-        Assert.Equal(ResultStatus.Invalid, result.Status);
-        Assert.NotNull(result.ErrorDetails);
-        Assert.Contains("Invalid bike type", result.ErrorDetails.Detail, StringComparison.Ordinal);
+        (result.IsSuccess).ShouldBeFalse();
+        (result.Status).ShouldBe(ResultStatus.Invalid);
+        (result.ErrorDetails).ShouldNotBeNull();
+        (result.ErrorDetails.Detail).ShouldContain("Invalid bike type", StringComparison.Ordinal);
     }
 
     [Fact]
@@ -84,10 +84,10 @@ public class TourUpdateBookingDetailsTests
             (BikeType)999);
 
         // Assert
-        Assert.False(result.IsSuccess);
-        Assert.Equal(ResultStatus.Invalid, result.Status);
-        Assert.NotNull(result.ErrorDetails);
-        Assert.Contains("Invalid bike type", result.ErrorDetails.Detail, StringComparison.Ordinal);
+        (result.IsSuccess).ShouldBeFalse();
+        (result.Status).ShouldBe(ResultStatus.Invalid);
+        (result.ErrorDetails).ShouldNotBeNull();
+        (result.ErrorDetails.Detail).ShouldContain("Invalid bike type", StringComparison.Ordinal);
     }
 
     [Fact]
@@ -105,10 +105,10 @@ public class TourUpdateBookingDetailsTests
             BikeType.EBike);
 
         // Assert
-        Assert.False(result.IsSuccess);
-        Assert.Equal(ResultStatus.Invalid, result.Status);
-        Assert.NotNull(result.ErrorDetails);
-        Assert.Contains("cannot be specified without a companion customer", result.ErrorDetails.Detail, StringComparison.Ordinal);
+        (result.IsSuccess).ShouldBeFalse();
+        (result.Status).ShouldBe(ResultStatus.Invalid);
+        (result.ErrorDetails).ShouldNotBeNull();
+        (result.ErrorDetails.Detail).ShouldContain("cannot be specified without a companion customer", StringComparison.Ordinal);
     }
 
     [Fact]
@@ -126,10 +126,10 @@ public class TourUpdateBookingDetailsTests
             null);
 
         // Assert
-        Assert.False(result.IsSuccess);
-        Assert.Equal(ResultStatus.Invalid, result.Status);
-        Assert.NotNull(result.ErrorDetails);
-        Assert.Contains("Companion bike type is required", result.ErrorDetails.Detail, StringComparison.Ordinal);
+        (result.IsSuccess).ShouldBeFalse();
+        (result.Status).ShouldBe(ResultStatus.Invalid);
+        (result.ErrorDetails).ShouldNotBeNull();
+        (result.ErrorDetails.Detail).ShouldContain("Companion bike type is required", StringComparison.Ordinal);
     }
 
     [Fact]
@@ -147,10 +147,10 @@ public class TourUpdateBookingDetailsTests
             BikeType.EBike);
 
         // Assert
-        Assert.False(result.IsSuccess);
-        Assert.Equal(ResultStatus.Invalid, result.Status);
-        Assert.NotNull(result.ErrorDetails);
-        Assert.Contains("cannot be the same person", result.ErrorDetails.Detail, StringComparison.Ordinal);
+        (result.IsSuccess).ShouldBeFalse();
+        (result.Status).ShouldBe(ResultStatus.Invalid);
+        (result.ErrorDetails).ShouldNotBeNull();
+        (result.ErrorDetails.Detail).ShouldContain("cannot be the same person", StringComparison.Ordinal);
     }
 
     [Fact]
@@ -158,7 +158,7 @@ public class TourUpdateBookingDetailsTests
     {
         // Arrange
         var (tour, booking) = BookingDomainTestDataFactory.CreateTourWithSingleBooking();
-        Assert.True(booking.Cancel().IsSuccess);
+        (booking.Cancel().IsSuccess).ShouldBeTrue();
 
         // Act
         var result = tour.UpdateBookingDetails(
@@ -169,10 +169,10 @@ public class TourUpdateBookingDetailsTests
             null);
 
         // Assert
-        Assert.False(result.IsSuccess);
-        Assert.Equal(ResultStatus.Conflict, result.Status);
-        Assert.NotNull(result.ErrorDetails);
-        Assert.Contains("cannot be modified", result.ErrorDetails.Detail, StringComparison.Ordinal);
+        (result.IsSuccess).ShouldBeFalse();
+        (result.Status).ShouldBe(ResultStatus.Conflict);
+        (result.ErrorDetails).ShouldNotBeNull();
+        (result.ErrorDetails.Detail).ShouldContain("cannot be modified", StringComparison.Ordinal);
     }
 
     [Fact]
@@ -191,12 +191,12 @@ public class TourUpdateBookingDetailsTests
             BikeType.Regular);
 
         // Assert
-        Assert.True(result.IsSuccess);
-        Assert.Equal(RoomType.DoubleOccupancy, booking.RoomType);
-        Assert.Equal(BikeType.EBike, booking.PrincipalCustomer.BikeType);
-        Assert.NotNull(booking.CompanionCustomer);
-        Assert.Equal(companionCustomerId, booking.CompanionCustomer.CustomerId);
-        Assert.Equal(BikeType.Regular, booking.CompanionCustomer.BikeType);
+        (result.IsSuccess).ShouldBeTrue();
+        (booking.RoomType).ShouldBe(RoomType.DoubleOccupancy);
+        (booking.PrincipalCustomer.BikeType).ShouldBe(BikeType.EBike);
+        (booking.CompanionCustomer).ShouldNotBeNull();
+        (booking.CompanionCustomer.CustomerId).ShouldBe(companionCustomerId);
+        (booking.CompanionCustomer.BikeType).ShouldBe(BikeType.Regular);
     }
 
     [Fact]
@@ -204,7 +204,7 @@ public class TourUpdateBookingDetailsTests
     {
         // Arrange
         var (tour, booking) = BookingDomainTestDataFactory.CreateTourWithDoubleBooking();
-        Assert.NotNull(booking.CompanionCustomer);
+        (booking.CompanionCustomer).ShouldNotBeNull();
 
         // Act
         var result = tour.UpdateBookingDetails(
@@ -215,10 +215,10 @@ public class TourUpdateBookingDetailsTests
             null);
 
         // Assert
-        Assert.True(result.IsSuccess);
-        Assert.Equal(RoomType.SingleOccupancy, booking.RoomType);
-        Assert.Null(booking.CompanionCustomer);
-        Assert.Equal(BikeType.Regular, booking.PrincipalCustomer.BikeType);
+        (result.IsSuccess).ShouldBeTrue();
+        (booking.RoomType).ShouldBe(RoomType.SingleOccupancy);
+        (booking.CompanionCustomer).ShouldBeNull();
+        (booking.PrincipalCustomer.BikeType).ShouldBe(BikeType.Regular);
     }
 
 }

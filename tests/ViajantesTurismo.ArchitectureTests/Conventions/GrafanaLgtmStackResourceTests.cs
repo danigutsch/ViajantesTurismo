@@ -22,14 +22,8 @@ public sealed class GrafanaLgtmStackResourceTests
         };
 
         // Assert
-        Assert.Equal("ASPIRE_ENABLE_OBSERVABILITY_STACK", GrafanaLgtmStackDefaults.EnableObservabilityStackVariable);
-        Assert.Collection(
-            configuredNames,
-            name => Assert.Equal("opentelemetry-collector", name),
-            name => Assert.Equal("grafana", name),
-            name => Assert.Equal("loki", name),
-            name => Assert.Equal("tempo", name),
-            name => Assert.Equal("prometheus", name));
+        GrafanaLgtmStackDefaults.EnableObservabilityStackVariable.ShouldBe("ASPIRE_ENABLE_OBSERVABILITY_STACK");
+        (configuredNames).ShouldMatchCollection(name => name.ShouldBe("opentelemetry-collector"), name => name.ShouldBe("grafana"), name => name.ShouldBe("loki"), name => name.ShouldBe("tempo"), name => name.ShouldBe("prometheus"));
     }
 
     [Fact]
@@ -49,11 +43,11 @@ public sealed class GrafanaLgtmStackResourceTests
         var resources = builder.Resources.ToArray();
 
         // Assert
-        Assert.IsType<GrafanaResource>(grafana.Resource);
-        Assert.Contains(resources, resource => resource is GrafanaResource && resource.Name == "grafana-test");
-        Assert.Contains(resources, resource => resource is LokiResource && resource.Name == "loki-test");
-        Assert.Contains(resources, resource => resource is TempoResource && resource.Name == "tempo-test");
-        Assert.Contains(resources, resource => resource is PrometheusResource && resource.Name == "prometheus-test");
-        Assert.Contains(resources, resource => resource.Name == "collector-test");
+        grafana.Resource.ShouldBeOfType<GrafanaResource>();
+        resources.ShouldContain(resource => resource is GrafanaResource && resource.Name == "grafana-test");
+        resources.ShouldContain(resource => resource is LokiResource && resource.Name == "loki-test");
+        resources.ShouldContain(resource => resource is TempoResource && resource.Name == "tempo-test");
+        resources.ShouldContain(resource => resource is PrometheusResource && resource.Name == "prometheus-test");
+        resources.ShouldContain(resource => resource.Name == "collector-test");
     }
 }
