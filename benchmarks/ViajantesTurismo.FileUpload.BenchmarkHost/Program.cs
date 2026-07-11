@@ -6,12 +6,18 @@ using Microsoft.Net.Http.Headers;
 
 const byte TargetByte = 0x5A;
 const int BufferLength = 64 * 1024;
+const long MaxPayloadBytes = 16_777_216;
+const long MaxMultipartOverheadBytes = 1_048_576;
+const long MaxRequestBodyBytes = MaxPayloadBytes + MaxMultipartOverheadBytes;
 const int MaxBoundaryLength = 128;
 const string ReadyFileVariable = "VT_UPLOAD_BENCHMARK_READY_FILE";
 const string MultipartContentType = "multipart/form-data";
 
 var builder = WebApplication.CreateSlimBuilder(args);
-builder.WebHost.UseKestrel();
+builder.WebHost.UseKestrel(static options =>
+{
+    options.Limits.MaxRequestBodySize = MaxRequestBodyBytes;
+});
 
 var app = builder.Build();
 
