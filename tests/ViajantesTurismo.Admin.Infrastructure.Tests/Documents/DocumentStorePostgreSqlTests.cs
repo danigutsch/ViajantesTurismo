@@ -4,7 +4,7 @@ using ViajantesTurismo.Admin.Domain.Documents;
 namespace ViajantesTurismo.Admin.Infrastructure.Tests.Documents;
 
 [Trait(SharedKernelTestTraitNames.CategoryName, TestTraits.DatabaseIntegrationCategory)]
-[Trait(SharedKernelTestTraitNames.CapabilityName, DocumentTestTraits.GeneratedDocumentsCapability)]
+[Trait(SharedKernelTestTraitNames.CapabilityName, TestTraitValues.GeneratedDocumentsCapability)]
 public sealed class DocumentStorePostgreSqlTests : IAsyncLifetime
 {
     private PostgreSqlDocumentStoreScenario? scenario;

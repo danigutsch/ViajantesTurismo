@@ -3,7 +3,7 @@ using ViajantesTurismo.Admin.Domain.Documents;
 
 namespace ViajantesTurismo.Admin.UnitTests.Documents;
 
-[Trait(SharedKernelTestTraitNames.CapabilityName, DocumentTestTraits.GeneratedDocumentsCapability)]
+[Trait(SharedKernelTestTraitNames.CapabilityName, TestTraitValues.GeneratedDocumentsCapability)]
 public sealed class DocumentDraftTests
 {
     [Fact]

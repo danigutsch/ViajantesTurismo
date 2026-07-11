@@ -9,4 +9,5 @@ internal static class TestTraits
     public const string SecurityCategory = SharedKernel.Testing.TestTraitValues.SecurityCategory;
 
     public const string IntegrationEventRelayCapability = "integration-event-relay";
+
 }

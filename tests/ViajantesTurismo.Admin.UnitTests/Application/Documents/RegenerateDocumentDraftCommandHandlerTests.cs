@@ -7,7 +7,7 @@ using ViajantesTurismo.Admin.UnitTests.Documents;
 
 namespace ViajantesTurismo.Admin.UnitTests.Application.Documents;
 
-[Trait(SharedKernelTestTraitNames.CapabilityName, DocumentTestTraits.GeneratedDocumentsCapability)]
+[Trait(SharedKernelTestTraitNames.CapabilityName, TestTraitValues.GeneratedDocumentsCapability)]
 public sealed class RegenerateDocumentDraftCommandHandlerTests
 {
     [Fact]
