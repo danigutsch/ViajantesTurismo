@@ -1,6 +1,5 @@
 using SharedKernel.Branding;
 using SharedKernel.Testing;
-using SharedKernel.Testing.Assertions;
 using ViajantesTurismo.Admin.Application.Documents;
 using ViajantesTurismo.Admin.Contracts.Application;
 using ViajantesTurismo.Admin.Testing.Fakes;

@@ -1,5 +1,4 @@
 using ViajantesTurismo.Admin.Domain.Documents;
-using SharedKernel.Testing.Assertions;
 
 namespace ViajantesTurismo.Admin.UnitTests.Documents;
 
