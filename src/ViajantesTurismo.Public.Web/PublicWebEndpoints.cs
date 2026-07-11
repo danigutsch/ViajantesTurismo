@@ -1,6 +1,5 @@
-using System.Xml;
-using System.Xml.Linq;
 using Microsoft.Extensions.Options;
+using SharedKernel.AspNetCore;
 using ViajantesTurismo.Catalog.Contracts.Application;
 using ViajantesTurismo.Public.Web.Components;
 
@@ -10,9 +9,6 @@ internal static class PublicWebEndpoints
 {
     private const string RobotsTxtPath = "/robots.txt";
     private const string SitemapPath = "/sitemap.xml";
-    private const string SitemapContentType = "application/xml; charset=utf-8";
-    private const int SitemapProtocolMaximumUrlCount = 50_000;
-    private static readonly XNamespace SitemapNamespace = "http://www.sitemaps.org/schemas/sitemap/0.9";
 
     internal static IEndpointRouteBuilder MapPublicWebEndpoints(this IEndpointRouteBuilder app)
     {
@@ -40,7 +36,7 @@ internal static class PublicWebEndpoints
 
     private static IResult GetPublicRobotsTxt(IOptions<PublicWebSitemapOptions> sitemapOptions)
     {
-        var origin = new Uri(sitemapOptions.Value.CanonicalOrigin, UriKind.Absolute);
+        var origin = SitemapCanonicalOrigin.Parse(sitemapOptions.Value.CanonicalOrigin);
         var sitemapUri = new Uri(origin, SitemapPath);
         return Results.Text(
             $"User-agent: *\nAllow: /\nSitemap: {sitemapUri.AbsoluteUri}",
@@ -53,7 +49,7 @@ internal static class PublicWebEndpoints
         IPublicCatalogApiClient catalogApi,
         CancellationToken ct)
     {
-        var origin = new Uri(sitemapOptions.Value.CanonicalOrigin, UriKind.Absolute);
+        var origin = SitemapCanonicalOrigin.Parse(sitemapOptions.Value.CanonicalOrigin);
 
         CatalogTourDto[] tours;
         try
@@ -71,43 +67,21 @@ internal static class PublicWebEndpoints
             return Results.StatusCode(StatusCodes.Status503ServiceUnavailable);
         }
 
-        var urls = new List<XElement>
+        var urls = new List<SitemapEntry>
         {
-            CreateSitemapUrl(new Uri(origin, "/")),
-            CreateSitemapUrl(new Uri(origin, "/group-bike-tours")),
-            CreateSitemapUrl(new Uri(origin, "/gallery"))
+            new(new Uri(origin, "/")),
+            new(new Uri(origin, "/group-bike-tours")),
+            new(new Uri(origin, "/gallery"))
         };
 
-        foreach (var tour in tours.Where(IsPublicTourPage).Take(SitemapProtocolMaximumUrlCount - urls.Count))
+        foreach (var tour in tours.Where(IsPublicTourPage).Take(SitemapXmlSerializer.MaximumUrlCount - urls.Count))
         {
             var tourUri = new Uri(origin, $"/group-bike-tours/{Uri.EscapeDataString(tour.Slug)}");
-            urls.Add(CreateSitemapUrl(tourUri, tour.UpdatedAt));
+            urls.Add(new SitemapEntry(tourUri, tour.UpdatedAt));
         }
 
-        var document = new XDocument(
-            new XDeclaration("1.0", "utf-8", null),
-            new XElement(SitemapNamespace + "urlset", urls));
-
-        await using var stream = new MemoryStream();
-        await document.SaveAsync(stream, SaveOptions.None, ct);
-
-        return Results.File(stream.ToArray(), SitemapContentType);
-    }
-
-    private static XElement CreateSitemapUrl(Uri uri, DateTimeOffset? lastModified = null)
-    {
-        var url = new XElement(
-            SitemapNamespace + "url",
-            new XElement(SitemapNamespace + "loc", uri.AbsoluteUri));
-
-        if (lastModified is { } timestamp && timestamp != default)
-        {
-            url.Add(new XElement(
-                SitemapNamespace + "lastmod",
-                XmlConvert.ToString(timestamp.UtcDateTime, XmlDateTimeSerializationMode.Utc)));
-        }
-
-        return url;
+        var sitemap = await SitemapXmlSerializer.Serialize(urls, ct);
+        return Results.File(sitemap, SitemapXmlSerializer.ContentType);
     }
 
     private static bool IsPublicTourPage(CatalogTourDto tour)
