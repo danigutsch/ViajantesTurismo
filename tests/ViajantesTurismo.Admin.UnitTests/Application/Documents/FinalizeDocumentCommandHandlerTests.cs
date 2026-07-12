@@ -1,3 +1,4 @@
+using System.Text;
 using SharedKernel.Testing;
 using ViajantesTurismo.Admin.Application.Documents;
 using ViajantesTurismo.Admin.Domain.Documents;
@@ -6,7 +7,7 @@ using ViajantesTurismo.Admin.UnitTests.Documents;
 
 namespace ViajantesTurismo.Admin.UnitTests.Application.Documents;
 
-[Trait(SharedKernelTestTraitNames.CapabilityName, global::ViajantesTurismo.Admin.Testing.AdminTestTraitValues.GeneratedDocumentsCapability)]
+[Trait(SharedKernelTestTraitNames.CapabilityName, Testing.AdminTestTraitValues.GeneratedDocumentsCapability)]
 public sealed class FinalizeDocumentCommandHandlerTests
 {
     [Fact]
@@ -28,7 +29,9 @@ public sealed class FinalizeDocumentCommandHandlerTests
         // Assert
         result.IsSuccess.ShouldBeTrue();
         document.Status.ShouldBe(DocumentStatus.Finalized);
-        document.GetFinalizedArtifactContent().ShouldNotBeNull();
+        var finalizedArtifact = document.GetFinalizedArtifactContent().ShouldNotBeNull();
+        var html = Encoding.UTF8.GetString(finalizedArtifact.Span);
+        html.ShouldBeWellFormedHtmlDocument();
         unitOfWork.SaveEntitiesCallCount.ShouldBe(1);
     }
 
