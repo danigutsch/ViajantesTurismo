@@ -37,8 +37,7 @@ internal sealed class RoadmapProject
         var gitHubRepository = ReadGitHubRepository(config.RootElement);
         var gitHubEnabled = ReadGitHubEnabled(config.RootElement);
         var items = LoadItems(rootPath);
-        IReadOnlyList<string> effectiveClosedStatuses = closedStatuses.Length == 0 ? ["done", "dropped"] : closedStatuses;
-        return new RoadmapProject(items, new HashSet<string>(effectiveClosedStatuses, StringComparer.Ordinal), gitHubRepository, gitHubEnabled);
+        return new RoadmapProject(items, new HashSet<string>(closedStatuses, StringComparer.Ordinal), gitHubRepository, gitHubEnabled);
     }
 
     public IReadOnlyList<RoadmapItemSnapshot> OpenItems(string? type = null) =>
