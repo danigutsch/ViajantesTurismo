@@ -175,6 +175,12 @@ internal static class RepoConfigToolApplication
 
             case "blockers-of":
                 var itemId = positionalArgs[0];
+                if (!project.Items.Any(item => string.Equals(item.Id, itemId, StringComparison.Ordinal)))
+                {
+                    error.WriteLine($"Unknown roadmap item id: {itemId}");
+                    return 1;
+                }
+
                 WriteItems(output, project.BlockersOf(itemId).OrderByPriority().Take(limit));
                 return 0;
 
