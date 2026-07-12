@@ -311,6 +311,7 @@ internal static class RepoConfigVerifier
             if (!uniqueValues.Add(value))
             {
                 issues.Add(new RepoConfigIssue(relativePath, $"{propertyName} contains a duplicate value: {value}."));
+                continue;
             }
 
             values.Add(value);
@@ -520,7 +521,7 @@ internal static class RepoConfigVerifier
             issues.Add(new RepoConfigIssue(relativePath, $"Missing ordered item: {missingId}."));
         }
 
-        var expectedOrder = items.OrderBy(item => item.Order).ThenBy(item => item.Id, StringComparer.Ordinal).Select(item => item.Id);
+        var expectedOrder = items.OrderByPriority().Select(item => item.Id);
         if (!orderedValues.SequenceEqual(expectedOrder, StringComparer.Ordinal))
         {
             issues.Add(new RepoConfigIssue(relativePath, "order.json items must match item order values."));

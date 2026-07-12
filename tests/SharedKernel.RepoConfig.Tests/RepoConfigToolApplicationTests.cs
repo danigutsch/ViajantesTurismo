@@ -303,7 +303,7 @@ public sealed class RepoConfigToolApplicationTests
     }
 
     [Fact]
-    public void Verify_reports_duplicate_string_array_values()
+    public void Verify_reports_duplicate_string_array_values_without_cascading_reference_errors()
     {
         // Arrange
         using var workspace = new TemporaryRepoConfigWorkspace();
@@ -313,7 +313,7 @@ public sealed class RepoConfigToolApplicationTests
         using var verifyError = new StringWriter(CultureInfo.InvariantCulture);
         RepoConfigToolApplication.Run(["init", "--root", workspace.RootPath], initOutput, initError, workspace.RootPath).ShouldBe(0);
         var itemText = workspace.ReadFile("roadmap/items/RM-001-roadmap-gitops.json");
-        workspace.WriteFile("roadmap/items/RM-001-roadmap-gitops.json", itemText.Replace("\"gitops\",", "\"gitops\",\n    \"gitops\",", StringComparison.Ordinal));
+        workspace.WriteFile("roadmap/items/RM-001-roadmap-gitops.json", itemText.Replace("\"dependencies\": []", "\"dependencies\": [\"RM-404\", \"RM-404\"]", StringComparison.Ordinal));
 
         // Act
         var exitCode = RepoConfigToolApplication.Run(["verify", "--root", workspace.RootPath], verifyOutput, verifyError, workspace.RootPath);
@@ -321,7 +321,9 @@ public sealed class RepoConfigToolApplicationTests
 
         // Assert
         exitCode.ShouldBe(1);
-        errorText.ShouldContain("tags contains a duplicate value: gitops.", StringComparison.Ordinal);
+        errorText.ShouldContain("dependencies contains a duplicate value: RM-404.", StringComparison.Ordinal);
+        var unknownDependencyReports = errorText.Split("Unknown dependency: RM-404.", StringSplitOptions.None).Length - 1;
+        unknownDependencyReports.ShouldBe(1);
     }
 
     [Fact]
@@ -571,6 +573,30 @@ public sealed class RepoConfigToolApplicationTests
         // Assert
         exitCode.ShouldBe(1);
         errorText.ShouldContain("order.json items must match item order values.", StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public void Verify_order_file_uses_priority_tiebreakers()
+    {
+        // Arrange
+        using var workspace = new TemporaryRepoConfigWorkspace();
+        using var initOutput = new StringWriter(CultureInfo.InvariantCulture);
+        using var initError = new StringWriter(CultureInfo.InvariantCulture);
+        using var verifyOutput = new StringWriter(CultureInfo.InvariantCulture);
+        using var verifyError = new StringWriter(CultureInfo.InvariantCulture);
+        RepoConfigToolApplication.Run(["init", "--root", workspace.RootPath], initOutput, initError, workspace.RootPath).ShouldBe(0);
+        var tiedItem = RoadmapTestContent.HigherPriorityIssueJson
+            .Replace("\"id\": \"RM-002\"", "\"id\": \"RM-000\"", StringComparison.Ordinal)
+            .Replace("\"order\": 5", "\"order\": 10", StringComparison.Ordinal)
+            .Replace("\"reach\": 10", "\"reach\": 1", StringComparison.Ordinal);
+        workspace.WriteFile("roadmap/items/RM-000-follow-up.json", tiedItem);
+        workspace.WriteFile("roadmap/order.json", "{ \"items\": [\"RM-001\", \"RM-000\"] }");
+
+        // Act
+        var exitCode = RepoConfigToolApplication.Run(["verify", "--root", workspace.RootPath], verifyOutput, verifyError, workspace.RootPath);
+
+        // Assert
+        exitCode.ShouldBe(0);
     }
 
     [Fact]
