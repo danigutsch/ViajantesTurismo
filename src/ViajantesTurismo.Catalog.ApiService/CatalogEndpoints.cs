@@ -195,6 +195,7 @@ internal static class CatalogEndpoints
 
         var media = await objectStore.OpenRead(variant.ObjectKey, ct).ConfigureAwait(false);
         PublicCatalogHttpCache.SetPublicHeaders(httpContext);
+        httpContext.Response.RegisterForDispose(media);
         return Results.Stream(media.Content, media.ContentType, enableRangeProcessing: false);
     }
 
@@ -868,7 +869,7 @@ internal static class CatalogEndpoints
     {
         return new MediaImageResponsiveVariantDto
         {
-            ObjectKey = variant.ObjectKey,
+            ObjectKey = string.Empty,
             Uri = GetPublicMediaUri(imageId, variant.Width),
             Width = variant.Width,
             Height = variant.Height,
