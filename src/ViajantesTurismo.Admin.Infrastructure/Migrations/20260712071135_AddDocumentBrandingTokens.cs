@@ -16,7 +16,7 @@ namespace ViajantesTurismo.Admin.Infrastructure.Migrations
                 type: "character varying(128)",
                 maxLength: 128,
                 nullable: false,
-                defaultValue: "");
+                defaultValue: "#000000");
 
             migrationBuilder.AddColumn<string>(
                 name: "BrandingBackgroundColor",
@@ -24,7 +24,7 @@ namespace ViajantesTurismo.Admin.Infrastructure.Migrations
                 type: "character varying(128)",
                 maxLength: 128,
                 nullable: false,
-                defaultValue: "");
+                defaultValue: "#ffffff");
 
             migrationBuilder.AddColumn<string>(
                 name: "BrandingBodyFontFamily",
@@ -32,7 +32,7 @@ namespace ViajantesTurismo.Admin.Infrastructure.Migrations
                 type: "character varying(128)",
                 maxLength: 128,
                 nullable: false,
-                defaultValue: "");
+                defaultValue: "system-ui, sans-serif");
 
             migrationBuilder.AddColumn<string>(
                 name: "BrandingFooterText",
@@ -40,7 +40,7 @@ namespace ViajantesTurismo.Admin.Infrastructure.Migrations
                 type: "character varying(128)",
                 maxLength: 128,
                 nullable: false,
-                defaultValue: "");
+                defaultValue: "Viajantes Turismo");
 
             migrationBuilder.AddColumn<string>(
                 name: "BrandingHeadingFontFamily",
@@ -48,7 +48,7 @@ namespace ViajantesTurismo.Admin.Infrastructure.Migrations
                 type: "character varying(128)",
                 maxLength: 128,
                 nullable: false,
-                defaultValue: "");
+                defaultValue: "system-ui, sans-serif");
 
             migrationBuilder.AddColumn<string>(
                 name: "BrandingPrimaryColor",
@@ -56,7 +56,7 @@ namespace ViajantesTurismo.Admin.Infrastructure.Migrations
                 type: "character varying(128)",
                 maxLength: 128,
                 nullable: false,
-                defaultValue: "");
+                defaultValue: "#000000");
 
             migrationBuilder.AddColumn<string>(
                 name: "BrandingTextColor",
@@ -64,7 +64,13 @@ namespace ViajantesTurismo.Admin.Infrastructure.Migrations
                 type: "character varying(128)",
                 maxLength: 128,
                 nullable: false,
-                defaultValue: "");
+                defaultValue: "#000000");
+
+            migrationBuilder.Sql("""
+                UPDATE "DocumentDrafts"
+                SET "BrandingFooterText" = "BrandingName"
+                WHERE length(btrim("BrandingName")) > 0;
+                """);
         }
 
         /// <inheritdoc />
