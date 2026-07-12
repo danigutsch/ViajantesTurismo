@@ -149,7 +149,15 @@ public sealed class DocumentDraft : IEntity<Guid>
     public string? VoidReason { get; private set; }
 
     /// <summary>Gets a copy of the finalized artifact content.</summary>
-    public ReadOnlyMemory<byte>? GetFinalizedArtifactContent() => _finalizedArtifactContent?.ToArray();
+    public ReadOnlyMemory<byte>? GetFinalizedArtifactContent()
+    {
+        if (_finalizedArtifactContent is null)
+        {
+            return null;
+        }
+
+        return new ReadOnlyMemory<byte>(_finalizedArtifactContent.ToArray());
+    }
 
     /// <summary>Creates the initial document draft revision.</summary>
     public static Result<DocumentDraft> Create(
