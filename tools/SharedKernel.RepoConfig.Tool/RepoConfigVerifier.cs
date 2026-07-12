@@ -46,7 +46,7 @@ internal static class RepoConfigVerifier
             return RoadmapSettings.Default;
         }
 
-        var itemIdPrefix = GetString(root, "itemIdPrefix") ?? RoadmapSettings.Default.ItemIdPrefix;
+        var configuredItemIdPrefix = GetString(root, "itemIdPrefix");
         if (string.IsNullOrWhiteSpace(GetString(root, "schemaVersion")))
         {
             issues.Add(new RepoConfigIssue(relativePath, "Missing required string property: schemaVersion."));
@@ -57,7 +57,7 @@ internal static class RepoConfigVerifier
             issues.Add(new RepoConfigIssue(relativePath, "sourceOfTruth must be repository."));
         }
 
-        if (string.IsNullOrWhiteSpace(itemIdPrefix))
+        if (string.IsNullOrWhiteSpace(configuredItemIdPrefix))
         {
             issues.Add(new RepoConfigIssue(relativePath, "Missing required string property: itemIdPrefix."));
         }
@@ -122,7 +122,7 @@ internal static class RepoConfigVerifier
         }
 
         return new RoadmapSettings(
-            itemIdPrefix,
+            string.IsNullOrWhiteSpace(configuredItemIdPrefix) ? RoadmapSettings.Default.ItemIdPrefix : configuredItemIdPrefix,
             types.Count == 0 ? RoadmapSettings.Default.AllowedTypes : types,
             statuses.Count == 0 ? RoadmapSettings.Default.AllowedStatuses : statuses);
     }
@@ -331,6 +331,12 @@ internal static class RepoConfigVerifier
         {
             var relativePath = RepoConfigPaths.RelativeTo(rootPath, themePath);
             using var document = JsonDocument.Parse(File.ReadAllText(themePath));
+            if (document.RootElement.ValueKind != JsonValueKind.Object)
+            {
+                issues.Add(new RepoConfigIssue(relativePath, "Theme root must be a JSON object."));
+                continue;
+            }
+
             var id = GetString(document.RootElement, "id");
             if (string.IsNullOrWhiteSpace(id))
             {
@@ -349,11 +355,6 @@ internal static class RepoConfigVerifier
 
     private static void VerifyItemThemes(IReadOnlyCollection<RoadmapItemSnapshot> items, HashSet<string> themeIds, List<RepoConfigIssue> issues)
     {
-        if (themeIds.Count == 0)
-        {
-            return;
-        }
-
         foreach (var item in items.Where(item => !themeIds.Contains(item.Theme)))
         {
             issues.Add(new RepoConfigIssue(item.Path, $"Unknown theme: {item.Theme}."));

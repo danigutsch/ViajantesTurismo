@@ -23,6 +23,9 @@ internal sealed class TemporaryRepoConfigWorkspace : IDisposable
         File.WriteAllText(path, content);
     }
 
+    public void DeleteFile(string relativePath) =>
+        File.Delete(Path.Combine(RootPath, relativePath));
+
     public void Dispose()
     {
         if (Directory.Exists(RootPath))
