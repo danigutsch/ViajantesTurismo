@@ -24,6 +24,11 @@ internal static class RepoConfigSetter
             throw new ArgumentException($"Unsupported config key: {key}", nameof(key));
         }
 
+        if (!GitHubRepositoryName.IsValid(value))
+        {
+            throw new ArgumentException("github.repository must be shaped as owner/repository.", nameof(value));
+        }
+
         var configPath = Path.Combine(rootPath, RepoConfigPaths.Config);
         if (!File.Exists(configPath))
         {

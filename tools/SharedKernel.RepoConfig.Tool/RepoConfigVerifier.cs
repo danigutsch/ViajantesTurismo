@@ -607,7 +607,7 @@ internal static class RepoConfigVerifier
         if (github.TryGetProperty("enabled", out enabled) && enabled.ValueKind == JsonValueKind.True)
         {
             var repository = GetString(github, "repository");
-            if (string.IsNullOrWhiteSpace(repository) || !IsGitHubRepositoryName(repository))
+            if (string.IsNullOrWhiteSpace(repository) || !GitHubRepositoryName.IsValid(repository))
             {
                 issues.Add(new RepoConfigIssue(relativePath, "integrations.github.repository must be shaped as owner/repository when GitHub sync is enabled."));
             }
@@ -620,14 +620,6 @@ internal static class RepoConfigVerifier
         {
             issues.Add(new RepoConfigIssue(relativePath, $"{propertyPath} contains a duplicate value: {duplicate.Key}."));
         }
-    }
-
-    private static bool IsGitHubRepositoryName(string value)
-    {
-        var parts = value.Split('/');
-        return parts.Length == 2
-            && parts.All(part => !string.IsNullOrWhiteSpace(part))
-            && parts.All(part => !part.Any(char.IsWhiteSpace));
     }
 
     private static List<string> ReadStringArray(JsonElement root, string objectProperty, string arrayProperty)

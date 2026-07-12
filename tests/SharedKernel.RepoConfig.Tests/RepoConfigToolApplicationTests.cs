@@ -64,7 +64,9 @@ public sealed class RepoConfigToolApplicationTests
         // Assert
         exitCode.ShouldBe(0);
         configSchemaText.ShouldContain("\"required\": [", StringComparison.Ordinal);
+        configSchemaText.ShouldContain("\"$id\": \"https://github.com/danigutsch/ViajantesTurismo/roadmap/schema/roadmap-config.schema.json\"", StringComparison.Ordinal);
         configSchemaText.ShouldContain("\"integrations\"", StringComparison.Ordinal);
+        itemSchemaText.ShouldContain("\"$id\": \"https://github.com/danigutsch/ViajantesTurismo/roadmap/schema/roadmap-item.schema.json\"", StringComparison.Ordinal);
         itemSchemaText.ShouldContain("\"uniqueItems\": true", StringComparison.Ordinal);
         itemSchemaText.ShouldContain("\"minimum\": 0.1", StringComparison.Ordinal);
     }
@@ -87,6 +89,28 @@ public sealed class RepoConfigToolApplicationTests
         // Assert
         exitCode.ShouldBe(0);
         configText.ShouldContain("\"repository\": \"example/repository\"", StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public void Set_rejects_invalid_github_repository_config()
+    {
+        // Arrange
+        using var workspace = new TemporaryRepoConfigWorkspace();
+        using var initOutput = new StringWriter(CultureInfo.InvariantCulture);
+        using var initError = new StringWriter(CultureInfo.InvariantCulture);
+        using var setOutput = new StringWriter(CultureInfo.InvariantCulture);
+        using var setError = new StringWriter(CultureInfo.InvariantCulture);
+        RepoConfigToolApplication.Run(["init", "--root", workspace.RootPath], initOutput, initError, workspace.RootPath).ShouldBe(0);
+
+        // Act
+        var exitCode = RepoConfigToolApplication.Run(["set", "github.repository", "owner only", "--root", workspace.RootPath], setOutput, setError, workspace.RootPath);
+        var configText = workspace.ReadFile("roadmap/config.json");
+        var errorText = setError.ToString();
+
+        // Assert
+        exitCode.ShouldBe(1);
+        errorText.ShouldContain("github.repository must be shaped as owner/repository.", StringComparison.Ordinal);
+        configText.ShouldContain("\"repository\": \"owner/repository\"", StringComparison.Ordinal);
     }
 
     [Fact]
