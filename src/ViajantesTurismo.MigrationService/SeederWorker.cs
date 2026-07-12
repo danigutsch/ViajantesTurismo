@@ -99,7 +99,7 @@ internal sealed class SeederWorker : BackgroundService
 
         if (managementSecurityDbContext.Database.IsRelational())
         {
-            await ManagementSecurityDatabaseProvisioner.Provision(managementSecurityDbContext, stoppingToken);
+            await managementSecurityDbContext.Database.MigrateAsync(stoppingToken);
         }
 
         await seeder.Seed(stoppingToken);
