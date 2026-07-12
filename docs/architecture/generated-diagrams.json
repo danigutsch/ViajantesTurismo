@@ -102,6 +102,8 @@
       "kind": "apphost-resources",
       "sourcePath": "src/ViajantesTurismo.AppHost/AppHost.cs",
       "labels": {
+        "clamAv": "ClamAV",
+        "seaweedFs": "SeaweedFS",
         "databaseServer": "PostgreSQL server",
         "database": "database",
         "cache": "Redis cache",

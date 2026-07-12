@@ -114,19 +114,27 @@ internal static class AppHostResourceExtensions
     /// <param name="adminDatabase">The Admin database resource that owns integration-event transport.</param>
     /// <param name="catalogDatabase">The Catalog database resource.</param>
     /// <param name="migrationService">The migration service resource.</param>
+    /// <param name="clamAv">The private ClamAV scanner resource.</param>
+    /// <param name="seaweedFs">The private SeaweedFS object-storage resource.</param>
     /// <returns>The configured Catalog API resource.</returns>
     public static IResourceBuilder<ProjectResource> AddCatalogApi(
         this IDistributedApplicationBuilder builder,
         IResourceBuilder<PostgresDatabaseResource> adminDatabase,
         IResourceBuilder<PostgresDatabaseResource> catalogDatabase,
-        IResourceBuilder<ProjectResource> migrationService)
+        IResourceBuilder<ProjectResource> migrationService,
+        IResourceBuilder<ContainerResource> clamAv,
+        IResourceBuilder<SeaweedFsResource> seaweedFs)
     {
         return builder.AddDevelopmentAspNetCoreProject<ViajantesTurismo_Catalog_ApiService>(ResourceNames.CatalogApi)
             .WithHttpHealthCheck(EndpointPaths.Health)
             .WithReference(adminDatabase)
             .WithReference(catalogDatabase)
+            .WithClamAvReference(clamAv)
+            .WithSeaweedFsReference(seaweedFs)
             .WaitFor(adminDatabase)
             .WaitFor(catalogDatabase)
+            .WaitFor(clamAv)
+            .WaitFor(seaweedFs)
             .WaitForCompletion(migrationService);
     }
 
@@ -156,18 +164,26 @@ internal static class AppHostResourceExtensions
     /// <param name="adminDatabase">The Admin database resource that owns the transport table.</param>
     /// <param name="catalogDatabase">The Catalog database resource.</param>
     /// <param name="migrationService">The migration service resource.</param>
+    /// <param name="clamAv">The private ClamAV scanner resource.</param>
+    /// <param name="seaweedFs">The private SeaweedFS object-storage resource.</param>
     /// <returns>The configured integration-event worker resource.</returns>
     public static IResourceBuilder<ProjectResource> AddIntegrationEventWorker(
         this IDistributedApplicationBuilder builder,
         IResourceBuilder<PostgresDatabaseResource> adminDatabase,
         IResourceBuilder<PostgresDatabaseResource> catalogDatabase,
-        IResourceBuilder<ProjectResource> migrationService)
+        IResourceBuilder<ProjectResource> migrationService,
+        IResourceBuilder<ContainerResource> clamAv,
+        IResourceBuilder<SeaweedFsResource> seaweedFs)
     {
         return builder.AddDevelopmentDotNetProject<ViajantesTurismo_IntegrationEventWorker>(ResourceNames.IntegrationEventWorker)
             .WithReference(adminDatabase)
             .WithReference(catalogDatabase)
+            .WithClamAvReference(clamAv)
+            .WithSeaweedFsReference(seaweedFs)
             .WaitFor(adminDatabase)
             .WaitFor(catalogDatabase)
+            .WaitFor(clamAv)
+            .WaitFor(seaweedFs)
             .WaitForCompletion(migrationService);
     }
 

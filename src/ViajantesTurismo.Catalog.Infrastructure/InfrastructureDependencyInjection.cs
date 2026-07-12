@@ -1,4 +1,5 @@
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Npgsql;
@@ -108,7 +109,26 @@ public static class InfrastructureDependencyInjection
     private static TApplicationBuilder AddCatalogStoreInfrastructure<TApplicationBuilder>(this TApplicationBuilder builder)
         where TApplicationBuilder : IHostApplicationBuilder
     {
-        builder.Services.AddLocalMediaObjectStorage();
+        if (builder.Configuration.GetSection(SeaweedFsMediaObjectStorageOptions.SectionName).Exists())
+        {
+            builder.Services.AddSeaweedFsMediaObjectStorage();
+        }
+        else
+        {
+            builder.Services.AddLocalMediaObjectStorage();
+        }
+        if (builder.Configuration.GetSection(ClamAvMediaUploadScannerOptions.SectionName).Exists())
+        {
+            builder.Services.AddClamAvMediaUploadScanner();
+        }
+        else if (builder.Environment.IsDevelopment())
+        {
+            builder.Services.AddSingleton<IMediaUploadScanner, NoOpMediaUploadScanner>();
+        }
+        else
+        {
+            builder.Services.AddClamAvMediaUploadScanner();
+        }
         builder.Services.AddScoped<IPublicContentStore, EfPublicContentStore>();
         builder.Services.AddScoped<ICatalogTourReadModelStore, EfCatalogTourReadModelStore>();
         builder.Services.AddScoped<IPublicMediaImageStore, EfPublicMediaImageStore>();

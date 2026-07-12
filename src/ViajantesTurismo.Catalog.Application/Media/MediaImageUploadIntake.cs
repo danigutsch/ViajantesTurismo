@@ -73,6 +73,22 @@ public sealed class MediaImageUploadIntake(
         }
 
         content.Position = 0;
+        var objectKey = CreateOriginalObjectKey(request.MediaImageId, request.ContentType);
+        var scanResult = await Scan(objectKey, content, request.ContentType, actualLength, ct).ConfigureAwait(false);
+        if (scanResult.Status is MediaUploadScanStatus.Failed)
+        {
+            return Result.Unavailable<MediaImageUploadIntakeResult>(scanResult.Message ?? ScannerUnavailableMessage);
+        }
+
+        if (scanResult.Status is MediaUploadScanStatus.Rejected or MediaUploadScanStatus.Pending)
+        {
+            return Result.Invalid<MediaImageUploadIntakeResult>(
+                InvalidUploadMessage,
+                nameof(scanResult.Status),
+                scanResult.Message ?? "Media upload did not pass malware scanning.");
+        }
+
+        content.Position = 0;
         ImageProcessingResult decoded;
         try
         {
@@ -89,22 +105,6 @@ public sealed class MediaImageUploadIntake(
                 InvalidUploadMessage,
                 nameof(request.Content),
                 "Image content could not be decoded or exceeds the configured decoded image limits.");
-        }
-
-        content.Position = 0;
-        var objectKey = CreateOriginalObjectKey(request.MediaImageId, request.ContentType);
-        var scanResult = await Scan(objectKey, content, request.ContentType, actualLength, ct).ConfigureAwait(false);
-        if (scanResult.Status is MediaUploadScanStatus.Failed)
-        {
-            return Result.Unavailable<MediaImageUploadIntakeResult>(scanResult.Message ?? ScannerUnavailableMessage);
-        }
-
-        if (scanResult.Status is MediaUploadScanStatus.Rejected or MediaUploadScanStatus.Pending)
-        {
-            return Result.Invalid<MediaImageUploadIntakeResult>(
-                InvalidUploadMessage,
-                nameof(scanResult.Status),
-                scanResult.Message ?? "Media upload did not pass malware scanning.");
         }
 
         content.Position = 0;

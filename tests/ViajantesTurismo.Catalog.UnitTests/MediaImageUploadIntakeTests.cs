@@ -434,7 +434,7 @@ public sealed class MediaImageUploadIntakeTests
         // Assert
         result.IsFailure.ShouldBe(true);
         imageStore.Current.Id.ShouldBe(originalImage.Id);
-        scanner.ScanCount.ShouldBe(0);
+        scanner.ScanCount.ShouldBe(1);
     }
 
     [Fact]
@@ -465,6 +465,6 @@ public sealed class MediaImageUploadIntakeTests
         // Assert
         result.IsFailure.ShouldBe(true);
         imageStore.Current.Id.ShouldBe(originalImage.Id);
-        scanner.ScanCount.ShouldBe(0);
+        scanner.ScanCount.ShouldBe(1);
     }
 }
