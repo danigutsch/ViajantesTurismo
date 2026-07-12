@@ -91,6 +91,28 @@ public sealed class RepoConfigToolApplicationTests
     }
 
     [Fact]
+    public void Verify_reports_confidence_below_documented_range()
+    {
+        // Arrange
+        using var workspace = new TemporaryRepoConfigWorkspace();
+        using var initOutput = new StringWriter(CultureInfo.InvariantCulture);
+        using var initError = new StringWriter(CultureInfo.InvariantCulture);
+        using var verifyOutput = new StringWriter(CultureInfo.InvariantCulture);
+        using var verifyError = new StringWriter(CultureInfo.InvariantCulture);
+        RepoConfigToolApplication.Run(["init", "--root", workspace.RootPath], initOutput, initError, workspace.RootPath).ShouldBe(0);
+        var itemText = workspace.ReadFile("roadmap/items/RM-001-roadmap-gitops.json");
+        workspace.WriteFile("roadmap/items/RM-001-roadmap-gitops.json", itemText.Replace("\"confidence\": 0.8", "\"confidence\": 0.09", StringComparison.Ordinal));
+
+        // Act
+        var exitCode = RepoConfigToolApplication.Run(["verify", "--root", workspace.RootPath], verifyOutput, verifyError, workspace.RootPath);
+        var errorText = verifyError.ToString();
+
+        // Assert
+        exitCode.ShouldBe(1);
+        errorText.ShouldContain("confidence must be between 0.1 and 1.0.", StringComparison.Ordinal);
+    }
+
+    [Fact]
     public void Verify_reports_missing_item_id_prefix()
     {
         // Arrange
@@ -496,11 +518,8 @@ public sealed class RepoConfigToolApplicationTests
     {
         // Arrange
         using var workspace = new TemporaryRepoConfigWorkspace();
-        using var initOutput = new StringWriter(CultureInfo.InvariantCulture);
-        using var initError = new StringWriter(CultureInfo.InvariantCulture);
         using var getOutput = new StringWriter(CultureInfo.InvariantCulture);
         using var getError = new StringWriter(CultureInfo.InvariantCulture);
-        RepoConfigToolApplication.Run(["init", "--root", workspace.RootPath], initOutput, initError, workspace.RootPath).ShouldBe(0);
 
         // Act
         var exitCode = RepoConfigToolApplication.Run(["get", "by-label", "area:", "tooling", "--root", workspace.RootPath], getOutput, getError, workspace.RootPath);
@@ -509,5 +528,22 @@ public sealed class RepoConfigToolApplicationTests
         // Assert
         exitCode.ShouldBe(2);
         errorText.ShouldContain("Unknown or incomplete get query: by-label", StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public void Get_reports_tool_name_for_config_errors()
+    {
+        // Arrange
+        using var workspace = new TemporaryRepoConfigWorkspace();
+        using var getOutput = new StringWriter(CultureInfo.InvariantCulture);
+        using var getError = new StringWriter(CultureInfo.InvariantCulture);
+
+        // Act
+        var exitCode = RepoConfigToolApplication.Run(["get", "next-priority", "--root", workspace.RootPath], getOutput, getError, workspace.RootPath);
+        var errorText = getError.ToString();
+
+        // Assert
+        exitCode.ShouldBe(1);
+        errorText.ShouldContain("sharedkernel-repo: Roadmap config is invalid.", StringComparison.Ordinal);
     }
 }

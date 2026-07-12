@@ -236,7 +236,7 @@ internal static class RepoConfigVerifier
 
         VerifyNumber(scoring, "reach", relativePath, issues, value => value >= 0, "reach must be 0 or greater.");
         VerifyNumber(scoring, "impact", relativePath, issues, value => value is >= 1 and <= 5, "impact must be between 1 and 5.");
-        VerifyNumber(scoring, "confidence", relativePath, issues, value => value is > 0 and <= 1, "confidence must be greater than 0 and no more than 1.");
+        VerifyNumber(scoring, "confidence", relativePath, issues, value => value is >= 0.1m and <= 1, "confidence must be between 0.1 and 1.0.");
         VerifyNumber(scoring, "effort", relativePath, issues, value => value > 0, "effort must be greater than 0.");
     }
 

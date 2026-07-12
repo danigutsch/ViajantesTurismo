@@ -32,7 +32,7 @@ internal static class RepoConfigToolApplication
             or UnauthorizedAccessException
             or InvalidOperationException)
         {
-            error.WriteLine($"repo-config: {exception.Message}");
+            error.WriteLine($"sharedkernel-repo: {exception.Message}");
             return 1;
         }
     }
@@ -148,12 +148,18 @@ internal static class RepoConfigToolApplication
             return WriteUsageError(error, "Missing get query.");
         }
 
-        var project = RoadmapProject.Load(rootPath);
         var query = remaining[0];
         if (!TryParseGetOptions(remaining[1..], error, out var positionalArgs, out var type, out var limit))
         {
             return 2;
         }
+
+        if (!IsGetQueryShapeValid(query, positionalArgs))
+        {
+            return WriteUsageError(error, $"Unknown or incomplete get query: {query}");
+        }
+
+        var project = RoadmapProject.Load(rootPath);
 
         switch (query)
         {
@@ -165,7 +171,8 @@ internal static class RepoConfigToolApplication
                 WriteItems(output, project.OpenItems(type).Where(project.IsUnblocked).OrderByPriority().Take(limit));
                 return 0;
 
-            case "blockers-of" when positionalArgs is [var itemId]:
+            case "blockers-of":
+                var itemId = positionalArgs[0];
                 WriteItems(output, project.BlockersOf(itemId).OrderByPriority().Take(limit));
                 return 0;
 
@@ -198,11 +205,13 @@ internal static class RepoConfigToolApplication
                 WriteCounts(output, project.LabelCounts());
                 return 0;
 
-            case "by-tag" when positionalArgs is [var tag]:
+            case "by-tag":
+                var tag = positionalArgs[0];
                 WriteItems(output, project.OpenItems(type).Where(item => item.Tags.Contains(tag, StringComparer.Ordinal)).OrderByPriority().Take(limit));
                 return 0;
 
-            case "by-label" when positionalArgs is [var label]:
+            case "by-label":
+                var label = positionalArgs[0];
                 WriteItems(output, project.OpenItems(type).Where(item => item.Labels.Contains(label, StringComparer.Ordinal)).OrderByPriority().Take(limit));
                 return 0;
 
@@ -340,6 +349,14 @@ internal static class RepoConfigToolApplication
 
     private static bool HasOptionValue(string[] args, int index) =>
         index + 1 < args.Length && !args[index + 1].StartsWith("--", StringComparison.Ordinal);
+
+    private static bool IsGetQueryShapeValid(string query, string[] positionalArgs) =>
+        query switch
+        {
+            "next-priority" or "next-unblocked" or "next-blockers" or "next-enablers" or "low-hanging-fruit" or "pareto" or "blocking-overview" or "tags" or "labels" => positionalArgs.Length == 0,
+            "blockers-of" or "by-tag" or "by-label" => positionalArgs.Length == 1,
+            _ => false
+        };
 
     private static void WriteItems(TextWriter output, IEnumerable<RoadmapItemSnapshot> items)
     {

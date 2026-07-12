@@ -68,7 +68,7 @@
         },
         "confidence": {
           "type": "number",
-          "exclusiveMinimum": 0,
+          "minimum": 0.1,
           "maximum": 1
         },
         "effort": {
