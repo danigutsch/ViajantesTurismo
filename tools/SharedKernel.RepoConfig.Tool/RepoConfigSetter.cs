@@ -1,5 +1,4 @@
 using System.Text;
-using System.Text.Encodings.Web;
 using System.Text.Json;
 using System.Text.Json.Nodes;
 
@@ -9,7 +8,6 @@ internal static class RepoConfigSetter
 {
     private static readonly JsonWriterOptions WriterOptions = new()
     {
-        Encoder = JavaScriptEncoder.UnsafeRelaxedJsonEscaping,
         Indented = true
     };
 
@@ -48,7 +46,7 @@ internal static class RepoConfigSetter
             root.WriteTo(writer);
         }
 
-        File.WriteAllText(configPath, Encoding.UTF8.GetString(stream.ToArray()) + Environment.NewLine);
+        File.WriteAllText(configPath, Encoding.UTF8.GetString(stream.ToArray()) + "\n");
     }
 
     private static JsonObject GetOrCreateObject(JsonObject parent, string propertyName)
