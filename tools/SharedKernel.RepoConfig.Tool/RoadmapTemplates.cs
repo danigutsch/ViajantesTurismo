@@ -69,7 +69,95 @@ internal static class RoadmapTemplates
         {
           "$schema": "https://json-schema.org/draft/2020-12/schema",
           "title": "Roadmap configuration",
-          "type": "object"
+          "type": "object",
+          "required": [
+            "schemaVersion",
+            "sourceOfTruth",
+            "itemIdPrefix",
+            "allowed",
+            "project",
+            "scoring",
+            "integrations"
+          ],
+          "properties": {
+            "schemaVersion": {
+              "type": "string"
+            },
+            "sourceOfTruth": {
+              "const": "repository"
+            },
+            "itemIdPrefix": {
+              "type": "string",
+              "minLength": 1
+            },
+            "allowed": {
+              "type": "object",
+              "required": [
+                "types",
+                "statuses"
+              ],
+              "properties": {
+                "types": {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  },
+                  "minItems": 1,
+                  "uniqueItems": true
+                },
+                "statuses": {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  },
+                  "minItems": 1,
+                  "uniqueItems": true
+                }
+              }
+            },
+            "scoring": {
+              "type": "object",
+              "required": [
+                "model",
+                "formula"
+              ],
+              "properties": {
+                "model": {
+                  "const": "RICE"
+                },
+                "formula": {
+                  "const": "reach * impact * confidence / effort"
+                }
+              }
+            },
+            "project": {
+              "type": "object",
+              "required": [
+                "ordering",
+                "blockedBy",
+                "closedStatuses"
+              ],
+              "properties": {
+                "ordering": {
+                  "const": "order"
+                },
+                "blockedBy": {
+                  "const": "blockedBy"
+                },
+                "closedStatuses": {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  },
+                  "minItems": 1,
+                  "uniqueItems": true
+                }
+              }
+            },
+            "integrations": {
+              "type": "object"
+            }
+          }
         }
         """;
 
@@ -86,7 +174,123 @@ internal static class RoadmapTemplates
         {
           "$schema": "https://json-schema.org/draft/2020-12/schema",
           "title": "Roadmap item",
-          "type": "object"
+          "type": "object",
+          "required": [
+            "id",
+            "title",
+            "type",
+            "status",
+            "order",
+            "theme",
+            "outcome",
+            "scoring",
+            "blockedBy",
+            "blocks",
+            "dependencies",
+            "tags",
+            "labels"
+          ],
+          "properties": {
+            "id": {
+              "type": "string",
+              "minLength": 1
+            },
+            "title": {
+              "type": "string",
+              "minLength": 1
+            },
+            "type": {
+              "type": "string"
+            },
+            "status": {
+              "type": "string"
+            },
+            "order": {
+              "type": "integer",
+              "minimum": 1
+            },
+            "parent": {
+              "type": "string"
+            },
+            "theme": {
+              "type": "string",
+              "minLength": 1
+            },
+            "outcome": {
+              "type": "string",
+              "minLength": 1
+            },
+            "scoring": {
+              "type": "object",
+              "required": [
+                "reach",
+                "impact",
+                "confidence",
+                "effort"
+              ],
+              "properties": {
+                "reach": {
+                  "type": "number",
+                  "minimum": 0
+                },
+                "impact": {
+                  "type": "number",
+                  "minimum": 1,
+                  "maximum": 5
+                },
+                "confidence": {
+                  "type": "number",
+                  "minimum": 0.1,
+                  "maximum": 1
+                },
+                "effort": {
+                  "type": "number",
+                  "exclusiveMinimum": 0
+                }
+              }
+            },
+            "dependencies": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              },
+              "uniqueItems": true
+            },
+            "blockedBy": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              },
+              "uniqueItems": true
+            },
+            "blocks": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              },
+              "uniqueItems": true
+            },
+            "tags": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              },
+              "uniqueItems": true
+            },
+            "labels": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              },
+              "uniqueItems": true
+            },
+            "sources": {
+              "type": "array"
+            },
+            "integrations": {
+              "type": "object"
+            }
+          }
         }
         """;
 

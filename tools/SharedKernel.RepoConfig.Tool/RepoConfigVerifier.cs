@@ -65,6 +65,9 @@ internal static class RepoConfigVerifier
         var types = ReadStringArray(root, "allowed", "types");
         var statuses = ReadStringArray(root, "allowed", "statuses");
         var closedStatuses = ReadStringArray(root, "project", "closedStatuses");
+        VerifyUniqueValues(types, "allowed.types", relativePath, issues);
+        VerifyUniqueValues(statuses, "allowed.statuses", relativePath, issues);
+        VerifyUniqueValues(closedStatuses, "project.closedStatuses", relativePath, issues);
         if (types.Count == 0)
         {
             issues.Add(new RepoConfigIssue(relativePath, "allowed.types must contain at least one type."));
@@ -600,6 +603,31 @@ internal static class RepoConfigVerifier
         {
             issues.Add(new RepoConfigIssue(relativePath, "integrations.github.enabled must be a Boolean."));
         }
+
+        if (github.TryGetProperty("enabled", out enabled) && enabled.ValueKind == JsonValueKind.True)
+        {
+            var repository = GetString(github, "repository");
+            if (string.IsNullOrWhiteSpace(repository) || !IsGitHubRepositoryName(repository))
+            {
+                issues.Add(new RepoConfigIssue(relativePath, "integrations.github.repository must be shaped as owner/repository when GitHub sync is enabled."));
+            }
+        }
+    }
+
+    private static void VerifyUniqueValues(IReadOnlyCollection<string> values, string propertyPath, string relativePath, List<RepoConfigIssue> issues)
+    {
+        foreach (var duplicate in values.GroupBy(value => value, StringComparer.Ordinal).Where(group => group.Count() > 1))
+        {
+            issues.Add(new RepoConfigIssue(relativePath, $"{propertyPath} contains a duplicate value: {duplicate.Key}."));
+        }
+    }
+
+    private static bool IsGitHubRepositoryName(string value)
+    {
+        var parts = value.Split('/');
+        return parts.Length == 2
+            && parts.All(part => !string.IsNullOrWhiteSpace(part))
+            && parts.All(part => !part.Any(char.IsWhiteSpace));
     }
 
     private static List<string> ReadStringArray(JsonElement root, string objectProperty, string arrayProperty)

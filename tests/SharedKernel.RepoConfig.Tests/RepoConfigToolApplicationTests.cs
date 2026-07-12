@@ -49,6 +49,27 @@ public sealed class RepoConfigToolApplicationTests
     }
 
     [Fact]
+    public void Init_writes_full_schema_templates()
+    {
+        // Arrange
+        using var workspace = new TemporaryRepoConfigWorkspace();
+        using var initOutput = new StringWriter(CultureInfo.InvariantCulture);
+        using var initError = new StringWriter(CultureInfo.InvariantCulture);
+
+        // Act
+        var exitCode = RepoConfigToolApplication.Run(["init", "--root", workspace.RootPath], initOutput, initError, workspace.RootPath);
+        var configSchemaText = workspace.ReadFile("roadmap/schema/roadmap-config.schema.json");
+        var itemSchemaText = workspace.ReadFile("roadmap/schema/roadmap-item.schema.json");
+
+        // Assert
+        exitCode.ShouldBe(0);
+        configSchemaText.ShouldContain("\"required\": [", StringComparison.Ordinal);
+        configSchemaText.ShouldContain("\"integrations\"", StringComparison.Ordinal);
+        itemSchemaText.ShouldContain("\"uniqueItems\": true", StringComparison.Ordinal);
+        itemSchemaText.ShouldContain("\"minimum\": 0.1", StringComparison.Ordinal);
+    }
+
+    [Fact]
     public void Set_updates_github_repository_config()
     {
         // Arrange
@@ -155,6 +176,50 @@ public sealed class RepoConfigToolApplicationTests
         // Assert
         exitCode.ShouldBe(1);
         errorText.ShouldContain("Missing required object property: integrations.", StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public void Verify_reports_duplicate_config_array_values()
+    {
+        // Arrange
+        using var workspace = new TemporaryRepoConfigWorkspace();
+        using var initOutput = new StringWriter(CultureInfo.InvariantCulture);
+        using var initError = new StringWriter(CultureInfo.InvariantCulture);
+        using var verifyOutput = new StringWriter(CultureInfo.InvariantCulture);
+        using var verifyError = new StringWriter(CultureInfo.InvariantCulture);
+        RepoConfigToolApplication.Run(["init", "--root", workspace.RootPath], initOutput, initError, workspace.RootPath).ShouldBe(0);
+        var configText = workspace.ReadFile("roadmap/config.json");
+        workspace.WriteFile("roadmap/config.json", configText.Replace("\"done\",\n      \"dropped\"", "\"done\",\n      \"done\",\n      \"dropped\"", StringComparison.Ordinal));
+
+        // Act
+        var exitCode = RepoConfigToolApplication.Run(["verify", "--root", workspace.RootPath], verifyOutput, verifyError, workspace.RootPath);
+        var errorText = verifyError.ToString();
+
+        // Assert
+        exitCode.ShouldBe(1);
+        errorText.ShouldContain("project.closedStatuses contains a duplicate value: done.", StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public void Verify_reports_invalid_enabled_github_repository()
+    {
+        // Arrange
+        using var workspace = new TemporaryRepoConfigWorkspace();
+        using var initOutput = new StringWriter(CultureInfo.InvariantCulture);
+        using var initError = new StringWriter(CultureInfo.InvariantCulture);
+        using var verifyOutput = new StringWriter(CultureInfo.InvariantCulture);
+        using var verifyError = new StringWriter(CultureInfo.InvariantCulture);
+        RepoConfigToolApplication.Run(["init", "--root", workspace.RootPath], initOutput, initError, workspace.RootPath).ShouldBe(0);
+        var configText = workspace.ReadFile("roadmap/config.json");
+        workspace.WriteFile("roadmap/config.json", configText.Replace("\"repository\": \"owner/repository\"", "\"repository\": \"owner only\"", StringComparison.Ordinal));
+
+        // Act
+        var exitCode = RepoConfigToolApplication.Run(["verify", "--root", workspace.RootPath], verifyOutput, verifyError, workspace.RootPath);
+        var errorText = verifyError.ToString();
+
+        // Assert
+        exitCode.ShouldBe(1);
+        errorText.ShouldContain("integrations.github.repository must be shaped as owner/repository when GitHub sync is enabled.", StringComparison.Ordinal);
     }
 
     [Fact]
