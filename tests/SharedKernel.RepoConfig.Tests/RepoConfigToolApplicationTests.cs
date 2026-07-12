@@ -491,6 +491,53 @@ public sealed class RepoConfigToolApplicationTests
     }
 
     [Fact]
+    public async Task Sync_returns_clean_error_for_noncaller_cancellation()
+    {
+        // Arrange
+        using var workspace = new TemporaryRepoConfigWorkspace();
+        using var initOutput = new StringWriter(CultureInfo.InvariantCulture);
+        using var initError = new StringWriter(CultureInfo.InvariantCulture);
+        using var output = new CancellationThrowingTextWriter();
+        using var error = new StringWriter(CultureInfo.InvariantCulture);
+        (await RepoConfigToolApplication.Run(["init", "--root", workspace.RootPath], initOutput, initError, workspace.RootPath, TestContext.Current.CancellationToken)).ShouldBe(0);
+        RoadmapConfigTestOperations.EnableGitHubSync(workspace);
+        var itemText = workspace.ReadFile("roadmap/items/RM-001-roadmap-gitops.json");
+        workspace.WriteFile("roadmap/items/RM-001-roadmap-gitops.json", itemText.Replace("\"labels\": [", "\"integrations\": { \"github\": { \"issue\": 997 } },\n  \"labels\": [", StringComparison.Ordinal));
+
+        // Act
+        var exitCode = await RepoConfigToolApplication.Run(["sync", "github", "--dry-run", "--root", workspace.RootPath], output, error, workspace.RootPath, TestContext.Current.CancellationToken);
+        var errorText = error.ToString();
+
+        // Assert
+        exitCode.ShouldBe(1);
+        errorText.ShouldContain("sharedkernel-repo: The operation was canceled.", StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public async Task Sync_propagates_caller_cancellation()
+    {
+        // Arrange
+        using var workspace = new TemporaryRepoConfigWorkspace();
+        using var initOutput = new StringWriter(CultureInfo.InvariantCulture);
+        using var initError = new StringWriter(CultureInfo.InvariantCulture);
+        using var output = new CancellationThrowingTextWriter();
+        using var error = new StringWriter(CultureInfo.InvariantCulture);
+        using var cancellation = new CancellationTokenSource();
+        (await RepoConfigToolApplication.Run(["init", "--root", workspace.RootPath], initOutput, initError, workspace.RootPath, TestContext.Current.CancellationToken)).ShouldBe(0);
+        RoadmapConfigTestOperations.EnableGitHubSync(workspace);
+        var itemText = workspace.ReadFile("roadmap/items/RM-001-roadmap-gitops.json");
+        workspace.WriteFile("roadmap/items/RM-001-roadmap-gitops.json", itemText.Replace("\"labels\": [", "\"integrations\": { \"github\": { \"issue\": 997 } },\n  \"labels\": [", StringComparison.Ordinal));
+        await cancellation.CancelAsync();
+
+        // Act
+        var action = (Func<Task>)(async () => await RepoConfigToolApplication.Run(["sync", "github", "--dry-run", "--root", workspace.RootPath], output, error, workspace.RootPath, cancellation.Token));
+        var exception = await action.ShouldThrow<OperationCanceledException>();
+
+        // Assert
+        exception.CancellationToken.ShouldBe(cancellation.Token);
+    }
+
+    [Fact]
     public async Task Sync_github_dry_run_reports_mapped_issues_without_network()
     {
         // Arrange
@@ -802,6 +849,106 @@ public sealed class RepoConfigToolApplicationTests
         exitCode.ShouldBe(0);
         firstIndex.ShouldBeLessThan(secondIndex);
         secondIndex.ShouldBeLessThan(thirdIndex);
+    }
+
+    [Fact]
+    public async Task Get_next_blockers_orders_equal_blockers_by_id()
+    {
+        // Arrange
+        using var workspace = new TemporaryRepoConfigWorkspace();
+        using var initOutput = new StringWriter(CultureInfo.InvariantCulture);
+        using var initError = new StringWriter(CultureInfo.InvariantCulture);
+        using var getOutput = new StringWriter(CultureInfo.InvariantCulture);
+        using var getError = new StringWriter(CultureInfo.InvariantCulture);
+        (await RepoConfigToolApplication.Run(["init", "--root", workspace.RootPath], initOutput, initError, workspace.RootPath, TestContext.Current.CancellationToken)).ShouldBe(0);
+        var defaultItem = workspace.ReadFile("roadmap/items/RM-001-roadmap-gitops.json");
+        var laterId = defaultItem
+            .Replace("\"id\": \"RM-001\"", "\"id\": \"RM-003\"", StringComparison.Ordinal)
+            .Replace("\"type\": \"epic\"", "\"type\": \"blocker\"", StringComparison.Ordinal);
+        var earlierId = defaultItem
+            .Replace("\"id\": \"RM-001\"", "\"id\": \"RM-002\"", StringComparison.Ordinal)
+            .Replace("\"type\": \"epic\"", "\"type\": \"blocker\"", StringComparison.Ordinal);
+        workspace.WriteFile("roadmap/items/a-blocker.json", laterId);
+        workspace.WriteFile("roadmap/items/b-blocker.json", earlierId);
+        workspace.WriteFile("roadmap/order.json", "{ \"items\": [\"RM-001\", \"RM-002\", \"RM-003\"] }");
+
+        // Act
+        var exitCode = await RepoConfigToolApplication.Run(["get", "next-blockers", "--limit", "2", "--root", workspace.RootPath], getOutput, getError, workspace.RootPath, TestContext.Current.CancellationToken);
+        var outputText = getOutput.ToString();
+
+        // Assert
+        exitCode.ShouldBe(0);
+        outputText.ShouldStartWith("RM-002 | blocker", StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public async Task Get_low_hanging_fruit_orders_equal_items_by_id()
+    {
+        // Arrange
+        using var workspace = new TemporaryRepoConfigWorkspace();
+        using var initOutput = new StringWriter(CultureInfo.InvariantCulture);
+        using var initError = new StringWriter(CultureInfo.InvariantCulture);
+        using var getOutput = new StringWriter(CultureInfo.InvariantCulture);
+        using var getError = new StringWriter(CultureInfo.InvariantCulture);
+        (await RepoConfigToolApplication.Run(["init", "--root", workspace.RootPath], initOutput, initError, workspace.RootPath, TestContext.Current.CancellationToken)).ShouldBe(0);
+        var defaultItem = workspace.ReadFile("roadmap/items/RM-001-roadmap-gitops.json");
+        var laterId = defaultItem
+            .Replace("\"id\": \"RM-001\"", "\"id\": \"RM-003\"", StringComparison.Ordinal)
+            .Replace("\"type\": \"epic\"", "\"type\": \"issue\"", StringComparison.Ordinal);
+        var earlierId = defaultItem
+            .Replace("\"id\": \"RM-001\"", "\"id\": \"RM-002\"", StringComparison.Ordinal)
+            .Replace("\"type\": \"epic\"", "\"type\": \"issue\"", StringComparison.Ordinal);
+        workspace.WriteFile("roadmap/items/a-issue.json", laterId);
+        workspace.WriteFile("roadmap/items/b-issue.json", earlierId);
+        workspace.WriteFile("roadmap/order.json", "{ \"items\": [\"RM-001\", \"RM-002\", \"RM-003\"] }");
+
+        // Act
+        var exitCode = await RepoConfigToolApplication.Run(["get", "low-hanging-fruit", "--type", "issue", "--limit", "2", "--root", workspace.RootPath], getOutput, getError, workspace.RootPath, TestContext.Current.CancellationToken);
+        var outputText = getOutput.ToString();
+
+        // Assert
+        exitCode.ShouldBe(0);
+        outputText.ShouldStartWith("RM-002 | issue", StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public async Task Get_pareto_orders_equal_score_and_effort_by_order_then_id()
+    {
+        // Arrange
+        using var workspace = new TemporaryRepoConfigWorkspace();
+        using var initOutput = new StringWriter(CultureInfo.InvariantCulture);
+        using var initError = new StringWriter(CultureInfo.InvariantCulture);
+        using var getOutput = new StringWriter(CultureInfo.InvariantCulture);
+        using var getError = new StringWriter(CultureInfo.InvariantCulture);
+        (await RepoConfigToolApplication.Run(["init", "--root", workspace.RootPath], initOutput, initError, workspace.RootPath, TestContext.Current.CancellationToken)).ShouldBe(0);
+        var defaultItem = workspace.ReadFile("roadmap/items/RM-001-roadmap-gitops.json");
+        var items = new[]
+        {
+            (FileName: "a-issue.json", Id: "RM-006", Order: 20),
+            (FileName: "b-issue.json", Id: "RM-003", Order: 10),
+            (FileName: "c-issue.json", Id: "RM-002", Order: 10),
+            (FileName: "d-issue.json", Id: "RM-004", Order: 30),
+            (FileName: "e-issue.json", Id: "RM-005", Order: 40),
+            (FileName: "f-issue.json", Id: "RM-007", Order: 50)
+        };
+        foreach (var item in items)
+        {
+            var itemText = defaultItem
+                .Replace("\"id\": \"RM-001\"", $"\"id\": \"{item.Id}\"", StringComparison.Ordinal)
+                .Replace("\"type\": \"epic\"", "\"type\": \"issue\"", StringComparison.Ordinal)
+                .Replace("\"order\": 10", $"\"order\": {item.Order}", StringComparison.Ordinal);
+            workspace.WriteFile($"roadmap/items/{item.FileName}", itemText);
+        }
+
+        workspace.WriteFile("roadmap/order.json", "{ \"items\": [\"RM-001\", \"RM-002\", \"RM-003\", \"RM-006\", \"RM-004\", \"RM-005\", \"RM-007\"] }");
+
+        // Act
+        var exitCode = await RepoConfigToolApplication.Run(["get", "pareto", "--type", "issue", "--limit", "2", "--root", workspace.RootPath], getOutput, getError, workspace.RootPath, TestContext.Current.CancellationToken);
+        var outputText = getOutput.ToString();
+
+        // Assert
+        exitCode.ShouldBe(0);
+        outputText.ShouldStartWith("RM-002 | issue", StringComparison.Ordinal);
     }
 
     [Fact]

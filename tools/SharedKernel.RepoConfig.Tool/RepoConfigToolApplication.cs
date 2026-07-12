@@ -28,6 +28,11 @@ internal static class RepoConfigToolApplication
                 ? await RunGitHubProjection(args[1..], output, error, workingDirectory, cancellationToken).ConfigureAwait(false)
                 : RunCommand(args, output, error, workingDirectory);
         }
+        catch (OperationCanceledException exception) when (!cancellationToken.IsCancellationRequested)
+        {
+            await error.WriteLineAsync($"sharedkernel-repo: {exception.Message}".AsMemory(), cancellationToken).ConfigureAwait(false);
+            return 1;
+        }
         catch (Exception exception) when (exception is ArgumentException
             or IOException
             or JsonException
@@ -186,7 +191,7 @@ internal static class RepoConfigToolApplication
                 return 0;
 
             case "next-blockers":
-                WriteItems(output, project.OpenItems(type).Where(item => item.Type == "blocker" || item.Blocks.Count > 0).OrderByDescending(item => item.Blocks.Count).ThenBy(item => item.Order).Take(limit));
+                WriteItems(output, project.OpenItems(type).Where(item => item.Type == "blocker" || item.Blocks.Count > 0).OrderByDescending(item => item.Blocks.Count).ThenBy(item => item.Order).ThenBy(item => item.Id, StringComparer.Ordinal).Take(limit));
                 return 0;
 
             case "next-enablers":
@@ -194,13 +199,13 @@ internal static class RepoConfigToolApplication
                 return 0;
 
             case "low-hanging-fruit":
-                WriteItems(output, project.OpenItems(type).Where(project.IsUnblocked).OrderBy(item => item.Effort).ThenByDescending(item => item.Score).ThenBy(item => item.Order).Take(limit));
+                WriteItems(output, project.OpenItems(type).Where(project.IsUnblocked).OrderBy(item => item.Effort).ThenByDescending(item => item.Score).ThenBy(item => item.Order).ThenBy(item => item.Id, StringComparer.Ordinal).Take(limit));
                 return 0;
 
             case "pareto":
                 var unblockedOpenItems = project.OpenItems(type).Where(project.IsUnblocked).ToArray();
                 var paretoLimit = Math.Max(1, (int)Math.Ceiling(unblockedOpenItems.Length * ParetoFraction));
-                WriteItems(output, unblockedOpenItems.OrderByDescending(item => item.Score).ThenBy(item => item.Effort).Take(Math.Min(limit, paretoLimit)));
+                WriteItems(output, unblockedOpenItems.OrderByDescending(item => item.Score).ThenBy(item => item.Effort).ThenBy(item => item.Order).ThenBy(item => item.Id, StringComparer.Ordinal).Take(Math.Min(limit, paretoLimit)));
                 return 0;
 
             case "blocking-overview":
