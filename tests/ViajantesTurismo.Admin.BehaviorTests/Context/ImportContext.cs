@@ -171,7 +171,7 @@ public sealed class ImportContext
         var accommodationPreferences = AccommodationPreferences.Create(
             RoomType.DoubleOccupancy,
             BedType.SingleBed,
-            null).Value;
+            null);
 
         var emergencyContact = EmergencyContact.Create(
             "Emergency Contact",

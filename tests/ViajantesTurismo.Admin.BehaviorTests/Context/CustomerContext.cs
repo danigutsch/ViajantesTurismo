@@ -23,7 +23,7 @@ public sealed class CustomerContext
     public required Result<EmergencyContact> EmergencyContactResult { get; set; }
     public Result<PhysicalInfo>? PhysicalInfoResult { get; set; }
     public Result<MedicalInfo>? MedicalInfoResult { get; set; }
-    public Result<AccommodationPreferences>? AccommodationPreferencesResult { get; set; }
+    public AccommodationPreferences? AccommodationPreferences { get; set; }
 
     public required Customer Customer { get; set; }
 

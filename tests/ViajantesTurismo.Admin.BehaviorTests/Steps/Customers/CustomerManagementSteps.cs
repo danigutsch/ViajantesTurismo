@@ -46,7 +46,7 @@ public sealed class CustomerManagementSteps(CustomerContext context)
     [Given("I have valid accommodation preferences")]
     public void GivenIHaveValidAccommodationPreferences()
     {
-        context.AccommodationPreferencesResult =
+        context.AccommodationPreferences =
             AccommodationPreferences.Create(RoomType.DoubleOccupancy, BedType.DoubleBed, Guid.CreateVersion7());
     }
 
@@ -66,7 +66,7 @@ public sealed class CustomerManagementSteps(CustomerContext context)
     public void WhenICreateACustomer()
     {
         (context.PhysicalInfoResult).ShouldNotBeNull();
-        (context.AccommodationPreferencesResult).ShouldNotBeNull();
+        var accommodationPreferences = context.AccommodationPreferences.ShouldNotBeNull();
         (context.MedicalInfoResult).ShouldNotBeNull();
 
         context.PersonalInfoResult = PersonalInfo.Create(
@@ -84,7 +84,7 @@ public sealed class CustomerManagementSteps(CustomerContext context)
             context.ContactInfoResult.Value,
             context.AddressResult.Value,
             context.PhysicalInfoResult.Value.Value,
-            context.AccommodationPreferencesResult.Value.Value,
+            accommodationPreferences,
             new CustomerHealthInfo(context.EmergencyContactResult.Value, context.MedicalInfoResult.Value.Value));
     }
 
@@ -99,7 +99,7 @@ public sealed class CustomerManagementSteps(CustomerContext context)
     {
         (context.Customer).ShouldNotBeNull();
         (context.PhysicalInfoResult).ShouldNotBeNull();
-        (context.AccommodationPreferencesResult).ShouldNotBeNull();
+        var accommodationPreferences = context.AccommodationPreferences.ShouldNotBeNull();
         (context.MedicalInfoResult).ShouldNotBeNull();
 
         (context.Customer.PersonalInfo).ShouldBe(context.PersonalInfoResult.Value);
@@ -107,7 +107,7 @@ public sealed class CustomerManagementSteps(CustomerContext context)
         (context.Customer.ContactInfo).ShouldBe(context.ContactInfoResult.Value);
         (context.Customer.Address).ShouldBe(context.AddressResult.Value);
         (context.Customer.PhysicalInfo).ShouldBe(context.PhysicalInfoResult.Value.Value);
-        (context.Customer.AccommodationPreferences).ShouldBe(context.AccommodationPreferencesResult.Value.Value);
+        (context.Customer.AccommodationPreferences).ShouldBe(accommodationPreferences);
         (context.Customer.EmergencyContact).ShouldBe(context.EmergencyContactResult.Value);
         (context.Customer.MedicalInfo).ShouldBe(context.MedicalInfoResult.Value.Value);
     }
