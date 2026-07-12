@@ -86,63 +86,73 @@ internal static class RepoConfigVerifier
             issues.Add(new RepoConfigIssue(relativePath, "allowed.statuses must contain at least one status."));
         }
 
-        if (!root.TryGetProperty("project", out var project) || project.ValueKind != JsonValueKind.Object)
-        {
-            issues.Add(new RepoConfigIssue(relativePath, "Missing required object property: project."));
-        }
-        else
-        {
-            if (!string.Equals(GetString(project, "ordering"), "order", StringComparison.Ordinal))
-            {
-                issues.Add(new RepoConfigIssue(relativePath, "project.ordering must be order."));
-            }
-
-            if (!string.Equals(GetString(project, "blockedBy"), "blockedBy", StringComparison.Ordinal))
-            {
-                issues.Add(new RepoConfigIssue(relativePath, "project.blockedBy must be blockedBy."));
-            }
-
-            if (distinctClosedStatuses.Length == 0)
-            {
-                issues.Add(new RepoConfigIssue(relativePath, "project.closedStatuses must contain at least one status."));
-            }
-
-            foreach (var closedStatus in distinctClosedStatuses.Where(closedStatus => !distinctStatuses.Contains(closedStatus, StringComparer.Ordinal)))
-            {
-                issues.Add(new RepoConfigIssue(relativePath, $"project.closedStatuses contains unknown status: {closedStatus}."));
-            }
-        }
-
-        if (!root.TryGetProperty("integrations", out var integrations) || integrations.ValueKind != JsonValueKind.Object)
-        {
-            issues.Add(new RepoConfigIssue(relativePath, "Missing required object property: integrations."));
-        }
-        else
-        {
-            VerifyGitHubConfig(integrations, relativePath, issues);
-        }
-
-        if (!root.TryGetProperty("scoring", out var scoring) || scoring.ValueKind != JsonValueKind.Object)
-        {
-            issues.Add(new RepoConfigIssue(relativePath, "Missing required object property: scoring."));
-        }
-        else
-        {
-            if (!string.Equals(GetString(scoring, "model"), "RICE", StringComparison.Ordinal))
-            {
-                issues.Add(new RepoConfigIssue(relativePath, "scoring.model must be RICE."));
-            }
-
-            if (!string.Equals(GetString(scoring, "formula"), "reach * impact * confidence / effort", StringComparison.Ordinal))
-            {
-                issues.Add(new RepoConfigIssue(relativePath, "scoring.formula must be reach * impact * confidence / effort."));
-            }
-        }
+        VerifyProjectConfig(root, distinctStatuses, distinctClosedStatuses, relativePath, issues);
+        VerifyIntegrationsConfig(root, relativePath, issues);
+        VerifyConfigScoring(root, relativePath, issues);
 
         return new RoadmapSettings(
             string.IsNullOrWhiteSpace(configuredItemIdPrefix) ? RoadmapSettings.Default.ItemIdPrefix : configuredItemIdPrefix,
             distinctTypes.Length == 0 ? RoadmapSettings.Default.AllowedTypes : distinctTypes,
             distinctStatuses.Length == 0 ? RoadmapSettings.Default.AllowedStatuses : distinctStatuses);
+    }
+
+    private static void VerifyProjectConfig(JsonElement root, string[] distinctStatuses, string[] distinctClosedStatuses, string relativePath, List<RepoConfigIssue> issues)
+    {
+        if (!root.TryGetProperty("project", out var project) || project.ValueKind != JsonValueKind.Object)
+        {
+            issues.Add(new RepoConfigIssue(relativePath, "Missing required object property: project."));
+            return;
+        }
+
+        if (!string.Equals(GetString(project, "ordering"), "order", StringComparison.Ordinal))
+        {
+            issues.Add(new RepoConfigIssue(relativePath, "project.ordering must be order."));
+        }
+
+        if (!string.Equals(GetString(project, "blockedBy"), "blockedBy", StringComparison.Ordinal))
+        {
+            issues.Add(new RepoConfigIssue(relativePath, "project.blockedBy must be blockedBy."));
+        }
+
+        if (distinctClosedStatuses.Length == 0)
+        {
+            issues.Add(new RepoConfigIssue(relativePath, "project.closedStatuses must contain at least one status."));
+        }
+
+        foreach (var closedStatus in distinctClosedStatuses.Where(closedStatus => !distinctStatuses.Contains(closedStatus, StringComparer.Ordinal)))
+        {
+            issues.Add(new RepoConfigIssue(relativePath, $"project.closedStatuses contains unknown status: {closedStatus}."));
+        }
+    }
+
+    private static void VerifyIntegrationsConfig(JsonElement root, string relativePath, List<RepoConfigIssue> issues)
+    {
+        if (!root.TryGetProperty("integrations", out var integrations) || integrations.ValueKind != JsonValueKind.Object)
+        {
+            issues.Add(new RepoConfigIssue(relativePath, "Missing required object property: integrations."));
+            return;
+        }
+
+        VerifyGitHubConfig(integrations, relativePath, issues);
+    }
+
+    private static void VerifyConfigScoring(JsonElement root, string relativePath, List<RepoConfigIssue> issues)
+    {
+        if (!root.TryGetProperty("scoring", out var scoring) || scoring.ValueKind != JsonValueKind.Object)
+        {
+            issues.Add(new RepoConfigIssue(relativePath, "Missing required object property: scoring."));
+            return;
+        }
+
+        if (!string.Equals(GetString(scoring, "model"), "RICE", StringComparison.Ordinal))
+        {
+            issues.Add(new RepoConfigIssue(relativePath, "scoring.model must be RICE."));
+        }
+
+        if (!string.Equals(GetString(scoring, "formula"), "reach * impact * confidence / effort", StringComparison.Ordinal))
+        {
+            issues.Add(new RepoConfigIssue(relativePath, "scoring.formula must be reach * impact * confidence / effort."));
+        }
     }
 
     private static void VerifyItems(string rootPath, RoadmapSettings settings, List<RepoConfigIssue> issues)

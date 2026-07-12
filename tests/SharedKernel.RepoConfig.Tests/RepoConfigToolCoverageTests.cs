@@ -259,11 +259,12 @@ public sealed class RepoConfigToolCoverageTests
 
         // Assert
         exitCode.ShouldBe(1);
-        errorText.ShouldContain("sourceOfTruth must be repository.", StringComparison.Ordinal);
-        errorText.ShouldContain("allowed.statuses must contain at least one status.", StringComparison.Ordinal);
-        errorText.ShouldContain("project.ordering must be order.", StringComparison.Ordinal);
-        errorText.ShouldContain("integrations.github.enabled must be a Boolean.", StringComparison.Ordinal);
-        errorText.ShouldContain("scoring.model must be RICE.", StringComparison.Ordinal);
+        errorText.ShouldContainInOrder(
+            "sourceOfTruth must be repository.",
+            "allowed.statuses must contain at least one status.",
+            "project.ordering must be order.",
+            "integrations.github.enabled must be a Boolean.",
+            "scoring.model must be RICE.");
         errorText.ShouldContain("id must start with RM-.", StringComparison.Ordinal);
         errorText.ShouldContain("Unknown roadmap type: mystery.", StringComparison.Ordinal);
         errorText.ShouldContain("order must be 1 or greater.", StringComparison.Ordinal);
