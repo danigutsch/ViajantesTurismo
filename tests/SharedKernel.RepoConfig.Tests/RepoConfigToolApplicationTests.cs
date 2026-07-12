@@ -847,6 +847,9 @@ public sealed class RepoConfigToolApplicationTests
 
         // Assert
         exitCode.ShouldBe(0);
+        firstIndex.ShouldBeGreaterThan(-1);
+        secondIndex.ShouldBeGreaterThan(-1);
+        thirdIndex.ShouldBeGreaterThan(-1);
         firstIndex.ShouldBeLessThan(secondIndex);
         secondIndex.ShouldBeLessThan(thirdIndex);
     }
@@ -924,9 +927,9 @@ public sealed class RepoConfigToolApplicationTests
         var defaultItem = workspace.ReadFile("roadmap/items/RM-001-roadmap-gitops.json");
         var items = new[]
         {
-            (FileName: "a-issue.json", Id: "RM-006", Order: 20),
+            (FileName: "a-issue.json", Id: "RM-002", Order: 20),
             (FileName: "b-issue.json", Id: "RM-003", Order: 10),
-            (FileName: "c-issue.json", Id: "RM-002", Order: 10),
+            (FileName: "c-issue.json", Id: "RM-006", Order: 10),
             (FileName: "d-issue.json", Id: "RM-004", Order: 30),
             (FileName: "e-issue.json", Id: "RM-005", Order: 40),
             (FileName: "f-issue.json", Id: "RM-007", Order: 50)
@@ -940,7 +943,7 @@ public sealed class RepoConfigToolApplicationTests
             workspace.WriteFile($"roadmap/items/{item.FileName}", itemText);
         }
 
-        workspace.WriteFile("roadmap/order.json", "{ \"items\": [\"RM-001\", \"RM-002\", \"RM-003\", \"RM-006\", \"RM-004\", \"RM-005\", \"RM-007\"] }");
+        workspace.WriteFile("roadmap/order.json", "{ \"items\": [\"RM-001\", \"RM-003\", \"RM-006\", \"RM-002\", \"RM-004\", \"RM-005\", \"RM-007\"] }");
 
         // Act
         var exitCode = await RepoConfigToolApplication.Run(["get", "pareto", "--type", "issue", "--limit", "2", "--root", workspace.RootPath], getOutput, getError, workspace.RootPath, TestContext.Current.CancellationToken);
@@ -948,7 +951,9 @@ public sealed class RepoConfigToolApplicationTests
 
         // Assert
         exitCode.ShouldBe(0);
-        outputText.ShouldStartWith("RM-002 | issue", StringComparison.Ordinal);
+        outputText.ShouldStartWith("RM-003 | issue", StringComparison.Ordinal);
+        outputText.ShouldContain("RM-006 | issue", StringComparison.Ordinal);
+        outputText.ShouldNotContain("RM-002 | issue", StringComparison.Ordinal);
     }
 
     [Fact]
