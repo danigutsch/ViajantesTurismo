@@ -24,6 +24,13 @@ public sealed class DocumentDraft : IEntity<Guid>
         string brandingVersion,
         string brandingName,
         Uri? brandingLogoUri,
+        string brandingPrimaryColor,
+        string brandingAccentColor,
+        string brandingBackgroundColor,
+        string brandingTextColor,
+        string brandingHeadingFontFamily,
+        string brandingBodyFontFamily,
+        string brandingFooterText,
         DateTime createdAt,
         Guid? replacesDocumentId = null)
     {
@@ -39,6 +46,13 @@ public sealed class DocumentDraft : IEntity<Guid>
         BrandingVersion = brandingVersion;
         BrandingName = brandingName;
         BrandingLogoUri = brandingLogoUri;
+        BrandingPrimaryColor = brandingPrimaryColor;
+        BrandingAccentColor = brandingAccentColor;
+        BrandingBackgroundColor = brandingBackgroundColor;
+        BrandingTextColor = brandingTextColor;
+        BrandingHeadingFontFamily = brandingHeadingFontFamily;
+        BrandingBodyFontFamily = brandingBodyFontFamily;
+        BrandingFooterText = brandingFooterText;
         CreatedAt = createdAt;
         UpdatedAt = createdAt;
         RetentionExpiresAt = createdAt.AddDays(DocumentLimits.DraftRetentionDays);
@@ -89,6 +103,27 @@ public sealed class DocumentDraft : IEntity<Guid>
     /// <summary>Gets the immutable captured branding logo URI.</summary>
     public Uri? BrandingLogoUri { get; private init; }
 
+    /// <summary>Gets the immutable captured primary brand color.</summary>
+    public string BrandingPrimaryColor { get; private init; } = default!;
+
+    /// <summary>Gets the immutable captured accent brand color.</summary>
+    public string BrandingAccentColor { get; private init; } = default!;
+
+    /// <summary>Gets the immutable captured document background color.</summary>
+    public string BrandingBackgroundColor { get; private init; } = default!;
+
+    /// <summary>Gets the immutable captured document text color.</summary>
+    public string BrandingTextColor { get; private init; } = default!;
+
+    /// <summary>Gets the immutable captured heading font family.</summary>
+    public string BrandingHeadingFontFamily { get; private init; } = default!;
+
+    /// <summary>Gets the immutable captured body font family.</summary>
+    public string BrandingBodyFontFamily { get; private init; } = default!;
+
+    /// <summary>Gets the immutable captured footer text.</summary>
+    public string BrandingFooterText { get; private init; } = default!;
+
     /// <summary>Gets the classified document fields.</summary>
     public IReadOnlyList<DocumentField> Fields => _fields.AsReadOnly();
 
@@ -128,6 +163,45 @@ public sealed class DocumentDraft : IEntity<Guid>
         string brandingVersion,
         string brandingName,
         Uri? brandingLogoUri,
+        DateTime createdAt) => Create(
+            bookingId,
+            type,
+            audience,
+            templateId,
+            templateVersion,
+            sourceVersion,
+            fields,
+            brandingVersion,
+            brandingName,
+            brandingLogoUri,
+            "#000000",
+            "#000000",
+            "#ffffff",
+            "#000000",
+            "system-ui, sans-serif",
+            "system-ui, sans-serif",
+            brandingName,
+            createdAt);
+
+    /// <summary>Creates the initial document draft revision.</summary>
+    public static Result<DocumentDraft> Create(
+        Guid bookingId,
+        DocumentType type,
+        DocumentAudience audience,
+        string templateId,
+        string templateVersion,
+        string sourceVersion,
+        IEnumerable<DocumentField> fields,
+        string brandingVersion,
+        string brandingName,
+        Uri? brandingLogoUri,
+        string brandingPrimaryColor,
+        string brandingAccentColor,
+        string brandingBackgroundColor,
+        string brandingTextColor,
+        string brandingHeadingFontFamily,
+        string brandingBodyFontFamily,
+        string brandingFooterText,
         DateTime createdAt)
     {
         ArgumentNullException.ThrowIfNull(fields);
@@ -143,7 +217,14 @@ public sealed class DocumentDraft : IEntity<Guid>
             fieldList,
             brandingVersion,
             brandingName,
-            brandingLogoUri);
+            brandingLogoUri,
+            brandingPrimaryColor,
+            brandingAccentColor,
+            brandingBackgroundColor,
+            brandingTextColor,
+            brandingHeadingFontFamily,
+            brandingBodyFontFamily,
+            brandingFooterText);
         if (validation.IsFailure)
         {
             return validation.ConvertError<DocumentDraft>();
@@ -161,6 +242,13 @@ public sealed class DocumentDraft : IEntity<Guid>
             brandingVersion,
             brandingName,
             brandingLogoUri,
+            brandingPrimaryColor,
+            brandingAccentColor,
+            brandingBackgroundColor,
+            brandingTextColor,
+            brandingHeadingFontFamily,
+            brandingBodyFontFamily,
+            brandingFooterText,
             createdAt));
     }
 
@@ -173,6 +261,39 @@ public sealed class DocumentDraft : IEntity<Guid>
         string brandingVersion,
         string brandingName,
         Uri? brandingLogoUri,
+        DateTime createdAt) => CreateRevision(
+            templateId,
+            templateVersion,
+            sourceVersion,
+            fields,
+            brandingVersion,
+            brandingName,
+            brandingLogoUri,
+            "#000000",
+            "#000000",
+            "#ffffff",
+            "#000000",
+            "system-ui, sans-serif",
+            "system-ui, sans-serif",
+            brandingName,
+            createdAt);
+
+    /// <summary>Creates a replacement draft with refreshed source data.</summary>
+    public Result<DocumentDraft> CreateRevision(
+        string templateId,
+        string templateVersion,
+        string sourceVersion,
+        IEnumerable<DocumentField> fields,
+        string brandingVersion,
+        string brandingName,
+        Uri? brandingLogoUri,
+        string brandingPrimaryColor,
+        string brandingAccentColor,
+        string brandingBackgroundColor,
+        string brandingTextColor,
+        string brandingHeadingFontFamily,
+        string brandingBodyFontFamily,
+        string brandingFooterText,
         DateTime createdAt)
     {
         ArgumentNullException.ThrowIfNull(fields);
@@ -190,7 +311,14 @@ public sealed class DocumentDraft : IEntity<Guid>
             fieldList,
             brandingVersion,
             brandingName,
-            brandingLogoUri);
+            brandingLogoUri,
+            brandingPrimaryColor,
+            brandingAccentColor,
+            brandingBackgroundColor,
+            brandingTextColor,
+            brandingHeadingFontFamily,
+            brandingBodyFontFamily,
+            brandingFooterText);
         if (validation.IsFailure)
         {
             return validation.ConvertError<DocumentDraft>();
@@ -208,6 +336,13 @@ public sealed class DocumentDraft : IEntity<Guid>
             brandingVersion,
             brandingName,
             brandingLogoUri,
+            brandingPrimaryColor,
+            brandingAccentColor,
+            brandingBackgroundColor,
+            brandingTextColor,
+            brandingHeadingFontFamily,
+            brandingBodyFontFamily,
+            brandingFooterText,
             createdAt,
             Id));
     }
@@ -350,7 +485,14 @@ public sealed class DocumentDraft : IEntity<Guid>
         List<DocumentField> fields,
         string brandingVersion,
         string brandingName,
-        Uri? brandingLogoUri)
+        Uri? brandingLogoUri,
+        string brandingPrimaryColor,
+        string brandingAccentColor,
+        string brandingBackgroundColor,
+        string brandingTextColor,
+        string brandingHeadingFontFamily,
+        string brandingBodyFontFamily,
+        string brandingFooterText)
     {
         if (bookingId == Guid.Empty)
         {
@@ -427,6 +569,48 @@ public sealed class DocumentDraft : IEntity<Guid>
             return DocumentErrors.InvalidValue("brandingLogoUri");
         }
 
+        var brandingTokenValidation = ValidateBrandingToken("brandingPrimaryColor", brandingPrimaryColor);
+        if (brandingTokenValidation.IsFailure)
+        {
+            return brandingTokenValidation;
+        }
+
+        brandingTokenValidation = ValidateBrandingToken("brandingAccentColor", brandingAccentColor);
+        if (brandingTokenValidation.IsFailure)
+        {
+            return brandingTokenValidation;
+        }
+
+        brandingTokenValidation = ValidateBrandingToken("brandingBackgroundColor", brandingBackgroundColor);
+        if (brandingTokenValidation.IsFailure)
+        {
+            return brandingTokenValidation;
+        }
+
+        brandingTokenValidation = ValidateBrandingToken("brandingTextColor", brandingTextColor);
+        if (brandingTokenValidation.IsFailure)
+        {
+            return brandingTokenValidation;
+        }
+
+        brandingTokenValidation = ValidateBrandingToken("brandingHeadingFontFamily", brandingHeadingFontFamily);
+        if (brandingTokenValidation.IsFailure)
+        {
+            return brandingTokenValidation;
+        }
+
+        brandingTokenValidation = ValidateBrandingToken("brandingBodyFontFamily", brandingBodyFontFamily);
+        if (brandingTokenValidation.IsFailure)
+        {
+            return brandingTokenValidation;
+        }
+
+        brandingTokenValidation = ValidateBrandingToken("brandingFooterText", brandingFooterText);
+        if (brandingTokenValidation.IsFailure)
+        {
+            return brandingTokenValidation;
+        }
+
         var duplicateField = fields
             .GroupBy(field => field.FieldId, StringComparer.Ordinal)
             .FirstOrDefault(group => group.Skip(1).Any());
@@ -447,6 +631,18 @@ public sealed class DocumentDraft : IEntity<Guid>
         }
 
         return Result.Ok();
+    }
+
+    private static Result ValidateBrandingToken(string field, string value)
+    {
+        if (string.IsNullOrWhiteSpace(value))
+        {
+            return DocumentErrors.ValueRequired(field);
+        }
+
+        return value.Length > DocumentLimits.MaxBrandingTokenLength
+            ? DocumentErrors.ValueTooLong(field, DocumentLimits.MaxBrandingTokenLength)
+            : Result.Ok();
     }
 
     private static bool IsSafeBrandingLogoUri(Uri? logoUri)

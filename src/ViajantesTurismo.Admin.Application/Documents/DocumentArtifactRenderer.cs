@@ -26,7 +26,14 @@ internal static class DocumentArtifactRenderer
             new DocumentBrandingSnapshot(
                 document.BrandingVersion,
                 document.BrandingName,
-                document.BrandingLogoUri));
+                document.BrandingLogoUri,
+                document.BrandingPrimaryColor,
+                document.BrandingAccentColor,
+                document.BrandingBackgroundColor,
+                document.BrandingTextColor,
+                document.BrandingHeadingFontFamily,
+                document.BrandingBodyFontFamily,
+                document.BrandingFooterText));
 
         return new HtmlDocumentRenderer().Render(request);
     }

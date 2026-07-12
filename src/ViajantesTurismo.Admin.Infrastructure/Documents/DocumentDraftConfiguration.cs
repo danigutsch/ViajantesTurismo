@@ -28,6 +28,13 @@ internal sealed class DocumentDraftConfiguration : IEntityTypeConfiguration<Docu
                 uri => uri == null ? null : uri.OriginalString,
                 value => ToSafeLogoUri(value)))
             .HasMaxLength(DocumentLimits.MaxBrandingLogoUriLength);
+        entity.Property(document => document.BrandingPrimaryColor).HasMaxLength(DocumentLimits.MaxBrandingTokenLength).IsRequired();
+        entity.Property(document => document.BrandingAccentColor).HasMaxLength(DocumentLimits.MaxBrandingTokenLength).IsRequired();
+        entity.Property(document => document.BrandingBackgroundColor).HasMaxLength(DocumentLimits.MaxBrandingTokenLength).IsRequired();
+        entity.Property(document => document.BrandingTextColor).HasMaxLength(DocumentLimits.MaxBrandingTokenLength).IsRequired();
+        entity.Property(document => document.BrandingHeadingFontFamily).HasMaxLength(DocumentLimits.MaxBrandingTokenLength).IsRequired();
+        entity.Property(document => document.BrandingBodyFontFamily).HasMaxLength(DocumentLimits.MaxBrandingTokenLength).IsRequired();
+        entity.Property(document => document.BrandingFooterText).HasMaxLength(DocumentLimits.MaxBrandingTokenLength).IsRequired();
         entity.Property(document => document.Status).HasConversion<string>().IsRequired();
         entity.Property(document => document.CreatedAt).IsRequired();
         entity.Property(document => document.UpdatedAt).IsRequired();

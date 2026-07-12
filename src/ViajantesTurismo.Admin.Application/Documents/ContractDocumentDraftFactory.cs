@@ -41,6 +41,13 @@ internal static class ContractDocumentDraftFactory
             branding.Version,
             branding.BrandName,
             branding.LogoUri,
+            branding.PrimaryColor,
+            branding.AccentColor,
+            branding.BackgroundColor,
+            branding.TextColor,
+            branding.HeadingFontFamily,
+            branding.BodyFontFamily,
+            branding.FooterText,
             now);
     }
 
@@ -72,6 +79,13 @@ internal static class ContractDocumentDraftFactory
             branding.Version,
             branding.BrandName,
             branding.LogoUri,
+            branding.PrimaryColor,
+            branding.AccentColor,
+            branding.BackgroundColor,
+            branding.TextColor,
+            branding.HeadingFontFamily,
+            branding.BodyFontFamily,
+            branding.FooterText,
             now);
     }
 
