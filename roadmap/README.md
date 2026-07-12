@@ -37,6 +37,10 @@ represented in the canonical model.
 This roadmap intentionally avoids date-based planning. Use `order` for priority
 and `blockedBy` for sequencing. Lower `order` values come first.
 
+`roadmap/order.json` is the canonical list of every roadmap item ID. Its `items`
+array must contain each item exactly once, ordered by `order` ascending, RICE
+score descending, then ID ascending.
+
 ## Prioritization
 
 Roadmap items start with RICE scoring:

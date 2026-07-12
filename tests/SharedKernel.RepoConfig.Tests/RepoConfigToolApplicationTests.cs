@@ -1,6 +1,7 @@
 using System.Globalization;
 using System.Net;
 using System.Text.Json;
+using Microsoft.Extensions.Time.Testing;
 
 namespace SharedKernel.RepoConfig.Tests;
 
@@ -942,6 +943,33 @@ public sealed class RepoConfigToolApplicationTests
         handler.Requests[3].Method.ShouldBe(HttpMethod.Post);
         handler.Requests[3].Body.ShouldNotBeNull();
         handler.Requests[3].Body.ShouldContain("area: tooling", StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public async Task Sync_github_apply_resets_the_timeout_for_each_item()
+    {
+        // Arrange
+        using var workspace = new TemporaryRepoConfigWorkspace();
+        using var initOutput = new StringWriter(CultureInfo.InvariantCulture);
+        using var initError = new StringWriter(CultureInfo.InvariantCulture);
+        (await RepoConfigToolApplication.Run(["init", "--root", workspace.RootPath], initOutput, initError, workspace.RootPath, TestContext.Current.CancellationToken)).ShouldBe(0);
+        RoadmapConfigTestOperations.EnableGitHubSync(workspace);
+        var defaultItem = workspace.ReadFile("roadmap/items/RM-001-roadmap-gitops.json");
+        workspace.WriteFile("roadmap/items/RM-001-roadmap-gitops.json", defaultItem.Replace("\"labels\": [", "\"integrations\": { \"github\": { \"issue\": 997 } },\n  \"labels\": [", StringComparison.Ordinal));
+        var followUpItem = RoadmapTestContent.IssueWithGitHubMappingJson.Replace("\"issue\": 997", "\"issue\": 998", StringComparison.Ordinal);
+        workspace.WriteFile("roadmap/items/RM-002-follow-up.json", followUpItem);
+        workspace.WriteFile("roadmap/order.json", "{ \"items\": [\"RM-001\", \"RM-002\"] }");
+        var project = RoadmapProject.Load(workspace.RootPath);
+        var timeProvider = new FakeTimeProvider();
+        using var handler = new TimeAdvancingHttpMessageHandler(timeProvider);
+        using var httpClient = new HttpClient(handler);
+        var syncer = new GitHubRoadmapSyncer(project, httpClient, timeProvider);
+
+        // Act
+        var result = await syncer.Apply(TestContext.Current.CancellationToken);
+
+        // Assert
+        result.Messages.Count.ShouldBe(2);
     }
 
     [Fact]

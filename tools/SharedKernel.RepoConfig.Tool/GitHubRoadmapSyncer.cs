@@ -12,18 +12,20 @@ internal sealed class GitHubRoadmapSyncer
 
     private readonly HttpClient? _httpClient;
     private readonly RoadmapProject _project;
+    private readonly TimeProvider _timeProvider;
 
     public GitHubRoadmapSyncer(RoadmapProject project)
-        : this(project, httpClient: null)
+        : this(project, httpClient: null, timeProvider: null)
     {
     }
 
-    internal GitHubRoadmapSyncer(RoadmapProject project, HttpClient? httpClient)
+    internal GitHubRoadmapSyncer(RoadmapProject project, HttpClient? httpClient, TimeProvider? timeProvider = null)
     {
         ArgumentNullException.ThrowIfNull(project);
 
         _project = project;
         _httpClient = httpClient;
+        _timeProvider = timeProvider ?? TimeProvider.System;
     }
 
     public GitHubSyncResult Preview() =>
@@ -36,7 +38,8 @@ internal sealed class GitHubRoadmapSyncer
             throw new InvalidOperationException("GitHub sync is disabled in roadmap/config.json.");
         }
 
-        if (string.IsNullOrWhiteSpace(_project.GitHubRepository))
+        var repository = _project.GitHubRepository;
+        if (string.IsNullOrWhiteSpace(repository))
         {
             throw new InvalidOperationException("roadmap/config.json must define integrations.github.repository before GitHub sync.");
         }
@@ -50,15 +53,20 @@ internal sealed class GitHubRoadmapSyncer
         List<string> messages = [];
         using var ownedHttpClient = _httpClient is null ? CreateGitHubClient() : null;
         var httpClient = (_httpClient ?? ownedHttpClient) ?? throw new InvalidOperationException("GitHub sync could not create an HTTP client.");
-        using var timeout = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
-        timeout.CancelAfter(GitHubSyncTimeout);
         foreach (var item in itemsWithIssues)
         {
-            await UpdateIssue(httpClient, _project.GitHubRepository, item, timeout.Token).ConfigureAwait(false);
-            messages.Add($"updated {_project.GitHubRepository}#{item.GitHubIssue} from {item.Id}");
+            await UpdateItem(httpClient, repository, item, cancellationToken).ConfigureAwait(false);
+            messages.Add($"updated {repository}#{item.GitHubIssue} from {item.Id}");
         }
 
         return new GitHubSyncResult(messages);
+    }
+
+    private async Task UpdateItem(HttpClient httpClient, string repository, RoadmapItemSnapshot item, CancellationToken cancellationToken)
+    {
+        using var timeout = new CancellationTokenSource(GitHubSyncTimeout, _timeProvider);
+        using var itemCancellation = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, timeout.Token);
+        await UpdateIssue(httpClient, repository, item, itemCancellation.Token).ConfigureAwait(false);
     }
 
     private GitHubSyncResult BuildPreview(RoadmapItemSnapshot[] itemsWithIssues)
