@@ -135,6 +135,22 @@ public sealed partial class AppHostOrchestrationTests
     }
 
     [Fact]
+    public void Management_security_schema_is_provisioned_before_the_web_starts()
+    {
+        // Arrange
+        var resourceExtensionsText = File.ReadAllText(Path.Combine(
+            GetRepositoryRoot(),
+            "src",
+            "ViajantesTurismo.AppHost",
+            "AppHostResourceExtensions.cs"));
+
+        // Assert
+        resourceExtensionsText.ShouldContain("WithReference(securityDatabase)", StringComparison.Ordinal);
+        resourceExtensionsText.ShouldContain("WaitFor(securityDatabase)", StringComparison.Ordinal);
+        resourceExtensionsText.ShouldContain("WaitForCompletion(migrationService)", StringComparison.Ordinal);
+    }
+
+    [Fact]
     public void Observability_stack_is_opt_in_and_routes_through_collector()
     {
         // Arrange

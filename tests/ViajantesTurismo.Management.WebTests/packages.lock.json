@@ -1025,6 +1025,14 @@
           "ViajantesTurismo.Catalog.Contracts.Application": "[0.1.0-alpha.0, )"
         }
       },
+      "viajantesturismo.management.security": {
+        "type": "Project",
+        "dependencies": {
+          "Microsoft.AspNetCore.DataProtection.EntityFrameworkCore": "[10.0.9, )",
+          "Microsoft.Extensions.Caching.Postgres": "[1.2.2, )",
+          "Npgsql.EntityFrameworkCore.PostgreSQL": "[10.0.0, )"
+        }
+      },
       "viajantesturismo.management.web": {
         "type": "Project",
         "dependencies": {
@@ -1032,8 +1040,6 @@
           "Duende.AccessTokenManagement.OpenIdConnect": "[4.2.0, )",
           "Microsoft.AspNetCore.Components.QuickGrid": "[10.0.9, )",
           "Microsoft.AspNetCore.DataProtection.EntityFrameworkCore": "[10.0.9, )",
-          "Microsoft.Extensions.Caching.Postgres": "[1.2.2, )",
-          "Npgsql.EntityFrameworkCore.PostgreSQL": "[10.0.0, )",
           "SharedKernel.AspNetCore": "[0.1.0-alpha.0, )",
           "SharedKernel.Branding": "[0.1.0-alpha.0, )",
           "SharedKernel.HttpClients": "[0.1.0-alpha.0, )",
@@ -1041,6 +1047,7 @@
           "ViajantesTurismo.Admin.Contracts.Http": "[0.1.0-alpha.0, )",
           "ViajantesTurismo.Catalog.Contracts.Application": "[0.1.0-alpha.0, )",
           "ViajantesTurismo.Catalog.Contracts.Http": "[0.1.0-alpha.0, )",
+          "ViajantesTurismo.Management.Security": "[0.1.0-alpha.0, )",
           "ViajantesTurismo.Resources": "[0.1.0-alpha.0, )",
           "ViajantesTurismo.ServiceDefaults": "[0.1.0-alpha.0, )"
         }

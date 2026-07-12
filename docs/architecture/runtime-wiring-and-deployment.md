@@ -47,6 +47,7 @@ flowchart LR
     identityProvider --> managementWebClientSecret
     migrationService --> adminDatabase
     migrationService --> catalogDatabase
+    migrationService --> securityDatabase
     securityDatabase --> databaseServer
 ```
 <!-- generated:apphost-resources:end -->

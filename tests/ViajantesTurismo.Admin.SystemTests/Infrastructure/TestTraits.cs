@@ -36,6 +36,11 @@ public static class TestTraits
     public const string IntegrationEventTransportCategory = "integration-event-transport";
 
     /// <summary>
+    /// Category value for authentication conformance tests.
+    /// </summary>
+    public const string AuthenticationCategory = "authentication";
+
+    /// <summary>
     /// Surface value for Admin validation.
     /// </summary>
     public const string AdminSurface = "admin";

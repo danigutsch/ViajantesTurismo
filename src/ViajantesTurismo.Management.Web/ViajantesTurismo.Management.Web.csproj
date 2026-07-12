@@ -17,6 +17,7 @@
         <ProjectReference Include="..\ViajantesTurismo.Admin.Contracts.Http\ViajantesTurismo.Admin.Contracts.Http.csproj" />
         <ProjectReference Include="..\ViajantesTurismo.Catalog.Contracts.Application\ViajantesTurismo.Catalog.Contracts.Application.csproj" />
         <ProjectReference Include="..\ViajantesTurismo.Catalog.Contracts.Http\ViajantesTurismo.Catalog.Contracts.Http.csproj" />
+        <ProjectReference Include="..\ViajantesTurismo.Management.Security\ViajantesTurismo.Management.Security.csproj" />
         <ProjectReference Include="..\ViajantesTurismo.Resources\ViajantesTurismo.Resources.csproj" />
         <ProjectReference Include="..\ViajantesTurismo.ServiceDefaults\ViajantesTurismo.ServiceDefaults.csproj" />
     </ItemGroup>
@@ -31,8 +32,6 @@
         <PackageReference Include="Duende.AccessTokenManagement.OpenIdConnect" />
         <PackageReference Include="Microsoft.AspNetCore.Components.QuickGrid" />
         <PackageReference Include="Microsoft.AspNetCore.DataProtection.EntityFrameworkCore" />
-        <PackageReference Include="Microsoft.Extensions.Caching.Postgres" />
-        <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" />
     </ItemGroup>
 
 </Project>

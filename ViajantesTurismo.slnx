@@ -13,6 +13,7 @@
     </Folder>
     <Folder Name="/src/">
         <Project Path="src/ViajantesTurismo.AppHost/ViajantesTurismo.AppHost.csproj" />
+        <Project Path="src/ViajantesTurismo.Management.Security/ViajantesTurismo.Management.Security.csproj" />
         <Project Path="src/ViajantesTurismo.MigrationService/ViajantesTurismo.MigrationService.csproj" />
         <Project Path="src/ViajantesTurismo.IntegrationEventWorker/ViajantesTurismo.IntegrationEventWorker.csproj" />
         <Project Path="src/ViajantesTurismo.Resources/ViajantesTurismo.Resources.csproj" />

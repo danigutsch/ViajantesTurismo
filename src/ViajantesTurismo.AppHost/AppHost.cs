@@ -14,7 +14,7 @@ var seaweedFs = builder.AddMediaObjectStorage();
 var managementWebClientSecret = builder.AddParameter(ResourceNames.ManagementWebClientSecret, secret: true);
 var identityProvider = builder.AddRunModeIdentityProvider(managementWebClientSecret);
 
-var migrationService = builder.AddMigrationService(adminDatabase, catalogDatabase);
+var migrationService = builder.AddMigrationService(adminDatabase, catalogDatabase, securityDatabase);
 
 var brandingApiService = builder.AddBrandingApi(catalogDatabase, migrationService, identityProvider);
 
@@ -33,6 +33,7 @@ builder.AddIntegrationEventWorker(adminDatabase, catalogDatabase, migrationServi
 builder.AddManagementWeb(
     cache,
     securityDatabase,
+    migrationService,
     identityProvider,
     managementWebClientSecret,
     apiService,

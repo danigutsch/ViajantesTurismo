@@ -1,21 +1,23 @@
 using Microsoft.AspNetCore.DataProtection.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 
-namespace ViajantesTurismo.Management.Web;
+namespace ViajantesTurismo.Management.Security;
 
 /// <summary>
-/// Owns the Management Web Data Protection key ring stored in the security database.
+/// Owns persisted Data Protection keys for Management security state.
 /// </summary>
-internal sealed class ManagementSecurityDbContext(DbContextOptions<ManagementSecurityDbContext> options)
+public sealed class ManagementSecurityDbContext(DbContextOptions<ManagementSecurityDbContext> options)
     : DbContext(options), IDataProtectionKeyContext
 {
+    /// <inheritdoc />
     public DbSet<DataProtectionKey> DataProtectionKeys => Set<DataProtectionKey>();
 
+    /// <inheritdoc />
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         ArgumentNullException.ThrowIfNull(modelBuilder);
 
         modelBuilder.Entity<DataProtectionKey>()
-            .ToTable("data_protection_keys", ManagementAuthenticationDefaults.SecurityStoreSchemaName);
+            .ToTable("data_protection_keys", ManagementSecurityDefaults.SchemaName);
     }
 }

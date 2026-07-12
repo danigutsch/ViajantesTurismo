@@ -8,8 +8,6 @@ internal static class ManagementAuthenticationDefaults
     internal const string ClientIdConfigurationKey = "Authentication:ClientId";
     internal const string ClientSecretConfigurationKey = "Authentication:ClientSecret";
     internal const string SecurityDatabaseConnectionName = "security-database";
-    internal const string SecurityStoreSchemaName = "security";
-    internal const string TicketStoreTableName = "management_cookie_tickets";
     internal const string TicketStoreKeyPrefix = "management-ticket:";
     internal const string TicketStoreProtectorPurpose = "ViajantesTurismo.Management.Web.CookieTicketStore.v1";
     internal const string CookieName = "__Host-viajantes-management";

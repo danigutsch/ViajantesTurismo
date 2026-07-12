@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.DataProtection;
 using Microsoft.EntityFrameworkCore;
 using SharedKernel.AspNetCore;
+using ViajantesTurismo.Management.Security;
 using System.Security.Cryptography.X509Certificates;
 using ViajantesTurismo.Resources;
 
@@ -44,15 +45,7 @@ internal static class ManagementAuthenticationServiceCollectionExtensions
             allowHttpDevelopmentAuthority,
             environment);
 
-        services.AddDistributedPostgresCache(options =>
-        {
-            options.ConnectionString = connectionString;
-            options.SchemaName = ManagementAuthenticationDefaults.SecurityStoreSchemaName;
-            options.TableName = ManagementAuthenticationDefaults.TicketStoreTableName;
-            options.CreateIfNotExists = environment.IsDevelopment();
-            options.UseWAL = true;
-        });
-        services.AddDbContext<ManagementSecurityDbContext>(options => options.UseNpgsql(connectionString));
+        services.AddManagementSecurityPersistence(connectionString!);
 
         var dataProtection = services.AddDataProtection()
             .PersistKeysToDbContext<ManagementSecurityDbContext>()

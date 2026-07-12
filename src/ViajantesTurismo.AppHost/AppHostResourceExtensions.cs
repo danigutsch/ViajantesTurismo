@@ -147,17 +147,21 @@ internal static class AppHostResourceExtensions
     /// <param name="builder">The distributed application builder.</param>
     /// <param name="adminDatabase">The Admin database resource.</param>
     /// <param name="catalogDatabase">The Catalog database resource.</param>
+    /// <param name="securityDatabase">The Management security database resource.</param>
     /// <returns>The configured migration service resource.</returns>
     public static IResourceBuilder<ProjectResource> AddMigrationService(
         this IDistributedApplicationBuilder builder,
         IResourceBuilder<PostgresDatabaseResource> adminDatabase,
-        IResourceBuilder<PostgresDatabaseResource> catalogDatabase)
+        IResourceBuilder<PostgresDatabaseResource> catalogDatabase,
+        IResourceBuilder<PostgresDatabaseResource> securityDatabase)
     {
         return builder.AddDevelopmentDotNetProject<ViajantesTurismo_MigrationService>(ResourceNames.MigrationService)
             .WithReference(adminDatabase)
             .WithReference(catalogDatabase)
+            .WithReference(securityDatabase)
             .WaitFor(adminDatabase)
-            .WaitFor(catalogDatabase);
+            .WaitFor(catalogDatabase)
+            .WaitFor(securityDatabase);
     }
 
     /// <summary>
@@ -295,6 +299,7 @@ internal static class AppHostResourceExtensions
     /// <param name="builder">The distributed application builder.</param>
     /// <param name="cache">The cache resource.</param>
     /// <param name="securityDatabase">The Management Web security-state database resource.</param>
+    /// <param name="migrationService">The migration service resource.</param>
     /// <param name="identityProvider">The local identity-provider resource.</param>
     /// <param name="managementWebClientSecret">The confidential Management Web client secret.</param>
     /// <param name="apiService">The Admin API resource.</param>
@@ -305,6 +310,7 @@ internal static class AppHostResourceExtensions
         this IDistributedApplicationBuilder builder,
         IResourceBuilder<RedisResource> cache,
         IResourceBuilder<PostgresDatabaseResource> securityDatabase,
+        IResourceBuilder<ProjectResource> migrationService,
         IResourceBuilder<ContainerResource>? identityProvider,
         IResourceBuilder<ParameterResource> managementWebClientSecret,
         IResourceBuilder<ProjectResource> apiService,
@@ -318,6 +324,7 @@ internal static class AppHostResourceExtensions
             .WaitFor(cache)
             .WithReference(securityDatabase)
             .WaitFor(securityDatabase)
+            .WaitForCompletion(migrationService)
             .WithLocalIdentityProvider(identityProvider)
             .WithEnvironment(AuthenticationClientIdEnvironmentVariable, ResourceNames.WebApp)
             .WithEnvironment(AuthenticationClientSecretEnvironmentVariable, managementWebClientSecret)

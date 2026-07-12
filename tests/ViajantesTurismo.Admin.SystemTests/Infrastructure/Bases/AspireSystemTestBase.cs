@@ -26,6 +26,8 @@ public abstract class AspireSystemTestBase<TFixture>(TFixture fixture) : PageTes
 
     private protected UiFeedbackAssertions UiFeedback => new(Page);
 
+    protected virtual bool AutomaticallySignIn => true;
+
     public override async ValueTask InitializeAsync()
     {
         await base.InitializeAsync();
@@ -33,7 +35,10 @@ public abstract class AspireSystemTestBase<TFixture>(TFixture fixture) : PageTes
         Page.SetDefaultTimeout(DefaultTimeoutMilliseconds);
         Page.SetDefaultNavigationTimeout(DefaultTimeoutMilliseconds);
         Assertions.SetDefaultExpectTimeout(DefaultTimeoutMilliseconds);
-        await ManagementLogin.SignIn(Fixture.WebAppUrl, Fixture.ConformanceUserPassword);
+        if (AutomaticallySignIn)
+        {
+            await ManagementLogin.SignIn(Fixture.WebAppUrl, Fixture.ConformanceUserPassword);
+        }
     }
 
     protected async Task NavigateTo(string relativePath)
