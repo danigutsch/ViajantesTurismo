@@ -73,12 +73,15 @@ internal static class RepoConfigVerifier
         VerifyUniqueValues(types, "allowed.types", relativePath, issues);
         VerifyUniqueValues(statuses, "allowed.statuses", relativePath, issues);
         VerifyUniqueValues(closedStatuses, "project.closedStatuses", relativePath, issues);
-        if (types.Count == 0)
+        var distinctTypes = DistinctValues(types);
+        var distinctStatuses = DistinctValues(statuses);
+        var distinctClosedStatuses = DistinctValues(closedStatuses);
+        if (distinctTypes.Length == 0)
         {
             issues.Add(new RepoConfigIssue(relativePath, "allowed.types must contain at least one type."));
         }
 
-        if (statuses.Count == 0)
+        if (distinctStatuses.Length == 0)
         {
             issues.Add(new RepoConfigIssue(relativePath, "allowed.statuses must contain at least one status."));
         }
@@ -99,12 +102,12 @@ internal static class RepoConfigVerifier
                 issues.Add(new RepoConfigIssue(relativePath, "project.blockedBy must be blockedBy."));
             }
 
-            if (closedStatuses.Count == 0)
+            if (distinctClosedStatuses.Length == 0)
             {
                 issues.Add(new RepoConfigIssue(relativePath, "project.closedStatuses must contain at least one status."));
             }
 
-            foreach (var closedStatus in closedStatuses.Where(closedStatus => !statuses.Contains(closedStatus, StringComparer.Ordinal)))
+            foreach (var closedStatus in distinctClosedStatuses.Where(closedStatus => !distinctStatuses.Contains(closedStatus, StringComparer.Ordinal)))
             {
                 issues.Add(new RepoConfigIssue(relativePath, $"project.closedStatuses contains unknown status: {closedStatus}."));
             }
@@ -138,8 +141,8 @@ internal static class RepoConfigVerifier
 
         return new RoadmapSettings(
             string.IsNullOrWhiteSpace(configuredItemIdPrefix) ? RoadmapSettings.Default.ItemIdPrefix : configuredItemIdPrefix,
-            types.Count == 0 ? RoadmapSettings.Default.AllowedTypes : types,
-            statuses.Count == 0 ? RoadmapSettings.Default.AllowedStatuses : statuses);
+            distinctTypes.Length == 0 ? RoadmapSettings.Default.AllowedTypes : distinctTypes,
+            distinctStatuses.Length == 0 ? RoadmapSettings.Default.AllowedStatuses : distinctStatuses);
     }
 
     private static void VerifyItems(string rootPath, RoadmapSettings settings, List<RepoConfigIssue> issues)
@@ -671,6 +674,9 @@ internal static class RepoConfigVerifier
             issues.Add(new RepoConfigIssue(relativePath, $"{propertyPath} contains a duplicate value: {duplicate.Key}."));
         }
     }
+
+    private static string[] DistinctValues(IEnumerable<string> values) =>
+        values.Distinct(StringComparer.Ordinal).ToArray();
 
     private static List<string> VerifyConfigStringArray(JsonElement root, string objectProperty, string arrayProperty, string propertyPath, string relativePath, List<RepoConfigIssue> issues)
     {

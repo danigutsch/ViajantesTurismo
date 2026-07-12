@@ -8,7 +8,7 @@ internal static class RepoConfigToolApplication
     private const decimal ParetoFraction = 0.2m;
     private const string Usage = "Usage: sharedkernel-repo <init|verify|diff|set|get|sync> [--root <path>]";
 
-    public static int Run(string[] args, TextWriter output, TextWriter error, string workingDirectory)
+    public static async Task<int> Run(string[] args, TextWriter output, TextWriter error, string workingDirectory, CancellationToken cancellationToken)
     {
         ArgumentNullException.ThrowIfNull(args);
         ArgumentNullException.ThrowIfNull(output);
@@ -17,14 +17,16 @@ internal static class RepoConfigToolApplication
 
         if (args is [] or ["--help"] or ["-h"])
         {
-            output.WriteLine(Usage);
-            output.WriteLine("Commands: init, verify, diff, set github.repository <owner/repo>, get <query>, sync github.");
+            await output.WriteLineAsync(Usage.AsMemory(), cancellationToken).ConfigureAwait(false);
+            await output.WriteLineAsync("Commands: init, verify, diff, set github.repository <owner/repo>, get <query>, sync github.".AsMemory(), cancellationToken).ConfigureAwait(false);
             return 0;
         }
 
         try
         {
-            return RunCommand(args, output, error, workingDirectory);
+            return args[0] == "sync"
+                ? await RunGitHubProjection(args[1..], output, error, workingDirectory, cancellationToken).ConfigureAwait(false)
+                : RunCommand(args, output, error, workingDirectory);
         }
         catch (Exception exception) when (exception is ArgumentException
             or IOException
@@ -34,7 +36,7 @@ internal static class RepoConfigToolApplication
             or UnauthorizedAccessException
             or InvalidOperationException)
         {
-            error.WriteLine($"sharedkernel-repo: {exception.Message}");
+            await error.WriteLineAsync($"sharedkernel-repo: {exception.Message}".AsMemory(), cancellationToken).ConfigureAwait(false);
             return 1;
         }
     }
@@ -49,7 +51,6 @@ internal static class RepoConfigToolApplication
             "diff" => RunDiff(args[1..], output, error, workingDirectory),
             "set" => RunSet(args[1..], output, error, workingDirectory),
             "get" => RunGet(args[1..], output, error, workingDirectory),
-            "sync" => RunSync(args[1..], output, error, workingDirectory),
             _ => WriteUsageError(error, $"Unknown command: {command}")
         };
     }
@@ -229,38 +230,55 @@ internal static class RepoConfigToolApplication
         }
     }
 
-    private static int RunSync(string[] args, TextWriter output, TextWriter error, string workingDirectory)
+    private static async Task<int> RunGitHubProjection(string[] args, TextWriter output, TextWriter error, string workingDirectory, CancellationToken cancellationToken)
     {
-        if (!TryParseRootOption(args, workingDirectory, error, out var rootPath, out var remaining))
+        var parsed = TryParseGitHubProjection(args, workingDirectory, error);
+        if (parsed is null)
         {
             return 2;
         }
 
+        var (rootPath, dryRun) = parsed.Value;
+        var project = RoadmapProject.Load(rootPath);
+        var syncer = new GitHubRoadmapSyncer(project);
+        var result = dryRun
+            ? syncer.Preview()
+            : await syncer.Apply(cancellationToken).ConfigureAwait(false);
+        foreach (var message in result.Messages)
+        {
+            await output.WriteLineAsync(message.AsMemory(), cancellationToken).ConfigureAwait(false);
+        }
+
+        return 0;
+    }
+
+    private static (string RootPath, bool DryRun)? TryParseGitHubProjection(string[] args, string workingDirectory, TextWriter error)
+    {
+        if (!TryParseRootOption(args, workingDirectory, error, out var rootPath, out var remaining))
+        {
+            return null;
+        }
+
         if (remaining.Length == 0 || !string.Equals(remaining[0], "github", StringComparison.Ordinal))
         {
-            return WriteUsageError(error, "Missing sync target: github.");
+            WriteUsageError(error, "Missing sync target: github.");
+            return null;
         }
 
         var dryRun = !remaining.Contains("--apply", StringComparer.Ordinal);
         if (remaining.Contains("--dry-run", StringComparer.Ordinal) && remaining.Contains("--apply", StringComparer.Ordinal))
         {
-            return WriteUsageError(error, "Use either --dry-run or --apply, not both.");
+            WriteUsageError(error, "Use either --dry-run or --apply, not both.");
+            return null;
         }
 
         if (remaining.Any(argument => argument is not "github" and not "--dry-run" and not "--apply"))
         {
-            return WriteUsageError(error, "Unknown sync argument.");
+            WriteUsageError(error, "Unknown sync argument.");
+            return null;
         }
 
-        var project = RoadmapProject.Load(rootPath);
-        var syncer = new GitHubRoadmapSyncer(project);
-        var result = syncer.Sync(dryRun);
-        foreach (var message in result.Messages)
-        {
-            output.WriteLine(message);
-        }
-
-        return 0;
+        return (rootPath, dryRun);
     }
 
     private static bool TryParseRootOption(string[] args, string workingDirectory, TextWriter error, out string rootPath, out string[] remaining)

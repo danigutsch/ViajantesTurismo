@@ -8,6 +8,7 @@ namespace SharedKernel.RepoConfig.Tool;
 internal sealed class GitHubRoadmapSyncer
 {
     private const string GitHubLineBreak = "\n";
+    private static readonly TimeSpan GitHubSyncTimeout = TimeSpan.FromSeconds(30);
 
     private readonly HttpClient? _httpClient;
     private readonly RoadmapProject _project;
@@ -25,9 +26,11 @@ internal sealed class GitHubRoadmapSyncer
         _httpClient = httpClient;
     }
 
-    public GitHubSyncResult Sync(bool dryRun)
+    public GitHubSyncResult Preview() =>
+        BuildPreview(_project.Items.Where(item => item.GitHubIssue is not null).OrderByPriority().ToArray());
+
+    public async Task<GitHubSyncResult> Apply(CancellationToken cancellationToken)
     {
-        List<string> messages = [];
         if (!_project.GitHubEnabled)
         {
             throw new InvalidOperationException("GitHub sync is disabled in roadmap/config.json.");
@@ -41,29 +44,43 @@ internal sealed class GitHubRoadmapSyncer
         var itemsWithIssues = _project.Items.Where(item => item.GitHubIssue is not null).OrderByPriority().ToArray();
         if (itemsWithIssues.Length == 0)
         {
-            messages.Add("No roadmap items have GitHub issue mappings.");
-            return new GitHubSyncResult(messages);
+            return new GitHubSyncResult(["No roadmap items have GitHub issue mappings."]);
         }
 
-        if (dryRun)
-        {
-            foreach (var item in itemsWithIssues)
-            {
-                messages.Add($"dry-run: update {_project.GitHubRepository}#{item.GitHubIssue} from {item.Id}");
-            }
-
-            return new GitHubSyncResult(messages);
-        }
-
+        List<string> messages = [];
         using var ownedHttpClient = _httpClient is null ? CreateGitHubClient() : null;
         var httpClient = (_httpClient ?? ownedHttpClient) ?? throw new InvalidOperationException("GitHub sync could not create an HTTP client.");
+        using var timeout = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
+        timeout.CancelAfter(GitHubSyncTimeout);
         foreach (var item in itemsWithIssues)
         {
-            UpdateIssue(httpClient, _project.GitHubRepository, item);
+            await UpdateIssue(httpClient, _project.GitHubRepository, item, timeout.Token).ConfigureAwait(false);
             messages.Add($"updated {_project.GitHubRepository}#{item.GitHubIssue} from {item.Id}");
         }
 
         return new GitHubSyncResult(messages);
+    }
+
+    private GitHubSyncResult BuildPreview(RoadmapItemSnapshot[] itemsWithIssues)
+    {
+        if (!_project.GitHubEnabled)
+        {
+            throw new InvalidOperationException("GitHub sync is disabled in roadmap/config.json.");
+        }
+
+        if (string.IsNullOrWhiteSpace(_project.GitHubRepository))
+        {
+            throw new InvalidOperationException("roadmap/config.json must define integrations.github.repository before GitHub sync.");
+        }
+
+        if (itemsWithIssues.Length == 0)
+        {
+            return new GitHubSyncResult(["No roadmap items have GitHub issue mappings."]);
+        }
+
+        return new GitHubSyncResult(itemsWithIssues
+            .Select(item => $"dry-run: update {_project.GitHubRepository}#{item.GitHubIssue} from {item.Id}")
+            .ToArray());
     }
 
     private static HttpClient CreateGitHubClient()
@@ -81,15 +98,15 @@ internal sealed class GitHubRoadmapSyncer
         return httpClient;
     }
 
-    private static void UpdateIssue(HttpClient httpClient, string repository, RoadmapItemSnapshot item)
+    private static async Task UpdateIssue(HttpClient httpClient, string repository, RoadmapItemSnapshot item, CancellationToken cancellationToken)
     {
         var issueNumber = item.GitHubIssue ?? throw new InvalidOperationException("GitHub issue mapping is required.");
         var url = $"https://api.github.com/repos/{repository}/issues/{issueNumber}";
         var managedSection = BuildManagedSection(item);
-        var currentBody = ReadCurrentIssueBody(httpClient, url, issueNumber);
+        var currentBody = await ReadCurrentIssueBody(httpClient, url, issueNumber, cancellationToken).ConfigureAwait(false);
         // GitHub does not document conditional issue-body updates; re-read before PATCH to avoid
         // overwriting body edits made while this process prepared the managed section.
-        var confirmedBody = ReadCurrentIssueBody(httpClient, url, issueNumber);
+        var confirmedBody = await ReadCurrentIssueBody(httpClient, url, issueNumber, cancellationToken).ConfigureAwait(false);
         if (!string.Equals(currentBody, confirmedBody, StringComparison.Ordinal))
         {
             throw new InvalidOperationException($"GitHub issue body changed before update for #{issueNumber}; retry sync github --apply.");
@@ -102,7 +119,7 @@ internal sealed class GitHubRoadmapSyncer
         {
             Content = new StringContent(payload, Encoding.UTF8, "application/json")
         };
-        using var response = httpClient.Send(request);
+        using var response = await httpClient.SendAsync(request, cancellationToken).ConfigureAwait(false);
         if (!response.IsSuccessStatusCode)
         {
             throw new InvalidOperationException($"GitHub issue update failed for #{issueNumber}: {(int)response.StatusCode} {response.ReasonPhrase}");
@@ -115,7 +132,7 @@ internal sealed class GitHubRoadmapSyncer
             {
                 Content = new StringContent(labelPayload, Encoding.UTF8, "application/json")
             };
-            using var labelResponse = httpClient.Send(labelRequest);
+            using var labelResponse = await httpClient.SendAsync(labelRequest, cancellationToken).ConfigureAwait(false);
             if (!labelResponse.IsSuccessStatusCode)
             {
                 throw new InvalidOperationException($"GitHub label sync failed for #{issueNumber}: {(int)labelResponse.StatusCode} {labelResponse.ReasonPhrase}");
@@ -123,16 +140,16 @@ internal sealed class GitHubRoadmapSyncer
         }
     }
 
-    private static string ReadCurrentIssueBody(HttpClient httpClient, string url, int issueNumber)
+    private static async Task<string> ReadCurrentIssueBody(HttpClient httpClient, string url, int issueNumber, CancellationToken cancellationToken)
     {
         using var request = new HttpRequestMessage(HttpMethod.Get, url);
-        using var response = httpClient.Send(request);
+        using var response = await httpClient.SendAsync(request, cancellationToken).ConfigureAwait(false);
         if (!response.IsSuccessStatusCode)
         {
             throw new InvalidOperationException($"GitHub issue read failed for #{issueNumber}: {(int)response.StatusCode} {response.ReasonPhrase}");
         }
 
-        var responseText = response.Content.ReadAsStringAsync().GetAwaiter().GetResult();
+        var responseText = await response.Content.ReadAsStringAsync(cancellationToken).ConfigureAwait(false);
         using var document = JsonDocument.Parse(responseText);
         if (document.RootElement.TryGetProperty("pull_request", out _))
         {

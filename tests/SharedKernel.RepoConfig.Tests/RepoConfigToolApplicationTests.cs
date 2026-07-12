@@ -8,7 +8,7 @@ namespace SharedKernel.RepoConfig.Tests;
 public sealed class RepoConfigToolApplicationTests
 {
     [Fact]
-    public void Verify_reports_missing_roadmap_structure()
+    public async Task Verify_reports_missing_roadmap_structure()
     {
         // Arrange
         using var workspace = new TemporaryRepoConfigWorkspace();
@@ -16,7 +16,7 @@ public sealed class RepoConfigToolApplicationTests
         using var error = new StringWriter(CultureInfo.InvariantCulture);
 
         // Act
-        var exitCode = RepoConfigToolApplication.Run(["verify", "--root", workspace.RootPath], output, error, workspace.RootPath);
+        var exitCode = await RepoConfigToolApplication.Run(["verify", "--root", workspace.RootPath], output, error, workspace.RootPath, TestContext.Current.CancellationToken);
         var errorText = error.ToString();
 
         // Assert
@@ -27,7 +27,7 @@ public sealed class RepoConfigToolApplicationTests
     }
 
     [Fact]
-    public void Init_creates_structure_that_verify_accepts()
+    public async Task Init_creates_structure_that_verify_accepts()
     {
         // Arrange
         using var workspace = new TemporaryRepoConfigWorkspace();
@@ -37,8 +37,8 @@ public sealed class RepoConfigToolApplicationTests
         using var verifyError = new StringWriter(CultureInfo.InvariantCulture);
 
         // Act
-        var initExitCode = RepoConfigToolApplication.Run(["init", "--root", workspace.RootPath], initOutput, initError, workspace.RootPath);
-        var verifyExitCode = RepoConfigToolApplication.Run(["verify", "--root", workspace.RootPath], verifyOutput, verifyError, workspace.RootPath);
+        var initExitCode = await RepoConfigToolApplication.Run(["init", "--root", workspace.RootPath], initOutput, initError, workspace.RootPath, TestContext.Current.CancellationToken);
+        var verifyExitCode = await RepoConfigToolApplication.Run(["verify", "--root", workspace.RootPath], verifyOutput, verifyError, workspace.RootPath, TestContext.Current.CancellationToken);
         var verifyOutputText = verifyOutput.ToString();
 
         // Assert
@@ -50,7 +50,7 @@ public sealed class RepoConfigToolApplicationTests
     }
 
     [Fact]
-    public void Init_writes_full_schema_templates()
+    public async Task Init_writes_full_schema_templates()
     {
         // Arrange
         using var workspace = new TemporaryRepoConfigWorkspace();
@@ -58,7 +58,7 @@ public sealed class RepoConfigToolApplicationTests
         using var initError = new StringWriter(CultureInfo.InvariantCulture);
 
         // Act
-        var exitCode = RepoConfigToolApplication.Run(["init", "--root", workspace.RootPath], initOutput, initError, workspace.RootPath);
+        var exitCode = await RepoConfigToolApplication.Run(["init", "--root", workspace.RootPath], initOutput, initError, workspace.RootPath, TestContext.Current.CancellationToken);
         var configSchemaText = workspace.ReadFile("roadmap/schema/roadmap-config.schema.json");
         var itemSchemaText = workspace.ReadFile("roadmap/schema/roadmap-item.schema.json");
 
@@ -76,7 +76,7 @@ public sealed class RepoConfigToolApplicationTests
     }
 
     [Fact]
-    public void Init_writes_templates_with_resolvable_local_schema_references()
+    public async Task Init_writes_templates_with_resolvable_local_schema_references()
     {
         // Arrange
         using var workspace = new TemporaryRepoConfigWorkspace();
@@ -84,7 +84,7 @@ public sealed class RepoConfigToolApplicationTests
         using var initError = new StringWriter(CultureInfo.InvariantCulture);
 
         // Act
-        var exitCode = RepoConfigToolApplication.Run(["init", "--root", workspace.RootPath], initOutput, initError, workspace.RootPath);
+        var exitCode = await RepoConfigToolApplication.Run(["init", "--root", workspace.RootPath], initOutput, initError, workspace.RootPath, TestContext.Current.CancellationToken);
         using var configDocument = JsonDocument.Parse(workspace.ReadFile("roadmap/config.json"));
         using var itemDocument = JsonDocument.Parse(workspace.ReadFile("roadmap/items/RM-001-roadmap-gitops.json"));
         var configSchema = configDocument.RootElement.GetProperty("$schema").GetString();
@@ -99,7 +99,7 @@ public sealed class RepoConfigToolApplicationTests
     }
 
     [Fact]
-    public void Set_updates_github_repository_config()
+    public async Task Set_updates_github_repository_config()
     {
         // Arrange
         using var workspace = new TemporaryRepoConfigWorkspace();
@@ -107,10 +107,10 @@ public sealed class RepoConfigToolApplicationTests
         using var initError = new StringWriter(CultureInfo.InvariantCulture);
         using var setOutput = new StringWriter(CultureInfo.InvariantCulture);
         using var setError = new StringWriter(CultureInfo.InvariantCulture);
-        RepoConfigToolApplication.Run(["init", "--root", workspace.RootPath], initOutput, initError, workspace.RootPath).ShouldBe(0);
+        (await RepoConfigToolApplication.Run(["init", "--root", workspace.RootPath], initOutput, initError, workspace.RootPath, TestContext.Current.CancellationToken)).ShouldBe(0);
 
         // Act
-        var exitCode = RepoConfigToolApplication.Run(["set", "github.repository", "example/repository", "--root", workspace.RootPath], setOutput, setError, workspace.RootPath);
+        var exitCode = await RepoConfigToolApplication.Run(["set", "github.repository", "example/repository", "--root", workspace.RootPath], setOutput, setError, workspace.RootPath, TestContext.Current.CancellationToken);
         var configText = workspace.ReadFile("roadmap/config.json");
 
         // Assert
@@ -119,7 +119,7 @@ public sealed class RepoConfigToolApplicationTests
     }
 
     [Fact]
-    public void Set_preserves_existing_github_projection_settings_and_valid_config()
+    public async Task Set_preserves_existing_github_projection_settings_and_valid_config()
     {
         // Arrange
         using var workspace = new TemporaryRepoConfigWorkspace();
@@ -129,11 +129,11 @@ public sealed class RepoConfigToolApplicationTests
         using var setError = new StringWriter(CultureInfo.InvariantCulture);
         using var verifyOutput = new StringWriter(CultureInfo.InvariantCulture);
         using var verifyError = new StringWriter(CultureInfo.InvariantCulture);
-        RepoConfigToolApplication.Run(["init", "--root", workspace.RootPath], initOutput, initError, workspace.RootPath).ShouldBe(0);
+        (await RepoConfigToolApplication.Run(["init", "--root", workspace.RootPath], initOutput, initError, workspace.RootPath, TestContext.Current.CancellationToken)).ShouldBe(0);
 
         // Act
-        var setExitCode = RepoConfigToolApplication.Run(["set", "github.repository", "example/repository", "--root", workspace.RootPath], setOutput, setError, workspace.RootPath);
-        var verifyExitCode = RepoConfigToolApplication.Run(["verify", "--root", workspace.RootPath], verifyOutput, verifyError, workspace.RootPath);
+        var setExitCode = await RepoConfigToolApplication.Run(["set", "github.repository", "example/repository", "--root", workspace.RootPath], setOutput, setError, workspace.RootPath, TestContext.Current.CancellationToken);
+        var verifyExitCode = await RepoConfigToolApplication.Run(["verify", "--root", workspace.RootPath], verifyOutput, verifyError, workspace.RootPath, TestContext.Current.CancellationToken);
         using var document = JsonDocument.Parse(workspace.ReadFile("roadmap/config.json"));
         var github = document.RootElement.GetProperty("integrations").GetProperty("github");
 
@@ -150,7 +150,7 @@ public sealed class RepoConfigToolApplicationTests
     [InlineData("owner/repo?state=closed")]
     [InlineData("owner/repo#fragment")]
     [InlineData("owner/repo\\path")]
-    public void Set_rejects_invalid_github_repository_config(string repository)
+    public async Task Set_rejects_invalid_github_repository_config(string repository)
     {
         // Arrange
         using var workspace = new TemporaryRepoConfigWorkspace();
@@ -158,10 +158,10 @@ public sealed class RepoConfigToolApplicationTests
         using var initError = new StringWriter(CultureInfo.InvariantCulture);
         using var setOutput = new StringWriter(CultureInfo.InvariantCulture);
         using var setError = new StringWriter(CultureInfo.InvariantCulture);
-        RepoConfigToolApplication.Run(["init", "--root", workspace.RootPath], initOutput, initError, workspace.RootPath).ShouldBe(0);
+        (await RepoConfigToolApplication.Run(["init", "--root", workspace.RootPath], initOutput, initError, workspace.RootPath, TestContext.Current.CancellationToken)).ShouldBe(0);
 
         // Act
-        var exitCode = RepoConfigToolApplication.Run(["set", "github.repository", repository, "--root", workspace.RootPath], setOutput, setError, workspace.RootPath);
+        var exitCode = await RepoConfigToolApplication.Run(["set", "github.repository", repository, "--root", workspace.RootPath], setOutput, setError, workspace.RootPath, TestContext.Current.CancellationToken);
         var configText = workspace.ReadFile("roadmap/config.json");
         var errorText = setError.ToString();
 
@@ -172,7 +172,7 @@ public sealed class RepoConfigToolApplicationTests
     }
 
     [Fact]
-    public void Verify_reports_unknown_dependencies()
+    public async Task Verify_reports_unknown_dependencies()
     {
         // Arrange
         using var workspace = new TemporaryRepoConfigWorkspace();
@@ -180,12 +180,12 @@ public sealed class RepoConfigToolApplicationTests
         using var initError = new StringWriter(CultureInfo.InvariantCulture);
         using var verifyOutput = new StringWriter(CultureInfo.InvariantCulture);
         using var verifyError = new StringWriter(CultureInfo.InvariantCulture);
-        RepoConfigToolApplication.Run(["init", "--root", workspace.RootPath], initOutput, initError, workspace.RootPath).ShouldBe(0);
+        (await RepoConfigToolApplication.Run(["init", "--root", workspace.RootPath], initOutput, initError, workspace.RootPath, TestContext.Current.CancellationToken)).ShouldBe(0);
         var itemText = workspace.ReadFile("roadmap/items/RM-001-roadmap-gitops.json");
         workspace.WriteFile("roadmap/items/RM-001-roadmap-gitops.json", itemText.Replace("\"dependencies\": []", "\"dependencies\": [\"RM-404\"]", StringComparison.Ordinal));
 
         // Act
-        var exitCode = RepoConfigToolApplication.Run(["verify", "--root", workspace.RootPath], verifyOutput, verifyError, workspace.RootPath);
+        var exitCode = await RepoConfigToolApplication.Run(["verify", "--root", workspace.RootPath], verifyOutput, verifyError, workspace.RootPath, TestContext.Current.CancellationToken);
         var errorText = verifyError.ToString();
 
         // Assert
@@ -194,7 +194,7 @@ public sealed class RepoConfigToolApplicationTests
     }
 
     [Fact]
-    public void Verify_reports_duplicate_roadmap_ids_without_aborting_diagnostics()
+    public async Task Verify_reports_duplicate_roadmap_ids_without_aborting_diagnostics()
     {
         // Arrange
         using var workspace = new TemporaryRepoConfigWorkspace();
@@ -202,11 +202,11 @@ public sealed class RepoConfigToolApplicationTests
         using var initError = new StringWriter(CultureInfo.InvariantCulture);
         using var verifyOutput = new StringWriter(CultureInfo.InvariantCulture);
         using var verifyError = new StringWriter(CultureInfo.InvariantCulture);
-        RepoConfigToolApplication.Run(["init", "--root", workspace.RootPath], initOutput, initError, workspace.RootPath).ShouldBe(0);
+        (await RepoConfigToolApplication.Run(["init", "--root", workspace.RootPath], initOutput, initError, workspace.RootPath, TestContext.Current.CancellationToken)).ShouldBe(0);
         workspace.WriteFile("roadmap/items/RM-001-copy.json", workspace.ReadFile("roadmap/items/RM-001-roadmap-gitops.json"));
 
         // Act
-        var exitCode = RepoConfigToolApplication.Run(["verify", "--root", workspace.RootPath], verifyOutput, verifyError, workspace.RootPath);
+        var exitCode = await RepoConfigToolApplication.Run(["verify", "--root", workspace.RootPath], verifyOutput, verifyError, workspace.RootPath, TestContext.Current.CancellationToken);
         var errorText = verifyError.ToString();
 
         // Assert
@@ -216,7 +216,7 @@ public sealed class RepoConfigToolApplicationTests
     }
 
     [Fact]
-    public void Verify_reports_invalid_parent_type()
+    public async Task Verify_reports_invalid_parent_type()
     {
         // Arrange
         using var workspace = new TemporaryRepoConfigWorkspace();
@@ -224,12 +224,12 @@ public sealed class RepoConfigToolApplicationTests
         using var initError = new StringWriter(CultureInfo.InvariantCulture);
         using var verifyOutput = new StringWriter(CultureInfo.InvariantCulture);
         using var verifyError = new StringWriter(CultureInfo.InvariantCulture);
-        RepoConfigToolApplication.Run(["init", "--root", workspace.RootPath], initOutput, initError, workspace.RootPath).ShouldBe(0);
+        (await RepoConfigToolApplication.Run(["init", "--root", workspace.RootPath], initOutput, initError, workspace.RootPath, TestContext.Current.CancellationToken)).ShouldBe(0);
         var itemText = workspace.ReadFile("roadmap/items/RM-001-roadmap-gitops.json");
         workspace.WriteFile("roadmap/items/RM-001-roadmap-gitops.json", itemText.Replace("\"theme\":", "\"parent\": 7,\n  \"theme\":", StringComparison.Ordinal));
 
         // Act
-        var exitCode = RepoConfigToolApplication.Run(["verify", "--root", workspace.RootPath], verifyOutput, verifyError, workspace.RootPath);
+        var exitCode = await RepoConfigToolApplication.Run(["verify", "--root", workspace.RootPath], verifyOutput, verifyError, workspace.RootPath, TestContext.Current.CancellationToken);
         var errorText = verifyError.ToString();
 
         // Assert
@@ -238,7 +238,7 @@ public sealed class RepoConfigToolApplicationTests
     }
 
     [Fact]
-    public void Verify_reports_confidence_below_documented_range()
+    public async Task Verify_reports_confidence_below_documented_range()
     {
         // Arrange
         using var workspace = new TemporaryRepoConfigWorkspace();
@@ -246,12 +246,12 @@ public sealed class RepoConfigToolApplicationTests
         using var initError = new StringWriter(CultureInfo.InvariantCulture);
         using var verifyOutput = new StringWriter(CultureInfo.InvariantCulture);
         using var verifyError = new StringWriter(CultureInfo.InvariantCulture);
-        RepoConfigToolApplication.Run(["init", "--root", workspace.RootPath], initOutput, initError, workspace.RootPath).ShouldBe(0);
+        (await RepoConfigToolApplication.Run(["init", "--root", workspace.RootPath], initOutput, initError, workspace.RootPath, TestContext.Current.CancellationToken)).ShouldBe(0);
         var itemText = workspace.ReadFile("roadmap/items/RM-001-roadmap-gitops.json");
         workspace.WriteFile("roadmap/items/RM-001-roadmap-gitops.json", itemText.Replace("\"confidence\": 0.8", "\"confidence\": 0.09", StringComparison.Ordinal));
 
         // Act
-        var exitCode = RepoConfigToolApplication.Run(["verify", "--root", workspace.RootPath], verifyOutput, verifyError, workspace.RootPath);
+        var exitCode = await RepoConfigToolApplication.Run(["verify", "--root", workspace.RootPath], verifyOutput, verifyError, workspace.RootPath, TestContext.Current.CancellationToken);
         var errorText = verifyError.ToString();
 
         // Assert
@@ -260,7 +260,7 @@ public sealed class RepoConfigToolApplicationTests
     }
 
     [Fact]
-    public void Verify_reports_missing_item_id_prefix()
+    public async Task Verify_reports_missing_item_id_prefix()
     {
         // Arrange
         using var workspace = new TemporaryRepoConfigWorkspace();
@@ -268,12 +268,12 @@ public sealed class RepoConfigToolApplicationTests
         using var initError = new StringWriter(CultureInfo.InvariantCulture);
         using var verifyOutput = new StringWriter(CultureInfo.InvariantCulture);
         using var verifyError = new StringWriter(CultureInfo.InvariantCulture);
-        RepoConfigToolApplication.Run(["init", "--root", workspace.RootPath], initOutput, initError, workspace.RootPath).ShouldBe(0);
+        (await RepoConfigToolApplication.Run(["init", "--root", workspace.RootPath], initOutput, initError, workspace.RootPath, TestContext.Current.CancellationToken)).ShouldBe(0);
         var configText = workspace.ReadFile("roadmap/config.json");
         workspace.WriteFile("roadmap/config.json", configText.Replace("  \"itemIdPrefix\": \"RM\",\n", string.Empty, StringComparison.Ordinal));
 
         // Act
-        var exitCode = RepoConfigToolApplication.Run(["verify", "--root", workspace.RootPath], verifyOutput, verifyError, workspace.RootPath);
+        var exitCode = await RepoConfigToolApplication.Run(["verify", "--root", workspace.RootPath], verifyOutput, verifyError, workspace.RootPath, TestContext.Current.CancellationToken);
         var errorText = verifyError.ToString();
 
         // Assert
@@ -282,7 +282,7 @@ public sealed class RepoConfigToolApplicationTests
     }
 
     [Fact]
-    public void Verify_reports_missing_integrations_object()
+    public async Task Verify_reports_missing_integrations_object()
     {
         // Arrange
         using var workspace = new TemporaryRepoConfigWorkspace();
@@ -290,13 +290,13 @@ public sealed class RepoConfigToolApplicationTests
         using var initError = new StringWriter(CultureInfo.InvariantCulture);
         using var verifyOutput = new StringWriter(CultureInfo.InvariantCulture);
         using var verifyError = new StringWriter(CultureInfo.InvariantCulture);
-        RepoConfigToolApplication.Run(["init", "--root", workspace.RootPath], initOutput, initError, workspace.RootPath).ShouldBe(0);
+        (await RepoConfigToolApplication.Run(["init", "--root", workspace.RootPath], initOutput, initError, workspace.RootPath, TestContext.Current.CancellationToken)).ShouldBe(0);
         var configText = workspace.ReadFile("roadmap/config.json");
         var integrationsStart = configText.IndexOf("  \"integrations\": {", StringComparison.Ordinal);
         workspace.WriteFile("roadmap/config.json", configText[..integrationsStart].TrimEnd().TrimEnd(',') + Environment.NewLine + "}" + Environment.NewLine);
 
         // Act
-        var exitCode = RepoConfigToolApplication.Run(["verify", "--root", workspace.RootPath], verifyOutput, verifyError, workspace.RootPath);
+        var exitCode = await RepoConfigToolApplication.Run(["verify", "--root", workspace.RootPath], verifyOutput, verifyError, workspace.RootPath, TestContext.Current.CancellationToken);
         var errorText = verifyError.ToString();
 
         // Assert
@@ -305,7 +305,7 @@ public sealed class RepoConfigToolApplicationTests
     }
 
     [Fact]
-    public void Verify_reports_duplicate_config_array_values()
+    public async Task Verify_reports_duplicate_config_array_values()
     {
         // Arrange
         using var workspace = new TemporaryRepoConfigWorkspace();
@@ -313,12 +313,12 @@ public sealed class RepoConfigToolApplicationTests
         using var initError = new StringWriter(CultureInfo.InvariantCulture);
         using var verifyOutput = new StringWriter(CultureInfo.InvariantCulture);
         using var verifyError = new StringWriter(CultureInfo.InvariantCulture);
-        RepoConfigToolApplication.Run(["init", "--root", workspace.RootPath], initOutput, initError, workspace.RootPath).ShouldBe(0);
+        (await RepoConfigToolApplication.Run(["init", "--root", workspace.RootPath], initOutput, initError, workspace.RootPath, TestContext.Current.CancellationToken)).ShouldBe(0);
         var configText = workspace.ReadFile("roadmap/config.json");
         workspace.WriteFile("roadmap/config.json", configText.Replace("\"done\",\n      \"dropped\"", "\"done\",\n      \"done\",\n      \"dropped\"", StringComparison.Ordinal));
 
         // Act
-        var exitCode = RepoConfigToolApplication.Run(["verify", "--root", workspace.RootPath], verifyOutput, verifyError, workspace.RootPath);
+        var exitCode = await RepoConfigToolApplication.Run(["verify", "--root", workspace.RootPath], verifyOutput, verifyError, workspace.RootPath, TestContext.Current.CancellationToken);
         var errorText = verifyError.ToString();
 
         // Assert
@@ -327,7 +327,7 @@ public sealed class RepoConfigToolApplicationTests
     }
 
     [Fact]
-    public void Verify_reports_invalid_config_array_values()
+    public async Task Verify_reports_invalid_config_array_values()
     {
         // Arrange
         using var workspace = new TemporaryRepoConfigWorkspace();
@@ -335,12 +335,12 @@ public sealed class RepoConfigToolApplicationTests
         using var initError = new StringWriter(CultureInfo.InvariantCulture);
         using var verifyOutput = new StringWriter(CultureInfo.InvariantCulture);
         using var verifyError = new StringWriter(CultureInfo.InvariantCulture);
-        RepoConfigToolApplication.Run(["init", "--root", workspace.RootPath], initOutput, initError, workspace.RootPath).ShouldBe(0);
+        (await RepoConfigToolApplication.Run(["init", "--root", workspace.RootPath], initOutput, initError, workspace.RootPath, TestContext.Current.CancellationToken)).ShouldBe(0);
         var configText = workspace.ReadFile("roadmap/config.json");
         workspace.WriteFile("roadmap/config.json", configText.Replace("\"done\",\n      \"dropped\"", "\"done\",\n      7", StringComparison.Ordinal));
 
         // Act
-        var exitCode = RepoConfigToolApplication.Run(["verify", "--root", workspace.RootPath], verifyOutput, verifyError, workspace.RootPath);
+        var exitCode = await RepoConfigToolApplication.Run(["verify", "--root", workspace.RootPath], verifyOutput, verifyError, workspace.RootPath, TestContext.Current.CancellationToken);
         var errorText = verifyError.ToString();
 
         // Assert
@@ -353,7 +353,7 @@ public sealed class RepoConfigToolApplicationTests
     [InlineData("owner/repo?state=closed")]
     [InlineData("owner/repo#fragment")]
     [InlineData("owner/repo\\path")]
-    public void Verify_reports_invalid_enabled_github_repository(string repository)
+    public async Task Verify_reports_invalid_enabled_github_repository(string repository)
     {
         // Arrange
         using var workspace = new TemporaryRepoConfigWorkspace();
@@ -361,12 +361,12 @@ public sealed class RepoConfigToolApplicationTests
         using var initError = new StringWriter(CultureInfo.InvariantCulture);
         using var verifyOutput = new StringWriter(CultureInfo.InvariantCulture);
         using var verifyError = new StringWriter(CultureInfo.InvariantCulture);
-        RepoConfigToolApplication.Run(["init", "--root", workspace.RootPath], initOutput, initError, workspace.RootPath).ShouldBe(0);
+        (await RepoConfigToolApplication.Run(["init", "--root", workspace.RootPath], initOutput, initError, workspace.RootPath, TestContext.Current.CancellationToken)).ShouldBe(0);
         var configText = workspace.ReadFile("roadmap/config.json");
         workspace.WriteFile("roadmap/config.json", configText.Replace("\"enabled\": false", $"\"enabled\": true,\n      \"repository\": {JsonSerializer.Serialize(repository)}", StringComparison.Ordinal));
 
         // Act
-        var exitCode = RepoConfigToolApplication.Run(["verify", "--root", workspace.RootPath], verifyOutput, verifyError, workspace.RootPath);
+        var exitCode = await RepoConfigToolApplication.Run(["verify", "--root", workspace.RootPath], verifyOutput, verifyError, workspace.RootPath, TestContext.Current.CancellationToken);
         var errorText = verifyError.ToString();
 
         // Assert
@@ -375,7 +375,7 @@ public sealed class RepoConfigToolApplicationTests
     }
 
     [Fact]
-    public void Verify_reports_duplicate_string_array_values_without_cascading_reference_errors()
+    public async Task Verify_reports_duplicate_string_array_values_without_cascading_reference_errors()
     {
         // Arrange
         using var workspace = new TemporaryRepoConfigWorkspace();
@@ -383,12 +383,12 @@ public sealed class RepoConfigToolApplicationTests
         using var initError = new StringWriter(CultureInfo.InvariantCulture);
         using var verifyOutput = new StringWriter(CultureInfo.InvariantCulture);
         using var verifyError = new StringWriter(CultureInfo.InvariantCulture);
-        RepoConfigToolApplication.Run(["init", "--root", workspace.RootPath], initOutput, initError, workspace.RootPath).ShouldBe(0);
+        (await RepoConfigToolApplication.Run(["init", "--root", workspace.RootPath], initOutput, initError, workspace.RootPath, TestContext.Current.CancellationToken)).ShouldBe(0);
         var itemText = workspace.ReadFile("roadmap/items/RM-001-roadmap-gitops.json");
         workspace.WriteFile("roadmap/items/RM-001-roadmap-gitops.json", itemText.Replace("\"dependencies\": []", "\"dependencies\": [\"RM-404\", \"RM-404\"]", StringComparison.Ordinal));
 
         // Act
-        var exitCode = RepoConfigToolApplication.Run(["verify", "--root", workspace.RootPath], verifyOutput, verifyError, workspace.RootPath);
+        var exitCode = await RepoConfigToolApplication.Run(["verify", "--root", workspace.RootPath], verifyOutput, verifyError, workspace.RootPath, TestContext.Current.CancellationToken);
         var errorText = verifyError.ToString();
 
         // Assert
@@ -399,7 +399,7 @@ public sealed class RepoConfigToolApplicationTests
     }
 
     [Fact]
-    public void Verify_reports_non_object_theme_file()
+    public async Task Verify_reports_non_object_theme_file()
     {
         // Arrange
         using var workspace = new TemporaryRepoConfigWorkspace();
@@ -407,11 +407,11 @@ public sealed class RepoConfigToolApplicationTests
         using var initError = new StringWriter(CultureInfo.InvariantCulture);
         using var verifyOutput = new StringWriter(CultureInfo.InvariantCulture);
         using var verifyError = new StringWriter(CultureInfo.InvariantCulture);
-        RepoConfigToolApplication.Run(["init", "--root", workspace.RootPath], initOutput, initError, workspace.RootPath).ShouldBe(0);
+        (await RepoConfigToolApplication.Run(["init", "--root", workspace.RootPath], initOutput, initError, workspace.RootPath, TestContext.Current.CancellationToken)).ShouldBe(0);
         workspace.WriteFile("roadmap/themes/repo-operations.json", "[]");
 
         // Act
-        var exitCode = RepoConfigToolApplication.Run(["verify", "--root", workspace.RootPath], verifyOutput, verifyError, workspace.RootPath);
+        var exitCode = await RepoConfigToolApplication.Run(["verify", "--root", workspace.RootPath], verifyOutput, verifyError, workspace.RootPath, TestContext.Current.CancellationToken);
         var errorText = verifyError.ToString();
 
         // Assert
@@ -420,7 +420,7 @@ public sealed class RepoConfigToolApplicationTests
     }
 
     [Fact]
-    public void Verify_reports_items_when_theme_catalog_is_empty()
+    public async Task Verify_reports_items_when_theme_catalog_is_empty()
     {
         // Arrange
         using var workspace = new TemporaryRepoConfigWorkspace();
@@ -428,11 +428,11 @@ public sealed class RepoConfigToolApplicationTests
         using var initError = new StringWriter(CultureInfo.InvariantCulture);
         using var verifyOutput = new StringWriter(CultureInfo.InvariantCulture);
         using var verifyError = new StringWriter(CultureInfo.InvariantCulture);
-        RepoConfigToolApplication.Run(["init", "--root", workspace.RootPath], initOutput, initError, workspace.RootPath).ShouldBe(0);
+        (await RepoConfigToolApplication.Run(["init", "--root", workspace.RootPath], initOutput, initError, workspace.RootPath, TestContext.Current.CancellationToken)).ShouldBe(0);
         workspace.DeleteFile("roadmap/themes/repo-operations.json");
 
         // Act
-        var exitCode = RepoConfigToolApplication.Run(["verify", "--root", workspace.RootPath], verifyOutput, verifyError, workspace.RootPath);
+        var exitCode = await RepoConfigToolApplication.Run(["verify", "--root", workspace.RootPath], verifyOutput, verifyError, workspace.RootPath, TestContext.Current.CancellationToken);
         var errorText = verifyError.ToString();
 
         // Assert
@@ -441,7 +441,7 @@ public sealed class RepoConfigToolApplicationTests
     }
 
     [Fact]
-    public void Get_next_unblocked_skips_open_blockers()
+    public async Task Get_next_unblocked_skips_open_blockers()
     {
         // Arrange
         using var workspace = new TemporaryRepoConfigWorkspace();
@@ -449,14 +449,14 @@ public sealed class RepoConfigToolApplicationTests
         using var initError = new StringWriter(CultureInfo.InvariantCulture);
         using var getOutput = new StringWriter(CultureInfo.InvariantCulture);
         using var getError = new StringWriter(CultureInfo.InvariantCulture);
-        RepoConfigToolApplication.Run(["init", "--root", workspace.RootPath], initOutput, initError, workspace.RootPath).ShouldBe(0);
+        (await RepoConfigToolApplication.Run(["init", "--root", workspace.RootPath], initOutput, initError, workspace.RootPath, TestContext.Current.CancellationToken)).ShouldBe(0);
         var epicText = workspace.ReadFile("roadmap/items/RM-001-roadmap-gitops.json");
         workspace.WriteFile("roadmap/items/RM-001-roadmap-gitops.json", epicText.Replace("\"blocks\": []", "\"blocks\": [\"RM-002\"]", StringComparison.Ordinal));
         workspace.WriteFile("roadmap/items/RM-002-follow-up.json", RoadmapTestContent.BlockedIssueJson);
         workspace.WriteFile("roadmap/order.json", "{ \"items\": [\"RM-001\", \"RM-002\"] }");
 
         // Act
-        var exitCode = RepoConfigToolApplication.Run(["get", "next-unblocked", "--root", workspace.RootPath], getOutput, getError, workspace.RootPath);
+        var exitCode = await RepoConfigToolApplication.Run(["get", "next-unblocked", "--root", workspace.RootPath], getOutput, getError, workspace.RootPath, TestContext.Current.CancellationToken);
         var outputText = getOutput.ToString();
 
         // Assert
@@ -466,7 +466,7 @@ public sealed class RepoConfigToolApplicationTests
     }
 
     [Fact]
-    public void Get_blockers_of_lists_direct_blockers()
+    public async Task Get_blockers_of_lists_direct_blockers()
     {
         // Arrange
         using var workspace = new TemporaryRepoConfigWorkspace();
@@ -474,14 +474,14 @@ public sealed class RepoConfigToolApplicationTests
         using var initError = new StringWriter(CultureInfo.InvariantCulture);
         using var getOutput = new StringWriter(CultureInfo.InvariantCulture);
         using var getError = new StringWriter(CultureInfo.InvariantCulture);
-        RepoConfigToolApplication.Run(["init", "--root", workspace.RootPath], initOutput, initError, workspace.RootPath).ShouldBe(0);
+        (await RepoConfigToolApplication.Run(["init", "--root", workspace.RootPath], initOutput, initError, workspace.RootPath, TestContext.Current.CancellationToken)).ShouldBe(0);
         var epicText = workspace.ReadFile("roadmap/items/RM-001-roadmap-gitops.json");
         workspace.WriteFile("roadmap/items/RM-001-roadmap-gitops.json", epicText.Replace("\"blocks\": []", "\"blocks\": [\"RM-002\"]", StringComparison.Ordinal));
         workspace.WriteFile("roadmap/items/RM-002-follow-up.json", RoadmapTestContent.BlockedIssueJson);
         workspace.WriteFile("roadmap/order.json", "{ \"items\": [\"RM-001\", \"RM-002\"] }");
 
         // Act
-        var exitCode = RepoConfigToolApplication.Run(["get", "blockers-of", "RM-002", "--root", workspace.RootPath], getOutput, getError, workspace.RootPath);
+        var exitCode = await RepoConfigToolApplication.Run(["get", "blockers-of", "RM-002", "--root", workspace.RootPath], getOutput, getError, workspace.RootPath, TestContext.Current.CancellationToken);
         var outputText = getOutput.ToString();
 
         // Assert
@@ -490,7 +490,7 @@ public sealed class RepoConfigToolApplicationTests
     }
 
     [Fact]
-    public void Sync_github_dry_run_reports_mapped_issues_without_network()
+    public async Task Sync_github_dry_run_reports_mapped_issues_without_network()
     {
         // Arrange
         using var workspace = new TemporaryRepoConfigWorkspace();
@@ -498,13 +498,13 @@ public sealed class RepoConfigToolApplicationTests
         using var initError = new StringWriter(CultureInfo.InvariantCulture);
         using var syncOutput = new StringWriter(CultureInfo.InvariantCulture);
         using var syncError = new StringWriter(CultureInfo.InvariantCulture);
-        RepoConfigToolApplication.Run(["init", "--root", workspace.RootPath], initOutput, initError, workspace.RootPath).ShouldBe(0);
+        (await RepoConfigToolApplication.Run(["init", "--root", workspace.RootPath], initOutput, initError, workspace.RootPath, TestContext.Current.CancellationToken)).ShouldBe(0);
         RoadmapConfigTestOperations.EnableGitHubSync(workspace);
         var itemText = workspace.ReadFile("roadmap/items/RM-001-roadmap-gitops.json");
         workspace.WriteFile("roadmap/items/RM-001-roadmap-gitops.json", itemText.Replace("\"labels\": [", "\"integrations\": { \"github\": { \"issue\": 997 } },\n  \"labels\": [", StringComparison.Ordinal));
 
         // Act
-        var exitCode = RepoConfigToolApplication.Run(["sync", "github", "--dry-run", "--root", workspace.RootPath], syncOutput, syncError, workspace.RootPath);
+        var exitCode = await RepoConfigToolApplication.Run(["sync", "github", "--dry-run", "--root", workspace.RootPath], syncOutput, syncError, workspace.RootPath, TestContext.Current.CancellationToken);
         var outputText = syncOutput.ToString();
 
         // Assert
@@ -513,7 +513,7 @@ public sealed class RepoConfigToolApplicationTests
     }
 
     [Fact]
-    public void Verify_reports_stale_order_file()
+    public async Task Verify_reports_stale_order_file()
     {
         // Arrange
         using var workspace = new TemporaryRepoConfigWorkspace();
@@ -521,11 +521,11 @@ public sealed class RepoConfigToolApplicationTests
         using var initError = new StringWriter(CultureInfo.InvariantCulture);
         using var verifyOutput = new StringWriter(CultureInfo.InvariantCulture);
         using var verifyError = new StringWriter(CultureInfo.InvariantCulture);
-        RepoConfigToolApplication.Run(["init", "--root", workspace.RootPath], initOutput, initError, workspace.RootPath).ShouldBe(0);
+        (await RepoConfigToolApplication.Run(["init", "--root", workspace.RootPath], initOutput, initError, workspace.RootPath, TestContext.Current.CancellationToken)).ShouldBe(0);
         workspace.WriteFile("roadmap/order.json", "{ \"items\": [\"RM-404\"] }");
 
         // Act
-        var exitCode = RepoConfigToolApplication.Run(["verify", "--root", workspace.RootPath], verifyOutput, verifyError, workspace.RootPath);
+        var exitCode = await RepoConfigToolApplication.Run(["verify", "--root", workspace.RootPath], verifyOutput, verifyError, workspace.RootPath, TestContext.Current.CancellationToken);
         var errorText = verifyError.ToString();
 
         // Assert
@@ -535,7 +535,7 @@ public sealed class RepoConfigToolApplicationTests
     }
 
     [Fact]
-    public void Sync_github_dry_run_respects_disabled_integration()
+    public async Task Sync_github_dry_run_respects_disabled_integration()
     {
         // Arrange
         using var workspace = new TemporaryRepoConfigWorkspace();
@@ -543,10 +543,10 @@ public sealed class RepoConfigToolApplicationTests
         using var initError = new StringWriter(CultureInfo.InvariantCulture);
         using var syncOutput = new StringWriter(CultureInfo.InvariantCulture);
         using var syncError = new StringWriter(CultureInfo.InvariantCulture);
-        RepoConfigToolApplication.Run(["init", "--root", workspace.RootPath], initOutput, initError, workspace.RootPath).ShouldBe(0);
+        (await RepoConfigToolApplication.Run(["init", "--root", workspace.RootPath], initOutput, initError, workspace.RootPath, TestContext.Current.CancellationToken)).ShouldBe(0);
 
         // Act
-        var exitCode = RepoConfigToolApplication.Run(["sync", "github", "--dry-run", "--root", workspace.RootPath], syncOutput, syncError, workspace.RootPath);
+        var exitCode = await RepoConfigToolApplication.Run(["sync", "github", "--dry-run", "--root", workspace.RootPath], syncOutput, syncError, workspace.RootPath, TestContext.Current.CancellationToken);
         var errorText = syncError.ToString();
 
         // Assert
@@ -555,7 +555,7 @@ public sealed class RepoConfigToolApplicationTests
     }
 
     [Fact]
-    public void Sync_github_dry_run_defaults_to_disabled_when_enabled_is_missing()
+    public async Task Sync_github_dry_run_defaults_to_disabled_when_enabled_is_missing()
     {
         // Arrange
         using var workspace = new TemporaryRepoConfigWorkspace();
@@ -563,12 +563,12 @@ public sealed class RepoConfigToolApplicationTests
         using var initError = new StringWriter(CultureInfo.InvariantCulture);
         using var syncOutput = new StringWriter(CultureInfo.InvariantCulture);
         using var syncError = new StringWriter(CultureInfo.InvariantCulture);
-        RepoConfigToolApplication.Run(["init", "--root", workspace.RootPath], initOutput, initError, workspace.RootPath).ShouldBe(0);
+        (await RepoConfigToolApplication.Run(["init", "--root", workspace.RootPath], initOutput, initError, workspace.RootPath, TestContext.Current.CancellationToken)).ShouldBe(0);
         var configText = workspace.ReadFile("roadmap/config.json");
         workspace.WriteFile("roadmap/config.json", configText.Replace("      \"enabled\": false,\n", string.Empty, StringComparison.Ordinal));
 
         // Act
-        var exitCode = RepoConfigToolApplication.Run(["sync", "github", "--dry-run", "--root", workspace.RootPath], syncOutput, syncError, workspace.RootPath);
+        var exitCode = await RepoConfigToolApplication.Run(["sync", "github", "--dry-run", "--root", workspace.RootPath], syncOutput, syncError, workspace.RootPath, TestContext.Current.CancellationToken);
         var errorText = syncError.ToString();
 
         // Assert
@@ -577,7 +577,7 @@ public sealed class RepoConfigToolApplicationTests
     }
 
     [Fact]
-    public void Verify_reports_duplicate_github_issue_mappings()
+    public async Task Verify_reports_duplicate_github_issue_mappings()
     {
         // Arrange
         using var workspace = new TemporaryRepoConfigWorkspace();
@@ -585,14 +585,14 @@ public sealed class RepoConfigToolApplicationTests
         using var initError = new StringWriter(CultureInfo.InvariantCulture);
         using var verifyOutput = new StringWriter(CultureInfo.InvariantCulture);
         using var verifyError = new StringWriter(CultureInfo.InvariantCulture);
-        RepoConfigToolApplication.Run(["init", "--root", workspace.RootPath], initOutput, initError, workspace.RootPath).ShouldBe(0);
+        (await RepoConfigToolApplication.Run(["init", "--root", workspace.RootPath], initOutput, initError, workspace.RootPath, TestContext.Current.CancellationToken)).ShouldBe(0);
         var itemText = workspace.ReadFile("roadmap/items/RM-001-roadmap-gitops.json");
         workspace.WriteFile("roadmap/items/RM-001-roadmap-gitops.json", itemText.Replace("\"labels\": [", "\"integrations\": { \"github\": { \"issue\": 997 } },\n  \"labels\": [", StringComparison.Ordinal));
         workspace.WriteFile("roadmap/items/RM-002-follow-up.json", RoadmapTestContent.IssueWithGitHubMappingJson);
         workspace.WriteFile("roadmap/order.json", "{ \"items\": [\"RM-001\", \"RM-002\"] }");
 
         // Act
-        var exitCode = RepoConfigToolApplication.Run(["verify", "--root", workspace.RootPath], verifyOutput, verifyError, workspace.RootPath);
+        var exitCode = await RepoConfigToolApplication.Run(["verify", "--root", workspace.RootPath], verifyOutput, verifyError, workspace.RootPath, TestContext.Current.CancellationToken);
         var errorText = verifyError.ToString();
 
         // Assert
@@ -601,7 +601,7 @@ public sealed class RepoConfigToolApplicationTests
     }
 
     [Fact]
-    public void Verify_reports_unknown_theme()
+    public async Task Verify_reports_unknown_theme()
     {
         // Arrange
         using var workspace = new TemporaryRepoConfigWorkspace();
@@ -609,12 +609,12 @@ public sealed class RepoConfigToolApplicationTests
         using var initError = new StringWriter(CultureInfo.InvariantCulture);
         using var verifyOutput = new StringWriter(CultureInfo.InvariantCulture);
         using var verifyError = new StringWriter(CultureInfo.InvariantCulture);
-        RepoConfigToolApplication.Run(["init", "--root", workspace.RootPath], initOutput, initError, workspace.RootPath).ShouldBe(0);
+        (await RepoConfigToolApplication.Run(["init", "--root", workspace.RootPath], initOutput, initError, workspace.RootPath, TestContext.Current.CancellationToken)).ShouldBe(0);
         var itemText = workspace.ReadFile("roadmap/items/RM-001-roadmap-gitops.json");
         workspace.WriteFile("roadmap/items/RM-001-roadmap-gitops.json", itemText.Replace("\"theme\": \"repo-operations\"", "\"theme\": \"missing-theme\"", StringComparison.Ordinal));
 
         // Act
-        var exitCode = RepoConfigToolApplication.Run(["verify", "--root", workspace.RootPath], verifyOutput, verifyError, workspace.RootPath);
+        var exitCode = await RepoConfigToolApplication.Run(["verify", "--root", workspace.RootPath], verifyOutput, verifyError, workspace.RootPath, TestContext.Current.CancellationToken);
         var errorText = verifyError.ToString();
 
         // Assert
@@ -623,7 +623,7 @@ public sealed class RepoConfigToolApplicationTests
     }
 
     [Fact]
-    public void Verify_reports_missing_theme_without_unknown_theme_cascade()
+    public async Task Verify_reports_missing_theme_without_unknown_theme_cascade()
     {
         // Arrange
         using var workspace = new TemporaryRepoConfigWorkspace();
@@ -631,12 +631,12 @@ public sealed class RepoConfigToolApplicationTests
         using var initError = new StringWriter(CultureInfo.InvariantCulture);
         using var verifyOutput = new StringWriter(CultureInfo.InvariantCulture);
         using var verifyError = new StringWriter(CultureInfo.InvariantCulture);
-        RepoConfigToolApplication.Run(["init", "--root", workspace.RootPath], initOutput, initError, workspace.RootPath).ShouldBe(0);
+        (await RepoConfigToolApplication.Run(["init", "--root", workspace.RootPath], initOutput, initError, workspace.RootPath, TestContext.Current.CancellationToken)).ShouldBe(0);
         var itemText = workspace.ReadFile("roadmap/items/RM-001-roadmap-gitops.json");
         workspace.WriteFile("roadmap/items/RM-001-roadmap-gitops.json", itemText.Replace("  \"theme\": \"repo-operations\",\n", string.Empty, StringComparison.Ordinal));
 
         // Act
-        var exitCode = RepoConfigToolApplication.Run(["verify", "--root", workspace.RootPath], verifyOutput, verifyError, workspace.RootPath);
+        var exitCode = await RepoConfigToolApplication.Run(["verify", "--root", workspace.RootPath], verifyOutput, verifyError, workspace.RootPath, TestContext.Current.CancellationToken);
         var errorText = verifyError.ToString();
 
         // Assert
@@ -646,7 +646,7 @@ public sealed class RepoConfigToolApplicationTests
     }
 
     [Fact]
-    public void Verify_reports_non_object_order_file()
+    public async Task Verify_reports_non_object_order_file()
     {
         // Arrange
         using var workspace = new TemporaryRepoConfigWorkspace();
@@ -654,11 +654,11 @@ public sealed class RepoConfigToolApplicationTests
         using var initError = new StringWriter(CultureInfo.InvariantCulture);
         using var verifyOutput = new StringWriter(CultureInfo.InvariantCulture);
         using var verifyError = new StringWriter(CultureInfo.InvariantCulture);
-        RepoConfigToolApplication.Run(["init", "--root", workspace.RootPath], initOutput, initError, workspace.RootPath).ShouldBe(0);
+        (await RepoConfigToolApplication.Run(["init", "--root", workspace.RootPath], initOutput, initError, workspace.RootPath, TestContext.Current.CancellationToken)).ShouldBe(0);
         workspace.WriteFile("roadmap/order.json", "[]");
 
         // Act
-        var exitCode = RepoConfigToolApplication.Run(["verify", "--root", workspace.RootPath], verifyOutput, verifyError, workspace.RootPath);
+        var exitCode = await RepoConfigToolApplication.Run(["verify", "--root", workspace.RootPath], verifyOutput, verifyError, workspace.RootPath, TestContext.Current.CancellationToken);
         var errorText = verifyError.ToString();
 
         // Assert
@@ -668,7 +668,7 @@ public sealed class RepoConfigToolApplicationTests
     }
 
     [Fact]
-    public void Verify_reports_malformed_json_files_with_paths()
+    public async Task Verify_reports_malformed_json_files_with_paths()
     {
         // Arrange
         using var workspace = new TemporaryRepoConfigWorkspace();
@@ -676,14 +676,14 @@ public sealed class RepoConfigToolApplicationTests
         using var initError = new StringWriter(CultureInfo.InvariantCulture);
         using var verifyOutput = new StringWriter(CultureInfo.InvariantCulture);
         using var verifyError = new StringWriter(CultureInfo.InvariantCulture);
-        RepoConfigToolApplication.Run(["init", "--root", workspace.RootPath], initOutput, initError, workspace.RootPath).ShouldBe(0);
+        (await RepoConfigToolApplication.Run(["init", "--root", workspace.RootPath], initOutput, initError, workspace.RootPath, TestContext.Current.CancellationToken)).ShouldBe(0);
         workspace.WriteFile("roadmap/config.json", "{");
         workspace.WriteFile("roadmap/items/RM-001-roadmap-gitops.json", "{");
         workspace.WriteFile("roadmap/themes/repo-operations.json", "{");
         workspace.WriteFile("roadmap/order.json", "{");
 
         // Act
-        var exitCode = RepoConfigToolApplication.Run(["verify", "--root", workspace.RootPath], verifyOutput, verifyError, workspace.RootPath);
+        var exitCode = await RepoConfigToolApplication.Run(["verify", "--root", workspace.RootPath], verifyOutput, verifyError, workspace.RootPath, TestContext.Current.CancellationToken);
         var errorText = verifyError.ToString();
 
         // Assert
@@ -696,7 +696,7 @@ public sealed class RepoConfigToolApplicationTests
     }
 
     [Fact]
-    public void Verify_reports_order_file_sequence_mismatch()
+    public async Task Verify_reports_order_file_sequence_mismatch()
     {
         // Arrange
         using var workspace = new TemporaryRepoConfigWorkspace();
@@ -704,12 +704,12 @@ public sealed class RepoConfigToolApplicationTests
         using var initError = new StringWriter(CultureInfo.InvariantCulture);
         using var verifyOutput = new StringWriter(CultureInfo.InvariantCulture);
         using var verifyError = new StringWriter(CultureInfo.InvariantCulture);
-        RepoConfigToolApplication.Run(["init", "--root", workspace.RootPath], initOutput, initError, workspace.RootPath).ShouldBe(0);
+        (await RepoConfigToolApplication.Run(["init", "--root", workspace.RootPath], initOutput, initError, workspace.RootPath, TestContext.Current.CancellationToken)).ShouldBe(0);
         workspace.WriteFile("roadmap/items/RM-002-follow-up.json", RoadmapTestContent.HigherPriorityIssueJson);
         workspace.WriteFile("roadmap/order.json", "{ \"items\": [\"RM-001\", \"RM-002\"] }");
 
         // Act
-        var exitCode = RepoConfigToolApplication.Run(["verify", "--root", workspace.RootPath], verifyOutput, verifyError, workspace.RootPath);
+        var exitCode = await RepoConfigToolApplication.Run(["verify", "--root", workspace.RootPath], verifyOutput, verifyError, workspace.RootPath, TestContext.Current.CancellationToken);
         var errorText = verifyError.ToString();
 
         // Assert
@@ -718,7 +718,7 @@ public sealed class RepoConfigToolApplicationTests
     }
 
     [Fact]
-    public void Verify_order_file_uses_priority_tiebreakers()
+    public async Task Verify_order_file_uses_priority_tiebreakers()
     {
         // Arrange
         using var workspace = new TemporaryRepoConfigWorkspace();
@@ -726,7 +726,7 @@ public sealed class RepoConfigToolApplicationTests
         using var initError = new StringWriter(CultureInfo.InvariantCulture);
         using var verifyOutput = new StringWriter(CultureInfo.InvariantCulture);
         using var verifyError = new StringWriter(CultureInfo.InvariantCulture);
-        RepoConfigToolApplication.Run(["init", "--root", workspace.RootPath], initOutput, initError, workspace.RootPath).ShouldBe(0);
+        (await RepoConfigToolApplication.Run(["init", "--root", workspace.RootPath], initOutput, initError, workspace.RootPath, TestContext.Current.CancellationToken)).ShouldBe(0);
         var tiedItem = RoadmapTestContent.HigherPriorityIssueJson
             .Replace("\"id\": \"RM-002\"", "\"id\": \"RM-000\"", StringComparison.Ordinal)
             .Replace("\"order\": 5", "\"order\": 10", StringComparison.Ordinal)
@@ -735,14 +735,14 @@ public sealed class RepoConfigToolApplicationTests
         workspace.WriteFile("roadmap/order.json", "{ \"items\": [\"RM-001\", \"RM-000\"] }");
 
         // Act
-        var exitCode = RepoConfigToolApplication.Run(["verify", "--root", workspace.RootPath], verifyOutput, verifyError, workspace.RootPath);
+        var exitCode = await RepoConfigToolApplication.Run(["verify", "--root", workspace.RootPath], verifyOutput, verifyError, workspace.RootPath, TestContext.Current.CancellationToken);
 
         // Assert
         exitCode.ShouldBe(0);
     }
 
     [Fact]
-    public void Verify_reports_blocked_by_cycles()
+    public async Task Verify_reports_blocked_by_cycles()
     {
         // Arrange
         using var workspace = new TemporaryRepoConfigWorkspace();
@@ -750,7 +750,7 @@ public sealed class RepoConfigToolApplicationTests
         using var initError = new StringWriter(CultureInfo.InvariantCulture);
         using var verifyOutput = new StringWriter(CultureInfo.InvariantCulture);
         using var verifyError = new StringWriter(CultureInfo.InvariantCulture);
-        RepoConfigToolApplication.Run(["init", "--root", workspace.RootPath], initOutput, initError, workspace.RootPath).ShouldBe(0);
+        (await RepoConfigToolApplication.Run(["init", "--root", workspace.RootPath], initOutput, initError, workspace.RootPath, TestContext.Current.CancellationToken)).ShouldBe(0);
         var epicText = workspace.ReadFile("roadmap/items/RM-001-roadmap-gitops.json");
         workspace.WriteFile("roadmap/items/RM-001-roadmap-gitops.json", epicText
             .Replace("\"blockedBy\": []", "\"blockedBy\": [\"RM-002\"]", StringComparison.Ordinal)
@@ -760,7 +760,7 @@ public sealed class RepoConfigToolApplicationTests
         workspace.WriteFile("roadmap/order.json", "{ \"items\": [\"RM-001\", \"RM-002\"] }");
 
         // Act
-        var exitCode = RepoConfigToolApplication.Run(["verify", "--root", workspace.RootPath], verifyOutput, verifyError, workspace.RootPath);
+        var exitCode = await RepoConfigToolApplication.Run(["verify", "--root", workspace.RootPath], verifyOutput, verifyError, workspace.RootPath, TestContext.Current.CancellationToken);
         var errorText = verifyError.ToString();
 
         // Assert
@@ -769,7 +769,7 @@ public sealed class RepoConfigToolApplicationTests
     }
 
     [Fact]
-    public void Get_next_priority_orders_items_by_order_score_and_id()
+    public async Task Get_next_priority_orders_items_by_order_score_and_id()
     {
         // Arrange
         using var workspace = new TemporaryRepoConfigWorkspace();
@@ -777,7 +777,7 @@ public sealed class RepoConfigToolApplicationTests
         using var initError = new StringWriter(CultureInfo.InvariantCulture);
         using var getOutput = new StringWriter(CultureInfo.InvariantCulture);
         using var getError = new StringWriter(CultureInfo.InvariantCulture);
-        RepoConfigToolApplication.Run(["init", "--root", workspace.RootPath], initOutput, initError, workspace.RootPath).ShouldBe(0);
+        (await RepoConfigToolApplication.Run(["init", "--root", workspace.RootPath], initOutput, initError, workspace.RootPath, TestContext.Current.CancellationToken)).ShouldBe(0);
         var defaultItem = workspace.ReadFile("roadmap/items/RM-001-roadmap-gitops.json");
         var lowerScoreItem = RoadmapTestContent.HigherPriorityIssueJson
             .Replace("\"id\": \"RM-002\"", "\"id\": \"RM-000\"", StringComparison.Ordinal)
@@ -791,7 +791,7 @@ public sealed class RepoConfigToolApplicationTests
         workspace.WriteFile("roadmap/order.json", "{ \"items\": [\"RM-001\", \"RM-002\", \"RM-000\"] }");
 
         // Act
-        var exitCode = RepoConfigToolApplication.Run(["get", "next-priority", "--limit", "3", "--root", workspace.RootPath], getOutput, getError, workspace.RootPath);
+        var exitCode = await RepoConfigToolApplication.Run(["get", "next-priority", "--limit", "3", "--root", workspace.RootPath], getOutput, getError, workspace.RootPath, TestContext.Current.CancellationToken);
         var outputText = getOutput.ToString();
         var firstIndex = outputText.IndexOf("RM-001 |", StringComparison.Ordinal);
         var secondIndex = outputText.IndexOf("RM-002 |", StringComparison.Ordinal);
@@ -804,7 +804,7 @@ public sealed class RepoConfigToolApplicationTests
     }
 
     [Fact]
-    public void Get_pareto_limit_uses_unblocked_open_items()
+    public async Task Get_pareto_limit_uses_unblocked_open_items()
     {
         // Arrange
         using var workspace = new TemporaryRepoConfigWorkspace();
@@ -812,7 +812,7 @@ public sealed class RepoConfigToolApplicationTests
         using var initError = new StringWriter(CultureInfo.InvariantCulture);
         using var getOutput = new StringWriter(CultureInfo.InvariantCulture);
         using var getError = new StringWriter(CultureInfo.InvariantCulture);
-        RepoConfigToolApplication.Run(["init", "--root", workspace.RootPath], initOutput, initError, workspace.RootPath).ShouldBe(0);
+        (await RepoConfigToolApplication.Run(["init", "--root", workspace.RootPath], initOutput, initError, workspace.RootPath, TestContext.Current.CancellationToken)).ShouldBe(0);
         var epicText = workspace.ReadFile("roadmap/items/RM-001-roadmap-gitops.json");
         workspace.WriteFile("roadmap/items/RM-001-roadmap-gitops.json", epicText.Replace("\"blocks\": []", "\"blocks\": [\"RM-003\", \"RM-004\", \"RM-005\", \"RM-006\"]", StringComparison.Ordinal));
         var unblockedItem = RoadmapTestContent.UnblockedEnablerJson.Replace("\"id\": \"RM-003\"", "\"id\": \"RM-002\"", StringComparison.Ordinal);
@@ -828,7 +828,7 @@ public sealed class RepoConfigToolApplicationTests
         workspace.WriteFile("roadmap/order.json", "{ \"items\": [\"RM-001\", \"RM-002\", \"RM-003\", \"RM-004\", \"RM-005\", \"RM-006\"] }");
 
         // Act
-        var exitCode = RepoConfigToolApplication.Run(["get", "pareto", "--limit", "10", "--root", workspace.RootPath], getOutput, getError, workspace.RootPath);
+        var exitCode = await RepoConfigToolApplication.Run(["get", "pareto", "--limit", "10", "--root", workspace.RootPath], getOutput, getError, workspace.RootPath, TestContext.Current.CancellationToken);
         var outputText = getOutput.ToString();
 
         // Assert
@@ -838,13 +838,13 @@ public sealed class RepoConfigToolApplicationTests
     }
 
     [Fact]
-    public void Sync_github_dry_run_orders_mapped_items_by_priority()
+    public async Task Sync_github_dry_run_orders_mapped_items_by_priority()
     {
         // Arrange
         using var workspace = new TemporaryRepoConfigWorkspace();
         using var initOutput = new StringWriter(CultureInfo.InvariantCulture);
         using var initError = new StringWriter(CultureInfo.InvariantCulture);
-        RepoConfigToolApplication.Run(["init", "--root", workspace.RootPath], initOutput, initError, workspace.RootPath).ShouldBe(0);
+        (await RepoConfigToolApplication.Run(["init", "--root", workspace.RootPath], initOutput, initError, workspace.RootPath, TestContext.Current.CancellationToken)).ShouldBe(0);
         RoadmapConfigTestOperations.EnableGitHubSync(workspace);
         var defaultItem = workspace.ReadFile("roadmap/items/RM-001-roadmap-gitops.json");
         workspace.WriteFile("roadmap/items/RM-001-roadmap-gitops.json", defaultItem.Replace("\"labels\": [", "\"integrations\": { \"github\": { \"issue\": 997 } },\n  \"labels\": [", StringComparison.Ordinal));
@@ -858,7 +858,7 @@ public sealed class RepoConfigToolApplicationTests
         var syncer = new GitHubRoadmapSyncer(RoadmapProject.Load(workspace.RootPath));
 
         // Act
-        var result = syncer.Sync(dryRun: true);
+        var result = syncer.Preview();
 
         // Assert
         result.Messages[0].ShouldBe("dry-run: update owner/repository#997 from RM-001");
@@ -908,13 +908,13 @@ public sealed class RepoConfigToolApplicationTests
     }
 
     [Fact]
-    public void Sync_github_apply_updates_managed_section_and_labels()
+    public async Task Sync_github_apply_updates_managed_section_and_labels()
     {
         // Arrange
         using var workspace = new TemporaryRepoConfigWorkspace();
         using var initOutput = new StringWriter(CultureInfo.InvariantCulture);
         using var initError = new StringWriter(CultureInfo.InvariantCulture);
-        RepoConfigToolApplication.Run(["init", "--root", workspace.RootPath], initOutput, initError, workspace.RootPath).ShouldBe(0);
+        (await RepoConfigToolApplication.Run(["init", "--root", workspace.RootPath], initOutput, initError, workspace.RootPath, TestContext.Current.CancellationToken)).ShouldBe(0);
         RoadmapConfigTestOperations.EnableGitHubSync(workspace);
         var itemText = workspace.ReadFile("roadmap/items/RM-001-roadmap-gitops.json");
         workspace.WriteFile("roadmap/items/RM-001-roadmap-gitops.json", itemText.Replace("\"labels\": [", "\"integrations\": { \"github\": { \"issue\": 997 } },\n  \"labels\": [", StringComparison.Ordinal));
@@ -928,7 +928,7 @@ public sealed class RepoConfigToolApplicationTests
         var syncer = new GitHubRoadmapSyncer(project, httpClient);
 
         // Act
-        var result = syncer.Sync(dryRun: false);
+        var result = await syncer.Apply(TestContext.Current.CancellationToken);
 
         // Assert
         result.Messages.ShouldContain("updated owner/repository#997 from RM-001");
@@ -945,13 +945,13 @@ public sealed class RepoConfigToolApplicationTests
     }
 
     [Fact]
-    public void Sync_github_apply_rejects_issue_body_change_before_patch()
+    public async Task Sync_github_apply_rejects_issue_body_change_before_patch()
     {
         // Arrange
         using var workspace = new TemporaryRepoConfigWorkspace();
         using var initOutput = new StringWriter(CultureInfo.InvariantCulture);
         using var initError = new StringWriter(CultureInfo.InvariantCulture);
-        RepoConfigToolApplication.Run(["init", "--root", workspace.RootPath], initOutput, initError, workspace.RootPath).ShouldBe(0);
+        (await RepoConfigToolApplication.Run(["init", "--root", workspace.RootPath], initOutput, initError, workspace.RootPath, TestContext.Current.CancellationToken)).ShouldBe(0);
         RoadmapConfigTestOperations.EnableGitHubSync(workspace);
         var itemText = workspace.ReadFile("roadmap/items/RM-001-roadmap-gitops.json");
         workspace.WriteFile("roadmap/items/RM-001-roadmap-gitops.json", itemText.Replace("\"labels\": [", "\"integrations\": { \"github\": { \"issue\": 997 } },\n  \"labels\": [", StringComparison.Ordinal));
@@ -963,23 +963,24 @@ public sealed class RepoConfigToolApplicationTests
         var syncer = new GitHubRoadmapSyncer(project, httpClient);
 
         // Act
-        var action = (Func<object?>)(() => syncer.Sync(dryRun: false));
+        var exception = await ShouldAssertionExtensions.ShouldThrow<InvalidOperationException>(
+            () => syncer.Apply(TestContext.Current.CancellationToken));
 
         // Assert
-        action.ShouldThrow<InvalidOperationException>().Message.ShouldContain("GitHub issue body changed before update for #997", StringComparison.Ordinal);
+        exception.Message.ShouldContain("GitHub issue body changed before update for #997", StringComparison.Ordinal);
         handler.Requests.Count.ShouldBe(2);
         handler.Requests[0].Method.ShouldBe(HttpMethod.Get);
         handler.Requests[1].Method.ShouldBe(HttpMethod.Get);
     }
 
     [Fact]
-    public void Sync_github_apply_does_not_sync_labels_after_issue_update_failure()
+    public async Task Sync_github_apply_does_not_sync_labels_after_issue_update_failure()
     {
         // Arrange
         using var workspace = new TemporaryRepoConfigWorkspace();
         using var initOutput = new StringWriter(CultureInfo.InvariantCulture);
         using var initError = new StringWriter(CultureInfo.InvariantCulture);
-        RepoConfigToolApplication.Run(["init", "--root", workspace.RootPath], initOutput, initError, workspace.RootPath).ShouldBe(0);
+        (await RepoConfigToolApplication.Run(["init", "--root", workspace.RootPath], initOutput, initError, workspace.RootPath, TestContext.Current.CancellationToken)).ShouldBe(0);
         RoadmapConfigTestOperations.EnableGitHubSync(workspace);
         var itemText = workspace.ReadFile("roadmap/items/RM-001-roadmap-gitops.json");
         workspace.WriteFile("roadmap/items/RM-001-roadmap-gitops.json", itemText.Replace("\"labels\": [", "\"integrations\": { \"github\": { \"issue\": 997 } },\n  \"labels\": [", StringComparison.Ordinal));
@@ -992,10 +993,11 @@ public sealed class RepoConfigToolApplicationTests
         var syncer = new GitHubRoadmapSyncer(project, httpClient);
 
         // Act
-        var action = (Func<object?>)(() => syncer.Sync(dryRun: false));
+        var exception = await ShouldAssertionExtensions.ShouldThrow<InvalidOperationException>(
+            () => syncer.Apply(TestContext.Current.CancellationToken));
 
         // Assert
-        action.ShouldThrow<InvalidOperationException>().Message.ShouldContain("GitHub issue update failed for #997", StringComparison.Ordinal);
+        exception.Message.ShouldContain("GitHub issue update failed for #997", StringComparison.Ordinal);
         handler.Requests.Count.ShouldBe(3);
         handler.Requests[0].Method.ShouldBe(HttpMethod.Get);
         handler.Requests[1].Method.ShouldBe(HttpMethod.Get);
@@ -1003,13 +1005,13 @@ public sealed class RepoConfigToolApplicationTests
     }
 
     [Fact]
-    public void Sync_github_apply_rejects_pull_request_mappings()
+    public async Task Sync_github_apply_rejects_pull_request_mappings()
     {
         // Arrange
         using var workspace = new TemporaryRepoConfigWorkspace();
         using var initOutput = new StringWriter(CultureInfo.InvariantCulture);
         using var initError = new StringWriter(CultureInfo.InvariantCulture);
-        RepoConfigToolApplication.Run(["init", "--root", workspace.RootPath], initOutput, initError, workspace.RootPath).ShouldBe(0);
+        (await RepoConfigToolApplication.Run(["init", "--root", workspace.RootPath], initOutput, initError, workspace.RootPath, TestContext.Current.CancellationToken)).ShouldBe(0);
         RoadmapConfigTestOperations.EnableGitHubSync(workspace);
         var itemText = workspace.ReadFile("roadmap/items/RM-001-roadmap-gitops.json");
         workspace.WriteFile("roadmap/items/RM-001-roadmap-gitops.json", itemText.Replace("\"labels\": [", "\"integrations\": { \"github\": { \"issue\": 997 } },\n  \"labels\": [", StringComparison.Ordinal));
@@ -1020,16 +1022,17 @@ public sealed class RepoConfigToolApplicationTests
         var syncer = new GitHubRoadmapSyncer(project, httpClient);
 
         // Act
-        var action = (Func<object?>)(() => syncer.Sync(dryRun: false));
+        var exception = await ShouldAssertionExtensions.ShouldThrow<InvalidOperationException>(
+            () => syncer.Apply(TestContext.Current.CancellationToken));
 
         // Assert
-        action.ShouldThrow<InvalidOperationException>().Message.ShouldContain("points to a pull request", StringComparison.Ordinal);
+        exception.Message.ShouldContain("points to a pull request", StringComparison.Ordinal);
         handler.Requests.Count.ShouldBe(1);
         handler.Requests[0].Method.ShouldBe(HttpMethod.Get);
     }
 
     [Fact]
-    public void Get_by_label_rejects_unquoted_label_with_spaces()
+    public async Task Get_by_label_rejects_unquoted_label_with_spaces()
     {
         // Arrange
         using var workspace = new TemporaryRepoConfigWorkspace();
@@ -1037,7 +1040,7 @@ public sealed class RepoConfigToolApplicationTests
         using var getError = new StringWriter(CultureInfo.InvariantCulture);
 
         // Act
-        var exitCode = RepoConfigToolApplication.Run(["get", "by-label", "area:", "tooling", "--root", workspace.RootPath], getOutput, getError, workspace.RootPath);
+        var exitCode = await RepoConfigToolApplication.Run(["get", "by-label", "area:", "tooling", "--root", workspace.RootPath], getOutput, getError, workspace.RootPath, TestContext.Current.CancellationToken);
         var errorText = getError.ToString();
 
         // Assert
@@ -1046,7 +1049,7 @@ public sealed class RepoConfigToolApplicationTests
     }
 
     [Fact]
-    public void Get_reports_tool_name_for_config_errors()
+    public async Task Get_reports_tool_name_for_config_errors()
     {
         // Arrange
         using var workspace = new TemporaryRepoConfigWorkspace();
@@ -1054,7 +1057,7 @@ public sealed class RepoConfigToolApplicationTests
         using var getError = new StringWriter(CultureInfo.InvariantCulture);
 
         // Act
-        var exitCode = RepoConfigToolApplication.Run(["get", "next-priority", "--root", workspace.RootPath], getOutput, getError, workspace.RootPath);
+        var exitCode = await RepoConfigToolApplication.Run(["get", "next-priority", "--root", workspace.RootPath], getOutput, getError, workspace.RootPath, TestContext.Current.CancellationToken);
         var errorText = getError.ToString();
 
         // Assert
