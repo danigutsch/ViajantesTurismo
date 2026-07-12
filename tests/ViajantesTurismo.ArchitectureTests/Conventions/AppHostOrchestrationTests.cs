@@ -267,6 +267,7 @@ public sealed partial class AppHostOrchestrationTests
         seaweedFsText.ShouldNotContain("viajantes-media", StringComparison.Ordinal);
         seaweedFsText.ShouldNotContain("Catalog__MediaObjectStorage", StringComparison.Ordinal);
         appHostExtensionsText.ShouldContain("private static IResourceBuilder<TDestination> WithSeaweedFsReference<TDestination>(", StringComparison.Ordinal);
+        seaweedFsText.ShouldContain("DcpPublisher:ResourceNameSuffix", StringComparison.Ordinal);
     }
 
 }
