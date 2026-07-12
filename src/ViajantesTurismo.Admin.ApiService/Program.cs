@@ -1,4 +1,5 @@
 using SharedKernel.AspNetCore;
+using SharedKernel.Branding;
 using ViajantesTurismo.Admin.ApiService;
 using ViajantesTurismo.Admin.ApiService.Bookings;
 using ViajantesTurismo.Admin.ApiService.Customers;
@@ -7,6 +8,7 @@ using ViajantesTurismo.Admin.ApiService.Tours;
 using ViajantesTurismo.Admin.Application;
 using ViajantesTurismo.Admin.Infrastructure;
 using ViajantesTurismo.ServiceDefaults;
+using ViajantesTurismo.Resources;
 
 const string ApiRobotsTxt = "User-agent: *\nDisallow: /";
 
@@ -17,6 +19,7 @@ builder.WebHost.UseKestrelHttpsConfiguration();
 builder.AddServiceDefaults();
 
 builder.Services.AddSingleton(TimeProvider.System);
+builder.Services.AddHttpClient<IBrandingApiClient, BrandingApiClient>(client => client.BaseAddress = new Uri($"https+http://{ResourceNames.BrandingApi}"));
 
 builder.Services.AddProblemDetails();
 builder.Services.AddConfiguredTrustedForwardedHeaders(builder.Configuration.GetSection("Security:ForwardedHeaders"));

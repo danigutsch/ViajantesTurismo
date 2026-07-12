@@ -67,6 +67,7 @@
         <Project Path="src/SharedKernel/SharedKernel.ApiVersioning/SharedKernel.ApiVersioning.csproj" />
         <Project Path="src/SharedKernel/SharedKernel.ApiVersioning.AspNetCore/SharedKernel.ApiVersioning.AspNetCore.csproj" />
         <Project Path="src/SharedKernel/SharedKernel.Branding/SharedKernel.Branding.csproj" />
+        <Project Path="src/SharedKernel/SharedKernel.DocumentRendering/SharedKernel.DocumentRendering.csproj" />
     </Folder>
     <Folder Name="/src/Admin/">
         <Project Path="src/ViajantesTurismo.Admin.Contracts.Application/ViajantesTurismo.Admin.Contracts.Application.csproj" />
@@ -156,6 +157,7 @@
         <Project Path="tests/SharedKernel.Mediator.EntityFrameworkCore.Tests/SharedKernel.Mediator.EntityFrameworkCore.Tests.csproj" />
         <Project Path="tests/SharedKernel.EntityFrameworkCore.Tests/SharedKernel.EntityFrameworkCore.Tests.csproj" />
         <Project Path="tests/ViajantesTurismo.Admin.BehaviorTests/ViajantesTurismo.Admin.BehaviorTests.csproj" />
+        <Project Path="tests/ViajantesTurismo.Admin.Infrastructure.Tests/ViajantesTurismo.Admin.Infrastructure.Tests.csproj" />
         <Project Path="tests/ViajantesTurismo.Admin.IntegrationTests/ViajantesTurismo.Admin.IntegrationTests.csproj" />
         <Project Path="tests/ViajantesTurismo.Admin.UnitTests/ViajantesTurismo.Admin.UnitTests.csproj" />
         <Project Path="tests/ViajantesTurismo.Catalog.UnitTests/ViajantesTurismo.Catalog.UnitTests.csproj" />
@@ -164,6 +166,7 @@
         <Project Path="tests/ViajantesTurismo.Catalog.ApiServiceTests/ViajantesTurismo.Catalog.ApiServiceTests.csproj" />
         <Project Path="tests/ViajantesTurismo.Catalog.ContractTests/ViajantesTurismo.Catalog.ContractTests.csproj" />
         <Project Path="tests/SharedKernel.Branding.Tests/SharedKernel.Branding.Tests.csproj" />
+        <Project Path="tests/SharedKernel.DocumentRendering.Tests/SharedKernel.DocumentRendering.Tests.csproj" />
         <Project Path="tests/ViajantesTurismo.Branding.ApiServiceTests/ViajantesTurismo.Branding.ApiServiceTests.csproj" />
     </Folder>
     <Folder Name="/benchmarks/">

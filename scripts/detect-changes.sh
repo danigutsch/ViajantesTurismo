@@ -115,6 +115,7 @@ fast_validation_patterns=(
     "src/SharedKernel/SharedKernel.AspNetCore/**"
     "src/SharedKernel/SharedKernel.Aspire.Hosting.Grafana/**"
     "src/SharedKernel/SharedKernel.Branding/**"
+    "src/SharedKernel/SharedKernel.DocumentRendering/**"
     "src/SharedKernel/SharedKernel.Domain/**"
     "src/SharedKernel/SharedKernel.Domain.SourceGenerator/**"
     "src/SharedKernel/SharedKernel.DomainEvents/**"
@@ -215,6 +216,7 @@ admin_integration_patterns=(
     "src/ViajantesTurismo.Resources/**"
     "src/ViajantesTurismo.ServiceDefaults/**"
     "tests/SharedKernel.EventSourcing.Npgsql.Tests/**"
+    "tests/ViajantesTurismo.Admin.Infrastructure.Tests/**"
     "tests/ViajantesTurismo.Admin.IntegrationTests/**"
     "tests/ViajantesTurismo.Admin.Testing/**"
 )

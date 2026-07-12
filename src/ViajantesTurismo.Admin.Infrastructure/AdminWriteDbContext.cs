@@ -2,6 +2,8 @@ using Microsoft.EntityFrameworkCore;
 using SharedKernel.EntityFrameworkCore;
 using ViajantesTurismo.Admin.Application;
 using ViajantesTurismo.Admin.Domain.Customers;
+using ViajantesTurismo.Admin.Domain.Documents;
+using ViajantesTurismo.Admin.Infrastructure.Documents;
 using ViajantesTurismo.Admin.Infrastructure.ModelConfigurations;
 using ViajantesTurismo.Admin.Domain.Tours;
 
@@ -14,6 +16,7 @@ internal sealed class AdminWriteDbContext(
 {
     public DbSet<Tour> Tours => Set<Tour>();
     public DbSet<Customer> Customers => Set<Customer>();
+    public DbSet<DocumentDraft> DocumentDrafts => Set<DocumentDraft>();
 
     public async Task SaveEntities(CancellationToken ct)
     {
@@ -41,6 +44,7 @@ internal sealed class AdminWriteDbContext(
         modelBuilder.ApplyConfiguration(new CustomerConfiguration());
         modelBuilder.ApplyConfiguration(new BookingConfiguration());
         modelBuilder.ApplyConfiguration(new PaymentConfiguration());
+        modelBuilder.ApplyConfiguration(new DocumentDraftConfiguration());
         if (configurations is not null)
         {
             foreach (var configuration in configurations)
