@@ -1,0 +1,40 @@
+{
+  "$schema": "../schema/roadmap-item.schema.json",
+  "id": "RM-004",
+  "parent": "RM-001",
+  "title": "Create .NET repo config tool skeleton",
+  "type": "enabler",
+  "status": "ready",
+  "order": 40,
+  "theme": "repo-operations",
+  "outcome": "A repository-owned .NET tool can initialize, modify, verify, query, and sync roadmap configuration without shell or Python helper scripts.",
+  "size": "M",
+  "scoring": {
+    "reach": 20,
+    "impact": 5,
+    "confidence": 0.8,
+    "effort": 4
+  },
+  "blockedBy": [
+    "RM-002",
+    "RM-003"
+  ],
+  "blocks": [
+    "RM-005"
+  ],
+  "dependencies": [],
+  "tags": [
+    "dotnet-tool",
+    "repo-config",
+    "query"
+  ],
+  "labels": [
+    "area: tooling",
+    "configuration"
+  ],
+  "integrations": {
+    "github": {
+      "issue": 1001
+    }
+  }
+}

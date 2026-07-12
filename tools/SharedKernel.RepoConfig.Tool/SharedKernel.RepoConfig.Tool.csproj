@@ -1,0 +1,23 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <OutputType>Exe</OutputType>
+        <RootNamespace>SharedKernel.RepoConfig.Tool</RootNamespace>
+        <PackAsTool>true</PackAsTool>
+        <ToolCommandName>sharedkernel-repo</ToolCommandName>
+        <PackageId>SharedKernel.RepoConfig.Tool</PackageId>
+        <Description>Repository structure, roadmap, and project configuration verification.</Description>
+        <PackageReadmeFile>README.md</PackageReadmeFile>
+        <PackageTags>repository-configuration;roadmap;gitops;dotnet-tool</PackageTags>
+        <IsAotCompatible>true</IsAotCompatible>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <InternalsVisibleTo Include="SharedKernel.RepoConfig.Tests" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <None Include="README.md" Pack="true" PackagePath="\" />
+    </ItemGroup>
+
+</Project>

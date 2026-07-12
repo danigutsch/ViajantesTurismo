@@ -1,0 +1,65 @@
+{
+  "$schema": "./schema/roadmap-config.schema.json",
+  "schemaVersion": "1.0",
+  "sourceOfTruth": "repository",
+  "itemIdPrefix": "RM",
+  "allowed": {
+    "types": [
+      "epic",
+      "issue",
+      "feature",
+      "enabler",
+      "blocker",
+      "risk",
+      "documentation"
+    ],
+    "statuses": [
+      "proposed",
+      "ready",
+      "in_progress",
+      "done",
+      "dropped"
+    ]
+  },
+  "project": {
+    "ordering": "order",
+    "blockedBy": "blockedBy",
+    "closedStatuses": [
+      "done",
+      "dropped"
+    ],
+    "tagFields": [
+      "tags",
+      "labels"
+    ]
+  },
+  "scoring": {
+    "model": "RICE",
+    "formula": "reach * impact * confidence / effort",
+    "ranges": {
+      "reach": "0 or greater",
+      "impact": "1 to 5",
+      "confidence": "0.1 to 1.0",
+      "effort": "greater than 0"
+    }
+  },
+  "integrations": {
+    "github": {
+      "enabled": true,
+      "repository": "danigutsch/ViajantesTurismo",
+      "sourceOfTruth": "projection",
+      "issueBodyOwnership": "roadmap-managed-section",
+      "projectFieldMapping": {
+        "status": "Status",
+        "theme": "Theme",
+        "order": "Order",
+        "blockedBy": "Blocked by",
+        "reach": "Reach",
+        "impact": "Impact",
+        "confidence": "Confidence",
+        "effort": "Effort",
+        "score": "RICE"
+      }
+    }
+  }
+}

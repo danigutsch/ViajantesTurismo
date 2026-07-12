@@ -1,0 +1,94 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/danigutsch/ViajantesTurismo/roadmap/schema/roadmap-config.schema.json",
+  "title": "Roadmap configuration",
+  "type": "object",
+  "required": [
+    "schemaVersion",
+      "sourceOfTruth",
+      "itemIdPrefix",
+      "allowed",
+      "project",
+      "scoring",
+    "integrations"
+  ],
+  "properties": {
+    "schemaVersion": {
+      "type": "string"
+    },
+    "sourceOfTruth": {
+      "const": "repository"
+    },
+    "itemIdPrefix": {
+      "type": "string",
+      "minLength": 1
+    },
+    "allowed": {
+      "type": "object",
+      "required": [
+        "types",
+        "statuses"
+      ],
+      "properties": {
+        "types": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "minItems": 1,
+          "uniqueItems": true
+        },
+        "statuses": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "minItems": 1,
+          "uniqueItems": true
+        }
+      }
+    },
+    "scoring": {
+      "type": "object",
+      "required": [
+        "model",
+        "formula"
+      ],
+      "properties": {
+        "model": {
+          "const": "RICE"
+        },
+        "formula": {
+          "const": "reach * impact * confidence / effort"
+        }
+      }
+    },
+    "project": {
+      "type": "object",
+      "required": [
+        "ordering",
+        "blockedBy",
+        "closedStatuses"
+      ],
+      "properties": {
+        "ordering": {
+          "const": "order"
+        },
+        "blockedBy": {
+          "const": "blockedBy"
+        },
+        "closedStatuses": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "minItems": 1,
+          "uniqueItems": true
+        }
+      }
+    },
+    "integrations": {
+      "type": "object"
+    }
+  }
+}

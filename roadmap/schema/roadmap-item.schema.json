@@ -1,0 +1,122 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/danigutsch/ViajantesTurismo/roadmap/schema/roadmap-item.schema.json",
+  "title": "Roadmap item",
+  "type": "object",
+  "required": [
+    "id",
+    "title",
+    "type",
+    "status",
+    "order",
+    "theme",
+    "outcome",
+    "scoring",
+    "blockedBy",
+    "blocks",
+    "dependencies",
+    "tags",
+    "labels"
+  ],
+  "properties": {
+    "id": {
+      "type": "string",
+      "pattern": "^RM-[0-9]{3,}$"
+    },
+    "title": {
+      "type": "string",
+      "minLength": 1
+    },
+    "type": {
+      "type": "string"
+    },
+    "status": {
+      "type": "string"
+    },
+    "order": {
+      "type": "integer",
+      "minimum": 1
+    },
+    "parent": {
+      "type": "string"
+    },
+    "theme": {
+      "type": "string",
+      "minLength": 1
+    },
+    "outcome": {
+      "type": "string",
+      "minLength": 1
+    },
+    "scoring": {
+      "type": "object",
+      "required": [
+        "reach",
+        "impact",
+        "confidence",
+        "effort"
+      ],
+      "properties": {
+        "reach": {
+          "type": "number",
+          "minimum": 0
+        },
+        "impact": {
+          "type": "number",
+          "minimum": 1,
+          "maximum": 5
+        },
+        "confidence": {
+          "type": "number",
+          "exclusiveMinimum": 0,
+          "maximum": 1
+        },
+        "effort": {
+          "type": "number",
+          "exclusiveMinimum": 0
+        }
+      }
+    },
+    "dependencies": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "uniqueItems": true
+    },
+    "blockedBy": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "uniqueItems": true
+    },
+    "blocks": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "uniqueItems": true
+    },
+    "tags": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "uniqueItems": true
+    },
+    "labels": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "uniqueItems": true
+    },
+    "sources": {
+      "type": "array"
+    },
+    "integrations": {
+      "type": "object"
+    }
+  }
+}
