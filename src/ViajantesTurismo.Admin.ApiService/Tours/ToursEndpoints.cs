@@ -25,9 +25,11 @@ internal static class ToursEndpoints
         toursGroup.MapCreateTourEndpoint();
 
         toursGroup.MapGet("/", GetAllTours)
+            .RequireAuthorization(AdminAuthorization.TourRead)
             .WithAdminMetadata("GetTours", "Retrieves all available tours.", "Retrieves all available tours.");
 
         toursGroup.MapGet("/{id:guid}", GetTourById)
+            .RequireAuthorization(AdminAuthorization.TourRead)
             .WithAdminMetadata("GetTourById", "Retrieves a tour by its ID.", "Retrieves a tour by its ID.");
 
         toursGroup.MapUpdateTourEndpoint();

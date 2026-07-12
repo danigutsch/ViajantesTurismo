@@ -16,6 +16,8 @@ projects, and reusable service defaults belong in `ViajantesTurismo.ServiceDefau
 
 - **PostgreSQL**: database server with PgWeb admin interface
 - **Redis**: cache server with RedisInsight admin interface
+- **Keycloak**: local OIDC conformance identity provider; browser-facing because it hosts the
+  Management Web authorization endpoint
 
 ### Application Services
 
@@ -71,6 +73,7 @@ code builds or before committing.
 | PgWeb | `docker.io/sosedoff/pgweb:0.17.0` | `sha256:a5256d416e2e8b92d69a4459058e3eca33a9f075d8325491644411d0bc3bd70b` |
 | Redis | `docker.io/library/redis:8.8` | `sha256:2838d5524559494f6f1cd66e97e76b200d64a633a8614200620755ed395daf32` |
 | RedisInsight | `docker.io/redis/redisinsight:3.6` | `sha256:aa21bbd198455b4ad964f76782db951155aa0d712321f599972d1525f031f0e6` |
+| Keycloak | `quay.io/keycloak/keycloak:26.7.0` | `sha256:2eb3cd316835c990e69e26ade292ffa78f6fb0db7d5fc6377463c162e1979ac0` |
 | OpenTelemetry Collector | `docker.io/otel/opentelemetry-collector-contrib:0.130.1` | `sha256:9c247564e65ca19f97d891cca19a1a8d291ce631b890885b44e3503c5fdb3895` |
 | Grafana | `docker.io/grafana/grafana:12.0.2` | `sha256:b5b59bfc7561634c2d7b136c4543d702ebcc94a3da477f21ff26f89ffd4214fa` |
 | Loki | `docker.io/grafana/loki:3.5.1` | `sha256:a74594532eec4cc313401beedc4dd2708c43674c032084b1aeb87c14a5be1745` |
@@ -83,6 +86,18 @@ The AppHost must not calculate application versions. Release workflows calculate
 `SharedKernel.Versioning.Tool calculate-release`, then pass the computed values into Aspire publish
 steps as configuration, environment variables, or MSBuild properties.
 Release workflow context lives in [`docs/ci/supplemental-workflows.md`](../../docs/ci/supplemental-workflows.md).
+
+### Execution mode
+
+Use Aspire's `builder.ExecutionContext.IsRunMode` and `IsPublishMode` to choose resources that
+exist only for local orchestration. Do not infer the execution mode from a release workflow
+configuration value. `VT_ASPIRE_CONTAINER_IMAGE_TAG` supplies container metadata during publish; it
+does not decide whether the AppHost is running locally or publishing a deployment model.
+
+Keycloak and its HTTP development authority are run-mode-only resources. `aspire publish` omits
+them entirely. Published services must receive provider-neutral OIDC authority, issuer, client ID,
+and client-secret configuration from the target deployment environment. Standardization of this
+boundary is tracked in #989.
 
 Use these Aspire 13.4 integration points for release work:
 
@@ -160,6 +175,33 @@ directly on `PATH`.
 
 The Aspire dashboard URL is printed when the AppHost starts. Use it to inspect services, logs,
 traces, metrics, endpoints, and health status.
+
+## Local OIDC conformance
+
+Keycloak receives a dynamically allocated `localhost` HTTP endpoint for development and CI
+conformance only. It is intentionally browser-facing because it hosts the authorization endpoint
+used by Management Web. The AppHost declares it only in `IsRunMode`; production identity providers
+remain deployment configuration and are never included in the publish model.
+
+AppHost stores the following required values as local secrets:
+
+- `management-web-client-secret`: Keycloak receives it as `MANAGEMENT_WEB_CLIENT_SECRET` and
+  Management Web receives it as `Authentication__ClientSecret`.
+- `identity-provider-conformance-user-password`: Keycloak receives it as
+  `LOCAL_CONFORMANCE_PASSWORD` for the `conformance` user.
+- `identity-provider-admin-password`: Keycloak receives it as `KC_BOOTSTRAP_ADMIN_PASSWORD` for
+  the `admin` bootstrap user.
+
+The imported confidential client ID is `web-app`. Keycloak permits only the local dynamic
+`https://localhost:<port>` and `https://127.0.0.1:<port>` host origins; Keycloak does not support
+an exact callback path with a dynamic HTTPS port. The configuration is local-conformance only and
+has no browser web origins because Management Web is a server-side BFF. No resolved credential
+belongs in source control.
+
+`web-app` requests the approved Admin, Catalog, and Branding API scopes during sign-in. Its
+server-side BFF ticket can then call those intended backends without exposing a token to the browser.
+`conformance-test-client` permits password grants solely for owned integration and browser-test
+setup; it is a local realm client and is not a production client.
 
 ## Performance Smoke Resource
 

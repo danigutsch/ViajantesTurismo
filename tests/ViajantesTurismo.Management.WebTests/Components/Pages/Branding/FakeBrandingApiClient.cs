@@ -2,7 +2,7 @@ using SharedKernel.HttpClients;
 
 namespace ViajantesTurismo.Management.WebTests.Components.Pages.Branding;
 
-internal sealed class FakeBrandingApiClient : IBrandingApiClient
+internal sealed class FakeBrandingApiClient : IManagementBrandingApiClient
 {
     public BrandingSettingsDto Branding { get; set; } = CreateDefaultBranding();
 
@@ -15,11 +15,6 @@ internal sealed class FakeBrandingApiClient : IBrandingApiClient
     public ContractValidationException? ValidationException { get; set; }
 
     public BrandingSettingsDto? SavedBranding { get; private set; }
-
-    public Task<BrandingSettingsDto> GetPublicSettings(CancellationToken ct)
-    {
-        return GetSettings(ct);
-    }
 
     public Task<BrandingSettingsDto> GetSettings(CancellationToken ct)
     {

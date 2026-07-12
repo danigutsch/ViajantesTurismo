@@ -1,5 +1,7 @@
 using Microsoft.Extensions.Diagnostics.HealthChecks;
+using Microsoft.Extensions.Hosting;
 using SharedKernel.AI;
+using SharedKernel.AspNetCore;
 using SharedKernel.Testing.AspNetCore;
 using ViajantesTurismo.Catalog.ApiService;
 using ViajantesTurismo.Catalog.Application.Media;
@@ -10,6 +12,11 @@ namespace ViajantesTurismo.Catalog.Testing.Infrastructure;
 
 internal static class CatalogApiTestHost
 {
+    private const string Audience = "catalog-api";
+    private const string AdministratorRole = "Admin";
+    private const string UntrustedIssuer = "https://untrusted.test";
+    private const string WrongAudience = "wrong-audience";
+
     public static WebApplicationFactory<CatalogApiHostEntryPoint> Create(string? environment = null)
     {
         return Create(environment, null, null, null, null, null);
@@ -38,14 +45,48 @@ internal static class CatalogApiTestHost
         return Create(null, null, null, mediaStore, objectStore, imageTextGenerator);
     }
 
+    public static WebApplicationFactory<CatalogApiHostEntryPoint> CreateAnonymous()
+    {
+        return Create(null, null, null, null, null, null, authenticateClient: false);
+    }
+
+    public static void ConfigureAuthenticatedClient(HttpClient client)
+    {
+        ApiTestAuthentication.ConfigureAuthenticatedClient(client, Audience, AdministratorRole);
+    }
+
+    public static void ConfigureAuthenticatedClient(HttpClient client, string role)
+    {
+        ApiTestAuthentication.ConfigureAuthenticatedClient(client, Audience, role);
+    }
+
+    public static void ConfigureClientWithUntrustedIssuer(HttpClient client)
+    {
+        ApiTestAuthentication.ConfigureClient(client, Audience, UntrustedIssuer, AdministratorRole);
+    }
+
+    public static void ConfigureClientWithWrongAudience(HttpClient client)
+    {
+        ApiTestAuthentication.ConfigureAuthenticatedClient(client, WrongAudience, AdministratorRole);
+    }
+
     private static WebApplicationFactory<CatalogApiHostEntryPoint> Create(
         string? environment,
         TestCatalogTourReadModelStore? tourStore,
         TestPublicContentStore? publicContentStore,
         TestPublicMediaImageStore? mediaStore,
         TestMediaObjectStore? objectStore,
-        IImageTextGenerator? imageTextGenerator)
+        IImageTextGenerator? imageTextGenerator,
+        bool authenticateClient = true)
     {
+        var configuration = string.Equals(environment, Environments.Production, StringComparison.Ordinal)
+            ? new Dictionary<string, string?>
+            {
+                [ApiAuthenticationDefaults.AuthorityConfigurationKey] = ApiTestAuthentication.Authority,
+                [ApiAuthenticationDefaults.IssuerConfigurationKey] = ApiTestAuthentication.Authority
+            }
+            : null;
+
         return WebApplicationTestHost.Create<CatalogApiHostEntryPoint>(
             environment,
             services =>
@@ -60,6 +101,11 @@ internal static class CatalogApiTestHost
                 }
 
                 services.Configure<HealthCheckServiceOptions>(options => options.Registrations.Clear());
-            });
+                ApiTestAuthentication.ConfigureJwtBearer(services, Audience);
+            },
+            authenticateClient
+                ? ConfigureAuthenticatedClient
+                : null,
+            configuration);
     }
 }

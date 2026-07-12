@@ -28,7 +28,7 @@ internal static class DevelopmentProjectResourceExtensions
         where TProject : IProjectMetadata, new()
     {
         var project = builder.AddProject<TProject>(name, launchProfileName: null);
-        if (!HasContainerImageTag(builder))
+        if (builder.ExecutionContext.IsRunMode)
         {
             project.WithEnvironment(AspNetCoreEnvironmentVariable, DevelopmentEnvironment);
         }
@@ -52,7 +52,7 @@ internal static class DevelopmentProjectResourceExtensions
         where TProject : IProjectMetadata, new()
     {
         var project = builder.AddProject<TProject>(name, launchProfileName: null);
-        if (!HasContainerImageTag(builder))
+        if (builder.ExecutionContext.IsRunMode)
         {
             project.WithEnvironment(DotNetEnvironmentVariable, DevelopmentEnvironment);
         }
@@ -60,15 +60,15 @@ internal static class DevelopmentProjectResourceExtensions
         return project.WithReleasePublishing(builder);
     }
 
-    private static bool HasContainerImageTag(IDistributedApplicationBuilder builder)
-    {
-        return !string.IsNullOrWhiteSpace(builder.Configuration[ContainerImageTagConfigurationKey]);
-    }
-
     private static IResourceBuilder<ProjectResource> WithReleasePublishing(
         this IResourceBuilder<ProjectResource> project,
         IDistributedApplicationBuilder builder)
     {
+        if (builder.ExecutionContext.IsRunMode)
+        {
+            return project;
+        }
+
         var imageTag = builder.Configuration[ContainerImageTagConfigurationKey];
         if (string.IsNullOrWhiteSpace(imageTag))
         {

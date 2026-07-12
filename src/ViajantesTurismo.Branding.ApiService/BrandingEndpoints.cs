@@ -12,8 +12,10 @@ internal static class BrandingEndpoints
         ArgumentNullException.ThrowIfNull(app);
 
         var versionedApi = app.MapApiVersionGroup(BrandingOpenApiDocuments.CurrentApiVersion);
-        var publicBranding = versionedApi.MapGroup($"/{BrandingRoutes.PublicSettingsPath}");
-        var managementBranding = versionedApi.MapGroup($"/{BrandingRoutes.ManagementSettingsPath}");
+        var publicBranding = versionedApi.MapGroup($"/{BrandingRoutes.PublicSettingsPath}")
+            .AllowAnonymous();
+        var managementBranding = versionedApi.MapGroup($"/{BrandingRoutes.ManagementSettingsPath}")
+            .RequireAuthorization(BrandingAuthorization.BrandingRead);
 
         publicBranding.MapGet("/", GetPublicSettings)
             .CacheOutput(policy => policy.Expire(BrandingHttpCache.PublicFreshness).Tag(BrandingHttpCache.PublicBrandingTag))
@@ -21,7 +23,8 @@ internal static class BrandingEndpoints
         managementBranding.MapGet("/", GetManagementSettings)
             .RequireRateLimiting(BrandingSecurityBaseline.MutationRateLimitPolicy);
         managementBranding.MapPut("/", SaveSettings)
-            .RequireRateLimiting(BrandingSecurityBaseline.MutationRateLimitPolicy);
+            .RequireRateLimiting(BrandingSecurityBaseline.MutationRateLimitPolicy)
+            .RequireAuthorization(BrandingAuthorization.BrandingWrite);
 
         return app;
     }

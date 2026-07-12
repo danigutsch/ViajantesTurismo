@@ -23,15 +23,19 @@ internal static class BookingEndpoints
         var bookingsGroup = app.MapBookingsGroup();
 
         bookingsGroup.MapGet("/", GetAllBookings)
+            .RequireAuthorization(AdminAuthorization.BookingRead, AdminAuthorization.PaymentRead)
             .WithAdminMetadata("GetBookings", "Retrieves all bookings.", "Retrieves all bookings.");
 
         bookingsGroup.MapGet("/{id:guid}", GetBookingById)
+            .RequireAuthorization(AdminAuthorization.BookingRead, AdminAuthorization.PaymentRead)
             .WithAdminMetadata("GetBookingById", "Retrieves a booking by its ID.", "Retrieves a booking by its ID.");
 
         bookingsGroup.MapGet("/tour/{tourId:guid}", GetBookingsByTourId)
+            .RequireAuthorization(AdminAuthorization.BookingRead, AdminAuthorization.PaymentRead)
             .WithAdminMetadata("GetBookingsByTourId", "Retrieves all bookings for a specific tour.", "Retrieves all bookings for a specific tour.");
 
         bookingsGroup.MapGet("/customer/{customerId:guid}", GetBookingsByCustomerId)
+            .RequireAuthorization(AdminAuthorization.BookingRead, AdminAuthorization.PaymentRead)
             .WithAdminMetadata("GetBookingsByCustomerId", "Retrieves all bookings for a specific customer (as primary or companion).", "Retrieves all bookings for a specific customer.");
 
         bookingsGroup.MapCreateBookingEndpoint();

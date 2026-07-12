@@ -2,6 +2,7 @@ using System.Net;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using ViajantesTurismo.Admin.ApiService;
 using TestTraits = ViajantesTurismo.Admin.UnitTests.Infrastructure.TestTraits;
@@ -153,8 +154,11 @@ public sealed class CustomerImportEndpointsTests
         });
         builder.WebHost.UseKestrel().UseUrls("http://127.0.0.1:0");
         builder.Services.AddAdminSecurityBaseline(builder.Configuration);
+        builder.Services.AddAuthorization(options =>
+            options.AddPolicy(AdminAuthorization.CustomerImport, policy => policy.RequireAssertion(static _ => true)));
         await using var app = builder.Build();
         app.UseRateLimiter();
+        app.UseAuthorization();
         app.MapCustomerImportEndpoints();
 
         await app.StartAsync(cancellationToken);

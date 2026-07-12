@@ -10,7 +10,8 @@ internal static class ErrorDocumentationEndpoints
     {
         ArgumentNullException.ThrowIfNull(app);
 
-        var errorDocumentationGroup = app.MapErrorDocumentationGroup();
+        var errorDocumentationGroup = app.MapErrorDocumentationGroup()
+            .RequireAuthorization(AdminAuthorization.DocumentationRead);
 
         errorDocumentationGroup.MapGet("/", GetAllErrorDocumentation)
             .WithName("GetErrorDocumentation")

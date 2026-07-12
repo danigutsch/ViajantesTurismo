@@ -15,44 +15,39 @@ flowchart LR
     AdminPerformanceSmoke[Admin Performance Smoke]
     apiService[Admin.ApiService]
     brandingApiService[Branding Api]
-    catalogApiService[Catalog.ApiService]
     clamAv[ClamAV]
     adminDatabase[Database]
     catalogDatabase[Database]
+    securityDatabase[Database]
+    IdentityProvider[Identity Provider]
     IntegrationEventWorker[Integration Event Worker]
-    ManagementWeb[Management.Web]
     migrationService[MigrationService]
     ObservabilityStack[Observability Stack]
+    managementWebClientSecret[Parameter]
+    identityProviderConformanceUserPassword[Parameter]
     databaseServer[PostgreSQL server]
     PublicWeb[Public.Web]
     cache[Redis cache]
     seaweedFs[SeaweedFS]
     AdminPerformanceSmoke --> apiService
+    IdentityProvider --> identityProviderConformanceUserPassword
+    IdentityProvider --> managementWebClientSecret
     IntegrationEventWorker --> adminDatabase
     IntegrationEventWorker --> catalogDatabase
     IntegrationEventWorker --> clamAv
     IntegrationEventWorker --> migrationService
     IntegrationEventWorker --> seaweedFs
-    ManagementWeb --> apiService
-    ManagementWeb --> brandingApiService
-    ManagementWeb --> cache
-    ManagementWeb --> catalogApiService
     PublicWeb --> brandingApiService
-    PublicWeb --> catalogApiService
     adminDatabase --> databaseServer
     apiService --> adminDatabase
     apiService --> brandingApiService
     apiService --> migrationService
     brandingApiService --> catalogDatabase
     brandingApiService --> migrationService
-    catalogApiService --> adminDatabase
-    catalogApiService --> catalogDatabase
-    catalogApiService --> clamAv
-    catalogApiService --> migrationService
-    catalogApiService --> seaweedFs
     catalogDatabase --> databaseServer
     migrationService --> adminDatabase
     migrationService --> catalogDatabase
+    securityDatabase --> databaseServer
 ```
 <!-- generated:apphost-resources:end -->
 

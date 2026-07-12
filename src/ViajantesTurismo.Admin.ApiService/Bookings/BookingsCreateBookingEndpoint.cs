@@ -23,6 +23,7 @@ internal static class BookingsCreateBookingEndpoint
 
         bookingsGroup.MapPost("/", CreateBooking)
             .RequireRateLimiting(AdminSecurityBaseline.MutationRateLimitPolicy)
+            .RequireAuthorization(AdminAuthorization.BookingWrite)
             .WithAdminMetadata("CreateBooking", "Creates a new booking for a tour.", "Creates a new booking.");
     }
 

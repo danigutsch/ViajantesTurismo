@@ -1,4 +1,7 @@
 using SharedKernel.AspNetCore;
+using Microsoft.AspNetCore.Authentication;
+using Microsoft.AspNetCore.Authentication.Cookies;
+using Microsoft.AspNetCore.Authentication.OpenIdConnect;
 using ViajantesTurismo.Management.Web.Components;
 
 namespace ViajantesTurismo.Management.Web;
@@ -11,13 +14,42 @@ internal static class ManagementWebEndpoints
     {
         ArgumentNullException.ThrowIfNull(app);
 
-        app.MapRobotsTxt(ManagementRobotsTxt);
+        app.MapRobotsTxt(ManagementRobotsTxt)
+            .AllowAnonymous();
 
-        app.MapStaticAssets();
+        app.MapGet(ManagementAuthenticationDefaults.LoginPath, (HttpContext context, string? returnUrl) =>
+            context.ChallengeAsync(
+                OpenIdConnectDefaults.AuthenticationScheme,
+                new AuthenticationProperties
+                {
+                    RedirectUri = IsLocalReturnUrl(returnUrl) ? returnUrl : "/"
+                }))
+            .AllowAnonymous();
+
+        app.MapPost(ManagementAuthenticationDefaults.LogoutPath, async (HttpContext context) =>
+            {
+                await context.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
+                await context.SignOutAsync(
+                    OpenIdConnectDefaults.AuthenticationScheme,
+                    new AuthenticationProperties { RedirectUri = "/" });
+            })
+            .RequireAuthorization();
+
+        app.MapStaticAssets()
+            .AllowAnonymous();
 
         app.MapRazorComponents<App>()
-            .AddInteractiveServerRenderMode();
+            .AddInteractiveServerRenderMode()
+            .RequireAuthorization();
 
         return app;
+    }
+
+    private static bool IsLocalReturnUrl(string? returnUrl)
+    {
+        return !string.IsNullOrWhiteSpace(returnUrl)
+               && returnUrl.StartsWith('/')
+               && !returnUrl.StartsWith("//", StringComparison.Ordinal)
+               && !returnUrl.StartsWith("/\\", StringComparison.Ordinal);
     }
 }

@@ -22,6 +22,8 @@ public abstract class AspireSystemTestBase<TFixture>(TFixture fixture) : PageTes
 
     private protected BookingWorkflow BookingWorkflow => new(Page, NavigateTo);
 
+    private protected ManagementLoginWorkflow ManagementLogin => new(Page);
+
     private protected UiFeedbackAssertions UiFeedback => new(Page);
 
     public override async ValueTask InitializeAsync()
@@ -31,6 +33,7 @@ public abstract class AspireSystemTestBase<TFixture>(TFixture fixture) : PageTes
         Page.SetDefaultTimeout(DefaultTimeoutMilliseconds);
         Page.SetDefaultNavigationTimeout(DefaultTimeoutMilliseconds);
         Assertions.SetDefaultExpectTimeout(DefaultTimeoutMilliseconds);
+        await ManagementLogin.SignIn(Fixture.WebAppUrl, Fixture.ConformanceUserPassword);
     }
 
     protected async Task NavigateTo(string relativePath)

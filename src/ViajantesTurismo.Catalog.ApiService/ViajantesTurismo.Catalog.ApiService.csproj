@@ -28,6 +28,7 @@
     </ItemGroup>
 
     <ItemGroup>
+        <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" />
         <PackageReference Include="Microsoft.AspNetCore.OpenApi" />
         <PackageReference Include="Microsoft.Extensions.ApiDescription.Server" />
     </ItemGroup>
@@ -47,10 +48,7 @@
         </ItemGroup>
 
         <MakeDir Directories="$(MSBuildProjectDirectory)/../ViajantesTurismo.Catalog.Contracts.Http/OpenApi" />
-        <Copy
-            SourceFiles="@(GeneratedOpenApiArtifact->'%(SourcePath)')"
-            DestinationFiles="@(GeneratedOpenApiArtifact->'%(TargetPath)')"
-            SkipUnchangedFiles="true" />
+        <Copy SourceFiles="@(GeneratedOpenApiArtifact->'%(SourcePath)')" DestinationFiles="@(GeneratedOpenApiArtifact->'%(TargetPath)')" SkipUnchangedFiles="true" />
     </Target>
 
 </Project>

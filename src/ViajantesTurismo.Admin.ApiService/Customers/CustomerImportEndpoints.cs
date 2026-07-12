@@ -23,7 +23,8 @@ internal static class CustomerImportEndpoints
         ArgumentNullException.ThrowIfNull(app);
 
         var importGroup = app.MapCustomerImportsGroup()
-            .RequireRateLimiting(AdminSecurityBaseline.ImportRateLimitPolicy);
+            .RequireRateLimiting(AdminSecurityBaseline.ImportRateLimitPolicy)
+            .RequireAuthorization(AdminAuthorization.CustomerImport);
 
         importGroup.MapPost("/", ImportCustomers)
             .WithName("ImportCustomers")

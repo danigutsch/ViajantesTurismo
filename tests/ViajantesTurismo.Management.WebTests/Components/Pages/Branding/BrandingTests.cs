@@ -10,7 +10,7 @@ public sealed class BrandingTests : BunitContext
     public BrandingTests()
     {
         JSInterop.Mode = JSRuntimeMode.Loose;
-        Services.AddSingleton<IBrandingApiClient>(brandingApi);
+        Services.AddSingleton<IManagementBrandingApiClient>(brandingApi);
     }
 
     [Fact]

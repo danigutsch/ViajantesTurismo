@@ -26,23 +26,27 @@ internal static class CustomerEndpoints
         var customersGroup = app.MapCustomersGroup();
 
         customersGroup.MapGet("/", GetAllCustomers)
+            .RequireAuthorization(AdminAuthorization.CustomerRead, AdminAuthorization.CustomerSensitiveRead)
             .WithName("GetCustomers")
             .WithDescription("Retrieves all customers.")
             .WithSummary("Retrieves all customers.");
 
         customersGroup.MapGet("/{id:guid}", GetCustomerById)
+            .RequireAuthorization(AdminAuthorization.CustomerRead, AdminAuthorization.CustomerSensitiveRead)
             .WithName("GetCustomerById")
             .WithDescription("Retrieves a customer by their ID.")
             .WithSummary("Retrieves a customer by their ID.");
 
         customersGroup.MapPost("/", CreateCustomer)
             .RequireRateLimiting(AdminSecurityBaseline.MutationRateLimitPolicy)
+            .RequireAuthorization(AdminAuthorization.CustomerWrite)
             .WithName("CreateCustomer")
             .WithDescription("Creates a new customer with all required information.")
             .WithSummary("Creates a new customer.");
 
         customersGroup.MapPut("/{id:guid}", UpdateCustomer)
             .RequireRateLimiting(AdminSecurityBaseline.MutationRateLimitPolicy)
+            .RequireAuthorization(AdminAuthorization.CustomerWrite)
             .WithName("UpdateCustomer")
             .WithDescription("Updates an existing customer.")
             .WithSummary("Updates an existing customer.");

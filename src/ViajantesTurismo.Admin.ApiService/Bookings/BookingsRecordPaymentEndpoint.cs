@@ -16,6 +16,7 @@ internal static class BookingsRecordPaymentEndpoint
 
         bookingsGroup.MapPost("/{id:guid}/payments", RecordPayment)
             .RequireRateLimiting(AdminSecurityBaseline.MutationRateLimitPolicy)
+            .RequireAuthorization(AdminAuthorization.PaymentWrite)
             .WithAdminMetadata("RecordPayment", "Records a payment for a booking.", "Records a payment.");
     }
 

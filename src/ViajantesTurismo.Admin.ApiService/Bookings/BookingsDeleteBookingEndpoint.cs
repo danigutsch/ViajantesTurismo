@@ -12,6 +12,7 @@ internal static class BookingsDeleteBookingEndpoint
 
         bookingsGroup.MapDelete("/{id:guid}", DeleteBooking)
             .RequireRateLimiting(AdminSecurityBaseline.MutationRateLimitPolicy)
+            .RequireAuthorization(AdminAuthorization.BookingDelete)
             .WithAdminMetadata("DeleteBooking", "Deletes a booking.", "Deletes a booking.");
     }
 

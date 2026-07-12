@@ -7,8 +7,8 @@ using ViajantesTurismo.Admin.ApiService.Errors;
 using ViajantesTurismo.Admin.ApiService.Tours;
 using ViajantesTurismo.Admin.Application;
 using ViajantesTurismo.Admin.Infrastructure;
-using ViajantesTurismo.ServiceDefaults;
 using ViajantesTurismo.Resources;
+using ViajantesTurismo.ServiceDefaults;
 
 const string ApiRobotsTxt = "User-agent: *\nDisallow: /";
 
@@ -24,6 +24,23 @@ builder.Services.AddHttpClient<IBrandingApiClient, BrandingApiClient>(client => 
 builder.Services.AddProblemDetails();
 builder.Services.AddConfiguredTrustedForwardedHeaders(builder.Configuration.GetSection("Security:ForwardedHeaders"));
 builder.Services.AddAdminSecurityBaseline(builder.Configuration);
+builder.Services.AddApiBearerAuthentication(
+        builder.Configuration,
+        builder.Environment,
+        ApiAudienceNames.Admin,
+        AdminAuthorization.PermissionsByRole)
+    .AddPolicy(AdminAuthorization.BookingRead, policy => policy.RequirePermission(AdminAuthorization.BookingRead))
+    .AddPolicy(AdminAuthorization.BookingWrite, policy => policy.RequirePermission(AdminAuthorization.BookingWrite))
+    .AddPolicy(AdminAuthorization.BookingDelete, policy => policy.RequirePermission(AdminAuthorization.BookingDelete))
+    .AddPolicy(AdminAuthorization.CustomerImport, policy => policy.RequirePermission(AdminAuthorization.CustomerImport))
+    .AddPolicy(AdminAuthorization.CustomerRead, policy => policy.RequirePermission(AdminAuthorization.CustomerRead))
+    .AddPolicy(AdminAuthorization.CustomerSensitiveRead, policy => policy.RequirePermission(AdminAuthorization.CustomerSensitiveRead))
+    .AddPolicy(AdminAuthorization.CustomerWrite, policy => policy.RequirePermission(AdminAuthorization.CustomerWrite))
+    .AddPolicy(AdminAuthorization.DocumentationRead, policy => policy.RequirePermission(AdminAuthorization.DocumentationRead))
+    .AddPolicy(AdminAuthorization.PaymentRead, policy => policy.RequirePermission(AdminAuthorization.PaymentRead))
+    .AddPolicy(AdminAuthorization.PaymentWrite, policy => policy.RequirePermission(AdminAuthorization.PaymentWrite))
+    .AddPolicy(AdminAuthorization.TourRead, policy => policy.RequirePermission(AdminAuthorization.TourRead))
+    .AddPolicy(AdminAuthorization.TourWrite, policy => policy.RequirePermission(AdminAuthorization.TourWrite));
 
 builder.Services.ConfigureHttpJsonOptions(options => options.SerializerOptions.TypeInfoResolverChain.Insert(0, AppJsonSerializerContext.Default));
 
@@ -45,6 +62,8 @@ if (app.Environment.IsDevelopment())
 
 app.UseCors(AdminSecurityBaseline.CorsPolicyName);
 
+app.UseAuthentication();
+app.UseAuthorization();
 app.UseRateLimiter();
 
 app.MapToursEndpoints();
@@ -52,7 +71,7 @@ app.MapCustomerEndpoints()
     .MapCustomerImportEndpoints();
 app.MapBookingEndpoints();
 app.MapErrorDocumentationEndpoints();
-app.MapRobotsTxt(ApiRobotsTxt);
+app.MapRobotsTxt(ApiRobotsTxt).AllowAnonymous();
 
 app.MapDefaultEndpoints();
 
