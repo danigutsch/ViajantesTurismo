@@ -1,3 +1,5 @@
+using Projects;
+using SharedKernel.IntegrationTesting;
 using ViajantesTurismo.Resources;
 
 namespace ViajantesTurismo.Admin.IntegrationTests.Infrastructure;
@@ -7,6 +9,7 @@ namespace ViajantesTurismo.Admin.IntegrationTests.Infrastructure;
 /// </summary>
 [Trait(SharedKernel.Testing.TestTraitNames.CategoryName, TestTraits.SmokeCategory)]
 [Trait(SharedKernel.Testing.TestTraitNames.ScopeName, TestTraits.IntegrationScope)]
+[Trait(SharedKernel.Testing.TestTraitNames.HostName, TestTraits.AspireHost)]
 public sealed class ConcurrentAspireTestApplicationTests
 {
     [Fact]
@@ -14,7 +17,10 @@ public sealed class ConcurrentAspireTestApplicationTests
     {
         // Arrange
         var cancellationToken = TestContext.Current.CancellationToken;
-        await using var applications = await ConcurrentAspireTestApplications.Start(cancellationToken);
+        await using var applications = await ConcurrentAspireTestApplications.Start<ViajantesTurismo_AppHost>(
+            [ResourceNames.Api],
+            AppHostTestArguments.Create,
+            cancellationToken);
 
         // Act
         var firstEndpoint = applications.First.GetEndpoint(ResourceNames.Api, "https");

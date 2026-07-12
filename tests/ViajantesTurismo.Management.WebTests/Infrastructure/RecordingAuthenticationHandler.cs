@@ -1,5 +1,6 @@
 using System.Security.Claims;
 using Microsoft.AspNetCore.Authentication;
+using Microsoft.AspNetCore.Authentication.OpenIdConnect;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
@@ -32,6 +33,12 @@ internal sealed class RecordingAuthenticationHandler(
     public Task SignOutAsync(AuthenticationProperties? properties)
     {
         Response.Headers.Append(SignOutSchemeHeaderName, Scheme.Name);
+
+        if (string.Equals(Scheme.Name, OpenIdConnectDefaults.AuthenticationScheme, StringComparison.Ordinal))
+        {
+            Response.StatusCode = StatusCodes.Status302Found;
+        }
+
         return Task.CompletedTask;
     }
 }

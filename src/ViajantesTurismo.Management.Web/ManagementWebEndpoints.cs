@@ -26,14 +26,11 @@ internal static class ManagementWebEndpoints
                 }))
             .AllowAnonymous();
 
-        app.MapPost(ManagementAuthenticationDefaults.LogoutPath, async (HttpContext context) =>
-            {
-                await context.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
-                await context.SignOutAsync(
-                    OpenIdConnectDefaults.AuthenticationScheme,
-                    new AuthenticationProperties { RedirectUri = "/" });
-            })
-            .RequireAuthorization();
+        app.MapAntiforgeryProtectedSignOut(
+            ManagementAuthenticationDefaults.LogoutPath,
+            CookieAuthenticationDefaults.AuthenticationScheme,
+            OpenIdConnectDefaults.AuthenticationScheme,
+            "/");
 
         app.MapStaticAssets()
             .AllowAnonymous();

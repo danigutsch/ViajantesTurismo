@@ -14,14 +14,14 @@ internal static class BrandingEndpoints
         var versionedApi = app.MapApiVersionGroup(BrandingOpenApiDocuments.CurrentApiVersion);
         var publicBranding = versionedApi.MapGroup($"/{BrandingRoutes.PublicSettingsPath}")
             .AllowAnonymous();
-        var managementBranding = versionedApi.MapGroup($"/{BrandingRoutes.ManagementSettingsPath}")
-            .RequireAuthorization(BrandingAuthorization.BrandingRead);
+        var managementBranding = versionedApi.MapGroup($"/{BrandingRoutes.ManagementSettingsPath}");
 
         publicBranding.MapGet("/", GetPublicSettings)
             .CacheOutput(policy => policy.Expire(BrandingHttpCache.PublicFreshness).Tag(BrandingHttpCache.PublicBrandingTag))
             .RequireRateLimiting(BrandingSecurityBaseline.PublicReadRateLimitPolicy);
         managementBranding.MapGet("/", GetManagementSettings)
-            .RequireRateLimiting(BrandingSecurityBaseline.MutationRateLimitPolicy);
+            .RequireRateLimiting(BrandingSecurityBaseline.MutationRateLimitPolicy)
+            .RequireAuthorization(BrandingAuthorization.BrandingRead);
         managementBranding.MapPut("/", SaveSettings)
             .RequireRateLimiting(BrandingSecurityBaseline.MutationRateLimitPolicy)
             .RequireAuthorization(BrandingAuthorization.BrandingWrite);

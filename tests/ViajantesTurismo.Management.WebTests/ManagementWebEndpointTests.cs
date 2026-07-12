@@ -101,14 +101,33 @@ public sealed class ManagementWebEndpointTests
         using var client = host.GetTestClient();
 
         // Act
-        using var response = await client.PostAsync(
-            new Uri("/logout", UriKind.Relative),
-            content: null,
+        using var request = await ManagementWebEndpointTestHost.CreateAntiforgeryPost(
+            client,
+            "/logout",
             Xunit.TestContext.Current.CancellationToken);
+        using var response = await client.SendAsync(request, Xunit.TestContext.Current.CancellationToken);
+        response.StatusCode.ShouldBe(HttpStatusCode.Found);
         var signOutSchemes = response.Headers.GetValues(RecordingAuthenticationHandler.SignOutSchemeHeaderName).ToArray();
 
         // Assert
         signOutSchemes.ShouldContain(Microsoft.AspNetCore.Authentication.Cookies.CookieAuthenticationDefaults.AuthenticationScheme);
         signOutSchemes.ShouldContain(Microsoft.AspNetCore.Authentication.OpenIdConnect.OpenIdConnectDefaults.AuthenticationScheme);
+    }
+
+    [Fact]
+    public async Task Logout_rejects_requests_without_an_antiforgery_token()
+    {
+        // Arrange
+        using var host = await ManagementWebEndpointTestHost.StartWithRecordingAuthentication(Xunit.TestContext.Current.CancellationToken);
+        using var client = host.GetTestClient();
+
+        // Act
+        using var response = await client.PostAsync(
+            new Uri("/logout", UriKind.Relative),
+            content: null,
+            Xunit.TestContext.Current.CancellationToken);
+
+        // Assert
+        response.StatusCode.ShouldBe(HttpStatusCode.BadRequest);
     }
 }

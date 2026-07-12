@@ -25,7 +25,7 @@ Source: `src/**/*.cs` route declarations plus route-group prefixes in
 | `PUT` | `/api/v1/bookings/{id:guid}/discount` | UpdateBookingDiscount | management/internal | required | `ViajantesTurismo.Admin.ApiService/Bookings/BookingsUpdateBookingDiscountEndpoint.cs` |
 | `PATCH` | `/api/v1/bookings/{id:guid}/notes` | UpdateBookingNotes | management/internal | required | `ViajantesTurismo.Admin.ApiService/Bookings/BookingsUpdateBookingNotesEndpoint.cs` |
 | `POST` | `/api/v1/bookings/{id:guid}/payments` | RecordPayment | management/internal | required | `ViajantesTurismo.Admin.ApiService/Bookings/BookingsRecordPaymentEndpoint.cs` |
-| `GET` | `/api/v1/branding/settings` | GetManagementSettings | management/internal | not declared | `ViajantesTurismo.Branding.ApiService/BrandingEndpoints.cs` |
+| `GET` | `/api/v1/branding/settings` | GetManagementSettings | management/internal | required | `ViajantesTurismo.Branding.ApiService/BrandingEndpoints.cs` |
 | `PUT` | `/api/v1/branding/settings` | SaveSettings | management/internal | required | `ViajantesTurismo.Branding.ApiService/BrandingEndpoints.cs` |
 | `PUT` | `/api/v1/catalog/media/images/{id:guid}` | UpsertMediaImage | management/internal | required | `ViajantesTurismo.Catalog.ApiService/CatalogEndpoints.cs` |
 | `POST` | `/api/v1/catalog/media/images/{id:guid}/accessibility-draft` | GenerateMediaImageAccessibilityDraft | management/internal | required | `ViajantesTurismo.Catalog.ApiService/CatalogEndpoints.cs` |

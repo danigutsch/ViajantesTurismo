@@ -21,6 +21,11 @@ public static class TestTraits
     public const string IntegrationScope = "integration";
 
     /// <summary>
+    /// Host value for Aspire-backed tests.
+    /// </summary>
+    public const string AspireHost = "aspire";
+
+    /// <summary>
     /// Area value for bookings tests.
     /// </summary>
     public const string BookingsArea = "bookings";
