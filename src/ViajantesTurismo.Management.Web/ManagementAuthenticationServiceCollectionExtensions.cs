@@ -124,20 +124,20 @@ internal static class ManagementAuthenticationServiceCollectionExtensions
         string? dataProtectionCertificatePassword,
         IHostEnvironment environment)
     {
-        if (environment.IsDevelopment())
-        {
-            return;
-        }
-
         if (string.IsNullOrWhiteSpace(authority)
             || string.IsNullOrWhiteSpace(issuer)
             || string.IsNullOrWhiteSpace(clientId)
             || string.IsNullOrWhiteSpace(clientSecret)
-            || string.IsNullOrWhiteSpace(connectionString)
-            || string.IsNullOrWhiteSpace(dataProtectionCertificatePath)
-            || string.IsNullOrWhiteSpace(dataProtectionCertificatePassword))
+            || string.IsNullOrWhiteSpace(connectionString))
         {
-            throw new InvalidOperationException("Management OIDC and security-store configuration must be set outside Development.");
+            throw new InvalidOperationException("Management OIDC and security-store configuration must be set.");
+        }
+
+        if (!environment.IsDevelopment()
+            && (string.IsNullOrWhiteSpace(dataProtectionCertificatePath)
+                || string.IsNullOrWhiteSpace(dataProtectionCertificatePassword)))
+        {
+            throw new InvalidOperationException("Management Data Protection certificate configuration must be set outside Development.");
         }
     }
 }

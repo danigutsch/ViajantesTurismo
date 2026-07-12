@@ -2,7 +2,6 @@
 
 - Status: Accepted
 - Date: 2026-07-11
-- Epic: #805
 
 ## Context
 
@@ -31,8 +30,7 @@ must remain replaceable.
   `Authentication:DataProtection:CertificatePassword` to protect that key ring at rest.
 - Management requests `offline_access`. Refresh-token rotation remains disabled until separate
   refresh-token persistence, advisory locking, post-lock reread, and compare-and-swap rotation are
-  implemented; tokens remain in the protected server-side ticket. Track that distributed rotation
-  work in #975.
+  implemented; tokens remain in the protected server-side ticket.
 - Management sign-in requests the approved Admin, Catalog, and Branding API scopes. Its protected
   server-side ticket can call those intended backends, while each typed client remains bound to its
   intended base address and public clients never receive bearer-token handlers. Token exchange
@@ -51,4 +49,3 @@ must remain replaceable.
   `403`. Authorization failures do not disclose tokens, permissions, or customer data.
 - OpenAPI documents describe the bearer scheme and attach `401`/`403` requirements only to
   protected operations.
-- The remaining AppHost execution-context convention is tracked in #989.

@@ -96,8 +96,7 @@ does not decide whether the AppHost is running locally or publishing a deploymen
 
 Keycloak and its HTTP development authority are run-mode-only resources. `aspire publish` omits
 them entirely. Published services must receive provider-neutral OIDC authority, issuer, client ID,
-and client-secret configuration from the target deployment environment. Standardization of this
-boundary is tracked in #989.
+and client-secret configuration from the target deployment environment.
 
 Use these Aspire 13.4 integration points for release work:
 

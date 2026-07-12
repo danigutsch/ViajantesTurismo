@@ -23,8 +23,8 @@ public sealed class ManagementWebEndpointTests
                 .UseTestServer()
                 .ConfigureServices(services =>
                 {
-                    services.AddAuthentication(AnonymousAuthenticationHandler.Scheme)
-                        .AddScheme<AuthenticationSchemeOptions, AnonymousAuthenticationHandler>(AnonymousAuthenticationHandler.Scheme, null);
+                    services.AddAuthentication(AnonymousAuthenticationHandler.SchemeName)
+                        .AddScheme<AuthenticationSchemeOptions, AnonymousAuthenticationHandler>(AnonymousAuthenticationHandler.SchemeName, null);
                     services.AddAuthorization();
                     services.AddRazorComponents()
                         .AddInteractiveServerComponents();

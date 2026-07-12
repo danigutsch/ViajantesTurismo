@@ -11,7 +11,7 @@ internal sealed class AnonymousAuthenticationHandler(
     UrlEncoder encoder)
     : AuthenticationHandler<AuthenticationSchemeOptions>(options, logger, encoder)
 {
-    internal new const string Scheme = "test";
+    internal const string SchemeName = "test";
 
     protected override Task<AuthenticateResult> HandleAuthenticateAsync()
     {

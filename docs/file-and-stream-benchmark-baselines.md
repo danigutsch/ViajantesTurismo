@@ -1,6 +1,6 @@
 # File and stream benchmark baselines
 
-Epic #694 establishes repeatable baselines for local file scans and real multipart upload scans.
+This document establishes repeatable baselines for local file scans and real multipart upload scans.
 
 ## Design choice
 

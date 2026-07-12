@@ -23,6 +23,20 @@ public sealed class ManagementAuthenticationServiceCollectionExtensionsTests
     }
 
     [Fact]
+    public void Development_configuration_requires_oidc_and_security_store_settings()
+    {
+        // Arrange
+        var configuration = ManagementAuthenticationTestConfiguration.Create(includeRequiredSettings: false);
+        var environment = new TestHostEnvironment { EnvironmentName = Environments.Development };
+
+        // Act
+        Action action = () => ManagementAuthenticationTestHost.Create(configuration, environment);
+
+        // Assert
+        action.ShouldThrow<InvalidOperationException>();
+    }
+
+    [Fact]
     public async Task Development_configuration_allows_http_metadata_only_when_explicitly_enabled()
     {
         // Arrange
