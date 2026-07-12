@@ -85,8 +85,17 @@ internal sealed class GitHubRoadmapSyncer
     {
         var issueNumber = item.GitHubIssue ?? throw new InvalidOperationException("GitHub issue mapping is required.");
         var url = $"https://api.github.com/repos/{repository}/issues/{issueNumber}";
+        var managedSection = BuildManagedSection(item);
         var currentBody = ReadCurrentIssueBody(httpClient, url, issueNumber);
-        var updatedBody = UpsertManagedSection(currentBody, BuildManagedSection(item));
+        // GitHub does not document conditional issue-body updates; re-read before PATCH to avoid
+        // overwriting body edits made while this process prepared the managed section.
+        var confirmedBody = ReadCurrentIssueBody(httpClient, url, issueNumber);
+        if (!string.Equals(currentBody, confirmedBody, StringComparison.Ordinal))
+        {
+            throw new InvalidOperationException($"GitHub issue body changed before update for #{issueNumber}; retry sync github --apply.");
+        }
+
+        var updatedBody = UpsertManagedSection(confirmedBody, managedSection);
         var payload = BuildIssueUpdatePayload(updatedBody);
 
         using var request = new HttpRequestMessage(HttpMethod.Patch, url)

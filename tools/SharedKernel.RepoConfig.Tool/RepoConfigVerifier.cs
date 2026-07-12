@@ -534,7 +534,7 @@ internal static class RepoConfigVerifier
         var expectedOrder = items.OrderByPriority().Select(item => item.Id);
         if (!orderedValues.SequenceEqual(expectedOrder, StringComparer.Ordinal))
         {
-            issues.Add(new RepoConfigIssue(relativePath, "order.json items must match item order values."));
+            issues.Add(new RepoConfigIssue(relativePath, "order.json items must match priority order: order ascending, score descending, then id."));
         }
     }
 

@@ -691,7 +691,7 @@ public sealed class RepoConfigToolApplicationTests
 
         // Assert
         exitCode.ShouldBe(1);
-        errorText.ShouldContain("order.json items must match item order values.", StringComparison.Ordinal);
+        errorText.ShouldContain("order.json items must match priority order: order ascending, score descending, then id.", StringComparison.Ordinal);
     }
 
     [Fact]
@@ -869,6 +869,7 @@ public sealed class RepoConfigToolApplicationTests
         var project = RoadmapProject.Load(workspace.RootPath);
         using var handler = new TestHttpMessageHandler();
         handler.EnqueueJson(HttpStatusCode.OK, "{ \"body\": \"before\" }");
+        handler.EnqueueJson(HttpStatusCode.OK, "{ \"body\": \"before\" }");
         handler.EnqueueJson(HttpStatusCode.OK, "{}");
         handler.EnqueueJson(HttpStatusCode.OK, "{}");
         using var httpClient = new HttpClient(handler);
@@ -879,15 +880,43 @@ public sealed class RepoConfigToolApplicationTests
 
         // Assert
         result.Messages.ShouldContain("updated owner/repository#997 from RM-001");
-        handler.Requests.Count.ShouldBe(3);
+        handler.Requests.Count.ShouldBe(4);
         handler.Requests[0].Method.ShouldBe(HttpMethod.Get);
-        handler.Requests[1].Method.ShouldBe(HttpMethod.Patch);
-        handler.Requests[1].Body.ShouldNotBeNull();
-        handler.Requests[1].Body.ShouldContain("roadmap:managed:start", StringComparison.Ordinal);
-        handler.Requests[1].Body.ShouldNotContain("\"title\"", StringComparison.Ordinal);
-        handler.Requests[2].Method.ShouldBe(HttpMethod.Post);
+        handler.Requests[1].Method.ShouldBe(HttpMethod.Get);
+        handler.Requests[2].Method.ShouldBe(HttpMethod.Patch);
         handler.Requests[2].Body.ShouldNotBeNull();
-        handler.Requests[2].Body.ShouldContain("area: tooling", StringComparison.Ordinal);
+        handler.Requests[2].Body.ShouldContain("roadmap:managed:start", StringComparison.Ordinal);
+        handler.Requests[2].Body.ShouldNotContain("\"title\"", StringComparison.Ordinal);
+        handler.Requests[3].Method.ShouldBe(HttpMethod.Post);
+        handler.Requests[3].Body.ShouldNotBeNull();
+        handler.Requests[3].Body.ShouldContain("area: tooling", StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public void Sync_github_apply_rejects_issue_body_change_before_patch()
+    {
+        // Arrange
+        using var workspace = new TemporaryRepoConfigWorkspace();
+        using var initOutput = new StringWriter(CultureInfo.InvariantCulture);
+        using var initError = new StringWriter(CultureInfo.InvariantCulture);
+        RepoConfigToolApplication.Run(["init", "--root", workspace.RootPath], initOutput, initError, workspace.RootPath).ShouldBe(0);
+        var itemText = workspace.ReadFile("roadmap/items/RM-001-roadmap-gitops.json");
+        workspace.WriteFile("roadmap/items/RM-001-roadmap-gitops.json", itemText.Replace("\"labels\": [", "\"integrations\": { \"github\": { \"issue\": 997 } },\n  \"labels\": [", StringComparison.Ordinal));
+        var project = RoadmapProject.Load(workspace.RootPath);
+        using var handler = new TestHttpMessageHandler();
+        handler.EnqueueJson(HttpStatusCode.OK, "{ \"body\": \"before\" }");
+        handler.EnqueueJson(HttpStatusCode.OK, "{ \"body\": \"concurrent edit\" }");
+        using var httpClient = new HttpClient(handler);
+        var syncer = new GitHubRoadmapSyncer(project, httpClient);
+
+        // Act
+        var action = (Func<object?>)(() => syncer.Sync(dryRun: false));
+
+        // Assert
+        action.ShouldThrow<InvalidOperationException>().Message.ShouldContain("GitHub issue body changed before update for #997", StringComparison.Ordinal);
+        handler.Requests.Count.ShouldBe(2);
+        handler.Requests[0].Method.ShouldBe(HttpMethod.Get);
+        handler.Requests[1].Method.ShouldBe(HttpMethod.Get);
     }
 
     [Fact]
@@ -903,6 +932,7 @@ public sealed class RepoConfigToolApplicationTests
         var project = RoadmapProject.Load(workspace.RootPath);
         using var handler = new TestHttpMessageHandler();
         handler.EnqueueJson(HttpStatusCode.OK, "{ \"body\": \"before\" }");
+        handler.EnqueueJson(HttpStatusCode.OK, "{ \"body\": \"before\" }");
         handler.EnqueueJson(HttpStatusCode.BadRequest, "{}");
         using var httpClient = new HttpClient(handler);
         var syncer = new GitHubRoadmapSyncer(project, httpClient);
@@ -912,9 +942,10 @@ public sealed class RepoConfigToolApplicationTests
 
         // Assert
         action.ShouldThrow<InvalidOperationException>().Message.ShouldContain("GitHub issue update failed for #997", StringComparison.Ordinal);
-        handler.Requests.Count.ShouldBe(2);
+        handler.Requests.Count.ShouldBe(3);
         handler.Requests[0].Method.ShouldBe(HttpMethod.Get);
-        handler.Requests[1].Method.ShouldBe(HttpMethod.Patch);
+        handler.Requests[1].Method.ShouldBe(HttpMethod.Get);
+        handler.Requests[2].Method.ShouldBe(HttpMethod.Patch);
     }
 
     [Fact]
