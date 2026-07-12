@@ -71,7 +71,7 @@ app.MapCustomerEndpoints()
     .MapCustomerImportEndpoints();
 app.MapBookingEndpoints();
 app.MapErrorDocumentationEndpoints();
-app.MapRobotsTxt(ApiRobotsTxt).AllowAnonymous();
+app.MapRobotsTxt(ApiRobotsTxt);
 
 app.MapDefaultEndpoints();
 

@@ -14,8 +14,7 @@ internal static class ManagementWebEndpoints
     {
         ArgumentNullException.ThrowIfNull(app);
 
-        app.MapRobotsTxt(ManagementRobotsTxt)
-            .AllowAnonymous();
+        app.MapRobotsTxt(ManagementRobotsTxt);
 
         app.MapGet(ManagementAuthenticationDefaults.LoginPath, (HttpContext context, string? returnUrl) =>
             context.ChallengeAsync(

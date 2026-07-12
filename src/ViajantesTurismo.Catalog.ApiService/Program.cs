@@ -41,7 +41,7 @@ app.UseAuthorization();
 app.UseRateLimiter();
 app.UseOutputCache();
 app.MapCatalogEndpoints();
-app.MapRobotsTxt(ApiRobotsTxt).AllowAnonymous();
+app.MapRobotsTxt(ApiRobotsTxt);
 
 app.MapDefaultEndpoints();
 
