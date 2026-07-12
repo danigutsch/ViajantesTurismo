@@ -11,6 +11,7 @@ dotnet run --project tools/SharedKernel.RepoConfig.Tool/SharedKernel.RepoConfig.
 dotnet run --project tools/SharedKernel.RepoConfig.Tool/SharedKernel.RepoConfig.Tool.csproj -- init
 dotnet run --project tools/SharedKernel.RepoConfig.Tool/SharedKernel.RepoConfig.Tool.csproj -- set github.repository owner/repository
 dotnet run --project tools/SharedKernel.RepoConfig.Tool/SharedKernel.RepoConfig.Tool.csproj -- get next-priority
+dotnet run --project tools/SharedKernel.RepoConfig.Tool/SharedKernel.RepoConfig.Tool.csproj -- get blocking-overview
 dotnet run --project tools/SharedKernel.RepoConfig.Tool/SharedKernel.RepoConfig.Tool.csproj -- sync github --dry-run
 ```
 
@@ -31,6 +32,7 @@ Pass `--root <path>` after the command to target another repository root.
 | `get next-enablers` | Lists unblocked enabler items. |
 | `get low-hanging-fruit` | Lists unblocked low-effort items first. |
 | `get pareto` | Lists the top unblocked high-score slice. |
+| `get blocking-overview` | Lists open items and their open direct blocker IDs. |
 | `get tags` / `get labels` | Lists tag or label counts. |
 | `get by-tag <tag>` / `get by-label <label>` | Lists items by taxonomy value. |
 | `sync github --dry-run` | Prints the GitHub issue updates that would be applied. |

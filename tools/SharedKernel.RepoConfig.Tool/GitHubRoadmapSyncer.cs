@@ -1,4 +1,5 @@
 using System.Globalization;
+using System.Net;
 using System.Net.Http.Headers;
 using System.Text;
 using System.Text.Json;
@@ -130,7 +131,7 @@ internal sealed class GitHubRoadmapSyncer
         using var response = await httpClient.SendAsync(request, cancellationToken).ConfigureAwait(false);
         if (!response.IsSuccessStatusCode)
         {
-            throw new InvalidOperationException($"GitHub issue update failed for #{issueNumber}: {(int)response.StatusCode} {response.ReasonPhrase}");
+            throw CreateGitHubFailure("issue update", issueNumber, response.StatusCode);
         }
 
         if (item.Labels.Count > 0)
@@ -143,7 +144,7 @@ internal sealed class GitHubRoadmapSyncer
             using var labelResponse = await httpClient.SendAsync(labelRequest, cancellationToken).ConfigureAwait(false);
             if (!labelResponse.IsSuccessStatusCode)
             {
-                throw new InvalidOperationException($"GitHub label sync failed for #{issueNumber}: {(int)labelResponse.StatusCode} {labelResponse.ReasonPhrase}");
+                throw CreateGitHubFailure("label sync", issueNumber, labelResponse.StatusCode);
             }
         }
     }
@@ -154,7 +155,7 @@ internal sealed class GitHubRoadmapSyncer
         using var response = await httpClient.SendAsync(request, cancellationToken).ConfigureAwait(false);
         if (!response.IsSuccessStatusCode)
         {
-            throw new InvalidOperationException($"GitHub issue read failed for #{issueNumber}: {(int)response.StatusCode} {response.ReasonPhrase}");
+            throw CreateGitHubFailure("issue read", issueNumber, response.StatusCode);
         }
 
         var responseText = await response.Content.ReadAsStringAsync(cancellationToken).ConfigureAwait(false);
@@ -170,6 +171,21 @@ internal sealed class GitHubRoadmapSyncer
         }
 
         return string.Empty;
+    }
+
+    private static InvalidOperationException CreateGitHubFailure(string operation, int issueNumber, HttpStatusCode statusCode)
+    {
+        var hint = statusCode switch
+        {
+            HttpStatusCode.Unauthorized => " (authentication required)",
+            HttpStatusCode.Forbidden => " (access denied or rate limited)",
+            HttpStatusCode.NotFound => " (resource not found or inaccessible)",
+            HttpStatusCode.UnprocessableEntity => " (request validation failed)",
+            HttpStatusCode.TooManyRequests => " (rate limited)",
+            _ => string.Empty
+        };
+
+        return new InvalidOperationException($"GitHub {operation} failed for #{issueNumber}: HTTP {(int)statusCode}{hint}.");
     }
 
     private static string BuildIssueUpdatePayload(string body)

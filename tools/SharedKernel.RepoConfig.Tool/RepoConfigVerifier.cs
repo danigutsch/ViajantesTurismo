@@ -331,6 +331,12 @@ internal static class RepoConfigVerifier
             }
 
             var value = item.GetString() ?? string.Empty;
+            if (!string.Equals(value, value.Trim(), StringComparison.Ordinal))
+            {
+                issues.Add(new RepoConfigIssue(relativePath, $"{propertyName} must not contain leading or trailing whitespace."));
+                continue;
+            }
+
             if (!uniqueValues.Add(value))
             {
                 issues.Add(new RepoConfigIssue(relativePath, $"{propertyName} contains a duplicate value: {value}."));
@@ -707,7 +713,14 @@ internal static class RepoConfigVerifier
                 continue;
             }
 
-            values.Add(element.GetString() ?? string.Empty);
+            var value = element.GetString() ?? string.Empty;
+            if (!string.Equals(value, value.Trim(), StringComparison.Ordinal))
+            {
+                issues.Add(new RepoConfigIssue(relativePath, $"{propertyPath} must not contain leading or trailing whitespace."));
+                continue;
+            }
+
+            values.Add(value);
         }
 
         return values;

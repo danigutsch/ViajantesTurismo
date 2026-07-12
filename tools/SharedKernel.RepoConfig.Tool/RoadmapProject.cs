@@ -56,7 +56,16 @@ internal sealed class RoadmapProject
             return [];
         }
 
-        return item.BlockedBy.Where(_itemsById.ContainsKey).Select(blockerId => _itemsById[blockerId]).ToArray();
+        List<RoadmapItemSnapshot> blockers = [];
+        foreach (var blockerId in item.BlockedBy)
+        {
+            if (_itemsById.TryGetValue(blockerId, out var blocker))
+            {
+                blockers.Add(blocker);
+            }
+        }
+
+        return blockers;
     }
 
     public IEnumerable<KeyValuePair<string, int>> TagCounts() =>

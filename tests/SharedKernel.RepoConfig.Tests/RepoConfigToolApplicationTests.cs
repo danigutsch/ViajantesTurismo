@@ -349,6 +349,50 @@ public sealed class RepoConfigToolApplicationTests
         errorText.ShouldContain("project.closedStatuses must contain only non-empty strings.", StringComparison.Ordinal);
     }
 
+    [Fact]
+    public async Task Verify_rejects_config_array_values_with_leading_or_trailing_whitespace()
+    {
+        // Arrange
+        using var workspace = new TemporaryRepoConfigWorkspace();
+        using var initOutput = new StringWriter(CultureInfo.InvariantCulture);
+        using var initError = new StringWriter(CultureInfo.InvariantCulture);
+        using var verifyOutput = new StringWriter(CultureInfo.InvariantCulture);
+        using var verifyError = new StringWriter(CultureInfo.InvariantCulture);
+        (await RepoConfigToolApplication.Run(["init", "--root", workspace.RootPath], initOutput, initError, workspace.RootPath, TestContext.Current.CancellationToken)).ShouldBe(0);
+        var configText = workspace.ReadFile("roadmap/config.json");
+        workspace.WriteFile("roadmap/config.json", configText.Replace("\"done\",\n      \"dropped\"", "\"done \",\n      \"dropped\"", StringComparison.Ordinal));
+
+        // Act
+        var exitCode = await RepoConfigToolApplication.Run(["verify", "--root", workspace.RootPath], verifyOutput, verifyError, workspace.RootPath, TestContext.Current.CancellationToken);
+        var errorText = verifyError.ToString();
+
+        // Assert
+        exitCode.ShouldBe(1);
+        errorText.ShouldContain("project.closedStatuses must not contain leading or trailing whitespace.", StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public async Task Verify_rejects_item_array_values_with_leading_or_trailing_whitespace()
+    {
+        // Arrange
+        using var workspace = new TemporaryRepoConfigWorkspace();
+        using var initOutput = new StringWriter(CultureInfo.InvariantCulture);
+        using var initError = new StringWriter(CultureInfo.InvariantCulture);
+        using var verifyOutput = new StringWriter(CultureInfo.InvariantCulture);
+        using var verifyError = new StringWriter(CultureInfo.InvariantCulture);
+        (await RepoConfigToolApplication.Run(["init", "--root", workspace.RootPath], initOutput, initError, workspace.RootPath, TestContext.Current.CancellationToken)).ShouldBe(0);
+        var itemText = workspace.ReadFile("roadmap/items/RM-001-roadmap-gitops.json");
+        workspace.WriteFile("roadmap/items/RM-001-roadmap-gitops.json", itemText.Replace("\"area: tooling\"", "\"area: tooling \"", StringComparison.Ordinal));
+
+        // Act
+        var exitCode = await RepoConfigToolApplication.Run(["verify", "--root", workspace.RootPath], verifyOutput, verifyError, workspace.RootPath, TestContext.Current.CancellationToken);
+        var errorText = verifyError.ToString();
+
+        // Assert
+        exitCode.ShouldBe(1);
+        errorText.ShouldContain("labels must not contain leading or trailing whitespace.", StringComparison.Ordinal);
+    }
+
     [Theory]
     [InlineData("owner only")]
     [InlineData("owner/repo?state=closed")]
@@ -1168,7 +1212,7 @@ public sealed class RepoConfigToolApplicationTests
         using var handler = new TestHttpMessageHandler();
         handler.EnqueueJson(HttpStatusCode.OK, "{ \"body\": \"before\" }");
         handler.EnqueueJson(HttpStatusCode.OK, "{ \"body\": \"before\" }");
-        handler.EnqueueJson(HttpStatusCode.BadRequest, "{}");
+        handler.Enqueue(GitHubSyncTestResponseFactory.UntrustedError(HttpStatusCode.UnprocessableEntity));
         using var httpClient = new HttpClient(handler);
         var syncer = new GitHubRoadmapSyncer(project, httpClient);
 
@@ -1177,11 +1221,83 @@ public sealed class RepoConfigToolApplicationTests
             () => syncer.Apply(TestContext.Current.CancellationToken));
 
         // Assert
-        exception.Message.ShouldContain("GitHub issue update failed for #997", StringComparison.Ordinal);
+        exception.Message.ShouldBe("GitHub issue update failed for #997: HTTP 422 (request validation failed).");
+        exception.Message.ShouldNotContain("ghp_reason_token", StringComparison.Ordinal);
+        exception.Message.ShouldNotContain("ghp_body_token", StringComparison.Ordinal);
+        exception.Message.ShouldNotContain("ghp_header_token", StringComparison.Ordinal);
         handler.Requests.Count.ShouldBe(3);
         handler.Requests[0].Method.ShouldBe(HttpMethod.Get);
         handler.Requests[1].Method.ShouldBe(HttpMethod.Get);
         handler.Requests[2].Method.ShouldBe(HttpMethod.Patch);
+    }
+
+    [Theory]
+    [InlineData(HttpStatusCode.Unauthorized, "GitHub issue read failed for #997: HTTP 401 (authentication required).")]
+    [InlineData(HttpStatusCode.Forbidden, "GitHub issue read failed for #997: HTTP 403 (access denied or rate limited).")]
+    [InlineData(HttpStatusCode.NotFound, "GitHub issue read failed for #997: HTTP 404 (resource not found or inaccessible).")]
+    [InlineData(HttpStatusCode.UnprocessableEntity, "GitHub issue read failed for #997: HTTP 422 (request validation failed).")]
+    [InlineData(HttpStatusCode.TooManyRequests, "GitHub issue read failed for #997: HTTP 429 (rate limited).")]
+    [InlineData(HttpStatusCode.BadGateway, "GitHub issue read failed for #997: HTTP 502.")]
+    public async Task Sync_github_apply_uses_safe_status_hints_for_issue_read_failures(HttpStatusCode statusCode, string expectedMessage)
+    {
+        // Arrange
+        using var workspace = new TemporaryRepoConfigWorkspace();
+        using var initOutput = new StringWriter(CultureInfo.InvariantCulture);
+        using var initError = new StringWriter(CultureInfo.InvariantCulture);
+        (await RepoConfigToolApplication.Run(["init", "--root", workspace.RootPath], initOutput, initError, workspace.RootPath, TestContext.Current.CancellationToken)).ShouldBe(0);
+        RoadmapConfigTestOperations.EnableGitHubSync(workspace);
+        var itemText = workspace.ReadFile("roadmap/items/RM-001-roadmap-gitops.json");
+        workspace.WriteFile("roadmap/items/RM-001-roadmap-gitops.json", itemText.Replace("\"labels\": [", "\"integrations\": { \"github\": { \"issue\": 997 } },\n  \"labels\": [", StringComparison.Ordinal));
+        var project = RoadmapProject.Load(workspace.RootPath);
+        using var handler = new TestHttpMessageHandler();
+        handler.Enqueue(GitHubSyncTestResponseFactory.UntrustedError(statusCode));
+        using var httpClient = new HttpClient(handler);
+        var syncer = new GitHubRoadmapSyncer(project, httpClient);
+
+        // Act
+        var exception = await ShouldAssertionExtensions.ShouldThrow<InvalidOperationException>(
+            () => syncer.Apply(TestContext.Current.CancellationToken));
+
+        // Assert
+        exception.Message.ShouldBe(expectedMessage);
+        exception.Message.ShouldNotContain("ghp_reason_token", StringComparison.Ordinal);
+        exception.Message.ShouldNotContain("ghp_body_token", StringComparison.Ordinal);
+        exception.Message.ShouldNotContain("ghp_header_token", StringComparison.Ordinal);
+        handler.Requests.Count.ShouldBe(1);
+        handler.Requests[0].Method.ShouldBe(HttpMethod.Get);
+    }
+
+    [Fact]
+    public async Task Sync_github_apply_does_not_expose_remote_details_for_label_failure()
+    {
+        // Arrange
+        using var workspace = new TemporaryRepoConfigWorkspace();
+        using var initOutput = new StringWriter(CultureInfo.InvariantCulture);
+        using var initError = new StringWriter(CultureInfo.InvariantCulture);
+        (await RepoConfigToolApplication.Run(["init", "--root", workspace.RootPath], initOutput, initError, workspace.RootPath, TestContext.Current.CancellationToken)).ShouldBe(0);
+        RoadmapConfigTestOperations.EnableGitHubSync(workspace);
+        var itemText = workspace.ReadFile("roadmap/items/RM-001-roadmap-gitops.json");
+        workspace.WriteFile("roadmap/items/RM-001-roadmap-gitops.json", itemText.Replace("\"labels\": [", "\"integrations\": { \"github\": { \"issue\": 997 } },\n  \"labels\": [", StringComparison.Ordinal));
+        var project = RoadmapProject.Load(workspace.RootPath);
+        using var handler = new TestHttpMessageHandler();
+        handler.EnqueueJson(HttpStatusCode.OK, "{ \"body\": \"before\" }");
+        handler.EnqueueJson(HttpStatusCode.OK, "{ \"body\": \"before\" }");
+        handler.EnqueueJson(HttpStatusCode.OK, "{}");
+        handler.Enqueue(GitHubSyncTestResponseFactory.UntrustedError(HttpStatusCode.UnprocessableEntity));
+        using var httpClient = new HttpClient(handler);
+        var syncer = new GitHubRoadmapSyncer(project, httpClient);
+
+        // Act
+        var exception = await ShouldAssertionExtensions.ShouldThrow<InvalidOperationException>(
+            () => syncer.Apply(TestContext.Current.CancellationToken));
+
+        // Assert
+        exception.Message.ShouldBe("GitHub label sync failed for #997: HTTP 422 (request validation failed).");
+        exception.Message.ShouldNotContain("ghp_reason_token", StringComparison.Ordinal);
+        exception.Message.ShouldNotContain("ghp_body_token", StringComparison.Ordinal);
+        exception.Message.ShouldNotContain("ghp_header_token", StringComparison.Ordinal);
+        handler.Requests.Count.ShouldBe(4);
+        handler.Requests[3].Method.ShouldBe(HttpMethod.Post);
     }
 
     [Fact]
