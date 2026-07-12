@@ -124,6 +124,8 @@ public sealed class RepoConfigToolCoverageTests
         workspace.WriteFile("roadmap/order.json", "{ \"items\": [\"RM-001\", \"RM-002\", \"RM-003\"] }");
         using var output = new StringWriter(CultureInfo.InvariantCulture);
         using var error = new StringWriter(CultureInfo.InvariantCulture);
+        using var nextIssueOutput = new StringWriter(CultureInfo.InvariantCulture);
+        using var nextIssueError = new StringWriter(CultureInfo.InvariantCulture);
 
         // Act
         var nextPriority = RepoConfigToolApplication.Run(["get", "next-priority", "--limit", "2", "--root", workspace.RootPath], output, error, workspace.RootPath);
@@ -136,8 +138,9 @@ public sealed class RepoConfigToolCoverageTests
         var labels = RepoConfigToolApplication.Run(["get", "labels", "--root", workspace.RootPath], output, error, workspace.RootPath);
         var byTag = RepoConfigToolApplication.Run(["get", "by-tag", "enabler", "--root", workspace.RootPath], output, error, workspace.RootPath);
         var byLabel = RepoConfigToolApplication.Run(["get", "by-label", "area: tooling", "--root", workspace.RootPath], output, error, workspace.RootPath);
-        var nextIssue = RepoConfigToolApplication.Run(["get", "next-unblocked", "--type", "issue", "--root", workspace.RootPath], output, error, workspace.RootPath);
+        var nextIssue = RepoConfigToolApplication.Run(["get", "next-unblocked", "--type", "issue", "--root", workspace.RootPath], nextIssueOutput, nextIssueError, workspace.RootPath);
         var outputText = output.ToString();
+        var nextIssueOutputText = nextIssueOutput.ToString();
 
         // Assert
         nextPriority.ShouldBe(0);
@@ -156,7 +159,7 @@ public sealed class RepoConfigToolCoverageTests
         outputText.ShouldContain("RM-002 blocked by RM-001", StringComparison.Ordinal);
         outputText.ShouldContain("enabler | 1", StringComparison.Ordinal);
         outputText.ShouldContain("area: tooling | 3", StringComparison.Ordinal);
-        outputText.ShouldContain("No matching roadmap items.", StringComparison.Ordinal);
+        nextIssueOutputText.ShouldContain("No matching roadmap items.", StringComparison.Ordinal);
     }
 
     [Fact]
