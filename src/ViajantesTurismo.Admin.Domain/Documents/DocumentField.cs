@@ -33,6 +33,9 @@ public sealed class DocumentField
     /// <summary>Gets the stable template field identifier.</summary>
     public string FieldId { get; private set; } = default!;
 
+    /// <summary>Gets the stable field order from the source template.</summary>
+    public int SortOrder { get; private set; }
+
     /// <summary>Gets the customer-visible field label.</summary>
     public string Label { get; private set; } = default!;
 
@@ -128,6 +131,12 @@ public sealed class DocumentField
             StaffOverride = previous.StaffOverride;
         }
 
+        return this;
+    }
+
+    internal DocumentField SetSortOrder(int sortOrder)
+    {
+        SortOrder = sortOrder;
         return this;
     }
 }

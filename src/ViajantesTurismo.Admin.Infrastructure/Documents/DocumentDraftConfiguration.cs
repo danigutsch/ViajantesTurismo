@@ -1,6 +1,7 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
+using SharedKernel.InputNormalization;
 using ViajantesTurismo.Admin.Domain.Documents;
 
 namespace ViajantesTurismo.Admin.Infrastructure.Documents;
@@ -26,7 +27,7 @@ internal sealed class DocumentDraftConfiguration : IEntityTypeConfiguration<Docu
         entity.Property(document => document.BrandingLogoUri)
             .HasConversion(new ValueConverter<Uri?, string?>(
                 uri => uri == null ? null : uri.OriginalString,
-                value => ToSafeLogoUri(value)))
+                value => WebAssetUriSanitizer.ToRootRelativeOrHttpsUri(value, DocumentLimits.MaxBrandingLogoUriLength)))
             .HasMaxLength(DocumentLimits.MaxBrandingLogoUriLength);
         entity.Property(document => document.BrandingPrimaryColor).HasMaxLength(DocumentLimits.MaxBrandingTokenLength).IsRequired();
         entity.Property(document => document.BrandingAccentColor).HasMaxLength(DocumentLimits.MaxBrandingTokenLength).IsRequired();
@@ -52,6 +53,7 @@ internal sealed class DocumentDraftConfiguration : IEntityTypeConfiguration<Docu
             field.WithOwner().HasForeignKey("DocumentDraftId");
             field.HasKey("DocumentDraftId", nameof(DocumentField.FieldId));
             field.Property(documentField => documentField.FieldId).HasMaxLength(DocumentLimits.MaxFieldIdLength).IsRequired();
+            field.Property(documentField => documentField.SortOrder).IsRequired();
             field.Property(documentField => documentField.Label).HasMaxLength(DocumentLimits.MaxFieldLabelLength).IsRequired();
             field.Property(documentField => documentField.Value).HasMaxLength(DocumentLimits.MaxFieldValueLength).IsRequired();
             field.Property(documentField => documentField.StaffOverride).HasMaxLength(DocumentLimits.MaxFieldValueLength);
@@ -60,25 +62,5 @@ internal sealed class DocumentDraftConfiguration : IEntityTypeConfiguration<Docu
         });
         entity.Navigation(document => document.Fields).Metadata.SetField("_fields");
         entity.Navigation(document => document.Fields).UsePropertyAccessMode(PropertyAccessMode.Field);
-    }
-
-    private static Uri? ToSafeLogoUri(string? value)
-    {
-        if (!Uri.TryCreate(value, UriKind.RelativeOrAbsolute, out var uri))
-        {
-            return null;
-        }
-
-        if (uri.IsAbsoluteUri)
-        {
-            return uri.Scheme == Uri.UriSchemeHttps && string.IsNullOrEmpty(uri.UserInfo) ? uri : null;
-        }
-
-        return value.StartsWith('/')
-            && !value.StartsWith("//", StringComparison.Ordinal)
-            && !value.Contains('\\', StringComparison.Ordinal)
-            && !value.Any(static character => char.IsWhiteSpace(character) || char.IsControl(character))
-            ? uri
-            : null;
     }
 }

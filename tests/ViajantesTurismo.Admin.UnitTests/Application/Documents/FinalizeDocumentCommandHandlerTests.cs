@@ -36,6 +36,50 @@ public sealed class FinalizeDocumentCommandHandlerTests
     }
 
     [Fact]
+    public async Task Handle_preserves_template_field_order_in_finalized_artifact()
+    {
+        // Arrange
+        var now = DateTime.UtcNow;
+        DocumentField[] fields =
+        [
+            DocumentField.Create("z-template-first", "Template first", "First value", DocumentPrivacyClassification.Public, false).Value,
+            DocumentField.Create("a-template-second", "Template second", "Second value", DocumentPrivacyClassification.Operational, false).Value,
+        ];
+        var documentResult = DocumentDraft.Create(
+            Guid.CreateVersion7(),
+            DocumentType.BookingConfirmationContract,
+            DocumentAudience.Customer,
+            "tour-service-contract",
+            "1",
+            "SOURCE-VERSION",
+            fields,
+            "BRANDING-VERSION",
+            "Viajantes Turismo",
+            null,
+            now);
+        documentResult.IsSuccess.ShouldBeTrue();
+        var document = documentResult.Value;
+        document.BeginReview(now).IsSuccess.ShouldBeTrue();
+        document.Approve(now).IsSuccess.ShouldBeTrue();
+        var store = new FakeDocumentStore();
+        store.Documents.Add(document.Id, document);
+        var unitOfWork = new FakeUnitOfWork();
+        var handler = new FinalizeDocumentCommandHandler(store, unitOfWork, TimeProvider.System);
+
+        // Act
+        var result = await handler.Handle(new FinalizeDocumentCommand(document.Id), CancellationToken.None);
+
+        // Assert
+        result.IsSuccess.ShouldBeTrue();
+        var finalizedArtifact = document.GetFinalizedArtifactContent().ShouldNotBeNull();
+        var html = Encoding.UTF8.GetString(finalizedArtifact.Span);
+        var firstIndex = html.IndexOf("Template first", StringComparison.Ordinal);
+        var secondIndex = html.IndexOf("Template second", StringComparison.Ordinal);
+        firstIndex.ShouldBeGreaterThanOrEqualTo(0);
+        secondIndex.ShouldBeGreaterThan(firstIndex);
+    }
+
+    [Fact]
     public async Task Handle_rejects_unapproved_document_without_saving()
     {
         // Arrange

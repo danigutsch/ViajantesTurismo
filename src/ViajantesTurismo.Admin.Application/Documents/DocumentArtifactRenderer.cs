@@ -15,10 +15,11 @@ internal static class DocumentArtifactRenderer
     {
         ArgumentNullException.ThrowIfNull(document);
 
-        var fields = document.Fields
-            .OrderBy(field => field.FieldId, StringComparer.Ordinal)
-            .Select(field => new RenderField(field.Label, field.RenderedValue, MapPrivacy(field.PrivacyClassification)))
-            .ToArray();
+        RenderField[] fields = [
+            .. document.Fields
+                .OrderBy(field => field.SortOrder)
+                .Select(field => new RenderField(field.Label, field.RenderedValue, MapPrivacy(field.PrivacyClassification))),
+        ];
         var request = new DocumentRenderRequest(
             "en",
             "Tour service contract",

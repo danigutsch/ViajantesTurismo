@@ -14,7 +14,7 @@ internal sealed class DocumentStore(AdminWriteDbContext dbContext) : IDocumentSt
 
     public async Task<DocumentDraft?> GetById(Guid id, CancellationToken ct) =>
         await dbContext.DocumentDrafts
-            .Include(document => document.Fields)
+            .Include(document => document.Fields.OrderBy(field => field.SortOrder))
             .FirstOrDefaultAsync(document => document.Id == id, ct);
 
     public async Task<int> PurgeExpiredDrafts(DateTime now, CancellationToken ct)

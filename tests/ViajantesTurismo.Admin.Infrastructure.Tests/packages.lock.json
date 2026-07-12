@@ -976,7 +976,10 @@
         }
       },
       "sharedkernel.documentrendering": {
-        "type": "Project"
+        "type": "Project",
+        "dependencies": {
+          "SharedKernel.InputNormalization": "[0.1.0-alpha.0, )"
+        }
       },
       "sharedkernel.domain": {
         "type": "Project"
@@ -1141,6 +1144,7 @@
           "SharedKernel.DomainEvents": "[0.1.0-alpha.0, )",
           "SharedKernel.DomainEvents.EntityFrameworkCore": "[0.1.0-alpha.0, )",
           "SharedKernel.EntityFrameworkCore": "[0.1.0-alpha.0, )",
+          "SharedKernel.InputNormalization": "[0.1.0-alpha.0, )",
           "SharedKernel.Mediator.EntityFrameworkCore": "[0.1.0-alpha.0, )",
           "SharedKernel.Messaging.IntegrationEvents": "[0.1.0-alpha.0, )",
           "SharedKernel.Messaging.IntegrationEvents.EntityFrameworkCore": "[0.1.0-alpha.0, )",

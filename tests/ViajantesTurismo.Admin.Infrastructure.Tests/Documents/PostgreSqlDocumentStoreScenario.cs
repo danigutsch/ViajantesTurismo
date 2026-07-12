@@ -59,6 +59,12 @@ internal sealed class PostgreSqlDocumentStoreScenario : IAsyncDisposable
             .ToArrayAsync(ct);
     }
 
+    public async ValueTask<DocumentDraft?> GetDocumentById(Guid id, CancellationToken ct)
+    {
+        await using var dbContext = CreateDbContext();
+        return await new DocumentStore(dbContext).GetById(id, ct);
+    }
+
     public async ValueTask SetBrandingLogoUri(Guid documentId, string value, CancellationToken ct)
     {
         await using var dbContext = CreateDbContext();

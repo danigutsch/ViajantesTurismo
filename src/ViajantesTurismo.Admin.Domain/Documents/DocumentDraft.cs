@@ -1,5 +1,6 @@
 using JetBrains.Annotations;
 using SharedKernel.Domain;
+using SharedKernel.InputNormalization;
 using SharedKernel.Results;
 
 namespace ViajantesTurismo.Admin.Domain.Documents;
@@ -42,7 +43,7 @@ public sealed class DocumentDraft : IEntity<Guid>
         TemplateVersion = templateVersion;
         Revision = revision;
         SourceVersion = sourceVersion;
-        _fields.AddRange(fields);
+        _fields.AddRange(fields.Select((field, index) => field.SetSortOrder(index)));
         BrandingVersion = brandingVersion;
         BrandingName = brandingName;
         BrandingLogoUri = brandingLogoUri;
@@ -614,7 +615,8 @@ public sealed class DocumentDraft : IEntity<Guid>
             return DocumentErrors.ValueTooLong("brandingLogoUri", DocumentLimits.MaxBrandingLogoUriLength);
         }
 
-        if (!IsSafeBrandingLogoUri(brandingLogoUri))
+        if (brandingLogoUri is not null &&
+            WebAssetUriSanitizer.NormalizeRootRelativeOrHttps(brandingLogoUri.OriginalString, DocumentLimits.MaxBrandingLogoUriLength) is null)
         {
             return DocumentErrors.InvalidValue("brandingLogoUri");
         }
@@ -686,24 +688,5 @@ public sealed class DocumentDraft : IEntity<Guid>
         return value.Length > DocumentLimits.MaxBrandingTokenLength
             ? DocumentErrors.ValueTooLong(field, DocumentLimits.MaxBrandingTokenLength)
             : Result.Ok();
-    }
-
-    private static bool IsSafeBrandingLogoUri(Uri? logoUri)
-    {
-        if (logoUri is null)
-        {
-            return true;
-        }
-
-        if (logoUri.IsAbsoluteUri)
-        {
-            return logoUri.Scheme == Uri.UriSchemeHttps && string.IsNullOrEmpty(logoUri.UserInfo);
-        }
-
-        var value = logoUri.OriginalString;
-        return value.StartsWith('/')
-            && !value.StartsWith("//", StringComparison.Ordinal)
-            && !value.Contains('\\', StringComparison.Ordinal)
-            && !value.Any(static character => char.IsWhiteSpace(character) || char.IsControl(character));
     }
 }

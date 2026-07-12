@@ -1,6 +1,7 @@
 using System.Security.Cryptography;
 using System.Text;
 using SharedKernel.Branding;
+using SharedKernel.InputNormalization;
 using ViajantesTurismo.Admin.Domain.Documents;
 
 namespace ViajantesTurismo.Admin.Application.Documents;
@@ -16,7 +17,7 @@ internal static class DocumentBrandingSnapshotFactory
 
         var settings = await brandingApiClient.GetPublicSettings(ct);
         var logoUri = settings.LogoUri is { Length: <= DocumentLimits.MaxBrandingLogoUriLength } value ? value : null;
-        var parsedLogoUri = ToSafeLogoUri(logoUri);
+        var parsedLogoUri = WebAssetUriSanitizer.ToRootRelativeOrHttpsUri(logoUri, DocumentLimits.MaxBrandingLogoUriLength);
         var footerText = settings.BrandName;
         var source = string.Join("\n", settings.BrandName, parsedLogoUri?.OriginalString ?? string.Empty, settings.PrimaryColor,
             settings.AccentColor, settings.BackgroundColor, settings.TextColor, settings.HeadingFontFamily, settings.BodyFontFamily, footerText);
@@ -32,26 +33,5 @@ internal static class DocumentBrandingSnapshotFactory
             settings.HeadingFontFamily,
             settings.BodyFontFamily,
             footerText);
-    }
-
-    private static Uri? ToSafeLogoUri(string? logoUri)
-    {
-        if (!Uri.TryCreate(logoUri, UriKind.RelativeOrAbsolute, out var uri))
-        {
-            return null;
-        }
-
-        if (uri.IsAbsoluteUri)
-        {
-            return uri.Scheme == Uri.UriSchemeHttps && string.IsNullOrEmpty(uri.UserInfo) ? uri : null;
-        }
-
-        var value = uri.OriginalString;
-        return value.StartsWith('/')
-            && !value.StartsWith("//", StringComparison.Ordinal)
-            && !value.Contains('\\', StringComparison.Ordinal)
-            && !value.Any(static character => char.IsWhiteSpace(character) || char.IsControl(character))
-            ? uri
-            : null;
     }
 }

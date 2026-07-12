@@ -715,6 +715,9 @@ namespace ViajantesTurismo.Admin.Infrastructure.Migrations
                                 .IsRequired()
                                 .HasColumnType("text");
 
+                            b1.Property<int>("SortOrder")
+                                .HasColumnType("integer");
+
                             b1.Property<string>("StaffOverride")
                                 .HasMaxLength(4000)
                                 .HasColumnType("character varying(4000)");

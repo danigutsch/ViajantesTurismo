@@ -50,6 +50,7 @@ namespace ViajantesTurismo.Admin.Infrastructure.Migrations
                     Label = table.Column<string>(type: "character varying(128)", maxLength: 128, nullable: false),
                     Value = table.Column<string>(type: "character varying(4000)", maxLength: 4000, nullable: false),
                     PrivacyClassification = table.Column<string>(type: "text", nullable: false),
+                    SortOrder = table.Column<int>(type: "integer", nullable: false),
                     IsEditable = table.Column<bool>(type: "boolean", nullable: false),
                     StaffOverride = table.Column<string>(type: "character varying(4000)", maxLength: 4000, nullable: true)
                 },

@@ -4,7 +4,7 @@ using ViajantesTurismo.Admin.Domain.Documents;
 namespace ViajantesTurismo.Admin.Infrastructure.Tests.Documents;
 
 [Trait(SharedKernelTestTraitNames.CategoryName, TestTraits.DatabaseIntegrationCategory)]
-[Trait(SharedKernelTestTraitNames.CapabilityName, global::ViajantesTurismo.Admin.Testing.AdminTestTraitValues.GeneratedDocumentsCapability)]
+[Trait(SharedKernelTestTraitNames.CapabilityName, Testing.AdminTestTraitValues.GeneratedDocumentsCapability)]
 public sealed class DocumentStorePostgreSqlTests : IAsyncLifetime
 {
     private PostgreSqlDocumentStoreScenario? scenario;
@@ -69,5 +69,38 @@ public sealed class DocumentStorePostgreSqlTests : IAsyncLifetime
 
         // Assert
         documents.ShouldHaveSingleItem().BrandingLogoUri.ShouldBeNull();
+    }
+
+    [Fact]
+    public async Task GetById_preserves_persisted_template_field_order()
+    {
+        // Arrange
+        var now = new DateTime(2026, 7, 11, 0, 0, 0, DateTimeKind.Utc);
+        DocumentField[] fields =
+        [
+            DocumentField.Create("z-template-first", "Template first", "First value", DocumentPrivacyClassification.Public, false).Value,
+            DocumentField.Create("a-template-second", "Template second", "Second value", DocumentPrivacyClassification.Operational, false).Value,
+        ];
+        var documentResult = DocumentDraft.Create(
+            Guid.CreateVersion7(),
+            DocumentType.BookingConfirmationContract,
+            DocumentAudience.Customer,
+            "tour-service-contract",
+            "1",
+            "SOURCE-VERSION",
+            fields,
+            "BRANDING-VERSION",
+            "Viajantes Turismo",
+            null,
+            now);
+        documentResult.IsSuccess.ShouldBeTrue();
+        var document = documentResult.Value;
+        await Scenario.Seed(document);
+
+        // Act
+        var reloaded = await Scenario.GetDocumentById(document.Id, TestContext.Current.CancellationToken);
+
+        // Assert
+        reloaded.ShouldNotBeNull().ShouldHaveFieldIdsInOrder(["z-template-first", "a-template-second"]);
     }
 }
