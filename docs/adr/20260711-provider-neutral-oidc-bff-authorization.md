@@ -15,8 +15,9 @@ must remain replaceable.
 - Use standards-based OIDC/OAuth 2.0. Management Web is a confidential authorization-code + PKCE
   client using a secure, `HttpOnly`, `SameSite=Lax`, `__Host-` cookie.
 - APIs accept delegated bearer access tokens only. Each validates its configured issuer,
-  discovery metadata, signature/JWKS, `RS256` algorithm, expiry, bounded clock skew, and exactly
-  one audience: `admin-api`, `catalog-api`, or `branding-api`.
+  discovery metadata, signature/JWKS, `RS256` algorithm, expiry, bounded clock skew, and intended
+  audience: `admin-api`, `catalog-api`, or `branding-api`. Management's server-side BFF token may
+  carry multiple approved API audiences because it calls each protected backend on the user's behalf.
 - Map the validated `roles` claim centrally into application-owned `permission` claims. Policies
   use permissions; they never authorize a raw provider role directly. `Admin` receives all
   boundary permissions. `Operator` receives the non-sensitive operational permissions assigned to
