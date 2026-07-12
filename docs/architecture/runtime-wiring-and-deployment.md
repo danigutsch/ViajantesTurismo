@@ -15,11 +15,13 @@ flowchart LR
     AdminPerformanceSmoke[Admin Performance Smoke]
     apiService[Admin.ApiService]
     brandingApiService[Branding Api]
+    catalogApiService[Catalog.ApiService]
     clamAv[ClamAV]
     adminDatabase[Database]
     catalogDatabase[Database]
     securityDatabase[Database]
     IntegrationEventWorker[Integration Event Worker]
+    ManagementWeb[Management.Web]
     migrationService[MigrationService]
     ObservabilityStack[Observability Stack]
     managementWebClientSecret[Parameter]
@@ -34,7 +36,16 @@ flowchart LR
     IntegrationEventWorker --> clamAv
     IntegrationEventWorker --> migrationService
     IntegrationEventWorker --> seaweedFs
+    ManagementWeb --> apiService
+    ManagementWeb --> brandingApiService
+    ManagementWeb --> cache
+    ManagementWeb --> catalogApiService
+    ManagementWeb --> identityProvider
+    ManagementWeb --> managementWebClientSecret
+    ManagementWeb --> migrationService
+    ManagementWeb --> securityDatabase
     PublicWeb --> brandingApiService
+    PublicWeb --> catalogApiService
     adminDatabase --> databaseServer
     apiService --> adminDatabase
     apiService --> brandingApiService
@@ -43,6 +54,12 @@ flowchart LR
     brandingApiService --> catalogDatabase
     brandingApiService --> identityProvider
     brandingApiService --> migrationService
+    catalogApiService --> adminDatabase
+    catalogApiService --> catalogDatabase
+    catalogApiService --> clamAv
+    catalogApiService --> identityProvider
+    catalogApiService --> migrationService
+    catalogApiService --> seaweedFs
     catalogDatabase --> databaseServer
     identityProvider --> managementWebClientSecret
     migrationService --> adminDatabase
