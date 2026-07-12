@@ -68,7 +68,6 @@ internal static class RoadmapTemplates
     public const string ConfigSchemaJson = """
         {
           "$schema": "https://json-schema.org/draft/2020-12/schema",
-          "$id": "https://github.com/danigutsch/ViajantesTurismo/roadmap/schema/roadmap-config.schema.json",
           "title": "Roadmap configuration",
           "type": "object",
           "required": [
@@ -174,7 +173,6 @@ internal static class RoadmapTemplates
     public const string ItemSchemaJson = """
         {
           "$schema": "https://json-schema.org/draft/2020-12/schema",
-          "$id": "https://github.com/danigutsch/ViajantesTurismo/roadmap/schema/roadmap-item.schema.json",
           "title": "Roadmap item",
           "type": "object",
           "required": [

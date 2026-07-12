@@ -65,9 +65,11 @@ public sealed class RepoConfigToolApplicationTests
         // Assert
         exitCode.ShouldBe(0);
         configSchemaText.ShouldContain("\"required\": [", StringComparison.Ordinal);
-        configSchemaText.ShouldContain("\"$id\": \"https://github.com/danigutsch/ViajantesTurismo/roadmap/schema/roadmap-config.schema.json\"", StringComparison.Ordinal);
+        configSchemaText.ShouldContain("\"$schema\": \"https://json-schema.org/draft/2020-12/schema\"", StringComparison.Ordinal);
+        configSchemaText.ShouldNotContain("github.com/danigutsch/ViajantesTurismo", StringComparison.Ordinal);
         configSchemaText.ShouldContain("\"integrations\"", StringComparison.Ordinal);
-        itemSchemaText.ShouldContain("\"$id\": \"https://github.com/danigutsch/ViajantesTurismo/roadmap/schema/roadmap-item.schema.json\"", StringComparison.Ordinal);
+        itemSchemaText.ShouldContain("\"$schema\": \"https://json-schema.org/draft/2020-12/schema\"", StringComparison.Ordinal);
+        itemSchemaText.ShouldNotContain("github.com/danigutsch/ViajantesTurismo", StringComparison.Ordinal);
         itemSchemaText.ShouldContain("\"size\"", StringComparison.Ordinal);
         itemSchemaText.ShouldContain("\"uniqueItems\": true", StringComparison.Ordinal);
         itemSchemaText.ShouldContain("\"minimum\": 0.1", StringComparison.Ordinal);
@@ -573,6 +575,20 @@ public sealed class RepoConfigToolApplicationTests
 
         // Assert
         result.ShouldBe($"  before  {Environment.NewLine}{managedSection}{Environment.NewLine}  after  ");
+    }
+
+    [Fact]
+    public void Sync_managed_section_appends_with_lf_line_breaks()
+    {
+        // Arrange
+        const string CurrentBody = "before";
+        const string ManagedSection = "<!-- roadmap:managed:start -->\nnew\n<!-- roadmap:managed:end -->";
+
+        // Act
+        var result = GitHubRoadmapSyncer.UpsertManagedSection(CurrentBody, ManagedSection);
+
+        // Assert
+        result.ShouldBe("before\n\n<!-- roadmap:managed:start -->\nnew\n<!-- roadmap:managed:end -->");
     }
 
     [Fact]

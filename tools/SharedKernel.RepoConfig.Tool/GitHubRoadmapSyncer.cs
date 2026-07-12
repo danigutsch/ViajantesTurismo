@@ -7,6 +7,8 @@ namespace SharedKernel.RepoConfig.Tool;
 
 internal sealed class GitHubRoadmapSyncer
 {
+    private const string GitHubLineBreak = "\n";
+
     private readonly HttpClient? _httpClient;
     private readonly RoadmapProject _project;
 
@@ -194,7 +196,7 @@ internal sealed class GitHubRoadmapSyncer
 
         return currentBody.Length == 0
             ? managedSection
-            : $"{currentBody}{Environment.NewLine}{Environment.NewLine}{managedSection}";
+            : $"{currentBody}{GitHubLineBreak}{GitHubLineBreak}{managedSection}";
     }
 
     private static string BuildManagedSection(RoadmapItemSnapshot item) =>
