@@ -19,19 +19,16 @@ flowchart LR
     adminDatabase[Database]
     catalogDatabase[Database]
     securityDatabase[Database]
-    IdentityProvider[Identity Provider]
     IntegrationEventWorker[Integration Event Worker]
     migrationService[MigrationService]
     ObservabilityStack[Observability Stack]
     managementWebClientSecret[Parameter]
-    identityProviderConformanceUserPassword[Parameter]
     databaseServer[PostgreSQL server]
     PublicWeb[Public.Web]
     cache[Redis cache]
+    identityProvider[Run Mode Identity Provider]
     seaweedFs[SeaweedFS]
     AdminPerformanceSmoke --> apiService
-    IdentityProvider --> identityProviderConformanceUserPassword
-    IdentityProvider --> managementWebClientSecret
     IntegrationEventWorker --> adminDatabase
     IntegrationEventWorker --> catalogDatabase
     IntegrationEventWorker --> clamAv
@@ -41,10 +38,13 @@ flowchart LR
     adminDatabase --> databaseServer
     apiService --> adminDatabase
     apiService --> brandingApiService
+    apiService --> identityProvider
     apiService --> migrationService
     brandingApiService --> catalogDatabase
+    brandingApiService --> identityProvider
     brandingApiService --> migrationService
     catalogDatabase --> databaseServer
+    identityProvider --> managementWebClientSecret
     migrationService --> adminDatabase
     migrationService --> catalogDatabase
     securityDatabase --> databaseServer

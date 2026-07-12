@@ -26,6 +26,7 @@ public sealed class ManagementWebEndpointTests
                     services.AddAuthentication(AnonymousAuthenticationHandler.SchemeName)
                         .AddScheme<AuthenticationSchemeOptions, AnonymousAuthenticationHandler>(AnonymousAuthenticationHandler.SchemeName, null);
                     services.AddAuthorization();
+                    services.AddAntiforgery();
                     services.AddRazorComponents()
                         .AddInteractiveServerComponents();
                 })

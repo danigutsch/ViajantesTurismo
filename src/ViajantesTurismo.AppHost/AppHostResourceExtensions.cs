@@ -96,19 +96,32 @@ internal static class AppHostResourceExtensions
     }
 
     /// <summary>
-    /// Adds a digest-pinned Keycloak identity provider for local OIDC conformance.
+    /// Adds a digest-pinned Keycloak identity provider when the AppHost runs locally.
     /// </summary>
     /// <param name="builder">The distributed application builder.</param>
     /// <param name="managementWebClientSecret">The confidential Management Web client secret.</param>
-    /// <param name="conformanceUserPassword">The local conformance-user password.</param>
-    /// <returns>The configured local identity-provider resource.</returns>
-    public static IResourceBuilder<ContainerResource> AddIdentityProvider(
+    /// <returns>The configured local identity-provider resource, or <see langword="null"/> during publish.</returns>
+    public static IResourceBuilder<ContainerResource>? AddRunModeIdentityProvider(
         this IDistributedApplicationBuilder builder,
-        IResourceBuilder<ParameterResource> managementWebClientSecret,
-        IResourceBuilder<ParameterResource> conformanceUserPassword)
+        IResourceBuilder<ParameterResource> managementWebClientSecret)
     {
         ArgumentNullException.ThrowIfNull(builder);
         ArgumentNullException.ThrowIfNull(managementWebClientSecret);
+
+        if (!builder.ExecutionContext.IsRunMode)
+        {
+            return null;
+        }
+
+        var conformanceUserPassword = builder.AddParameter(ResourceNames.IdentityProviderConformanceUserPassword, secret: true);
+        return AddIdentityProvider(builder, managementWebClientSecret, conformanceUserPassword);
+    }
+
+    private static IResourceBuilder<ContainerResource> AddIdentityProvider(
+        IDistributedApplicationBuilder builder,
+        IResourceBuilder<ParameterResource> managementWebClientSecret,
+        IResourceBuilder<ParameterResource> conformanceUserPassword)
+    {
         ArgumentNullException.ThrowIfNull(conformanceUserPassword);
 
         var bootstrapAdminPassword = builder.AddParameter(ResourceNames.IdentityProviderAdminPassword, secret: true);

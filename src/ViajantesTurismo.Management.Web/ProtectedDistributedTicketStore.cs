@@ -33,19 +33,25 @@ internal sealed class ProtectedDistributedTicketStore : ITicketStore
         return key;
     }
 
-    public Task RenewAsync(string key, AuthenticationTicket ticket)
+    public async Task RenewAsync(string key, AuthenticationTicket ticket)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(key);
         ArgumentNullException.ThrowIfNull(ticket);
 
+        if (HasExpired(ticket))
+        {
+            await cache.RemoveAsync(key).ConfigureAwait(false);
+            return;
+        }
+
         var protectedTicket = protector.Protect(TicketSerializer.Default.Serialize(ticket));
-        return cache.SetAsync(
+        await cache.SetAsync(
             key,
             protectedTicket,
             new DistributedCacheEntryOptions
             {
                 AbsoluteExpiration = ticket.Properties.ExpiresUtc ?? DateTimeOffset.UtcNow.Add(ManagementAuthenticationDefaults.SessionLifetime)
-            });
+            }).ConfigureAwait(false);
     }
 
     public async Task<AuthenticationTicket?> RetrieveAsync(string key)
@@ -60,7 +66,14 @@ internal sealed class ProtectedDistributedTicketStore : ITicketStore
 
         try
         {
-            return TicketSerializer.Default.Deserialize(protector.Unprotect(protectedTicket));
+            var ticket = TicketSerializer.Default.Deserialize(protector.Unprotect(protectedTicket));
+            if (ticket is null || HasExpired(ticket))
+            {
+                await cache.RemoveAsync(key).ConfigureAwait(false);
+                return null;
+            }
+
+            return ticket;
         }
         catch (CryptographicException)
         {
@@ -80,5 +93,10 @@ internal sealed class ProtectedDistributedTicketStore : ITicketStore
         return string.Concat(
             ManagementAuthenticationDefaults.TicketStoreKeyPrefix,
             WebEncoders.Base64UrlEncode(RandomNumberGenerator.GetBytes(32)));
+    }
+
+    private static bool HasExpired(AuthenticationTicket ticket)
+    {
+        return ticket.Properties.ExpiresUtc is { } expiresUtc && expiresUtc <= DateTimeOffset.UtcNow;
     }
 }

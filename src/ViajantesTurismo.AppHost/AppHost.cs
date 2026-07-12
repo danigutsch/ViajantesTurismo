@@ -12,12 +12,7 @@ var cache = builder.AddCache();
 var clamAv = builder.AddClamAv(ResourceNames.ClamAv);
 var seaweedFs = builder.AddMediaObjectStorage();
 var managementWebClientSecret = builder.AddParameter(ResourceNames.ManagementWebClientSecret, secret: true);
-IResourceBuilder<ContainerResource>? identityProvider = null;
-if (builder.ExecutionContext.IsRunMode)
-{
-    var identityProviderConformanceUserPassword = builder.AddParameter(ResourceNames.IdentityProviderConformanceUserPassword, secret: true);
-    identityProvider = builder.AddIdentityProvider(managementWebClientSecret, identityProviderConformanceUserPassword);
-}
+var identityProvider = builder.AddRunModeIdentityProvider(managementWebClientSecret);
 
 var migrationService = builder.AddMigrationService(adminDatabase, catalogDatabase);
 

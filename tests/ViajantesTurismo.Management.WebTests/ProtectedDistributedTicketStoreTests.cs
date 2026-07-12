@@ -3,6 +3,8 @@ namespace ViajantesTurismo.Management.WebTests;
 /// <summary>
 /// Verifies protected server-side authentication ticket storage.
 /// </summary>
+[Trait(SharedKernel.Testing.TestTraitNames.CategoryName, TestTraits.SecurityCategory)]
+[Trait(SharedKernel.Testing.TestTraitNames.ScopeName, TestTraits.UnitScope)]
 public sealed class ProtectedDistributedTicketStoreTests
 {
     [Fact]
@@ -83,9 +85,11 @@ public sealed class ProtectedDistributedTicketStoreTests
         // Act
         var key = await context.Store.StoreAsync(expiredTicket);
         var retrieved = await context.Store.RetrieveAsync(key);
+        var cachedValue = await context.Cache.GetAsync(key, Xunit.TestContext.Current.CancellationToken);
 
         // Assert
         retrieved.ShouldBeNull();
+        cachedValue.ShouldBeNull();
     }
 
     [Theory]

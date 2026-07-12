@@ -111,11 +111,12 @@ public sealed partial class AppHostOrchestrationTests
 
         // Act
         var hasReleaseGate = appHostText.Contains(
-            "builder.ExecutionContext.IsRunMode",
+            "builder.AddRunModeIdentityProvider(managementWebClientSecret)",
             StringComparison.Ordinal);
 
         // Assert
         hasReleaseGate.ShouldBeTrue();
+        resourceExtensionsText.ShouldContain("builder.ExecutionContext.IsRunMode", StringComparison.Ordinal);
         resourceExtensionsText.ShouldContain("WithLocalIdentityProvider", StringComparison.Ordinal);
     }
 

@@ -41,6 +41,7 @@ internal static class ManagementAuthenticationServiceCollectionExtensions
             connectionString,
             dataProtectionCertificatePath,
             dataProtectionCertificatePassword,
+            allowHttpDevelopmentAuthority,
             environment);
 
         services.AddDistributedPostgresCache(options =>
@@ -122,6 +123,7 @@ internal static class ManagementAuthenticationServiceCollectionExtensions
         string? connectionString,
         string? dataProtectionCertificatePath,
         string? dataProtectionCertificatePassword,
+        bool allowHttpDevelopmentAuthority,
         IHostEnvironment environment)
     {
         if (string.IsNullOrWhiteSpace(authority)
@@ -135,6 +137,10 @@ internal static class ManagementAuthenticationServiceCollectionExtensions
                 + "Authentication:ClientSecret, and ConnectionStrings:security-database must be set.");
         }
 
+        var allowHttpAuthority = environment.IsDevelopment() && allowHttpDevelopmentAuthority;
+        ValidateAuthorityUri(authority, ApiAuthenticationDefaults.AuthorityConfigurationKey, allowHttpAuthority);
+        ValidateAuthorityUri(issuer, ApiAuthenticationDefaults.IssuerConfigurationKey, allowHttpAuthority);
+
         if (!environment.IsDevelopment()
             && (string.IsNullOrWhiteSpace(dataProtectionCertificatePath)
                 || string.IsNullOrWhiteSpace(dataProtectionCertificatePassword)))
@@ -142,6 +148,23 @@ internal static class ManagementAuthenticationServiceCollectionExtensions
             throw new InvalidOperationException(
                 "Authentication:DataProtection:CertificatePath and "
                 + "Authentication:DataProtection:CertificatePassword must be set outside Development.");
+        }
+    }
+
+    private static void ValidateAuthorityUri(string value, string configurationKey, bool allowHttpAuthority)
+    {
+        if (!Uri.TryCreate(value, UriKind.Absolute, out var uri))
+        {
+            throw new InvalidOperationException(
+                $"{configurationKey} must be an HTTPS absolute URI outside an explicitly configured Development environment.");
+        }
+
+        var isHttps = string.Equals(uri.Scheme, Uri.UriSchemeHttps, StringComparison.OrdinalIgnoreCase);
+        var isHttp = string.Equals(uri.Scheme, Uri.UriSchemeHttp, StringComparison.OrdinalIgnoreCase);
+        if (!isHttps && !(allowHttpAuthority && isHttp))
+        {
+            throw new InvalidOperationException(
+                $"{configurationKey} must be an HTTPS absolute URI outside an explicitly configured Development environment.");
         }
     }
 }

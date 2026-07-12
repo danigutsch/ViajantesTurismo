@@ -39,6 +39,37 @@ public sealed class ManagementAuthenticationServiceCollectionExtensionsTests
     }
 
     [Fact]
+    public void Development_configuration_rejects_http_authority_without_the_explicit_opt_in()
+    {
+        // Arrange
+        var configuration = ManagementAuthenticationTestConfiguration.Create(
+            authority: "http://identity.example.test/realms/viajantes");
+        var environment = new TestHostEnvironment { EnvironmentName = Environments.Development };
+
+        // Act
+        Action action = () => ManagementAuthenticationTestHost.Create(configuration, environment);
+
+        // Assert
+        action.ShouldThrow<InvalidOperationException>();
+    }
+
+    [Fact]
+    public void Development_configuration_rejects_unsupported_authority_schemes()
+    {
+        // Arrange
+        var configuration = ManagementAuthenticationTestConfiguration.Create(
+            allowHttpDevelopmentAuthority: true,
+            authority: "ftp://identity.example.test/realms/viajantes");
+        var environment = new TestHostEnvironment { EnvironmentName = Environments.Development };
+
+        // Act
+        Action action = () => ManagementAuthenticationTestHost.Create(configuration, environment);
+
+        // Assert
+        action.ShouldThrow<InvalidOperationException>();
+    }
+
+    [Fact]
     public async Task Development_configuration_allows_http_metadata_only_when_explicitly_enabled()
     {
         // Arrange
