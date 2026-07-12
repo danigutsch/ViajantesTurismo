@@ -385,7 +385,7 @@ internal static class RepoConfigVerifier
 
     private static void VerifyItemThemes(IReadOnlyCollection<RoadmapItemSnapshot> items, HashSet<string> themeIds, List<RepoConfigIssue> issues)
     {
-        foreach (var item in items.Where(item => !themeIds.Contains(item.Theme)))
+        foreach (var item in items.Where(item => !string.IsNullOrWhiteSpace(item.Theme) && !themeIds.Contains(item.Theme)))
         {
             issues.Add(new RepoConfigIssue(item.Path, $"Unknown theme: {item.Theme}."));
         }
@@ -420,7 +420,9 @@ internal static class RepoConfigVerifier
 
     private static void VerifyBlockerConsistency(IReadOnlyCollection<RoadmapItemSnapshot> items, List<RepoConfigIssue> issues)
     {
-        var itemsById = items.ToDictionary(item => item.Id, StringComparer.Ordinal);
+        var itemsById = items
+            .GroupBy(item => item.Id, StringComparer.Ordinal)
+            .ToDictionary(group => group.Key, group => group.First(), StringComparer.Ordinal);
         foreach (var item in items)
         {
             foreach (var blockerId in item.BlockedBy.Where(itemsById.ContainsKey))
@@ -445,7 +447,9 @@ internal static class RepoConfigVerifier
 
     private static void VerifyBlockedByCycles(IReadOnlyCollection<RoadmapItemSnapshot> items, List<RepoConfigIssue> issues)
     {
-        var itemsById = items.ToDictionary(item => item.Id, StringComparer.Ordinal);
+        var itemsById = items
+            .GroupBy(item => item.Id, StringComparer.Ordinal)
+            .ToDictionary(group => group.Key, group => group.First(), StringComparer.Ordinal);
         HashSet<string> reported = new(StringComparer.Ordinal);
         foreach (var item in items)
         {
@@ -486,6 +490,12 @@ internal static class RepoConfigVerifier
 
         var relativePath = RepoConfigPaths.RelativeTo(rootPath, orderPath);
         using var document = JsonDocument.Parse(File.ReadAllText(orderPath));
+        if (document.RootElement.ValueKind != JsonValueKind.Object)
+        {
+            issues.Add(new RepoConfigIssue(relativePath, "order.json must contain an items array."));
+            return;
+        }
+
         if (!document.RootElement.TryGetProperty("items", out var orderItems) || orderItems.ValueKind != JsonValueKind.Array)
         {
             issues.Add(new RepoConfigIssue(relativePath, "order.json must contain an items array."));

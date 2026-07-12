@@ -76,6 +76,29 @@ public sealed class RepoConfigToolApplicationTests
     }
 
     [Fact]
+    public void Init_writes_templates_with_resolvable_local_schema_references()
+    {
+        // Arrange
+        using var workspace = new TemporaryRepoConfigWorkspace();
+        using var initOutput = new StringWriter(CultureInfo.InvariantCulture);
+        using var initError = new StringWriter(CultureInfo.InvariantCulture);
+
+        // Act
+        var exitCode = RepoConfigToolApplication.Run(["init", "--root", workspace.RootPath], initOutput, initError, workspace.RootPath);
+        using var configDocument = JsonDocument.Parse(workspace.ReadFile("roadmap/config.json"));
+        using var itemDocument = JsonDocument.Parse(workspace.ReadFile("roadmap/items/RM-001-roadmap-gitops.json"));
+        var configSchema = configDocument.RootElement.GetProperty("$schema").GetString();
+        var itemSchema = itemDocument.RootElement.GetProperty("$schema").GetString();
+        var configSchemaPath = Path.GetFullPath(Path.Combine(workspace.RootPath, "roadmap", configSchema ?? string.Empty));
+        var itemSchemaPath = Path.GetFullPath(Path.Combine(workspace.RootPath, "roadmap/items", itemSchema ?? string.Empty));
+
+        // Assert
+        exitCode.ShouldBe(0);
+        File.Exists(configSchemaPath).ShouldBeTrue();
+        File.Exists(itemSchemaPath).ShouldBeTrue();
+    }
+
+    [Fact]
     public void Set_updates_github_repository_config()
     {
         // Arrange
@@ -93,6 +116,35 @@ public sealed class RepoConfigToolApplicationTests
         // Assert
         exitCode.ShouldBe(0);
         configText.ShouldContain("\"repository\": \"example/repository\"", StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public void Set_preserves_existing_github_projection_settings_and_valid_config()
+    {
+        // Arrange
+        using var workspace = new TemporaryRepoConfigWorkspace();
+        using var initOutput = new StringWriter(CultureInfo.InvariantCulture);
+        using var initError = new StringWriter(CultureInfo.InvariantCulture);
+        using var setOutput = new StringWriter(CultureInfo.InvariantCulture);
+        using var setError = new StringWriter(CultureInfo.InvariantCulture);
+        using var verifyOutput = new StringWriter(CultureInfo.InvariantCulture);
+        using var verifyError = new StringWriter(CultureInfo.InvariantCulture);
+        RepoConfigToolApplication.Run(["init", "--root", workspace.RootPath], initOutput, initError, workspace.RootPath).ShouldBe(0);
+        var configText = workspace.ReadFile("roadmap/config.json");
+        workspace.WriteFile("roadmap/config.json", configText.Replace("\"enabled\": true", "\"enabled\": false", StringComparison.Ordinal));
+
+        // Act
+        var setExitCode = RepoConfigToolApplication.Run(["set", "github.repository", "example/repository", "--root", workspace.RootPath], setOutput, setError, workspace.RootPath);
+        var verifyExitCode = RepoConfigToolApplication.Run(["verify", "--root", workspace.RootPath], verifyOutput, verifyError, workspace.RootPath);
+        using var document = JsonDocument.Parse(workspace.ReadFile("roadmap/config.json"));
+        var github = document.RootElement.GetProperty("integrations").GetProperty("github");
+
+        // Assert
+        setExitCode.ShouldBe(0);
+        verifyExitCode.ShouldBe(0);
+        github.GetProperty("enabled").GetBoolean().ShouldBeFalse();
+        github.GetProperty("sourceOfTruth").GetString().ShouldBe("projection");
+        github.GetProperty("repository").GetString().ShouldBe("example/repository");
     }
 
     [Theory]
@@ -141,6 +193,28 @@ public sealed class RepoConfigToolApplicationTests
         // Assert
         exitCode.ShouldBe(1);
         errorText.ShouldContain("Unknown dependency: RM-404.", StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public void Verify_reports_duplicate_roadmap_ids_without_aborting_diagnostics()
+    {
+        // Arrange
+        using var workspace = new TemporaryRepoConfigWorkspace();
+        using var initOutput = new StringWriter(CultureInfo.InvariantCulture);
+        using var initError = new StringWriter(CultureInfo.InvariantCulture);
+        using var verifyOutput = new StringWriter(CultureInfo.InvariantCulture);
+        using var verifyError = new StringWriter(CultureInfo.InvariantCulture);
+        RepoConfigToolApplication.Run(["init", "--root", workspace.RootPath], initOutput, initError, workspace.RootPath).ShouldBe(0);
+        workspace.WriteFile("roadmap/items/RM-001-copy.json", workspace.ReadFile("roadmap/items/RM-001-roadmap-gitops.json"));
+
+        // Act
+        var exitCode = RepoConfigToolApplication.Run(["verify", "--root", workspace.RootPath], verifyOutput, verifyError, workspace.RootPath);
+        var errorText = verifyError.ToString();
+
+        // Assert
+        exitCode.ShouldBe(1);
+        errorText.ShouldContain("Duplicate roadmap item id: RM-001.", StringComparison.Ordinal);
+        errorText.ShouldNotContain("sharedkernel-repo:", StringComparison.Ordinal);
     }
 
     [Fact]
@@ -554,6 +628,51 @@ public sealed class RepoConfigToolApplicationTests
     }
 
     [Fact]
+    public void Verify_reports_missing_theme_without_unknown_theme_cascade()
+    {
+        // Arrange
+        using var workspace = new TemporaryRepoConfigWorkspace();
+        using var initOutput = new StringWriter(CultureInfo.InvariantCulture);
+        using var initError = new StringWriter(CultureInfo.InvariantCulture);
+        using var verifyOutput = new StringWriter(CultureInfo.InvariantCulture);
+        using var verifyError = new StringWriter(CultureInfo.InvariantCulture);
+        RepoConfigToolApplication.Run(["init", "--root", workspace.RootPath], initOutput, initError, workspace.RootPath).ShouldBe(0);
+        var itemText = workspace.ReadFile("roadmap/items/RM-001-roadmap-gitops.json");
+        workspace.WriteFile("roadmap/items/RM-001-roadmap-gitops.json", itemText.Replace("  \"theme\": \"repo-operations\",\n", string.Empty, StringComparison.Ordinal));
+
+        // Act
+        var exitCode = RepoConfigToolApplication.Run(["verify", "--root", workspace.RootPath], verifyOutput, verifyError, workspace.RootPath);
+        var errorText = verifyError.ToString();
+
+        // Assert
+        exitCode.ShouldBe(1);
+        errorText.ShouldContain("Missing required string property: theme.", StringComparison.Ordinal);
+        errorText.ShouldNotContain("Unknown theme:", StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public void Verify_reports_non_object_order_file()
+    {
+        // Arrange
+        using var workspace = new TemporaryRepoConfigWorkspace();
+        using var initOutput = new StringWriter(CultureInfo.InvariantCulture);
+        using var initError = new StringWriter(CultureInfo.InvariantCulture);
+        using var verifyOutput = new StringWriter(CultureInfo.InvariantCulture);
+        using var verifyError = new StringWriter(CultureInfo.InvariantCulture);
+        RepoConfigToolApplication.Run(["init", "--root", workspace.RootPath], initOutput, initError, workspace.RootPath).ShouldBe(0);
+        workspace.WriteFile("roadmap/order.json", "[]");
+
+        // Act
+        var exitCode = RepoConfigToolApplication.Run(["verify", "--root", workspace.RootPath], verifyOutput, verifyError, workspace.RootPath);
+        var errorText = verifyError.ToString();
+
+        // Assert
+        exitCode.ShouldBe(1);
+        errorText.ShouldContain("order.json must contain an items array.", StringComparison.Ordinal);
+        errorText.ShouldNotContain("sharedkernel-repo:", StringComparison.Ordinal);
+    }
+
+    [Fact]
     public void Verify_reports_order_file_sequence_mismatch()
     {
         // Arrange
@@ -597,6 +716,102 @@ public sealed class RepoConfigToolApplicationTests
 
         // Assert
         exitCode.ShouldBe(0);
+    }
+
+    [Fact]
+    public void Get_next_priority_orders_items_by_order_score_and_id()
+    {
+        // Arrange
+        using var workspace = new TemporaryRepoConfigWorkspace();
+        using var initOutput = new StringWriter(CultureInfo.InvariantCulture);
+        using var initError = new StringWriter(CultureInfo.InvariantCulture);
+        using var getOutput = new StringWriter(CultureInfo.InvariantCulture);
+        using var getError = new StringWriter(CultureInfo.InvariantCulture);
+        RepoConfigToolApplication.Run(["init", "--root", workspace.RootPath], initOutput, initError, workspace.RootPath).ShouldBe(0);
+        var defaultItem = workspace.ReadFile("roadmap/items/RM-001-roadmap-gitops.json");
+        var lowerScoreItem = RoadmapTestContent.HigherPriorityIssueJson
+            .Replace("\"id\": \"RM-002\"", "\"id\": \"RM-000\"", StringComparison.Ordinal)
+            .Replace("\"order\": 5", "\"order\": 10", StringComparison.Ordinal)
+            .Replace("\"reach\": 10", "\"reach\": 1", StringComparison.Ordinal);
+        var sameScoreItem = defaultItem
+            .Replace("\"id\": \"RM-001\"", "\"id\": \"RM-002\"", StringComparison.Ordinal)
+            .Replace("Establish GitOps roadmap and repo configuration tooling", "Same score follow-up", StringComparison.Ordinal);
+        workspace.WriteFile("roadmap/items/RM-000-follow-up.json", lowerScoreItem);
+        workspace.WriteFile("roadmap/items/RM-002-follow-up.json", sameScoreItem);
+        workspace.WriteFile("roadmap/order.json", "{ \"items\": [\"RM-001\", \"RM-002\", \"RM-000\"] }");
+
+        // Act
+        var exitCode = RepoConfigToolApplication.Run(["get", "next-priority", "--limit", "3", "--root", workspace.RootPath], getOutput, getError, workspace.RootPath);
+        var outputText = getOutput.ToString();
+        var firstIndex = outputText.IndexOf("RM-001 |", StringComparison.Ordinal);
+        var secondIndex = outputText.IndexOf("RM-002 |", StringComparison.Ordinal);
+        var thirdIndex = outputText.IndexOf("RM-000 |", StringComparison.Ordinal);
+
+        // Assert
+        exitCode.ShouldBe(0);
+        firstIndex.ShouldBeLessThan(secondIndex);
+        secondIndex.ShouldBeLessThan(thirdIndex);
+    }
+
+    [Fact]
+    public void Get_pareto_limit_uses_unblocked_open_items()
+    {
+        // Arrange
+        using var workspace = new TemporaryRepoConfigWorkspace();
+        using var initOutput = new StringWriter(CultureInfo.InvariantCulture);
+        using var initError = new StringWriter(CultureInfo.InvariantCulture);
+        using var getOutput = new StringWriter(CultureInfo.InvariantCulture);
+        using var getError = new StringWriter(CultureInfo.InvariantCulture);
+        RepoConfigToolApplication.Run(["init", "--root", workspace.RootPath], initOutput, initError, workspace.RootPath).ShouldBe(0);
+        var epicText = workspace.ReadFile("roadmap/items/RM-001-roadmap-gitops.json");
+        workspace.WriteFile("roadmap/items/RM-001-roadmap-gitops.json", epicText.Replace("\"blocks\": []", "\"blocks\": [\"RM-003\", \"RM-004\", \"RM-005\", \"RM-006\"]", StringComparison.Ordinal));
+        var unblockedItem = RoadmapTestContent.UnblockedEnablerJson.Replace("\"id\": \"RM-003\"", "\"id\": \"RM-002\"", StringComparison.Ordinal);
+        workspace.WriteFile("roadmap/items/RM-002-enabler.json", unblockedItem);
+        for (var index = 3; index <= 6; index++)
+        {
+            var blockedItem = RoadmapTestContent.BlockedIssueJson
+                .Replace("\"id\": \"RM-002\"", $"\"id\": \"RM-00{index}\"", StringComparison.Ordinal)
+                .Replace("\"order\": 20", $"\"order\": {index * 10 + 10}", StringComparison.Ordinal);
+            workspace.WriteFile($"roadmap/items/RM-00{index}-blocked.json", blockedItem);
+        }
+
+        workspace.WriteFile("roadmap/order.json", "{ \"items\": [\"RM-001\", \"RM-002\", \"RM-003\", \"RM-004\", \"RM-005\", \"RM-006\"] }");
+
+        // Act
+        var exitCode = RepoConfigToolApplication.Run(["get", "pareto", "--limit", "10", "--root", workspace.RootPath], getOutput, getError, workspace.RootPath);
+        var outputText = getOutput.ToString();
+
+        // Assert
+        exitCode.ShouldBe(0);
+        outputText.ShouldContain("RM-002 |", StringComparison.Ordinal);
+        outputText.ShouldNotContain("RM-001 |", StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public void Sync_github_dry_run_orders_mapped_items_by_priority()
+    {
+        // Arrange
+        using var workspace = new TemporaryRepoConfigWorkspace();
+        using var initOutput = new StringWriter(CultureInfo.InvariantCulture);
+        using var initError = new StringWriter(CultureInfo.InvariantCulture);
+        RepoConfigToolApplication.Run(["init", "--root", workspace.RootPath], initOutput, initError, workspace.RootPath).ShouldBe(0);
+        var defaultItem = workspace.ReadFile("roadmap/items/RM-001-roadmap-gitops.json");
+        workspace.WriteFile("roadmap/items/RM-001-roadmap-gitops.json", defaultItem.Replace("\"labels\": [", "\"integrations\": { \"github\": { \"issue\": 997 } },\n  \"labels\": [", StringComparison.Ordinal));
+        var followUpItem = RoadmapTestContent.HigherPriorityIssueJson
+            .Replace("\"id\": \"RM-002\"", "\"id\": \"RM-000\"", StringComparison.Ordinal)
+            .Replace("\"order\": 5", "\"order\": 10", StringComparison.Ordinal)
+            .Replace("\"reach\": 10", "\"reach\": 1", StringComparison.Ordinal)
+            .Replace("\"labels\": [", "\"integrations\": { \"github\": { \"issue\": 998 } },\n  \"labels\": [", StringComparison.Ordinal);
+        workspace.WriteFile("roadmap/items/RM-000-follow-up.json", followUpItem);
+        workspace.WriteFile("roadmap/order.json", "{ \"items\": [\"RM-001\", \"RM-000\"] }");
+        var syncer = new GitHubRoadmapSyncer(RoadmapProject.Load(workspace.RootPath));
+
+        // Act
+        var result = syncer.Sync(dryRun: true);
+
+        // Assert
+        result.Messages[0].ShouldBe("dry-run: update owner/repository#997 from RM-001");
+        result.Messages[1].ShouldBe("dry-run: update owner/repository#998 from RM-000");
     }
 
     [Fact]
@@ -673,6 +888,33 @@ public sealed class RepoConfigToolApplicationTests
         handler.Requests[2].Method.ShouldBe(HttpMethod.Post);
         handler.Requests[2].Body.ShouldNotBeNull();
         handler.Requests[2].Body.ShouldContain("area: tooling", StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public void Sync_github_apply_does_not_sync_labels_after_issue_update_failure()
+    {
+        // Arrange
+        using var workspace = new TemporaryRepoConfigWorkspace();
+        using var initOutput = new StringWriter(CultureInfo.InvariantCulture);
+        using var initError = new StringWriter(CultureInfo.InvariantCulture);
+        RepoConfigToolApplication.Run(["init", "--root", workspace.RootPath], initOutput, initError, workspace.RootPath).ShouldBe(0);
+        var itemText = workspace.ReadFile("roadmap/items/RM-001-roadmap-gitops.json");
+        workspace.WriteFile("roadmap/items/RM-001-roadmap-gitops.json", itemText.Replace("\"labels\": [", "\"integrations\": { \"github\": { \"issue\": 997 } },\n  \"labels\": [", StringComparison.Ordinal));
+        var project = RoadmapProject.Load(workspace.RootPath);
+        using var handler = new TestHttpMessageHandler();
+        handler.EnqueueJson(HttpStatusCode.OK, "{ \"body\": \"before\" }");
+        handler.EnqueueJson(HttpStatusCode.BadRequest, "{}");
+        using var httpClient = new HttpClient(handler);
+        var syncer = new GitHubRoadmapSyncer(project, httpClient);
+
+        // Act
+        var action = (Func<object?>)(() => syncer.Sync(dryRun: false));
+
+        // Assert
+        action.ShouldThrow<InvalidOperationException>().Message.ShouldContain("GitHub issue update failed for #997", StringComparison.Ordinal);
+        handler.Requests.Count.ShouldBe(2);
+        handler.Requests[0].Method.ShouldBe(HttpMethod.Get);
+        handler.Requests[1].Method.ShouldBe(HttpMethod.Patch);
     }
 
     [Fact]

@@ -5,6 +5,7 @@ namespace SharedKernel.RepoConfig.Tool;
 
 internal static class RepoConfigToolApplication
 {
+    private const decimal ParetoFraction = 0.2m;
     private const string Usage = "Usage: sharedkernel-repo <init|verify|diff|set|get|sync> [--root <path>]";
 
     public static int Run(string[] args, TextWriter output, TextWriter error, string workingDirectory)
@@ -190,9 +191,9 @@ internal static class RepoConfigToolApplication
                 return 0;
 
             case "pareto":
-                var openItems = project.OpenItems(type);
-                var paretoLimit = Math.Max(1, (int)Math.Ceiling(openItems.Count * 0.2m));
-                WriteItems(output, openItems.Where(project.IsUnblocked).OrderByDescending(item => item.Score).ThenBy(item => item.Effort).Take(Math.Min(limit, paretoLimit)));
+                var unblockedOpenItems = project.OpenItems(type).Where(project.IsUnblocked).ToArray();
+                var paretoLimit = Math.Max(1, (int)Math.Ceiling(unblockedOpenItems.Length * ParetoFraction));
+                WriteItems(output, unblockedOpenItems.OrderByDescending(item => item.Score).ThenBy(item => item.Effort).Take(Math.Min(limit, paretoLimit)));
                 return 0;
 
             case "blocking-overview":
