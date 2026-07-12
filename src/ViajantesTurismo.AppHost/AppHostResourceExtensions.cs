@@ -37,7 +37,7 @@ internal static class AppHostResourceExtensions
     private const string KeycloakImageRegistry = "quay.io";
     private const string KeycloakImageName = "keycloak/keycloak";
     private const string KeycloakImageTag = "26.7.0";
-    private const string KeycloakImageDigest = "2eb3cd316835c990e69e26ade292ffa78f6fb0db7d5fc6377463c162e1979ac0";
+    private const string OidcProviderImageDigest = "2eb3cd316835c990e69e26ade292ffa78f6fb0db7d5fc6377463c162e1979ac0";
     private const string AuthenticationAuthorityEnvironmentVariable = "Authentication__Authority";
     private const string AuthenticationIssuerEnvironmentVariable = "Authentication__Issuer";
     private const string AuthenticationAllowHttpDevelopmentAuthorityEnvironmentVariable = "Authentication__AllowHttpDevelopmentAuthority";
@@ -116,7 +116,7 @@ internal static class AppHostResourceExtensions
 
         return builder.AddContainer(ResourceNames.IdentityProvider, KeycloakImageName, KeycloakImageRegistry)
             .WithImageTag(KeycloakImageTag)
-            .WithImageSHA256(KeycloakImageDigest)
+            .WithImageSHA256(OidcProviderImageDigest)
             .WithExternalHttpEndpoints()
             .WithHttpEndpoint(targetPort: 8080, name: "http")
             .WithBindMount(realmImportPath, KeycloakRealmImportDirectory, isReadOnly: true)
