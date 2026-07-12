@@ -502,6 +502,48 @@ public sealed class DocumentDraft : IEntity<Guid>
         string brandingBodyFontFamily,
         string brandingFooterText)
     {
+        var metadataValidation = ValidateDocumentMetadata(
+            bookingId,
+            type,
+            audience,
+            templateId,
+            templateVersion,
+            sourceVersion,
+            brandingVersion,
+            brandingName,
+            brandingLogoUri);
+        if (metadataValidation.IsFailure)
+        {
+            return metadataValidation;
+        }
+
+        var brandingTokenValidation = ValidateBrandingTokens(
+            brandingPrimaryColor,
+            brandingAccentColor,
+            brandingBackgroundColor,
+            brandingTextColor,
+            brandingHeadingFontFamily,
+            brandingBodyFontFamily,
+            brandingFooterText);
+        if (brandingTokenValidation.IsFailure)
+        {
+            return brandingTokenValidation;
+        }
+
+        return ValidateFields(fields);
+    }
+
+    private static Result ValidateDocumentMetadata(
+        Guid bookingId,
+        DocumentType type,
+        DocumentAudience audience,
+        string templateId,
+        string templateVersion,
+        string sourceVersion,
+        string brandingVersion,
+        string brandingName,
+        Uri? brandingLogoUri)
+    {
         if (bookingId == Guid.Empty)
         {
             return DocumentErrors.ValueRequired("bookingId");
@@ -577,48 +619,41 @@ public sealed class DocumentDraft : IEntity<Guid>
             return DocumentErrors.InvalidValue("brandingLogoUri");
         }
 
-        var brandingTokenValidation = ValidateBrandingToken("brandingPrimaryColor", brandingPrimaryColor);
-        if (brandingTokenValidation.IsFailure)
+        return Result.Ok();
+    }
+
+    private static Result ValidateBrandingTokens(
+        string brandingPrimaryColor,
+        string brandingAccentColor,
+        string brandingBackgroundColor,
+        string brandingTextColor,
+        string brandingHeadingFontFamily,
+        string brandingBodyFontFamily,
+        string brandingFooterText)
+    {
+        foreach (var (field, value) in new[]
         {
-            return brandingTokenValidation;
+            ("brandingPrimaryColor", brandingPrimaryColor),
+            ("brandingAccentColor", brandingAccentColor),
+            ("brandingBackgroundColor", brandingBackgroundColor),
+            ("brandingTextColor", brandingTextColor),
+            ("brandingHeadingFontFamily", brandingHeadingFontFamily),
+            ("brandingBodyFontFamily", brandingBodyFontFamily),
+            ("brandingFooterText", brandingFooterText),
+        })
+        {
+            var validation = ValidateBrandingToken(field, value);
+            if (validation.IsFailure)
+            {
+                return validation;
+            }
         }
 
-        brandingTokenValidation = ValidateBrandingToken("brandingAccentColor", brandingAccentColor);
-        if (brandingTokenValidation.IsFailure)
-        {
-            return brandingTokenValidation;
-        }
+        return Result.Ok();
+    }
 
-        brandingTokenValidation = ValidateBrandingToken("brandingBackgroundColor", brandingBackgroundColor);
-        if (brandingTokenValidation.IsFailure)
-        {
-            return brandingTokenValidation;
-        }
-
-        brandingTokenValidation = ValidateBrandingToken("brandingTextColor", brandingTextColor);
-        if (brandingTokenValidation.IsFailure)
-        {
-            return brandingTokenValidation;
-        }
-
-        brandingTokenValidation = ValidateBrandingToken("brandingHeadingFontFamily", brandingHeadingFontFamily);
-        if (brandingTokenValidation.IsFailure)
-        {
-            return brandingTokenValidation;
-        }
-
-        brandingTokenValidation = ValidateBrandingToken("brandingBodyFontFamily", brandingBodyFontFamily);
-        if (brandingTokenValidation.IsFailure)
-        {
-            return brandingTokenValidation;
-        }
-
-        brandingTokenValidation = ValidateBrandingToken("brandingFooterText", brandingFooterText);
-        if (brandingTokenValidation.IsFailure)
-        {
-            return brandingTokenValidation;
-        }
-
+    private static Result ValidateFields(List<DocumentField> fields)
+    {
         var duplicateField = fields
             .GroupBy(field => field.FieldId, StringComparer.Ordinal)
             .FirstOrDefault(group => group.Skip(1).Any());
