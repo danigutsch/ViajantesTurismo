@@ -20,6 +20,6 @@ internal sealed class DocumentDraftRetentionHostedService(
         var handler = scope.ServiceProvider.GetRequiredService<PurgeExpiredDraftsCommandHandler>();
         var result = await handler.Handle(new PurgeExpiredDraftsCommand(), stoppingToken).ConfigureAwait(false);
 
-        return result.IsSuccess ? result.Value : 0;
+        return result.Value;
     }
 }
