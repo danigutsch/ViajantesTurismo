@@ -38,7 +38,12 @@ internal static class RepoConfigVerifier
     private static RoadmapSettings VerifyConfig(string rootPath, string configPath, List<RepoConfigIssue> issues)
     {
         var relativePath = RepoConfigPaths.RelativeTo(rootPath, configPath);
-        using var document = JsonDocument.Parse(File.ReadAllText(configPath));
+        using var document = TryParseJsonFile(rootPath, configPath, issues);
+        if (document is null)
+        {
+            return RoadmapSettings.Default;
+        }
+
         var root = document.RootElement;
         if (root.ValueKind != JsonValueKind.Object)
         {
@@ -168,7 +173,12 @@ internal static class RepoConfigVerifier
     private static RoadmapItemSnapshot? VerifyItem(string rootPath, string itemPath, RoadmapSettings settings, List<RepoConfigIssue> issues)
     {
         var relativePath = RepoConfigPaths.RelativeTo(rootPath, itemPath);
-        using var document = JsonDocument.Parse(File.ReadAllText(itemPath));
+        using var document = TryParseJsonFile(rootPath, itemPath, issues);
+        if (document is null)
+        {
+            return null;
+        }
+
         var root = document.RootElement;
         if (root.ValueKind != JsonValueKind.Object)
         {
@@ -360,7 +370,12 @@ internal static class RepoConfigVerifier
         foreach (var themePath in Directory.EnumerateFiles(themesPath, "*.json", SearchOption.TopDirectoryOnly).Order(StringComparer.Ordinal))
         {
             var relativePath = RepoConfigPaths.RelativeTo(rootPath, themePath);
-            using var document = JsonDocument.Parse(File.ReadAllText(themePath));
+            using var document = TryParseJsonFile(rootPath, themePath, issues);
+            if (document is null)
+            {
+                continue;
+            }
+
             if (document.RootElement.ValueKind != JsonValueKind.Object)
             {
                 issues.Add(new RepoConfigIssue(relativePath, "Theme root must be a JSON object."));
@@ -496,10 +511,15 @@ internal static class RepoConfigVerifier
         }
 
         var relativePath = RepoConfigPaths.RelativeTo(rootPath, orderPath);
-        using var document = JsonDocument.Parse(File.ReadAllText(orderPath));
+        using var document = TryParseJsonFile(rootPath, orderPath, issues);
+        if (document is null)
+        {
+            return;
+        }
+
         if (document.RootElement.ValueKind != JsonValueKind.Object)
         {
-            issues.Add(new RepoConfigIssue(relativePath, "order.json must contain an items array."));
+            issues.Add(new RepoConfigIssue(relativePath, "order.json root must be a JSON object."));
             return;
         }
 
@@ -675,5 +695,18 @@ internal static class RepoConfigVerifier
         }
 
         return values;
+    }
+
+    private static JsonDocument? TryParseJsonFile(string rootPath, string path, List<RepoConfigIssue> issues)
+    {
+        try
+        {
+            return JsonDocument.Parse(File.ReadAllText(path));
+        }
+        catch (JsonException exception)
+        {
+            issues.Add(new RepoConfigIssue(RepoConfigPaths.RelativeTo(rootPath, path), $"Invalid JSON: {exception.Message}"));
+            return null;
+        }
     }
 }

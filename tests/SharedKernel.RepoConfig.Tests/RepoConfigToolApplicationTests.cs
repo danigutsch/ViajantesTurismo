@@ -663,7 +663,35 @@ public sealed class RepoConfigToolApplicationTests
 
         // Assert
         exitCode.ShouldBe(1);
-        errorText.ShouldContain("order.json must contain an items array.", StringComparison.Ordinal);
+        errorText.ShouldContain("order.json root must be a JSON object.", StringComparison.Ordinal);
+        errorText.ShouldNotContain("sharedkernel-repo:", StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public void Verify_reports_malformed_json_files_with_paths()
+    {
+        // Arrange
+        using var workspace = new TemporaryRepoConfigWorkspace();
+        using var initOutput = new StringWriter(CultureInfo.InvariantCulture);
+        using var initError = new StringWriter(CultureInfo.InvariantCulture);
+        using var verifyOutput = new StringWriter(CultureInfo.InvariantCulture);
+        using var verifyError = new StringWriter(CultureInfo.InvariantCulture);
+        RepoConfigToolApplication.Run(["init", "--root", workspace.RootPath], initOutput, initError, workspace.RootPath).ShouldBe(0);
+        workspace.WriteFile("roadmap/config.json", "{");
+        workspace.WriteFile("roadmap/items/RM-001-roadmap-gitops.json", "{");
+        workspace.WriteFile("roadmap/themes/repo-operations.json", "{");
+        workspace.WriteFile("roadmap/order.json", "{");
+
+        // Act
+        var exitCode = RepoConfigToolApplication.Run(["verify", "--root", workspace.RootPath], verifyOutput, verifyError, workspace.RootPath);
+        var errorText = verifyError.ToString();
+
+        // Assert
+        exitCode.ShouldBe(1);
+        errorText.ShouldContain("roadmap/config.json: Invalid JSON:", StringComparison.Ordinal);
+        errorText.ShouldContain("roadmap/items/RM-001-roadmap-gitops.json: Invalid JSON:", StringComparison.Ordinal);
+        errorText.ShouldContain("roadmap/themes/repo-operations.json: Invalid JSON:", StringComparison.Ordinal);
+        errorText.ShouldContain("roadmap/order.json: Invalid JSON:", StringComparison.Ordinal);
         errorText.ShouldNotContain("sharedkernel-repo:", StringComparison.Ordinal);
     }
 
