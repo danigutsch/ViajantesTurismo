@@ -213,6 +213,28 @@ public sealed class RepoConfigToolCoverageTests
     }
 
     [Fact]
+    public void Sync_propagates_http_request_errors_for_application_boundary()
+    {
+        // Arrange
+        using var workspace = new TemporaryRepoConfigWorkspace();
+        using var initOutput = new StringWriter(CultureInfo.InvariantCulture);
+        using var initError = new StringWriter(CultureInfo.InvariantCulture);
+        RepoConfigToolApplication.Run(["init", "--root", workspace.RootPath], initOutput, initError, workspace.RootPath).ShouldBe(0);
+        var itemText = workspace.ReadFile("roadmap/items/RM-001-roadmap-gitops.json");
+        workspace.WriteFile("roadmap/items/RM-001-roadmap-gitops.json", itemText.Replace("\"labels\": [", "\"integrations\": { \"github\": { \"issue\": 997 } },\n  \"labels\": [", StringComparison.Ordinal));
+        var project = RoadmapProject.Load(workspace.RootPath);
+        using var handler = TestHttpMessageHandler.FromException(new HttpRequestException("network unavailable"));
+        using var httpClient = new HttpClient(handler);
+        var syncer = new GitHubRoadmapSyncer(project, httpClient);
+
+        // Act
+        var action = (Func<object?>)(() => syncer.Sync(dryRun: false));
+
+        // Assert
+        action.ShouldThrow<HttpRequestException>().Message.ShouldContain("network unavailable", StringComparison.Ordinal);
+    }
+
+    [Fact]
     public void Verify_reports_config_and_item_policy_violations()
     {
         // Arrange

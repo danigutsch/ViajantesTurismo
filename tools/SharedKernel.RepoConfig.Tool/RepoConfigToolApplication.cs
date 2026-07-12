@@ -28,6 +28,7 @@ internal static class RepoConfigToolApplication
         catch (Exception exception) when (exception is ArgumentException
             or IOException
             or JsonException
+            or HttpRequestException
             or NotSupportedException
             or UnauthorizedAccessException
             or InvalidOperationException)
@@ -189,8 +190,9 @@ internal static class RepoConfigToolApplication
                 return 0;
 
             case "pareto":
-                var paretoLimit = Math.Max(1, (int)Math.Ceiling(project.OpenItems(type).Count * 0.2m));
-                WriteItems(output, project.OpenItems(type).Where(project.IsUnblocked).OrderByDescending(item => item.Score).ThenBy(item => item.Effort).Take(Math.Min(limit, paretoLimit)));
+                var openItems = project.OpenItems(type);
+                var paretoLimit = Math.Max(1, (int)Math.Ceiling(openItems.Count * 0.2m));
+                WriteItems(output, openItems.Where(project.IsUnblocked).OrderByDescending(item => item.Score).ThenBy(item => item.Effort).Take(Math.Min(limit, paretoLimit)));
                 return 0;
 
             case "blocking-overview":

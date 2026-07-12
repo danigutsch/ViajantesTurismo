@@ -62,9 +62,9 @@ internal static class RepoConfigVerifier
             issues.Add(new RepoConfigIssue(relativePath, "Missing required string property: itemIdPrefix."));
         }
 
-        var types = ReadStringArray(root, "allowed", "types");
-        var statuses = ReadStringArray(root, "allowed", "statuses");
-        var closedStatuses = ReadStringArray(root, "project", "closedStatuses");
+        var types = VerifyConfigStringArray(root, "allowed", "types", "allowed.types", relativePath, issues);
+        var statuses = VerifyConfigStringArray(root, "allowed", "statuses", "allowed.statuses", relativePath, issues);
+        var closedStatuses = VerifyConfigStringArray(root, "project", "closedStatuses", "project.closedStatuses", relativePath, issues);
         VerifyUniqueValues(types, "allowed.types", relativePath, issues);
         VerifyUniqueValues(statuses, "allowed.statuses", relativePath, issues);
         VerifyUniqueValues(closedStatuses, "project.closedStatuses", relativePath, issues);
@@ -622,7 +622,7 @@ internal static class RepoConfigVerifier
         }
     }
 
-    private static List<string> ReadStringArray(JsonElement root, string objectProperty, string arrayProperty)
+    private static List<string> VerifyConfigStringArray(JsonElement root, string objectProperty, string arrayProperty, string propertyPath, string relativePath, List<RepoConfigIssue> issues)
     {
         if (!root.TryGetProperty(objectProperty, out var parent)
             || parent.ValueKind != JsonValueKind.Object
@@ -635,10 +635,13 @@ internal static class RepoConfigVerifier
         List<string> values = [];
         foreach (var element in array.EnumerateArray())
         {
-            if (element.ValueKind == JsonValueKind.String && !string.IsNullOrWhiteSpace(element.GetString()))
+            if (element.ValueKind != JsonValueKind.String || string.IsNullOrWhiteSpace(element.GetString()))
             {
-                values.Add(element.GetString() ?? string.Empty);
+                issues.Add(new RepoConfigIssue(relativePath, $"{propertyPath} must contain only non-empty strings."));
+                continue;
             }
+
+            values.Add(element.GetString() ?? string.Empty);
         }
 
         return values;

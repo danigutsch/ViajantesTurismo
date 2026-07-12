@@ -1,5 +1,6 @@
 using System.Globalization;
 using System.Net;
+using System.Text.Json;
 
 namespace SharedKernel.RepoConfig.Tests;
 
@@ -67,6 +68,7 @@ public sealed class RepoConfigToolApplicationTests
         configSchemaText.ShouldContain("\"$id\": \"https://github.com/danigutsch/ViajantesTurismo/roadmap/schema/roadmap-config.schema.json\"", StringComparison.Ordinal);
         configSchemaText.ShouldContain("\"integrations\"", StringComparison.Ordinal);
         itemSchemaText.ShouldContain("\"$id\": \"https://github.com/danigutsch/ViajantesTurismo/roadmap/schema/roadmap-item.schema.json\"", StringComparison.Ordinal);
+        itemSchemaText.ShouldContain("\"size\"", StringComparison.Ordinal);
         itemSchemaText.ShouldContain("\"uniqueItems\": true", StringComparison.Ordinal);
         itemSchemaText.ShouldContain("\"minimum\": 0.1", StringComparison.Ordinal);
     }
@@ -91,8 +93,12 @@ public sealed class RepoConfigToolApplicationTests
         configText.ShouldContain("\"repository\": \"example/repository\"", StringComparison.Ordinal);
     }
 
-    [Fact]
-    public void Set_rejects_invalid_github_repository_config()
+    [Theory]
+    [InlineData("owner only")]
+    [InlineData("owner/repo?state=closed")]
+    [InlineData("owner/repo#fragment")]
+    [InlineData("owner/repo\\path")]
+    public void Set_rejects_invalid_github_repository_config(string repository)
     {
         // Arrange
         using var workspace = new TemporaryRepoConfigWorkspace();
@@ -103,7 +109,7 @@ public sealed class RepoConfigToolApplicationTests
         RepoConfigToolApplication.Run(["init", "--root", workspace.RootPath], initOutput, initError, workspace.RootPath).ShouldBe(0);
 
         // Act
-        var exitCode = RepoConfigToolApplication.Run(["set", "github.repository", "owner only", "--root", workspace.RootPath], setOutput, setError, workspace.RootPath);
+        var exitCode = RepoConfigToolApplication.Run(["set", "github.repository", repository, "--root", workspace.RootPath], setOutput, setError, workspace.RootPath);
         var configText = workspace.ReadFile("roadmap/config.json");
         var errorText = setError.ToString();
 
@@ -225,7 +231,7 @@ public sealed class RepoConfigToolApplicationTests
     }
 
     [Fact]
-    public void Verify_reports_invalid_enabled_github_repository()
+    public void Verify_reports_invalid_config_array_values()
     {
         // Arrange
         using var workspace = new TemporaryRepoConfigWorkspace();
@@ -235,7 +241,33 @@ public sealed class RepoConfigToolApplicationTests
         using var verifyError = new StringWriter(CultureInfo.InvariantCulture);
         RepoConfigToolApplication.Run(["init", "--root", workspace.RootPath], initOutput, initError, workspace.RootPath).ShouldBe(0);
         var configText = workspace.ReadFile("roadmap/config.json");
-        workspace.WriteFile("roadmap/config.json", configText.Replace("\"repository\": \"owner/repository\"", "\"repository\": \"owner only\"", StringComparison.Ordinal));
+        workspace.WriteFile("roadmap/config.json", configText.Replace("\"done\",\n      \"dropped\"", "\"done\",\n      7", StringComparison.Ordinal));
+
+        // Act
+        var exitCode = RepoConfigToolApplication.Run(["verify", "--root", workspace.RootPath], verifyOutput, verifyError, workspace.RootPath);
+        var errorText = verifyError.ToString();
+
+        // Assert
+        exitCode.ShouldBe(1);
+        errorText.ShouldContain("project.closedStatuses must contain only non-empty strings.", StringComparison.Ordinal);
+    }
+
+    [Theory]
+    [InlineData("owner only")]
+    [InlineData("owner/repo?state=closed")]
+    [InlineData("owner/repo#fragment")]
+    [InlineData("owner/repo\\path")]
+    public void Verify_reports_invalid_enabled_github_repository(string repository)
+    {
+        // Arrange
+        using var workspace = new TemporaryRepoConfigWorkspace();
+        using var initOutput = new StringWriter(CultureInfo.InvariantCulture);
+        using var initError = new StringWriter(CultureInfo.InvariantCulture);
+        using var verifyOutput = new StringWriter(CultureInfo.InvariantCulture);
+        using var verifyError = new StringWriter(CultureInfo.InvariantCulture);
+        RepoConfigToolApplication.Run(["init", "--root", workspace.RootPath], initOutput, initError, workspace.RootPath).ShouldBe(0);
+        var configText = workspace.ReadFile("roadmap/config.json");
+        workspace.WriteFile("roadmap/config.json", configText.Replace("\"repository\": \"owner/repository\"", $"\"repository\": {JsonSerializer.Serialize(repository)}", StringComparison.Ordinal));
 
         // Act
         var exitCode = RepoConfigToolApplication.Run(["verify", "--root", workspace.RootPath], verifyOutput, verifyError, workspace.RootPath);
@@ -554,7 +586,7 @@ public sealed class RepoConfigToolApplicationTests
         var itemText = workspace.ReadFile("roadmap/items/RM-001-roadmap-gitops.json");
         workspace.WriteFile("roadmap/items/RM-001-roadmap-gitops.json", itemText.Replace("\"labels\": [", "\"integrations\": { \"github\": { \"issue\": 997 } },\n  \"labels\": [", StringComparison.Ordinal));
         var project = RoadmapProject.Load(workspace.RootPath);
-        using var handler = new TestGitHubMessageHandler();
+        using var handler = new TestHttpMessageHandler();
         handler.EnqueueJson(HttpStatusCode.OK, "{ \"body\": \"before\" }");
         handler.EnqueueJson(HttpStatusCode.OK, "{}");
         handler.EnqueueJson(HttpStatusCode.OK, "{}");
@@ -588,7 +620,7 @@ public sealed class RepoConfigToolApplicationTests
         var itemText = workspace.ReadFile("roadmap/items/RM-001-roadmap-gitops.json");
         workspace.WriteFile("roadmap/items/RM-001-roadmap-gitops.json", itemText.Replace("\"labels\": [", "\"integrations\": { \"github\": { \"issue\": 997 } },\n  \"labels\": [", StringComparison.Ordinal));
         var project = RoadmapProject.Load(workspace.RootPath);
-        using var handler = new TestGitHubMessageHandler();
+        using var handler = new TestHttpMessageHandler();
         handler.EnqueueJson(HttpStatusCode.OK, "{ \"body\": \"before\", \"pull_request\": {} }");
         using var httpClient = new HttpClient(handler);
         var syncer = new GitHubRoadmapSyncer(project, httpClient);

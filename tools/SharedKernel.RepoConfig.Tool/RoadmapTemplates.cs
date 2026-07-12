@@ -222,6 +222,16 @@ internal static class RoadmapTemplates
               "type": "string",
               "minLength": 1
             },
+            "size": {
+              "type": "string",
+              "enum": [
+                "XS",
+                "S",
+                "M",
+                "L",
+                "XL"
+              ]
+            },
             "scoring": {
               "type": "object",
               "required": [
