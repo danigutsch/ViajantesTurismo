@@ -113,6 +113,51 @@ public sealed class RepoConfigToolApplicationTests
     }
 
     [Fact]
+    public void Verify_reports_missing_integrations_object()
+    {
+        // Arrange
+        using var workspace = new TemporaryRepoConfigWorkspace();
+        using var initOutput = new StringWriter(CultureInfo.InvariantCulture);
+        using var initError = new StringWriter(CultureInfo.InvariantCulture);
+        using var verifyOutput = new StringWriter(CultureInfo.InvariantCulture);
+        using var verifyError = new StringWriter(CultureInfo.InvariantCulture);
+        RepoConfigToolApplication.Run(["init", "--root", workspace.RootPath], initOutput, initError, workspace.RootPath).ShouldBe(0);
+        var configText = workspace.ReadFile("roadmap/config.json");
+        var integrationsStart = configText.IndexOf("  \"integrations\": {", StringComparison.Ordinal);
+        workspace.WriteFile("roadmap/config.json", configText[..integrationsStart].TrimEnd().TrimEnd(',') + Environment.NewLine + "}" + Environment.NewLine);
+
+        // Act
+        var exitCode = RepoConfigToolApplication.Run(["verify", "--root", workspace.RootPath], verifyOutput, verifyError, workspace.RootPath);
+        var errorText = verifyError.ToString();
+
+        // Assert
+        exitCode.ShouldBe(1);
+        errorText.ShouldContain("Missing required object property: integrations.", StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public void Verify_reports_duplicate_string_array_values()
+    {
+        // Arrange
+        using var workspace = new TemporaryRepoConfigWorkspace();
+        using var initOutput = new StringWriter(CultureInfo.InvariantCulture);
+        using var initError = new StringWriter(CultureInfo.InvariantCulture);
+        using var verifyOutput = new StringWriter(CultureInfo.InvariantCulture);
+        using var verifyError = new StringWriter(CultureInfo.InvariantCulture);
+        RepoConfigToolApplication.Run(["init", "--root", workspace.RootPath], initOutput, initError, workspace.RootPath).ShouldBe(0);
+        var itemText = workspace.ReadFile("roadmap/items/RM-001-roadmap-gitops.json");
+        workspace.WriteFile("roadmap/items/RM-001-roadmap-gitops.json", itemText.Replace("\"gitops\",", "\"gitops\",\n    \"gitops\",", StringComparison.Ordinal));
+
+        // Act
+        var exitCode = RepoConfigToolApplication.Run(["verify", "--root", workspace.RootPath], verifyOutput, verifyError, workspace.RootPath);
+        var errorText = verifyError.ToString();
+
+        // Assert
+        exitCode.ShouldBe(1);
+        errorText.ShouldContain("tags contains a duplicate value: gitops.", StringComparison.Ordinal);
+    }
+
+    [Fact]
     public void Verify_reports_non_object_theme_file()
     {
         // Arrange
@@ -371,6 +416,20 @@ public sealed class RepoConfigToolApplicationTests
 
         // Assert
         action.ShouldThrow<InvalidOperationException>().Message.ShouldContain("malformed roadmap managed-section markers", StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public void Sync_managed_section_preserves_unmanaged_whitespace()
+    {
+        // Arrange
+        var currentBody = $"  before  {Environment.NewLine}<!-- roadmap:managed:start -->old<!-- roadmap:managed:end -->{Environment.NewLine}  after  ";
+        var managedSection = $"<!-- roadmap:managed:start -->{Environment.NewLine}new{Environment.NewLine}<!-- roadmap:managed:end -->";
+
+        // Act
+        var result = GitHubRoadmapSyncer.UpsertManagedSection(currentBody, managedSection);
+
+        // Assert
+        result.ShouldBe($"  before  {Environment.NewLine}{managedSection}{Environment.NewLine}  after  ");
     }
 
     [Fact]

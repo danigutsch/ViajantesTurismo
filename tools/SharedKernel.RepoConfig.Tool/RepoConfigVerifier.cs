@@ -102,7 +102,14 @@ internal static class RepoConfigVerifier
             }
         }
 
-        VerifyGitHubConfig(root, relativePath, issues);
+        if (!root.TryGetProperty("integrations", out var integrations) || integrations.ValueKind != JsonValueKind.Object)
+        {
+            issues.Add(new RepoConfigIssue(relativePath, "Missing required object property: integrations."));
+        }
+        else
+        {
+            VerifyGitHubConfig(integrations, relativePath, issues);
+        }
 
         if (!root.TryGetProperty("scoring", out var scoring) || scoring.ValueKind != JsonValueKind.Object)
         {
@@ -276,6 +283,7 @@ internal static class RepoConfigVerifier
         }
 
         List<string> values = [];
+        HashSet<string> uniqueValues = new(StringComparer.Ordinal);
         foreach (var item in array.EnumerateArray())
         {
             if (item.ValueKind != JsonValueKind.String || string.IsNullOrWhiteSpace(item.GetString()))
@@ -284,7 +292,13 @@ internal static class RepoConfigVerifier
                 continue;
             }
 
-            values.Add(item.GetString() ?? string.Empty);
+            var value = item.GetString() ?? string.Empty;
+            if (!uniqueValues.Add(value))
+            {
+                issues.Add(new RepoConfigIssue(relativePath, $"{propertyName} contains a duplicate value: {value}."));
+            }
+
+            values.Add(value);
         }
 
         return values;
@@ -569,10 +583,16 @@ internal static class RepoConfigVerifier
         return issueNumber;
     }
 
-    private static void VerifyGitHubConfig(JsonElement root, string relativePath, List<RepoConfigIssue> issues)
+    private static void VerifyGitHubConfig(JsonElement integrations, string relativePath, List<RepoConfigIssue> issues)
     {
-        if (!root.TryGetProperty("integrations", out var integrations) || !integrations.TryGetProperty("github", out var github))
+        if (!integrations.TryGetProperty("github", out var github))
         {
+            return;
+        }
+
+        if (github.ValueKind != JsonValueKind.Object)
+        {
+            issues.Add(new RepoConfigIssue(relativePath, "integrations.github must be a JSON object."));
             return;
         }
 

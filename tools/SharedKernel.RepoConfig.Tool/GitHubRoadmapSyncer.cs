@@ -189,16 +189,12 @@ internal sealed class GitHubRoadmapSyncer
 
         if (startIndex >= 0 && endIndex >= startIndex)
         {
-            var before = currentBody[..startIndex].TrimEnd();
-            var after = currentBody[(endIndex + end.Length)..].TrimStart();
-            return string.IsNullOrWhiteSpace(after)
-                ? $"{before}{Environment.NewLine}{Environment.NewLine}{managedSection}".TrimStart()
-                : $"{before}{Environment.NewLine}{Environment.NewLine}{managedSection}{Environment.NewLine}{Environment.NewLine}{after}".TrimStart();
+            return currentBody[..startIndex] + managedSection + currentBody[(endIndex + end.Length)..];
         }
 
-        return string.IsNullOrWhiteSpace(currentBody)
+        return currentBody.Length == 0
             ? managedSection
-            : $"{currentBody.TrimEnd()}{Environment.NewLine}{Environment.NewLine}{managedSection}";
+            : $"{currentBody}{Environment.NewLine}{Environment.NewLine}{managedSection}";
     }
 
     private static string BuildManagedSection(RoadmapItemSnapshot item) =>

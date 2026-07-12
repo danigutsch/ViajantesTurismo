@@ -5,11 +5,11 @@
   "type": "object",
   "required": [
     "schemaVersion",
-      "sourceOfTruth",
-      "itemIdPrefix",
-      "allowed",
-      "project",
-      "scoring",
+    "sourceOfTruth",
+    "itemIdPrefix",
+    "allowed",
+    "project",
+    "scoring",
     "integrations"
   ],
   "properties": {
