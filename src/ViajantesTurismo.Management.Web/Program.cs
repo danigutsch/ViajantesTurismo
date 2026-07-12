@@ -42,7 +42,7 @@ if (app.Environment.IsDevelopment()
 {
     using var scope = app.Services.CreateScope();
     var securityDbContext = scope.ServiceProvider.GetRequiredService<ManagementSecurityDbContext>();
-    await securityDbContext.Database.EnsureCreatedAsync();
+    await securityDbContext.Database.EnsureCreatedAsync(app.Lifetime.ApplicationStopping);
 }
 
 if (!app.Environment.IsDevelopment())
