@@ -5,7 +5,7 @@ namespace ViajantesTurismo.Admin.IntegrationTests.ApiClients;
 
 [Trait(SharedKernel.Testing.TestTraitNames.CategoryName, TestTraits.SmokeCategory)]
 [Trait(SharedKernel.Testing.TestTraitNames.ScopeName, TestTraits.IntegrationScope)]
-public sealed class AdminApiClientIntegrationTests(AspireSerialIntegrationTestFixture fixture)
+public sealed class AdminApiClientIntegrationTests(ApiFixture fixture)
     : AspireSerialIntegrationTestBase(fixture)
 {
     [Fact]

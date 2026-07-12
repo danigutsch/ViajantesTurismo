@@ -40,7 +40,7 @@ public sealed partial class AdminTestArchitectureGuardTests
 
         AssertFileContains(
             Path.Combine(integrationInfrastructurePath, "ApiFixture.cs"),
-            "public sealed class ApiFixture : ViajantesTurismo.Admin.Testing.Integration.IAdminTestHost, IAsyncLifetime");
+            "public sealed class ApiFixture : Testing.Integration.IAdminTestHost, IAsyncLifetime");
 
         AssertFileContains(
             Path.Combine(integrationInfrastructurePath, "ApiFixture.cs"),
@@ -51,20 +51,24 @@ public sealed partial class AdminTestArchitectureGuardTests
             "_client = _app.CreateHttpClient(ResourceNames.Api);");
 
         AssertFileContains(
+            Path.Combine(integrationInfrastructurePath, "ApiFixture.cs"),
+            "_databaseConnectionString = await _app.GetConnectionString(ResourceNames.AdminDatabase, TestContext.Current.CancellationToken);");
+
+        AssertFileContains(
             Path.Combine(GetRepositoryRoot(), "src", "SharedKernel", "SharedKernel.IntegrationTesting", "PostgreSqlPublicSchemaReset.cs"),
             "public static async Task Reset(DbConnection connection, CancellationToken ct)");
 
         AssertFileContains(
-            Path.Combine(integrationInfrastructurePath, "Fixtures", "AspireSerialIntegrationTestFixture.cs"),
-            "public sealed class AspireSerialIntegrationTestFixture : IAsyncLifetime, IDisposable");
+            Path.Combine(integrationInfrastructurePath, "ApiFixture.cs"),
+            "await PostgreSqlPublicSchemaReset.Reset(connection, ct);");
 
         AssertFileContains(
             Path.Combine(integrationInfrastructurePath, "Fixtures", "AspireSerialIntegrationTestCollection.cs"),
             "[CollectionDefinition(IntegrationTestCollections.Serial, DisableParallelization = true)]");
 
-        AssertFileContains(
-            Path.Combine(integrationInfrastructurePath, "Fixtures", "AspireSerialIntegrationTestFixture.cs"),
-            "await PostgreSqlPublicSchemaReset.Reset(connection, ct);");
+        AssertFileDoesNotContain(
+            Path.Combine(integrationInfrastructurePath, "Fixtures", "AspireSerialIntegrationTestCollection.cs"),
+            new Regex("ICollectionFixture<", RegexOptions.CultureInvariant));
 
         AssertFileContains(
             Path.Combine(integrationInfrastructurePath, "Bases", "AspireSerialIntegrationTestBase.cs"),
@@ -72,7 +76,7 @@ public sealed partial class AdminTestArchitectureGuardTests
 
         AssertFileContains(
             Path.Combine(integrationInfrastructurePath, "Bases", "AspireSerialIntegrationTestBase.cs"),
-            "AspireSerialIntegrationTestFixture fixture) : IAsyncLifetime");
+            "ApiFixture fixture) : IAsyncLifetime");
 
         AssertFileContains(
             Path.Combine(integrationInfrastructurePath, "Bases", "AspireSerialIntegrationTestBase.cs"),
@@ -81,6 +85,9 @@ public sealed partial class AdminTestArchitectureGuardTests
         AssertFileDoesNotContain(
             Path.Combine(integrationInfrastructurePath, "Bases", "AspireSerialIntegrationTestBase.cs"),
             new Regex(@"public\s+virtual\s+async\s+ValueTask\s+DisposeAsync\s*\(\s*\)\s*\{[^}]*ResetDatabase\(", RegexOptions.Singleline | RegexOptions.CultureInvariant));
+
+        AssertFileDoesNotExist(
+            Path.Combine(integrationInfrastructurePath, "Fixtures", "AspireSerialIntegrationTestFixture.cs"));
 
         AssertFileContains(
             Path.Combine(systemTestBasesPath, "AspireSystemTestBase.cs"),

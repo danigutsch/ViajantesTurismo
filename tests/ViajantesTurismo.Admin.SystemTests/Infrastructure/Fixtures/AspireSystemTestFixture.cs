@@ -26,8 +26,6 @@ public sealed class AspireSystemTestFixture : IAspireSystemTestFixture, IAsyncLi
 
     public ICatalogToursApiClient CatalogTours => _catalogTours ?? throw new InvalidOperationException("Fixture is not initialized.");
 
-    ICatalogToursApiClient IAspireSystemTestFixture.CatalogTours => throw new NotImplementedException();
-
     public async ValueTask InitializeAsync()
     {
         _app = await AspireTestApplication.Start<ViajantesTurismo_AppHost>(

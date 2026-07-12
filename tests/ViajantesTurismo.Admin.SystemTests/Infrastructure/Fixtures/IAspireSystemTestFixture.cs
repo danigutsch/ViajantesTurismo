@@ -1,5 +1,3 @@
-using ViajantesTurismo.Catalog.Contracts.Http;
-
 namespace ViajantesTurismo.Admin.SystemTests.Infrastructure.Fixtures;
 
 public interface IAspireSystemTestFixture
@@ -11,6 +9,4 @@ public interface IAspireSystemTestFixture
     Uri WebAppUrl { get; }
 
     Uri PublicWebAppUrl { get; }
-
-    ICatalogToursApiClient CatalogTours { get; }
 }

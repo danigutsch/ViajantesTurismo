@@ -3,7 +3,6 @@ using ViajantesTurismo.Admin.SystemTests.Infrastructure.Pages;
 using ViajantesTurismo.Admin.SystemTests.Infrastructure.Workflows;
 
 [assembly: AssemblyFixture(typeof(AspireSystemTestFixture))]
-[assembly: CollectionBehavior(DisableTestParallelization = true)]
 
 namespace ViajantesTurismo.Admin.SystemTests.Infrastructure.Bases;
 
@@ -11,6 +10,7 @@ public abstract class AspireSystemTestBase<TFixture>(TFixture fixture) : PageTes
     where TFixture : IAspireSystemTestFixture
 {
     private const float DefaultTimeoutMilliseconds = 15000;
+    private const string BlazorInteractiveSelector = "[data-testid='blazor-interactive']";
 
     protected TFixture Fixture => fixture;
 
@@ -60,6 +60,15 @@ public abstract class AspireSystemTestBase<TFixture>(TFixture fixture) : PageTes
         try
         {
             await Page.GotoAsync(uri.ToString(), new PageGotoOptions { WaitUntil = WaitUntilState.NetworkIdle });
+            if (uri.Scheme.Equals(Fixture.WebAppUrl.Scheme, StringComparison.OrdinalIgnoreCase)
+                && uri.Host.Equals(Fixture.WebAppUrl.Host, StringComparison.OrdinalIgnoreCase)
+                && uri.Port == Fixture.WebAppUrl.Port)
+            {
+                var interactiveMarker = Page.Locator(BlazorInteractiveSelector);
+                await interactiveMarker.WaitForAsync(
+                    new LocatorWaitForOptions { State = WaitForSelectorState.Attached });
+            }
+
             return true;
         }
         catch (PlaywrightException exception) when (IsRetryableNavigationFailure(exception))

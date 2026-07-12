@@ -1,13 +1,15 @@
+using Npgsql;
 using Projects;
 using SharedKernel.IntegrationTesting;
 using ViajantesTurismo.Resources;
 
 namespace ViajantesTurismo.Admin.IntegrationTests.Infrastructure;
 
-public sealed class ApiFixture : ViajantesTurismo.Admin.Testing.Integration.IAdminTestHost, IAsyncLifetime
+public sealed class ApiFixture : Testing.Integration.IAdminTestHost, IAsyncLifetime
 {
     private AspireTestApplication? _app;
     private HttpClient? _client;
+    private string? _databaseConnectionString;
 
     public HttpClient Client => _client ?? throw new InvalidOperationException("Fixture is not initialized.");
 
@@ -17,6 +19,7 @@ public sealed class ApiFixture : ViajantesTurismo.Admin.Testing.Integration.IAdm
     {
         _app = await AspireTestApplication.Start<ViajantesTurismo_AppHost>([ResourceNames.Api], null, TestContext.Current.CancellationToken);
         _client = _app.CreateHttpClient(ResourceNames.Api);
+        _databaseConnectionString = await _app.GetConnectionString(ResourceNames.AdminDatabase, TestContext.Current.CancellationToken);
     }
 
     public async ValueTask DisposeAsync()
@@ -25,6 +28,7 @@ public sealed class ApiFixture : ViajantesTurismo.Admin.Testing.Integration.IAdm
         var app = _app;
         _client = null;
         _app = null;
+        _databaseConnectionString = null;
 
         client?.Dispose();
 
@@ -37,5 +41,13 @@ public sealed class ApiFixture : ViajantesTurismo.Admin.Testing.Integration.IAdm
     public void Dispose()
     {
         DisposeAsync().AsTask().GetAwaiter().GetResult();
+    }
+
+    public async Task ResetToKnownBaseline(CancellationToken ct)
+    {
+        ArgumentNullException.ThrowIfNull(_databaseConnectionString);
+
+        await using var connection = new NpgsqlConnection(_databaseConnectionString);
+        await PostgreSqlPublicSchemaReset.Reset(connection, ct);
     }
 }

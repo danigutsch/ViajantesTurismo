@@ -157,6 +157,7 @@ fast_validation_patterns=(
     "src/SharedKernel/SharedKernel.Testing.Data/**"
     "src/SharedKernel/SharedKernel.Testing.Http/**"
     "src/SharedKernel/SharedKernel.Testing.Mediator/**"
+    "src/SharedKernel/SharedKernel.Testing.Playwright/**"
     "src/SharedKernel/SharedKernel.Testing.Roslyn/**"
     "src/SharedKernel/SharedKernel.Testing.Snapshots/**"
     "src/SharedKernel/SharedKernel.Testing.Web/**"
@@ -226,6 +227,7 @@ admin_integration_patterns=(
 )
 
 admin_system_patterns=(
+    "src/SharedKernel/SharedKernel.Testing.Playwright/**"
     "src/ViajantesTurismo.Admin.ApiService/**"
     "src/ViajantesTurismo.Admin.Infrastructure/**"
     "src/ViajantesTurismo.AppHost/**"

@@ -1,8 +1,8 @@
 namespace ViajantesTurismo.Admin.IntegrationTests.Infrastructure.Bases;
 
-[Collection(ViajantesTurismo.Admin.IntegrationTests.Infrastructure.Fixtures.IntegrationTestCollections.Serial)]
+[Collection(IntegrationTestCollections.Serial)]
 public abstract class AspireSerialIntegrationTestBase(
-    ViajantesTurismo.Admin.IntegrationTests.Infrastructure.Fixtures.AspireSerialIntegrationTestFixture fixture) : IAsyncLifetime
+    ApiFixture fixture) : IAsyncLifetime
 {
     private static readonly TimeSpan DatabaseResetTimeout = TimeSpan.FromSeconds(30);
 

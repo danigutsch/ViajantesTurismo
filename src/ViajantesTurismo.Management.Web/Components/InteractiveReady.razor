@@ -1,0 +1,19 @@
+@if (_isInteractive)
+{
+    <span data-testid="blazor-interactive" hidden aria-hidden="true"></span>
+}
+
+@code {
+    private bool _isInteractive;
+
+    protected override void OnAfterRender(bool firstRender)
+    {
+        if (!firstRender)
+        {
+            return;
+        }
+
+        _isInteractive = true;
+        StateHasChanged();
+    }
+}

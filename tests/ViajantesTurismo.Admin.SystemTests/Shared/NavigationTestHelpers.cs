@@ -11,7 +11,7 @@ public static class NavigationTestHelpers
         ArgumentNullException.ThrowIfNull(navigateTo);
 
         await navigateTo(path);
-        await Expect(page).ToHaveTitleAsync(expectedTitle);
+        await page.ShouldHaveTitle(expectedTitle);
     }
 
     public static async Task AssertCustomerWizardDeepLink(
@@ -26,7 +26,7 @@ public static class NavigationTestHelpers
 
         await navigateTo("/customers/create");
         await Expect(page).ToHaveURLAsync(expectedUrl);
-        await Expect(page).ToHaveTitleAsync(expectedTitle);
+        await page.ShouldHaveTitle(expectedTitle);
     }
 
     public static async Task AssertSidebarNavigation(IPage page, ILocator sidebar, string linkName, Regex expectedUrl, bool? exact = null)

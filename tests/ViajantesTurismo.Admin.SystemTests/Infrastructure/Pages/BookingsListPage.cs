@@ -59,7 +59,7 @@ internal sealed class BookingsListPage(
             var bookingIndex = FindBookingIndex(allBookings, bookingId);
 
             await navigateTo("/bookings");
-            (await page.TitleAsync()).ShouldBe("Bookings");
+            await page.ShouldHaveTitle("Bookings");
             await NavigateToPageContaining(bookingIndex);
 
             var row = page.Locator($"table tbody tr:has(a[href='{href}'])");
