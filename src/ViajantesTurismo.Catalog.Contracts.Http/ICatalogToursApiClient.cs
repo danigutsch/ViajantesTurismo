@@ -25,4 +25,19 @@ public interface ICatalogToursApiClient
     /// Generates AI-assisted draft accessibility text for a media image.
     /// </summary>
     Task<PublicMediaImageDto?> GenerateMediaImageAccessibilityDraft(Guid id, PublicMediaImageAccessibilityDraftRequest request, CancellationToken ct);
+
+    /// <summary>
+    /// Uploads a new image for a catalog tour.
+    /// </summary>
+    Task<PublicMediaImageDto?> UploadTourImage(Guid id, CatalogTourImageUploadRequest request, CancellationToken ct);
+
+    /// <summary>
+    /// Gets the media images linked to a catalog tour.
+    /// </summary>
+    Task<IReadOnlyList<PublicMediaImageDto>> GetTourImages(Guid id, CancellationToken ct);
+
+    /// <summary>
+    /// Approves media image accessibility text.
+    /// </summary>
+    Task<PublicMediaImageDto?> ReviewMediaImageAccessibility(Guid id, PublicMediaImageAccessibilityReviewRequest request, CancellationToken ct);
 }

@@ -9,6 +9,47 @@ namespace ViajantesTurismo.Public.WebTests;
 public sealed class PublicWebEndpointTests
 {
     [Fact]
+    public async Task Public_media_returns_not_found_and_no_store_when_catalog_has_no_media()
+    {
+        // Arrange
+        await using var factory = PublicWebEndpointTestsHelpers.CreateFactory();
+        using var client = factory.CreateClient();
+
+        // Act
+        using var response = await client.GetAsync(new Uri("/catalog/media/6db0b8be-e4e8-4500-a398-b44e7709a640", UriKind.Relative), TestContext.Current.CancellationToken);
+
+        // Assert
+        response.StatusCode.ShouldBe(HttpStatusCode.NotFound);
+        response.Headers.CacheControl?.NoStore.ShouldBe(true);
+    }
+
+    [Fact]
+    public async Task Public_media_streams_catalog_content_with_public_cache_headers()
+    {
+        // Arrange
+        using var upstreamResponse = new HttpResponseMessage();
+        var catalogApi = new FakePublicCatalogApiClient
+        {
+            Media = new PublicMediaObjectResponse(
+                upstreamResponse,
+                new MemoryStream("image"u8.ToArray()),
+                "image/jpeg")
+        };
+        await using var factory = PublicWebEndpointTestsHelpers.CreateFactory(catalogApi);
+        using var client = factory.CreateClient();
+
+        // Act
+        using var response = await client.GetAsync(new Uri("/catalog/media/6db0b8be-e4e8-4500-a398-b44e7709a640/640", UriKind.Relative), TestContext.Current.CancellationToken);
+        var content = await response.Content.ReadAsByteArrayAsync(TestContext.Current.CancellationToken);
+
+        // Assert
+        response.StatusCode.ShouldBe(HttpStatusCode.OK);
+        response.Content.Headers.ContentType?.MediaType.ShouldBe("image/jpeg");
+        response.Headers.CacheControl?.NoStore.ShouldBe(false);
+        content.ShouldBe("image"u8.ToArray());
+    }
+
+    [Fact]
     public async Task Root_returns_public_landing_page()
     {
         // Arrange

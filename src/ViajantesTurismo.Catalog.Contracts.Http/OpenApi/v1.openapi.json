@@ -115,6 +115,59 @@
             "description": "OK"
           }
         }
+      },
+      "post": {
+        "tags": [
+          "CatalogEndpoints"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "type": "object",
+                "allOf": [
+                  {
+                    "type": "object",
+                    "properties": {
+                      "file": {
+                        "$ref": "#/components/schemas/IFormFile"
+                      }
+                    }
+                  },
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "string"
+                  }
+                ]
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
       }
     },
     "/api/v1/catalog/media/images/{id}": {
@@ -183,6 +236,39 @@
         }
       }
     },
+    "/api/v1/catalog/media/images/{id}/accessibility-review": {
+      "put": {
+        "tags": [
+          "CatalogEndpoints"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PublicMediaImageAccessibilityReviewRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
     "/api/v1/public/catalog/tours": {
       "get": {
         "tags": [
@@ -217,6 +303,74 @@
             "required": true,
             "schema": {
               "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/api/v1/public/catalog/media/{id}": {
+      "get": {
+        "tags": [
+          "CatalogEndpoints"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "width",
+            "in": "query",
+            "schema": {
+              "pattern": "^-?(?:0|[1-9]\\d*)$",
+              "type": [
+                "integer",
+                "string"
+              ],
+              "format": "int32"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/api/v1/public/catalog/media/{id}/{width}": {
+      "get": {
+        "tags": [
+          "CatalogEndpoints"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "width",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "pattern": "^-?(?:0|[1-9]\\d*)$",
+              "type": "integer",
+              "format": "int32"
             }
           }
         ],
@@ -453,6 +607,10 @@
             }
           }
         }
+      },
+      "IFormFile": {
+        "type": "string",
+        "format": "binary"
       },
       "MediaImageDimensionsDto": {
         "required": [
@@ -705,6 +863,37 @@
               "string"
             ],
             "format": "double"
+          }
+        }
+      },
+      "PublicMediaImageAccessibilityReviewRequest": {
+        "required": [
+          "language",
+          "isDecorative"
+        ],
+        "type": "object",
+        "properties": {
+          "language": {
+            "$ref": "#/components/schemas/PublicContentLanguageDto"
+          },
+          "altText": {
+            "maxLength": 256,
+            "minLength": 0,
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "caption": {
+            "maxLength": 256,
+            "minLength": 0,
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "isDecorative": {
+            "type": "boolean"
           }
         }
       },

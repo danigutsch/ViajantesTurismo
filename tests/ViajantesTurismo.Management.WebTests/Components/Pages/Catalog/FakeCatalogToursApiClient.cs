@@ -60,4 +60,25 @@ internal sealed class FakeCatalogToursApiClient : ICatalogToursApiClient
 
         return Task.FromResult<PublicMediaImageDto?>(null);
     }
+
+    public Task<PublicMediaImageDto?> UploadTourImage(Guid id, CatalogTourImageUploadRequest request, CancellationToken ct)
+    {
+        ct.ThrowIfCancellationRequested();
+
+        return Task.FromResult<PublicMediaImageDto?>(null);
+    }
+
+    public Task<IReadOnlyList<PublicMediaImageDto>> GetTourImages(Guid id, CancellationToken ct)
+    {
+        ct.ThrowIfCancellationRequested();
+
+        return Task.FromResult<IReadOnlyList<PublicMediaImageDto>>([]);
+    }
+
+    public Task<PublicMediaImageDto?> ReviewMediaImageAccessibility(Guid id, PublicMediaImageAccessibilityReviewRequest request, CancellationToken ct)
+    {
+        ct.ThrowIfCancellationRequested();
+
+        return Task.FromResult<PublicMediaImageDto?>(null);
+    }
 }

@@ -23,6 +23,8 @@ internal sealed class FakePublicCatalogApiClient : IPublicCatalogApiClient
 
     public TaskCompletionSource<object?>? ContentStarted { get; set; }
 
+    public PublicMediaObjectResponse? Media { get; set; }
+
     public void AddTour(CatalogTourDto tour)
     {
         ArgumentNullException.ThrowIfNull(tour);
@@ -96,6 +98,13 @@ internal sealed class FakePublicCatalogApiClient : IPublicCatalogApiClient
         var requestedCulture = string.IsNullOrWhiteSpace(culture) ? "en-US" : culture;
         contentByKeyAndCulture.TryGetValue(CreateContentKey(key, requestedCulture), out var content);
         return content;
+    }
+
+    public Task<PublicMediaObjectResponse?> GetPublicMedia(Guid id, int? width, CancellationToken ct)
+    {
+        ct.ThrowIfCancellationRequested();
+
+        return Task.FromResult(Media);
     }
 
     private static string CreateContentKey(string key, string culture) => $"{key}\u001F{culture}";

@@ -27,6 +27,11 @@ internal static class PublicWebEndpoints
         app.MapGet(SitemapPath, GetSitemap)
             .ExcludeFromDescription();
 
+        app.MapGet("/catalog/media/{id:guid}", GetPublicMedia)
+            .ExcludeFromDescription();
+        app.MapGet("/catalog/media/{id:guid}/{width:int}", GetPublicMedia)
+            .ExcludeFromDescription();
+
         app.MapStaticAssets();
 
         app.MapRazorComponents<App>();
@@ -82,6 +87,34 @@ internal static class PublicWebEndpoints
 
         var sitemap = await SitemapXmlSerializer.Serialize(urls, ct);
         return Results.File(sitemap, SitemapXmlSerializer.ContentType);
+    }
+
+    private static async Task<IResult> GetPublicMedia(
+        Guid id,
+        int? width,
+        IPublicCatalogApiClient catalogApi,
+        HttpContext httpContext,
+        CancellationToken ct)
+    {
+        PublicMediaObjectResponse? media;
+        try
+        {
+            media = await catalogApi.GetPublicMedia(id, width, ct).ConfigureAwait(false);
+        }
+        catch (HttpRequestException)
+        {
+            PublicWebHttpCache.SetServiceUnavailableNoStore(httpContext);
+            return Results.StatusCode(StatusCodes.Status503ServiceUnavailable);
+        }
+        if (media is null)
+        {
+            PublicWebHttpCache.SetNoStore(httpContext);
+            return Results.NotFound();
+        }
+
+        PublicWebHttpCache.SetPublishedContent(httpContext);
+        httpContext.Response.RegisterForDisposeAsync(media);
+        return Results.Stream(media.Content, media.ContentType, enableRangeProcessing: false);
     }
 
     private static bool IsPublicTourPage(CatalogTourDto tour)

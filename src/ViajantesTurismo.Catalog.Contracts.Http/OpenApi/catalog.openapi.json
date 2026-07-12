@@ -115,6 +115,59 @@
             "description": "OK"
           }
         }
+      },
+      "post": {
+        "tags": [
+          "CatalogEndpoints"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "type": "object",
+                "allOf": [
+                  {
+                    "type": "object",
+                    "properties": {
+                      "file": {
+                        "$ref": "#/components/schemas/IFormFile"
+                      }
+                    }
+                  },
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "string"
+                  }
+                ]
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
       }
     },
     "/api/v1/catalog/media/images/{id}": {
@@ -171,6 +224,39 @@
             "application/json": {
               "schema": {
                 "$ref": "#/components/schemas/PublicMediaImageAccessibilityDraftRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/api/v1/catalog/media/images/{id}/accessibility-review": {
+      "put": {
+        "tags": [
+          "CatalogEndpoints"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PublicMediaImageAccessibilityReviewRequest"
               }
             }
           },
@@ -373,6 +459,10 @@
             }
           }
         }
+      },
+      "IFormFile": {
+        "type": "string",
+        "format": "binary"
       },
       "MediaImageDimensionsDto": {
         "required": [
@@ -625,6 +715,37 @@
               "string"
             ],
             "format": "double"
+          }
+        }
+      },
+      "PublicMediaImageAccessibilityReviewRequest": {
+        "required": [
+          "language",
+          "isDecorative"
+        ],
+        "type": "object",
+        "properties": {
+          "language": {
+            "$ref": "#/components/schemas/PublicContentLanguageDto"
+          },
+          "altText": {
+            "maxLength": 256,
+            "minLength": 0,
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "caption": {
+            "maxLength": 256,
+            "minLength": 0,
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "isDecorative": {
+            "type": "boolean"
           }
         }
       },

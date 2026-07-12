@@ -1,0 +1,123 @@
+@page "/catalog/tours/{Id:guid}/images/upload"
+@using Microsoft.AspNetCore.Components.Forms
+@using SharedKernel.HttpClients
+@using ViajantesTurismo.Catalog.Contracts.Http
+@inject ICatalogToursApiClient CatalogToursApi
+@rendermode InteractiveServer
+
+<PageTitle>Upload Catalog Tour Image</PageTitle>
+
+<h1>Upload Catalog Tour Image</h1>
+
+@if (_success)
+{
+    <div class="alert alert-success" role="status">Image uploaded and awaiting processing.</div>
+}
+
+@if (_errorMessage is not null)
+{
+    <div class="alert alert-danger" role="alert">@_errorMessage</div>
+}
+
+<EditForm Model="@_model" OnValidSubmit="@HandleSubmit" FormName="uploadCatalogTourImage">
+    <DataAnnotationsValidator />
+    <ValidationSummary />
+
+    <div class="mb-3">
+        <label for="imageFile" class="form-label">Image file</label>
+        <InputFile id="imageFile" class="form-control" OnChange="HandleFileSelection" accept="image/jpeg,image/png,image/webp,image/avif" />
+        <div class="form-text">JPEG, PNG, WebP, or AVIF. Maximum size: 5 MiB.</div>
+    </div>
+
+    <div class="mb-3">
+        <label for="altText" class="form-label">Image description</label>
+        <InputText id="altText" class="form-control" @bind-Value="_model.AltText" />
+        <div class="form-text">Describe the image for people who cannot see it.</div>
+    </div>
+
+    <div class="mb-3">
+        <label for="caption" class="form-label">Caption (optional)</label>
+        <InputText id="caption" class="form-control" @bind-Value="_model.Caption" />
+    </div>
+
+    <button type="submit" class="btn btn-primary" disabled="@(_saving || _file is null)">
+        @(_saving ? "Uploading..." : "Upload image")
+    </button>
+    <NavLink href="@($"/catalog/tours/{Id}/presentation")" class="btn btn-secondary ms-2">Cancel</NavLink>
+</EditForm>
+
+@code {
+    [Parameter]
+    public Guid Id { get; set; }
+
+    private readonly UploadImageFormModel _model = new();
+    private IBrowserFile? _file;
+    private bool _saving;
+    private bool _success;
+    private string? _errorMessage;
+
+    private void HandleFileSelection(InputFileChangeEventArgs args)
+    {
+        _success = false;
+        _errorMessage = null;
+        _file = args.File;
+    }
+
+    private async Task HandleSubmit()
+    {
+        if (_file is null)
+        {
+            _errorMessage = "Select an image file before uploading.";
+            return;
+        }
+
+        _saving = true;
+        _success = false;
+        _errorMessage = null;
+
+        try
+        {
+            await using var content = CatalogImageUploadFileReader.Open(_file);
+            var uploaded = await CatalogToursApi.UploadTourImage(
+                Id,
+                new CatalogTourImageUploadRequest(content, _file.Name, _file.ContentType, _model.AltText, _model.Caption),
+                CancellationToken.None);
+            if (uploaded is null)
+            {
+                _errorMessage = "Catalog tour not found.";
+                return;
+            }
+
+            _success = true;
+            _file = null;
+        }
+        catch (ContractValidationException exception)
+        {
+            _errorMessage = exception.ValidationErrors.Count == 0
+                ? "Image could not be uploaded. Check the file and try again."
+                : string.Join(" ", exception.ValidationErrors.SelectMany(error => error.Value));
+        }
+        catch (HttpRequestException)
+        {
+            _errorMessage = "Image could not be uploaded. Try again later.";
+        }
+        catch (IOException)
+        {
+            _errorMessage = "Image could not be read. Check that it is no larger than 5 MiB and try again.";
+        }
+        finally
+        {
+            _saving = false;
+        }
+    }
+
+    private sealed class UploadImageFormModel
+    {
+        [System.ComponentModel.DataAnnotations.Required]
+        [System.ComponentModel.DataAnnotations.StringLength(ViajantesTurismo.Catalog.Contracts.Application.ContractConstants.MaxAltTextLength, MinimumLength = 1)]
+        public string AltText { get; set; } = string.Empty;
+
+        [System.ComponentModel.DataAnnotations.StringLength(ViajantesTurismo.Catalog.Contracts.Application.ContractConstants.MaxCaptionLength)]
+        public string? Caption { get; set; }
+    }
+}
