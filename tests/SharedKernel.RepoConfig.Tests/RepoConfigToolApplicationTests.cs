@@ -130,8 +130,6 @@ public sealed class RepoConfigToolApplicationTests
         using var verifyOutput = new StringWriter(CultureInfo.InvariantCulture);
         using var verifyError = new StringWriter(CultureInfo.InvariantCulture);
         RepoConfigToolApplication.Run(["init", "--root", workspace.RootPath], initOutput, initError, workspace.RootPath).ShouldBe(0);
-        var configText = workspace.ReadFile("roadmap/config.json");
-        workspace.WriteFile("roadmap/config.json", configText.Replace("\"enabled\": true", "\"enabled\": false", StringComparison.Ordinal));
 
         // Act
         var setExitCode = RepoConfigToolApplication.Run(["set", "github.repository", "example/repository", "--root", workspace.RootPath], setOutput, setError, workspace.RootPath);
@@ -170,7 +168,7 @@ public sealed class RepoConfigToolApplicationTests
         // Assert
         exitCode.ShouldBe(1);
         errorText.ShouldContain("github.repository must be shaped as owner/repository.", StringComparison.Ordinal);
-        configText.ShouldContain("\"repository\": \"owner/repository\"", StringComparison.Ordinal);
+        configText.ShouldNotContain(JsonSerializer.Serialize(repository), StringComparison.Ordinal);
     }
 
     [Fact]
@@ -365,7 +363,7 @@ public sealed class RepoConfigToolApplicationTests
         using var verifyError = new StringWriter(CultureInfo.InvariantCulture);
         RepoConfigToolApplication.Run(["init", "--root", workspace.RootPath], initOutput, initError, workspace.RootPath).ShouldBe(0);
         var configText = workspace.ReadFile("roadmap/config.json");
-        workspace.WriteFile("roadmap/config.json", configText.Replace("\"repository\": \"owner/repository\"", $"\"repository\": {JsonSerializer.Serialize(repository)}", StringComparison.Ordinal));
+        workspace.WriteFile("roadmap/config.json", configText.Replace("\"enabled\": false", $"\"enabled\": true,\n      \"repository\": {JsonSerializer.Serialize(repository)}", StringComparison.Ordinal));
 
         // Act
         var exitCode = RepoConfigToolApplication.Run(["verify", "--root", workspace.RootPath], verifyOutput, verifyError, workspace.RootPath);
@@ -501,6 +499,7 @@ public sealed class RepoConfigToolApplicationTests
         using var syncOutput = new StringWriter(CultureInfo.InvariantCulture);
         using var syncError = new StringWriter(CultureInfo.InvariantCulture);
         RepoConfigToolApplication.Run(["init", "--root", workspace.RootPath], initOutput, initError, workspace.RootPath).ShouldBe(0);
+        RoadmapConfigTestOperations.EnableGitHubSync(workspace);
         var itemText = workspace.ReadFile("roadmap/items/RM-001-roadmap-gitops.json");
         workspace.WriteFile("roadmap/items/RM-001-roadmap-gitops.json", itemText.Replace("\"labels\": [", "\"integrations\": { \"github\": { \"issue\": 997 } },\n  \"labels\": [", StringComparison.Ordinal));
 
@@ -545,10 +544,6 @@ public sealed class RepoConfigToolApplicationTests
         using var syncOutput = new StringWriter(CultureInfo.InvariantCulture);
         using var syncError = new StringWriter(CultureInfo.InvariantCulture);
         RepoConfigToolApplication.Run(["init", "--root", workspace.RootPath], initOutput, initError, workspace.RootPath).ShouldBe(0);
-        var configText = workspace.ReadFile("roadmap/config.json");
-        workspace.WriteFile("roadmap/config.json", configText
-            .Replace("\"enabled\": true", "\"enabled\": false", StringComparison.Ordinal)
-            .Replace("      \"repository\": \"owner/repository\",\n", string.Empty, StringComparison.Ordinal));
 
         // Act
         var exitCode = RepoConfigToolApplication.Run(["sync", "github", "--dry-run", "--root", workspace.RootPath], syncOutput, syncError, workspace.RootPath);
@@ -570,7 +565,7 @@ public sealed class RepoConfigToolApplicationTests
         using var syncError = new StringWriter(CultureInfo.InvariantCulture);
         RepoConfigToolApplication.Run(["init", "--root", workspace.RootPath], initOutput, initError, workspace.RootPath).ShouldBe(0);
         var configText = workspace.ReadFile("roadmap/config.json");
-        workspace.WriteFile("roadmap/config.json", configText.Replace("\"enabled\": true,\n      ", string.Empty, StringComparison.Ordinal));
+        workspace.WriteFile("roadmap/config.json", configText.Replace("      \"enabled\": false,\n", string.Empty, StringComparison.Ordinal));
 
         // Act
         var exitCode = RepoConfigToolApplication.Run(["sync", "github", "--dry-run", "--root", workspace.RootPath], syncOutput, syncError, workspace.RootPath);
@@ -719,6 +714,33 @@ public sealed class RepoConfigToolApplicationTests
     }
 
     [Fact]
+    public void Verify_reports_blocked_by_cycles()
+    {
+        // Arrange
+        using var workspace = new TemporaryRepoConfigWorkspace();
+        using var initOutput = new StringWriter(CultureInfo.InvariantCulture);
+        using var initError = new StringWriter(CultureInfo.InvariantCulture);
+        using var verifyOutput = new StringWriter(CultureInfo.InvariantCulture);
+        using var verifyError = new StringWriter(CultureInfo.InvariantCulture);
+        RepoConfigToolApplication.Run(["init", "--root", workspace.RootPath], initOutput, initError, workspace.RootPath).ShouldBe(0);
+        var epicText = workspace.ReadFile("roadmap/items/RM-001-roadmap-gitops.json");
+        workspace.WriteFile("roadmap/items/RM-001-roadmap-gitops.json", epicText
+            .Replace("\"blockedBy\": []", "\"blockedBy\": [\"RM-002\"]", StringComparison.Ordinal)
+            .Replace("\"blocks\": []", "\"blocks\": [\"RM-002\"]", StringComparison.Ordinal));
+        workspace.WriteFile("roadmap/items/RM-002-follow-up.json", RoadmapTestContent.BlockedIssueJson
+            .Replace("\"blocks\": []", "\"blocks\": [\"RM-001\"]", StringComparison.Ordinal));
+        workspace.WriteFile("roadmap/order.json", "{ \"items\": [\"RM-001\", \"RM-002\"] }");
+
+        // Act
+        var exitCode = RepoConfigToolApplication.Run(["verify", "--root", workspace.RootPath], verifyOutput, verifyError, workspace.RootPath);
+        var errorText = verifyError.ToString();
+
+        // Assert
+        exitCode.ShouldBe(1);
+        errorText.ShouldContain("blockedBy cycle includes", StringComparison.Ordinal);
+    }
+
+    [Fact]
     public void Get_next_priority_orders_items_by_order_score_and_id()
     {
         // Arrange
@@ -795,6 +817,7 @@ public sealed class RepoConfigToolApplicationTests
         using var initOutput = new StringWriter(CultureInfo.InvariantCulture);
         using var initError = new StringWriter(CultureInfo.InvariantCulture);
         RepoConfigToolApplication.Run(["init", "--root", workspace.RootPath], initOutput, initError, workspace.RootPath).ShouldBe(0);
+        RoadmapConfigTestOperations.EnableGitHubSync(workspace);
         var defaultItem = workspace.ReadFile("roadmap/items/RM-001-roadmap-gitops.json");
         workspace.WriteFile("roadmap/items/RM-001-roadmap-gitops.json", defaultItem.Replace("\"labels\": [", "\"integrations\": { \"github\": { \"issue\": 997 } },\n  \"labels\": [", StringComparison.Ordinal));
         var followUpItem = RoadmapTestContent.HigherPriorityIssueJson
@@ -864,6 +887,7 @@ public sealed class RepoConfigToolApplicationTests
         using var initOutput = new StringWriter(CultureInfo.InvariantCulture);
         using var initError = new StringWriter(CultureInfo.InvariantCulture);
         RepoConfigToolApplication.Run(["init", "--root", workspace.RootPath], initOutput, initError, workspace.RootPath).ShouldBe(0);
+        RoadmapConfigTestOperations.EnableGitHubSync(workspace);
         var itemText = workspace.ReadFile("roadmap/items/RM-001-roadmap-gitops.json");
         workspace.WriteFile("roadmap/items/RM-001-roadmap-gitops.json", itemText.Replace("\"labels\": [", "\"integrations\": { \"github\": { \"issue\": 997 } },\n  \"labels\": [", StringComparison.Ordinal));
         var project = RoadmapProject.Load(workspace.RootPath);
@@ -900,6 +924,7 @@ public sealed class RepoConfigToolApplicationTests
         using var initOutput = new StringWriter(CultureInfo.InvariantCulture);
         using var initError = new StringWriter(CultureInfo.InvariantCulture);
         RepoConfigToolApplication.Run(["init", "--root", workspace.RootPath], initOutput, initError, workspace.RootPath).ShouldBe(0);
+        RoadmapConfigTestOperations.EnableGitHubSync(workspace);
         var itemText = workspace.ReadFile("roadmap/items/RM-001-roadmap-gitops.json");
         workspace.WriteFile("roadmap/items/RM-001-roadmap-gitops.json", itemText.Replace("\"labels\": [", "\"integrations\": { \"github\": { \"issue\": 997 } },\n  \"labels\": [", StringComparison.Ordinal));
         var project = RoadmapProject.Load(workspace.RootPath);
@@ -927,6 +952,7 @@ public sealed class RepoConfigToolApplicationTests
         using var initOutput = new StringWriter(CultureInfo.InvariantCulture);
         using var initError = new StringWriter(CultureInfo.InvariantCulture);
         RepoConfigToolApplication.Run(["init", "--root", workspace.RootPath], initOutput, initError, workspace.RootPath).ShouldBe(0);
+        RoadmapConfigTestOperations.EnableGitHubSync(workspace);
         var itemText = workspace.ReadFile("roadmap/items/RM-001-roadmap-gitops.json");
         workspace.WriteFile("roadmap/items/RM-001-roadmap-gitops.json", itemText.Replace("\"labels\": [", "\"integrations\": { \"github\": { \"issue\": 997 } },\n  \"labels\": [", StringComparison.Ordinal));
         var project = RoadmapProject.Load(workspace.RootPath);
@@ -956,6 +982,7 @@ public sealed class RepoConfigToolApplicationTests
         using var initOutput = new StringWriter(CultureInfo.InvariantCulture);
         using var initError = new StringWriter(CultureInfo.InvariantCulture);
         RepoConfigToolApplication.Run(["init", "--root", workspace.RootPath], initOutput, initError, workspace.RootPath).ShouldBe(0);
+        RoadmapConfigTestOperations.EnableGitHubSync(workspace);
         var itemText = workspace.ReadFile("roadmap/items/RM-001-roadmap-gitops.json");
         workspace.WriteFile("roadmap/items/RM-001-roadmap-gitops.json", itemText.Replace("\"labels\": [", "\"integrations\": { \"github\": { \"issue\": 997 } },\n  \"labels\": [", StringComparison.Ordinal));
         var project = RoadmapProject.Load(workspace.RootPath);

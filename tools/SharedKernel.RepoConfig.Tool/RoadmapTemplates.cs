@@ -57,8 +57,7 @@ internal static class RoadmapTemplates
           },
           "integrations": {
             "github": {
-              "enabled": true,
-              "repository": "owner/repository",
+              "enabled": false,
               "sourceOfTruth": "projection"
             }
           }

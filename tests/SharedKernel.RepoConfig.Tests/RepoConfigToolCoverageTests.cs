@@ -195,6 +195,7 @@ public sealed class RepoConfigToolCoverageTests
         using var output = new StringWriter(CultureInfo.InvariantCulture);
         using var error = new StringWriter(CultureInfo.InvariantCulture);
         RepoConfigToolApplication.Run(["init", "--root", workspace.RootPath], initOutput, initError, workspace.RootPath).ShouldBe(0);
+        RoadmapConfigTestOperations.EnableGitHubSync(workspace);
 
         // Act
         var missingTarget = RepoConfigToolApplication.Run(["sync", "--root", workspace.RootPath], output, error, workspace.RootPath);
@@ -223,6 +224,7 @@ public sealed class RepoConfigToolCoverageTests
         using var initOutput = new StringWriter(CultureInfo.InvariantCulture);
         using var initError = new StringWriter(CultureInfo.InvariantCulture);
         RepoConfigToolApplication.Run(["init", "--root", workspace.RootPath], initOutput, initError, workspace.RootPath).ShouldBe(0);
+        RoadmapConfigTestOperations.EnableGitHubSync(workspace);
         var itemText = workspace.ReadFile("roadmap/items/RM-001-roadmap-gitops.json");
         workspace.WriteFile("roadmap/items/RM-001-roadmap-gitops.json", itemText.Replace("\"labels\": [", "\"integrations\": { \"github\": { \"issue\": 997 } },\n  \"labels\": [", StringComparison.Ordinal));
         var project = RoadmapProject.Load(workspace.RootPath);

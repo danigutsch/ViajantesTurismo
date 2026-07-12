@@ -474,9 +474,16 @@ internal static class RepoConfigVerifier
             return;
         }
 
-        foreach (var blockerId in item.BlockedBy.Where(itemsById.ContainsKey))
+        try
         {
-            DetectCycle(itemsById[blockerId], itemsById, [.. path], reported, issues);
+            foreach (var blockerId in item.BlockedBy.Where(itemsById.ContainsKey))
+            {
+                DetectCycle(itemsById[blockerId], itemsById, path, reported, issues);
+            }
+        }
+        finally
+        {
+            path.Remove(item.Id);
         }
     }
 
