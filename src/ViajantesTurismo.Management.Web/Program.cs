@@ -37,14 +37,6 @@ builder.Services.AddHttpClient<IManagementBrandingApiClient, ManagementBrandingA
 
 var app = builder.Build();
 
-if (app.Environment.IsDevelopment()
-    && !string.IsNullOrWhiteSpace(app.Configuration.GetConnectionString(ManagementAuthenticationDefaults.SecurityDatabaseConnectionName)))
-{
-    using var scope = app.Services.CreateScope();
-    var securityDbContext = scope.ServiceProvider.GetRequiredService<ManagementSecurityDbContext>();
-    await securityDbContext.Database.EnsureCreatedAsync(app.Lifetime.ApplicationStopping);
-}
-
 if (!app.Environment.IsDevelopment())
 {
     app.UseExceptionHandler("/Error", createScopeForErrors: true);
