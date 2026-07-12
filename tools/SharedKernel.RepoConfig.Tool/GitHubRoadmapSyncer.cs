@@ -28,14 +28,14 @@ internal sealed class GitHubRoadmapSyncer
     public GitHubSyncResult Sync(bool dryRun)
     {
         List<string> messages = [];
-        if (string.IsNullOrWhiteSpace(_project.GitHubRepository))
-        {
-            throw new InvalidOperationException("roadmap/config.json must define integrations.github.repository before GitHub sync.");
-        }
-
         if (!_project.GitHubEnabled)
         {
             throw new InvalidOperationException("GitHub sync is disabled in roadmap/config.json.");
+        }
+
+        if (string.IsNullOrWhiteSpace(_project.GitHubRepository))
+        {
+            throw new InvalidOperationException("roadmap/config.json must define integrations.github.repository before GitHub sync.");
         }
 
         var itemsWithIssues = _project.Items.Where(item => item.GitHubIssue is not null).OrderByPriority().ToArray();

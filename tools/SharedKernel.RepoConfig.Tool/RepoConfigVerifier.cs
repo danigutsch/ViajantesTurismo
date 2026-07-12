@@ -181,7 +181,19 @@ internal static class RepoConfigVerifier
         var type = VerifyRequiredString(root, "type", relativePath, issues);
         var status = VerifyRequiredString(root, "status", relativePath, issues);
         var order = VerifyRequiredOrder(root, relativePath, issues);
-        var parent = GetString(root, "parent");
+        string? parent = null;
+        if (root.TryGetProperty("parent", out var parentElement))
+        {
+            if (parentElement.ValueKind != JsonValueKind.String)
+            {
+                issues.Add(new RepoConfigIssue(relativePath, "parent must be a string when present."));
+            }
+            else
+            {
+                parent = parentElement.GetString();
+            }
+        }
+
         var theme = VerifyRequiredString(root, "theme", relativePath, issues);
         VerifyRequiredString(root, "outcome", relativePath, issues);
 

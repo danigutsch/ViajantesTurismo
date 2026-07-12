@@ -144,6 +144,28 @@ public sealed class RepoConfigToolApplicationTests
     }
 
     [Fact]
+    public void Verify_reports_invalid_parent_type()
+    {
+        // Arrange
+        using var workspace = new TemporaryRepoConfigWorkspace();
+        using var initOutput = new StringWriter(CultureInfo.InvariantCulture);
+        using var initError = new StringWriter(CultureInfo.InvariantCulture);
+        using var verifyOutput = new StringWriter(CultureInfo.InvariantCulture);
+        using var verifyError = new StringWriter(CultureInfo.InvariantCulture);
+        RepoConfigToolApplication.Run(["init", "--root", workspace.RootPath], initOutput, initError, workspace.RootPath).ShouldBe(0);
+        var itemText = workspace.ReadFile("roadmap/items/RM-001-roadmap-gitops.json");
+        workspace.WriteFile("roadmap/items/RM-001-roadmap-gitops.json", itemText.Replace("\"theme\":", "\"parent\": 7,\n  \"theme\":", StringComparison.Ordinal));
+
+        // Act
+        var exitCode = RepoConfigToolApplication.Run(["verify", "--root", workspace.RootPath], verifyOutput, verifyError, workspace.RootPath);
+        var errorText = verifyError.ToString();
+
+        // Assert
+        exitCode.ShouldBe(1);
+        errorText.ShouldContain("parent must be a string when present.", StringComparison.Ordinal);
+    }
+
+    [Fact]
     public void Verify_reports_confidence_below_documented_range()
     {
         // Arrange
@@ -448,7 +470,9 @@ public sealed class RepoConfigToolApplicationTests
         using var syncError = new StringWriter(CultureInfo.InvariantCulture);
         RepoConfigToolApplication.Run(["init", "--root", workspace.RootPath], initOutput, initError, workspace.RootPath).ShouldBe(0);
         var configText = workspace.ReadFile("roadmap/config.json");
-        workspace.WriteFile("roadmap/config.json", configText.Replace("\"enabled\": true", "\"enabled\": false", StringComparison.Ordinal));
+        workspace.WriteFile("roadmap/config.json", configText
+            .Replace("\"enabled\": true", "\"enabled\": false", StringComparison.Ordinal)
+            .Replace("      \"repository\": \"owner/repository\",\n", string.Empty, StringComparison.Ordinal));
 
         // Act
         var exitCode = RepoConfigToolApplication.Run(["sync", "github", "--dry-run", "--root", workspace.RootPath], syncOutput, syncError, workspace.RootPath);
