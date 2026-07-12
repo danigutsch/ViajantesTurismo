@@ -610,18 +610,7 @@ public sealed class DocumentDraft : IEntity<Guid>
             return DocumentErrors.ValueTooLong("brandingName", DocumentLimits.MaxBrandingNameLength);
         }
 
-        if (brandingLogoUri?.OriginalString.Length > DocumentLimits.MaxBrandingLogoUriLength)
-        {
-            return DocumentErrors.ValueTooLong("brandingLogoUri", DocumentLimits.MaxBrandingLogoUriLength);
-        }
-
-        if (brandingLogoUri is not null &&
-            WebAssetUriSanitizer.NormalizeRootRelativeOrHttps(brandingLogoUri.OriginalString, DocumentLimits.MaxBrandingLogoUriLength) is null)
-        {
-            return DocumentErrors.InvalidValue("brandingLogoUri");
-        }
-
-        return Result.Ok();
+        return ValidateBrandingLogoUri(brandingLogoUri);
     }
 
     private static Result ValidateBrandingTokens(
@@ -688,5 +677,18 @@ public sealed class DocumentDraft : IEntity<Guid>
         return value.Length > DocumentLimits.MaxBrandingTokenLength
             ? DocumentErrors.ValueTooLong(field, DocumentLimits.MaxBrandingTokenLength)
             : Result.Ok();
+    }
+
+    private static Result ValidateBrandingLogoUri(Uri? brandingLogoUri)
+    {
+        if (brandingLogoUri?.OriginalString.Length > DocumentLimits.MaxBrandingLogoUriLength)
+        {
+            return DocumentErrors.ValueTooLong("brandingLogoUri", DocumentLimits.MaxBrandingLogoUriLength);
+        }
+
+        return brandingLogoUri is not null &&
+            WebAssetUriSanitizer.NormalizeRootRelativeOrHttps(brandingLogoUri.OriginalString, DocumentLimits.MaxBrandingLogoUriLength) is null
+                ? DocumentErrors.InvalidValue("brandingLogoUri")
+                : Result.Ok();
     }
 }
