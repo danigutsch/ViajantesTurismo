@@ -75,7 +75,7 @@ internal sealed class ProtectedDistributedTicketStore : ITicketStore
 
             return ticket;
         }
-        catch (CryptographicException)
+        catch (Exception exception) when (exception is CryptographicException or FormatException or InvalidDataException)
         {
             await cache.RemoveAsync(key).ConfigureAwait(false);
             return null;
