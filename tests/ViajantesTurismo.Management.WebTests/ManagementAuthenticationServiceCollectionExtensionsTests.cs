@@ -19,7 +19,8 @@ public sealed class ManagementAuthenticationServiceCollectionExtensionsTests
         Action action = () => ManagementAuthenticationTestHost.Create(configuration, environment);
 
         // Assert
-        action.ShouldThrow<InvalidOperationException>();
+        var exception = action.ShouldThrow<InvalidOperationException>();
+        exception.Message.ShouldContain("Authentication:DataProtection:CertificatePath", StringComparison.Ordinal);
     }
 
     [Fact]
@@ -33,7 +34,8 @@ public sealed class ManagementAuthenticationServiceCollectionExtensionsTests
         Action action = () => ManagementAuthenticationTestHost.Create(configuration, environment);
 
         // Assert
-        action.ShouldThrow<InvalidOperationException>();
+        var exception = action.ShouldThrow<InvalidOperationException>();
+        exception.Message.ShouldContain("Authentication:Authority", StringComparison.Ordinal);
     }
 
     [Fact]

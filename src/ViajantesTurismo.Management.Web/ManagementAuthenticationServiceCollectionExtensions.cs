@@ -130,14 +130,18 @@ internal static class ManagementAuthenticationServiceCollectionExtensions
             || string.IsNullOrWhiteSpace(clientSecret)
             || string.IsNullOrWhiteSpace(connectionString))
         {
-            throw new InvalidOperationException("Management OIDC and security-store configuration must be set.");
+            throw new InvalidOperationException(
+                "Authentication:Authority, Authentication:Issuer, Authentication:ClientId, "
+                + "Authentication:ClientSecret, and ConnectionStrings:security-database must be set.");
         }
 
         if (!environment.IsDevelopment()
             && (string.IsNullOrWhiteSpace(dataProtectionCertificatePath)
                 || string.IsNullOrWhiteSpace(dataProtectionCertificatePassword)))
         {
-            throw new InvalidOperationException("Management Data Protection certificate configuration must be set outside Development.");
+            throw new InvalidOperationException(
+                "Authentication:DataProtection:CertificatePath and "
+                + "Authentication:DataProtection:CertificatePassword must be set outside Development.");
         }
     }
 }
