@@ -20,13 +20,12 @@ public sealed class CreateRedirectPageTests : BunitContext
     }
 
     [Fact]
-    public void Renders_only_the_interactivity_marker()
+    public void Renders_without_content()
     {
         // Act
         var cut = Render<CreateRedirect>();
 
         // Assert
-        var markers = cut.FindAll("[data-testid='blazor-interactive']");
-        markers.ShouldHaveSingleItem();
+        (cut.Markup.Trim()).ShouldBeEmpty();
     }
 }

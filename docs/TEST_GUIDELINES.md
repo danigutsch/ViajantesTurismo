@@ -621,6 +621,30 @@ Prefer selectors in this order:
 
 Avoid introducing raw HTML IDs or brittle CSS traversal solely to compensate for weak test setup.
 
+### Blazor Server interactivity and browser readiness
+
+`ViajantesTurismo.Management.Web` owns its render-mode policy in `Components/App.razor`.
+`HeadOutlet` and `Routes` use `InteractiveServer`, so route UI is available during prerendering.
+`MainLayout` keeps the route subtree inert and `aria-busy` until `RendererInfo.IsInteractive` is
+true. This preserves visible SSR content while preventing users and browser tests from acting on
+controls before their event handlers are available.
+
+The app root provides a user-visible accessible loading status while the SSR route remains inert and
+a no-JavaScript error message when interaction cannot become available.
+
+- Keep this policy at the app root. Do not add route-level render modes, hidden hydration markers,
+  JavaScript readiness probes, or test-only readiness UI.
+- System tests use `DOMContentLoaded` to complete navigation. The shared base retries a transient
+  circuit startup only while the user-visible route layout remains inert; tests then wait for the
+  specific heading, form control, link, or state they exercise. Playwright actionability waits
+  handle visible and enabled controls; `NetworkIdle` is not a Blazor readiness signal.
+- Changes to the render-mode policy must preserve the inert and `aria-busy` contract until
+  `RendererInfo.IsInteractive` is true and add focused coverage for that contract.
+
+References: [Blazor render modes](https://learn.microsoft.com/en-us/aspnet/core/blazor/components/render-modes?view=aspnetcore-10.0),
+[Blazor lifecycle](https://learn.microsoft.com/en-us/aspnet/core/blazor/components/lifecycle?view=aspnetcore-10.0), and
+[Playwright actionability](https://playwright.dev/dotnet/docs/actionability).
+
 ## Mapper Testing Pattern
 
 All mapper methods need three tests:

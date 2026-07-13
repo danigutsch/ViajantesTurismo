@@ -44,7 +44,7 @@ public class NavigationTests(AspireSystemTestFixture fixture) : AspireSystemTest
         await NavigationTestHelpers.AssertDeepLink(Page, NavigateTo, "/customers/create/review", "Create Customer - Review & Submit");
         await NavigateTo("/tours");
         await NavigateTo($"/tours/{tour.Id}");
-        await Page.GoBackAsync(new PageGoBackOptions { WaitUntil = WaitUntilState.NetworkIdle });
+        await Page.GoBackAsync(new PageGoBackOptions { WaitUntil = WaitUntilState.DOMContentLoaded });
 
         // Assert
         // Deep-link assertions are verified inside the navigation helpers above; this final block checks browser back-navigation.
@@ -73,6 +73,38 @@ public class NavigationTests(AspireSystemTestFixture fixture) : AspireSystemTest
         await Expect(content.GetLink("View All")).ToHaveCountAsync(3);
         await Expect(Page.GetLink("About")).ToBeVisibleAsync();
         await Expect(sidebar.GetLink("Home")).ToHaveClassAsync(NavigationTestRegexes.Active());
+    }
+
+    [Fact]
+    public async Task Interactive_layout_enables_actions_after_the_dashboard_renders()
+    {
+        // Arrange
+        var interactiveLayout = Page.Locator(".page");
+
+        // Act
+        await NavigateTo("/");
+
+        // Assert
+        await Expect(Page.GetHeading("ViajantesTurismo Admin Dashboard")).ToBeVisibleAsync();
+        await Expect(interactiveLayout).ToHaveAttributeAsync("aria-busy", "false");
+    }
+
+    [Fact]
+    public async Task Prerendered_routes_block_interaction_until_the_circuit_is_ready()
+    {
+        // Arrange
+        await using var noJavaScriptContext = await Browser.NewContextAsync(
+            new BrowserNewContextOptions { IgnoreHTTPSErrors = true, JavaScriptEnabled = false });
+        var noJavaScriptPage = await noJavaScriptContext.NewPageAsync();
+
+        // Act
+        await noJavaScriptPage.GotoAsync(Fixture.WebAppUrl.ToString(), new PageGotoOptions { WaitUntil = WaitUntilState.DOMContentLoaded });
+
+        // Assert
+        await Expect(noJavaScriptPage.GetHeading("ViajantesTurismo Admin Dashboard")).ToBeVisibleAsync();
+        await Expect(noJavaScriptPage.Locator(".page[inert]")).ToBeVisibleAsync();
+        await Expect(noJavaScriptPage.Locator(".page")).ToHaveAttributeAsync("aria-busy", "true");
+        await Expect(noJavaScriptPage.GetByRole(AriaRole.Alert)).ToBeVisibleAsync();
     }
 
     [Fact]

@@ -60,6 +60,10 @@ internal sealed class BookingsListPage(
 
             await navigateTo("/bookings");
             await page.ShouldHaveTitle("Bookings");
+
+            var firstBookingLink = page.Locator("table tbody tr a[href^='/bookings/']").First;
+            await firstBookingLink.WaitForAsync(new LocatorWaitForOptions { State = WaitForSelectorState.Visible });
+
             await NavigateToPageContaining(bookingIndex);
 
             var row = page.Locator($"table tbody tr:has(a[href='{href}'])");
