@@ -35,6 +35,9 @@ internal static class AppHostResourceExtensions
     /// <summary>Configuration key for Public Web canonical sitemap URLs.</summary>
     private const string PublicWebSitemapCanonicalOriginEnvironmentVariable = "PublicWeb__Sitemap__CanonicalOrigin";
 
+    /// <summary>Default bucket for Viajantes media object storage.</summary>
+    private const string SeaweedFsBucketDefault = "viajantes-media";
+
     /// <summary>
     /// Adds the PostgreSQL server and PgWeb companion resource.
     /// </summary>
@@ -63,6 +66,20 @@ internal static class AppHostResourceExtensions
             .WithRedisInsight(redisInsight => redisInsight
                 .WithImageTag(RedisInsightImageTag)
                 .WithImageSHA256(RedisInsightImageDigest));
+    }
+
+    /// <summary>
+    /// Adds the SeaweedFS resource that stores Viajantes media objects.
+    /// </summary>
+    /// <param name="builder">The distributed application builder.</param>
+    /// <returns>The configured SeaweedFS resource.</returns>
+    public static IResourceBuilder<SeaweedFsResource> AddMediaObjectStorage(this IDistributedApplicationBuilder builder)
+    {
+        var bucket = builder.AddParameter(
+            $"{ResourceNames.SeaweedFs}-bucket",
+            SeaweedFsBucketDefault);
+
+        return builder.AddSeaweedFs(ResourceNames.SeaweedFs, bucket);
     }
 
     /// <summary>

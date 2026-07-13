@@ -181,9 +181,14 @@ public sealed partial class AppHostOrchestrationTests
 
         // Assert
         appHostText.ShouldContain("AddClamAv(ResourceNames.ClamAv)", StringComparison.Ordinal);
-        appHostText.ShouldContain("$\"{ResourceNames.SeaweedFs}-bucket\"", StringComparison.Ordinal);
-        appHostText.ShouldContain("\"viajantes-media\"", StringComparison.Ordinal);
-        appHostText.ShouldContain("AddSeaweedFs(ResourceNames.SeaweedFs, seaweedFsBucket)", StringComparison.Ordinal);
+        appHostText.ShouldContain("var seaweedFs = builder.AddMediaObjectStorage();", StringComparison.Ordinal);
+        appHostText.ShouldNotContain("seaweedFsBucket", StringComparison.Ordinal);
+        appHostText.ShouldNotContain("AddParameter(", StringComparison.Ordinal);
+        appHostText.ShouldNotContain("viajantes-media", StringComparison.Ordinal);
+        appHostExtensionsText.ShouldContain("AddMediaObjectStorage(this IDistributedApplicationBuilder builder)", StringComparison.Ordinal);
+        appHostExtensionsText.ShouldContain("$\"{ResourceNames.SeaweedFs}-bucket\"", StringComparison.Ordinal);
+        appHostExtensionsText.ShouldContain("\"viajantes-media\"", StringComparison.Ordinal);
+        appHostExtensionsText.ShouldContain("AddSeaweedFs(ResourceNames.SeaweedFs, bucket)", StringComparison.Ordinal);
         catalogApiBlock.ShouldContain("WithClamAvReference(clamAv)", StringComparison.Ordinal);
         catalogApiBlock.ShouldContain("WaitFor(clamAv)", StringComparison.Ordinal);
         clamAvText.ShouldContain("WithImageSHA256", StringComparison.Ordinal);
