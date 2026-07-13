@@ -6,7 +6,7 @@ using ViajantesTurismo.Admin.UnitTests.Documents;
 
 namespace ViajantesTurismo.Admin.UnitTests.Application.Documents;
 
-[Trait(SharedKernelTestTraitNames.CapabilityName, global::ViajantesTurismo.Admin.Testing.AdminTestTraitValues.GeneratedDocumentsCapability)]
+[Trait(SharedKernelTestTraitNames.CapabilityName, Testing.AdminTestTraitValues.GeneratedDocumentsCapability)]
 public sealed class DocumentLifecycleCommandHandlerTests
 {
     [Fact]
@@ -98,12 +98,12 @@ public sealed class DocumentLifecycleCommandHandlerTests
         store.Documents.Add(expired.Id, expired);
         store.Documents.Add(current.Id, current);
         // Act
-        var result = await new PurgeExpiredDraftsCommandHandler(store, new FakeTimeProvider(now))
+        object removedCount = await new PurgeExpiredDraftsCommandHandler(store, new FakeTimeProvider(now))
             .Handle(new PurgeExpiredDraftsCommand(), CancellationToken.None);
 
         // Assert
-        result.IsSuccess.ShouldBeTrue();
-        result.Value.ShouldBe(1);
+        var rawRemovedCount = removedCount.ShouldBeOfType<int>();
+        rawRemovedCount.ShouldBe(1);
         store.Documents.ContainsKey(expired.Id).ShouldBeFalse();
         store.Documents.ContainsKey(current.Id).ShouldBeTrue();
     }
