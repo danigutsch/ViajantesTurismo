@@ -38,8 +38,8 @@ Pass `--root <path>` after the command to target another repository root.
 | `get blocking-overview` | Lists open items and their open direct blocker IDs. |
 | `get tags` / `get labels` | Lists tag or label counts. |
 | `get by-tag <tag>` / `get by-label <label>` | Lists items by taxonomy value. |
-| `sync github --dry-run` | Previews additive labels and configured Project membership for mapped GitHub issues. |
-| `sync github --apply` | Adds mapped labels and configured Project membership using `GH_TOKEN` or `GITHUB_TOKEN`. |
+| `sync github --dry-run` | Previews issue creation, additive labels, and configured Project membership. |
+| `sync github --apply` | Creates requested issues, persists their issue numbers, adds labels, and configures Project membership using `GH_TOKEN` or `GITHUB_TOKEN`. |
 
 ## Exit codes
 
@@ -49,8 +49,11 @@ Pass `--root <path>` after the command to target another repository root.
 | `1` | Verification failed or command execution failed. |
 | `2` | Command syntax is invalid. |
 
-GitHub sync never modifies issue bodies. Labels are additive. The repository remains the source of
-truth.
+Set `integrations.github.issue` to `"create"` to create an issue; `sync github --apply` replaces it
+with the created issue number.
+
+GitHub sync never modifies issue bodies. Labels are additive. Existing labels and conflicting Project
+field values are report-only drift. The repository remains the source of truth.
 
 Project membership requires a user-owned Project target in `integrations.github.projectV2` and a
 classic token with `repo` and `project` scopes. Fine-grained tokens cannot currently automate

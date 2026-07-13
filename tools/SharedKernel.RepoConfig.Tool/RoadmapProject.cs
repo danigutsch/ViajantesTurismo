@@ -6,8 +6,9 @@ internal sealed class RoadmapProject
 {
     private readonly Dictionary<string, RoadmapItemSnapshot> _itemsById;
 
-    private RoadmapProject(IReadOnlyList<RoadmapItemSnapshot> items, IReadOnlySet<string> closedStatuses, string? gitHubRepository, bool gitHubEnabled, GitHubProjectTarget? gitHubProjectTarget)
+    private RoadmapProject(string rootPath, IReadOnlyList<RoadmapItemSnapshot> items, IReadOnlySet<string> closedStatuses, string? gitHubRepository, bool gitHubEnabled, GitHubProjectTarget? gitHubProjectTarget)
     {
+        RootPath = rootPath;
         Items = items;
         ClosedStatuses = closedStatuses;
         GitHubRepository = gitHubRepository;
@@ -17,6 +18,8 @@ internal sealed class RoadmapProject
     }
 
     public IReadOnlyList<RoadmapItemSnapshot> Items { get; }
+
+    public string RootPath { get; }
 
     public IReadOnlySet<string> ClosedStatuses { get; }
 
@@ -41,7 +44,7 @@ internal sealed class RoadmapProject
         var gitHubEnabled = ReadGitHubEnabled(config.RootElement);
         var gitHubProjectTarget = ReadGitHubProjectTarget(config.RootElement);
         var items = LoadItems(rootPath);
-        return new RoadmapProject(items, new HashSet<string>(closedStatuses, StringComparer.Ordinal), gitHubRepository, gitHubEnabled, gitHubProjectTarget);
+        return new RoadmapProject(rootPath, items, new HashSet<string>(closedStatuses, StringComparer.Ordinal), gitHubRepository, gitHubEnabled, gitHubProjectTarget);
     }
 
     public IReadOnlyList<RoadmapItemSnapshot> OpenItems(string? type = null) =>
@@ -108,7 +111,8 @@ internal sealed class RoadmapProject
             ReadStringArray(root, "dependencies"),
             ReadStringArray(root, "tags"),
             ReadStringArray(root, "labels"),
-            ReadGitHubIssue(root));
+            ReadGitHubIssue(root, out var createGitHubIssue),
+            createGitHubIssue);
     }
 
     private static string? ReadGitHubRepository(JsonElement root)
@@ -159,18 +163,23 @@ internal sealed class RoadmapProject
         return new GitHubProjectTarget(id.GetString() ?? string.Empty, owner.GetString() ?? string.Empty, value);
     }
 
-    private static int? ReadGitHubIssue(JsonElement root)
+    private static int? ReadGitHubIssue(JsonElement root, out bool createRequested)
     {
+        createRequested = false;
         if (!root.TryGetProperty("integrations", out var integrations)
             || !integrations.TryGetProperty("github", out var github)
-            || !github.TryGetProperty("issue", out var issue)
-            || issue.ValueKind != JsonValueKind.Number
-            || !issue.TryGetInt32(out var value))
+            || !github.TryGetProperty("issue", out var issue))
         {
             return null;
         }
 
-        return value;
+        if (issue.ValueKind == JsonValueKind.String && string.Equals(issue.GetString(), "create", StringComparison.Ordinal))
+        {
+            createRequested = true;
+            return null;
+        }
+
+        return issue.ValueKind == JsonValueKind.Number && issue.TryGetInt32(out var value) ? value : null;
     }
 
     private static string[] ReadStringArray(JsonElement root, string propertyName)

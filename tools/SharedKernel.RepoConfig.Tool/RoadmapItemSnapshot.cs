@@ -18,7 +18,8 @@ internal sealed record RoadmapItemSnapshot(
     IReadOnlyList<string> Dependencies,
     IReadOnlyList<string> Tags,
     IReadOnlyList<string> Labels,
-    int? GitHubIssue)
+    int? GitHubIssue,
+    bool CreateGitHubIssue)
 {
     public decimal Score => Effort == 0 ? 0 : Reach * Impact * Confidence / Effort;
 }

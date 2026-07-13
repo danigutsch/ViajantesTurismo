@@ -351,7 +351,25 @@ internal static class RoadmapTemplates
               "type": "array"
             },
             "integrations": {
-              "type": "object"
+              "type": "object",
+              "properties": {
+                "github": {
+                  "type": "object",
+                  "properties": {
+                    "issue": {
+                      "oneOf": [
+                        {
+                          "type": "integer",
+                          "minimum": 1
+                        },
+                        {
+                          "const": "create"
+                        }
+                      ]
+                    }
+                  }
+                }
+              }
             }
           }
         }

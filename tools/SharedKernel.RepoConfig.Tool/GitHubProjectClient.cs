@@ -38,7 +38,7 @@ internal sealed class GitHubProjectClient(HttpClient httpClient)
             : issueId;
     }
 
-    public async Task AddIssue(GitHubProjectTarget target, string issueId, CancellationToken cancellationToken)
+    public async Task<string> AddIssue(GitHubProjectTarget target, string issueId, CancellationToken cancellationToken)
     {
         const string Query = "mutation($projectId:ID!,$contentId:ID!){addProjectV2ItemById(input:{projectId:$projectId,contentId:$contentId}){item{id}}}";
         var response = await Send(Query, writer =>
@@ -46,17 +46,17 @@ internal sealed class GitHubProjectClient(HttpClient httpClient)
             writer.WriteString("projectId", target.Id);
             writer.WriteString("contentId", issueId);
         }, cancellationToken).ConfigureAwait(false);
-        if (response.Data?.AddProjectV2ItemById?.Item is null)
-        {
-            throw new InvalidOperationException("GitHub Project item could not be added.");
-        }
+        var itemId = response.Data?.AddProjectV2ItemById?.Item?.Id;
+        return string.IsNullOrWhiteSpace(itemId)
+            ? throw new InvalidOperationException("GitHub Project item could not be added.")
+            : itemId;
     }
 
-    public async Task<bool> HasIssue(GitHubProjectTarget target, string issueId, CancellationToken cancellationToken)
+    public async Task<string?> FindItemId(GitHubProjectTarget target, string issueId, CancellationToken cancellationToken)
     {
         const string Query = "query($id:ID!,$after:String){node(id:$id){... on ProjectV2{items(first:100,after:$after){nodes{id content{... on Issue{id}} pageInfo{hasNextPage endCursor}}}}}}";
         string? cursor = null;
-        GitHubProjectResponse.ProjectItemConnection? items;
+        GitHubProjectResponse.ProjectItemConnection items;
         do
         {
             var response = await Send(Query, writer =>
@@ -71,17 +71,68 @@ internal sealed class GitHubProjectClient(HttpClient httpClient)
                     writer.WriteNull("after");
                 }
             }, cancellationToken).ConfigureAwait(false);
-            items = response.Data?.Node?.Items;
-            if (items?.Nodes?.Any(item => string.Equals(item.Content?.Id, issueId, StringComparison.Ordinal)) == true)
+            items = response.Data?.Node?.Items
+                ?? throw new InvalidOperationException("GitHub Project items could not be read.");
+            var item = items.Nodes?.FirstOrDefault(item => string.Equals(item.Content?.Id, issueId, StringComparison.Ordinal));
+            if (!string.IsNullOrWhiteSpace(item?.Id))
             {
-                return true;
+                return item.Id;
             }
 
-            cursor = items?.PageInfo?.EndCursor;
+            cursor = items.PageInfo?.EndCursor;
         }
-        while (items?.PageInfo?.HasNextPage == true);
+        while (items.PageInfo?.HasNextPage == true);
 
-        return false;
+        return null;
+    }
+
+    public async Task<IReadOnlyList<GitHubProjectResponse.ProjectField>> GetFields(GitHubProjectTarget target, CancellationToken cancellationToken)
+    {
+        const string Query = "query($id:ID!){node(id:$id){... on ProjectV2{fields(first:100){nodes{__typename ... on ProjectV2FieldCommon{id name dataType} ... on ProjectV2SingleSelectField{options{id name}}}}}}}";
+        var response = await Send(Query, writer => writer.WriteString("id", target.Id), cancellationToken).ConfigureAwait(false);
+        return response.Data?.Node?.Fields?.Nodes
+            ?? throw new InvalidOperationException("GitHub Project fields could not be read.");
+    }
+
+    public async Task<IReadOnlyList<GitHubProjectItemResponse.FieldValue>> GetFieldValues(string itemId, CancellationToken cancellationToken)
+    {
+        const string Query = "query($id:ID!){node(id:$id){... on ProjectV2Item{fieldValues(first:100){nodes{... on ProjectV2ItemFieldNumberValue{number field{... on ProjectV2FieldCommon{id name}}} ... on ProjectV2ItemFieldTextValue{text field{... on ProjectV2FieldCommon{id name}}} ... on ProjectV2ItemFieldSingleSelectValue{optionId field{... on ProjectV2FieldCommon{id name}}}}}}}}";
+        var response = await SendItem(Query, writer => writer.WriteString("id", itemId), cancellationToken).ConfigureAwait(false);
+        return response.Data?.Node?.FieldValues?.Nodes
+            ?? throw new InvalidOperationException("GitHub Project field values could not be read.");
+    }
+
+    public async Task UpdateNumber(GitHubProjectTarget target, string itemId, string fieldId, decimal value, CancellationToken cancellationToken)
+    {
+        const string Query = "mutation($projectId:ID!,$itemId:ID!,$fieldId:ID!,$value:Float!){updateProjectV2ItemFieldValue(input:{projectId:$projectId,itemId:$itemId,fieldId:$fieldId,value:{number:$value}}){projectV2Item{id}}}";
+        await UpdateField(Query, target, itemId, fieldId, writer => writer.WriteNumber("value", value), cancellationToken).ConfigureAwait(false);
+    }
+
+    public async Task UpdateText(GitHubProjectTarget target, string itemId, string fieldId, string value, CancellationToken cancellationToken)
+    {
+        const string Query = "mutation($projectId:ID!,$itemId:ID!,$fieldId:ID!,$value:String!){updateProjectV2ItemFieldValue(input:{projectId:$projectId,itemId:$itemId,fieldId:$fieldId,value:{text:$value}}){projectV2Item{id}}}";
+        await UpdateField(Query, target, itemId, fieldId, writer => writer.WriteString("value", value), cancellationToken).ConfigureAwait(false);
+    }
+
+    public async Task UpdateSingleSelect(GitHubProjectTarget target, string itemId, string fieldId, string optionId, CancellationToken cancellationToken)
+    {
+        const string Query = "mutation($projectId:ID!,$itemId:ID!,$fieldId:ID!,$optionId:String!){updateProjectV2ItemFieldValue(input:{projectId:$projectId,itemId:$itemId,fieldId:$fieldId,value:{singleSelectOptionId:$optionId}}){projectV2Item{id}}}";
+        await UpdateField(Query, target, itemId, fieldId, writer => writer.WriteString("optionId", optionId), cancellationToken).ConfigureAwait(false);
+    }
+
+    private async Task UpdateField(string query, GitHubProjectTarget target, string itemId, string fieldId, Action<Utf8JsonWriter> writeValue, CancellationToken cancellationToken)
+    {
+        var response = await Send(query, writer =>
+        {
+            writer.WriteString("projectId", target.Id);
+            writer.WriteString("itemId", itemId);
+            writer.WriteString("fieldId", fieldId);
+            writeValue(writer);
+        }, cancellationToken).ConfigureAwait(false);
+        if (string.IsNullOrWhiteSpace(response.Data?.UpdateProjectV2ItemFieldValue?.ProjectV2Item?.Id))
+        {
+            throw new InvalidOperationException("GitHub Project field could not be updated.");
+        }
     }
 
     private async Task<GitHubProjectResponse> Send(string query, Action<Utf8JsonWriter> writeVariables, CancellationToken cancellationToken)
@@ -110,12 +161,53 @@ internal sealed class GitHubProjectClient(HttpClient httpClient)
         }
 
         var content = await response.Content.ReadAsByteArrayAsync(cancellationToken).ConfigureAwait(false);
-        var result = JsonSerializer.Deserialize(content, GitHubProjectJsonContext.Default.GitHubProjectResponse)
+        var result = JsonSerializer.Deserialize(content, GitHubProjectJsonContext.Default.ProjectResponse)
             ?? throw new InvalidOperationException("GitHub Project request returned no result.");
-        var errorType = result.Errors?.Select(error => error.Type).FirstOrDefault(type => !string.IsNullOrWhiteSpace(type));
-        if (!string.IsNullOrWhiteSpace(errorType))
+        if (result.Errors?.Count > 0)
         {
-            throw new InvalidOperationException($"GitHub Project request failed ({errorType}).");
+            var errorType = result.Errors.Select(error => error.Type).FirstOrDefault(type => !string.IsNullOrWhiteSpace(type));
+            throw new InvalidOperationException(string.IsNullOrWhiteSpace(errorType)
+                ? "GitHub Project request failed."
+                : $"GitHub Project request failed ({errorType}).");
+        }
+
+        return result;
+    }
+
+    private async Task<GitHubProjectItemResponse> SendItem(string query, Action<Utf8JsonWriter> writeVariables, CancellationToken cancellationToken)
+    {
+        using var stream = new MemoryStream();
+        using (var writer = new Utf8JsonWriter(stream))
+        {
+            writer.WriteStartObject();
+            writer.WriteString("query", query);
+            writer.WritePropertyName("variables");
+            writer.WriteStartObject();
+            writeVariables(writer);
+            writer.WriteEndObject();
+            writer.WriteEndObject();
+        }
+
+        var endpoint = new UriBuilder(Uri.UriSchemeHttps, "api.github.com") { Path = "graphql" }.Uri;
+        using var request = new HttpRequestMessage(HttpMethod.Post, endpoint)
+        {
+            Content = new StringContent(Encoding.UTF8.GetString(stream.ToArray()), Encoding.UTF8, "application/json")
+        };
+        using var response = await httpClient.SendAsync(request, cancellationToken).ConfigureAwait(false);
+        if (!response.IsSuccessStatusCode)
+        {
+            throw new InvalidOperationException($"GitHub Project request failed with HTTP {(int)response.StatusCode}.");
+        }
+
+        var content = await response.Content.ReadAsByteArrayAsync(cancellationToken).ConfigureAwait(false);
+        var result = JsonSerializer.Deserialize(content, GitHubProjectJsonContext.Default.ProjectItemResponse)
+            ?? throw new InvalidOperationException("GitHub Project request returned no result.");
+        if (result.Errors?.Count > 0)
+        {
+            var errorType = result.Errors.Select(error => error.Type).FirstOrDefault(type => !string.IsNullOrWhiteSpace(type));
+            throw new InvalidOperationException(string.IsNullOrWhiteSpace(errorType)
+                ? "GitHub Project request failed."
+                : $"GitHub Project request failed ({errorType}).");
         }
 
         return result;

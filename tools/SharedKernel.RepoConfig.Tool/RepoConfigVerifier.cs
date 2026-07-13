@@ -246,7 +246,7 @@ internal static class RepoConfigVerifier
         var dependencies = VerifyStringArray(root, "dependencies", relativePath, issues, required: true);
         var tags = VerifyStringArray(root, "tags", relativePath, issues, required: true);
         var labels = VerifyStringArray(root, "labels", relativePath, issues, required: true);
-        var githubIssue = GetGitHubIssue(root, relativePath, issues);
+        var githubIssue = GetGitHubIssue(root, relativePath, issues, out var createGitHubIssue);
         return string.IsNullOrWhiteSpace(id)
             ? null
             : new RoadmapItemSnapshot(
@@ -267,7 +267,8 @@ internal static class RepoConfigVerifier
                 dependencies,
                 tags,
                 labels,
-                githubIssue);
+                githubIssue,
+                createGitHubIssue);
     }
 
     private static void VerifyScoring(JsonElement root, string relativePath, List<RepoConfigIssue> issues)
@@ -640,8 +641,9 @@ internal static class RepoConfigVerifier
         return result;
     }
 
-    private static int? GetGitHubIssue(JsonElement root, string relativePath, List<RepoConfigIssue> issues)
+    private static int? GetGitHubIssue(JsonElement root, string relativePath, List<RepoConfigIssue> issues, out bool createRequested)
     {
+        createRequested = false;
         if (!root.TryGetProperty("integrations", out var integrations))
         {
             return null;
@@ -669,9 +671,15 @@ internal static class RepoConfigVerifier
             return null;
         }
 
+        if (issue.ValueKind == JsonValueKind.String && string.Equals(issue.GetString(), "create", StringComparison.Ordinal))
+        {
+            createRequested = true;
+            return null;
+        }
+
         if (issue.ValueKind != JsonValueKind.Number || !issue.TryGetInt32(out var issueNumber) || issueNumber < 1)
         {
-            issues.Add(new RepoConfigIssue(relativePath, "integrations.github.issue must be a positive integer."));
+            issues.Add(new RepoConfigIssue(relativePath, "integrations.github.issue must be a positive integer or exact string create."));
             return null;
         }
 

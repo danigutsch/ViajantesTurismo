@@ -1283,6 +1283,7 @@ public sealed class RepoConfigToolApplicationTests
         var project = RoadmapProject.Load(workspace.RootPath);
         using var handler = new TestHttpMessageHandler();
         handler.EnqueueJson(HttpStatusCode.NotFound, "{}");
+        handler.EnqueueJson(HttpStatusCode.OK, "{ \"labels\": [] }");
         handler.EnqueueJson(HttpStatusCode.OK, "{}");
         using var httpClient = new HttpClient(handler);
         var syncer = new GitHubRoadmapSyncer(project, httpClient);
@@ -1292,14 +1293,118 @@ public sealed class RepoConfigToolApplicationTests
 
         // Assert
         result.Messages.ShouldContain("updated labels for owner/repository#997 from RM-001");
-        handler.Requests.Count.ShouldBe(2);
+        handler.Requests.Count.ShouldBe(3);
         handler.Requests[0].Method.ShouldBe(HttpMethod.Get);
         handler.Requests[0].PathAndQuery.ShouldBe("/repos/owner/repository/pulls/997");
-        handler.Requests[1].Method.ShouldBe(HttpMethod.Post);
-        handler.Requests[1].PathAndQuery.ShouldBe("/repos/owner/repository/issues/997/labels");
+        handler.Requests[1].Method.ShouldBe(HttpMethod.Get);
+        handler.Requests[1].PathAndQuery.ShouldBe("/repos/owner/repository/issues/997");
+        handler.Requests[2].Method.ShouldBe(HttpMethod.Post);
+        handler.Requests[2].PathAndQuery.ShouldBe("/repos/owner/repository/issues/997/labels");
         handler.Requests.ShouldNotContain(request => request.Method == HttpMethod.Patch);
-        handler.Requests[1].Body.ShouldNotBeNull();
-        handler.Requests[1].Body.ShouldContain("area: tooling", StringComparison.Ordinal);
+        handler.Requests[2].Body.ShouldNotBeNull();
+        handler.Requests[2].Body.ShouldContain("area: tooling", StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public async Task Sync_github_preview_describes_explicit_issue_creation_without_http()
+    {
+        // Arrange
+        using var workspace = new TemporaryRepoConfigWorkspace();
+        using var initOutput = new StringWriter(CultureInfo.InvariantCulture);
+        using var initError = new StringWriter(CultureInfo.InvariantCulture);
+        (await RepoConfigToolApplication.Run(["init", "--root", workspace.RootPath], initOutput, initError, workspace.RootPath, TestContext.Current.CancellationToken)).ShouldBe(0);
+        RoadmapConfigTestOperations.EnableGitHubSync(workspace);
+        var itemText = workspace.ReadFile("roadmap/items/RM-001-roadmap-gitops.json");
+        workspace.WriteFile("roadmap/items/RM-001-roadmap-gitops.json", itemText.Replace("\"labels\": [", "\"integrations\": { \"github\": { \"issue\": \"create\" } },\n  \"labels\": [", StringComparison.Ordinal));
+        var project = RoadmapProject.Load(workspace.RootPath);
+        using var handler = new TestHttpMessageHandler();
+        using var httpClient = new HttpClient(handler);
+        var syncer = new GitHubRoadmapSyncer(project, httpClient);
+
+        // Act
+        var result = syncer.Preview();
+
+        // Assert
+        result.Messages.ShouldContain("dry-run: create GitHub issue for owner/repository from RM-001");
+        handler.Requests.ShouldBeEmpty();
+    }
+
+    [Fact]
+    public async Task Sync_github_apply_reports_extra_github_labels_without_removing_them()
+    {
+        // Arrange
+        using var workspace = new TemporaryRepoConfigWorkspace();
+        using var initOutput = new StringWriter(CultureInfo.InvariantCulture);
+        using var initError = new StringWriter(CultureInfo.InvariantCulture);
+        (await RepoConfigToolApplication.Run(["init", "--root", workspace.RootPath], initOutput, initError, workspace.RootPath, TestContext.Current.CancellationToken)).ShouldBe(0);
+        RoadmapConfigTestOperations.EnableGitHubSync(workspace);
+        var itemText = workspace.ReadFile("roadmap/items/RM-001-roadmap-gitops.json");
+        workspace.WriteFile("roadmap/items/RM-001-roadmap-gitops.json", itemText.Replace("\"labels\": [", "\"integrations\": { \"github\": { \"issue\": 997 } },\n  \"labels\": [", StringComparison.Ordinal));
+        var project = RoadmapProject.Load(workspace.RootPath);
+        using var handler = new TestHttpMessageHandler();
+        handler.EnqueueJson(HttpStatusCode.NotFound, "{}");
+        handler.EnqueueJson(HttpStatusCode.OK, "{ \"labels\": [{ \"name\": \"manual\" }] }");
+        handler.EnqueueJson(HttpStatusCode.OK, "{}");
+        using var httpClient = new HttpClient(handler);
+        var syncer = new GitHubRoadmapSyncer(project, httpClient);
+
+        // Act
+        var result = await syncer.Apply(TestContext.Current.CancellationToken);
+
+        // Assert
+        result.Messages.ShouldContain("drift: owner/repository#997 has extra GitHub label manual");
+        handler.Requests.ShouldNotContain(request => request.Method == HttpMethod.Delete || request.Method == HttpMethod.Patch || request.Method == HttpMethod.Put);
+    }
+
+    [Fact]
+    public async Task Sync_github_apply_creates_and_persists_an_explicit_issue_mapping()
+    {
+        // Arrange
+        using var workspace = new TemporaryRepoConfigWorkspace();
+        using var initOutput = new StringWriter(CultureInfo.InvariantCulture);
+        using var initError = new StringWriter(CultureInfo.InvariantCulture);
+        (await RepoConfigToolApplication.Run(["init", "--root", workspace.RootPath], initOutput, initError, workspace.RootPath, TestContext.Current.CancellationToken)).ShouldBe(0);
+        RoadmapConfigTestOperations.EnableGitHubSync(workspace);
+        var itemText = workspace.ReadFile("roadmap/items/RM-001-roadmap-gitops.json");
+        workspace.WriteFile("roadmap/items/RM-001-roadmap-gitops.json", itemText.Replace("\"labels\": [", "\"integrations\": { \"github\": { \"issue\": \"create\" } },\n  \"labels\": [", StringComparison.Ordinal));
+        var project = RoadmapProject.Load(workspace.RootPath);
+        using var handler = new TestHttpMessageHandler();
+        handler.EnqueueJson(HttpStatusCode.Created, "{ \"number\": 1200 }");
+        handler.EnqueueJson(HttpStatusCode.NotFound, "{}");
+        handler.EnqueueJson(HttpStatusCode.OK, "{ \"labels\": [] }");
+        handler.EnqueueJson(HttpStatusCode.OK, "{}");
+        using var httpClient = new HttpClient(handler);
+        var syncer = new GitHubRoadmapSyncer(project, httpClient);
+
+        // Act
+        var result = await syncer.Apply(TestContext.Current.CancellationToken);
+        var persistedItem = workspace.ReadFile("roadmap/items/RM-001-roadmap-gitops.json");
+
+        // Assert
+        result.Messages.ShouldContain("created owner/repository#1200 from RM-001");
+        persistedItem.ShouldContain("\"issue\": 1200", StringComparison.Ordinal);
+        handler.Requests[0].Method.ShouldBe(HttpMethod.Post);
+        handler.Requests[0].PathAndQuery.ShouldBe("/repos/owner/repository/issues");
+        handler.Requests[0].Body.ShouldNotBeNull();
+        handler.Requests[0].Body.ShouldContain("Establish GitOps roadmap and repo configuration tooling", StringComparison.Ordinal);
+        handler.Requests[0].Body.ShouldContain("area: tooling", StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public async Task GitHub_project_field_reads_fail_closed_when_graphql_reports_an_error()
+    {
+        // Arrange
+        using var handler = new TestHttpMessageHandler();
+        handler.EnqueueJson(HttpStatusCode.OK, "{ \"errors\": [{ \"type\": \"FORBIDDEN\" }] }");
+        using var httpClient = new HttpClient(handler);
+        var client = new GitHubProjectClient(httpClient);
+
+        // Act
+        Func<Task> action = () => client.GetFieldValues("item-id", TestContext.Current.CancellationToken);
+        var exception = await action.ShouldThrow<InvalidOperationException>();
+
+        // Assert
+        exception.Message.ShouldBe("GitHub Project request failed (FORBIDDEN).");
     }
 
     [Fact]
@@ -1319,10 +1424,14 @@ public sealed class RepoConfigToolApplicationTests
         using var handler = new TestHttpMessageHandler();
         handler.EnqueueJson(HttpStatusCode.OK, "{ \"data\": { \"node\": { \"id\": \"project-id\", \"number\": 1, \"owner\": { \"login\": \"owner\" } } } }");
         handler.EnqueueJson(HttpStatusCode.NotFound, "{}");
+        handler.EnqueueJson(HttpStatusCode.OK, "{ \"labels\": [] }");
         handler.EnqueueJson(HttpStatusCode.OK, "{}");
         handler.EnqueueJson(HttpStatusCode.OK, "{ \"data\": { \"repository\": { \"issue\": { \"id\": \"issue-id\" } } } }");
         handler.EnqueueJson(HttpStatusCode.OK, "{ \"data\": { \"node\": { \"items\": { \"nodes\": [], \"pageInfo\": { \"hasNextPage\": false, \"endCursor\": null } } } } }");
         handler.EnqueueJson(HttpStatusCode.OK, "{ \"data\": { \"addProjectV2ItemById\": { \"item\": { \"id\": \"item-id\" } } } }");
+        handler.EnqueueJson(HttpStatusCode.OK, "{ \"data\": { \"node\": { \"fields\": { \"nodes\": [{ \"id\": \"status-id\", \"name\": \"Roadmap status\", \"dataType\": \"SINGLE_SELECT\", \"options\": [{ \"id\": \"ready-id\", \"name\": \"ready\" }] }] } } } }");
+        handler.EnqueueJson(HttpStatusCode.OK, "{ \"data\": { \"node\": { \"fieldValues\": { \"nodes\": [] } } } }");
+        handler.EnqueueJson(HttpStatusCode.OK, "{ \"data\": { \"updateProjectV2ItemFieldValue\": { \"projectV2Item\": { \"id\": \"item-id\" } } } }");
         using var httpClient = new HttpClient(handler);
         var syncer = new GitHubRoadmapSyncer(project, httpClient);
 
@@ -1330,8 +1439,9 @@ public sealed class RepoConfigToolApplicationTests
         var result = await syncer.Apply(TestContext.Current.CancellationToken);
 
         // Assert
-        result.Messages.ShouldContain("added owner/repository#997 to GitHub Project 1");
+        result.Messages.ShouldContain("projected owner/repository#997 to GitHub Project 1");
         handler.Requests.ShouldContain(request => request.PathAndQuery == "/graphql" && request.Method == HttpMethod.Post);
+        handler.Requests.ShouldContain(request => request.Body?.Contains("singleSelectOptionId", StringComparison.Ordinal) == true);
         handler.Requests.ShouldContain(request => request.PathAndQuery == "/repos/owner/repository/issues/997/labels" && request.Method == HttpMethod.Post);
     }
 
@@ -1351,6 +1461,8 @@ public sealed class RepoConfigToolApplicationTests
         workspace.WriteFile("roadmap/items/RM-001-roadmap-gitops.json", mappedItem);
         var project = RoadmapProject.Load(workspace.RootPath);
         using var handler = new TestHttpMessageHandler();
+        handler.EnqueueJson(HttpStatusCode.NotFound, "{}");
+        handler.EnqueueJson(HttpStatusCode.OK, "{ \"labels\": [] }");
         using var httpClient = new HttpClient(handler);
         var syncer = new GitHubRoadmapSyncer(project, httpClient);
 
@@ -1359,7 +1471,8 @@ public sealed class RepoConfigToolApplicationTests
 
         // Assert
         result.Messages.ShouldContain("skipped owner/repository#997 from RM-001 because it has no labels");
-        handler.Requests.ShouldBeEmpty();
+        handler.Requests.Count.ShouldBe(2);
+        handler.Requests.ShouldNotContain(request => request.Method == HttpMethod.Post);
     }
 
     [Fact]
@@ -1464,6 +1577,7 @@ public sealed class RepoConfigToolApplicationTests
         var project = RoadmapProject.Load(workspace.RootPath);
         using var handler = new TestHttpMessageHandler();
         handler.EnqueueJson(HttpStatusCode.NotFound, "{}");
+        handler.EnqueueJson(HttpStatusCode.OK, "{ \"labels\": [] }");
         handler.Enqueue(GitHubSyncTestResponseFactory.UntrustedError(HttpStatusCode.UnprocessableEntity));
         using var httpClient = new HttpClient(handler);
         var syncer = new GitHubRoadmapSyncer(project, httpClient);
@@ -1477,8 +1591,8 @@ public sealed class RepoConfigToolApplicationTests
         exception.Message.ShouldNotContain("ghp_reason_token", StringComparison.Ordinal);
         exception.Message.ShouldNotContain("ghp_body_token", StringComparison.Ordinal);
         exception.Message.ShouldNotContain("ghp_header_token", StringComparison.Ordinal);
-        handler.Requests.Count.ShouldBe(2);
-        handler.Requests[1].Method.ShouldBe(HttpMethod.Post);
+        handler.Requests.Count.ShouldBe(3);
+        handler.Requests[2].Method.ShouldBe(HttpMethod.Post);
     }
 
     [Fact]
