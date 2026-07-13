@@ -63,6 +63,8 @@ Use WSJF only after cost-of-delay inputs are reliable and shared across teams.
 - Issues are execution records.
 - Projects are planning views.
 - Labels are stable facets such as area or type.
+- GitHub issue bodies remain GitHub-owned; roadmap sync only adds mapped labels.
+- Existing roadmap managed sections in issue bodies are left untouched.
 - Milestones are not used by the roadmap model by default.
 - Project fields may mirror score inputs and computed score, but they do not
   replace the repository model.

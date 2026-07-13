@@ -35,8 +35,8 @@ Pass `--root <path>` after the command to target another repository root.
 | `get blocking-overview` | Lists open items and their open direct blocker IDs. |
 | `get tags` / `get labels` | Lists tag or label counts. |
 | `get by-tag <tag>` / `get by-label <label>` | Lists items by taxonomy value. |
-| `sync github --dry-run` | Prints the GitHub issue updates that would be applied. |
-| `sync github --apply` | Updates existing mapped GitHub issues using `GH_TOKEN` or `GITHUB_TOKEN`. |
+| `sync github --dry-run` | Previews additive label updates for mapped GitHub issues. |
+| `sync github --apply` | Adds mapped roadmap labels to existing GitHub issues using `GH_TOKEN` or `GITHUB_TOKEN`. |
 
 ## Exit codes
 
@@ -46,5 +46,5 @@ Pass `--root <path>` after the command to target another repository root.
 | `1` | Verification failed or command execution failed. |
 | `2` | Command syntax is invalid. |
 
-GitHub sync preserves existing issue body content and only upserts the managed
-roadmap section. Labels are additive. The repository remains the source of truth.
+GitHub sync never modifies issue bodies. Labels are additive. The repository remains the source of
+truth.

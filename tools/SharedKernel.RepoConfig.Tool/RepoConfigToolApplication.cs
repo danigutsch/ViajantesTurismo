@@ -8,7 +8,10 @@ internal static class RepoConfigToolApplication
     private const decimal ParetoFraction = 0.2m;
     private const string Usage = "Usage: sharedkernel-repo <init|verify|diff|set|get|sync> [--root <path>]";
 
-    public static async Task<int> Run(string[] args, TextWriter output, TextWriter error, string workingDirectory, CancellationToken cancellationToken)
+    public static Task<int> Run(string[] args, TextWriter output, TextWriter error, string workingDirectory, CancellationToken cancellationToken) =>
+        Run(args, output, error, workingDirectory, httpClient: null, cancellationToken);
+
+    internal static async Task<int> Run(string[] args, TextWriter output, TextWriter error, string workingDirectory, HttpClient? httpClient, CancellationToken cancellationToken)
     {
         ArgumentNullException.ThrowIfNull(args);
         ArgumentNullException.ThrowIfNull(output);
@@ -25,7 +28,7 @@ internal static class RepoConfigToolApplication
         try
         {
             return args[0] == "sync"
-                ? await RunGitHubProjection(args[1..], output, error, workingDirectory, cancellationToken).ConfigureAwait(false)
+                ? await RunGitHubProjection(args[1..], output, error, workingDirectory, httpClient, cancellationToken).ConfigureAwait(false)
                 : RunCommand(args, output, error, workingDirectory);
         }
         catch (OperationCanceledException exception) when (!cancellationToken.IsCancellationRequested)
@@ -33,10 +36,14 @@ internal static class RepoConfigToolApplication
             await error.WriteLineAsync($"sharedkernel-repo: {exception.Message}".AsMemory(), cancellationToken).ConfigureAwait(false);
             return 1;
         }
+        catch (HttpRequestException)
+        {
+            await error.WriteLineAsync("sharedkernel-repo: GitHub sync request failed.".AsMemory(), cancellationToken).ConfigureAwait(false);
+            return 1;
+        }
         catch (Exception exception) when (exception is ArgumentException
             or IOException
             or JsonException
-            or HttpRequestException
             or NotSupportedException
             or UnauthorizedAccessException
             or InvalidOperationException)
@@ -183,8 +190,7 @@ internal static class RepoConfigToolApplication
                 var itemId = positionalArgs[0];
                 if (!project.Items.Any(item => string.Equals(item.Id, itemId, StringComparison.Ordinal)))
                 {
-                    error.WriteLine($"Unknown roadmap item id: {itemId}");
-                    return 1;
+                    throw new InvalidOperationException($"Unknown roadmap item id: {itemId}");
                 }
 
                 WriteItems(output, project.BlockersOf(itemId).OrderByPriority().Take(limit));
@@ -235,7 +241,7 @@ internal static class RepoConfigToolApplication
         }
     }
 
-    private static async Task<int> RunGitHubProjection(string[] args, TextWriter output, TextWriter error, string workingDirectory, CancellationToken cancellationToken)
+    private static async Task<int> RunGitHubProjection(string[] args, TextWriter output, TextWriter error, string workingDirectory, HttpClient? httpClient, CancellationToken cancellationToken)
     {
         var parsed = TryParseGitHubProjection(args, workingDirectory, error);
         if (parsed is null)
@@ -245,7 +251,7 @@ internal static class RepoConfigToolApplication
 
         var (rootPath, dryRun) = parsed.Value;
         var project = RoadmapProject.Load(rootPath);
-        var syncer = new GitHubRoadmapSyncer(project);
+        var syncer = new GitHubRoadmapSyncer(project, httpClient);
         var result = dryRun
             ? syncer.Preview()
             : await syncer.Apply(cancellationToken).ConfigureAwait(false);

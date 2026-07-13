@@ -241,6 +241,34 @@ public sealed class RepoConfigToolCoverageTests
     }
 
     [Fact]
+    public async Task Sync_github_apply_reports_safe_diagnostic_for_http_request_errors()
+    {
+        // Arrange
+        using var workspace = new TemporaryRepoConfigWorkspace();
+        using var initOutput = new StringWriter(CultureInfo.InvariantCulture);
+        using var initError = new StringWriter(CultureInfo.InvariantCulture);
+        using var output = new StringWriter(CultureInfo.InvariantCulture);
+        using var error = new StringWriter(CultureInfo.InvariantCulture);
+        (await RepoConfigToolApplication.Run(["init", "--root", workspace.RootPath], initOutput, initError, workspace.RootPath, TestContext.Current.CancellationToken)).ShouldBe(0);
+        RoadmapConfigTestOperations.EnableGitHubSync(workspace);
+        var itemText = workspace.ReadFile("roadmap/items/RM-001-roadmap-gitops.json");
+        workspace.WriteFile("roadmap/items/RM-001-roadmap-gitops.json", itemText.Replace("\"labels\": [", "\"integrations\": { \"github\": { \"issue\": 997 } },\n  \"labels\": [", StringComparison.Ordinal));
+        using var handler = TestHttpMessageHandler.FromException(new HttpRequestException("ghp_transport_token"));
+        using var httpClient = new HttpClient(handler);
+
+        // Act
+        var exitCode = await RepoConfigToolApplication.Run(["sync", "github", "--apply", "--root", workspace.RootPath], output, error, workspace.RootPath, httpClient, TestContext.Current.CancellationToken);
+        var outputText = output.ToString();
+        var errorText = error.ToString();
+
+        // Assert
+        exitCode.ShouldBe(1);
+        outputText.ShouldBe(string.Empty);
+        errorText.ShouldBe("sharedkernel-repo: GitHub sync request failed." + Environment.NewLine);
+        errorText.ShouldNotContain("ghp_transport_token", StringComparison.Ordinal);
+    }
+
+    [Fact]
     public async Task Verify_reports_config_and_item_policy_violations()
     {
         // Arrange

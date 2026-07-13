@@ -535,6 +535,28 @@ public sealed class RepoConfigToolApplicationTests
     }
 
     [Fact]
+    public async Task Get_blockers_of_prefixes_unknown_item_error()
+    {
+        // Arrange
+        using var workspace = new TemporaryRepoConfigWorkspace();
+        using var initOutput = new StringWriter(CultureInfo.InvariantCulture);
+        using var initError = new StringWriter(CultureInfo.InvariantCulture);
+        using var getOutput = new StringWriter(CultureInfo.InvariantCulture);
+        using var getError = new StringWriter(CultureInfo.InvariantCulture);
+        (await RepoConfigToolApplication.Run(["init", "--root", workspace.RootPath], initOutput, initError, workspace.RootPath, TestContext.Current.CancellationToken)).ShouldBe(0);
+
+        // Act
+        var exitCode = await RepoConfigToolApplication.Run(["get", "blockers-of", "RM-999", "--root", workspace.RootPath], getOutput, getError, workspace.RootPath, TestContext.Current.CancellationToken);
+        var outputText = getOutput.ToString();
+        var errorText = getError.ToString();
+
+        // Assert
+        exitCode.ShouldBe(1);
+        outputText.ShouldBe(string.Empty);
+        errorText.ShouldBe("sharedkernel-repo: Unknown roadmap item id: RM-999" + Environment.NewLine);
+    }
+
+    [Fact]
     public async Task Sync_returns_clean_error_for_noncaller_cancellation()
     {
         // Arrange
@@ -601,7 +623,7 @@ public sealed class RepoConfigToolApplicationTests
 
         // Assert
         exitCode.ShouldBe(0);
-        outputText.ShouldContain("dry-run: update owner/repository#997 from RM-001", StringComparison.Ordinal);
+        outputText.ShouldContain("dry-run: sync labels for owner/repository#997 from RM-001", StringComparison.Ordinal);
     }
 
     [Fact]
@@ -1058,54 +1080,12 @@ public sealed class RepoConfigToolApplicationTests
         var result = syncer.Preview();
 
         // Assert
-        result.Messages[0].ShouldBe("dry-run: update owner/repository#997 from RM-001");
-        result.Messages[1].ShouldBe("dry-run: update owner/repository#998 from RM-000");
+        result.Messages[0].ShouldBe("dry-run: sync labels for owner/repository#997 from RM-001");
+        result.Messages[1].ShouldBe("dry-run: sync labels for owner/repository#998 from RM-000");
     }
 
     [Fact]
-    public void Sync_managed_section_rejects_malformed_markers()
-    {
-        // Arrange
-        const string CurrentBody = "before\n<!-- roadmap:managed:start -->\nmissing end";
-        const string ManagedSection = "<!-- roadmap:managed:start -->\nnew\n<!-- roadmap:managed:end -->";
-
-        // Act
-        var action = (Func<object?>)(() => GitHubRoadmapSyncer.UpsertManagedSection(CurrentBody, ManagedSection));
-
-        // Assert
-        action.ShouldThrow<InvalidOperationException>().Message.ShouldContain("malformed roadmap managed-section markers", StringComparison.Ordinal);
-    }
-
-    [Fact]
-    public void Sync_managed_section_preserves_unmanaged_whitespace()
-    {
-        // Arrange
-        var currentBody = $"  before  {Environment.NewLine}<!-- roadmap:managed:start -->old<!-- roadmap:managed:end -->{Environment.NewLine}  after  ";
-        var managedSection = $"<!-- roadmap:managed:start -->{Environment.NewLine}new{Environment.NewLine}<!-- roadmap:managed:end -->";
-
-        // Act
-        var result = GitHubRoadmapSyncer.UpsertManagedSection(currentBody, managedSection);
-
-        // Assert
-        result.ShouldBe($"  before  {Environment.NewLine}{managedSection}{Environment.NewLine}  after  ");
-    }
-
-    [Fact]
-    public void Sync_managed_section_appends_with_lf_line_breaks()
-    {
-        // Arrange
-        const string CurrentBody = "before";
-        const string ManagedSection = "<!-- roadmap:managed:start -->\nnew\n<!-- roadmap:managed:end -->";
-
-        // Act
-        var result = GitHubRoadmapSyncer.UpsertManagedSection(CurrentBody, ManagedSection);
-
-        // Assert
-        result.ShouldBe("before\n\n<!-- roadmap:managed:start -->\nnew\n<!-- roadmap:managed:end -->");
-    }
-
-    [Fact]
-    public async Task Sync_github_apply_updates_managed_section_and_labels()
+    public async Task Sync_github_apply_syncs_labels_after_confirming_the_mapping_is_not_a_pull_request()
     {
         // Arrange
         using var workspace = new TemporaryRepoConfigWorkspace();
@@ -1117,9 +1097,7 @@ public sealed class RepoConfigToolApplicationTests
         workspace.WriteFile("roadmap/items/RM-001-roadmap-gitops.json", itemText.Replace("\"labels\": [", "\"integrations\": { \"github\": { \"issue\": 997 } },\n  \"labels\": [", StringComparison.Ordinal));
         var project = RoadmapProject.Load(workspace.RootPath);
         using var handler = new TestHttpMessageHandler();
-        handler.EnqueueJson(HttpStatusCode.OK, "{ \"body\": \"before\" }");
-        handler.EnqueueJson(HttpStatusCode.OK, "{ \"body\": \"before\" }");
-        handler.EnqueueJson(HttpStatusCode.OK, "{}");
+        handler.EnqueueJson(HttpStatusCode.NotFound, "{}");
         handler.EnqueueJson(HttpStatusCode.OK, "{}");
         using var httpClient = new HttpClient(handler);
         var syncer = new GitHubRoadmapSyncer(project, httpClient);
@@ -1128,17 +1106,42 @@ public sealed class RepoConfigToolApplicationTests
         var result = await syncer.Apply(TestContext.Current.CancellationToken);
 
         // Assert
-        result.Messages.ShouldContain("updated owner/repository#997 from RM-001");
-        handler.Requests.Count.ShouldBe(4);
+        result.Messages.ShouldContain("updated labels for owner/repository#997 from RM-001");
+        handler.Requests.Count.ShouldBe(2);
         handler.Requests[0].Method.ShouldBe(HttpMethod.Get);
-        handler.Requests[1].Method.ShouldBe(HttpMethod.Get);
-        handler.Requests[2].Method.ShouldBe(HttpMethod.Patch);
-        handler.Requests[2].Body.ShouldNotBeNull();
-        handler.Requests[2].Body.ShouldContain("roadmap:managed:start", StringComparison.Ordinal);
-        handler.Requests[2].Body.ShouldNotContain("\"title\"", StringComparison.Ordinal);
-        handler.Requests[3].Method.ShouldBe(HttpMethod.Post);
-        handler.Requests[3].Body.ShouldNotBeNull();
-        handler.Requests[3].Body.ShouldContain("area: tooling", StringComparison.Ordinal);
+        handler.Requests[0].PathAndQuery.ShouldBe("/repos/owner/repository/pulls/997");
+        handler.Requests[1].Method.ShouldBe(HttpMethod.Post);
+        handler.Requests[1].PathAndQuery.ShouldBe("/repos/owner/repository/issues/997/labels");
+        handler.Requests.ShouldNotContain(request => request.Method == HttpMethod.Patch);
+        handler.Requests[1].Body.ShouldNotBeNull();
+        handler.Requests[1].Body.ShouldContain("area: tooling", StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public async Task Sync_github_apply_skips_mapped_items_without_labels()
+    {
+        // Arrange
+        using var workspace = new TemporaryRepoConfigWorkspace();
+        using var initOutput = new StringWriter(CultureInfo.InvariantCulture);
+        using var initError = new StringWriter(CultureInfo.InvariantCulture);
+        (await RepoConfigToolApplication.Run(["init", "--root", workspace.RootPath], initOutput, initError, workspace.RootPath, TestContext.Current.CancellationToken)).ShouldBe(0);
+        RoadmapConfigTestOperations.EnableGitHubSync(workspace);
+        var itemText = workspace.ReadFile("roadmap/items/RM-001-roadmap-gitops.json");
+        var mappedItem = itemText
+            .Replace("\"labels\": [", "\"integrations\": { \"github\": { \"issue\": 997 } },\n  \"labels\": [", StringComparison.Ordinal)
+            .Replace("\"labels\": [\n    \"area: tooling\",\n    \"configuration\",\n    \"documentation\"\n  ]", "\"labels\": []", StringComparison.Ordinal);
+        workspace.WriteFile("roadmap/items/RM-001-roadmap-gitops.json", mappedItem);
+        var project = RoadmapProject.Load(workspace.RootPath);
+        using var handler = new TestHttpMessageHandler();
+        using var httpClient = new HttpClient(handler);
+        var syncer = new GitHubRoadmapSyncer(project, httpClient);
+
+        // Act
+        var result = await syncer.Apply(TestContext.Current.CancellationToken);
+
+        // Assert
+        result.Messages.ShouldContain("skipped owner/repository#997 from RM-001 because it has no labels");
+        handler.Requests.ShouldBeEmpty();
     }
 
     [Fact]
@@ -1168,77 +1171,13 @@ public sealed class RepoConfigToolApplicationTests
         result.Messages.Count.ShouldBe(2);
     }
 
-    [Fact]
-    public async Task Sync_github_apply_rejects_issue_body_change_before_patch()
-    {
-        // Arrange
-        using var workspace = new TemporaryRepoConfigWorkspace();
-        using var initOutput = new StringWriter(CultureInfo.InvariantCulture);
-        using var initError = new StringWriter(CultureInfo.InvariantCulture);
-        (await RepoConfigToolApplication.Run(["init", "--root", workspace.RootPath], initOutput, initError, workspace.RootPath, TestContext.Current.CancellationToken)).ShouldBe(0);
-        RoadmapConfigTestOperations.EnableGitHubSync(workspace);
-        var itemText = workspace.ReadFile("roadmap/items/RM-001-roadmap-gitops.json");
-        workspace.WriteFile("roadmap/items/RM-001-roadmap-gitops.json", itemText.Replace("\"labels\": [", "\"integrations\": { \"github\": { \"issue\": 997 } },\n  \"labels\": [", StringComparison.Ordinal));
-        var project = RoadmapProject.Load(workspace.RootPath);
-        using var handler = new TestHttpMessageHandler();
-        handler.EnqueueJson(HttpStatusCode.OK, "{ \"body\": \"before\" }");
-        handler.EnqueueJson(HttpStatusCode.OK, "{ \"body\": \"concurrent edit\" }");
-        using var httpClient = new HttpClient(handler);
-        var syncer = new GitHubRoadmapSyncer(project, httpClient);
-
-        // Act
-        var exception = await ShouldAssertionExtensions.ShouldThrow<InvalidOperationException>(
-            () => syncer.Apply(TestContext.Current.CancellationToken));
-
-        // Assert
-        exception.Message.ShouldContain("GitHub issue body changed before update for #997", StringComparison.Ordinal);
-        handler.Requests.Count.ShouldBe(2);
-        handler.Requests[0].Method.ShouldBe(HttpMethod.Get);
-        handler.Requests[1].Method.ShouldBe(HttpMethod.Get);
-    }
-
-    [Fact]
-    public async Task Sync_github_apply_does_not_sync_labels_after_issue_update_failure()
-    {
-        // Arrange
-        using var workspace = new TemporaryRepoConfigWorkspace();
-        using var initOutput = new StringWriter(CultureInfo.InvariantCulture);
-        using var initError = new StringWriter(CultureInfo.InvariantCulture);
-        (await RepoConfigToolApplication.Run(["init", "--root", workspace.RootPath], initOutput, initError, workspace.RootPath, TestContext.Current.CancellationToken)).ShouldBe(0);
-        RoadmapConfigTestOperations.EnableGitHubSync(workspace);
-        var itemText = workspace.ReadFile("roadmap/items/RM-001-roadmap-gitops.json");
-        workspace.WriteFile("roadmap/items/RM-001-roadmap-gitops.json", itemText.Replace("\"labels\": [", "\"integrations\": { \"github\": { \"issue\": 997 } },\n  \"labels\": [", StringComparison.Ordinal));
-        var project = RoadmapProject.Load(workspace.RootPath);
-        using var handler = new TestHttpMessageHandler();
-        handler.EnqueueJson(HttpStatusCode.OK, "{ \"body\": \"before\" }");
-        handler.EnqueueJson(HttpStatusCode.OK, "{ \"body\": \"before\" }");
-        handler.Enqueue(GitHubSyncTestResponseFactory.UntrustedError(HttpStatusCode.UnprocessableEntity));
-        using var httpClient = new HttpClient(handler);
-        var syncer = new GitHubRoadmapSyncer(project, httpClient);
-
-        // Act
-        var exception = await ShouldAssertionExtensions.ShouldThrow<InvalidOperationException>(
-            () => syncer.Apply(TestContext.Current.CancellationToken));
-
-        // Assert
-        exception.Message.ShouldBe("GitHub issue update failed for #997: HTTP 422 (request validation failed).");
-        exception.Message.ShouldNotContain("ghp_reason_token", StringComparison.Ordinal);
-        exception.Message.ShouldNotContain("ghp_body_token", StringComparison.Ordinal);
-        exception.Message.ShouldNotContain("ghp_header_token", StringComparison.Ordinal);
-        handler.Requests.Count.ShouldBe(3);
-        handler.Requests[0].Method.ShouldBe(HttpMethod.Get);
-        handler.Requests[1].Method.ShouldBe(HttpMethod.Get);
-        handler.Requests[2].Method.ShouldBe(HttpMethod.Patch);
-    }
-
     [Theory]
-    [InlineData(HttpStatusCode.Unauthorized, "GitHub issue read failed for #997: HTTP 401 (authentication required).")]
-    [InlineData(HttpStatusCode.Forbidden, "GitHub issue read failed for #997: HTTP 403 (access denied or rate limited).")]
-    [InlineData(HttpStatusCode.NotFound, "GitHub issue read failed for #997: HTTP 404 (resource not found or inaccessible).")]
-    [InlineData(HttpStatusCode.UnprocessableEntity, "GitHub issue read failed for #997: HTTP 422 (request validation failed).")]
-    [InlineData(HttpStatusCode.TooManyRequests, "GitHub issue read failed for #997: HTTP 429 (rate limited).")]
-    [InlineData(HttpStatusCode.BadGateway, "GitHub issue read failed for #997: HTTP 502.")]
-    public async Task Sync_github_apply_uses_safe_status_hints_for_issue_read_failures(HttpStatusCode statusCode, string expectedMessage)
+    [InlineData(HttpStatusCode.Unauthorized, "GitHub pull request check failed for #997: HTTP 401 (authentication required).")]
+    [InlineData(HttpStatusCode.Forbidden, "GitHub pull request check failed for #997: HTTP 403 (access denied or rate limited).")]
+    [InlineData(HttpStatusCode.UnprocessableEntity, "GitHub pull request check failed for #997: HTTP 422 (request validation failed).")]
+    [InlineData(HttpStatusCode.TooManyRequests, "GitHub pull request check failed for #997: HTTP 429 (rate limited).")]
+    [InlineData(HttpStatusCode.BadGateway, "GitHub pull request check failed for #997: HTTP 502.")]
+    public async Task Sync_github_apply_uses_safe_status_hints_for_pull_request_check_failures(HttpStatusCode statusCode, string expectedMessage)
     {
         // Arrange
         using var workspace = new TemporaryRepoConfigWorkspace();
@@ -1265,6 +1204,7 @@ public sealed class RepoConfigToolApplicationTests
         exception.Message.ShouldNotContain("ghp_header_token", StringComparison.Ordinal);
         handler.Requests.Count.ShouldBe(1);
         handler.Requests[0].Method.ShouldBe(HttpMethod.Get);
+        handler.Requests[0].PathAndQuery.ShouldBe("/repos/owner/repository/pulls/997");
     }
 
     [Fact]
@@ -1280,9 +1220,7 @@ public sealed class RepoConfigToolApplicationTests
         workspace.WriteFile("roadmap/items/RM-001-roadmap-gitops.json", itemText.Replace("\"labels\": [", "\"integrations\": { \"github\": { \"issue\": 997 } },\n  \"labels\": [", StringComparison.Ordinal));
         var project = RoadmapProject.Load(workspace.RootPath);
         using var handler = new TestHttpMessageHandler();
-        handler.EnqueueJson(HttpStatusCode.OK, "{ \"body\": \"before\" }");
-        handler.EnqueueJson(HttpStatusCode.OK, "{ \"body\": \"before\" }");
-        handler.EnqueueJson(HttpStatusCode.OK, "{}");
+        handler.EnqueueJson(HttpStatusCode.NotFound, "{}");
         handler.Enqueue(GitHubSyncTestResponseFactory.UntrustedError(HttpStatusCode.UnprocessableEntity));
         using var httpClient = new HttpClient(handler);
         var syncer = new GitHubRoadmapSyncer(project, httpClient);
@@ -1296,8 +1234,8 @@ public sealed class RepoConfigToolApplicationTests
         exception.Message.ShouldNotContain("ghp_reason_token", StringComparison.Ordinal);
         exception.Message.ShouldNotContain("ghp_body_token", StringComparison.Ordinal);
         exception.Message.ShouldNotContain("ghp_header_token", StringComparison.Ordinal);
-        handler.Requests.Count.ShouldBe(4);
-        handler.Requests[3].Method.ShouldBe(HttpMethod.Post);
+        handler.Requests.Count.ShouldBe(2);
+        handler.Requests[1].Method.ShouldBe(HttpMethod.Post);
     }
 
     [Fact]
@@ -1313,7 +1251,7 @@ public sealed class RepoConfigToolApplicationTests
         workspace.WriteFile("roadmap/items/RM-001-roadmap-gitops.json", itemText.Replace("\"labels\": [", "\"integrations\": { \"github\": { \"issue\": 997 } },\n  \"labels\": [", StringComparison.Ordinal));
         var project = RoadmapProject.Load(workspace.RootPath);
         using var handler = new TestHttpMessageHandler();
-        handler.EnqueueJson(HttpStatusCode.OK, "{ \"body\": \"before\", \"pull_request\": {} }");
+        handler.EnqueueJson(HttpStatusCode.OK, "{}");
         using var httpClient = new HttpClient(handler);
         var syncer = new GitHubRoadmapSyncer(project, httpClient);
 
@@ -1325,6 +1263,7 @@ public sealed class RepoConfigToolApplicationTests
         exception.Message.ShouldContain("points to a pull request", StringComparison.Ordinal);
         handler.Requests.Count.ShouldBe(1);
         handler.Requests[0].Method.ShouldBe(HttpMethod.Get);
+        handler.Requests[0].PathAndQuery.ShouldBe("/repos/owner/repository/pulls/997");
     }
 
     [Fact]

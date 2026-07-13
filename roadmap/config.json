@@ -48,7 +48,6 @@
       "enabled": true,
       "repository": "danigutsch/ViajantesTurismo",
       "sourceOfTruth": "projection",
-      "issueBodyOwnership": "roadmap-managed-section",
       "projectFieldMapping": {
         "status": "Status",
         "theme": "Theme",

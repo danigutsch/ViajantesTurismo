@@ -7,7 +7,7 @@
   "status": "ready",
   "order": 50,
   "theme": "repo-operations",
-  "outcome": "Roadmap items can be projected into existing GitHub issues with a safe managed section and additive labels.",
+  "outcome": "Roadmap items can project additive labels into existing GitHub issues without modifying issue bodies.",
   "size": "M",
   "scoring": {
     "reach": 20,
