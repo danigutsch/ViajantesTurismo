@@ -42,4 +42,21 @@ public sealed class SeaweedFsResourceTests
         // Assert
         volume.Source.ShouldBe("seaweed-test-data");
     }
+
+    [Fact]
+    public void AddSeaweedFs_uses_default_data_volume_when_dcp_resource_name_suffix_is_whitespace()
+    {
+        // Arrange
+        var builder = DistributedApplication.CreateBuilder([]);
+        builder.Configuration["DcpPublisher:ResourceNameSuffix"] = " ";
+
+        // Act
+        var seaweedFs = builder.AddSeaweedFs("seaweed");
+        var volume = seaweedFs.Resource.Annotations
+            .OfType<ContainerMountAnnotation>()
+            .ShouldHaveSingleItem();
+
+        // Assert
+        volume.Source.ShouldBe("seaweed-data");
+    }
 }
