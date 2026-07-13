@@ -24,4 +24,25 @@ public sealed class ManagementSecurityDbContextFactoryTests
         dataProtectionKeyEntity.FindAnnotation("Relational:Schema")?.Value.ShouldBe(ManagementSecurityDefaults.SchemaName);
         dataProtectionKeyEntity.FindAnnotation("Relational:TableName")?.Value.ShouldBe("data_protection_keys");
     }
+
+    [Fact]
+    public void Maps_the_ticket_cache_table_and_expiration_index()
+    {
+        // Arrange
+        var factory = new ManagementSecurityDbContextFactory();
+
+        // Act
+        using var context = factory.CreateDbContext([]);
+        var entityType = context.Model.GetEntityTypes().SingleOrDefault(
+            entity => entity.FindAnnotation("Relational:TableName")?.Value?.Equals("management_cookie_tickets") == true);
+
+        // Assert
+        var ticketCacheEntity = entityType.ShouldNotBeNull();
+        var expirationIndex = ticketCacheEntity.GetIndexes().SingleOrDefault(
+            index => index.Properties.Count == 1 && index.Properties[0].Name == "ExpiresAtTime");
+        var schema = ticketCacheEntity.FindAnnotation("Relational:Schema")?.Value as string;
+        schema.ShouldNotBeNull().ShouldBe(ManagementSecurityDefaults.SchemaName);
+        ticketCacheEntity.FindPrimaryKey().ShouldNotBeNull();
+        expirationIndex.ShouldNotBeNull();
+    }
 }

@@ -27,6 +27,13 @@ internal static class PublicWebEndpointTestsHelpers
             string? environment = null,
             string? canonicalOrigin = null)
     {
+        IReadOnlyDictionary<string, string?>? configuration = canonicalOrigin is null
+            ? null
+            : new Dictionary<string, string?>
+            {
+                [$"{PublicWebSitemapOptions.SectionName}:CanonicalOrigin"] = canonicalOrigin
+            };
+
         return WebApplicationTestHost.Create<IPublicWebAssemblyMarker>(
             environment,
             services =>
@@ -35,11 +42,7 @@ internal static class PublicWebEndpointTestsHelpers
                 services.RemoveAll<IBrandingApiClient>();
                 services.AddSingleton(catalogApiClient ?? new FakePublicCatalogApiClient());
                 services.AddSingleton(brandingApiClient ?? new FakeBrandingApiClient());
-
-                if (canonicalOrigin is not null)
-                {
-                    services.PostConfigure<PublicWebSitemapOptions>(options => options.CanonicalOrigin = canonicalOrigin);
-                }
-            });
+            },
+            configuration: configuration);
     }
 }

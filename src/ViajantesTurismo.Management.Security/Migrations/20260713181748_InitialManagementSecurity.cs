@@ -1,4 +1,5 @@
-﻿using Microsoft.EntityFrameworkCore.Migrations;
+﻿using System;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
 #nullable disable
@@ -29,28 +30,38 @@ namespace ViajantesTurismo.Management.Security.Migrations
                     table.PrimaryKey("PK_data_protection_keys", x => x.Id);
                 });
 
-            migrationBuilder.Sql(
-                """
-                CREATE TABLE IF NOT EXISTS security.management_cookie_tickets (
-                    id VARCHAR(449) COLLATE "C" PRIMARY KEY,
-                    value BYTEA NOT NULL,
-                    expiresattime TIMESTAMPTZ NOT NULL,
-                    slidingexpirationinseconds BIGINT NULL,
-                    absoluteexpiration TIMESTAMPTZ NULL
-                );
-                CREATE INDEX IF NOT EXISTS ix_expiresattime
-                    ON security.management_cookie_tickets (expiresattime)
-                    WITH (deduplicate_items = true);
-                """);
+            migrationBuilder.CreateTable(
+                name: "management_cookie_tickets",
+                schema: "security",
+                columns: table => new
+                {
+                    id = table.Column<string>(type: "character varying(449)", maxLength: 449, nullable: false, collation: "C"),
+                    value = table.Column<byte[]>(type: "bytea", nullable: false),
+                    expiresattime = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: false),
+                    slidingexpirationinseconds = table.Column<long>(type: "bigint", nullable: true),
+                    absoluteexpiration = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_management_cookie_tickets", x => x.id);
+                });
+
+            migrationBuilder.CreateIndex(
+                name: "ix_expiresattime",
+                schema: "security",
+                table: "management_cookie_tickets",
+                column: "expiresattime");
         }
 
         /// <inheritdoc />
         protected override void Down(MigrationBuilder migrationBuilder)
         {
-            migrationBuilder.Sql("DROP TABLE IF EXISTS security.management_cookie_tickets;");
-
             migrationBuilder.DropTable(
                 name: "data_protection_keys",
+                schema: "security");
+
+            migrationBuilder.DropTable(
+                name: "management_cookie_tickets",
                 schema: "security");
         }
     }

@@ -12,6 +12,8 @@ public sealed class ManagementSecurityDbContext(DbContextOptions<ManagementSecur
     /// <inheritdoc />
     public DbSet<DataProtectionKey> DataProtectionKeys => Set<DataProtectionKey>();
 
+    internal DbSet<ManagementCookieTicketCacheEntry> TicketCacheEntries => Set<ManagementCookieTicketCacheEntry>();
+
     /// <inheritdoc />
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -19,5 +21,20 @@ public sealed class ManagementSecurityDbContext(DbContextOptions<ManagementSecur
 
         modelBuilder.Entity<DataProtectionKey>()
             .ToTable("data_protection_keys", ManagementSecurityDefaults.SchemaName);
+
+        modelBuilder.Entity<ManagementCookieTicketCacheEntry>(entity =>
+        {
+            entity.ToTable("management_cookie_tickets", ManagementSecurityDefaults.SchemaName);
+            entity.HasKey(entry => entry.Id);
+            entity.Property(entry => entry.Id)
+                .HasMaxLength(449)
+                .UseCollation("C")
+                .HasColumnName("id");
+            entity.Property(entry => entry.Value).HasColumnName("value");
+            entity.Property(entry => entry.ExpiresAtTime).HasColumnName("expiresattime");
+            entity.Property(entry => entry.SlidingExpirationInSeconds).HasColumnName("slidingexpirationinseconds");
+            entity.Property(entry => entry.AbsoluteExpiration).HasColumnName("absoluteexpiration");
+            entity.HasIndex(entry => entry.ExpiresAtTime).HasDatabaseName("ix_expiresattime");
+        });
     }
 }
