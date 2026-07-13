@@ -1,5 +1,6 @@
 using Aspire.Hosting;
 using Aspire.Hosting.ApplicationModel;
+using Microsoft.Extensions.Logging.Abstractions;
 
 namespace ViajantesTurismo.ArchitectureTests.Conventions;
 
@@ -8,7 +9,7 @@ public sealed class SeaweedFsResourceTests
     private const string ResourceNameSuffixConfigurationKey = "DcpPublisher:ResourceNameSuffix";
 
     [Fact]
-    public void AddSeaweedFs_uses_name_scoped_data_volume_by_default()
+    public async Task AddSeaweedFs_uses_name_scoped_data_volume_by_default()
     {
         // Arrange
         var builder = DistributedApplication.CreateBuilder([]);
@@ -19,11 +20,24 @@ public sealed class SeaweedFsResourceTests
         var volume = seaweedFs.Resource.Annotations
             .OfType<ContainerMountAnnotation>()
             .ShouldHaveSingleItem();
+        var environmentConfiguration = await ExecutionConfigurationBuilder
+            .Create(seaweedFs.Resource)
+            .WithEnvironmentVariablesConfig()
+            .BuildAsync(
+                new DistributedApplicationExecutionContext(DistributedApplicationOperation.Run),
+                NullLogger.Instance,
+                TestContext.Current.CancellationToken);
+        var bucketEnvironment = environmentConfiguration.EnvironmentVariablesWithUnprocessed
+            .Where(variable => variable.Key == "S3_BUCKET")
+            .ShouldHaveSingleItem();
 
         // Assert
         volume.Source.ShouldBe("seaweed-data");
         volume.Target.ShouldBe("/data");
         volume.Type.ShouldBe(ContainerMountType.Volume);
+        seaweedFs.Resource.BucketParameter.ShouldBeSameAs(bucket.Resource);
+        bucketEnvironment.Value.Unprocessed.ShouldBeSameAs(bucket.Resource);
+        bucketEnvironment.Value.Processed.ShouldBe("media");
         seaweedFs.Resource.Annotations
             .OfType<ContainerLifetimeAnnotation>()
             .ShouldBeEmpty();
