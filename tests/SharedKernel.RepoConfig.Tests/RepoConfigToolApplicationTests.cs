@@ -77,23 +77,24 @@ public sealed class RepoConfigToolApplicationTests
     }
 
     [Fact]
-    public void Config_schema_declares_shipped_config_properties()
+    public void Config_schema_matches_shipped_config_contract()
     {
         // Arrange
-        using var schemaDocument = JsonDocument.Parse(RoadmapTemplates.ConfigSchemaJson);
-        var properties = schemaDocument.RootElement.GetProperty("properties");
+        using var configDocument = JsonDocument.Parse(RoadmapConfigSchemaTestFiles.ReadCheckedInConfig());
+        using var checkedInSchemaDocument = JsonDocument.Parse(RoadmapConfigSchemaTestFiles.ReadCheckedInSchema());
+        using var generatedSchemaDocument = JsonDocument.Parse(RoadmapTemplates.ConfigSchemaJson);
 
         // Act
-        var tagFields = properties.GetProperty("project").GetProperty("properties").GetProperty("tagFields");
-        var ranges = properties.GetProperty("scoring").GetProperty("properties").GetProperty("ranges");
-        var github = properties.GetProperty("integrations").GetProperty("properties").GetProperty("github").GetProperty("properties");
+        var checkedInSchema = checkedInSchemaDocument.RootElement;
+        var generatedSchema = generatedSchemaDocument.RootElement;
+        var projectSchema = checkedInSchema.GetProperty("properties").GetProperty("project");
+        var githubSchema = checkedInSchema.GetProperty("properties").GetProperty("integrations").GetProperty("properties").GetProperty("github");
 
         // Assert
-        tagFields.GetProperty("type").GetString().ShouldBe("array");
-        ranges.GetProperty("type").GetString().ShouldBe("object");
-        github.GetProperty("enabled").GetProperty("type").GetString().ShouldBe("boolean");
-        github.GetProperty("repository").GetProperty("type").GetString().ShouldBe("string");
-        github.GetProperty("sourceOfTruth").GetProperty("const").GetString().ShouldBe("projection");
+        JsonElement.DeepEquals(checkedInSchema, generatedSchema).ShouldBeTrue();
+        RoadmapConfigSchemaTestFiles.ShouldDeclareConfigProperties(configDocument.RootElement, checkedInSchema);
+        projectSchema.GetProperty("additionalProperties").GetBoolean().ShouldBeFalse();
+        githubSchema.GetProperty("additionalProperties").GetBoolean().ShouldBeFalse();
     }
 
     [Fact]
@@ -164,6 +165,28 @@ public sealed class RepoConfigToolApplicationTests
         github.GetProperty("enabled").GetBoolean().ShouldBeFalse();
         github.GetProperty("sourceOfTruth").GetString().ShouldBe("projection");
         github.GetProperty("repository").GetString().ShouldBe("example/repository");
+    }
+
+    [Fact]
+    public async Task Verify_rejects_obsolete_github_project_field_mapping()
+    {
+        // Arrange
+        using var workspace = new TemporaryRepoConfigWorkspace();
+        using var initOutput = new StringWriter(CultureInfo.InvariantCulture);
+        using var initError = new StringWriter(CultureInfo.InvariantCulture);
+        using var verifyOutput = new StringWriter(CultureInfo.InvariantCulture);
+        using var verifyError = new StringWriter(CultureInfo.InvariantCulture);
+        (await RepoConfigToolApplication.Run(["init", "--root", workspace.RootPath], initOutput, initError, workspace.RootPath, TestContext.Current.CancellationToken)).ShouldBe(0);
+        var configText = workspace.ReadFile("roadmap/config.json");
+        workspace.WriteFile("roadmap/config.json", configText.Replace("\"sourceOfTruth\": \"projection\"", "\"sourceOfTruth\": \"projection\",\n      \"projectFieldMapping\": {}", StringComparison.Ordinal));
+
+        // Act
+        var exitCode = await RepoConfigToolApplication.Run(["verify", "--root", workspace.RootPath], verifyOutput, verifyError, workspace.RootPath, TestContext.Current.CancellationToken);
+        var errorText = verifyError.ToString();
+
+        // Assert
+        exitCode.ShouldBe(1);
+        errorText.ShouldContain("integrations.github.projectFieldMapping is not supported.", StringComparison.Ordinal);
     }
 
     [Theory]

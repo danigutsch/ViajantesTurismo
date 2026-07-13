@@ -109,7 +109,8 @@
           "minItems": 1,
           "uniqueItems": true
         }
-      }
+      },
+      "additionalProperties": false
     },
     "integrations": {
       "type": "object",
@@ -126,7 +127,8 @@
             "sourceOfTruth": {
               "const": "projection"
             }
-          }
+          },
+          "additionalProperties": false
         }
       }
     }

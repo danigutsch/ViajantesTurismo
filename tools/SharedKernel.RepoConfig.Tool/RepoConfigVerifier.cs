@@ -668,6 +668,11 @@ internal static class RepoConfigVerifier
             return;
         }
 
+        if (github.TryGetProperty("projectFieldMapping", out _))
+        {
+            issues.Add(new RepoConfigIssue(relativePath, "integrations.github.projectFieldMapping is not supported."));
+        }
+
         if (github.TryGetProperty("enabled", out var enabled) && enabled.ValueKind is not JsonValueKind.True and not JsonValueKind.False)
         {
             issues.Add(new RepoConfigIssue(relativePath, "integrations.github.enabled must be a Boolean."));

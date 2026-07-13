@@ -176,7 +176,8 @@ internal static class RoadmapTemplates
                   "minItems": 1,
                   "uniqueItems": true
                 }
-              }
+              },
+              "additionalProperties": false
             },
             "integrations": {
               "type": "object",
@@ -193,7 +194,8 @@ internal static class RoadmapTemplates
                     "sourceOfTruth": {
                       "const": "projection"
                     }
-                  }
+                  },
+                  "additionalProperties": false
                 }
               }
             }
