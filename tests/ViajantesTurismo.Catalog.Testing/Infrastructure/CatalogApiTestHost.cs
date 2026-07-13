@@ -1,5 +1,4 @@
 using Microsoft.Extensions.Diagnostics.HealthChecks;
-using Microsoft.Extensions.Hosting;
 using SharedKernel.AI;
 using SharedKernel.AspNetCore;
 using SharedKernel.Testing.AspNetCore;
@@ -79,13 +78,11 @@ internal static class CatalogApiTestHost
         IImageTextGenerator? imageTextGenerator,
         bool authenticateClient = true)
     {
-        var configuration = string.Equals(environment, Environments.Production, StringComparison.Ordinal)
-            ? new Dictionary<string, string?>
-            {
-                [ApiAuthenticationDefaults.AuthorityConfigurationKey] = ApiTestAuthentication.Authority,
-                [ApiAuthenticationDefaults.IssuerConfigurationKey] = ApiTestAuthentication.Authority
-            }
-            : null;
+        var configuration = new Dictionary<string, string?>
+        {
+            [ApiAuthenticationDefaults.AuthorityConfigurationKey] = ApiTestAuthentication.Authority,
+            [ApiAuthenticationDefaults.IssuerConfigurationKey] = ApiTestAuthentication.Authority
+        };
 
         return WebApplicationTestHost.Create<CatalogApiHostEntryPoint>(
             environment,
