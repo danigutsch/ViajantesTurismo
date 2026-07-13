@@ -1,0 +1,40 @@
+{
+  "$schema": "../schema/roadmap-item.schema.json",
+  "id": "RM-002",
+  "parent": "RM-001",
+  "title": "Create canonical roadmap source structure",
+  "type": "issue",
+  "status": "ready",
+  "order": 20,
+  "theme": "repo-operations",
+  "outcome": "Roadmap items, ordering, blockers, themes, tags, labels, and schemas are represented as repository-owned files.",
+  "size": "S",
+  "scoring": {
+    "reach": 20,
+    "impact": 4,
+    "confidence": 0.9,
+    "effort": 2
+  },
+  "blockedBy": [],
+  "blocks": [
+    "RM-003",
+    "RM-004",
+    "RM-005",
+    "RM-006"
+  ],
+  "dependencies": [],
+  "tags": [
+    "roadmap",
+    "schema"
+  ],
+  "labels": [
+    "area: tooling",
+    "configuration",
+    "documentation"
+  ],
+  "integrations": {
+    "github": {
+      "issue": 1002
+    }
+  }
+}

@@ -128,6 +128,7 @@
         <Project Path="tests/ViajantesTurismo.Performance.Tool.Tests/ViajantesTurismo.Performance.Tool.Tests.csproj" />
         <Project Path="tests/SharedKernel.Versioning.Tests/SharedKernel.Versioning.Tests.csproj" />
         <Project Path="tests/SharedKernel.Documentation.Tests/SharedKernel.Documentation.Tests.csproj" />
+        <Project Path="tests/SharedKernel.RepoConfig.Tests/SharedKernel.RepoConfig.Tests.csproj" />
         <Project Path="tests/SharedKernel.ApiVersioning.Tests/SharedKernel.ApiVersioning.Tests.csproj" />
         <Project Path="tests/SharedKernel.ApiVersioning.AspNetCore.Tests/SharedKernel.ApiVersioning.AspNetCore.Tests.csproj" />
         <Project Path="tests/ViajantesTurismo.ServiceDefaults.Tests/ViajantesTurismo.ServiceDefaults.Tests.csproj" />
@@ -181,6 +182,7 @@
         <Project Path="tools/SharedKernel.Testing.CodeFixRunner/SharedKernel.Testing.CodeFixRunner.csproj" />
         <Project Path="tools/SharedKernel.Versioning.Tool/SharedKernel.Versioning.Tool.csproj" />
         <Project Path="tools/SharedKernel.Documentation.Tool/SharedKernel.Documentation.Tool.csproj" />
+        <Project Path="tools/SharedKernel.RepoConfig.Tool/SharedKernel.RepoConfig.Tool.csproj" />
         <Project Path="tools/ViajantesTurismo.SecurityChecks.Tool/ViajantesTurismo.SecurityChecks.Tool.csproj" />
         <Project Path="tools/ViajantesTurismo.Performance.Tool/ViajantesTurismo.Performance.Tool.csproj" />
     </Folder>

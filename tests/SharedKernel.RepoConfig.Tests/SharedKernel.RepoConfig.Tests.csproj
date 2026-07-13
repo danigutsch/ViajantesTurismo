@@ -2,17 +2,19 @@
 
     <PropertyGroup>
         <OutputType>Exe</OutputType>
-        <RootNamespace>SharedKernel.AI.Tests</RootNamespace>
+        <RootNamespace>SharedKernel.RepoConfig.Tests</RootNamespace>
     </PropertyGroup>
 
     <ItemGroup>
-        <Using Include="SharedKernel.AI" />
         <Using Include="SharedKernel.Testing.Assertions" />
         <Using Include="SharedKernel.Testing.Http" />
+        <Using Include="SharedKernel.Testing" />
+        <Using Include="SharedKernel.RepoConfig.Tool" />
         <Using Include="Xunit" />
     </ItemGroup>
 
     <ItemGroup>
+        <PackageReference Include="Microsoft.Extensions.TimeProvider.Testing" />
         <PackageReference Include="Microsoft.Testing.Extensions.CodeCoverage">
             <PrivateAssets>all</PrivateAssets>
         </PackageReference>
@@ -20,10 +22,10 @@
     </ItemGroup>
 
     <ItemGroup>
-        <ProjectReference Include="..\..\src\SharedKernel\SharedKernel.AI\SharedKernel.AI.csproj" />
         <ProjectReference Include="..\..\src\SharedKernel\SharedKernel.Testing.Assertions\SharedKernel.Testing.Assertions.csproj" />
         <ProjectReference Include="..\..\src\SharedKernel\SharedKernel.Testing.Http\SharedKernel.Testing.Http.csproj" />
         <ProjectReference Include="..\..\src\SharedKernel\SharedKernel.Testing\SharedKernel.Testing.csproj" />
+        <ProjectReference Include="..\..\tools\SharedKernel.RepoConfig.Tool\SharedKernel.RepoConfig.Tool.csproj" />
     </ItemGroup>
 
 </Project>

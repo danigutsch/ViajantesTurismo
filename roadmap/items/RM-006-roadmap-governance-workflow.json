@@ -1,0 +1,37 @@
+{
+  "$schema": "../schema/roadmap-item.schema.json",
+  "id": "RM-006",
+  "parent": "RM-001",
+  "title": "Document roadmap governance workflow",
+  "type": "documentation",
+  "status": "ready",
+  "order": 60,
+  "theme": "repo-operations",
+  "outcome": "Contributors know how to add, prioritize, query, and sync roadmap work through reviewed repository changes.",
+  "size": "S",
+  "scoring": {
+    "reach": 20,
+    "impact": 3,
+    "confidence": 0.9,
+    "effort": 2
+  },
+  "blockedBy": [
+    "RM-002",
+    "RM-003"
+  ],
+  "blocks": [],
+  "dependencies": [],
+  "tags": [
+    "workflow",
+    "governance"
+  ],
+  "labels": [
+    "area: tooling",
+    "documentation"
+  ],
+  "integrations": {
+    "github": {
+      "issue": 998
+    }
+  }
+}
