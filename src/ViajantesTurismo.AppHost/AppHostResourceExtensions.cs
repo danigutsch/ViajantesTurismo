@@ -187,6 +187,23 @@ internal static class AppHostResourceExtensions
             .WaitForCompletion(migrationService);
     }
 
+    private static IResourceBuilder<TDestination> WithSeaweedFsReference<TDestination>(
+        this IResourceBuilder<TDestination> destination,
+        IResourceBuilder<SeaweedFsResource> seaweedFs)
+        where TDestination : IResourceWithEnvironment
+    {
+        ArgumentNullException.ThrowIfNull(destination);
+        ArgumentNullException.ThrowIfNull(seaweedFs);
+        var builder = destination.ApplicationBuilder;
+
+        return destination
+            .WithEnvironment("Catalog__MediaObjectStorage__SeaweedFs__Endpoint", seaweedFs.GetEndpoint(SeaweedFsResource.S3EndpointName))
+            .WithEnvironment("Catalog__MediaObjectStorage__SeaweedFs__AccessKey", builder.CreateResourceBuilder(seaweedFs.Resource.AccessKeyParameter))
+            .WithEnvironment("Catalog__MediaObjectStorage__SeaweedFs__SecretKey", builder.CreateResourceBuilder(seaweedFs.Resource.SecretKeyParameter))
+            .WithEnvironment("Catalog__MediaObjectStorage__SeaweedFs__Bucket", builder.CreateResourceBuilder(seaweedFs.Resource.BucketParameter))
+            .WithEnvironment("Catalog__MediaObjectStorage__SeaweedFs__AutoProvisionBucket", "true");
+    }
+
     /// <summary>
     /// Adds the management web frontend.
     /// </summary>
