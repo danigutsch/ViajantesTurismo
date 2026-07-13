@@ -11,7 +11,7 @@ internal static class RoadmapTemplates
         Run the repo config tool to verify the structure:
 
         ```bash
-        dotnet run --project tools/SharedKernel.RepoConfig.Tool/SharedKernel.RepoConfig.Tool.csproj -- verify
+        sharedkernel-repo verify
         ```
         """;
 

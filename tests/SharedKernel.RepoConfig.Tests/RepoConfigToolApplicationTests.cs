@@ -77,6 +77,24 @@ public sealed class RepoConfigToolApplicationTests
     }
 
     [Fact]
+    public async Task Init_writes_portable_roadmap_readme_command()
+    {
+        // Arrange
+        using var workspace = new TemporaryRepoConfigWorkspace();
+        using var initOutput = new StringWriter(CultureInfo.InvariantCulture);
+        using var initError = new StringWriter(CultureInfo.InvariantCulture);
+
+        // Act
+        var exitCode = await RepoConfigToolApplication.Run(["init", "--root", workspace.RootPath], initOutput, initError, workspace.RootPath, TestContext.Current.CancellationToken);
+        var readmeText = workspace.ReadFile("roadmap/README.md");
+
+        // Assert
+        exitCode.ShouldBe(0);
+        readmeText.ShouldContain("sharedkernel-repo verify", StringComparison.Ordinal);
+        readmeText.ShouldNotContain("dotnet run --project", StringComparison.Ordinal);
+    }
+
+    [Fact]
     public void Config_schema_matches_shipped_config_contract()
     {
         // Arrange
