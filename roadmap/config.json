@@ -43,7 +43,12 @@
     "github": {
       "enabled": true,
       "repository": "danigutsch/ViajantesTurismo",
-      "sourceOfTruth": "projection"
+      "sourceOfTruth": "projection",
+      "projectV2": {
+        "id": "PVT_kwHOBRDnvc4BdSvO",
+        "owner": "danigutsch",
+        "number": 1
+      }
     }
   }
 }

@@ -12,7 +12,7 @@ internal static class GitHubRepositoryName
             && IsValidRepository(parts[1]);
     }
 
-    private static bool IsValidOwner(string value) => value.Length is > 0 and <= 39
+    internal static bool IsValidOwner(string value) => value.Length is > 0 and <= 39
         && value[0] != '-'
         && value[^1] != '-'
         && !value.Contains("--", StringComparison.Ordinal)

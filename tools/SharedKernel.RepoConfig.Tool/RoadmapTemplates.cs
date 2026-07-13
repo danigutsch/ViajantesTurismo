@@ -181,6 +181,29 @@ internal static class RoadmapTemplates
                     },
                     "sourceOfTruth": {
                       "const": "projection"
+                    },
+                    "projectV2": {
+                      "type": "object",
+                      "required": [
+                        "id",
+                        "owner",
+                        "number"
+                      ],
+                      "properties": {
+                        "id": {
+                          "type": "string",
+                          "minLength": 1
+                        },
+                        "owner": {
+                          "type": "string",
+                          "minLength": 1
+                        },
+                        "number": {
+                          "type": "integer",
+                          "minimum": 1
+                        }
+                      },
+                      "additionalProperties": false
                     }
                   },
                   "additionalProperties": false

@@ -50,18 +50,50 @@ internal sealed class GitHubRoadmapSyncer
         }
 
         List<string> messages = [];
-        using var ownedHttpClient = _httpClient is null && itemsWithIssues.Any(item => item.Labels.Count > 0) ? CreateGitHubClient() : null;
+        using var ownedHttpClient = _httpClient is null && (itemsWithIssues.Any(item => item.Labels.Count > 0) || _project.GitHubProjectTarget is not null) ? CreateGitHubClient() : null;
         var httpClient = _httpClient ?? ownedHttpClient;
+        var projectTarget = _project.GitHubProjectTarget;
+        var projectClient = projectTarget is null
+            ? null
+            : new GitHubProjectClient(httpClient ?? throw new InvalidOperationException("GitHub sync could not create an HTTP client."));
+        if (projectClient is not null)
+        {
+            await RunProjectOperation(async token =>
+            {
+                await projectClient.VerifyTarget(projectTarget!, token).ConfigureAwait(false);
+                return true;
+            }, cancellationToken).ConfigureAwait(false);
+        }
         foreach (var item in itemsWithIssues)
         {
-            if (item.Labels.Count == 0)
+            if (item.Labels.Count > 0)
             {
-                messages.Add($"skipped {repository}#{item.GitHubIssue} from {item.Id} because it has no labels");
-                continue;
+                await UpdateItem(httpClient ?? throw new InvalidOperationException("GitHub sync could not create an HTTP client."), repository, item, cancellationToken).ConfigureAwait(false);
+                messages.Add($"updated labels for {repository}#{item.GitHubIssue} from {item.Id}");
             }
 
-            await UpdateItem(httpClient ?? throw new InvalidOperationException("GitHub sync could not create an HTTP client."), repository, item, cancellationToken).ConfigureAwait(false);
-            messages.Add($"updated labels for {repository}#{item.GitHubIssue} from {item.Id}");
+            if (projectClient is not null)
+            {
+                var added = await RunProjectOperation(async token =>
+                {
+                    var issueId = await projectClient.GetIssueNodeId(repository, item.GitHubIssue!.Value, token).ConfigureAwait(false);
+                    if (await projectClient.HasIssue(projectTarget!, issueId, token).ConfigureAwait(false))
+                    {
+                        return false;
+                    }
+
+                    await projectClient.AddIssue(projectTarget!, issueId, token).ConfigureAwait(false);
+                    return true;
+                }, cancellationToken).ConfigureAwait(false);
+                messages.Add(added
+                    ? $"added {repository}#{item.GitHubIssue} to GitHub Project {projectTarget!.Number}"
+                    : $"skipped {repository}#{item.GitHubIssue}; already in GitHub Project {projectTarget!.Number}");
+            }
+
+            if (item.Labels.Count == 0 && projectClient is null)
+            {
+                messages.Add($"skipped {repository}#{item.GitHubIssue} from {item.Id} because it has no labels");
+            }
         }
 
         return new GitHubSyncResult(messages);
@@ -74,6 +106,20 @@ internal sealed class GitHubRoadmapSyncer
         try
         {
             await UpdateIssue(httpClient, repository, item, itemCancellation.Token).ConfigureAwait(false);
+        }
+        catch (OperationCanceledException) when (timeout.IsCancellationRequested && !cancellationToken.IsCancellationRequested)
+        {
+            throw new GitHubSyncTimeoutException();
+        }
+    }
+
+    private async Task<T> RunProjectOperation<T>(Func<CancellationToken, Task<T>> operation, CancellationToken cancellationToken)
+    {
+        using var timeout = new CancellationTokenSource(GitHubSyncTimeout, _timeProvider);
+        using var operationCancellation = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, timeout.Token);
+        try
+        {
+            return await operation(operationCancellation.Token).ConfigureAwait(false);
         }
         catch (OperationCanceledException) when (timeout.IsCancellationRequested && !cancellationToken.IsCancellationRequested)
         {
@@ -99,10 +145,25 @@ internal sealed class GitHubRoadmapSyncer
         }
 
         return new GitHubSyncResult(itemsWithIssues
-            .Select(item => item.Labels.Count == 0
-                ? $"dry-run: skip {_project.GitHubRepository}#{item.GitHubIssue} from {item.Id} because it has no labels"
-                : $"dry-run: sync labels for {_project.GitHubRepository}#{item.GitHubIssue} from {item.Id}")
+            .SelectMany(item => BuildPreviewMessages(item))
             .ToArray());
+    }
+
+    private IEnumerable<string> BuildPreviewMessages(RoadmapItemSnapshot item)
+    {
+        if (item.Labels.Count > 0)
+        {
+            yield return $"dry-run: sync labels for {_project.GitHubRepository}#{item.GitHubIssue} from {item.Id}";
+        }
+        else if (_project.GitHubProjectTarget is null)
+        {
+            yield return $"dry-run: skip {_project.GitHubRepository}#{item.GitHubIssue} from {item.Id} because it has no labels";
+        }
+
+        if (_project.GitHubProjectTarget is not null)
+        {
+            yield return $"dry-run: add {_project.GitHubRepository}#{item.GitHubIssue} to GitHub Project {_project.GitHubProjectTarget.Number}";
+        }
     }
 
     private static HttpClient CreateGitHubClient()

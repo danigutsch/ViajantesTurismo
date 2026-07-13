@@ -714,6 +714,44 @@ internal static class RepoConfigVerifier
                 issues.Add(new RepoConfigIssue(relativePath, "integrations.github.repository must be shaped as owner/repository when GitHub sync is enabled."));
             }
         }
+
+        VerifyGitHubProjectTarget(github, relativePath, issues);
+    }
+
+    private static void VerifyGitHubProjectTarget(JsonElement github, string relativePath, List<RepoConfigIssue> issues)
+    {
+        if (!github.TryGetProperty("projectV2", out var projectV2))
+        {
+            return;
+        }
+
+        if (projectV2.ValueKind != JsonValueKind.Object)
+        {
+            issues.Add(new RepoConfigIssue(relativePath, "integrations.github.projectV2 must be a JSON object."));
+            return;
+        }
+
+        if (!github.TryGetProperty("enabled", out var enabled) || enabled.ValueKind != JsonValueKind.True)
+        {
+            issues.Add(new RepoConfigIssue(relativePath, "integrations.github.projectV2 requires GitHub sync to be enabled."));
+        }
+
+        var id = GetString(projectV2, "id");
+        if (string.IsNullOrWhiteSpace(id))
+        {
+            issues.Add(new RepoConfigIssue(relativePath, "integrations.github.projectV2.id must be a non-empty string."));
+        }
+
+        var owner = GetString(projectV2, "owner");
+        if (string.IsNullOrWhiteSpace(owner) || !GitHubRepositoryName.IsValidOwner(owner))
+        {
+            issues.Add(new RepoConfigIssue(relativePath, "integrations.github.projectV2.owner must be a valid GitHub owner."));
+        }
+
+        if (!projectV2.TryGetProperty("number", out var number) || number.ValueKind != JsonValueKind.Number || !number.TryGetInt32(out var value) || value <= 0)
+        {
+            issues.Add(new RepoConfigIssue(relativePath, "integrations.github.projectV2.number must be a positive integer."));
+        }
     }
 
     private static void VerifyUniqueValues(IReadOnlyCollection<string> values, string propertyPath, string relativePath, List<RepoConfigIssue> issues)
