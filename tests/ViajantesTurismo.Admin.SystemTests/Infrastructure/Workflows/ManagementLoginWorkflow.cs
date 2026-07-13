@@ -11,15 +11,33 @@ internal sealed class ManagementLoginWorkflow(IPage page)
         ArgumentException.ThrowIfNullOrWhiteSpace(password);
 
         var loginUrl = new Uri(managementWebUrl, "/login?returnUrl=/");
-        await NavigateToLogin(loginUrl);
-        await page.Locator("#username").FillAsync(ConformanceUsername);
-        await page.Locator("#password").FillAsync(password);
-        await page.Locator("#kc-login").ClickAsync();
-        await page.WaitForURLAsync(
-            url => Uri.TryCreate(url, UriKind.Absolute, out var uri)
-                   && uri.Host.Equals(managementWebUrl.Host, StringComparison.OrdinalIgnoreCase)
-                   && uri.Port == managementWebUrl.Port,
-            new PageWaitForURLOptions { WaitUntil = WaitUntilState.NetworkIdle });
+        for (var attempt = 1; attempt <= MaxLoginNavigationAttempts; attempt++)
+        {
+            await NavigateToLogin(loginUrl);
+
+            try
+            {
+                await page.Locator("#username").FillAsync(ConformanceUsername);
+                await page.Locator("#password").FillAsync(password);
+                await page.Locator("#kc-login").ClickAsync();
+                await page.WaitForURLAsync(
+                    url => Uri.TryCreate(url, UriKind.Absolute, out var uri)
+                           && uri.Host.Equals(managementWebUrl.Host, StringComparison.OrdinalIgnoreCase)
+                           && uri.Port == managementWebUrl.Port,
+                    new PageWaitForURLOptions { WaitUntil = WaitUntilState.NetworkIdle });
+                return;
+            }
+            catch (PlaywrightException exception) when (IsRetryableNetworkChange(exception) && attempt < MaxLoginNavigationAttempts)
+            {
+                // Retry the complete OIDC redirect after transient AppHost loopback endpoint changes.
+            }
+            catch (TimeoutException) when (attempt < MaxLoginNavigationAttempts)
+            {
+                // Retry when the OIDC redirect is interrupted before the web app regains control.
+            }
+        }
+
+        throw new InvalidOperationException($"Sign-in to '{managementWebUrl}' did not complete after {MaxLoginNavigationAttempts} attempts.");
     }
 
     private async Task NavigateToLogin(Uri loginUrl)

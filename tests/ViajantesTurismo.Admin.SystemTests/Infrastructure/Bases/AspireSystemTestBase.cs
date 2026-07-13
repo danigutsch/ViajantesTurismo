@@ -95,7 +95,7 @@ public abstract class AspireSystemTestBase<TFixture>(TFixture fixture) : PageTes
                 new LocatorWaitForOptions { State = WaitForSelectorState.Visible });
             return true;
         }
-        catch (PlaywrightException) when (canRetry)
+        catch (Exception exception) when (canRetry && exception is PlaywrightException or TimeoutException)
         {
             if (await Page.Locator(InertPageSelector).IsVisibleAsync())
             {

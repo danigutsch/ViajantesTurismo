@@ -93,8 +93,14 @@ public class NavigationTests(AspireSystemTestFixture fixture) : AspireSystemTest
     public async Task Prerendered_routes_block_interaction_until_the_circuit_is_ready()
     {
         // Arrange
+        var storageState = await Context.StorageStateAsync();
         await using var noJavaScriptContext = await Browser.NewContextAsync(
-            new BrowserNewContextOptions { IgnoreHTTPSErrors = true, JavaScriptEnabled = false });
+            new BrowserNewContextOptions
+            {
+                IgnoreHTTPSErrors = true,
+                JavaScriptEnabled = false,
+                StorageState = storageState
+            });
         var noJavaScriptPage = await noJavaScriptContext.NewPageAsync();
 
         // Act
