@@ -47,18 +47,7 @@
     "github": {
       "enabled": true,
       "repository": "danigutsch/ViajantesTurismo",
-      "sourceOfTruth": "projection",
-      "projectFieldMapping": {
-        "status": "Status",
-        "theme": "Theme",
-        "order": "Order",
-        "blockedBy": "Blocked by",
-        "reach": "Reach",
-        "impact": "Impact",
-        "confidence": "Confidence",
-        "effort": "Effort",
-        "score": "RICE"
-      }
+      "sourceOfTruth": "projection"
     }
   }
 }

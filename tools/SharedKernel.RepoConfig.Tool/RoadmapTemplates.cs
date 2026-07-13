@@ -126,6 +126,23 @@ internal static class RoadmapTemplates
                 },
                 "formula": {
                   "const": "reach * impact * confidence / effort"
+                },
+                "ranges": {
+                  "type": "object",
+                  "properties": {
+                    "reach": {
+                      "type": "string"
+                    },
+                    "impact": {
+                      "type": "string"
+                    },
+                    "confidence": {
+                      "type": "string"
+                    },
+                    "effort": {
+                      "type": "string"
+                    }
+                  }
                 }
               }
             },
@@ -150,11 +167,35 @@ internal static class RoadmapTemplates
                   },
                   "minItems": 1,
                   "uniqueItems": true
+                },
+                "tagFields": {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  },
+                  "minItems": 1,
+                  "uniqueItems": true
                 }
               }
             },
             "integrations": {
-              "type": "object"
+              "type": "object",
+              "properties": {
+                "github": {
+                  "type": "object",
+                  "properties": {
+                    "enabled": {
+                      "type": "boolean"
+                    },
+                    "repository": {
+                      "type": "string"
+                    },
+                    "sourceOfTruth": {
+                      "const": "projection"
+                    }
+                  }
+                }
+              }
             }
           }
         }

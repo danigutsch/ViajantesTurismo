@@ -77,6 +77,26 @@ public sealed class RepoConfigToolApplicationTests
     }
 
     [Fact]
+    public void Config_schema_declares_shipped_config_properties()
+    {
+        // Arrange
+        using var schemaDocument = JsonDocument.Parse(RoadmapTemplates.ConfigSchemaJson);
+        var properties = schemaDocument.RootElement.GetProperty("properties");
+
+        // Act
+        var tagFields = properties.GetProperty("project").GetProperty("properties").GetProperty("tagFields");
+        var ranges = properties.GetProperty("scoring").GetProperty("properties").GetProperty("ranges");
+        var github = properties.GetProperty("integrations").GetProperty("properties").GetProperty("github").GetProperty("properties");
+
+        // Assert
+        tagFields.GetProperty("type").GetString().ShouldBe("array");
+        ranges.GetProperty("type").GetString().ShouldBe("object");
+        github.GetProperty("enabled").GetProperty("type").GetString().ShouldBe("boolean");
+        github.GetProperty("repository").GetProperty("type").GetString().ShouldBe("string");
+        github.GetProperty("sourceOfTruth").GetProperty("const").GetString().ShouldBe("projection");
+    }
+
+    [Fact]
     public async Task Init_writes_templates_with_resolvable_local_schema_references()
     {
         // Arrange
