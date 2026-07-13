@@ -17,6 +17,9 @@ dotnet run --project tools/SharedKernel.RepoConfig.Tool/SharedKernel.RepoConfig.
 
 Pass `--root <path>` after the command to target another repository root.
 
+`init` disables GitHub sync by default. Set `integrations.github.repository`, then set
+`integrations.github.enabled` to `true` in `roadmap/config.json` before running `sync github`.
+
 ## Commands
 
 | Command | Behavior |

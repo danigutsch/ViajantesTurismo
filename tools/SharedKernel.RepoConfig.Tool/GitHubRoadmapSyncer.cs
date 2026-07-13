@@ -71,7 +71,14 @@ internal sealed class GitHubRoadmapSyncer
     {
         using var timeout = new CancellationTokenSource(GitHubSyncTimeout, _timeProvider);
         using var itemCancellation = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, timeout.Token);
-        await UpdateIssue(httpClient, repository, item, itemCancellation.Token).ConfigureAwait(false);
+        try
+        {
+            await UpdateIssue(httpClient, repository, item, itemCancellation.Token).ConfigureAwait(false);
+        }
+        catch (OperationCanceledException) when (timeout.IsCancellationRequested && !cancellationToken.IsCancellationRequested)
+        {
+            throw new GitHubSyncTimeoutException();
+        }
     }
 
     private GitHubSyncResult BuildPreview(RoadmapItemSnapshot[] itemsWithIssues)

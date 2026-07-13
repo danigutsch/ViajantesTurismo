@@ -31,6 +31,11 @@ internal static class RepoConfigToolApplication
                 ? await RunGitHubProjection(args[1..], output, error, workingDirectory, httpClient, cancellationToken).ConfigureAwait(false)
                 : RunCommand(args, output, error, workingDirectory);
         }
+        catch (GitHubSyncTimeoutException)
+        {
+            await error.WriteLineAsync("sharedkernel-repo: GitHub sync timed out after 30 seconds.".AsMemory(), cancellationToken).ConfigureAwait(false);
+            return 1;
+        }
         catch (OperationCanceledException exception) when (!cancellationToken.IsCancellationRequested)
         {
             await error.WriteLineAsync($"sharedkernel-repo: {exception.Message}".AsMemory(), cancellationToken).ConfigureAwait(false);

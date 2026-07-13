@@ -1214,6 +1214,31 @@ public sealed class RepoConfigToolApplicationTests
         result.Messages.Count.ShouldBe(2);
     }
 
+    [Fact]
+    public async Task Sync_github_apply_throws_timeout_when_the_per_item_limit_is_reached()
+    {
+        // Arrange
+        using var workspace = new TemporaryRepoConfigWorkspace();
+        using var initOutput = new StringWriter(CultureInfo.InvariantCulture);
+        using var initError = new StringWriter(CultureInfo.InvariantCulture);
+        (await RepoConfigToolApplication.Run(["init", "--root", workspace.RootPath], initOutput, initError, workspace.RootPath, TestContext.Current.CancellationToken)).ShouldBe(0);
+        RoadmapConfigTestOperations.EnableGitHubSync(workspace);
+        var itemText = workspace.ReadFile("roadmap/items/RM-001-roadmap-gitops.json");
+        workspace.WriteFile("roadmap/items/RM-001-roadmap-gitops.json", itemText.Replace("\"labels\": [", "\"integrations\": { \"github\": { \"issue\": 997 } },\n  \"labels\": [", StringComparison.Ordinal));
+        var project = RoadmapProject.Load(workspace.RootPath);
+        var timeProvider = new FakeTimeProvider();
+        using var handler = new TimingOutHttpMessageHandler(timeProvider);
+        using var httpClient = new HttpClient(handler);
+        var syncer = new GitHubRoadmapSyncer(project, httpClient, timeProvider);
+
+        // Act
+        Func<Task> action = () => syncer.Apply(TestContext.Current.CancellationToken);
+        var exception = await action.ShouldThrow<GitHubSyncTimeoutException>();
+
+        // Assert
+        exception.Message.ShouldBe("GitHub sync timed out after 30 seconds.");
+    }
+
     [Theory]
     [InlineData(HttpStatusCode.Unauthorized, "GitHub pull request check failed for #997: HTTP 401 (authentication required).")]
     [InlineData(HttpStatusCode.Forbidden, "GitHub pull request check failed for #997: HTTP 403 (access denied or rate limited).")]
@@ -1237,8 +1262,8 @@ public sealed class RepoConfigToolApplicationTests
         var syncer = new GitHubRoadmapSyncer(project, httpClient);
 
         // Act
-        var exception = await ShouldAssertionExtensions.ShouldThrow<InvalidOperationException>(
-            () => syncer.Apply(TestContext.Current.CancellationToken));
+        Func<Task> action = () => syncer.Apply(TestContext.Current.CancellationToken);
+        var exception = await action.ShouldThrow<InvalidOperationException>();
 
         // Assert
         exception.Message.ShouldBe(expectedMessage);
@@ -1269,8 +1294,8 @@ public sealed class RepoConfigToolApplicationTests
         var syncer = new GitHubRoadmapSyncer(project, httpClient);
 
         // Act
-        var exception = await ShouldAssertionExtensions.ShouldThrow<InvalidOperationException>(
-            () => syncer.Apply(TestContext.Current.CancellationToken));
+        Func<Task> action = () => syncer.Apply(TestContext.Current.CancellationToken);
+        var exception = await action.ShouldThrow<InvalidOperationException>();
 
         // Assert
         exception.Message.ShouldBe("GitHub label sync failed for #997: HTTP 422 (request validation failed).");
@@ -1299,8 +1324,8 @@ public sealed class RepoConfigToolApplicationTests
         var syncer = new GitHubRoadmapSyncer(project, httpClient);
 
         // Act
-        var exception = await ShouldAssertionExtensions.ShouldThrow<InvalidOperationException>(
-            () => syncer.Apply(TestContext.Current.CancellationToken));
+        Func<Task> action = () => syncer.Apply(TestContext.Current.CancellationToken);
+        var exception = await action.ShouldThrow<InvalidOperationException>();
 
         // Assert
         exception.Message.ShouldContain("points to a pull request", StringComparison.Ordinal);

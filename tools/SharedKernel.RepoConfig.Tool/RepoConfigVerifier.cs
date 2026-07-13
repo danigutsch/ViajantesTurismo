@@ -731,15 +731,20 @@ internal static class RepoConfigVerifier
         return values;
     }
 
-    private static JsonDocument? TryParseJsonFile(string rootPath, string path, List<RepoConfigIssue> issues)
+    internal static JsonDocument? TryParseJsonFile(string rootPath, string path, List<RepoConfigIssue> issues, Func<string, string>? readFile = null)
     {
         try
         {
-            return JsonDocument.Parse(File.ReadAllText(path));
+            return JsonDocument.Parse((readFile ?? File.ReadAllText)(path));
         }
         catch (JsonException exception)
         {
             issues.Add(new RepoConfigIssue(RepoConfigPaths.RelativeTo(rootPath, path), $"Invalid JSON: {exception.Message}"));
+            return null;
+        }
+        catch (Exception exception) when (exception is IOException or UnauthorizedAccessException)
+        {
+            issues.Add(new RepoConfigIssue(RepoConfigPaths.RelativeTo(rootPath, path), $"Unable to read JSON: {exception.Message}"));
             return null;
         }
     }

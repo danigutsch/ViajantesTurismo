@@ -233,8 +233,8 @@ public sealed class RepoConfigToolCoverageTests
         var syncer = new GitHubRoadmapSyncer(project, httpClient);
 
         // Act
-        var exception = await ShouldAssertionExtensions.ShouldThrow<HttpRequestException>(
-            () => syncer.Apply(TestContext.Current.CancellationToken));
+        Func<Task> action = () => syncer.Apply(TestContext.Current.CancellationToken);
+        var exception = await action.ShouldThrow<HttpRequestException>();
 
         // Assert
         exception.Message.ShouldContain("network unavailable", StringComparison.Ordinal);
@@ -266,6 +266,49 @@ public sealed class RepoConfigToolCoverageTests
         outputText.ShouldBe(string.Empty);
         errorText.ShouldBe("sharedkernel-repo: GitHub sync request failed." + Environment.NewLine);
         errorText.ShouldNotContain("ghp_transport_token", StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public void Try_parse_json_file_reports_read_failures_as_issues()
+    {
+        // Arrange
+        List<RepoConfigIssue> issues = [];
+
+        // Act
+        var document = RepoConfigVerifier.TryParseJsonFile("/repository", "/repository/roadmap/config.json", issues, _ => throw new IOException("simulated read failure"));
+
+        // Assert
+        document.ShouldBeNull();
+        issues.Count.ShouldBe(1);
+        issues[0].Path.ShouldBe("roadmap/config.json");
+        issues[0].Message.ShouldBe("Unable to read JSON: simulated read failure");
+    }
+
+    [Fact]
+    public async Task Sync_github_apply_reports_safe_diagnostic_for_timeouts()
+    {
+        // Arrange
+        using var workspace = new TemporaryRepoConfigWorkspace();
+        using var initOutput = new StringWriter(CultureInfo.InvariantCulture);
+        using var initError = new StringWriter(CultureInfo.InvariantCulture);
+        using var output = new StringWriter(CultureInfo.InvariantCulture);
+        using var error = new StringWriter(CultureInfo.InvariantCulture);
+        (await RepoConfigToolApplication.Run(["init", "--root", workspace.RootPath], initOutput, initError, workspace.RootPath, TestContext.Current.CancellationToken)).ShouldBe(0);
+        RoadmapConfigTestOperations.EnableGitHubSync(workspace);
+        var itemText = workspace.ReadFile("roadmap/items/RM-001-roadmap-gitops.json");
+        workspace.WriteFile("roadmap/items/RM-001-roadmap-gitops.json", itemText.Replace("\"labels\": [", "\"integrations\": { \"github\": { \"issue\": 997 } },\n  \"labels\": [", StringComparison.Ordinal));
+        using var handler = TestHttpMessageHandler.FromException(new GitHubSyncTimeoutException());
+        using var httpClient = new HttpClient(handler);
+
+        // Act
+        var exitCode = await RepoConfigToolApplication.Run(["sync", "github", "--apply", "--root", workspace.RootPath], output, error, workspace.RootPath, httpClient, TestContext.Current.CancellationToken);
+        var outputText = output.ToString();
+        var errorText = error.ToString();
+
+        // Assert
+        exitCode.ShouldBe(1);
+        outputText.ShouldBe(string.Empty);
+        errorText.ShouldBe("sharedkernel-repo: GitHub sync timed out after 30 seconds." + Environment.NewLine);
     }
 
     [Fact]
