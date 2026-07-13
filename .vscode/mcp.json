@@ -2,18 +2,14 @@
   "servers": {
     "aspire": {
       "type": "stdio",
-      "command": "aspire",
+      "command": "dotnet",
       "args": [
-        "mcp",
-        "start"
-      ]
-    },
-    "playwright": {
-      "type": "stdio",
-      "command": "npx",
-      "args": [
-        "-y",
-        "@playwright/mcp@0.0.76"
+        "tool",
+        "run",
+        "aspire",
+        "--",
+        "agent",
+        "mcp"
       ]
     }
   }

@@ -1,17 +1,14 @@
 {
   "mcpServers": {
-    "playwright": {
-      "command": "npx",
-      "args": [
-        "-y",
-        "@playwright/mcp@0.0.76"
-      ]
-    },
     "aspire": {
-      "command": "aspire",
+      "command": "dotnet",
       "args": [
-        "mcp",
-        "start"
+        "tool",
+        "run",
+        "aspire",
+        "--",
+        "agent",
+        "mcp"
       ]
     }
   }
