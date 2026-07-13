@@ -641,8 +641,25 @@ internal static class RepoConfigVerifier
 
     private static int? GetGitHubIssue(JsonElement root, string relativePath, List<RepoConfigIssue> issues)
     {
-        if (!root.TryGetProperty("integrations", out var integrations) || !integrations.TryGetProperty("github", out var github))
+        if (!root.TryGetProperty("integrations", out var integrations))
         {
+            return null;
+        }
+
+        if (integrations.ValueKind != JsonValueKind.Object)
+        {
+            issues.Add(new RepoConfigIssue(relativePath, "integrations must be a JSON object when present."));
+            return null;
+        }
+
+        if (!integrations.TryGetProperty("github", out var github))
+        {
+            return null;
+        }
+
+        if (github.ValueKind != JsonValueKind.Object)
+        {
+            issues.Add(new RepoConfigIssue(relativePath, "integrations.github must be a JSON object when present."));
             return null;
         }
 

@@ -504,6 +504,30 @@ public sealed class RepoConfigToolApplicationTests
     }
 
     [Theory]
+    [InlineData("[]", "integrations must be a JSON object when present.")]
+    [InlineData("{ \"github\": [] }", "integrations.github must be a JSON object when present.")]
+    public async Task Verify_reports_malformed_item_integrations(string integrations, string expectedMessage)
+    {
+        // Arrange
+        using var workspace = new TemporaryRepoConfigWorkspace();
+        using var initOutput = new StringWriter(CultureInfo.InvariantCulture);
+        using var initError = new StringWriter(CultureInfo.InvariantCulture);
+        using var verifyOutput = new StringWriter(CultureInfo.InvariantCulture);
+        using var verifyError = new StringWriter(CultureInfo.InvariantCulture);
+        (await RepoConfigToolApplication.Run(["init", "--root", workspace.RootPath], initOutput, initError, workspace.RootPath, TestContext.Current.CancellationToken)).ShouldBe(0);
+        var itemText = workspace.ReadFile("roadmap/items/RM-001-roadmap-gitops.json");
+        workspace.WriteFile("roadmap/items/RM-001-roadmap-gitops.json", itemText.Replace("\"labels\": [", $"\"integrations\": {integrations},\n  \"labels\": [", StringComparison.Ordinal));
+
+        // Act
+        var exitCode = await RepoConfigToolApplication.Run(["verify", "--root", workspace.RootPath], verifyOutput, verifyError, workspace.RootPath, TestContext.Current.CancellationToken);
+        var errorText = verifyError.ToString();
+
+        // Assert
+        exitCode.ShouldBe(1);
+        errorText.ShouldContain(expectedMessage, StringComparison.Ordinal);
+    }
+
+    [Theory]
     [InlineData("owner only")]
     [InlineData("owner/repo?state=closed")]
     [InlineData("owner/repo#fragment")]
