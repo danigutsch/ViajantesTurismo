@@ -189,6 +189,50 @@ public sealed class RepoConfigToolApplicationTests
         errorText.ShouldContain("integrations.github.projectFieldMapping is not supported.", StringComparison.Ordinal);
     }
 
+    [Fact]
+    public async Task Verify_rejects_invalid_github_projection_source_of_truth()
+    {
+        // Arrange
+        using var workspace = new TemporaryRepoConfigWorkspace();
+        using var initOutput = new StringWriter(CultureInfo.InvariantCulture);
+        using var initError = new StringWriter(CultureInfo.InvariantCulture);
+        using var verifyOutput = new StringWriter(CultureInfo.InvariantCulture);
+        using var verifyError = new StringWriter(CultureInfo.InvariantCulture);
+        (await RepoConfigToolApplication.Run(["init", "--root", workspace.RootPath], initOutput, initError, workspace.RootPath, TestContext.Current.CancellationToken)).ShouldBe(0);
+        var configText = workspace.ReadFile("roadmap/config.json");
+        workspace.WriteFile("roadmap/config.json", configText.Replace("\"sourceOfTruth\": \"projection\"", "\"sourceOfTruth\": \"manual\"", StringComparison.Ordinal));
+
+        // Act
+        var exitCode = await RepoConfigToolApplication.Run(["verify", "--root", workspace.RootPath], verifyOutput, verifyError, workspace.RootPath, TestContext.Current.CancellationToken);
+        var errorText = verifyError.ToString();
+
+        // Assert
+        exitCode.ShouldBe(1);
+        errorText.ShouldContain("integrations.github.sourceOfTruth must be projection.", StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public async Task Verify_allows_missing_github_projection_source_of_truth()
+    {
+        // Arrange
+        using var workspace = new TemporaryRepoConfigWorkspace();
+        using var initOutput = new StringWriter(CultureInfo.InvariantCulture);
+        using var initError = new StringWriter(CultureInfo.InvariantCulture);
+        using var verifyOutput = new StringWriter(CultureInfo.InvariantCulture);
+        using var verifyError = new StringWriter(CultureInfo.InvariantCulture);
+        (await RepoConfigToolApplication.Run(["init", "--root", workspace.RootPath], initOutput, initError, workspace.RootPath, TestContext.Current.CancellationToken)).ShouldBe(0);
+        var configText = workspace.ReadFile("roadmap/config.json");
+        workspace.WriteFile("roadmap/config.json", configText.Replace(",\n      \"sourceOfTruth\": \"projection\"", string.Empty, StringComparison.Ordinal));
+
+        // Act
+        var exitCode = await RepoConfigToolApplication.Run(["verify", "--root", workspace.RootPath], verifyOutput, verifyError, workspace.RootPath, TestContext.Current.CancellationToken);
+        var errorText = verifyError.ToString();
+
+        // Assert
+        exitCode.ShouldBe(0);
+        errorText.ShouldBe(string.Empty);
+    }
+
     [Theory]
     [InlineData("owner only")]
     [InlineData("owner/repo?state=closed")]
