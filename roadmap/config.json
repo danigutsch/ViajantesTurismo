@@ -27,10 +27,6 @@
     "closedStatuses": [
       "done",
       "dropped"
-    ],
-    "tagFields": [
-      "tags",
-      "labels"
     ]
   },
   "scoring": {

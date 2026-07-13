@@ -238,6 +238,7 @@ public sealed class RepoConfigToolApplicationTests
     [InlineData("owner/repo?state=closed")]
     [InlineData("owner/repo#fragment")]
     [InlineData("owner/repo\\path")]
+    [InlineData("owner--name/repository")]
     public async Task Set_rejects_invalid_github_repository_config(string repository)
     {
         // Arrange

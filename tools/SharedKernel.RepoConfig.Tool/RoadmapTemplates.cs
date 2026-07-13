@@ -45,10 +45,6 @@ internal static class RoadmapTemplates
             "closedStatuses": [
               "done",
               "dropped"
-            ],
-            "tagFields": [
-              "tags",
-              "labels"
             ]
           },
           "scoring": {
@@ -161,14 +157,6 @@ internal static class RoadmapTemplates
                   "const": "blockedBy"
                 },
                 "closedStatuses": {
-                  "type": "array",
-                  "items": {
-                    "type": "string"
-                  },
-                  "minItems": 1,
-                  "uniqueItems": true
-                },
-                "tagFields": {
                   "type": "array",
                   "items": {
                     "type": "string"
