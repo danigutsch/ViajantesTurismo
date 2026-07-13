@@ -9,8 +9,10 @@ public sealed class AccommodationPreferencesValidationSteps(CustomerContext cont
     [When(@"I create accommodation preferences with double room, double bed, and companion ID (\d+)")]
     public void WhenICreateAccommodationPreferencesWithDoubleRoomDoubleBedAndCompanionId(int companionId)
     {
-        context.CompanionId = Guid.CreateVersion7();
-        context.AccommodationPreferences = AccommodationPreferences.Create(RoomType.DoubleOccupancy, BedType.DoubleBed, context.CompanionId);
+        context.AccommodationPreferences = AccommodationPreferences.Create(
+            RoomType.DoubleOccupancy,
+            BedType.DoubleBed,
+            CreateDeterministicCompanionId(companionId));
     }
 
     [When("I create accommodation preferences with single room, single bed, and no companion")]
@@ -34,8 +36,10 @@ public sealed class AccommodationPreferencesValidationSteps(CustomerContext cont
     [When(@"I create accommodation preferences with single room, single bed, and companion ID (\d+)")]
     public void WhenICreateAccommodationPreferencesWithSingleRoomSingleBedAndCompanionId(int companionId)
     {
-        context.CompanionId = Guid.CreateVersion7();
-        context.AccommodationPreferences = AccommodationPreferences.Create(RoomType.SingleOccupancy, BedType.SingleBed, context.CompanionId);
+        context.AccommodationPreferences = AccommodationPreferences.Create(
+            RoomType.SingleOccupancy,
+            BedType.SingleBed,
+            CreateDeterministicCompanionId(companionId));
     }
 
     [Then("the accommodation preferences should be created successfully")]
@@ -48,7 +52,7 @@ public sealed class AccommodationPreferencesValidationSteps(CustomerContext cont
     public void ThenTheCompanionIdShouldBe(int expectedCompanionId)
     {
         var accommodationPreferences = context.AccommodationPreferences.ShouldNotBeNull();
-        accommodationPreferences.CompanionId.ShouldBe(context.CompanionId);
+        accommodationPreferences.CompanionId.ShouldBe(CreateDeterministicCompanionId(expectedCompanionId));
     }
 
     [Then("the companion ID should be null")]
@@ -56,5 +60,10 @@ public sealed class AccommodationPreferencesValidationSteps(CustomerContext cont
     {
         var accommodationPreferences = context.AccommodationPreferences.ShouldNotBeNull();
         accommodationPreferences.CompanionId.ShouldBeNull();
+    }
+
+    private static Guid CreateDeterministicCompanionId(int companionId)
+    {
+        return new Guid(companionId, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0);
     }
 }

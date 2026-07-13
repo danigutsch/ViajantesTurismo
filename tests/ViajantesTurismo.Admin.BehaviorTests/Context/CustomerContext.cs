@@ -14,8 +14,6 @@ public sealed class CustomerContext
     public string Nationality { get; set; } = null!;
     public string Occupation { get; set; } = null!;
 
-    public Guid? CompanionId { get; set; }
-
     public required Result<PersonalInfo> PersonalInfoResult { get; set; }
     public required Result<IdentificationInfo> IdentificationInfoResult { get; set; }
     public required Result<ContactInfo> ContactInfoResult { get; set; }
