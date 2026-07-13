@@ -2,7 +2,6 @@
 
     <PropertyGroup>
         <EnableRequestDelegateGenerator>true</EnableRequestDelegateGenerator>
-        <IsAotCompatible>false</IsAotCompatible>
         <OpenApiGenerateDocuments>false</OpenApiGenerateDocuments>
         <OpenApiGenerateDocumentsOnBuild>false</OpenApiGenerateDocumentsOnBuild>
         <GenerateAdminOpenApiArtifacts Condition="'$(RefreshAdminOpenApiArtifacts)' == 'true'">true</GenerateAdminOpenApiArtifacts>
