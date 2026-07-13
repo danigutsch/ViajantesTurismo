@@ -4,6 +4,11 @@ namespace ViajantesTurismo.Management.WebTests.Components.Layout;
 
 public sealed class MainLayoutTests : BunitContext
 {
+    public MainLayoutTests()
+    {
+        SetRendererInfo(new Microsoft.AspNetCore.Components.RendererInfo("Server", true));
+    }
+
     [Fact]
     public void Renders_page_container()
     {

@@ -172,124 +172,17 @@ Diagnostics should name the attribute option, the affected type, and the smalles
 - EF Core query shapes and includes.
 - Any media-processing, localization, or review workflow rules.
 
-## Migration away from `Entity<TId>`
+## Identity interfaces
 
-### Target shape
+`SharedKernel.BuildingBlocks.IIdentified<TId>` exposes a stable `Id` for any identified model.
 
-Introduce DDD-named interfaces before removing base classes:
+`SharedKernel.Domain.IEntity<TId>` extends `IIdentified<TId>` for domain entities.
+`SharedKernel.Domain.IAggregateRoot<TId>` extends `IEntity<TId>` and the non-generic
+`IAggregateRoot`, which exposes domain-event retrieval and clearing.
 
-```csharp
-public interface IIdentified<out TId>
-{
-    TId Id { get; }
-}
-
-public interface IEntity<out TId> : IIdentified<TId>
-{
-}
-
-public interface IAggregateRoot<out TId> : IEntity<TId>
-{
-    IReadOnlyCollection<IDomainEvent> GetDomainEvents();
-
-    void ClearDomainEvents();
-}
-```
-
-The snippet shows the intended relationships only. Each top-level interface should be implemented in
-its own C# file, following repository conventions.
-
-Domain models should use `IEntity<TId>` or `IAggregateRoot<TId>` rather than `IIdentified<TId>`.
-`IIdentified<TId>` remains the non-DDD primitive for read models, DTO-adjacent models, and generator
-internals. Generated identity support can target all identified models, while DDD-specific behavior
-targets the DDD interfaces.
-
-Aggregate roots, not child entities, record domain events. Domain events are internal bounded-context
-facts; integration events remain the externally visible contracts. Child entities can participate in
-behavior, but the aggregate root records the domain event after invariants pass.
-
-Generated support should keep that boundary explicit:
-
-- identity/equality generation can target `IEntity<TId>`;
-- domain-event collection helpers can target `IAggregateRoot<TId>`;
-- non-domain models can use `IIdentified<TId>` only when identity support is useful.
-
-### Stages
-
-1. Add DDD identity interfaces and analyzer diagnostics.
-    - No model behavior changes.
-    - Avoid introducing new base-class consumers.
-
-2. Make current base classes implement DDD interfaces.
-    - Preserve equality semantics.
-    - Add core behavior tests around default identifiers, type checks, hash behavior, aggregate-root
-      domain-event recording, and domain-event clearing.
-
-3. Add DDD rule behavior tests before generator migration.
-    - Mirror the SharedKernel functional pattern tests: focused xUnit tests, explicit Arrange/Act/Assert,
-      behavior traits, and no infrastructure dependencies.
-    - Cover that aggregate roots can record/clear domain events.
-    - Cover that plain entities expose identity/equality only and do not expose domain-event collection.
-    - Cover that generated support preserves the current base-class equality semantics.
-
-4. Opt in one small model group to generated identity.
-    - Prefer a non-hot-path model with direct tests.
-    - Do not mix this with EF mapping generation.
-
-5. Migrate Admin aggregate roots one group at a time.
-    - `Customer`, then `Tour`, then `Booking`/`Payment`.
-    - Run Admin unit/integration tests after each group.
-
-6. Migrate Catalog aggregate/read models only after Catalog persistence tests cover identity and EF
-   materialization.
-
-7. Keep model identity on SharedKernel interfaces and generated identity support.
-
-### Current inventory
-
-Models using generated identity support:
-
-| Model | Project | Current identity shape | Notes |
-| --- | --- | --- | --- |
-| `Customer` | `src/ViajantesTurismo.Admin.Domain` | `IEntity<Guid>` plus generated identity support | EF key configured with `ValueGeneratedNever()`; direct entity, no domain events. |
-| `Tour` | `src/ViajantesTurismo.Admin.Domain` | `IEntity<Guid>` plus generated identity support | Aggregate root by behavior; owns `Booking` collection but does not yet use SharedKernel domain events. |
-| `Booking` | `src/ViajantesTurismo.Admin.Domain` | `IEntity<Guid>` plus generated identity support | Child entity inside `Tour`; EF key configured with `ValueGeneratedNever()`. |
-| `Payment` | `src/ViajantesTurismo.Admin.Domain` | `IEntity<Guid>` plus generated identity support | Child entity inside `Booking`; immutable after creation; EF key configured with `ValueGeneratedNever()`. |
-| `EditablePublicContent` | `src/ViajantesTurismo.Catalog.Domain` | `IAggregateRoot<Guid>` plus generated identity support | Aggregate root with EF materialization constructor and explicit key generation. |
-
-- `tests/ViajantesTurismo.ArchitectureTests`: DDD convention helpers identify entity types through
-  `IEntity<TId>` and allow both Admin and Catalog domain namespaces.
-
-### Persistence assumptions
-
-- EF mappings own keys explicitly through `HasKey(...Id)` and `ValueGeneratedNever()` for persisted
-  Admin and Catalog models. Migration PRs must not change key generation or migrations unless that PR
-  is explicitly about persistence.
-- EF materialization constructors are private and marked for tooling; keep them unchanged while only
-  moving identity/equality support.
-- Admin `Tour`, `Booking`, and `Payment` have aggregate-boundary assumptions. Migrate `Tour` behavior
-  tests before migrating its child entities.
-
-### Staged migration order
-
-1. `Customer` first.
-   - Lowest aggregate-boundary risk among Admin entities.
-   - Add/keep Admin unit tests for identity equality and EF materialization.
-2. `Tour` aggregate root next.
-   - Add behavior tests for booking collection invariants and identity equality before migration.
-3. `Booking`, then `Payment`.
-   - Keep child-entity changes separate from `Tour` root migration.
-   - Preserve payment immutability and booking payment-status tests.
-4. `EditablePublicContent`.
-   - Keep domain-event behavior and EF `ValueGeneratedNever()` covered by Catalog tests.
-5. Remaining Catalog persisted models last.
-
-### Guardrails
-
-- Do not change equality semantics silently.
-- Keep EF value generation explicit with `ValueGeneratedNever()` unless a migration deliberately
-  changes key ownership.
-- Keep architecture or analyzer coverage in place before forbidding previous base-class patterns.
+Domain models implement `IEntity<TId>` or `IAggregateRoot<TId>`. Non-domain models may implement
+`IIdentified<TId>` when generated identity support is useful. Identity generation targets opted-in
+`IIdentified<TId>` implementations.
 
 ## Recommended follow-up order
 

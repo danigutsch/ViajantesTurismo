@@ -1,6 +1,5 @@
 using JetBrains.Annotations;
 using ViajantesTurismo.Admin.Domain.Shared;
-using SharedKernel.Results;
 
 namespace ViajantesTurismo.Admin.Domain.Customers;
 
@@ -45,9 +44,7 @@ public sealed class AccommodationPreferences
     /// <param name="roomType">The room type.</param>
     /// <param name="bedType">The bed type.</param>
     /// <param name="companionId">The companion's ID.</param>
-    /// <returns>A <see cref="Result{AccommodationPreferences}"/> containing the accommodation preferences.</returns>
-    public static Result<AccommodationPreferences> Create(RoomType roomType, BedType bedType, Guid? companionId)
-    {
-        return Result.Ok(new AccommodationPreferences(roomType, bedType, companionId));
-    }
+    /// <returns>The accommodation preferences.</returns>
+    public static AccommodationPreferences Create(RoomType roomType, BedType bedType, Guid? companionId) =>
+        new(roomType, bedType, companionId);
 }

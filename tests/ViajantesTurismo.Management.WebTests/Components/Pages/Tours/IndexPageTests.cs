@@ -148,4 +148,21 @@ public class IndexPageTests : BunitContext
         (badge.TextContent).ShouldContain("Below Min", StringComparison.Ordinal);
         (cut.Markup).ShouldContain("5 / 30", StringComparison.Ordinal);
     }
+
+    [Fact]
+    public void Sorting_by_name_sets_an_ascending_aria_state()
+    {
+        // Arrange
+        _fakeToursApi.AddTour(BuildTourDto(identifier: "TOUR-A", name: "Alpha Tour"));
+        _fakeToursApi.AddTour(BuildTourDto(identifier: "TOUR-Z", name: "Zulu Tour"));
+        var cut = Render<Index>();
+        cut.WaitForState(() => cut.Markup.Contains("Alpha Tour", StringComparison.Ordinal), TimeSpan.FromSeconds(2));
+
+        // Act
+        var nameButton = cut.FindAll("button").Single(button => button.TextContent.Trim() == "Name");
+        nameButton.Click();
+
+        // Assert
+        IndexPageTestsHelper.AssertNameSortIsAscending(cut);
+    }
 }

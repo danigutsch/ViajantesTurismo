@@ -1,9 +1,9 @@
 namespace ViajantesTurismo.Admin.IntegrationTests.Bookings;
 
-[Trait(global::SharedKernel.Testing.TestTraitNames.CategoryName, TestTraits.SmokeCategory)]
-[Trait(global::SharedKernel.Testing.TestTraitNames.ScopeName, TestTraits.IntegrationScope)]
-[Trait(global::SharedKernel.Testing.TestTraitNames.AreaName, TestTraits.BookingsArea)]
-public sealed class BookingBaselineIsolationTests(AspireSerialIntegrationTestFixture fixture)
+[Trait(SharedKernel.Testing.TestTraitNames.CategoryName, TestTraits.SmokeCategory)]
+[Trait(SharedKernel.Testing.TestTraitNames.ScopeName, TestTraits.IntegrationScope)]
+[Trait(SharedKernel.Testing.TestTraitNames.AreaName, TestTraits.BookingsArea)]
+public sealed class BookingBaselineIsolationTests(ApiFixture fixture)
     : AspireSerialIntegrationTestBase(fixture)
 {
     [Fact]

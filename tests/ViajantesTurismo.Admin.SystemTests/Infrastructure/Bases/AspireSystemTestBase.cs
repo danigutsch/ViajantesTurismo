@@ -3,7 +3,6 @@ using ViajantesTurismo.Admin.SystemTests.Infrastructure.Pages;
 using ViajantesTurismo.Admin.SystemTests.Infrastructure.Workflows;
 
 [assembly: AssemblyFixture(typeof(AspireSystemTestFixture))]
-[assembly: CollectionBehavior(DisableTestParallelization = true)]
 
 namespace ViajantesTurismo.Admin.SystemTests.Infrastructure.Bases;
 
@@ -11,7 +10,8 @@ public abstract class AspireSystemTestBase<TFixture>(TFixture fixture) : PageTes
     where TFixture : IAspireSystemTestFixture
 {
     private const float DefaultTimeoutMilliseconds = 15000;
-
+    private const string InteractivePageSelector = ".page:not([inert])";
+    private const string InertPageSelector = ".page[inert]";
     protected TFixture Fixture => fixture;
 
     protected HttpClient ApiClient => Fixture.ApiClient;
@@ -59,14 +59,14 @@ public abstract class AspireSystemTestBase<TFixture>(TFixture fixture) : PageTes
     {
         try
         {
-            await Page.GotoAsync(uri.ToString(), new PageGotoOptions { WaitUntil = WaitUntilState.NetworkIdle });
-            return true;
+            await Page.GotoAsync(uri.ToString(), new PageGotoOptions { WaitUntil = WaitUntilState.DOMContentLoaded });
+            return !IsManagementWebAppUri(uri) || await WaitForInteractivePage(canRetry);
         }
         catch (PlaywrightException exception) when (IsRetryableNavigationFailure(exception))
         {
             if (IsCurrentRoute(uri))
             {
-                return true;
+                return !IsManagementWebAppUri(uri) || await WaitForInteractivePage(canRetry);
             }
 
             if (!canRetry)
@@ -77,6 +77,32 @@ public abstract class AspireSystemTestBase<TFixture>(TFixture fixture) : PageTes
             // Retry immediately on transient AppHost network switches instead of relying on a fixed delay.
             return false;
         }
+    }
+
+    private async Task<bool> WaitForInteractivePage(bool canRetry)
+    {
+        try
+        {
+            await Page.Locator(InteractivePageSelector).WaitForAsync(
+                new LocatorWaitForOptions { State = WaitForSelectorState.Visible });
+            return true;
+        }
+        catch (PlaywrightException) when (canRetry)
+        {
+            if (await Page.Locator(InertPageSelector).IsVisibleAsync())
+            {
+                return false;
+            }
+
+            throw;
+        }
+    }
+
+    private bool IsManagementWebAppUri(Uri uri)
+    {
+        return uri.Scheme.Equals(Fixture.WebAppUrl.Scheme, StringComparison.OrdinalIgnoreCase)
+            && uri.Host.Equals(Fixture.WebAppUrl.Host, StringComparison.OrdinalIgnoreCase)
+            && uri.Port == Fixture.WebAppUrl.Port;
     }
 
     private bool IsCurrentRoute(Uri targetUri)

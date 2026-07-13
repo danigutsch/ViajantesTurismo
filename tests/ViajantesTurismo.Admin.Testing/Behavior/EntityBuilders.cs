@@ -134,7 +134,7 @@ public static class EntityBuilders
             var accommodationPreferences = AccommodationPreferences.Create(
                 _options.PreferredRoom ?? RoomType.DoubleOccupancy,
                 _options.PreferredBed ?? BedType.SingleBed,
-                _options.CompanionId).Value;
+                _options.CompanionId);
 
             var emergencyContact = EmergencyContact.Create(
                 _options.EmergencyContactName ?? "Emergency Contact",

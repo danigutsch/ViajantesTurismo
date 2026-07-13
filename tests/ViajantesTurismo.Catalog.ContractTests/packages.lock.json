@@ -344,7 +344,10 @@
         }
       },
       "sharedkernel.domain": {
-        "type": "Project"
+        "type": "Project",
+        "dependencies": {
+          "SharedKernel.BuildingBlocks": "[0.1.0-alpha.0, )"
+        }
       },
       "sharedkernel.entityframeworkcore": {
         "type": "Project",

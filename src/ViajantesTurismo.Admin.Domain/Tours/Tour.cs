@@ -533,7 +533,7 @@ public sealed partial class Tour : IAggregateRoot<Guid>
     /// <returns>A result indicating success or failure.</returns>
     public Result CancelBooking(Guid bookingId)
     {
-        var bookingResult = FindBooking(bookingId);
+        var bookingResult = FindBooking(bookingId).ToNotFoundResult(bookingId, "this tour");
         if (bookingResult.IsFailure)
         {
             return bookingResult.ConvertError();
@@ -549,7 +549,7 @@ public sealed partial class Tour : IAggregateRoot<Guid>
     /// <returns>A result indicating success or failure.</returns>
     public Result ConfirmBooking(Guid bookingId)
     {
-        var bookingResult = FindBooking(bookingId);
+        var bookingResult = FindBooking(bookingId).ToNotFoundResult(bookingId, "this tour");
         if (bookingResult.IsFailure)
         {
             return bookingResult.ConvertError();
@@ -565,7 +565,7 @@ public sealed partial class Tour : IAggregateRoot<Guid>
     /// <returns>A result indicating success or failure.</returns>
     public Result CompleteBooking(Guid bookingId)
     {
-        var bookingResult = FindBooking(bookingId);
+        var bookingResult = FindBooking(bookingId).ToNotFoundResult(bookingId, "this tour");
         if (bookingResult.IsFailure)
         {
             return bookingResult.ConvertError();
@@ -594,7 +594,7 @@ public sealed partial class Tour : IAggregateRoot<Guid>
         string? referenceNumber = null,
         string? notes = null)
     {
-        var bookingResult = FindBooking(bookingId);
+        var bookingResult = FindBooking(bookingId).ToNotFoundResult(bookingId, "this tour");
         if (bookingResult.IsFailure)
         {
             return bookingResult.ConvertError<Booking, Payment>();
@@ -611,7 +611,7 @@ public sealed partial class Tour : IAggregateRoot<Guid>
     /// <returns>A result indicating success or failure.</returns>
     public Result UpdateBookingNotes(Guid bookingId, string? notes)
     {
-        var bookingResult = FindBooking(bookingId);
+        var bookingResult = FindBooking(bookingId).ToNotFoundResult(bookingId, "this tour");
         return bookingResult.IsFailure
             ? bookingResult.ConvertError()
             : bookingResult.Value.UpdateNotes(notes);
@@ -631,7 +631,7 @@ public sealed partial class Tour : IAggregateRoot<Guid>
         decimal discountAmount,
         string? discountReason)
     {
-        var bookingResult = FindBooking(bookingId);
+        var bookingResult = FindBooking(bookingId).ToNotFoundResult(bookingId, "this tour");
         if (bookingResult.IsFailure)
         {
             return bookingResult.ConvertError();
@@ -662,7 +662,7 @@ public sealed partial class Tour : IAggregateRoot<Guid>
         Guid? companionCustomerId,
         BikeType? companionBikeType)
     {
-        var bookingResult = FindBooking(bookingId);
+        var bookingResult = FindBooking(bookingId).ToNotFoundResult(bookingId, "this tour");
         if (bookingResult.IsFailure)
         {
             return bookingResult.ConvertError();
@@ -764,7 +764,7 @@ public sealed partial class Tour : IAggregateRoot<Guid>
     /// <returns>A result indicating success or failure.</returns>
     public Result RemoveBooking(Guid bookingId)
     {
-        var bookingResult = FindBooking(bookingId);
+        var bookingResult = FindBooking(bookingId).ToNotFoundResult(bookingId, "this tour");
         if (bookingResult.IsFailure)
         {
             return bookingResult.ConvertError();
@@ -797,16 +797,8 @@ public sealed partial class Tour : IAggregateRoot<Guid>
         return Result.Ok();
     }
 
-    private Result<Booking> FindBooking(Guid bookingId)
-    {
-        var booking = _bookings.FirstOrDefault(booking => booking.Id == bookingId);
-        if (booking is null)
-        {
-            return TourErrors.BookingNotFound(bookingId).ConvertError<Booking>();
-        }
-
-        return Result.Ok(booking);
-    }
+    private Option<Booking> FindBooking(Guid bookingId) =>
+        Option.FromNullable(_bookings.FirstOrDefault(booking => booking.Id == bookingId));
 
     /// <summary>
     /// Marks the tour for deletion after validating business rules.

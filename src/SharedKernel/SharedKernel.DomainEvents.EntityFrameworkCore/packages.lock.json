@@ -102,8 +102,17 @@
         "resolved": "10.0.9",
         "contentHash": "fmEbAUFsaIKirgLt/lYhuFRBwhcSJN31jjHgCdbQxJiWOum6EdLjkbgGuukSP9z/a+9LibaxII/kF+GwOXgC4g=="
       },
+      "sharedkernel.buildingblocks": {
+        "type": "Project",
+        "dependencies": {
+          "SharedKernel.Results": "[0.1.0-alpha.0, )"
+        }
+      },
       "sharedkernel.domain": {
-        "type": "Project"
+        "type": "Project",
+        "dependencies": {
+          "SharedKernel.BuildingBlocks": "[0.1.0-alpha.0, )"
+        }
       },
       "sharedkernel.domainevents": {
         "type": "Project",
@@ -120,6 +129,9 @@
         }
       },
       "sharedkernel.mediator.abstractions": {
+        "type": "Project"
+      },
+      "sharedkernel.results": {
         "type": "Project"
       },
       "Microsoft.Extensions.DependencyInjection": {

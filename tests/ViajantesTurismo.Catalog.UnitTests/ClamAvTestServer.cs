@@ -40,6 +40,10 @@ internal sealed class ClamAvTestServer : IAsyncDisposable
         {
             // The test host can cancel before a test client connects.
         }
+        catch (EndOfStreamException)
+        {
+            // A timed-out scanner can close the client before the test server finishes reading.
+        }
     }
 
     private async Task<byte[]> Serve(string? response)

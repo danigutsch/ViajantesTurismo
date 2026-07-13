@@ -76,7 +76,7 @@ public static class CustomerMapper
         return AccommodationPreferences.Create(
             BookingMapper.MapToRoomType(dto.RoomType),
             MapToBedType(dto.BedType),
-            dto.CompanionId).Value;
+            dto.CompanionId);
     }
 
     /// <summary>

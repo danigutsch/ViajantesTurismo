@@ -38,7 +38,6 @@ message record. These concepts should not be represented by one catch-all type.
 
 Owns DDD primitives:
 
-- `IIdentified<TId>`.
 - `IEntity<TId>`.
 - `IAggregateRoot`.
 - `IAggregateRoot<TId>`.
@@ -47,8 +46,9 @@ Owns DDD primitives:
 
 ### `SharedKernel.BuildingBlocks`
 
-Owns reusable value objects and small cross-context primitives:
+Owns reusable identity interfaces, value objects, and small cross-context primitives:
 
+- `IIdentified<TId>`.
 - `ValueObject`.
 - `DateRange`.
 - Future source-generated value-object conventions.

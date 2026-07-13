@@ -275,6 +275,7 @@ flowchart TB
     SharedKernel_Branding[SharedKernel.Branding] --> SharedKernel_Results[SharedKernel.Results]
     SharedKernel_BuildingBlocks[SharedKernel.BuildingBlocks] --> SharedKernel_Results[SharedKernel.Results]
     SharedKernel_DocumentRendering[SharedKernel.DocumentRendering] --> SharedKernel_InputNormalization[SharedKernel.InputNormalization]
+    SharedKernel_Domain[SharedKernel.Domain] --> SharedKernel_BuildingBlocks[SharedKernel.BuildingBlocks]
     SharedKernel_DomainEvents[SharedKernel.DomainEvents] --> SharedKernel_Domain[SharedKernel.Domain]
     SharedKernel_DomainEvents[SharedKernel.DomainEvents] --> SharedKernel_Mediator_Abstractions[SharedKernel.Mediator.Abstractions]
     SharedKernel_DomainEvents_EntityFrameworkCore[SharedKernel.DomainEvents.EntityFrameworkCore] --> SharedKernel_Domain[SharedKernel.Domain]

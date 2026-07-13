@@ -40,7 +40,7 @@ public sealed partial class AdminTestArchitectureGuardTests
 
         AssertFileContains(
             Path.Combine(integrationInfrastructurePath, "ApiFixture.cs"),
-            "public sealed class ApiFixture : ViajantesTurismo.Admin.Testing.Integration.IAdminTestHost, IAsyncLifetime");
+            "public sealed class ApiFixture : Testing.Integration.IAdminTestHost, IAsyncLifetime");
 
         AssertFileContains(
             Path.Combine(integrationInfrastructurePath, "ApiFixture.cs"),
@@ -51,20 +51,24 @@ public sealed partial class AdminTestArchitectureGuardTests
             "_client = _app.CreateHttpClient(ResourceNames.Api);");
 
         AssertFileContains(
+            Path.Combine(integrationInfrastructurePath, "ApiFixture.cs"),
+            "_databaseConnectionString = await _app.GetConnectionString(ResourceNames.AdminDatabase, TestContext.Current.CancellationToken);");
+
+        AssertFileContains(
             Path.Combine(GetRepositoryRoot(), "src", "SharedKernel", "SharedKernel.IntegrationTesting", "PostgreSqlPublicSchemaReset.cs"),
             "public static async Task Reset(DbConnection connection, CancellationToken ct)");
 
         AssertFileContains(
-            Path.Combine(integrationInfrastructurePath, "Fixtures", "AspireSerialIntegrationTestFixture.cs"),
-            "public sealed class AspireSerialIntegrationTestFixture : IAsyncLifetime, IDisposable");
+            Path.Combine(integrationInfrastructurePath, "ApiFixture.cs"),
+            "await PostgreSqlPublicSchemaReset.Reset(connection, ct);");
 
         AssertFileContains(
             Path.Combine(integrationInfrastructurePath, "Fixtures", "AspireSerialIntegrationTestCollection.cs"),
             "[CollectionDefinition(IntegrationTestCollections.Serial, DisableParallelization = true)]");
 
-        AssertFileContains(
-            Path.Combine(integrationInfrastructurePath, "Fixtures", "AspireSerialIntegrationTestFixture.cs"),
-            "await PostgreSqlPublicSchemaReset.Reset(connection, ct);");
+        AssertFileDoesNotContain(
+            Path.Combine(integrationInfrastructurePath, "Fixtures", "AspireSerialIntegrationTestCollection.cs"),
+            new Regex("ICollectionFixture<", RegexOptions.CultureInvariant));
 
         AssertFileContains(
             Path.Combine(integrationInfrastructurePath, "Bases", "AspireSerialIntegrationTestBase.cs"),
@@ -72,7 +76,7 @@ public sealed partial class AdminTestArchitectureGuardTests
 
         AssertFileContains(
             Path.Combine(integrationInfrastructurePath, "Bases", "AspireSerialIntegrationTestBase.cs"),
-            "AspireSerialIntegrationTestFixture fixture) : IAsyncLifetime");
+            "ApiFixture fixture) : IAsyncLifetime");
 
         AssertFileContains(
             Path.Combine(integrationInfrastructurePath, "Bases", "AspireSerialIntegrationTestBase.cs"),
@@ -81,6 +85,9 @@ public sealed partial class AdminTestArchitectureGuardTests
         AssertFileDoesNotContain(
             Path.Combine(integrationInfrastructurePath, "Bases", "AspireSerialIntegrationTestBase.cs"),
             new Regex(@"public\s+virtual\s+async\s+ValueTask\s+DisposeAsync\s*\(\s*\)\s*\{[^}]*ResetDatabase\(", RegexOptions.Singleline | RegexOptions.CultureInvariant));
+
+        AssertFileDoesNotExist(
+            Path.Combine(integrationInfrastructurePath, "Fixtures", "AspireSerialIntegrationTestFixture.cs"));
 
         AssertFileContains(
             Path.Combine(systemTestBasesPath, "AspireSystemTestBase.cs"),
@@ -142,6 +149,46 @@ public sealed partial class AdminTestArchitectureGuardTests
 
         (violatingFiles.Length == 0).ShouldBeTrue(
             $"Expected serial collection ownership to stay in base-class infrastructure, but found direct usage in:{Environment.NewLine}{string.Join(Environment.NewLine, violatingFiles)}");
+    }
+
+    [Fact]
+    public void Management_web_should_render_routes_only_after_interactive_server_connection()
+    {
+        // Arrange
+        var repositoryRoot = GetRepositoryRoot();
+        var componentsPath = Path.Combine(repositoryRoot, "src", "ViajantesTurismo.Management.Web", "Components");
+        var pagesPath = Path.Combine(componentsPath, "Pages");
+        var appPath = Path.Combine(componentsPath, "App.razor");
+        var mainLayoutPath = Path.Combine(componentsPath, "Layout", "MainLayout.razor");
+        var appStylesPath = Path.Combine(repositoryRoot, "src", "ViajantesTurismo.Management.Web", "wwwroot", "app.css");
+        var noScriptStylesPath = Path.Combine(repositoryRoot, "src", "ViajantesTurismo.Management.Web", "wwwroot", "app-noscript.css");
+        var interactiveReadyPath = Path.Combine(componentsPath, "InteractiveReady.razor");
+
+        // Act
+        var appMarkup = File.ReadAllText(appPath);
+        var mainLayoutMarkup = File.ReadAllText(mainLayoutPath);
+        var appStyles = File.ReadAllText(appStylesPath);
+        var noScriptStylesExists = File.Exists(noScriptStylesPath);
+        var noScriptStyles = noScriptStylesExists ? File.ReadAllText(noScriptStylesPath) : string.Empty;
+        var interactiveReadyExists = File.Exists(interactiveReadyPath);
+        var pagesWithRouteRenderModes = Directory.GetFiles(pagesPath, "*.razor", SearchOption.AllDirectories)
+            .Where(path => File.ReadAllText(path).Contains("@rendermode", StringComparison.Ordinal))
+            .Select(path => Path.GetRelativePath(repositoryRoot, path).Replace('\\', '/'))
+            .ToArray();
+
+        // Assert
+        (appMarkup).ShouldContain("<HeadOutlet @rendermode=\"InteractiveServer\" />", StringComparison.Ordinal);
+        (appMarkup).ShouldContain("<Routes @rendermode=\"InteractiveServer\" />", StringComparison.Ordinal);
+        (appMarkup).ShouldContain("<div class=\"app-startup-status\" role=\"status\" aria-live=\"polite\">", StringComparison.Ordinal);
+        (appMarkup).ShouldContain("<noscript>", StringComparison.Ordinal);
+        (appMarkup).ShouldContain("<link rel=\"stylesheet\" href=\"@Assets[\"app-noscript.css\"]\" />", StringComparison.Ordinal);
+        (mainLayoutMarkup).ShouldContain("inert=\"@(!RendererInfo.IsInteractive ? \"inert\" : null)\"", StringComparison.Ordinal);
+        (mainLayoutMarkup).ShouldContain("aria-busy=\"@(!RendererInfo.IsInteractive ? \"true\" : \"false\")\"", StringComparison.Ordinal);
+        (appStyles).ShouldContain("body:has(.page:not([inert])) .app-startup-status", StringComparison.Ordinal);
+        noScriptStylesExists.ShouldBeTrue();
+        (noScriptStyles).ShouldContain(".app-startup-status { display: none; }", StringComparison.Ordinal);
+        interactiveReadyExists.ShouldBeFalse();
+        pagesWithRouteRenderModes.ShouldBeEmpty();
     }
 
     [Fact]

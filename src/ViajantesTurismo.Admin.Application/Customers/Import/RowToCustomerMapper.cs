@@ -279,7 +279,7 @@ public static class RowToCustomerMapper
             return errors.ToResult<AccommodationPreferences>();
         }
 
-        return AccommodationPreferences.Create(roomType, bedType, companionId);
+        return Result.Ok(AccommodationPreferences.Create(roomType, bedType, companionId));
     }
 
     private static Result<EmergencyContact> MapEmergencyContact(IImportDocument document, IImportRow row)
