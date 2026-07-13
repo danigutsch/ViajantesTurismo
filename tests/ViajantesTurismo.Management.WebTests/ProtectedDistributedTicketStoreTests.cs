@@ -21,7 +21,9 @@ public sealed class ProtectedDistributedTicketStoreTests
 
         // Assert
         key.ShouldStartWith("management-ticket:", StringComparison.Ordinal);
-        storedValue.ShouldNotBeNull();
+        var protectedTicket = storedValue ?? throw new InvalidOperationException("The ticket was not stored.");
+        var serializedTicket = Microsoft.AspNetCore.Authentication.TicketSerializer.Default.Serialize(ticket);
+        protectedTicket.SequenceEqual(serializedTicket).ShouldBeFalse();
         retrieved.ShouldNotBeNull();
         retrieved.Principal.Identity?.Name.ShouldBe("Test Administrator");
     }
