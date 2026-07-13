@@ -527,6 +527,32 @@ public sealed class RepoConfigToolApplicationTests
         errorText.ShouldContain(expectedMessage, StringComparison.Ordinal);
     }
 
+    [Fact]
+    public async Task Verify_reports_malformed_item_integrations_when_the_item_id_is_invalid()
+    {
+        // Arrange
+        using var workspace = new TemporaryRepoConfigWorkspace();
+        using var initOutput = new StringWriter(CultureInfo.InvariantCulture);
+        using var initError = new StringWriter(CultureInfo.InvariantCulture);
+        using var verifyOutput = new StringWriter(CultureInfo.InvariantCulture);
+        using var verifyError = new StringWriter(CultureInfo.InvariantCulture);
+        (await RepoConfigToolApplication.Run(["init", "--root", workspace.RootPath], initOutput, initError, workspace.RootPath, TestContext.Current.CancellationToken)).ShouldBe(0);
+        var itemText = workspace.ReadFile("roadmap/items/RM-001-roadmap-gitops.json");
+        var malformedItem = itemText
+            .Replace("\"id\": \"RM-001\"", "\"id\": \"\"", StringComparison.Ordinal)
+            .Replace("\"labels\": [", "\"integrations\": [],\n  \"labels\": [", StringComparison.Ordinal);
+        workspace.WriteFile("roadmap/items/RM-001-roadmap-gitops.json", malformedItem);
+
+        // Act
+        var exitCode = await RepoConfigToolApplication.Run(["verify", "--root", workspace.RootPath], verifyOutput, verifyError, workspace.RootPath, TestContext.Current.CancellationToken);
+        var errorText = verifyError.ToString();
+
+        // Assert
+        exitCode.ShouldBe(1);
+        errorText.ShouldContain("Missing required string property: id.", StringComparison.Ordinal);
+        errorText.ShouldContain("integrations must be a JSON object when present.", StringComparison.Ordinal);
+    }
+
     [Theory]
     [InlineData("owner only")]
     [InlineData("owner/repo?state=closed")]

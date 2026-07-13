@@ -246,6 +246,7 @@ internal static class RepoConfigVerifier
         var dependencies = VerifyStringArray(root, "dependencies", relativePath, issues, required: true);
         var tags = VerifyStringArray(root, "tags", relativePath, issues, required: true);
         var labels = VerifyStringArray(root, "labels", relativePath, issues, required: true);
+        var githubIssue = GetGitHubIssue(root, relativePath, issues);
         return string.IsNullOrWhiteSpace(id)
             ? null
             : new RoadmapItemSnapshot(
@@ -266,7 +267,7 @@ internal static class RepoConfigVerifier
                 dependencies,
                 tags,
                 labels,
-                GetGitHubIssue(root, relativePath, issues));
+                githubIssue);
     }
 
     private static void VerifyScoring(JsonElement root, string relativePath, List<RepoConfigIssue> issues)
