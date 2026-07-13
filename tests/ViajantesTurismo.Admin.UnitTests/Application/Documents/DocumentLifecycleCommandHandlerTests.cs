@@ -98,12 +98,11 @@ public sealed class DocumentLifecycleCommandHandlerTests
         store.Documents.Add(expired.Id, expired);
         store.Documents.Add(current.Id, current);
         // Act
-        object removedCount = await new PurgeExpiredDraftsCommandHandler(store, new FakeTimeProvider(now))
+        var removedCount = await new PurgeExpiredDraftsCommandHandler(store, new FakeTimeProvider(now))
             .Handle(new PurgeExpiredDraftsCommand(), CancellationToken.None);
 
         // Assert
-        var rawRemovedCount = removedCount.ShouldBeOfType<int>();
-        rawRemovedCount.ShouldBe(1);
+        removedCount.ShouldBe(1);
         store.Documents.ContainsKey(expired.Id).ShouldBeFalse();
         store.Documents.ContainsKey(current.Id).ShouldBeTrue();
     }
