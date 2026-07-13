@@ -907,6 +907,12 @@
           "CommunityToolkit.Aspire.Hosting.OpenTelemetryCollector": "[13.4.0, )"
         }
       },
+      "sharedkernel.aspire.hosting.seaweedfs": {
+        "type": "Project",
+        "dependencies": {
+          "Aspire.Hosting": "[13.4.6, )"
+        }
+      },
       "sharedkernel.aspnetcore": {
         "type": "Project",
         "dependencies": {

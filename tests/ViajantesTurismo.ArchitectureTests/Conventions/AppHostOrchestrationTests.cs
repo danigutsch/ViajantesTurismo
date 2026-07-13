@@ -181,6 +181,9 @@ public sealed partial class AppHostOrchestrationTests
 
         // Assert
         appHostText.ShouldContain("AddClamAv(ResourceNames.ClamAv)", StringComparison.Ordinal);
+        appHostText.ShouldContain("$\"{ResourceNames.SeaweedFs}-bucket\"", StringComparison.Ordinal);
+        appHostText.ShouldContain("\"viajantes-media\"", StringComparison.Ordinal);
+        appHostText.ShouldContain("AddSeaweedFs(ResourceNames.SeaweedFs, seaweedFsBucket)", StringComparison.Ordinal);
         catalogApiBlock.ShouldContain("WithClamAvReference(clamAv)", StringComparison.Ordinal);
         catalogApiBlock.ShouldContain("WaitFor(clamAv)", StringComparison.Ordinal);
         clamAvText.ShouldContain("WithImageSHA256", StringComparison.Ordinal);
@@ -200,6 +203,9 @@ public sealed partial class AppHostOrchestrationTests
         seaweedFsText.ShouldContain("persist: true", StringComparison.Ordinal);
         seaweedFsText.ShouldContain("AWS_ACCESS_KEY_ID", StringComparison.Ordinal);
         seaweedFsText.ShouldContain("AWS_SECRET_ACCESS_KEY", StringComparison.Ordinal);
+        seaweedFsText.ShouldNotContain("viajantes-media", StringComparison.Ordinal);
+        seaweedFsText.ShouldNotContain("Catalog__MediaObjectStorage", StringComparison.Ordinal);
+        appHostExtensionsText.ShouldContain("private static IResourceBuilder<TDestination> WithSeaweedFsReference<TDestination>(", StringComparison.Ordinal);
     }
 
 }
