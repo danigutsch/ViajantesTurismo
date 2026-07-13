@@ -1,4 +1,5 @@
 using Microsoft.Extensions.Diagnostics.HealthChecks;
+using SharedKernel.AspNetCore;
 using SharedKernel.Testing.AspNetCore;
 using ViajantesTurismo.Branding.ApiService;
 
@@ -34,7 +35,12 @@ internal static class BrandingApiTestHost
             },
             authenticateClient
                 ? client => ApiTestAuthentication.ConfigureAuthenticatedClient(client, Audience, AdministratorRole)
-                : null);
+                : null,
+            new Dictionary<string, string?>
+            {
+                [ApiAuthenticationDefaults.AuthorityConfigurationKey] = ApiTestAuthentication.Authority,
+                [ApiAuthenticationDefaults.IssuerConfigurationKey] = ApiTestAuthentication.Authority
+            });
     }
 
     public static WebApplicationFactory<BrandingApiHostEntryPoint> CreateAnonymous()
