@@ -9,6 +9,8 @@ internal static class BrandingApiTestHost
 {
     private const string Audience = "branding-api";
     private const string AdministratorRole = "Admin";
+    private const string UntrustedIssuer = "https://untrusted.test";
+    private const string WrongAudience = "wrong-audience";
 
     public static WebApplicationFactory<BrandingApiHostEntryPoint> Create(string? environment = null)
     {
@@ -46,5 +48,20 @@ internal static class BrandingApiTestHost
     public static WebApplicationFactory<BrandingApiHostEntryPoint> CreateAnonymous()
     {
         return Create(null, null, authenticateClient: false);
+    }
+
+    public static void ConfigureAuthenticatedClient(HttpClient client, string role)
+    {
+        ApiTestAuthentication.ConfigureAuthenticatedClient(client, Audience, role);
+    }
+
+    public static void ConfigureClientWithUntrustedIssuer(HttpClient client)
+    {
+        ApiTestAuthentication.ConfigureClient(client, Audience, UntrustedIssuer, AdministratorRole);
+    }
+
+    public static void ConfigureClientWithWrongAudience(HttpClient client)
+    {
+        ApiTestAuthentication.ConfigureAuthenticatedClient(client, WrongAudience, AdministratorRole);
     }
 }
