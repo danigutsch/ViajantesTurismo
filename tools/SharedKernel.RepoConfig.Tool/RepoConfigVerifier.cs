@@ -104,6 +104,11 @@ internal static class RepoConfigVerifier
             return;
         }
 
+        if (project.TryGetProperty("tagFields", out _))
+        {
+            issues.Add(new RepoConfigIssue(relativePath, "project.tagFields is not supported."));
+        }
+
         if (!string.Equals(GetString(project, "ordering"), "order", StringComparison.Ordinal))
         {
             issues.Add(new RepoConfigIssue(relativePath, "project.ordering must be order."));

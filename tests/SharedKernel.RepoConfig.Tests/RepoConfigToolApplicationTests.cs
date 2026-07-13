@@ -460,6 +460,28 @@ public sealed class RepoConfigToolApplicationTests
     }
 
     [Fact]
+    public async Task Verify_rejects_obsolete_project_tag_fields()
+    {
+        // Arrange
+        using var workspace = new TemporaryRepoConfigWorkspace();
+        using var initOutput = new StringWriter(CultureInfo.InvariantCulture);
+        using var initError = new StringWriter(CultureInfo.InvariantCulture);
+        using var verifyOutput = new StringWriter(CultureInfo.InvariantCulture);
+        using var verifyError = new StringWriter(CultureInfo.InvariantCulture);
+        (await RepoConfigToolApplication.Run(["init", "--root", workspace.RootPath], initOutput, initError, workspace.RootPath, TestContext.Current.CancellationToken)).ShouldBe(0);
+        var configText = workspace.ReadFile("roadmap/config.json");
+        workspace.WriteFile("roadmap/config.json", configText.Replace("\"project\": {", "\"project\": {\n    \"tagFields\": [],", StringComparison.Ordinal));
+
+        // Act
+        var exitCode = await RepoConfigToolApplication.Run(["verify", "--root", workspace.RootPath], verifyOutput, verifyError, workspace.RootPath, TestContext.Current.CancellationToken);
+        var errorText = verifyError.ToString();
+
+        // Assert
+        exitCode.ShouldBe(1);
+        errorText.ShouldContain("project.tagFields is not supported.", StringComparison.Ordinal);
+    }
+
+    [Fact]
     public async Task Verify_rejects_item_array_values_with_leading_or_trailing_whitespace()
     {
         // Arrange
@@ -486,6 +508,7 @@ public sealed class RepoConfigToolApplicationTests
     [InlineData("owner/repo?state=closed")]
     [InlineData("owner/repo#fragment")]
     [InlineData("owner/repo\\path")]
+    [InlineData("owner--name/repository")]
     public async Task Verify_reports_invalid_enabled_github_repository(string repository)
     {
         // Arrange
@@ -505,6 +528,12 @@ public sealed class RepoConfigToolApplicationTests
         // Assert
         exitCode.ShouldBe(1);
         errorText.ShouldContain("integrations.github.repository must be shaped as owner/repository when GitHub sync is enabled.", StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public void GitHub_repository_name_accepts_single_hyphenated_owner()
+    {
+        GitHubRepositoryName.IsValid("owner-name/repository").ShouldBeTrue();
     }
 
     [Fact]
