@@ -24,7 +24,7 @@ public sealed class ManagementSecurityDbContext(DbContextOptions<ManagementSecur
 
         modelBuilder.Entity<ManagementCookieTicketCacheEntry>(entity =>
         {
-            entity.ToTable("management_cookie_tickets", ManagementSecurityDefaults.SchemaName);
+            entity.ToTable(ManagementSecurityDefaults.TicketTableName, ManagementSecurityDefaults.SchemaName);
             entity.HasKey(entry => entry.Id);
             entity.Property(entry => entry.Id)
                 .HasMaxLength(449)

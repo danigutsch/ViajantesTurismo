@@ -34,7 +34,7 @@ public sealed class ManagementSecurityDbContextFactoryTests
         // Act
         using var context = factory.CreateDbContext([]);
         var entityType = context.Model.GetEntityTypes().SingleOrDefault(
-            entity => entity.FindAnnotation("Relational:TableName")?.Value?.Equals("management_cookie_tickets") == true);
+            entity => entity.FindAnnotation("Relational:TableName")?.Value?.Equals(ManagementSecurityDefaults.TicketTableName) == true);
 
         // Assert
         var ticketCacheEntity = entityType.ShouldNotBeNull();
