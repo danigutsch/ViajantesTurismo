@@ -1,11 +1,14 @@
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
+using Microsoft.Extensions.Options;
 
 namespace ViajantesTurismo.Public.WebTests;
 
 internal static class PublicWebEndpointTestsHelpers
 {
+    private const int MaximumProductionStartupAttempts = 3;
+
     public static CatalogTourDto CreateTour(string slug, string title)
     {
         return new CatalogTourDto
@@ -44,5 +47,27 @@ internal static class PublicWebEndpointTestsHelpers
                 services.AddSingleton(brandingApiClient ?? new FakeBrandingApiClient());
             },
             configuration: configuration);
+    }
+
+    public static OptionsValidationException GetProductionSitemapValidationException(string? canonicalOrigin = null)
+    {
+        for (var attempt = 1; attempt <= MaximumProductionStartupAttempts; attempt++)
+        {
+            using var factory = CreateFactory(environment: "Production", canonicalOrigin: canonicalOrigin);
+            try
+            {
+                using var client = factory.CreateClient();
+            }
+            catch (OptionsValidationException exception)
+            {
+                return exception;
+            }
+            catch (ObjectDisposedException) when (attempt < MaximumProductionStartupAttempts)
+            {
+                // Retry the transient deferred-host disposal race without weakening the startup assertion.
+            }
+        }
+
+        throw new InvalidOperationException("Production sitemap validation did not fail during startup.");
     }
 }

@@ -1,5 +1,4 @@
 using Microsoft.AspNetCore.Mvc.Testing;
-using Microsoft.Extensions.Options;
 using System.Xml.Linq;
 using TestTraits = ViajantesTurismo.Public.WebTests.Infrastructure.TestTraits;
 
@@ -887,14 +886,8 @@ public sealed class PublicWebEndpointTests
     public void Production_host_fails_startup_when_sitemap_canonical_origin_is_missing()
     {
         // Arrange
-        using var factory = PublicWebEndpointTestsHelpers.CreateFactory(environment: "Production");
-        Action action = () =>
-        {
-            using var client = factory.CreateClient();
-        };
-
         // Act
-        var exception = action.ShouldThrow<OptionsValidationException>();
+        var exception = PublicWebEndpointTestsHelpers.GetProductionSitemapValidationException();
 
         // Assert
         exception.Message.ShouldContain(
@@ -906,16 +899,9 @@ public sealed class PublicWebEndpointTests
     public void Production_host_fails_startup_when_sitemap_canonical_origin_is_invalid()
     {
         // Arrange
-        using var factory = PublicWebEndpointTestsHelpers.CreateFactory(
-            environment: "Production",
-            canonicalOrigin: "https://public.example.test/sitemap.xml");
-        Action action = () =>
-        {
-            using var client = factory.CreateClient();
-        };
-
         // Act
-        var exception = action.ShouldThrow<OptionsValidationException>();
+        var exception = PublicWebEndpointTestsHelpers.GetProductionSitemapValidationException(
+            "https://public.example.test/sitemap.xml");
 
         // Assert
         exception.Message.ShouldContain(
