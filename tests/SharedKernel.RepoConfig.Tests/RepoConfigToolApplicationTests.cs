@@ -1391,6 +1391,109 @@ public sealed class RepoConfigToolApplicationTests
     }
 
     [Fact]
+    public async Task Sync_github_apply_throws_timeout_when_issue_creation_limit_is_reached()
+    {
+        // Arrange
+        using var workspace = new TemporaryRepoConfigWorkspace();
+        using var initOutput = new StringWriter(CultureInfo.InvariantCulture);
+        using var initError = new StringWriter(CultureInfo.InvariantCulture);
+        (await RepoConfigToolApplication.Run(["init", "--root", workspace.RootPath], initOutput, initError, workspace.RootPath, TestContext.Current.CancellationToken)).ShouldBe(0);
+        RoadmapConfigTestOperations.EnableGitHubSync(workspace);
+        var itemText = workspace.ReadFile("roadmap/items/RM-001-roadmap-gitops.json");
+        workspace.WriteFile("roadmap/items/RM-001-roadmap-gitops.json", itemText.Replace("\"labels\": [", "\"integrations\": { \"github\": { \"issue\": \"create\" } },\n  \"labels\": [", StringComparison.Ordinal));
+        var project = RoadmapProject.Load(workspace.RootPath);
+        var timeProvider = new FakeTimeProvider();
+        using var handler = new TimingOutHttpMessageHandler(timeProvider);
+        using var httpClient = new HttpClient(handler);
+        var syncer = new GitHubRoadmapSyncer(project, httpClient, timeProvider);
+
+        // Act
+        Func<Task> action = () => syncer.Apply(TestContext.Current.CancellationToken);
+        var exception = await action.ShouldThrow<GitHubSyncTimeoutException>();
+
+        // Assert
+        exception.Message.ShouldBe("GitHub sync timed out after 30 seconds.");
+        workspace.ReadFile("roadmap/items/RM-001-roadmap-gitops.json").ShouldContain("\"issue\": \"create\"", StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public async Task Sync_github_apply_adopts_a_mapping_persisted_after_project_load()
+    {
+        // Arrange
+        using var workspace = new TemporaryRepoConfigWorkspace();
+        using var initOutput = new StringWriter(CultureInfo.InvariantCulture);
+        using var initError = new StringWriter(CultureInfo.InvariantCulture);
+        (await RepoConfigToolApplication.Run(["init", "--root", workspace.RootPath], initOutput, initError, workspace.RootPath, TestContext.Current.CancellationToken)).ShouldBe(0);
+        RoadmapConfigTestOperations.EnableGitHubSync(workspace);
+        var itemText = workspace.ReadFile("roadmap/items/RM-001-roadmap-gitops.json");
+        workspace.WriteFile("roadmap/items/RM-001-roadmap-gitops.json", itemText.Replace("\"labels\": [", "\"integrations\": { \"github\": { \"issue\": \"create\" } },\n  \"labels\": [", StringComparison.Ordinal));
+        var project = RoadmapProject.Load(workspace.RootPath);
+        workspace.WriteFile("roadmap/items/RM-001-roadmap-gitops.json", workspace.ReadFile("roadmap/items/RM-001-roadmap-gitops.json").Replace("\"issue\": \"create\"", "\"issue\": 1200", StringComparison.Ordinal));
+        using var handler = new TestHttpMessageHandler();
+        handler.EnqueueJson(HttpStatusCode.NotFound, "{}");
+        handler.EnqueueJson(HttpStatusCode.OK, "{ \"labels\": [] }");
+        handler.EnqueueJson(HttpStatusCode.OK, "{}");
+        using var httpClient = new HttpClient(handler);
+        var syncer = new GitHubRoadmapSyncer(project, httpClient);
+
+        // Act
+        var result = await syncer.Apply(TestContext.Current.CancellationToken);
+
+        // Assert
+        result.Messages.ShouldNotContain("created owner/repository#1200 from RM-001");
+        handler.Requests.ShouldNotContain(request => request.Method == HttpMethod.Post && request.PathAndQuery == "/repos/owner/repository/issues");
+        handler.Requests.ShouldContain(request => request.PathAndQuery == "/repos/owner/repository/issues/1200/labels");
+    }
+
+    [Fact]
+    public async Task Sync_github_apply_keeps_create_intent_when_issue_creation_fails()
+    {
+        // Arrange
+        using var workspace = new TemporaryRepoConfigWorkspace();
+        using var initOutput = new StringWriter(CultureInfo.InvariantCulture);
+        using var initError = new StringWriter(CultureInfo.InvariantCulture);
+        (await RepoConfigToolApplication.Run(["init", "--root", workspace.RootPath], initOutput, initError, workspace.RootPath, TestContext.Current.CancellationToken)).ShouldBe(0);
+        RoadmapConfigTestOperations.EnableGitHubSync(workspace);
+        var itemText = workspace.ReadFile("roadmap/items/RM-001-roadmap-gitops.json");
+        workspace.WriteFile("roadmap/items/RM-001-roadmap-gitops.json", itemText.Replace("\"labels\": [", "\"integrations\": { \"github\": { \"issue\": \"create\" } },\n  \"labels\": [", StringComparison.Ordinal));
+        using var handler = new TestHttpMessageHandler();
+        handler.EnqueueJson(HttpStatusCode.UnprocessableEntity, "{}");
+        using var httpClient = new HttpClient(handler);
+        var syncer = new GitHubRoadmapSyncer(RoadmapProject.Load(workspace.RootPath), httpClient);
+
+        // Act
+        Func<Task> action = () => syncer.Apply(TestContext.Current.CancellationToken);
+        var exception = await action.ShouldThrow<InvalidOperationException>();
+
+        // Assert
+        exception.Message.ShouldBe("GitHub issue creation failed: HTTP 422.");
+        workspace.ReadFile("roadmap/items/RM-001-roadmap-gitops.json").ShouldContain("\"issue\": \"create\"", StringComparison.Ordinal);
+        handler.Requests.Count.ShouldBe(1);
+    }
+
+    [Fact]
+    public async Task Sync_github_preview_describes_conditional_project_membership()
+    {
+        // Arrange
+        using var workspace = new TemporaryRepoConfigWorkspace();
+        using var initOutput = new StringWriter(CultureInfo.InvariantCulture);
+        using var initError = new StringWriter(CultureInfo.InvariantCulture);
+        (await RepoConfigToolApplication.Run(["init", "--root", workspace.RootPath], initOutput, initError, workspace.RootPath, TestContext.Current.CancellationToken)).ShouldBe(0);
+        RoadmapConfigTestOperations.EnableGitHubSync(workspace);
+        var configText = workspace.ReadFile("roadmap/config.json");
+        workspace.WriteFile("roadmap/config.json", configText.Replace("\"sourceOfTruth\": \"projection\"", "\"sourceOfTruth\": \"projection\",\n      \"projectV2\": { \"id\": \"project-id\", \"owner\": \"owner\", \"number\": 1 }", StringComparison.Ordinal));
+        var itemText = workspace.ReadFile("roadmap/items/RM-001-roadmap-gitops.json");
+        workspace.WriteFile("roadmap/items/RM-001-roadmap-gitops.json", itemText.Replace("\"labels\": [", "\"integrations\": { \"github\": { \"issue\": 997 } },\n  \"labels\": [", StringComparison.Ordinal));
+        var syncer = new GitHubRoadmapSyncer(RoadmapProject.Load(workspace.RootPath));
+
+        // Act
+        var result = syncer.Preview();
+
+        // Assert
+        result.Messages.ShouldContain("dry-run: ensure owner/repository#997 is in GitHub Project 1");
+    }
+
+    [Fact]
     public async Task GitHub_project_field_reads_fail_closed_when_graphql_reports_an_error()
     {
         // Arrange

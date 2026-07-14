@@ -79,7 +79,7 @@ internal sealed class GitHubRoadmapSyncer
                 else
                 {
                     EnsureCreateIntent(mapping.GitHub, item.Path);
-                    var issueNumber = await CreateIssue(httpClient ?? throw new InvalidOperationException("GitHub sync could not create an HTTP client."), repository, item, cancellationToken).ConfigureAwait(false);
+                    var issueNumber = await RunProjectOperation(token => CreateIssue(httpClient ?? throw new InvalidOperationException("GitHub sync could not create an HTTP client."), repository, item, token), cancellationToken).ConfigureAwait(false);
                     try
                     {
                         PersistIssueMapping(mapping.Path, mapping.Root, issueNumber);
@@ -285,7 +285,7 @@ internal sealed class GitHubRoadmapSyncer
 
         if (_project.GitHubProjectTarget is not null)
         {
-            yield return $"dry-run: add {_project.GitHubRepository}#{item.GitHubIssue} to GitHub Project {_project.GitHubProjectTarget.Number}";
+            yield return $"dry-run: ensure {_project.GitHubRepository}#{item.GitHubIssue} is in GitHub Project {_project.GitHubProjectTarget.Number}";
         }
     }
 

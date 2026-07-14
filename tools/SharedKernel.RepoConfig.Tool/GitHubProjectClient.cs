@@ -1,5 +1,6 @@
 using System.Text;
 using System.Text.Json;
+using System.Text.Json.Serialization.Metadata;
 
 namespace SharedKernel.RepoConfig.Tool;
 
@@ -11,7 +12,7 @@ internal sealed class GitHubProjectClient(HttpClient httpClient)
         var response = await Send(Query, writer =>
         {
             writer.WriteString("id", target.Id);
-        }, cancellationToken).ConfigureAwait(false);
+        }, GitHubProjectJsonContext.Default.ProjectResponse, response => response.Errors, cancellationToken).ConfigureAwait(false);
         var project = response.Data?.Node;
         if (!string.Equals(project?.Id, target.Id, StringComparison.Ordinal)
             || project?.Number != target.Number
@@ -30,7 +31,7 @@ internal sealed class GitHubProjectClient(HttpClient httpClient)
             writer.WriteString("owner", parts[0]);
             writer.WriteString("repo", parts[1]);
             writer.WriteNumber("number", issueNumber);
-        }, cancellationToken).ConfigureAwait(false);
+        }, GitHubProjectJsonContext.Default.ProjectResponse, response => response.Errors, cancellationToken).ConfigureAwait(false);
         var repositoryResult = response.Data?.Repository;
         var issueId = repositoryResult?.Issue?.Id;
         return string.IsNullOrWhiteSpace(issueId)
@@ -45,7 +46,7 @@ internal sealed class GitHubProjectClient(HttpClient httpClient)
         {
             writer.WriteString("projectId", target.Id);
             writer.WriteString("contentId", issueId);
-        }, cancellationToken).ConfigureAwait(false);
+        }, GitHubProjectJsonContext.Default.ProjectResponse, response => response.Errors, cancellationToken).ConfigureAwait(false);
         var itemId = response.Data?.AddProjectV2ItemById?.Item?.Id;
         return string.IsNullOrWhiteSpace(itemId)
             ? throw new InvalidOperationException("GitHub Project item could not be added.")
@@ -70,7 +71,7 @@ internal sealed class GitHubProjectClient(HttpClient httpClient)
                 {
                     writer.WriteNull("after");
                 }
-            }, cancellationToken).ConfigureAwait(false);
+            }, GitHubProjectJsonContext.Default.ProjectResponse, response => response.Errors, cancellationToken).ConfigureAwait(false);
             items = response.Data?.Node?.Items
                 ?? throw new InvalidOperationException("GitHub Project items could not be read.");
             var item = items.Nodes?.FirstOrDefault(item => string.Equals(item.Content?.Id, issueId, StringComparison.Ordinal));
@@ -89,7 +90,7 @@ internal sealed class GitHubProjectClient(HttpClient httpClient)
     public async Task<IReadOnlyList<GitHubProjectResponse.ProjectField>> GetFields(GitHubProjectTarget target, CancellationToken cancellationToken)
     {
         const string Query = "query($id:ID!){node(id:$id){... on ProjectV2{fields(first:100){nodes{__typename ... on ProjectV2FieldCommon{id name dataType} ... on ProjectV2SingleSelectField{options{id name}}}}}}}";
-        var response = await Send(Query, writer => writer.WriteString("id", target.Id), cancellationToken).ConfigureAwait(false);
+        var response = await Send(Query, writer => writer.WriteString("id", target.Id), GitHubProjectJsonContext.Default.ProjectResponse, result => result.Errors, cancellationToken).ConfigureAwait(false);
         return response.Data?.Node?.Fields?.Nodes
             ?? throw new InvalidOperationException("GitHub Project fields could not be read.");
     }
@@ -97,7 +98,7 @@ internal sealed class GitHubProjectClient(HttpClient httpClient)
     public async Task<IReadOnlyList<GitHubProjectItemResponse.FieldValue>> GetFieldValues(string itemId, CancellationToken cancellationToken)
     {
         const string Query = "query($id:ID!){node(id:$id){... on ProjectV2Item{fieldValues(first:100){nodes{... on ProjectV2ItemFieldNumberValue{number field{... on ProjectV2FieldCommon{id name}}} ... on ProjectV2ItemFieldTextValue{text field{... on ProjectV2FieldCommon{id name}}} ... on ProjectV2ItemFieldSingleSelectValue{optionId field{... on ProjectV2FieldCommon{id name}}}}}}}}";
-        var response = await SendItem(Query, writer => writer.WriteString("id", itemId), cancellationToken).ConfigureAwait(false);
+        var response = await Send(Query, writer => writer.WriteString("id", itemId), GitHubProjectJsonContext.Default.ProjectItemResponse, result => result.Errors, cancellationToken).ConfigureAwait(false);
         return response.Data?.Node?.FieldValues?.Nodes
             ?? throw new InvalidOperationException("GitHub Project field values could not be read.");
     }
@@ -128,14 +129,14 @@ internal sealed class GitHubProjectClient(HttpClient httpClient)
             writer.WriteString("itemId", itemId);
             writer.WriteString("fieldId", fieldId);
             writeValue(writer);
-        }, cancellationToken).ConfigureAwait(false);
+        }, GitHubProjectJsonContext.Default.ProjectResponse, result => result.Errors, cancellationToken).ConfigureAwait(false);
         if (string.IsNullOrWhiteSpace(response.Data?.UpdateProjectV2ItemFieldValue?.ProjectV2Item?.Id))
         {
             throw new InvalidOperationException("GitHub Project field could not be updated.");
         }
     }
 
-    private async Task<GitHubProjectResponse> Send(string query, Action<Utf8JsonWriter> writeVariables, CancellationToken cancellationToken)
+    private async Task<TResponse> Send<TResponse>(string query, Action<Utf8JsonWriter> writeVariables, JsonTypeInfo<TResponse> typeInfo, Func<TResponse, IReadOnlyList<GitHubProjectResponse.Error>?> getErrors, CancellationToken cancellationToken)
     {
         using var stream = new MemoryStream();
         using (var writer = new Utf8JsonWriter(stream))
@@ -161,11 +162,12 @@ internal sealed class GitHubProjectClient(HttpClient httpClient)
         }
 
         var content = await response.Content.ReadAsByteArrayAsync(cancellationToken).ConfigureAwait(false);
-        var result = JsonSerializer.Deserialize(content, GitHubProjectJsonContext.Default.ProjectResponse)
+        var result = JsonSerializer.Deserialize(content, typeInfo)
             ?? throw new InvalidOperationException("GitHub Project request returned no result.");
-        if (result.Errors?.Count > 0)
+        var errors = getErrors(result);
+        if (errors?.Count > 0)
         {
-            var errorType = result.Errors.Select(error => error.Type).FirstOrDefault(type => !string.IsNullOrWhiteSpace(type));
+            var errorType = errors.Select(error => error.Type).FirstOrDefault(type => !string.IsNullOrWhiteSpace(type));
             throw new InvalidOperationException(string.IsNullOrWhiteSpace(errorType)
                 ? "GitHub Project request failed."
                 : $"GitHub Project request failed ({errorType}).");
@@ -174,42 +176,4 @@ internal sealed class GitHubProjectClient(HttpClient httpClient)
         return result;
     }
 
-    private async Task<GitHubProjectItemResponse> SendItem(string query, Action<Utf8JsonWriter> writeVariables, CancellationToken cancellationToken)
-    {
-        using var stream = new MemoryStream();
-        using (var writer = new Utf8JsonWriter(stream))
-        {
-            writer.WriteStartObject();
-            writer.WriteString("query", query);
-            writer.WritePropertyName("variables");
-            writer.WriteStartObject();
-            writeVariables(writer);
-            writer.WriteEndObject();
-            writer.WriteEndObject();
-        }
-
-        var endpoint = new UriBuilder(Uri.UriSchemeHttps, "api.github.com") { Path = "graphql" }.Uri;
-        using var request = new HttpRequestMessage(HttpMethod.Post, endpoint)
-        {
-            Content = new StringContent(Encoding.UTF8.GetString(stream.ToArray()), Encoding.UTF8, "application/json")
-        };
-        using var response = await httpClient.SendAsync(request, cancellationToken).ConfigureAwait(false);
-        if (!response.IsSuccessStatusCode)
-        {
-            throw new InvalidOperationException($"GitHub Project request failed with HTTP {(int)response.StatusCode}.");
-        }
-
-        var content = await response.Content.ReadAsByteArrayAsync(cancellationToken).ConfigureAwait(false);
-        var result = JsonSerializer.Deserialize(content, GitHubProjectJsonContext.Default.ProjectItemResponse)
-            ?? throw new InvalidOperationException("GitHub Project request returned no result.");
-        if (result.Errors?.Count > 0)
-        {
-            var errorType = result.Errors.Select(error => error.Type).FirstOrDefault(type => !string.IsNullOrWhiteSpace(type));
-            throw new InvalidOperationException(string.IsNullOrWhiteSpace(errorType)
-                ? "GitHub Project request failed."
-                : $"GitHub Project request failed ({errorType}).");
-        }
-
-        return result;
-    }
 }

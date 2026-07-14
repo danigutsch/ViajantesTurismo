@@ -739,7 +739,7 @@ internal static class RepoConfigVerifier
             return;
         }
 
-        if (!github.TryGetProperty("enabled", out var enabled) || enabled.ValueKind != JsonValueKind.True)
+        if (!github.TryGetProperty("enabled", out var enabled) || enabled.ValueKind == JsonValueKind.False)
         {
             issues.Add(new RepoConfigIssue(relativePath, "integrations.github.projectV2 requires GitHub sync to be enabled."));
         }
