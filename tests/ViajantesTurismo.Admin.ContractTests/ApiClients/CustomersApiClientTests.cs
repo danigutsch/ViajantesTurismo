@@ -1,4 +1,5 @@
 using System.Net;
+using System.Collections.Concurrent;
 using System.Diagnostics;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
@@ -240,14 +241,9 @@ public sealed class CustomersApiClientTests
     {
         // Arrange
         const string sensitiveValue = "alice@example.test";
-        List<Activity> stoppedActivities = [];
-        using var listener = new ActivityListener
-        {
-            ShouldListenTo = source => source.Name == "ViajantesTurismo.Admin.Contracts.Clients",
-            Sample = static (ref ActivityCreationOptions<ActivityContext> _) => ActivitySamplingResult.AllData,
-            ActivityStopped = stoppedActivities.Add
-        };
-        ActivitySource.AddActivityListener(listener);
+        var stoppedActivities = new ConcurrentQueue<Activity>();
+        using var listener = AdminContractsClientTelemetryTestsHelpers.CreateActivityListener(stoppedActivities);
+        using var rootActivity = AdminContractsClientTelemetryTestsHelpers.StartRootActivity();
         using var httpClient = CatalogToursApiClientTestsHelpers.CreateClient(_ =>
             CatalogToursApiClientTestsHelpers.JsonResponse($"not json {sensitiveValue}", HttpStatusCode.BadRequest));
         var sut = CustomersApiClientTestsHelpers.CreateSut(httpClient);
@@ -257,9 +253,10 @@ public sealed class CustomersApiClientTests
 
         // Assert
         outcome.Kind.ShouldBe(ContractCommandOutcomeKind.MalformedBody);
-        var activity = stoppedActivities
-            .Where(candidate => candidate.DisplayName == "customers.create")
-            .ShouldHaveSingleItem();
+        var activity = AdminContractsClientTelemetryTestsHelpers.SingleActivity(
+            stoppedActivities,
+            rootActivity,
+            "customers.create");
         activity.DisplayName.ShouldBe("customers.create");
         activity.Kind.ShouldBe(ActivityKind.Client);
         activity.Tags.ShouldContain(new KeyValuePair<string, string?>("viajantes.api_area", "admin"));
