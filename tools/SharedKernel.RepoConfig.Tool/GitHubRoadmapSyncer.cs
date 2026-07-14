@@ -355,7 +355,7 @@ internal sealed class GitHubRoadmapSyncer
         return remoteLabels.EnumerateArray()
             .Where(label => label.ValueKind == JsonValueKind.Object && label.TryGetProperty("name", out var name) && name.ValueKind == JsonValueKind.String)
             .Select(label => label.GetProperty("name").GetString())
-            .Where(name => !string.IsNullOrWhiteSpace(name) && !labels.Contains(name, StringComparer.Ordinal))
+            .Where(name => !string.IsNullOrWhiteSpace(name) && !labels.Contains(name, StringComparer.OrdinalIgnoreCase))
             .Select(name => name ?? string.Empty)
             .ToArray();
     }
@@ -369,7 +369,7 @@ internal sealed class GitHubRoadmapSyncer
         using var response = await httpClient.SendAsync(request, cancellationToken).ConfigureAwait(false);
         if (!response.IsSuccessStatusCode)
         {
-            throw new InvalidOperationException($"GitHub issue creation failed: HTTP {(int)response.StatusCode}.");
+            throw CreateGitHubCreationFailure(response.StatusCode);
         }
 
         using var responseStream = await response.Content.ReadAsStreamAsync(cancellationToken).ConfigureAwait(false);
@@ -473,7 +473,14 @@ internal sealed class GitHubRoadmapSyncer
 
     private static InvalidOperationException CreateGitHubFailure(string operation, int issueNumber, HttpStatusCode statusCode)
     {
-        var hint = statusCode switch
+        return new InvalidOperationException($"GitHub {operation} failed for #{issueNumber}: HTTP {(int)statusCode}{GetGitHubFailureHint(statusCode)}.");
+    }
+
+    private static InvalidOperationException CreateGitHubCreationFailure(HttpStatusCode statusCode) =>
+        new($"GitHub issue creation failed: HTTP {(int)statusCode}{GetGitHubFailureHint(statusCode)}.");
+
+    private static string GetGitHubFailureHint(HttpStatusCode statusCode) =>
+        statusCode switch
         {
             HttpStatusCode.Unauthorized => " (authentication required)",
             HttpStatusCode.Forbidden => " (access denied or rate limited)",
@@ -482,9 +489,6 @@ internal sealed class GitHubRoadmapSyncer
             HttpStatusCode.TooManyRequests => " (rate limited)",
             _ => string.Empty
         };
-
-        return new InvalidOperationException($"GitHub {operation} failed for #{issueNumber}: HTTP {(int)statusCode}{hint}.");
-    }
 
     private static string BuildLabelPayload(IReadOnlyList<string> labels)
     {

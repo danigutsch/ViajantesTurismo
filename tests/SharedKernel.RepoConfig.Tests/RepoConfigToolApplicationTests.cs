@@ -1343,7 +1343,7 @@ public sealed class RepoConfigToolApplicationTests
         var project = RoadmapProject.Load(workspace.RootPath);
         using var handler = new TestHttpMessageHandler();
         handler.EnqueueJson(HttpStatusCode.NotFound, "{}");
-        handler.EnqueueJson(HttpStatusCode.OK, "{ \"labels\": [{ \"name\": \"manual\" }] }");
+        handler.EnqueueJson(HttpStatusCode.OK, "{ \"labels\": [{ \"name\": \"AREA: TOOLING\" }, { \"name\": \"manual\" }] }");
         handler.EnqueueJson(HttpStatusCode.OK, "{}");
         using var httpClient = new HttpClient(handler);
         var syncer = new GitHubRoadmapSyncer(project, httpClient);
@@ -1466,7 +1466,7 @@ public sealed class RepoConfigToolApplicationTests
         var exception = await action.ShouldThrow<InvalidOperationException>();
 
         // Assert
-        exception.Message.ShouldBe("GitHub issue creation failed: HTTP 422.");
+        exception.Message.ShouldBe("GitHub issue creation failed: HTTP 422 (request validation failed).");
         workspace.ReadFile("roadmap/items/RM-001-roadmap-gitops.json").ShouldContain("\"issue\": \"create\"", StringComparison.Ordinal);
         handler.Requests.Count.ShouldBe(1);
     }
