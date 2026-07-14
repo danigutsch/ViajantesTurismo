@@ -13,10 +13,9 @@ public sealed class SeaweedFsResourceTests
     {
         // Arrange
         var builder = DistributedApplication.CreateBuilder([]);
-        var bucket = builder.AddParameter("bucket", "media");
 
         // Act
-        var seaweedFs = builder.AddSeaweedFs("seaweed", bucket);
+        var seaweedFs = builder.AddSeaweedFs("seaweed", "media");
         var volume = seaweedFs.Resource.Annotations
             .OfType<ContainerMountAnnotation>()
             .ShouldHaveSingleItem();
@@ -35,8 +34,8 @@ public sealed class SeaweedFsResourceTests
         volume.Source.ShouldBe("seaweed-data");
         volume.Target.ShouldBe("/data");
         volume.Type.ShouldBe(ContainerMountType.Volume);
-        seaweedFs.Resource.BucketParameter.ShouldBeSameAs(bucket.Resource);
-        bucketEnvironment.Value.Unprocessed.ShouldBeSameAs(bucket.Resource);
+        seaweedFs.Resource.BucketParameter.Name.ShouldBe("seaweed-bucket");
+        bucketEnvironment.Value.Unprocessed.ShouldBeSameAs(seaweedFs.Resource.BucketParameter);
         bucketEnvironment.Value.Processed.ShouldBe("media");
         seaweedFs.Resource.Annotations
             .OfType<ContainerLifetimeAnnotation>()
@@ -48,11 +47,10 @@ public sealed class SeaweedFsResourceTests
     {
         // Arrange
         var builder = DistributedApplication.CreateBuilder([]);
-        var bucket = builder.AddParameter("bucket", "media");
         builder.Configuration[ResourceNameSuffixConfigurationKey] = "test";
 
         // Act
-        var seaweedFs = builder.AddSeaweedFs("seaweed", bucket);
+        var seaweedFs = builder.AddSeaweedFs("seaweed", "media");
         var volume = seaweedFs.Resource.Annotations
             .OfType<ContainerMountAnnotation>()
             .ShouldHaveSingleItem();
@@ -66,16 +64,45 @@ public sealed class SeaweedFsResourceTests
     {
         // Arrange
         var builder = DistributedApplication.CreateBuilder([]);
-        var bucket = builder.AddParameter("bucket", "media");
         builder.Configuration[ResourceNameSuffixConfigurationKey] = " ";
 
         // Act
-        var seaweedFs = builder.AddSeaweedFs("seaweed", bucket);
+        var seaweedFs = builder.AddSeaweedFs("seaweed", "media");
         var volume = seaweedFs.Resource.Annotations
             .OfType<ContainerMountAnnotation>()
             .ShouldHaveSingleItem();
 
         // Assert
         volume.Source.ShouldBe("seaweed-data");
+    }
+
+    [Theory]
+    [InlineData("")]
+    [InlineData(" ")]
+    public void AddSeaweedFs_rejects_blank_bucket_defaults(string bucketDefault)
+    {
+        // Arrange
+        var builder = DistributedApplication.CreateBuilder([]);
+
+        // Act
+        var action = () => builder.AddSeaweedFs("seaweed", bucketDefault);
+
+        // Assert
+        var exception = action.ShouldThrow<ArgumentException>();
+        exception.ParamName.ShouldBe("bucketDefault");
+    }
+
+    [Fact]
+    public void AddSeaweedFs_rejects_a_null_bucket_default()
+    {
+        // Arrange
+        var builder = DistributedApplication.CreateBuilder([]);
+
+        // Act
+        var action = () => builder.AddSeaweedFs("seaweed", null!);
+
+        // Assert
+        var exception = action.ShouldThrow<ArgumentNullException>();
+        exception.ParamName.ShouldBe("bucketDefault");
     }
 }

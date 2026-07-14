@@ -75,11 +75,7 @@ internal static class AppHostResourceExtensions
     /// <returns>The configured SeaweedFS resource.</returns>
     public static IResourceBuilder<SeaweedFsResource> AddMediaObjectStorage(this IDistributedApplicationBuilder builder)
     {
-        var bucket = builder.AddParameter(
-            $"{ResourceNames.SeaweedFs}-bucket",
-            SeaweedFsBucketDefault);
-
-        return builder.AddSeaweedFs(ResourceNames.SeaweedFs, bucket);
+        return builder.AddSeaweedFs(ResourceNames.SeaweedFs, SeaweedFsBucketDefault);
     }
 
     /// <summary>
