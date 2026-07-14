@@ -1,7 +1,7 @@
 # Asynchronous contracts
 
 This page records the current asynchronous contract inventory, contract-documentation workflow, and
-drift guard for Epic #827.
+drift guard.
 
 ## Scope
 

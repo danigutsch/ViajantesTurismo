@@ -15,6 +15,7 @@ internal static class BookingsUpdateBookingDiscountEndpoint
 
         bookingsGroup.MapPut("/{id:guid}/discount", UpdateBookingDiscount)
             .RequireRateLimiting(AdminSecurityBaseline.MutationRateLimitPolicy)
+            .RequireAuthorization(AdminAuthorization.BookingWrite)
             .WithAdminMetadata("UpdateBookingDiscount", "Updates the discount for a booking.", "Updates booking discount.");
     }
 

@@ -116,9 +116,11 @@ public static class ServiceDefaultsExtensions
     {
         ArgumentNullException.ThrowIfNull(app);
 
-        app.MapHealthChecks(EndpointPaths.Health, CreateHealthCheckOptions());
+        app.MapHealthChecks(EndpointPaths.Health, CreateHealthCheckOptions())
+            .AllowAnonymous();
 
-        app.MapHealthChecks(EndpointPaths.Aliveness, CreateHealthCheckOptions(r => r.Tags.Contains("live")));
+        app.MapHealthChecks(EndpointPaths.Aliveness, CreateHealthCheckOptions(r => r.Tags.Contains("live")))
+            .AllowAnonymous();
 
         return app;
     }

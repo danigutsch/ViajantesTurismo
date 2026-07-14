@@ -47,5 +47,5 @@ route segment such as `/api/v2`, with the older version marked deprecated before
 ## Value-object generation note
 
 `ApiVersion` is value-object-shaped. It is implemented explicitly today so API versioning packages can ship without
-waiting for the source-generation epic. Future work is tracked in #460 and #750 for Vogen-like value-object generation
-and specialized API version generation.
+waiting for the source-generation epic. Future work includes Vogen-like value-object generation and
+specialized API version generation.

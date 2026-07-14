@@ -15,6 +15,7 @@ internal static class BookingsCancelBookingEndpoint
 
         bookingsGroup.MapPost("/{id:guid}/cancel", CancelBooking)
             .RequireRateLimiting(AdminSecurityBaseline.MutationRateLimitPolicy)
+            .RequireAuthorization(AdminAuthorization.BookingWrite)
             .WithAdminMetadata("CancelBooking", "Cancels a booking by transitioning its status to Cancelled.", "Cancels a booking.");
     }
 

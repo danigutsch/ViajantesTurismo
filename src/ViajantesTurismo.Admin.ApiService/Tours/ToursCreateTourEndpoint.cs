@@ -23,6 +23,7 @@ internal static class ToursCreateTourEndpoint
 
         toursGroup.MapPost("/", CreateTour)
             .RequireRateLimiting(AdminSecurityBaseline.MutationRateLimitPolicy)
+            .RequireAuthorization(AdminAuthorization.TourWrite)
             .WithAdminMetadata("CreateTour", "Creates a new tour.", "Creates a new tour.");
     }
 

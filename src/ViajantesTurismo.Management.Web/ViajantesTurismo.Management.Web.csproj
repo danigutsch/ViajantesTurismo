@@ -6,19 +6,20 @@
     </PropertyGroup>
 
     <ItemGroup>
-        <InternalsVisibleTo Include="ViajantesTurismo.Management.WebTests"/>
+        <InternalsVisibleTo Include="ViajantesTurismo.Management.WebTests" />
     </ItemGroup>
 
     <ItemGroup>
         <ProjectReference Include="..\SharedKernel\SharedKernel.AspNetCore\SharedKernel.AspNetCore.csproj" />
         <ProjectReference Include="..\SharedKernel\SharedKernel.Branding\SharedKernel.Branding.csproj" />
         <ProjectReference Include="..\SharedKernel\SharedKernel.HttpClients\SharedKernel.HttpClients.csproj" />
-        <ProjectReference Include="..\ViajantesTurismo.Admin.Contracts.Application\ViajantesTurismo.Admin.Contracts.Application.csproj"/>
-        <ProjectReference Include="..\ViajantesTurismo.Admin.Contracts.Http\ViajantesTurismo.Admin.Contracts.Http.csproj"/>
-        <ProjectReference Include="..\ViajantesTurismo.Catalog.Contracts.Application\ViajantesTurismo.Catalog.Contracts.Application.csproj"/>
-        <ProjectReference Include="..\ViajantesTurismo.Catalog.Contracts.Http\ViajantesTurismo.Catalog.Contracts.Http.csproj"/>
-        <ProjectReference Include="..\ViajantesTurismo.Resources\ViajantesTurismo.Resources.csproj"/>
-        <ProjectReference Include="..\ViajantesTurismo.ServiceDefaults\ViajantesTurismo.ServiceDefaults.csproj"/>
+        <ProjectReference Include="..\ViajantesTurismo.Admin.Contracts.Application\ViajantesTurismo.Admin.Contracts.Application.csproj" />
+        <ProjectReference Include="..\ViajantesTurismo.Admin.Contracts.Http\ViajantesTurismo.Admin.Contracts.Http.csproj" />
+        <ProjectReference Include="..\ViajantesTurismo.Catalog.Contracts.Application\ViajantesTurismo.Catalog.Contracts.Application.csproj" />
+        <ProjectReference Include="..\ViajantesTurismo.Catalog.Contracts.Http\ViajantesTurismo.Catalog.Contracts.Http.csproj" />
+        <ProjectReference Include="..\ViajantesTurismo.Management.Security\ViajantesTurismo.Management.Security.csproj" />
+        <ProjectReference Include="..\ViajantesTurismo.Resources\ViajantesTurismo.Resources.csproj" />
+        <ProjectReference Include="..\ViajantesTurismo.ServiceDefaults\ViajantesTurismo.ServiceDefaults.csproj" />
     </ItemGroup>
 
     <ItemGroup>
@@ -27,8 +28,10 @@
     </ItemGroup>
 
     <ItemGroup>
-        <PackageReference Include="Aspire.StackExchange.Redis.OutputCaching"/>
-        <PackageReference Include="Microsoft.AspNetCore.Components.QuickGrid"/>
+        <PackageReference Include="Aspire.StackExchange.Redis.OutputCaching" />
+        <PackageReference Include="Duende.AccessTokenManagement.OpenIdConnect" />
+        <PackageReference Include="Microsoft.AspNetCore.Components.QuickGrid" />
+        <PackageReference Include="Microsoft.AspNetCore.DataProtection.EntityFrameworkCore" />
     </ItemGroup>
 
 </Project>

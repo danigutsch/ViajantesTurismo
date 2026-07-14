@@ -20,4 +20,19 @@ public sealed class AdminApiEndpointTests(ApiFixture fixture)
         response.Content.Headers.ContentType?.CharSet.ShouldBe("utf-8");
         body.ShouldBe("User-agent: *\nDisallow: /");
     }
+
+    [Fact]
+    public async Task Protected_admin_routes_reject_anonymous_callers()
+    {
+        // Arrange
+        using var client = fixture.CreateAnonymousClient();
+
+        // Act
+        using var response = await client.GetAsync(
+            new Uri($"/api/v1/tours/{Guid.NewGuid()}", UriKind.Relative),
+            TestContext.Current.CancellationToken);
+
+        // Assert
+        response.StatusCode.ShouldBe(HttpStatusCode.Unauthorized);
+    }
 }

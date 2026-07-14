@@ -37,6 +37,30 @@ public static class ResourceNames
     public const string CatalogDatabase = "catalog-database";
 
     /// <summary>
+    /// The name of the Management Web security-state database.
+    /// </summary>
+    public const string SecurityDatabase = "security-database";
+
+    /// <summary>
+    /// The name of the local OIDC identity-provider resource.
+    /// </summary>
+    public const string IdentityProvider = "identity-provider";
+
+    /// <summary>
+    /// The name of the local OIDC bootstrap-admin password parameter.
+    /// </summary>
+    public const string IdentityProviderAdminPassword = "identity-provider-admin-password";
+    /// <summary>
+    /// The name of the local OIDC conformance-user password parameter.
+    /// </summary>
+    public const string IdentityProviderConformanceUserPassword = "identity-provider-conformance-user-password";
+
+    /// <summary>
+    /// The name of the Management Web OIDC client-secret parameter.
+    /// </summary>
+    public const string ManagementWebClientSecret = "management-web-client-secret";
+
+    /// <summary>
     /// The name of the API service resource.
     /// </summary>
     public const string Api = "api";

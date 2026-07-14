@@ -1,6 +1,7 @@
 using SharedKernel.AspNetCore;
 using ViajantesTurismo.Catalog.ApiService;
 using ViajantesTurismo.Catalog.Infrastructure;
+using ViajantesTurismo.Resources;
 using ViajantesTurismo.ServiceDefaults;
 
 const string ApiRobotsTxt = "User-agent: *\nDisallow: /";
@@ -13,6 +14,14 @@ builder.Services.AddConfiguredTrustedForwardedHeaders(builder.Configuration.GetS
 builder.Services.AddCatalogOpenApiDocuments();
 builder.Services.AddOutputCache();
 builder.Services.AddCatalogSecurityBaseline(builder.Configuration);
+builder.Services.AddApiBearerAuthentication(
+        builder.Configuration,
+        builder.Environment,
+        ApiAudienceNames.Catalog,
+        CatalogAuthorization.PermissionsByRole)
+    .AddPolicy(CatalogAuthorization.CatalogRead, policy => policy.RequirePermission(CatalogAuthorization.CatalogRead))
+    .AddPolicy(CatalogAuthorization.CatalogWrite, policy => policy.RequirePermission(CatalogAuthorization.CatalogWrite))
+    .AddPolicy(CatalogAuthorization.MediaAi, policy => policy.RequirePermission(CatalogAuthorization.MediaAi));
 builder.AddCatalogInfrastructure();
 
 var app = builder.Build();
@@ -27,6 +36,8 @@ if (app.Environment.IsDevelopment())
 app.UsePublicContentLanguageQueryAlias();
 app.UseCors(CatalogSecurityBaseline.CorsPolicyName);
 
+app.UseAuthentication();
+app.UseAuthorization();
 app.UseRateLimiter();
 app.UseOutputCache();
 app.MapCatalogEndpoints();

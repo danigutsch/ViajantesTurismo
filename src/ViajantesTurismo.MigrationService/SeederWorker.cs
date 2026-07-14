@@ -6,6 +6,7 @@ using SharedKernel.EventSourcing.Npgsql;
 using ViajantesTurismo.Admin.Infrastructure;
 using ViajantesTurismo.Branding.Infrastructure;
 using ViajantesTurismo.Catalog.Infrastructure;
+using ViajantesTurismo.Management.Security;
 
 namespace ViajantesTurismo.MigrationService;
 
@@ -81,6 +82,7 @@ internal sealed class SeederWorker : BackgroundService
     {
         var catalogDbContext = serviceProvider.GetRequiredService<CatalogDbContext>();
         var brandingDbContext = serviceProvider.GetRequiredService<BrandingDbContext>();
+        var managementSecurityDbContext = serviceProvider.GetRequiredService<ManagementSecurityDbContext>();
         var seeder = serviceProvider.GetRequiredService<Seeder>();
 
         if (catalogDbContext.Database.IsRelational())
@@ -93,6 +95,11 @@ internal sealed class SeederWorker : BackgroundService
         if (brandingDbContext.Database.IsRelational())
         {
             await brandingDbContext.Database.MigrateAsync(stoppingToken);
+        }
+
+        if (managementSecurityDbContext.Database.IsRelational())
+        {
+            await managementSecurityDbContext.Database.MigrateAsync(stoppingToken);
         }
 
         await seeder.Seed(stoppingToken);

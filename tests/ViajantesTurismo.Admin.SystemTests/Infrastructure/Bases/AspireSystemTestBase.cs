@@ -22,7 +22,11 @@ public abstract class AspireSystemTestBase<TFixture>(TFixture fixture) : PageTes
 
     private protected BookingWorkflow BookingWorkflow => new(Page, NavigateTo);
 
+    private protected ManagementLoginWorkflow ManagementLogin => new(Page);
+
     private protected UiFeedbackAssertions UiFeedback => new(Page);
+
+    protected virtual bool AutomaticallySignIn => true;
 
     public override async ValueTask InitializeAsync()
     {
@@ -31,6 +35,10 @@ public abstract class AspireSystemTestBase<TFixture>(TFixture fixture) : PageTes
         Page.SetDefaultTimeout(DefaultTimeoutMilliseconds);
         Page.SetDefaultNavigationTimeout(DefaultTimeoutMilliseconds);
         Assertions.SetDefaultExpectTimeout(DefaultTimeoutMilliseconds);
+        if (AutomaticallySignIn)
+        {
+            await ManagementLogin.SignIn(Fixture.WebAppUrl, Fixture.ConformanceUserPassword);
+        }
     }
 
     protected async Task NavigateTo(string relativePath)
@@ -87,7 +95,7 @@ public abstract class AspireSystemTestBase<TFixture>(TFixture fixture) : PageTes
                 new LocatorWaitForOptions { State = WaitForSelectorState.Visible });
             return true;
         }
-        catch (PlaywrightException) when (canRetry)
+        catch (Exception exception) when (canRetry && exception is PlaywrightException or TimeoutException)
         {
             if (await Page.Locator(InertPageSelector).IsVisibleAsync())
             {

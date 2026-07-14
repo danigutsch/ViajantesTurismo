@@ -13,13 +13,32 @@ public sealed class ApiFixture : Testing.Integration.IAdminTestHost, IAsyncLifet
 
     public HttpClient Client => _client ?? throw new InvalidOperationException("Fixture is not initialized.");
 
+    internal HttpClient CreateAnonymousClient()
+    {
+        ArgumentNullException.ThrowIfNull(_app);
+
+        return _app.CreateHttpClient(ResourceNames.Api);
+    }
+
     public Uri BaseUri => Client.BaseAddress ?? throw new InvalidOperationException("Client base address is not configured.");
 
     public async ValueTask InitializeAsync()
     {
-        _app = await AspireTestApplication.Start<ViajantesTurismo_AppHost>([ResourceNames.Api], null, TestContext.Current.CancellationToken);
+        var testConfiguration = AppHostTestArguments.CreateConfiguration();
+        _app = await AspireTestApplication.Start<ViajantesTurismo_AppHost>(
+            [ResourceNames.Api],
+            null,
+            testConfiguration.Arguments,
+            TestContext.Current.CancellationToken);
         _client = _app.CreateHttpClient(ResourceNames.Api);
         _databaseConnectionString = await _app.GetConnectionString(ResourceNames.AdminDatabase, TestContext.Current.CancellationToken);
+        var identityProviderEndpoint = _app.GetEndpoint(ResourceNames.IdentityProvider, "http");
+        var accessToken = await KeycloakConformanceClient.RequestAccessToken(
+            identityProviderEndpoint,
+            testConfiguration.ConformanceUserPassword,
+            [ApiAudienceNames.Admin],
+            TestContext.Current.CancellationToken);
+        _client.DefaultRequestHeaders.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", accessToken);
     }
 
     public async ValueTask DisposeAsync()

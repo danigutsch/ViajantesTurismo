@@ -64,7 +64,7 @@ public sealed partial class AppHostOrchestrationTests
         releasePublisherText.ShouldContain("PublishAsDockerFile", StringComparison.Ordinal);
         releasePublisherText.ShouldContain("WithImageTag(", StringComparison.Ordinal);
         releasePublisherText.ShouldContain("WithImageRegistry(", StringComparison.Ordinal);
-        releasePublisherText.ShouldContain("!HasContainerImageTag(builder)", StringComparison.Ordinal);
+        releasePublisherText.ShouldContain("builder.ExecutionContext.IsRunMode", StringComparison.Ordinal);
         releasePublisherText.ShouldContain("VT_DEPLOYMENT_VERSION", StringComparison.Ordinal);
         releasePublisherText.ShouldContain("VT_SOURCE_REVISION", StringComparison.Ordinal);
         appHostReadmeText.ShouldNotContain("git describe", StringComparison.Ordinal);
@@ -92,6 +92,62 @@ public sealed partial class AppHostOrchestrationTests
         catalogApiBlock.ShouldContain("WithReference(catalogDatabase)", StringComparison.Ordinal);
         catalogApiBlock.ShouldContain("WaitFor(catalogDatabase)", StringComparison.Ordinal);
         catalogApiBlock.ShouldContain("WaitForCompletion(migrationService)", StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public void Local_oidc_provider_is_excluded_from_release_publishing()
+    {
+        // Arrange
+        var appHostText = File.ReadAllText(Path.Combine(
+            GetRepositoryRoot(),
+            "src",
+            "ViajantesTurismo.AppHost",
+            "AppHost.cs"));
+        var resourceExtensionsText = File.ReadAllText(Path.Combine(
+            GetRepositoryRoot(),
+            "src",
+            "ViajantesTurismo.AppHost",
+            "AppHostResourceExtensions.cs"));
+
+        // Act
+        var hasReleaseGate = appHostText.Contains(
+            "builder.AddRunModeIdentityProvider(managementWebClientSecret)",
+            StringComparison.Ordinal);
+
+        // Assert
+        hasReleaseGate.ShouldBeTrue();
+        resourceExtensionsText.ShouldContain("builder.ExecutionContext.IsRunMode", StringComparison.Ordinal);
+        resourceExtensionsText.ShouldContain("WithLocalIdentityProvider", StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public void Local_postgresql_capacity_supports_the_system_test_resource_model()
+    {
+        // Arrange
+        var resourceExtensionsText = File.ReadAllText(Path.Combine(
+            GetRepositoryRoot(),
+            "src",
+            "ViajantesTurismo.AppHost",
+            "AppHostResourceExtensions.cs"));
+
+        // Act and assert
+        resourceExtensionsText.ShouldContain("WithArgs(\"-c\", \"max_connections=200\")", StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public void Management_security_schema_is_provisioned_before_the_web_starts()
+    {
+        // Arrange
+        var resourceExtensionsText = File.ReadAllText(Path.Combine(
+            GetRepositoryRoot(),
+            "src",
+            "ViajantesTurismo.AppHost",
+            "AppHostResourceExtensions.cs"));
+
+        // Assert
+        resourceExtensionsText.ShouldContain("WithReference(securityDatabase)", StringComparison.Ordinal);
+        resourceExtensionsText.ShouldContain("WaitFor(securityDatabase)", StringComparison.Ordinal);
+        resourceExtensionsText.ShouldContain("WaitForCompletion(migrationService)", StringComparison.Ordinal);
     }
 
     [Fact]
@@ -211,6 +267,7 @@ public sealed partial class AppHostOrchestrationTests
         seaweedFsText.ShouldNotContain("viajantes-media", StringComparison.Ordinal);
         seaweedFsText.ShouldNotContain("Catalog__MediaObjectStorage", StringComparison.Ordinal);
         appHostExtensionsText.ShouldContain("private static IResourceBuilder<TDestination> WithSeaweedFsReference<TDestination>(", StringComparison.Ordinal);
+        seaweedFsText.ShouldContain("DcpPublisher:ResourceNameSuffix", StringComparison.Ordinal);
     }
 
 }

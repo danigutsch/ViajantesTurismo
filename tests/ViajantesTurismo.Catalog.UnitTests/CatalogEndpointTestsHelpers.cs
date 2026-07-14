@@ -19,6 +19,13 @@ internal static class CatalogEndpointTestsHelpers
                 services.RemoveAll<IPublicMediaImageStore>();
                 services.AddSingleton(store);
                 services.AddSingleton<IPublicMediaImageStore, StubPublicMediaImageStore>();
+                ApiTestAuthentication.ConfigureJwtBearer(services, "catalog-api");
+            },
+            configureClient: client => ApiTestAuthentication.ConfigureAuthenticatedClient(client, "catalog-api", "Admin"),
+            configuration: new Dictionary<string, string?>
+            {
+                ["Authentication:Authority"] = ApiTestAuthentication.Authority,
+                ["Authentication:Issuer"] = ApiTestAuthentication.Authority
             });
     }
 

@@ -45,7 +45,7 @@ full CSV file contents, import rows, tokens, or credentials.
 
 Customer import accepts small CSV files only. Empty files, oversized files, and non-CSV uploads fail with a
 generic ProblemDetails response. Multipart request limits include the max CSV size, a conflict-resolution field
-budget, and multipart envelope headroom. Malware scanning is considered separately in #559.
+budget, and multipart envelope headroom. Malware scanning is considered separately.
 
 ## Recurring check
 

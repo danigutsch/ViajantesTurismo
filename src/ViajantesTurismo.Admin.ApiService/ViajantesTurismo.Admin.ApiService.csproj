@@ -11,26 +11,27 @@
     </PropertyGroup>
 
     <ItemGroup>
-        <InternalsVisibleTo Include="ViajantesTurismo.Admin.UnitTests"/>
+        <InternalsVisibleTo Include="ViajantesTurismo.Admin.UnitTests" />
     </ItemGroup>
 
     <ItemGroup>
-        <ProjectReference Include="..\ViajantesTurismo.Admin.Application\ViajantesTurismo.Admin.Application.csproj"/>
-        <ProjectReference Include="..\ViajantesTurismo.Admin.Infrastructure\ViajantesTurismo.Admin.Infrastructure.csproj"/>
-        <ProjectReference Include="..\ViajantesTurismo.Admin.Contracts.Application\ViajantesTurismo.Admin.Contracts.Application.csproj"/>
-        <ProjectReference Include="..\ViajantesTurismo.Admin.Contracts.Http\ViajantesTurismo.Admin.Contracts.Http.csproj"/>
-        <ProjectReference Include="..\ViajantesTurismo.ServiceDefaults\ViajantesTurismo.ServiceDefaults.csproj"/>
-        <ProjectReference Include="..\SharedKernel\SharedKernel.Results\SharedKernel.Results.csproj"/>
-        <ProjectReference Include="..\SharedKernel\SharedKernel.Results.AspNet\SharedKernel.Results.AspNet.csproj"/>
-        <ProjectReference Include="..\SharedKernel\SharedKernel.AspNetCore\SharedKernel.AspNetCore.csproj"/>
-        <ProjectReference Include="..\SharedKernel\SharedKernel.ApiVersioning.AspNetCore\SharedKernel.ApiVersioning.AspNetCore.csproj"/>
-        <ProjectReference Include="..\SharedKernel\SharedKernel.OpenApi\SharedKernel.OpenApi.csproj"/>
+        <ProjectReference Include="..\ViajantesTurismo.Admin.Application\ViajantesTurismo.Admin.Application.csproj" />
+        <ProjectReference Include="..\ViajantesTurismo.Admin.Infrastructure\ViajantesTurismo.Admin.Infrastructure.csproj" />
+        <ProjectReference Include="..\ViajantesTurismo.Admin.Contracts.Application\ViajantesTurismo.Admin.Contracts.Application.csproj" />
+        <ProjectReference Include="..\ViajantesTurismo.Admin.Contracts.Http\ViajantesTurismo.Admin.Contracts.Http.csproj" />
+        <ProjectReference Include="..\ViajantesTurismo.ServiceDefaults\ViajantesTurismo.ServiceDefaults.csproj" />
+        <ProjectReference Include="..\SharedKernel\SharedKernel.Results\SharedKernel.Results.csproj" />
+        <ProjectReference Include="..\SharedKernel\SharedKernel.Results.AspNet\SharedKernel.Results.AspNet.csproj" />
+        <ProjectReference Include="..\SharedKernel\SharedKernel.AspNetCore\SharedKernel.AspNetCore.csproj" />
+        <ProjectReference Include="..\SharedKernel\SharedKernel.ApiVersioning.AspNetCore\SharedKernel.ApiVersioning.AspNetCore.csproj" />
+        <ProjectReference Include="..\SharedKernel\SharedKernel.OpenApi\SharedKernel.OpenApi.csproj" />
         <ProjectReference Include="..\SharedKernel\SharedKernel.Branding\SharedKernel.Branding.csproj" />
     </ItemGroup>
 
     <ItemGroup>
-        <PackageReference Include="Microsoft.AspNetCore.OpenApi"/>
-        <PackageReference Include="Microsoft.Extensions.ApiDescription.Server"/>
+        <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" />
+        <PackageReference Include="Microsoft.AspNetCore.OpenApi" />
+        <PackageReference Include="Microsoft.Extensions.ApiDescription.Server" />
     </ItemGroup>
 
     <Target Name="CopyAdminBoundaryOpenApiArtifacts" AfterTargets="GenerateOpenApiDocuments" Condition="'$(RefreshAdminOpenApiArtifacts)' == 'true'">
@@ -48,10 +49,7 @@
         </ItemGroup>
 
         <MakeDir Directories="$(MSBuildProjectDirectory)/../ViajantesTurismo.Admin.Contracts.Http/OpenApi" />
-        <Copy
-            SourceFiles="@(GeneratedOpenApiArtifact->'%(SourcePath)')"
-            DestinationFiles="@(GeneratedOpenApiArtifact->'%(TargetPath)')"
-            SkipUnchangedFiles="true" />
+        <Copy SourceFiles="@(GeneratedOpenApiArtifact->'%(SourcePath)')" DestinationFiles="@(GeneratedOpenApiArtifact->'%(TargetPath)')" SkipUnchangedFiles="true" />
     </Target>
 
 </Project>

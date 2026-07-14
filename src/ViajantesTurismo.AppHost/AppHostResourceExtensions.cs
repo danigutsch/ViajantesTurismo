@@ -34,6 +34,22 @@ internal static class AppHostResourceExtensions
 
     /// <summary>Configuration key for Public Web canonical sitemap URLs.</summary>
     private const string PublicWebSitemapCanonicalOriginEnvironmentVariable = "PublicWeb__Sitemap__CanonicalOrigin";
+    private const string KeycloakImageRegistry = "quay.io";
+    private const string KeycloakImageName = "keycloak/keycloak";
+    private const string KeycloakImageTag = "26.7.0";
+    private const string OidcProviderImageDigest = "2eb3cd316835c990e69e26ade292ffa78f6fb0db7d5fc6377463c162e1979ac0";
+    private const string AuthenticationAuthorityEnvironmentVariable = "Authentication__Authority";
+    private const string AuthenticationIssuerEnvironmentVariable = "Authentication__Issuer";
+    private const string AuthenticationAllowHttpDevelopmentAuthorityEnvironmentVariable = "Authentication__AllowHttpDevelopmentAuthority";
+    private const string AuthenticationClientIdEnvironmentVariable = "Authentication__ClientId";
+    private const string AuthenticationClientSecretEnvironmentVariable = "Authentication__ClientSecret";
+    private const string KeycloakBootstrapAdminUsernameEnvironmentVariable = "KC_BOOTSTRAP_ADMIN_USERNAME";
+    private const string KeycloakBootstrapAdminPasswordEnvironmentVariable = "KC_BOOTSTRAP_ADMIN_PASSWORD";
+    private const string KeycloakManagementClientSecretEnvironmentVariable = "MANAGEMENT_WEB_CLIENT_SECRET";
+    private const string KeycloakConformanceUserPasswordEnvironmentVariable = "LOCAL_CONFORMANCE_PASSWORD";
+    private const string KeycloakRealmImportDirectory = "/opt/keycloak/data/import";
+    private const string KeycloakBootstrapAdminUsername = "admin";
+    private const string LocalHttpAuthorityAllowed = "true";
 
     /// <summary>Default bucket for Viajantes media object storage.</summary>
     private const string SeaweedFsBucketDefault = "viajantes-media";
@@ -48,6 +64,7 @@ internal static class AppHostResourceExtensions
         return builder.AddPostgres(ResourceNames.DatabaseServer)
             .WithImageTag(PostgresImageTag)
             .WithImageSHA256(PostgresImageDigest)
+            .WithArgs("-c", "max_connections=200")
             .WithPgWeb(pgweb => pgweb
                 .WithImageTag(PgWebImageTag)
                 .WithImageSHA256(PgWebImageDigest));
@@ -79,22 +96,72 @@ internal static class AppHostResourceExtensions
     }
 
     /// <summary>
+    /// Adds a digest-pinned Keycloak identity provider when the AppHost runs locally.
+    /// </summary>
+    /// <param name="builder">The distributed application builder.</param>
+    /// <param name="managementWebClientSecret">The confidential Management Web client secret.</param>
+    /// <returns>The configured local identity-provider resource, or <see langword="null"/> during publish.</returns>
+    public static IResourceBuilder<ContainerResource>? AddRunModeIdentityProvider(
+        this IDistributedApplicationBuilder builder,
+        IResourceBuilder<ParameterResource> managementWebClientSecret)
+    {
+        ArgumentNullException.ThrowIfNull(builder);
+        ArgumentNullException.ThrowIfNull(managementWebClientSecret);
+
+        if (!builder.ExecutionContext.IsRunMode)
+        {
+            return null;
+        }
+
+        var conformanceUserPassword = builder.AddParameter(ResourceNames.IdentityProviderConformanceUserPassword, secret: true);
+        return AddIdentityProvider(builder, managementWebClientSecret, conformanceUserPassword);
+    }
+
+    private static IResourceBuilder<ContainerResource> AddIdentityProvider(
+        IDistributedApplicationBuilder builder,
+        IResourceBuilder<ParameterResource> managementWebClientSecret,
+        IResourceBuilder<ParameterResource> conformanceUserPassword)
+    {
+        ArgumentNullException.ThrowIfNull(conformanceUserPassword);
+
+        var bootstrapAdminPassword = builder.AddParameter(ResourceNames.IdentityProviderAdminPassword, secret: true);
+        var realmImportPath = Path.Combine(AppContext.BaseDirectory, "Keycloak");
+
+        return builder.AddContainer(ResourceNames.IdentityProvider, KeycloakImageName, KeycloakImageRegistry)
+            .WithImageTag(KeycloakImageTag)
+            .WithImageSHA256(OidcProviderImageDigest)
+            .WithExternalHttpEndpoints()
+            .WithHttpEndpoint(targetPort: 8080, name: "http")
+            .WithBindMount(realmImportPath, KeycloakRealmImportDirectory, isReadOnly: true)
+            .WithEnvironment(KeycloakBootstrapAdminUsernameEnvironmentVariable, KeycloakBootstrapAdminUsername)
+            .WithEnvironment(KeycloakBootstrapAdminPasswordEnvironmentVariable, bootstrapAdminPassword)
+            .WithEnvironment(KeycloakManagementClientSecretEnvironmentVariable, managementWebClientSecret)
+            .WithEnvironment(KeycloakConformanceUserPasswordEnvironmentVariable, conformanceUserPassword)
+            .WithHttpHealthCheck("/realms/viajantes/.well-known/openid-configuration")
+            .WithArgs("start-dev", "--import-realm");
+    }
+
+    /// <summary>
     /// Adds the database migration service.
     /// </summary>
     /// <param name="builder">The distributed application builder.</param>
     /// <param name="adminDatabase">The Admin database resource.</param>
     /// <param name="catalogDatabase">The Catalog database resource.</param>
+    /// <param name="securityDatabase">The Management security database resource.</param>
     /// <returns>The configured migration service resource.</returns>
     public static IResourceBuilder<ProjectResource> AddMigrationService(
         this IDistributedApplicationBuilder builder,
         IResourceBuilder<PostgresDatabaseResource> adminDatabase,
-        IResourceBuilder<PostgresDatabaseResource> catalogDatabase)
+        IResourceBuilder<PostgresDatabaseResource> catalogDatabase,
+        IResourceBuilder<PostgresDatabaseResource> securityDatabase)
     {
         return builder.AddDevelopmentDotNetProject<ViajantesTurismo_MigrationService>(ResourceNames.MigrationService)
             .WithReference(adminDatabase)
             .WithReference(catalogDatabase)
+            .WithReference(securityDatabase)
             .WaitFor(adminDatabase)
-            .WaitFor(catalogDatabase);
+            .WaitFor(catalogDatabase)
+            .WaitFor(securityDatabase);
     }
 
     /// <summary>
@@ -104,12 +171,14 @@ internal static class AppHostResourceExtensions
     /// <param name="adminDatabase">The Admin database resource.</param>
     /// <param name="brandingApiService">The Branding API resource.</param>
     /// <param name="migrationService">The migration service resource.</param>
+    /// <param name="identityProvider">The local identity-provider resource.</param>
     /// <returns>The configured Admin API resource.</returns>
     public static IResourceBuilder<ProjectResource> AddAdminApi(
         this IDistributedApplicationBuilder builder,
         IResourceBuilder<PostgresDatabaseResource> adminDatabase,
         IResourceBuilder<ProjectResource> brandingApiService,
-        IResourceBuilder<ProjectResource> migrationService)
+        IResourceBuilder<ProjectResource> migrationService,
+        IResourceBuilder<ContainerResource>? identityProvider)
     {
         return builder.AddDevelopmentAspNetCoreProject<ViajantesTurismo_Admin_ApiService>(ResourceNames.Api)
             .WithHttpHealthCheck(EndpointPaths.Health)
@@ -117,7 +186,8 @@ internal static class AppHostResourceExtensions
             .WithReference(brandingApiService)
             .WaitFor(adminDatabase)
             .WaitFor(brandingApiService)
-            .WaitForCompletion(migrationService);
+            .WaitForCompletion(migrationService)
+            .WithLocalIdentityProvider(identityProvider);
     }
 
     /// <summary>
@@ -129,6 +199,7 @@ internal static class AppHostResourceExtensions
     /// <param name="migrationService">The migration service resource.</param>
     /// <param name="clamAv">The private ClamAV scanner resource.</param>
     /// <param name="seaweedFs">The private SeaweedFS object-storage resource.</param>
+    /// <param name="identityProvider">The local identity-provider resource.</param>
     /// <returns>The configured Catalog API resource.</returns>
     public static IResourceBuilder<ProjectResource> AddCatalogApi(
         this IDistributedApplicationBuilder builder,
@@ -136,7 +207,8 @@ internal static class AppHostResourceExtensions
         IResourceBuilder<PostgresDatabaseResource> catalogDatabase,
         IResourceBuilder<ProjectResource> migrationService,
         IResourceBuilder<ContainerResource> clamAv,
-        IResourceBuilder<SeaweedFsResource> seaweedFs)
+        IResourceBuilder<SeaweedFsResource> seaweedFs,
+        IResourceBuilder<ContainerResource>? identityProvider)
     {
         return builder.AddDevelopmentAspNetCoreProject<ViajantesTurismo_Catalog_ApiService>(ResourceNames.CatalogApi)
             .WithHttpHealthCheck(EndpointPaths.Health)
@@ -148,7 +220,8 @@ internal static class AppHostResourceExtensions
             .WaitFor(catalogDatabase)
             .WaitFor(clamAv)
             .WaitFor(seaweedFs)
-            .WaitForCompletion(migrationService);
+            .WaitForCompletion(migrationService)
+            .WithLocalIdentityProvider(identityProvider);
     }
 
     /// <summary>
@@ -157,17 +230,20 @@ internal static class AppHostResourceExtensions
     /// <param name="builder">The distributed application builder.</param>
     /// <param name="catalogDatabase">The Catalog database resource that also stores Branding settings.</param>
     /// <param name="migrationService">The migration service resource.</param>
+    /// <param name="identityProvider">The local identity-provider resource.</param>
     /// <returns>The configured Branding API resource.</returns>
     public static IResourceBuilder<ProjectResource> AddBrandingApi(
         this IDistributedApplicationBuilder builder,
         IResourceBuilder<PostgresDatabaseResource> catalogDatabase,
-        IResourceBuilder<ProjectResource> migrationService)
+        IResourceBuilder<ProjectResource> migrationService,
+        IResourceBuilder<ContainerResource>? identityProvider)
     {
         return builder.AddDevelopmentAspNetCoreProject<ViajantesTurismo_Branding_ApiService>(ResourceNames.BrandingApi)
             .WithHttpHealthCheck(EndpointPaths.Health)
             .WithReference(catalogDatabase)
             .WaitFor(catalogDatabase)
-            .WaitForCompletion(migrationService);
+            .WaitForCompletion(migrationService)
+            .WithLocalIdentityProvider(identityProvider);
     }
 
     /// <summary>
@@ -222,6 +298,10 @@ internal static class AppHostResourceExtensions
     /// </summary>
     /// <param name="builder">The distributed application builder.</param>
     /// <param name="cache">The cache resource.</param>
+    /// <param name="securityDatabase">The Management Web security-state database resource.</param>
+    /// <param name="migrationService">The migration service resource.</param>
+    /// <param name="identityProvider">The local identity-provider resource.</param>
+    /// <param name="managementWebClientSecret">The confidential Management Web client secret.</param>
     /// <param name="apiService">The Admin API resource.</param>
     /// <param name="catalogApiService">The Catalog API resource.</param>
     /// <param name="brandingApiService">The Branding API resource.</param>
@@ -229,6 +309,10 @@ internal static class AppHostResourceExtensions
     public static IResourceBuilder<ProjectResource> AddManagementWeb(
         this IDistributedApplicationBuilder builder,
         IResourceBuilder<RedisResource> cache,
+        IResourceBuilder<PostgresDatabaseResource> securityDatabase,
+        IResourceBuilder<ProjectResource> migrationService,
+        IResourceBuilder<ContainerResource>? identityProvider,
+        IResourceBuilder<ParameterResource> managementWebClientSecret,
         IResourceBuilder<ProjectResource> apiService,
         IResourceBuilder<ProjectResource> catalogApiService,
         IResourceBuilder<ProjectResource> brandingApiService)
@@ -238,12 +322,45 @@ internal static class AppHostResourceExtensions
             .WithHttpHealthCheck(EndpointPaths.Health)
             .WithReference(cache)
             .WaitFor(cache)
+            .WithReference(securityDatabase)
+            .WaitFor(securityDatabase)
+            .WaitForCompletion(migrationService)
+            .WithLocalIdentityProvider(identityProvider)
+            .WithEnvironment(AuthenticationClientIdEnvironmentVariable, ResourceNames.WebApp)
+            .WithEnvironment(AuthenticationClientSecretEnvironmentVariable, managementWebClientSecret)
             .WithReference(apiService)
             .WaitFor(apiService)
             .WithReference(catalogApiService)
             .WaitFor(catalogApiService)
             .WithReference(brandingApiService)
             .WaitFor(brandingApiService);
+    }
+
+    private static IResourceBuilder<TResource> WithDevelopmentOidcAuthority<TResource>(
+        this IResourceBuilder<TResource> resource,
+        IResourceBuilder<ContainerResource> identityProvider)
+        where TResource : IResourceWithEnvironment
+    {
+        ArgumentNullException.ThrowIfNull(identityProvider);
+
+        return resource
+            .WithEnvironment(
+                AuthenticationAuthorityEnvironmentVariable,
+                $"{identityProvider.GetEndpoint("http")}/realms/viajantes")
+            .WithEnvironment(
+                AuthenticationIssuerEnvironmentVariable,
+                $"{identityProvider.GetEndpoint("http")}/realms/viajantes")
+            .WithEnvironment(AuthenticationAllowHttpDevelopmentAuthorityEnvironmentVariable, LocalHttpAuthorityAllowed);
+    }
+
+    private static IResourceBuilder<TResource> WithLocalIdentityProvider<TResource>(
+        this IResourceBuilder<TResource> resource,
+        IResourceBuilder<ContainerResource>? identityProvider)
+        where TResource : IResourceWithEnvironment, IResourceWithWaitSupport
+    {
+        return identityProvider is null
+            ? resource
+            : resource.WaitFor(identityProvider).WithDevelopmentOidcAuthority(identityProvider);
     }
 
     /// <summary>

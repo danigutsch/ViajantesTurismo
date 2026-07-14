@@ -21,6 +21,8 @@ namespace ViajantesTurismo.Catalog.Infrastructure;
 /// </summary>
 public static class InfrastructureDependencyInjection
 {
+    private const string OpenApiBuildGenerationConfigurationKey = "OpenApi:BuildGeneration";
+
     /// <summary>
     /// Adds Catalog infrastructure services to the application builder.
     /// </summary>
@@ -32,7 +34,12 @@ public static class InfrastructureDependencyInjection
     {
         ArgumentNullException.ThrowIfNull(builder);
 
-        return AddCatalogInfrastructure(builder, addOutboxRelay: true);
+        var isOpenApiBuildGeneration = string.Equals(
+            builder.Configuration[OpenApiBuildGenerationConfigurationKey],
+            bool.TrueString,
+            StringComparison.OrdinalIgnoreCase);
+
+        return AddCatalogInfrastructure(builder, addOutboxRelay: !isOpenApiBuildGeneration);
     }
 
     /// <summary>

@@ -19,34 +19,45 @@ internal static class CatalogEndpoints
 
         var versionedApi = app.MapApiVersionGroup(CatalogOpenApiDocuments.CurrentApiVersion);
 
-        versionedApi.MapGet("/catalog/tours", GetTours);
-        versionedApi.MapGet("/catalog/tours/{id:guid}", GetTour);
+        versionedApi.MapGet("/catalog/tours", GetTours)
+            .RequireAuthorization(CatalogAuthorization.CatalogRead);
+        versionedApi.MapGet("/catalog/tours/{id:guid}", GetTour)
+            .RequireAuthorization(CatalogAuthorization.CatalogRead);
         versionedApi.MapPut("/catalog/tours/{id:guid}/presentation", UpsertTourPresentation)
-            .RequireRateLimiting(CatalogSecurityBaseline.MutationRateLimitPolicy);
-        versionedApi.MapGet("/catalog/tours/{id:guid}/images", ListTourImages);
+            .RequireRateLimiting(CatalogSecurityBaseline.MutationRateLimitPolicy)
+            .RequireAuthorization(CatalogAuthorization.CatalogWrite);
+        versionedApi.MapGet("/catalog/tours/{id:guid}/images", ListTourImages)
+            .RequireAuthorization(CatalogAuthorization.CatalogRead);
         versionedApi.MapPut("/catalog/media/images/{id:guid}", UpsertMediaImage)
-            .RequireRateLimiting(CatalogSecurityBaseline.MutationRateLimitPolicy);
+            .RequireRateLimiting(CatalogSecurityBaseline.MutationRateLimitPolicy)
+            .RequireAuthorization(CatalogAuthorization.CatalogWrite);
         versionedApi.MapPost("/catalog/media/images/{id:guid}/accessibility-draft", GenerateMediaImageAccessibilityDraft)
-            .RequireRateLimiting(CatalogSecurityBaseline.MutationRateLimitPolicy);
+            .RequireRateLimiting(CatalogSecurityBaseline.MutationRateLimitPolicy)
+            .RequireAuthorization(CatalogAuthorization.MediaAi);
 
         versionedApi.MapGet("/public/catalog/tours", GetPublishedTours)
             .CacheOutput(policy => policy.Expire(PublicCatalogHttpCache.Freshness).Tag(PublicCatalogHttpCache.Tag))
-            .RequireRateLimiting(CatalogSecurityBaseline.PublicReadRateLimitPolicy);
+            .RequireRateLimiting(CatalogSecurityBaseline.PublicReadRateLimitPolicy)
+            .AllowAnonymous();
         versionedApi.MapGet("/public/catalog/tours/{slug}", GetPublishedTour)
             .CacheOutput(policy => policy.Expire(PublicCatalogHttpCache.Freshness).Tag(PublicCatalogHttpCache.Tag))
-            .RequireRateLimiting(CatalogSecurityBaseline.PublicReadRateLimitPolicy);
+            .RequireRateLimiting(CatalogSecurityBaseline.PublicReadRateLimitPolicy)
+            .AllowAnonymous();
         versionedApi.MapGet("/public/catalog/content/{**key}", GetPublicContent)
             .CacheOutput(policy => policy.Expire(PublicContentHttpCache.Freshness).SetVaryByQuery(PublicContentHttpCache.CultureQueryKey).Tag(PublicContentHttpCache.Tag))
-            .RequireRateLimiting(CatalogSecurityBaseline.PublicReadRateLimitPolicy);
+            .RequireRateLimiting(CatalogSecurityBaseline.PublicReadRateLimitPolicy)
+            .AllowAnonymous();
         versionedApi.MapGet("/catalog/public-content", async (IPublicContentStore store, HttpContext httpContext, CancellationToken ct) =>
         {
             HttpCacheHeaders.SetNoStore(httpContext);
             var content = await store.ListContent(ct);
             return content.Select(MapPublicContent);
-        });
-        versionedApi.MapGet("/catalog/public-content/{**key}", GetPublicContentForManagement);
+        }).RequireAuthorization(CatalogAuthorization.CatalogRead);
+        versionedApi.MapGet("/catalog/public-content/{**key}", GetPublicContentForManagement)
+            .RequireAuthorization(CatalogAuthorization.CatalogRead);
         versionedApi.MapPut("/catalog/public-content/{**key}", UpsertPublicContent)
-            .RequireRateLimiting(CatalogSecurityBaseline.MutationRateLimitPolicy);
+            .RequireRateLimiting(CatalogSecurityBaseline.MutationRateLimitPolicy)
+            .RequireAuthorization(CatalogAuthorization.CatalogWrite);
 
         return app;
     }

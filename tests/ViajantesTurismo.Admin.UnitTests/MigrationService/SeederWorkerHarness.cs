@@ -10,6 +10,7 @@ using ViajantesTurismo.Admin.Infrastructure;
 using ViajantesTurismo.Branding.Infrastructure;
 using ViajantesTurismo.Catalog.Infrastructure;
 using ViajantesTurismo.MigrationService;
+using ViajantesTurismo.Management.Security;
 
 namespace ViajantesTurismo.Admin.UnitTests.MigrationService;
 
@@ -50,6 +51,7 @@ internal sealed class SeederWorkerHarness : IDisposable
         var adminDatabaseName = Guid.NewGuid().ToString("N");
         services.AddDbContext<CatalogDbContext>(options => options.UseInMemoryDatabase(Guid.NewGuid().ToString("N")));
         services.AddDbContext<BrandingDbContext>(options => options.UseInMemoryDatabase(Guid.NewGuid().ToString("N")));
+        services.AddDbContext<ManagementSecurityDbContext>(options => options.UseInMemoryDatabase(Guid.NewGuid().ToString("N")));
         services.AddScoped<IBrandingSettingsStore, EmptyBrandingSettingsStore>();
         services.AddIntegrationEventOutbox<AdminWriteDbContext>();
         services.AddDbContext<AdminWriteDbContext>(options =>

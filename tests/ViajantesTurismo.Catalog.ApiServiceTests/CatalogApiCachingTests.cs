@@ -25,6 +25,7 @@ public sealed class CatalogApiCachingTests
 
         await using var factory = CatalogApiTestHost.Create(tourStore, contentStore);
         using var client = factory.CreateClient();
+        client.DefaultRequestHeaders.Authorization = null;
 
         // Act
         using var response = await client.GetAsync(new Uri(path, UriKind.Relative), cancellationToken);
@@ -42,7 +43,9 @@ public sealed class CatalogApiCachingTests
         // Arrange
         await using var factory = CatalogApiTestHost.Create();
         using var client = factory.CreateClient();
+        client.DefaultRequestHeaders.Authorization = null;
         var request = CatalogApiCachingTestData.CreateContentRequest("No-store content");
+        CatalogApiTestHost.ConfigureAuthenticatedClient(client);
 
         // Act
         using var response = await client.PutAsJsonAsync(
@@ -73,6 +76,7 @@ public sealed class CatalogApiCachingTests
             cancellationToken);
         await using var factory = CatalogApiTestHost.Create(tourStore, new TestPublicContentStore());
         using var client = factory.CreateClient();
+        client.DefaultRequestHeaders.Authorization = null;
 
         // Act
         using var firstResponse = await client.GetAsync(new Uri("/api/v1/public/catalog/tours/camino-norte", UriKind.Relative), cancellationToken);
@@ -83,6 +87,7 @@ public sealed class CatalogApiCachingTests
             cancellationToken);
         using var cachedResponse = await client.GetAsync(new Uri("/api/v1/public/catalog/tours/camino-norte", UriKind.Relative), cancellationToken);
         var cachedTour = await cachedResponse.Content.ReadFromJsonAsync<CatalogTourDto>(cancellationToken);
+        CatalogApiTestHost.ConfigureAuthenticatedClient(client);
         using var updateResponse = await client.PutAsJsonAsync(
             new Uri($"/api/v1/catalog/tours/{tourId}/presentation", UriKind.Relative),
             CatalogApiCachingTestData.CreatePresentationRequest("Invalidated tour", "camino-norte"),
@@ -112,6 +117,7 @@ public sealed class CatalogApiCachingTests
         await contentStore.SaveContent(CatalogApiCachingTestData.CreatePublishedContent("Original content"), cancellationToken);
         await using var factory = CatalogApiTestHost.Create(new TestCatalogTourReadModelStore(), contentStore);
         using var client = factory.CreateClient();
+        client.DefaultRequestHeaders.Authorization = null;
 
         // Act
         using var firstResponse = await client.GetAsync(new Uri("/api/v1/public/catalog/content/home.hero?culture=en-US", UriKind.Relative), cancellationToken);
@@ -119,6 +125,7 @@ public sealed class CatalogApiCachingTests
         await contentStore.SaveContent(CatalogApiCachingTestData.CreatePublishedContent("Store-only content"), cancellationToken);
         using var cachedResponse = await client.GetAsync(new Uri("/api/v1/public/catalog/content/home.hero?culture=en-US", UriKind.Relative), cancellationToken);
         var cachedContent = await cachedResponse.Content.ReadFromJsonAsync<PublicContentVariantDto>(cancellationToken);
+        CatalogApiTestHost.ConfigureAuthenticatedClient(client);
         using var updateResponse = await client.PutAsJsonAsync(
             new Uri("/api/v1/catalog/public-content/home.hero", UriKind.Relative),
             CatalogApiCachingTestData.CreateContentRequest("Invalidated content"),
@@ -148,6 +155,7 @@ public sealed class CatalogApiCachingTests
         await contentStore.SaveContent(CatalogApiCachingTestData.CreatePublishedContent("Original content"), cancellationToken);
         await using var factory = CatalogApiTestHost.Create(new TestCatalogTourReadModelStore(), contentStore);
         using var client = factory.CreateClient();
+        client.DefaultRequestHeaders.Authorization = null;
 
         // Act
         using var firstResponse = await client.GetAsync(new Uri("/api/v1/public/catalog/content/home.hero?culture=ZZ&language=EN", UriKind.Relative), cancellationToken);
@@ -174,6 +182,7 @@ public sealed class CatalogApiCachingTests
         await contentStore.SaveContent(CatalogApiCachingTestData.CreatePublishedContent("Original content"), cancellationToken);
         await using var factory = CatalogApiTestHost.Create(new TestCatalogTourReadModelStore(), contentStore);
         using var client = factory.CreateClient();
+        client.DefaultRequestHeaders.Authorization = null;
 
         // Act
         using var response = await client.GetAsync(new Uri("/api/v1/public/catalog/content/home.hero?culture=ZZ", UriKind.Relative), cancellationToken);
@@ -198,6 +207,7 @@ public sealed class CatalogApiCachingTests
         await contentStore.SaveContent(CatalogApiCachingTestData.CreatePublishedContent("Default content"), cancellationToken);
         await using var factory = CatalogApiTestHost.Create(new TestCatalogTourReadModelStore(), contentStore);
         using var client = factory.CreateClient();
+        client.DefaultRequestHeaders.Authorization = null;
 
         // Act
         using var response = await client.GetAsync(new Uri("/api/v1/public/catalog/content/home.hero?culture=", UriKind.Relative), cancellationToken);
@@ -215,6 +225,7 @@ public sealed class CatalogApiCachingTests
         // Arrange
         await using var factory = CatalogApiTestHost.Create();
         using var client = factory.CreateClient();
+        client.DefaultRequestHeaders.Authorization = null;
 
         // Act
         using var response = await client.GetAsync(new Uri("/api/v1/public/catalog/content/%20?culture=en-US", UriKind.Relative), TestContext.Current.CancellationToken);
@@ -241,6 +252,7 @@ public sealed class CatalogApiCachingTests
         await contentStore.SaveContent(CatalogApiCachingTestData.CreatePublishedContent("Published content"), cancellationToken);
         await using var factory = CatalogApiTestHost.Create(new TestCatalogTourReadModelStore(), contentStore);
         using var client = factory.CreateClient();
+        client.DefaultRequestHeaders.Authorization = null;
 
         // Act
         using var response = await client.GetAsync(new Uri(path, UriKind.Relative), cancellationToken);

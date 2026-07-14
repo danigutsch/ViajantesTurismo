@@ -29,18 +29,18 @@ OpenTelemetry exporters, and external clients such as browsers and API clients.
 
 ## STRIDE-A findings
 
-| Area | Threat | Baseline control | Follow-up |
-| --- | --- | --- | --- |
-| Public Web | Spoofed framing or browser capability abuse | Security headers and CSP for public pages | #815 |
-| Management Web | Cross-site UI embedding or unsafe browser defaults | Management CSP allows Blazor SignalR only for `connect-src` | #815 |
-| APIs | Cross-origin browser calls from untrusted origins | Explicit configured CORS allowlist, default deny | #817 |
-| Public reads | High-volume scraping or accidental load spike | Public-read rate-limit policy with browsing-friendly threshold | #816 |
-| Mutations/import | Abuse of write or import endpoints | Stricter mutation/import rate-limit policies | #816 |
-| Customer PII | Disclosure through logs or EF diagnostics | Sensitive data logging remains development-gated; logging guidance forbids PII payloads | #818 |
-| Upload and import | Oversized, malformed, or wrong content-type CSV upload | Customer import validation rejects non-CSV, empty, and oversized files with generic ProblemDetails | #819 |
-| Media upload | Malware or unsafe binary content | Scanner integration remains tracked separately | #559 |
-| Auditability | Sensitive business actions need durable audit trail | Audit design remains separate from baseline controls | #575 |
-| Baseline drift | Controls removed during future refactors | .NET security baseline tool checks docs and wiring | #820 |
+| Area | Threat | Baseline control |
+| --- | --- | --- |
+| Public Web | Spoofed framing or browser capability abuse | Security headers and CSP for public pages |
+| Management Web | Cross-site UI embedding or unsafe browser defaults | Management CSP allows Blazor SignalR only for `connect-src` |
+| APIs | Cross-origin browser calls from untrusted origins | Explicit configured CORS allowlist, default deny |
+| Public reads | High-volume scraping or accidental load spike | Public-read rate-limit policy with browsing-friendly threshold |
+| Mutations/import | Abuse of write or import endpoints | Stricter mutation/import rate-limit policies |
+| Customer PII | Disclosure through logs or EF diagnostics | Sensitive data logging remains development-gated; logging guidance forbids PII payloads |
+| Upload and import | Oversized, malformed, or wrong content-type CSV upload | Customer import validation rejects non-CSV, empty, and oversized files with generic ProblemDetails |
+| Media upload | Malware or unsafe binary content | Scanner integration remains tracked separately |
+| Auditability | Sensitive business actions need durable audit trail | Audit design remains separate from baseline controls |
+| Baseline drift | Controls removed during future refactors | .NET security baseline tool checks docs and wiring |
 
 ## Notes
 

@@ -13,6 +13,7 @@
     </Folder>
     <Folder Name="/src/">
         <Project Path="src/ViajantesTurismo.AppHost/ViajantesTurismo.AppHost.csproj" />
+        <Project Path="src/ViajantesTurismo.Management.Security/ViajantesTurismo.Management.Security.csproj" />
         <Project Path="src/ViajantesTurismo.MigrationService/ViajantesTurismo.MigrationService.csproj" />
         <Project Path="src/ViajantesTurismo.IntegrationEventWorker/ViajantesTurismo.IntegrationEventWorker.csproj" />
         <Project Path="src/ViajantesTurismo.Resources/ViajantesTurismo.Resources.csproj" />
@@ -99,6 +100,7 @@
         <Project Path="src/ViajantesTurismo.Public.Web/ViajantesTurismo.Public.Web.csproj" />
     </Folder>
     <Folder Name="/tests/">
+        <Project Path="tests/SharedKernel.AspNetCore.Tests/SharedKernel.AspNetCore.Tests.csproj" />
         <Project Path="src/SharedKernel/SharedKernel.Testing/SharedKernel.Testing.csproj" />
         <Project Path="src/SharedKernel/SharedKernel.Testing.Assertions/SharedKernel.Testing.Assertions.csproj" />
         <Project Path="tests/SharedKernel.Testing.Contracts/SharedKernel.Testing.Contracts.csproj" />

@@ -24,17 +24,32 @@ public sealed class AspireSystemTestFixture : IAspireSystemTestFixture, IAsyncLi
 
     public Uri PublicWebAppUrl { get; private set; } = null!;
 
+    public string ConformanceUserPassword { get; private set; } = string.Empty;
+
     public ICatalogToursApiClient CatalogTours => _catalogTours ?? throw new InvalidOperationException("Fixture is not initialized.");
+
+    ICatalogToursApiClient IAspireSystemTestFixture.CatalogTours => CatalogTours;
 
     public async ValueTask InitializeAsync()
     {
+        var testConfiguration = AppHostTestArguments.CreateConfiguration();
+        ConformanceUserPassword = testConfiguration.ConformanceUserPassword;
         _app = await AspireTestApplication.Start<ViajantesTurismo_AppHost>(
             [ResourceNames.Api, ResourceNames.WebApp, ResourceNames.PublicWebApp],
             null,
+            testConfiguration.Arguments,
             TestContext.Current.CancellationToken);
 
         _apiClient = _app.CreateHttpClient(ResourceNames.Api);
         _catalogApiClient = _app.CreateHttpClient(ResourceNames.CatalogApi);
+        var identityProviderEndpoint = _app.GetEndpoint(ResourceNames.IdentityProvider, "http");
+        var accessToken = await KeycloakConformanceClient.RequestAccessToken(
+            identityProviderEndpoint,
+            testConfiguration.ConformanceUserPassword,
+            [ApiAudienceNames.Admin, ApiAudienceNames.Catalog, ApiAudienceNames.Branding],
+            TestContext.Current.CancellationToken);
+        _apiClient.DefaultRequestHeaders.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", accessToken);
+        _catalogApiClient.DefaultRequestHeaders.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", accessToken);
         _catalogTours = new CatalogToursApiClient(_catalogApiClient);
         WebAppUrl = _app.GetEndpoint(ResourceNames.WebApp, "https");
         PublicWebAppUrl = _app.GetEndpoint(ResourceNames.PublicWebApp, "https");
@@ -53,6 +68,7 @@ public sealed class AspireSystemTestFixture : IAspireSystemTestFixture, IAsyncLi
         _apiClient = null;
         _catalogApiClient = null;
         _catalogTours = null;
+        ConformanceUserPassword = string.Empty;
         _databaseConnectionString = null;
         _catalogDatabaseConnectionString = null;
 
@@ -177,7 +193,7 @@ public sealed class AspireSystemTestFixture : IAspireSystemTestFixture, IAsyncLi
         ArgumentNullException.ThrowIfNull(_app);
 
         using var webClient = _app.CreateHttpClient(ResourceNames.WebApp);
-        using var response = await webClient.GetAsync(new Uri("/", UriKind.Relative), ct);
+        using var response = await webClient.GetAsync(new Uri("/robots.txt", UriKind.Relative), ct);
         response.EnsureSuccessStatusCode();
 
         using var publicWebClient = _app.CreateHttpClient(ResourceNames.PublicWebApp);
