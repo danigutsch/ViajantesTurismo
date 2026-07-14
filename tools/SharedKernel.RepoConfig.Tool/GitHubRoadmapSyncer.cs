@@ -167,6 +167,9 @@ internal sealed class GitHubRoadmapSyncer
         var fields = await projectClient.GetFields(target, cancellationToken).ConfigureAwait(false);
         var values = await projectClient.GetFieldValues(itemId, cancellationToken).ConfigureAwait(false);
         List<string> conflicts = [];
+        string[] requiredFields = ["Roadmap order", "Roadmap status", "Roadmap parent", "Roadmap blocked by", "Roadmap tags", "RICE reach", "RICE impact", "RICE confidence", "RICE effort", "RICE score"];
+        conflicts.AddRange(requiredFields.Where(requiredField => !fields.Any(field => string.Equals(field.Name, requiredField, StringComparison.Ordinal))));
+
         foreach (var field in fields)
         {
             if (string.IsNullOrWhiteSpace(field.Id))
@@ -271,6 +274,11 @@ internal sealed class GitHubRoadmapSyncer
         if (item.CreateGitHubIssue)
         {
             yield return $"dry-run: create GitHub issue for {_project.GitHubRepository} from {item.Id}";
+            if (_project.GitHubProjectTarget is not null)
+            {
+                yield return $"dry-run: ensure the created issue from {item.Id} is in GitHub Project {_project.GitHubProjectTarget.Number}";
+            }
+
             yield break;
         }
 
