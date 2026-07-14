@@ -104,7 +104,10 @@ public sealed class DocumentationGeneratorTests
         result.ChangedFiles.ShouldBe(["docs/architecture/overview.md"]);
         updated.ShouldContain("admin[Admin database]", StringComparison.Ordinal);
         updated.ShouldContain("api[API service]", StringComparison.Ordinal);
+        updated.ShouldContain("clamAv[Clam Av]", StringComparison.Ordinal);
         updated.ShouldContain("api --> admin", StringComparison.Ordinal);
+        updated.ShouldContain("api --> clamAv", StringComparison.Ordinal);
+        updated.ShouldNotContain("includeDeveloperTooling", StringComparison.Ordinal);
         updated.ShouldContain("App[App] --> Lib[Lib]", StringComparison.Ordinal);
         updated.ShouldContain("| `GET` | `/customers` | GetCustomers | management/internal | not declared | `Api/CustomerEndpoints.cs` |", StringComparison.Ordinal);
         updated.ShouldContain("| `POST` | `/customers` | CreateCustomer | management/internal | required | `Api/CustomerEndpoints.cs` |", StringComparison.Ordinal);

@@ -183,9 +183,11 @@ internal static class DocumentationTestContent
     public static string AppHostProgram() =>
         """
         var builder = DistributedApplication.CreateBuilder(args);
+        var includeDeveloperTooling = profile.IncludesDeveloperTooling();
         var postgres = builder.AddPostgres("postgres");
         var admin = postgres.AddDatabase("admin");
-        var api = builder.AddProject(api, admin);
+        var clamAv = includeDeveloperTooling ? builder.AddClamAv("clam") : null;
+        var api = builder.AddProject(api, admin, clamAv);
         builder.AddDockerfile(worker, api);
         """;
 

@@ -11,6 +11,8 @@ public sealed class BrandingDbContext(
     DbContextOptions<BrandingDbContext> options,
     IEnumerable<IDbContextConfiguration<BrandingDbContext>>? configurations = null) : DbContext(options)
 {
+    internal const string SchemaName = "branding";
+
     internal DbSet<BrandingSettingsRecord> BrandingSettings => Set<BrandingSettingsRecord>();
 
     /// <inheritdoc />
@@ -34,6 +36,7 @@ public sealed class BrandingDbContext(
 
         base.OnModelCreating(modelBuilder);
 
+        modelBuilder.HasDefaultSchema(SchemaName);
         modelBuilder.ApplyConfiguration(new BrandingSettingsConfiguration());
 
         if (configurations is not null)

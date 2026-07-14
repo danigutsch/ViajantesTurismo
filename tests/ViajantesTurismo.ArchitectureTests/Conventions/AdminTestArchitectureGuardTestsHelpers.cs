@@ -29,24 +29,6 @@ internal static partial class AdminTestArchitectureGuardTestsHelpers
         $@"(?:Trait\s*\(\s*""(?:{string.Join('|', CanonicalTraitNames.Select(Regex.Escape))})""|const\s+string\s+\w+Name\s*=\s*""(?:{string.Join('|', CanonicalTraitNames.Select(Regex.Escape))})"")",
         RegexOptions.Compiled | RegexOptions.CultureInvariant);
 
-    public static void AssertFileContains(string filePath, string expectedText)
-    {
-        var fileContents = File.ReadAllText(filePath);
-        fileContents.ShouldContain(expectedText, StringComparison.Ordinal);
-    }
-
-    public static void AssertFileDoesNotExist(string filePath)
-    {
-        var fileExists = File.Exists(filePath);
-        fileExists.ShouldBeFalse($"Did not expect file to exist: {filePath}");
-    }
-
-    public static void AssertFileDoesNotContain(string filePath, Regex unexpectedPattern)
-    {
-        var fileContents = File.ReadAllText(filePath);
-        (fileContents).ShouldNotMatch(unexpectedPattern);
-    }
-
     public static string[] FindGenericServiceProviderReachThrough(string filePath)
     {
         var repositoryRoot = GetRepositoryRoot();

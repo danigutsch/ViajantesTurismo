@@ -25,10 +25,12 @@ public sealed class ApiFixture : Testing.Integration.IAdminTestHost, IAsyncLifet
     public async ValueTask InitializeAsync()
     {
         var testConfiguration = AppHostTestArguments.CreateConfiguration();
+        var appHostArguments =
+            [.. testConfiguration.Arguments, .. HostedProfile.Admin.ToArguments()];
         _app = await AspireTestApplication.Start<ViajantesTurismo_AppHost>(
             [ResourceNames.Api],
             null,
-            testConfiguration.Arguments,
+            appHostArguments,
             TestContext.Current.CancellationToken);
         _client = _app.CreateHttpClient(ResourceNames.Api);
         _databaseConnectionString = await _app.GetConnectionString(ResourceNames.AdminDatabase, TestContext.Current.CancellationToken);
@@ -39,6 +41,11 @@ public sealed class ApiFixture : Testing.Integration.IAdminTestHost, IAsyncLifet
             [ApiAudienceNames.Admin],
             TestContext.Current.CancellationToken);
         _client.DefaultRequestHeaders.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", accessToken);
+    }
+
+    public Task<PostgreSqlTestDatabase> CreateIsolatedPostgreSqlDatabase(CancellationToken ct)
+    {
+        return PostgreSqlTestDatabase.Create(GetDatabaseConnectionString(), ct);
     }
 
     public async ValueTask DisposeAsync()
@@ -68,5 +75,10 @@ public sealed class ApiFixture : Testing.Integration.IAdminTestHost, IAsyncLifet
 
         await using var connection = new NpgsqlConnection(_databaseConnectionString);
         await PostgreSqlPublicSchemaReset.Reset(connection, ct);
+    }
+
+    private string GetDatabaseConnectionString()
+    {
+        return _databaseConnectionString ?? throw new InvalidOperationException("Fixture is not initialized.");
     }
 }

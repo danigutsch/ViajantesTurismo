@@ -27,6 +27,7 @@
             ReferenceOutputAssembly="false"
             PrivateAssets="all"
             IsAspireProjectResource="false"/>
+        <ProjectReference Include="..\ViajantesTurismo.DatabaseObservability\ViajantesTurismo.DatabaseObservability.csproj"/>
     </ItemGroup>
 
     <ItemGroup>

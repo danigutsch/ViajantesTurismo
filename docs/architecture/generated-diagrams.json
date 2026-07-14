@@ -100,7 +100,7 @@
     {
       "name": "apphost-resources",
       "kind": "apphost-resources",
-      "sourcePath": "src/ViajantesTurismo.AppHost/AppHost.cs",
+      "sourcePath": "src/ViajantesTurismo.AppHost/AppHostComposition.cs",
       "labels": {
         "clamAv": "ClamAV",
         "seaweedFs": "SeaweedFS",

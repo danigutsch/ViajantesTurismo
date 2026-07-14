@@ -8,7 +8,7 @@ internal sealed class BrandingSettingsConfiguration : IEntityTypeConfiguration<B
 {
     public void Configure(EntityTypeBuilder<BrandingSettingsRecord> entity)
     {
-        entity.ToTable("BrandingSettings");
+        entity.ToTable("BrandingSettings", BrandingDbContext.SchemaName);
 
         entity.HasKey(settings => settings.Id);
         entity.Property(settings => settings.Id).ValueGeneratedNever();

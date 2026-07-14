@@ -50,39 +50,58 @@ internal static class AppHostResourceExtensions
     private const string KeycloakRealmImportDirectory = "/opt/keycloak/data/import";
     private const string KeycloakBootstrapAdminUsername = "admin";
     private const string LocalHttpAuthorityAllowed = "true";
+    private const string DatabaseObservabilityEnabledEnvironmentVariable = "DatabaseObservability__PostgreSqlIndexHealth__Enabled";
+    private const string AdminIndexHealthConnectionStringParameterName = "admin-index-health-connection-string";
+    private const string CatalogIndexHealthConnectionStringParameterName = "catalog-index-health-connection-string";
+    private const string AdminIndexHealthConnectionStringEnvironmentVariable = "ConnectionStrings__admin-index-health";
+    private const string CatalogIndexHealthConnectionStringEnvironmentVariable = "ConnectionStrings__catalog-index-health";
 
     /// <summary>Default bucket for Viajantes media object storage.</summary>
     private const string SeaweedFsBucketDefault = "viajantes-media";
 
     /// <summary>
-    /// Adds the PostgreSQL server and PgWeb companion resource.
+    /// Adds the PostgreSQL server and, when selected, its PgWeb companion resource.
     /// </summary>
     /// <param name="builder">The distributed application builder.</param>
+    /// <param name="includePgWeb">Whether to include the PgWeb companion resource.</param>
     /// <returns>The configured PostgreSQL server resource.</returns>
-    public static IResourceBuilder<PostgresServerResource> AddDatabaseServer(this IDistributedApplicationBuilder builder)
+    public static IResourceBuilder<PostgresServerResource> AddDatabaseServer(this IDistributedApplicationBuilder builder, bool includePgWeb)
     {
-        return builder.AddPostgres(ResourceNames.DatabaseServer)
+        var databaseServer = builder.AddPostgres(ResourceNames.DatabaseServer)
             .WithImageTag(PostgresImageTag)
             .WithImageSHA256(PostgresImageDigest)
-            .WithArgs("-c", "max_connections=200")
-            .WithPgWeb(pgweb => pgweb
+            .WithArgs("-c", "max_connections=200");
+
+        if (includePgWeb)
+        {
+            databaseServer.WithPgWeb(pgweb => pgweb
                 .WithImageTag(PgWebImageTag)
                 .WithImageSHA256(PgWebImageDigest));
+        }
+
+        return databaseServer;
     }
 
     /// <summary>
-    /// Adds the Redis cache and RedisInsight companion resource.
+    /// Adds the Redis cache and, when selected, its RedisInsight companion resource.
     /// </summary>
     /// <param name="builder">The distributed application builder.</param>
+    /// <param name="includeRedisInsight">Whether to include the RedisInsight companion resource.</param>
     /// <returns>The configured Redis resource.</returns>
-    public static IResourceBuilder<RedisResource> AddCache(this IDistributedApplicationBuilder builder)
+    public static IResourceBuilder<RedisResource> AddCache(this IDistributedApplicationBuilder builder, bool includeRedisInsight)
     {
-        return builder.AddRedis(ResourceNames.Cache)
+        var cache = builder.AddRedis(ResourceNames.Cache)
             .WithImageTag(RedisImageTag)
-            .WithImageSHA256(RedisImageDigest)
-            .WithRedisInsight(redisInsight => redisInsight
+            .WithImageSHA256(RedisImageDigest);
+
+        if (includeRedisInsight)
+        {
+            cache.WithRedisInsight(redisInsight => redisInsight
                 .WithImageTag(RedisInsightImageTag)
                 .WithImageSHA256(RedisInsightImageDigest));
+        }
+
+        return cache;
     }
 
     /// <summary>
@@ -165,6 +184,34 @@ internal static class AppHostResourceExtensions
     }
 
     /// <summary>
+    /// Adds the opt-in PostgreSQL database observability service.
+    /// </summary>
+    /// <param name="builder">The distributed application builder.</param>
+    /// <param name="adminDatabase">The Admin database resource.</param>
+    /// <param name="catalogDatabase">The Catalog database resource.</param>
+    /// <param name="migrationService">The migration service resource.</param>
+    /// <returns>The configured database observability resource.</returns>
+    public static IResourceBuilder<ProjectResource> AddDatabaseObservability(
+        this IDistributedApplicationBuilder builder,
+        IResourceBuilder<PostgresDatabaseResource> adminDatabase,
+        IResourceBuilder<PostgresDatabaseResource> catalogDatabase,
+        IResourceBuilder<ProjectResource> migrationService)
+    {
+        var adminConnectionString = builder.AddParameter(AdminIndexHealthConnectionStringParameterName, secret: true);
+        var catalogConnectionString = builder.AddParameter(CatalogIndexHealthConnectionStringParameterName, secret: true);
+
+        var resource = builder.AddDevelopmentDotNetProject<ViajantesTurismo_DatabaseObservability>(ResourceNames.DatabaseObservability)
+            .WaitFor(adminDatabase)
+            .WaitFor(catalogDatabase)
+            .WaitForCompletion(migrationService);
+
+        return resource
+            .WithEnvironment(DatabaseObservabilityEnabledEnvironmentVariable, "true")
+            .WithEnvironment(AdminIndexHealthConnectionStringEnvironmentVariable, adminConnectionString)
+            .WithEnvironment(CatalogIndexHealthConnectionStringEnvironmentVariable, catalogConnectionString);
+    }
+
+    /// <summary>
     /// Adds the Admin API service.
     /// </summary>
     /// <param name="builder">The distributed application builder.</param>
@@ -197,8 +244,8 @@ internal static class AppHostResourceExtensions
     /// <param name="adminDatabase">The Admin database resource that owns integration-event transport.</param>
     /// <param name="catalogDatabase">The Catalog database resource.</param>
     /// <param name="migrationService">The migration service resource.</param>
-    /// <param name="clamAv">The private ClamAV scanner resource.</param>
-    /// <param name="seaweedFs">The private SeaweedFS object-storage resource.</param>
+    /// <param name="clamAv">The optional private ClamAV scanner resource.</param>
+    /// <param name="seaweedFs">The optional private SeaweedFS object-storage resource.</param>
     /// <param name="identityProvider">The local identity-provider resource.</param>
     /// <returns>The configured Catalog API resource.</returns>
     public static IResourceBuilder<ProjectResource> AddCatalogApi(
@@ -206,22 +253,30 @@ internal static class AppHostResourceExtensions
         IResourceBuilder<PostgresDatabaseResource> adminDatabase,
         IResourceBuilder<PostgresDatabaseResource> catalogDatabase,
         IResourceBuilder<ProjectResource> migrationService,
-        IResourceBuilder<ContainerResource> clamAv,
-        IResourceBuilder<SeaweedFsResource> seaweedFs,
+        IResourceBuilder<ContainerResource>? clamAv,
+        IResourceBuilder<SeaweedFsResource>? seaweedFs,
         IResourceBuilder<ContainerResource>? identityProvider)
     {
-        return builder.AddDevelopmentAspNetCoreProject<ViajantesTurismo_Catalog_ApiService>(ResourceNames.CatalogApi)
+        var catalogApi = builder.AddDevelopmentAspNetCoreProject<ViajantesTurismo_Catalog_ApiService>(ResourceNames.CatalogApi)
             .WithHttpHealthCheck(EndpointPaths.Health)
             .WithReference(adminDatabase)
             .WithReference(catalogDatabase)
-            .WithClamAvReference(clamAv)
-            .WithSeaweedFsReference(seaweedFs)
             .WaitFor(adminDatabase)
             .WaitFor(catalogDatabase)
-            .WaitFor(clamAv)
-            .WaitFor(seaweedFs)
             .WaitForCompletion(migrationService)
             .WithLocalIdentityProvider(identityProvider);
+
+        if (clamAv is not null)
+        {
+            catalogApi.WithClamAvReference(clamAv).WaitFor(clamAv);
+        }
+
+        if (seaweedFs is not null)
+        {
+            catalogApi.WithSeaweedFsReference(seaweedFs).WaitFor(seaweedFs);
+        }
+
+        return catalogApi;
     }
 
     /// <summary>
@@ -253,27 +308,35 @@ internal static class AppHostResourceExtensions
     /// <param name="adminDatabase">The Admin database resource that owns the transport table.</param>
     /// <param name="catalogDatabase">The Catalog database resource.</param>
     /// <param name="migrationService">The migration service resource.</param>
-    /// <param name="clamAv">The private ClamAV scanner resource.</param>
-    /// <param name="seaweedFs">The private SeaweedFS object-storage resource.</param>
+    /// <param name="clamAv">The optional private ClamAV scanner resource.</param>
+    /// <param name="seaweedFs">The optional private SeaweedFS object-storage resource.</param>
     /// <returns>The configured integration-event worker resource.</returns>
     public static IResourceBuilder<ProjectResource> AddIntegrationEventWorker(
         this IDistributedApplicationBuilder builder,
         IResourceBuilder<PostgresDatabaseResource> adminDatabase,
         IResourceBuilder<PostgresDatabaseResource> catalogDatabase,
         IResourceBuilder<ProjectResource> migrationService,
-        IResourceBuilder<ContainerResource> clamAv,
-        IResourceBuilder<SeaweedFsResource> seaweedFs)
+        IResourceBuilder<ContainerResource>? clamAv,
+        IResourceBuilder<SeaweedFsResource>? seaweedFs)
     {
-        return builder.AddDevelopmentDotNetProject<ViajantesTurismo_IntegrationEventWorker>(ResourceNames.IntegrationEventWorker)
+        var worker = builder.AddDevelopmentDotNetProject<ViajantesTurismo_IntegrationEventWorker>(ResourceNames.IntegrationEventWorker)
             .WithReference(adminDatabase)
             .WithReference(catalogDatabase)
-            .WithClamAvReference(clamAv)
-            .WithSeaweedFsReference(seaweedFs)
             .WaitFor(adminDatabase)
             .WaitFor(catalogDatabase)
-            .WaitFor(clamAv)
-            .WaitFor(seaweedFs)
             .WaitForCompletion(migrationService);
+
+        if (clamAv is not null)
+        {
+            worker.WithClamAvReference(clamAv).WaitFor(clamAv);
+        }
+
+        if (seaweedFs is not null)
+        {
+            worker.WithSeaweedFsReference(seaweedFs).WaitFor(seaweedFs);
+        }
+
+        return worker;
     }
 
     private static IResourceBuilder<TDestination> WithSeaweedFsReference<TDestination>(

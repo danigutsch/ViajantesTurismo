@@ -42,5 +42,4 @@
         <ProjectReference Include="..\..\src\SharedKernel\SharedKernel.BuildingBlocks\SharedKernel.BuildingBlocks.csproj"/>
         <ProjectReference Include="..\..\src\SharedKernel\SharedKernel.Messaging.IntegrationEvents\SharedKernel.Messaging.IntegrationEvents.csproj" />
     </ItemGroup>
-
 </Project>

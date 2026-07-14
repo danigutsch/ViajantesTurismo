@@ -98,11 +98,11 @@ public sealed partial class AppHostOrchestrationTests
     public void Local_oidc_provider_is_excluded_from_release_publishing()
     {
         // Arrange
-        var appHostText = File.ReadAllText(Path.Combine(
+        var compositionText = File.ReadAllText(Path.Combine(
             GetRepositoryRoot(),
             "src",
             "ViajantesTurismo.AppHost",
-            "AppHost.cs"));
+            "AppHostComposition.cs"));
         var resourceExtensionsText = File.ReadAllText(Path.Combine(
             GetRepositoryRoot(),
             "src",
@@ -110,7 +110,7 @@ public sealed partial class AppHostOrchestrationTests
             "AppHostResourceExtensions.cs"));
 
         // Act
-        var hasReleaseGate = appHostText.Contains(
+        var hasReleaseGate = compositionText.Contains(
             "builder.AddRunModeIdentityProvider(managementWebClientSecret)",
             StringComparison.Ordinal);
 
@@ -148,6 +148,171 @@ public sealed partial class AppHostOrchestrationTests
         resourceExtensionsText.ShouldContain("WithReference(securityDatabase)", StringComparison.Ordinal);
         resourceExtensionsText.ShouldContain("WaitFor(securityDatabase)", StringComparison.Ordinal);
         resourceExtensionsText.ShouldContain("WaitForCompletion(migrationService)", StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public void Admin_hosted_profile_composes_only_its_required_resources()
+    {
+        // Arrange
+        var compositionText = File.ReadAllText(Path.Combine(
+            GetRepositoryRoot(),
+            "src",
+            "ViajantesTurismo.AppHost",
+            "AppHostComposition.cs"));
+        var appHostText = File.ReadAllText(Path.Combine(
+            GetRepositoryRoot(),
+            "src",
+            "ViajantesTurismo.AppHost",
+            "AppHost.cs"));
+        var profileContractText = File.ReadAllText(Path.Combine(
+            GetRepositoryRoot(),
+            "src",
+            "ViajantesTurismo.Resources",
+            "HostedProfile.cs"));
+        var adminProfileEnd = compositionText.IndexOf("if (profile is HostedProfile.Admin)", StringComparison.Ordinal);
+        var adminProfileComposition = compositionText[..adminProfileEnd];
+
+        // Act
+        var includesOnlyAdminDependencies = adminProfileComposition.Contains("var includeDeveloperTooling = profile.IncludesDeveloperTooling()", StringComparison.Ordinal)
+            && adminProfileComposition.Contains("AddDatabaseServer(includePgWeb: includeDeveloperTooling)", StringComparison.Ordinal)
+            && adminProfileComposition.Contains("AddDatabase(ResourceNames.AdminDatabase)", StringComparison.Ordinal)
+            && adminProfileComposition.Contains("AddDatabase(ResourceNames.CatalogDatabase)", StringComparison.Ordinal)
+            && adminProfileComposition.Contains("AddDatabase(ResourceNames.SecurityDatabase)", StringComparison.Ordinal)
+            && adminProfileComposition.Contains("builder.AddParameter(ResourceNames.ManagementWebClientSecret, secret: true)", StringComparison.Ordinal)
+            && adminProfileComposition.Contains("builder.AddRunModeIdentityProvider(managementWebClientSecret)", StringComparison.Ordinal)
+            && adminProfileComposition.Contains("AddMigrationService(adminDatabase, catalogDatabase, securityDatabase)", StringComparison.Ordinal)
+            && adminProfileComposition.Contains("AddBrandingApi(catalogDatabase, migrationService, identityProvider)", StringComparison.Ordinal)
+            && adminProfileComposition.Contains("AddAdminApi(adminDatabase, brandingApiService, migrationService, identityProvider)", StringComparison.Ordinal);
+
+        // Assert
+        profileContractText.ShouldContain("Admin", StringComparison.Ordinal);
+        appHostText.ShouldContain("HostedProfileArguments.FromArguments(args)", StringComparison.Ordinal);
+        appHostText.ShouldContain("AddProductResources(profile)", StringComparison.Ordinal);
+        adminProfileEnd.ShouldBeGreaterThan(0);
+        includesOnlyAdminDependencies.ShouldBeTrue();
+        adminProfileComposition.ShouldNotContain("AddCache", StringComparison.Ordinal);
+        adminProfileComposition.ShouldNotContain("AddCatalogApi", StringComparison.Ordinal);
+        adminProfileComposition.ShouldNotContain("AddIntegrationEventWorker", StringComparison.Ordinal);
+        adminProfileComposition.ShouldNotContain("AddManagementWeb", StringComparison.Ordinal);
+        adminProfileComposition.ShouldNotContain("AddPublicWeb", StringComparison.Ordinal);
+        adminProfileComposition.ShouldNotContain("AddClamAv", StringComparison.Ordinal);
+        adminProfileComposition.ShouldNotContain("AddSeaweedFs", StringComparison.Ordinal);
+        adminProfileComposition.ShouldNotContain("AddAdminPerformanceSmoke", StringComparison.Ordinal);
+        adminProfileComposition.ShouldNotContain("AddDatabaseObservability", StringComparison.Ordinal);
+        adminProfileComposition.ShouldNotContain("AddObservabilityStack", StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public void System_hosted_profile_includes_media_without_developer_tooling()
+    {
+        // Arrange
+        var profileExtensionsText = File.ReadAllText(Path.Combine(
+            GetRepositoryRoot(),
+            "src",
+            "ViajantesTurismo.AppHost",
+            "AppHostProfileExtensions.cs"));
+
+        // Act
+        var includesSystemMedia = profileExtensionsText.Contains(
+            "return profile is HostedProfile.Full or HostedProfile.System;",
+            StringComparison.Ordinal);
+
+        // Assert
+        includesSystemMedia.ShouldBeTrue();
+        profileExtensionsText.ShouldContain(
+            "return profile is HostedProfile.Full;",
+            StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public void Aspire_test_application_bounds_build_start_and_resource_health_waits()
+    {
+        // Arrange
+        var testApplicationText = File.ReadAllText(Path.Combine(
+            GetRepositoryRoot(),
+            "src",
+            "SharedKernel",
+            "SharedKernel.IntegrationTesting",
+            "AspireTestApplication.cs"));
+
+        // Act
+        var usesBoundedStartup = testApplicationText.Contains("RunWithResourceStartupTimeout", StringComparison.Ordinal)
+            && testApplicationText.Contains("BuildAsync(startupCt)", StringComparison.Ordinal)
+            && testApplicationText.Contains("await builtApp.StartAsync(startupCt)", StringComparison.Ordinal)
+            && testApplicationText.Contains(
+                "WaitForResourceHealthyAsync(resourceName, startupCt)",
+                StringComparison.Ordinal);
+
+        // Assert
+        usesBoundedStartup.ShouldBeTrue();
+        testApplicationText.ShouldContain(
+            "CancellationTokenSource.CreateLinkedTokenSource(ct, timeoutCts.Token)",
+            StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public void Aspire_test_application_bounds_resource_teardown()
+    {
+        // Arrange
+        var testApplicationText = File.ReadAllText(Path.Combine(
+            GetRepositoryRoot(),
+            "src",
+            "SharedKernel",
+            "SharedKernel.IntegrationTesting",
+            "AspireTestApplication.cs"));
+
+        // Act
+        var usesBoundedTeardown = testApplicationText.Contains("DefaultResourceTeardownTimeout", StringComparison.Ordinal)
+            && testApplicationText.Contains("RunWithResourceTeardownTimeout", StringComparison.Ordinal)
+            && testApplicationText.Contains("app.StopAsync(teardownCt)", StringComparison.Ordinal)
+            && testApplicationText.Contains(
+                "operation(timeoutCts.Token).WaitAsync(timeoutCts.Token)",
+                StringComparison.Ordinal);
+
+        // Assert
+        usesBoundedTeardown.ShouldBeTrue();
+        testApplicationText.ShouldContain("CaptureTeardownFailure", StringComparison.Ordinal);
+        testApplicationText.ShouldContain("new AggregateException(", StringComparison.Ordinal);
+        testApplicationText.ShouldContain("var teardownFailures = await DisposeAfterFailedStart", StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public void Database_observability_waits_for_both_databases_after_migrations()
+    {
+        // Arrange
+        var compositionText = File.ReadAllText(Path.Combine(
+            GetRepositoryRoot(),
+            "src",
+            "ViajantesTurismo.AppHost",
+            "AppHostComposition.cs"));
+        var appHostExtensionsText = File.ReadAllText(Path.Combine(
+            GetRepositoryRoot(),
+            "src",
+            "ViajantesTurismo.AppHost",
+            "AppHostResourceExtensions.cs"));
+        var appHostProfileExtensionsText = File.ReadAllText(Path.Combine(
+            GetRepositoryRoot(),
+            "src",
+            "ViajantesTurismo.AppHost",
+            "AppHostProfileExtensions.cs"));
+
+        // Act
+        var databaseObservabilityBlock = DatabaseObservabilityResourceRegex().Match(appHostExtensionsText).Value;
+
+        // Assert
+        appHostProfileExtensionsText.ShouldContain("Aspire:Features:DatabaseObservability", StringComparison.Ordinal);
+        compositionText.ShouldContain("AddDatabaseObservability(adminDatabase, catalogDatabase, migrationService)", StringComparison.Ordinal);
+        databaseObservabilityBlock.ShouldNotBeEmpty();
+        databaseObservabilityBlock.ShouldContain("AddDevelopmentDotNetProject<ViajantesTurismo_DatabaseObservability>", StringComparison.Ordinal);
+        databaseObservabilityBlock.ShouldContain("WaitFor(adminDatabase)", StringComparison.Ordinal);
+        databaseObservabilityBlock.ShouldContain("WaitFor(catalogDatabase)", StringComparison.Ordinal);
+        databaseObservabilityBlock.ShouldContain("WaitForCompletion(migrationService)", StringComparison.Ordinal);
+        databaseObservabilityBlock.ShouldContain("AddParameter(AdminIndexHealthConnectionStringParameterName, secret: true)", StringComparison.Ordinal);
+        databaseObservabilityBlock.ShouldContain("AddParameter(CatalogIndexHealthConnectionStringParameterName, secret: true)", StringComparison.Ordinal);
+        appHostExtensionsText.ShouldContain("ConnectionStrings__admin-index-health", StringComparison.Ordinal);
+        appHostExtensionsText.ShouldContain("ConnectionStrings__catalog-index-health", StringComparison.Ordinal);
+        databaseObservabilityBlock.ShouldNotContain("WithReference(adminDatabase)", StringComparison.Ordinal);
+        databaseObservabilityBlock.ShouldNotContain("WithReference(catalogDatabase)", StringComparison.Ordinal);
     }
 
     [Fact]
@@ -226,7 +391,7 @@ public sealed partial class AppHostOrchestrationTests
     public void Media_infrastructure_resources_are_private_pinned_and_ready_before_catalog_services()
     {
         // Arrange
-        var appHostText = File.ReadAllText(Path.Combine(GetRepositoryRoot(), "src", "ViajantesTurismo.AppHost", "AppHost.cs"));
+        var compositionText = File.ReadAllText(Path.Combine(GetRepositoryRoot(), "src", "ViajantesTurismo.AppHost", "AppHostComposition.cs"));
         var appHostExtensionsText = File.ReadAllText(Path.Combine(GetRepositoryRoot(), "src", "ViajantesTurismo.AppHost", "AppHostResourceExtensions.cs"));
         var clamAvText = File.ReadAllText(Path.Combine(GetRepositoryRoot(), "src", "SharedKernel", "SharedKernel.Aspire.Hosting.ClamAv", "ClamAvResourceExtensions.cs"));
         var clamAvHealthCheckText = File.ReadAllText(Path.Combine(GetRepositoryRoot(), "src", "SharedKernel", "SharedKernel.Aspire.Hosting.ClamAv", "ClamAvPingHealthCheck.cs"));
@@ -236,10 +401,10 @@ public sealed partial class AppHostOrchestrationTests
         var catalogApiBlock = CatalogApiResourceRegex().Match(appHostExtensionsText).Value;
 
         // Assert
-        appHostText.ShouldContain("AddClamAv(ResourceNames.ClamAv)", StringComparison.Ordinal);
-        appHostText.ShouldContain("var seaweedFs = builder.AddMediaObjectStorage();", StringComparison.Ordinal);
-        appHostText.ShouldNotContain("seaweedFsBucket", StringComparison.Ordinal);
-        appHostText.ShouldNotContain("viajantes-media", StringComparison.Ordinal);
+        compositionText.ShouldContain("AddClamAv(ResourceNames.ClamAv)", StringComparison.Ordinal);
+        compositionText.ShouldContain("builder.AddMediaObjectStorage()", StringComparison.Ordinal);
+        compositionText.ShouldNotContain("seaweedFsBucket", StringComparison.Ordinal);
+        compositionText.ShouldNotContain("\"viajantes-media\"", StringComparison.Ordinal);
         appHostExtensionsText.ShouldContain("AddMediaObjectStorage(this IDistributedApplicationBuilder builder)", StringComparison.Ordinal);
         appHostExtensionsText.ShouldContain("\"viajantes-media\"", StringComparison.Ordinal);
         appHostExtensionsText.ShouldNotContain("$\"{ResourceNames.SeaweedFs}-bucket\"", StringComparison.Ordinal);
@@ -268,6 +433,25 @@ public sealed partial class AppHostOrchestrationTests
         seaweedFsText.ShouldNotContain("Catalog__MediaObjectStorage", StringComparison.Ordinal);
         appHostExtensionsText.ShouldContain("private static IResourceBuilder<TDestination> WithSeaweedFsReference<TDestination>(", StringComparison.Ordinal);
         seaweedFsText.ShouldContain("DcpPublisher:ResourceNameSuffix", StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public void Seaweedfs_uses_named_storage()
+    {
+        // Arrange
+        var seaweedFsText = File.ReadAllText(Path.Combine(
+            GetRepositoryRoot(),
+            "src",
+            "SharedKernel",
+            "SharedKernel.Aspire.Hosting.SeaweedFs",
+            "SeaweedFsResourceExtensions.cs"));
+
+        // Act
+        var usesNamedStorage = seaweedFsText.Contains("DcpPublisher:ResourceNameSuffix", StringComparison.Ordinal)
+            && seaweedFsText.Contains("WithVolume(dataVolumeName, \"/data\")", StringComparison.Ordinal);
+
+        // Assert
+        usesNamedStorage.ShouldBeTrue();
     }
 
 }

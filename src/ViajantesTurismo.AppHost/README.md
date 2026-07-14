@@ -22,6 +22,8 @@ projects, and reusable service defaults belong in `ViajantesTurismo.ServiceDefau
 ### Application Services
 
 - **MigrationService**: applies database migrations and seed data, then exits
+- **DatabaseObservability**: waits for migrations and optionally collects read-only index-health
+  evidence for both PostgreSQL databases
 - **Admin.ApiService**: Admin REST API; waits for the database and migration completion
 - **Catalog.ApiService**: localized public content and public theme API
 - **Management.Web**: Blazor management UI; waits for Redis, the Admin API, and the Catalog API
@@ -39,8 +41,10 @@ projects, and reusable service defaults belong in `ViajantesTurismo.ServiceDefau
 
 ```text
 PostgreSQL → Database → MigrationService
-                     ↓
-                  Admin.ApiService → Management.Web ← Redis
+                      ↓
+              DatabaseObservability (optional collection)
+                      ↓
+                   Admin.ApiService → Management.Web ← Redis
                          ↓
                admin-performance-smoke (opt-in)
 
@@ -154,6 +158,8 @@ main orchestration map.
 - local admin tools through `.WithPgWeb()` and `.WithRedisInsight()`
 - opt-in performance smoke execution through `admin-performance-smoke`
 - opt-in local Grafana LGTM stack through `ASPIRE_ENABLE_OBSERVABILITY_STACK=1`
+- opt-in read-only PostgreSQL index-health collection through
+  `Aspire:Features:DatabaseObservability=true`
 
 ## Running
 
@@ -237,6 +243,25 @@ datasource, provisioning, and dashboard validation work. Provisioning files live
 `observability/` at the repository root. The reusable stack wiring lives in
 `SharedKernel.Aspire.Hosting.Grafana`; the AppHost only owns the opt-in environment gate and
 configuration path.
+
+## Database Observability Resource
+
+`database-observability` starts after database migrations and applies the reusable
+`SharedKernel.Observability.Npgsql` monitor to both `admin-database` and `catalog-database`. It does
+not receive application database references and never falls back to application credentials.
+
+The resource is absent unless `Aspire:Features:DatabaseObservability=true` is configured for the
+AppHost. When it is enabled, configure these AppHost parameters through user secrets or deployment
+configuration:
+
+```text
+Parameters:admin-index-health-connection-string=<least-privilege admin monitoring connection>
+Parameters:catalog-index-health-connection-string=<least-privilege catalog monitoring connection>
+```
+
+Use a monitoring role with only the statistics access documented in
+[`docs/architecture/postgresql-observability.md`](../../docs/architecture/postgresql-observability.md).
+Do not put those connection strings in source-controlled configuration.
 
 ## Coverage
 

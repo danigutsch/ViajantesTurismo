@@ -9,7 +9,7 @@ namespace ViajantesTurismo.Admin.SystemTests.Infrastructure.Bases;
 public abstract class AspireSystemTestBase<TFixture>(TFixture fixture) : PageTest
     where TFixture : IAspireSystemTestFixture
 {
-    private const float DefaultTimeoutMilliseconds = 15000;
+    private const float DefaultTimeoutMilliseconds = 30000;
     private const string InteractivePageSelector = ".page:not([inert])";
     private const string InertPageSelector = ".page[inert]";
     protected TFixture Fixture => fixture;

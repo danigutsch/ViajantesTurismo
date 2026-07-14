@@ -27,17 +27,17 @@ public sealed class AspireSystemTestFixture : IAspireSystemTestFixture, IAsyncLi
     public string ConformanceUserPassword { get; private set; } = string.Empty;
 
     public ICatalogToursApiClient CatalogTours => _catalogTours ?? throw new InvalidOperationException("Fixture is not initialized.");
-
     ICatalogToursApiClient IAspireSystemTestFixture.CatalogTours => CatalogTours;
-
     public async ValueTask InitializeAsync()
     {
         var testConfiguration = AppHostTestArguments.CreateConfiguration();
         ConformanceUserPassword = testConfiguration.ConformanceUserPassword;
+        var appHostArguments =
+            [.. testConfiguration.Arguments, .. HostedProfile.System.ToArguments()];
         _app = await AspireTestApplication.Start<ViajantesTurismo_AppHost>(
             [ResourceNames.Api, ResourceNames.WebApp, ResourceNames.PublicWebApp],
             null,
-            testConfiguration.Arguments,
+            appHostArguments,
             TestContext.Current.CancellationToken);
 
         _apiClient = _app.CreateHttpClient(ResourceNames.Api);
