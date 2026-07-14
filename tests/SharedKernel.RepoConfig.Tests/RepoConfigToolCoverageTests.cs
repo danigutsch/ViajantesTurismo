@@ -213,7 +213,7 @@ public sealed class RepoConfigToolCoverageTests
         errorText.ShouldContain("Missing sync target: github.", StringComparison.Ordinal);
         errorText.ShouldContain("Use either --dry-run or --apply, not both.", StringComparison.Ordinal);
         errorText.ShouldContain("Unknown sync argument.", StringComparison.Ordinal);
-        outputText.ShouldContain("No roadmap items have GitHub issue mappings.", StringComparison.Ordinal);
+        outputText.ShouldContain("No roadmap items have GitHub issue mappings or explicit creation requests.", StringComparison.Ordinal);
     }
 
     [Fact]

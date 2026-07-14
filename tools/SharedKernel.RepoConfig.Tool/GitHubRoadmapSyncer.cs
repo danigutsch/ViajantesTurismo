@@ -9,7 +9,7 @@ namespace SharedKernel.RepoConfig.Tool;
 internal sealed class GitHubRoadmapSyncer
 {
     private static readonly TimeSpan GitHubSyncTimeout = TimeSpan.FromSeconds(30);
-
+    private const decimal ProjectNumberTolerance = 0.000001m;
     private readonly HttpClient? _httpClient;
     private readonly RoadmapProject _project;
     private readonly TimeProvider _timeProvider;
@@ -33,105 +33,216 @@ internal sealed class GitHubRoadmapSyncer
 
     public async Task<GitHubSyncResult> Apply(CancellationToken cancellationToken)
     {
+        var repository = GetGitHubRepository();
+        var itemsWithIssues = GetItemsToSync();
+        if (itemsWithIssues.Length == 0)
+        {
+            return EmptySyncResult();
+        }
+
+        List<string> messages = [];
+        using var ownedHttpClient = _httpClient is null ? CreateGitHubClient() : null;
+        var httpClient = _httpClient ?? ownedHttpClient;
+        var client = httpClient ?? throw new InvalidOperationException("GitHub sync could not create an HTTP client.");
+        var projectClient = CreateProjectClient(client);
+        await VerifyProjectTarget(projectClient, cancellationToken).ConfigureAwait(false);
+
+        foreach (var configuredItem in itemsWithIssues)
+        {
+            await SyncItem(client, repository, projectClient, configuredItem, messages, cancellationToken).ConfigureAwait(false);
+        }
+
+        return new GitHubSyncResult(messages);
+    }
+
+    private string GetGitHubRepository()
+    {
         if (!_project.GitHubEnabled)
         {
             throw new InvalidOperationException("GitHub sync is disabled in roadmap/config.json.");
         }
 
-        var repository = _project.GitHubRepository;
-        if (string.IsNullOrWhiteSpace(repository))
+        return string.IsNullOrWhiteSpace(_project.GitHubRepository)
+            ? throw new InvalidOperationException("roadmap/config.json must define integrations.github.repository before GitHub sync.")
+            : _project.GitHubRepository;
+    }
+
+    private RoadmapItemSnapshot[] GetItemsToSync() =>
+        _project.Items.Where(item => item.GitHubIssue is not null || item.CreateGitHubIssue).OrderByPriority().ToArray();
+
+    private static GitHubSyncResult EmptySyncResult() =>
+        new(["No roadmap items have GitHub issue mappings or explicit creation requests."]);
+
+    private GitHubProjectClient? CreateProjectClient(HttpClient httpClient) =>
+        _project.GitHubProjectTarget is null ? null : new GitHubProjectClient(httpClient);
+
+    private async Task VerifyProjectTarget(GitHubProjectClient? projectClient, CancellationToken cancellationToken)
+    {
+        if (projectClient is null)
         {
-            throw new InvalidOperationException("roadmap/config.json must define integrations.github.repository before GitHub sync.");
+            return;
         }
 
-        var itemsWithIssues = _project.Items.Where(item => item.GitHubIssue is not null || item.CreateGitHubIssue).OrderByPriority().ToArray();
-        if (itemsWithIssues.Length == 0)
+        var target = _project.GitHubProjectTarget ?? throw new InvalidOperationException("GitHub Project target is required.");
+        await RunProjectOperation(async token =>
         {
-            return new GitHubSyncResult(["No roadmap items have GitHub issue mappings."]);
+            await projectClient.VerifyTarget(target, token).ConfigureAwait(false);
+            return true;
+        }, cancellationToken).ConfigureAwait(false);
+    }
+
+    private async Task SyncItem(
+        HttpClient httpClient,
+        string repository,
+        GitHubProjectClient? projectClient,
+        RoadmapItemSnapshot configuredItem,
+        List<string> messages,
+        CancellationToken cancellationToken)
+    {
+        var item = await CreateOrAdoptIssue(httpClient, repository, configuredItem, messages, cancellationToken).ConfigureAwait(false);
+        await SyncLabels(httpClient, repository, item, messages, cancellationToken).ConfigureAwait(false);
+        await ProjectItem(projectClient, repository, item, messages, cancellationToken).ConfigureAwait(false);
+
+        if (item.Labels.Count == 0 && projectClient is null)
+        {
+            messages.Add($"skipped {repository}#{item.GitHubIssue} from {item.Id} because it has no labels");
+        }
+    }
+
+    private async Task<RoadmapItemSnapshot> CreateOrAdoptIssue(
+        HttpClient httpClient,
+        string repository,
+        RoadmapItemSnapshot item,
+        List<string> messages,
+        CancellationToken cancellationToken)
+    {
+        if (!item.CreateGitHubIssue)
+        {
+            return item;
         }
 
-        List<string> messages = [];
-        using var ownedHttpClient = _httpClient is null && itemsWithIssues.Length > 0 ? CreateGitHubClient() : null;
-        var httpClient = _httpClient ?? ownedHttpClient;
-        var projectTarget = _project.GitHubProjectTarget;
-        var projectClient = projectTarget is null
-            ? null
-            : new GitHubProjectClient(httpClient ?? throw new InvalidOperationException("GitHub sync could not create an HTTP client."));
-        if (projectClient is not null)
+        var creationLock = AcquireIssueCreationLock(item);
+        var retainCreationLock = false;
+        var creationRequestStarted = false;
+        var issueCreated = false;
+        try
         {
-            await RunProjectOperation(async token =>
+            var mapping = PrepareIssueMapping(item);
+            if (TryGetMappedIssueNumber(mapping.GitHub, out var existingIssueNumber))
             {
-                await projectClient.VerifyTarget(projectTarget!, token).ConfigureAwait(false);
-                return true;
-            }, cancellationToken).ConfigureAwait(false);
+                return item with { GitHubIssue = existingIssueNumber, CreateGitHubIssue = false };
+            }
+
+            EnsureCreateIntent(mapping.GitHub, item.Path);
+            creationRequestStarted = true;
+            var creation = await RunProjectOperation(token => CreateIssue(httpClient, repository, item, token), cancellationToken).ConfigureAwait(false);
+            if (creation.FailureStatus is HttpStatusCode failureStatus)
+            {
+                retainCreationLock = (int)failureStatus >= 500;
+                throw CreateGitHubFailure("issue creation", failureStatus);
+            }
+
+            var issueNumber = creation.IssueNumber ?? throw new JsonException("GitHub issue creation response did not contain a positive issue number.");
+            issueCreated = true;
+            PersistCreatedIssueMapping(item, issueNumber);
+            messages.Add($"created {repository}#{issueNumber} from {item.Id}");
+            return item with { GitHubIssue = issueNumber, CreateGitHubIssue = false };
         }
-        foreach (var configuredItem in itemsWithIssues)
+        catch (Exception exception) when (issueCreated || (creationRequestStarted && IsAmbiguousIssueCreationFailure(exception)))
         {
-            var item = configuredItem;
-            if (item.CreateGitHubIssue)
+            retainCreationLock = true;
+            throw;
+        }
+        finally
+        {
+            var lockPath = creationLock.Name;
+            await creationLock.DisposeAsync().ConfigureAwait(false);
+            if (!retainCreationLock)
             {
-                using var creationLock = AcquireIssueCreationLock(item);
-                var mapping = PrepareIssueMapping(item);
-                if (TryGetMappedIssueNumber(mapping.GitHub, out var existingIssueNumber))
-                {
-                    item = item with { GitHubIssue = existingIssueNumber, CreateGitHubIssue = false };
-                }
-                else
-                {
-                    EnsureCreateIntent(mapping.GitHub, item.Path);
-                    var issueNumber = await RunProjectOperation(token => CreateIssue(httpClient ?? throw new InvalidOperationException("GitHub sync could not create an HTTP client."), repository, item, token), cancellationToken).ConfigureAwait(false);
-                    try
-                    {
-                        PersistIssueMapping(mapping.Path, mapping.Root, issueNumber);
-                    }
-                    catch (IOException exception)
-                    {
-                        throw new InvalidOperationException($"GitHub issue #{issueNumber} was created but its roadmap mapping could not be persisted. Set integrations.github.issue to {issueNumber} in {item.Path} before retrying.", exception);
-                    }
-                    catch (UnauthorizedAccessException exception)
-                    {
-                        throw new InvalidOperationException($"GitHub issue #{issueNumber} was created but its roadmap mapping could not be persisted. Set integrations.github.issue to {issueNumber} in {item.Path} before retrying.", exception);
-                    }
-
-                    item = item with { GitHubIssue = issueNumber, CreateGitHubIssue = false };
-                    messages.Add($"created {repository}#{issueNumber} from {item.Id}");
-                }
-            }
-
-            var extraLabels = await UpdateItem(httpClient ?? throw new InvalidOperationException("GitHub sync could not create an HTTP client."), repository, item, cancellationToken).ConfigureAwait(false);
-            if (item.Labels.Count > 0)
-            {
-                messages.Add($"updated labels for {repository}#{item.GitHubIssue} from {item.Id}");
-            }
-
-            foreach (var label in extraLabels)
-            {
-                messages.Add($"drift: {repository}#{item.GitHubIssue} has extra GitHub label {label}");
-            }
-
-            if (projectClient is not null)
-            {
-                var conflicts = await RunProjectOperation(async token =>
-                {
-                    var issueId = await projectClient.GetIssueNodeId(repository, item.GitHubIssue!.Value, token).ConfigureAwait(false);
-                    var projectItemId = await projectClient.FindItemId(projectTarget!, issueId, token).ConfigureAwait(false)
-                        ?? await projectClient.AddIssue(projectTarget!, issueId, token).ConfigureAwait(false);
-                    return await ProjectFields(projectClient, projectTarget!, projectItemId, item, token).ConfigureAwait(false);
-                }, cancellationToken).ConfigureAwait(false);
-                messages.Add($"projected {repository}#{item.GitHubIssue} to GitHub Project {projectTarget!.Number}");
-                foreach (var conflict in conflicts)
-                {
-                    messages.Add($"drift: {repository}#{item.GitHubIssue} Project field {conflict} cannot be projected from roadmap source");
-                }
-            }
-
-            if (item.Labels.Count == 0 && projectClient is null)
-            {
-                messages.Add($"skipped {repository}#{item.GitHubIssue} from {item.Id} because it has no labels");
+                File.Delete(lockPath);
             }
         }
+    }
 
-        return new GitHubSyncResult(messages);
+    private void PersistCreatedIssueMapping(RoadmapItemSnapshot item, int issueNumber)
+    {
+        var mapping = PrepareIssueMapping(item);
+        try
+        {
+            EnsureCreateIntent(mapping.GitHub, item.Path);
+        }
+        catch (InvalidOperationException exception)
+        {
+            throw new InvalidOperationException($"GitHub issue #{issueNumber} was created but its roadmap mapping changed while synchronizing: {item.Path}. Verify the mapping before retrying.", exception);
+        }
+
+        try
+        {
+            PersistIssueMapping(mapping.Path, mapping.Root, issueNumber);
+        }
+        catch (Exception exception) when (exception is IOException or UnauthorizedAccessException)
+        {
+            throw new InvalidOperationException($"GitHub issue #{issueNumber} was created but its roadmap mapping could not be persisted. Set integrations.github.issue to {issueNumber} in {item.Path} before retrying.", exception);
+        }
+    }
+
+    private static bool IsAmbiguousIssueCreationFailure(Exception exception)
+    {
+        return exception is GitHubSyncTimeoutException or OperationCanceledException or HttpRequestException or IOException or JsonException;
+    }
+
+    private async Task SyncLabels(
+        HttpClient httpClient,
+        string repository,
+        RoadmapItemSnapshot item,
+        List<string> messages,
+        CancellationToken cancellationToken)
+    {
+        var extraLabels = await UpdateItem(httpClient, repository, item, cancellationToken).ConfigureAwait(false);
+        if (item.Labels.Count > 0)
+        {
+            messages.Add($"updated labels for {repository}#{item.GitHubIssue} from {item.Id}");
+        }
+
+        foreach (var label in extraLabels)
+        {
+            messages.Add($"drift: {repository}#{item.GitHubIssue} has extra GitHub label {label}");
+        }
+    }
+
+    private async Task ProjectItem(
+        GitHubProjectClient? projectClient,
+        string repository,
+        RoadmapItemSnapshot item,
+        List<string> messages,
+        CancellationToken cancellationToken)
+    {
+        if (projectClient is null)
+        {
+            return;
+        }
+
+        var target = _project.GitHubProjectTarget ?? throw new InvalidOperationException("GitHub Project target is required.");
+        var conflicts = await RunProjectOperation(token => EnsureProjectMembershipAndProjectFields(projectClient, target, repository, item, token), cancellationToken).ConfigureAwait(false);
+        messages.Add($"projected {repository}#{item.GitHubIssue} to GitHub Project {target.Number}");
+        foreach (var conflict in conflicts)
+        {
+            messages.Add($"drift: {repository}#{item.GitHubIssue} Project field {conflict} cannot be projected from roadmap source");
+        }
+    }
+
+    private static async Task<IReadOnlyList<string>> EnsureProjectMembershipAndProjectFields(
+        GitHubProjectClient projectClient,
+        GitHubProjectTarget target,
+        string repository,
+        RoadmapItemSnapshot item,
+        CancellationToken cancellationToken)
+    {
+        var issueNumber = item.GitHubIssue ?? throw new InvalidOperationException("GitHub issue mapping is required.");
+        var issueId = await projectClient.GetIssueNodeId(repository, issueNumber, cancellationToken).ConfigureAwait(false);
+        var projectItemId = await projectClient.FindItemId(target, issueId, cancellationToken).ConfigureAwait(false)
+            ?? await projectClient.AddIssue(target, issueId, cancellationToken).ConfigureAwait(false);
+        return await ProjectFields(projectClient, target, projectItemId, item, cancellationToken).ConfigureAwait(false);
     }
 
     private async Task<IReadOnlyList<string>> UpdateItem(HttpClient httpClient, string repository, RoadmapItemSnapshot item, CancellationToken cancellationToken)
@@ -167,84 +278,135 @@ internal sealed class GitHubRoadmapSyncer
         var fields = await projectClient.GetFields(target, cancellationToken).ConfigureAwait(false);
         var values = await projectClient.GetFieldValues(itemId, cancellationToken).ConfigureAwait(false);
         List<string> conflicts = [];
-        string[] requiredFields = ["Roadmap order", "Roadmap status", "Roadmap parent", "Roadmap blocked by", "Roadmap tags", "RICE reach", "RICE impact", "RICE confidence", "RICE effort", "RICE score"];
-        conflicts.AddRange(requiredFields.Where(requiredField => !fields.Any(field => string.Equals(field.Name, requiredField, StringComparison.Ordinal))));
-
-        foreach (var field in fields)
-        {
-            if (string.IsNullOrWhiteSpace(field.Id))
-            {
-                continue;
-            }
-
-            switch (field.Name)
-            {
-                case "Roadmap order": await ProjectNumber(projectClient, target, itemId, field, values, item.Order, conflicts, cancellationToken).ConfigureAwait(false); break;
-                case "RICE reach": await ProjectNumber(projectClient, target, itemId, field, values, item.Reach, conflicts, cancellationToken).ConfigureAwait(false); break;
-                case "RICE impact": await ProjectNumber(projectClient, target, itemId, field, values, item.Impact, conflicts, cancellationToken).ConfigureAwait(false); break;
-                case "RICE confidence": await ProjectNumber(projectClient, target, itemId, field, values, item.Confidence, conflicts, cancellationToken).ConfigureAwait(false); break;
-                case "RICE effort": await ProjectNumber(projectClient, target, itemId, field, values, item.Effort, conflicts, cancellationToken).ConfigureAwait(false); break;
-                case "RICE score": await ProjectNumber(projectClient, target, itemId, field, values, item.Score, conflicts, cancellationToken).ConfigureAwait(false); break;
-                case "Roadmap status": await ProjectStatus(projectClient, target, itemId, field, values, item.Status, conflicts, cancellationToken).ConfigureAwait(false); break;
-                case "Roadmap parent": await ProjectText(projectClient, target, itemId, field, values, item.Parent ?? string.Empty, conflicts, cancellationToken).ConfigureAwait(false); break;
-                case "Roadmap blocked by": await ProjectText(projectClient, target, itemId, field, values, string.Join(", ", item.BlockedBy), conflicts, cancellationToken).ConfigureAwait(false); break;
-                case "Roadmap tags": await ProjectText(projectClient, target, itemId, field, values, string.Join(", ", item.Tags), conflicts, cancellationToken).ConfigureAwait(false); break;
-            }
-        }
+        await ProjectNumber(projectClient, target, itemId, fields, "Roadmap order", values, item.Order, conflicts, cancellationToken).ConfigureAwait(false);
+        await ProjectNumber(projectClient, target, itemId, fields, "RICE reach", values, item.Reach, conflicts, cancellationToken).ConfigureAwait(false);
+        await ProjectNumber(projectClient, target, itemId, fields, "RICE impact", values, item.Impact, conflicts, cancellationToken).ConfigureAwait(false);
+        await ProjectNumber(projectClient, target, itemId, fields, "RICE confidence", values, item.Confidence, conflicts, cancellationToken).ConfigureAwait(false);
+        await ProjectNumber(projectClient, target, itemId, fields, "RICE effort", values, item.Effort, conflicts, cancellationToken).ConfigureAwait(false);
+        await ProjectNumber(projectClient, target, itemId, fields, "RICE score", values, item.Score, conflicts, cancellationToken).ConfigureAwait(false);
+        await ProjectStatus(projectClient, target, itemId, fields, values, item.Status, conflicts, cancellationToken).ConfigureAwait(false);
+        await ProjectText(projectClient, target, itemId, fields, "Roadmap parent", values, item.Parent ?? string.Empty, conflicts, cancellationToken).ConfigureAwait(false);
+        await ProjectText(projectClient, target, itemId, fields, "Roadmap blocked by", values, string.Join(", ", item.BlockedBy), conflicts, cancellationToken).ConfigureAwait(false);
+        await ProjectText(projectClient, target, itemId, fields, "Roadmap tags", values, string.Join(", ", item.Tags), conflicts, cancellationToken).ConfigureAwait(false);
 
         return conflicts;
     }
 
-    private static async Task ProjectNumber(GitHubProjectClient client, GitHubProjectTarget target, string itemId, GitHubProjectResponse.ProjectField field, IReadOnlyList<GitHubProjectItemResponse.FieldValue> values, decimal value, List<string> conflicts, CancellationToken cancellationToken)
+    private static async Task ProjectNumber(
+        GitHubProjectClient client,
+        GitHubProjectTarget target,
+        string itemId,
+        IReadOnlyList<GitHubProjectResponse.ProjectField> fields,
+        string fieldName,
+        IReadOnlyList<GitHubProjectItemResponse.FieldValue> values,
+        decimal value,
+        List<string> conflicts,
+        CancellationToken cancellationToken)
     {
-        var existing = values.FirstOrDefault(candidate => string.Equals(candidate.Field?.Id, field.Id, StringComparison.Ordinal));
-        if (existing?.Number is not null && Math.Abs(existing.Number.Value - value) > 0.000001m)
+        var field = FindCompatibleField(fields, fieldName, "NUMBER", conflicts);
+        if (field is null)
         {
-            conflicts.Add(field.Name ?? field.Id!);
+            return;
+        }
+
+        var fieldId = field.Id ?? throw new InvalidOperationException("GitHub Project field identifier is required.");
+        var existing = values.FirstOrDefault(candidate => string.Equals(candidate.Field?.Id, field.Id, StringComparison.Ordinal));
+        if (existing?.Number is decimal existingNumber && Math.Abs(existingNumber - value) > ProjectNumberTolerance)
+        {
+            conflicts.Add(fieldName);
             return;
         }
 
         if (existing?.Number is null)
         {
-            await client.UpdateNumber(target, itemId, field.Id!, value, cancellationToken).ConfigureAwait(false);
+            await client.UpdateNumber(target, itemId, fieldId, value, cancellationToken).ConfigureAwait(false);
         }
     }
 
-    private static async Task ProjectStatus(GitHubProjectClient client, GitHubProjectTarget target, string itemId, GitHubProjectResponse.ProjectField field, IReadOnlyList<GitHubProjectItemResponse.FieldValue> values, string status, List<string> conflicts, CancellationToken cancellationToken)
+    private static async Task ProjectStatus(
+        GitHubProjectClient client,
+        GitHubProjectTarget target,
+        string itemId,
+        IReadOnlyList<GitHubProjectResponse.ProjectField> fields,
+        IReadOnlyList<GitHubProjectItemResponse.FieldValue> values,
+        string status,
+        List<string> conflicts,
+        CancellationToken cancellationToken)
     {
+        var field = FindCompatibleField(fields, "Roadmap status", "SINGLE_SELECT", conflicts);
+        if (field is null)
+        {
+            return;
+        }
+
+        var fieldId = field.Id ?? throw new InvalidOperationException("GitHub Project field identifier is required.");
         var option = field.Options?.FirstOrDefault(candidate => string.Equals(candidate.Name, status, StringComparison.Ordinal));
         if (string.IsNullOrWhiteSpace(option?.Id))
         {
-            conflicts.Add(field.Name ?? field.Id!);
+            conflicts.Add("Roadmap status");
             return;
         }
 
         var existing = values.FirstOrDefault(candidate => string.Equals(candidate.Field?.Id, field.Id, StringComparison.Ordinal));
         if (!string.IsNullOrWhiteSpace(existing?.OptionId) && !string.Equals(existing.OptionId, option.Id, StringComparison.Ordinal))
         {
-            conflicts.Add(field.Name ?? field.Id!);
+            conflicts.Add("Roadmap status");
             return;
         }
 
         if (string.IsNullOrWhiteSpace(existing?.OptionId))
         {
-            await client.UpdateSingleSelect(target, itemId, field.Id!, option.Id, cancellationToken).ConfigureAwait(false);
+            await client.UpdateSingleSelect(target, itemId, fieldId, option.Id, cancellationToken).ConfigureAwait(false);
         }
     }
 
-    private static async Task ProjectText(GitHubProjectClient client, GitHubProjectTarget target, string itemId, GitHubProjectResponse.ProjectField field, IReadOnlyList<GitHubProjectItemResponse.FieldValue> values, string value, List<string> conflicts, CancellationToken cancellationToken)
+    private static async Task ProjectText(
+        GitHubProjectClient client,
+        GitHubProjectTarget target,
+        string itemId,
+        IReadOnlyList<GitHubProjectResponse.ProjectField> fields,
+        string fieldName,
+        IReadOnlyList<GitHubProjectItemResponse.FieldValue> values,
+        string value,
+        List<string> conflicts,
+        CancellationToken cancellationToken)
     {
+        var field = FindCompatibleField(fields, fieldName, "TEXT", conflicts);
+        if (field is null)
+        {
+            return;
+        }
+
+        var fieldId = field.Id ?? throw new InvalidOperationException("GitHub Project field identifier is required.");
         var existing = values.FirstOrDefault(candidate => string.Equals(candidate.Field?.Id, field.Id, StringComparison.Ordinal));
         if (!string.IsNullOrWhiteSpace(existing?.Text) && !string.Equals(existing.Text, value, StringComparison.Ordinal))
         {
-            conflicts.Add(field.Name ?? field.Id!);
+            conflicts.Add(fieldName);
             return;
         }
 
         if (string.IsNullOrWhiteSpace(existing?.Text))
         {
-            await client.UpdateText(target, itemId, field.Id!, value, cancellationToken).ConfigureAwait(false);
+            await client.UpdateText(target, itemId, fieldId, value, cancellationToken).ConfigureAwait(false);
         }
+    }
+
+    private static GitHubProjectResponse.ProjectField? FindCompatibleField(
+        IReadOnlyList<GitHubProjectResponse.ProjectField> fields,
+        string fieldName,
+        string dataType,
+        List<string> conflicts)
+    {
+        var candidates = fields.Where(field => string.Equals(field.Name, fieldName, StringComparison.Ordinal)).ToArray();
+        if (candidates.Length != 1
+            || string.IsNullOrWhiteSpace(candidates[0].Id)
+            || !string.Equals(candidates[0].DataType, dataType, StringComparison.Ordinal))
+        {
+            conflicts.Add(fieldName);
+            return null;
+        }
+
+        return candidates[0];
     }
 
     private GitHubSyncResult BuildPreview(RoadmapItemSnapshot[] itemsWithIssues)
@@ -261,7 +423,7 @@ internal sealed class GitHubRoadmapSyncer
 
         if (itemsWithIssues.Length == 0)
         {
-            return new GitHubSyncResult(["No roadmap items have GitHub issue mappings."]);
+            return EmptySyncResult();
         }
 
         return new GitHubSyncResult(itemsWithIssues
@@ -329,7 +491,7 @@ internal sealed class GitHubRoadmapSyncer
             using var labelResponse = await httpClient.SendAsync(labelRequest, cancellationToken).ConfigureAwait(false);
             if (!labelResponse.IsSuccessStatusCode)
             {
-                throw CreateGitHubFailure("label sync", issueNumber, labelResponse.StatusCode);
+                throw CreateGitHubFailure("label sync", labelResponse.StatusCode, issueNumber);
             }
         }
 
@@ -342,7 +504,7 @@ internal sealed class GitHubRoadmapSyncer
         using var response = await httpClient.SendAsync(request, cancellationToken).ConfigureAwait(false);
         if (!response.IsSuccessStatusCode)
         {
-            throw CreateGitHubFailure("label drift check", issueNumber, response.StatusCode);
+            throw CreateGitHubFailure("label drift check", response.StatusCode, issueNumber);
         }
 
         using var responseStream = await response.Content.ReadAsStreamAsync(cancellationToken).ConfigureAwait(false);
@@ -360,7 +522,7 @@ internal sealed class GitHubRoadmapSyncer
             .ToArray();
     }
 
-    private static async Task<int> CreateIssue(HttpClient httpClient, string repository, RoadmapItemSnapshot item, CancellationToken cancellationToken)
+    private static async Task<(int? IssueNumber, HttpStatusCode? FailureStatus)> CreateIssue(HttpClient httpClient, string repository, RoadmapItemSnapshot item, CancellationToken cancellationToken)
     {
         using var request = new HttpRequestMessage(HttpMethod.Post, $"https://api.github.com/repos/{repository}/issues")
         {
@@ -369,17 +531,17 @@ internal sealed class GitHubRoadmapSyncer
         using var response = await httpClient.SendAsync(request, cancellationToken).ConfigureAwait(false);
         if (!response.IsSuccessStatusCode)
         {
-            throw CreateGitHubCreationFailure(response.StatusCode);
+            return (null, response.StatusCode);
         }
 
         using var responseStream = await response.Content.ReadAsStreamAsync(cancellationToken).ConfigureAwait(false);
         using var document = await JsonDocument.ParseAsync(responseStream, cancellationToken: cancellationToken).ConfigureAwait(false);
         if (!document.RootElement.TryGetProperty("number", out var number) || !number.TryGetInt32(out var issueNumber) || issueNumber < 1)
         {
-            throw new InvalidOperationException("GitHub issue creation response did not contain a positive issue number.");
+            throw new JsonException("GitHub issue creation response did not contain a positive issue number.");
         }
 
-        return issueNumber;
+        return (issueNumber, null);
     }
 
     private (string Path, JsonObject Root, JsonObject GitHub) PrepareIssueMapping(RoadmapItemSnapshot item)
@@ -397,11 +559,11 @@ internal sealed class GitHubRoadmapSyncer
         var lockPath = Path.Combine(_project.RootPath, item.Path) + ".lock";
         try
         {
-            return new FileStream(lockPath, FileMode.CreateNew, FileAccess.ReadWrite, FileShare.None, 1, FileOptions.DeleteOnClose);
+            return new FileStream(lockPath, FileMode.CreateNew, FileAccess.ReadWrite, FileShare.None, 1, FileOptions.None);
         }
         catch (IOException exception)
         {
-            throw new InvalidOperationException($"GitHub issue creation is already in progress for {item.Id}. If no sync is running, remove stale lock file {lockPath} and retry.", exception);
+            throw new InvalidOperationException($"GitHub issue creation is already in progress for {item.Id}. If no sync is running, verify whether an issue was created, then remove stale lock file {lockPath} and retry.", exception);
         }
     }
 
@@ -468,19 +630,12 @@ internal sealed class GitHubRoadmapSyncer
             throw new InvalidOperationException($"GitHub issue mapping points to a pull request: #{issueNumber}.");
         }
 
-        throw CreateGitHubFailure("pull request check", issueNumber, response.StatusCode);
+        throw CreateGitHubFailure("pull request check", response.StatusCode, issueNumber);
     }
 
-    private static InvalidOperationException CreateGitHubFailure(string operation, int issueNumber, HttpStatusCode statusCode)
+    private static InvalidOperationException CreateGitHubFailure(string operation, HttpStatusCode statusCode, int? issueNumber = null)
     {
-        return new InvalidOperationException($"GitHub {operation} failed for #{issueNumber}: HTTP {(int)statusCode}{GetGitHubFailureHint(statusCode)}.");
-    }
-
-    private static InvalidOperationException CreateGitHubCreationFailure(HttpStatusCode statusCode) =>
-        new($"GitHub issue creation failed: HTTP {(int)statusCode}{GetGitHubFailureHint(statusCode)}.");
-
-    private static string GetGitHubFailureHint(HttpStatusCode statusCode) =>
-        statusCode switch
+        var hint = statusCode switch
         {
             HttpStatusCode.Unauthorized => " (authentication required)",
             HttpStatusCode.Forbidden => " (access denied or rate limited)",
@@ -489,6 +644,10 @@ internal sealed class GitHubRoadmapSyncer
             HttpStatusCode.TooManyRequests => " (rate limited)",
             _ => string.Empty
         };
+
+        var issueSuffix = issueNumber is null ? string.Empty : $" for #{issueNumber.Value}";
+        return new InvalidOperationException($"GitHub {operation} failed{issueSuffix}: HTTP {(int)statusCode}{hint}.");
+    }
 
     private static string BuildLabelPayload(IReadOnlyList<string> labels)
     {
