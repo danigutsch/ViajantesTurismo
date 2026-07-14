@@ -41,4 +41,4 @@ env \
     OpenApi__BuildGeneration=true \
     Authentication__Authority=https://openapi.invalid \
     Authentication__Issuer=https://openapi.invalid \
-    dotnet build --no-restore "${project}" "-p:${property}=true"
+    dotnet build "${project}" "-p:${property}=true"
