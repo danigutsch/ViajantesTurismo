@@ -598,6 +598,37 @@ public sealed class RepoConfigToolApplicationTests
         errorText.ShouldContain("integrations.github.repository must be shaped as owner/repository when GitHub sync is enabled.", StringComparison.Ordinal);
     }
 
+    [Theory]
+    [InlineData("[]", "integrations.github.projectV2 must be a JSON object.")]
+    [InlineData("{}", "integrations.github.projectV2.id must be a non-empty string.")]
+    [InlineData("{\"id\":\"\",\"owner\":\"owner\",\"number\":1}", "integrations.github.projectV2.id must be a non-empty string.")]
+    [InlineData("{\"id\":1,\"owner\":\"owner\",\"number\":1}", "integrations.github.projectV2.id must be a non-empty string.")]
+    [InlineData("{\"id\":\"project\",\"owner\":\"\",\"number\":1}", "integrations.github.projectV2.owner must be a valid GitHub owner.")]
+    [InlineData("{\"id\":\"project\",\"owner\":\"invalid owner\",\"number\":1}", "integrations.github.projectV2.owner must be a valid GitHub owner.")]
+    [InlineData("{\"id\":\"project\",\"owner\":1,\"number\":1}", "integrations.github.projectV2.owner must be a valid GitHub owner.")]
+    [InlineData("{\"id\":\"project\",\"owner\":\"owner\",\"number\":0}", "integrations.github.projectV2.number must be a positive integer.")]
+    [InlineData("{\"id\":\"project\",\"owner\":\"owner\",\"number\":-1}", "integrations.github.projectV2.number must be a positive integer.")]
+    [InlineData("{\"id\":\"project\",\"owner\":\"owner\",\"number\":\"1\"}", "integrations.github.projectV2.number must be a positive integer.")]
+    public async Task Verify_reports_invalid_github_project_target_configuration(string projectV2, string expectedError)
+    {
+        // Arrange
+        using var workspace = new TemporaryRepoConfigWorkspace();
+        using var initOutput = new StringWriter(CultureInfo.InvariantCulture);
+        using var initError = new StringWriter(CultureInfo.InvariantCulture);
+        using var verifyOutput = new StringWriter(CultureInfo.InvariantCulture);
+        using var verifyError = new StringWriter(CultureInfo.InvariantCulture);
+        (await RepoConfigToolApplication.Run(["init", "--root", workspace.RootPath], initOutput, initError, workspace.RootPath, TestContext.Current.CancellationToken)).ShouldBe(0);
+        var configText = workspace.ReadFile("roadmap/config.json");
+        workspace.WriteFile("roadmap/config.json", configText.Replace("\"enabled\": false", $"\"enabled\": true,\n      \"repository\": \"owner/repository\",\n      \"projectV2\": {projectV2}", StringComparison.Ordinal));
+
+        // Act
+        var exitCode = await RepoConfigToolApplication.Run(["verify", "--root", workspace.RootPath], verifyOutput, verifyError, workspace.RootPath, TestContext.Current.CancellationToken);
+
+        // Assert
+        exitCode.ShouldBe(1);
+        verifyError.ToString().ShouldContain(expectedError, StringComparison.Ordinal);
+    }
+
     [Fact]
     public void GitHub_repository_name_accepts_single_hyphenated_owner()
     {
@@ -1578,6 +1609,76 @@ public sealed class RepoConfigToolApplicationTests
 
         // Assert
         itemId.ShouldBeNull();
+    }
+
+    [Fact]
+    public async Task GitHub_project_target_rejects_mismatched_remote_number()
+    {
+        using var handler = new TestHttpMessageHandler();
+        handler.EnqueueJson(HttpStatusCode.OK, "{ \"data\": { \"node\": { \"id\": \"project-id\", \"number\": 2, \"owner\": { \"login\": \"owner\" } } } }");
+        using var httpClient = new HttpClient(handler);
+        var client = new GitHubProjectClient(httpClient);
+        Func<Task> action = () => client.VerifyTarget(new GitHubProjectTarget("project-id", "owner", 1), TestContext.Current.CancellationToken);
+
+        var exception = await action.ShouldThrow<InvalidOperationException>();
+
+        exception.Message.ShouldBe("Configured GitHub Project target could not be verified.");
+    }
+
+    [Fact]
+    public async Task GitHub_project_client_rejects_missing_issue_node_id()
+    {
+        using var handler = new TestHttpMessageHandler();
+        handler.EnqueueJson(HttpStatusCode.OK, "{ \"data\": { \"repository\": { \"issue\": {} } } }");
+        using var httpClient = new HttpClient(handler);
+        var client = new GitHubProjectClient(httpClient);
+        Func<Task> action = () => client.GetIssueNodeId("owner/repository", 1, TestContext.Current.CancellationToken);
+
+        var exception = await action.ShouldThrow<InvalidOperationException>();
+
+        exception.Message.ShouldBe("GitHub issue mapping could not be found: #1.");
+    }
+
+    [Fact]
+    public async Task GitHub_project_client_rejects_http_failure()
+    {
+        using var handler = new TestHttpMessageHandler();
+        handler.EnqueueJson(HttpStatusCode.Forbidden, "{}");
+        using var httpClient = new HttpClient(handler);
+        var client = new GitHubProjectClient(httpClient);
+        Func<Task> action = () => client.GetFields(new GitHubProjectTarget("project-id", "owner", 1), TestContext.Current.CancellationToken);
+
+        var exception = await action.ShouldThrow<InvalidOperationException>();
+
+        exception.Message.ShouldBe("GitHub Project request failed with HTTP 403.");
+    }
+
+    [Fact]
+    public async Task GitHub_project_client_rejects_missing_field_values()
+    {
+        using var handler = new TestHttpMessageHandler();
+        handler.EnqueueJson(HttpStatusCode.OK, "{ \"data\": { \"node\": {} } }");
+        using var httpClient = new HttpClient(handler);
+        var client = new GitHubProjectClient(httpClient);
+        Func<Task> action = () => client.GetFieldValues("item-id", TestContext.Current.CancellationToken);
+
+        var exception = await action.ShouldThrow<InvalidOperationException>();
+
+        exception.Message.ShouldBe("GitHub Project field values could not be read.");
+    }
+
+    [Fact]
+    public async Task GitHub_project_client_rejects_missing_project_items()
+    {
+        using var handler = new TestHttpMessageHandler();
+        handler.EnqueueJson(HttpStatusCode.OK, "{ \"data\": { \"node\": {} } }");
+        using var httpClient = new HttpClient(handler);
+        var client = new GitHubProjectClient(httpClient);
+        Func<Task> action = () => client.FindItemId(new GitHubProjectTarget("project-id", "owner", 1), "issue-id", TestContext.Current.CancellationToken);
+
+        var exception = await action.ShouldThrow<InvalidOperationException>();
+
+        exception.Message.ShouldBe("GitHub Project items could not be read.");
     }
 
     [Fact]
