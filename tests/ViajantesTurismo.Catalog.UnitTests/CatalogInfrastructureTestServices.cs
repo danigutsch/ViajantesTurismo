@@ -39,6 +39,22 @@ internal static class CatalogInfrastructureTestServices
         return new CatalogInfrastructureScenario(builder.Services.BuildServiceProvider());
     }
 
+    public static CatalogInfrastructureScenario CreateOpenApiBuildGenerationScenario()
+    {
+        var builder = Host.CreateApplicationBuilder();
+        builder.Configuration.AddInMemoryCollection(new Dictionary<string, string?>
+        {
+            [$"ConnectionStrings:{ResourceNames.CatalogDatabase}"] = "Host=localhost;Database=viajantes;Username=test;Password=test",
+            [$"{ClamAvMediaUploadScannerOptions.SectionName}:Host"] = "clamav",
+            [$"{ClamAvMediaUploadScannerOptions.SectionName}:Port"] = "3310",
+            ["OpenApi:BuildGeneration"] = bool.TrueString
+        });
+
+        builder.AddCatalogInfrastructure();
+
+        return new CatalogInfrastructureScenario(builder.Services.BuildServiceProvider());
+    }
+
     public static CatalogInfrastructureScenario CreateConfiguredDevelopmentScenario()
     {
         var builder = Host.CreateApplicationBuilder(new HostApplicationBuilderSettings

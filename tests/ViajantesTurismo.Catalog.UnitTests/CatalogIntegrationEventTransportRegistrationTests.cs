@@ -75,6 +75,19 @@ public sealed class CatalogIntegrationEventTransportRegistrationTests
     }
 
     [Fact]
+    public void OpenApi_build_generation_infrastructure_does_not_start_catalog_outbox_relay()
+    {
+        // Arrange
+        using var scenario = CatalogInfrastructureTestServices.CreateOpenApiBuildGenerationScenario();
+
+        // Act
+        var includesCatalogOutboxRelay = scenario.ContainsHostedService<IntegrationEventOutboxRelayHostedService<CatalogDbContext>>();
+
+        // Assert
+        includesCatalogOutboxRelay.ShouldBeFalse();
+    }
+
+    [Fact]
     public void Seeding_infrastructure_does_not_start_catalog_projection_workers()
     {
         // Arrange
