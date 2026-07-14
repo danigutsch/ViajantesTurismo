@@ -170,7 +170,7 @@ public sealed partial class AppHostOrchestrationTests
             "ViajantesTurismo.Resources",
             "HostedProfile.cs"));
         var adminProfileEnd = compositionText.IndexOf("if (profile is HostedProfile.Admin)", StringComparison.Ordinal);
-        var adminProfileComposition = compositionText[..adminProfileEnd];
+        var adminProfileComposition = adminProfileEnd > 0 ? compositionText[..adminProfileEnd] : string.Empty;
 
         // Act
         var includesOnlyAdminDependencies = adminProfileComposition.Contains("var includeDeveloperTooling = profile.IncludesDeveloperTooling()", StringComparison.Ordinal)
