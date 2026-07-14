@@ -37,8 +37,13 @@ case "${service}" in
         ;;
 esac
 
+dotnet_build_arguments=("${project}" "-p:${property}=true")
+if [[ "${CI:-}" == "true" ]]; then
+    dotnet_build_arguments=(--no-restore "${dotnet_build_arguments[@]}")
+fi
+
 env \
     OpenApi__BuildGeneration=true \
     Authentication__Authority=https://openapi.invalid \
     Authentication__Issuer=https://openapi.invalid \
-    dotnet build "${project}" "-p:${property}=true"
+    dotnet build "${dotnet_build_arguments[@]}"

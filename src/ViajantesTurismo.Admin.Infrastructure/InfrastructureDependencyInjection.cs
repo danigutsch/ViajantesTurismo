@@ -21,6 +21,8 @@ namespace ViajantesTurismo.Admin.Infrastructure;
 /// </summary>
 public static class InfrastructureDependencyInjection
 {
+    private const string OpenApiBuildGenerationConfigurationKey = "OpenApi:BuildGeneration";
+
     /// <summary>
     /// Adds the Infrastructure layer services to the application builder.
     /// </summary>
@@ -31,6 +33,11 @@ public static class InfrastructureDependencyInjection
         where TApplicationBuilder : IHostApplicationBuilder
     {
         ArgumentNullException.ThrowIfNull(builder);
+
+        var isOpenApiBuildGeneration = string.Equals(
+            builder.Configuration[OpenApiBuildGenerationConfigurationKey],
+            bool.TrueString,
+            StringComparison.OrdinalIgnoreCase);
 
         if (builder.Environment.IsDevelopment())
         {
@@ -46,13 +53,16 @@ public static class InfrastructureDependencyInjection
         builder.Services.AddScoped<ITourStore, TourStore>();
         builder.Services.AddScoped<ICustomerStore, CustomerStore>();
         builder.Services.AddScoped<IDocumentStore, DocumentStore>();
-        builder.Services.AddHostedService<DocumentDraftRetentionHostedService>();
         builder.Services.AddIntegrationEventContract(
             AdminTourCreatedIntegrationEvent.EventType,
             AdminIntegrationEventJsonContext.Default.AdminTourCreatedIntegrationEvent);
         builder.Services.AddIntegrationEventOutbox<AdminWriteDbContext>();
-        builder.Services.AddIntegrationEventOutboxRelay<AdminWriteDbContext>();
-        builder.Services.AddPostgreSqlIntegrationEventOutboxRelayAtomicClaims<AdminWriteDbContext>();
+        if (!isOpenApiBuildGeneration)
+        {
+            builder.Services.AddHostedService<DocumentDraftRetentionHostedService>();
+            builder.Services.AddIntegrationEventOutboxRelay<AdminWriteDbContext>();
+            builder.Services.AddPostgreSqlIntegrationEventOutboxRelayAtomicClaims<AdminWriteDbContext>();
+        }
         builder.Services.AddPostgreSqlIntegrationEventTransportProducer<AdminWriteDbContext>(IntegrationEventConsumerNames.Catalog);
 
         return builder;

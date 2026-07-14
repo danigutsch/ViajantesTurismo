@@ -8,6 +8,7 @@ using ViajantesTurismo.Admin.Application;
 using ViajantesTurismo.Admin.Domain.Customers;
 using ViajantesTurismo.Admin.Domain.Tours;
 using ViajantesTurismo.Admin.Infrastructure;
+using ViajantesTurismo.Admin.Infrastructure.Documents;
 using ViajantesTurismo.Admin.Testing.Fakes;
 using ViajantesTurismo.Admin.UnitTests.Application.IntegrationEvents;
 
@@ -78,7 +79,22 @@ public sealed class AdminInfrastructureModuleTests
         tourStore.ShouldBeOfType<TourStore>();
         customerStore.ShouldBeOfType<CustomerStore>();
         outbox.ShouldBeOfType<EfIntegrationEventOutbox<AdminWriteDbContext>>();
+        hostedServices.ShouldContain(service => service is DocumentDraftRetentionHostedService);
         hostedServices.ShouldContain(service => (service is IntegrationEventOutboxRelayHostedService<AdminWriteDbContext>));
+    }
+
+    [Fact]
+    public void OpenApi_build_generation_does_not_start_admin_background_workers()
+    {
+        // Arrange
+        using var serviceProvider = AdminInfrastructureModuleTestServices.CreateWithOpenApiBuildGenerationInfrastructureModule();
+
+        // Act
+        var hostedServices = serviceProvider.GetServices<IHostedService>().ToArray();
+
+        // Assert
+        hostedServices.ShouldNotContain(service => service is DocumentDraftRetentionHostedService);
+        hostedServices.ShouldNotContain(service => service is IntegrationEventOutboxRelayHostedService<AdminWriteDbContext>);
     }
 
     [Fact]

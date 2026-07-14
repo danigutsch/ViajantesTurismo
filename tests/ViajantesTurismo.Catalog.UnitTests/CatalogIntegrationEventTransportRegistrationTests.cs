@@ -22,6 +22,19 @@ public sealed class CatalogIntegrationEventTransportRegistrationTests
     }
 
     [Fact]
+    public void Catalog_api_infrastructure_starts_the_catalog_outbox_relay()
+    {
+        // Arrange
+        using var scenario = CatalogInfrastructureTestServices.CreateScenario();
+
+        // Act
+        var includesCatalogOutboxRelay = scenario.ContainsHostedService<IntegrationEventOutboxRelayHostedService<CatalogDbContext>>();
+
+        // Assert
+        includesCatalogOutboxRelay.ShouldBeTrue();
+    }
+
+    [Fact]
     public void Hosted_transport_mode_registers_the_admin_transport_consumer()
     {
         // Arrange
