@@ -35,6 +35,22 @@ public sealed class EfBrandingSettingsStoreTests
     }
 
     [Fact]
+    public void Design_time_factory_configures_branding_postgresql_provider()
+    {
+        // Arrange
+        var factory = new BrandingDbContextDesignTimeFactory();
+
+        // Act
+        using var dbContext = factory.CreateDbContext([]);
+        var providerName = dbContext.Database.ProviderName;
+        var connectionString = dbContext.Database.GetDbConnection().ConnectionString;
+
+        // Assert
+        providerName.ShouldBe("Npgsql.EntityFrameworkCore.PostgreSQL");
+        connectionString.ShouldBe("Host=localhost;Database=branding-design-time");
+    }
+
+    [Fact]
     public async Task GetSettings_returns_null_when_no_settings_have_been_saved()
     {
         // Arrange

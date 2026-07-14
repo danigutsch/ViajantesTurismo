@@ -5,6 +5,8 @@ namespace ViajantesTurismo.Admin.IntegrationTests.Infrastructure;
 
 public sealed class PostgreSqlTestDatabase : IAsyncDisposable
 {
+    private static readonly TimeSpan DefaultDisposalTimeout = TimeSpan.FromSeconds(30);
+
     private readonly string _administrativeConnectionString;
     private readonly string _connectionString;
     private readonly string _databaseName;
@@ -69,10 +71,11 @@ public sealed class PostgreSqlTestDatabase : IAsyncDisposable
         Justification = "The database name is generated from a fixed ASCII prefix and Guid.NewGuid().ToString(\"N\").")]
     public async ValueTask DisposeAsync()
     {
+        using var timeoutCts = new CancellationTokenSource(DefaultDisposalTimeout);
         await using var dataSource = NpgsqlDataSource.Create(_administrativeConnectionString);
-        await using var connection = await dataSource.OpenConnectionAsync();
+        await using var connection = await dataSource.OpenConnectionAsync(timeoutCts.Token);
         await using var command = connection.CreateCommand();
         command.CommandText = $"DROP DATABASE IF EXISTS \"{_databaseName}\" WITH (FORCE);";
-        _ = await command.ExecuteNonQueryAsync();
+        _ = await command.ExecuteNonQueryAsync(timeoutCts.Token);
     }
 }

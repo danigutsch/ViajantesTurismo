@@ -25,4 +25,27 @@ public sealed class PostgreSqlObservabilityTestSafetyTests
         // Assert
         usesBoundedRoleTeardown.ShouldBeTrue();
     }
+
+    [Fact]
+    public void PostgreSql_test_database_bounds_disposal()
+    {
+        // Arrange
+        var testDatabasePath = Path.Combine(
+            GetRepositoryRoot(),
+            "tests",
+            "ViajantesTurismo.Admin.IntegrationTests",
+            "Infrastructure",
+            "PostgreSqlTestDatabase.cs");
+        var testDatabaseText = File.ReadAllText(testDatabasePath);
+
+        // Act
+        var usesBoundedDisposal = testDatabaseText.Contains(
+                "new CancellationTokenSource(DefaultDisposalTimeout)",
+                StringComparison.Ordinal)
+            && testDatabaseText.Contains("OpenConnectionAsync(timeoutCts.Token)", StringComparison.Ordinal)
+            && testDatabaseText.Contains("ExecuteNonQueryAsync(timeoutCts.Token)", StringComparison.Ordinal);
+
+        // Assert
+        usesBoundedDisposal.ShouldBeTrue();
+    }
 }

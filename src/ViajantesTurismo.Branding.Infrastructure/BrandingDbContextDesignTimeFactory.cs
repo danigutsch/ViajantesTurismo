@@ -12,7 +12,9 @@ internal sealed class BrandingDbContextDesignTimeFactory : IDesignTimeDbContextF
     public BrandingDbContext CreateDbContext(string[] args)
     {
         var options = new DbContextOptionsBuilder<BrandingDbContext>()
-            .UseNpgsql(providerOptions => providerOptions.MigrationsHistoryTable("__EFMigrationsHistory_Branding", schema: "public"))
+            .UseNpgsql(
+                "Host=localhost;Database=branding-design-time",
+                providerOptions => providerOptions.MigrationsHistoryTable("__EFMigrationsHistory_Branding", schema: "public"))
             .Options;
 
         return new BrandingDbContext(options);
