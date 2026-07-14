@@ -9,10 +9,7 @@ var catalogDatabase = databaseServer.AddDatabase(ResourceNames.CatalogDatabase);
 
 var cache = builder.AddCache();
 var clamAv = builder.AddClamAv(ResourceNames.ClamAv);
-var seaweedFsBucket = builder.AddParameter(
-    $"{ResourceNames.SeaweedFs}-bucket",
-    "viajantes-media");
-var seaweedFs = builder.AddSeaweedFs(ResourceNames.SeaweedFs, seaweedFsBucket);
+var seaweedFs = builder.AddMediaObjectStorage();
 
 var migrationService = builder.AddMigrationService(adminDatabase, catalogDatabase);
 
