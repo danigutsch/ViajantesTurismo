@@ -278,22 +278,33 @@ internal sealed class GitHubRoadmapSyncer
         var fields = await projectClient.GetFields(target, cancellationToken).ConfigureAwait(false);
         var values = await projectClient.GetFieldValues(itemId, cancellationToken).ConfigureAwait(false);
         List<string> conflicts = [];
-        await ProjectNumber("Roadmap order", item.Order).ConfigureAwait(false);
-        await ProjectNumber("RICE reach", item.Reach).ConfigureAwait(false);
-        await ProjectNumber("RICE impact", item.Impact).ConfigureAwait(false);
-        await ProjectNumber("RICE confidence", item.Confidence).ConfigureAwait(false);
-        await ProjectNumber("RICE effort", item.Effort).ConfigureAwait(false);
-        await ProjectNumber("RICE score", item.Score).ConfigureAwait(false);
-        await ProjectStatus(item.Status).ConfigureAwait(false);
-        await ProjectText("Roadmap parent", item.Parent ?? string.Empty).ConfigureAwait(false);
-        await ProjectText("Roadmap blocked by", string.Join(", ", item.BlockedBy)).ConfigureAwait(false);
-        await ProjectText("Roadmap tags", string.Join(", ", item.Tags)).ConfigureAwait(false);
+        var projection = new ProjectFieldProjection(projectClient, target, itemId, fields, values, conflicts, cancellationToken);
+        await projection.ProjectNumber("Roadmap order", item.Order).ConfigureAwait(false);
+        await projection.ProjectNumber("RICE reach", item.Reach).ConfigureAwait(false);
+        await projection.ProjectNumber("RICE impact", item.Impact).ConfigureAwait(false);
+        await projection.ProjectNumber("RICE confidence", item.Confidence).ConfigureAwait(false);
+        await projection.ProjectNumber("RICE effort", item.Effort).ConfigureAwait(false);
+        await projection.ProjectNumber("RICE score", item.Score).ConfigureAwait(false);
+        await projection.ProjectStatus(item.Status).ConfigureAwait(false);
+        await projection.ProjectText("Roadmap parent", item.Parent ?? string.Empty).ConfigureAwait(false);
+        await projection.ProjectText("Roadmap blocked by", string.Join(", ", item.BlockedBy)).ConfigureAwait(false);
+        await projection.ProjectText("Roadmap tags", string.Join(", ", item.Tags)).ConfigureAwait(false);
 
         return conflicts;
+    }
 
-        async Task ProjectNumber(string fieldName, decimal value)
+    private sealed class ProjectFieldProjection(
+        GitHubProjectClient projectClient,
+        GitHubProjectTarget target,
+        string itemId,
+        IReadOnlyList<GitHubProjectResponse.ProjectField> fields,
+        IReadOnlyList<GitHubProjectItemResponse.FieldValue> values,
+        List<string> conflicts,
+        CancellationToken cancellationToken)
+    {
+        public async Task ProjectNumber(string fieldName, decimal value)
         {
-            var field = FindCompatibleField(fields, fieldName, "NUMBER", conflicts);
+            var field = FindCompatibleField(fieldName, "NUMBER");
             if (field is null)
             {
                 return;
@@ -313,9 +324,9 @@ internal sealed class GitHubRoadmapSyncer
             }
         }
 
-        async Task ProjectStatus(string status)
+        public async Task ProjectStatus(string status)
         {
-            var field = FindCompatibleField(fields, "Roadmap status", "SINGLE_SELECT", conflicts);
+            var field = FindCompatibleField("Roadmap status", "SINGLE_SELECT");
             if (field is null)
             {
                 return;
@@ -342,9 +353,9 @@ internal sealed class GitHubRoadmapSyncer
             }
         }
 
-        async Task ProjectText(string fieldName, string value)
+        public async Task ProjectText(string fieldName, string value)
         {
-            var field = FindCompatibleField(fields, fieldName, "TEXT", conflicts);
+            var field = FindCompatibleField(fieldName, "TEXT");
             if (field is null)
             {
                 return;
@@ -363,24 +374,20 @@ internal sealed class GitHubRoadmapSyncer
                 await projectClient.UpdateText(target, itemId, fieldId, value, cancellationToken).ConfigureAwait(false);
             }
         }
-    }
 
-    private static GitHubProjectResponse.ProjectField? FindCompatibleField(
-        IReadOnlyList<GitHubProjectResponse.ProjectField> fields,
-        string fieldName,
-        string dataType,
-        List<string> conflicts)
-    {
-        var candidates = fields.Where(field => string.Equals(field.Name, fieldName, StringComparison.Ordinal)).ToArray();
-        if (candidates.Length != 1
-            || string.IsNullOrWhiteSpace(candidates[0].Id)
-            || !string.Equals(candidates[0].DataType, dataType, StringComparison.Ordinal))
+        private GitHubProjectResponse.ProjectField? FindCompatibleField(string fieldName, string dataType)
         {
-            conflicts.Add(fieldName);
-            return null;
-        }
+            var candidates = fields.Where(field => string.Equals(field.Name, fieldName, StringComparison.Ordinal)).ToArray();
+            if (candidates.Length != 1
+                || string.IsNullOrWhiteSpace(candidates[0].Id)
+                || !string.Equals(candidates[0].DataType, dataType, StringComparison.Ordinal))
+            {
+                conflicts.Add(fieldName);
+                return null;
+            }
 
-        return candidates[0];
+            return candidates[0];
+        }
     }
 
     private GitHubSyncResult BuildPreview(RoadmapItemSnapshot[] itemsWithIssues)
