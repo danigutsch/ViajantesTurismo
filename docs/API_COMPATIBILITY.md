@@ -4,8 +4,7 @@ This repository protects two public contract surfaces:
 
 - `SharedKernel.*` package APIs through `PublicAPI.Shipped.txt`, `PublicAPI.Unshipped.txt`,
   and .NET package validation.
-- Admin HTTP contracts through canonical OpenAPI artifacts under
-  `src/ViajantesTurismo.Admin.Contracts.Http/OpenApi/` and contract tests.
+- Admin, Catalog, and Branding HTTP contracts through canonical OpenAPI artifacts and contract tests.
 
 ## Release phase policy
 
@@ -86,15 +85,17 @@ Release-candidate and stable compatibility failures still block even when a mark
 
 ## OpenAPI snapshots
 
-The Admin and Catalog contract tests read the committed OpenAPI artifacts and compare them with
-generated documents. Regenerate the committed artifacts intentionally when HTTP contracts change:
+The Admin, Catalog, and Branding contract tests read the committed OpenAPI artifacts and compare them
+with generated documents. Regenerate the committed artifacts intentionally when HTTP contracts change:
 
-The wrapper scopes placeholder authentication URLs and the build-generation marker to the document
-generator child process. Do not export them for normal application runs or ordinary builds.
+The .NET tool scopes the build-generation marker to the document generator process. The APIs use
+deterministic, no-discovery placeholder authentication only in that process; normal application runs
+remain fail-closed when authentication configuration is missing.
 
 ```bash
-bash scripts/generate-openapi-artifacts.sh admin --refresh
-bash scripts/generate-openapi-artifacts.sh catalog --refresh
+dotnet run --project tools/ViajantesTurismo.OpenApi.Tool -- generate admin --refresh
+dotnet run --project tools/ViajantesTurismo.OpenApi.Tool -- generate catalog --refresh
+dotnet run --project tools/ViajantesTurismo.OpenApi.Tool -- generate branding --refresh
 ```
 
 Then run:
@@ -102,4 +103,5 @@ Then run:
 ```bash
 dotnet test --project tests/ViajantesTurismo.Admin.ContractTests/ViajantesTurismo.Admin.ContractTests.csproj --filter-class "*OpenApi*"
 dotnet test --project tests/ViajantesTurismo.Catalog.ContractTests/ViajantesTurismo.Catalog.ContractTests.csproj --filter-class "*OpenApi*"
+dotnet test --project tests/ViajantesTurismo.Branding.ContractTests/ViajantesTurismo.Branding.ContractTests.csproj --filter-class "*OpenApi*"
 ```

@@ -1,4 +1,6 @@
+using System.Reflection;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using SharedKernel.DomainEvents.EntityFrameworkCore;
@@ -21,6 +23,7 @@ namespace ViajantesTurismo.Admin.Infrastructure;
 /// </summary>
 public static class InfrastructureDependencyInjection
 {
+    private const string OpenApiDocumentGeneratorAssemblyName = "GetDocument.Insider";
     private const string OpenApiBuildGenerationConfigurationKey = "OpenApi:BuildGeneration";
 
     /// <summary>
@@ -34,38 +37,9 @@ public static class InfrastructureDependencyInjection
     {
         ArgumentNullException.ThrowIfNull(builder);
 
-        var isOpenApiBuildGeneration = string.Equals(
-            builder.Configuration[OpenApiBuildGenerationConfigurationKey],
-            bool.TrueString,
-            StringComparison.OrdinalIgnoreCase);
-
-        if (builder.Environment.IsDevelopment())
-        {
-            builder.Services.AddDbContextDevelopmentDiagnostics<AdminWriteDbContext>();
-            builder.Services.AddDbContextDevelopmentDiagnostics<AdminReadDbContext>();
-        }
-
-        builder.AddAdminWriteDbContext();
-        builder.AddAdminReadDbContext();
-
-        builder.Services.AddScoped<IUnitOfWork>(sp => sp.GetRequiredService<AdminWriteDbContext>());
-        builder.Services.AddScoped<IQueryService, QueryService>();
-        builder.Services.AddScoped<ITourStore, TourStore>();
-        builder.Services.AddScoped<ICustomerStore, CustomerStore>();
-        builder.Services.AddScoped<IDocumentStore, DocumentStore>();
-        builder.Services.AddIntegrationEventContract(
-            AdminTourCreatedIntegrationEvent.EventType,
-            AdminIntegrationEventJsonContext.Default.AdminTourCreatedIntegrationEvent);
-        builder.Services.AddIntegrationEventOutbox<AdminWriteDbContext>();
-        if (!isOpenApiBuildGeneration)
-        {
-            builder.Services.AddHostedService<DocumentDraftRetentionHostedService>();
-            builder.Services.AddIntegrationEventOutboxRelay<AdminWriteDbContext>();
-            builder.Services.AddPostgreSqlIntegrationEventOutboxRelayAtomicClaims<AdminWriteDbContext>();
-        }
-        builder.Services.AddPostgreSqlIntegrationEventTransportProducer<AdminWriteDbContext>(IntegrationEventConsumerNames.Catalog);
-
-        return builder;
+        return AddInfrastructure(
+            builder,
+            addRuntimeBackgroundServices: !IsOpenApiBuildGeneration(builder.Configuration));
     }
 
     /// <summary>
@@ -93,6 +67,59 @@ public static class InfrastructureDependencyInjection
         builder.Services.AddScoped(sp => new Seeder(sp.GetRequiredService<AdminWriteDbContext>()));
 
         return builder;
+    }
+
+    private static TApplicationBuilder AddInfrastructure<TApplicationBuilder>(
+        TApplicationBuilder builder,
+        bool addRuntimeBackgroundServices)
+        where TApplicationBuilder : IHostApplicationBuilder
+    {
+        if (builder.Environment.IsDevelopment())
+        {
+            builder.Services.AddDbContextDevelopmentDiagnostics<AdminWriteDbContext>();
+            builder.Services.AddDbContextDevelopmentDiagnostics<AdminReadDbContext>();
+        }
+
+        builder.AddAdminWriteDbContext();
+        builder.AddAdminReadDbContext();
+
+        builder.Services.AddScoped<IUnitOfWork>(sp => sp.GetRequiredService<AdminWriteDbContext>());
+        builder.Services.AddScoped<IQueryService, QueryService>();
+        builder.Services.AddScoped<ITourStore, TourStore>();
+        builder.Services.AddScoped<ICustomerStore, CustomerStore>();
+        builder.Services.AddScoped<IDocumentStore, DocumentStore>();
+        builder.Services.AddIntegrationEventContract(
+            AdminTourCreatedIntegrationEvent.EventType,
+            AdminIntegrationEventJsonContext.Default.AdminTourCreatedIntegrationEvent);
+        builder.Services.AddIntegrationEventOutbox<AdminWriteDbContext>();
+        builder.Services.AddPostgreSqlIntegrationEventTransportProducer<AdminWriteDbContext>(IntegrationEventConsumerNames.Catalog);
+
+        return builder.AddAdminRuntimeBackgroundServices(addRuntimeBackgroundServices);
+    }
+
+    private static TApplicationBuilder AddAdminRuntimeBackgroundServices<TApplicationBuilder>(
+        this TApplicationBuilder builder,
+        bool addRuntimeBackgroundServices)
+        where TApplicationBuilder : IHostApplicationBuilder
+    {
+        if (addRuntimeBackgroundServices)
+        {
+            builder.Services.AddHostedService<DocumentDraftRetentionHostedService>();
+            builder.Services.AddIntegrationEventOutboxRelay<AdminWriteDbContext>();
+            builder.Services.AddPostgreSqlIntegrationEventOutboxRelayAtomicClaims<AdminWriteDbContext>();
+        }
+
+        return builder;
+    }
+
+    private static bool IsOpenApiBuildGeneration(IConfiguration configuration)
+    {
+        return bool.TryParse(configuration[OpenApiBuildGenerationConfigurationKey], out var enabled)
+               && enabled
+               && string.Equals(
+                   Assembly.GetEntryAssembly()?.GetName().Name,
+                   OpenApiDocumentGeneratorAssemblyName,
+                   StringComparison.Ordinal);
     }
 
     private static void AddAdminWriteDbContext<TApplicationBuilder>(this TApplicationBuilder builder)

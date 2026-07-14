@@ -12,18 +12,18 @@ Ownership rules:
 
 - Source metadata lives in `src/ViajantesTurismo.Catalog.ApiService`.
 - The refresh build generates intermediate documents under `OpenApi/.generated/`.
-- The wrapper scopes placeholder authentication URLs and the build-generation marker to the document
-  generator child process. Do not export them for normal application runs or ordinary builds.
+- The .NET tool scopes the build-generation marker to the document generator process. Deterministic,
+  no-discovery placeholder authentication applies only there; normal application runs stay fail-closed.
 - CI drift checks can generate only intermediate documents with:
 
   ```bash
-  bash scripts/generate-openapi-artifacts.sh catalog
+  dotnet run --project tools/ViajantesTurismo.OpenApi.Tool -- generate catalog
   ```
 
 - Refresh the committed canonical artifacts intentionally with:
 
   ```bash
-  bash scripts/generate-openapi-artifacts.sh catalog --refresh
+  dotnet run --project tools/ViajantesTurismo.OpenApi.Tool -- generate catalog --refresh
   ```
 
 - `OpenApi/.generated/` is intermediate output only.

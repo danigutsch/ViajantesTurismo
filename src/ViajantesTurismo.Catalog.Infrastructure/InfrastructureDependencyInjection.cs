@@ -1,3 +1,4 @@
+using System.Reflection;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -21,6 +22,7 @@ namespace ViajantesTurismo.Catalog.Infrastructure;
 /// </summary>
 public static class InfrastructureDependencyInjection
 {
+    private const string OpenApiDocumentGeneratorAssemblyName = "GetDocument.Insider";
     private const string OpenApiBuildGenerationConfigurationKey = "OpenApi:BuildGeneration";
 
     /// <summary>
@@ -34,10 +36,7 @@ public static class InfrastructureDependencyInjection
     {
         ArgumentNullException.ThrowIfNull(builder);
 
-        var isOpenApiBuildGeneration = string.Equals(
-            builder.Configuration[OpenApiBuildGenerationConfigurationKey],
-            bool.TrueString,
-            StringComparison.OrdinalIgnoreCase);
+        var isOpenApiBuildGeneration = IsOpenApiBuildGeneration(builder.Configuration);
 
         return AddCatalogInfrastructure(builder, addOutboxRelay: !isOpenApiBuildGeneration);
     }
@@ -166,6 +165,16 @@ public static class InfrastructureDependencyInjection
         }
 
         return builder;
+    }
+
+    private static bool IsOpenApiBuildGeneration(IConfiguration configuration)
+    {
+        return bool.TryParse(configuration[OpenApiBuildGenerationConfigurationKey], out var enabled)
+               && enabled
+               && string.Equals(
+                   Assembly.GetEntryAssembly()?.GetName().Name,
+                   OpenApiDocumentGeneratorAssemblyName,
+                   StringComparison.Ordinal);
     }
 
     private static TApplicationBuilder AddCatalogIntegrationEventTransportContext<TApplicationBuilder>(this TApplicationBuilder builder)

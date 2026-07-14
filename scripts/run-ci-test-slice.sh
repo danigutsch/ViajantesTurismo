@@ -186,12 +186,16 @@ build_projects() {
 prepare_openapi_artifacts() {
     local project_path
     local prepare_admin=false
+    local prepare_branding=false
     local prepare_catalog=false
 
     for project_path in "$@"; do
         case "${project_path}" in
             tests/ViajantesTurismo.Admin.ContractTests/ViajantesTurismo.Admin.ContractTests.csproj)
                 prepare_admin=true
+                ;;
+            tests/ViajantesTurismo.Branding.ContractTests/ViajantesTurismo.Branding.ContractTests.csproj)
+                prepare_branding=true
                 ;;
             tests/ViajantesTurismo.Catalog.ContractTests/ViajantesTurismo.Catalog.ContractTests.csproj)
                 prepare_catalog=true
@@ -201,11 +205,15 @@ prepare_openapi_artifacts() {
     done
 
     if [[ "${prepare_admin}" == "true" ]]; then
-        bash scripts/generate-openapi-artifacts.sh admin || return $?
+        dotnet run --project tools/ViajantesTurismo.OpenApi.Tool --no-restore -- generate admin || return $?
+    fi
+
+    if [[ "${prepare_branding}" == "true" ]]; then
+        dotnet run --project tools/ViajantesTurismo.OpenApi.Tool --no-restore -- generate branding || return $?
     fi
 
     if [[ "${prepare_catalog}" == "true" ]]; then
-        bash scripts/generate-openapi-artifacts.sh catalog || return $?
+        dotnet run --project tools/ViajantesTurismo.OpenApi.Tool --no-restore -- generate catalog || return $?
     fi
 
     return 0
@@ -507,6 +515,7 @@ main() {
     for openapi_project_path in "${projects[@]}"; do
         case "${openapi_project_path}" in
             tests/ViajantesTurismo.Admin.ContractTests/ViajantesTurismo.Admin.ContractTests.csproj | \
+                tests/ViajantesTurismo.Branding.ContractTests/ViajantesTurismo.Branding.ContractTests.csproj | \
                 tests/ViajantesTurismo.Catalog.ContractTests/ViajantesTurismo.Catalog.ContractTests.csproj)
                 openapi_artifacts_required=true
                 ;;

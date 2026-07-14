@@ -1,5 +1,6 @@
 using SharedKernel.AspNetCore;
 using SharedKernel.Branding;
+using SharedKernel.OpenApi;
 using ViajantesTurismo.Admin.ApiService;
 using ViajantesTurismo.Admin.ApiService.Bookings;
 using ViajantesTurismo.Admin.ApiService.Customers;
@@ -14,6 +15,7 @@ const string ApiRobotsTxt = "User-agent: *\nDisallow: /";
 
 var builder = WebApplication.CreateSlimBuilder(args);
 
+builder.Services.AddOpenApiBuildGenerationDataProtection(builder.Configuration);
 builder.WebHost.UseKestrelHttpsConfiguration();
 
 builder.AddServiceDefaults();
@@ -55,10 +57,7 @@ app.UseExceptionHandler();
 
 app.UseForwardedHeaders();
 
-if (app.Environment.IsDevelopment())
-{
-    app.MapOpenApi();
-}
+app.MapConfiguredOpenApi();
 
 app.UseCors(AdminSecurityBaseline.CorsPolicyName);
 
