@@ -205,15 +205,15 @@ prepare_openapi_artifacts() {
     done
 
     if [[ "${prepare_admin}" == "true" ]]; then
-        dotnet run --project tools/ViajantesTurismo.OpenApi.Tool --no-restore -- generate admin || return $?
+        CI=true dotnet run --project tools/ViajantesTurismo.OpenApi.Tool --no-restore -- generate admin || return $?
     fi
 
     if [[ "${prepare_branding}" == "true" ]]; then
-        dotnet run --project tools/ViajantesTurismo.OpenApi.Tool --no-restore -- generate branding || return $?
+        CI=true dotnet run --project tools/ViajantesTurismo.OpenApi.Tool --no-restore -- generate branding || return $?
     fi
 
     if [[ "${prepare_catalog}" == "true" ]]; then
-        dotnet run --project tools/ViajantesTurismo.OpenApi.Tool --no-restore -- generate catalog || return $?
+        CI=true dotnet run --project tools/ViajantesTurismo.OpenApi.Tool --no-restore -- generate catalog || return $?
     fi
 
     return 0
