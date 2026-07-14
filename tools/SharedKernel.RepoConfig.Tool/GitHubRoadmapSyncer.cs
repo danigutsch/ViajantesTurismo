@@ -121,7 +121,7 @@ internal sealed class GitHubRoadmapSyncer
                 messages.Add($"projected {repository}#{item.GitHubIssue} to GitHub Project {projectTarget!.Number}");
                 foreach (var conflict in conflicts)
                 {
-                    messages.Add($"drift: {repository}#{item.GitHubIssue} Project field {conflict} differs from roadmap source");
+                    messages.Add($"drift: {repository}#{item.GitHubIssue} Project field {conflict} cannot be projected from roadmap source");
                 }
             }
 

@@ -1511,6 +1511,43 @@ public sealed class RepoConfigToolApplicationTests
     }
 
     [Fact]
+    public async Task GitHub_project_client_finds_existing_item_on_a_later_page()
+    {
+        // Arrange
+        using var handler = new TestHttpMessageHandler();
+        handler.EnqueueJson(HttpStatusCode.OK, "{ \"data\": { \"node\": { \"items\": { \"nodes\": [{ \"id\": \"other-item\", \"content\": { \"id\": \"other-issue\" } }], \"pageInfo\": { \"hasNextPage\": true, \"endCursor\": \"cursor-1\" } } } } }");
+        handler.EnqueueJson(HttpStatusCode.OK, "{ \"data\": { \"node\": { \"items\": { \"nodes\": [{ \"id\": \"target-item\", \"content\": { \"id\": \"target-issue\" } }], \"pageInfo\": { \"hasNextPage\": false, \"endCursor\": null } } } } }");
+        using var httpClient = new HttpClient(handler);
+        var client = new GitHubProjectClient(httpClient);
+        var target = new GitHubProjectTarget("project-id", "owner", 1);
+
+        // Act
+        var itemId = await client.FindItemId(target, "target-issue", TestContext.Current.CancellationToken);
+
+        // Assert
+        itemId.ShouldBe("target-item");
+        handler.Requests.Count.ShouldBe(2);
+        handler.Requests[1].Body.ShouldContain("cursor-1", StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public async Task GitHub_project_target_accepts_case_insensitive_owner_login()
+    {
+        // Arrange
+        using var handler = new TestHttpMessageHandler();
+        handler.EnqueueJson(HttpStatusCode.OK, "{ \"data\": { \"node\": { \"id\": \"project-id\", \"number\": 1, \"owner\": { \"login\": \"owner\" } } } }");
+        using var httpClient = new HttpClient(handler);
+        var client = new GitHubProjectClient(httpClient);
+        var target = new GitHubProjectTarget("project-id", "OWNER", 1);
+
+        // Act
+        await client.VerifyTarget(target, TestContext.Current.CancellationToken);
+
+        // Assert
+        handler.Requests.Count.ShouldBe(1);
+    }
+
+    [Fact]
     public async Task Sync_github_apply_adds_mapped_issue_to_configured_project_once()
     {
         // Arrange
