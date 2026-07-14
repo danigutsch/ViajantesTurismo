@@ -102,7 +102,8 @@ Defaults:
 When monitoring is enabled, invalid, missing, or malformed configuration fails startup with a
 connection-string-free validation message. Disabled monitoring registers no collector. A collection
 cycle visits both databases sequentially and emits only aggregate bounded dimensions; it never emits
-a database, schema, or object identifier.
+a database, schema, or object identifier. Each subsequent cycle begins only after the preceding
+cycle completes and the polling interval elapses; missed cadence never queues catch-up cycles.
 
 ## Excluded data and non-goals
 

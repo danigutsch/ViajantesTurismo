@@ -48,4 +48,33 @@ public sealed class PostgreSqlObservabilityTestSafetyTests
         // Assert
         usesBoundedDisposal.ShouldBeTrue();
     }
+
+    [Fact]
+    public void PostgreSql_index_health_hosted_service_delays_after_each_completed_collection_cycle()
+    {
+        // Arrange
+        var hostedServicePath = Path.Combine(
+            GetRepositoryRoot(),
+            "src",
+            "SharedKernel",
+            "SharedKernel.Observability.Npgsql",
+            "PostgreSqlIndexHealthHostedService.cs");
+        var hostedServiceText = File.ReadAllText(hostedServicePath);
+
+        // Act
+        var waitsAfterCompletedCollection = hostedServiceText.Contains(
+            """
+                            foreach (var collector in collectors)
+                            {
+                                _ = await collector.Collect(stoppingToken).ConfigureAwait(false);
+                            }
+
+                            using var timer = new PeriodicTimer(registration.Options.PollingInterval);
+                            _ = await timer.WaitForNextTickAsync(stoppingToken).ConfigureAwait(false);
+            """,
+            StringComparison.Ordinal);
+
+        // Assert
+        waitsAfterCompletedCollection.ShouldBeTrue();
+    }
 }
