@@ -16,7 +16,7 @@ internal sealed class GitHubProjectClient(HttpClient httpClient)
         var project = response.Data?.Node;
         if (!string.Equals(project?.Id, target.Id, StringComparison.Ordinal)
             || project?.Number != target.Number
-            || !string.Equals(project.Owner?.Login, target.Owner, StringComparison.Ordinal))
+            || !string.Equals(project.Owner?.Login, target.Owner, StringComparison.OrdinalIgnoreCase))
         {
             throw new InvalidOperationException("Configured GitHub Project target could not be verified.");
         }

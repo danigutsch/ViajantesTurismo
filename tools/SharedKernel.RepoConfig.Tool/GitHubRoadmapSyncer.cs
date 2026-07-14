@@ -393,7 +393,7 @@ internal sealed class GitHubRoadmapSyncer
         }
         catch (IOException exception)
         {
-            throw new InvalidOperationException($"GitHub issue creation is already in progress for {item.Id}.", exception);
+            throw new InvalidOperationException($"GitHub issue creation is already in progress for {item.Id}. If no sync is running, remove stale lock file {lockPath} and retry.", exception);
         }
     }
 
