@@ -246,7 +246,7 @@ internal static class RepoConfigVerifier
         var dependencies = VerifyStringArray(root, "dependencies", relativePath, issues, required: true);
         var tags = VerifyStringArray(root, "tags", relativePath, issues, required: true);
         var labels = VerifyStringArray(root, "labels", relativePath, issues, required: true);
-        var githubIssue = GetGitHubIssue(root, relativePath, issues);
+        var githubIssue = GetGitHubIssue(root, relativePath, issues, out var createGitHubIssue);
         return string.IsNullOrWhiteSpace(id)
             ? null
             : new RoadmapItemSnapshot(
@@ -267,7 +267,8 @@ internal static class RepoConfigVerifier
                 dependencies,
                 tags,
                 labels,
-                githubIssue);
+                githubIssue,
+                createGitHubIssue);
     }
 
     private static void VerifyScoring(JsonElement root, string relativePath, List<RepoConfigIssue> issues)
@@ -640,8 +641,9 @@ internal static class RepoConfigVerifier
         return result;
     }
 
-    private static int? GetGitHubIssue(JsonElement root, string relativePath, List<RepoConfigIssue> issues)
+    private static int? GetGitHubIssue(JsonElement root, string relativePath, List<RepoConfigIssue> issues, out bool createRequested)
     {
+        createRequested = false;
         if (!root.TryGetProperty("integrations", out var integrations))
         {
             return null;
@@ -669,9 +671,15 @@ internal static class RepoConfigVerifier
             return null;
         }
 
+        if (issue.ValueKind == JsonValueKind.String && string.Equals(issue.GetString(), "create", StringComparison.Ordinal))
+        {
+            createRequested = true;
+            return null;
+        }
+
         if (issue.ValueKind != JsonValueKind.Number || !issue.TryGetInt32(out var issueNumber) || issueNumber < 1)
         {
-            issues.Add(new RepoConfigIssue(relativePath, "integrations.github.issue must be a positive integer."));
+            issues.Add(new RepoConfigIssue(relativePath, "integrations.github.issue must be a positive integer or exact string create."));
             return null;
         }
 
@@ -713,6 +721,44 @@ internal static class RepoConfigVerifier
             {
                 issues.Add(new RepoConfigIssue(relativePath, "integrations.github.repository must be shaped as owner/repository when GitHub sync is enabled."));
             }
+        }
+
+        VerifyGitHubProjectTarget(github, relativePath, issues);
+    }
+
+    private static void VerifyGitHubProjectTarget(JsonElement github, string relativePath, List<RepoConfigIssue> issues)
+    {
+        if (!github.TryGetProperty("projectV2", out var projectV2))
+        {
+            return;
+        }
+
+        if (projectV2.ValueKind != JsonValueKind.Object)
+        {
+            issues.Add(new RepoConfigIssue(relativePath, "integrations.github.projectV2 must be a JSON object."));
+            return;
+        }
+
+        if (!github.TryGetProperty("enabled", out var enabled) || enabled.ValueKind == JsonValueKind.False)
+        {
+            issues.Add(new RepoConfigIssue(relativePath, "integrations.github.projectV2 requires GitHub sync to be enabled."));
+        }
+
+        var id = GetString(projectV2, "id");
+        if (string.IsNullOrWhiteSpace(id))
+        {
+            issues.Add(new RepoConfigIssue(relativePath, "integrations.github.projectV2.id must be a non-empty string."));
+        }
+
+        var owner = GetString(projectV2, "owner");
+        if (string.IsNullOrWhiteSpace(owner) || !GitHubRepositoryName.IsValidOwner(owner))
+        {
+            issues.Add(new RepoConfigIssue(relativePath, "integrations.github.projectV2.owner must be a valid GitHub owner."));
+        }
+
+        if (!projectV2.TryGetProperty("number", out var number) || number.ValueKind != JsonValueKind.Number || !number.TryGetInt32(out var value) || value <= 0)
+        {
+            issues.Add(new RepoConfigIssue(relativePath, "integrations.github.projectV2.number must be a positive integer."));
         }
     }
 

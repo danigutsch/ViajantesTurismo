@@ -20,11 +20,11 @@ internal sealed class TimeAdvancingHttpMessageHandler(FakeTimeProvider timeProvi
     {
         return _requestCount switch
         {
-            1 or 3 => new HttpResponseMessage(HttpStatusCode.NotFound)
+            1 or 4 => new HttpResponseMessage(HttpStatusCode.NotFound)
             {
                 Content = new StringContent("{}")
             },
-            2 => new HttpResponseMessage(HttpStatusCode.OK)
+            3 => new HttpResponseMessage(HttpStatusCode.OK)
             {
                 Content = new TimeAdvancingHttpContent(_timeProvider)
             },
