@@ -68,8 +68,8 @@ public sealed partial class AdminTestArchitectureGuardTests
             "public sealed class ApiFixture : Testing.Integration.IAdminTestHost, IAsyncLifetime",
             StringComparison.Ordinal);
         apiFixtureText.ShouldContain("var testConfiguration = AppHostTestArguments.CreateConfiguration();", StringComparison.Ordinal);
-        apiFixtureText.ShouldContain("HostedProfile.Admin.ToArguments(),", StringComparison.Ordinal);
-        apiFixtureText.ShouldContain("var appHostArguments =", StringComparison.Ordinal);
+        apiFixtureText.ShouldContain("HostedProfile.Admin.ToArguments()", StringComparison.Ordinal);
+        apiFixtureText.ShouldContain("string[] appHostArguments =", StringComparison.Ordinal);
         apiFixtureText.ShouldContain("_app = await AspireTestApplication.Start<ViajantesTurismo_AppHost>(", StringComparison.Ordinal);
         apiFixtureText.ShouldContain("_client = _app.CreateHttpClient(ResourceNames.Api);", StringComparison.Ordinal);
         apiFixtureText.ShouldContain(

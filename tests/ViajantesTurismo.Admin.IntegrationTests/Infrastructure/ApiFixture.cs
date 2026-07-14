@@ -25,7 +25,7 @@ public sealed class ApiFixture : Testing.Integration.IAdminTestHost, IAsyncLifet
     public async ValueTask InitializeAsync()
     {
         var testConfiguration = AppHostTestArguments.CreateConfiguration();
-        var appHostArguments =
+        string[] appHostArguments =
             [.. testConfiguration.Arguments, .. HostedProfile.Admin.ToArguments()];
         _app = await AspireTestApplication.Start<ViajantesTurismo_AppHost>(
             [ResourceNames.Api],

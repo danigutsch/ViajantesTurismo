@@ -12,7 +12,7 @@ using ViajantesTurismo.Management.Security;
 namespace ViajantesTurismo.Management.Security.Migrations
 {
     [DbContext(typeof(ManagementSecurityDbContext))]
-    [Migration("20260713181748_InitialManagementSecurity")]
+    [Migration("20260714160453_InitialManagementSecurity")]
     partial class InitialManagementSecurity
     {
         /// <inheritdoc />

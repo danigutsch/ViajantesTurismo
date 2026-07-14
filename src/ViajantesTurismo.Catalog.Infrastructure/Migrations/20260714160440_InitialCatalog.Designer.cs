@@ -13,7 +13,7 @@ using ViajantesTurismo.Catalog.Infrastructure;
 namespace ViajantesTurismo.Catalog.Infrastructure.Migrations
 {
     [DbContext(typeof(CatalogDbContext))]
-    [Migration("20260712192225_InitialCatalog")]
+    [Migration("20260714160440_InitialCatalog")]
     partial class InitialCatalog
     {
         /// <inheritdoc />

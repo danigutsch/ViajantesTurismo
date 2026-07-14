@@ -12,7 +12,7 @@ using ViajantesTurismo.Admin.Infrastructure;
 namespace ViajantesTurismo.Admin.Infrastructure.Migrations
 {
     [DbContext(typeof(AdminWriteDbContext))]
-    [Migration("20260712192140_InitialAdmin")]
+    [Migration("20260714160424_InitialAdmin")]
     partial class InitialAdmin
     {
         /// <inheritdoc />

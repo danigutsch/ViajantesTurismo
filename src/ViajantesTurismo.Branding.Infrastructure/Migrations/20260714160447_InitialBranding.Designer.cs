@@ -12,7 +12,7 @@ using ViajantesTurismo.Branding.Infrastructure;
 namespace ViajantesTurismo.Branding.Infrastructure.Migrations
 {
     [DbContext(typeof(BrandingDbContext))]
-    [Migration("20260712192240_InitialBranding")]
+    [Migration("20260714160447_InitialBranding")]
     partial class InitialBranding
     {
         /// <inheritdoc />

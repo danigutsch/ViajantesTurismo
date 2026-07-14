@@ -46,24 +46,10 @@ internal static class AppHostComposition
             builder.AddDatabaseObservability(adminDatabase, catalogDatabase, migrationService);
         }
 
-        var catalogApiService = builder.AddCatalogApi(
-            adminDatabase,
-            catalogDatabase,
-            migrationService,
-            clamAv,
-            seaweedFs,
-            identityProvider);
+        var catalogApiService = builder.AddCatalogApi(adminDatabase, catalogDatabase, migrationService, clamAv, seaweedFs, identityProvider);
 
         builder.AddIntegrationEventWorker(adminDatabase, catalogDatabase, migrationService, clamAv, seaweedFs);
-        builder.AddManagementWeb(
-            cache,
-            securityDatabase,
-            migrationService,
-            identityProvider,
-            managementWebClientSecret,
-            apiService,
-            catalogApiService,
-            brandingApiService);
+        builder.AddManagementWeb(cache, securityDatabase, migrationService, identityProvider, managementWebClientSecret, apiService, catalogApiService, brandingApiService);
         builder.AddPublicWeb(catalogApiService, brandingApiService);
         if (includeDeveloperTooling)
         {

@@ -34,7 +34,7 @@ public sealed class AspireSystemTestFixture : IAspireSystemTestFixture, IAsyncLi
     {
         var testConfiguration = AppHostTestArguments.CreateConfiguration();
         ConformanceUserPassword = testConfiguration.ConformanceUserPassword;
-        var appHostArguments =
+        string[] appHostArguments =
             [.. testConfiguration.Arguments, .. HostedProfile.System.ToArguments()];
         _app = await AspireTestApplication.Start<ViajantesTurismo_AppHost>(
             [ResourceNames.Api, ResourceNames.WebApp, ResourceNames.PublicWebApp],
