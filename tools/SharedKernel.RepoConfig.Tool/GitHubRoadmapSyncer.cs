@@ -278,116 +278,90 @@ internal sealed class GitHubRoadmapSyncer
         var fields = await projectClient.GetFields(target, cancellationToken).ConfigureAwait(false);
         var values = await projectClient.GetFieldValues(itemId, cancellationToken).ConfigureAwait(false);
         List<string> conflicts = [];
-        await ProjectNumber(projectClient, target, itemId, fields, "Roadmap order", values, item.Order, conflicts, cancellationToken).ConfigureAwait(false);
-        await ProjectNumber(projectClient, target, itemId, fields, "RICE reach", values, item.Reach, conflicts, cancellationToken).ConfigureAwait(false);
-        await ProjectNumber(projectClient, target, itemId, fields, "RICE impact", values, item.Impact, conflicts, cancellationToken).ConfigureAwait(false);
-        await ProjectNumber(projectClient, target, itemId, fields, "RICE confidence", values, item.Confidence, conflicts, cancellationToken).ConfigureAwait(false);
-        await ProjectNumber(projectClient, target, itemId, fields, "RICE effort", values, item.Effort, conflicts, cancellationToken).ConfigureAwait(false);
-        await ProjectNumber(projectClient, target, itemId, fields, "RICE score", values, item.Score, conflicts, cancellationToken).ConfigureAwait(false);
-        await ProjectStatus(projectClient, target, itemId, fields, values, item.Status, conflicts, cancellationToken).ConfigureAwait(false);
-        await ProjectText(projectClient, target, itemId, fields, "Roadmap parent", values, item.Parent ?? string.Empty, conflicts, cancellationToken).ConfigureAwait(false);
-        await ProjectText(projectClient, target, itemId, fields, "Roadmap blocked by", values, string.Join(", ", item.BlockedBy), conflicts, cancellationToken).ConfigureAwait(false);
-        await ProjectText(projectClient, target, itemId, fields, "Roadmap tags", values, string.Join(", ", item.Tags), conflicts, cancellationToken).ConfigureAwait(false);
+        await ProjectNumber("Roadmap order", item.Order).ConfigureAwait(false);
+        await ProjectNumber("RICE reach", item.Reach).ConfigureAwait(false);
+        await ProjectNumber("RICE impact", item.Impact).ConfigureAwait(false);
+        await ProjectNumber("RICE confidence", item.Confidence).ConfigureAwait(false);
+        await ProjectNumber("RICE effort", item.Effort).ConfigureAwait(false);
+        await ProjectNumber("RICE score", item.Score).ConfigureAwait(false);
+        await ProjectStatus(item.Status).ConfigureAwait(false);
+        await ProjectText("Roadmap parent", item.Parent ?? string.Empty).ConfigureAwait(false);
+        await ProjectText("Roadmap blocked by", string.Join(", ", item.BlockedBy)).ConfigureAwait(false);
+        await ProjectText("Roadmap tags", string.Join(", ", item.Tags)).ConfigureAwait(false);
 
         return conflicts;
-    }
 
-    private static async Task ProjectNumber(
-        GitHubProjectClient client,
-        GitHubProjectTarget target,
-        string itemId,
-        IReadOnlyList<GitHubProjectResponse.ProjectField> fields,
-        string fieldName,
-        IReadOnlyList<GitHubProjectItemResponse.FieldValue> values,
-        decimal value,
-        List<string> conflicts,
-        CancellationToken cancellationToken)
-    {
-        var field = FindCompatibleField(fields, fieldName, "NUMBER", conflicts);
-        if (field is null)
+        async Task ProjectNumber(string fieldName, decimal value)
         {
-            return;
+            var field = FindCompatibleField(fields, fieldName, "NUMBER", conflicts);
+            if (field is null)
+            {
+                return;
+            }
+
+            var fieldId = field.Id ?? throw new InvalidOperationException("GitHub Project field identifier is required.");
+            var existing = values.FirstOrDefault(candidate => string.Equals(candidate.Field?.Id, field.Id, StringComparison.Ordinal));
+            if (existing?.Number is decimal existingNumber && Math.Abs(existingNumber - value) > ProjectNumberTolerance)
+            {
+                conflicts.Add(fieldName);
+                return;
+            }
+
+            if (existing?.Number is null)
+            {
+                await projectClient.UpdateNumber(target, itemId, fieldId, value, cancellationToken).ConfigureAwait(false);
+            }
         }
 
-        var fieldId = field.Id ?? throw new InvalidOperationException("GitHub Project field identifier is required.");
-        var existing = values.FirstOrDefault(candidate => string.Equals(candidate.Field?.Id, field.Id, StringComparison.Ordinal));
-        if (existing?.Number is decimal existingNumber && Math.Abs(existingNumber - value) > ProjectNumberTolerance)
+        async Task ProjectStatus(string status)
         {
-            conflicts.Add(fieldName);
-            return;
+            var field = FindCompatibleField(fields, "Roadmap status", "SINGLE_SELECT", conflicts);
+            if (field is null)
+            {
+                return;
+            }
+
+            var fieldId = field.Id ?? throw new InvalidOperationException("GitHub Project field identifier is required.");
+            var option = field.Options?.FirstOrDefault(candidate => string.Equals(candidate.Name, status, StringComparison.Ordinal));
+            if (string.IsNullOrWhiteSpace(option?.Id))
+            {
+                conflicts.Add("Roadmap status");
+                return;
+            }
+
+            var existing = values.FirstOrDefault(candidate => string.Equals(candidate.Field?.Id, field.Id, StringComparison.Ordinal));
+            if (!string.IsNullOrWhiteSpace(existing?.OptionId) && !string.Equals(existing.OptionId, option.Id, StringComparison.Ordinal))
+            {
+                conflicts.Add("Roadmap status");
+                return;
+            }
+
+            if (string.IsNullOrWhiteSpace(existing?.OptionId))
+            {
+                await projectClient.UpdateSingleSelect(target, itemId, fieldId, option.Id, cancellationToken).ConfigureAwait(false);
+            }
         }
 
-        if (existing?.Number is null)
+        async Task ProjectText(string fieldName, string value)
         {
-            await client.UpdateNumber(target, itemId, fieldId, value, cancellationToken).ConfigureAwait(false);
-        }
-    }
+            var field = FindCompatibleField(fields, fieldName, "TEXT", conflicts);
+            if (field is null)
+            {
+                return;
+            }
 
-    private static async Task ProjectStatus(
-        GitHubProjectClient client,
-        GitHubProjectTarget target,
-        string itemId,
-        IReadOnlyList<GitHubProjectResponse.ProjectField> fields,
-        IReadOnlyList<GitHubProjectItemResponse.FieldValue> values,
-        string status,
-        List<string> conflicts,
-        CancellationToken cancellationToken)
-    {
-        var field = FindCompatibleField(fields, "Roadmap status", "SINGLE_SELECT", conflicts);
-        if (field is null)
-        {
-            return;
-        }
+            var fieldId = field.Id ?? throw new InvalidOperationException("GitHub Project field identifier is required.");
+            var existing = values.FirstOrDefault(candidate => string.Equals(candidate.Field?.Id, field.Id, StringComparison.Ordinal));
+            if (!string.IsNullOrWhiteSpace(existing?.Text) && !string.Equals(existing.Text, value, StringComparison.Ordinal))
+            {
+                conflicts.Add(fieldName);
+                return;
+            }
 
-        var fieldId = field.Id ?? throw new InvalidOperationException("GitHub Project field identifier is required.");
-        var option = field.Options?.FirstOrDefault(candidate => string.Equals(candidate.Name, status, StringComparison.Ordinal));
-        if (string.IsNullOrWhiteSpace(option?.Id))
-        {
-            conflicts.Add("Roadmap status");
-            return;
-        }
-
-        var existing = values.FirstOrDefault(candidate => string.Equals(candidate.Field?.Id, field.Id, StringComparison.Ordinal));
-        if (!string.IsNullOrWhiteSpace(existing?.OptionId) && !string.Equals(existing.OptionId, option.Id, StringComparison.Ordinal))
-        {
-            conflicts.Add("Roadmap status");
-            return;
-        }
-
-        if (string.IsNullOrWhiteSpace(existing?.OptionId))
-        {
-            await client.UpdateSingleSelect(target, itemId, fieldId, option.Id, cancellationToken).ConfigureAwait(false);
-        }
-    }
-
-    private static async Task ProjectText(
-        GitHubProjectClient client,
-        GitHubProjectTarget target,
-        string itemId,
-        IReadOnlyList<GitHubProjectResponse.ProjectField> fields,
-        string fieldName,
-        IReadOnlyList<GitHubProjectItemResponse.FieldValue> values,
-        string value,
-        List<string> conflicts,
-        CancellationToken cancellationToken)
-    {
-        var field = FindCompatibleField(fields, fieldName, "TEXT", conflicts);
-        if (field is null)
-        {
-            return;
-        }
-
-        var fieldId = field.Id ?? throw new InvalidOperationException("GitHub Project field identifier is required.");
-        var existing = values.FirstOrDefault(candidate => string.Equals(candidate.Field?.Id, field.Id, StringComparison.Ordinal));
-        if (!string.IsNullOrWhiteSpace(existing?.Text) && !string.Equals(existing.Text, value, StringComparison.Ordinal))
-        {
-            conflicts.Add(fieldName);
-            return;
-        }
-
-        if (string.IsNullOrWhiteSpace(existing?.Text))
-        {
-            await client.UpdateText(target, itemId, fieldId, value, cancellationToken).ConfigureAwait(false);
+            if (string.IsNullOrWhiteSpace(existing?.Text))
+            {
+                await projectClient.UpdateText(target, itemId, fieldId, value, cancellationToken).ConfigureAwait(false);
+            }
         }
     }
 
