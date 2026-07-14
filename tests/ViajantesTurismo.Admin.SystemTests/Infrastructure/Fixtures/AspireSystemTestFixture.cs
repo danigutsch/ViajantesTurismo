@@ -9,6 +9,8 @@ namespace ViajantesTurismo.Admin.SystemTests.Infrastructure.Fixtures;
 
 public sealed class AspireSystemTestFixture : IAspireSystemTestFixture, IAsyncLifetime, IDisposable
 {
+    private static readonly TimeSpan SystemResourceStartupTimeout = TimeSpan.FromMinutes(3);
+
     private AspireTestApplication? _app;
     private HttpClient? _apiClient;
     private HttpClient? _catalogApiClient;
@@ -36,7 +38,7 @@ public sealed class AspireSystemTestFixture : IAspireSystemTestFixture, IAsyncLi
             [.. testConfiguration.Arguments, .. HostedProfile.System.ToArguments()];
         _app = await AspireTestApplication.Start<ViajantesTurismo_AppHost>(
             [ResourceNames.Api, ResourceNames.WebApp, ResourceNames.PublicWebApp],
-            null,
+            SystemResourceStartupTimeout,
             appHostArguments,
             TestContext.Current.CancellationToken);
 

@@ -56,6 +56,34 @@ public sealed class PostgreSqlIndexHealthCollectorTests(PostgreSqlIndexHealthCol
     }
 
     [Fact]
+    public async Task Monitoring_role_cannot_modify_or_drop_application_data()
+    {
+        // Arrange
+        var operations = new[]
+        {
+            MonitoringRoleDataOperation.Insert,
+            MonitoringRoleDataOperation.Update,
+            MonitoringRoleDataOperation.Delete,
+            MonitoringRoleDataOperation.Drop,
+        };
+
+        // Act
+        foreach (var operation in operations)
+        {
+            Func<Task> execute = () => scenario.AttemptDataMutationAsMonitoringRole(operation, TestContext.Current.CancellationToken);
+            var exception = await execute.ShouldThrow<PostgresException>();
+
+            // Assert
+            exception.SqlState.ShouldBe("42501");
+        }
+
+        var payload = await scenario.GetSamplePayload(TestContext.Current.CancellationToken);
+
+        // Assert
+        payload.ShouldBe("sample");
+    }
+
+    [Fact]
     public async Task Collect_emits_only_bounded_telemetry_tags()
     {
         // Arrange

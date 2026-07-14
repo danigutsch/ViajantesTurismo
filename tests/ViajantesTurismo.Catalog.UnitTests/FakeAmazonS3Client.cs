@@ -21,6 +21,8 @@ internal sealed class FakeAmazonS3Client : AmazonS3Client
 
     public DateTime ListObjectLastModified { get; set; } = DateTime.UtcNow;
 
+    public bool ReturnEmptyListResponse { get; set; }
+
     public override Task<PutBucketResponse> PutBucketAsync(PutBucketRequest request, CancellationToken cancellationToken = default)
     {
         Operations.Add($"PutBucket:{request.BucketName}");
@@ -66,6 +68,11 @@ internal sealed class FakeAmazonS3Client : AmazonS3Client
     public override Task<ListObjectsV2Response> ListObjectsV2Async(ListObjectsV2Request request, CancellationToken cancellationToken = default)
     {
         Operations.Add($"ListObjectsV2:{request.BucketName}/{request.Prefix}/{request.ContinuationToken}");
+        if (ReturnEmptyListResponse)
+        {
+            return Task.FromResult(new ListObjectsV2Response { IsTruncated = false });
+        }
+
         return Task.FromResult(request.ContinuationToken is null
             ? new ListObjectsV2Response
             {

@@ -67,6 +67,34 @@ public sealed class PostgreSqlIndexHealthCollectorScenario(ApiFixture fixture) :
         _ = await command.ExecuteNonQueryAsync(ct);
     }
 
+    [SuppressMessage(
+        "Security",
+        "CA2100:Review SQL queries for security vulnerabilities",
+        Justification = "The operation is an internal enum mapped only to fixed test SQL literals.")]
+    internal async Task AttemptDataMutationAsMonitoringRole(MonitoringRoleDataOperation operation, CancellationToken ct)
+    {
+        await using var connection = await MonitoringDataSource.OpenConnectionAsync(ct);
+        await using var command = connection.CreateCommand();
+        command.CommandText = operation switch
+        {
+            MonitoringRoleDataOperation.Insert => "INSERT INTO index_health_sample (id, payload) VALUES (2, 'unauthorized');",
+            MonitoringRoleDataOperation.Update => "UPDATE index_health_sample SET payload = 'unauthorized' WHERE id = 1;",
+            MonitoringRoleDataOperation.Delete => "DELETE FROM index_health_sample WHERE id = 1;",
+            MonitoringRoleDataOperation.Drop => "DROP TABLE index_health_sample;",
+            _ => throw new ArgumentOutOfRangeException(nameof(operation)),
+        };
+        _ = await command.ExecuteNonQueryAsync(ct);
+    }
+
+    public async Task<string> GetSamplePayload(CancellationToken ct)
+    {
+        var dataSource = _testDataSource ?? throw new InvalidOperationException("The PostgreSQL index-health scenario has not started.");
+        await using var connection = await dataSource.OpenConnectionAsync(ct);
+        await using var command = connection.CreateCommand();
+        command.CommandText = "SELECT payload FROM index_health_sample WHERE id = 1;";
+        return (string)(await command.ExecuteScalarAsync(ct) ?? throw new InvalidOperationException("The sample row is missing."));
+    }
+
     public async ValueTask DisposeAsync()
     {
         var monitoringDataSource = _monitoringDataSource;

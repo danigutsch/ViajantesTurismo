@@ -225,6 +225,28 @@ public sealed partial class AppHostOrchestrationTests
     }
 
     [Fact]
+    public void System_fixture_allows_full_profile_resources_to_start()
+    {
+        // Arrange
+        var fixtureText = File.ReadAllText(Path.Combine(
+            GetRepositoryRoot(),
+            "tests",
+            "ViajantesTurismo.Admin.SystemTests",
+            "Infrastructure",
+            "Fixtures",
+            "AspireSystemTestFixture.cs"));
+
+        // Act
+        var usesDedicatedStartupTimeout = fixtureText.Contains(
+            "SystemResourceStartupTimeout",
+            StringComparison.Ordinal)
+            && fixtureText.Contains("TimeSpan.FromMinutes(3)", StringComparison.Ordinal);
+
+        // Assert
+        usesDedicatedStartupTimeout.ShouldBeTrue();
+    }
+
+    [Fact]
     public void Aspire_test_application_bounds_build_start_and_resource_health_waits()
     {
         // Arrange
