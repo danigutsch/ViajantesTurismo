@@ -201,21 +201,11 @@ prepare_openapi_artifacts() {
     done
 
     if [[ "${prepare_admin}" == "true" ]]; then
-        OpenApi__BuildGeneration=true \
-            Authentication__Authority=https://openapi.invalid \
-            Authentication__Issuer=https://openapi.invalid \
-            dotnet build --no-restore \
-            src/ViajantesTurismo.Admin.ApiService/ViajantesTurismo.Admin.ApiService.csproj \
-            -p:GenerateAdminOpenApiArtifacts=true || return $?
+        bash scripts/generate-openapi-artifacts.sh admin || return $?
     fi
 
     if [[ "${prepare_catalog}" == "true" ]]; then
-        OpenApi__BuildGeneration=true \
-            Authentication__Authority=https://openapi.invalid \
-            Authentication__Issuer=https://openapi.invalid \
-            dotnet build --no-restore \
-            src/ViajantesTurismo.Catalog.ApiService/ViajantesTurismo.Catalog.ApiService.csproj \
-            -p:GenerateCatalogOpenApiArtifacts=true || return $?
+        bash scripts/generate-openapi-artifacts.sh catalog || return $?
     fi
 
     return 0

@@ -89,13 +89,12 @@ Release-candidate and stable compatibility failures still block even when a mark
 The Admin and Catalog contract tests read the committed OpenAPI artifacts and compare them with
 generated documents. Regenerate the committed artifacts intentionally when HTTP contracts change:
 
-The following Bash or Git Bash commands scope placeholder authentication URLs and the build-generation
-marker to the document-generator child process. Do not export them for normal application runs or
-ordinary builds.
+The wrapper scopes placeholder authentication URLs and the build-generation marker to the document
+generator child process. Do not export them for normal application runs or ordinary builds.
 
 ```bash
-env OpenApi__BuildGeneration=true Authentication__Authority=https://openapi.invalid Authentication__Issuer=https://openapi.invalid dotnet build src/ViajantesTurismo.Admin.ApiService/ViajantesTurismo.Admin.ApiService.csproj -p:RefreshAdminOpenApiArtifacts=true
-env OpenApi__BuildGeneration=true Authentication__Authority=https://openapi.invalid Authentication__Issuer=https://openapi.invalid dotnet build src/ViajantesTurismo.Catalog.ApiService/ViajantesTurismo.Catalog.ApiService.csproj -p:RefreshCatalogOpenApiArtifacts=true
+bash scripts/generate-openapi-artifacts.sh admin --refresh
+bash scripts/generate-openapi-artifacts.sh catalog --refresh
 ```
 
 Then run:

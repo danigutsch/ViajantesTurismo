@@ -6,7 +6,7 @@ internal static class CatalogOpenApiSnapshots
 {
     private const string CanonicalArtifactSuffix = ".openapi.json";
     private const string GeneratedArtifactPrefix = "ViajantesTurismo.Catalog.ApiService_";
-    private const string RefreshHint = "Refresh with `env OpenApi__BuildGeneration=true Authentication__Authority=https://openapi.invalid Authentication__Issuer=https://openapi.invalid dotnet build src/ViajantesTurismo.Catalog.ApiService/ViajantesTurismo.Catalog.ApiService.csproj -p:RefreshCatalogOpenApiArtifacts=true` when the HTTP contract changes intentionally.";
+    private const string RefreshHint = "Refresh with `bash scripts/generate-openapi-artifacts.sh catalog --refresh` when the HTTP contract changes intentionally.";
 
     public static void AssertCanonicalArtifactsMatchGeneratedArtifacts()
     {
