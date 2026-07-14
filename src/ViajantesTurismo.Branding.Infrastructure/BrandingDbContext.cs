@@ -12,6 +12,7 @@ public sealed class BrandingDbContext(
     IEnumerable<IDbContextConfiguration<BrandingDbContext>>? configurations = null) : DbContext(options)
 {
     internal const string SchemaName = "branding";
+    internal const string MigrationsHistorySchemaName = "public";
 
     internal DbSet<BrandingSettingsRecord> BrandingSettings => Set<BrandingSettingsRecord>();
 

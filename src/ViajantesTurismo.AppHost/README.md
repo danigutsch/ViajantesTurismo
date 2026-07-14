@@ -250,9 +250,9 @@ configuration path.
 `SharedKernel.Observability.Npgsql` monitor to both `admin-database` and `catalog-database`. It does
 not receive application database references and never falls back to application credentials.
 
-The resource is absent unless `Aspire:Features:DatabaseObservability=true` is configured for the
-AppHost. When it is enabled, configure these AppHost parameters through user secrets or deployment
-configuration:
+The resource is absent unless the AppHost uses the `Full` profile and
+`Aspire:Features:DatabaseObservability=true` is configured. When it is enabled, configure these
+AppHost parameters through user secrets or deployment configuration:
 
 ```text
 Parameters:admin-index-health-connection-string=<least-privilege admin monitoring connection>

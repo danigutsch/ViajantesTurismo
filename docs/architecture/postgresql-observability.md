@@ -8,7 +8,7 @@ host once to both production databases: `admin-database` and `catalog-database`.
 
 Assumptions:
 
-- PostgreSQL 16+
+- Locally tested with PostgreSQL 18.4; compatibility with other PostgreSQL versions is tracked in #1052.
 - a dedicated, least-privilege monitoring `NpgsqlDataSource`
 - PostgreSQL cumulative statistics are reset-dependent and are not workload history
 
