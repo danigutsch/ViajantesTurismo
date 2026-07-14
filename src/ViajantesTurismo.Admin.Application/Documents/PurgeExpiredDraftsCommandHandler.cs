@@ -1,4 +1,3 @@
-using SharedKernel.Results;
 using ViajantesTurismo.Admin.Domain.Documents;
 
 namespace ViajantesTurismo.Admin.Application.Documents;
@@ -9,13 +8,13 @@ public sealed class PurgeExpiredDraftsCommandHandler(
     TimeProvider timeProvider)
 {
     /// <summary>Removes expired unfinalized drafts and returns the count.</summary>
-    public async Task<Result<int>> Handle(PurgeExpiredDraftsCommand command, CancellationToken ct)
+    public async Task<int> Handle(PurgeExpiredDraftsCommand command, CancellationToken ct)
     {
         ArgumentNullException.ThrowIfNull(command);
 
         var now = timeProvider.GetUtcNow().UtcDateTime;
         var removedCount = await documentStore.PurgeExpiredDrafts(now, ct);
 
-        return Result.Ok(removedCount);
+        return removedCount;
     }
 }
