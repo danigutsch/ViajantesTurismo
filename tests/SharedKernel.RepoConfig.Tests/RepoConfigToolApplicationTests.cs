@@ -1558,6 +1558,7 @@ public sealed class RepoConfigToolApplicationTests
         // Assert
         itemId.ShouldBe("target-item");
         handler.Requests.Count.ShouldBe(2);
+        handler.Requests[0].Body.ShouldContain("nodes{id content{... on Issue{id}}}pageInfo{hasNextPage endCursor}", StringComparison.Ordinal);
         handler.Requests[1].Body.ShouldContain("cursor-1", StringComparison.Ordinal);
     }
 

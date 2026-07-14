@@ -55,7 +55,7 @@ internal sealed class GitHubProjectClient(HttpClient httpClient)
 
     public async Task<string?> FindItemId(GitHubProjectTarget target, string issueId, CancellationToken cancellationToken)
     {
-        const string Query = "query($id:ID!,$after:String){node(id:$id){... on ProjectV2{items(first:100,after:$after){nodes{id content{... on Issue{id}} pageInfo{hasNextPage endCursor}}}}}}";
+        const string Query = "query($id:ID!,$after:String){node(id:$id){... on ProjectV2{items(first:100,after:$after){nodes{id content{... on Issue{id}}}pageInfo{hasNextPage endCursor}}}}}";
         string? cursor = null;
         GitHubProjectResponse.ProjectItemConnection items;
         do
