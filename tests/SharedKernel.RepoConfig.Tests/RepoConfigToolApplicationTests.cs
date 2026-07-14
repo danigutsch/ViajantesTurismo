@@ -1548,6 +1548,39 @@ public sealed class RepoConfigToolApplicationTests
     }
 
     [Fact]
+    public async Task GitHub_project_fields_fail_closed_when_graphql_reports_an_error()
+    {
+        // Arrange
+        using var handler = new TestHttpMessageHandler();
+        handler.EnqueueJson(HttpStatusCode.OK, "{ \"errors\": [{ \"type\": \"FORBIDDEN\" }] }");
+        using var httpClient = new HttpClient(handler);
+        var client = new GitHubProjectClient(httpClient);
+
+        // Act
+        Func<Task> action = () => client.GetFields(new GitHubProjectTarget("project-id", "owner", 1), TestContext.Current.CancellationToken);
+        var exception = await action.ShouldThrow<InvalidOperationException>();
+
+        // Assert
+        exception.Message.ShouldBe("GitHub Project request failed (FORBIDDEN).");
+    }
+
+    [Fact]
+    public async Task GitHub_project_client_returns_null_when_item_is_not_present()
+    {
+        // Arrange
+        using var handler = new TestHttpMessageHandler();
+        handler.EnqueueJson(HttpStatusCode.OK, "{ \"data\": { \"node\": { \"items\": { \"nodes\": [], \"pageInfo\": { \"hasNextPage\": false, \"endCursor\": null } } } } }");
+        using var httpClient = new HttpClient(handler);
+        var client = new GitHubProjectClient(httpClient);
+
+        // Act
+        var itemId = await client.FindItemId(new GitHubProjectTarget("project-id", "owner", 1), "missing", TestContext.Current.CancellationToken);
+
+        // Assert
+        itemId.ShouldBeNull();
+    }
+
+    [Fact]
     public async Task Sync_github_apply_adds_mapped_issue_to_configured_project_once()
     {
         // Arrange

@@ -198,7 +198,7 @@ internal sealed class GitHubRoadmapSyncer
     private static async Task ProjectNumber(GitHubProjectClient client, GitHubProjectTarget target, string itemId, GitHubProjectResponse.ProjectField field, IReadOnlyList<GitHubProjectItemResponse.FieldValue> values, decimal value, List<string> conflicts, CancellationToken cancellationToken)
     {
         var existing = values.FirstOrDefault(candidate => string.Equals(candidate.Field?.Id, field.Id, StringComparison.Ordinal));
-        if (existing?.Number is not null && existing.Number != value)
+        if (existing?.Number is not null && Math.Abs(existing.Number.Value - value) > 0.000001m)
         {
             conflicts.Add(field.Name ?? field.Id!);
             return;
