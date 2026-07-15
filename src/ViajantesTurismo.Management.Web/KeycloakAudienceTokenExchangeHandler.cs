@@ -107,7 +107,7 @@ internal sealed class KeycloakAudienceTokenExchangeHandler : DelegatingHandler
             || !string.Equals(authorization.Scheme, "Bearer", StringComparison.OrdinalIgnoreCase)
             || string.IsNullOrWhiteSpace(authorization.Parameter))
         {
-            throw new InvalidOperationException("A managed management access token is required.");
+            throw new InvalidOperationException("A management access token is required.");
         }
 
         return authorization.Parameter;

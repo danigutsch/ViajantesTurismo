@@ -134,6 +134,35 @@ public sealed class AudienceTokenExchangeHandlerTests
         host.Backend.AuthorizationHeaders.ShouldBeEmpty();
     }
 
+    [Theory]
+    [InlineData(null)]
+    [InlineData("Basic source-token")]
+    [InlineData("Bearer ")]
+    public async Task Rejects_an_invalid_source_token_header(string? authorizationHeader)
+    {
+        // Arrange
+        await using var host = AudienceTokenExchangeTestHost.Create();
+        using var exchangeHandler = host.CreateHandler(ApiAudienceNames.Admin);
+        using var client = new HttpMessageInvoker(exchangeHandler, disposeHandler: false);
+        using var request = new HttpRequestMessage(HttpMethod.Get, "https://admin.example.test/");
+        if (authorizationHeader is not null)
+        {
+            request.Headers.TryAddWithoutValidation("Authorization", authorizationHeader);
+        }
+
+        // Act
+        Func<Task> action = async () =>
+        {
+            using var response = await client.SendAsync(request, Xunit.TestContext.Current.CancellationToken);
+        };
+
+        // Assert
+        var exception = await action.ShouldThrow<InvalidOperationException>();
+        exception.Message.ShouldBe("A management access token is required.");
+        host.TokenEndpoint.Requests.ShouldBeEmpty();
+        host.Backend.AuthorizationHeaders.ShouldBeEmpty();
+    }
+
     [Fact]
     public async Task Rejects_an_exchanged_token_cache_entry_transplanted_from_another_source_token()
     {
