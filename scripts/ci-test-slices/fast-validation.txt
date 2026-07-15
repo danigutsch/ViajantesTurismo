@@ -42,3 +42,4 @@ tests/SharedKernel.Idempotency.Tests/SharedKernel.Idempotency.Tests.csproj
 tests/SharedKernel.DomainEvents.Tests/SharedKernel.DomainEvents.Tests.csproj
 tests/SharedKernel.AI.Tests/SharedKernel.AI.Tests.csproj
 tests/ViajantesTurismo.Admin.UiIntegrationTests/ViajantesTurismo.Admin.UiIntegrationTests.csproj
+tests/ViajantesTurismo.DatabaseObservability.Tests/ViajantesTurismo.DatabaseObservability.Tests.csproj
