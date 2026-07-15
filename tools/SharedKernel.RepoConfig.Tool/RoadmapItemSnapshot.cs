@@ -7,12 +7,13 @@ internal sealed record RoadmapItemSnapshot(
     string Type,
     string Status,
     string Theme,
-    int Order,
+    bool IsTriaged,
+    int? Order,
     string? Parent,
-    decimal Reach,
-    decimal Impact,
-    decimal Confidence,
-    decimal Effort,
+    decimal? Reach,
+    decimal? Impact,
+    decimal? Confidence,
+    decimal? Effort,
     IReadOnlyList<string> BlockedBy,
     IReadOnlyList<string> Blocks,
     IReadOnlyList<string> Dependencies,
@@ -21,5 +22,13 @@ internal sealed record RoadmapItemSnapshot(
     int? GitHubIssue,
     bool CreateGitHubIssue)
 {
-    public decimal Score => Effort == 0 ? 0 : Reach * Impact * Confidence / Effort;
+    public decimal? Score =>
+        IsTriaged
+        && Reach is decimal reach
+        && Impact is decimal impact
+        && Confidence is decimal confidence
+        && Effort is decimal effort
+        && effort > 0
+            ? reach * impact * confidence / effort
+            : null;
 }

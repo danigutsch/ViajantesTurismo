@@ -26,20 +26,20 @@ Pass `--root <path>` after the command to target another repository root.
 | Command | Behavior |
 | --- | --- |
 | `init` | Creates missing roadmap directories and default files. Existing files are not overwritten. |
-| `verify` | Checks roadmap structure, config, item metadata, scoring values, and dependencies. |
+| `verify` | Checks roadmap structure, config, item metadata, triage state, scoring values, and dependencies. |
 | `diff` | Reports verification drift using the same checks as `verify`. |
 | `set github.repository <owner/repo>` | Updates the GitHub projection repository in `roadmap/config.json`. |
-| `get next-priority` | Lists open items by explicit order and RICE score. |
-| `get next-unblocked` | Lists open items with no open blockers. Supports `--type <type>`. |
-| `get next-work` | Generates the executable queue: unblocked items that unblock open work first, then other unblocked items by explicit order and RICE score. Supports `--type <type>`. |
+| `get next-priority` | Lists open triaged items by explicit order and RICE score. |
+| `get next-unblocked` | Lists open triaged items with no open blockers. Supports `--type <type>`. |
+| `get next-work` | Generates the executable queue from unblocked triaged items, prioritizing items that unblock open work, then explicit order and RICE score. Supports `--type <type>`. |
 | `get blockers-of <id>` | Lists direct blockers for one roadmap item. |
-| `get next-blockers` | Lists open blockers or items that unblock other work. |
-| `get next-enablers` | Lists unblocked enabler items. |
-| `get low-hanging-fruit` | Lists unblocked low-effort items first. |
-| `get pareto` | Lists the top unblocked high-score slice. |
-| `get blocking-overview` | Lists open items and their open direct blocker IDs. |
+| `get next-blockers` | Lists open triaged blockers or triaged items that unblock other work. |
+| `get next-enablers` | Lists unblocked triaged enabler items. |
+| `get low-hanging-fruit` | Lists unblocked triaged low-effort items first. |
+| `get pareto` | Lists the top unblocked triaged high-score slice. |
+| `get blocking-overview` | Lists open triaged items and their open direct blocker IDs. |
 | `get tags` / `get labels` | Lists tag or label counts. |
-| `get by-tag <tag>` / `get by-label <label>` | Lists items by taxonomy value. |
+| `get by-tag <tag>` / `get by-label <label>` | Lists triaged items by taxonomy value. |
 | `sync github --dry-run` | Previews issue creation and labels. When a Project target is configured, it authenticates to preflight target, schema, membership, field writes, and conflicts without mutation. |
 | `sync github --apply` | Creates requested issues, persists their issue numbers, adds labels, and configures Project membership using `GH_TOKEN` or `GITHUB_TOKEN`. |
 
@@ -56,6 +56,11 @@ with the created issue number.
 
 GitHub sync never modifies issue bodies. Labels are additive. Existing labels and conflicting Project
 field values are report-only drift. The repository remains the source of truth.
+
+An item with `"triage": "untriaged"` omits `order` and `scoring`. The tool accepts it as
+canonical identity and hierarchy, excludes it from executable priority queries and `order.json`,
+and leaves Project numeric priority fields unchanged during sync. Status and text projection remain
+available.
 
 Project membership requires a user-owned Project target in `integrations.github.projectV2` and a
 classic token with `repo` and `project` scopes. Fine-grained tokens cannot currently automate

@@ -4,7 +4,7 @@
   "parent": "RM-001",
   "title": "Create .NET repo config tool skeleton",
   "type": "enabler",
-  "status": "ready",
+  "status": "done",
   "order": 40,
   "theme": "repo-operations",
   "outcome": "A repository-owned .NET tool can initialize, modify, verify, query, and sync roadmap configuration without shell or Python helper scripts.",

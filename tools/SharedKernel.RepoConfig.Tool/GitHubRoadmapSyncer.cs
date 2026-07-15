@@ -1,6 +1,6 @@
+using System.Globalization;
 using System.Net;
 using System.Net.Http.Headers;
-using System.Globalization;
 using System.Text;
 using System.Text.Json;
 using System.Text.Json.Nodes;
@@ -110,7 +110,13 @@ internal sealed class GitHubRoadmapSyncer
     }
 
     private RoadmapItemSnapshot[] GetItemsToSync() =>
-        _project.Items.Where(item => item.GitHubIssue is not null || item.CreateGitHubIssue).OrderByPriority().ToArray();
+        _project.Items
+            .Where(item => item.GitHubIssue is not null || item.CreateGitHubIssue)
+            .OrderBy(item => item.IsTriaged ? 0 : 1)
+            .ThenBy(item => item.Order ?? int.MaxValue)
+            .ThenByDescending(item => item.Score)
+            .ThenBy(item => item.Id, StringComparer.Ordinal)
+            .ToArray();
 
     private static GitHubSyncResult EmptySyncResult() =>
         new(["No roadmap items have GitHub issue mappings or explicit creation requests."]);
@@ -459,12 +465,22 @@ internal sealed class GitHubRoadmapSyncer
 
     private static async Task PopulateProjectFields(ProjectFieldProjection projection, RoadmapItemSnapshot item)
     {
-        await projection.ProjectNumber("Roadmap order", item.Order).ConfigureAwait(false);
-        await projection.ProjectNumber("RICE reach", item.Reach).ConfigureAwait(false);
-        await projection.ProjectNumber("RICE impact", item.Impact).ConfigureAwait(false);
-        await projection.ProjectNumber("RICE confidence", item.Confidence).ConfigureAwait(false);
-        await projection.ProjectNumber("RICE effort", item.Effort).ConfigureAwait(false);
-        await projection.ProjectNumber("RICE score", item.Score).ConfigureAwait(false);
+        if (item.IsTriaged)
+        {
+            var order = item.Order ?? throw new InvalidOperationException("Triaged roadmap items require an order.");
+            var reach = item.Reach ?? throw new InvalidOperationException("Triaged roadmap items require RICE reach.");
+            var impact = item.Impact ?? throw new InvalidOperationException("Triaged roadmap items require RICE impact.");
+            var confidence = item.Confidence ?? throw new InvalidOperationException("Triaged roadmap items require RICE confidence.");
+            var effort = item.Effort ?? throw new InvalidOperationException("Triaged roadmap items require RICE effort.");
+            var score = item.Score ?? throw new InvalidOperationException("Triaged roadmap items require a RICE score.");
+            await projection.ProjectNumber("Roadmap order", order).ConfigureAwait(false);
+            await projection.ProjectNumber("RICE reach", reach).ConfigureAwait(false);
+            await projection.ProjectNumber("RICE impact", impact).ConfigureAwait(false);
+            await projection.ProjectNumber("RICE confidence", confidence).ConfigureAwait(false);
+            await projection.ProjectNumber("RICE effort", effort).ConfigureAwait(false);
+            await projection.ProjectNumber("RICE score", score).ConfigureAwait(false);
+        }
+
         await projection.ProjectStatus(item.Status).ConfigureAwait(false);
         await projection.ProjectText("Roadmap parent", item.Parent ?? string.Empty).ConfigureAwait(false);
         await projection.ProjectText("Roadmap blocked by", string.Join(", ", item.BlockedBy)).ConfigureAwait(false);

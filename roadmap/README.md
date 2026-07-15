@@ -29,8 +29,8 @@ roadmap/
    adapter.
 5. Report drift when repository-owned fields and GitHub-owned fields conflict.
 
-The repository owns item identity, outcome, explicit ordering, scoring inputs,
-blockers, parent-child relationships, themes, tags, and labels. GitHub owns
+The repository owns item identity, outcome, explicit ordering and scoring for triaged
+work, blockers, parent-child relationships, themes, tags, and labels. GitHub owns
 discussion, day-to-day execution comments, and workflow details that are not
 represented in the canonical model.
 
@@ -38,9 +38,9 @@ This roadmap intentionally avoids date-based planning. Use `order` for priority
 and `blockedBy` for sequencing. Lower `order` values come first among feasible
 work; open blockers are a gate, not a score adjustment.
 
-`roadmap/order.json` is the canonical list of every roadmap item ID. Its `items`
-array must contain each item exactly once, ordered by `order` ascending, RICE
-score descending, then ID ascending.
+`roadmap/order.json` is the canonical list of every triaged roadmap item ID. Its
+`items` array must contain each triaged item exactly once, ordered by `order`
+ascending, RICE score descending, then ID ascending.
 
 ## Prioritization
 
@@ -59,6 +59,17 @@ Keep the inputs reviewable instead of hand-editing rank:
 
 Use WSJF only after cost-of-delay inputs are reliable and shared across teams.
 
+### Untriaged work
+
+Use `"triage": "untriaged"` for an active item that needs canonical identity,
+hierarchy, or GitHub projection before priority evidence exists. Untriaged items must
+omit `order` and `scoring`; they are excluded from `order.json` and executable
+priority queries. They may still block scored work and appear in `blockers-of` without
+an invented order or score.
+
+Record evidence before removing `triage` and assigning `order` and RICE inputs. Do not
+use placeholder zeroes or arbitrary low values to make an item fit the triaged model.
+
 Priority overrides are exceptional: security, privacy, data safety, legal/compliance,
 fixed external deadlines, material risk reduction, or prerequisites that unlock multiple
 higher-value items. Record the evidence, owner, review date, and displaced work in the
@@ -74,6 +85,8 @@ pull request that changes canonical roadmap data.
 - Milestones are not used by the roadmap model by default.
 - Project fields may mirror score inputs and computed score, but they do not
   replace the repository model.
+- Untriaged items can project their status and text fields, but sync leaves all
+  Project numeric priority fields unchanged.
 - Project-configured dry-runs authenticate only to validate target, schema,
   membership, proposed field writes, and report-only conflicts; they do not mutate
   GitHub.

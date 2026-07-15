@@ -232,11 +232,9 @@ internal static class RoadmapTemplates
             "id",
             "title",
             "type",
-            "status",
-            "order",
-            "theme",
-            "outcome",
-            "scoring",
+             "status",
+             "theme",
+             "outcome",
             "blockedBy",
             "blocks",
             "dependencies",
@@ -258,12 +256,17 @@ internal static class RoadmapTemplates
             "status": {
               "type": "string"
             },
+            "triage": {
+              "const": "untriaged"
+            },
             "order": {
               "type": "integer",
               "minimum": 1
             },
             "parent": {
-              "type": "string"
+              "type": "string",
+              "minLength": 1,
+              "pattern": "\\S"
             },
             "theme": {
               "type": "string",
@@ -367,11 +370,48 @@ internal static class RoadmapTemplates
                         }
                       ]
                     }
-                  }
+                  },
+                  "additionalProperties": false
                 }
               }
             }
-          }
+          },
+          "allOf": [
+            {
+              "if": {
+                "required": [
+                  "triage"
+                ],
+                "properties": {
+                  "triage": {
+                    "const": "untriaged"
+                  }
+                }
+              },
+              "then": {
+                "not": {
+                  "anyOf": [
+                    {
+                      "required": [
+                        "order"
+                      ]
+                    },
+                    {
+                      "required": [
+                        "scoring"
+                      ]
+                    }
+                  ]
+                }
+              },
+              "else": {
+                "required": [
+                  "order",
+                  "scoring"
+                ]
+              }
+            }
+          ]
         }
         """;
 

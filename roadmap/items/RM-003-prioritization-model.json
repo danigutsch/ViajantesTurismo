@@ -4,7 +4,7 @@
   "parent": "RM-001",
   "title": "Define roadmap prioritization model",
   "type": "issue",
-  "status": "ready",
+  "status": "done",
   "order": 30,
   "theme": "repo-operations",
   "outcome": "Ordering, RICE inputs, low-hanging-fruit queries, and blocker-aware prioritization are documented and verifiable.",

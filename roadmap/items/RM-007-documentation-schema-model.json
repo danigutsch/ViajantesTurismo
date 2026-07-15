@@ -1,0 +1,31 @@
+{
+  "$schema": "../schema/roadmap-item.schema.json",
+  "id": "RM-007",
+  "parent": "RM-001",
+  "title": "Define composable schemas for repository documentation",
+  "type": "documentation",
+  "status": "done",
+  "triage": "untriaged",
+  "theme": "repo-operations",
+  "outcome": "Maintained documentation can compose source-agnostic governance blocks without a global Markdown template.",
+  "blockedBy": [],
+  "blocks": [
+    "RM-008"
+  ],
+  "dependencies": [],
+  "tags": [
+    "documentation",
+    "schema",
+    "governance"
+  ],
+  "labels": [
+    "area: tooling",
+    "configuration",
+    "documentation"
+  ],
+  "integrations": {
+    "github": {
+      "issue": 1005
+    }
+  }
+}

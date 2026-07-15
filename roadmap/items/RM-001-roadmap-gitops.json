@@ -4,16 +4,10 @@
   "title": "Establish GitOps roadmap and repo configuration tooling",
   "type": "epic",
   "status": "ready",
-  "order": 10,
+  "triage": "untriaged",
   "theme": "repo-operations",
   "outcome": "Roadmap intent and prioritization are managed through reviewed repository changes and projected into GitHub for execution.",
   "size": "L",
-  "scoring": {
-    "reach": 20,
-    "impact": 4,
-    "confidence": 0.8,
-    "effort": 5
-  },
   "blockedBy": [],
   "blocks": [],
   "dependencies": [],
@@ -35,14 +29,7 @@
   ],
   "integrations": {
     "github": {
-      "issue": 997,
-      "subIssues": [
-        1002,
-        1000,
-        1001,
-        999,
-        998
-      ]
+      "issue": 997
     }
   }
 }

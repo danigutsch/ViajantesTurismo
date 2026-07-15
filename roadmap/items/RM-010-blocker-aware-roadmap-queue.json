@@ -1,0 +1,27 @@
+{
+  "$schema": "../schema/roadmap-item.schema.json",
+  "id": "RM-010",
+  "parent": "RM-009",
+  "title": "Generate blocker-aware executable roadmap queue",
+  "type": "enabler",
+  "status": "done",
+  "triage": "untriaged",
+  "theme": "repo-operations",
+  "outcome": "The local tool can select feasible work that unlocks open dependents before ordinary priority ties.",
+  "blockedBy": [],
+  "blocks": [],
+  "dependencies": [],
+  "tags": [
+    "roadmap",
+    "queue",
+    "blockers"
+  ],
+  "labels": [
+    "area: tooling"
+  ],
+  "integrations": {
+    "github": {
+      "issue": 1061
+    }
+  }
+}
