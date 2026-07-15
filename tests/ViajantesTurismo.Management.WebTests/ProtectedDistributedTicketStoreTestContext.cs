@@ -10,9 +10,9 @@ namespace ViajantesTurismo.Management.WebTests;
 
 internal sealed class ProtectedDistributedTicketStoreTestContext
 {
-    public ProtectedDistributedTicketStoreTestContext()
+    public ProtectedDistributedTicketStoreTestContext(IDistributedCache? cache = null)
     {
-        Cache = new MemoryDistributedCache(Options.Create(new MemoryDistributedCacheOptions()));
+        Cache = cache ?? new MemoryDistributedCache(Options.Create(new MemoryDistributedCacheOptions()));
         Store = new ProtectedDistributedTicketStore(Cache, new EphemeralDataProtectionProvider());
     }
 

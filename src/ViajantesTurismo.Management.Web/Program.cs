@@ -1,4 +1,3 @@
-using Duende.AccessTokenManagement;
 using Duende.AccessTokenManagement.OpenIdConnect;
 using SharedKernel.Branding;
 using SharedKernel.HttpClients;
@@ -23,17 +22,23 @@ builder.Services.AddScoped<CustomerCreationState>();
 builder.Services.AddScoped<ICountryService, CountryService>();
 
 builder.Services.AddHttpClient<IToursApiClient, ToursApiClient>(client => client.BaseAddress = new Uri($"https+http://{ResourceNames.Api}"))
-    .AddUserAccessTokenHandler(new UserTokenRequestParameters { Scope = Scope.Parse(ApiAudienceNames.Admin) });
+    .AddUserAccessTokenHandler()
+    .AddKeycloakAudienceTokenExchangeHandler(ApiAudienceNames.Admin);
 builder.Services.AddHttpClient<ICustomersApiClient, CustomersApiClient>(client => client.BaseAddress = new Uri($"https+http://{ResourceNames.Api}"))
-    .AddUserAccessTokenHandler(new UserTokenRequestParameters { Scope = Scope.Parse(ApiAudienceNames.Admin) });
+    .AddUserAccessTokenHandler()
+    .AddKeycloakAudienceTokenExchangeHandler(ApiAudienceNames.Admin);
 builder.Services.AddHttpClient<IBookingsApiClient, BookingsApiClient>(client => client.BaseAddress = new Uri($"https+http://{ResourceNames.Api}"))
-    .AddUserAccessTokenHandler(new UserTokenRequestParameters { Scope = Scope.Parse(ApiAudienceNames.Admin) });
+    .AddUserAccessTokenHandler()
+    .AddKeycloakAudienceTokenExchangeHandler(ApiAudienceNames.Admin);
 builder.Services.AddHttpClient<ICatalogToursApiClient, CatalogToursApiClient>(client => client.BaseAddress = new Uri($"https+http://{ResourceNames.CatalogApi}"))
-    .AddUserAccessTokenHandler(new UserTokenRequestParameters { Scope = Scope.Parse(ApiAudienceNames.Catalog) });
+    .AddUserAccessTokenHandler()
+    .AddKeycloakAudienceTokenExchangeHandler(ApiAudienceNames.Catalog);
 builder.Services.AddHttpClient<IPublicContentApiClient, PublicContentApiClient>(client => client.BaseAddress = new Uri($"https+http://{ResourceNames.CatalogApi}"))
-    .AddUserAccessTokenHandler(new UserTokenRequestParameters { Scope = Scope.Parse(ApiAudienceNames.Catalog) });
+    .AddUserAccessTokenHandler()
+    .AddKeycloakAudienceTokenExchangeHandler(ApiAudienceNames.Catalog);
 builder.Services.AddHttpClient<IManagementBrandingApiClient, ManagementBrandingApiClient>(client => client.BaseAddress = new Uri($"https+http://{ResourceNames.BrandingApi}"))
-    .AddUserAccessTokenHandler(new UserTokenRequestParameters { Scope = Scope.Parse(ApiAudienceNames.Branding) });
+    .AddUserAccessTokenHandler()
+    .AddKeycloakAudienceTokenExchangeHandler(ApiAudienceNames.Branding);
 
 var app = builder.Build();
 

@@ -39,6 +39,49 @@ public sealed class ManagementAuthenticationServiceCollectionExtensionsTests
     }
 
     [Fact]
+    public void Development_configuration_requires_explicit_keycloak_token_exchange_settings()
+    {
+        // Arrange
+        var configuration = ManagementAuthenticationTestConfiguration.Create(includeTokenExchangeSettings: false);
+        var environment = new TestHostEnvironment { EnvironmentName = Environments.Development };
+
+        // Act
+        Action action = () => ManagementAuthenticationTestHost.Create(configuration, environment);
+
+        // Assert
+        var exception = action.ShouldThrow<InvalidOperationException>();
+        exception.Message.ShouldContain("Authentication:TokenExchange:Enabled", StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public void Development_configuration_rejects_unsupported_token_exchange_providers()
+    {
+        // Arrange
+        var configuration = ManagementAuthenticationTestConfiguration.Create(tokenExchangeProvider: "unsupported");
+        var environment = new TestHostEnvironment { EnvironmentName = Environments.Development };
+
+        // Act
+        Action action = () => ManagementAuthenticationTestHost.Create(configuration, environment);
+
+        // Assert
+        action.ShouldThrow<InvalidOperationException>();
+    }
+
+    [Fact]
+    public void Development_configuration_rejects_disabled_token_exchange()
+    {
+        // Arrange
+        var configuration = ManagementAuthenticationTestConfiguration.Create(tokenExchangeEnabled: "false");
+        var environment = new TestHostEnvironment { EnvironmentName = Environments.Development };
+
+        // Act
+        Action action = () => ManagementAuthenticationTestHost.Create(configuration, environment);
+
+        // Assert
+        action.ShouldThrow<InvalidOperationException>();
+    }
+
+    [Fact]
     public void Development_configuration_rejects_http_authority_without_the_explicit_opt_in()
     {
         // Arrange
@@ -84,6 +127,7 @@ public sealed class ManagementAuthenticationServiceCollectionExtensionsTests
         options.RequireHttpsMetadata.ShouldBeFalse();
         options.UsePkce.ShouldBeTrue();
         options.SaveTokens.ShouldBeTrue();
+        options.EventsType.ShouldBe(typeof(ManagementOpenIdConnectEvents));
         options.Scope.ShouldContain("offline_access");
         options.Scope.ShouldContain("admin-api");
         options.Scope.ShouldContain("catalog-api");
@@ -116,6 +160,8 @@ public sealed class ManagementAuthenticationServiceCollectionExtensionsTests
         // Act
         var cookieOptions = host.CookieOptions;
         var ticketStore = host.TicketStore;
+        var userTokenStore = host.UserTokenStore;
+        var protectedUserTokenStore = host.ProtectedUserTokenStore;
         var authorization = host.AuthorizationOptions;
 
         // Assert
@@ -123,7 +169,10 @@ public sealed class ManagementAuthenticationServiceCollectionExtensionsTests
         cookieOptions.Cookie.HttpOnly.ShouldBeTrue();
         cookieOptions.Cookie.SecurePolicy.ShouldBe(Microsoft.AspNetCore.Http.CookieSecurePolicy.Always);
         cookieOptions.SlidingExpiration.ShouldBeFalse();
+        cookieOptions.EventsType.ShouldBe(typeof(ManagementCookieAuthenticationEvents));
         ticketStore.ShouldBeOfType<ProtectedDistributedTicketStore>();
+        userTokenStore.ShouldBeOfType<ProtectedDistributedUserTokenStore>();
+        ReferenceEquals(userTokenStore, protectedUserTokenStore).ShouldBeTrue();
         authorization.FallbackPolicy.ShouldNotBeNull();
     }
 }

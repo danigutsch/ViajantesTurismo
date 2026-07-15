@@ -70,11 +70,57 @@ public sealed class ProtectedDistributedTicketStoreTests
         var key = await context.Store.StoreAsync(ProtectedDistributedTicketStoreTestContext.CreateTicket());
 
         // Act
-        await context.Store.RemoveAsync(key);
+        await context.Store.RemoveAsync(key, Xunit.TestContext.Current.CancellationToken);
         var retrieved = await context.Store.RetrieveAsync(key);
 
         // Assert
         retrieved.ShouldBeNull();
+    }
+
+    [Fact]
+    public async Task Rejects_a_protected_ticket_transplanted_from_another_cache_key()
+    {
+        // Arrange
+        var context = new ProtectedDistributedTicketStoreTestContext();
+        const string firstKey = "management-ticket:first";
+        const string secondKey = "management-ticket:second";
+        await context.Store.RenewAsync(firstKey, ProtectedDistributedTicketStoreTestContext.CreateTicket());
+        var transplantedTicket = await context.Cache.GetAsync(firstKey, Xunit.TestContext.Current.CancellationToken)
+            ?? throw new InvalidOperationException("The source ticket was not stored.");
+        await context.Cache.SetAsync(
+            secondKey,
+            transplantedTicket,
+            new Microsoft.Extensions.Caching.Distributed.DistributedCacheEntryOptions(),
+            Xunit.TestContext.Current.CancellationToken);
+
+        // Act
+        var ticket = await context.Store.RetrieveAsync(secondKey);
+        var remainingTicket = await context.Cache.GetAsync(secondKey, Xunit.TestContext.Current.CancellationToken);
+
+        // Assert
+        ticket.ShouldBeNull();
+        remainingTicket.ShouldBeNull();
+    }
+
+    [Fact]
+    public async Task Propagates_cooperative_cancellation_when_removing_a_ticket()
+    {
+        // Arrange
+        var innerCache = new Microsoft.Extensions.Caching.Distributed.MemoryDistributedCache(
+            Microsoft.Extensions.Options.Options.Create(
+                new Microsoft.Extensions.Caching.Memory.MemoryDistributedCacheOptions()));
+        using var cancellationSource = new CancellationTokenSource();
+        await cancellationSource.CancelAsync();
+        var cache = new ThrowingRemoveDistributedCache(
+            innerCache,
+            new OperationCanceledException(cancellationSource.Token));
+        var context = new ProtectedDistributedTicketStoreTestContext(cache);
+
+        // Act
+        Func<Task> remove = () => context.Store.RemoveAsync("management-ticket:test", cancellationSource.Token);
+
+        // Assert
+        await remove.ShouldThrow<OperationCanceledException>();
     }
 
     [Fact]

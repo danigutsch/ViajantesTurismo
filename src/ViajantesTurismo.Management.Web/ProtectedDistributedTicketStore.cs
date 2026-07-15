@@ -44,7 +44,7 @@ internal sealed class ProtectedDistributedTicketStore : ITicketStore
             return;
         }
 
-        var protectedTicket = protector.Protect(TicketSerializer.Default.Serialize(ticket));
+        var protectedTicket = GetProtector(key).Protect(TicketSerializer.Default.Serialize(ticket));
         await cache.SetAsync(
             key,
             protectedTicket,
@@ -66,7 +66,7 @@ internal sealed class ProtectedDistributedTicketStore : ITicketStore
 
         try
         {
-            var ticket = TicketSerializer.Default.Deserialize(protector.Unprotect(protectedTicket));
+            var ticket = TicketSerializer.Default.Deserialize(GetProtector(key).Unprotect(protectedTicket));
             if (ticket is null || HasExpired(ticket))
             {
                 await cache.RemoveAsync(key).ConfigureAwait(false);
@@ -84,8 +84,22 @@ internal sealed class ProtectedDistributedTicketStore : ITicketStore
 
     public Task RemoveAsync(string key)
     {
+        return RemoveAsync(key, CancellationToken.None);
+    }
+
+    public async Task RemoveAsync(string key, CancellationToken cancellationToken)
+    {
         ArgumentException.ThrowIfNullOrWhiteSpace(key);
-        return cache.RemoveAsync(key);
+
+        var ct = cancellationToken;
+        try
+        {
+            await cache.RemoveAsync(key, ct).ConfigureAwait(false);
+        }
+        catch (Exception exception) when (exception is not OperationCanceledException || !ct.IsCancellationRequested)
+        {
+            // Browser cookie deletion must proceed even when server-side cleanup is unavailable.
+        }
     }
 
     private static string CreateKey()
@@ -93,6 +107,11 @@ internal sealed class ProtectedDistributedTicketStore : ITicketStore
         return string.Concat(
             ManagementAuthenticationDefaults.TicketStoreKeyPrefix,
             WebEncoders.Base64UrlEncode(RandomNumberGenerator.GetBytes(32)));
+    }
+
+    private IDataProtector GetProtector(string key)
+    {
+        return protector.CreateProtector(key);
     }
 
     private static bool HasExpired(AuthenticationTicket ticket)

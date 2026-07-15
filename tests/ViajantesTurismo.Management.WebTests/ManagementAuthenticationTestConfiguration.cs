@@ -8,7 +8,10 @@ internal static class ManagementAuthenticationTestConfiguration
         bool allowHttpDevelopmentAuthority = false,
         bool includeRequiredSettings = true,
         string authority = "https://identity.example.test/realms/viajantes",
-        string? issuer = null)
+        string? issuer = null,
+        bool includeTokenExchangeSettings = true,
+        string tokenExchangeEnabled = "true",
+        string tokenExchangeProvider = "Keycloak")
     {
         var settings = new Dictionary<string, string?>
         {
@@ -22,6 +25,12 @@ internal static class ManagementAuthenticationTestConfiguration
             settings.Add("Authentication:ClientId", "web-app");
             settings.Add("Authentication:ClientSecret", "client-secret");
             settings.Add("ConnectionStrings:security-database", "Host=localhost;Database=security;Username=security;Password=secret");
+
+            if (includeTokenExchangeSettings)
+            {
+                settings.Add("Authentication:TokenExchange:Enabled", tokenExchangeEnabled);
+                settings.Add("Authentication:TokenExchange:Provider", tokenExchangeProvider);
+            }
         }
 
         return new ConfigurationBuilder()
