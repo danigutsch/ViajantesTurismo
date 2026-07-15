@@ -1,3 +1,4 @@
+using System.Net;
 using ViajantesTurismo.Admin.Contracts.Application;
 using ViajantesTurismo.Catalog.Contracts.Application;
 using ViajantesTurismo.Catalog.Contracts.Http;
@@ -24,8 +25,15 @@ internal sealed class PostTransportValidationScenario(
         return await Eventually.Until(
             async probeCt =>
             {
-                var tours = await catalogTours.GetTours(probeCt);
-                return tours.SingleOrDefault(tour => tour.AdminTourId == adminTourId);
+                try
+                {
+                    var tours = await catalogTours.GetTours(probeCt);
+                    return tours.SingleOrDefault(tour => tour.AdminTourId == adminTourId);
+                }
+                catch (HttpRequestException exception) when (exception.StatusCode == HttpStatusCode.InternalServerError)
+                {
+                    return null;
+                }
             },
             ProjectionTimeout,
             ct);
