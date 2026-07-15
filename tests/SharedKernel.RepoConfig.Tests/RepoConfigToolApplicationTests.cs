@@ -126,9 +126,11 @@ public sealed class RepoConfigToolApplicationTests
         // Act
         var checkedInSchema = checkedInSchemaDocument.RootElement;
         var generatedSchema = generatedSchemaDocument.RootElement;
+        var parentSchema = checkedInSchema.GetProperty("properties").GetProperty("parent");
 
         // Assert
         JsonElement.DeepEquals(checkedInSchema, generatedSchema).ShouldBeTrue();
+        parentSchema.GetProperty("pattern").GetString().ShouldBe("\\S");
     }
 
     [Fact]
@@ -456,6 +458,28 @@ public sealed class RepoConfigToolApplicationTests
         // Assert
         exitCode.ShouldBe(1);
         errorText.ShouldContain("parent must be a string when present.", StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public async Task Verify_rejects_blank_parent()
+    {
+        // Arrange
+        using var workspace = new TemporaryRepoConfigWorkspace();
+        using var initOutput = new StringWriter(CultureInfo.InvariantCulture);
+        using var initError = new StringWriter(CultureInfo.InvariantCulture);
+        using var verifyOutput = new StringWriter(CultureInfo.InvariantCulture);
+        using var verifyError = new StringWriter(CultureInfo.InvariantCulture);
+        (await RepoConfigToolApplication.Run(["init", "--root", workspace.RootPath], initOutput, initError, workspace.RootPath, TestContext.Current.CancellationToken)).ShouldBe(0);
+        var itemText = workspace.ReadFile("roadmap/items/RM-001-roadmap-gitops.json");
+        workspace.WriteFile("roadmap/items/RM-001-roadmap-gitops.json", itemText.Replace("\"theme\":", "\"parent\": \"   \",\n  \"theme\":", StringComparison.Ordinal));
+
+        // Act
+        var exitCode = await RepoConfigToolApplication.Run(["verify", "--root", workspace.RootPath], verifyOutput, verifyError, workspace.RootPath, TestContext.Current.CancellationToken);
+        var errorText = verifyError.ToString();
+
+        // Assert
+        exitCode.ShouldBe(1);
+        errorText.ShouldContain("parent must not be blank when present.", StringComparison.Ordinal);
     }
 
     [Fact]

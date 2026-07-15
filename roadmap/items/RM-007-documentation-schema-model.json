@@ -4,7 +4,7 @@
   "parent": "RM-001",
   "title": "Define composable schemas for repository documentation",
   "type": "documentation",
-  "status": "in_progress",
+  "status": "done",
   "triage": "untriaged",
   "theme": "repo-operations",
   "outcome": "Maintained documentation can compose source-agnostic governance blocks without a global Markdown template.",

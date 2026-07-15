@@ -209,26 +209,10 @@ internal static class RepoConfigVerifier
         var title = VerifyRequiredString(root, "title", relativePath, issues);
         var type = VerifyRequiredString(root, "type", relativePath, issues);
         var status = VerifyRequiredString(root, "status", relativePath, issues);
-        var isUntriaged = root.TryGetProperty("triage", out var triage);
-        if (isUntriaged && (triage.ValueKind != JsonValueKind.String || !string.Equals(triage.GetString(), "untriaged", StringComparison.Ordinal)))
-        {
-            issues.Add(new RepoConfigIssue(relativePath, "triage must be untriaged when present."));
-            isUntriaged = false;
-        }
+        var isUntriaged = IsUntriaged(root, relativePath, issues);
 
         int? order = isUntriaged ? null : VerifyRequiredOrder(root, relativePath, issues);
-        string? parent = null;
-        if (root.TryGetProperty("parent", out var parentElement))
-        {
-            if (parentElement.ValueKind != JsonValueKind.String)
-            {
-                issues.Add(new RepoConfigIssue(relativePath, "parent must be a string when present."));
-            }
-            else
-            {
-                parent = parentElement.GetString();
-            }
-        }
+        var parent = GetParent(root, relativePath, issues);
 
         var theme = VerifyRequiredString(root, "theme", relativePath, issues);
         VerifyRequiredString(root, "outcome", relativePath, issues);
@@ -297,6 +281,41 @@ internal static class RepoConfigVerifier
                 labels,
                 githubIssue,
                 createGitHubIssue);
+    }
+
+    private static bool IsUntriaged(JsonElement root, string relativePath, List<RepoConfigIssue> issues)
+    {
+        var isUntriaged = root.TryGetProperty("triage", out var triage);
+        if (isUntriaged && (triage.ValueKind != JsonValueKind.String || !string.Equals(triage.GetString(), "untriaged", StringComparison.Ordinal)))
+        {
+            issues.Add(new RepoConfigIssue(relativePath, "triage must be untriaged when present."));
+            return false;
+        }
+
+        return isUntriaged;
+    }
+
+    private static string? GetParent(JsonElement root, string relativePath, List<RepoConfigIssue> issues)
+    {
+        if (!root.TryGetProperty("parent", out var parentElement))
+        {
+            return null;
+        }
+
+        if (parentElement.ValueKind != JsonValueKind.String)
+        {
+            issues.Add(new RepoConfigIssue(relativePath, "parent must be a string when present."));
+            return null;
+        }
+
+        var parent = parentElement.GetString();
+        if (string.IsNullOrWhiteSpace(parent))
+        {
+            issues.Add(new RepoConfigIssue(relativePath, "parent must not be blank when present."));
+            return null;
+        }
+
+        return parent;
     }
 
     private static void VerifyScoring(JsonElement root, string relativePath, List<RepoConfigIssue> issues)
@@ -587,11 +606,7 @@ internal static class RepoConfigVerifier
     {
         if (!path.Add(item.Id))
         {
-            if (reported.Add(item.Id))
-            {
-                issues.Add(new RepoConfigIssue(item.Path, $"blockedBy cycle includes {item.Id}."));
-            }
-
+            ReportBlockedByCycle(item, reported, issues);
             return;
         }
 
@@ -605,6 +620,14 @@ internal static class RepoConfigVerifier
         finally
         {
             path.Remove(item.Id);
+        }
+    }
+
+    private static void ReportBlockedByCycle(RoadmapItemSnapshot item, HashSet<string> reported, List<RepoConfigIssue> issues)
+    {
+        if (reported.Add(item.Id))
+        {
+            issues.Add(new RepoConfigIssue(item.Path, $"blockedBy cycle includes {item.Id}."));
         }
     }
 

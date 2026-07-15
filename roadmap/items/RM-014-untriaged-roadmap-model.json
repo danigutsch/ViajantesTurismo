@@ -4,7 +4,7 @@
   "parent": "RM-009",
   "title": "Add untriaged canonical roadmap item support",
   "type": "enabler",
-  "status": "in_progress",
+  "status": "done",
   "triage": "untriaged",
   "theme": "repo-operations",
   "outcome": "Canonical work can be represented without fabricated priority inputs until evidence is available.",

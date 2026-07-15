@@ -264,7 +264,9 @@ internal static class RoadmapTemplates
               "minimum": 1
             },
             "parent": {
-              "type": "string"
+              "type": "string",
+              "minLength": 1,
+              "pattern": "\\S"
             },
             "theme": {
               "type": "string",

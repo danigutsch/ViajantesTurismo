@@ -4,7 +4,7 @@
   "parent": "RM-001",
   "title": "Define documentation table of contents policy",
   "type": "documentation",
-  "status": "in_progress",
+  "status": "done",
   "triage": "untriaged",
   "theme": "repo-operations",
   "outcome": "Long reference documentation has navigable, maintainable tables of contents without requiring them everywhere.",

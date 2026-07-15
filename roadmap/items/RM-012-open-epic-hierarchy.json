@@ -4,7 +4,7 @@
   "parent": "RM-009",
   "title": "Model open epics and hierarchy in canonical roadmap",
   "type": "issue",
-  "status": "in_progress",
+  "status": "done",
   "triage": "untriaged",
   "theme": "repo-operations",
   "outcome": "Open epics and delivery children have canonical identity and dependency relationships before scoring.",

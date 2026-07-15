@@ -4,7 +4,7 @@
   "parent": "RM-009",
   "title": "Reconcile closed foundation items with canonical roadmap",
   "type": "issue",
-  "status": "in_progress",
+  "status": "done",
   "triage": "untriaged",
   "theme": "repo-operations",
   "outcome": "Closed foundation work is represented as closed without changing its reviewed priority evidence.",
