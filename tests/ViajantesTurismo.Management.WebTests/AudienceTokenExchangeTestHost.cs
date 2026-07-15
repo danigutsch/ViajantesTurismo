@@ -38,12 +38,19 @@ internal sealed class AudienceTokenExchangeTestHost : IAsyncDisposable
         };
     }
 
-    public static AudienceTokenExchangeTestHost Create()
+    public static AudienceTokenExchangeTestHost Create(IDistributedCache? cache = null)
     {
         var tokenEndpoint = new RecordingAudienceTokenEndpointHandler();
         var backend = new RecordingAudienceTokenBackendHandler();
         var services = new ServiceCollection();
-        services.AddDistributedMemoryCache();
+        if (cache is null)
+        {
+            services.AddDistributedMemoryCache();
+        }
+        else
+        {
+            services.AddSingleton(cache);
+        }
         services.AddDataProtection();
         services.AddSingleton(TimeProvider.System);
         services.AddSingleton<ProtectedDistributedAudienceTokenStore>();

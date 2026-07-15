@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.DataProtection;
 using Microsoft.AspNetCore.WebUtilities;
 using Microsoft.Extensions.Caching.Distributed;
+using SharedKernel.AspNetCore;
 using SharedKernel.BuildingBlocks;
 
 namespace ViajantesTurismo.Management.Web;
@@ -14,10 +15,12 @@ namespace ViajantesTurismo.Management.Web;
 internal sealed partial class ProtectedDistributedTicketStore : ITicketStore
 {
     private const int CacheRemovalAttempts = 2;
+    private const string ActiveRemovalCanceledMessage = "The management ticket removal was canceled.";
+    private const string StaleCleanupCanceledMessage = "The management stale ticket cleanup was canceled.";
 
     private readonly IDistributedCache cache;
     private readonly ILogger<ProtectedDistributedTicketStore> logger;
-    private readonly IDataProtector protector;
+    private readonly KeyBoundDataProtector protector;
 
     public ProtectedDistributedTicketStore(
         IDistributedCache cache,
@@ -30,7 +33,9 @@ internal sealed partial class ProtectedDistributedTicketStore : ITicketStore
 
         this.cache = cache;
         this.logger = logger;
-        protector = dataProtectionProvider.CreateProtector(ManagementAuthenticationDefaults.TicketStoreProtectorPurpose);
+        protector = new KeyBoundDataProtector(
+            dataProtectionProvider,
+            ManagementAuthenticationDefaults.TicketStoreProtectorPurpose);
     }
 
     public async Task<string> StoreAsync(AuthenticationTicket ticket)
@@ -49,11 +54,11 @@ internal sealed partial class ProtectedDistributedTicketStore : ITicketStore
 
         if (HasExpired(ticket))
         {
-            await cache.RemoveAsync(key).ConfigureAwait(false);
+            await TryRemoveStaleTicket(key, CancellationToken.None).ConfigureAwait(false);
             return;
         }
 
-        var protectedTicket = GetProtector(key).Protect(TicketSerializer.Default.Serialize(ticket));
+        var protectedTicket = protector.Protect(key, TicketSerializer.Default.Serialize(ticket));
         await cache.SetAsync(
             key,
             protectedTicket,
@@ -75,10 +80,10 @@ internal sealed partial class ProtectedDistributedTicketStore : ITicketStore
 
         try
         {
-            var ticket = TicketSerializer.Default.Deserialize(GetProtector(key).Unprotect(protectedTicket));
+            var ticket = TicketSerializer.Default.Deserialize(protector.Unprotect(key, protectedTicket));
             if (ticket is null || HasExpired(ticket))
             {
-                await RemoveAsync(key).ConfigureAwait(false);
+                await TryRemoveStaleTicket(key, CancellationToken.None).ConfigureAwait(false);
                 return null;
             }
 
@@ -86,7 +91,7 @@ internal sealed partial class ProtectedDistributedTicketStore : ITicketStore
         }
         catch (Exception exception) when (exception is CryptographicException or FormatException or InvalidDataException)
         {
-            await RemoveAsync(key).ConfigureAwait(false);
+            await TryRemoveStaleTicket(key, CancellationToken.None).ConfigureAwait(false);
             return null;
         }
     }
@@ -100,16 +105,24 @@ internal sealed partial class ProtectedDistributedTicketStore : ITicketStore
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(key);
 
-        var firstFailure = await TryRemoveFromCache(key, cancellationToken).ConfigureAwait(false);
-        if (firstFailure is null)
+        try
         {
-            return;
-        }
+            var firstFailure = await TryRemoveFromCache(key, cancellationToken).ConfigureAwait(false);
+            if (firstFailure is null)
+            {
+                return;
+            }
 
-        var terminalFailure = await TryRemoveFromCache(key, cancellationToken).ConfigureAwait(false);
-        if (terminalFailure is not null)
+            var terminalFailure = await TryRemoveFromCache(key, cancellationToken).ConfigureAwait(false);
+            if (terminalFailure is not null)
+            {
+                LogTicketCacheRemovalFailed(logger, CacheRemovalAttempts, terminalFailure.GetType().Name);
+                throw new InvalidOperationException("The management ticket could not be removed.");
+            }
+        }
+        catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
         {
-            LogTicketCacheRemovalFailed(logger, CacheRemovalAttempts, terminalFailure.GetType().Name);
+            throw new OperationCanceledException(ActiveRemovalCanceledMessage, cancellationToken);
         }
     }
 
@@ -129,16 +142,28 @@ internal sealed partial class ProtectedDistributedTicketStore : ITicketStore
         }
     }
 
+    private async Task<bool> TryRemoveStaleTicket(string key, CancellationToken cancellationToken)
+    {
+        try
+        {
+            await cache.RemoveAsync(key, cancellationToken).ConfigureAwait(false);
+            return true;
+        }
+        catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
+        {
+            throw new OperationCanceledException(StaleCleanupCanceledMessage, cancellationToken);
+        }
+        catch (Exception exception) when (exception.ShouldHandleAsFailure(cancellationToken))
+        {
+            return false;
+        }
+    }
+
     private static string CreateKey()
     {
         return string.Concat(
             ManagementAuthenticationDefaults.TicketStoreKeyPrefix,
             WebEncoders.Base64UrlEncode(RandomNumberGenerator.GetBytes(32)));
-    }
-
-    private IDataProtector GetProtector(string key)
-    {
-        return protector.CreateProtector(key);
     }
 
     private static bool HasExpired(AuthenticationTicket ticket)

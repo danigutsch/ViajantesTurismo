@@ -1,17 +1,16 @@
-using System.Net;
 using Microsoft.AspNetCore.TestHost;
 
 namespace ViajantesTurismo.Management.WebTests;
 
 /// <summary>
-/// Verifies cookie deletion remains available when server-side ticket cleanup fails.
+/// Verifies sign-out fails closed when server-side ticket revocation cannot complete.
 /// </summary>
 [Trait(SharedKernel.Testing.TestTraitNames.CategoryName, TestTraits.SecurityCategory)]
 [Trait(SharedKernel.Testing.TestTraitNames.ScopeName, TestTraits.UnitScope)]
 public sealed class ProtectedDistributedTicketStoreCookieHandlerTests
 {
     [Fact]
-    public async Task Signing_out_deletes_the_cookie_when_ticket_cache_removal_fails()
+    public async Task Signing_out_fails_when_ticket_cache_removal_fails()
     {
         // Arrange
         using var testHost = await ProtectedDistributedTicketStoreCookieHandlerTestHost.StartWithFailingTicketRemoval(
@@ -25,13 +24,13 @@ public sealed class ProtectedDistributedTicketStoreCookieHandlerTests
         signOutRequest.Headers.Add("Cookie", sessionCookie);
 
         // Act
-        using var signOutResponse = await client.SendAsync(signOutRequest, Xunit.TestContext.Current.CancellationToken);
-        var deletedCookie = signOutResponse.Headers.GetValues("Set-Cookie").Single();
+        Func<Task> signOut = async () =>
+        {
+            using var response = await client.SendAsync(signOutRequest, Xunit.TestContext.Current.CancellationToken);
+        };
 
         // Assert
-        signOutResponse.StatusCode.ShouldBe(HttpStatusCode.OK);
-        deletedCookie.ShouldStartWith($"{ProtectedDistributedTicketStoreCookieHandlerTestHost.CookieName}=", StringComparison.Ordinal);
-        deletedCookie.ShouldContain("expires=", StringComparison.OrdinalIgnoreCase);
-        testHost.Cache.RemoveCalls.ShouldBe(3);
+        await signOut.ShouldThrow<InvalidOperationException>();
+        testHost.Cache.RemoveCalls.ShouldBe(2);
     }
 }

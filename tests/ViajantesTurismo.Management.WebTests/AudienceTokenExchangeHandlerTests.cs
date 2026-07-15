@@ -219,4 +219,63 @@ public sealed class AudienceTokenExchangeHandlerTests
         host.TokenEndpoint.Requests.Count.ShouldBe(1);
         host.Backend.AuthorizationHeaders.ShouldBe(["Bearer token-for-admin-api"]);
     }
+
+    [Fact]
+    public async Task Exchanges_a_new_token_when_expired_audience_cache_cleanup_fails()
+    {
+        // Arrange
+        var innerCache = new Microsoft.Extensions.Caching.Distributed.MemoryDistributedCache(
+            Microsoft.Extensions.Options.Options.Create(
+                new Microsoft.Extensions.Caching.Memory.MemoryDistributedCacheOptions()));
+        var cache = new ThrowingRemoveDistributedCache(innerCache);
+        await using var host = AudienceTokenExchangeTestHost.Create(cache);
+        await host.StoreProtectedAudienceTokenEntry(
+            ApiAudienceNames.Admin,
+            "source-token",
+            "expired-audience-token",
+            DateTimeOffset.UtcNow.AddSeconds(30),
+            Xunit.TestContext.Current.CancellationToken);
+        using var exchangeHandler = host.CreateHandler(ApiAudienceNames.Admin);
+        using var sourceHandler = new SourceAccessTokenHandler("source-token") { InnerHandler = exchangeHandler };
+        using var client = new HttpMessageInvoker(sourceHandler, disposeHandler: false);
+
+        // Act
+        using var response = await client.SendAsync(
+            new HttpRequestMessage(HttpMethod.Get, "https://admin.example.test/"),
+            Xunit.TestContext.Current.CancellationToken);
+
+        // Assert
+        response.StatusCode.ShouldBe(HttpStatusCode.OK);
+        host.TokenEndpoint.Requests.Count.ShouldBe(1);
+        host.Backend.AuthorizationHeaders.ShouldBe(["Bearer token-for-admin-api"]);
+    }
+
+    [Fact]
+    public async Task Exchanges_a_new_token_when_corrupt_audience_cache_cleanup_fails()
+    {
+        // Arrange
+        var innerCache = new Microsoft.Extensions.Caching.Distributed.MemoryDistributedCache(
+            Microsoft.Extensions.Options.Options.Create(
+                new Microsoft.Extensions.Caching.Memory.MemoryDistributedCacheOptions()));
+        var cache = new ThrowingRemoveDistributedCache(innerCache);
+        await using var host = AudienceTokenExchangeTestHost.Create(cache);
+        await host.Cache.SetAsync(
+            AudienceTokenExchangeTestHost.GetAudienceTokenCacheKey(ApiAudienceNames.Admin, "source-token"),
+            [0x01],
+            new Microsoft.Extensions.Caching.Distributed.DistributedCacheEntryOptions(),
+            Xunit.TestContext.Current.CancellationToken);
+        using var exchangeHandler = host.CreateHandler(ApiAudienceNames.Admin);
+        using var sourceHandler = new SourceAccessTokenHandler("source-token") { InnerHandler = exchangeHandler };
+        using var client = new HttpMessageInvoker(sourceHandler, disposeHandler: false);
+
+        // Act
+        using var response = await client.SendAsync(
+            new HttpRequestMessage(HttpMethod.Get, "https://admin.example.test/"),
+            Xunit.TestContext.Current.CancellationToken);
+
+        // Assert
+        response.StatusCode.ShouldBe(HttpStatusCode.OK);
+        host.TokenEndpoint.Requests.Count.ShouldBe(1);
+        host.Backend.AuthorizationHeaders.ShouldBe(["Bearer token-for-admin-api"]);
+    }
 }

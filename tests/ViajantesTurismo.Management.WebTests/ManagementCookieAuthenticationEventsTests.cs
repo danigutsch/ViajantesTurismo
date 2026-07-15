@@ -3,6 +3,7 @@ using Duende.AccessTokenManagement.OpenIdConnect;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.Logging.Abstractions;
 using ViajantesTurismo.Management.Web;
 using ViajantesTurismo.Resources;
 
@@ -40,7 +41,10 @@ public sealed class ManagementCookieAuthenticationEventsTests
             new CookieAuthenticationOptions(),
             properties: null,
             new CookieOptions());
-        var events = new ManagementCookieAuthenticationEvents(tokenStoreContext.Store, tokenStoreContext.AudienceTokenStore);
+        var events = new ManagementCookieAuthenticationEvents(
+            tokenStoreContext.Store,
+            tokenStoreContext.AudienceTokenStore,
+            NullLogger<ManagementCookieAuthenticationEvents>.Instance);
 
         // Act
         await events.SigningOut(signingOutContext);
@@ -89,7 +93,10 @@ public sealed class ManagementCookieAuthenticationEventsTests
             new CookieAuthenticationOptions(),
             properties: null,
             new CookieOptions());
-        var events = new ManagementCookieAuthenticationEvents(tokenStoreContext.Store, tokenStoreContext.AudienceTokenStore);
+        var events = new ManagementCookieAuthenticationEvents(
+            tokenStoreContext.Store,
+            tokenStoreContext.AudienceTokenStore,
+            NullLogger<ManagementCookieAuthenticationEvents>.Instance);
 
         // Act
         await events.SigningOut(signingOutContext);
@@ -144,7 +151,10 @@ public sealed class ManagementCookieAuthenticationEventsTests
             new CookieAuthenticationOptions(),
             properties: null,
             new CookieOptions());
-        var events = new ManagementCookieAuthenticationEvents(tokenStoreContext.Store, tokenStoreContext.AudienceTokenStore);
+        var events = new ManagementCookieAuthenticationEvents(
+            tokenStoreContext.Store,
+            tokenStoreContext.AudienceTokenStore,
+            NullLogger<ManagementCookieAuthenticationEvents>.Instance);
 
         // Act
         await events.SigningOut(signingOutContext);
@@ -173,7 +183,10 @@ public sealed class ManagementCookieAuthenticationEventsTests
             new CookieAuthenticationOptions(),
             properties: null,
             new CookieOptions());
-        var events = new ManagementCookieAuthenticationEvents(tokenStoreContext.Store, tokenStoreContext.AudienceTokenStore);
+        var events = new ManagementCookieAuthenticationEvents(
+            tokenStoreContext.Store,
+            tokenStoreContext.AudienceTokenStore,
+            NullLogger<ManagementCookieAuthenticationEvents>.Instance);
 
         // Act
         await events.SigningOut(signingOutContext);
@@ -202,7 +215,10 @@ public sealed class ManagementCookieAuthenticationEventsTests
             new CookieAuthenticationOptions(),
             properties: null,
             new CookieOptions());
-        var events = new ManagementCookieAuthenticationEvents(tokenStoreContext.Store, tokenStoreContext.AudienceTokenStore);
+        var events = new ManagementCookieAuthenticationEvents(
+            tokenStoreContext.Store,
+            tokenStoreContext.AudienceTokenStore,
+            NullLogger<ManagementCookieAuthenticationEvents>.Instance);
 
         // Act
         await events.SigningOut(signingOutContext);
@@ -231,12 +247,53 @@ public sealed class ManagementCookieAuthenticationEventsTests
             new CookieAuthenticationOptions(),
             properties: null,
             new CookieOptions());
-        var events = new ManagementCookieAuthenticationEvents(tokenStoreContext.Store, tokenStoreContext.AudienceTokenStore);
+        var events = new ManagementCookieAuthenticationEvents(
+            tokenStoreContext.Store,
+            tokenStoreContext.AudienceTokenStore,
+            NullLogger<ManagementCookieAuthenticationEvents>.Instance);
 
         // Act
         await events.SigningOut(signingOutContext);
 
         // Assert
         httpContext.User.Identity?.IsAuthenticated.ShouldBeTrue();
+    }
+
+    [Fact]
+    public async Task Does_not_log_token_cache_keys_when_user_token_cleanup_fails()
+    {
+        // Arrange
+        const string cacheKey = "management-user-token:confidential-session-key";
+        var innerCache = new Microsoft.Extensions.Caching.Distributed.MemoryDistributedCache(
+            Microsoft.Extensions.Options.Options.Create(
+                new Microsoft.Extensions.Caching.Memory.MemoryDistributedCacheOptions()));
+        var cache = new ThrowingRemoveDistributedCache(
+            innerCache,
+            new InvalidOperationException($"The cache could not remove {cacheKey}."));
+        var tokenStoreContext = new ProtectedDistributedUserTokenStoreTestContext(cache);
+        var user = ProtectedDistributedUserTokenStoreTestContext.CreateUser("session-a");
+        var httpContext = new DefaultHttpContext { User = user };
+        var signingOutContext = new CookieSigningOutContext(
+            httpContext,
+            new AuthenticationScheme(
+                CookieAuthenticationDefaults.AuthenticationScheme,
+                displayName: null,
+                handlerType: typeof(CookieAuthenticationHandler)),
+            new CookieAuthenticationOptions(),
+            properties: null,
+            new CookieOptions());
+        var logger = new CapturingLogger<ManagementCookieAuthenticationEvents>();
+        var events = new ManagementCookieAuthenticationEvents(
+            tokenStoreContext.Store,
+            tokenStoreContext.AudienceTokenStore,
+            logger);
+
+        // Act
+        await events.SigningOut(signingOutContext);
+        var logEntry = logger.Entries.ShouldHaveSingleItem();
+
+        // Assert
+        logEntry.ShouldContain("Management user-token sign-out cleanup failed.", StringComparison.Ordinal);
+        logEntry.ShouldNotContain(cacheKey, StringComparison.Ordinal);
     }
 }

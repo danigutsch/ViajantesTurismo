@@ -5,6 +5,8 @@ using Duende.AccessTokenManagement;
 using Duende.AccessTokenManagement.OpenIdConnect;
 using Microsoft.AspNetCore.DataProtection;
 using Microsoft.Extensions.Caching.Distributed;
+using SharedKernel.AspNetCore;
+using SharedKernel.BuildingBlocks;
 
 namespace ViajantesTurismo.Management.Web;
 
@@ -16,7 +18,7 @@ internal sealed class ProtectedDistributedUserTokenStore : IUserTokenStore
     private const int MaximumTokenEntries = 16;
 
     private readonly IDistributedCache _cache;
-    private readonly IDataProtector _protector;
+    private readonly KeyBoundDataProtector _protector;
     private readonly TimeProvider _timeProvider;
 
     public ProtectedDistributedUserTokenStore(
@@ -29,7 +31,9 @@ internal sealed class ProtectedDistributedUserTokenStore : IUserTokenStore
         ArgumentNullException.ThrowIfNull(timeProvider);
 
         _cache = cache;
-        _protector = dataProtectionProvider.CreateProtector(ManagementAuthenticationDefaults.UserTokenStoreProtectorPurpose);
+        _protector = new KeyBoundDataProtector(
+            dataProtectionProvider,
+            ManagementAuthenticationDefaults.UserTokenStoreProtectorPurpose);
         _timeProvider = timeProvider;
     }
 
@@ -67,7 +71,7 @@ internal sealed class ProtectedDistributedUserTokenStore : IUserTokenStore
         var session = GetSession(user);
         if (session.ExpiresAt <= _timeProvider.GetUtcNow())
         {
-            await _cache.RemoveAsync(session.CacheKey, ct);
+            await TryRemoveStaleEntry(session.CacheKey, ct);
             return TokenResult.Failure("The management token session has expired.");
         }
 
@@ -103,7 +107,7 @@ internal sealed class ProtectedDistributedUserTokenStore : IUserTokenStore
         var session = GetSession(user);
         if (session.ExpiresAt <= _timeProvider.GetUtcNow())
         {
-            await _cache.RemoveAsync(session.CacheKey, ct);
+            await TryRemoveStaleEntry(session.CacheKey, ct);
             return;
         }
 
@@ -153,18 +157,18 @@ internal sealed class ProtectedDistributedUserTokenStore : IUserTokenStore
 
         try
         {
-            return DeserializeEntries(GetProtector(session).Unprotect(protectedEntries));
+            return DeserializeEntries(_protector.Unprotect(session.CacheKey, protectedEntries));
         }
         catch (Exception exception) when (exception is ArgumentException or CryptographicException or EndOfStreamException or FormatException or InvalidDataException or OverflowException)
         {
-            await _cache.RemoveAsync(session.CacheKey, ct);
+            await TryRemoveStaleEntry(session.CacheKey, ct);
             return null;
         }
     }
 
     private Task WriteEntries(TokenSession session, IReadOnlyDictionary<string, UserToken> entries, CancellationToken ct)
     {
-        var protectedEntries = GetProtector(session).Protect(SerializeEntries(entries));
+        var protectedEntries = _protector.Protect(session.CacheKey, SerializeEntries(entries));
         return _cache.SetAsync(
             session.CacheKey,
             protectedEntries,
@@ -277,11 +281,6 @@ internal sealed class ProtectedDistributedUserTokenStore : IUserTokenStore
         return string.Concat(parameters.Scope, '\u001f', parameters.Resource);
     }
 
-    private IDataProtector GetProtector(TokenSession session)
-    {
-        return _protector.CreateProtector(session.CacheKey);
-    }
-
     private static TokenSession GetSession(ClaimsPrincipal user)
     {
         var sessionId = user.FindFirst(ManagementAuthenticationDefaults.UserTokenStoreSessionIdClaimType)?.Value;
@@ -310,6 +309,19 @@ internal sealed class ProtectedDistributedUserTokenStore : IUserTokenStore
         if (token.DPoPJsonWebKey is not null)
         {
             throw new InvalidOperationException("DPoP user-token storage is not configured.");
+        }
+    }
+
+    private async Task<bool> TryRemoveStaleEntry(string cacheKey, CancellationToken ct)
+    {
+        try
+        {
+            await _cache.RemoveAsync(cacheKey, ct);
+            return true;
+        }
+        catch (Exception exception) when (exception.ShouldHandleAsFailure(ct))
+        {
+            return false;
         }
     }
 

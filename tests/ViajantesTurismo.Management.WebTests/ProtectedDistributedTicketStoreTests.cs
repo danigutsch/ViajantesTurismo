@@ -100,6 +100,24 @@ public sealed class ProtectedDistributedTicketStoreTests
     }
 
     [Fact]
+    public async Task Renews_an_expired_ticket_when_cache_cleanup_fails()
+    {
+        // Arrange
+        var innerCache = new Microsoft.Extensions.Caching.Distributed.MemoryDistributedCache(
+            Microsoft.Extensions.Options.Options.Create(
+                new Microsoft.Extensions.Caching.Memory.MemoryDistributedCacheOptions()));
+        var cache = new ThrowingRemoveDistributedCache(innerCache);
+        var context = new ProtectedDistributedTicketStoreTestContext(cache);
+        var expiredTicket = ProtectedDistributedTicketStoreTestContext.CreateTicket(DateTimeOffset.UtcNow.AddMinutes(-1));
+
+        // Act
+        await context.Store.RenewAsync("management-ticket:expired", expiredTicket);
+
+        // Assert
+        cache.RemoveCalls.ShouldBe(1);
+    }
+
+    [Fact]
     public async Task Does_not_log_the_ticket_key_when_terminal_removal_fails()
     {
         // Arrange
@@ -114,12 +132,15 @@ public sealed class ProtectedDistributedTicketStoreTests
         var context = new ProtectedDistributedTicketStoreTestContext(cache, logger);
 
         // Act
-        await context.Store.RemoveAsync(key, Xunit.TestContext.Current.CancellationToken);
-        var logEntry = logger.Entries.ShouldHaveSingleItem();
+        Func<Task> remove = () => context.Store.RemoveAsync(key, Xunit.TestContext.Current.CancellationToken);
 
         // Assert
+        var exception = await remove.ShouldThrow<InvalidOperationException>();
+        var logEntry = logger.Entries.ShouldHaveSingleItem();
+
         logEntry.ShouldContain("Management ticket cache removal failed after 2 attempts.", StringComparison.Ordinal);
         logEntry.ShouldNotContain(key, StringComparison.Ordinal);
+        exception.Message.ShouldNotContain(key, StringComparison.Ordinal);
     }
 
     [Fact]
@@ -168,13 +189,14 @@ public sealed class ProtectedDistributedTicketStoreTests
 
         // Assert
         ticket.ShouldBeNull();
-        cache.RemoveCalls.ShouldBe(2);
+        cache.RemoveCalls.ShouldBe(1);
     }
 
     [Fact]
     public async Task Propagates_cooperative_cancellation_when_removing_a_ticket()
     {
         // Arrange
+        const string key = "management-ticket:confidential-session-key";
         var innerCache = new Microsoft.Extensions.Caching.Distributed.MemoryDistributedCache(
             Microsoft.Extensions.Options.Options.Create(
                 new Microsoft.Extensions.Caching.Memory.MemoryDistributedCacheOptions()));
@@ -182,14 +204,16 @@ public sealed class ProtectedDistributedTicketStoreTests
         await cancellationSource.CancelAsync();
         var cache = new ThrowingRemoveDistributedCache(
             innerCache,
-            new OperationCanceledException(cancellationSource.Token));
+            new OperationCanceledException($"The cache could not remove {key}.", cancellationSource.Token));
         var context = new ProtectedDistributedTicketStoreTestContext(cache);
 
         // Act
-        Func<Task> remove = () => context.Store.RemoveAsync("management-ticket:test", cancellationSource.Token);
+        Func<Task> remove = () => context.Store.RemoveAsync(key, cancellationSource.Token);
 
         // Assert
-        await remove.ShouldThrow<OperationCanceledException>();
+        var exception = await remove.ShouldThrow<OperationCanceledException>();
+        exception.Message.ShouldNotContain(key, StringComparison.Ordinal);
+        exception.CancellationToken.ShouldBe(cancellationSource.Token);
         cache.LastRemoveCancellationToken.ShouldBe(cancellationSource.Token);
     }
 

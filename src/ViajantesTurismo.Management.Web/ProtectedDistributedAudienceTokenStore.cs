@@ -3,6 +3,8 @@ using System.Text;
 using Microsoft.AspNetCore.DataProtection;
 using Microsoft.AspNetCore.WebUtilities;
 using Microsoft.Extensions.Caching.Distributed;
+using SharedKernel.AspNetCore;
+using SharedKernel.BuildingBlocks;
 using ViajantesTurismo.Resources;
 
 namespace ViajantesTurismo.Management.Web;
@@ -23,7 +25,7 @@ internal sealed class ProtectedDistributedAudienceTokenStore
     ];
 
     private readonly IDistributedCache _cache;
-    private readonly IDataProtector _protector;
+    private readonly KeyBoundDataProtector _protector;
     private readonly TimeProvider _timeProvider;
 
     public ProtectedDistributedAudienceTokenStore(
@@ -36,7 +38,7 @@ internal sealed class ProtectedDistributedAudienceTokenStore
         ArgumentNullException.ThrowIfNull(timeProvider);
 
         _cache = cache;
-        _protector = dataProtectionProvider.CreateProtector(ProtectorPurpose);
+        _protector = new KeyBoundDataProtector(dataProtectionProvider, ProtectorPurpose);
         _timeProvider = timeProvider;
     }
 
@@ -51,7 +53,7 @@ internal sealed class ProtectedDistributedAudienceTokenStore
 
         try
         {
-            using var stream = new MemoryStream(GetProtector(cacheKey).Unprotect(protectedEntry));
+            using var stream = new MemoryStream(_protector.Unprotect(cacheKey, protectedEntry));
             using var reader = new BinaryReader(stream, Encoding.UTF8, leaveOpen: true);
             var expiresAt = DateTimeOffset.FromUnixTimeMilliseconds(reader.ReadInt64());
             var accessToken = reader.ReadString();
@@ -60,7 +62,7 @@ internal sealed class ProtectedDistributedAudienceTokenStore
                 || string.Equals(accessToken, sourceAccessToken, StringComparison.Ordinal)
                 || expiresAt <= _timeProvider.GetUtcNow().Add(RefreshBeforeExpiration))
             {
-                await _cache.RemoveAsync(cacheKey, cancellationToken);
+                await TryRemoveStaleEntry(cacheKey, cancellationToken);
                 return null;
             }
 
@@ -68,7 +70,7 @@ internal sealed class ProtectedDistributedAudienceTokenStore
         }
         catch (Exception exception) when (exception is ArgumentException or CryptographicException or EndOfStreamException or FormatException or InvalidDataException or OverflowException)
         {
-            await _cache.RemoveAsync(cacheKey, cancellationToken);
+            await TryRemoveStaleEntry(cacheKey, cancellationToken);
             return null;
         }
     }
@@ -93,7 +95,7 @@ internal sealed class ProtectedDistributedAudienceTokenStore
 
         return _cache.SetAsync(
             cacheKey,
-            GetProtector(cacheKey).Protect(stream.ToArray()),
+            _protector.Protect(cacheKey, stream.ToArray()),
             new DistributedCacheEntryOptions { AbsoluteExpiration = expiresAt },
             cancellationToken);
     }
@@ -114,8 +116,16 @@ internal sealed class ProtectedDistributedAudienceTokenStore
         return string.Concat(CacheKeyPrefix, audience, ':', WebEncoders.Base64UrlEncode(sourceTokenHash));
     }
 
-    private IDataProtector GetProtector(string cacheKey)
+    private async Task<bool> TryRemoveStaleEntry(string cacheKey, CancellationToken cancellationToken)
     {
-        return _protector.CreateProtector(cacheKey);
+        try
+        {
+            await _cache.RemoveAsync(cacheKey, cancellationToken);
+            return true;
+        }
+        catch (Exception exception) when (exception.ShouldHandleAsFailure(cancellationToken))
+        {
+            return false;
+        }
     }
 }

@@ -178,6 +178,103 @@ public sealed class ProtectedDistributedUserTokenStoreTests
     }
 
     [Fact]
+    public async Task Does_not_return_tokens_after_the_session_expires_when_cache_cleanup_fails()
+    {
+        // Arrange
+        var innerCache = new Microsoft.Extensions.Caching.Distributed.MemoryDistributedCache(
+            Microsoft.Extensions.Options.Options.Create(
+                new Microsoft.Extensions.Caching.Memory.MemoryDistributedCacheOptions()));
+        var cache = new ThrowingRemoveDistributedCache(innerCache);
+        var context = new ProtectedDistributedUserTokenStoreTestContext(cache);
+        var activeUser = ProtectedDistributedUserTokenStoreTestContext.CreateUser("session-a");
+        var expiredUser = ProtectedDistributedUserTokenStoreTestContext.CreateUser("session-a", DateTimeOffset.UtcNow.AddMinutes(-1));
+        await context.Store.StoreTokenAsync(
+            activeUser,
+            ProtectedDistributedUserTokenStoreTestContext.CreateToken("source-access-token"),
+            ct: Xunit.TestContext.Current.CancellationToken);
+
+        // Act
+        var result = await context.Store.GetTokenAsync(expiredUser, ct: Xunit.TestContext.Current.CancellationToken);
+
+        // Assert
+        result.Succeeded.ShouldBeFalse();
+        cache.RemoveCalls.ShouldBe(1);
+    }
+
+    [Fact]
+    public async Task Clears_an_expired_token_session_when_cache_cleanup_fails()
+    {
+        // Arrange
+        var innerCache = new Microsoft.Extensions.Caching.Distributed.MemoryDistributedCache(
+            Microsoft.Extensions.Options.Options.Create(
+                new Microsoft.Extensions.Caching.Memory.MemoryDistributedCacheOptions()));
+        var cache = new ThrowingRemoveDistributedCache(innerCache);
+        var context = new ProtectedDistributedUserTokenStoreTestContext(cache);
+        var activeUser = ProtectedDistributedUserTokenStoreTestContext.CreateUser("session-a");
+        var expiredUser = ProtectedDistributedUserTokenStoreTestContext.CreateUser("session-a", DateTimeOffset.UtcNow.AddMinutes(-1));
+        await context.Store.StoreTokenAsync(
+            activeUser,
+            ProtectedDistributedUserTokenStoreTestContext.CreateToken("source-access-token"),
+            ct: Xunit.TestContext.Current.CancellationToken);
+
+        // Act
+        await context.Store.ClearTokenAsync(expiredUser, ct: Xunit.TestContext.Current.CancellationToken);
+
+        // Assert
+        cache.RemoveCalls.ShouldBe(1);
+    }
+
+    [Fact]
+    public async Task Treats_corrupted_user_tokens_as_missing_when_cache_cleanup_fails()
+    {
+        // Arrange
+        var innerCache = new Microsoft.Extensions.Caching.Distributed.MemoryDistributedCache(
+            Microsoft.Extensions.Options.Options.Create(
+                new Microsoft.Extensions.Caching.Memory.MemoryDistributedCacheOptions()));
+        var cache = new ThrowingRemoveDistributedCache(innerCache);
+        var context = new ProtectedDistributedUserTokenStoreTestContext(cache);
+        var user = ProtectedDistributedUserTokenStoreTestContext.CreateUser("session-a");
+        await context.Store.StoreTokenAsync(
+            user,
+            ProtectedDistributedUserTokenStoreTestContext.CreateToken("source-access-token"),
+            ct: Xunit.TestContext.Current.CancellationToken);
+        await context.Cache.SetAsync(
+            ProtectedDistributedUserTokenStoreTestContext.GetCacheKey("session-a"),
+            [0x01],
+            new Microsoft.Extensions.Caching.Distributed.DistributedCacheEntryOptions(),
+            Xunit.TestContext.Current.CancellationToken);
+
+        // Act
+        var result = await context.Store.GetTokenAsync(user, ct: Xunit.TestContext.Current.CancellationToken);
+
+        // Assert
+        result.Succeeded.ShouldBeFalse();
+        cache.RemoveCalls.ShouldBe(1);
+    }
+
+    [Fact]
+    public async Task Propagates_cache_failures_when_clearing_an_active_token_session()
+    {
+        // Arrange
+        var innerCache = new Microsoft.Extensions.Caching.Distributed.MemoryDistributedCache(
+            Microsoft.Extensions.Options.Options.Create(
+                new Microsoft.Extensions.Caching.Memory.MemoryDistributedCacheOptions()));
+        var cache = new ThrowingRemoveDistributedCache(innerCache);
+        var context = new ProtectedDistributedUserTokenStoreTestContext(cache);
+        var user = ProtectedDistributedUserTokenStoreTestContext.CreateUser("session-a");
+        await context.Store.StoreTokenAsync(
+            user,
+            ProtectedDistributedUserTokenStoreTestContext.CreateToken("source-access-token"),
+            ct: Xunit.TestContext.Current.CancellationToken);
+
+        // Act
+        Func<Task> clearToken = () => context.Store.ClearTokenAsync(user, ct: Xunit.TestContext.Current.CancellationToken);
+
+        // Assert
+        await clearToken.ShouldThrow<InvalidOperationException>();
+    }
+
+    [Fact]
     public async Task Clears_all_tokens_when_the_session_signs_out()
     {
         // Arrange
