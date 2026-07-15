@@ -191,6 +191,19 @@ internal static class RepoConfigToolApplication
                 WriteItems(output, project.OpenItems(type).Where(project.IsUnblocked).OrderByPriority().Take(limit));
                 return 0;
 
+            case "next-work":
+                var openItems = project.OpenItems();
+                WriteItems(
+                    output,
+                    openItems
+                        .Where(item => (type is null || string.Equals(item.Type, type, StringComparison.Ordinal)) && project.IsUnblocked(item))
+                        .OrderByDescending(candidate => openItems.Any(item => item.BlockedBy.Contains(candidate.Id, StringComparer.Ordinal)))
+                        .ThenBy(item => item.Order)
+                        .ThenByDescending(item => item.Score)
+                        .ThenBy(item => item.Id, StringComparer.Ordinal)
+                        .Take(limit));
+                return 0;
+
             case "blockers-of":
                 var itemId = positionalArgs[0];
                 if (!project.Items.Any(item => string.Equals(item.Id, itemId, StringComparison.Ordinal)))
@@ -396,7 +409,7 @@ internal static class RepoConfigToolApplication
     private static bool IsGetQueryShapeValid(string query, string[] positionalArgs) =>
         query switch
         {
-            "next-priority" or "next-unblocked" or "next-blockers" or "next-enablers" or "low-hanging-fruit" or "pareto" or "blocking-overview" or "tags" or "labels" => positionalArgs.Length == 0,
+            "next-priority" or "next-unblocked" or "next-work" or "next-blockers" or "next-enablers" or "low-hanging-fruit" or "pareto" or "blocking-overview" or "tags" or "labels" => positionalArgs.Length == 0,
             "blockers-of" or "by-tag" or "by-label" => positionalArgs.Length == 1,
             _ => false
         };

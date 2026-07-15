@@ -11,6 +11,7 @@ dotnet run --project tools/SharedKernel.RepoConfig.Tool/SharedKernel.RepoConfig.
 dotnet run --project tools/SharedKernel.RepoConfig.Tool/SharedKernel.RepoConfig.Tool.csproj -- init
 dotnet run --project tools/SharedKernel.RepoConfig.Tool/SharedKernel.RepoConfig.Tool.csproj -- set github.repository owner/repository
 dotnet run --project tools/SharedKernel.RepoConfig.Tool/SharedKernel.RepoConfig.Tool.csproj -- get next-priority
+dotnet run --project tools/SharedKernel.RepoConfig.Tool/SharedKernel.RepoConfig.Tool.csproj -- get next-work
 dotnet run --project tools/SharedKernel.RepoConfig.Tool/SharedKernel.RepoConfig.Tool.csproj -- get blocking-overview
 dotnet run --project tools/SharedKernel.RepoConfig.Tool/SharedKernel.RepoConfig.Tool.csproj -- sync github --dry-run
 ```
@@ -30,6 +31,7 @@ Pass `--root <path>` after the command to target another repository root.
 | `set github.repository <owner/repo>` | Updates the GitHub projection repository in `roadmap/config.json`. |
 | `get next-priority` | Lists open items by explicit order and RICE score. |
 | `get next-unblocked` | Lists open items with no open blockers. Supports `--type <type>`. |
+| `get next-work` | Generates the executable queue: unblocked items that unblock open work first, then other unblocked items by explicit order and RICE score. Supports `--type <type>`. |
 | `get blockers-of <id>` | Lists direct blockers for one roadmap item. |
 | `get next-blockers` | Lists open blockers or items that unblock other work. |
 | `get next-enablers` | Lists unblocked enabler items. |

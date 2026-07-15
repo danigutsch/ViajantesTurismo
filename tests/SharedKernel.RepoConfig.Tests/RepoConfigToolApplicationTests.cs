@@ -727,6 +727,107 @@ public sealed class RepoConfigToolApplicationTests
     }
 
     [Fact]
+    public async Task Get_next_work_prioritizes_unblocked_items_that_close_open_blockers()
+    {
+        // Arrange
+        using var workspace = new TemporaryRepoConfigWorkspace();
+        using var initOutput = new StringWriter(CultureInfo.InvariantCulture);
+        using var initError = new StringWriter(CultureInfo.InvariantCulture);
+        using var getOutput = new StringWriter(CultureInfo.InvariantCulture);
+        using var getError = new StringWriter(CultureInfo.InvariantCulture);
+        (await RepoConfigToolApplication.Run(["init", "--root", workspace.RootPath], initOutput, initError, workspace.RootPath, TestContext.Current.CancellationToken)).ShouldBe(0);
+        var epicText = workspace.ReadFile("roadmap/items/RM-001-roadmap-gitops.json");
+        var standardWork = RoadmapTestContent.UnblockedEnablerJson.Replace("\"order\": 30", "\"order\": 5", StringComparison.Ordinal);
+        workspace.WriteFile("roadmap/items/RM-001-roadmap-gitops.json", epicText.Replace("\"blocks\": []", "\"blocks\": [\"RM-002\"]", StringComparison.Ordinal));
+        workspace.WriteFile("roadmap/items/RM-002-follow-up.json", RoadmapTestContent.BlockedIssueJson);
+        workspace.WriteFile("roadmap/items/RM-003-standard-work.json", standardWork);
+        workspace.WriteFile("roadmap/order.json", "{ \"items\": [\"RM-003\", \"RM-001\", \"RM-002\"] }");
+
+        // Act
+        var exitCode = await RepoConfigToolApplication.Run(["get", "next-work", "--root", workspace.RootPath], getOutput, getError, workspace.RootPath, TestContext.Current.CancellationToken);
+        var outputText = getOutput.ToString();
+        var blockerIndex = outputText.IndexOf("RM-001 | epic", StringComparison.Ordinal);
+        var standardWorkIndex = outputText.IndexOf("RM-003 | enabler", StringComparison.Ordinal);
+
+        // Assert
+        exitCode.ShouldBe(0);
+        blockerIndex.ShouldBeGreaterThan(-1);
+        standardWorkIndex.ShouldBeGreaterThan(-1);
+        blockerIndex.ShouldBeLessThan(standardWorkIndex);
+        outputText.ShouldNotContain("RM-002 | issue", StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public async Task Get_next_work_does_not_elevate_items_that_only_unblock_closed_work()
+    {
+        // Arrange
+        using var workspace = new TemporaryRepoConfigWorkspace();
+        using var initOutput = new StringWriter(CultureInfo.InvariantCulture);
+        using var initError = new StringWriter(CultureInfo.InvariantCulture);
+        using var getOutput = new StringWriter(CultureInfo.InvariantCulture);
+        using var getError = new StringWriter(CultureInfo.InvariantCulture);
+        (await RepoConfigToolApplication.Run(["init", "--root", workspace.RootPath], initOutput, initError, workspace.RootPath, TestContext.Current.CancellationToken)).ShouldBe(0);
+        var epicText = workspace.ReadFile("roadmap/items/RM-001-roadmap-gitops.json");
+        var closedDependent = RoadmapTestContent.BlockedIssueJson.Replace("\"status\": \"ready\"", "\"status\": \"done\"", StringComparison.Ordinal);
+        var standardWork = RoadmapTestContent.UnblockedEnablerJson.Replace("\"order\": 30", "\"order\": 5", StringComparison.Ordinal);
+        workspace.WriteFile("roadmap/items/RM-001-roadmap-gitops.json", epicText.Replace("\"blocks\": []", "\"blocks\": [\"RM-002\"]", StringComparison.Ordinal));
+        workspace.WriteFile("roadmap/items/RM-002-follow-up.json", closedDependent);
+        workspace.WriteFile("roadmap/items/RM-003-standard-work.json", standardWork);
+        workspace.WriteFile("roadmap/order.json", "{ \"items\": [\"RM-003\", \"RM-001\", \"RM-002\"] }");
+
+        // Act
+        var exitCode = await RepoConfigToolApplication.Run(["get", "next-work", "--root", workspace.RootPath], getOutput, getError, workspace.RootPath, TestContext.Current.CancellationToken);
+        var outputText = getOutput.ToString();
+        var blockerIndex = outputText.IndexOf("RM-001 | epic", StringComparison.Ordinal);
+        var standardWorkIndex = outputText.IndexOf("RM-003 | enabler", StringComparison.Ordinal);
+
+        // Assert
+        exitCode.ShouldBe(0);
+        blockerIndex.ShouldBeGreaterThan(-1);
+        standardWorkIndex.ShouldBeGreaterThan(-1);
+        standardWorkIndex.ShouldBeLessThan(blockerIndex);
+        outputText.ShouldNotContain("RM-002 | issue", StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public async Task Get_next_work_uses_canonical_priority_to_break_blocker_ties()
+    {
+        // Arrange
+        using var workspace = new TemporaryRepoConfigWorkspace();
+        using var initOutput = new StringWriter(CultureInfo.InvariantCulture);
+        using var initError = new StringWriter(CultureInfo.InvariantCulture);
+        using var getOutput = new StringWriter(CultureInfo.InvariantCulture);
+        using var getError = new StringWriter(CultureInfo.InvariantCulture);
+        (await RepoConfigToolApplication.Run(["init", "--root", workspace.RootPath], initOutput, initError, workspace.RootPath, TestContext.Current.CancellationToken)).ShouldBe(0);
+        var epicText = workspace.ReadFile("roadmap/items/RM-001-roadmap-gitops.json");
+        var higherPriorityBlocker = RoadmapTestContent.UnblockedEnablerJson
+            .Replace("\"blocks\": []", "\"blocks\": [\"RM-005\"]", StringComparison.Ordinal)
+            .Replace("\"order\": 30", "\"order\": 5", StringComparison.Ordinal);
+        var secondDependent = RoadmapTestContent.BlockedIssueJson.Replace("\"id\": \"RM-002\"", "\"id\": \"RM-004\"", StringComparison.Ordinal);
+        var thirdDependent = RoadmapTestContent.BlockedIssueJson
+            .Replace("\"id\": \"RM-002\"", "\"id\": \"RM-005\"", StringComparison.Ordinal)
+            .Replace("\"blockedBy\": [\n    \"RM-001\"\n  ]", "\"blockedBy\": [\n    \"RM-003\"\n  ]", StringComparison.Ordinal);
+        workspace.WriteFile("roadmap/items/RM-001-roadmap-gitops.json", epicText.Replace("\"blocks\": []", "\"blocks\": [\"RM-002\", \"RM-004\"]", StringComparison.Ordinal));
+        workspace.WriteFile("roadmap/items/RM-002-follow-up.json", RoadmapTestContent.BlockedIssueJson);
+        workspace.WriteFile("roadmap/items/RM-003-priority-blocker.json", higherPriorityBlocker);
+        workspace.WriteFile("roadmap/items/RM-004-follow-up.json", secondDependent);
+        workspace.WriteFile("roadmap/items/RM-005-follow-up.json", thirdDependent);
+        workspace.WriteFile("roadmap/order.json", "{ \"items\": [\"RM-003\", \"RM-001\", \"RM-002\", \"RM-004\", \"RM-005\"] }");
+
+        // Act
+        var exitCode = await RepoConfigToolApplication.Run(["get", "next-work", "--root", workspace.RootPath], getOutput, getError, workspace.RootPath, TestContext.Current.CancellationToken);
+        var outputText = getOutput.ToString();
+        var lowerPriorityBlockerIndex = outputText.IndexOf("RM-001 | epic", StringComparison.Ordinal);
+        var higherPriorityBlockerIndex = outputText.IndexOf("RM-003 | enabler", StringComparison.Ordinal);
+
+        // Assert
+        exitCode.ShouldBe(0);
+        lowerPriorityBlockerIndex.ShouldBeGreaterThan(-1);
+        higherPriorityBlockerIndex.ShouldBeGreaterThan(-1);
+        higherPriorityBlockerIndex.ShouldBeLessThan(lowerPriorityBlockerIndex);
+    }
+
+    [Fact]
     public async Task Get_blockers_of_lists_direct_blockers()
     {
         // Arrange
