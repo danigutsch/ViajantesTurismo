@@ -66,4 +66,17 @@ public sealed class OpenApiGenerationCommandTests
         // Assert
         exception.Message.ShouldContain("generate <admin|catalog|branding> [--refresh]", StringComparison.Ordinal);
     }
+
+    [Fact]
+    public void Resolves_the_repository_root_from_a_nested_directory()
+    {
+        // Arrange
+        var nestedDirectory = Path.Combine(AppContext.BaseDirectory, "nested");
+
+        // Act
+        var repositoryRoot = OpenApiToolApplication.FindRepositoryRoot(nestedDirectory);
+
+        // Assert
+        File.Exists(Path.Combine(repositoryRoot, "ViajantesTurismo.slnx")).ShouldBeTrue();
+    }
 }

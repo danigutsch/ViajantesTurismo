@@ -20,7 +20,7 @@ internal static class OpenApiToolApplication
 
         try
         {
-            var options = OpenApiGenerationOptions.Parse(args, Directory.GetCurrentDirectory());
+            var options = OpenApiGenerationOptions.Parse(args, FindRepositoryRoot(Directory.GetCurrentDirectory()));
             var startInfo = OpenApiGenerationCommand.CreateStartInfo(
                 options,
                 string.Equals(Environment.GetEnvironmentVariable("CI"), "true", StringComparison.Ordinal));
@@ -33,5 +33,25 @@ internal static class OpenApiToolApplication
             await error.WriteLineAsync($"Error: {exception.Message}").ConfigureAwait(false);
             return 2;
         }
+    }
+
+    internal static string FindRepositoryRoot(string startDirectory)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(startDirectory);
+
+        var currentDirectory = new DirectoryInfo(startDirectory);
+
+        while (currentDirectory is not null)
+        {
+            if (File.Exists(Path.Combine(currentDirectory.FullName, "ViajantesTurismo.slnx")))
+            {
+                return currentDirectory.FullName;
+            }
+
+            currentDirectory = currentDirectory.Parent;
+        }
+
+        throw new InvalidOperationException(
+            $"Could not locate ViajantesTurismo.slnx from '{startDirectory}'.");
     }
 }
