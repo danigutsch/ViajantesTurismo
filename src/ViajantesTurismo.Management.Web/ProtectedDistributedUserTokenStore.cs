@@ -123,7 +123,7 @@ internal sealed class ProtectedDistributedUserTokenStore : IUserTokenStore
         await WriteEntries(session, entries, ct);
     }
 
-    internal Task ClearAllAsync(ClaimsPrincipal user, CancellationToken ct)
+    internal Task ClearAll(ClaimsPrincipal user, CancellationToken ct)
     {
         ArgumentNullException.ThrowIfNull(user);
 

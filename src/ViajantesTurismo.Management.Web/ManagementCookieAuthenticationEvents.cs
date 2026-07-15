@@ -19,7 +19,7 @@ internal sealed class ManagementCookieAuthenticationEvents(ProtectedDistributedU
         var ct = context.HttpContext.RequestAborted;
         try
         {
-            await userTokenStore.ClearAllAsync(user, ct);
+            await userTokenStore.ClearAll(user, ct);
         }
         catch (Exception exception) when (exception is not OperationCanceledException || !ct.IsCancellationRequested)
         {

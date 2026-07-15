@@ -6,6 +6,8 @@ namespace ViajantesTurismo.Management.WebTests;
 /// <summary>
 /// Verifies the Management BFF exchanges one server-side token for each backend audience.
 /// </summary>
+[Trait(SharedKernel.Testing.TestTraitNames.CategoryName, TestTraits.SecurityCategory)]
+[Trait(SharedKernel.Testing.TestTraitNames.ScopeName, TestTraits.UnitScope)]
 public sealed class AudienceTokenExchangeHandlerTests
 {
     [Fact]

@@ -148,6 +148,7 @@ internal sealed class KeycloakAudienceTokenExchangeHandler : DelegatingHandler
 
     private Task StoreAccessToken(string sourceAccessToken, string accessToken, DateTimeOffset expiresAt, CancellationToken cancellationToken)
     {
+        var cacheKey = GetCacheKey(sourceAccessToken);
         using var stream = new MemoryStream();
         using (var writer = new BinaryWriter(stream, Encoding.UTF8, leaveOpen: true))
         {
@@ -157,8 +158,8 @@ internal sealed class KeycloakAudienceTokenExchangeHandler : DelegatingHandler
         }
 
         return _cache.SetAsync(
-            GetCacheKey(sourceAccessToken),
-            GetProtector(GetCacheKey(sourceAccessToken)).Protect(stream.ToArray()),
+            cacheKey,
+            GetProtector(cacheKey).Protect(stream.ToArray()),
             new DistributedCacheEntryOptions { AbsoluteExpiration = expiresAt },
             cancellationToken);
     }

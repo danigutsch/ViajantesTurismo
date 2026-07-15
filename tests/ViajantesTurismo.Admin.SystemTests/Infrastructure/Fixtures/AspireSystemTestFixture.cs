@@ -45,13 +45,18 @@ public sealed class AspireSystemTestFixture : IAspireSystemTestFixture, IAsyncLi
         _apiClient = _app.CreateHttpClient(ResourceNames.Api);
         _catalogApiClient = _app.CreateHttpClient(ResourceNames.CatalogApi);
         var identityProviderEndpoint = _app.GetEndpoint(ResourceNames.IdentityProvider, "http");
-        var accessToken = await KeycloakConformanceClient.RequestAccessToken(
+        var adminAccessToken = await KeycloakConformanceClient.RequestAccessToken(
             identityProviderEndpoint,
             testConfiguration.ConformanceUserPassword,
-            [ApiAudienceNames.Admin, ApiAudienceNames.Catalog, ApiAudienceNames.Branding],
+            [ApiAudienceNames.Admin],
             TestContext.Current.CancellationToken);
-        _apiClient.DefaultRequestHeaders.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", accessToken);
-        _catalogApiClient.DefaultRequestHeaders.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", accessToken);
+        var catalogAccessToken = await KeycloakConformanceClient.RequestAccessToken(
+            identityProviderEndpoint,
+            testConfiguration.ConformanceUserPassword,
+            [ApiAudienceNames.Catalog],
+            TestContext.Current.CancellationToken);
+        _apiClient.DefaultRequestHeaders.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", adminAccessToken);
+        _catalogApiClient.DefaultRequestHeaders.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", catalogAccessToken);
         _catalogTours = new CatalogToursApiClient(_catalogApiClient);
         WebAppUrl = _app.GetEndpoint(ResourceNames.WebApp, "https");
         PublicWebAppUrl = _app.GetEndpoint(ResourceNames.PublicWebApp, "https");

@@ -189,7 +189,7 @@ public sealed class ProtectedDistributedUserTokenStoreTests
             ct: Xunit.TestContext.Current.CancellationToken);
 
         // Act
-        await context.Store.ClearAllAsync(user, Xunit.TestContext.Current.CancellationToken);
+        await context.Store.ClearAll(user, Xunit.TestContext.Current.CancellationToken);
         var cachedValue = await context.Cache.GetAsync(
             ProtectedDistributedUserTokenStoreTestContext.GetCacheKey("session-a"),
             Xunit.TestContext.Current.CancellationToken);
