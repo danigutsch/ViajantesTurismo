@@ -662,6 +662,29 @@ internal static class RepoConfigVerifier
         HashSet<string> untriagedIds = new(items.Where(item => !item.IsTriaged).Select(item => item.Id), StringComparer.Ordinal);
         HashSet<string> orderedIds = new(StringComparer.Ordinal);
         List<string> orderedValues = [];
+        VerifyOrderItems(orderItems, roadmapIds, untriagedIds, orderedIds, orderedValues, relativePath, issues);
+
+        foreach (var missingId in roadmapIds.Except(orderedIds, StringComparer.Ordinal))
+        {
+            issues.Add(new RepoConfigIssue(relativePath, $"Missing ordered item: {missingId}."));
+        }
+
+        var expectedOrder = items.Where(item => item.IsTriaged).OrderByPriority().Select(item => item.Id);
+        if (!orderedValues.SequenceEqual(expectedOrder, StringComparer.Ordinal))
+        {
+            issues.Add(new RepoConfigIssue(relativePath, "order.json items must match priority order: order ascending, score descending, then id."));
+        }
+    }
+
+    private static void VerifyOrderItems(
+        JsonElement orderItems,
+        HashSet<string> roadmapIds,
+        HashSet<string> untriagedIds,
+        HashSet<string> orderedIds,
+        List<string> orderedValues,
+        string relativePath,
+        List<RepoConfigIssue> issues)
+    {
         foreach (var orderItem in orderItems.EnumerateArray())
         {
             if (orderItem.ValueKind != JsonValueKind.String || string.IsNullOrWhiteSpace(orderItem.GetString()))
@@ -685,17 +708,6 @@ internal static class RepoConfigVerifier
             {
                 issues.Add(new RepoConfigIssue(relativePath, $"Unknown ordered item: {id}."));
             }
-        }
-
-        foreach (var missingId in roadmapIds.Except(orderedIds, StringComparer.Ordinal))
-        {
-            issues.Add(new RepoConfigIssue(relativePath, $"Missing ordered item: {missingId}."));
-        }
-
-        var expectedOrder = items.Where(item => item.IsTriaged).OrderByPriority().Select(item => item.Id);
-        if (!orderedValues.SequenceEqual(expectedOrder, StringComparer.Ordinal))
-        {
-            issues.Add(new RepoConfigIssue(relativePath, "order.json items must match priority order: order ascending, score descending, then id."));
         }
     }
 
