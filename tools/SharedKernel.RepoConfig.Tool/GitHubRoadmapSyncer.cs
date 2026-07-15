@@ -431,8 +431,7 @@ internal sealed class GitHubRoadmapSyncer
         }
         catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
         {
-            cancellationToken.ThrowIfCancellationRequested();
-            throw;
+            throw new OperationCanceledException(cancellationToken);
         }
         catch (OperationCanceledException) when (timeout.IsCancellationRequested && !cancellationToken.IsCancellationRequested)
         {
@@ -450,8 +449,7 @@ internal sealed class GitHubRoadmapSyncer
         }
         catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
         {
-            cancellationToken.ThrowIfCancellationRequested();
-            throw;
+            throw new OperationCanceledException(cancellationToken);
         }
         catch (OperationCanceledException) when (timeout.IsCancellationRequested && !cancellationToken.IsCancellationRequested)
         {
