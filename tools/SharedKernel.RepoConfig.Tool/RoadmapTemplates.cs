@@ -232,11 +232,9 @@ internal static class RoadmapTemplates
             "id",
             "title",
             "type",
-            "status",
-            "order",
-            "theme",
-            "outcome",
-            "scoring",
+             "status",
+             "theme",
+             "outcome",
             "blockedBy",
             "blocks",
             "dependencies",
@@ -257,6 +255,9 @@ internal static class RoadmapTemplates
             },
             "status": {
               "type": "string"
+            },
+            "triage": {
+              "const": "untriaged"
             },
             "order": {
               "type": "integer",
@@ -371,7 +372,43 @@ internal static class RoadmapTemplates
                 }
               }
             }
-          }
+          },
+          "allOf": [
+            {
+              "if": {
+                "required": [
+                  "triage"
+                ],
+                "properties": {
+                  "triage": {
+                    "const": "untriaged"
+                  }
+                }
+              },
+              "then": {
+                "not": {
+                  "anyOf": [
+                    {
+                      "required": [
+                        "order"
+                      ]
+                    },
+                    {
+                      "required": [
+                        "scoring"
+                      ]
+                    }
+                  ]
+                }
+              },
+              "else": {
+                "required": [
+                  "order",
+                  "scoring"
+                ]
+              }
+            }
+          ]
         }
         """;
 

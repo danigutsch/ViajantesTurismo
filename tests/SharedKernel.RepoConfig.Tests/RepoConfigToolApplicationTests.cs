@@ -117,6 +117,119 @@ public sealed class RepoConfigToolApplicationTests
     }
 
     [Fact]
+    public void Item_schema_matches_shipped_item_schema_contract()
+    {
+        // Arrange
+        using var checkedInSchemaDocument = JsonDocument.Parse(RoadmapConfigSchemaTestFiles.ReadCheckedInItemSchema());
+        using var generatedSchemaDocument = JsonDocument.Parse(RoadmapTemplates.ItemSchemaJson);
+
+        // Act
+        var checkedInSchema = checkedInSchemaDocument.RootElement;
+        var generatedSchema = generatedSchemaDocument.RootElement;
+
+        // Assert
+        JsonElement.DeepEquals(checkedInSchema, generatedSchema).ShouldBeTrue();
+    }
+
+    [Fact]
+    public async Task Get_excludes_untriaged_items_from_executable_priority_queries()
+    {
+        // Arrange
+        using var workspace = new TemporaryRepoConfigWorkspace();
+        using var initOutput = new StringWriter(CultureInfo.InvariantCulture);
+        using var initError = new StringWriter(CultureInfo.InvariantCulture);
+        using var verifyOutput = new StringWriter(CultureInfo.InvariantCulture);
+        using var verifyError = new StringWriter(CultureInfo.InvariantCulture);
+        using var getOutput = new StringWriter(CultureInfo.InvariantCulture);
+        using var getError = new StringWriter(CultureInfo.InvariantCulture);
+        (await RepoConfigToolApplication.Run(["init", "--root", workspace.RootPath], initOutput, initError, workspace.RootPath, TestContext.Current.CancellationToken)).ShouldBe(0);
+        workspace.WriteFile("roadmap/items/RM-002-untriaged.json", RoadmapTestContent.UntriagedIssueJson);
+
+        // Act
+        var verifyExitCode = await RepoConfigToolApplication.Run(["verify", "--root", workspace.RootPath], verifyOutput, verifyError, workspace.RootPath, TestContext.Current.CancellationToken);
+        var getExitCode = await RepoConfigToolApplication.Run(["get", "next-priority", "--root", workspace.RootPath], getOutput, getError, workspace.RootPath, TestContext.Current.CancellationToken);
+        var outputText = getOutput.ToString();
+
+        // Assert
+        verifyExitCode.ShouldBe(0);
+        getExitCode.ShouldBe(0);
+        outputText.ShouldContain("RM-001", StringComparison.Ordinal);
+        outputText.ShouldNotContain("RM-002", StringComparison.Ordinal);
+    }
+
+    [Theory]
+    [InlineData("\"order\": 20,")]
+    [InlineData("\"scoring\": { \"reach\": 10, \"impact\": 3, \"confidence\": 0.8, \"effort\": 2 },")]
+    public async Task Verify_rejects_priority_inputs_on_untriaged_items(string priorityInput)
+    {
+        // Arrange
+        using var workspace = new TemporaryRepoConfigWorkspace();
+        using var initOutput = new StringWriter(CultureInfo.InvariantCulture);
+        using var initError = new StringWriter(CultureInfo.InvariantCulture);
+        using var verifyOutput = new StringWriter(CultureInfo.InvariantCulture);
+        using var verifyError = new StringWriter(CultureInfo.InvariantCulture);
+        (await RepoConfigToolApplication.Run(["init", "--root", workspace.RootPath], initOutput, initError, workspace.RootPath, TestContext.Current.CancellationToken)).ShouldBe(0);
+        var itemText = RoadmapTestContent.UntriagedIssueJson.Replace("\"theme\":", $"{priorityInput}\n  \"theme\":", StringComparison.Ordinal);
+        workspace.WriteFile("roadmap/items/RM-002-untriaged.json", itemText);
+
+        // Act
+        var exitCode = await RepoConfigToolApplication.Run(["verify", "--root", workspace.RootPath], verifyOutput, verifyError, workspace.RootPath, TestContext.Current.CancellationToken);
+        var errorText = verifyError.ToString();
+
+        // Assert
+        exitCode.ShouldBe(1);
+        errorText.ShouldContain("Untriaged roadmap items must not define priority inputs.", StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public async Task Verify_rejects_untriaged_items_in_order_json()
+    {
+        // Arrange
+        using var workspace = new TemporaryRepoConfigWorkspace();
+        using var initOutput = new StringWriter(CultureInfo.InvariantCulture);
+        using var initError = new StringWriter(CultureInfo.InvariantCulture);
+        using var verifyOutput = new StringWriter(CultureInfo.InvariantCulture);
+        using var verifyError = new StringWriter(CultureInfo.InvariantCulture);
+        (await RepoConfigToolApplication.Run(["init", "--root", workspace.RootPath], initOutput, initError, workspace.RootPath, TestContext.Current.CancellationToken)).ShouldBe(0);
+        workspace.WriteFile("roadmap/items/RM-002-untriaged.json", RoadmapTestContent.UntriagedIssueJson);
+        workspace.WriteFile("roadmap/order.json", "{ \"items\": [\"RM-001\", \"RM-002\"] }");
+
+        // Act
+        var exitCode = await RepoConfigToolApplication.Run(["verify", "--root", workspace.RootPath], verifyOutput, verifyError, workspace.RootPath, TestContext.Current.CancellationToken);
+        var errorText = verifyError.ToString();
+
+        // Assert
+        exitCode.ShouldBe(1);
+        errorText.ShouldContain("order.json must not contain untriaged item: RM-002.", StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public async Task Get_blockers_of_renders_untriaged_items_without_priority_values()
+    {
+        // Arrange
+        using var workspace = new TemporaryRepoConfigWorkspace();
+        using var initOutput = new StringWriter(CultureInfo.InvariantCulture);
+        using var initError = new StringWriter(CultureInfo.InvariantCulture);
+        using var getOutput = new StringWriter(CultureInfo.InvariantCulture);
+        using var getError = new StringWriter(CultureInfo.InvariantCulture);
+        (await RepoConfigToolApplication.Run(["init", "--root", workspace.RootPath], initOutput, initError, workspace.RootPath, TestContext.Current.CancellationToken)).ShouldBe(0);
+        var rootItem = workspace.ReadFile("roadmap/items/RM-001-roadmap-gitops.json");
+        workspace.WriteFile("roadmap/items/RM-001-roadmap-gitops.json", rootItem.Replace("\"blockedBy\": []", "\"blockedBy\": [\"RM-002\"]", StringComparison.Ordinal));
+        var untriagedItem = RoadmapTestContent.UntriagedIssueJson.Replace("\"blocks\": []", "\"blocks\": [\"RM-001\"]", StringComparison.Ordinal);
+        workspace.WriteFile("roadmap/items/RM-002-untriaged.json", untriagedItem);
+
+        // Act
+        var exitCode = await RepoConfigToolApplication.Run(["get", "blockers-of", "RM-001", "--root", workspace.RootPath], getOutput, getError, workspace.RootPath, TestContext.Current.CancellationToken);
+        var outputText = getOutput.ToString();
+
+        // Assert
+        exitCode.ShouldBe(0);
+        outputText.ShouldContain("RM-002 | issue | ready | untriaged", StringComparison.Ordinal);
+        outputText.ShouldNotContain("order", StringComparison.Ordinal);
+        outputText.ShouldNotContain("score", StringComparison.Ordinal);
+    }
+
+    [Fact]
     public async Task Init_writes_templates_with_resolvable_local_schema_references()
     {
         // Arrange
@@ -2898,6 +3011,105 @@ public sealed class RepoConfigToolApplicationTests
                 "addProjectV2ItemById",
                 StringComparison.Ordinal) == true);
         handler.Requests.Count(request => request.Body?.Contains("updateProjectV2ItemFieldValue", StringComparison.Ordinal) == true).ShouldBe(2);
+    }
+
+    [Fact]
+    public async Task Sync_github_apply_skips_numeric_project_fields_for_untriaged_items()
+    {
+        // Arrange
+        using var workspace = new TemporaryRepoConfigWorkspace();
+        using var initOutput = new StringWriter(CultureInfo.InvariantCulture);
+        using var initError = new StringWriter(CultureInfo.InvariantCulture);
+        (await RepoConfigToolApplication.Run(["init", "--root", workspace.RootPath], initOutput, initError, workspace.RootPath, TestContext.Current.CancellationToken)).ShouldBe(0);
+        RoadmapConfigTestOperations.EnableGitHubSync(workspace);
+        GitHubProjectSyncTestOperations.EnableProjectTarget(workspace);
+        workspace.WriteFile("roadmap/items/RM-002-untriaged.json", RoadmapTestContent.UntriagedIssueJson);
+        using var handler = new TestHttpMessageHandler();
+        GitHubProjectSyncTestOperations.EnqueueMissingProjectItem(
+            handler,
+            GitHubProjectSyncTestOperations.CompleteProjectFields("""
+                [
+                  { "id": "proposed", "name": "proposed" },
+                  { "id": "ready", "name": "ready" },
+                  { "id": "in-progress", "name": "in_progress" },
+                  { "id": "done", "name": "done" },
+                  { "id": "dropped", "name": "dropped" }
+                ]
+                """),
+            """
+            { "data": { "node": { "fieldValues": { "nodes": [
+              { "number": 10, "field": { "id": "order", "name": "Roadmap order" } },
+              { "number": 10, "field": { "id": "reach", "name": "RICE reach" } },
+              { "number": 3, "field": { "id": "impact", "name": "RICE impact" } },
+              { "number": 0.8, "field": { "id": "confidence", "name": "RICE confidence" } },
+              { "number": 2, "field": { "id": "effort", "name": "RICE effort" } },
+              { "number": 12, "field": { "id": "score", "name": "RICE score" } }
+            ] } } } }
+            """);
+        for (var updateIndex = 0; updateIndex < 4; updateIndex++)
+        {
+            handler.EnqueueJson(HttpStatusCode.OK, "{ \"data\": { \"updateProjectV2ItemFieldValue\": { \"projectV2Item\": { \"id\": \"item-id\" } } } }");
+        }
+
+        using var httpClient = new HttpClient(handler);
+        var syncer = new GitHubRoadmapSyncer(RoadmapProject.Load(workspace.RootPath), httpClient);
+
+        // Act
+        var result = await syncer.Apply(TestContext.Current.CancellationToken);
+        var projectFieldUpdates = handler.Requests
+            .Where(request => request.Body?.Contains("updateProjectV2ItemFieldValue", StringComparison.Ordinal) == true)
+            .ToArray();
+
+        // Assert
+        result.Messages.ShouldContain("projected owner/repository#997 to GitHub Project 1");
+        projectFieldUpdates.Length.ShouldBe(4);
+        projectFieldUpdates.ShouldNotContain(request => request.Body?.Contains("\"fieldId\":\"order\"", StringComparison.Ordinal) == true);
+        projectFieldUpdates.ShouldNotContain(request => request.Body?.Contains("\"fieldId\":\"reach\"", StringComparison.Ordinal) == true);
+        projectFieldUpdates.ShouldNotContain(request => request.Body?.Contains("\"fieldId\":\"impact\"", StringComparison.Ordinal) == true);
+        projectFieldUpdates.ShouldNotContain(request => request.Body?.Contains("\"fieldId\":\"confidence\"", StringComparison.Ordinal) == true);
+        projectFieldUpdates.ShouldNotContain(request => request.Body?.Contains("\"fieldId\":\"effort\"", StringComparison.Ordinal) == true);
+        projectFieldUpdates.ShouldNotContain(request => request.Body?.Contains("\"fieldId\":\"score\"", StringComparison.Ordinal) == true);
+        handler.Requests.ShouldNotContain(request => request.Body?.Contains("clearProjectV2ItemFieldValue", StringComparison.Ordinal) == true);
+    }
+
+    [Fact]
+    public async Task Sync_github_dry_run_skips_numeric_project_fields_for_untriaged_items()
+    {
+        // Arrange
+        using var workspace = new TemporaryRepoConfigWorkspace();
+        using var initOutput = new StringWriter(CultureInfo.InvariantCulture);
+        using var initError = new StringWriter(CultureInfo.InvariantCulture);
+        using var syncOutput = new StringWriter(CultureInfo.InvariantCulture);
+        using var syncError = new StringWriter(CultureInfo.InvariantCulture);
+        (await RepoConfigToolApplication.Run(["init", "--root", workspace.RootPath], initOutput, initError, workspace.RootPath, TestContext.Current.CancellationToken)).ShouldBe(0);
+        RoadmapConfigTestOperations.EnableGitHubSync(workspace);
+        GitHubProjectSyncTestOperations.EnableProjectTarget(workspace);
+        workspace.WriteFile("roadmap/items/RM-002-untriaged.json", RoadmapTestContent.UntriagedIssueJson);
+        using var handler = new TestHttpMessageHandler();
+        GitHubProjectSyncTestOperations.EnqueueExistingProjectPreflight(
+            handler,
+            GitHubProjectSyncTestOperations.CompleteProjectFields("""
+                [
+                  { "id": "proposed", "name": "proposed" },
+                  { "id": "ready", "name": "ready" },
+                  { "id": "in-progress", "name": "in_progress" },
+                  { "id": "done", "name": "done" },
+                  { "id": "dropped", "name": "dropped" }
+                ]
+                """),
+            "{ \"data\": { \"node\": { \"fieldValues\": { \"nodes\": [] } } } }");
+        using var httpClient = new HttpClient(handler);
+
+        // Act
+        var exitCode = await RepoConfigToolApplication.Run(["sync", "github", "--dry-run", "--root", workspace.RootPath], syncOutput, syncError, workspace.RootPath, httpClient, TestContext.Current.CancellationToken);
+        var outputText = syncOutput.ToString();
+
+        // Assert
+        exitCode.ShouldBe(0);
+        outputText.ShouldContain("dry-run: set owner/repository#997 Project field Roadmap status to ready", StringComparison.Ordinal);
+        outputText.ShouldNotContain("Roadmap order", StringComparison.Ordinal);
+        outputText.ShouldNotContain("RICE", StringComparison.Ordinal);
+        handler.Requests.ShouldNotContain(request => request.Body?.Contains("mutation", StringComparison.Ordinal) == true);
     }
 
     [Fact]

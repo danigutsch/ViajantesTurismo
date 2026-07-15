@@ -420,7 +420,9 @@ internal static class RepoConfigToolApplication
         var count = 0;
         foreach (var item in items)
         {
-            output.WriteLine($"{item.Id} | {item.Type} | {item.Status} | order {item.Order.ToString(CultureInfo.InvariantCulture)} | score {item.Score.ToString("0.##", CultureInfo.InvariantCulture)} | {item.Title}");
+            output.WriteLine(item.IsTriaged
+                ? $"{item.Id} | {item.Type} | {item.Status} | order {item.Order?.ToString(CultureInfo.InvariantCulture)} | score {item.Score?.ToString("0.##", CultureInfo.InvariantCulture)} | {item.Title}"
+                : $"{item.Id} | {item.Type} | {item.Status} | untriaged | {item.Title}");
             count++;
         }
 

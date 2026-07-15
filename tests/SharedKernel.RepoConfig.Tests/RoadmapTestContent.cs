@@ -148,6 +148,34 @@ internal static class RoadmapTestContent
         }
         """;
 
+    public const string UntriagedIssueJson = """
+        {
+          "$schema": "../schema/roadmap-item.schema.json",
+          "id": "RM-002",
+          "parent": "RM-001",
+          "title": "Untriaged roadmap issue",
+          "type": "issue",
+          "status": "ready",
+          "triage": "untriaged",
+          "theme": "repo-operations",
+          "outcome": "An active item can be modeled before priority evidence is available.",
+          "blockedBy": [],
+          "blocks": [],
+          "dependencies": [],
+          "tags": [
+            "roadmap"
+          ],
+          "labels": [
+            "area: tooling"
+          ],
+          "integrations": {
+            "github": {
+              "issue": 997
+            }
+          }
+        }
+        """;
+
     public const string BlockedIssueJson = """
         {
           "$schema": "../schema/roadmap-item.schema.json",

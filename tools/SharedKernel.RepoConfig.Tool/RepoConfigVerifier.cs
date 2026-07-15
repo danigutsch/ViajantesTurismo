@@ -208,7 +208,14 @@ internal static class RepoConfigVerifier
         var title = VerifyRequiredString(root, "title", relativePath, issues);
         var type = VerifyRequiredString(root, "type", relativePath, issues);
         var status = VerifyRequiredString(root, "status", relativePath, issues);
-        var order = VerifyRequiredOrder(root, relativePath, issues);
+        var isUntriaged = root.TryGetProperty("triage", out var triage);
+        if (isUntriaged && (triage.ValueKind != JsonValueKind.String || !string.Equals(triage.GetString(), "untriaged", StringComparison.Ordinal)))
+        {
+            issues.Add(new RepoConfigIssue(relativePath, "triage must be untriaged when present."));
+            isUntriaged = false;
+        }
+
+        int? order = isUntriaged ? null : VerifyRequiredOrder(root, relativePath, issues);
         string? parent = null;
         if (root.TryGetProperty("parent", out var parentElement))
         {
@@ -240,13 +247,32 @@ internal static class RepoConfigVerifier
             issues.Add(new RepoConfigIssue(relativePath, $"Unknown roadmap status: {status}."));
         }
 
-        VerifyScoring(root, relativePath, issues);
+        if (isUntriaged)
+        {
+            VerifyUntriagedPriorityInputs(root, relativePath, issues);
+        }
+        else
+        {
+            VerifyScoring(root, relativePath, issues);
+        }
         var blockedBy = VerifyStringArray(root, "blockedBy", relativePath, issues, required: true);
         var blocks = VerifyStringArray(root, "blocks", relativePath, issues, required: true);
         var dependencies = VerifyStringArray(root, "dependencies", relativePath, issues, required: true);
         var tags = VerifyStringArray(root, "tags", relativePath, issues, required: true);
         var labels = VerifyStringArray(root, "labels", relativePath, issues, required: true);
         var githubIssue = GetGitHubIssue(root, relativePath, issues, out var createGitHubIssue);
+        decimal? reach = null;
+        decimal? impact = null;
+        decimal? confidence = null;
+        decimal? effort = null;
+        if (!isUntriaged)
+        {
+            reach = GetDecimal(root, "scoring", "reach");
+            impact = GetDecimal(root, "scoring", "impact");
+            confidence = GetDecimal(root, "scoring", "confidence");
+            effort = GetDecimal(root, "scoring", "effort");
+        }
+
         return string.IsNullOrWhiteSpace(id)
             ? null
             : new RoadmapItemSnapshot(
@@ -256,12 +282,13 @@ internal static class RepoConfigVerifier
                 type,
                 status,
                 theme,
+                !isUntriaged,
                 order,
                 parent,
-                GetDecimal(root, "scoring", "reach"),
-                GetDecimal(root, "scoring", "impact"),
-                GetDecimal(root, "scoring", "confidence"),
-                GetDecimal(root, "scoring", "effort"),
+                reach,
+                impact,
+                confidence,
+                effort,
                 blockedBy,
                 blocks,
                 dependencies,
@@ -283,6 +310,14 @@ internal static class RepoConfigVerifier
         VerifyNumber(scoring, "impact", relativePath, issues, value => value is >= 1 and <= 5, "impact must be between 1 and 5.");
         VerifyNumber(scoring, "confidence", relativePath, issues, value => value is >= 0.1m and <= 1, "confidence must be between 0.1 and 1.0.");
         VerifyNumber(scoring, "effort", relativePath, issues, value => value > 0, "effort must be greater than 0.");
+    }
+
+    private static void VerifyUntriagedPriorityInputs(JsonElement root, string relativePath, List<RepoConfigIssue> issues)
+    {
+        if (root.TryGetProperty("order", out _) || root.TryGetProperty("scoring", out _))
+        {
+            issues.Add(new RepoConfigIssue(relativePath, "Untriaged roadmap items must not define priority inputs."));
+        }
     }
 
     private static void VerifyNumber(JsonElement parent, string propertyName, string relativePath, List<RepoConfigIssue> issues, Func<decimal, bool> isValid, string failureMessage)
@@ -555,7 +590,8 @@ internal static class RepoConfigVerifier
             return;
         }
 
-        HashSet<string> roadmapIds = new(items.Select(item => item.Id), StringComparer.Ordinal);
+        HashSet<string> roadmapIds = new(items.Where(item => item.IsTriaged).Select(item => item.Id), StringComparer.Ordinal);
+        HashSet<string> untriagedIds = new(items.Where(item => !item.IsTriaged).Select(item => item.Id), StringComparer.Ordinal);
         HashSet<string> orderedIds = new(StringComparer.Ordinal);
         List<string> orderedValues = [];
         foreach (var orderItem in orderItems.EnumerateArray())
@@ -573,7 +609,11 @@ internal static class RepoConfigVerifier
                 issues.Add(new RepoConfigIssue(relativePath, $"Duplicate ordered item: {id}."));
             }
 
-            if (!roadmapIds.Contains(id))
+            if (untriagedIds.Contains(id))
+            {
+                issues.Add(new RepoConfigIssue(relativePath, $"order.json must not contain untriaged item: {id}."));
+            }
+            else if (!roadmapIds.Contains(id))
             {
                 issues.Add(new RepoConfigIssue(relativePath, $"Unknown ordered item: {id}."));
             }
@@ -584,7 +624,7 @@ internal static class RepoConfigVerifier
             issues.Add(new RepoConfigIssue(relativePath, $"Missing ordered item: {missingId}."));
         }
 
-        var expectedOrder = items.OrderByPriority().Select(item => item.Id);
+        var expectedOrder = items.Where(item => item.IsTriaged).OrderByPriority().Select(item => item.Id);
         if (!orderedValues.SequenceEqual(expectedOrder, StringComparer.Ordinal))
         {
             issues.Add(new RepoConfigIssue(relativePath, "order.json items must match priority order: order ascending, score descending, then id."));
@@ -627,7 +667,7 @@ internal static class RepoConfigVerifier
         return property.GetString();
     }
 
-    private static decimal GetDecimal(JsonElement root, string objectProperty, string propertyName)
+    private static decimal? GetDecimal(JsonElement root, string objectProperty, string propertyName)
     {
         if (!root.TryGetProperty(objectProperty, out var parent)
             || parent.ValueKind != JsonValueKind.Object
@@ -635,7 +675,7 @@ internal static class RepoConfigVerifier
             || value.ValueKind != JsonValueKind.Number
             || !value.TryGetDecimal(out var result))
         {
-            return 0;
+            return null;
         }
 
         return result;

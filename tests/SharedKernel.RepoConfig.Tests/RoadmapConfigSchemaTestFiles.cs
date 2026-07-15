@@ -10,6 +10,9 @@ internal static class RoadmapConfigSchemaTestFiles
     public static string ReadCheckedInSchema() =>
         File.ReadAllText(Path.Combine(GetRepositoryRoot(), "roadmap", "schema", "roadmap-config.schema.json"));
 
+    public static string ReadCheckedInItemSchema() =>
+        File.ReadAllText(Path.Combine(GetRepositoryRoot(), "roadmap", "schema", "roadmap-item.schema.json"));
+
     public static void ShouldDeclareConfigProperties(JsonElement config, JsonElement schema)
     {
         var schemaProperties = schema.GetProperty("properties");

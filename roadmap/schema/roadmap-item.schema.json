@@ -7,10 +7,8 @@
     "title",
     "type",
     "status",
-    "order",
     "theme",
     "outcome",
-    "scoring",
     "blockedBy",
     "blocks",
     "dependencies",
@@ -31,6 +29,9 @@
     },
     "status": {
       "type": "string"
+    },
+    "triage": {
+      "const": "untriaged"
     },
     "order": {
       "type": "integer",
@@ -145,5 +146,41 @@
         }
       }
     }
-  }
+  },
+  "allOf": [
+    {
+      "if": {
+        "required": [
+          "triage"
+        ],
+        "properties": {
+          "triage": {
+            "const": "untriaged"
+          }
+        }
+      },
+      "then": {
+        "not": {
+          "anyOf": [
+            {
+              "required": [
+                "order"
+              ]
+            },
+            {
+              "required": [
+                "scoring"
+              ]
+            }
+          ]
+        }
+      },
+      "else": {
+        "required": [
+          "order",
+          "scoring"
+        ]
+      }
+    }
+  ]
 }

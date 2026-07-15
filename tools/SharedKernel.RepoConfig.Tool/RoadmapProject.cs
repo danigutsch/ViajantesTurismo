@@ -52,7 +52,7 @@ internal sealed class RoadmapProject
     }
 
     public IReadOnlyList<RoadmapItemSnapshot> OpenItems(string? type = null) =>
-        Items.Where(item => !IsClosed(item) && (type is null || string.Equals(item.Type, type, StringComparison.Ordinal))).ToArray();
+        Items.Where(item => item.IsTriaged && !IsClosed(item) && (type is null || string.Equals(item.Type, type, StringComparison.Ordinal))).ToArray();
 
     public bool IsClosed(RoadmapItemSnapshot item) =>
         ClosedStatuses.Contains(item.Status);
@@ -96,7 +96,31 @@ internal sealed class RoadmapProject
         var relativePath = RepoConfigPaths.RelativeTo(rootPath, itemPath);
         using var document = JsonDocument.Parse(File.ReadAllText(itemPath));
         var root = document.RootElement;
-        var scoring = root.GetProperty("scoring");
+        var isUntriaged = root.TryGetProperty("triage", out var triage)
+            && triage.ValueKind == JsonValueKind.String
+            && string.Equals(triage.GetString(), "untriaged", StringComparison.Ordinal);
+        var isTriaged = !isUntriaged;
+        var scoring = root.TryGetProperty("scoring", out var scoringElement) && scoringElement.ValueKind == JsonValueKind.Object
+            ? scoringElement
+            : default;
+        int? order = null;
+        decimal? reach = null;
+        decimal? impact = null;
+        decimal? confidence = null;
+        decimal? effort = null;
+        if (isTriaged)
+        {
+            if (root.TryGetProperty("order", out var orderElement) && orderElement.TryGetInt32(out var orderValue))
+            {
+                order = orderValue;
+            }
+
+            reach = ReadDecimal(scoring, "reach");
+            impact = ReadDecimal(scoring, "impact");
+            confidence = ReadDecimal(scoring, "confidence");
+            effort = ReadDecimal(scoring, "effort");
+        }
+
         return new RoadmapItemSnapshot(
             root.GetProperty("id").GetString() ?? string.Empty,
             relativePath,
@@ -104,12 +128,13 @@ internal sealed class RoadmapProject
             root.GetProperty("type").GetString() ?? string.Empty,
             root.GetProperty("status").GetString() ?? string.Empty,
             root.GetProperty("theme").GetString() ?? string.Empty,
-            root.GetProperty("order").GetInt32(),
+            isTriaged,
+            order,
             root.TryGetProperty("parent", out var parent) && parent.ValueKind == JsonValueKind.String ? parent.GetString() : null,
-            scoring.GetProperty("reach").GetDecimal(),
-            scoring.GetProperty("impact").GetDecimal(),
-            scoring.GetProperty("confidence").GetDecimal(),
-            scoring.GetProperty("effort").GetDecimal(),
+            reach,
+            impact,
+            confidence,
+            effort,
             ReadStringArray(root, "blockedBy"),
             ReadStringArray(root, "blocks"),
             ReadStringArray(root, "dependencies"),
@@ -185,6 +210,13 @@ internal sealed class RoadmapProject
 
         return issue.ValueKind == JsonValueKind.Number && issue.TryGetInt32(out var value) ? value : null;
     }
+
+    private static decimal? ReadDecimal(JsonElement parent, string propertyName) =>
+        parent.TryGetProperty(propertyName, out var value)
+        && value.ValueKind == JsonValueKind.Number
+        && value.TryGetDecimal(out var decimalValue)
+            ? decimalValue
+            : null;
 
     private static string[] ReadStringArray(JsonElement root, string propertyName)
     {
