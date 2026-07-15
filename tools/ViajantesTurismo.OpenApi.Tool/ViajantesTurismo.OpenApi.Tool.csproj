@@ -9,8 +9,4 @@
         <InternalsVisibleTo Include="ViajantesTurismo.OpenApi.Tool.Tests" />
     </ItemGroup>
 
-    <ItemGroup>
-        <ProjectReference Include="..\..\src\SharedKernel\SharedKernel.AspNetCore\SharedKernel.AspNetCore.csproj" />
-    </ItemGroup>
-
 </Project>

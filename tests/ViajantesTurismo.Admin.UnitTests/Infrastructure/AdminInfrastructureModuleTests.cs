@@ -84,7 +84,7 @@ public sealed class AdminInfrastructureModuleTests
     }
 
     [Fact]
-    public void OpenApi_build_generation_marker_does_not_stop_admin_background_workers_outside_the_document_generator()
+    public void Explicit_openapi_generation_registration_omits_admin_background_workers()
     {
         // Arrange
         using var serviceProvider = AdminInfrastructureModuleTestServices.CreateWithOpenApiBuildGenerationInfrastructureModule();
@@ -93,8 +93,8 @@ public sealed class AdminInfrastructureModuleTests
         var hostedServices = serviceProvider.GetServices<IHostedService>().ToArray();
 
         // Assert
-        hostedServices.ShouldContain(service => service is DocumentDraftRetentionHostedService);
-        hostedServices.ShouldContain(service => service is IntegrationEventOutboxRelayHostedService<AdminWriteDbContext>);
+        hostedServices.ShouldNotContain(service => service is DocumentDraftRetentionHostedService);
+        hostedServices.ShouldNotContain(service => service is IntegrationEventOutboxRelayHostedService<AdminWriteDbContext>);
     }
 
     [Fact]

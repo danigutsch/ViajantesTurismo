@@ -9,14 +9,13 @@ const string ApiRobotsTxt = "User-agent: *\nDisallow: /";
 
 var builder = WebApplication.CreateSlimBuilder(args);
 
-builder.Services.AddOpenApiBuildGenerationDataProtection(builder.Configuration);
 builder.WebHost.UseKestrelHttpsConfiguration();
 builder.AddServiceDefaults();
 builder.Services.AddConfiguredTrustedForwardedHeaders(builder.Configuration.GetSection("Security:ForwardedHeaders"));
 builder.Services.AddCatalogOpenApiDocuments();
 builder.Services.AddOutputCache();
 builder.Services.AddCatalogSecurityBaseline(builder.Configuration);
-builder.Services.AddApiBearerAuthentication(
+builder.Services.AddApiSecurity(
         builder.Configuration,
         builder.Environment,
         ApiAudienceNames.Catalog,
@@ -35,8 +34,7 @@ app.MapConfiguredOpenApi();
 app.UsePublicContentLanguageQueryAlias();
 app.UseCors(CatalogSecurityBaseline.CorsPolicyName);
 
-app.UseAuthentication();
-app.UseAuthorization();
+app.UseApiSecurity();
 app.UseRateLimiter();
 app.UseOutputCache();
 app.MapCatalogEndpoints();

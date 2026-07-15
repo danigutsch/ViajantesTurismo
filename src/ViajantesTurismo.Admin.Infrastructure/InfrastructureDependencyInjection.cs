@@ -1,12 +1,11 @@
-using System.Reflection;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using SharedKernel.DomainEvents.EntityFrameworkCore;
 using SharedKernel.EntityFrameworkCore;
 using SharedKernel.Messaging.IntegrationEvents;
 using SharedKernel.Messaging.IntegrationEvents.EntityFrameworkCore;
+using SharedKernel.OpenApi;
 using ViajantesTurismo.Admin.Contracts.IntegrationEvents;
 using ViajantesTurismo.Admin.Contracts.IntegrationEvents.Tours;
 using ViajantesTurismo.Admin.Application;
@@ -23,9 +22,6 @@ namespace ViajantesTurismo.Admin.Infrastructure;
 /// </summary>
 public static class InfrastructureDependencyInjection
 {
-    private const string OpenApiDocumentGeneratorAssemblyName = "GetDocument.Insider";
-    private const string OpenApiBuildGenerationConfigurationKey = "OpenApi:BuildGeneration";
-
     /// <summary>
     /// Adds the Infrastructure layer services to the application builder.
     /// </summary>
@@ -35,11 +31,47 @@ public static class InfrastructureDependencyInjection
     public static TApplicationBuilder AddInfrastructure<TApplicationBuilder>(this TApplicationBuilder builder)
         where TApplicationBuilder : IHostApplicationBuilder
     {
+        return builder.AddInfrastructure(addRuntimeBackgroundServices: null);
+    }
+
+    /// <summary>
+    /// Adds Infrastructure layer services with an explicit runtime background-service registration choice.
+    /// </summary>
+    /// <param name="builder">The application builder to configure.</param>
+    /// <param name="addRuntimeBackgroundServices">Whether to register runtime hosted services. When omitted, trusted OpenAPI generation omits them.</param>
+    /// <typeparam name="TApplicationBuilder">The type of the application builder, constrained to <see cref="IHostApplicationBuilder"/>.</typeparam>
+    /// <returns>The updated application builder.</returns>
+    public static TApplicationBuilder AddInfrastructure<TApplicationBuilder>(
+        this TApplicationBuilder builder,
+        bool? addRuntimeBackgroundServices)
+        where TApplicationBuilder : IHostApplicationBuilder
+    {
         ArgumentNullException.ThrowIfNull(builder);
 
-        return AddInfrastructure(
-            builder,
-            addRuntimeBackgroundServices: !IsOpenApiBuildGeneration(builder.Configuration));
+        if (builder.Environment.IsDevelopment())
+        {
+            builder.Services.AddDbContextDevelopmentDiagnostics<AdminWriteDbContext>();
+            builder.Services.AddDbContextDevelopmentDiagnostics<AdminReadDbContext>();
+        }
+
+        builder.AddAdminWriteDbContext();
+        builder.AddAdminReadDbContext();
+
+        builder.Services.AddScoped<IUnitOfWork>(sp => sp.GetRequiredService<AdminWriteDbContext>());
+        builder.Services.AddScoped<IQueryService, QueryService>();
+        builder.Services.AddScoped<ITourStore, TourStore>();
+        builder.Services.AddScoped<ICustomerStore, CustomerStore>();
+        builder.Services.AddScoped<IDocumentStore, DocumentStore>();
+        builder.Services.AddIntegrationEventContract(
+            AdminTourCreatedIntegrationEvent.EventType,
+            AdminIntegrationEventJsonContext.Default.AdminTourCreatedIntegrationEvent);
+        builder.Services.AddIntegrationEventOutbox<AdminWriteDbContext>();
+        builder.Services.AddPostgreSqlIntegrationEventTransportProducer<AdminWriteDbContext>(IntegrationEventConsumerNames.Catalog);
+
+        var shouldAddRuntimeBackgroundServices = addRuntimeBackgroundServices
+            ?? !OpenApiGenerationMode.IsEnabled(builder.Environment);
+
+        return builder.AddAdminRuntimeBackgroundServices(shouldAddRuntimeBackgroundServices);
     }
 
     /// <summary>
@@ -69,34 +101,6 @@ public static class InfrastructureDependencyInjection
         return builder;
     }
 
-    private static TApplicationBuilder AddInfrastructure<TApplicationBuilder>(
-        TApplicationBuilder builder,
-        bool addRuntimeBackgroundServices)
-        where TApplicationBuilder : IHostApplicationBuilder
-    {
-        if (builder.Environment.IsDevelopment())
-        {
-            builder.Services.AddDbContextDevelopmentDiagnostics<AdminWriteDbContext>();
-            builder.Services.AddDbContextDevelopmentDiagnostics<AdminReadDbContext>();
-        }
-
-        builder.AddAdminWriteDbContext();
-        builder.AddAdminReadDbContext();
-
-        builder.Services.AddScoped<IUnitOfWork>(sp => sp.GetRequiredService<AdminWriteDbContext>());
-        builder.Services.AddScoped<IQueryService, QueryService>();
-        builder.Services.AddScoped<ITourStore, TourStore>();
-        builder.Services.AddScoped<ICustomerStore, CustomerStore>();
-        builder.Services.AddScoped<IDocumentStore, DocumentStore>();
-        builder.Services.AddIntegrationEventContract(
-            AdminTourCreatedIntegrationEvent.EventType,
-            AdminIntegrationEventJsonContext.Default.AdminTourCreatedIntegrationEvent);
-        builder.Services.AddIntegrationEventOutbox<AdminWriteDbContext>();
-        builder.Services.AddPostgreSqlIntegrationEventTransportProducer<AdminWriteDbContext>(IntegrationEventConsumerNames.Catalog);
-
-        return builder.AddAdminRuntimeBackgroundServices(addRuntimeBackgroundServices);
-    }
-
     private static TApplicationBuilder AddAdminRuntimeBackgroundServices<TApplicationBuilder>(
         this TApplicationBuilder builder,
         bool addRuntimeBackgroundServices)
@@ -110,16 +114,6 @@ public static class InfrastructureDependencyInjection
         }
 
         return builder;
-    }
-
-    private static bool IsOpenApiBuildGeneration(IConfiguration configuration)
-    {
-        return bool.TryParse(configuration[OpenApiBuildGenerationConfigurationKey], out var enabled)
-               && enabled
-               && string.Equals(
-                   Assembly.GetEntryAssembly()?.GetName().Name,
-                   OpenApiDocumentGeneratorAssemblyName,
-                   StringComparison.Ordinal);
     }
 
     private static void AddAdminWriteDbContext<TApplicationBuilder>(this TApplicationBuilder builder)

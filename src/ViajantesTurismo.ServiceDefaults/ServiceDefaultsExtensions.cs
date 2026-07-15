@@ -9,6 +9,7 @@ using OpenTelemetry;
 using OpenTelemetry.Metrics;
 using OpenTelemetry.Trace;
 using SharedKernel.Observability;
+using SharedKernel.OpenApi;
 using ViajantesTurismo.Resources;
 
 namespace ViajantesTurismo.ServiceDefaults;
@@ -33,14 +34,34 @@ public static class ServiceDefaultsExtensions
     /// <returns>The updated host application builder.</returns>
     public static TBuilder AddServiceDefaults<TBuilder>(this TBuilder builder) where TBuilder : IHostApplicationBuilder
     {
+        return builder.AddServiceDefaults(includeObservabilityAndServiceDiscovery: null);
+    }
+
+    /// <summary>
+    /// Adds health checks and, optionally, observability and service-discovery defaults to the host builder.
+    /// </summary>
+    /// <typeparam name="TBuilder">The type of the host application builder.</typeparam>
+    /// <param name="builder">The host application builder.</param>
+    /// <param name="includeObservabilityAndServiceDiscovery">Whether to configure telemetry and service discovery. When omitted, trusted OpenAPI generation uses health checks only.</param>
+    /// <returns>The updated host application builder.</returns>
+    public static TBuilder AddServiceDefaults<TBuilder>(
+        this TBuilder builder,
+        bool? includeObservabilityAndServiceDiscovery)
+        where TBuilder : IHostApplicationBuilder
+    {
         ArgumentNullException.ThrowIfNull(builder);
 
-        builder.ConfigureOpenTelemetry();
-        builder.AddApplicationVersionLogging();
+        var shouldIncludeObservabilityAndServiceDiscovery = includeObservabilityAndServiceDiscovery
+            ?? !OpenApiGenerationMode.IsEnabled(builder.Environment);
+
+        if (shouldIncludeObservabilityAndServiceDiscovery)
+        {
+            builder.ConfigureOpenTelemetry();
+            builder.AddApplicationVersionLogging();
+            builder.Services.AddServiceDiscovery();
+        }
 
         builder.AddDefaultHealthChecks();
-
-        builder.Services.AddServiceDiscovery();
 
         return builder;
     }

@@ -15,7 +15,6 @@ const string ApiRobotsTxt = "User-agent: *\nDisallow: /";
 
 var builder = WebApplication.CreateSlimBuilder(args);
 
-builder.Services.AddOpenApiBuildGenerationDataProtection(builder.Configuration);
 builder.WebHost.UseKestrelHttpsConfiguration();
 
 builder.AddServiceDefaults();
@@ -26,7 +25,7 @@ builder.Services.AddHttpClient<IBrandingApiClient, BrandingApiClient>(client => 
 builder.Services.AddProblemDetails();
 builder.Services.AddConfiguredTrustedForwardedHeaders(builder.Configuration.GetSection("Security:ForwardedHeaders"));
 builder.Services.AddAdminSecurityBaseline(builder.Configuration);
-builder.Services.AddApiBearerAuthentication(
+builder.Services.AddApiSecurity(
         builder.Configuration,
         builder.Environment,
         ApiAudienceNames.Admin,
@@ -61,8 +60,7 @@ app.MapConfiguredOpenApi();
 
 app.UseCors(AdminSecurityBaseline.CorsPolicyName);
 
-app.UseAuthentication();
-app.UseAuthorization();
+app.UseApiSecurity();
 app.UseRateLimiter();
 
 app.MapToursEndpoints();

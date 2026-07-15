@@ -4,7 +4,7 @@ namespace ViajantesTurismo.OpenApi.Tool;
 
 internal static class OpenApiToolApplication
 {
-    private const string Usage = "Usage: dotnet run --project tools/ViajantesTurismo.OpenApi.Tool -- generate <admin|catalog|branding> [--refresh]";
+    private const string Usage = "Usage: dotnet run --project tools/ViajantesTurismo.OpenApi.Tool --no-restore -- generate <admin|catalog|branding> [--refresh]";
 
     public static async Task<int> Run(string[] args, TextWriter output, TextWriter error)
     {
@@ -21,9 +21,7 @@ internal static class OpenApiToolApplication
         try
         {
             var options = OpenApiGenerationOptions.Parse(args, FindRepositoryRoot(Directory.GetCurrentDirectory()));
-            var startInfo = OpenApiGenerationCommand.CreateStartInfo(
-                options,
-                string.Equals(Environment.GetEnvironmentVariable("CI"), "true", StringComparison.Ordinal));
+            var startInfo = OpenApiGenerationCommand.CreateStartInfo(options);
             using var process = Process.Start(startInfo) ?? throw new InvalidOperationException("Could not start dotnet build.");
             await process.WaitForExitAsync().ConfigureAwait(false);
             return process.ExitCode;

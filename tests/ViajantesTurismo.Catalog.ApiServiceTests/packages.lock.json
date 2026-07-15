@@ -680,7 +680,8 @@
         "type": "Project",
         "dependencies": {
           "Microsoft.AspNetCore.Authentication.JwtBearer": "[10.0.9, )",
-          "SharedKernel.InputNormalization": "[0.1.0-alpha.0, )"
+          "SharedKernel.InputNormalization": "[0.1.0-alpha.0, )",
+          "SharedKernel.OpenApi": "[0.1.0-alpha.0, )"
         }
       },
       "sharedkernel.buildingblocks": {
@@ -906,6 +907,7 @@
           "SharedKernel.Idempotency": "[0.1.0-alpha.0, )",
           "SharedKernel.InputNormalization": "[0.1.0-alpha.0, )",
           "SharedKernel.Messaging.IntegrationEvents.EntityFrameworkCore": "[0.1.0-alpha.0, )",
+          "SharedKernel.OpenApi": "[0.1.0-alpha.0, )",
           "SharedKernel.Scheduling": "[0.1.0-alpha.0, )",
           "ViajantesTurismo.Catalog.Application": "[0.1.0-alpha.0, )",
           "ViajantesTurismo.Catalog.Domain": "[0.1.0-alpha.0, )",
@@ -939,6 +941,7 @@
           "OpenTelemetry.Instrumentation.Runtime": "[1.15.1, )",
           "SharedKernel.Mediator.Abstractions": "[0.1.0-alpha.0, )",
           "SharedKernel.Observability": "[0.1.0-alpha.0, )",
+          "SharedKernel.OpenApi": "[0.1.0-alpha.0, )",
           "ViajantesTurismo.Resources": "[0.1.0-alpha.0, )"
         }
       },

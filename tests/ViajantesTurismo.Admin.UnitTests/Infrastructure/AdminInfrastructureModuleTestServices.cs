@@ -61,12 +61,8 @@ internal static class AdminInfrastructureModuleTestServices
     public static ServiceProvider CreateWithOpenApiBuildGenerationInfrastructureModule()
     {
         var builder = CreateConfiguredApplicationBuilder();
-        builder.Configuration.AddInMemoryCollection(new Dictionary<string, string?>
-        {
-            ["OpenApi:BuildGeneration"] = bool.TrueString
-        });
         builder.AddApplication();
-        builder.AddInfrastructure();
+        builder.AddInfrastructure(addRuntimeBackgroundServices: false);
 
         return builder.Services.BuildServiceProvider();
     }

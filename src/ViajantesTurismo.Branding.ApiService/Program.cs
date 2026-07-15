@@ -7,14 +7,13 @@ using ViajantesTurismo.ServiceDefaults;
 
 var builder = WebApplication.CreateSlimBuilder(args);
 
-builder.Services.AddOpenApiBuildGenerationDataProtection(builder.Configuration);
 builder.WebHost.UseKestrelHttpsConfiguration();
 builder.AddServiceDefaults();
 builder.Services.AddConfiguredTrustedForwardedHeaders(builder.Configuration.GetSection("Security:ForwardedHeaders"));
 builder.Services.AddBrandingOpenApiDocuments();
 builder.Services.AddOutputCache();
 builder.Services.AddBrandingSecurityBaseline(builder.Configuration);
-builder.Services.AddApiBearerAuthentication(
+builder.Services.AddApiSecurity(
         builder.Configuration,
         builder.Environment,
         ApiAudienceNames.Branding,
@@ -30,8 +29,7 @@ app.UseForwardedHeaders();
 app.MapConfiguredOpenApi();
 
 app.UseCors(BrandingSecurityBaseline.CorsPolicyName);
-app.UseAuthentication();
-app.UseAuthorization();
+app.UseApiSecurity();
 app.UseRateLimiter();
 app.UseOutputCache();
 

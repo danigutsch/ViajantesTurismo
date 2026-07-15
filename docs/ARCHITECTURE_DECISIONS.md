@@ -71,6 +71,8 @@ Decisions about application architecture and layer responsibilities.
 - **[ADR-034](adr/20260705-bounded-context-databases-and-outbox-ownership.md)** — Bounded Context
   Databases and Outbox Ownership
 - **[ADR-035](adr/20260707-postgresql-access-policy.md)** — PostgreSQL Access Policy
+- **[ADR-037](adr/20260715-deterministic-no-network-build-time-openapi-generation.md)** —
+  Deterministic, No-Network Build-Time OpenAPI Generation
 
 ### Versioning & Release
 

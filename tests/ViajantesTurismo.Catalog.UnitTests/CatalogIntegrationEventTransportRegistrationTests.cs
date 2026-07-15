@@ -88,7 +88,7 @@ public sealed class CatalogIntegrationEventTransportRegistrationTests
     }
 
     [Fact]
-    public void OpenApi_build_generation_marker_does_not_stop_catalog_outbox_relay_outside_the_document_generator()
+    public void Explicit_openapi_generation_registration_omits_catalog_outbox_relay()
     {
         // Arrange
         using var scenario = CatalogInfrastructureTestServices.CreateOpenApiBuildGenerationScenario();
@@ -97,7 +97,7 @@ public sealed class CatalogIntegrationEventTransportRegistrationTests
         var includesCatalogOutboxRelay = scenario.ContainsHostedService<IntegrationEventOutboxRelayHostedService<CatalogDbContext>>();
 
         // Assert
-        includesCatalogOutboxRelay.ShouldBeTrue();
+        includesCatalogOutboxRelay.ShouldBeFalse();
     }
 
     [Fact]
