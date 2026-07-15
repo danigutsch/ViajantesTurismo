@@ -193,11 +193,12 @@ internal static class RepoConfigToolApplication
 
             case "next-work":
                 var openItems = project.OpenItems();
+                var blockerIdsWithOpenDependents = openItems.SelectMany(item => item.BlockedBy).ToHashSet(StringComparer.Ordinal);
                 WriteItems(
                     output,
                     openItems
                         .Where(item => (type is null || string.Equals(item.Type, type, StringComparison.Ordinal)) && project.IsUnblocked(item))
-                        .OrderByDescending(candidate => openItems.Any(item => item.BlockedBy.Contains(candidate.Id, StringComparer.Ordinal)))
+                        .OrderByDescending(candidate => blockerIdsWithOpenDependents.Contains(candidate.Id))
                         .ThenBy(item => item.Order)
                         .ThenByDescending(item => item.Score)
                         .ThenBy(item => item.Id, StringComparer.Ordinal)
