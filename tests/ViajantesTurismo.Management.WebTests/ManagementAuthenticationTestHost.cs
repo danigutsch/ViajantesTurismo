@@ -36,6 +36,7 @@ internal sealed class ManagementAuthenticationTestHost : IAsyncDisposable
     public static ManagementAuthenticationTestHost Create(IConfiguration configuration, TestHostEnvironment environment)
     {
         var services = new ServiceCollection();
+        services.AddLogging();
         services.AddManagementAuthentication(configuration, environment);
         return new ManagementAuthenticationTestHost(services.BuildServiceProvider());
     }

@@ -14,10 +14,14 @@ internal sealed class ProtectedDistributedUserTokenStoreTestContext
     public ProtectedDistributedUserTokenStoreTestContext(IDistributedCache? cache = null)
     {
         Cache = cache ?? new MemoryDistributedCache(Options.Create(new MemoryDistributedCacheOptions()));
-        Store = new ProtectedDistributedUserTokenStore(Cache, new EphemeralDataProtectionProvider(), TimeProvider.System);
+        var dataProtectionProvider = new EphemeralDataProtectionProvider();
+        AudienceTokenStore = new ProtectedDistributedAudienceTokenStore(Cache, dataProtectionProvider, TimeProvider.System);
+        Store = new ProtectedDistributedUserTokenStore(Cache, dataProtectionProvider, TimeProvider.System);
     }
 
     public IDistributedCache Cache { get; }
+
+    public ProtectedDistributedAudienceTokenStore AudienceTokenStore { get; }
 
     public ProtectedDistributedUserTokenStore Store { get; }
 

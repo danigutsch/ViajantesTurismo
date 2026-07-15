@@ -78,6 +78,51 @@ public sealed class ProtectedDistributedTicketStoreTests
     }
 
     [Fact]
+    public async Task Retries_ticket_removal_when_the_cache_recovers()
+    {
+        // Arrange
+        var innerCache = new Microsoft.Extensions.Caching.Distributed.MemoryDistributedCache(
+            Microsoft.Extensions.Options.Options.Create(
+                new Microsoft.Extensions.Caching.Memory.MemoryDistributedCacheOptions()));
+        var cache = new ThrowingRemoveDistributedCache(
+            innerCache,
+            shouldThrowOnRemove: static (_, removeCall) => removeCall == 1);
+        var context = new ProtectedDistributedTicketStoreTestContext(cache);
+        var key = await context.Store.StoreAsync(ProtectedDistributedTicketStoreTestContext.CreateTicket());
+
+        // Act
+        await context.Store.RemoveAsync(key, Xunit.TestContext.Current.CancellationToken);
+        var retrieved = await context.Store.RetrieveAsync(key);
+
+        // Assert
+        retrieved.ShouldBeNull();
+        cache.RemoveCalls.ShouldBe(2);
+    }
+
+    [Fact]
+    public async Task Does_not_log_the_ticket_key_when_terminal_removal_fails()
+    {
+        // Arrange
+        const string key = "management-ticket:confidential-session-key";
+        var innerCache = new Microsoft.Extensions.Caching.Distributed.MemoryDistributedCache(
+            Microsoft.Extensions.Options.Options.Create(
+                new Microsoft.Extensions.Caching.Memory.MemoryDistributedCacheOptions()));
+        var cache = new ThrowingRemoveDistributedCache(
+            innerCache,
+            new InvalidOperationException($"The cache could not remove {key}."));
+        var logger = new CapturingLogger<Web.ProtectedDistributedTicketStore>();
+        var context = new ProtectedDistributedTicketStoreTestContext(cache, logger);
+
+        // Act
+        await context.Store.RemoveAsync(key, Xunit.TestContext.Current.CancellationToken);
+        var logEntry = logger.Entries.ShouldHaveSingleItem();
+
+        // Assert
+        logEntry.ShouldContain("Management ticket cache removal failed after 2 attempts.", StringComparison.Ordinal);
+        logEntry.ShouldNotContain(key, StringComparison.Ordinal);
+    }
+
+    [Fact]
     public async Task Rejects_a_protected_ticket_transplanted_from_another_cache_key()
     {
         // Arrange
@@ -123,7 +168,7 @@ public sealed class ProtectedDistributedTicketStoreTests
 
         // Assert
         ticket.ShouldBeNull();
-        cache.RemoveCalls.ShouldBe(1);
+        cache.RemoveCalls.ShouldBe(2);
     }
 
     [Fact]

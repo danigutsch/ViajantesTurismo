@@ -311,6 +311,12 @@
           "SharedKernel.Results": "[0.1.0-alpha.0, )"
         }
       },
+      "sharedkernel.buildingblocks": {
+        "type": "Project",
+        "dependencies": {
+          "SharedKernel.Results": "[0.1.0-alpha.0, )"
+        }
+      },
       "sharedkernel.httpclients": {
         "type": "Project",
         "dependencies": {

@@ -180,6 +180,7 @@ flowchart TB
     ViajantesTurismo_IntegrationEventWorker[ViajantesTurismo.IntegrationEventWorker] --> ViajantesTurismo_ServiceDefaults[ViajantesTurismo.ServiceDefaults]
     ViajantesTurismo_Management_Web[ViajantesTurismo.Management.Web] --> SharedKernel_AspNetCore[SharedKernel.AspNetCore]
     ViajantesTurismo_Management_Web[ViajantesTurismo.Management.Web] --> SharedKernel_Branding[SharedKernel.Branding]
+    ViajantesTurismo_Management_Web[ViajantesTurismo.Management.Web] --> SharedKernel_BuildingBlocks[SharedKernel.BuildingBlocks]
     ViajantesTurismo_Management_Web[ViajantesTurismo.Management.Web] --> SharedKernel_HttpClients[SharedKernel.HttpClients]
     ViajantesTurismo_Management_Web[ViajantesTurismo.Management.Web] --> ViajantesTurismo_Admin_Contracts_Application[ViajantesTurismo.Admin.Contracts.Application]
     ViajantesTurismo_Management_Web[ViajantesTurismo.Management.Web] --> ViajantesTurismo_Admin_Contracts_Http[ViajantesTurismo.Admin.Contracts.Http]

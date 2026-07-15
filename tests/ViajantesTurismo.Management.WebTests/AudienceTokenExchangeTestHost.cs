@@ -1,8 +1,4 @@
-using System.Security.Cryptography;
-using System.Text;
 using Microsoft.AspNetCore.Authentication.OpenIdConnect;
-using Microsoft.AspNetCore.DataProtection;
-using Microsoft.AspNetCore.WebUtilities;
 using Microsoft.Extensions.Caching.Distributed;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Protocols.OpenIdConnect;
@@ -34,8 +30,7 @@ internal sealed class AudienceTokenExchangeTestHost : IAsyncDisposable
         return new KeycloakAudienceTokenExchangeHandler(
             audience,
             _provider.GetRequiredService<IHttpClientFactory>(),
-            _provider.GetRequiredService<IDistributedCache>(),
-            _provider.GetRequiredService<IDataProtectionProvider>(),
+            _provider.GetRequiredService<ProtectedDistributedAudienceTokenStore>(),
             _provider.GetRequiredService<IOptionsMonitor<OpenIdConnectOptions>>(),
             TimeProvider.System)
         {
@@ -50,6 +45,8 @@ internal sealed class AudienceTokenExchangeTestHost : IAsyncDisposable
         var services = new ServiceCollection();
         services.AddDistributedMemoryCache();
         services.AddDataProtection();
+        services.AddSingleton(TimeProvider.System);
+        services.AddSingleton<ProtectedDistributedAudienceTokenStore>();
         services.AddOptions();
         services.Configure<OpenIdConnectOptions>(OpenIdConnectDefaults.AuthenticationScheme, options =>
         {
@@ -70,8 +67,7 @@ internal sealed class AudienceTokenExchangeTestHost : IAsyncDisposable
 
     public static string GetAudienceTokenCacheKey(string audience, string sourceAccessToken)
     {
-        var sourceTokenHash = SHA256.HashData(Encoding.UTF8.GetBytes(sourceAccessToken));
-        return string.Concat("management-audience-token:", audience, ':', WebEncoders.Base64UrlEncode(sourceTokenHash));
+        return ProtectedDistributedAudienceTokenStore.GetCacheKey(audience, sourceAccessToken);
     }
 
     public Task StoreProtectedAudienceTokenEntry(
@@ -81,23 +77,8 @@ internal sealed class AudienceTokenExchangeTestHost : IAsyncDisposable
         DateTimeOffset expiresAt,
         CancellationToken ct)
     {
-        var cacheKey = GetAudienceTokenCacheKey(audience, sourceAccessToken);
-        using var stream = new MemoryStream();
-        using (var writer = new BinaryWriter(stream, Encoding.UTF8, leaveOpen: true))
-        {
-            writer.Write(expiresAt.ToUnixTimeMilliseconds());
-            writer.Write(accessToken);
-            writer.Flush();
-        }
-
-        var protector = _provider.GetRequiredService<IDataProtectionProvider>()
-            .CreateProtector("ViajantesTurismo.Management.Web.AudienceTokenStore.v1")
-            .CreateProtector(cacheKey);
-        return Cache.SetAsync(
-            cacheKey,
-            protector.Protect(stream.ToArray()),
-            new DistributedCacheEntryOptions { AbsoluteExpiration = expiresAt },
-            ct);
+        return _provider.GetRequiredService<ProtectedDistributedAudienceTokenStore>()
+            .Store(audience, sourceAccessToken, accessToken, expiresAt, ct);
     }
 
     public ValueTask DisposeAsync()

@@ -4,23 +4,32 @@ using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.DataProtection;
 using Microsoft.AspNetCore.WebUtilities;
 using Microsoft.Extensions.Caching.Distributed;
+using SharedKernel.BuildingBlocks;
 
 namespace ViajantesTurismo.Management.Web;
 
 /// <summary>
 /// Stores encrypted cookie authentication tickets outside the browser.
 /// </summary>
-internal sealed class ProtectedDistributedTicketStore : ITicketStore
+internal sealed partial class ProtectedDistributedTicketStore : ITicketStore
 {
+    private const int CacheRemovalAttempts = 2;
+
     private readonly IDistributedCache cache;
+    private readonly ILogger<ProtectedDistributedTicketStore> logger;
     private readonly IDataProtector protector;
 
-    public ProtectedDistributedTicketStore(IDistributedCache cache, IDataProtectionProvider dataProtectionProvider)
+    public ProtectedDistributedTicketStore(
+        IDistributedCache cache,
+        IDataProtectionProvider dataProtectionProvider,
+        ILogger<ProtectedDistributedTicketStore> logger)
     {
         ArgumentNullException.ThrowIfNull(cache);
         ArgumentNullException.ThrowIfNull(dataProtectionProvider);
+        ArgumentNullException.ThrowIfNull(logger);
 
         this.cache = cache;
+        this.logger = logger;
         protector = dataProtectionProvider.CreateProtector(ManagementAuthenticationDefaults.TicketStoreProtectorPurpose);
     }
 
@@ -91,14 +100,32 @@ internal sealed class ProtectedDistributedTicketStore : ITicketStore
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(key);
 
-        var ct = cancellationToken;
+        var firstFailure = await TryRemoveFromCache(key, cancellationToken).ConfigureAwait(false);
+        if (firstFailure is null)
+        {
+            return;
+        }
+
+        var terminalFailure = await TryRemoveFromCache(key, cancellationToken).ConfigureAwait(false);
+        if (terminalFailure is not null)
+        {
+            LogTicketCacheRemovalFailed(logger, CacheRemovalAttempts, terminalFailure.GetType().Name);
+        }
+    }
+
+    [LoggerMessage(LogLevel.Error, "Management ticket cache removal failed after {AttemptCount} attempts. Failure type: {FailureType}.")]
+    private static partial void LogTicketCacheRemovalFailed(ILogger logger, int attemptCount, string failureType);
+
+    private async Task<Exception?> TryRemoveFromCache(string key, CancellationToken cancellationToken)
+    {
         try
         {
-            await cache.RemoveAsync(key, ct).ConfigureAwait(false);
+            await cache.RemoveAsync(key, cancellationToken).ConfigureAwait(false);
+            return null;
         }
-        catch (Exception exception) when (exception is not OperationCanceledException || !ct.IsCancellationRequested)
+        catch (Exception exception) when (exception.ShouldHandleAsFailure(cancellationToken))
         {
-            // Browser cookie deletion must proceed even when server-side cleanup is unavailable.
+            return exception;
         }
     }
 

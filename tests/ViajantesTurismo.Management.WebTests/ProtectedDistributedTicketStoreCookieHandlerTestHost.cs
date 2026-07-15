@@ -38,9 +38,11 @@ internal sealed class ProtectedDistributedTicketStoreCookieHandlerTestHost : IDi
                 {
                     services.AddRouting();
                     services.AddDataProtection();
+                    services.AddLogging();
                     services.AddSingleton<IDistributedCache>(cache);
                     services.AddSingleton(TimeProvider.System);
                     services.AddSingleton<ITicketStore, ProtectedDistributedTicketStore>();
+                    services.AddScoped<ProtectedDistributedAudienceTokenStore>();
                     services.AddScoped<ProtectedDistributedUserTokenStore>();
                     services.AddScoped<ManagementCookieAuthenticationEvents>();
                     services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)

@@ -130,6 +130,19 @@ internal sealed class ProtectedDistributedUserTokenStore : IUserTokenStore
         return _cache.RemoveAsync(GetSession(user).CacheKey, ct);
     }
 
+    internal async Task<string?> GetSourceAccessToken(ClaimsPrincipal user, CancellationToken ct)
+    {
+        ArgumentNullException.ThrowIfNull(user);
+
+        var entries = await ReadEntries(GetSession(user), ct);
+        if (entries is null || !entries.TryGetValue(string.Empty, out var token))
+        {
+            return null;
+        }
+
+        return token.AccessToken.ToString();
+    }
+
     private async Task<Dictionary<string, UserToken>?> ReadEntries(TokenSession session, CancellationToken ct)
     {
         var protectedEntries = await _cache.GetAsync(session.CacheKey, ct);

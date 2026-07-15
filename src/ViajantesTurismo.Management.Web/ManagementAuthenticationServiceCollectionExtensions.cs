@@ -118,6 +118,7 @@ internal static class ManagementAuthenticationServiceCollectionExtensions
                 .Build());
         services.AddOpenIdConnectAccessTokenManagement()
             .AddBlazorServerAccessTokenManagement<ProtectedDistributedUserTokenStore>();
+        services.AddScoped<ProtectedDistributedAudienceTokenStore>();
         services.AddScoped<ProtectedDistributedUserTokenStore>();
         services.AddScoped<IUserTokenStore>(serviceProvider =>
             serviceProvider.GetRequiredService<ProtectedDistributedUserTokenStore>());

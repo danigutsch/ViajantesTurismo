@@ -32,6 +32,6 @@ public sealed class ProtectedDistributedTicketStoreCookieHandlerTests
         signOutResponse.StatusCode.ShouldBe(HttpStatusCode.OK);
         deletedCookie.ShouldStartWith($"{ProtectedDistributedTicketStoreCookieHandlerTestHost.CookieName}=", StringComparison.Ordinal);
         deletedCookie.ShouldContain("expires=", StringComparison.OrdinalIgnoreCase);
-        testHost.Cache.RemoveCalls.ShouldBe(2);
+        testHost.Cache.RemoveCalls.ShouldBe(3);
     }
 }

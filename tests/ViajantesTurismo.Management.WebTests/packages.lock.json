@@ -1054,6 +1054,7 @@
           "Microsoft.AspNetCore.DataProtection.EntityFrameworkCore": "[10.0.9, )",
           "SharedKernel.AspNetCore": "[0.1.0-alpha.0, )",
           "SharedKernel.Branding": "[0.1.0-alpha.0, )",
+          "SharedKernel.BuildingBlocks": "[0.1.0-alpha.0, )",
           "SharedKernel.HttpClients": "[0.1.0-alpha.0, )",
           "ViajantesTurismo.Admin.Contracts.Application": "[0.1.0-alpha.0, )",
           "ViajantesTurismo.Admin.Contracts.Http": "[0.1.0-alpha.0, )",
