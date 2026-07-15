@@ -6,6 +6,7 @@ using Microsoft.Extensions.Time.Testing;
 namespace SharedKernel.RepoConfig.Tests;
 
 [Trait(TestTraitNames.CategoryName, TestTraits.CommandLineCategory)]
+[Collection("Repo config tool environment")]
 public sealed class RepoConfigToolApplicationTests
 {
     [Fact]
@@ -1093,7 +1094,7 @@ public sealed class RepoConfigToolApplicationTests
         using var handler = new TestHttpMessageHandler();
         GitHubProjectSyncTestOperations.EnqueueExistingProjectPreflight(
             handler,
-            "{ \"data\": { \"node\": { \"fields\": { \"nodes\": [{ \"id\": \"order\", \"name\": \"Roadmap order\", \"dataType\": \"NUMBER\" }] } } } }",
+            GitHubProjectSyncTestOperations.ProjectFieldsWithValidStatus("""{ "id": "order", "name": "Roadmap order", "dataType": "NUMBER" }"""),
             "{ \"data\": { \"node\": { \"fieldValues\": { \"nodes\": [] } } } }");
         using var httpClient = new HttpClient(handler);
 
@@ -1105,7 +1106,6 @@ public sealed class RepoConfigToolApplicationTests
         exitCode.ShouldBe(0);
         outputText.ShouldContain("dry-run: GitHub Project 1 already contains owner/repository#997", StringComparison.Ordinal);
         outputText.ShouldContain("dry-run: set owner/repository#997 Project field Roadmap order to 10", StringComparison.Ordinal);
-        outputText.ShouldContain("drift: owner/repository#997 Project field Roadmap status cannot be projected from roadmap source", StringComparison.Ordinal);
         handler.Requests.ShouldNotContain(request => request.Body?.Contains("mutation", StringComparison.Ordinal) == true);
     }
 
@@ -1125,7 +1125,7 @@ public sealed class RepoConfigToolApplicationTests
         using var handler = new TestHttpMessageHandler();
         GitHubProjectSyncTestOperations.EnqueueMissingProjectPreflight(
             handler,
-            "{ \"data\": { \"node\": { \"fields\": { \"nodes\": [{ \"id\": \"order\", \"name\": \"Roadmap order\", \"dataType\": \"NUMBER\" }] } } } }");
+            GitHubProjectSyncTestOperations.ProjectFieldsWithValidStatus("""{ "id": "order", "name": "Roadmap order", "dataType": "NUMBER" }"""));
         using var httpClient = new HttpClient(handler);
 
         // Act
@@ -1136,7 +1136,6 @@ public sealed class RepoConfigToolApplicationTests
         exitCode.ShouldBe(0);
         outputText.ShouldContain("dry-run: add owner/repository#997 to GitHub Project 1", StringComparison.Ordinal);
         outputText.ShouldContain("dry-run: set owner/repository#997 Project field Roadmap order to 10 after adding it", StringComparison.Ordinal);
-        outputText.ShouldContain("drift: owner/repository#997 Project field Roadmap status cannot be projected from roadmap source", StringComparison.Ordinal);
         handler.Requests.Count.ShouldBe(4);
         handler.Requests.ShouldNotContain(request => request.Body?.Contains("mutation", StringComparison.Ordinal) == true);
     }
@@ -1226,7 +1225,7 @@ public sealed class RepoConfigToolApplicationTests
         using var handler = new TestHttpMessageHandler();
         GitHubProjectSyncTestOperations.EnqueueExistingProjectPreflight(
             handler,
-            "{ \"data\": { \"node\": { \"fields\": { \"nodes\": [{ \"id\": \"order\", \"name\": \"Roadmap order\", \"dataType\": \"NUMBER\" }] } } } }",
+            GitHubProjectSyncTestOperations.ProjectFieldsWithValidStatus("""{ "id": "order", "name": "Roadmap order", "dataType": "NUMBER" }"""),
             "{ \"data\": { \"node\": { \"fieldValues\": { \"nodes\": [{ \"number\": 11, \"field\": { \"id\": \"order\", \"name\": \"Roadmap order\" } }] } } } }");
         using var httpClient = new HttpClient(handler);
 
@@ -2554,7 +2553,7 @@ public sealed class RepoConfigToolApplicationTests
     }
 
     [Fact]
-    public async Task Sync_github_apply_does_not_add_an_issue_that_is_already_in_the_configured_project()
+    public async Task Sync_github_apply_blocks_project_projection_when_roadmap_status_field_is_missing()
     {
         // Arrange
         using var workspace = new TemporaryRepoConfigWorkspace();
@@ -2576,9 +2575,9 @@ public sealed class RepoConfigToolApplicationTests
         var result = await syncer.Apply(TestContext.Current.CancellationToken);
 
         // Assert
-        result.Messages.ShouldContain("projected owner/repository#997 to GitHub Project 1");
-        handler.Requests.ShouldNotContain(request => request.Body?.Contains("addProjectV2ItemById", StringComparison.Ordinal) == true);
-        handler.Requests.Count.ShouldBe(8);
+        result.Messages.ShouldContain("skipped projection of owner/repository#997 to GitHub Project 1 because Roadmap status cannot be projected from roadmap source");
+        result.Messages.ShouldContain("drift: owner/repository#997 Project field Roadmap status cannot be projected from roadmap source");
+        handler.Requests.ShouldNotContain(request => request.Body?.Contains("mutation", StringComparison.Ordinal) == true);
     }
 
     [Fact]
@@ -2595,8 +2594,8 @@ public sealed class RepoConfigToolApplicationTests
         using var handler = new TestHttpMessageHandler();
         GitHubProjectSyncTestOperations.EnqueueExistingProjectItem(
             handler,
-            "{ \"data\": { \"node\": { \"fields\": { \"nodes\": [{ \"id\": \"order\", \"name\": \"Roadmap order\", \"dataType\": \"NUMBER\" }] } } } }",
-            "{ \"data\": { \"node\": { \"fieldValues\": { \"nodes\": [{ \"number\": 11, \"field\": { \"id\": \"order\", \"name\": \"Roadmap order\" } }] } } } }");
+            GitHubProjectSyncTestOperations.ProjectFieldsWithValidStatus("""{ "id": "order", "name": "Roadmap order", "dataType": "NUMBER" }"""),
+            "{ \"data\": { \"node\": { \"fieldValues\": { \"nodes\": [{ \"number\": 11, \"field\": { \"id\": \"order\", \"name\": \"Roadmap order\" } }, { \"optionId\": \"ready\", \"field\": { \"id\": \"status\", \"name\": \"Roadmap status\" } }] } } } }");
         using var httpClient = new HttpClient(handler);
         var syncer = new GitHubRoadmapSyncer(RoadmapProject.Load(workspace.RootPath), httpClient);
 
@@ -2622,8 +2621,8 @@ public sealed class RepoConfigToolApplicationTests
         using var handler = new TestHttpMessageHandler();
         GitHubProjectSyncTestOperations.EnqueueExistingProjectItem(
             handler,
-            "{ \"data\": { \"node\": { \"fields\": { \"nodes\": [{ \"id\": \"confidence\", \"name\": \"RICE confidence\", \"dataType\": \"NUMBER\" }] } } } }",
-            "{ \"data\": { \"node\": { \"fieldValues\": { \"nodes\": [{ \"number\": 0.8000005, \"field\": { \"id\": \"confidence\", \"name\": \"RICE confidence\" } }] } } } }");
+            GitHubProjectSyncTestOperations.ProjectFieldsWithValidStatus("""{ "id": "confidence", "name": "RICE confidence", "dataType": "NUMBER" }"""),
+            "{ \"data\": { \"node\": { \"fieldValues\": { \"nodes\": [{ \"number\": 0.8000005, \"field\": { \"id\": \"confidence\", \"name\": \"RICE confidence\" } }, { \"optionId\": \"ready\", \"field\": { \"id\": \"status\", \"name\": \"Roadmap status\" } }] } } } }");
         using var httpClient = new HttpClient(handler);
         var syncer = new GitHubRoadmapSyncer(RoadmapProject.Load(workspace.RootPath), httpClient);
 
@@ -2649,7 +2648,7 @@ public sealed class RepoConfigToolApplicationTests
         using var handler = new TestHttpMessageHandler();
         GitHubProjectSyncTestOperations.EnqueueExistingProjectItem(
             handler,
-            "{ \"data\": { \"node\": { \"fields\": { \"nodes\": [{ \"id\": \"status\", \"name\": \"Roadmap status\", \"dataType\": \"SINGLE_SELECT\", \"options\": [{ \"id\": \"ready\", \"name\": \"ready\" }, { \"id\": \"done\", \"name\": \"done\" }] }] } } } }",
+            GitHubProjectSyncTestOperations.ProjectFieldsWithValidStatus(string.Empty),
             "{ \"data\": { \"node\": { \"fieldValues\": { \"nodes\": [{ \"optionId\": \"done\", \"field\": { \"id\": \"status\", \"name\": \"Roadmap status\" } }] } } } }");
         using var httpClient = new HttpClient(handler);
         var syncer = new GitHubRoadmapSyncer(RoadmapProject.Load(workspace.RootPath), httpClient);
@@ -2676,8 +2675,8 @@ public sealed class RepoConfigToolApplicationTests
         using var handler = new TestHttpMessageHandler();
         GitHubProjectSyncTestOperations.EnqueueExistingProjectItem(
             handler,
-            "{ \"data\": { \"node\": { \"fields\": { \"nodes\": [{ \"id\": \"tags\", \"name\": \"Roadmap tags\", \"dataType\": \"TEXT\" }] } } } }",
-            "{ \"data\": { \"node\": { \"fieldValues\": { \"nodes\": [{ \"text\": \"manual\", \"field\": { \"id\": \"tags\", \"name\": \"Roadmap tags\" } }] } } } }");
+            GitHubProjectSyncTestOperations.ProjectFieldsWithValidStatus("""{ "id": "tags", "name": "Roadmap tags", "dataType": "TEXT" }"""),
+            "{ \"data\": { \"node\": { \"fieldValues\": { \"nodes\": [{ \"text\": \"manual\", \"field\": { \"id\": \"tags\", \"name\": \"Roadmap tags\" } }, { \"optionId\": \"ready\", \"field\": { \"id\": \"status\", \"name\": \"Roadmap status\" } }] } } } }");
         using var httpClient = new HttpClient(handler);
         var syncer = new GitHubRoadmapSyncer(RoadmapProject.Load(workspace.RootPath), httpClient);
 
@@ -2714,6 +2713,53 @@ public sealed class RepoConfigToolApplicationTests
         // Assert
         result.Messages.ShouldContain("drift: owner/repository#997 Project field Roadmap status cannot be projected from roadmap source");
         handler.Requests.ShouldNotContain(request => request.Body?.Contains("updateProjectV2ItemFieldValue", StringComparison.Ordinal) == true);
+    }
+
+    [Theory]
+    [InlineData("""
+        { "data": { "node": { "fields": { "nodes": [] } } } }
+        """)]
+    [InlineData("""
+        { "data": { "node": { "fields": { "nodes": [
+          { "id": "status-a", "name": "Roadmap status", "dataType": "SINGLE_SELECT" },
+          { "id": "status-b", "name": "Roadmap status", "dataType": "SINGLE_SELECT" }
+        ] } } } }
+        """)]
+    [InlineData("""
+        { "data": { "node": { "fields": { "nodes": [
+          { "id": "", "name": "Roadmap status", "dataType": "SINGLE_SELECT" }
+        ] } } } }
+        """)]
+    [InlineData("""
+        { "data": { "node": { "fields": { "nodes": [
+          { "id": "status", "name": "Roadmap status", "dataType": "TEXT" }
+        ] } } } }
+        """)]
+    public async Task Sync_github_apply_blocks_invalid_required_status_schema_before_project_mutations(string projectFields)
+    {
+        // Arrange
+        using var workspace = new TemporaryRepoConfigWorkspace();
+        using var initOutput = new StringWriter(CultureInfo.InvariantCulture);
+        using var initError = new StringWriter(CultureInfo.InvariantCulture);
+        (await RepoConfigToolApplication.Run(["init", "--root", workspace.RootPath], initOutput, initError, workspace.RootPath, TestContext.Current.CancellationToken)).ShouldBe(0);
+        RoadmapConfigTestOperations.EnableGitHubSync(workspace);
+        GitHubProjectSyncTestOperations.EnableProjectTarget(workspace);
+        GitHubProjectSyncTestOperations.MapDefaultItem(workspace);
+        using var handler = new TestHttpMessageHandler();
+        GitHubProjectSyncTestOperations.EnqueueMissingProjectItem(
+            handler,
+            projectFields,
+            "{ \"data\": { \"node\": { \"fieldValues\": { \"nodes\": [] } } } }");
+        using var httpClient = new HttpClient(handler);
+        var syncer = new GitHubRoadmapSyncer(RoadmapProject.Load(workspace.RootPath), httpClient);
+
+        // Act
+        var result = await syncer.Apply(TestContext.Current.CancellationToken);
+
+        // Assert
+        result.Messages.ShouldContain("skipped projection of owner/repository#997 to GitHub Project 1 because Roadmap status cannot be projected from roadmap source");
+        result.Messages.ShouldContain("drift: owner/repository#997 Project field Roadmap status cannot be projected from roadmap source");
+        handler.Requests.ShouldNotContain(request => request.Body?.Contains("mutation", StringComparison.Ordinal) == true);
     }
 
     [Theory]
@@ -2783,15 +2829,10 @@ public sealed class RepoConfigToolApplicationTests
             ]
             """;
         using var handler = new TestHttpMessageHandler();
-        handler.EnqueueJson(HttpStatusCode.OK, "{ \"data\": { \"node\": { \"id\": \"project-id\", \"number\": 1, \"owner\": { \"login\": \"owner\" } } } }");
-        handler.EnqueueJson(HttpStatusCode.NotFound, "{}");
-        handler.EnqueueJson(HttpStatusCode.OK, "{ \"labels\": [] }");
-        handler.EnqueueJson(HttpStatusCode.OK, "{}");
-        handler.EnqueueJson(HttpStatusCode.OK, GitHubProjectSyncTestOperations.CompleteProjectFields(statusOptions));
-        handler.EnqueueJson(HttpStatusCode.OK, "{ \"data\": { \"repository\": { \"issue\": { \"id\": \"issue-id\" } } } }");
-        handler.EnqueueJson(HttpStatusCode.OK, "{ \"data\": { \"node\": { \"items\": { \"nodes\": [], \"pageInfo\": { \"hasNextPage\": false, \"endCursor\": null } } } } }");
-        handler.EnqueueJson(HttpStatusCode.OK, "{ \"data\": { \"addProjectV2ItemById\": { \"item\": { \"id\": \"item-id\" } } } }");
-        handler.EnqueueJson(HttpStatusCode.OK, "{ \"data\": { \"node\": { \"fieldValues\": { \"nodes\": [] } } } }");
+        GitHubProjectSyncTestOperations.EnqueueMissingProjectItem(
+            handler,
+            GitHubProjectSyncTestOperations.CompleteProjectFields(statusOptions),
+            "{ \"data\": { \"node\": { \"fieldValues\": { \"nodes\": [] } } } }");
         for (var updateIndex = 0; updateIndex < 10; updateIndex++)
         {
             handler.EnqueueJson(HttpStatusCode.OK, "{ \"data\": { \"updateProjectV2ItemFieldValue\": { \"projectV2Item\": { \"id\": \"item-id\" } } } }");
@@ -2873,8 +2914,8 @@ public sealed class RepoConfigToolApplicationTests
         using var handler = new TestHttpMessageHandler();
         GitHubProjectSyncTestOperations.EnqueueExistingProjectItem(
             handler,
-            "{ \"data\": { \"node\": { \"fields\": { \"nodes\": [{ \"id\": \"order\", \"name\": \"Roadmap order\", \"dataType\": \"TEXT\" }] } } } }",
-            "{ \"data\": { \"node\": { \"fieldValues\": { \"nodes\": [] } } } }");
+            GitHubProjectSyncTestOperations.ProjectFieldsWithValidStatus("""{ "id": "order", "name": "Roadmap order", "dataType": "TEXT" }"""),
+            "{ \"data\": { \"node\": { \"fieldValues\": { \"nodes\": [{ \"optionId\": \"ready\", \"field\": { \"id\": \"status\", \"name\": \"Roadmap status\" } }] } } } }");
         using var httpClient = new HttpClient(handler);
         var syncer = new GitHubRoadmapSyncer(RoadmapProject.Load(workspace.RootPath), httpClient);
 

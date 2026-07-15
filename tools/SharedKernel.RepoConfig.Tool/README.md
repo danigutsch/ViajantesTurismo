@@ -61,3 +61,7 @@ Project membership requires a user-owned Project target in `integrations.github.
 classic token with `repo` and `project` scopes. Fine-grained tokens cannot currently automate
 user-owned Projects. A configured Project target requires that token for both `--dry-run` live
 preflight and `--apply`.
+
+`Roadmap status` is a safety gate: missing, ambiguous, incompatible, or unaddressable status
+schema/options block all Project membership and field writes. Other incompatible Project fields
+remain report-only drift.

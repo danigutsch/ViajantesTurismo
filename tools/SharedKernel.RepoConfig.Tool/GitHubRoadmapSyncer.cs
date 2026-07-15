@@ -391,7 +391,7 @@ internal sealed class GitHubRoadmapSyncer
         var statusFields = fields.Where(field => string.Equals(field.Name, "Roadmap status", StringComparison.Ordinal)).ToArray();
         if (statusFields.Length != 1)
         {
-            return false;
+            return true;
         }
 
         var statusField = statusFields[0];
@@ -399,7 +399,7 @@ internal sealed class GitHubRoadmapSyncer
         if (string.IsNullOrWhiteSpace(statusField.Id)
             || !string.Equals(statusField.DataType, "SINGLE_SELECT", StringComparison.Ordinal))
         {
-            return false;
+            return true;
         }
 
         if (statusOptions is null)

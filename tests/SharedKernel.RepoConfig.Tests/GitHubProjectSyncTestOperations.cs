@@ -72,6 +72,38 @@ internal static class GitHubProjectSyncTestOperations
         handler.EnqueueJson(HttpStatusCode.OK, "{ \"data\": { \"node\": { \"items\": { \"nodes\": [], \"pageInfo\": { \"hasNextPage\": false, \"endCursor\": null } } } } }");
     }
 
+    public static void EnqueueMissingProjectItem(
+        TestHttpMessageHandler handler,
+        string projectFields,
+        string fieldValues)
+    {
+        ArgumentNullException.ThrowIfNull(handler);
+        ArgumentException.ThrowIfNullOrWhiteSpace(projectFields);
+        ArgumentException.ThrowIfNullOrWhiteSpace(fieldValues);
+
+        handler.EnqueueJson(HttpStatusCode.OK, "{ \"data\": { \"node\": { \"id\": \"project-id\", \"number\": 1, \"owner\": { \"login\": \"owner\" } } } }");
+        handler.EnqueueJson(HttpStatusCode.NotFound, "{}");
+        handler.EnqueueJson(HttpStatusCode.OK, "{ \"labels\": [] }");
+        handler.EnqueueJson(HttpStatusCode.OK, "{}");
+        handler.EnqueueJson(HttpStatusCode.OK, projectFields);
+        handler.EnqueueJson(HttpStatusCode.OK, "{ \"data\": { \"repository\": { \"issue\": { \"id\": \"issue-id\" } } } }");
+        handler.EnqueueJson(HttpStatusCode.OK, "{ \"data\": { \"node\": { \"items\": { \"nodes\": [], \"pageInfo\": { \"hasNextPage\": false, \"endCursor\": null } } } } }");
+        handler.EnqueueJson(HttpStatusCode.OK, "{ \"data\": { \"addProjectV2ItemById\": { \"item\": { \"id\": \"item-id\" } } } }");
+        handler.EnqueueJson(HttpStatusCode.OK, fieldValues);
+    }
+
+    public static string ProjectFieldsWithValidStatus(string additionalFields)
+    {
+        ArgumentNullException.ThrowIfNull(additionalFields);
+
+        var fieldNodes = string.IsNullOrWhiteSpace(additionalFields)
+            ? ValidStatusField
+            : $"{additionalFields}, {ValidStatusField}";
+        return $$"""
+            { "data": { "node": { "fields": { "nodes": [{{fieldNodes}}] } } } }
+            """;
+    }
+
     public static string CompleteProjectFields(string statusOptions)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(statusOptions);
@@ -91,4 +123,14 @@ internal static class GitHubProjectSyncTestOperations
             ] } } } }
             """;
     }
+
+    private const string ValidStatusField = """
+        { "id": "status", "name": "Roadmap status", "dataType": "SINGLE_SELECT", "options": [
+          { "id": "proposed", "name": "proposed" },
+          { "id": "ready", "name": "ready" },
+          { "id": "in-progress", "name": "in_progress" },
+          { "id": "done", "name": "done" },
+          { "id": "dropped", "name": "dropped" }
+        ] }
+        """;
 }
