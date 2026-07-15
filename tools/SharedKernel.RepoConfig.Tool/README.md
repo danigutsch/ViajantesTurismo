@@ -11,6 +11,7 @@ dotnet run --project tools/SharedKernel.RepoConfig.Tool/SharedKernel.RepoConfig.
 dotnet run --project tools/SharedKernel.RepoConfig.Tool/SharedKernel.RepoConfig.Tool.csproj -- init
 dotnet run --project tools/SharedKernel.RepoConfig.Tool/SharedKernel.RepoConfig.Tool.csproj -- set github.repository owner/repository
 dotnet run --project tools/SharedKernel.RepoConfig.Tool/SharedKernel.RepoConfig.Tool.csproj -- get next-priority
+dotnet run --project tools/SharedKernel.RepoConfig.Tool/SharedKernel.RepoConfig.Tool.csproj -- get next-work
 dotnet run --project tools/SharedKernel.RepoConfig.Tool/SharedKernel.RepoConfig.Tool.csproj -- get blocking-overview
 dotnet run --project tools/SharedKernel.RepoConfig.Tool/SharedKernel.RepoConfig.Tool.csproj -- sync github --dry-run
 ```
@@ -30,6 +31,7 @@ Pass `--root <path>` after the command to target another repository root.
 | `set github.repository <owner/repo>` | Updates the GitHub projection repository in `roadmap/config.json`. |
 | `get next-priority` | Lists open items by explicit order and RICE score. |
 | `get next-unblocked` | Lists open items with no open blockers. Supports `--type <type>`. |
+| `get next-work` | Generates the executable queue: unblocked items that unblock open work first, then other unblocked items by explicit order and RICE score. Supports `--type <type>`. |
 | `get blockers-of <id>` | Lists direct blockers for one roadmap item. |
 | `get next-blockers` | Lists open blockers or items that unblock other work. |
 | `get next-enablers` | Lists unblocked enabler items. |
@@ -38,7 +40,7 @@ Pass `--root <path>` after the command to target another repository root.
 | `get blocking-overview` | Lists open items and their open direct blocker IDs. |
 | `get tags` / `get labels` | Lists tag or label counts. |
 | `get by-tag <tag>` / `get by-label <label>` | Lists items by taxonomy value. |
-| `sync github --dry-run` | Previews issue creation, additive labels, and configured Project membership. |
+| `sync github --dry-run` | Previews issue creation and labels. When a Project target is configured, it authenticates to preflight target, schema, membership, field writes, and conflicts without mutation. |
 | `sync github --apply` | Creates requested issues, persists their issue numbers, adds labels, and configures Project membership using `GH_TOKEN` or `GITHUB_TOKEN`. |
 
 ## Exit codes
@@ -57,4 +59,9 @@ field values are report-only drift. The repository remains the source of truth.
 
 Project membership requires a user-owned Project target in `integrations.github.projectV2` and a
 classic token with `repo` and `project` scopes. Fine-grained tokens cannot currently automate
-user-owned Projects.
+user-owned Projects. A configured Project target requires that token for both `--dry-run` live
+preflight and `--apply`.
+
+`Roadmap status` is a safety gate: missing, ambiguous, incompatible, or unaddressable status
+schema/options block all Project membership and field writes. Other incompatible Project fields
+remain report-only drift.

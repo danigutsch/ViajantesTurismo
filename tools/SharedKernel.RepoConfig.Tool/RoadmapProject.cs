@@ -6,10 +6,11 @@ internal sealed class RoadmapProject
 {
     private readonly Dictionary<string, RoadmapItemSnapshot> _itemsById;
 
-    private RoadmapProject(string rootPath, IReadOnlyList<RoadmapItemSnapshot> items, IReadOnlySet<string> closedStatuses, string? gitHubRepository, bool gitHubEnabled, GitHubProjectTarget? gitHubProjectTarget)
+    private RoadmapProject(string rootPath, IReadOnlyList<RoadmapItemSnapshot> items, IReadOnlySet<string> allowedStatuses, IReadOnlySet<string> closedStatuses, string? gitHubRepository, bool gitHubEnabled, GitHubProjectTarget? gitHubProjectTarget)
     {
         RootPath = rootPath;
         Items = items;
+        AllowedStatuses = allowedStatuses;
         ClosedStatuses = closedStatuses;
         GitHubRepository = gitHubRepository;
         GitHubEnabled = gitHubEnabled;
@@ -22,6 +23,8 @@ internal sealed class RoadmapProject
     public string RootPath { get; }
 
     public IReadOnlySet<string> ClosedStatuses { get; }
+
+    public IReadOnlySet<string> AllowedStatuses { get; }
 
     public string? GitHubRepository { get; }
 
@@ -39,12 +42,13 @@ internal sealed class RoadmapProject
 
         var configPath = Path.Combine(rootPath, RepoConfigPaths.Config);
         using var config = JsonDocument.Parse(File.ReadAllText(configPath));
+        var allowedStatuses = ReadStringArray(config.RootElement, "allowed", "statuses");
         var closedStatuses = ReadStringArray(config.RootElement, "project", "closedStatuses");
         var gitHubRepository = ReadGitHubRepository(config.RootElement);
         var gitHubEnabled = ReadGitHubEnabled(config.RootElement);
         var gitHubProjectTarget = ReadGitHubProjectTarget(config.RootElement);
         var items = LoadItems(rootPath);
-        return new RoadmapProject(rootPath, items, new HashSet<string>(closedStatuses, StringComparer.Ordinal), gitHubRepository, gitHubEnabled, gitHubProjectTarget);
+        return new RoadmapProject(rootPath, items, new HashSet<string>(allowedStatuses, StringComparer.Ordinal), new HashSet<string>(closedStatuses, StringComparer.Ordinal), gitHubRepository, gitHubEnabled, gitHubProjectTarget);
     }
 
     public IReadOnlyList<RoadmapItemSnapshot> OpenItems(string? type = null) =>

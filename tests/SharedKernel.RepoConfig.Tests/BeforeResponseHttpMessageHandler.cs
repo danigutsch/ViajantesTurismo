@@ -8,6 +8,7 @@ internal sealed class BeforeResponseHttpMessageHandler(Func<HttpResponseMessage>
     protected override Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
     {
         _beforeResponse();
+        cancellationToken.ThrowIfCancellationRequested();
         return Task.FromResult(_createResponse());
     }
 }

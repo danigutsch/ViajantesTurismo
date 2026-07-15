@@ -35,7 +35,8 @@ discussion, day-to-day execution comments, and workflow details that are not
 represented in the canonical model.
 
 This roadmap intentionally avoids date-based planning. Use `order` for priority
-and `blockedBy` for sequencing. Lower `order` values come first.
+and `blockedBy` for sequencing. Lower `order` values come first among feasible
+work; open blockers are a gate, not a score adjustment.
 
 `roadmap/order.json` is the canonical list of every roadmap item ID. Its `items`
 array must contain each item exactly once, ordered by `order` ascending, RICE
@@ -58,6 +59,11 @@ Keep the inputs reviewable instead of hand-editing rank:
 
 Use WSJF only after cost-of-delay inputs are reliable and shared across teams.
 
+Priority overrides are exceptional: security, privacy, data safety, legal/compliance,
+fixed external deadlines, material risk reduction, or prerequisites that unlock multiple
+higher-value items. Record the evidence, owner, review date, and displaced work in the
+pull request that changes canonical roadmap data.
+
 ## GitHub projection policy
 
 - Issues are execution records.
@@ -68,6 +74,9 @@ Use WSJF only after cost-of-delay inputs are reliable and shared across teams.
 - Milestones are not used by the roadmap model by default.
 - Project fields may mirror score inputs and computed score, but they do not
   replace the repository model.
+- Project-configured dry-runs authenticate only to validate target, schema,
+  membership, proposed field writes, and report-only conflicts; they do not mutate
+  GitHub.
 - Sync automation must be driven by the .NET repo config tool, not shell or
   Python helper scripts.
 
@@ -78,6 +87,7 @@ The repo config tool also exposes project-style queries over roadmap data:
 ```bash
 dotnet run --project tools/SharedKernel.RepoConfig.Tool/SharedKernel.RepoConfig.Tool.csproj -- get next-priority
 dotnet run --project tools/SharedKernel.RepoConfig.Tool/SharedKernel.RepoConfig.Tool.csproj -- get next-unblocked --type issue
+dotnet run --project tools/SharedKernel.RepoConfig.Tool/SharedKernel.RepoConfig.Tool.csproj -- get next-work
 dotnet run --project tools/SharedKernel.RepoConfig.Tool/SharedKernel.RepoConfig.Tool.csproj -- get blockers-of RM-004
 dotnet run --project tools/SharedKernel.RepoConfig.Tool/SharedKernel.RepoConfig.Tool.csproj -- get next-blockers
 dotnet run --project tools/SharedKernel.RepoConfig.Tool/SharedKernel.RepoConfig.Tool.csproj -- get low-hanging-fruit
@@ -85,8 +95,10 @@ dotnet run --project tools/SharedKernel.RepoConfig.Tool/SharedKernel.RepoConfig.
 dotnet run --project tools/SharedKernel.RepoConfig.Tool/SharedKernel.RepoConfig.Tool.csproj -- get by-label "area: tooling"
 ```
 
-Use these commands for the local "what should we do next?" view before opening
-GitHub Projects.
+Use `get next-work` for the local executable queue: it promotes unblocked work that
+removes open blockers, then uses canonical order and RICE to break ties. Use
+`next-priority` to inspect the strategic ranking, and `next-unblocked` or
+`next-blockers` to diagnose sequencing. Run `verify` before trusting any generated view.
 
 ## Repository config tool
 
