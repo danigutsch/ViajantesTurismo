@@ -1,0 +1,28 @@
+{
+  "$schema": "../schema/roadmap-item.schema.json",
+  "id": "RM-011",
+  "parent": "RM-009",
+  "title": "Reconcile closed foundation items with canonical roadmap",
+  "type": "issue",
+  "status": "in_progress",
+  "triage": "untriaged",
+  "theme": "repo-operations",
+  "outcome": "Closed foundation work is represented as closed without changing its reviewed priority evidence.",
+  "blockedBy": [],
+  "blocks": [
+    "RM-012"
+  ],
+  "dependencies": [],
+  "tags": [
+    "roadmap",
+    "reconciliation"
+  ],
+  "labels": [
+    "area: tooling"
+  ],
+  "integrations": {
+    "github": {
+      "issue": 1062
+    }
+  }
+}

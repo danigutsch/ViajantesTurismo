@@ -4,7 +4,7 @@
   "parent": "RM-001",
   "title": "Create canonical roadmap source structure",
   "type": "issue",
-  "status": "ready",
+  "status": "done",
   "order": 20,
   "theme": "repo-operations",
   "outcome": "Roadmap items, ordering, blockers, themes, tags, labels, and schemas are represented as repository-owned files.",

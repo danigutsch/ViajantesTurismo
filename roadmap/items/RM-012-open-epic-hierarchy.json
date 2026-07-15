@@ -1,0 +1,32 @@
+{
+  "$schema": "../schema/roadmap-item.schema.json",
+  "id": "RM-012",
+  "parent": "RM-009",
+  "title": "Model open epics and hierarchy in canonical roadmap",
+  "type": "issue",
+  "status": "in_progress",
+  "triage": "untriaged",
+  "theme": "repo-operations",
+  "outcome": "Open epics and delivery children have canonical identity and dependency relationships before scoring.",
+  "blockedBy": [
+    "RM-011",
+    "RM-014"
+  ],
+  "blocks": [
+    "RM-013"
+  ],
+  "dependencies": [],
+  "tags": [
+    "roadmap",
+    "hierarchy",
+    "epics"
+  ],
+  "labels": [
+    "area: tooling"
+  ],
+  "integrations": {
+    "github": {
+      "issue": 1063
+    }
+  }
+}

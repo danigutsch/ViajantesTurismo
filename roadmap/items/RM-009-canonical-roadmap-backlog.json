@@ -1,0 +1,35 @@
+{
+  "$schema": "../schema/roadmap-item.schema.json",
+  "id": "RM-009",
+  "title": "Reconcile and prioritize the canonical roadmap backlog",
+  "type": "epic",
+  "status": "in_progress",
+  "triage": "untriaged",
+  "theme": "repo-operations",
+  "outcome": "Active delivery work has canonical identity and hierarchy before evidence-backed prioritization.",
+  "blockedBy": [],
+  "blocks": [],
+  "dependencies": [],
+  "tags": [
+    "roadmap",
+    "prioritization",
+    "backlog"
+  ],
+  "labels": [
+    "area: tooling",
+    "type: epic"
+  ],
+  "integrations": {
+    "github": {
+      "issue": 1060,
+      "subIssues": [
+        1061,
+        1062,
+        1063,
+        1064,
+        1065,
+        1066
+      ]
+    }
+  }
+}

@@ -1,0 +1,30 @@
+{
+  "$schema": "../schema/roadmap-item.schema.json",
+  "id": "RM-008",
+  "parent": "RM-001",
+  "title": "Define documentation table of contents policy",
+  "type": "documentation",
+  "status": "in_progress",
+  "triage": "untriaged",
+  "theme": "repo-operations",
+  "outcome": "Long reference documentation has navigable, maintainable tables of contents without requiring them everywhere.",
+  "blockedBy": [
+    "RM-007"
+  ],
+  "blocks": [],
+  "dependencies": [],
+  "tags": [
+    "documentation",
+    "navigation",
+    "toc"
+  ],
+  "labels": [
+    "area: tooling",
+    "documentation"
+  ],
+  "integrations": {
+    "github": {
+      "issue": 1006
+    }
+  }
+}

@@ -1,0 +1,30 @@
+{
+  "$schema": "../schema/roadmap-item.schema.json",
+  "id": "RM-015",
+  "parent": "RM-009",
+  "title": "Configure GitHub Project execution views",
+  "type": "issue",
+  "status": "proposed",
+  "triage": "untriaged",
+  "theme": "repo-operations",
+  "outcome": "Project #1 makes execution, active flow, and roadmap projection visible without becoming authoritative.",
+  "blockedBy": [
+    "RM-013"
+  ],
+  "blocks": [],
+  "dependencies": [],
+  "tags": [
+    "github",
+    "project",
+    "views"
+  ],
+  "labels": [
+    "area: tooling",
+    "configuration"
+  ],
+  "integrations": {
+    "github": {
+      "issue": 1066
+    }
+  }
+}

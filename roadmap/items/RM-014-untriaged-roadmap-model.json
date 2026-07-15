@@ -1,0 +1,30 @@
+{
+  "$schema": "../schema/roadmap-item.schema.json",
+  "id": "RM-014",
+  "parent": "RM-009",
+  "title": "Add untriaged canonical roadmap item support",
+  "type": "enabler",
+  "status": "in_progress",
+  "triage": "untriaged",
+  "theme": "repo-operations",
+  "outcome": "Canonical work can be represented without fabricated priority inputs until evidence is available.",
+  "blockedBy": [],
+  "blocks": [
+    "RM-012"
+  ],
+  "dependencies": [],
+  "tags": [
+    "roadmap",
+    "triage",
+    "prioritization"
+  ],
+  "labels": [
+    "area: tooling",
+    "configuration"
+  ],
+  "integrations": {
+    "github": {
+      "issue": 1065
+    }
+  }
+}

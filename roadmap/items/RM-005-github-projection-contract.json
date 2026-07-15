@@ -4,7 +4,7 @@
   "parent": "RM-001",
   "title": "Add GitHub roadmap projection contract",
   "type": "issue",
-  "status": "ready",
+  "status": "done",
   "order": 50,
   "theme": "repo-operations",
   "outcome": "Roadmap items can project additive labels into existing GitHub issues without modifying issue bodies.",

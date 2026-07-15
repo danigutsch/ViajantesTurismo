@@ -1,7 +1,6 @@
 {
   "ordering": "lower order values are higher priority",
   "items": [
-    "RM-001",
     "RM-002",
     "RM-003",
     "RM-004",

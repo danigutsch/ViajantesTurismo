@@ -4,7 +4,7 @@
   "parent": "RM-001",
   "title": "Document roadmap governance workflow",
   "type": "documentation",
-  "status": "ready",
+  "status": "done",
   "order": 60,
   "theme": "repo-operations",
   "outcome": "Contributors know how to add, prioritize, query, and sync roadmap work through reviewed repository changes.",

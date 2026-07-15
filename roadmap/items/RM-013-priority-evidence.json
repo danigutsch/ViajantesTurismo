@@ -1,0 +1,31 @@
+{
+  "$schema": "../schema/roadmap-item.schema.json",
+  "id": "RM-013",
+  "parent": "RM-009",
+  "title": "Score and order the first executable roadmap tranche",
+  "type": "issue",
+  "status": "proposed",
+  "triage": "untriaged",
+  "theme": "repo-operations",
+  "outcome": "The first active tranche receives reviewed RICE evidence and canonical order without fabricated estimates.",
+  "blockedBy": [
+    "RM-012"
+  ],
+  "blocks": [
+    "RM-015"
+  ],
+  "dependencies": [],
+  "tags": [
+    "roadmap",
+    "prioritization",
+    "rice"
+  ],
+  "labels": [
+    "area: tooling"
+  ],
+  "integrations": {
+    "github": {
+      "issue": 1064
+    }
+  }
+}
