@@ -42,7 +42,9 @@ public class BookingDeleteAndDialogTests(AspireSystemTestFixture fixture) : Aspi
         // Assert
         await Expect(Page).ToHaveURLAsync(new Regex("/bookings$"));
         await Expect(Page).ToHaveTitleAsync("Bookings");
-        var deletedLink = Page.Locator($"a[href='/bookings/{booking.Id}']");
-        await Expect(deletedLink).ToHaveCountAsync(0);
+        await NavigateTo($"/bookings/{booking.Id}");
+        var missingBookingAlert = Page.Locator("[role='alert']", new PageLocatorOptions { HasText = "Booking not found." });
+        await Expect(missingBookingAlert).ToHaveCountAsync(1);
+        await Expect(missingBookingAlert).ToBeVisibleAsync();
     }
 }

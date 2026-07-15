@@ -50,4 +50,32 @@ public sealed class GrafanaLgtmStackResourceTests
         resources.ShouldContain(resource => resource is PrometheusResource && resource.Name == "prometheus-test");
         resources.ShouldContain(resource => resource.Name == "collector-test");
     }
+
+    [Fact]
+    public async Task Add_grafana_enables_anonymous_local_access()
+    {
+        // Arrange
+        var builder = DistributedApplication.CreateBuilder([]);
+
+        // Act
+        var grafana = builder.AddGrafana("grafana-test", Path.Combine(Path.GetTempPath(), "grafana-lgtm-test"));
+        var environmentVariables = new Dictionary<string, object>();
+        var executionContext = new DistributedApplicationExecutionContext(DistributedApplicationOperation.Run);
+        foreach (var annotation in grafana.Resource.Annotations.OfType<EnvironmentCallbackAnnotation>())
+        {
+            await annotation.Callback(new EnvironmentCallbackContext(
+                executionContext,
+                grafana.Resource,
+                environmentVariables,
+                TestContext.Current.CancellationToken));
+        }
+
+        // Assert
+        var anonymousAccess = environmentVariables
+            .ShouldHaveSingleItem(variable => string.Equals(
+                variable.Key,
+                "GF_AUTH_ANONYMOUS_ENABLED",
+                StringComparison.Ordinal));
+        anonymousAccess.Value.ShouldBe("true");
+    }
 }

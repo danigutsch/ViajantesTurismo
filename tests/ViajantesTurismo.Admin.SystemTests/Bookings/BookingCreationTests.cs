@@ -8,9 +8,10 @@ public class BookingCreationTests(AspireSystemTestFixture fixture) : AspireSyste
     public async Task Can_create_booking_from_customer_details_with_prefilled_data()
     {
         // Arrange
-        var tour = await ApiClient.CreateTour(new CreateTourOptions { Name = "Owned Cultural Experience" });
+        var tour = await ApiClient.CreateTour(new CreateTourOptions { Name = $"Owned Cultural {Guid.NewGuid():N}"[..30] });
+        var customerFirstName = $"Elena{Guid.NewGuid():N}"[..13];
         var customer = await ApiClient.CreateCustomer(
-            firstName: "Elena",
+            firstName: customerFirstName,
             lastName: "Owned",
             bikeType: BikeTypeDto.EBike);
         var customerFullName = $"{customer.FirstName} {customer.LastName}";
@@ -18,11 +19,15 @@ public class BookingCreationTests(AspireSystemTestFixture fixture) : AspireSyste
         // Act
         await NavigateTo($"/customers/{customer.Id}");
         await Expect(Page).ToHaveTitleAsync("Customer Details");
-        await Expect(Page.GetByText(customerFullName).First).ToBeVisibleAsync();
+        await Expect(Page.GetByRole(AriaRole.Heading, new PageGetByRoleOptions { Name = "Customer Details" })).ToBeVisibleAsync();
+        var customerName = Page.GetByText(customerFullName, new PageGetByTextOptions { Exact = true });
+        await Expect(customerName).ToHaveCountAsync(1);
+        await Expect(customerName).ToBeVisibleAsync();
 
         // Click "Add Booking" to show the inline booking creation form
         await Page.GetButton("Add Booking").ClickAsync();
-        await Expect(Page.GetByText("Create New Booking")).ToBeVisibleAsync();
+        await Expect(Page.GetByRole(AriaRole.Heading, new PageGetByRoleOptions { Name = "Create New Booking" }))
+            .ToBeVisibleAsync();
 
         var bookingForm = Page.Locator("form:has(button:text('Create Booking'))");
         await Expect(bookingForm).ToBeVisibleAsync();
@@ -44,7 +49,8 @@ public class BookingCreationTests(AspireSystemTestFixture fixture) : AspireSyste
             .Filter(new LocatorFilterOptions { HasText = "Tour" }).First.Locator("select");
         var ownedTourOption = tourSelect.Locator("option", new LocatorLocatorOptions { HasText = tour.Name });
         var optionValue = await ownedTourOption.GetAttributeAsync("value");
-        await tourSelect.SelectOptionAsync(optionValue!);
+        optionValue.ShouldNotBeNull();
+        await tourSelect.SelectOptionAsync(optionValue);
 
         // Assert: availability and price breakdown appear for the selected owned tour.
         await Expect(bookingForm.GetByText("available")).ToBeVisibleAsync();
@@ -56,6 +62,8 @@ public class BookingCreationTests(AspireSystemTestFixture fixture) : AspireSyste
 
         // Assert: success toast and resulting customer-bookings row use the owned tour.
         await UiFeedback.ExpectToast("Booking created successfully");
-        await Expect(Page.GetByText(tour.Name).First).ToBeVisibleAsync();
+        var tourLink = Page.Locator($"a[href='/tours/{tour.Id}']");
+        await Expect(tourLink).ToHaveCountAsync(1);
+        await Expect(tourLink).ToBeVisibleAsync();
     }
 }

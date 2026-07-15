@@ -17,16 +17,18 @@ public class PaymentStatusConsistencyTests(AspireSystemTestFixture fixture) : As
             500m);
 
         // Act
-        // Assert
         var unpaidFromList = await BookingsList.GetPaymentStatus(unpaidBooking.Id);
         var partiallyPaidFromList = await BookingsList.GetPaymentStatus(partiallyPaidBooking.Id);
-
         var unpaidFromDetails = await ReadBookingDetailsBadgeText(unpaidBooking.Id, "Payment Status");
         var partiallyPaidFromDetails = await ReadBookingDetailsBadgeText(partiallyPaidBooking.Id, "Payment Status");
 
-        (unpaidFromDetails).ShouldBe(unpaidFromList);
-        (partiallyPaidFromDetails).ShouldBe(partiallyPaidFromList);
-        (partiallyPaidFromList).ShouldNotBe("Unpaid");
+        // Assert
+        unpaidFromList.ShouldBe("Unpaid");
+        partiallyPaidFromList.ShouldBe("Partially Paid");
+        unpaidFromDetails.ShouldBe("Unpaid");
+        partiallyPaidFromDetails.ShouldBe("Partially Paid");
+        unpaidFromDetails.ShouldBe(unpaidFromList);
+        partiallyPaidFromDetails.ShouldBe(partiallyPaidFromList);
     }
 
     [Fact]
@@ -39,25 +41,26 @@ public class PaymentStatusConsistencyTests(AspireSystemTestFixture fixture) : As
         var booking1 = await ApiClient.CreateBooking(tour.Id, customer1.Id);
         var booking2 = await ApiClient.CreatePartiallyPaidBooking(tour.Id, customer2.Id, 300m);
 
-        var booking1Href = $"/bookings/{booking1.Id}";
-        var booking2Href = $"/bookings/{booking2.Id}";
-        var expectedBooking1 = await BookingsList.GetPaymentStatus(booking1.Id);
-        var expectedBooking2 = await BookingsList.GetPaymentStatus(booking2.Id);
-
         // Act
+        var booking1GlobalStatus = await BookingsList.GetPaymentStatus(booking1.Id);
+        var booking2GlobalStatus = await BookingsList.GetPaymentStatus(booking2.Id);
         await NavigateTo($"/tours/{tour.Id}");
         await Expect(Page).ToHaveTitleAsync("Tour Details");
 
-        var scopedBooking1Row = Page.Locator($".table tbody tr:has(a[href='{booking1Href}'])");
-        var scopedBooking2Row = Page.Locator($".table tbody tr:has(a[href='{booking2Href}'])");
+        var scopedBooking1Row = Page.Locator($".table tbody tr:has(a[href='/bookings/{booking1.Id}'])");
+        var scopedBooking2Row = Page.Locator($".table tbody tr:has(a[href='/bookings/{booking2.Id}'])");
         await Expect(scopedBooking1Row).ToHaveCountAsync(1);
         await Expect(scopedBooking2Row).ToHaveCountAsync(1);
 
-        var scopedBooking1Status = (await scopedBooking1Row.First.Locator("td .badge").Last.InnerTextAsync()).Trim();
-        var scopedBooking2Status = (await scopedBooking2Row.First.Locator("td .badge").Last.InnerTextAsync()).Trim();
+        var scopedBooking1Status = (await scopedBooking1Row.Locator("td .badge").Last.InnerTextAsync()).Trim();
+        var scopedBooking2Status = (await scopedBooking2Row.Locator("td .badge").Last.InnerTextAsync()).Trim();
 
         // Assert
-        (scopedBooking1Status).ShouldBe(expectedBooking1);
-        (scopedBooking2Status).ShouldBe(expectedBooking2);
+        booking1GlobalStatus.ShouldBe("Unpaid");
+        booking2GlobalStatus.ShouldBe("Partially Paid");
+        scopedBooking1Status.ShouldBe("Unpaid");
+        scopedBooking2Status.ShouldBe("Partially Paid");
+        scopedBooking1Status.ShouldBe(booking1GlobalStatus);
+        scopedBooking2Status.ShouldBe(booking2GlobalStatus);
     }
 }

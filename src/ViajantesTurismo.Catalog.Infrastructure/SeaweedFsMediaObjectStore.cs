@@ -123,7 +123,7 @@ internal sealed class SeaweedFsMediaObjectStore(
                 Prefix = prefix,
                 ContinuationToken = continuationToken
             }, ct).ConfigureAwait(false);
-            objects.AddRange(response.S3Objects);
+            objects.AddRange(response.S3Objects ?? []);
             continuationToken = response.IsTruncated.GetValueOrDefault() ? response.NextContinuationToken : null;
         }
         while (continuationToken is not null);

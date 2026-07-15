@@ -33,105 +33,90 @@ public sealed partial class AdminTestArchitectureGuardTests
         var integrationInfrastructurePath = Path.Combine(repositoryRoot, "tests", "ViajantesTurismo.Admin.IntegrationTests", "Infrastructure");
         var systemTestBasesPath = Path.Combine(repositoryRoot, "tests", "ViajantesTurismo.Admin.SystemTests", "Infrastructure", "Bases");
         var systemTestFixturesPath = Path.Combine(repositoryRoot, "tests", "ViajantesTurismo.Admin.SystemTests", "Infrastructure", "Fixtures");
+        var assemblyFixtureText = File.ReadAllText(Path.Combine(integrationInfrastructurePath, "AssemblyFixture.cs"));
+        var apiFixtureText = File.ReadAllText(Path.Combine(integrationInfrastructurePath, "ApiFixture.cs"));
+        var publicSchemaResetText = File.ReadAllText(Path.Combine(
+            repositoryRoot,
+            "src",
+            "SharedKernel",
+            "SharedKernel.IntegrationTesting",
+            "PostgreSqlPublicSchemaReset.cs"));
+        var serialIntegrationCollectionText = File.ReadAllText(Path.Combine(
+            integrationInfrastructurePath,
+            "Fixtures",
+            "AspireSerialIntegrationTestCollection.cs"));
+        var serialIntegrationBaseText = File.ReadAllText(Path.Combine(
+            integrationInfrastructurePath,
+            "Bases",
+            "AspireSerialIntegrationTestBase.cs"));
+        var systemTestBaseText = File.ReadAllText(Path.Combine(systemTestBasesPath, "AspireSystemTestBase.cs"));
+        var serialSystemTestBaseText = File.ReadAllText(Path.Combine(systemTestBasesPath, "AspireSerialSystemTestBase.cs"));
+        var systemFixtureText = File.ReadAllText(Path.Combine(systemTestFixturesPath, "AspireSystemTestFixture.cs"));
+        var obsoleteIntegrationFixtureExists = File.Exists(Path.Combine(
+            integrationInfrastructurePath,
+            "Fixtures",
+            "AspireSerialIntegrationTestFixture.cs"));
+        var obsoleteSystemFixtureExists = File.Exists(Path.Combine(systemTestFixturesPath, "AspireSerialSystemTestFixture.cs"));
+        var obsoleteE2ETestBaseExists = File.Exists(Path.Combine(systemTestBasesPath, "E2ETestBase.cs"));
+        var obsoleteE2ESerialTestBaseExists = File.Exists(Path.Combine(systemTestBasesPath, "E2ESerialTestBase.cs"));
+        var obsoleteE2EFixtureExists = File.Exists(Path.Combine(systemTestFixturesPath, "E2EFixture.cs"));
 
-        AssertFileContains(
-            Path.Combine(integrationInfrastructurePath, "AssemblyFixture.cs"),
-            "[assembly: Xunit.AssemblyFixture(typeof(ViajantesTurismo.Admin.IntegrationTests.Infrastructure.ApiFixture))]");
+        assemblyFixtureText.ShouldContain(
+            "[assembly: Xunit.AssemblyFixture(typeof(ViajantesTurismo.Admin.IntegrationTests.Infrastructure.ApiFixture))]",
+            StringComparison.Ordinal);
+        apiFixtureText.ShouldContain(
+            "public sealed class ApiFixture : Testing.Integration.IAdminTestHost, IAsyncLifetime",
+            StringComparison.Ordinal);
+        apiFixtureText.ShouldContain("var testConfiguration = AppHostTestArguments.CreateConfiguration();", StringComparison.Ordinal);
+        apiFixtureText.ShouldContain("HostedProfile.Admin.ToArguments()", StringComparison.Ordinal);
+        apiFixtureText.ShouldContain("string[] appHostArguments =", StringComparison.Ordinal);
+        apiFixtureText.ShouldContain("_app = await AspireTestApplication.Start<ViajantesTurismo_AppHost>(", StringComparison.Ordinal);
+        apiFixtureText.ShouldContain("_client = _app.CreateHttpClient(ResourceNames.Api);", StringComparison.Ordinal);
+        apiFixtureText.ShouldContain(
+            "_databaseConnectionString = await _app.GetConnectionString(ResourceNames.AdminDatabase, TestContext.Current.CancellationToken);",
+            StringComparison.Ordinal);
+        publicSchemaResetText.ShouldContain(
+            "public static async Task Reset(DbConnection connection, CancellationToken ct)",
+            StringComparison.Ordinal);
+        apiFixtureText.ShouldContain("await PostgreSqlPublicSchemaReset.Reset(connection, ct);", StringComparison.Ordinal);
+        serialIntegrationCollectionText.ShouldContain(
+            "[CollectionDefinition(IntegrationTestCollections.Serial, DisableParallelization = true)]",
+            StringComparison.Ordinal);
 
-        AssertFileContains(
-            Path.Combine(integrationInfrastructurePath, "ApiFixture.cs"),
-            "public sealed class ApiFixture : Testing.Integration.IAdminTestHost, IAsyncLifetime");
+        serialIntegrationCollectionText.ShouldNotMatch(new Regex("ICollectionFixture<", RegexOptions.CultureInvariant));
 
-        AssertFileContains(
-            Path.Combine(integrationInfrastructurePath, "ApiFixture.cs"),
-            "testConfiguration.Arguments,");
+        serialIntegrationBaseText.ShouldContain("public abstract class AspireSerialIntegrationTestBase(", StringComparison.Ordinal);
+        serialIntegrationBaseText.ShouldContain("ApiFixture fixture) : IAsyncLifetime", StringComparison.Ordinal);
+        serialIntegrationBaseText.ShouldContain("await fixture.ResetToKnownBaseline(cts.Token);", StringComparison.Ordinal);
 
-        AssertFileContains(
-            Path.Combine(integrationInfrastructurePath, "ApiFixture.cs"),
-            "_client = _app.CreateHttpClient(ResourceNames.Api);");
+        serialIntegrationBaseText.ShouldNotMatch(
+            new Regex(
+                @"public\s+virtual\s+async\s+ValueTask\s+DisposeAsync\s*\(\s*\)\s*\{[^}]*ResetDatabase\(",
+                RegexOptions.Singleline | RegexOptions.CultureInvariant));
 
-        AssertFileContains(
-            Path.Combine(integrationInfrastructurePath, "ApiFixture.cs"),
-            "_databaseConnectionString = await _app.GetConnectionString(ResourceNames.AdminDatabase, TestContext.Current.CancellationToken);");
+        obsoleteIntegrationFixtureExists.ShouldBeFalse();
 
-        AssertFileContains(
-            Path.Combine(GetRepositoryRoot(), "src", "SharedKernel", "SharedKernel.IntegrationTesting", "PostgreSqlPublicSchemaReset.cs"),
-            "public static async Task Reset(DbConnection connection, CancellationToken ct)");
+        systemTestBaseText.ShouldContain(
+            "public abstract class AspireSystemTestBase<TFixture>(TFixture fixture) : PageTest",
+            StringComparison.Ordinal);
+        systemTestBaseText.ShouldContain("protected Uri ApiBaseUri => Fixture.ApiBaseUri;", StringComparison.Ordinal);
+        serialSystemTestBaseText.ShouldContain("[Collection(E2ETestCollections.Serial)]", StringComparison.Ordinal);
+        serialSystemTestBaseText.ShouldContain(
+            "public abstract class AspireSerialSystemTestBase(AspireSystemTestFixture fixture) : AspireSystemTestBase<AspireSystemTestFixture>(fixture)",
+            StringComparison.Ordinal);
+        systemFixtureText.ShouldContain("await PostgreSqlPublicSchemaReset.Reset(connection, ct);", StringComparison.Ordinal);
+        serialSystemTestBaseText.ShouldContain("await Fixture.ResetToKnownBaseline(cts.Token);", StringComparison.Ordinal);
 
-        AssertFileContains(
-            Path.Combine(integrationInfrastructurePath, "ApiFixture.cs"),
-            "await PostgreSqlPublicSchemaReset.Reset(connection, ct);");
+        serialSystemTestBaseText.ShouldNotMatch(ProtectedClearDatabaseMemberRegex());
 
-        AssertFileContains(
-            Path.Combine(integrationInfrastructurePath, "Fixtures", "AspireSerialIntegrationTestCollection.cs"),
-            "[CollectionDefinition(IntegrationTestCollections.Serial, DisableParallelization = true)]");
+        systemFixtureText.ShouldContain(
+            "public sealed class AspireSystemTestFixture : IAspireSystemTestFixture, IAsyncLifetime, IDisposable",
+            StringComparison.Ordinal);
 
-        AssertFileDoesNotContain(
-            Path.Combine(integrationInfrastructurePath, "Fixtures", "AspireSerialIntegrationTestCollection.cs"),
-            new Regex("ICollectionFixture<", RegexOptions.CultureInvariant));
-
-        AssertFileContains(
-            Path.Combine(integrationInfrastructurePath, "Bases", "AspireSerialIntegrationTestBase.cs"),
-            "public abstract class AspireSerialIntegrationTestBase(");
-
-        AssertFileContains(
-            Path.Combine(integrationInfrastructurePath, "Bases", "AspireSerialIntegrationTestBase.cs"),
-            "ApiFixture fixture) : IAsyncLifetime");
-
-        AssertFileContains(
-            Path.Combine(integrationInfrastructurePath, "Bases", "AspireSerialIntegrationTestBase.cs"),
-            "await fixture.ResetToKnownBaseline(cts.Token);");
-
-        AssertFileDoesNotContain(
-            Path.Combine(integrationInfrastructurePath, "Bases", "AspireSerialIntegrationTestBase.cs"),
-            new Regex(@"public\s+virtual\s+async\s+ValueTask\s+DisposeAsync\s*\(\s*\)\s*\{[^}]*ResetDatabase\(", RegexOptions.Singleline | RegexOptions.CultureInvariant));
-
-        AssertFileDoesNotExist(
-            Path.Combine(integrationInfrastructurePath, "Fixtures", "AspireSerialIntegrationTestFixture.cs"));
-
-        AssertFileContains(
-            Path.Combine(systemTestBasesPath, "AspireSystemTestBase.cs"),
-            "public abstract class AspireSystemTestBase<TFixture>(TFixture fixture) : PageTest");
-
-        AssertFileContains(
-            Path.Combine(systemTestBasesPath, "AspireSystemTestBase.cs"),
-            "protected Uri ApiBaseUri => Fixture.ApiBaseUri;");
-
-        AssertFileContains(
-            Path.Combine(systemTestBasesPath, "AspireSerialSystemTestBase.cs"),
-            "[Collection(E2ETestCollections.Serial)]");
-
-        AssertFileContains(
-            Path.Combine(systemTestBasesPath, "AspireSerialSystemTestBase.cs"),
-            "public abstract class AspireSerialSystemTestBase(AspireSystemTestFixture fixture) : AspireSystemTestBase<AspireSystemTestFixture>(fixture)");
-
-        AssertFileContains(
-            Path.Combine(systemTestFixturesPath, "AspireSystemTestFixture.cs"),
-            "await PostgreSqlPublicSchemaReset.Reset(connection, ct);");
-
-        AssertFileContains(
-            Path.Combine(systemTestBasesPath, "AspireSerialSystemTestBase.cs"),
-            "await Fixture.ResetToKnownBaseline(cts.Token);");
-
-        AssertFileDoesNotContain(
-            Path.Combine(systemTestBasesPath, "AspireSerialSystemTestBase.cs"),
-            ProtectedClearDatabaseMemberRegex());
-
-        AssertFileContains(
-            Path.Combine(systemTestFixturesPath, "AspireSystemTestFixture.cs"),
-            "public sealed class AspireSystemTestFixture : IAspireSystemTestFixture, IAsyncLifetime, IDisposable");
-
-        AssertFileDoesNotExist(
-            Path.Combine(systemTestFixturesPath, "AspireSerialSystemTestFixture.cs"));
-
-        AssertFileDoesNotExist(
-            Path.Combine(systemTestBasesPath, "E2ETestBase.cs"));
-
-        AssertFileDoesNotExist(
-            Path.Combine(systemTestBasesPath, "E2ESerialTestBase.cs"));
-
-        AssertFileDoesNotExist(
-            Path.Combine(systemTestFixturesPath, "E2EFixture.cs"));
+        obsoleteSystemFixtureExists.ShouldBeFalse();
+        obsoleteE2ETestBaseExists.ShouldBeFalse();
+        obsoleteE2ESerialTestBaseExists.ShouldBeFalse();
+        obsoleteE2EFixtureExists.ShouldBeFalse();
     }
 
     [Fact]

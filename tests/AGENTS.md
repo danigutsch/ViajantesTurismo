@@ -16,6 +16,7 @@ This file overrides root guidance where test-specific behavior is needed.
 - Do not append the `Async` suffix to test or helper method names; use
   descriptive names without the suffix, even when the implementation is
   asynchronous.
+- Keep test fixture database schema values as hard-coded literals.
 - Prefer test filters: `--filter-class`, `--filter-method`, `--filter-namespace`, `--filter-trait`.
 - Do not use legacy VSTest filter syntax `--filter "FullyQualifiedName~..."`.
 - Use Arrange/Act/Assert structure in test methods.

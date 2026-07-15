@@ -40,7 +40,9 @@ public static class BrandingInfrastructureDependencyInjection
         where TContext : DbContext
         where TBuilder : IHostApplicationBuilder
     {
-        options.UseNpgsql(providerOptions => providerOptions.MigrationsHistoryTable(MigrationsHistoryTable));
+        options.UseNpgsql(providerOptions => providerOptions.MigrationsHistoryTable(
+            MigrationsHistoryTable,
+            schema: BrandingDbContext.MigrationsHistorySchemaName));
 
         if (!builder.Environment.IsDevelopment())
         {

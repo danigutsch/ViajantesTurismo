@@ -29,4 +29,24 @@ public static class TestTraits
     /// Area value for bookings tests.
     /// </summary>
     public const string BookingsArea = "bookings";
+
+    /// <summary>
+    /// Scope value for database integration tests.
+    /// </summary>
+    public const string DatabaseIntegrationScope = "database-integration";
+
+    /// <summary>
+    /// Area value for Branding tests.
+    /// </summary>
+    public const string BrandingArea = "branding";
+
+    /// <summary>
+    /// Trait name for test component ownership.
+    /// </summary>
+    public const string ComponentName = "Component";
+
+    /// <summary>
+    /// Component value for PostgreSQL observability tests.
+    /// </summary>
+    public const string PostgreSqlObservabilityComponent = "SharedKernel.Observability.Npgsql";
 }

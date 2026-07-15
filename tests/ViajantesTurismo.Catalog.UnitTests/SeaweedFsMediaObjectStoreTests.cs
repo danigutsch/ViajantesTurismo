@@ -148,6 +148,21 @@ public sealed class SeaweedFsMediaObjectStoreTests
     }
 
     [Fact]
+    public async Task ListObjects_treats_a_missing_object_collection_as_empty()
+    {
+        // Arrange
+        using var client = new FakeAmazonS3Client { ReturnEmptyListResponse = true };
+        var store = SeaweedFsMediaObjectStoreTestFactory.CreateStore(client, autoProvisionBucket: false);
+
+        // Act
+        var objects = await store.ListObjects("media", TestContext.Current.CancellationToken);
+
+        // Assert
+        objects.ShouldBeEmpty();
+        client.Operations.ShouldBe(["ListObjectsV2:media/media/"]);
+    }
+
+    [Fact]
     public async Task Put_stores_checksum_metadata_and_returns_escaped_public_uri()
     {
         // Arrange

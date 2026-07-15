@@ -17,11 +17,12 @@ public sealed class ConcurrentAspireTestApplicationTests
     {
         // Arrange
         var cancellationToken = TestContext.Current.CancellationToken;
+        string[] appHostArguments = [.. AppHostTestArguments.Create(), .. HostedProfile.Admin.ToArguments()];
         await using var applications = await ConcurrentAspireTestApplications.Start(
             ct => AspireTestApplication.Start<ViajantesTurismo_AppHost>(
                 [ResourceNames.Api],
                 null,
-                AppHostTestArguments.Create(),
+                appHostArguments,
                 ct),
             cancellationToken);
 

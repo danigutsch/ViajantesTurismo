@@ -58,6 +58,7 @@
         <Project Path="src/SharedKernel/SharedKernel.Idempotency.EntityFrameworkCore/SharedKernel.Idempotency.EntityFrameworkCore.csproj" />
         <Project Path="src/SharedKernel/SharedKernel.OpenApi/SharedKernel.OpenApi.csproj" />
         <Project Path="src/SharedKernel/SharedKernel.Observability/SharedKernel.Observability.csproj" />
+        <Project Path="src/SharedKernel/SharedKernel.Observability.Npgsql/SharedKernel.Observability.Npgsql.csproj" />
         <Project Path="src/SharedKernel/SharedKernel.InputNormalization/SharedKernel.InputNormalization.csproj" />
         <Project Path="src/SharedKernel/SharedKernel.AI/SharedKernel.AI.csproj" />
         <Project Path="src/SharedKernel/SharedKernel.HttpClients/SharedKernel.HttpClients.csproj" />
@@ -91,6 +92,7 @@
         <Project Path="src/ViajantesTurismo.Catalog.Contracts.IntegrationEvents/ViajantesTurismo.Catalog.Contracts.IntegrationEvents.csproj" />
         <Project Path="src/ViajantesTurismo.Catalog.Domain/ViajantesTurismo.Catalog.Domain.csproj" />
         <Project Path="src/ViajantesTurismo.Catalog.Infrastructure/ViajantesTurismo.Catalog.Infrastructure.csproj" />
+        <Project Path="src/ViajantesTurismo.DatabaseObservability/ViajantesTurismo.DatabaseObservability.csproj" />
     </Folder>
     <Folder Name="/src/Branding/">
         <Project Path="src/ViajantesTurismo.Branding.ApiService/ViajantesTurismo.Branding.ApiService.csproj" />
@@ -139,6 +141,7 @@
         <Project Path="tests/ViajantesTurismo.Admin.UiIntegrationTests/ViajantesTurismo.Admin.UiIntegrationTests.csproj" />
         <Project Path="tests/ViajantesTurismo.Admin.SystemTests/ViajantesTurismo.Admin.SystemTests.csproj" />
         <Project Path="tests/ViajantesTurismo.Admin.Testing/ViajantesTurismo.Admin.Testing.csproj" />
+        <Project Path="tests/ViajantesTurismo.DatabaseObservability.Tests/ViajantesTurismo.DatabaseObservability.Tests.csproj" />
         <Project Path="tests/ViajantesTurismo.Management.WebTests/ViajantesTurismo.Management.WebTests.csproj" />
         <Project Path="tests/ViajantesTurismo.Public.WebTests/ViajantesTurismo.Public.WebTests.csproj" />
         <Project Path="tests/ViajantesTurismo.ArchitectureTests/ViajantesTurismo.ArchitectureTests.csproj" />

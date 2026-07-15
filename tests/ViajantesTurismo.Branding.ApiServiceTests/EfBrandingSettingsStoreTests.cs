@@ -1,4 +1,5 @@
 using Microsoft.EntityFrameworkCore;
+using Npgsql;
 using ViajantesTurismo.Branding.Infrastructure;
 using ViajantesTurismo.Resources;
 using TestTraits = ViajantesTurismo.Branding.ApiServiceTests.Infrastructure.TestTraits;
@@ -32,6 +33,24 @@ public sealed class EfBrandingSettingsStoreTests
 
         // Assert
         store.ShouldNotBeNull();
+    }
+
+    [Fact]
+    public void Design_time_factory_configures_branding_postgresql_provider()
+    {
+        // Arrange
+        var factory = new BrandingDbContextDesignTimeFactory();
+
+        // Act
+        using var dbContext = factory.CreateDbContext([]);
+        var providerName = dbContext.Database.ProviderName;
+        var connectionString = dbContext.Database.GetDbConnection().ConnectionString;
+        var connectionStringBuilder = new NpgsqlConnectionStringBuilder(connectionString);
+
+        // Assert
+        providerName.ShouldBe("Npgsql.EntityFrameworkCore.PostgreSQL");
+        connectionStringBuilder.Host.ShouldBe("localhost");
+        connectionStringBuilder.Database.ShouldBe("branding-design-time");
     }
 
     [Fact]

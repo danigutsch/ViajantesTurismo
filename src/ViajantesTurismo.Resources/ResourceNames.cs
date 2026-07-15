@@ -96,6 +96,11 @@ public static class ResourceNames
     public const string MigrationService = "migration";
 
     /// <summary>
+    /// The name of the PostgreSQL database observability service resource.
+    /// </summary>
+    public const string DatabaseObservability = "database-observability";
+
+    /// <summary>
     /// The name of the Admin performance smoke test resource.
     /// </summary>
     public const string AdminPerformanceSmoke = "admin-performance-smoke";

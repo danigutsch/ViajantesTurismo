@@ -62,7 +62,7 @@ internal static partial class AppHostMermaidDiagram
         Dictionary<string, string> variables,
         List<(string Source, string Target)> edges)
     {
-        if (method == "CreateBuilder")
+        if (!method.StartsWith("Add", StringComparison.Ordinal))
         {
             return;
         }
@@ -122,7 +122,7 @@ internal static partial class AppHostMermaidDiagram
         return PascalCaseWordRegex().Replace(value, " $1").Replace(" Web", ".Web", StringComparison.Ordinal);
     }
 
-    [GeneratedRegex(@"var\s+(\w+)\s+=\s+([\w.]+)\.(\w+)\(([^)]*)\);", RegexOptions.CultureInvariant)]
+    [GeneratedRegex(@"var\s+(\w+)\s+=\s+(?:.+?\?\s+)?([\w.]+)\.(\w+)\(([^)]*)\)(?:\s*:\s*null)?;", RegexOptions.CultureInvariant)]
     private static partial Regex AppHostAssignmentRegex();
 
     [GeneratedRegex(@"builder\.(Add\w+)\(([^)]*)\);", RegexOptions.CultureInvariant)]
