@@ -272,7 +272,7 @@ internal static class RepoConfigToolApplication
         var project = RoadmapProject.Load(rootPath);
         var syncer = new GitHubRoadmapSyncer(project, httpClient);
         var result = dryRun
-            ? syncer.Preview()
+            ? await syncer.Preview(cancellationToken).ConfigureAwait(false)
             : await syncer.Apply(cancellationToken).ConfigureAwait(false);
         foreach (var message in result.Messages)
         {

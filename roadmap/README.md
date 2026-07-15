@@ -74,6 +74,9 @@ pull request that changes canonical roadmap data.
 - Milestones are not used by the roadmap model by default.
 - Project fields may mirror score inputs and computed score, but they do not
   replace the repository model.
+- Project-configured dry-runs authenticate only to validate target, schema,
+  membership, proposed field writes, and report-only conflicts; they do not mutate
+  GitHub.
 - Sync automation must be driven by the .NET repo config tool, not shell or
   Python helper scripts.
 

@@ -40,7 +40,7 @@ Pass `--root <path>` after the command to target another repository root.
 | `get blocking-overview` | Lists open items and their open direct blocker IDs. |
 | `get tags` / `get labels` | Lists tag or label counts. |
 | `get by-tag <tag>` / `get by-label <label>` | Lists items by taxonomy value. |
-| `sync github --dry-run` | Previews issue creation, additive labels, and configured Project membership. |
+| `sync github --dry-run` | Previews issue creation and labels. When a Project target is configured, it authenticates to preflight target, schema, membership, field writes, and conflicts without mutation. |
 | `sync github --apply` | Creates requested issues, persists their issue numbers, adds labels, and configures Project membership using `GH_TOKEN` or `GITHUB_TOKEN`. |
 
 ## Exit codes
@@ -59,4 +59,5 @@ field values are report-only drift. The repository remains the source of truth.
 
 Project membership requires a user-owned Project target in `integrations.github.projectV2` and a
 classic token with `repo` and `project` scopes. Fine-grained tokens cannot currently automate
-user-owned Projects.
+user-owned Projects. A configured Project target requires that token for both `--dry-run` live
+preflight and `--apply`.
