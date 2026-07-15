@@ -689,7 +689,7 @@ internal sealed class GitHubRoadmapSyncer
         var token = Environment.GetEnvironmentVariable("GH_TOKEN") ?? Environment.GetEnvironmentVariable("GITHUB_TOKEN");
         if (string.IsNullOrWhiteSpace(token))
         {
-            throw new InvalidOperationException("Set GH_TOKEN or GITHUB_TOKEN before running authenticated GitHub Project validation.");
+            throw new InvalidOperationException("Set GH_TOKEN or GITHUB_TOKEN before running authenticated GitHub sync.");
         }
 
         var httpClient = new HttpClient();

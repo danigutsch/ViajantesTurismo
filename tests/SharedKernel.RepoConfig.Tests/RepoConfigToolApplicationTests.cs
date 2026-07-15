@@ -1056,6 +1056,28 @@ public sealed class RepoConfigToolApplicationTests
     }
 
     [Fact]
+    public async Task Sync_github_apply_requires_a_token_for_authenticated_sync()
+    {
+        // Arrange
+        using var workspace = new TemporaryRepoConfigWorkspace();
+        using var initOutput = new StringWriter(CultureInfo.InvariantCulture);
+        using var initError = new StringWriter(CultureInfo.InvariantCulture);
+        (await RepoConfigToolApplication.Run(["init", "--root", workspace.RootPath], initOutput, initError, workspace.RootPath, TestContext.Current.CancellationToken)).ShouldBe(0);
+        RoadmapConfigTestOperations.EnableGitHubSync(workspace);
+        GitHubProjectSyncTestOperations.MapDefaultItem(workspace);
+        var syncer = new GitHubRoadmapSyncer(RoadmapProject.Load(workspace.RootPath));
+        using var ghTokenScope = new EnvironmentVariableScope("GH_TOKEN", null);
+        using var gitHubTokenScope = new EnvironmentVariableScope("GITHUB_TOKEN", null);
+
+        // Act
+        var action = (Func<Task>)(async () => await syncer.Apply(TestContext.Current.CancellationToken));
+        var exception = await action.ShouldThrow<InvalidOperationException>();
+
+        // Assert
+        exception.Message.ShouldBe("Set GH_TOKEN or GITHUB_TOKEN before running authenticated GitHub sync.");
+    }
+
+    [Fact]
     public async Task Sync_github_dry_run_preflights_existing_project_membership_without_mutating()
     {
         // Arrange
