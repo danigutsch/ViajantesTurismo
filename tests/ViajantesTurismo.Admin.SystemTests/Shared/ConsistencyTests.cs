@@ -1,4 +1,5 @@
 using ViajantesTurismo.Admin.Contracts.Application;
+using ViajantesTurismo.Admin.SystemTests.Infrastructure.Pages;
 
 namespace ViajantesTurismo.Admin.SystemTests.Shared;
 
@@ -11,17 +12,23 @@ public class ConsistencyTests(AspireSystemTestFixture fixture) : AspireSystemTes
         var tour = await ApiClient.CreateTour(new CreateTourOptions { Currency = CurrencyDto.Real });
 
         // Act
-        await NavigateTo("/tours");
-        await Expect(Page).ToHaveTitleAsync("Tours");
+        var tours = new PagedEntityListPage<GetTourDto>(
+            Page,
+            NavigateTo,
+            ApiClient.GetAllTours,
+            static item => item.Id,
+            "/tours",
+            "/tours",
+            "Tours");
+        var tourRow = await tours.GetRow(tour.Id);
 
-        var tourRow = Page.Locator("table tbody tr").Filter(new LocatorFilterOptions { HasText = tour.Identifier });
         await Expect(tourRow).ToBeVisibleAsync();
         var listText = await tourRow.InnerTextAsync();
 
         // Assert
         (listText).ShouldContain("R$", StringComparison.Ordinal);
 
-        await tourRow.GetLink("View").ClickAsync();
+        await NavigateTo($"/tours/{tour.Id}");
         await Expect(Page).ToHaveTitleAsync("Tour Details");
         await Expect(Page.GetByText(ConsistencyTestRegexes.BrlPrice()).First).ToBeVisibleAsync();
         await Expect(Page.GetByText(ConsistencyTestRegexes.DateFormat()).First).ToBeVisibleAsync();

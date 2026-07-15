@@ -4,8 +4,7 @@ This repository protects two public contract surfaces:
 
 - `SharedKernel.*` package APIs through `PublicAPI.Shipped.txt`, `PublicAPI.Unshipped.txt`,
   and .NET package validation.
-- Admin HTTP contracts through canonical OpenAPI artifacts under
-  `src/ViajantesTurismo.Admin.Contracts.Http/OpenApi/` and contract tests.
+- Admin, Catalog, and Branding HTTP contracts through canonical OpenAPI artifacts and contract tests.
 
 ## Release phase policy
 
@@ -86,16 +85,18 @@ Release-candidate and stable compatibility failures still block even when a mark
 
 ## OpenAPI snapshots
 
-The Admin and Catalog contract tests read the committed OpenAPI artifacts and compare them with
-generated documents. Regenerate the committed artifacts intentionally when HTTP contracts change:
+The Admin, Catalog, and Branding contract tests read the committed OpenAPI artifacts and compare them
+with generated documents. Regenerate the committed artifacts intentionally when HTTP contracts change:
 
-The following Bash or Git Bash commands scope placeholder authentication URLs and the build-generation
-marker to the document-generator child process. Do not export them for normal application runs or
-ordinary builds.
+After a locked restore, the .NET tool runs the supported build generator with a minimal child environment.
+Trusted generation omits JWT/OIDC registration while retaining authorization metadata for the generated
+Bearer security documents. Normal application runs remain fail-closed when authentication configuration
+is missing.
 
 ```bash
-env OpenApi__BuildGeneration=true Authentication__Authority=https://openapi.invalid Authentication__Issuer=https://openapi.invalid dotnet build src/ViajantesTurismo.Admin.ApiService/ViajantesTurismo.Admin.ApiService.csproj -p:RefreshAdminOpenApiArtifacts=true
-env OpenApi__BuildGeneration=true Authentication__Authority=https://openapi.invalid Authentication__Issuer=https://openapi.invalid dotnet build src/ViajantesTurismo.Catalog.ApiService/ViajantesTurismo.Catalog.ApiService.csproj -p:RefreshCatalogOpenApiArtifacts=true
+dotnet run --project tools/ViajantesTurismo.OpenApi.Tool --no-restore -- generate admin --refresh
+dotnet run --project tools/ViajantesTurismo.OpenApi.Tool --no-restore -- generate catalog --refresh
+dotnet run --project tools/ViajantesTurismo.OpenApi.Tool --no-restore -- generate branding --refresh
 ```
 
 Then run:
@@ -103,4 +104,5 @@ Then run:
 ```bash
 dotnet test --project tests/ViajantesTurismo.Admin.ContractTests/ViajantesTurismo.Admin.ContractTests.csproj --filter-class "*OpenApi*"
 dotnet test --project tests/ViajantesTurismo.Catalog.ContractTests/ViajantesTurismo.Catalog.ContractTests.csproj --filter-class "*OpenApi*"
+dotnet test --project tests/ViajantesTurismo.Branding.ContractTests/ViajantesTurismo.Branding.ContractTests.csproj --filter-class "*OpenApi*"
 ```

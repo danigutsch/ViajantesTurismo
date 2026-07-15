@@ -1,5 +1,6 @@
 using SharedKernel.AspNetCore;
 using SharedKernel.Branding;
+using SharedKernel.OpenApi;
 using ViajantesTurismo.Admin.ApiService;
 using ViajantesTurismo.Admin.ApiService.Bookings;
 using ViajantesTurismo.Admin.ApiService.Customers;
@@ -24,7 +25,7 @@ builder.Services.AddHttpClient<IBrandingApiClient, BrandingApiClient>(client => 
 builder.Services.AddProblemDetails();
 builder.Services.AddConfiguredTrustedForwardedHeaders(builder.Configuration.GetSection("Security:ForwardedHeaders"));
 builder.Services.AddAdminSecurityBaseline(builder.Configuration);
-builder.Services.AddApiBearerAuthentication(
+builder.Services.AddApiSecurity(
         builder.Configuration,
         builder.Environment,
         ApiAudienceNames.Admin,
@@ -55,15 +56,11 @@ app.UseExceptionHandler();
 
 app.UseForwardedHeaders();
 
-if (app.Environment.IsDevelopment())
-{
-    app.MapOpenApi();
-}
+app.MapConfiguredOpenApi();
 
 app.UseCors(AdminSecurityBaseline.CorsPolicyName);
 
-app.UseAuthentication();
-app.UseAuthorization();
+app.UseApiSecurity();
 app.UseRateLimiter();
 
 app.MapToursEndpoints();

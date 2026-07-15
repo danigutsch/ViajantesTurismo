@@ -5,6 +5,7 @@ using SharedKernel.DomainEvents.EntityFrameworkCore;
 using SharedKernel.EntityFrameworkCore;
 using SharedKernel.Messaging.IntegrationEvents;
 using SharedKernel.Messaging.IntegrationEvents.EntityFrameworkCore;
+using SharedKernel.OpenApi;
 using ViajantesTurismo.Admin.Contracts.IntegrationEvents;
 using ViajantesTurismo.Admin.Contracts.IntegrationEvents.Tours;
 using ViajantesTurismo.Admin.Application;
@@ -30,6 +31,21 @@ public static class InfrastructureDependencyInjection
     public static TApplicationBuilder AddInfrastructure<TApplicationBuilder>(this TApplicationBuilder builder)
         where TApplicationBuilder : IHostApplicationBuilder
     {
+        return builder.AddInfrastructure(addRuntimeBackgroundServices: null);
+    }
+
+    /// <summary>
+    /// Adds Infrastructure layer services with an explicit runtime background-service registration choice.
+    /// </summary>
+    /// <param name="builder">The application builder to configure.</param>
+    /// <param name="addRuntimeBackgroundServices">Whether to register runtime hosted services. When omitted, trusted OpenAPI generation omits them.</param>
+    /// <typeparam name="TApplicationBuilder">The type of the application builder, constrained to <see cref="IHostApplicationBuilder"/>.</typeparam>
+    /// <returns>The updated application builder.</returns>
+    public static TApplicationBuilder AddInfrastructure<TApplicationBuilder>(
+        this TApplicationBuilder builder,
+        bool? addRuntimeBackgroundServices)
+        where TApplicationBuilder : IHostApplicationBuilder
+    {
         ArgumentNullException.ThrowIfNull(builder);
 
         if (builder.Environment.IsDevelopment())
@@ -46,16 +62,16 @@ public static class InfrastructureDependencyInjection
         builder.Services.AddScoped<ITourStore, TourStore>();
         builder.Services.AddScoped<ICustomerStore, CustomerStore>();
         builder.Services.AddScoped<IDocumentStore, DocumentStore>();
-        builder.Services.AddHostedService<DocumentDraftRetentionHostedService>();
         builder.Services.AddIntegrationEventContract(
             AdminTourCreatedIntegrationEvent.EventType,
             AdminIntegrationEventJsonContext.Default.AdminTourCreatedIntegrationEvent);
         builder.Services.AddIntegrationEventOutbox<AdminWriteDbContext>();
-        builder.Services.AddIntegrationEventOutboxRelay<AdminWriteDbContext>();
-        builder.Services.AddPostgreSqlIntegrationEventOutboxRelayAtomicClaims<AdminWriteDbContext>();
         builder.Services.AddPostgreSqlIntegrationEventTransportProducer<AdminWriteDbContext>(IntegrationEventConsumerNames.Catalog);
 
-        return builder;
+        var shouldAddRuntimeBackgroundServices = addRuntimeBackgroundServices
+            ?? !OpenApiGenerationMode.IsEnabled(builder.Environment);
+
+        return builder.AddAdminRuntimeBackgroundServices(shouldAddRuntimeBackgroundServices);
     }
 
     /// <summary>
@@ -81,6 +97,21 @@ public static class InfrastructureDependencyInjection
         builder.Services.AddIntegrationEventOutbox<AdminWriteDbContext>();
         builder.Services.AddPostgreSqlIntegrationEventTransportProducer<AdminWriteDbContext>(IntegrationEventConsumerNames.Catalog);
         builder.Services.AddScoped(sp => new Seeder(sp.GetRequiredService<AdminWriteDbContext>()));
+
+        return builder;
+    }
+
+    private static TApplicationBuilder AddAdminRuntimeBackgroundServices<TApplicationBuilder>(
+        this TApplicationBuilder builder,
+        bool addRuntimeBackgroundServices)
+        where TApplicationBuilder : IHostApplicationBuilder
+    {
+        if (addRuntimeBackgroundServices)
+        {
+            builder.Services.AddHostedService<DocumentDraftRetentionHostedService>();
+            builder.Services.AddIntegrationEventOutboxRelay<AdminWriteDbContext>();
+            builder.Services.AddPostgreSqlIntegrationEventOutboxRelayAtomicClaims<AdminWriteDbContext>();
+        }
 
         return builder;
     }

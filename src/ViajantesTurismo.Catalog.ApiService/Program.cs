@@ -1,4 +1,5 @@
 using SharedKernel.AspNetCore;
+using SharedKernel.OpenApi;
 using ViajantesTurismo.Catalog.ApiService;
 using ViajantesTurismo.Catalog.Infrastructure;
 using ViajantesTurismo.Resources;
@@ -14,7 +15,7 @@ builder.Services.AddConfiguredTrustedForwardedHeaders(builder.Configuration.GetS
 builder.Services.AddCatalogOpenApiDocuments();
 builder.Services.AddOutputCache();
 builder.Services.AddCatalogSecurityBaseline(builder.Configuration);
-builder.Services.AddApiBearerAuthentication(
+builder.Services.AddApiSecurity(
         builder.Configuration,
         builder.Environment,
         ApiAudienceNames.Catalog,
@@ -28,16 +29,12 @@ var app = builder.Build();
 
 app.UseForwardedHeaders();
 
-if (app.Environment.IsDevelopment())
-{
-    app.MapOpenApi();
-}
+app.MapConfiguredOpenApi();
 
 app.UsePublicContentLanguageQueryAlias();
 app.UseCors(CatalogSecurityBaseline.CorsPolicyName);
 
-app.UseAuthentication();
-app.UseAuthorization();
+app.UseApiSecurity();
 app.UseRateLimiter();
 app.UseOutputCache();
 app.MapCatalogEndpoints();

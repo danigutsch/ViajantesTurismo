@@ -97,6 +97,8 @@ jobs:
     name: Fast Validation
     needs:
       - detect-changes
+      - openapi-tool-windows
+    if: ${{ always() }}
     runs-on: ${{ vars.CI_UBUNTU_RUNNER }}
     timeout-minutes: 15
     permissions:
@@ -106,6 +108,18 @@ jobs:
       SONAR_ORGANIZATION: ${{ vars.SONAR_ORGANIZATION }}
       SONAR_PROJECT_KEY: ${{ vars.SONAR_PROJECT_KEY }}
     steps:
+      - name: Fail fast validation when prerequisites fail
+        if: ${{ needs.detect-changes.result != 'success' || needs.openapi-tool-windows.result != 'success' }}
+        shell: bash
+        run: |
+          if [[ "${{ needs.detect-changes.result }}" != "success" ]]; then
+            echo "Detect Changes failed." >&2
+            exit 1
+          fi
+
+          echo "OpenAPI Tool Windows failed." >&2
+          exit 1
+
       - name: Skip fast validation when not required
         if: ${{ needs.detect-changes.outputs.fast_validation_required != 'true' }}
         shell: bash
@@ -181,6 +195,43 @@ jobs:
           DIAGNOSTICS_ARTIFACT_URL: ${{ steps.upload-fast-validation-diagnostics.outputs.artifact-url }}
           RESULTS_ARTIFACT_URL: ${{ steps.upload-fast-validation-results.outputs.artifact-url }}
         run: bash scripts/write-ci-artifact-summary.sh "Fast validation"
+
+  openapi-tool-windows:
+    name: OpenAPI Tool Windows
+    needs:
+      - detect-changes
+    runs-on: windows-latest
+    timeout-minutes: 20
+    permissions:
+      contents: read
+    steps:
+      - name: Skip OpenAPI tool tests when not required
+        if: ${{ needs.detect-changes.outputs.build_required != 'true' }}
+        shell: bash
+        run: |
+          echo "OpenAPI tool tests were not required for this change set."
+
+      - name: Checkout repository
+        if: ${{ needs.detect-changes.outputs.build_required == 'true' }}
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+
+      - name: Set up CI prerequisites
+        if: ${{ needs.detect-changes.outputs.build_required == 'true' }}
+        uses: ./.github/actions/setup-ci-prerequisites
+        with:
+          restore-targets: |
+            tests/ViajantesTurismo.OpenApi.Tool.Tests/ViajantesTurismo.OpenApi.Tool.Tests.csproj
+            src/ViajantesTurismo.Admin.ApiService/ViajantesTurismo.Admin.ApiService.csproj
+            src/ViajantesTurismo.Branding.ApiService/ViajantesTurismo.Branding.ApiService.csproj
+            src/ViajantesTurismo.Catalog.ApiService/ViajantesTurismo.Catalog.ApiService.csproj
+          trust-dev-certificate: "false"
+
+      - name: Run OpenAPI tool tests
+        if: ${{ needs.detect-changes.outputs.build_required == 'true' }}
+        run: dotnet test --project tests/ViajantesTurismo.OpenApi.Tool.Tests/ViajantesTurismo.OpenApi.Tool.Tests.csproj --no-restore
 
   admin-integration-tests:
     name: Admin Integration Tests
@@ -443,6 +494,7 @@ jobs:
       - admin-integration-tests
       - mediator-heavy-tests
       - admin-system-tests
+      - openapi-tool-windows
     if: ${{ always() }}
     runs-on: ${{ vars.CI_UBUNTU_RUNNER }}
     timeout-minutes: 5
@@ -474,6 +526,11 @@ jobs:
 
           if [[ "${{ needs.admin-system-tests.result }}" != "success" ]]; then
               echo "Admin System Tests failed." >&2
+              exit 1
+          fi
+
+          if [[ "${{ needs.openapi-tool-windows.result }}" != "success" ]]; then
+              echo "OpenAPI Tool Windows failed." >&2
               exit 1
           fi
 

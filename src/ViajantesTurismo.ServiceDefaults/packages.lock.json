@@ -119,6 +119,9 @@
           "OpenTelemetry.Api": "1.16.0"
         }
       },
+      "sharedkernel.apiversioning": {
+        "type": "Project"
+      },
       "sharedkernel.mediator.abstractions": {
         "type": "Project"
       },
@@ -132,8 +135,25 @@
           "OpenTelemetry.Instrumentation.Runtime": "[1.15.1, )"
         }
       },
+      "sharedkernel.openapi": {
+        "type": "Project",
+        "dependencies": {
+          "Microsoft.AspNetCore.OpenApi": "[10.0.9, )",
+          "Microsoft.OpenApi": "[2.9.0, )",
+          "SharedKernel.ApiVersioning": "[0.1.0-alpha.0, )"
+        }
+      },
       "viajantesturismo.resources": {
         "type": "Project"
+      },
+      "Microsoft.AspNetCore.OpenApi": {
+        "type": "CentralTransitive",
+        "requested": "[10.0.9, )",
+        "resolved": "10.0.9",
+        "contentHash": "1ihb8FO9cGgEK1/m3CTtT/SfnynwmiZib0W2pcDVj3KSWk/Sca4VOXEtaptKQc582zpFrzTFiwkGRCglt6H+WQ==",
+        "dependencies": {
+          "Microsoft.OpenApi": "2.0.0"
+        }
       },
       "Microsoft.Extensions.Compliance.Abstractions": {
         "type": "CentralTransitive",
@@ -160,6 +180,12 @@
           "Microsoft.Extensions.DependencyInjection.AutoActivation": "10.7.0",
           "Microsoft.Extensions.Telemetry.Abstractions": "10.7.0"
         }
+      },
+      "Microsoft.OpenApi": {
+        "type": "CentralTransitive",
+        "requested": "[2.9.0, )",
+        "resolved": "2.9.0",
+        "contentHash": "uS2awDkgUvVhd735HEcNcOQdwbIDCAK3V1QzgWoszd/FPDLLVv9eF+fImmdJiGLIKKWJv2DMJQ7OSR9gYLd+uw=="
       },
       "OpenTelemetry": {
         "type": "CentralTransitive",

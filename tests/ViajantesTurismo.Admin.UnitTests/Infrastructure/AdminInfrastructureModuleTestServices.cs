@@ -58,6 +58,15 @@ internal static class AdminInfrastructureModuleTestServices
         return builder.Services.BuildServiceProvider();
     }
 
+    public static ServiceProvider CreateWithOpenApiBuildGenerationInfrastructureModule()
+    {
+        var builder = CreateConfiguredApplicationBuilder();
+        builder.AddApplication();
+        builder.AddInfrastructure(addRuntimeBackgroundServices: false);
+
+        return builder.Services.BuildServiceProvider();
+    }
+
     public static ServiceProvider CreateWithSeedingModule()
     {
         var builder = CreateConfiguredApplicationBuilder();

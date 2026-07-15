@@ -46,11 +46,10 @@ internal static class CatalogInfrastructureTestServices
         {
             [$"ConnectionStrings:{ResourceNames.CatalogDatabase}"] = "Host=localhost;Database=viajantes;Username=test;Password=test",
             [$"{ClamAvMediaUploadScannerOptions.SectionName}:Host"] = "clamav",
-            [$"{ClamAvMediaUploadScannerOptions.SectionName}:Port"] = "3310",
-            ["OpenApi:BuildGeneration"] = bool.TrueString
+            [$"{ClamAvMediaUploadScannerOptions.SectionName}:Port"] = "3310"
         });
 
-        builder.AddCatalogInfrastructure();
+        builder.AddCatalogInfrastructure(addOutboxRelay: false);
 
         return new CatalogInfrastructureScenario(builder.Services.BuildServiceProvider());
     }

@@ -7,6 +7,7 @@ using SharedKernel.EntityFrameworkCore;
 using SharedKernel.EventSourcing;
 using SharedKernel.EventSourcing.Npgsql;
 using SharedKernel.Messaging.IntegrationEvents.EntityFrameworkCore;
+using SharedKernel.OpenApi;
 using ViajantesTurismo.Catalog.Application;
 using ViajantesTurismo.Catalog.Application.Media;
 using ViajantesTurismo.Catalog.Application.Projections;
@@ -21,8 +22,6 @@ namespace ViajantesTurismo.Catalog.Infrastructure;
 /// </summary>
 public static class InfrastructureDependencyInjection
 {
-    private const string OpenApiBuildGenerationConfigurationKey = "OpenApi:BuildGeneration";
-
     /// <summary>
     /// Adds Catalog infrastructure services to the application builder.
     /// </summary>
@@ -32,14 +31,41 @@ public static class InfrastructureDependencyInjection
     public static TApplicationBuilder AddCatalogInfrastructure<TApplicationBuilder>(this TApplicationBuilder builder)
         where TApplicationBuilder : IHostApplicationBuilder
     {
+        return builder.AddCatalogInfrastructure(addOutboxRelay: null);
+    }
+
+    /// <summary>
+    /// Adds Catalog infrastructure services with an explicit outbox-relay registration choice.
+    /// </summary>
+    /// <param name="builder">The application builder to configure.</param>
+    /// <param name="addOutboxRelay">Whether to register runtime outbox relay services. When omitted, trusted OpenAPI generation omits them.</param>
+    /// <typeparam name="TApplicationBuilder">The application builder type.</typeparam>
+    /// <returns>The updated application builder.</returns>
+    public static TApplicationBuilder AddCatalogInfrastructure<TApplicationBuilder>(
+        this TApplicationBuilder builder,
+        bool? addOutboxRelay)
+        where TApplicationBuilder : IHostApplicationBuilder
+    {
         ArgumentNullException.ThrowIfNull(builder);
 
-        var isOpenApiBuildGeneration = string.Equals(
-            builder.Configuration[OpenApiBuildGenerationConfigurationKey],
-            bool.TrueString,
-            StringComparison.OrdinalIgnoreCase);
+        builder.AddNpgsqlDataSource(ResourceNames.CatalogDatabase);
+        builder.Services.AddDbContextPool<CatalogDbContext>((serviceProvider, options) =>
+        {
+            options.UseNpgsql(serviceProvider.GetRequiredService<NpgsqlDataSource>());
+            ConfigureDevelopmentDatabaseOptions<CatalogDbContext, TApplicationBuilder>(builder, options);
+        });
 
-        return AddCatalogInfrastructure(builder, addOutboxRelay: !isOpenApiBuildGeneration);
+        builder.Services.AddCatalogApplication();
+        builder.AddCatalogAiTextGeneration();
+        builder.Services.AddSingleton(TimeProvider.System);
+
+        var shouldAddOutboxRelay = addOutboxRelay
+            ?? !OpenApiGenerationMode.IsEnabled(builder.Environment);
+
+        return builder
+            .AddCatalogStoreInfrastructure()
+            .AddCatalogEventStore()
+            .AddCatalogOutbox(shouldAddOutboxRelay);
     }
 
     /// <summary>
@@ -89,28 +115,6 @@ public static class InfrastructureDependencyInjection
         builder.Services.AddHostedService<MediaObjectReconciliationHostedService>();
 
         return builder;
-    }
-
-    private static TApplicationBuilder AddCatalogInfrastructure<TApplicationBuilder>(
-        TApplicationBuilder builder,
-        bool addOutboxRelay)
-        where TApplicationBuilder : IHostApplicationBuilder
-    {
-        builder.AddNpgsqlDataSource(ResourceNames.CatalogDatabase);
-        builder.Services.AddDbContextPool<CatalogDbContext>((serviceProvider, options) =>
-        {
-            options.UseNpgsql(serviceProvider.GetRequiredService<NpgsqlDataSource>());
-            ConfigureDevelopmentDatabaseOptions<CatalogDbContext, TApplicationBuilder>(builder, options);
-        });
-
-        builder.Services.AddCatalogApplication();
-        builder.AddCatalogAiTextGeneration();
-        builder.Services.AddSingleton(TimeProvider.System);
-
-        return builder
-            .AddCatalogStoreInfrastructure()
-            .AddCatalogEventStore()
-            .AddCatalogOutbox(addOutboxRelay);
     }
 
     private static TApplicationBuilder AddCatalogStoreInfrastructure<TApplicationBuilder>(this TApplicationBuilder builder)

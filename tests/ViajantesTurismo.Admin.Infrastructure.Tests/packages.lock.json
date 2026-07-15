@@ -940,6 +940,9 @@
         "resolved": "16.3.0",
         "contentHash": "SgMOdxbz8X65z8hraIs6hOEdnkH6hESTAIUa7viEngHOYaH+6q5XJmwr1+yb9vJpNQ19hCQY69xbFsLtXpobQA=="
       },
+      "sharedkernel.apiversioning": {
+        "type": "Project"
+      },
       "sharedkernel.branding": {
         "type": "Project",
         "dependencies": {
@@ -1056,6 +1059,14 @@
           "SharedKernel.Scheduling": "[0.1.0-alpha.0, )"
         }
       },
+      "sharedkernel.openapi": {
+        "type": "Project",
+        "dependencies": {
+          "Microsoft.AspNetCore.OpenApi": "[10.0.9, )",
+          "Microsoft.OpenApi": "[2.9.0, )",
+          "SharedKernel.ApiVersioning": "[0.1.0-alpha.0, )"
+        }
+      },
       "sharedkernel.results": {
         "type": "Project"
       },
@@ -1130,6 +1141,7 @@
           "SharedKernel.Mediator.EntityFrameworkCore": "[0.1.0-alpha.0, )",
           "SharedKernel.Messaging.IntegrationEvents": "[0.1.0-alpha.0, )",
           "SharedKernel.Messaging.IntegrationEvents.EntityFrameworkCore": "[0.1.0-alpha.0, )",
+          "SharedKernel.OpenApi": "[0.1.0-alpha.0, )",
           "SharedKernel.Scheduling": "[0.1.0-alpha.0, )",
           "ViajantesTurismo.Admin.Application": "[0.1.0-alpha.0, )",
           "ViajantesTurismo.Admin.Domain": "[0.1.0-alpha.0, )",
@@ -1190,6 +1202,15 @@
         "requested": "[2026.2.0, )",
         "resolved": "2026.2.0",
         "contentHash": "drvAEaI7Xf4wU6dx4UTB9MoZWXZlraaQ0qoeThPQ411FxNhId7QdUTukIC9I8aUHP0ycAaGwZNKqSvfOZQvUlg=="
+      },
+      "Microsoft.AspNetCore.OpenApi": {
+        "type": "CentralTransitive",
+        "requested": "[10.0.9, )",
+        "resolved": "10.0.9",
+        "contentHash": "1ihb8FO9cGgEK1/m3CTtT/SfnynwmiZib0W2pcDVj3KSWk/Sca4VOXEtaptKQc582zpFrzTFiwkGRCglt6H+WQ==",
+        "dependencies": {
+          "Microsoft.OpenApi": "2.0.0"
+        }
       },
       "Microsoft.EntityFrameworkCore.Relational": {
         "type": "CentralTransitive",
@@ -1359,6 +1380,12 @@
           "Microsoft.Extensions.ObjectPool": "10.0.9",
           "Microsoft.Extensions.Telemetry.Abstractions": "10.7.0"
         }
+      },
+      "Microsoft.OpenApi": {
+        "type": "CentralTransitive",
+        "requested": "[2.9.0, )",
+        "resolved": "2.9.0",
+        "contentHash": "uS2awDkgUvVhd735HEcNcOQdwbIDCAK3V1QzgWoszd/FPDLLVv9eF+fImmdJiGLIKKWJv2DMJQ7OSR9gYLd+uw=="
       },
       "Npgsql": {
         "type": "CentralTransitive",

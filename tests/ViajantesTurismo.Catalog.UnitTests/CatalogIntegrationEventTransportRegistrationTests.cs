@@ -22,6 +22,19 @@ public sealed class CatalogIntegrationEventTransportRegistrationTests
     }
 
     [Fact]
+    public void Catalog_api_infrastructure_starts_the_catalog_outbox_relay()
+    {
+        // Arrange
+        using var scenario = CatalogInfrastructureTestServices.CreateScenario();
+
+        // Act
+        var includesCatalogOutboxRelay = scenario.ContainsHostedService<IntegrationEventOutboxRelayHostedService<CatalogDbContext>>();
+
+        // Assert
+        includesCatalogOutboxRelay.ShouldBeTrue();
+    }
+
+    [Fact]
     public void Hosted_transport_mode_registers_the_admin_transport_consumer()
     {
         // Arrange
@@ -75,7 +88,7 @@ public sealed class CatalogIntegrationEventTransportRegistrationTests
     }
 
     [Fact]
-    public void OpenApi_build_generation_infrastructure_does_not_start_catalog_outbox_relay()
+    public void Explicit_openapi_generation_registration_omits_catalog_outbox_relay()
     {
         // Arrange
         using var scenario = CatalogInfrastructureTestServices.CreateOpenApiBuildGenerationScenario();

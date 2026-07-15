@@ -1,0 +1,26 @@
+{
+  "openapi": "3.1.1",
+  "info": {
+    "title": "ViajantesTurismo.Branding.ApiService | public-branding",
+    "version": "1.0.0"
+  },
+  "paths": {
+    "/api/v1/public/branding": {
+      "get": {
+        "tags": [
+          "BrandingEndpoints"
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    }
+  },
+  "tags": [
+    {
+      "name": "BrandingEndpoints"
+    }
+  ]
+}

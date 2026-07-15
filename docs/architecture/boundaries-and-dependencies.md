@@ -101,6 +101,7 @@ flowchart TB
     ViajantesTurismo_Admin_Infrastructure[ViajantesTurismo.Admin.Infrastructure] --> SharedKernel_Mediator_EntityFrameworkCore[SharedKernel.Mediator.EntityFrameworkCore]
     ViajantesTurismo_Admin_Infrastructure[ViajantesTurismo.Admin.Infrastructure] --> SharedKernel_Messaging_IntegrationEvents[SharedKernel.Messaging.IntegrationEvents]
     ViajantesTurismo_Admin_Infrastructure[ViajantesTurismo.Admin.Infrastructure] --> SharedKernel_Messaging_IntegrationEvents_EntityFrameworkCore[SharedKernel.Messaging.IntegrationEvents.EntityFrameworkCore]
+    ViajantesTurismo_Admin_Infrastructure[ViajantesTurismo.Admin.Infrastructure] --> SharedKernel_OpenApi[SharedKernel.OpenApi]
     ViajantesTurismo_Admin_Infrastructure[ViajantesTurismo.Admin.Infrastructure] --> SharedKernel_Scheduling[SharedKernel.Scheduling]
     ViajantesTurismo_Admin_Infrastructure[ViajantesTurismo.Admin.Infrastructure] --> ViajantesTurismo_Admin_Application[ViajantesTurismo.Admin.Application]
     ViajantesTurismo_Admin_Infrastructure[ViajantesTurismo.Admin.Infrastructure] --> ViajantesTurismo_Admin_Domain[ViajantesTurismo.Admin.Domain]
@@ -168,6 +169,7 @@ flowchart TB
     ViajantesTurismo_Catalog_Infrastructure[ViajantesTurismo.Catalog.Infrastructure] --> SharedKernel_Idempotency[SharedKernel.Idempotency]
     ViajantesTurismo_Catalog_Infrastructure[ViajantesTurismo.Catalog.Infrastructure] --> SharedKernel_InputNormalization[SharedKernel.InputNormalization]
     ViajantesTurismo_Catalog_Infrastructure[ViajantesTurismo.Catalog.Infrastructure] --> SharedKernel_Messaging_IntegrationEvents_EntityFrameworkCore[SharedKernel.Messaging.IntegrationEvents.EntityFrameworkCore]
+    ViajantesTurismo_Catalog_Infrastructure[ViajantesTurismo.Catalog.Infrastructure] --> SharedKernel_OpenApi[SharedKernel.OpenApi]
     ViajantesTurismo_Catalog_Infrastructure[ViajantesTurismo.Catalog.Infrastructure] --> SharedKernel_Scheduling[SharedKernel.Scheduling]
     ViajantesTurismo_Catalog_Infrastructure[ViajantesTurismo.Catalog.Infrastructure] --> ViajantesTurismo_Catalog_Application[ViajantesTurismo.Catalog.Application]
     ViajantesTurismo_Catalog_Infrastructure[ViajantesTurismo.Catalog.Infrastructure] --> ViajantesTurismo_Catalog_Domain[ViajantesTurismo.Catalog.Domain]
@@ -205,6 +207,7 @@ flowchart TB
     ViajantesTurismo_Public_Web[ViajantesTurismo.Public.Web] --> ViajantesTurismo_ServiceDefaults[ViajantesTurismo.ServiceDefaults]
     ViajantesTurismo_ServiceDefaults[ViajantesTurismo.ServiceDefaults] --> SharedKernel_Mediator_Abstractions[SharedKernel.Mediator.Abstractions]
     ViajantesTurismo_ServiceDefaults[ViajantesTurismo.ServiceDefaults] --> SharedKernel_Observability[SharedKernel.Observability]
+    ViajantesTurismo_ServiceDefaults[ViajantesTurismo.ServiceDefaults] --> SharedKernel_OpenApi[SharedKernel.OpenApi]
     ViajantesTurismo_ServiceDefaults[ViajantesTurismo.ServiceDefaults] --> ViajantesTurismo_Resources[ViajantesTurismo.Resources]
 ```
 <!-- generated:project-dependencies:end -->
@@ -275,6 +278,7 @@ This diagram is generated from SharedKernel project references.
 flowchart TB
     SharedKernel_ApiVersioning_AspNetCore[SharedKernel.ApiVersioning.AspNetCore] --> SharedKernel_ApiVersioning[SharedKernel.ApiVersioning]
     SharedKernel_AspNetCore[SharedKernel.AspNetCore] --> SharedKernel_InputNormalization[SharedKernel.InputNormalization]
+    SharedKernel_AspNetCore[SharedKernel.AspNetCore] --> SharedKernel_OpenApi[SharedKernel.OpenApi]
     SharedKernel_Branding[SharedKernel.Branding] --> SharedKernel_HttpClients[SharedKernel.HttpClients]
     SharedKernel_Branding[SharedKernel.Branding] --> SharedKernel_InputNormalization[SharedKernel.InputNormalization]
     SharedKernel_Branding[SharedKernel.Branding] --> SharedKernel_Results[SharedKernel.Results]

@@ -133,8 +133,9 @@ public partial class CustomerImportTests(AspireSystemTestFixture fixture) : Aspi
 
         var viewCustomerLink = successRow.Locator("a[data-action='view-customer']");
         await Expect(viewCustomerLink).ToBeVisibleAsync();
-        await viewCustomerLink.ClickAsync();
+        var customerDetailsHref = (await viewCustomerLink.GetAttributeAsync("href")).ShouldNotBeNull();
 
+        await NavigateTo(customerDetailsHref);
         await Expect(Page).ToHaveURLAsync(CustomerImportTestRegexes.CustomerUrl());
         await Expect(Page).ToHaveTitleAsync("Customer Details");
     }

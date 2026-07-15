@@ -96,6 +96,7 @@
     </Folder>
     <Folder Name="/src/Branding/">
         <Project Path="src/ViajantesTurismo.Branding.ApiService/ViajantesTurismo.Branding.ApiService.csproj" />
+        <Project Path="src/ViajantesTurismo.Branding.Contracts.Http/ViajantesTurismo.Branding.Contracts.Http.csproj" />
         <Project Path="src/ViajantesTurismo.Branding.Infrastructure/ViajantesTurismo.Branding.Infrastructure.csproj" />
     </Folder>
     <Folder Name="/src/Public/">
@@ -134,6 +135,7 @@
         <Project Path="tests/SharedKernel.Versioning.Tests/SharedKernel.Versioning.Tests.csproj" />
         <Project Path="tests/SharedKernel.Documentation.Tests/SharedKernel.Documentation.Tests.csproj" />
         <Project Path="tests/SharedKernel.RepoConfig.Tests/SharedKernel.RepoConfig.Tests.csproj" />
+        <Project Path="tests/ViajantesTurismo.OpenApi.Tool.Tests/ViajantesTurismo.OpenApi.Tool.Tests.csproj" />
         <Project Path="tests/SharedKernel.ApiVersioning.Tests/SharedKernel.ApiVersioning.Tests.csproj" />
         <Project Path="tests/SharedKernel.ApiVersioning.AspNetCore.Tests/SharedKernel.ApiVersioning.AspNetCore.Tests.csproj" />
         <Project Path="tests/ViajantesTurismo.ServiceDefaults.Tests/ViajantesTurismo.ServiceDefaults.Tests.csproj" />
@@ -177,6 +179,7 @@
         <Project Path="tests/SharedKernel.Branding.Tests/SharedKernel.Branding.Tests.csproj" />
         <Project Path="tests/SharedKernel.DocumentRendering.Tests/SharedKernel.DocumentRendering.Tests.csproj" />
         <Project Path="tests/ViajantesTurismo.Branding.ApiServiceTests/ViajantesTurismo.Branding.ApiServiceTests.csproj" />
+        <Project Path="tests/ViajantesTurismo.Branding.ContractTests/ViajantesTurismo.Branding.ContractTests.csproj" />
     </Folder>
     <Folder Name="/benchmarks/">
         <Project Path="benchmarks/SharedKernel.Mediator.Benchmarks/SharedKernel.Mediator.Benchmarks.csproj" />
@@ -191,6 +194,7 @@
         <Project Path="tools/SharedKernel.RepoConfig.Tool/SharedKernel.RepoConfig.Tool.csproj" />
         <Project Path="tools/ViajantesTurismo.SecurityChecks.Tool/ViajantesTurismo.SecurityChecks.Tool.csproj" />
         <Project Path="tools/ViajantesTurismo.Performance.Tool/ViajantesTurismo.Performance.Tool.csproj" />
+        <Project Path="tools/ViajantesTurismo.OpenApi.Tool/ViajantesTurismo.OpenApi.Tool.csproj" />
     </Folder>
     <Folder Name="/samples/">
         <Project Path="samples/Mediator/Mediator.Sample/Mediator.Sample.csproj" />

@@ -4,6 +4,10 @@
         <EnableRequestDelegateGenerator>true</EnableRequestDelegateGenerator>
         <OpenApiGenerateDocuments>false</OpenApiGenerateDocuments>
         <OpenApiGenerateDocumentsOnBuild>false</OpenApiGenerateDocumentsOnBuild>
+        <GenerateBrandingOpenApiArtifacts Condition="'$(RefreshBrandingOpenApiArtifacts)' == 'true'">true</GenerateBrandingOpenApiArtifacts>
+        <OpenApiGenerateDocuments Condition="'$(GenerateBrandingOpenApiArtifacts)' == 'true'">true</OpenApiGenerateDocuments>
+        <OpenApiGenerateDocumentsOnBuild Condition="'$(GenerateBrandingOpenApiArtifacts)' == 'true'">true</OpenApiGenerateDocumentsOnBuild>
+        <OpenApiDocumentsDirectory>$(MSBuildProjectDirectory)/../ViajantesTurismo.Branding.Contracts.Http/OpenApi/.generated</OpenApiDocumentsDirectory>
     </PropertyGroup>
 
     <ItemGroup>
@@ -26,5 +30,23 @@
         <PackageReference Include="Microsoft.AspNetCore.OpenApi" />
         <PackageReference Include="Microsoft.Extensions.ApiDescription.Server" />
     </ItemGroup>
+
+    <Target Name="CopyBrandingBoundaryOpenApiArtifacts" AfterTargets="GenerateOpenApiDocuments" Condition="'$(RefreshBrandingOpenApiArtifacts)' == 'true'">
+        <ItemGroup>
+            <BrandingOpenApiArtifact Include="branding;public-branding" />
+            <GeneratedOpenApiArtifact Include="@(BrandingOpenApiArtifact)">
+                <SourcePath>$(OpenApiDocumentsDirectory)/$(AssemblyName)_%(Identity).json</SourcePath>
+                <TargetPath>$(MSBuildProjectDirectory)/../ViajantesTurismo.Branding.Contracts.Http/OpenApi/%(Identity).openapi.json</TargetPath>
+            </GeneratedOpenApiArtifact>
+            <GeneratedOpenApiArtifact Include="v1">
+                <!-- The ASP.NET Core generator writes the default v1 document to $(AssemblyName).json. -->
+                <SourcePath>$(OpenApiDocumentsDirectory)/$(AssemblyName).json</SourcePath>
+                <TargetPath>$(MSBuildProjectDirectory)/../ViajantesTurismo.Branding.Contracts.Http/OpenApi/v1.openapi.json</TargetPath>
+            </GeneratedOpenApiArtifact>
+        </ItemGroup>
+
+        <MakeDir Directories="$(MSBuildProjectDirectory)/../ViajantesTurismo.Branding.Contracts.Http/OpenApi" />
+        <Copy SourceFiles="@(GeneratedOpenApiArtifact->'%(SourcePath)')" DestinationFiles="@(GeneratedOpenApiArtifact->'%(TargetPath)')" SkipUnchangedFiles="true" />
+    </Target>
 
 </Project>

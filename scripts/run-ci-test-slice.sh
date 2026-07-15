@@ -186,12 +186,16 @@ build_projects() {
 prepare_openapi_artifacts() {
     local project_path
     local prepare_admin=false
+    local prepare_branding=false
     local prepare_catalog=false
 
     for project_path in "$@"; do
         case "${project_path}" in
             tests/ViajantesTurismo.Admin.ContractTests/ViajantesTurismo.Admin.ContractTests.csproj)
                 prepare_admin=true
+                ;;
+            tests/ViajantesTurismo.Branding.ContractTests/ViajantesTurismo.Branding.ContractTests.csproj)
+                prepare_branding=true
                 ;;
             tests/ViajantesTurismo.Catalog.ContractTests/ViajantesTurismo.Catalog.ContractTests.csproj)
                 prepare_catalog=true
@@ -201,21 +205,15 @@ prepare_openapi_artifacts() {
     done
 
     if [[ "${prepare_admin}" == "true" ]]; then
-        OpenApi__BuildGeneration=true \
-            Authentication__Authority=https://openapi.invalid \
-            Authentication__Issuer=https://openapi.invalid \
-            dotnet build --no-restore \
-            src/ViajantesTurismo.Admin.ApiService/ViajantesTurismo.Admin.ApiService.csproj \
-            -p:GenerateAdminOpenApiArtifacts=true || return $?
+        dotnet run --project tools/ViajantesTurismo.OpenApi.Tool --no-restore -- generate admin || return $?
+    fi
+
+    if [[ "${prepare_branding}" == "true" ]]; then
+        dotnet run --project tools/ViajantesTurismo.OpenApi.Tool --no-restore -- generate branding || return $?
     fi
 
     if [[ "${prepare_catalog}" == "true" ]]; then
-        OpenApi__BuildGeneration=true \
-            Authentication__Authority=https://openapi.invalid \
-            Authentication__Issuer=https://openapi.invalid \
-            dotnet build --no-restore \
-            src/ViajantesTurismo.Catalog.ApiService/ViajantesTurismo.Catalog.ApiService.csproj \
-            -p:GenerateCatalogOpenApiArtifacts=true || return $?
+        dotnet run --project tools/ViajantesTurismo.OpenApi.Tool --no-restore -- generate catalog || return $?
     fi
 
     return 0
@@ -517,6 +515,7 @@ main() {
     for openapi_project_path in "${projects[@]}"; do
         case "${openapi_project_path}" in
             tests/ViajantesTurismo.Admin.ContractTests/ViajantesTurismo.Admin.ContractTests.csproj | \
+                tests/ViajantesTurismo.Branding.ContractTests/ViajantesTurismo.Branding.ContractTests.csproj | \
                 tests/ViajantesTurismo.Catalog.ContractTests/ViajantesTurismo.Catalog.ContractTests.csproj)
                 openapi_artifacts_required=true
                 ;;

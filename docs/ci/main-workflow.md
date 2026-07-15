@@ -14,8 +14,9 @@ The workflow-level concurrency policy cancels stale runs for non-`main` refs but
 in-flight `main` runs. This keeps pull request iteration responsive while ensuring the
 protected branch keeps its post-merge validation history intact.
 
-All jobs in this workflow use the repository `CI_UBUNTU_RUNNER` Actions variable.
-Set that variable to the current repository CI baseline runner.
+All jobs except `OpenAPI Tool Windows` use the repository `CI_UBUNTU_RUNNER` Actions variable.
+Set that variable to the current repository CI baseline runner. `OpenAPI Tool Windows` uses
+`windows-latest` to validate the platform-specific child-process environment allowlist.
 
 > **Note:** When `CI_UBUNTU_RUNNER` points to a preview hosted runner image, queue time
 > and image behavior may be less stable than GA runner images.
@@ -45,30 +46,44 @@ raw JSON as job outputs for later release workflow steps.
 
 **Steps:**
 
-1. Wait for `detect-changes` to complete successfully.
-2. Read the `fast_validation_required` decision from `detect-changes`.
-3. If only documentation changed, run a lightweight success step so the required
+1. Wait for `detect-changes` and `openapi-tool-windows` to complete.
+2. Fail when either prerequisite did not succeed, propagating the Windows OpenAPI tool
+   test result through this required check.
+3. Read the `fast_validation_required` decision from `detect-changes`.
+4. If only documentation changed, run a lightweight success step so the required
    `Fast Validation` check resolves cleanly without starting the expensive validation
    path.
-4. Checkout repository (`actions/checkout`) when fast validation work is required.
-5. Configure a repository-local NuGet global-packages path and set up the .NET SDK from
+5. Checkout repository (`actions/checkout`) when fast validation work is required.
+6. Configure a repository-local NuGet global-packages path and set up the .NET SDK from
    `global.json` with built-in NuGet caching (`actions/setup-dotnet`) when validation work
    is required.
-6. Run `dotnet restore ViajantesTurismo.slnx --locked-mode` when validation work is
+7. Run `dotnet restore ViajantesTurismo.slnx --locked-mode` when validation work is
    required.
-7. Run `dotnet tool restore` when validation work is required.
-8. Run `bash scripts/run-ci-test-slice.sh --slice-name "Fast Validation" ...` to execute
+8. Run `dotnet tool restore` when validation work is required.
+9. Run `bash scripts/run-ci-test-slice.sh --slice-name "Fast Validation" ...` to execute
    the fast project set with project-scoped build, project-level parallel test execution,
    normalized per-slice timing output, machine-readable manifest output, and coverage collection.
-9. When validation work fails, create a focused diagnostic summary under
+10. When validation work fails, create a focused diagnostic summary under
    `TestResults/ci-diagnostics/`.
-10. Upload the slice-local test results artifact and upload the focused diagnostics
+11. Upload the slice-local test results artifact and upload the focused diagnostics
    artifact when the job fails.
 
 The slice result uploads are intentionally best-effort. If validation fails before those
 files exist, CI should report the actual build/test failure instead of adding secondary
 artifact-missing noise. The focused diagnostics artifacts remain strict because they are
 part of the failure-investigation path.
+
+### OpenAPI Tool Windows
+
+| Attribute | Value |
+| --- | --- |
+| Job key | `openapi-tool-windows` |
+| Job name | `OpenAPI Tool Windows` |
+| Runner | `windows-latest` |
+
+This job restores the OpenAPI tool test project and its API-generation targets, then runs the
+OpenAPI tool tests on Windows. `Fast Validation` waits for and propagates this job's result so
+the platform-specific child environment safety check remains part of the required merge gate.
 
 ### Admin Integration Tests
 

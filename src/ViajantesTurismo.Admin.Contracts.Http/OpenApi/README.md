@@ -13,19 +13,18 @@ Ownership rules:
 
 - Source metadata lives in `src/ViajantesTurismo.Admin.ApiService`.
 - The refresh build generates intermediate documents under `OpenApi/.generated/`.
-- The following Bash or Git Bash commands scope placeholder authentication URLs and the build-generation
-  marker to the document-generator child process. Do not export them for normal application runs or
-  ordinary builds.
+- The .NET tool starts the trusted document generator with a minimal environment. It preserves
+  authorization metadata without registering JWT/OIDC; normal application runs stay fail-closed.
 - CI drift checks can generate only intermediate documents with:
 
   ```bash
-  env OpenApi__BuildGeneration=true Authentication__Authority=https://openapi.invalid Authentication__Issuer=https://openapi.invalid dotnet build src/ViajantesTurismo.Admin.ApiService/ViajantesTurismo.Admin.ApiService.csproj -p:GenerateAdminOpenApiArtifacts=true
+  dotnet run --project tools/ViajantesTurismo.OpenApi.Tool --no-restore -- generate admin
   ```
 
 - Refresh the committed canonical artifacts intentionally with:
 
   ```bash
-  env OpenApi__BuildGeneration=true Authentication__Authority=https://openapi.invalid Authentication__Issuer=https://openapi.invalid dotnet build src/ViajantesTurismo.Admin.ApiService/ViajantesTurismo.Admin.ApiService.csproj -p:RefreshAdminOpenApiArtifacts=true
+  dotnet run --project tools/ViajantesTurismo.OpenApi.Tool --no-restore -- generate admin --refresh
   ```
 
 - `OpenApi/.generated/` is intermediate output only.

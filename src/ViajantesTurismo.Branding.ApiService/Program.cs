@@ -1,4 +1,5 @@
 using SharedKernel.AspNetCore;
+using SharedKernel.OpenApi;
 using ViajantesTurismo.Branding.ApiService;
 using ViajantesTurismo.Branding.Infrastructure;
 using ViajantesTurismo.Resources;
@@ -12,7 +13,7 @@ builder.Services.AddConfiguredTrustedForwardedHeaders(builder.Configuration.GetS
 builder.Services.AddBrandingOpenApiDocuments();
 builder.Services.AddOutputCache();
 builder.Services.AddBrandingSecurityBaseline(builder.Configuration);
-builder.Services.AddApiBearerAuthentication(
+builder.Services.AddApiSecurity(
         builder.Configuration,
         builder.Environment,
         ApiAudienceNames.Branding,
@@ -25,14 +26,10 @@ var app = builder.Build();
 
 app.UseForwardedHeaders();
 
-if (app.Environment.IsDevelopment())
-{
-    app.MapOpenApi();
-}
+app.MapConfiguredOpenApi();
 
 app.UseCors(BrandingSecurityBaseline.CorsPolicyName);
-app.UseAuthentication();
-app.UseAuthorization();
+app.UseApiSecurity();
 app.UseRateLimiter();
 app.UseOutputCache();
 

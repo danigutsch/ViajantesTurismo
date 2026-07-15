@@ -27,6 +27,7 @@
         <ProjectReference Include="..\SharedKernel\SharedKernel.Mediator.EntityFrameworkCore\SharedKernel.Mediator.EntityFrameworkCore.csproj" />
         <ProjectReference Include="..\SharedKernel\SharedKernel.Messaging.IntegrationEvents\SharedKernel.Messaging.IntegrationEvents.csproj" />
         <ProjectReference Include="..\SharedKernel\SharedKernel.Messaging.IntegrationEvents.EntityFrameworkCore\SharedKernel.Messaging.IntegrationEvents.EntityFrameworkCore.csproj" />
+        <ProjectReference Include="..\SharedKernel\SharedKernel.OpenApi\SharedKernel.OpenApi.csproj" />
         <ProjectReference Include="..\ViajantesTurismo.Resources\ViajantesTurismo.Resources.csproj"/>
         <ProjectReference Include="..\SharedKernel\SharedKernel.DomainEvents\SharedKernel.DomainEvents.csproj" />
         <ProjectReference Include="..\SharedKernel\SharedKernel.Scheduling\SharedKernel.Scheduling.csproj" />
