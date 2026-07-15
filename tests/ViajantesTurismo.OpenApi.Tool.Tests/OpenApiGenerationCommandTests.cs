@@ -156,7 +156,21 @@ public sealed class OpenApiGenerationCommandTests
         startInfo.Environment["Authentication__DataProtection__CertificatePassword"] = "certificate-password";
         startInfo.Environment["ConnectionStrings__CatalogDatabase"] = "Host=database.example;Password=secret";
         startInfo.Environment["OTEL_EXPORTER_OTLP_ENDPOINT"] = "https://otel.example";
+        startInfo.Environment["OTEL_EXPORTER_OTLP_HEADERS"] = "Authorization=secret";
+        startInfo.Environment["OTEL_SDK_DISABLED"] = "false";
+        startInfo.Environment["HTTP_PROXY"] = "https://proxy.example";
         startInfo.Environment["HTTPS_PROXY"] = "https://proxy.example";
+        startInfo.Environment["ALL_PROXY"] = "https://proxy.example";
+        startInfo.Environment["http_proxy"] = "https://proxy.example";
+        startInfo.Environment["https_proxy"] = "https://proxy.example";
+        startInfo.Environment["all_proxy"] = "https://proxy.example";
+        startInfo.Environment["GITHUB_TOKEN"] = "token";
+        startInfo.Environment["AZURE_CLIENT_SECRET"] = "secret";
+        startInfo.Environment["DOTNET_CLI_HOME"] = "/dotnet-home";
+        startInfo.Environment["DOTNET_CLI_TELEMETRY_OPTOUT"] = "0";
+        startInfo.Environment["DOTNET_STARTUP_HOOKS"] = "/startup-hook.dll";
+        startInfo.Environment["MSBuildSDKsPath"] = "/msbuild-sdks";
+        startInfo.Environment["NUGET_CREDENTIALPROVIDERS_PATH"] = "/nuget-credentials";
         startInfo.Environment["OpenApiToolTests__Unrelated"] = "sentinel";
 
         // Act
@@ -173,12 +187,86 @@ public sealed class OpenApiGenerationCommandTests
         startInfo.Environment.ContainsKey("Authentication__DataProtection__CertificatePassword").ShouldBeFalse();
         startInfo.Environment.ContainsKey("ConnectionStrings__CatalogDatabase").ShouldBeFalse();
         startInfo.Environment.ContainsKey("OTEL_EXPORTER_OTLP_ENDPOINT").ShouldBeFalse();
+        startInfo.Environment.ContainsKey("OTEL_EXPORTER_OTLP_HEADERS").ShouldBeFalse();
+        startInfo.Environment.ContainsKey("HTTP_PROXY").ShouldBeFalse();
         startInfo.Environment.ContainsKey("HTTPS_PROXY").ShouldBeFalse();
+        startInfo.Environment.ContainsKey("ALL_PROXY").ShouldBeFalse();
+        startInfo.Environment.ContainsKey("http_proxy").ShouldBeFalse();
+        startInfo.Environment.ContainsKey("https_proxy").ShouldBeFalse();
+        startInfo.Environment.ContainsKey("all_proxy").ShouldBeFalse();
+        startInfo.Environment.ContainsKey("GITHUB_TOKEN").ShouldBeFalse();
+        startInfo.Environment.ContainsKey("AZURE_CLIENT_SECRET").ShouldBeFalse();
+        startInfo.Environment.ContainsKey("DOTNET_CLI_HOME").ShouldBeFalse();
+        startInfo.Environment.ContainsKey("DOTNET_STARTUP_HOOKS").ShouldBeFalse();
+        startInfo.Environment.ContainsKey("MSBuildSDKsPath").ShouldBeFalse();
+        startInfo.Environment.ContainsKey("NUGET_CREDENTIALPROVIDERS_PATH").ShouldBeFalse();
         startInfo.Environment.ContainsKey("OpenApiToolTests__Unrelated").ShouldBeFalse();
         startInfo.Environment.ContainsKey("OpenApi__BuildGeneration").ShouldBeFalse();
         startInfo.Environment["PATH"].ShouldContain(dotnetDirectory, StringComparison.Ordinal);
         startInfo.Environment["DOTNET_CLI_TELEMETRY_OPTOUT"].ShouldBe("1");
         startInfo.Environment["OTEL_SDK_DISABLED"].ShouldBe("true");
+    }
+
+    [Fact]
+    public void Generation_environment_preserves_required_windows_profile_and_temp_paths()
+    {
+        if (!OperatingSystem.IsWindows())
+        {
+            return;
+        }
+
+        // Arrange
+        var startInfo = new ProcessStartInfo(Path.Combine(Path.GetTempPath(), "dotnet"));
+        startInfo.Environment["TEMP"] = "C:\\temp";
+        startInfo.Environment["TMP"] = "C:\\tmp";
+        startInfo.Environment["USERPROFILE"] = "C:\\Users\\Viajantes";
+        startInfo.Environment["APPDATA"] = "C:\\Users\\Viajantes\\AppData\\Roaming";
+        startInfo.Environment["LOCALAPPDATA"] = "C:\\Users\\Viajantes\\AppData\\Local";
+        startInfo.Environment["HOME"] = "/home/viajantes";
+        startInfo.Environment["TMPDIR"] = "/tmp/viajantes";
+
+        // Act
+        OpenApiGenerationCommand.ApplyGenerationEnvironment(startInfo);
+
+        // Assert
+        startInfo.Environment["TEMP"].ShouldBe("C:\\temp");
+        startInfo.Environment["TMP"].ShouldBe("C:\\tmp");
+        startInfo.Environment["USERPROFILE"].ShouldBe("C:\\Users\\Viajantes");
+        startInfo.Environment["APPDATA"].ShouldBe("C:\\Users\\Viajantes\\AppData\\Roaming");
+        startInfo.Environment["LOCALAPPDATA"].ShouldBe("C:\\Users\\Viajantes\\AppData\\Local");
+        startInfo.Environment.ContainsKey("HOME").ShouldBeFalse();
+        startInfo.Environment.ContainsKey("TMPDIR").ShouldBeFalse();
+    }
+
+    [Fact]
+    public void Generation_environment_preserves_required_unix_profile_and_temp_paths()
+    {
+        if (OperatingSystem.IsWindows())
+        {
+            return;
+        }
+
+        // Arrange
+        var startInfo = new ProcessStartInfo(Path.Combine(Path.GetTempPath(), "dotnet"));
+        startInfo.Environment["HOME"] = "/home/viajantes";
+        startInfo.Environment["TMPDIR"] = "/tmp/viajantes";
+        startInfo.Environment["TEMP"] = "C:\\temp";
+        startInfo.Environment["TMP"] = "C:\\tmp";
+        startInfo.Environment["USERPROFILE"] = "C:\\Users\\Viajantes";
+        startInfo.Environment["APPDATA"] = "C:\\Users\\Viajantes\\AppData\\Roaming";
+        startInfo.Environment["LOCALAPPDATA"] = "C:\\Users\\Viajantes\\AppData\\Local";
+
+        // Act
+        OpenApiGenerationCommand.ApplyGenerationEnvironment(startInfo);
+
+        // Assert
+        startInfo.Environment["HOME"].ShouldBe("/home/viajantes");
+        startInfo.Environment["TMPDIR"].ShouldBe("/tmp/viajantes");
+        startInfo.Environment.ContainsKey("TEMP").ShouldBeFalse();
+        startInfo.Environment.ContainsKey("TMP").ShouldBeFalse();
+        startInfo.Environment.ContainsKey("USERPROFILE").ShouldBeFalse();
+        startInfo.Environment.ContainsKey("APPDATA").ShouldBeFalse();
+        startInfo.Environment.ContainsKey("LOCALAPPDATA").ShouldBeFalse();
     }
 
     [Fact]

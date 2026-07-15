@@ -6,6 +6,8 @@ namespace ViajantesTurismo.OpenApi.Tool;
 internal static class OpenApiGenerationCommand
 {
     private const string OpenApiGenerationEnvironment = "OpenApiGeneration";
+    private static readonly string[] UnixPreservedEnvironmentVariables = ["HOME", "TMPDIR"];
+    private static readonly string[] WindowsPreservedEnvironmentVariables = ["TEMP", "TMP", "USERPROFILE", "APPDATA", "LOCALAPPDATA"];
 
     public static ProcessStartInfo CreateStartInfo(OpenApiGenerationOptions options)
     {
@@ -57,7 +59,25 @@ internal static class OpenApiGenerationCommand
     {
         ArgumentNullException.ThrowIfNull(startInfo);
 
+        var preservedVariables = OperatingSystem.IsWindows()
+            ? WindowsPreservedEnvironmentVariables
+            : UnixPreservedEnvironmentVariables;
+        var preservedEnvironment = new Dictionary<string, string>(StringComparer.Ordinal);
+        foreach (var variable in preservedVariables)
+        {
+            if (startInfo.Environment.TryGetValue(variable, out var value)
+                && !string.IsNullOrWhiteSpace(value))
+            {
+                preservedEnvironment[variable] = value;
+            }
+        }
+
         startInfo.Environment.Clear();
+
+        foreach (var (variable, value) in preservedEnvironment)
+        {
+            startInfo.Environment[variable] = value;
+        }
 
         var dotnetDirectory = Path.GetDirectoryName(startInfo.FileName)
             ?? throw new InvalidOperationException("Could not determine the dotnet host directory.");

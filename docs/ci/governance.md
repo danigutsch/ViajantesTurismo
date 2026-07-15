@@ -23,6 +23,9 @@ Branch protection for `main` is configured to require the following status check
 - `SonarCloud` (from `.github/workflows/ci.yml`; includes hosted quality gate and the
   repository-owned new issue policy fallback)
 
+`Fast Validation` also propagates the `OpenAPI Tool Windows` result, so the Windows
+OpenAPI-generation safety check blocks merging without adding a separate branch-protection status.
+
 These names match the `name:` fields in the respective workflow files. Any rename of the
 jobs must be reflected in branch protection settings.
 
