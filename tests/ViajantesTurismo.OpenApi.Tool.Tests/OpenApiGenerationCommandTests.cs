@@ -146,7 +146,11 @@ public sealed class OpenApiGenerationCommandTests
     public void Generation_environment_removes_hostile_parent_settings()
     {
         // Arrange
-        var startInfo = new ProcessStartInfo(Path.Combine(Path.GetTempPath(), "dotnet"));
+        var repositoryRoot = Path.Combine(Path.GetTempPath(), "viajantes-openapi-repository");
+        var startInfo = new ProcessStartInfo(Path.Combine(Path.GetTempPath(), "dotnet"))
+        {
+            WorkingDirectory = repositoryRoot
+        };
         startInfo.Environment["Authentication__Authority"] = "https://authority.example";
         startInfo.Environment["Authentication__Issuer"] = "https://issuer.example";
         startInfo.Environment["Authentication__AllowHttpDevelopmentAuthority"] = "true";
@@ -170,7 +174,9 @@ public sealed class OpenApiGenerationCommandTests
         startInfo.Environment["DOTNET_CLI_TELEMETRY_OPTOUT"] = "0";
         startInfo.Environment["DOTNET_STARTUP_HOOKS"] = "/startup-hook.dll";
         startInfo.Environment["MSBuildSDKsPath"] = "/msbuild-sdks";
+        startInfo.Environment["NUGET_PACKAGES"] = Path.Combine(Path.GetTempPath(), "parent-nuget-packages");
         startInfo.Environment["NUGET_CREDENTIALPROVIDERS_PATH"] = "/nuget-credentials";
+        startInfo.Environment["NUGET_UNTRUSTED_PARENT_VALUE"] = "sentinel";
         startInfo.Environment["OpenApiToolTests__Unrelated"] = "sentinel";
 
         // Act
@@ -199,12 +205,35 @@ public sealed class OpenApiGenerationCommandTests
         startInfo.Environment.ContainsKey("DOTNET_CLI_HOME").ShouldBeFalse();
         startInfo.Environment.ContainsKey("DOTNET_STARTUP_HOOKS").ShouldBeFalse();
         startInfo.Environment.ContainsKey("MSBuildSDKsPath").ShouldBeFalse();
+        startInfo.Environment.ContainsKey("NUGET_PACKAGES").ShouldBeFalse();
         startInfo.Environment.ContainsKey("NUGET_CREDENTIALPROVIDERS_PATH").ShouldBeFalse();
+        startInfo.Environment.ContainsKey("NUGET_UNTRUSTED_PARENT_VALUE").ShouldBeFalse();
         startInfo.Environment.ContainsKey("OpenApiToolTests__Unrelated").ShouldBeFalse();
         startInfo.Environment.ContainsKey("OpenApi__BuildGeneration").ShouldBeFalse();
         startInfo.Environment["PATH"].ShouldContain(dotnetDirectory, StringComparison.Ordinal);
         startInfo.Environment["DOTNET_CLI_TELEMETRY_OPTOUT"].ShouldBe("1");
         startInfo.Environment["OTEL_SDK_DISABLED"].ShouldBe("true");
+    }
+
+    [Fact]
+    public void Generation_environment_preserves_the_repository_nuget_cache()
+    {
+        // Arrange
+        var repositoryRoot = Path.Combine(Path.GetTempPath(), "viajantes-openapi-repository");
+        var expectedPackagesPath = Path.Combine(repositoryRoot, ".nuget", "packages");
+        var startInfo = new ProcessStartInfo(Path.Combine(Path.GetTempPath(), "dotnet"))
+        {
+            WorkingDirectory = repositoryRoot
+        };
+        startInfo.Environment["NUGET_PACKAGES"] = expectedPackagesPath;
+        startInfo.Environment["NUGET_CREDENTIALPROVIDERS_PATH"] = "/nuget-credentials";
+
+        // Act
+        OpenApiGenerationCommand.ApplyGenerationEnvironment(startInfo);
+
+        // Assert
+        startInfo.Environment["NUGET_PACKAGES"].ShouldBe(expectedPackagesPath);
+        startInfo.Environment.ContainsKey("NUGET_CREDENTIALPROVIDERS_PATH").ShouldBeFalse();
     }
 
     [Fact]
@@ -216,12 +245,20 @@ public sealed class OpenApiGenerationCommandTests
         }
 
         // Arrange
-        var startInfo = new ProcessStartInfo(Path.Combine(Path.GetTempPath(), "dotnet"));
+        var repositoryRoot = Path.Combine(Path.GetTempPath(), "viajantes-openapi-repository");
+        var expectedPackagesPath = Path.Combine(repositoryRoot, ".nuget", "packages");
+        var startInfo = new ProcessStartInfo(Path.Combine(Path.GetTempPath(), "dotnet"))
+        {
+            WorkingDirectory = repositoryRoot
+        };
         startInfo.Environment["TEMP"] = "C:\\temp";
         startInfo.Environment["TMP"] = "C:\\tmp";
         startInfo.Environment["USERPROFILE"] = "C:\\Users\\Viajantes";
         startInfo.Environment["APPDATA"] = "C:\\Users\\Viajantes\\AppData\\Roaming";
         startInfo.Environment["LOCALAPPDATA"] = "C:\\Users\\Viajantes\\AppData\\Local";
+        startInfo.Environment["NUGET_PACKAGES"] = expectedPackagesPath.Replace(
+            Path.DirectorySeparatorChar,
+            Path.AltDirectorySeparatorChar);
         startInfo.Environment["HOME"] = "/home/viajantes";
         startInfo.Environment["TMPDIR"] = "/tmp/viajantes";
 
@@ -234,6 +271,7 @@ public sealed class OpenApiGenerationCommandTests
         startInfo.Environment["USERPROFILE"].ShouldBe("C:\\Users\\Viajantes");
         startInfo.Environment["APPDATA"].ShouldBe("C:\\Users\\Viajantes\\AppData\\Roaming");
         startInfo.Environment["LOCALAPPDATA"].ShouldBe("C:\\Users\\Viajantes\\AppData\\Local");
+        startInfo.Environment["NUGET_PACKAGES"].ShouldBe(expectedPackagesPath);
         startInfo.Environment.ContainsKey("HOME").ShouldBeFalse();
         startInfo.Environment.ContainsKey("TMPDIR").ShouldBeFalse();
     }

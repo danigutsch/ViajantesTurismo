@@ -6,6 +6,7 @@ namespace ViajantesTurismo.OpenApi.Tool;
 internal static class OpenApiGenerationCommand
 {
     private const string OpenApiGenerationEnvironment = "OpenApiGeneration";
+    private const string NuGetPackagesEnvironmentVariable = "NUGET_PACKAGES";
     private static readonly string[] UnixPreservedEnvironmentVariables = ["HOME", "TMPDIR"];
     private static readonly string[] WindowsPreservedEnvironmentVariables = ["TEMP", "TMP", "USERPROFILE", "APPDATA", "LOCALAPPDATA"];
 
@@ -59,7 +60,8 @@ internal static class OpenApiGenerationCommand
     {
         ArgumentNullException.ThrowIfNull(startInfo);
 
-        var preservedVariables = OperatingSystem.IsWindows()
+        var isWindows = OperatingSystem.IsWindows();
+        var preservedVariables = isWindows
             ? WindowsPreservedEnvironmentVariables
             : UnixPreservedEnvironmentVariables;
         var preservedEnvironment = new Dictionary<string, string>(StringComparer.Ordinal);
@@ -69,6 +71,23 @@ internal static class OpenApiGenerationCommand
                 && !string.IsNullOrWhiteSpace(value))
             {
                 preservedEnvironment[variable] = value;
+            }
+        }
+
+        var repositoryNuGetPackagesPath = Path.Combine(startInfo.WorkingDirectory, ".nuget", "packages");
+        var normalizedRepositoryNuGetPackagesPath = Path.TrimEndingDirectorySeparator(
+            repositoryNuGetPackagesPath.Replace(Path.AltDirectorySeparatorChar, Path.DirectorySeparatorChar));
+        if (startInfo.Environment.TryGetValue(NuGetPackagesEnvironmentVariable, out var nugetPackagesPath)
+            && !string.IsNullOrWhiteSpace(nugetPackagesPath))
+        {
+            var normalizedNuGetPackagesPath = Path.TrimEndingDirectorySeparator(
+                nugetPackagesPath.Replace(Path.AltDirectorySeparatorChar, Path.DirectorySeparatorChar));
+            if (string.Equals(
+                normalizedNuGetPackagesPath,
+                normalizedRepositoryNuGetPackagesPath,
+                isWindows ? StringComparison.OrdinalIgnoreCase : StringComparison.Ordinal))
+            {
+                preservedEnvironment[NuGetPackagesEnvironmentVariable] = repositoryNuGetPackagesPath;
             }
         }
 
@@ -82,7 +101,7 @@ internal static class OpenApiGenerationCommand
         var dotnetDirectory = Path.GetDirectoryName(startInfo.FileName)
             ?? throw new InvalidOperationException("Could not determine the dotnet host directory.");
 
-        if (OperatingSystem.IsWindows())
+        if (isWindows)
         {
             var systemRoot = Path.GetDirectoryName(Environment.SystemDirectory)
                 ?? throw new InvalidOperationException("Could not determine the Windows system root.");
