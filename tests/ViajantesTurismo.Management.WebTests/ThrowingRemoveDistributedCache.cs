@@ -8,6 +8,8 @@ internal sealed class ThrowingRemoveDistributedCache(IDistributedCache inner, Ex
 
     public int RemoveCalls { get; private set; }
 
+    public CancellationToken LastRemoveCancellationToken { get; private set; }
+
     public byte[]? Get(string key)
     {
         return inner.Get(key);
@@ -31,12 +33,14 @@ internal sealed class ThrowingRemoveDistributedCache(IDistributedCache inner, Ex
     public void Remove(string key)
     {
         RemoveCalls++;
+        LastRemoveCancellationToken = CancellationToken.None;
         throw _failure;
     }
 
     public Task RemoveAsync(string key, CancellationToken token = default)
     {
         RemoveCalls++;
+        LastRemoveCancellationToken = token;
         return Task.FromException(_failure);
     }
 

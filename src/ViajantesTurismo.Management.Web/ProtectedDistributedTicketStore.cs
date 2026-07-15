@@ -69,7 +69,7 @@ internal sealed class ProtectedDistributedTicketStore : ITicketStore
             var ticket = TicketSerializer.Default.Deserialize(GetProtector(key).Unprotect(protectedTicket));
             if (ticket is null || HasExpired(ticket))
             {
-                await cache.RemoveAsync(key).ConfigureAwait(false);
+                await RemoveAsync(key).ConfigureAwait(false);
                 return null;
             }
 
@@ -77,7 +77,7 @@ internal sealed class ProtectedDistributedTicketStore : ITicketStore
         }
         catch (Exception exception) when (exception is CryptographicException or FormatException or InvalidDataException)
         {
-            await cache.RemoveAsync(key).ConfigureAwait(false);
+            await RemoveAsync(key).ConfigureAwait(false);
             return null;
         }
     }

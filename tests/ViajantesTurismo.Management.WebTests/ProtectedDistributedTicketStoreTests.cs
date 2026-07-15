@@ -103,6 +103,30 @@ public sealed class ProtectedDistributedTicketStoreTests
     }
 
     [Fact]
+    public async Task Treats_a_corrupted_ticket_as_missing_when_cache_cleanup_fails()
+    {
+        // Arrange
+        var innerCache = new Microsoft.Extensions.Caching.Distributed.MemoryDistributedCache(
+            Microsoft.Extensions.Options.Options.Create(
+                new Microsoft.Extensions.Caching.Memory.MemoryDistributedCacheOptions()));
+        var cache = new ThrowingRemoveDistributedCache(innerCache);
+        var context = new ProtectedDistributedTicketStoreTestContext(cache);
+        var key = await context.Store.StoreAsync(ProtectedDistributedTicketStoreTestContext.CreateTicket());
+        await context.Cache.SetAsync(
+            key,
+            [0x01],
+            new Microsoft.Extensions.Caching.Distributed.DistributedCacheEntryOptions(),
+            Xunit.TestContext.Current.CancellationToken);
+
+        // Act
+        var ticket = await context.Store.RetrieveAsync(key);
+
+        // Assert
+        ticket.ShouldBeNull();
+        cache.RemoveCalls.ShouldBe(1);
+    }
+
+    [Fact]
     public async Task Propagates_cooperative_cancellation_when_removing_a_ticket()
     {
         // Arrange
@@ -121,6 +145,7 @@ public sealed class ProtectedDistributedTicketStoreTests
 
         // Assert
         await remove.ShouldThrow<OperationCanceledException>();
+        cache.LastRemoveCancellationToken.ShouldBe(cancellationSource.Token);
     }
 
     [Fact]
