@@ -79,4 +79,22 @@ public sealed class OpenApiGenerationCommandTests
         // Assert
         File.Exists(Path.Combine(repositoryRoot, "ViajantesTurismo.slnx")).ShouldBeTrue();
     }
+
+    [Fact]
+    public async Task Help_displays_the_documented_dotnet_run_invocation()
+    {
+        // Arrange
+        using var output = new StringWriter();
+        using var error = new StringWriter();
+
+        // Act
+        var exitCode = await OpenApiToolApplication.Run(["--help"], output, error);
+
+        // Assert
+        exitCode.ShouldBe(0);
+        output.ToString().ShouldContain(
+            "dotnet run --project tools/ViajantesTurismo.OpenApi.Tool -- generate",
+            StringComparison.Ordinal);
+        error.ToString().ShouldBeEmpty();
+    }
 }

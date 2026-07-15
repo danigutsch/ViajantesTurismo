@@ -4,7 +4,7 @@ namespace ViajantesTurismo.OpenApi.Tool;
 
 internal static class OpenApiToolApplication
 {
-    private const string Usage = "Usage: viajantes-openapi generate <admin|catalog|branding> [--refresh]";
+    private const string Usage = "Usage: dotnet run --project tools/ViajantesTurismo.OpenApi.Tool -- generate <admin|catalog|branding> [--refresh]";
 
     public static async Task<int> Run(string[] args, TextWriter output, TextWriter error)
     {
