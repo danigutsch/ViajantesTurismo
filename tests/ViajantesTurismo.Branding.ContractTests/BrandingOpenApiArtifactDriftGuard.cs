@@ -10,7 +10,7 @@ internal static class BrandingOpenApiArtifactDriftGuard
 {
     private const string CanonicalArtifactSuffix = ".openapi.json";
     private const string GeneratedArtifactPrefix = "ViajantesTurismo.Branding.ApiService_";
-    private const string RefreshHint = "Refresh with `dotnet run --project tools/ViajantesTurismo.OpenApi.Tool -- generate branding --refresh` when the HTTP contract changes intentionally.";
+    private const string RefreshHint = "Refresh with `dotnet run --project tools/ViajantesTurismo.OpenApi.Tool --no-restore -- generate branding --refresh` when the HTTP contract changes intentionally.";
 
     public static JsonSnapshotArtifactSet CreateSnapshotSet()
     {

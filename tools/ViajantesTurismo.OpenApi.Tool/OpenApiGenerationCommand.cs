@@ -33,7 +33,10 @@ internal static class OpenApiGenerationCommand
             OpenApiTarget.Branding => (
                 "src/ViajantesTurismo.Branding.ApiService/ViajantesTurismo.Branding.ApiService.csproj",
                 options.Refresh ? "RefreshBrandingOpenApiArtifacts" : "GenerateBrandingOpenApiArtifacts"),
-            _ => throw new ArgumentOutOfRangeException(nameof(options))
+            _ => throw new ArgumentOutOfRangeException(
+                nameof(options),
+                options.Target,
+                "The OpenAPI target is not supported.")
         };
 
         var startInfo = new ProcessStartInfo(dotnetHostPath)

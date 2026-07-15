@@ -6,6 +6,7 @@ using SharedKernel.Messaging.IntegrationEvents.EntityFrameworkCore;
 using SharedKernel.Testing;
 using ViajantesTurismo.Admin.Application;
 using ViajantesTurismo.Admin.Domain.Customers;
+using ViajantesTurismo.Admin.Domain.Documents;
 using ViajantesTurismo.Admin.Domain.Tours;
 using ViajantesTurismo.Admin.Infrastructure;
 using ViajantesTurismo.Admin.Infrastructure.Documents;
@@ -70,6 +71,7 @@ public sealed class AdminInfrastructureModuleTests
         var queryService = serviceProvider.GetRequiredService<IQueryService>();
         var tourStore = serviceProvider.GetRequiredService<ITourStore>();
         var customerStore = serviceProvider.GetRequiredService<ICustomerStore>();
+        var documentStore = serviceProvider.GetRequiredService<IDocumentStore>();
         var outbox = serviceProvider.GetRequiredService<IIntegrationEventOutbox>();
         var hostedServices = serviceProvider.GetServices<IHostedService>().ToArray();
 
@@ -78,6 +80,7 @@ public sealed class AdminInfrastructureModuleTests
         queryService.ShouldBeOfType<QueryService>();
         tourStore.ShouldBeOfType<TourStore>();
         customerStore.ShouldBeOfType<CustomerStore>();
+        documentStore.ShouldBeOfType<DocumentStore>();
         outbox.ShouldBeOfType<EfIntegrationEventOutbox<AdminWriteDbContext>>();
         hostedServices.ShouldContain(service => service is DocumentDraftRetentionHostedService);
         hostedServices.ShouldContain(service => (service is IntegrationEventOutboxRelayHostedService<AdminWriteDbContext>));
