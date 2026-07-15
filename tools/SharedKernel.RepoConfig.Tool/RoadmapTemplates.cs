@@ -368,7 +368,8 @@ internal static class RoadmapTemplates
                         }
                       ]
                     }
-                  }
+                  },
+                  "additionalProperties": false
                 }
               }
             }
