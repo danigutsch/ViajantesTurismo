@@ -55,7 +55,7 @@ public sealed class MediaInfrastructureContainerTests(MediaInfrastructureContain
         listener.Start();
         var unavailablePort = ((IPEndPoint)listener.LocalEndpoint).Port;
         listener.Stop();
-        var unavailableEndpoint = new UriBuilder(Uri.UriSchemeHttp, IPAddress.Loopback.ToString(), unavailablePort).Uri;
+        var unavailableEndpoint = new UriBuilder("tcp", IPAddress.Loopback.ToString(), unavailablePort).Uri;
         using var scannerScope = ClamAvMalwareScannerTestScope.Create(new ClamAvMalwareScannerTestSettings(unavailableEndpoint, TimeSpan.FromMilliseconds(100)));
         var objectStore = new RecordingMediaObjectStore();
         var validationOptions = new MediaUploadValidationOptions();
