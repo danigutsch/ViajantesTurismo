@@ -41,7 +41,7 @@ raw JSON as job outputs for later release workflow steps.
 | Attribute | Value |
 | --- | --- |
 | Job key | `test-slices` |
-| Job name | `Test slices` |
+| Job name | Matrix row `display_name` |
 | Runner | Repository CI baseline |
 
 One static matrix owns every Linux test slice. Each row declares its display name, change-detection

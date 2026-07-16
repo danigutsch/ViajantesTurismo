@@ -114,8 +114,10 @@ public sealed class DocumentationGeneratorTests
         updated.ShouldContain("| `GET` | `/api/v1/public/catalog/content/{key}` | GetPublicContent | public API | not declared | `Api/CustomerEndpoints.cs` |", StringComparison.Ordinal);
         updated.ShouldContain("| AdminTourCreatedIntegrationEvent | `admin.tour.created` | 1 | `Application/TourIntegrationEventMappings.cs` | `Application/ApplicationDependencyInjection.cs` | `AdminTourCreatedIntegrationHandler` |", StringComparison.Ordinal);
         updated.ShouldContain("trigger --> build", StringComparison.Ordinal);
+        updated.ShouldContain("test[test]", StringComparison.Ordinal);
         updated.ShouldContain("build --> test", StringComparison.Ordinal);
         updated.ShouldContain("test --> deploy", StringComparison.Ordinal);
+        updated.ShouldNotContain("${{ matrix.display_name }}", StringComparison.Ordinal);
         updated.ShouldContain("repo --> ci", StringComparison.Ordinal);
         updated.ShouldContain("repo --> release", StringComparison.Ordinal);
         updated.ShouldNotContain("Excluded workflow", StringComparison.Ordinal);

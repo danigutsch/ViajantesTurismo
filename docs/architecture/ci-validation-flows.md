@@ -16,7 +16,7 @@ flowchart TB
     detect_changes[Detect Changes]
     calculate_version[Calculate Version]
     openapi_tool_windows[OpenAPI Tool Windows]
-    test_slices[Test slices]
+    test_slices[test-slices]
     build_and_test[Build and Test]
     api_compatibility[API Compatibility]
     sonarcloud[SonarCloud]

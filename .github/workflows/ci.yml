@@ -131,7 +131,7 @@ jobs:
         run: dotnet test --project tests/ViajantesTurismo.OpenApi.Tool.Tests/ViajantesTurismo.OpenApi.Tool.Tests.csproj --no-restore
 
   test-slices:
-    name: Test slices
+    name: ${{ matrix.display_name }}
     needs:
       - detect-changes
     if: ${{ always() }}

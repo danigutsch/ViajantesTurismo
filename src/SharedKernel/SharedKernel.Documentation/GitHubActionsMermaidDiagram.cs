@@ -124,7 +124,10 @@ internal static partial class GitHubActionsMermaidDiagram
     {
         if (jobId.Length > 0)
         {
-            jobs.Add((jobId, name.Length > 0 ? name : jobId, needs));
+            var diagramName = name.Length == 0 || name.Contains("${{", StringComparison.Ordinal)
+                ? jobId
+                : name;
+            jobs.Add((jobId, diagramName, needs));
         }
     }
 
