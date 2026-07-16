@@ -941,6 +941,12 @@
           "SharedKernel.Messaging": "[0.1.0-alpha.0, )"
         }
       },
+      "sharedkernel.npgsql": {
+        "type": "Project",
+        "dependencies": {
+          "Npgsql": "[10.0.3, )"
+        }
+      },
       "sharedkernel.observability": {
         "type": "Project",
         "dependencies": {
@@ -1052,10 +1058,12 @@
           "Duende.AccessTokenManagement.OpenIdConnect": "[4.2.0, )",
           "Microsoft.AspNetCore.Components.QuickGrid": "[10.0.9, )",
           "Microsoft.AspNetCore.DataProtection.EntityFrameworkCore": "[10.0.9, )",
+          "Npgsql": "[10.0.3, )",
           "SharedKernel.AspNetCore": "[0.1.0-alpha.0, )",
           "SharedKernel.Branding": "[0.1.0-alpha.0, )",
           "SharedKernel.BuildingBlocks": "[0.1.0-alpha.0, )",
           "SharedKernel.HttpClients": "[0.1.0-alpha.0, )",
+          "SharedKernel.Npgsql": "[0.1.0-alpha.0, )",
           "ViajantesTurismo.Admin.Contracts.Application": "[0.1.0-alpha.0, )",
           "ViajantesTurismo.Admin.Contracts.Http": "[0.1.0-alpha.0, )",
           "ViajantesTurismo.Catalog.Contracts.Application": "[0.1.0-alpha.0, )",

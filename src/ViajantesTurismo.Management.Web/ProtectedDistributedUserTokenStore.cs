@@ -1,3 +1,4 @@
+using System.Buffers.Binary;
 using System.Security.Claims;
 using System.Security.Cryptography;
 using System.Text;
@@ -5,8 +6,10 @@ using Duende.AccessTokenManagement;
 using Duende.AccessTokenManagement.OpenIdConnect;
 using Microsoft.AspNetCore.DataProtection;
 using Microsoft.Extensions.Caching.Distributed;
+using Npgsql;
 using SharedKernel.AspNetCore;
 using SharedKernel.BuildingBlocks;
+using SharedKernel.Npgsql;
 
 namespace ViajantesTurismo.Management.Web;
 
@@ -16,7 +19,10 @@ namespace ViajantesTurismo.Management.Web;
 internal sealed class ProtectedDistributedUserTokenStore : IUserTokenStore
 {
     private const int MaximumTokenEntries = 16;
+    private const string SessionMutationLockPurpose = "ViajantesTurismo.Management.Web.ProtectedDistributedUserTokenStore";
+    private const string SessionRevocationKeySuffix = ":revoked";
 
+    private readonly NpgsqlDataSource? _advisoryLockDataSource;
     private readonly IDistributedCache _cache;
     private readonly KeyBoundDataProtector _protector;
     private readonly TimeProvider _timeProvider;
@@ -24,12 +30,41 @@ internal sealed class ProtectedDistributedUserTokenStore : IUserTokenStore
     public ProtectedDistributedUserTokenStore(
         IDistributedCache cache,
         IDataProtectionProvider dataProtectionProvider,
+        TimeProvider timeProvider,
+        NpgsqlDataSource advisoryLockDataSource)
+        : this(cache, dataProtectionProvider, timeProvider, advisoryLockDataSource, bypassAdvisoryLock: false)
+    {
+    }
+
+    internal static ProtectedDistributedUserTokenStore CreateForTesting(
+        IDistributedCache cache,
+        IDataProtectionProvider dataProtectionProvider,
         TimeProvider timeProvider)
+    {
+        return new ProtectedDistributedUserTokenStore(
+            cache,
+            dataProtectionProvider,
+            timeProvider,
+            advisoryLockDataSource: null,
+            bypassAdvisoryLock: true);
+    }
+
+    private ProtectedDistributedUserTokenStore(
+        IDistributedCache cache,
+        IDataProtectionProvider dataProtectionProvider,
+        TimeProvider timeProvider,
+        NpgsqlDataSource? advisoryLockDataSource,
+        bool bypassAdvisoryLock)
     {
         ArgumentNullException.ThrowIfNull(cache);
         ArgumentNullException.ThrowIfNull(dataProtectionProvider);
         ArgumentNullException.ThrowIfNull(timeProvider);
+        if (!bypassAdvisoryLock)
+        {
+            ArgumentNullException.ThrowIfNull(advisoryLockDataSource);
+        }
 
+        _advisoryLockDataSource = advisoryLockDataSource;
         _cache = cache;
         _protector = new KeyBoundDataProtector(
             dataProtectionProvider,
@@ -50,15 +85,25 @@ internal sealed class ProtectedDistributedUserTokenStore : IUserTokenStore
         EnsureActive(session);
         EnsureSupported(token);
 
-        var entries = await ReadEntries(session, ct) ?? new Dictionary<string, UserToken>(StringComparer.Ordinal);
-        var parameterKey = GetParameterKey(parameters);
-        if (!entries.ContainsKey(parameterKey) && entries.Count >= MaximumTokenEntries)
+        await ExecuteSessionMutation(session, async () =>
         {
-            throw new InvalidOperationException("The management token session has too many token entries.");
-        }
+            EnsureActive(session);
+            if (await IsSessionRevoked(session, ct))
+            {
+                throw new InvalidOperationException("The management token session has been revoked.");
+            }
 
-        entries[parameterKey] = token;
-        await WriteEntries(session, entries, ct);
+            var read = await ReadEntries(session, ct);
+            var entries = read.Entries ?? new Dictionary<string, UserToken>(StringComparer.Ordinal);
+            var parameterKey = GetParameterKey(parameters);
+            if (!entries.ContainsKey(parameterKey) && entries.Count >= MaximumTokenEntries)
+            {
+                throw new InvalidOperationException("The management token session has too many token entries.");
+            }
+
+            entries[parameterKey] = token;
+            await WriteEntries(session, entries, ct);
+        }, ct);
     }
 
     public async Task<TokenResult<TokenForParameters>> GetTokenAsync(
@@ -71,11 +116,23 @@ internal sealed class ProtectedDistributedUserTokenStore : IUserTokenStore
         var session = GetSession(user);
         if (session.ExpiresAt <= _timeProvider.GetUtcNow())
         {
-            await TryRemoveStaleEntry(session.CacheKey, ct);
+            await TryRemoveStaleEntry(session, expectedProtectedEntries: null, ct);
             return TokenResult.Failure("The management token session has expired.");
         }
 
-        var entries = await ReadEntries(session, ct);
+        if (await IsSessionRevoked(session, ct))
+        {
+            return TokenResult.Failure("No access token or refresh token is available.");
+        }
+
+        var read = await ReadEntries(session, ct);
+        if (read.CorruptProtectedEntries is not null)
+        {
+            await TryRemoveStaleEntry(session, read.CorruptProtectedEntries, ct);
+            return TokenResult.Failure("No access token or refresh token is available.");
+        }
+
+        var entries = read.Entries;
         if (entries is null)
         {
             return TokenResult.Failure("No access token or refresh token is available.");
@@ -107,38 +164,70 @@ internal sealed class ProtectedDistributedUserTokenStore : IUserTokenStore
         var session = GetSession(user);
         if (session.ExpiresAt <= _timeProvider.GetUtcNow())
         {
-            await TryRemoveStaleEntry(session.CacheKey, ct);
+            await TryRemoveStaleEntry(session, expectedProtectedEntries: null, ct);
             return;
         }
 
-        var entries = await ReadEntries(session, ct);
-        if (entries is null)
+        await ExecuteSessionMutation(session, async () =>
         {
-            return;
-        }
+            var read = await ReadEntries(session, ct);
+            if (read.CorruptProtectedEntries is not null)
+            {
+                await TryRemoveStaleEntryWithinMutation(session, read.CorruptProtectedEntries, ct);
+                return;
+            }
 
-        entries.Remove(GetParameterKey(parameters));
-        if (entries.Count == 0)
-        {
-            await _cache.RemoveAsync(session.CacheKey, ct);
-            return;
-        }
+            var entries = read.Entries;
+            if (entries is null)
+            {
+                return;
+            }
 
-        await WriteEntries(session, entries, ct);
+            entries.Remove(GetParameterKey(parameters));
+            if (entries.Count == 0)
+            {
+                await _cache.RemoveAsync(session.CacheKey, ct);
+                return;
+            }
+
+            await WriteEntries(session, entries, ct);
+        }, ct);
     }
 
-    internal Task ClearAll(ClaimsPrincipal user, CancellationToken ct)
+    internal async Task ClearAll(ClaimsPrincipal user, CancellationToken ct)
     {
         ArgumentNullException.ThrowIfNull(user);
 
-        return _cache.RemoveAsync(GetSession(user).CacheKey, ct);
+        var session = GetSession(user);
+        await ExecuteSessionMutation(session, async () =>
+        {
+            if (session.ExpiresAt > _timeProvider.GetUtcNow())
+            {
+                await WriteSessionRevocation(session, ct);
+            }
+
+            await _cache.RemoveAsync(session.CacheKey, ct);
+        }, ct);
     }
 
     internal async Task<string?> GetSourceAccessToken(ClaimsPrincipal user, CancellationToken ct)
     {
         ArgumentNullException.ThrowIfNull(user);
 
-        var entries = await ReadEntries(GetSession(user), ct);
+        var session = GetSession(user);
+        if (await IsSessionRevoked(session, ct))
+        {
+            return null;
+        }
+
+        var read = await ReadEntries(session, ct);
+        if (read.CorruptProtectedEntries is not null)
+        {
+            await TryRemoveStaleEntry(session, read.CorruptProtectedEntries, ct);
+            return null;
+        }
+
+        var entries = read.Entries;
         if (entries is null || !entries.TryGetValue(string.Empty, out var token))
         {
             return null;
@@ -147,22 +236,23 @@ internal sealed class ProtectedDistributedUserTokenStore : IUserTokenStore
         return token.AccessToken.ToString();
     }
 
-    private async Task<Dictionary<string, UserToken>?> ReadEntries(TokenSession session, CancellationToken ct)
+    private async Task<(Dictionary<string, UserToken>? Entries, byte[]? CorruptProtectedEntries)> ReadEntries(
+        TokenSession session,
+        CancellationToken ct)
     {
         var protectedEntries = await _cache.GetAsync(session.CacheKey, ct);
         if (protectedEntries is null)
         {
-            return null;
+            return (Entries: null, CorruptProtectedEntries: null);
         }
 
         try
         {
-            return DeserializeEntries(_protector.Unprotect(session.CacheKey, protectedEntries));
+            return (Entries: DeserializeEntries(_protector.Unprotect(session.CacheKey, protectedEntries)), CorruptProtectedEntries: null);
         }
         catch (Exception exception) when (exception is ArgumentException or CryptographicException or EndOfStreamException or FormatException or InvalidDataException or OverflowException)
         {
-            await TryRemoveStaleEntry(session.CacheKey, ct);
-            return null;
+            return (Entries: null, CorruptProtectedEntries: protectedEntries);
         }
     }
 
@@ -172,6 +262,15 @@ internal sealed class ProtectedDistributedUserTokenStore : IUserTokenStore
         return _cache.SetAsync(
             session.CacheKey,
             protectedEntries,
+            new DistributedCacheEntryOptions { AbsoluteExpiration = session.ExpiresAt },
+            ct);
+    }
+
+    private Task WriteSessionRevocation(TokenSession session, CancellationToken ct)
+    {
+        return _cache.SetAsync(
+            GetSessionRevocationKey(session),
+            [0x01],
             new DistributedCacheEntryOptions { AbsoluteExpiration = session.ExpiresAt },
             ct);
     }
@@ -312,17 +411,87 @@ internal sealed class ProtectedDistributedUserTokenStore : IUserTokenStore
         }
     }
 
-    private async Task<bool> TryRemoveStaleEntry(string cacheKey, CancellationToken ct)
+    private async Task ExecuteSessionMutation(TokenSession session, Func<Task> mutation, CancellationToken ct)
+    {
+        ArgumentNullException.ThrowIfNull(mutation);
+
+        if (_advisoryLockDataSource is null)
+        {
+            await mutation();
+            return;
+        }
+
+        await using var connection = await _advisoryLockDataSource.OpenConnectionAsync(ct);
+        await using var transaction = await connection.BeginTransactionAsync(ct);
+        await PostgreSqlTransactionAdvisoryLock.Acquire(connection, transaction, GetSessionMutationLockKey(session), ct);
+        await mutation();
+        await transaction.CommitAsync(ct);
+    }
+
+    private async Task<bool> TryRemoveStaleEntry(
+        TokenSession session,
+        byte[]? expectedProtectedEntries,
+        CancellationToken ct)
     {
         try
         {
-            await _cache.RemoveAsync(cacheKey, ct);
+            await ExecuteSessionMutation(
+                session,
+                () => RemoveStaleEntry(session, expectedProtectedEntries, ct),
+                ct);
             return true;
         }
         catch (Exception exception) when (exception.ShouldHandleAsFailure(ct))
         {
             return false;
         }
+    }
+
+    private async Task<bool> TryRemoveStaleEntryWithinMutation(
+        TokenSession session,
+        byte[]? expectedProtectedEntries,
+        CancellationToken ct)
+    {
+        try
+        {
+            await RemoveStaleEntry(session, expectedProtectedEntries, ct);
+            return true;
+        }
+        catch (Exception exception) when (exception.ShouldHandleAsFailure(ct))
+        {
+            return false;
+        }
+    }
+
+    private async Task RemoveStaleEntry(TokenSession session, byte[]? expectedProtectedEntries, CancellationToken ct)
+    {
+        if (expectedProtectedEntries is null)
+        {
+            await _cache.RemoveAsync(session.CacheKey, ct);
+            return;
+        }
+
+        var currentProtectedEntries = await _cache.GetAsync(session.CacheKey, ct);
+        if (currentProtectedEntries is not null && currentProtectedEntries.AsSpan().SequenceEqual(expectedProtectedEntries))
+        {
+            await _cache.RemoveAsync(session.CacheKey, ct);
+        }
+    }
+
+    private async Task<bool> IsSessionRevoked(TokenSession session, CancellationToken ct)
+    {
+        return await _cache.GetAsync(GetSessionRevocationKey(session), ct) is not null;
+    }
+
+    private static long GetSessionMutationLockKey(TokenSession session)
+    {
+        var hash = SHA256.HashData(Encoding.UTF8.GetBytes($"{SessionMutationLockPurpose}:{session.CacheKey}"));
+        return BinaryPrimitives.ReadInt64LittleEndian(hash);
+    }
+
+    private static string GetSessionRevocationKey(TokenSession session)
+    {
+        return string.Concat(session.CacheKey, SessionRevocationKeySuffix);
     }
 
     private sealed record TokenSession(string CacheKey, DateTimeOffset ExpiresAt);

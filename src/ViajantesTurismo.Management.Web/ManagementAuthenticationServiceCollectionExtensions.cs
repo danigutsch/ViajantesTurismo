@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.DataProtection;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection.Extensions;
+using Npgsql;
 using SharedKernel.AspNetCore;
 using ViajantesTurismo.Management.Security;
 using System.Security.Cryptography.X509Certificates;
@@ -51,6 +52,7 @@ internal static class ManagementAuthenticationServiceCollectionExtensions
             environment);
 
         services.AddManagementSecurityPersistence(connectionString!);
+        services.AddSingleton(_ => NpgsqlDataSource.Create(connectionString!));
         services.TryAddSingleton(TimeProvider.System);
         services.AddHttpClient(ManagementAuthenticationDefaults.KeycloakTokenExchangeHttpClientName);
 

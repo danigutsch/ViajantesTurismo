@@ -275,6 +275,69 @@ public sealed class ProtectedDistributedUserTokenStoreTests
     }
 
     [Fact]
+    public async Task Clearing_one_parameterized_token_preserves_the_other_and_clearing_the_last_removes_the_session()
+    {
+        // Arrange
+        var context = new ProtectedDistributedUserTokenStoreTestContext();
+        var user = ProtectedDistributedUserTokenStoreTestContext.CreateUser("session-a");
+        var firstParameters = new UserTokenRequestParameters { Scope = Scope.Parse("admin-api") };
+        var secondParameters = new UserTokenRequestParameters { Scope = Scope.Parse("catalog-api") };
+        await context.Store.StoreTokenAsync(
+            user,
+            ProtectedDistributedUserTokenStoreTestContext.CreateToken("admin-access-token"),
+            firstParameters,
+            Xunit.TestContext.Current.CancellationToken);
+        await context.Store.StoreTokenAsync(
+            user,
+            ProtectedDistributedUserTokenStoreTestContext.CreateToken("catalog-access-token"),
+            secondParameters,
+            Xunit.TestContext.Current.CancellationToken);
+
+        // Act
+        await context.Store.ClearTokenAsync(user, firstParameters, Xunit.TestContext.Current.CancellationToken);
+        var firstResult = await context.Store.GetTokenAsync(user, firstParameters, Xunit.TestContext.Current.CancellationToken);
+        var secondResult = await context.Store.GetTokenAsync(user, secondParameters, Xunit.TestContext.Current.CancellationToken);
+        await context.Store.ClearTokenAsync(user, secondParameters, Xunit.TestContext.Current.CancellationToken);
+        var cachedValue = await context.Cache.GetAsync(
+            ProtectedDistributedUserTokenStoreTestContext.GetCacheKey("session-a"),
+            Xunit.TestContext.Current.CancellationToken);
+
+        // Assert
+        firstResult.Succeeded.ShouldBeFalse();
+        secondResult.Succeeded.ShouldBeTrue();
+        var secondTokens = secondResult.Token ?? throw new InvalidOperationException("The second user token was not retrieved.");
+        var secondToken = secondTokens.TokenForSpecifiedParameters ?? throw new InvalidOperationException("The second access token was not retrieved.");
+        secondToken.AccessToken.ToString().ShouldBe("catalog-access-token");
+        cachedValue.ShouldBeNull();
+    }
+
+    [Fact]
+    public async Task Clearing_a_corrupt_token_entry_removes_it()
+    {
+        // Arrange
+        var context = new ProtectedDistributedUserTokenStoreTestContext();
+        var user = ProtectedDistributedUserTokenStoreTestContext.CreateUser("session-a");
+        await context.Store.StoreTokenAsync(
+            user,
+            ProtectedDistributedUserTokenStoreTestContext.CreateToken("source-access-token"),
+            ct: Xunit.TestContext.Current.CancellationToken);
+        await context.Cache.SetAsync(
+            ProtectedDistributedUserTokenStoreTestContext.GetCacheKey("session-a"),
+            [0x01],
+            new Microsoft.Extensions.Caching.Distributed.DistributedCacheEntryOptions(),
+            Xunit.TestContext.Current.CancellationToken);
+
+        // Act
+        await context.Store.ClearTokenAsync(user, ct: Xunit.TestContext.Current.CancellationToken);
+        var cachedValue = await context.Cache.GetAsync(
+            ProtectedDistributedUserTokenStoreTestContext.GetCacheKey("session-a"),
+            Xunit.TestContext.Current.CancellationToken);
+
+        // Assert
+        cachedValue.ShouldBeNull();
+    }
+
+    [Fact]
     public async Task Clears_all_tokens_when_the_session_signs_out()
     {
         // Arrange

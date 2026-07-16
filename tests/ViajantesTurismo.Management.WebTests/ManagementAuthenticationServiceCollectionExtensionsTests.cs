@@ -175,4 +175,26 @@ public sealed class ManagementAuthenticationServiceCollectionExtensionsTests
         ReferenceEquals(userTokenStore, protectedUserTokenStore).ShouldBeTrue();
         authorization.FallbackPolicy.ShouldNotBeNull();
     }
+
+    [Fact]
+    public async Task Maps_the_user_token_store_to_the_scoped_protected_store_in_each_scope()
+    {
+        // Arrange
+        var configuration = ManagementAuthenticationTestConfiguration.Create();
+        var environment = new TestHostEnvironment { EnvironmentName = Environments.Development };
+        await using var host = ManagementAuthenticationTestHost.Create(configuration, environment);
+        using var firstSession = host.CreateUserTokenStoreSession();
+        using var secondSession = host.CreateUserTokenStoreSession();
+
+        // Act
+        var firstUserTokenStore = firstSession.UserTokenStore;
+        var firstProtectedUserTokenStore = firstSession.ProtectedUserTokenStore;
+        var secondUserTokenStore = secondSession.UserTokenStore;
+        var secondProtectedUserTokenStore = secondSession.ProtectedUserTokenStore;
+
+        // Assert
+        ReferenceEquals(firstUserTokenStore, firstProtectedUserTokenStore).ShouldBeTrue();
+        ReferenceEquals(secondUserTokenStore, secondProtectedUserTokenStore).ShouldBeTrue();
+        ReferenceEquals(firstUserTokenStore, secondUserTokenStore).ShouldBeFalse();
+    }
 }

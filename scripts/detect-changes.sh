@@ -217,17 +217,21 @@ fast_validation_patterns=(
 admin_integration_patterns=(
     "src/SharedKernel/SharedKernel.EventSourcing.Npgsql/**"
     "src/SharedKernel/SharedKernel.IntegrationTesting/**"
+    "src/SharedKernel/SharedKernel.Npgsql/**"
     "src/SharedKernel/SharedKernel.Observability.Npgsql/**"
     "src/ViajantesTurismo.Admin.ApiService/**"
     "src/ViajantesTurismo.Admin.Application/**"
     "src/ViajantesTurismo.Admin.Contracts/**"
     "src/ViajantesTurismo.Admin.Domain/**"
     "src/ViajantesTurismo.Admin.Infrastructure/**"
+    "src/ViajantesTurismo.Management.Web/**"
     "src/ViajantesTurismo.Resources/**"
     "src/ViajantesTurismo.ServiceDefaults/**"
     "tests/SharedKernel.EventSourcing.Npgsql.Tests/**"
+    "tests/SharedKernel.Npgsql.Tests/**"
     "tests/ViajantesTurismo.Admin.Infrastructure.Tests/**"
     "tests/ViajantesTurismo.Admin.IntegrationTests/**"
+    "tests/ViajantesTurismo.Management.WebIntegrationTests/**"
     "tests/ViajantesTurismo.Admin.Testing/**"
 )
 

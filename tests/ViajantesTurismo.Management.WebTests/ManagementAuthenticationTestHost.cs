@@ -33,6 +33,11 @@ internal sealed class ManagementAuthenticationTestHost : IAsyncDisposable
 
     public AuthorizationOptions AuthorizationOptions => _provider.GetRequiredService<IOptions<AuthorizationOptions>>().Value;
 
+    public ManagementAuthenticationTestScope CreateUserTokenStoreSession()
+    {
+        return new ManagementAuthenticationTestScope(_provider.GetRequiredService<IServiceScopeFactory>());
+    }
+
     public static ManagementAuthenticationTestHost Create(IConfiguration configuration, TestHostEnvironment environment)
     {
         var services = new ServiceCollection();

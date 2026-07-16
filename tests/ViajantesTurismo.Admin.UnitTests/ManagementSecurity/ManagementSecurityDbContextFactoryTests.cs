@@ -45,4 +45,14 @@ public sealed class ManagementSecurityDbContextFactoryTests
         ticketCacheEntity.FindPrimaryKey().ShouldNotBeNull();
         expirationIndex.ShouldNotBeNull();
     }
+
+    [Fact]
+    public void Registers_security_persistence_without_an_unkeyed_npgsql_data_source()
+    {
+        // Arrange
+        var hasUnkeyedDataSource = ManagementSecurityPersistenceRegistrationTestContext.HasUnkeyedNpgsqlDataSource();
+
+        // Assert
+        hasUnkeyedDataSource.ShouldBeFalse();
+    }
 }

@@ -16,7 +16,7 @@ internal sealed class ProtectedDistributedUserTokenStoreTestContext
         Cache = cache ?? new MemoryDistributedCache(Options.Create(new MemoryDistributedCacheOptions()));
         var dataProtectionProvider = new EphemeralDataProtectionProvider();
         AudienceTokenStore = new ProtectedDistributedAudienceTokenStore(Cache, dataProtectionProvider, TimeProvider.System);
-        Store = new ProtectedDistributedUserTokenStore(Cache, dataProtectionProvider, TimeProvider.System);
+        Store = ProtectedDistributedUserTokenStore.CreateForTesting(Cache, dataProtectionProvider, TimeProvider.System);
     }
 
     public IDistributedCache Cache { get; }
