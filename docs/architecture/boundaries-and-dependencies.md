@@ -303,6 +303,7 @@ flowchart TB
     SharedKernel_Idempotency_EntityFrameworkCore[SharedKernel.Idempotency.EntityFrameworkCore] --> SharedKernel_EntityFrameworkCore[SharedKernel.EntityFrameworkCore]
     SharedKernel_Idempotency_EntityFrameworkCore[SharedKernel.Idempotency.EntityFrameworkCore] --> SharedKernel_Idempotency[SharedKernel.Idempotency]
     SharedKernel_MalwareScanning_ClamAv[SharedKernel.MalwareScanning.ClamAv] --> SharedKernel_MalwareScanning[SharedKernel.MalwareScanning]
+    SharedKernel_MalwareScanning_ClamAv[SharedKernel.MalwareScanning.ClamAv] --> SharedKernel_OpenApi[SharedKernel.OpenApi]
     SharedKernel_Mediator[SharedKernel.Mediator] --> SharedKernel_Mediator_Abstractions[SharedKernel.Mediator.Abstractions]
     SharedKernel_Mediator_EntityFrameworkCore[SharedKernel.Mediator.EntityFrameworkCore] --> SharedKernel_EntityFrameworkCore[SharedKernel.EntityFrameworkCore]
     SharedKernel_Mediator_EntityFrameworkCore[SharedKernel.Mediator.EntityFrameworkCore] --> SharedKernel_Mediator_Abstractions[SharedKernel.Mediator.Abstractions]

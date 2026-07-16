@@ -49,13 +49,7 @@ public static class InfrastructureDependencyInjection
     {
         ArgumentNullException.ThrowIfNull(builder);
 
-        builder.AddNpgsqlDataSource(ResourceNames.CatalogDatabase);
-        builder.Services.AddDbContextPool<CatalogDbContext>((serviceProvider, options) =>
-        {
-            options.UseNpgsql(serviceProvider.GetRequiredService<NpgsqlDataSource>());
-            ConfigureDevelopmentDatabaseOptions<CatalogDbContext, TApplicationBuilder>(builder, options);
-        });
-
+        builder.AddCatalogPersistence();
         builder.Services.AddCatalogApplication();
         builder.AddCatalogAiTextGeneration();
         builder.Services.AddSingleton(TimeProvider.System);
@@ -80,7 +74,9 @@ public static class InfrastructureDependencyInjection
     {
         ArgumentNullException.ThrowIfNull(builder);
 
-        return AddCatalogInfrastructure(builder, addOutboxRelay: false);
+        return builder
+            .AddCatalogPersistence()
+            .AddCatalogOutbox(addOutboxRelay: false);
     }
 
     /// <summary>
@@ -134,6 +130,19 @@ public static class InfrastructureDependencyInjection
         builder.Services.AddScoped<IPublicContentStore, EfPublicContentStore>();
         builder.Services.AddScoped<ICatalogTourReadModelStore, EfCatalogTourReadModelStore>();
         builder.Services.AddScoped<IPublicMediaImageStore, EfPublicMediaImageStore>();
+
+        return builder;
+    }
+
+    private static TApplicationBuilder AddCatalogPersistence<TApplicationBuilder>(this TApplicationBuilder builder)
+        where TApplicationBuilder : IHostApplicationBuilder
+    {
+        builder.AddNpgsqlDataSource(ResourceNames.CatalogDatabase);
+        builder.Services.AddDbContextPool<CatalogDbContext>((serviceProvider, options) =>
+        {
+            options.UseNpgsql(serviceProvider.GetRequiredService<NpgsqlDataSource>());
+            ConfigureDevelopmentDatabaseOptions<CatalogDbContext, TApplicationBuilder>(builder, options);
+        });
 
         return builder;
     }

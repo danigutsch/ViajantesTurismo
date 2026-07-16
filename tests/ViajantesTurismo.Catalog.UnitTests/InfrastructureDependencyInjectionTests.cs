@@ -72,4 +72,23 @@ public sealed class InfrastructureDependencyInjectionTests
         scenario.ShouldResolveAs<IMediaObjectStore, SeaweedFsMediaObjectStore>();
         scenario.ShouldResolveSingleton<IMediaObjectStore>();
     }
+
+    [Fact]
+    public void AddCatalogSeeding_does_not_require_malware_scanner_configuration()
+    {
+        // Arrange
+        using var scenario = CatalogInfrastructureTestServices.CreateSeedingScenario();
+
+        // Act
+
+        // Assert
+        var catalogDbContext = scenario.ShouldResolve<CatalogDbContext>();
+        scenario.ShouldResolveSingleton<NpgsqlDataSource>();
+        var outboxEntity = catalogDbContext.Model.GetEntityTypes().SingleOrDefault(
+            entity => entity.FindAnnotation("Relational:TableName")?.Value?.Equals("outbox_messages") == true);
+        var mappedOutboxEntity = outboxEntity
+            ?? throw new InvalidOperationException("The integration-event outbox entity is not mapped.");
+
+        mappedOutboxEntity.FindAnnotation("Relational:Schema")?.Value.ShouldBe("messaging");
+    }
 }

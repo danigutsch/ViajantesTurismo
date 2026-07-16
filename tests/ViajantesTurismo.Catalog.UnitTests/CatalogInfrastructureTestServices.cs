@@ -101,9 +101,7 @@ internal static class CatalogInfrastructureTestServices
         var builder = Host.CreateApplicationBuilder();
         builder.Configuration.AddInMemoryCollection(new Dictionary<string, string?>
         {
-            [$"ConnectionStrings:{ResourceNames.CatalogDatabase}"] = "Host=localhost;Database=viajantes-catalog;Username=test;Password=test",
-            [ClamAvHostConfigurationKey] = "clamav",
-            [ClamAvPortConfigurationKey] = "3310"
+            [$"ConnectionStrings:{ResourceNames.CatalogDatabase}"] = "Host=localhost;Database=viajantes-catalog;Username=test;Password=test"
         });
 
         builder.AddCatalogSeeding();
@@ -160,10 +158,12 @@ internal sealed class CatalogInfrastructureScenario(ServiceProvider provider) : 
         return hostedServices.Any(service => service.GetType() == typeof(TService));
     }
 
-    public void ShouldResolve<TService>()
+    public TService ShouldResolve<TService>()
         where TService : class
     {
-        provider.GetRequiredService<TService>().ShouldNotBeNull();
+        var service = provider.GetRequiredService<TService>();
+        service.ShouldNotBeNull();
+        return service;
     }
 
     public void ShouldResolveSingleton<TService>()
