@@ -99,8 +99,12 @@ configuration value. `VT_ASPIRE_CONTAINER_IMAGE_TAG` supplies container metadata
 does not decide whether the AppHost is running locally or publishing a deployment model.
 
 Keycloak and its HTTP development authority are run-mode-only resources. `aspire publish` omits
-them entirely. Published services must receive provider-neutral OIDC authority, issuer, client ID,
-and client-secret configuration from the target deployment environment.
+them entirely. Published Management Web must receive deployment-provided OIDC authority, issuer,
+client ID, and client-secret configuration plus
+`Authentication:TokenExchange:Enabled=true` and
+`Authentication:TokenExchange:Provider=Keycloak`. Its identity provider must expose a
+Keycloak-compatible RFC 8693 token endpoint. API bearer validation and authorization remain
+provider-neutral.
 
 Use these Aspire 13.4 integration points for release work:
 
@@ -186,7 +190,9 @@ traces, metrics, endpoints, and health status.
 Keycloak receives a dynamically allocated `localhost` HTTP endpoint for development and CI
 conformance only. It is intentionally browser-facing because it hosts the authorization endpoint
 used by Management Web. The AppHost declares it only in `IsRunMode`; production identity providers
-remain deployment configuration and are never included in the publish model.
+remain deployment configuration and are never included in the publish model. Management Web's
+enforced audience-token exchange requires a Keycloak-compatible RFC 8693 endpoint in every
+deployment.
 
 AppHost stores the following required values as local secrets:
 
@@ -203,8 +209,10 @@ an exact callback path with a dynamic HTTPS port. The configuration is local-con
 has no browser web origins because Management Web is a server-side BFF. No resolved credential
 belongs in source control.
 
-`web-app` requests the approved Admin, Catalog, and Branding API scopes during sign-in. Its
-server-side BFF ticket can then call those intended backends without exposing a token to the browser.
+`web-app` requests the approved Admin, Catalog, and Branding API scopes during sign-in. The protected
+server-side BFF ticket retains the source token, then obtains or reuses a protected cached exchanged
+token for the exact backend audience. Each backend receives only its exchanged token; neither token
+reaches the browser.
 `conformance-test-client` permits password grants solely for owned integration and browser-test
 setup; it is a local realm client and is not a production client.
 
