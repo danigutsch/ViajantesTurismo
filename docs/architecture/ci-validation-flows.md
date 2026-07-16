@@ -43,14 +43,10 @@ Workflow details: [CI overview](../ci/overview.md) and [main workflow](../ci/mai
 | Lane | Current purpose | Cost posture |
 | --- | --- | --- |
 | `Calculate Version` | Run the versioning tool and expose release-version outputs. | Fast; runs independently. |
-| `Fast Validation` | Build and test the fast project set. | Default application feedback path. |
+| `Test slices` | Run path-gated fast, provider/database, full-host API, browser/system, and tooling rows. | Matrix rows run independently. |
 | `Lint` | Markdown, scripts, specs, and repository quality checks. | Fast; runs independently. |
 | `Dependency Review` | Scan dependency manifest and lock-file diffs. | Fast governance lane. |
 | `Secret Scan` | Detect committed secrets and publish SARIF when allowed. | Fast security lane. |
-| `Admin Integration Tests` | Run database-backed Admin integration tests. | Heavier; path-gated. |
-| `Admin API Integration Tests` | Run full-host Admin API integration tests. | Heavier; dedicated DCP capacity. |
-| `Admin System Tests` | Run hosted UI/system tests with Playwright Chromium. | Heavier; path-gated. |
-| `Mediator Heavy Tests` | Run source-generator, analyzer, and mediator-heavy tests. | Heavier; path-gated. |
 | `SonarCloud` | Aggregate coverage and run hosted analysis. | Dependency-heavy; secret-aware. |
 
 `scripts/detect-changes.sh` owns the path decisions. If diff detection is uncertain, it fails open so
