@@ -1,0 +1,27 @@
+{
+  "$schema": "../schema/roadmap-item.schema.json",
+  "id": "RM-016",
+  "parent": "RM-009",
+  "title": "Consolidate GitHub clients under src",
+  "type": "issue",
+  "status": "proposed",
+  "triage": "untriaged",
+  "theme": "repo-operations",
+  "outcome": "Roadmap projection reuses a focused source-owned GitHub client without changing GitHub issue-body behavior.",
+  "blockedBy": [],
+  "blocks": [],
+  "dependencies": [],
+  "tags": [
+    "github",
+    "projection",
+    "client"
+  ],
+  "labels": [
+    "area: tooling"
+  ],
+  "integrations": {
+    "github": {
+      "issue": 1030
+    }
+  }
+}

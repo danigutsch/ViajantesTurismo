@@ -1,0 +1,29 @@
+{
+  "$schema": "../schema/roadmap-item.schema.json",
+  "id": "RM-017",
+  "parent": "RM-009",
+  "title": "Optimize GitHub Project sync query reuse",
+  "type": "issue",
+  "status": "proposed",
+  "triage": "untriaged",
+  "theme": "repo-operations",
+  "outcome": "GitHub Project sync reuses target metadata while preserving existing timeout, drift, and idempotency behavior.",
+  "blockedBy": [],
+  "blocks": [],
+  "dependencies": [],
+  "tags": [
+    "github",
+    "project",
+    "sync"
+  ],
+  "labels": [
+    "area: tooling",
+    "configuration",
+    "type: chore"
+  ],
+  "integrations": {
+    "github": {
+      "issue": 1053
+    }
+  }
+}
