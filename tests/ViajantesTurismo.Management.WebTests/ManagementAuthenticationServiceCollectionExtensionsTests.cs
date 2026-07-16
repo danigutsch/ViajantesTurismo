@@ -6,6 +6,8 @@ namespace ViajantesTurismo.Management.WebTests;
 /// <summary>
 /// Verifies Management Web authentication startup configuration.
 /// </summary>
+[Trait(SharedKernel.Testing.TestTraitNames.CategoryName, TestTraits.SecurityCategory)]
+[Trait(SharedKernel.Testing.TestTraitNames.ScopeName, TestTraits.UnitScope)]
 public sealed class ManagementAuthenticationServiceCollectionExtensionsTests
 {
     [Fact]
@@ -57,7 +59,7 @@ public sealed class ManagementAuthenticationServiceCollectionExtensionsTests
     public void Development_configuration_rejects_unsupported_token_exchange_providers()
     {
         // Arrange
-        var configuration = ManagementAuthenticationTestConfiguration.Create(tokenExchangeProvider: "unsupported");
+        var configuration = ManagementAuthenticationTestConfiguration.Create(tokenExchangeProvider: "Keycloak2");
         var environment = new TestHostEnvironment { EnvironmentName = Environments.Development };
 
         // Act
@@ -65,6 +67,23 @@ public sealed class ManagementAuthenticationServiceCollectionExtensionsTests
 
         // Assert
         action.ShouldThrow<InvalidOperationException>();
+    }
+
+    [Theory]
+    [InlineData("keycloak")]
+    [InlineData("KEYCLOAK")]
+    public async Task Development_configuration_accepts_keycloak_token_exchange_provider_regardless_of_casing(
+        string tokenExchangeProvider)
+    {
+        // Arrange
+        var configuration = ManagementAuthenticationTestConfiguration.Create(tokenExchangeProvider: tokenExchangeProvider);
+        var environment = new TestHostEnvironment { EnvironmentName = Environments.Development };
+
+        // Act
+        await using var host = ManagementAuthenticationTestHost.Create(configuration, environment);
+
+        // Assert
+        host.OpenIdConnectOptions.ShouldNotBeNull();
     }
 
     [Fact]

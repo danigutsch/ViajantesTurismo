@@ -176,7 +176,7 @@ internal static class ManagementAuthenticationServiceCollectionExtensions
         if (!string.Equals(
                 tokenExchangeProvider,
                 ManagementAuthenticationDefaults.KeycloakTokenExchangeProvider,
-                StringComparison.Ordinal))
+                StringComparison.OrdinalIgnoreCase))
         {
             throw new InvalidOperationException(
                 $"{ManagementAuthenticationDefaults.TokenExchangeProviderConfigurationKey} must be {ManagementAuthenticationDefaults.KeycloakTokenExchangeProvider}.");
