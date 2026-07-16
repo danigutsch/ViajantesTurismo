@@ -1,4 +1,6 @@
 using ViajantesTurismo.Catalog.Application.Media;
+using SharedKernel.InputNormalization;
+using ViajantesTurismo.Catalog.Domain;
 
 namespace ViajantesTurismo.Catalog.UnitTests;
 
@@ -8,6 +10,8 @@ internal sealed class InMemoryMediaObjectStore : IMediaObjectStore
     private readonly HashSet<string> failingDeletes = [];
     private Exception? openReadException;
 
+    private const int MaxObjectKeyLength = CatalogDomainLimits.MaxMediaObjectKeyLength;
+
     public IReadOnlyCollection<string> ObjectKeys => objects.Keys;
 
     public int ExistsCallCount { get; private set; }
@@ -15,6 +19,7 @@ internal sealed class InMemoryMediaObjectStore : IMediaObjectStore
     public async ValueTask<MediaObjectWriteResult> Put(MediaObjectWriteRequest request, CancellationToken ct)
     {
         ct.ThrowIfCancellationRequested();
+        ValidateObjectKey(request.ObjectKey);
         using var content = new MemoryStream();
         await request.Content.CopyToAsync(content, ct);
         objects[request.ObjectKey] = new StoredMediaObject(
@@ -33,6 +38,7 @@ internal sealed class InMemoryMediaObjectStore : IMediaObjectStore
     public async ValueTask<MediaObjectReadResult> OpenRead(string objectKey, CancellationToken ct)
     {
         ct.ThrowIfCancellationRequested();
+        ValidateObjectKey(objectKey);
 
         if (openReadException is not null)
         {
@@ -57,6 +63,7 @@ internal sealed class InMemoryMediaObjectStore : IMediaObjectStore
     public ValueTask<bool> Exists(string objectKey, CancellationToken ct)
     {
         ct.ThrowIfCancellationRequested();
+        ValidateObjectKey(objectKey);
         ExistsCallCount++;
 
         return ValueTask.FromResult(objects.ContainsKey(objectKey));
@@ -65,6 +72,7 @@ internal sealed class InMemoryMediaObjectStore : IMediaObjectStore
     public ValueTask<IReadOnlyList<string>> ListKeys(string prefix, CancellationToken ct)
     {
         ct.ThrowIfCancellationRequested();
+        ValidatePrefix(prefix);
 
         return ValueTask.FromResult<IReadOnlyList<string>>(
             [.. objects.Keys.Where(key => key.StartsWith(prefix, StringComparison.Ordinal)).Order(StringComparer.Ordinal)]);
@@ -73,6 +81,7 @@ internal sealed class InMemoryMediaObjectStore : IMediaObjectStore
     public ValueTask<IReadOnlyList<MediaObjectInventoryItem>> ListObjects(string prefix, CancellationToken ct)
     {
         ct.ThrowIfCancellationRequested();
+        ValidatePrefix(prefix);
 
         return ValueTask.FromResult<IReadOnlyList<MediaObjectInventoryItem>>(
             [.. objects.Where(item => item.Key.StartsWith(prefix, StringComparison.Ordinal))
@@ -85,11 +94,16 @@ internal sealed class InMemoryMediaObjectStore : IMediaObjectStore
         throw new NotSupportedException();
     }
 
-    public Uri GetPublicUri(string objectKey) => new($"https://cdn.example/{objectKey}");
+    public Uri GetPublicUri(string objectKey)
+    {
+        ValidateObjectKey(objectKey);
+        return new Uri($"https://cdn.example/{objectKey}");
+    }
 
     public ValueTask Delete(string objectKey, CancellationToken ct)
     {
         ct.ThrowIfCancellationRequested();
+        ValidateObjectKey(objectKey);
         if (failingDeletes.Remove(objectKey))
         {
             throw new IOException($"Delete failed for {objectKey}.");
@@ -102,11 +116,13 @@ internal sealed class InMemoryMediaObjectStore : IMediaObjectStore
 
     public void SetLastModified(string objectKey, DateTimeOffset lastModifiedAt)
     {
+        ValidateObjectKey(objectKey);
         objects[objectKey] = objects[objectKey] with { LastModifiedAt = lastModifiedAt };
     }
 
     public void FailNextDelete(string objectKey)
     {
+        ValidateObjectKey(objectKey);
         failingDeletes.Add(objectKey);
     }
 
@@ -116,4 +132,23 @@ internal sealed class InMemoryMediaObjectStore : IMediaObjectStore
     }
 
     private sealed record StoredMediaObject(MediaObjectWriteRequest Request, DateTimeOffset LastModifiedAt);
+
+    private static void ValidateObjectKey(string objectKey)
+    {
+        if (!ObjectStorageKeyValidator.IsValidRelativeKey(objectKey, MaxObjectKeyLength))
+        {
+            throw new ArgumentException("Media object key must be a relative slash-delimited path without dot segments.", nameof(objectKey));
+        }
+    }
+
+    private static void ValidatePrefix(string prefix)
+    {
+        if (string.IsNullOrWhiteSpace(prefix))
+        {
+            return;
+        }
+
+        var normalizedPrefix = prefix.TrimEnd('/');
+        ValidateObjectKey(normalizedPrefix);
+    }
 }

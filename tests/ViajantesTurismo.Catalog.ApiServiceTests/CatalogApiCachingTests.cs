@@ -35,6 +35,7 @@ public sealed class CatalogApiCachingTests
         var cacheControl = response.Headers.CacheControl.ShouldNotBeNull();
         cacheControl.Public.ShouldBeTrue();
         cacheControl.MaxAge.ShouldBe(TimeSpan.FromSeconds(60));
+        cacheControl.Extensions.Select(extension => extension.Name).ShouldNotContain("stale-while-revalidate");
     }
 
     [Fact]

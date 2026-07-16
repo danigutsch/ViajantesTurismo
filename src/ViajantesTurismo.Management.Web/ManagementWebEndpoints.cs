@@ -1,5 +1,7 @@
 using SharedKernel.AspNetCore;
+using SharedKernel.HttpCaching.AspNetCore;
 using Microsoft.AspNetCore.Authentication;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authentication.OpenIdConnect;
 using ViajantesTurismo.Management.Web.Components;
@@ -9,6 +11,8 @@ namespace ViajantesTurismo.Management.Web;
 internal static class ManagementWebEndpoints
 {
     private const string ManagementRobotsTxt = "User-agent: *\nDisallow: /";
+
+    internal const string MediaPreviewByRenditionEndpointName = "management-media-preview-by-rendition";
 
     internal static IEndpointRouteBuilder MapManagementWebEndpoints(this IEndpointRouteBuilder app)
     {
@@ -31,6 +35,11 @@ internal static class ManagementWebEndpoints
             OpenIdConnectDefaults.AuthenticationScheme,
             "/");
 
+        app.MapGet("/catalog/media/images/{id:guid}/preview/{width:int}/{format}", (Guid id, int width, string format, [FromServices] ICatalogToursApiClient catalogToursApi, HttpContext context, CancellationToken ct) =>
+                GetMediaPreview(id, width, format, catalogToursApi, context, ct))
+            .WithName(MediaPreviewByRenditionEndpointName)
+            .RequireAuthorization();
+
         app.MapStaticAssets()
             .AllowAnonymous();
 
@@ -39,6 +48,38 @@ internal static class ManagementWebEndpoints
             .RequireAuthorization();
 
         return app;
+    }
+
+    private static async Task<IResult> GetMediaPreview(
+        Guid id,
+        int width,
+        string format,
+        ICatalogToursApiClient catalogToursApi,
+        HttpContext context,
+        CancellationToken ct)
+    {
+        HttpCacheHeaders.SetNoStore(context);
+
+        try
+        {
+            var media = await catalogToursApi.GetMediaPreview(id, width, format, ct).ConfigureAwait(false);
+            if (media is null)
+            {
+                return Results.NotFound();
+            }
+
+            context.Response.Headers["X-Content-Type-Options"] = "nosniff";
+            context.Response.RegisterForDisposeAsync(media);
+            return Results.Stream(media.Content, media.ContentType, enableRangeProcessing: false);
+        }
+        catch (HttpRequestException)
+        {
+            return Results.StatusCode(StatusCodes.Status503ServiceUnavailable);
+        }
+        catch (OperationCanceledException) when (!ct.IsCancellationRequested)
+        {
+            return Results.StatusCode(StatusCodes.Status503ServiceUnavailable);
+        }
     }
 
     private static bool IsLocalReturnUrl(string? returnUrl)

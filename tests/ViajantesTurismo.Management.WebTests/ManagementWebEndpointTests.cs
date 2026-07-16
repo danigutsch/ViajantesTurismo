@@ -6,6 +6,7 @@ using Microsoft.Extensions.Hosting;
 using SharedKernel.Testing;
 using System.Net;
 using ViajantesTurismo.Management.Web;
+using ViajantesTurismo.Management.WebTests.Components.Pages.Catalog;
 using ViajantesTurismo.Management.WebTests.Infrastructure;
 
 namespace ViajantesTurismo.Management.WebTests;
@@ -46,6 +47,41 @@ public sealed class ManagementWebEndpointTests
 
         // Assert
         response.StatusCode.ShouldBe(HttpStatusCode.Unauthorized);
+    }
+
+    [Fact]
+    public async Task Management_media_preview_forwards_authenticated_request_to_catalog()
+    {
+        // Arrange
+        var imageId = Guid.CreateVersion7();
+        using var catalogResponse = new HttpResponseMessage(HttpStatusCode.OK);
+        var catalogApi = new FakeCatalogToursApiClient
+        {
+            Media = new PublicMediaObjectResponse(
+                catalogResponse,
+                new MemoryStream("image"u8.ToArray()),
+                "image/jpeg")
+        };
+        using var host = await ManagementWebEndpointTestHost.StartWithRecordingAuthentication(
+            Xunit.TestContext.Current.CancellationToken,
+            catalogApi);
+        using var client = host.GetTestClient();
+
+        // Act
+        using var response = await client.GetAsync(
+            new Uri($"/catalog/media/images/{imageId}/preview/640/jpg", UriKind.Relative),
+            Xunit.TestContext.Current.CancellationToken);
+        var content = await response.Content.ReadAsByteArrayAsync(Xunit.TestContext.Current.CancellationToken);
+
+        // Assert
+        response.StatusCode.ShouldBe(HttpStatusCode.OK);
+        response.Content.Headers.ContentType?.MediaType.ShouldBe("image/jpeg");
+        response.Headers.CacheControl?.NoStore.ShouldBeTrue();
+        response.Headers.GetValues("X-Content-Type-Options").ShouldHaveSingleItem().ShouldBe("nosniff");
+        content.ShouldBe("image"u8.ToArray());
+        catalogApi.LastMediaId.ShouldBe(imageId);
+        catalogApi.LastMediaWidth.ShouldBe(640);
+        catalogApi.LastMediaFormat.ShouldBe("jpg");
     }
 
     [Fact]

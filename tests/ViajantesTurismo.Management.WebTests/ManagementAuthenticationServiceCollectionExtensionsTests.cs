@@ -15,7 +15,7 @@ public sealed class ManagementAuthenticationServiceCollectionExtensionsTests
     {
         // Arrange
         var configuration = ManagementAuthenticationTestConfiguration.Create();
-        var environment = new TestHostEnvironment();
+        var environment = new TestHostEnvironment("ViajantesTurismo.Management.WebTests");
 
         // Act
         Action action = () => ManagementAuthenticationTestHost.Create(configuration, environment);
@@ -30,7 +30,7 @@ public sealed class ManagementAuthenticationServiceCollectionExtensionsTests
     {
         // Arrange
         var configuration = ManagementAuthenticationTestConfiguration.Create(includeRequiredSettings: false);
-        var environment = new TestHostEnvironment { EnvironmentName = Environments.Development };
+        var environment = new TestHostEnvironment("ViajantesTurismo.Management.WebTests") { EnvironmentName = Environments.Development };
 
         // Act
         Action action = () => ManagementAuthenticationTestHost.Create(configuration, environment);
@@ -106,7 +106,7 @@ public sealed class ManagementAuthenticationServiceCollectionExtensionsTests
         // Arrange
         var configuration = ManagementAuthenticationTestConfiguration.Create(
             authority: "http://identity.example.test/realms/viajantes");
-        var environment = new TestHostEnvironment { EnvironmentName = Environments.Development };
+        var environment = new TestHostEnvironment("ViajantesTurismo.Management.WebTests") { EnvironmentName = Environments.Development };
 
         // Act
         Action action = () => ManagementAuthenticationTestHost.Create(configuration, environment);
@@ -122,7 +122,7 @@ public sealed class ManagementAuthenticationServiceCollectionExtensionsTests
         var configuration = ManagementAuthenticationTestConfiguration.Create(
             allowHttpDevelopmentAuthority: true,
             authority: "ftp://identity.example.test/realms/viajantes");
-        var environment = new TestHostEnvironment { EnvironmentName = Environments.Development };
+        var environment = new TestHostEnvironment("ViajantesTurismo.Management.WebTests") { EnvironmentName = Environments.Development };
 
         // Act
         Action action = () => ManagementAuthenticationTestHost.Create(configuration, environment);
@@ -136,7 +136,7 @@ public sealed class ManagementAuthenticationServiceCollectionExtensionsTests
     {
         // Arrange
         var configuration = ManagementAuthenticationTestConfiguration.Create(allowHttpDevelopmentAuthority: true);
-        var environment = new TestHostEnvironment { EnvironmentName = Environments.Development };
+        var environment = new TestHostEnvironment("ViajantesTurismo.Management.WebTests") { EnvironmentName = Environments.Development };
         await using var host = ManagementAuthenticationTestHost.Create(configuration, environment);
 
         // Act
@@ -158,7 +158,7 @@ public sealed class ManagementAuthenticationServiceCollectionExtensionsTests
     {
         // Arrange
         var configuration = ManagementAuthenticationTestConfiguration.Create();
-        var environment = new TestHostEnvironment { EnvironmentName = Environments.Development };
+        var environment = new TestHostEnvironment("ViajantesTurismo.Management.WebTests") { EnvironmentName = Environments.Development };
         await using var host = ManagementAuthenticationTestHost.Create(configuration, environment);
 
         // Act
@@ -173,7 +173,7 @@ public sealed class ManagementAuthenticationServiceCollectionExtensionsTests
     {
         // Arrange
         var configuration = ManagementAuthenticationTestConfiguration.Create();
-        var environment = new TestHostEnvironment { EnvironmentName = Environments.Development };
+        var environment = new TestHostEnvironment("ViajantesTurismo.Management.WebTests") { EnvironmentName = Environments.Development };
         await using var host = ManagementAuthenticationTestHost.Create(configuration, environment);
 
         // Act

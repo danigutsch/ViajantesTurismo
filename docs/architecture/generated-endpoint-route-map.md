@@ -27,16 +27,16 @@ Source: `src/**/*.cs` route declarations plus route-group prefixes in
 | `POST` | `/api/v1/bookings/{id:guid}/payments` | RecordPayment | management/internal | required | `ViajantesTurismo.Admin.ApiService/Bookings/BookingsRecordPaymentEndpoint.cs` |
 | `GET` | `/api/v1/branding/settings` | GetManagementSettings | management/internal | required | `ViajantesTurismo.Branding.ApiService/BrandingEndpoints.cs` |
 | `PUT` | `/api/v1/branding/settings` | SaveSettings | management/internal | required | `ViajantesTurismo.Branding.ApiService/BrandingEndpoints.cs` |
-| `PUT` | `/api/v1/catalog/media/images/{id:guid}` | UpsertMediaImage | management/internal | required | `ViajantesTurismo.Catalog.ApiService/CatalogEndpoints.cs` |
 | `POST` | `/api/v1/catalog/media/images/{id:guid}/accessibility-draft` | GenerateMediaImageAccessibilityDraft | management/internal | required | `ViajantesTurismo.Catalog.ApiService/CatalogEndpoints.cs` |
 | `PUT` | `/api/v1/catalog/media/images/{id:guid}/accessibility-review` | ReviewMediaImageAccessibility | management/internal | required | `ViajantesTurismo.Catalog.ApiService/CatalogEndpoints.cs` |
+| `GET` | `/api/v1/catalog/media/images/{id:guid}/preview/{width:int}/{format}` | GetManagementMediaPreview | management/internal | required | `ViajantesTurismo.Catalog.ApiService/CatalogEndpoints.cs` |
 | `GET` | `/api/v1/catalog/public-content` | inline | management/internal | not declared | `ViajantesTurismo.Catalog.ApiService/CatalogEndpoints.cs` |
 | `GET` | `/api/v1/catalog/public-content/{**key}` | GetPublicContentForManagement | management/internal | required | `ViajantesTurismo.Catalog.ApiService/CatalogEndpoints.cs` |
 | `PUT` | `/api/v1/catalog/public-content/{**key}` | UpsertPublicContent | management/internal | required | `ViajantesTurismo.Catalog.ApiService/CatalogEndpoints.cs` |
 | `GET` | `/api/v1/catalog/tours` | GetTours | management/internal | required | `ViajantesTurismo.Catalog.ApiService/CatalogEndpoints.cs` |
 | `GET` | `/api/v1/catalog/tours/{id:guid}` | GetTour | management/internal | required | `ViajantesTurismo.Catalog.ApiService/CatalogEndpoints.cs` |
 | `GET` | `/api/v1/catalog/tours/{id:guid}/images` | ListTourImages | management/internal | required | `ViajantesTurismo.Catalog.ApiService/CatalogEndpoints.cs` |
-| `POST` | `/api/v1/catalog/tours/{id:guid}/images` | UploadTourImage | management/internal | required | `ViajantesTurismo.Catalog.ApiService/CatalogEndpoints.cs` |
+| `POST` | `/api/v1/catalog/tours/{id:guid}/images` | UploadTourImage | management/internal | not declared | `ViajantesTurismo.Catalog.ApiService/CatalogEndpoints.cs` |
 | `PUT` | `/api/v1/catalog/tours/{id:guid}/presentation` | UpsertTourPresentation | management/internal | required | `ViajantesTurismo.Catalog.ApiService/CatalogEndpoints.cs` |
 | `GET` | `/api/v1/customers` | GetCustomers | management/internal | required | `ViajantesTurismo.Admin.ApiService/Customers/CustomerEndpoints.cs` |
 | `POST` | `/api/v1/customers` | CreateCustomer | management/internal | required | `ViajantesTurismo.Admin.ApiService/Customers/CustomerEndpoints.cs` |
@@ -48,16 +48,15 @@ Source: `src/**/*.cs` route declarations plus route-group prefixes in
 | `GET` | `/api/v1/docs/errors/{identifier}` | GetErrorDocumentationByIdentifier | management/internal | not declared | `ViajantesTurismo.Admin.ApiService/Errors/ErrorDocumentationEndpoints.cs` |
 | `GET` | `/api/v1/public/branding` | GetPublicSettings | public API | not declared | `ViajantesTurismo.Branding.ApiService/BrandingEndpoints.cs` |
 | `GET` | `/api/v1/public/catalog/content/{**key}` | GetPublicContent | public API | anonymous | `ViajantesTurismo.Catalog.ApiService/CatalogEndpoints.cs` |
-| `GET` | `/api/v1/public/catalog/media/{id:guid}` | GetPublicMedia | public API | anonymous | `ViajantesTurismo.Catalog.ApiService/CatalogEndpoints.cs` |
-| `GET` | `/api/v1/public/catalog/media/{id:guid}/{width:int}` | GetPublicMedia | public API | anonymous | `ViajantesTurismo.Catalog.ApiService/CatalogEndpoints.cs` |
+| `GET` | `/api/v1/public/catalog/media/{id:guid}/{width:int}/{format}` | GetPublicMedia | public API | anonymous | `ViajantesTurismo.Catalog.ApiService/CatalogEndpoints.cs` |
 | `GET` | `/api/v1/public/catalog/tours` | GetPublishedTours | public API | anonymous | `ViajantesTurismo.Catalog.ApiService/CatalogEndpoints.cs` |
 | `GET` | `/api/v1/public/catalog/tours/{slug}` | GetPublishedTour | public API | anonymous | `ViajantesTurismo.Catalog.ApiService/CatalogEndpoints.cs` |
 | `GET` | `/api/v1/tours` | GetTours | management/internal | required | `ViajantesTurismo.Admin.ApiService/Tours/ToursEndpoints.cs` |
 | `POST` | `/api/v1/tours` | CreateTour | management/internal | required | `ViajantesTurismo.Admin.ApiService/Tours/ToursCreateTourEndpoint.cs` |
 | `GET` | `/api/v1/tours/{id:guid}` | GetTourById | management/internal | required | `ViajantesTurismo.Admin.ApiService/Tours/ToursEndpoints.cs` |
 | `PUT` | `/api/v1/tours/{id:guid}` | UpdateTour | management/internal | required | `ViajantesTurismo.Admin.ApiService/Tours/ToursUpdateTourEndpoint.cs` |
-| `GET` | `/catalog/media/{id:guid}` | GetPublicMedia | public web | not declared | `ViajantesTurismo.Public.Web/PublicWebEndpoints.cs` |
-| `GET` | `/catalog/media/{id:guid}/{width:int}` | GetPublicMedia | public web | not declared | `ViajantesTurismo.Public.Web/PublicWebEndpoints.cs` |
+| `GET` | `/catalog/media/images/{id:guid}/preview/{width:int}/{format}` | inline | management/internal | required | `ViajantesTurismo.Management.Web/ManagementWebEndpoints.cs` |
+| `GET` | `/catalog/media/{id:guid}/{width:int}/{format}` | GetPublicMedia | public web | not declared | `ViajantesTurismo.Public.Web/PublicWebEndpoints.cs` |
 <!-- generated:api-endpoints:end -->
 
 ## Notes

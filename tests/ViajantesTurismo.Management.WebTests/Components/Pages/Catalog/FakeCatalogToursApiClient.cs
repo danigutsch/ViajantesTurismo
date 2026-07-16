@@ -10,6 +10,20 @@ internal sealed class FakeCatalogToursApiClient : ICatalogToursApiClient
 
     public ContractValidationException? ValidationException { get; set; }
 
+    public IReadOnlyList<CatalogMediaImageDto> Images { get; set; } = [];
+
+    public CatalogMediaImageDto? Draft { get; set; }
+
+    public PublicMediaObjectResponse? Media { get; set; }
+
+    public Guid? LastMediaId { get; private set; }
+
+    public int? LastMediaWidth { get; private set; }
+
+    public string? LastMediaFormat { get; private set; }
+
+    public PublicMediaImageAccessibilityReviewRequest? LastAccessibilityReviewRequest { get; private set; }
+
     public Task<CatalogTourDto[]> GetTours(CancellationToken ct)
     {
         ct.ThrowIfCancellationRequested();
@@ -54,31 +68,42 @@ internal sealed class FakeCatalogToursApiClient : ICatalogToursApiClient
         return Task.FromResult<CatalogTourDto?>(updated);
     }
 
-    public Task<PublicMediaImageDto?> GenerateMediaImageAccessibilityDraft(Guid id, PublicMediaImageAccessibilityDraftRequest request, CancellationToken ct)
+    public Task<CatalogMediaImageDto?> GenerateMediaImageAccessibilityDraft(Guid id, PublicMediaImageAccessibilityDraftRequest request, CancellationToken ct)
     {
         ct.ThrowIfCancellationRequested();
 
-        return Task.FromResult<PublicMediaImageDto?>(null);
+        return Task.FromResult(Draft);
     }
 
-    public Task<PublicMediaImageDto?> UploadTourImage(Guid id, CatalogTourImageUploadRequest request, CancellationToken ct)
+    public Task<CatalogMediaImageDto?> UploadTourImage(Guid id, CatalogTourImageUploadRequest request, CancellationToken ct)
     {
         ct.ThrowIfCancellationRequested();
 
-        return Task.FromResult<PublicMediaImageDto?>(null);
+        return Task.FromResult<CatalogMediaImageDto?>(null);
     }
 
-    public Task<IReadOnlyList<PublicMediaImageDto>> GetTourImages(Guid id, CancellationToken ct)
+    public Task<IReadOnlyList<CatalogMediaImageDto>> GetTourImages(Guid id, CancellationToken ct)
     {
         ct.ThrowIfCancellationRequested();
 
-        return Task.FromResult<IReadOnlyList<PublicMediaImageDto>>([]);
+        return Task.FromResult(Images);
     }
 
-    public Task<PublicMediaImageDto?> ReviewMediaImageAccessibility(Guid id, PublicMediaImageAccessibilityReviewRequest request, CancellationToken ct)
+    public Task<CatalogMediaImageDto?> ReviewMediaImageAccessibility(Guid id, PublicMediaImageAccessibilityReviewRequest request, CancellationToken ct)
     {
         ct.ThrowIfCancellationRequested();
 
-        return Task.FromResult<PublicMediaImageDto?>(null);
+        LastAccessibilityReviewRequest = request;
+        return Task.FromResult(Images.FirstOrDefault(image => image.Id == id));
+    }
+
+    public Task<PublicMediaObjectResponse?> GetMediaPreview(Guid id, int width, string format, CancellationToken ct)
+    {
+        ct.ThrowIfCancellationRequested();
+        LastMediaId = id;
+        LastMediaWidth = width;
+        LastMediaFormat = format;
+
+        return Task.FromResult(Media);
     }
 }

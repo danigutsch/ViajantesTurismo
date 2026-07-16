@@ -50,7 +50,13 @@ internal sealed class PublicMediaImageConfiguration : IEntityTypeConfiguration<P
             link.ToTable("PublicMediaImageTourLinks");
             link.WithOwner().HasForeignKey("PublicMediaImageId");
             link.HasKey("PublicMediaImageId", nameof(MediaImageTourLink.CatalogTourId));
-            link.HasIndex(item => new { item.CatalogTourId, item.DisplayOrder });
+            link.HasIndex(item => new { item.CatalogTourId, item.DisplayOrder })
+                .HasDatabaseName(PublicMediaImageSchema.GalleryDisplayOrderUniqueIndex)
+                .IsUnique();
+            link.HasIndex(item => item.CatalogTourId)
+                .HasDatabaseName(PublicMediaImageSchema.GalleryCoverUniqueIndex)
+                .HasFilter("\"IsCover\" = TRUE")
+                .IsUnique();
             link.Property(item => item.CatalogTourId).ValueGeneratedNever();
             link.Property(item => item.DisplayOrder).IsRequired();
             link.Property(item => item.IsCover).IsRequired();

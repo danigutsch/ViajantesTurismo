@@ -27,6 +27,6 @@ public interface IPublicCatalogApiClient
     /// <remarks>
     /// The caller must asynchronously dispose a non-null response after streaming completes.
     /// </remarks>
-    Task<PublicMediaObjectResponse?> GetPublicMedia(Guid id, int? width, CancellationToken ct);
+    Task<PublicMediaObjectResponse?> GetPublicMedia(Guid id, int width, string format, CancellationToken ct);
 
 }

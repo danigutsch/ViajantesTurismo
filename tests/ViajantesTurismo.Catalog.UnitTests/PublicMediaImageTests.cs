@@ -9,6 +9,58 @@ namespace ViajantesTurismo.Catalog.UnitTests;
 public sealed class PublicMediaImageTests
 {
     [Fact]
+    public void Finds_a_responsive_variant_by_width_and_content_type()
+    {
+        // Arrange
+        var image = PublicMediaImageTestFactory.CreateImageWithVariants(
+            Guid.CreateVersion7(),
+            Guid.CreateVersion7(),
+            MediaImageProcessingStatus.Ready,
+            [
+                new MediaImageResponsiveVariant("media/image-640.avif", 640, 427, "image/avif", 640),
+                new MediaImageResponsiveVariant("media/image-640.jpg", 640, 427, "image/jpeg", 640)
+            ]);
+
+        // Act
+        var variant = image.FindResponsiveVariant(640, "image/jpeg");
+
+        // Assert
+        variant.ShouldNotBeNull();
+        variant.ObjectKey.ShouldBe("media/image-640.jpg");
+    }
+
+    [Fact]
+    public void Create_rejects_responsive_variants_with_duplicate_normalized_width_and_content_type()
+    {
+        // Arrange
+        var metadata = new PublicMediaImageMetadata
+        {
+            Id = Guid.CreateVersion7(),
+            SourceObjectKey = "media/source.jpg",
+            Checksum = "sha256:abc",
+            ContentType = "image/jpeg",
+            FileSizeBytes = 2048,
+            Dimensions = new MediaImageDimensions(1200, 800),
+            ProcessingStatus = MediaImageProcessingStatus.Ready,
+            AltText = "Cyclists in the mountains"
+        };
+        var variants = new[]
+        {
+            new MediaImageResponsiveVariant("media/image-640-a.jpg", 640, 427, "image/jpeg", 640),
+            new MediaImageResponsiveVariant("media/image-640-b.jpg", 640, 427, "IMAGE/JPEG", 640)
+        };
+        var tourLinks = new[] { new MediaImageTourLink(Guid.CreateVersion7(), 0, true) };
+
+        // Act
+        var result = PublicMediaImage.Create(metadata, variants, ["mountain"], tourLinks);
+
+        // Assert
+        result.IsFailure.ShouldBeTrue();
+        var validationErrors = result.ErrorDetails.ShouldNotBeNull().ValidationErrors.ShouldNotBeNull();
+        validationErrors.ContainsKey(nameof(PublicMediaImage.ResponsiveVariants)).ShouldBeTrue();
+    }
+
+    [Fact]
     public void Has_public_variants_requires_ready_status_and_responsive_variants()
     {
         // Arrange
@@ -271,8 +323,8 @@ public sealed class PublicMediaImageTests
         // Act
         var result = PublicMediaImageAccessibilityText.Create(
             language,
-            altText: new string('a', ViajantesTurismo.Catalog.Contracts.Application.ContractConstants.MaxAltTextLength + 1),
-            caption: new string('c', ViajantesTurismo.Catalog.Contracts.Application.ContractConstants.MaxCaptionLength + 1),
+            altText: new string('a', Contracts.Application.ContractConstants.MaxAltTextLength + 1),
+            caption: new string('c', Contracts.Application.ContractConstants.MaxCaptionLength + 1),
             isDecorative: false,
             requiresHumanReview: false,
             isAiGenerated: false);
@@ -483,6 +535,7 @@ public sealed class PublicMediaImageTests
     [InlineData("media/./source.jpg")]
     [InlineData("media/../source.jpg")]
     [InlineData("C:/media/source.jpg")]
+    [InlineData("media\\source.jpg")]
     public void Create_rejects_invalid_source_object_keys(string sourceObjectKey)
     {
         // Arrange
@@ -508,12 +561,39 @@ public sealed class PublicMediaImageTests
         validationErrors.ContainsKey(nameof(PublicMediaImageMetadata.SourceObjectKey)).ShouldBeTrue();
     }
 
+    [Fact]
+    public void Create_rejects_source_object_keys_that_exceed_the_storage_limit()
+    {
+        // Arrange
+        var metadata = new PublicMediaImageMetadata
+        {
+            Id = Guid.CreateVersion7(),
+            SourceObjectKey = new string('a', 1025),
+            Checksum = "sha256:abc",
+            ContentType = "image/jpeg",
+            FileSizeBytes = 2048,
+            Dimensions = new MediaImageDimensions(1200, 800),
+            ProcessingStatus = MediaImageProcessingStatus.Pending,
+            AltText = "Cyclists in the mountains",
+        };
+        var tourLinks = new[] { new MediaImageTourLink(Guid.CreateVersion7(), 0, true) };
+
+        // Act
+        var result = PublicMediaImage.Create(metadata, [], ["mountain"], tourLinks);
+
+        // Assert
+        result.IsFailure.ShouldBeTrue();
+        var validationErrors = result.ErrorDetails.ShouldNotBeNull().ValidationErrors.ShouldNotBeNull();
+        validationErrors.ContainsKey(nameof(PublicMediaImageMetadata.SourceObjectKey)).ShouldBeTrue();
+    }
+
     [Theory]
     [InlineData("/media/source.jpg")]
     [InlineData("media//source.jpg")]
     [InlineData("media/./source.jpg")]
     [InlineData("media/../source.jpg")]
     [InlineData("C:/media/source.jpg")]
+    [InlineData("media\\source.jpg")]
     public void Create_rejects_invalid_responsive_variant_object_keys(string objectKey)
     {
         // Arrange

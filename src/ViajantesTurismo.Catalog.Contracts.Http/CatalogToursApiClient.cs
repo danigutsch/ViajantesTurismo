@@ -65,7 +65,7 @@ public sealed class CatalogToursApiClient(HttpClient httpClient) : ICatalogTours
     }
 
     /// <inheritdoc />
-    public async Task<PublicMediaImageDto?> GenerateMediaImageAccessibilityDraft(Guid id, PublicMediaImageAccessibilityDraftRequest request, CancellationToken ct)
+    public async Task<CatalogMediaImageDto?> GenerateMediaImageAccessibilityDraft(Guid id, PublicMediaImageAccessibilityDraftRequest request, CancellationToken ct)
     {
         ArgumentNullException.ThrowIfNull(request);
 
@@ -76,12 +76,12 @@ public sealed class CatalogToursApiClient(HttpClient httpClient) : ICatalogTours
         }
 
         await ContractHttpValidation.EnsureSuccessOrThrowValidationException(response, Json.ContractValidationProblemDto, ct).ConfigureAwait(false);
-        return await response.Content.ReadFromJsonAsync(Json.PublicMediaImageDto, ct).ConfigureAwait(false)
+        return await response.Content.ReadFromJsonAsync(Json.CatalogMediaImageDto, ct).ConfigureAwait(false)
                ?? throw new InvalidOperationException("The media image response body was empty.");
     }
 
     /// <inheritdoc />
-    public async Task<PublicMediaImageDto?> UploadTourImage(Guid id, CatalogTourImageUploadRequest request, CancellationToken ct)
+    public async Task<CatalogMediaImageDto?> UploadTourImage(Guid id, CatalogTourImageUploadRequest request, CancellationToken ct)
     {
         ArgumentNullException.ThrowIfNull(request);
 
@@ -101,19 +101,19 @@ public sealed class CatalogToursApiClient(HttpClient httpClient) : ICatalogTours
         }
 
         await ContractHttpValidation.EnsureSuccessOrThrowValidationException(response, Json.ContractValidationProblemDto, ct).ConfigureAwait(false);
-        return await response.Content.ReadFromJsonAsync(Json.PublicMediaImageDto, ct).ConfigureAwait(false)
+        return await response.Content.ReadFromJsonAsync(Json.CatalogMediaImageDto, ct).ConfigureAwait(false)
                ?? throw new InvalidOperationException("The media image response body was empty.");
     }
 
     /// <inheritdoc />
-    public async Task<IReadOnlyList<PublicMediaImageDto>> GetTourImages(Guid id, CancellationToken ct)
+    public async Task<IReadOnlyList<CatalogMediaImageDto>> GetTourImages(Guid id, CancellationToken ct)
     {
-        var images = await httpClient.GetFromJsonAsync(new Uri($"{RoutePrefix}/tours/{id}/images", UriKind.Relative), Json.PublicMediaImageDtoArray, ct).ConfigureAwait(false);
+        var images = await httpClient.GetFromJsonAsync(new Uri($"{RoutePrefix}/tours/{id}/images", UriKind.Relative), Json.CatalogMediaImageDtoArray, ct).ConfigureAwait(false);
         return images ?? [];
     }
 
     /// <inheritdoc />
-    public async Task<PublicMediaImageDto?> ReviewMediaImageAccessibility(Guid id, PublicMediaImageAccessibilityReviewRequest request, CancellationToken ct)
+    public async Task<CatalogMediaImageDto?> ReviewMediaImageAccessibility(Guid id, PublicMediaImageAccessibilityReviewRequest request, CancellationToken ct)
     {
         ArgumentNullException.ThrowIfNull(request);
 
@@ -124,8 +124,36 @@ public sealed class CatalogToursApiClient(HttpClient httpClient) : ICatalogTours
         }
 
         await ContractHttpValidation.EnsureSuccessOrThrowValidationException(response, Json.ContractValidationProblemDto, ct).ConfigureAwait(false);
-        return await response.Content.ReadFromJsonAsync(Json.PublicMediaImageDto, ct).ConfigureAwait(false)
+        return await response.Content.ReadFromJsonAsync(Json.CatalogMediaImageDto, ct).ConfigureAwait(false)
                ?? throw new InvalidOperationException("The media image response body was empty.");
+    }
+
+    /// <inheritdoc />
+    public async Task<PublicMediaObjectResponse?> GetMediaPreview(Guid id, int width, string format, CancellationToken ct)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(format);
+
+        using var request = new HttpRequestMessage(
+            HttpMethod.Get,
+            new Uri($"{RoutePrefix}/media/images/{id}/preview/{width}/{Uri.EscapeDataString(format)}", UriKind.Relative));
+        var response = await httpClient.SendAsync(request, HttpCompletionOption.ResponseHeadersRead, ct).ConfigureAwait(false);
+        if (response.StatusCode == HttpStatusCode.NotFound)
+        {
+            response.Dispose();
+            return null;
+        }
+
+        try
+        {
+            response.EnsureSuccessStatusCode();
+            var content = await response.Content.ReadAsStreamAsync(ct).ConfigureAwait(false);
+            return new PublicMediaObjectResponse(response, content, response.Content.Headers.ContentType?.MediaType ?? "application/octet-stream");
+        }
+        catch
+        {
+            response.Dispose();
+            throw;
+        }
     }
 
     private static void AddOptionalFormValue(MultipartFormDataContent content, string name, string? value)

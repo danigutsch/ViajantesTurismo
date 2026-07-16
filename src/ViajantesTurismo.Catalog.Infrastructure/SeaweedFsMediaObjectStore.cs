@@ -1,7 +1,9 @@
 using Amazon.S3;
 using Amazon.S3.Model;
 using Microsoft.Extensions.Options;
+using SharedKernel.InputNormalization;
 using ViajantesTurismo.Catalog.Application.Media;
+using ViajantesTurismo.Catalog.Domain;
 
 namespace ViajantesTurismo.Catalog.Infrastructure;
 
@@ -209,10 +211,7 @@ internal sealed class SeaweedFsMediaObjectStore(
 
     private static void ValidateKey(string objectKey)
     {
-        if (string.IsNullOrWhiteSpace(objectKey)
-            || objectKey.StartsWith(Separator, StringComparison.Ordinal)
-            || objectKey.Contains('\\', StringComparison.Ordinal)
-            || objectKey.Split(Separator).Any(static segment => segment.Length == 0 || segment is "." or ".."))
+        if (!ObjectStorageKeyValidator.IsValidRelativeKey(objectKey, CatalogDomainLimits.MaxMediaObjectKeyLength))
         {
             throw new ArgumentException("Media object key must be a relative slash-delimited path without dot segments.", nameof(objectKey));
         }

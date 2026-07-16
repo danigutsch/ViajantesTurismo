@@ -1,3 +1,6 @@
+@using Microsoft.AspNetCore.Routing
+@inject LinkGenerator LinkGenerator
+
 <picture>
     @foreach (var source in SourceGroups())
     {
@@ -27,33 +30,48 @@
             .OrderBy(group => ContentTypeSortOrder(group.Key))
             .Select(group => (ContentType: group.Key, SrcSet: string.Join(", ", group
                 .OrderBy(variant => variant.Width)
-                .Select(variant => $"{variant.Uri} {variant.Width}w"))));
+                .Select(variant => $"{GetVariantPath(variant)} {variant.Width}w"))));
     }
 
-    private string ImageSource() => SelectFallbackVariant()?.Uri.ToString() ?? Image.Uri.ToString();
+    private string ImageSource() => GetVariantPath(SelectFallbackVariant());
 
-    private int? ImageWidth() => SelectFallbackVariant()?.Width;
+    private int ImageWidth() => SelectFallbackVariant().Width;
 
-    private int? ImageHeight() => SelectFallbackVariant()?.Height;
+    private int ImageHeight() => SelectFallbackVariant().Height;
 
-    private MediaImageResponsiveVariantDto? SelectFallbackVariant() => Image.ResponsiveVariants
+    private CatalogMediaImageVariantDto SelectFallbackVariant() => Image.ResponsiveVariants
         .Where(variant => string.Equals(variant.ContentType, "image/jpeg", StringComparison.OrdinalIgnoreCase)
             || string.Equals(variant.ContentType, "image/png", StringComparison.OrdinalIgnoreCase))
         .OrderByDescending(variant => variant.Width)
-        .FirstOrDefault();
+        .FirstOrDefault()
+        ?? Image.ResponsiveVariants.OrderByDescending(variant => variant.Width).First();
 
-    private static int ContentTypeSortOrder(string contentType) => contentType.ToLowerInvariant() switch
+    private string GetVariantPath(CatalogMediaImageVariantDto variant) => LinkGenerator.GetPathByName(
+        PublicWebEndpoints.PublicMediaByRenditionEndpointName,
+        new { id = Image.Id, width = variant.Width, format = GetMediaFormatSegment(variant.ContentType) })
+        ?? throw new InvalidOperationException("The public media rendition route is not available.");
+
+    private static string GetMediaFormatSegment(string contentType) => contentType.Trim().ToUpperInvariant() switch
     {
-        "image/avif" => 0,
-        "image/webp" => 1,
-        "image/jpeg" => 2,
-        "image/png" => 3,
+        "IMAGE/AVIF" => "avif",
+        "IMAGE/JPEG" => "jpg",
+        "IMAGE/PNG" => "png",
+        "IMAGE/WEBP" => "webp",
+        _ => throw new ArgumentOutOfRangeException(nameof(contentType), contentType, "Unsupported media content type.")
+    };
+
+    private static int ContentTypeSortOrder(string contentType) => contentType.ToUpperInvariant() switch
+    {
+        "IMAGE/AVIF" => 0,
+        "IMAGE/WEBP" => 1,
+        "IMAGE/JPEG" => 2,
+        "IMAGE/PNG" => 3,
         _ => 4
     };
 
-    private static bool IsPictureSourceContentType(string contentType) => contentType.ToLowerInvariant() switch
+    private static bool IsPictureSourceContentType(string contentType) => contentType.ToUpperInvariant() switch
     {
-        "image/avif" or "image/webp" or "image/jpeg" or "image/png" => true,
+        "IMAGE/AVIF" or "IMAGE/WEBP" or "IMAGE/JPEG" or "IMAGE/PNG" => true,
         _ => false
     };
 }

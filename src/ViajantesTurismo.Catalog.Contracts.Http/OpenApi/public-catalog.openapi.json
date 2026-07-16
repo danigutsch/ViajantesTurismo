@@ -49,42 +49,7 @@
         }
       }
     },
-    "/api/v1/public/catalog/media/{id}": {
-      "get": {
-        "tags": [
-          "CatalogEndpoints"
-        ],
-        "parameters": [
-          {
-            "name": "id",
-            "in": "path",
-            "required": true,
-            "schema": {
-              "type": "string",
-              "format": "uuid"
-            }
-          },
-          {
-            "name": "width",
-            "in": "query",
-            "schema": {
-              "pattern": "^-?(?:0|[1-9]\\d*)$",
-              "type": [
-                "integer",
-                "string"
-              ],
-              "format": "int32"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "OK"
-          }
-        }
-      }
-    },
-    "/api/v1/public/catalog/media/{id}/{width}": {
+    "/api/v1/public/catalog/media/{id}/{width}/{format}": {
       "get": {
         "tags": [
           "CatalogEndpoints"
@@ -107,6 +72,14 @@
               "pattern": "^-?(?:0|[1-9]\\d*)$",
               "type": "integer",
               "format": "int32"
+            }
+          },
+          {
+            "name": "format",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
             }
           }
         ],
@@ -156,6 +129,52 @@
   },
   "components": {
     "schemas": {
+      "CatalogMediaImageVariantDto": {
+        "required": [
+          "width",
+          "height",
+          "contentType",
+          "fileSizeBytes"
+        ],
+        "type": "object",
+        "properties": {
+          "width": {
+            "maximum": 2147483647,
+            "minimum": 1,
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "format": "int32"
+          },
+          "height": {
+            "maximum": 2147483647,
+            "minimum": 1,
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "format": "int32"
+          },
+          "contentType": {
+            "maxLength": 128,
+            "minLength": 1,
+            "type": "string"
+          },
+          "fileSizeBytes": {
+            "maximum": 9223372036854776000,
+            "minimum": 1,
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "format": "int64"
+          }
+        }
+      },
       "CatalogTourDto": {
         "required": [
           "id",
@@ -209,15 +228,19 @@
       },
       "CatalogTourImageDto": {
         "required": [
+          "id",
           "sortOrder",
           "isCover",
-          "uri",
           "altText",
           "isDecorative",
           "responsiveVariants"
         ],
         "type": "object",
         "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
           "sortOrder": {
             "maximum": 2147483647,
             "minimum": 0,
@@ -230,10 +253,6 @@
           },
           "isCover": {
             "type": "boolean"
-          },
-          "uri": {
-            "type": "string",
-            "format": "uri"
           },
           "altText": {
             "maxLength": 256,
@@ -252,67 +271,11 @@
             ]
           },
           "responsiveVariants": {
+            "minItems": 1,
             "type": "array",
             "items": {
-              "$ref": "#/components/schemas/MediaImageResponsiveVariantDto"
+              "$ref": "#/components/schemas/CatalogMediaImageVariantDto"
             }
-          }
-        }
-      },
-      "MediaImageResponsiveVariantDto": {
-        "required": [
-          "uri",
-          "width",
-          "height",
-          "contentType",
-          "fileSizeBytes"
-        ],
-        "type": "object",
-        "properties": {
-          "objectKey": {
-            "type": [
-              "null",
-              "string"
-            ]
-          },
-          "uri": {
-            "type": "string",
-            "format": "uri"
-          },
-          "width": {
-            "maximum": 2147483647,
-            "minimum": 1,
-            "pattern": "^-?(?:0|[1-9]\\d*)$",
-            "type": [
-              "integer",
-              "string"
-            ],
-            "format": "int32"
-          },
-          "height": {
-            "maximum": 2147483647,
-            "minimum": 1,
-            "pattern": "^-?(?:0|[1-9]\\d*)$",
-            "type": [
-              "integer",
-              "string"
-            ],
-            "format": "int32"
-          },
-          "contentType": {
-            "maxLength": 128,
-            "minLength": 1,
-            "type": "string"
-          },
-          "fileSizeBytes": {
-            "maximum": 9223372036854776000,
-            "minimum": 1,
-            "pattern": "^-?(?:0|[1-9]\\d*)$",
-            "type": [
-              "integer",
-              "string"
-            ],
-            "format": "int64"
           }
         }
       }

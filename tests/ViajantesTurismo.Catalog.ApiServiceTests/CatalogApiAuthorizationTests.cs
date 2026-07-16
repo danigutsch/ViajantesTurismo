@@ -97,9 +97,51 @@ public sealed class CatalogApiAuthorizationTests
     }
 
     [Theory]
+    [InlineData(null, HttpStatusCode.Unauthorized)]
+    [InlineData("Guest", HttpStatusCode.Forbidden)]
+    public async Task Management_media_preview_rejects_unauthorized_roles(string? role, HttpStatusCode expectedStatusCode)
+    {
+        // Arrange
+        await using var factory = CatalogApiTestHost.CreateAnonymous();
+        using var client = factory.CreateClient();
+        if (role is not null)
+        {
+            CatalogApiTestHost.ConfigureAuthenticatedClient(client, role);
+        }
+
+        // Act
+        using var response = await client.GetAsync(
+            new Uri("/api/v1/catalog/media/images/1d02ec44-41b5-4d3a-878b-89f53261a803/preview/640/jpg", UriKind.Relative),
+            TestContext.Current.CancellationToken);
+
+        // Assert
+        response.StatusCode.ShouldBe(expectedStatusCode);
+    }
+
+    [Theory]
+    [InlineData("Admin")]
+    [InlineData("Operator")]
+    public async Task Management_media_preview_accepts_catalog_read_roles(string role)
+    {
+        // Arrange
+        await using var factory = CatalogApiTestHost.CreateAnonymous();
+        using var client = factory.CreateClient();
+        CatalogApiTestHost.ConfigureAuthenticatedClient(client, role);
+
+        // Act
+        using var response = await client.GetAsync(
+            new Uri("/api/v1/catalog/media/images/1d02ec44-41b5-4d3a-878b-89f53261a803/preview/640/jpg", UriKind.Relative),
+            TestContext.Current.CancellationToken);
+
+        // Assert
+        response.StatusCode.ShouldBe(HttpStatusCode.NotFound);
+    }
+
+    [Theory]
     [InlineData("/api/v1/public/catalog/tours", HttpStatusCode.OK)]
     [InlineData("/api/v1/public/catalog/tours/missing", HttpStatusCode.NotFound)]
     [InlineData("/api/v1/public/catalog/content/missing", HttpStatusCode.NotFound)]
+    [InlineData("/api/v1/public/catalog/media/1d02ec44-41b5-4d3a-878b-89f53261a803/640/jpg", HttpStatusCode.NotFound)]
     public async Task Public_catalog_endpoints_allow_anonymous_requests(string path, HttpStatusCode expectedStatusCode)
     {
         // Arrange
@@ -117,6 +159,7 @@ public sealed class CatalogApiAuthorizationTests
 
     [Theory]
     [InlineData("PUT", "/api/v1/catalog/tours/1d02ec44-41b5-4d3a-878b-89f53261a803/presentation")]
+    [InlineData("PUT", "/api/v1/catalog/media/images/1d02ec44-41b5-4d3a-878b-89f53261a803/accessibility-review")]
     [InlineData("POST", "/api/v1/catalog/media/images/1d02ec44-41b5-4d3a-878b-89f53261a803/accessibility-draft")]
     public async Task Management_catalog_mutation_endpoints_reject_anonymous_requests(string method, string path)
     {
@@ -137,6 +180,7 @@ public sealed class CatalogApiAuthorizationTests
 
     [Theory]
     [InlineData("PUT", "/api/v1/catalog/tours/1d02ec44-41b5-4d3a-878b-89f53261a803/presentation")]
+    [InlineData("PUT", "/api/v1/catalog/media/images/1d02ec44-41b5-4d3a-878b-89f53261a803/accessibility-review")]
     [InlineData("POST", "/api/v1/catalog/media/images/1d02ec44-41b5-4d3a-878b-89f53261a803/accessibility-draft")]
     public async Task Management_catalog_mutation_endpoints_reject_an_authenticated_role_without_permissions(string method, string path)
     {
@@ -158,8 +202,10 @@ public sealed class CatalogApiAuthorizationTests
 
     [Theory]
     [InlineData("Admin", "PUT", "/api/v1/catalog/tours/1d02ec44-41b5-4d3a-878b-89f53261a803/presentation", HttpStatusCode.BadRequest)]
+    [InlineData("Admin", "PUT", "/api/v1/catalog/media/images/1d02ec44-41b5-4d3a-878b-89f53261a803/accessibility-review", HttpStatusCode.NotFound)]
     [InlineData("Admin", "POST", "/api/v1/catalog/media/images/1d02ec44-41b5-4d3a-878b-89f53261a803/accessibility-draft", HttpStatusCode.NotFound)]
     [InlineData("Operator", "PUT", "/api/v1/catalog/tours/1d02ec44-41b5-4d3a-878b-89f53261a803/presentation", HttpStatusCode.BadRequest)]
+    [InlineData("Operator", "PUT", "/api/v1/catalog/media/images/1d02ec44-41b5-4d3a-878b-89f53261a803/accessibility-review", HttpStatusCode.NotFound)]
     [InlineData("Operator", "POST", "/api/v1/catalog/media/images/1d02ec44-41b5-4d3a-878b-89f53261a803/accessibility-draft", HttpStatusCode.NotFound)]
     public async Task Management_catalog_mutation_endpoints_accept_supported_roles(
         string role,
@@ -181,5 +227,55 @@ public sealed class CatalogApiAuthorizationTests
 
         // Assert
         response.StatusCode.ShouldBe(expectedStatusCode);
+    }
+
+    [Theory]
+    [InlineData(null, HttpStatusCode.Unauthorized)]
+    [InlineData("Guest", HttpStatusCode.Forbidden)]
+    public async Task Catalog_tour_image_upload_rejects_unauthorized_roles(string? role, HttpStatusCode expectedStatusCode)
+    {
+        // Arrange
+        await using var factory = CatalogApiTestHost.CreateAnonymous();
+        using var client = factory.CreateClient();
+        if (role is not null)
+        {
+            CatalogApiTestHost.ConfigureAuthenticatedClient(client, role);
+        }
+
+        using var content = new MultipartFormDataContent();
+        content.Add(new ByteArrayContent([0x89, 0x50, 0x4E, 0x47]), "file", "tour.png");
+        content.Add(new StringContent("Tour image"), "altText");
+
+        // Act
+        using var response = await client.PostAsync(
+            new Uri("/api/v1/catalog/tours/1d02ec44-41b5-4d3a-878b-89f53261a803/images", UriKind.Relative),
+            content,
+            TestContext.Current.CancellationToken);
+
+        // Assert
+        response.StatusCode.ShouldBe(expectedStatusCode);
+    }
+
+    [Theory]
+    [InlineData("Admin")]
+    [InlineData("Operator")]
+    public async Task Catalog_tour_image_upload_accepts_catalog_write_roles(string role)
+    {
+        // Arrange
+        await using var factory = CatalogApiTestHost.CreateAnonymous();
+        using var client = factory.CreateClient();
+        CatalogApiTestHost.ConfigureAuthenticatedClient(client, role);
+        using var content = new MultipartFormDataContent();
+        content.Add(new ByteArrayContent([0x89, 0x50, 0x4E, 0x47]), "file", "tour.png");
+        content.Add(new StringContent("Tour image"), "altText");
+
+        // Act
+        using var response = await client.PostAsync(
+            new Uri("/api/v1/catalog/tours/1d02ec44-41b5-4d3a-878b-89f53261a803/images", UriKind.Relative),
+            content,
+            TestContext.Current.CancellationToken);
+
+        // Assert
+        response.StatusCode.ShouldBe(HttpStatusCode.NotFound);
     }
 }

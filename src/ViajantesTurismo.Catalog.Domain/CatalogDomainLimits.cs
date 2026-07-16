@@ -41,6 +41,11 @@ public static class CatalogDomainLimits
     public const int MaxContentTypeLength = 128;
 
     /// <summary>
+    /// The maximum length for media object keys.
+    /// </summary>
+    public const int MaxMediaObjectKeyLength = 1024;
+
+    /// <summary>
     /// The maximum length for media attribution text.
     /// </summary>
     public const int MaxAttributionLength = 256;

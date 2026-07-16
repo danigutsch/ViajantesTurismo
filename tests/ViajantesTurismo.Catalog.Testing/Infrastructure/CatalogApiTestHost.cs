@@ -1,6 +1,7 @@
 using Microsoft.Extensions.Diagnostics.HealthChecks;
 using SharedKernel.AI;
 using SharedKernel.AspNetCore;
+using SharedKernel.Messaging.IntegrationEvents;
 using SharedKernel.Testing.AspNetCore;
 using ViajantesTurismo.Catalog.ApiService;
 using ViajantesTurismo.Catalog.Application.Media;
@@ -34,6 +35,14 @@ internal static class CatalogApiTestHost
         TestPublicMediaImageStore mediaStore)
     {
         return Create(null, tourStore, publicContentStore, mediaStore, null, null);
+    }
+
+    public static WebApplicationFactory<CatalogApiHostEntryPoint> Create(
+        TestCatalogTourReadModelStore tourStore,
+        TestPublicMediaImageStore mediaStore,
+        TestMediaObjectStore objectStore)
+    {
+        return Create(null, tourStore, null, mediaStore, objectStore, null);
     }
 
     public static WebApplicationFactory<CatalogApiHostEntryPoint> Create(
@@ -92,6 +101,7 @@ internal static class CatalogApiTestHost
                 services.Replace(ServiceDescriptor.Singleton<ICatalogTourReadModelStore>(tourStore ?? new TestCatalogTourReadModelStore()));
                 services.Replace(ServiceDescriptor.Singleton<IPublicMediaImageStore>(mediaStore ?? new TestPublicMediaImageStore()));
                 services.Replace(ServiceDescriptor.Singleton<IMediaObjectStore>(objectStore ?? new TestMediaObjectStore()));
+                services.Replace(ServiceDescriptor.Singleton<IIntegrationEventOutbox, TestIntegrationEventOutbox>());
                 if (imageTextGenerator is not null)
                 {
                     services.Replace(ServiceDescriptor.Singleton(imageTextGenerator));

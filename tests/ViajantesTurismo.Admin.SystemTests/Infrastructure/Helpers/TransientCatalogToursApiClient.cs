@@ -33,11 +33,44 @@ internal sealed class TransientCatalogToursApiClient(
         return Task.FromResult<CatalogTourDto?>(null);
     }
 
-    public Task<PublicMediaImageDto?> GenerateMediaImageAccessibilityDraft(
+    public Task<CatalogMediaImageDto?> GenerateMediaImageAccessibilityDraft(
         Guid id,
         PublicMediaImageAccessibilityDraftRequest request,
         CancellationToken ct)
     {
-        return Task.FromResult<PublicMediaImageDto?>(null);
+        ct.ThrowIfCancellationRequested();
+
+        return Task.FromResult<CatalogMediaImageDto?>(null);
+    }
+
+    public Task<CatalogMediaImageDto?> UploadTourImage(Guid id, CatalogTourImageUploadRequest request, CancellationToken ct)
+    {
+        ct.ThrowIfCancellationRequested();
+
+        return Task.FromResult<CatalogMediaImageDto?>(null);
+    }
+
+    public Task<IReadOnlyList<CatalogMediaImageDto>> GetTourImages(Guid id, CancellationToken ct)
+    {
+        ct.ThrowIfCancellationRequested();
+
+        return Task.FromResult<IReadOnlyList<CatalogMediaImageDto>>([]);
+    }
+
+    public Task<CatalogMediaImageDto?> ReviewMediaImageAccessibility(
+        Guid id,
+        PublicMediaImageAccessibilityReviewRequest request,
+        CancellationToken ct)
+    {
+        ct.ThrowIfCancellationRequested();
+
+        return Task.FromResult<CatalogMediaImageDto?>(null);
+    }
+
+    public Task<PublicMediaObjectResponse?> GetMediaPreview(Guid id, int width, string format, CancellationToken ct)
+    {
+        ct.ThrowIfCancellationRequested();
+
+        return Task.FromResult<PublicMediaObjectResponse?>(null);
     }
 }

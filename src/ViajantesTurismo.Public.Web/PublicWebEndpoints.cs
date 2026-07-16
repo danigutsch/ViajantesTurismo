@@ -10,6 +10,8 @@ internal static class PublicWebEndpoints
     private const string RobotsTxtPath = "/robots.txt";
     private const string SitemapPath = "/sitemap.xml";
 
+    internal const string PublicMediaByRenditionEndpointName = "public-media-by-rendition";
+
     internal static IEndpointRouteBuilder MapPublicWebEndpoints(this IEndpointRouteBuilder app)
     {
         ArgumentNullException.ThrowIfNull(app);
@@ -27,9 +29,8 @@ internal static class PublicWebEndpoints
         app.MapGet(SitemapPath, GetSitemap)
             .ExcludeFromDescription();
 
-        app.MapGet("/catalog/media/{id:guid}", GetPublicMedia)
-            .ExcludeFromDescription();
-        app.MapGet("/catalog/media/{id:guid}/{width:int}", GetPublicMedia)
+        app.MapGet("/catalog/media/{id:guid}/{width:int}/{format}", GetPublicMedia)
+            .WithName(PublicMediaByRenditionEndpointName)
             .ExcludeFromDescription();
 
         app.MapStaticAssets();
@@ -71,7 +72,6 @@ internal static class PublicWebEndpoints
             PublicWebHttpCache.SetServiceUnavailableNoStore(httpContext);
             return Results.StatusCode(StatusCodes.Status503ServiceUnavailable);
         }
-
         var urls = new List<SitemapEntry>
         {
             new(new Uri(origin, "/")),
@@ -91,7 +91,8 @@ internal static class PublicWebEndpoints
 
     private static async Task<IResult> GetPublicMedia(
         Guid id,
-        int? width,
+        int width,
+        string format,
         IPublicCatalogApiClient catalogApi,
         HttpContext httpContext,
         CancellationToken ct)
@@ -99,9 +100,14 @@ internal static class PublicWebEndpoints
         PublicMediaObjectResponse? media;
         try
         {
-            media = await catalogApi.GetPublicMedia(id, width, ct).ConfigureAwait(false);
+            media = await catalogApi.GetPublicMedia(id, width, format, ct).ConfigureAwait(false);
         }
         catch (HttpRequestException)
+        {
+            PublicWebHttpCache.SetServiceUnavailableNoStore(httpContext);
+            return Results.StatusCode(StatusCodes.Status503ServiceUnavailable);
+        }
+        catch (OperationCanceledException) when (!ct.IsCancellationRequested)
         {
             PublicWebHttpCache.SetServiceUnavailableNoStore(httpContext);
             return Results.StatusCode(StatusCodes.Status503ServiceUnavailable);
@@ -112,7 +118,8 @@ internal static class PublicWebEndpoints
             return Results.NotFound();
         }
 
-        PublicWebHttpCache.SetPublishedContent(httpContext);
+        PublicWebHttpCache.SetNoStore(httpContext);
+        httpContext.Response.Headers["X-Content-Type-Options"] = "nosniff";
         httpContext.Response.RegisterForDisposeAsync(media);
         return Results.Stream(media.Content, media.ContentType, enableRangeProcessing: false);
     }

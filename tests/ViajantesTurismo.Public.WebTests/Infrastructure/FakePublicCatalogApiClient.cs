@@ -11,6 +11,8 @@ internal sealed class FakePublicCatalogApiClient : IPublicCatalogApiClient
 
     public bool ThrowOperationCanceledExceptionOnListRequests { get; set; }
 
+    public bool ThrowOperationCanceledExceptionOnMediaRequests { get; set; }
+
     public bool FailDetailsRequests { get; set; }
 
     public bool FailContentRequests { get; set; }
@@ -24,6 +26,12 @@ internal sealed class FakePublicCatalogApiClient : IPublicCatalogApiClient
     public TaskCompletionSource<object?>? ContentStarted { get; set; }
 
     public PublicMediaObjectResponse? Media { get; set; }
+
+    public Guid? LastMediaId { get; private set; }
+
+    public int? LastMediaWidth { get; private set; }
+
+    public string? LastMediaFormat { get; private set; }
 
     public void AddTour(CatalogTourDto tour)
     {
@@ -100,9 +108,17 @@ internal sealed class FakePublicCatalogApiClient : IPublicCatalogApiClient
         return content;
     }
 
-    public Task<PublicMediaObjectResponse?> GetPublicMedia(Guid id, int? width, CancellationToken ct)
+    public Task<PublicMediaObjectResponse?> GetPublicMedia(Guid id, int width, string format, CancellationToken ct)
     {
         ct.ThrowIfCancellationRequested();
+        LastMediaId = id;
+        LastMediaWidth = width;
+        LastMediaFormat = format;
+
+        if (ThrowOperationCanceledExceptionOnMediaRequests)
+        {
+            throw new OperationCanceledException("Catalog media request canceled upstream.");
+        }
 
         return Task.FromResult(Media);
     }

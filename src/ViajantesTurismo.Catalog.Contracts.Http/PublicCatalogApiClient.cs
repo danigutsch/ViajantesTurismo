@@ -69,11 +69,12 @@ public sealed class PublicCatalogApiClient(HttpClient httpClient) : IPublicCatal
     }
 
     /// <inheritdoc />
-    public async Task<PublicMediaObjectResponse?> GetPublicMedia(Guid id, int? width, CancellationToken ct)
+    public async Task<PublicMediaObjectResponse?> GetPublicMedia(Guid id, int width, string format, CancellationToken ct)
     {
-        var suffix = width is null ? string.Empty : $"/{width}";
+        ArgumentException.ThrowIfNullOrWhiteSpace(format);
+
         var response = await httpClient.GetAsync(
-            new Uri($"{RoutePrefix}/media/{id}{suffix}", UriKind.Relative),
+            new Uri($"{RoutePrefix}/media/{id}/{width}/{Uri.EscapeDataString(format)}", UriKind.Relative),
             HttpCompletionOption.ResponseHeadersRead,
             ct).ConfigureAwait(false);
         if (response.StatusCode == HttpStatusCode.NotFound)
@@ -92,7 +93,16 @@ public sealed class PublicCatalogApiClient(HttpClient httpClient) : IPublicCatal
             throw;
         }
 
-        return new PublicMediaObjectResponse(response, await response.Content.ReadAsStreamAsync(ct).ConfigureAwait(false), response.Content.Headers.ContentType?.MediaType ?? "application/octet-stream");
+        try
+        {
+            var content = await response.Content.ReadAsStreamAsync(ct).ConfigureAwait(false);
+            return new PublicMediaObjectResponse(response, content, response.Content.Headers.ContentType?.MediaType ?? "application/octet-stream");
+        }
+        catch
+        {
+            response.Dispose();
+            throw;
+        }
     }
 
     private static string EscapePath(string path)

@@ -219,4 +219,70 @@ public sealed class CatalogToursApiClientTests
         exception.Message.ShouldBe("The catalog tour response body was empty.");
     }
 
+    [Fact]
+    public async Task GetTourImages_reads_management_media_without_storage_keys()
+    {
+        // Arrange
+        var requestPath = string.Empty;
+        var tourId = Guid.Parse("11111111-1111-1111-1111-111111111111");
+        using var httpClient = CatalogToursApiClientTestsHelpers.CreateClient(request =>
+        {
+            requestPath = request.RequestUri?.PathAndQuery ?? string.Empty;
+            return CatalogToursApiClientTestsHelpers.JsonResponse("""
+                [
+                  {
+                    "id":"33333333-3333-3333-3333-333333333333",
+                    "responsiveVariants":[
+                      {
+                        "width":640,
+                        "height":427,
+                        "contentType":"image/jpeg",
+                        "fileSizeBytes":640
+                      }
+                    ],
+                    "altText":"Cyclist on a mountain pass",
+                    "isDecorative":false,
+                    "requiresHumanReview":true,
+                    "isAiGenerated":true
+                  }
+                ]
+                """);
+        });
+        var sut = new CatalogToursApiClient(httpClient);
+
+        // Act
+        var images = await sut.GetTourImages(tourId, TestContext.Current.CancellationToken);
+
+        // Assert
+        requestPath.ShouldBe("/api/v1/catalog/tours/11111111-1111-1111-1111-111111111111/images");
+        var image = images.ShouldHaveSingleItem();
+        image.Id.ShouldBe(Guid.Parse("33333333-3333-3333-3333-333333333333"));
+        image.ResponsiveVariants.ShouldHaveSingleItem().Width.ShouldBe(640);
+    }
+
+    [Fact]
+    public async Task GetMediaPreview_streams_the_catalog_preview_response()
+    {
+        // Arrange
+        var requestPath = string.Empty;
+        var imageId = Guid.Parse("33333333-3333-3333-3333-333333333333");
+        using var httpClient = CatalogToursApiClientTestsHelpers.CreateClient(request =>
+        {
+            requestPath = request.RequestUri?.PathAndQuery ?? string.Empty;
+            var responseContent = new ByteArrayContent("preview"u8.ToArray());
+            responseContent.Headers.ContentType = new System.Net.Http.Headers.MediaTypeHeaderValue("image/jpeg");
+            return new HttpResponseMessage(System.Net.HttpStatusCode.OK) { Content = responseContent };
+        });
+        var sut = new CatalogToursApiClient(httpClient);
+
+        // Act
+        await using var preview = await sut.GetMediaPreview(imageId, 640, "jpg", TestContext.Current.CancellationToken);
+        using var buffer = new MemoryStream();
+        await preview.ShouldNotBeNull().Content.CopyToAsync(buffer, TestContext.Current.CancellationToken);
+        var content = buffer.ToArray();
+
+        // Assert
+        requestPath.ShouldBe("/api/v1/catalog/media/images/33333333-3333-3333-3333-333333333333/preview/640/jpg");
+        content.ShouldBe("preview"u8.ToArray());
+    }
 }

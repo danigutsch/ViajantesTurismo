@@ -11,7 +11,13 @@ public sealed record PublicMediaObjectResponse(HttpResponseMessage Response, Str
     /// <inheritdoc />
     public async ValueTask DisposeAsync()
     {
-        await Content.DisposeAsync().ConfigureAwait(false);
-        Response.Dispose();
+        try
+        {
+            await Content.DisposeAsync().ConfigureAwait(false);
+        }
+        finally
+        {
+            Response.Dispose();
+        }
     }
 }

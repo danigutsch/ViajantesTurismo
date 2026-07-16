@@ -8,10 +8,21 @@ public sealed class TestPublicMediaImageStore : IPublicMediaImageStore
 {
     private readonly ConcurrentDictionary<Guid, PublicMediaImage> imagesById = new();
 
+    private int getImageCallCount;
+
+    public Exception? UpsertException { get; set; }
+
+    public int GetImageCallCount => getImageCallCount;
+
     public ValueTask Upsert(PublicMediaImage image, CancellationToken ct)
     {
         ArgumentNullException.ThrowIfNull(image);
         ct.ThrowIfCancellationRequested();
+
+        if (UpsertException is not null)
+        {
+            throw UpsertException;
+        }
 
         imagesById[image.Id] = image;
         return ValueTask.CompletedTask;
@@ -20,6 +31,7 @@ public sealed class TestPublicMediaImageStore : IPublicMediaImageStore
     public ValueTask<PublicMediaImage?> GetImage(Guid imageId, CancellationToken ct)
     {
         ct.ThrowIfCancellationRequested();
+        Interlocked.Increment(ref getImageCallCount);
         imagesById.TryGetValue(imageId, out var image);
 
         return ValueTask.FromResult(image);

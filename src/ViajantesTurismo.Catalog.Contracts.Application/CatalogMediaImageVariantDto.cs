@@ -3,21 +3,10 @@ using System.ComponentModel.DataAnnotations;
 namespace ViajantesTurismo.Catalog.Contracts.Application;
 
 /// <summary>
-/// Responsive rendition for a public media image contract.
+/// Represents a responsive rendition available for authenticated management preview.
 /// </summary>
-public sealed record MediaImageResponsiveVariantDto
+public sealed record CatalogMediaImageVariantDto
 {
-    /// <summary>
-    /// Gets the stored rendition object key.
-    /// </summary>
-    public string? ObjectKey { get; init; }
-
-    /// <summary>
-    /// Gets the derived public rendition URI.
-    /// </summary>
-    [Required]
-    public required Uri Uri { get; init; }
-
     /// <summary>
     /// Gets the rendition width in pixels.
     /// </summary>

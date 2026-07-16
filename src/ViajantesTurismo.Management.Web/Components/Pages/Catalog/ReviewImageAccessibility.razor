@@ -1,8 +1,9 @@
 @page "/catalog/tours/{Id:guid}/images/review"
+@using Microsoft.AspNetCore.Routing
 @using SharedKernel.HttpClients
 @using ViajantesTurismo.Catalog.Contracts.Application
 @inject ICatalogToursApiClient CatalogToursApi
-@rendermode InteractiveServer
+@inject LinkGenerator LinkGenerator
 
 <PageTitle>Review Image Accessibility</PageTitle>
 
@@ -33,9 +34,9 @@ else
         }
 
         <p><strong>AI draft:</strong> @(_image.IsAiGenerated ? "Review required" : "Editor-provided")</p>
-    @if (_image.ResponsiveVariants.FirstOrDefault() is { } preview)
+    @if (_image.ResponsiveVariants.FirstOrDefault() is { } preview && GetPreviewPath(_image.Id, preview) is { } previewPath)
     {
-        <img src="@preview.Uri" alt="Preview for accessibility review" class="img-fluid mb-3" />
+        <img src="@previewPath" alt="Preview for accessibility review" class="img-fluid mb-3" />
     }
     <div class="mb-3">
         <label for="altText" class="form-label">Image description</label>
@@ -56,7 +57,7 @@ else
     [Parameter]
     public Guid Id { get; set; }
 
-    private PublicMediaImageDto? _image;
+    private CatalogMediaImageDto? _image;
     private string _altText = string.Empty;
     private bool _isDecorative;
     private bool _loading = true;
@@ -108,6 +109,7 @@ else
 
             _image = draft;
             _altText = draft.AltText;
+            _isDecorative = draft.IsDecorative;
         }
         catch (HttpRequestException)
         {
@@ -136,7 +138,7 @@ else
                 new PublicMediaImageAccessibilityReviewRequest
                 {
                     Language = PublicContentLanguageDto.EnUs,
-                    AltText = _altText,
+                    AltText = _isDecorative ? null : _altText,
                     Caption = _image.Caption,
                     IsDecorative = _isDecorative
                 },
@@ -181,5 +183,26 @@ else
         {
             _errorMessage = "The next image could not be loaded. Refresh the page and try again.";
         }
+    }
+
+    private string? GetPreviewPath(Guid imageId, CatalogMediaImageVariantDto variant)
+    {
+        var format = variant.ContentType.Trim().ToUpperInvariant() switch
+        {
+            "IMAGE/AVIF" => "avif",
+            "IMAGE/JPEG" => "jpg",
+            "IMAGE/PNG" => "png",
+            "IMAGE/WEBP" => "webp",
+            _ => null
+        };
+
+        if (format is null)
+        {
+            return null;
+        }
+
+        return LinkGenerator.GetPathByName(
+            ManagementWebEndpoints.MediaPreviewByRenditionEndpointName,
+            new { id = imageId, width = variant.Width, format });
     }
 }

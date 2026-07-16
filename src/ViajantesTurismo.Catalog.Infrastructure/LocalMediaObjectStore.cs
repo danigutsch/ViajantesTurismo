@@ -1,5 +1,7 @@
 using Microsoft.Extensions.Options;
+using SharedKernel.InputNormalization;
 using ViajantesTurismo.Catalog.Application.Media;
+using ViajantesTurismo.Catalog.Domain;
 
 namespace ViajantesTurismo.Catalog.Infrastructure;
 
@@ -119,7 +121,7 @@ internal sealed class LocalMediaObjectStore(IOptions<LocalMediaObjectStorageOpti
             : new Uri(options.PublicBaseUri.OriginalString + UriPathSeparator, baseUriKind);
         var escapedKey = string.Join(
             UriPathSeparator,
-            objectKey.Split(['/', '\\'], StringSplitOptions.RemoveEmptyEntries).Select(Uri.EscapeDataString));
+            objectKey.Split('/', StringSplitOptions.RemoveEmptyEntries).Select(Uri.EscapeDataString));
 
         return baseUri.IsAbsoluteUri
             ? new Uri(baseUri, escapedKey)
@@ -141,23 +143,12 @@ internal sealed class LocalMediaObjectStore(IOptions<LocalMediaObjectStorageOpti
 
     private string GetSafeObjectPath(string objectKey)
     {
-        if (string.IsNullOrWhiteSpace(objectKey))
+        if (!ObjectStorageKeyValidator.IsValidRelativeKey(objectKey, CatalogDomainLimits.MaxMediaObjectKeyLength))
         {
-            throw new ArgumentException("Media object key must be provided.", nameof(objectKey));
+            throw new ArgumentException("Media object key must be a relative slash-delimited path without dot segments.", nameof(objectKey));
         }
 
-        var normalizedObjectKey = objectKey.Replace('\\', Path.DirectorySeparatorChar).Replace('/', Path.DirectorySeparatorChar);
-
-        if (Path.IsPathRooted(normalizedObjectKey))
-        {
-            throw new ArgumentException("Media object key must be relative.", nameof(objectKey));
-        }
-
-        if (normalizedObjectKey.Split(Path.DirectorySeparatorChar).Any(static segment =>
-            segment.Length == 0 || segment == "." || segment == ".."))
-        {
-            throw new ArgumentException("Media object key must not include empty or dot path segments.", nameof(objectKey));
-        }
+        var normalizedObjectKey = objectKey.Replace('/', Path.DirectorySeparatorChar);
 
         var root = Path.TrimEndingDirectorySeparator(Path.GetFullPath(options.RootPath));
         var path = Path.GetFullPath(Path.Combine(root, normalizedObjectKey));
@@ -175,14 +166,13 @@ internal sealed class LocalMediaObjectStore(IOptions<LocalMediaObjectStorageOpti
             return string.Empty;
         }
 
-        var normalizedPrefix = prefix.Replace('\\', '/');
-        if (normalizedPrefix.StartsWith('/')
-            || normalizedPrefix.Split('/').Any(static segment => segment is "." or ".."))
+        var normalizedPrefix = prefix.TrimEnd('/');
+        if (!ObjectStorageKeyValidator.IsValidRelativeKey(normalizedPrefix, CatalogDomainLimits.MaxMediaObjectKeyLength))
         {
             throw new ArgumentException("Media object prefix must be relative and must not include dot path segments.", nameof(prefix));
         }
 
-        return normalizedPrefix;
+        return prefix.EndsWith(UriPathSeparator, StringComparison.Ordinal) ? normalizedPrefix + UriPathSeparator : normalizedPrefix;
     }
 
     private static string GetContentType(string objectKey) => Path.GetExtension(objectKey).ToUpperInvariant() switch

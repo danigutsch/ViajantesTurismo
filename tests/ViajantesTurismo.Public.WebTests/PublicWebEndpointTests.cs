@@ -16,7 +16,7 @@ public sealed class PublicWebEndpointTests
         using var client = factory.CreateClient();
 
         // Act
-        using var response = await client.GetAsync(new Uri("/catalog/media/6db0b8be-e4e8-4500-a398-b44e7709a640", UriKind.Relative), TestContext.Current.CancellationToken);
+        using var response = await client.GetAsync(new Uri("/catalog/media/6db0b8be-e4e8-4500-a398-b44e7709a640/640/jpg", UriKind.Relative), TestContext.Current.CancellationToken);
 
         // Assert
         response.StatusCode.ShouldBe(HttpStatusCode.NotFound);
@@ -24,7 +24,7 @@ public sealed class PublicWebEndpointTests
     }
 
     [Fact]
-    public async Task Public_media_streams_catalog_content_with_public_cache_headers()
+    public async Task Public_media_streams_catalog_content_without_cache_storage()
     {
         // Arrange
         using var upstreamResponse = new HttpResponseMessage();
@@ -39,14 +39,37 @@ public sealed class PublicWebEndpointTests
         using var client = factory.CreateClient();
 
         // Act
-        using var response = await client.GetAsync(new Uri("/catalog/media/6db0b8be-e4e8-4500-a398-b44e7709a640/640", UriKind.Relative), TestContext.Current.CancellationToken);
+        using var response = await client.GetAsync(new Uri("/catalog/media/6db0b8be-e4e8-4500-a398-b44e7709a640/640/jpg", UriKind.Relative), TestContext.Current.CancellationToken);
         var content = await response.Content.ReadAsByteArrayAsync(TestContext.Current.CancellationToken);
 
         // Assert
         response.StatusCode.ShouldBe(HttpStatusCode.OK);
         response.Content.Headers.ContentType?.MediaType.ShouldBe("image/jpeg");
-        response.Headers.CacheControl?.NoStore.ShouldBe(false);
+        response.Headers.CacheControl?.NoStore.ShouldBe(true);
+        response.Headers.GetValues("X-Content-Type-Options").ShouldHaveSingleItem().ShouldBe("nosniff");
         content.ShouldBe("image"u8.ToArray());
+        catalogApi.LastMediaId.ShouldBe(Guid.Parse("6db0b8be-e4e8-4500-a398-b44e7709a640"));
+        catalogApi.LastMediaWidth.ShouldBe(640);
+        catalogApi.LastMediaFormat.ShouldBe("jpg");
+    }
+
+    [Fact]
+    public async Task Public_media_returns_non_cacheable_service_unavailable_when_catalog_cancels_upstream()
+    {
+        // Arrange
+        var catalogApi = new FakePublicCatalogApiClient { ThrowOperationCanceledExceptionOnMediaRequests = true };
+        await using var factory = PublicWebEndpointTestsHelpers.CreateFactory(catalogApi);
+        using var client = factory.CreateClient();
+
+        // Act
+        using var response = await client.GetAsync(
+            new Uri("/catalog/media/6db0b8be-e4e8-4500-a398-b44e7709a640/640/jpg", UriKind.Relative),
+            TestContext.Current.CancellationToken);
+
+        // Assert
+        response.StatusCode.ShouldBe(HttpStatusCode.ServiceUnavailable);
+        var cacheControl = response.Headers.CacheControl.ShouldNotBeNull();
+        cacheControl.NoStore.ShouldBeTrue();
     }
 
     [Fact]
