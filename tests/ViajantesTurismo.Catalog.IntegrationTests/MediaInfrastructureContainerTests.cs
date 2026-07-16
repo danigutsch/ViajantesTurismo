@@ -15,7 +15,7 @@ using ViajantesTurismo.Catalog.IntegrationTests.Infrastructure;
 namespace ViajantesTurismo.Catalog.IntegrationTests;
 
 [Trait(TestTraitNames.CategoryName, TestTraitValues.SecurityCategory)]
-[Trait(TestTraitNames.AreaName, "media-infrastructure")]
+[Trait(TestTraitNames.AreaName, TestTraits.MediaInfrastructureArea)]
 public sealed class MediaInfrastructureContainerTests(MediaInfrastructureContainerFixture fixture)
     : IClassFixture<MediaInfrastructureContainerFixture>
 {
