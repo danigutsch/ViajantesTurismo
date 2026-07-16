@@ -28,9 +28,10 @@ internal static class AppHostComposition
         var securityDatabase = databaseServer.AddDatabase(ResourceNames.SecurityDatabase);
         var managementWebClientSecret = builder.AddParameter(ResourceNames.ManagementWebClientSecret, secret: true);
         var identityProvider = builder.AddRunModeIdentityProvider(managementWebClientSecret);
+        var clamAv = builder.AddClamAv(ResourceNames.ClamAv);
         var migrationService = builder.AddMigrationService(adminDatabase, catalogDatabase, securityDatabase);
         var brandingApiService = builder.AddBrandingApi(catalogDatabase, migrationService, identityProvider);
-        var apiService = builder.AddAdminApi(adminDatabase, brandingApiService, migrationService, identityProvider);
+        var apiService = builder.AddAdminApi(adminDatabase, brandingApiService, migrationService, clamAv, identityProvider);
 
         if (profile is HostedProfile.Admin)
         {
@@ -38,7 +39,6 @@ internal static class AppHostComposition
         }
 
         var cache = builder.AddCache(includeRedisInsight: includeDeveloperTooling);
-        var clamAv = profile.IncludesMediaInfrastructure() ? builder.AddClamAv(ResourceNames.ClamAv) : null;
         var seaweedFs = profile.IncludesMediaInfrastructure() ? builder.AddMediaObjectStorage() : null;
 
         if (builder.EnablesDatabaseObservability(profile))

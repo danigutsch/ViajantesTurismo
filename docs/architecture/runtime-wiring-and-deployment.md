@@ -54,6 +54,7 @@ flowchart LR
     adminDatabase --> databaseServer
     apiService --> adminDatabase
     apiService --> brandingApiService
+    apiService --> clamAv
     apiService --> identityProvider
     apiService --> migrationService
     brandingApiService --> catalogDatabase
@@ -82,6 +83,8 @@ Current AppHost rules:
 - Management Web waits for Redis, Admin API, and Catalog API.
 - Public Web waits for Catalog API.
 - API services stay internal; web frontends expose external HTTP endpoints.
+- ClamAV stays private on TCP; Admin API, Catalog API, and Integration Event Worker receive its
+  private host and port and wait for its PING/PONG health check.
 - The performance smoke resource is opt-in through `VT_ASPIRE_ENABLE_PERFORMANCE_TESTS=1`.
 
 ## Current service references
@@ -126,7 +129,7 @@ Deployment mapping:
 | Source | Deployment target | Boundary |
 | --- | --- | --- |
 | Production runtime option | App setting or environment variable on the consuming service | Operator-facing. |
-| Secret or credential | Managed secret store, deployment secret, or platform secret reference | No sample values. |
+| Secret or credential | User secrets locally; managed secret store, deployment secret, or platform secret reference remotely | No sample values. |
 | Connection string | Aspire resource reference or deployment secret/reference | Generated; do not hardcode. |
 | Service endpoint | Aspire service discovery reference | Generated from `.WithReference(...)`. |
 | Local AppHost setting | Local environment variable or launch profile value | Local unless promoted. |
@@ -163,6 +166,18 @@ Deployment guidance:
 - map secrets by boundary and owning platform, not by example values
 - keep deployment-time infrastructure choices in deployment parameters
 - avoid promoting local AppHost values unless operators need environment-specific control
+
+### Local scanner and storage reset
+
+ClamAV definitions persist in `clamav-definitions` at `/var/lib/clamav`; an isolated test run uses
+`clamav-<suffix>-definitions`. Stop the AppHost first, inspect the exact volume with
+`docker volume ls`, then remove only a verified volume with `docker volume rm <verified-volume-name>`
+when a definitions reset is required. Removing it is destructive: cached signatures are deleted and
+FreshClam downloads them again on the next start. Do not run `docker volume prune` for this purpose.
+
+ClamAV remains private TCP-only. Its PING/PONG health check gates dependent services instead of a
+fixed startup delay. The AppHost does not set a ClamAV memory limit; local container runtime capacity
+must accommodate the daemon and loaded definitions.
 
 ## Application container publish boundary
 

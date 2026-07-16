@@ -26,6 +26,8 @@
         <ProjectReference Include="..\SharedKernel\SharedKernel.ApiVersioning.AspNetCore\SharedKernel.ApiVersioning.AspNetCore.csproj" />
         <ProjectReference Include="..\SharedKernel\SharedKernel.OpenApi\SharedKernel.OpenApi.csproj" />
         <ProjectReference Include="..\SharedKernel\SharedKernel.Branding\SharedKernel.Branding.csproj" />
+        <ProjectReference Include="..\SharedKernel\SharedKernel.MalwareScanning\SharedKernel.MalwareScanning.csproj" />
+        <ProjectReference Include="..\SharedKernel\SharedKernel.MalwareScanning.ClamAv\SharedKernel.MalwareScanning.ClamAv.csproj" />
     </ItemGroup>
 
     <ItemGroup>

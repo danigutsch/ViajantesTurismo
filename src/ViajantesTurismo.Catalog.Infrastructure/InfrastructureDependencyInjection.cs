@@ -6,6 +6,7 @@ using Npgsql;
 using SharedKernel.EntityFrameworkCore;
 using SharedKernel.EventSourcing;
 using SharedKernel.EventSourcing.Npgsql;
+using SharedKernel.MalwareScanning.ClamAv;
 using SharedKernel.Messaging.IntegrationEvents.EntityFrameworkCore;
 using SharedKernel.OpenApi;
 using ViajantesTurismo.Catalog.Application;
@@ -128,18 +129,8 @@ public static class InfrastructureDependencyInjection
         {
             builder.Services.AddLocalMediaObjectStorage();
         }
-        if (builder.Configuration.GetSection(ClamAvMediaUploadScannerOptions.SectionName).Exists())
-        {
-            builder.Services.AddClamAvMediaUploadScanner();
-        }
-        else if (builder.Environment.IsDevelopment())
-        {
-            builder.Services.AddSingleton<IMediaUploadScanner, NoOpMediaUploadScanner>();
-        }
-        else
-        {
-            builder.Services.AddClamAvMediaUploadScanner();
-        }
+        builder.Services.AddConfiguredClamAvMalwareScanner(builder.Configuration, builder.Environment);
+        builder.Services.AddSingleton<IMediaUploadScanner, MalwareScannerMediaUploadScanner>();
         builder.Services.AddScoped<IPublicContentStore, EfPublicContentStore>();
         builder.Services.AddScoped<ICatalogTourReadModelStore, EfCatalogTourReadModelStore>();
         builder.Services.AddScoped<IPublicMediaImageStore, EfPublicMediaImageStore>();

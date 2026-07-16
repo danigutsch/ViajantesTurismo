@@ -8,6 +8,7 @@
     <ItemGroup>
         <InternalsVisibleTo Include="ViajantesTurismo.Admin.UnitTests" />
         <InternalsVisibleTo Include="ViajantesTurismo.Catalog.InfrastructureTests" />
+        <InternalsVisibleTo Include="ViajantesTurismo.Catalog.IntegrationTests" />
         <InternalsVisibleTo Include="ViajantesTurismo.Catalog.UnitTests" />
     </ItemGroup>
 
@@ -32,6 +33,8 @@
         <ProjectReference Include="..\SharedKernel\SharedKernel.Scheduling\SharedKernel.Scheduling.csproj" />
         <ProjectReference Include="..\SharedKernel\SharedKernel.HttpClients\SharedKernel.HttpClients.csproj" />
         <ProjectReference Include="..\SharedKernel\SharedKernel.InputNormalization\SharedKernel.InputNormalization.csproj" />
+        <ProjectReference Include="..\SharedKernel\SharedKernel.MalwareScanning\SharedKernel.MalwareScanning.csproj" />
+        <ProjectReference Include="..\SharedKernel\SharedKernel.MalwareScanning.ClamAv\SharedKernel.MalwareScanning.ClamAv.csproj" />
         <ProjectReference Include="..\ViajantesTurismo.Catalog.Application\ViajantesTurismo.Catalog.Application.csproj" />
         <ProjectReference Include="..\ViajantesTurismo.Catalog.Domain\ViajantesTurismo.Catalog.Domain.csproj" />
         <ProjectReference Include="..\ViajantesTurismo.Resources\ViajantesTurismo.Resources.csproj" />

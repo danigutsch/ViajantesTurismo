@@ -221,6 +221,7 @@ internal static class AppHostResourceExtensions
     /// <param name="adminDatabase">The Admin database resource.</param>
     /// <param name="brandingApiService">The Branding API resource.</param>
     /// <param name="migrationService">The migration service resource.</param>
+    /// <param name="clamAv"></param>
     /// <param name="identityProvider">The local identity-provider resource.</param>
     /// <returns>The configured Admin API resource.</returns>
     public static IResourceBuilder<ProjectResource> AddAdminApi(
@@ -228,6 +229,7 @@ internal static class AppHostResourceExtensions
         IResourceBuilder<PostgresDatabaseResource> adminDatabase,
         IResourceBuilder<ProjectResource> brandingApiService,
         IResourceBuilder<ProjectResource> migrationService,
+        IResourceBuilder<ClamAvResource> clamAv,
         IResourceBuilder<ContainerResource>? identityProvider)
     {
         return builder.AddDevelopmentAspNetCoreProject<ViajantesTurismo_Admin_ApiService>(ResourceNames.Api)
@@ -237,6 +239,8 @@ internal static class AppHostResourceExtensions
             .WaitFor(adminDatabase)
             .WaitFor(brandingApiService)
             .WaitForCompletion(migrationService)
+            .WithClamAvReference(clamAv)
+            .WaitFor(clamAv)
             .WithLocalIdentityProvider(identityProvider);
     }
 
@@ -256,7 +260,7 @@ internal static class AppHostResourceExtensions
         IResourceBuilder<PostgresDatabaseResource> adminDatabase,
         IResourceBuilder<PostgresDatabaseResource> catalogDatabase,
         IResourceBuilder<ProjectResource> migrationService,
-        IResourceBuilder<ContainerResource>? clamAv,
+        IResourceBuilder<ClamAvResource>? clamAv,
         IResourceBuilder<SeaweedFsResource>? seaweedFs,
         IResourceBuilder<ContainerResource>? identityProvider)
     {
@@ -319,7 +323,7 @@ internal static class AppHostResourceExtensions
         IResourceBuilder<PostgresDatabaseResource> adminDatabase,
         IResourceBuilder<PostgresDatabaseResource> catalogDatabase,
         IResourceBuilder<ProjectResource> migrationService,
-        IResourceBuilder<ContainerResource>? clamAv,
+        IResourceBuilder<ClamAvResource>? clamAv,
         IResourceBuilder<SeaweedFsResource>? seaweedFs)
     {
         var worker = builder.AddDevelopmentDotNetProject<ViajantesTurismo_IntegrationEventWorker>(ResourceNames.IntegrationEventWorker)

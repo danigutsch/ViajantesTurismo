@@ -1,6 +1,7 @@
 using SharedKernel.Testing;
 using SharedKernel.EventSourcing;
 using SharedKernel.EventSourcing.Npgsql;
+using SharedKernel.MalwareScanning;
 using Npgsql;
 using ViajantesTurismo.Catalog.Application.Media;
 using ViajantesTurismo.Catalog.Application.Projections;
@@ -26,7 +27,7 @@ public sealed class InfrastructureDependencyInjectionTests
         scenario.ShouldResolveSingleton<NpgsqlDataSource>();
         scenario.ShouldResolveAs<IPublicContentStore, EfPublicContentStore>();
         scenario.ShouldResolveAs<IMediaObjectStore, LocalMediaObjectStore>();
-        scenario.ShouldResolveAs<IMediaUploadScanner, ClamAvMediaUploadScanner>();
+        scenario.ShouldResolveAs<IMediaUploadScanner, MalwareScannerMediaUploadScanner>();
         scenario.ShouldResolveAs<IMediaUploadValidator, MediaUploadValidator>();
         scenario.ShouldResolveAs<IEventSerializer, CatalogEventSerializer>();
         scenario.ShouldResolveAs<IEventStore, PostgreSqlEventStore>();
@@ -36,7 +37,7 @@ public sealed class InfrastructureDependencyInjectionTests
     }
 
     [Fact]
-    public void AddCatalogInfrastructure_configures_development_catalog_options()
+    public void AddCatalogInfrastructure_allows_explicitly_disabled_development_scanning()
     {
         // Arrange
         using var scenario = CatalogInfrastructureTestServices.CreateDevelopmentScenario();
@@ -45,7 +46,8 @@ public sealed class InfrastructureDependencyInjectionTests
 
         // Assert
         scenario.ShouldResolveDbContextOptions<CatalogDbContext>();
-        scenario.ShouldResolveAs<IMediaUploadScanner, NoOpMediaUploadScanner>();
+        scenario.ShouldResolveAs<IMediaUploadScanner, MalwareScannerMediaUploadScanner>();
+        scenario.ShouldResolve<IMalwareScanner>();
     }
 
     [Fact]
@@ -55,7 +57,7 @@ public sealed class InfrastructureDependencyInjectionTests
         using var scenario = CatalogInfrastructureTestServices.CreateConfiguredDevelopmentScenario();
 
         // Assert
-        scenario.ShouldResolveAs<IMediaUploadScanner, ClamAvMediaUploadScanner>();
+        scenario.ShouldResolveAs<IMediaUploadScanner, MalwareScannerMediaUploadScanner>();
     }
 
     [Fact]
