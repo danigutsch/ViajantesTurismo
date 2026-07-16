@@ -221,7 +221,7 @@ internal static class AppHostResourceExtensions
     /// <param name="adminDatabase">The Admin database resource.</param>
     /// <param name="brandingApiService">The Branding API resource.</param>
     /// <param name="migrationService">The migration service resource.</param>
-    /// <param name="clamAv"></param>
+    /// <param name="clamAv">The private ClamAV malware scanner resource.</param>
     /// <param name="identityProvider">The local identity-provider resource.</param>
     /// <returns>The configured Admin API resource.</returns>
     public static IResourceBuilder<ProjectResource> AddAdminApi(
