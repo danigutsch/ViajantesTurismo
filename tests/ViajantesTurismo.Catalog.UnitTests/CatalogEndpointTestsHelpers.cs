@@ -2,6 +2,8 @@ using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Hosting;
+using SharedKernel.AspNetCore;
+using SharedKernel.MalwareScanning.ClamAv;
 using SharedKernel.Testing.AspNetCore;
 using ViajantesTurismo.Catalog.ApiService;
 using ViajantesTurismo.Catalog.Application.Media;
@@ -26,9 +28,9 @@ internal static class CatalogEndpointTestsHelpers
             configureClient: client => ApiTestAuthentication.ConfigureAuthenticatedClient(client, "catalog-api", "Admin"),
             configuration: new Dictionary<string, string?>
             {
-                ["Authentication:Authority"] = ApiTestAuthentication.Authority,
-                ["Authentication:Issuer"] = ApiTestAuthentication.Authority,
-                ["MalwareScanning:Disabled"] = bool.TrueString
+                [ApiAuthenticationDefaults.AuthorityConfigurationKey] = ApiTestAuthentication.Authority,
+                [ApiAuthenticationDefaults.IssuerConfigurationKey] = ApiTestAuthentication.Authority,
+                [ClamAvMalwareScannerConfigurationKeys.DisabledConfigurationKey] = bool.TrueString
             });
     }
 

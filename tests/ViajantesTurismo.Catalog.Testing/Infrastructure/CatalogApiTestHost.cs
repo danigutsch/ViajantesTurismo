@@ -3,6 +3,7 @@ using Microsoft.Extensions.Hosting;
 using SharedKernel.AI;
 using SharedKernel.AspNetCore;
 using SharedKernel.Messaging.IntegrationEvents;
+using SharedKernel.MalwareScanning.ClamAv;
 using SharedKernel.Testing.AspNetCore;
 using ViajantesTurismo.Catalog.ApiService;
 using ViajantesTurismo.Catalog.Application.Media;
@@ -99,11 +100,11 @@ internal static class CatalogApiTestHost
             || string.Equals(hostEnvironment, "Test", StringComparison.OrdinalIgnoreCase)
             || string.Equals(hostEnvironment, "Testing", StringComparison.OrdinalIgnoreCase))
         {
-            configuration["MalwareScanning:Disabled"] = bool.TrueString;
+            configuration[ClamAvMalwareScannerConfigurationKeys.DisabledConfigurationKey] = bool.TrueString;
         }
         else
         {
-            configuration["MalwareScanning:ClamAv:Host"] = "test-clamav";
+            configuration[ClamAvMalwareScannerConfigurationKeys.HostConfigurationKey] = "test-clamav";
         }
 
         return WebApplicationTestHost.Create<CatalogApiHostEntryPoint>(

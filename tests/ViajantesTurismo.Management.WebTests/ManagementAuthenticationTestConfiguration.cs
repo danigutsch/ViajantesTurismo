@@ -1,4 +1,5 @@
 using Microsoft.Extensions.Configuration;
+using SharedKernel.AspNetCore;
 
 namespace ViajantesTurismo.Management.WebTests;
 
@@ -15,13 +16,13 @@ internal static class ManagementAuthenticationTestConfiguration
     {
         var settings = new Dictionary<string, string?>
         {
-            ["Authentication:AllowHttpDevelopmentAuthority"] = allowHttpDevelopmentAuthority.ToString()
+            [ApiAuthenticationDefaults.AllowHttpDevelopmentAuthorityConfigurationKey] = allowHttpDevelopmentAuthority.ToString()
         };
 
         if (includeRequiredSettings)
         {
-            settings.Add("Authentication:Authority", authority);
-            settings.Add("Authentication:Issuer", issuer ?? authority);
+            settings.Add(ApiAuthenticationDefaults.AuthorityConfigurationKey, authority);
+            settings.Add(ApiAuthenticationDefaults.IssuerConfigurationKey, issuer ?? authority);
             settings.Add("Authentication:ClientId", "web-app");
             settings.Add("Authentication:ClientSecret", "client-secret");
             settings.Add("ConnectionStrings:security-database", "Host=localhost;Database=security;Username=security;Password=secret");
