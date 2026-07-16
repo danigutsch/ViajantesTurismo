@@ -1,0 +1,29 @@
+{
+  "$schema": "../schema/roadmap-item.schema.json",
+  "id": "RM-018",
+  "parent": "RM-009",
+  "title": "Define service and data deployment topology",
+  "type": "epic",
+  "status": "proposed",
+  "triage": "untriaged",
+  "theme": "repo-operations",
+  "outcome": "Service, worker, schema-deployment, and production topology boundaries have explicit ownership, trust, lifecycle, and scaling models.",
+  "blockedBy": [],
+  "blocks": [],
+  "dependencies": [],
+  "tags": [
+    "architecture",
+    "deployment",
+    "topology",
+    "aspire",
+    "security"
+  ],
+  "labels": [
+    "type: epic"
+  ],
+  "integrations": {
+    "github": {
+      "issue": 1035
+    }
+  }
+}

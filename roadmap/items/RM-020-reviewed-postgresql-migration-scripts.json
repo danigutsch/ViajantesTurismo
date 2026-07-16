@@ -1,0 +1,29 @@
+{
+  "$schema": "../schema/roadmap-item.schema.json",
+  "id": "RM-020",
+  "parent": "RM-018",
+  "title": "Generate reviewed PostgreSQL migration scripts for deployment",
+  "type": "enabler",
+  "status": "proposed",
+  "triage": "untriaged",
+  "theme": "repo-operations",
+  "outcome": "Production schema changes use reviewed immutable PostgreSQL artifacts with a least-privileged, auditable deployment stage.",
+  "blockedBy": [],
+  "blocks": [],
+  "dependencies": [],
+  "tags": [
+    "database",
+    "migration",
+    "deployment",
+    "security"
+  ],
+  "labels": [
+    "area: tooling",
+    "type: enabler"
+  ],
+  "integrations": {
+    "github": {
+      "issue": 1032
+    }
+  }
+}
