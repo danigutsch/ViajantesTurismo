@@ -45,3 +45,8 @@ tests/SharedKernel.DomainEvents.Tests/SharedKernel.DomainEvents.Tests.csproj
 tests/SharedKernel.AI.Tests/SharedKernel.AI.Tests.csproj
 tests/ViajantesTurismo.Admin.UiIntegrationTests/ViajantesTurismo.Admin.UiIntegrationTests.csproj
 tests/ViajantesTurismo.DatabaseObservability.Tests/ViajantesTurismo.DatabaseObservability.Tests.csproj
+tests/SharedKernel.AspNetCore.Tests/SharedKernel.AspNetCore.Tests.csproj
+tests/SharedKernel.DocumentRendering.Tests/SharedKernel.DocumentRendering.Tests.csproj
+tests/SharedKernel.Messaging.Tests/SharedKernel.Messaging.Tests.csproj
+tests/SharedKernel.Messaging.IntegrationEvents.GeneratorTests/SharedKernel.Messaging.IntegrationEvents.GeneratorTests.csproj
+tests/ViajantesTurismo.Performance.Tool.Tests/ViajantesTurismo.Performance.Tool.Tests.csproj

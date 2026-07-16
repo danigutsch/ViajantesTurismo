@@ -317,6 +317,90 @@ jobs:
           RESULTS_ARTIFACT_URL: ${{ steps.upload-admin-integration-results.outputs.artifact-url }}
         run: bash scripts/write-ci-artifact-summary.sh "Admin integration tests"
 
+  admin-api-integration-tests:
+    name: Admin API Integration Tests
+    needs:
+      - detect-changes
+    runs-on: ${{ vars.CI_UBUNTU_RUNNER }}
+    timeout-minutes: 15
+    permissions:
+      contents: read
+    steps:
+      - name: Skip admin API integration tests when paths do not require them
+        if: ${{ needs.detect-changes.outputs.admin_integration_required != 'true' }}
+        shell: bash
+        run: |
+          echo "Admin API integration test paths were not changed."
+          {
+            echo "## Admin API integration tests"
+            echo
+            echo "This slice was skipped because no matching paths changed."
+          } >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Checkout repository
+        if: ${{ needs.detect-changes.outputs.admin_integration_required == 'true' }}
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+
+      - name: Set up CI prerequisites
+        if: ${{ needs.detect-changes.outputs.admin_integration_required == 'true' }}
+        uses: ./.github/actions/setup-ci-prerequisites
+        with:
+          restore-targets-file: scripts/ci-test-slices/admin-api-integration.txt
+
+      - name: Run admin API integration test slice
+        if: ${{ needs.detect-changes.outputs.admin_integration_required == 'true' }}
+        id: run-admin-api-integration
+        run: |
+          set -o pipefail
+          mkdir -p TestResults
+          bash scripts/run-ci-test-slice.sh \
+            --slice-name "Admin API Integration Tests" \
+            --projects-file scripts/ci-test-slices/admin-api-integration.txt
+
+      - name: Capture admin API integration diagnostics
+        if: ${{ failure() && steps.run-admin-api-integration.outcome != 'skipped' }}
+        env:
+          BUILD_OUTCOME: included-in-admin-api-integration-tests
+          PLAYWRIGHT_OUTCOME: not-applicable
+          TEST_OUTCOME: ${{ steps.run-admin-api-integration.outcome }}
+        run: |
+          bash scripts/collect-ci-build-test-diagnostics.sh \
+            "$BUILD_OUTCOME" \
+            "$PLAYWRIGHT_OUTCOME" \
+            "$TEST_OUTCOME"
+
+      - name: Upload admin API integration diagnostics
+        id: upload-admin-api-integration-diagnostics
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
+        if: ${{ failure() && steps.run-admin-api-integration.outcome != 'skipped' }}
+        with:
+          if-no-files-found: error
+          name: admin-api-integration-test-diagnostics
+          path: TestResults/ci-diagnostics/**
+          retention-days: 7
+
+      - name: Upload admin API integration test results
+        id: upload-admin-api-integration-results
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
+        if: ${{ always() && steps.run-admin-api-integration.outcome != 'skipped' }}
+        with:
+          if-no-files-found: ignore
+          name: admin-api-integration-test-results
+          path: |
+            **/TestResults/**
+            !TestResults/ci-diagnostics/**
+          retention-days: 7
+
+      - name: Report admin API integration artifacts
+        if: ${{ always() && steps.run-admin-api-integration.outcome != 'skipped' }}
+        env:
+          DIAGNOSTICS_ARTIFACT_URL: ${{ steps.upload-admin-api-integration-diagnostics.outputs.artifact-url }}
+          RESULTS_ARTIFACT_URL: ${{ steps.upload-admin-api-integration-results.outputs.artifact-url }}
+        run: bash scripts/write-ci-artifact-summary.sh "Admin API integration tests"
+
   mediator-heavy-tests:
     name: Mediator Heavy Tests
     needs:
@@ -492,6 +576,7 @@ jobs:
       - detect-changes
       - fast-validation
       - admin-integration-tests
+      - admin-api-integration-tests
       - mediator-heavy-tests
       - admin-system-tests
       - openapi-tool-windows
@@ -516,6 +601,11 @@ jobs:
 
           if [[ "${{ needs.admin-integration-tests.result }}" != "success" ]]; then
               echo "Admin Integration Tests failed." >&2
+              exit 1
+          fi
+
+          if [[ "${{ needs.admin-api-integration-tests.result }}" != "success" ]]; then
+              echo "Admin API Integration Tests failed." >&2
               exit 1
           fi
 
@@ -620,6 +710,7 @@ jobs:
       - detect-changes
       - fast-validation
       - admin-integration-tests
+      - admin-api-integration-tests
       - mediator-heavy-tests
       - admin-system-tests
     if: ${{ always() }}
@@ -712,6 +803,13 @@ jobs:
           name: admin-integration-test-results
           path: artifacts/admin-integration
 
+      - name: Download admin API integration test results
+        if: ${{ steps.sonar-boundary.outputs.can_run == 'true' && needs.detect-changes.outputs.admin_integration_required == 'true' && needs.admin-api-integration-tests.result == 'success' }}
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+        with:
+          name: admin-api-integration-test-results
+          path: artifacts/admin-api-integration
+
       - name: Download mediator heavy test results
         if: ${{ steps.sonar-boundary.outputs.can_run == 'true' && needs.detect-changes.outputs.mediator_heavy_required == 'true' && needs.mediator-heavy-tests.result == 'success' }}
         uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
@@ -727,11 +825,11 @@ jobs:
           path: artifacts/admin-system
 
       - name: Generate Sonar coverage report from test slices
-        if: ${{ steps.sonar-boundary.outputs.can_run == 'true' && needs.detect-changes.outputs.build_required == 'true' && needs.fast-validation.result == 'success' && needs.admin-integration-tests.result == 'success' && needs.mediator-heavy-tests.result == 'success' && needs.admin-system-tests.result == 'success' }}
+        if: ${{ steps.sonar-boundary.outputs.can_run == 'true' && needs.detect-changes.outputs.build_required == 'true' && needs.fast-validation.result == 'success' && needs.admin-integration-tests.result == 'success' && needs.admin-api-integration-tests.result == 'success' && needs.mediator-heavy-tests.result == 'success' && needs.admin-system-tests.result == 'success' }}
         run: bash scripts/generate-sonar-coverage-report.sh
 
       - name: Run SonarCloud analysis
-        if: ${{ steps.sonar-boundary.outputs.can_run == 'true' && needs.detect-changes.outputs.build_required == 'true' && needs.fast-validation.result == 'success' && needs.admin-integration-tests.result == 'success' && needs.mediator-heavy-tests.result == 'success' && needs.admin-system-tests.result == 'success' }}
+        if: ${{ steps.sonar-boundary.outputs.can_run == 'true' && needs.detect-changes.outputs.build_required == 'true' && needs.fast-validation.result == 'success' && needs.admin-integration-tests.result == 'success' && needs.admin-api-integration-tests.result == 'success' && needs.mediator-heavy-tests.result == 'success' && needs.admin-system-tests.result == 'success' }}
         id: run-sonar
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -814,6 +912,11 @@ jobs:
 
           if [[ "${{ needs.admin-integration-tests.result }}" != "success" ]]; then
               echo "Admin Integration Tests failed." >&2
+              exit 1
+          fi
+
+          if [[ "${{ needs.admin-api-integration-tests.result }}" != "success" ]]; then
+              echo "Admin API Integration Tests failed." >&2
               exit 1
           fi
 

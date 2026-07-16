@@ -457,6 +457,7 @@ Available slice names match `scripts/ci-test-slices/*.txt`:
 
 - `fast-validation`
 - `admin-integration`
+- `admin-api-integration`
 - `mediator-heavy`
 - `admin-system`
 

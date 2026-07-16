@@ -13,21 +13,21 @@ see [`trust-boundaries.md`](trust-boundaries.md).
 
 Branch protection for `main` is configured to require the following status checks:
 
-- `Fast Validation` (from `.github/workflows/ci.yml`)
-- `Admin Integration Tests` (from `.github/workflows/ci.yml`)
-- `Admin System Tests` (from `.github/workflows/ci.yml`)
-- `Mediator Heavy Tests` (from `.github/workflows/ci.yml`)
+- `Build and Test` (from `.github/workflows/ci.yml`)
 - `Lint` (from `.github/workflows/ci.yml`)
 - `Dependency Review` (from `.github/workflows/dependency-review.yml`)
 - `Secret Scan` (from `.github/workflows/secret-scan.yml`)
 - `SonarCloud` (from `.github/workflows/ci.yml`; includes hosted quality gate and the
   repository-owned new issue policy fallback)
 
-`Fast Validation` also propagates the `OpenAPI Tool Windows` result, so the Windows
-OpenAPI-generation safety check blocks merging without adding a separate branch-protection status.
+`Build and Test` is the required non-secret aggregate for `Fast Validation`, `Admin Integration
+Tests`, `Admin API Integration Tests`, `Mediator Heavy Tests`, and `Admin System Tests`.
+`Fast Validation` also propagates the `OpenAPI Tool Windows` result. Consequently, either Admin
+integration lane blocks merging, including on fork pull requests where `SonarCloud` intentionally
+resolves successfully without accessing repository secrets.
 
-These names match the `name:` fields in the respective workflow files. Any rename of the
-jobs must be reflected in branch protection settings.
+These names match the `name:` fields in the respective workflow files. Any rename of a required
+job must be reflected in branch protection settings.
 
 Representative pull request validation has also been observed successfully with these
 checks, including the main CI workflow and its integrated SonarCloud status job, the

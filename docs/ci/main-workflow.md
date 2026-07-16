@@ -48,11 +48,10 @@ raw JSON as job outputs for later release workflow steps.
 
 1. Wait for `detect-changes` and `openapi-tool-windows` to complete.
 2. Fail when either prerequisite did not succeed, propagating the Windows OpenAPI tool
-   test result through this required check.
+   test result through the required `Build and Test` aggregate.
 3. Read the `fast_validation_required` decision from `detect-changes`.
-4. If only documentation changed, run a lightweight success step so the required
-   `Fast Validation` check resolves cleanly without starting the expensive validation
-   path.
+4. If only documentation changed, run a lightweight success step so the `Build and Test`
+   aggregate resolves cleanly without starting the expensive validation path.
 5. Checkout repository (`actions/checkout`) when fast validation work is required.
 6. Configure a repository-local NuGet global-packages path and set up the .NET SDK from
    `global.json` with built-in NuGet caching (`actions/setup-dotnet`) when validation work
@@ -83,7 +82,25 @@ part of the failure-investigation path.
 
 This job restores the OpenAPI tool test project and its API-generation targets, then runs the
 OpenAPI tool tests on Windows. `Fast Validation` waits for and propagates this job's result so
-the platform-specific child environment safety check remains part of the required merge gate.
+the platform-specific child environment safety check remains part of the required merge gate
+through `Build and Test`.
+
+### Admin API Integration Tests
+
+| Attribute | Value |
+| --- | --- |
+| Job key | `admin-api-integration-tests` |
+| Job name | `Admin API Integration Tests` |
+| Runner | Repository CI baseline |
+
+This dedicated slice runs `ViajantesTurismo.Admin.IntegrationTests` when
+`admin_integration_required` is `true`.
+
+Measured DCP runner-capacity isolation justified separating this full-host API slice from the
+provider/database lane. This is job-level isolation; it does not reduce project-level test
+parallelism within either slice. SonarCloud aggregates this slice's results artifact with the
+`Admin Integration Tests` results artifact, and the required `Build and Test` aggregate fails
+when either lane fails.
 
 ### Admin Integration Tests
 
@@ -93,15 +110,28 @@ the platform-specific child environment safety check remains part of the require
 | Job name | `Admin Integration Tests` |
 | Runner | Repository CI baseline |
 
-This slice runs only when `detect-changes` reports that dependency-heavy integration-sensitive
-paths changed. It restores shared prerequisites, then builds and executes the Admin API
-integration project plus the PostgreSQL event-sourcing integration project, then uploads
-slice-local results and diagnostics.
+This residual provider/database slice also runs when `admin_integration_required` is `true`. It
+restores shared prerequisites, then builds and executes the provider/database integration projects
+before uploading slice-local results and diagnostics.
 
 The PostgreSQL event-sourcing tests live here instead of in `Fast Validation` because that project
 uses `Aspire.Hosting.Testing` and starts a real PostgreSQL resource. Keeping it out of the fast lane
 protects the no-host/no-container fast-feedback contract while avoiding another CI job for the same
 class of dependency-heavy work.
+
+### Build and Test
+
+| Attribute | Value |
+| --- | --- |
+| Job key | `build-and-test` |
+| Job name | `Build and Test` |
+| Runner | Repository CI baseline |
+
+This is the required non-secret aggregate in the `main` branch-protection rule. It waits for fast,
+provider/database, Admin API, mediator-heavy, system, and OpenAPI validation before succeeding.
+The component lanes remain parallel; the aggregate only reports their combined result. Because it
+does not need SonarCloud credentials, it blocks a failing Admin API lane on fork pull requests even
+when `SonarCloud` is intentionally skipped.
 
 ### Mediator Heavy Tests
 
@@ -140,8 +170,9 @@ For pull requests and pushes that only modify `docs/**`, `README.md`, `CONTRIBUT
 the small allowlist of low-risk contributor-maintenance scripts in
 `scripts/detect-changes.sh` (for example `scripts/lint-all.sh` or
 `scripts/validate-commit-message.sh`), the affected validation jobs still run and report
-successful required checks through lightweight skip steps, but they skip the expensive
-restore, build, Playwright, and test steps. This avoids the pending required-check problem
+successful outcomes to the required `Build and Test` aggregate through lightweight skip steps,
+but they skip the expensive restore, build, Playwright, and test steps. This avoids the pending
+required-check problem
 caused by trigger-level `paths` or `paths-ignore` filters. `Fast Validation` is also
 path-gated now, so changes isolated to heavier hosted or mediator-specific surfaces do not
 automatically re-run the cheaper fast slice.
@@ -198,7 +229,8 @@ command for that maintenance step.
    step.
 3. Checkout repository and validate SonarCloud configuration.
 4. Restore repository prerequisites and cache SonarCloud packages.
-5. Download the `*-results` artifacts from the test slices that actually ran.
+5. Download the `*-results` artifacts from the test slices that actually ran, including both
+   Admin integration slices when `admin_integration_required` is `true`.
 6. Generate the aggregated `sonar-coverage.xml` and HTML coverage report from the slice
    artifacts.
 7. Run `bash scripts/run-sonar-analysis.sh` in reuse mode so SonarScanner performs a fresh

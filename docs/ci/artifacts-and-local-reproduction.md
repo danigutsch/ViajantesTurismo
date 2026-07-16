@@ -14,7 +14,8 @@ when that job fails.
 | Artifact name | Contents | Retention |
 | --- | --- | --- |
 | `fast-validation-results` | `**/TestResults/**` produced by the fast test slice | 7 days |
-| `admin-integration-test-results` | `**/TestResults/**` produced by the admin integration slice | 7 days |
+| `admin-integration-test-results` | `**/TestResults/**` produced by the provider/database integration slice | 7 days |
+| `admin-api-integration-test-results` | `**/TestResults/**` produced by the dedicated Admin API integration slice | 7 days |
 | `admin-system-test-results` | `**/TestResults/**` produced by the admin system slice | 7 days |
 | `mediator-heavy-test-results` | `**/TestResults/**` produced by the mediator-heavy slice | 7 days |
 | `sonar-coverage` | Aggregated SonarCloud coverage input at `TestResults/sonar-coverage.xml` | 7 days |
@@ -22,7 +23,8 @@ when that job fails.
 | `sonar-analysis-manifest` | Machine-readable Sonar job manifest at `TestResults/ci-validation-manifest.json` | 7 days |
 | `coverage-report` | Aggregated HTML coverage report under `TestResults/CoverageReport/**` from the Sonar aggregation job | 7 days |
 | `fast-validation-diagnostics` | Focused failure summary for the fast validation slice | 7 days |
-| `admin-integration-test-diagnostics` | Focused failure summary for the admin integration slice | 7 days |
+| `admin-integration-test-diagnostics` | Focused failure summary for the provider/database integration slice | 7 days |
+| `admin-api-integration-test-diagnostics` | Focused failure summary for the dedicated Admin API integration slice | 7 days |
 | `admin-system-test-diagnostics` | Focused failure summary for the admin system slice | 7 days |
 | `mediator-heavy-test-diagnostics` | Focused failure summary for the mediator-heavy slice | 7 days |
 
@@ -78,6 +80,9 @@ job.
 
 ### Admin Integration Tests job
 
+This residual slice exercises provider/database integration projects. The dedicated Admin API
+integration project runs in the next lane.
+
 ```bash
 # From repository root
 dotnet restore ViajantesTurismo.slnx
@@ -87,6 +92,19 @@ export SSL_CERT_DIR="$HOME/.aspnet/dev-certs/trust"
 bash scripts/run-ci-test-slice.sh \
   --slice-name "Admin Integration Tests" \
   --projects-file scripts/ci-test-slices/admin-integration.txt
+```
+
+### Admin API Integration Tests job
+
+```bash
+# From repository root
+dotnet restore ViajantesTurismo.slnx
+dotnet tool restore
+dotnet dev-certs https --trust || true
+export SSL_CERT_DIR="$HOME/.aspnet/dev-certs/trust"
+bash scripts/run-ci-test-slice.sh \
+  --slice-name "Admin API Integration Tests" \
+  --projects-file scripts/ci-test-slices/admin-api-integration.txt
 ```
 
 ### Admin System Tests job
@@ -146,8 +164,8 @@ SONAR_ANALYSIS_SKIP_TESTS=true bash scripts/run-sonar-analysis.sh
 
 For documentation-only or low-risk contributor-maintenance changes (`docs/**`, `README.md`,
 `CONTRIBUTING.md`, and the allowlisted scripts in `scripts/detect-changes.sh`), CI skips the
-validation commands above but still records successful required checks through the lightweight
-skip path in each affected job.
+validation commands above. The affected test jobs use lightweight skip paths, and the required
+`Build and Test` aggregate records their successful outcomes.
 
 ### Lint job
 

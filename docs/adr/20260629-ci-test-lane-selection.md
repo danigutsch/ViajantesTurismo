@@ -17,6 +17,10 @@ no-build/no-restore test run is not a safe CI baseline on this repository: `dotn
 Splitting every slow test project into its own CI job is also not the default answer. Dependency-heavy tests pay fixed startup costs for restore, build,
 AppHost, containers, databases, and browsers. More jobs only help when parallel wall-clock savings beat duplicated setup cost.
 
+Measured DCP runner-capacity isolation showed that `ViajantesTurismo.Admin.IntegrationTests` should
+run in its own CI job rather than share the provider/database lane. The split isolates runner capacity
+at the job level; it does not reduce project-level test parallelism within either slice.
+
 ## Decision
 
 CI test lanes are selected by runtime dependency and failure-isolation need, not by project count alone.
@@ -43,6 +47,10 @@ flowchart TD
 - `Fast Validation` must stay no-host and no-container. Small test count does not make a hosted test fast.
 - Hosted/database/API tests are bundled before adding new CI jobs unless measured timing shows a split wins.
 - Browser/system tests stay separate from API integration tests because they use a different entrypoint, failure mode, and concurrency model.
+- `ViajantesTurismo.Admin.IntegrationTests` runs in the dedicated `Admin API Integration Tests`
+  slice. The residual `Admin Integration Tests` slice retains provider/database tests. Both slices use
+  the existing `admin_integration_required` gate. The required `Build and Test` aggregate fails when
+  either lane fails, and SonarCloud aggregates both results artifacts.
 - Package-consumption tests move out of fast validation only when they are measured hotspots or protect packaging behavior that deserves separate failure
   visibility.
 - The current `mediator-heavy` lane is a tooling-heavy lane in practice. It is mediator-specific today because that is the only package-consumption hotspot

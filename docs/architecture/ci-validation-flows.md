@@ -18,6 +18,7 @@ flowchart TB
     fast_validation[Fast Validation]
     openapi_tool_windows[OpenAPI Tool Windows]
     admin_integration_tests[Admin Integration Tests]
+    admin_api_integration_tests[Admin API Integration Tests]
     mediator_heavy_tests[Mediator Heavy Tests]
     admin_system_tests[Admin System Tests]
     build_and_test[Build and Test]
@@ -30,11 +31,13 @@ flowchart TB
     openapi_tool_windows --> fast_validation
     detect_changes --> openapi_tool_windows
     detect_changes --> admin_integration_tests
+    detect_changes --> admin_api_integration_tests
     detect_changes --> mediator_heavy_tests
     detect_changes --> admin_system_tests
     detect_changes --> build_and_test
     fast_validation --> build_and_test
     admin_integration_tests --> build_and_test
+    admin_api_integration_tests --> build_and_test
     mediator_heavy_tests --> build_and_test
     admin_system_tests --> build_and_test
     openapi_tool_windows --> build_and_test
@@ -42,6 +45,7 @@ flowchart TB
     detect_changes --> sonarcloud
     fast_validation --> sonarcloud
     admin_integration_tests --> sonarcloud
+    admin_api_integration_tests --> sonarcloud
     mediator_heavy_tests --> sonarcloud
     admin_system_tests --> sonarcloud
     trigger --> lint
@@ -61,6 +65,7 @@ Workflow details: [CI overview](../ci/overview.md) and [main workflow](../ci/mai
 | `Dependency Review` | Scan dependency manifest and lock-file diffs. | Fast governance lane. |
 | `Secret Scan` | Detect committed secrets and publish SARIF when allowed. | Fast security lane. |
 | `Admin Integration Tests` | Run database-backed Admin integration tests. | Heavier; path-gated. |
+| `Admin API Integration Tests` | Run full-host Admin API integration tests. | Heavier; dedicated DCP capacity. |
 | `Admin System Tests` | Run hosted UI/system tests with Playwright Chromium. | Heavier; path-gated. |
 | `Mediator Heavy Tests` | Run source-generator, analyzer, and mediator-heavy tests. | Heavier; path-gated. |
 | `SonarCloud` | Aggregate coverage and run hosted analysis. | Dependency-heavy; secret-aware. |

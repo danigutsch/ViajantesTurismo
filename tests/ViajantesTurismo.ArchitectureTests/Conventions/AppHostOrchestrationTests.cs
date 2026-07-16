@@ -247,6 +247,30 @@ public sealed partial class AppHostOrchestrationTests
     }
 
     [Fact]
+    public void Admin_integration_fixture_allows_admin_profile_resources_to_start()
+    {
+        // Arrange
+        var fixtureText = File.ReadAllText(Path.Combine(
+            GetRepositoryRoot(),
+            "tests",
+            "ViajantesTurismo.Admin.IntegrationTests",
+            "Infrastructure",
+            "ApiFixture.cs"));
+
+        // Act
+        var usesDedicatedStartupTimeout = fixtureText.Contains(
+            "ApiResourceStartupTimeout",
+            StringComparison.Ordinal)
+            && fixtureText.Contains("TimeSpan.FromMinutes(3)", StringComparison.Ordinal)
+            && fixtureText.Contains(
+                "[ResourceNames.Api],\n            ApiResourceStartupTimeout,\n            appHostArguments,",
+                StringComparison.Ordinal);
+
+        // Assert
+        usesDedicatedStartupTimeout.ShouldBeTrue();
+    }
+
+    [Fact]
     public void Aspire_test_application_bounds_build_start_and_resource_health_waits()
     {
         // Arrange
