@@ -1,5 +1,6 @@
 using Duende.IdentityModel;
 using Duende.IdentityModel.Client;
+using Duende.AccessTokenManagement.OpenIdConnect;
 using Microsoft.AspNetCore.Authentication.OpenIdConnect;
 using Microsoft.Extensions.Options;
 using ViajantesTurismo.Resources;
@@ -16,24 +17,32 @@ internal sealed class KeycloakAudienceTokenExchangeHandler : DelegatingHandler
     private readonly IHttpClientFactory _httpClientFactory;
     private readonly IOptionsMonitor<OpenIdConnectOptions> _openIdConnectOptions;
     private readonly TimeProvider _timeProvider;
+    private readonly IUserAccessor _userAccessor;
+    private readonly ProtectedDistributedUserTokenStore _userTokenStore;
 
     public KeycloakAudienceTokenExchangeHandler(
         string audience,
         IHttpClientFactory httpClientFactory,
         ProtectedDistributedAudienceTokenStore audienceTokenStore,
         IOptionsMonitor<OpenIdConnectOptions> openIdConnectOptions,
+        IUserAccessor userAccessor,
+        ProtectedDistributedUserTokenStore userTokenStore,
         TimeProvider timeProvider)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(audience);
         ArgumentNullException.ThrowIfNull(httpClientFactory);
         ArgumentNullException.ThrowIfNull(audienceTokenStore);
         ArgumentNullException.ThrowIfNull(openIdConnectOptions);
+        ArgumentNullException.ThrowIfNull(userAccessor);
+        ArgumentNullException.ThrowIfNull(userTokenStore);
         ArgumentNullException.ThrowIfNull(timeProvider);
 
         _audience = GetSupportedAudience(audience);
         _httpClientFactory = httpClientFactory;
         _audienceTokenStore = audienceTokenStore;
         _openIdConnectOptions = openIdConnectOptions;
+        _userAccessor = userAccessor;
+        _userTokenStore = userTokenStore;
         _timeProvider = timeProvider;
     }
 
@@ -41,15 +50,26 @@ internal sealed class KeycloakAudienceTokenExchangeHandler : DelegatingHandler
     {
         ArgumentNullException.ThrowIfNull(request);
 
+        var user = await _userAccessor.GetCurrentUserAsync(cancellationToken);
+        var session = ManagementTokenSession.From(user);
         var sourceAccessToken = GetSourceAccessToken(request);
-        var accessToken = await _audienceTokenStore.Get(_audience, sourceAccessToken, cancellationToken)
-            ?? await ExchangeAccessToken(sourceAccessToken, cancellationToken);
+        return await _userTokenStore.ExecuteForActiveSession(
+            user,
+            async ct =>
+            {
+                var accessToken = await _audienceTokenStore.Get(_audience, session, sourceAccessToken, ct)
+                    ?? await ExchangeAccessToken(session, sourceAccessToken, ct);
 
-        request.Headers.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", accessToken);
-        return await base.SendAsync(request, cancellationToken);
+                request.Headers.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", accessToken);
+                return await base.SendAsync(request, ct);
+            },
+            cancellationToken);
     }
 
-    private async Task<string> ExchangeAccessToken(string sourceAccessToken, CancellationToken cancellationToken)
+    private async Task<string> ExchangeAccessToken(
+        ManagementTokenSession session,
+        string sourceAccessToken,
+        CancellationToken cancellationToken)
     {
         var options = _openIdConnectOptions.Get(OpenIdConnectDefaults.AuthenticationScheme);
         var clientId = options.ClientId;
@@ -96,7 +116,7 @@ internal sealed class KeycloakAudienceTokenExchangeHandler : DelegatingHandler
             throw new InvalidOperationException("The identity provider returned an invalid exchanged token lifetime.");
         }
 
-        await _audienceTokenStore.Store(_audience, sourceAccessToken, accessToken, expiresAt, cancellationToken);
+        await _audienceTokenStore.Store(_audience, session, sourceAccessToken, accessToken, expiresAt, cancellationToken);
         return accessToken;
     }
 

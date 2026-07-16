@@ -1,3 +1,6 @@
+using System.Security.Claims;
+using Duende.AccessTokenManagement.OpenIdConnect;
+using Microsoft.AspNetCore.DataProtection;
 using Microsoft.AspNetCore.Authentication.OpenIdConnect;
 using Microsoft.Extensions.Caching.Distributed;
 using Microsoft.Extensions.Options;
@@ -27,11 +30,18 @@ internal sealed class AudienceTokenExchangeTestHost : IAsyncDisposable
 
     public KeycloakAudienceTokenExchangeHandler CreateHandler(string audience)
     {
+        return CreateHandler(audience, ProtectedDistributedUserTokenStoreTestContext.CreateUser("session-default"));
+    }
+
+    public KeycloakAudienceTokenExchangeHandler CreateHandler(string audience, ClaimsPrincipal user)
+    {
         return new KeycloakAudienceTokenExchangeHandler(
             audience,
             _provider.GetRequiredService<IHttpClientFactory>(),
             _provider.GetRequiredService<ProtectedDistributedAudienceTokenStore>(),
             _provider.GetRequiredService<IOptionsMonitor<OpenIdConnectOptions>>(),
+            new FixedUserAccessor(user),
+            _provider.GetRequiredService<ProtectedDistributedUserTokenStore>(),
             TimeProvider.System)
         {
             InnerHandler = Backend
@@ -54,6 +64,11 @@ internal sealed class AudienceTokenExchangeTestHost : IAsyncDisposable
         services.AddDataProtection();
         services.AddSingleton(TimeProvider.System);
         services.AddSingleton<ProtectedDistributedAudienceTokenStore>();
+        services.AddSingleton(serviceProvider =>
+            ProtectedDistributedUserTokenStore.CreateForTesting(
+                serviceProvider.GetRequiredService<IDistributedCache>(),
+                serviceProvider.GetRequiredService<IDataProtectionProvider>(),
+                serviceProvider.GetRequiredService<TimeProvider>()));
         services.AddOptions();
         services.Configure<OpenIdConnectOptions>(OpenIdConnectDefaults.AuthenticationScheme, options =>
         {
@@ -72,24 +87,39 @@ internal sealed class AudienceTokenExchangeTestHost : IAsyncDisposable
         return new AudienceTokenExchangeTestHost(provider, tokenEndpoint, backend);
     }
 
-    public static string GetAudienceTokenCacheKey(string audience, string sourceAccessToken)
+    public static string GetAudienceTokenCacheKey(string audience, ClaimsPrincipal user)
     {
-        return ProtectedDistributedAudienceTokenStore.GetCacheKey(audience, sourceAccessToken);
+        return ProtectedDistributedAudienceTokenStore.GetCacheKey(audience, ManagementTokenSession.From(user));
     }
 
     public Task StoreProtectedAudienceTokenEntry(
         string audience,
+        ClaimsPrincipal user,
         string sourceAccessToken,
         string accessToken,
         DateTimeOffset expiresAt,
         CancellationToken ct)
     {
         return _provider.GetRequiredService<ProtectedDistributedAudienceTokenStore>()
-            .Store(audience, sourceAccessToken, accessToken, expiresAt, ct);
+            .Store(audience, ManagementTokenSession.From(user), sourceAccessToken, accessToken, expiresAt, ct);
+    }
+
+    public Task RevokeUserTokenSession(ClaimsPrincipal user, CancellationToken ct)
+    {
+        return _provider.GetRequiredService<ProtectedDistributedUserTokenStore>().ClearAll(user, ct);
     }
 
     public ValueTask DisposeAsync()
     {
         return _provider.DisposeAsync();
+    }
+
+    private sealed class FixedUserAccessor(ClaimsPrincipal user) : IUserAccessor
+    {
+        public Task<ClaimsPrincipal> GetCurrentUserAsync(CancellationToken ct = default)
+        {
+            ct.ThrowIfCancellationRequested();
+            return Task.FromResult(user);
+        }
     }
 }

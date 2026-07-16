@@ -1,4 +1,7 @@
+using System.Net;
+using System.Net.Http.Headers;
 using ViajantesTurismo.Admin.SystemTests.Infrastructure;
+using ViajantesTurismo.Resources;
 
 namespace ViajantesTurismo.Admin.SystemTests.Authentication;
 
@@ -47,5 +50,81 @@ public sealed class ManagementBffConformanceTests(AspireSystemTestFixture fixtur
         finalUri.Host.ShouldBe(Fixture.WebAppUrl.Host);
         finalUri.AbsolutePath.ShouldBe("/bookings");
         (await Page.Locator("h1").InnerTextAsync()).ShouldContain("All Bookings", StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public async Task Uses_fixed_backend_audiences_for_management_requests()
+    {
+        // Arrange
+        await ManagementLogin.SignIn(Fixture.WebAppUrl, Fixture.ConformanceUserPassword);
+
+        // Act
+        await NavigateTo("/bookings");
+        await Page.WaitForFunctionAsync(
+            "() => document.querySelector('[role=\"alert\"]')?.textContent?.includes('No bookings found.') || document.querySelector('table') !== null");
+        var emptyBookingsCount = await Page.GetByText("No bookings found.", new PageGetByTextOptions { Exact = true }).CountAsync();
+        var bookingsTableCount = await Page.GetByRole(AriaRole.Table).CountAsync();
+
+        await NavigateTo("/catalog/tours");
+        await Page.WaitForFunctionAsync(
+            "() => document.querySelector('[role=\"alert\"]')?.textContent?.includes('Catalog tours could not be loaded.') || document.querySelector('[role=\"status\"]') !== null || document.querySelector('table') !== null");
+        var catalogErrorCount = await Page.GetByText(
+            "Catalog tours could not be loaded. Try again later.",
+            new PageGetByTextOptions { Exact = true }).CountAsync();
+        var catalogStatusCount = await Page.GetByRole(AriaRole.Status).CountAsync();
+        var catalogTableCount = await Page.GetByRole(AriaRole.Table).CountAsync();
+
+        await NavigateTo("/branding");
+        var brandingNameInput = Page.Locator("#branding-brand-name");
+        await brandingNameInput.WaitForAsync(new LocatorWaitForOptions { State = WaitForSelectorState.Visible });
+        var brandingErrorCount = await Page.GetByRole(AriaRole.Alert).CountAsync();
+
+        // Assert
+        (emptyBookingsCount == 1 || bookingsTableCount > 0).ShouldBeTrue();
+        catalogErrorCount.ShouldBe(0);
+        (catalogStatusCount > 0 || catalogTableCount > 0).ShouldBeTrue();
+        brandingErrorCount.ShouldBe(0);
+    }
+
+    [Fact]
+    public async Task Rejects_live_tokens_issued_for_other_backend_audiences()
+    {
+        // Arrange
+        var ct = TestContext.Current.CancellationToken;
+        var identityProviderEndpoint = Fixture.IdentityProviderEndpoint;
+        var adminAccessToken = await KeycloakConformanceClient.RequestAccessToken(
+            identityProviderEndpoint,
+            Fixture.ConformanceUserPassword,
+            [ApiAudienceNames.Admin],
+            ct);
+        var catalogAccessToken = await KeycloakConformanceClient.RequestAccessToken(
+            identityProviderEndpoint,
+            Fixture.ConformanceUserPassword,
+            [ApiAudienceNames.Catalog],
+            ct);
+        var brandingAccessToken = await KeycloakConformanceClient.RequestAccessToken(
+            identityProviderEndpoint,
+            Fixture.ConformanceUserPassword,
+            [ApiAudienceNames.Branding],
+            ct);
+        using var adminApiClient = Fixture.CreateResourceClient(ResourceNames.Api);
+        using var catalogApiClient = Fixture.CreateResourceClient(ResourceNames.CatalogApi);
+        using var brandingApiClient = Fixture.CreateResourceClient(ResourceNames.BrandingApi);
+        using var adminRequest = new HttpRequestMessage(HttpMethod.Get, "/api/v1/bookings/");
+        using var catalogRequest = new HttpRequestMessage(HttpMethod.Get, "/api/v1/catalog/tours");
+        using var brandingRequest = new HttpRequestMessage(HttpMethod.Get, "/api/v1/branding/settings");
+        adminRequest.Headers.Authorization = new AuthenticationHeaderValue("Bearer", catalogAccessToken);
+        catalogRequest.Headers.Authorization = new AuthenticationHeaderValue("Bearer", brandingAccessToken);
+        brandingRequest.Headers.Authorization = new AuthenticationHeaderValue("Bearer", adminAccessToken);
+
+        // Act
+        using var adminResponse = await adminApiClient.SendAsync(adminRequest, ct);
+        using var catalogResponse = await catalogApiClient.SendAsync(catalogRequest, ct);
+        using var brandingResponse = await brandingApiClient.SendAsync(brandingRequest, ct);
+
+        // Assert
+        adminResponse.StatusCode.ShouldBe(HttpStatusCode.Unauthorized);
+        catalogResponse.StatusCode.ShouldBe(HttpStatusCode.Unauthorized);
+        brandingResponse.StatusCode.ShouldBe(HttpStatusCode.Unauthorized);
     }
 }

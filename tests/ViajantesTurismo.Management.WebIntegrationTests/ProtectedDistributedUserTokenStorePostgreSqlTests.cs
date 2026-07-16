@@ -1,3 +1,7 @@
+using System.Net;
+using ViajantesTurismo.Management.Web;
+using ViajantesTurismo.Resources;
+
 namespace ViajantesTurismo.Management.WebIntegrationTests;
 
 [Trait(SharedKernel.Testing.TestTraitNames.CategoryName, SharedKernel.Testing.TestTraitValues.SecurityCategory)]
@@ -175,5 +179,85 @@ public sealed class ProtectedDistributedUserTokenStorePostgreSqlTests : IAsyncLi
         // Assert
         exception.Message.ShouldBe("The management token session has been revoked.");
         result.Succeeded.ShouldBeFalse();
+    }
+
+    [Fact]
+    public async Task Signing_out_rejects_an_audience_operation_waiting_for_the_same_session_lock()
+    {
+        // Arrange
+        var cache = _scenario.CreateBlockingFirstRemoveCache();
+        var signingOutStore = _scenario.CreateStore(cache);
+        var audienceStore = _scenario.CreateStore();
+        var user = PostgreSqlManagementUserTokenStoreScenario.CreateUser("audience-sign-out-race-session");
+        var audienceOperationRan = false;
+
+        // Act
+        var signOut = signingOutStore.ClearAll(user, TestContext.Current.CancellationToken);
+        await cache.WaitForFirstRemove(TestContext.Current.CancellationToken);
+        var audienceOperation = audienceStore.ExecuteForActiveSession(
+            user,
+            _ =>
+            {
+                audienceOperationRan = true;
+                return Task.FromResult("audience-token");
+            },
+            TestContext.Current.CancellationToken);
+        await _scenario.ReleaseFirstRemoveAfterWaitingForLock(
+            cache,
+            signOut,
+            TestContext.Current.CancellationToken);
+        Func<Task> awaitAudienceOperation = async () =>
+        {
+            await audienceOperation;
+        };
+
+        // Assert
+        var exception = await awaitAudienceOperation.ShouldThrow<InvalidOperationException>();
+        exception.Message.ShouldBe("The management token session has been revoked.");
+        audienceOperationRan.ShouldBeFalse();
+    }
+
+    [Fact]
+    public async Task Signing_out_waits_for_an_inflight_cached_audience_backend_send()
+    {
+        // Arrange
+        const string sourceAccessToken = "source-access-token";
+        const string exchangedAccessToken = "exchanged-access-token";
+        var user = PostgreSqlManagementUserTokenStoreScenario.CreateUser("inflight-audience-session");
+        var userTokenStore = _scenario.CreateStore();
+        var audienceTokenStore = _scenario.CreateAudienceTokenStore();
+        await audienceTokenStore.Store(
+            ApiAudienceNames.Admin,
+            ManagementTokenSession.From(user),
+            sourceAccessToken,
+            exchangedAccessToken,
+            DateTimeOffset.UtcNow.AddMinutes(5),
+            TestContext.Current.CancellationToken);
+        using var exchange = AudienceTokenExchangeIntegrationTestScope.Create(user, userTokenStore, audienceTokenStore);
+
+        // Act
+        var firstResponse = exchange.Send(
+            new Uri("https://admin.example.test/first"),
+            sourceAccessToken,
+            TestContext.Current.CancellationToken);
+        await exchange.WaitForBackendSend(TestContext.Current.CancellationToken);
+        var signOut = _scenario.CreateStore().ClearAll(user, TestContext.Current.CancellationToken);
+        await _scenario.WaitForWaitingAdvisoryLock(TestContext.Current.CancellationToken);
+        exchange.ReleaseBackendSend();
+        using var completedResponse = await firstResponse;
+        await signOut;
+        Func<Task> sendAfterSignOut = async () =>
+        {
+            using var response = await exchange.Send(
+                new Uri("https://admin.example.test/later"),
+                sourceAccessToken,
+                TestContext.Current.CancellationToken);
+        };
+
+        // Assert
+        completedResponse.StatusCode.ShouldBe(HttpStatusCode.OK);
+        var exception = await sendAfterSignOut.ShouldThrow<InvalidOperationException>();
+        exception.Message.ShouldBe("The management token session has been revoked.");
+        exchange.AuthorizationHeaders.ShouldBe(["Bearer exchanged-access-token"]);
     }
 }

@@ -81,6 +81,117 @@ public sealed class AudienceTokenExchangeHandlerTests
     }
 
     [Fact]
+    public async Task Reuses_an_exchanged_token_until_the_login_session_expires()
+    {
+        // Arrange
+        await using var host = AudienceTokenExchangeTestHost.Create();
+        var sessionExpiresAt = DateTimeOffset.UtcNow.AddMinutes(2);
+        var user = ProtectedDistributedUserTokenStoreTestContext.CreateUser("session-a", sessionExpiresAt);
+        await host.StoreProtectedAudienceTokenEntry(
+            ApiAudienceNames.Admin,
+            user,
+            "source-token",
+            "cached-token",
+            sessionExpiresAt.AddMinutes(3),
+            Xunit.TestContext.Current.CancellationToken);
+        using var exchangeHandler = host.CreateHandler(ApiAudienceNames.Admin, user);
+        using var sourceHandler = new SourceAccessTokenHandler("source-token") { InnerHandler = exchangeHandler };
+        using var client = new HttpMessageInvoker(sourceHandler, disposeHandler: false);
+
+        // Act
+        using var response = await client.SendAsync(
+            new HttpRequestMessage(HttpMethod.Get, "https://admin.example.test/"),
+            Xunit.TestContext.Current.CancellationToken);
+
+        // Assert
+        response.StatusCode.ShouldBe(HttpStatusCode.OK);
+        host.TokenEndpoint.Requests.ShouldBeEmpty();
+        host.Backend.AuthorizationHeaders.ShouldBe(["Bearer cached-token"]);
+    }
+
+    [Fact]
+    public async Task Exchanges_a_new_token_when_the_source_token_changes_within_a_login_session()
+    {
+        // Arrange
+        await using var host = AudienceTokenExchangeTestHost.Create();
+        var user = ProtectedDistributedUserTokenStoreTestContext.CreateUser("session-a");
+        using var firstExchangeHandler = host.CreateHandler(ApiAudienceNames.Admin, user);
+        using var secondExchangeHandler = host.CreateHandler(ApiAudienceNames.Admin, user);
+        using var firstSourceHandler = new SourceAccessTokenHandler("first-source-token") { InnerHandler = firstExchangeHandler };
+        using var secondSourceHandler = new SourceAccessTokenHandler("second-source-token") { InnerHandler = secondExchangeHandler };
+        using var firstClient = new HttpMessageInvoker(firstSourceHandler, disposeHandler: false);
+        using var secondClient = new HttpMessageInvoker(secondSourceHandler, disposeHandler: false);
+
+        // Act
+        using var firstResponse = await firstClient.SendAsync(
+            new HttpRequestMessage(HttpMethod.Get, "https://admin.example.test/first"),
+            Xunit.TestContext.Current.CancellationToken);
+        using var secondResponse = await secondClient.SendAsync(
+            new HttpRequestMessage(HttpMethod.Get, "https://admin.example.test/second"),
+            Xunit.TestContext.Current.CancellationToken);
+
+        // Assert
+        firstResponse.StatusCode.ShouldBe(HttpStatusCode.OK);
+        secondResponse.StatusCode.ShouldBe(HttpStatusCode.OK);
+        host.TokenEndpoint.Requests.Select(static request => request["subject_token"])
+            .ShouldBe(["first-source-token", "second-source-token"]);
+    }
+
+    [Fact]
+    public async Task Does_not_exchange_or_send_a_backend_token_after_sign_out_revokes_the_session()
+    {
+        // Arrange
+        await using var host = AudienceTokenExchangeTestHost.Create();
+        var user = ProtectedDistributedUserTokenStoreTestContext.CreateUser("session-a");
+        await host.RevokeUserTokenSession(user, Xunit.TestContext.Current.CancellationToken);
+        using var exchangeHandler = host.CreateHandler(ApiAudienceNames.Admin, user);
+        using var sourceHandler = new SourceAccessTokenHandler("source-token") { InnerHandler = exchangeHandler };
+        using var client = new HttpMessageInvoker(sourceHandler, disposeHandler: false);
+        Func<Task> sendRequest = async () =>
+        {
+            using var response = await client.SendAsync(
+                new HttpRequestMessage(HttpMethod.Get, "https://admin.example.test/"),
+                Xunit.TestContext.Current.CancellationToken);
+        };
+
+        // Act
+        var exception = await sendRequest.ShouldThrow<InvalidOperationException>();
+
+        // Assert
+        exception.Message.ShouldBe("The management token session has been revoked.");
+        host.TokenEndpoint.Requests.ShouldBeEmpty();
+        host.Backend.AuthorizationHeaders.ShouldBeEmpty();
+    }
+
+    [Fact]
+    public async Task Does_not_reuse_an_exchanged_token_between_distinct_login_sessions()
+    {
+        // Arrange
+        await using var host = AudienceTokenExchangeTestHost.Create();
+        var firstUser = ProtectedDistributedUserTokenStoreTestContext.CreateUser("session-a");
+        var secondUser = ProtectedDistributedUserTokenStoreTestContext.CreateUser("session-b");
+        using var firstExchangeHandler = host.CreateHandler(ApiAudienceNames.Catalog, firstUser);
+        using var secondExchangeHandler = host.CreateHandler(ApiAudienceNames.Catalog, secondUser);
+        using var firstSourceHandler = new SourceAccessTokenHandler("source-token") { InnerHandler = firstExchangeHandler };
+        using var secondSourceHandler = new SourceAccessTokenHandler("source-token") { InnerHandler = secondExchangeHandler };
+        using var firstClient = new HttpMessageInvoker(firstSourceHandler, disposeHandler: false);
+        using var secondClient = new HttpMessageInvoker(secondSourceHandler, disposeHandler: false);
+
+        // Act
+        using var firstResponse = await firstClient.SendAsync(
+            new HttpRequestMessage(HttpMethod.Get, "https://catalog.example.test/first"),
+            Xunit.TestContext.Current.CancellationToken);
+        using var secondResponse = await secondClient.SendAsync(
+            new HttpRequestMessage(HttpMethod.Get, "https://catalog.example.test/second"),
+            Xunit.TestContext.Current.CancellationToken);
+
+        // Assert
+        firstResponse.StatusCode.ShouldBe(HttpStatusCode.OK);
+        secondResponse.StatusCode.ShouldBe(HttpStatusCode.OK);
+        host.TokenEndpoint.Requests.Count.ShouldBe(2);
+    }
+
+    [Fact]
     public async Task Rejects_an_invalid_exchange_response_without_forwarding_the_source_token()
     {
         // Arrange
@@ -164,7 +275,7 @@ public sealed class AudienceTokenExchangeHandlerTests
     }
 
     [Fact]
-    public async Task Rejects_an_exchanged_token_cache_entry_transplanted_from_another_source_token()
+    public async Task Rejects_an_exchanged_token_cache_entry_transplanted_from_another_session()
     {
         // Arrange
         await using var host = AudienceTokenExchangeTestHost.Create();
@@ -175,23 +286,25 @@ public sealed class AudienceTokenExchangeHandlerTests
                 System.Text.Encoding.UTF8,
                 "application/json")
         };
-        using var firstExchangeHandler = host.CreateHandler(ApiAudienceNames.Admin);
-        using var firstSourceHandler = new SourceAccessTokenHandler("source-token-a") { InnerHandler = firstExchangeHandler };
+        var firstUser = ProtectedDistributedUserTokenStoreTestContext.CreateUser("session-a");
+        var secondUser = ProtectedDistributedUserTokenStoreTestContext.CreateUser("session-b");
+        using var firstExchangeHandler = host.CreateHandler(ApiAudienceNames.Admin, firstUser);
+        using var firstSourceHandler = new SourceAccessTokenHandler("source-token") { InnerHandler = firstExchangeHandler };
         using var firstClient = new HttpMessageInvoker(firstSourceHandler, disposeHandler: false);
 
         // Act
         using var firstResponse = await firstClient.SendAsync(new HttpRequestMessage(HttpMethod.Get, "https://admin.example.test/first"), Xunit.TestContext.Current.CancellationToken);
         var transplantedValue = await host.Cache.GetAsync(
-            AudienceTokenExchangeTestHost.GetAudienceTokenCacheKey(ApiAudienceNames.Admin, "source-token-a"),
+            AudienceTokenExchangeTestHost.GetAudienceTokenCacheKey(ApiAudienceNames.Admin, firstUser),
             Xunit.TestContext.Current.CancellationToken)
             ?? throw new InvalidOperationException("The source audience-token entry was not stored.");
         await host.Cache.SetAsync(
-            AudienceTokenExchangeTestHost.GetAudienceTokenCacheKey(ApiAudienceNames.Admin, "source-token-b"),
+            AudienceTokenExchangeTestHost.GetAudienceTokenCacheKey(ApiAudienceNames.Admin, secondUser),
             transplantedValue,
             new Microsoft.Extensions.Caching.Distributed.DistributedCacheEntryOptions(),
             Xunit.TestContext.Current.CancellationToken);
-        using var secondExchangeHandler = host.CreateHandler(ApiAudienceNames.Admin);
-        using var secondSourceHandler = new SourceAccessTokenHandler("source-token-b") { InnerHandler = secondExchangeHandler };
+        using var secondExchangeHandler = host.CreateHandler(ApiAudienceNames.Admin, secondUser);
+        using var secondSourceHandler = new SourceAccessTokenHandler("source-token") { InnerHandler = secondExchangeHandler };
         using var secondClient = new HttpMessageInvoker(secondSourceHandler, disposeHandler: false);
         using var secondResponse = await secondClient.SendAsync(new HttpRequestMessage(HttpMethod.Get, "https://admin.example.test/second"), Xunit.TestContext.Current.CancellationToken);
 
@@ -199,7 +312,7 @@ public sealed class AudienceTokenExchangeHandlerTests
         firstResponse.StatusCode.ShouldBe(HttpStatusCode.OK);
         secondResponse.StatusCode.ShouldBe(HttpStatusCode.OK);
         host.TokenEndpoint.Requests.Count.ShouldBe(2);
-        host.Backend.AuthorizationHeaders.ShouldBe(["Bearer token-for-source-token-a", "Bearer token-for-source-token-b"]);
+        host.Backend.AuthorizationHeaders.ShouldBe(["Bearer token-for-source-token", "Bearer token-for-source-token"]);
     }
 
     [Fact]
@@ -207,13 +320,15 @@ public sealed class AudienceTokenExchangeHandlerTests
     {
         // Arrange
         await using var host = AudienceTokenExchangeTestHost.Create();
+        var user = ProtectedDistributedUserTokenStoreTestContext.CreateUser("session-a");
         await host.StoreProtectedAudienceTokenEntry(
             ApiAudienceNames.Admin,
+            user,
             "source-token",
             "source-token",
             DateTimeOffset.UtcNow.AddMinutes(5),
             Xunit.TestContext.Current.CancellationToken);
-        using var exchangeHandler = host.CreateHandler(ApiAudienceNames.Admin);
+        using var exchangeHandler = host.CreateHandler(ApiAudienceNames.Admin, user);
         using var sourceHandler = new SourceAccessTokenHandler("source-token") { InnerHandler = exchangeHandler };
         using var client = new HttpMessageInvoker(sourceHandler, disposeHandler: false);
 
@@ -258,13 +373,15 @@ public sealed class AudienceTokenExchangeHandlerTests
                 new Microsoft.Extensions.Caching.Memory.MemoryDistributedCacheOptions()));
         var cache = new ThrowingRemoveDistributedCache(innerCache);
         await using var host = AudienceTokenExchangeTestHost.Create(cache);
+        var user = ProtectedDistributedUserTokenStoreTestContext.CreateUser("session-a");
         await host.StoreProtectedAudienceTokenEntry(
             ApiAudienceNames.Admin,
+            user,
             "source-token",
             "expired-audience-token",
             DateTimeOffset.UtcNow.AddSeconds(30),
             Xunit.TestContext.Current.CancellationToken);
-        using var exchangeHandler = host.CreateHandler(ApiAudienceNames.Admin);
+        using var exchangeHandler = host.CreateHandler(ApiAudienceNames.Admin, user);
         using var sourceHandler = new SourceAccessTokenHandler("source-token") { InnerHandler = exchangeHandler };
         using var client = new HttpMessageInvoker(sourceHandler, disposeHandler: false);
 
@@ -288,12 +405,13 @@ public sealed class AudienceTokenExchangeHandlerTests
                 new Microsoft.Extensions.Caching.Memory.MemoryDistributedCacheOptions()));
         var cache = new ThrowingRemoveDistributedCache(innerCache);
         await using var host = AudienceTokenExchangeTestHost.Create(cache);
+        var user = ProtectedDistributedUserTokenStoreTestContext.CreateUser("session-a");
         await host.Cache.SetAsync(
-            AudienceTokenExchangeTestHost.GetAudienceTokenCacheKey(ApiAudienceNames.Admin, "source-token"),
+            AudienceTokenExchangeTestHost.GetAudienceTokenCacheKey(ApiAudienceNames.Admin, user),
             [0x01],
             new Microsoft.Extensions.Caching.Distributed.DistributedCacheEntryOptions(),
             Xunit.TestContext.Current.CancellationToken);
-        using var exchangeHandler = host.CreateHandler(ApiAudienceNames.Admin);
+        using var exchangeHandler = host.CreateHandler(ApiAudienceNames.Admin, user);
         using var sourceHandler = new SourceAccessTokenHandler("source-token") { InnerHandler = exchangeHandler };
         using var client = new HttpMessageInvoker(sourceHandler, disposeHandler: false);
 

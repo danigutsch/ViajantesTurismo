@@ -15,30 +15,37 @@ must remain replaceable.
 - Use standards-based OIDC/OAuth 2.0. Management Web is a confidential authorization-code + PKCE
   client using a secure, `HttpOnly`, `SameSite=Lax`, `__Host-` cookie.
 - APIs accept delegated bearer access tokens only. Each validates its configured issuer,
-  discovery metadata, signature/JWKS, `RS256` algorithm, expiry, bounded clock skew, and intended
-  audience: `admin-api`, `catalog-api`, or `branding-api`. Management never forwards its source
-  token to an API.
+  discovery metadata, signature/JWKS, `RS256` algorithm, expiry, bounded clock skew, and exactly one
+  intended audience: `admin-api`, `catalog-api`, or `branding-api`. Management never forwards its
+  source token to an API.
 - Map the validated `roles` claim centrally into application-owned `permission` claims. Policies
   use permissions; they never authorize a raw provider role directly. `Admin` receives all
   boundary permissions. `Operator` receives the non-sensitive operational permissions assigned to
   its boundary.
 - Apply an authenticated fallback policy. Only reviewed health probes, `robots.txt`, public Catalog
   reads, and public Branding reads are explicitly anonymous.
-- Management Web stores protected cookie tickets, including saved OIDC tokens, in
-  `security.management_cookie_tickets`. The ticket store uses a dedicated Data Protection purpose.
-  Data Protection keys are shared through `security.data_protection_keys` and production startup
-  requires `Authentication:DataProtection:CertificatePath` and
+- Management Web stores protected cookie tickets without OIDC tokens in
+  `security.management_cookie_tickets`. A random per-login session claim keys encrypted delegated
+  tokens in the same server-side distributed store through a distinct Data Protection purpose. Each
+  exchanged-token entry is bound to the source access token for that login session.
+  Data Protection keys are shared through `security.data_protection_keys`; production startup requires
+  `Authentication:DataProtection:CertificatePath` and
   `Authentication:DataProtection:CertificatePassword` to protect that key ring at rest.
-- Management requests `offline_access`. Refresh-token rotation remains disabled until separate
-  refresh-token persistence, advisory locking, post-lock reread, and compare-and-swap rotation are
-  implemented; tokens remain in the protected server-side ticket.
+- Management requests `offline_access` and uses Duende Blazor Server token management with the
+  protected per-session store. The token manager handles refresh coordination; cached source and
+  exchanged tokens expire no later than the login session. Sign-out must persist the session-revocation
+  fence or fail closed. After the fence is persisted, token-entry and audience-cache eviction is
+  best-effort, while browser sign-out continues if that cleanup encounters a recoverable failure.
+  Backend exchange and sends share the session revocation fence, so sign-out waits for in-flight
+  requests and rejects later exchange attempts.
 - Management sign-in requests the approved Admin, Catalog, and Branding API scopes. For each protected
   backend call, Management exchanges its protected server-side source access token through Keycloak
   RFC 8693 token exchange for the exact `admin-api`, `catalog-api`, or `branding-api` audience. The
   request supplies the source access token as `subject_token`, requests an access token, and uses the
   exact audience as both `audience` and scope. Each typed client sends only the exchanged audience
   token; neither source nor exchanged tokens reach the browser. Exchanged tokens are protected and
-  cached server-side by source token and audience until shortly before expiry.
+  cached server-side by login session and audience, bound to a source-token fingerprint, and expire no
+  later than the login session.
 - OIDC authority, issuer, client ID, and client-secret configuration remain deployment-provided.
   The current Management BFF implementation requires
   `Authentication:TokenExchange:Enabled=true`,
