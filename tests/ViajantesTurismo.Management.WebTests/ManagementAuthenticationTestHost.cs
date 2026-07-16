@@ -1,3 +1,4 @@
+using Duende.AccessTokenManagement.OpenIdConnect;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authentication.OpenIdConnect;
 using Microsoft.AspNetCore.Authorization;
@@ -26,11 +27,21 @@ internal sealed class ManagementAuthenticationTestHost : IAsyncDisposable
 
     public ITicketStore TicketStore => _provider.GetRequiredService<ITicketStore>();
 
+    public IUserTokenStore UserTokenStore => _provider.GetRequiredService<IUserTokenStore>();
+
+    public ProtectedDistributedUserTokenStore ProtectedUserTokenStore => _provider.GetRequiredService<ProtectedDistributedUserTokenStore>();
+
     public AuthorizationOptions AuthorizationOptions => _provider.GetRequiredService<IOptions<AuthorizationOptions>>().Value;
+
+    public ManagementAuthenticationTestScope CreateUserTokenStoreSession()
+    {
+        return new ManagementAuthenticationTestScope(_provider.GetRequiredService<IServiceScopeFactory>());
+    }
 
     public static ManagementAuthenticationTestHost Create(IConfiguration configuration, TestHostEnvironment environment)
     {
         var services = new ServiceCollection();
+        services.AddLogging();
         services.AddManagementAuthentication(configuration, environment);
         return new ManagementAuthenticationTestHost(services.BuildServiceProvider());
     }

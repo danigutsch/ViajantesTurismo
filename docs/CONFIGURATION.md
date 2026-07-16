@@ -10,6 +10,14 @@ overridden per environment.
 
 | Key | Default | Unit/range | Safe to log | Consumed by | Notes |
 | --- | --- | --- | --- | --- | --- |
+| `Authentication:Authority` | None; required | Absolute HTTPS OIDC authority URI; HTTP only with the explicit Development override | Yes | `ViajantesTurismo.Management.Web` | Deployment-provided OIDC authority for the Management BFF and required token exchange. |
+| `Authentication:Issuer` | None; required | Absolute HTTPS issuer URI; HTTP only with the explicit Development override | Yes | `ViajantesTurismo.Management.Web` | Expected issuer for Management OIDC validation. |
+| `Authentication:ClientId` | None; required | Non-empty string | Yes | `ViajantesTurismo.Management.Web` | Confidential OIDC client identifier used for Management sign-in and token exchange. |
+| `Authentication:ClientSecret` | None; required secret | Non-empty string | No | `ViajantesTurismo.Management.Web` | Confidential OIDC client secret used for Management sign-in and token exchange. |
+| `Authentication:DataProtection:CertificatePath` | None; required outside Development | Path to the PKCS#12 certificate that encrypts the shared Data Protection key ring | No | `ViajantesTurismo.Management.Web` | Deployment-provided certificate path; startup fails outside Development when absent. |
+| `Authentication:DataProtection:CertificatePassword` | None; required secret outside Development | Non-empty string | No | `ViajantesTurismo.Management.Web` | Password for the Data Protection key-encryption certificate. |
+| `Authentication:TokenExchange:Enabled` | None; required `true` | Boolean; must be `true` | Yes | `ViajantesTurismo.Management.Web` | Enables the required BFF audience-token exchange; it is not an optional feature flag. |
+| `Authentication:TokenExchange:Provider` | None; required `Keycloak` | Case-insensitive `Keycloak` | Yes | `ViajantesTurismo.Management.Web` | Selects the current Keycloak RFC 8693 audience-token exchange implementation. |
 | `CatalogIntegrationEvents:IdempotencyLockDuration` | `00:05:00` | .NET `TimeSpan` round-trip `c` format; greater than zero | Yes | `ViajantesTurismo.Catalog.Application` integration event handlers | Controls how long an idempotency lock is held while processing one integration event. |
 | `PublicWeb:Sitemap:CanonicalOrigin` | None in production | Absolute `http` or `https` origin without path, query, fragment, or userinfo | Yes | `ViajantesTurismo.Public.Web` | Emits canonical absolute URLs in public `/sitemap.xml` and `/robots.txt`. Local AppHost injects its HTTPS endpoint. |
 
@@ -17,6 +25,14 @@ Environment variable form:
 
 | Key | Environment variable |
 | --- | --- |
+| `Authentication:Authority` | `Authentication__Authority` |
+| `Authentication:Issuer` | `Authentication__Issuer` |
+| `Authentication:ClientId` | `Authentication__ClientId` |
+| `Authentication:ClientSecret` | `Authentication__ClientSecret` |
+| `Authentication:DataProtection:CertificatePath` | `Authentication__DataProtection__CertificatePath` |
+| `Authentication:DataProtection:CertificatePassword` | `Authentication__DataProtection__CertificatePassword` |
+| `Authentication:TokenExchange:Enabled` | `Authentication__TokenExchange__Enabled` |
+| `Authentication:TokenExchange:Provider` | `Authentication__TokenExchange__Provider` |
 | `CatalogIntegrationEvents:IdempotencyLockDuration` | `CatalogIntegrationEvents__IdempotencyLockDuration` |
 | `PublicWeb:Sitemap:CanonicalOrigin` | `PublicWeb__Sitemap__CanonicalOrigin` |
 

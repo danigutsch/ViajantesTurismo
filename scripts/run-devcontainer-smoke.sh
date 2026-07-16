@@ -417,10 +417,10 @@ main() {
                 dotnet build "${project_path}" --no-restore
             done < <(sort -u scripts/ci-test-slices/*.txt)
 
-            run_test_projects "Devcontainer Fast Validation" scripts/ci-test-slices/fast-validation.txt
-            run_test_projects "Devcontainer Admin Integration Tests" scripts/ci-test-slices/admin-integration.txt
-            run_test_projects "Devcontainer Mediator Heavy Tests" scripts/ci-test-slices/mediator-heavy.txt
-            run_test_projects "Devcontainer Admin System Tests" scripts/ci-test-slices/admin-system.txt
+            for projects_file in scripts/ci-test-slices/*.txt; do
+                slice_name="${projects_file##*/}"
+                run_test_projects "Devcontainer ${slice_name%.txt}" "${projects_file}"
+            done
         ' 2>&1 | tee "${test_log_path}"
     fi
 

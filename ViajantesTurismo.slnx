@@ -47,6 +47,7 @@
         <Project Path="src/SharedKernel/SharedKernel.Messaging.IntegrationEvents.CloudEvents/SharedKernel.Messaging.IntegrationEvents.CloudEvents.csproj" />
         <Project Path="src/SharedKernel/SharedKernel.EventSourcing/SharedKernel.EventSourcing.csproj" />
         <Project Path="src/SharedKernel/SharedKernel.EventSourcing.Npgsql/SharedKernel.EventSourcing.Npgsql.csproj" />
+        <Project Path="src/SharedKernel/SharedKernel.Npgsql/SharedKernel.Npgsql.csproj" />
         <Project Path="src/SharedKernel/SharedKernel.Functional/SharedKernel.Functional.csproj" />
         <Project Path="src/SharedKernel/SharedKernel.Domain.SourceGenerator/SharedKernel.Domain.SourceGenerator.csproj" />
         <Project Path="src/SharedKernel/SharedKernel.Messaging.IntegrationEvents.SourceGenerator/SharedKernel.Messaging.IntegrationEvents.SourceGenerator.csproj" />
@@ -123,6 +124,7 @@
         <Project Path="tests/SharedKernel.Messaging.IntegrationEvents.CloudEvents.Tests/SharedKernel.Messaging.IntegrationEvents.CloudEvents.Tests.csproj" />
         <Project Path="tests/SharedKernel.EventSourcing.Tests/SharedKernel.EventSourcing.Tests.csproj" />
         <Project Path="tests/SharedKernel.EventSourcing.Npgsql.Tests/SharedKernel.EventSourcing.Npgsql.Tests.csproj" />
+        <Project Path="tests/SharedKernel.Npgsql.Tests/SharedKernel.Npgsql.Tests.csproj" />
         <Project Path="src/SharedKernel/SharedKernel.IntegrationTesting/SharedKernel.IntegrationTesting.csproj" />
         <Project Path="tests/SharedKernel.Functional.Tests/SharedKernel.Functional.Tests.csproj" />
         <Project Path="tests/SharedKernel.Idempotency.Tests/SharedKernel.Idempotency.Tests.csproj" />
@@ -145,6 +147,7 @@
         <Project Path="tests/ViajantesTurismo.Admin.Testing/ViajantesTurismo.Admin.Testing.csproj" />
         <Project Path="tests/ViajantesTurismo.DatabaseObservability.Tests/ViajantesTurismo.DatabaseObservability.Tests.csproj" />
         <Project Path="tests/ViajantesTurismo.Management.WebTests/ViajantesTurismo.Management.WebTests.csproj" />
+        <Project Path="tests/ViajantesTurismo.Management.WebIntegrationTests/ViajantesTurismo.Management.WebIntegrationTests.csproj" />
         <Project Path="tests/ViajantesTurismo.Public.WebTests/ViajantesTurismo.Public.WebTests.csproj" />
         <Project Path="tests/ViajantesTurismo.ArchitectureTests/ViajantesTurismo.ArchitectureTests.csproj" />
         <Project Path="tests/SharedKernel.Mediator.CodeFixes.Tests/SharedKernel.Mediator.CodeFixes.Tests.csproj" />

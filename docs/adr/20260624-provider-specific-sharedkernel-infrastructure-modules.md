@@ -35,6 +35,23 @@ Current examples:
 - `SharedKernel.Messaging.IntegrationEvents.CloudEvents` owns CloudEvents mapping as an adapter.
 - `SharedKernel.Idempotency` owns idempotency contracts and value types.
 
+### Raw Npgsql primitives
+
+`SharedKernel.Npgsql` may contain small, reusable raw-Npgsql primitives without a neutral contract when
+the primitive is inherently PostgreSQL-specific. Its initial scope is
+`PostgreSqlTransactionAdvisoryLock`, which acquires a parameterized
+`pg_advisory_xact_lock` on a caller-supplied `NpgsqlConnection`, `NpgsqlTransaction`, and 64-bit lock
+key.
+
+The module does not own schemas, migrations, connection-string configuration, lock-key derivation,
+retry or timeout policy, distributed-cache behavior, authentication/token behavior, or transaction
+lifetime. Callers retain the transaction through the critical section.
+
+Current callers are `SharedKernel.EventSourcing.Npgsql.PostgreSqlEventStore` and
+`ViajantesTurismo.Management.Web.ProtectedDistributedUserTokenStore`. Independent
+`SharedKernel.Npgsql.Tests` integration tests must prove same-key contention, distinct-key concurrency,
+cancellation, and release after commit, rollback, and disposal.
+
 Adapter modules may reference the external packages needed for their implementation, such as
 `Npgsql` for PostgreSQL or CloudEvents SDK packages for CloudEvents mapping. Provider-neutral modules
 must not.

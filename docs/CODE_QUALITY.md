@@ -453,12 +453,8 @@ bash scripts/benchmark-local-validation.sh --all-slices --output TestResults/loc
 bash scripts/benchmark-local-validation.sh --skip-restore --skip-build --solution-tests
 ```
 
-Available slice names match `scripts/ci-test-slices/*.txt`:
-
-- `fast-validation`
-- `admin-integration`
-- `mediator-heavy`
-- `admin-system`
+Available slice names are the basenames of `scripts/ci-test-slices/*.txt`; the benchmark's
+`--all-slices` option discovers every current slice automatically.
 
 Dependency-heavy slices may require a running container runtime, trusted development certificates,
 or Playwright browsers. If a local machine cannot run those prerequisites, capture the restore,

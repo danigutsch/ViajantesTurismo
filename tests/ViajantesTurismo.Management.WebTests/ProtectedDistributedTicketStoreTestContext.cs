@@ -3,6 +3,8 @@ using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.DataProtection;
 using Microsoft.Extensions.Caching.Distributed;
 using Microsoft.Extensions.Caching.Memory;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Options;
 using ViajantesTurismo.Management.Web;
 
@@ -10,10 +12,15 @@ namespace ViajantesTurismo.Management.WebTests;
 
 internal sealed class ProtectedDistributedTicketStoreTestContext
 {
-    public ProtectedDistributedTicketStoreTestContext()
+    public ProtectedDistributedTicketStoreTestContext(
+        IDistributedCache? cache = null,
+        ILogger<ProtectedDistributedTicketStore>? logger = null)
     {
-        Cache = new MemoryDistributedCache(Options.Create(new MemoryDistributedCacheOptions()));
-        Store = new ProtectedDistributedTicketStore(Cache, new EphemeralDataProtectionProvider());
+        Cache = cache ?? new MemoryDistributedCache(Options.Create(new MemoryDistributedCacheOptions()));
+        Store = new ProtectedDistributedTicketStore(
+            Cache,
+            new EphemeralDataProtectionProvider(),
+            logger ?? NullLogger<ProtectedDistributedTicketStore>.Instance);
     }
 
     public IDistributedCache Cache { get; }

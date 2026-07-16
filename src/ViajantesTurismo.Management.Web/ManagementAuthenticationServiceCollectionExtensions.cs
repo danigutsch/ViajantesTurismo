@@ -4,6 +4,8 @@ using Microsoft.AspNetCore.Authentication.OpenIdConnect;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.DataProtection;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.DependencyInjection.Extensions;
+using Npgsql;
 using SharedKernel.AspNetCore;
 using ViajantesTurismo.Management.Security;
 using System.Security.Cryptography.X509Certificates;
@@ -33,6 +35,8 @@ internal static class ManagementAuthenticationServiceCollectionExtensions
         var dataProtectionCertificatePath = configuration[ManagementAuthenticationDefaults.DataProtectionCertificatePathConfigurationKey];
         var dataProtectionCertificatePassword = configuration[ManagementAuthenticationDefaults.DataProtectionCertificatePasswordConfigurationKey];
         var allowHttpDevelopmentAuthority = configuration.GetValue<bool>(ApiAuthenticationDefaults.AllowHttpDevelopmentAuthorityConfigurationKey);
+        var tokenExchangeEnabled = configuration[ManagementAuthenticationDefaults.TokenExchangeEnabledConfigurationKey];
+        var tokenExchangeProvider = configuration[ManagementAuthenticationDefaults.TokenExchangeProviderConfigurationKey];
 
         EnsureConfigured(
             authority,
@@ -43,9 +47,14 @@ internal static class ManagementAuthenticationServiceCollectionExtensions
             dataProtectionCertificatePath,
             dataProtectionCertificatePassword,
             allowHttpDevelopmentAuthority,
+            tokenExchangeEnabled,
+            tokenExchangeProvider,
             environment);
 
         services.AddManagementSecurityPersistence(connectionString!);
+        services.AddSingleton(_ => NpgsqlDataSource.Create(connectionString!));
+        services.TryAddSingleton(TimeProvider.System);
+        services.AddHttpClient(ManagementAuthenticationDefaults.KeycloakTokenExchangeHttpClientName);
 
         var dataProtection = services.AddDataProtection()
             .PersistKeysToDbContext<ManagementSecurityDbContext>()
@@ -58,6 +67,8 @@ internal static class ManagementAuthenticationServiceCollectionExtensions
             dataProtection.ProtectKeysWithCertificate(certificate);
         }
         services.AddSingleton<ITicketStore, ProtectedDistributedTicketStore>();
+        services.AddScoped<ManagementCookieAuthenticationEvents>();
+        services.AddScoped<ManagementOpenIdConnectEvents>();
 
         services.AddAuthentication(options =>
             {
@@ -74,6 +85,7 @@ internal static class ManagementAuthenticationServiceCollectionExtensions
                 options.Cookie.Path = "/";
                 options.ExpireTimeSpan = ManagementAuthenticationDefaults.SessionLifetime;
                 options.SlidingExpiration = false;
+                options.EventsType = typeof(ManagementCookieAuthenticationEvents);
             })
             .AddOpenIdConnect(options =>
             {
@@ -83,6 +95,7 @@ internal static class ManagementAuthenticationServiceCollectionExtensions
                 options.ResponseType = "code";
                 options.UsePkce = true;
                 options.SaveTokens = true;
+                options.EventsType = typeof(ManagementOpenIdConnectEvents);
                 options.MapInboundClaims = false;
                 options.RequireHttpsMetadata = !(environment.IsDevelopment() && allowHttpDevelopmentAuthority);
                 options.Scope.Clear();
@@ -105,7 +118,12 @@ internal static class ManagementAuthenticationServiceCollectionExtensions
             .SetFallbackPolicy(new AuthorizationPolicyBuilder()
                 .RequireAuthenticatedUser()
                 .Build());
-        services.AddOpenIdConnectAccessTokenManagement();
+        services.AddOpenIdConnectAccessTokenManagement()
+            .AddBlazorServerAccessTokenManagement<ProtectedDistributedUserTokenStore>();
+        services.AddScoped<ProtectedDistributedAudienceTokenStore>();
+        services.AddScoped<ProtectedDistributedUserTokenStore>();
+        services.AddScoped<IUserTokenStore>(serviceProvider =>
+            serviceProvider.GetRequiredService<ProtectedDistributedUserTokenStore>());
     }
 
     private static void EnsureConfigured(
@@ -117,6 +135,8 @@ internal static class ManagementAuthenticationServiceCollectionExtensions
         string? dataProtectionCertificatePath,
         string? dataProtectionCertificatePassword,
         bool allowHttpDevelopmentAuthority,
+        string? tokenExchangeEnabled,
+        string? tokenExchangeProvider,
         IHostEnvironment environment)
     {
         if (string.IsNullOrWhiteSpace(authority)
@@ -133,6 +153,7 @@ internal static class ManagementAuthenticationServiceCollectionExtensions
         var allowHttpAuthority = environment.IsDevelopment() && allowHttpDevelopmentAuthority;
         ValidateAuthorityUri(authority, ApiAuthenticationDefaults.AuthorityConfigurationKey, allowHttpAuthority);
         ValidateAuthorityUri(issuer, ApiAuthenticationDefaults.IssuerConfigurationKey, allowHttpAuthority);
+        ValidateTokenExchangeConfiguration(tokenExchangeEnabled, tokenExchangeProvider);
 
         if (!environment.IsDevelopment()
             && (string.IsNullOrWhiteSpace(dataProtectionCertificatePath)
@@ -141,6 +162,24 @@ internal static class ManagementAuthenticationServiceCollectionExtensions
             throw new InvalidOperationException(
                 "Authentication:DataProtection:CertificatePath and "
                 + "Authentication:DataProtection:CertificatePassword must be set outside Development.");
+        }
+    }
+
+    private static void ValidateTokenExchangeConfiguration(string? tokenExchangeEnabled, string? tokenExchangeProvider)
+    {
+        if (!bool.TryParse(tokenExchangeEnabled, out var enabled) || !enabled)
+        {
+            throw new InvalidOperationException(
+                $"{ManagementAuthenticationDefaults.TokenExchangeEnabledConfigurationKey} must be explicitly set to true.");
+        }
+
+        if (!string.Equals(
+                tokenExchangeProvider,
+                ManagementAuthenticationDefaults.KeycloakTokenExchangeProvider,
+                StringComparison.OrdinalIgnoreCase))
+        {
+            throw new InvalidOperationException(
+                $"{ManagementAuthenticationDefaults.TokenExchangeProviderConfigurationKey} must be {ManagementAuthenticationDefaults.KeycloakTokenExchangeProvider}.");
         }
     }
 

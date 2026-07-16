@@ -36,42 +36,28 @@ commit messages into `sharedkernel-version compute` and exposes the calculated S
 package version, assembly version, file version, informational version, base version, source tag, and
 raw JSON as job outputs for later release workflow steps.
 
-### Fast Validation
+### Test slices
 
 | Attribute | Value |
 | --- | --- |
-| Job key | `fast-validation` |
-| Job name | `Fast Validation` |
+| Job key | `test-slices` |
+| Job name | Matrix row `display_name` |
 | Runner | Repository CI baseline |
 
-**Steps:**
+One static matrix owns every Linux test slice. Each row declares its display name, change-detection
+output, project-list file, timeout, and whether Playwright installation is needed. The shared job
+then performs the same checkout, prerequisite setup, test execution, diagnostics, artifact upload,
+and summary steps for every row.
 
-1. Wait for `detect-changes` and `openapi-tool-windows` to complete.
-2. Fail when either prerequisite did not succeed, propagating the Windows OpenAPI tool
-   test result through this required check.
-3. Read the `fast_validation_required` decision from `detect-changes`.
-4. If only documentation changed, run a lightweight success step so the required
-   `Fast Validation` check resolves cleanly without starting the expensive validation
-   path.
-5. Checkout repository (`actions/checkout`) when fast validation work is required.
-6. Configure a repository-local NuGet global-packages path and set up the .NET SDK from
-   `global.json` with built-in NuGet caching (`actions/setup-dotnet`) when validation work
-   is required.
-7. Run `dotnet restore ViajantesTurismo.slnx --locked-mode` when validation work is
-   required.
-8. Run `dotnet tool restore` when validation work is required.
-9. Run `bash scripts/run-ci-test-slice.sh --slice-name "Fast Validation" ...` to execute
-   the fast project set with project-scoped build, project-level parallel test execution,
-   normalized per-slice timing output, machine-readable manifest output, and coverage collection.
-10. When validation work fails, create a focused diagnostic summary under
-   `TestResults/ci-diagnostics/`.
-11. Upload the slice-local test results artifact and upload the focused diagnostics
-   artifact when the job fails.
+`strategy.fail-fast: false` keeps independent rows running when another row fails, preserving
+their artifacts and diagnostics. The matrix does not set `max-parallel` or
+`CI_TEST_PROJECT_PARALLELISM`, so job-level and project-level parallelism remain unchanged.
 
-The slice result uploads are intentionally best-effort. If validation fails before those
-files exist, CI should report the actual build/test failure instead of adding secondary
-artifact-missing noise. The focused diagnostics artifacts remain strict because they are
-part of the failure-investigation path.
+The fast row remains no-host and no-container. The provider/database and full-host Admin API rows
+remain separate because DCP runner-capacity isolation was measured to be more reliable than sharing
+one lane. Browser/system and tooling-heavy rows retain their dedicated runtime boundaries. The
+matrix is an execution mechanism; [ADR-030](../adr/20260629-ci-test-lane-selection.md) remains the
+source of the lane-selection policy.
 
 ### OpenAPI Tool Windows
 
@@ -82,54 +68,23 @@ part of the failure-investigation path.
 | Runner | `windows-latest` |
 
 This job restores the OpenAPI tool test project and its API-generation targets, then runs the
-OpenAPI tool tests on Windows. `Fast Validation` waits for and propagates this job's result so
-the platform-specific child environment safety check remains part of the required merge gate.
+OpenAPI tool tests on Windows. It runs independently of the matrix; `Build and Test` aggregates
+both outcomes so the platform-specific child-environment safety check remains part of the required
+merge gate without delaying unrelated test slices.
 
-### Admin Integration Tests
-
-| Attribute | Value |
-| --- | --- |
-| Job key | `admin-integration-tests` |
-| Job name | `Admin Integration Tests` |
-| Runner | Repository CI baseline |
-
-This slice runs only when `detect-changes` reports that dependency-heavy integration-sensitive
-paths changed. It restores shared prerequisites, then builds and executes the Admin API
-integration project plus the PostgreSQL event-sourcing integration project, then uploads
-slice-local results and diagnostics.
-
-The PostgreSQL event-sourcing tests live here instead of in `Fast Validation` because that project
-uses `Aspire.Hosting.Testing` and starts a real PostgreSQL resource. Keeping it out of the fast lane
-protects the no-host/no-container fast-feedback contract while avoiding another CI job for the same
-class of dependency-heavy work.
-
-### Mediator Heavy Tests
+### Build and Test
 
 | Attribute | Value |
 | --- | --- |
-| Job key | `mediator-heavy-tests` |
-| Job name | `Mediator Heavy Tests` |
+| Job key | `build-and-test` |
+| Job name | `Build and Test` |
 | Runner | Repository CI baseline |
 
-This slice runs only when mediator/analyzer/source-generator paths changed. It isolates the
-slow mediator-specific test projects so they no longer delay ordinary pull requests that do
-not touch that surface.
-
-This lane is also the repository's primary generated-output guardrail path: it owns the
-source-generator-heavy, package-consumption, and code-fix validation projects that are meant
-to catch generated-source regressions before they surface later in broader validation.
-
-### Admin System Tests
-
-| Attribute | Value |
-| --- | --- |
-| Job key | `admin-system-tests` |
-| Job name | `Admin System Tests` |
-| Runner | Repository CI baseline |
-
-This slice runs only when hosted UI or system-test-sensitive paths changed. It restores
-shared prerequisites, builds the system-test project, installs Playwright Chromium only,
-executes the system test project, and uploads slice-local results and diagnostics.
+This is the required non-secret aggregate in the `main` branch-protection rule. It waits for the
+test-slice matrix and Windows OpenAPI validation before succeeding. The component rows and Windows
+job remain parallel; the aggregate only reports their combined result. Because it does not need
+SonarCloud credentials, it blocks a failing test slice on fork pull requests even when
+`SonarCloud` is intentionally skipped.
 
 NuGet lock files (`packages.lock.json`) are committed for the projects in this repository so
 that CI can combine `actions/setup-dotnet` built-in caching with locked-mode restore. This
@@ -139,12 +94,12 @@ the cache a stable key source.
 For pull requests and pushes that only modify `docs/**`, `README.md`, `CONTRIBUTING.md`, or
 the small allowlist of low-risk contributor-maintenance scripts in
 `scripts/detect-changes.sh` (for example `scripts/lint-all.sh` or
-`scripts/validate-commit-message.sh`), the affected validation jobs still run and report
-successful required checks through lightweight skip steps, but they skip the expensive
-restore, build, Playwright, and test steps. This avoids the pending required-check problem
-caused by trigger-level `paths` or `paths-ignore` filters. `Fast Validation` is also
-path-gated now, so changes isolated to heavier hosted or mediator-specific surfaces do not
-automatically re-run the cheaper fast slice.
+`scripts/validate-commit-message.sh`), the affected matrix rows still run and report successful
+outcomes to the required `Build and Test` aggregate through lightweight skip steps,
+but they skip the expensive restore, build, Playwright, and test steps. This avoids the pending
+required-check problem
+caused by trigger-level `paths` or `paths-ignore` filters. The fast row is independently
+path-gated, so heavier hosted or tooling changes do not automatically re-run it.
 
 The change classification logic is implemented in `scripts/detect-changes.sh`, not inline
 in the workflow YAML. If the script cannot determine the diff range reliably, it fails
@@ -198,7 +153,7 @@ command for that maintenance step.
    step.
 3. Checkout repository and validate SonarCloud configuration.
 4. Restore repository prerequisites and cache SonarCloud packages.
-5. Download the `*-results` artifacts from the test slices that actually ran.
+5. Download all `ci-test-slice-*-results` artifacts from matrix rows that actually ran.
 6. Generate the aggregated `sonar-coverage.xml` and HTML coverage report from the slice
    artifacts.
 7. Run `bash scripts/run-sonar-analysis.sh` in reuse mode so SonarScanner performs a fresh

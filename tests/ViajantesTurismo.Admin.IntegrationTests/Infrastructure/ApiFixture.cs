@@ -7,6 +7,8 @@ namespace ViajantesTurismo.Admin.IntegrationTests.Infrastructure;
 
 public sealed class ApiFixture : Testing.Integration.IAdminTestHost, IAsyncLifetime
 {
+    private static readonly TimeSpan ApiResourceStartupTimeout = TimeSpan.FromMinutes(3);
+
     private AspireTestApplication? _app;
     private HttpClient? _client;
     private string? _databaseConnectionString;
@@ -29,7 +31,7 @@ public sealed class ApiFixture : Testing.Integration.IAdminTestHost, IAsyncLifet
             [.. testConfiguration.Arguments, .. HostedProfile.Admin.ToArguments()];
         _app = await AspireTestApplication.Start<ViajantesTurismo_AppHost>(
             [ResourceNames.Api],
-            null,
+            ApiResourceStartupTimeout,
             appHostArguments,
             TestContext.Current.CancellationToken);
         _client = _app.CreateHttpClient(ResourceNames.Api);

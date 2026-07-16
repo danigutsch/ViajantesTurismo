@@ -273,7 +273,7 @@ internal static class DocumentationTestContent
           build:
             name: Build job
           test:
-            name: "Test job"
+            name: "${{ matrix.display_name }}"
             needs: build
           deploy:
             needs:

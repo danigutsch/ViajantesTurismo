@@ -49,6 +49,12 @@
           "Microsoft.EntityFrameworkCore": "10.0.9"
         }
       },
+      "Npgsql": {
+        "type": "Direct",
+        "requested": "[10.0.3, )",
+        "resolved": "10.0.3",
+        "contentHash": "7nb5YzXuvWWJxB0J8DiyL3we+X4FOctZrt0fIBnucOIaIevFEEwGQVZKtiu9olXdlNAK1eNgqSral6r/jlhI4w=="
+      },
       "SonarAnalyzer.CSharp": {
         "type": "Direct",
         "requested": "[10.27.0.140913, )",
@@ -311,6 +317,12 @@
           "SharedKernel.Results": "[0.1.0-alpha.0, )"
         }
       },
+      "sharedkernel.buildingblocks": {
+        "type": "Project",
+        "dependencies": {
+          "SharedKernel.Results": "[0.1.0-alpha.0, )"
+        }
+      },
       "sharedkernel.httpclients": {
         "type": "Project",
         "dependencies": {
@@ -325,6 +337,12 @@
       },
       "sharedkernel.mediator.abstractions": {
         "type": "Project"
+      },
+      "sharedkernel.npgsql": {
+        "type": "Project",
+        "dependencies": {
+          "Npgsql": "[10.0.3, )"
+        }
       },
       "sharedkernel.observability": {
         "type": "Project",
@@ -488,12 +506,6 @@
         "requested": "[2.9.0, )",
         "resolved": "2.9.0",
         "contentHash": "uS2awDkgUvVhd735HEcNcOQdwbIDCAK3V1QzgWoszd/FPDLLVv9eF+fImmdJiGLIKKWJv2DMJQ7OSR9gYLd+uw=="
-      },
-      "Npgsql": {
-        "type": "CentralTransitive",
-        "requested": "[10.0.3, )",
-        "resolved": "10.0.3",
-        "contentHash": "7nb5YzXuvWWJxB0J8DiyL3we+X4FOctZrt0fIBnucOIaIevFEEwGQVZKtiu9olXdlNAK1eNgqSral6r/jlhI4w=="
       },
       "Npgsql.EntityFrameworkCore.PostgreSQL": {
         "type": "CentralTransitive",
