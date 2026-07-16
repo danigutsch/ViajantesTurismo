@@ -81,7 +81,7 @@ shared_validation_patterns=(
     "scripts/detect-changes.sh"
     "scripts/generate-sonar-coverage-report.sh"
     "scripts/install-playwright.sh"
-    "scripts/refresh-sdk-lockfiles.sh"
+    "scripts/refresh-dependency-lockfiles.sh"
     "scripts/run-ci-test-slice.sh"
     "scripts/run-devcontainer-smoke.sh"
     "scripts/run-sonar-analysis.sh"

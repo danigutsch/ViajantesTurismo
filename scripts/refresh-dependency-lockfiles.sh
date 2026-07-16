@@ -7,5 +7,6 @@ repo_root="$(cd -- "${script_dir}/.." && pwd)"
 
 cd "${repo_root}"
 
+dotnet tool restore
 dotnet restore ViajantesTurismo.slnx --force-evaluate
 dotnet restore ViajantesTurismo.slnx --locked-mode

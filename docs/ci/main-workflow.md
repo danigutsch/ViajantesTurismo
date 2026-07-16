@@ -128,9 +128,11 @@ must not be added to `scripts/ci-test-slices/fast-validation.txt`. Prefer bundli
 slow dependency class into an existing dependency-heavy lane before adding another parallel job;
 split only after CI timing data shows duplicated setup is cheaper than serial execution.
 
-SDK bump pull requests must refresh committed `packages.lock.json` files when `global.json`
-changes. The repository provides `bash scripts/refresh-sdk-lockfiles.sh` as the canonical
-command for that maintenance step.
+Dependency-graph changes—including NuGet, SDK, local-tool, project-reference, or dependency-related
+rebase changes—must refresh committed `packages.lock.json` files with
+`bash scripts/refresh-dependency-lockfiles.sh`. CI uses locked restore to reject drift; contributors
+must review regenerated locks and follow the canonical
+[dependency graph and lock-file maintenance workflow](../../CONTRIBUTING.md#dependency-graph-and-lock-file-maintenance).
 
 > **Note:** The CI setup path works around a known SDK Linux dev-certs issue where
 > `dotnet dev-certs https --trust` can exit with code 4 on Linux CI runners in SDK 10.0.103+
