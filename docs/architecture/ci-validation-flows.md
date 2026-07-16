@@ -15,39 +15,22 @@ flowchart TB
     trigger[Pull request, push to main, merge queue, or manual run]
     detect_changes[Detect Changes]
     calculate_version[Calculate Version]
-    fast_validation[Fast Validation]
     openapi_tool_windows[OpenAPI Tool Windows]
-    admin_integration_tests[Admin Integration Tests]
-    admin_api_integration_tests[Admin API Integration Tests]
-    mediator_heavy_tests[Mediator Heavy Tests]
-    admin_system_tests[Admin System Tests]
+    test_slices[Test slices]
     build_and_test[Build and Test]
     api_compatibility[API Compatibility]
     sonarcloud[SonarCloud]
     lint[Lint]
     trigger --> detect_changes
     trigger --> calculate_version
-    detect_changes --> fast_validation
-    openapi_tool_windows --> fast_validation
     detect_changes --> openapi_tool_windows
-    detect_changes --> admin_integration_tests
-    detect_changes --> admin_api_integration_tests
-    detect_changes --> mediator_heavy_tests
-    detect_changes --> admin_system_tests
+    detect_changes --> test_slices
     detect_changes --> build_and_test
-    fast_validation --> build_and_test
-    admin_integration_tests --> build_and_test
-    admin_api_integration_tests --> build_and_test
-    mediator_heavy_tests --> build_and_test
-    admin_system_tests --> build_and_test
+    test_slices --> build_and_test
     openapi_tool_windows --> build_and_test
     trigger --> api_compatibility
     detect_changes --> sonarcloud
-    fast_validation --> sonarcloud
-    admin_integration_tests --> sonarcloud
-    admin_api_integration_tests --> sonarcloud
-    mediator_heavy_tests --> sonarcloud
-    admin_system_tests --> sonarcloud
+    test_slices --> sonarcloud
     trigger --> lint
 ```
 <!-- generated:ci-main-jobs:end -->

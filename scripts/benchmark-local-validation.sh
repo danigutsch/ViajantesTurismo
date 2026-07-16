@@ -8,7 +8,7 @@ usage() {
     cat >&2 << 'EOF'
 Usage: bash scripts/benchmark-local-validation.sh [--skip-restore] [--skip-build] [--skip-tests] [--solution-tests] [--all-slices] [--slice <name>] [--output <path>]
 
-Slice names: fast-validation, admin-integration, admin-api-integration, admin-system, mediator-heavy
+Slice names: file basenames from scripts/ci-test-slices/*.txt
 EOF
 
     return "${exit_code}"
@@ -131,7 +131,13 @@ main() {
     local all_slices=false
     local output="TestResults/local-validation-benchmark-timings.tsv"
     local -a requested_slices=()
-    local -a default_slices=(fast-validation admin-integration admin-api-integration mediator-heavy admin-system)
+    local -a default_slices=()
+    local slice_file
+
+    for slice_file in scripts/ci-test-slices/*.txt; do
+        slice_file="${slice_file##*/}"
+        default_slices+=("${slice_file%.txt}")
+    done
 
     while [[ $# -gt 0 ]]; do
         local argument="$1"

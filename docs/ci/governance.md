@@ -20,11 +20,9 @@ Branch protection for `main` is configured to require the following status check
 - `SonarCloud` (from `.github/workflows/ci.yml`; includes hosted quality gate and the
   repository-owned new issue policy fallback)
 
-`Build and Test` is the required non-secret aggregate for `Fast Validation`, `Admin Integration
-Tests`, `Admin API Integration Tests`, `Mediator Heavy Tests`, and `Admin System Tests`.
-`Fast Validation` also propagates the `OpenAPI Tool Windows` result. Consequently, either Admin
-integration lane blocks merging, including on fork pull requests where `SonarCloud` intentionally
-resolves successfully without accessing repository secrets.
+`Build and Test` is the required non-secret aggregate for the `test-slices` matrix and
+`OpenAPI Tool Windows`. Any failed matrix row blocks merging, including on fork pull requests where
+`SonarCloud` intentionally resolves successfully without accessing repository secrets.
 
 These names match the `name:` fields in the respective workflow files. Any rename of a required
 job must be reflected in branch protection settings.

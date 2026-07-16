@@ -18,8 +18,8 @@ Splitting every slow test project into its own CI job is also not the default an
 AppHost, containers, databases, and browsers. More jobs only help when parallel wall-clock savings beat duplicated setup cost.
 
 Measured DCP runner-capacity isolation showed that `ViajantesTurismo.Admin.IntegrationTests` should
-run in its own CI job rather than share the provider/database lane. The split isolates runner capacity
-at the job level; it does not reduce project-level test parallelism within either slice.
+run in its own matrix row rather than share the provider/database lane. The split isolates runner
+capacity at the job level; it does not reduce project-level test parallelism within either slice.
 
 ## Decision
 
@@ -45,16 +45,16 @@ flowchart TD
 ```
 
 - `Fast Validation` must stay no-host and no-container. Small test count does not make a hosted test fast.
-- Hosted/database/API tests are bundled before adding new CI jobs unless measured timing shows a split wins.
+- Hosted/database/API tests are bundled before adding a new matrix row unless measured timing shows a split wins.
 - Browser/system tests stay separate from API integration tests because they use a different entrypoint, failure mode, and concurrency model.
 - `ViajantesTurismo.Admin.IntegrationTests` runs in the dedicated `Admin API Integration Tests`
   slice. The residual `Admin Integration Tests` slice retains provider/database tests. Both slices use
   the existing `admin_integration_required` gate. The required `Build and Test` aggregate fails when
-  either lane fails, and SonarCloud aggregates both results artifacts.
+  either matrix row fails, and SonarCloud discovers both results artifacts by convention.
 - Package-consumption tests move out of fast validation only when they are measured hotspots or protect packaging behavior that deserves separate failure
   visibility.
 - The current `mediator-heavy` lane is a tooling-heavy lane in practice. It is mediator-specific today because that is the only package-consumption hotspot
-  with a dedicated lane and required check. Do not add more package-consumption lanes without benchmark evidence.
+  with a dedicated matrix row. Do not add more package-consumption lanes without benchmark evidence.
 
 ## Consequences
 
@@ -67,7 +67,7 @@ flowchart TD
 
 ### Negative
 
-- Some lane names remain historical, especially `admin-integration-tests` and `mediator-heavy-tests`.
+- Matrix rows need explicit metadata for their path gate, project list, timeout, and browser requirement.
 - Bundling unrelated dependency-heavy projects can make one job longer even when it avoids another required check.
 - A local benchmark can differ from CI because CI collects coverage and uses hosted runner images.
 
