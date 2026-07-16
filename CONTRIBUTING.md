@@ -92,6 +92,18 @@ documents **GPG signing** as the recommended contributor path.
 - Link related backlog items, issues, or ADRs when applicable
 - Update documentation when behavior, workflow, or contributor expectations change
 
+### Updating an open pull request after its base merges
+
+Prefer GitHub's **Update with rebase** action when it is available. It updates the existing remote
+pull request branch without a local `git push --force-with-lease`.
+
+After GitHub updates the branch, rebase or cherry-pick any local follow-up commits onto the updated
+remote branch, then use a normal push. Do not push those commits onto the stale local branch.
+
+If **Update with rebase** is unavailable and a non-linear pull request branch is acceptable, use a
+signed merge from `main` followed by a normal push. Otherwise, open a follow-up pull request or close
+and recreate the pull request.
+
 ## Quality Checks
 
 Run the checks relevant to your changes:
