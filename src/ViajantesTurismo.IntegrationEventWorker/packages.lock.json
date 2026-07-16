@@ -529,6 +529,22 @@
       "sharedkernel.inputnormalization": {
         "type": "Project"
       },
+      "sharedkernel.malwarescanning": {
+        "type": "Project"
+      },
+      "sharedkernel.malwarescanning.clamav": {
+        "type": "Project",
+        "dependencies": {
+          "Microsoft.Extensions.DependencyInjection.Abstractions": "[10.0.9, )",
+          "Microsoft.Extensions.Hosting.Abstractions": "[10.0.9, )",
+          "Microsoft.Extensions.Options": "[10.0.9, )",
+          "Microsoft.Extensions.Options.ConfigurationExtensions": "[10.0.9, )",
+          "OpenTelemetry": "[1.16.0, )",
+          "OpenTelemetry.Extensions.Hosting": "[1.16.0, )",
+          "SharedKernel.MalwareScanning": "[0.1.0-alpha.0, )",
+          "SharedKernel.OpenApi": "[0.1.0-alpha.0, )"
+        }
+      },
       "sharedkernel.mediator.abstractions": {
         "type": "Project"
       },
@@ -653,6 +669,8 @@
           "SharedKernel.HttpClients": "[0.1.0-alpha.0, )",
           "SharedKernel.Idempotency": "[0.1.0-alpha.0, )",
           "SharedKernel.InputNormalization": "[0.1.0-alpha.0, )",
+          "SharedKernel.MalwareScanning": "[0.1.0-alpha.0, )",
+          "SharedKernel.MalwareScanning.ClamAv": "[0.1.0-alpha.0, )",
           "SharedKernel.Messaging.IntegrationEvents.EntityFrameworkCore": "[0.1.0-alpha.0, )",
           "SharedKernel.OpenApi": "[0.1.0-alpha.0, )",
           "SharedKernel.Scheduling": "[0.1.0-alpha.0, )",
