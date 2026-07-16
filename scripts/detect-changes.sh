@@ -226,7 +226,11 @@ fast_validation_patterns=(
 
 admin_integration_patterns=(
     "src/SharedKernel/SharedKernel.EventSourcing.Npgsql/**"
+    "src/SharedKernel/SharedKernel.Aspire.Hosting.ClamAv/**"
+    "src/SharedKernel/SharedKernel.Aspire.Hosting.SeaweedFs/**"
     "src/SharedKernel/SharedKernel.IntegrationTesting/**"
+    "src/SharedKernel/SharedKernel.MalwareScanning/**"
+    "src/SharedKernel/SharedKernel.MalwareScanning.ClamAv/**"
     "src/SharedKernel/SharedKernel.Npgsql/**"
     "src/SharedKernel/SharedKernel.Observability.Npgsql/**"
     "src/ViajantesTurismo.Admin.ApiService/**"
@@ -234,6 +238,9 @@ admin_integration_patterns=(
     "src/ViajantesTurismo.Admin.Contracts*/**"
     "src/ViajantesTurismo.Admin.Domain/**"
     "src/ViajantesTurismo.Admin.Infrastructure/**"
+    "src/ViajantesTurismo.Catalog.Application/**"
+    "src/ViajantesTurismo.Catalog.Domain/**"
+    "src/ViajantesTurismo.Catalog.Infrastructure/**"
     "src/ViajantesTurismo.Management.Web/**"
     "src/ViajantesTurismo.Resources/**"
     "src/ViajantesTurismo.ServiceDefaults/**"
@@ -244,6 +251,8 @@ admin_integration_patterns=(
     "tests/ViajantesTurismo.Admin.IntegrationTests/**"
     "tests/ViajantesTurismo.Management.WebIntegrationTests/**"
     "tests/ViajantesTurismo.Admin.Testing/**"
+    "tests/SharedKernel.MalwareScanning.ClamAv.Testing/**"
+    "tests/ViajantesTurismo.Catalog.IntegrationTests/**"
 )
 
 admin_system_patterns=(

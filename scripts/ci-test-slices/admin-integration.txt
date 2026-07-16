@@ -1,3 +1,4 @@
+tests/ViajantesTurismo.Catalog.IntegrationTests/ViajantesTurismo.Catalog.IntegrationTests.csproj
 tests/SharedKernel.EventSourcing.Npgsql.Tests/SharedKernel.EventSourcing.Npgsql.Tests.csproj
 tests/SharedKernel.Npgsql.Tests/SharedKernel.Npgsql.Tests.csproj
 tests/ViajantesTurismo.Admin.Infrastructure.Tests/ViajantesTurismo.Admin.Infrastructure.Tests.csproj
