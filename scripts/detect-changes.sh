@@ -134,6 +134,8 @@ fast_validation_patterns=(
     "src/SharedKernel/SharedKernel.Messaging.IntegrationEvents.CloudEvents/**"
     "src/SharedKernel/SharedKernel.Messaging.IntegrationEvents.EntityFrameworkCore/**"
     "src/SharedKernel/SharedKernel.Messaging.IntegrationEvents.SourceGenerator/**"
+    "src/SharedKernel/SharedKernel.MalwareScanning/**"
+    "src/SharedKernel/SharedKernel.MalwareScanning.ClamAv/**"
     "src/SharedKernel/SharedKernel.Mediator/**"
     "src/SharedKernel/SharedKernel.Mediator.Abstractions/**"
     "src/SharedKernel/SharedKernel.Mediator.Analyzers/**"

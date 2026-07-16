@@ -39,6 +39,7 @@ tests/SharedKernel.Mediator.Tests/SharedKernel.Mediator.Tests.csproj
 tests/SharedKernel.ImageProcessing.Tests/SharedKernel.ImageProcessing.Tests.csproj
 tests/SharedKernel.Observability.Tests/SharedKernel.Observability.Tests.csproj
 tests/SharedKernel.Messaging.IntegrationEvents.Tests/SharedKernel.Messaging.IntegrationEvents.Tests.csproj
+tests/SharedKernel.MalwareScanning.ClamAv.Tests/SharedKernel.MalwareScanning.ClamAv.Tests.csproj
 tests/SharedKernel.Functional.Tests/SharedKernel.Functional.Tests.csproj
 tests/SharedKernel.Idempotency.Tests/SharedKernel.Idempotency.Tests.csproj
 tests/SharedKernel.DomainEvents.Tests/SharedKernel.DomainEvents.Tests.csproj

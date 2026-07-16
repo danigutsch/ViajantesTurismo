@@ -1,4 +1,5 @@
 using Microsoft.Extensions.Diagnostics.HealthChecks;
+using Microsoft.Extensions.Hosting;
 using SharedKernel.AI;
 using SharedKernel.AspNetCore;
 using SharedKernel.Messaging.IntegrationEvents;
@@ -87,14 +88,26 @@ internal static class CatalogApiTestHost
         IImageTextGenerator? imageTextGenerator,
         bool authenticateClient = true)
     {
+        var hostEnvironment = environment ?? Environments.Development;
         var configuration = new Dictionary<string, string?>
         {
             [ApiAuthenticationDefaults.AuthorityConfigurationKey] = ApiTestAuthentication.Authority,
             [ApiAuthenticationDefaults.IssuerConfigurationKey] = ApiTestAuthentication.Authority
         };
 
+        if (string.Equals(hostEnvironment, Environments.Development, StringComparison.OrdinalIgnoreCase)
+            || string.Equals(hostEnvironment, "Test", StringComparison.OrdinalIgnoreCase)
+            || string.Equals(hostEnvironment, "Testing", StringComparison.OrdinalIgnoreCase))
+        {
+            configuration["MalwareScanning:Disabled"] = bool.TrueString;
+        }
+        else
+        {
+            configuration["MalwareScanning:ClamAv:Host"] = "test-clamav";
+        }
+
         return WebApplicationTestHost.Create<CatalogApiHostEntryPoint>(
-            environment,
+            hostEnvironment,
             services =>
             {
                 services.Replace(ServiceDescriptor.Singleton<IPublicContentStore>(publicContentStore ?? new TestPublicContentStore()));

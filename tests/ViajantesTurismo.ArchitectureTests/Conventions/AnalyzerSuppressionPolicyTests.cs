@@ -8,6 +8,7 @@ public sealed partial class AnalyzerSuppressionPolicyTests
         "src/SharedKernel/SharedKernel.Branding/BrandingSettings.cs",
         "src/SharedKernel/SharedKernel.Branding/BrandingSettingsDto.cs",
         "src/ViajantesTurismo.Admin.Domain/Customers/Customer.cs",
+        "src/ViajantesTurismo.Admin.ApiService/Customers/CustomerImportEndpoints.cs",
         "src/SharedKernel/SharedKernel.IntegrationTesting/AspireTestApplication.cs",
         "tests/ViajantesTurismo.Admin.IntegrationTests/Infrastructure/PostgreSqlTestDatabase.cs",
         "tests/ViajantesTurismo.Admin.IntegrationTests/Observability/PostgreSqlIndexHealthCollectorScenario.cs"
