@@ -19,6 +19,21 @@ public sealed class ProtectedDistributedUserTokenStorePostgreSqlTests : IAsyncLi
     }
 
     [Fact]
+    public async Task Waiting_for_an_advisory_lock_propagates_cancellation()
+    {
+        // Arrange
+        using var cancellation = new CancellationTokenSource();
+        await cancellation.CancelAsync();
+
+        // Act
+        Func<Task> waitForLock = () => _scenario.WaitForWaitingAdvisoryLock(cancellation.Token);
+        var exception = await waitForLock.ShouldThrowAssignableTo<OperationCanceledException>();
+
+        // Assert
+        exception.ShouldNotBeNull();
+    }
+
+    [Fact]
     public async Task Concurrent_parameterized_stores_for_one_session_preserve_both_tokens()
     {
         // Arrange

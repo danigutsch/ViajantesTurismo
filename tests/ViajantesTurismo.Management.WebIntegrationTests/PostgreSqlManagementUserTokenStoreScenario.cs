@@ -148,6 +148,7 @@ internal sealed class PostgreSqlManagementUserTokenStoreScenario : IAsyncDisposa
             throw new TimeoutException("The second user-token mutation did not wait for the PostgreSQL advisory lock.");
         }
 
+        ct.ThrowIfCancellationRequested();
         throw new TimeoutException("The second user-token mutation did not wait for the PostgreSQL advisory lock.");
     }
 
