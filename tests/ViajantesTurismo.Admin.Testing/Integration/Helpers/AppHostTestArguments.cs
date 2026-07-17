@@ -26,8 +26,10 @@ public static class AppHostTestArguments
             [
                 $"--Parameters:management-web-client-secret={secret}",
                 $"--Parameters:identity-provider-conformance-user-password={secret}",
+                $"--Parameters:identity-provider-operator-conformance-user-password={secret}",
                 $"--Parameters:identity-provider-admin-password={secret}"
             ],
+            secret,
             secret);
     }
 }

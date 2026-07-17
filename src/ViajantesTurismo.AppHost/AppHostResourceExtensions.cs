@@ -50,6 +50,7 @@ internal static class AppHostResourceExtensions
     private const string KeycloakBootstrapAdminPasswordEnvironmentVariable = "KC_BOOTSTRAP_ADMIN_PASSWORD";
     private const string KeycloakManagementClientSecretEnvironmentVariable = "MANAGEMENT_WEB_CLIENT_SECRET";
     private const string KeycloakConformanceUserPasswordEnvironmentVariable = "LOCAL_CONFORMANCE_PASSWORD";
+    private const string KeycloakOperatorConformanceUserPasswordEnvironmentVariable = "LOCAL_OPERATOR_CONFORMANCE_PASSWORD";
     private const string KeycloakRealmImportDirectory = "/opt/keycloak/data/import";
     private const string KeycloakBootstrapAdminUsername = "admin";
     private const string LocalHttpAuthorityAllowed = "true";
@@ -136,15 +137,18 @@ internal static class AppHostResourceExtensions
         }
 
         var conformanceUserPassword = builder.AddParameter(ResourceNames.IdentityProviderConformanceUserPassword, secret: true);
-        return AddIdentityProvider(builder, managementWebClientSecret, conformanceUserPassword);
+        var operatorConformanceUserPassword = builder.AddParameter(ResourceNames.IdentityProviderOperatorConformanceUserPassword, secret: true);
+        return AddIdentityProvider(builder, managementWebClientSecret, conformanceUserPassword, operatorConformanceUserPassword);
     }
 
     private static IResourceBuilder<ContainerResource> AddIdentityProvider(
         IDistributedApplicationBuilder builder,
         IResourceBuilder<ParameterResource> managementWebClientSecret,
-        IResourceBuilder<ParameterResource> conformanceUserPassword)
+        IResourceBuilder<ParameterResource> conformanceUserPassword,
+        IResourceBuilder<ParameterResource> operatorConformanceUserPassword)
     {
         ArgumentNullException.ThrowIfNull(conformanceUserPassword);
+        ArgumentNullException.ThrowIfNull(operatorConformanceUserPassword);
 
         var bootstrapAdminPassword = builder.AddParameter(ResourceNames.IdentityProviderAdminPassword, secret: true);
         var realmImportPath = Path.Combine(AppContext.BaseDirectory, "Keycloak");
@@ -159,6 +163,7 @@ internal static class AppHostResourceExtensions
             .WithEnvironment(KeycloakBootstrapAdminPasswordEnvironmentVariable, bootstrapAdminPassword)
             .WithEnvironment(KeycloakManagementClientSecretEnvironmentVariable, managementWebClientSecret)
             .WithEnvironment(KeycloakConformanceUserPasswordEnvironmentVariable, conformanceUserPassword)
+            .WithEnvironment(KeycloakOperatorConformanceUserPasswordEnvironmentVariable, operatorConformanceUserPassword)
             .WithHttpHealthCheck("/realms/viajantes/.well-known/openid-configuration")
             .WithArgs("start-dev", "--import-realm");
     }

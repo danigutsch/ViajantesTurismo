@@ -40,6 +40,8 @@ internal static class ManagementWebEndpoints
             .WithName(MediaPreviewByRenditionEndpointName)
             .RequireAuthorization();
 
+        app.MapDocumentArtifactProxy();
+
         app.MapStaticAssets()
             .AllowAnonymous();
 

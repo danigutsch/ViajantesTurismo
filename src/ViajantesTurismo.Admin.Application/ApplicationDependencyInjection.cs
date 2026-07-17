@@ -51,12 +51,15 @@ public static class ApplicationDependencyInjection
         builder.Services.AddScoped<UpdateCustomerCommandHandler>();
         builder.Services.AddScoped<GenerateContractDraftCommandHandler>();
         builder.Services.AddScoped<BeginDocumentReviewCommandHandler>();
+        builder.Services.AddScoped<RequestDocumentChangesCommandHandler>();
         builder.Services.AddScoped<UpdateDocumentFieldCommandHandler>();
         builder.Services.AddScoped<ApproveDocumentCommandHandler>();
         builder.Services.AddScoped<FinalizeDocumentCommandHandler>();
+        builder.Services.AddScoped<GetFinalizedDocumentArtifactHandler>();
         builder.Services.AddScoped<RegenerateDocumentDraftCommandHandler>();
         builder.Services.AddScoped<VoidDocumentCommandHandler>();
         builder.Services.AddScoped<PurgeExpiredDraftsCommandHandler>();
+        builder.Services.AddScoped<PurgeExpiredDocumentAuditsCommandHandler>();
         builder.Services.AddScoped<CreateTourCommandHandler>();
         builder.Services.AddScoped<DeleteTourCommandHandler>();
         builder.Services.AddScoped<UpdateTourCommandHandler>();

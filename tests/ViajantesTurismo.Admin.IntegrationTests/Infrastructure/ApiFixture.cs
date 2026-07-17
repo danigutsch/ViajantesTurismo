@@ -1,6 +1,7 @@
 using Npgsql;
 using Projects;
 using SharedKernel.IntegrationTesting;
+using ViajantesTurismo.Admin.IntegrationTests.Infrastructure.Documents;
 using ViajantesTurismo.Resources;
 
 namespace ViajantesTurismo.Admin.IntegrationTests.Infrastructure;
@@ -12,6 +13,7 @@ public sealed class ApiFixture : Testing.Integration.IAdminTestHost, IAsyncLifet
     private AspireTestApplication? _app;
     private HttpClient? _client;
     private string? _databaseConnectionString;
+    private string? _operatorConformanceUserPassword;
 
     public HttpClient Client => _client ?? throw new InvalidOperationException("Fixture is not initialized.");
 
@@ -30,12 +32,13 @@ public sealed class ApiFixture : Testing.Integration.IAdminTestHost, IAsyncLifet
         string[] appHostArguments =
             [.. testConfiguration.Arguments, .. HostedProfile.Admin.ToArguments()];
         _app = await AspireTestApplication.Start<ViajantesTurismo_AppHost>(
-            [ResourceNames.Api],
+            [ResourceNames.Api, ResourceNames.DatabaseServer],
             ApiResourceStartupTimeout,
             appHostArguments,
             TestContext.Current.CancellationToken);
         _client = _app.CreateHttpClient(ResourceNames.Api);
         _databaseConnectionString = await _app.GetConnectionString(ResourceNames.AdminDatabase, TestContext.Current.CancellationToken);
+        _operatorConformanceUserPassword = testConfiguration.OperatorConformanceUserPassword;
         var identityProviderEndpoint = _app.GetEndpoint(ResourceNames.IdentityProvider, "http");
         var accessToken = await KeycloakConformanceClient.RequestAccessToken(
             identityProviderEndpoint,
@@ -50,6 +53,54 @@ public sealed class ApiFixture : Testing.Integration.IAdminTestHost, IAsyncLifet
         return PostgreSqlTestDatabase.Create(GetDatabaseConnectionString(), ct);
     }
 
+    internal Task<DocumentMutationConcurrencyScenario> CreateDocumentMutationConcurrencyScenario(
+        Guid documentId,
+        CancellationToken ct) =>
+        DocumentMutationConcurrencyScenario.Create(GetDatabaseConnectionString(), documentId, ct);
+
+    internal async Task<IReadOnlyList<DocumentAuditEntry>> GetDocumentAuditMetadata(Guid documentId, CancellationToken ct)
+    {
+        await using var dataSource = NpgsqlDataSource.Create(GetDatabaseConnectionString());
+        return await DocumentAuditMetadataReader.ReadByDocumentId(dataSource, documentId, ct);
+    }
+
+    internal async Task<IReadOnlyList<DocumentAuditEntry>> GetDocumentAuditMetadataForBooking(Guid bookingId, CancellationToken ct)
+    {
+        await using var dataSource = NpgsqlDataSource.Create(GetDatabaseConnectionString());
+        return await DocumentAuditMetadataReader.ReadByBookingId(dataSource, bookingId, ct);
+    }
+
+    internal async Task<int> GetDocumentDraftCountForBooking(Guid bookingId, CancellationToken ct)
+    {
+        await using var dataSource = NpgsqlDataSource.Create(GetDatabaseConnectionString());
+        await using var command = dataSource.CreateCommand(
+            """
+            SELECT COUNT(*)
+            FROM "DocumentDrafts"
+            WHERE "BookingId" = @bookingId;
+            """);
+        command.Parameters.AddWithValue("bookingId", bookingId);
+        var count = await command.ExecuteScalarAsync(ct);
+        return Convert.ToInt32(count, System.Globalization.CultureInfo.InvariantCulture);
+    }
+
+    internal async Task<HttpClient> CreateOperatorClient(CancellationToken ct)
+    {
+        ArgumentNullException.ThrowIfNull(_app);
+        ArgumentException.ThrowIfNullOrWhiteSpace(_operatorConformanceUserPassword);
+
+        var identityProviderEndpoint = _app.GetEndpoint(ResourceNames.IdentityProvider, "http");
+        var accessToken = await KeycloakConformanceClient.RequestAccessToken(
+            identityProviderEndpoint,
+            _operatorConformanceUserPassword,
+            [ApiAudienceNames.Admin],
+            ct,
+            KeycloakConformanceClient.OperatorUsername);
+        var client = _app.CreateHttpClient(ResourceNames.Api);
+        client.DefaultRequestHeaders.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", accessToken);
+        return client;
+    }
+
     public async ValueTask DisposeAsync()
     {
         var client = _client;
@@ -57,6 +108,7 @@ public sealed class ApiFixture : Testing.Integration.IAdminTestHost, IAsyncLifet
         _client = null;
         _app = null;
         _databaseConnectionString = null;
+        _operatorConformanceUserPassword = null;
 
         client?.Dispose();
 

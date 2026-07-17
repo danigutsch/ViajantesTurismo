@@ -83,6 +83,7 @@ public sealed class AdminInfrastructureModuleTests
         documentStore.ShouldBeOfType<DocumentStore>();
         outbox.ShouldBeOfType<EfIntegrationEventOutbox<AdminWriteDbContext>>();
         hostedServices.ShouldContain(service => service is DocumentDraftRetentionHostedService);
+        hostedServices.ShouldContain(service => service is DocumentAuditRetentionHostedService);
         hostedServices.ShouldContain(service => (service is IntegrationEventOutboxRelayHostedService<AdminWriteDbContext>));
     }
 
@@ -97,6 +98,7 @@ public sealed class AdminInfrastructureModuleTests
 
         // Assert
         hostedServices.ShouldNotContain(service => service is DocumentDraftRetentionHostedService);
+        hostedServices.ShouldNotContain(service => service is DocumentAuditRetentionHostedService);
         hostedServices.ShouldNotContain(service => service is IntegrationEventOutboxRelayHostedService<AdminWriteDbContext>);
     }
 

@@ -653,7 +653,7 @@ public sealed class DocumentDraftTests
 
         // Act
         var expiredDraft = draft.IsExpiredDraft(createdAt.AddDays(DocumentLimits.DraftRetentionDays));
-        var expiredFinalized = finalized.IsExpiredDraft(createdAt.AddYears(DocumentLimits.FinalizedRetentionYears + 1));
+        var expiredFinalized = finalized.IsExpiredDraft(createdAt.AddYears(1));
 
         // Assert
         beginReview.IsSuccess.ShouldBeTrue();
@@ -661,5 +661,6 @@ public sealed class DocumentDraftTests
         finalize.IsSuccess.ShouldBeTrue();
         expiredDraft.ShouldBeTrue();
         expiredFinalized.ShouldBeFalse();
+        finalized.RetentionExpiresAt.ShouldBeNull();
     }
 }

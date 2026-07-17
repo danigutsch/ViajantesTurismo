@@ -135,7 +135,7 @@ public sealed class DocumentDraft : IEntity<Guid>
     public DateTime UpdatedAt { get; private set; }
 
     /// <summary>Gets when this revision may be removed under retention policy.</summary>
-    public DateTime RetentionExpiresAt { get; private set; }
+    public DateTime? RetentionExpiresAt { get; private set; }
 
     /// <summary>Gets when this revision was finalized.</summary>
     public DateTime? FinalizedAt { get; private set; }
@@ -438,7 +438,7 @@ public sealed class DocumentDraft : IEntity<Guid>
         _finalizedArtifactContent = artifactContent.ToArray();
         FinalizedArtifactName = $"document-{Id:N}-r{Revision}.html";
         FinalizedAt = now;
-        RetentionExpiresAt = now.AddYears(DocumentLimits.FinalizedRetentionYears);
+        RetentionExpiresAt = null;
         Status = DocumentStatus.Finalized;
         UpdatedAt = now;
         return Result.Ok();
@@ -482,7 +482,10 @@ public sealed class DocumentDraft : IEntity<Guid>
     }
 
     /// <summary>Gets whether this unfinalized draft is eligible for purge.</summary>
-    public bool IsExpiredDraft(DateTime now) => FinalizedAt is null && RetentionExpiresAt <= now;
+    public bool IsExpiredDraft(DateTime now) =>
+        FinalizedAt is null
+        && RetentionExpiresAt is { } retentionExpiresAt
+        && retentionExpiresAt <= now;
 
     private static Result Validate(
         Guid bookingId,

@@ -15,10 +15,11 @@ public sealed class DocumentLifecycleCommandHandlerTests
         var document = DocumentDraftTestData.Create(DateTime.UtcNow);
         var store = new FakeDocumentStore();
         store.Documents.Add(document.Id, document);
+        var auditStore = new FakeDocumentAuditStore();
         var unitOfWork = new FakeUnitOfWork();
 
-        var result = await new BeginDocumentReviewCommandHandler(store, unitOfWork, TimeProvider.System)
-            .Handle(new BeginDocumentReviewCommand(document.Id), CancellationToken.None);
+        var result = await new BeginDocumentReviewCommandHandler(store, unitOfWork, TimeProvider.System, auditStore)
+            .Handle(new BeginDocumentReviewCommand(document.Id, DocumentAuditTestData.CreateContext()), CancellationToken.None);
 
         result.IsSuccess.ShouldBeTrue();
         document.Status.ShouldBe(DocumentStatus.InReview);
@@ -28,13 +29,14 @@ public sealed class DocumentLifecycleCommandHandlerTests
     [Fact]
     public async Task BeginReview_does_not_save_missing_draft()
     {
+        var auditStore = new FakeDocumentAuditStore();
         var unitOfWork = new FakeUnitOfWork();
 
-        var result = await new BeginDocumentReviewCommandHandler(new FakeDocumentStore(), unitOfWork, TimeProvider.System)
-            .Handle(new BeginDocumentReviewCommand(Guid.CreateVersion7()), CancellationToken.None);
+        var result = await new BeginDocumentReviewCommandHandler(new FakeDocumentStore(), unitOfWork, TimeProvider.System, auditStore)
+            .Handle(new BeginDocumentReviewCommand(Guid.CreateVersion7(), DocumentAuditTestData.CreateContext()), CancellationToken.None);
 
         result.IsFailure.ShouldBeTrue();
-        unitOfWork.SaveEntitiesCallCount.ShouldBe(0);
+        unitOfWork.SaveEntitiesCallCount.ShouldBe(1);
     }
 
     [Fact]
@@ -47,10 +49,11 @@ public sealed class DocumentLifecycleCommandHandlerTests
         document.Finalize("artifact"u8.ToArray(), now).IsSuccess.ShouldBeTrue();
         var store = new FakeDocumentStore();
         store.Documents.Add(document.Id, document);
+        var auditStore = new FakeDocumentAuditStore();
         var unitOfWork = new FakeUnitOfWork();
 
-        var result = await new VoidDocumentCommandHandler(store, unitOfWork, TimeProvider.System)
-            .Handle(new VoidDocumentCommand(document.Id, "customer-cancellation"), CancellationToken.None);
+        var result = await new VoidDocumentCommandHandler(store, unitOfWork, TimeProvider.System, auditStore)
+            .Handle(new VoidDocumentCommand(document.Id, "customer-cancellation", DocumentAuditTestData.CreateContext()), CancellationToken.None);
 
         result.IsSuccess.ShouldBeTrue();
         document.Status.ShouldBe(DocumentStatus.Voided);
@@ -65,10 +68,11 @@ public sealed class DocumentLifecycleCommandHandlerTests
         document.BeginReview(now).IsSuccess.ShouldBeTrue();
         var store = new FakeDocumentStore();
         store.Documents.Add(document.Id, document);
+        var auditStore = new FakeDocumentAuditStore();
         var unitOfWork = new FakeUnitOfWork();
 
-        var result = await new ApproveDocumentCommandHandler(store, unitOfWork, TimeProvider.System)
-            .Handle(new ApproveDocumentCommand(document.Id), CancellationToken.None);
+        var result = await new ApproveDocumentCommandHandler(store, unitOfWork, TimeProvider.System, auditStore)
+            .Handle(new ApproveDocumentCommand(document.Id, DocumentAuditTestData.CreateContext()), CancellationToken.None);
 
         result.IsSuccess.ShouldBeTrue();
         document.Status.ShouldBe(DocumentStatus.Approved);
@@ -76,15 +80,81 @@ public sealed class DocumentLifecycleCommandHandlerTests
     }
 
     [Fact]
-    public async Task Void_does_not_save_missing_draft()
+    public async Task Approve_rejects_missing_document_and_records_audit()
     {
+        // Arrange
+        var documentId = Guid.CreateVersion7();
+        var auditContext = DocumentAuditTestData.CreateContext();
+        var auditStore = new FakeDocumentAuditStore();
         var unitOfWork = new FakeUnitOfWork();
 
-        var result = await new VoidDocumentCommandHandler(new FakeDocumentStore(), unitOfWork, TimeProvider.System)
-            .Handle(new VoidDocumentCommand(Guid.CreateVersion7(), "customer-cancellation"), CancellationToken.None);
+        // Act
+        var result = await new ApproveDocumentCommandHandler(new FakeDocumentStore(), unitOfWork, TimeProvider.System, auditStore)
+            .Handle(new ApproveDocumentCommand(documentId, auditContext), CancellationToken.None);
+        var audit = auditStore.Records.ShouldHaveSingleItem();
+
+        // Assert
+        result.IsFailure.ShouldBeTrue();
+        audit.Operation.ShouldBe(DocumentAuditOperation.Approve);
+        audit.Outcome.ShouldBe(DocumentAuditOutcome.Rejected);
+        audit.ReasonCode.ShouldBe(DocumentAuditReasonCode.DocumentNotFound);
+        audit.DocumentId.ShouldBe(documentId);
+        audit.BookingId.ShouldBeNull();
+        audit.DocumentRevision.ShouldBeNull();
+        audit.ActorId.ShouldBe(auditContext.ActorId);
+        audit.CorrelationId.ShouldBe(auditContext.CorrelationId);
+        unitOfWork.SaveEntitiesCallCount.ShouldBe(1);
+    }
+
+    [Fact]
+    public async Task RequestChanges_saves_document_in_review()
+    {
+        // Arrange
+        var now = DateTime.UtcNow;
+        var document = DocumentDraftTestData.Create(now);
+        document.BeginReview(now).IsSuccess.ShouldBeTrue();
+        var store = new FakeDocumentStore();
+        store.Documents.Add(document.Id, document);
+        var auditStore = new FakeDocumentAuditStore();
+        var unitOfWork = new FakeUnitOfWork();
+
+        // Act
+        var result = await new RequestDocumentChangesCommandHandler(store, unitOfWork, TimeProvider.System, auditStore)
+            .Handle(new RequestDocumentChangesCommand(document.Id, DocumentAuditTestData.CreateContext()), CancellationToken.None);
+
+        // Assert
+        result.IsSuccess.ShouldBeTrue();
+        document.Status.ShouldBe(DocumentStatus.ChangesRequested);
+        unitOfWork.SaveEntitiesCallCount.ShouldBe(1);
+    }
+
+    [Fact]
+    public async Task RequestChanges_does_not_save_missing_draft()
+    {
+        // Arrange
+        var auditStore = new FakeDocumentAuditStore();
+        var unitOfWork = new FakeUnitOfWork();
+
+        // Act
+        var result = await new RequestDocumentChangesCommandHandler(new FakeDocumentStore(), unitOfWork, TimeProvider.System, auditStore)
+            .Handle(new RequestDocumentChangesCommand(Guid.CreateVersion7(), DocumentAuditTestData.CreateContext()), CancellationToken.None);
+
+        // Assert
+        result.IsFailure.ShouldBeTrue();
+        unitOfWork.SaveEntitiesCallCount.ShouldBe(1);
+    }
+
+    [Fact]
+    public async Task Void_does_not_save_missing_draft()
+    {
+        var auditStore = new FakeDocumentAuditStore();
+        var unitOfWork = new FakeUnitOfWork();
+
+        var result = await new VoidDocumentCommandHandler(new FakeDocumentStore(), unitOfWork, TimeProvider.System, auditStore)
+            .Handle(new VoidDocumentCommand(Guid.CreateVersion7(), "customer-cancellation", DocumentAuditTestData.CreateContext()), CancellationToken.None);
 
         result.IsFailure.ShouldBeTrue();
-        unitOfWork.SaveEntitiesCallCount.ShouldBe(0);
+        unitOfWork.SaveEntitiesCallCount.ShouldBe(1);
     }
 
     [Fact]
@@ -114,15 +184,43 @@ public sealed class DocumentLifecycleCommandHandlerTests
         var document = DocumentDraftTestData.Create(DateTime.UtcNow);
         var store = new FakeDocumentStore();
         store.Documents.Add(document.Id, document);
+        var auditStore = new FakeDocumentAuditStore();
         var unitOfWork = new FakeUnitOfWork();
 
         // Act
-        var result = await new UpdateDocumentFieldCommandHandler(store, unitOfWork, TimeProvider.System)
-            .Handle(new UpdateDocumentFieldCommand(document.Id, "greeting", "Welcome"), CancellationToken.None);
+        var result = await new UpdateDocumentFieldCommandHandler(store, unitOfWork, TimeProvider.System, auditStore)
+            .Handle(new UpdateDocumentFieldCommand(document.Id, "greeting", "Welcome", DocumentAuditTestData.CreateContext()), CancellationToken.None);
 
         // Assert
         result.IsSuccess.ShouldBeTrue();
         document.Fields.Single(field => field.FieldId == "greeting").RenderedValue.ShouldBe("Welcome");
+        unitOfWork.SaveEntitiesCallCount.ShouldBe(1);
+    }
+
+    [Fact]
+    public async Task UpdateField_rejects_missing_document_and_records_audit()
+    {
+        // Arrange
+        var documentId = Guid.CreateVersion7();
+        var auditContext = DocumentAuditTestData.CreateContext();
+        var auditStore = new FakeDocumentAuditStore();
+        var unitOfWork = new FakeUnitOfWork();
+
+        // Act
+        var result = await new UpdateDocumentFieldCommandHandler(new FakeDocumentStore(), unitOfWork, TimeProvider.System, auditStore)
+            .Handle(new UpdateDocumentFieldCommand(documentId, "greeting", "Welcome", auditContext), CancellationToken.None);
+        var audit = auditStore.Records.ShouldHaveSingleItem();
+
+        // Assert
+        result.IsFailure.ShouldBeTrue();
+        audit.Operation.ShouldBe(DocumentAuditOperation.UpdateField);
+        audit.Outcome.ShouldBe(DocumentAuditOutcome.Rejected);
+        audit.ReasonCode.ShouldBe(DocumentAuditReasonCode.DocumentNotFound);
+        audit.DocumentId.ShouldBe(documentId);
+        audit.BookingId.ShouldBeNull();
+        audit.DocumentRevision.ShouldBeNull();
+        audit.ActorId.ShouldBe(auditContext.ActorId);
+        audit.CorrelationId.ShouldBe(auditContext.CorrelationId);
         unitOfWork.SaveEntitiesCallCount.ShouldBe(1);
     }
 }

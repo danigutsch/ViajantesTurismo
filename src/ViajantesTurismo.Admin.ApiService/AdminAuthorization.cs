@@ -12,6 +12,7 @@ internal static class AdminAuthorization
     public const string CustomerRead = "customer.read";
     public const string CustomerSensitiveRead = "customer.sensitive.read";
     public const string CustomerWrite = "customer.write";
+    public const string DocumentManage = "document.manage";
     public const string DocumentationRead = "documentation.read";
     public const string PaymentRead = "payment.read";
     public const string PaymentWrite = "payment.write";
@@ -30,6 +31,7 @@ internal static class AdminAuthorization
                 CustomerRead,
                 CustomerSensitiveRead,
                 CustomerWrite,
+                DocumentManage,
                 DocumentationRead,
                 PaymentRead,
                 PaymentWrite,

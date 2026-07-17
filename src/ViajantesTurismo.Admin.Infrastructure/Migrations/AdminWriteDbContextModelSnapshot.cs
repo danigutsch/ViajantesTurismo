@@ -263,6 +263,56 @@ namespace ViajantesTurismo.Admin.Infrastructure.Migrations
                     b.ToTable("Customers");
                 });
 
+            modelBuilder.Entity("ViajantesTurismo.Admin.Domain.Documents.DocumentAuditRecord", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("ActorId")
+                        .IsRequired()
+                        .HasMaxLength(128)
+                        .HasColumnType("character varying(128)");
+
+                    b.Property<Guid?>("BookingId")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("CorrelationId")
+                        .IsRequired()
+                        .HasMaxLength(128)
+                        .HasColumnType("character varying(128)");
+
+                    b.Property<Guid?>("DocumentId")
+                        .HasColumnType("uuid");
+
+                    b.Property<int?>("DocumentRevision")
+                        .HasColumnType("integer");
+
+                    b.Property<DateTime>("OccurredAtUtc")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("Operation")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("Outcome")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("ReasonCode")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<DateTime>("RetentionExpiresAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("RetentionExpiresAt")
+                        .HasDatabaseName("IX_DocumentAuditRecords_RetentionExpiresAt");
+
+                    b.ToTable("DocumentAuditRecords");
+                });
+
             modelBuilder.Entity("ViajantesTurismo.Admin.Domain.Documents.DocumentDraft", b =>
                 {
                     b.Property<Guid>("Id")
@@ -337,7 +387,7 @@ namespace ViajantesTurismo.Admin.Infrastructure.Migrations
                     b.Property<Guid?>("ReplacesDocumentId")
                         .HasColumnType("uuid");
 
-                    b.Property<DateTime>("RetentionExpiresAt")
+                    b.Property<DateTime?>("RetentionExpiresAt")
                         .HasColumnType("timestamp with time zone");
 
                     b.Property<int>("Revision")
@@ -376,6 +426,12 @@ namespace ViajantesTurismo.Admin.Infrastructure.Migrations
                     b.Property<byte[]>("_finalizedArtifactContent")
                         .HasColumnType("bytea")
                         .HasColumnName("FinalizedArtifactContent");
+
+                    b.Property<uint>("xmin")
+                        .IsConcurrencyToken()
+                        .ValueGeneratedOnAddOrUpdate()
+                        .HasColumnType("xid")
+                        .HasColumnName("xmin");
 
                     b.HasKey("Id");
 

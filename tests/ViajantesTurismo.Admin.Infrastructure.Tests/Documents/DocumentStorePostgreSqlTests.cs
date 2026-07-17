@@ -37,7 +37,7 @@ public sealed class DocumentStorePostgreSqlTests : IAsyncLifetime
         var boundaryExpired = DocumentDraftInfrastructureTestData.CreateDraft(now.AddDays(-DocumentLimits.DraftRetentionDays));
         var future = DocumentDraftInfrastructureTestData.CreateDraft(now.AddDays(-DocumentLimits.DraftRetentionDays).AddMinutes(1));
         var current = DocumentDraftInfrastructureTestData.CreateDraft(now);
-        var finalized = DocumentDraftInfrastructureTestData.CreateFinalizedDraft(now.AddYears(-DocumentLimits.FinalizedRetentionYears - 1));
+        var finalized = DocumentDraftInfrastructureTestData.CreateFinalizedDraft(now.AddYears(-1));
         await Scenario.Seed(expired, boundaryExpired, future, current, finalized);
 
         // Act
@@ -51,6 +51,8 @@ public sealed class DocumentStorePostgreSqlTests : IAsyncLifetime
         remaining.Select(document => document.Id).ShouldContain(finalized.Id);
         remaining.Select(document => document.Id).ShouldNotContain(expired.Id);
         remaining.Select(document => document.Id).ShouldNotContain(boundaryExpired.Id);
+        var retainedFinalized = remaining.ShouldHaveSingleItem(document => document.Id == finalized.Id);
+        retainedFinalized.RetentionExpiresAt.ShouldBeNull();
         remaining.Sum(document => document.Fields.Count).ShouldBe(6);
         var hasRetentionIndex = await Scenario.HasRetentionIndex(TestContext.Current.CancellationToken);
         hasRetentionIndex.ShouldBeTrue();
@@ -102,5 +104,36 @@ public sealed class DocumentStorePostgreSqlTests : IAsyncLifetime
 
         // Assert
         reloaded.ShouldNotBeNull().ShouldHaveFieldIdsInOrder(["z-template-first", "a-template-second"]);
+    }
+
+    [Fact]
+    public async Task GetAuditMetadataById_returns_only_document_audit_identifiers()
+    {
+        // Arrange
+        var document = DocumentDraftInfrastructureTestData.CreateDraft(DateTime.UtcNow);
+        await Scenario.Seed(document);
+
+        // Act
+        var metadata = await Scenario.GetAuditMetadataById(document.Id, TestContext.Current.CancellationToken);
+
+        // Assert
+        var auditMetadata = metadata.ShouldNotBeNull();
+        auditMetadata.BookingId.ShouldBe(document.BookingId);
+        auditMetadata.Revision.ShouldBe(document.Revision);
+    }
+
+    [Fact]
+    public async Task DocumentDraft_rejects_concurrent_updates()
+    {
+        // Arrange
+        var now = DateTime.UtcNow;
+        var document = DocumentDraftInfrastructureTestData.CreateDraft(now);
+        await Scenario.Seed(document);
+
+        // Act
+        var conflictDetected = await Scenario.HasConcurrentDocumentUpdateConflict(document.Id, now, TestContext.Current.CancellationToken);
+
+        // Assert
+        conflictDetected.ShouldBeTrue();
     }
 }

@@ -211,7 +211,7 @@ public sealed partial class AppHostOrchestrationTests
             StringComparison.Ordinal)
             && fixtureText.Contains("TimeSpan.FromMinutes(3)", StringComparison.Ordinal)
             && fixtureText.Contains(
-                "[ResourceNames.Api],\n            ApiResourceStartupTimeout,\n            appHostArguments,",
+                "[ResourceNames.Api, ResourceNames.DatabaseServer],\n            ApiResourceStartupTimeout,\n            appHostArguments,",
                 StringComparison.Ordinal);
 
         // Assert

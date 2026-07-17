@@ -15,6 +15,7 @@ internal sealed class DocumentDraftConfiguration : IEntityTypeConfiguration<Docu
     {
         entity.HasKey(document => document.Id);
         entity.Property(document => document.Id).ValueGeneratedNever();
+        entity.Property<uint>("xmin").IsRowVersion();
         entity.Property(document => document.BookingId).IsRequired();
         entity.Property(document => document.Type).HasConversion<string>().IsRequired();
         entity.Property(document => document.Audience).HasConversion<string>().IsRequired();
@@ -39,7 +40,7 @@ internal sealed class DocumentDraftConfiguration : IEntityTypeConfiguration<Docu
         entity.Property(document => document.Status).HasConversion<string>().IsRequired();
         entity.Property(document => document.CreatedAt).IsRequired();
         entity.Property(document => document.UpdatedAt).IsRequired();
-        entity.Property(document => document.RetentionExpiresAt).IsRequired();
+        entity.Property(document => document.RetentionExpiresAt);
         entity.HasIndex(document => document.RetentionExpiresAt)
             .HasDatabaseName("IX_DocumentDrafts_RetentionExpiresAt_Unfinalized")
             .HasFilter("\"FinalizedAt\" IS NULL");

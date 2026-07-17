@@ -115,6 +115,28 @@ public sealed class AspireSystemTestFixture : IAspireSystemTestFixture, IAsyncLi
         await PostgreSqlEventSourcingSchemaReset.Reset(catalogConnection, ct);
     }
 
+    internal async Task<string?> GetRejectedDocumentReadAuditActor(Guid documentId, CancellationToken ct)
+    {
+        ArgumentNullException.ThrowIfNull(_databaseConnectionString);
+
+        const string sql = """
+            SELECT "ActorId"
+            FROM "DocumentAuditRecords"
+            WHERE "DocumentId" = @documentId
+              AND "Operation" = 'Read'
+              AND "Outcome" = 'Rejected'
+              AND "ReasonCode" = 'DocumentNotFound'
+            ORDER BY "OccurredAtUtc" DESC
+            LIMIT 1;
+            """;
+
+        await using var connection = new NpgsqlConnection(_databaseConnectionString);
+        await connection.OpenAsync(ct);
+        await using var command = new NpgsqlCommand(sql, connection);
+        command.Parameters.AddWithValue("documentId", documentId);
+        return await command.ExecuteScalarAsync(ct) as string;
+    }
+
     internal async Task RequeueCatalogTransportMessageForAdminTour(Guid adminTourId, CancellationToken ct)
     {
         ArgumentNullException.ThrowIfNull(_databaseConnectionString);

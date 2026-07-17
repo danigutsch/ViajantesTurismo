@@ -47,6 +47,25 @@ public sealed class AdminOpenApiDocumentRegistrationTests
     }
 
     [Fact]
+    public async Task Generates_a_documents_document_containing_only_document_paths()
+    {
+        // Act
+        var document = await AdminOpenApiDocumentFactory.CreateDocument(
+            "documents",
+            TestContext.Current.CancellationToken,
+            "MapDocumentEndpoints",
+            "MapBookingEndpoints",
+            "MapCustomerEndpoints");
+
+        // Assert
+        document.Paths.Keys.ShouldContain("/api/v1/documents/{id}");
+        document.Paths.Keys.ShouldContain("/api/v1/documents/{id}/download");
+        document.Paths.Keys.ShouldContain("/api/v1/documents/bookings/{bookingId}/contract-drafts");
+        document.Paths.Keys.ShouldNotContain("/api/v1/bookings");
+        document.Paths.Keys.ShouldNotContain("/api/v1/customers");
+    }
+
+    [Fact]
     public async Task Generates_a_v1_document_including_error_documentation_paths()
     {
         var document = await AdminOpenApiDocumentFactory.CreateDocument(

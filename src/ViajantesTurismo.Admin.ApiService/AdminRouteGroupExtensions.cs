@@ -15,6 +15,8 @@ internal static class AdminRouteGroupExtensions
     private const string CustomersGroupName = "Customers";
     private const string BookingsRoutePrefix = "bookings";
     private const string BookingsGroupName = "Bookings";
+    private const string DocumentsRoutePrefix = "documents";
+    private const string DocumentsGroupName = "Documents";
 
     /// <summary>
     /// Gets the OpenAPI document names used by the Admin API.
@@ -24,6 +26,7 @@ internal static class AdminRouteGroupExtensions
         ToursRoutePrefix,
         CustomersRoutePrefix,
         BookingsRoutePrefix,
+        DocumentsRoutePrefix,
         CurrentApiVersion.OpenApiDocumentName
     ];
 
@@ -73,6 +76,16 @@ internal static class AdminRouteGroupExtensions
     public static RouteGroupBuilder MapBookingsGroup(this WebApplication app)
     {
         return app.MapRouteGroup(BookingsRoutePrefix, BookingsGroupName);
+    }
+
+    /// <summary>
+    /// Maps the generated-documents route group with the correct OpenAPI metadata.
+    /// </summary>
+    /// <param name="app">The web application to configure.</param>
+    /// <returns>The configured route group builder.</returns>
+    public static RouteGroupBuilder MapDocumentsGroup(this WebApplication app)
+    {
+        return app.MapRouteGroup(DocumentsRoutePrefix, DocumentsGroupName);
     }
 
     /// <summary>

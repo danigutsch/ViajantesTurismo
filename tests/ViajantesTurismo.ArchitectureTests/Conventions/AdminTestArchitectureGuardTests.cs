@@ -99,6 +99,9 @@ public sealed partial class AdminTestArchitectureGuardTests
         systemTestBaseText.ShouldContain(
             "public abstract class AspireSystemTestBase<TFixture>(TFixture fixture) : PageTest",
             StringComparison.Ordinal);
+        systemTestBaseText.ShouldContain(
+            "[assembly: CollectionBehavior(DisableTestParallelization = true)]",
+            StringComparison.Ordinal);
         systemTestBaseText.ShouldContain("protected Uri ApiBaseUri => Fixture.ApiBaseUri;", StringComparison.Ordinal);
         serialSystemTestBaseText.ShouldContain("[Collection(E2ETestCollections.Serial)]", StringComparison.Ordinal);
         serialSystemTestBaseText.ShouldContain(

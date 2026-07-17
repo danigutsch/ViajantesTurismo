@@ -1,10 +1,12 @@
 using SharedKernel.AspNetCore;
 using SharedKernel.Branding;
+using SharedKernel.HttpClients;
 using SharedKernel.MalwareScanning.ClamAv;
 using SharedKernel.OpenApi;
 using ViajantesTurismo.Admin.ApiService;
 using ViajantesTurismo.Admin.ApiService.Bookings;
 using ViajantesTurismo.Admin.ApiService.Customers;
+using ViajantesTurismo.Admin.ApiService.Documents;
 using ViajantesTurismo.Admin.ApiService.Errors;
 using ViajantesTurismo.Admin.ApiService.Tours;
 using ViajantesTurismo.Admin.Application;
@@ -19,6 +21,7 @@ var builder = WebApplication.CreateSlimBuilder(args);
 builder.WebHost.UseKestrelHttpsConfiguration();
 
 builder.AddServiceDefaults();
+builder.Services.AddHttpClientDefaults();
 
 builder.Services.AddSingleton(TimeProvider.System);
 builder.Services.AddHttpClient<IBrandingApiClient, BrandingApiClient>(client => client.BaseAddress = new Uri($"https+http://{ResourceNames.BrandingApi}"));
@@ -38,6 +41,7 @@ builder.Services.AddApiSecurity(
     .AddPolicy(AdminAuthorization.CustomerRead, policy => policy.RequirePermission(AdminAuthorization.CustomerRead))
     .AddPolicy(AdminAuthorization.CustomerSensitiveRead, policy => policy.RequirePermission(AdminAuthorization.CustomerSensitiveRead))
     .AddPolicy(AdminAuthorization.CustomerWrite, policy => policy.RequirePermission(AdminAuthorization.CustomerWrite))
+    .AddPolicy(AdminAuthorization.DocumentManage, policy => policy.RequirePermission(AdminAuthorization.DocumentManage))
     .AddPolicy(AdminAuthorization.DocumentationRead, policy => policy.RequirePermission(AdminAuthorization.DocumentationRead))
     .AddPolicy(AdminAuthorization.PaymentRead, policy => policy.RequirePermission(AdminAuthorization.PaymentRead))
     .AddPolicy(AdminAuthorization.PaymentWrite, policy => policy.RequirePermission(AdminAuthorization.PaymentWrite))
@@ -69,6 +73,7 @@ app.MapToursEndpoints();
 app.MapCustomerEndpoints()
     .MapCustomerImportEndpoints();
 app.MapBookingEndpoints();
+app.MapDocumentEndpoints();
 app.MapErrorDocumentationEndpoints();
 app.MapRobotsTxt(ApiRobotsTxt);
 

@@ -17,6 +17,7 @@ internal sealed class AdminWriteDbContext(
     public DbSet<Tour> Tours => Set<Tour>();
     public DbSet<Customer> Customers => Set<Customer>();
     public DbSet<DocumentDraft> DocumentDrafts => Set<DocumentDraft>();
+    public DbSet<DocumentAuditRecord> DocumentAuditRecords => Set<DocumentAuditRecord>();
 
     public async Task SaveEntities(CancellationToken ct)
     {
@@ -45,6 +46,7 @@ internal sealed class AdminWriteDbContext(
         modelBuilder.ApplyConfiguration(new BookingConfiguration());
         modelBuilder.ApplyConfiguration(new PaymentConfiguration());
         modelBuilder.ApplyConfiguration(new DocumentDraftConfiguration());
+        modelBuilder.ApplyConfiguration(new DocumentAuditConfiguration());
         if (configurations is not null)
         {
             foreach (var configuration in configurations)

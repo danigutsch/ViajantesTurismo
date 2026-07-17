@@ -31,6 +31,11 @@ public static class ContractConstants
     public const int MaxBookingNotesLength = 2000;
 
     /// <summary>
+    /// The maximum length for an editable generated-document field value.
+    /// </summary>
+    public const int MaxDocumentFieldValueLength = 4000;
+
+    /// <summary>
     /// The maximum length for medical information fields (allergies and additional info).
     /// </summary>
     public const int MaxMedicalInfoLength = 500;

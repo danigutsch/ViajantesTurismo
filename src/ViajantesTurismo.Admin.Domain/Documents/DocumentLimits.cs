@@ -41,6 +41,4 @@ public static class DocumentLimits
     /// <summary>The retention period for unfinalized drafts.</summary>
     public const int DraftRetentionDays = 30;
 
-    /// <summary>The provisional retention period for finalized artifacts.</summary>
-    public const int FinalizedRetentionYears = 7;
 }

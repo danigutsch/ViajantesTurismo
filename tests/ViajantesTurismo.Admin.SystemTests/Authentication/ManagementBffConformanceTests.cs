@@ -127,4 +127,23 @@ public sealed class ManagementBffConformanceTests(AspireSystemTestFixture fixtur
         catalogResponse.StatusCode.ShouldBe(HttpStatusCode.Unauthorized);
         brandingResponse.StatusCode.ShouldBe(HttpStatusCode.Unauthorized);
     }
+
+    [Fact]
+    public async Task Preserves_the_opaque_subject_through_bff_token_exchange_to_document_audit()
+    {
+        // Arrange
+        var documentId = Guid.CreateVersion7();
+
+        // Act
+        await ManagementLogin.SignIn(Fixture.WebAppUrl, Fixture.ConformanceUserPassword);
+        await NavigateTo($"/documents/{documentId}");
+        var expectedUrl = new Uri(Fixture.WebAppUrl, $"/documents/{documentId}").ToString();
+        Page.Url.ShouldBe(expectedUrl);
+        var missingDocumentAlert = Page.GetByRole(AriaRole.Alert);
+        await Expect(missingDocumentAlert).ToContainTextAsync("Document not found.");
+        var actorId = await Fixture.GetRejectedDocumentReadAuditActor(documentId, TestContext.Current.CancellationToken);
+
+        // Assert
+        actorId.ShouldBe(KeycloakConformanceClient.ConformanceUserId);
+    }
 }
