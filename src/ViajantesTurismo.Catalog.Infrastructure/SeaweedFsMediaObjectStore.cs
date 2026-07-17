@@ -1,7 +1,9 @@
 using Amazon.S3;
 using Amazon.S3.Model;
 using Microsoft.Extensions.Options;
+using SharedKernel.InputNormalization;
 using ViajantesTurismo.Catalog.Application.Media;
+using ViajantesTurismo.Catalog.Domain;
 
 namespace ViajantesTurismo.Catalog.Infrastructure;
 
@@ -51,9 +53,16 @@ internal sealed class SeaweedFsMediaObjectStore(
         ValidateKey(objectKey);
         await EnsureBucketProvisioned(ct).ConfigureAwait(false);
 
-        var response = await client.GetObjectAsync(new GetObjectRequest { BucketName = options.Bucket, Key = objectKey }, ct).ConfigureAwait(false);
-        var checksum = GetMetadataValue(response.Metadata, "checksum");
-        return new MediaObjectReadResult(objectKey, new SeaweedFsObjectResponseStream(response), response.Headers.ContentType, response.Headers.ContentLength, checksum);
+        try
+        {
+            var response = await client.GetObjectAsync(new GetObjectRequest { BucketName = options.Bucket, Key = objectKey }, ct).ConfigureAwait(false);
+            var checksum = GetMetadataValue(response.Metadata, "checksum");
+            return new MediaObjectReadResult(objectKey, new SeaweedFsObjectResponseStream(response), response.Headers.ContentType, response.Headers.ContentLength, checksum);
+        }
+        catch (AmazonS3Exception exception) when (exception.StatusCode == System.Net.HttpStatusCode.NotFound)
+        {
+            throw new FileNotFoundException("The media object is unavailable.", objectKey, exception);
+        }
     }
 
     public async ValueTask<bool> Exists(string objectKey, CancellationToken ct)
@@ -209,10 +218,7 @@ internal sealed class SeaweedFsMediaObjectStore(
 
     private static void ValidateKey(string objectKey)
     {
-        if (string.IsNullOrWhiteSpace(objectKey)
-            || objectKey.StartsWith(Separator, StringComparison.Ordinal)
-            || objectKey.Contains('\\', StringComparison.Ordinal)
-            || objectKey.Split(Separator).Any(static segment => segment.Length == 0 || segment is "." or ".."))
+        if (!ObjectStorageKeyValidator.IsValidRelativeKey(objectKey, CatalogDomainLimits.MaxMediaObjectKeyLength))
         {
             throw new ArgumentException("Media object key must be a relative slash-delimited path without dot segments.", nameof(objectKey));
         }

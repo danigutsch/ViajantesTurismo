@@ -178,6 +178,23 @@ public sealed class PublicMediaImage
     public bool HasReviewedAccessibilityText => !RequiresHumanReview && (IsDecorative || !string.IsNullOrWhiteSpace(AltText));
 
     /// <summary>
+    /// Finds a processed rendition by its width and media content type.
+    /// </summary>
+    /// <param name="width">The rendition width in pixels.</param>
+    /// <param name="contentType">The rendition media content type.</param>
+    /// <returns>The matching rendition, or <see langword="null"/> when no rendition matches.</returns>
+    public MediaImageResponsiveVariant? FindResponsiveVariant(int width, string contentType)
+    {
+        if (width <= 0 || string.IsNullOrWhiteSpace(contentType))
+        {
+            return null;
+        }
+
+        return _responsiveVariants.FirstOrDefault(variant =>
+            variant.Width == width && string.Equals(variant.ContentType, contentType.Trim(), StringComparison.OrdinalIgnoreCase));
+    }
+
+    /// <summary>
     /// Creates a public media image after validating catalog media rules.
     /// </summary>
     /// <param name="metadata">The scalar media image metadata.</param>
@@ -549,6 +566,12 @@ public sealed class PublicMediaImage
         {
             errors[nameof(ResponsiveVariants)] = ["Responsive variants must include valid relative object keys, positive dimensions, content type, and file size."];
         }
+        else if (responsiveVariants
+            .GroupBy(static variant => (variant.Width, ContentType: StringSanitizer.Sanitize(variant.ContentType).ToUpperInvariant()))
+            .Any(static group => group.Count() > 1))
+        {
+            errors[nameof(ResponsiveVariants)] = ["Responsive variants cannot duplicate a width and content type."];
+        }
         else if (processingStatus == MediaImageProcessingStatus.Ready && responsiveVariants.Count == 0)
         {
             errors[nameof(ResponsiveVariants)] = ["Ready images require at least one processed public variant."];
@@ -570,22 +593,8 @@ public sealed class PublicMediaImage
     private static bool IsInvalidObjectKey(string? objectKey)
     {
         var sanitized = StringSanitizer.Sanitize(objectKey);
-        if (string.IsNullOrWhiteSpace(sanitized))
-        {
-            return true;
-        }
-
-        if (sanitized.StartsWith('/') || sanitized.StartsWith('\\') || IsWindowsRootedPath(sanitized))
-        {
-            return true;
-        }
-
-        return sanitized.Replace('\\', '/').Split('/').Any(static segment =>
-            segment.Length == 0 || segment is "." or "..");
+        return !ObjectStorageKeyValidator.IsValidRelativeKey(sanitized, CatalogDomainLimits.MaxMediaObjectKeyLength);
     }
-
-    private static bool IsWindowsRootedPath(string objectKey) =>
-        objectKey.Length >= 2 && char.IsAsciiLetter(objectKey[0]) && objectKey[1] == ':';
 
     private static void ValidateRequiredText(
         Dictionary<string, string[]> errors,

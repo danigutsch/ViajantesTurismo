@@ -21,4 +21,12 @@ public interface IPublicCatalogApiClient
     /// </summary>
     Task<PublicContentVariantDto?> GetPublicContent(string key, string? culture, CancellationToken ct);
 
+    /// <summary>
+    /// Opens public media content for streaming.
+    /// </summary>
+    /// <remarks>
+    /// The caller must asynchronously dispose a non-null response after streaming completes.
+    /// </remarks>
+    Task<PublicMediaObjectResponse?> GetPublicMedia(Guid id, int width, string format, CancellationToken ct);
+
 }

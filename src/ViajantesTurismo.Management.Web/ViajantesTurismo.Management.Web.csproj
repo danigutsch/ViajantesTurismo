@@ -15,6 +15,7 @@
         <ProjectReference Include="..\SharedKernel\SharedKernel.Branding\SharedKernel.Branding.csproj" />
         <ProjectReference Include="..\SharedKernel\SharedKernel.BuildingBlocks\SharedKernel.BuildingBlocks.csproj" />
         <ProjectReference Include="..\SharedKernel\SharedKernel.HttpClients\SharedKernel.HttpClients.csproj" />
+        <ProjectReference Include="..\SharedKernel\SharedKernel.HttpCaching.AspNetCore\SharedKernel.HttpCaching.AspNetCore.csproj" />
         <ProjectReference Include="..\SharedKernel\SharedKernel.Npgsql\SharedKernel.Npgsql.csproj" />
         <ProjectReference Include="..\ViajantesTurismo.Admin.Contracts.Application\ViajantesTurismo.Admin.Contracts.Application.csproj" />
         <ProjectReference Include="..\ViajantesTurismo.Admin.Contracts.Http\ViajantesTurismo.Admin.Contracts.Http.csproj" />

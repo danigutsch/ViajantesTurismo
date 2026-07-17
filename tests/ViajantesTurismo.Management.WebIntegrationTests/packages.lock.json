@@ -1191,6 +1191,9 @@
           "SharedKernel.Results": "[0.1.0-alpha.0, )"
         }
       },
+      "sharedkernel.httpcaching.aspnetcore": {
+        "type": "Project"
+      },
       "sharedkernel.httpclients": {
         "type": "Project",
         "dependencies": {
@@ -1290,6 +1293,7 @@
           "SharedKernel.AspNetCore": "[0.1.0-alpha.0, )",
           "SharedKernel.Branding": "[0.1.0-alpha.0, )",
           "SharedKernel.BuildingBlocks": "[0.1.0-alpha.0, )",
+          "SharedKernel.HttpCaching.AspNetCore": "[0.1.0-alpha.0, )",
           "SharedKernel.HttpClients": "[0.1.0-alpha.0, )",
           "SharedKernel.Npgsql": "[0.1.0-alpha.0, )",
           "ViajantesTurismo.Admin.Contracts.Application": "[0.1.0-alpha.0, )",

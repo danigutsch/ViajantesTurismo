@@ -181,6 +181,7 @@ flowchart TB
     ViajantesTurismo_Management_Web[ViajantesTurismo.Management.Web] --> SharedKernel_AspNetCore[SharedKernel.AspNetCore]
     ViajantesTurismo_Management_Web[ViajantesTurismo.Management.Web] --> SharedKernel_Branding[SharedKernel.Branding]
     ViajantesTurismo_Management_Web[ViajantesTurismo.Management.Web] --> SharedKernel_BuildingBlocks[SharedKernel.BuildingBlocks]
+    ViajantesTurismo_Management_Web[ViajantesTurismo.Management.Web] --> SharedKernel_HttpCaching_AspNetCore[SharedKernel.HttpCaching.AspNetCore]
     ViajantesTurismo_Management_Web[ViajantesTurismo.Management.Web] --> SharedKernel_HttpClients[SharedKernel.HttpClients]
     ViajantesTurismo_Management_Web[ViajantesTurismo.Management.Web] --> SharedKernel_Npgsql[SharedKernel.Npgsql]
     ViajantesTurismo_Management_Web[ViajantesTurismo.Management.Web] --> ViajantesTurismo_Admin_Contracts_Application[ViajantesTurismo.Admin.Contracts.Application]

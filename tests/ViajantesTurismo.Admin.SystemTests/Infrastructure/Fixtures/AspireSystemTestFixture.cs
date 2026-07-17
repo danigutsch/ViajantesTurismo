@@ -30,6 +30,18 @@ public sealed class AspireSystemTestFixture : IAspireSystemTestFixture, IAsyncLi
 
     public ICatalogToursApiClient CatalogTours => _catalogTours ?? throw new InvalidOperationException("Fixture is not initialized.");
     ICatalogToursApiClient IAspireSystemTestFixture.CatalogTours => CatalogTours;
+
+    internal Uri IdentityProviderEndpoint => (_app ?? throw new InvalidOperationException("Fixture is not initialized."))
+        .GetEndpoint(ResourceNames.IdentityProvider, "http");
+
+    internal HttpClient CreateResourceClient(string resourceName)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(resourceName);
+
+        return (_app ?? throw new InvalidOperationException("Fixture is not initialized."))
+            .CreateHttpClient(resourceName);
+    }
+
     public async ValueTask InitializeAsync()
     {
         var testConfiguration = AppHostTestArguments.CreateConfiguration();
@@ -44,7 +56,7 @@ public sealed class AspireSystemTestFixture : IAspireSystemTestFixture, IAsyncLi
 
         _apiClient = _app.CreateHttpClient(ResourceNames.Api);
         _catalogApiClient = _app.CreateHttpClient(ResourceNames.CatalogApi);
-        var identityProviderEndpoint = _app.GetEndpoint(ResourceNames.IdentityProvider, "http");
+        var identityProviderEndpoint = IdentityProviderEndpoint;
         var adminAccessToken = await KeycloakConformanceClient.RequestAccessToken(
             identityProviderEndpoint,
             testConfiguration.ConformanceUserPassword,

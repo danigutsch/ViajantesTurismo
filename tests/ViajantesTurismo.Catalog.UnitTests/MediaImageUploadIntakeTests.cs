@@ -1,6 +1,7 @@
 using ViajantesTurismo.Catalog.Application.Media;
 using ViajantesTurismo.Catalog.Contracts.IntegrationEvents.Media;
 using ViajantesTurismo.Catalog.Domain.Media;
+using SharedKernel.Results;
 
 namespace ViajantesTurismo.Catalog.UnitTests;
 
@@ -36,11 +37,44 @@ public sealed class MediaImageUploadIntakeTests
         imageStore.Current.ProcessingStatus.ShouldBe(MediaImageProcessingStatus.Pending);
         imageStore.Current.Dimensions.Width.ShouldBe(640);
         imageStore.Current.Dimensions.Height.ShouldBe(320);
-        objectStore.ObjectKeys.ShouldContain($"media/{mediaImageId:N}/original.jpg");
+        var storedObjectKey = objectStore.ObjectKeys.ShouldHaveSingleItem();
+        storedObjectKey.ShouldStartWith($"media/{mediaImageId:N}/original-", StringComparison.Ordinal);
+        storedObjectKey.ShouldEndWith(".jpg", StringComparison.Ordinal);
         objectStore.ObjectKeys.ShouldNotContain("client-photo.jpg");
-        result.Value.OriginalStoredEvent.SourceObjectKey.ShouldBe($"media/{mediaImageId:N}/original.jpg");
+        result.Value.OriginalStoredEvent.SourceObjectKey.ShouldBe(storedObjectKey);
         scanner.LastRequest.ShouldNotBeNull();
-        scanner.LastRequest.ObjectKey.ShouldBe($"media/{mediaImageId:N}/original.jpg");
+        scanner.LastRequest.ObjectKey.ShouldBe(storedObjectKey);
+    }
+
+    [Fact]
+    public async Task Accept_uses_a_distinct_original_object_key_for_each_upload_attempt()
+    {
+        // Arrange
+        var mediaImageId = Guid.CreateVersion7();
+        var content = CatalogTestImages.CreateJpeg(320, 160);
+        var objectStore = new InMemoryMediaObjectStore();
+        var intake = MediaImageUploadIntakeTestFactory.Create(
+            new StubMediaUploadScanner(MediaUploadScanResult.Passed),
+            objectStore,
+            new InMemoryPublicMediaImageStore(PublicMediaImageTestFactory.CreatePendingImage(Guid.CreateVersion7(), 1)));
+        var request = new MediaImageUploadIntakeRequest(
+            mediaImageId,
+            new MemoryStream(content),
+            "photo.jpg",
+            "image/jpeg",
+            content.Length,
+            "Cyclists in the mountains",
+            [new MediaImageTourLink(Guid.CreateVersion7(), 0, true)]);
+
+        // Act
+        var first = await intake.Accept(request, TestContext.Current.CancellationToken);
+        var retry = await intake.Accept(request with { Content = new MemoryStream(content) }, TestContext.Current.CancellationToken);
+
+        // Assert
+        first.IsSuccess.ShouldBeTrue();
+        retry.IsSuccess.ShouldBeTrue();
+        first.Value.Image.SourceObjectKey.ShouldNotBe(retry.Value.Image.SourceObjectKey);
+        objectStore.ObjectKeys.Count.ShouldBe(2);
     }
 
     [Fact]
@@ -165,6 +199,36 @@ public sealed class MediaImageUploadIntakeTests
     }
 
     [Fact]
+    public async Task Accept_returns_a_retryable_conflict_when_gallery_placement_is_taken_concurrently()
+    {
+        // Arrange
+        var mediaImageId = Guid.CreateVersion7();
+        var originalImage = PublicMediaImageTestFactory.CreatePendingImage(mediaImageId, 1);
+        var content = CatalogTestImages.CreateJpeg(320, 160);
+        var objectStore = new InMemoryMediaObjectStore();
+        var imageStore = new ThrowingPublicMediaImageStore(originalImage, new MediaGalleryPlacementConflictException());
+        var intake = MediaImageUploadIntakeTestFactory.Create(
+            new StubMediaUploadScanner(MediaUploadScanResult.Passed),
+            objectStore,
+            imageStore);
+        var request = new MediaImageUploadIntakeRequest(
+            mediaImageId,
+            new MemoryStream(content),
+            "photo.jpg",
+            "image/jpeg",
+            content.Length,
+            "Cyclists in the mountains",
+            [new MediaImageTourLink(Guid.CreateVersion7(), 0, true)]);
+
+        // Act
+        var result = await intake.Accept(request, TestContext.Current.CancellationToken);
+
+        // Assert
+        result.Status.ShouldBe(ResultStatus.Conflict);
+        objectStore.ObjectKeys.ShouldBeEmpty();
+    }
+
+    [Fact]
     public async Task Accept_rejects_upload_when_scanner_rejects()
     {
         // Arrange
@@ -190,6 +254,10 @@ public sealed class MediaImageUploadIntakeTests
 
         // Assert
         result.IsFailure.ShouldBe(true);
+        var rejection = result.ErrorDetails.ShouldNotBeNull();
+        rejection.Detail.ShouldBe("Media upload is invalid.");
+        var scanErrors = rejection.ValidationErrors.ShouldNotBeNull()["Status"];
+        scanErrors.ShouldBe(["Media upload did not pass security scanning."]);
         imageStore.Current.Id.ShouldBe(originalImage.Id);
         objectStore.ObjectKeys.ShouldBeEmpty();
     }
@@ -221,7 +289,7 @@ public sealed class MediaImageUploadIntakeTests
         // Assert
         result.IsFailure.ShouldBe(true);
         result.ErrorDetails.ShouldNotBeNull();
-        result.ErrorDetails.Detail.ShouldBe("scanner unavailable");
+        result.ErrorDetails.Detail.ShouldBe("Media upload scanner is unavailable.");
         imageStore.Current.Id.ShouldBe(originalImage.Id);
         objectStore.ObjectKeys.ShouldBeEmpty();
     }

@@ -1,3 +1,5 @@
+using System.Net;
+
 namespace ViajantesTurismo.Management.WebIntegrationTests;
 
 [Trait(SharedKernel.Testing.TestTraitNames.CategoryName, SharedKernel.Testing.TestTraitValues.SecurityCategory)]
@@ -175,5 +177,72 @@ public sealed class ProtectedDistributedUserTokenStorePostgreSqlTests : IAsyncLi
         // Assert
         exception.Message.ShouldBe("The management token session has been revoked.");
         result.Succeeded.ShouldBeFalse();
+    }
+
+    [Fact]
+    public async Task Signing_out_rejects_an_audience_operation_waiting_for_the_same_session_lock()
+    {
+        // Arrange
+        var cache = _scenario.CreateBlockingFirstRemoveCache();
+        var signingOutStore = _scenario.CreateStore(cache);
+        var audienceStore = _scenario.CreateStore();
+        var user = PostgreSqlManagementUserTokenStoreScenario.CreateUser("audience-sign-out-race-session");
+        var audienceOperationRan = false;
+
+        // Act
+        var signOut = signingOutStore.ClearAll(user, TestContext.Current.CancellationToken);
+        await cache.WaitForFirstRemove(TestContext.Current.CancellationToken);
+        var audienceOperation = audienceStore.ExecuteForActiveSession(
+            user,
+            _ =>
+            {
+                audienceOperationRan = true;
+                return Task.FromResult("audience-token");
+            },
+            TestContext.Current.CancellationToken);
+        await _scenario.ReleaseFirstRemoveAfterWaitingForLock(
+            cache,
+            signOut,
+            TestContext.Current.CancellationToken);
+        Func<Task> awaitAudienceOperation = async () =>
+        {
+            await audienceOperation;
+        };
+
+        // Assert
+        var exception = await awaitAudienceOperation.ShouldThrow<InvalidOperationException>();
+        exception.Message.ShouldBe("The management token session has been revoked.");
+        audienceOperationRan.ShouldBeFalse();
+    }
+
+    [Fact]
+    public async Task Signing_out_does_not_wait_for_an_inflight_cached_audience_backend_send()
+    {
+        // Arrange
+        const string sourceAccessToken = "source-access-token";
+        const string exchangedAccessToken = "exchanged-access-token";
+        var user = PostgreSqlManagementUserTokenStoreScenario.CreateUser("inflight-audience-session");
+        await using var inFlight = await InflightCachedAudienceBackendSend.Start(
+            _scenario,
+            user,
+            sourceAccessToken,
+            exchangedAccessToken,
+            TestContext.Current.CancellationToken);
+
+        // Act
+        using var removeTimeout = new CancellationTokenSource(TimeSpan.FromSeconds(10));
+        await inFlight.WaitForSignOutToReachRemove(removeTimeout.Token);
+        await inFlight.CompleteSignOut(TestContext.Current.CancellationToken);
+        Func<Task> sendAfterSignOut = async () =>
+        {
+            using var response = await inFlight.SendAfterSignOut(sourceAccessToken, TestContext.Current.CancellationToken);
+        };
+
+        // Assert
+        var exception = await sendAfterSignOut.ShouldThrow<InvalidOperationException>();
+        exception.Message.ShouldBe("The management token session has been revoked.");
+        inFlight.AuthorizationHeaders.ShouldHaveSingleItem().ShouldBe("Bearer exchanged-access-token");
+        using var completedResponse = await inFlight.CompleteFirstBackendSend(TestContext.Current.CancellationToken);
+        completedResponse.StatusCode.ShouldBe(HttpStatusCode.OK);
     }
 }

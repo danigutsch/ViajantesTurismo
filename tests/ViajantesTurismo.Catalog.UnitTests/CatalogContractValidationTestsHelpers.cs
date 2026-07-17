@@ -19,9 +19,13 @@ public static class CatalogContractValidationTestsHelpers
             [
                 new CatalogTourImageDto
                 {
-                    Uri = new Uri("https://cdn.example/tour.jpg"),
+                    Id = Guid.CreateVersion7(),
                     AltText = "Cyclists on a mountain road",
-                    Caption = "Morning climb"
+                    Caption = "Morning climb",
+                    ResponsiveVariants =
+                    [
+                        new CatalogMediaImageVariantDto { Width = 640, Height = 427, ContentType = "image/jpeg", FileSizeBytes = 1024 }
+                    ]
                 }
             ],
             UpdatedAt = DateTimeOffset.UtcNow

@@ -1,7 +1,6 @@
 using System.Security.Cryptography;
 using System.Text;
 using Microsoft.AspNetCore.DataProtection;
-using Microsoft.AspNetCore.WebUtilities;
 using Microsoft.Extensions.Caching.Distributed;
 using SharedKernel.AspNetCore;
 using SharedKernel.BuildingBlocks;
@@ -15,7 +14,8 @@ namespace ViajantesTurismo.Management.Web;
 internal sealed class ProtectedDistributedAudienceTokenStore
 {
     private const string CacheKeyPrefix = "management-audience-token:";
-    private const string ProtectorPurpose = "ViajantesTurismo.Management.Web.AudienceTokenStore.v1";
+    private const string ProtectorPurpose = "ViajantesTurismo.Management.Web.AudienceTokenStore.v2";
+    private const int SourceAccessTokenFingerprintLength = 32;
     private static readonly TimeSpan RefreshBeforeExpiration = TimeSpan.FromMinutes(1);
     private static readonly string[] Audiences =
     [
@@ -42,9 +42,15 @@ internal sealed class ProtectedDistributedAudienceTokenStore
         _timeProvider = timeProvider;
     }
 
-    internal async Task<string?> Get(string audience, string sourceAccessToken, CancellationToken cancellationToken)
+    internal async Task<string?> Get(
+        string audience,
+        ManagementTokenSession session,
+        string sourceAccessToken,
+        CancellationToken cancellationToken)
     {
-        var cacheKey = GetCacheKey(audience, sourceAccessToken);
+        session.EnsureActive(_timeProvider);
+        var cacheKey = GetCacheKey(audience, session);
+        var sourceAccessTokenFingerprint = CreateSourceAccessTokenFingerprint(sourceAccessToken);
         var protectedEntry = await _cache.GetAsync(cacheKey, cancellationToken);
         if (protectedEntry is null)
         {
@@ -56,8 +62,11 @@ internal sealed class ProtectedDistributedAudienceTokenStore
             using var stream = new MemoryStream(_protector.Unprotect(cacheKey, protectedEntry));
             using var reader = new BinaryReader(stream, Encoding.UTF8, leaveOpen: true);
             var expiresAt = DateTimeOffset.FromUnixTimeMilliseconds(reader.ReadInt64());
+            var storedSourceAccessTokenFingerprint = reader.ReadBytes(SourceAccessTokenFingerprintLength);
             var accessToken = reader.ReadString();
             if (stream.Position != stream.Length
+                || storedSourceAccessTokenFingerprint.Length != SourceAccessTokenFingerprintLength
+                || !CryptographicOperations.FixedTimeEquals(storedSourceAccessTokenFingerprint, sourceAccessTokenFingerprint)
                 || string.IsNullOrWhiteSpace(accessToken)
                 || string.Equals(accessToken, sourceAccessToken, StringComparison.Ordinal)
                 || expiresAt <= _timeProvider.GetUtcNow().Add(RefreshBeforeExpiration))
@@ -77,18 +86,23 @@ internal sealed class ProtectedDistributedAudienceTokenStore
 
     internal Task Store(
         string audience,
+        ManagementTokenSession session,
         string sourceAccessToken,
         string accessToken,
         DateTimeOffset expiresAt,
         CancellationToken cancellationToken)
     {
+        ArgumentException.ThrowIfNullOrWhiteSpace(sourceAccessToken);
         ArgumentException.ThrowIfNullOrWhiteSpace(accessToken);
 
-        var cacheKey = GetCacheKey(audience, sourceAccessToken);
+        session.EnsureActive(_timeProvider);
+        var cacheKey = GetCacheKey(audience, session);
+        var cacheExpiresAt = expiresAt <= session.ExpiresAt ? expiresAt : session.ExpiresAt;
         using var stream = new MemoryStream();
         using (var writer = new BinaryWriter(stream, Encoding.UTF8, leaveOpen: true))
         {
             writer.Write(expiresAt.ToUnixTimeMilliseconds());
+            writer.Write(CreateSourceAccessTokenFingerprint(sourceAccessToken));
             writer.Write(accessToken);
             writer.Flush();
         }
@@ -96,24 +110,32 @@ internal sealed class ProtectedDistributedAudienceTokenStore
         return _cache.SetAsync(
             cacheKey,
             _protector.Protect(cacheKey, stream.ToArray()),
-            new DistributedCacheEntryOptions { AbsoluteExpiration = expiresAt },
+            new DistributedCacheEntryOptions { AbsoluteExpiration = cacheExpiresAt },
             cancellationToken);
     }
 
-    internal Task ClearAll(string sourceAccessToken, CancellationToken cancellationToken)
+    internal Task ClearAll(ManagementTokenSession session, CancellationToken cancellationToken)
     {
-        ArgumentException.ThrowIfNullOrWhiteSpace(sourceAccessToken);
-
-        return Task.WhenAll(Audiences.Select(audience => _cache.RemoveAsync(GetCacheKey(audience, sourceAccessToken), cancellationToken)));
+        return Task.WhenAll(Audiences.Select(audience => _cache.RemoveAsync(GetCacheKey(audience, session), cancellationToken)));
     }
 
-    internal static string GetCacheKey(string audience, string sourceAccessToken)
+    internal static string GetCacheKey(string audience, ManagementTokenSession session)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(audience);
+        ArgumentException.ThrowIfNullOrWhiteSpace(session.Id);
+        if (!Audiences.Contains(audience, StringComparer.Ordinal))
+        {
+            throw new ArgumentOutOfRangeException(nameof(audience), "The backend audience is not configured for token exchange.");
+        }
+
+        return string.Concat(CacheKeyPrefix, audience, ':', session.Id);
+    }
+
+    private static byte[] CreateSourceAccessTokenFingerprint(string sourceAccessToken)
+    {
         ArgumentException.ThrowIfNullOrWhiteSpace(sourceAccessToken);
 
-        var sourceTokenHash = SHA256.HashData(Encoding.UTF8.GetBytes(sourceAccessToken));
-        return string.Concat(CacheKeyPrefix, audience, ':', WebEncoders.Base64UrlEncode(sourceTokenHash));
+        return SHA256.HashData(Encoding.UTF8.GetBytes(sourceAccessToken));
     }
 
     private async Task<bool> TryRemoveStaleEntry(string cacheKey, CancellationToken cancellationToken)

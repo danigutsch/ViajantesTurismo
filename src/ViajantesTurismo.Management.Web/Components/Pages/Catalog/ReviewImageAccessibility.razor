@@ -1,0 +1,207 @@
+@page "/catalog/tours/{Id:guid}/images/review"
+@using Microsoft.AspNetCore.Routing
+@using SharedKernel.HttpClients
+@using ViajantesTurismo.Catalog.Contracts.Application
+@inject ICatalogToursApiClient CatalogToursApi
+@inject LinkGenerator LinkGenerator
+
+<PageTitle>Review Image Accessibility</PageTitle>
+
+<h1>Review Image Accessibility</h1>
+
+@if (_loading)
+{
+    <p><em>Loading images...</em></p>
+}
+else
+{
+    @if (_success)
+    {
+        <div class="alert alert-success" role="status">Accessibility text approved for publication.</div>
+    }
+    @if (_errorMessage is not null)
+    {
+        <div class="alert alert-danger" role="alert">@_errorMessage</div>
+    }
+    @if (_image is null)
+    {
+        @if (_errorMessage is null)
+        {
+            <div class="alert alert-info" role="status">No images require accessibility review.</div>
+        }
+    }
+    else
+    {
+        <p><strong>AI draft:</strong> @(_image.IsAiGenerated ? "Review required" : "Editor-provided")</p>
+    @if (_image.ResponsiveVariants.FirstOrDefault() is { } preview && GetPreviewPath(_image.Id, preview) is { } previewPath)
+    {
+        <img src="@previewPath" alt="Preview for accessibility review" class="img-fluid mb-3" />
+    }
+    <div class="mb-3">
+        <label for="altText" class="form-label">Image description</label>
+        <textarea id="altText" class="form-control" @bind="_altText" rows="4"></textarea>
+    </div>
+    <div class="form-check mb-3">
+        <InputCheckbox id="isDecorative" class="form-check-input" @bind-Value="_isDecorative" />
+        <label for="isDecorative" class="form-check-label">This image is decorative</label>
+    </div>
+        <div class="d-flex gap-2">
+            <button class="btn btn-outline-primary" @onclick="GenerateDraft" disabled="@_saving">Generate AI draft</button>
+            <button class="btn btn-primary" @onclick="Approve" disabled="@(_saving || (!_isDecorative && string.IsNullOrWhiteSpace(_altText)))">Approve description</button>
+        </div>
+    }
+}
+
+@code {
+    [Parameter]
+    public Guid Id { get; set; }
+
+    private CatalogMediaImageDto? _image;
+    private string _altText = string.Empty;
+    private bool _isDecorative;
+    private bool _loading = true;
+    private bool _saving;
+    private bool _success;
+    private string? _errorMessage;
+
+    /// <inheritdoc />
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            var images = await CatalogToursApi.GetTourImages(Id, CancellationToken.None);
+            _image = images.FirstOrDefault(image => image.RequiresHumanReview);
+            _altText = _image?.AltText ?? string.Empty;
+            _isDecorative = _image?.IsDecorative ?? false;
+        }
+        catch (HttpRequestException)
+        {
+            _errorMessage = "Images could not be loaded. Try again later.";
+        }
+        finally
+        {
+            _loading = false;
+        }
+    }
+
+    private async Task GenerateDraft()
+    {
+        if (_image is null)
+        {
+            return;
+        }
+
+        _saving = true;
+        _success = false;
+        _errorMessage = null;
+        try
+        {
+            var draft = await CatalogToursApi.GenerateMediaImageAccessibilityDraft(
+                _image.Id,
+                new PublicMediaImageAccessibilityDraftRequest { Language = PublicContentLanguageDto.EnUs },
+                CancellationToken.None);
+            if (draft is null)
+            {
+                _errorMessage = "Image was not found.";
+                return;
+            }
+
+            _image = draft;
+            _altText = draft.AltText;
+            _isDecorative = draft.IsDecorative;
+        }
+        catch (HttpRequestException)
+        {
+            _errorMessage = "Accessibility draft could not be generated. Try again later.";
+        }
+        finally
+        {
+            _saving = false;
+        }
+    }
+
+    private async Task Approve()
+    {
+        if (_image is null)
+        {
+            return;
+        }
+
+        _saving = true;
+        _success = false;
+        _errorMessage = null;
+        try
+        {
+            var updated = await CatalogToursApi.ReviewMediaImageAccessibility(
+                _image.Id,
+                new PublicMediaImageAccessibilityReviewRequest
+                {
+                    Language = PublicContentLanguageDto.EnUs,
+                    AltText = _isDecorative ? null : _altText,
+                    Caption = _image.Caption,
+                    IsDecorative = _isDecorative
+                },
+                CancellationToken.None);
+            if (updated is null)
+            {
+                _errorMessage = "Image was not found.";
+                return;
+            }
+
+            _image = updated;
+            _altText = updated.AltText;
+            _success = true;
+            await LoadNextImage();
+        }
+        catch (ContractValidationException exception)
+        {
+            _errorMessage = exception.ValidationErrors.Count == 0
+                ? "Accessibility text could not be saved. Try again later."
+                : string.Join(" ", exception.ValidationErrors.SelectMany(error => error.Value));
+        }
+        catch (HttpRequestException)
+        {
+            _errorMessage = "Accessibility text could not be saved. Try again later.";
+        }
+        finally
+        {
+            _saving = false;
+        }
+    }
+
+    private async Task LoadNextImage()
+    {
+        try
+        {
+            var images = await CatalogToursApi.GetTourImages(Id, CancellationToken.None);
+            _image = images.FirstOrDefault(image => image.RequiresHumanReview);
+            _altText = _image?.AltText ?? string.Empty;
+            _isDecorative = _image?.IsDecorative ?? false;
+        }
+        catch (HttpRequestException)
+        {
+            _errorMessage = "The next image could not be loaded. Refresh the page and try again.";
+        }
+    }
+
+    private string? GetPreviewPath(Guid imageId, CatalogMediaImageVariantDto variant)
+    {
+        var format = variant.ContentType.Trim().ToUpperInvariant() switch
+        {
+            "IMAGE/AVIF" => "avif",
+            "IMAGE/JPEG" => "jpg",
+            "IMAGE/PNG" => "png",
+            "IMAGE/WEBP" => "webp",
+            _ => null
+        };
+
+        if (format is null)
+        {
+            return null;
+        }
+
+        return LinkGenerator.GetPathByName(
+            ManagementWebEndpoints.MediaPreviewByRenditionEndpointName,
+            new { id = imageId, width = variant.Width, format });
+    }
+}

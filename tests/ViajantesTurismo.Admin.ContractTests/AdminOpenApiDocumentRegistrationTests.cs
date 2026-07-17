@@ -40,9 +40,10 @@ public sealed class AdminOpenApiDocumentRegistrationTests
         document.Paths.Keys.ShouldNotContain("/api/v1/tours");
 
         var importSchema = AdminOpenApiDocumentRegistrationTestHelpers.GetMultipartSchema(document, "/api/v1/customers/import/commit");
-        importSchema.AllOf.ShouldNotBeNull();
-        importSchema.AllOf.ShouldContain(static item => item.Properties?.ContainsKey("file") == true);
-        importSchema.AllOf.ShouldContain(static item => item.Properties?.ContainsKey("conflictResolutions") == true);
+        importSchema.AllOf.ShouldBeNull();
+        var properties = importSchema.Properties.ShouldNotBeNull();
+        properties.ContainsKey("file").ShouldBeTrue();
+        properties.ContainsKey("conflictResolutions").ShouldBeTrue();
     }
 
     [Fact]

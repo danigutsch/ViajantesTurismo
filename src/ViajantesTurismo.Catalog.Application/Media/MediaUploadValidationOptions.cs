@@ -1,3 +1,5 @@
+using ViajantesTurismo.Catalog.Contracts.Application;
+
 namespace ViajantesTurismo.Catalog.Application.Media;
 
 /// <summary>
@@ -13,7 +15,7 @@ public sealed class MediaUploadValidationOptions
     /// <summary>
     /// Gets the default maximum upload length.
     /// </summary>
-    public const long DefaultMaxLengthBytes = 10 * 1024 * 1024;
+    public const long DefaultMaxLengthBytes = ContractConstants.MaxMediaUploadBytes;
 
     /// <summary>
     /// Gets the default maximum decoded image width.

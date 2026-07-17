@@ -179,6 +179,7 @@
         <Project Path="tests/ViajantesTurismo.Catalog.BehaviorTests/ViajantesTurismo.Catalog.BehaviorTests.csproj" />
         <Project Path="tests/ViajantesTurismo.Catalog.ApiServiceTests/ViajantesTurismo.Catalog.ApiServiceTests.csproj" />
         <Project Path="tests/ViajantesTurismo.Catalog.ContractTests/ViajantesTurismo.Catalog.ContractTests.csproj" />
+        <Project Path="tests/ViajantesTurismo.Catalog.InfrastructureTests/ViajantesTurismo.Catalog.InfrastructureTests.csproj" />
         <Project Path="tests/SharedKernel.Branding.Tests/SharedKernel.Branding.Tests.csproj" />
         <Project Path="tests/SharedKernel.DocumentRendering.Tests/SharedKernel.DocumentRendering.Tests.csproj" />
         <Project Path="tests/ViajantesTurismo.Branding.ApiServiceTests/ViajantesTurismo.Branding.ApiServiceTests.csproj" />

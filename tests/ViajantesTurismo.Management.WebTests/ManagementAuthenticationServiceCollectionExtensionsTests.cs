@@ -1,3 +1,4 @@
+using System.Net;
 using Microsoft.Extensions.Hosting;
 using ViajantesTurismo.Management.Web;
 
@@ -15,7 +16,7 @@ public sealed class ManagementAuthenticationServiceCollectionExtensionsTests
     {
         // Arrange
         var configuration = ManagementAuthenticationTestConfiguration.Create();
-        var environment = new TestHostEnvironment();
+        var environment = new TestHostEnvironment("ViajantesTurismo.Management.WebTests");
 
         // Act
         Action action = () => ManagementAuthenticationTestHost.Create(configuration, environment);
@@ -30,7 +31,7 @@ public sealed class ManagementAuthenticationServiceCollectionExtensionsTests
     {
         // Arrange
         var configuration = ManagementAuthenticationTestConfiguration.Create(includeRequiredSettings: false);
-        var environment = new TestHostEnvironment { EnvironmentName = Environments.Development };
+        var environment = new TestHostEnvironment("ViajantesTurismo.Management.WebTests") { EnvironmentName = Environments.Development };
 
         // Act
         Action action = () => ManagementAuthenticationTestHost.Create(configuration, environment);
@@ -45,7 +46,7 @@ public sealed class ManagementAuthenticationServiceCollectionExtensionsTests
     {
         // Arrange
         var configuration = ManagementAuthenticationTestConfiguration.Create(includeTokenExchangeSettings: false);
-        var environment = new TestHostEnvironment { EnvironmentName = Environments.Development };
+        var environment = new TestHostEnvironment("ViajantesTurismo.Management.WebTests") { EnvironmentName = Environments.Development };
 
         // Act
         Action action = () => ManagementAuthenticationTestHost.Create(configuration, environment);
@@ -60,7 +61,7 @@ public sealed class ManagementAuthenticationServiceCollectionExtensionsTests
     {
         // Arrange
         var configuration = ManagementAuthenticationTestConfiguration.Create(tokenExchangeProvider: "Keycloak2");
-        var environment = new TestHostEnvironment { EnvironmentName = Environments.Development };
+        var environment = new TestHostEnvironment("ViajantesTurismo.Management.WebTests") { EnvironmentName = Environments.Development };
 
         // Act
         Action action = () => ManagementAuthenticationTestHost.Create(configuration, environment);
@@ -77,7 +78,7 @@ public sealed class ManagementAuthenticationServiceCollectionExtensionsTests
     {
         // Arrange
         var configuration = ManagementAuthenticationTestConfiguration.Create(tokenExchangeProvider: tokenExchangeProvider);
-        var environment = new TestHostEnvironment { EnvironmentName = Environments.Development };
+        var environment = new TestHostEnvironment("ViajantesTurismo.Management.WebTests") { EnvironmentName = Environments.Development };
 
         // Act
         await using var host = ManagementAuthenticationTestHost.Create(configuration, environment);
@@ -91,7 +92,7 @@ public sealed class ManagementAuthenticationServiceCollectionExtensionsTests
     {
         // Arrange
         var configuration = ManagementAuthenticationTestConfiguration.Create(tokenExchangeEnabled: "false");
-        var environment = new TestHostEnvironment { EnvironmentName = Environments.Development };
+        var environment = new TestHostEnvironment("ViajantesTurismo.Management.WebTests") { EnvironmentName = Environments.Development };
 
         // Act
         Action action = () => ManagementAuthenticationTestHost.Create(configuration, environment);
@@ -106,7 +107,7 @@ public sealed class ManagementAuthenticationServiceCollectionExtensionsTests
         // Arrange
         var configuration = ManagementAuthenticationTestConfiguration.Create(
             authority: "http://identity.example.test/realms/viajantes");
-        var environment = new TestHostEnvironment { EnvironmentName = Environments.Development };
+        var environment = new TestHostEnvironment("ViajantesTurismo.Management.WebTests") { EnvironmentName = Environments.Development };
 
         // Act
         Action action = () => ManagementAuthenticationTestHost.Create(configuration, environment);
@@ -122,7 +123,7 @@ public sealed class ManagementAuthenticationServiceCollectionExtensionsTests
         var configuration = ManagementAuthenticationTestConfiguration.Create(
             allowHttpDevelopmentAuthority: true,
             authority: "ftp://identity.example.test/realms/viajantes");
-        var environment = new TestHostEnvironment { EnvironmentName = Environments.Development };
+        var environment = new TestHostEnvironment("ViajantesTurismo.Management.WebTests") { EnvironmentName = Environments.Development };
 
         // Act
         Action action = () => ManagementAuthenticationTestHost.Create(configuration, environment);
@@ -136,7 +137,7 @@ public sealed class ManagementAuthenticationServiceCollectionExtensionsTests
     {
         // Arrange
         var configuration = ManagementAuthenticationTestConfiguration.Create(allowHttpDevelopmentAuthority: true);
-        var environment = new TestHostEnvironment { EnvironmentName = Environments.Development };
+        var environment = new TestHostEnvironment("ViajantesTurismo.Management.WebTests") { EnvironmentName = Environments.Development };
         await using var host = ManagementAuthenticationTestHost.Create(configuration, environment);
 
         // Act
@@ -145,7 +146,7 @@ public sealed class ManagementAuthenticationServiceCollectionExtensionsTests
         // Assert
         options.RequireHttpsMetadata.ShouldBeFalse();
         options.UsePkce.ShouldBeTrue();
-        options.SaveTokens.ShouldBeTrue();
+        options.SaveTokens.ShouldBeFalse();
         options.EventsType.ShouldBe(typeof(ManagementOpenIdConnectEvents));
         options.Scope.ShouldContain("offline_access");
         options.Scope.ShouldContain("admin-api");
@@ -158,7 +159,7 @@ public sealed class ManagementAuthenticationServiceCollectionExtensionsTests
     {
         // Arrange
         var configuration = ManagementAuthenticationTestConfiguration.Create();
-        var environment = new TestHostEnvironment { EnvironmentName = Environments.Development };
+        var environment = new TestHostEnvironment("ViajantesTurismo.Management.WebTests") { EnvironmentName = Environments.Development };
         await using var host = ManagementAuthenticationTestHost.Create(configuration, environment);
 
         // Act
@@ -173,7 +174,7 @@ public sealed class ManagementAuthenticationServiceCollectionExtensionsTests
     {
         // Arrange
         var configuration = ManagementAuthenticationTestConfiguration.Create();
-        var environment = new TestHostEnvironment { EnvironmentName = Environments.Development };
+        var environment = new TestHostEnvironment("ViajantesTurismo.Management.WebTests") { EnvironmentName = Environments.Development };
         await using var host = ManagementAuthenticationTestHost.Create(configuration, environment);
 
         // Act
@@ -200,7 +201,7 @@ public sealed class ManagementAuthenticationServiceCollectionExtensionsTests
     {
         // Arrange
         var configuration = ManagementAuthenticationTestConfiguration.Create();
-        var environment = new TestHostEnvironment { EnvironmentName = Environments.Development };
+        var environment = new TestHostEnvironment("ViajantesTurismo.Management.WebTests") { EnvironmentName = Environments.Development };
         await using var host = ManagementAuthenticationTestHost.Create(configuration, environment);
         using var firstSession = host.CreateUserTokenStoreSession();
         using var secondSession = host.CreateUserTokenStoreSession();
@@ -215,5 +216,32 @@ public sealed class ManagementAuthenticationServiceCollectionExtensionsTests
         ReferenceEquals(firstUserTokenStore, firstProtectedUserTokenStore).ShouldBeTrue();
         ReferenceEquals(secondUserTokenStore, secondProtectedUserTokenStore).ShouldBeTrue();
         ReferenceEquals(firstUserTokenStore, secondUserTokenStore).ShouldBeFalse();
+    }
+
+    [Fact]
+    public async Task Keycloak_token_exchange_http_client_does_not_follow_temporary_redirects()
+    {
+        // Arrange
+        var ct = Xunit.TestContext.Current.CancellationToken;
+        await using var server = await RedirectingTokenExchangeTestServer.Start(ct);
+        var configuration = ManagementAuthenticationTestConfiguration.Create();
+        var environment = new TestHostEnvironment("ViajantesTurismo.Management.WebTests") { EnvironmentName = Environments.Development };
+        await using var host = ManagementAuthenticationTestHost.Create(configuration, environment);
+        using var client = host.CreateKeycloakTokenExchangeClient();
+        using var requestContent = new FormUrlEncodedContent(
+        [
+            new KeyValuePair<string, string>("subject_token", "test-source-token"),
+            new KeyValuePair<string, string>("client_secret", "test-client-secret")
+        ]);
+
+        // Act
+        using var response = await client.PostAsync(server.TokenEndpoint, requestContent, ct);
+
+        // Assert
+        response.StatusCode.ShouldBe(HttpStatusCode.TemporaryRedirect);
+        server.TokenRequestBodies.Count.ShouldBe(1);
+        server.TokenRequestBodies[0].ShouldContain("subject_token=test-source-token", StringComparison.Ordinal);
+        server.TokenRequestBodies[0].ShouldContain("client_secret=test-client-secret", StringComparison.Ordinal);
+        server.RedirectRequestBodies.ShouldBeEmpty();
     }
 }

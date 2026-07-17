@@ -182,12 +182,13 @@ for the localization and review flow.
 
 Current implementation:
 
-- `CatalogTourImageDto` defines public image metadata with required `Uri`, reviewed `AltText` or an
-  explicit decorative-image decision, optional `Caption`, responsive variants, ordering, and cover-image
-  data.
+- `CatalogTourImageDto` defines public image metadata with an image identifier, reviewed `AltText` or an
+  explicit decorative-image decision, optional `Caption`, responsive rendition metadata, ordering, and
+  cover-image data.
 - `CatalogTourDto.Images` is populated on management and public tour responses.
-- `GET /catalog/tours/{id}/images` and `PUT /catalog/media/images/{id}` persist Catalog-owned image
-  metadata, localized accessibility text review state, and tour associations.
+- `POST /catalog/tours/{id}/images` accepts validated multipart uploads and creates Catalog-owned image
+  metadata and tour associations; `GET /catalog/tours/{id}/images` returns management metadata without
+  storage keys or storage URIs.
 - `POST /catalog/media/images/{id}/accessibility-draft` uses the SharedKernel LiteLLM-compatible image
   text generator to create review-required alt text/caption drafts from stored image bytes plus optional
   editorial context and trusted geolocation metadata.

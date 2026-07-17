@@ -16,14 +16,12 @@ internal static class PublicContentHttpCache
 
     private const string LanguageQueryKey = "language";
 
-    private static readonly TimeSpan StaleWhileRevalidate = TimeSpan.FromSeconds(300);
-
     private static readonly string PathPrefix =
         $"/api/{CatalogOpenApiDocuments.CurrentApiVersion.RouteSegment}/public/catalog/content";
 
     public static void SetPublicHeaders(HttpContext httpContext)
     {
-        HttpCacheHeaders.SetPublic(httpContext, Freshness, StaleWhileRevalidate);
+        HttpCacheHeaders.SetPublic(httpContext, Freshness);
     }
 
     public static IApplicationBuilder UsePublicContentLanguageQueryAlias(this IApplicationBuilder app)

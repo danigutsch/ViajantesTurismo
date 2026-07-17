@@ -1,4 +1,5 @@
 using System.ComponentModel.DataAnnotations;
+using System.Diagnostics.CodeAnalysis;
 
 namespace ViajantesTurismo.Catalog.Contracts.Application;
 
@@ -7,6 +8,12 @@ namespace ViajantesTurismo.Catalog.Contracts.Application;
 /// </summary>
 public sealed record CatalogTourImageDto
 {
+    /// <summary>
+    /// Gets the stable media image identifier.
+    /// </summary>
+    [Required]
+    public Guid Id { get; init; }
+
     /// <summary>
     /// Gets the display order for the image inside its tour gallery.
     /// </summary>
@@ -18,12 +25,6 @@ public sealed record CatalogTourImageDto
     /// </summary>
     [Required]
     public bool IsCover { get; init; }
-
-    /// <summary>
-    /// Gets the public image URI.
-    /// </summary>
-    [Required]
-    public required Uri Uri { get; init; }
 
     /// <summary>
     /// Gets the accessible image description.
@@ -44,8 +45,9 @@ public sealed record CatalogTourImageDto
     public string? Caption { get; init; }
 
     /// <summary>
-    /// Gets processed variants for responsive image rendering.
+    /// Gets processed rendition metadata for responsive image rendering.
     /// </summary>
-    [Required]
-    public IReadOnlyList<MediaImageResponsiveVariantDto> ResponsiveVariants { get; init; } = [];
+    [Required, MinLength(1)]
+    [UnconditionalSuppressMessage("Trimming", "IL2026:Members annotated with 'RequiresUnreferencedCodeAttribute' require dynamic access otherwise can break functionality when trimming application code", Justification = "The contract uses source-generated JSON serialization for responsive variant metadata.")]
+    public IReadOnlyList<CatalogMediaImageVariantDto> ResponsiveVariants { get; init; } = [];
 }

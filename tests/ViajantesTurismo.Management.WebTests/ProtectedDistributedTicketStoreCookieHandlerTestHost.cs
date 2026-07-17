@@ -15,14 +15,18 @@ namespace ViajantesTurismo.Management.WebTests;
 internal sealed class ProtectedDistributedTicketStoreCookieHandlerTestHost : IDisposable
 {
     internal const string CookieName = "management-test";
+    private readonly ThrowingRemoveDistributedCache? _ticketRemovalCache;
 
-    private ProtectedDistributedTicketStoreCookieHandlerTestHost(IHost host, ThrowingRemoveDistributedCache cache)
+    private ProtectedDistributedTicketStoreCookieHandlerTestHost(
+        IHost host,
+        ThrowingRemoveDistributedCache? ticketRemovalCache)
     {
         Host = host;
-        Cache = cache;
+        _ticketRemovalCache = ticketRemovalCache;
     }
 
-    public ThrowingRemoveDistributedCache Cache { get; }
+    public ThrowingRemoveDistributedCache Cache => _ticketRemovalCache
+        ?? throw new InvalidOperationException("The test host was not configured with a failing ticket cache.");
 
     public IHost Host { get; }
 
@@ -31,6 +35,24 @@ internal sealed class ProtectedDistributedTicketStoreCookieHandlerTestHost : IDi
         var innerCache = new MemoryDistributedCache(Options.Create(new MemoryDistributedCacheOptions()));
         var cache = new ThrowingRemoveDistributedCache(innerCache);
 
+        return await Start(cache, cache, ct);
+    }
+
+    public static async Task<ProtectedDistributedTicketStoreCookieHandlerTestHost> StartWithFailingSessionRevocation(CancellationToken ct)
+    {
+        var innerCache = new MemoryDistributedCache(Options.Create(new MemoryDistributedCacheOptions()));
+        var cache = new ThrowingSetDistributedCache(
+            innerCache,
+            static (key, _) => key.EndsWith(":revoked", StringComparison.Ordinal));
+
+        return await Start(cache, ticketRemovalCache: null, ct: ct);
+    }
+
+    private static async Task<ProtectedDistributedTicketStoreCookieHandlerTestHost> Start(
+        IDistributedCache cache,
+        ThrowingRemoveDistributedCache? ticketRemovalCache,
+        CancellationToken ct)
+    {
         var host = await new HostBuilder()
             .ConfigureWebHost(webBuilder => webBuilder
                 .UseTestServer()
@@ -39,7 +61,7 @@ internal sealed class ProtectedDistributedTicketStoreCookieHandlerTestHost : IDi
                     services.AddRouting();
                     services.AddDataProtection();
                     services.AddLogging();
-                    services.AddSingleton<IDistributedCache>(cache);
+                    services.AddSingleton(cache);
                     services.AddSingleton(TimeProvider.System);
                     services.AddSingleton<ITicketStore, ProtectedDistributedTicketStore>();
                     services.AddScoped<ProtectedDistributedAudienceTokenStore>();
@@ -83,7 +105,7 @@ internal sealed class ProtectedDistributedTicketStoreCookieHandlerTestHost : IDi
                 }))
             .StartAsync(ct);
 
-        return new ProtectedDistributedTicketStoreCookieHandlerTestHost(host, cache);
+        return new ProtectedDistributedTicketStoreCookieHandlerTestHost(host, ticketRemovalCache);
     }
 
     public void Dispose()

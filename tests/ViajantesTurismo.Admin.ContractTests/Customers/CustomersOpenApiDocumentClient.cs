@@ -111,18 +111,16 @@ internal static class CustomersOpenApiDocumentClient
 
     private static string? ExtractCommitImportSchemaToken(CustomersOpenApiSchemaDto? schema)
     {
-        if (schema?.AllOf is null || schema.AllOf.Count == 0)
+        if (schema?.Properties is null)
         {
             return null;
         }
 
-        var hasFilePart = schema.AllOf.Any(static item =>
-            item.Properties is not null && item.Properties.ContainsKey("file"));
-        var hasConflictResolutionPart = schema.AllOf.Any(static item =>
-            item.Properties is not null && item.Properties.ContainsKey("conflictResolutions"));
+        var hasFilePart = schema.Properties.ContainsKey("file");
+        var hasConflictResolutionPart = schema.Properties.ContainsKey("conflictResolutions");
 
         return hasFilePart && hasConflictResolutionPart
-            ? "multipart-object-allOf:file+conflictResolutions"
+            ? "multipart-object-properties:file+conflictResolutions"
             : null;
     }
 

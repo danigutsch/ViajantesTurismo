@@ -11,6 +11,10 @@ internal sealed class FakePublicCatalogApiClient : IPublicCatalogApiClient
 
     public bool ThrowOperationCanceledExceptionOnListRequests { get; set; }
 
+    public bool ThrowOperationCanceledExceptionOnMediaRequests { get; set; }
+
+    public bool FailMediaRequests { get; set; }
+
     public bool FailDetailsRequests { get; set; }
 
     public bool FailContentRequests { get; set; }
@@ -22,6 +26,14 @@ internal sealed class FakePublicCatalogApiClient : IPublicCatalogApiClient
     public TaskCompletionSource<object?>? ListStarted { get; set; }
 
     public TaskCompletionSource<object?>? ContentStarted { get; set; }
+
+    public PublicMediaObjectResponse? Media { get; set; }
+
+    public Guid? LastMediaId { get; private set; }
+
+    public int? LastMediaWidth { get; private set; }
+
+    public string? LastMediaFormat { get; private set; }
 
     public void AddTour(CatalogTourDto tour)
     {
@@ -96,6 +108,26 @@ internal sealed class FakePublicCatalogApiClient : IPublicCatalogApiClient
         var requestedCulture = string.IsNullOrWhiteSpace(culture) ? "en-US" : culture;
         contentByKeyAndCulture.TryGetValue(CreateContentKey(key, requestedCulture), out var content);
         return content;
+    }
+
+    public Task<PublicMediaObjectResponse?> GetPublicMedia(Guid id, int width, string format, CancellationToken ct)
+    {
+        ct.ThrowIfCancellationRequested();
+        LastMediaId = id;
+        LastMediaWidth = width;
+        LastMediaFormat = format;
+
+        if (ThrowOperationCanceledExceptionOnMediaRequests)
+        {
+            throw new OperationCanceledException("Catalog media request canceled upstream.");
+        }
+
+        if (FailMediaRequests)
+        {
+            throw new HttpRequestException("Catalog unavailable.");
+        }
+
+        return Task.FromResult(Media);
     }
 
     private static string CreateContentKey(string key, string culture) => $"{key}\u001F{culture}";

@@ -297,9 +297,10 @@ Current rendering rules:
 ### Current implementation
 
 Catalog owns customer-facing image metadata and tour associations. Binary storage remains outside the
-Catalog aggregate; Catalog stores safe public URIs, reviewed alt text or explicit decorative-image
-decisions, captions, localized accessibility review state, attribution, tags, ordering, cover-image flags,
-processing status, and responsive variants.
+Catalog aggregate; Catalog stores object keys internally alongside reviewed alt text or explicit
+decorative-image decisions, captions, localized accessibility review state, attribution, tags, ordering,
+cover-image flags, processing status, and responsive variants. Public contracts expose only image IDs and
+rendition metadata.
 
 ```mermaid
 flowchart LR
@@ -312,7 +313,7 @@ flowchart LR
     publicWeb[Public.Web gallery]
 
     management --> api
-    api -->|PUT /catalog/media/images/{id}| store
+    api -->|POST /catalog/tours/{id}/images| store
     store --> db
     api -->|GET /catalog/tours/{id}/images| store
     api --> mapper
@@ -322,7 +323,8 @@ flowchart LR
 
 Current constraints visible in contracts:
 
-- `Uri` is required.
+- Public image contracts contain image IDs and rendition dimensions/types, never storage keys or storage
+  URIs.
 - Public images require reviewed default accessibility text: non-empty `AltText` or an explicit
   decorative-image decision.
 - `Caption` is optional and length-limited.

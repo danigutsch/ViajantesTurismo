@@ -59,7 +59,7 @@ internal static class PublicWebHttpCache
         SetNoStore(httpContext);
     }
 
-    private static void SetPublishedContent(HttpContext httpContext)
+    public static void SetPublishedContent(HttpContext httpContext)
     {
         HttpCacheHeaders.SetPublic(httpContext, PublishedContentFreshness, StaleWhileRevalidate);
     }

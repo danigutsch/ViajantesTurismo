@@ -21,28 +21,40 @@ internal sealed partial class ManagementCookieAuthenticationEvents(
         }
 
         var ct = context.HttpContext.RequestAborted;
+        ManagementTokenSession session;
         try
         {
-            var sourceAccessToken = await userTokenStore.GetSourceAccessToken(user, ct);
-            if (!string.IsNullOrWhiteSpace(sourceAccessToken))
-            {
-                await audienceTokenStore.ClearAll(sourceAccessToken, ct);
-            }
+            session = ManagementTokenSession.From(user);
+        }
+        catch (InvalidOperationException)
+        {
+            return;
+        }
+
+        bool userTokenEntriesRemoved;
+        try
+        {
+            userTokenEntriesRemoved = await userTokenStore.ClearAll(user, ct);
+        }
+        catch (Exception exception) when (exception.ShouldHandleAsFailure(ct))
+        {
+            LogUserTokenCleanupFailure(logger, exception.GetType().Name);
+            throw;
+        }
+
+        if (!userTokenEntriesRemoved)
+        {
+            LogUserTokenCleanupFailure(logger, "TokenEntryRemoval");
+        }
+
+        try
+        {
+            await audienceTokenStore.ClearAll(session, ct);
         }
         catch (Exception exception) when (exception.ShouldHandleAsFailure(ct))
         {
             // User-token cleanup and browser cookie deletion must proceed when audience-token cleanup fails.
             LogAudienceTokenCleanupFailure(logger, exception.GetType().Name);
-        }
-
-        try
-        {
-            await userTokenStore.ClearAll(user, ct);
-        }
-        catch (Exception exception) when (exception.ShouldHandleAsFailure(ct))
-        {
-            // Browser cookie deletion must proceed even when protected user-token cleanup fails.
-            LogUserTokenCleanupFailure(logger, exception.GetType().Name);
         }
     }
 

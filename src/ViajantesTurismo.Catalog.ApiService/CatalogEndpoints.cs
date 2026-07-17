@@ -1,4 +1,6 @@
 using Microsoft.AspNetCore.OutputCaching;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.OpenApi;
 using SharedKernel.ApiVersioning.AspNetCore;
 using SharedKernel.HttpCaching.AspNetCore;
 using SharedKernel.Results;
@@ -13,6 +15,7 @@ namespace ViajantesTurismo.Catalog.ApiService;
 
 internal static class CatalogEndpoints
 {
+
     internal static IEndpointRouteBuilder MapCatalogEndpoints(this IEndpointRouteBuilder app)
     {
         ArgumentNullException.ThrowIfNull(app);
@@ -28,12 +31,34 @@ internal static class CatalogEndpoints
             .RequireAuthorization(CatalogAuthorization.CatalogWrite);
         versionedApi.MapGet("/catalog/tours/{id:guid}/images", ListTourImages)
             .RequireAuthorization(CatalogAuthorization.CatalogRead);
-        versionedApi.MapPut("/catalog/media/images/{id:guid}", UpsertMediaImage)
+        versionedApi.MapGet("/catalog/media/images/{id:guid}/preview/{width:int}/{format}", GetManagementMediaPreview)
+            .RequireAuthorization(CatalogAuthorization.CatalogRead);
+        versionedApi.MapPost("/catalog/tours/{id:guid}/images", UploadTourImage)
+            .Accepts<MediaImageUploadFormDto>("multipart/form-data")
+            .Produces<CatalogMediaImageDto>(StatusCodes.Status201Created)
+            .AddOpenApiOperationTransformer((operation, _, _) =>
+            {
+                var content = operation.RequestBody?.Content;
+                if (content is not null && content.TryGetValue("multipart/form-data", out var mediaType)
+                    && mediaType.Schema is OpenApiSchema schema)
+                {
+                    schema.Required ??= new HashSet<string>(StringComparer.Ordinal);
+                    schema.Required.Add("file");
+                    schema.Required.Add("altText");
+                }
+
+                return Task.CompletedTask;
+            })
+            .WithMetadata(new RequestSizeLimitAttribute(MediaUploadValidationOptions.DefaultMaxLengthBytes + 16_384))
             .RequireRateLimiting(CatalogSecurityBaseline.MutationRateLimitPolicy)
+            .DisableAntiforgery()
             .RequireAuthorization(CatalogAuthorization.CatalogWrite);
         versionedApi.MapPost("/catalog/media/images/{id:guid}/accessibility-draft", GenerateMediaImageAccessibilityDraft)
             .RequireRateLimiting(CatalogSecurityBaseline.MutationRateLimitPolicy)
             .RequireAuthorization(CatalogAuthorization.MediaAi);
+        versionedApi.MapPut("/catalog/media/images/{id:guid}/accessibility-review", ReviewMediaImageAccessibility)
+            .RequireRateLimiting(CatalogSecurityBaseline.MutationRateLimitPolicy)
+            .RequireAuthorization(CatalogAuthorization.CatalogWrite);
 
         versionedApi.MapGet("/public/catalog/tours", GetPublishedTours)
             .CacheOutput(policy => policy.Expire(PublicCatalogHttpCache.Freshness).Tag(PublicCatalogHttpCache.Tag))
@@ -41,6 +66,9 @@ internal static class CatalogEndpoints
             .AllowAnonymous();
         versionedApi.MapGet("/public/catalog/tours/{slug}", GetPublishedTour)
             .CacheOutput(policy => policy.Expire(PublicCatalogHttpCache.Freshness).Tag(PublicCatalogHttpCache.Tag))
+            .RequireRateLimiting(CatalogSecurityBaseline.PublicReadRateLimitPolicy)
+            .AllowAnonymous();
+        versionedApi.MapGet("/public/catalog/media/{id:guid}/{width:int}/{format}", GetPublicMedia)
             .RequireRateLimiting(CatalogSecurityBaseline.PublicReadRateLimitPolicy)
             .AllowAnonymous();
         versionedApi.MapGet("/public/catalog/content/{**key}", GetPublicContent)
@@ -62,7 +90,7 @@ internal static class CatalogEndpoints
         return app;
     }
 
-    private static async Task<IResult> GetTour(Guid id, ICatalogTourReadModelStore store, IPublicMediaImageStore imageStore, IMediaObjectStore objectStore, HttpContext httpContext, CancellationToken ct)
+    private static async Task<IResult> GetTour(Guid id, ICatalogTourReadModelStore store, IPublicMediaImageStore imageStore, HttpContext httpContext, CancellationToken ct)
     {
         HttpCacheHeaders.SetNoStore(httpContext);
 
@@ -78,10 +106,10 @@ internal static class CatalogEndpoints
         }
 
         var images = await imageStore.ListByTour(id, ct);
-        return Results.Ok(MapTour(tour, images, objectStore));
+        return Results.Ok(MapTour(tour, images));
     }
 
-    private static async Task<IResult> GetPublishedTour(string slug, ICatalogTourReadModelStore store, IPublicMediaImageStore imageStore, IMediaObjectStore objectStore, HttpContext httpContext, CancellationToken ct)
+    private static async Task<IResult> GetPublishedTour(string slug, ICatalogTourReadModelStore store, IPublicMediaImageStore imageStore, HttpContext httpContext, CancellationToken ct)
     {
         if (string.IsNullOrWhiteSpace(slug))
         {
@@ -96,7 +124,7 @@ internal static class CatalogEndpoints
         }
 
         var images = await imageStore.ListByTour(tour.CatalogTourId, ct);
-        var dto = MapTour(tour, GetReadyImages(images), objectStore);
+        var dto = MapTour(tour, GetReadyImages(images));
         PublicCatalogHttpCache.SetPublicHeaders(httpContext);
         return Results.Ok(dto);
     }
@@ -140,6 +168,120 @@ internal static class CatalogEndpoints
         return Results.Ok(dto);
     }
 
+    private static async Task<IResult> GetPublicMedia(
+        Guid id,
+        int width,
+        string format,
+        ICatalogTourReadModelStore tourStore,
+        IPublicMediaImageStore imageStore,
+        IMediaObjectStore objectStore,
+        HttpContext httpContext,
+        CancellationToken ct)
+    {
+        if (id == Guid.Empty)
+        {
+            HttpCacheHeaders.SetNoStore(httpContext);
+            return Results.NotFound();
+        }
+
+        var contentType = GetMediaContentType(format);
+        if (width <= 0 || contentType is null)
+        {
+            HttpCacheHeaders.SetNoStore(httpContext);
+            return Results.NotFound();
+        }
+
+        var image = await imageStore.GetImage(id, ct).ConfigureAwait(false);
+        if (image is null || !image.HasPublicVariants || !await IsLinkedToPublishedTour(image, tourStore, ct).ConfigureAwait(false))
+        {
+            HttpCacheHeaders.SetNoStore(httpContext);
+            return Results.NotFound();
+        }
+
+        var variant = image.FindResponsiveVariant(width, contentType);
+        if (variant is null)
+        {
+            HttpCacheHeaders.SetNoStore(httpContext);
+            return Results.NotFound();
+        }
+
+        if (!await objectStore.Exists(variant.ObjectKey, ct).ConfigureAwait(false))
+        {
+            HttpCacheHeaders.SetNoStore(httpContext);
+            return Results.NotFound();
+        }
+
+        var media = await TryOpenMediaObject(objectStore, variant.ObjectKey, ct).ConfigureAwait(false);
+        if (media is null)
+        {
+            HttpCacheHeaders.SetNoStore(httpContext);
+            return Results.NotFound();
+        }
+
+        if (!string.Equals(media.ContentType, contentType, StringComparison.OrdinalIgnoreCase))
+        {
+            media.Dispose();
+            HttpCacheHeaders.SetNoStore(httpContext);
+            return Results.NotFound();
+        }
+
+        HttpCacheHeaders.SetNoStore(httpContext);
+        httpContext.Response.Headers["X-Content-Type-Options"] = "nosniff";
+        httpContext.Response.RegisterForDispose(media);
+        return Results.Stream(media.Content, contentType, enableRangeProcessing: false);
+    }
+
+    private static async Task<IResult> GetManagementMediaPreview(
+        Guid id,
+        int width,
+        string format,
+        IPublicMediaImageStore imageStore,
+        IMediaObjectStore objectStore,
+        HttpContext httpContext,
+        CancellationToken ct)
+    {
+        HttpCacheHeaders.SetNoStore(httpContext);
+
+        if (id == Guid.Empty)
+        {
+            return Results.BadRequest();
+        }
+
+        var contentType = GetMediaContentType(format);
+        if (width <= 0 || contentType is null)
+        {
+            return Results.NotFound();
+        }
+
+        var image = await imageStore.GetImage(id, ct).ConfigureAwait(false);
+        if (image is null)
+        {
+            return Results.NotFound();
+        }
+
+        var variant = image.FindResponsiveVariant(width, contentType);
+        if (variant is null || !await objectStore.Exists(variant.ObjectKey, ct).ConfigureAwait(false))
+        {
+            return Results.NotFound();
+        }
+
+        var media = await TryOpenMediaObject(objectStore, variant.ObjectKey, ct).ConfigureAwait(false);
+        if (media is null)
+        {
+            return Results.NotFound();
+        }
+
+        if (!string.Equals(media.ContentType, contentType, StringComparison.OrdinalIgnoreCase))
+        {
+            media.Dispose();
+            return Results.NotFound();
+        }
+
+        httpContext.Response.Headers["X-Content-Type-Options"] = "nosniff";
+        httpContext.Response.RegisterForDispose(media);
+        return Results.Stream(media.Content, contentType, enableRangeProcessing: false);
+    }
+
     private static async Task<IResult> GetPublicContentForManagement(string key, IPublicContentStore store, HttpContext httpContext, CancellationToken ct)
     {
         HttpCacheHeaders.SetNoStore(httpContext);
@@ -156,7 +298,6 @@ internal static class CatalogEndpoints
     private static async Task<IReadOnlyList<CatalogTourDto>> GetTours(
         ICatalogTourReadModelStore store,
         IPublicMediaImageStore imageStore,
-        IMediaObjectStore objectStore,
         HttpContext httpContext,
         CancellationToken ct)
     {
@@ -166,14 +307,13 @@ internal static class CatalogEndpoints
 
         return
         [
-            .. tours.Select(tour => MapTour(tour, GetImages(imagesByTour, tour.CatalogTourId), objectStore))
+            .. tours.Select(tour => MapTour(tour, GetImages(imagesByTour, tour.CatalogTourId)))
         ];
     }
 
     private static async Task<IReadOnlyList<CatalogTourDto>> GetPublishedTours(
         ICatalogTourReadModelStore store,
         IPublicMediaImageStore imageStore,
-        IMediaObjectStore objectStore,
         HttpContext httpContext,
         CancellationToken ct)
     {
@@ -183,7 +323,7 @@ internal static class CatalogEndpoints
 
         CatalogTourDto[] result =
         [
-            .. publishedTours.Select(tour => MapTour(tour, GetReadyImages(GetImages(imagesByTour, tour.CatalogTourId)), objectStore))
+            .. publishedTours.Select(tour => MapTour(tour, GetReadyImages(GetImages(imagesByTour, tour.CatalogTourId))))
         ];
         PublicCatalogHttpCache.SetPublicHeaders(httpContext);
         return result;
@@ -247,7 +387,6 @@ internal static class CatalogEndpoints
         UpsertCatalogTourPresentationRequest request,
         ICatalogTourReadModelStore store,
         IPublicMediaImageStore imageStore,
-        IMediaObjectStore objectStore,
         IOutputCacheStore outputCacheStore,
         ILogger<CatalogApiHostEntryPoint> logger,
         HttpContext httpContext,
@@ -278,14 +417,13 @@ internal static class CatalogEndpoints
 
         var images = await imageStore.ListByTour(id, ct);
         await InvalidatePublicCatalogCache(outputCacheStore, logger, ct);
-        return Results.Ok(MapTour(updated, (IReadOnlyList<PublicMediaImage>?)images, objectStore));
+        return Results.Ok(MapTour(updated, (IReadOnlyList<PublicMediaImage>?)images));
     }
 
     private static async Task<IResult> ListTourImages(
         Guid id,
         ICatalogTourReadModelStore store,
         IPublicMediaImageStore imageStore,
-        IMediaObjectStore objectStore,
         HttpContext httpContext,
         CancellationToken ct)
     {
@@ -303,58 +441,62 @@ internal static class CatalogEndpoints
         }
 
         var images = await imageStore.ListByTour(id, ct);
-        return Results.Ok(MapImages(images, objectStore));
+        return Results.Ok(images.Select(MapManagementMediaImage).ToArray());
     }
 
-    private static async Task<IResult> UpsertMediaImage(
+    private static async Task<IResult> UploadTourImage(
         Guid id,
-        PublicMediaImageDto request,
+        [AsParameters] MediaImageUploadFormDto form,
         ICatalogTourReadModelStore store,
         IPublicMediaImageStore imageStore,
-        IMediaObjectStore objectStore,
-        IOutputCacheStore outputCacheStore,
-        ILogger<CatalogApiHostEntryPoint> logger,
+        MediaImageUploadIntake intake,
         HttpContext httpContext,
         CancellationToken ct)
     {
         HttpCacheHeaders.SetNoStore(httpContext);
 
-        if (id == Guid.Empty || id != request.Id)
+        var altText = form.AltText;
+        if (id == Guid.Empty || form.File is null || string.IsNullOrWhiteSpace(altText))
         {
             return Results.BadRequest();
         }
 
-        var errors = ValidateMediaImage(request);
-        if (errors.Count > 0)
+        if (await store.GetTour(id, ct).ConfigureAwait(false) is null)
         {
-            return Results.ValidationProblem(errors);
+            return Results.NotFound();
         }
 
-        var image = ToDomainMediaImage(request);
-        if (image.IsFailure)
-        {
-            return ToValidationProblem(image.ErrorDetails);
-        }
+        var existingImages = await imageStore.ListByTour(id, ct).ConfigureAwait(false);
 
-        foreach (var link in image.Value.TourLinks)
-        {
-            var tour = await store.GetTour(link.CatalogTourId, ct);
-            if (tour is null)
-            {
-                return Results.NotFound();
-            }
-        }
+        await using var content = form.File.OpenReadStream();
+        var result = await intake.Accept(
+            new MediaImageUploadIntakeRequest(
+                Guid.CreateVersion7(),
+                content,
+                form.File.FileName,
+                form.File.ContentType,
+                form.File.Length,
+                altText,
+                [new MediaImageTourLink(id, existingImages.Count, existingImages.Count == 0)],
+                Caption: form.Caption,
+                Attribution: form.Attribution,
+                Copyright: form.Copyright),
+            ct).ConfigureAwait(false);
 
-        await imageStore.Upsert(image.Value, ct);
-        await InvalidatePublicCatalogCache(outputCacheStore, logger, ct);
-        return Results.Ok(MapMediaImage(image.Value, objectStore));
+        return result.Status switch
+        {
+            ResultStatus.Ok => Results.Created($"/catalog/media/images/{result.Value.Image.Id}", MapManagementMediaImage(result.Value.Image)),
+            ResultStatus.Invalid => ToValidationProblem(result.ErrorDetails ?? throw new InvalidOperationException("Invalid upload results must include validation details.")),
+            ResultStatus.Conflict => Results.Problem(result.ErrorDetails?.Detail ?? "The tour gallery changed while this upload was processing. Retry the upload.", statusCode: StatusCodes.Status409Conflict),
+            ResultStatus.Unavailable => Results.Problem("Media upload scanner is unavailable.", statusCode: StatusCodes.Status503ServiceUnavailable),
+            _ => Results.Problem("Media upload could not be completed.")
+        };
     }
 
     private static async Task<IResult> GenerateMediaImageAccessibilityDraft(
         Guid id,
         PublicMediaImageAccessibilityDraftRequest request,
         MediaImageAccessibilityDraftService service,
-        IMediaObjectStore objectStore,
         IOutputCacheStore outputCacheStore,
         ILogger<CatalogApiHostEntryPoint> logger,
         HttpContext httpContext,
@@ -387,7 +529,7 @@ internal static class CatalogEndpoints
         if (result.IsSuccess)
         {
             await InvalidatePublicCatalogCache(outputCacheStore, logger, ct);
-            return Results.Ok(MapMediaImage(result.Value, objectStore));
+            return Results.Ok(MapManagementMediaImage(result.Value));
         }
 
         return result.Status switch
@@ -397,6 +539,39 @@ internal static class CatalogEndpoints
             ResultStatus.Unavailable => Results.Problem(result.ErrorDetails.Detail, statusCode: StatusCodes.Status503ServiceUnavailable),
             _ => Results.Problem(result.ErrorDetails.Detail)
         };
+    }
+
+    private static async Task<IResult> ReviewMediaImageAccessibility(
+        Guid id,
+        PublicMediaImageAccessibilityReviewRequest request,
+        IPublicMediaImageStore imageStore,
+        IOutputCacheStore outputCacheStore,
+        ILogger<CatalogApiHostEntryPoint> logger,
+        HttpContext httpContext,
+        CancellationToken ct)
+    {
+        HttpCacheHeaders.SetNoStore(httpContext);
+
+        if (id == Guid.Empty)
+        {
+            return Results.BadRequest();
+        }
+
+        var image = await imageStore.GetImage(id, ct).ConfigureAwait(false);
+        if (image is null)
+        {
+            return Results.NotFound();
+        }
+
+        var result = image.SetReviewedAccessibilityText(ToDomainLanguage(request.Language), request.AltText, request.Caption, request.IsDecorative);
+        if (result.Status == ResultStatus.Invalid)
+        {
+            return ToValidationProblem(result.ErrorDetails ?? throw new InvalidOperationException("Invalid accessibility review results must include validation details."));
+        }
+
+        await imageStore.Upsert(image, ct).ConfigureAwait(false);
+        await InvalidatePublicCatalogCache(outputCacheStore, logger, ct);
+        return Results.Ok(MapManagementMediaImage(image));
     }
 
     private static async Task InvalidatePublicCatalogCache(IOutputCacheStore outputCacheStore, ILogger logger, CancellationToken ct)
@@ -411,7 +586,7 @@ internal static class CatalogEndpoints
         logger.PublicCacheAreaInvalidated(PublicContentHttpCache.Area);
     }
 
-    private static CatalogTourDto MapTour(CatalogTourDraftReadModel tour, IReadOnlyList<PublicMediaImage>? images, IMediaObjectStore objectStore)
+    private static CatalogTourDto MapTour(CatalogTourDraftReadModel tour, IReadOnlyList<PublicMediaImage>? images)
     {
         return new CatalogTourDto
         {
@@ -421,16 +596,16 @@ internal static class CatalogEndpoints
             Title = tour.Title,
             Slug = tour.Slug,
             IsPublished = tour.IsPublished,
-            Images = MapImages(images ?? [], objectStore),
+            Images = MapImages(images ?? []),
             UpdatedAt = tour.UpdatedAt
         };
     }
 
-    private static CatalogTourImageDto[] MapImages(IReadOnlyList<PublicMediaImage> images, IMediaObjectStore objectStore)
+    private static CatalogTourImageDto[] MapImages(IReadOnlyList<PublicMediaImage> images)
     {
         return PublicMediaImage
-            .OrderForGallery(images)
-            .Select(image => MapImage(image, objectStore))
+            .OrderForGallery(images.Where(image => image.HasPublicVariants).ToArray())
+            .Select(MapImage)
             .ToArray();
     }
 
@@ -439,30 +614,21 @@ internal static class CatalogEndpoints
         return [.. images.Where(image => image.HasPublicVariants)];
     }
 
-    private static CatalogTourImageDto MapImage(PublicMediaImage image, IMediaObjectStore objectStore)
+    private static CatalogTourImageDto MapImage(PublicMediaImage image)
     {
         return new CatalogTourImageDto
         {
+            Id = image.Id,
             SortOrder = image.DisplayOrder,
             IsCover = image.IsCover,
-            Uri = GetPublicImageUri(image, objectStore),
             AltText = image.AltText,
             IsDecorative = image.IsDecorative,
             Caption = image.Caption,
             ResponsiveVariants = image.ResponsiveVariants
                 .OrderBy(variant => variant.Width)
-                .Select(variant => MapResponsiveVariant(variant, objectStore))
+                .Select(MapPublicResponsiveVariant)
                 .ToArray()
         };
-    }
-
-    private static Dictionary<string, string[]> ValidateMediaImage(PublicMediaImageDto image)
-    {
-        var errors = new Dictionary<string, string[]>();
-
-        ValidateMediaShape(errors, image);
-
-        return errors;
     }
 
     private static Dictionary<string, string[]> ValidateAccessibilityDraftRequest(PublicMediaImageAccessibilityDraftRequest request)
@@ -497,87 +663,6 @@ internal static class CatalogEndpoints
         return errors;
     }
 
-    private static void ValidateMediaShape(Dictionary<string, string[]> errors, PublicMediaImageDto image)
-    {
-        if (image.Dimensions is null)
-        {
-            errors[nameof(PublicMediaImageDto.Dimensions)] = ["Dimensions are required."];
-        }
-
-        if (image.TourLinks is null || image.TourLinks.Any(link => link is null))
-        {
-            errors[nameof(PublicMediaImageDto.TourLinks)] = ["Tour links are required."];
-        }
-
-        if (image.ResponsiveVariants is null || image.ResponsiveVariants.Any(variant => variant is null))
-        {
-            errors[nameof(PublicMediaImageDto.ResponsiveVariants)] = ["Responsive variants are required."];
-        }
-
-        if (image.Tags is null)
-        {
-            errors[nameof(PublicMediaImageDto.Tags)] = ["Tags are required."];
-        }
-
-        if (string.IsNullOrWhiteSpace(image.SourceObjectKey) && !IsHttpUri(image.SourceUri))
-        {
-            errors[nameof(PublicMediaImageDto.SourceUri)] = ["Source URI must be an absolute HTTP or HTTPS URI when SourceObjectKey is not provided."];
-        }
-
-        if (image.ResponsiveVariants is not null && image.ResponsiveVariants.Any(static variant => variant is not null && string.IsNullOrWhiteSpace(variant.ObjectKey) && !IsHttpUri(variant.Uri)))
-        {
-            errors[nameof(PublicMediaImageDto.ResponsiveVariants)] = ["Responsive variants must include absolute HTTP or HTTPS URIs when ObjectKey is not provided."];
-        }
-
-        ValidateMediaAccessibilityTexts(errors, image);
-    }
-
-    private static void ValidateMediaAccessibilityTexts(Dictionary<string, string[]> errors, PublicMediaImageDto image)
-    {
-        if (image.AccessibilityTexts is null)
-        {
-            errors[nameof(PublicMediaImageDto.AccessibilityTexts)] = ["Accessibility texts are required."];
-        }
-        else if (image.AccessibilityTexts.Any(text => text is null))
-        {
-            errors[nameof(PublicMediaImageDto.AccessibilityTexts)] = ["Accessibility text entries are required."];
-        }
-        else if (image.AccessibilityTexts.Select(text => text.Language).Distinct().Count() != image.AccessibilityTexts.Count)
-        {
-            errors[nameof(PublicMediaImageDto.AccessibilityTexts)] = ["Accessibility text languages cannot be duplicated."];
-        }
-        else if (image.AccessibilityTexts.Any(static text => text.IsAiGenerated && !text.RequiresHumanReview))
-        {
-            errors[nameof(PublicMediaImageDto.AccessibilityTexts)] = ["AI-generated accessibility text requires human review."];
-        }
-        else if (image.AccessibilityTexts.Any(static text => text.IsAiGenerated && text.IsDecorative))
-        {
-            errors[nameof(PublicMediaImageDto.AccessibilityTexts)] = ["AI draft accessibility text cannot mark images decorative."];
-        }
-
-        var defaultText = image.AccessibilityTexts?.FirstOrDefault(static text => text.Language == PublicContentLanguageDto.EnUs);
-        if (defaultText is not null && !DefaultAccessibilityTextMatches(image, defaultText))
-        {
-            errors[nameof(PublicMediaImageDto.AccessibilityTexts)] = ["Default-language accessibility text must match the top-level accessibility fields."];
-        }
-    }
-
-    private static bool DefaultAccessibilityTextMatches(PublicMediaImageDto image, PublicMediaAccessibilityTextDto text)
-    {
-        return string.Equals(image.AltText ?? string.Empty, text.AltText ?? string.Empty, StringComparison.Ordinal)
-            && string.Equals(image.Caption, text.Caption, StringComparison.Ordinal)
-            && image.IsDecorative == text.IsDecorative
-            && image.RequiresHumanReview == text.RequiresHumanReview
-            && image.IsAiGenerated == text.IsAiGenerated;
-    }
-
-    private static bool IsHttpUri(Uri? uri)
-    {
-        return uri is not null
-            && uri.IsAbsoluteUri
-            && (uri.Scheme == Uri.UriSchemeHttp || uri.Scheme == Uri.UriSchemeHttps);
-    }
-
     private static IReadOnlyList<PublicMediaImage> GetImages(
         IReadOnlyDictionary<Guid, IReadOnlyList<PublicMediaImage>> imagesByTour,
         Guid tourId)
@@ -585,126 +670,27 @@ internal static class CatalogEndpoints
         return imagesByTour.TryGetValue(tourId, out var images) ? images : [];
     }
 
-    private static Result<PublicMediaImage> ToDomainMediaImage(PublicMediaImageDto image)
+    private static CatalogMediaImageDto MapManagementMediaImage(PublicMediaImage image)
     {
-        var result = PublicMediaImage.Create(
-            new PublicMediaImageMetadata
-            {
-                Id = image.Id,
-                SourceObjectKey = GetSourceObjectKey(image),
-                Checksum = image.Checksum ?? string.Empty,
-                ContentType = image.ContentType ?? string.Empty,
-                FileSizeBytes = image.FileSizeBytes,
-                Dimensions = image.Dimensions is null
-                    ? new MediaImageDimensions(0, 0)
-                    : new MediaImageDimensions(image.Dimensions.Width, image.Dimensions.Height),
-                ProcessingStatus = (MediaImageProcessingStatus)(int)image.ProcessingStatus,
-                AltText = image.AltText ?? string.Empty,
-                Caption = image.Caption,
-                IsDecorative = image.IsDecorative,
-                RequiresHumanReview = image.RequiresHumanReview,
-                IsAiGenerated = image.IsAiGenerated,
-                Attribution = image.Attribution,
-                Copyright = image.Copyright
-            },
-            image.ResponsiveVariants.Select(ToDomainResponsiveVariant).ToArray(),
-            image.Tags,
-            image.TourLinks.Select(link => new MediaImageTourLink(link.CatalogTourId, link.DisplayOrder, link.IsCover)).ToArray());
-
-        if (result.IsFailure || image.AccessibilityTexts.Count == 0)
-        {
-            return result;
-        }
-
-        var mediaImage = result.Value;
-        foreach (var text in image.AccessibilityTexts)
-        {
-            var language = ToDomainLanguage(text.Language);
-            Result textResult;
-            if (text.IsAiGenerated)
-            {
-                textResult = mediaImage.SetAiDraftAccessibilityText(language, text.AltText ?? string.Empty, text.Caption);
-            }
-            else if (text.RequiresHumanReview)
-            {
-                textResult = mediaImage.SetDraftAccessibilityText(language, text.AltText ?? string.Empty, text.Caption);
-            }
-            else
-            {
-                textResult = mediaImage.SetReviewedAccessibilityText(language, text.AltText, text.Caption, text.IsDecorative);
-            }
-
-            if (textResult.IsFailure)
-            {
-                return Result.Invalid<PublicMediaImage>(textResult.ErrorDetails.Detail, textResult.ErrorDetails.ValidationErrors?.ToDictionary(error => error.Key, error => error.Value.ToArray(), StringComparer.Ordinal) ?? []);
-            }
-        }
-
-        return result;
-    }
-
-    private static MediaImageResponsiveVariant ToDomainResponsiveVariant(MediaImageResponsiveVariantDto variant)
-    {
-        return new MediaImageResponsiveVariant(
-            GetVariantObjectKey(variant),
-            variant.Width,
-            variant.Height,
-            variant.ContentType ?? string.Empty,
-            variant.FileSizeBytes);
-    }
-
-    private static PublicMediaImageDto MapMediaImage(PublicMediaImage image, IMediaObjectStore objectStore)
-    {
-        return new PublicMediaImageDto
+        return new CatalogMediaImageDto
         {
             Id = image.Id,
-            SourceObjectKey = image.SourceObjectKey,
-            SourceUri = objectStore.GetPublicUri(image.SourceObjectKey),
-            Checksum = image.Checksum,
-            ContentType = image.ContentType,
-            FileSizeBytes = image.FileSizeBytes,
-            Dimensions = new MediaImageDimensionsDto { Width = image.Dimensions.Width, Height = image.Dimensions.Height },
-            ProcessingStatus = (MediaImageProcessingStatusDto)(int)image.ProcessingStatus,
-            ResponsiveVariants = image.ResponsiveVariants.Select(variant => MapResponsiveVariant(variant, objectStore)).ToArray(),
-            Tags = image.Tags,
-            TourLinks = image.TourLinks
-                .Select(link => new MediaImageTourLinkDto
-                {
-                    CatalogTourId = link.CatalogTourId,
-                    DisplayOrder = link.DisplayOrder,
-                    IsCover = link.IsCover
-                })
+            ResponsiveVariants = image.ResponsiveVariants
+                .OrderBy(variant => variant.Width)
+                .Select(MapManagementResponsiveVariant)
                 .ToArray(),
             AltText = image.AltText,
             Caption = image.Caption,
             IsDecorative = image.IsDecorative,
             RequiresHumanReview = image.RequiresHumanReview,
-            IsAiGenerated = image.IsAiGenerated,
-            AccessibilityTexts = image.AccessibilityTexts.Select(MapAccessibilityText).ToArray(),
-            Attribution = image.Attribution,
-            Copyright = image.Copyright
+            IsAiGenerated = image.IsAiGenerated
         };
     }
 
-    private static PublicMediaAccessibilityTextDto MapAccessibilityText(PublicMediaImageAccessibilityText text)
+    private static CatalogMediaImageVariantDto MapManagementResponsiveVariant(MediaImageResponsiveVariant variant)
     {
-        return new PublicMediaAccessibilityTextDto
+        return new CatalogMediaImageVariantDto
         {
-            Language = ToContractLanguage(text.Language),
-            AltText = text.AltText,
-            Caption = text.Caption,
-            IsDecorative = text.IsDecorative,
-            RequiresHumanReview = text.RequiresHumanReview,
-            IsAiGenerated = text.IsAiGenerated
-        };
-    }
-
-    private static MediaImageResponsiveVariantDto MapResponsiveVariant(MediaImageResponsiveVariant variant, IMediaObjectStore objectStore)
-    {
-        return new MediaImageResponsiveVariantDto
-        {
-            ObjectKey = variant.ObjectKey,
-            Uri = objectStore.GetPublicUri(variant.ObjectKey),
             Width = variant.Width,
             Height = variant.Height,
             ContentType = variant.ContentType,
@@ -712,31 +698,57 @@ internal static class CatalogEndpoints
         };
     }
 
-    private static Uri GetPublicImageUri(PublicMediaImage image, IMediaObjectStore objectStore)
+    private static CatalogMediaImageVariantDto MapPublicResponsiveVariant(MediaImageResponsiveVariant variant)
     {
-        var largestVariant = image.ResponsiveVariants.OrderByDescending(variant => variant.Width).FirstOrDefault();
-
-        return objectStore.GetPublicUri(largestVariant?.ObjectKey ?? image.SourceObjectKey);
+        return new CatalogMediaImageVariantDto
+        {
+            Width = variant.Width,
+            Height = variant.Height,
+            ContentType = variant.ContentType,
+            FileSizeBytes = variant.FileSizeBytes
+        };
     }
 
-    private static string GetSourceObjectKey(PublicMediaImageDto image)
+    private static string? GetMediaContentType(string format) => format.Trim().ToUpperInvariant() switch
     {
-        if (!string.IsNullOrWhiteSpace(image.SourceObjectKey))
-        {
-            return image.SourceObjectKey;
-        }
+        "AVIF" => "image/avif",
+        "JPG" => "image/jpeg",
+        "PNG" => "image/png",
+        "WEBP" => "image/webp",
+        _ => null
+    };
 
-        return image.SourceUri?.AbsolutePath.TrimStart('/') ?? string.Empty;
+    private static async Task<MediaObjectReadResult?> TryOpenMediaObject(
+        IMediaObjectStore objectStore,
+        string objectKey,
+        CancellationToken ct)
+    {
+        try
+        {
+            return await objectStore.OpenRead(objectKey, ct).ConfigureAwait(false);
+        }
+        catch (FileNotFoundException)
+        {
+            return null;
+        }
+        catch (DirectoryNotFoundException)
+        {
+            return null;
+        }
     }
 
-    private static string GetVariantObjectKey(MediaImageResponsiveVariantDto variant)
+    private static async Task<bool> IsLinkedToPublishedTour(PublicMediaImage image, ICatalogTourReadModelStore tourStore, CancellationToken ct)
     {
-        if (!string.IsNullOrWhiteSpace(variant.ObjectKey))
+        foreach (var link in image.TourLinks)
         {
-            return variant.ObjectKey;
+            var tour = await tourStore.GetTour(link.CatalogTourId, ct).ConfigureAwait(false);
+            if (tour?.IsPubliclyVisible == true)
+            {
+                return true;
+            }
         }
 
-        return variant.Uri?.AbsolutePath.TrimStart('/') ?? string.Empty;
+        return false;
     }
 
     private static PublicContentDto MapPublicContent(EditablePublicContent content)

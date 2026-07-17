@@ -57,8 +57,19 @@
         "responses": {
           "200": {
             "description": "OK"
+          },
+          "401": {
+            "description": "Authentication is required."
+          },
+          "403": {
+            "description": "The authenticated caller lacks the required permission."
           }
-        }
+        },
+        "security": [
+          {
+            "Bearer": [ ]
+          }
+        ]
       }
     },
     "/api/v1/catalog/tours/{id}/presentation": {
@@ -90,8 +101,19 @@
         "responses": {
           "200": {
             "description": "OK"
+          },
+          "401": {
+            "description": "Authentication is required."
+          },
+          "403": {
+            "description": "The authenticated caller lacks the required permission."
           }
-        }
+        },
+        "security": [
+          {
+            "Bearer": [ ]
+          }
+        ]
       }
     },
     "/api/v1/catalog/tours/{id}/images": {
@@ -113,12 +135,21 @@
         "responses": {
           "200": {
             "description": "OK"
+          },
+          "401": {
+            "description": "Authentication is required."
+          },
+          "403": {
+            "description": "The authenticated caller lacks the required permission."
           }
-        }
-      }
-    },
-    "/api/v1/catalog/media/images/{id}": {
-      "put": {
+        },
+        "security": [
+          {
+            "Bearer": [ ]
+          }
+        ]
+      },
+      "post": {
         "tags": [
           "CatalogEndpoints"
         ],
@@ -135,19 +166,110 @@
         ],
         "requestBody": {
           "content": {
-            "application/json": {
+            "multipart/form-data": {
               "schema": {
-                "$ref": "#/components/schemas/PublicMediaImageDto"
+                "required": [
+                  "file",
+                  "altText"
+                ],
+                "type": "object",
+                "properties": {
+                  "file": {
+                    "$ref": "#/components/schemas/IFormFile"
+                  },
+                  "altText": {
+                    "type": "string"
+                  },
+                  "caption": {
+                    "type": "string"
+                  },
+                  "attribution": {
+                    "type": "string"
+                  },
+                  "copyright": {
+                    "type": "string"
+                  }
+                }
               }
             }
           },
           "required": true
         },
         "responses": {
+          "201": {
+            "description": "Created",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CatalogMediaImageDto"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Authentication is required."
+          },
+          "403": {
+            "description": "The authenticated caller lacks the required permission."
+          }
+        },
+        "security": [
+          {
+            "Bearer": [ ]
+          }
+        ]
+      }
+    },
+    "/api/v1/catalog/media/images/{id}/preview/{width}/{format}": {
+      "get": {
+        "tags": [
+          "CatalogEndpoints"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "width",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "pattern": "^-?(?:0|[1-9]\\d*)$",
+              "type": "integer",
+              "format": "int32"
+            }
+          },
+          {
+            "name": "format",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
           "200": {
             "description": "OK"
+          },
+          "401": {
+            "description": "Authentication is required."
+          },
+          "403": {
+            "description": "The authenticated caller lacks the required permission."
           }
-        }
+        },
+        "security": [
+          {
+            "Bearer": [ ]
+          }
+        ]
       }
     },
     "/api/v1/catalog/media/images/{id}/accessibility-draft": {
@@ -179,8 +301,63 @@
         "responses": {
           "200": {
             "description": "OK"
+          },
+          "401": {
+            "description": "Authentication is required."
+          },
+          "403": {
+            "description": "The authenticated caller lacks the required permission."
           }
-        }
+        },
+        "security": [
+          {
+            "Bearer": [ ]
+          }
+        ]
+      }
+    },
+    "/api/v1/catalog/media/images/{id}/accessibility-review": {
+      "put": {
+        "tags": [
+          "CatalogEndpoints"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PublicMediaImageAccessibilityReviewRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "401": {
+            "description": "Authentication is required."
+          },
+          "403": {
+            "description": "The authenticated caller lacks the required permission."
+          }
+        },
+        "security": [
+          {
+            "Bearer": [ ]
+          }
+        ]
       }
     },
     "/api/v1/public/catalog/tours": {
@@ -213,6 +390,47 @@
         "parameters": [
           {
             "name": "slug",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/api/v1/public/catalog/media/{id}/{width}/{format}": {
+      "get": {
+        "tags": [
+          "CatalogEndpoints"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "width",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "pattern": "^-?(?:0|[1-9]\\d*)$",
+              "type": "integer",
+              "format": "int32"
+            }
+          },
+          {
+            "name": "format",
             "in": "path",
             "required": true,
             "schema": {
@@ -314,8 +532,19 @@
         "responses": {
           "200": {
             "description": "OK"
+          },
+          "401": {
+            "description": "Authentication is required."
+          },
+          "403": {
+            "description": "The authenticated caller lacks the required permission."
           }
-        }
+        },
+        "security": [
+          {
+            "Bearer": [ ]
+          }
+        ]
       },
       "put": {
         "tags": [
@@ -344,13 +573,115 @@
         "responses": {
           "200": {
             "description": "OK"
+          },
+          "401": {
+            "description": "Authentication is required."
+          },
+          "403": {
+            "description": "The authenticated caller lacks the required permission."
           }
-        }
+        },
+        "security": [
+          {
+            "Bearer": [ ]
+          }
+        ]
       }
     }
   },
   "components": {
     "schemas": {
+      "CatalogMediaImageDto": {
+        "required": [
+          "id",
+          "responsiveVariants",
+          "altText",
+          "isDecorative",
+          "requiresHumanReview",
+          "isAiGenerated"
+        ],
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "responsiveVariants": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/CatalogMediaImageVariantDto"
+            }
+          },
+          "altText": {
+            "maxLength": 256,
+            "minLength": 0,
+            "type": "string"
+          },
+          "caption": {
+            "maxLength": 256,
+            "minLength": 0,
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "isDecorative": {
+            "type": "boolean"
+          },
+          "requiresHumanReview": {
+            "type": "boolean"
+          },
+          "isAiGenerated": {
+            "type": "boolean"
+          }
+        }
+      },
+      "CatalogMediaImageVariantDto": {
+        "required": [
+          "width",
+          "height",
+          "contentType",
+          "fileSizeBytes"
+        ],
+        "type": "object",
+        "properties": {
+          "width": {
+            "maximum": 2147483647,
+            "minimum": 1,
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "format": "int32"
+          },
+          "height": {
+            "maximum": 2147483647,
+            "minimum": 1,
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "format": "int32"
+          },
+          "contentType": {
+            "maxLength": 128,
+            "minLength": 1,
+            "type": "string"
+          },
+          "fileSizeBytes": {
+            "maximum": 9223372036854776000,
+            "minimum": 1,
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "format": "int64"
+          }
+        }
+      },
       "CatalogTourDto": {
         "required": [
           "id",
@@ -404,15 +735,19 @@
       },
       "CatalogTourImageDto": {
         "required": [
+          "id",
           "sortOrder",
           "isCover",
-          "uri",
           "altText",
           "isDecorative",
           "responsiveVariants"
         ],
         "type": "object",
         "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
           "sortOrder": {
             "maximum": 2147483647,
             "minimum": 0,
@@ -425,10 +760,6 @@
           },
           "isCover": {
             "type": "boolean"
-          },
-          "uri": {
-            "type": "string",
-            "format": "uri"
           },
           "altText": {
             "maxLength": 256,
@@ -447,128 +778,17 @@
             ]
           },
           "responsiveVariants": {
+            "minItems": 1,
             "type": "array",
             "items": {
-              "$ref": "#/components/schemas/MediaImageResponsiveVariantDto"
+              "$ref": "#/components/schemas/CatalogMediaImageVariantDto"
             }
           }
         }
       },
-      "MediaImageDimensionsDto": {
-        "required": [
-          "width",
-          "height"
-        ],
-        "type": "object",
-        "properties": {
-          "width": {
-            "maximum": 2147483647,
-            "minimum": 1,
-            "pattern": "^-?(?:0|[1-9]\\d*)$",
-            "type": [
-              "integer",
-              "string"
-            ],
-            "format": "int32"
-          },
-          "height": {
-            "maximum": 2147483647,
-            "minimum": 1,
-            "pattern": "^-?(?:0|[1-9]\\d*)$",
-            "type": [
-              "integer",
-              "string"
-            ],
-            "format": "int32"
-          }
-        }
-      },
-      "MediaImageProcessingStatusDto": {
-        "type": "integer"
-      },
-      "MediaImageResponsiveVariantDto": {
-        "required": [
-          "uri",
-          "width",
-          "height",
-          "contentType",
-          "fileSizeBytes"
-        ],
-        "type": "object",
-        "properties": {
-          "objectKey": {
-            "type": [
-              "null",
-              "string"
-            ]
-          },
-          "uri": {
-            "type": "string",
-            "format": "uri"
-          },
-          "width": {
-            "maximum": 2147483647,
-            "minimum": 1,
-            "pattern": "^-?(?:0|[1-9]\\d*)$",
-            "type": [
-              "integer",
-              "string"
-            ],
-            "format": "int32"
-          },
-          "height": {
-            "maximum": 2147483647,
-            "minimum": 1,
-            "pattern": "^-?(?:0|[1-9]\\d*)$",
-            "type": [
-              "integer",
-              "string"
-            ],
-            "format": "int32"
-          },
-          "contentType": {
-            "maxLength": 128,
-            "minLength": 1,
-            "type": "string"
-          },
-          "fileSizeBytes": {
-            "maximum": 9223372036854776000,
-            "minimum": 1,
-            "pattern": "^-?(?:0|[1-9]\\d*)$",
-            "type": [
-              "integer",
-              "string"
-            ],
-            "format": "int64"
-          }
-        }
-      },
-      "MediaImageTourLinkDto": {
-        "required": [
-          "catalogTourId",
-          "displayOrder",
-          "isCover"
-        ],
-        "type": "object",
-        "properties": {
-          "catalogTourId": {
-            "type": "string",
-            "format": "uuid"
-          },
-          "displayOrder": {
-            "maximum": 2147483647,
-            "minimum": 0,
-            "pattern": "^-?(?:0|[1-9]\\d*)$",
-            "type": [
-              "integer",
-              "string"
-            ],
-            "format": "int32"
-          },
-          "isCover": {
-            "type": "boolean"
-          }
-        }
+      "IFormFile": {
+        "type": "string",
+        "format": "binary"
       },
       "PublicContentDto": {
         "type": "object",
@@ -628,45 +848,6 @@
           }
         }
       },
-      "PublicMediaAccessibilityTextDto": {
-        "required": [
-          "language",
-          "isDecorative",
-          "requiresHumanReview",
-          "isAiGenerated"
-        ],
-        "type": "object",
-        "properties": {
-          "language": {
-            "$ref": "#/components/schemas/PublicContentLanguageDto"
-          },
-          "altText": {
-            "maxLength": 256,
-            "minLength": 0,
-            "type": [
-              "null",
-              "string"
-            ]
-          },
-          "caption": {
-            "maxLength": 256,
-            "minLength": 0,
-            "type": [
-              "null",
-              "string"
-            ]
-          },
-          "isDecorative": {
-            "type": "boolean"
-          },
-          "requiresHumanReview": {
-            "type": "boolean"
-          },
-          "isAiGenerated": {
-            "type": "boolean"
-          }
-        }
-      },
       "PublicMediaImageAccessibilityDraftRequest": {
         "required": [
           "language"
@@ -708,88 +889,23 @@
           }
         }
       },
-      "PublicMediaImageDto": {
+      "PublicMediaImageAccessibilityReviewRequest": {
         "required": [
-          "id",
-          "sourceUri",
-          "checksum",
-          "contentType",
-          "fileSizeBytes",
-          "dimensions",
-          "processingStatus",
-          "responsiveVariants",
-          "tags",
-          "tourLinks",
-          "altText",
-          "isDecorative",
-          "requiresHumanReview",
-          "isAiGenerated",
-          "accessibilityTexts"
+          "language",
+          "isDecorative"
         ],
         "type": "object",
         "properties": {
-          "id": {
-            "type": "string",
-            "format": "uuid"
-          },
-          "sourceObjectKey": {
-            "type": [
-              "null",
-              "string"
-            ]
-          },
-          "sourceUri": {
-            "type": "string",
-            "format": "uri"
-          },
-          "checksum": {
-            "maxLength": 128,
-            "minLength": 1,
-            "type": "string"
-          },
-          "contentType": {
-            "maxLength": 128,
-            "minLength": 1,
-            "type": "string"
-          },
-          "fileSizeBytes": {
-            "maximum": 9223372036854776000,
-            "minimum": 1,
-            "pattern": "^-?(?:0|[1-9]\\d*)$",
-            "type": [
-              "integer",
-              "string"
-            ],
-            "format": "int64"
-          },
-          "dimensions": {
-            "$ref": "#/components/schemas/MediaImageDimensionsDto"
-          },
-          "processingStatus": {
-            "$ref": "#/components/schemas/MediaImageProcessingStatusDto"
-          },
-          "responsiveVariants": {
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/MediaImageResponsiveVariantDto"
-            }
-          },
-          "tags": {
-            "type": "array",
-            "items": {
-              "type": "string"
-            }
-          },
-          "tourLinks": {
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/MediaImageTourLinkDto"
-            }
+          "language": {
+            "$ref": "#/components/schemas/PublicContentLanguageDto"
           },
           "altText": {
             "maxLength": 256,
             "minLength": 0,
-            "type": "string"
+            "type": [
+              "null",
+              "string"
+            ]
           },
           "caption": {
             "maxLength": 256,
@@ -801,34 +917,6 @@
           },
           "isDecorative": {
             "type": "boolean"
-          },
-          "requiresHumanReview": {
-            "type": "boolean"
-          },
-          "isAiGenerated": {
-            "type": "boolean"
-          },
-          "accessibilityTexts": {
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/PublicMediaAccessibilityTextDto"
-            }
-          },
-          "attribution": {
-            "maxLength": 256,
-            "minLength": 0,
-            "type": [
-              "null",
-              "string"
-            ]
-          },
-          "copyright": {
-            "maxLength": 256,
-            "minLength": 0,
-            "type": [
-              "null",
-              "string"
-            ]
           }
         }
       },

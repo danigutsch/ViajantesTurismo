@@ -51,6 +51,11 @@ public static class ContractConstants
     public const int MaxCopyrightLength = 256;
 
     /// <summary>
+    /// The maximum accepted image-upload size in bytes.
+    /// </summary>
+    public const long MaxMediaUploadBytes = 5 * 1024 * 1024;
+
+    /// <summary>
     /// The maximum length for public content body text.
     /// </summary>
     public const int MaxBodyLength = 4000;

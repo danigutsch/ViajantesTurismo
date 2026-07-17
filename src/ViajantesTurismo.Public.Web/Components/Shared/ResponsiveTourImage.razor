@@ -1,9 +1,15 @@
+@using Microsoft.AspNetCore.Routing
+@inject LinkGenerator LinkGenerator
+
+@{
+    var fallbackVariant = SelectFallbackVariant();
+}
 <picture>
     @foreach (var source in SourceGroups())
     {
         <source type="@source.ContentType" srcset="@source.SrcSet" sizes="@Sizes" />
     }
-    <img src="@ImageSource()" alt="@Image.AltText" width="@ImageWidth()" height="@ImageHeight()" loading="@Loading" fetchpriority="@FetchPriority" />
+    <img src="@GetVariantPath(fallbackVariant)" alt="@Image.AltText" width="@fallbackVariant.Width" height="@fallbackVariant.Height" loading="@Loading" fetchpriority="@FetchPriority" />
 </picture>
 
 @code {
@@ -22,38 +28,52 @@
     private IEnumerable<(string ContentType, string SrcSet)> SourceGroups()
     {
         return Image.ResponsiveVariants
-            .Where(variant => IsPictureSourceContentType(variant.ContentType))
+            .Select(static variant => (Variant: variant, ContentType: NormalizeContentType(variant.ContentType)))
+            .Where(static variant => IsPictureSourceContentType(variant.ContentType))
             .GroupBy(variant => variant.ContentType, StringComparer.OrdinalIgnoreCase)
             .OrderBy(group => ContentTypeSortOrder(group.Key))
             .Select(group => (ContentType: group.Key, SrcSet: string.Join(", ", group
-                .OrderBy(variant => variant.Width)
-                .Select(variant => $"{variant.Uri} {variant.Width}w"))));
+                .OrderBy(variant => variant.Variant.Width)
+                .Select(variant => $"{GetVariantPath(variant.Variant)} {variant.Variant.Width}w"))));
     }
 
-    private string ImageSource() => SelectFallbackVariant()?.Uri.ToString() ?? Image.Uri.ToString();
+    private CatalogMediaImageVariantDto SelectFallbackVariant() => Image.ResponsiveVariants
+        .Where(variant => IsPictureSourceContentType(variant.ContentType))
+        .OrderByDescending(variant =>
+            string.Equals(NormalizeContentType(variant.ContentType), "image/jpeg", StringComparison.OrdinalIgnoreCase)
+            || string.Equals(NormalizeContentType(variant.ContentType), "image/png", StringComparison.OrdinalIgnoreCase))
+        .ThenByDescending(variant => variant.Width)
+        .FirstOrDefault()
+        ?? throw new InvalidOperationException("A responsive tour image requires a supported media variant.");
 
-    private int? ImageWidth() => SelectFallbackVariant()?.Width;
+    private string GetVariantPath(CatalogMediaImageVariantDto variant) => LinkGenerator.GetPathByName(
+        PublicWebEndpoints.PublicMediaByRenditionEndpointName,
+        new { id = Image.Id, width = variant.Width, format = GetMediaFormatSegment(variant.ContentType) })
+        ?? throw new InvalidOperationException("The public media rendition route is not available.");
 
-    private int? ImageHeight() => SelectFallbackVariant()?.Height;
-
-    private MediaImageResponsiveVariantDto? SelectFallbackVariant() => Image.ResponsiveVariants
-        .Where(variant => string.Equals(variant.ContentType, "image/jpeg", StringComparison.OrdinalIgnoreCase)
-            || string.Equals(variant.ContentType, "image/png", StringComparison.OrdinalIgnoreCase))
-        .OrderByDescending(variant => variant.Width)
-        .FirstOrDefault();
-
-    private static int ContentTypeSortOrder(string contentType) => contentType.ToLowerInvariant() switch
+    private static string GetMediaFormatSegment(string contentType) => NormalizeContentType(contentType).ToUpperInvariant() switch
     {
-        "image/avif" => 0,
-        "image/webp" => 1,
-        "image/jpeg" => 2,
-        "image/png" => 3,
+        "IMAGE/AVIF" => "avif",
+        "IMAGE/JPEG" => "jpg",
+        "IMAGE/PNG" => "png",
+        "IMAGE/WEBP" => "webp",
+        _ => throw new ArgumentOutOfRangeException(nameof(contentType), contentType, "Unsupported media content type.")
+    };
+
+    private static int ContentTypeSortOrder(string contentType) => NormalizeContentType(contentType).ToUpperInvariant() switch
+    {
+        "IMAGE/AVIF" => 0,
+        "IMAGE/WEBP" => 1,
+        "IMAGE/JPEG" => 2,
+        "IMAGE/PNG" => 3,
         _ => 4
     };
 
-    private static bool IsPictureSourceContentType(string contentType) => contentType.ToLowerInvariant() switch
+    private static bool IsPictureSourceContentType(string contentType) => NormalizeContentType(contentType).ToUpperInvariant() switch
     {
-        "image/avif" or "image/webp" or "image/jpeg" or "image/png" => true,
+        "IMAGE/AVIF" or "IMAGE/WEBP" or "IMAGE/JPEG" or "IMAGE/PNG" => true,
         _ => false
     };
+
+    private static string NormalizeContentType(string contentType) => contentType.Trim();
 }

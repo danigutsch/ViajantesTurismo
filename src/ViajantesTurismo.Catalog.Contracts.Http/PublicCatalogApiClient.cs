@@ -68,6 +68,43 @@ public sealed class PublicCatalogApiClient(HttpClient httpClient) : IPublicCatal
                ?? throw new InvalidOperationException("The public content response body was empty.");
     }
 
+    /// <inheritdoc />
+    public async Task<PublicMediaObjectResponse?> GetPublicMedia(Guid id, int width, string format, CancellationToken ct)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(format);
+
+        var response = await httpClient.GetAsync(
+            new Uri($"{RoutePrefix}/media/{id}/{width}/{Uri.EscapeDataString(format)}", UriKind.Relative),
+            HttpCompletionOption.ResponseHeadersRead,
+            ct).ConfigureAwait(false);
+        if (response.StatusCode == HttpStatusCode.NotFound)
+        {
+            response.Dispose();
+            return null;
+        }
+
+        try
+        {
+            response.EnsureSuccessStatusCode();
+        }
+        catch
+        {
+            response.Dispose();
+            throw;
+        }
+
+        try
+        {
+            var content = await response.Content.ReadAsStreamAsync(ct).ConfigureAwait(false);
+            return new PublicMediaObjectResponse(response, content, response.Content.Headers.ContentType?.MediaType ?? "application/octet-stream");
+        }
+        catch
+        {
+            response.Dispose();
+            throw;
+        }
+    }
+
     private static string EscapePath(string path)
     {
         return string.Join('/', path

@@ -151,8 +151,19 @@
                 }
               }
             }
+          },
+          "401": {
+            "description": "Authentication is required."
+          },
+          "403": {
+            "description": "The authenticated caller lacks the required permission."
           }
-        }
+        },
+        "security": [
+          {
+            "Bearer": [ ]
+          }
+        ]
       },
       "put": {
         "tags": [
@@ -205,8 +216,19 @@
                 }
               }
             }
+          },
+          "401": {
+            "description": "Authentication is required."
+          },
+          "403": {
+            "description": "The authenticated caller lacks the required permission."
           }
-        }
+        },
+        "security": [
+          {
+            "Bearer": [ ]
+          }
+        ]
       }
     },
     "/api/v1/customers/import": {
@@ -282,28 +304,18 @@
           "content": {
             "multipart/form-data": {
               "schema": {
+                "required": [
+                  "file"
+                ],
                 "type": "object",
-                "allOf": [
-                  {
-                    "required": [
-                      "file"
-                    ],
-                    "type": "object",
-                    "properties": {
-                      "file": {
-                        "$ref": "#/components/schemas/IFormFile"
-                      }
-                    }
+                "properties": {
+                  "file": {
+                    "$ref": "#/components/schemas/IFormFile"
                   },
-                  {
-                    "type": "object",
-                    "properties": {
-                      "conflictResolutions": {
-                        "type": "string"
-                      }
-                    }
+                  "conflictResolutions": {
+                    "type": "string"
                   }
-                ]
+                }
               }
             }
           },

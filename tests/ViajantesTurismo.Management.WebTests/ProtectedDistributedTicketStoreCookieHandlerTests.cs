@@ -33,4 +33,28 @@ public sealed class ProtectedDistributedTicketStoreCookieHandlerTests
         await signOut.ShouldThrow<InvalidOperationException>();
         testHost.Cache.RemoveCalls.ShouldBe(2);
     }
+
+    [Fact]
+    public async Task Signing_out_fails_when_session_revocation_persistence_fails()
+    {
+        // Arrange
+        using var testHost = await ProtectedDistributedTicketStoreCookieHandlerTestHost.StartWithFailingSessionRevocation(
+            Xunit.TestContext.Current.CancellationToken);
+        using var client = testHost.Host.GetTestClient();
+        using var signInResponse = await client.GetAsync(
+            new Uri("/sign-in", UriKind.Relative),
+            Xunit.TestContext.Current.CancellationToken);
+        var sessionCookie = signInResponse.Headers.GetValues("Set-Cookie").Single().Split(';', 2)[0];
+        using var signOutRequest = new HttpRequestMessage(HttpMethod.Post, new Uri("/sign-out", UriKind.Relative));
+        signOutRequest.Headers.Add("Cookie", sessionCookie);
+
+        // Act
+        Func<Task> signOut = async () =>
+        {
+            using var response = await client.SendAsync(signOutRequest, Xunit.TestContext.Current.CancellationToken);
+        };
+
+        // Assert
+        await signOut.ShouldThrow<InvalidOperationException>();
+    }
 }

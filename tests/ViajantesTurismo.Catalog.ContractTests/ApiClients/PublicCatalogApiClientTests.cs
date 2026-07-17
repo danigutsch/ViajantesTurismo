@@ -1,6 +1,7 @@
 using System.Net;
 using System.Text.Json;
 using PublicCatalogApiClientTestsHelpers = SharedKernel.Testing.Contracts.ContractHttpClientTestHelper;
+using SharedKernel.Testing.Contracts;
 using ViajantesTurismo.Catalog.Contracts.Http;
 
 namespace ViajantesTurismo.Catalog.ContractTests.ApiClients;
@@ -69,13 +70,14 @@ public sealed class PublicCatalogApiClientTests
                 "isPublished":true,
                 "images":[
                   {
-                    "uri":"https://cdn.example/cover.jpg",
+                    "id":"55555555-5555-5555-5555-555555555555",
                     "altText":"Cover image",
                     "caption":"Mountain pass",
                     "sortOrder":1,
                     "isCover":true,
+                    "isDecorative":false,
                     "responsiveVariants":[
-                      {"uri":"https://cdn.example/cover-320.jpg","width":320,"height":213,"contentType":"image/jpeg","fileSizeBytes":512}
+                      {"width":320,"height":213,"contentType":"image/jpeg","fileSizeBytes":512}
                     ]
                   }
                 ],
@@ -92,11 +94,75 @@ public sealed class PublicCatalogApiClientTests
         var tour = tours.ShouldHaveSingleItem();
         var image = tour.Images.ShouldHaveSingleItem();
         image.IsCover.ShouldBeTrue();
-        image.Uri.ToString().ShouldBe("https://cdn.example/cover.jpg");
+        image.Id.ShouldBe(Guid.Parse("55555555-5555-5555-5555-555555555555"));
         image.Caption.ShouldBe("Mountain pass");
         var variant = image.ResponsiveVariants.ShouldHaveSingleItem();
         variant.Width.ShouldBe(320);
-        variant.Uri.ToString().ShouldBe("https://cdn.example/cover-320.jpg");
+        variant.ContentType.ShouldBe("image/jpeg");
+    }
+
+    [Fact]
+    public async Task GetPublicMedia_requests_the_exact_rendition_endpoint()
+    {
+        // Arrange
+        var requestPath = string.Empty;
+        var imageId = Guid.Parse("55555555-5555-5555-5555-555555555555");
+        using var httpClient = PublicCatalogApiClientTestsHelpers.CreateClient(request =>
+        {
+            requestPath = request.RequestUri?.PathAndQuery ?? string.Empty;
+            return new HttpResponseMessage(HttpStatusCode.OK)
+            {
+                Content = new ByteArrayContent("image"u8.ToArray())
+            };
+        });
+        var sut = new PublicCatalogApiClient(httpClient);
+
+        // Act
+        var media = await sut.GetPublicMedia(imageId, 640, "jpg", TestContext.Current.CancellationToken);
+
+        // Assert
+        await using var response = media.ShouldNotBeNull();
+        requestPath.ShouldBe("/api/v1/public/catalog/media/55555555-5555-5555-5555-555555555555/640/jpg");
+    }
+
+    [Fact]
+    public async Task GetPublicMedia_returns_null_and_disposes_the_not_found_response()
+    {
+        // Arrange
+        var content = new TrackingHttpContent();
+        using var response = new HttpResponseMessage(HttpStatusCode.NotFound)
+        {
+            Content = content
+        };
+        using var httpClient = PublicCatalogApiClientTestsHelpers.CreateClient(_ => response);
+        var sut = new PublicCatalogApiClient(httpClient);
+
+        // Act
+        var media = await sut.GetPublicMedia(Guid.CreateVersion7(), 640, "jpg", TestContext.Current.CancellationToken);
+
+        // Assert
+        media.ShouldBeNull();
+        content.IsDisposed.ShouldBeTrue();
+    }
+
+    [Fact]
+    public async Task GetPublicMedia_disposes_the_response_when_the_upstream_status_is_unsuccessful()
+    {
+        // Arrange
+        var content = new TrackingHttpContent();
+        using var response = new HttpResponseMessage(HttpStatusCode.BadGateway)
+        {
+            Content = content
+        };
+        using var httpClient = PublicCatalogApiClientTestsHelpers.CreateClient(_ => response);
+        var sut = new PublicCatalogApiClient(httpClient);
+
+        // Act
+        Func<Task> act = async () => await sut.GetPublicMedia(Guid.CreateVersion7(), 640, "jpg", TestContext.Current.CancellationToken);
+
+        // Assert
+        await act.ShouldThrow<HttpRequestException>();
+        content.IsDisposed.ShouldBeTrue();
     }
 
     [Theory]

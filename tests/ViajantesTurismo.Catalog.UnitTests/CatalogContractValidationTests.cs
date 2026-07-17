@@ -63,9 +63,13 @@ public sealed class CatalogContractValidationTests
         // Arrange
         var image = new CatalogTourImageDto
         {
-            Uri = new Uri("https://cdn.example/tour.jpg"),
+            Id = Guid.CreateVersion7(),
             AltText = new string('a', ContractConstants.MaxAltTextLength + 1),
-            Caption = new string('c', ContractConstants.MaxCaptionLength + 1)
+            Caption = new string('c', ContractConstants.MaxCaptionLength + 1),
+            ResponsiveVariants =
+            [
+                new CatalogMediaImageVariantDto { Width = 640, Height = 427, ContentType = "image/jpeg", FileSizeBytes = 1024 }
+            ]
         };
 
         // Act
@@ -82,9 +86,13 @@ public sealed class CatalogContractValidationTests
         // Arrange
         var image = new CatalogTourImageDto
         {
-            Uri = new Uri("https://cdn.example/tour.jpg"),
+            Id = Guid.CreateVersion7(),
             AltText = string.Empty,
-            IsDecorative = true
+            IsDecorative = true,
+            ResponsiveVariants =
+            [
+                new CatalogMediaImageVariantDto { Width = 640, Height = 427, ContentType = "image/jpeg", FileSizeBytes = 1024 }
+            ]
         };
 
         // Act

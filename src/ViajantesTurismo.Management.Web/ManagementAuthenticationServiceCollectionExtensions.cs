@@ -54,7 +54,8 @@ internal static class ManagementAuthenticationServiceCollectionExtensions
         services.AddManagementSecurityPersistence(connectionString!);
         services.AddSingleton(_ => NpgsqlDataSource.Create(connectionString!));
         services.TryAddSingleton(TimeProvider.System);
-        services.AddHttpClient(ManagementAuthenticationDefaults.KeycloakTokenExchangeHttpClientName);
+        services.AddHttpClient(ManagementAuthenticationDefaults.KeycloakTokenExchangeHttpClientName)
+            .ConfigurePrimaryHttpMessageHandler(static () => new HttpClientHandler { AllowAutoRedirect = false });
 
         var dataProtection = services.AddDataProtection()
             .PersistKeysToDbContext<ManagementSecurityDbContext>()
@@ -94,7 +95,7 @@ internal static class ManagementAuthenticationServiceCollectionExtensions
                 options.ClientSecret = clientSecret;
                 options.ResponseType = "code";
                 options.UsePkce = true;
-                options.SaveTokens = true;
+                options.SaveTokens = false;
                 options.EventsType = typeof(ManagementOpenIdConnectEvents);
                 options.MapInboundClaims = false;
                 options.RequireHttpsMetadata = !(environment.IsDevelopment() && allowHttpDevelopmentAuthority);

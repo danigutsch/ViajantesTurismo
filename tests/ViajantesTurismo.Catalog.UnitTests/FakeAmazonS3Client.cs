@@ -19,6 +19,8 @@ internal sealed class FakeAmazonS3Client : AmazonS3Client
 
     public Exception? GetObjectMetadataException { get; set; }
 
+    public Exception? GetObjectException { get; set; }
+
     public DateTime ListObjectLastModified { get; set; } = DateTime.UtcNow;
 
     public bool ReturnEmptyListResponse { get; set; }
@@ -44,6 +46,11 @@ internal sealed class FakeAmazonS3Client : AmazonS3Client
     public override Task<GetObjectResponse> GetObjectAsync(GetObjectRequest request, CancellationToken cancellationToken = default)
     {
         Operations.Add($"GetObject:{request.BucketName}/{request.Key}");
+        if (GetObjectException is not null)
+        {
+            throw GetObjectException;
+        }
+
         var response = new GetObjectResponse
         {
             ResponseStream = new MemoryStream("image"u8.ToArray())

@@ -1,8 +1,4 @@
 using System.Security.Claims;
-using Microsoft.AspNetCore.Authentication;
-using Microsoft.AspNetCore.Authentication.OpenIdConnect;
-using Microsoft.AspNetCore.Http;
-using Microsoft.IdentityModel.Protocols.OpenIdConnect;
 using ViajantesTurismo.Management.Web;
 
 namespace ViajantesTurismo.Management.WebTests;
@@ -26,25 +22,7 @@ public sealed class ManagementOpenIdConnectEventsTests
             new Claim(ManagementAuthenticationDefaults.UserTokenStoreSessionExpiresAtClaimType, "2000-01-01T00:00:00.0000000+00:00")
         ],
         "provider"));
-        var context = new TokenValidatedContext(
-            new DefaultHttpContext(),
-            new AuthenticationScheme(
-                OpenIdConnectDefaults.AuthenticationScheme,
-                displayName: null,
-                handlerType: typeof(OpenIdConnectHandler)),
-            new OpenIdConnectOptions { ClientId = "web-app" },
-            principal,
-            new AuthenticationProperties())
-        {
-            ProtocolMessage = new OpenIdConnectMessage(),
-            TokenEndpointResponse = new OpenIdConnectMessage
-            {
-                AccessToken = "access-token",
-                ExpiresIn = "300",
-                RefreshToken = "refresh-token",
-                TokenType = "Bearer"
-            }
-        };
+        var context = ManagementOpenIdConnectEventsTestContext.Create(principal);
 
         // Act
         await events.TokenValidated(context);
@@ -57,5 +35,57 @@ public sealed class ManagementOpenIdConnectEventsTests
         expiryClaims.Length.ShouldBe(1);
         sessionClaims[0].Value.ShouldNotBe("provider-session");
         expiryClaims[0].Value.ShouldNotBe("2000-01-01T00:00:00.0000000+00:00");
+    }
+
+    [Theory]
+    [InlineData(null, "refresh-token", "Bearer", "300", "web-app")]
+    [InlineData("access-token", null, "Bearer", "300", "web-app")]
+    [InlineData("access-token", "refresh-token", null, "300", "web-app")]
+    [InlineData("access-token", "refresh-token", "Bearer", null, "web-app")]
+    [InlineData("access-token", "refresh-token", "Bearer", "invalid", "web-app")]
+    [InlineData("access-token", "refresh-token", "Bearer", "0", "web-app")]
+    [InlineData("access-token", "refresh-token", "Bearer", "-1", "web-app")]
+    [InlineData("access-token", "refresh-token", "Bearer", "300", null)]
+    public async Task Rejects_invalid_token_responses_without_storing_tokens(
+        string? accessToken,
+        string? refreshToken,
+        string? tokenType,
+        string? expiresIn,
+        string? clientId)
+    {
+        // Arrange
+        var store = new RecordingUserTokenStore();
+        var events = new ManagementOpenIdConnectEvents(store, TimeProvider.System);
+        var context = ManagementOpenIdConnectEventsTestContext.Create(
+            accessToken: accessToken,
+            refreshToken: refreshToken,
+            tokenType: tokenType,
+            expiresIn: expiresIn,
+            clientId: clientId);
+        Func<Task> validateToken = () => events.TokenValidated(context);
+
+        // Act
+        var exception = await validateToken.ShouldThrow<InvalidOperationException>();
+
+        // Assert
+        exception.Message.ShouldBe("The identity provider did not return a valid token response.");
+        store.StoredUser.ShouldBeNull();
+    }
+
+    [Fact]
+    public async Task Rejects_a_missing_token_response_without_storing_tokens()
+    {
+        // Arrange
+        var store = new RecordingUserTokenStore();
+        var events = new ManagementOpenIdConnectEvents(store, TimeProvider.System);
+        var context = ManagementOpenIdConnectEventsTestContext.CreateWithoutTokenResponse();
+        Func<Task> validateToken = () => events.TokenValidated(context);
+
+        // Act
+        var exception = await validateToken.ShouldThrow<InvalidOperationException>();
+
+        // Assert
+        exception.Message.ShouldBe("The identity provider did not return a token response.");
+        store.StoredUser.ShouldBeNull();
     }
 }

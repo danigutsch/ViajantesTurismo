@@ -70,6 +70,15 @@ internal sealed class PostgreSqlManagementUserTokenStoreScenario : IAsyncDisposa
         return new ProtectedDistributedUserTokenStore(cache, dataProtectionProvider, TimeProvider.System, dataSource);
     }
 
+    public ProtectedDistributedAudienceTokenStore CreateAudienceTokenStore()
+    {
+        var cache = _cache ?? throw new InvalidOperationException("The PostgreSQL user-token-store test scenario has not started.");
+        var dataProtectionProvider = _dataProtectionProvider
+            ?? throw new InvalidOperationException("The PostgreSQL user-token-store test scenario has not started.");
+
+        return new ProtectedDistributedAudienceTokenStore(cache, dataProtectionProvider, TimeProvider.System);
+    }
+
     public BlockingFirstGetDistributedCache CreateBlockingFirstGetCache(string sessionId)
     {
         var cache = _cache ?? throw new InvalidOperationException("The PostgreSQL user-token-store test scenario has not started.");

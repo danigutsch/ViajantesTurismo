@@ -1,4 +1,5 @@
 using Microsoft.EntityFrameworkCore;
+using Npgsql;
 using ViajantesTurismo.Catalog.Application.Media;
 using ViajantesTurismo.Catalog.Domain.Media;
 using SharedKernel.InputNormalization;
@@ -14,7 +15,16 @@ internal sealed class EfPublicMediaImageStore(CatalogDbContext dbContext) : IPub
         var sanitizedImage = Sanitize(image);
         var strategy = dbContext.Database.CreateExecutionStrategy();
 
-        await strategy.ExecuteAsync(() => ReplaceImage(sanitizedImage, ct)).ConfigureAwait(false);
+        try
+        {
+            await strategy.ExecuteAsync(() => ReplaceImage(sanitizedImage, ct)).ConfigureAwait(false);
+        }
+        catch (DbUpdateException exception) when (IsGalleryPlacementConflict(exception))
+        {
+            throw new MediaGalleryPlacementConflictException(
+                "The tour gallery changed while the media image was being saved.",
+                exception);
+        }
     }
 
     private async Task ReplaceImage(PublicMediaImage image, CancellationToken ct)
@@ -165,6 +175,15 @@ internal sealed class EfPublicMediaImageStore(CatalogDbContext dbContext) : IPub
             StringSanitizer.SanitizeCollection(image.Tags),
             [.. image.TourLinks.OrderBy(link => link.DisplayOrder)],
             image.AccessibilityTexts);
+    }
+
+    private static bool IsGalleryPlacementConflict(DbUpdateException exception)
+    {
+        return exception.InnerException is PostgresException
+        {
+            SqlState: PostgresErrorCodes.UniqueViolation,
+            ConstraintName: PublicMediaImageSchema.GalleryCoverUniqueIndex or PublicMediaImageSchema.GalleryDisplayOrderUniqueIndex
+        };
     }
 
     private static PublicMediaImage ForTour(PublicMediaImage image, Guid catalogTourId)

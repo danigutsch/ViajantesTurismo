@@ -1,5 +1,6 @@
 using System.Globalization;
 using System.Security.Cryptography;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using SharedKernel.ImageProcessing;
 using SharedKernel.Messaging.IntegrationEvents;
@@ -13,17 +14,22 @@ namespace ViajantesTurismo.Catalog.Application.Media;
 /// <summary>
 /// Validates, scans, stores, and records metadata for uploaded original Catalog images.
 /// </summary>
-public sealed class MediaImageUploadIntake(
+public sealed partial class MediaImageUploadIntake(
     IMediaUploadValidator validator,
     IMediaUploadScanner scanner,
     IMediaObjectStore objectStore,
     IPublicMediaImageStore imageStore,
     IIntegrationEventOutbox outbox,
-    IOptions<MediaUploadValidationOptions> validationOptions)
+    IOptions<MediaUploadValidationOptions> validationOptions,
+    ILogger<MediaImageUploadIntake> logger)
 {
     private const string InvalidUploadMessage = "Media upload is invalid.";
 
     private const string ScannerUnavailableMessage = "Media upload scanner is unavailable.";
+
+    private const string ScanRejectedMessage = "Media upload did not pass security scanning.";
+
+    private const string GalleryPlacementConflictMessage = "The tour gallery changed while this upload was processing. Retry the upload.";
 
     private static readonly IReadOnlyList<ImageVariantRequest> ProbeVariants = [new("probe-webp", ImageOutputFormat.WebP, 1, 80, 1)];
 
@@ -73,19 +79,21 @@ public sealed class MediaImageUploadIntake(
         }
 
         content.Position = 0;
-        var objectKey = CreateOriginalObjectKey(request.MediaImageId, request.ContentType);
+        var objectKey = CreateOriginalObjectKey(request.MediaImageId, Guid.CreateVersion7(), request.ContentType);
         var scanResult = await Scan(objectKey, content, request.ContentType, actualLength, ct).ConfigureAwait(false);
         if (scanResult.Status is MediaUploadScanStatus.Failed)
         {
-            return Result.Unavailable<MediaImageUploadIntakeResult>(scanResult.Message ?? ScannerUnavailableMessage);
+            LogScanDiagnostic(scanResult);
+            return Result.Unavailable<MediaImageUploadIntakeResult>(ScannerUnavailableMessage);
         }
 
         if (scanResult.Status is MediaUploadScanStatus.Rejected or MediaUploadScanStatus.Pending)
         {
+            LogScanDiagnostic(scanResult);
             return Result.Invalid<MediaImageUploadIntakeResult>(
                 InvalidUploadMessage,
                 nameof(scanResult.Status),
-                scanResult.Message ?? "Media upload did not pass malware scanning.");
+                ScanRejectedMessage);
         }
 
         content.Position = 0;
@@ -147,7 +155,14 @@ public sealed class MediaImageUploadIntake(
             objectKey,
             1);
 
-        await StoreImageEventAndCompensateObject(image, originalStoredEvent, objectKey, ct).ConfigureAwait(false);
+        try
+        {
+            await StoreImageEventAndCompensateObject(image, originalStoredEvent, objectKey, ct).ConfigureAwait(false);
+        }
+        catch (MediaGalleryPlacementConflictException)
+        {
+            return Result.Conflict<MediaImageUploadIntakeResult>(GalleryPlacementConflictMessage);
+        }
 
         return Result.Ok(new MediaImageUploadIntakeResult(image, originalStoredEvent, scanResult.Status));
     }
@@ -166,6 +181,7 @@ public sealed class MediaImageUploadIntake(
         }
         catch (Exception exception) when (exception.ShouldHandleAsFailure(ct))
         {
+            LogScannerFailure(logger, exception);
             content.Position = 0;
             return new MediaUploadScanResult(MediaUploadScanStatus.Failed, ScannerUnavailableMessage);
         }
@@ -225,8 +241,22 @@ public sealed class MediaImageUploadIntake(
         return string.Create(CultureInfo.InvariantCulture, $"sha256:{Convert.ToHexString(hash).ToUpperInvariant()}");
     }
 
-    private static string CreateOriginalObjectKey(Guid mediaImageId, string contentType)
-        => string.Create(CultureInfo.InvariantCulture, $"media/{mediaImageId:N}/original{GetFileExtension(contentType)}");
+    private void LogScanDiagnostic(MediaUploadScanResult scanResult)
+    {
+        if (!string.IsNullOrWhiteSpace(scanResult.Message))
+        {
+            LogScanDiagnostic(logger, scanResult.Status, scanResult.Message);
+        }
+    }
+
+    [LoggerMessage(LogLevel.Warning, "Media upload scanner failed.")]
+    private static partial void LogScannerFailure(ILogger logger, Exception exception);
+
+    [LoggerMessage(LogLevel.Warning, "Media upload scanner returned {ScanStatus}: {ScanMessage}")]
+    private static partial void LogScanDiagnostic(ILogger logger, MediaUploadScanStatus scanStatus, string scanMessage);
+
+    private static string CreateOriginalObjectKey(Guid mediaImageId, Guid uploadAttemptId, string contentType)
+        => string.Create(CultureInfo.InvariantCulture, $"media/{mediaImageId:N}/original-{uploadAttemptId:N}{GetFileExtension(contentType)}");
 
     private static string GetFileExtension(string contentType) => contentType.Trim().ToUpperInvariant() switch
     {
