@@ -3,6 +3,7 @@ using System.Net.Sockets;
 using System.Text;
 using Amazon.S3;
 using Amazon.S3.Model;
+using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Options;
 using SharedKernel.MalwareScanning;
 using SharedKernel.MalwareScanning.ClamAv.Testing;
@@ -65,7 +66,8 @@ public sealed class MediaInfrastructureContainerTests(MediaInfrastructureContain
             objectStore,
             new UnexpectedPublicMediaImageStore(),
             new UnexpectedIntegrationEventOutbox(),
-            Options.Create(validationOptions));
+            Options.Create(validationOptions),
+            NullLogger<MediaImageUploadIntake>.Instance);
         var content = new byte[] { 0xFF, 0xD8, 0xFF, 0xD9 };
         var request = new MediaImageUploadIntakeRequest(
             Guid.CreateVersion7(),

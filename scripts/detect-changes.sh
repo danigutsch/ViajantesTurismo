@@ -199,6 +199,7 @@ fast_validation_patterns=(
     "tests/SharedKernel.InputNormalization.Tests/**"
     "tests/SharedKernel.Mediator.Analyzers.Tests/**"
     "tests/SharedKernel.Mediator.Tests/**"
+    "tests/SharedKernel.MalwareScanning.ClamAv.Testing/**"
     "tests/SharedKernel.Aspire.Analyzers.Tests/**"
     "tests/SharedKernel.Aspire.CodeFixes.Tests/**"
     "tests/SharedKernel.OpenApi.Tests/**"
