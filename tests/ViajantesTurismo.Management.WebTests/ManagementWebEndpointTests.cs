@@ -107,6 +107,27 @@ public sealed class ManagementWebEndpointTests
     }
 
     [Fact]
+    public async Task Management_media_preview_rejects_an_empty_image_identifier_without_calling_catalog()
+    {
+        // Arrange
+        var catalogApi = new FakeCatalogToursApiClient { ThrowOnMediaPreview = true };
+        using var host = await ManagementWebEndpointTestHost.StartWithRecordingAuthentication(
+            Xunit.TestContext.Current.CancellationToken,
+            catalogApi);
+        using var client = host.GetTestClient();
+
+        // Act
+        using var response = await client.GetAsync(
+            new Uri("/catalog/media/images/00000000-0000-0000-0000-000000000000/preview/640/jpg", UriKind.Relative),
+            Xunit.TestContext.Current.CancellationToken);
+
+        // Assert
+        response.StatusCode.ShouldBe(HttpStatusCode.BadRequest);
+        response.Headers.CacheControl?.NoStore.ShouldBeTrue();
+        catalogApi.LastMediaId.ShouldBeNull();
+    }
+
+    [Fact]
     public async Task Robots_txt_disallows_management_crawling()
     {
         // Arrange

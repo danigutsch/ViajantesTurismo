@@ -59,6 +59,10 @@ internal static class ManagementWebEndpoints
         CancellationToken ct)
     {
         HttpCacheHeaders.SetNoStore(context);
+        if (id == Guid.Empty)
+        {
+            return Results.BadRequest();
+        }
 
         try
         {
