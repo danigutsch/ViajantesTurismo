@@ -1,6 +1,9 @@
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
+using Microsoft.Extensions.Hosting;
+using SharedKernel.AspNetCore;
+using SharedKernel.MalwareScanning.ClamAv;
 using SharedKernel.Testing.AspNetCore;
 using ViajantesTurismo.Catalog.ApiService;
 using ViajantesTurismo.Catalog.Application.Media;
@@ -13,6 +16,7 @@ internal static class CatalogEndpointTestsHelpers
     public static WebApplicationFactory<ICatalogApiAssemblyMarker> CreateFactory(ICatalogTourReadModelStore store)
     {
         return WebApplicationTestHost.Create<ICatalogApiAssemblyMarker>(
+            environment: Environments.Development,
             configureTestServices: services =>
             {
                 services.RemoveAll<ICatalogTourReadModelStore>();
@@ -24,8 +28,9 @@ internal static class CatalogEndpointTestsHelpers
             configureClient: client => ApiTestAuthentication.ConfigureAuthenticatedClient(client, "catalog-api", "Admin"),
             configuration: new Dictionary<string, string?>
             {
-                ["Authentication:Authority"] = ApiTestAuthentication.Authority,
-                ["Authentication:Issuer"] = ApiTestAuthentication.Authority
+                [ApiAuthenticationDefaults.AuthorityConfigurationKey] = ApiTestAuthentication.Authority,
+                [ApiAuthenticationDefaults.IssuerConfigurationKey] = ApiTestAuthentication.Authority,
+                [ClamAvMalwareScannerConfigurationKeys.DisabledConfigurationKey] = bool.TrueString
             });
     }
 

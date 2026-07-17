@@ -1,7 +1,9 @@
 using Microsoft.Extensions.Diagnostics.HealthChecks;
+using Microsoft.Extensions.Hosting;
 using SharedKernel.AI;
 using SharedKernel.AspNetCore;
 using SharedKernel.Messaging.IntegrationEvents;
+using SharedKernel.MalwareScanning.ClamAv;
 using SharedKernel.Testing.AspNetCore;
 using ViajantesTurismo.Catalog.ApiService;
 using ViajantesTurismo.Catalog.Application.Media;
@@ -87,14 +89,26 @@ internal static class CatalogApiTestHost
         IImageTextGenerator? imageTextGenerator,
         bool authenticateClient = true)
     {
+        var hostEnvironment = environment ?? Environments.Development;
         var configuration = new Dictionary<string, string?>
         {
             [ApiAuthenticationDefaults.AuthorityConfigurationKey] = ApiTestAuthentication.Authority,
             [ApiAuthenticationDefaults.IssuerConfigurationKey] = ApiTestAuthentication.Authority
         };
 
+        if (string.Equals(hostEnvironment, Environments.Development, StringComparison.OrdinalIgnoreCase)
+            || string.Equals(hostEnvironment, "Test", StringComparison.OrdinalIgnoreCase)
+            || string.Equals(hostEnvironment, "Testing", StringComparison.OrdinalIgnoreCase))
+        {
+            configuration[ClamAvMalwareScannerConfigurationKeys.DisabledConfigurationKey] = bool.TrueString;
+        }
+        else
+        {
+            configuration[ClamAvMalwareScannerConfigurationKeys.HostConfigurationKey] = "test-clamav";
+        }
+
         return WebApplicationTestHost.Create<CatalogApiHostEntryPoint>(
-            environment,
+            hostEnvironment,
             services =>
             {
                 services.Replace(ServiceDescriptor.Singleton<IPublicContentStore>(publicContentStore ?? new TestPublicContentStore()));

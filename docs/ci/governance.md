@@ -117,10 +117,10 @@ dependency.
 
 The current hosted analysis path actively uses:
 
-- `dotnet-sonarscanner` `11.2.0`
-- `dotnet-reportgenerator-globaltool` `5.5.1`
+- `dotnet-sonarscanner` `11.2.1`
+- `dotnet-reportgenerator-globaltool` `5.5.10`
 
-The local tool manifest also contains `dotnet-coverage` `18.5.2` for supported .NET
+The local tool manifest also contains `dotnet-coverage` `18.8.0` for supported .NET
 coverage workflows, but the current SonarCloud workflow does not rely on the direct
 `dotnet-coverage -f xml` path.
 
@@ -130,8 +130,8 @@ SonarCloud analysis model used in BookWorm's quality strategy.
 ### Update process
 
 - GitHub Dependabot automates version update PRs via `.github/dependabot.yml`. The
-  configuration covers `github-actions`, `devcontainers`, and `nuget`
-  ecosystems on a deliberately cautious monthly schedule for routine version updates.
+  configuration covers `github-actions`, `dotnet-sdk`, `nuget`, and `devcontainers`
+  ecosystems with deliberately cautious schedules for routine version updates.
 - When Dependabot proposes an action update, review both the release notes and the
   resolved SHA, then verify the affected workflows still pass before merging.
 - When upgrading across major action versions, review the migration guidance before
@@ -152,8 +152,9 @@ designated code owners. See `CODEOWNERS` for the current ownership mapping.
 | Ecosystem | Scope | Schedule | PR limit | Update shaping |
 | --- | --- | --- | --- | --- |
 | `github-actions` | Workflow action references | Monthly at 05:00 UTC | 1 | All action updates grouped into one PR |
-| `devcontainers` | Dev Container Features in valid `devcontainer.json` locations | Monthly at 05:00 UTC | 1 | All feature updates grouped into one PR |
+| `dotnet-sdk` | Repository SDK pin | Monthly at 05:00 UTC | 1 | Minor and patch updates grouped, longer cooldown enabled |
 | `nuget` | .NET package dependencies | Monthly at 05:00 UTC | 1 | Minor and patch updates grouped, security updates grouped, longer cooldown enabled |
+| `devcontainers` | Dev Container Features in valid `devcontainer.json` locations | Quarterly at 05:00 UTC | 1 | All feature updates grouped into one PR |
 
 Dependabot PRs use conventional commit prefixes (`ci` for actions, `deps` for packages).
 
@@ -165,7 +166,8 @@ Those custom labels are managed in `.github/labels.json` and synced by
 
 No separate `docker` ecosystem entry is configured because the repository does not
 currently contain Dockerfiles, Docker Compose files, or Kubernetes manifests for
-Dependabot's Docker updater to monitor.
+Dependabot's Docker updater to monitor. It also cannot update image references declared
+in C# resource code, which require a separate manual review path.
 
 The configuration intentionally reduces PR churn instead of accepting Dependabot's
 default one-PR-per-update behavior.

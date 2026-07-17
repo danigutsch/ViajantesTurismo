@@ -22,6 +22,7 @@
 
     <ItemGroup>
         <ProjectReference Include="..\..\src\SharedKernel\SharedKernel.InputNormalization\SharedKernel.InputNormalization.csproj" />
+        <ProjectReference Include="..\..\src\SharedKernel\SharedKernel.MalwareScanning\SharedKernel.MalwareScanning.csproj" />
         <ProjectReference Include="..\..\src\SharedKernel\SharedKernel.EventSourcing\SharedKernel.EventSourcing.csproj" />
         <ProjectReference Include="..\..\src\SharedKernel\SharedKernel.Idempotency\SharedKernel.Idempotency.csproj" />
         <ProjectReference Include="..\..\src\SharedKernel\SharedKernel.Idempotency.EntityFrameworkCore\SharedKernel.Idempotency.EntityFrameworkCore.csproj" />

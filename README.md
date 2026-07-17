@@ -247,10 +247,6 @@ See `tests/performance/README.md`, `tests/performance/k6/README.md`, and
 `docs/file-and-stream-benchmark-baselines.md` for profiles, thresholds, tool behavior, security
 defaults, and output details.
 
-When `global.json` changes, CI still expects committed `packages.lock.json` files to stay in sync.
-Dependabot PRs that only bump the SDK now trigger the `SDK Lockfile Maintenance` workflow, which
-refreshes lock files and pushes a follow-up commit so the next CI run uses the updated lockfiles.
-
 ### Optional: Dev Containers
 
 If you prefer a containerized development environment, the repository includes a
@@ -338,23 +334,21 @@ dotnet run --project tools/ViajantesTurismo.Performance.Tool/ViajantesTurismo.Pe
 dotnet run --project samples/Mediator/Mediator.Sample/Mediator.Sample.csproj
 ```
 
-**NuGet lock files:**
+**Dependency graph and lock files:**
 
-This repository commits `packages.lock.json` for its .NET projects so CI can use
-locked-mode restore and built-in NuGet caching. If you add, remove, or update a
-NuGet package or a project reference that affects package resolution, regenerate the
-lock files from the repository root before opening a pull request:
+This repository commits `packages.lock.json` for reproducible NuGet restores. After an intentional
+NuGet, SDK, local-tool, or project-reference graph change—or a related rebase conflict—run:
 
-```powershell
-dotnet restore ViajantesTurismo.slnx --force-evaluate
+```bash
+bash scripts/refresh-dependency-lockfiles.sh
 ```
 
-After updating the lock files, verify the solution still restores and builds cleanly:
-
-```powershell
-dotnet restore ViajantesTurismo.slnx --locked-mode
-dotnet build ViajantesTurismo.slnx --no-restore
-```
+The helper restores pinned local tools, regenerates NuGet locks, and verifies locked restore. Review
+the resulting lock-file diff, including resolved-version changes, before committing it with its
+dependency inputs. It does not edit declared dependency versions, GitHub Actions, or container image
+pins. See
+[CONTRIBUTING.md](CONTRIBUTING.md#dependency-graph-and-lock-file-maintenance) for the canonical
+workflow and rebase recovery steps.
 
 **Run CI-Owned Quality Checks:**
 

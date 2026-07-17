@@ -12,6 +12,8 @@ namespace ViajantesTurismo.Admin.IntegrationTests.Infrastructure;
 [Trait(SharedKernel.Testing.TestTraitNames.HostName, TestTraits.AspireHost)]
 public sealed class ConcurrentAspireTestApplicationTests
 {
+    private static readonly TimeSpan ConcurrentResourceStartupTimeout = TimeSpan.FromMinutes(3);
+
     [Fact]
     public async Task Concurrent_test_app_hosts_use_distinct_dynamic_api_endpoints()
     {
@@ -21,7 +23,7 @@ public sealed class ConcurrentAspireTestApplicationTests
         await using var applications = await ConcurrentAspireTestApplications.Start(
             ct => AspireTestApplication.Start<ViajantesTurismo_AppHost>(
                 [ResourceNames.Api],
-                null,
+                ConcurrentResourceStartupTimeout,
                 appHostArguments,
                 ct),
             cancellationToken);

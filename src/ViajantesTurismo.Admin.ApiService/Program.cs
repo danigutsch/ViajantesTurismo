@@ -1,5 +1,6 @@
 using SharedKernel.AspNetCore;
 using SharedKernel.Branding;
+using SharedKernel.MalwareScanning.ClamAv;
 using SharedKernel.OpenApi;
 using ViajantesTurismo.Admin.ApiService;
 using ViajantesTurismo.Admin.ApiService.Bookings;
@@ -46,6 +47,7 @@ builder.Services.AddApiSecurity(
 builder.Services.ConfigureHttpJsonOptions(options => options.SerializerOptions.TypeInfoResolverChain.Insert(0, AppJsonSerializerContext.Default));
 
 builder.Services.AddAdminOpenApiDocuments();
+builder.Services.AddConfiguredClamAvMalwareScanner(builder.Configuration, builder.Environment);
 
 builder.AddApplication();
 builder.AddInfrastructure();

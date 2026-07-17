@@ -4,6 +4,8 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using SharedKernel.MalwareScanning;
+using SharedKernel.Results;
 using ViajantesTurismo.Admin.ApiService;
 using TestTraits = ViajantesTurismo.Admin.UnitTests.Infrastructure.TestTraits;
 using ViajantesTurismo.Admin.ApiService.Customers;
@@ -141,6 +143,94 @@ public sealed class CustomerImportEndpointsTests
 
         // Assert
         requestLimit.ShouldBe(expectedBudget);
+    }
+
+    [Fact]
+    public async Task Reads_csv_only_after_a_clean_scan_of_the_received_bytes()
+    {
+        // Arrange
+        var expectedCsv = "firstName,lastName\nAda,Lovelace";
+        using var stream = new MemoryStream(System.Text.Encoding.UTF8.GetBytes(expectedCsv));
+        var file = new FormFile(stream, 0, stream.Length, "file", "customers.csv")
+        {
+            Headers = new HeaderDictionary(),
+            ContentType = ContractConstants.CustomerImportTextCsvContentType
+        };
+        var scanner = new StubMalwareScanner(MalwareScanResult.Passed);
+
+        // Act
+        var result = await CustomerImportEndpoints.ReadCsv(file, scanner, TestContext.Current.CancellationToken);
+
+        // Assert
+        result.IsSuccess.ShouldBeTrue();
+        result.Value.ShouldBe(expectedCsv);
+        scanner.ScannedContent.ShouldBe(System.Text.Encoding.UTF8.GetBytes(expectedCsv));
+    }
+
+    [Fact]
+    public async Task Rejects_csv_content_when_the_scanner_reports_malware()
+    {
+        // Arrange
+        using var stream = new MemoryStream("firstName,lastName\nAda,Lovelace"u8.ToArray());
+        var file = new FormFile(stream, 0, stream.Length, "file", "customers.csv")
+        {
+            Headers = new HeaderDictionary(),
+            ContentType = ContractConstants.CustomerImportTextCsvContentType
+        };
+        var scanner = new StubMalwareScanner(new MalwareScanResult(MalwareScanStatus.Rejected));
+
+        // Act
+        var result = await CustomerImportEndpoints.ReadCsv(file, scanner, TestContext.Current.CancellationToken);
+
+        // Assert
+        result.IsFailure.ShouldBeTrue();
+        result.Status.ShouldBe(ResultStatus.Invalid);
+        result.ErrorDetails.ShouldNotBeNull();
+        result.ErrorDetails.Detail.ShouldBe("Customer import file did not pass malware scanning.");
+    }
+
+    [Fact]
+    public async Task Fails_closed_when_the_csv_scanner_is_unavailable()
+    {
+        // Arrange
+        using var stream = new MemoryStream("firstName,lastName\nAda,Lovelace"u8.ToArray());
+        var file = new FormFile(stream, 0, stream.Length, "file", "customers.csv")
+        {
+            Headers = new HeaderDictionary(),
+            ContentType = ContractConstants.CustomerImportTextCsvContentType
+        };
+        var scanner = new StubMalwareScanner(new MalwareScanResult(MalwareScanStatus.Failed));
+
+        // Act
+        var result = await CustomerImportEndpoints.ReadCsv(file, scanner, TestContext.Current.CancellationToken);
+
+        // Assert
+        result.IsFailure.ShouldBeTrue();
+        result.Status.ShouldBe(ResultStatus.Unavailable);
+        result.ErrorDetails.ShouldNotBeNull();
+        result.ErrorDetails.Detail.ShouldBe("Customer import scanner is unavailable.");
+    }
+
+    [Fact]
+    public async Task Fails_closed_when_the_csv_scanner_throws()
+    {
+        // Arrange
+        using var stream = new MemoryStream("firstName,lastName\nAda,Lovelace"u8.ToArray());
+        var file = new FormFile(stream, 0, stream.Length, "file", "customers.csv")
+        {
+            Headers = new HeaderDictionary(),
+            ContentType = ContractConstants.CustomerImportTextCsvContentType
+        };
+        var scanner = new StubMalwareScanner(MalwareScanResult.Passed, new IOException());
+
+        // Act
+        var result = await CustomerImportEndpoints.ReadCsv(file, scanner, TestContext.Current.CancellationToken);
+
+        // Assert
+        result.IsFailure.ShouldBeTrue();
+        result.Status.ShouldBe(ResultStatus.Unavailable);
+        result.ErrorDetails.ShouldNotBeNull();
+        result.ErrorDetails.Detail.ShouldBe("Customer import scanner is unavailable.");
     }
 
     [Fact]

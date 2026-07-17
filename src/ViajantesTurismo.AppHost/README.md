@@ -16,6 +16,7 @@ projects, and reusable service defaults belong in `ViajantesTurismo.ServiceDefau
 
 - **PostgreSQL**: database server with PgWeb admin interface
 - **Redis**: cache server with RedisInsight admin interface
+- **ClamAV**: private TCP malware scanner for untrusted uploads
 - **Keycloak**: local OIDC conformance identity provider; browser-facing because it hosts the
   Management Web authorization endpoint
 
@@ -50,7 +51,9 @@ PostgreSQL → Database → MigrationService
 
 Catalog.ApiService → Management.Web
         ↓
-   Public.Web
+    Public.Web
+
+ClamAV (private TCP) → Admin.ApiService, Catalog.ApiService, Integration Event Worker
 ```
 
 ## Resource Names
@@ -78,6 +81,7 @@ code builds or before committing.
 | Redis | `docker.io/library/redis:8.8` | `sha256:2838d5524559494f6f1cd66e97e76b200d64a633a8614200620755ed395daf32` |
 | RedisInsight | `docker.io/redis/redisinsight:3.6` | `sha256:aa21bbd198455b4ad964f76782db951155aa0d712321f599972d1525f031f0e6` |
 | Keycloak | `quay.io/keycloak/keycloak:26.7.0` | `sha256:2eb3cd316835c990e69e26ade292ffa78f6fb0db7d5fc6377463c162e1979ac0` |
+| ClamAV | `docker.io/clamav/clamav:1.5` | `sha256:6f4a9e7d616ffc8d1070200fe35ac860735fdd522161a1043f94856e6ee13c28` |
 | OpenTelemetry Collector | `docker.io/otel/opentelemetry-collector-contrib:0.130.1` | `sha256:9c247564e65ca19f97d891cca19a1a8d291ce631b890885b44e3503c5fdb3895` |
 | Grafana | `docker.io/grafana/grafana:12.0.2` | `sha256:b5b59bfc7561634c2d7b136c4543d702ebcc94a3da477f21ff26f89ffd4214fa` |
 | Loki | `docker.io/grafana/loki:3.5.1` | `sha256:a74594532eec4cc313401beedc4dd2708c43674c032084b1aeb87c14a5be1745` |
@@ -185,6 +189,23 @@ directly on `PATH`.
 The Aspire dashboard URL is printed when the AppHost starts. Use it to inspect services, logs,
 traces, metrics, endpoints, and health status.
 
+## Local malware scanning
+
+ClamAV exposes only its private TCP `clamd` endpoint on port `3310`; it has no public endpoint or
+HTTP health check. Admin.ApiService, Catalog.ApiService, and Integration Event Worker receive the
+private host and port through AppHost configuration and wait for the ClamAV PING/PONG health check.
+
+The scanner persists definitions in `clamav-definitions` at `/var/lib/clamav`. Test runs use the
+isolated name `clamav-<suffix>-definitions`. FreshClam is enabled by default. A missing or reset
+definitions volume can make the next startup take longer while definitions download and ClamAV loads
+them. The AppHost does not configure a ClamAV memory limit; ensure the local container runtime has
+enough memory for the daemon and its definitions. Health waits, not fixed delays, decide readiness.
+
+To reset definitions deliberately, stop the AppHost, inspect the exact local volume with
+`docker volume ls`, and then remove only that verified volume with
+`docker volume rm <verified-volume-name>`. This is destructive: it deletes cached signatures and
+forces a new definitions download. Do not use broad cleanup such as `docker volume prune`.
+
 ## Local OIDC conformance
 
 Keycloak receives a dynamically allocated `localhost` HTTP endpoint for development and CI
@@ -215,6 +236,17 @@ token for the exact backend audience. Each backend receives only its exchanged t
 reaches the browser.
 `conformance-test-client` permits password grants solely for owned integration and browser-test
 setup; it is a local realm client and is not a production client.
+
+SeaweedFS access and secret keys are persisted Aspire parameters. To override them locally, use the
+AppHost user-secrets store and omit resolved values from source control:
+
+```bash
+dotnet user-secrets set "Parameters:seaweedfs-access-key" "<local-access-key>" --project src/ViajantesTurismo.AppHost
+dotnet user-secrets set "Parameters:seaweedfs-secret-key" "<local-secret-key>" --project src/ViajantesTurismo.AppHost
+```
+
+Use deployment-managed secret stores for production. Do not copy generated credentials, connection
+strings, endpoint URLs, scanner responses, or uploaded content into documentation or settings files.
 
 ## Performance Smoke Resource
 

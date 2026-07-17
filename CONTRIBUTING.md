@@ -118,23 +118,34 @@ Use the tooling inventory in `README.md` when deciding whether a missing tool is
 required locally, optional for a specific task, CI-only, or already provided by
 the documented devcontainer workflow.
 
-If you change NuGet dependencies or project references that affect package
-resolution, regenerate and commit the affected `packages.lock.json` files:
+## Dependency graph and lock-file maintenance
 
-- Refresh lock files: `dotnet restore ViajantesTurismo.slnx --force-evaluate`
-- Verify locked restore: `dotnet restore ViajantesTurismo.slnx --locked-mode`
+Use `bash scripts/refresh-dependency-lockfiles.sh` after intentionally changing any NuGet package
+or project reference, `Directory.Packages.props`, restore-affecting build configuration,
+`NuGet.Config`, solution/project membership, `global.json`, or `.config/dotnet-tools.json`.
+The command restores pinned local tools, regenerates `packages.lock.json` with
+`--force-evaluate`, and verifies the result with `--locked-mode`.
 
-## Updating the .NET SDK
+Review every generated lock-file change, including resolved-version changes, before committing it
+with the dependency input that caused it. The command does not edit declared package or tool versions
+and never auto-commits changes. Package-version inputs remain review-driven through Dependabot or an
+intentional dependency update.
 
-The repository pins a specific SDK version in `global.json` with
-`"rollForward": "patch"`, so CI only rolls forward within the same patch band.
+When resolving a rebase or merge conflict that affects dependency inputs or lock files:
 
-To update:
+1. Resolve the authoritative dependency inputs first.
+2. Do not hand-merge or delete `packages.lock.json` files.
+3. Run `bash scripts/refresh-dependency-lockfiles.sh`.
+4. Review the regenerated lock-file diff, then run the build and relevant test slice.
 
-1. Install the new SDK locally
-2. Set the new version in `global.json`
-3. Regenerate lock files: `dotnet restore ViajantesTurismo.slnx --force-evaluate`
-4. Verify: `dotnet restore ViajantesTurismo.slnx --locked-mode`
-5. Commit `global.json` and any changed `packages.lock.json` files together
+GitHub Action SHA pins and container image tag/digest pairs have their own review paths; do not run
+the lock-file helper solely for those changes.
+
+### Updating the .NET SDK
+
+The repository pins a specific SDK version in `global.json` with `"rollForward": "patch"`, so CI
+only rolls forward within the same patch band. Update `global.json`, run
+`bash scripts/refresh-dependency-lockfiles.sh`, and commit the SDK input with the regenerated lock
+files.
 
 See `docs/CODE_QUALITY.md` for the full local tooling reference.

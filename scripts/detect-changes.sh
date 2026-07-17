@@ -81,7 +81,7 @@ shared_validation_patterns=(
     "scripts/detect-changes.sh"
     "scripts/generate-sonar-coverage-report.sh"
     "scripts/install-playwright.sh"
-    "scripts/refresh-sdk-lockfiles.sh"
+    "scripts/refresh-dependency-lockfiles.sh"
     "scripts/run-ci-test-slice.sh"
     "scripts/run-devcontainer-smoke.sh"
     "scripts/run-sonar-analysis.sh"
@@ -134,6 +134,8 @@ fast_validation_patterns=(
     "src/SharedKernel/SharedKernel.Messaging.IntegrationEvents.CloudEvents/**"
     "src/SharedKernel/SharedKernel.Messaging.IntegrationEvents.EntityFrameworkCore/**"
     "src/SharedKernel/SharedKernel.Messaging.IntegrationEvents.SourceGenerator/**"
+    "src/SharedKernel/SharedKernel.MalwareScanning/**"
+    "src/SharedKernel/SharedKernel.MalwareScanning.ClamAv/**"
     "src/SharedKernel/SharedKernel.Mediator/**"
     "src/SharedKernel/SharedKernel.Mediator.Abstractions/**"
     "src/SharedKernel/SharedKernel.Mediator.Analyzers/**"
@@ -197,6 +199,7 @@ fast_validation_patterns=(
     "tests/SharedKernel.InputNormalization.Tests/**"
     "tests/SharedKernel.Mediator.Analyzers.Tests/**"
     "tests/SharedKernel.Mediator.Tests/**"
+    "tests/SharedKernel.MalwareScanning.ClamAv.Testing/**"
     "tests/SharedKernel.Aspire.Analyzers.Tests/**"
     "tests/SharedKernel.Aspire.CodeFixes.Tests/**"
     "tests/SharedKernel.OpenApi.Tests/**"
@@ -224,7 +227,11 @@ fast_validation_patterns=(
 
 admin_integration_patterns=(
     "src/SharedKernel/SharedKernel.EventSourcing.Npgsql/**"
+    "src/SharedKernel/SharedKernel.Aspire.Hosting.ClamAv/**"
+    "src/SharedKernel/SharedKernel.Aspire.Hosting.SeaweedFs/**"
     "src/SharedKernel/SharedKernel.IntegrationTesting/**"
+    "src/SharedKernel/SharedKernel.MalwareScanning/**"
+    "src/SharedKernel/SharedKernel.MalwareScanning.ClamAv/**"
     "src/SharedKernel/SharedKernel.Npgsql/**"
     "src/SharedKernel/SharedKernel.Observability.Npgsql/**"
     "src/ViajantesTurismo.Admin.ApiService/**"
@@ -232,6 +239,9 @@ admin_integration_patterns=(
     "src/ViajantesTurismo.Admin.Contracts*/**"
     "src/ViajantesTurismo.Admin.Domain/**"
     "src/ViajantesTurismo.Admin.Infrastructure/**"
+    "src/ViajantesTurismo.Catalog.Application/**"
+    "src/ViajantesTurismo.Catalog.Domain/**"
+    "src/ViajantesTurismo.Catalog.Infrastructure/**"
     "src/ViajantesTurismo.Management.Web/**"
     "src/ViajantesTurismo.Resources/**"
     "src/ViajantesTurismo.ServiceDefaults/**"
@@ -242,6 +252,8 @@ admin_integration_patterns=(
     "tests/ViajantesTurismo.Admin.IntegrationTests/**"
     "tests/ViajantesTurismo.Management.WebIntegrationTests/**"
     "tests/ViajantesTurismo.Admin.Testing/**"
+    "tests/SharedKernel.MalwareScanning.ClamAv.Testing/**"
+    "tests/ViajantesTurismo.Catalog.IntegrationTests/**"
 )
 
 admin_system_patterns=(

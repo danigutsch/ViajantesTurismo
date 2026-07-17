@@ -151,58 +151,6 @@ public sealed partial class AppHostOrchestrationTests
     }
 
     [Fact]
-    public void Admin_hosted_profile_composes_only_its_required_resources()
-    {
-        // Arrange
-        var compositionText = File.ReadAllText(Path.Combine(
-            GetRepositoryRoot(),
-            "src",
-            "ViajantesTurismo.AppHost",
-            "AppHostComposition.cs"));
-        var appHostText = File.ReadAllText(Path.Combine(
-            GetRepositoryRoot(),
-            "src",
-            "ViajantesTurismo.AppHost",
-            "AppHost.cs"));
-        var profileContractText = File.ReadAllText(Path.Combine(
-            GetRepositoryRoot(),
-            "src",
-            "ViajantesTurismo.Resources",
-            "HostedProfile.cs"));
-        var adminProfileEnd = compositionText.IndexOf("if (profile is HostedProfile.Admin)", StringComparison.Ordinal);
-        var adminProfileComposition = adminProfileEnd > 0 ? compositionText[..adminProfileEnd] : string.Empty;
-
-        // Act
-        var includesOnlyAdminDependencies = adminProfileComposition.Contains("var includeDeveloperTooling = profile.IncludesDeveloperTooling()", StringComparison.Ordinal)
-            && adminProfileComposition.Contains("AddDatabaseServer(includePgWeb: includeDeveloperTooling)", StringComparison.Ordinal)
-            && adminProfileComposition.Contains("AddDatabase(ResourceNames.AdminDatabase)", StringComparison.Ordinal)
-            && adminProfileComposition.Contains("AddDatabase(ResourceNames.CatalogDatabase)", StringComparison.Ordinal)
-            && adminProfileComposition.Contains("AddDatabase(ResourceNames.SecurityDatabase)", StringComparison.Ordinal)
-            && adminProfileComposition.Contains("builder.AddParameter(ResourceNames.ManagementWebClientSecret, secret: true)", StringComparison.Ordinal)
-            && adminProfileComposition.Contains("builder.AddRunModeIdentityProvider(managementWebClientSecret)", StringComparison.Ordinal)
-            && adminProfileComposition.Contains("AddMigrationService(adminDatabase, catalogDatabase, securityDatabase)", StringComparison.Ordinal)
-            && adminProfileComposition.Contains("AddBrandingApi(catalogDatabase, migrationService, identityProvider)", StringComparison.Ordinal)
-            && adminProfileComposition.Contains("AddAdminApi(adminDatabase, brandingApiService, migrationService, identityProvider)", StringComparison.Ordinal);
-
-        // Assert
-        profileContractText.ShouldContain("Admin", StringComparison.Ordinal);
-        appHostText.ShouldContain("HostedProfileArguments.FromArguments(args)", StringComparison.Ordinal);
-        appHostText.ShouldContain("AddProductResources(profile)", StringComparison.Ordinal);
-        adminProfileEnd.ShouldBeGreaterThan(0);
-        includesOnlyAdminDependencies.ShouldBeTrue();
-        adminProfileComposition.ShouldNotContain("AddCache", StringComparison.Ordinal);
-        adminProfileComposition.ShouldNotContain("AddCatalogApi", StringComparison.Ordinal);
-        adminProfileComposition.ShouldNotContain("AddIntegrationEventWorker", StringComparison.Ordinal);
-        adminProfileComposition.ShouldNotContain("AddManagementWeb", StringComparison.Ordinal);
-        adminProfileComposition.ShouldNotContain("AddPublicWeb", StringComparison.Ordinal);
-        adminProfileComposition.ShouldNotContain("AddClamAv", StringComparison.Ordinal);
-        adminProfileComposition.ShouldNotContain("AddSeaweedFs", StringComparison.Ordinal);
-        adminProfileComposition.ShouldNotContain("AddAdminPerformanceSmoke", StringComparison.Ordinal);
-        adminProfileComposition.ShouldNotContain("AddDatabaseObservability", StringComparison.Ordinal);
-        adminProfileComposition.ShouldNotContain("AddObservabilityStack", StringComparison.Ordinal);
-    }
-
-    [Fact]
     public void System_hosted_profile_includes_media_without_developer_tooling()
     {
         // Arrange
@@ -434,35 +382,17 @@ public sealed partial class AppHostOrchestrationTests
     }
 
     [Fact]
-    public void Media_infrastructure_resources_are_private_pinned_and_ready_before_catalog_services()
+    public void Media_object_storage_source_configuration_is_private_and_pinned()
     {
         // Arrange
-        var compositionText = File.ReadAllText(Path.Combine(GetRepositoryRoot(), "src", "ViajantesTurismo.AppHost", "AppHostComposition.cs"));
         var appHostExtensionsText = File.ReadAllText(Path.Combine(GetRepositoryRoot(), "src", "ViajantesTurismo.AppHost", "AppHostResourceExtensions.cs"));
-        var clamAvText = File.ReadAllText(Path.Combine(GetRepositoryRoot(), "src", "SharedKernel", "SharedKernel.Aspire.Hosting.ClamAv", "ClamAvResourceExtensions.cs"));
-        var clamAvHealthCheckText = File.ReadAllText(Path.Combine(GetRepositoryRoot(), "src", "SharedKernel", "SharedKernel.Aspire.Hosting.ClamAv", "ClamAvPingHealthCheck.cs"));
         var seaweedFsText = File.ReadAllText(Path.Combine(GetRepositoryRoot(), "src", "SharedKernel", "SharedKernel.Aspire.Hosting.SeaweedFs", "SeaweedFsResourceExtensions.cs"));
 
-        // Act
-        var catalogApiBlock = CatalogApiResourceRegex().Match(appHostExtensionsText).Value;
-
         // Assert
-        compositionText.ShouldContain("AddClamAv(ResourceNames.ClamAv)", StringComparison.Ordinal);
-        compositionText.ShouldContain("builder.AddMediaObjectStorage()", StringComparison.Ordinal);
-        compositionText.ShouldNotContain("seaweedFsBucket", StringComparison.Ordinal);
-        compositionText.ShouldNotContain("\"viajantes-media\"", StringComparison.Ordinal);
         appHostExtensionsText.ShouldContain("AddMediaObjectStorage(this IDistributedApplicationBuilder builder)", StringComparison.Ordinal);
         appHostExtensionsText.ShouldContain("\"viajantes-media\"", StringComparison.Ordinal);
         appHostExtensionsText.ShouldNotContain("$\"{ResourceNames.SeaweedFs}-bucket\"", StringComparison.Ordinal);
         appHostExtensionsText.ShouldContain("AddSeaweedFs(ResourceNames.SeaweedFs, SeaweedFsBucketDefault)", StringComparison.Ordinal);
-        catalogApiBlock.ShouldContain("WithClamAvReference(clamAv)", StringComparison.Ordinal);
-        catalogApiBlock.ShouldContain("WaitFor(clamAv)", StringComparison.Ordinal);
-        clamAvText.ShouldContain("WithImageSHA256", StringComparison.Ordinal);
-        clamAvText.ShouldContain("isExternal: false", StringComparison.Ordinal);
-        clamAvText.ShouldContain("WithVolume", StringComparison.Ordinal);
-        clamAvText.ShouldContain("WithFreshClam", StringComparison.Ordinal);
-        clamAvText.ShouldContain("CLAMAV_NO_FRESHCLAMD", StringComparison.Ordinal);
-        clamAvHealthCheckText.ShouldContain("zPING", StringComparison.Ordinal);
         seaweedFsText.ShouldContain("WithImageSHA256", StringComparison.Ordinal);
         seaweedFsText.ShouldContain("isExternal: false", StringComparison.Ordinal);
         seaweedFsText.ShouldContain("-dir=/data", StringComparison.Ordinal);

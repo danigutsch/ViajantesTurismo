@@ -36,6 +36,8 @@
         <Project Path="src/SharedKernel/SharedKernel.Domain/SharedKernel.Domain.csproj" />
         <Project Path="src/SharedKernel/SharedKernel.Aspire.Hosting.Grafana/SharedKernel.Aspire.Hosting.Grafana.csproj" />
         <Project Path="src/SharedKernel/SharedKernel.Aspire.Hosting.ClamAv/SharedKernel.Aspire.Hosting.ClamAv.csproj" />
+        <Project Path="src/SharedKernel/SharedKernel.MalwareScanning/SharedKernel.MalwareScanning.csproj" />
+        <Project Path="src/SharedKernel/SharedKernel.MalwareScanning.ClamAv/SharedKernel.MalwareScanning.ClamAv.csproj" />
         <Project Path="src/SharedKernel/SharedKernel.Aspire.Hosting.SeaweedFs/SharedKernel.Aspire.Hosting.SeaweedFs.csproj" />
         <Project Path="src/SharedKernel/SharedKernel.BuildingBlocks/SharedKernel.BuildingBlocks.csproj" />
         <Project Path="src/SharedKernel/SharedKernel.DomainEvents/SharedKernel.DomainEvents.csproj" />
@@ -121,6 +123,8 @@
         <Project Path="tests/SharedKernel.Messaging.Tests/SharedKernel.Messaging.Tests.csproj" />
         <Project Path="tests/SharedKernel.Messaging.IntegrationEvents.Tests/SharedKernel.Messaging.IntegrationEvents.Tests.csproj" />
         <Project Path="tests/SharedKernel.ImageProcessing.Tests/SharedKernel.ImageProcessing.Tests.csproj" />
+        <Project Path="tests/SharedKernel.MalwareScanning.ClamAv.Tests/SharedKernel.MalwareScanning.ClamAv.Tests.csproj" />
+        <Project Path="tests/SharedKernel.MalwareScanning.ClamAv.Testing/SharedKernel.MalwareScanning.ClamAv.Testing.csproj" />
         <Project Path="tests/SharedKernel.Messaging.IntegrationEvents.CloudEvents.Tests/SharedKernel.Messaging.IntegrationEvents.CloudEvents.Tests.csproj" />
         <Project Path="tests/SharedKernel.EventSourcing.Tests/SharedKernel.EventSourcing.Tests.csproj" />
         <Project Path="tests/SharedKernel.EventSourcing.Npgsql.Tests/SharedKernel.EventSourcing.Npgsql.Tests.csproj" />
@@ -174,6 +178,7 @@
         <Project Path="tests/ViajantesTurismo.Admin.Infrastructure.Tests/ViajantesTurismo.Admin.Infrastructure.Tests.csproj" />
         <Project Path="tests/ViajantesTurismo.Admin.IntegrationTests/ViajantesTurismo.Admin.IntegrationTests.csproj" />
         <Project Path="tests/ViajantesTurismo.Admin.UnitTests/ViajantesTurismo.Admin.UnitTests.csproj" />
+        <Project Path="tests/ViajantesTurismo.Catalog.IntegrationTests/ViajantesTurismo.Catalog.IntegrationTests.csproj" />
         <Project Path="tests/ViajantesTurismo.Catalog.UnitTests/ViajantesTurismo.Catalog.UnitTests.csproj" />
         <Project Path="tests/ViajantesTurismo.Catalog.Testing/ViajantesTurismo.Catalog.Testing.csproj" />
         <Project Path="tests/ViajantesTurismo.Catalog.BehaviorTests/ViajantesTurismo.Catalog.BehaviorTests.csproj" />

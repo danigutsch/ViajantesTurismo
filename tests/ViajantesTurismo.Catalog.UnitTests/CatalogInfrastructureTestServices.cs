@@ -1,6 +1,7 @@
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using SharedKernel.MalwareScanning.ClamAv;
 using ViajantesTurismo.Catalog.Infrastructure;
 using ViajantesTurismo.Resources;
 
@@ -14,8 +15,8 @@ internal static class CatalogInfrastructureTestServices
         builder.Configuration.AddInMemoryCollection(new Dictionary<string, string?>
         {
             [$"ConnectionStrings:{ResourceNames.CatalogDatabase}"] = "Host=localhost;Database=viajantes;Username=test;Password=test",
-            [$"{ClamAvMediaUploadScannerOptions.SectionName}:Host"] = "clamav",
-            [$"{ClamAvMediaUploadScannerOptions.SectionName}:Port"] = "3310"
+            [ClamAvMalwareScannerConfigurationKeys.HostConfigurationKey] = "clamav",
+            [ClamAvMalwareScannerConfigurationKeys.PortConfigurationKey] = "3310"
         });
 
         builder.AddCatalogInfrastructure();
@@ -31,7 +32,8 @@ internal static class CatalogInfrastructureTestServices
         });
         builder.Configuration.AddInMemoryCollection(new Dictionary<string, string?>
         {
-            [$"ConnectionStrings:{ResourceNames.CatalogDatabase}"] = "Host=localhost;Database=viajantes;Username=test;Password=test"
+            [$"ConnectionStrings:{ResourceNames.CatalogDatabase}"] = "Host=localhost;Database=viajantes;Username=test;Password=test",
+            [ClamAvMalwareScannerConfigurationKeys.DisabledConfigurationKey] = bool.TrueString
         });
 
         builder.AddCatalogInfrastructure();
@@ -45,8 +47,8 @@ internal static class CatalogInfrastructureTestServices
         builder.Configuration.AddInMemoryCollection(new Dictionary<string, string?>
         {
             [$"ConnectionStrings:{ResourceNames.CatalogDatabase}"] = "Host=localhost;Database=viajantes;Username=test;Password=test",
-            [$"{ClamAvMediaUploadScannerOptions.SectionName}:Host"] = "clamav",
-            [$"{ClamAvMediaUploadScannerOptions.SectionName}:Port"] = "3310"
+            [ClamAvMalwareScannerConfigurationKeys.HostConfigurationKey] = "clamav",
+            [ClamAvMalwareScannerConfigurationKeys.PortConfigurationKey] = "3310"
         });
 
         builder.AddCatalogInfrastructure(addOutboxRelay: false);
@@ -63,8 +65,8 @@ internal static class CatalogInfrastructureTestServices
         builder.Configuration.AddInMemoryCollection(new Dictionary<string, string?>
         {
             [$"ConnectionStrings:{ResourceNames.CatalogDatabase}"] = "Host=localhost;Database=viajantes;Username=test;Password=test",
-            [$"{ClamAvMediaUploadScannerOptions.SectionName}:Host"] = "clamav",
-            [$"{ClamAvMediaUploadScannerOptions.SectionName}:Port"] = "3310"
+            [ClamAvMalwareScannerConfigurationKeys.HostConfigurationKey] = "clamav",
+            [ClamAvMalwareScannerConfigurationKeys.PortConfigurationKey] = "3310"
         });
 
         builder.AddCatalogInfrastructure();
@@ -78,8 +80,8 @@ internal static class CatalogInfrastructureTestServices
         builder.Configuration.AddInMemoryCollection(new Dictionary<string, string?>
         {
             [$"ConnectionStrings:{ResourceNames.CatalogDatabase}"] = "Host=localhost;Database=viajantes;Username=test;Password=test",
-            [$"{ClamAvMediaUploadScannerOptions.SectionName}:Host"] = "clamav",
-            [$"{ClamAvMediaUploadScannerOptions.SectionName}:Port"] = "3310",
+            [ClamAvMalwareScannerConfigurationKeys.HostConfigurationKey] = "clamav",
+            [ClamAvMalwareScannerConfigurationKeys.PortConfigurationKey] = "3310",
             [$"{SeaweedFsMediaObjectStorageOptions.SectionName}:Endpoint"] = "https://seaweedfs.example",
             [$"{SeaweedFsMediaObjectStorageOptions.SectionName}:Bucket"] = "media",
             [$"{SeaweedFsMediaObjectStorageOptions.SectionName}:AccessKey"] = "access",
@@ -110,7 +112,9 @@ internal static class CatalogInfrastructureTestServices
         builder.Configuration.AddInMemoryCollection(new Dictionary<string, string?>
         {
             [$"ConnectionStrings:{ResourceNames.CatalogDatabase}"] = "Host=localhost;Database=viajantes-catalog;Username=test;Password=test",
-            [$"ConnectionStrings:{ResourceNames.AdminDatabase}"] = "Host=localhost;Database=viajantes-admin;Username=test;Password=test"
+            [$"ConnectionStrings:{ResourceNames.AdminDatabase}"] = "Host=localhost;Database=viajantes-admin;Username=test;Password=test",
+            [ClamAvMalwareScannerConfigurationKeys.HostConfigurationKey] = "clamav",
+            [ClamAvMalwareScannerConfigurationKeys.PortConfigurationKey] = "3310"
         });
 
         builder.AddCatalogIntegrationEventWorkerInfrastructure();
@@ -151,10 +155,12 @@ internal sealed class CatalogInfrastructureScenario(ServiceProvider provider) : 
         return hostedServices.Any(service => service.GetType() == typeof(TService));
     }
 
-    public void ShouldResolve<TService>()
+    public TService ShouldResolve<TService>()
         where TService : class
     {
-        provider.GetRequiredService<TService>().ShouldNotBeNull();
+        var service = provider.GetRequiredService<TService>();
+        service.ShouldNotBeNull();
+        return service;
     }
 
     public void ShouldResolveSingleton<TService>()
