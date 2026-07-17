@@ -53,21 +53,45 @@ internal sealed class KeycloakAudienceTokenExchangeHandler : DelegatingHandler
         var user = await _userAccessor.GetCurrentUserAsync(cancellationToken);
         var session = ManagementTokenSession.From(user);
         var sourceAccessToken = GetSourceAccessToken(request);
-        return await _userTokenStore.ExecuteForActiveSession(
+        var cachedAccessToken = await _userTokenStore.ExecuteForActiveSession(
             user,
-            async ct =>
-            {
-                var accessToken = await _audienceTokenStore.Get(_audience, session, sourceAccessToken, ct)
-                    ?? await ExchangeAccessToken(session, sourceAccessToken, ct);
-
-                request.Headers.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", accessToken);
-                return await base.SendAsync(request, ct);
-            },
+            ct => _audienceTokenStore.Get(_audience, session, sourceAccessToken, ct),
             cancellationToken);
+        string accessToken;
+        if (cachedAccessToken is not null)
+        {
+            accessToken = cachedAccessToken;
+        }
+        else
+        {
+            var exchangedToken = await ExchangeAccessToken(sourceAccessToken, cancellationToken);
+            accessToken = await _userTokenStore.ExecuteForActiveSession(
+                user,
+                async ct =>
+                {
+                    var recheckedAccessToken = await _audienceTokenStore.Get(_audience, session, sourceAccessToken, ct);
+                    if (recheckedAccessToken is not null)
+                    {
+                        return recheckedAccessToken;
+                    }
+
+                    await _audienceTokenStore.Store(
+                        _audience,
+                        session,
+                        sourceAccessToken,
+                        exchangedToken.AccessToken,
+                        exchangedToken.ExpiresAt,
+                        ct);
+                    return exchangedToken.AccessToken;
+                },
+                cancellationToken);
+        }
+
+        request.Headers.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", accessToken);
+        return await base.SendAsync(request, cancellationToken);
     }
 
-    private async Task<string> ExchangeAccessToken(
-        ManagementTokenSession session,
+    private async Task<(string AccessToken, DateTimeOffset ExpiresAt)> ExchangeAccessToken(
         string sourceAccessToken,
         CancellationToken cancellationToken)
     {
@@ -116,8 +140,7 @@ internal sealed class KeycloakAudienceTokenExchangeHandler : DelegatingHandler
             throw new InvalidOperationException("The identity provider returned an invalid exchanged token lifetime.");
         }
 
-        await _audienceTokenStore.Store(_audience, session, sourceAccessToken, accessToken, expiresAt, cancellationToken);
-        return accessToken;
+        return (accessToken, expiresAt);
     }
 
     private static string GetSourceAccessToken(HttpRequestMessage request)

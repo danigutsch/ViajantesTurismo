@@ -1,6 +1,4 @@
 using System.Net;
-using ViajantesTurismo.Management.Web;
-using ViajantesTurismo.Resources;
 
 namespace ViajantesTurismo.Management.WebIntegrationTests;
 
@@ -218,46 +216,33 @@ public sealed class ProtectedDistributedUserTokenStorePostgreSqlTests : IAsyncLi
     }
 
     [Fact]
-    public async Task Signing_out_waits_for_an_inflight_cached_audience_backend_send()
+    public async Task Signing_out_does_not_wait_for_an_inflight_cached_audience_backend_send()
     {
         // Arrange
         const string sourceAccessToken = "source-access-token";
         const string exchangedAccessToken = "exchanged-access-token";
         var user = PostgreSqlManagementUserTokenStoreScenario.CreateUser("inflight-audience-session");
-        var userTokenStore = _scenario.CreateStore();
-        var audienceTokenStore = _scenario.CreateAudienceTokenStore();
-        await audienceTokenStore.Store(
-            ApiAudienceNames.Admin,
-            ManagementTokenSession.From(user),
+        await using var inFlight = await InflightCachedAudienceBackendSend.Start(
+            _scenario,
+            user,
             sourceAccessToken,
             exchangedAccessToken,
-            DateTimeOffset.UtcNow.AddMinutes(5),
             TestContext.Current.CancellationToken);
-        using var exchange = AudienceTokenExchangeIntegrationTestScope.Create(user, userTokenStore, audienceTokenStore);
 
         // Act
-        var firstResponse = exchange.Send(
-            new Uri("https://admin.example.test/first"),
-            sourceAccessToken,
-            TestContext.Current.CancellationToken);
-        await exchange.WaitForBackendSend(TestContext.Current.CancellationToken);
-        var signOut = _scenario.CreateStore().ClearAll(user, TestContext.Current.CancellationToken);
-        await _scenario.WaitForWaitingAdvisoryLock(TestContext.Current.CancellationToken);
-        exchange.ReleaseBackendSend();
-        using var completedResponse = await firstResponse;
-        await signOut;
+        using var removeTimeout = new CancellationTokenSource(TimeSpan.FromSeconds(10));
+        await inFlight.WaitForSignOutToReachRemove(removeTimeout.Token);
+        await inFlight.CompleteSignOut(TestContext.Current.CancellationToken);
         Func<Task> sendAfterSignOut = async () =>
         {
-            using var response = await exchange.Send(
-                new Uri("https://admin.example.test/later"),
-                sourceAccessToken,
-                TestContext.Current.CancellationToken);
+            using var response = await inFlight.SendAfterSignOut(sourceAccessToken, TestContext.Current.CancellationToken);
         };
 
         // Assert
-        completedResponse.StatusCode.ShouldBe(HttpStatusCode.OK);
         var exception = await sendAfterSignOut.ShouldThrow<InvalidOperationException>();
         exception.Message.ShouldBe("The management token session has been revoked.");
-        exchange.AuthorizationHeaders.ShouldBe(["Bearer exchanged-access-token"]);
+        inFlight.AuthorizationHeaders.ShouldHaveSingleItem().ShouldBe("Bearer exchanged-access-token");
+        using var completedResponse = await inFlight.CompleteFirstBackendSend(TestContext.Current.CancellationToken);
+        completedResponse.StatusCode.ShouldBe(HttpStatusCode.OK);
     }
 }

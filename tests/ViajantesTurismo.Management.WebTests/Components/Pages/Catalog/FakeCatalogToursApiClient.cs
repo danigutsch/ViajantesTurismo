@@ -16,6 +16,18 @@ internal sealed class FakeCatalogToursApiClient : ICatalogToursApiClient
 
     public CatalogMediaImageDto? Draft { get; set; }
 
+    public CatalogMediaImageDto? UploadedImage { get; set; }
+
+    public Guid? LastUploadedTourId { get; private set; }
+
+    public string? LastUploadedFileName { get; private set; }
+
+    public string? LastUploadedContentType { get; private set; }
+
+    public string? LastUploadedAltText { get; private set; }
+
+    public string? LastUploadedCaption { get; private set; }
+
     public CatalogMediaImageDto? AccessibilityReviewResult { get; set; }
 
     public bool ReturnNullOnAccessibilityReview { get; set; }
@@ -91,7 +103,12 @@ internal sealed class FakeCatalogToursApiClient : ICatalogToursApiClient
     {
         ct.ThrowIfCancellationRequested();
 
-        return Task.FromResult<CatalogMediaImageDto?>(null);
+        LastUploadedTourId = id;
+        LastUploadedFileName = request.FileName;
+        LastUploadedContentType = request.ContentType;
+        LastUploadedAltText = request.AltText;
+        LastUploadedCaption = request.Caption;
+        return Task.FromResult(UploadedImage);
     }
 
     public Task<IReadOnlyList<CatalogMediaImageDto>> GetTourImages(Guid id, CancellationToken ct)
