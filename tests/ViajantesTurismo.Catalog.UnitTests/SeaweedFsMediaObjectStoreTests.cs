@@ -23,6 +23,27 @@ public sealed class SeaweedFsMediaObjectStoreTests
     }
 
     [Fact]
+    public async Task OpenRead_throws_file_not_found_when_object_is_not_found()
+    {
+        // Arrange
+        using var client = new FakeAmazonS3Client
+        {
+            GetObjectException = new AmazonS3Exception("Not found")
+            {
+                StatusCode = System.Net.HttpStatusCode.NotFound
+            }
+        };
+        var store = SeaweedFsMediaObjectStoreTestFactory.CreateStore(client, autoProvisionBucket: false);
+
+        // Act
+        Func<Task> act = () => store.OpenRead("media/image.jpg", TestContext.Current.CancellationToken).AsTask();
+
+        // Assert
+        await act.ShouldThrow<FileNotFoundException>();
+        client.Operations.ShouldBe(["GetObject:media/media/image.jpg"]);
+    }
+
+    [Fact]
     public async Task Exists_initializes_the_bucket_before_metadata_lookup()
     {
         // Arrange

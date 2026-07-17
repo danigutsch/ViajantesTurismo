@@ -924,6 +924,50 @@ public sealed class CatalogApiEndpointTests
     }
 
     [Fact]
+    public async Task Public_catalog_media_endpoint_returns_not_found_when_the_object_disappears_before_opening()
+    {
+        // Arrange
+        var tourId = Guid.CreateVersion7();
+        var tourStore = new TestCatalogTourReadModelStore();
+        await tourStore.UpsertDraft(
+            new CatalogTourDraftReadModel(
+                tourId,
+                Guid.CreateVersion7(),
+                "TOUR-2026",
+                "Published Tour",
+                "published-tour",
+                true,
+                1,
+                DateTimeOffset.UtcNow),
+            TestContext.Current.CancellationToken);
+        var image = PublicMediaImageTestFactory.CreateReadyImage(
+            tourId,
+            "source.jpg",
+            "published-640.jpg",
+            "sha256:published",
+            "Published image",
+            displayOrder: 0,
+            isCover: true);
+        var mediaStore = new TestPublicMediaImageStore();
+        await mediaStore.Upsert(image, TestContext.Current.CancellationToken);
+        var objectStore = new TestMediaObjectStore { ThrowFileNotFoundOnOpenRead = true };
+        await objectStore.Put(
+            new MediaObjectWriteRequest("published-640.jpg", new MemoryStream("published-media"u8.ToArray()), "image/jpeg", 15, "sha256:published"),
+            TestContext.Current.CancellationToken);
+        await using var factory = CatalogApiTestHost.Create(tourStore, mediaStore, objectStore);
+        using var client = factory.CreateClient();
+
+        // Act
+        using var response = await client.GetAsync(
+            new Uri($"/api/v1/public/catalog/media/{image.Id}/640/jpg", UriKind.Relative),
+            TestContext.Current.CancellationToken);
+
+        // Assert
+        response.StatusCode.ShouldBe(HttpStatusCode.NotFound);
+        response.Headers.CacheControl?.NoStore.ShouldBeTrue();
+    }
+
+    [Fact]
     public async Task Management_media_preview_streams_the_selected_rendition_with_nosniff()
     {
         // Arrange
@@ -1175,6 +1219,124 @@ public sealed class CatalogApiEndpointTests
         // Assert
         response.StatusCode.ShouldBe(HttpStatusCode.NotFound);
         response.Headers.CacheControl?.NoStore.ShouldBe(true);
+    }
+
+    [Fact]
+    public async Task Catalog_media_accessibility_review_promotes_an_ai_draft_to_public_delivery()
+    {
+        // Arrange
+        var tourId = Guid.CreateVersion7();
+        var tourStore = new TestCatalogTourReadModelStore();
+        await tourStore.UpsertDraft(
+            new CatalogTourDraftReadModel(
+                tourId,
+                Guid.CreateVersion7(),
+                "TOUR-2026",
+                "Published Tour",
+                "published-tour",
+                true,
+                1,
+                DateTimeOffset.UtcNow),
+            TestContext.Current.CancellationToken);
+        var image = PublicMediaImageTestFactory.CreateReadyImage(
+            tourId,
+            "source.jpg",
+            "review-640.jpg",
+            "sha256:review",
+            "Initial image",
+            displayOrder: 0,
+            isCover: true);
+        image.SetAiDraftAccessibilityText(PublicContentLanguage.EnUs, "AI draft", null).IsSuccess.ShouldBeTrue();
+        var mediaStore = new TestPublicMediaImageStore();
+        await mediaStore.Upsert(image, TestContext.Current.CancellationToken);
+        var objectStore = new TestMediaObjectStore();
+        var expectedContent = "reviewed-media"u8.ToArray();
+        await objectStore.Put(
+            new MediaObjectWriteRequest("review-640.jpg", new MemoryStream(expectedContent), "image/jpeg", expectedContent.Length, "sha256:review"),
+            TestContext.Current.CancellationToken);
+        await using var factory = CatalogApiTestHost.Create(tourStore, mediaStore, objectStore);
+        using var client = factory.CreateClient();
+
+        // Act
+        using var beforeReview = await client.GetAsync(
+            new Uri($"/api/v1/public/catalog/media/{image.Id}/640/jpg", UriKind.Relative),
+            TestContext.Current.CancellationToken);
+        using var reviewResponse = await client.PutAsJsonAsync(
+            new Uri($"/api/v1/catalog/media/images/{image.Id}/accessibility-review", UriKind.Relative),
+            new PublicMediaImageAccessibilityReviewRequest
+            {
+                Language = PublicContentLanguageDto.EnUs,
+                AltText = "Cyclists riding through a mountain pass.",
+                IsDecorative = false
+            },
+            TestContext.Current.CancellationToken);
+        using var afterReview = await client.GetAsync(
+            new Uri($"/api/v1/public/catalog/media/{image.Id}/640/jpg", UriKind.Relative),
+            TestContext.Current.CancellationToken);
+        var deliveredContent = await afterReview.Content.ReadAsByteArrayAsync(TestContext.Current.CancellationToken);
+
+        // Assert
+        beforeReview.StatusCode.ShouldBe(HttpStatusCode.NotFound);
+        reviewResponse.StatusCode.ShouldBe(HttpStatusCode.OK);
+        afterReview.StatusCode.ShouldBe(HttpStatusCode.OK);
+        deliveredContent.ShouldBe(expectedContent);
+    }
+
+    [Fact]
+    public async Task Catalog_media_accessibility_review_rejects_empty_non_decorative_alt_text_without_publication()
+    {
+        // Arrange
+        var tourId = Guid.CreateVersion7();
+        var tourStore = new TestCatalogTourReadModelStore();
+        await tourStore.UpsertDraft(
+            new CatalogTourDraftReadModel(
+                tourId,
+                Guid.CreateVersion7(),
+                "TOUR-2026",
+                "Published Tour",
+                "published-tour",
+                true,
+                1,
+                DateTimeOffset.UtcNow),
+            TestContext.Current.CancellationToken);
+        var image = PublicMediaImageTestFactory.CreateReadyImage(
+            tourId,
+            "source.jpg",
+            "review-640.jpg",
+            "sha256:review",
+            "Initial image",
+            displayOrder: 0,
+            isCover: true);
+        image.SetAiDraftAccessibilityText(PublicContentLanguage.EnUs, "AI draft", null).IsSuccess.ShouldBeTrue();
+        var mediaStore = new TestPublicMediaImageStore();
+        await mediaStore.Upsert(image, TestContext.Current.CancellationToken);
+        var objectStore = new TestMediaObjectStore();
+        await objectStore.Put(
+            new MediaObjectWriteRequest("review-640.jpg", new MemoryStream("reviewed-media"u8.ToArray()), "image/jpeg", 14, "sha256:review"),
+            TestContext.Current.CancellationToken);
+        await using var factory = CatalogApiTestHost.Create(tourStore, mediaStore, objectStore);
+        using var client = factory.CreateClient();
+
+        // Act
+        using var reviewResponse = await client.PutAsJsonAsync(
+            new Uri($"/api/v1/catalog/media/images/{image.Id}/accessibility-review", UriKind.Relative),
+            new PublicMediaImageAccessibilityReviewRequest
+            {
+                Language = PublicContentLanguageDto.EnUs,
+                AltText = string.Empty,
+                IsDecorative = false
+            },
+            TestContext.Current.CancellationToken);
+        using var publicResponse = await client.GetAsync(
+            new Uri($"/api/v1/public/catalog/media/{image.Id}/640/jpg", UriKind.Relative),
+            TestContext.Current.CancellationToken);
+        var persistedImage = await mediaStore.GetImage(image.Id, TestContext.Current.CancellationToken);
+
+        // Assert
+        reviewResponse.StatusCode.ShouldBe(HttpStatusCode.BadRequest);
+        publicResponse.StatusCode.ShouldBe(HttpStatusCode.NotFound);
+        persistedImage.ShouldNotBeNull();
+        persistedImage.RequiresHumanReview.ShouldBeTrue();
     }
 
     [Fact]

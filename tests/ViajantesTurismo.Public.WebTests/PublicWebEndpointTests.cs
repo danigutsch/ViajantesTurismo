@@ -24,7 +24,7 @@ public sealed class PublicWebEndpointTests
     }
 
     [Fact]
-    public async Task Public_media_streams_catalog_content_without_cache_storage()
+    public async Task Public_media_streams_catalog_content_with_public_cache_storage()
     {
         // Arrange
         using var upstreamResponse = new HttpResponseMessage();
@@ -45,7 +45,10 @@ public sealed class PublicWebEndpointTests
         // Assert
         response.StatusCode.ShouldBe(HttpStatusCode.OK);
         response.Content.Headers.ContentType?.MediaType.ShouldBe("image/jpeg");
-        response.Headers.CacheControl?.NoStore.ShouldBe(true);
+        var cacheControl = response.Headers.CacheControl.ShouldNotBeNull();
+        cacheControl.Public.ShouldBeTrue();
+        cacheControl.NoStore.ShouldBeFalse();
+        cacheControl.MaxAge.ShouldBe(PublicWebHttpCache.PublishedContentFreshness);
         response.Headers.GetValues("X-Content-Type-Options").ShouldHaveSingleItem().ShouldBe("nosniff");
         content.ShouldBe("image"u8.ToArray());
         catalogApi.LastMediaId.ShouldBe(Guid.Parse("6db0b8be-e4e8-4500-a398-b44e7709a640"));
@@ -58,6 +61,25 @@ public sealed class PublicWebEndpointTests
     {
         // Arrange
         var catalogApi = new FakePublicCatalogApiClient { ThrowOperationCanceledExceptionOnMediaRequests = true };
+        await using var factory = PublicWebEndpointTestsHelpers.CreateFactory(catalogApi);
+        using var client = factory.CreateClient();
+
+        // Act
+        using var response = await client.GetAsync(
+            new Uri("/catalog/media/6db0b8be-e4e8-4500-a398-b44e7709a640/640/jpg", UriKind.Relative),
+            TestContext.Current.CancellationToken);
+
+        // Assert
+        response.StatusCode.ShouldBe(HttpStatusCode.ServiceUnavailable);
+        var cacheControl = response.Headers.CacheControl.ShouldNotBeNull();
+        cacheControl.NoStore.ShouldBeTrue();
+    }
+
+    [Fact]
+    public async Task Public_media_returns_non_cacheable_service_unavailable_when_catalog_http_request_fails()
+    {
+        // Arrange
+        var catalogApi = new FakePublicCatalogApiClient { FailMediaRequests = true };
         await using var factory = PublicWebEndpointTestsHelpers.CreateFactory(catalogApi);
         using var client = factory.CreateClient();
 

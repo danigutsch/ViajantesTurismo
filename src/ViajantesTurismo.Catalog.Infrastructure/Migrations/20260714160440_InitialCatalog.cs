@@ -251,9 +251,17 @@ namespace ViajantesTurismo.Catalog.Infrastructure.Migrations
                 unique: true);
 
             migrationBuilder.CreateIndex(
-                name: "IX_PublicMediaImageTourLinks_CatalogTourId_DisplayOrder",
+                name: "UX_PublicMediaImageTourLinks_CatalogTourId_Cover",
                 table: "PublicMediaImageTourLinks",
-                columns: new[] { "CatalogTourId", "DisplayOrder" });
+                column: "CatalogTourId",
+                unique: true,
+                filter: "\"IsCover\" = TRUE");
+
+            migrationBuilder.CreateIndex(
+                name: "UX_PublicMediaImageTourLinks_CatalogTourId_DisplayOrder",
+                table: "PublicMediaImageTourLinks",
+                columns: new[] { "CatalogTourId", "DisplayOrder" },
+                unique: true);
         }
 
         /// <inheritdoc />

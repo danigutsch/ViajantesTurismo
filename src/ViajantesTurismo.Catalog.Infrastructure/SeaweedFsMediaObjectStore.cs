@@ -53,9 +53,16 @@ internal sealed class SeaweedFsMediaObjectStore(
         ValidateKey(objectKey);
         await EnsureBucketProvisioned(ct).ConfigureAwait(false);
 
-        var response = await client.GetObjectAsync(new GetObjectRequest { BucketName = options.Bucket, Key = objectKey }, ct).ConfigureAwait(false);
-        var checksum = GetMetadataValue(response.Metadata, "checksum");
-        return new MediaObjectReadResult(objectKey, new SeaweedFsObjectResponseStream(response), response.Headers.ContentType, response.Headers.ContentLength, checksum);
+        try
+        {
+            var response = await client.GetObjectAsync(new GetObjectRequest { BucketName = options.Bucket, Key = objectKey }, ct).ConfigureAwait(false);
+            var checksum = GetMetadataValue(response.Metadata, "checksum");
+            return new MediaObjectReadResult(objectKey, new SeaweedFsObjectResponseStream(response), response.Headers.ContentType, response.Headers.ContentLength, checksum);
+        }
+        catch (AmazonS3Exception exception) when (exception.StatusCode == System.Net.HttpStatusCode.NotFound)
+        {
+            throw new FileNotFoundException("The media object is unavailable.", objectKey, exception);
+        }
     }
 
     public async ValueTask<bool> Exists(string objectKey, CancellationToken ct)

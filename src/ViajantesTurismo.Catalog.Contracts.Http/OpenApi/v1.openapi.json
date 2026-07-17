@@ -57,8 +57,19 @@
         "responses": {
           "200": {
             "description": "OK"
+          },
+          "401": {
+            "description": "Authentication is required."
+          },
+          "403": {
+            "description": "The authenticated caller lacks the required permission."
           }
-        }
+        },
+        "security": [
+          {
+            "Bearer": [ ]
+          }
+        ]
       }
     },
     "/api/v1/catalog/tours/{id}/presentation": {
@@ -90,8 +101,19 @@
         "responses": {
           "200": {
             "description": "OK"
+          },
+          "401": {
+            "description": "Authentication is required."
+          },
+          "403": {
+            "description": "The authenticated caller lacks the required permission."
           }
-        }
+        },
+        "security": [
+          {
+            "Bearer": [ ]
+          }
+        ]
       }
     },
     "/api/v1/catalog/tours/{id}/images": {
@@ -113,8 +135,19 @@
         "responses": {
           "200": {
             "description": "OK"
+          },
+          "401": {
+            "description": "Authentication is required."
+          },
+          "403": {
+            "description": "The authenticated caller lacks the required permission."
           }
-        }
+        },
+        "security": [
+          {
+            "Bearer": [ ]
+          }
+        ]
       },
       "post": {
         "tags": [
@@ -140,58 +173,51 @@
                   "altText"
                 ],
                 "type": "object",
-                "allOf": [
-                  {
-                    "type": "object",
-                    "properties": {
-                      "file": {
-                        "$ref": "#/components/schemas/IFormFile"
-                      }
-                    }
+                "properties": {
+                  "file": {
+                    "$ref": "#/components/schemas/IFormFile"
                   },
-                  {
-                    "type": "object",
-                    "properties": {
-                      "altText": {
-                        "type": "string"
-                      }
-                    }
+                  "altText": {
+                    "type": "string"
                   },
-                  {
-                    "type": "object",
-                    "properties": {
-                      "caption": {
-                        "type": "string"
-                      }
-                    }
+                  "caption": {
+                    "type": "string"
                   },
-                  {
-                    "type": "object",
-                    "properties": {
-                      "attribution": {
-                        "type": "string"
-                      }
-                    }
+                  "attribution": {
+                    "type": "string"
                   },
-                  {
-                    "type": "object",
-                    "properties": {
-                      "copyright": {
-                        "type": "string"
-                      }
-                    }
+                  "copyright": {
+                    "type": "string"
                   }
-                ]
+                }
               }
             }
           },
           "required": true
         },
         "responses": {
-          "200": {
-            "description": "OK"
+          "201": {
+            "description": "Created",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CatalogMediaImageDto"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Authentication is required."
+          },
+          "403": {
+            "description": "The authenticated caller lacks the required permission."
           }
-        }
+        },
+        "security": [
+          {
+            "Bearer": [ ]
+          }
+        ]
       }
     },
     "/api/v1/catalog/media/images/{id}/preview/{width}/{format}": {
@@ -231,8 +257,19 @@
         "responses": {
           "200": {
             "description": "OK"
+          },
+          "401": {
+            "description": "Authentication is required."
+          },
+          "403": {
+            "description": "The authenticated caller lacks the required permission."
           }
-        }
+        },
+        "security": [
+          {
+            "Bearer": [ ]
+          }
+        ]
       }
     },
     "/api/v1/catalog/media/images/{id}/accessibility-draft": {
@@ -264,8 +301,19 @@
         "responses": {
           "200": {
             "description": "OK"
+          },
+          "401": {
+            "description": "Authentication is required."
+          },
+          "403": {
+            "description": "The authenticated caller lacks the required permission."
           }
-        }
+        },
+        "security": [
+          {
+            "Bearer": [ ]
+          }
+        ]
       }
     },
     "/api/v1/catalog/media/images/{id}/accessibility-review": {
@@ -297,8 +345,19 @@
         "responses": {
           "200": {
             "description": "OK"
+          },
+          "401": {
+            "description": "Authentication is required."
+          },
+          "403": {
+            "description": "The authenticated caller lacks the required permission."
           }
-        }
+        },
+        "security": [
+          {
+            "Bearer": [ ]
+          }
+        ]
       }
     },
     "/api/v1/public/catalog/tours": {
@@ -473,8 +532,19 @@
         "responses": {
           "200": {
             "description": "OK"
+          },
+          "401": {
+            "description": "Authentication is required."
+          },
+          "403": {
+            "description": "The authenticated caller lacks the required permission."
           }
-        }
+        },
+        "security": [
+          {
+            "Bearer": [ ]
+          }
+        ]
       },
       "put": {
         "tags": [
@@ -503,13 +573,69 @@
         "responses": {
           "200": {
             "description": "OK"
+          },
+          "401": {
+            "description": "Authentication is required."
+          },
+          "403": {
+            "description": "The authenticated caller lacks the required permission."
           }
-        }
+        },
+        "security": [
+          {
+            "Bearer": [ ]
+          }
+        ]
       }
     }
   },
   "components": {
     "schemas": {
+      "CatalogMediaImageDto": {
+        "required": [
+          "id",
+          "responsiveVariants",
+          "altText",
+          "isDecorative",
+          "requiresHumanReview",
+          "isAiGenerated"
+        ],
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "responsiveVariants": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/CatalogMediaImageVariantDto"
+            }
+          },
+          "altText": {
+            "maxLength": 256,
+            "minLength": 0,
+            "type": "string"
+          },
+          "caption": {
+            "maxLength": 256,
+            "minLength": 0,
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "isDecorative": {
+            "type": "boolean"
+          },
+          "requiresHumanReview": {
+            "type": "boolean"
+          },
+          "isAiGenerated": {
+            "type": "boolean"
+          }
+        }
+      },
       "CatalogMediaImageVariantDto": {
         "required": [
           "width",

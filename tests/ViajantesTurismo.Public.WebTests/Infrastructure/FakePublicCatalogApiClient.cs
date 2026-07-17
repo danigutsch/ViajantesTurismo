@@ -13,6 +13,8 @@ internal sealed class FakePublicCatalogApiClient : IPublicCatalogApiClient
 
     public bool ThrowOperationCanceledExceptionOnMediaRequests { get; set; }
 
+    public bool FailMediaRequests { get; set; }
+
     public bool FailDetailsRequests { get; set; }
 
     public bool FailContentRequests { get; set; }
@@ -118,6 +120,11 @@ internal sealed class FakePublicCatalogApiClient : IPublicCatalogApiClient
         if (ThrowOperationCanceledExceptionOnMediaRequests)
         {
             throw new OperationCanceledException("Catalog media request canceled upstream.");
+        }
+
+        if (FailMediaRequests)
+        {
+            throw new HttpRequestException("Catalog unavailable.");
         }
 
         return Task.FromResult(Media);

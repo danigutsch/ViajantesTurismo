@@ -19,7 +19,9 @@ public sealed class CatalogOpenApiUploadContractTests
         var uploadOperation = uploadPath["post"].ShouldNotBeNull().AsObject();
         var requestBody = uploadOperation["requestBody"].ShouldNotBeNull().AsObject();
         var content = requestBody["content"].ShouldNotBeNull().AsObject();
+        var responses = uploadOperation["responses"].ShouldNotBeNull().AsObject();
         var multipartSchema = content["multipart/form-data"].ShouldNotBeNull().AsObject()["schema"].ShouldNotBeNull().AsObject();
+        var properties = multipartSchema["properties"].ShouldNotBeNull().AsObject();
         var requiredFields = multipartSchema["required"].ShouldNotBeNull().AsArray()
             .Select(item => item.ShouldNotBeNull().GetValue<string>())
             .ToArray();
@@ -32,5 +34,11 @@ public sealed class CatalogOpenApiUploadContractTests
         mediaTypes.ShouldNotContain("application/x-www-form-urlencoded");
         requiredFields.ShouldContain("file");
         requiredFields.ShouldContain("altText");
+        properties.ContainsKey("file").ShouldBeTrue();
+        properties.ContainsKey("altText").ShouldBeTrue();
+        properties.ContainsKey("caption").ShouldBeTrue();
+        properties.ContainsKey("attribution").ShouldBeTrue();
+        properties.ContainsKey("copyright").ShouldBeTrue();
+        responses.ContainsKey("201").ShouldBeTrue();
     }
 }

@@ -25,7 +25,7 @@ internal static class CustomersOpenApiAssertions
         contract.ImportCustomersOperationId.ShouldBe("ImportCustomers");
         contract.ImportCustomersSchemaReference.ShouldBe("#/components/schemas/IFormFile");
         contract.CommitImportOperationId.ShouldBe("CommitImportWithResolutions");
-        contract.CommitImportSchemaToken.ShouldBe("multipart-object-allOf:file+conflictResolutions");
+        contract.CommitImportSchemaToken.ShouldBe("multipart-object-properties:file+conflictResolutions");
     }
 
     /// <summary>

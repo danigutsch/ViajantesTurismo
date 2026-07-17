@@ -1,5 +1,7 @@
 using Microsoft.AspNetCore.Http;
+using System.Net;
 using CatalogToursApiClientTestsHelpers = SharedKernel.Testing.Contracts.ContractHttpClientTestHelper;
+using SharedKernel.Testing.Contracts;
 using ViajantesTurismo.Catalog.Contracts.Application;
 using ViajantesTurismo.Catalog.Contracts.Http;
 
@@ -149,7 +151,7 @@ public sealed class CatalogToursApiClientTests
     public async Task GetTour_returns_null_when_catalog_returns_notfound()
     {
         // Arrange
-        using var httpClient = CatalogToursApiClientTestsHelpers.CreateClient(_ => new HttpResponseMessage(System.Net.HttpStatusCode.NotFound));
+        using var httpClient = CatalogToursApiClientTestsHelpers.CreateClient(_ => new HttpResponseMessage(HttpStatusCode.NotFound));
         var sut = new CatalogToursApiClient(httpClient);
 
         // Act
@@ -178,7 +180,7 @@ public sealed class CatalogToursApiClientTests
     public async Task UpdatePresentation_returns_null_when_catalog_returns_notfound()
     {
         // Arrange
-        using var httpClient = CatalogToursApiClientTestsHelpers.CreateClient(_ => new HttpResponseMessage(System.Net.HttpStatusCode.NotFound));
+        using var httpClient = CatalogToursApiClientTestsHelpers.CreateClient(_ => new HttpResponseMessage(HttpStatusCode.NotFound));
         var sut = new CatalogToursApiClient(httpClient);
 
         // Act
@@ -271,7 +273,7 @@ public sealed class CatalogToursApiClientTests
             requestPath = request.RequestUri?.PathAndQuery ?? string.Empty;
             var responseContent = new ByteArrayContent("preview"u8.ToArray());
             responseContent.Headers.ContentType = new System.Net.Http.Headers.MediaTypeHeaderValue("image/jpeg");
-            return new HttpResponseMessage(System.Net.HttpStatusCode.OK) { Content = responseContent };
+            return new HttpResponseMessage(HttpStatusCode.OK) { Content = responseContent };
         });
         var sut = new CatalogToursApiClient(httpClient);
 
@@ -284,5 +286,163 @@ public sealed class CatalogToursApiClientTests
         // Assert
         requestPath.ShouldBe("/api/v1/catalog/media/images/33333333-3333-3333-3333-333333333333/preview/640/jpg");
         content.ShouldBe("preview"u8.ToArray());
+    }
+
+    [Fact]
+    public async Task UploadTourImage_sends_multipart_metadata_and_reads_created_image()
+    {
+        // Arrange
+        var requestMethod = string.Empty;
+        var requestPath = string.Empty;
+        var requestMediaType = string.Empty;
+        var requestBody = string.Empty;
+        var tourId = Guid.Parse("11111111-1111-1111-1111-111111111111");
+        using var content = new MemoryStream("image"u8.ToArray());
+        using var httpClient = CatalogToursApiClientTestsHelpers.CreateClient(request =>
+        {
+            requestMethod = request.Method.Method;
+            requestPath = request.RequestUri?.PathAndQuery ?? string.Empty;
+            requestMediaType = request.Content?.Headers.ContentType?.MediaType ?? string.Empty;
+            requestBody = request.Content?.ReadAsStringAsync().GetAwaiter().GetResult() ?? string.Empty;
+            return CatalogToursApiClientTestsHelpers.JsonResponse("""
+                {
+                  "id":"33333333-3333-3333-3333-333333333333",
+                  "responsiveVariants":[],
+                  "altText":"Cyclist on a mountain pass",
+                  "isDecorative":false,
+                  "requiresHumanReview":true,
+                  "isAiGenerated":false
+                }
+                """);
+        });
+        var sut = new CatalogToursApiClient(httpClient);
+
+        // Act
+        var image = await sut.UploadTourImage(
+            tourId,
+            new CatalogTourImageUploadRequest(content, "mountain.jpg", "image/jpeg", "Cyclist on a mountain pass", "Mountain pass", "Photo team", "© Viajantes"),
+            TestContext.Current.CancellationToken);
+
+        // Assert
+        image.ShouldNotBeNull();
+        image.Id.ShouldBe(Guid.Parse("33333333-3333-3333-3333-333333333333"));
+        requestMethod.ShouldBe(HttpMethods.Post);
+        requestPath.ShouldBe("/api/v1/catalog/tours/11111111-1111-1111-1111-111111111111/images");
+        requestMediaType.ShouldBe("multipart/form-data");
+        requestBody.ShouldContain("name=file", StringComparison.Ordinal);
+        requestBody.ShouldContain("filename=mountain.jpg", StringComparison.Ordinal);
+        requestBody.ShouldContain("name=altText", StringComparison.Ordinal);
+        requestBody.ShouldContain("Cyclist on a mountain pass", StringComparison.Ordinal);
+        requestBody.ShouldContain("name=caption", StringComparison.Ordinal);
+        requestBody.ShouldContain("Mountain pass", StringComparison.Ordinal);
+        requestBody.ShouldContain("name=attribution", StringComparison.Ordinal);
+        requestBody.ShouldContain("Photo team", StringComparison.Ordinal);
+        requestBody.ShouldContain("name=copyright", StringComparison.Ordinal);
+        requestBody.ShouldContain("© Viajantes", StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public async Task UploadTourImage_returns_null_when_tour_is_not_found()
+    {
+        // Arrange
+        using var content = new MemoryStream("image"u8.ToArray());
+        using var httpClient = CatalogToursApiClientTestsHelpers.CreateClient(_ => new HttpResponseMessage(HttpStatusCode.NotFound));
+        var sut = new CatalogToursApiClient(httpClient);
+
+        // Act
+        var image = await sut.UploadTourImage(
+            Guid.CreateVersion7(),
+            new CatalogTourImageUploadRequest(content, "missing.jpg", "image/jpeg", "Missing tour"),
+            TestContext.Current.CancellationToken);
+
+        // Assert
+        image.ShouldBeNull();
+    }
+
+    [Fact]
+    public async Task ReviewMediaImageAccessibility_sends_review_request_and_reads_updated_image()
+    {
+        // Arrange
+        var requestMethod = string.Empty;
+        var requestPath = string.Empty;
+        var requestBody = string.Empty;
+        var imageId = Guid.Parse("33333333-3333-3333-3333-333333333333");
+        using var httpClient = CatalogToursApiClientTestsHelpers.CreateClient(request =>
+        {
+            requestMethod = request.Method.Method;
+            requestPath = request.RequestUri?.PathAndQuery ?? string.Empty;
+            requestBody = request.Content?.ReadAsStringAsync().GetAwaiter().GetResult() ?? string.Empty;
+            return CatalogToursApiClientTestsHelpers.JsonResponse("""
+                {
+                  "id":"33333333-3333-3333-3333-333333333333",
+                  "responsiveVariants":[],
+                  "altText":"Cyclist on a mountain pass",
+                  "isDecorative":false,
+                  "requiresHumanReview":false,
+                  "isAiGenerated":true
+                }
+                """);
+        });
+        var sut = new CatalogToursApiClient(httpClient);
+
+        // Act
+        var image = await sut.ReviewMediaImageAccessibility(
+            imageId,
+            new PublicMediaImageAccessibilityReviewRequest
+            {
+                Language = PublicContentLanguageDto.EnUs,
+                AltText = "Cyclist on a mountain pass",
+                IsDecorative = false
+            },
+            TestContext.Current.CancellationToken);
+
+        // Assert
+        image.ShouldNotBeNull();
+        image.RequiresHumanReview.ShouldBeFalse();
+        requestMethod.ShouldBe(HttpMethods.Put);
+        requestPath.ShouldBe("/api/v1/catalog/media/images/33333333-3333-3333-3333-333333333333/accessibility-review");
+        requestBody.ShouldContain("Cyclist on a mountain pass", StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public async Task ReviewMediaImageAccessibility_returns_null_when_image_is_not_found()
+    {
+        // Arrange
+        using var httpClient = CatalogToursApiClientTestsHelpers.CreateClient(_ => new HttpResponseMessage(HttpStatusCode.NotFound));
+        var sut = new CatalogToursApiClient(httpClient);
+
+        // Act
+        var image = await sut.ReviewMediaImageAccessibility(
+            Guid.CreateVersion7(),
+            new PublicMediaImageAccessibilityReviewRequest
+            {
+                Language = PublicContentLanguageDto.EnUs,
+                AltText = "Missing image",
+                IsDecorative = false
+            },
+            TestContext.Current.CancellationToken);
+
+        // Assert
+        image.ShouldBeNull();
+    }
+
+    [Fact]
+    public async Task GetMediaPreview_returns_null_and_disposes_the_not_found_response()
+    {
+        // Arrange
+        var content = new TrackingHttpContent();
+        using var response = new HttpResponseMessage(HttpStatusCode.NotFound)
+        {
+            Content = content
+        };
+        using var httpClient = CatalogToursApiClientTestsHelpers.CreateClient(_ => response);
+        var sut = new CatalogToursApiClient(httpClient);
+
+        // Act
+        var preview = await sut.GetMediaPreview(Guid.CreateVersion7(), 640, "jpg", TestContext.Current.CancellationToken);
+
+        // Assert
+        preview.ShouldBeNull();
+        content.IsDisposed.ShouldBeTrue();
     }
 }

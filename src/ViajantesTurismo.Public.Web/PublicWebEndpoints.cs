@@ -118,7 +118,7 @@ internal static class PublicWebEndpoints
             return Results.NotFound();
         }
 
-        PublicWebHttpCache.SetNoStore(httpContext);
+        PublicWebHttpCache.SetPublishedContent(httpContext);
         httpContext.Response.Headers["X-Content-Type-Options"] = "nosniff";
         httpContext.Response.RegisterForDisposeAsync(media);
         return Results.Stream(media.Content, media.ContentType, enableRangeProcessing: false);

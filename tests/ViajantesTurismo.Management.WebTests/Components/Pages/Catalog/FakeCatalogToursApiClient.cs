@@ -12,9 +12,19 @@ internal sealed class FakeCatalogToursApiClient : ICatalogToursApiClient
 
     public IReadOnlyList<CatalogMediaImageDto> Images { get; set; } = [];
 
+    public bool ThrowOnGetTourImages { get; set; }
+
     public CatalogMediaImageDto? Draft { get; set; }
 
+    public CatalogMediaImageDto? AccessibilityReviewResult { get; set; }
+
+    public bool ReturnNullOnAccessibilityReview { get; set; }
+
+    public bool ThrowOnSubsequentGetTourImages { get; set; }
+
     public PublicMediaObjectResponse? Media { get; set; }
+
+    public bool ThrowOnMediaPreview { get; set; }
 
     public Guid? LastMediaId { get; private set; }
 
@@ -23,6 +33,8 @@ internal sealed class FakeCatalogToursApiClient : ICatalogToursApiClient
     public string? LastMediaFormat { get; private set; }
 
     public PublicMediaImageAccessibilityReviewRequest? LastAccessibilityReviewRequest { get; private set; }
+
+    private int getTourImagesRequests;
 
     public Task<CatalogTourDto[]> GetTours(CancellationToken ct)
     {
@@ -86,6 +98,16 @@ internal sealed class FakeCatalogToursApiClient : ICatalogToursApiClient
     {
         ct.ThrowIfCancellationRequested();
 
+        if (ThrowOnGetTourImages)
+        {
+            throw new HttpRequestException("Catalog unavailable.");
+        }
+
+        if (ThrowOnSubsequentGetTourImages && Interlocked.Increment(ref getTourImagesRequests) > 1)
+        {
+            throw new HttpRequestException("Catalog unavailable.");
+        }
+
         return Task.FromResult(Images);
     }
 
@@ -93,8 +115,24 @@ internal sealed class FakeCatalogToursApiClient : ICatalogToursApiClient
     {
         ct.ThrowIfCancellationRequested();
 
+        if (ValidationException is not null)
+        {
+            throw ValidationException;
+        }
+
         LastAccessibilityReviewRequest = request;
-        return Task.FromResult(Images.FirstOrDefault(image => image.Id == id));
+        if (ReturnNullOnAccessibilityReview)
+        {
+            return Task.FromResult<CatalogMediaImageDto?>(null);
+        }
+
+        var reviewed = AccessibilityReviewResult ?? Images.FirstOrDefault(image => image.Id == id);
+        if (reviewed is not null)
+        {
+            Images = Images.Select(image => image.Id == id ? reviewed : image).ToArray();
+        }
+
+        return Task.FromResult(reviewed);
     }
 
     public Task<PublicMediaObjectResponse?> GetMediaPreview(Guid id, int width, string format, CancellationToken ct)
@@ -103,6 +141,11 @@ internal sealed class FakeCatalogToursApiClient : ICatalogToursApiClient
         LastMediaId = id;
         LastMediaWidth = width;
         LastMediaFormat = format;
+
+        if (ThrowOnMediaPreview)
+        {
+            throw new HttpRequestException("Catalog unavailable.");
+        }
 
         return Task.FromResult(Media);
     }

@@ -40,11 +40,13 @@
     private int ImageHeight() => SelectFallbackVariant().Height;
 
     private CatalogMediaImageVariantDto SelectFallbackVariant() => Image.ResponsiveVariants
-        .Where(variant => string.Equals(variant.ContentType, "image/jpeg", StringComparison.OrdinalIgnoreCase)
+        .Where(variant => IsPictureSourceContentType(variant.ContentType))
+        .OrderByDescending(variant =>
+            string.Equals(variant.ContentType, "image/jpeg", StringComparison.OrdinalIgnoreCase)
             || string.Equals(variant.ContentType, "image/png", StringComparison.OrdinalIgnoreCase))
-        .OrderByDescending(variant => variant.Width)
+        .ThenByDescending(variant => variant.Width)
         .FirstOrDefault()
-        ?? Image.ResponsiveVariants.OrderByDescending(variant => variant.Width).First();
+        ?? throw new InvalidOperationException("A responsive tour image requires a supported media variant.");
 
     private string GetVariantPath(CatalogMediaImageVariantDto variant) => LinkGenerator.GetPathByName(
         PublicWebEndpoints.PublicMediaByRenditionEndpointName,

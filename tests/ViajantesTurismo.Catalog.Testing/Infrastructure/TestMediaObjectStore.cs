@@ -10,6 +10,8 @@ public sealed class TestMediaObjectStore : IMediaObjectStore
 
     private const int MaxObjectKeyLength = CatalogDomainLimits.MaxMediaObjectKeyLength;
 
+    public bool ThrowFileNotFoundOnOpenRead { get; set; }
+
     public async ValueTask<MediaObjectWriteResult> Put(MediaObjectWriteRequest request, CancellationToken ct)
     {
         ArgumentNullException.ThrowIfNull(request);
@@ -26,6 +28,11 @@ public sealed class TestMediaObjectStore : IMediaObjectStore
     {
         ct.ThrowIfCancellationRequested();
         ValidateObjectKey(objectKey);
+        if (ThrowFileNotFoundOnOpenRead)
+        {
+            throw new FileNotFoundException("The media object is unavailable.", objectKey);
+        }
+
         var request = objects[objectKey];
         request.Content.Position = 0;
         using var content = new MemoryStream();

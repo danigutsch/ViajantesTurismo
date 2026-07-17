@@ -15,8 +15,10 @@ namespace ViajantesTurismo.Management.WebTests;
 [Trait(TestTraitNames.ScopeName, TestTraits.UnitScope)]
 public sealed class ManagementWebEndpointTests
 {
-    [Fact]
-    public async Task Management_endpoints_reject_anonymous_requests()
+    [Theory]
+    [InlineData("/")]
+    [InlineData("/catalog/media/images/6db0b8be-e4e8-4500-a398-b44e7709a640/preview/640/jpg")]
+    public async Task Management_endpoints_reject_anonymous_requests(string path)
     {
         // Arrange
         using var host = await new HostBuilder()
@@ -43,7 +45,7 @@ public sealed class ManagementWebEndpointTests
         using var client = host.GetTestClient();
 
         // Act
-        using var response = await client.GetAsync(new Uri("/", UriKind.Relative), Xunit.TestContext.Current.CancellationToken);
+        using var response = await client.GetAsync(new Uri(path, UriKind.Relative), Xunit.TestContext.Current.CancellationToken);
 
         // Assert
         response.StatusCode.ShouldBe(HttpStatusCode.Unauthorized);
@@ -82,6 +84,26 @@ public sealed class ManagementWebEndpointTests
         catalogApi.LastMediaId.ShouldBe(imageId);
         catalogApi.LastMediaWidth.ShouldBe(640);
         catalogApi.LastMediaFormat.ShouldBe("jpg");
+    }
+
+    [Fact]
+    public async Task Management_media_preview_returns_non_cacheable_service_unavailable_when_catalog_request_fails()
+    {
+        // Arrange
+        var catalogApi = new FakeCatalogToursApiClient { ThrowOnMediaPreview = true };
+        using var host = await ManagementWebEndpointTestHost.StartWithRecordingAuthentication(
+            Xunit.TestContext.Current.CancellationToken,
+            catalogApi);
+        using var client = host.GetTestClient();
+
+        // Act
+        using var response = await client.GetAsync(
+            new Uri("/catalog/media/images/6db0b8be-e4e8-4500-a398-b44e7709a640/preview/640/jpg", UriKind.Relative),
+            Xunit.TestContext.Current.CancellationToken);
+
+        // Assert
+        response.StatusCode.ShouldBe(HttpStatusCode.ServiceUnavailable);
+        response.Headers.CacheControl?.NoStore.ShouldBeTrue();
     }
 
     [Fact]

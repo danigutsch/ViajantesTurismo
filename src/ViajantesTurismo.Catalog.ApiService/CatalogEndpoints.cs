@@ -35,6 +35,7 @@ internal static class CatalogEndpoints
             .RequireAuthorization(CatalogAuthorization.CatalogRead);
         versionedApi.MapPost("/catalog/tours/{id:guid}/images", UploadTourImage)
             .Accepts<MediaImageUploadFormDto>("multipart/form-data")
+            .Produces<CatalogMediaImageDto>(StatusCodes.Status201Created)
             .AddOpenApiOperationTransformer((operation, _, _) =>
             {
                 var content = operation.RequestBody?.Content;
@@ -210,7 +211,13 @@ internal static class CatalogEndpoints
             return Results.NotFound();
         }
 
-        var media = await objectStore.OpenRead(variant.ObjectKey, ct).ConfigureAwait(false);
+        var media = await TryOpenMediaObject(objectStore, variant.ObjectKey, ct).ConfigureAwait(false);
+        if (media is null)
+        {
+            HttpCacheHeaders.SetNoStore(httpContext);
+            return Results.NotFound();
+        }
+
         if (!string.Equals(media.ContentType, contentType, StringComparison.OrdinalIgnoreCase))
         {
             media.Dispose();
@@ -258,7 +265,12 @@ internal static class CatalogEndpoints
             return Results.NotFound();
         }
 
-        var media = await objectStore.OpenRead(variant.ObjectKey, ct).ConfigureAwait(false);
+        var media = await TryOpenMediaObject(objectStore, variant.ObjectKey, ct).ConfigureAwait(false);
+        if (media is null)
+        {
+            return Results.NotFound();
+        }
+
         if (!string.Equals(media.ContentType, contentType, StringComparison.OrdinalIgnoreCase))
         {
             media.Dispose();
@@ -705,6 +717,25 @@ internal static class CatalogEndpoints
         "WEBP" => "image/webp",
         _ => null
     };
+
+    private static async Task<MediaObjectReadResult?> TryOpenMediaObject(
+        IMediaObjectStore objectStore,
+        string objectKey,
+        CancellationToken ct)
+    {
+        try
+        {
+            return await objectStore.OpenRead(objectKey, ct).ConfigureAwait(false);
+        }
+        catch (FileNotFoundException)
+        {
+            return null;
+        }
+        catch (DirectoryNotFoundException)
+        {
+            return null;
+        }
+    }
 
     private static async Task<bool> IsLinkedToPublishedTour(PublicMediaImage image, ICatalogTourReadModelStore tourStore, CancellationToken ct)
     {

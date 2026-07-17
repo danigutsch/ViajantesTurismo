@@ -363,7 +363,14 @@ namespace ViajantesTurismo.Catalog.Infrastructure.Migrations
 
                             b1.HasKey("PublicMediaImageId", "CatalogTourId");
 
-                            b1.HasIndex("CatalogTourId", "DisplayOrder");
+                            b1.HasIndex("CatalogTourId")
+                                .IsUnique()
+                                .HasDatabaseName("UX_PublicMediaImageTourLinks_CatalogTourId_Cover")
+                                .HasFilter("\"IsCover\" = TRUE");
+
+                            b1.HasIndex("CatalogTourId", "DisplayOrder")
+                                .IsUnique()
+                                .HasDatabaseName("UX_PublicMediaImageTourLinks_CatalogTourId_DisplayOrder");
 
                             b1.ToTable("PublicMediaImageTourLinks", (string)null);
 

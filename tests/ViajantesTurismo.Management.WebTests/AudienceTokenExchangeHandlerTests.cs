@@ -1,4 +1,5 @@
 using System.Net;
+using Microsoft.IdentityModel.Protocols.OpenIdConnect;
 using ViajantesTurismo.Resources;
 
 namespace ViajantesTurismo.Management.WebTests;
@@ -159,6 +160,65 @@ public sealed class AudienceTokenExchangeHandlerTests
 
         // Assert
         exception.Message.ShouldBe("The management token session has been revoked.");
+        host.TokenEndpoint.Requests.ShouldBeEmpty();
+        host.Backend.AuthorizationHeaders.ShouldBeEmpty();
+    }
+
+    [Fact]
+    public async Task Does_not_exchange_or_send_a_backend_token_after_session_expiry()
+    {
+        // Arrange
+        await using var host = AudienceTokenExchangeTestHost.Create();
+        var user = ProtectedDistributedUserTokenStoreTestContext.CreateUser(
+            "expired-session",
+            DateTimeOffset.UtcNow.AddMinutes(-1));
+        using var exchangeHandler = host.CreateHandler(ApiAudienceNames.Admin, user);
+        using var sourceHandler = new SourceAccessTokenHandler("source-token") { InnerHandler = exchangeHandler };
+        using var client = new HttpMessageInvoker(sourceHandler, disposeHandler: false);
+        Func<Task> sendRequest = async () =>
+        {
+            using var response = await client.SendAsync(
+                new HttpRequestMessage(HttpMethod.Get, "https://admin.example.test/"),
+                Xunit.TestContext.Current.CancellationToken);
+        };
+
+        // Act
+        var exception = await sendRequest.ShouldThrow<InvalidOperationException>();
+
+        // Assert
+        exception.Message.ShouldBe("The management token session has expired.");
+        host.TokenEndpoint.Requests.ShouldBeEmpty();
+        host.Backend.AuthorizationHeaders.ShouldBeEmpty();
+    }
+
+    [Fact]
+    public async Task Rejects_a_non_https_token_endpoint_before_sending_client_or_user_tokens()
+    {
+        // Arrange
+        await using var host = AudienceTokenExchangeTestHost.Create(
+            configureOptions: options =>
+            {
+                options.Configuration = new OpenIdConnectConfiguration
+                {
+                    TokenEndpoint = "http://identity.example.test/realms/viajantes/protocol/openid-connect/token"
+                };
+                options.RequireHttpsMetadata = true;
+            });
+        using var exchangeHandler = host.CreateHandler(ApiAudienceNames.Admin);
+        using var sourceHandler = new SourceAccessTokenHandler("source-token") { InnerHandler = exchangeHandler };
+        using var client = new HttpMessageInvoker(sourceHandler, disposeHandler: false);
+        Func<Task> sendRequest = async () =>
+        {
+            using var response = await client.SendAsync(
+                new HttpRequestMessage(HttpMethod.Get, "https://admin.example.test/"),
+                Xunit.TestContext.Current.CancellationToken);
+        };
+
+        // Act
+        var exception = await sendRequest.ShouldThrow<InvalidOperationException>();
+
+        // Assert
+        exception.Message.ShouldBe("The identity provider token endpoint is unavailable.");
         host.TokenEndpoint.Requests.ShouldBeEmpty();
         host.Backend.AuthorizationHeaders.ShouldBeEmpty();
     }

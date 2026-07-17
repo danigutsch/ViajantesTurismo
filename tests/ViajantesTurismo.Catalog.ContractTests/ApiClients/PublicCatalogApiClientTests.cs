@@ -1,6 +1,7 @@
 using System.Net;
 using System.Text.Json;
 using PublicCatalogApiClientTestsHelpers = SharedKernel.Testing.Contracts.ContractHttpClientTestHelper;
+using SharedKernel.Testing.Contracts;
 using ViajantesTurismo.Catalog.Contracts.Http;
 
 namespace ViajantesTurismo.Catalog.ContractTests.ApiClients;
@@ -122,6 +123,46 @@ public sealed class PublicCatalogApiClientTests
         // Assert
         await using var response = media.ShouldNotBeNull();
         requestPath.ShouldBe("/api/v1/public/catalog/media/55555555-5555-5555-5555-555555555555/640/jpg");
+    }
+
+    [Fact]
+    public async Task GetPublicMedia_returns_null_and_disposes_the_not_found_response()
+    {
+        // Arrange
+        var content = new TrackingHttpContent();
+        using var response = new HttpResponseMessage(HttpStatusCode.NotFound)
+        {
+            Content = content
+        };
+        using var httpClient = PublicCatalogApiClientTestsHelpers.CreateClient(_ => response);
+        var sut = new PublicCatalogApiClient(httpClient);
+
+        // Act
+        var media = await sut.GetPublicMedia(Guid.CreateVersion7(), 640, "jpg", TestContext.Current.CancellationToken);
+
+        // Assert
+        media.ShouldBeNull();
+        content.IsDisposed.ShouldBeTrue();
+    }
+
+    [Fact]
+    public async Task GetPublicMedia_disposes_the_response_when_the_upstream_status_is_unsuccessful()
+    {
+        // Arrange
+        var content = new TrackingHttpContent();
+        using var response = new HttpResponseMessage(HttpStatusCode.BadGateway)
+        {
+            Content = content
+        };
+        using var httpClient = PublicCatalogApiClientTestsHelpers.CreateClient(_ => response);
+        var sut = new PublicCatalogApiClient(httpClient);
+
+        // Act
+        Func<Task> act = async () => await sut.GetPublicMedia(Guid.CreateVersion7(), 640, "jpg", TestContext.Current.CancellationToken);
+
+        // Assert
+        await act.ShouldThrow<HttpRequestException>();
+        content.IsDisposed.ShouldBeTrue();
     }
 
     [Theory]

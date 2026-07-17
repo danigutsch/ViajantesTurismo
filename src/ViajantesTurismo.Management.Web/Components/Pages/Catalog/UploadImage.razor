@@ -1,6 +1,7 @@
 @page "/catalog/tours/{Id:guid}/images/upload"
 @using Microsoft.AspNetCore.Components.Forms
 @using SharedKernel.HttpClients
+@using ViajantesTurismo.Catalog.Contracts.Application
 @using ViajantesTurismo.Catalog.Contracts.Http
 @inject ICatalogToursApiClient CatalogToursApi
 
@@ -25,7 +26,7 @@
     <div class="mb-3">
         <label for="imageFile" class="form-label">Image file</label>
         <InputFile id="imageFile" class="form-control" OnChange="HandleFileSelection" accept="image/jpeg,image/png,image/webp,image/avif" />
-        <div class="form-text">JPEG, PNG, WebP, or AVIF. Maximum size: 5 MiB.</div>
+        <div class="form-text">JPEG, PNG, WebP, or AVIF. Maximum size: @MaximumFileSizeInMebibytes MiB.</div>
     </div>
 
     <div class="mb-3">
@@ -50,6 +51,8 @@
     public Guid Id { get; set; }
 
     private readonly UploadImageFormModel _model = new();
+    private const long BytesPerMebibyte = 1024 * 1024;
+    private const long MaximumFileSizeInMebibytes = ViajantesTurismo.Catalog.Contracts.Application.ContractConstants.MaxMediaUploadBytes / BytesPerMebibyte;
     private IBrowserFile? _file;
     private bool _saving;
     private bool _success;
@@ -102,7 +105,7 @@
         }
         catch (IOException)
         {
-            _errorMessage = "Image could not be read. Check that it is no larger than 5 MiB and try again.";
+            _errorMessage = $"Image could not be read. Check that it is no larger than {MaximumFileSizeInMebibytes} MiB and try again.";
         }
         finally
         {

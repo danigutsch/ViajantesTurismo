@@ -48,7 +48,9 @@ internal sealed class AudienceTokenExchangeTestHost : IAsyncDisposable
         };
     }
 
-    public static AudienceTokenExchangeTestHost Create(IDistributedCache? cache = null)
+    public static AudienceTokenExchangeTestHost Create(
+        IDistributedCache? cache = null,
+        Action<OpenIdConnectOptions>? configureOptions = null)
     {
         var tokenEndpoint = new RecordingAudienceTokenEndpointHandler();
         var backend = new RecordingAudienceTokenBackendHandler();
@@ -78,6 +80,7 @@ internal sealed class AudienceTokenExchangeTestHost : IAsyncDisposable
             {
                 TokenEndpoint = "https://identity.example.test/realms/viajantes/protocol/openid-connect/token"
             };
+            configureOptions?.Invoke(options);
         });
         services.AddHttpClient(ManagementAuthenticationDefaults.KeycloakTokenExchangeHttpClientName)
             .ConfigurePrimaryHttpMessageHandler(() => tokenEndpoint);

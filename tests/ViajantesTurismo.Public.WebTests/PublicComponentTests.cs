@@ -234,6 +234,34 @@ public sealed class PublicComponentTests : BunitContext
     }
 
     [Fact]
+    public void TourGallery_rejects_images_without_a_supported_responsive_variant()
+    {
+        // Arrange
+        var image = new CatalogTourImageDto
+        {
+            Id = Guid.CreateVersion7(),
+            AltText = "Unsupported image",
+            ResponsiveVariants =
+            [
+                new CatalogMediaImageVariantDto
+                {
+                    Width = 640,
+                    Height = 427,
+                    ContentType = "image/gif",
+                    FileSizeBytes = 640
+                }
+            ]
+        };
+        Action renderGallery = () => Render<TourGallery>(parameters => parameters.Add(component => component.Images, [image]));
+
+        // Act
+        var exception = renderGallery.ShouldThrow<InvalidOperationException>();
+
+        // Assert
+        exception.Message.ShouldBe("A responsive tour image requires a supported media variant.");
+    }
+
+    [Fact]
     public void TourGallery_can_prioritize_the_first_image()
     {
         // Arrange

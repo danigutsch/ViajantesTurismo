@@ -15,6 +15,10 @@
 }
 else
 {
+    @if (_success)
+    {
+        <div class="alert alert-success" role="status">Accessibility text approved for publication.</div>
+    }
     @if (_errorMessage is not null)
     {
         <div class="alert alert-danger" role="alert">@_errorMessage</div>
@@ -28,11 +32,6 @@ else
     }
     else
     {
-        @if (_success)
-        {
-            <div class="alert alert-success" role="status">Accessibility text approved for publication.</div>
-        }
-
         <p><strong>AI draft:</strong> @(_image.IsAiGenerated ? "Review required" : "Editor-provided")</p>
     @if (_image.ResponsiveVariants.FirstOrDefault() is { } preview && GetPreviewPath(_image.Id, preview) is { } previewPath)
     {
@@ -71,7 +70,7 @@ else
         try
         {
             var images = await CatalogToursApi.GetTourImages(Id, CancellationToken.None);
-            _image = images.FirstOrDefault(image => image.RequiresHumanReview) ?? images.FirstOrDefault();
+            _image = images.FirstOrDefault(image => image.RequiresHumanReview);
             _altText = _image?.AltText ?? string.Empty;
             _isDecorative = _image?.IsDecorative ?? false;
         }

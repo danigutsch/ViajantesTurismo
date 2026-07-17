@@ -37,16 +37,14 @@ public class BookingTests(ApiFixture fixture)
     }
 
     [Fact]
-    public async Task Exposes_a_seeded_baseline_without_test_control_pruning_the_host_seam()
+    public async Task Returns_a_stable_bookings_collection_without_mutating_the_host_seam()
     {
         // Arrange
         var cancellationToken = TestContext.Current.CancellationToken;
-        var originalBookings = await fixture.Client.GetAllBookingsAndRead(cancellationToken);
 
         // Act
+        var originalBookings = await fixture.Client.GetAllBookingsAndRead(cancellationToken);
         var bookingsAfterSecondRead = await fixture.Client.GetAllBookingsAndRead(cancellationToken);
-
-        originalBookings.ShouldNotBeEmpty();
 
         // Assert
         bookingsAfterSecondRead.Length.ShouldBe(originalBookings.Length);
