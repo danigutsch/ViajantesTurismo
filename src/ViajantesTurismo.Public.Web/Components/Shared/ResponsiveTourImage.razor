@@ -1,12 +1,15 @@
 @using Microsoft.AspNetCore.Routing
 @inject LinkGenerator LinkGenerator
 
+@{
+    var fallbackVariant = SelectFallbackVariant();
+}
 <picture>
     @foreach (var source in SourceGroups())
     {
         <source type="@source.ContentType" srcset="@source.SrcSet" sizes="@Sizes" />
     }
-    <img src="@ImageSource()" alt="@Image.AltText" width="@ImageWidth()" height="@ImageHeight()" loading="@Loading" fetchpriority="@FetchPriority" />
+    <img src="@GetVariantPath(fallbackVariant)" alt="@Image.AltText" width="@fallbackVariant.Width" height="@fallbackVariant.Height" loading="@Loading" fetchpriority="@FetchPriority" />
 </picture>
 
 @code {
@@ -25,25 +28,20 @@
     private IEnumerable<(string ContentType, string SrcSet)> SourceGroups()
     {
         return Image.ResponsiveVariants
-            .Where(variant => IsPictureSourceContentType(variant.ContentType))
+            .Select(static variant => (Variant: variant, ContentType: NormalizeContentType(variant.ContentType)))
+            .Where(static variant => IsPictureSourceContentType(variant.ContentType))
             .GroupBy(variant => variant.ContentType, StringComparer.OrdinalIgnoreCase)
             .OrderBy(group => ContentTypeSortOrder(group.Key))
             .Select(group => (ContentType: group.Key, SrcSet: string.Join(", ", group
-                .OrderBy(variant => variant.Width)
-                .Select(variant => $"{GetVariantPath(variant)} {variant.Width}w"))));
+                .OrderBy(variant => variant.Variant.Width)
+                .Select(variant => $"{GetVariantPath(variant.Variant)} {variant.Variant.Width}w"))));
     }
-
-    private string ImageSource() => GetVariantPath(SelectFallbackVariant());
-
-    private int ImageWidth() => SelectFallbackVariant().Width;
-
-    private int ImageHeight() => SelectFallbackVariant().Height;
 
     private CatalogMediaImageVariantDto SelectFallbackVariant() => Image.ResponsiveVariants
         .Where(variant => IsPictureSourceContentType(variant.ContentType))
         .OrderByDescending(variant =>
-            string.Equals(variant.ContentType, "image/jpeg", StringComparison.OrdinalIgnoreCase)
-            || string.Equals(variant.ContentType, "image/png", StringComparison.OrdinalIgnoreCase))
+            string.Equals(NormalizeContentType(variant.ContentType), "image/jpeg", StringComparison.OrdinalIgnoreCase)
+            || string.Equals(NormalizeContentType(variant.ContentType), "image/png", StringComparison.OrdinalIgnoreCase))
         .ThenByDescending(variant => variant.Width)
         .FirstOrDefault()
         ?? throw new InvalidOperationException("A responsive tour image requires a supported media variant.");
@@ -53,7 +51,7 @@
         new { id = Image.Id, width = variant.Width, format = GetMediaFormatSegment(variant.ContentType) })
         ?? throw new InvalidOperationException("The public media rendition route is not available.");
 
-    private static string GetMediaFormatSegment(string contentType) => contentType.Trim().ToUpperInvariant() switch
+    private static string GetMediaFormatSegment(string contentType) => NormalizeContentType(contentType).ToUpperInvariant() switch
     {
         "IMAGE/AVIF" => "avif",
         "IMAGE/JPEG" => "jpg",
@@ -62,7 +60,7 @@
         _ => throw new ArgumentOutOfRangeException(nameof(contentType), contentType, "Unsupported media content type.")
     };
 
-    private static int ContentTypeSortOrder(string contentType) => contentType.ToUpperInvariant() switch
+    private static int ContentTypeSortOrder(string contentType) => NormalizeContentType(contentType).ToUpperInvariant() switch
     {
         "IMAGE/AVIF" => 0,
         "IMAGE/WEBP" => 1,
@@ -71,9 +69,11 @@
         _ => 4
     };
 
-    private static bool IsPictureSourceContentType(string contentType) => contentType.ToUpperInvariant() switch
+    private static bool IsPictureSourceContentType(string contentType) => NormalizeContentType(contentType).ToUpperInvariant() switch
     {
         "IMAGE/AVIF" or "IMAGE/WEBP" or "IMAGE/JPEG" or "IMAGE/PNG" => true,
         _ => false
     };
+
+    private static string NormalizeContentType(string contentType) => contentType.Trim();
 }

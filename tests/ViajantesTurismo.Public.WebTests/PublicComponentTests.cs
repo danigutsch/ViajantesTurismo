@@ -234,6 +234,34 @@ public sealed class PublicComponentTests : BunitContext
     }
 
     [Fact]
+    public void TourGallery_trims_responsive_variant_content_types()
+    {
+        // Arrange
+        var imageId = Guid.Parse("55555555-5555-5555-5555-555555555555");
+        var images = new[]
+        {
+            new CatalogTourImageDto
+            {
+                Id = imageId,
+                AltText = "First image",
+                ResponsiveVariants =
+                [
+                    new CatalogMediaImageVariantDto { Width = 320, Height = 213, ContentType = " image/avif ", FileSizeBytes = 256 },
+                    new CatalogMediaImageVariantDto { Width = 640, Height = 427, ContentType = " image/jpeg ", FileSizeBytes = 512 }
+                ]
+            }
+        };
+
+        // Act
+        var cut = Render<TourGallery>(parameters => parameters.Add(component => component.Images, images));
+
+        // Assert
+        cut.Find("source").GetAttribute("type").ShouldBe("image/avif");
+        cut.Find("source").GetAttribute("srcset").ShouldBe($"/catalog/media/{imageId}/320/avif 320w");
+        cut.Find("img").GetAttribute("src").ShouldBe($"/catalog/media/{imageId}/640/jpg");
+    }
+
+    [Fact]
     public void TourGallery_rejects_images_without_a_supported_responsive_variant()
     {
         // Arrange
