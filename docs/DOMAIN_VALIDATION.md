@@ -283,6 +283,22 @@ ASP.NET Core Minimal API validation support is evolving. Before adding a global 
 pipeline, evaluate built-in `AddValidation`, `IProblemDetailsService` integration, request-size metadata, and
 file-upload limit guidance against the current target framework.
 
+### Mutating endpoint validation contracts
+
+Validation is assigned by rule ownership rather than inferred from endpoint signatures. The current route inventory
+is maintained in [generated endpoint route map](architecture/generated-endpoint-route-map.md).
+
+| Mutation family | Contract shape | Endpoint-only | Domain or application |
+| --- | --- | --- | --- |
+| Admin body commands | DTO annotations and cross-field rules | Route binding | Result validation from handlers and domain behavior |
+| Admin state transitions and delete | None beyond route shape | Route identifiers | Transition and existence checks |
+| Admin imports and Catalog image upload | Multipart request shape | File limits, media type, and intake checks | Malware and persistence-backed intake checks |
+| Catalog and Branding mutations | Request DTO shape | HTTP problem mapping | Result validation from domain and application services |
+
+Authorization and mutation rate limits remain required execution guards for every management mutation. They do not
+replace request validation. Framework parameters, route constraints, and file streaming are intentionally excluded
+from reusable request-contract rules because their validation belongs to routing or the endpoint that consumes them.
+
 ### Tour Creation
 
 ```csharp

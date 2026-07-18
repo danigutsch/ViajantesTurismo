@@ -12,6 +12,7 @@
 
     <ItemGroup>
         <InternalsVisibleTo Include="ViajantesTurismo.Admin.UnitTests" />
+        <InternalsVisibleTo Include="ViajantesTurismo.Admin.ApiServiceTests" />
     </ItemGroup>
 
     <ItemGroup>

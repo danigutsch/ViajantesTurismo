@@ -27,6 +27,8 @@ internal static class CatalogEndpoints
         versionedApi.MapGet("/catalog/tours/{id:guid}", GetTour)
             .RequireAuthorization(CatalogAuthorization.CatalogRead);
         versionedApi.MapPut("/catalog/tours/{id:guid}/presentation", UpsertTourPresentation)
+            .Produces(StatusCodes.Status200OK)
+            .ProducesValidationProblem(StatusCodes.Status400BadRequest)
             .RequireRateLimiting(CatalogSecurityBaseline.MutationRateLimitPolicy)
             .RequireAuthorization(CatalogAuthorization.CatalogWrite);
         versionedApi.MapGet("/catalog/tours/{id:guid}/images", ListTourImages)
@@ -36,6 +38,7 @@ internal static class CatalogEndpoints
         versionedApi.MapPost("/catalog/tours/{id:guid}/images", UploadTourImage)
             .Accepts<MediaImageUploadFormDto>("multipart/form-data")
             .Produces<CatalogMediaImageDto>(StatusCodes.Status201Created)
+            .ProducesValidationProblem(StatusCodes.Status400BadRequest)
             .AddOpenApiOperationTransformer((operation, _, _) =>
             {
                 var content = operation.RequestBody?.Content;
@@ -54,9 +57,13 @@ internal static class CatalogEndpoints
             .DisableAntiforgery()
             .RequireAuthorization(CatalogAuthorization.CatalogWrite);
         versionedApi.MapPost("/catalog/media/images/{id:guid}/accessibility-draft", GenerateMediaImageAccessibilityDraft)
+            .Produces(StatusCodes.Status200OK)
+            .ProducesValidationProblem(StatusCodes.Status400BadRequest)
             .RequireRateLimiting(CatalogSecurityBaseline.MutationRateLimitPolicy)
             .RequireAuthorization(CatalogAuthorization.MediaAi);
         versionedApi.MapPut("/catalog/media/images/{id:guid}/accessibility-review", ReviewMediaImageAccessibility)
+            .Produces(StatusCodes.Status200OK)
+            .ProducesValidationProblem(StatusCodes.Status400BadRequest)
             .RequireRateLimiting(CatalogSecurityBaseline.MutationRateLimitPolicy)
             .RequireAuthorization(CatalogAuthorization.CatalogWrite);
 
@@ -84,6 +91,8 @@ internal static class CatalogEndpoints
         versionedApi.MapGet("/catalog/public-content/{**key}", GetPublicContentForManagement)
             .RequireAuthorization(CatalogAuthorization.CatalogRead);
         versionedApi.MapPut("/catalog/public-content/{**key}", UpsertPublicContent)
+            .Produces(StatusCodes.Status200OK)
+            .ProducesValidationProblem(StatusCodes.Status400BadRequest)
             .RequireRateLimiting(CatalogSecurityBaseline.MutationRateLimitPolicy)
             .RequireAuthorization(CatalogAuthorization.CatalogWrite);
 
@@ -332,7 +341,7 @@ internal static class CatalogEndpoints
     private static async Task<IResult> UpsertPublicContent(
         string key,
         UpsertPublicContentRequest request,
-        IPublicContentStore store,
+        PublicContentUpsertService service,
         IOutputCacheStore outputCacheStore,
         ILogger<CatalogApiHostEntryPoint> logger,
         HttpContext httpContext,
@@ -345,39 +354,13 @@ internal static class CatalogEndpoints
             return Results.BadRequest();
         }
 
-        if (request.Variants is null)
-        {
-            var missingVariants = Result.Invalid(
-                "Public content variants must be provided.",
-                nameof(UpsertPublicContentRequest.Variants),
-                "Variants are required.");
-            return ToValidationProblem(missingVariants.ErrorDetails ?? throw new InvalidOperationException("Public content validation errors must include validation details."));
-        }
-
-        var variants = request.Variants.Select(CreateVariant).ToArray();
-
-        if (variants.Any(variant => variant.IsFailure))
-        {
-            return ToValidationProblemFromVariants(variants);
-        }
-
-        var content = EditablePublicContent.Create(
-            key,
-            ToDomainLanguage(request.SourceLanguage),
-            variants.Select(variant => variant.Value));
+        var content = await service.Upsert(key, request, ct);
 
         if (content.IsFailure)
         {
-            return ToValidationProblem(content.ErrorDetails);
+            return ToValidationProblem(content.ErrorDetails ?? throw new InvalidOperationException("Public content validation errors must include validation details."));
         }
 
-        var publish = content.Value.PublishIfReady();
-        if (publish.IsFailure)
-        {
-            return ToValidationProblem(publish.ErrorDetails);
-        }
-
-        await store.SaveContent(content.Value, ct);
         await InvalidatePublicContentCache(outputCacheStore, logger, ct);
         return Results.Ok(MapPublicContent(content.Value));
     }
@@ -782,47 +765,9 @@ internal static class CatalogEndpoints
         };
     }
 
-    private static Result<PublicContentVariant> CreateVariant(PublicContentVariantDto? variant)
-    {
-        if (variant is null)
-        {
-            return Result.Invalid<PublicContentVariant>(
-                "Public content variants cannot contain null entries.",
-                nameof(UpsertPublicContentRequest.Variants),
-                "Variants cannot contain null entries.");
-        }
-
-        var language = ToDomainLanguage(variant.Language);
-
-        return PublicContentVariant.Create(
-            language,
-            variant.Title,
-            variant.Body,
-            variant.SeoTitle,
-            variant.MetaDescription,
-            variant.ShareSummary,
-            variant.RequiresHumanReview);
-    }
-
     private static IResult ToValidationProblem(ResultError error)
     {
         return Results.ValidationProblem(ToValidationProblemDictionary(error.ValidationErrors), detail: error.Detail);
-    }
-
-    private static IResult ToValidationProblemFromVariants(IEnumerable<Result<PublicContentVariant>> results)
-    {
-        var validationErrors = new ValidationErrors();
-
-        foreach (var result in results)
-        {
-            if (result.IsFailure)
-            {
-                validationErrors.Add(result);
-            }
-        }
-
-        var error = validationErrors.ToResult().ErrorDetails ?? throw new InvalidOperationException("Public content validation errors must include validation details.");
-        return ToValidationProblem(error);
     }
 
     private static Dictionary<string, string[]> ToValidationProblemDictionary(IReadOnlyDictionary<string, IReadOnlyList<string>>? validationErrors)

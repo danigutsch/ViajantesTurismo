@@ -8,6 +8,7 @@ using ViajantesTurismo.Admin.Contracts.IntegrationEvents;
 using ViajantesTurismo.Admin.Contracts.IntegrationEvents.Tours;
 using ViajantesTurismo.Catalog.Application.IntegrationEvents;
 using ViajantesTurismo.Catalog.Application.Media;
+using ViajantesTurismo.Catalog.Application.PublicContent;
 using ViajantesTurismo.Catalog.Application.Tours;
 
 namespace ViajantesTurismo.Catalog.Application;
@@ -42,6 +43,7 @@ public static class ApplicationDependencyInjection
             AdminTourCreatedIntegrationEvent.EventType,
             AdminIntegrationEventJsonContext.Default.AdminTourCreatedIntegrationEvent);
         services.AddCatalogMediaApplication();
+        services.TryAddScoped<PublicContentUpsertService>();
 
         return services;
     }

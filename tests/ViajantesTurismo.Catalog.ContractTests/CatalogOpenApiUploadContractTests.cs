@@ -41,4 +41,42 @@ public sealed class CatalogOpenApiUploadContractTests
         properties.ContainsKey("copyright").ShouldBeTrue();
         responses.ContainsKey("201").ShouldBeTrue();
     }
+
+    [Fact]
+    [Trait(SharedKernel.Testing.TestTraitNames.CategoryName, TestTraits.DriftGuardCategory)]
+    [Trait(SharedKernel.Testing.TestTraitNames.SurfaceName, TestTraits.OpenApiSurface)]
+    public void Catalog_mutations_document_validation_problem_responses()
+    {
+        // Arrange
+        var document = CatalogOpenApiSnapshots.CreateSnapshotSet().GetCanonicalSnapshot("catalog").AsObject();
+        var paths = document["paths"].ShouldNotBeNull().AsObject();
+        (string Path, string Method, string SuccessStatus)[] mutationOperations =
+        [
+            ("/api/v1/catalog/tours/{id}/presentation", "put", "200"),
+            ("/api/v1/catalog/tours/{id}/images", "post", "201"),
+            ("/api/v1/catalog/media/images/{id}/accessibility-draft", "post", "200"),
+            ("/api/v1/catalog/media/images/{id}/accessibility-review", "put", "200"),
+            ("/api/v1/catalog/public-content/{key}", "put", "200")
+        ];
+
+        // Act
+        var validationResponses = mutationOperations.Select(operation =>
+        {
+            var path = paths[operation.Path].ShouldNotBeNull().AsObject();
+            var endpoint = path[operation.Method].ShouldNotBeNull().AsObject();
+            return (operation.SuccessStatus, Responses: endpoint["responses"].ShouldNotBeNull().AsObject());
+        }).ToArray();
+
+        // Assert
+        foreach (var (successStatus, responses) in validationResponses)
+        {
+            responses.ContainsKey(successStatus).ShouldBeTrue();
+            var validationResponse = responses["400"].ShouldNotBeNull().AsObject();
+            validationResponse["description"].ShouldNotBeNull().GetValue<string>().ShouldBe("Bad Request");
+            var content = validationResponse["content"].ShouldNotBeNull().AsObject();
+            var problem = content["application/problem+json"].ShouldNotBeNull().AsObject();
+            var schema = problem["schema"].ShouldNotBeNull().AsObject();
+            schema["$ref"].ShouldNotBeNull().GetValue<string>().ShouldBe("#/components/schemas/HttpValidationProblemDetails");
+        }
+    }
 }

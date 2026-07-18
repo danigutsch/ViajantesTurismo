@@ -37,6 +37,7 @@
         <ProjectReference Include="..\..\src\ViajantesTurismo.Catalog.Contracts.IntegrationEvents\ViajantesTurismo.Catalog.Contracts.IntegrationEvents.csproj" />
         <ProjectReference Include="..\..\src\ViajantesTurismo.Catalog.Domain\ViajantesTurismo.Catalog.Domain.csproj" />
         <ProjectReference Include="..\..\src\ViajantesTurismo.Catalog.Infrastructure\ViajantesTurismo.Catalog.Infrastructure.csproj" />
+        <ProjectReference Include="..\ViajantesTurismo.Catalog.Testing\ViajantesTurismo.Catalog.Testing.csproj" />
     </ItemGroup>
 
 </Project>

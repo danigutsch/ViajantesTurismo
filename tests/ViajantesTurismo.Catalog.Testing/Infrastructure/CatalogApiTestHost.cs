@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.OutputCaching;
 using Microsoft.Extensions.Diagnostics.HealthChecks;
 using Microsoft.Extensions.Hosting;
 using SharedKernel.AI;
@@ -60,6 +61,26 @@ internal static class CatalogApiTestHost
         return Create(null, null, null, null, null, null, authenticateClient: false);
     }
 
+    public static WebApplicationFactory<CatalogApiHostEntryPoint> CreateProductionComposition()
+    {
+        return WebApplicationTestHost.Create<CatalogApiHostEntryPoint>(
+            Environments.Development,
+            services =>
+            {
+                services.Configure<HealthCheckServiceOptions>(options => options.Registrations.Clear());
+                ApiTestAuthentication.ConfigureJwtBearer(services, Audience);
+                services.RemoveAll<IHostedService>();
+            },
+            null,
+            new Dictionary<string, string?>
+            {
+                [ApiAuthenticationDefaults.AuthorityConfigurationKey] = ApiTestAuthentication.Authority,
+                [ApiAuthenticationDefaults.IssuerConfigurationKey] = ApiTestAuthentication.Authority,
+                ["ConnectionStrings:catalog-database"] = "Host=localhost;Database=viajantes-catalog",
+                [ClamAvMalwareScannerConfigurationKeys.DisabledConfigurationKey] = bool.TrueString
+            });
+    }
+
     public static void ConfigureAuthenticatedClient(HttpClient client)
     {
         ApiTestAuthentication.ConfigureAuthenticatedClient(client, Audience, AdministratorRole);
@@ -78,6 +99,19 @@ internal static class CatalogApiTestHost
     public static void ConfigureClientWithWrongAudience(HttpClient client)
     {
         ApiTestAuthentication.ConfigureAuthenticatedClient(client, WrongAudience, AdministratorRole);
+    }
+
+    public static void VerifyMappedMutationDependencies(WebApplicationFactory<CatalogApiHostEntryPoint> factory)
+    {
+        ArgumentNullException.ThrowIfNull(factory);
+
+        using var scope = factory.Services.CreateScope();
+        _ = scope.ServiceProvider.GetRequiredService<ICatalogTourReadModelStore>();
+        _ = scope.ServiceProvider.GetRequiredService<IPublicMediaImageStore>();
+        _ = scope.ServiceProvider.GetRequiredService<MediaImageUploadIntake>();
+        _ = scope.ServiceProvider.GetRequiredService<MediaImageAccessibilityDraftService>();
+        _ = scope.ServiceProvider.GetRequiredService<PublicContentUpsertService>();
+        _ = scope.ServiceProvider.GetRequiredService<IOutputCacheStore>();
     }
 
     private static WebApplicationFactory<CatalogApiHostEntryPoint> Create(

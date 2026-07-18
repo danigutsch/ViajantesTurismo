@@ -125,6 +125,35 @@ public sealed class CatalogApiSecurityBaselineTests
         limitedResponse.StatusCode.ShouldBe(HttpStatusCode.TooManyRequests);
     }
 
+    [Theory]
+    [InlineData("PUT", "/api/v1/catalog/tours/1d02ec44-41b5-4d3a-878b-89f53261a803/presentation")]
+    [InlineData("POST", "/api/v1/catalog/tours/1d02ec44-41b5-4d3a-878b-89f53261a803/images")]
+    [InlineData("POST", "/api/v1/catalog/media/images/1d02ec44-41b5-4d3a-878b-89f53261a803/accessibility-draft")]
+    [InlineData("PUT", "/api/v1/catalog/media/images/1d02ec44-41b5-4d3a-878b-89f53261a803/accessibility-review")]
+    [InlineData("PUT", "/api/v1/catalog/public-content/home.hero")]
+    public async Task Catalog_mutations_return_too_many_requests_after_policy_limit(string method, string path)
+    {
+        // Arrange
+        ArgumentNullException.ThrowIfNull(method);
+        ArgumentNullException.ThrowIfNull(path);
+        await using var factory = CatalogApiTestHost.Create();
+        using var client = factory.CreateClient();
+
+        // Act
+        for (var requestNumber = 0; requestNumber < 20; requestNumber++)
+        {
+            using var request = CatalogApiMutationRequestFactory.Create(method, path);
+            using var allowedResponse = await client.SendAsync(request, TestContext.Current.CancellationToken);
+            allowedResponse.StatusCode.ShouldNotBe(HttpStatusCode.TooManyRequests);
+        }
+
+        using var limitedRequest = CatalogApiMutationRequestFactory.Create(method, path);
+        using var limitedResponse = await client.SendAsync(limitedRequest, TestContext.Current.CancellationToken);
+
+        // Assert
+        limitedResponse.StatusCode.ShouldBe(HttpStatusCode.TooManyRequests);
+    }
+
     [Fact]
     public void Forwarded_headers_configuration_uses_trusted_proxy_entries()
     {
