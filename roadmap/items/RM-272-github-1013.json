@@ -1,0 +1,34 @@
+{
+  "$schema": "../schema/roadmap-item.schema.json",
+  "id": "RM-272",
+  "title": "Enforce exact API token audience validation",
+  "type": "feature",
+  "status": "done",
+  "triage": "untriaged",
+  "theme": "repo-operations",
+  "outcome": "GitHub issue #1013 is canonically represented from the reconciliation manifest.",
+  "blockedBy": [
+    "RM-271"
+  ],
+  "blocks": [],
+  "dependencies": [],
+  "tags": [],
+  "labels": [
+    "area: api",
+    "security",
+    "sharedkernel",
+    "testing",
+    "type: feature"
+  ],
+  "sources": [
+    {
+      "kind": "github-issue",
+      "reference": "#1013"
+    }
+  ],
+  "integrations": {
+    "github": {
+      "issue": 1013
+    }
+  }
+}

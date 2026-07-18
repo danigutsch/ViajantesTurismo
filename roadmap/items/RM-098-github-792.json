@@ -1,0 +1,38 @@
+{
+  "$schema": "../schema/roadmap-item.schema.json",
+  "id": "RM-098",
+  "parent": "RM-095",
+  "title": "Document HATEOAS response shapes in OpenAPI",
+  "type": "feature",
+  "status": "proposed",
+  "order": 280,
+  "theme": "repo-operations",
+  "outcome": "GitHub issue #792 is canonically represented from the reconciliation manifest.",
+  "scoring": {
+    "reach": 1,
+    "impact": 1,
+    "confidence": 0.1,
+    "effort": 5
+  },
+  "blockedBy": [],
+  "blocks": [],
+  "dependencies": [],
+  "tags": [],
+  "labels": [
+    "area: api",
+    "sharedkernel",
+    "testing",
+    "type: feature"
+  ],
+  "sources": [
+    {
+      "kind": "github-issue",
+      "reference": "#792"
+    }
+  ],
+  "integrations": {
+    "github": {
+      "issue": 792
+    }
+  }
+}

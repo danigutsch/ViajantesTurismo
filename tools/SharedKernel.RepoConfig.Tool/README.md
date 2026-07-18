@@ -14,6 +14,10 @@ dotnet run --project tools/SharedKernel.RepoConfig.Tool/SharedKernel.RepoConfig.
 dotnet run --project tools/SharedKernel.RepoConfig.Tool/SharedKernel.RepoConfig.Tool.csproj -- get next-work
 dotnet run --project tools/SharedKernel.RepoConfig.Tool/SharedKernel.RepoConfig.Tool.csproj -- get blocking-overview
 dotnet run --project tools/SharedKernel.RepoConfig.Tool/SharedKernel.RepoConfig.Tool.csproj -- sync github --dry-run
+dotnet run --project tools/SharedKernel.RepoConfig.Tool/SharedKernel.RepoConfig.Tool.csproj -- reconcile github --dry-run
+dotnet run --project tools/SharedKernel.RepoConfig.Tool/SharedKernel.RepoConfig.Tool.csproj -- reconcile github --apply
+dotnet run --project tools/SharedKernel.RepoConfig.Tool/SharedKernel.RepoConfig.Tool.csproj -- intake github --dry-run
+dotnet run --project tools/SharedKernel.RepoConfig.Tool/SharedKernel.RepoConfig.Tool.csproj -- intake github --apply
 ```
 
 Pass `--root <path>` after the command to target another repository root.
@@ -42,6 +46,10 @@ Pass `--root <path>` after the command to target another repository root.
 | `get by-tag <tag>` / `get by-label <label>` | Lists triaged items by taxonomy value. |
 | `sync github --dry-run` | Previews issue creation and labels. When a Project target is configured, it authenticates to preflight target, schema, membership, field writes, and conflicts without mutation. |
 | `sync github --apply` | Creates requested issues, persists their issue numbers, adds labels, and configures Project membership using `GH_TOKEN` or `GITHUB_TOKEN`. |
+| `reconcile github --dry-run` | Default. Regenerates the manifest in memory from restricted structural GitHub metadata and previews the local manifest update. |
+| `reconcile github --apply` | Atomically updates only the existing reconciliation manifest; it never mutates GitHub or roadmap items. |
+| `intake github --dry-run` | Default. Reads the reconciliation snapshot's restricted GitHub metadata and previews local roadmap changes without writing. |
+| `intake github --apply` | Writes only local roadmap items and `roadmap/order.json`; it never mutates GitHub. |
 
 ## Exit codes
 
@@ -56,6 +64,27 @@ with the created issue number.
 
 GitHub sync never modifies issue bodies. Labels are additive. Existing labels and conflicting Project
 field values are report-only drift. The repository remains the source of truth.
+
+GitHub reconciliation requires exactly one seed manifest at
+`roadmap/reconciliation/open-issues-*.json`. The only reviewed inputs are:
+
+- `mechanicalPriorityOverride`: approved scoring and ordering policy;
+- `directCanonicalPrimaries`: exact existing issue-to-roadmap mappings that define canonical roots;
+- `closedItemTransitions`: explicit approvals to change mapped open items to closed support.
+
+The tool derives the snapshot date and commit, issue dispositions, parent-chain exits, structural roots,
+exact blocker edges and endpoint states, and all integrity counts. When a mapped active item closes,
+the command fails with the exact `#issue -> RM-ID` entry and manifest path to add. It requests only issue
+number, title, state, labels, official parent/subissue relationships, exact blocker relationships, and
+commit metadata. It never requests bodies, comments, tokens, or mutations. A digest of allowed open-issue
+metadata lets intake reject changes made after reconciliation.
+
+GitHub intake requires exactly one `roadmap/reconciliation/open-issues-*.json` manifest. It rejects
+snapshot drift and pull requests before writing. It reads only issue number, title, state, labels, and
+parent number; it never reads or persists bodies, comments, or tokens. Re-running a matching apply is
+idempotent. `closedItemTransitions` can transition an existing mapped open item to closed support while
+retaining its canonical roadmap item ID; without that explicit manifest declaration, intake rejects the
+transition.
 
 An item with `"triage": "untriaged"` omits `order` and `scoring`. The tool accepts it as
 canonical identity and hierarchy, excludes it from executable priority queries and `order.json`,

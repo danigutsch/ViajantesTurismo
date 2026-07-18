@@ -1,6 +1,5 @@
 using System.Globalization;
 using System.Net;
-using System.Net.Http.Headers;
 using System.Text;
 using System.Text.Json;
 using System.Text.Json.Nodes;
@@ -53,7 +52,7 @@ internal sealed class GitHubRoadmapSyncer
 
         var repository = GetGitHubRepository();
         List<string> messages = [.. preview.Messages];
-        using var ownedHttpClient = _httpClient is null ? CreateGitHubClient() : null;
+        using var ownedHttpClient = _httpClient is null ? GitHubHttpClient.Create("sync") : null;
         var httpClient = _httpClient ?? ownedHttpClient;
         var client = httpClient ?? throw new InvalidOperationException("GitHub sync could not create an HTTP client.");
         var projectClient = new GitHubProjectClient(client);
@@ -83,7 +82,7 @@ internal sealed class GitHubRoadmapSyncer
         }
 
         List<string> messages = [];
-        using var ownedHttpClient = _httpClient is null ? CreateGitHubClient() : null;
+        using var ownedHttpClient = _httpClient is null ? GitHubHttpClient.Create("sync") : null;
         var httpClient = _httpClient ?? ownedHttpClient;
         var client = httpClient ?? throw new InvalidOperationException("GitHub sync could not create an HTTP client.");
         var projectClient = CreateProjectClient(client);
@@ -696,21 +695,6 @@ internal sealed class GitHubRoadmapSyncer
         {
             yield return $"dry-run: ensure {_project.GitHubRepository}#{item.GitHubIssue} is in GitHub Project {_project.GitHubProjectTarget.Number}";
         }
-    }
-
-    private static HttpClient CreateGitHubClient()
-    {
-        var token = Environment.GetEnvironmentVariable("GH_TOKEN") ?? Environment.GetEnvironmentVariable("GITHUB_TOKEN");
-        if (string.IsNullOrWhiteSpace(token))
-        {
-            throw new InvalidOperationException("Set GH_TOKEN or GITHUB_TOKEN before running authenticated GitHub sync.");
-        }
-
-        var httpClient = new HttpClient();
-        httpClient.DefaultRequestHeaders.UserAgent.Add(new ProductInfoHeaderValue("sharedkernel-repo", "1.0"));
-        httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
-        httpClient.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/vnd.github+json"));
-        return httpClient;
     }
 
     private static async Task<IReadOnlyList<string>> UpdateIssue(HttpClient httpClient, string repository, RoadmapItemSnapshot item, CancellationToken cancellationToken)

@@ -1,0 +1,35 @@
+{
+  "$schema": "../schema/roadmap-item.schema.json",
+  "id": "RM-177",
+  "title": "Detect duplicate media uploads before storage",
+  "type": "issue",
+  "status": "proposed",
+  "order": 219,
+  "theme": "repo-operations",
+  "outcome": "GitHub issue #976 is canonically represented from the reconciliation manifest.",
+  "scoring": {
+    "reach": 1,
+    "impact": 1,
+    "confidence": 0.1,
+    "effort": 3
+  },
+  "blockedBy": [],
+  "blocks": [],
+  "dependencies": [],
+  "tags": [],
+  "labels": [
+    "enhancement",
+    "media"
+  ],
+  "sources": [
+    {
+      "kind": "github-issue",
+      "reference": "#976"
+    }
+  ],
+  "integrations": {
+    "github": {
+      "issue": 976
+    }
+  }
+}

@@ -1,0 +1,38 @@
+{
+  "$schema": "../schema/roadmap-item.schema.json",
+  "id": "RM-198",
+  "parent": "RM-162",
+  "title": "Research test logs and OpenTelemetry diagnostics",
+  "type": "issue",
+  "status": "proposed",
+  "order": 232,
+  "theme": "repo-operations",
+  "outcome": "GitHub issue #1011 is canonically represented from the reconciliation manifest.",
+  "scoring": {
+    "reach": 1,
+    "impact": 1,
+    "confidence": 0.1,
+    "effort": 3
+  },
+  "blockedBy": [],
+  "blocks": [],
+  "dependencies": [],
+  "tags": [],
+  "labels": [
+    "aspire",
+    "observability",
+    "research",
+    "testing"
+  ],
+  "sources": [
+    {
+      "kind": "github-issue",
+      "reference": "#1011"
+    }
+  ],
+  "integrations": {
+    "github": {
+      "issue": 1011
+    }
+  }
+}

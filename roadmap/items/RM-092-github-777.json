@@ -1,0 +1,38 @@
+{
+  "$schema": "../schema/roadmap-item.schema.json",
+  "id": "RM-092",
+  "title": "Add SharedKernel package-consumption test abstraction",
+  "type": "enabler",
+  "status": "proposed",
+  "order": 168,
+  "theme": "repo-operations",
+  "outcome": "GitHub issue #777 is canonically represented from the reconciliation manifest.",
+  "scoring": {
+    "reach": 1,
+    "impact": 1,
+    "confidence": 0.1,
+    "effort": 3
+  },
+  "blockedBy": [],
+  "blocks": [
+    "RM-221"
+  ],
+  "dependencies": [],
+  "tags": [],
+  "labels": [
+    "area: packaging",
+    "area: testing",
+    "type: enabler"
+  ],
+  "sources": [
+    {
+      "kind": "github-issue",
+      "reference": "#777"
+    }
+  ],
+  "integrations": {
+    "github": {
+      "issue": 777
+    }
+  }
+}

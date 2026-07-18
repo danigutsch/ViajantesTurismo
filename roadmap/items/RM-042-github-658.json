@@ -1,0 +1,36 @@
+{
+  "$schema": "../schema/roadmap-item.schema.json",
+  "id": "RM-042",
+  "title": "Add smoke validation for packaged tools",
+  "type": "enabler",
+  "status": "proposed",
+  "order": 139,
+  "theme": "repo-operations",
+  "outcome": "GitHub issue #658 is canonically represented from the reconciliation manifest.",
+  "scoring": {
+    "reach": 1,
+    "impact": 1,
+    "confidence": 0.1,
+    "effort": 3
+  },
+  "blockedBy": [],
+  "blocks": [],
+  "dependencies": [],
+  "tags": [],
+  "labels": [
+    "area: testing",
+    "area: tooling",
+    "type: enabler"
+  ],
+  "sources": [
+    {
+      "kind": "github-issue",
+      "reference": "#658"
+    }
+  ],
+  "integrations": {
+    "github": {
+      "issue": 658
+    }
+  }
+}

@@ -1,0 +1,38 @@
+{
+  "$schema": "../schema/roadmap-item.schema.json",
+  "id": "RM-076",
+  "parent": "RM-023",
+  "title": "Research .NET discriminated union support for Result and Option",
+  "type": "enabler",
+  "status": "proposed",
+  "order": 160,
+  "theme": "repo-operations",
+  "outcome": "GitHub issue #734 is canonically represented from the reconciliation manifest.",
+  "scoring": {
+    "reach": 1,
+    "impact": 1,
+    "confidence": 0.1,
+    "effort": 3
+  },
+  "blockedBy": [],
+  "blocks": [],
+  "dependencies": [],
+  "tags": [],
+  "labels": [
+    ".net",
+    "research",
+    "sharedkernel",
+    "type: enabler"
+  ],
+  "sources": [
+    {
+      "kind": "github-issue",
+      "reference": "#734"
+    }
+  ],
+  "integrations": {
+    "github": {
+      "issue": 734
+    }
+  }
+}

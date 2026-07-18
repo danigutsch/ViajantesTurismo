@@ -1,0 +1,38 @@
+{
+  "$schema": "../schema/roadmap-item.schema.json",
+  "id": "RM-264",
+  "title": "[Issue]: Explore xUnit v3 extensibility for test libraries",
+  "type": "epic",
+  "status": "proposed",
+  "order": 349,
+  "theme": "repo-operations",
+  "outcome": "GitHub issue #1107 is canonically represented from the reconciliation manifest.",
+  "scoring": {
+    "reach": 1,
+    "impact": 1,
+    "confidence": 0.1,
+    "effort": 8
+  },
+  "blockedBy": [],
+  "blocks": [],
+  "dependencies": [],
+  "tags": [],
+  "labels": [
+    "architecture",
+    "research",
+    "sharedkernel",
+    "testing",
+    "type: epic"
+  ],
+  "sources": [
+    {
+      "kind": "github-issue",
+      "reference": "#1107"
+    }
+  ],
+  "integrations": {
+    "github": {
+      "issue": 1107
+    }
+  }
+}

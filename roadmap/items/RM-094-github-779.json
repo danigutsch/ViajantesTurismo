@@ -1,0 +1,36 @@
+{
+  "$schema": "../schema/roadmap-item.schema.json",
+  "id": "RM-094",
+  "title": "Harden SharedKernel NuGet package asset requirements",
+  "type": "enabler",
+  "status": "proposed",
+  "order": 169,
+  "theme": "repo-operations",
+  "outcome": "GitHub issue #779 is canonically represented from the reconciliation manifest.",
+  "scoring": {
+    "reach": 1,
+    "impact": 1,
+    "confidence": 0.1,
+    "effort": 3
+  },
+  "blockedBy": [],
+  "blocks": [],
+  "dependencies": [],
+  "tags": [],
+  "labels": [
+    "area: packaging",
+    "area: sharedkernel",
+    "type: enabler"
+  ],
+  "sources": [
+    {
+      "kind": "github-issue",
+      "reference": "#779"
+    }
+  ],
+  "integrations": {
+    "github": {
+      "issue": 779
+    }
+  }
+}

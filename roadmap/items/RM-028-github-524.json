@@ -1,0 +1,38 @@
+{
+  "$schema": "../schema/roadmap-item.schema.json",
+  "id": "RM-028",
+  "parent": "RM-018",
+  "title": "Implement cloud object media storage adapter",
+  "type": "issue",
+  "status": "proposed",
+  "order": 125,
+  "theme": "repo-operations",
+  "outcome": "GitHub issue #524 is canonically represented from the reconciliation manifest.",
+  "scoring": {
+    "reach": 1,
+    "impact": 1,
+    "confidence": 0.1,
+    "effort": 3
+  },
+  "blockedBy": [],
+  "blocks": [],
+  "dependencies": [],
+  "tags": [],
+  "labels": [
+    "enhancement",
+    "infrastructure",
+    "media",
+    "public-web"
+  ],
+  "sources": [
+    {
+      "kind": "github-issue",
+      "reference": "#524"
+    }
+  ],
+  "integrations": {
+    "github": {
+      "issue": 524
+    }
+  }
+}

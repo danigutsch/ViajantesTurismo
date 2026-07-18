@@ -1,0 +1,39 @@
+{
+  "$schema": "../schema/roadmap-item.schema.json",
+  "id": "RM-137",
+  "parent": "RM-140",
+  "title": "Add YARP reverse proxy edge gateway",
+  "type": "enabler",
+  "status": "proposed",
+  "order": 196,
+  "theme": "repo-operations",
+  "outcome": "GitHub issue #897 is canonically represented from the reconciliation manifest.",
+  "scoring": {
+    "reach": 1,
+    "impact": 1,
+    "confidence": 0.1,
+    "effort": 3
+  },
+  "blockedBy": [],
+  "blocks": [],
+  "dependencies": [],
+  "tags": [],
+  "labels": [
+    "architecture",
+    "aspire",
+    "enhancement",
+    "infrastructure",
+    "type: enabler"
+  ],
+  "sources": [
+    {
+      "kind": "github-issue",
+      "reference": "#897"
+    }
+  ],
+  "integrations": {
+    "github": {
+      "issue": 897
+    }
+  }
+}

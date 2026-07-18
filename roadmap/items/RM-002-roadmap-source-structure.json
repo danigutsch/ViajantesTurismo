@@ -16,12 +16,7 @@
     "effort": 2
   },
   "blockedBy": [],
-  "blocks": [
-    "RM-003",
-    "RM-004",
-    "RM-005",
-    "RM-006"
-  ],
+  "blocks": [],
   "dependencies": [],
   "tags": [
     "roadmap",

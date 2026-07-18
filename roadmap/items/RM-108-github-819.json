@@ -1,0 +1,38 @@
+{
+  "$schema": "../schema/roadmap-item.schema.json",
+  "id": "RM-108",
+  "parent": "RM-102",
+  "title": "Harden customer import upload handling",
+  "type": "feature",
+  "status": "proposed",
+  "order": 285,
+  "theme": "repo-operations",
+  "outcome": "GitHub issue #819 is canonically represented from the reconciliation manifest.",
+  "scoring": {
+    "reach": 1,
+    "impact": 1,
+    "confidence": 0.1,
+    "effort": 5
+  },
+  "blockedBy": [],
+  "blocks": [],
+  "dependencies": [],
+  "tags": [],
+  "labels": [
+    "area: api",
+    "security",
+    "testing",
+    "type: feature"
+  ],
+  "sources": [
+    {
+      "kind": "github-issue",
+      "reference": "#819"
+    }
+  ],
+  "integrations": {
+    "github": {
+      "issue": 819
+    }
+  }
+}

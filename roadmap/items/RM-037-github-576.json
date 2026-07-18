@@ -1,0 +1,37 @@
+{
+  "$schema": "../schema/roadmap-item.schema.json",
+  "id": "RM-037",
+  "title": "Design maintenance mode for web and API surfaces",
+  "type": "issue",
+  "status": "proposed",
+  "order": 136,
+  "theme": "repo-operations",
+  "outcome": "GitHub issue #576 is canonically represented from the reconciliation manifest.",
+  "scoring": {
+    "reach": 1,
+    "impact": 1,
+    "confidence": 0.1,
+    "effort": 3
+  },
+  "blockedBy": [],
+  "blocks": [],
+  "dependencies": [],
+  "tags": [],
+  "labels": [
+    "architecture",
+    "aspire",
+    "enhancement",
+    "testing"
+  ],
+  "sources": [
+    {
+      "kind": "github-issue",
+      "reference": "#576"
+    }
+  ],
+  "integrations": {
+    "github": {
+      "issue": 576
+    }
+  }
+}

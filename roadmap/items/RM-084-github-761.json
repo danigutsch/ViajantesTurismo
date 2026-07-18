@@ -1,0 +1,36 @@
+{
+  "$schema": "../schema/roadmap-item.schema.json",
+  "id": "RM-084",
+  "title": "add Catalog behavior coverage for duplicate integration-event delivery",
+  "type": "issue",
+  "status": "proposed",
+  "order": 166,
+  "theme": "repo-operations",
+  "outcome": "GitHub issue #761 is canonically represented from the reconciliation manifest.",
+  "scoring": {
+    "reach": 1,
+    "impact": 1,
+    "confidence": 0.1,
+    "effort": 3
+  },
+  "blockedBy": [],
+  "blocks": [],
+  "dependencies": [],
+  "tags": [],
+  "labels": [
+    "area: testing",
+    "catalog",
+    "testing"
+  ],
+  "sources": [
+    {
+      "kind": "github-issue",
+      "reference": "#761"
+    }
+  ],
+  "integrations": {
+    "github": {
+      "issue": 761
+    }
+  }
+}

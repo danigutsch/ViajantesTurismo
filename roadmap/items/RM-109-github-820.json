@@ -1,0 +1,38 @@
+{
+  "$schema": "../schema/roadmap-item.schema.json",
+  "id": "RM-109",
+  "parent": "RM-102",
+  "title": "Add recurring security baseline checks",
+  "type": "enabler",
+  "status": "proposed",
+  "order": 174,
+  "theme": "repo-operations",
+  "outcome": "GitHub issue #820 is canonically represented from the reconciliation manifest.",
+  "scoring": {
+    "reach": 1,
+    "impact": 1,
+    "confidence": 0.1,
+    "effort": 3
+  },
+  "blockedBy": [],
+  "blocks": [],
+  "dependencies": [],
+  "tags": [],
+  "labels": [
+    "ci",
+    "security",
+    "testing",
+    "type: enabler"
+  ],
+  "sources": [
+    {
+      "kind": "github-issue",
+      "reference": "#820"
+    }
+  ],
+  "integrations": {
+    "github": {
+      "issue": 820
+    }
+  }
+}

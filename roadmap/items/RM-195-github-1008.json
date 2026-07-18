@@ -1,0 +1,36 @@
+{
+  "$schema": "../schema/roadmap-item.schema.json",
+  "id": "RM-195",
+  "title": "Design branding caching strategy",
+  "type": "issue",
+  "status": "proposed",
+  "order": 230,
+  "theme": "repo-operations",
+  "outcome": "GitHub issue #1008 is canonically represented from the reconciliation manifest.",
+  "scoring": {
+    "reach": 1,
+    "impact": 1,
+    "confidence": 0.1,
+    "effort": 3
+  },
+  "blockedBy": [],
+  "blocks": [],
+  "dependencies": [],
+  "tags": [],
+  "labels": [
+    "caching",
+    "documentation",
+    "enhancement"
+  ],
+  "sources": [
+    {
+      "kind": "github-issue",
+      "reference": "#1008"
+    }
+  ],
+  "integrations": {
+    "github": {
+      "issue": 1008
+    }
+  }
+}

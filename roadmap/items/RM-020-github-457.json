@@ -1,0 +1,36 @@
+{
+  "$schema": "../schema/roadmap-item.schema.json",
+  "id": "RM-020",
+  "title": "Migrate shared extension methods to C# extension members",
+  "type": "issue",
+  "status": "proposed",
+  "order": 120,
+  "theme": "repo-operations",
+  "outcome": "GitHub issue #457 is canonically represented from the reconciliation manifest.",
+  "scoring": {
+    "reach": 1,
+    "impact": 1,
+    "confidence": 0.1,
+    "effort": 3
+  },
+  "blockedBy": [],
+  "blocks": [],
+  "dependencies": [],
+  "tags": [],
+  "labels": [
+    "architecture",
+    "enhancement",
+    "sharedkernel"
+  ],
+  "sources": [
+    {
+      "kind": "github-issue",
+      "reference": "#457"
+    }
+  ],
+  "integrations": {
+    "github": {
+      "issue": 457
+    }
+  }
+}

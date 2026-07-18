@@ -1,0 +1,37 @@
+{
+  "$schema": "../schema/roadmap-item.schema.json",
+  "id": "RM-144",
+  "title": "Evaluate Admin QueryService caching boundaries",
+  "type": "enabler",
+  "status": "proposed",
+  "order": 200,
+  "theme": "repo-operations",
+  "outcome": "GitHub issue #907 is canonically represented from the reconciliation manifest.",
+  "scoring": {
+    "reach": 1,
+    "impact": 1,
+    "confidence": 0.1,
+    "effort": 3
+  },
+  "blockedBy": [],
+  "blocks": [],
+  "dependencies": [],
+  "tags": [],
+  "labels": [
+    "area: api",
+    "performance",
+    "research",
+    "type: enabler"
+  ],
+  "sources": [
+    {
+      "kind": "github-issue",
+      "reference": "#907"
+    }
+  ],
+  "integrations": {
+    "github": {
+      "issue": 907
+    }
+  }
+}

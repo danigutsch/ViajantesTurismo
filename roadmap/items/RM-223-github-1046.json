@@ -1,0 +1,39 @@
+{
+  "$schema": "../schema/roadmap-item.schema.json",
+  "id": "RM-223",
+  "title": "Remove production sitemap validation retry after repository reorganization",
+  "type": "issue",
+  "status": "proposed",
+  "order": 324,
+  "theme": "repo-operations",
+  "outcome": "GitHub issue #1046 is canonically represented from the reconciliation manifest.",
+  "scoring": {
+    "reach": 1,
+    "impact": 2,
+    "confidence": 0.1,
+    "effort": 2
+  },
+  "blockedBy": [
+    "RM-203"
+  ],
+  "blocks": [],
+  "dependencies": [],
+  "tags": [],
+  "labels": [
+    "area: testing",
+    "public-web",
+    "testing",
+    "type: chore"
+  ],
+  "sources": [
+    {
+      "kind": "github-issue",
+      "reference": "#1046"
+    }
+  ],
+  "integrations": {
+    "github": {
+      "issue": 1046
+    }
+  }
+}

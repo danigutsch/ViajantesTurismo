@@ -15,11 +15,7 @@
     "confidence": 0.7,
     "effort": 4
   },
-  "blockedBy": [
-    "RM-002",
-    "RM-003",
-    "RM-004"
-  ],
+  "blockedBy": [],
   "blocks": [],
   "dependencies": [],
   "tags": [

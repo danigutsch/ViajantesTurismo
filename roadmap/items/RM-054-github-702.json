@@ -1,0 +1,37 @@
+{
+  "$schema": "../schema/roadmap-item.schema.json",
+  "id": "RM-054",
+  "parent": "RM-050",
+  "title": "Design minimal SharedKernel.IO API",
+  "type": "enabler",
+  "status": "proposed",
+  "order": 143,
+  "theme": "repo-operations",
+  "outcome": "GitHub issue #702 is canonically represented from the reconciliation manifest.",
+  "scoring": {
+    "reach": 1,
+    "impact": 1,
+    "confidence": 0.1,
+    "effort": 3
+  },
+  "blockedBy": [],
+  "blocks": [],
+  "dependencies": [],
+  "tags": [],
+  "labels": [
+    "architecture",
+    "sharedkernel",
+    "type: enabler"
+  ],
+  "sources": [
+    {
+      "kind": "github-issue",
+      "reference": "#702"
+    }
+  ],
+  "integrations": {
+    "github": {
+      "issue": 702
+    }
+  }
+}

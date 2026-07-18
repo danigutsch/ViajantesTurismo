@@ -1,0 +1,29 @@
+{
+  "$schema": "../schema/roadmap-item.schema.json",
+  "id": "RM-249",
+  "title": "Add field-level GitHub Project dry-run preflight",
+  "type": "issue",
+  "status": "done",
+  "triage": "untriaged",
+  "theme": "repo-operations",
+  "outcome": "GitHub issue #1059 is canonically represented from the reconciliation manifest.",
+  "blockedBy": [],
+  "blocks": [
+    "RM-009",
+    "RM-276"
+  ],
+  "dependencies": [],
+  "tags": [],
+  "labels": [],
+  "sources": [
+    {
+      "kind": "github-issue",
+      "reference": "#1059"
+    }
+  ],
+  "integrations": {
+    "github": {
+      "issue": 1059
+    }
+  }
+}

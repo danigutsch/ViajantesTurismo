@@ -1,0 +1,37 @@
+{
+  "$schema": "../schema/roadmap-item.schema.json",
+  "id": "RM-077",
+  "parent": "RM-023",
+  "title": "Compare discriminated unions with current Result and Option APIs",
+  "type": "enabler",
+  "status": "proposed",
+  "order": 161,
+  "theme": "repo-operations",
+  "outcome": "GitHub issue #735 is canonically represented from the reconciliation manifest.",
+  "scoring": {
+    "reach": 1,
+    "impact": 1,
+    "confidence": 0.1,
+    "effort": 3
+  },
+  "blockedBy": [],
+  "blocks": [],
+  "dependencies": [],
+  "tags": [],
+  "labels": [
+    "architecture",
+    "sharedkernel",
+    "type: enabler"
+  ],
+  "sources": [
+    {
+      "kind": "github-issue",
+      "reference": "#735"
+    }
+  ],
+  "integrations": {
+    "github": {
+      "issue": 735
+    }
+  }
+}

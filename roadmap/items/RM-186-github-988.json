@@ -1,0 +1,38 @@
+{
+  "$schema": "../schema/roadmap-item.schema.json",
+  "id": "RM-186",
+  "title": "test: add nullable overloads for domain assertion helpers",
+  "type": "feature",
+  "status": "proposed",
+  "order": 130,
+  "theme": "repo-operations",
+  "outcome": "GitHub issue #988 is canonically represented from the reconciliation manifest.",
+  "scoring": {
+    "reach": 1,
+    "impact": 2,
+    "confidence": 0.1,
+    "effort": 5
+  },
+  "blockedBy": [
+    "RM-032"
+  ],
+  "blocks": [],
+  "dependencies": [],
+  "tags": [],
+  "labels": [
+    "sharedkernel",
+    "testing",
+    "type: feature"
+  ],
+  "sources": [
+    {
+      "kind": "github-issue",
+      "reference": "#988"
+    }
+  ],
+  "integrations": {
+    "github": {
+      "issue": 988
+    }
+  }
+}

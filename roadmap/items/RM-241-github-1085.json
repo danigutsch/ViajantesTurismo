@@ -1,0 +1,38 @@
+{
+  "$schema": "../schema/roadmap-item.schema.json",
+  "id": "RM-241",
+  "parent": "RM-230",
+  "title": "Govern ClamAV configuration-key constants",
+  "type": "enabler",
+  "status": "proposed",
+  "order": 261,
+  "theme": "repo-operations",
+  "outcome": "GitHub issue #1085 is canonically represented from the reconciliation manifest.",
+  "scoring": {
+    "reach": 1,
+    "impact": 1,
+    "confidence": 0.1,
+    "effort": 3
+  },
+  "blockedBy": [],
+  "blocks": [],
+  "dependencies": [],
+  "tags": [],
+  "labels": [
+    "architecture",
+    "area: sharedkernel",
+    "area: tooling",
+    "type: enabler"
+  ],
+  "sources": [
+    {
+      "kind": "github-issue",
+      "reference": "#1085"
+    }
+  ],
+  "integrations": {
+    "github": {
+      "issue": 1085
+    }
+  }
+}

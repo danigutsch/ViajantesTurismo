@@ -1,0 +1,36 @@
+{
+  "$schema": "../schema/roadmap-item.schema.json",
+  "id": "RM-091",
+  "title": "Add architecture tests for required project test coverage",
+  "type": "enabler",
+  "status": "proposed",
+  "order": 167,
+  "theme": "repo-operations",
+  "outcome": "GitHub issue #776 is canonically represented from the reconciliation manifest.",
+  "scoring": {
+    "reach": 1,
+    "impact": 1,
+    "confidence": 0.1,
+    "effort": 3
+  },
+  "blockedBy": [],
+  "blocks": [],
+  "dependencies": [],
+  "tags": [],
+  "labels": [
+    "architecture",
+    "area: testing",
+    "type: enabler"
+  ],
+  "sources": [
+    {
+      "kind": "github-issue",
+      "reference": "#776"
+    }
+  ],
+  "integrations": {
+    "github": {
+      "issue": 776
+    }
+  }
+}

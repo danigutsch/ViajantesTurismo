@@ -1,0 +1,38 @@
+{
+  "$schema": "../schema/roadmap-item.schema.json",
+  "id": "RM-103",
+  "parent": "RM-102",
+  "title": "Create STRIDE-A threat model for the application",
+  "type": "enabler",
+  "status": "proposed",
+  "order": 172,
+  "theme": "repo-operations",
+  "outcome": "GitHub issue #814 is canonically represented from the reconciliation manifest.",
+  "scoring": {
+    "reach": 1,
+    "impact": 1,
+    "confidence": 0.1,
+    "effort": 3
+  },
+  "blockedBy": [],
+  "blocks": [],
+  "dependencies": [],
+  "tags": [],
+  "labels": [
+    "architecture",
+    "documentation",
+    "security",
+    "type: enabler"
+  ],
+  "sources": [
+    {
+      "kind": "github-issue",
+      "reference": "#814"
+    }
+  ],
+  "integrations": {
+    "github": {
+      "issue": 814
+    }
+  }
+}

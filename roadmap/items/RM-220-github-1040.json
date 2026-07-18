@@ -1,0 +1,39 @@
+{
+  "$schema": "../schema/roadmap-item.schema.json",
+  "id": "RM-220",
+  "title": "Epic: prepare SharedKernel for independent package and repository extraction",
+  "type": "epic",
+  "status": "proposed",
+  "order": 327,
+  "theme": "repo-operations",
+  "outcome": "GitHub issue #1040 is canonically represented from the reconciliation manifest.",
+  "scoring": {
+    "reach": 1,
+    "impact": 1,
+    "confidence": 0.1,
+    "effort": 8
+  },
+  "blockedBy": [],
+  "blocks": [],
+  "dependencies": [],
+  "tags": [],
+  "labels": [
+    "architecture",
+    "area: packaging",
+    "area: sharedkernel",
+    "risk: breaking-change",
+    "sharedkernel",
+    "type: epic"
+  ],
+  "sources": [
+    {
+      "kind": "github-issue",
+      "reference": "#1040"
+    }
+  ],
+  "integrations": {
+    "github": {
+      "issue": 1040
+    }
+  }
+}

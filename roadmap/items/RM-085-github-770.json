@@ -1,0 +1,37 @@
+{
+  "$schema": "../schema/roadmap-item.schema.json",
+  "id": "RM-085",
+  "title": "research and document exception documentation practices",
+  "type": "documentation",
+  "status": "proposed",
+  "order": 105,
+  "theme": "repo-operations",
+  "outcome": "GitHub issue #770 is canonically represented from the reconciliation manifest.",
+  "scoring": {
+    "reach": 1,
+    "impact": 1,
+    "confidence": 0.1,
+    "effort": 2
+  },
+  "blockedBy": [],
+  "blocks": [],
+  "dependencies": [],
+  "tags": [],
+  "labels": [
+    ".net",
+    "documentation",
+    "research",
+    "type: docs"
+  ],
+  "sources": [
+    {
+      "kind": "github-issue",
+      "reference": "#770"
+    }
+  ],
+  "integrations": {
+    "github": {
+      "issue": 770
+    }
+  }
+}

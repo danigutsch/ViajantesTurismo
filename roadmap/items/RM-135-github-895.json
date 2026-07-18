@@ -1,0 +1,38 @@
+{
+  "$schema": "../schema/roadmap-item.schema.json",
+  "id": "RM-135",
+  "title": "Evaluate FusionCache for distributed caching",
+  "type": "enabler",
+  "status": "proposed",
+  "order": 194,
+  "theme": "repo-operations",
+  "outcome": "GitHub issue #895 is canonically represented from the reconciliation manifest.",
+  "scoring": {
+    "reach": 1,
+    "impact": 1,
+    "confidence": 0.1,
+    "effort": 3
+  },
+  "blockedBy": [],
+  "blocks": [],
+  "dependencies": [],
+  "tags": [],
+  "labels": [
+    "aspire",
+    "enhancement",
+    "performance",
+    "research",
+    "type: enabler"
+  ],
+  "sources": [
+    {
+      "kind": "github-issue",
+      "reference": "#895"
+    }
+  ],
+  "integrations": {
+    "github": {
+      "issue": 895
+    }
+  }
+}

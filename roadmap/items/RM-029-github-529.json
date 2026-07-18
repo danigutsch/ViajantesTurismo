@@ -1,0 +1,32 @@
+{
+  "$schema": "../schema/roadmap-item.schema.json",
+  "id": "RM-029",
+  "parent": "RM-018",
+  "title": "Add image accessibility review workflow",
+  "type": "issue",
+  "status": "done",
+  "triage": "untriaged",
+  "theme": "repo-operations",
+  "outcome": "GitHub issue #529 is canonically represented from the reconciliation manifest.",
+  "blockedBy": [],
+  "blocks": [],
+  "dependencies": [],
+  "tags": [],
+  "labels": [
+    "enhancement",
+    "frontend",
+    "media",
+    "public-web"
+  ],
+  "sources": [
+    {
+      "kind": "github-issue",
+      "reference": "#529"
+    }
+  ],
+  "integrations": {
+    "github": {
+      "issue": 529
+    }
+  }
+}

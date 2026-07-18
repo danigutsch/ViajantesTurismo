@@ -1,0 +1,40 @@
+{
+  "$schema": "../schema/roadmap-item.schema.json",
+  "id": "RM-033",
+  "parent": "RM-018",
+  "title": "Implement ClamAV malware scanner and Aspire resource",
+  "type": "enabler",
+  "status": "done",
+  "triage": "untriaged",
+  "theme": "repo-operations",
+  "outcome": "GitHub issue #559 is canonically represented from the reconciliation manifest.",
+  "blockedBy": [],
+  "blocks": [
+    "RM-154"
+  ],
+  "dependencies": [],
+  "tags": [],
+  "labels": [
+    "area: sharedkernel",
+    "area: tooling",
+    "aspire",
+    "catalog",
+    "enhancement",
+    "infrastructure",
+    "media",
+    "security",
+    "testing",
+    "type: enabler"
+  ],
+  "sources": [
+    {
+      "kind": "github-issue",
+      "reference": "#559"
+    }
+  ],
+  "integrations": {
+    "github": {
+      "issue": 559
+    }
+  }
+}

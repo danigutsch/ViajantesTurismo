@@ -1,0 +1,40 @@
+{
+  "$schema": "../schema/roadmap-item.schema.json",
+  "id": "RM-217",
+  "title": "Epic: secure repository MCP and Aspire resource tooling",
+  "type": "epic",
+  "status": "proposed",
+  "order": 326,
+  "theme": "repo-operations",
+  "outcome": "GitHub issue #1037 is canonically represented from the reconciliation manifest.",
+  "scoring": {
+    "reach": 1,
+    "impact": 1,
+    "confidence": 0.1,
+    "effort": 8
+  },
+  "blockedBy": [],
+  "blocks": [],
+  "dependencies": [],
+  "tags": [],
+  "labels": [
+    "architecture",
+    "area: tooling",
+    "aspire",
+    "configuration",
+    "infrastructure",
+    "security",
+    "type: epic"
+  ],
+  "sources": [
+    {
+      "kind": "github-issue",
+      "reference": "#1037"
+    }
+  ],
+  "integrations": {
+    "github": {
+      "issue": 1037
+    }
+  }
+}

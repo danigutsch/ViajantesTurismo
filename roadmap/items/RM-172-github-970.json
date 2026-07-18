@@ -1,0 +1,30 @@
+{
+  "$schema": "../schema/roadmap-item.schema.json",
+  "id": "RM-172",
+  "parent": "RM-018",
+  "title": "Add public media proxy routes",
+  "type": "issue",
+  "status": "done",
+  "triage": "untriaged",
+  "theme": "repo-operations",
+  "outcome": "GitHub issue #970 is canonically represented from the reconciliation manifest.",
+  "blockedBy": [],
+  "blocks": [],
+  "dependencies": [],
+  "tags": [],
+  "labels": [
+    "enhancement",
+    "media"
+  ],
+  "sources": [
+    {
+      "kind": "github-issue",
+      "reference": "#970"
+    }
+  ],
+  "integrations": {
+    "github": {
+      "issue": 970
+    }
+  }
+}

@@ -1,0 +1,40 @@
+{
+  "$schema": "../schema/roadmap-item.schema.json",
+  "id": "RM-257",
+  "parent": "RM-255",
+  "title": "Add typed Should* assertion delegate APIs",
+  "type": "feature",
+  "status": "proposed",
+  "order": 343,
+  "theme": "repo-operations",
+  "outcome": "GitHub issue #1100 is canonically represented from the reconciliation manifest.",
+  "scoring": {
+    "reach": 1,
+    "impact": 1,
+    "confidence": 0.1,
+    "effort": 5
+  },
+  "blockedBy": [],
+  "blocks": [],
+  "dependencies": [],
+  "tags": [],
+  "labels": [
+    "area: sharedkernel",
+    "area: testing",
+    "area: tooling",
+    "sharedkernel",
+    "testing",
+    "type: feature"
+  ],
+  "sources": [
+    {
+      "kind": "github-issue",
+      "reference": "#1100"
+    }
+  ],
+  "integrations": {
+    "github": {
+      "issue": 1100
+    }
+  }
+}

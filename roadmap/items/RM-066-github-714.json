@@ -1,0 +1,36 @@
+{
+  "$schema": "../schema/roadmap-item.schema.json",
+  "id": "RM-066",
+  "parent": "RM-044",
+  "title": "Plan Admin vertical-slice migration",
+  "type": "enabler",
+  "status": "proposed",
+  "order": 150,
+  "theme": "repo-operations",
+  "outcome": "GitHub issue #714 is canonically represented from the reconciliation manifest.",
+  "scoring": {
+    "reach": 1,
+    "impact": 1,
+    "confidence": 0.1,
+    "effort": 3
+  },
+  "blockedBy": [],
+  "blocks": [],
+  "dependencies": [],
+  "tags": [],
+  "labels": [
+    "architecture",
+    "type: enabler"
+  ],
+  "sources": [
+    {
+      "kind": "github-issue",
+      "reference": "#714"
+    }
+  ],
+  "integrations": {
+    "github": {
+      "issue": 714
+    }
+  }
+}

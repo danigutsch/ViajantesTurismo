@@ -1,0 +1,39 @@
+{
+  "$schema": "../schema/roadmap-item.schema.json",
+  "id": "RM-100",
+  "parent": "RM-095",
+  "title": "Adopt HATEOAS links in Catalog REST endpoints",
+  "type": "feature",
+  "status": "proposed",
+  "order": 282,
+  "theme": "repo-operations",
+  "outcome": "GitHub issue #794 is canonically represented from the reconciliation manifest.",
+  "scoring": {
+    "reach": 1,
+    "impact": 1,
+    "confidence": 0.1,
+    "effort": 5
+  },
+  "blockedBy": [],
+  "blocks": [],
+  "dependencies": [],
+  "tags": [],
+  "labels": [
+    "area: api",
+    "catalog",
+    "public-web",
+    "testing",
+    "type: feature"
+  ],
+  "sources": [
+    {
+      "kind": "github-issue",
+      "reference": "#794"
+    }
+  ],
+  "integrations": {
+    "github": {
+      "issue": 794
+    }
+  }
+}

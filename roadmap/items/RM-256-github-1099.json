@@ -1,0 +1,41 @@
+{
+  "$schema": "../schema/roadmap-item.schema.json",
+  "id": "RM-256",
+  "parent": "RM-255",
+  "title": "Research xUnit assertion delegate patterns",
+  "type": "enabler",
+  "status": "proposed",
+  "order": 332,
+  "theme": "repo-operations",
+  "outcome": "GitHub issue #1099 is canonically represented from the reconciliation manifest.",
+  "scoring": {
+    "reach": 1,
+    "impact": 1,
+    "confidence": 0.1,
+    "effort": 3
+  },
+  "blockedBy": [],
+  "blocks": [],
+  "dependencies": [],
+  "tags": [],
+  "labels": [
+    "area: sharedkernel",
+    "area: testing",
+    "area: tooling",
+    "research",
+    "sharedkernel",
+    "testing",
+    "type: enabler"
+  ],
+  "sources": [
+    {
+      "kind": "github-issue",
+      "reference": "#1099"
+    }
+  ],
+  "integrations": {
+    "github": {
+      "issue": 1099
+    }
+  }
+}

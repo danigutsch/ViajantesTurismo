@@ -1,0 +1,35 @@
+{
+  "$schema": "../schema/roadmap-item.schema.json",
+  "id": "RM-075",
+  "title": "Plan first document-generation vertical slice",
+  "type": "enabler",
+  "status": "proposed",
+  "order": 159,
+  "theme": "repo-operations",
+  "outcome": "GitHub issue #728 is canonically represented from the reconciliation manifest.",
+  "scoring": {
+    "reach": 1,
+    "impact": 1,
+    "confidence": 0.1,
+    "effort": 3
+  },
+  "blockedBy": [],
+  "blocks": [],
+  "dependencies": [],
+  "tags": [],
+  "labels": [
+    "architecture",
+    "type: enabler"
+  ],
+  "sources": [
+    {
+      "kind": "github-issue",
+      "reference": "#728"
+    }
+  ],
+  "integrations": {
+    "github": {
+      "issue": 728
+    }
+  }
+}

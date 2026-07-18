@@ -1,0 +1,39 @@
+{
+  "$schema": "../schema/roadmap-item.schema.json",
+  "id": "RM-104",
+  "parent": "RM-102",
+  "title": "Add web security headers and CSP strategy",
+  "type": "feature",
+  "status": "proposed",
+  "order": 283,
+  "theme": "repo-operations",
+  "outcome": "GitHub issue #815 is canonically represented from the reconciliation manifest.",
+  "scoring": {
+    "reach": 1,
+    "impact": 1,
+    "confidence": 0.1,
+    "effort": 5
+  },
+  "blockedBy": [],
+  "blocks": [],
+  "dependencies": [],
+  "tags": [],
+  "labels": [
+    "management-web",
+    "public-web",
+    "security",
+    "testing",
+    "type: feature"
+  ],
+  "sources": [
+    {
+      "kind": "github-issue",
+      "reference": "#815"
+    }
+  ],
+  "integrations": {
+    "github": {
+      "issue": 815
+    }
+  }
+}

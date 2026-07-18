@@ -1,0 +1,36 @@
+{
+  "$schema": "../schema/roadmap-item.schema.json",
+  "id": "RM-143",
+  "title": "Make CountryService cache process-wide",
+  "type": "feature",
+  "status": "proposed",
+  "order": 289,
+  "theme": "repo-operations",
+  "outcome": "GitHub issue #906 is canonically represented from the reconciliation manifest.",
+  "scoring": {
+    "reach": 1,
+    "impact": 1,
+    "confidence": 0.1,
+    "effort": 5
+  },
+  "blockedBy": [],
+  "blocks": [],
+  "dependencies": [],
+  "tags": [],
+  "labels": [
+    "management-web",
+    "performance",
+    "type: feature"
+  ],
+  "sources": [
+    {
+      "kind": "github-issue",
+      "reference": "#906"
+    }
+  ],
+  "integrations": {
+    "github": {
+      "issue": 906
+    }
+  }
+}

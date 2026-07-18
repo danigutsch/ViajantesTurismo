@@ -1,0 +1,39 @@
+{
+  "$schema": "../schema/roadmap-item.schema.json",
+  "id": "RM-204",
+  "parent": "RM-203",
+  "title": "Define test taxonomy inventory and validator",
+  "type": "enabler",
+  "status": "proposed",
+  "order": 236,
+  "theme": "repo-operations",
+  "outcome": "GitHub issue #1023 is canonically represented from the reconciliation manifest.",
+  "scoring": {
+    "reach": 1,
+    "impact": 1,
+    "confidence": 0.1,
+    "effort": 3
+  },
+  "blockedBy": [],
+  "blocks": [],
+  "dependencies": [],
+  "tags": [],
+  "labels": [
+    "architecture",
+    "area: testing",
+    "area: tooling",
+    "testing",
+    "type: enabler"
+  ],
+  "sources": [
+    {
+      "kind": "github-issue",
+      "reference": "#1023"
+    }
+  ],
+  "integrations": {
+    "github": {
+      "issue": 1023
+    }
+  }
+}

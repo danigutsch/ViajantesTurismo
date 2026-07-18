@@ -4,6 +4,7 @@ internal static class RepoConfigPaths
 {
     public const string Roadmap = "roadmap";
     public const string Items = "roadmap/items";
+    public const string Reconciliation = "roadmap/reconciliation";
     public const string Schema = "roadmap/schema";
     public const string Themes = "roadmap/themes";
     public const string RoadmapReadme = "roadmap/README.md";

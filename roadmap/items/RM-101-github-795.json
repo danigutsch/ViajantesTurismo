@@ -1,0 +1,38 @@
+{
+  "$schema": "../schema/roadmap-item.schema.json",
+  "id": "RM-101",
+  "parent": "RM-095",
+  "title": "Document HATEOAS response migration and client impact",
+  "type": "documentation",
+  "status": "proposed",
+  "order": 107,
+  "theme": "repo-operations",
+  "outcome": "GitHub issue #795 is canonically represented from the reconciliation manifest.",
+  "scoring": {
+    "reach": 1,
+    "impact": 1,
+    "confidence": 0.1,
+    "effort": 2
+  },
+  "blockedBy": [],
+  "blocks": [],
+  "dependencies": [],
+  "tags": [],
+  "labels": [
+    "area: api",
+    "documentation",
+    "risk: breaking-change",
+    "type: docs"
+  ],
+  "sources": [
+    {
+      "kind": "github-issue",
+      "reference": "#795"
+    }
+  ],
+  "integrations": {
+    "github": {
+      "issue": 795
+    }
+  }
+}

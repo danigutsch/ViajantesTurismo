@@ -1,0 +1,33 @@
+{
+  "$schema": "../schema/roadmap-item.schema.json",
+  "id": "RM-271",
+  "title": "Add audience-specific BFF backend tokens",
+  "type": "enabler",
+  "status": "done",
+  "triage": "untriaged",
+  "theme": "repo-operations",
+  "outcome": "GitHub issue #1012 is canonically represented from the reconciliation manifest.",
+  "blockedBy": [],
+  "blocks": [
+    "RM-272"
+  ],
+  "dependencies": [],
+  "tags": [],
+  "labels": [
+    "architecture",
+    "management-web",
+    "security",
+    "type: enabler"
+  ],
+  "sources": [
+    {
+      "kind": "github-issue",
+      "reference": "#1012"
+    }
+  ],
+  "integrations": {
+    "github": {
+      "issue": 1012
+    }
+  }
+}

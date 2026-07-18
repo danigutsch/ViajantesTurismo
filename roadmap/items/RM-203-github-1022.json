@@ -1,0 +1,41 @@
+{
+  "$schema": "../schema/roadmap-item.schema.json",
+  "id": "RM-203",
+  "title": "Define test seams, taxonomy, and Admin AppHost ownership",
+  "type": "epic",
+  "status": "proposed",
+  "order": 323,
+  "theme": "repo-operations",
+  "outcome": "GitHub issue #1022 is canonically represented from the reconciliation manifest.",
+  "scoring": {
+    "reach": 1,
+    "impact": 1,
+    "confidence": 0.1,
+    "effort": 8
+  },
+  "blockedBy": [],
+  "blocks": [
+    "RM-223"
+  ],
+  "dependencies": [],
+  "tags": [],
+  "labels": [
+    "architecture",
+    "area: testing",
+    "area: tooling",
+    "documentation",
+    "testing",
+    "type: epic"
+  ],
+  "sources": [
+    {
+      "kind": "github-issue",
+      "reference": "#1022"
+    }
+  ],
+  "integrations": {
+    "github": {
+      "issue": 1022
+    }
+  }
+}

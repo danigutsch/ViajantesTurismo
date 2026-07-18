@@ -1,0 +1,37 @@
+{
+  "$schema": "../schema/roadmap-item.schema.json",
+  "id": "RM-052",
+  "title": "Add custom IO analyzers and safe code fixes",
+  "type": "epic",
+  "status": "proposed",
+  "order": 314,
+  "theme": "repo-operations",
+  "outcome": "GitHub issue #697 is canonically represented from the reconciliation manifest.",
+  "scoring": {
+    "reach": 1,
+    "impact": 1,
+    "confidence": 0.1,
+    "effort": 8
+  },
+  "blockedBy": [],
+  "blocks": [],
+  "dependencies": [],
+  "tags": [],
+  "labels": [
+    "area: sharedkernel",
+    "area: tooling",
+    "testing",
+    "type: epic"
+  ],
+  "sources": [
+    {
+      "kind": "github-issue",
+      "reference": "#697"
+    }
+  ],
+  "integrations": {
+    "github": {
+      "issue": 697
+    }
+  }
+}

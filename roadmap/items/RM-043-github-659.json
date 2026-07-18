@@ -1,0 +1,36 @@
+{
+  "$schema": "../schema/roadmap-item.schema.json",
+  "id": "RM-043",
+  "title": "Decide CodeFixRunner project location",
+  "type": "documentation",
+  "status": "proposed",
+  "order": 102,
+  "theme": "repo-operations",
+  "outcome": "GitHub issue #659 is canonically represented from the reconciliation manifest.",
+  "scoring": {
+    "reach": 1,
+    "impact": 1,
+    "confidence": 0.1,
+    "effort": 2
+  },
+  "blockedBy": [],
+  "blocks": [],
+  "dependencies": [],
+  "tags": [],
+  "labels": [
+    "area: sharedkernel",
+    "area: tooling",
+    "type: docs"
+  ],
+  "sources": [
+    {
+      "kind": "github-issue",
+      "reference": "#659"
+    }
+  ],
+  "integrations": {
+    "github": {
+      "issue": 659
+    }
+  }
+}

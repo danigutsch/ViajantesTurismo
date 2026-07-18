@@ -1,0 +1,32 @@
+{
+  "$schema": "../schema/roadmap-item.schema.json",
+  "id": "RM-247",
+  "title": "test(analyzers): forbid parenthesized Should assertions",
+  "type": "issue",
+  "status": "proposed",
+  "order": 265,
+  "theme": "repo-operations",
+  "outcome": "GitHub issue #1091 is canonically represented from the reconciliation manifest.",
+  "scoring": {
+    "reach": 1,
+    "impact": 1,
+    "confidence": 0.1,
+    "effort": 3
+  },
+  "blockedBy": [],
+  "blocks": [],
+  "dependencies": [],
+  "tags": [],
+  "labels": [],
+  "sources": [
+    {
+      "kind": "github-issue",
+      "reference": "#1091"
+    }
+  ],
+  "integrations": {
+    "github": {
+      "issue": 1091
+    }
+  }
+}

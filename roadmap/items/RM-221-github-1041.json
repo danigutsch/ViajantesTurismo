@@ -1,0 +1,44 @@
+{
+  "$schema": "../schema/roadmap-item.schema.json",
+  "id": "RM-221",
+  "parent": "RM-220",
+  "title": "research(sharedkernel): define independent repository extraction boundary",
+  "type": "enabler",
+  "status": "proposed",
+  "order": 279,
+  "theme": "repo-operations",
+  "outcome": "GitHub issue #1041 is canonically represented from the reconciliation manifest.",
+  "scoring": {
+    "reach": 1,
+    "impact": 3,
+    "confidence": 0.1,
+    "effort": 3
+  },
+  "blockedBy": [
+    "RM-092",
+    "RM-093"
+  ],
+  "blocks": [],
+  "dependencies": [],
+  "tags": [],
+  "labels": [
+    "architecture",
+    "area: packaging",
+    "area: sharedkernel",
+    "research",
+    "risk: breaking-change",
+    "sharedkernel",
+    "type: enabler"
+  ],
+  "sources": [
+    {
+      "kind": "github-issue",
+      "reference": "#1041"
+    }
+  ],
+  "integrations": {
+    "github": {
+      "issue": 1041
+    }
+  }
+}

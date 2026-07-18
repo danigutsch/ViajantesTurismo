@@ -1,0 +1,36 @@
+{
+  "$schema": "../schema/roadmap-item.schema.json",
+  "id": "RM-027",
+  "title": "Assess code fix support for xUnit assertion analyzer",
+  "type": "issue",
+  "status": "proposed",
+  "order": 124,
+  "theme": "repo-operations",
+  "outcome": "GitHub issue #517 is canonically represented from the reconciliation manifest.",
+  "scoring": {
+    "reach": 1,
+    "impact": 1,
+    "confidence": 0.1,
+    "effort": 3
+  },
+  "blockedBy": [],
+  "blocks": [],
+  "dependencies": [],
+  "tags": [],
+  "labels": [
+    "research",
+    "sharedkernel",
+    "testing"
+  ],
+  "sources": [
+    {
+      "kind": "github-issue",
+      "reference": "#517"
+    }
+  ],
+  "integrations": {
+    "github": {
+      "issue": 517
+    }
+  }
+}

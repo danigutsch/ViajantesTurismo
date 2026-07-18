@@ -1,0 +1,32 @@
+{
+  "$schema": "../schema/roadmap-item.schema.json",
+  "id": "RM-273",
+  "parent": "RM-276",
+  "title": "Add GitHub Projects roadmap target projection",
+  "type": "enabler",
+  "status": "done",
+  "triage": "untriaged",
+  "theme": "repo-operations",
+  "outcome": "GitHub issue #1018 is canonically represented from the reconciliation manifest.",
+  "blockedBy": [],
+  "blocks": [
+    "RM-274"
+  ],
+  "dependencies": [],
+  "tags": [],
+  "labels": [
+    "area: tooling",
+    "type: enabler"
+  ],
+  "sources": [
+    {
+      "kind": "github-issue",
+      "reference": "#1018"
+    }
+  ],
+  "integrations": {
+    "github": {
+      "issue": 1018
+    }
+  }
+}

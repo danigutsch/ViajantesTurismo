@@ -1,0 +1,33 @@
+{
+  "$schema": "../schema/roadmap-item.schema.json",
+  "id": "RM-275",
+  "parent": "RM-276",
+  "title": "Add roadmap issue lifecycle and drift reporting",
+  "type": "enabler",
+  "status": "done",
+  "triage": "untriaged",
+  "theme": "repo-operations",
+  "outcome": "GitHub issue #1020 is canonically represented from the reconciliation manifest.",
+  "blockedBy": [
+    "RM-274"
+  ],
+  "blocks": [],
+  "dependencies": [],
+  "tags": [],
+  "labels": [
+    "area: tooling",
+    "ci",
+    "type: enabler"
+  ],
+  "sources": [
+    {
+      "kind": "github-issue",
+      "reference": "#1020"
+    }
+  ],
+  "integrations": {
+    "github": {
+      "issue": 1020
+    }
+  }
+}

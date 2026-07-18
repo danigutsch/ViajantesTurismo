@@ -1,0 +1,37 @@
+{
+  "$schema": "../schema/roadmap-item.schema.json",
+  "id": "RM-236",
+  "parent": "RM-234",
+  "title": "Publish a consolidated CI warning summary",
+  "type": "enabler",
+  "status": "proposed",
+  "order": 256,
+  "theme": "repo-operations",
+  "outcome": "GitHub issue #1078 is canonically represented from the reconciliation manifest.",
+  "scoring": {
+    "reach": 1,
+    "impact": 1,
+    "confidence": 0.1,
+    "effort": 3
+  },
+  "blockedBy": [],
+  "blocks": [],
+  "dependencies": [],
+  "tags": [],
+  "labels": [
+    "area: tooling",
+    "ci",
+    "type: enabler"
+  ],
+  "sources": [
+    {
+      "kind": "github-issue",
+      "reference": "#1078"
+    }
+  ],
+  "integrations": {
+    "github": {
+      "issue": 1078
+    }
+  }
+}

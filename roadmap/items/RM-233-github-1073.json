@@ -1,0 +1,35 @@
+{
+  "$schema": "../schema/roadmap-item.schema.json",
+  "id": "RM-233",
+  "parent": "RM-033",
+  "title": "Model ClamAV as a typed Aspire resource",
+  "type": "enabler",
+  "status": "done",
+  "triage": "untriaged",
+  "theme": "repo-operations",
+  "outcome": "GitHub issue #1073 is canonically represented from the reconciliation manifest.",
+  "blockedBy": [],
+  "blocks": [],
+  "dependencies": [],
+  "tags": [],
+  "labels": [
+    "area: sharedkernel",
+    "area: tooling",
+    "aspire",
+    "infrastructure",
+    "security",
+    "testing",
+    "type: enabler"
+  ],
+  "sources": [
+    {
+      "kind": "github-issue",
+      "reference": "#1073"
+    }
+  ],
+  "integrations": {
+    "github": {
+      "issue": 1073
+    }
+  }
+}

@@ -1,0 +1,38 @@
+{
+  "$schema": "../schema/roadmap-item.schema.json",
+  "id": "RM-262",
+  "parent": "RM-259",
+  "title": "Verify endpoint dependencies from composed hosts",
+  "type": "issue",
+  "status": "proposed",
+  "order": 337,
+  "theme": "repo-operations",
+  "outcome": "GitHub issue #1105 is canonically represented from the reconciliation manifest.",
+  "scoring": {
+    "reach": 1,
+    "impact": 1,
+    "confidence": 0.1,
+    "effort": 3
+  },
+  "blockedBy": [],
+  "blocks": [],
+  "dependencies": [],
+  "tags": [],
+  "labels": [
+    ".net",
+    "area: api",
+    "enhancement",
+    "testing"
+  ],
+  "sources": [
+    {
+      "kind": "github-issue",
+      "reference": "#1105"
+    }
+  ],
+  "integrations": {
+    "github": {
+      "issue": 1105
+    }
+  }
+}

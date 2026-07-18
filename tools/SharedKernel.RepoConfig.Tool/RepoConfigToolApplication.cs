@@ -6,7 +6,7 @@ namespace SharedKernel.RepoConfig.Tool;
 internal static class RepoConfigToolApplication
 {
     private const decimal ParetoFraction = 0.2m;
-    private const string Usage = "Usage: sharedkernel-repo <init|verify|diff|set|get|sync> [--root <path>]";
+    private const string Usage = "Usage: sharedkernel-repo <init|verify|diff|set|get|sync|reconcile|intake> [--root <path>]";
 
     public static Task<int> Run(string[] args, TextWriter output, TextWriter error, string workingDirectory, CancellationToken cancellationToken) =>
         Run(args, output, error, workingDirectory, httpClient: null, cancellationToken);
@@ -21,15 +21,29 @@ internal static class RepoConfigToolApplication
         if (args is [] or ["--help"] or ["-h"])
         {
             await output.WriteLineAsync(Usage.AsMemory(), cancellationToken).ConfigureAwait(false);
-            await output.WriteLineAsync("Commands: init, verify, diff, set github.repository <owner/repo>, get <query>, sync github.".AsMemory(), cancellationToken).ConfigureAwait(false);
+            await output.WriteLineAsync("Commands: init, verify, diff, set github.repository <owner/repo>, get <query>, sync github, reconcile github, intake github.".AsMemory(), cancellationToken).ConfigureAwait(false);
             return 0;
         }
 
         try
         {
-            return args[0] == "sync"
-                ? await RunGitHubProjection(args[1..], output, error, workingDirectory, httpClient, cancellationToken).ConfigureAwait(false)
-                : RunCommand(args, output, error, workingDirectory);
+            return args[0] switch
+            {
+                "sync" => await RunGitHubProjection(args[1..], output, error, workingDirectory, httpClient, cancellationToken).ConfigureAwait(false),
+                "reconcile" => await RunGitHubReconciliation(args[1..], output, error, workingDirectory, httpClient, cancellationToken).ConfigureAwait(false),
+                "intake" => await RunGitHubIntake(args[1..], output, error, workingDirectory, httpClient, cancellationToken).ConfigureAwait(false),
+                _ => RunCommand(args, output, error, workingDirectory)
+            };
+        }
+        catch (GitHubIntakeTimeoutException)
+        {
+            await error.WriteLineAsync("sharedkernel-repo: GitHub intake timed out after 30 seconds.".AsMemory(), cancellationToken).ConfigureAwait(false);
+            return 1;
+        }
+        catch (GitHubReconcileTimeoutException)
+        {
+            await error.WriteLineAsync("sharedkernel-repo: GitHub reconciliation timed out after 30 seconds.".AsMemory(), cancellationToken).ConfigureAwait(false);
+            return 1;
         }
         catch (GitHubSyncTimeoutException)
         {
@@ -282,6 +296,50 @@ internal static class RepoConfigToolApplication
         return 0;
     }
 
+    private static async Task<int> RunGitHubIntake(string[] args, TextWriter output, TextWriter error, string workingDirectory, HttpClient? httpClient, CancellationToken cancellationToken)
+    {
+        var parsed = TryParseGitHubIntake(args, workingDirectory, error);
+        if (parsed is null)
+        {
+            return 2;
+        }
+
+        var (rootPath, dryRun) = parsed.Value;
+        var project = RoadmapProject.Load(rootPath);
+        var intake = new GitHubRoadmapIntake(project, httpClient);
+        var messages = dryRun
+            ? await intake.Preview(cancellationToken).ConfigureAwait(false)
+            : await intake.Apply(cancellationToken).ConfigureAwait(false);
+        foreach (var message in messages)
+        {
+            await output.WriteLineAsync(message.AsMemory(), cancellationToken).ConfigureAwait(false);
+        }
+
+        return 0;
+    }
+
+    private static async Task<int> RunGitHubReconciliation(string[] args, TextWriter output, TextWriter error, string workingDirectory, HttpClient? httpClient, CancellationToken cancellationToken)
+    {
+        var parsed = TryParseGitHubReconciliation(args, workingDirectory, error);
+        if (parsed is null)
+        {
+            return 2;
+        }
+
+        var (rootPath, dryRun) = parsed.Value;
+        var project = RoadmapProject.Load(rootPath);
+        var reconciler = new GitHubRoadmapReconciler(project, httpClient);
+        var messages = dryRun
+            ? await reconciler.Preview(cancellationToken).ConfigureAwait(false)
+            : await reconciler.Apply(cancellationToken).ConfigureAwait(false);
+        foreach (var message in messages)
+        {
+            await output.WriteLineAsync(message.AsMemory(), cancellationToken).ConfigureAwait(false);
+        }
+
+        return 0;
+    }
+
     private static (string RootPath, bool DryRun)? TryParseGitHubProjection(string[] args, string workingDirectory, TextWriter error)
     {
         if (!TryParseRootOption(args, workingDirectory, error, out var rootPath, out var remaining))
@@ -305,6 +363,64 @@ internal static class RepoConfigToolApplication
         if (remaining.Any(argument => argument is not "github" and not "--dry-run" and not "--apply"))
         {
             WriteUsageError(error, "Unknown sync argument.");
+            return null;
+        }
+
+        return (rootPath, dryRun);
+    }
+
+    private static (string RootPath, bool DryRun)? TryParseGitHubIntake(string[] args, string workingDirectory, TextWriter error)
+    {
+        if (!TryParseRootOption(args, workingDirectory, error, out var rootPath, out var remaining))
+        {
+            return null;
+        }
+
+        if (remaining.Length == 0 || !string.Equals(remaining[0], "github", StringComparison.Ordinal))
+        {
+            WriteUsageError(error, "Missing intake target: github.");
+            return null;
+        }
+
+        var dryRun = !remaining.Contains("--apply", StringComparer.Ordinal);
+        if (remaining.Contains("--dry-run", StringComparer.Ordinal) && remaining.Contains("--apply", StringComparer.Ordinal))
+        {
+            WriteUsageError(error, "Use either --dry-run or --apply, not both.");
+            return null;
+        }
+
+        if (remaining.Any(argument => argument is not "github" and not "--dry-run" and not "--apply"))
+        {
+            WriteUsageError(error, "Unknown intake argument.");
+            return null;
+        }
+
+        return (rootPath, dryRun);
+    }
+
+    private static (string RootPath, bool DryRun)? TryParseGitHubReconciliation(string[] args, string workingDirectory, TextWriter error)
+    {
+        if (!TryParseRootOption(args, workingDirectory, error, out var rootPath, out var remaining))
+        {
+            return null;
+        }
+
+        if (remaining.Length == 0 || !string.Equals(remaining[0], "github", StringComparison.Ordinal))
+        {
+            WriteUsageError(error, "Missing reconciliation target: github.");
+            return null;
+        }
+
+        var dryRun = !remaining.Contains("--apply", StringComparer.Ordinal);
+        if (remaining.Contains("--dry-run", StringComparer.Ordinal) && remaining.Contains("--apply", StringComparer.Ordinal))
+        {
+            WriteUsageError(error, "Use either --dry-run or --apply, not both.");
+            return null;
+        }
+
+        if (remaining.Any(argument => argument is not "github" and not "--dry-run" and not "--apply"))
+        {
+            WriteUsageError(error, "Unknown reconciliation argument.");
             return null;
         }
 

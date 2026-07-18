@@ -1,0 +1,33 @@
+{
+  "$schema": "../schema/roadmap-item.schema.json",
+  "id": "RM-248",
+  "title": "Design provider-neutral OIDC/OAuth and authorization model",
+  "type": "enabler",
+  "status": "done",
+  "triage": "untriaged",
+  "theme": "repo-operations",
+  "outcome": "GitHub issue #806 is canonically represented from the reconciliation manifest.",
+  "blockedBy": [],
+  "blocks": [
+    "RM-170"
+  ],
+  "dependencies": [],
+  "tags": [],
+  "labels": [
+    "architecture",
+    "configuration",
+    "security",
+    "type: enabler"
+  ],
+  "sources": [
+    {
+      "kind": "github-issue",
+      "reference": "#806"
+    }
+  ],
+  "integrations": {
+    "github": {
+      "issue": 806
+    }
+  }
+}

@@ -1,0 +1,38 @@
+{
+  "$schema": "../schema/roadmap-item.schema.json",
+  "id": "RM-226",
+  "title": "Enforce case-insensitive JSON source-generation contexts",
+  "type": "enabler",
+  "status": "proposed",
+  "order": 250,
+  "theme": "repo-operations",
+  "outcome": "GitHub issue #1054 is canonically represented from the reconciliation manifest.",
+  "scoring": {
+    "reach": 1,
+    "impact": 1,
+    "confidence": 0.1,
+    "effort": 3
+  },
+  "blockedBy": [],
+  "blocks": [],
+  "dependencies": [],
+  "tags": [],
+  "labels": [
+    ".net",
+    "area: sharedkernel",
+    "enhancement",
+    "sharedkernel",
+    "type: enabler"
+  ],
+  "sources": [
+    {
+      "kind": "github-issue",
+      "reference": "#1054"
+    }
+  ],
+  "integrations": {
+    "github": {
+      "issue": 1054
+    }
+  }
+}

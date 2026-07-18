@@ -1,0 +1,40 @@
+{
+  "$schema": "../schema/roadmap-item.schema.json",
+  "id": "RM-219",
+  "parent": "RM-217",
+  "title": "feat(aspire): validate MCP discovery for AppHost resources",
+  "type": "feature",
+  "status": "proposed",
+  "order": 305,
+  "theme": "repo-operations",
+  "outcome": "GitHub issue #1039 is canonically represented from the reconciliation manifest.",
+  "scoring": {
+    "reach": 1,
+    "impact": 1,
+    "confidence": 0.1,
+    "effort": 5
+  },
+  "blockedBy": [],
+  "blocks": [],
+  "dependencies": [],
+  "tags": [],
+  "labels": [
+    "area: tooling",
+    "aspire",
+    "configuration",
+    "infrastructure",
+    "security",
+    "type: feature"
+  ],
+  "sources": [
+    {
+      "kind": "github-issue",
+      "reference": "#1039"
+    }
+  ],
+  "integrations": {
+    "github": {
+      "issue": 1039
+    }
+  }
+}

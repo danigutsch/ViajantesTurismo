@@ -1,0 +1,38 @@
+{
+  "$schema": "../schema/roadmap-item.schema.json",
+  "id": "RM-267",
+  "parent": "RM-264",
+  "title": "[Issue]: Assess reusable xUnit v3 scenario-data patterns",
+  "type": "enabler",
+  "status": "proposed",
+  "order": 347,
+  "theme": "repo-operations",
+  "outcome": "GitHub issue #1110 is canonically represented from the reconciliation manifest.",
+  "scoring": {
+    "reach": 1,
+    "impact": 1,
+    "confidence": 0.1,
+    "effort": 3
+  },
+  "blockedBy": [],
+  "blocks": [],
+  "dependencies": [],
+  "tags": [],
+  "labels": [
+    "research",
+    "sharedkernel",
+    "testing",
+    "type: enabler"
+  ],
+  "sources": [
+    {
+      "kind": "github-issue",
+      "reference": "#1110"
+    }
+  ],
+  "integrations": {
+    "github": {
+      "issue": 1110
+    }
+  }
+}

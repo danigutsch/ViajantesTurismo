@@ -1,0 +1,38 @@
+{
+  "$schema": "../schema/roadmap-item.schema.json",
+  "id": "RM-149",
+  "title": "Enforce aggregate and entity encapsulation",
+  "type": "feature",
+  "status": "proposed",
+  "order": 291,
+  "theme": "repo-operations",
+  "outcome": "GitHub issue #913 is canonically represented from the reconciliation manifest.",
+  "scoring": {
+    "reach": 1,
+    "impact": 1,
+    "confidence": 0.1,
+    "effort": 5
+  },
+  "blockedBy": [],
+  "blocks": [],
+  "dependencies": [],
+  "tags": [],
+  "labels": [
+    ".net",
+    "architecture",
+    "area: tooling",
+    "enhancement",
+    "type: feature"
+  ],
+  "sources": [
+    {
+      "kind": "github-issue",
+      "reference": "#913"
+    }
+  ],
+  "integrations": {
+    "github": {
+      "issue": 913
+    }
+  }
+}

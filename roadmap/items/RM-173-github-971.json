@@ -1,0 +1,40 @@
+{
+  "$schema": "../schema/roadmap-item.schema.json",
+  "id": "RM-173",
+  "parent": "RM-018",
+  "title": "Add media accessibility review workflow",
+  "type": "issue",
+  "status": "proposed",
+  "order": 216,
+  "theme": "repo-operations",
+  "outcome": "GitHub issue #971 is canonically represented from the reconciliation manifest.",
+  "scoring": {
+    "reach": 1,
+    "impact": 2,
+    "confidence": 0.1,
+    "effort": 3
+  },
+  "blockedBy": [
+    "RM-170"
+  ],
+  "blocks": [],
+  "dependencies": [],
+  "tags": [],
+  "labels": [
+    "enhancement",
+    "localization",
+    "media",
+    "testing"
+  ],
+  "sources": [
+    {
+      "kind": "github-issue",
+      "reference": "#971"
+    }
+  ],
+  "integrations": {
+    "github": {
+      "issue": 971
+    }
+  }
+}

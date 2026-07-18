@@ -1,0 +1,38 @@
+{
+  "$schema": "../schema/roadmap-item.schema.json",
+  "id": "RM-049",
+  "title": "Evaluate source-generated DbContext partial configuration attributes",
+  "type": "enabler",
+  "status": "proposed",
+  "order": 142,
+  "theme": "repo-operations",
+  "outcome": "GitHub issue #687 is canonically represented from the reconciliation manifest.",
+  "scoring": {
+    "reach": 1,
+    "impact": 1,
+    "confidence": 0.1,
+    "effort": 3
+  },
+  "blockedBy": [],
+  "blocks": [],
+  "dependencies": [],
+  "tags": [],
+  "labels": [
+    "architecture",
+    "area: tooling",
+    "infrastructure",
+    "sharedkernel",
+    "type: enabler"
+  ],
+  "sources": [
+    {
+      "kind": "github-issue",
+      "reference": "#687"
+    }
+  ],
+  "integrations": {
+    "github": {
+      "issue": 687
+    }
+  }
+}

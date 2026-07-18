@@ -1,0 +1,36 @@
+{
+  "$schema": "../schema/roadmap-item.schema.json",
+  "id": "RM-153",
+  "title": "refactor(architecture): extract domain validation constants from contracts",
+  "type": "issue",
+  "status": "proposed",
+  "order": 113,
+  "theme": "repo-operations",
+  "outcome": "GitHub issue #930 is canonically represented from the reconciliation manifest.",
+  "scoring": {
+    "reach": 1,
+    "impact": 1,
+    "confidence": 0.1,
+    "effort": 2
+  },
+  "blockedBy": [],
+  "blocks": [],
+  "dependencies": [],
+  "tags": [],
+  "labels": [
+    "architecture",
+    "area: sharedkernel",
+    "type: chore"
+  ],
+  "sources": [
+    {
+      "kind": "github-issue",
+      "reference": "#930"
+    }
+  ],
+  "integrations": {
+    "github": {
+      "issue": 930
+    }
+  }
+}

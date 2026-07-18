@@ -1,0 +1,42 @@
+{
+  "$schema": "../schema/roadmap-item.schema.json",
+  "id": "RM-254",
+  "parent": "RM-171",
+  "title": "Add progressive folder intake to Catalog media upload",
+  "type": "feature",
+  "status": "proposed",
+  "order": 342,
+  "theme": "repo-operations",
+  "outcome": "GitHub issue #1097 is canonically represented from the reconciliation manifest.",
+  "scoring": {
+    "reach": 1,
+    "impact": 1,
+    "confidence": 0.1,
+    "effort": 5
+  },
+  "blockedBy": [],
+  "blocks": [],
+  "dependencies": [],
+  "tags": [],
+  "labels": [
+    "catalog",
+    "enhancement",
+    "frontend",
+    "management-web",
+    "media",
+    "security",
+    "testing",
+    "type: feature"
+  ],
+  "sources": [
+    {
+      "kind": "github-issue",
+      "reference": "#1097"
+    }
+  ],
+  "integrations": {
+    "github": {
+      "issue": 1097
+    }
+  }
+}

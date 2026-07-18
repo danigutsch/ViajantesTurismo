@@ -1,0 +1,36 @@
+{
+  "$schema": "../schema/roadmap-item.schema.json",
+  "id": "RM-039",
+  "parent": "RM-038",
+  "title": "Update security policy after versioned releases exist",
+  "type": "issue",
+  "status": "proposed",
+  "order": 101,
+  "theme": "repo-operations",
+  "outcome": "GitHub issue #595 is canonically represented from the reconciliation manifest.",
+  "scoring": {
+    "reach": 1,
+    "impact": 1,
+    "confidence": 0.1,
+    "effort": 2
+  },
+  "blockedBy": [],
+  "blocks": [],
+  "dependencies": [],
+  "tags": [],
+  "labels": [
+    "area: release",
+    "type: chore"
+  ],
+  "sources": [
+    {
+      "kind": "github-issue",
+      "reference": "#595"
+    }
+  ],
+  "integrations": {
+    "github": {
+      "issue": 595
+    }
+  }
+}

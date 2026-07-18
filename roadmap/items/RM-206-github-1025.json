@@ -1,0 +1,38 @@
+{
+  "$schema": "../schema/roadmap-item.schema.json",
+  "id": "RM-206",
+  "parent": "RM-203",
+  "title": "Standardize application test project ownership",
+  "type": "enabler",
+  "status": "proposed",
+  "order": 237,
+  "theme": "repo-operations",
+  "outcome": "GitHub issue #1025 is canonically represented from the reconciliation manifest.",
+  "scoring": {
+    "reach": 1,
+    "impact": 1,
+    "confidence": 0.1,
+    "effort": 3
+  },
+  "blockedBy": [],
+  "blocks": [],
+  "dependencies": [],
+  "tags": [],
+  "labels": [
+    "architecture",
+    "area: testing",
+    "testing",
+    "type: enabler"
+  ],
+  "sources": [
+    {
+      "kind": "github-issue",
+      "reference": "#1025"
+    }
+  ],
+  "integrations": {
+    "github": {
+      "issue": 1025
+    }
+  }
+}

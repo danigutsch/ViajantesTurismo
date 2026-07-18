@@ -1,0 +1,40 @@
+{
+  "$schema": "../schema/roadmap-item.schema.json",
+  "id": "RM-207",
+  "parent": "RM-203",
+  "title": "Standardize SharedKernel test project ownership",
+  "type": "enabler",
+  "status": "proposed",
+  "order": 238,
+  "theme": "repo-operations",
+  "outcome": "GitHub issue #1026 is canonically represented from the reconciliation manifest.",
+  "scoring": {
+    "reach": 1,
+    "impact": 1,
+    "confidence": 0.1,
+    "effort": 3
+  },
+  "blockedBy": [],
+  "blocks": [],
+  "dependencies": [],
+  "tags": [],
+  "labels": [
+    "architecture",
+    "area: sharedkernel",
+    "area: testing",
+    "sharedkernel",
+    "testing",
+    "type: enabler"
+  ],
+  "sources": [
+    {
+      "kind": "github-issue",
+      "reference": "#1026"
+    }
+  ],
+  "integrations": {
+    "github": {
+      "issue": 1026
+    }
+  }
+}

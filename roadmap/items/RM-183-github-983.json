@@ -1,0 +1,37 @@
+{
+  "$schema": "../schema/roadmap-item.schema.json",
+  "id": "RM-183",
+  "title": "[Epic]: PostgreSQL observability and index health",
+  "type": "epic",
+  "status": "proposed",
+  "order": 321,
+  "theme": "repo-operations",
+  "outcome": "GitHub issue #983 is canonically represented from the reconciliation manifest.",
+  "scoring": {
+    "reach": 1,
+    "impact": 1,
+    "confidence": 0.1,
+    "effort": 8
+  },
+  "blockedBy": [],
+  "blocks": [],
+  "dependencies": [],
+  "tags": [],
+  "labels": [
+    "infrastructure",
+    "observability",
+    "performance",
+    "type: epic"
+  ],
+  "sources": [
+    {
+      "kind": "github-issue",
+      "reference": "#983"
+    }
+  ],
+  "integrations": {
+    "github": {
+      "issue": 983
+    }
+  }
+}

@@ -1,0 +1,39 @@
+{
+  "$schema": "../schema/roadmap-item.schema.json",
+  "id": "RM-184",
+  "parent": "RM-183",
+  "title": "Establish a safe Npgsql metrics baseline",
+  "type": "enabler",
+  "status": "proposed",
+  "order": 225,
+  "theme": "repo-operations",
+  "outcome": "GitHub issue #985 is canonically represented from the reconciliation manifest.",
+  "scoring": {
+    "reach": 1,
+    "impact": 1,
+    "confidence": 0.1,
+    "effort": 3
+  },
+  "blockedBy": [],
+  "blocks": [],
+  "dependencies": [],
+  "tags": [],
+  "labels": [
+    ".net",
+    "configuration",
+    "observability",
+    "security",
+    "type: enabler"
+  ],
+  "sources": [
+    {
+      "kind": "github-issue",
+      "reference": "#985"
+    }
+  ],
+  "integrations": {
+    "github": {
+      "issue": 985
+    }
+  }
+}

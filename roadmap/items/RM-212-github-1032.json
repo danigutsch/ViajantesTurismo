@@ -1,0 +1,40 @@
+{
+  "$schema": "../schema/roadmap-item.schema.json",
+  "id": "RM-212",
+  "parent": "RM-215",
+  "title": "Generate reviewed PostgreSQL migration scripts for deployment",
+  "type": "enabler",
+  "status": "proposed",
+  "order": 243,
+  "theme": "repo-operations",
+  "outcome": "GitHub issue #1032 is canonically represented from the reconciliation manifest.",
+  "scoring": {
+    "reach": 1,
+    "impact": 1,
+    "confidence": 0.1,
+    "effort": 3
+  },
+  "blockedBy": [],
+  "blocks": [],
+  "dependencies": [],
+  "tags": [],
+  "labels": [
+    "architecture",
+    "area: tooling",
+    "infrastructure",
+    "security",
+    "testing",
+    "type: enabler"
+  ],
+  "sources": [
+    {
+      "kind": "github-issue",
+      "reference": "#1032"
+    }
+  ],
+  "integrations": {
+    "github": {
+      "issue": 1032
+    }
+  }
+}

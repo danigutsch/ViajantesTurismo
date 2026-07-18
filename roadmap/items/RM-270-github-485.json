@@ -1,0 +1,32 @@
+{
+  "$schema": "../schema/roadmap-item.schema.json",
+  "id": "RM-270",
+  "title": "Add code fix and cleanup for success-only Result methods",
+  "type": "issue",
+  "status": "done",
+  "triage": "untriaged",
+  "theme": "repo-operations",
+  "outcome": "GitHub issue #485 is canonically represented from the reconciliation manifest.",
+  "blockedBy": [
+    "RM-269"
+  ],
+  "blocks": [],
+  "dependencies": [],
+  "tags": [],
+  "labels": [
+    "enhancement",
+    "sharedkernel",
+    "testing"
+  ],
+  "sources": [
+    {
+      "kind": "github-issue",
+      "reference": "#485"
+    }
+  ],
+  "integrations": {
+    "github": {
+      "issue": 485
+    }
+  }
+}

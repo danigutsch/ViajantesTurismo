@@ -1,0 +1,35 @@
+{
+  "$schema": "../schema/roadmap-item.schema.json",
+  "id": "RM-174",
+  "parent": "RM-018",
+  "title": "Add container-backed ClamAV and SeaweedFS integration tests",
+  "type": "feature",
+  "status": "done",
+  "triage": "untriaged",
+  "theme": "repo-operations",
+  "outcome": "GitHub issue #972 is canonically represented from the reconciliation manifest.",
+  "blockedBy": [],
+  "blocks": [],
+  "dependencies": [],
+  "tags": [],
+  "labels": [
+    "aspire",
+    "enhancement",
+    "infrastructure",
+    "media",
+    "security",
+    "testing",
+    "type: feature"
+  ],
+  "sources": [
+    {
+      "kind": "github-issue",
+      "reference": "#972"
+    }
+  ],
+  "integrations": {
+    "github": {
+      "issue": 972
+    }
+  }
+}

@@ -1,0 +1,36 @@
+{
+  "$schema": "../schema/roadmap-item.schema.json",
+  "id": "RM-062",
+  "parent": "RM-044",
+  "title": "Inventory current vertical-slice structure by bounded context",
+  "type": "enabler",
+  "status": "proposed",
+  "order": 146,
+  "theme": "repo-operations",
+  "outcome": "GitHub issue #710 is canonically represented from the reconciliation manifest.",
+  "scoring": {
+    "reach": 1,
+    "impact": 1,
+    "confidence": 0.1,
+    "effort": 3
+  },
+  "blockedBy": [],
+  "blocks": [],
+  "dependencies": [],
+  "tags": [],
+  "labels": [
+    "architecture",
+    "type: enabler"
+  ],
+  "sources": [
+    {
+      "kind": "github-issue",
+      "reference": "#710"
+    }
+  ],
+  "integrations": {
+    "github": {
+      "issue": 710
+    }
+  }
+}
