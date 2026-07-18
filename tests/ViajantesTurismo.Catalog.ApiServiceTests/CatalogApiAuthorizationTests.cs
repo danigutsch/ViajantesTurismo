@@ -161,6 +161,7 @@ public sealed class CatalogApiAuthorizationTests
     [InlineData("PUT", "/api/v1/catalog/tours/1d02ec44-41b5-4d3a-878b-89f53261a803/presentation")]
     [InlineData("PUT", "/api/v1/catalog/media/images/1d02ec44-41b5-4d3a-878b-89f53261a803/accessibility-review")]
     [InlineData("POST", "/api/v1/catalog/media/images/1d02ec44-41b5-4d3a-878b-89f53261a803/accessibility-draft")]
+    [InlineData("PUT", "/api/v1/catalog/public-content/home.hero")]
     public async Task Management_catalog_mutation_endpoints_reject_anonymous_requests(string method, string path)
     {
         // Arrange
@@ -182,6 +183,7 @@ public sealed class CatalogApiAuthorizationTests
     [InlineData("PUT", "/api/v1/catalog/tours/1d02ec44-41b5-4d3a-878b-89f53261a803/presentation")]
     [InlineData("PUT", "/api/v1/catalog/media/images/1d02ec44-41b5-4d3a-878b-89f53261a803/accessibility-review")]
     [InlineData("POST", "/api/v1/catalog/media/images/1d02ec44-41b5-4d3a-878b-89f53261a803/accessibility-draft")]
+    [InlineData("PUT", "/api/v1/catalog/public-content/home.hero")]
     public async Task Management_catalog_mutation_endpoints_reject_an_authenticated_role_without_permissions(string method, string path)
     {
         // Arrange
@@ -207,6 +209,8 @@ public sealed class CatalogApiAuthorizationTests
     [InlineData("Operator", "PUT", "/api/v1/catalog/tours/1d02ec44-41b5-4d3a-878b-89f53261a803/presentation", HttpStatusCode.BadRequest)]
     [InlineData("Operator", "PUT", "/api/v1/catalog/media/images/1d02ec44-41b5-4d3a-878b-89f53261a803/accessibility-review", HttpStatusCode.NotFound)]
     [InlineData("Operator", "POST", "/api/v1/catalog/media/images/1d02ec44-41b5-4d3a-878b-89f53261a803/accessibility-draft", HttpStatusCode.NotFound)]
+    [InlineData("Admin", "PUT", "/api/v1/catalog/public-content/home.hero", HttpStatusCode.BadRequest)]
+    [InlineData("Operator", "PUT", "/api/v1/catalog/public-content/home.hero", HttpStatusCode.BadRequest)]
     public async Task Management_catalog_mutation_endpoints_accept_supported_roles(
         string role,
         string method,

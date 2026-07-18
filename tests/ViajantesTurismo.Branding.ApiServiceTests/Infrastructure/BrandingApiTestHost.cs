@@ -1,4 +1,6 @@
+using Microsoft.AspNetCore.OutputCaching;
 using Microsoft.Extensions.Diagnostics.HealthChecks;
+using Microsoft.Extensions.Hosting;
 using SharedKernel.AspNetCore;
 using SharedKernel.Testing.AspNetCore;
 using ViajantesTurismo.Branding.ApiService;
@@ -20,6 +22,24 @@ internal static class BrandingApiTestHost
     public static WebApplicationFactory<BrandingApiHostEntryPoint> Create(TestBrandingSettingsStore store)
     {
         return Create(null, store);
+    }
+
+    public static WebApplicationFactory<BrandingApiHostEntryPoint> CreateProductionComposition()
+    {
+        return WebApplicationTestHost.Create<BrandingApiHostEntryPoint>(
+            Environments.Development,
+            services =>
+            {
+                services.Configure<HealthCheckServiceOptions>(options => options.Registrations.Clear());
+                ApiTestAuthentication.ConfigureJwtBearer(services, Audience);
+            },
+            null,
+            new Dictionary<string, string?>
+            {
+                [ApiAuthenticationDefaults.AuthorityConfigurationKey] = ApiTestAuthentication.Authority,
+                [ApiAuthenticationDefaults.IssuerConfigurationKey] = ApiTestAuthentication.Authority,
+                ["ConnectionStrings:catalog-database"] = "Host=localhost;Database=viajantes-branding"
+            });
     }
 
     private static WebApplicationFactory<BrandingApiHostEntryPoint> Create(
@@ -63,5 +83,14 @@ internal static class BrandingApiTestHost
     public static void ConfigureClientWithWrongAudience(HttpClient client)
     {
         ApiTestAuthentication.ConfigureAuthenticatedClient(client, WrongAudience, AdministratorRole);
+    }
+
+    public static void VerifyMappedMutationDependencies(WebApplicationFactory<BrandingApiHostEntryPoint> factory)
+    {
+        ArgumentNullException.ThrowIfNull(factory);
+
+        using var scope = factory.Services.CreateScope();
+        _ = scope.ServiceProvider.GetRequiredService<IBrandingSettingsStore>();
+        _ = scope.ServiceProvider.GetRequiredService<IOutputCacheStore>();
     }
 }
