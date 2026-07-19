@@ -209,7 +209,7 @@ internal sealed class GitHubRoadmapIntake
         AllocateClosedSupportItems(reconciliation, closedIssuesByNumber, existingItemsByIssue, itemIdsByIssue, usedItemIds, candidates, closedItemTransitions, ref roadmapNumber);
         AddExactBlockerLinks(reconciliation, itemIdsByIssue, candidates);
         AddParentLinks(candidates, itemIdsByIssue, reconciliation.Repository);
-        var importedOrdering = CreateImportedOrdering(reconciliation, openIssuesByNumber, itemIdsByIssue, candidates, existingItemsById, closedItemTransitions);
+        var importedOrdering = CreateImportedOrdering(_project, reconciliation, openIssuesByNumber, itemIdsByIssue, candidates, existingItemsById, closedItemTransitions);
 
         return CreateWritePlan(
             reconciliation,
@@ -454,7 +454,8 @@ internal sealed class GitHubRoadmapIntake
         string.Equals(parent.Repository, repository, StringComparison.OrdinalIgnoreCase)
         && string.Equals(parent.State, "OPEN", StringComparison.Ordinal);
 
-    private ImportedOrdering CreateImportedOrdering(
+    private static ImportedOrdering CreateImportedOrdering(
+        RoadmapProject project,
         GitHubRoadmapReconciliation reconciliation,
         Dictionary<int, GitHubRoadmapReconcileIssue> openIssuesByNumber,
         Dictionary<int, string> itemIdsByIssue,
@@ -463,52 +464,17 @@ internal sealed class GitHubRoadmapIntake
         IReadOnlyCollection<RoadmapItemSnapshot> closedItemTransitions)
     {
         var transitioningItemIds = new HashSet<string>(closedItemTransitions.Select(item => item.Id), StringComparer.Ordinal);
-        Dictionary<string, List<string>> blockerIdsByItemId = new(StringComparer.Ordinal);
-        foreach (var edge in reconciliation.BlockerEdges)
-        {
-            if (!itemIdsByIssue.TryGetValue(edge.Blocker, out var blockerId)
-                || !itemIdsByIssue.TryGetValue(edge.Blocked, out var blockedId))
-            {
-                throw new InvalidOperationException("GitHub reconciliation blocker edge cannot be mapped to roadmap items.");
-            }
+        var (_, blockerIdsByItemId) = CreateBlockerLinkMaps(reconciliation.BlockerEdges, itemIdsByIssue);
+        var (remaining, scoringByItemId) = CreateOrderNodes(
+            project,
+            reconciliation,
+            openIssuesByNumber,
+            existingItemsById,
+            transitioningItemIds,
+            blockerIdsByItemId,
+            candidates);
 
-            AddLink(blockerIdsByItemId, blockedId, blockerId);
-        }
-
-        Dictionary<string, ImportedOrderNode> remaining = new(StringComparer.Ordinal);
-        Dictionary<string, IntakeScoring> scoringByItemId = new(StringComparer.Ordinal);
-        foreach (var item in existingItemsById.Values.Where(item => item.IsTriaged && IsIntakeGenerated(item) && !transitioningItemIds.Contains(item.Id) && !_project.IsClosed(item)))
-        {
-            if (item.GitHubIssue is not int issueNumber || !openIssuesByNumber.TryGetValue(issueNumber, out var issue))
-            {
-                throw new InvalidOperationException($"Imported roadmap item requires current GitHub metadata before ordering: {item.Id}.");
-            }
-
-            var classification = Classify(issue.Labels, reconciliation.PriorityPolicy);
-            var scoring = CreateScoring(issueNumber, isOpen: true, reconciliation.BlockerEdges, reconciliation.PriorityPolicy, classification.Effort);
-            var blockers = blockerIdsByItemId.TryGetValue(item.Id, out var blockerIds) ? blockerIds : [];
-            remaining.Add(item.Id, new ImportedOrderNode(item.Id, scoring.Score, blockers));
-            scoringByItemId.Add(item.Id, scoring);
-        }
-
-        foreach (var candidate in candidates.Where(candidate => candidate.IsOpen))
-        {
-            var blockers = blockerIdsByItemId.TryGetValue(candidate.Id, out var blockerIds) ? blockerIds : [];
-            remaining.Add(candidate.Id, new ImportedOrderNode(candidate.Id, candidate.Score, blockers));
-            scoringByItemId.Add(candidate.Id, candidate.Scoring);
-        }
-
-        List<string> orderedItemIds = [];
-        while (remaining.Count > 0)
-        {
-            var next = remaining.Values
-                .Where(node => node.BlockedBy.All(blockerId => !remaining.ContainsKey(blockerId)))
-                .OrderByDescending(node => node.Score)
-                .ThenBy(node => node.Id, StringComparer.Ordinal)
-                .FirstOrDefault() ?? throw new InvalidOperationException("GitHub reconciliation blocker edges contain a cycle.");
-            remaining.Remove(next.Id);
-            orderedItemIds.Add(next.Id);
-        }
+        var orderedItemIds = OrderImportedItems(remaining);
 
         var nextOrder = existingItemsById.Values
             .Where(item => item.IsTriaged && !IsIntakeGenerated(item) && !transitioningItemIds.Contains(item.Id))
@@ -526,13 +492,71 @@ internal sealed class GitHubRoadmapIntake
             ordersByItemId.Add(itemId, ++nextOrder);
         }
 
+        SetCandidateOrders(candidates, ordersByItemId);
+
+        var existingOrdersChanged = ordersByItemId.Any(entry => existingItemsById.TryGetValue(entry.Key, out var item) && item.Order != entry.Value);
+        return new ImportedOrdering(orderedItemIds, ordersByItemId, scoringByItemId, existingOrdersChanged);
+    }
+
+    private static (Dictionary<string, ImportedOrderNode> Remaining, Dictionary<string, IntakeScoring> ScoringByItemId) CreateOrderNodes(
+        RoadmapProject project,
+        GitHubRoadmapReconciliation reconciliation,
+        Dictionary<int, GitHubRoadmapReconcileIssue> openIssuesByNumber,
+        Dictionary<string, RoadmapItemSnapshot> existingItemsById,
+        HashSet<string> transitioningItemIds,
+        Dictionary<string, List<string>> blockerIdsByItemId,
+        IEnumerable<IntakeCandidate> candidates)
+    {
+        Dictionary<string, ImportedOrderNode> remaining = new(StringComparer.Ordinal);
+        Dictionary<string, IntakeScoring> scoringByItemId = new(StringComparer.Ordinal);
+        foreach (var item in existingItemsById.Values.Where(item => item.IsTriaged
+            && IsIntakeGenerated(item)
+            && !transitioningItemIds.Contains(item.Id)
+            && !project.IsClosed(item)))
+        {
+            if (item.GitHubIssue is not int issueNumber || !openIssuesByNumber.TryGetValue(issueNumber, out var issue))
+            {
+                throw new InvalidOperationException($"Imported roadmap item requires current GitHub metadata before ordering: {item.Id}.");
+            }
+
+            var classification = Classify(issue.Labels, reconciliation.PriorityPolicy);
+            var scoring = CreateScoring(issueNumber, isOpen: true, reconciliation.BlockerEdges, reconciliation.PriorityPolicy, classification.Effort);
+            remaining.Add(item.Id, new ImportedOrderNode(item.Id, scoring.Score, GetSortedLinks(blockerIdsByItemId, item.Id)));
+            scoringByItemId.Add(item.Id, scoring);
+        }
+
+        foreach (var candidate in candidates.Where(candidate => candidate.IsOpen))
+        {
+            remaining.Add(candidate.Id, new ImportedOrderNode(candidate.Id, candidate.Score, GetSortedLinks(blockerIdsByItemId, candidate.Id)));
+            scoringByItemId.Add(candidate.Id, candidate.Scoring);
+        }
+
+        return (remaining, scoringByItemId);
+    }
+
+    private static List<string> OrderImportedItems(Dictionary<string, ImportedOrderNode> remaining)
+    {
+        List<string> orderedItemIds = [];
+        while (remaining.Count > 0)
+        {
+            var next = remaining.Values
+                .Where(node => node.BlockedBy.All(blockerId => !remaining.ContainsKey(blockerId)))
+                .OrderByDescending(node => node.Score)
+                .ThenBy(node => node.Id, StringComparer.Ordinal)
+                .FirstOrDefault() ?? throw new InvalidOperationException("GitHub reconciliation blocker edges contain a cycle.");
+            remaining.Remove(next.Id);
+            orderedItemIds.Add(next.Id);
+        }
+
+        return orderedItemIds;
+    }
+
+    private static void SetCandidateOrders(IEnumerable<IntakeCandidate> candidates, Dictionary<string, int> ordersByItemId)
+    {
         foreach (var candidate in candidates.Where(candidate => candidate.IsOpen))
         {
             candidate.Order = ordersByItemId[candidate.Id];
         }
-
-        var existingOrdersChanged = ordersByItemId.Any(entry => existingItemsById.TryGetValue(entry.Key, out var item) && item.Order != entry.Value);
-        return new ImportedOrdering(orderedItemIds, ordersByItemId, scoringByItemId, existingOrdersChanged);
     }
 
     private IntakePlan CreateWritePlan(
@@ -618,59 +642,21 @@ internal sealed class GitHubRoadmapIntake
     {
         var candidateIds = new HashSet<string>(candidates.Select(candidate => candidate.Id), StringComparer.Ordinal);
         var transitioningItemIds = new HashSet<string>(closedItemTransitions.Select(item => item.Id), StringComparer.Ordinal);
-        Dictionary<string, string?> parentByItemId = new(StringComparer.Ordinal);
-        foreach (var issue in openIssuesByNumber.Values)
-        {
-            if (itemIdsByIssue.TryGetValue(issue.Number, out var itemId))
-            {
-                parentByItemId[itemId] = issue.Parent is { } parent
-                    && IsLocalOpenParent(parent, reconciliation.Repository)
-                    && itemIdsByIssue.TryGetValue(parent.Number, out var parentId)
-                    ? parentId
-                    : null;
-            }
-        }
-
-        Dictionary<string, IntakeMetadata> metadataByItemId = new(StringComparer.Ordinal);
-        foreach (var issue in openIssuesByNumber.Values)
-        {
-            if (!itemIdsByIssue.TryGetValue(issue.Number, out var itemId)
-                || !existingItemsById.TryGetValue(itemId, out var item)
-                || !IsIntakeGenerated(item))
-            {
-                continue;
-            }
-
-            var classification = Classify(issue.Labels, reconciliation.PriorityPolicy);
-            metadataByItemId.Add(
-                itemId,
-                new IntakeMetadata(
-                    issue.Title,
-                    classification.Type,
-                    openStatus,
-                    theme,
-                    issue.Labels.Order(StringComparer.Ordinal).ToArray()));
-        }
-
-        Dictionary<string, List<string>> blocksByItemId = new(StringComparer.Ordinal);
-        Dictionary<string, List<string>> blockedByItemId = new(StringComparer.Ordinal);
-        foreach (var edge in reconciliation.BlockerEdges)
-        {
-            if (!itemIdsByIssue.TryGetValue(edge.Blocker, out var blockerId)
-                || !itemIdsByIssue.TryGetValue(edge.Blocked, out var blockedId))
-            {
-                throw new InvalidOperationException("GitHub reconciliation blocker edge cannot be mapped to roadmap items.");
-            }
-
-            AddLink(blocksByItemId, blockerId, blockedId);
-            AddLink(blockedByItemId, blockedId, blockerId);
-        }
+        var parentByItemId = CreateParentByItemId(reconciliation.Repository, openIssuesByNumber, itemIdsByIssue);
+        var metadataByItemId = CreateIntakeMetadataByItemId(
+            reconciliation.PriorityPolicy,
+            openIssuesByNumber,
+            itemIdsByIssue,
+            existingItemsById,
+            theme,
+            openStatus);
+        var (blocksByItemId, blockedByItemId) = CreateBlockerLinkMaps(reconciliation.BlockerEdges, itemIdsByIssue);
 
         var changes = 0;
         foreach (var item in existingItemsById.Values)
         {
-            var desiredBlocks = blocksByItemId.TryGetValue(item.Id, out var blocks) ? blocks.Order(StringComparer.Ordinal).ToArray() : [];
-            var desiredBlockedBy = blockedByItemId.TryGetValue(item.Id, out var blockers) ? blockers.Order(StringComparer.Ordinal).ToArray() : [];
+            var desiredBlocks = GetSortedLinks(blocksByItemId, item.Id);
+            var desiredBlockedBy = GetSortedLinks(blockedByItemId, item.Id);
             var transitionsToClosedSupport = transitioningItemIds.Contains(item.Id);
             var replacesGitHubRelationships = item.GitHubIssue is int;
             string? desiredParent = null;
@@ -680,8 +666,18 @@ internal sealed class GitHubRoadmapIntake
             var updatesScoring = desiredScoring is not null && !desiredScoring.Matches(item);
             metadataByItemId.TryGetValue(item.Id, out var desiredMetadata);
             var updatesMetadata = desiredMetadata is not null && !desiredMetadata.Matches(item);
-            if ((!replacesGitHubRelationships && desiredBlocks.Length == 0 && desiredBlockedBy.Length == 0 && !transitionsToClosedSupport && !updatesParent && !updatesOrder && !updatesScoring && !updatesMetadata)
-                || candidateIds.Contains(item.Id))
+            var hasUpdate = desiredBlocks.Length > 0
+                || desiredBlockedBy.Length > 0
+                || transitionsToClosedSupport
+                || updatesParent
+                || updatesOrder
+                || updatesScoring
+                || updatesMetadata;
+            if (ShouldSkipExistingItem(
+                    item.Id,
+                    candidateIds,
+                    replacesGitHubRelationships,
+                    hasUpdate))
             {
                 continue;
             }
@@ -719,8 +715,91 @@ internal sealed class GitHubRoadmapIntake
         return changes;
     }
 
+    private static Dictionary<string, string?> CreateParentByItemId(
+        string repository,
+        IReadOnlyDictionary<int, GitHubRoadmapReconcileIssue> openIssuesByNumber,
+        Dictionary<int, string> itemIdsByIssue)
+    {
+        Dictionary<string, string?> parentByItemId = new(StringComparer.Ordinal);
+        foreach (var issue in openIssuesByNumber.Values)
+        {
+            if (itemIdsByIssue.TryGetValue(issue.Number, out var itemId))
+            {
+                parentByItemId[itemId] = issue.Parent is { } parent
+                    && IsLocalOpenParent(parent, repository)
+                    && itemIdsByIssue.TryGetValue(parent.Number, out var parentId)
+                    ? parentId
+                    : null;
+            }
+        }
+
+        return parentByItemId;
+    }
+
+    private static Dictionary<string, IntakeMetadata> CreateIntakeMetadataByItemId(
+        GitHubRoadmapPriorityPolicy priorityPolicy,
+        IReadOnlyDictionary<int, GitHubRoadmapReconcileIssue> openIssuesByNumber,
+        Dictionary<int, string> itemIdsByIssue,
+        Dictionary<string, RoadmapItemSnapshot> existingItemsById,
+        string theme,
+        string openStatus)
+    {
+        Dictionary<string, IntakeMetadata> metadataByItemId = new(StringComparer.Ordinal);
+        foreach (var issue in openIssuesByNumber.Values)
+        {
+            if (!itemIdsByIssue.TryGetValue(issue.Number, out var itemId)
+                || !existingItemsById.TryGetValue(itemId, out var item)
+                || !IsIntakeGenerated(item))
+            {
+                continue;
+            }
+
+            var classification = Classify(issue.Labels, priorityPolicy);
+            metadataByItemId.Add(
+                itemId,
+                new IntakeMetadata(
+                    issue.Title,
+                    classification.Type,
+                    openStatus,
+                    theme,
+                    issue.Labels.Order(StringComparer.Ordinal).ToArray()));
+        }
+
+        return metadataByItemId;
+    }
+
+    private static bool ShouldSkipExistingItem(
+        string itemId,
+        HashSet<string> candidateIds,
+        bool replacesGitHubRelationships,
+        bool hasUpdate) => candidateIds.Contains(itemId) || (!replacesGitHubRelationships && !hasUpdate);
+
     private static bool IsIntakeGenerated(RoadmapItemSnapshot item) => item.GitHubIssue is int issueNumber
         && string.Equals(Path.GetFileName(item.Path), $"{item.Id}-github-{issueNumber}.json", StringComparison.Ordinal);
+
+    private static (Dictionary<string, List<string>> BlocksByItemId, Dictionary<string, List<string>> BlockedByItemId) CreateBlockerLinkMaps(
+        IEnumerable<GitHubRoadmapBlockerEdge> blockerEdges,
+        Dictionary<int, string> itemIdsByIssue)
+    {
+        Dictionary<string, List<string>> blocksByItemId = new(StringComparer.Ordinal);
+        Dictionary<string, List<string>> blockedByItemId = new(StringComparer.Ordinal);
+        foreach (var edge in blockerEdges)
+        {
+            if (!itemIdsByIssue.TryGetValue(edge.Blocker, out var blockerId)
+                || !itemIdsByIssue.TryGetValue(edge.Blocked, out var blockedId))
+            {
+                throw new InvalidOperationException("GitHub reconciliation blocker edge cannot be mapped to roadmap items.");
+            }
+
+            AddLink(blocksByItemId, blockerId, blockedId);
+            AddLink(blockedByItemId, blockedId, blockerId);
+        }
+
+        return (blocksByItemId, blockedByItemId);
+    }
+
+    private static string[] GetSortedLinks(Dictionary<string, List<string>> linksByItemId, string itemId) =>
+        linksByItemId.TryGetValue(itemId, out var links) ? links.Order(StringComparer.Ordinal).ToArray() : [];
 
     private static void AddLink(Dictionary<string, List<string>> linksByItemId, string itemId, string linkId)
     {
@@ -775,120 +854,213 @@ internal sealed class GitHubRoadmapIntake
             return null;
         }
 
-        var wroteStatus = false;
-        var wroteOrder = false;
-        var wroteScoring = false;
-        var wroteTitle = false;
-        var wroteType = false;
-        var wroteOpenStatus = false;
-        var wroteTheme = false;
-        var wroteLabels = false;
-        var hasParentProperty = document.RootElement.TryGetProperty("parent", out _);
+        var options = new UpdatedItemOptions
+        {
+            TransitionsToClosedSupport = transitionsToClosedSupport,
+            ClosedStatus = closedStatus,
+            UpdatesParent = updatesParent,
+            DesiredParent = desiredParent,
+            HasParentProperty = document.RootElement.TryGetProperty("parent", out _),
+            UpdatesOrder = updatesOrder,
+            DesiredOrder = desiredOrder,
+            UpdatesScoring = updatesScoring,
+            DesiredScoring = desiredScoring,
+            UpdatesMetadata = updatesMetadata,
+            DesiredMetadata = desiredMetadata,
+            Blocks = blocks,
+            BlockedBy = blockedBy
+        };
+        var writeState = new UpdatedItemWriteState();
         using var stream = new MemoryStream();
         using (var writer = new Utf8JsonWriter(stream, new JsonWriterOptions { Indented = true }))
         {
             writer.WriteStartObject();
             foreach (var property in document.RootElement.EnumerateObject())
             {
-                if (transitionsToClosedSupport && string.Equals(property.Name, "status", StringComparison.Ordinal))
-                {
-                    writer.WriteString("status", closedStatus);
-                    writer.WriteString("triage", "untriaged");
-                    wroteStatus = true;
-                }
-                else if (transitionsToClosedSupport && property.Name is "triage" or "order" or "scoring")
-                {
-                    continue;
-                }
-                else if (updatesParent && string.Equals(property.Name, "parent", StringComparison.Ordinal))
-                {
-                    if (desiredParent is not null)
-                    {
-                        writer.WriteString("parent", desiredParent);
-                    }
-                }
-                else if (updatesOrder && string.Equals(property.Name, "order", StringComparison.Ordinal))
-                {
-                    writer.WriteNumber("order", desiredOrder);
-                    wroteOrder = true;
-                }
-                else if (updatesScoring && string.Equals(property.Name, "scoring", StringComparison.Ordinal))
-                {
-                    writer.WritePropertyName(property.Name);
-                    WriteScoring(writer, desiredScoring ?? throw new InvalidOperationException("Imported roadmap scoring update is incomplete."));
-                    wroteScoring = true;
-                }
-                else if (updatesMetadata && string.Equals(property.Name, "title", StringComparison.Ordinal))
-                {
-                    writer.WriteString(property.Name, desiredMetadata?.Title);
-                    wroteTitle = true;
-                }
-                else if (updatesMetadata && string.Equals(property.Name, "type", StringComparison.Ordinal))
-                {
-                    writer.WriteString(property.Name, desiredMetadata?.Type);
-                    wroteType = true;
-                }
-                else if (updatesMetadata && string.Equals(property.Name, "status", StringComparison.Ordinal))
-                {
-                    writer.WriteString(property.Name, desiredMetadata?.Status);
-                    wroteOpenStatus = true;
-                }
-                else if (updatesMetadata && string.Equals(property.Name, "theme", StringComparison.Ordinal))
-                {
-                    writer.WriteString(property.Name, desiredMetadata?.Theme);
-                    wroteTheme = true;
-                }
-                else if (updatesMetadata && string.Equals(property.Name, "labels", StringComparison.Ordinal))
-                {
-                    writer.WritePropertyName(property.Name);
-                    WriteStringArray(writer, desiredMetadata?.Labels ?? []);
-                    wroteLabels = true;
-                }
-                else if (string.Equals(property.Name, "blocks", StringComparison.Ordinal))
-                {
-                    writer.WritePropertyName(property.Name);
-                    WriteStringArray(writer, blocks);
-                }
-                else if (string.Equals(property.Name, "blockedBy", StringComparison.Ordinal))
-                {
-                    writer.WritePropertyName(property.Name);
-                    WriteStringArray(writer, blockedBy);
-                }
-                else
-                {
-                    writer.WritePropertyName(property.Name);
-                    property.Value.WriteTo(writer);
-                    if (updatesParent && !hasParentProperty && desiredParent is not null && string.Equals(property.Name, "id", StringComparison.Ordinal))
-                    {
-                        writer.WriteString("parent", desiredParent);
-                    }
-                }
+                WriteUpdatedProperty(writer, property, options, writeState);
             }
 
             writer.WriteEndObject();
         }
 
-        if (transitionsToClosedSupport && !wroteStatus)
-        {
-            throw new InvalidOperationException($"Roadmap item must define status before a closed support transition: {relativeItemPath}.");
-        }
-
-        if (updatesOrder && !wroteOrder)
-        {
-            throw new InvalidOperationException($"Imported roadmap item must define order before reprioritization: {relativeItemPath}.");
-        }
-
-        if (updatesScoring && !wroteScoring)
-        {
-            throw new InvalidOperationException($"Imported roadmap item must define scoring before reprioritization: {relativeItemPath}.");
-        }
-
-        if (updatesMetadata && (!wroteTitle || !wroteType || !wroteOpenStatus || !wroteTheme || !wroteLabels))
-        {
-            throw new InvalidOperationException($"Imported roadmap item must define snapshot metadata before synchronization: {relativeItemPath}.");
-        }
+        ValidateUpdatedItemWrite(options, writeState, relativeItemPath);
 
         return Encoding.UTF8.GetString(stream.ToArray()) + Environment.NewLine;
+    }
+
+    private static void WriteUpdatedProperty(
+        Utf8JsonWriter writer,
+        JsonProperty property,
+        UpdatedItemOptions options,
+        UpdatedItemWriteState writeState)
+    {
+        if (TryWriteClosedSupportTransitionProperty(writer, property, options, writeState)
+            || TryWriteParentProperty(writer, property, options)
+            || TryWritePriorityProperty(writer, property, options, writeState)
+            || TryWriteMetadataProperty(writer, property, options, writeState))
+        {
+            return;
+        }
+
+        WriteRelationshipOrOriginalProperty(writer, property, options);
+    }
+
+    private static bool TryWriteClosedSupportTransitionProperty(
+        Utf8JsonWriter writer,
+        JsonProperty property,
+        UpdatedItemOptions options,
+        UpdatedItemWriteState writeState)
+    {
+        if (!options.TransitionsToClosedSupport)
+        {
+            return false;
+        }
+
+        if (string.Equals(property.Name, "status", StringComparison.Ordinal))
+        {
+            writer.WriteString("status", options.ClosedStatus);
+            writer.WriteString("triage", "untriaged");
+            writeState.WroteStatus = true;
+            return true;
+        }
+
+        return property.Name is "triage" or "order" or "scoring";
+    }
+
+    private static bool TryWriteParentProperty(Utf8JsonWriter writer, JsonProperty property, UpdatedItemOptions options)
+    {
+        if (!options.UpdatesParent || !string.Equals(property.Name, "parent", StringComparison.Ordinal))
+        {
+            return false;
+        }
+
+        if (options.DesiredParent is not null)
+        {
+            writer.WriteString("parent", options.DesiredParent);
+        }
+
+        return true;
+    }
+
+    private static bool TryWritePriorityProperty(
+        Utf8JsonWriter writer,
+        JsonProperty property,
+        UpdatedItemOptions options,
+        UpdatedItemWriteState writeState)
+    {
+        if (options.UpdatesOrder && string.Equals(property.Name, "order", StringComparison.Ordinal))
+        {
+            writer.WriteNumber("order", options.DesiredOrder);
+            writeState.WroteOrder = true;
+            return true;
+        }
+
+        if (!options.UpdatesScoring || !string.Equals(property.Name, "scoring", StringComparison.Ordinal))
+        {
+            return false;
+        }
+
+        writer.WritePropertyName(property.Name);
+        WriteScoring(writer, options.DesiredScoring ?? throw new InvalidOperationException("Imported roadmap scoring update is incomplete."));
+        writeState.WroteScoring = true;
+        return true;
+    }
+
+    private static bool TryWriteMetadataProperty(
+        Utf8JsonWriter writer,
+        JsonProperty property,
+        UpdatedItemOptions options,
+        UpdatedItemWriteState writeState)
+    {
+        if (!options.UpdatesMetadata)
+        {
+            return false;
+        }
+
+        switch (property.Name)
+        {
+            case "title":
+                writer.WriteString(property.Name, options.DesiredMetadata?.Title);
+                writeState.WroteTitle = true;
+                return true;
+            case "type":
+                writer.WriteString(property.Name, options.DesiredMetadata?.Type);
+                writeState.WroteType = true;
+                return true;
+            case "status":
+                writer.WriteString(property.Name, options.DesiredMetadata?.Status);
+                writeState.WroteOpenStatus = true;
+                return true;
+            case "theme":
+                writer.WriteString(property.Name, options.DesiredMetadata?.Theme);
+                writeState.WroteTheme = true;
+                return true;
+            case "labels":
+                writer.WritePropertyName(property.Name);
+                WriteStringArray(writer, options.DesiredMetadata?.Labels ?? []);
+                writeState.WroteLabels = true;
+                return true;
+            default:
+                return false;
+        }
+    }
+
+    private static void WriteRelationshipOrOriginalProperty(Utf8JsonWriter writer, JsonProperty property, UpdatedItemOptions options)
+    {
+        if (string.Equals(property.Name, "blocks", StringComparison.Ordinal))
+        {
+            writer.WritePropertyName(property.Name);
+            WriteStringArray(writer, options.Blocks);
+            return;
+        }
+
+        if (string.Equals(property.Name, "blockedBy", StringComparison.Ordinal))
+        {
+            writer.WritePropertyName(property.Name);
+            WriteStringArray(writer, options.BlockedBy);
+            return;
+        }
+
+        writer.WritePropertyName(property.Name);
+        property.Value.WriteTo(writer);
+        if (options.UpdatesParent
+            && !options.HasParentProperty
+            && options.DesiredParent is not null
+            && string.Equals(property.Name, "id", StringComparison.Ordinal))
+        {
+            writer.WriteString("parent", options.DesiredParent);
+        }
+    }
+
+    private static void ValidateUpdatedItemWrite(
+        UpdatedItemOptions options,
+        UpdatedItemWriteState writeState,
+        string relativeItemPath)
+    {
+        EnsureRequiredPropertyWasWritten(
+            options.TransitionsToClosedSupport,
+            writeState.WroteStatus,
+            $"Roadmap item must define status before a closed support transition: {relativeItemPath}.");
+        EnsureRequiredPropertyWasWritten(
+            options.UpdatesOrder,
+            writeState.WroteOrder,
+            $"Imported roadmap item must define order before reprioritization: {relativeItemPath}.");
+        EnsureRequiredPropertyWasWritten(
+            options.UpdatesScoring,
+            writeState.WroteScoring,
+            $"Imported roadmap item must define scoring before reprioritization: {relativeItemPath}.");
+        EnsureRequiredPropertyWasWritten(
+            options.UpdatesMetadata,
+            writeState.WroteAllMetadata,
+            $"Imported roadmap item must define snapshot metadata before synchronization: {relativeItemPath}.");
+    }
+
+    private static void EnsureRequiredPropertyWasWritten(bool required, bool written, string message)
+    {
+        if (required && !written)
+        {
+            throw new InvalidOperationException(message);
+        }
     }
 
     private static string[] AddMissingLinks(string[] existingLinks, string[] desiredLinks)
@@ -1070,6 +1242,56 @@ internal sealed class GitHubRoadmapIntake
 
     private static string FormatRoadmapId(string itemIdPrefix, int roadmapNumber) => $"{itemIdPrefix}-{roadmapNumber:D3}";
 
+    private sealed class UpdatedItemOptions
+    {
+        public required string[] BlockedBy { get; init; }
+
+        public required string[] Blocks { get; init; }
+
+        public required string ClosedStatus { get; init; }
+
+        public int DesiredOrder { get; init; }
+
+        public string? DesiredParent { get; init; }
+
+        public IntakeMetadata? DesiredMetadata { get; init; }
+
+        public IntakeScoring? DesiredScoring { get; init; }
+
+        public bool HasParentProperty { get; init; }
+
+        public bool TransitionsToClosedSupport { get; init; }
+
+        public bool UpdatesMetadata { get; init; }
+
+        public bool UpdatesOrder { get; init; }
+
+        public bool UpdatesParent { get; init; }
+
+        public bool UpdatesScoring { get; init; }
+    }
+
+    private sealed class UpdatedItemWriteState
+    {
+        public bool WroteAllMetadata => WroteTitle && WroteType && WroteOpenStatus && WroteTheme && WroteLabels;
+
+        public bool WroteLabels { get; set; }
+
+        public bool WroteOpenStatus { get; set; }
+
+        public bool WroteOrder { get; set; }
+
+        public bool WroteScoring { get; set; }
+
+        public bool WroteStatus { get; set; }
+
+        public bool WroteTheme { get; set; }
+
+        public bool WroteTitle { get; set; }
+
+        public bool WroteType { get; set; }
+    }
+
     private sealed class IntakeCandidate(
         GitHubRoadmapReconcileIssue issue,
         string id,
@@ -1147,19 +1369,18 @@ internal sealed class GitHubRoadmapIntake
 
             var prefix = dryRun ? "dry-run: GitHub intake would" : "intake:";
             List<string> messages = [];
-            if (openItemsToCreate > 0)
-            {
-                messages.Add(dryRun
-                    ? $"{prefix} add {openItemsToCreate} open roadmap items."
-                    : $"{prefix} added {openItemsToCreate} open roadmap items.");
-            }
-
-            if (closedSupportItemsToCreate > 0)
-            {
-                messages.Add(dryRun
-                    ? $"{prefix} add {closedSupportItemsToCreate} closed support roadmap items."
-                    : $"{prefix} added {closedSupportItemsToCreate} closed support roadmap items.");
-            }
+            AddConditionalMessage(
+                messages,
+                openItemsToCreate > 0,
+                dryRun,
+                $"{prefix} add {openItemsToCreate} open roadmap items.",
+                $"{prefix} added {openItemsToCreate} open roadmap items.");
+            AddConditionalMessage(
+                messages,
+                closedSupportItemsToCreate > 0,
+                dryRun,
+                $"{prefix} add {closedSupportItemsToCreate} closed support roadmap items.",
+                $"{prefix} added {closedSupportItemsToCreate} closed support roadmap items.");
 
             if (closedItemsToTransition > 0)
             {
@@ -1169,21 +1390,33 @@ internal sealed class GitHubRoadmapIntake
                     : $"{prefix} transitioned {closedItemsToTransition} imported roadmap {itemNoun} to closed support.");
             }
 
-            if (existingItemChanges > 0)
-            {
-                messages.Add(dryRun
-                    ? $"{prefix} update {existingItemChanges} existing roadmap items with exact GitHub metadata."
-                    : $"{prefix} updated {existingItemChanges} existing roadmap items with exact GitHub metadata.");
-            }
-
-            if (orderUpdated)
-            {
-                messages.Add(dryRun
-                    ? $"{prefix} update roadmap/order.json."
-                    : $"{prefix} updated roadmap/order.json.");
-            }
+            AddConditionalMessage(
+                messages,
+                existingItemChanges > 0,
+                dryRun,
+                $"{prefix} update {existingItemChanges} existing roadmap items with exact GitHub metadata.",
+                $"{prefix} updated {existingItemChanges} existing roadmap items with exact GitHub metadata.");
+            AddConditionalMessage(
+                messages,
+                orderUpdated,
+                dryRun,
+                $"{prefix} update roadmap/order.json.",
+                $"{prefix} updated roadmap/order.json.");
 
             return messages;
+        }
+
+        private static void AddConditionalMessage(
+            List<string> messages,
+            bool condition,
+            bool dryRun,
+            string dryRunMessage,
+            string appliedMessage)
+        {
+            if (condition)
+            {
+                messages.Add(dryRun ? dryRunMessage : appliedMessage);
+            }
         }
 
     }
