@@ -4,7 +4,7 @@
   "title": "Add accessible drag-and-drop to Catalog media upload",
   "type": "feature",
   "status": "proposed",
-  "order": 318,
+  "order": 319,
   "theme": "repo-operations",
   "outcome": "GitHub issue #1095 is canonically represented from the reconciliation manifest.",
   "scoring": {

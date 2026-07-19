@@ -4,7 +4,7 @@
   "title": "add saga operations UI and correlation trace",
   "type": "feature",
   "status": "proposed",
-  "order": 288,
+  "order": 289,
   "theme": "repo-operations",
   "outcome": "GitHub issue #773 is canonically represented from the reconciliation manifest.",
   "scoring": {

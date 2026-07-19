@@ -4,7 +4,7 @@
   "title": "Add no-PII observability for document operations",
   "type": "feature",
   "status": "proposed",
-  "order": 311,
+  "order": 312,
   "theme": "repo-operations",
   "outcome": "GitHub issue #994 is canonically represented from the reconciliation manifest.",
   "scoring": {

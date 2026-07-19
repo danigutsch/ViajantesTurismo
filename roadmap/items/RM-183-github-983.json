@@ -4,7 +4,7 @@
   "title": "[Epic]: PostgreSQL observability and index health",
   "type": "epic",
   "status": "proposed",
-  "order": 338,
+  "order": 339,
   "theme": "repo-operations",
   "outcome": "GitHub issue #983 is canonically represented from the reconciliation manifest.",
   "scoring": {

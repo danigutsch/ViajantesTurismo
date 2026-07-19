@@ -4,7 +4,7 @@
   "title": "Implement generated document audit events and evidence ledger",
   "type": "feature",
   "status": "proposed",
-  "order": 309,
+  "order": 310,
   "theme": "repo-operations",
   "outcome": "GitHub issue #992 is canonically represented from the reconciliation manifest.",
   "scoring": {

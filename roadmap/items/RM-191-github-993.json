@@ -4,7 +4,7 @@
   "title": "Move finalized document artifacts to governed storage",
   "type": "feature",
   "status": "proposed",
-  "order": 310,
+  "order": 311,
   "theme": "repo-operations",
   "outcome": "GitHub issue #993 is canonically represented from the reconciliation manifest.",
   "scoring": {

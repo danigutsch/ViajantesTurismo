@@ -4,7 +4,7 @@
   "title": "add scheduling UI for jobs, triggers, and safe controls",
   "type": "feature",
   "status": "proposed",
-  "order": 286,
+  "order": 287,
   "theme": "repo-operations",
   "outcome": "GitHub issue #771 is canonically represented from the reconciliation manifest.",
   "scoring": {

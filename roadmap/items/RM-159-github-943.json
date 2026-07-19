@@ -4,7 +4,7 @@
   "title": "Support partner and tour-presentation documents",
   "type": "feature",
   "status": "proposed",
-  "order": 306,
+  "order": 307,
   "theme": "repo-operations",
   "outcome": "GitHub issue #943 is canonically represented from the reconciliation manifest.",
   "scoring": {

@@ -5,7 +5,7 @@
   "title": "Harden customer import upload handling",
   "type": "feature",
   "status": "proposed",
-  "order": 297,
+  "order": 298,
   "theme": "repo-operations",
   "outcome": "GitHub issue #819 is canonically represented from the reconciliation manifest.",
   "scoring": {

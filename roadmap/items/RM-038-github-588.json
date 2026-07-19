@@ -4,7 +4,7 @@
   "title": "Epic: Versioning governance",
   "type": "epic",
   "status": "proposed",
-  "order": 327,
+  "order": 328,
   "theme": "repo-operations",
   "outcome": "GitHub issue #588 is canonically represented from the reconciliation manifest.",
   "scoring": {

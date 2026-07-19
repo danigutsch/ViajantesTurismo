@@ -5,7 +5,7 @@
   "title": "Document HATEOAS response shapes in OpenAPI",
   "type": "feature",
   "status": "proposed",
-  "order": 292,
+  "order": 293,
   "theme": "repo-operations",
   "outcome": "GitHub issue #792 is canonically represented from the reconciliation manifest.",
   "scoring": {

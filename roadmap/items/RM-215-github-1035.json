@@ -5,7 +5,7 @@
   "title": "Epic: define service and data deployment topology",
   "type": "epic",
   "status": "proposed",
-  "order": 342,
+  "order": 343,
   "theme": "repo-operations",
   "outcome": "Service, worker, schema-deployment, and production topology boundaries have explicit ownership, trust, lifecycle, and scaling models.",
   "scoring": {

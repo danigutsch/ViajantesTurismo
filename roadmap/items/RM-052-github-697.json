@@ -4,7 +4,7 @@
   "title": "Add custom IO analyzers and safe code fixes",
   "type": "epic",
   "status": "proposed",
-  "order": 331,
+  "order": 332,
   "theme": "repo-operations",
   "outcome": "GitHub issue #697 is canonically represented from the reconciliation manifest.",
   "scoring": {

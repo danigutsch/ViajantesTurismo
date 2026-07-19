@@ -4,7 +4,7 @@
   "title": "Verticalize Branding into composable feature modules",
   "type": "epic",
   "status": "proposed",
-  "order": 339,
+  "order": 340,
   "theme": "repo-operations",
   "outcome": "GitHub issue #1009 is canonically represented from the reconciliation manifest.",
   "scoring": {

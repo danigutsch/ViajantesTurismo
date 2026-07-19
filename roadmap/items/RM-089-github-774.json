@@ -4,7 +4,7 @@
   "title": "add messaging UI for outbox inbox and retry triage",
   "type": "feature",
   "status": "proposed",
-  "order": 289,
+  "order": 290,
   "theme": "repo-operations",
   "outcome": "GitHub issue #774 is canonically represented from the reconciliation manifest.",
   "scoring": {

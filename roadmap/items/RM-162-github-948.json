@@ -4,7 +4,7 @@
   "title": "Epic: provide safe, layer-appropriate bug reproduction",
   "type": "epic",
   "status": "proposed",
-  "order": 336,
+  "order": 337,
   "theme": "repo-operations",
   "outcome": "GitHub issue #948 is canonically represented from the reconciliation manifest.",
   "scoring": {

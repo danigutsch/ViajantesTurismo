@@ -5,7 +5,7 @@
   "title": "Add typed Should* assertion delegate APIs",
   "type": "feature",
   "status": "proposed",
-  "order": 321,
+  "order": 322,
   "theme": "repo-operations",
   "outcome": "GitHub issue #1100 is canonically represented from the reconciliation manifest.",
   "scoring": {

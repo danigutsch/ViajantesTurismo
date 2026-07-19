@@ -4,7 +4,7 @@
   "title": "[Issue]: Explore xUnit v3 extensibility for test libraries",
   "type": "epic",
   "status": "proposed",
-  "order": 349,
+  "order": 350,
   "theme": "repo-operations",
   "outcome": "GitHub issue #1107 is canonically represented from the reconciliation manifest.",
   "scoring": {

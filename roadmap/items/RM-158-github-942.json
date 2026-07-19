@@ -4,7 +4,7 @@
   "title": "Bind tour and traveler data to document templates",
   "type": "feature",
   "status": "proposed",
-  "order": 305,
+  "order": 306,
   "theme": "repo-operations",
   "outcome": "GitHub issue #942 is canonically represented from the reconciliation manifest.",
   "scoring": {

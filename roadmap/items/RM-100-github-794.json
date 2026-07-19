@@ -5,7 +5,7 @@
   "title": "Adopt HATEOAS links in Catalog REST endpoints",
   "type": "feature",
   "status": "proposed",
-  "order": 294,
+  "order": 295,
   "theme": "repo-operations",
   "outcome": "GitHub issue #794 is canonically represented from the reconciliation manifest.",
   "scoring": {

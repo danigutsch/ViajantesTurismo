@@ -4,7 +4,7 @@
   "title": "Suggest field mappings when import headers do not match",
   "type": "feature",
   "status": "proposed",
-  "order": 300,
+  "order": 301,
   "theme": "repo-operations",
   "outcome": "GitHub issue #881 is canonically represented from the reconciliation manifest.",
   "scoring": {

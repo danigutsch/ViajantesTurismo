@@ -31,7 +31,7 @@
     "Only exact GitHub blocker relationships may become canonical blockedBy and blocks links.",
     "Only an explicit closedItemTransitions entry can move an imported open item to closed support."
   ],
-  "snapshotDigest": "8fec0683a8c772ee8b7854d7ae4aedbdb11d5955bbff405dacd0f002cc583327",
+  "snapshotDigest": "dbe5ff4e33233f56f7b1991f4b66583b38a73b66023f579d4afdfe26dd0213cc",
   "blockerEdges": [
     {
       "blocker": 484,
@@ -507,14 +507,15 @@
     1125,
     1126,
     1127,
-    1128
+    1128,
+    1130
   ],
   "integrity": {
-    "expectedIssueCount": 257,
+    "expectedIssueCount": 258,
     "expectedDirectCanonicalPrimaryCount": 6,
     "expectedChildrenOfCanonicalPrimaryCount": 3,
     "expectedUnmappedStructuralRootCount": 27,
-    "expectedNeedsHumanCount": 221,
+    "expectedNeedsHumanCount": 222,
     "expectedBlockerEdgeCount": 23,
     "dispositionsAreDisjoint": true,
     "dispositionsCoverSnapshot": true

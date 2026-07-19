@@ -4,7 +4,7 @@
   "title": "Epic: Govern GDPR/LGPD-aligned privacy controls",
   "type": "epic",
   "status": "proposed",
-  "order": 350,
+  "order": 351,
   "theme": "repo-operations",
   "outcome": "GitHub issue #1113 is canonically represented from the reconciliation manifest.",
   "scoring": {

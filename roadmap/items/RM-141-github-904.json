@@ -4,7 +4,7 @@
   "title": "Epic: standardize API boundary contracts",
   "type": "epic",
   "status": "proposed",
-  "order": 335,
+  "order": 336,
   "theme": "repo-operations",
   "outcome": "GitHub issue #904 is canonically represented from the reconciliation manifest.",
   "scoring": {

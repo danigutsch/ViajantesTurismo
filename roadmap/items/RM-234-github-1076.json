@@ -4,7 +4,7 @@
   "title": "Epic: make CI warnings actionable",
   "type": "epic",
   "status": "proposed",
-  "order": 346,
+  "order": 347,
   "theme": "repo-operations",
   "outcome": "GitHub issue #1076 is canonically represented from the reconciliation manifest.",
   "scoring": {

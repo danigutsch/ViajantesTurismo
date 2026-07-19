@@ -4,7 +4,7 @@
   "title": "Support Protobuf messaging serialization",
   "type": "feature",
   "status": "proposed",
-  "order": 285,
+  "order": 286,
   "theme": "repo-operations",
   "outcome": "GitHub issue #749 is canonically represented from the reconciliation manifest.",
   "scoring": {

@@ -4,7 +4,7 @@
   "title": "Define and adopt minimal SharedKernel.IO primitives",
   "type": "epic",
   "status": "proposed",
-  "order": 329,
+  "order": 330,
   "theme": "repo-operations",
   "outcome": "GitHub issue #695 is canonically represented from the reconciliation manifest.",
   "scoring": {
