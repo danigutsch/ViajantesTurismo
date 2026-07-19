@@ -1,6 +1,6 @@
 using System.Diagnostics;
 
-namespace ViajantesTurismo.PlaywrightMcp.Tool;
+namespace SharedKernel.PlaywrightMcp.Tool;
 
 internal static class PlaywrightMcpCommand
 {

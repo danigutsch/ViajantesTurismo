@@ -169,7 +169,7 @@ fast_validation_patterns=(
     "src/SharedKernel/SharedKernel.Testing.CodeFixes/**"
     "src/SharedKernel/SharedKernel.Versioning/**"
     "tools/ViajantesTurismo.Performance.Tool/**"
-    "tools/ViajantesTurismo.PlaywrightMcp.Tool/**"
+    "tools/SharedKernel.PlaywrightMcp.Tool/**"
     "tools/SharedKernel.RepoConfig.Tool/**"
     "src/ViajantesTurismo.Admin.ApiService/**"
     "src/ViajantesTurismo.Admin.Application/**"
@@ -223,7 +223,7 @@ fast_validation_patterns=(
     "tests/ViajantesTurismo.Management.WebTests/**"
     "tests/ViajantesTurismo.Public.WebTests/**"
     "tests/ViajantesTurismo.Performance.Tool.Tests/**"
-    "tests/ViajantesTurismo.PlaywrightMcp.Tool.Tests/**"
+    "tests/SharedKernel.PlaywrightMcp.Tool.Tests/**"
     "tests/ViajantesTurismo.ServiceDefaults.Tests/**"
 )
 

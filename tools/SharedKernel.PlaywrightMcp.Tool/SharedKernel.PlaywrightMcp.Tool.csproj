@@ -2,11 +2,11 @@
 
     <PropertyGroup>
         <OutputType>Exe</OutputType>
-        <RootNamespace>ViajantesTurismo.PlaywrightMcp.Tool</RootNamespace>
+        <RootNamespace>SharedKernel.PlaywrightMcp.Tool</RootNamespace>
     </PropertyGroup>
 
     <ItemGroup>
-        <InternalsVisibleTo Include="ViajantesTurismo.PlaywrightMcp.Tool.Tests" />
+        <InternalsVisibleTo Include="SharedKernel.PlaywrightMcp.Tool.Tests" />
     </ItemGroup>
 
 </Project>

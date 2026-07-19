@@ -1,4 +1,4 @@
-namespace ViajantesTurismo.PlaywrightMcp.Tool;
+namespace SharedKernel.PlaywrightMcp.Tool;
 
 internal enum ContainerEngine
 {

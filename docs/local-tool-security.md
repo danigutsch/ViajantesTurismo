@@ -72,7 +72,7 @@ and its build output before starting OpenCode from an untrusted branch.
   manifest digest. The current pin is `v0.0.78` at
   `sha256:3d871c22ea2d4cca0966e2cfb1860e1cb03eb7353725a3d6cffd133296fb04eb`, reviewed on
   2026-07-18.
-- Use the repository-owned `ViajantesTurismo.PlaywrightMcp.Tool` executable. Build the solution with
+- Use the repository-owned `SharedKernel.PlaywrightMcp.Tool` executable. Build the solution with
   `dotnet build ViajantesTurismo.slnx --configuration Release` before starting OpenCode; MCP startup
   uses `dotnet run --configuration Release --no-build --no-restore`. Do not use host `npm`, `npx`, shell
   launchers, persistent browser profiles, storage-state files, secret files, browser extensions, remote
@@ -114,13 +114,13 @@ Pre-pull through the repository-owned tool. It selects the sole installed engine
 `PLAYWRIGHT_MCP_ENGINE` when both are installed:
 
 ```bash
-dotnet run --project tools/ViajantesTurismo.PlaywrightMcp.Tool --configuration Release -- prepare
+dotnet run --project tools/SharedKernel.PlaywrightMcp.Tool --configuration Release -- prepare
 ```
 
 Remove the pinned image from the selected local engine cache:
 
 ```bash
-dotnet run --project tools/ViajantesTurismo.PlaywrightMcp.Tool --configuration Release -- clean
+dotnet run --project tools/SharedKernel.PlaywrightMcp.Tool --configuration Release -- clean
 ```
 
 When updating Playwright MCP:

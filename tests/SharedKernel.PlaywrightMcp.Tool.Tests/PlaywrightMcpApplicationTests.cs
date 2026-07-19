@@ -1,4 +1,4 @@
-namespace ViajantesTurismo.PlaywrightMcp.Tool.Tests;
+namespace SharedKernel.PlaywrightMcp.Tool.Tests;
 
 [Trait(TestTraitNames.CategoryName, TestTraitValues.SecurityCategory)]
 [Trait(TestTraitNames.ScopeName, SharedKernelTestTraitNames.UnitScope)]
@@ -269,7 +269,7 @@ public sealed class PlaywrightMcpApplicationTests
         var cleanupStartInfo = cleanup.ShouldNotBeNull();
         cleanupStartInfo.ArgumentList.ShouldContain("rm");
         cleanupStartInfo.ArgumentList.ShouldContain("--force");
-        cleanupStartInfo.ArgumentList.ShouldContain(static argument => argument.StartsWith("viajantes-playwright-mcp-", StringComparison.Ordinal));
+        cleanupStartInfo.ArgumentList.ShouldContain(static argument => argument.StartsWith("sharedkernel-playwright-mcp-", StringComparison.Ordinal));
     }
 
     [Fact]
@@ -304,7 +304,7 @@ public sealed class PlaywrightMcpApplicationTests
         // Assert
         exitCode.ShouldBe(1);
         invocation.ShouldBe(5);
-        error.ToString().ShouldContain("Container cleanup failed for 'viajantes-playwright-mcp-", StringComparison.Ordinal);
+        error.ToString().ShouldContain("Container cleanup failed for 'sharedkernel-playwright-mcp-", StringComparison.Ordinal);
         error.ToString().ShouldContain("permission denied", StringComparison.Ordinal);
     }
 }

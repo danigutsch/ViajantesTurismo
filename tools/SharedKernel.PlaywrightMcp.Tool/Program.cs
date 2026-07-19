@@ -1,5 +1,5 @@
 using System.Runtime.InteropServices;
-using ViajantesTurismo.PlaywrightMcp.Tool;
+using SharedKernel.PlaywrightMcp.Tool;
 
 using var cancellation = new CancellationTokenSource();
 ConsoleCancelEventHandler cancelHandler = (_, eventArgs) =>

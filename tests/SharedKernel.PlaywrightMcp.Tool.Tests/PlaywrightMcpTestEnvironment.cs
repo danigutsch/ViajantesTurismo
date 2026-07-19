@@ -1,4 +1,4 @@
-namespace ViajantesTurismo.PlaywrightMcp.Tool.Tests;
+namespace SharedKernel.PlaywrightMcp.Tool.Tests;
 
 internal sealed class PlaywrightMcpTestEnvironment
 {

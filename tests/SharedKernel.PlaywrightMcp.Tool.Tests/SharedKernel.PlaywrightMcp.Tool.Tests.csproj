@@ -2,13 +2,13 @@
 
     <PropertyGroup>
         <OutputType>Exe</OutputType>
-        <RootNamespace>ViajantesTurismo.PlaywrightMcp.Tool.Tests</RootNamespace>
+        <RootNamespace>SharedKernel.PlaywrightMcp.Tool.Tests</RootNamespace>
     </PropertyGroup>
 
     <ItemGroup>
         <Using Include="SharedKernel.Testing" />
         <Using Include="SharedKernel.Testing.Assertions" />
-        <Using Include="ViajantesTurismo.PlaywrightMcp.Tool" />
+        <Using Include="SharedKernel.PlaywrightMcp.Tool" />
         <Using Include="Xunit" />
     </ItemGroup>
 
@@ -22,7 +22,7 @@
     <ItemGroup>
         <ProjectReference Include="..\..\src\SharedKernel\SharedKernel.Testing\SharedKernel.Testing.csproj" />
         <ProjectReference Include="..\..\src\SharedKernel\SharedKernel.Testing.Assertions\SharedKernel.Testing.Assertions.csproj" />
-        <ProjectReference Include="..\..\tools\ViajantesTurismo.PlaywrightMcp.Tool\ViajantesTurismo.PlaywrightMcp.Tool.csproj" />
+        <ProjectReference Include="..\..\tools\SharedKernel.PlaywrightMcp.Tool\SharedKernel.PlaywrightMcp.Tool.csproj" />
     </ItemGroup>
 
 </Project>

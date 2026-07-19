@@ -2,7 +2,7 @@ using System.ComponentModel;
 using System.Diagnostics;
 using System.Runtime.ExceptionServices;
 
-namespace ViajantesTurismo.PlaywrightMcp.Tool;
+namespace SharedKernel.PlaywrightMcp.Tool;
 
 internal readonly record struct ProcessResult(int ExitCode, string StandardOutput, string StandardError);
 
@@ -110,7 +110,7 @@ internal static class PlaywrightMcpApplication
                 return result.ExitCode;
             }
 
-            var containerName = $"viajantes-playwright-mcp-{Environment.ProcessId}-{Guid.NewGuid():N}";
+            var containerName = $"sharedkernel-playwright-mcp-{Environment.ProcessId}-{Guid.NewGuid():N}";
             var startInfo = PlaywrightMcpCommand.CreateRuntimeStartInfo(options, args, containerName);
             ProcessResult runtimeResult = default;
             ExceptionDispatchInfo? runtimeFailure = null;

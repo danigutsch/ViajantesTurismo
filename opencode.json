@@ -14,7 +14,7 @@
         "dotnet",
         "run",
         "--project",
-        "tools/ViajantesTurismo.PlaywrightMcp.Tool/ViajantesTurismo.PlaywrightMcp.Tool.csproj",
+        "tools/SharedKernel.PlaywrightMcp.Tool/SharedKernel.PlaywrightMcp.Tool.csproj",
         "--configuration",
         "Release",
         "--no-build",
