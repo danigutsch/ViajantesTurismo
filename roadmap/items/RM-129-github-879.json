@@ -1,0 +1,37 @@
+{
+  "$schema": "../schema/roadmap-item.schema.json",
+  "id": "RM-129",
+  "title": "Update package versions and reduce central transitive pins",
+  "type": "issue",
+  "status": "proposed",
+  "order": 111,
+  "theme": "repo-operations",
+  "outcome": "GitHub issue #879 is canonically represented from the reconciliation manifest.",
+  "scoring": {
+    "reach": 1,
+    "impact": 1,
+    "confidence": 0.1,
+    "effort": 2
+  },
+  "blockedBy": [],
+  "blocks": [],
+  "dependencies": [],
+  "tags": [],
+  "labels": [
+    ".net",
+    "area: packaging",
+    "dependencies",
+    "type: chore"
+  ],
+  "sources": [
+    {
+      "kind": "github-issue",
+      "reference": "#879"
+    }
+  ],
+  "integrations": {
+    "github": {
+      "issue": 879
+    }
+  }
+}

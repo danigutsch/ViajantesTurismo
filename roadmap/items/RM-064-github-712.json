@@ -1,0 +1,36 @@
+{
+  "$schema": "../schema/roadmap-item.schema.json",
+  "id": "RM-064",
+  "parent": "RM-044",
+  "title": "Define vertical-slice module composition contracts",
+  "type": "enabler",
+  "status": "proposed",
+  "order": 147,
+  "theme": "repo-operations",
+  "outcome": "GitHub issue #712 is canonically represented from the reconciliation manifest.",
+  "scoring": {
+    "reach": 1,
+    "impact": 1,
+    "confidence": 0.1,
+    "effort": 3
+  },
+  "blockedBy": [],
+  "blocks": [],
+  "dependencies": [],
+  "tags": [],
+  "labels": [
+    "architecture",
+    "type: enabler"
+  ],
+  "sources": [
+    {
+      "kind": "github-issue",
+      "reference": "#712"
+    }
+  ],
+  "integrations": {
+    "github": {
+      "issue": 712
+    }
+  }
+}

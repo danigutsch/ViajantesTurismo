@@ -1,0 +1,34 @@
+{
+  "$schema": "../schema/roadmap-item.schema.json",
+  "id": "RM-154",
+  "parent": "RM-102",
+  "title": "Add antivirus scanning for uploaded files",
+  "type": "feature",
+  "status": "done",
+  "triage": "untriaged",
+  "theme": "repo-operations",
+  "outcome": "GitHub issue #932 is canonically represented from the reconciliation manifest.",
+  "blockedBy": [
+    "RM-033"
+  ],
+  "blocks": [],
+  "dependencies": [],
+  "tags": [],
+  "labels": [
+    "infrastructure",
+    "media",
+    "security",
+    "type: feature"
+  ],
+  "sources": [
+    {
+      "kind": "github-issue",
+      "reference": "#932"
+    }
+  ],
+  "integrations": {
+    "github": {
+      "issue": 932
+    }
+  }
+}

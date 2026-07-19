@@ -1,0 +1,32 @@
+{
+  "$schema": "../schema/roadmap-item.schema.json",
+  "id": "RM-269",
+  "title": "Add analyzer for Result methods that can only succeed",
+  "type": "issue",
+  "status": "done",
+  "triage": "untriaged",
+  "theme": "repo-operations",
+  "outcome": "GitHub issue #484 is canonically represented from the reconciliation manifest.",
+  "blockedBy": [],
+  "blocks": [
+    "RM-270"
+  ],
+  "dependencies": [],
+  "tags": [],
+  "labels": [
+    "enhancement",
+    "sharedkernel",
+    "testing"
+  ],
+  "sources": [
+    {
+      "kind": "github-issue",
+      "reference": "#484"
+    }
+  ],
+  "integrations": {
+    "github": {
+      "issue": 484
+    }
+  }
+}

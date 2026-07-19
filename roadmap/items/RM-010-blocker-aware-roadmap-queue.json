@@ -9,7 +9,9 @@
   "theme": "repo-operations",
   "outcome": "The local tool can select feasible work that unlocks open dependents before ordinary priority ties.",
   "blockedBy": [],
-  "blocks": [],
+  "blocks": [
+    "RM-011"
+  ],
   "dependencies": [],
   "tags": [
     "roadmap",

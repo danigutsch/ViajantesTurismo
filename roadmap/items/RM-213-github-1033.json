@@ -1,0 +1,38 @@
+{
+  "$schema": "../schema/roadmap-item.schema.json",
+  "id": "RM-213",
+  "parent": "RM-203",
+  "title": "Rename API service projects to Api",
+  "type": "enabler",
+  "status": "proposed",
+  "order": 240,
+  "theme": "repo-operations",
+  "outcome": "GitHub issue #1033 is canonically represented from the reconciliation manifest.",
+  "scoring": {
+    "reach": 1,
+    "impact": 1,
+    "confidence": 0.1,
+    "effort": 3
+  },
+  "blockedBy": [],
+  "blocks": [],
+  "dependencies": [],
+  "tags": [],
+  "labels": [
+    "architecture",
+    "area: api",
+    "risk: breaking-change",
+    "type: enabler"
+  ],
+  "sources": [
+    {
+      "kind": "github-issue",
+      "reference": "#1033"
+    }
+  ],
+  "integrations": {
+    "github": {
+      "issue": 1033
+    }
+  }
+}

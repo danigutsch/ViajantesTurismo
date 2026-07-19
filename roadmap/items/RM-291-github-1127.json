@@ -1,0 +1,32 @@
+{
+  "$schema": "../schema/roadmap-item.schema.json",
+  "id": "RM-291",
+  "title": "Diagnose PostgreSQL test leaks and add a reusable test host",
+  "type": "issue",
+  "status": "proposed",
+  "order": 276,
+  "theme": "repo-operations",
+  "outcome": "GitHub issue #1127 is canonically represented from the reconciliation manifest.",
+  "scoring": {
+    "reach": 1,
+    "impact": 1,
+    "confidence": 0.1,
+    "effort": 3
+  },
+  "blockedBy": [],
+  "blocks": [],
+  "dependencies": [],
+  "tags": [],
+  "labels": [],
+  "sources": [
+    {
+      "kind": "github-issue",
+      "reference": "#1127"
+    }
+  ],
+  "integrations": {
+    "github": {
+      "issue": 1127
+    }
+  }
+}

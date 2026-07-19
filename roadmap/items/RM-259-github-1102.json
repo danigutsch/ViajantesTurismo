@@ -1,0 +1,30 @@
+{
+  "$schema": "../schema/roadmap-item.schema.json",
+  "id": "RM-259",
+  "title": "Strengthen endpoint composition guarantees",
+  "type": "issue",
+  "status": "done",
+  "triage": "untriaged",
+  "theme": "repo-operations",
+  "outcome": "GitHub issue #1102 is canonically represented from the reconciliation manifest.",
+  "blockedBy": [],
+  "blocks": [],
+  "dependencies": [],
+  "tags": [],
+  "labels": [
+    ".net",
+    "area: tooling",
+    "enhancement"
+  ],
+  "sources": [
+    {
+      "kind": "github-issue",
+      "reference": "#1102"
+    }
+  ],
+  "integrations": {
+    "github": {
+      "issue": 1102
+    }
+  }
+}

@@ -1,0 +1,36 @@
+{
+  "$schema": "../schema/roadmap-item.schema.json",
+  "id": "RM-022",
+  "title": "Evaluate .NET 11 discriminated unions for API responses",
+  "type": "issue",
+  "status": "proposed",
+  "order": 123,
+  "theme": "repo-operations",
+  "outcome": "GitHub issue #481 is canonically represented from the reconciliation manifest.",
+  "scoring": {
+    "reach": 1,
+    "impact": 1,
+    "confidence": 0.1,
+    "effort": 3
+  },
+  "blockedBy": [],
+  "blocks": [],
+  "dependencies": [],
+  "tags": [],
+  "labels": [
+    "architecture",
+    "enhancement",
+    "testing"
+  ],
+  "sources": [
+    {
+      "kind": "github-issue",
+      "reference": "#481"
+    }
+  ],
+  "integrations": {
+    "github": {
+      "issue": 481
+    }
+  }
+}

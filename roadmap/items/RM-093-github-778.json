@@ -1,0 +1,38 @@
+{
+  "$schema": "../schema/roadmap-item.schema.json",
+  "id": "RM-093",
+  "title": "Replace package-consumption project references with local NuGet packages",
+  "type": "feature",
+  "status": "proposed",
+  "order": 291,
+  "theme": "repo-operations",
+  "outcome": "GitHub issue #778 is canonically represented from the reconciliation manifest.",
+  "scoring": {
+    "reach": 1,
+    "impact": 1,
+    "confidence": 0.1,
+    "effort": 5
+  },
+  "blockedBy": [],
+  "blocks": [
+    "RM-221"
+  ],
+  "dependencies": [],
+  "tags": [],
+  "labels": [
+    "area: packaging",
+    "area: testing",
+    "type: feature"
+  ],
+  "sources": [
+    {
+      "kind": "github-issue",
+      "reference": "#778"
+    }
+  ],
+  "integrations": {
+    "github": {
+      "issue": 778
+    }
+  }
+}

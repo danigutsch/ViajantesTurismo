@@ -1,0 +1,35 @@
+{
+  "$schema": "../schema/roadmap-item.schema.json",
+  "id": "RM-169",
+  "parent": "RM-166",
+  "title": "Deliver customer payment instructions safely",
+  "type": "issue",
+  "status": "proposed",
+  "order": 212,
+  "theme": "repo-operations",
+  "outcome": "GitHub issue #960 is canonically represented from the reconciliation manifest.",
+  "scoring": {
+    "reach": 1,
+    "impact": 1,
+    "confidence": 0.1,
+    "effort": 3
+  },
+  "blockedBy": [],
+  "blocks": [],
+  "dependencies": [],
+  "tags": [],
+  "labels": [
+    "enhancement"
+  ],
+  "sources": [
+    {
+      "kind": "github-issue",
+      "reference": "#960"
+    }
+  ],
+  "integrations": {
+    "github": {
+      "issue": 960
+    }
+  }
+}

@@ -1,0 +1,35 @@
+{
+  "$schema": "../schema/roadmap-item.schema.json",
+  "id": "RM-188",
+  "title": "Add opt-in SeaweedFS Filer UI companion endpoint",
+  "type": "issue",
+  "status": "proposed",
+  "order": 224,
+  "theme": "repo-operations",
+  "outcome": "GitHub issue #990 is canonically represented from the reconciliation manifest.",
+  "scoring": {
+    "reach": 1,
+    "impact": 1,
+    "confidence": 0.1,
+    "effort": 3
+  },
+  "blockedBy": [],
+  "blocks": [],
+  "dependencies": [],
+  "tags": [],
+  "labels": [
+    "enhancement",
+    "media"
+  ],
+  "sources": [
+    {
+      "kind": "github-issue",
+      "reference": "#990"
+    }
+  ],
+  "integrations": {
+    "github": {
+      "issue": 990
+    }
+  }
+}

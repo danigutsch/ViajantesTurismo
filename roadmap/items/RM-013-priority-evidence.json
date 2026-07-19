@@ -5,9 +5,16 @@
   "title": "Score and order the first executable roadmap tranche",
   "type": "issue",
   "status": "proposed",
-  "triage": "untriaged",
+  "order": 70,
   "theme": "repo-operations",
   "outcome": "The first active tranche receives reviewed RICE evidence and canonical order without fabricated estimates.",
+  "size": "XS",
+  "scoring": {
+    "reach": 1,
+    "impact": 2,
+    "confidence": 0.8,
+    "effort": 1
+  },
   "blockedBy": [
     "RM-012"
   ],
@@ -22,6 +29,24 @@
   ],
   "labels": [
     "area: tooling"
+  ],
+  "sources": [
+    {
+      "kind": "github-issue",
+      "reference": "#1064",
+      "supports": [
+        "scope",
+        "confidence"
+      ]
+    },
+    {
+      "kind": "maintainer-review",
+      "reference": "@danigutsch, deterministic-open-leaf-v1 at 63b5dc7, 2026-07-16; review by 2026-07-30",
+      "supports": [
+        "scope",
+        "effort"
+      ]
+    }
   ],
   "integrations": {
     "github": {

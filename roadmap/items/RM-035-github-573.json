@@ -1,0 +1,35 @@
+{
+  "$schema": "../schema/roadmap-item.schema.json",
+  "id": "RM-035",
+  "title": "Audit project test-layer coverage",
+  "type": "issue",
+  "status": "proposed",
+  "order": 133,
+  "theme": "repo-operations",
+  "outcome": "GitHub issue #573 is canonically represented from the reconciliation manifest.",
+  "scoring": {
+    "reach": 1,
+    "impact": 1,
+    "confidence": 0.1,
+    "effort": 3
+  },
+  "blockedBy": [],
+  "blocks": [],
+  "dependencies": [],
+  "tags": [],
+  "labels": [
+    "ci",
+    "testing"
+  ],
+  "sources": [
+    {
+      "kind": "github-issue",
+      "reference": "#573"
+    }
+  ],
+  "integrations": {
+    "github": {
+      "issue": 573
+    }
+  }
+}

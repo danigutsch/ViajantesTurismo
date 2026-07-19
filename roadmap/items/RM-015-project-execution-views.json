@@ -5,9 +5,16 @@
   "title": "Configure GitHub Project execution views",
   "type": "issue",
   "status": "proposed",
-  "triage": "untriaged",
+  "order": 80,
   "theme": "repo-operations",
   "outcome": "Project #1 makes execution, active flow, and roadmap projection visible without becoming authoritative.",
+  "size": "S",
+  "scoring": {
+    "reach": 1,
+    "impact": 1,
+    "confidence": 0.8,
+    "effort": 2
+  },
   "blockedBy": [
     "RM-013"
   ],
@@ -21,6 +28,24 @@
   "labels": [
     "area: tooling",
     "configuration"
+  ],
+  "sources": [
+    {
+      "kind": "github-issue",
+      "reference": "#1066",
+      "supports": [
+        "scope",
+        "confidence"
+      ]
+    },
+    {
+      "kind": "maintainer-review",
+      "reference": "@danigutsch, deterministic-open-leaf-v1 at 63b5dc7, 2026-07-16; review by 2026-07-30",
+      "supports": [
+        "scope",
+        "effort"
+      ]
+    }
   ],
   "integrations": {
     "github": {

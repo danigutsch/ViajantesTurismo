@@ -1,0 +1,40 @@
+{
+  "$schema": "../schema/roadmap-item.schema.json",
+  "id": "RM-243",
+  "parent": "RM-242",
+  "title": "Document dependency graph refresh and rebase recovery",
+  "type": "enabler",
+  "status": "proposed",
+  "order": 257,
+  "theme": "repo-operations",
+  "outcome": "GitHub issue #1087 is canonically represented from the reconciliation manifest.",
+  "scoring": {
+    "reach": 1,
+    "impact": 1,
+    "confidence": 0.1,
+    "effort": 3
+  },
+  "blockedBy": [],
+  "blocks": [],
+  "dependencies": [],
+  "tags": [],
+  "labels": [
+    "area: packaging",
+    "area: tooling",
+    "dependencies",
+    "documentation",
+    "security",
+    "type: enabler"
+  ],
+  "sources": [
+    {
+      "kind": "github-issue",
+      "reference": "#1087"
+    }
+  ],
+  "integrations": {
+    "github": {
+      "issue": 1087
+    }
+  }
+}

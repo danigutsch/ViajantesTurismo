@@ -1,0 +1,41 @@
+{
+  "$schema": "../schema/roadmap-item.schema.json",
+  "id": "RM-222",
+  "title": "Define reusable named-container lifecycle for AppHost tests",
+  "type": "enabler",
+  "status": "proposed",
+  "order": 243,
+  "theme": "repo-operations",
+  "outcome": "GitHub issue #1042 is canonically represented from the reconciliation manifest.",
+  "scoring": {
+    "reach": 1,
+    "impact": 1,
+    "confidence": 0.1,
+    "effort": 3
+  },
+  "blockedBy": [],
+  "blocks": [],
+  "dependencies": [],
+  "tags": [],
+  "labels": [
+    "architecture",
+    "area: sharedkernel",
+    "area: testing",
+    "aspire",
+    "infrastructure",
+    "sharedkernel",
+    "testing",
+    "type: enabler"
+  ],
+  "sources": [
+    {
+      "kind": "github-issue",
+      "reference": "#1042"
+    }
+  ],
+  "integrations": {
+    "github": {
+      "issue": 1042
+    }
+  }
+}

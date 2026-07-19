@@ -1,0 +1,36 @@
+{
+  "$schema": "../schema/roadmap-item.schema.json",
+  "id": "RM-116",
+  "title": "Inventory and consolidate duplicated docs",
+  "type": "enabler",
+  "status": "proposed",
+  "order": 179,
+  "theme": "repo-operations",
+  "outcome": "GitHub issue #850 is canonically represented from the reconciliation manifest.",
+  "scoring": {
+    "reach": 1,
+    "impact": 1,
+    "confidence": 0.1,
+    "effort": 3
+  },
+  "blockedBy": [],
+  "blocks": [],
+  "dependencies": [],
+  "tags": [],
+  "labels": [
+    "architecture",
+    "documentation",
+    "type: enabler"
+  ],
+  "sources": [
+    {
+      "kind": "github-issue",
+      "reference": "#850"
+    }
+  ],
+  "integrations": {
+    "github": {
+      "issue": 850
+    }
+  }
+}

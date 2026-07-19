@@ -1,0 +1,36 @@
+{
+  "$schema": "../schema/roadmap-item.schema.json",
+  "id": "RM-074",
+  "title": "Define document storage retention audit and regeneration rules",
+  "type": "enabler",
+  "status": "proposed",
+  "order": 157,
+  "theme": "repo-operations",
+  "outcome": "GitHub issue #727 is canonically represented from the reconciliation manifest.",
+  "scoring": {
+    "reach": 1,
+    "impact": 1,
+    "confidence": 0.1,
+    "effort": 3
+  },
+  "blockedBy": [],
+  "blocks": [],
+  "dependencies": [],
+  "tags": [],
+  "labels": [
+    "architecture",
+    "security",
+    "type: enabler"
+  ],
+  "sources": [
+    {
+      "kind": "github-issue",
+      "reference": "#727"
+    }
+  ],
+  "integrations": {
+    "github": {
+      "issue": 727
+    }
+  }
+}

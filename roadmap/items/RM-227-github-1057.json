@@ -1,0 +1,37 @@
+{
+  "$schema": "../schema/roadmap-item.schema.json",
+  "id": "RM-227",
+  "title": "Add analyzer for runtime-code route handler annotations",
+  "type": "issue",
+  "status": "proposed",
+  "order": 247,
+  "theme": "repo-operations",
+  "outcome": "GitHub issue #1057 is canonically represented from the reconciliation manifest.",
+  "scoring": {
+    "reach": 1,
+    "impact": 1,
+    "confidence": 0.1,
+    "effort": 3
+  },
+  "blockedBy": [],
+  "blocks": [],
+  "dependencies": [],
+  "tags": [],
+  "labels": [
+    ".net",
+    "enhancement",
+    "security",
+    "sharedkernel"
+  ],
+  "sources": [
+    {
+      "kind": "github-issue",
+      "reference": "#1057"
+    }
+  ],
+  "integrations": {
+    "github": {
+      "issue": 1057
+    }
+  }
+}

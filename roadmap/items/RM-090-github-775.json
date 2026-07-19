@@ -1,0 +1,36 @@
+{
+  "$schema": "../schema/roadmap-item.schema.json",
+  "id": "RM-090",
+  "title": "chore: migrate repository scripts to .NET tooling",
+  "type": "issue",
+  "status": "proposed",
+  "order": 106,
+  "theme": "repo-operations",
+  "outcome": "GitHub issue #775 is canonically represented from the reconciliation manifest.",
+  "scoring": {
+    "reach": 1,
+    "impact": 1,
+    "confidence": 0.1,
+    "effort": 2
+  },
+  "blockedBy": [],
+  "blocks": [],
+  "dependencies": [],
+  "tags": [],
+  "labels": [
+    ".net",
+    "area: tooling",
+    "type: chore"
+  ],
+  "sources": [
+    {
+      "kind": "github-issue",
+      "reference": "#775"
+    }
+  ],
+  "integrations": {
+    "github": {
+      "issue": 775
+    }
+  }
+}

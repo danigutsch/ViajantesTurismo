@@ -1,4 +1,5 @@
 using System.Globalization;
+using System.Text;
 using System.Text.Json;
 
 namespace SharedKernel.RepoConfig.Tool;
@@ -6,7 +7,7 @@ namespace SharedKernel.RepoConfig.Tool;
 internal static class RepoConfigToolApplication
 {
     private const decimal ParetoFraction = 0.2m;
-    private const string Usage = "Usage: sharedkernel-repo <init|verify|diff|set|get|sync> [--root <path>]";
+    private const string Usage = "Usage: sharedkernel-repo <init|verify|diff|set|get|sync|reconcile|intake> [--root <path>]";
 
     public static Task<int> Run(string[] args, TextWriter output, TextWriter error, string workingDirectory, CancellationToken cancellationToken) =>
         Run(args, output, error, workingDirectory, httpClient: null, cancellationToken);
@@ -21,24 +22,28 @@ internal static class RepoConfigToolApplication
         if (args is [] or ["--help"] or ["-h"])
         {
             await output.WriteLineAsync(Usage.AsMemory(), cancellationToken).ConfigureAwait(false);
-            await output.WriteLineAsync("Commands: init, verify, diff, set github.repository <owner/repo>, get <query>, sync github.".AsMemory(), cancellationToken).ConfigureAwait(false);
+            await output.WriteLineAsync("Commands: init, verify, diff, set github.repository <owner/repo>, get <query>, sync github, reconcile github, intake github.".AsMemory(), cancellationToken).ConfigureAwait(false);
             return 0;
         }
 
         try
         {
-            return args[0] == "sync"
-                ? await RunGitHubProjection(args[1..], output, error, workingDirectory, httpClient, cancellationToken).ConfigureAwait(false)
-                : RunCommand(args, output, error, workingDirectory);
+            return args[0] switch
+            {
+                "sync" => await RunGitHubProjection(args[1..], output, error, workingDirectory, httpClient, cancellationToken).ConfigureAwait(false),
+                "reconcile" => await RunGitHubReconciliation(args[1..], output, error, workingDirectory, httpClient, cancellationToken).ConfigureAwait(false),
+                "intake" => await RunGitHubIntake(args[1..], output, error, workingDirectory, httpClient, cancellationToken).ConfigureAwait(false),
+                _ => RunCommand(args, output, error, workingDirectory)
+            };
         }
-        catch (GitHubSyncTimeoutException)
+        catch (TimeoutException exception)
         {
-            await error.WriteLineAsync("sharedkernel-repo: GitHub sync timed out after 30 seconds.".AsMemory(), cancellationToken).ConfigureAwait(false);
+            await error.WriteLineAsync($"sharedkernel-repo: {EscapeControlCharacters(exception.Message)}".AsMemory(), cancellationToken).ConfigureAwait(false);
             return 1;
         }
         catch (OperationCanceledException exception) when (!cancellationToken.IsCancellationRequested)
         {
-            await error.WriteLineAsync($"sharedkernel-repo: {exception.Message}".AsMemory(), cancellationToken).ConfigureAwait(false);
+            await error.WriteLineAsync($"sharedkernel-repo: {EscapeControlCharacters(exception.Message)}".AsMemory(), cancellationToken).ConfigureAwait(false);
             return 1;
         }
         catch (HttpRequestException)
@@ -53,7 +58,7 @@ internal static class RepoConfigToolApplication
             or UnauthorizedAccessException
             or InvalidOperationException)
         {
-            await error.WriteLineAsync($"sharedkernel-repo: {exception.Message}".AsMemory(), cancellationToken).ConfigureAwait(false);
+            await error.WriteLineAsync($"sharedkernel-repo: {EscapeControlCharacters(exception.Message)}".AsMemory(), cancellationToken).ConfigureAwait(false);
             return 1;
         }
     }
@@ -89,7 +94,7 @@ internal static class RepoConfigToolApplication
         output.WriteLine("Initialized repository roadmap structure:");
         foreach (var path in createdPaths)
         {
-            output.WriteLine($"- {path}");
+            output.WriteLine($"- {EscapeControlCharacters(path)}");
         }
 
         return 0;
@@ -152,7 +157,7 @@ internal static class RepoConfigToolApplication
         var value = remaining[1];
 
         RepoConfigSetter.Set(rootPath, key, value);
-        output.WriteLine($"Updated {key}.");
+        output.WriteLine($"Updated {EscapeControlCharacters(key)}.");
         return 0;
     }
 
@@ -276,7 +281,51 @@ internal static class RepoConfigToolApplication
             : await syncer.Apply(cancellationToken).ConfigureAwait(false);
         foreach (var message in result.Messages)
         {
-            await output.WriteLineAsync(message.AsMemory(), cancellationToken).ConfigureAwait(false);
+            await output.WriteLineAsync(EscapeControlCharacters(message).AsMemory(), cancellationToken).ConfigureAwait(false);
+        }
+
+        return 0;
+    }
+
+    private static async Task<int> RunGitHubIntake(string[] args, TextWriter output, TextWriter error, string workingDirectory, HttpClient? httpClient, CancellationToken cancellationToken)
+    {
+        var parsed = TryParseGitHubIntake(args, workingDirectory, error);
+        if (parsed is null)
+        {
+            return 2;
+        }
+
+        var (rootPath, dryRun) = parsed.Value;
+        var project = RoadmapProject.Load(rootPath);
+        var intake = new GitHubRoadmapIntake(project, httpClient);
+        var messages = dryRun
+            ? await intake.Preview(cancellationToken).ConfigureAwait(false)
+            : await intake.Apply(cancellationToken).ConfigureAwait(false);
+        foreach (var message in messages)
+        {
+            await output.WriteLineAsync(EscapeControlCharacters(message).AsMemory(), cancellationToken).ConfigureAwait(false);
+        }
+
+        return 0;
+    }
+
+    private static async Task<int> RunGitHubReconciliation(string[] args, TextWriter output, TextWriter error, string workingDirectory, HttpClient? httpClient, CancellationToken cancellationToken)
+    {
+        var parsed = TryParseGitHubReconciliation(args, workingDirectory, error);
+        if (parsed is null)
+        {
+            return 2;
+        }
+
+        var (rootPath, dryRun) = parsed.Value;
+        var project = RoadmapProject.Load(rootPath);
+        var reconciler = new GitHubRoadmapReconciler(project, httpClient);
+        var messages = dryRun
+            ? await reconciler.Preview(cancellationToken).ConfigureAwait(false)
+            : await reconciler.Apply(cancellationToken).ConfigureAwait(false);
+        foreach (var message in messages)
+        {
+            await output.WriteLineAsync(EscapeControlCharacters(message).AsMemory(), cancellationToken).ConfigureAwait(false);
         }
 
         return 0;
@@ -305,6 +354,64 @@ internal static class RepoConfigToolApplication
         if (remaining.Any(argument => argument is not "github" and not "--dry-run" and not "--apply"))
         {
             WriteUsageError(error, "Unknown sync argument.");
+            return null;
+        }
+
+        return (rootPath, dryRun);
+    }
+
+    private static (string RootPath, bool DryRun)? TryParseGitHubIntake(string[] args, string workingDirectory, TextWriter error)
+    {
+        if (!TryParseRootOption(args, workingDirectory, error, out var rootPath, out var remaining))
+        {
+            return null;
+        }
+
+        if (remaining.Length == 0 || !string.Equals(remaining[0], "github", StringComparison.Ordinal))
+        {
+            WriteUsageError(error, "Missing intake target: github.");
+            return null;
+        }
+
+        var dryRun = !remaining.Contains("--apply", StringComparer.Ordinal);
+        if (remaining.Contains("--dry-run", StringComparer.Ordinal) && remaining.Contains("--apply", StringComparer.Ordinal))
+        {
+            WriteUsageError(error, "Use either --dry-run or --apply, not both.");
+            return null;
+        }
+
+        if (remaining.Any(argument => argument is not "github" and not "--dry-run" and not "--apply"))
+        {
+            WriteUsageError(error, "Unknown intake argument.");
+            return null;
+        }
+
+        return (rootPath, dryRun);
+    }
+
+    private static (string RootPath, bool DryRun)? TryParseGitHubReconciliation(string[] args, string workingDirectory, TextWriter error)
+    {
+        if (!TryParseRootOption(args, workingDirectory, error, out var rootPath, out var remaining))
+        {
+            return null;
+        }
+
+        if (remaining.Length == 0 || !string.Equals(remaining[0], "github", StringComparison.Ordinal))
+        {
+            WriteUsageError(error, "Missing reconciliation target: github.");
+            return null;
+        }
+
+        var dryRun = !remaining.Contains("--apply", StringComparer.Ordinal);
+        if (remaining.Contains("--dry-run", StringComparer.Ordinal) && remaining.Contains("--apply", StringComparer.Ordinal))
+        {
+            WriteUsageError(error, "Use either --dry-run or --apply, not both.");
+            return null;
+        }
+
+        if (remaining.Any(argument => argument is not "github" and not "--dry-run" and not "--apply"))
+        {
+            WriteUsageError(error, "Unknown reconciliation argument.");
             return null;
         }
 
@@ -342,7 +449,7 @@ internal static class RepoConfigToolApplication
 
     private static int WriteUsageError(TextWriter error, string message)
     {
-        error.WriteLine(message);
+        error.WriteLine(EscapeControlCharacters(message));
         error.WriteLine(Usage);
         return 2;
     }
@@ -352,7 +459,7 @@ internal static class RepoConfigToolApplication
         error.WriteLine(heading);
         foreach (var issue in issues)
         {
-            error.WriteLine($"- {issue.Path}: {issue.Message}");
+            error.WriteLine($"- {EscapeControlCharacters(issue.Path)}: {EscapeControlCharacters(issue.Message)}");
         }
     }
 
@@ -420,9 +527,13 @@ internal static class RepoConfigToolApplication
         var count = 0;
         foreach (var item in items)
         {
+            var id = EscapeControlCharacters(item.Id);
+            var type = EscapeControlCharacters(item.Type);
+            var status = EscapeControlCharacters(item.Status);
+            var title = EscapeControlCharacters(item.Title);
             output.WriteLine(item.IsTriaged
-                ? $"{item.Id} | {item.Type} | {item.Status} | order {item.Order?.ToString(CultureInfo.InvariantCulture)} | score {item.Score?.ToString("0.##", CultureInfo.InvariantCulture)} | {item.Title}"
-                : $"{item.Id} | {item.Type} | {item.Status} | untriaged | {item.Title}");
+                ? $"{id} | {type} | {status} | order {item.Order?.ToString(CultureInfo.InvariantCulture)} | score {item.Score?.ToString("0.##", CultureInfo.InvariantCulture)} | {title}"
+                : $"{id} | {type} | {status} | untriaged | {title}");
             count++;
         }
 
@@ -437,7 +548,7 @@ internal static class RepoConfigToolApplication
         var count = 0;
         foreach (var item in counts)
         {
-            output.WriteLine($"{item.Key} | {item.Value.ToString(CultureInfo.InvariantCulture)}");
+            output.WriteLine($"{EscapeControlCharacters(item.Key)} | {item.Value.ToString(CultureInfo.InvariantCulture)}");
             count++;
         }
 
@@ -460,7 +571,7 @@ internal static class RepoConfigToolApplication
 
         foreach (var item in blockedItems)
         {
-            output.WriteLine($"{item.Item.Id} blocked by {string.Join(", ", item.Blockers)}");
+            output.WriteLine($"{EscapeControlCharacters(item.Item.Id)} blocked by {string.Join(", ", item.Blockers.Select(EscapeControlCharacters))}");
             count++;
         }
 
@@ -468,5 +579,24 @@ internal static class RepoConfigToolApplication
         {
             output.WriteLine("No blocked roadmap items.");
         }
+    }
+
+    private static string EscapeControlCharacters(string value)
+    {
+        StringBuilder? escaped = null;
+        for (var index = 0; index < value.Length; index++)
+        {
+            var character = value[index];
+            if (!char.IsControl(character))
+            {
+                escaped?.Append(character);
+                continue;
+            }
+
+            escaped ??= new StringBuilder(value.Length + 6).Append(value, 0, index);
+            escaped.Append("\\u").Append(((int)character).ToString("X4", CultureInfo.InvariantCulture));
+        }
+
+        return escaped?.ToString() ?? value;
     }
 }

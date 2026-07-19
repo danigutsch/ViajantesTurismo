@@ -1,0 +1,37 @@
+{
+  "$schema": "../schema/roadmap-item.schema.json",
+  "id": "RM-113",
+  "title": "Add logging and telemetry redaction rules",
+  "type": "feature",
+  "status": "proposed",
+  "order": 299,
+  "theme": "repo-operations",
+  "outcome": "GitHub issue #841 is canonically represented from the reconciliation manifest.",
+  "scoring": {
+    "reach": 1,
+    "impact": 1,
+    "confidence": 0.1,
+    "effort": 5
+  },
+  "blockedBy": [],
+  "blocks": [],
+  "dependencies": [],
+  "tags": [],
+  "labels": [
+    "observability",
+    "security",
+    "testing",
+    "type: feature"
+  ],
+  "sources": [
+    {
+      "kind": "github-issue",
+      "reference": "#841"
+    }
+  ],
+  "integrations": {
+    "github": {
+      "issue": 841
+    }
+  }
+}

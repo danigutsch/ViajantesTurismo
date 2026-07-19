@@ -1,0 +1,39 @@
+{
+  "$schema": "../schema/roadmap-item.schema.json",
+  "id": "RM-132",
+  "parent": "RM-140",
+  "title": "Define mailing needs and Mailpit testing",
+  "type": "enabler",
+  "status": "proposed",
+  "order": 190,
+  "theme": "repo-operations",
+  "outcome": "GitHub issue #891 is canonically represented from the reconciliation manifest.",
+  "scoring": {
+    "reach": 1,
+    "impact": 1,
+    "confidence": 0.1,
+    "effort": 3
+  },
+  "blockedBy": [],
+  "blocks": [],
+  "dependencies": [],
+  "tags": [],
+  "labels": [
+    "aspire",
+    "infrastructure",
+    "research",
+    "testing",
+    "type: enabler"
+  ],
+  "sources": [
+    {
+      "kind": "github-issue",
+      "reference": "#891"
+    }
+  ],
+  "integrations": {
+    "github": {
+      "issue": 891
+    }
+  }
+}

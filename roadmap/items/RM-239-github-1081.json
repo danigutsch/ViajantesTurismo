@@ -1,0 +1,39 @@
+{
+  "$schema": "../schema/roadmap-item.schema.json",
+  "id": "RM-239",
+  "parent": "RM-234",
+  "title": "Define CI warning policy and exception lifecycle",
+  "type": "enabler",
+  "status": "proposed",
+  "order": 254,
+  "theme": "repo-operations",
+  "outcome": "GitHub issue #1081 is canonically represented from the reconciliation manifest.",
+  "scoring": {
+    "reach": 1,
+    "impact": 1,
+    "confidence": 0.1,
+    "effort": 3
+  },
+  "blockedBy": [],
+  "blocks": [],
+  "dependencies": [],
+  "tags": [],
+  "labels": [
+    "area: tooling",
+    "ci",
+    "configuration",
+    "security",
+    "type: enabler"
+  ],
+  "sources": [
+    {
+      "kind": "github-issue",
+      "reference": "#1081"
+    }
+  ],
+  "integrations": {
+    "github": {
+      "issue": 1081
+    }
+  }
+}

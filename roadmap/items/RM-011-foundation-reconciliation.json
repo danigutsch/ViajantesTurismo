@@ -8,7 +8,9 @@
   "triage": "untriaged",
   "theme": "repo-operations",
   "outcome": "Closed foundation work is represented as closed without changing its reviewed priority evidence.",
-  "blockedBy": [],
+  "blockedBy": [
+    "RM-010"
+  ],
   "blocks": [
     "RM-012"
   ],

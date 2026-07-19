@@ -1,0 +1,40 @@
+{
+  "$schema": "../schema/roadmap-item.schema.json",
+  "id": "RM-046",
+  "parent": "RM-044",
+  "title": "Migrate Catalog and media flows into feature slices",
+  "type": "feature",
+  "status": "proposed",
+  "order": 280,
+  "theme": "repo-operations",
+  "outcome": "GitHub issue #684 is canonically represented from the reconciliation manifest.",
+  "scoring": {
+    "reach": 1,
+    "impact": 1,
+    "confidence": 0.1,
+    "effort": 5
+  },
+  "blockedBy": [],
+  "blocks": [],
+  "dependencies": [],
+  "tags": [],
+  "labels": [
+    "architecture",
+    "area: api",
+    "catalog",
+    "infrastructure",
+    "media",
+    "type: feature"
+  ],
+  "sources": [
+    {
+      "kind": "github-issue",
+      "reference": "#684"
+    }
+  ],
+  "integrations": {
+    "github": {
+      "issue": 684
+    }
+  }
+}

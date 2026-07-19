@@ -1,0 +1,35 @@
+{
+  "$schema": "../schema/roadmap-item.schema.json",
+  "id": "RM-083",
+  "title": "add Admin contract tests for integration-event payload compatibility",
+  "type": "issue",
+  "status": "proposed",
+  "order": 164,
+  "theme": "repo-operations",
+  "outcome": "GitHub issue #760 is canonically represented from the reconciliation manifest.",
+  "scoring": {
+    "reach": 1,
+    "impact": 1,
+    "confidence": 0.1,
+    "effort": 3
+  },
+  "blockedBy": [],
+  "blocks": [],
+  "dependencies": [],
+  "tags": [],
+  "labels": [
+    "area: testing",
+    "testing"
+  ],
+  "sources": [
+    {
+      "kind": "github-issue",
+      "reference": "#760"
+    }
+  ],
+  "integrations": {
+    "github": {
+      "issue": 760
+    }
+  }
+}

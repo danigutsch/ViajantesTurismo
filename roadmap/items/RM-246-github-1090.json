@@ -1,0 +1,37 @@
+{
+  "$schema": "../schema/roadmap-item.schema.json",
+  "id": "RM-246",
+  "title": "Enforce clean terminology before publication",
+  "type": "issue",
+  "status": "proposed",
+  "order": 117,
+  "theme": "repo-operations",
+  "outcome": "GitHub issue #1090 is canonically represented from the reconciliation manifest.",
+  "scoring": {
+    "reach": 1,
+    "impact": 1,
+    "confidence": 0.1,
+    "effort": 2
+  },
+  "blockedBy": [],
+  "blocks": [],
+  "dependencies": [],
+  "tags": [],
+  "labels": [
+    "area: release",
+    "risk: breaking-change",
+    "testing",
+    "type: chore"
+  ],
+  "sources": [
+    {
+      "kind": "github-issue",
+      "reference": "#1090"
+    }
+  ],
+  "integrations": {
+    "github": {
+      "issue": 1090
+    }
+  }
+}

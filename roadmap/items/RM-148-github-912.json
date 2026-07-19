@@ -1,0 +1,40 @@
+{
+  "$schema": "../schema/roadmap-item.schema.json",
+  "id": "RM-148",
+  "title": "Research DDD analyzer rule catalog",
+  "type": "enabler",
+  "status": "proposed",
+  "order": 201,
+  "theme": "repo-operations",
+  "outcome": "GitHub issue #912 is canonically represented from the reconciliation manifest.",
+  "scoring": {
+    "reach": 1,
+    "impact": 1,
+    "confidence": 0.1,
+    "effort": 3
+  },
+  "blockedBy": [],
+  "blocks": [
+    "RM-152"
+  ],
+  "dependencies": [],
+  "tags": [],
+  "labels": [
+    ".net",
+    "architecture",
+    "area: tooling",
+    "research",
+    "type: enabler"
+  ],
+  "sources": [
+    {
+      "kind": "github-issue",
+      "reference": "#912"
+    }
+  ],
+  "integrations": {
+    "github": {
+      "issue": 912
+    }
+  }
+}

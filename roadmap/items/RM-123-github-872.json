@@ -1,0 +1,38 @@
+{
+  "$schema": "../schema/roadmap-item.schema.json",
+  "id": "RM-123",
+  "title": "Define endpoint metadata conventions for route diagrams",
+  "type": "enabler",
+  "status": "proposed",
+  "order": 183,
+  "theme": "repo-operations",
+  "outcome": "GitHub issue #872 is canonically represented from the reconciliation manifest.",
+  "scoring": {
+    "reach": 1,
+    "impact": 1,
+    "confidence": 0.1,
+    "effort": 3
+  },
+  "blockedBy": [],
+  "blocks": [],
+  "dependencies": [],
+  "tags": [],
+  "labels": [
+    "area: api",
+    "area: tooling",
+    "documentation",
+    "testing",
+    "type: enabler"
+  ],
+  "sources": [
+    {
+      "kind": "github-issue",
+      "reference": "#872"
+    }
+  ],
+  "integrations": {
+    "github": {
+      "issue": 872
+    }
+  }
+}

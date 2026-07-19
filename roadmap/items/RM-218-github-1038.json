@@ -1,0 +1,39 @@
+{
+  "$schema": "../schema/roadmap-item.schema.json",
+  "id": "RM-218",
+  "parent": "RM-217",
+  "title": "chore(mcp): configure pinned repository MCP launchers",
+  "type": "enabler",
+  "status": "proposed",
+  "order": 242,
+  "theme": "repo-operations",
+  "outcome": "GitHub issue #1038 is canonically represented from the reconciliation manifest.",
+  "scoring": {
+    "reach": 1,
+    "impact": 1,
+    "confidence": 0.1,
+    "effort": 3
+  },
+  "blockedBy": [],
+  "blocks": [],
+  "dependencies": [],
+  "tags": [],
+  "labels": [
+    "area: tooling",
+    "aspire",
+    "configuration",
+    "security",
+    "type: enabler"
+  ],
+  "sources": [
+    {
+      "kind": "github-issue",
+      "reference": "#1038"
+    }
+  ],
+  "integrations": {
+    "github": {
+      "issue": 1038
+    }
+  }
+}

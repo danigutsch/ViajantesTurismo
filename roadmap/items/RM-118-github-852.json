@@ -1,0 +1,35 @@
+{
+  "$schema": "../schema/roadmap-item.schema.json",
+  "id": "RM-118",
+  "title": "Improve docs navigation and contributor entry points",
+  "type": "documentation",
+  "status": "proposed",
+  "order": 109,
+  "theme": "repo-operations",
+  "outcome": "GitHub issue #852 is canonically represented from the reconciliation manifest.",
+  "scoring": {
+    "reach": 1,
+    "impact": 1,
+    "confidence": 0.1,
+    "effort": 2
+  },
+  "blockedBy": [],
+  "blocks": [],
+  "dependencies": [],
+  "tags": [],
+  "labels": [
+    "documentation",
+    "type: docs"
+  ],
+  "sources": [
+    {
+      "kind": "github-issue",
+      "reference": "#852"
+    }
+  ],
+  "integrations": {
+    "github": {
+      "issue": 852
+    }
+  }
+}

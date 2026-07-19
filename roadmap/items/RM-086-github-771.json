@@ -1,0 +1,39 @@
+{
+  "$schema": "../schema/roadmap-item.schema.json",
+  "id": "RM-086",
+  "title": "add scheduling UI for jobs, triggers, and safe controls",
+  "type": "feature",
+  "status": "proposed",
+  "order": 287,
+  "theme": "repo-operations",
+  "outcome": "GitHub issue #771 is canonically represented from the reconciliation manifest.",
+  "scoring": {
+    "reach": 1,
+    "impact": 1,
+    "confidence": 0.1,
+    "effort": 5
+  },
+  "blockedBy": [],
+  "blocks": [],
+  "dependencies": [],
+  "tags": [],
+  "labels": [
+    "enhancement",
+    "frontend",
+    "management-web",
+    "observability",
+    "security",
+    "type: feature"
+  ],
+  "sources": [
+    {
+      "kind": "github-issue",
+      "reference": "#771"
+    }
+  ],
+  "integrations": {
+    "github": {
+      "issue": 771
+    }
+  }
+}

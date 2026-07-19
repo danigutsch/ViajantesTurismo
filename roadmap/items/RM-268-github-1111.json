@@ -1,0 +1,39 @@
+{
+  "$schema": "../schema/roadmap-item.schema.json",
+  "id": "RM-268",
+  "parent": "RM-264",
+  "title": "[Issue]: Validate need for a custom xUnit v3 ITestFramework",
+  "type": "enabler",
+  "status": "proposed",
+  "order": 268,
+  "theme": "repo-operations",
+  "outcome": "GitHub issue #1111 is canonically represented from the reconciliation manifest.",
+  "scoring": {
+    "reach": 1,
+    "impact": 1,
+    "confidence": 0.1,
+    "effort": 3
+  },
+  "blockedBy": [],
+  "blocks": [],
+  "dependencies": [],
+  "tags": [],
+  "labels": [
+    "architecture",
+    "research",
+    "sharedkernel",
+    "testing",
+    "type: enabler"
+  ],
+  "sources": [
+    {
+      "kind": "github-issue",
+      "reference": "#1111"
+    }
+  ],
+  "integrations": {
+    "github": {
+      "issue": 1111
+    }
+  }
+}

@@ -1,0 +1,38 @@
+{
+  "$schema": "../schema/roadmap-item.schema.json",
+  "id": "RM-121",
+  "title": "Research automatic table of contents generation for Markdown",
+  "type": "feature",
+  "status": "proposed",
+  "order": 300,
+  "theme": "repo-operations",
+  "outcome": "GitHub issue #870 is canonically represented from the reconciliation manifest.",
+  "scoring": {
+    "reach": 1,
+    "impact": 1,
+    "confidence": 0.1,
+    "effort": 5
+  },
+  "blockedBy": [],
+  "blocks": [],
+  "dependencies": [],
+  "tags": [],
+  "labels": [
+    "area: tooling",
+    "documentation",
+    "enhancement",
+    "research",
+    "type: feature"
+  ],
+  "sources": [
+    {
+      "kind": "github-issue",
+      "reference": "#870"
+    }
+  ],
+  "integrations": {
+    "github": {
+      "issue": 870
+    }
+  }
+}

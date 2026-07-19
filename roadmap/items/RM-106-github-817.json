@@ -1,0 +1,38 @@
+{
+  "$schema": "../schema/roadmap-item.schema.json",
+  "id": "RM-106",
+  "parent": "RM-102",
+  "title": "Define and enforce CORS policy",
+  "type": "enabler",
+  "status": "proposed",
+  "order": 172,
+  "theme": "repo-operations",
+  "outcome": "GitHub issue #817 is canonically represented from the reconciliation manifest.",
+  "scoring": {
+    "reach": 1,
+    "impact": 1,
+    "confidence": 0.1,
+    "effort": 3
+  },
+  "blockedBy": [],
+  "blocks": [],
+  "dependencies": [],
+  "tags": [],
+  "labels": [
+    "area: api",
+    "configuration",
+    "security",
+    "type: enabler"
+  ],
+  "sources": [
+    {
+      "kind": "github-issue",
+      "reference": "#817"
+    }
+  ],
+  "integrations": {
+    "github": {
+      "issue": 817
+    }
+  }
+}

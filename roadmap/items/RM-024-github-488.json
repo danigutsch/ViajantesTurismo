@@ -1,0 +1,38 @@
+{
+  "$schema": "../schema/roadmap-item.schema.json",
+  "id": "RM-024",
+  "parent": "RM-021",
+  "title": "Design SharedKernel HTTP result client library",
+  "type": "issue",
+  "status": "proposed",
+  "order": 124,
+  "theme": "repo-operations",
+  "outcome": "GitHub issue #488 is canonically represented from the reconciliation manifest.",
+  "scoring": {
+    "reach": 1,
+    "impact": 1,
+    "confidence": 0.1,
+    "effort": 3
+  },
+  "blockedBy": [],
+  "blocks": [],
+  "dependencies": [],
+  "tags": [],
+  "labels": [
+    ".net",
+    "architecture",
+    "enhancement",
+    "sharedkernel"
+  ],
+  "sources": [
+    {
+      "kind": "github-issue",
+      "reference": "#488"
+    }
+  ],
+  "integrations": {
+    "github": {
+      "issue": 488
+    }
+  }
+}

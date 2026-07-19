@@ -1,0 +1,40 @@
+{
+  "$schema": "../schema/roadmap-item.schema.json",
+  "id": "RM-263",
+  "title": "Add XML documentation analyzer for properties and positional records",
+  "type": "enabler",
+  "status": "proposed",
+  "order": 264,
+  "theme": "repo-operations",
+  "outcome": "GitHub issue #1106 is canonically represented from the reconciliation manifest.",
+  "scoring": {
+    "reach": 1,
+    "impact": 1,
+    "confidence": 0.1,
+    "effort": 3
+  },
+  "blockedBy": [],
+  "blocks": [],
+  "dependencies": [],
+  "tags": [],
+  "labels": [
+    ".net",
+    "architecture",
+    "area: sharedkernel",
+    "area: tooling",
+    "documentation",
+    "testing",
+    "type: enabler"
+  ],
+  "sources": [
+    {
+      "kind": "github-issue",
+      "reference": "#1106"
+    }
+  ],
+  "integrations": {
+    "github": {
+      "issue": 1106
+    }
+  }
+}

@@ -1,0 +1,37 @@
+{
+  "$schema": "../schema/roadmap-item.schema.json",
+  "id": "RM-059",
+  "parent": "RM-052",
+  "title": "Specify custom IO analyzer rules",
+  "type": "enabler",
+  "status": "proposed",
+  "order": 144,
+  "theme": "repo-operations",
+  "outcome": "GitHub issue #707 is canonically represented from the reconciliation manifest.",
+  "scoring": {
+    "reach": 1,
+    "impact": 1,
+    "confidence": 0.1,
+    "effort": 3
+  },
+  "blockedBy": [],
+  "blocks": [],
+  "dependencies": [],
+  "tags": [],
+  "labels": [
+    "area: sharedkernel",
+    "area: tooling",
+    "type: enabler"
+  ],
+  "sources": [
+    {
+      "kind": "github-issue",
+      "reference": "#707"
+    }
+  ],
+  "integrations": {
+    "github": {
+      "issue": 707
+    }
+  }
+}

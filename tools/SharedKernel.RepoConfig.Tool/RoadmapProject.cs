@@ -6,12 +6,27 @@ internal sealed class RoadmapProject
 {
     private readonly Dictionary<string, RoadmapItemSnapshot> _itemsById;
 
-    private RoadmapProject(string rootPath, IReadOnlyList<RoadmapItemSnapshot> items, IReadOnlySet<string> allowedStatuses, IReadOnlySet<string> closedStatuses, string? gitHubRepository, bool gitHubEnabled, GitHubProjectTarget? gitHubProjectTarget)
+    private RoadmapProject(
+        string rootPath,
+        IReadOnlyList<RoadmapItemSnapshot> items,
+        IReadOnlySet<string> allowedStatuses,
+        IReadOnlySet<string> closedStatuses,
+        string itemIdPrefix,
+        string? gitHubIntakeTheme,
+        string? gitHubIntakeOpenStatus,
+        string? gitHubIntakeClosedStatus,
+        string? gitHubRepository,
+        bool gitHubEnabled,
+        GitHubProjectTarget? gitHubProjectTarget)
     {
         RootPath = rootPath;
         Items = items;
         AllowedStatuses = allowedStatuses;
         ClosedStatuses = closedStatuses;
+        ItemIdPrefix = itemIdPrefix;
+        GitHubIntakeTheme = gitHubIntakeTheme;
+        GitHubIntakeOpenStatus = gitHubIntakeOpenStatus;
+        GitHubIntakeClosedStatus = gitHubIntakeClosedStatus;
         GitHubRepository = gitHubRepository;
         GitHubEnabled = gitHubEnabled;
         GitHubProjectTarget = gitHubProjectTarget;
@@ -30,6 +45,14 @@ internal sealed class RoadmapProject
 
     public bool GitHubEnabled { get; }
 
+    public string ItemIdPrefix { get; }
+
+    public string? GitHubIntakeTheme { get; }
+
+    public string? GitHubIntakeOpenStatus { get; }
+
+    public string? GitHubIntakeClosedStatus { get; }
+
     public GitHubProjectTarget? GitHubProjectTarget { get; }
 
     public static RoadmapProject Load(string rootPath)
@@ -44,11 +67,24 @@ internal sealed class RoadmapProject
         using var config = JsonDocument.Parse(File.ReadAllText(configPath));
         var allowedStatuses = ReadStringArray(config.RootElement, "allowed", "statuses");
         var closedStatuses = ReadStringArray(config.RootElement, "project", "closedStatuses");
+        var itemIdPrefix = config.RootElement.GetProperty("itemIdPrefix").GetString() ?? throw new InvalidOperationException("roadmap/config.json must define itemIdPrefix.");
         var gitHubRepository = ReadGitHubRepository(config.RootElement);
         var gitHubEnabled = ReadGitHubEnabled(config.RootElement);
         var gitHubProjectTarget = ReadGitHubProjectTarget(config.RootElement);
         var items = LoadItems(rootPath);
-        return new RoadmapProject(rootPath, items, new HashSet<string>(allowedStatuses, StringComparer.Ordinal), new HashSet<string>(closedStatuses, StringComparer.Ordinal), gitHubRepository, gitHubEnabled, gitHubProjectTarget);
+        var (gitHubIntakeTheme, gitHubIntakeOpenStatus, gitHubIntakeClosedStatus) = ReadGitHubIntakeSettings(config.RootElement);
+        return new RoadmapProject(
+            rootPath,
+            items,
+            new HashSet<string>(allowedStatuses, StringComparer.Ordinal),
+            new HashSet<string>(closedStatuses, StringComparer.Ordinal),
+            itemIdPrefix,
+            gitHubIntakeTheme,
+            gitHubIntakeOpenStatus,
+            gitHubIntakeClosedStatus,
+            gitHubRepository,
+            gitHubEnabled,
+            gitHubProjectTarget);
     }
 
     public IReadOnlyList<RoadmapItemSnapshot> OpenItems(string? type = null) =>
@@ -85,11 +121,34 @@ internal sealed class RoadmapProject
     public IEnumerable<KeyValuePair<string, int>> LabelCounts() =>
         Items.SelectMany(item => item.Labels).GroupBy(label => label, StringComparer.Ordinal).Select(group => new KeyValuePair<string, int>(group.Key, group.Count())).OrderByDescending(item => item.Value).ThenBy(item => item.Key, StringComparer.Ordinal);
 
+    public int[] GetGitHubIssueNumbers() => Items
+        .Where(item => item.GitHubIssue is int)
+        .Select(item => item.GitHubIssue.GetValueOrDefault())
+        .Distinct()
+        .Order()
+        .ToArray();
+
     private static RoadmapItemSnapshot[] LoadItems(string rootPath) =>
         Directory.EnumerateFiles(Path.Combine(rootPath, RepoConfigPaths.Items), "*.json", SearchOption.TopDirectoryOnly)
             .Order(StringComparer.Ordinal)
             .Select(path => LoadItem(rootPath, path))
             .ToArray();
+
+    private static (string? Theme, string? OpenStatus, string? ClosedStatus) ReadGitHubIntakeSettings(JsonElement root)
+    {
+        if (!root.TryGetProperty("integrations", out var integrations)
+            || !integrations.TryGetProperty("github", out var github)
+            || !github.TryGetProperty("intake", out var intake)
+            || intake.ValueKind != JsonValueKind.Object)
+        {
+            return (null, null, null);
+        }
+
+        return (
+            ReadNullableString(intake, "theme"),
+            ReadNullableString(intake, "openStatus"),
+            ReadNullableString(intake, "closedStatus"));
+    }
 
     private static RoadmapItemSnapshot LoadItem(string rootPath, string itemPath)
     {
@@ -216,6 +275,11 @@ internal sealed class RoadmapProject
         && value.ValueKind == JsonValueKind.Number
         && value.TryGetDecimal(out var decimalValue)
             ? decimalValue
+            : null;
+
+    private static string? ReadNullableString(JsonElement root, string propertyName) =>
+        root.TryGetProperty(propertyName, out var value) && value.ValueKind == JsonValueKind.String
+            ? value.GetString()
             : null;
 
     private static string[] ReadStringArray(JsonElement root, string propertyName)

@@ -1,0 +1,35 @@
+{
+  "$schema": "../schema/roadmap-item.schema.json",
+  "id": "RM-164",
+  "title": "Add reusable review evidence primitives",
+  "type": "issue",
+  "status": "proposed",
+  "order": 208,
+  "theme": "repo-operations",
+  "outcome": "GitHub issue #954 is canonically represented from the reconciliation manifest.",
+  "scoring": {
+    "reach": 1,
+    "impact": 1,
+    "confidence": 0.1,
+    "effort": 3
+  },
+  "blockedBy": [],
+  "blocks": [],
+  "dependencies": [],
+  "tags": [],
+  "labels": [
+    "architecture",
+    "enhancement"
+  ],
+  "sources": [
+    {
+      "kind": "github-issue",
+      "reference": "#954"
+    }
+  ],
+  "integrations": {
+    "github": {
+      "issue": 954
+    }
+  }
+}

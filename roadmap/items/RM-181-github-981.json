@@ -1,0 +1,36 @@
+{
+  "$schema": "../schema/roadmap-item.schema.json",
+  "id": "RM-181",
+  "title": "[Bug]: Harden test naming keyword casing and diagnostic IDs",
+  "type": "issue",
+  "status": "proposed",
+  "order": 219,
+  "theme": "repo-operations",
+  "outcome": "GitHub issue #981 is canonically represented from the reconciliation manifest.",
+  "scoring": {
+    "reach": 1,
+    "impact": 1,
+    "confidence": 0.1,
+    "effort": 3
+  },
+  "blockedBy": [],
+  "blocks": [],
+  "dependencies": [],
+  "tags": [],
+  "labels": [
+    "area: sharedkernel",
+    "area: testing",
+    "bug"
+  ],
+  "sources": [
+    {
+      "kind": "github-issue",
+      "reference": "#981"
+    }
+  ],
+  "integrations": {
+    "github": {
+      "issue": 981
+    }
+  }
+}

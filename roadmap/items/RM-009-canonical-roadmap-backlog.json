@@ -7,7 +7,9 @@
   "triage": "untriaged",
   "theme": "repo-operations",
   "outcome": "Active delivery work has canonical identity and hierarchy before evidence-backed prioritization.",
-  "blockedBy": [],
+  "blockedBy": [
+    "RM-249"
+  ],
   "blocks": [],
   "dependencies": [],
   "tags": [

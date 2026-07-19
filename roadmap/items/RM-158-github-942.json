@@ -1,0 +1,36 @@
+{
+  "$schema": "../schema/roadmap-item.schema.json",
+  "id": "RM-158",
+  "title": "Bind tour and traveler data to document templates",
+  "type": "feature",
+  "status": "proposed",
+  "order": 306,
+  "theme": "repo-operations",
+  "outcome": "GitHub issue #942 is canonically represented from the reconciliation manifest.",
+  "scoring": {
+    "reach": 1,
+    "impact": 1,
+    "confidence": 0.1,
+    "effort": 5
+  },
+  "blockedBy": [],
+  "blocks": [],
+  "dependencies": [],
+  "tags": [],
+  "labels": [
+    "area: api",
+    "security",
+    "type: feature"
+  ],
+  "sources": [
+    {
+      "kind": "github-issue",
+      "reference": "#942"
+    }
+  ],
+  "integrations": {
+    "github": {
+      "issue": 942
+    }
+  }
+}

@@ -1,0 +1,38 @@
+{
+  "$schema": "../schema/roadmap-item.schema.json",
+  "id": "RM-139",
+  "parent": "RM-141",
+  "title": "Evaluate body-only endpoint request contracts",
+  "type": "enabler",
+  "status": "proposed",
+  "order": 197,
+  "theme": "repo-operations",
+  "outcome": "GitHub issue #902 is canonically represented from the reconciliation manifest.",
+  "scoring": {
+    "reach": 1,
+    "impact": 1,
+    "confidence": 0.1,
+    "effort": 3
+  },
+  "blockedBy": [],
+  "blocks": [],
+  "dependencies": [],
+  "tags": [],
+  "labels": [
+    "architecture",
+    "area: api",
+    "research",
+    "type: enabler"
+  ],
+  "sources": [
+    {
+      "kind": "github-issue",
+      "reference": "#902"
+    }
+  ],
+  "integrations": {
+    "github": {
+      "issue": 902
+    }
+  }
+}

@@ -1,0 +1,35 @@
+{
+  "$schema": "../schema/roadmap-item.schema.json",
+  "id": "RM-180",
+  "title": "Decide media database and object-storage ownership boundaries",
+  "type": "issue",
+  "status": "proposed",
+  "order": 218,
+  "theme": "repo-operations",
+  "outcome": "GitHub issue #980 is canonically represented from the reconciliation manifest.",
+  "scoring": {
+    "reach": 1,
+    "impact": 1,
+    "confidence": 0.1,
+    "effort": 3
+  },
+  "blockedBy": [],
+  "blocks": [],
+  "dependencies": [],
+  "tags": [],
+  "labels": [
+    "documentation",
+    "media"
+  ],
+  "sources": [
+    {
+      "kind": "github-issue",
+      "reference": "#980"
+    }
+  ],
+  "integrations": {
+    "github": {
+      "issue": 980
+    }
+  }
+}

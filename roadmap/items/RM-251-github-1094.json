@@ -1,0 +1,41 @@
+{
+  "$schema": "../schema/roadmap-item.schema.json",
+  "id": "RM-251",
+  "title": "Build accessible multi-file Catalog media upload queue",
+  "type": "feature",
+  "status": "proposed",
+  "order": 318,
+  "theme": "repo-operations",
+  "outcome": "GitHub issue #1094 is canonically represented from the reconciliation manifest.",
+  "scoring": {
+    "reach": 1,
+    "impact": 1,
+    "confidence": 0.1,
+    "effort": 5
+  },
+  "blockedBy": [],
+  "blocks": [],
+  "dependencies": [],
+  "tags": [],
+  "labels": [
+    "catalog",
+    "enhancement",
+    "frontend",
+    "management-web",
+    "media",
+    "security",
+    "testing",
+    "type: feature"
+  ],
+  "sources": [
+    {
+      "kind": "github-issue",
+      "reference": "#1094"
+    }
+  ],
+  "integrations": {
+    "github": {
+      "issue": 1094
+    }
+  }
+}

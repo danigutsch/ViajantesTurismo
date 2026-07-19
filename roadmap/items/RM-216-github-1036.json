@@ -1,0 +1,41 @@
+{
+  "$schema": "../schema/roadmap-item.schema.json",
+  "id": "RM-216",
+  "parent": "RM-217",
+  "title": "feat(aspire): expose MCP tools for custom resources",
+  "type": "feature",
+  "status": "proposed",
+  "order": 316,
+  "theme": "repo-operations",
+  "outcome": "GitHub issue #1036 is canonically represented from the reconciliation manifest.",
+  "scoring": {
+    "reach": 1,
+    "impact": 1,
+    "confidence": 0.1,
+    "effort": 5
+  },
+  "blockedBy": [],
+  "blocks": [],
+  "dependencies": [],
+  "tags": [],
+  "labels": [
+    "area: tooling",
+    "aspire",
+    "configuration",
+    "infrastructure",
+    "security",
+    "sharedkernel",
+    "type: feature"
+  ],
+  "sources": [
+    {
+      "kind": "github-issue",
+      "reference": "#1036"
+    }
+  ],
+  "integrations": {
+    "github": {
+      "issue": 1036
+    }
+  }
+}

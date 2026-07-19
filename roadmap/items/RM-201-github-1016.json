@@ -1,0 +1,38 @@
+{
+  "$schema": "../schema/roadmap-item.schema.json",
+  "id": "RM-201",
+  "title": "Research deterministic coupling and cohesion relation analysis",
+  "type": "issue",
+  "status": "proposed",
+  "order": 229,
+  "theme": "repo-operations",
+  "outcome": "GitHub issue #1016 is canonically represented from the reconciliation manifest.",
+  "scoring": {
+    "reach": 1,
+    "impact": 1,
+    "confidence": 0.1,
+    "effort": 3
+  },
+  "blockedBy": [],
+  "blocks": [
+    "RM-200"
+  ],
+  "dependencies": [],
+  "tags": [],
+  "labels": [
+    "architecture",
+    "research",
+    "sharedkernel"
+  ],
+  "sources": [
+    {
+      "kind": "github-issue",
+      "reference": "#1016"
+    }
+  ],
+  "integrations": {
+    "github": {
+      "issue": 1016
+    }
+  }
+}

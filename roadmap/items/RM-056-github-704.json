@@ -1,0 +1,38 @@
+{
+  "$schema": "../schema/roadmap-item.schema.json",
+  "id": "RM-056",
+  "parent": "RM-051",
+  "title": "Trace upload and import stream pass counts",
+  "type": "enabler",
+  "status": "proposed",
+  "order": 143,
+  "theme": "repo-operations",
+  "outcome": "GitHub issue #704 is canonically represented from the reconciliation manifest.",
+  "scoring": {
+    "reach": 1,
+    "impact": 1,
+    "confidence": 0.1,
+    "effort": 3
+  },
+  "blockedBy": [],
+  "blocks": [],
+  "dependencies": [],
+  "tags": [],
+  "labels": [
+    "area: api",
+    "performance",
+    "research",
+    "type: enabler"
+  ],
+  "sources": [
+    {
+      "kind": "github-issue",
+      "reference": "#704"
+    }
+  ],
+  "integrations": {
+    "github": {
+      "issue": 704
+    }
+  }
+}

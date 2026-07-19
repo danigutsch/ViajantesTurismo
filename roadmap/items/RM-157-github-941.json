@@ -1,0 +1,36 @@
+{
+  "$schema": "../schema/roadmap-item.schema.json",
+  "id": "RM-157",
+  "title": "Add versioned travel document templates",
+  "type": "feature",
+  "status": "proposed",
+  "order": 305,
+  "theme": "repo-operations",
+  "outcome": "GitHub issue #941 is canonically represented from the reconciliation manifest.",
+  "scoring": {
+    "reach": 1,
+    "impact": 1,
+    "confidence": 0.1,
+    "effort": 5
+  },
+  "blockedBy": [],
+  "blocks": [],
+  "dependencies": [],
+  "tags": [],
+  "labels": [
+    "architecture",
+    "area: api",
+    "type: feature"
+  ],
+  "sources": [
+    {
+      "kind": "github-issue",
+      "reference": "#941"
+    }
+  ],
+  "integrations": {
+    "github": {
+      "issue": 941
+    }
+  }
+}

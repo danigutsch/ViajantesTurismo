@@ -1,0 +1,38 @@
+{
+  "$schema": "../schema/roadmap-item.schema.json",
+  "id": "RM-088",
+  "title": "add saga operations UI and correlation trace",
+  "type": "feature",
+  "status": "proposed",
+  "order": 289,
+  "theme": "repo-operations",
+  "outcome": "GitHub issue #773 is canonically represented from the reconciliation manifest.",
+  "scoring": {
+    "reach": 1,
+    "impact": 1,
+    "confidence": 0.1,
+    "effort": 5
+  },
+  "blockedBy": [],
+  "blocks": [],
+  "dependencies": [],
+  "tags": [],
+  "labels": [
+    "enhancement",
+    "frontend",
+    "management-web",
+    "observability",
+    "type: feature"
+  ],
+  "sources": [
+    {
+      "kind": "github-issue",
+      "reference": "#773"
+    }
+  ],
+  "integrations": {
+    "github": {
+      "issue": 773
+    }
+  }
+}

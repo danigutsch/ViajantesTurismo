@@ -1,0 +1,36 @@
+{
+  "$schema": "../schema/roadmap-item.schema.json",
+  "id": "RM-036",
+  "title": "Design audit functionality for sensitive business actions",
+  "type": "issue",
+  "status": "proposed",
+  "order": 134,
+  "theme": "repo-operations",
+  "outcome": "GitHub issue #575 is canonically represented from the reconciliation manifest.",
+  "scoring": {
+    "reach": 1,
+    "impact": 1,
+    "confidence": 0.1,
+    "effort": 3
+  },
+  "blockedBy": [],
+  "blocks": [],
+  "dependencies": [],
+  "tags": [],
+  "labels": [
+    "architecture",
+    "enhancement",
+    "security"
+  ],
+  "sources": [
+    {
+      "kind": "github-issue",
+      "reference": "#575"
+    }
+  ],
+  "integrations": {
+    "github": {
+      "issue": 575
+    }
+  }
+}

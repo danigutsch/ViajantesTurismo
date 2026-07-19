@@ -1,0 +1,38 @@
+{
+  "$schema": "../schema/roadmap-item.schema.json",
+  "id": "RM-110",
+  "title": "Research SEO analysis and improvement strategy",
+  "type": "enabler",
+  "status": "proposed",
+  "order": 174,
+  "theme": "repo-operations",
+  "outcome": "GitHub issue #832 is canonically represented from the reconciliation manifest.",
+  "scoring": {
+    "reach": 1,
+    "impact": 1,
+    "confidence": 0.1,
+    "effort": 3
+  },
+  "blockedBy": [],
+  "blocks": [],
+  "dependencies": [],
+  "tags": [],
+  "labels": [
+    "frontend",
+    "public-web",
+    "research",
+    "testing",
+    "type: enabler"
+  ],
+  "sources": [
+    {
+      "kind": "github-issue",
+      "reference": "#832"
+    }
+  ],
+  "integrations": {
+    "github": {
+      "issue": 832
+    }
+  }
+}

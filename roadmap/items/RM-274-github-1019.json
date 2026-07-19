@@ -1,0 +1,34 @@
+{
+  "$schema": "../schema/roadmap-item.schema.json",
+  "id": "RM-274",
+  "parent": "RM-276",
+  "title": "Project roadmap fields to GitHub Projects",
+  "type": "enabler",
+  "status": "done",
+  "triage": "untriaged",
+  "theme": "repo-operations",
+  "outcome": "GitHub issue #1019 is canonically represented from the reconciliation manifest.",
+  "blockedBy": [
+    "RM-273"
+  ],
+  "blocks": [
+    "RM-275"
+  ],
+  "dependencies": [],
+  "tags": [],
+  "labels": [
+    "area: tooling",
+    "type: enabler"
+  ],
+  "sources": [
+    {
+      "kind": "github-issue",
+      "reference": "#1019"
+    }
+  ],
+  "integrations": {
+    "github": {
+      "issue": 1019
+    }
+  }
+}

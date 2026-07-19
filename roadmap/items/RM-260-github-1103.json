@@ -1,0 +1,33 @@
+{
+  "$schema": "../schema/roadmap-item.schema.json",
+  "id": "RM-260",
+  "parent": "RM-259",
+  "title": "Verify mutating endpoint validation contracts",
+  "type": "issue",
+  "status": "done",
+  "triage": "untriaged",
+  "theme": "repo-operations",
+  "outcome": "GitHub issue #1103 is canonically represented from the reconciliation manifest.",
+  "blockedBy": [],
+  "blocks": [],
+  "dependencies": [],
+  "tags": [],
+  "labels": [
+    ".net",
+    "area: api",
+    "enhancement",
+    "security",
+    "testing"
+  ],
+  "sources": [
+    {
+      "kind": "github-issue",
+      "reference": "#1103"
+    }
+  ],
+  "integrations": {
+    "github": {
+      "issue": 1103
+    }
+  }
+}

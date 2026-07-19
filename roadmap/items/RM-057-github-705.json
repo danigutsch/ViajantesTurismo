@@ -1,0 +1,38 @@
+{
+  "$schema": "../schema/roadmap-item.schema.json",
+  "id": "RM-057",
+  "parent": "RM-051",
+  "title": "Refactor one upload or import flow using measured strategy",
+  "type": "feature",
+  "status": "proposed",
+  "order": 282,
+  "theme": "repo-operations",
+  "outcome": "GitHub issue #705 is canonically represented from the reconciliation manifest.",
+  "scoring": {
+    "reach": 1,
+    "impact": 1,
+    "confidence": 0.1,
+    "effort": 5
+  },
+  "blockedBy": [],
+  "blocks": [],
+  "dependencies": [],
+  "tags": [],
+  "labels": [
+    "area: api",
+    "performance",
+    "sharedkernel",
+    "type: feature"
+  ],
+  "sources": [
+    {
+      "kind": "github-issue",
+      "reference": "#705"
+    }
+  ],
+  "integrations": {
+    "github": {
+      "issue": 705
+    }
+  }
+}

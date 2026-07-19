@@ -1,0 +1,39 @@
+{
+  "$schema": "../schema/roadmap-item.schema.json",
+  "id": "RM-228",
+  "parent": "RM-230",
+  "title": "Define governed literals and canonical constant owners",
+  "type": "enabler",
+  "status": "proposed",
+  "order": 248,
+  "theme": "repo-operations",
+  "outcome": "GitHub issue #1068 is canonically represented from the reconciliation manifest.",
+  "scoring": {
+    "reach": 1,
+    "impact": 1,
+    "confidence": 0.1,
+    "effort": 3
+  },
+  "blockedBy": [],
+  "blocks": [],
+  "dependencies": [],
+  "tags": [],
+  "labels": [
+    "architecture",
+    "area: sharedkernel",
+    "area: tooling",
+    "configuration",
+    "type: enabler"
+  ],
+  "sources": [
+    {
+      "kind": "github-issue",
+      "reference": "#1068"
+    }
+  ],
+  "integrations": {
+    "github": {
+      "issue": 1068
+    }
+  }
+}

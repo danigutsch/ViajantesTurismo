@@ -1,0 +1,37 @@
+{
+  "$schema": "../schema/roadmap-item.schema.json",
+  "id": "RM-051",
+  "title": "Improve real upload and import stream performance",
+  "type": "epic",
+  "status": "proposed",
+  "order": 331,
+  "theme": "repo-operations",
+  "outcome": "GitHub issue #696 is canonically represented from the reconciliation manifest.",
+  "scoring": {
+    "reach": 1,
+    "impact": 1,
+    "confidence": 0.1,
+    "effort": 8
+  },
+  "blockedBy": [],
+  "blocks": [],
+  "dependencies": [],
+  "tags": [],
+  "labels": [
+    "area: api",
+    "media",
+    "performance",
+    "type: epic"
+  ],
+  "sources": [
+    {
+      "kind": "github-issue",
+      "reference": "#696"
+    }
+  ],
+  "integrations": {
+    "github": {
+      "issue": 696
+    }
+  }
+}

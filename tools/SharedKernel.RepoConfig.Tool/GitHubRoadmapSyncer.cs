@@ -1,6 +1,5 @@
 using System.Globalization;
 using System.Net;
-using System.Net.Http.Headers;
 using System.Text;
 using System.Text.Json;
 using System.Text.Json.Nodes;
@@ -9,7 +8,6 @@ namespace SharedKernel.RepoConfig.Tool;
 
 internal sealed class GitHubRoadmapSyncer
 {
-    private static readonly TimeSpan GitHubSyncTimeout = TimeSpan.FromSeconds(30);
     private const decimal ProjectNumberTolerance = 0.000001m;
     private static readonly (string Name, string DataType)[] RequiredProjectFields =
     [
@@ -53,7 +51,7 @@ internal sealed class GitHubRoadmapSyncer
 
         var repository = GetGitHubRepository();
         List<string> messages = [.. preview.Messages];
-        using var ownedHttpClient = _httpClient is null ? CreateGitHubClient() : null;
+        using var ownedHttpClient = _httpClient is null ? GitHubHttpClient.Create("sync") : null;
         var httpClient = _httpClient ?? ownedHttpClient;
         var client = httpClient ?? throw new InvalidOperationException("GitHub sync could not create an HTTP client.");
         var projectClient = new GitHubProjectClient(client);
@@ -83,7 +81,7 @@ internal sealed class GitHubRoadmapSyncer
         }
 
         List<string> messages = [];
-        using var ownedHttpClient = _httpClient is null ? CreateGitHubClient() : null;
+        using var ownedHttpClient = _httpClient is null ? GitHubHttpClient.Create("sync") : null;
         var httpClient = _httpClient ?? ownedHttpClient;
         var client = httpClient ?? throw new InvalidOperationException("GitHub sync could not create an HTTP client.");
         var projectClient = CreateProjectClient(client);
@@ -236,7 +234,7 @@ internal sealed class GitHubRoadmapSyncer
 
     private static bool IsAmbiguousIssueCreationFailure(Exception exception)
     {
-        return exception is GitHubSyncTimeoutException or OperationCanceledException or HttpRequestException or IOException or JsonException;
+        return exception is TimeoutException or OperationCanceledException or HttpRequestException or IOException or JsonException;
     }
 
     private async Task SyncLabels(
@@ -429,7 +427,7 @@ internal sealed class GitHubRoadmapSyncer
 
     private async Task<IReadOnlyList<string>> UpdateItem(HttpClient httpClient, string repository, RoadmapItemSnapshot item, CancellationToken cancellationToken)
     {
-        using var timeout = new CancellationTokenSource(GitHubSyncTimeout, _timeProvider);
+        using var timeout = new CancellationTokenSource(GitHubRequestTimeout.Duration, _timeProvider);
         using var itemCancellation = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, timeout.Token);
         try
         {
@@ -441,13 +439,13 @@ internal sealed class GitHubRoadmapSyncer
         }
         catch (OperationCanceledException) when (timeout.IsCancellationRequested && !cancellationToken.IsCancellationRequested)
         {
-            throw new GitHubSyncTimeoutException();
+            throw GitHubRequestTimeout.Create("sync");
         }
     }
 
     private async Task<T> RunProjectOperation<T>(Func<CancellationToken, Task<T>> operation, CancellationToken cancellationToken)
     {
-        using var timeout = new CancellationTokenSource(GitHubSyncTimeout, _timeProvider);
+        using var timeout = new CancellationTokenSource(GitHubRequestTimeout.Duration, _timeProvider);
         using var operationCancellation = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, timeout.Token);
         try
         {
@@ -459,7 +457,7 @@ internal sealed class GitHubRoadmapSyncer
         }
         catch (OperationCanceledException) when (timeout.IsCancellationRequested && !cancellationToken.IsCancellationRequested)
         {
-            throw new GitHubSyncTimeoutException();
+            throw GitHubRequestTimeout.Create("sync");
         }
     }
 
@@ -696,21 +694,6 @@ internal sealed class GitHubRoadmapSyncer
         {
             yield return $"dry-run: ensure {_project.GitHubRepository}#{item.GitHubIssue} is in GitHub Project {_project.GitHubProjectTarget.Number}";
         }
-    }
-
-    private static HttpClient CreateGitHubClient()
-    {
-        var token = Environment.GetEnvironmentVariable("GH_TOKEN") ?? Environment.GetEnvironmentVariable("GITHUB_TOKEN");
-        if (string.IsNullOrWhiteSpace(token))
-        {
-            throw new InvalidOperationException("Set GH_TOKEN or GITHUB_TOKEN before running authenticated GitHub sync.");
-        }
-
-        var httpClient = new HttpClient();
-        httpClient.DefaultRequestHeaders.UserAgent.Add(new ProductInfoHeaderValue("sharedkernel-repo", "1.0"));
-        httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
-        httpClient.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/vnd.github+json"));
-        return httpClient;
     }
 
     private static async Task<IReadOnlyList<string>> UpdateIssue(HttpClient httpClient, string repository, RoadmapItemSnapshot item, CancellationToken cancellationToken)

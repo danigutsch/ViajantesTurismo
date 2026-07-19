@@ -1,0 +1,38 @@
+{
+  "$schema": "../schema/roadmap-item.schema.json",
+  "id": "RM-099",
+  "parent": "RM-095",
+  "title": "Adopt HATEOAS links in Admin REST endpoints",
+  "type": "feature",
+  "status": "proposed",
+  "order": 294,
+  "theme": "repo-operations",
+  "outcome": "GitHub issue #793 is canonically represented from the reconciliation manifest.",
+  "scoring": {
+    "reach": 1,
+    "impact": 1,
+    "confidence": 0.1,
+    "effort": 5
+  },
+  "blockedBy": [],
+  "blocks": [],
+  "dependencies": [],
+  "tags": [],
+  "labels": [
+    "area: api",
+    "management-web",
+    "testing",
+    "type: feature"
+  ],
+  "sources": [
+    {
+      "kind": "github-issue",
+      "reference": "#793"
+    }
+  ],
+  "integrations": {
+    "github": {
+      "issue": 793
+    }
+  }
+}

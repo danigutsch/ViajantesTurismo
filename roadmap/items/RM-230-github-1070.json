@@ -1,0 +1,38 @@
+{
+  "$schema": "../schema/roadmap-item.schema.json",
+  "id": "RM-230",
+  "title": "Epic: governed constants and literal diagnostics",
+  "type": "epic",
+  "status": "proposed",
+  "order": 346,
+  "theme": "repo-operations",
+  "outcome": "GitHub issue #1070 is canonically represented from the reconciliation manifest.",
+  "scoring": {
+    "reach": 1,
+    "impact": 1,
+    "confidence": 0.1,
+    "effort": 8
+  },
+  "blockedBy": [],
+  "blocks": [],
+  "dependencies": [],
+  "tags": [],
+  "labels": [
+    "architecture",
+    "area: sharedkernel",
+    "area: tooling",
+    "configuration",
+    "type: epic"
+  ],
+  "sources": [
+    {
+      "kind": "github-issue",
+      "reference": "#1070"
+    }
+  ],
+  "integrations": {
+    "github": {
+      "issue": 1070
+    }
+  }
+}

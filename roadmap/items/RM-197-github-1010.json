@@ -1,0 +1,37 @@
+{
+  "$schema": "../schema/roadmap-item.schema.json",
+  "id": "RM-197",
+  "parent": "RM-196",
+  "title": "Isolate Branding persistence in a dedicated PostgreSQL schema",
+  "type": "enabler",
+  "status": "proposed",
+  "order": 227,
+  "theme": "repo-operations",
+  "outcome": "GitHub issue #1010 is canonically represented from the reconciliation manifest.",
+  "scoring": {
+    "reach": 1,
+    "impact": 1,
+    "confidence": 0.1,
+    "effort": 3
+  },
+  "blockedBy": [],
+  "blocks": [],
+  "dependencies": [],
+  "tags": [],
+  "labels": [
+    "architecture",
+    "infrastructure",
+    "type: enabler"
+  ],
+  "sources": [
+    {
+      "kind": "github-issue",
+      "reference": "#1010"
+    }
+  ],
+  "integrations": {
+    "github": {
+      "issue": 1010
+    }
+  }
+}

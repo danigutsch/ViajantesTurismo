@@ -1,0 +1,39 @@
+{
+  "$schema": "../schema/roadmap-item.schema.json",
+  "id": "RM-238",
+  "parent": "RM-234",
+  "title": "Enforce actionable NuGet restore and audit findings",
+  "type": "enabler",
+  "status": "proposed",
+  "order": 253,
+  "theme": "repo-operations",
+  "outcome": "GitHub issue #1080 is canonically represented from the reconciliation manifest.",
+  "scoring": {
+    "reach": 1,
+    "impact": 1,
+    "confidence": 0.1,
+    "effort": 3
+  },
+  "blockedBy": [],
+  "blocks": [],
+  "dependencies": [],
+  "tags": [],
+  "labels": [
+    ".net",
+    "area: tooling",
+    "ci",
+    "security",
+    "type: enabler"
+  ],
+  "sources": [
+    {
+      "kind": "github-issue",
+      "reference": "#1080"
+    }
+  ],
+  "integrations": {
+    "github": {
+      "issue": 1080
+    }
+  }
+}

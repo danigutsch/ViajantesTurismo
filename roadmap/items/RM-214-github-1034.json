@@ -1,0 +1,44 @@
+{
+  "$schema": "../schema/roadmap-item.schema.json",
+  "id": "RM-214",
+  "parent": "RM-215",
+  "title": "Align worker ownership to bounded contexts",
+  "type": "enabler",
+  "status": "proposed",
+  "order": 241,
+  "theme": "repo-operations",
+  "outcome": "Each event consumer has bounded-context ownership with matching deployment, scaling, credentials, and reliability boundaries.",
+  "scoring": {
+    "reach": 1,
+    "impact": 1,
+    "confidence": 0.1,
+    "effort": 3
+  },
+  "blockedBy": [],
+  "blocks": [],
+  "dependencies": [],
+  "tags": [
+    "architecture",
+    "worker",
+    "ownership",
+    "eventing"
+  ],
+  "labels": [
+    "architecture",
+    "aspire",
+    "infrastructure",
+    "testing",
+    "type: enabler"
+  ],
+  "sources": [
+    {
+      "kind": "github-issue",
+      "reference": "#1034"
+    }
+  ],
+  "integrations": {
+    "github": {
+      "issue": 1034
+    }
+  }
+}

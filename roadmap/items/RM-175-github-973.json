@@ -1,0 +1,35 @@
+{
+  "$schema": "../schema/roadmap-item.schema.json",
+  "id": "RM-175",
+  "parent": "RM-018",
+  "title": "Document local media infrastructure secrets and reset workflow",
+  "type": "documentation",
+  "status": "done",
+  "triage": "untriaged",
+  "theme": "repo-operations",
+  "outcome": "GitHub issue #973 is canonically represented from the reconciliation manifest.",
+  "blockedBy": [],
+  "blocks": [],
+  "dependencies": [],
+  "tags": [],
+  "labels": [
+    "area: tooling",
+    "aspire",
+    "documentation",
+    "infrastructure",
+    "media",
+    "security",
+    "type: docs"
+  ],
+  "sources": [
+    {
+      "kind": "github-issue",
+      "reference": "#973"
+    }
+  ],
+  "integrations": {
+    "github": {
+      "issue": 973
+    }
+  }
+}

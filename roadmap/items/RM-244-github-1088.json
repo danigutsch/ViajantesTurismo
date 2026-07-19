@@ -1,0 +1,40 @@
+{
+  "$schema": "../schema/roadmap-item.schema.json",
+  "id": "RM-244",
+  "parent": "RM-242",
+  "title": "Add an explicit dependency graph refresh command",
+  "type": "enabler",
+  "status": "proposed",
+  "order": 258,
+  "theme": "repo-operations",
+  "outcome": "GitHub issue #1088 is canonically represented from the reconciliation manifest.",
+  "scoring": {
+    "reach": 1,
+    "impact": 1,
+    "confidence": 0.1,
+    "effort": 3
+  },
+  "blockedBy": [],
+  "blocks": [],
+  "dependencies": [],
+  "tags": [],
+  "labels": [
+    ".net",
+    "area: packaging",
+    "area: tooling",
+    "dependencies",
+    "security",
+    "type: enabler"
+  ],
+  "sources": [
+    {
+      "kind": "github-issue",
+      "reference": "#1088"
+    }
+  ],
+  "integrations": {
+    "github": {
+      "issue": 1088
+    }
+  }
+}

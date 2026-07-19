@@ -52,6 +52,8 @@ internal static class RepoConfigVerifier
         }
 
         var configuredItemIdPrefix = GetString(root, "itemIdPrefix");
+        var itemIdPrefixIsValid = !string.IsNullOrWhiteSpace(configuredItemIdPrefix)
+            && configuredItemIdPrefix.All(character => char.IsAsciiLetterOrDigit(character) || character is '_' or '-');
         if (string.IsNullOrWhiteSpace(GetString(root, "schemaVersion")))
         {
             issues.Add(new RepoConfigIssue(relativePath, "Missing required string property: schemaVersion."));
@@ -65,6 +67,10 @@ internal static class RepoConfigVerifier
         if (string.IsNullOrWhiteSpace(configuredItemIdPrefix))
         {
             issues.Add(new RepoConfigIssue(relativePath, "Missing required string property: itemIdPrefix."));
+        }
+        else if (!itemIdPrefixIsValid)
+        {
+            issues.Add(new RepoConfigIssue(relativePath, "itemIdPrefix may contain only ASCII letters, digits, underscores, and hyphens."));
         }
 
         var types = VerifyConfigStringArray(root, "allowed", "types", "allowed.types", relativePath, issues);
@@ -87,11 +93,11 @@ internal static class RepoConfigVerifier
         }
 
         VerifyProjectConfig(root, distinctStatuses, distinctClosedStatuses, relativePath, issues);
-        VerifyIntegrationsConfig(root, relativePath, issues);
+        VerifyIntegrationsConfig(root, distinctStatuses, distinctClosedStatuses, relativePath, issues);
         VerifyConfigScoring(root, relativePath, issues);
 
         return new RoadmapSettings(
-            string.IsNullOrWhiteSpace(configuredItemIdPrefix) ? RoadmapSettings.Default.ItemIdPrefix : configuredItemIdPrefix,
+            itemIdPrefixIsValid ? configuredItemIdPrefix! : RoadmapSettings.Default.ItemIdPrefix,
             distinctTypes.Length == 0 ? RoadmapSettings.Default.AllowedTypes : distinctTypes,
             distinctStatuses.Length == 0 ? RoadmapSettings.Default.AllowedStatuses : distinctStatuses);
     }
@@ -130,7 +136,12 @@ internal static class RepoConfigVerifier
         }
     }
 
-    private static void VerifyIntegrationsConfig(JsonElement root, string relativePath, List<RepoConfigIssue> issues)
+    private static void VerifyIntegrationsConfig(
+        JsonElement root,
+        string[] allowedStatuses,
+        string[] closedStatuses,
+        string relativePath,
+        List<RepoConfigIssue> issues)
     {
         if (!root.TryGetProperty("integrations", out var integrations) || integrations.ValueKind != JsonValueKind.Object)
         {
@@ -138,7 +149,7 @@ internal static class RepoConfigVerifier
             return;
         }
 
-        VerifyGitHubConfig(integrations, relativePath, issues);
+        VerifyGitHubConfig(integrations, allowedStatuses, closedStatuses, relativePath, issues);
     }
 
     private static void VerifyConfigScoring(JsonElement root, string relativePath, List<RepoConfigIssue> issues)
@@ -811,7 +822,12 @@ internal static class RepoConfigVerifier
         return issueNumber;
     }
 
-    private static void VerifyGitHubConfig(JsonElement integrations, string relativePath, List<RepoConfigIssue> issues)
+    private static void VerifyGitHubConfig(
+        JsonElement integrations,
+        string[] allowedStatuses,
+        string[] closedStatuses,
+        string relativePath,
+        List<RepoConfigIssue> issues)
     {
         if (!integrations.TryGetProperty("github", out var github))
         {
@@ -848,7 +864,47 @@ internal static class RepoConfigVerifier
             }
         }
 
+        VerifyGitHubIntakeConfig(github, allowedStatuses, closedStatuses, relativePath, issues);
         VerifyGitHubProjectTarget(github, relativePath, issues);
+    }
+
+    private static void VerifyGitHubIntakeConfig(
+        JsonElement github,
+        string[] allowedStatuses,
+        string[] closedStatuses,
+        string relativePath,
+        List<RepoConfigIssue> issues)
+    {
+        if (!github.TryGetProperty("intake", out var intake))
+        {
+            return;
+        }
+
+        if (intake.ValueKind != JsonValueKind.Object)
+        {
+            issues.Add(new RepoConfigIssue(relativePath, "integrations.github.intake must be a JSON object."));
+            return;
+        }
+
+        var theme = GetString(intake, "theme");
+        if (string.IsNullOrWhiteSpace(theme))
+        {
+            issues.Add(new RepoConfigIssue(relativePath, "integrations.github.intake.theme must be a non-empty string."));
+        }
+
+        var openStatus = GetString(intake, "openStatus");
+        if (string.IsNullOrWhiteSpace(openStatus)
+            || !allowedStatuses.Contains(openStatus, StringComparer.Ordinal)
+            || closedStatuses.Contains(openStatus, StringComparer.Ordinal))
+        {
+            issues.Add(new RepoConfigIssue(relativePath, "integrations.github.intake.openStatus must be an allowed non-closed status."));
+        }
+
+        var closedStatus = GetString(intake, "closedStatus");
+        if (string.IsNullOrWhiteSpace(closedStatus) || !closedStatuses.Contains(closedStatus, StringComparer.Ordinal))
+        {
+            issues.Add(new RepoConfigIssue(relativePath, "integrations.github.intake.closedStatus must be a configured closed status."));
+        }
     }
 
     private static void VerifyGitHubProjectTarget(JsonElement github, string relativePath, List<RepoConfigIssue> issues)

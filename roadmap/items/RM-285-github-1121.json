@@ -1,0 +1,41 @@
+{
+  "$schema": "../schema/roadmap-item.schema.json",
+  "id": "RM-285",
+  "parent": "RM-286",
+  "title": "[Issue]: Standardize messaging source generation and registration",
+  "type": "enabler",
+  "status": "proposed",
+  "order": 272,
+  "theme": "repo-operations",
+  "outcome": "GitHub issue #1121 is canonically represented from the reconciliation manifest.",
+  "scoring": {
+    "reach": 1,
+    "impact": 1,
+    "confidence": 0.1,
+    "effort": 3
+  },
+  "blockedBy": [],
+  "blocks": [],
+  "dependencies": [],
+  "tags": [],
+  "labels": [
+    "architecture",
+    "area: packaging",
+    "area: sharedkernel",
+    "area: tooling",
+    "risk: breaking-change",
+    "sharedkernel",
+    "type: enabler"
+  ],
+  "sources": [
+    {
+      "kind": "github-issue",
+      "reference": "#1121"
+    }
+  ],
+  "integrations": {
+    "github": {
+      "issue": 1121
+    }
+  }
+}

@@ -1,0 +1,38 @@
+{
+  "$schema": "../schema/roadmap-item.schema.json",
+  "id": "RM-119",
+  "title": "Add documentation conformance and drift checks",
+  "type": "enabler",
+  "status": "proposed",
+  "order": 181,
+  "theme": "repo-operations",
+  "outcome": "GitHub issue #853 is canonically represented from the reconciliation manifest.",
+  "scoring": {
+    "reach": 1,
+    "impact": 1,
+    "confidence": 0.1,
+    "effort": 3
+  },
+  "blockedBy": [],
+  "blocks": [],
+  "dependencies": [],
+  "tags": [],
+  "labels": [
+    "area: tooling",
+    "ci",
+    "documentation",
+    "testing",
+    "type: enabler"
+  ],
+  "sources": [
+    {
+      "kind": "github-issue",
+      "reference": "#853"
+    }
+  ],
+  "integrations": {
+    "github": {
+      "issue": 853
+    }
+  }
+}

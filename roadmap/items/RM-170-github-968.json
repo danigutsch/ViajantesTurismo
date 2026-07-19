@@ -1,0 +1,35 @@
+{
+  "$schema": "../schema/roadmap-item.schema.json",
+  "id": "RM-170",
+  "parent": "RM-018",
+  "title": "Apply management authorization to media mutations",
+  "type": "issue",
+  "status": "done",
+  "triage": "untriaged",
+  "theme": "repo-operations",
+  "outcome": "GitHub issue #968 is canonically represented from the reconciliation manifest.",
+  "blockedBy": [
+    "RM-248"
+  ],
+  "blocks": [
+    "RM-171",
+    "RM-173"
+  ],
+  "dependencies": [],
+  "tags": [],
+  "labels": [
+    "enhancement",
+    "media"
+  ],
+  "sources": [
+    {
+      "kind": "github-issue",
+      "reference": "#968"
+    }
+  ],
+  "integrations": {
+    "github": {
+      "issue": 968
+    }
+  }
+}

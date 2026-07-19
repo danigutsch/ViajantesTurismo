@@ -1,0 +1,38 @@
+{
+  "$schema": "../schema/roadmap-item.schema.json",
+  "id": "RM-281",
+  "parent": "RM-190",
+  "title": "Test document audit privacy and route authorization safeguards",
+  "type": "enabler",
+  "status": "proposed",
+  "order": 270,
+  "theme": "repo-operations",
+  "outcome": "GitHub issue #1116 is canonically represented from the reconciliation manifest.",
+  "scoring": {
+    "reach": 1,
+    "impact": 1,
+    "confidence": 0.1,
+    "effort": 3
+  },
+  "blockedBy": [],
+  "blocks": [],
+  "dependencies": [],
+  "tags": [],
+  "labels": [
+    "area: api",
+    "security",
+    "testing",
+    "type: enabler"
+  ],
+  "sources": [
+    {
+      "kind": "github-issue",
+      "reference": "#1116"
+    }
+  ],
+  "integrations": {
+    "github": {
+      "issue": 1116
+    }
+  }
+}

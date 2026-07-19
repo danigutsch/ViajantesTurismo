@@ -1,0 +1,38 @@
+{
+  "$schema": "../schema/roadmap-item.schema.json",
+  "id": "RM-140",
+  "title": "Epic: evaluate platform service integrations",
+  "type": "epic",
+  "status": "proposed",
+  "order": 335,
+  "theme": "repo-operations",
+  "outcome": "GitHub issue #903 is canonically represented from the reconciliation manifest.",
+  "scoring": {
+    "reach": 1,
+    "impact": 1,
+    "confidence": 0.1,
+    "effort": 8
+  },
+  "blockedBy": [],
+  "blocks": [],
+  "dependencies": [],
+  "tags": [],
+  "labels": [
+    "architecture",
+    "aspire",
+    "infrastructure",
+    "research",
+    "type: epic"
+  ],
+  "sources": [
+    {
+      "kind": "github-issue",
+      "reference": "#903"
+    }
+  ],
+  "integrations": {
+    "github": {
+      "issue": 903
+    }
+  }
+}

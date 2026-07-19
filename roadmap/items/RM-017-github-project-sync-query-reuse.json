@@ -5,9 +5,16 @@
   "title": "Optimize GitHub Project sync query reuse",
   "type": "issue",
   "status": "proposed",
-  "triage": "untriaged",
+  "order": 90,
   "theme": "repo-operations",
   "outcome": "GitHub Project sync reuses target metadata while preserving existing timeout, drift, and idempotency behavior.",
+  "size": "S",
+  "scoring": {
+    "reach": 1,
+    "impact": 1,
+    "confidence": 0.8,
+    "effort": 2
+  },
   "blockedBy": [],
   "blocks": [],
   "dependencies": [],
@@ -20,6 +27,31 @@
     "area: tooling",
     "configuration",
     "type: chore"
+  ],
+  "sources": [
+    {
+      "kind": "github-issue",
+      "reference": "#1053",
+      "supports": [
+        "scope"
+      ]
+    },
+    {
+      "kind": "repository-artifact",
+      "reference": "tools/SharedKernel.RepoConfig.Tool/GitHubRoadmapSyncer.cs; tests/SharedKernel.RepoConfig.Tests/RepoConfigToolApplicationTests.cs",
+      "supports": [
+        "effort",
+        "confidence"
+      ]
+    },
+    {
+      "kind": "maintainer-review",
+      "reference": "@danigutsch, deterministic-open-leaf-v1 at 63b5dc7, 2026-07-16; review by 2026-07-30",
+      "supports": [
+        "scope",
+        "effort"
+      ]
+    }
   ],
   "integrations": {
     "github": {

@@ -1,0 +1,35 @@
+{
+  "$schema": "../schema/roadmap-item.schema.json",
+  "id": "RM-178",
+  "title": "Evaluate SeaweedFS TLS and OIDC S3 identity integration",
+  "type": "issue",
+  "status": "proposed",
+  "order": 216,
+  "theme": "repo-operations",
+  "outcome": "GitHub issue #978 is canonically represented from the reconciliation manifest.",
+  "scoring": {
+    "reach": 1,
+    "impact": 1,
+    "confidence": 0.1,
+    "effort": 3
+  },
+  "blockedBy": [],
+  "blocks": [],
+  "dependencies": [],
+  "tags": [],
+  "labels": [
+    "enhancement",
+    "media"
+  ],
+  "sources": [
+    {
+      "kind": "github-issue",
+      "reference": "#978"
+    }
+  ],
+  "integrations": {
+    "github": {
+      "issue": 978
+    }
+  }
+}

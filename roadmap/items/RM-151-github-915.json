@@ -1,0 +1,38 @@
+{
+  "$schema": "../schema/roadmap-item.schema.json",
+  "id": "RM-151",
+  "title": "Detect repeated external domain checks",
+  "type": "enabler",
+  "status": "proposed",
+  "order": 204,
+  "theme": "repo-operations",
+  "outcome": "GitHub issue #915 is canonically represented from the reconciliation manifest.",
+  "scoring": {
+    "reach": 1,
+    "impact": 1,
+    "confidence": 0.1,
+    "effort": 3
+  },
+  "blockedBy": [],
+  "blocks": [],
+  "dependencies": [],
+  "tags": [],
+  "labels": [
+    ".net",
+    "architecture",
+    "area: tooling",
+    "research",
+    "type: enabler"
+  ],
+  "sources": [
+    {
+      "kind": "github-issue",
+      "reference": "#915"
+    }
+  ],
+  "integrations": {
+    "github": {
+      "issue": 915
+    }
+  }
+}

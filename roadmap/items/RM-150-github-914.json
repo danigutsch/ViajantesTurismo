@@ -1,0 +1,38 @@
+{
+  "$schema": "../schema/roadmap-item.schema.json",
+  "id": "RM-150",
+  "title": "Evaluate exposed enums in domain models",
+  "type": "enabler",
+  "status": "proposed",
+  "order": 203,
+  "theme": "repo-operations",
+  "outcome": "GitHub issue #914 is canonically represented from the reconciliation manifest.",
+  "scoring": {
+    "reach": 1,
+    "impact": 1,
+    "confidence": 0.1,
+    "effort": 3
+  },
+  "blockedBy": [],
+  "blocks": [],
+  "dependencies": [],
+  "tags": [],
+  "labels": [
+    ".net",
+    "architecture",
+    "area: tooling",
+    "research",
+    "type: enabler"
+  ],
+  "sources": [
+    {
+      "kind": "github-issue",
+      "reference": "#914"
+    }
+  ],
+  "integrations": {
+    "github": {
+      "issue": 914
+    }
+  }
+}

@@ -1,0 +1,39 @@
+{
+  "$schema": "../schema/roadmap-item.schema.json",
+  "id": "RM-237",
+  "parent": "RM-234",
+  "title": "Compile all changed buildable projects in fork PRs",
+  "type": "enabler",
+  "status": "proposed",
+  "order": 252,
+  "theme": "repo-operations",
+  "outcome": "GitHub issue #1079 is canonically represented from the reconciliation manifest.",
+  "scoring": {
+    "reach": 1,
+    "impact": 1,
+    "confidence": 0.1,
+    "effort": 3
+  },
+  "blockedBy": [],
+  "blocks": [],
+  "dependencies": [],
+  "tags": [],
+  "labels": [
+    ".net",
+    "area: tooling",
+    "ci",
+    "testing",
+    "type: enabler"
+  ],
+  "sources": [
+    {
+      "kind": "github-issue",
+      "reference": "#1079"
+    }
+  ],
+  "integrations": {
+    "github": {
+      "issue": 1079
+    }
+  }
+}

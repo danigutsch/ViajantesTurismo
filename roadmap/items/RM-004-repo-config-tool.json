@@ -15,13 +15,8 @@
     "confidence": 0.8,
     "effort": 4
   },
-  "blockedBy": [
-    "RM-002",
-    "RM-003"
-  ],
-  "blocks": [
-    "RM-005"
-  ],
+  "blockedBy": [],
+  "blocks": [],
   "dependencies": [],
   "tags": [
     "dotnet-tool",

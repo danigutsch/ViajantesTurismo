@@ -1,0 +1,36 @@
+{
+  "$schema": "../schema/roadmap-item.schema.json",
+  "id": "RM-159",
+  "title": "Support partner and tour-presentation documents",
+  "type": "feature",
+  "status": "proposed",
+  "order": 307,
+  "theme": "repo-operations",
+  "outcome": "GitHub issue #943 is canonically represented from the reconciliation manifest.",
+  "scoring": {
+    "reach": 1,
+    "impact": 1,
+    "confidence": 0.1,
+    "effort": 5
+  },
+  "blockedBy": [],
+  "blocks": [],
+  "dependencies": [],
+  "tags": [],
+  "labels": [
+    "area: api",
+    "security",
+    "type: feature"
+  ],
+  "sources": [
+    {
+      "kind": "github-issue",
+      "reference": "#943"
+    }
+  ],
+  "integrations": {
+    "github": {
+      "issue": 943
+    }
+  }
+}

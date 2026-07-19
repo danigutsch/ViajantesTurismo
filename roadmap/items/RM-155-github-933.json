@@ -1,0 +1,37 @@
+{
+  "$schema": "../schema/roadmap-item.schema.json",
+  "id": "RM-155",
+  "title": "Add design-time factories for EF Core DbContexts",
+  "type": "enabler",
+  "status": "proposed",
+  "order": 205,
+  "theme": "repo-operations",
+  "outcome": "GitHub issue #933 is canonically represented from the reconciliation manifest.",
+  "scoring": {
+    "reach": 1,
+    "impact": 1,
+    "confidence": 0.1,
+    "effort": 3
+  },
+  "blockedBy": [],
+  "blocks": [],
+  "dependencies": [],
+  "tags": [],
+  "labels": [
+    ".net",
+    "area: tooling",
+    "infrastructure",
+    "type: enabler"
+  ],
+  "sources": [
+    {
+      "kind": "github-issue",
+      "reference": "#933"
+    }
+  ],
+  "integrations": {
+    "github": {
+      "issue": 933
+    }
+  }
+}

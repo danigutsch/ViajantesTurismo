@@ -1,0 +1,35 @@
+{
+  "$schema": "../schema/roadmap-item.schema.json",
+  "id": "RM-189",
+  "title": "Centralize Aspire run, publish, and test resource-mode policy",
+  "type": "issue",
+  "status": "proposed",
+  "order": 225,
+  "theme": "repo-operations",
+  "outcome": "GitHub issue #991 is canonically represented from the reconciliation manifest.",
+  "scoring": {
+    "reach": 1,
+    "impact": 1,
+    "confidence": 0.1,
+    "effort": 3
+  },
+  "blockedBy": [],
+  "blocks": [],
+  "dependencies": [],
+  "tags": [],
+  "labels": [
+    "documentation",
+    "enhancement"
+  ],
+  "sources": [
+    {
+      "kind": "github-issue",
+      "reference": "#991"
+    }
+  ],
+  "integrations": {
+    "github": {
+      "issue": 991
+    }
+  }
+}

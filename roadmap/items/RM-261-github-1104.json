@@ -1,0 +1,32 @@
+{
+  "$schema": "../schema/roadmap-item.schema.json",
+  "id": "RM-261",
+  "parent": "RM-259",
+  "title": "Move one Catalog endpoint use case into Catalog Application",
+  "type": "issue",
+  "status": "done",
+  "triage": "untriaged",
+  "theme": "repo-operations",
+  "outcome": "GitHub issue #1104 is canonically represented from the reconciliation manifest.",
+  "blockedBy": [],
+  "blocks": [],
+  "dependencies": [],
+  "tags": [],
+  "labels": [
+    ".net",
+    "architecture",
+    "catalog",
+    "enhancement"
+  ],
+  "sources": [
+    {
+      "kind": "github-issue",
+      "reference": "#1104"
+    }
+  ],
+  "integrations": {
+    "github": {
+      "issue": 1104
+    }
+  }
+}

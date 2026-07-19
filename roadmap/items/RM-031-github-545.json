@@ -1,0 +1,36 @@
+{
+  "$schema": "../schema/roadmap-item.schema.json",
+  "id": "RM-031",
+  "title": "Enforce generic type and file naming conventions",
+  "type": "issue",
+  "status": "proposed",
+  "order": 129,
+  "theme": "repo-operations",
+  "outcome": "GitHub issue #545 is canonically represented from the reconciliation manifest.",
+  "scoring": {
+    "reach": 1,
+    "impact": 1,
+    "confidence": 0.1,
+    "effort": 3
+  },
+  "blockedBy": [],
+  "blocks": [],
+  "dependencies": [],
+  "tags": [],
+  "labels": [
+    ".net",
+    "sharedkernel",
+    "testing"
+  ],
+  "sources": [
+    {
+      "kind": "github-issue",
+      "reference": "#545"
+    }
+  ],
+  "integrations": {
+    "github": {
+      "issue": 545
+    }
+  }
+}

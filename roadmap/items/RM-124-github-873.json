@@ -1,0 +1,38 @@
+{
+  "$schema": "../schema/roadmap-item.schema.json",
+  "id": "RM-124",
+  "title": "Expose AppHost resource metadata for runtime diagrams",
+  "type": "enabler",
+  "status": "proposed",
+  "order": 184,
+  "theme": "repo-operations",
+  "outcome": "GitHub issue #873 is canonically represented from the reconciliation manifest.",
+  "scoring": {
+    "reach": 1,
+    "impact": 1,
+    "confidence": 0.1,
+    "effort": 3
+  },
+  "blockedBy": [],
+  "blocks": [],
+  "dependencies": [],
+  "tags": [],
+  "labels": [
+    "architecture",
+    "area: tooling",
+    "aspire",
+    "documentation",
+    "type: enabler"
+  ],
+  "sources": [
+    {
+      "kind": "github-issue",
+      "reference": "#873"
+    }
+  ],
+  "integrations": {
+    "github": {
+      "issue": 873
+    }
+  }
+}

@@ -1,0 +1,523 @@
+{
+  "repository": "danigutsch/ViajantesTurismo",
+  "retrievedOn": "2026-07-19",
+  "repositoryCommit": "cae78428d0379a9628f43dea44525aff247b9846",
+  "source": "GitHub GraphQL repository.issues snapshot with parent, subissue, label, and blocker metadata.",
+  "ruleVersion": "structural-parent-subissue-blocker-v1",
+  "mechanicalPriorityOverride": {
+    "approvedOn": "2026-07-16",
+    "scope": "Open issues without reviewed priority evidence.",
+    "idAllocation": "RM-018 through RM-245 map the original 228 unmapped open issues; later snapshot additions use subsequent IDs in ascending issue-number order.",
+    "firstItemNumber": 18,
+    "reach": 1,
+    "impact": "1 plus direct open blockers, capped at impactCap.",
+    "impactCap": 5,
+    "confidence": 0.1,
+    "effort": {
+      "type: epic": 8,
+      "type: feature": 5,
+      "type: enabler": 3,
+      "type: docs": 2,
+      "type: chore": 2,
+      "default": 3
+    },
+    "order": "Existing reviewed orders remain first; imported work uses topological order, score descending, then canonical ID."
+  },
+  "rules": [
+    "Only an exact integrations.github.issue mapping is canonical.",
+    "A child reaches a canonical item only when its open parent chain reaches that primary issue.",
+    "An unmapped root with the type: epic label or at least two subissues requires review.",
+    "All remaining issues require human review; titles and bodies never create mappings or blockers.",
+    "Only exact GitHub blocker relationships may become canonical blockedBy and blocks links.",
+    "Only an explicit closedItemTransitions entry can move an imported open item to closed support."
+  ],
+  "snapshotDigest": "dbe5ff4e33233f56f7b1991f4b66583b38a73b66023f579d4afdfe26dd0213cc",
+  "blockerEdges": [
+    {
+      "blocker": 484,
+      "blockerState": "CLOSED",
+      "blocked": 485,
+      "blockedState": "CLOSED"
+    },
+    {
+      "blocker": 556,
+      "blockerState": "OPEN",
+      "blocked": 988,
+      "blockedState": "OPEN"
+    },
+    {
+      "blocker": 559,
+      "blockerState": "CLOSED",
+      "blocked": 932,
+      "blockedState": "CLOSED"
+    },
+    {
+      "blocker": 777,
+      "blockerState": "OPEN",
+      "blocked": 1041,
+      "blockedState": "OPEN"
+    },
+    {
+      "blocker": 778,
+      "blockerState": "OPEN",
+      "blocked": 1041,
+      "blockedState": "OPEN"
+    },
+    {
+      "blocker": 806,
+      "blockerState": "CLOSED",
+      "blocked": 968,
+      "blockedState": "CLOSED"
+    },
+    {
+      "blocker": 912,
+      "blockerState": "OPEN",
+      "blocked": 916,
+      "blockedState": "OPEN"
+    },
+    {
+      "blocker": 968,
+      "blockerState": "CLOSED",
+      "blocked": 969,
+      "blockedState": "CLOSED"
+    },
+    {
+      "blocker": 968,
+      "blockerState": "CLOSED",
+      "blocked": 971,
+      "blockedState": "OPEN"
+    },
+    {
+      "blocker": 1005,
+      "blockerState": "CLOSED",
+      "blocked": 1006,
+      "blockedState": "CLOSED"
+    },
+    {
+      "blocker": 1012,
+      "blockerState": "CLOSED",
+      "blocked": 1013,
+      "blockedState": "CLOSED"
+    },
+    {
+      "blocker": 1016,
+      "blockerState": "OPEN",
+      "blocked": 1015,
+      "blockedState": "OPEN"
+    },
+    {
+      "blocker": 1018,
+      "blockerState": "CLOSED",
+      "blocked": 1019,
+      "blockedState": "CLOSED"
+    },
+    {
+      "blocker": 1019,
+      "blockerState": "CLOSED",
+      "blocked": 1020,
+      "blockedState": "CLOSED"
+    },
+    {
+      "blocker": 1022,
+      "blockerState": "OPEN",
+      "blocked": 1046,
+      "blockedState": "OPEN"
+    },
+    {
+      "blocker": 1058,
+      "blockerState": "CLOSED",
+      "blocked": 1021,
+      "blockedState": "CLOSED"
+    },
+    {
+      "blocker": 1059,
+      "blockerState": "CLOSED",
+      "blocked": 1021,
+      "blockedState": "CLOSED"
+    },
+    {
+      "blocker": 1059,
+      "blockerState": "CLOSED",
+      "blocked": 1060,
+      "blockedState": "OPEN"
+    },
+    {
+      "blocker": 1061,
+      "blockerState": "CLOSED",
+      "blocked": 1062,
+      "blockedState": "CLOSED"
+    },
+    {
+      "blocker": 1062,
+      "blockerState": "CLOSED",
+      "blocked": 1063,
+      "blockedState": "CLOSED"
+    },
+    {
+      "blocker": 1063,
+      "blockerState": "CLOSED",
+      "blocked": 1064,
+      "blockedState": "OPEN"
+    },
+    {
+      "blocker": 1064,
+      "blockerState": "OPEN",
+      "blocked": 1066,
+      "blockedState": "OPEN"
+    },
+    {
+      "blocker": 1065,
+      "blockerState": "CLOSED",
+      "blocked": 1063,
+      "blockedState": "CLOSED"
+    }
+  ],
+  "closedItemTransitions": [
+    {
+      "issue": 529,
+      "roadmapItem": "RM-029"
+    },
+    {
+      "issue": 559,
+      "roadmapItem": "RM-033"
+    },
+    {
+      "issue": 932,
+      "roadmapItem": "RM-154"
+    },
+    {
+      "issue": 968,
+      "roadmapItem": "RM-170"
+    },
+    {
+      "issue": 969,
+      "roadmapItem": "RM-171"
+    },
+    {
+      "issue": 970,
+      "roadmapItem": "RM-172"
+    },
+    {
+      "issue": 972,
+      "roadmapItem": "RM-174"
+    },
+    {
+      "issue": 973,
+      "roadmapItem": "RM-175"
+    },
+    {
+      "issue": 1073,
+      "roadmapItem": "RM-233"
+    },
+    {
+      "issue": 1102,
+      "roadmapItem": "RM-259"
+    },
+    {
+      "issue": 1103,
+      "roadmapItem": "RM-260"
+    },
+    {
+      "issue": 1104,
+      "roadmapItem": "RM-261"
+    },
+    {
+      "issue": 1105,
+      "roadmapItem": "RM-262"
+    }
+  ],
+  "directCanonicalPrimaries": [
+    {
+      "issue": 997,
+      "roadmapItem": "RM-001"
+    },
+    {
+      "issue": 1030,
+      "roadmapItem": "RM-016"
+    },
+    {
+      "issue": 1053,
+      "roadmapItem": "RM-017"
+    },
+    {
+      "issue": 1060,
+      "roadmapItem": "RM-009"
+    },
+    {
+      "issue": 1064,
+      "roadmapItem": "RM-013"
+    },
+    {
+      "issue": 1066,
+      "roadmapItem": "RM-015"
+    }
+  ],
+  "childrenOfCanonicalPrimaries": [
+    1032,
+    1034,
+    1035
+  ],
+  "unmappedStructuralRoots": [
+    342,
+    476,
+    482,
+    512,
+    588,
+    682,
+    695,
+    696,
+    697,
+    789,
+    813,
+    903,
+    904,
+    948,
+    956,
+    983,
+    1009,
+    1022,
+    1037,
+    1040,
+    1070,
+    1076,
+    1086,
+    1098,
+    1107,
+    1113,
+    1122
+  ],
+  "needsHuman": [
+    394,
+    457,
+    481,
+    488,
+    489,
+    517,
+    524,
+    538,
+    545,
+    556,
+    561,
+    573,
+    575,
+    576,
+    595,
+    625,
+    656,
+    658,
+    659,
+    683,
+    684,
+    685,
+    686,
+    687,
+    701,
+    702,
+    703,
+    704,
+    705,
+    706,
+    707,
+    708,
+    709,
+    710,
+    711,
+    712,
+    713,
+    714,
+    715,
+    716,
+    717,
+    723,
+    724,
+    725,
+    726,
+    727,
+    728,
+    734,
+    735,
+    736,
+    737,
+    749,
+    752,
+    758,
+    760,
+    761,
+    770,
+    771,
+    772,
+    773,
+    774,
+    775,
+    776,
+    777,
+    778,
+    779,
+    790,
+    791,
+    792,
+    793,
+    794,
+    795,
+    814,
+    815,
+    816,
+    817,
+    818,
+    819,
+    820,
+    832,
+    833,
+    840,
+    841,
+    842,
+    843,
+    850,
+    851,
+    852,
+    853,
+    854,
+    870,
+    871,
+    872,
+    873,
+    874,
+    875,
+    877,
+    878,
+    879,
+    881,
+    888,
+    891,
+    892,
+    893,
+    895,
+    896,
+    897,
+    898,
+    902,
+    905,
+    906,
+    907,
+    908,
+    909,
+    910,
+    912,
+    913,
+    914,
+    915,
+    916,
+    930,
+    933,
+    936,
+    941,
+    942,
+    943,
+    944,
+    945,
+    951,
+    954,
+    955,
+    957,
+    959,
+    960,
+    971,
+    975,
+    976,
+    978,
+    979,
+    980,
+    981,
+    982,
+    985,
+    987,
+    988,
+    989,
+    990,
+    991,
+    992,
+    993,
+    994,
+    995,
+    1007,
+    1008,
+    1010,
+    1011,
+    1014,
+    1015,
+    1016,
+    1017,
+    1023,
+    1024,
+    1025,
+    1026,
+    1027,
+    1028,
+    1029,
+    1031,
+    1033,
+    1036,
+    1038,
+    1039,
+    1041,
+    1042,
+    1046,
+    1051,
+    1052,
+    1054,
+    1057,
+    1068,
+    1069,
+    1071,
+    1072,
+    1077,
+    1078,
+    1079,
+    1080,
+    1081,
+    1084,
+    1085,
+    1087,
+    1088,
+    1089,
+    1090,
+    1091,
+    1093,
+    1094,
+    1095,
+    1096,
+    1097,
+    1099,
+    1100,
+    1101,
+    1106,
+    1108,
+    1109,
+    1110,
+    1111,
+    1114,
+    1115,
+    1116,
+    1117,
+    1118,
+    1119,
+    1121,
+    1123,
+    1124,
+    1125,
+    1126,
+    1127,
+    1128,
+    1130
+  ],
+  "integrity": {
+    "expectedIssueCount": 258,
+    "expectedDirectCanonicalPrimaryCount": 6,
+    "expectedChildrenOfCanonicalPrimaryCount": 3,
+    "expectedUnmappedStructuralRootCount": 27,
+    "expectedNeedsHumanCount": 222,
+    "expectedBlockerEdgeCount": 23,
+    "dispositionsAreDisjoint": true,
+    "dispositionsCoverSnapshot": true
+  }
+}

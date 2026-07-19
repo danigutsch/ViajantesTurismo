@@ -1,0 +1,35 @@
+{
+  "$schema": "../schema/roadmap-item.schema.json",
+  "id": "RM-165",
+  "title": "Add approved legal contract template versions",
+  "type": "issue",
+  "status": "proposed",
+  "order": 209,
+  "theme": "repo-operations",
+  "outcome": "GitHub issue #955 is canonically represented from the reconciliation manifest.",
+  "scoring": {
+    "reach": 1,
+    "impact": 1,
+    "confidence": 0.1,
+    "effort": 3
+  },
+  "blockedBy": [],
+  "blocks": [],
+  "dependencies": [],
+  "tags": [],
+  "labels": [
+    "architecture",
+    "enhancement"
+  ],
+  "sources": [
+    {
+      "kind": "github-issue",
+      "reference": "#955"
+    }
+  ],
+  "integrations": {
+    "github": {
+      "issue": 955
+    }
+  }
+}

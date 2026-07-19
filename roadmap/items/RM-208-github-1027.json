@@ -1,0 +1,39 @@
+{
+  "$schema": "../schema/roadmap-item.schema.json",
+  "id": "RM-208",
+  "parent": "RM-203",
+  "title": "Define System test AppHost ownership",
+  "type": "enabler",
+  "status": "proposed",
+  "order": 235,
+  "theme": "repo-operations",
+  "outcome": "GitHub issue #1027 is canonically represented from the reconciliation manifest.",
+  "scoring": {
+    "reach": 1,
+    "impact": 1,
+    "confidence": 0.1,
+    "effort": 3
+  },
+  "blockedBy": [],
+  "blocks": [],
+  "dependencies": [],
+  "tags": [],
+  "labels": [
+    "architecture",
+    "area: testing",
+    "aspire",
+    "testing",
+    "type: enabler"
+  ],
+  "sources": [
+    {
+      "kind": "github-issue",
+      "reference": "#1027"
+    }
+  ],
+  "integrations": {
+    "github": {
+      "issue": 1027
+    }
+  }
+}

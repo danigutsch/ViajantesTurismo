@@ -1,0 +1,40 @@
+{
+  "$schema": "../schema/roadmap-item.schema.json",
+  "id": "RM-258",
+  "parent": "RM-255",
+  "title": "Add Should* assertion analyzers and code fixes",
+  "type": "enabler",
+  "status": "proposed",
+  "order": 263,
+  "theme": "repo-operations",
+  "outcome": "GitHub issue #1101 is canonically represented from the reconciliation manifest.",
+  "scoring": {
+    "reach": 1,
+    "impact": 1,
+    "confidence": 0.1,
+    "effort": 3
+  },
+  "blockedBy": [],
+  "blocks": [],
+  "dependencies": [],
+  "tags": [],
+  "labels": [
+    "area: sharedkernel",
+    "area: testing",
+    "area: tooling",
+    "sharedkernel",
+    "testing",
+    "type: enabler"
+  ],
+  "sources": [
+    {
+      "kind": "github-issue",
+      "reference": "#1101"
+    }
+  ],
+  "integrations": {
+    "github": {
+      "issue": 1101
+    }
+  }
+}
