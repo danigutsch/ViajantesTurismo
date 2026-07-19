@@ -58,6 +58,22 @@ internal static class DetectChangesScriptTestProcess
                 // Preserve the original cancellation after best-effort child cleanup.
             }
 
+            var outputDrain = Task.WhenAll(standardOutput, standardError);
+            try
+            {
+                await outputDrain.WaitAsync(TimeSpan.FromSeconds(2), CancellationToken.None);
+            }
+            catch (Exception exception) when (exception is TimeoutException
+                or IOException
+                or InvalidOperationException)
+            {
+                _ = outputDrain.ContinueWith(
+                    static completed => _ = completed.Exception,
+                    CancellationToken.None,
+                    TaskContinuationOptions.OnlyOnFaulted | TaskContinuationOptions.ExecuteSynchronously,
+                    TaskScheduler.Default);
+            }
+
             throw;
         }
 
