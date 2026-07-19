@@ -38,58 +38,108 @@ internal sealed class GitHubRoadmapReconcileClient(HttpClient httpClient)
         ArgumentNullException.ThrowIfNull(requiredIssueNumbers);
 
         var (owner, name) = SplitRepository(repository);
+        var (repositoryCommit, issuesByNumber) = await ReadOpenIssues(owner, name, cancellationToken).ConfigureAwait(false);
+        var supplementalIssueNumbers = DiscoverSupplementalIssueNumbers(requiredIssueNumbers, issuesByNumber.Values, repository);
+        await AddSupplementalIssues(owner, name, supplementalIssueNumbers, issuesByNumber, cancellationToken).ConfigureAwait(false);
+
+        return new GitHubRoadmapReconcileSnapshot(repositoryCommit, issuesByNumber.Values.OrderBy(issue => issue.Number).ToArray());
+    }
+
+    private async Task<(string? RepositoryCommit, Dictionary<int, GitHubRoadmapReconcileIssue> IssuesByNumber)> ReadOpenIssues(
+        string owner,
+        string name,
+        CancellationToken cancellationToken)
+    {
         Dictionary<int, GitHubRoadmapReconcileIssue> issuesByNumber = [];
         string? repositoryCommit = null;
         string? cursor = null;
-
-        do
+        while (true)
         {
-            using var document = await Send(
-                ReconcileQuery,
-                writer =>
-                {
-                    writer.WriteString("owner", owner);
-                    writer.WriteString("name", name);
-                    if (cursor is null)
-                    {
-                        writer.WriteNull("after");
-                    }
-                    else
-                    {
-                        writer.WriteString("after", cursor);
-                    }
-                },
+            var page = await ReadOpenIssuePage(
+                owner,
+                name,
+                cursor,
+                readRepositoryCommit: repositoryCommit is null,
+                issuesByNumber,
                 cancellationToken).ConfigureAwait(false);
-            var repositoryElement = GetRepository(document.RootElement);
-            repositoryCommit ??= ReadRepositoryCommit(repositoryElement);
-            var connection = GetRequiredObject(repositoryElement, "issues");
-            var nodes = GetRequiredArray(connection, "nodes");
-            foreach (var node in nodes.EnumerateArray())
+            repositoryCommit ??= page.RepositoryCommit;
+            if (!page.HasNextPage)
             {
-                var issue = await ReadIssue(node, owner, name, cancellationToken).ConfigureAwait(false);
-                if (!issuesByNumber.TryAdd(issue.Number, issue))
-                {
-                    throw new InvalidOperationException("GitHub reconciliation response contains duplicate issue numbers.");
-                }
+                return (repositoryCommit, issuesByNumber);
             }
 
-            var pageInfo = GetRequiredObject(connection, "pageInfo");
-            var hasNextPage = GetRequiredBoolean(pageInfo, "hasNextPage");
-            cursor = GetNullableString(pageInfo, "endCursor");
-            if (hasNextPage && string.IsNullOrWhiteSpace(cursor))
-            {
-                throw new InvalidOperationException("GitHub reconciliation response has an incomplete issue page.");
-            }
-
-            if (!hasNextPage)
-            {
-                break;
-            }
+            cursor = RequireNextCursor(page.EndCursor);
         }
-        while (true);
+    }
 
+    private async Task<OpenIssuePage> ReadOpenIssuePage(
+        string owner,
+        string name,
+        string? cursor,
+        bool readRepositoryCommit,
+        Dictionary<int, GitHubRoadmapReconcileIssue> issuesByNumber,
+        CancellationToken cancellationToken)
+    {
+        using var document = await Send(
+            ReconcileQuery,
+            writer => WriteReconcileVariables(writer, owner, name, cursor),
+            cancellationToken).ConfigureAwait(false);
+        var repositoryElement = GetRepository(document.RootElement);
+        var repositoryCommit = readRepositoryCommit ? ReadRepositoryCommit(repositoryElement) : null;
+        var connection = GetRequiredObject(repositoryElement, "issues");
+        foreach (var node in GetRequiredArray(connection, "nodes").EnumerateArray())
+        {
+            var issue = await ReadIssue(node, owner, name, cancellationToken).ConfigureAwait(false);
+            AddOpenIssue(issuesByNumber, issue);
+        }
+
+        var pageInfo = GetRequiredObject(connection, "pageInfo");
+        return new OpenIssuePage(
+            repositoryCommit,
+            GetRequiredBoolean(pageInfo, "hasNextPage"),
+            GetNullableString(pageInfo, "endCursor"));
+    }
+
+    private static void WriteReconcileVariables(Utf8JsonWriter writer, string owner, string name, string? cursor)
+    {
+        writer.WriteString("owner", owner);
+        writer.WriteString("name", name);
+        if (cursor is null)
+        {
+            writer.WriteNull("after");
+            return;
+        }
+
+        writer.WriteString("after", cursor);
+    }
+
+    private static void AddOpenIssue(
+        Dictionary<int, GitHubRoadmapReconcileIssue> issuesByNumber,
+        GitHubRoadmapReconcileIssue issue)
+    {
+        if (!issuesByNumber.TryAdd(issue.Number, issue))
+        {
+            throw new InvalidOperationException("GitHub reconciliation response contains duplicate issue numbers.");
+        }
+    }
+
+    private static string RequireNextCursor(string? cursor)
+    {
+        if (string.IsNullOrWhiteSpace(cursor))
+        {
+            throw new InvalidOperationException("GitHub reconciliation response has an incomplete issue page.");
+        }
+
+        return cursor;
+    }
+
+    private static HashSet<int> DiscoverSupplementalIssueNumbers(
+        IEnumerable<int> requiredIssueNumbers,
+        IEnumerable<GitHubRoadmapReconcileIssue> issues,
+        string repository)
+    {
         HashSet<int> supplementalIssueNumbers = [.. requiredIssueNumbers];
-        foreach (var issue in issuesByNumber.Values)
+        foreach (var issue in issues)
         {
             AddClosedRelation(issue.Parent, repository, supplementalIssueNumbers);
             foreach (var relation in issue.SubIssues.Concat(issue.BlockedBy).Concat(issue.Blocking))
@@ -98,6 +148,16 @@ internal sealed class GitHubRoadmapReconcileClient(HttpClient httpClient)
             }
         }
 
+        return supplementalIssueNumbers;
+    }
+
+    private async Task AddSupplementalIssues(
+        string owner,
+        string name,
+        IEnumerable<int> supplementalIssueNumbers,
+        Dictionary<int, GitHubRoadmapReconcileIssue> issuesByNumber,
+        CancellationToken cancellationToken)
+    {
         foreach (var issueNumber in supplementalIssueNumbers.Order())
         {
             if (issuesByNumber.ContainsKey(issueNumber))
@@ -111,9 +171,12 @@ internal sealed class GitHubRoadmapReconcileClient(HttpClient httpClient)
                 throw new InvalidOperationException("GitHub reconciliation response contains inconsistent issue metadata.");
             }
         }
-
-        return new GitHubRoadmapReconcileSnapshot(repositoryCommit, issuesByNumber.Values.OrderBy(issue => issue.Number).ToArray());
     }
+
+    private sealed record OpenIssuePage(
+        string? RepositoryCommit,
+        bool HasNextPage,
+        string? EndCursor);
 
     private async Task<GitHubRoadmapReconcileIssue> ReadIssueByNumber(
         string owner,

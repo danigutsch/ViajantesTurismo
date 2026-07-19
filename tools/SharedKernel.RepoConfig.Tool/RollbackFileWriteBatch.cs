@@ -21,6 +21,12 @@ internal static class RollbackFileWriteBatch
             return;
         }
 
+        var normalizedWrites = PrepareWrites(normalizedScope, writes);
+        ExecuteWrites(normalizedScope, normalizedWrites, verifyPreconditions);
+    }
+
+    private static AtomicFileWrite[] PrepareWrites(string normalizedScope, IEnumerable<AtomicFileWrite> writes)
+    {
         var normalizedWrites = writes
             .Select(write => write with { Path = Path.GetFullPath(write.Path) })
             .ToArray();
@@ -41,57 +47,84 @@ internal static class RollbackFileWriteBatch
             VerifyExpectedContent(write);
         }
 
+        return normalizedWrites;
+    }
+
+    private static void ExecuteWrites(string normalizedScope, AtomicFileWrite[] normalizedWrites, Action? verifyPreconditions)
+    {
         List<StagedWrite> stagedWrites = [];
         try
         {
-            foreach (var write in normalizedWrites)
-            {
-                stagedWrites.Add(Stage(write));
-            }
-
+            StageWrites(normalizedWrites, stagedWrites);
             verifyPreconditions?.Invoke();
-
-            foreach (var stagedWrite in stagedWrites)
-            {
-                VerifyExpectedContent(stagedWrite.Write);
-                ValidateWritePath(normalizedScope, stagedWrite.Write.Path);
-                if (File.Exists(stagedWrite.Write.Path))
-                {
-                    stagedWrite.BackupPath = CreateUniqueSiblingPath(stagedWrite.Write.Path, "bak");
-                    File.Copy(stagedWrite.Write.Path, stagedWrite.BackupPath);
-                }
-
-                if (stagedWrite.Write.ExpectedContent is null)
-                {
-                    File.Move(stagedWrite.TemporaryPath, stagedWrite.Write.Path);
-                }
-                else
-                {
-                    File.Move(stagedWrite.TemporaryPath, stagedWrite.Write.Path, overwrite: true);
-                }
-
-                stagedWrite.Applied = true;
-            }
+            CommitWrites(normalizedScope, stagedWrites);
         }
         catch (Exception exception)
         {
-            var rollbackFailures = RollBack(stagedWrites);
-            if (rollbackFailures.Count > 0)
-            {
-                rollbackFailures.Insert(0, exception);
-                throw new IOException("Atomic write batch failed and could not be fully rolled back.", new AggregateException(rollbackFailures));
-            }
-
+            ThrowIfRollbackFailed(stagedWrites, exception);
             throw;
         }
         finally
         {
-            foreach (var stagedWrite in stagedWrites)
-            {
-                TryDeleteIfExists(stagedWrite.TemporaryPath);
-            }
+            DeleteTemporaryFiles(stagedWrites);
         }
 
+        DeleteBackupFiles(stagedWrites);
+    }
+
+    private static void StageWrites(IEnumerable<AtomicFileWrite> writes, List<StagedWrite> stagedWrites)
+    {
+        foreach (var write in writes)
+        {
+            stagedWrites.Add(Stage(write));
+        }
+    }
+
+    private static void CommitWrites(string normalizedScope, IEnumerable<StagedWrite> stagedWrites)
+    {
+        foreach (var stagedWrite in stagedWrites)
+        {
+            VerifyExpectedContent(stagedWrite.Write);
+            ValidateWritePath(normalizedScope, stagedWrite.Write.Path);
+            if (File.Exists(stagedWrite.Write.Path))
+            {
+                stagedWrite.BackupPath = CreateUniqueSiblingPath(stagedWrite.Write.Path, "bak");
+                File.Copy(stagedWrite.Write.Path, stagedWrite.BackupPath);
+            }
+
+            if (stagedWrite.Write.ExpectedContent is null)
+            {
+                File.Move(stagedWrite.TemporaryPath, stagedWrite.Write.Path);
+            }
+            else
+            {
+                File.Move(stagedWrite.TemporaryPath, stagedWrite.Write.Path, overwrite: true);
+            }
+
+            stagedWrite.Applied = true;
+        }
+    }
+
+    private static void ThrowIfRollbackFailed(List<StagedWrite> stagedWrites, Exception exception)
+    {
+        var rollbackFailures = RollBack(stagedWrites);
+        if (rollbackFailures.Count > 0)
+        {
+            rollbackFailures.Insert(0, exception);
+            throw new IOException("Atomic write batch failed and could not be fully rolled back.", new AggregateException(rollbackFailures));
+        }
+    }
+
+    private static void DeleteTemporaryFiles(IEnumerable<StagedWrite> stagedWrites)
+    {
+        foreach (var stagedWrite in stagedWrites)
+        {
+            TryDeleteIfExists(stagedWrite.TemporaryPath);
+        }
+    }
+
+    private static void DeleteBackupFiles(IEnumerable<StagedWrite> stagedWrites)
+    {
         foreach (var stagedWrite in stagedWrites)
         {
             TryDeleteIfExists(stagedWrite.BackupPath);
