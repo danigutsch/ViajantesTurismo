@@ -169,6 +169,7 @@ fast_validation_patterns=(
     "src/SharedKernel/SharedKernel.Testing.CodeFixes/**"
     "src/SharedKernel/SharedKernel.Versioning/**"
     "tools/ViajantesTurismo.Performance.Tool/**"
+    "tools/SharedKernel.PlaywrightMcp.Tool/**"
     "tools/SharedKernel.RepoConfig.Tool/**"
     "src/ViajantesTurismo.Admin.ApiService/**"
     "src/ViajantesTurismo.Admin.Application/**"
@@ -222,6 +223,7 @@ fast_validation_patterns=(
     "tests/ViajantesTurismo.Management.WebTests/**"
     "tests/ViajantesTurismo.Public.WebTests/**"
     "tests/ViajantesTurismo.Performance.Tool.Tests/**"
+    "tests/SharedKernel.PlaywrightMcp.Tool.Tests/**"
     "tests/ViajantesTurismo.ServiceDefaults.Tests/**"
 )
 
@@ -313,7 +315,7 @@ admin_system_required=false
 mediator_heavy_required=false
 changed_files=""
 
-if ! changed_files="$(git diff --name-only "${diff_range}")"; then
+if ! changed_files="$(git diff --no-renames --name-only "${diff_range}")"; then
     require_all_validation "Build and test will run because the change range '${diff_range}' could not be evaluated."
     exit 0
 fi
