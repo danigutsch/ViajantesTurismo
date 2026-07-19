@@ -12,6 +12,21 @@ internal static class PlaywrightMcpCommand
         "--version"
     };
 
+    public static ProcessStartInfo CreateDockerContextShowStartInfo(PlaywrightMcpOptions options)
+    {
+        ArgumentNullException.ThrowIfNull(options);
+        if (options.Engine != ContainerEngine.Docker)
+        {
+            throw new ArgumentException("Docker context inspection requires the Docker engine.", nameof(options));
+        }
+
+        var startInfo = CreateBaseStartInfo(options);
+        startInfo.RedirectStandardOutput = true;
+        startInfo.RedirectStandardError = true;
+        AddArguments(startInfo, "context", "show");
+        return startInfo;
+    }
+
     public static ProcessStartInfo CreateDockerContextProbeStartInfo(PlaywrightMcpOptions options)
     {
         ArgumentNullException.ThrowIfNull(options);
@@ -23,7 +38,15 @@ internal static class PlaywrightMcpCommand
         var startInfo = CreateBaseStartInfo(options);
         startInfo.RedirectStandardOutput = true;
         startInfo.RedirectStandardError = true;
-        AddArguments(startInfo, "--context", "default", "context", "inspect", "default", "--format", "{{.Endpoints.docker.Host}}");
+        AddArguments(
+            startInfo,
+            "--context",
+            options.DockerContext,
+            "context",
+            "inspect",
+            options.DockerContext,
+            "--format",
+            "{{.Endpoints.docker.Host}}");
         return startInfo;
     }
 
@@ -38,7 +61,7 @@ internal static class PlaywrightMcpCommand
         ValidateMcpArguments(mcpArguments);
 
         var startInfo = CreateBaseStartInfo(options);
-        AddLocalEnginePrefix(startInfo, options.Engine);
+        AddLocalEnginePrefix(startInfo, options);
 
         AddArguments(
             startInfo,
@@ -65,6 +88,8 @@ internal static class PlaywrightMcpCommand
             "--env",
             "ALL_PROXY=",
             "--env",
+            "FTP_PROXY=",
+            "--env",
             "NO_PROXY=",
             "--env",
             "http_proxy=",
@@ -72,6 +97,8 @@ internal static class PlaywrightMcpCommand
             "https_proxy=",
             "--env",
             "all_proxy=",
+            "--env",
+            "ftp_proxy=",
             "--env",
             "no_proxy=");
 
@@ -113,7 +140,7 @@ internal static class PlaywrightMcpCommand
     {
         ArgumentNullException.ThrowIfNull(options);
         var startInfo = CreateBaseStartInfo(options);
-        AddLocalEnginePrefix(startInfo, options.Engine);
+        AddLocalEnginePrefix(startInfo, options);
         AddArguments(startInfo, "pull", Image);
         return startInfo;
     }
@@ -122,7 +149,7 @@ internal static class PlaywrightMcpCommand
     {
         ArgumentNullException.ThrowIfNull(options);
         var startInfo = CreateBaseStartInfo(options);
-        AddLocalEnginePrefix(startInfo, options.Engine);
+        AddLocalEnginePrefix(startInfo, options);
         AddArguments(startInfo, "image", "rm", Image);
         return startInfo;
     }
@@ -134,8 +161,33 @@ internal static class PlaywrightMcpCommand
         ArgumentNullException.ThrowIfNull(options);
         ArgumentException.ThrowIfNullOrWhiteSpace(containerName);
         var startInfo = CreateBaseStartInfo(options);
-        AddLocalEnginePrefix(startInfo, options.Engine);
-        AddArguments(startInfo, "rm", "--force", containerName);
+        AddLocalEnginePrefix(startInfo, options);
+        AddArguments(startInfo, "rm", "--force");
+        if (options.Engine == ContainerEngine.Podman)
+        {
+            AddArguments(startInfo, "--ignore");
+        }
+
+        AddArguments(startInfo, containerName);
+        startInfo.RedirectStandardOutput = true;
+        startInfo.RedirectStandardError = true;
+        return startInfo;
+    }
+
+    public static ProcessStartInfo CreateContainerExistenceProbeStartInfo(
+        PlaywrightMcpOptions options,
+        string containerName)
+    {
+        ArgumentNullException.ThrowIfNull(options);
+        ArgumentException.ThrowIfNullOrWhiteSpace(containerName);
+        if (options.Engine != ContainerEngine.Docker)
+        {
+            throw new ArgumentException("Container existence inspection requires Docker.", nameof(options));
+        }
+
+        var startInfo = CreateBaseStartInfo(options);
+        AddLocalEnginePrefix(startInfo, options);
+        AddArguments(startInfo, "container", "ls", "--all", "--quiet", "--filter", $"name=^/{containerName}$");
         startInfo.RedirectStandardOutput = true;
         startInfo.RedirectStandardError = true;
         return startInfo;
@@ -193,11 +245,16 @@ internal static class PlaywrightMcpCommand
         }
     }
 
-    private static void AddLocalEnginePrefix(ProcessStartInfo startInfo, ContainerEngine engine)
+    private static void AddLocalEnginePrefix(ProcessStartInfo startInfo, PlaywrightMcpOptions options)
     {
-        if (engine == ContainerEngine.Docker)
+        if (options.Engine == ContainerEngine.Docker)
         {
-            AddArguments(startInfo, "--context", "default");
+            if (string.IsNullOrWhiteSpace(options.DockerEndpoint))
+            {
+                throw new InvalidOperationException("The Docker endpoint must be validated before use.");
+            }
+
+            AddArguments(startInfo, "--host", options.DockerEndpoint);
         }
         else
         {

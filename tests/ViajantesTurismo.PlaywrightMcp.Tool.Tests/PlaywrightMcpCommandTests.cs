@@ -4,6 +4,37 @@ namespace ViajantesTurismo.PlaywrightMcp.Tool.Tests;
 [Trait(TestTraitNames.ScopeName, SharedKernelTestTraitNames.UnitScope)]
 public sealed class PlaywrightMcpCommandTests
 {
+    private const string LocalDockerEndpoint = "unix:///var/run/docker.sock";
+
+    [Fact]
+    public void Docker_context_probe_pins_the_selected_current_context()
+    {
+        // Arrange
+        var options = new PlaywrightMcpOptions(
+            ContainerEngine.Docker,
+            PlaywrightMcpTestEnvironment.GetExecutablePath("docker"),
+            false,
+            "omit",
+            "desktop-linux");
+
+        // Act
+        var show = PlaywrightMcpCommand.CreateDockerContextShowStartInfo(options);
+        var inspect = PlaywrightMcpCommand.CreateDockerContextProbeStartInfo(options);
+
+        // Assert
+        show.ArgumentList.ToArray().ShouldBe(["context", "show"]);
+        inspect.ArgumentList.ToArray().ShouldBe(
+        [
+            "--context",
+            "desktop-linux",
+            "context",
+            "inspect",
+            "desktop-linux",
+            "--format",
+            "{{.Endpoints.docker.Host}}"
+        ]);
+    }
+
     [Fact]
     public void Docker_defaults_to_local_offline_network_isolation()
     {
@@ -12,7 +43,8 @@ public sealed class PlaywrightMcpCommandTests
             ContainerEngine.Docker,
             PlaywrightMcpTestEnvironment.GetExecutablePath("docker"),
             false,
-            "omit");
+            "omit",
+            DockerEndpoint: LocalDockerEndpoint);
 
         // Act
         var startInfo = PlaywrightMcpCommand.CreateRuntimeStartInfo(options, [], "test-container");
@@ -24,8 +56,8 @@ public sealed class PlaywrightMcpCommandTests
         startInfo.RedirectStandardError.ShouldBeFalse();
         startInfo.ArgumentList.ToArray().ShouldBe(
         [
-            "--context",
-            "default",
+            "--host",
+            "unix:///var/run/docker.sock",
             "run",
             "--rm",
             "-i",
@@ -49,6 +81,8 @@ public sealed class PlaywrightMcpCommandTests
             "--env",
             "ALL_PROXY=",
             "--env",
+            "FTP_PROXY=",
+            "--env",
             "NO_PROXY=",
             "--env",
             "http_proxy=",
@@ -56,6 +90,8 @@ public sealed class PlaywrightMcpCommandTests
             "https_proxy=",
             "--env",
             "all_proxy=",
+            "--env",
+            "ftp_proxy=",
             "--env",
             "no_proxy=",
             "--cap-drop=ALL",
@@ -77,7 +113,8 @@ public sealed class PlaywrightMcpCommandTests
             ContainerEngine.Docker,
             PlaywrightMcpTestEnvironment.GetExecutablePath("docker"),
             true,
-            "allow");
+            "allow",
+            DockerEndpoint: LocalDockerEndpoint);
 
         // Act
         var startInfo = PlaywrightMcpCommand.CreateRuntimeStartInfo(options, [], "test-container");
@@ -108,10 +145,12 @@ public sealed class PlaywrightMcpCommandTests
         startInfo.ArgumentList.ShouldContain("--cap-drop=all");
         startInfo.ArgumentList.ShouldContain("--network=none");
         startInfo.ArgumentList.ShouldNotContain("--context");
+        PlaywrightMcpCommand.CreateContainerCleanupStartInfo(options, "test-container")
+            .ArgumentList.ShouldContain("--ignore");
     }
 
     [Theory]
-    [InlineData("docker", "--context", "default")]
+    [InlineData("docker", "--host", LocalDockerEndpoint)]
     [InlineData("podman", "--remote=false", null)]
     public void Prepare_pulls_the_exact_image_with_the_selected_local_engine(
         string engineName,
@@ -121,7 +160,12 @@ public sealed class PlaywrightMcpCommandTests
         // Arrange
         var engine = engineName == "docker" ? ContainerEngine.Docker : ContainerEngine.Podman;
         var executable = PlaywrightMcpTestEnvironment.GetExecutablePath(engineName);
-        var options = new PlaywrightMcpOptions(engine, executable, false, "omit");
+        var options = new PlaywrightMcpOptions(
+            engine,
+            executable,
+            false,
+            "omit",
+            DockerEndpoint: engine == ContainerEngine.Docker ? LocalDockerEndpoint : null);
         var expectedArguments = secondArgument is null
             ? new[] { firstArgument, "pull", PlaywrightMcpCommand.Image }
             : new[] { firstArgument, secondArgument, "pull", PlaywrightMcpCommand.Image };
@@ -141,7 +185,8 @@ public sealed class PlaywrightMcpCommandTests
             ContainerEngine.Docker,
             PlaywrightMcpTestEnvironment.GetExecutablePath("docker"),
             false,
-            "omit");
+            "omit",
+            DockerEndpoint: LocalDockerEndpoint);
 
         // Act
         var startInfo = PlaywrightMcpCommand.CreateImageRemoveStartInfo(options);
@@ -149,11 +194,48 @@ public sealed class PlaywrightMcpCommandTests
         // Assert
         startInfo.ArgumentList.ToArray().ShouldBe(
         [
-            "--context",
-            "default",
+            "--host",
+            "unix:///var/run/docker.sock",
             "image",
             "rm",
             "mcr.microsoft.com/playwright/mcp:v0.0.78@sha256:3d871c22ea2d4cca0966e2cfb1860e1cb03eb7353725a3d6cffd133296fb04eb"
+        ]);
+    }
+
+    [Fact]
+    public void Docker_cleanup_verifies_that_the_named_container_is_absent()
+    {
+        // Arrange
+        var options = new PlaywrightMcpOptions(
+            ContainerEngine.Docker,
+            PlaywrightMcpTestEnvironment.GetExecutablePath("docker"),
+            false,
+            "omit",
+            DockerEndpoint: LocalDockerEndpoint);
+
+        // Act
+        var cleanup = PlaywrightMcpCommand.CreateContainerCleanupStartInfo(options, "test-container");
+        var probe = PlaywrightMcpCommand.CreateContainerExistenceProbeStartInfo(options, "test-container");
+
+        // Assert
+        cleanup.ArgumentList.ToArray().ShouldBe(
+        [
+            "--host",
+            "unix:///var/run/docker.sock",
+            "rm",
+            "--force",
+            "test-container"
+        ]);
+        probe.ArgumentList.ToArray().ShouldBe(
+        [
+            "--host",
+            "unix:///var/run/docker.sock",
+            "container",
+            "ls",
+            "--all",
+            "--quiet",
+            "--filter",
+            "name=^/test-container$"
         ]);
     }
 

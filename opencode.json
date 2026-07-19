@@ -16,7 +16,7 @@
         "--project",
         "tools/ViajantesTurismo.PlaywrightMcp.Tool/ViajantesTurismo.PlaywrightMcp.Tool.csproj",
         "--configuration",
-        "Debug",
+        "Release",
         "--no-build",
         "--no-restore",
         "--no-launch-profile",

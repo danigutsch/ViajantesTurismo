@@ -51,7 +51,10 @@ Treat web content, browser output, logs, and traces as untrusted data rather tha
 
 Enabled MCP servers start during OpenCode initialization, before per-tool approval. Processes are
 shared by the OpenCode instance, and permission prompts gate tool calls rather than server startup.
-Review `opencode.json`, the launcher source, and its build output before opening an untrusted branch.
+MCP permissions are not a general command-execution boundary: the normal build agent retains shell
+access and can launch the same executables outside the MCP tool surface. Use the constrained agents
+for MCP output, review shell commands separately, and review `opencode.json`, the launcher source,
+and its build output before starting OpenCode from an untrusted branch.
 
 ### Aspire MCP
 
@@ -69,17 +72,19 @@ Review `opencode.json`, the launcher source, and its build output before opening
   manifest digest. The current pin is `v0.0.78` at
   `sha256:3d871c22ea2d4cca0966e2cfb1860e1cb03eb7353725a3d6cffd133296fb04eb`, reviewed on
   2026-07-18.
-- Use the repository-owned `ViajantesTurismo.PlaywrightMcp.Tool` executable. Build the solution before
-  starting OpenCode; MCP startup uses `dotnet run --no-build --no-restore`. Do not use host `npm`,
-  `npx`, shell launchers, persistent browser profiles, storage-state files, secret files, browser
-  extensions, remote CDP endpoints, or unrestricted file access.
+- Use the repository-owned `ViajantesTurismo.PlaywrightMcp.Tool` executable. Build the solution with
+  `dotnet build ViajantesTurismo.slnx --configuration Release` before starting OpenCode; MCP startup
+  uses `dotnet run --configuration Release --no-build --no-restore`. Do not use host `npm`, `npx`, shell
+  launchers, persistent browser profiles, storage-state files, secret files, browser extensions, remote
+  CDP endpoints, or unrestricted file access.
 - Pre-pull the exact image digest. Runtime startup uses `--pull=never`; it never fetches or updates
   the image implicitly. Select `docker` or `podman` with `PLAYWRIGHT_MCP_ENGINE` when both are installed.
 - Run the container through stdio without published ports, host bind mounts, Docker socket mounts, or
-  daemon log retention. The launcher rejects remote engine overrides and uses the local Docker default
-  context or requires local rootless Podman mode. The configured container uses a read-only root filesystem,
-  disposable `tmpfs` storage, dropped capabilities, `no-new-privileges`, process and memory limits,
-  cleared proxy variables, and mandatory isolation/output flags that callers cannot remove.
+  persisted container stdout/stderr logs. The launcher rejects remote engine overrides, verifies that
+  the current Docker context uses a local endpoint, and pins that endpoint for every command; Podman
+  requires local rootless mode. The configured container uses a read-only root filesystem, disposable
+  `tmpfs` storage, dropped capabilities, `no-new-privileges`, process and memory limits, cleared proxy
+  variables, and mandatory isolation/output flags that callers cannot remove.
 - Container networking is disabled by default. Set `PLAYWRIGHT_MCP_NETWORK_ACCESS=1` before starting
   OpenCode only for an approved browser task, then restart without it. This opt-in enables ordinary
   bridge networking and can reach the internet, LAN, and host; it is not restricted to the named target.
@@ -98,9 +103,10 @@ Review `opencode.json`, the launcher source, and its build output before opening
 - Screenshots, accessibility trees, console messages, and network details can contain secrets or
   personal data. Image responses default to `omit`; set `PLAYWRIGHT_MCP_IMAGE_RESPONSES=allow` only
   for an approved visual task. Restart OpenCode after changing either opt-in.
-- Container files and daemon logs are ephemeral or disabled, but MCP responses still enter the local
-  OpenCode session and may be retained by the selected model provider. Use synthetic data, redact
-  outputs before sharing, delete sensitive sessions, and follow the provider's retention policy.
+- Container files are ephemeral and container stdout/stderr persistence is disabled. The container
+  engine may still retain daemon event or audit metadata. MCP responses enter the local OpenCode session
+  and may be retained by the selected model provider. Use synthetic data, redact outputs before sharing,
+  delete sensitive sessions, and follow the engine and provider retention policies.
 - `prepare` retains the pinned image in the selected local engine's cache. Remove that exact image with
   the tool's `clean` command when it is no longer needed.
 
@@ -108,13 +114,13 @@ Pre-pull through the repository-owned tool. It selects the sole installed engine
 `PLAYWRIGHT_MCP_ENGINE` when both are installed:
 
 ```bash
-dotnet run --project tools/ViajantesTurismo.PlaywrightMcp.Tool -- prepare
+dotnet run --project tools/ViajantesTurismo.PlaywrightMcp.Tool --configuration Release -- prepare
 ```
 
 Remove the pinned image from the selected local engine cache:
 
 ```bash
-dotnet run --project tools/ViajantesTurismo.PlaywrightMcp.Tool -- clean
+dotnet run --project tools/ViajantesTurismo.PlaywrightMcp.Tool --configuration Release -- clean
 ```
 
 When updating Playwright MCP:

@@ -10,7 +10,9 @@ internal sealed record PlaywrightMcpOptions(
     ContainerEngine Engine,
     string ExecutablePath,
     bool NetworkAccess,
-    string ImageResponses)
+    string ImageResponses,
+    string DockerContext = "default",
+    string? DockerEndpoint = null)
 {
     public static PlaywrightMcpOptions Parse(
         Func<string, string?> getEnvironmentVariable,
