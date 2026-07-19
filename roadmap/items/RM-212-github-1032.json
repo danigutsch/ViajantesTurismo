@@ -7,7 +7,7 @@
   "status": "proposed",
   "order": 239,
   "theme": "repo-operations",
-  "outcome": "GitHub issue #1032 is canonically represented from the reconciliation manifest.",
+  "outcome": "Production schema changes use reviewed immutable PostgreSQL artifacts with a least-privileged, auditable deployment stage.",
   "scoring": {
     "reach": 1,
     "impact": 1,
@@ -17,7 +17,12 @@
   "blockedBy": [],
   "blocks": [],
   "dependencies": [],
-  "tags": [],
+  "tags": [
+    "database",
+    "migration",
+    "deployment",
+    "security"
+  ],
   "labels": [
     "architecture",
     "area: tooling",

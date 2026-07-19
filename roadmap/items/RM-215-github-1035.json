@@ -6,7 +6,7 @@
   "status": "proposed",
   "order": 342,
   "theme": "repo-operations",
-  "outcome": "GitHub issue #1035 is canonically represented from the reconciliation manifest.",
+  "outcome": "Service, worker, schema-deployment, and production topology boundaries have explicit ownership, trust, lifecycle, and scaling models.",
   "scoring": {
     "reach": 1,
     "impact": 1,
@@ -16,7 +16,13 @@
   "blockedBy": [],
   "blocks": [],
   "dependencies": [],
-  "tags": [],
+  "tags": [
+    "architecture",
+    "deployment",
+    "topology",
+    "aspire",
+    "security"
+  ],
   "labels": [
     "architecture",
     "aspire",

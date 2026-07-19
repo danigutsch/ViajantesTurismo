@@ -7,7 +7,7 @@
   "status": "proposed",
   "order": 241,
   "theme": "repo-operations",
-  "outcome": "GitHub issue #1034 is canonically represented from the reconciliation manifest.",
+  "outcome": "Each event consumer has bounded-context ownership with matching deployment, scaling, credentials, and reliability boundaries.",
   "scoring": {
     "reach": 1,
     "impact": 1,
@@ -17,7 +17,12 @@
   "blockedBy": [],
   "blocks": [],
   "dependencies": [],
-  "tags": [],
+  "tags": [
+    "architecture",
+    "worker",
+    "ownership",
+    "eventing"
+  ],
   "labels": [
     "architecture",
     "aspire",
