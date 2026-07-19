@@ -297,7 +297,7 @@ public sealed class RepoConfigToolCoverageTests
         RoadmapConfigTestOperations.EnableGitHubSync(workspace);
         var itemText = workspace.ReadFile("roadmap/items/RM-001-roadmap-gitops.json");
         workspace.WriteFile("roadmap/items/RM-001-roadmap-gitops.json", itemText.Replace("\"labels\": [", "\"integrations\": { \"github\": { \"issue\": 997 } },\n  \"labels\": [", StringComparison.Ordinal));
-        using var handler = TestHttpMessageHandler.FromException(new GitHubSyncTimeoutException());
+        using var handler = TestHttpMessageHandler.FromException(GitHubRequestTimeout.Create("sync"));
         using var httpClient = new HttpClient(handler);
 
         // Act

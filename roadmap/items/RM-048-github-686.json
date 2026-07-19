@@ -4,7 +4,7 @@
   "title": "Design reusable read/write DbContext configuration without inheritance",
   "type": "enabler",
   "status": "proposed",
-  "order": 141,
+  "order": 140,
   "theme": "repo-operations",
   "outcome": "GitHub issue #686 is canonically represented from the reconciliation manifest.",
   "scoring": {

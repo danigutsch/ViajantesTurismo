@@ -5,7 +5,7 @@
   "title": "Assess NoSQL data store opportunities",
   "type": "enabler",
   "status": "proposed",
-  "order": 192,
+  "order": 191,
   "theme": "repo-operations",
   "outcome": "GitHub issue #892 is canonically represented from the reconciliation manifest.",
   "scoring": {

@@ -5,7 +5,7 @@
   "title": "Add SharedKernel hypermedia primitives",
   "type": "enabler",
   "status": "proposed",
-  "order": 170,
+  "order": 169,
   "theme": "repo-operations",
   "outcome": "GitHub issue #790 is canonically represented from the reconciliation manifest.",
   "scoring": {

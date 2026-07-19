@@ -4,7 +4,7 @@
   "title": "Add SharedKernel package-consumption test abstraction",
   "type": "enabler",
   "status": "proposed",
-  "order": 168,
+  "order": 167,
   "theme": "repo-operations",
   "outcome": "GitHub issue #777 is canonically represented from the reconciliation manifest.",
   "scoring": {

@@ -4,7 +4,7 @@
   "title": "Add SharedKernel process manager support for long-running integration workflows",
   "type": "enabler",
   "status": "proposed",
-  "order": 163,
+  "order": 162,
   "theme": "repo-operations",
   "outcome": "GitHub issue #752 is canonically represented from the reconciliation manifest.",
   "scoring": {

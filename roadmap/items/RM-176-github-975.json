@@ -4,7 +4,7 @@
   "title": "Provision Management Web OIDC security persistence for deployment",
   "type": "enabler",
   "status": "proposed",
-  "order": 218,
+  "order": 214,
   "theme": "repo-operations",
   "outcome": "GitHub issue #975 is canonically represented from the reconciliation manifest.",
   "scoring": {

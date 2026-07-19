@@ -5,12 +5,12 @@
   "title": "Add media accessibility review workflow",
   "type": "issue",
   "status": "proposed",
-  "order": 216,
+  "order": 213,
   "theme": "repo-operations",
   "outcome": "GitHub issue #971 is canonically represented from the reconciliation manifest.",
   "scoring": {
     "reach": 1,
-    "impact": 2,
+    "impact": 1,
     "confidence": 0.1,
     "effort": 3
   },

@@ -4,7 +4,7 @@
   "title": "add Catalog behavior coverage for duplicate integration-event delivery",
   "type": "issue",
   "status": "proposed",
-  "order": 166,
+  "order": 165,
   "theme": "repo-operations",
   "outcome": "GitHub issue #761 is canonically represented from the reconciliation manifest.",
   "scoring": {

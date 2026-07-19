@@ -4,7 +4,7 @@
   "title": "Add analyzer to forbid SUT construction in the Act phase",
   "type": "enabler",
   "status": "proposed",
-  "order": 260,
+  "order": 255,
   "theme": "repo-operations",
   "outcome": "GitHub issue #1084 is canonically represented from the reconciliation manifest.",
   "scoring": {

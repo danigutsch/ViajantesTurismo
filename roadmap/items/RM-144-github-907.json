@@ -4,7 +4,7 @@
   "title": "Evaluate Admin QueryService caching boundaries",
   "type": "enabler",
   "status": "proposed",
-  "order": 200,
+  "order": 199,
   "theme": "repo-operations",
   "outcome": "GitHub issue #907 is canonically represented from the reconciliation manifest.",
   "scoring": {

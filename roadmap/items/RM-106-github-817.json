@@ -5,7 +5,7 @@
   "title": "Define and enforce CORS policy",
   "type": "enabler",
   "status": "proposed",
-  "order": 173,
+  "order": 172,
   "theme": "repo-operations",
   "outcome": "GitHub issue #817 is canonically represented from the reconciliation manifest.",
   "scoring": {

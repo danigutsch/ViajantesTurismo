@@ -4,7 +4,7 @@
   "title": "Add generated-code provenance metadata standards",
   "type": "enabler",
   "status": "proposed",
-  "order": 189,
+  "order": 188,
   "theme": "repo-operations",
   "outcome": "GitHub issue #878 is canonically represented from the reconciliation manifest.",
   "scoring": {

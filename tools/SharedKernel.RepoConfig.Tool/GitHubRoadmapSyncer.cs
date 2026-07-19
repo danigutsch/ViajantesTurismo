@@ -8,7 +8,6 @@ namespace SharedKernel.RepoConfig.Tool;
 
 internal sealed class GitHubRoadmapSyncer
 {
-    private static readonly TimeSpan GitHubSyncTimeout = TimeSpan.FromSeconds(30);
     private const decimal ProjectNumberTolerance = 0.000001m;
     private static readonly (string Name, string DataType)[] RequiredProjectFields =
     [
@@ -235,7 +234,7 @@ internal sealed class GitHubRoadmapSyncer
 
     private static bool IsAmbiguousIssueCreationFailure(Exception exception)
     {
-        return exception is GitHubSyncTimeoutException or OperationCanceledException or HttpRequestException or IOException or JsonException;
+        return exception is TimeoutException or OperationCanceledException or HttpRequestException or IOException or JsonException;
     }
 
     private async Task SyncLabels(
@@ -428,7 +427,7 @@ internal sealed class GitHubRoadmapSyncer
 
     private async Task<IReadOnlyList<string>> UpdateItem(HttpClient httpClient, string repository, RoadmapItemSnapshot item, CancellationToken cancellationToken)
     {
-        using var timeout = new CancellationTokenSource(GitHubSyncTimeout, _timeProvider);
+        using var timeout = new CancellationTokenSource(GitHubRequestTimeout.Duration, _timeProvider);
         using var itemCancellation = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, timeout.Token);
         try
         {
@@ -440,13 +439,13 @@ internal sealed class GitHubRoadmapSyncer
         }
         catch (OperationCanceledException) when (timeout.IsCancellationRequested && !cancellationToken.IsCancellationRequested)
         {
-            throw new GitHubSyncTimeoutException();
+            throw GitHubRequestTimeout.Create("sync");
         }
     }
 
     private async Task<T> RunProjectOperation<T>(Func<CancellationToken, Task<T>> operation, CancellationToken cancellationToken)
     {
-        using var timeout = new CancellationTokenSource(GitHubSyncTimeout, _timeProvider);
+        using var timeout = new CancellationTokenSource(GitHubRequestTimeout.Duration, _timeProvider);
         using var operationCancellation = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, timeout.Token);
         try
         {
@@ -458,7 +457,7 @@ internal sealed class GitHubRoadmapSyncer
         }
         catch (OperationCanceledException) when (timeout.IsCancellationRequested && !cancellationToken.IsCancellationRequested)
         {
-            throw new GitHubSyncTimeoutException();
+            throw GitHubRequestTimeout.Create("sync");
         }
     }
 

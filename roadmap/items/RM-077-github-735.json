@@ -5,7 +5,7 @@
   "title": "Compare discriminated unions with current Result and Option APIs",
   "type": "enabler",
   "status": "proposed",
-  "order": 161,
+  "order": 160,
   "theme": "repo-operations",
   "outcome": "GitHub issue #735 is canonically represented from the reconciliation manifest.",
   "scoring": {

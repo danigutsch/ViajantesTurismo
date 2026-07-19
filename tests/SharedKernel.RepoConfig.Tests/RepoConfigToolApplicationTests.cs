@@ -159,6 +159,102 @@ public sealed class RepoConfigToolApplicationTests
         outputText.ShouldNotContain("RM-002", StringComparison.Ordinal);
     }
 
+    [Fact]
+    public async Task Get_escapes_control_characters_in_item_titles()
+    {
+        // Arrange
+        using var workspace = new TemporaryRepoConfigWorkspace();
+        using var initOutput = new StringWriter(CultureInfo.InvariantCulture);
+        using var initError = new StringWriter(CultureInfo.InvariantCulture);
+        using var getOutput = new StringWriter(CultureInfo.InvariantCulture);
+        using var getError = new StringWriter(CultureInfo.InvariantCulture);
+        (await RepoConfigToolApplication.Run(["init", "--root", workspace.RootPath], initOutput, initError, workspace.RootPath, TestContext.Current.CancellationToken)).ShouldBe(0);
+        var item = workspace.ReadFile("roadmap/items/RM-001-roadmap-gitops.json")
+            .Replace(
+                "Establish GitOps roadmap and repo configuration tooling",
+                "First line\\n\\u001b[31mSecond line",
+                StringComparison.Ordinal);
+        workspace.WriteFile("roadmap/items/RM-001-roadmap-gitops.json", item);
+
+        // Act
+        var exitCode = await RepoConfigToolApplication.Run(["get", "next-priority", "--root", workspace.RootPath], getOutput, getError, workspace.RootPath, TestContext.Current.CancellationToken);
+        var outputText = getOutput.ToString();
+        var outputLines = outputText.Split(Environment.NewLine, StringSplitOptions.RemoveEmptyEntries);
+
+        // Assert
+        exitCode.ShouldBe(0);
+        getError.ToString().ShouldBe(string.Empty);
+        outputLines.Length.ShouldBe(1);
+        outputText.ShouldNotContain("\u001b", StringComparison.Ordinal);
+        outputText.ShouldContain("\\u000A", StringComparison.Ordinal);
+        outputText.ShouldContain("\\u001B", StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public async Task Verify_does_not_emit_control_characters_from_an_invalid_item_id_prefix()
+    {
+        // Arrange
+        using var workspace = new TemporaryRepoConfigWorkspace();
+        using var initOutput = new StringWriter(CultureInfo.InvariantCulture);
+        using var initError = new StringWriter(CultureInfo.InvariantCulture);
+        using var verifyOutput = new StringWriter(CultureInfo.InvariantCulture);
+        using var verifyError = new StringWriter(CultureInfo.InvariantCulture);
+        (await RepoConfigToolApplication.Run(["init", "--root", workspace.RootPath], initOutput, initError, workspace.RootPath, TestContext.Current.CancellationToken)).ShouldBe(0);
+        var config = workspace.ReadFile("roadmap/config.json")
+            .Replace("\"itemIdPrefix\": \"RM\"", "\"itemIdPrefix\": \"RM\\n\\u001b\"", StringComparison.Ordinal);
+        workspace.WriteFile("roadmap/config.json", config);
+
+        // Act
+        var exitCode = await RepoConfigToolApplication.Run(["verify", "--root", workspace.RootPath], verifyOutput, verifyError, workspace.RootPath, TestContext.Current.CancellationToken);
+        var errorText = verifyError.ToString();
+
+        // Assert
+        exitCode.ShouldBe(1);
+        verifyOutput.ToString().ShouldBe(string.Empty);
+        errorText.ShouldContain("itemIdPrefix may contain only ASCII letters, digits, underscores, and hyphens.", StringComparison.Ordinal);
+        errorText.ShouldNotContain("\u001b", StringComparison.Ordinal);
+        errorText.ShouldNotContain("RM\n", StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public async Task Get_blocking_overview_escapes_control_characters_in_item_ids()
+    {
+        // Arrange
+        using var workspace = new TemporaryRepoConfigWorkspace();
+        using var initOutput = new StringWriter(CultureInfo.InvariantCulture);
+        using var initError = new StringWriter(CultureInfo.InvariantCulture);
+        using var getOutput = new StringWriter(CultureInfo.InvariantCulture);
+        using var getError = new StringWriter(CultureInfo.InvariantCulture);
+        (await RepoConfigToolApplication.Run(["init", "--root", workspace.RootPath], initOutput, initError, workspace.RootPath, TestContext.Current.CancellationToken)).ShouldBe(0);
+        const string itemId = "RM-002\n\u001b";
+        var serializedItemId = JsonSerializer.Serialize(itemId);
+        var blockedItem = RoadmapTestContent.BlockedIssueJson.Replace("\"RM-002\"", serializedItemId, StringComparison.Ordinal);
+        var blockerItem = workspace.ReadFile("roadmap/items/RM-001-roadmap-gitops.json")
+            .Replace("\"blocks\": []", $"\"blocks\": [{serializedItemId}]", StringComparison.Ordinal);
+        workspace.WriteFile("roadmap/items/RM-001-roadmap-gitops.json", blockerItem);
+        workspace.WriteFile("roadmap/items/RM-002-blocked.json", blockedItem);
+        workspace.WriteFile(
+            "roadmap/order.json",
+            $$"""
+            {
+              "ordering": "lower order values are higher priority",
+              "items": ["RM-001", {{serializedItemId}}]
+            }
+            """);
+
+        // Act
+        var exitCode = await RepoConfigToolApplication.Run(["get", "blocking-overview", "--root", workspace.RootPath], getOutput, getError, workspace.RootPath, TestContext.Current.CancellationToken);
+        var outputText = getOutput.ToString();
+        var outputLines = outputText.Split(Environment.NewLine, StringSplitOptions.RemoveEmptyEntries);
+
+        // Assert
+        exitCode.ShouldBe(0);
+        getError.ToString().ShouldBe(string.Empty);
+        outputLines.Length.ShouldBe(1);
+        outputText.ShouldNotContain("\u001b", StringComparison.Ordinal);
+        outputText.ShouldContain("RM-002\\u000A\\u001B blocked by RM-001", StringComparison.Ordinal);
+    }
+
     [Theory]
     [InlineData("\"order\": 20,")]
     [InlineData("\"scoring\": { \"reach\": 10, \"impact\": 3, \"confidence\": 0.8, \"effort\": 2 },")]
@@ -2180,7 +2276,7 @@ public sealed class RepoConfigToolApplicationTests
 
         // Act
         Func<Task> action = () => syncer.Apply(TestContext.Current.CancellationToken);
-        var exception = await action.ShouldThrow<GitHubSyncTimeoutException>();
+        var exception = await action.ShouldThrow<TimeoutException>();
 
         // Assert
         exception.Message.ShouldBe("GitHub sync timed out after 30 seconds.");
@@ -2635,7 +2731,7 @@ public sealed class RepoConfigToolApplicationTests
 
         // Act
         Func<Task> action = () => syncer.Apply(TestContext.Current.CancellationToken);
-        var exception = await action.ShouldThrow<GitHubSyncTimeoutException>();
+        var exception = await action.ShouldThrow<TimeoutException>();
 
         // Assert
         exception.Message.ShouldBe("GitHub sync timed out after 30 seconds.");

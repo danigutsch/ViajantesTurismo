@@ -4,7 +4,7 @@
   "title": "Enforce aggregate and entity encapsulation",
   "type": "feature",
   "status": "proposed",
-  "order": 291,
+  "order": 303,
   "theme": "repo-operations",
   "outcome": "GitHub issue #913 is canonically represented from the reconciliation manifest.",
   "scoring": {

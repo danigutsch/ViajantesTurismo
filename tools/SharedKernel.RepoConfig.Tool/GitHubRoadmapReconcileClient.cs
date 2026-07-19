@@ -6,13 +6,11 @@ namespace SharedKernel.RepoConfig.Tool;
 
 internal sealed class GitHubRoadmapReconcileClient(HttpClient httpClient)
 {
-    private static readonly TimeSpan GitHubReconcileTimeout = TimeSpan.FromSeconds(30);
-
     private const string ReconcileQuery = """
         query($owner:String!,$name:String!,$after:String){
           repository(owner:$owner,name:$name){
             defaultBranchRef{target{oid}}
-            issues(first:100,after:$after,states:[OPEN,CLOSED],orderBy:{field:CREATED_AT,direction:ASC}){
+            issues(first:100,after:$after,states:[OPEN],orderBy:{field:CREATED_AT,direction:ASC}){
               nodes{
                 __typename
                 number
@@ -30,8 +28,15 @@ internal sealed class GitHubRoadmapReconcileClient(HttpClient httpClient)
         }
         """;
 
-    public async Task<GitHubRoadmapReconcileSnapshot> ReadSnapshot(string repository, CancellationToken cancellationToken)
+    private const string IssueQuery = "query($owner:String!,$name:String!,$number:Int!){repository(owner:$owner,name:$name){issueOrPullRequest(number:$number){__typename ... on Issue{number title state labels(first:100){nodes{name}pageInfo{hasNextPage endCursor}} parent{number state repository{nameWithOwner}} subIssues(first:100){nodes{number state repository{nameWithOwner}}pageInfo{hasNextPage endCursor}} blockedBy(first:100){nodes{number state repository{nameWithOwner}}pageInfo{hasNextPage endCursor}} blocking(first:100){nodes{number state repository{nameWithOwner}}pageInfo{hasNextPage endCursor}}}}}}";
+
+    public async Task<GitHubRoadmapReconcileSnapshot> ReadSnapshot(
+        string repository,
+        int[] requiredIssueNumbers,
+        CancellationToken cancellationToken)
     {
+        ArgumentNullException.ThrowIfNull(requiredIssueNumbers);
+
         var (owner, name) = SplitRepository(repository);
         Dictionary<int, GitHubRoadmapReconcileIssue> issuesByNumber = [];
         string? repositoryCommit = null;
@@ -83,12 +88,68 @@ internal sealed class GitHubRoadmapReconcileClient(HttpClient httpClient)
         }
         while (true);
 
+        HashSet<int> supplementalIssueNumbers = [.. requiredIssueNumbers];
+        foreach (var issue in issuesByNumber.Values)
+        {
+            AddClosedRelation(issue.Parent, repository, supplementalIssueNumbers);
+            foreach (var relation in issue.SubIssues.Concat(issue.BlockedBy).Concat(issue.Blocking))
+            {
+                AddClosedRelation(relation, repository, supplementalIssueNumbers);
+            }
+        }
+
+        foreach (var issueNumber in supplementalIssueNumbers.Order())
+        {
+            if (issuesByNumber.ContainsKey(issueNumber))
+            {
+                continue;
+            }
+
+            var issue = await ReadIssueByNumber(owner, name, issueNumber, cancellationToken).ConfigureAwait(false);
+            if (issue.Number != issueNumber || !issuesByNumber.TryAdd(issue.Number, issue))
+            {
+                throw new InvalidOperationException("GitHub reconciliation response contains inconsistent issue metadata.");
+            }
+        }
+
         return new GitHubRoadmapReconcileSnapshot(repositoryCommit, issuesByNumber.Values.OrderBy(issue => issue.Number).ToArray());
+    }
+
+    private async Task<GitHubRoadmapReconcileIssue> ReadIssueByNumber(
+        string owner,
+        string name,
+        int issueNumber,
+        CancellationToken cancellationToken)
+    {
+        using var document = await Send(
+            IssueQuery,
+            writer =>
+            {
+                writer.WriteString("owner", owner);
+                writer.WriteString("name", name);
+                writer.WriteNumber("number", issueNumber);
+            },
+            cancellationToken).ConfigureAwait(false);
+        var node = GetRequiredObject(GetRepository(document.RootElement), "issueOrPullRequest");
+        return await ReadIssue(node, owner, name, cancellationToken).ConfigureAwait(false);
+    }
+
+    private static void AddClosedRelation(
+        GitHubRoadmapReconcileRelation? relation,
+        string repository,
+        HashSet<int> issueNumbers)
+    {
+        if (relation is not null
+            && string.Equals(relation.Repository, repository, StringComparison.OrdinalIgnoreCase)
+            && string.Equals(relation.State, "CLOSED", StringComparison.Ordinal))
+        {
+            issueNumbers.Add(relation.Number);
+        }
     }
 
     private async Task<JsonDocument> Send(string query, Action<Utf8JsonWriter> writeVariables, CancellationToken cancellationToken)
     {
-        using var timeout = new CancellationTokenSource(GitHubReconcileTimeout);
+        using var timeout = new CancellationTokenSource(GitHubRequestTimeout.Duration);
         using var requestCancellation = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, timeout.Token);
         try
         {
@@ -100,7 +161,7 @@ internal sealed class GitHubRoadmapReconcileClient(HttpClient httpClient)
         }
         catch (OperationCanceledException) when (timeout.IsCancellationRequested)
         {
-            throw new GitHubReconcileTimeoutException();
+            throw GitHubRequestTimeout.Create("reconciliation");
         }
     }
 
@@ -243,7 +304,7 @@ internal sealed class GitHubRoadmapReconcileClient(HttpClient httpClient)
         CancellationToken cancellationToken)
     {
         var connection = GetRequiredObject(root, propertyName);
-        Dictionary<int, GitHubRoadmapReconcileRelation> relations = [];
+        Dictionary<(string Repository, int Number), GitHubRoadmapReconcileRelation> relations = [];
         AddRelations(connection, relations);
         var (hasNextPage, cursor) = ReadPageInfo(connection);
         while (hasNextPage)
@@ -254,15 +315,20 @@ internal sealed class GitHubRoadmapReconcileClient(HttpClient httpClient)
             (hasNextPage, cursor) = ReadPageInfo(connection);
         }
 
-        return relations.Values.OrderBy(relation => relation.Number).ToArray();
+        return relations.Values
+            .OrderBy(relation => relation.Repository, StringComparer.OrdinalIgnoreCase)
+            .ThenBy(relation => relation.Number)
+            .ToArray();
     }
 
-    private static void AddRelations(JsonElement connection, Dictionary<int, GitHubRoadmapReconcileRelation> relations)
+    private static void AddRelations(
+        JsonElement connection,
+        Dictionary<(string Repository, int Number), GitHubRoadmapReconcileRelation> relations)
     {
         foreach (var node in GetRequiredArray(connection, "nodes").EnumerateArray())
         {
             var relation = ReadRelation(node);
-            if (!relations.TryAdd(relation.Number, relation))
+            if (!relations.TryAdd((relation.Repository.ToUpperInvariant(), relation.Number), relation))
             {
                 throw new InvalidOperationException("GitHub reconciliation response contains duplicate relationship metadata.");
             }

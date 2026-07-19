@@ -4,7 +4,7 @@
   "title": "Add analyzer for Playwright Should* assertions",
   "type": "feature",
   "status": "proposed",
-  "order": 302,
+  "order": 313,
   "theme": "repo-operations",
   "outcome": "GitHub issue #1007 is canonically represented from the reconciliation manifest.",
   "scoring": {

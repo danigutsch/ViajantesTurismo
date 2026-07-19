@@ -4,9 +4,7 @@ namespace SharedKernel.RepoConfig.Tool;
 
 internal sealed class GitHubRoadmapReconciliation
 {
-    private const decimal ApprovedReach = 1m;
-    private const decimal ApprovedConfidence = 0.1m;
-    private const string ApprovedImpact = "1 plus direct open blockers, capped at 5.";
+    private const string ApprovedImpact = "1 plus direct open blockers, capped at impactCap.";
     private const string ApprovedOrder = "Existing reviewed orders remain first; imported work uses topological order, score descending, then canonical ID.";
 
     private GitHubRoadmapReconciliation(
@@ -19,9 +17,10 @@ internal sealed class GitHubRoadmapReconciliation
         IReadOnlyList<GitHubRoadmapBlockerEdge> blockerEdges,
         IReadOnlyDictionary<int, string> closedEndpointStates,
         IReadOnlyDictionary<int, string> closedItemTransitions,
-        IReadOnlyDictionary<int, int> parentChainExits,
         string? snapshotDigest,
-        string? ruleVersion)
+        string? ruleVersion,
+        GitHubRoadmapPriorityPolicy priorityPolicy,
+        string sourceContent)
     {
         ManifestPath = manifestPath;
         Repository = repository;
@@ -32,9 +31,10 @@ internal sealed class GitHubRoadmapReconciliation
         BlockerEdges = blockerEdges;
         ClosedEndpointStates = closedEndpointStates;
         ClosedItemTransitions = closedItemTransitions;
-        ParentChainExits = parentChainExits;
         SnapshotDigest = snapshotDigest;
         RuleVersion = ruleVersion;
+        PriorityPolicy = priorityPolicy;
+        SourceContent = sourceContent;
     }
 
     public IReadOnlyList<GitHubRoadmapBlockerEdge> BlockerEdges { get; }
@@ -51,22 +51,44 @@ internal sealed class GitHubRoadmapReconciliation
 
     public string ManifestPath { get; }
 
-    public IReadOnlyDictionary<int, int> ParentChainExits { get; }
-
     public string Repository { get; }
 
     public string? RuleVersion { get; }
 
     public string? SnapshotDigest { get; }
 
+    public string SourceContent { get; }
+
+    public GitHubRoadmapPriorityPolicy PriorityPolicy { get; }
+
     public IReadOnlyList<int> UnmappedOpenIssueNumbers { get; }
+
+    public int[] GetRequiredIssueNumbers(RoadmapProject project)
+    {
+        ArgumentNullException.ThrowIfNull(project);
+
+        return project.GetGitHubIssueNumbers()
+            .Concat(ClosedEndpointStates.Keys)
+            .Concat(ClosedItemTransitions.Keys)
+            .Distinct()
+            .Order()
+            .ToArray();
+    }
 
     public static GitHubRoadmapReconciliation Load(string rootPath)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(rootPath);
 
         var manifestPath = FindManifestPath(rootPath);
-        using var document = JsonDocument.Parse(File.ReadAllText(manifestPath));
+        return Parse(manifestPath, File.ReadAllText(manifestPath));
+    }
+
+    public static GitHubRoadmapReconciliation Parse(string manifestPath, string content)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(manifestPath);
+        ArgumentNullException.ThrowIfNull(content);
+
+        using var document = JsonDocument.Parse(content);
         var root = document.RootElement;
         if (root.ValueKind != JsonValueKind.Object)
         {
@@ -74,14 +96,13 @@ internal sealed class GitHubRoadmapReconciliation
         }
 
         var repository = GetRequiredString(root, "repository");
-        VerifyMechanicalPriorityOverride(root);
+        var priorityPolicy = ReadMechanicalPriorityOverride(root);
         var directCanonicalPrimaries = ReadDirectCanonicalPrimaries(root);
         var childrenOfCanonicalPrimaries = ReadIssueNumbers(root, "childrenOfCanonicalPrimaries");
         var unmappedStructuralRoots = ReadIssueNumbers(root, "unmappedStructuralRoots");
         var needsHuman = ReadIssueNumbers(root, "needsHuman");
         var expectedOpenIssueNumbers = ReadExpectedOpenIssues(directCanonicalPrimaries.Keys, childrenOfCanonicalPrimaries, unmappedStructuralRoots, needsHuman);
         var expectedOpenIssueSet = new HashSet<int>(expectedOpenIssueNumbers);
-        var parentChainExits = ReadParentChainExits(root, expectedOpenIssueSet);
         var blockerEdges = ReadBlockerEdges(root, expectedOpenIssueSet, out var closedEndpointStates);
         var closedItemTransitions = ReadClosedItemTransitions(root, closedEndpointStates);
         VerifyIntegrity(root, expectedOpenIssueNumbers, directCanonicalPrimaries, childrenOfCanonicalPrimaries, unmappedStructuralRoots, needsHuman, blockerEdges);
@@ -96,9 +117,10 @@ internal sealed class GitHubRoadmapReconciliation
             blockerEdges,
             closedEndpointStates,
             closedItemTransitions,
-            parentChainExits,
             GetNullableString(root, "snapshotDigest"),
-            GetNullableString(root, "ruleVersion"));
+            GetNullableString(root, "ruleVersion"),
+            priorityPolicy,
+            content);
     }
 
     private static string FindManifestPath(string rootPath)
@@ -120,27 +142,40 @@ internal sealed class GitHubRoadmapReconciliation
         };
     }
 
-    private static void VerifyMechanicalPriorityOverride(JsonElement root)
+    private static GitHubRoadmapPriorityPolicy ReadMechanicalPriorityOverride(JsonElement root)
     {
         var priority = GetRequiredObject(root, "mechanicalPriorityOverride");
-        if (GetRequiredDecimal(priority, "reach") != ApprovedReach
-            || GetRequiredDecimal(priority, "confidence") != ApprovedConfidence
-            || !string.Equals(GetRequiredString(priority, "impact"), ApprovedImpact, StringComparison.Ordinal)
+        if (!string.Equals(GetRequiredString(priority, "impact"), ApprovedImpact, StringComparison.Ordinal)
             || !string.Equals(GetRequiredString(priority, "order"), ApprovedOrder, StringComparison.Ordinal))
         {
             throw new InvalidOperationException("GitHub reconciliation manifest does not contain the approved mechanical priority policy.");
         }
 
         var effort = GetRequiredObject(priority, "effort");
-        if (GetRequiredDecimal(effort, "type: epic") != 8m
-            || GetRequiredDecimal(effort, "type: feature") != 5m
-            || GetRequiredDecimal(effort, "type: enabler") != 3m
-            || GetRequiredDecimal(effort, "type: docs") != 2m
-            || GetRequiredDecimal(effort, "type: chore") != 2m
-            || GetRequiredDecimal(effort, "default") != 3m)
+        Dictionary<string, decimal> effortByLabel = new(StringComparer.Ordinal)
         {
-            throw new InvalidOperationException("GitHub reconciliation manifest does not contain the approved mechanical priority policy.");
+            ["type: epic"] = GetRequiredPositiveDecimal(effort, "type: epic"),
+            ["type: feature"] = GetRequiredPositiveDecimal(effort, "type: feature"),
+            ["type: enabler"] = GetRequiredPositiveDecimal(effort, "type: enabler"),
+            ["type: docs"] = GetRequiredPositiveDecimal(effort, "type: docs"),
+            ["type: chore"] = GetRequiredPositiveDecimal(effort, "type: chore")
+        };
+        var reach = GetRequiredPositiveDecimal(priority, "reach");
+        var confidence = GetRequiredPositiveDecimal(priority, "confidence");
+        var impactCap = GetRequiredPositiveDecimal(priority, "impactCap");
+        var firstItemNumber = GetRequiredPositiveInteger(priority, "firstItemNumber");
+        if (confidence > 1m || impactCap is < 1m or > 5m)
+        {
+            throw new InvalidOperationException("GitHub reconciliation manifest contains invalid mechanical priority values.");
         }
+
+        return new GitHubRoadmapPriorityPolicy(
+            firstItemNumber,
+            reach,
+            confidence,
+            impactCap,
+            effortByLabel,
+            GetRequiredPositiveDecimal(effort, "default"));
     }
 
     private static Dictionary<int, string> ReadDirectCanonicalPrimaries(JsonElement root)
@@ -198,28 +233,6 @@ internal sealed class GitHubRoadmapReconciliation
         }
 
         return expected.Order().ToArray();
-    }
-
-    private static Dictionary<int, int> ReadParentChainExits(JsonElement root, HashSet<int> expectedOpenIssueNumbers)
-    {
-        var entries = GetRequiredArray(root, "needsHumanParentChainExits");
-        Dictionary<int, int> parentChainExits = [];
-        foreach (var entry in entries.EnumerateArray())
-        {
-            if (entry.ValueKind != JsonValueKind.Object)
-            {
-                throw new InvalidOperationException("GitHub reconciliation manifest parent-chain exits must be objects.");
-            }
-
-            var issue = GetRequiredPositiveInteger(entry, "issue");
-            var parent = GetRequiredPositiveInteger(entry, "parent");
-            if (!expectedOpenIssueNumbers.Contains(issue) || !parentChainExits.TryAdd(issue, parent))
-            {
-                throw new InvalidOperationException("GitHub reconciliation manifest parent-chain exits must be unique snapshot issues.");
-            }
-        }
-
-        return parentChainExits;
     }
 
     private static GitHubRoadmapBlockerEdge[] ReadBlockerEdges(
@@ -420,6 +433,14 @@ internal sealed class GitHubRoadmapReconciliation
         }
 
         return value;
+    }
+
+    private static decimal GetRequiredPositiveDecimal(JsonElement root, string propertyName)
+    {
+        var value = GetRequiredDecimal(root, propertyName);
+        return value > 0m
+            ? value
+            : throw new InvalidOperationException("GitHub reconciliation manifest mechanical priority values must be positive.");
     }
 
     private static bool GetRequiredBoolean(JsonElement root, string propertyName)

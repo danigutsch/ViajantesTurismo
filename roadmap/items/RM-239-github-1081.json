@@ -5,7 +5,7 @@
   "title": "Define CI warning policy and exception lifecycle",
   "type": "enabler",
   "status": "proposed",
-  "order": 259,
+  "order": 254,
   "theme": "repo-operations",
   "outcome": "GitHub issue #1081 is canonically represented from the reconciliation manifest.",
   "scoring": {

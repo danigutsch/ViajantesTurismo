@@ -5,7 +5,7 @@
   "title": "Migrate Catalog and media flows into feature slices",
   "type": "feature",
   "status": "proposed",
-  "order": 267,
+  "order": 279,
   "theme": "repo-operations",
   "outcome": "GitHub issue #684 is canonically represented from the reconciliation manifest.",
   "scoring": {

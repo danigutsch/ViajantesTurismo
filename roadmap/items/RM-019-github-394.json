@@ -4,7 +4,7 @@
   "title": "Consolidate extracted test helpers after shared testing libraries exist",
   "type": "issue",
   "status": "proposed",
-  "order": 119,
+  "order": 121,
   "theme": "repo-operations",
   "outcome": "GitHub issue #394 is canonically represented from the reconciliation manifest.",
   "scoring": {

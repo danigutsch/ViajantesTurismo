@@ -5,7 +5,7 @@
   "title": "Define mailing needs and Mailpit testing",
   "type": "enabler",
   "status": "proposed",
-  "order": 191,
+  "order": 190,
   "theme": "repo-operations",
   "outcome": "GitHub issue #891 is canonically represented from the reconciliation manifest.",
   "scoring": {

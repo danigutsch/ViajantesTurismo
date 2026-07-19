@@ -4,7 +4,7 @@
   "title": "Classify PII fields and privacy data flows",
   "type": "enabler",
   "status": "proposed",
-  "order": 177,
+  "order": 176,
   "theme": "repo-operations",
   "outcome": "GitHub issue #840 is canonically represented from the reconciliation manifest.",
   "scoring": {

@@ -4,7 +4,7 @@
   "title": "Add documentation conformance and drift checks",
   "type": "enabler",
   "status": "proposed",
-  "order": 182,
+  "order": 181,
   "theme": "repo-operations",
   "outcome": "GitHub issue #853 is canonically represented from the reconciliation manifest.",
   "scoring": {

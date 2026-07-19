@@ -4,7 +4,7 @@
   "title": "Epic: evaluate platform service integrations",
   "type": "epic",
   "status": "proposed",
-  "order": 317,
+  "order": 334,
   "theme": "repo-operations",
   "outcome": "GitHub issue #903 is canonically represented from the reconciliation manifest.",
   "scoring": {

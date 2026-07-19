@@ -4,7 +4,7 @@
   "title": "Extract reusable file scanning and object-storage capabilities to SharedKernel",
   "type": "issue",
   "status": "proposed",
-  "order": 221,
+  "order": 217,
   "theme": "repo-operations",
   "outcome": "GitHub issue #979 is canonically represented from the reconciliation manifest.",
   "scoring": {

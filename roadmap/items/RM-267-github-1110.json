@@ -5,7 +5,7 @@
   "title": "[Issue]: Assess reusable xUnit v3 scenario-data patterns",
   "type": "enabler",
   "status": "proposed",
-  "order": 347,
+  "order": 267,
   "theme": "repo-operations",
   "outcome": "GitHub issue #1110 is canonically represented from the reconciliation manifest.",
   "scoring": {

@@ -26,13 +26,13 @@ roadmap/
 
 Exactly one [`reconciliation/open-issues-*.json`](reconciliation/) manifest defines the accepted open
 snapshot, issue dispositions, exact blocker edges, closed endpoint states, and approved mechanical
-priority policy. Intake rejects a snapshot mismatch or pull-request endpoint before writing any local
-roadmap file. Only exact `integrations.github.issue` mappings affect canonical roadmap identity,
-dependencies, or priority.
+priority policy. Intake requires `snapshotDigest` and rejects a missing or mismatched digest or
+pull-request endpoint before writing any local roadmap file. Only exact
+`integrations.github.issue` mappings affect canonical roadmap identity, dependencies, or priority.
 
 Run `reconcile github --dry-run` before intake. The .NET tool preserves the reviewed policy, canonical
-primary mappings, and explicit closure approvals, then derives every snapshot-owned list, parent-chain
-exit, exact blocker edge, endpoint state, and integrity count from field-selected GitHub GraphQL data.
+primary mappings, and explicit closure approvals, then derives every snapshot-owned disposition, exact
+blocker edge, endpoint state, and integrity count from field-selected GitHub GraphQL data.
 `reconcile github --apply` updates only this manifest. If a mapped active item closes without approval,
 the error names the exact `closedItemTransitions` entry and manifest path to edit.
 

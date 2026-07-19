@@ -5,7 +5,7 @@
   "title": "Implement first SharedKernel.IO primitive",
   "type": "feature",
   "status": "proposed",
-  "order": 268,
+  "order": 280,
   "theme": "repo-operations",
   "outcome": "GitHub issue #703 is canonically represented from the reconciliation manifest.",
   "scoring": {

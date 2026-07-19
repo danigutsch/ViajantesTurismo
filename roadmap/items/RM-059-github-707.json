@@ -5,7 +5,7 @@
   "title": "Specify custom IO analyzer rules",
   "type": "enabler",
   "status": "proposed",
-  "order": 145,
+  "order": 144,
   "theme": "repo-operations",
   "outcome": "GitHub issue #707 is canonically represented from the reconciliation manifest.",
   "scoring": {

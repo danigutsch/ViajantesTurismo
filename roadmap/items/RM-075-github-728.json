@@ -4,7 +4,7 @@
   "title": "Plan first document-generation vertical slice",
   "type": "enabler",
   "status": "proposed",
-  "order": 159,
+  "order": 158,
   "theme": "repo-operations",
   "outcome": "GitHub issue #728 is canonically represented from the reconciliation manifest.",
   "scoring": {

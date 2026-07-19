@@ -48,7 +48,7 @@ Pass `--root <path>` after the command to target another repository root.
 | `sync github --apply` | Creates requested issues, persists their issue numbers, adds labels, and configures Project membership using `GH_TOKEN` or `GITHUB_TOKEN`. |
 | `reconcile github --dry-run` | Default. Regenerates the manifest in memory from restricted structural GitHub metadata and previews the local manifest update. |
 | `reconcile github --apply` | Atomically updates only the existing reconciliation manifest; it never mutates GitHub or roadmap items. |
-| `intake github --dry-run` | Default. Reads the reconciliation snapshot's restricted GitHub metadata and previews local roadmap changes without writing. |
+| `intake github --dry-run` | Default. Requires a matching `snapshotDigest`, reads the current full structural reconciliation snapshot, and previews local roadmap changes without writing. |
 | `intake github --apply` | Writes only local roadmap items and `roadmap/order.json`; it never mutates GitHub. |
 
 ## Exit codes
@@ -72,19 +72,19 @@ GitHub reconciliation requires exactly one seed manifest at
 - `directCanonicalPrimaries`: exact existing issue-to-roadmap mappings that define canonical roots;
 - `closedItemTransitions`: explicit approvals to change mapped open items to closed support.
 
-The tool derives the snapshot date and commit, issue dispositions, parent-chain exits, structural roots,
+The tool derives the snapshot date and commit, issue dispositions, structural roots,
 exact blocker edges and endpoint states, and all integrity counts. When a mapped active item closes,
 the command fails with the exact `#issue -> RM-ID` entry and manifest path to add. It requests only issue
 number, title, state, labels, official parent/subissue relationships, exact blocker relationships, and
-commit metadata. It never requests bodies, comments, tokens, or mutations. A digest of allowed open-issue
-metadata lets intake reject changes made after reconciliation.
+commit metadata. It never requests bodies, comments, tokens, or mutations. Reconciliation writes the required
+`snapshotDigest`, which lets intake reject changes made after reconciliation.
 
-GitHub intake requires exactly one `roadmap/reconciliation/open-issues-*.json` manifest. It rejects
-snapshot drift and pull requests before writing. It reads only issue number, title, state, labels, and
-parent number; it never reads or persists bodies, comments, or tokens. Re-running a matching apply is
-idempotent. `closedItemTransitions` can transition an existing mapped open item to closed support while
-retaining its canonical roadmap item ID; without that explicit manifest declaration, intake rejects the
-transition.
+GitHub intake requires exactly one `roadmap/reconciliation/open-issues-*.json` manifest with
+`snapshotDigest`. It rejects a missing or mismatched digest and pull requests before writing. It reads the full
+structural reconciliation snapshot; it never reads or persists bodies, comments, or tokens. Re-running a
+matching apply is idempotent. `closedItemTransitions` can transition an existing mapped open item to closed
+support while retaining its canonical roadmap item ID; without that explicit manifest declaration, intake
+rejects the transition.
 
 An item with `"triage": "untriaged"` omits `order` and `scoring`. The tool accepts it as
 canonical identity and hierarchy, excludes it from executable priority queries and `order.json`,

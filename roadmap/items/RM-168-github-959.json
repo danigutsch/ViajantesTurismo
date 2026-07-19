@@ -5,7 +5,7 @@
   "title": "Add customer payment schedules and status",
   "type": "issue",
   "status": "proposed",
-  "order": 212,
+  "order": 211,
   "theme": "repo-operations",
   "outcome": "GitHub issue #959 is canonically represented from the reconciliation manifest.",
   "scoring": {

@@ -5,7 +5,7 @@
   "title": "Define vertical-slice module composition contracts",
   "type": "enabler",
   "status": "proposed",
-  "order": 148,
+  "order": 147,
   "theme": "repo-operations",
   "outcome": "GitHub issue #712 is canonically represented from the reconciliation manifest.",
   "scoring": {

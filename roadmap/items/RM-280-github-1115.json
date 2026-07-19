@@ -1,0 +1,38 @@
+{
+  "$schema": "../schema/roadmap-item.schema.json",
+  "id": "RM-280",
+  "parent": "RM-278",
+  "title": "Approve document and audit retention and legal-hold policy",
+  "type": "documentation",
+  "status": "proposed",
+  "order": 118,
+  "theme": "repo-operations",
+  "outcome": "GitHub issue #1115 is canonically represented from the reconciliation manifest.",
+  "scoring": {
+    "reach": 1,
+    "impact": 1,
+    "confidence": 0.1,
+    "effort": 2
+  },
+  "blockedBy": [],
+  "blocks": [],
+  "dependencies": [],
+  "tags": [],
+  "labels": [
+    "architecture",
+    "documentation",
+    "security",
+    "type: docs"
+  ],
+  "sources": [
+    {
+      "kind": "github-issue",
+      "reference": "#1115"
+    }
+  ],
+  "integrations": {
+    "github": {
+      "issue": 1115
+    }
+  }
+}

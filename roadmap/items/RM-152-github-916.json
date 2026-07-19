@@ -4,7 +4,7 @@
   "title": "Implement first DDD analyzer with code fix",
   "type": "feature",
   "status": "proposed",
-  "order": 203,
+  "order": 202,
   "theme": "repo-operations",
   "outcome": "GitHub issue #916 is canonically represented from the reconciliation manifest.",
   "scoring": {

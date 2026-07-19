@@ -4,7 +4,7 @@
   "title": "Decide media database and object-storage ownership boundaries",
   "type": "issue",
   "status": "proposed",
-  "order": 222,
+  "order": 218,
   "theme": "repo-operations",
   "outcome": "GitHub issue #980 is canonically represented from the reconciliation manifest.",
   "scoring": {

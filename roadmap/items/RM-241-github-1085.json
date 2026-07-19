@@ -5,7 +5,7 @@
   "title": "Govern ClamAV configuration-key constants",
   "type": "enabler",
   "status": "proposed",
-  "order": 261,
+  "order": 256,
   "theme": "repo-operations",
   "outcome": "GitHub issue #1085 is canonically represented from the reconciliation manifest.",
   "scoring": {

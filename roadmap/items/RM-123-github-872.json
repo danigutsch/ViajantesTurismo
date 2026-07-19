@@ -4,7 +4,7 @@
   "title": "Define endpoint metadata conventions for route diagrams",
   "type": "enabler",
   "status": "proposed",
-  "order": 184,
+  "order": 183,
   "theme": "repo-operations",
   "outcome": "GitHub issue #872 is canonically represented from the reconciliation manifest.",
   "scoring": {

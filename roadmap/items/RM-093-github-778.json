@@ -4,7 +4,7 @@
   "title": "Replace package-consumption project references with local NuGet packages",
   "type": "feature",
   "status": "proposed",
-  "order": 278,
+  "order": 290,
   "theme": "repo-operations",
   "outcome": "GitHub issue #778 is canonically represented from the reconciliation manifest.",
   "scoring": {

@@ -4,7 +4,7 @@
   "title": "add Admin contract tests for integration-event payload compatibility",
   "type": "issue",
   "status": "proposed",
-  "order": 165,
+  "order": 164,
   "theme": "repo-operations",
   "outcome": "GitHub issue #760 is canonically represented from the reconciliation manifest.",
   "scoring": {

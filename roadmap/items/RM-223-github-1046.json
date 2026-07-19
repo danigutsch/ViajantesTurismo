@@ -4,7 +4,7 @@
   "title": "Remove production sitemap validation retry after repository reorganization",
   "type": "issue",
   "status": "proposed",
-  "order": 324,
+  "order": 341,
   "theme": "repo-operations",
   "outcome": "GitHub issue #1046 is canonically represented from the reconciliation manifest.",
   "scoring": {

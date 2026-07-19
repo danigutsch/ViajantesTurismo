@@ -4,7 +4,7 @@
   "title": "Define test seams, taxonomy, and Admin AppHost ownership",
   "type": "epic",
   "status": "proposed",
-  "order": 323,
+  "order": 340,
   "theme": "repo-operations",
   "outcome": "GitHub issue #1022 is canonically represented from the reconciliation manifest.",
   "scoring": {

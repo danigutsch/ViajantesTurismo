@@ -5,7 +5,7 @@
   "title": "Align worker ownership to bounded contexts",
   "type": "enabler",
   "status": "proposed",
-  "order": 245,
+  "order": 241,
   "theme": "repo-operations",
   "outcome": "GitHub issue #1034 is canonically represented from the reconciliation manifest.",
   "scoring": {

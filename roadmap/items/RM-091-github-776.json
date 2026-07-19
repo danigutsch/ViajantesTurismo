@@ -4,7 +4,7 @@
   "title": "Add architecture tests for required project test coverage",
   "type": "enabler",
   "status": "proposed",
-  "order": 167,
+  "order": 166,
   "theme": "repo-operations",
   "outcome": "GitHub issue #776 is canonically represented from the reconciliation manifest.",
   "scoring": {

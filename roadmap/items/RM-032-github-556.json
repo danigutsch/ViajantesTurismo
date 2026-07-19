@@ -4,7 +4,7 @@
   "title": "Review TestAssert visibility and assertion wrapper design",
   "type": "issue",
   "status": "proposed",
-  "order": 129,
+  "order": 130,
   "theme": "repo-operations",
   "outcome": "GitHub issue #556 is canonically represented from the reconciliation manifest.",
   "scoring": {

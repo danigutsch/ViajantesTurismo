@@ -1,15 +1,17 @@
 {
   "repository": "danigutsch/ViajantesTurismo",
   "retrievedOn": "2026-07-18",
-  "repositoryCommit": "aa267dcada5ddca11951f8d32fa1692e21964707",
+  "repositoryCommit": "cae78428d0379a9628f43dea44525aff247b9846",
   "source": "GitHub GraphQL repository.issues snapshot with parent, subissue, label, and blocker metadata.",
   "ruleVersion": "structural-parent-subissue-blocker-v1",
   "mechanicalPriorityOverride": {
     "approvedOn": "2026-07-16",
     "scope": "Open issues without reviewed priority evidence.",
     "idAllocation": "RM-018 through RM-245 map the original 228 unmapped open issues; later snapshot additions use subsequent IDs in ascending issue-number order.",
+    "firstItemNumber": 18,
     "reach": 1,
-    "impact": "1 plus direct open blockers, capped at 5.",
+    "impact": "1 plus direct open blockers, capped at impactCap.",
+    "impactCap": 5,
     "confidence": 0.1,
     "effort": {
       "type: epic": 8,
@@ -29,7 +31,7 @@
     "Only exact GitHub blocker relationships may become canonical blockedBy and blocks links.",
     "Only an explicit closedItemTransitions entry can move an imported open item to closed support."
   ],
-  "snapshotDigest": "dc98526ab8191ad106bfed3d422b3bb1dd8d7c13f52a9dc4ae19c3cea973bb12",
+  "snapshotDigest": "aa1e6cf2e01ecd6790e173b4ddee144d845ab09f2e3ca7266a49015fc404b3bc",
   "blockerEdges": [
     {
       "blocker": 484,
@@ -206,6 +208,22 @@
     {
       "issue": 1073,
       "roadmapItem": "RM-233"
+    },
+    {
+      "issue": 1102,
+      "roadmapItem": "RM-259"
+    },
+    {
+      "issue": 1103,
+      "roadmapItem": "RM-260"
+    },
+    {
+      "issue": 1104,
+      "roadmapItem": "RM-261"
+    },
+    {
+      "issue": 1105,
+      "roadmapItem": "RM-262"
     }
   ],
   "directCanonicalPrimaries": [
@@ -261,8 +279,9 @@
     1076,
     1086,
     1098,
-    1102,
-    1107
+    1107,
+    1113,
+    1122
   ],
   "needsHuman": [
     394,
@@ -470,195 +489,31 @@
     1099,
     1100,
     1101,
-    1103,
-    1104,
-    1105,
     1106,
     1108,
     1109,
     1110,
-    1111
-  ],
-  "needsHumanParentChainExits": [
-    {
-      "issue": 394,
-      "parent": 387
-    },
-    {
-      "issue": 517,
-      "parent": 742
-    },
-    {
-      "issue": 556,
-      "parent": 738
-    },
-    {
-      "issue": 625,
-      "parent": 624
-    },
-    {
-      "issue": 656,
-      "parent": 653
-    },
-    {
-      "issue": 658,
-      "parent": 653
-    },
-    {
-      "issue": 659,
-      "parent": 653
-    },
-    {
-      "issue": 723,
-      "parent": 472
-    },
-    {
-      "issue": 724,
-      "parent": 472
-    },
-    {
-      "issue": 725,
-      "parent": 472
-    },
-    {
-      "issue": 726,
-      "parent": 472
-    },
-    {
-      "issue": 727,
-      "parent": 472
-    },
-    {
-      "issue": 728,
-      "parent": 472
-    },
-    {
-      "issue": 840,
-      "parent": 839
-    },
-    {
-      "issue": 841,
-      "parent": 839
-    },
-    {
-      "issue": 842,
-      "parent": 839
-    },
-    {
-      "issue": 843,
-      "parent": 839
-    },
-    {
-      "issue": 850,
-      "parent": 849
-    },
-    {
-      "issue": 851,
-      "parent": 849
-    },
-    {
-      "issue": 852,
-      "parent": 849
-    },
-    {
-      "issue": 853,
-      "parent": 849
-    },
-    {
-      "issue": 854,
-      "parent": 849
-    },
-    {
-      "issue": 879,
-      "parent": 796
-    },
-    {
-      "issue": 895,
-      "parent": 821
-    },
-    {
-      "issue": 912,
-      "parent": 911
-    },
-    {
-      "issue": 913,
-      "parent": 911
-    },
-    {
-      "issue": 914,
-      "parent": 911
-    },
-    {
-      "issue": 915,
-      "parent": 911
-    },
-    {
-      "issue": 916,
-      "parent": 911
-    },
-    {
-      "issue": 936,
-      "parent": 472
-    },
-    {
-      "issue": 941,
-      "parent": 472
-    },
-    {
-      "issue": 942,
-      "parent": 472
-    },
-    {
-      "issue": 943,
-      "parent": 472
-    },
-    {
-      "issue": 944,
-      "parent": 472
-    },
-    {
-      "issue": 945,
-      "parent": 472
-    },
-    {
-      "issue": 954,
-      "parent": 472
-    },
-    {
-      "issue": 955,
-      "parent": 472
-    },
-    {
-      "issue": 989,
-      "parent": 805
-    },
-    {
-      "issue": 1054,
-      "parent": 458
-    },
-    {
-      "issue": 1093,
-      "parent": 969
-    },
-    {
-      "issue": 1094,
-      "parent": 969
-    },
-    {
-      "issue": 1095,
-      "parent": 969
-    },
-    {
-      "issue": 1097,
-      "parent": 969
-    }
+    1111,
+    1114,
+    1115,
+    1116,
+    1117,
+    1118,
+    1119,
+    1121,
+    1123,
+    1124,
+    1125,
+    1126,
+    1127,
+    1128
   ],
   "integrity": {
-    "expectedIssueCount": 246,
+    "expectedIssueCount": 257,
     "expectedDirectCanonicalPrimaryCount": 6,
     "expectedChildrenOfCanonicalPrimaryCount": 0,
-    "expectedUnmappedStructuralRootCount": 27,
-    "expectedNeedsHumanCount": 213,
+    "expectedUnmappedStructuralRootCount": 28,
+    "expectedNeedsHumanCount": 223,
     "expectedBlockerEdgeCount": 23,
     "dispositionsAreDisjoint": true,
     "dispositionsCoverSnapshot": true

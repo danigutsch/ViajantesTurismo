@@ -4,7 +4,7 @@
   "title": "Epic: standardize test assertions behind SharedKernel wrappers",
   "type": "epic",
   "status": "proposed",
-  "order": 309,
+  "order": 326,
   "theme": "repo-operations",
   "outcome": "GitHub issue #512 is canonically represented from the reconciliation manifest.",
   "scoring": {

@@ -4,7 +4,7 @@
   "title": "Add analyzer for runtime-code route handler annotations",
   "type": "issue",
   "status": "proposed",
-  "order": 251,
+  "order": 247,
   "theme": "repo-operations",
   "outcome": "GitHub issue #1057 is canonically represented from the reconciliation manifest.",
   "scoring": {

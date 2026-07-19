@@ -4,7 +4,7 @@
   "title": "Add opt-in SeaweedFS Filer UI companion endpoint",
   "type": "issue",
   "status": "proposed",
-  "order": 228,
+  "order": 224,
   "theme": "repo-operations",
   "outcome": "GitHub issue #990 is canonically represented from the reconciliation manifest.",
   "scoring": {

@@ -4,7 +4,7 @@
   "title": "Add analyzer and code fix for conditional ShouldBe assertions",
   "type": "enabler",
   "status": "proposed",
-  "order": 241,
+  "order": 237,
   "theme": "repo-operations",
   "outcome": "GitHub issue #1029 is canonically represented from the reconciliation manifest.",
   "scoring": {

@@ -4,7 +4,7 @@
   "title": "test(analyzers): forbid parenthesized Should assertions",
   "type": "issue",
   "status": "proposed",
-  "order": 265,
+  "order": 260,
   "theme": "repo-operations",
   "outcome": "GitHub issue #1091 is canonically represented from the reconciliation manifest.",
   "scoring": {

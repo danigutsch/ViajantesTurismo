@@ -4,7 +4,7 @@
   "title": "Plan vertical feature-slice migration across the repository",
   "type": "epic",
   "status": "proposed",
-  "order": 311,
+  "order": 328,
   "theme": "repo-operations",
   "outcome": "GitHub issue #682 is canonically represented from the reconciliation manifest.",
   "scoring": {

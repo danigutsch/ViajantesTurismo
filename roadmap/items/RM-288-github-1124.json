@@ -1,0 +1,41 @@
+{
+  "$schema": "../schema/roadmap-item.schema.json",
+  "id": "RM-288",
+  "parent": "RM-285",
+  "title": "[Issue]: Decouple integration events from SharedKernel mediator",
+  "type": "enabler",
+  "status": "proposed",
+  "order": 273,
+  "theme": "repo-operations",
+  "outcome": "GitHub issue #1124 is canonically represented from the reconciliation manifest.",
+  "scoring": {
+    "reach": 1,
+    "impact": 1,
+    "confidence": 0.1,
+    "effort": 3
+  },
+  "blockedBy": [],
+  "blocks": [],
+  "dependencies": [],
+  "tags": [],
+  "labels": [
+    "architecture",
+    "area: sharedkernel",
+    "catalog",
+    "infrastructure",
+    "risk: breaking-change",
+    "sharedkernel",
+    "type: enabler"
+  ],
+  "sources": [
+    {
+      "kind": "github-issue",
+      "reference": "#1124"
+    }
+  ],
+  "integrations": {
+    "github": {
+      "issue": 1124
+    }
+  }
+}

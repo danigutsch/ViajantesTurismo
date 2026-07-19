@@ -5,7 +5,7 @@
   "title": "Compile all changed buildable projects in fork PRs",
   "type": "enabler",
   "status": "proposed",
-  "order": 257,
+  "order": 252,
   "theme": "repo-operations",
   "outcome": "GitHub issue #1079 is canonically represented from the reconciliation manifest.",
   "scoring": {

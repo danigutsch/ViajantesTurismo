@@ -5,7 +5,7 @@
   "title": "Isolate Branding persistence in a dedicated PostgreSQL schema",
   "type": "enabler",
   "status": "proposed",
-  "order": 231,
+  "order": 227,
   "theme": "repo-operations",
   "outcome": "GitHub issue #1010 is canonically represented from the reconciliation manifest.",
   "scoring": {

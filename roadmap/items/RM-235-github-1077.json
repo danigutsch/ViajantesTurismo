@@ -5,7 +5,7 @@
   "title": "Fail Sonar analysis on unexpected file parse warnings",
   "type": "issue",
   "status": "proposed",
-  "order": 117,
+  "order": 116,
   "theme": "repo-operations",
   "outcome": "GitHub issue #1077 is canonically represented from the reconciliation manifest.",
   "scoring": {

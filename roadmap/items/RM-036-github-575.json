@@ -4,7 +4,7 @@
   "title": "Design audit functionality for sensitive business actions",
   "type": "issue",
   "status": "proposed",
-  "order": 135,
+  "order": 134,
   "theme": "repo-operations",
   "outcome": "GitHub issue #575 is canonically represented from the reconciliation manifest.",
   "scoring": {

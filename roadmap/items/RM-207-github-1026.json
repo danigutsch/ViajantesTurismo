@@ -5,7 +5,7 @@
   "title": "Standardize SharedKernel test project ownership",
   "type": "enabler",
   "status": "proposed",
-  "order": 238,
+  "order": 234,
   "theme": "repo-operations",
   "outcome": "GitHub issue #1026 is canonically represented from the reconciliation manifest.",
   "scoring": {

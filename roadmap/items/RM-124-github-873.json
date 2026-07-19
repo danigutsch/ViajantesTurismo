@@ -4,7 +4,7 @@
   "title": "Expose AppHost resource metadata for runtime diagrams",
   "type": "enabler",
   "status": "proposed",
-  "order": 185,
+  "order": 184,
   "theme": "repo-operations",
   "outcome": "GitHub issue #873 is canonically represented from the reconciliation manifest.",
   "scoring": {

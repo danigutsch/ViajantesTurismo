@@ -5,7 +5,7 @@
   "title": "[Issue]: Assess remaining xUnit v3 integration-host seams",
   "type": "enabler",
   "status": "proposed",
-  "order": 346,
+  "order": 266,
   "theme": "repo-operations",
   "outcome": "GitHub issue #1109 is canonically represented from the reconciliation manifest.",
   "scoring": {

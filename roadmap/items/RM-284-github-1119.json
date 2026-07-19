@@ -1,0 +1,38 @@
+{
+  "$schema": "../schema/roadmap-item.schema.json",
+  "id": "RM-284",
+  "parent": "RM-278",
+  "title": "Classify production log fields for privacy redaction",
+  "type": "enabler",
+  "status": "proposed",
+  "order": 271,
+  "theme": "repo-operations",
+  "outcome": "GitHub issue #1119 is canonically represented from the reconciliation manifest.",
+  "scoring": {
+    "reach": 1,
+    "impact": 1,
+    "confidence": 0.1,
+    "effort": 3
+  },
+  "blockedBy": [],
+  "blocks": [],
+  "dependencies": [],
+  "tags": [],
+  "labels": [
+    "observability",
+    "security",
+    "sharedkernel",
+    "type: enabler"
+  ],
+  "sources": [
+    {
+      "kind": "github-issue",
+      "reference": "#1119"
+    }
+  ],
+  "integrations": {
+    "github": {
+      "issue": 1119
+    }
+  }
+}

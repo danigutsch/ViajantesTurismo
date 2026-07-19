@@ -4,7 +4,7 @@
   "title": "Improve real upload and import stream performance",
   "type": "epic",
   "status": "proposed",
-  "order": 313,
+  "order": 330,
   "theme": "repo-operations",
   "outcome": "GitHub issue #696 is canonically represented from the reconciliation manifest.",
   "scoring": {

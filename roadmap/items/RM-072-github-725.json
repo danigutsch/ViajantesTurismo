@@ -4,7 +4,7 @@
   "title": "Define PDF generation and accessibility requirements",
   "type": "enabler",
   "status": "proposed",
-  "order": 156,
+  "order": 155,
   "theme": "repo-operations",
   "outcome": "GitHub issue #725 is canonically represented from the reconciliation manifest.",
   "scoring": {

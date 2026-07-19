@@ -4,7 +4,7 @@
   "title": "Enforce thin file-based .NET tools",
   "type": "issue",
   "status": "proposed",
-  "order": 242,
+  "order": 238,
   "theme": "repo-operations",
   "outcome": "GitHub issue #1031 is canonically represented from the reconciliation manifest.",
   "scoring": {

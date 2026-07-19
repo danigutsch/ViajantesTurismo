@@ -44,6 +44,11 @@
       "enabled": true,
       "repository": "danigutsch/ViajantesTurismo",
       "sourceOfTruth": "projection",
+      "intake": {
+        "theme": "repo-operations",
+        "openStatus": "proposed",
+        "closedStatus": "done"
+      },
       "projectV2": {
         "id": "PVT_kwHOBRDnvc4BdSvO",
         "owner": "danigutsch",

@@ -4,7 +4,7 @@
   "title": "Evaluate FusionCache for distributed caching",
   "type": "enabler",
   "status": "proposed",
-  "order": 194,
+  "order": 193,
   "theme": "repo-operations",
   "outcome": "GitHub issue #895 is canonically represented from the reconciliation manifest.",
   "scoring": {

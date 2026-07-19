@@ -4,7 +4,7 @@
   "title": "Evaluate SeaweedFS TLS and OIDC S3 identity integration",
   "type": "issue",
   "status": "proposed",
-  "order": 220,
+  "order": 216,
   "theme": "repo-operations",
   "outcome": "GitHub issue #978 is canonically represented from the reconciliation manifest.",
   "scoring": {

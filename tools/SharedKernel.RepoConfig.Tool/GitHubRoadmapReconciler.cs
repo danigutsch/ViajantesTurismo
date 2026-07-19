@@ -9,7 +9,7 @@ internal sealed class GitHubRoadmapReconciler
     private const string Source = "GitHub GraphQL repository.issues snapshot with parent, subissue, label, and blocker metadata.";
 
     private readonly HttpClient? _httpClient;
-    private readonly RoadmapProject _project;
+    private RoadmapProject _project;
 
     internal GitHubRoadmapReconciler(RoadmapProject project, HttpClient? httpClient)
     {
@@ -34,6 +34,9 @@ internal sealed class GitHubRoadmapReconciler
 
     private async Task<ReconcilePlan> CreatePlan(CancellationToken cancellationToken)
     {
+        var inputSnapshot = RoadmapWriteInputSnapshot.Capture(_project.RootPath);
+        _project = RoadmapProject.Load(_project.RootPath);
+        inputSnapshot.Verify();
         var repository = GetGitHubRepository();
         var seed = await LoadSeed(cancellationToken).ConfigureAwait(false);
         if (!string.Equals(seed.Reconciliation.Repository, repository, StringComparison.OrdinalIgnoreCase))
@@ -46,8 +49,8 @@ internal sealed class GitHubRoadmapReconciler
         var client = httpClient is null
             ? throw new InvalidOperationException("GitHub reconciliation could not create an HTTP client.")
             : new GitHubRoadmapReconcileClient(httpClient);
-        var snapshot = await client.ReadSnapshot(repository, cancellationToken).ConfigureAwait(false);
-        var currentContent = await File.ReadAllTextAsync(seed.ManifestPath, cancellationToken).ConfigureAwait(false);
+        var snapshot = await client.ReadSnapshot(repository, seed.Reconciliation.GetRequiredIssueNumbers(_project), cancellationToken).ConfigureAwait(false);
+        var currentContent = seed.SourceContent;
         var content = CreateManifestContent(seed, repository, snapshot, seed.RetrievedOn);
         if (!string.Equals(currentContent, content, StringComparison.Ordinal))
         {
@@ -55,7 +58,7 @@ internal sealed class GitHubRoadmapReconciler
             content = CreateManifestContent(seed, repository, snapshot, retrievedOn);
         }
 
-        return new ReconcilePlan(seed.ManifestPath, content, string.Equals(currentContent, content, StringComparison.Ordinal));
+        return new ReconcilePlan(_project.RootPath, seed.ManifestPath, content, currentContent, inputSnapshot);
     }
 
     private string GetGitHubRepository()
@@ -82,7 +85,8 @@ internal sealed class GitHubRoadmapReconciler
         }
 
         var manifestPath = manifests[0];
-        using var document = JsonDocument.Parse(await File.ReadAllTextAsync(manifestPath, cancellationToken).ConfigureAwait(false));
+        var manifestContent = await File.ReadAllTextAsync(manifestPath, cancellationToken).ConfigureAwait(false);
+        using var document = JsonDocument.Parse(manifestContent);
         var root = document.RootElement;
         if (!root.TryGetProperty("closedItemTransitions", out var closedItemTransitions)
             || closedItemTransitions.ValueKind != JsonValueKind.Array)
@@ -90,7 +94,7 @@ internal sealed class GitHubRoadmapReconciler
             throw new InvalidOperationException(RequiredInputs);
         }
 
-        var reconciliation = GitHubRoadmapReconciliation.Load(_project.RootPath);
+        var reconciliation = GitHubRoadmapReconciliation.Parse(manifestPath, manifestContent);
         return new ReconcileSeed(
             reconciliation,
             manifestPath,
@@ -98,7 +102,8 @@ internal sealed class GitHubRoadmapReconciler
             GetRequiredArray(root, "rules").Clone(),
             GetRequiredString(root, "ruleVersion"),
             GetNullableString(root, "repositoryCommit"),
-            GetRequiredString(root, "retrievedOn"));
+            GetRequiredString(root, "retrievedOn"),
+            manifestContent);
     }
 
     private string CreateManifestContent(ReconcileSeed seed, string repository, GitHubRoadmapReconcileSnapshot snapshot, string retrievedOn)
@@ -115,6 +120,11 @@ internal sealed class GitHubRoadmapReconciler
         var dispositions = DeriveDispositions(openIssues, issuesByNumber, directCanonicalIssueNumbers, repository);
         var blockerEdges = DeriveBlockerEdges(snapshot.Issues, issuesByNumber, repository);
         var repositoryCommit = snapshot.RepositoryCommit ?? seed.RepositoryCommit;
+        var digestIssueNumbers = _project.GetGitHubIssueNumbers()
+            .Concat(seed.Reconciliation.ClosedItemTransitions.Keys)
+            .Concat(blockerEdges.Select(edge => edge.Blocker))
+            .Concat(blockerEdges.Select(edge => edge.Blocked))
+            .ToHashSet();
 
         using var stream = new MemoryStream();
         using (var writer = new Utf8JsonWriter(stream, new JsonWriterOptions { Indented = true }))
@@ -133,14 +143,13 @@ internal sealed class GitHubRoadmapReconciler
             seed.MechanicalPriorityOverride.WriteTo(writer);
             writer.WritePropertyName("rules");
             seed.Rules.WriteTo(writer);
-            writer.WriteString("snapshotDigest", GitHubIssueSnapshotDigest.Compute(snapshot.Issues));
+            writer.WriteString("snapshotDigest", GitHubIssueSnapshotDigest.ComputeForOpenAndRequiredIssues(snapshot.Issues, digestIssueNumbers, repository));
             WriteBlockerEdges(writer, blockerEdges);
             WriteClosedTransitions(writer, seed.Reconciliation.ClosedItemTransitions);
             WriteDirectCanonicalPrimaries(writer, directCanonicalPrimaries);
             WriteIssueNumbers(writer, "childrenOfCanonicalPrimaries", dispositions.ChildrenOfCanonicalPrimaries);
             WriteIssueNumbers(writer, "unmappedStructuralRoots", dispositions.UnmappedStructuralRoots);
             WriteIssueNumbers(writer, "needsHuman", dispositions.NeedsHuman);
-            WriteParentChainExits(writer, dispositions.ParentChainExits);
             WriteIntegrity(writer, openIssues.Length, directCanonicalPrimaries.Length, dispositions, blockerEdges.Length);
             writer.WriteEndObject();
         }
@@ -185,7 +194,6 @@ internal sealed class GitHubRoadmapReconciler
         List<int> children = [];
         List<int> structuralRoots = [];
         List<int> needsHuman = [];
-        Dictionary<int, int> parentChainExits = [];
         foreach (var issue in openIssues)
         {
             if (directCanonicalIssueNumbers.Contains(issue.Number))
@@ -193,17 +201,11 @@ internal sealed class GitHubRoadmapReconciler
                 continue;
             }
 
-            var parentAnalysis = AnalyzeParent(issue, issuesByNumber, directCanonicalIssueNumbers, repository);
-            if (parentAnalysis.ReachesCanonicalPrimary)
+            if (ReachesCanonicalPrimary(issue, issuesByNumber, directCanonicalIssueNumbers, repository))
             {
                 children.Add(issue.Number);
             }
-            else if (parentAnalysis.ExitParentNumber is int exitParentNumber)
-            {
-                needsHuman.Add(issue.Number);
-                parentChainExits.Add(issue.Number, exitParentNumber);
-            }
-            else if (!parentAnalysis.HasOpenParent && IsStructuralRoot(issue))
+            else if (issue.Parent is null && IsStructuralRoot(issue, repository))
             {
                 structuralRoots.Add(issue.Number);
             }
@@ -213,10 +215,10 @@ internal sealed class GitHubRoadmapReconciler
             }
         }
 
-        return new ReconcileDispositions(children, structuralRoots, needsHuman, parentChainExits);
+        return new ReconcileDispositions(children, structuralRoots, needsHuman);
     }
 
-    private static ParentAnalysis AnalyzeParent(
+    private static bool ReachesCanonicalPrimary(
         GitHubRoadmapReconcileIssue issue,
         Dictionary<int, GitHubRoadmapReconcileIssue> issuesByNumber,
         HashSet<int> directCanonicalIssueNumbers,
@@ -224,14 +226,13 @@ internal sealed class GitHubRoadmapReconciler
     {
         HashSet<int> seen = [issue.Number];
         var parent = issue.Parent;
-        var hasOpenParent = false;
         while (parent is not null)
         {
             if (!string.Equals(parent.Repository, repository, StringComparison.OrdinalIgnoreCase)
                 || !string.Equals(parent.State, "OPEN", StringComparison.Ordinal)
                 || !issuesByNumber.TryGetValue(parent.Number, out var parentIssue))
             {
-                return new ParentAnalysis(false, hasOpenParent, parent.Number);
+                return false;
             }
 
             if (!seen.Add(parent.Number))
@@ -239,28 +240,47 @@ internal sealed class GitHubRoadmapReconciler
                 throw new InvalidOperationException("GitHub reconciliation parent hierarchy contains a cycle.");
             }
 
-            hasOpenParent = true;
             if (directCanonicalIssueNumbers.Contains(parent.Number))
             {
-                return new ParentAnalysis(true, true, null);
+                return true;
             }
 
             parent = parentIssue.Parent;
         }
 
-        return new ParentAnalysis(false, hasOpenParent, null);
+        return false;
     }
 
-    private static bool IsStructuralRoot(GitHubRoadmapReconcileIssue issue) => issue.Labels.Contains("type: epic", StringComparer.Ordinal)
-        || issue.SubIssues.Count >= 2;
+    private static bool IsStructuralRoot(GitHubRoadmapReconcileIssue issue, string repository) =>
+        issue.Labels.Contains("type: epic", StringComparer.Ordinal)
+        || issue.SubIssues.Count(relation => relation.State == "OPEN"
+            && string.Equals(relation.Repository, repository, StringComparison.OrdinalIgnoreCase)) >= 2;
 
-    private static GitHubRoadmapBlockerEdge[] DeriveBlockerEdges(
+    internal static GitHubRoadmapBlockerEdge[] DeriveBlockerEdges(
         IReadOnlyList<GitHubRoadmapReconcileIssue> issues,
         Dictionary<int, GitHubRoadmapReconcileIssue> issuesByNumber,
         string repository)
     {
-        var blocking = issues.SelectMany(issue => issue.Blocking.Select(relation => (Blocker: issue.Number, Blocked: relation.Number))).ToHashSet();
-        var blockedBy = issues.SelectMany(issue => issue.BlockedBy.Select(relation => (Blocker: relation.Number, Blocked: issue.Number))).ToHashSet();
+        if (issues.SelectMany(issue => issue.BlockedBy.Concat(issue.Blocking))
+            .Any(relation => !string.Equals(relation.Repository, repository, StringComparison.OrdinalIgnoreCase)))
+        {
+            throw new InvalidOperationException("GitHub reconciliation does not support cross-repository blocker metadata.");
+        }
+
+        foreach (var relation in issues.SelectMany(issue => issue.BlockedBy.Concat(issue.Blocking)))
+        {
+            ResolveLocalRelation(relation, repository, issuesByNumber);
+        }
+
+        var includedIssueNumbers = issuesByNumber.Keys.ToHashSet();
+        var blocking = issues.SelectMany(issue => issue.Blocking
+            .Where(relation => includedIssueNumbers.Contains(relation.Number)
+                && string.Equals(relation.Repository, repository, StringComparison.OrdinalIgnoreCase))
+            .Select(relation => (Blocker: issue.Number, Blocked: relation.Number))).ToHashSet();
+        var blockedBy = issues.SelectMany(issue => issue.BlockedBy
+            .Where(relation => includedIssueNumbers.Contains(relation.Number)
+                && string.Equals(relation.Repository, repository, StringComparison.OrdinalIgnoreCase))
+            .Select(relation => (Blocker: relation.Number, Blocked: issue.Number))).ToHashSet();
         if (!blocking.SetEquals(blockedBy))
         {
             throw new InvalidOperationException("GitHub reconciliation blocker metadata is inconsistent.");
@@ -303,26 +323,55 @@ internal sealed class GitHubRoadmapReconciler
     {
         foreach (var issue in issues)
         {
-            if (issue.Parent is not null
-                && (!string.Equals(issue.Parent.Repository, repository, StringComparison.OrdinalIgnoreCase)
-                    || !issuesByNumber.TryGetValue(issue.Parent.Number, out var parent)
-                    || !parent.SubIssues.Any(subIssue => subIssue.Number == issue.Number
-                        && string.Equals(subIssue.Repository, repository, StringComparison.OrdinalIgnoreCase))))
+            if (issue.Parent is { } parentRelation
+                && ResolveLocalRelation(parentRelation, repository, issuesByNumber) is { } parent
+                && !parent.SubIssues.Any(subIssue => subIssue.Number == issue.Number
+                    && string.Equals(subIssue.Repository, repository, StringComparison.OrdinalIgnoreCase)
+                    && string.Equals(subIssue.State, issue.State, StringComparison.Ordinal)))
             {
-                throw new InvalidOperationException("GitHub reconciliation parent metadata is inconsistent or cross-repository.");
+                throw new InvalidOperationException("GitHub reconciliation parent metadata is inconsistent.");
             }
 
             foreach (var subIssue in issue.SubIssues)
             {
-                if (!string.Equals(subIssue.Repository, repository, StringComparison.OrdinalIgnoreCase)
-                    || !issuesByNumber.TryGetValue(subIssue.Number, out var child)
-                    || child.Parent is null
-                    || child.Parent.Number != issue.Number)
+                if (ResolveLocalRelation(subIssue, repository, issuesByNumber) is { } child
+                    && (child.Parent is null
+                        || child.Parent.Number != issue.Number
+                        || !string.Equals(child.Parent.Repository, repository, StringComparison.OrdinalIgnoreCase)
+                        || !string.Equals(child.Parent.State, issue.State, StringComparison.Ordinal)))
                 {
-                    throw new InvalidOperationException("GitHub reconciliation subissue metadata is inconsistent or cross-repository.");
+                    throw new InvalidOperationException("GitHub reconciliation subissue metadata is inconsistent.");
                 }
             }
         }
+    }
+
+    private static GitHubRoadmapReconcileIssue? ResolveLocalRelation(
+        GitHubRoadmapReconcileRelation relation,
+        string repository,
+        Dictionary<int, GitHubRoadmapReconcileIssue> issuesByNumber)
+    {
+        if (!string.Equals(relation.Repository, repository, StringComparison.OrdinalIgnoreCase))
+        {
+            return null;
+        }
+
+        if (!issuesByNumber.TryGetValue(relation.Number, out var target))
+        {
+            if (string.Equals(relation.State, "OPEN", StringComparison.Ordinal))
+            {
+                throw new InvalidOperationException($"GitHub reconciliation local open relationship target is missing: #{relation.Number}.");
+            }
+
+            return null;
+        }
+
+        if (!string.Equals(relation.State, target.State, StringComparison.Ordinal))
+        {
+            throw new InvalidOperationException($"GitHub reconciliation relationship state is inconsistent for issue #{relation.Number}.");
+        }
+
+        return target;
     }
 
     private static void WriteBlockerEdges(Utf8JsonWriter writer, IReadOnlyList<GitHubRoadmapBlockerEdge> blockerEdges)
@@ -384,21 +433,6 @@ internal sealed class GitHubRoadmapReconciler
         writer.WriteEndArray();
     }
 
-    private static void WriteParentChainExits(Utf8JsonWriter writer, IReadOnlyDictionary<int, int> parentChainExits)
-    {
-        writer.WritePropertyName("needsHumanParentChainExits");
-        writer.WriteStartArray();
-        foreach (var (issueNumber, parentNumber) in parentChainExits.OrderBy(exit => exit.Key))
-        {
-            writer.WriteStartObject();
-            writer.WriteNumber("issue", issueNumber);
-            writer.WriteNumber("parent", parentNumber);
-            writer.WriteEndObject();
-        }
-
-        writer.WriteEndArray();
-    }
-
     private static void WriteIntegrity(Utf8JsonWriter writer, int openIssueCount, int directCanonicalPrimaryCount, ReconcileDispositions dispositions, int blockerEdgeCount)
     {
         writer.WritePropertyName("integrity");
@@ -455,33 +489,23 @@ internal sealed class GitHubRoadmapReconciler
         ? property.GetString()
         : null;
 
-    private sealed class ReconcilePlan(string manifestPath, string content, bool matches)
+    private sealed class ReconcilePlan(
+        string rootPath,
+        string manifestPath,
+        string content,
+        string expectedContent,
+        RoadmapWriteInputSnapshot inputSnapshot)
     {
-        public void Apply()
-        {
-            if (matches)
-            {
-                return;
-            }
+        private bool Matches => string.Equals(expectedContent, content, StringComparison.Ordinal);
 
-            var temporaryPath = manifestPath + ".tmp";
-            try
-            {
-                File.WriteAllText(temporaryPath, content);
-                File.Move(temporaryPath, manifestPath, overwrite: true);
-            }
-            finally
-            {
-                if (File.Exists(temporaryPath))
-                {
-                    File.Delete(temporaryPath);
-                }
-            }
-        }
+        public void Apply() => RollbackFileWriteBatch.Apply(
+            rootPath,
+            Matches ? [] : [new AtomicFileWrite(manifestPath, content, expectedContent)],
+            inputSnapshot.Verify);
 
         public IReadOnlyList<string> Messages(bool dryRun)
         {
-            if (matches)
+            if (Matches)
             {
                 return [dryRun
                     ? "dry-run: reconciliation manifest already matches the GitHub snapshot."
@@ -495,13 +519,10 @@ internal sealed class GitHubRoadmapReconciler
         }
     }
 
-    private sealed record ParentAnalysis(bool ReachesCanonicalPrimary, bool HasOpenParent, int? ExitParentNumber);
-
     private sealed record ReconcileDispositions(
         IReadOnlyList<int> ChildrenOfCanonicalPrimaries,
         IReadOnlyList<int> UnmappedStructuralRoots,
-        IReadOnlyList<int> NeedsHuman,
-        IReadOnlyDictionary<int, int> ParentChainExits);
+        IReadOnlyList<int> NeedsHuman);
 
     private sealed record ReconcileSeed(
         GitHubRoadmapReconciliation Reconciliation,
@@ -510,5 +531,6 @@ internal sealed class GitHubRoadmapReconciler
         JsonElement Rules,
         string RuleVersion,
         string? RepositoryCommit,
-        string RetrievedOn);
+        string RetrievedOn,
+        string SourceContent);
 }

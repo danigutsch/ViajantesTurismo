@@ -30,8 +30,9 @@ Add a specialized assertion only when a current semantic assertion shape needs a
 host-neutral API. `ShouldBeOneOf` is the current example. When no appropriate specialized assertion
 exists, assign the target to a meaningfully named local before asserting it.
 
-Future test-analyzer enforcement is tracked separately. This ADR establishes the policy; it does not
-introduce the analyzer rule itself.
+Analyzer enforcement is required as an immediate follow-up. It should report a parenthesized receiver
+followed by `Should*`, but it must not offer a generic code fix. Choosing a specialized assertion or a
+meaningfully named local requires test-specific intent.
 
 ## Consequences
 
@@ -44,8 +45,7 @@ introduce the analyzer rule itself.
 ### Negative
 
 - Some tests need a local variable or a new semantic assertion instead of a compact expression.
-- Existing parenthesized `Should*` calls require incremental migration before analyzer enforcement can
-  be enabled repository-wide.
+- Existing parenthesized `Should*` calls require intentional migration when analyzer enforcement lands.
 
 ## Alternatives
 
@@ -53,10 +53,11 @@ introduce the analyzer rule itself.
 
 Rejected. The syntax commonly hides the assertion target and encourages generic boolean assertions.
 
-### Require an analyzer immediately
+### Delay analyzer enforcement
 
-Rejected. Existing tests need an intentional migration path, and choosing a semantic assertion or local
-variable requires context that an automatic code fix cannot safely infer.
+Rejected. The syntax rule should be enforced promptly so new opaque assertions do not accumulate.
+Existing violations should be migrated intentionally; no generic code fix should guess whether a
+specialized assertion or a named local best expresses the test contract.
 
 ### Add a wrapper for every boolean expression shape
 

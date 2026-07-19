@@ -5,7 +5,7 @@
   "title": "Define PostgreSQL index-health version support",
   "type": "enabler",
   "status": "proposed",
-  "order": 249,
+  "order": 245,
   "theme": "repo-operations",
   "outcome": "GitHub issue #1052 is canonically represented from the reconciliation manifest.",
   "scoring": {

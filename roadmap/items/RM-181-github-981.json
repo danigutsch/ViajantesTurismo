@@ -4,7 +4,7 @@
   "title": "[Bug]: Harden test naming keyword casing and diagnostic IDs",
   "type": "issue",
   "status": "proposed",
-  "order": 223,
+  "order": 219,
   "theme": "repo-operations",
   "outcome": "GitHub issue #981 is canonically represented from the reconciliation manifest.",
   "scoring": {

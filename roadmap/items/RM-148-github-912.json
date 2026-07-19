@@ -4,7 +4,7 @@
   "title": "Research DDD analyzer rule catalog",
   "type": "enabler",
   "status": "proposed",
-  "order": 202,
+  "order": 201,
   "theme": "repo-operations",
   "outcome": "GitHub issue #912 is canonically represented from the reconciliation manifest.",
   "scoring": {

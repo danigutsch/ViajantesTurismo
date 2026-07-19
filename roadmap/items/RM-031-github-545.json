@@ -4,7 +4,7 @@
   "title": "Enforce generic type and file naming conventions",
   "type": "issue",
   "status": "proposed",
-  "order": 128,
+  "order": 129,
   "theme": "repo-operations",
   "outcome": "GitHub issue #545 is canonically represented from the reconciliation manifest.",
   "scoring": {

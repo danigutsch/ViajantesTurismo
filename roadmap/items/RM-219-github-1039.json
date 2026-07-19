@@ -5,7 +5,7 @@
   "title": "feat(aspire): validate MCP discovery for AppHost resources",
   "type": "feature",
   "status": "proposed",
-  "order": 305,
+  "order": 316,
   "theme": "repo-operations",
   "outcome": "GitHub issue #1039 is canonically represented from the reconciliation manifest.",
   "scoring": {

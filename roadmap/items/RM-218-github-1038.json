@@ -5,7 +5,7 @@
   "title": "chore(mcp): configure pinned repository MCP launchers",
   "type": "enabler",
   "status": "proposed",
-  "order": 246,
+  "order": 242,
   "theme": "repo-operations",
   "outcome": "GitHub issue #1038 is canonically represented from the reconciliation manifest.",
   "scoring": {

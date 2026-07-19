@@ -4,7 +4,7 @@
   "title": "Define documentation standards and required sections",
   "type": "enabler",
   "status": "proposed",
-  "order": 181,
+  "order": 180,
   "theme": "repo-operations",
   "outcome": "GitHub issue #851 is canonically represented from the reconciliation manifest.",
   "scoring": {

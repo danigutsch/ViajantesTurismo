@@ -5,7 +5,7 @@
   "title": "Design SharedKernel HTTP result client library",
   "type": "issue",
   "status": "proposed",
-  "order": 122,
+  "order": 124,
   "theme": "repo-operations",
   "outcome": "GitHub issue #488 is canonically represented from the reconciliation manifest.",
   "scoring": {

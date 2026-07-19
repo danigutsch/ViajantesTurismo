@@ -5,7 +5,7 @@
   "title": "Establish a safe Npgsql metrics baseline",
   "type": "enabler",
   "status": "proposed",
-  "order": 225,
+  "order": 221,
   "theme": "repo-operations",
   "outcome": "GitHub issue #985 is canonically represented from the reconciliation manifest.",
   "scoring": {

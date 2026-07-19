@@ -4,7 +4,7 @@
   "title": "Assess code fix support for xUnit assertion analyzer",
   "type": "issue",
   "status": "proposed",
-  "order": 124,
+  "order": 126,
   "theme": "repo-operations",
   "outcome": "GitHub issue #517 is canonically represented from the reconciliation manifest.",
   "scoring": {

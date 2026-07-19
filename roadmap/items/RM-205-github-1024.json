@@ -5,7 +5,7 @@
   "title": "Document system and test seams",
   "type": "documentation",
   "status": "proposed",
-  "order": 115,
+  "order": 114,
   "theme": "repo-operations",
   "outcome": "GitHub issue #1024 is canonically represented from the reconciliation manifest.",
   "scoring": {

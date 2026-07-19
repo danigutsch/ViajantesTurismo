@@ -5,7 +5,7 @@
   "title": "Plan Catalog vertical-slice migration",
   "type": "enabler",
   "status": "proposed",
-  "order": 151,
+  "order": 150,
   "theme": "repo-operations",
   "outcome": "GitHub issue #715 is canonically represented from the reconciliation manifest.",
   "scoring": {

@@ -4,7 +4,7 @@
   "title": "Centralize country and currency reference data",
   "type": "enabler",
   "status": "proposed",
-  "order": 201,
+  "order": 200,
   "theme": "repo-operations",
   "outcome": "GitHub issue #909 is canonically represented from the reconciliation manifest.",
   "scoring": {

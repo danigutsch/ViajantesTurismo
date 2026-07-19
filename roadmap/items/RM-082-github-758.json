@@ -4,7 +4,7 @@
   "title": "refactor messaging registration to fluent transport builder",
   "type": "enabler",
   "status": "proposed",
-  "order": 164,
+  "order": 163,
   "theme": "repo-operations",
   "outcome": "GitHub issue #758 is canonically represented from the reconciliation manifest.",
   "scoring": {

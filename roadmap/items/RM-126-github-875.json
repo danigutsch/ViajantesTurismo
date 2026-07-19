@@ -4,7 +4,7 @@
   "title": "Standardize SharedKernel source generator package contracts",
   "type": "enabler",
   "status": "proposed",
-  "order": 187,
+  "order": 186,
   "theme": "repo-operations",
   "outcome": "GitHub issue #875 is canonically represented from the reconciliation manifest.",
   "scoring": {

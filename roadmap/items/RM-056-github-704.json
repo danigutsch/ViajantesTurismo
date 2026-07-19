@@ -5,7 +5,7 @@
   "title": "Trace upload and import stream pass counts",
   "type": "enabler",
   "status": "proposed",
-  "order": 144,
+  "order": 143,
   "theme": "repo-operations",
   "outcome": "GitHub issue #704 is canonically represented from the reconciliation manifest.",
   "scoring": {

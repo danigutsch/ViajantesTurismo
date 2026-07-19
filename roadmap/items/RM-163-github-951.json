@@ -5,7 +5,7 @@
   "title": "Evaluate Garage as a self-hosted S3 storage alternative",
   "type": "issue",
   "status": "proposed",
-  "order": 208,
+  "order": 207,
   "theme": "repo-operations",
   "outcome": "GitHub issue #951 is canonically represented from the reconciliation manifest.",
   "scoring": {

@@ -5,7 +5,7 @@
   "title": "Enforce test seams and consistency",
   "type": "enabler",
   "status": "proposed",
-  "order": 240,
+  "order": 236,
   "theme": "repo-operations",
   "outcome": "GitHub issue #1028 is canonically represented from the reconciliation manifest.",
   "scoring": {

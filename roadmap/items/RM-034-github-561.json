@@ -4,7 +4,7 @@
   "title": "Add analyzer to require TimeProvider for current time",
   "type": "issue",
   "status": "proposed",
-  "order": 133,
+  "order": 132,
   "theme": "repo-operations",
   "outcome": "GitHub issue #561 is canonically represented from the reconciliation manifest.",
   "scoring": {

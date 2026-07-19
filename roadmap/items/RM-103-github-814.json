@@ -5,7 +5,7 @@
   "title": "Create STRIDE-A threat model for the application",
   "type": "enabler",
   "status": "proposed",
-  "order": 172,
+  "order": 171,
   "theme": "repo-operations",
   "outcome": "GitHub issue #814 is canonically represented from the reconciliation manifest.",
   "scoring": {

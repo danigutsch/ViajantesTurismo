@@ -5,7 +5,7 @@
   "title": "Add web security headers and CSP strategy",
   "type": "feature",
   "status": "proposed",
-  "order": 283,
+  "order": 295,
   "theme": "repo-operations",
   "outcome": "GitHub issue #815 is canonically represented from the reconciliation manifest.",
   "scoring": {

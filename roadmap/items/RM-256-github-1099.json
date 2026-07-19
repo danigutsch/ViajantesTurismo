@@ -5,7 +5,7 @@
   "title": "Research xUnit assertion delegate patterns",
   "type": "enabler",
   "status": "proposed",
-  "order": 332,
+  "order": 262,
   "theme": "repo-operations",
   "outcome": "GitHub issue #1099 is canonically represented from the reconciliation manifest.",
   "scoring": {

@@ -5,7 +5,7 @@
   "title": "Add local AI capabilities with Ollama",
   "type": "enabler",
   "status": "proposed",
-  "order": 193,
+  "order": 192,
   "theme": "repo-operations",
   "outcome": "GitHub issue #893 is canonically represented from the reconciliation manifest.",
   "scoring": {

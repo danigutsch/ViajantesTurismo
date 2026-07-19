@@ -5,7 +5,7 @@
   "title": "Generate reviewed PostgreSQL migration scripts for deployment",
   "type": "enabler",
   "status": "proposed",
-  "order": 243,
+  "order": 239,
   "theme": "repo-operations",
   "outcome": "GitHub issue #1032 is canonically represented from the reconciliation manifest.",
   "scoring": {

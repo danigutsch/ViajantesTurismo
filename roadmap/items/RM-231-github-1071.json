@@ -5,7 +5,7 @@
   "title": "Add analyzer for governed C# string literals",
   "type": "enabler",
   "status": "proposed",
-  "order": 253,
+  "order": 249,
   "theme": "repo-operations",
   "outcome": "GitHub issue #1071 is canonically represented from the reconciliation manifest.",
   "scoring": {

@@ -4,7 +4,7 @@
   "title": "Review SharedKernel testing package boundaries",
   "type": "enabler",
   "status": "proposed",
-  "order": 137,
+  "order": 136,
   "theme": "repo-operations",
   "outcome": "GitHub issue #625 is canonically represented from the reconciliation manifest.",
   "scoring": {

@@ -1,11 +1,10 @@
 {
   "$schema": "../schema/roadmap-item.schema.json",
   "id": "RM-250",
-  "parent": "RM-171",
   "title": "Add secure Catalog media multipart upload endpoint",
   "type": "enabler",
   "status": "proposed",
-  "order": 331,
+  "order": 261,
   "theme": "repo-operations",
   "outcome": "GitHub issue #1093 is canonically represented from the reconciliation manifest.",
   "scoring": {

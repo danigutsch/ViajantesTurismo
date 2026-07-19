@@ -4,7 +4,7 @@
   "title": "Detect duplicate media uploads before storage",
   "type": "issue",
   "status": "proposed",
-  "order": 219,
+  "order": 215,
   "theme": "repo-operations",
   "outcome": "GitHub issue #976 is canonically represented from the reconciliation manifest.",
   "scoring": {

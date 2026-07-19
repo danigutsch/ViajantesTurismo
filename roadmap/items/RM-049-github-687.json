@@ -4,7 +4,7 @@
   "title": "Evaluate source-generated DbContext partial configuration attributes",
   "type": "enabler",
   "status": "proposed",
-  "order": 142,
+  "order": 141,
   "theme": "repo-operations",
   "outcome": "GitHub issue #687 is canonically represented from the reconciliation manifest.",
   "scoring": {

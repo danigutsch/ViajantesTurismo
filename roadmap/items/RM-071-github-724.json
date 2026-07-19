@@ -4,7 +4,7 @@
   "title": "Choose editable intermediate document format",
   "type": "enabler",
   "status": "proposed",
-  "order": 155,
+  "order": 154,
   "theme": "repo-operations",
   "outcome": "GitHub issue #724 is canonically represented from the reconciliation manifest.",
   "scoring": {

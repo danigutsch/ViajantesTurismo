@@ -4,7 +4,7 @@
   "title": "Evaluate exposed enums in domain models",
   "type": "enabler",
   "status": "proposed",
-  "order": 204,
+  "order": 203,
   "theme": "repo-operations",
   "outcome": "GitHub issue #914 is canonically represented from the reconciliation manifest.",
   "scoring": {

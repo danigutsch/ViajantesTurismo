@@ -1,11 +1,10 @@
 {
   "$schema": "../schema/roadmap-item.schema.json",
   "id": "RM-252",
-  "parent": "RM-171",
   "title": "Add accessible drag-and-drop to Catalog media upload",
   "type": "feature",
   "status": "proposed",
-  "order": 340,
+  "order": 318,
   "theme": "repo-operations",
   "outcome": "GitHub issue #1095 is canonically represented from the reconciliation manifest.",
   "scoring": {

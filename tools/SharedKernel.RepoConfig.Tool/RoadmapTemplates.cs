@@ -54,7 +54,12 @@ internal static class RoadmapTemplates
           "integrations": {
             "github": {
               "enabled": false,
-              "sourceOfTruth": "projection"
+              "sourceOfTruth": "projection",
+              "intake": {
+                "theme": "repo-operations",
+                "openStatus": "proposed",
+                "closedStatus": "done"
+              }
             }
           }
         }
@@ -83,7 +88,8 @@ internal static class RoadmapTemplates
             },
             "itemIdPrefix": {
               "type": "string",
-              "minLength": 1
+              "minLength": 1,
+              "pattern": "^[A-Za-z0-9_-]+$"
             },
             "allowed": {
               "type": "object",
@@ -181,6 +187,29 @@ internal static class RoadmapTemplates
                     },
                     "sourceOfTruth": {
                       "const": "projection"
+                    },
+                    "intake": {
+                      "type": "object",
+                      "required": [
+                        "theme",
+                        "openStatus",
+                        "closedStatus"
+                      ],
+                      "properties": {
+                        "theme": {
+                          "type": "string",
+                          "minLength": 1
+                        },
+                        "openStatus": {
+                          "type": "string",
+                          "minLength": 1
+                        },
+                        "closedStatus": {
+                          "type": "string",
+                          "minLength": 1
+                        }
+                      },
+                      "additionalProperties": false
                     },
                     "projectV2": {
                       "type": "object",

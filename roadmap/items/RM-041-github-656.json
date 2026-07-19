@@ -4,7 +4,7 @@
   "title": "Add ToolCommandName for CodeFixRunner",
   "type": "enabler",
   "status": "proposed",
-  "order": 138,
+  "order": 137,
   "theme": "repo-operations",
   "outcome": "GitHub issue #656 is canonically represented from the reconciliation manifest.",
   "scoring": {

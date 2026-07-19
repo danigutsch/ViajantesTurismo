@@ -4,7 +4,7 @@
   "title": "Evaluate .NET 11 discriminated unions for API responses",
   "type": "issue",
   "status": "proposed",
-  "order": 121,
+  "order": 123,
   "theme": "repo-operations",
   "outcome": "GitHub issue #481 is canonically represented from the reconciliation manifest.",
   "scoring": {

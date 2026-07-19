@@ -4,7 +4,7 @@
   "title": "Add approved legal contract template versions",
   "type": "issue",
   "status": "proposed",
-  "order": 210,
+  "order": 209,
   "theme": "repo-operations",
   "outcome": "GitHub issue #955 is canonically represented from the reconciliation manifest.",
   "scoring": {

@@ -4,7 +4,7 @@
   "title": "Improve Should* assertion analyzers and code fixes",
   "type": "epic",
   "status": "proposed",
-  "order": 344,
+  "order": 348,
   "theme": "repo-operations",
   "outcome": "GitHub issue #1098 is canonically represented from the reconciliation manifest.",
   "scoring": {

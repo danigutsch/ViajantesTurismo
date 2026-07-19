@@ -1,0 +1,38 @@
+{
+  "$schema": "../schema/roadmap-item.schema.json",
+  "id": "RM-283",
+  "parent": "RM-278",
+  "title": "Establish privacy incident transfer and processing governance",
+  "type": "documentation",
+  "status": "proposed",
+  "order": 119,
+  "theme": "repo-operations",
+  "outcome": "GitHub issue #1118 is canonically represented from the reconciliation manifest.",
+  "scoring": {
+    "reach": 1,
+    "impact": 1,
+    "confidence": 0.1,
+    "effort": 2
+  },
+  "blockedBy": [],
+  "blocks": [],
+  "dependencies": [],
+  "tags": [],
+  "labels": [
+    "architecture",
+    "documentation",
+    "security",
+    "type: docs"
+  ],
+  "sources": [
+    {
+      "kind": "github-issue",
+      "reference": "#1118"
+    }
+  ],
+  "integrations": {
+    "github": {
+      "issue": 1118
+    }
+  }
+}

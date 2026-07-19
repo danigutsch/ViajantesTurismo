@@ -4,7 +4,7 @@
   "title": "Harden document lifecycle integrity and retention",
   "type": "feature",
   "status": "proposed",
-  "order": 296,
+  "order": 308,
   "theme": "repo-operations",
   "outcome": "GitHub issue #945 is canonically represented from the reconciliation manifest.",
   "scoring": {

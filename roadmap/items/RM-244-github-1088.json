@@ -5,7 +5,7 @@
   "title": "Add an explicit dependency graph refresh command",
   "type": "enabler",
   "status": "proposed",
-  "order": 263,
+  "order": 258,
   "theme": "repo-operations",
   "outcome": "GitHub issue #1088 is canonically represented from the reconciliation manifest.",
   "scoring": {

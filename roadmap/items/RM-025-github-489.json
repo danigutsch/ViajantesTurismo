@@ -4,7 +4,7 @@
   "title": "Migrate typed API clients to result-based outcomes",
   "type": "issue",
   "status": "proposed",
-  "order": 123,
+  "order": 125,
   "theme": "repo-operations",
   "outcome": "GitHub issue #489 is canonically represented from the reconciliation manifest.",
   "scoring": {

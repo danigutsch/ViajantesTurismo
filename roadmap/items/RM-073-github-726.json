@@ -4,7 +4,7 @@
   "title": "Define manual review and finalization workflow for generated documents",
   "type": "enabler",
   "status": "proposed",
-  "order": 157,
+  "order": 156,
   "theme": "repo-operations",
   "outcome": "GitHub issue #726 is canonically represented from the reconciliation manifest.",
   "scoring": {

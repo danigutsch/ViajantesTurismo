@@ -4,7 +4,7 @@
   "title": "Epic: payment instructions and tracking",
   "type": "epic",
   "status": "proposed",
-  "order": 320,
+  "order": 337,
   "theme": "repo-operations",
   "outcome": "GitHub issue #956 is canonically represented from the reconciliation manifest.",
   "scoring": {

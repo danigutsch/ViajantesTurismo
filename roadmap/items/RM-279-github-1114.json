@@ -1,0 +1,40 @@
+{
+  "$schema": "../schema/roadmap-item.schema.json",
+  "id": "RM-279",
+  "parent": "RM-161",
+  "title": "Enforce unique document revisions and idempotent generation",
+  "type": "issue",
+  "status": "proposed",
+  "order": 269,
+  "theme": "repo-operations",
+  "outcome": "GitHub issue #1114 is canonically represented from the reconciliation manifest.",
+  "scoring": {
+    "reach": 1,
+    "impact": 1,
+    "confidence": 0.1,
+    "effort": 3
+  },
+  "blockedBy": [],
+  "blocks": [],
+  "dependencies": [],
+  "tags": [],
+  "labels": [
+    "architecture",
+    "area: api",
+    "bug",
+    "infrastructure",
+    "security",
+    "testing"
+  ],
+  "sources": [
+    {
+      "kind": "github-issue",
+      "reference": "#1114"
+    }
+  ],
+  "integrations": {
+    "github": {
+      "issue": 1114
+    }
+  }
+}

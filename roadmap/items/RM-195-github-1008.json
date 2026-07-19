@@ -4,7 +4,7 @@
   "title": "Design branding caching strategy",
   "type": "issue",
   "status": "proposed",
-  "order": 230,
+  "order": 226,
   "theme": "repo-operations",
   "outcome": "GitHub issue #1008 is canonically represented from the reconciliation manifest.",
   "scoring": {

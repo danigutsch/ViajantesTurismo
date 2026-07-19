@@ -4,7 +4,7 @@
   "title": "Add smoke validation for packaged tools",
   "type": "enabler",
   "status": "proposed",
-  "order": 139,
+  "order": 138,
   "theme": "repo-operations",
   "outcome": "GitHub issue #658 is canonically represented from the reconciliation manifest.",
   "scoring": {

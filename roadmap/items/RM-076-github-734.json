@@ -5,7 +5,7 @@
   "title": "Research .NET discriminated union support for Result and Option",
   "type": "enabler",
   "status": "proposed",
-  "order": 160,
+  "order": 159,
   "theme": "repo-operations",
   "outcome": "GitHub issue #734 is canonically represented from the reconciliation manifest.",
   "scoring": {

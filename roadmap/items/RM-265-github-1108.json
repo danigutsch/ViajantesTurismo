@@ -5,7 +5,7 @@
   "title": "[Issue]: Assess typed xUnit v3 trait attributes",
   "type": "enabler",
   "status": "proposed",
-  "order": 345,
+  "order": 265,
   "theme": "repo-operations",
   "outcome": "GitHub issue #1108 is canonically represented from the reconciliation manifest.",
   "scoring": {

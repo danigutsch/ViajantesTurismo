@@ -4,7 +4,7 @@
   "title": "Add design-time factories for EF Core DbContexts",
   "type": "enabler",
   "status": "proposed",
-  "order": 206,
+  "order": 205,
   "theme": "repo-operations",
   "outcome": "GitHub issue #933 is canonically represented from the reconciliation manifest.",
   "scoring": {

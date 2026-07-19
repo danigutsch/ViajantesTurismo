@@ -5,7 +5,7 @@
   "title": "[Issue]: Validate need for a custom xUnit v3 ITestFramework",
   "type": "enabler",
   "status": "proposed",
-  "order": 348,
+  "order": 268,
   "theme": "repo-operations",
   "outcome": "GitHub issue #1111 is canonically represented from the reconciliation manifest.",
   "scoring": {

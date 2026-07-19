@@ -1,4 +1,5 @@
 using System.Globalization;
+using System.Text;
 using System.Text.Json;
 
 namespace SharedKernel.RepoConfig.Tool;
@@ -35,24 +36,14 @@ internal static class RepoConfigToolApplication
                 _ => RunCommand(args, output, error, workingDirectory)
             };
         }
-        catch (GitHubIntakeTimeoutException)
+        catch (TimeoutException exception)
         {
-            await error.WriteLineAsync("sharedkernel-repo: GitHub intake timed out after 30 seconds.".AsMemory(), cancellationToken).ConfigureAwait(false);
-            return 1;
-        }
-        catch (GitHubReconcileTimeoutException)
-        {
-            await error.WriteLineAsync("sharedkernel-repo: GitHub reconciliation timed out after 30 seconds.".AsMemory(), cancellationToken).ConfigureAwait(false);
-            return 1;
-        }
-        catch (GitHubSyncTimeoutException)
-        {
-            await error.WriteLineAsync("sharedkernel-repo: GitHub sync timed out after 30 seconds.".AsMemory(), cancellationToken).ConfigureAwait(false);
+            await error.WriteLineAsync($"sharedkernel-repo: {EscapeControlCharacters(exception.Message)}".AsMemory(), cancellationToken).ConfigureAwait(false);
             return 1;
         }
         catch (OperationCanceledException exception) when (!cancellationToken.IsCancellationRequested)
         {
-            await error.WriteLineAsync($"sharedkernel-repo: {exception.Message}".AsMemory(), cancellationToken).ConfigureAwait(false);
+            await error.WriteLineAsync($"sharedkernel-repo: {EscapeControlCharacters(exception.Message)}".AsMemory(), cancellationToken).ConfigureAwait(false);
             return 1;
         }
         catch (HttpRequestException)
@@ -67,7 +58,7 @@ internal static class RepoConfigToolApplication
             or UnauthorizedAccessException
             or InvalidOperationException)
         {
-            await error.WriteLineAsync($"sharedkernel-repo: {exception.Message}".AsMemory(), cancellationToken).ConfigureAwait(false);
+            await error.WriteLineAsync($"sharedkernel-repo: {EscapeControlCharacters(exception.Message)}".AsMemory(), cancellationToken).ConfigureAwait(false);
             return 1;
         }
     }
@@ -103,7 +94,7 @@ internal static class RepoConfigToolApplication
         output.WriteLine("Initialized repository roadmap structure:");
         foreach (var path in createdPaths)
         {
-            output.WriteLine($"- {path}");
+            output.WriteLine($"- {EscapeControlCharacters(path)}");
         }
 
         return 0;
@@ -166,7 +157,7 @@ internal static class RepoConfigToolApplication
         var value = remaining[1];
 
         RepoConfigSetter.Set(rootPath, key, value);
-        output.WriteLine($"Updated {key}.");
+        output.WriteLine($"Updated {EscapeControlCharacters(key)}.");
         return 0;
     }
 
@@ -290,7 +281,7 @@ internal static class RepoConfigToolApplication
             : await syncer.Apply(cancellationToken).ConfigureAwait(false);
         foreach (var message in result.Messages)
         {
-            await output.WriteLineAsync(message.AsMemory(), cancellationToken).ConfigureAwait(false);
+            await output.WriteLineAsync(EscapeControlCharacters(message).AsMemory(), cancellationToken).ConfigureAwait(false);
         }
 
         return 0;
@@ -312,7 +303,7 @@ internal static class RepoConfigToolApplication
             : await intake.Apply(cancellationToken).ConfigureAwait(false);
         foreach (var message in messages)
         {
-            await output.WriteLineAsync(message.AsMemory(), cancellationToken).ConfigureAwait(false);
+            await output.WriteLineAsync(EscapeControlCharacters(message).AsMemory(), cancellationToken).ConfigureAwait(false);
         }
 
         return 0;
@@ -334,7 +325,7 @@ internal static class RepoConfigToolApplication
             : await reconciler.Apply(cancellationToken).ConfigureAwait(false);
         foreach (var message in messages)
         {
-            await output.WriteLineAsync(message.AsMemory(), cancellationToken).ConfigureAwait(false);
+            await output.WriteLineAsync(EscapeControlCharacters(message).AsMemory(), cancellationToken).ConfigureAwait(false);
         }
 
         return 0;
@@ -458,7 +449,7 @@ internal static class RepoConfigToolApplication
 
     private static int WriteUsageError(TextWriter error, string message)
     {
-        error.WriteLine(message);
+        error.WriteLine(EscapeControlCharacters(message));
         error.WriteLine(Usage);
         return 2;
     }
@@ -468,7 +459,7 @@ internal static class RepoConfigToolApplication
         error.WriteLine(heading);
         foreach (var issue in issues)
         {
-            error.WriteLine($"- {issue.Path}: {issue.Message}");
+            error.WriteLine($"- {EscapeControlCharacters(issue.Path)}: {EscapeControlCharacters(issue.Message)}");
         }
     }
 
@@ -536,9 +527,13 @@ internal static class RepoConfigToolApplication
         var count = 0;
         foreach (var item in items)
         {
+            var id = EscapeControlCharacters(item.Id);
+            var type = EscapeControlCharacters(item.Type);
+            var status = EscapeControlCharacters(item.Status);
+            var title = EscapeControlCharacters(item.Title);
             output.WriteLine(item.IsTriaged
-                ? $"{item.Id} | {item.Type} | {item.Status} | order {item.Order?.ToString(CultureInfo.InvariantCulture)} | score {item.Score?.ToString("0.##", CultureInfo.InvariantCulture)} | {item.Title}"
-                : $"{item.Id} | {item.Type} | {item.Status} | untriaged | {item.Title}");
+                ? $"{id} | {type} | {status} | order {item.Order?.ToString(CultureInfo.InvariantCulture)} | score {item.Score?.ToString("0.##", CultureInfo.InvariantCulture)} | {title}"
+                : $"{id} | {type} | {status} | untriaged | {title}");
             count++;
         }
 
@@ -553,7 +548,7 @@ internal static class RepoConfigToolApplication
         var count = 0;
         foreach (var item in counts)
         {
-            output.WriteLine($"{item.Key} | {item.Value.ToString(CultureInfo.InvariantCulture)}");
+            output.WriteLine($"{EscapeControlCharacters(item.Key)} | {item.Value.ToString(CultureInfo.InvariantCulture)}");
             count++;
         }
 
@@ -576,7 +571,7 @@ internal static class RepoConfigToolApplication
 
         foreach (var item in blockedItems)
         {
-            output.WriteLine($"{item.Item.Id} blocked by {string.Join(", ", item.Blockers)}");
+            output.WriteLine($"{EscapeControlCharacters(item.Item.Id)} blocked by {string.Join(", ", item.Blockers.Select(EscapeControlCharacters))}");
             count++;
         }
 
@@ -584,5 +579,24 @@ internal static class RepoConfigToolApplication
         {
             output.WriteLine("No blocked roadmap items.");
         }
+    }
+
+    private static string EscapeControlCharacters(string value)
+    {
+        StringBuilder? escaped = null;
+        for (var index = 0; index < value.Length; index++)
+        {
+            var character = value[index];
+            if (!char.IsControl(character))
+            {
+                escaped?.Append(character);
+                continue;
+            }
+
+            escaped ??= new StringBuilder(value.Length + 6).Append(value, 0, index);
+            escaped.Append("\\u").Append(((int)character).ToString("X4", CultureInfo.InvariantCulture));
+        }
+
+        return escaped?.ToString() ?? value;
     }
 }

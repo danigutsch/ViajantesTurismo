@@ -1,0 +1,38 @@
+{
+  "$schema": "../schema/roadmap-item.schema.json",
+  "id": "RM-282",
+  "parent": "RM-278",
+  "title": "Implement document data-subject rights and retention exceptions",
+  "type": "feature",
+  "status": "proposed",
+  "order": 322,
+  "theme": "repo-operations",
+  "outcome": "GitHub issue #1117 is canonically represented from the reconciliation manifest.",
+  "scoring": {
+    "reach": 1,
+    "impact": 1,
+    "confidence": 0.1,
+    "effort": 5
+  },
+  "blockedBy": [],
+  "blocks": [],
+  "dependencies": [],
+  "tags": [],
+  "labels": [
+    "area: api",
+    "infrastructure",
+    "security",
+    "type: feature"
+  ],
+  "sources": [
+    {
+      "kind": "github-issue",
+      "reference": "#1117"
+    }
+  ],
+  "integrations": {
+    "github": {
+      "issue": 1117
+    }
+  }
+}
