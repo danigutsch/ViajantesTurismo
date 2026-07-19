@@ -34,6 +34,7 @@ tests/SharedKernel.ApiVersioning.AspNetCore.Tests/SharedKernel.ApiVersioning.Asp
 tests/SharedKernel.Documentation.Tests/SharedKernel.Documentation.Tests.csproj
 tests/SharedKernel.RepoConfig.Tests/SharedKernel.RepoConfig.Tests.csproj
 tests/ViajantesTurismo.OpenApi.Tool.Tests/ViajantesTurismo.OpenApi.Tool.Tests.csproj
+tests/ViajantesTurismo.PlaywrightMcp.Tool.Tests/ViajantesTurismo.PlaywrightMcp.Tool.Tests.csproj
 tests/ViajantesTurismo.Branding.ContractTests/ViajantesTurismo.Branding.ContractTests.csproj
 tests/SharedKernel.Mediator.Tests/SharedKernel.Mediator.Tests.csproj
 tests/SharedKernel.ImageProcessing.Tests/SharedKernel.ImageProcessing.Tests.csproj
