@@ -1,6 +1,7 @@
 {
   "$schema": "../schema/roadmap-item.schema.json",
   "id": "RM-215",
+  "parent": "RM-009",
   "title": "Epic: define service and data deployment topology",
   "type": "epic",
   "status": "proposed",

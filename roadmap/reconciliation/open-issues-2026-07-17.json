@@ -1,6 +1,6 @@
 {
   "repository": "danigutsch/ViajantesTurismo",
-  "retrievedOn": "2026-07-18",
+  "retrievedOn": "2026-07-19",
   "repositoryCommit": "cae78428d0379a9628f43dea44525aff247b9846",
   "source": "GitHub GraphQL repository.issues snapshot with parent, subissue, label, and blocker metadata.",
   "ruleVersion": "structural-parent-subissue-blocker-v1",
@@ -31,7 +31,7 @@
     "Only exact GitHub blocker relationships may become canonical blockedBy and blocks links.",
     "Only an explicit closedItemTransitions entry can move an imported open item to closed support."
   ],
-  "snapshotDigest": "aa1e6cf2e01ecd6790e173b4ddee144d845ab09f2e3ca7266a49015fc404b3bc",
+  "snapshotDigest": "8fec0683a8c772ee8b7854d7ae4aedbdb11d5955bbff405dacd0f002cc583327",
   "blockerEdges": [
     {
       "blocker": 484,
@@ -252,7 +252,11 @@
       "roadmapItem": "RM-015"
     }
   ],
-  "childrenOfCanonicalPrimaries": [],
+  "childrenOfCanonicalPrimaries": [
+    1032,
+    1034,
+    1035
+  ],
   "unmappedStructuralRoots": [
     342,
     476,
@@ -272,7 +276,6 @@
     983,
     1009,
     1022,
-    1035,
     1037,
     1040,
     1070,
@@ -452,9 +455,7 @@
     1028,
     1029,
     1031,
-    1032,
     1033,
-    1034,
     1036,
     1038,
     1039,
@@ -511,9 +512,9 @@
   "integrity": {
     "expectedIssueCount": 257,
     "expectedDirectCanonicalPrimaryCount": 6,
-    "expectedChildrenOfCanonicalPrimaryCount": 0,
-    "expectedUnmappedStructuralRootCount": 28,
-    "expectedNeedsHumanCount": 223,
+    "expectedChildrenOfCanonicalPrimaryCount": 3,
+    "expectedUnmappedStructuralRootCount": 27,
+    "expectedNeedsHumanCount": 221,
     "expectedBlockerEdgeCount": 23,
     "dispositionsAreDisjoint": true,
     "dispositionsCoverSnapshot": true
