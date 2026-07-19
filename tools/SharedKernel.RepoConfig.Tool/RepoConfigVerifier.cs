@@ -97,7 +97,7 @@ internal static class RepoConfigVerifier
         VerifyConfigScoring(root, relativePath, issues);
 
         return new RoadmapSettings(
-            itemIdPrefixIsValid ? configuredItemIdPrefix ?? RoadmapSettings.Default.ItemIdPrefix : RoadmapSettings.Default.ItemIdPrefix,
+            itemIdPrefixIsValid ? configuredItemIdPrefix! : RoadmapSettings.Default.ItemIdPrefix,
             distinctTypes.Length == 0 ? RoadmapSettings.Default.AllowedTypes : distinctTypes,
             distinctStatuses.Length == 0 ? RoadmapSettings.Default.AllowedStatuses : distinctStatuses);
     }
