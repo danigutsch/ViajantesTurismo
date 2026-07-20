@@ -8,6 +8,7 @@ namespace SharedKernel.Documentation;
 /// </summary>
 internal static partial class EndpointRouteMarkdownTable
 {
+    private const int MaximumEndpointChainLineCount = 128;
     private static readonly UTF8Encoding Utf8NoBom = new(false);
 
     /// <summary>
@@ -102,7 +103,9 @@ internal static partial class EndpointRouteMarkdownTable
     {
         var builder = new StringBuilder();
         var braceDepth = 0;
-        for (var index = startIndex; index < lines.Length; index++)
+        for (var index = startIndex;
+             index < lines.Length && index < startIndex + MaximumEndpointChainLineCount;
+             index++)
         {
             var line = lines[index];
             builder.Append(line);

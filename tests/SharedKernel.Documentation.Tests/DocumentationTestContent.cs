@@ -206,8 +206,13 @@ internal static class DocumentationTestContent
         <Project Sdk="Microsoft.NET.Sdk" />
         """;
 
-    public static string CustomerEndpoints() =>
-        """
+    public static string CustomerEndpoints()
+    {
+        var padding = string.Join(
+            '\n',
+            Enumerable.Repeat("            // endpoint-chain scan padding", 129));
+
+        return $$"""
         internal static class CustomerEndpoints
         {
             public static WebApplication MapCustomerEndpoints(this WebApplication app)
@@ -216,6 +221,11 @@ internal static class DocumentationTestContent
                 customersGroup.MapGet("/", GetAllCustomers)
                     .WithName("GetCustomers");
                 customersGroup.MapPost("/", CreateCustomer)
+                    .RequireAuthorization();
+                customersGroup.MapGet("/brace-literal", GetBraceLiteral)
+                    .WithDescription("Literal {");
+        {{padding}}
+                customersGroup.MapGet("/later-secured", GetLaterSecured)
                     .RequireAuthorization();
                 var publicCatalogGroup = app.MapPublicCatalogGroup();
                 publicCatalogGroup.MapGet("/content/{key}", GetPublicContent)
@@ -236,6 +246,7 @@ internal static class DocumentationTestContent
             }
         }
         """;
+    }
 
     public static string AdminTourCreatedIntegrationEvent() =>
         """
