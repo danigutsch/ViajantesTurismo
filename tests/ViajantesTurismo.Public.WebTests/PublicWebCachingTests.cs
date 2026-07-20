@@ -28,6 +28,7 @@ public sealed class PublicWebCachingTests
         var cacheControl = response.Headers.CacheControl.ShouldNotBeNull();
         cacheControl.Public.ShouldBeTrue();
         cacheControl.MaxAge.ShouldBe(TimeSpan.FromSeconds(60));
+        cacheControl.ToString().ShouldNotContain("stale-while-revalidate", StringComparison.OrdinalIgnoreCase);
     }
 
     [Fact]

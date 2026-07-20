@@ -101,10 +101,14 @@ internal static partial class EndpointRouteMarkdownTable
     private static string EndpointChain(string[] lines, int startIndex)
     {
         var builder = new StringBuilder();
-        for (var index = startIndex; index < lines.Length && index < startIndex + 8; index++)
+        var braceDepth = 0;
+        for (var index = startIndex; index < lines.Length; index++)
         {
-            builder.Append(lines[index]);
-            if (lines[index].Contains(';', StringComparison.Ordinal))
+            var line = lines[index];
+            builder.Append(line);
+            braceDepth += line.Count(static character => character == '{');
+            braceDepth -= line.Count(static character => character == '}');
+            if (braceDepth == 0 && line.TrimEnd().EndsWith(';'))
             {
                 break;
             }

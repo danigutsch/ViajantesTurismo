@@ -43,7 +43,7 @@
     [CascadingParameter]
     private HttpContext? HttpContext { get; set; }
 
-    private CatalogTourDto[]? _tours;
+    private TourSummaryDto[]? _tours;
     private PublicContentVariantDto? _hero;
     private bool _loadFailed;
 
@@ -78,7 +78,14 @@
     {
         try
         {
-            _tours = await CatalogApi.GetPublishedTours(CancellationToken.None);
+            var requestAborted = HttpContext?.RequestAborted ?? CancellationToken.None;
+            _tours = await CatalogApi.GetPublishedTours(requestAborted);
+        }
+        catch (OperationCanceledException) when (HttpContext?.RequestAborted.IsCancellationRequested != true)
+        {
+            PublicWebHttpCache.SetServiceUnavailableNoStore(HttpContext);
+            _loadFailed = true;
+            _tours = [];
         }
         catch (HttpRequestException)
         {

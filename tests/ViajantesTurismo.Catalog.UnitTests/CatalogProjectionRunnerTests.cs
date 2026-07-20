@@ -19,12 +19,14 @@ public sealed class CatalogProjectionRunnerTests
         var readModelStore = new CapturingCatalogTourReadModelStore();
         var projection = new CatalogTourReadModelProjection(readModelStore);
         var runner = new CatalogProjectionRunner(eventStore, checkpointStore, [projection]);
+        var catalogTourId = Guid.CreateVersion7();
         var draftCreated = new CatalogTourDraftCreated(
+            catalogTourId,
             Guid.CreateVersion7(),
-            Guid.CreateVersion7(),
-            "andes-2026",
+            "TOUR/2026",
             "Andes 2026",
-            Guid.CreateVersion7());
+            Guid.CreateVersion7(),
+            $"tour-{catalogTourId:N}");
         var recordedAt = DateTimeOffset.UtcNow;
         eventStore.AddReplayEvent(CatalogProjectionRunnerTestsHelpers.CreateEnvelope(11, draftCreated, recordedAt));
 
@@ -39,6 +41,7 @@ public sealed class CatalogProjectionRunnerTests
         (readModelStore.Draft.AdminTourId).ShouldBe(draftCreated.AdminTourId);
         (readModelStore.Draft.Identifier).ShouldBe(draftCreated.Identifier);
         (readModelStore.Draft.Title).ShouldBe(draftCreated.Title);
+        (readModelStore.Draft.Slug).ShouldBe($"tour-{draftCreated.CatalogTourId:N}");
         (readModelStore.Draft.Position).ShouldBe(11);
         (readModelStore.Draft.UpdatedAt).ShouldBe(recordedAt);
         (checkpointStore.SavedCheckpoint).ShouldNotBeNull();
@@ -80,13 +83,15 @@ public sealed class CatalogProjectionRunnerTests
             Guid.CreateVersion7(),
             "andes-2026",
             "Andes 2026",
-            Guid.CreateVersion7());
+            Guid.CreateVersion7(),
+            "andes-2026");
         var secondDraftCreated = new CatalogTourDraftCreated(
             Guid.CreateVersion7(),
             Guid.CreateVersion7(),
             "patagonia-2026",
             "Patagonia 2026",
-            Guid.CreateVersion7());
+            Guid.CreateVersion7(),
+            "patagonia-2026");
         eventStore.AddReplayEvent(CatalogProjectionRunnerTestsHelpers.CreateEnvelope(12, secondDraftCreated, DateTimeOffset.UtcNow));
         eventStore.AddReplayEvent(CatalogProjectionRunnerTestsHelpers.CreateEnvelope(11, firstDraftCreated, DateTimeOffset.UtcNow));
 

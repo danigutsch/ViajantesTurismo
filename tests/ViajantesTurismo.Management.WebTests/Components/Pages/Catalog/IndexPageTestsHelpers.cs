@@ -11,7 +11,13 @@ internal static class IndexPageTestsHelpers
             Identifier = identifier,
             Title = title,
             Slug = slug,
+            Summary = $"Summary for {title}",
+            Description = $"Description for {title}",
+            Itinerary = $"Itinerary for {title}",
+            SeoTitle = $"{title} SEO",
+            SeoDescription = $"SEO description for {title}",
             IsPublished = isPublished,
+            Version = 1,
             Images = [],
             UpdatedAt = new DateTimeOffset(2026, 6, 25, 10, 30, 0, TimeSpan.Zero)
         };

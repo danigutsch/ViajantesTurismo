@@ -262,13 +262,14 @@ Current implementation:
 
 - Event-sourced aggregate root keyed by Catalog tour id.
 - Creates draft state from an Admin tour id, identifier, title, and source event id.
-- Currently raises/applies `CatalogTourDraftCreated` only.
+- Applies `CatalogTourDraftCreated`, `CatalogTourPresentationChanged`, `CatalogTourPublished`, and
+  `CatalogTourUnpublished`.
+- Uses optimistic versions for unpublished presentation edits and explicit publication transitions;
+  read models remain rebuildable from the stream.
 
 Planned/evolving:
 
-- Presentation field changes, publication transitions, gallery changes, SEO changes, and itinerary
-  changes should become event-sourced commands before read models are treated as rebuildable source of
-  truth.
+- Gallery changes remain future event-sourced work.
 
 ### EditablePublicContent
 

@@ -38,17 +38,21 @@ Current examples:
 ### Raw Npgsql primitives
 
 `SharedKernel.Npgsql` may contain small, reusable raw-Npgsql primitives without a neutral contract when
-the primitive is inherently PostgreSQL-specific. Its initial scope is
+the primitive is inherently PostgreSQL-specific. Its scope includes
 `PostgreSqlTransactionAdvisoryLock`, which acquires a parameterized
 `pg_advisory_xact_lock` on a caller-supplied `NpgsqlConnection`, `NpgsqlTransaction`, and 64-bit lock
-key.
+key, and `PostgreSqlSessionAdvisoryLock`, which acquires a parameterized `pg_advisory_lock` on a
+dedicated connection from a caller-supplied `NpgsqlDataSource` and returns a disposable lease.
 
 The module does not own schemas, migrations, connection-string configuration, lock-key derivation,
 retry or timeout policy, distributed-cache behavior, authentication/token behavior, or transaction
-lifetime. Callers retain the transaction through the critical section.
+lifetime. Callers retain the transaction through the critical section. For session locks, callers
+retain the lease through the critical section; disposing it closes the lock-owning connection and
+releases the lock.
 
 Current callers are `SharedKernel.EventSourcing.Npgsql.PostgreSqlEventStore` and
-`ViajantesTurismo.Management.Web.ProtectedDistributedUserTokenStore`. Independent
+`ViajantesTurismo.Management.Web.ProtectedDistributedUserTokenStore`. The session-scoped primitive is
+used by `ViajantesTurismo.Catalog.Infrastructure.PostgreSqlCatalogTourSlugLock`. Independent
 `SharedKernel.Npgsql.Tests` integration tests must prove same-key contention, distinct-key concurrency,
 cancellation, and release after commit, rollback, and disposal.
 

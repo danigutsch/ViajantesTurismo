@@ -22,6 +22,22 @@ public interface ICatalogToursApiClient
     Task<CatalogTourDto?> UpdatePresentation(Guid id, UpsertCatalogTourPresentationRequest request, CancellationToken ct);
 
     /// <summary>
+    /// Publishes a Catalog tour explicitly.
+    /// </summary>
+    /// <param name="id">The Catalog tour identifier.</param>
+    /// <param name="request">The optimistic publication transition request.</param>
+    /// <param name="ct">The cancellation token.</param>
+    Task Publish(Guid id, CatalogTourPublicationRequest request, CancellationToken ct);
+
+    /// <summary>
+    /// Unpublishes a Catalog tour explicitly.
+    /// </summary>
+    /// <param name="id">The Catalog tour identifier.</param>
+    /// <param name="request">The optimistic publication transition request.</param>
+    /// <param name="ct">The cancellation token.</param>
+    Task Unpublish(Guid id, CatalogTourPublicationRequest request, CancellationToken ct);
+
+    /// <summary>
     /// Generates AI-assisted draft accessibility text for a media image.
     /// </summary>
     Task<CatalogMediaImageDto?> GenerateMediaImageAccessibilityDraft(Guid id, PublicMediaImageAccessibilityDraftRequest request, CancellationToken ct);

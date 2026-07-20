@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.OutputCaching;
 using SharedKernel.ApiVersioning.AspNetCore;
 using SharedKernel.Branding;
+using SharedKernel.HttpCaching.AspNetCore;
 using SharedKernel.Results;
 
 namespace ViajantesTurismo.Branding.ApiService;
@@ -14,7 +15,8 @@ internal static class BrandingEndpoints
         var versionedApi = app.MapApiVersionGroup(BrandingOpenApiDocuments.CurrentApiVersion);
         var publicBranding = versionedApi.MapGroup($"/{BrandingRoutes.PublicSettingsPath}")
             .AllowAnonymous();
-        var managementBranding = versionedApi.MapGroup($"/{BrandingRoutes.ManagementSettingsPath}");
+        var managementBranding = versionedApi.MapGroup($"/{BrandingRoutes.ManagementSettingsPath}")
+            .WithNoStoreResponses();
 
         publicBranding.MapGet("/", GetPublicSettings)
             .CacheOutput(policy => policy.Expire(BrandingHttpCache.PublicFreshness).Tag(BrandingHttpCache.PublicBrandingTag))
@@ -41,10 +43,8 @@ internal static class BrandingEndpoints
 
     private static async Task<IResult> GetManagementSettings(
         IBrandingSettingsStore store,
-        HttpContext httpContext,
         CancellationToken ct)
     {
-        BrandingHttpCache.SetNoStore(httpContext);
         var settings = await GetSettingsOrDefault(store, ct).ConfigureAwait(false);
         return Results.Ok(ToDto(settings));
     }
@@ -54,11 +54,8 @@ internal static class BrandingEndpoints
         IBrandingSettingsStore store,
         IOutputCacheStore outputCacheStore,
         ILogger<BrandingApiHostEntryPoint> logger,
-        HttpContext httpContext,
         CancellationToken ct)
     {
-        BrandingHttpCache.SetNoStore(httpContext);
-
         var settings = BrandingSettings.Create(request, BrandingDefaults.AllowedFonts);
         if (settings.IsFailure)
         {

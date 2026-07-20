@@ -23,6 +23,8 @@ namespace ViajantesTurismo.Catalog.Infrastructure;
 /// </summary>
 public static class InfrastructureDependencyInjection
 {
+    private const int CatalogSlugLockMaximumPoolSize = 8;
+
     /// <summary>
     /// Adds Catalog infrastructure services to the application builder.
     /// </summary>
@@ -138,6 +140,17 @@ public static class InfrastructureDependencyInjection
         where TApplicationBuilder : IHostApplicationBuilder
     {
         builder.AddNpgsqlDataSource(ResourceNames.CatalogDatabase);
+        builder.AddKeyedNpgsqlDataSource(
+            ResourceNames.CatalogDatabase,
+            configureDataSourceBuilder: dataSourceBuilder =>
+            {
+                dataSourceBuilder.ConnectionStringBuilder.MaxPoolSize = Math.Min(
+                    CatalogSlugLockMaximumPoolSize,
+                    dataSourceBuilder.ConnectionStringBuilder.MaxPoolSize);
+            });
+        builder.Services.AddSingleton<ICatalogTourSlugLock>(serviceProvider =>
+            new PostgreSqlCatalogTourSlugLock(
+                serviceProvider.GetRequiredKeyedService<NpgsqlDataSource>(ResourceNames.CatalogDatabase)));
         builder.Services.AddDbContextPool<CatalogDbContext>((serviceProvider, options) =>
         {
             options.UseNpgsql(serviceProvider.GetRequiredService<NpgsqlDataSource>());
@@ -153,7 +166,8 @@ public static class InfrastructureDependencyInjection
         builder.Services.AddSingleton<IEventSerializer, CatalogEventSerializer>();
         builder.Services.AddSingleton<IEventStore, PostgreSqlEventStore>();
         builder.Services.AddSingleton<IProjectionCheckpointStore, PostgreSqlProjectionCheckpointStore>();
-        builder.Services.AddScoped<IProjection, CatalogTourReadModelProjection>();
+        builder.Services.AddScoped<CatalogTourReadModelProjection>();
+        builder.Services.AddScoped<IProjection>(services => services.GetRequiredService<CatalogTourReadModelProjection>());
         builder.Services.AddScoped<CatalogProjectionRunner>();
 
         return builder;

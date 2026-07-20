@@ -9,12 +9,12 @@ public interface IPublicCatalogApiClient
     /// <summary>
     /// Gets published tours.
     /// </summary>
-    Task<CatalogTourDto[]> GetPublishedTours(CancellationToken ct);
+    Task<TourSummaryDto[]> GetPublishedTours(CancellationToken ct);
 
     /// <summary>
     /// Gets a published tour by slug.
     /// </summary>
-    Task<CatalogTourDto?> GetPublishedTourBySlug(string slug, CancellationToken ct);
+    Task<TourDetailsDto?> GetPublishedTourBySlug(string slug, CancellationToken ct);
 
     /// <summary>
     /// Gets public content by key and culture.

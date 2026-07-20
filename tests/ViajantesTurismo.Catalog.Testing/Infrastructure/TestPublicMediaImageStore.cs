@@ -12,6 +12,8 @@ public sealed class TestPublicMediaImageStore : IPublicMediaImageStore
 
     public Exception? UpsertException { get; set; }
 
+    public Exception? ListByTourException { get; set; }
+
     public int GetImageCallCount => getImageCallCount;
 
     public ValueTask Upsert(PublicMediaImage image, CancellationToken ct)
@@ -40,6 +42,11 @@ public sealed class TestPublicMediaImageStore : IPublicMediaImageStore
     public ValueTask<IReadOnlyList<PublicMediaImage>> ListByTour(Guid catalogTourId, CancellationToken ct)
     {
         ct.ThrowIfCancellationRequested();
+        if (ListByTourException is not null)
+        {
+            throw ListByTourException;
+        }
+
         return ValueTask.FromResult(ListByTour(catalogTourId));
     }
 

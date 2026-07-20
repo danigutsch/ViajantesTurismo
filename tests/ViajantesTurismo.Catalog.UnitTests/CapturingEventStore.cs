@@ -17,7 +17,7 @@ public sealed class CapturingEventStore : IEventStore
 
     public void AddReplayEvent(EventEnvelope envelope) => replayEvents.Add(envelope);
 
-    public ValueTask Append(
+    public ValueTask<IReadOnlyCollection<EventEnvelope>> Append(
         StreamId streamId,
         ExpectedStreamRevision expectedRevision,
         IReadOnlyCollection<object> events,
@@ -26,8 +26,19 @@ public sealed class CapturingEventStore : IEventStore
         StreamId = streamId;
         ExpectedRevision = expectedRevision;
         appendedEvents.AddRange(events);
+        var revision = expectedRevision.Value ?? 0;
+        IReadOnlyCollection<EventEnvelope> envelopes = events
+            .Select((domainEvent, index) => new EventEnvelope(
+                streamId,
+                index + 1,
+                StreamRevision.From(revision + index + 1),
+                Guid.CreateVersion7(),
+                domainEvent.GetType().FullName ?? domainEvent.GetType().Name,
+                domainEvent,
+                DateTimeOffset.UtcNow))
+            .ToArray();
 
-        return ValueTask.CompletedTask;
+        return ValueTask.FromResult(envelopes);
     }
 
     public ValueTask<IReadOnlyCollection<EventEnvelope>> Load(

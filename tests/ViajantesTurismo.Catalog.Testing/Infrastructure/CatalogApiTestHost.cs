@@ -3,6 +3,7 @@ using Microsoft.Extensions.Diagnostics.HealthChecks;
 using Microsoft.Extensions.Hosting;
 using SharedKernel.AI;
 using SharedKernel.AspNetCore;
+using SharedKernel.EventSourcing;
 using SharedKernel.Messaging.IntegrationEvents;
 using SharedKernel.MalwareScanning.ClamAv;
 using SharedKernel.Testing.AspNetCore;
@@ -38,6 +39,14 @@ internal static class CatalogApiTestHost
         TestPublicMediaImageStore mediaStore)
     {
         return Create(null, tourStore, publicContentStore, mediaStore, null, null);
+    }
+
+    public static WebApplicationFactory<CatalogApiHostEntryPoint> Create(
+        TestCatalogTourReadModelStore tourStore,
+        TestPublicContentStore publicContentStore,
+        TestEventStore eventStore)
+    {
+        return Create(null, tourStore, publicContentStore, null, null, null, eventStore: eventStore);
     }
 
     public static WebApplicationFactory<CatalogApiHostEntryPoint> Create(
@@ -121,8 +130,19 @@ internal static class CatalogApiTestHost
         TestPublicMediaImageStore? mediaStore,
         TestMediaObjectStore? objectStore,
         IImageTextGenerator? imageTextGenerator,
-        bool authenticateClient = true)
+        bool authenticateClient = true,
+        TestEventStore? eventStore = null)
     {
+        var configuredTourStore = tourStore ?? new TestCatalogTourReadModelStore();
+        var configuredEventStore = eventStore ?? new TestEventStore();
+        if (eventStore is null)
+        {
+            foreach (var tour in configuredTourStore.GetSnapshot())
+            {
+                configuredEventStore.SeedTour(tour);
+            }
+        }
+
         var hostEnvironment = environment ?? Environments.Development;
         var configuration = new Dictionary<string, string?>
         {
@@ -146,7 +166,9 @@ internal static class CatalogApiTestHost
             services =>
             {
                 services.Replace(ServiceDescriptor.Singleton<IPublicContentStore>(publicContentStore ?? new TestPublicContentStore()));
-                services.Replace(ServiceDescriptor.Singleton<ICatalogTourReadModelStore>(tourStore ?? new TestCatalogTourReadModelStore()));
+                services.Replace(ServiceDescriptor.Singleton<ICatalogTourReadModelStore>(configuredTourStore));
+                services.Replace(ServiceDescriptor.Singleton<IEventStore>(configuredEventStore));
+                services.Replace(ServiceDescriptor.Singleton<ICatalogTourSlugLock>(new TestCatalogTourSlugLock()));
                 services.Replace(ServiceDescriptor.Singleton<IPublicMediaImageStore>(mediaStore ?? new TestPublicMediaImageStore()));
                 services.Replace(ServiceDescriptor.Singleton<IMediaObjectStore>(objectStore ?? new TestMediaObjectStore()));
                 services.Replace(ServiceDescriptor.Singleton<IIntegrationEventOutbox, TestIntegrationEventOutbox>());

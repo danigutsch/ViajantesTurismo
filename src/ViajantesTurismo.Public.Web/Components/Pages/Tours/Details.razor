@@ -1,5 +1,11 @@
 @page "/group-bike-tours/{Slug}"
+@using Microsoft.AspNetCore.Routing
+@using Microsoft.Extensions.Options
+@using SharedKernel.AspNetCore
 @inject IPublicCatalogApiClient CatalogApi
+@inject LinkGenerator LinkGenerator
+@inject NavigationManager Navigation
+@inject IOptions<PublicWebSitemapOptions> SitemapOptions
 
 @if (_loadFailed)
 {
@@ -15,19 +21,61 @@ else if (_tour is null)
 }
 else
 {
-    <PageTitle>@_tour.Title - Viajantes Turismo</PageTitle>
+    var documentTitle = GetDocumentTitle();
+    var metadataDescription = GetMetadataDescription();
+    var canonicalUrl = GetCanonicalUrl();
+    var socialImageUrl = GetSocialImageUrl();
+    var coverImage = GetCoverImage();
+    var galleryImages = GetGalleryImages(coverImage);
+
+    <PageTitle>@documentTitle</PageTitle>
+    <HeadContent>
+        <meta name="description" content="@metadataDescription" />
+        <link rel="canonical" href="@canonicalUrl" />
+        <meta property="og:title" content="@documentTitle" />
+        <meta property="og:description" content="@metadataDescription" />
+        <meta property="og:type" content="website" />
+        <meta property="og:url" content="@canonicalUrl" />
+        @if (socialImageUrl is not null)
+        {
+            <meta property="og:image" content="@socialImageUrl" />
+        }
+    </HeadContent>
 
     <article>
         <a href="/group-bike-tours">All tours</a>
         <h1>@_tour.Title</h1>
-        <p>@_tour.Identifier</p>
+        @if (coverImage is not null)
+        {
+            <div class="tour-hero">
+                <ResponsiveTourImage Image="coverImage" Sizes="100vw" Loading="eager" FetchPriority="high" />
+            </div>
+        }
 
-        @if (_tour.Images.Count > 0)
+        <p class="tour-summary">@_tour.Summary</p>
+
+        @if (!string.IsNullOrWhiteSpace(_tour.Description))
+        {
+            <section aria-labelledby="tour-description">
+                <h2 id="tour-description">About this tour</h2>
+                <p>@_tour.Description</p>
+            </section>
+        }
+
+        @if (!string.IsNullOrWhiteSpace(_tour.Itinerary))
+        {
+            <section aria-labelledby="tour-itinerary">
+                <h2 id="tour-itinerary">Itinerary</h2>
+                <p>@_tour.Itinerary</p>
+            </section>
+        }
+
+        @if (galleryImages.Count > 0)
         {
             <section aria-labelledby="tour-gallery">
                 <h2 id="tour-gallery">Gallery</h2>
                 <div class="tour-gallery">
-                    <TourGallery Images="_tour.Images" PrioritizeFirstImage="true" />
+                    <TourGallery Images="galleryImages" />
                 </div>
             </section>
         }
@@ -41,8 +89,69 @@ else
     [CascadingParameter]
     private HttpContext? HttpContext { get; set; }
 
-    private CatalogTourDto? _tour;
+    private TourDetailsDto? _tour;
     private bool _loadFailed;
+
+    private string GetDocumentTitle()
+    {
+        return string.IsNullOrWhiteSpace(_tour?.SeoTitle)
+            ? $"{_tour?.Title} - Viajantes Turismo"
+            : _tour.SeoTitle;
+    }
+
+    private string GetMetadataDescription()
+    {
+        return string.IsNullOrWhiteSpace(_tour?.SeoDescription)
+            ? _tour?.Summary ?? string.Empty
+            : _tour.SeoDescription;
+    }
+
+    private Uri GetCanonicalUrl()
+    {
+        var origin = SitemapCanonicalOrigin.Parse(SitemapOptions.Value.CanonicalOrigin);
+        return new Uri(origin, $"/group-bike-tours/{Uri.EscapeDataString(_tour?.Slug ?? Slug)}");
+    }
+
+    private Uri? GetSocialImageUrl()
+    {
+        var image = GetCoverImage();
+        var variant = image?.ResponsiveVariants
+            .Where(variant => GetMediaFormatSegment(variant.ContentType) is not null)
+            .OrderByDescending(variant => variant.Width)
+            .FirstOrDefault();
+        if (image is null || variant is null)
+        {
+            return null;
+        }
+
+        var format = GetMediaFormatSegment(variant.ContentType);
+        var path = LinkGenerator.GetPathByName(
+            PublicWebEndpoints.PublicMediaByRenditionEndpointName,
+            new { id = image.Id, width = variant.Width, format });
+        return path is null ? null : new Uri(SitemapCanonicalOrigin.Parse(SitemapOptions.Value.CanonicalOrigin), path);
+    }
+
+    private CatalogTourImageDto? GetCoverImage() => _tour?.Images
+        .OrderByDescending(image => image.IsCover)
+        .ThenBy(image => image.SortOrder)
+        .FirstOrDefault();
+
+    private IReadOnlyList<CatalogTourImageDto> GetGalleryImages(CatalogTourImageDto? coverImage)
+    {
+        return _tour?.Images
+            .Where(image => image.Id != coverImage?.Id)
+            .ToArray()
+            ?? [];
+    }
+
+    private static string? GetMediaFormatSegment(string contentType) => contentType.Trim().ToUpperInvariant() switch
+    {
+        "IMAGE/AVIF" => "avif",
+        "IMAGE/JPEG" => "jpg",
+        "IMAGE/PNG" => "png",
+        "IMAGE/WEBP" => "webp",
+        _ => null
+    };
 
     /// <inheritdoc />
     protected override async Task OnParametersSetAsync()
@@ -52,7 +161,17 @@ else
 
         try
         {
-            _tour = await CatalogApi.GetPublishedTourBySlug(Slug, CancellationToken.None);
+            var requestAborted = HttpContext?.RequestAborted ?? CancellationToken.None;
+            _tour = await CatalogApi.GetPublishedTourBySlug(Slug, requestAborted);
+            if (_tour is null)
+            {
+                Navigation.NotFound();
+            }
+        }
+        catch (OperationCanceledException) when (HttpContext?.RequestAborted.IsCancellationRequested != true)
+        {
+            PublicWebHttpCache.SetServiceUnavailableNoStore(HttpContext);
+            _loadFailed = true;
         }
         catch (HttpRequestException)
         {

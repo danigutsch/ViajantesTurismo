@@ -20,8 +20,38 @@ public sealed record UpsertCatalogTourPresentationRequest
     public required string Slug { get; init; }
 
     /// <summary>
-    /// Gets a value indicating whether the tour is visible on the public website.
+    /// Gets the concise customer-facing tour summary.
     /// </summary>
-    [Required]
-    public required bool IsPublished { get; init; }
+    [StringLength(ContractConstants.MaxBodyLength)]
+    public string Summary { get; init; } = string.Empty;
+
+    /// <summary>
+    /// Gets the detailed customer-facing tour description.
+    /// </summary>
+    [StringLength(ContractConstants.MaxBodyLength)]
+    public string Description { get; init; } = string.Empty;
+
+    /// <summary>
+    /// Gets the plain-text customer-facing itinerary.
+    /// </summary>
+    [StringLength(ContractConstants.MaxBodyLength)]
+    public string Itinerary { get; init; } = string.Empty;
+
+    /// <summary>
+    /// Gets the optional search-engine title override.
+    /// </summary>
+    [StringLength(ContractConstants.MaxNameLength)]
+    public string SeoTitle { get; init; } = string.Empty;
+
+    /// <summary>
+    /// Gets the optional search-engine description override.
+    /// </summary>
+    [StringLength(ContractConstants.MaxBodyLength)]
+    public string SeoDescription { get; init; } = string.Empty;
+
+    /// <summary>
+    /// Gets the stream version on which this edit is based.
+    /// </summary>
+    [Range(1, long.MaxValue)]
+    public required long ExpectedVersion { get; init; }
 }

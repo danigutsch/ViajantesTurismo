@@ -1,5 +1,6 @@
 using System.Net.Http.Json;
 using TestTraits = ViajantesTurismo.Catalog.ApiServiceTests.Infrastructure.TestTraits;
+using ViajantesTurismo.Catalog.Contracts.Application;
 
 namespace ViajantesTurismo.Catalog.ApiServiceTests;
 
@@ -10,8 +11,10 @@ namespace ViajantesTurismo.Catalog.ApiServiceTests;
 [Trait(SharedKernel.Testing.TestTraitNames.HostName, TestTraits.TestServerHost)]
 public sealed class CatalogApiAuthorizationTests
 {
-    [Fact]
-    public async Task Management_catalog_endpoint_rejects_anonymous_requests()
+    [Theory]
+    [InlineData("/api/v1/catalog/tours")]
+    [InlineData("/API/V1/CATALOG/TOURS")]
+    public async Task Management_catalog_endpoint_rejects_anonymous_requests(string path)
     {
         // Arrange
         await using var factory = CatalogApiTestHost.CreateAnonymous();
@@ -19,11 +22,18 @@ public sealed class CatalogApiAuthorizationTests
 
         // Act
         using var response = await client.GetAsync(
-            new Uri("/api/v1/catalog/tours", UriKind.Relative),
+            new Uri(path, UriKind.Relative),
             TestContext.Current.CancellationToken);
 
         // Assert
         response.StatusCode.ShouldBe(HttpStatusCode.Unauthorized);
+        var cacheControl = response.Headers.CacheControl.ShouldNotBeNull();
+        cacheControl.NoStore.ShouldBeTrue();
+        response.Headers.GetValues("Pragma").ShouldHaveSingleItem().ShouldBe("no-cache");
+        var expires = response.Headers.NonValidated.TryGetValues("Expires", out var values)
+            ? values
+            : response.Content.Headers.NonValidated["Expires"];
+        expires.ShouldHaveSingleItem().ShouldBe("Thu, 01 Jan 1970 00:00:00 GMT");
     }
 
     [Fact]
@@ -75,6 +85,13 @@ public sealed class CatalogApiAuthorizationTests
 
         // Assert
         response.StatusCode.ShouldBe(HttpStatusCode.Forbidden);
+        var cacheControl = response.Headers.CacheControl.ShouldNotBeNull();
+        cacheControl.NoStore.ShouldBeTrue();
+        response.Headers.GetValues("Pragma").ShouldHaveSingleItem().ShouldBe("no-cache");
+        var expires = response.Headers.NonValidated.TryGetValues("Expires", out var values)
+            ? values
+            : response.Content.Headers.NonValidated["Expires"];
+        expires.ShouldHaveSingleItem().ShouldBe("Thu, 01 Jan 1970 00:00:00 GMT");
     }
 
     [Theory]
@@ -159,6 +176,8 @@ public sealed class CatalogApiAuthorizationTests
 
     [Theory]
     [InlineData("PUT", "/api/v1/catalog/tours/1d02ec44-41b5-4d3a-878b-89f53261a803/presentation")]
+    [InlineData("POST", "/api/v1/catalog/tours/1d02ec44-41b5-4d3a-878b-89f53261a803/publish")]
+    [InlineData("POST", "/api/v1/catalog/tours/1d02ec44-41b5-4d3a-878b-89f53261a803/unpublish")]
     [InlineData("PUT", "/api/v1/catalog/media/images/1d02ec44-41b5-4d3a-878b-89f53261a803/accessibility-review")]
     [InlineData("POST", "/api/v1/catalog/media/images/1d02ec44-41b5-4d3a-878b-89f53261a803/accessibility-draft")]
     [InlineData("PUT", "/api/v1/catalog/public-content/home.hero")]
@@ -181,6 +200,8 @@ public sealed class CatalogApiAuthorizationTests
 
     [Theory]
     [InlineData("PUT", "/api/v1/catalog/tours/1d02ec44-41b5-4d3a-878b-89f53261a803/presentation")]
+    [InlineData("POST", "/api/v1/catalog/tours/1d02ec44-41b5-4d3a-878b-89f53261a803/publish")]
+    [InlineData("POST", "/api/v1/catalog/tours/1d02ec44-41b5-4d3a-878b-89f53261a803/unpublish")]
     [InlineData("PUT", "/api/v1/catalog/media/images/1d02ec44-41b5-4d3a-878b-89f53261a803/accessibility-review")]
     [InlineData("POST", "/api/v1/catalog/media/images/1d02ec44-41b5-4d3a-878b-89f53261a803/accessibility-draft")]
     [InlineData("PUT", "/api/v1/catalog/public-content/home.hero")]
@@ -204,6 +225,8 @@ public sealed class CatalogApiAuthorizationTests
 
     [Theory]
     [InlineData("Admin", "PUT", "/api/v1/catalog/tours/1d02ec44-41b5-4d3a-878b-89f53261a803/presentation", HttpStatusCode.BadRequest)]
+    [InlineData("Admin", "POST", "/api/v1/catalog/tours/1d02ec44-41b5-4d3a-878b-89f53261a803/publish", HttpStatusCode.BadRequest)]
+    [InlineData("Admin", "POST", "/api/v1/catalog/tours/1d02ec44-41b5-4d3a-878b-89f53261a803/unpublish", HttpStatusCode.BadRequest)]
     [InlineData("Admin", "PUT", "/api/v1/catalog/media/images/1d02ec44-41b5-4d3a-878b-89f53261a803/accessibility-review", HttpStatusCode.NotFound)]
     [InlineData("Admin", "POST", "/api/v1/catalog/media/images/1d02ec44-41b5-4d3a-878b-89f53261a803/accessibility-draft", HttpStatusCode.NotFound)]
     [InlineData("Operator", "PUT", "/api/v1/catalog/tours/1d02ec44-41b5-4d3a-878b-89f53261a803/presentation", HttpStatusCode.BadRequest)]
@@ -231,6 +254,26 @@ public sealed class CatalogApiAuthorizationTests
 
         // Assert
         response.StatusCode.ShouldBe(expectedStatusCode);
+    }
+
+    [Theory]
+    [InlineData("publish")]
+    [InlineData("unpublish")]
+    public async Task Catalog_publication_endpoints_reject_operator_role(string transition)
+    {
+        // Arrange
+        await using var factory = CatalogApiTestHost.CreateAnonymous();
+        using var client = factory.CreateClient();
+        CatalogApiTestHost.ConfigureAuthenticatedClient(client, "Operator");
+
+        // Act
+        using var response = await client.PostAsJsonAsync(
+            new Uri($"/api/v1/catalog/tours/1d02ec44-41b5-4d3a-878b-89f53261a803/{transition}", UriKind.Relative),
+            new CatalogTourPublicationRequest { ExpectedVersion = 1 },
+            TestContext.Current.CancellationToken);
+
+        // Assert
+        response.StatusCode.ShouldBe(HttpStatusCode.Forbidden);
     }
 
     [Theory]

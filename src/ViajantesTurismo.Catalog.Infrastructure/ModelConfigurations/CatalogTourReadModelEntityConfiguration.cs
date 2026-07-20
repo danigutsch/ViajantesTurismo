@@ -16,6 +16,15 @@ internal sealed class CatalogTourReadModelEntityConfiguration : IEntityTypeConfi
         entity.Property(tour => tour.Identifier).HasMaxLength(CatalogDomainLimits.MaxDefaultLength).IsRequired();
         entity.Property(tour => tour.Title).HasMaxLength(CatalogDomainLimits.MaxNameLength).IsRequired();
         entity.Property(tour => tour.Slug).HasMaxLength(CatalogDomainLimits.MaxSlugLength).IsRequired();
+        entity.Property(tour => tour.Summary).HasMaxLength(CatalogDomainLimits.MaxBodyLength).IsRequired();
+        entity.Property(tour => tour.Description).HasMaxLength(CatalogDomainLimits.MaxBodyLength).IsRequired();
+        entity.Property(tour => tour.Itinerary).HasMaxLength(CatalogDomainLimits.MaxBodyLength).IsRequired();
+        entity.Property(tour => tour.SeoTitle).HasMaxLength(CatalogDomainLimits.MaxNameLength).IsRequired();
+        entity.Property(tour => tour.SeoDescription).HasMaxLength(CatalogDomainLimits.MaxBodyLength).IsRequired();
+        entity.Property(tour => tour.StreamVersion).HasDefaultValue(1L).IsRequired();
+        entity.Property(tour => tour.PresentationPosition).IsRequired().IsConcurrencyToken();
+        entity.Property(tour => tour.PublicationPosition).IsRequired().IsConcurrencyToken();
+        entity.Property(tour => tour.Position).IsConcurrencyToken();
         entity.Property(tour => tour.UpdatedAt).IsRequired();
     }
 }

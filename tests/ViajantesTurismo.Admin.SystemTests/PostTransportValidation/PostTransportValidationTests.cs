@@ -49,7 +49,7 @@ public sealed class PostTransportValidationTests(AspireSystemTestFixture fixture
         // Assert
         published.IsPublished.ShouldBeTrue();
         await Expect(Page.GetByRole(AriaRole.Heading, new PageGetByRoleOptions { Name = "Group Bike Tours" })).ToBeVisibleAsync();
-        await Expect(Page.GetByText(title)).ToBeVisibleAsync();
+        await Expect(Page.GetByRole(AriaRole.Link, new PageGetByRoleOptions { Name = title })).ToBeVisibleAsync();
     }
 
     [Fact]
@@ -73,7 +73,7 @@ public sealed class PostTransportValidationTests(AspireSystemTestFixture fixture
         published.Identifier.ShouldBe(identifier);
         published.Slug.ShouldBe(slug);
         await Expect(Page.GetByRole(AriaRole.Heading, new PageGetByRoleOptions { Name = title })).ToBeVisibleAsync();
-        await Expect(Page.GetByText(identifier)).ToBeVisibleAsync();
+        await Expect(Page.GetByText($"Discover {title} by bicycle.")).ToBeVisibleAsync();
     }
 
     [Fact]
@@ -102,6 +102,6 @@ public sealed class PostTransportValidationTests(AspireSystemTestFixture fixture
         eventCountAfterDuplicate.ShouldBe(1);
         var projectedTours = catalogTours.Where(tour => tour.AdminTourId == adminTour.Id).ToArray();
         projectedTours.ShouldHaveSingleItem().Id.ShouldBe(catalogTour.Id);
-        await Expect(Page.GetByText(title)).ToHaveCountAsync(1);
+        await Expect(Page.GetByRole(AriaRole.Link, new PageGetByRoleOptions { Name = title })).ToHaveCountAsync(1);
     }
 }

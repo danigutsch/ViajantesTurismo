@@ -8,4 +8,18 @@ internal static partial class CatalogCacheLog
         Level = LogLevel.Information,
         Message = "Invalidated public cache area {CacheArea}.")]
     public static partial void PublicCacheAreaInvalidated(this ILogger logger, string cacheArea);
+
+    [LoggerMessage(
+        EventId = 2,
+        EventName = nameof(TourProjectionPending),
+        Level = LogLevel.Warning,
+        Message = "Catalog tour {CatalogTourId} was committed but its inline projection is pending.")]
+    public static partial void TourProjectionPending(this ILogger logger, Guid catalogTourId, Exception exception);
+
+    [LoggerMessage(
+        EventId = 3,
+        EventName = nameof(PublicCacheAreaInvalidationFailed),
+        Level = LogLevel.Warning,
+        Message = "Could not invalidate public cache area {CacheArea}.")]
+    public static partial void PublicCacheAreaInvalidationFailed(this ILogger logger, string cacheArea, Exception exception);
 }

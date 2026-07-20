@@ -74,6 +74,7 @@ internal static class DocumentationTestContent
               "sourcePath": "src",
               "routePrefixes": {
                 "customersGroup": "/customers",
+                "managementCatalog": "/api/v1/catalog",
                 "publicCatalogGroup": "/api/v1/public/catalog"
               }
             },
@@ -219,6 +220,18 @@ internal static class DocumentationTestContent
                 var publicCatalogGroup = app.MapPublicCatalogGroup();
                 publicCatalogGroup.MapGet("/content/{key}", GetPublicContent)
                     .WithName("GetPublicContent");
+                var managementCatalog = app.MapCatalogGroup();
+                managementCatalog.MapPut("/tours/{id}/presentation", UpdatePresentation)
+                    .AddOpenApiOperationTransformer((operation, _, _) =>
+                    {
+                        operation.Description = "Updates presentation.";
+                        operation.Summary = "Update";
+                        operation.Deprecated = false;
+                        operation.Tags = [];
+                        operation.Parameters = [];
+                        return Task.CompletedTask;
+                    })
+                    .RequireAuthorization();
                 return app;
             }
         }

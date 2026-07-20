@@ -15,6 +15,7 @@ public static class CatalogContractValidationTestsHelpers
             Title = "Tour 2026",
             Slug = "tour-2026",
             IsPublished = true,
+            Version = 1,
             Images =
             [
                 new CatalogTourImageDto

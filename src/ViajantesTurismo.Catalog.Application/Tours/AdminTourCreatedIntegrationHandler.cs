@@ -11,7 +11,8 @@ namespace ViajantesTurismo.Catalog.Application.Tours;
 /// Creates a draft Catalog tour stream from an Admin tour-created integration event.
 /// </summary>
 public sealed class AdminTourCreatedIntegrationHandler(
-    IEventStore eventStore) : IIntegrationEventHandler<AdminTourCreatedIntegrationEvent>
+    IEventStore eventStore,
+    ICatalogTourSlugLock slugLock) : IIntegrationEventHandler<AdminTourCreatedIntegrationEvent>
 {
     /// <inheritdoc />
     public async ValueTask Handle(AdminTourCreatedIntegrationEvent notification, CancellationToken ct)
@@ -25,22 +26,30 @@ public sealed class AdminTourCreatedIntegrationHandler(
         activity?.SetTag(CatalogTelemetry.TagIntegrationEventType, AdminTourCreatedIntegrationEvent.EventType);
         activity?.SetTag(CatalogTelemetry.TagIntegrationEventVersion, AdminTourCreatedIntegrationEvent.EventVersion);
 
-        var catalogTour = CatalogTour.CreateDraft(
-            notification.AdminTourId,
-            notification.Identifier,
-            notification.Name,
-            notification.EventId);
-
-        var pendingEvents = catalogTour.GetUncommittedEvents();
-        activity?.SetTag(CatalogTelemetry.TagEventCount, pendingEvents.Count);
         try
         {
-            await eventStore.Append(
-                CatalogTourStreamIds.FromAdminTourId(notification.AdminTourId),
-                ExpectedStreamRevision.NoStream,
-                pendingEvents,
-                ct);
-            catalogTour.ClearUncommittedEvents();
+            ct.ThrowIfCancellationRequested();
+            var preferredTour = CatalogTour.CreateDraft(
+                notification.AdminTourId,
+                notification.Identifier,
+                notification.Name,
+                notification.EventId);
+            if (!await TryPersist(preferredTour, ct).ConfigureAwait(false))
+            {
+                var fallbackTour = CatalogTour.CreateDraft(
+                    preferredTour.Id,
+                    notification.AdminTourId,
+                    notification.Identifier,
+                    notification.Name,
+                    notification.EventId,
+                    $"tour-{preferredTour.Id:N}");
+                if (!await TryPersist(fallbackTour, ct).ConfigureAwait(false))
+                {
+                    throw new CatalogTourSlugConflictException();
+                }
+            }
+
+            activity?.SetTag(CatalogTelemetry.TagEventCount, 1);
 
             SetOutcome(activity, CatalogTelemetry.OutcomeSuccess);
             CatalogTelemetry.TourStreamUpdates.Add(1, CreateTags(CatalogTelemetry.OutcomeSuccess));
@@ -64,6 +73,28 @@ public sealed class AdminTourCreatedIntegrationHandler(
 
             throw;
         }
+    }
+
+    private async ValueTask<bool> TryPersist(CatalogTour catalogTour, CancellationToken ct)
+    {
+        await using var slugLease = await slugLock.Acquire(catalogTour.Slug, ct).ConfigureAwait(false);
+        if (!await CatalogTourSlugAvailability.IsAvailable(
+            eventStore,
+            catalogTour.Id,
+            catalogTour.Slug,
+            ct).ConfigureAwait(false))
+        {
+            return false;
+        }
+
+        var pendingEvents = catalogTour.GetUncommittedEvents();
+        await eventStore.Append(
+            CatalogTourStreamIds.FromAdminTourId(catalogTour.AdminTourId),
+            ExpectedStreamRevision.NoStream,
+            pendingEvents,
+            ct).ConfigureAwait(false);
+        catalogTour.ClearUncommittedEvents();
+        return true;
     }
 
     private static TagList CreateTags(string outcome)
