@@ -35,7 +35,7 @@ else
     [CascadingParameter]
     private HttpContext? HttpContext { get; set; }
 
-    private CatalogTourDto[]? _tours;
+    private TourSummaryDto[]? _tours;
     private bool _loadFailed;
 
     /// <inheritdoc />
@@ -43,7 +43,14 @@ else
     {
         try
         {
-            _tours = await CatalogApi.GetPublishedTours(CancellationToken.None);
+            var requestAborted = HttpContext?.RequestAborted ?? CancellationToken.None;
+            _tours = await CatalogApi.GetPublishedTours(requestAborted);
+        }
+        catch (OperationCanceledException) when (HttpContext?.RequestAborted.IsCancellationRequested != true)
+        {
+            PublicWebHttpCache.SetServiceUnavailableNoStore(HttpContext);
+            _loadFailed = true;
+            _tours = [];
         }
         catch (HttpRequestException)
         {
@@ -53,5 +60,5 @@ else
         }
     }
 
-    private static string GalleryHeadingId(CatalogTourDto tour) => $"gallery-{tour.Id:N}";
+    private static string GalleryHeadingId(TourSummaryDto tour) => $"gallery-{tour.Slug}";
 }

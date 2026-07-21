@@ -17,9 +17,20 @@ storage target.
 Use event sourcing for Catalog tours and related customer-facing Catalog entities that require
 versioned presentation history.
 
-`CatalogTour` will be modeled as an event-sourced aggregate. Catalog stores append-only event streams,
+`CatalogTour` is modeled as an event-sourced aggregate. Catalog stores append-only event streams,
 enforces optimistic stream versioning, and builds read models through projections. Catalog may use the
 same physical PostgreSQL resource as Admin initially, but it owns separate schema and tables.
+
+Unpublished presentation edits and explicit publish/unpublish transitions append
+`CatalogTourPresentationChanged`, `CatalogTourPublished`, and `CatalogTourUnpublished` events. Public
+summary and detail DTOs remain separate from the management DTO and expose published projections only.
+The command path attempts inline projection after append. If the event commits but projection fails,
+the API returns `202 Accepted` with the management detail location and leaves replay to the projection
+runner without advancing its checkpoint.
+
+No Catalog tour HTTP contract has been released. Separating the public DTOs and requiring optimistic
+versions therefore update v1 directly; all repository-owned typed clients and OpenAPI artifacts change
+in the same release.
 
 Create `SharedKernel.EventSourcing` for storage-neutral event-sourcing abstractions. PostgreSQL
 storage and projection persistence belong in bounded-context infrastructure or future adapter
@@ -31,6 +42,7 @@ projects.
 - Public and management read models can be rebuilt from event streams.
 - Optimistic stream versioning provides concurrency control for content editing.
 - Projection code and checkpointing become required infrastructure.
+- Clients must treat `202 Accepted` as committed but not yet visible in read models.
 - The first Catalog implementation is more complex than state-based CRUD.
 
 ## Alternatives Considered

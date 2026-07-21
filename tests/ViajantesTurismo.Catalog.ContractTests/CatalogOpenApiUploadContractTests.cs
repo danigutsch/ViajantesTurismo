@@ -53,6 +53,8 @@ public sealed class CatalogOpenApiUploadContractTests
         (string Path, string Method, string SuccessStatus)[] mutationOperations =
         [
             ("/api/v1/catalog/tours/{id}/presentation", "put", "200"),
+            ("/api/v1/catalog/tours/{id}/publish", "post", "204"),
+            ("/api/v1/catalog/tours/{id}/unpublish", "post", "204"),
             ("/api/v1/catalog/tours/{id}/images", "post", "201"),
             ("/api/v1/catalog/media/images/{id}/accessibility-draft", "post", "200"),
             ("/api/v1/catalog/media/images/{id}/accessibility-review", "put", "200"),

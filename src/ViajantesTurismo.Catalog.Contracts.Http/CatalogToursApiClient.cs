@@ -26,7 +26,7 @@ public sealed class CatalogToursApiClient(HttpClient httpClient) : ICatalogTours
             }
 
             tours ??= [];
-            tours.Add(tour);
+            tours.Add(EnsureValidTour(tour));
         }
 
         return tours?.ToArray() ?? [];
@@ -44,9 +44,39 @@ public sealed class CatalogToursApiClient(HttpClient httpClient) : ICatalogTours
             return null;
         }
 
+        ThrowIfProjectionPending(response);
         await ContractHttpValidation.EnsureSuccessOrThrowValidationException(response, Json.ContractValidationProblemDto, ct).ConfigureAwait(false);
-        return await response.Content.ReadFromJsonAsync(Json.CatalogTourDto, ct).ConfigureAwait(false)
-               ?? throw new InvalidOperationException("The catalog tour response body was empty.");
+        var tour = await response.Content.ReadFromJsonAsync(Json.CatalogTourDto, ct).ConfigureAwait(false)
+            ?? throw new InvalidOperationException("The catalog tour response body was empty.");
+        return EnsureValidTour(tour);
+    }
+
+    /// <inheritdoc />
+    public async Task Publish(Guid id, CatalogTourPublicationRequest request, CancellationToken ct)
+    {
+        ArgumentNullException.ThrowIfNull(request);
+
+        using var response = await httpClient.PostAsJsonAsync(
+            $"{RoutePrefix}/tours/{id}/publish",
+            request,
+            Json.CatalogTourPublicationRequest,
+            ct).ConfigureAwait(false);
+        ThrowIfProjectionPending(response);
+        await ContractHttpValidation.EnsureSuccessOrThrowValidationException(response, Json.ContractValidationProblemDto, ct).ConfigureAwait(false);
+    }
+
+    /// <inheritdoc />
+    public async Task Unpublish(Guid id, CatalogTourPublicationRequest request, CancellationToken ct)
+    {
+        ArgumentNullException.ThrowIfNull(request);
+
+        using var response = await httpClient.PostAsJsonAsync(
+            $"{RoutePrefix}/tours/{id}/unpublish",
+            request,
+            Json.CatalogTourPublicationRequest,
+            ct).ConfigureAwait(false);
+        ThrowIfProjectionPending(response);
+        await ContractHttpValidation.EnsureSuccessOrThrowValidationException(response, Json.ContractValidationProblemDto, ct).ConfigureAwait(false);
     }
 
     /// <inheritdoc />
@@ -60,8 +90,9 @@ public sealed class CatalogToursApiClient(HttpClient httpClient) : ICatalogTours
         }
 
         response.EnsureSuccessStatusCode();
-        return await response.Content.ReadFromJsonAsync(Json.CatalogTourDto, ct).ConfigureAwait(false)
-               ?? throw new InvalidOperationException("The catalog tour response body was empty.");
+        var tour = await response.Content.ReadFromJsonAsync(Json.CatalogTourDto, ct).ConfigureAwait(false)
+            ?? throw new InvalidOperationException("The catalog tour response body was empty.");
+        return EnsureValidTour(tour);
     }
 
     /// <inheritdoc />
@@ -161,6 +192,27 @@ public sealed class CatalogToursApiClient(HttpClient httpClient) : ICatalogTours
         if (value is not null)
         {
             content.Add(new StringContent(value), name);
+        }
+    }
+
+    private static CatalogTourDto EnsureValidTour(CatalogTourDto tour)
+    {
+        if (tour.Version < 1)
+        {
+            throw new InvalidOperationException("The catalog tour response contained an invalid stream version.");
+        }
+
+        return tour;
+    }
+
+    private static void ThrowIfProjectionPending(HttpResponseMessage response)
+    {
+        if (response.StatusCode == HttpStatusCode.Accepted)
+        {
+            throw new HttpRequestException(
+                "The Catalog tour change was accepted and is waiting for projection.",
+                inner: null,
+                HttpStatusCode.Accepted);
         }
     }
 }

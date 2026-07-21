@@ -8,9 +8,11 @@ namespace ViajantesTurismo.Catalog.Domain.Tours;
 /// <param name="Identifier">The source Admin tour business identifier.</param>
 /// <param name="Title">The initial customer-facing title.</param>
 /// <param name="SourceEventId">The integration event that caused the draft creation.</param>
+/// <param name="InitialSlug">The selected canonical initial slug.</param>
 public sealed record CatalogTourDraftCreated(
     Guid CatalogTourId,
     Guid AdminTourId,
     string Identifier,
     string Title,
-    Guid SourceEventId);
+    Guid SourceEventId,
+    string InitialSlug);

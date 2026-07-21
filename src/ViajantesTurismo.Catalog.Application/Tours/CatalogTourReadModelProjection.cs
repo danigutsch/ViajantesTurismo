@@ -17,13 +17,49 @@ public sealed class CatalogTourReadModelProjection(
     {
         ArgumentNullException.ThrowIfNull(envelope);
 
-        if (envelope.Data is not CatalogTourDraftCreated draftCreated)
+        switch (envelope.Data)
         {
-            return;
+            case CatalogTourDraftCreated draftCreated:
+                await readModelStore.UpsertDraft(
+                    CatalogTourDraftReadModel.FromDraftCreated(draftCreated, envelope.Position, envelope.RecordedAt),
+                    ct);
+                return;
+            case CatalogTourPresentationChanged presentationChanged:
+                await readModelStore.UpdatePresentation(
+                    presentationChanged.CatalogTourId,
+                    new CatalogTourPresentationUpdate(
+                        presentationChanged.Title,
+                        presentationChanged.Slug,
+                        presentationChanged.Summary,
+                        presentationChanged.Description,
+                        presentationChanged.Itinerary,
+                        presentationChanged.SeoTitle,
+                        presentationChanged.SeoDescription),
+                    envelope.Revision.Value,
+                    envelope.Position,
+                    envelope.RecordedAt,
+                    ct);
+                return;
+            case CatalogTourPublished published:
+                await readModelStore.SetPublicationStatus(
+                    published.CatalogTourId,
+                    isPublished: true,
+                    envelope.Revision.Value,
+                    envelope.Position,
+                    envelope.RecordedAt,
+                    ct);
+                return;
+            case CatalogTourUnpublished unpublished:
+                await readModelStore.SetPublicationStatus(
+                    unpublished.CatalogTourId,
+                    isPublished: false,
+                    envelope.Revision.Value,
+                    envelope.Position,
+                    envelope.RecordedAt,
+                    ct);
+                return;
+            default:
+                return;
         }
-
-        await readModelStore.UpsertDraft(
-            CatalogTourDraftReadModel.FromDraftCreated(draftCreated, envelope.Position, envelope.RecordedAt),
-            ct);
     }
 }

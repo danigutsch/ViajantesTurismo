@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Http;
 using System.Net;
+using System.Text.Json;
 using CatalogToursApiClientTestsHelpers = SharedKernel.Testing.Contracts.ContractHttpClientTestHelper;
 using SharedKernel.Testing.Contracts;
 using ViajantesTurismo.Catalog.Contracts.Application;
@@ -27,6 +28,7 @@ public sealed class CatalogToursApiClientTests
                     "title":"First tour",
                     "slug":"first-tour",
                     "isPublished":false,
+                    "version":1,
                     "images":[],
                     "updatedAt":"2026-06-25T10:00:00+00:00"
                   },
@@ -38,6 +40,7 @@ public sealed class CatalogToursApiClientTests
                     "title":"Second tour",
                     "slug":"second-tour",
                     "isPublished":true,
+                    "version":2,
                     "images":[],
                     "updatedAt":"2026-06-25T11:00:00+00:00"
                   }
@@ -76,11 +79,13 @@ public sealed class CatalogToursApiClientTests
         // Arrange
         var requestPath = string.Empty;
         var requestMethod = string.Empty;
+        var requestBody = string.Empty;
         var tourId = Guid.Parse("11111111-1111-1111-1111-111111111111");
         using var httpClient = CatalogToursApiClientTestsHelpers.CreateClient(request =>
         {
             requestPath = request.RequestUri?.PathAndQuery ?? string.Empty;
             requestMethod = request.Method.Method;
+            requestBody = request.Content?.ReadAsStringAsync().GetAwaiter().GetResult() ?? string.Empty;
             return CatalogToursApiClientTestsHelpers.JsonResponse("""
                 {
                   "id":"11111111-1111-1111-1111-111111111111",
@@ -89,6 +94,7 @@ public sealed class CatalogToursApiClientTests
                   "title":"Updated tour",
                   "slug":"updated-tour",
                   "isPublished":true,
+                  "version":2,
                   "images":[],
                   "updatedAt":"2026-06-25T10:00:00+00:00"
                 }
@@ -103,7 +109,12 @@ public sealed class CatalogToursApiClientTests
             {
                 Title = "Updated tour",
                 Slug = "updated-tour",
-                IsPublished = true
+                Summary = "Updated summary",
+                Description = "Updated description",
+                Itinerary = "Updated itinerary",
+                SeoTitle = "Updated SEO title",
+                SeoDescription = "Updated SEO description",
+                ExpectedVersion = 4
             },
             TestContext.Current.CancellationToken);
 
@@ -111,7 +122,114 @@ public sealed class CatalogToursApiClientTests
         updated.ShouldNotBeNull();
         requestMethod.ShouldBe(HttpMethods.Put);
         requestPath.ShouldBe("/api/v1/catalog/tours/11111111-1111-1111-1111-111111111111/presentation");
+        requestBody.ShouldContain("\"summary\":\"Updated summary\"", StringComparison.Ordinal);
+        requestBody.ShouldContain("\"expectedVersion\":4", StringComparison.Ordinal);
+        requestBody.ShouldNotContain("\"isPublished\"", StringComparison.Ordinal);
         updated.IsPublished.ShouldBeTrue();
+    }
+
+    [Fact]
+    public async Task UpdatePresentation_surfaces_a_pending_projection_as_accepted()
+    {
+        // Arrange
+        using var httpClient = CatalogToursApiClientTestsHelpers.CreateClient(_ =>
+            new HttpResponseMessage(HttpStatusCode.Accepted));
+        var sut = new CatalogToursApiClient(httpClient);
+
+        // Act
+        Func<Task> update = async () => await sut.UpdatePresentation(
+            Guid.CreateVersion7(),
+            new UpsertCatalogTourPresentationRequest
+            {
+                Title = "Accepted tour",
+                Slug = "accepted-tour",
+                Summary = "Accepted summary",
+                ExpectedVersion = 1
+            },
+            TestContext.Current.CancellationToken);
+
+        // Assert
+        var exception = await update.ShouldThrow<HttpRequestException>();
+        exception.StatusCode.ShouldBe(HttpStatusCode.Accepted);
+    }
+
+    [Fact]
+    public async Task Publish_sends_explicit_publication_request()
+    {
+        // Arrange
+        var requestPath = string.Empty;
+        var requestMethod = string.Empty;
+        var requestBody = string.Empty;
+        var tourId = Guid.Parse("11111111-1111-1111-1111-111111111111");
+        using var httpClient = CatalogToursApiClientTestsHelpers.CreateClient(request =>
+        {
+            requestPath = request.RequestUri?.PathAndQuery ?? string.Empty;
+            requestMethod = request.Method.Method;
+            requestBody = request.Content?.ReadAsStringAsync().GetAwaiter().GetResult() ?? string.Empty;
+            return new HttpResponseMessage(HttpStatusCode.NoContent);
+        });
+        var sut = new CatalogToursApiClient(httpClient);
+
+        // Act
+        await sut.Publish(
+            tourId,
+            new CatalogTourPublicationRequest { ExpectedVersion = 5 },
+            TestContext.Current.CancellationToken);
+
+        // Assert
+        requestMethod.ShouldBe(HttpMethods.Post);
+        requestPath.ShouldBe("/api/v1/catalog/tours/11111111-1111-1111-1111-111111111111/publish");
+        requestBody.ShouldContain("\"expectedVersion\":5", StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public async Task Unpublish_sends_explicit_publication_request()
+    {
+        // Arrange
+        var requestPath = string.Empty;
+        var requestMethod = string.Empty;
+        var requestBody = string.Empty;
+        var tourId = Guid.Parse("11111111-1111-1111-1111-111111111111");
+        using var httpClient = CatalogToursApiClientTestsHelpers.CreateClient(request =>
+        {
+            requestPath = request.RequestUri?.PathAndQuery ?? string.Empty;
+            requestMethod = request.Method.Method;
+            requestBody = request.Content?.ReadAsStringAsync().GetAwaiter().GetResult() ?? string.Empty;
+            return new HttpResponseMessage(HttpStatusCode.NoContent);
+        });
+        var sut = new CatalogToursApiClient(httpClient);
+
+        // Act
+        await sut.Unpublish(
+            tourId,
+            new CatalogTourPublicationRequest { ExpectedVersion = 6 },
+            TestContext.Current.CancellationToken);
+
+        // Assert
+        requestMethod.ShouldBe(HttpMethods.Post);
+        requestPath.ShouldBe("/api/v1/catalog/tours/11111111-1111-1111-1111-111111111111/unpublish");
+        requestBody.ShouldContain("\"expectedVersion\":6", StringComparison.Ordinal);
+    }
+
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public async Task Publication_surfaces_a_pending_projection_as_accepted(bool publish)
+    {
+        // Arrange
+        using var httpClient = CatalogToursApiClientTestsHelpers.CreateClient(_ =>
+            new HttpResponseMessage(HttpStatusCode.Accepted));
+        var sut = new CatalogToursApiClient(httpClient);
+        var request = new CatalogTourPublicationRequest { ExpectedVersion = 3 };
+
+        // Act
+        Func<Task> changePublication = publish
+            ? () => sut.Publish(Guid.CreateVersion7(), request, TestContext.Current.CancellationToken)
+            : () => sut.Unpublish(Guid.CreateVersion7(), request, TestContext.Current.CancellationToken);
+
+        // Assert
+        var exception = await changePublication.ShouldThrow<HttpRequestException>();
+        exception.StatusCode.ShouldBe(HttpStatusCode.Accepted);
     }
 
     [Fact]
@@ -131,6 +249,7 @@ public sealed class CatalogToursApiClientTests
                   "title":"Catalog tour",
                   "slug":"catalog-tour",
                   "isPublished":false,
+                  "version":1,
                   "images":[],
                   "updatedAt":"2026-06-25T10:00:00+00:00"
                 }
@@ -145,6 +264,59 @@ public sealed class CatalogToursApiClientTests
         tour.ShouldNotBeNull();
         requestPath.ShouldBe("/api/v1/catalog/tours/11111111-1111-1111-1111-111111111111");
         tour.Slug.ShouldBe("catalog-tour");
+    }
+
+    [Fact]
+    public async Task GetTour_rejects_a_management_payload_with_a_missing_version()
+    {
+        // Arrange
+        using var httpClient = CatalogToursApiClientTestsHelpers.CreateClient(_ =>
+            CatalogToursApiClientTestsHelpers.JsonResponse("""
+                {
+                  "id":"11111111-1111-1111-1111-111111111111",
+                  "adminTourId":"22222222-2222-2222-2222-222222222222",
+                  "identifier":"TOUR-1",
+                  "title":"Missing version",
+                  "slug":"missing-version",
+                  "isPublished":false,
+                  "images":[],
+                  "updatedAt":"2026-06-25T10:00:00+00:00"
+                }
+                """));
+        var sut = new CatalogToursApiClient(httpClient);
+
+        // Act
+        Func<Task> getTour = async () => await sut.GetTour(Guid.CreateVersion7(), TestContext.Current.CancellationToken);
+
+        // Assert
+        await getTour.ShouldThrow<JsonException>();
+    }
+
+    [Fact]
+    public async Task GetTour_rejects_a_management_payload_with_a_zero_version()
+    {
+        // Arrange
+        using var httpClient = CatalogToursApiClientTestsHelpers.CreateClient(_ =>
+            CatalogToursApiClientTestsHelpers.JsonResponse("""
+                {
+                  "id":"11111111-1111-1111-1111-111111111111",
+                  "adminTourId":"22222222-2222-2222-2222-222222222222",
+                  "identifier":"TOUR-1",
+                  "title":"Zero version",
+                  "slug":"zero-version",
+                  "isPublished":false,
+                  "version":0,
+                  "images":[],
+                  "updatedAt":"2026-06-25T10:00:00+00:00"
+                }
+                """));
+        var sut = new CatalogToursApiClient(httpClient);
+
+        // Act
+        Func<Task> getTour = async () => await sut.GetTour(Guid.CreateVersion7(), TestContext.Current.CancellationToken);
+
+        // Assert
+        await getTour.ShouldThrow<InvalidOperationException>();
     }
 
     [Fact]
@@ -190,7 +362,7 @@ public sealed class CatalogToursApiClientTests
             {
                 Title = "Missing",
                 Slug = "missing",
-                IsPublished = true
+                ExpectedVersion = 1
             },
             TestContext.Current.CancellationToken);
 
@@ -212,7 +384,7 @@ public sealed class CatalogToursApiClientTests
             {
                 Title = "Missing",
                 Slug = "missing",
-                IsPublished = true
+                ExpectedVersion = 1
             },
             TestContext.Current.CancellationToken);
 

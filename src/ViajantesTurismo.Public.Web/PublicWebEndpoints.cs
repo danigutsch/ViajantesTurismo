@@ -57,7 +57,7 @@ internal static class PublicWebEndpoints
     {
         var origin = SitemapCanonicalOrigin.Parse(sitemapOptions.Value.CanonicalOrigin);
 
-        CatalogTourDto[] tours;
+        TourSummaryDto[] tours;
         try
         {
             tours = await catalogApi.GetPublishedTours(ct);
@@ -124,10 +124,9 @@ internal static class PublicWebEndpoints
         return Results.Stream(media.Content, media.ContentType, enableRangeProcessing: false);
     }
 
-    private static bool IsPublicTourPage(CatalogTourDto tour)
+    private static bool IsPublicTourPage(TourSummaryDto tour)
     {
-        return tour.IsPublished
-            && !string.IsNullOrWhiteSpace(tour.Slug)
+        return !string.IsNullOrWhiteSpace(tour.Slug)
             && !string.Equals(tour.Slug, ".", StringComparison.Ordinal)
             && !string.Equals(tour.Slug, "..", StringComparison.Ordinal)
             && tour.Slug.All(character => !char.IsControl(character)

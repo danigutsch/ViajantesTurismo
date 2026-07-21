@@ -47,10 +47,17 @@ internal sealed class PostTransportValidationScenario(
             {
                 Title = title,
                 Slug = slug,
-                IsPublished = true
+                Summary = $"Discover {title} by bicycle.",
+                ExpectedVersion = tour.Version
             },
             ct);
+        var updated = published ?? throw new InvalidOperationException($"Catalog tour '{tour.Id}' was not found for publication.");
+        await catalogTours.Publish(
+            tour.Id,
+            new CatalogTourPublicationRequest { ExpectedVersion = updated.Version },
+            ct);
 
-        return published ?? throw new InvalidOperationException($"Catalog tour '{tour.Id}' was not found for publication.");
+        return await catalogTours.GetTour(tour.Id, ct)
+            ?? throw new InvalidOperationException($"Catalog tour '{tour.Id}' was not found after publication.");
     }
 }

@@ -20,23 +20,17 @@ public sealed class PublicCatalogApiClientTests
             return PublicCatalogApiClientTestsHelpers.JsonResponse("""
                 [
                   {
-                    "id":"11111111-1111-1111-1111-111111111111",
-                    "adminTourId":"22222222-2222-2222-2222-222222222222",
-                    "identifier":"TOUR-1",
                     "title":"First tour",
                     "slug":"first-tour",
-                    "isPublished":true,
+                    "summary":"First tour summary",
                     "images":[],
                     "updatedAt":"2026-06-25T10:00:00+00:00"
                   },
                   null,
                   {
-                    "id":"33333333-3333-3333-3333-333333333333",
-                    "adminTourId":"44444444-4444-4444-4444-444444444444",
-                    "identifier":"TOUR-2",
                     "title":"Second tour",
                     "slug":"second-tour",
-                    "isPublished":true,
+                    "summary":"Second tour summary",
                     "images":[],
                     "updatedAt":"2026-06-25T11:00:00+00:00"
                   }
@@ -62,12 +56,9 @@ public sealed class PublicCatalogApiClientTests
         using var httpClient = PublicCatalogApiClientTestsHelpers.CreateClient(_ => PublicCatalogApiClientTestsHelpers.JsonResponse("""
             [
               {
-                "id":"11111111-1111-1111-1111-111111111111",
-                "adminTourId":"22222222-2222-2222-2222-222222222222",
-                "identifier":"TOUR-1",
                 "title":"First tour",
                 "slug":"first-tour",
-                "isPublished":true,
+                "summary":"First tour summary",
                 "images":[
                   {
                     "id":"55555555-5555-5555-5555-555555555555",
@@ -178,12 +169,11 @@ public sealed class PublicCatalogApiClientTests
             requestPath = request.RequestUri?.PathAndQuery ?? string.Empty;
             return PublicCatalogApiClientTestsHelpers.JsonResponse("""
                 {
-                  "id":"11111111-1111-1111-1111-111111111111",
-                  "adminTourId":"22222222-2222-2222-2222-222222222222",
-                  "identifier":"TOUR-1",
                   "title":"First tour",
                   "slug":"first-tour",
-                  "isPublished":true,
+                  "summary":"First tour summary",
+                  "description":"First tour description",
+                  "itinerary":"Day one: ride.",
                   "images":[],
                   "updatedAt":"2026-06-25T10:00:00+00:00"
                 }

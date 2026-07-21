@@ -2,16 +2,13 @@ namespace ViajantesTurismo.Public.WebTests;
 
 internal static class PublicComponentTestsHelpers
 {
-    public static CatalogTourDto CreateTour(string slug, string title, bool includeImage)
+    public static TourSummaryDto CreateTour(string slug, string title, bool includeImage)
     {
-        return new CatalogTourDto
+        return new TourSummaryDto
         {
-            Id = Guid.CreateVersion7(),
-            AdminTourId = Guid.CreateVersion7(),
-            Identifier = "TOUR-2026",
             Title = title,
             Slug = slug,
-            IsPublished = true,
+            Summary = $"Discover {title} by bicycle.",
             Images = includeImage
                 ?
                 [

@@ -32,7 +32,7 @@ public sealed class PublicComponentTests : BunitContext
         var heading = cut.Find("h2 a");
         heading.TextContent.ShouldBe("Camino Norte");
         heading.GetAttribute("href").ShouldBe("/group-bike-tours/camino%20norte");
-        cut.Find("p").TextContent.ShouldBe("TOUR-2026");
+        cut.Find("p").TextContent.ShouldBe("Discover Camino Norte by bicycle.");
         cut.Find("img").GetAttribute("src").ShouldBe($"/catalog/media/{image.Id}/640/jpg");
         cut.Find("img").GetAttribute("alt").ShouldBe("Cyclists on the Camino");
     }
@@ -59,14 +59,11 @@ public sealed class PublicComponentTests : BunitContext
     {
         // Arrange
         var coverImageId = Guid.Parse("22222222-2222-2222-2222-222222222222");
-        var tour = new CatalogTourDto
+        var tour = new TourSummaryDto
         {
-            Id = Guid.CreateVersion7(),
-            AdminTourId = Guid.CreateVersion7(),
-            Identifier = "TOUR-2026",
             Title = "Camino Norte",
             Slug = "camino-norte",
-            IsPublished = true,
+            Summary = "Discover Camino Norte by bicycle.",
             Images =
             [
                 new CatalogTourImageDto

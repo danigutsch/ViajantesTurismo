@@ -251,6 +251,11 @@ namespace ViajantesTurismo.Catalog.Infrastructure.Migrations
                     b.Property<Guid>("AdminTourId")
                         .HasColumnType("uuid");
 
+                    b.Property<string>("Description")
+                        .IsRequired()
+                        .HasMaxLength(4000)
+                        .HasColumnType("character varying(4000)");
+
                     b.Property<string>("Identifier")
                         .IsRequired()
                         .HasMaxLength(64)
@@ -259,13 +264,47 @@ namespace ViajantesTurismo.Catalog.Infrastructure.Migrations
                     b.Property<bool>("IsPublished")
                         .HasColumnType("boolean");
 
+                    b.Property<string>("Itinerary")
+                        .IsRequired()
+                        .HasMaxLength(4000)
+                        .HasColumnType("character varying(4000)");
+
                     b.Property<long>("Position")
+                        .IsConcurrencyToken()
                         .HasColumnType("bigint");
+
+                    b.Property<long>("PresentationPosition")
+                        .IsConcurrencyToken()
+                        .HasColumnType("bigint");
+
+                    b.Property<long>("PublicationPosition")
+                        .IsConcurrencyToken()
+                        .HasColumnType("bigint");
+
+                    b.Property<string>("SeoDescription")
+                        .IsRequired()
+                        .HasMaxLength(4000)
+                        .HasColumnType("character varying(4000)");
+
+                    b.Property<string>("SeoTitle")
+                        .IsRequired()
+                        .HasMaxLength(128)
+                        .HasColumnType("character varying(128)");
 
                     b.Property<string>("Slug")
                         .IsRequired()
                         .HasMaxLength(128)
                         .HasColumnType("character varying(128)");
+
+                    b.Property<long>("StreamVersion")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bigint")
+                        .HasDefaultValue(1L);
+
+                    b.Property<string>("Summary")
+                        .IsRequired()
+                        .HasMaxLength(4000)
+                        .HasColumnType("character varying(4000)");
 
                     b.Property<string>("Title")
                         .IsRequired()

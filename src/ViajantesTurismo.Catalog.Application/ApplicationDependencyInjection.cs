@@ -36,7 +36,9 @@ public static class ApplicationDependencyInjection
                 IntegrationEventOptionsValidator>());
         services.TryAddScoped<IIntegrationEventHandler<AdminTourCreatedIntegrationEvent>>(sp =>
             new IdempotentIntegrationHandler<AdminTourCreatedIntegrationEvent>(
-                new AdminTourCreatedIntegrationHandler(sp.GetRequiredService<IEventStore>()),
+                new AdminTourCreatedIntegrationHandler(
+                    sp.GetRequiredService<IEventStore>(),
+                    sp.GetRequiredService<ICatalogTourSlugLock>()),
                 sp.GetRequiredService<IIdempotencyStore>(),
                 sp.GetRequiredService<IOptions<IntegrationEventOptions>>()));
         services.AddIntegrationEventConsumer(
@@ -44,6 +46,7 @@ public static class ApplicationDependencyInjection
             AdminIntegrationEventJsonContext.Default.AdminTourCreatedIntegrationEvent);
         services.AddCatalogMediaApplication();
         services.TryAddScoped<PublicContentUpsertService>();
+        services.TryAddScoped<CatalogTourPresentationService>();
 
         return services;
     }

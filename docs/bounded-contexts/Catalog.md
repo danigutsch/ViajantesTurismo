@@ -109,12 +109,14 @@ Expected invariants:
 
 Current implementation:
 
-- `CatalogTour` is an event-sourced aggregate that currently creates and applies
-  `CatalogTourDraftCreated` only.
-- The current management presentation endpoint updates `CatalogTourReadModels` directly; presentation
-  edit events are planned/evolving.
-- `CatalogTourDto.Images` is populated from Catalog media metadata; public endpoints include only
-  images whose processing status is ready.
+- `CatalogTour` creates and applies `CatalogTourDraftCreated`, `CatalogTourPresentationChanged`,
+  `CatalogTourPublished`, and `CatalogTourUnpublished`.
+- Unpublished management presentation edits and explicit publish/unpublish transitions append to the
+  tour stream; projections update `CatalogTourReadModels` for management and public reads.
+- Mutations attempt inline projection. A committed mutation whose projection is deferred returns
+  `202 Accepted`; the projection runner retries it from the unchanged checkpoint.
+- Public tour DTO images are populated from Catalog media metadata and include only images whose
+  processing and accessibility-review status is ready.
 
 ### Slug Policy
 
@@ -131,7 +133,13 @@ Initial slug rules:
 - Accented Latin letters normalize to their ASCII base letter when practical.
 - Slugs must not exceed the Catalog contract maximum length.
 - Slugs are unique within Catalog published and draft tour records.
-- Slugs should be stable after publication; changes need explicit redirect handling.
+- Draft creation uses the normalized Admin identifier when available and an id-based fallback when
+  that initial slug is already owned.
+- Concurrent claims for the same normalized slug are serialized across application instances before
+  Catalog checks availability against tour event streams and persists the presentation change. The
+  unique `CatalogTourReadModels.Slug` database index independently rejects projection collisions.
+  Optimistic stream versioning continues to protect edits to the individual tour stream.
+- Published tours must be unpublished before presentation edits, including slug changes.
 
 Keep conventional UI labels and unrelated URL helpers out of this model. If future CMS or media
 features need identical URL-safe identifier rules, create a focused SharedKernel extraction issue
@@ -217,21 +225,17 @@ for the media/gallery flow.
 
 Catalog tours use append-only event streams.
 
-Initial domain events:
+Implemented domain events:
 
 - `CatalogTourDraftCreated`.
-- `CatalogTourTitleChanged`.
-- `CatalogTourSummaryChanged`.
-- `CatalogTourHeroImageChanged`.
-- `CatalogTourItineraryChanged`.
-- `CatalogTourGalleryChanged`.
-- `CatalogTourSeoMetadataChanged`.
+- `CatalogTourPresentationChanged`.
 - `CatalogTourPublished`.
 - `CatalogTourUnpublished`.
-- `CatalogTourArchived`.
 
-Current implementation applies `CatalogTourDraftCreated` only. The remaining events above describe the
-accepted direction and should be added with their owning feature slices.
+Planned/evolving domain events:
+
+- `CatalogTourGalleryChanged`.
+- `CatalogTourArchived`.
 
 Projection types:
 
@@ -285,9 +289,6 @@ Current management endpoints:
 - `GET /catalog/tours`.
 - `GET /catalog/tours/{id}`.
 - `PUT /catalog/tours/{id}/presentation`.
-
-Planned/evolving management endpoints:
-
 - `POST /catalog/tours/{id}/publish`.
 - `POST /catalog/tours/{id}/unpublish`.
 
@@ -297,6 +298,11 @@ Initial public endpoints:
 
 - `GET /public/catalog/tours`.
 - `GET /public/catalog/tours/{slug}`.
+
+The public list uses `TourSummaryDto`, while the detail endpoint uses `TourDetailsDto`. Both are
+separate from management `CatalogTourDto` and expose published projections only. The detail contract
+adds description, itinerary, SEO metadata, reviewed images, and `UpdatedAt`; the summary contract
+contains title, slug, summary, reviewed images, and `UpdatedAt`.
 
 ## Related Documentation
 

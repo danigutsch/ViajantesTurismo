@@ -20,6 +20,7 @@ public sealed class PostTransportValidationScenarioTests
             Title = "Transient catalog result",
             Slug = "transient-catalog-result",
             IsPublished = false,
+            Version = 1,
             Images = [],
             UpdatedAt = DateTimeOffset.UtcNow
         };
@@ -52,6 +53,7 @@ public sealed class PostTransportValidationScenarioTests
             Title = "Nonretryable catalog result",
             Slug = "nonretryable-catalog-result",
             IsPublished = false,
+            Version = 1,
             Images = [],
             UpdatedAt = DateTimeOffset.UtcNow
         };

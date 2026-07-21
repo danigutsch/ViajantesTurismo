@@ -5,6 +5,7 @@ using ViajantesTurismo.Admin.Contracts.IntegrationEvents.Tours;
 using ViajantesTurismo.Catalog.Application.IntegrationEvents;
 using ViajantesTurismo.Catalog.Application.Tours;
 using ViajantesTurismo.Catalog.Domain.Tours;
+using ViajantesTurismo.Catalog.Testing.Infrastructure;
 
 namespace ViajantesTurismo.Catalog.UnitTests;
 
@@ -16,7 +17,7 @@ public sealed class AdminTourCreatedIntegrationHandlerTests
         var idempotencyStore = new CapturingIdempotencyStore();
         var eventStore = new CapturingEventStore();
         var handler = new IdempotentIntegrationHandler<AdminTourCreatedIntegrationEvent>(
-            new AdminTourCreatedIntegrationHandler(eventStore),
+            new AdminTourCreatedIntegrationHandler(eventStore, new TestCatalogTourSlugLock()),
             idempotencyStore,
             Options.Create(new IntegrationEventOptions()));
         var integrationEvent = new AdminTourCreatedIntegrationEvent(
@@ -45,7 +46,7 @@ public sealed class AdminTourCreatedIntegrationHandlerTests
         var idempotencyStore = new CapturingIdempotencyStore();
         var eventStore = new CapturingEventStore();
         var handler = new IdempotentIntegrationHandler<AdminTourCreatedIntegrationEvent>(
-            new AdminTourCreatedIntegrationHandler(eventStore),
+            new AdminTourCreatedIntegrationHandler(eventStore, new TestCatalogTourSlugLock()),
             idempotencyStore,
             Options.Create(new IntegrationEventOptions()));
         var integrationEvent = new AdminTourCreatedIntegrationEvent(
@@ -64,12 +65,53 @@ public sealed class AdminTourCreatedIntegrationHandlerTests
     }
 
     [Fact]
+    public async Task Handle_uses_an_id_fallback_when_the_normalized_initial_slug_is_already_owned()
+    {
+        // Arrange
+        var eventStore = new CapturingEventStore();
+        var ownerId = Guid.CreateVersion7();
+        eventStore.AddReplayEvent(new EventEnvelope(
+            CatalogTourStreamIds.FromAdminTourId(Guid.CreateVersion7()),
+            1,
+            StreamRevision.From(1),
+            Guid.CreateVersion7(),
+            typeof(CatalogTourDraftCreated).FullName ?? nameof(CatalogTourDraftCreated),
+            new CatalogTourDraftCreated(
+                ownerId,
+                Guid.CreateVersion7(),
+                "TOUR-1",
+                "Owner Tour",
+                Guid.CreateVersion7(),
+                "tour-1"),
+            DateTimeOffset.UtcNow));
+        var slugLock = new TestCatalogTourSlugLock();
+        var handler = new AdminTourCreatedIntegrationHandler(eventStore, slugLock);
+        var integrationEvent = new AdminTourCreatedIntegrationEvent(
+            Guid.CreateVersion7(),
+            DateTimeOffset.UtcNow,
+            Guid.CreateVersion7(),
+            "TOUR_1",
+            "Second Tour");
+
+        // Act
+        await handler.Handle(integrationEvent, TestContext.Current.CancellationToken);
+
+        // Assert
+        var draftCreated = eventStore.Events.ShouldHaveSingleItem().ShouldBeOfType<CatalogTourDraftCreated>();
+        var createdTour = CatalogTour.Rehydrate([draftCreated]);
+        createdTour.Slug.ShouldBe($"tour-{draftCreated.CatalogTourId:N}");
+        slugLock.AcquiredSlugs.ShouldMatchCollection(
+            preferred => preferred.ShouldBe("tour-1"),
+            fallback => fallback.ShouldBe(createdTour.Slug));
+    }
+
+    [Fact]
     public async Task Handle_ignores_duplicate_event_delivery()
     {
         var idempotencyStore = new CapturingIdempotencyStore();
         var eventStore = new CapturingEventStore();
         var handler = new IdempotentIntegrationHandler<AdminTourCreatedIntegrationEvent>(
-            new AdminTourCreatedIntegrationHandler(eventStore),
+            new AdminTourCreatedIntegrationHandler(eventStore, new TestCatalogTourSlugLock()),
             idempotencyStore,
             Options.Create(new IntegrationEventOptions()));
         var integrationEvent = new AdminTourCreatedIntegrationEvent(
@@ -95,7 +137,7 @@ public sealed class AdminTourCreatedIntegrationHandlerTests
         var idempotencyStore = new CapturingIdempotencyStore();
         var configuredDuration = TimeSpan.FromMinutes(2);
         var handler = new IdempotentIntegrationHandler<AdminTourCreatedIntegrationEvent>(
-            new AdminTourCreatedIntegrationHandler(new CapturingEventStore()),
+            new AdminTourCreatedIntegrationHandler(new CapturingEventStore(), new TestCatalogTourSlugLock()),
             idempotencyStore,
             Options.Create(new IntegrationEventOptions { IdempotencyLockDuration = configuredDuration }));
         var integrationEvent = new AdminTourCreatedIntegrationEvent(

@@ -8,6 +8,7 @@ using ViajantesTurismo.Catalog.Application.IntegrationEvents;
 using ViajantesTurismo.Catalog.Application.Projections;
 using ViajantesTurismo.Catalog.Application.Tours;
 using ViajantesTurismo.Catalog.Domain.Tours;
+using ViajantesTurismo.Catalog.Testing.Infrastructure;
 
 namespace ViajantesTurismo.Catalog.UnitTests;
 
@@ -24,7 +25,7 @@ public sealed class CatalogTelemetryTests
         using var meterListener = CatalogTelemetryTestsHelpers.CreateMeterListener(measurements);
         using var rootActivity = CatalogTelemetryTestsHelpers.StartRootActivity();
         var handler = new IdempotentIntegrationHandler<AdminTourCreatedIntegrationEvent>(
-            new AdminTourCreatedIntegrationHandler(new CapturingEventStore()),
+            new AdminTourCreatedIntegrationHandler(new CapturingEventStore(), new TestCatalogTourSlugLock()),
             new CapturingIdempotencyStore(),
             Options.Create(new IntegrationEventOptions()));
         var integrationEvent = new AdminTourCreatedIntegrationEvent(
@@ -56,7 +57,7 @@ public sealed class CatalogTelemetryTests
         using var meterListener = CatalogTelemetryTestsHelpers.CreateMeterListener(measurements);
         using var rootActivity = CatalogTelemetryTestsHelpers.StartRootActivity();
         var handler = new IdempotentIntegrationHandler<AdminTourCreatedIntegrationEvent>(
-            new AdminTourCreatedIntegrationHandler(new CapturingEventStore()),
+            new AdminTourCreatedIntegrationHandler(new CapturingEventStore(), new TestCatalogTourSlugLock()),
             new CapturingIdempotencyStore(started: false),
             Options.Create(new IntegrationEventOptions()));
         var integrationEvent = new AdminTourCreatedIntegrationEvent(
@@ -97,7 +98,8 @@ public sealed class CatalogTelemetryTests
             Guid.CreateVersion7(),
             "andes-2026",
             "Andes 2026",
-            Guid.CreateVersion7());
+            Guid.CreateVersion7(),
+            "andes-2026");
         eventStore.AddReplayEvent(CatalogTelemetryTestsHelpers.CreateEnvelope(11, draftCreated, DateTimeOffset.UtcNow));
 
         // Act
@@ -123,7 +125,7 @@ public sealed class CatalogTelemetryTests
         using var meterListener = CatalogTelemetryTestsHelpers.CreateMeterListener(measurements);
         using var rootActivity = CatalogTelemetryTestsHelpers.StartRootActivity();
         var handler = new IdempotentIntegrationHandler<AdminTourCreatedIntegrationEvent>(
-            new AdminTourCreatedIntegrationHandler(new ThrowingEventStore()),
+            new AdminTourCreatedIntegrationHandler(new ThrowingEventStore(), new TestCatalogTourSlugLock()),
             new CapturingIdempotencyStore(),
             Options.Create(new IntegrationEventOptions()));
         var integrationEvent = new AdminTourCreatedIntegrationEvent(
@@ -158,7 +160,7 @@ public sealed class CatalogTelemetryTests
         using var meterListener = CatalogTelemetryTestsHelpers.CreateMeterListener(measurements);
         using var rootActivity = CatalogTelemetryTestsHelpers.StartRootActivity();
         var handler = new IdempotentIntegrationHandler<AdminTourCreatedIntegrationEvent>(
-            new AdminTourCreatedIntegrationHandler(new UnexpectedCancelledEventStore()),
+            new AdminTourCreatedIntegrationHandler(new UnexpectedCancelledEventStore(), new TestCatalogTourSlugLock()),
             new CapturingIdempotencyStore(),
             Options.Create(new IntegrationEventOptions()));
         var integrationEvent = new AdminTourCreatedIntegrationEvent(
@@ -196,7 +198,7 @@ public sealed class CatalogTelemetryTests
         using var meterListener = CatalogTelemetryTestsHelpers.CreateMeterListener(measurements);
         using var rootActivity = CatalogTelemetryTestsHelpers.StartRootActivity();
         var handler = new IdempotentIntegrationHandler<AdminTourCreatedIntegrationEvent>(
-            new AdminTourCreatedIntegrationHandler(new CapturingEventStore()),
+            new AdminTourCreatedIntegrationHandler(new CapturingEventStore(), new TestCatalogTourSlugLock()),
             new UnexpectedCancelledIdempotencyStore(),
             Options.Create(new IntegrationEventOptions()));
         var integrationEvent = new AdminTourCreatedIntegrationEvent(
@@ -229,7 +231,7 @@ public sealed class CatalogTelemetryTests
         using var activityListener = CatalogTelemetryTestsHelpers.CreateActivityListener(stoppedActivities);
         using var meterListener = CatalogTelemetryTestsHelpers.CreateMeterListener(measurements);
         using var rootActivity = CatalogTelemetryTestsHelpers.StartRootActivity();
-        var handler = new AdminTourCreatedIntegrationHandler(new UnexpectedCancelledEventStore());
+        var handler = new AdminTourCreatedIntegrationHandler(new UnexpectedCancelledEventStore(), new TestCatalogTourSlugLock());
         var integrationEvent = new AdminTourCreatedIntegrationEvent(
             Guid.CreateVersion7(),
             DateTimeOffset.UtcNow,
@@ -267,7 +269,8 @@ public sealed class CatalogTelemetryTests
             Guid.CreateVersion7(),
             "andes-2026",
             "Andes 2026",
-            Guid.CreateVersion7());
+            Guid.CreateVersion7(),
+            "andes-2026");
         eventStore.AddReplayEvent(CatalogTelemetryTestsHelpers.CreateEnvelope(1, draftCreated, DateTimeOffset.UtcNow));
 
         // Act
@@ -301,7 +304,8 @@ public sealed class CatalogTelemetryTests
             Guid.CreateVersion7(),
             "andes-2026",
             "Andes 2026",
-            Guid.CreateVersion7());
+            Guid.CreateVersion7(),
+            "andes-2026");
         eventStore.AddReplayEvent(CatalogTelemetryTestsHelpers.CreateEnvelope(1, draftCreated, DateTimeOffset.UtcNow));
 
         // Act
@@ -352,7 +356,7 @@ public sealed class CatalogTelemetryTests
         using var meterListener = CatalogTelemetryTestsHelpers.CreateMeterListener(measurements);
         using var rootActivity = CatalogTelemetryTestsHelpers.StartRootActivity();
         var handler = new IdempotentIntegrationHandler<AdminTourCreatedIntegrationEvent>(
-            new AdminTourCreatedIntegrationHandler(new CancelledEventStore()),
+            new AdminTourCreatedIntegrationHandler(new CancelledEventStore(), new TestCatalogTourSlugLock()),
             new CapturingIdempotencyStore(),
             Options.Create(new IntegrationEventOptions()));
         var integrationEvent = new AdminTourCreatedIntegrationEvent(
@@ -389,7 +393,7 @@ public sealed class CatalogTelemetryTests
         using var meterListener = CatalogTelemetryTestsHelpers.CreateMeterListener(measurements);
         using var rootActivity = CatalogTelemetryTestsHelpers.StartRootActivity();
         var handler = new IdempotentIntegrationHandler<AdminTourCreatedIntegrationEvent>(
-            new AdminTourCreatedIntegrationHandler(new CapturingEventStore()),
+            new AdminTourCreatedIntegrationHandler(new CapturingEventStore(), new TestCatalogTourSlugLock()),
             new CancelledIdempotencyStore(),
             Options.Create(new IntegrationEventOptions()));
         var integrationEvent = new AdminTourCreatedIntegrationEvent(
@@ -423,7 +427,7 @@ public sealed class CatalogTelemetryTests
         using var activityListener = CatalogTelemetryTestsHelpers.CreateActivityListener(stoppedActivities);
         using var meterListener = CatalogTelemetryTestsHelpers.CreateMeterListener(measurements);
         using var rootActivity = CatalogTelemetryTestsHelpers.StartRootActivity();
-        var handler = new AdminTourCreatedIntegrationHandler(new CancelledEventStore());
+        var handler = new AdminTourCreatedIntegrationHandler(new CancelledEventStore(), new TestCatalogTourSlugLock());
         var integrationEvent = new AdminTourCreatedIntegrationEvent(
             Guid.CreateVersion7(),
             DateTimeOffset.UtcNow,
@@ -462,7 +466,8 @@ public sealed class CatalogTelemetryTests
             Guid.CreateVersion7(),
             "andes-2026",
             "Andes 2026",
-            Guid.CreateVersion7());
+            Guid.CreateVersion7(),
+            "andes-2026");
         eventStore.AddReplayEvent(CatalogTelemetryTestsHelpers.CreateEnvelope(1, draftCreated, DateTimeOffset.UtcNow));
         using var cancellation = new CancellationTokenSource();
         await cancellation.CancelAsync();

@@ -8,6 +8,7 @@ namespace SharedKernel.Documentation;
 /// </summary>
 internal static partial class EndpointRouteMarkdownTable
 {
+    private const int MaximumEndpointChainLineCount = 128;
     private static readonly UTF8Encoding Utf8NoBom = new(false);
 
     /// <summary>
@@ -101,16 +102,34 @@ internal static partial class EndpointRouteMarkdownTable
     private static string EndpointChain(string[] lines, int startIndex)
     {
         var builder = new StringBuilder();
-        for (var index = startIndex; index < lines.Length && index < startIndex + 8; index++)
+        var endpointIndentation = Indentation(lines[startIndex]);
+        for (var index = startIndex;
+             index < lines.Length && index < startIndex + MaximumEndpointChainLineCount;
+             index++)
         {
-            builder.Append(lines[index]);
-            if (lines[index].Contains(';', StringComparison.Ordinal))
+            if (index > startIndex
+                && (EndpointMapStartRegex().IsMatch(lines[index])
+                    || (Indentation(lines[index]) < endpointIndentation
+                        && MemberDeclarationStartRegex().IsMatch(lines[index]))))
             {
                 break;
             }
+
+            builder.Append(lines[index]);
         }
 
         return builder.ToString();
+    }
+
+    private static int Indentation(string line)
+    {
+        var length = 0;
+        while (length < line.Length && char.IsWhiteSpace(line[length]))
+        {
+            length++;
+        }
+
+        return length;
     }
 
     private static string EndpointName(string chain, string handler)
@@ -160,6 +179,12 @@ internal static partial class EndpointRouteMarkdownTable
 
     [GeneratedRegex(@"^\s*(\w+)\.Map(Get|Post|Put|Delete|Patch)\(""([^""]+)""\s*,\s*([^;]+?)\)?\s*(?:;|$)", RegexOptions.CultureInvariant)]
     private static partial Regex EndpointMapRegex();
+
+    [GeneratedRegex(@"^\s*\w+\.Map(?:Get|Post|Put|Delete|Patch)\s*\(", RegexOptions.CultureInvariant)]
+    private static partial Regex EndpointMapStartRegex();
+
+    [GeneratedRegex(@"^\s*(?:public|private|protected|internal)\b", RegexOptions.CultureInvariant)]
+    private static partial Regex MemberDeclarationStartRegex();
 
     [GeneratedRegex(@"\.WithName\(""([^""]+)""\)", RegexOptions.CultureInvariant)]
     private static partial Regex EndpointNameRegex();

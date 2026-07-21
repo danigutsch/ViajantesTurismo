@@ -74,6 +74,7 @@ internal static class DocumentationTestContent
               "sourcePath": "src",
               "routePrefixes": {
                 "customersGroup": "/customers",
+                "managementCatalog": "/api/v1/catalog",
                 "publicCatalogGroup": "/api/v1/public/catalog"
               }
             },
@@ -205,8 +206,13 @@ internal static class DocumentationTestContent
         <Project Sdk="Microsoft.NET.Sdk" />
         """;
 
-    public static string CustomerEndpoints() =>
-        """
+    public static string CustomerEndpoints()
+    {
+        var padding = string.Join(
+            '\n',
+            Enumerable.Repeat("            // endpoint-chain scan padding", 129));
+
+        return $$""""
         internal static class CustomerEndpoints
         {
             public static WebApplication MapCustomerEndpoints(this WebApplication app)
@@ -216,13 +222,72 @@ internal static class DocumentationTestContent
                     .WithName("GetCustomers");
                 customersGroup.MapPost("/", CreateCustomer)
                     .RequireAuthorization();
+                customersGroup.MapGet("/unterminated-adjacent", GetUnterminatedAdjacent)
+                    .WithDescription("Missing terminator")
+                customersGroup.MapGet("/after-unterminated-adjacent", GetAfterUnterminatedAdjacent)
+                    .RequireAuthorization();
+                customersGroup.MapGet("/raw-multiline", GetRawMultiline)
+                    .WithDescription(
+                        """
+                        public endpoint;
+                        """)
+                    .RequireAuthorization();
+                customersGroup.MapGet("/brace-literal", GetBraceLiteral)
+                    .WithDescription("Literal {");
+                customersGroup.MapGet("/verbatim-multiline", GetVerbatimMultiline)
+                    .WithDescription(@"Literal \
+                        {");
+                customersGroup.MapGet("/later-secured", GetLaterSecured)
+                    .RequireAuthorization();
+                customersGroup.MapGet("/char-literal", GetCharLiteral)
+                    .WithMetadata('{');
+                customersGroup.MapGet("/after-char-secured", GetAfterCharSecured)
+                    .RequireAuthorization();
+                customersGroup.MapGet("/line-comment", GetLineComment)
+                    .WithDescription("Line comment"); // {
+                customersGroup.MapGet("/after-comment-secured", GetAfterCommentSecured)
+                    .RequireAuthorization();
+                customersGroup.MapGet("/block-comment", GetBlockComment)
+                    /* {
+                       ; */
+                    .WithDescription("Block comment");
+                customersGroup.MapGet("/after-block-comment-secured", GetAfterBlockCommentSecured)
+                    .RequireAuthorization();
+                customersGroup.MapGet("/unterminated", GetUnterminated)
+                    .WithDescription("Missing terminator")
+        {{padding}}
+                customersGroup.MapGet("/after-padding-secured", GetAfterPaddingSecured)
+                    .RequireAuthorization();
                 var publicCatalogGroup = app.MapPublicCatalogGroup();
                 publicCatalogGroup.MapGet("/content/{key}", GetPublicContent)
                     .WithName("GetPublicContent");
+                var managementCatalog = app.MapCatalogGroup();
+                managementCatalog.MapPut("/tours/{id}/presentation", UpdatePresentation)
+                    .AddOpenApiOperationTransformer((operation, _, _) =>
+                    {
+                        operation.Description = "Updates presentation.";
+                        operation.Summary = "Update";
+                        operation.Deprecated = false;
+                        operation.Tags = [];
+                        operation.Parameters = [];
+                        return Task.CompletedTask;
+                    })
+                    .RequireAuthorization();
+                customersGroup.MapGet("/last-unsecured", GetLastUnsecured);
+                customersGroup.MapGet(RouteNames.Hidden, GetHidden)
+                    .RequireAuthorization();
+                customersGroup.MapGet("/method-boundary", GetMethodBoundary);
                 return app;
             }
+
+            private static void
+                ConfigureAuthorization<T>()
+            {
+                builder.RequireAuthorization();
+            }
         }
-        """;
+        """";
+    }
 
     public static string AdminTourCreatedIntegrationEvent() =>
         """

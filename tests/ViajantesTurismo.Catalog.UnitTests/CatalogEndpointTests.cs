@@ -77,7 +77,7 @@ public sealed class CatalogEndpointTests
         using var response = await client.GetAsync(
             new Uri("/api/v1/public/catalog/tours", UriKind.Relative),
             TestContext.Current.CancellationToken);
-        var tours = await response.Content.ReadFromJsonAsync<CatalogTourDto[]>(TestContext.Current.CancellationToken);
+        var tours = await response.Content.ReadFromJsonAsync<TourSummaryDto[]>(TestContext.Current.CancellationToken);
 
         // Assert
         response.StatusCode.ShouldBe(HttpStatusCode.OK);
@@ -130,7 +130,7 @@ public sealed class CatalogEndpointTests
         using var response = await client.GetAsync(
             new Uri("/api/v1/public/catalog/tours/%20published-tour%20", UriKind.Relative),
             TestContext.Current.CancellationToken);
-        var dto = await response.Content.ReadFromJsonAsync<CatalogTourDto>(TestContext.Current.CancellationToken);
+        var dto = await response.Content.ReadFromJsonAsync<TourDetailsDto>(TestContext.Current.CancellationToken);
 
         // Assert
         response.StatusCode.ShouldBe(HttpStatusCode.OK);

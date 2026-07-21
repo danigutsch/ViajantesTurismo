@@ -9,7 +9,7 @@ namespace ViajantesTurismo.Catalog.ApiServiceTests;
 public sealed class CatalogApiClientIntegrationTests
 {
     [Fact]
-    public async Task Catalog_tours_clients_update_and_read_published_tour_through_api_host()
+    public async Task Catalog_tours_clients_update_publish_and_unpublish_through_api_host()
     {
         // Arrange
         var cancellationToken = TestContext.Current.CancellationToken;
@@ -34,20 +34,36 @@ public sealed class CatalogApiClientIntegrationTests
         {
             Title = "Contract Client Tour",
             Slug = "contract-client-tour",
-            IsPublished = true
+            Summary = "A contract-tested tour.",
+            Description = "A detailed contract-tested tour description.",
+            Itinerary = "Day one: test the HTTP contract.",
+            SeoTitle = "Contract Client Tour SEO",
+            SeoDescription = "Contract-tested search description.",
+            ExpectedVersion = 1
         };
 
         // Act
         var saved = await managementClient.UpdatePresentation(tourId, request, cancellationToken);
+        await managementClient.Publish(
+            tourId,
+            new CatalogTourPublicationRequest { ExpectedVersion = 2 },
+            cancellationToken);
         var published = await publicClient.GetPublishedTourBySlug("contract-client-tour", cancellationToken);
+        await managementClient.Unpublish(
+            tourId,
+            new CatalogTourPublicationRequest { ExpectedVersion = 3 },
+            cancellationToken);
+        var unpublished = await publicClient.GetPublishedTourBySlug("contract-client-tour", cancellationToken);
 
         // Assert
         saved.ShouldNotBeNull();
         saved.Title.ShouldBe("Contract Client Tour");
-        saved.IsPublished.ShouldBeTrue();
+        saved.IsPublished.ShouldBeFalse();
         published.ShouldNotBeNull();
-        published.Id.ShouldBe(tourId);
+        published.Title.ShouldBe("Contract Client Tour");
         published.Slug.ShouldBe("contract-client-tour");
+        published.Summary.ShouldBe("A contract-tested tour.");
+        unpublished.ShouldBeNull();
     }
 
     [Fact]
