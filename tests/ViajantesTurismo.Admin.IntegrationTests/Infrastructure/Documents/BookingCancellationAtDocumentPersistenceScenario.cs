@@ -18,25 +18,39 @@ internal sealed class BookingCancellationAtDocumentPersistenceScenario : IAsyncD
         this.bookingId = bookingId;
     }
 
-    public static async Task<BookingCancellationAtDocumentPersistenceScenario> Create(
+    public static Task<BookingCancellationAtDocumentPersistenceScenario> Create(
         string connectionString,
+        Guid bookingId,
+        CancellationToken ct) =>
+        Create(NpgsqlDataSource.Create(connectionString), bookingId, ct);
+
+    internal static async Task<BookingCancellationAtDocumentPersistenceScenario> Create(
+        NpgsqlDataSource dataSource,
         Guid bookingId,
         CancellationToken ct)
     {
-        var dataSource = NpgsqlDataSource.Create(connectionString);
-        await using var connection = await dataSource.OpenConnectionAsync(ct);
-        await using var command = new NpgsqlCommand(
-            "SELECT EXISTS (SELECT 1 FROM \"Booking\" WHERE \"Id\" = @bookingId);",
-            connection);
-        command.Parameters.AddWithValue("bookingId", bookingId);
-        var bookingExists = await command.ExecuteScalarAsync(ct);
-        if (bookingExists is not true)
+        ArgumentNullException.ThrowIfNull(dataSource);
+
+        try
+        {
+            await using var connection = await dataSource.OpenConnectionAsync(ct);
+            await using var command = new NpgsqlCommand(
+                "SELECT EXISTS (SELECT 1 FROM \"Booking\" WHERE \"Id\" = @bookingId);",
+                connection);
+            command.Parameters.AddWithValue("bookingId", bookingId);
+            var bookingExists = await command.ExecuteScalarAsync(ct);
+            if (bookingExists is not true)
+            {
+                throw new InvalidOperationException("The booking cancellation scenario requires an existing booking.");
+            }
+
+            return new BookingCancellationAtDocumentPersistenceScenario(dataSource, bookingId);
+        }
+        catch
         {
             await dataSource.DisposeAsync();
-            throw new InvalidOperationException("The booking cancellation scenario requires an existing booking.");
+            throw;
         }
-
-        return new BookingCancellationAtDocumentPersistenceScenario(dataSource, bookingId);
     }
 
     public async Task HoldCancellation(CancellationToken ct)
@@ -76,7 +90,7 @@ internal sealed class BookingCancellationAtDocumentPersistenceScenario : IAsyncD
         }
     }
 
-    public async Task WaitForBlockedDocumentPersistence(CancellationToken ct)
+    public async Task WaitForBlockedDocumentPersistence(int expectedBlockedRequestCount, CancellationToken ct)
     {
         var processId = cancellationProcessId ?? throw new InvalidOperationException("The booking cancellation transaction is not active.");
         using var timeoutCts = new CancellationTokenSource(LockWaitTimeout);
@@ -88,11 +102,27 @@ internal sealed class BookingCancellationAtDocumentPersistenceScenario : IAsyncD
             {
                 await using var connection = await dataSource.OpenConnectionAsync(linkedCts.Token);
                 await using var command = new NpgsqlCommand(
-                    "SELECT EXISTS (SELECT 1 FROM pg_stat_activity WHERE @processId = ANY(pg_blocking_pids(pid)));",
+                    """
+                    WITH RECURSIVE blocked_requests(pid) AS (
+                        SELECT blocked.pid
+                        FROM pg_stat_activity AS blocked
+                        WHERE @processId = ANY(pg_blocking_pids(blocked.pid))
+
+                        UNION
+
+                        SELECT blocked.pid
+                        FROM pg_stat_activity AS blocked
+                        INNER JOIN blocked_requests AS blocker
+                            ON blocker.pid = ANY(pg_blocking_pids(blocked.pid))
+                    )
+                    SELECT COUNT(*) >= @expectedBlockedRequestCount
+                    FROM blocked_requests;
+                    """,
                     connection);
                 command.Parameters.AddWithValue("processId", processId);
-                var requestIsBlocked = await command.ExecuteScalarAsync(linkedCts.Token);
-                if (requestIsBlocked is true)
+                command.Parameters.AddWithValue("expectedBlockedRequestCount", expectedBlockedRequestCount);
+                var requestsAreBlocked = await command.ExecuteScalarAsync(linkedCts.Token);
+                if (requestsAreBlocked is true)
                 {
                     return;
                 }
@@ -115,6 +145,19 @@ internal sealed class BookingCancellationAtDocumentPersistenceScenario : IAsyncD
         var connection = cancellationConnection ?? throw new InvalidOperationException("The booking cancellation connection is not active.");
 
         await transaction.CommitAsync(ct);
+        cancellationTransaction = null;
+        cancellationConnection = null;
+        cancellationProcessId = null;
+        await transaction.DisposeAsync();
+        await connection.DisposeAsync();
+    }
+
+    public async Task RollbackCancellation(CancellationToken ct)
+    {
+        var transaction = cancellationTransaction ?? throw new InvalidOperationException("The booking cancellation transaction is not active.");
+        var connection = cancellationConnection ?? throw new InvalidOperationException("The booking cancellation connection is not active.");
+
+        await transaction.RollbackAsync(ct);
         cancellationTransaction = null;
         cancellationConnection = null;
         cancellationProcessId = null;

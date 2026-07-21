@@ -1,5 +1,7 @@
+using System.Net;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Polly.Timeout;
 
 namespace ViajantesTurismo.Management.Web;
 
@@ -38,6 +40,18 @@ internal static class DocumentArtifactProxyEndpoints
             httpContext.Response.Headers.Expires = "0";
             httpContext.Response.Headers["X-Content-Type-Options"] = "nosniff";
             return TypedResults.File(artifact.Content.ToArray(), HtmlMediaType, artifact.FileName, enableRangeProcessing: false);
+        }
+        catch (HttpRequestException exception) when (exception.StatusCode == HttpStatusCode.Conflict)
+        {
+            return TypedResults.Problem("The document artifact is not available for download.", statusCode: StatusCodes.Status409Conflict);
+        }
+        catch (TimeoutRejectedException)
+        {
+            return TypedResults.Problem("The document artifact could not be retrieved.", statusCode: StatusCodes.Status504GatewayTimeout);
+        }
+        catch (OperationCanceledException) when (!ct.IsCancellationRequested)
+        {
+            return TypedResults.Problem("The document artifact could not be retrieved.", statusCode: StatusCodes.Status504GatewayTimeout);
         }
         catch (HttpRequestException)
         {

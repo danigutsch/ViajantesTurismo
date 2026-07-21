@@ -169,6 +169,51 @@ public sealed class DetailsPageTests : BunitContext
     }
 
     [Fact]
+    public async Task Editable_fields_have_distinct_save_button_accessible_names()
+    {
+        // Arrange
+        var document = new GetDocumentDto
+        {
+            Id = Guid.CreateVersion7(),
+            BookingId = Guid.CreateVersion7(),
+            Revision = 1,
+            TemplateId = "tour-service-contract",
+            TemplateVersion = "1",
+            SourceVersion = "SOURCE-VERSION",
+            Status = DocumentStatusDto.DraftGenerated,
+            Fields =
+            [
+                new GetDocumentFieldDto
+                {
+                    FieldId = "greeting",
+                    Label = "Greeting",
+                    RenderedValue = "Dear customer",
+                    IsEditable = true
+                },
+                new GetDocumentFieldDto
+                {
+                    FieldId = "trip-note",
+                    Label = "Trip note",
+                    RenderedValue = "Bring a hat",
+                    IsEditable = true
+                }
+            ],
+            CreatedAt = DateTime.UtcNow,
+            UpdatedAt = DateTime.UtcNow,
+            HasFinalizedArtifact = false
+        };
+        documentsApiClient.AddDocument(document);
+
+        // Act
+        var cut = Render<Details>(parameters => parameters.Add(page => page.Id, document.Id));
+        await cut.WaitForAssertionAsync(() => cut.Find("h1"));
+
+        // Assert
+        cut.Find("button[aria-label='Save Greeting']").ShouldNotBeNull();
+        cut.Find("button[aria-label='Save Trip note']").ShouldNotBeNull();
+    }
+
+    [Fact]
     public async Task Load_failure_shows_a_retryable_error_instead_of_not_found()
     {
         // Arrange

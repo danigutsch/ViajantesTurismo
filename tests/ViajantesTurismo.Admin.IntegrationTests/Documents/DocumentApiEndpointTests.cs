@@ -81,6 +81,39 @@ public sealed class DocumentApiEndpointTests(ApiFixture fixture)
     }
 
     [Fact]
+    public async Task Accepted_booking_with_joined_included_services_over_4000_characters_generates_and_reloads_the_full_document_value()
+    {
+        // Arrange
+        var cancellationToken = TestContext.Current.CancellationToken;
+        var includedServices = Enumerable.Range(1, 17)
+            .Select(index => $"Service {index:D2} {new string('x', 230)}")
+            .ToArray();
+        var expectedValue = string.Join(", ", includedServices);
+        var tour = await fixture.Client.CreateTestTour(
+            "document-long-services",
+            "Document long services",
+            includedServices,
+            cancellationToken);
+        var customer = await fixture.Client.CreateTestCustomer("Document", "Long services", cancellationToken);
+        var booking = await fixture.Client.CreateTestBooking(tour.Id, customer.Id, null, cancellationToken);
+        using var confirmResponse = await fixture.Client.ConfirmBooking(booking.Id, cancellationToken);
+        confirmResponse.StatusCode.ShouldBe(HttpStatusCode.OK);
+        var documents = new DocumentsApiClient(fixture.Client);
+
+        // Act
+        var generated = await documents.GenerateContractDraft(booking.Id, cancellationToken);
+        var reloaded = await documents.GetDocumentById(generated.Id, cancellationToken);
+
+        // Assert
+        expectedValue.Length.ShouldBe(4_129);
+        var generatedField = generated.Fields.ShouldHaveSingleItem(field => field.FieldId == "included-services");
+        var reloadedDocument = reloaded.ShouldNotBeNull();
+        var reloadedField = reloadedDocument.Fields.ShouldHaveSingleItem(field => field.FieldId == "included-services");
+        generatedField.RenderedValue.ShouldBe(expectedValue);
+        reloadedField.RenderedValue.ShouldBe(expectedValue);
+    }
+
+    [Fact]
     public async Task Null_document_field_update_is_rejected_and_audited()
     {
         // Arrange
@@ -171,7 +204,7 @@ public sealed class DocumentApiEndpointTests(ApiFixture fixture)
             new Uri($"/api/v1/documents/bookings/{booking.Id}/contract-drafts", UriKind.Relative),
             null,
             cancellationToken);
-        await scenario.WaitForBlockedDocumentPersistence(cancellationToken);
+        await scenario.WaitForBlockedDocumentPersistence(1, cancellationToken);
         await scenario.CommitCancellation(cancellationToken);
         using var response = await responseTask;
         var draftCount = await fixture.GetDocumentDraftCountForBooking(booking.Id, cancellationToken);
@@ -300,19 +333,31 @@ public sealed class DocumentApiEndpointTests(ApiFixture fixture)
         using var confirmResponse = await fixture.Client.ConfirmBooking(booking.Id, cancellationToken);
         confirmResponse.StatusCode.ShouldBe(HttpStatusCode.OK);
         var route = new Uri($"/api/v1/documents/bookings/{booking.Id}/contract-drafts", UriKind.Relative);
+        await using var scenario = await fixture.CreateBookingCancellationAtDocumentPersistenceScenario(
+            booking.Id,
+            cancellationToken);
+        await scenario.HoldCancellation(cancellationToken);
 
         // Act
         var firstRequest = fixture.Client.PostAsync(route, null, cancellationToken);
+        await scenario.WaitForBlockedDocumentPersistence(1, cancellationToken);
         var secondRequest = fixture.Client.PostAsync(route, null, cancellationToken);
-        var responses = await Task.WhenAll(firstRequest, secondRequest);
-        using var firstResponse = responses[0];
-        using var secondResponse = responses[1];
+        await scenario.WaitForBlockedDocumentPersistence(2, cancellationToken);
+        var firstRequestWasBlocked = !firstRequest.IsCompleted;
+        var secondRequestWasBlocked = !secondRequest.IsCompleted;
+        await scenario.RollbackCancellation(cancellationToken);
+        using var firstResponse = await firstRequest;
+        using var secondResponse = await secondRequest;
         var draftCount = await fixture.GetDocumentDraftCountForBooking(booking.Id, cancellationToken);
         var audits = await fixture.GetDocumentAuditMetadataForBooking(booking.Id, cancellationToken);
+        var bookingStatus = await scenario.GetBookingStatus(cancellationToken);
 
         // Assert
-        responses.Select(response => response.StatusCode)
-            .ShouldBeEquivalentTo(HttpStatusCode.Created, HttpStatusCode.Conflict);
+        firstRequestWasBlocked.ShouldBeTrue();
+        secondRequestWasBlocked.ShouldBeTrue();
+        firstResponse.StatusCode.ShouldBe(HttpStatusCode.Created);
+        secondResponse.StatusCode.ShouldBe(HttpStatusCode.Conflict);
+        bookingStatus.ShouldBe("Confirmed");
         draftCount.ShouldBe(1);
         var generationAudits = audits.Where(audit => audit.Operation == "Generate").ToArray();
         generationAudits.ShouldHaveCount(2);
@@ -377,7 +422,7 @@ public sealed class DocumentApiEndpointTests(ApiFixture fixture)
             new Uri($"/api/v1/documents/{document.Id}/regenerate", UriKind.Relative),
             null,
             cancellationToken);
-        await scenario.WaitForBlockedDocumentPersistence(cancellationToken);
+        await scenario.WaitForBlockedDocumentPersistence(1, cancellationToken);
         await scenario.CommitCancellation(cancellationToken);
         using var response = await responseTask;
         var draftCount = await fixture.GetDocumentDraftCountForBooking(booking.Id, cancellationToken);

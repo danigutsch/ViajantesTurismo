@@ -555,6 +555,25 @@ public sealed class DocumentDraftTests
     }
 
     [Fact]
+    public void Create_field_accepts_generated_value_above_the_staff_override_limit()
+    {
+        // Arrange
+        var generatedValue = new string('x', 4_001);
+
+        // Act
+        var result = DocumentField.Create(
+            "included-services",
+            "Included services",
+            generatedValue,
+            DocumentPrivacyClassification.Operational,
+            false);
+
+        // Assert
+        result.IsSuccess.ShouldBeTrue();
+        result.Value.Value.ShouldBe(generatedValue);
+    }
+
+    [Fact]
     public void CreateRevision_discards_override_when_the_generated_value_changes()
     {
         // Arrange

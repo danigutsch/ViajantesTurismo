@@ -59,8 +59,8 @@ internal sealed class DocumentDraftConfiguration : IEntityTypeConfiguration<Docu
             field.Property(documentField => documentField.FieldId).HasMaxLength(DocumentLimits.MaxFieldIdLength).IsRequired();
             field.Property(documentField => documentField.SortOrder).IsRequired();
             field.Property(documentField => documentField.Label).HasMaxLength(DocumentLimits.MaxFieldLabelLength).IsRequired();
-            field.Property(documentField => documentField.Value).HasMaxLength(DocumentLimits.MaxFieldValueLength).IsRequired();
-            field.Property(documentField => documentField.StaffOverride).HasMaxLength(DocumentLimits.MaxFieldValueLength);
+            field.Property(documentField => documentField.Value).HasColumnType("text").IsRequired();
+            field.Property(documentField => documentField.StaffOverride).HasMaxLength(DocumentLimits.MaxStaffOverrideLength);
             field.Property(documentField => documentField.PrivacyClassification).HasConversion<string>().IsRequired();
             field.Property(documentField => documentField.IsEditable).IsRequired();
         });

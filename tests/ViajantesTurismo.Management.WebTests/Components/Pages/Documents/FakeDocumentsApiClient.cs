@@ -14,6 +14,8 @@ internal sealed class FakeDocumentsApiClient : IDocumentsApiClient
 
     public DocumentArtifactResponse? Artifact { get; set; }
 
+    public Func<Guid, CancellationToken, Task<DocumentArtifactResponse?>>? DownloadArtifactHandler { get; set; }
+
     public void AddDocument(GetDocumentDto document) => _documents.Add(document.Id, document);
 
     public Task<GetDocumentDto?> GetDocumentById(Guid id, CancellationToken ct) =>
@@ -49,7 +51,9 @@ internal sealed class FakeDocumentsApiClient : IDocumentsApiClient
         Task.FromResult(GetRequiredDocument(documentId));
 
     public Task<DocumentArtifactResponse?> DownloadFinalizedArtifact(Guid documentId, CancellationToken ct) =>
-        Task.FromResult(Artifact);
+        DownloadArtifactHandler is null
+            ? Task.FromResult(Artifact)
+            : DownloadArtifactHandler(documentId, ct);
 
     private GetDocumentDto GetRequiredDocument(Guid id) =>
         _documents.GetValueOrDefault(id) ?? throw new InvalidOperationException("The configured document was not found.");

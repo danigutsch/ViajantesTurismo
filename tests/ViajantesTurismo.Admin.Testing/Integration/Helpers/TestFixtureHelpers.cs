@@ -22,10 +22,21 @@ public static class TestFixtureHelpers
     /// <summary>
     /// Creates a test tour and returns the created tour DTO.
     /// </summary>
+    public static Task<GetTourDto> CreateTestTour(
+        this HttpClient client,
+        string? identifier,
+        string? name,
+        CancellationToken ct) =>
+        CreateTestTour(client, identifier, name, null, ct);
+
+    /// <summary>
+    /// Creates a test tour with caller-selected included services and returns the created tour DTO.
+    /// </summary>
     public static async Task<GetTourDto> CreateTestTour(
         this HttpClient client,
         string? identifier,
         string? name,
+        string[]? includedServices,
         CancellationToken ct)
     {
         ArgumentNullException.ThrowIfNull(client);
@@ -46,7 +57,10 @@ public static class TestFixtureHelpers
             }
         }
 
-        var tourRequest = DtoBuilders.BuildCreateTourDto(identifier: identifier, name: name);
+        var tourRequest = DtoBuilders.BuildCreateTourDto(
+            identifier: identifier,
+            name: name,
+            includedServices: includedServices);
         var response = await client.CreateTour(tourRequest, ct);
 
         if (!response.IsSuccessStatusCode)

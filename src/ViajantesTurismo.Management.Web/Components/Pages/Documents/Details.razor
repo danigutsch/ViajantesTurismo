@@ -58,7 +58,7 @@
                             <label for="@FieldInputId(field.FieldId)" class="form-label">@field.Label</label>
                             <div class="input-group">
                                 <input id="@FieldInputId(field.FieldId)" class="form-control" @bind="_fieldValues[field.FieldId]" />
-                                <button type="button" class="btn btn-outline-primary" @onclick="() => UpdateField(field.FieldId)">Save</button>
+                                <button type="button" class="btn btn-outline-primary" aria-label="Save @field.Label" @onclick="() => UpdateField(field.FieldId)">Save</button>
                             </div>
                         }
                         else

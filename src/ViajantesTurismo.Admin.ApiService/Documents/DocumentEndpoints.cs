@@ -26,6 +26,7 @@ internal static class DocumentEndpoints
             .RequireRateLimiting(AdminSecurityBaseline.MutationRateLimitPolicy)
             .RequireAuthorization(AdminAuthorization.DocumentManage)
             .Produces<GetDocumentDto>(StatusCodes.Status201Created)
+            .ProducesValidationProblem(StatusCodes.Status400BadRequest)
             .Produces<ProblemDetails>(StatusCodes.Status404NotFound)
             .Produces<ProblemDetails>(StatusCodes.Status409Conflict)
             .WithAdminMetadata("GenerateDocumentContractDraft", "Generates the server-selected contract draft for an eligible booking.", "Generates a contract draft.");
@@ -56,7 +57,7 @@ internal static class DocumentEndpoints
             .RequireRateLimiting(AdminSecurityBaseline.MutationRateLimitPolicy)
             .RequireAuthorization(AdminAuthorization.DocumentManage)
             .Produces<GetDocumentDto>()
-            .Produces<ProblemDetails>(StatusCodes.Status400BadRequest)
+            .ProducesValidationProblem(StatusCodes.Status400BadRequest)
             .Produces<ProblemDetails>(StatusCodes.Status404NotFound)
             .Produces<ProblemDetails>(StatusCodes.Status409Conflict)
             .WithAdminMetadata("UpdateDocumentField", "Updates one staff-editable document field.", "Updates a document field.");
@@ -81,6 +82,7 @@ internal static class DocumentEndpoints
             .RequireRateLimiting(AdminSecurityBaseline.MutationRateLimitPolicy)
             .RequireAuthorization(AdminAuthorization.DocumentManage)
             .Produces<GetDocumentDto>()
+            .ProducesValidationProblem(StatusCodes.Status400BadRequest)
             .Produces<ProblemDetails>(StatusCodes.Status404NotFound)
             .Produces<ProblemDetails>(StatusCodes.Status409Conflict)
             .WithAdminMetadata("RegenerateDocument", "Creates a replacement document revision from current source data.", "Regenerates a document.");
@@ -95,7 +97,7 @@ internal static class DocumentEndpoints
 
         documentsGroup.MapGet("/{id:guid}/download", DownloadFinalizedArtifact)
             .RequireAuthorization(AdminAuthorization.DocumentManage)
-            .Produces(StatusCodes.Status200OK, contentType: HtmlMediaType)
+            .Produces<Stream>(StatusCodes.Status200OK, contentType: "text/html")
             .Produces<ProblemDetails>(StatusCodes.Status404NotFound)
             .Produces<ProblemDetails>(StatusCodes.Status409Conflict)
             .WithAdminMetadata("DownloadDocumentArtifact", "Downloads a finalized document artifact through a mediated response.", "Downloads a document artifact.");

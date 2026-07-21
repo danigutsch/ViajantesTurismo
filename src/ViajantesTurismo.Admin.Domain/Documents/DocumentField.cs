@@ -86,11 +86,6 @@ public sealed class DocumentField
             return DocumentErrors.ValueTooLong("label", DocumentLimits.MaxFieldLabelLength).ConvertError<DocumentField>();
         }
 
-        if (value.Length > DocumentLimits.MaxFieldValueLength)
-        {
-            return DocumentErrors.ValueTooLong("value", DocumentLimits.MaxFieldValueLength).ConvertError<DocumentField>();
-        }
-
         if (!Enum.IsDefined(privacyClassification))
         {
             return DocumentErrors.InvalidValue("privacyClassification").ConvertError<DocumentField>();
@@ -119,9 +114,9 @@ public sealed class DocumentField
             return DocumentErrors.FieldIsNotEditable(FieldId);
         }
 
-        if (value.Length > DocumentLimits.MaxFieldValueLength)
+        if (value.Length > DocumentLimits.MaxStaffOverrideLength)
         {
-            return DocumentErrors.ValueTooLong("value", DocumentLimits.MaxFieldValueLength);
+            return DocumentErrors.ValueTooLong("value", DocumentLimits.MaxStaffOverrideLength);
         }
 
         StaffOverride = value;

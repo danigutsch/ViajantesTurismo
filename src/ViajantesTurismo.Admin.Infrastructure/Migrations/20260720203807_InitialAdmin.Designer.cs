@@ -857,8 +857,7 @@ namespace ViajantesTurismo.Admin.Infrastructure.Migrations
 
                             b1.Property<string>("Value")
                                 .IsRequired()
-                                .HasMaxLength(4000)
-                                .HasColumnType("character varying(4000)");
+                                .HasColumnType("text");
 
                             b1.HasKey("DocumentDraftId", "FieldId");
 
