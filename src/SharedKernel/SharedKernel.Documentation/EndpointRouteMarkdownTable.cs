@@ -102,22 +102,34 @@ internal static partial class EndpointRouteMarkdownTable
     private static string EndpointChain(string[] lines, int startIndex)
     {
         var builder = new StringBuilder();
-        var braceDepth = 0;
+        var endpointIndentation = Indentation(lines[startIndex]);
         for (var index = startIndex;
              index < lines.Length && index < startIndex + MaximumEndpointChainLineCount;
              index++)
         {
-            var line = lines[index];
-            builder.Append(line);
-            braceDepth += line.Count(static character => character == '{');
-            braceDepth -= line.Count(static character => character == '}');
-            if (braceDepth == 0 && line.TrimEnd().EndsWith(';'))
+            if (index > startIndex
+                && (EndpointMapStartRegex().IsMatch(lines[index])
+                    || (Indentation(lines[index]) < endpointIndentation
+                        && MemberDeclarationStartRegex().IsMatch(lines[index]))))
             {
                 break;
             }
+
+            builder.Append(lines[index]);
         }
 
         return builder.ToString();
+    }
+
+    private static int Indentation(string line)
+    {
+        var length = 0;
+        while (length < line.Length && char.IsWhiteSpace(line[length]))
+        {
+            length++;
+        }
+
+        return length;
     }
 
     private static string EndpointName(string chain, string handler)
@@ -167,6 +179,12 @@ internal static partial class EndpointRouteMarkdownTable
 
     [GeneratedRegex(@"^\s*(\w+)\.Map(Get|Post|Put|Delete|Patch)\(""([^""]+)""\s*,\s*([^;]+?)\)?\s*(?:;|$)", RegexOptions.CultureInvariant)]
     private static partial Regex EndpointMapRegex();
+
+    [GeneratedRegex(@"^\s*\w+\.Map(?:Get|Post|Put|Delete|Patch)\s*\(", RegexOptions.CultureInvariant)]
+    private static partial Regex EndpointMapStartRegex();
+
+    [GeneratedRegex(@"^\s*(?:public|private|protected|internal)\b", RegexOptions.CultureInvariant)]
+    private static partial Regex MemberDeclarationStartRegex();
 
     [GeneratedRegex(@"\.WithName\(""([^""]+)""\)", RegexOptions.CultureInvariant)]
     private static partial Regex EndpointNameRegex();

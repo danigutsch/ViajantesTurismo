@@ -110,7 +110,16 @@ public sealed class DocumentationGeneratorTests
         updated.ShouldNotContain("includeDeveloperTooling", StringComparison.Ordinal);
         updated.ShouldContain("App[App] --> Lib[Lib]", StringComparison.Ordinal);
         updated.ShouldContain("| `GET` | `/customers` | GetCustomers | management/internal | not declared | `Api/CustomerEndpoints.cs` |", StringComparison.Ordinal);
+        updated.ShouldContain("| `GET` | `/customers/block-comment` | GetBlockComment | management/internal | not declared | `Api/CustomerEndpoints.cs` |", StringComparison.Ordinal);
         updated.ShouldContain("| `GET` | `/customers/brace-literal` | GetBraceLiteral | management/internal | not declared | `Api/CustomerEndpoints.cs` |", StringComparison.Ordinal);
+        updated.ShouldContain("| `GET` | `/customers/char-literal` | GetCharLiteral | management/internal | not declared | `Api/CustomerEndpoints.cs` |", StringComparison.Ordinal);
+        updated.ShouldContain("| `GET` | `/customers/last-unsecured` | GetLastUnsecured | management/internal | not declared | `Api/CustomerEndpoints.cs` |", StringComparison.Ordinal);
+        updated.ShouldContain("| `GET` | `/customers/line-comment` | GetLineComment | management/internal | not declared | `Api/CustomerEndpoints.cs` |", StringComparison.Ordinal);
+        updated.ShouldContain("| `GET` | `/customers/method-boundary` | GetMethodBoundary | management/internal | not declared | `Api/CustomerEndpoints.cs` |", StringComparison.Ordinal);
+        updated.ShouldContain("| `GET` | `/customers/raw-multiline` | GetRawMultiline | management/internal | required | `Api/CustomerEndpoints.cs` |", StringComparison.Ordinal);
+        updated.ShouldContain("| `GET` | `/customers/unterminated` | GetUnterminated | management/internal | not declared | `Api/CustomerEndpoints.cs` |", StringComparison.Ordinal);
+        updated.ShouldContain("| `GET` | `/customers/unterminated-adjacent` | GetUnterminatedAdjacent | management/internal | not declared | `Api/CustomerEndpoints.cs` |", StringComparison.Ordinal);
+        updated.ShouldContain("| `GET` | `/customers/verbatim-multiline` | GetVerbatimMultiline | management/internal | not declared | `Api/CustomerEndpoints.cs` |", StringComparison.Ordinal);
         updated.ShouldContain("| `POST` | `/customers` | CreateCustomer | management/internal | required | `Api/CustomerEndpoints.cs` |", StringComparison.Ordinal);
         updated.ShouldContain("| `GET` | `/api/v1/public/catalog/content/{key}` | GetPublicContent | public API | not declared | `Api/CustomerEndpoints.cs` |", StringComparison.Ordinal);
         updated.ShouldContain("| `PUT` | `/api/v1/catalog/tours/{id}/presentation` | UpdatePresentation | management/internal | required | `Api/CustomerEndpoints.cs` |", StringComparison.Ordinal);
