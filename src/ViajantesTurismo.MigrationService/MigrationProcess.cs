@@ -24,8 +24,8 @@ internal static class MigrationProcess
             started = true;
 
             var lifetime = host.Services.GetRequiredService<IHostApplicationLifetime>();
-            var runner = host.Services.GetRequiredService<MigrationRunner>();
-            await runner.Run(lifetime.ApplicationStopping).ConfigureAwait(false);
+            var worker = host.Services.GetRequiredService<DatabaseInitializationWorker>();
+            await worker.Run(lifetime.ApplicationStopping).ConfigureAwait(false);
         }
         catch (Exception exception)
         {

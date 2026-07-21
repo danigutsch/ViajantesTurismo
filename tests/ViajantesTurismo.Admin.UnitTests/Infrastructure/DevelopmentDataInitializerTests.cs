@@ -47,6 +47,19 @@ public sealed class DevelopmentDataInitializerTests
     }
 
     [Fact]
+    public async Task Initialize_preserves_the_booking_status_distribution_by_tour()
+    {
+        // Arrange
+        await using var scenario = DevelopmentDataInitializerScenario.Create();
+
+        // Act
+        await scenario.Initialize(TestContext.Current.CancellationToken);
+
+        // Assert
+        await scenario.ShouldContainExpectedBookingStatuses(TestContext.Current.CancellationToken);
+    }
+
+    [Fact]
     public async Task Initialize_honors_cancellation_without_inserting_partial_data()
     {
         // Arrange

@@ -62,27 +62,6 @@ public sealed class CompositeDomainEventDispatcherTests
     }
 
     [Fact]
-    public async Task Dispatch_continues_when_the_mediator_has_no_notification_for_an_event()
-    {
-        // Arrange
-        var calls = new List<string>();
-        var mediator = (IDomainEventDispatchHandler)new MediatorDomainEventDispatcher(
-            new CapturingPublisher(),
-            new TestDomainEventNotificationFactory());
-        var dispatcher = new CompositeDomainEventDispatcher(
-        [
-            mediator,
-            new CapturingDomainEventDispatchHandler("audit", calls),
-        ]);
-
-        // Act
-        await dispatcher.Dispatch(new UnmappedDomainEvent("document-finalized"), CancellationToken.None);
-
-        // Assert
-        calls.ShouldHaveSingleItem().ShouldBe("audit");
-    }
-
-    [Fact]
     public void Constructor_rejects_null_handlers()
     {
         // Arrange

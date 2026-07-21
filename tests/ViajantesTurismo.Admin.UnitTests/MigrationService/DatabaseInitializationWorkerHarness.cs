@@ -24,7 +24,6 @@ internal sealed class DatabaseInitializationWorkerHarness : IDisposable
 
     private DatabaseInitializationWorkerHarness(
         ServiceProvider serviceProvider,
-        TestHostApplicationLifetime hostLifetime,
         IHostEnvironment environment,
         Func<IServiceProvider, CancellationToken, Task> migrationOperation,
         Func<IServiceProvider, CancellationToken, Task> developmentDataOperation,
@@ -34,11 +33,8 @@ internal sealed class DatabaseInitializationWorkerHarness : IDisposable
         this.environment = environment;
         this.migrationOperation = migrationOperation;
         this.developmentDataOperation = developmentDataOperation;
-        HostLifetime = hostLifetime;
         StoreProbe = storeProbe;
     }
-
-    public TestHostApplicationLifetime HostLifetime { get; }
 
     public MigrationStoreResolutionProbe? StoreProbe { get; }
 
@@ -65,7 +61,6 @@ internal sealed class DatabaseInitializationWorkerHarness : IDisposable
 
         return new DatabaseInitializationWorkerHarness(
             services.BuildServiceProvider(),
-            new TestHostApplicationLifetime(),
             environment,
             (_, ct) => migrationOperation(ct),
             (_, ct) => developmentDataOperation(ct));
@@ -121,7 +116,6 @@ internal sealed class DatabaseInitializationWorkerHarness : IDisposable
 
         return new DatabaseInitializationWorkerHarness(
             services.BuildServiceProvider(),
-            new TestHostApplicationLifetime(),
             environment,
             static (_, _) => Task.CompletedTask,
             static (_, _) => Task.CompletedTask,
@@ -134,7 +128,6 @@ internal sealed class DatabaseInitializationWorkerHarness : IDisposable
             serviceProvider.GetRequiredService<IServiceScopeFactory>(),
             environment,
             NullLogger<DatabaseInitializationWorker>.Instance,
-            HostLifetime,
             migrationOperation,
             developmentDataOperation);
     }
@@ -144,8 +137,7 @@ internal sealed class DatabaseInitializationWorkerHarness : IDisposable
         return new DatabaseInitializationWorker(
             serviceProvider.GetRequiredService<IServiceScopeFactory>(),
             environment,
-            NullLogger<DatabaseInitializationWorker>.Instance,
-            HostLifetime);
+            NullLoggerFactory.Instance);
     }
 
     public DatabaseInitializationWorker CreateDefaultWorker(ILoggerFactory loggerFactory)
@@ -155,8 +147,7 @@ internal sealed class DatabaseInitializationWorkerHarness : IDisposable
         return new DatabaseInitializationWorker(
             serviceProvider.GetRequiredService<IServiceScopeFactory>(),
             environment,
-            loggerFactory.CreateLogger<DatabaseInitializationWorker>(),
-            HostLifetime);
+            loggerFactory);
     }
 
     public async Task ShouldContainDevelopmentData(CancellationToken ct)

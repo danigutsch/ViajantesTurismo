@@ -1,4 +1,5 @@
 using Microsoft.EntityFrameworkCore;
+using SharedKernel.EntityFrameworkCore;
 using SharedKernel.Results;
 using ViajantesTurismo.Admin.Domain.Customers;
 using ViajantesTurismo.Admin.Domain.Shared;
@@ -7,11 +8,12 @@ using ViajantesTurismo.Admin.Domain.Tours;
 namespace ViajantesTurismo.Admin.Infrastructure;
 
 /// <summary>
-/// Seeds the Admin database with development baseline data.
+/// Initializes the Admin database with synthetic development data.
 /// </summary>
-public sealed class Seeder
+public sealed class DevelopmentDataInitializer
 {
     private readonly AdminWriteDbContext dbContext;
+    private readonly TimeProvider timeProvider;
 
     private const string BreakfastService = "Breakfast";
     private const string BrazilianNationality = "Brazilian";
@@ -220,23 +222,49 @@ public sealed class Seeder
     private static readonly string[] BaselineCustomerNationalIds =
         Customers.Select(static customer => customer.IdentificationInfo.NationalId).ToArray();
 
-    internal Seeder(AdminWriteDbContext dbContext)
+    internal DevelopmentDataInitializer(AdminWriteDbContext dbContext, TimeProvider timeProvider)
     {
         ArgumentNullException.ThrowIfNull(dbContext);
+        ArgumentNullException.ThrowIfNull(timeProvider);
 
         this.dbContext = dbContext;
+        this.timeProvider = timeProvider;
     }
 
     /// <summary>
-    /// Applies Admin database migrations and resumes known development baseline seeding.
+    /// Resumes recognized development-data checkpoints inside one transaction.
     /// </summary>
     /// <param name="ct">The cancellation token.</param>
-    public async Task Seed(CancellationToken ct)
+    public async Task Initialize(CancellationToken ct)
     {
-        if (dbContext.Database.IsRelational())
+        var concurrentRetries = 0;
+        while (true)
         {
-            await dbContext.Database.MigrateAsync(ct);
+            try
+            {
+                _ = await EfCoreCommandTransactionScope.Execute(
+                    dbContext,
+                    () => InitializeCore(ct),
+                    ct);
+                return;
+            }
+            catch (Exception exception) when (
+                exception is DbUpdateException
+                or InvalidOperationException { InnerException: DbUpdateException })
+            {
+                dbContext.ChangeTracker.Clear();
+                if (concurrentRetries++ >= 1)
+                {
+                    throw;
+                }
+            }
         }
+    }
+
+    private async ValueTask<bool> InitializeCore(CancellationToken ct)
+    {
+        ct.ThrowIfCancellationRequested();
+        dbContext.ChangeTracker.Clear();
 
         var existingCustomerNationalIds = await dbContext.Customers
             .Select(static customer => customer.IdentificationInfo.NationalId)
@@ -263,13 +291,13 @@ public sealed class Seeder
         };
         if (!isRecognizedCheckpoint)
         {
-            return;
+            return false;
         }
 
         var baselineTours = await ResolveBaselineTours(hasNoTours, ct);
         if (baselineTours is null)
         {
-            return;
+            return false;
         }
 
         Customer[] baselineCustomers;
@@ -299,7 +327,7 @@ public sealed class Seeder
         if (baselineCustomers.Length != Customers.Length ||
             baselineCustomers.Any(static customer => !MatchesBaselineCustomer(customer)))
         {
-            return;
+            return false;
         }
 
         if (hasNoCustomers)
@@ -316,7 +344,7 @@ public sealed class Seeder
         {
             SeedBookings(baselineTours, baselineCustomers);
             await dbContext.SaveChangesAsync(ct);
-            return;
+            return true;
         }
 
         baselineTours = await dbContext.Tours
@@ -333,10 +361,11 @@ public sealed class Seeder
                 booking.Status == BookingStatus.Pending && booking.Payments.Count == 0);
         if (!isPendingBookingCheckpoint || !TryCompleteBookingStates(baselineTours, baselineCustomers))
         {
-            return;
+            return false;
         }
 
         await dbContext.SaveChangesAsync(ct);
+        return true;
     }
 
     private static bool HasExactValues(string[] actual, string[] expected) =>
@@ -376,7 +405,7 @@ public sealed class Seeder
                 : null;
     }
 
-    private static void SeedBookings(
+    private void SeedBookings(
         Tour[] tours,
         Customer[] customers)
     {
@@ -448,7 +477,7 @@ public sealed class Seeder
         }
     }
 
-    private static bool TryCompleteBookingStates(Tour[] tours, Customer[] customers)
+    private bool TryCompleteBookingStates(Tour[] tours, Customer[] customers)
     {
         var booking1 = tours[0].Bookings.FirstOrDefault(
             booking => MatchesBaselineBooking(
@@ -544,13 +573,13 @@ public sealed class Seeder
             return false;
         }
 
-        var timeProvider = TimeProvider.System;
+        var paymentDate = timeProvider.GetUtcNow().UtcDateTime;
 
         EnsureSeedOperationSucceeded(tours[0].ConfirmBooking(booking1.Id));
         EnsureSeedOperationSucceeded(tours[0].RecordBookingPayment(
             booking1.Id,
             booking1.TotalPrice,
-            DateTime.UtcNow,
+            paymentDate,
             PaymentMethod.CreditCard,
             timeProvider,
             "CC-2024-001"));
@@ -559,7 +588,7 @@ public sealed class Seeder
         EnsureSeedOperationSucceeded(tours[1].RecordBookingPayment(
             booking2.Id,
             booking2.TotalPrice * 0.5m,
-            DateTime.UtcNow,
+            paymentDate,
             PaymentMethod.BankTransfer,
             timeProvider,
             "BT-2024-002",
@@ -569,7 +598,7 @@ public sealed class Seeder
         EnsureSeedOperationSucceeded(tours[3].RecordBookingPayment(
             booking4.Id,
             booking4.TotalPrice,
-            DateTime.UtcNow,
+            paymentDate,
             PaymentMethod.CreditCard,
             timeProvider,
             "CC-2024-003"));
@@ -582,7 +611,7 @@ public sealed class Seeder
         EnsureSeedOperationSucceeded(tours[1].RecordBookingPayment(
             booking7.Id,
             booking7.TotalPrice * 0.75m,
-            DateTime.UtcNow,
+            paymentDate,
             PaymentMethod.BankTransfer,
             timeProvider,
             "BT-2024-004",
@@ -592,7 +621,7 @@ public sealed class Seeder
         EnsureSeedOperationSucceeded(tours[0].RecordBookingPayment(
             booking9.Id,
             booking9.TotalPrice,
-            DateTime.UtcNow,
+            paymentDate,
             PaymentMethod.Cash,
             timeProvider));
 
@@ -601,7 +630,7 @@ public sealed class Seeder
         EnsureSeedOperationSucceeded(tours[2].RecordBookingPayment(
             booking3.Id,
             booking3.TotalPrice * 0.25m,
-            DateTime.UtcNow,
+            paymentDate,
             PaymentMethod.CreditCard,
             timeProvider,
             "CC-2024-006",

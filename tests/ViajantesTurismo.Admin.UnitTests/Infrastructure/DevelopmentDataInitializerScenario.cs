@@ -79,10 +79,31 @@ internal sealed class DevelopmentDataInitializerScenario : IAsyncDisposable
         var tourCount = await DbContext.Tours.CountAsync(ct);
         var customerCount = await DbContext.Customers.CountAsync(ct);
         var bookingCount = await DbContext.Tours.SelectMany(tour => tour.Bookings).CountAsync(ct);
+        var documentLineageCount = await DbContext.DocumentLineages.CountAsync(ct);
+        var documentDraftCount = await DbContext.DocumentDrafts.CountAsync(ct);
+        var documentAuditCount = await DbContext.DocumentAuditRecords.CountAsync(ct);
 
         tourCount.ShouldBe(5);
         customerCount.ShouldBe(15);
         bookingCount.ShouldBe(10);
+        documentLineageCount.ShouldBe(0);
+        documentDraftCount.ShouldBe(0);
+        documentAuditCount.ShouldBe(0);
+    }
+
+    public async Task ShouldContainExpectedBookingStatuses(CancellationToken ct)
+    {
+        var tours = await DbContext.Tours
+            .Include(static tour => tour.Bookings)
+            .OrderBy(static tour => tour.Identifier)
+            .ToArrayAsync(ct);
+
+        tours.Select(static tour => tour.Identifier).ShouldBe(new[] { "CITY001", "CULT001", "FOWI003", "HIST002", "NATR001" });
+        tours[0].Bookings.Select(static booking => booking.Status).Order().ToArray().ShouldBe(new[] { BookingStatus.Confirmed, BookingStatus.Confirmed, BookingStatus.Cancelled }.Order().ToArray());
+        tours[1].Bookings.Select(static booking => booking.Status).Order().ToArray().ShouldBe(new[] { BookingStatus.Confirmed, BookingStatus.Confirmed });
+        tours[2].Bookings.Select(static booking => booking.Status).ToArray().ShouldBe(new[] { BookingStatus.Pending });
+        tours[3].Bookings.Select(static booking => booking.Status).Order().ToArray().ShouldBe(new[] { BookingStatus.Pending, BookingStatus.Confirmed }.Order().ToArray());
+        tours[4].Bookings.Select(static booking => booking.Status).Order().ToArray().ShouldBe(new[] { BookingStatus.Confirmed, BookingStatus.Completed }.Order().ToArray());
     }
 
     public async Task ShouldContainOnlyTours(int expectedTourCount, CancellationToken ct)

@@ -16,17 +16,17 @@ public sealed class MigrationProcessTests
         // Assert
         exitCode.ShouldBe(0);
         host.StartCalled.ShouldBeTrue();
-        host.SeedCalled.ShouldBeTrue();
-        host.SeedToken.ShouldBe(host.ApplicationStopping);
+        host.InitializationCalled.ShouldBeTrue();
+        host.InitializationToken.ShouldBe(host.ApplicationStopping);
         host.StopCalled.ShouldBeTrue();
         host.DisposeCalled.ShouldBeTrue();
-        host.LifecycleEvents.ShouldBe(["Start", "Seed", "Stop", "Dispose"]);
+        host.LifecycleEvents.ShouldBe(["Start", "Initialize", "Stop", "Dispose"]);
         host.StartToken.IsCancellationRequested.ShouldBeFalse();
         host.StopToken.ShouldBe(CancellationToken.None);
     }
 
     [Fact]
-    public async Task Returns_one_and_cleans_up_after_runner_failure()
+    public async Task Returns_one_and_cleans_up_after_initialization_failure()
     {
         // Arrange
         var failure = new InvalidOperationException("boom");
@@ -40,10 +40,10 @@ public sealed class MigrationProcessTests
         exitCode.ShouldBe(1);
         reportedFailure.ShouldBeSameAs(failure);
         host.StartCalled.ShouldBeTrue();
-        host.SeedCalled.ShouldBeTrue();
+        host.InitializationCalled.ShouldBeTrue();
         host.StopCalled.ShouldBeTrue();
         host.DisposeCalled.ShouldBeTrue();
-        host.LifecycleEvents.ShouldBe(["Start", "Seed", "Stop", "Dispose"]);
+        host.LifecycleEvents.ShouldBe(["Start", "Initialize", "Stop", "Dispose"]);
         host.StopToken.ShouldBe(CancellationToken.None);
     }
 
@@ -57,14 +57,14 @@ public sealed class MigrationProcessTests
                 ct.ThrowIfCancellationRequested();
                 return Task.CompletedTask;
             },
-            cancelDuringSeed: true);
+            cancelDuringInitialization: true);
 
         // Act
         var exitCode = await MigrationProcess.Run(() => host);
 
         // Assert
         exitCode.ShouldBe(1);
-        host.SeedToken.IsCancellationRequested.ShouldBeTrue();
+        host.InitializationToken.IsCancellationRequested.ShouldBeTrue();
         host.StopCalled.ShouldBeTrue();
         host.DisposeCalled.ShouldBeTrue();
     }
@@ -83,7 +83,7 @@ public sealed class MigrationProcessTests
         // Assert
         exitCode.ShouldBe(1);
         host.StartCalled.ShouldBeTrue();
-        host.SeedCalled.ShouldBeFalse();
+        host.InitializationCalled.ShouldBeFalse();
         host.StopCalled.ShouldBeFalse();
         host.DisposeCalled.ShouldBeTrue();
     }
@@ -123,14 +123,14 @@ public sealed class MigrationProcessTests
     }
 
     [Fact]
-    public async Task Reports_runner_and_cleanup_failures_without_masking_the_primary_failure()
+    public async Task Reports_initialization_and_cleanup_failures_without_masking_the_primary_failure()
     {
         // Arrange
-        var runnerFailure = new InvalidOperationException("runner failed");
+        var initializationFailure = new InvalidOperationException("initialization failed");
         var stopFailure = new InvalidOperationException("stop failed");
         var disposeFailure = new InvalidOperationException("dispose failed");
         using var host = new MigrationProcessTestHost(
-            _ => throw runnerFailure,
+            _ => throw initializationFailure,
             stopFailure: stopFailure,
             disposeFailure: disposeFailure);
         Exception? reportedFailure = null;
@@ -141,7 +141,7 @@ public sealed class MigrationProcessTests
         // Assert
         exitCode.ShouldBe(1);
         var aggregateFailure = reportedFailure.ShouldBeOfType<AggregateException>();
-        aggregateFailure.InnerExceptions.ShouldBe([runnerFailure, stopFailure, disposeFailure]);
-        host.LifecycleEvents.ShouldBe(["Start", "Seed", "Stop", "Dispose"]);
+        aggregateFailure.InnerExceptions.ShouldBe([initializationFailure, stopFailure, disposeFailure]);
+        host.LifecycleEvents.ShouldBe(["Start", "Initialize", "Stop", "Dispose"]);
     }
 }

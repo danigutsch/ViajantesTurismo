@@ -35,7 +35,6 @@ public sealed class DatabaseInitializationWorkerTelemetryTests
         (activity.Tags).ShouldContain(static tag => tag.Key == "operation.type" && tag.Value == "database_initialization");
         (activity.Tags).ShouldContain(static tag => tag.Key == "worker.type" && tag.Value == "migration");
         (activity.Events).ShouldNotContain(static activityEvent => activityEvent.Name == "exception");
-        (harness.HostLifetime.StopApplicationCalled).ShouldBeTrue();
         (initializationCalled).ShouldBeTrue();
     }
 
@@ -74,7 +73,6 @@ public sealed class DatabaseInitializationWorkerTelemetryTests
             tag.Key == "exception.type" && string.Equals(tag.Value as string, typeof(InvalidOperationException).FullName, StringComparison.Ordinal));
         (exceptionTags).ShouldContain(static tag =>
             tag.Key == "exception.message" && string.Equals(tag.Value as string, "boom", StringComparison.Ordinal));
-        (harness.HostLifetime.StopApplicationCalled).ShouldBeTrue();
         (initializationCalled).ShouldBeTrue();
     }
 
@@ -107,7 +105,6 @@ public sealed class DatabaseInitializationWorkerTelemetryTests
         (activity.Tags).ShouldContain(static tag => tag.Key == "operation.type" && tag.Value == "database_initialization");
         (activity.Tags).ShouldContain(static tag => tag.Key == "worker.type" && tag.Value == "migration");
         (activity.Events).ShouldNotContain(static activityEvent => activityEvent.Name == "exception");
-        (harness.HostLifetime.StopApplicationCalled).ShouldBeTrue();
         (initializationCalled).ShouldBeTrue();
     }
 
@@ -131,7 +128,7 @@ public sealed class DatabaseInitializationWorkerTelemetryTests
     }
 
     [Fact]
-    public async Task Default_worker_runs_development_data_initialization_and_stops_the_host()
+    public async Task Default_worker_runs_development_data_initialization()
     {
         // Arrange
         using var harness = DatabaseInitializationWorkerHarness.CreateWithDefaultInitialization(Environments.Development);
@@ -146,11 +143,10 @@ public sealed class DatabaseInitializationWorkerTelemetryTests
         probe.CatalogResolved.ShouldBeTrue();
         probe.BrandingResolved.ShouldBeTrue();
         probe.ManagementSecurityResolved.ShouldBeTrue();
-        (harness.HostLifetime.StopApplicationCalled).ShouldBeTrue();
     }
 
     [Fact]
-    public async Task Default_worker_in_production_skips_development_data_and_stops_the_host()
+    public async Task Default_worker_in_production_skips_development_data()
     {
         // Arrange
         using var harness = DatabaseInitializationWorkerHarness.CreateWithDefaultInitialization(Environments.Production);
@@ -161,7 +157,6 @@ public sealed class DatabaseInitializationWorkerTelemetryTests
 
         // Assert
         await harness.ShouldNotContainDevelopmentData(TestContext.Current.CancellationToken);
-        harness.HostLifetime.StopApplicationCalled.ShouldBeTrue();
     }
 
     [Fact]

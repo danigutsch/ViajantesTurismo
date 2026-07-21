@@ -9,8 +9,8 @@ namespace ViajantesTurismo.Admin.UnitTests.MigrationService;
 
 internal sealed class MigrationProcessTestHost : IHost
 {
-    private readonly bool cancelDuringSeed;
-    private readonly ActivitySource activitySource = new(MigrationRunner.ActivitySourceName);
+    private readonly bool cancelDuringInitialization;
+    private readonly ActivitySource activitySource = new(DatabaseInitializationWorker.ActivitySourceName);
     private readonly CancellationToken applicationStopping;
     private readonly Exception? disposeFailure;
     private readonly TestHostApplicationLifetime lifetime = new();
@@ -20,15 +20,15 @@ internal sealed class MigrationProcessTestHost : IHost
     private readonly List<string> lifecycleEvents = [];
 
     public MigrationProcessTestHost(
-        Func<CancellationToken, Task> seedOperation,
-        bool cancelDuringSeed = false,
+        Func<CancellationToken, Task> initializationOperation,
+        bool cancelDuringInitialization = false,
         Exception? startFailure = null,
         Exception? stopFailure = null,
         Exception? disposeFailure = null)
     {
-        ArgumentNullException.ThrowIfNull(seedOperation);
+        ArgumentNullException.ThrowIfNull(initializationOperation);
 
-        this.cancelDuringSeed = cancelDuringSeed;
+        this.cancelDuringInitialization = cancelDuringInitialization;
         this.startFailure = startFailure;
         this.stopFailure = stopFailure;
         this.disposeFailure = disposeFailure;
@@ -36,10 +36,13 @@ internal sealed class MigrationProcessTestHost : IHost
 
         var services = new ServiceCollection();
         services.AddSingleton<IHostApplicationLifetime>(lifetime);
-        services.AddSingleton(serviceProvider => new MigrationRunner(
+        services.AddSingleton<IHostEnvironment>(new TestHostEnvironment(Environments.Production));
+        services.AddSingleton(serviceProvider => new DatabaseInitializationWorker(
             serviceProvider.GetRequiredService<IServiceScopeFactory>(),
-            NullLogger.Instance,
-            (_, ct) => RunSeed(seedOperation, ct),
+            serviceProvider.GetRequiredService<IHostEnvironment>(),
+            NullLogger<DatabaseInitializationWorker>.Instance,
+            (_, ct) => RunInitialization(initializationOperation, ct),
+            static (_, _) => Task.CompletedTask,
             activitySource));
         provider = services.BuildServiceProvider();
     }
@@ -50,9 +53,9 @@ internal sealed class MigrationProcessTestHost : IHost
 
     public bool DisposeCalled { get; private set; }
 
-    public bool SeedCalled { get; private set; }
+    public bool InitializationCalled { get; private set; }
 
-    public CancellationToken SeedToken { get; private set; }
+    public CancellationToken InitializationToken { get; private set; }
 
     public bool StartCalled { get; private set; }
 
@@ -112,18 +115,18 @@ internal sealed class MigrationProcessTestHost : IHost
         }
     }
 
-    private Task RunSeed(Func<CancellationToken, Task> seedOperation, CancellationToken ct)
+    private Task RunInitialization(Func<CancellationToken, Task> initializationOperation, CancellationToken ct)
     {
-        SeedCalled = true;
-        SeedToken = ct;
-        lifecycleEvents.Add("Seed");
+        InitializationCalled = true;
+        InitializationToken = ct;
+        lifecycleEvents.Add("Initialize");
 
-        if (cancelDuringSeed)
+        if (cancelDuringInitialization)
         {
             lifetime.StopApplication();
         }
 
-        return seedOperation(ct);
+        return initializationOperation(ct);
     }
 
     private sealed class TestHostApplicationLifetime : IHostApplicationLifetime, IDisposable
