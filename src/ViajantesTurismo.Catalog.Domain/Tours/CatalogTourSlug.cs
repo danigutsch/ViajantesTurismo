@@ -58,9 +58,9 @@ public static class CatalogTourSlug
                 continue;
             }
 
-            if (character is >= 'A' and <= 'Z' or >= 'a' and <= 'z' or >= '0' and <= '9')
+            if (char.IsAsciiLetterOrDigit(character))
             {
-                if (requiresSeparator && builder.Length > 0)
+                if (requiresSeparator)
                 {
                     builder.Append('-');
                 }
