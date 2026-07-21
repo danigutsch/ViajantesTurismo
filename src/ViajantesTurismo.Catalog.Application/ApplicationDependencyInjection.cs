@@ -1,3 +1,4 @@
+using System.Text.Json.Serialization.Metadata;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Options;
@@ -41,10 +42,13 @@ public static class ApplicationDependencyInjection
                     sp.GetRequiredService<ICatalogTourSlugLock>()),
                 sp.GetRequiredService<IIdempotencyStore>(),
                 sp.GetRequiredService<IOptions<IntegrationEventOptions>>()));
+        JsonTypeInfo<AdminTourCreatedIntegrationEvent> adminTourCreatedJsonTypeInfo =
+            AdminIntegrationEventJsonContext.Default.AdminTourCreatedIntegrationEvent;
         services.AddIntegrationEventConsumer(
             AdminTourCreatedIntegrationEvent.EventType,
-            AdminIntegrationEventJsonContext.Default.AdminTourCreatedIntegrationEvent);
+            adminTourCreatedJsonTypeInfo);
         services.AddCatalogMediaApplication();
+        services.AddGeneratedIntegrationEvents();
         services.TryAddScoped<PublicContentUpsertService>();
         services.TryAddScoped<CatalogTourPresentationService>();
 

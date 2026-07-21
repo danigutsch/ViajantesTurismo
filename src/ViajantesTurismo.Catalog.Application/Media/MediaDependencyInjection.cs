@@ -1,3 +1,4 @@
+using System.Text.Json.Serialization.Metadata;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Options;
@@ -40,9 +41,11 @@ public static class MediaDependencyInjection
                 sp.GetRequiredService<MediaImageOriginalStoredIntegrationHandler>(),
                 sp.GetRequiredService<IIdempotencyStore>(),
                 sp.GetRequiredService<IOptions<IntegrationEventOptions>>()));
+        JsonTypeInfo<MediaImageOriginalStoredIntegrationEvent> mediaImageOriginalStoredJsonTypeInfo =
+            CatalogIntegrationEventJsonContext.Default.MediaImageOriginalStoredIntegrationEvent;
         services.AddIntegrationEventConsumer(
             MediaImageOriginalStoredIntegrationEvent.EventType,
-            CatalogIntegrationEventJsonContext.Default.MediaImageOriginalStoredIntegrationEvent);
+            mediaImageOriginalStoredJsonTypeInfo);
 
         return services;
     }
