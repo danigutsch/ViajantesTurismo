@@ -145,16 +145,20 @@ and connection-resiliency guidance on transaction commit ambiguity:
 - Failure window: single durable store.
 - Recommendation: no change for multi-store consistency.
 
-### Migration service seeding
+### Database initialization
 
-- Trigger: `MigrationRunner.Run`.
-- Code: `src/ViajantesTurismo.MigrationService/MigrationRunner.cs`.
-- Systems touched: Catalog, Branding, and Management Security migrations plus Admin migration and seeding.
-- Failure window: startup seeding can partially apply if later seed steps fail.
-- Existing mitigation: intended local/startup migration workflow; EF migrations are idempotent, and
-  `InitializeCatalogEventSourcingSchema` delegates rerunnable Catalog event-store DDL to
-  `PostgreSqlEventSourcingSchema.Initialize`.
-- Recommendation: no production outbox/inbox. Keep seed methods idempotent and re-runnable.
+- Trigger: `DatabaseInitializationWorker.Run`.
+- Code: `src/ViajantesTurismo.MigrationService/DatabaseInitializationWorker.cs` and
+  `src/ViajantesTurismo.Admin.Infrastructure/DevelopmentDataInitializer.cs`.
+- Systems touched: Admin, Catalog, Branding, and Management Security migrations; Catalog event-store
+  schema initialization; and Development-only Admin data initialization.
+- Failure window: migrations span independent stores and can complete before a later store fails.
+  Development data initialization is atomic within the Admin database.
+- Existing mitigation: EF migrations and Catalog event-store schema initialization are rerunnable.
+  `DevelopmentDataInitializer.Initialize` inserts the complete synthetic data set in one transaction,
+  tolerates one concurrent initializer, and runs only in Development.
+- Recommendation: no production outbox/inbox. Keep migrations rerunnable and preserve the atomic,
+  Development-only data initialization boundary.
 
 ### Frontend and contract HTTP API clients
 

@@ -13,7 +13,7 @@ each surface is registered, and how to verify the emitted signals locally.
 | Meter | `ViajantesTurismo.Catalog` | `src/ViajantesTurismo.Catalog.Application/CatalogTelemetry.cs` | Emits Catalog integration event, idempotency, stream update, and projection metrics. |
 | ActivitySource | `SharedKernel.EventSourcing.Npgsql` | `src/SharedKernel/SharedKernel.EventSourcing.Npgsql/PostgreSqlEventSourcingTelemetry.cs` | Emits PostgreSQL event-store append/load/checkpoint spans. |
 | Meter | `SharedKernel.EventSourcing.Npgsql` | `src/SharedKernel/SharedKernel.EventSourcing.Npgsql/PostgreSqlEventSourcingTelemetry.cs` | Emits PostgreSQL event-store duration, count, and conflict metrics. |
-| ActivitySource | `ViajantesTurismo.MigrationService.SeederWorker` | `src/ViajantesTurismo.MigrationService/MigrationRunner.cs` | Emits database seeding span (`DatabaseSeeding`). |
+| ActivitySource | `ViajantesTurismo.MigrationService.DatabaseInitializationWorker` | `src/ViajantesTurismo.MigrationService/DatabaseInitializationWorker.cs` | Emits the `DatabaseInitialization` span around migrations and Development-only atomic data initialization. |
 
 ## Telemetry contract documentation rules
 
@@ -149,7 +149,7 @@ when a log is written inside an `Activity`.
 The migration service adds its custom source explicitly:
 
 - `src/ViajantesTurismo.MigrationService/Program.cs`
-- `.WithTracing(tracingBuilder => tracingBuilder.AddSource(MigrationRunner.ActivitySourceName))`
+- `.WithTracing(tracingBuilder => tracingBuilder.AddSource(DatabaseInitializationWorker.ActivitySourceName))`
 
 ## Exporter configuration
 
@@ -192,8 +192,8 @@ surface-owned tag contract.
 - `SharedKernel.Mediator` generated spans require:
     - `mediator.outcome`
     - `error.type` on failures only
-- `ViajantesTurismo.MigrationService.SeederWorker` spans require:
-    - `operation.type=database_seeding`
+- `ViajantesTurismo.MigrationService.DatabaseInitializationWorker` spans require:
+    - `operation.type=database_initialization`
     - `worker.type=migration`
 - `ViajantesTurismo.Catalog` spans and metrics use Catalog-owned operation and outcome tags.
 - `SharedKernel.EventSourcing.Npgsql` spans and metrics use provider-owned operation, stream,
@@ -255,8 +255,9 @@ structured fields reviewable as telemetry contracts.
 - Mediator request, notification, and stream spans use `AddException(ex)` plus
   `SetStatus(ActivityStatusCode.Error, ...)` on failures, leave cancellation status unset,
   and emit outcome tags.
-- Migration service seeding spans use the same failure-status and exception-event pattern,
-  while keeping seeding-specific operation tags on all paths.
+- Database initialization spans use the same failure-status and exception-event pattern while
+  retaining initialization-specific operation tags on all paths. Synthetic Admin data initialization
+  runs atomically only in Development; migrations run in every environment.
 - Catalog and PostgreSQL event-sourcing surfaces are registered through service defaults, leave
   cooperative cancellation out of error metrics, and keep their tag sets low-cardinality because
   they are used by traces and metrics.
@@ -296,7 +297,7 @@ least two production surfaces need the same lifecycle API and tag contract.
         - `mediator.publish`
         - `mediator.notification.handle`
     - Find migration service span:
-        - `DatabaseSeeding`
+        - `DatabaseInitialization`
     - Find Catalog spans:
         - `catalog.integration_event.handle`
         - `catalog.tour.stream_update`
@@ -332,7 +333,8 @@ least two production surfaces need the same lifecycle API and tag contract.
 - Catalog telemetry names and instrumentation helpers: `src/ViajantesTurismo.Catalog.Application/CatalogTelemetry.cs`
 - PostgreSQL event-sourcing telemetry names and instrumentation helpers:
   `src/SharedKernel/SharedKernel.EventSourcing.Npgsql/PostgreSqlEventSourcingTelemetry.cs`
-- Migration custom source + span emission: `src/ViajantesTurismo.MigrationService/MigrationRunner.cs`
+- Migration custom source + span emission:
+  `src/ViajantesTurismo.MigrationService/DatabaseInitializationWorker.cs`
 - Migration custom source registration: `src/ViajantesTurismo.MigrationService/Program.cs`
 - Architecture consumption flow: `docs/architecture/observability-consumption-flows.md`
 

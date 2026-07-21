@@ -10,7 +10,7 @@ flowchart LR
     mediator[SharedKernel.Mediator]
     catalog[ViajantesTurismo.Catalog]
     postgres[SharedKernel.EventSourcing.Npgsql]
-    migration[MigrationService seeding]
+    migration[MigrationService database initialization]
 
     defaults[ViajantesTurismo.ServiceDefaults]
     migrationStartup[MigrationService Program]
@@ -29,7 +29,8 @@ flowchart LR
 ```
 
 Service defaults register shared ActivitySource and Meter names for application services. The
-migration service registers its seeding ActivitySource explicitly because it owns the worker span.
+migration service registers its database-initialization ActivitySource explicitly because it owns the
+worker span.
 
 ## Consumer boundaries
 

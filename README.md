@@ -456,7 +456,7 @@ dotnet ef database update --project src/ViajantesTurismo.Admin.Infrastructure --
 ```
 
 Always use `ViajantesTurismo.MigrationService` as the startup project for EF Core commands. For
-additional migration and seeding guidance, see
+additional migration and database initialization guidance, see
 [src/ViajantesTurismo.MigrationService/README.md](src/ViajantesTurismo.MigrationService/README.md).
 
 ## Contributing

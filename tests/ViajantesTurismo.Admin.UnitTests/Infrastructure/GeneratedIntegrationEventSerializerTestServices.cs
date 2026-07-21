@@ -1,3 +1,4 @@
+using System.Text.Json.Serialization.Metadata;
 using Microsoft.Extensions.DependencyInjection;
 using SharedKernel.Messaging.IntegrationEvents;
 using ViajantesTurismo.Admin.Application;
@@ -19,9 +20,11 @@ internal static class GeneratedIntegrationEventSerializerTestServices
 
     public static IServiceCollection AddAdminIntegrationEventContract(this IServiceCollection services)
     {
+        JsonTypeInfo<AdminTourCreatedIntegrationEvent> adminTourCreatedJsonTypeInfo =
+            AdminIntegrationEventJsonContext.Default.AdminTourCreatedIntegrationEvent;
         services.AddIntegrationEventContract(
             AdminTourCreatedIntegrationEvent.EventType,
-            AdminIntegrationEventJsonContext.Default.AdminTourCreatedIntegrationEvent);
+            adminTourCreatedJsonTypeInfo);
         services.AddDomainEventProcessing();
 
         return services;

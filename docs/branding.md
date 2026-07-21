@@ -24,7 +24,7 @@ ViajantesTurismo owns the app-specific adapter:
 
 - Branding API endpoint hosting and typed client base-address wiring used by Management.Web and
   Public.Web;
-- persistence, `BrandingDbContext` schema/migrations, seeding, and ViajantesTurismo default values;
+- persistence, `BrandingDbContext` schema/migrations, and ViajantesTurismo fallback default values;
 - server-side validation integration using `SharedKernel.Branding` rules;
 - cache invalidation for public branding reads.
 

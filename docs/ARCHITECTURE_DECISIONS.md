@@ -74,7 +74,7 @@ Decisions about application architecture and layer responsibilities.
 - **[ADR-035](adr/20260707-postgresql-access-policy.md)** — PostgreSQL Access Policy
 - **[ADR-037](adr/20260715-deterministic-no-network-build-time-openapi-generation.md)** —
   Deterministic, No-Network Build-Time OpenAPI Generation
-- **[ADR-038](adr/20260719-generated-messaging-dispatch-ownership.md)** — Generated Messaging Dispatch
+- **[ADR-039](adr/20260719-generated-messaging-dispatch-ownership.md)** — Generated Messaging Dispatch
   Ownership
 
 ### Versioning & Release

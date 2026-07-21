@@ -2,9 +2,9 @@
 
 **Status**: Superseded - 2026-07-19
 
-**Superseded by**: [ADR-038: Generated Messaging Dispatch Ownership](20260719-generated-messaging-dispatch-ownership.md)
+**Superseded by**: [ADR-039: Generated Messaging Dispatch Ownership](20260719-generated-messaging-dispatch-ownership.md)
 
-ADR-038 preserves the conceptual separation between domain and integration events while replacing the
+ADR-039 preserves the conceptual separation between domain and integration events while replacing the
 dispatcher and handler adapters described here with direct generated domain-event-to-outbox mapping and
 closed typed integration-event delivery.
 

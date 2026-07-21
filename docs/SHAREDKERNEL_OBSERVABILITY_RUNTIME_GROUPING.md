@@ -31,7 +31,7 @@ all listed code. The goal is to separate:
 | Shared mediator meter/source registration | `src/ViajantesTurismo.ServiceDefaults/OpenTelemetryBuilderExtensions.cs` | Reusable pattern, but feature-coupled to mediator telemetry. |
 | Health endpoint defaults | `src/ViajantesTurismo.ServiceDefaults/ServiceDefaultsExtensions.cs` | Reusable startup behavior, but ASP.NET Core specific. |
 | Service discovery + HTTP resilience defaults | `src/ViajantesTurismo.ServiceDefaults/ServiceDefaultsExtensions.cs` | Reusable startup behavior, but Aspire and HTTP specific. |
-| Migration seeding telemetry/logging pattern | `src/ViajantesTurismo.MigrationService/MigrationRunner.cs` | Useful pattern reference, but still application-specific rather than package-ready. |
+| Database initialization telemetry/logging pattern | `src/ViajantesTurismo.MigrationService/DatabaseInitializationWorker.cs` | Useful pattern reference, but still application-specific rather than package-ready. |
 
 ## Recommended grouping
 
@@ -131,8 +131,9 @@ Keep local to the application/service unless a second concrete consumer appears.
 
 Current examples:
 
-- `src/ViajantesTurismo.MigrationService/MigrationRunner.cs`
-- migration-worker logging messages and seeding span names
+- `src/ViajantesTurismo.MigrationService/DatabaseInitializationWorker.cs`
+- database-initialization worker logging messages, the `DatabaseInitialization` span, and
+  `operation.type=database_initialization`
 - app-specific startup composition in `Program.cs` files
 
 Reason:

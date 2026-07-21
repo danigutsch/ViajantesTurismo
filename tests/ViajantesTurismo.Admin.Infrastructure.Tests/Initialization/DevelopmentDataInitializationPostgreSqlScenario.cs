@@ -1,3 +1,4 @@
+using System.Text.Json.Serialization.Metadata;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Diagnostics;
 using Microsoft.Extensions.DependencyInjection;
@@ -112,9 +113,11 @@ internal sealed class DevelopmentDataInitializationPostgreSqlScenario : IAsyncDi
     private ServiceProvider CreateProvider(IInterceptor? interceptor = null)
     {
         var services = new ServiceCollection();
+        JsonTypeInfo<AdminTourCreatedIntegrationEvent> adminTourCreatedJsonTypeInfo =
+            AdminIntegrationEventJsonContext.Default.AdminTourCreatedIntegrationEvent;
         services.AddIntegrationEventContract(
             AdminTourCreatedIntegrationEvent.EventType,
-            AdminIntegrationEventJsonContext.Default.AdminTourCreatedIntegrationEvent);
+            adminTourCreatedJsonTypeInfo);
         services.AddDomainEventProcessing();
         services.AddDomainEventDispatch<AdminWriteDbContext>();
         services.AddIntegrationEventOutbox<AdminWriteDbContext>();

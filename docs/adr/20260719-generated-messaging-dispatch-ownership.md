@@ -1,4 +1,4 @@
-# ADR-038: Generated Messaging Dispatch Ownership
+# ADR-039: Generated Messaging Dispatch Ownership
 
 **Status**: Accepted - 2026-07-19
 
@@ -51,7 +51,8 @@ idempotency is the acceptance boundary.
 ## Consequences
 
 - Missing and duplicate integration-event consumer handlers fail compilation with `SKMSG001` and
-  `SKMSG002`; duplicate consumer event types fail compilation with `SKMSG003`.
+  `SKMSG002`; duplicate consumer event types fail compilation with `SKMSG003`; invalid registered
+  contract types fail compilation with `SKMSG006`.
 - Generated constructor size grows with the closed handler set, but dependencies and lifetimes become
   visible to DI validation.
 - Adding a contract requires explicit metadata and generated host composition.

@@ -165,7 +165,7 @@ public sealed class AdminTourCreatedIntegrationHandlerTests
             existingState: IdempotencyEntryState.Started);
         var eventStore = new CapturingEventStore();
         var handler = new IdempotentIntegrationHandler<AdminTourCreatedIntegrationEvent>(
-            new AdminTourCreatedIntegrationHandler(eventStore),
+            new AdminTourCreatedIntegrationHandler(eventStore, new TestCatalogTourSlugLock()),
             idempotencyStore,
             Options.Create(new IntegrationEventOptions()));
         var integrationEvent = new AdminTourCreatedIntegrationEvent(
@@ -193,7 +193,7 @@ public sealed class AdminTourCreatedIntegrationHandlerTests
         var idempotencyStore = new CapturingIdempotencyStore();
         var eventStore = new CapturingEventStore(appendFailures: 1);
         var handler = new IdempotentIntegrationHandler<AdminTourCreatedIntegrationEvent>(
-            new AdminTourCreatedIntegrationHandler(eventStore),
+            new AdminTourCreatedIntegrationHandler(eventStore, new TestCatalogTourSlugLock()),
             idempotencyStore,
             Options.Create(new IntegrationEventOptions()));
         var integrationEvent = new AdminTourCreatedIntegrationEvent(

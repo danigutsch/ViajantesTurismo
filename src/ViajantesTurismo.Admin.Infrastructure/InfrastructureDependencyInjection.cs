@@ -1,3 +1,4 @@
+using System.Text.Json.Serialization.Metadata;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
@@ -84,9 +85,11 @@ public static class InfrastructureDependencyInjection
         builder.Services.AddScoped<ICustomerStore, CustomerStore>();
         builder.Services.AddScoped<IDocumentStore, DocumentStore>();
         builder.Services.AddScoped<IDocumentAuditStore, DocumentAuditStore>();
+        JsonTypeInfo<AdminTourCreatedIntegrationEvent> adminTourCreatedJsonTypeInfo =
+            AdminIntegrationEventJsonContext.Default.AdminTourCreatedIntegrationEvent;
         builder.Services.AddIntegrationEventContract(
             AdminTourCreatedIntegrationEvent.EventType,
-            AdminIntegrationEventJsonContext.Default.AdminTourCreatedIntegrationEvent);
+            adminTourCreatedJsonTypeInfo);
         builder.Services.AddDomainEventProcessing();
         builder.Services.AddIntegrationEventOutbox<AdminWriteDbContext>();
         builder.Services.AddPostgreSqlIntegrationEventTransportProducer<AdminWriteDbContext>(IntegrationEventConsumerNames.Catalog);
@@ -114,9 +117,11 @@ public static class InfrastructureDependencyInjection
         }
 
         builder.AddAdminWriteDbContext();
+        JsonTypeInfo<AdminTourCreatedIntegrationEvent> adminTourCreatedJsonTypeInfo =
+            AdminIntegrationEventJsonContext.Default.AdminTourCreatedIntegrationEvent;
         builder.Services.AddIntegrationEventContract(
             AdminTourCreatedIntegrationEvent.EventType,
-            AdminIntegrationEventJsonContext.Default.AdminTourCreatedIntegrationEvent);
+            adminTourCreatedJsonTypeInfo);
         builder.Services.AddDomainEventProcessing();
         builder.Services.AddIntegrationEventOutbox<AdminWriteDbContext>();
         builder.Services.AddPostgreSqlIntegrationEventTransportProducer<AdminWriteDbContext>(IntegrationEventConsumerNames.Catalog);

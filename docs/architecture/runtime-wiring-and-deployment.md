@@ -137,11 +137,12 @@ Deployment mapping:
 | Local AppHost setting | Local environment variable or launch profile value | Local unless promoted. |
 | Existing cloud resource choice | Deployment parameter | Environment-owned infrastructure setting. |
 
-## Migration service and seed data
+## Database initialization service
 
 Current behavior:
 
-- `MigrationService` applies database migrations and seed data, then exits.
+- `MigrationService` applies database migrations in every environment, atomically initializes the
+  synthetic Admin data set only in Development, then exits.
 - `InitializeCatalogEventSourcingSchema` invokes `PostgreSqlEventSourcingSchema.Initialize` after the
   Catalog EF migration; the initializer is rerunnable and owns the Catalog event-store schema only.
 - Admin, Catalog, Branding, and Management Security wait for `MigrationService` completion before starting.
@@ -150,7 +151,7 @@ Current behavior:
 Operational boundary:
 
 - Migration state belongs to the database and migration service.
-- Business rules for seeded data still belong in domain/application code.
+- Business rules for Development data initialization still belong in domain/application code.
 - Deployment automation should preserve the startup ordering or provide an equivalent migration gate.
 
 Admin and Catalog use separate PostgreSQL databases, even when both databases share one server. Each
