@@ -37,7 +37,7 @@ public sealed class RegenerateDocumentDraftCommandHandlerTests
 
         // Act
         var result = await handler.Handle(
-            new RegenerateDocumentDraftCommand(document.Id, "booking-confirmation", "2"),
+            new RegenerateDocumentDraftCommand(document.Id, "booking-confirmation", "2", null!),
             CancellationToken.None);
 
         // Assert

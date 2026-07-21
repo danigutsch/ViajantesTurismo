@@ -45,7 +45,7 @@ public sealed class DocumentLifecycleCommandHandlerTests
             DocumentAuditTestData.CreateWriter(auditStore, unitOfWork));
 
         // Act
-        var result = await handler.Handle(new BeginDocumentReviewCommand(document.Id), CancellationToken.None);
+        var result = await handler.Handle(new BeginDocumentReviewCommand(document.Id, null!), CancellationToken.None);
 
         // Assert
         result.IsFailure.ShouldBeTrue();
@@ -176,7 +176,7 @@ public sealed class DocumentLifecycleCommandHandlerTests
             DocumentAuditTestData.CreateWriter(auditStore, unitOfWork));
 
         // Act
-        var result = await handler.Handle(new ApproveDocumentCommand(document.Id), CancellationToken.None);
+        var result = await handler.Handle(new ApproveDocumentCommand(document.Id, null!), CancellationToken.None);
 
         // Assert
         result.IsFailure.ShouldBeTrue();
@@ -256,7 +256,7 @@ public sealed class DocumentLifecycleCommandHandlerTests
             DocumentAuditTestData.CreateWriter(auditStore, unitOfWork));
 
         // Act
-        var result = await handler.Handle(new RequestDocumentChangesCommand(document.Id), CancellationToken.None);
+        var result = await handler.Handle(new RequestDocumentChangesCommand(document.Id, null!), CancellationToken.None);
 
         // Assert
         result.IsFailure.ShouldBeTrue();
@@ -341,7 +341,7 @@ public sealed class DocumentLifecycleCommandHandlerTests
 
         // Act
         var result = await handler.Handle(
-            new VoidDocumentCommand(document.Id, "customer-cancellation"),
+            new VoidDocumentCommand(document.Id, "customer-cancellation", null!),
             CancellationToken.None);
 
         // Assert
@@ -470,7 +470,7 @@ public sealed class DocumentLifecycleCommandHandlerTests
 
         // Act
         var result = await handler.Handle(
-            new UpdateDocumentFieldCommand(document.Id, "greeting", "Changed", null),
+            new UpdateDocumentFieldCommand(document.Id, "greeting", "Changed", null!),
             CancellationToken.None);
 
         // Assert

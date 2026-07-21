@@ -19,7 +19,7 @@ public sealed class DocumentAuditWriterTests
 
         // Act
         var result = await writer.Add(
-            null,
+            null!,
             DocumentAuditOperation.Finalize,
             Guid.CreateVersion7(),
             Guid.CreateVersion7(),

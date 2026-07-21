@@ -7,4 +7,4 @@ public sealed record UpdateDocumentFieldCommand(
     Guid DocumentId,
     string FieldId,
     string? Value,
-    DocumentAuditContext? AuditContext = null);
+    DocumentAuditContext AuditContext);

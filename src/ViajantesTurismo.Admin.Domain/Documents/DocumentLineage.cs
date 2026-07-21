@@ -75,7 +75,7 @@ public sealed class DocumentLineage : IAggregateRoot<Guid>
         DocumentAudience audience,
         DocumentDraftContent content,
         DateTime createdAt,
-        DocumentAuditContext? auditContext)
+        DocumentAuditContext auditContext)
     {
         ArgumentNullException.ThrowIfNull(content);
 
@@ -153,7 +153,7 @@ public sealed class DocumentLineage : IAggregateRoot<Guid>
         Guid replacesDocumentId,
         DocumentDraftContent content,
         DateTime createdAt,
-        DocumentAuditContext? auditContext)
+        DocumentAuditContext auditContext)
     {
         ArgumentNullException.ThrowIfNull(content);
         if (auditContext is null)
@@ -208,7 +208,7 @@ public sealed class DocumentLineage : IAggregateRoot<Guid>
         _revisions.FirstOrDefault(revision => revision.Id == documentId);
 
     /// <summary>Starts or restarts staff review for one revision.</summary>
-    public Result BeginReview(Guid documentId, DateTime now, DocumentAuditContext? auditContext) =>
+    public Result BeginReview(Guid documentId, DateTime now, DocumentAuditContext auditContext) =>
         Apply(
             documentId,
             revision => revision.BeginReview(now),
@@ -216,7 +216,7 @@ public sealed class DocumentLineage : IAggregateRoot<Guid>
             auditContext);
 
     /// <summary>Records requested changes for one revision.</summary>
-    public Result RequestChanges(Guid documentId, DateTime now, DocumentAuditContext? auditContext) =>
+    public Result RequestChanges(Guid documentId, DateTime now, DocumentAuditContext auditContext) =>
         Apply(
             documentId,
             revision => revision.RequestChanges(now),
@@ -229,7 +229,7 @@ public sealed class DocumentLineage : IAggregateRoot<Guid>
         string fieldId,
         string value,
         DateTime now,
-        DocumentAuditContext? auditContext) =>
+        DocumentAuditContext auditContext) =>
         Apply(
             documentId,
             revision => revision.UpdateField(fieldId, value, now),
@@ -237,7 +237,7 @@ public sealed class DocumentLineage : IAggregateRoot<Guid>
             auditContext);
 
     /// <summary>Approves one revision under active staff review.</summary>
-    public Result Approve(Guid documentId, DateTime now, DocumentAuditContext? auditContext) =>
+    public Result Approve(Guid documentId, DateTime now, DocumentAuditContext auditContext) =>
         Apply(documentId, revision => revision.Approve(now), DocumentAuditOperation.Approve, auditContext);
 
     /// <summary>Finalizes one revision while preserving monotonic lineage history.</summary>
@@ -245,7 +245,7 @@ public sealed class DocumentLineage : IAggregateRoot<Guid>
         Guid documentId,
         byte[] artifactContent,
         DateTime now,
-        DocumentAuditContext? auditContext)
+        DocumentAuditContext auditContext)
     {
         if (auditContext is null)
         {
@@ -295,14 +295,14 @@ public sealed class DocumentLineage : IAggregateRoot<Guid>
         Guid documentId,
         string reason,
         DateTime now,
-        DocumentAuditContext? auditContext) =>
+        DocumentAuditContext auditContext) =>
         Apply(documentId, revision => revision.Void(reason, now), DocumentAuditOperation.Void, auditContext);
 
     private Result Apply(
         Guid documentId,
         Func<DocumentDraft, Result> operation,
         DocumentAuditOperation auditOperation,
-        DocumentAuditContext? auditContext)
+        DocumentAuditContext auditContext)
     {
         if (auditContext is null)
         {

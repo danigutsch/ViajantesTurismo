@@ -11,7 +11,7 @@ public sealed class DocumentAuditWriter(
 {
     /// <summary>Adds and persists an audit record when trusted request metadata is available.</summary>
     public async Task<Result> Add(
-        DocumentAuditContext? auditContext,
+        DocumentAuditContext auditContext,
         DocumentAuditOperation operation,
         Guid? documentId,
         Guid? bookingId,

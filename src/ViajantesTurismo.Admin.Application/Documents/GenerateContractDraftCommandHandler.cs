@@ -113,7 +113,7 @@ public sealed class GenerateContractDraftCommandHandler(
 
     private async Task<Result<Guid>> RecordAndReturn(
         Result<Guid> operationResult,
-        DocumentAuditContext? auditContext,
+        DocumentAuditContext auditContext,
         Guid? documentId,
         Guid? bookingId,
         int? documentRevision,

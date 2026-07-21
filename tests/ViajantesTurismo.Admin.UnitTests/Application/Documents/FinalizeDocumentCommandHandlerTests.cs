@@ -107,7 +107,7 @@ public sealed class FinalizeDocumentCommandHandlerTests
         var unitOfWork = new FakeUnitOfWork();
         var handler = new FinalizeDocumentCommandHandler(store, unitOfWork, TimeProvider.System, DocumentAuditTestData.CreateWriter(auditStore, unitOfWork));
         // Act
-        var result = await handler.Handle(new FinalizeDocumentCommand(document.Id), CancellationToken.None);
+        var result = await handler.Handle(new FinalizeDocumentCommand(document.Id, null!), CancellationToken.None);
 
         // Assert
         result.IsFailure.ShouldBeTrue();

@@ -33,7 +33,7 @@ public sealed class GenerateContractDraftCommandHandlerTests
 
         // Act
         var result = await handler.Handle(
-            new GenerateContractDraftCommand(booking.Id, "booking-confirmation", "1"),
+            new GenerateContractDraftCommand(booking.Id, "booking-confirmation", "1", null!),
             CancellationToken.None);
 
         // Assert

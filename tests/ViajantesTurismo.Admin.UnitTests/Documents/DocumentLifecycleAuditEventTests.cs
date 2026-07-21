@@ -63,7 +63,7 @@ public sealed class DocumentLifecycleAuditEventTests
             DocumentAudience.Customer,
             DocumentLineageTestData.CreateContent(),
             now,
-            null);
+            null!);
 
         // Assert
         result.IsFailure.ShouldBeTrue();

@@ -67,7 +67,7 @@ public sealed class UpdateDocumentFieldCommandHandler(
 
     private async Task<Result> RecordAndReturn(
         Result operationResult,
-        DocumentAuditContext? auditContext,
+        DocumentAuditContext auditContext,
         Guid? documentId,
         Guid? bookingId,
         int? documentRevision,

@@ -9,4 +9,4 @@ public sealed record GenerateContractDraftCommand(
     Guid BookingId,
     string TemplateId,
     string TemplateVersion,
-    DocumentAuditContext? AuditContext = null);
+    DocumentAuditContext AuditContext);

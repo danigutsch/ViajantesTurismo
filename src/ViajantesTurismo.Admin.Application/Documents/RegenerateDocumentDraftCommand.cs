@@ -7,4 +7,4 @@ public sealed record RegenerateDocumentDraftCommand(
     Guid DocumentId,
     string TemplateId,
     string TemplateVersion,
-    DocumentAuditContext? AuditContext = null);
+    DocumentAuditContext AuditContext);
