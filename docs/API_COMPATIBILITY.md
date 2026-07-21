@@ -11,7 +11,7 @@ This repository protects two public contract surfaces:
 | Phase | Gate behavior | Breaking-change expectation |
 | --- | --- | --- |
 | Alpha / `0.y.z` / `-alpha` | Report-only compatibility artifacts | Evolve current code and contracts directly. Do not retain legacy implementations, add compatibility layers, or create parallel `/api/v2` endpoints solely for backward compatibility. Document significant consumer-visible breaks. |
-| Beta / `-beta` | Package breaking diffs are report-only only when a breaking-change marker is present | App HTTP compatibility begins: incompatible changes require a new API version and deprecation of the previous route. Package breaks must be intentional and documented. |
+| Beta / `-beta` | Package breaking diffs are report-only when a breaking-change marker is present | App HTTP compatibility begins: incompatible changes require a new API version and deprecation of the previous route. Package breaks must be intentional and documented. |
 | Release candidate / `-rc` | Block breaking diffs | Treat the API as final except for critical fixes. |
 | Stable / `>=1.0.0` | Block breaking diffs, even when a marker is present | Use a SemVer major version or a new HTTP API version for incompatible changes. Deprecate first when practical. |
 
