@@ -2,13 +2,13 @@
 
     <PropertyGroup>
         <PackageId>SharedKernel.DomainEvents</PackageId>
-        <Description>Typed domain event dispatch abstractions backed by SharedKernel.Mediator.</Description>
+        <Description>Typed domain event dispatch abstractions for local persistence boundaries.</Description>
         <RootNamespace>SharedKernel.DomainEvents</RootNamespace>
         <PackageReadmeFile>README.md</PackageReadmeFile>
         <PackageLicenseExpression>MIT</PackageLicenseExpression>
         <RepositoryUrl>https://github.com/danigutsch/ViajantesTurismo</RepositoryUrl>
         <PublishRepositoryUrl>true</PublishRepositoryUrl>
-        <PackageTags>domain-events;shared-kernel;mediator;dotnet</PackageTags>
+        <PackageTags>domain-events;shared-kernel;dotnet</PackageTags>
     </PropertyGroup>
 
     <ItemGroup>
@@ -16,7 +16,6 @@
 
     <ItemGroup>
         <ProjectReference Include="..\SharedKernel.Domain\SharedKernel.Domain.csproj" />
-        <ProjectReference Include="..\SharedKernel.Mediator.Abstractions\SharedKernel.Mediator.Abstractions.csproj" />
     </ItemGroup>
 
     <ItemGroup>

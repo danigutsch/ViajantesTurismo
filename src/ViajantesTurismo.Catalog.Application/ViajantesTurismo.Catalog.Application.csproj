@@ -27,8 +27,10 @@
         <ProjectReference Include="..\SharedKernel\SharedKernel.ImageProcessing\SharedKernel.ImageProcessing.csproj" />
         <ProjectReference Include="..\SharedKernel\SharedKernel.InputNormalization\SharedKernel.InputNormalization.csproj" />
         <ProjectReference Include="..\SharedKernel\SharedKernel.Messaging\SharedKernel.Messaging.csproj" />
+        <ProjectReference Include="..\SharedKernel\SharedKernel.Messaging.IntegrationEvents.SourceGenerator\SharedKernel.Messaging.IntegrationEvents.SourceGenerator.csproj"
+                          OutputItemType="Analyzer"
+                          ReferenceOutputAssembly="false" />
         <ProjectReference Include="..\SharedKernel\SharedKernel.Messaging.IntegrationEvents\SharedKernel.Messaging.IntegrationEvents.csproj" />
-        <ProjectReference Include="..\SharedKernel\SharedKernel.Mediator.Abstractions\SharedKernel.Mediator.Abstractions.csproj" />
         <ProjectReference Include="..\SharedKernel\SharedKernel.Results\SharedKernel.Results.csproj" />
         <ProjectReference Include="..\ViajantesTurismo.Admin.Contracts.IntegrationEvents\ViajantesTurismo.Admin.Contracts.IntegrationEvents.csproj" />
         <ProjectReference Include="..\ViajantesTurismo.Catalog.Contracts.Application\ViajantesTurismo.Catalog.Contracts.Application.csproj" />
