@@ -42,6 +42,8 @@
         <Project Path="src/SharedKernel/SharedKernel.BuildingBlocks/SharedKernel.BuildingBlocks.csproj" />
         <Project Path="src/SharedKernel/SharedKernel.DomainEvents/SharedKernel.DomainEvents.csproj" />
         <Project Path="src/SharedKernel/SharedKernel.DomainEvents.EntityFrameworkCore/SharedKernel.DomainEvents.EntityFrameworkCore.csproj" />
+        <Project Path="src/SharedKernel/SharedKernel.AuditTrail/SharedKernel.AuditTrail.csproj" />
+        <Project Path="src/SharedKernel/SharedKernel.AuditTrail.SourceGenerator/SharedKernel.AuditTrail.SourceGenerator.csproj" />
         <Project Path="src/SharedKernel/SharedKernel.Messaging/SharedKernel.Messaging.csproj" />
         <Project Path="src/SharedKernel/SharedKernel.Messaging.IntegrationEvents/SharedKernel.Messaging.IntegrationEvents.csproj" />
         <Project Path="src/SharedKernel/SharedKernel.Messaging.IntegrationEvents.EntityFrameworkCore/SharedKernel.Messaging.IntegrationEvents.EntityFrameworkCore.csproj" />
@@ -158,6 +160,7 @@
         <Project Path="tests/SharedKernel.Mediator.CodeFixes.Tests/SharedKernel.Mediator.CodeFixes.Tests.csproj" />
         <Project Path="tests/SharedKernel.Mediator.Analyzers.Tests/SharedKernel.Mediator.Analyzers.Tests.csproj" />
         <Project Path="tests/SharedKernel.Domain.GeneratorTests/SharedKernel.Domain.GeneratorTests.csproj" />
+        <Project Path="tests/SharedKernel.AuditTrail.GeneratorTests/SharedKernel.AuditTrail.GeneratorTests.csproj" />
         <Project Path="tests/SharedKernel.Results.GeneratorTests/SharedKernel.Results.GeneratorTests.csproj" />
         <Project Path="tests/SharedKernel.Messaging.IntegrationEvents.GeneratorTests/SharedKernel.Messaging.IntegrationEvents.GeneratorTests.csproj" />
         <Project Path="tests/SharedKernel.Results.AspNet.Tests/SharedKernel.Results.AspNet.Tests.csproj" />

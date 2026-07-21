@@ -1,11 +1,12 @@
 using JetBrains.Annotations;
+using SharedKernel.AuditTrail;
 using SharedKernel.Domain;
 using SharedKernel.Results;
 
 namespace ViajantesTurismo.Admin.Domain.Documents;
 
 /// <summary>Represents immutable metadata for a document operation.</summary>
-public sealed class DocumentAuditRecord : IEntity<Guid>
+public sealed class DocumentAuditRecord : IEntity<Guid>, IAuditTrailEntry
 {
     private DocumentAuditRecord(
         string actorId,
@@ -107,6 +108,15 @@ public sealed class DocumentAuditRecord : IEntity<Guid>
             return DocumentAuditErrors.InvalidDocumentRevision().ConvertError<DocumentAuditRecord>();
         }
 
+        if (!Enum.IsDefined(operation) ||
+            !Enum.IsDefined(outcome) ||
+            !Enum.IsDefined(reasonCode) ||
+            !IsValidReasonCode(operation, outcome, reasonCode) ||
+            !HasValidResourceMetadata(documentId, bookingId, documentRevision, operation, outcome))
+        {
+            return DocumentAuditErrors.InvalidEvidence().ConvertError<DocumentAuditRecord>();
+        }
+
         return Result.Ok(new DocumentAuditRecord(
             actorId,
             documentId,
@@ -117,5 +127,79 @@ public sealed class DocumentAuditRecord : IEntity<Guid>
             reasonCode,
             correlationId,
             occurredAtUtc));
+    }
+
+    private static bool IsValidReasonCode(
+        DocumentAuditOperation operation,
+        DocumentAuditOutcome outcome,
+        DocumentAuditReasonCode reasonCode) => outcome switch
+        {
+            DocumentAuditOutcome.Succeeded => operation switch
+            {
+                DocumentAuditOperation.Generate or
+                    DocumentAuditOperation.BeginReview or
+                    DocumentAuditOperation.RequestChanges or
+                    DocumentAuditOperation.UpdateField or
+                    DocumentAuditOperation.Approve => reasonCode == DocumentAuditReasonCode.ManualOperation,
+                DocumentAuditOperation.Finalize => reasonCode == DocumentAuditReasonCode.ManualFinalize,
+                DocumentAuditOperation.Regenerate => reasonCode == DocumentAuditReasonCode.ManualRegeneration,
+                DocumentAuditOperation.Void => reasonCode == DocumentAuditReasonCode.ManualVoid,
+                DocumentAuditOperation.Read or DocumentAuditOperation.Download => reasonCode == DocumentAuditReasonCode.None,
+                _ => false,
+            },
+            DocumentAuditOutcome.Rejected => operation switch
+            {
+                DocumentAuditOperation.Generate => reasonCode is
+                    DocumentAuditReasonCode.BookingNotFound or
+                    DocumentAuditReasonCode.StateConflict or
+                    DocumentAuditReasonCode.ValidationRejected or
+                    DocumentAuditReasonCode.TourNotFound,
+                DocumentAuditOperation.Read => reasonCode == DocumentAuditReasonCode.DocumentNotFound,
+                DocumentAuditOperation.BeginReview or
+                    DocumentAuditOperation.RequestChanges or
+                    DocumentAuditOperation.Approve or
+                    DocumentAuditOperation.Finalize => reasonCode is
+                        DocumentAuditReasonCode.DocumentNotFound or DocumentAuditReasonCode.StateConflict,
+                DocumentAuditOperation.Void => reasonCode is
+                    DocumentAuditReasonCode.DocumentNotFound or
+                    DocumentAuditReasonCode.ValidationRejected or
+                    DocumentAuditReasonCode.StateConflict,
+                DocumentAuditOperation.UpdateField => reasonCode is
+                    DocumentAuditReasonCode.DocumentNotFound or
+                    DocumentAuditReasonCode.ValidationRejected or
+                    DocumentAuditReasonCode.StateConflict,
+                DocumentAuditOperation.Regenerate => reasonCode is
+                    DocumentAuditReasonCode.DocumentNotFound or
+                    DocumentAuditReasonCode.BookingNotFound or
+                    DocumentAuditReasonCode.StateConflict or
+                    DocumentAuditReasonCode.ValidationRejected or
+                    DocumentAuditReasonCode.TourNotFound,
+                DocumentAuditOperation.Download => reasonCode is
+                    DocumentAuditReasonCode.DocumentNotFound or DocumentAuditReasonCode.ArtifactUnavailable,
+                _ => false,
+            },
+            _ => false,
+        };
+
+    private static bool HasValidResourceMetadata(
+        Guid? documentId,
+        Guid? bookingId,
+        int? documentRevision,
+        DocumentAuditOperation operation,
+        DocumentAuditOutcome outcome)
+    {
+        if (outcome == DocumentAuditOutcome.Succeeded)
+        {
+            return documentId is not null && bookingId is not null && documentRevision is not null;
+        }
+
+        if (operation == DocumentAuditOperation.Generate)
+        {
+            return documentId is null && bookingId is not null && documentRevision is null;
+        }
+
+        return documentId is not null &&
+            ((bookingId is null && documentRevision is null) ||
+             (bookingId is not null && documentRevision is not null));
     }
 }

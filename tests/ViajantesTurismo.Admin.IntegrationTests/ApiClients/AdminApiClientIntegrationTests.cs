@@ -6,14 +6,13 @@ namespace ViajantesTurismo.Admin.IntegrationTests.ApiClients;
 [Trait(SharedKernel.Testing.TestTraitNames.CategoryName, TestTraits.SmokeCategory)]
 [Trait(SharedKernel.Testing.TestTraitNames.ScopeName, TestTraits.IntegrationScope)]
 public sealed class AdminApiClientIntegrationTests(ApiFixture fixture)
-    : AspireSerialIntegrationTestBase(fixture)
 {
     [Fact]
     public async Task Customers_client_creates_and_reads_customer_through_api_host()
     {
         // Arrange
         var cancellationToken = TestContext.Current.CancellationToken;
-        var sut = new CustomersApiClient(Client, NullLogger<CustomersApiClient>.Instance);
+        var sut = new CustomersApiClient(fixture.Client, NullLogger<CustomersApiClient>.Instance);
         var request = DtoBuilders.BuildCreateCustomerDto(firstName: "Contract", lastName: "Client");
 
         // Act
@@ -38,7 +37,7 @@ public sealed class AdminApiClientIntegrationTests(ApiFixture fixture)
     {
         // Arrange
         var cancellationToken = TestContext.Current.CancellationToken;
-        var sut = new ToursApiClient(Client);
+        var sut = new ToursApiClient(fixture.Client);
         var createRequest = DtoBuilders.BuildCreateTourDto(name: "Contract Client Tour");
 
         // Act

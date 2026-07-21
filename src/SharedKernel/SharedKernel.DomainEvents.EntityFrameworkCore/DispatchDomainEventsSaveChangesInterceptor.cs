@@ -14,7 +14,7 @@ namespace SharedKernel.DomainEvents.EntityFrameworkCore;
 /// </summary>
 internal sealed class DispatchDomainEventsSaveChangesInterceptor : SaveChangesInterceptor
 {
-    private static readonly ConditionalWeakTable<DbContext, HashSet<IDomainEvent>> DispatchedEvents = new();
+    private static readonly ConditionalWeakTable<DbContext, DispatchedEventState> DispatchedEvents = new();
 
     /// <inheritdoc />
     public override InterceptionResult<int> SavingChanges(
@@ -23,9 +23,7 @@ internal sealed class DispatchDomainEventsSaveChangesInterceptor : SaveChangesIn
     {
         ArgumentNullException.ThrowIfNull(eventData);
 
-        DispatchDomainEvents(eventData.Context, CancellationToken.None).AsTask().ConfigureAwait(false).GetAwaiter().GetResult();
-
-        return result;
+        throw new InvalidOperationException("Synchronous SaveChanges is not supported; use SaveChangesAsync.");
     }
 
     /// <inheritdoc />
@@ -89,34 +87,62 @@ internal sealed class DispatchDomainEventsSaveChangesInterceptor : SaveChangesIn
 
         var domainEvents = GetAggregatesWithDomainEvents(dbContext)
             .SelectMany(static aggregate => aggregate.GetDomainEvents())
+            .Where(domainEvent => !HasDispatched(dbContext, domainEvent))
             .ToArray();
 
-        var domainEventDispatcher = dbContext.GetService<IDomainEventDispatcher>();
+        if (domainEvents.Length == 0)
+        {
+            return;
+        }
 
         using var currentDbContext = CurrentSaveChangesDbContext.Enter(dbContext);
+        var applicationServiceProvider = dbContext.GetService<IDbContextOptions>()
+            .FindExtension<CoreOptionsExtension>()?
+            .ApplicationServiceProvider
+            ?? throw new InvalidOperationException("The DbContext application service provider is unavailable.");
+        var dispatchScope = applicationServiceProvider.CreateAsyncScope();
+        await using var configuredDispatchScope = dispatchScope.ConfigureAwait(false);
+        var domainEventDispatcher = dispatchScope.ServiceProvider.GetRequiredService<IDomainEventDispatcher>();
 
         foreach (var domainEvent in domainEvents)
         {
-            if (HasDispatched(dbContext, domainEvent))
-            {
-                continue;
-            }
-
             await domainEventDispatcher.Dispatch(domainEvent, ct).ConfigureAwait(false);
             MarkDispatched(dbContext, domainEvent);
         }
     }
 
     private static bool HasDispatched(DbContext dbContext, IDomainEvent domainEvent) =>
-        DispatchedEvents.TryGetValue(dbContext, out var dispatchedEvents) && dispatchedEvents.Contains(domainEvent);
+        TryGetCurrentDispatchState(dbContext, out var state) && state.Events.Contains(domainEvent);
 
     private static void MarkDispatched(DbContext dbContext, IDomainEvent domainEvent)
     {
-        var dispatchedEvents = DispatchedEvents.GetValue(
-            dbContext,
-            static _ => new HashSet<IDomainEvent>(ReferenceEqualityComparer.Instance));
+        var state = GetCurrentDispatchState(dbContext);
+        _ = state.Events.Add(domainEvent);
+    }
 
-        _ = dispatchedEvents.Add(domainEvent);
+    private static DispatchedEventState GetCurrentDispatchState(DbContext dbContext)
+    {
+        if (TryGetCurrentDispatchState(dbContext, out var state))
+        {
+            return state;
+        }
+
+        state = new DispatchedEventState(dbContext.ContextId);
+        DispatchedEvents.Add(dbContext, state);
+
+        return state;
+    }
+
+    private static bool TryGetCurrentDispatchState(DbContext dbContext, out DispatchedEventState state)
+    {
+        if (DispatchedEvents.TryGetValue(dbContext, out state!) && state.ContextId == dbContext.ContextId)
+        {
+            return true;
+        }
+
+        _ = DispatchedEvents.Remove(dbContext);
+        state = null!;
+        return false;
     }
 
     private static void ClearDomainEvents(DbContext? dbContext)
@@ -152,4 +178,11 @@ internal sealed class DispatchDomainEventsSaveChangesInterceptor : SaveChangesIn
             .Select(static entry => entry.Entity)
             .Where(static aggregate => aggregate.GetDomainEvents().Count > 0)
             .ToArray();
+
+    private sealed class DispatchedEventState(DbContextId contextId)
+    {
+        public DbContextId ContextId { get; } = contextId;
+
+        public HashSet<IDomainEvent> Events { get; } = new(ReferenceEqualityComparer.Instance);
+    }
 }

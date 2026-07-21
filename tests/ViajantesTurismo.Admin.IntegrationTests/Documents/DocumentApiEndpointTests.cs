@@ -41,9 +41,20 @@ public sealed class DocumentApiEndpointTests(ApiFixture fixture)
         using var response = await fixture.Client.GetAsync(
             new Uri($"/api/v1/documents/{documentId}", UriKind.Relative),
             TestContext.Current.CancellationToken);
+        var audits = await fixture.GetDocumentAuditMetadata(documentId, TestContext.Current.CancellationToken);
 
         // Assert
         response.StatusCode.ShouldBe(HttpStatusCode.NotFound);
+        var audit = audits.ShouldHaveSingleItem();
+        audit.Operation.ShouldBe("Read");
+        audit.Outcome.ShouldBe("Rejected");
+        audit.ReasonCode.ShouldBe("DocumentNotFound");
+        audit.DocumentId.ShouldBe(documentId);
+        audit.BookingId.ShouldBeNull();
+        audit.DocumentRevision.ShouldBeNull();
+        audit.ActorId.ShouldBe(KeycloakConformanceClient.ConformanceUserId);
+        string.IsNullOrWhiteSpace(audit.CorrelationId).ShouldBeFalse();
+        audit.RetentionExpiresAt.ShouldBe(audit.OccurredAtUtc.AddMonths(24));
     }
 
     [Fact]
@@ -67,6 +78,39 @@ public sealed class DocumentApiEndpointTests(ApiFixture fixture)
         response.StatusCode.ShouldBe(HttpStatusCode.Created);
         var document = (await response.Content.ReadFromJsonAsync<GetDocumentDto>(cancellationToken)).ShouldNotBeNull();
         document.BookingId.ShouldBe(booking.Id);
+    }
+
+    [Fact]
+    public async Task Null_document_field_update_is_rejected_and_audited()
+    {
+        // Arrange
+        var cancellationToken = TestContext.Current.CancellationToken;
+        var tour = await fixture.Client.CreateTestTour("document-null-field", "Document null field", cancellationToken);
+        var customer = await fixture.Client.CreateTestCustomer("Document", "Null field", cancellationToken);
+        var booking = await fixture.Client.CreateTestBooking(tour.Id, customer.Id, null, cancellationToken);
+        using var confirmResponse = await fixture.Client.ConfirmBooking(booking.Id, cancellationToken);
+        confirmResponse.StatusCode.ShouldBe(HttpStatusCode.OK);
+        var documents = new DocumentsApiClient(fixture.Client);
+        var document = await documents.GenerateContractDraft(booking.Id, cancellationToken);
+        var fieldId = document.Fields.First(field => field.IsEditable).FieldId;
+        using var content = new StringContent(
+            """{"value":null}""",
+            System.Text.Encoding.UTF8,
+            "application/json");
+
+        // Act
+        using var response = await fixture.Client.PatchAsync(
+            new Uri($"/api/v1/documents/{document.Id}/fields/{fieldId}", UriKind.Relative),
+            content,
+            cancellationToken);
+        var audits = await fixture.GetDocumentAuditMetadata(document.Id, cancellationToken);
+
+        // Assert
+        response.StatusCode.ShouldBe(HttpStatusCode.BadRequest);
+        var audit = audits.ShouldHaveSingleItem(entry => entry.Operation == "UpdateField");
+        audit.Operation.ShouldBe("UpdateField");
+        audit.Outcome.ShouldBe("Rejected");
+        audit.ReasonCode.ShouldBe("ValidationRejected");
     }
 
     [Theory]
@@ -110,6 +154,43 @@ public sealed class DocumentApiEndpointTests(ApiFixture fixture)
     }
 
     [Fact]
+    public async Task Contract_draft_generation_rejects_a_booking_cancelled_during_persistence()
+    {
+        // Arrange
+        var cancellationToken = TestContext.Current.CancellationToken;
+        var tour = await fixture.Client.CreateTestTour("document-generation-race", "Document generation race", cancellationToken);
+        var customer = await fixture.Client.CreateTestCustomer("Document", "Generation race", cancellationToken);
+        var booking = await fixture.Client.CreateTestBooking(tour.Id, customer.Id, null, cancellationToken);
+        using var confirmResponse = await fixture.Client.ConfirmBooking(booking.Id, cancellationToken);
+        confirmResponse.StatusCode.ShouldBe(HttpStatusCode.OK);
+        await using var scenario = await fixture.CreateBookingCancellationAtDocumentPersistenceScenario(booking.Id, cancellationToken);
+        await scenario.HoldCancellation(cancellationToken);
+
+        // Act
+        var responseTask = fixture.Client.PostAsync(
+            new Uri($"/api/v1/documents/bookings/{booking.Id}/contract-drafts", UriKind.Relative),
+            null,
+            cancellationToken);
+        await scenario.WaitForBlockedDocumentPersistence(cancellationToken);
+        await scenario.CommitCancellation(cancellationToken);
+        using var response = await responseTask;
+        var draftCount = await fixture.GetDocumentDraftCountForBooking(booking.Id, cancellationToken);
+        var audits = await fixture.GetDocumentAuditMetadataForBooking(booking.Id, cancellationToken);
+        var bookingStatus = await scenario.GetBookingStatus(cancellationToken);
+
+        // Assert
+        response.StatusCode.ShouldBe(HttpStatusCode.Conflict);
+        draftCount.ShouldBe(0);
+        var audit = audits.ShouldHaveSingleItem(audit => audit.Operation == "Generate");
+        audit.Outcome.ShouldBe("Rejected");
+        audit.ReasonCode.ShouldBe("StateConflict");
+        audit.BookingId.ShouldBe(booking.Id);
+        audit.DocumentId.ShouldBeNull();
+        audit.DocumentRevision.ShouldBeNull();
+        bookingStatus.ShouldBe("Cancelled");
+    }
+
+    [Fact]
     public async Task Document_review_concurrency_returns_conflict_and_persists_rejected_audit_record()
     {
         // Arrange
@@ -141,6 +222,238 @@ public sealed class DocumentApiEndpointTests(ApiFixture fixture)
         string.IsNullOrWhiteSpace(reviewAudit.CorrelationId).ShouldBeFalse();
         reviewAudit.BookingId.ShouldBe(document.BookingId);
         reviewAudit.DocumentRevision.ShouldBe(document.Revision);
+    }
+
+    [Fact]
+    public async Task Document_read_and_rejected_download_persist_retained_metadata_only_audits()
+    {
+        // Arrange
+        var cancellationToken = TestContext.Current.CancellationToken;
+        var tour = await fixture.Client.CreateTestTour("document-audit-boundary", "Document audit boundary", cancellationToken);
+        var customer = await fixture.Client.CreateTestCustomer("Document", "Audit boundary", cancellationToken);
+        var booking = await fixture.Client.CreateTestBooking(tour.Id, customer.Id, null, cancellationToken);
+        using var confirmResponse = await fixture.Client.ConfirmBooking(booking.Id, cancellationToken);
+        confirmResponse.StatusCode.ShouldBe(HttpStatusCode.OK);
+        var documents = new DocumentsApiClient(fixture.Client);
+        var document = await documents.GenerateContractDraft(booking.Id, cancellationToken);
+
+        // Act
+        using var readResponse = await fixture.Client.GetAsync(
+            new Uri($"/api/v1/documents/{document.Id}", UriKind.Relative),
+            cancellationToken);
+        using var downloadResponse = await fixture.Client.GetAsync(
+            new Uri($"/api/v1/documents/{document.Id}/download", UriKind.Relative),
+            cancellationToken);
+        var audits = await fixture.GetDocumentAuditMetadata(document.Id, cancellationToken);
+
+        // Assert
+        readResponse.StatusCode.ShouldBe(HttpStatusCode.OK);
+        downloadResponse.StatusCode.ShouldBe(HttpStatusCode.Conflict);
+        audits.Select(audit => audit.Operation).ShouldBe(["Generate", "Read", "Download"]);
+        audits.Select(audit => audit.Outcome).ShouldBe(["Succeeded", "Succeeded", "Rejected"]);
+        audits.Select(audit => audit.ReasonCode).ShouldBe(["ManualOperation", "None", "ArtifactUnavailable"]);
+        foreach (var audit in audits)
+        {
+            audit.DocumentId.ShouldBe(document.Id);
+            audit.BookingId.ShouldBe(booking.Id);
+            audit.DocumentRevision.ShouldBe(1);
+            audit.ActorId.ShouldBe(KeycloakConformanceClient.ConformanceUserId);
+            string.IsNullOrWhiteSpace(audit.CorrelationId).ShouldBeFalse();
+            audit.RetentionExpiresAt.ShouldBe(audit.OccurredAtUtc.AddMonths(24));
+        }
+    }
+
+    [Fact]
+    public async Task Audit_insert_failure_rolls_back_generated_draft_and_audit_record()
+    {
+        // Arrange
+        var cancellationToken = TestContext.Current.CancellationToken;
+        var tour = await fixture.Client.CreateTestTour("document-audit-atomicity", "Document audit atomicity", cancellationToken);
+        var customer = await fixture.Client.CreateTestCustomer("Document", "Audit atomicity", cancellationToken);
+        var booking = await fixture.Client.CreateTestBooking(tour.Id, customer.Id, null, cancellationToken);
+        using var confirmResponse = await fixture.Client.ConfirmBooking(booking.Id, cancellationToken);
+        confirmResponse.StatusCode.ShouldBe(HttpStatusCode.OK);
+        await using var scenario = await fixture.CreateDocumentAuditInsertFailureScenario(booking.Id, cancellationToken);
+
+        // Act
+        using var response = await fixture.Client.PostAsync(
+            new Uri($"/api/v1/documents/bookings/{booking.Id}/contract-drafts", UriKind.Relative),
+            null,
+            cancellationToken);
+        var draftCount = await fixture.GetDocumentDraftCountForBooking(booking.Id, cancellationToken);
+        var audits = await fixture.GetDocumentAuditMetadataForBooking(booking.Id, cancellationToken);
+
+        // Assert
+        response.StatusCode.ShouldBe(HttpStatusCode.InternalServerError);
+        draftCount.ShouldBe(0);
+        audits.ShouldBeEmpty();
+    }
+
+    [Fact]
+    public async Task Concurrent_contract_generation_returns_conflict_without_duplicate_success_audits()
+    {
+        // Arrange
+        var cancellationToken = TestContext.Current.CancellationToken;
+        var tour = await fixture.Client.CreateTestTour("document-audit-idempotency", "Document audit idempotency", cancellationToken);
+        var customer = await fixture.Client.CreateTestCustomer("Document", "Audit idempotency", cancellationToken);
+        var booking = await fixture.Client.CreateTestBooking(tour.Id, customer.Id, null, cancellationToken);
+        using var confirmResponse = await fixture.Client.ConfirmBooking(booking.Id, cancellationToken);
+        confirmResponse.StatusCode.ShouldBe(HttpStatusCode.OK);
+        var route = new Uri($"/api/v1/documents/bookings/{booking.Id}/contract-drafts", UriKind.Relative);
+
+        // Act
+        var firstRequest = fixture.Client.PostAsync(route, null, cancellationToken);
+        var secondRequest = fixture.Client.PostAsync(route, null, cancellationToken);
+        var responses = await Task.WhenAll(firstRequest, secondRequest);
+        using var firstResponse = responses[0];
+        using var secondResponse = responses[1];
+        var draftCount = await fixture.GetDocumentDraftCountForBooking(booking.Id, cancellationToken);
+        var audits = await fixture.GetDocumentAuditMetadataForBooking(booking.Id, cancellationToken);
+
+        // Assert
+        responses.Select(response => response.StatusCode)
+            .ShouldBeEquivalentTo(HttpStatusCode.Created, HttpStatusCode.Conflict);
+        draftCount.ShouldBe(1);
+        var generationAudits = audits.Where(audit => audit.Operation == "Generate").ToArray();
+        generationAudits.ShouldHaveCount(2);
+        generationAudits.ShouldHaveSingleItem(audit => audit.Outcome == "Succeeded")
+            .ReasonCode.ShouldBe("ManualOperation");
+        generationAudits.ShouldHaveSingleItem(audit => audit.Outcome == "Rejected")
+            .ReasonCode.ShouldBe("StateConflict");
+    }
+
+    [Fact]
+    public async Task Regeneration_concurrency_conflict_does_not_create_a_sibling_revision()
+    {
+        // Arrange
+        var cancellationToken = TestContext.Current.CancellationToken;
+        var tour = await fixture.Client.CreateTestTour("document-regeneration-race", "Document regeneration race", cancellationToken);
+        var customer = await fixture.Client.CreateTestCustomer("Document", "Regeneration race", cancellationToken);
+        var booking = await fixture.Client.CreateTestBooking(tour.Id, customer.Id, null, cancellationToken);
+        using var confirmResponse = await fixture.Client.ConfirmBooking(booking.Id, cancellationToken);
+        confirmResponse.StatusCode.ShouldBe(HttpStatusCode.OK);
+        var documents = new DocumentsApiClient(fixture.Client);
+        var generated = await documents.GenerateContractDraft(booking.Id, cancellationToken);
+        var route = new Uri($"/api/v1/documents/{generated.Id}/regenerate", UriKind.Relative);
+        var replacement = await documents.Regenerate(generated.Id, cancellationToken);
+        await using var scenario = await fixture.CreateDocumentMutationConcurrencyScenario(
+            generated.Id,
+            cancellationToken);
+
+        // Act
+        using var response = await fixture.Client.PostAsync(route, null, cancellationToken);
+        var draftCount = await fixture.GetDocumentDraftCountForBooking(booking.Id, cancellationToken);
+        var audits = await fixture.GetDocumentAuditMetadataForBooking(booking.Id, cancellationToken);
+
+        // Assert
+        response.StatusCode.ShouldBe(HttpStatusCode.Conflict);
+        replacement.Revision.ShouldBe(2);
+        draftCount.ShouldBe(2);
+        var regenerationAudits = audits.Where(audit => audit.Operation == "Regenerate").ToArray();
+        regenerationAudits.ShouldHaveCount(2);
+        regenerationAudits.ShouldHaveSingleItem(audit => audit.Outcome == "Succeeded")
+            .DocumentRevision.ShouldBe(2);
+        regenerationAudits.ShouldHaveSingleItem(audit => audit.Outcome == "Rejected")
+            .ReasonCode.ShouldBe("StateConflict");
+    }
+
+    [Fact]
+    public async Task Contract_draft_regeneration_rejects_a_booking_cancelled_during_persistence()
+    {
+        // Arrange
+        var cancellationToken = TestContext.Current.CancellationToken;
+        var tour = await fixture.Client.CreateTestTour("document-regeneration-race", "Document regeneration race", cancellationToken);
+        var customer = await fixture.Client.CreateTestCustomer("Document", "Regeneration race", cancellationToken);
+        var booking = await fixture.Client.CreateTestBooking(tour.Id, customer.Id, null, cancellationToken);
+        using var confirmResponse = await fixture.Client.ConfirmBooking(booking.Id, cancellationToken);
+        confirmResponse.StatusCode.ShouldBe(HttpStatusCode.OK);
+        var documents = new DocumentsApiClient(fixture.Client);
+        var document = await documents.GenerateContractDraft(booking.Id, cancellationToken);
+        await using var scenario = await fixture.CreateBookingCancellationAtDocumentPersistenceScenario(booking.Id, cancellationToken);
+        await scenario.HoldCancellation(cancellationToken);
+
+        // Act
+        var responseTask = fixture.Client.PostAsync(
+            new Uri($"/api/v1/documents/{document.Id}/regenerate", UriKind.Relative),
+            null,
+            cancellationToken);
+        await scenario.WaitForBlockedDocumentPersistence(cancellationToken);
+        await scenario.CommitCancellation(cancellationToken);
+        using var response = await responseTask;
+        var draftCount = await fixture.GetDocumentDraftCountForBooking(booking.Id, cancellationToken);
+        var audits = await fixture.GetDocumentAuditMetadataForBooking(booking.Id, cancellationToken);
+        var bookingStatus = await scenario.GetBookingStatus(cancellationToken);
+
+        // Assert
+        response.StatusCode.ShouldBe(HttpStatusCode.Conflict);
+        draftCount.ShouldBe(1);
+        var audit = audits.ShouldHaveSingleItem(audit => audit.Operation == "Regenerate");
+        audit.Outcome.ShouldBe("Rejected");
+        audit.ReasonCode.ShouldBe("StateConflict");
+        audit.BookingId.ShouldBe(booking.Id);
+        audit.DocumentId.ShouldBe(document.Id);
+        audit.DocumentRevision.ShouldBe(1);
+        bookingStatus.ShouldBe("Cancelled");
+    }
+
+    [Fact]
+    public async Task Regeneration_and_void_preserve_revision_lineage_and_audit_reason_codes()
+    {
+        // Arrange
+        var cancellationToken = TestContext.Current.CancellationToken;
+        var tour = await fixture.Client.CreateTestTour("document-audit-lineage", "Document audit lineage", cancellationToken);
+        var customer = await fixture.Client.CreateTestCustomer("Document", "Audit lineage", cancellationToken);
+        var booking = await fixture.Client.CreateTestBooking(tour.Id, customer.Id, null, cancellationToken);
+        using var confirmResponse = await fixture.Client.ConfirmBooking(booking.Id, cancellationToken);
+        confirmResponse.StatusCode.ShouldBe(HttpStatusCode.OK);
+        var documents = new DocumentsApiClient(fixture.Client);
+        var generated = await documents.GenerateContractDraft(booking.Id, cancellationToken);
+        var editableField = generated.Fields.First(field => field.IsEditable);
+
+        // Act
+        var updated = await documents.UpdateField(
+            generated.Id,
+            editableField.FieldId,
+            new UpdateDocumentFieldDto { Value = "Reviewed customer-facing value" },
+            cancellationToken);
+        var approved = await documents.Approve(generated.Id, cancellationToken);
+        var finalized = await documents.Finalize(generated.Id, cancellationToken);
+        var replacement = await documents.Regenerate(generated.Id, cancellationToken);
+        var replacementInReview = await documents.BeginReview(replacement.Id, cancellationToken);
+        var replacementApproved = await documents.Approve(replacement.Id, cancellationToken);
+        var replacementFinalized = await documents.Finalize(replacement.Id, cancellationToken);
+        var voided = await documents.Void(replacement.Id, cancellationToken);
+        var superseded = await documents.GetDocumentById(generated.Id, cancellationToken);
+        var originalAudits = await fixture.GetDocumentAuditMetadata(generated.Id, cancellationToken);
+        var replacementAudits = await fixture.GetDocumentAuditMetadata(replacement.Id, cancellationToken);
+
+        // Assert
+        updated.Status.ShouldBe(DocumentStatusDto.InReview);
+        approved.Status.ShouldBe(DocumentStatusDto.Approved);
+        finalized.Status.ShouldBe(DocumentStatusDto.Finalized);
+        replacement.Revision.ShouldBe(2);
+        replacement.ReplacesDocumentId.ShouldBe(generated.Id);
+        replacementInReview.Status.ShouldBe(DocumentStatusDto.InReview);
+        replacementApproved.Status.ShouldBe(DocumentStatusDto.Approved);
+        replacementFinalized.Status.ShouldBe(DocumentStatusDto.Finalized);
+        voided.Status.ShouldBe(DocumentStatusDto.Voided);
+        superseded.ShouldNotBeNull().Status.ShouldBe(DocumentStatusDto.Superseded);
+
+        originalAudits.Select(audit => audit.Operation).ShouldBe(
+            ["Generate", "UpdateField", "Approve", "Finalize", "Read"]);
+        replacementAudits.Select(audit => audit.Operation).ShouldBe(
+            ["Regenerate", "BeginReview", "Approve", "Finalize", "Void"]);
+        replacementAudits.Select(audit => audit.ReasonCode).ShouldBe(
+            ["ManualRegeneration", "ManualOperation", "ManualOperation", "ManualFinalize", "ManualVoid"]);
+
+        foreach (var audit in replacementAudits)
+        {
+            audit.DocumentId.ShouldBe(replacement.Id);
+            audit.BookingId.ShouldBe(booking.Id);
+            audit.DocumentRevision.ShouldBe(2);
+            audit.Outcome.ShouldBe("Succeeded");
+            audit.RetentionExpiresAt.ShouldBe(audit.OccurredAtUtc.AddMonths(24));
+        }
     }
 
     [Fact]
@@ -226,6 +539,7 @@ public sealed class DocumentApiEndpointTests(ApiFixture fixture)
             audit.DocumentRevision.ShouldBe(1);
             audit.ActorId.ShouldBe(KeycloakConformanceClient.ConformanceUserId);
             string.IsNullOrWhiteSpace(audit.CorrelationId).ShouldBeFalse();
+            audit.RetentionExpiresAt.ShouldBe(audit.OccurredAtUtc.AddMonths(24));
         }
     }
 }

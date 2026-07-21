@@ -8,16 +8,21 @@ public sealed class ApproveDocumentCommandHandler(
     IDocumentStore documentStore,
     IUnitOfWork unitOfWork,
     TimeProvider timeProvider,
-    IDocumentAuditStore? auditStore = null)
+    DocumentAuditWriter documentAuditWriter)
 {
     /// <summary>Approves a reviewable document draft.</summary>
     public async Task<Result> Handle(ApproveDocumentCommand command, CancellationToken ct)
     {
         ArgumentNullException.ThrowIfNull(command);
+        if (command.AuditContext is null)
+        {
+            return DocumentAuditErrors.AuditContextRequired();
+        }
 
         var now = timeProvider.GetUtcNow().UtcDateTime;
-        var document = await documentStore.GetById(command.DocumentId, ct);
-        if (document is null)
+        var lineage = await documentStore.GetByDocumentId(command.DocumentId, ct);
+        var document = lineage?.GetRevision(command.DocumentId);
+        if (lineage is null || document is null)
         {
             return await RecordAndReturn(
                 DocumentErrors.DocumentNotFound(command.DocumentId),
@@ -26,11 +31,10 @@ public sealed class ApproveDocumentCommandHandler(
                 null,
                 null,
                 DocumentAuditReasonCode.DocumentNotFound,
-                now,
                 ct);
         }
 
-        var result = document.Approve(now);
+        var result = lineage.Approve(document.Id, now, command.AuditContext);
         if (result.IsFailure)
         {
             return await RecordAndReturn(
@@ -40,23 +44,7 @@ public sealed class ApproveDocumentCommandHandler(
                 document.BookingId,
                 document.Revision,
                 DocumentAuditReasonCode.StateConflict,
-                now,
                 ct);
-        }
-
-        var auditResult = DocumentAuditWriter.Add(
-            auditStore,
-            command.AuditContext,
-            DocumentAuditOperation.Approve,
-            document.Id,
-            document.BookingId,
-            document.Revision,
-            DocumentAuditOutcome.Succeeded,
-            DocumentAuditReasonCode.ManualOperation,
-            now);
-        if (auditResult.IsFailure)
-        {
-            return auditResult.ConvertError();
         }
 
         await unitOfWork.SaveEntities(ct);
@@ -70,11 +58,9 @@ public sealed class ApproveDocumentCommandHandler(
         Guid? bookingId,
         int? documentRevision,
         DocumentAuditReasonCode reasonCode,
-        DateTime occurredAtUtc,
         CancellationToken ct)
     {
-        var auditResult = DocumentAuditWriter.Add(
-            auditStore,
+        var auditResult = await documentAuditWriter.Add(
             auditContext,
             DocumentAuditOperation.Approve,
             documentId,
@@ -82,15 +68,10 @@ public sealed class ApproveDocumentCommandHandler(
             documentRevision,
             DocumentAuditOutcome.Rejected,
             reasonCode,
-            occurredAtUtc);
+            ct);
         if (auditResult.IsFailure)
         {
-            return auditResult.ConvertError();
-        }
-
-        if (auditResult.Value)
-        {
-            await unitOfWork.SaveEntities(ct);
+            return auditResult;
         }
 
         return operationResult;

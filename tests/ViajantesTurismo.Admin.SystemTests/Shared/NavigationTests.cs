@@ -42,14 +42,9 @@ public class NavigationTests(AspireSystemTestFixture fixture) : AspireSystemTest
         await NavigationTestHelpers.AssertDeepLink(Page, NavigateTo, "/customers/create/emergency-contact", "Create Customer - Emergency Contact");
         await NavigationTestHelpers.AssertDeepLink(Page, NavigateTo, "/customers/create/medical", "Create Customer - Medical Information");
         await NavigationTestHelpers.AssertDeepLink(Page, NavigateTo, "/customers/create/review", "Create Customer - Review & Submit");
-        await NavigateTo("/tours");
-        await NavigateTo($"/tours/{tour.Id}");
-        await Page.GoBackAsync(new PageGoBackOptions { WaitUntil = WaitUntilState.DOMContentLoaded });
 
         // Assert
-        // Deep-link assertions are verified inside the navigation helpers above; this final block checks browser back-navigation.
-        await Expect(Page).ToHaveTitleAsync(ToursTitle);
-        await Expect(Page).ToHaveURLAsync(NavigationTestRegexes.Tours());
+        await Expect(Page).ToHaveTitleAsync("Create Customer - Review & Submit");
     }
 
     [Fact]

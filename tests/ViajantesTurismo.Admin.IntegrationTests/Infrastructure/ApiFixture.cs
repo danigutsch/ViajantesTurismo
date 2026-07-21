@@ -58,6 +58,16 @@ public sealed class ApiFixture : Testing.Integration.IAdminTestHost, IAsyncLifet
         CancellationToken ct) =>
         DocumentMutationConcurrencyScenario.Create(GetDatabaseConnectionString(), documentId, ct);
 
+    internal Task<DocumentAuditInsertFailureScenario> CreateDocumentAuditInsertFailureScenario(
+        Guid bookingId,
+        CancellationToken ct) =>
+        DocumentAuditInsertFailureScenario.Create(GetDatabaseConnectionString(), bookingId, ct);
+
+    internal Task<BookingCancellationAtDocumentPersistenceScenario> CreateBookingCancellationAtDocumentPersistenceScenario(
+        Guid bookingId,
+        CancellationToken ct) =>
+        BookingCancellationAtDocumentPersistenceScenario.Create(GetDatabaseConnectionString(), bookingId, ct);
+
     internal async Task<IReadOnlyList<DocumentAuditEntry>> GetDocumentAuditMetadata(Guid documentId, CancellationToken ct)
     {
         await using var dataSource = NpgsqlDataSource.Create(GetDatabaseConnectionString());
@@ -121,14 +131,6 @@ public sealed class ApiFixture : Testing.Integration.IAdminTestHost, IAsyncLifet
     public void Dispose()
     {
         DisposeAsync().AsTask().GetAwaiter().GetResult();
-    }
-
-    public async Task ResetToKnownBaseline(CancellationToken ct)
-    {
-        ArgumentNullException.ThrowIfNull(_databaseConnectionString);
-
-        await using var connection = new NpgsqlConnection(_databaseConnectionString);
-        await PostgreSqlPublicSchemaReset.Reset(connection, ct);
     }
 
     private string GetDatabaseConnectionString()

@@ -1,3 +1,5 @@
+using ViajantesTurismo.Admin.Domain.Documents;
+
 namespace ViajantesTurismo.Admin.Application.Documents;
 
 /// <summary>Requests approval of a generated document draft.</summary>

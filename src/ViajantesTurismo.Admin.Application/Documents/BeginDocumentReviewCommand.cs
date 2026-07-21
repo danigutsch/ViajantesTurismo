@@ -1,3 +1,5 @@
+using ViajantesTurismo.Admin.Domain.Documents;
+
 namespace ViajantesTurismo.Admin.Application.Documents;
 
 /// <summary>Requests staff review for a generated document draft.</summary>

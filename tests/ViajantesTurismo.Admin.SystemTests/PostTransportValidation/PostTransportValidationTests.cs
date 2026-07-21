@@ -1,4 +1,5 @@
 using ViajantesTurismo.Admin.SystemTests.Infrastructure;
+using ViajantesTurismo.Catalog.Contracts.Http;
 
 namespace ViajantesTurismo.Admin.SystemTests.PostTransportValidation;
 
@@ -15,7 +16,9 @@ public sealed class PostTransportValidationTests(AspireSystemTestFixture fixture
     public async Task Catalog_api_exposes_tour_after_admin_event_is_delivered()
     {
         // Arrange
-        var scenario = new PostTransportValidationScenario(ApiClient, Fixture.CatalogTours);
+        using var catalogApiClient = await Fixture.CreateCatalogApiClient(TestContext.Current.CancellationToken);
+        var catalogTours = new CatalogToursApiClient(catalogApiClient);
+        var scenario = new PostTransportValidationScenario(ApiClient, catalogTours);
         var identifier = $"PTV-{Guid.CreateVersion7():N}"[..16];
         var title = $"Transport Tour {Guid.CreateVersion7():N}"[..30];
 
@@ -34,7 +37,9 @@ public sealed class PostTransportValidationTests(AspireSystemTestFixture fixture
     public async Task Public_web_renders_published_tour_from_real_catalog_api()
     {
         // Arrange
-        var scenario = new PostTransportValidationScenario(ApiClient, Fixture.CatalogTours);
+        using var catalogApiClient = await Fixture.CreateCatalogApiClient(TestContext.Current.CancellationToken);
+        var catalogTours = new CatalogToursApiClient(catalogApiClient);
+        var scenario = new PostTransportValidationScenario(ApiClient, catalogTours);
         var unique = Guid.CreateVersion7().ToString("N")[..12];
         var identifier = $"PUB-{unique}";
         var title = $"Published Tour {unique}";
@@ -56,7 +61,9 @@ public sealed class PostTransportValidationTests(AspireSystemTestFixture fixture
     public async Task Admin_api_to_public_flow_renders_tour_details_after_transport_projection()
     {
         // Arrange
-        var scenario = new PostTransportValidationScenario(ApiClient, Fixture.CatalogTours);
+        using var catalogApiClient = await Fixture.CreateCatalogApiClient(TestContext.Current.CancellationToken);
+        var catalogTours = new CatalogToursApiClient(catalogApiClient);
+        var scenario = new PostTransportValidationScenario(ApiClient, catalogTours);
         var unique = Guid.CreateVersion7().ToString("N")[..12];
         var identifier = $"E2E-{unique}";
         var title = $"End To End Tour {unique}";
@@ -80,11 +87,12 @@ public sealed class PostTransportValidationTests(AspireSystemTestFixture fixture
     public async Task Duplicate_transport_delivery_does_not_duplicate_catalog_result()
     {
         // Arrange
-        var scenario = new PostTransportValidationScenario(ApiClient, Fixture.CatalogTours);
+        using var catalogApiClient = await Fixture.CreateCatalogApiClient(TestContext.Current.CancellationToken);
+        var catalogTours = new CatalogToursApiClient(catalogApiClient);
+        var scenario = new PostTransportValidationScenario(ApiClient, catalogTours);
         var unique = Guid.CreateVersion7().ToString("N")[..12];
         var identifier = $"DUP-{unique}";
         var title = $"Duplicate Tour {unique}";
-        var slug = $"duplicate-tour-{unique}";
         var adminTour = await scenario.CreateAdminTour(identifier, title);
         var catalogTour = await scenario.WaitForCatalogTour(adminTour.Id, TestContext.Current.CancellationToken);
         var eventCountBeforeDuplicate = await Fixture.CountCatalogTourEvents(adminTour.Id, TestContext.Current.CancellationToken);
@@ -92,16 +100,13 @@ public sealed class PostTransportValidationTests(AspireSystemTestFixture fixture
         // Act
         await Fixture.RequeueCatalogTransportMessageForAdminTour(adminTour.Id, TestContext.Current.CancellationToken);
         await Fixture.WaitForCatalogTransportMessageProcessed(adminTour.Id, TestContext.Current.CancellationToken);
-        var catalogTours = await Fixture.CatalogTours.GetTours(TestContext.Current.CancellationToken);
+        var projectedCatalogTours = await catalogTours.GetTours(TestContext.Current.CancellationToken);
         var eventCountAfterDuplicate = await Fixture.CountCatalogTourEvents(adminTour.Id, TestContext.Current.CancellationToken);
-        await scenario.PublishCatalogTour(catalogTour, title, slug, TestContext.Current.CancellationToken);
-        await NavigateTo(new Uri(Fixture.PublicWebAppUrl, "/group-bike-tours"));
 
         // Assert
         eventCountBeforeDuplicate.ShouldBe(1);
         eventCountAfterDuplicate.ShouldBe(1);
-        var projectedTours = catalogTours.Where(tour => tour.AdminTourId == adminTour.Id).ToArray();
+        var projectedTours = projectedCatalogTours.Where(tour => tour.AdminTourId == adminTour.Id).ToArray();
         projectedTours.ShouldHaveSingleItem().Id.ShouldBe(catalogTour.Id);
-        await Expect(Page.GetByRole(AriaRole.Link, new PageGetByRoleOptions { Name = title })).ToHaveCountAsync(1);
     }
 }

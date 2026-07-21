@@ -68,6 +68,10 @@ public static class DocumentErrors
     public static Result DocumentChangedByAnotherRequest() => Result.Conflict(
         detail: "The document was changed by another request. Reload and retry.");
 
+    /// <summary>Returns a conflict when a document revision lineage key already exists.</summary>
+    public static Result DocumentRevisionAlreadyExists() => Result.Conflict(
+        detail: "A document revision already exists for this booking. Reload and retry.");
+
     /// <summary>Returns a length-validation failure.</summary>
     public static Result ValueTooLong(string field, int maxLength) => Result.Invalid(
         detail: $"{field} cannot exceed {maxLength} characters.",

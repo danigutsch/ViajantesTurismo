@@ -410,6 +410,9 @@
           "xunit.v3.runner.common": "[3.2.2]"
         }
       },
+      "sharedkernel.audittrail": {
+        "type": "Project"
+      },
       "sharedkernel.branding": {
         "type": "Project",
         "dependencies": {
@@ -483,6 +486,7 @@
         "type": "Project",
         "dependencies": {
           "Microsoft.Extensions.Hosting.Abstractions": "[10.0.9, )",
+          "SharedKernel.AuditTrail": "[0.1.0-alpha.0, )",
           "SharedKernel.Branding": "[0.1.0-alpha.0, )",
           "SharedKernel.BuildingBlocks": "[0.1.0-alpha.0, )",
           "SharedKernel.DocumentRendering": "[0.1.0-alpha.0, )",
@@ -517,6 +521,7 @@
         "type": "Project",
         "dependencies": {
           "JetBrains.Annotations": "[2026.2.0, )",
+          "SharedKernel.AuditTrail": "[0.1.0-alpha.0, )",
           "SharedKernel.BuildingBlocks": "[0.1.0-alpha.0, )",
           "SharedKernel.Domain": "[0.1.0-alpha.0, )",
           "SharedKernel.InputNormalization": "[0.1.0-alpha.0, )",

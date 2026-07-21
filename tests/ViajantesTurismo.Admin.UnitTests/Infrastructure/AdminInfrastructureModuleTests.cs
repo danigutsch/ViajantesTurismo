@@ -1,17 +1,11 @@
-using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Hosting;
-using SharedKernel.DomainEvents;
 using SharedKernel.Messaging.IntegrationEvents;
 using SharedKernel.Messaging.IntegrationEvents.EntityFrameworkCore;
 using SharedKernel.Testing;
-using ViajantesTurismo.Admin.Application;
-using ViajantesTurismo.Admin.Domain.Customers;
-using ViajantesTurismo.Admin.Domain.Documents;
-using ViajantesTurismo.Admin.Domain.Tours;
 using ViajantesTurismo.Admin.Infrastructure;
 using ViajantesTurismo.Admin.Infrastructure.Documents;
 using ViajantesTurismo.Admin.Testing.Fakes;
 using ViajantesTurismo.Admin.UnitTests.Application.IntegrationEvents;
+using ViajantesTurismo.Admin.UnitTests.Documents;
 
 namespace ViajantesTurismo.Admin.UnitTests.Infrastructure;
 
@@ -21,8 +15,8 @@ public sealed class AdminInfrastructureModuleTests
     [Fact]
     public void AddApplication_requires_an_integration_event_outbox_to_resolve_domain_dispatching()
     {
-        using var serviceProvider = AdminInfrastructureModuleTestServices.CreateWithoutOutbox();
-        Action resolveDispatcher = () => serviceProvider.GetRequiredService<IDomainEventDispatcher>();
+        using var services = AdminInfrastructureModuleTestServices.CreateWithoutOutbox();
+        Func<object?> resolveDispatcher = () => services.Dispatcher;
 
         var exception = resolveDispatcher.ShouldThrow<InvalidOperationException>();
 
@@ -32,9 +26,9 @@ public sealed class AdminInfrastructureModuleTests
     [Fact]
     public void AddIntegrationEventOutbox_composes_generated_domain_dispatching_dependencies()
     {
-        using var serviceProvider = AdminInfrastructureModuleTestServices.CreateWithOutboxModule();
+        using var services = AdminInfrastructureModuleTestServices.CreateWithOutboxModule();
 
-        var dispatcher = serviceProvider.GetRequiredService<IDomainEventDispatcher>();
+        var dispatcher = services.Dispatcher;
 
         dispatcher.ShouldNotBeNull();
     }
@@ -42,9 +36,9 @@ public sealed class AdminInfrastructureModuleTests
     [Fact]
     public void Admin_write_context_resolves_with_composed_modules()
     {
-        using var serviceProvider = AdminInfrastructureModuleTestServices.CreateWithWriteContext();
+        using var services = AdminInfrastructureModuleTestServices.CreateWithWriteContext();
 
-        var dbContext = serviceProvider.GetRequiredService<AdminWriteDbContext>();
+        var dbContext = services.WriteContext;
 
         dbContext.ShouldNotBeNull();
     }
@@ -53,9 +47,9 @@ public sealed class AdminInfrastructureModuleTests
     public void AddIntegrationEventOutbox_preserves_existing_outbox_registration()
     {
         var outbox = new CapturingIntegrationEventOutbox(new FakeUnitOfWork());
-        using var serviceProvider = AdminInfrastructureModuleTestServices.CreateWithOutbox(outbox);
+        using var services = AdminInfrastructureModuleTestServices.CreateWithOutbox(outbox);
 
-        var registeredOutbox = serviceProvider.GetRequiredService<IIntegrationEventOutbox>();
+        var registeredOutbox = services.Outbox;
 
         registeredOutbox.ShouldBeSameAs(outbox);
     }
@@ -64,16 +58,17 @@ public sealed class AdminInfrastructureModuleTests
     public void AddInfrastructure_registers_admin_runtime_services()
     {
         // Arrange
-        using var serviceProvider = AdminInfrastructureModuleTestServices.CreateWithInfrastructureModule();
+        using var services = AdminInfrastructureModuleTestServices.CreateWithInfrastructureModule();
 
         // Act
-        var unitOfWork = serviceProvider.GetRequiredService<IUnitOfWork>();
-        var queryService = serviceProvider.GetRequiredService<IQueryService>();
-        var tourStore = serviceProvider.GetRequiredService<ITourStore>();
-        var customerStore = serviceProvider.GetRequiredService<ICustomerStore>();
-        var documentStore = serviceProvider.GetRequiredService<IDocumentStore>();
-        var outbox = serviceProvider.GetRequiredService<IIntegrationEventOutbox>();
-        var hostedServices = serviceProvider.GetServices<IHostedService>().ToArray();
+        var unitOfWork = services.UnitOfWork;
+        var queryService = services.QueryService;
+        var tourStore = services.TourStore;
+        var customerStore = services.CustomerStore;
+        var documentStore = services.DocumentStore;
+        var outbox = services.Outbox;
+        var brandingApiClient = services.BrandingApiClient;
+        var hostedServices = services.HostedServices;
 
         // Assert
         unitOfWork.ShouldBeOfType<AdminWriteDbContext>();
@@ -82,6 +77,7 @@ public sealed class AdminInfrastructureModuleTests
         customerStore.ShouldBeOfType<CustomerStore>();
         documentStore.ShouldBeOfType<DocumentStore>();
         outbox.ShouldBeOfType<EfIntegrationEventOutbox<AdminWriteDbContext>>();
+        brandingApiClient.ShouldBeOfType<FakeBrandingApiClient>();
         hostedServices.ShouldContain(service => service is DocumentDraftRetentionHostedService);
         hostedServices.ShouldContain(service => service is DocumentAuditRetentionHostedService);
         hostedServices.ShouldContain(service => (service is IntegrationEventOutboxRelayHostedService<AdminWriteDbContext>));
@@ -91,10 +87,10 @@ public sealed class AdminInfrastructureModuleTests
     public void Explicit_openapi_generation_registration_omits_admin_background_workers()
     {
         // Arrange
-        using var serviceProvider = AdminInfrastructureModuleTestServices.CreateWithOpenApiBuildGenerationInfrastructureModule();
+        using var services = AdminInfrastructureModuleTestServices.CreateWithOpenApiBuildGenerationInfrastructureModule();
 
         // Act
-        var hostedServices = serviceProvider.GetServices<IHostedService>().ToArray();
+        var hostedServices = services.HostedServices;
 
         // Assert
         hostedServices.ShouldNotContain(service => service is DocumentDraftRetentionHostedService);
@@ -106,16 +102,18 @@ public sealed class AdminInfrastructureModuleTests
     public void AddAdminSeeding_registers_seeder_without_outbox_relay()
     {
         // Arrange
-        using var serviceProvider = AdminInfrastructureModuleTestServices.CreateWithSeedingModule();
+        using var services = AdminInfrastructureModuleTestServices.CreateWithSeedingModule();
 
         // Act
-        var seeder = serviceProvider.GetRequiredService<Seeder>();
-        var outbox = serviceProvider.GetRequiredService<IIntegrationEventOutbox>();
-        var hostedServices = serviceProvider.GetServices<IHostedService>().ToArray();
+        var seeder = services.Seeder;
+        var outbox = services.Outbox;
+        var dispatcher = services.Dispatcher;
+        var hostedServices = services.HostedServices;
 
         // Assert
         seeder.ShouldNotBeNull();
         outbox.ShouldBeOfType<EfIntegrationEventOutbox<AdminWriteDbContext>>();
+        dispatcher.ShouldNotBeNull();
         hostedServices.ShouldNotContain(service => (service is IntegrationEventOutboxRelayHostedService<AdminWriteDbContext>));
     }
 }

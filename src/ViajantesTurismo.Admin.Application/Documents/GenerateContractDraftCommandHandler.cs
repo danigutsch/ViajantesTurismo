@@ -15,12 +15,16 @@ public sealed class GenerateContractDraftCommandHandler(
     IBrandingApiClient brandingApiClient,
     IUnitOfWork unitOfWork,
     TimeProvider timeProvider,
-    IDocumentAuditStore? auditStore = null)
+    DocumentAuditWriter documentAuditWriter)
 {
     /// <summary>Generates and persists a new draft revision.</summary>
     public async Task<Result<Guid>> Handle(GenerateContractDraftCommand command, CancellationToken ct)
     {
         ArgumentNullException.ThrowIfNull(command);
+        if (command.AuditContext is null)
+        {
+            return DocumentAuditErrors.AuditContextRequired().ConvertError<Guid>();
+        }
 
         var now = timeProvider.GetUtcNow().UtcDateTime;
         var booking = await queryService.GetBookingById(command.BookingId, ct);
@@ -33,7 +37,6 @@ public sealed class GenerateContractDraftCommandHandler(
                 command.BookingId,
                 null,
                 DocumentAuditReasonCode.BookingNotFound,
-                now,
                 ct);
         }
 
@@ -46,7 +49,6 @@ public sealed class GenerateContractDraftCommandHandler(
                 booking.Id,
                 null,
                 DocumentAuditReasonCode.StateConflict,
-                now,
                 ct);
         }
 
@@ -60,49 +62,53 @@ public sealed class GenerateContractDraftCommandHandler(
                 booking.Id,
                 null,
                 DocumentAuditReasonCode.TourNotFound,
-                now,
                 ct);
         }
 
         var branding = await DocumentBrandingSnapshotFactory.Capture(brandingApiClient, ct);
-        var draftResult = ContractDocumentDraftFactory.Create(
+        var contentResult = ContractDocumentDraftFactory.Create(
             booking,
             tour,
             command.TemplateId,
             command.TemplateVersion,
             branding,
             now);
-        if (draftResult.IsFailure)
+        if (contentResult.IsFailure)
         {
             return await RecordAndReturn(
-                draftResult.ConvertError<DocumentDraft, Guid>(),
+                contentResult.ConvertError<DocumentDraftContent, Guid>(),
                 command.AuditContext,
                 null,
                 booking.Id,
                 null,
                 DocumentAuditReasonCode.ValidationRejected,
-                now,
                 ct);
         }
 
-        documentStore.Add(draftResult.Value);
-        var auditResult = DocumentAuditWriter.Add(
-            auditStore,
-            command.AuditContext,
-            DocumentAuditOperation.Generate,
-            draftResult.Value.Id,
-            draftResult.Value.BookingId,
-            draftResult.Value.Revision,
-            DocumentAuditOutcome.Succeeded,
-            DocumentAuditReasonCode.ManualOperation,
-            now);
-        if (auditResult.IsFailure)
+        var lineageResult = DocumentLineage.Create(
+            booking.Id,
+            DocumentType.BookingConfirmationContract,
+            DocumentAudience.Customer,
+            contentResult.Value,
+            now,
+            command.AuditContext);
+        if (lineageResult.IsFailure)
         {
-            return auditResult.ConvertError<bool, Guid>();
+            return await RecordAndReturn(
+                lineageResult.ConvertError<DocumentLineage, Guid>(),
+                command.AuditContext,
+                null,
+                booking.Id,
+                null,
+                DocumentAuditReasonCode.ValidationRejected,
+                ct);
         }
 
+        var lineage = lineageResult.Value;
+        var draft = lineage.Revisions[0];
+        documentStore.Add(lineage);
         await unitOfWork.SaveEntities(ct);
-        return Result.Ok(draftResult.Value.Id);
+        return Result.Ok(draft.Id);
     }
 
     private async Task<Result<Guid>> RecordAndReturn(
@@ -112,11 +118,9 @@ public sealed class GenerateContractDraftCommandHandler(
         Guid? bookingId,
         int? documentRevision,
         DocumentAuditReasonCode reasonCode,
-        DateTime occurredAtUtc,
         CancellationToken ct)
     {
-        var auditResult = DocumentAuditWriter.Add(
-            auditStore,
+        var auditResult = await documentAuditWriter.Add(
             auditContext,
             DocumentAuditOperation.Generate,
             documentId,
@@ -124,15 +128,10 @@ public sealed class GenerateContractDraftCommandHandler(
             documentRevision,
             DocumentAuditOutcome.Rejected,
             reasonCode,
-            occurredAtUtc);
+            ct);
         if (auditResult.IsFailure)
         {
-            return auditResult.ConvertError<bool, Guid>();
-        }
-
-        if (auditResult.Value)
-        {
-            await unitOfWork.SaveEntities(ct);
+            return auditResult.ConvertError<Guid>();
         }
 
         return operationResult;

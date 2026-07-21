@@ -4,11 +4,13 @@ using ViajantesTurismo.Admin.Domain.Documents;
 namespace ViajantesTurismo.Admin.Application.Documents;
 
 /// <summary>Adds metadata-only audit records to the current document unit of work.</summary>
-public static class DocumentAuditWriter
+public sealed class DocumentAuditWriter(
+    IDocumentAuditStore auditStore,
+    IUnitOfWork unitOfWork,
+    TimeProvider timeProvider)
 {
-    /// <summary>Adds an audit record when trusted request metadata is available.</summary>
-    public static Result<bool> Add(
-        IDocumentAuditStore? auditStore,
+    /// <summary>Adds and persists an audit record when trusted request metadata is available.</summary>
+    public async Task<Result> Add(
         DocumentAuditContext? auditContext,
         DocumentAuditOperation operation,
         Guid? documentId,
@@ -16,16 +18,11 @@ public static class DocumentAuditWriter
         int? documentRevision,
         DocumentAuditOutcome outcome,
         DocumentAuditReasonCode reasonCode,
-        DateTime occurredAtUtc)
+        CancellationToken ct)
     {
         if (auditContext is null)
         {
-            return DocumentAuditErrors.AuditContextRequired().ConvertError<bool>();
-        }
-
-        if (auditStore is null)
-        {
-            return DocumentAuditErrors.AuditStoreUnavailable().ConvertError<bool>();
+            return DocumentAuditErrors.AuditContextRequired();
         }
 
         var recordResult = DocumentAuditRecord.Create(
@@ -37,13 +34,14 @@ public static class DocumentAuditWriter
             outcome,
             reasonCode,
             auditContext.CorrelationId,
-            occurredAtUtc);
+            timeProvider.GetUtcNow().UtcDateTime);
         if (recordResult.IsFailure)
         {
-            return recordResult.ConvertError<DocumentAuditRecord, bool>();
+            return recordResult.ConvertError();
         }
 
         auditStore.Add(recordResult.Value);
-        return Result.Ok(true);
+        await unitOfWork.SaveEntities(ct);
+        return Result.Ok();
     }
 }

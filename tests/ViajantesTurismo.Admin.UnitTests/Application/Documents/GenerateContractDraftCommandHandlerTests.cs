@@ -13,6 +13,36 @@ namespace ViajantesTurismo.Admin.UnitTests.Application.Documents;
 [Trait(SharedKernelTestTraitNames.CapabilityName, Testing.AdminTestTraitValues.GeneratedDocumentsCapability)]
 public sealed class GenerateContractDraftCommandHandlerTests
 {
+    [Fact]
+    public async Task Handle_rejects_missing_audit_context_before_adding_a_draft()
+    {
+        // Arrange
+        var tourId = Guid.CreateVersion7();
+        var booking = DtoBuilders.BuildBookingDto(tourId: tourId, status: BookingStatusDto.Confirmed);
+        var tour = DtoBuilders.BuildTourDto(id: tourId);
+        var store = new FakeDocumentStore();
+        var auditStore = new FakeDocumentAuditStore();
+        var unitOfWork = new FakeUnitOfWork();
+        var handler = new GenerateContractDraftCommandHandler(
+            new FakeQueryService(booking, tour),
+            store,
+            new FakeBrandingApiClient(DocumentDraftTestData.CreateBrandingSettings()),
+            unitOfWork,
+            TimeProvider.System,
+            DocumentAuditTestData.CreateWriter(auditStore, unitOfWork));
+
+        // Act
+        var result = await handler.Handle(
+            new GenerateContractDraftCommand(booking.Id, "booking-confirmation", "1"),
+            CancellationToken.None);
+
+        // Assert
+        result.IsFailure.ShouldBeTrue();
+        store.AddedDocuments.ShouldBeEmpty();
+        auditStore.Records.ShouldBeEmpty();
+        unitOfWork.SaveEntitiesCallCount.ShouldBe(0);
+    }
+
     [Theory]
     [InlineData(BookingStatusDto.Confirmed)]
     [InlineData(BookingStatusDto.Completed)]
@@ -28,7 +58,7 @@ public sealed class GenerateContractDraftCommandHandlerTests
         var auditStore = new FakeDocumentAuditStore();
         var unitOfWork = new FakeUnitOfWork();
         var branding = new BrandingSettingsDto { BrandName = "Viajantes", PrimaryColor = "#102030", AccentColor = "#405060", BackgroundColor = "#fdfdfd", TextColor = "#111111", HeadingFontFamily = "Montserrat", BodyFontFamily = "Inter" };
-        var handler = new GenerateContractDraftCommandHandler(queryService, store, new FakeBrandingApiClient(branding), unitOfWork, TimeProvider.System, auditStore);
+        var handler = new GenerateContractDraftCommandHandler(queryService, store, new FakeBrandingApiClient(branding), unitOfWork, TimeProvider.System, DocumentAuditTestData.CreateWriter(auditStore, unitOfWork));
 
         // Act
         var result = await handler.Handle(new GenerateContractDraftCommand(bookingId, "booking-confirmation", "1", DocumentAuditTestData.CreateContext()), CancellationToken.None);
@@ -44,6 +74,9 @@ public sealed class GenerateContractDraftCommandHandlerTests
         draft.BrandingHeadingFontFamily.ShouldBe("Montserrat");
         draft.BrandingBodyFontFamily.ShouldBe("Inter");
         draft.BrandingFooterText.ShouldBe("Viajantes");
+        var lineage = store.AddedLineages.ShouldHaveSingleItem();
+        var auditEvent = lineage.GetDomainEvents().ShouldHaveSingleItem().ShouldBeOfType<DocumentLifecycleAuditDomainEvent>();
+        auditEvent.Operation.ShouldBe(DocumentAuditOperation.Generate);
         unitOfWork.SaveEntitiesCallCount.ShouldBe(1);
     }
 
@@ -66,7 +99,7 @@ public sealed class GenerateContractDraftCommandHandlerTests
             new FakeBrandingApiClient(DocumentDraftTestData.CreateBrandingSettings()),
             unitOfWork,
             TimeProvider.System,
-            auditStore);
+            DocumentAuditTestData.CreateWriter(auditStore, unitOfWork));
 
         // Act
         var result = await handler.Handle(
@@ -92,17 +125,30 @@ public sealed class GenerateContractDraftCommandHandlerTests
     public async Task Handle_returns_not_found_without_persisting_when_booking_is_missing()
     {
         // Arrange
+        var bookingId = Guid.CreateVersion7();
+        var auditContext = DocumentAuditTestData.CreateContext();
         var store = new FakeDocumentStore();
         var auditStore = new FakeDocumentAuditStore();
         var unitOfWork = new FakeUnitOfWork();
-        var handler = new GenerateContractDraftCommandHandler(new FakeQueryService(null), store, new FakeBrandingApiClient(new BrandingSettingsDto()), unitOfWork, TimeProvider.System, auditStore);
+        var handler = new GenerateContractDraftCommandHandler(new FakeQueryService(null), store, new FakeBrandingApiClient(new BrandingSettingsDto()), unitOfWork, TimeProvider.System, DocumentAuditTestData.CreateWriter(auditStore, unitOfWork));
 
         // Act
-        var result = await handler.Handle(new GenerateContractDraftCommand(Guid.CreateVersion7(), "booking-confirmation", "1", DocumentAuditTestData.CreateContext()), CancellationToken.None);
+        var result = await handler.Handle(
+            new GenerateContractDraftCommand(bookingId, "booking-confirmation", "1", auditContext),
+            CancellationToken.None);
+        var audit = auditStore.Records.ShouldHaveSingleItem();
 
         // Assert
         result.IsFailure.ShouldBeTrue();
         store.AddedDocuments.ShouldBeEmpty();
+        audit.Operation.ShouldBe(DocumentAuditOperation.Generate);
+        audit.Outcome.ShouldBe(DocumentAuditOutcome.Rejected);
+        audit.ReasonCode.ShouldBe(DocumentAuditReasonCode.BookingNotFound);
+        audit.DocumentId.ShouldBeNull();
+        audit.BookingId.ShouldBe(bookingId);
+        audit.DocumentRevision.ShouldBeNull();
+        audit.ActorId.ShouldBe(auditContext.ActorId);
+        audit.CorrelationId.ShouldBe(auditContext.CorrelationId);
         unitOfWork.SaveEntitiesCallCount.ShouldBe(1);
     }
 
@@ -114,22 +160,32 @@ public sealed class GenerateContractDraftCommandHandlerTests
         var store = new FakeDocumentStore();
         var auditStore = new FakeDocumentAuditStore();
         var unitOfWork = new FakeUnitOfWork();
+        var auditContext = DocumentAuditTestData.CreateContext();
         var handler = new GenerateContractDraftCommandHandler(
             new FakeQueryService(booking),
             store,
             new FakeBrandingApiClient(DocumentDraftTestData.CreateBrandingSettings()),
             unitOfWork,
             TimeProvider.System,
-            auditStore);
+            DocumentAuditTestData.CreateWriter(auditStore, unitOfWork));
 
         // Act
         var result = await handler.Handle(
-            new GenerateContractDraftCommand(booking.Id, "booking-confirmation", "1", DocumentAuditTestData.CreateContext()),
+            new GenerateContractDraftCommand(booking.Id, "booking-confirmation", "1", auditContext),
             CancellationToken.None);
+        var audit = auditStore.Records.ShouldHaveSingleItem();
 
         // Assert
         result.IsFailure.ShouldBeTrue();
         store.AddedDocuments.ShouldBeEmpty();
+        audit.Operation.ShouldBe(DocumentAuditOperation.Generate);
+        audit.Outcome.ShouldBe(DocumentAuditOutcome.Rejected);
+        audit.ReasonCode.ShouldBe(DocumentAuditReasonCode.TourNotFound);
+        audit.DocumentId.ShouldBeNull();
+        audit.BookingId.ShouldBe(booking.Id);
+        audit.DocumentRevision.ShouldBeNull();
+        audit.ActorId.ShouldBe(auditContext.ActorId);
+        audit.CorrelationId.ShouldBe(auditContext.CorrelationId);
         unitOfWork.SaveEntitiesCallCount.ShouldBe(1);
     }
 
@@ -146,7 +202,7 @@ public sealed class GenerateContractDraftCommandHandlerTests
         var auditStore = new FakeDocumentAuditStore();
         var unitOfWork = new FakeUnitOfWork();
         var branding = new BrandingSettingsDto { BrandName = "Viajantes", LogoUri = "/\\evil.test/logo.svg", PrimaryColor = "#000", AccentColor = "#000", BackgroundColor = "#fff", TextColor = "#000", HeadingFontFamily = "sans", BodyFontFamily = "sans" };
-        var handler = new GenerateContractDraftCommandHandler(queryService, store, new FakeBrandingApiClient(branding), unitOfWork, TimeProvider.System, auditStore);
+        var handler = new GenerateContractDraftCommandHandler(queryService, store, new FakeBrandingApiClient(branding), unitOfWork, TimeProvider.System, DocumentAuditTestData.CreateWriter(auditStore, unitOfWork));
 
         // Act
         var result = await handler.Handle(new GenerateContractDraftCommand(bookingId, "booking-confirmation", "1", DocumentAuditTestData.CreateContext()), CancellationToken.None);

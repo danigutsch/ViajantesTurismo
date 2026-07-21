@@ -1,3 +1,5 @@
+using ViajantesTurismo.Admin.Domain.Documents;
+
 namespace ViajantesTurismo.Admin.Application.Documents;
 
 /// <summary>Requests a refreshed document draft revision from current booking source data.</summary>

@@ -13,7 +13,7 @@ each surface is registered, and how to verify the emitted signals locally.
 | Meter | `ViajantesTurismo.Catalog` | `src/ViajantesTurismo.Catalog.Application/CatalogTelemetry.cs` | Emits Catalog integration event, idempotency, stream update, and projection metrics. |
 | ActivitySource | `SharedKernel.EventSourcing.Npgsql` | `src/SharedKernel/SharedKernel.EventSourcing.Npgsql/PostgreSqlEventSourcingTelemetry.cs` | Emits PostgreSQL event-store append/load/checkpoint spans. |
 | Meter | `SharedKernel.EventSourcing.Npgsql` | `src/SharedKernel/SharedKernel.EventSourcing.Npgsql/PostgreSqlEventSourcingTelemetry.cs` | Emits PostgreSQL event-store duration, count, and conflict metrics. |
-| ActivitySource | `ViajantesTurismo.MigrationService.SeederWorker` | `src/ViajantesTurismo.MigrationService/SeederWorker.cs` | Emits database seeding span (`DatabaseSeeding`). |
+| ActivitySource | `ViajantesTurismo.MigrationService.SeederWorker` | `src/ViajantesTurismo.MigrationService/MigrationRunner.cs` | Emits database seeding span (`DatabaseSeeding`). |
 
 ## Telemetry contract documentation rules
 
@@ -149,7 +149,7 @@ when a log is written inside an `Activity`.
 The migration service adds its custom source explicitly:
 
 - `src/ViajantesTurismo.MigrationService/Program.cs`
-- `.WithTracing(tracingBuilder => tracingBuilder.AddSource(SeederWorker.ActivitySourceName))`
+- `.WithTracing(tracingBuilder => tracingBuilder.AddSource(MigrationRunner.ActivitySourceName))`
 
 ## Exporter configuration
 
@@ -332,7 +332,7 @@ least two production surfaces need the same lifecycle API and tag contract.
 - Catalog telemetry names and instrumentation helpers: `src/ViajantesTurismo.Catalog.Application/CatalogTelemetry.cs`
 - PostgreSQL event-sourcing telemetry names and instrumentation helpers:
   `src/SharedKernel/SharedKernel.EventSourcing.Npgsql/PostgreSqlEventSourcingTelemetry.cs`
-- Migration custom source + span emission: `src/ViajantesTurismo.MigrationService/SeederWorker.cs`
+- Migration custom source + span emission: `src/ViajantesTurismo.MigrationService/MigrationRunner.cs`
 - Migration custom source registration: `src/ViajantesTurismo.MigrationService/Program.cs`
 - Architecture consumption flow: `docs/architecture/observability-consumption-flows.md`
 

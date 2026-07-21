@@ -53,10 +53,36 @@ public sealed class DocumentAuditStorePostgreSqlTests : IAsyncLifetime
     }
 
     [Fact]
+    public async Task Audit_table_contains_only_approved_metadata_columns()
+    {
+        // Arrange
+        string[] expectedColumns =
+        [
+            "ActorId",
+            "BookingId",
+            "CorrelationId",
+            "DocumentId",
+            "DocumentRevision",
+            "Id",
+            "OccurredAtUtc",
+            "Operation",
+            "Outcome",
+            "ReasonCode",
+            "RetentionExpiresAt",
+        ];
+
+        // Act
+        var columns = await Scenario.GetDocumentAuditColumnNames(TestContext.Current.CancellationToken);
+
+        // Assert
+        columns.ShouldBe(expectedColumns);
+    }
+
+    [Fact]
     public async Task Audit_records_reject_update_and_delete_before_retention_expires()
     {
         // Arrange
-        var record = DocumentAuditInfrastructureTestData.CreateRecord(new DateTime(2026, 7, 16, 9, 0, 0, DateTimeKind.Utc));
+        var record = DocumentAuditInfrastructureTestData.CreateRecord(DateTime.UtcNow);
         await Scenario.SeedAudit(record);
 
         // Act
@@ -66,6 +92,37 @@ public sealed class DocumentAuditStorePostgreSqlTests : IAsyncLifetime
         // Assert
         _ = await update.ShouldThrow<PostgresException>();
         _ = await delete.ShouldThrow<PostgresException>();
+    }
+
+    [Fact]
+    public async Task Expired_audit_records_still_reject_update()
+    {
+        // Arrange
+        var record = DocumentAuditInfrastructureTestData.CreateRecord(DateTime.UtcNow.AddMonths(-25));
+        await Scenario.SeedAudit(record);
+
+        // Act
+        Func<Task> update = async () =>
+            await Scenario.UpdateAuditActor(record.Id, "different-actor", TestContext.Current.CancellationToken);
+
+        // Assert
+        _ = await update.ShouldThrow<PostgresException>();
+        var persisted = await Scenario.GetAuditRecord(record.Id, TestContext.Current.CancellationToken);
+        persisted.ShouldNotBeNull().ActorId.ShouldBe(record.ActorId);
+    }
+
+    [Fact]
+    public async Task Audit_records_reject_truncate()
+    {
+        // Arrange
+        var record = DocumentAuditInfrastructureTestData.CreateRecord(DateTime.UtcNow);
+        await Scenario.SeedAudit(record);
+
+        // Act
+        Func<Task> truncate = async () => await Scenario.TruncateAuditRecords(TestContext.Current.CancellationToken);
+
+        // Assert
+        _ = await truncate.ShouldThrow<PostgresException>();
     }
 
     [Fact]

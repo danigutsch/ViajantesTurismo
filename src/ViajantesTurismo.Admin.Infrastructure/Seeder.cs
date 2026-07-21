@@ -221,32 +221,6 @@ public sealed class Seeder
     }
 
     /// <summary>
-    /// Clears all Admin database data while preserving migration history.
-    /// </summary>
-    /// <param name="ct">The cancellation token.</param>
-    public async Task ClearDatabase(CancellationToken ct)
-    {
-        const string sql = """
-                           DO $$
-                           DECLARE
-                               tables_to_truncate text;
-                           BEGIN
-                               SELECT string_agg('"' || tablename || '"', ', ')
-                               INTO tables_to_truncate
-                               FROM pg_tables
-                               WHERE schemaname = 'public'
-                                 AND tablename <> '__EFMigrationsHistory';
-
-                               IF tables_to_truncate IS NOT NULL THEN
-                                   EXECUTE 'TRUNCATE TABLE ' || tables_to_truncate || ' RESTART IDENTITY CASCADE';
-                               END IF;
-                           END $$;
-                           """;
-
-        await dbContext.Database.ExecuteSqlRawAsync(sql, ct);
-    }
-
-    /// <summary>
     /// Applies Admin database migrations and inserts baseline development data when empty.
     /// </summary>
     /// <param name="ct">The cancellation token.</param>
@@ -294,15 +268,15 @@ public sealed class Seeder
 
         await dbContext.SaveChangesAsync(ct);
 
-        SeedBookings();
+        await SeedBookings(ct);
 
         await dbContext.SaveChangesAsync(ct);
     }
 
-    private void SeedBookings()
+    private async Task SeedBookings(CancellationToken ct)
     {
-        var tours = dbContext.Tours.OrderBy(t => t.Identifier).ToArray();
-        var customers = dbContext.Customers.OrderBy(c => c.Id).ToArray();
+        var tours = await dbContext.Tours.OrderBy(t => t.Identifier).ToArrayAsync(ct);
+        var customers = await dbContext.Customers.OrderBy(c => c.Id).ToArrayAsync(ct);
 
         if (tours.Length < 5 || customers.Length < 15)
         {
@@ -366,7 +340,7 @@ public sealed class Seeder
             customers[8].AccommodationPreferences.RoomType,
             notes: "Payment pending bank transfer")).Value;
 
-        dbContext.SaveChanges();
+        await dbContext.SaveChangesAsync(ct);
 
         var timeProvider = TimeProvider.System;
 

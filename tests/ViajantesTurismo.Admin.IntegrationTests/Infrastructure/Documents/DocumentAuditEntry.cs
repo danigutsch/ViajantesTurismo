@@ -8,4 +8,6 @@ internal sealed record DocumentAuditEntry(
     string ActorId,
     string CorrelationId,
     Guid? BookingId,
-    int? DocumentRevision);
+    int? DocumentRevision,
+    DateTime OccurredAtUtc,
+    DateTime RetentionExpiresAt);

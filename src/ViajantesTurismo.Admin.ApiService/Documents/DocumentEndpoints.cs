@@ -1,7 +1,6 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using SharedKernel.Results;
-using ViajantesTurismo.Admin.Application;
 using ViajantesTurismo.Admin.Application.Documents;
 using ViajantesTurismo.Admin.Contracts.Application;
 using ViajantesTurismo.Admin.Domain.Documents;
@@ -135,9 +134,7 @@ internal static class DocumentEndpoints
     private static async Task<IResult> GetDocumentById(
         [FromRoute] Guid id,
         [FromServices] IDocumentQueryService queryService,
-        [FromServices] IDocumentAuditStore auditStore,
-        [FromServices] IUnitOfWork unitOfWork,
-        [FromServices] TimeProvider timeProvider,
+        [FromServices] DocumentAuditWriter documentAuditWriter,
         HttpContext httpContext,
         CancellationToken ct)
     {
@@ -145,9 +142,7 @@ internal static class DocumentEndpoints
         var document = await queryService.GetById(id, ct);
         if (document is null)
         {
-            var auditResult = await RecordEndpointAudit(
-                auditStore,
-                unitOfWork,
+            var auditResult = await documentAuditWriter.Add(
                 auditContext,
                 DocumentAuditOperation.Read,
                 id,
@@ -155,14 +150,11 @@ internal static class DocumentEndpoints
                 null,
                 DocumentAuditOutcome.Rejected,
                 DocumentAuditReasonCode.DocumentNotFound,
-                timeProvider,
                 ct);
             return auditResult.IsFailure ? ToError(auditResult) : ToError(DocumentErrors.DocumentNotFound(id));
         }
 
-        var successfulAudit = await RecordEndpointAudit(
-            auditStore,
-            unitOfWork,
+        var successfulAudit = await documentAuditWriter.Add(
             auditContext,
             DocumentAuditOperation.Read,
             document.Id,
@@ -170,7 +162,6 @@ internal static class DocumentEndpoints
             document.Revision,
             DocumentAuditOutcome.Succeeded,
             DocumentAuditReasonCode.None,
-            timeProvider,
             ct);
         return successfulAudit.IsFailure ? ToError(successfulAudit) : TypedResults.Ok(document);
     }
@@ -326,9 +317,8 @@ internal static class DocumentEndpoints
     private static async Task<IResult> DownloadFinalizedArtifact(
         [FromRoute] Guid id,
         [FromServices] GetFinalizedDocumentArtifactHandler handler,
-        [FromServices] IDocumentAuditStore auditStore,
-        [FromServices] IUnitOfWork unitOfWork,
-        [FromServices] TimeProvider timeProvider,
+        [FromServices] IDocumentQueryService queryService,
+        [FromServices] DocumentAuditWriter documentAuditWriter,
         HttpContext httpContext,
         CancellationToken ct)
     {
@@ -337,25 +327,21 @@ internal static class DocumentEndpoints
         if (result.IsFailure)
         {
             var failure = result.ConvertError();
-            var auditResult = await RecordEndpointAudit(
-                auditStore,
-                unitOfWork,
+            var metadata = await queryService.GetAuditMetadataById(id, ct);
+            var auditResult = await documentAuditWriter.Add(
                 auditContext,
                 DocumentAuditOperation.Download,
                 id,
-                null,
-                null,
+                metadata?.BookingId,
+                metadata?.Revision,
                 DocumentAuditOutcome.Rejected,
                 GetFailureReasonCode(failure),
-                timeProvider,
                 ct);
             return auditResult.IsFailure ? ToError(auditResult) : ToError(failure);
         }
 
         var artifact = result.Value;
-        var successfulAudit = await RecordEndpointAudit(
-            auditStore,
-            unitOfWork,
+        var successfulAudit = await documentAuditWriter.Add(
             auditContext,
             DocumentAuditOperation.Download,
             artifact.DocumentId,
@@ -363,7 +349,6 @@ internal static class DocumentEndpoints
             artifact.Revision,
             DocumentAuditOutcome.Succeeded,
             DocumentAuditReasonCode.None,
-            timeProvider,
             ct);
         if (successfulAudit.IsFailure)
         {
@@ -413,6 +398,16 @@ internal static class DocumentEndpoints
             var auditResult = await RecordRejectedConcurrencyAudit(scopeFactory, auditMetadata, ct);
             return auditResult.IsFailure ? auditResult : DocumentErrors.DocumentChangedByAnotherRequest();
         }
+        catch (DocumentRevisionConflictException)
+        {
+            var auditResult = await RecordRejectedConcurrencyAudit(scopeFactory, auditMetadata, ct);
+            return auditResult.IsFailure ? auditResult : DocumentErrors.DocumentRevisionAlreadyExists();
+        }
+        catch (DocumentBookingEligibilityConflictException)
+        {
+            var auditResult = await RecordRejectedConcurrencyAudit(scopeFactory, auditMetadata, ct);
+            return auditResult.IsFailure ? auditResult : DocumentErrors.BookingIsNotAccepted();
+        }
     }
 
     private static async Task<Result<T>> ExecuteDocumentCommand<T>(
@@ -433,6 +428,20 @@ internal static class DocumentEndpoints
                 ? auditResult.ConvertError<T>()
                 : DocumentErrors.DocumentChangedByAnotherRequest().ConvertError<T>();
         }
+        catch (DocumentRevisionConflictException)
+        {
+            var auditResult = await RecordRejectedConcurrencyAudit(scopeFactory, auditMetadata, ct);
+            return auditResult.IsFailure
+                ? auditResult.ConvertError<T>()
+                : DocumentErrors.DocumentRevisionAlreadyExists().ConvertError<T>();
+        }
+        catch (DocumentBookingEligibilityConflictException)
+        {
+            var auditResult = await RecordRejectedConcurrencyAudit(scopeFactory, auditMetadata, ct);
+            return auditResult.IsFailure
+                ? auditResult.ConvertError<T>()
+                : DocumentErrors.BookingIsNotAccepted().ConvertError<T>();
+        }
     }
 
     private static async Task<Result> RecordRejectedConcurrencyAudit(
@@ -442,9 +451,7 @@ internal static class DocumentEndpoints
     {
         using var scope = scopeFactory.CreateScope();
         var serviceProvider = scope.ServiceProvider;
-        var auditStore = serviceProvider.GetRequiredService<IDocumentAuditStore>();
-        var unitOfWork = serviceProvider.GetRequiredService<IUnitOfWork>();
-        var timeProvider = serviceProvider.GetRequiredService<TimeProvider>();
+        var documentAuditWriter = serviceProvider.GetRequiredService<DocumentAuditWriter>();
         var bookingId = metadata.BookingId;
         int? revision = null;
 
@@ -459,9 +466,7 @@ internal static class DocumentEndpoints
             }
         }
 
-        return await RecordEndpointAudit(
-            auditStore,
-            unitOfWork,
+        return await documentAuditWriter.Add(
             metadata.Context,
             metadata.Operation,
             metadata.DocumentId,
@@ -469,44 +474,7 @@ internal static class DocumentEndpoints
             revision,
             DocumentAuditOutcome.Rejected,
             DocumentAuditReasonCode.StateConflict,
-            timeProvider,
             ct);
-    }
-
-    private static async Task<Result> RecordEndpointAudit(
-        IDocumentAuditStore auditStore,
-        IUnitOfWork unitOfWork,
-        DocumentAuditContext auditContext,
-        DocumentAuditOperation operation,
-        Guid? documentId,
-        Guid? bookingId,
-        int? revision,
-        DocumentAuditOutcome outcome,
-        DocumentAuditReasonCode reasonCode,
-        TimeProvider timeProvider,
-        CancellationToken ct)
-    {
-        var auditResult = DocumentAuditWriter.Add(
-            auditStore,
-            auditContext,
-            operation,
-            documentId,
-            bookingId,
-            revision,
-            outcome,
-            reasonCode,
-            timeProvider.GetUtcNow().UtcDateTime);
-        if (auditResult.IsFailure)
-        {
-            return auditResult.ConvertError();
-        }
-
-        if (auditResult.Value)
-        {
-            await unitOfWork.SaveEntities(ct);
-        }
-
-        return Result.Ok();
     }
 
     private static DocumentAuditContext CreateAuditContext(HttpContext httpContext)
@@ -517,8 +485,13 @@ internal static class DocumentEndpoints
             throw new InvalidOperationException("Document operations require an authenticated subject identifier.");
         }
 
-        var correlationId = Guid.CreateVersion7().ToString("N");
-        return new DocumentAuditContext(actorId, correlationId);
+        var auditContextResult = DocumentAuditContext.Create(actorId, Guid.CreateVersion7().ToString("N"));
+        if (auditContextResult.IsFailure)
+        {
+            throw new InvalidOperationException("Document operations require valid audit metadata.");
+        }
+
+        return auditContextResult.Value;
     }
 
     private static DocumentAuditReasonCode GetFailureReasonCode(Result result) => result.Status switch

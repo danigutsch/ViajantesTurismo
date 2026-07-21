@@ -68,7 +68,7 @@ public sealed class DetailsPageTests : BunitContext
     }
 
     [Fact]
-    public void Finalized_document_shows_only_the_mediated_download_link_and_read_only_fields()
+    public async Task Finalized_document_shows_only_the_mediated_download_link_and_read_only_fields()
     {
         // Arrange
         var document = new GetDocumentDto
@@ -99,12 +99,112 @@ public sealed class DetailsPageTests : BunitContext
 
         // Act
         var cut = Render<Details>(parameters => parameters.Add(page => page.Id, document.Id));
-        cut.WaitForAssertion(() => cut.Find("h1"));
+        await cut.WaitForAssertionAsync(() => cut.Find("h1"));
 
         // Assert
         cut.FindAll("input").ShouldBeEmpty();
+        cut.FindAll("label").ShouldBeEmpty();
         cut.FindAll("a").ShouldContain(link =>
             link.GetAttribute("href") == $"/documents/{document.Id}/download"
             && link.TextContent.Contains("Download artifact", StringComparison.Ordinal));
+    }
+
+    [Fact]
+    public async Task Regenerate_navigates_to_the_replacement_revision()
+    {
+        // Arrange
+        var bookingId = Guid.CreateVersion7();
+        var original = new GetDocumentDto
+        {
+            Id = Guid.CreateVersion7(),
+            BookingId = bookingId,
+            Revision = 1,
+            TemplateId = "tour-service-contract",
+            TemplateVersion = "1",
+            SourceVersion = "SOURCE-VERSION-1",
+            Status = DocumentStatusDto.Finalized,
+            Fields = [],
+            CreatedAt = DateTime.UtcNow,
+            UpdatedAt = DateTime.UtcNow,
+            FinalizedAt = DateTime.UtcNow,
+            HasFinalizedArtifact = true
+        };
+        var replacement = original with
+        {
+            Id = Guid.CreateVersion7(),
+            Revision = 2,
+            SourceVersion = "SOURCE-VERSION-2",
+            Status = DocumentStatusDto.DraftGenerated,
+            FinalizedAt = null,
+            HasFinalizedArtifact = false
+        };
+        documentsApiClient.AddDocument(original);
+        documentsApiClient.AddDocument(replacement);
+        documentsApiClient.RegeneratedDocument = replacement;
+        var cut = Render<Details>(parameters => parameters.Add(page => page.Id, original.Id));
+        await cut.WaitForAssertionAsync(() => cut.Find("h1"));
+
+        // Act
+        await cut.InvokeAsync(() => cut.Find("button").Click());
+
+        // Assert
+        var navigationManager = Services.GetRequiredService<NavigationManager>();
+        navigationManager.Uri.ShouldBe($"http://localhost/documents/{replacement.Id}");
+
+        // Act
+        await cut.InvokeAsync(() => cut.Find("button").Click());
+
+        // Assert
+        documentsApiClient.LastBeginReviewDocumentId.ShouldBe(replacement.Id);
+
+        var otherRevision = replacement with { Id = Guid.CreateVersion7() };
+        documentsApiClient.AddDocument(otherRevision);
+        cut.Render(parameters => parameters.Add(page => page.Id, otherRevision.Id));
+
+        // Act
+        await cut.InvokeAsync(() => cut.Find("button").Click());
+
+        // Assert
+        documentsApiClient.LastBeginReviewDocumentId.ShouldBe(otherRevision.Id);
+    }
+
+    [Fact]
+    public async Task Load_failure_shows_a_retryable_error_instead_of_not_found()
+    {
+        // Arrange
+        var documentId = Guid.CreateVersion7();
+        documentsApiClient.GetDocumentException = new HttpRequestException("Service unavailable.");
+
+        // Act
+        var cut = Render<Details>(parameters => parameters.Add(page => page.Id, documentId));
+        await cut.WaitForAssertionAsync(() => cut.Find("[role='alert']"));
+
+        // Assert
+        cut.Find("[role='alert']").TextContent.ShouldContain("The document could not be loaded", StringComparison.Ordinal);
+        cut.Markup.ShouldNotContain("Document not found.", StringComparison.Ordinal);
+        cut.Find("button").TextContent.ShouldContain("Retry", StringComparison.Ordinal);
+
+        documentsApiClient.GetDocumentException = null;
+        documentsApiClient.AddDocument(new GetDocumentDto
+        {
+            Id = documentId,
+            BookingId = Guid.CreateVersion7(),
+            Revision = 1,
+            TemplateId = "tour-service-contract",
+            TemplateVersion = "1",
+            SourceVersion = "SOURCE-VERSION",
+            Status = DocumentStatusDto.DraftGenerated,
+            Fields = [],
+            CreatedAt = DateTime.UtcNow,
+            UpdatedAt = DateTime.UtcNow,
+            HasFinalizedArtifact = false
+        });
+
+        // Act
+        await cut.InvokeAsync(() => cut.Find("button").Click());
+
+        // Assert
+        await cut.WaitForAssertionAsync(() => cut.Find("h1").TextContent.ShouldContain("Document Details", StringComparison.Ordinal));
+        cut.FindAll("[role='alert']").ShouldBeEmpty();
     }
 }

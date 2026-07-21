@@ -13,16 +13,21 @@ public sealed class RegenerateDocumentDraftCommandHandler(
     IBrandingApiClient brandingApiClient,
     IUnitOfWork unitOfWork,
     TimeProvider timeProvider,
-    IDocumentAuditStore? auditStore = null)
+    DocumentAuditWriter documentAuditWriter)
 {
     /// <summary>Generates and persists the replacement revision.</summary>
     public async Task<Result<Guid>> Handle(RegenerateDocumentDraftCommand command, CancellationToken ct)
     {
         ArgumentNullException.ThrowIfNull(command);
+        if (command.AuditContext is null)
+        {
+            return DocumentAuditErrors.AuditContextRequired().ConvertError<Guid>();
+        }
 
         var now = timeProvider.GetUtcNow().UtcDateTime;
-        var current = await documentStore.GetById(command.DocumentId, ct);
-        if (current is null)
+        var lineage = await documentStore.GetByDocumentId(command.DocumentId, ct);
+        var current = lineage?.GetRevision(command.DocumentId);
+        if (lineage is null || current is null)
         {
             return await RecordAndReturn(
                 DocumentErrors.DocumentNotFound(command.DocumentId).ConvertError<Guid>(),
@@ -31,7 +36,6 @@ public sealed class RegenerateDocumentDraftCommandHandler(
                 null,
                 null,
                 DocumentAuditReasonCode.DocumentNotFound,
-                now,
                 ct);
         }
 
@@ -45,7 +49,6 @@ public sealed class RegenerateDocumentDraftCommandHandler(
                 current.BookingId,
                 current.Revision,
                 DocumentAuditReasonCode.BookingNotFound,
-                now,
                 ct);
         }
 
@@ -58,7 +61,6 @@ public sealed class RegenerateDocumentDraftCommandHandler(
                 current.BookingId,
                 current.Revision,
                 DocumentAuditReasonCode.StateConflict,
-                now,
                 ct);
         }
 
@@ -72,19 +74,30 @@ public sealed class RegenerateDocumentDraftCommandHandler(
                 current.BookingId,
                 current.Revision,
                 DocumentAuditReasonCode.TourNotFound,
-                now,
                 ct);
         }
 
         var branding = await DocumentBrandingSnapshotFactory.Capture(brandingApiClient, ct);
-        var replacementResult = ContractDocumentDraftFactory.CreateRevision(
-            current,
+        var contentResult = ContractDocumentDraftFactory.Create(
             booking,
             tour,
             command.TemplateId,
             command.TemplateVersion,
             branding,
             now);
+        if (contentResult.IsFailure)
+        {
+            return await RecordAndReturn(
+                contentResult.ConvertError<DocumentDraftContent, Guid>(),
+                command.AuditContext,
+                current.Id,
+                current.BookingId,
+                current.Revision,
+                DocumentAuditReasonCode.ValidationRejected,
+                ct);
+        }
+
+        var replacementResult = lineage.CreateRevision(current.Id, contentResult.Value, now, command.AuditContext);
         if (replacementResult.IsFailure)
         {
             return await RecordAndReturn(
@@ -94,24 +107,7 @@ public sealed class RegenerateDocumentDraftCommandHandler(
                 current.BookingId,
                 current.Revision,
                 DocumentAuditReasonCode.ValidationRejected,
-                now,
                 ct);
-        }
-
-        documentStore.Add(replacementResult.Value);
-        var auditResult = DocumentAuditWriter.Add(
-            auditStore,
-            command.AuditContext,
-            DocumentAuditOperation.Regenerate,
-            replacementResult.Value.Id,
-            replacementResult.Value.BookingId,
-            replacementResult.Value.Revision,
-            DocumentAuditOutcome.Succeeded,
-            DocumentAuditReasonCode.ManualRegeneration,
-            now);
-        if (auditResult.IsFailure)
-        {
-            return auditResult.ConvertError<bool, Guid>();
         }
 
         await unitOfWork.SaveEntities(ct);
@@ -125,11 +121,9 @@ public sealed class RegenerateDocumentDraftCommandHandler(
         Guid? bookingId,
         int? documentRevision,
         DocumentAuditReasonCode reasonCode,
-        DateTime occurredAtUtc,
         CancellationToken ct)
     {
-        var auditResult = DocumentAuditWriter.Add(
-            auditStore,
+        var auditResult = await documentAuditWriter.Add(
             auditContext,
             DocumentAuditOperation.Regenerate,
             documentId,
@@ -137,15 +131,10 @@ public sealed class RegenerateDocumentDraftCommandHandler(
             documentRevision,
             DocumentAuditOutcome.Rejected,
             reasonCode,
-            occurredAtUtc);
+            ct);
         if (auditResult.IsFailure)
         {
-            return auditResult.ConvertError<bool, Guid>();
-        }
-
-        if (auditResult.Value)
-        {
-            await unitOfWork.SaveEntities(ct);
+            return auditResult.ConvertError<Guid>();
         }
 
         return operationResult;

@@ -6,7 +6,7 @@ namespace SharedKernel.DomainEvents;
 /// <summary>
 /// Dispatches domain events through the SharedKernel mediator publisher.
 /// </summary>
-public sealed class MediatorDomainEventDispatcher : IDomainEventDispatcher
+public sealed class MediatorDomainEventDispatcher : IDomainEventDispatcher, IDomainEventDispatchHandler
 {
     private readonly IPublisher publisher;
     private readonly IDomainEventNotificationFactory notificationFactory;
@@ -49,5 +49,22 @@ public sealed class MediatorDomainEventDispatcher : IDomainEventDispatcher
         ArgumentNullException.ThrowIfNull(domainEvent);
 
         return publisher.Publish(notificationFactory.Create(domainEvent), ct);
+    }
+
+    ValueTask IDomainEventDispatchHandler.Handle(IDomainEvent domainEvent, CancellationToken ct)
+    {
+        ArgumentNullException.ThrowIfNull(domainEvent);
+
+        INotification notification;
+        try
+        {
+            notification = notificationFactory.Create(domainEvent);
+        }
+        catch (NotSupportedException)
+        {
+            return ValueTask.CompletedTask;
+        }
+
+        return publisher.Publish(notification, ct);
     }
 }

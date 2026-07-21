@@ -17,5 +17,22 @@ public sealed class MainLayoutInteractivityTests : BunitContext
         var page = cut.Find("div.page");
         (page.GetAttribute("inert")).ShouldBe("inert");
         (page.GetAttribute("aria-busy")).ShouldBe("true");
+        (page.GetAttribute("data-interactive")).ShouldBe("false");
+    }
+
+    [Fact]
+    public void Interactive_page_marks_application_ready_for_startup_status()
+    {
+        // Arrange
+        SetRendererInfo(new Microsoft.AspNetCore.Components.RendererInfo("Server", true));
+
+        // Act
+        var cut = Render<MainLayout>();
+
+        // Assert
+        var page = cut.Find("div.page");
+        (page.HasAttribute("inert")).ShouldBeFalse();
+        (page.GetAttribute("aria-busy")).ShouldBe("false");
+        (page.GetAttribute("data-interactive")).ShouldBe("true");
     }
 }

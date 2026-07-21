@@ -50,6 +50,7 @@ public static class ApplicationDependencyInjection
         builder.Services.AddScoped<CustomerImportWorkflowService>();
         builder.Services.AddScoped<UpdateCustomerCommandHandler>();
         builder.Services.AddScoped<GenerateContractDraftCommandHandler>();
+        builder.Services.AddScoped<DocumentAuditWriter>();
         builder.Services.AddScoped<BeginDocumentReviewCommandHandler>();
         builder.Services.AddScoped<RequestDocumentChangesCommandHandler>();
         builder.Services.AddScoped<UpdateDocumentFieldCommandHandler>();
@@ -77,6 +78,7 @@ public static class ApplicationDependencyInjection
     {
         ArgumentNullException.ThrowIfNull(services);
 
+        services.AddGeneratedAuditTrailMappings();
         services.AddGeneratedIntegrationEventMappings();
 
         return services;

@@ -58,10 +58,11 @@ public class BookingCreationTests(AspireSystemTestFixture fixture) : AspireSyste
 
         // Act: submit the booking.
         await bookingForm.Locator("#notes").FillAsync("E2E test booking from customer details");
+        var toastTask = UiFeedback.ExpectToast("Booking created successfully");
         await bookingForm.GetButton("Create Booking").ClickAsync();
 
         // Assert: success toast and resulting customer-bookings row use the owned tour.
-        await UiFeedback.ExpectToast("Booking created successfully");
+        await toastTask;
         var tourLink = Page.Locator($"a[href='/tours/{tour.Id}']");
         await Expect(tourLink).ToHaveCountAsync(1);
         await Expect(tourLink).ToBeVisibleAsync();

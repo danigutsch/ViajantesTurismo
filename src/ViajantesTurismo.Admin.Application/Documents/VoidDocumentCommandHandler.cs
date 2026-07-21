@@ -8,16 +8,21 @@ public sealed class VoidDocumentCommandHandler(
     IDocumentStore documentStore,
     IUnitOfWork unitOfWork,
     TimeProvider timeProvider,
-    IDocumentAuditStore? auditStore = null)
+    DocumentAuditWriter documentAuditWriter)
 {
     /// <summary>Records a bounded staff reason and persists the voided status.</summary>
     public async Task<Result> Handle(VoidDocumentCommand command, CancellationToken ct)
     {
         ArgumentNullException.ThrowIfNull(command);
+        if (command.AuditContext is null)
+        {
+            return DocumentAuditErrors.AuditContextRequired();
+        }
 
         var now = timeProvider.GetUtcNow().UtcDateTime;
-        var document = await documentStore.GetById(command.DocumentId, ct);
-        if (document is null)
+        var lineage = await documentStore.GetByDocumentId(command.DocumentId, ct);
+        var document = lineage?.GetRevision(command.DocumentId);
+        if (lineage is null || document is null)
         {
             return await RecordAndReturn(
                 DocumentErrors.DocumentNotFound(command.DocumentId),
@@ -26,11 +31,10 @@ public sealed class VoidDocumentCommandHandler(
                 null,
                 null,
                 DocumentAuditReasonCode.DocumentNotFound,
-                now,
                 ct);
         }
 
-        var result = document.Void(command.Reason, now);
+        var result = lineage.Void(document.Id, command.Reason, now, command.AuditContext);
         if (result.IsFailure)
         {
             return await RecordAndReturn(
@@ -39,24 +43,10 @@ public sealed class VoidDocumentCommandHandler(
                 document.Id,
                 document.BookingId,
                 document.Revision,
-                DocumentAuditReasonCode.StateConflict,
-                now,
+                result.Status == ResultStatus.Invalid
+                    ? DocumentAuditReasonCode.ValidationRejected
+                    : DocumentAuditReasonCode.StateConflict,
                 ct);
-        }
-
-        var auditResult = DocumentAuditWriter.Add(
-            auditStore,
-            command.AuditContext,
-            DocumentAuditOperation.Void,
-            document.Id,
-            document.BookingId,
-            document.Revision,
-            DocumentAuditOutcome.Succeeded,
-            DocumentAuditReasonCode.ManualVoid,
-            now);
-        if (auditResult.IsFailure)
-        {
-            return auditResult.ConvertError();
         }
 
         await unitOfWork.SaveEntities(ct);
@@ -70,11 +60,9 @@ public sealed class VoidDocumentCommandHandler(
         Guid? bookingId,
         int? documentRevision,
         DocumentAuditReasonCode reasonCode,
-        DateTime occurredAtUtc,
         CancellationToken ct)
     {
-        var auditResult = DocumentAuditWriter.Add(
-            auditStore,
+        var auditResult = await documentAuditWriter.Add(
             auditContext,
             DocumentAuditOperation.Void,
             documentId,
@@ -82,15 +70,10 @@ public sealed class VoidDocumentCommandHandler(
             documentRevision,
             DocumentAuditOutcome.Rejected,
             reasonCode,
-            occurredAtUtc);
+            ct);
         if (auditResult.IsFailure)
         {
-            return auditResult.ConvertError();
-        }
-
-        if (auditResult.Value)
-        {
-            await unitOfWork.SaveEntities(ct);
+            return auditResult;
         }
 
         return operationResult;

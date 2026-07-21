@@ -15,13 +15,16 @@ internal sealed class DocumentDraftConfiguration : IEntityTypeConfiguration<Docu
     {
         entity.HasKey(document => document.Id);
         entity.Property(document => document.Id).ValueGeneratedNever();
-        entity.Property<uint>("xmin").IsRowVersion();
+        entity.Property(document => document.DocumentLineageId).IsRequired();
         entity.Property(document => document.BookingId).IsRequired();
         entity.Property(document => document.Type).HasConversion<string>().IsRequired();
         entity.Property(document => document.Audience).HasConversion<string>().IsRequired();
         entity.Property(document => document.TemplateId).HasMaxLength(DocumentLimits.MaxTemplateIdLength).IsRequired();
         entity.Property(document => document.TemplateVersion).HasMaxLength(DocumentLimits.MaxTemplateVersionLength).IsRequired();
         entity.Property(document => document.Revision).IsRequired();
+        entity.HasIndex(document => new { document.DocumentLineageId, document.Revision })
+            .IsUnique()
+            .HasDatabaseName(DocumentDraftSchema.RevisionUniqueIndex);
         entity.Property(document => document.SourceVersion).HasMaxLength(DocumentLimits.MaxSourceVersionLength).IsRequired();
         entity.Property(document => document.BrandingVersion).HasMaxLength(DocumentLimits.MaxBrandingVersionLength).IsRequired();
         entity.Property(document => document.BrandingName).HasMaxLength(DocumentLimits.MaxBrandingNameLength).IsRequired();

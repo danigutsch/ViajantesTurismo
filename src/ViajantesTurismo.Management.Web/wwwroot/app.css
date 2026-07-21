@@ -46,7 +46,7 @@ h1:focus {
     z-index: 1030;
 }
 
-body:has(.page:not([inert])) .app-startup-status {
+body:has(.page[data-interactive="true"]) .app-startup-status {
     display: none;
 }
 

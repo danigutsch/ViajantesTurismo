@@ -33,9 +33,11 @@ public sealed class DocumentDraft : IEntity<Guid>
         string brandingBodyFontFamily,
         string brandingFooterText,
         DateTime createdAt,
-        Guid? replacesDocumentId = null)
+        Guid? replacesDocumentId = null,
+        Guid? documentLineageId = null)
     {
         Id = Guid.CreateVersion7();
+        DocumentLineageId = documentLineageId ?? Guid.CreateVersion7();
         BookingId = bookingId;
         Type = type;
         Audience = audience;
@@ -43,7 +45,7 @@ public sealed class DocumentDraft : IEntity<Guid>
         TemplateVersion = templateVersion;
         Revision = revision;
         SourceVersion = sourceVersion;
-        _fields.AddRange(fields.Select((field, index) => field.SetSortOrder(index)));
+        _fields.AddRange(fields);
         BrandingVersion = brandingVersion;
         BrandingName = brandingName;
         BrandingLogoUri = brandingLogoUri;
@@ -70,6 +72,9 @@ public sealed class DocumentDraft : IEntity<Guid>
 
     /// <summary>Gets the opaque document revision identifier.</summary>
     public Guid Id { get; private init; }
+
+    /// <summary>Gets the owning document lineage identifier.</summary>
+    public Guid DocumentLineageId { get; private set; }
 
     /// <summary>Gets the source booking identifier.</summary>
     public Guid BookingId { get; private init; }
@@ -161,7 +166,7 @@ public sealed class DocumentDraft : IEntity<Guid>
     }
 
     /// <summary>Creates the initial document draft revision.</summary>
-    public static Result<DocumentDraft> Create(
+    internal static Result<DocumentDraft> Create(
         Guid bookingId,
         DocumentType type,
         DocumentAudience audience,
@@ -193,7 +198,7 @@ public sealed class DocumentDraft : IEntity<Guid>
             createdAt);
 
     /// <summary>Creates the initial document draft revision.</summary>
-    public static Result<DocumentDraft> Create(
+    internal static Result<DocumentDraft> Create(
         Guid bookingId,
         DocumentType type,
         DocumentAudience audience,
@@ -239,6 +244,9 @@ public sealed class DocumentDraft : IEntity<Guid>
             return validation.ConvertError<DocumentDraft>();
         }
 
+        var ownedFields = fieldList
+            .Select((field, index) => field.CopyForOwnership(index))
+            .ToList();
         return Result.Ok(new DocumentDraft(
             bookingId,
             type,
@@ -247,7 +255,7 @@ public sealed class DocumentDraft : IEntity<Guid>
             templateVersion,
             1,
             sourceVersion,
-            fieldList,
+            ownedFields,
             brandingVersion,
             brandingName,
             brandingLogoUri,
@@ -262,7 +270,7 @@ public sealed class DocumentDraft : IEntity<Guid>
     }
 
     /// <summary>Creates a replacement draft with refreshed source data.</summary>
-    public Result<DocumentDraft> CreateRevision(
+    internal Result<DocumentDraft> CreateRevision(
         string templateId,
         string templateVersion,
         string sourceVersion,
@@ -288,7 +296,7 @@ public sealed class DocumentDraft : IEntity<Guid>
             createdAt);
 
     /// <summary>Creates a replacement draft with refreshed source data.</summary>
-    public Result<DocumentDraft> CreateRevision(
+    internal Result<DocumentDraft> CreateRevision(
         string templateId,
         string templateVersion,
         string sourceVersion,
@@ -307,9 +315,7 @@ public sealed class DocumentDraft : IEntity<Guid>
     {
         ArgumentNullException.ThrowIfNull(fields);
 
-        var fieldList = fields
-            .Select(field => field.CopyWithCompatibleOverride(_fields.FirstOrDefault(previous => previous.FieldId == field.FieldId) ?? field))
-            .ToList();
+        var fieldList = fields.ToList();
         var validation = Validate(
             BookingId,
             Type,
@@ -333,6 +339,11 @@ public sealed class DocumentDraft : IEntity<Guid>
             return validation.ConvertError<DocumentDraft>();
         }
 
+        var ownedFields = fieldList
+            .Select((field, index) => field.CopyForOwnership(
+                index,
+                _fields.FirstOrDefault(previous => previous.FieldId == field.FieldId)))
+            .ToList();
         return Result.Ok(new DocumentDraft(
             BookingId,
             Type,
@@ -341,7 +352,7 @@ public sealed class DocumentDraft : IEntity<Guid>
             templateVersion,
             Revision + 1,
             sourceVersion,
-            fieldList,
+            ownedFields,
             brandingVersion,
             brandingName,
             brandingLogoUri,
@@ -353,11 +364,107 @@ public sealed class DocumentDraft : IEntity<Guid>
             brandingBodyFontFamily,
             brandingFooterText,
             createdAt,
-            Id));
+            Id,
+            DocumentLineageId));
+    }
+
+    internal static Result<DocumentDraft> CreateForLineage(
+        Guid documentLineageId,
+        Guid bookingId,
+        DocumentType type,
+        DocumentAudience audience,
+        DocumentDraftContent content,
+        DateTime createdAt)
+    {
+        ArgumentNullException.ThrowIfNull(content);
+        var result = Create(
+            bookingId,
+            type,
+            audience,
+            content.TemplateId,
+            content.TemplateVersion,
+            content.SourceVersion,
+            content.Fields,
+            content.BrandingVersion,
+            content.BrandingName,
+            content.BrandingLogoUri,
+            content.BrandingPrimaryColor,
+            content.BrandingAccentColor,
+            content.BrandingBackgroundColor,
+            content.BrandingTextColor,
+            content.BrandingHeadingFontFamily,
+            content.BrandingBodyFontFamily,
+            content.BrandingFooterText,
+            createdAt);
+        if (result.IsSuccess)
+        {
+            result.Value.DocumentLineageId = documentLineageId;
+        }
+
+        return result;
+    }
+
+    internal Result<DocumentDraft> CreateReplacement(
+        DocumentDraftContent content,
+        int revision,
+        DateTime createdAt)
+    {
+        ArgumentNullException.ThrowIfNull(content);
+        var fieldList = content.Fields.ToList();
+        var validation = Validate(
+            BookingId,
+            Type,
+            Audience,
+            content.TemplateId,
+            content.TemplateVersion,
+            content.SourceVersion,
+            fieldList,
+            content.BrandingVersion,
+            content.BrandingName,
+            content.BrandingLogoUri,
+            content.BrandingPrimaryColor,
+            content.BrandingAccentColor,
+            content.BrandingBackgroundColor,
+            content.BrandingTextColor,
+            content.BrandingHeadingFontFamily,
+            content.BrandingBodyFontFamily,
+            content.BrandingFooterText);
+        if (validation.IsFailure)
+        {
+            return validation.ConvertError<DocumentDraft>();
+        }
+
+        var ownedFields = fieldList
+            .Select((field, index) => field.CopyForOwnership(
+                index,
+                _fields.FirstOrDefault(previous => previous.FieldId == field.FieldId)))
+            .ToList();
+        return Result.Ok(new DocumentDraft(
+            BookingId,
+            Type,
+            Audience,
+            content.TemplateId,
+            content.TemplateVersion,
+            revision,
+            content.SourceVersion,
+            ownedFields,
+            content.BrandingVersion,
+            content.BrandingName,
+            content.BrandingLogoUri,
+            content.BrandingPrimaryColor,
+            content.BrandingAccentColor,
+            content.BrandingBackgroundColor,
+            content.BrandingTextColor,
+            content.BrandingHeadingFontFamily,
+            content.BrandingBodyFontFamily,
+            content.BrandingFooterText,
+            createdAt,
+            Id,
+            DocumentLineageId));
     }
 
     /// <summary>Starts or restarts staff review.</summary>
-    public Result BeginReview(DateTime now)
+    internal Result BeginReview(DateTime now)
     {
         if (Status is not (DocumentStatus.DraftGenerated or DocumentStatus.ChangesRequested))
         {
@@ -370,7 +477,7 @@ public sealed class DocumentDraft : IEntity<Guid>
     }
 
     /// <summary>Records requested changes.</summary>
-    public Result RequestChanges(DateTime now)
+    internal Result RequestChanges(DateTime now)
     {
         if (Status is not (DocumentStatus.InReview or DocumentStatus.Approved))
         {
@@ -383,7 +490,7 @@ public sealed class DocumentDraft : IEntity<Guid>
     }
 
     /// <summary>Updates a staff-editable field.</summary>
-    public Result UpdateField(string fieldId, string value, DateTime now)
+    internal Result UpdateField(string fieldId, string value, DateTime now)
     {
         if (Status is DocumentStatus.Finalized or DocumentStatus.Superseded or DocumentStatus.Voided)
         {
@@ -408,7 +515,7 @@ public sealed class DocumentDraft : IEntity<Guid>
     }
 
     /// <summary>Approves a document under active staff review.</summary>
-    public Result Approve(DateTime now)
+    internal Result Approve(DateTime now)
     {
         if (Status != DocumentStatus.InReview)
         {
@@ -421,7 +528,7 @@ public sealed class DocumentDraft : IEntity<Guid>
     }
 
     /// <summary>Seals the deterministic final artifact for an approved revision.</summary>
-    public Result Finalize(byte[] artifactContent, DateTime now)
+    internal Result Finalize(byte[] artifactContent, DateTime now)
     {
         ArgumentNullException.ThrowIfNull(artifactContent);
 
@@ -445,7 +552,7 @@ public sealed class DocumentDraft : IEntity<Guid>
     }
 
     /// <summary>Marks a finalized revision as replaced by a newer finalized revision.</summary>
-    public Result Supersede(DateTime now)
+    internal Result Supersede(DateTime now)
     {
         if (Status != DocumentStatus.Finalized)
         {
@@ -458,7 +565,7 @@ public sealed class DocumentDraft : IEntity<Guid>
     }
 
     /// <summary>Voids a document with a non-empty reason.</summary>
-    public Result Void(string reason, DateTime now)
+    internal Result Void(string reason, DateTime now)
     {
         if (Status != DocumentStatus.Finalized)
         {
@@ -694,4 +801,5 @@ public sealed class DocumentDraft : IEntity<Guid>
                 ? DocumentErrors.InvalidValue("brandingLogoUri")
                 : Result.Ok();
     }
+
 }

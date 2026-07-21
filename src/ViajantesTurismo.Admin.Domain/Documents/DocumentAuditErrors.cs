@@ -44,4 +44,10 @@ public static class DocumentAuditErrors
         detail: "A document audit revision must be greater than zero when present.",
         field: "documentRevision",
         message: "The document revision is invalid.");
+
+    internal static Result InvalidEvidence() => Result.Invalid(
+        detail: "Document audit evidence must use a supported operation, outcome, reason, and resource combination.",
+        field: "auditEvidence",
+        message: "The document audit evidence is invalid.");
+
 }

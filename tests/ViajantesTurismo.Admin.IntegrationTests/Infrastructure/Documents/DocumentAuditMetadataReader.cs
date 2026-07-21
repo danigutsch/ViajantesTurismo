@@ -11,10 +11,10 @@ internal static class DocumentAuditMetadataReader
     {
         await using var command = dataSource.CreateCommand(
             """
-            SELECT "Operation", "Outcome", "ReasonCode", "DocumentId", "ActorId", "CorrelationId", "BookingId", "DocumentRevision"
+            SELECT "Operation", "Outcome", "ReasonCode", "DocumentId", "ActorId", "CorrelationId", "BookingId", "DocumentRevision", "OccurredAtUtc", "RetentionExpiresAt"
             FROM "DocumentAuditRecords"
             WHERE "DocumentId" = @documentId
-            ORDER BY "OccurredAtUtc";
+            ORDER BY "OccurredAtUtc", "Id";
             """);
         command.Parameters.AddWithValue("documentId", documentId);
 
@@ -28,10 +28,10 @@ internal static class DocumentAuditMetadataReader
     {
         await using var command = dataSource.CreateCommand(
             """
-            SELECT "Operation", "Outcome", "ReasonCode", "DocumentId", "ActorId", "CorrelationId", "BookingId", "DocumentRevision"
+            SELECT "Operation", "Outcome", "ReasonCode", "DocumentId", "ActorId", "CorrelationId", "BookingId", "DocumentRevision", "OccurredAtUtc", "RetentionExpiresAt"
             FROM "DocumentAuditRecords"
             WHERE "BookingId" = @bookingId
-            ORDER BY "OccurredAtUtc";
+            ORDER BY "OccurredAtUtc", "Id";
             """);
         command.Parameters.AddWithValue("bookingId", bookingId);
 
@@ -55,7 +55,9 @@ internal static class DocumentAuditMetadataReader
                 reader.GetString(4),
                 reader.GetString(5),
                 bookingId,
-                documentRevision));
+                documentRevision,
+                reader.GetDateTime(8),
+                reader.GetDateTime(9)));
         }
 
         return audits;

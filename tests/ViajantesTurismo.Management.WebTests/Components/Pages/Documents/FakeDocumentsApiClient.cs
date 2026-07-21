@@ -6,18 +6,29 @@ internal sealed class FakeDocumentsApiClient : IDocumentsApiClient
 
     public GetDocumentDto? GeneratedDocument { get; set; }
 
+    public Exception? GetDocumentException { get; set; }
+
+    public GetDocumentDto? RegeneratedDocument { get; set; }
+
+    public Guid? LastBeginReviewDocumentId { get; private set; }
+
     public DocumentArtifactResponse? Artifact { get; set; }
 
     public void AddDocument(GetDocumentDto document) => _documents.Add(document.Id, document);
 
     public Task<GetDocumentDto?> GetDocumentById(Guid id, CancellationToken ct) =>
-        Task.FromResult(_documents.GetValueOrDefault(id));
+        GetDocumentException is null
+            ? Task.FromResult(_documents.GetValueOrDefault(id))
+            : Task.FromException<GetDocumentDto?>(GetDocumentException);
 
     public Task<GetDocumentDto> GenerateContractDraft(Guid bookingId, CancellationToken ct) =>
         Task.FromResult(GeneratedDocument ?? throw new InvalidOperationException("No generated document was configured."));
 
-    public Task<GetDocumentDto> BeginReview(Guid documentId, CancellationToken ct) =>
-        Task.FromResult(GetRequiredDocument(documentId));
+    public Task<GetDocumentDto> BeginReview(Guid documentId, CancellationToken ct)
+    {
+        LastBeginReviewDocumentId = documentId;
+        return Task.FromResult(GetRequiredDocument(documentId));
+    }
 
     public Task<GetDocumentDto> RequestChanges(Guid documentId, CancellationToken ct) =>
         Task.FromResult(GetRequiredDocument(documentId));
@@ -32,7 +43,7 @@ internal sealed class FakeDocumentsApiClient : IDocumentsApiClient
         Task.FromResult(GetRequiredDocument(documentId));
 
     public Task<GetDocumentDto> Regenerate(Guid documentId, CancellationToken ct) =>
-        Task.FromResult(GetRequiredDocument(documentId));
+        Task.FromResult(RegeneratedDocument ?? GetRequiredDocument(documentId));
 
     public Task<GetDocumentDto> Void(Guid documentId, CancellationToken ct) =>
         Task.FromResult(GetRequiredDocument(documentId));

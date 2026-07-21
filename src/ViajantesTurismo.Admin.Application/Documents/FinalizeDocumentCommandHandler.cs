@@ -8,76 +8,44 @@ public sealed class FinalizeDocumentCommandHandler(
     IDocumentStore documentStore,
     IUnitOfWork unitOfWork,
     TimeProvider timeProvider,
-    IDocumentAuditStore? auditStore = null)
+    DocumentAuditWriter documentAuditWriter)
 {
-    /// <summary>Finalizes the artifact and supersedes its predecessor only after success.</summary>
+    /// <summary>Finalizes the artifact and supersedes older finalized revisions only after success.</summary>
     public async Task<Result> Handle(FinalizeDocumentCommand command, CancellationToken ct)
     {
         ArgumentNullException.ThrowIfNull(command);
+        var auditContext = command.AuditContext;
+        if (auditContext is null)
+        {
+            return DocumentAuditErrors.AuditContextRequired();
+        }
 
         var now = timeProvider.GetUtcNow().UtcDateTime;
-        var document = await documentStore.GetById(command.DocumentId, ct);
-        if (document is null)
+        var lineage = await documentStore.GetByDocumentId(command.DocumentId, ct);
+        var document = lineage?.GetRevision(command.DocumentId);
+        if (lineage is null || document is null)
         {
             return await RecordAndReturn(
                 DocumentErrors.DocumentNotFound(command.DocumentId),
-                command.AuditContext,
+                auditContext,
                 command.DocumentId,
                 null,
                 null,
                 DocumentAuditReasonCode.DocumentNotFound,
-                now,
                 ct);
         }
 
-        var result = document.Finalize(DocumentArtifactRenderer.Render(document), now);
+        var result = lineage.Finalize(document.Id, DocumentArtifactRenderer.Render(document), now, auditContext);
         if (result.IsFailure)
         {
             return await RecordAndReturn(
                 result,
-                command.AuditContext,
+                auditContext,
                 document.Id,
                 document.BookingId,
                 document.Revision,
                 DocumentAuditReasonCode.StateConflict,
-                now,
                 ct);
-        }
-
-        if (document.ReplacesDocumentId is Guid previousDocumentId)
-        {
-            var previous = await documentStore.GetById(previousDocumentId, ct);
-            if (previous is not null && previous.Status == DocumentStatus.Finalized)
-            {
-                var supersedeResult = previous.Supersede(now);
-                if (supersedeResult.IsFailure)
-                {
-                    return await RecordAndReturn(
-                        supersedeResult,
-                        command.AuditContext,
-                        document.Id,
-                        document.BookingId,
-                        document.Revision,
-                        DocumentAuditReasonCode.StateConflict,
-                        now,
-                        ct);
-                }
-            }
-        }
-
-        var auditResult = DocumentAuditWriter.Add(
-            auditStore,
-            command.AuditContext,
-            DocumentAuditOperation.Finalize,
-            document.Id,
-            document.BookingId,
-            document.Revision,
-            DocumentAuditOutcome.Succeeded,
-            DocumentAuditReasonCode.ManualFinalize,
-            now);
-        if (auditResult.IsFailure)
-        {
-            return auditResult.ConvertError();
         }
 
         await unitOfWork.SaveEntities(ct);
@@ -91,11 +59,9 @@ public sealed class FinalizeDocumentCommandHandler(
         Guid? bookingId,
         int? documentRevision,
         DocumentAuditReasonCode reasonCode,
-        DateTime occurredAtUtc,
         CancellationToken ct)
     {
-        var auditResult = DocumentAuditWriter.Add(
-            auditStore,
+        var auditResult = await documentAuditWriter.Add(
             auditContext,
             DocumentAuditOperation.Finalize,
             documentId,
@@ -103,15 +69,10 @@ public sealed class FinalizeDocumentCommandHandler(
             documentRevision,
             DocumentAuditOutcome.Rejected,
             reasonCode,
-            occurredAtUtc);
+            ct);
         if (auditResult.IsFailure)
         {
-            return auditResult.ConvertError();
-        }
-
-        if (auditResult.Value)
-        {
-            await unitOfWork.SaveEntities(ct);
+            return auditResult;
         }
 
         return operationResult;

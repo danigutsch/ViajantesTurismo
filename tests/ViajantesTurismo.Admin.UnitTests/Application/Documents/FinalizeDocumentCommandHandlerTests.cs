@@ -22,7 +22,7 @@ public sealed class FinalizeDocumentCommandHandlerTests
         store.Documents.Add(document.Id, document);
         var auditStore = new FakeDocumentAuditStore();
         var unitOfWork = new FakeUnitOfWork();
-        var handler = new FinalizeDocumentCommandHandler(store, unitOfWork, TimeProvider.System, auditStore);
+        var handler = new FinalizeDocumentCommandHandler(store, unitOfWork, TimeProvider.System, DocumentAuditTestData.CreateWriter(auditStore, unitOfWork));
 
         // Act
         var result = await handler.Handle(new FinalizeDocumentCommand(document.Id, DocumentAuditTestData.CreateContext()), CancellationToken.None);
@@ -48,7 +48,7 @@ public sealed class FinalizeDocumentCommandHandlerTests
         store.Documents.Add(document.Id, document);
         var auditStore = new FakeDocumentAuditStore();
         var unitOfWork = new FakeUnitOfWork();
-        var handler = new FinalizeDocumentCommandHandler(store, unitOfWork, TimeProvider.System, auditStore);
+        var handler = new FinalizeDocumentCommandHandler(store, unitOfWork, TimeProvider.System, DocumentAuditTestData.CreateWriter(auditStore, unitOfWork));
 
         // Act
         var result = await handler.Handle(new FinalizeDocumentCommand(document.Id, DocumentAuditTestData.CreateContext()), CancellationToken.None);
@@ -62,7 +62,7 @@ public sealed class FinalizeDocumentCommandHandlerTests
     }
 
     [Fact]
-    public async Task Handle_records_metadata_only_audit_for_finalized_document()
+    public async Task Handle_queues_metadata_only_audit_event_for_finalized_document()
     {
         // Arrange
         var now = DateTime.UtcNow;
@@ -73,28 +73,28 @@ public sealed class FinalizeDocumentCommandHandlerTests
         store.Documents.Add(document.Id, document);
         var auditStore = new FakeDocumentAuditStore();
         var unitOfWork = new FakeUnitOfWork();
-        var handler = new FinalizeDocumentCommandHandler(store, unitOfWork, TimeProvider.System, auditStore);
-        var auditContext = new DocumentAuditContext("9c5ff2e6-8b35-4f78-9df3-ef15af8e92a4", "9a3ca841b4354928861c660a6e4e1b99");
+        var handler = new FinalizeDocumentCommandHandler(store, unitOfWork, TimeProvider.System, DocumentAuditTestData.CreateWriter(auditStore, unitOfWork));
+        var auditContext = DocumentAuditTestData.CreateContext();
 
         // Act
         var result = await handler.Handle(new FinalizeDocumentCommand(document.Id, auditContext), CancellationToken.None);
 
         // Assert
         result.IsSuccess.ShouldBeTrue();
-        var audit = auditStore.Records.ShouldHaveSingleItem();
-        audit.ActorId.ShouldBe(auditContext.ActorId);
-        audit.DocumentId.ShouldBe(document.Id);
-        audit.BookingId.ShouldBe(document.BookingId);
-        audit.DocumentRevision.ShouldBe(document.Revision);
-        audit.Operation.ShouldBe(DocumentAuditOperation.Finalize);
-        audit.Outcome.ShouldBe(DocumentAuditOutcome.Succeeded);
-        audit.ReasonCode.ShouldBe(DocumentAuditReasonCode.ManualFinalize);
-        audit.CorrelationId.ShouldBe(auditContext.CorrelationId);
+        auditStore.Records.ShouldBeEmpty();
+        var auditEvent = store.LastLoadedLineage.ShouldNotBeNull().GetDomainEvents()
+            .ShouldHaveSingleItem().ShouldBeOfType<DocumentLifecycleAuditDomainEvent>();
+        auditEvent.ActorId.ShouldBe(auditContext.ActorId);
+        auditEvent.DocumentId.ShouldBe(document.Id);
+        auditEvent.BookingId.ShouldBe(document.BookingId);
+        auditEvent.DocumentRevision.ShouldBe(document.Revision);
+        auditEvent.Operation.ShouldBe(DocumentAuditOperation.Finalize);
+        auditEvent.CorrelationId.ShouldBe(auditContext.CorrelationId);
         unitOfWork.SaveEntitiesCallCount.ShouldBe(1);
     }
 
     [Fact]
-    public async Task Handle_does_not_save_finalization_when_audit_metadata_is_invalid()
+    public async Task Handle_does_not_save_finalization_without_audit_metadata()
     {
         // Arrange
         var now = DateTime.UtcNow;
@@ -105,16 +105,15 @@ public sealed class FinalizeDocumentCommandHandlerTests
         store.Documents.Add(document.Id, document);
         var auditStore = new FakeDocumentAuditStore();
         var unitOfWork = new FakeUnitOfWork();
-        var handler = new FinalizeDocumentCommandHandler(store, unitOfWork, TimeProvider.System, auditStore);
-        var invalidAuditContext = new DocumentAuditContext(
-            new string('a', DocumentAuditLimits.MaxActorIdLength + 1),
-            "9a3ca841b4354928861c660a6e4e1b99");
-
+        var handler = new FinalizeDocumentCommandHandler(store, unitOfWork, TimeProvider.System, DocumentAuditTestData.CreateWriter(auditStore, unitOfWork));
         // Act
-        var result = await handler.Handle(new FinalizeDocumentCommand(document.Id, invalidAuditContext), CancellationToken.None);
+        var result = await handler.Handle(new FinalizeDocumentCommand(document.Id), CancellationToken.None);
 
         // Assert
         result.IsFailure.ShouldBeTrue();
+        document.Status.ShouldBe(DocumentStatus.Approved);
+        document.GetFinalizedArtifactContent().ShouldBeNull();
+        store.LastLoadedLineage.ShouldBeNull();
         auditStore.Records.ShouldBeEmpty();
         unitOfWork.SaveEntitiesCallCount.ShouldBe(0);
     }
@@ -149,7 +148,7 @@ public sealed class FinalizeDocumentCommandHandlerTests
         store.Documents.Add(document.Id, document);
         var auditStore = new FakeDocumentAuditStore();
         var unitOfWork = new FakeUnitOfWork();
-        var handler = new FinalizeDocumentCommandHandler(store, unitOfWork, TimeProvider.System, auditStore);
+        var handler = new FinalizeDocumentCommandHandler(store, unitOfWork, TimeProvider.System, DocumentAuditTestData.CreateWriter(auditStore, unitOfWork));
 
         // Act
         var result = await handler.Handle(new FinalizeDocumentCommand(document.Id, DocumentAuditTestData.CreateContext()), CancellationToken.None);
@@ -173,13 +172,25 @@ public sealed class FinalizeDocumentCommandHandlerTests
         store.Documents.Add(document.Id, document);
         var auditStore = new FakeDocumentAuditStore();
         var unitOfWork = new FakeUnitOfWork();
-        var handler = new FinalizeDocumentCommandHandler(store, unitOfWork, TimeProvider.System, auditStore);
+        var auditContext = DocumentAuditTestData.CreateContext();
+        var handler = new FinalizeDocumentCommandHandler(store, unitOfWork, TimeProvider.System, DocumentAuditTestData.CreateWriter(auditStore, unitOfWork));
 
         // Act
-        var result = await handler.Handle(new FinalizeDocumentCommand(document.Id, DocumentAuditTestData.CreateContext()), CancellationToken.None);
+        var result = await handler.Handle(new FinalizeDocumentCommand(document.Id, auditContext), CancellationToken.None);
+        var audit = auditStore.Records.ShouldHaveSingleItem();
 
         // Assert
         result.IsFailure.ShouldBeTrue();
+        document.Status.ShouldBe(DocumentStatus.DraftGenerated);
+        store.LastLoadedLineage.ShouldNotBeNull().GetDomainEvents().ShouldBeEmpty();
+        audit.Operation.ShouldBe(DocumentAuditOperation.Finalize);
+        audit.Outcome.ShouldBe(DocumentAuditOutcome.Rejected);
+        audit.ReasonCode.ShouldBe(DocumentAuditReasonCode.StateConflict);
+        audit.DocumentId.ShouldBe(document.Id);
+        audit.BookingId.ShouldBe(document.BookingId);
+        audit.DocumentRevision.ShouldBe(document.Revision);
+        audit.ActorId.ShouldBe(auditContext.ActorId);
+        audit.CorrelationId.ShouldBe(auditContext.CorrelationId);
         unitOfWork.SaveEntitiesCallCount.ShouldBe(1);
     }
 
@@ -187,16 +198,27 @@ public sealed class FinalizeDocumentCommandHandlerTests
     public async Task Handle_returns_not_found_without_saving_when_document_is_missing()
     {
         // Arrange
+        var documentId = Guid.CreateVersion7();
+        var auditContext = DocumentAuditTestData.CreateContext();
         var store = new FakeDocumentStore();
         var auditStore = new FakeDocumentAuditStore();
         var unitOfWork = new FakeUnitOfWork();
-        var handler = new FinalizeDocumentCommandHandler(store, unitOfWork, TimeProvider.System, auditStore);
+        var handler = new FinalizeDocumentCommandHandler(store, unitOfWork, TimeProvider.System, DocumentAuditTestData.CreateWriter(auditStore, unitOfWork));
 
         // Act
-        var result = await handler.Handle(new FinalizeDocumentCommand(Guid.CreateVersion7(), DocumentAuditTestData.CreateContext()), CancellationToken.None);
+        var result = await handler.Handle(new FinalizeDocumentCommand(documentId, auditContext), CancellationToken.None);
+        var audit = auditStore.Records.ShouldHaveSingleItem();
 
         // Assert
         result.IsFailure.ShouldBeTrue();
+        audit.Operation.ShouldBe(DocumentAuditOperation.Finalize);
+        audit.Outcome.ShouldBe(DocumentAuditOutcome.Rejected);
+        audit.ReasonCode.ShouldBe(DocumentAuditReasonCode.DocumentNotFound);
+        audit.DocumentId.ShouldBe(documentId);
+        audit.BookingId.ShouldBeNull();
+        audit.DocumentRevision.ShouldBeNull();
+        audit.ActorId.ShouldBe(auditContext.ActorId);
+        audit.CorrelationId.ShouldBe(auditContext.CorrelationId);
         unitOfWork.SaveEntitiesCallCount.ShouldBe(1);
     }
 
@@ -232,7 +254,7 @@ public sealed class FinalizeDocumentCommandHandlerTests
         store.Documents.Add(replacement.Id, replacement);
         var auditStore = new FakeDocumentAuditStore();
         var unitOfWork = new FakeUnitOfWork();
-        var handler = new FinalizeDocumentCommandHandler(store, unitOfWork, TimeProvider.System, auditStore);
+        var handler = new FinalizeDocumentCommandHandler(store, unitOfWork, TimeProvider.System, DocumentAuditTestData.CreateWriter(auditStore, unitOfWork));
 
         // Act
         var result = await handler.Handle(new FinalizeDocumentCommand(replacement.Id, DocumentAuditTestData.CreateContext()), CancellationToken.None);
@@ -241,6 +263,69 @@ public sealed class FinalizeDocumentCommandHandlerTests
         result.IsSuccess.ShouldBeTrue();
         replacement.Status.ShouldBe(DocumentStatus.Finalized);
         previous.Status.ShouldBe(DocumentStatus.Superseded);
+        unitOfWork.SaveEntitiesCallCount.ShouldBe(1);
+    }
+
+    [Fact]
+    public async Task Handle_supersedes_active_finalized_ancestor_when_predecessor_is_unfinalized()
+    {
+        // Arrange
+        var now = DateTime.UtcNow;
+        var first = DocumentDraftTestData.Create(now);
+        first.BeginReview(now).IsSuccess.ShouldBeTrue();
+        first.Approve(now).IsSuccess.ShouldBeTrue();
+        first.Finalize("first"u8.ToArray(), now).IsSuccess.ShouldBeTrue();
+        DocumentField[] fields =
+        [
+            DocumentField.Create("booking-reference", "Booking reference", "ABC123", DocumentPrivacyClassification.Operational, false).Value,
+            DocumentField.Create("greeting", "Greeting", "Dear customer", DocumentPrivacyClassification.PersonalData, true).Value,
+        ];
+        var secondResult = first.CreateRevision(
+            "tour-service-contract",
+            "2",
+            "SOURCE-VERSION-2",
+            fields,
+            "BRANDING-VERSION",
+            "Viajantes Turismo",
+            new Uri("/logo.svg", UriKind.Relative),
+            now);
+        secondResult.IsSuccess.ShouldBeTrue();
+        var second = secondResult.Value;
+        var thirdResult = second.CreateRevision(
+            "tour-service-contract",
+            "3",
+            "SOURCE-VERSION-3",
+            fields,
+            "BRANDING-VERSION",
+            "Viajantes Turismo",
+            new Uri("/logo.svg", UriKind.Relative),
+            now);
+        thirdResult.IsSuccess.ShouldBeTrue();
+        var third = thirdResult.Value;
+        third.BeginReview(now).IsSuccess.ShouldBeTrue();
+        third.Approve(now).IsSuccess.ShouldBeTrue();
+        var store = new FakeDocumentStore();
+        store.Documents.Add(first.Id, first);
+        store.Documents.Add(second.Id, second);
+        store.Documents.Add(third.Id, third);
+        var auditStore = new FakeDocumentAuditStore();
+        var unitOfWork = new FakeUnitOfWork();
+        var handler = new FinalizeDocumentCommandHandler(
+            store,
+            unitOfWork,
+            TimeProvider.System,
+            DocumentAuditTestData.CreateWriter(auditStore, unitOfWork));
+
+        // Act
+        var result = await handler.Handle(
+            new FinalizeDocumentCommand(third.Id, DocumentAuditTestData.CreateContext()),
+            CancellationToken.None);
+
+        // Assert
+        result.IsSuccess.ShouldBeTrue();
+        first.Status.ShouldBe(DocumentStatus.Superseded);
+        second.Status.ShouldBe(DocumentStatus.DraftGenerated);
+        third.Status.ShouldBe(DocumentStatus.Finalized);
         unitOfWork.SaveEntitiesCallCount.ShouldBe(1);
     }
 
@@ -272,7 +357,7 @@ public sealed class FinalizeDocumentCommandHandlerTests
         store.Documents.Add(replacement.Id, replacement);
         var auditStore = new FakeDocumentAuditStore();
         var unitOfWork = new FakeUnitOfWork();
-        var handler = new FinalizeDocumentCommandHandler(store, unitOfWork, TimeProvider.System, auditStore);
+        var handler = new FinalizeDocumentCommandHandler(store, unitOfWork, TimeProvider.System, DocumentAuditTestData.CreateWriter(auditStore, unitOfWork));
 
         // Act
         var result = await handler.Handle(new FinalizeDocumentCommand(replacement.Id, DocumentAuditTestData.CreateContext()), CancellationToken.None);
@@ -282,4 +367,108 @@ public sealed class FinalizeDocumentCommandHandlerTests
         replacement.Status.ShouldBe(DocumentStatus.Finalized);
         unitOfWork.SaveEntitiesCallCount.ShouldBe(1);
     }
+
+    [Fact]
+    public async Task Handle_rejects_finalizing_an_older_revision_after_a_newer_revision()
+    {
+        // Arrange
+        var now = DateTime.UtcNow;
+        var older = DocumentDraftTestData.Create(now);
+        DocumentField[] replacementFields =
+        [
+            DocumentField.Create("booking-reference", "Booking reference", "ABC123", DocumentPrivacyClassification.Operational, false).Value,
+            DocumentField.Create("greeting", "Greeting", "Dear customer", DocumentPrivacyClassification.PersonalData, true).Value,
+        ];
+        var newerResult = older.CreateRevision(
+            "tour-service-contract",
+            "2",
+            "SOURCE-VERSION-2",
+            replacementFields,
+            "BRANDING-VERSION",
+            "Viajantes Turismo",
+            new Uri("/logo.svg", UriKind.Relative),
+            now);
+        newerResult.IsSuccess.ShouldBeTrue();
+        var newer = newerResult.Value;
+        newer.BeginReview(now).IsSuccess.ShouldBeTrue();
+        newer.Approve(now).IsSuccess.ShouldBeTrue();
+        newer.Finalize("newer"u8.ToArray(), now).IsSuccess.ShouldBeTrue();
+        older.BeginReview(now).IsSuccess.ShouldBeTrue();
+        older.Approve(now).IsSuccess.ShouldBeTrue();
+        var store = new FakeDocumentStore();
+        store.Documents.Add(older.Id, older);
+        store.Documents.Add(newer.Id, newer);
+        var auditStore = new FakeDocumentAuditStore();
+        var unitOfWork = new FakeUnitOfWork();
+        var handler = new FinalizeDocumentCommandHandler(
+            store,
+            unitOfWork,
+            TimeProvider.System,
+            DocumentAuditTestData.CreateWriter(auditStore, unitOfWork));
+
+        // Act
+        var result = await handler.Handle(
+            new FinalizeDocumentCommand(older.Id, DocumentAuditTestData.CreateContext()),
+            CancellationToken.None);
+
+        // Assert
+        result.IsFailure.ShouldBeTrue();
+        older.Status.ShouldBe(DocumentStatus.Approved);
+        newer.Status.ShouldBe(DocumentStatus.Finalized);
+        auditStore.Records.ShouldHaveSingleItem().ReasonCode.ShouldBe(DocumentAuditReasonCode.StateConflict);
+        unitOfWork.SaveEntitiesCallCount.ShouldBe(1);
+    }
+
+    [Fact]
+    public async Task Handle_rejects_finalizing_an_older_revision_after_a_newer_revision_was_voided()
+    {
+        // Arrange
+        var now = DateTime.UtcNow;
+        var older = DocumentDraftTestData.Create(now);
+        DocumentField[] replacementFields =
+        [
+            DocumentField.Create("booking-reference", "Booking reference", "ABC123", DocumentPrivacyClassification.Operational, false).Value,
+            DocumentField.Create("greeting", "Greeting", "Dear customer", DocumentPrivacyClassification.PersonalData, true).Value,
+        ];
+        var newerResult = older.CreateRevision(
+            "tour-service-contract",
+            "2",
+            "SOURCE-VERSION-2",
+            replacementFields,
+            "BRANDING-VERSION",
+            "Viajantes Turismo",
+            new Uri("/logo.svg", UriKind.Relative),
+            now);
+        newerResult.IsSuccess.ShouldBeTrue();
+        var newer = newerResult.Value;
+        newer.BeginReview(now).IsSuccess.ShouldBeTrue();
+        newer.Approve(now).IsSuccess.ShouldBeTrue();
+        newer.Finalize("newer"u8.ToArray(), now).IsSuccess.ShouldBeTrue();
+        newer.Void("Superseded contract cancelled", now).IsSuccess.ShouldBeTrue();
+        older.BeginReview(now).IsSuccess.ShouldBeTrue();
+        older.Approve(now).IsSuccess.ShouldBeTrue();
+        var store = new FakeDocumentStore();
+        store.Documents.Add(older.Id, older);
+        store.Documents.Add(newer.Id, newer);
+        var auditStore = new FakeDocumentAuditStore();
+        var unitOfWork = new FakeUnitOfWork();
+        var handler = new FinalizeDocumentCommandHandler(
+            store,
+            unitOfWork,
+            TimeProvider.System,
+            DocumentAuditTestData.CreateWriter(auditStore, unitOfWork));
+
+        // Act
+        var result = await handler.Handle(
+            new FinalizeDocumentCommand(older.Id, DocumentAuditTestData.CreateContext()),
+            CancellationToken.None);
+
+        // Assert
+        result.IsFailure.ShouldBeTrue();
+        older.Status.ShouldBe(DocumentStatus.Approved);
+        newer.Status.ShouldBe(DocumentStatus.Voided);
+        auditStore.Records.ShouldHaveSingleItem().ReasonCode.ShouldBe(DocumentAuditReasonCode.StateConflict);
+        unitOfWork.SaveEntitiesCallCount.ShouldBe(1);
+    }
+
 }

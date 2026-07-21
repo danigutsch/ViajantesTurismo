@@ -11,7 +11,8 @@ public sealed class GetFinalizedDocumentArtifactHandler(IDocumentStore documentS
     {
         ArgumentNullException.ThrowIfNull(query);
 
-        var document = await documentStore.GetById(query.DocumentId, ct);
+        var lineage = await documentStore.GetByDocumentId(query.DocumentId, ct);
+        var document = lineage?.GetRevision(query.DocumentId);
         if (document is null)
         {
             return DocumentErrors.DocumentNotFound(query.DocumentId).ConvertError<FinalizedDocumentArtifact>();

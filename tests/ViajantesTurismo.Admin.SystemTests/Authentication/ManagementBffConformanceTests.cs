@@ -66,8 +66,8 @@ public sealed class ManagementBffConformanceTests(AspireSystemTestFixture fixtur
         var bookingsTableCount = await Page.GetByRole(AriaRole.Table).CountAsync();
 
         await NavigateTo("/catalog/tours");
-        await Page.WaitForFunctionAsync(
-            "() => document.querySelector('[role=\"alert\"]')?.textContent?.includes('Catalog tours could not be loaded.') || document.querySelector('[role=\"status\"]') !== null || document.querySelector('table') !== null");
+        var catalogLoading = Page.GetByText("Loading...", new PageGetByTextOptions { Exact = true });
+        await Expect(catalogLoading).Not.ToBeVisibleAsync();
         var catalogErrorCount = await Page.GetByText(
             "Catalog tours could not be loaded. Try again later.",
             new PageGetByTextOptions { Exact = true }).CountAsync();

@@ -540,6 +540,21 @@ public sealed class DocumentDraftTests
     }
 
     [Fact]
+    public void Create_field_rejects_undefined_privacy_classification()
+    {
+        // Act
+        var result = DocumentField.Create(
+            "greeting",
+            "Greeting",
+            "Dear customer",
+            (DocumentPrivacyClassification)999,
+            true);
+
+        // Assert
+        result.IsFailure.ShouldBeTrue();
+    }
+
+    [Fact]
     public void CreateRevision_discards_override_when_the_generated_value_changes()
     {
         // Arrange

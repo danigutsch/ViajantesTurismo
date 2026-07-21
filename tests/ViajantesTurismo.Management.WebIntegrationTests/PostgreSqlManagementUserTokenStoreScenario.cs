@@ -25,7 +25,7 @@ internal sealed class PostgreSqlManagementUserTokenStoreScenario : IAsyncDisposa
 
     public async ValueTask InitializeAsync()
     {
-        var appBuilder = DistributedApplication.CreateBuilder([]);
+        var appBuilder = AspireTestApplication.CreateBuilder();
         var databaseServer = appBuilder.AddPostgres(PostgreSqlResourceName);
         _ = databaseServer.AddDatabase(DatabaseResourceName);
 

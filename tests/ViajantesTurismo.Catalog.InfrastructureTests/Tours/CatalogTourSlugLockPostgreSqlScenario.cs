@@ -36,7 +36,7 @@ internal sealed class CatalogTourSlugLockPostgreSqlScenario : IAsyncDisposable
 
     public static async ValueTask<CatalogTourSlugLockPostgreSqlScenario> Create(CancellationToken ct)
     {
-        var appBuilder = DistributedApplication.CreateBuilder([]);
+        var appBuilder = AspireTestApplication.CreateBuilder();
         var databaseServer = appBuilder.AddPostgres(PostgreSqlResourceName);
         _ = databaseServer.AddDatabase(DatabaseResourceName);
 

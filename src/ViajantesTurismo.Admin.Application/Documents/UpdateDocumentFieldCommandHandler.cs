@@ -8,16 +8,21 @@ public sealed class UpdateDocumentFieldCommandHandler(
     IDocumentStore documentStore,
     IUnitOfWork unitOfWork,
     TimeProvider timeProvider,
-    IDocumentAuditStore? auditStore = null)
+    DocumentAuditWriter documentAuditWriter)
 {
     /// <summary>Applies and persists the permitted staff override.</summary>
     public async Task<Result> Handle(UpdateDocumentFieldCommand command, CancellationToken ct)
     {
         ArgumentNullException.ThrowIfNull(command);
+        if (command.AuditContext is null)
+        {
+            return DocumentAuditErrors.AuditContextRequired();
+        }
 
         var now = timeProvider.GetUtcNow().UtcDateTime;
-        var document = await documentStore.GetById(command.DocumentId, ct);
-        if (document is null)
+        var lineage = await documentStore.GetByDocumentId(command.DocumentId, ct);
+        var document = lineage?.GetRevision(command.DocumentId);
+        if (lineage is null || document is null)
         {
             return await RecordAndReturn(
                 DocumentErrors.DocumentNotFound(command.DocumentId),
@@ -26,11 +31,22 @@ public sealed class UpdateDocumentFieldCommandHandler(
                 null,
                 null,
                 DocumentAuditReasonCode.DocumentNotFound,
-                now,
                 ct);
         }
 
-        var result = document.UpdateField(command.FieldId, command.Value, now);
+        if (command.Value is null)
+        {
+            return await RecordAndReturn(
+                DocumentErrors.ValueRequired("value"),
+                command.AuditContext,
+                document.Id,
+                document.BookingId,
+                document.Revision,
+                DocumentAuditReasonCode.ValidationRejected,
+                ct);
+        }
+
+        var result = lineage.UpdateField(document.Id, command.FieldId, command.Value, now, command.AuditContext);
         if (result.IsFailure)
         {
             return await RecordAndReturn(
@@ -39,24 +55,10 @@ public sealed class UpdateDocumentFieldCommandHandler(
                 document.Id,
                 document.BookingId,
                 document.Revision,
-                DocumentAuditReasonCode.ValidationRejected,
-                now,
+                result.Status == ResultStatus.Conflict
+                    ? DocumentAuditReasonCode.StateConflict
+                    : DocumentAuditReasonCode.ValidationRejected,
                 ct);
-        }
-
-        var auditResult = DocumentAuditWriter.Add(
-            auditStore,
-            command.AuditContext,
-            DocumentAuditOperation.UpdateField,
-            document.Id,
-            document.BookingId,
-            document.Revision,
-            DocumentAuditOutcome.Succeeded,
-            DocumentAuditReasonCode.ManualOperation,
-            now);
-        if (auditResult.IsFailure)
-        {
-            return auditResult.ConvertError();
         }
 
         await unitOfWork.SaveEntities(ct);
@@ -70,11 +72,9 @@ public sealed class UpdateDocumentFieldCommandHandler(
         Guid? bookingId,
         int? documentRevision,
         DocumentAuditReasonCode reasonCode,
-        DateTime occurredAtUtc,
         CancellationToken ct)
     {
-        var auditResult = DocumentAuditWriter.Add(
-            auditStore,
+        var auditResult = await documentAuditWriter.Add(
             auditContext,
             DocumentAuditOperation.UpdateField,
             documentId,
@@ -82,15 +82,10 @@ public sealed class UpdateDocumentFieldCommandHandler(
             documentRevision,
             DocumentAuditOutcome.Rejected,
             reasonCode,
-            occurredAtUtc);
+            ct);
         if (auditResult.IsFailure)
         {
-            return auditResult.ConvertError();
-        }
-
-        if (auditResult.Value)
-        {
-            await unitOfWork.SaveEntities(ct);
+            return auditResult;
         }
 
         return operationResult;

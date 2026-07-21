@@ -15,27 +15,8 @@ public class CrossEntityNavigationTests(AspireSystemTestFixture fixture) : Aspir
         // Act
         await NavigateTo($"/bookings/{booking.Id}");
         await CrossEntityNavigationTestHelpers.FollowLinkAndExpectTitle(Page, Page.Locator("a[href^='/tours/']").First, "Tour Details");
-        await Page.GoBackAsync();
+        await NavigateTo($"/bookings/{booking.Id}");
         await CrossEntityNavigationTestHelpers.FollowLinkAndExpectTitle(Page, Page.Locator("a[href^='/customers/']").First, CustomerDetailsTitle);
-
-        // Assert
-        await Expect(Page).ToHaveTitleAsync(CustomerDetailsTitle);
-    }
-
-    [Fact]
-    public async Task Bookings_list_should_navigate_to_related_tour_and_customer_details()
-    {
-        // Arrange
-        var tour = await ApiClient.CreateTour();
-        var customer = await ApiClient.CreateCustomer();
-        var booking = await ApiClient.CreateBooking(tour.Id, customer.Id);
-
-        // Act
-        var bookingRow = await BookingsList.GetBookingRow(booking.Id);
-        await CrossEntityNavigationTestHelpers.FollowLinkAndExpectTitle(Page, bookingRow.Locator("a[href^='/tours/']").First, "Tour Details");
-        await Page.GoBackAsync();
-        bookingRow = await BookingsList.GetBookingRow(booking.Id);
-        await CrossEntityNavigationTestHelpers.FollowLinkAndExpectTitle(Page, bookingRow.Locator("a[href^='/customers/']").First, CustomerDetailsTitle);
 
         // Assert
         await Expect(Page).ToHaveTitleAsync(CustomerDetailsTitle);

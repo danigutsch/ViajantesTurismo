@@ -91,6 +91,11 @@ public sealed class DocumentField
             return DocumentErrors.ValueTooLong("value", DocumentLimits.MaxFieldValueLength).ConvertError<DocumentField>();
         }
 
+        if (!Enum.IsDefined(privacyClassification))
+        {
+            return DocumentErrors.InvalidValue("privacyClassification").ConvertError<DocumentField>();
+        }
+
         if (privacyClassification == DocumentPrivacyClassification.Unclassified)
         {
             return DocumentErrors.UnclassifiedField(fieldId).ConvertError<DocumentField>();
@@ -105,7 +110,7 @@ public sealed class DocumentField
     }
 
     /// <summary>Sets a staff override for an editable field.</summary>
-    public Result SetStaffOverride(string value)
+    internal Result SetStaffOverride(string value)
     {
         ArgumentNullException.ThrowIfNull(value);
 
@@ -123,20 +128,19 @@ public sealed class DocumentField
         return Result.Ok();
     }
 
-    internal DocumentField CopyWithCompatibleOverride(DocumentField previous)
+    internal DocumentField CopyForOwnership(int sortOrder, DocumentField? previous = null)
     {
-        if (previous.IsEditable && IsEditable && previous.StaffOverride is not null &&
+        var copy = new DocumentField(FieldId, Label, Value, PrivacyClassification, IsEditable)
+        {
+            SortOrder = sortOrder,
+        };
+
+        if (previous is not null && previous.IsEditable && IsEditable && previous.StaffOverride is not null &&
             string.Equals(previous.Value, Value, StringComparison.Ordinal))
         {
-            StaffOverride = previous.StaffOverride;
+            copy.StaffOverride = previous.StaffOverride;
         }
 
-        return this;
-    }
-
-    internal DocumentField SetSortOrder(int sortOrder)
-    {
-        SortOrder = sortOrder;
-        return this;
+        return copy;
     }
 }

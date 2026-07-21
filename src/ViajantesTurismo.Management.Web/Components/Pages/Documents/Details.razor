@@ -11,6 +11,12 @@
         <h1>Document Details</h1>
         <p><em>Loading...</em></p>
     }
+    else if (!string.IsNullOrWhiteSpace(_loadErrorMessage))
+    {
+        <div class="alert alert-danger" role="alert">@_loadErrorMessage</div>
+        <button type="button" class="btn btn-primary me-2" @onclick="LoadDocument">Retry</button>
+        <NavLink href="/bookings" class="btn btn-outline-secondary">Back to bookings</NavLink>
+    }
     else if (_notFound)
     {
         <div class="alert alert-danger" role="alert">Document not found.</div>
@@ -47,9 +53,9 @@
                 @foreach (var field in _document.Fields)
                 {
                     <div class="mb-3">
-                        <label for="@FieldInputId(field.FieldId)" class="form-label">@field.Label</label>
                         @if (CanEdit(field))
                         {
+                            <label for="@FieldInputId(field.FieldId)" class="form-label">@field.Label</label>
                             <div class="input-group">
                                 <input id="@FieldInputId(field.FieldId)" class="form-control" @bind="_fieldValues[field.FieldId]" />
                                 <button type="button" class="btn btn-outline-primary" @onclick="() => UpdateField(field.FieldId)">Save</button>
@@ -57,6 +63,7 @@
                         }
                         else
                         {
+                            <div class="form-label">@field.Label</div>
                             <p id="@FieldInputId(field.FieldId)" class="form-control-plaintext">@field.RenderedValue</p>
                         }
                     </div>
@@ -98,15 +105,19 @@
     private bool _loading = true;
     private bool _notFound;
     private string? _errorMessage;
+    private string? _loadErrorMessage;
 
-    protected override async Task OnInitializedAsync()
+    protected override async Task OnParametersSetAsync()
     {
         await LoadDocument();
     }
 
     private async Task LoadDocument()
     {
+        _loading = true;
+        _notFound = false;
         _errorMessage = null;
+        _loadErrorMessage = null;
 
         try
         {
@@ -123,7 +134,9 @@
         }
         catch (Exception)
         {
-            _notFound = true;
+            _document = null;
+            _fieldValues.Clear();
+            _loadErrorMessage = "The document could not be loaded. Please try again.";
         }
         finally
         {
@@ -137,17 +150,27 @@
 
     private static string FieldInputId(string fieldId) => $"document-field-{fieldId}";
 
-    private async Task BeginReview() => await ExecuteAction(() => DocumentsApi.BeginReview(Id, CancellationToken.None), "The document review could not be started.");
+    private Guid CurrentDocumentId => _document?.Id ?? Id;
 
-    private async Task RequestChanges() => await ExecuteAction(() => DocumentsApi.RequestChanges(Id, CancellationToken.None), "Document changes could not be requested.");
+    private async Task BeginReview() => await ExecuteAction(() => DocumentsApi.BeginReview(CurrentDocumentId, CancellationToken.None), "The document review could not be started.");
 
-    private async Task Approve() => await ExecuteAction(() => DocumentsApi.Approve(Id, CancellationToken.None), "The document could not be approved.");
+    private async Task RequestChanges() => await ExecuteAction(() => DocumentsApi.RequestChanges(CurrentDocumentId, CancellationToken.None), "Document changes could not be requested.");
 
-    private async Task FinalizeDocument() => await ExecuteAction(() => DocumentsApi.Finalize(Id, CancellationToken.None), "The document could not be finalized.");
+    private async Task Approve() => await ExecuteAction(() => DocumentsApi.Approve(CurrentDocumentId, CancellationToken.None), "The document could not be approved.");
 
-    private async Task Regenerate() => await ExecuteAction(() => DocumentsApi.Regenerate(Id, CancellationToken.None), "The document could not be regenerated.");
+    private async Task FinalizeDocument() => await ExecuteAction(() => DocumentsApi.Finalize(CurrentDocumentId, CancellationToken.None), "The document could not be finalized.");
 
-    private async Task Void() => await ExecuteAction(() => DocumentsApi.Void(Id, CancellationToken.None), "The document could not be voided.");
+    private async Task Regenerate()
+    {
+        await ExecuteAction(() => DocumentsApi.Regenerate(CurrentDocumentId, CancellationToken.None), "The document could not be regenerated.");
+
+        if (_document is not null && _document.Id != Id)
+        {
+            Navigation.NavigateTo($"/documents/{_document.Id}");
+        }
+    }
+
+    private async Task Void() => await ExecuteAction(() => DocumentsApi.Void(CurrentDocumentId, CancellationToken.None), "The document could not be voided.");
 
     private async Task UpdateField(string fieldId)
     {
@@ -157,7 +180,7 @@
         }
 
         await ExecuteAction(
-            () => DocumentsApi.UpdateField(Id, fieldId, new UpdateDocumentFieldDto { Value = value }, CancellationToken.None),
+            () => DocumentsApi.UpdateField(CurrentDocumentId, fieldId, new UpdateDocumentFieldDto { Value = value }, CancellationToken.None),
             "The document field could not be updated.");
     }
 
