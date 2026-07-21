@@ -30,14 +30,16 @@ Source: `src/**/*.cs` route declarations plus route-group prefixes in
 | `POST` | `/api/v1/catalog/media/images/{id:guid}/accessibility-draft` | GenerateMediaImageAccessibilityDraft | management/internal | required | `ViajantesTurismo.Catalog.ApiService/CatalogEndpoints.cs` |
 | `PUT` | `/api/v1/catalog/media/images/{id:guid}/accessibility-review` | ReviewMediaImageAccessibility | management/internal | required | `ViajantesTurismo.Catalog.ApiService/CatalogEndpoints.cs` |
 | `GET` | `/api/v1/catalog/media/images/{id:guid}/preview/{width:int}/{format}` | GetManagementMediaPreview | management/internal | required | `ViajantesTurismo.Catalog.ApiService/CatalogEndpoints.cs` |
-| `GET` | `/api/v1/catalog/public-content` | inline | management/internal | not declared | `ViajantesTurismo.Catalog.ApiService/CatalogEndpoints.cs` |
+| `GET` | `/api/v1/catalog/public-content` | inline | management/internal | required | `ViajantesTurismo.Catalog.ApiService/CatalogEndpoints.cs` |
 | `GET` | `/api/v1/catalog/public-content/{**key}` | GetPublicContentForManagement | management/internal | required | `ViajantesTurismo.Catalog.ApiService/CatalogEndpoints.cs` |
 | `PUT` | `/api/v1/catalog/public-content/{**key}` | UpsertPublicContent | management/internal | required | `ViajantesTurismo.Catalog.ApiService/CatalogEndpoints.cs` |
 | `GET` | `/api/v1/catalog/tours` | GetTours | management/internal | required | `ViajantesTurismo.Catalog.ApiService/CatalogEndpoints.cs` |
 | `GET` | `/api/v1/catalog/tours/{id:guid}` | GetTour | management/internal | required | `ViajantesTurismo.Catalog.ApiService/CatalogEndpoints.cs` |
 | `GET` | `/api/v1/catalog/tours/{id:guid}/images` | ListTourImages | management/internal | required | `ViajantesTurismo.Catalog.ApiService/CatalogEndpoints.cs` |
-| `POST` | `/api/v1/catalog/tours/{id:guid}/images` | UploadTourImage | management/internal | not declared | `ViajantesTurismo.Catalog.ApiService/CatalogEndpoints.cs` |
+| `POST` | `/api/v1/catalog/tours/{id:guid}/images` | UploadTourImage | management/internal | required | `ViajantesTurismo.Catalog.ApiService/CatalogEndpoints.cs` |
 | `PUT` | `/api/v1/catalog/tours/{id:guid}/presentation` | UpsertTourPresentation | management/internal | required | `ViajantesTurismo.Catalog.ApiService/CatalogEndpoints.cs` |
+| `POST` | `/api/v1/catalog/tours/{id:guid}/publish` | PublishTour | management/internal | required | `ViajantesTurismo.Catalog.ApiService/CatalogEndpoints.cs` |
+| `POST` | `/api/v1/catalog/tours/{id:guid}/unpublish` | UnpublishTour | management/internal | required | `ViajantesTurismo.Catalog.ApiService/CatalogEndpoints.cs` |
 | `GET` | `/api/v1/customers` | GetCustomers | management/internal | required | `ViajantesTurismo.Admin.ApiService/Customers/CustomerEndpoints.cs` |
 | `POST` | `/api/v1/customers` | CreateCustomer | management/internal | required | `ViajantesTurismo.Admin.ApiService/Customers/CustomerEndpoints.cs` |
 | `POST` | `/api/v1/customers/import` | ImportCustomers | management/internal | not declared | `ViajantesTurismo.Admin.ApiService/Customers/CustomerImportEndpoints.cs` |

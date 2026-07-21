@@ -39,7 +39,8 @@ internal sealed class CatalogProjectionHostedServiceScenario : IAsyncDisposable
             Guid.CreateVersion7(),
             "andes-2026",
             "Andes 2026",
-            Guid.CreateVersion7());
+            Guid.CreateVersion7(),
+            "andes-2026");
         eventStore.AddReplayEvent(CatalogProjectionRunnerTestsHelpers.CreateEnvelope(1, draftCreated, DateTimeOffset.UtcNow));
 
         var services = new ServiceCollection();

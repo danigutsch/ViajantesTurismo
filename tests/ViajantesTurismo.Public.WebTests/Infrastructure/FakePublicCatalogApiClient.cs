@@ -4,7 +4,8 @@ namespace ViajantesTurismo.Public.WebTests.Infrastructure;
 
 internal sealed class FakePublicCatalogApiClient : IPublicCatalogApiClient
 {
-    private readonly List<CatalogTourDto> tours = [];
+    private readonly List<TourSummaryDto> tours = [];
+    private readonly List<TourDetailsDto> tourDetails = [];
     private readonly ConcurrentDictionary<string, PublicContentVariantDto> contentByKeyAndCulture = new(StringComparer.OrdinalIgnoreCase);
 
     public bool FailListRequests { get; set; }
@@ -17,7 +18,11 @@ internal sealed class FakePublicCatalogApiClient : IPublicCatalogApiClient
 
     public bool FailDetailsRequests { get; set; }
 
+    public bool ThrowOperationCanceledExceptionOnDetailsRequests { get; set; }
+
     public bool FailContentRequests { get; set; }
+
+    public bool ThrowOperationCanceledExceptionOnContentRequests { get; set; }
 
     public TimeSpan ListDelay { get; set; }
 
@@ -35,7 +40,22 @@ internal sealed class FakePublicCatalogApiClient : IPublicCatalogApiClient
 
     public string? LastMediaFormat { get; private set; }
 
-    public void AddTour(CatalogTourDto tour)
+    public void AddTour(TourDetailsDto tour)
+    {
+        ArgumentNullException.ThrowIfNull(tour);
+
+        tourDetails.Add(tour);
+        tours.Add(new TourSummaryDto
+        {
+            Title = tour.Title,
+            Slug = tour.Slug,
+            Summary = tour.Summary,
+            Images = tour.Images,
+            UpdatedAt = tour.UpdatedAt
+        });
+    }
+
+    public void AddTour(TourSummaryDto tour)
     {
         ArgumentNullException.ThrowIfNull(tour);
 
@@ -56,7 +76,7 @@ internal sealed class FakePublicCatalogApiClient : IPublicCatalogApiClient
         contentByKeyAndCulture[CreateContentKey(key, culture)] = content;
     }
 
-    public async Task<CatalogTourDto[]> GetPublishedTours(CancellationToken ct)
+    public async Task<TourSummaryDto[]> GetPublishedTours(CancellationToken ct)
     {
         ct.ThrowIfCancellationRequested();
         ListStarted?.TrySetResult(null);
@@ -73,20 +93,24 @@ internal sealed class FakePublicCatalogApiClient : IPublicCatalogApiClient
 
         return FailListRequests
             ? throw new HttpRequestException("Catalog unavailable.")
-            : tours.Where(tour => tour.IsPublished).ToArray();
+            : tours.ToArray();
     }
 
-    public Task<CatalogTourDto?> GetPublishedTourBySlug(string slug, CancellationToken ct)
+    public Task<TourDetailsDto?> GetPublishedTourBySlug(string slug, CancellationToken ct)
     {
         ct.ThrowIfCancellationRequested();
+
+        if (ThrowOperationCanceledExceptionOnDetailsRequests)
+        {
+            throw new OperationCanceledException("Catalog details request canceled upstream.");
+        }
 
         if (FailDetailsRequests)
         {
             throw new HttpRequestException("Catalog unavailable.");
         }
 
-        var tour = tours.FirstOrDefault(tour =>
-            tour.IsPublished && string.Equals(tour.Slug, slug, StringComparison.Ordinal));
+        var tour = tourDetails.FirstOrDefault(tour => string.Equals(tour.Slug, slug, StringComparison.Ordinal));
         return Task.FromResult(tour);
     }
 
@@ -98,6 +122,11 @@ internal sealed class FakePublicCatalogApiClient : IPublicCatalogApiClient
         if (ContentDelay > TimeSpan.Zero)
         {
             await Task.Delay(ContentDelay, ct);
+        }
+
+        if (ThrowOperationCanceledExceptionOnContentRequests)
+        {
+            throw new OperationCanceledException("Catalog content request canceled upstream.");
         }
 
         if (FailContentRequests)

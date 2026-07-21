@@ -24,6 +24,36 @@ public sealed record CatalogTourDraftReadModel(
     DateTimeOffset UpdatedAt)
 {
     /// <summary>
+    /// Gets the concise customer-facing summary.
+    /// </summary>
+    public string Summary { get; init; } = string.Empty;
+
+    /// <summary>
+    /// Gets the detailed customer-facing description.
+    /// </summary>
+    public string Description { get; init; } = string.Empty;
+
+    /// <summary>
+    /// Gets the plain-text customer-facing itinerary.
+    /// </summary>
+    public string Itinerary { get; init; } = string.Empty;
+
+    /// <summary>
+    /// Gets the optional search-engine title override.
+    /// </summary>
+    public string SeoTitle { get; init; } = string.Empty;
+
+    /// <summary>
+    /// Gets the optional search-engine description override.
+    /// </summary>
+    public string SeoDescription { get; init; } = string.Empty;
+
+    /// <summary>
+    /// Gets the event-stream version represented by this read model.
+    /// </summary>
+    public long StreamVersion { get; init; } = 1;
+
+    /// <summary>
     /// Gets a value indicating whether this tour can be shown on public endpoints.
     /// </summary>
     public bool IsPubliclyVisible => IsPublished;
@@ -47,9 +77,12 @@ public sealed record CatalogTourDraftReadModel(
             draftCreated.AdminTourId,
             draftCreated.Identifier,
             draftCreated.Title,
-            draftCreated.Identifier.Trim(),
+            CatalogTourSlug.RequireCanonical(draftCreated.InitialSlug),
             IsPublished: false,
             position,
-            recordedAt);
+            recordedAt)
+        {
+            StreamVersion = 1
+        };
     }
 }

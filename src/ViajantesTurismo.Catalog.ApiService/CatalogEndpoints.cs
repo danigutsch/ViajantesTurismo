@@ -1,6 +1,8 @@
 using Microsoft.AspNetCore.OutputCaching;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.OpenApi;
+using SharedKernel.BuildingBlocks;
+using SharedKernel.EventSourcing;
 using SharedKernel.ApiVersioning.AspNetCore;
 using SharedKernel.HttpCaching.AspNetCore;
 using SharedKernel.Results;
@@ -10,6 +12,7 @@ using ViajantesTurismo.Catalog.Application.Tours;
 using ViajantesTurismo.Catalog.Contracts.Application;
 using ViajantesTurismo.Catalog.Domain.Media;
 using ViajantesTurismo.Catalog.Domain.PublicContent;
+using ViajantesTurismo.Catalog.Domain.Tours;
 
 namespace ViajantesTurismo.Catalog.ApiService;
 
@@ -21,21 +24,56 @@ internal static class CatalogEndpoints
         ArgumentNullException.ThrowIfNull(app);
 
         var versionedApi = app.MapApiVersionGroup(CatalogOpenApiDocuments.CurrentApiVersion);
+        var managementCatalog = versionedApi.MapGroup("/catalog").WithNoStoreResponses();
 
-        versionedApi.MapGet("/catalog/tours", GetTours)
+        managementCatalog.MapGet("/tours", GetTours)
             .RequireAuthorization(CatalogAuthorization.CatalogRead);
-        versionedApi.MapGet("/catalog/tours/{id:guid}", GetTour)
+        managementCatalog.MapGet("/tours/{id:guid}", GetTour)
             .RequireAuthorization(CatalogAuthorization.CatalogRead);
-        versionedApi.MapPut("/catalog/tours/{id:guid}/presentation", UpsertTourPresentation)
-            .Produces(StatusCodes.Status200OK)
+        managementCatalog.MapPut("/tours/{id:guid}/presentation", UpsertTourPresentation)
+            .Produces<CatalogTourDto>(StatusCodes.Status200OK)
+            .Produces(StatusCodes.Status202Accepted)
             .ProducesValidationProblem(StatusCodes.Status400BadRequest)
+            .Produces(StatusCodes.Status404NotFound)
+            .ProducesProblem(StatusCodes.Status409Conflict)
+            .AddOpenApiOperationTransformer((operation, _, _) =>
+            {
+                AddAcceptedLocationHeader(operation);
+                return Task.CompletedTask;
+            })
             .RequireRateLimiting(CatalogSecurityBaseline.MutationRateLimitPolicy)
             .RequireAuthorization(CatalogAuthorization.CatalogWrite);
-        versionedApi.MapGet("/catalog/tours/{id:guid}/images", ListTourImages)
+        managementCatalog.MapPost("/tours/{id:guid}/publish", PublishTour)
+            .Produces(StatusCodes.Status204NoContent)
+            .Produces(StatusCodes.Status202Accepted)
+            .ProducesValidationProblem(StatusCodes.Status400BadRequest)
+            .Produces(StatusCodes.Status404NotFound)
+            .ProducesProblem(StatusCodes.Status409Conflict)
+            .AddOpenApiOperationTransformer((operation, _, _) =>
+            {
+                AddAcceptedLocationHeader(operation);
+                return Task.CompletedTask;
+            })
+            .RequireRateLimiting(CatalogSecurityBaseline.MutationRateLimitPolicy)
+            .RequireAuthorization(CatalogAuthorization.CatalogPublish);
+        managementCatalog.MapPost("/tours/{id:guid}/unpublish", UnpublishTour)
+            .Produces(StatusCodes.Status204NoContent)
+            .Produces(StatusCodes.Status202Accepted)
+            .ProducesValidationProblem(StatusCodes.Status400BadRequest)
+            .Produces(StatusCodes.Status404NotFound)
+            .ProducesProblem(StatusCodes.Status409Conflict)
+            .AddOpenApiOperationTransformer((operation, _, _) =>
+            {
+                AddAcceptedLocationHeader(operation);
+                return Task.CompletedTask;
+            })
+            .RequireRateLimiting(CatalogSecurityBaseline.MutationRateLimitPolicy)
+            .RequireAuthorization(CatalogAuthorization.CatalogPublish);
+        managementCatalog.MapGet("/tours/{id:guid}/images", ListTourImages)
             .RequireAuthorization(CatalogAuthorization.CatalogRead);
-        versionedApi.MapGet("/catalog/media/images/{id:guid}/preview/{width:int}/{format}", GetManagementMediaPreview)
+        managementCatalog.MapGet("/media/images/{id:guid}/preview/{width:int}/{format}", GetManagementMediaPreview)
             .RequireAuthorization(CatalogAuthorization.CatalogRead);
-        versionedApi.MapPost("/catalog/tours/{id:guid}/images", UploadTourImage)
+        managementCatalog.MapPost("/tours/{id:guid}/images", UploadTourImage)
             .Accepts<MediaImageUploadFormDto>("multipart/form-data")
             .Produces<CatalogMediaImageDto>(StatusCodes.Status201Created)
             .ProducesValidationProblem(StatusCodes.Status400BadRequest)
@@ -56,12 +94,12 @@ internal static class CatalogEndpoints
             .RequireRateLimiting(CatalogSecurityBaseline.MutationRateLimitPolicy)
             .DisableAntiforgery()
             .RequireAuthorization(CatalogAuthorization.CatalogWrite);
-        versionedApi.MapPost("/catalog/media/images/{id:guid}/accessibility-draft", GenerateMediaImageAccessibilityDraft)
+        managementCatalog.MapPost("/media/images/{id:guid}/accessibility-draft", GenerateMediaImageAccessibilityDraft)
             .Produces(StatusCodes.Status200OK)
             .ProducesValidationProblem(StatusCodes.Status400BadRequest)
             .RequireRateLimiting(CatalogSecurityBaseline.MutationRateLimitPolicy)
             .RequireAuthorization(CatalogAuthorization.MediaAi);
-        versionedApi.MapPut("/catalog/media/images/{id:guid}/accessibility-review", ReviewMediaImageAccessibility)
+        managementCatalog.MapPut("/media/images/{id:guid}/accessibility-review", ReviewMediaImageAccessibility)
             .Produces(StatusCodes.Status200OK)
             .ProducesValidationProblem(StatusCodes.Status400BadRequest)
             .RequireRateLimiting(CatalogSecurityBaseline.MutationRateLimitPolicy)
@@ -72,6 +110,8 @@ internal static class CatalogEndpoints
             .RequireRateLimiting(CatalogSecurityBaseline.PublicReadRateLimitPolicy)
             .AllowAnonymous();
         versionedApi.MapGet("/public/catalog/tours/{slug}", GetPublishedTour)
+            .Produces<TourDetailsDto>(StatusCodes.Status200OK)
+            .Produces(StatusCodes.Status404NotFound)
             .CacheOutput(policy => policy.Expire(PublicCatalogHttpCache.Freshness).Tag(PublicCatalogHttpCache.Tag))
             .RequireRateLimiting(CatalogSecurityBaseline.PublicReadRateLimitPolicy)
             .AllowAnonymous();
@@ -82,15 +122,14 @@ internal static class CatalogEndpoints
             .CacheOutput(policy => policy.Expire(PublicContentHttpCache.Freshness).SetVaryByQuery(PublicContentHttpCache.CultureQueryKey).Tag(PublicContentHttpCache.Tag))
             .RequireRateLimiting(CatalogSecurityBaseline.PublicReadRateLimitPolicy)
             .AllowAnonymous();
-        versionedApi.MapGet("/catalog/public-content", async (IPublicContentStore store, HttpContext httpContext, CancellationToken ct) =>
+        managementCatalog.MapGet("/public-content", async (IPublicContentStore store, CancellationToken ct) =>
         {
-            HttpCacheHeaders.SetNoStore(httpContext);
             var content = await store.ListContent(ct);
             return content.Select(MapPublicContent);
         }).RequireAuthorization(CatalogAuthorization.CatalogRead);
-        versionedApi.MapGet("/catalog/public-content/{**key}", GetPublicContentForManagement)
+        managementCatalog.MapGet("/public-content/{**key}", GetPublicContentForManagement)
             .RequireAuthorization(CatalogAuthorization.CatalogRead);
-        versionedApi.MapPut("/catalog/public-content/{**key}", UpsertPublicContent)
+        managementCatalog.MapPut("/public-content/{**key}", UpsertPublicContent)
             .Produces(StatusCodes.Status200OK)
             .ProducesValidationProblem(StatusCodes.Status400BadRequest)
             .RequireRateLimiting(CatalogSecurityBaseline.MutationRateLimitPolicy)
@@ -99,10 +138,8 @@ internal static class CatalogEndpoints
         return app;
     }
 
-    private static async Task<IResult> GetTour(Guid id, ICatalogTourReadModelStore store, IPublicMediaImageStore imageStore, HttpContext httpContext, CancellationToken ct)
+    private static async Task<IResult> GetTour(Guid id, ICatalogTourReadModelStore store, IPublicMediaImageStore imageStore, CancellationToken ct)
     {
-        HttpCacheHeaders.SetNoStore(httpContext);
-
         if (id == Guid.Empty)
         {
             return Results.BadRequest();
@@ -115,7 +152,7 @@ internal static class CatalogEndpoints
         }
 
         var images = await imageStore.ListByTour(id, ct);
-        return Results.Ok(MapTour(tour, images));
+        return Results.Ok(MapManagementTour(tour, images));
     }
 
     private static async Task<IResult> GetPublishedTour(string slug, ICatalogTourReadModelStore store, IPublicMediaImageStore imageStore, HttpContext httpContext, CancellationToken ct)
@@ -133,7 +170,7 @@ internal static class CatalogEndpoints
         }
 
         var images = await imageStore.ListByTour(tour.CatalogTourId, ct);
-        var dto = MapTour(tour, GetReadyImages(images));
+        var dto = MapPublicTourDetail(tour, GetReadyImages(images));
         PublicCatalogHttpCache.SetPublicHeaders(httpContext);
         return Results.Ok(dto);
     }
@@ -249,8 +286,6 @@ internal static class CatalogEndpoints
         HttpContext httpContext,
         CancellationToken ct)
     {
-        HttpCacheHeaders.SetNoStore(httpContext);
-
         if (id == Guid.Empty)
         {
             return Results.BadRequest();
@@ -291,10 +326,8 @@ internal static class CatalogEndpoints
         return Results.Stream(media.Content, contentType, enableRangeProcessing: false);
     }
 
-    private static async Task<IResult> GetPublicContentForManagement(string key, IPublicContentStore store, HttpContext httpContext, CancellationToken ct)
+    private static async Task<IResult> GetPublicContentForManagement(string key, IPublicContentStore store, CancellationToken ct)
     {
-        HttpCacheHeaders.SetNoStore(httpContext);
-
         if (string.IsNullOrWhiteSpace(key))
         {
             return Results.BadRequest();
@@ -307,20 +340,18 @@ internal static class CatalogEndpoints
     private static async Task<IReadOnlyList<CatalogTourDto>> GetTours(
         ICatalogTourReadModelStore store,
         IPublicMediaImageStore imageStore,
-        HttpContext httpContext,
         CancellationToken ct)
     {
-        HttpCacheHeaders.SetNoStore(httpContext);
         var tours = await store.ListTours(ct);
         var imagesByTour = await imageStore.ListByTours([.. tours.Select(tour => tour.CatalogTourId)], ct);
 
         return
         [
-            .. tours.Select(tour => MapTour(tour, GetImages(imagesByTour, tour.CatalogTourId)))
+            .. tours.Select(tour => MapManagementTour(tour, GetImages(imagesByTour, tour.CatalogTourId)))
         ];
     }
 
-    private static async Task<IReadOnlyList<CatalogTourDto>> GetPublishedTours(
+    private static async Task<IReadOnlyList<TourSummaryDto>> GetPublishedTours(
         ICatalogTourReadModelStore store,
         IPublicMediaImageStore imageStore,
         HttpContext httpContext,
@@ -330,9 +361,9 @@ internal static class CatalogEndpoints
         var publishedTours = tours.Where(tour => tour.IsPubliclyVisible).ToArray();
         var imagesByTour = await imageStore.ListByTours([.. publishedTours.Select(tour => tour.CatalogTourId)], ct);
 
-        CatalogTourDto[] result =
+        TourSummaryDto[] result =
         [
-            .. publishedTours.Select(tour => MapTour(tour, GetReadyImages(GetImages(imagesByTour, tour.CatalogTourId))))
+            .. publishedTours.Select(tour => MapPublicTourSummary(tour, GetReadyImages(GetImages(imagesByTour, tour.CatalogTourId))))
         ];
         PublicCatalogHttpCache.SetPublicHeaders(httpContext);
         return result;
@@ -344,11 +375,8 @@ internal static class CatalogEndpoints
         PublicContentUpsertService service,
         IOutputCacheStore outputCacheStore,
         ILogger<CatalogApiHostEntryPoint> logger,
-        HttpContext httpContext,
         CancellationToken ct)
     {
-        HttpCacheHeaders.SetNoStore(httpContext);
-
         if (string.IsNullOrWhiteSpace(key))
         {
             return Results.BadRequest();
@@ -361,57 +389,170 @@ internal static class CatalogEndpoints
             return ToValidationProblem(content.ErrorDetails ?? throw new InvalidOperationException("Public content validation errors must include validation details."));
         }
 
-        await InvalidatePublicContentCache(outputCacheStore, logger, ct);
+        await InvalidatePublicContentCache(outputCacheStore, logger);
         return Results.Ok(MapPublicContent(content.Value));
     }
 
     private static async Task<IResult> UpsertTourPresentation(
         Guid id,
         UpsertCatalogTourPresentationRequest request,
-        ICatalogTourReadModelStore store,
+        CatalogTourPresentationService presentationService,
         IPublicMediaImageStore imageStore,
         IOutputCacheStore outputCacheStore,
         ILogger<CatalogApiHostEntryPoint> logger,
-        HttpContext httpContext,
         CancellationToken ct)
     {
-        HttpCacheHeaders.SetNoStore(httpContext);
-
         if (id == Guid.Empty)
         {
             return Results.BadRequest();
         }
 
-        var presentation = CatalogTourPresentationUpdate.Create(request.Title, request.Slug, request.IsPublished);
+        if (ValidateExpectedVersion(request.ExpectedVersion) is { } versionValidationProblem)
+        {
+            return versionValidationProblem;
+        }
+
+        var presentation = CatalogTourPresentationUpdate.Create(
+            request.Title,
+            request.Slug,
+            request.Summary,
+            request.Description,
+            request.Itinerary,
+            request.SeoTitle,
+            request.SeoDescription);
         if (presentation.IsFailure)
         {
             return ToValidationProblem(presentation.ErrorDetails);
         }
 
-        var updated = await store.UpdatePresentation(
-            id,
-            presentation.Value,
-            ct);
+        var images = await imageStore.ListByTour(id, ct);
+        CatalogTourDraftReadModel? updated;
+        try
+        {
+            updated = await presentationService.UpdatePresentation(
+                id,
+                presentation.Value,
+                request.ExpectedVersion,
+                ct);
+        }
+        catch (CatalogTourSlugConflictException)
+        {
+            return Results.Problem("The public tour slug is already in use.", statusCode: StatusCodes.Status409Conflict);
+        }
+        catch (CatalogTourPublishedPresentationChangeException exception)
+        {
+            return Results.Problem(exception.Message, statusCode: StatusCodes.Status409Conflict);
+        }
+        catch (ExpectedStreamRevisionConflictException)
+        {
+            return Results.Problem("The tour changed while this edit was in progress. Reload it and try again.", statusCode: StatusCodes.Status409Conflict);
+        }
+        catch (CatalogTourProjectionPendingException exception)
+        {
+            logger.TourProjectionPending(id, exception);
+            return await AcceptPendingProjection(id, outputCacheStore, logger);
+        }
 
         if (updated is null)
         {
             return Results.NotFound();
         }
 
-        var images = await imageStore.ListByTour(id, ct);
-        await InvalidatePublicCatalogCache(outputCacheStore, logger, ct);
-        return Results.Ok(MapTour(updated, (IReadOnlyList<PublicMediaImage>?)images));
+        await InvalidatePublicCatalogCache(outputCacheStore, logger);
+        return Results.Ok(MapManagementTour(updated, (IReadOnlyList<PublicMediaImage>?)images));
+    }
+
+    private static async Task<IResult> PublishTour(
+        Guid id,
+        CatalogTourPublicationRequest request,
+        CatalogTourPresentationService presentationService,
+        IOutputCacheStore outputCacheStore,
+        ILogger<CatalogApiHostEntryPoint> logger,
+        CancellationToken ct)
+    {
+        if (id == Guid.Empty)
+        {
+            return Results.BadRequest();
+        }
+
+        if (ValidateExpectedVersion(request.ExpectedVersion) is { } versionValidationProblem)
+        {
+            return versionValidationProblem;
+        }
+
+        try
+        {
+            if (await presentationService.Publish(id, request.ExpectedVersion, ct).ConfigureAwait(false) is null)
+            {
+                return Results.NotFound();
+            }
+        }
+        catch (CatalogTourPublicationNotReadyException exception)
+        {
+            return Results.ValidationProblem(new Dictionary<string, string[]>
+            {
+                [nameof(CatalogTourDto.Summary)] = [exception.Message]
+            });
+        }
+        catch (ExpectedStreamRevisionConflictException)
+        {
+            return Results.Problem("The tour changed while publication was in progress. Reload it and try again.", statusCode: StatusCodes.Status409Conflict);
+        }
+        catch (CatalogTourProjectionPendingException exception)
+        {
+            logger.TourProjectionPending(id, exception);
+            return await AcceptPendingProjection(id, outputCacheStore, logger);
+        }
+
+        await InvalidatePublicCatalogCache(outputCacheStore, logger);
+        return Results.NoContent();
+    }
+
+    private static async Task<IResult> UnpublishTour(
+        Guid id,
+        CatalogTourPublicationRequest request,
+        CatalogTourPresentationService presentationService,
+        IOutputCacheStore outputCacheStore,
+        ILogger<CatalogApiHostEntryPoint> logger,
+        CancellationToken ct)
+    {
+        if (id == Guid.Empty)
+        {
+            return Results.BadRequest();
+        }
+
+        if (ValidateExpectedVersion(request.ExpectedVersion) is { } versionValidationProblem)
+        {
+            return versionValidationProblem;
+        }
+
+        try
+        {
+            if (await presentationService.Unpublish(id, request.ExpectedVersion, ct).ConfigureAwait(false) is null)
+            {
+                return Results.NotFound();
+            }
+        }
+        catch (ExpectedStreamRevisionConflictException)
+        {
+            return Results.Problem("The tour changed while unpublication was in progress. Reload it and try again.", statusCode: StatusCodes.Status409Conflict);
+        }
+        catch (CatalogTourProjectionPendingException exception)
+        {
+            logger.TourProjectionPending(id, exception);
+            return await AcceptPendingProjection(id, outputCacheStore, logger);
+        }
+
+        await InvalidatePublicCatalogCache(outputCacheStore, logger);
+        return Results.NoContent();
     }
 
     private static async Task<IResult> ListTourImages(
         Guid id,
         ICatalogTourReadModelStore store,
         IPublicMediaImageStore imageStore,
-        HttpContext httpContext,
         CancellationToken ct)
     {
-        HttpCacheHeaders.SetNoStore(httpContext);
-
         if (id == Guid.Empty)
         {
             return Results.BadRequest();
@@ -433,11 +574,8 @@ internal static class CatalogEndpoints
         ICatalogTourReadModelStore store,
         IPublicMediaImageStore imageStore,
         MediaImageUploadIntake intake,
-        HttpContext httpContext,
         CancellationToken ct)
     {
-        HttpCacheHeaders.SetNoStore(httpContext);
-
         var altText = form.AltText;
         if (id == Guid.Empty || form.File is null || string.IsNullOrWhiteSpace(altText))
         {
@@ -482,11 +620,8 @@ internal static class CatalogEndpoints
         MediaImageAccessibilityDraftService service,
         IOutputCacheStore outputCacheStore,
         ILogger<CatalogApiHostEntryPoint> logger,
-        HttpContext httpContext,
         CancellationToken ct)
     {
-        HttpCacheHeaders.SetNoStore(httpContext);
-
         if (id == Guid.Empty)
         {
             return Results.BadRequest();
@@ -511,7 +646,7 @@ internal static class CatalogEndpoints
 
         if (result.IsSuccess)
         {
-            await InvalidatePublicCatalogCache(outputCacheStore, logger, ct);
+            await InvalidatePublicCatalogCache(outputCacheStore, logger);
             return Results.Ok(MapManagementMediaImage(result.Value));
         }
 
@@ -530,11 +665,8 @@ internal static class CatalogEndpoints
         IPublicMediaImageStore imageStore,
         IOutputCacheStore outputCacheStore,
         ILogger<CatalogApiHostEntryPoint> logger,
-        HttpContext httpContext,
         CancellationToken ct)
     {
-        HttpCacheHeaders.SetNoStore(httpContext);
-
         if (id == Guid.Empty)
         {
             return Results.BadRequest();
@@ -553,23 +685,63 @@ internal static class CatalogEndpoints
         }
 
         await imageStore.Upsert(image, ct).ConfigureAwait(false);
-        await InvalidatePublicCatalogCache(outputCacheStore, logger, ct);
+        await InvalidatePublicCatalogCache(outputCacheStore, logger);
         return Results.Ok(MapManagementMediaImage(image));
     }
 
-    private static async Task InvalidatePublicCatalogCache(IOutputCacheStore outputCacheStore, ILogger logger, CancellationToken ct)
+    private static async Task InvalidatePublicCatalogCache(IOutputCacheStore outputCacheStore, ILogger logger)
     {
-        await outputCacheStore.EvictByTagAsync(PublicCatalogHttpCache.Tag, ct);
-        logger.PublicCacheAreaInvalidated(PublicCatalogHttpCache.Area);
+        try
+        {
+            await outputCacheStore.EvictByTagAsync(PublicCatalogHttpCache.Tag, CancellationToken.None);
+            logger.PublicCacheAreaInvalidated(PublicCatalogHttpCache.Area);
+        }
+        catch (Exception exception) when (exception.ShouldHandleAsFailure(CancellationToken.None))
+        {
+            logger.PublicCacheAreaInvalidationFailed(PublicCatalogHttpCache.Area, exception);
+        }
     }
 
-    private static async Task InvalidatePublicContentCache(IOutputCacheStore outputCacheStore, ILogger logger, CancellationToken ct)
+    private static async Task<IResult> AcceptPendingProjection(
+        Guid id,
+        IOutputCacheStore outputCacheStore,
+        ILogger logger)
     {
-        await outputCacheStore.EvictByTagAsync(PublicContentHttpCache.Tag, ct);
-        logger.PublicCacheAreaInvalidated(PublicContentHttpCache.Area);
+        await InvalidatePublicCatalogCache(outputCacheStore, logger);
+        return Results.Accepted($"/api/v1/catalog/tours/{id}");
     }
 
-    private static CatalogTourDto MapTour(CatalogTourDraftReadModel tour, IReadOnlyList<PublicMediaImage>? images)
+    private static void AddAcceptedLocationHeader(OpenApiOperation operation)
+    {
+        if (operation.Responses is null
+            || !operation.Responses.TryGetValue("202", out var acceptedResponse)
+            || acceptedResponse is not OpenApiResponse response)
+        {
+            return;
+        }
+
+        response.Headers ??= new Dictionary<string, IOpenApiHeader>(StringComparer.Ordinal);
+        response.Headers["Location"] = new OpenApiHeader
+        {
+            Description = "Management detail resource to poll until projection completes.",
+            Schema = new OpenApiSchema { Type = JsonSchemaType.String }
+        };
+    }
+
+    private static async Task InvalidatePublicContentCache(IOutputCacheStore outputCacheStore, ILogger logger)
+    {
+        try
+        {
+            await outputCacheStore.EvictByTagAsync(PublicContentHttpCache.Tag, CancellationToken.None);
+            logger.PublicCacheAreaInvalidated(PublicContentHttpCache.Area);
+        }
+        catch (Exception exception) when (exception.ShouldHandleAsFailure(CancellationToken.None))
+        {
+            logger.PublicCacheAreaInvalidationFailed(PublicContentHttpCache.Area, exception);
+        }
+    }
+
+    private static CatalogTourDto MapManagementTour(CatalogTourDraftReadModel tour, IReadOnlyList<PublicMediaImage>? images)
     {
         return new CatalogTourDto
         {
@@ -578,8 +750,42 @@ internal static class CatalogEndpoints
             Identifier = tour.Identifier,
             Title = tour.Title,
             Slug = tour.Slug,
+            Summary = tour.Summary,
+            Description = tour.Description,
+            Itinerary = tour.Itinerary,
+            SeoTitle = tour.SeoTitle,
+            SeoDescription = tour.SeoDescription,
             IsPublished = tour.IsPublished,
+            Version = tour.StreamVersion,
             Images = MapImages(images ?? []),
+            UpdatedAt = tour.UpdatedAt
+        };
+    }
+
+    private static TourSummaryDto MapPublicTourSummary(CatalogTourDraftReadModel tour, IReadOnlyList<PublicMediaImage> images)
+    {
+        return new TourSummaryDto
+        {
+            Title = tour.Title,
+            Slug = tour.Slug,
+            Summary = tour.Summary,
+            Images = MapImages(images),
+            UpdatedAt = tour.UpdatedAt
+        };
+    }
+
+    private static TourDetailsDto MapPublicTourDetail(CatalogTourDraftReadModel tour, IReadOnlyList<PublicMediaImage> images)
+    {
+        return new TourDetailsDto
+        {
+            Title = tour.Title,
+            Slug = tour.Slug,
+            Summary = tour.Summary,
+            Description = tour.Description,
+            Itinerary = tour.Itinerary,
+            SeoTitle = tour.SeoTitle,
+            SeoDescription = tour.SeoDescription,
+            Images = MapImages(images),
             UpdatedAt = tour.UpdatedAt
         };
     }
@@ -768,6 +974,16 @@ internal static class CatalogEndpoints
     private static IResult ToValidationProblem(ResultError error)
     {
         return Results.ValidationProblem(ToValidationProblemDictionary(error.ValidationErrors), detail: error.Detail);
+    }
+
+    private static IResult? ValidateExpectedVersion(long expectedVersion)
+    {
+        return expectedVersion < 1
+            ? Results.ValidationProblem(new Dictionary<string, string[]>
+            {
+                [nameof(CatalogTourPublicationRequest.ExpectedVersion)] = ["ExpectedVersion must be at least 1."]
+            })
+            : null;
     }
 
     private static Dictionary<string, string[]> ToValidationProblemDictionary(IReadOnlyDictionary<string, IReadOnlyList<string>>? validationErrors)

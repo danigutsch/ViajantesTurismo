@@ -9,16 +9,15 @@ internal static class PublicWebEndpointTestsHelpers
 {
     private const int MaximumProductionStartupAttempts = 3;
 
-    public static CatalogTourDto CreateTour(string slug, string title)
+    public static TourDetailsDto CreateTour(string slug, string title)
     {
-        return new CatalogTourDto
+        return new TourDetailsDto
         {
-            Id = Guid.CreateVersion7(),
-            AdminTourId = Guid.CreateVersion7(),
-            Identifier = "TOUR-2026",
             Title = title,
             Slug = slug,
-            IsPublished = true,
+            Summary = $"Discover {title} by bicycle.",
+            Description = $"A detailed description of {title}.",
+            Itinerary = $"Day one: explore {title}.",
             Images = [],
             UpdatedAt = DateTimeOffset.UtcNow
         };

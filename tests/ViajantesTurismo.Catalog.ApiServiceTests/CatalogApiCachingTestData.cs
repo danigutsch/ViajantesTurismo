@@ -16,7 +16,11 @@ internal static class CatalogApiCachingTestData
             slug,
             true,
             1,
-            DateTimeOffset.UtcNow);
+            DateTimeOffset.UtcNow)
+        {
+            Summary = $"Summary for {title}",
+            StreamVersion = 3
+        };
     }
 
     public static UpsertCatalogTourPresentationRequest CreatePresentationRequest(string title, string slug)
@@ -25,13 +29,21 @@ internal static class CatalogApiCachingTestData
         {
             Title = title,
             Slug = slug,
-            IsPublished = true
+            Summary = $"Summary for {title}",
+            ExpectedVersion = 3
         };
     }
 
     public static CatalogTourPresentationUpdate CreatePresentationUpdate(string title, string slug)
     {
-        var update = CatalogTourPresentationUpdate.Create(title, slug, isPublished: true);
+        var update = CatalogTourPresentationUpdate.Create(
+            title,
+            slug,
+            $"Summary for {title}",
+            description: null,
+            itinerary: null,
+            seoTitle: null,
+            seoDescription: null);
         if (update.IsFailure)
         {
             throw new InvalidOperationException(update.ErrorDetails.Detail);

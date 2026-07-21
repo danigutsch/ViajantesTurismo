@@ -33,6 +33,27 @@ internal sealed class TransientCatalogToursApiClient(
         return Task.FromResult<CatalogTourDto?>(null);
     }
 
+    public Task Publish(Guid id, CatalogTourPublicationRequest request, CancellationToken ct)
+    {
+        return CompletePublication(request, isPublished: true, ct);
+    }
+
+    public Task Unpublish(Guid id, CatalogTourPublicationRequest request, CancellationToken ct)
+    {
+        return CompletePublication(request, isPublished: false, ct);
+    }
+
+    private static Task CompletePublication(
+        CatalogTourPublicationRequest request,
+        bool isPublished,
+        CancellationToken ct)
+    {
+        ArgumentNullException.ThrowIfNull(request);
+        ct.ThrowIfCancellationRequested();
+        _ = isPublished;
+        return Task.CompletedTask;
+    }
+
     public Task<CatalogMediaImageDto?> GenerateMediaImageAccessibilityDraft(
         Guid id,
         PublicMediaImageAccessibilityDraftRequest request,

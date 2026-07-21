@@ -18,7 +18,7 @@
                 "schema": {
                   "type": "array",
                   "items": {
-                    "$ref": "#/components/schemas/CatalogTourDto"
+                    "$ref": "#/components/schemas/TourSummaryDto"
                   }
                 }
               }
@@ -44,7 +44,17 @@
         ],
         "responses": {
           "200": {
-            "description": "OK"
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TourDetailsDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found"
           }
         }
       }
@@ -175,57 +185,6 @@
           }
         }
       },
-      "CatalogTourDto": {
-        "required": [
-          "id",
-          "adminTourId",
-          "identifier",
-          "title",
-          "slug",
-          "isPublished",
-          "images",
-          "updatedAt"
-        ],
-        "type": "object",
-        "properties": {
-          "id": {
-            "type": "string",
-            "format": "uuid"
-          },
-          "adminTourId": {
-            "type": "string",
-            "format": "uuid"
-          },
-          "identifier": {
-            "maxLength": 64,
-            "minLength": 1,
-            "type": "string"
-          },
-          "title": {
-            "maxLength": 128,
-            "minLength": 1,
-            "type": "string"
-          },
-          "slug": {
-            "maxLength": 128,
-            "minLength": 1,
-            "type": "string"
-          },
-          "isPublished": {
-            "type": "boolean"
-          },
-          "images": {
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/CatalogTourImageDto"
-            }
-          },
-          "updatedAt": {
-            "type": "string",
-            "format": "date-time"
-          }
-        }
-      },
       "CatalogTourImageDto": {
         "required": [
           "id",
@@ -276,6 +235,100 @@
             "items": {
               "$ref": "#/components/schemas/CatalogMediaImageVariantDto"
             }
+          }
+        }
+      },
+      "TourDetailsDto": {
+        "required": [
+          "title",
+          "slug",
+          "summary",
+          "images",
+          "updatedAt"
+        ],
+        "type": "object",
+        "properties": {
+          "title": {
+            "maxLength": 128,
+            "minLength": 1,
+            "type": "string"
+          },
+          "slug": {
+            "maxLength": 128,
+            "minLength": 1,
+            "type": "string"
+          },
+          "summary": {
+            "maxLength": 4000,
+            "minLength": 1,
+            "type": "string"
+          },
+          "description": {
+            "maxLength": 4000,
+            "minLength": 0,
+            "type": "string"
+          },
+          "itinerary": {
+            "maxLength": 4000,
+            "minLength": 0,
+            "type": "string"
+          },
+          "seoTitle": {
+            "maxLength": 128,
+            "minLength": 0,
+            "type": "string"
+          },
+          "seoDescription": {
+            "maxLength": 4000,
+            "minLength": 0,
+            "type": "string"
+          },
+          "images": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/CatalogTourImageDto"
+            }
+          },
+          "updatedAt": {
+            "type": "string",
+            "format": "date-time"
+          }
+        }
+      },
+      "TourSummaryDto": {
+        "required": [
+          "title",
+          "slug",
+          "summary",
+          "images",
+          "updatedAt"
+        ],
+        "type": "object",
+        "properties": {
+          "title": {
+            "maxLength": 128,
+            "minLength": 1,
+            "type": "string"
+          },
+          "slug": {
+            "maxLength": 128,
+            "minLength": 1,
+            "type": "string"
+          },
+          "summary": {
+            "maxLength": 4000,
+            "minLength": 1,
+            "type": "string"
+          },
+          "images": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/CatalogTourImageDto"
+            }
+          },
+          "updatedAt": {
+            "type": "string",
+            "format": "date-time"
           }
         }
       }

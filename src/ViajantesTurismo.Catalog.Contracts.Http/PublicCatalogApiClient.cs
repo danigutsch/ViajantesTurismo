@@ -13,11 +13,11 @@ public sealed class PublicCatalogApiClient(HttpClient httpClient) : IPublicCatal
     private static readonly PublicCatalogApiClientJsonContext Json = PublicCatalogApiClientJsonContext.Default;
 
     /// <inheritdoc />
-    public async Task<CatalogTourDto[]> GetPublishedTours(CancellationToken ct)
+    public async Task<TourSummaryDto[]> GetPublishedTours(CancellationToken ct)
     {
-        List<CatalogTourDto>? tours = null;
+        List<TourSummaryDto>? tours = null;
 
-        await foreach (var tour in httpClient.GetFromJsonAsAsyncEnumerable($"{RoutePrefix}/tours", Json.CatalogTourDto, ct).ConfigureAwait(false))
+        await foreach (var tour in httpClient.GetFromJsonAsAsyncEnumerable($"{RoutePrefix}/tours", Json.TourSummaryDto, ct).ConfigureAwait(false))
         {
             if (tour is null)
             {
@@ -32,7 +32,7 @@ public sealed class PublicCatalogApiClient(HttpClient httpClient) : IPublicCatal
     }
 
     /// <inheritdoc />
-    public async Task<CatalogTourDto?> GetPublishedTourBySlug(string slug, CancellationToken ct)
+    public async Task<TourDetailsDto?> GetPublishedTourBySlug(string slug, CancellationToken ct)
     {
         ArgumentNullException.ThrowIfNull(slug);
 
@@ -44,7 +44,7 @@ public sealed class PublicCatalogApiClient(HttpClient httpClient) : IPublicCatal
         }
 
         response.EnsureSuccessStatusCode();
-        return await response.Content.ReadFromJsonAsync(Json.CatalogTourDto, ct).ConfigureAwait(false)
+        return await response.Content.ReadFromJsonAsync(Json.TourDetailsDto, ct).ConfigureAwait(false)
                ?? throw new InvalidOperationException("The published tour response body was empty.");
     }
 

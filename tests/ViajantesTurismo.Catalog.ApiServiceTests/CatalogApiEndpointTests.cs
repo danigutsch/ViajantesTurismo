@@ -4,6 +4,7 @@ using System.Text;
 using System.Text.Json;
 using Microsoft.AspNetCore.Http;
 using SharedKernel.AI;
+using SharedKernel.EventSourcing;
 using TestTraits = ViajantesTurismo.Catalog.ApiServiceTests.Infrastructure.TestTraits;
 using ViajantesTurismo.Catalog.ApiService;
 using ViajantesTurismo.Catalog.Application.Media;
@@ -11,6 +12,7 @@ using ViajantesTurismo.Catalog.Application.Tours;
 using ViajantesTurismo.Catalog.Contracts.Application;
 using ViajantesTurismo.Catalog.Domain.Media;
 using ViajantesTurismo.Catalog.Domain.PublicContent;
+using ViajantesTurismo.Catalog.Domain.Tours;
 
 namespace ViajantesTurismo.Catalog.ApiServiceTests;
 
@@ -385,7 +387,7 @@ public sealed class CatalogApiEndpointTests
         {
             Title = new string('t', ContractConstants.MaxNameLength + 1),
             Slug = new string('s', ContractConstants.MaxSlugLength + 1),
-            IsPublished = true
+            ExpectedVersion = 1
         };
 
         // Act
@@ -777,7 +779,7 @@ public sealed class CatalogApiEndpointTests
 
         // Assert
         (response.StatusCode).ShouldBe(HttpStatusCode.OK);
-        var tours = await response.Content.ReadFromJsonAsync<CatalogTourDto[]>(TestContext.Current.CancellationToken);
+        var tours = await response.Content.ReadFromJsonAsync<TourSummaryDto[]>(TestContext.Current.CancellationToken);
         _ = (tours).ShouldNotBeNull();
         var tour = (tours).ShouldHaveSingleItem();
         (tour.Slug).ShouldBe("camino-norte");
@@ -787,6 +789,439 @@ public sealed class CatalogApiEndpointTests
         rendition.Width.ShouldBe(640);
         rendition.ContentType.ShouldBe("image/jpeg");
         (image.AltText).ShouldBe("Published image");
+    }
+
+    [Fact]
+    public async Task Public_tour_list_returns_presentation_summary_without_management_fields()
+    {
+        // Arrange
+        var tourId = Guid.CreateVersion7();
+        var tourStore = new TestCatalogTourReadModelStore();
+        await tourStore.UpsertDraft(
+            new CatalogTourDraftReadModel(
+                tourId,
+                Guid.CreateVersion7(),
+                "TOUR-PUBLIC",
+                "Public Tour",
+                "public-tour",
+                true,
+                1,
+                DateTimeOffset.UtcNow),
+            TestContext.Current.CancellationToken);
+        await using var factory = CatalogApiTestHost.Create(tourStore, new TestPublicContentStore());
+        using var client = factory.CreateClient();
+
+        // Act
+        using var response = await client.GetAsync(
+            new Uri("/api/v1/public/catalog/tours", UriKind.Relative),
+            TestContext.Current.CancellationToken);
+        using var document = await JsonDocument.ParseAsync(
+            await response.Content.ReadAsStreamAsync(TestContext.Current.CancellationToken),
+            cancellationToken: TestContext.Current.CancellationToken);
+        var tour = document.RootElement.EnumerateArray().Single();
+
+        // Assert
+        response.StatusCode.ShouldBe(HttpStatusCode.OK);
+        tour.GetProperty("title").GetString().ShouldBe("Public Tour");
+        tour.TryGetProperty("summary", out _).ShouldBeTrue();
+        tour.TryGetProperty("id", out _).ShouldBeFalse();
+        tour.TryGetProperty("adminTourId", out _).ShouldBeFalse();
+        tour.TryGetProperty("identifier", out _).ShouldBeFalse();
+        tour.TryGetProperty("isPublished", out _).ShouldBeFalse();
+    }
+
+    [Fact]
+    public async Task Catalog_tour_publish_endpoint_requires_an_explicit_transition()
+    {
+        // Arrange
+        var tourId = Guid.CreateVersion7();
+        var tourStore = new TestCatalogTourReadModelStore();
+        await tourStore.UpsertDraft(
+            new CatalogTourDraftReadModel(
+                tourId,
+                Guid.CreateVersion7(),
+                "TOUR-DRAFT",
+                "Draft Tour",
+                "draft-tour",
+                false,
+                1,
+                DateTimeOffset.UtcNow),
+            TestContext.Current.CancellationToken);
+        await using var factory = CatalogApiTestHost.Create(tourStore, new TestPublicContentStore());
+        using var client = factory.CreateClient();
+        using var presentationResponse = await client.PutAsJsonAsync(
+            new Uri($"/api/v1/catalog/tours/{tourId}/presentation", UriKind.Relative),
+            new UpsertCatalogTourPresentationRequest
+            {
+                Title = "Draft Tour",
+                Slug = "draft-tour",
+                Summary = "A publishable draft tour.",
+                ExpectedVersion = 1
+            },
+            TestContext.Current.CancellationToken);
+
+        // Act
+        using var response = await client.PostAsJsonAsync(
+            new Uri($"/api/v1/catalog/tours/{tourId}/publish", UriKind.Relative),
+            new CatalogTourPublicationRequest { ExpectedVersion = 2 },
+            TestContext.Current.CancellationToken);
+
+        // Assert
+        presentationResponse.StatusCode.ShouldBe(HttpStatusCode.OK);
+        response.StatusCode.ShouldBe(HttpStatusCode.NoContent);
+    }
+
+    [Fact]
+    public async Task Catalog_tour_presentation_rejects_edits_until_a_published_tour_is_unpublished()
+    {
+        // Arrange
+        var tourId = Guid.CreateVersion7();
+        var tourStore = new TestCatalogTourReadModelStore();
+        await tourStore.UpsertDraft(
+            new CatalogTourDraftReadModel(
+                tourId,
+                Guid.CreateVersion7(),
+                "TOUR-PUBLISHED-EDIT",
+                "Published Edit Tour",
+                "published-edit-tour",
+                false,
+                1,
+                DateTimeOffset.UtcNow),
+            TestContext.Current.CancellationToken);
+        await using var factory = CatalogApiTestHost.Create(tourStore, new TestPublicContentStore());
+        using var client = factory.CreateClient();
+        using var presentationResponse = await client.PutAsJsonAsync(
+            new Uri($"/api/v1/catalog/tours/{tourId}/presentation", UriKind.Relative),
+            new UpsertCatalogTourPresentationRequest
+            {
+                Title = "Published Edit Tour",
+                Slug = "published-edit-tour",
+                Summary = "Ready to publish.",
+                ExpectedVersion = 1
+            },
+            TestContext.Current.CancellationToken);
+        using var publishResponse = await client.PostAsJsonAsync(
+            new Uri($"/api/v1/catalog/tours/{tourId}/publish", UriKind.Relative),
+            new CatalogTourPublicationRequest { ExpectedVersion = 2 },
+            TestContext.Current.CancellationToken);
+
+        // Act
+        using var response = await client.PutAsJsonAsync(
+            new Uri($"/api/v1/catalog/tours/{tourId}/presentation", UriKind.Relative),
+            new UpsertCatalogTourPresentationRequest
+            {
+                Title = "Unapproved Live Edit",
+                Slug = "unapproved-live-edit",
+                Summary = string.Empty,
+                ExpectedVersion = 3
+            },
+            TestContext.Current.CancellationToken);
+
+        // Assert
+        presentationResponse.StatusCode.ShouldBe(HttpStatusCode.OK);
+        publishResponse.StatusCode.ShouldBe(HttpStatusCode.NoContent);
+        response.StatusCode.ShouldBe(HttpStatusCode.Conflict);
+    }
+
+    [Fact]
+    public async Task Catalog_tour_presentation_does_not_commit_when_response_image_enrichment_fails()
+    {
+        // Arrange
+        var tourId = Guid.CreateVersion7();
+        var tourStore = new TestCatalogTourReadModelStore();
+        await tourStore.UpsertDraft(
+            new CatalogTourDraftReadModel(
+                tourId,
+                Guid.CreateVersion7(),
+                "TOUR-IMAGE-FAILURE",
+                "Image Failure Tour",
+                "image-failure-tour",
+                false,
+                1,
+                DateTimeOffset.UtcNow),
+            TestContext.Current.CancellationToken);
+        var imageStore = new TestPublicMediaImageStore
+        {
+            ListByTourException = new InvalidOperationException("Simulated image-store failure.")
+        };
+        await using var factory = CatalogApiTestHost.Create(tourStore, new TestPublicContentStore(), imageStore);
+        using var client = factory.CreateClient();
+        var request = new UpsertCatalogTourPresentationRequest
+        {
+            Title = "Updated Tour",
+            Slug = "updated-tour",
+            Summary = "Updated summary.",
+            ExpectedVersion = 1
+        };
+
+        // Act
+        using var failedResponse = await client.PutAsJsonAsync(
+            new Uri($"/api/v1/catalog/tours/{tourId}/presentation", UriKind.Relative),
+            request,
+            TestContext.Current.CancellationToken);
+        imageStore.ListByTourException = null;
+        using var retryResponse = await client.PutAsJsonAsync(
+            new Uri($"/api/v1/catalog/tours/{tourId}/presentation", UriKind.Relative),
+            request,
+            TestContext.Current.CancellationToken);
+
+        // Assert
+        failedResponse.StatusCode.ShouldBe(HttpStatusCode.InternalServerError);
+        retryResponse.StatusCode.ShouldBe(HttpStatusCode.OK);
+    }
+
+    [Fact]
+    public async Task Catalog_tour_presentation_normalizes_a_customer_facing_slug()
+    {
+        // Arrange
+        var tourId = Guid.CreateVersion7();
+        var tourStore = new TestCatalogTourReadModelStore();
+        await tourStore.UpsertDraft(
+            new CatalogTourDraftReadModel(
+                tourId,
+                Guid.CreateVersion7(),
+                "TOUR-SLUG",
+                "Slug Tour",
+                "slug-tour",
+                false,
+                1,
+                DateTimeOffset.UtcNow),
+            TestContext.Current.CancellationToken);
+        await using var factory = CatalogApiTestHost.Create(tourStore, new TestPublicContentStore());
+        using var client = factory.CreateClient();
+        var request = new UpsertCatalogTourPresentationRequest
+        {
+            Title = "Slug Tour",
+            Slug = "São Paulo Tour",
+            ExpectedVersion = 1
+        };
+
+        // Act
+        using var response = await client.PutAsJsonAsync(
+            new Uri($"/api/v1/catalog/tours/{tourId}/presentation", UriKind.Relative),
+            request,
+            TestContext.Current.CancellationToken);
+
+        // Assert
+        response.StatusCode.ShouldBe(HttpStatusCode.OK);
+        var tour = await response.Content.ReadFromJsonAsync<CatalogTourDto>(TestContext.Current.CancellationToken);
+        tour.ShouldNotBeNull();
+        tour.Slug.ShouldBe("sao-paulo-tour");
+    }
+
+    [Fact]
+    public async Task Catalog_tour_presentation_rejects_a_stale_expected_version()
+    {
+        // Arrange
+        var tourId = Guid.CreateVersion7();
+        var tourStore = new TestCatalogTourReadModelStore();
+        await tourStore.UpsertDraft(
+            new CatalogTourDraftReadModel(
+                tourId,
+                Guid.CreateVersion7(),
+                "TOUR-CONCURRENCY",
+                "Concurrency Tour",
+                "concurrency-tour",
+                false,
+                1,
+                DateTimeOffset.UtcNow),
+            TestContext.Current.CancellationToken);
+        await using var factory = CatalogApiTestHost.Create(tourStore, new TestPublicContentStore());
+        using var client = factory.CreateClient();
+        var request = new UpsertCatalogTourPresentationRequest
+        {
+            Title = "Concurrency Tour",
+            Slug = "concurrency-tour",
+            Summary = "A concurrency-tested tour.",
+            ExpectedVersion = 1
+        };
+        using var firstResponse = await client.PutAsJsonAsync(
+            new Uri($"/api/v1/catalog/tours/{tourId}/presentation", UriKind.Relative),
+            request,
+            TestContext.Current.CancellationToken);
+
+        // Act
+        using var staleResponse = await client.PutAsJsonAsync(
+            new Uri($"/api/v1/catalog/tours/{tourId}/presentation", UriKind.Relative),
+            request,
+            TestContext.Current.CancellationToken);
+
+        // Assert
+        firstResponse.StatusCode.ShouldBe(HttpStatusCode.OK);
+        staleResponse.StatusCode.ShouldBe(HttpStatusCode.Conflict);
+    }
+
+    [Fact]
+    public async Task Catalog_tour_presentation_rejects_a_duplicate_slug_without_advancing_the_stream()
+    {
+        // Arrange
+        var firstTourId = Guid.CreateVersion7();
+        var secondTourId = Guid.CreateVersion7();
+        var tourStore = new TestCatalogTourReadModelStore();
+        await tourStore.UpsertDraft(
+            new CatalogTourDraftReadModel(
+                firstTourId,
+                Guid.CreateVersion7(),
+                "TOUR-FIRST",
+                "First Tour",
+                "tour-first",
+                false,
+                1,
+                DateTimeOffset.UtcNow),
+            TestContext.Current.CancellationToken);
+        await tourStore.UpsertDraft(
+            new CatalogTourDraftReadModel(
+                secondTourId,
+                Guid.CreateVersion7(),
+                "TOUR-SECOND",
+                "Second Tour",
+                "tour-second",
+                false,
+                2,
+                DateTimeOffset.UtcNow),
+            TestContext.Current.CancellationToken);
+        await using var factory = CatalogApiTestHost.Create(tourStore, new TestPublicContentStore());
+        using var client = factory.CreateClient();
+        var firstRequest = new UpsertCatalogTourPresentationRequest
+        {
+            Title = "First Tour",
+            Slug = "shared-tour",
+            Summary = "First tour summary.",
+            ExpectedVersion = 1
+        };
+        var duplicateRequest = new UpsertCatalogTourPresentationRequest
+        {
+            Title = "Second Tour",
+            Slug = "shared-tour",
+            Summary = "Second tour summary.",
+            ExpectedVersion = 1
+        };
+        using var firstResponse = await client.PutAsJsonAsync(
+            new Uri($"/api/v1/catalog/tours/{firstTourId}/presentation", UriKind.Relative),
+            firstRequest,
+            TestContext.Current.CancellationToken);
+
+        // Act
+        using var duplicateResponse = await client.PutAsJsonAsync(
+            new Uri($"/api/v1/catalog/tours/{secondTourId}/presentation", UriKind.Relative),
+            duplicateRequest,
+            TestContext.Current.CancellationToken);
+        using var retryResponse = await client.PutAsJsonAsync(
+            new Uri($"/api/v1/catalog/tours/{secondTourId}/presentation", UriKind.Relative),
+            duplicateRequest with { Slug = "second-tour" },
+            TestContext.Current.CancellationToken);
+
+        // Assert
+        firstResponse.StatusCode.ShouldBe(HttpStatusCode.OK);
+        duplicateResponse.StatusCode.ShouldBe(HttpStatusCode.Conflict);
+        retryResponse.StatusCode.ShouldBe(HttpStatusCode.OK);
+    }
+
+    [Fact]
+    public async Task Catalog_tour_presentation_rejects_a_slug_claimed_by_an_unprojected_event()
+    {
+        // Arrange
+        var ownerTourId = Guid.CreateVersion7();
+        var ownerAdminTourId = Guid.CreateVersion7();
+        var targetTourId = Guid.CreateVersion7();
+        var targetAdminTourId = Guid.CreateVersion7();
+        var owner = new CatalogTourDraftReadModel(
+            ownerTourId,
+            ownerAdminTourId,
+            "TOUR-OWNER",
+            "Owner Tour",
+            "owner-tour",
+            false,
+            1,
+            DateTimeOffset.UtcNow);
+        var target = new CatalogTourDraftReadModel(
+            targetTourId,
+            targetAdminTourId,
+            "TOUR-TARGET",
+            "Target Tour",
+            "target-tour",
+            false,
+            2,
+            DateTimeOffset.UtcNow);
+        var tourStore = new TestCatalogTourReadModelStore();
+        await tourStore.UpsertDraft(owner, TestContext.Current.CancellationToken);
+        await tourStore.UpsertDraft(target, TestContext.Current.CancellationToken);
+        var eventStore = new TestEventStore();
+        eventStore.SeedTour(owner);
+        eventStore.SeedTour(target);
+        _ = await eventStore.Append(
+            CatalogTourStreamIds.FromAdminTourId(ownerAdminTourId),
+            ExpectedStreamRevision.From(StreamRevision.From(1)),
+            [new CatalogTourPresentationChanged(
+                ownerTourId,
+                "Owner Tour",
+                "reserved-tour",
+                "Reserved before projection.",
+                string.Empty,
+                string.Empty,
+                string.Empty,
+                string.Empty)],
+            TestContext.Current.CancellationToken);
+        await using var factory = CatalogApiTestHost.Create(tourStore, new TestPublicContentStore(), eventStore);
+        using var client = factory.CreateClient();
+
+        // Act
+        using var response = await client.PutAsJsonAsync(
+            new Uri($"/api/v1/catalog/tours/{targetTourId}/presentation", UriKind.Relative),
+            new UpsertCatalogTourPresentationRequest
+            {
+                Title = "Target Tour",
+                Slug = "reserved-tour",
+                Summary = "Must not claim the reserved slug.",
+                ExpectedVersion = 1
+            },
+            TestContext.Current.CancellationToken);
+        var targetEvents = await eventStore.Load(
+            CatalogTourStreamIds.FromAdminTourId(targetAdminTourId),
+            afterRevision: null,
+            TestContext.Current.CancellationToken);
+
+        // Assert
+        response.StatusCode.ShouldBe(HttpStatusCode.Conflict);
+        targetEvents.Count.ShouldBe(1);
+    }
+
+    [Theory]
+    [InlineData("public/tour")]
+    [InlineData("public?tour")]
+    public async Task Catalog_tour_presentation_rejects_unsafe_slugs(string slug)
+    {
+        // Arrange
+        var tourId = Guid.CreateVersion7();
+        var tourStore = new TestCatalogTourReadModelStore();
+        await tourStore.UpsertDraft(
+            new CatalogTourDraftReadModel(
+                tourId,
+                Guid.CreateVersion7(),
+                "TOUR-SLUG",
+                "Slug Tour",
+                "slug-tour",
+                false,
+                1,
+                DateTimeOffset.UtcNow),
+            TestContext.Current.CancellationToken);
+        await using var factory = CatalogApiTestHost.Create(tourStore, new TestPublicContentStore());
+        using var client = factory.CreateClient();
+        var request = new UpsertCatalogTourPresentationRequest
+        {
+            Title = "Slug Tour",
+            Slug = slug,
+            ExpectedVersion = 1
+        };
+
+        // Act
+        using var response = await client.PutAsJsonAsync(
+            new Uri($"/api/v1/catalog/tours/{tourId}/presentation", UriKind.Relative),
+            request,
+            TestContext.Current.CancellationToken);
+
+        // Assert
+        response.StatusCode.ShouldBe(HttpStatusCode.BadRequest);
     }
 
     [Fact]
@@ -822,7 +1257,7 @@ public sealed class CatalogApiEndpointTests
 
         // Act
         using var response = await client.GetAsync(new Uri("/api/v1/public/catalog/tours/published-tour", UriKind.Relative), TestContext.Current.CancellationToken);
-        var tour = await response.Content.ReadFromJsonAsync<CatalogTourDto>(TestContext.Current.CancellationToken);
+        var tour = await response.Content.ReadFromJsonAsync<TourDetailsDto>(TestContext.Current.CancellationToken);
 
         // Assert
         response.StatusCode.ShouldBe(HttpStatusCode.OK);
@@ -1457,7 +1892,7 @@ public sealed class CatalogApiEndpointTests
 
         // Assert
         (response.StatusCode).ShouldBe(HttpStatusCode.OK);
-        var tour = await response.Content.ReadFromJsonAsync<CatalogTourDto>(TestContext.Current.CancellationToken);
+        var tour = await response.Content.ReadFromJsonAsync<TourDetailsDto>(TestContext.Current.CancellationToken);
         _ = (tour).ShouldNotBeNull();
         (tour.Images).ShouldMatchCollection(image =>
             {
@@ -1506,7 +1941,7 @@ public sealed class CatalogApiEndpointTests
             TestContext.Current.CancellationToken);
 
         // Assert
-        var publicTour = await publicTourResponse.Content.ReadFromJsonAsync<CatalogTourDto>(TestContext.Current.CancellationToken);
+        var publicTour = await publicTourResponse.Content.ReadFromJsonAsync<TourDetailsDto>(TestContext.Current.CancellationToken);
         _ = (publicTour).ShouldNotBeNull();
         (publicTour.Images).ShouldBeEmpty();
         var managementTour = await managementTourResponse.Content.ReadFromJsonAsync<CatalogTourDto>(TestContext.Current.CancellationToken);

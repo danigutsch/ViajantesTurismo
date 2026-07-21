@@ -17,8 +17,4 @@ internal static class BrandingHttpCache
         HttpCacheHeaders.SetPublic(httpContext, PublicFreshness, StaleWhileRevalidate);
     }
 
-    public static void SetNoStore(HttpContext httpContext)
-    {
-        HttpCacheHeaders.SetNoStore(httpContext);
-    }
 }

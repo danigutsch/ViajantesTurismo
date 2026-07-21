@@ -42,32 +42,43 @@ public sealed class CatalogTourWorkflowSteps
     [When("I publish the catalog tour with title {string} and slug {string}")]
     public async Task WhenIPublishTheCatalogTourWithTitleAndSlug(string title, string slug)
     {
-        await PutPresentation(title, slug, true);
+        await PutPresentation(title, slug);
+        response.ShouldNotBeNull();
+        var presentation = await response.Content.ReadFromJsonAsync<CatalogTourDto>(TestContext.Current.CancellationToken);
+        presentation.ShouldNotBeNull();
+        response.Dispose();
+        response = await Client.PostAsJsonAsync(
+            new Uri($"/api/v1/catalog/tours/{catalogTourId}/publish", UriKind.Relative),
+            new CatalogTourPublicationRequest { ExpectedVersion = presentation.Version },
+            TestContext.Current.CancellationToken);
     }
 
     [When("I save the catalog tour presentation with title {string} and slug {string}")]
     public async Task WhenISaveTheCatalogTourPresentationWithTitleAndSlug(string title, string slug)
     {
-        await PutPresentation(title, slug, false);
+        await PutPresentation(title, slug);
     }
 
     [When("I try to publish a missing catalog tour")]
     public async Task WhenITryToPublishAMissingCatalogTour()
     {
-        await PutPresentation("Missing tour", "missing-tour", true);
+        response = await Client.PostAsJsonAsync(
+            new Uri($"/api/v1/catalog/tours/{catalogTourId}/publish", UriKind.Relative),
+            new CatalogTourPublicationRequest { ExpectedVersion = 1 },
+            TestContext.Current.CancellationToken);
     }
 
     [When("I try to publish the catalog tour without a title")]
     public async Task WhenITryToPublishTheCatalogTourWithoutATitle()
     {
-        await PutPresentation(string.Empty, "patagonia-2025", true);
+        await PutPresentation(string.Empty, "patagonia-2025");
     }
 
     [Then("the catalog tour should be available to catalog editors")]
     public async Task ThenTheCatalogTourShouldBeAvailableToCatalogEditors()
     {
         response.ShouldNotBeNull();
-        response.StatusCode.ShouldBe(HttpStatusCode.OK);
+        response.IsSuccessStatusCode.ShouldBeTrue();
 
         using var managementResponse = await Client.GetAsync(new Uri($"/api/v1/catalog/tours/{catalogTourId}", UriKind.Relative), TestContext.Current.CancellationToken);
         managementResponse.StatusCode.ShouldBe(HttpStatusCode.OK);
@@ -83,11 +94,9 @@ public sealed class CatalogTourWorkflowSteps
         using var publicResponse = await Client.GetAsync(new Uri($"/api/v1/public/catalog/tours/{slug}", UriKind.Relative), TestContext.Current.CancellationToken);
         publicResponse.StatusCode.ShouldBe(HttpStatusCode.OK);
 
-        var tour = await publicResponse.Content.ReadFromJsonAsync<CatalogTourDto>(TestContext.Current.CancellationToken);
+        var tour = await publicResponse.Content.ReadFromJsonAsync<TourDetailsDto>(TestContext.Current.CancellationToken);
         tour.ShouldNotBeNull();
         tour.Slug.ShouldBe(slug);
-        tour.Id.ShouldBe(catalogTourId);
-        tour.IsPublished.ShouldBeTrue();
     }
 
     [Then("the catalog tour should not be visible publicly by slug {string}")]
@@ -131,7 +140,7 @@ public sealed class CatalogTourWorkflowSteps
         }
     }
 
-    private async Task PutPresentation(string title, string slug, bool isPublished)
+    private async Task PutPresentation(string title, string slug)
     {
         response = await Client.PutAsJsonAsync(
             new Uri($"/api/v1/catalog/tours/{catalogTourId}/presentation", UriKind.Relative),
@@ -139,7 +148,8 @@ public sealed class CatalogTourWorkflowSteps
             {
                 Title = title,
                 Slug = slug,
-                IsPublished = isPublished
+                Summary = $"Summary for {title}",
+                ExpectedVersion = 1
             },
             TestContext.Current.CancellationToken);
     }

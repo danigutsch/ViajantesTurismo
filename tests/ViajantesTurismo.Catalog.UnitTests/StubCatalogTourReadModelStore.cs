@@ -10,7 +10,24 @@ public sealed class StubCatalogTourReadModelStore(params CatalogTourDraftReadMod
         throw new NotSupportedException();
     }
 
-    public ValueTask<CatalogTourDraftReadModel?> UpdatePresentation(Guid catalogTourId, CatalogTourPresentationUpdate update, CancellationToken ct)
+    public ValueTask<CatalogTourDraftReadModel?> UpdatePresentation(
+        Guid catalogTourId,
+        CatalogTourPresentationUpdate update,
+        long streamVersion,
+        long position,
+        DateTimeOffset updatedAt,
+        CancellationToken ct)
+    {
+        throw new NotSupportedException();
+    }
+
+    public ValueTask<CatalogTourDraftReadModel?> SetPublicationStatus(
+        Guid catalogTourId,
+        bool isPublished,
+        long streamVersion,
+        long position,
+        DateTimeOffset updatedAt,
+        CancellationToken ct)
     {
         throw new NotSupportedException();
     }

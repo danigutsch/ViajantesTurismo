@@ -10,8 +10,6 @@ internal static class PublicWebHttpCache
 
     public const string LanguageQueryKey = "language";
 
-    private static readonly TimeSpan StaleWhileRevalidate = TimeSpan.FromSeconds(300);
-
     public static IApplicationBuilder UsePublicWebCacheHeaders(this IApplicationBuilder app)
     {
         ArgumentNullException.ThrowIfNull(app);
@@ -61,7 +59,7 @@ internal static class PublicWebHttpCache
 
     public static void SetPublishedContent(HttpContext httpContext)
     {
-        HttpCacheHeaders.SetPublic(httpContext, PublishedContentFreshness, StaleWhileRevalidate);
+        HttpCacheHeaders.SetPublic(httpContext, PublishedContentFreshness);
     }
 
     private static bool IsErrorRequest(HttpContext httpContext)

@@ -18,11 +18,11 @@ else if (_notFound)
     <div class="alert alert-danger" role="alert">Catalog tour not found.</div>
     <NavLink href="/catalog/tours" class="btn btn-secondary">Back to Catalog Tours</NavLink>
 }
-else
+else if (_editContext is not null)
 {
-    @if (_success)
+    @if (_successMessage is not null)
     {
-        <div class="alert alert-success" role="alert">Catalog presentation updated.</div>
+        <div class="alert alert-success" role="status" aria-live="polite">@_successMessage</div>
     }
 
     @if (_errorMessage is not null)
@@ -30,32 +30,81 @@ else
         <div class="alert alert-danger" role="alert">@_errorMessage</div>
     }
 
-    <EditForm Model="@_model" OnValidSubmit="@HandleSubmit" FormName="editCatalogPresentation">
+    @if (_isPublished)
+    {
+        <div class="alert alert-info" role="status">Unpublish this tour before editing its public presentation.</div>
+    }
+
+    <EditForm EditContext="@_editContext" OnValidSubmit="@HandleSubmit" FormName="editCatalogPresentation">
         <DataAnnotationsValidator />
         <ValidationSummary />
 
         <div class="mb-3">
             <label for="title" class="form-label">Public title</label>
-            <InputText id="title" class="form-control" @bind-Value="_model.Title" />
+            <InputText id="title" class="form-control" disabled="@(_saving || _isPublished)" @bind-Value="_model.Title" />
         </div>
 
         <div class="mb-3">
             <label for="slug" class="form-label">Public slug</label>
-            <InputText id="slug" class="form-control" @bind-Value="_model.Slug" />
+            <InputText id="slug" class="form-control" disabled="@(_saving || _isPublished)" @bind-Value="_model.Slug" />
         </div>
 
-        <div class="form-check mb-3">
-            <InputCheckbox id="isPublished" class="form-check-input" @bind-Value="_model.IsPublished" />
-            <label for="isPublished" class="form-check-label">Published</label>
+        <div class="mb-3">
+            <label for="summary" class="form-label">Summary</label>
+            <InputText id="summary" class="form-control" disabled="@(_saving || _isPublished)" @bind-Value="_model.Summary" />
+        </div>
+
+        <div class="mb-3">
+            <label for="description" class="form-label">Description</label>
+            <InputTextArea id="description" class="form-control" disabled="@(_saving || _isPublished)" @bind-Value="_model.Description" />
+        </div>
+
+        <div class="mb-3">
+            <label for="itinerary" class="form-label">Itinerary</label>
+            <InputTextArea id="itinerary" class="form-control" disabled="@(_saving || _isPublished)" @bind-Value="_model.Itinerary" />
+        </div>
+
+        <div class="mb-3">
+            <label for="seoTitle" class="form-label">SEO title</label>
+            <InputText id="seoTitle" class="form-control" disabled="@(_saving || _isPublished)" @bind-Value="_model.SeoTitle" />
+        </div>
+
+        <div class="mb-3">
+            <label for="seoDescription" class="form-label">SEO description</label>
+            <InputTextArea id="seoDescription" class="form-control" disabled="@(_saving || _isPublished)" @bind-Value="_model.SeoDescription" />
+        </div>
+
+        <div class="mb-3">
+            <p id="publication-status" role="status" aria-live="polite">Status: @(_isPublished ? "Published" : "Draft")</p>
+            @if (_isPublished)
+            {
+                <button id="unpublish" type="button" class="btn btn-warning" disabled="@_saving" aria-describedby="publication-status" @onclick="Unpublish">
+                    Unpublish
+                </button>
+            }
+            else
+            {
+                <button id="publish" type="button" class="btn btn-success" disabled="@(_saving || _editContext?.IsModified() == true)" aria-describedby="@(_editContext?.IsModified() == true ? "publication-status publish-requirement" : "publication-status")" @onclick="Publish">
+                    Publish
+                </button>
+                @if (_editContext?.IsModified() == true)
+                {
+                    <span id="publish-requirement" class="form-text">Save presentation changes before publishing.</span>
+                }
+            }
         </div>
 
         <div class="d-flex gap-2">
-            <button type="submit" class="btn btn-primary" disabled="@_saving">
+            <button type="submit" class="btn btn-primary" disabled="@(_saving || _isPublished)">
                 @(_saving ? "Saving..." : "Save presentation")
             </button>
             <NavLink href="/catalog/tours" class="btn btn-secondary">Cancel</NavLink>
         </div>
     </EditForm>
+}
+else if (_errorMessage is not null)
+{
+    <div class="alert alert-danger" role="alert">@_errorMessage</div>
 }
 
 @code {
@@ -63,10 +112,12 @@ else
     public Guid Id { get; set; }
 
     private CatalogTourPresentationFormModel _model = new();
+    private EditContext? _editContext;
+    private bool _isPublished;
     private bool _loading = true;
     private bool _saving;
     private bool _notFound;
-    private bool _success;
+    private string? _successMessage;
     private string? _errorMessage;
 
     /// <inheritdoc />
@@ -87,8 +138,15 @@ else
             {
                 Title = tour.Title,
                 Slug = tour.Slug,
-                IsPublished = tour.IsPublished
+                Summary = tour.Summary,
+                Description = tour.Description,
+                Itinerary = tour.Itinerary,
+                SeoTitle = tour.SeoTitle,
+                SeoDescription = tour.SeoDescription,
+                ExpectedVersion = tour.Version
             };
+            _editContext = new EditContext(_model);
+            _isPublished = tour.IsPublished;
         }
         catch (HttpRequestException)
         {
@@ -103,7 +161,7 @@ else
     private async Task HandleSubmit()
     {
         _saving = true;
-        _success = false;
+        _successMessage = null;
         _errorMessage = null;
 
         try
@@ -114,7 +172,12 @@ else
                 {
                     Title = _model.Title,
                     Slug = _model.Slug,
-                    IsPublished = _model.IsPublished
+                    Summary = _model.Summary,
+                    Description = _model.Description,
+                    Itinerary = _model.Itinerary,
+                    SeoTitle = _model.SeoTitle,
+                    SeoDescription = _model.SeoDescription,
+                    ExpectedVersion = _model.ExpectedVersion
                 },
                 CancellationToken.None);
 
@@ -126,8 +189,15 @@ else
 
             _model.Title = updated.Title;
             _model.Slug = updated.Slug;
-            _model.IsPublished = updated.IsPublished;
-            _success = true;
+            _model.Summary = updated.Summary;
+            _model.Description = updated.Description;
+            _model.Itinerary = updated.Itinerary;
+            _model.SeoTitle = updated.SeoTitle;
+            _model.SeoDescription = updated.SeoDescription;
+            _model.ExpectedVersion = updated.Version;
+            _editContext?.MarkAsUnmodified();
+            _isPublished = updated.IsPublished;
+            _successMessage = "Catalog presentation updated.";
         }
         catch (ContractValidationException exception)
         {
@@ -135,9 +205,63 @@ else
                 ? "Catalog tour presentation could not be saved. Try again later."
                 : string.Join(" ", exception.ValidationErrors.SelectMany(error => error.Value));
         }
+        catch (HttpRequestException exception) when (exception.StatusCode == System.Net.HttpStatusCode.Accepted)
+        {
+            _successMessage = "Catalog presentation update accepted. Reload shortly to see the projected change.";
+        }
+        catch (HttpRequestException exception) when (exception.StatusCode == System.Net.HttpStatusCode.Conflict)
+        {
+            _errorMessage = "This tour changed after it was loaded. Reload it before saving again.";
+        }
         catch (HttpRequestException)
         {
             _errorMessage = "Catalog tour presentation could not be saved. Try again later.";
+        }
+        finally
+        {
+            _saving = false;
+        }
+    }
+
+    private Task Publish() => ChangePublication(publish: true);
+
+    private Task Unpublish() => ChangePublication(publish: false);
+
+    private async Task ChangePublication(bool publish)
+    {
+        _saving = true;
+        _successMessage = null;
+        _errorMessage = null;
+
+        try
+        {
+            var request = new CatalogTourPublicationRequest { ExpectedVersion = _model.ExpectedVersion };
+            if (publish)
+            {
+                await CatalogToursApi.Publish(Id, request, CancellationToken.None);
+            }
+            else
+            {
+                await CatalogToursApi.Unpublish(Id, request, CancellationToken.None);
+            }
+
+            _isPublished = publish;
+            _model.ExpectedVersion++;
+            _successMessage = publish ? "Catalog tour published." : "Catalog tour unpublished.";
+        }
+        catch (ContractValidationException exception)
+        {
+            _errorMessage = exception.ValidationErrors.Count == 0
+                ? "Catalog tour publication could not be changed. Try again later."
+                : string.Join(" ", exception.ValidationErrors.SelectMany(error => error.Value));
+        }
+        catch (HttpRequestException exception) when (exception.StatusCode == System.Net.HttpStatusCode.Accepted)
+        {
+            _successMessage = "Catalog publication change accepted. Reload shortly to see the projected status.";
+        }
+        catch (HttpRequestException)
+        {
+            _errorMessage = "Catalog tour publication could not be changed. Reload the tour and try again.";
         }
         finally
         {
@@ -153,6 +277,21 @@ else
         [Required, StringLength(ViajantesTurismo.Catalog.Contracts.Application.ContractConstants.MaxSlugLength, MinimumLength = 1)]
         public string Slug { get; set; } = string.Empty;
 
-        public bool IsPublished { get; set; }
+        [StringLength(ViajantesTurismo.Catalog.Contracts.Application.ContractConstants.MaxBodyLength)]
+        public string Summary { get; set; } = string.Empty;
+
+        [StringLength(ViajantesTurismo.Catalog.Contracts.Application.ContractConstants.MaxBodyLength)]
+        public string Description { get; set; } = string.Empty;
+
+        [StringLength(ViajantesTurismo.Catalog.Contracts.Application.ContractConstants.MaxBodyLength)]
+        public string Itinerary { get; set; } = string.Empty;
+
+        [StringLength(ViajantesTurismo.Catalog.Contracts.Application.ContractConstants.MaxNameLength)]
+        public string SeoTitle { get; set; } = string.Empty;
+
+        [StringLength(ViajantesTurismo.Catalog.Contracts.Application.ContractConstants.MaxBodyLength)]
+        public string SeoDescription { get; set; } = string.Empty;
+
+        public long ExpectedVersion { get; set; }
     }
 }

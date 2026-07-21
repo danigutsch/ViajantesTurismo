@@ -1,4 +1,5 @@
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Storage;
 using SharedKernel.Idempotency.EntityFrameworkCore;
 using ViajantesTurismo.Catalog.Infrastructure;
 
@@ -8,8 +9,13 @@ internal static class EfPublicContentStoreTestDbContextFactory
 {
     public static CatalogDbContext Create()
     {
+        return Create(Guid.NewGuid().ToString(), new InMemoryDatabaseRoot());
+    }
+
+    public static CatalogDbContext Create(string databaseName, InMemoryDatabaseRoot databaseRoot)
+    {
         var options = new DbContextOptionsBuilder<CatalogDbContext>()
-            .UseInMemoryDatabase(Guid.NewGuid().ToString())
+            .UseInMemoryDatabase(databaseName, databaseRoot)
             .Options;
 
         return new CatalogDbContext(options, [new IdempotencyDbContextConfiguration<CatalogDbContext>()]);

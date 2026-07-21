@@ -1,4 +1,5 @@
 using SharedKernel.AspNetCore;
+using SharedKernel.HttpCaching.AspNetCore;
 using SharedKernel.OpenApi;
 using ViajantesTurismo.Catalog.ApiService;
 using ViajantesTurismo.Catalog.Infrastructure;
@@ -22,6 +23,7 @@ builder.Services.AddApiSecurity(
         CatalogAuthorization.PermissionsByRole)
     .AddPolicy(CatalogAuthorization.CatalogRead, policy => policy.RequirePermission(CatalogAuthorization.CatalogRead))
     .AddPolicy(CatalogAuthorization.CatalogWrite, policy => policy.RequirePermission(CatalogAuthorization.CatalogWrite))
+    .AddPolicy(CatalogAuthorization.CatalogPublish, policy => policy.RequirePermission(CatalogAuthorization.CatalogPublish))
     .AddPolicy(CatalogAuthorization.MediaAi, policy => policy.RequirePermission(CatalogAuthorization.MediaAi));
 builder.AddCatalogInfrastructure();
 
@@ -33,6 +35,19 @@ app.MapConfiguredOpenApi();
 
 app.UsePublicContentLanguageQueryAlias();
 app.UseCors(CatalogSecurityBaseline.CorsPolicyName);
+app.Use(static (context, next) =>
+{
+    if (context.Request.Path.StartsWithSegments("/api/v1/catalog", StringComparison.OrdinalIgnoreCase))
+    {
+        context.Response.OnStarting(static state =>
+        {
+            HttpCacheHeaders.SetNoStore((HttpContext)state);
+            return Task.CompletedTask;
+        }, context);
+    }
+
+    return next(context);
+});
 
 app.UseApiSecurity();
 app.UseRateLimiter();

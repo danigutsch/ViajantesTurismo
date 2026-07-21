@@ -17,9 +17,36 @@ public interface ICatalogTourReadModelStore
     /// </summary>
     /// <param name="catalogTourId">The Catalog tour identifier.</param>
     /// <param name="update">The presentation update.</param>
+    /// <param name="streamVersion">The event-stream version represented by the update.</param>
+    /// <param name="position">The global event position when available.</param>
+    /// <param name="updatedAt">The event-recorded timestamp.</param>
     /// <param name="ct">The cancellation token.</param>
     /// <returns>The updated tour when one exists; otherwise, <see langword="null" />.</returns>
-    ValueTask<CatalogTourDraftReadModel?> UpdatePresentation(Guid catalogTourId, CatalogTourPresentationUpdate update, CancellationToken ct);
+    ValueTask<CatalogTourDraftReadModel?> UpdatePresentation(
+        Guid catalogTourId,
+        CatalogTourPresentationUpdate update,
+        long streamVersion,
+        long position,
+        DateTimeOffset updatedAt,
+        CancellationToken ct);
+
+    /// <summary>
+    /// Updates the projected public visibility state after an explicit event-sourced transition.
+    /// </summary>
+    /// <param name="catalogTourId">The Catalog tour identifier.</param>
+    /// <param name="isPublished">Whether the tour is publicly visible.</param>
+    /// <param name="streamVersion">The event-stream version represented by the update.</param>
+    /// <param name="position">The global event position when available.</param>
+    /// <param name="updatedAt">The event-recorded timestamp.</param>
+    /// <param name="ct">The cancellation token.</param>
+    /// <returns>The updated tour when one exists; otherwise, <see langword="null" />.</returns>
+    ValueTask<CatalogTourDraftReadModel?> SetPublicationStatus(
+        Guid catalogTourId,
+        bool isPublished,
+        long streamVersion,
+        long position,
+        DateTimeOffset updatedAt,
+        CancellationToken ct);
 
     /// <summary>
     /// Gets a Catalog tour by its identifier.

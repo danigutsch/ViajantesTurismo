@@ -4,14 +4,14 @@ namespace ViajantesTurismo.Catalog.UnitTests;
 
 public sealed class CancelledEventStore : IEventStore
 {
-    public ValueTask Append(
+    public ValueTask<IReadOnlyCollection<EventEnvelope>> Append(
         StreamId streamId,
         ExpectedStreamRevision expectedRevision,
         IReadOnlyCollection<object> events,
         CancellationToken ct)
     {
         ct.ThrowIfCancellationRequested();
-        return ValueTask.CompletedTask;
+        return ValueTask.FromResult<IReadOnlyCollection<EventEnvelope>>([]);
     }
 
     public ValueTask<IReadOnlyCollection<EventEnvelope>> Load(

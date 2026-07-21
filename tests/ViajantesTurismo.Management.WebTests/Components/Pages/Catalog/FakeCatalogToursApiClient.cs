@@ -1,3 +1,4 @@
+using System.Net;
 using SharedKernel.HttpClients;
 
 namespace ViajantesTurismo.Management.WebTests.Components.Pages.Catalog;
@@ -9,6 +10,18 @@ internal sealed class FakeCatalogToursApiClient : ICatalogToursApiClient
     public bool ThrowOnGetTours { get; set; }
 
     public ContractValidationException? ValidationException { get; set; }
+
+    public bool ThrowConflictOnUpdate { get; set; }
+
+    public bool ThrowAcceptedOnUpdate { get; set; }
+
+    public bool ThrowAcceptedOnPublication { get; set; }
+
+    public UpsertCatalogTourPresentationRequest? LastPresentationRequest { get; private set; }
+
+    public CatalogTourPublicationRequest? LastPublicationRequest { get; private set; }
+
+    public bool? LastPublicationState { get; private set; }
 
     public IReadOnlyList<CatalogMediaImageDto> Images { get; set; } = [];
 
@@ -75,6 +88,17 @@ internal sealed class FakeCatalogToursApiClient : ICatalogToursApiClient
             throw ValidationException;
         }
 
+        LastPresentationRequest = request;
+        if (ThrowAcceptedOnUpdate)
+        {
+            throw new HttpRequestException("Catalog tour projection pending.", null, HttpStatusCode.Accepted);
+        }
+
+        if (ThrowConflictOnUpdate)
+        {
+            throw new HttpRequestException("Catalog tour version conflict.", null, HttpStatusCode.Conflict);
+        }
+
         var tour = Tours.SingleOrDefault(tour => tour.Id == id);
         if (tour is null)
         {
@@ -85,11 +109,26 @@ internal sealed class FakeCatalogToursApiClient : ICatalogToursApiClient
         {
             Title = request.Title,
             Slug = request.Slug,
-            IsPublished = request.IsPublished
+            Summary = request.Summary,
+            Description = request.Description,
+            Itinerary = request.Itinerary,
+            SeoTitle = request.SeoTitle,
+            SeoDescription = request.SeoDescription,
+            Version = tour.Version + 1
         };
 
         Tours = Tours.Select(current => current.Id == id ? updated : current).ToArray();
         return Task.FromResult<CatalogTourDto?>(updated);
+    }
+
+    public Task Publish(Guid id, CatalogTourPublicationRequest request, CancellationToken ct)
+    {
+        return ChangePublication(id, request, isPublished: true, ct);
+    }
+
+    public Task Unpublish(Guid id, CatalogTourPublicationRequest request, CancellationToken ct)
+    {
+        return ChangePublication(id, request, isPublished: false, ct);
     }
 
     public Task<CatalogMediaImageDto?> GenerateMediaImageAccessibilityDraft(Guid id, PublicMediaImageAccessibilityDraftRequest request, CancellationToken ct)
@@ -165,5 +204,30 @@ internal sealed class FakeCatalogToursApiClient : ICatalogToursApiClient
         }
 
         return Task.FromResult(Media);
+    }
+
+    private Task ChangePublication(
+        Guid id,
+        CatalogTourPublicationRequest request,
+        bool isPublished,
+        CancellationToken ct)
+    {
+        ct.ThrowIfCancellationRequested();
+        LastPublicationRequest = request;
+        LastPublicationState = isPublished;
+
+        if (ThrowAcceptedOnPublication)
+        {
+            throw new HttpRequestException("Catalog tour projection pending.", null, HttpStatusCode.Accepted);
+        }
+
+        var tour = Tours.SingleOrDefault(tour => tour.Id == id);
+        if (tour is not null)
+        {
+            var updated = tour with { IsPublished = isPublished, Version = tour.Version + 1 };
+            Tours = Tours.Select(current => current.Id == id ? updated : current).ToArray();
+        }
+
+        return Task.CompletedTask;
     }
 }

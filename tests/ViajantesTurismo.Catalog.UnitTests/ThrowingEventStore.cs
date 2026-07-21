@@ -4,7 +4,7 @@ namespace ViajantesTurismo.Catalog.UnitTests;
 
 public sealed class ThrowingEventStore : IEventStore
 {
-    public ValueTask Append(
+    public ValueTask<IReadOnlyCollection<EventEnvelope>> Append(
         StreamId streamId,
         ExpectedStreamRevision expectedRevision,
         IReadOnlyCollection<object> events,

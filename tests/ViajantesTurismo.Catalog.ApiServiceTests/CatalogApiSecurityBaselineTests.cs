@@ -127,6 +127,8 @@ public sealed class CatalogApiSecurityBaselineTests
 
     [Theory]
     [InlineData("PUT", "/api/v1/catalog/tours/1d02ec44-41b5-4d3a-878b-89f53261a803/presentation")]
+    [InlineData("POST", "/api/v1/catalog/tours/1d02ec44-41b5-4d3a-878b-89f53261a803/publish")]
+    [InlineData("POST", "/api/v1/catalog/tours/1d02ec44-41b5-4d3a-878b-89f53261a803/unpublish")]
     [InlineData("POST", "/api/v1/catalog/tours/1d02ec44-41b5-4d3a-878b-89f53261a803/images")]
     [InlineData("POST", "/api/v1/catalog/media/images/1d02ec44-41b5-4d3a-878b-89f53261a803/accessibility-draft")]
     [InlineData("PUT", "/api/v1/catalog/media/images/1d02ec44-41b5-4d3a-878b-89f53261a803/accessibility-review")]
@@ -152,6 +154,13 @@ public sealed class CatalogApiSecurityBaselineTests
 
         // Assert
         limitedResponse.StatusCode.ShouldBe(HttpStatusCode.TooManyRequests);
+        var cacheControl = limitedResponse.Headers.CacheControl.ShouldNotBeNull();
+        cacheControl.NoStore.ShouldBeTrue();
+        limitedResponse.Headers.GetValues("Pragma").ShouldHaveSingleItem().ShouldBe("no-cache");
+        var expires = limitedResponse.Headers.NonValidated.TryGetValues("Expires", out var values)
+            ? values
+            : limitedResponse.Content.Headers.NonValidated["Expires"];
+        expires.ShouldHaveSingleItem().ShouldBe("Thu, 01 Jan 1970 00:00:00 GMT");
     }
 
     [Fact]
