@@ -7,8 +7,8 @@ events, call external side effects, or run asynchronous processing.
 
 - Media upload and processing currently touch database rows and media object storage.
 - Admin tour creation writes the Admin database and EF outbox rows in the same `SaveChanges` unit.
-- Catalog integration handling writes the Catalog event store behind a durable idempotency wrapper, but
-  broker transport is not wired in the current runtime.
+- Admin relays outbox envelopes into its PostgreSQL transport table. `IntegrationEventWorker` claims
+  transport batches and writes the Catalog event store behind Catalog's durable idempotency wrapper.
 - Catalog projection processing reads the event store, writes read models, then writes a checkpoint.
 - Public content, Branding settings, Catalog media metadata API, Admin
   booking/customer/tour mutations,
@@ -48,13 +48,13 @@ events, call external side effects, or run asynchronous processing.
 - Trigger: `CreateTourCommandHandler.Handle`.
 - Code: `src/ViajantesTurismo.Admin.Application/Tours/CreateTour/CreateTourCommandHandler.cs`.
 - Systems touched: Admin write database and `messaging.outbox_messages`.
-- Failure window: transport publication is not wired yet; committed outbox rows can accumulate until a
-  publisher exists.
+- Failure window: the relay may stop after the Admin transaction commits or after a transport attempt.
 - Existing mitigation: Admin aggregate rows and outbox rows are persisted in the same `SaveChanges`
   transaction through the shared EF Core outbox provider.
-- Remaining risk: outbox rows are durable but not yet published to Catalog.ApiService.
-- Recommendation: add a background publisher/transport consumer; do not publish directly from
-  `SavingChanges`.
+- Existing mitigation: the Admin relay uses leased claims and retry state, writes the Admin-owned
+  PostgreSQL transport table, and leaves failed outbox rows retryable. `IntegrationEventWorker` claims
+  transport rows with `FOR UPDATE SKIP LOCKED` and lease/retry metadata.
+- Recommendation: retain durable relay/worker monitoring; do not publish directly from `SavingChanges`.
 
 #### SaveChanges failure semantics
 
@@ -88,10 +88,11 @@ and connection-resiliency guidance on transaction commit ambiguity:
 - Failure window: duplicate event delivery after a handler success or transient failure.
 - Existing mitigation: `ExpectedStreamRevision.NoStream` prevents duplicate stream creation for the
   same Admin tour id.
-- Remaining risk: duplicate delivery is modeled as a stream revision conflict, not as an explicit
-  idempotent success. This is acceptable only while dispatch is in-process/test-like.
-- Recommendation: route broker-delivered events through `IdempotentIntegrationHandler<TIntegrationEvent>`
-  and the EF Core idempotency store.
+- Existing mitigation: `IntegrationEventWorker` resolves
+  `IdempotentIntegrationHandler<TIntegrationEvent>` through the generated typed envelope publisher.
+  Catalog's idempotency entry guards the stable source and event id before the inner handler appends.
+- Remaining risk: handler side effects still require replay-safe keys if completion fails after an
+  externally visible side effect.
 
 ### Catalog integration idempotency wrapper
 
@@ -101,10 +102,11 @@ and connection-resiliency guidance on transaction commit ambiguity:
 - Failure window: inner handler succeeds, then `Complete` fails; retry can re-run side effects after
   the lock expires.
 - Existing mitigation: lock duration and completion fingerprint.
-- Current runtime status: `SharedKernel.EntityFrameworkCore` provides `EfIdempotencyStore<TContext>` and
-  maps entries to `messaging.idempotency_keys`; no broker wiring consumes through this wrapper yet.
-- Recommendation: keep handler side effects idempotent by stable keys plus safe conflict handling, then
-  use the durable idempotency row as the delivery guard when real message ingress exists.
+- Current runtime status: `SharedKernel.Idempotency.EntityFrameworkCore` provides
+  `EfIdempotencyStore<TContext>` and maps entries to Catalog's `messaging.idempotency_keys`.
+  `IntegrationEventWorker` consumes through this wrapper.
+- Recommendation: keep handler side effects idempotent by stable keys plus safe conflict handling, and
+  retain the durable Catalog idempotency row as the delivery guard for current message ingress.
 
 ### Catalog event-store projection runner
 
@@ -149,7 +151,9 @@ and connection-resiliency guidance on transaction commit ambiguity:
 - Code: `src/ViajantesTurismo.MigrationService/MigrationRunner.cs`.
 - Systems touched: Catalog, Branding, and Management Security migrations plus Admin migration and seeding.
 - Failure window: startup seeding can partially apply if later seed steps fail.
-- Existing mitigation: intended local/startup migration workflow; EF migrations are idempotent.
+- Existing mitigation: intended local/startup migration workflow; EF migrations are idempotent, and
+  `InitializeCatalogEventSourcingSchema` delegates rerunnable Catalog event-store DDL to
+  `PostgreSqlEventSourcingSchema.Initialize`.
 - Recommendation: no production outbox/inbox. Keep seed methods idempotent and re-runnable.
 
 ### Frontend and contract HTTP API clients
@@ -173,6 +177,6 @@ and connection-resiliency guidance on transaction commit ambiguity:
 
 ## Follow-up implementation candidates
 
-1. Add an outbox publisher and Catalog transport consumer for durable cross-service event delivery.
+1. Add operational alerting for exhausted relay/consumer retries and expired claims.
 2. Add a media reconciliation job after object storage becomes remote or delete failures need durable
    repair outside the request path.

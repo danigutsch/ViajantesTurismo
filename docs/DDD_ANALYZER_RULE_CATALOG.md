@@ -36,7 +36,6 @@ Examples that should not report:
 
 ```csharp
 public sealed record TourCreatedDomainEvent(Guid TourId) : IDomainEvent;
-public sealed class DomainEventNotification<TDomainEvent> where TDomainEvent : IDomainEvent;
 ```
 
 Suppress only for externally named contracts that cannot be renamed.

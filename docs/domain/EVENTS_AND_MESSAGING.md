@@ -55,26 +55,26 @@ Owns reusable identity interfaces, value objects, and small cross-context primit
 
 ### `SharedKernel.DomainEvents`
 
-Owns typed domain event dispatch:
+Owns the transaction-boundary domain event dispatch contract:
 
 - `IDomainEventDispatcher`.
-- `IDomainEventHandler<TDomainEvent>`.
-- Mediator adapter for in-process generated dispatch.
+- The EF Core interceptor contract used before the owning `SaveChanges` transaction commits.
 
-Domain event dispatch stays local to the bounded context. It does not use CloudEvents, inbox, or
-outbox persistence by default.
+The integration-event source generator owns exhaustive domain-event-to-outbox mapping calls. The
+mediator generator does not discover domain event handlers or register a competing dispatcher.
 
 ### `SharedKernel.Messaging.IntegrationEvents`
 
-Owns typed integration event dispatch:
+Owns typed integration event contracts and transport boundaries:
 
 - `IIntegrationEvent`.
-- `IIntegrationEventDispatcher`.
 - `IIntegrationEventHandler<TIntegrationEvent>`.
+- `IIntegrationEventSerializer` and `IEventEnvelopePublisher` boundaries.
 - Event type and version conventions.
 
-Integration events can be persisted and transported through adapters, but the core abstraction
-project remains dependency-free.
+The integration-event generator emits closed, typed serialization, deserialization, envelope delivery,
+and domain-event mapping cases for each host compilation. It does not emit runtime registries,
+reflection, or ordinary-flow service-provider lookup.
 
 ### `SharedKernel.Messaging.IntegrationEvents.CloudEvents`
 
@@ -140,9 +140,31 @@ For example, `SharedKernel.EventSourcing.Npgsql` contains PostgreSQL event-store
 checkpoint persistence, while `SharedKernel.EventSourcing` remains storage-neutral.
 
 Bounded-context infrastructure owns composition, schema naming, migrations, read models, and
-context-specific operational policy. See
+context-specific operational policy. Generated and runtime ownership is explicit:
+
+| Capability | Owner | Registration and lifetime |
+| --- | --- | --- |
+| Request, stream, and notification dispatch | `SharedKernel.Mediator.SourceGenerator` | `AppMediator` is scoped; generated typed constructor dependencies preserve pipeline order and avoid dispatch-time service location. |
+| Domain event to transactional outbox mapping | `SharedKernel.Messaging.IntegrationEvents.SourceGenerator` | `IDomainEventDispatcher` is a singleton over the async-local EF outbox boundary and `TimeProvider`. |
+| Integration-event serialization | `SharedKernel.Messaging.IntegrationEvents.SourceGenerator` | `IIntegrationEventSerializer` is singleton and receives closed `JsonTypeInfo<T>` dependencies. |
+| Background envelope delivery | `SharedKernel.Messaging.IntegrationEvents.SourceGenerator` | One consumer scope owns each claimed batch; its generated `IEventEnvelopePublisher` and typed handlers process messages sequentially. |
+| Outbox persistence and relay | `SharedKernel.Messaging.IntegrationEvents.EntityFrameworkCore` | Context configuration and outbox services are explicit; relay/retry remains infrastructure-owned. |
+| Inbox idempotency | `SharedKernel.Idempotency.EntityFrameworkCore` | Owns `EfIdempotencyStore<TContext>` and its model configuration. `SharedKernel.Messaging.IntegrationEvents.EntityFrameworkCore` exposes `AddIntegrationEventInbox<TContext>()` as the integration-event composition call; inbox registration is not implied by outbox registration. |
+
+See
 [ADR-027](../adr/20260624-provider-specific-sharedkernel-infrastructure-modules.md) for naming and
 boundary rules.
+
+Generated code owns closed mechanical dispatch only; business behavior, persistence transactions,
+leases, retries, idempotency, and authorization remain in their runtime owners. Dynamic registries are
+not part of the generated path.
+
+| Boundary | Runtime entry | Generated responsibility | Runtime/business responsibility |
+| --- | --- | --- | --- |
+| Admin use case | Endpoint to directly resolved scoped handler | None | Handler orchestration, validation, authorization, aggregate behavior, and `SaveEntities(ct)`. |
+| Regular mediator use case | Caller to scoped `AppMediator` | Closed request/stream/notification and pipeline calls | Handler business behavior and configured pipeline semantics. |
+| Admin persistence | `SaveChanges` interceptor to generated domain-event dispatcher to outbox | Exhaustive domain-to-integration mapping and typed serialization | EF transaction, aggregate state, outbox atomicity, and post-save domain-event clearing. |
+| Durable delivery | Admin relay to PostgreSQL transport to worker batch to generated publisher | Closed envelope deserialization and typed handler selection | `FOR UPDATE SKIP LOCKED`, batch scope, sequential processing, lease/retry, Catalog idempotency, and handler side effects. |
 
 ## Domain Events
 
@@ -168,11 +190,6 @@ public interface IDomainEventDispatcher
         where TDomainEvent : IDomainEvent;
 }
 
-public interface IDomainEventHandler<in TDomainEvent>
-    where TDomainEvent : IDomainEvent
-{
-    ValueTask Handle(TDomainEvent domainEvent, CancellationToken ct);
-}
 ```
 
 ## Integration Events
@@ -207,15 +224,13 @@ flowchart LR
     aggregate[Aggregate records domain event]
     handler[Application handler saves domain state]
     dispatcher[Domain event dispatcher]
-    domainHandler[Domain event handler]
     outbox[(Integration outbox)]
     publisher[Outbox publisher]
     transport[Transport adapter]
 
     aggregate --> handler
     handler --> dispatcher
-    dispatcher --> domainHandler
-    domainHandler -->|only when external notification is needed| outbox
+    dispatcher -->|only for generated external mappings| outbox
     outbox --> publisher
     publisher --> transport
 ```
@@ -224,12 +239,6 @@ Example shape:
 
 ```csharp
 public interface IIntegrationEvent;
-
-public interface IIntegrationEventDispatcher
-{
-    ValueTask Dispatch<TIntegrationEvent>(TIntegrationEvent integrationEvent, CancellationToken ct)
-        where TIntegrationEvent : IIntegrationEvent;
-}
 
 public interface IIntegrationEventHandler<in TIntegrationEvent>
     where TIntegrationEvent : IIntegrationEvent
@@ -276,12 +285,14 @@ Runtime shape:
 - EF Core outbox provider code lives in `SharedKernel.Messaging.IntegrationEvents.EntityFrameworkCore`.
 - EF Core idempotency provider code lives in `SharedKernel.Idempotency.EntityFrameworkCore`.
 - EF outbox messages are stored in `messaging.outbox_messages`.
-- `AddIntegrationEventOutbox<TContext>()` registers the EF outbox, the shared idempotency store,
-  and the model configuration for both messaging tables.
-- `AddIntegrationEventInbox<TContext>()` registers only the shared idempotency store and inbox table
-  model configuration for contexts that consume but do not publish integration events.
-- Admin registers an AOT-safe `IIntegrationEventSerializer` for Admin integration events before
-  registering its outbox.
+- `AddIntegrationEventOutbox<TContext>()` registers only the EF outbox and its
+  `messaging.outbox_messages` model configuration.
+- `SharedKernel.Messaging.IntegrationEvents.EntityFrameworkCore` exposes
+  `AddIntegrationEventInbox<TContext>()`; it delegates to the
+  `SharedKernel.Idempotency.EntityFrameworkCore` provider and registers only the shared idempotency
+  store and inbox table model configuration.
+- Admin supplies AOT-safe `JsonTypeInfo<T>` metadata; generated composition registers the closed
+  `IIntegrationEventSerializer` before the EF outbox resolves it.
 
 Recommended columns:
 
@@ -301,9 +312,8 @@ Recommended columns:
 - `failed_at_utc`.
 - `last_error`.
 
-Current EF provider columns are intentionally smaller until a transport publisher is wired: `id`,
-`event_type`, `event_version`, `event_id`, `occurred_at`, `payload_json`, `enqueued_at`, and
-`published_at`.
+The current EF provider stores the complete envelope plus publish attempts, next-attempt time, claim
+owner/lease, publication time, and last error required by the PostgreSQL relay.
 
 ### Inbox
 
@@ -325,14 +335,18 @@ retry.
 Runtime shape:
 
 - Core idempotency contracts live in `SharedKernel.Idempotency`.
-- EF Core provider code lives in `SharedKernel.EntityFrameworkCore`.
+- EF Core provider code lives in `SharedKernel.Idempotency.EntityFrameworkCore`.
 - Durable idempotency entries are stored in `messaging.idempotency_keys`.
-- `AddIntegrationEventInbox<TContext>()` is the app-facing startup call for consumers that need inbox
-  idempotency without an outbound outbox.
+- `AddIntegrationEventInbox<TContext>()` is the integration-event adapter's app-facing startup call for
+  consumers that need inbox idempotency. `SharedKernel.Idempotency.EntityFrameworkCore` owns the store,
+  entity, and model configuration used by that call.
 - Catalog consumes Admin tour-created events through `IdempotentIntegrationHandler<TIntegrationEvent>`
   when the handler is resolved from DI.
 - The idempotency row moves from `Started` to `Completed` after the inner handler succeeds. If the
   process fails before completion, a later delivery can restart after the configured lock duration.
+- The PostgreSQL consumer claims rows with `FOR UPDATE SKIP LOCKED`, lease, and retry metadata. One DI
+  scope owns the claimed batch; messages are delivered sequentially through the generated publisher.
+  The runtime does not claim per-envelope parallelism.
 
 Recommended columns:
 
@@ -366,13 +380,13 @@ Event-sourced flows should include:
 Catalog tours use event sourcing because customer-facing content needs clear versioning, auditability,
 and rebuildable projections.
 
-## Future Runtime Direction
+## Runtime Direction
 
-The repository may later add a small endpoint/runtime framework that integrates:
+Keep runtime capabilities independently composable:
 
 - Minimal API endpoint registration.
 - Mediator command/query handlers.
-- Domain event handlers.
+- Generated domain-event-to-outbox mappings.
 - Integration event subscriptions.
 - Event-sourced projections.
 - Health checks and diagnostics.
@@ -380,7 +394,7 @@ The repository may later add a small endpoint/runtime framework that integrates:
 
 Transport adapters should remain replaceable:
 
-- In-process mediator.
+- Generated in-process mediator.
 - PostgreSQL inbox/outbox.
 - CloudEvents HTTP.
 - Dapr pub/sub.
@@ -394,3 +408,5 @@ Transport adapters should remain replaceable:
 - [ADR-024: CloudEvents as Integration Event Adapter](../adr/20260621-cloudevents-as-integration-event-adapter.md)
 - [ADR-025: Event Source Catalog Tour Presentation](../adr/20260621-event-source-catalog-tour-presentation.md)
 - [Catalog Bounded Context](../bounded-contexts/Catalog.md)
+- [Generated messaging dispatch ownership](../adr/20260719-generated-messaging-dispatch-ownership.md)
+- [SharedKernel packaging and source-generator contracts](../SHAREDKERNEL_PACKAGING.md)

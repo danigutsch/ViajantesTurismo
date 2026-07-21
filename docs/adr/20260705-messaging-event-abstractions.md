@@ -1,6 +1,6 @@
 # ADR-033: Messaging Event Abstractions and CloudEvents Boundary
 
-**Status**: Proposed - 2026-07-05
+**Status**: Accepted - 2026-07-19
 
 ## Context
 
@@ -92,11 +92,12 @@ simple composition while there are only a few concrete message records. Keep gen
 mechanical mapping, diagnostics, and serializer registration, not business validation or persistence
 state machines.
 
-Potential generator candidates later:
+Adopted generator responsibilities:
 
-- `IIntegrationEvent` to `EventEnvelope` metadata mapping.
-- AOT-safe serializer context registration for known event contracts.
-- Compile-time diagnostics for missing event type, event version, source, or serializer support.
+- Direct exhaustive domain-event-to-outbox mapping.
+- AOT-safe typed serialization and envelope delivery for known event contracts.
+- Compile-time diagnostics for missing or duplicate consumer handlers and duplicate consumer event
+  types.
 
 Non-candidates for now:
 

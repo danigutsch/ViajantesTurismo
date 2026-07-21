@@ -82,6 +82,8 @@ Current AppHost rules:
 - Admin and Catalog APIs wait for database migration completion.
 - Management Web waits for Redis, Admin API, and Catalog API.
 - Public Web waits for Catalog API.
+- `IntegrationEventWorker` waits for migration completion and receives both Admin and Catalog database
+  references. It reads Admin transport rows and writes Catalog idempotency/event-store state.
 - API services stay internal; web frontends expose external HTTP endpoints.
 - ClamAV stays private on TCP; Admin API, Catalog API, and Integration Event Worker receive its
   private host and port and wait for its PING/PONG health check.
@@ -140,6 +142,8 @@ Deployment mapping:
 Current behavior:
 
 - `MigrationService` applies database migrations and seed data, then exits.
+- `InitializeCatalogEventSourcingSchema` invokes `PostgreSqlEventSourcingSchema.Initialize` after the
+  Catalog EF migration; the initializer is rerunnable and owns the Catalog event-store schema only.
 - Admin, Catalog, Branding, and Management Security wait for `MigrationService` completion before starting.
 - The Admin, Catalog, Branding, and Management Security infrastructure projects are referenced by the migration service.
 
@@ -148,6 +152,10 @@ Operational boundary:
 - Migration state belongs to the database and migration service.
 - Business rules for seeded data still belong in domain/application code.
 - Deployment automation should preserve the startup ordering or provide an equivalent migration gate.
+
+Admin and Catalog use separate PostgreSQL databases, even when both databases share one server. Each
+database owns its own `messaging` schema. The Admin relay and transport queue remain in the Admin
+database; Catalog inbox/idempotency and Catalog outbox state remain in the Catalog database.
 
 ## Local Aspire versus deployment guidance
 

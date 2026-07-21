@@ -28,32 +28,39 @@ or forbidden dependency directions, see [Architecture boundaries and dependency 
 
 ## Admin-to-Catalog content workflow
 
-See [Architecture flows](FLOWS.md) for Admin workflows, Catalog event-sourcing/projection flows,
-localized public-content review flows, media/gallery metadata flows, and Branding adapter flows. Those
-diagrams separate current implementation from planned/evolving work.
+See [Architecture flows](FLOWS.md) for Admin workflows, the implemented Admin-to-Catalog transport,
+Catalog event-sourcing/projection flows, localized public-content review flows, media/gallery metadata
+flows, and Branding adapter flows. Planned behavior remains explicitly marked.
 
-### Planned Admin-to-Catalog publication direction
+### Implemented Admin-to-Catalog publication
 
 ```mermaid
 sequenceDiagram
     participant Admin as Admin context
-    participant Dispatcher as Integration event dispatcher
-    participant Catalog as Catalog consumer
+    participant Outbox as Admin outbox
+    participant Relay as Admin relay
+    participant Queue as Admin PostgreSQL transport
+    participant Worker as IntegrationEventWorker
+    participant Inbox as Catalog idempotency
     participant Store as PostgreSQL event store
     participant Projection as Catalog projection
     participant Public as Public.Web
 
-    Admin->>Dispatcher: Published tour integration event
-    Dispatcher->>Catalog: Handle integration event
-    Catalog->>Store: Append Catalog event
-    Catalog->>Projection: Process projection batch
+    Admin->>Outbox: Commit tour + envelope atomically
+    Relay->>Outbox: Claim with lease
+    Relay->>Queue: Publish transport message
+    Worker->>Queue: Claim batch with SKIP LOCKED
+    Worker->>Inbox: TryStart(source + event id)
+    Worker->>Store: Invoke typed handler; append Catalog event
+    Projection->>Store: Poll appended events after checkpoint
+    Projection->>Projection: Update read model and checkpoint
     Public->>Projection: Read published tour presentation
 ```
 
-The diagram above is the intended durable flow. Current production runtime has typed events, Admin
-outbox persistence, Catalog idempotency persistence, and Catalog consumer/projection components. The
-transport publisher/consumer path is still evolving. See
-[Events and messaging](../domain/EVENTS_AND_MESSAGING.md) and Catalog ADRs in
+Admin and Catalog use separate databases, which may share one PostgreSQL server. Admin owns its
+`messaging` schema, outbox, and transport rows. Catalog owns its `messaging` schema and idempotency rows.
+The worker reads Admin transport rows and performs Catalog handling through one scoped, sequential
+claimed batch. See [Events and messaging](../domain/EVENTS_AND_MESSAGING.md) and Catalog ADRs in
 [Architecture decisions](../ARCHITECTURE_DECISIONS.md#architecture--layers).
 
 ## Domain references
@@ -81,6 +88,7 @@ transport publisher/consumer path is still evolving. See
   contracts and Public.Web rendering, separate from core Admin CRUD.
 - Configurable branding now belongs to `SharedKernel.Branding` plus the ViajantesTurismo Branding API
   adapter. Catalog does not own Branding routes or clients.
-- Media/gallery management is planned under public-web media issues.
+- Catalog media upload, management metadata, accessibility drafts, processing, reconciliation, and
+  public ready-image filtering are implemented; event-sourced gallery editing remains planned.
 - Adapter package splits should follow ADR-027's capability-first naming, dependency-direction, and
   split-threshold rules.
