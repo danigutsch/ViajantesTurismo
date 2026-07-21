@@ -79,6 +79,22 @@ real consumption in this repository.
 Stable releases are promoted from the same source revision that passed the required prerelease or CI
 gate. Do not rebuild different source and call it the same release.
 
+### Addendum — 2026-07-20: Alpha direct evolution
+
+While an output remains alpha, evolve its current code and contract directly. Do not retain legacy
+implementations or compatibility layers solely for backward compatibility. Update affected callers,
+tests, contract artifacts, and documentation atomically. Significant consumer-visible breaks remain
+documented.
+
+For app HTTP APIs, the current `v1` route identifies the active alpha contract; it is not a promise to
+keep earlier alpha contracts available. Do not add a parallel `/api/v2` route solely to preserve an
+earlier alpha contract.
+
+This does not relax data safety. Migrations must preserve or transform durable data before destructive
+changes and follow the repository migration gate, backup, and recovery practices. Superseded application
+code and contract types do not need to remain in the active source tree. The compatibility promise begins
+at beta; beta and stable commitments remain unchanged.
+
 ## Consequences
 
 - The repository can implement versioning automation without reopening package-policy decisions.

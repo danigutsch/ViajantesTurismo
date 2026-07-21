@@ -21,6 +21,9 @@ Keep app-specific boundary names, domain policy, and business compatibility rule
 ViajantesTurismo app APIs use URL path versioning. The current public contract version is `v1`, exposed under
 `/api/v1/...`.
 
+While the app remains alpha, `v1` identifies the active route shape; it does not promise that earlier
+alpha contracts remain available.
+
 Current route prefixes:
 
 - Admin: `/api/v1/tours`, `/api/v1/customers`, `/api/v1/customers/import`, `/api/v1/bookings`, and
@@ -35,14 +38,32 @@ OpenAPI artifacts keep the existing boundary files (`tours`, `customers`, `booki
 and add a service-wide `v1` document for version-level review. Refresh committed artifacts only when the HTTP contract
 changes intentionally.
 
-## Deprecation
+## Alpha evolution
 
-Use `ApiVersionStatus.Deprecated` for versions that remain selectable but should move consumers forward. Use
-`ApiDeprecationPolicy` for sunset dates or migration information. Use `ApiVersionStatus.Retired` only when the version
-must no longer be selected for requests.
+While the app API is alpha, evolve its active route and implementation directly. Do not retain old
+endpoint implementations, compatibility DTOs, or parallel `/api/v2` routes solely for backward
+compatibility.
 
-Additive changes stay on the current version when they do not break existing clients. Breaking changes require a new
-route segment such as `/api/v2`, with the older version marked deprecated before retirement whenever practical.
+Remove replaced code and update affected callers, all affected tests including contract tests,
+committed OpenAPI artifacts, and documentation in the same change. Document each significant
+consumer-visible break and its migration impact.
+
+This policy does not permit destructive data loss. Use a reviewed forward migration, preserve or
+transform durable data before destructive removal, and keep the migration gate, backup, and recovery
+practices in [production readiness](operations/production-readiness.md#backup-restore-and-disaster-recovery).
+Alpha direct evolution does not require superseded application code or contract types to remain in the
+active source tree.
+
+## Deprecation from beta onward
+
+The app API compatibility promise begins at beta. From beta onward, use `ApiVersionStatus.Deprecated`
+for versions that remain selectable but should move consumers forward. Use `ApiDeprecationPolicy` for
+sunset dates or migration information. Use `ApiVersionStatus.Retired` only when the version must no
+longer be selected for requests.
+
+Additive changes stay on the current version when they do not break existing clients. An incompatible
+change from beta onward requires a new route segment such as `/api/v2`, with the older version deprecated
+before retirement whenever practical.
 
 ## Value-object generation note
 

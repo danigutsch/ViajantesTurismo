@@ -10,8 +10,8 @@ This repository protects two public contract surfaces:
 
 | Phase | Gate behavior | Breaking-change expectation |
 | --- | --- | --- |
-| Alpha / `0.y.z` / `-alpha` | Report-only compatibility artifacts | Breaking changes are allowed. Keep the package/API visibly prerelease and capture important design churn in release notes or issues. |
-| Beta / `-beta` | Report-only only when a breaking-change marker is present | Breaking changes are allowed, but should be intentional and documented. |
+| Alpha / `0.y.z` / `-alpha` | Report-only compatibility artifacts | Evolve current code and contracts directly. Do not retain legacy implementations, add compatibility layers, or create parallel `/api/v2` endpoints solely for backward compatibility. Document significant consumer-visible breaks. |
+| Beta / `-beta` | Package breaking diffs are report-only only when a breaking-change marker is present | App HTTP compatibility begins: incompatible changes require a new API version and deprecation of the previous route. Package breaks must be intentional and documented. |
 | Release candidate / `-rc` | Block breaking diffs | Treat the API as final except for critical fixes. |
 | Stable / `>=1.0.0` | Block breaking diffs, even when a marker is present | Use a SemVer major version or a new HTTP API version for incompatible changes. Deprecate first when practical. |
 
@@ -65,11 +65,11 @@ above instead of setting these variables directly.
 
 ## Breaking-change marker
 
-When a beta compatibility check finds a breaking API diff, the PR must include a Conventional Commit
-breaking marker in at least one commit:
+When a beta package compatibility check finds a breaking public API diff, the PR must include a
+Conventional Commit breaking marker in at least one commit:
 
 ```text
-feat(api)!: remove legacy contract
+feat(sharedkernel)!: revise package contract
 ```
 
 or a footer:
@@ -78,8 +78,11 @@ or a footer:
 BREAKING CHANGE: describe the migration impact
 ```
 
-Alpha changes do not need this marker unless the author wants the release notes to call out an
-important consumer-visible break.
+This marker exception applies only to beta package compatibility. Beginning at beta, app HTTP
+compatibility is preserved; incompatible changes use a new API version and deprecate the previous route.
+
+Alpha changes do not need this marker. Document every significant consumer-visible break in the
+same change, including caller impact and any required data migration.
 
 Release-candidate and stable compatibility failures still block even when a marker is present.
 
