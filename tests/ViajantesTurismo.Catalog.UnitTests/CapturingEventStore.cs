@@ -2,10 +2,11 @@ using SharedKernel.EventSourcing;
 
 namespace ViajantesTurismo.Catalog.UnitTests;
 
-public sealed class CapturingEventStore : IEventStore
+public sealed class CapturingEventStore(int appendFailures = 0) : IEventStore
 {
     private readonly List<object> appendedEvents = [];
     private readonly List<EventEnvelope> replayEvents = [];
+    private int remainingAppendFailures = appendFailures;
 
     public StreamId StreamId { get; private set; }
 
@@ -15,6 +16,8 @@ public sealed class CapturingEventStore : IEventStore
 
     public long? LoadedAfterPosition { get; private set; }
 
+    public int AppendAttempts { get; private set; }
+
     public void AddReplayEvent(EventEnvelope envelope) => replayEvents.Add(envelope);
 
     public ValueTask<IReadOnlyCollection<EventEnvelope>> Append(
@@ -23,6 +26,13 @@ public sealed class CapturingEventStore : IEventStore
         IReadOnlyCollection<object> events,
         CancellationToken ct)
     {
+        AppendAttempts++;
+        if (remainingAppendFailures > 0)
+        {
+            remainingAppendFailures--;
+            throw new InvalidOperationException("append failed");
+        }
+
         StreamId = streamId;
         ExpectedRevision = expectedRevision;
         appendedEvents.AddRange(events);

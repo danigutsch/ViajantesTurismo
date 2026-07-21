@@ -1,3 +1,6 @@
+using Microsoft.EntityFrameworkCore;
+using SharedKernel.Idempotency;
+using SharedKernel.Idempotency.EntityFrameworkCore;
 using SharedKernel.Messaging.IntegrationEvents.EntityFrameworkCore;
 using SharedKernel.Testing;
 using ViajantesTurismo.Catalog.Infrastructure;
@@ -32,6 +35,36 @@ public sealed class CatalogIntegrationEventTransportRegistrationTests
 
         // Assert
         includesCatalogOutboxRelay.ShouldBeTrue();
+    }
+
+    [Fact]
+    public void Catalog_composition_explicitly_registers_inbox_idempotency()
+    {
+        // Arrange
+        using var scenario = CatalogInfrastructureTestServices.CreateScenario();
+
+        // Act
+        var idempotencyStore = scenario.ShouldResolve<IIdempotencyStore>();
+
+        // Assert
+        idempotencyStore.ShouldNotBeNull();
+    }
+
+    [Fact]
+    public void Catalog_production_composition_maps_idempotency_keys_to_the_messaging_schema()
+    {
+        // Arrange
+        using var scenario = CatalogInfrastructureTestServices.CreateScenario();
+        var dbContext = scenario.ShouldResolve<CatalogDbContext>();
+
+        // Act
+        var entityType = dbContext.Model.FindEntityType(typeof(IdempotencyEntryEntity)).ShouldNotBeNull();
+        var tableName = entityType.GetTableName();
+        var schema = entityType.GetSchema();
+
+        // Assert
+        tableName.ShouldBe("idempotency_keys");
+        schema.ShouldBe("messaging");
     }
 
     [Fact]
@@ -75,7 +108,7 @@ public sealed class CatalogIntegrationEventTransportRegistrationTests
     }
 
     [Fact]
-    public void Seeding_infrastructure_does_not_start_catalog_outbox_relay()
+    public void Database_initialization_infrastructure_does_not_start_catalog_outbox_relay()
     {
         // Arrange
         using var scenario = CatalogInfrastructureTestServices.CreateSeedingScenario();
@@ -101,7 +134,7 @@ public sealed class CatalogIntegrationEventTransportRegistrationTests
     }
 
     [Fact]
-    public void Seeding_infrastructure_does_not_start_catalog_projection_workers()
+    public void Database_initialization_infrastructure_does_not_start_catalog_projection_workers()
     {
         // Arrange
         using var scenario = CatalogInfrastructureTestServices.CreateSeedingScenario();

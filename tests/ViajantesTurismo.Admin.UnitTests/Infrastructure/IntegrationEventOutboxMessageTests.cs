@@ -180,7 +180,7 @@ public sealed class IntegrationEventOutboxMessageTests
         var outbox = new EfIntegrationEventOutbox<AdminWriteDbContext>(
             dbContext,
             new FakeTimeProvider(new DateTimeOffset(2026, 6, 22, 12, 0, 0, TimeSpan.Zero)),
-            RegisteredIntegrationEventSerializerTestServices.CreateSerializer());
+            GeneratedIntegrationEventSerializerTestServices.CreateSerializer());
         using var activity = new Activity("outbox-test");
         activity.TraceStateString = "vendor=value";
         activity.Start();

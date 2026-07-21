@@ -4,24 +4,26 @@ using SharedKernel.EntityFrameworkCore;
 using SharedKernel.Messaging.IntegrationEvents.EntityFrameworkCore;
 using ViajantesTurismo.Admin.Domain.Tours;
 using ViajantesTurismo.Admin.Infrastructure;
+using ViajantesTurismo.Admin.Testing.Fakes;
 using ViajantesTurismo.Admin.UnitTests.Domain;
 
 namespace ViajantesTurismo.Admin.UnitTests.Infrastructure;
 
-internal sealed class AdminSeederScenario : IAsyncDisposable
+internal sealed class DevelopmentDataInitializerScenario : IAsyncDisposable
 {
+    private static readonly DateTimeOffset CurrentTime = new(2026, 7, 20, 12, 0, 0, TimeSpan.Zero);
+    private readonly DevelopmentDataInitializer initializer;
     private readonly ServiceProvider provider;
-    private readonly Seeder seeder;
 
-    private AdminSeederScenario(ServiceProvider provider)
+    private DevelopmentDataInitializerScenario(ServiceProvider provider)
     {
         this.provider = provider;
-        seeder = provider.GetRequiredService<Seeder>();
+        initializer = provider.GetRequiredService<DevelopmentDataInitializer>();
     }
 
     private AdminWriteDbContext DbContext => provider.GetRequiredService<AdminWriteDbContext>();
 
-    public static AdminSeederScenario Create()
+    public static DevelopmentDataInitializerScenario Create()
     {
         var services = new ServiceCollection();
         services.AddIntegrationEventOutbox<AdminWriteDbContext>();
@@ -30,19 +32,22 @@ internal sealed class AdminSeederScenario : IAsyncDisposable
             options.UseInMemoryDatabase(Guid.CreateVersion7().ToString("N"));
             services.ApplyDbContextOptionConfigurations<AdminWriteDbContext>(options);
         });
-        services.AddScoped(sp => new Seeder(sp.GetRequiredService<AdminWriteDbContext>()));
+        services.AddSingleton<TimeProvider>(new FakeTimeProvider(CurrentTime));
+        services.AddScoped(sp => new DevelopmentDataInitializer(
+            sp.GetRequiredService<AdminWriteDbContext>(),
+            sp.GetRequiredService<TimeProvider>()));
 
-        return new AdminSeederScenario(services.BuildServiceProvider());
+        return new DevelopmentDataInitializerScenario(services.BuildServiceProvider());
     }
 
-    public Task Seed(CancellationToken ct) => seeder.Seed(ct);
+    public Task Initialize(CancellationToken ct) => initializer.Initialize(ct);
 
     public async Task AddExistingTour(CancellationToken ct)
     {
         var tour = Tour.Create(new TourDefinition(
             "EXIST001",
             "Existing Tour",
-            new TourScheduleDefinition(DateTime.UtcNow.AddDays(1), DateTime.UtcNow.AddDays(7)),
+            new TourScheduleDefinition(CurrentTime.UtcDateTime.AddDays(1), CurrentTime.UtcDateTime.AddDays(7)),
             new TourPricingDefinition(1000m, 100m, 100m, 200m, Currency.Real),
             new TourCapacityDefinition(1, 10),
             ["Hotel"])).Value;
@@ -69,7 +74,7 @@ internal sealed class AdminSeederScenario : IAsyncDisposable
         DbContext.ChangeTracker.Clear();
     }
 
-    public async Task ShouldContainSeedData(CancellationToken ct)
+    public async Task ShouldContainDevelopmentData(CancellationToken ct)
     {
         var tourCount = await DbContext.Tours.CountAsync(ct);
         var customerCount = await DbContext.Customers.CountAsync(ct);
@@ -87,6 +92,28 @@ internal sealed class AdminSeederScenario : IAsyncDisposable
         var bookingCount = await DbContext.Tours.SelectMany(tour => tour.Bookings).CountAsync(ct);
 
         tourCount.ShouldBe(expectedTourCount);
+        customerCount.ShouldBe(0);
+        bookingCount.ShouldBe(0);
+    }
+
+    public async Task ShouldContainExistingTourAndDevelopmentData(CancellationToken ct)
+    {
+        var tourCount = await DbContext.Tours.CountAsync(ct);
+        var customerCount = await DbContext.Customers.CountAsync(ct);
+        var bookingCount = await DbContext.Tours.SelectMany(tour => tour.Bookings).CountAsync(ct);
+
+        tourCount.ShouldBe(6);
+        customerCount.ShouldBe(15);
+        bookingCount.ShouldBe(10);
+    }
+
+    public async Task ShouldNotContainDevelopmentData(CancellationToken ct)
+    {
+        var tourCount = await DbContext.Tours.CountAsync(ct);
+        var customerCount = await DbContext.Customers.CountAsync(ct);
+        var bookingCount = await DbContext.Tours.SelectMany(tour => tour.Bookings).CountAsync(ct);
+
+        tourCount.ShouldBe(0);
         customerCount.ShouldBe(0);
         bookingCount.ShouldBe(0);
     }

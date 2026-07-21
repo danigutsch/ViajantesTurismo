@@ -101,7 +101,7 @@ internal static class CatalogInfrastructureTestServices
             [$"ConnectionStrings:{ResourceNames.CatalogDatabase}"] = "Host=localhost;Database=viajantes-catalog;Username=test;Password=test"
         });
 
-        builder.AddCatalogSeeding();
+        builder.AddCatalogDatabaseInitialization();
 
         return new CatalogInfrastructureScenario(builder.Services.BuildServiceProvider());
     }

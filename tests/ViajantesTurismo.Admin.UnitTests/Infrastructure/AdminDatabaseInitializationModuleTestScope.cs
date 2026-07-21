@@ -2,26 +2,25 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using SharedKernel.DomainEvents;
 using SharedKernel.Messaging.IntegrationEvents;
-using ViajantesTurismo.Admin.Infrastructure;
 
 namespace ViajantesTurismo.Admin.UnitTests.Infrastructure;
 
-internal sealed class AdminSeedingModuleTestScope : IDisposable
+internal sealed class AdminDatabaseInitializationModuleTestScope : IDisposable
 {
     private readonly ServiceProvider serviceProvider;
     private readonly IServiceScope scope;
 
-    public AdminSeedingModuleTestScope(ServiceProvider serviceProvider)
+    public AdminDatabaseInitializationModuleTestScope(ServiceProvider serviceProvider)
     {
         this.serviceProvider = serviceProvider;
         scope = serviceProvider.CreateScope();
-        Seeder = scope.ServiceProvider.GetRequiredService<Seeder>();
+        Initializer = scope.ServiceProvider.GetRequiredService<DevelopmentDataInitializer>();
         Outbox = scope.ServiceProvider.GetRequiredService<IIntegrationEventOutbox>();
         Dispatcher = scope.ServiceProvider.GetRequiredService<IDomainEventDispatcher>();
         HostedServices = serviceProvider.GetServices<IHostedService>().ToArray();
     }
 
-    public Seeder Seeder { get; }
+    public DevelopmentDataInitializer Initializer { get; }
 
     public IIntegrationEventOutbox Outbox { get; }
 

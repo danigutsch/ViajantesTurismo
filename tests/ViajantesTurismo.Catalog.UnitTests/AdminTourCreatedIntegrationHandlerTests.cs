@@ -1,6 +1,7 @@
 using Microsoft.Extensions.Options;
 using SharedKernel.EventSourcing;
 using SharedKernel.Idempotency;
+using SharedKernel.Testing;
 using ViajantesTurismo.Admin.Contracts.IntegrationEvents.Tours;
 using ViajantesTurismo.Catalog.Application.IntegrationEvents;
 using ViajantesTurismo.Catalog.Application.Tours;
@@ -152,5 +153,65 @@ public sealed class AdminTourCreatedIntegrationHandlerTests
 
         // Assert
         idempotencyStore.CapturedLockDuration.ShouldBe(configuredDuration);
+    }
+
+    [Fact]
+    [Trait(SharedKernelTestTraitNames.CapabilityName, TestTraits.IntegrationEventTransportCapability)]
+    public async Task Handle_surfaces_an_existing_started_entry_for_transport_retry()
+    {
+        // Arrange
+        var idempotencyStore = new CapturingIdempotencyStore(
+            started: false,
+            existingState: IdempotencyEntryState.Started);
+        var eventStore = new CapturingEventStore();
+        var handler = new IdempotentIntegrationHandler<AdminTourCreatedIntegrationEvent>(
+            new AdminTourCreatedIntegrationHandler(eventStore),
+            idempotencyStore,
+            Options.Create(new IntegrationEventOptions()));
+        var integrationEvent = new AdminTourCreatedIntegrationEvent(
+            Guid.CreateVersion7(),
+            DateTimeOffset.UtcNow,
+            Guid.CreateVersion7(),
+            "andes-2026",
+            "Andes 2026");
+
+        // Act
+        Func<Task> handle = () => handler.Handle(integrationEvent, CancellationToken.None).AsTask();
+
+        // Assert
+        var exception = await handle.ShouldThrow<InvalidOperationException>();
+        exception.Message.ShouldContain("already being processed", StringComparison.Ordinal);
+        eventStore.Events.ShouldBeEmpty();
+        idempotencyStore.CompletedState.ShouldBeNull();
+    }
+
+    [Fact]
+    [Trait(SharedKernelTestTraitNames.CapabilityName, TestTraits.IntegrationEventTransportCapability)]
+    public async Task Handle_retries_a_failed_event_after_the_lease_is_reacquired()
+    {
+        // Arrange
+        var idempotencyStore = new CapturingIdempotencyStore();
+        var eventStore = new CapturingEventStore(appendFailures: 1);
+        var handler = new IdempotentIntegrationHandler<AdminTourCreatedIntegrationEvent>(
+            new AdminTourCreatedIntegrationHandler(eventStore),
+            idempotencyStore,
+            Options.Create(new IntegrationEventOptions()));
+        var integrationEvent = new AdminTourCreatedIntegrationEvent(
+            Guid.CreateVersion7(),
+            DateTimeOffset.UtcNow,
+            Guid.CreateVersion7(),
+            "andes-2026",
+            "Andes 2026");
+
+        // Act
+        Func<Task> firstAttempt = () => handler.Handle(integrationEvent, CancellationToken.None).AsTask();
+        _ = await firstAttempt.ShouldThrow<InvalidOperationException>();
+        idempotencyStore.SimulateExpiredLease();
+        await handler.Handle(integrationEvent, CancellationToken.None);
+
+        // Assert
+        eventStore.AppendAttempts.ShouldBe(2);
+        eventStore.Events.ShouldHaveSingleItem();
+        idempotencyStore.CompletedState.ShouldBe(IdempotencyEntryState.Completed);
     }
 }

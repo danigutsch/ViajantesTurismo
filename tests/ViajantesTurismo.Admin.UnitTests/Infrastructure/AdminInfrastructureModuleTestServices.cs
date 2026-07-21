@@ -2,7 +2,6 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using SharedKernel.AuditTrail;
 using SharedKernel.Branding;
 using SharedKernel.DomainEvents.EntityFrameworkCore;
 using SharedKernel.Messaging.IntegrationEvents;
@@ -72,16 +71,16 @@ internal static class AdminInfrastructureModuleTestServices
         return CreateScope(BuildValidatedServiceProvider(builder.Services));
     }
 
-    public static AdminSeedingModuleTestScope CreateWithSeedingModule()
+    public static AdminDatabaseInitializationModuleTestScope CreateWithDatabaseInitializationModule()
     {
-        var builder = CreateConfiguredApplicationBuilder();
+        var builder = CreateConfiguredApplicationBuilder(Environments.Development);
         builder.Services.AddDomainEventProcessing();
-        builder.AddAdminSeeding();
+        builder.AddAdminDatabaseInitialization();
 
         var serviceProvider = BuildValidatedServiceProvider(builder.Services);
         try
         {
-            return new AdminSeedingModuleTestScope(serviceProvider);
+            return new AdminDatabaseInitializationModuleTestScope(serviceProvider);
         }
         catch
         {
@@ -100,9 +99,12 @@ internal static class AdminInfrastructureModuleTestServices
         return builder;
     }
 
-    private static HostApplicationBuilder CreateConfiguredApplicationBuilder()
+    private static HostApplicationBuilder CreateConfiguredApplicationBuilder(string? environmentName = null)
     {
-        var builder = Host.CreateApplicationBuilder();
+        var builder = Host.CreateApplicationBuilder(new HostApplicationBuilderSettings
+        {
+            EnvironmentName = environmentName,
+        });
         builder.Services.AddSingleton<IBrandingApiClient>(
             new FakeBrandingApiClient(new BrandingSettingsDto()));
         builder.Configuration.AddInMemoryCollection(new Dictionary<string, string?>

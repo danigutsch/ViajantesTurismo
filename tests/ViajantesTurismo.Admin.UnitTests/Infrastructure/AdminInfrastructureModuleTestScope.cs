@@ -2,8 +2,11 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using SharedKernel.Branding;
 using SharedKernel.DomainEvents;
+using SharedKernel.EntityFrameworkCore;
+using SharedKernel.Idempotency;
 using SharedKernel.Messaging.IntegrationEvents;
 using ViajantesTurismo.Admin.Application;
+using ViajantesTurismo.Admin.Application.Tours.CreateTour;
 using ViajantesTurismo.Admin.Domain.Customers;
 using ViajantesTurismo.Admin.Domain.Documents;
 using ViajantesTurismo.Admin.Domain.Tours;
@@ -34,7 +37,23 @@ internal sealed class AdminInfrastructureModuleTestScope(ServiceProvider service
 
     public IBrandingApiClient BrandingApiClient => scope.ServiceProvider.GetRequiredService<IBrandingApiClient>();
 
+    public IIdempotencyStore? IdempotencyStore => scope.ServiceProvider.GetService<IIdempotencyStore>();
+
+    public IReadOnlyList<IDbContextConfiguration<AdminWriteDbContext>> DbContextConfigurations =>
+        scope.ServiceProvider.GetServices<IDbContextConfiguration<AdminWriteDbContext>>().ToArray();
+
     public IReadOnlyList<IHostedService> HostedServices => serviceProvider.GetServices<IHostedService>().ToArray();
+
+    public bool CreateTourHandlerHasScopedLifetime()
+    {
+        using var firstScope = serviceProvider.CreateScope();
+        using var secondScope = serviceProvider.CreateScope();
+        var firstHandler = firstScope.ServiceProvider.GetRequiredService<CreateTourCommandHandler>();
+        var sameScopeHandler = firstScope.ServiceProvider.GetRequiredService<CreateTourCommandHandler>();
+        var secondHandler = secondScope.ServiceProvider.GetRequiredService<CreateTourCommandHandler>();
+
+        return ReferenceEquals(firstHandler, sameScopeHandler) && !ReferenceEquals(firstHandler, secondHandler);
+    }
 
     public void Dispose()
     {

@@ -2,7 +2,9 @@ using SharedKernel.Idempotency;
 
 namespace ViajantesTurismo.Catalog.UnitTests;
 
-public sealed class CapturingIdempotencyStore(bool started = true) : IIdempotencyStore
+public sealed class CapturingIdempotencyStore(
+    bool started = true,
+    IdempotencyEntryState existingState = IdempotencyEntryState.Completed) : IIdempotencyStore
 {
     private readonly Dictionary<IdempotencyOperation, IdempotencyEntry> entries = [];
 
@@ -25,15 +27,15 @@ public sealed class CapturingIdempotencyStore(bool started = true) : IIdempotenc
 
         if (!started)
         {
-            var alreadyCompleted = new IdempotencyEntry(
+            var existing = new IdempotencyEntry(
                 operation,
-                IdempotencyEntryState.Completed,
+                existingState,
                 startedAt,
-                startedAt,
+                existingState is IdempotencyEntryState.Completed ? startedAt : null,
                 ResultFingerprint: null);
-            entries.Add(operation, alreadyCompleted);
+            entries.Add(operation, existing);
 
-            return ValueTask.FromResult(IdempotencyStartResult.AlreadyStarted(alreadyCompleted));
+            return ValueTask.FromResult(IdempotencyStartResult.AlreadyStarted(existing));
         }
 
         entries.Add(operation, new IdempotencyEntry(
@@ -78,5 +80,16 @@ public sealed class CapturingIdempotencyStore(bool started = true) : IIdempotenc
         entries.TryGetValue(operation, out var entry);
 
         return ValueTask.FromResult(entry);
+    }
+
+    public void SimulateExpiredLease()
+    {
+        foreach (var operation in entries
+                     .Where(static pair => pair.Value.State is IdempotencyEntryState.Started)
+                     .Select(static pair => pair.Key)
+                     .ToArray())
+        {
+            _ = entries.Remove(operation);
+        }
     }
 }
