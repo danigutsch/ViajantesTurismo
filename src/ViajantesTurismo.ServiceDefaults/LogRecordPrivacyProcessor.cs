@@ -59,7 +59,7 @@ internal sealed class LogRecordPrivacyProcessor : BaseProcessor<LogRecord>
             {
                 if (TelemetryPrivacyAttributeClassifier.IsSensitive(attribute.Key)
                     || attribute.Value is Exception
-                    || (exceptionType is not null && string.Equals(attribute.Key, ExceptionTypeAttribute, StringComparison.Ordinal)))
+                    || (exceptionType is not null && string.Equals(attribute.Key, ExceptionTypeAttribute, StringComparison.OrdinalIgnoreCase)))
                 {
                     continue;
                 }
@@ -108,8 +108,8 @@ internal sealed class LogRecordPrivacyProcessor : BaseProcessor<LogRecord>
 
     private static bool IsErrorType(string name)
     {
-        return string.Equals(name, "error.type", StringComparison.Ordinal)
-            || string.Equals(name, ExceptionTypeAttribute, StringComparison.Ordinal);
+        return string.Equals(name, "error.type", StringComparison.OrdinalIgnoreCase)
+            || string.Equals(name, ExceptionTypeAttribute, StringComparison.OrdinalIgnoreCase);
     }
 
 }

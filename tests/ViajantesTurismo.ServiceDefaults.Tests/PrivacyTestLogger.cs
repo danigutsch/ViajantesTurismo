@@ -16,6 +16,18 @@ internal static partial class PrivacyTestLogger
             new EventId(20101, "Microsoft.EntityFrameworkCore.Database.Command.CommandExecuted"),
             "Executed DbCommand {CommandText} with {Parameters}; {Outcome}");
 
+    private static readonly Action<ILogger, string, Exception?> LogMixedCaseExceptionTypeCore =
+        LoggerMessage.Define<string>(
+            LogLevel.Error,
+            new EventId(2, nameof(LogMixedCaseExceptionType)),
+            "Operation failed with {Exception.Type}");
+
+    private static readonly Action<ILogger, string, Exception?> LogMixedCaseErrorTypeCore =
+        LoggerMessage.Define<string>(
+            LogLevel.Error,
+            new EventId(3, nameof(LogMixedCaseErrorType)),
+            "Operation failed with {Error.Type}");
+
     [LoggerMessage(LogLevel.Error, "Customer {CustomerId} booking {BookingId} email {CustomerEmail} object {ObjectKey} failed with {Outcome}")]
     public static partial void LogFailure(
         ILogger logger,
@@ -41,5 +53,15 @@ internal static partial class PrivacyTestLogger
         string outcome)
     {
         LogEntityFrameworkCommandCore(logger, commandText, parameters, outcome, null);
+    }
+
+    public static void LogMixedCaseExceptionType(ILogger logger, string exceptionType, Exception? exception)
+    {
+        LogMixedCaseExceptionTypeCore(logger, exceptionType, exception);
+    }
+
+    public static void LogMixedCaseErrorType(ILogger logger, string errorType)
+    {
+        LogMixedCaseErrorTypeCore(logger, errorType, null);
     }
 }

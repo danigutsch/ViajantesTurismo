@@ -7,6 +7,7 @@ using Microsoft.Extensions.Diagnostics.HealthChecks;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using OpenTelemetry;
+using OpenTelemetry.Instrumentation.AspNetCore;
 using OpenTelemetry.Logs;
 using OpenTelemetry.Metrics;
 using OpenTelemetry.Trace;
@@ -106,13 +107,16 @@ public static class ServiceDefaultsExtensions
                     .AddSharedKernelMediatorTracing()
                     .AddSharedKernelProviderTracing()
                     .AddAspNetCoreInstrumentation(options =>
+                    {
                         options.Filter = context =>
                             !context.Request.Path.StartsWithSegments(EndpointPaths.Health, StringComparison.OrdinalIgnoreCase)
-                            && !context.Request.Path.StartsWithSegments(EndpointPaths.Aliveness, StringComparison.OrdinalIgnoreCase)
-                    )
+                            && !context.Request.Path.StartsWithSegments(EndpointPaths.Aliveness, StringComparison.OrdinalIgnoreCase);
+                    })
                     .AddGrpcClientInstrumentation()
                     .AddEntityFrameworkCoreInstrumentation();
             });
+        builder.Services.PostConfigureAll<AspNetCoreTraceInstrumentationOptions>(
+            static options => options.RecordException = false);
 
         builder.AddOpenTelemetryExporters();
 

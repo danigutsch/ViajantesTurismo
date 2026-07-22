@@ -5,7 +5,9 @@ using Microsoft.AspNetCore.TestHost;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 using OpenTelemetry;
+using OpenTelemetry.Instrumentation.AspNetCore;
 using OpenTelemetry.Logs;
 using OpenTelemetry.Trace;
 
@@ -103,6 +105,72 @@ public sealed class ServiceDefaultsPrivacyTelemetryTests
         tagValues.ShouldNotContain(value => value.Contains(bookingId.ToString(), StringComparison.OrdinalIgnoreCase));
         tagValues.ShouldNotContain(value => value.Contains(email, StringComparison.Ordinal));
         tagValues.ShouldNotContain(value => value.Contains("private-agent/123", StringComparison.Ordinal));
+    }
+
+    [Fact]
+    public async Task Aspnet_trace_export_disables_preconfigured_exception_events()
+    {
+        // Arrange
+        const string sensitiveMessage = "traveler@example.com at /customers/private";
+        var exportedActivities = new ConcurrentQueue<Activity>();
+        var serverActivityExported = new TaskCompletionSource<Activity>(TaskCreationOptions.RunContinuationsAsynchronously);
+        var builder = WebApplication.CreateSlimBuilder(new WebApplicationOptions
+        {
+            EnvironmentName = Environments.Production
+        });
+        builder.WebHost.UseTestServer();
+        builder.Configuration["OTEL_EXPORTER_OTLP_ENDPOINT"] = string.Empty;
+        builder.Services.PostConfigureAll<AspNetCoreTraceInstrumentationOptions>(options => options.RecordException = true);
+        builder.AddServiceDefaults();
+        builder.Services.AddOpenTelemetry().WithTracing(tracing =>
+            tracing.AddProcessor(new SimpleActivityExportProcessor(new CollectingActivityExporter(
+                exportedActivities,
+                activity =>
+                {
+                    if (activity.Kind == ActivityKind.Server)
+                    {
+                        serverActivityExported.TrySetResult(activity);
+                    }
+                }))));
+        await using var app = builder.Build();
+        app.MapGet("/failure", static () => Task.FromException(new InvalidOperationException(sensitiveMessage)));
+        await app.StartAsync(TestContext.Current.CancellationToken);
+        using var client = app.GetTestClient();
+
+        // Act
+        Func<Task> request = async () =>
+        {
+            using var response = await client.GetAsync(
+                new Uri("/failure", UriKind.Relative),
+                TestContext.Current.CancellationToken);
+        };
+        _ = await request.ShouldThrow<InvalidOperationException>();
+        await serverActivityExported.Task.WaitAsync(TimeSpan.FromSeconds(5), TestContext.Current.CancellationToken);
+
+        // Assert
+        var activity = exportedActivities.ShouldHaveSingleItem(item => item.Kind == ActivityKind.Server);
+        activity.Status.ShouldBe(ActivityStatusCode.Error);
+        activity.StatusDescription.ShouldBeNull();
+        activity.Events.ShouldNotContain(static activityEvent => activityEvent.Name == "exception");
+    }
+
+    [Theory]
+    [InlineData("")]
+    [InlineData("custom")]
+    public void Service_defaults_disable_exception_recording_for_all_aspnet_options(string optionsName)
+    {
+        // Arrange
+        var builder = Host.CreateApplicationBuilder();
+        builder.Services.PostConfigureAll<AspNetCoreTraceInstrumentationOptions>(options => options.RecordException = true);
+
+        // Act
+        builder.AddServiceDefaults();
+        using var host = builder.Build();
+        var options = host.Services.GetRequiredService<IOptionsMonitor<AspNetCoreTraceInstrumentationOptions>>()
+            .Get(optionsName);
+
+        // Assert
+        options.RecordException.ShouldBeFalse();
     }
 
     [Fact]
@@ -297,5 +365,76 @@ public sealed class ServiceDefaultsPrivacyTelemetryTests
             && string.Equals(attribute.Value as string, "executed", StringComparison.Ordinal));
         var exportedText = string.Join('|', exported.Attributes.Select(attribute => attribute.Value?.ToString() ?? string.Empty));
         exportedText.ShouldNotContain(email, StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public void Log_export_replaces_existing_exception_type_case_insensitively()
+    {
+        // Arrange
+        var exportedLogs = new ConcurrentQueue<CapturedLogRecord>();
+        var builder = Host.CreateApplicationBuilder();
+        builder.Configuration["OTEL_EXPORTER_OTLP_ENDPOINT"] = string.Empty;
+        builder.AddServiceDefaults();
+        builder.Logging.AddOpenTelemetry(logging =>
+            logging.AddProcessor(_ => new SimpleLogRecordExportProcessor(new CollectingLogRecordExporter(exportedLogs))));
+        using var host = builder.Build();
+        var logger = host.Services.GetRequiredService<ILogger<ServiceDefaultsPrivacyTelemetryTests>>();
+        const string unsafeType = "Sensitive.Exception.Type";
+
+        // Act
+        PrivacyTestLogger.LogMixedCaseExceptionType(
+            logger,
+            unsafeType,
+            new InvalidOperationException("traveler@example.com"));
+
+        // Assert
+        var exported = exportedLogs.ShouldHaveSingleItem(item => string.Equals(
+            item.CategoryName,
+            typeof(ServiceDefaultsPrivacyTelemetryTests).FullName,
+            StringComparison.Ordinal));
+        var exceptionTypes = exported.Attributes
+            .Where(static attribute => string.Equals(attribute.Key, "exception.type", StringComparison.OrdinalIgnoreCase))
+            .ToArray();
+        exceptionTypes.Length.ShouldBe(1);
+        exceptionTypes[0].Key.ShouldBe("exception.type");
+        exceptionTypes[0].Value.ShouldBe(typeof(InvalidOperationException).FullName);
+        exported.Attributes.ShouldNotContain(attribute => string.Equals(attribute.Value as string, unsafeType, StringComparison.Ordinal));
+    }
+
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public void Log_export_limits_error_type_case_insensitively(bool useExceptionType)
+    {
+        // Arrange
+        var exportedLogs = new ConcurrentQueue<CapturedLogRecord>();
+        var builder = Host.CreateApplicationBuilder();
+        builder.Configuration["OTEL_EXPORTER_OTLP_ENDPOINT"] = string.Empty;
+        builder.AddServiceDefaults();
+        builder.Logging.AddOpenTelemetry(logging =>
+            logging.AddProcessor(_ => new SimpleLogRecordExportProcessor(new CollectingLogRecordExporter(exportedLogs))));
+        using var host = builder.Build();
+        var logger = host.Services.GetRequiredService<ILogger<ServiceDefaultsPrivacyTelemetryTests>>();
+        var oversizedType = new string('x', 257);
+
+        // Act
+        if (useExceptionType)
+        {
+            PrivacyTestLogger.LogMixedCaseExceptionType(logger, oversizedType, exception: null);
+        }
+        else
+        {
+            PrivacyTestLogger.LogMixedCaseErrorType(logger, oversizedType);
+        }
+
+        // Assert
+        var exported = exportedLogs.ShouldHaveSingleItem(item => string.Equals(
+            item.CategoryName,
+            typeof(ServiceDefaultsPrivacyTelemetryTests).FullName,
+            StringComparison.Ordinal));
+        var errorType = exported.Attributes.ShouldHaveSingleItem(attribute =>
+            string.Equals(attribute.Key, useExceptionType ? "exception.type" : "error.type", StringComparison.OrdinalIgnoreCase));
+        var value = errorType.Value.ShouldBeOfType<string>();
+        value.Length.ShouldBe(256);
     }
 }
