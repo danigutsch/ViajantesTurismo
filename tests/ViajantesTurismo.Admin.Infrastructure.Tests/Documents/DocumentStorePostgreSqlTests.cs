@@ -2,6 +2,7 @@ using Microsoft.EntityFrameworkCore;
 using Npgsql;
 using SharedKernel.Testing;
 using ViajantesTurismo.Admin.Application.Documents;
+using ViajantesTurismo.Admin.Contracts.Application;
 using ViajantesTurismo.Admin.Domain.Documents;
 using ViajantesTurismo.Admin.Domain.Tours;
 
@@ -142,6 +143,41 @@ public sealed class DocumentStorePostgreSqlTests : IAsyncLifetime
     }
 
     [Fact]
+    public async Task PurgeExpiredDrafts_limits_the_batch_and_preserves_the_surviving_lineage_high_water_mark()
+    {
+        // Arrange
+        var now = new DateTime(2026, 7, 21, 12, 0, 0, DateTimeKind.Utc);
+        var firstCreatedAt = now
+            .AddDays(-DocumentLimits.DraftRetentionDays)
+            .AddMinutes(-501);
+        var lineage = DocumentDraftInfrastructureTestData.CreateLineageWithRevisions(firstCreatedAt, 501);
+        await Scenario.Seed(lineage);
+
+        // Act
+        var removedCount = await Scenario.PurgeExpiredDrafts(now, TestContext.Current.CancellationToken);
+
+        // Assert
+        removedCount.ShouldBe(500);
+        var remaining = await Scenario.GetDocuments(TestContext.Current.CancellationToken);
+        var survivor = remaining.ShouldHaveSingleItem();
+        survivor.Revision.ShouldBe(501);
+
+        var reloaded = await Scenario.GetLineageByDocumentId(
+            survivor.Id,
+            TestContext.Current.CancellationToken);
+        var survivingLineage = reloaded.ShouldNotBeNull();
+        survivingLineage.HighestRevision.ShouldBe(501);
+
+        var nextRevision = survivingLineage.CreateRevision(
+            survivor.Id,
+            DocumentDraftInfrastructureTestData.CreateContent("502"),
+            now,
+            DocumentDraftInfrastructureTestData.CreateAuditContext());
+        nextRevision.IsSuccess.ShouldBeTrue();
+        nextRevision.Value.Revision.ShouldBe(502);
+    }
+
+    [Fact]
     public async Task Invalid_branding_logo_uri_materializes_as_missing_snapshot_logo()
     {
         // Arrange
@@ -187,6 +223,67 @@ public sealed class DocumentStorePostgreSqlTests : IAsyncLifetime
 
         // Assert
         reloaded.ShouldNotBeNull().ShouldHaveFieldIdsInOrder(["z-template-first", "a-template-second"]);
+    }
+
+    [Fact]
+    public async Task GetById_projects_the_complete_persisted_document()
+    {
+        // Arrange
+        var createdAt = new DateTime(2026, 7, 21, 9, 0, 0, DateTimeKind.Utc);
+        var updatedAt = createdAt.AddMinutes(1);
+        var replacementCreatedAt = createdAt.AddMinutes(2);
+        var reviewAt = createdAt.AddMinutes(3);
+        var approvedAt = createdAt.AddMinutes(4);
+        var finalizedAt = createdAt.AddMinutes(5);
+        const string expectedOverride = "Welcome back, traveler";
+        var lineage = DocumentDraftInfrastructureTestData.CreateLineage(createdAt);
+        var first = lineage.Revisions.ShouldHaveSingleItem();
+        var auditContext = DocumentDraftInfrastructureTestData.CreateAuditContext();
+        lineage.UpdateField(first.Id, "greeting", expectedOverride, updatedAt, auditContext)
+            .IsSuccess.ShouldBeTrue();
+        var replacementContent = DocumentDraftInfrastructureTestData.CreateContent("2");
+        var replacementResult = lineage.CreateRevision(
+            first.Id,
+            replacementContent,
+            replacementCreatedAt,
+            auditContext);
+        replacementResult.IsSuccess.ShouldBeTrue();
+        var replacement = replacementResult.Value;
+        lineage.BeginReview(replacement.Id, reviewAt, auditContext).IsSuccess.ShouldBeTrue();
+        lineage.Approve(replacement.Id, approvedAt, auditContext).IsSuccess.ShouldBeTrue();
+        lineage.Finalize(replacement.Id, "artifact"u8.ToArray(), finalizedAt, auditContext)
+            .IsSuccess.ShouldBeTrue();
+        lineage.ClearDomainEvents();
+        await Scenario.Seed(lineage);
+
+        // Act
+        var result = await Scenario.GetDocumentProjectionById(
+            replacement.Id,
+            TestContext.Current.CancellationToken);
+
+        // Assert
+        var projection = result.ShouldNotBeNull();
+        projection.Id.ShouldBe(replacement.Id);
+        projection.BookingId.ShouldBe(replacement.BookingId);
+        projection.Revision.ShouldBe(2);
+        projection.TemplateId.ShouldBe(replacementContent.TemplateId);
+        projection.TemplateVersion.ShouldBe(replacementContent.TemplateVersion);
+        projection.SourceVersion.ShouldBe(replacementContent.SourceVersion);
+        projection.Status.ShouldBe(DocumentStatusDto.Finalized);
+        projection.CreatedAt.ShouldBe(replacementCreatedAt);
+        projection.UpdatedAt.ShouldBe(finalizedAt);
+        projection.FinalizedAt.ShouldBe(finalizedAt);
+        projection.ReplacesDocumentId.ShouldBe(first.Id);
+        projection.HasFinalizedArtifact.ShouldBeTrue();
+        projection.Fields.Count.ShouldBe(2);
+        projection.Fields[0].FieldId.ShouldBe("booking-reference");
+        projection.Fields[0].Label.ShouldBe("Booking reference");
+        projection.Fields[0].RenderedValue.ShouldBe("ABC123");
+        projection.Fields[0].IsEditable.ShouldBeFalse();
+        projection.Fields[1].FieldId.ShouldBe("greeting");
+        projection.Fields[1].Label.ShouldBe("Greeting");
+        projection.Fields[1].RenderedValue.ShouldBe(expectedOverride);
+        projection.Fields[1].IsEditable.ShouldBeTrue();
     }
 
     [Fact]
@@ -280,6 +377,31 @@ public sealed class DocumentStorePostgreSqlTests : IAsyncLifetime
         var postgresException = updateException.InnerException.ShouldBeOfType<PostgresException>();
         postgresException.SqlState.ShouldBe(PostgresErrorCodes.UniqueViolation);
         postgresException.ConstraintName.ShouldBe("UX_DocumentLineages_BookingId_Type");
+    }
+
+    [Fact]
+    public async Task SaveEntities_translates_duplicate_revision_constraint()
+    {
+        // Arrange
+        var now = new DateTime(2026, 7, 21, 12, 0, 0, DateTimeKind.Utc);
+        var existing = DocumentDraftInfrastructureTestData.CreateDraft(now);
+        await Scenario.Seed(existing);
+        var duplicate = DocumentDraftInfrastructureTestData.CreateDraft(
+            now.AddMinutes(1),
+            existing.BookingId);
+
+        // Act
+        Func<Task> save = async () => await Scenario.SaveDuplicateRevision(
+            existing.DocumentLineageId,
+            duplicate,
+            TestContext.Current.CancellationToken);
+
+        // Assert
+        var conflict = await save.ShouldThrow<DocumentRevisionConflictException>();
+        var updateException = conflict.InnerException.ShouldBeOfType<DbUpdateException>();
+        var postgresException = updateException.InnerException.ShouldBeOfType<PostgresException>();
+        postgresException.SqlState.ShouldBe(PostgresErrorCodes.UniqueViolation);
+        postgresException.ConstraintName.ShouldBe("UX_DocumentDrafts_DocumentLineageId_Revision");
     }
 
     [Fact]

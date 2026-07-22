@@ -1,4 +1,5 @@
 using System.Net;
+using System.Net.Http.Headers;
 using Microsoft.AspNetCore.TestHost;
 using Polly.Timeout;
 using SharedKernel.Testing;
@@ -152,5 +153,94 @@ public sealed class DocumentArtifactProxyEndpointTests
 
         // Assert
         _ = await awaitRequest.ShouldThrow<TaskCanceledException>();
+    }
+
+    [Fact]
+    public async Task Document_artifact_proxy_returns_not_found_when_the_artifact_is_missing()
+    {
+        // Arrange
+        var documentsApiClient = new FakeDocumentsApiClient();
+        using var host = await ManagementWebEndpointTestHost.StartWithRecordingAuthentication(
+            Xunit.TestContext.Current.CancellationToken,
+            documentsApiClient: documentsApiClient);
+        using var client = host.GetTestClient();
+
+        // Act
+        using var response = await client.GetAsync(
+            new Uri($"/documents/{Guid.CreateVersion7()}/download", UriKind.Relative),
+            Xunit.TestContext.Current.CancellationToken);
+
+        // Assert
+        response.StatusCode.ShouldBe(HttpStatusCode.NotFound);
+        response.Headers.Location.ShouldBeNull();
+        response.Content.Headers.ContentDisposition.ShouldBeNull();
+    }
+
+    [Theory]
+    [InlineData("request")]
+    [InlineData("invalid-response")]
+    public async Task Document_artifact_proxy_maps_upstream_failures_to_safe_bad_gateway(string failureType)
+    {
+        // Arrange
+        ArgumentNullException.ThrowIfNull(failureType);
+        var documentsApiClient = new FakeDocumentsApiClient
+        {
+            DownloadArtifactHandler = (_, _) => Task.FromException<DocumentArtifactResponse?>(failureType switch
+            {
+                "request" => new HttpRequestException("Downstream unavailable."),
+                "invalid-response" => new InvalidOperationException("Unsafe upstream filename."),
+                _ => throw new InvalidOperationException("Unsupported failure type.")
+            })
+        };
+        using var host = await ManagementWebEndpointTestHost.StartWithRecordingAuthentication(
+            Xunit.TestContext.Current.CancellationToken,
+            documentsApiClient: documentsApiClient);
+        using var client = host.GetTestClient();
+
+        // Act
+        using var response = await client.GetAsync(
+            new Uri($"/documents/{Guid.CreateVersion7()}/download", UriKind.Relative),
+            Xunit.TestContext.Current.CancellationToken);
+        var body = await response.Content.ReadAsStringAsync(Xunit.TestContext.Current.CancellationToken);
+
+        // Assert
+        response.StatusCode.ShouldBe(HttpStatusCode.BadGateway);
+        body.ShouldContain("The document artifact could not be retrieved.", StringComparison.Ordinal);
+        body.ShouldNotContain("Downstream unavailable.", StringComparison.Ordinal);
+        body.ShouldNotContain("Unsafe upstream filename.", StringComparison.Ordinal);
+        response.Content.Headers.ContentDisposition.ShouldBeNull();
+    }
+
+    [Fact]
+    public async Task Document_artifact_proxy_ignores_range_requests_and_returns_the_complete_attachment()
+    {
+        // Arrange
+        var documentId = Guid.CreateVersion7();
+        const string expectedHtml = "<html>complete contract</html>";
+        var documentsApiClient = new FakeDocumentsApiClient
+        {
+            Artifact = new DocumentArtifactResponse(
+                "<html>complete contract</html>"u8.ToArray(),
+                $"{documentId:N}.html")
+        };
+        using var host = await ManagementWebEndpointTestHost.StartWithRecordingAuthentication(
+            Xunit.TestContext.Current.CancellationToken,
+            documentsApiClient: documentsApiClient);
+        using var client = host.GetTestClient();
+        using var request = new HttpRequestMessage(
+            HttpMethod.Get,
+            new Uri($"/documents/{documentId}/download", UriKind.Relative));
+        request.Headers.Range = new RangeHeaderValue(0, 3);
+
+        // Act
+        using var response = await client.SendAsync(request, Xunit.TestContext.Current.CancellationToken);
+        var html = await response.Content.ReadAsStringAsync(Xunit.TestContext.Current.CancellationToken);
+
+        // Assert
+        response.StatusCode.ShouldBe(HttpStatusCode.OK);
+        response.Content.Headers.ContentRange.ShouldBeNull();
+        response.Headers.AcceptRanges.ShouldBeEmpty();
+        response.Content.Headers.ContentDisposition?.DispositionType.ShouldBe("attachment");
+        html.ShouldBe(expectedHtml);
     }
 }

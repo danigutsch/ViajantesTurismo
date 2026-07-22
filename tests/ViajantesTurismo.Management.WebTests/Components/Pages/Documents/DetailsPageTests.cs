@@ -14,6 +14,9 @@ public sealed class DetailsPageTests : BunitContext
 
     public DetailsPageTests()
     {
+        var authorization = AddAuthorization();
+        authorization.SetAuthorized("admin@example.test", AuthorizationState.Authorized);
+        authorization.SetRoles("Admin");
         Services.AddSingleton<IDocumentsApiClient>(documentsApiClient);
         SetRendererInfo(new RendererInfo("Server", true));
     }
@@ -53,6 +56,9 @@ public sealed class DetailsPageTests : BunitContext
     {
         // Arrange
         using var staticContext = new BunitContext();
+        var authorization = staticContext.AddAuthorization();
+        authorization.SetAuthorized("admin@example.test", AuthorizationState.Authorized);
+        authorization.SetRoles("Admin");
         staticContext.Services.AddSingleton<IDocumentsApiClient>(new FakeDocumentsApiClient());
         staticContext.SetRendererInfo(new RendererInfo("Static", false));
         var documentId = Guid.CreateVersion7();
@@ -65,6 +71,31 @@ public sealed class DetailsPageTests : BunitContext
         // Assert
         var details = cut.FindComponent<Details>();
         details.Instance.Id.ShouldBe(documentId);
+    }
+
+    [Fact]
+    public void Router_does_not_render_document_details_for_an_operator()
+    {
+        // Arrange
+        using var context = new BunitContext();
+        var authorization = context.AddAuthorization();
+        authorization.SetAuthorized("operator@example.test", AuthorizationState.Authorized);
+        authorization.SetRoles("Operator");
+        context.Services.AddSingleton<IDocumentsApiClient>(new FakeDocumentsApiClient());
+        context.SetRendererInfo(new RendererInfo("Server", true));
+        var documentId = Guid.CreateVersion7();
+        var navigationManager = context.Services.GetRequiredService<NavigationManager>();
+        navigationManager.NavigateTo($"/documents/{documentId}");
+
+        // Act
+        var cut = context.Render<Routes>();
+
+        // Assert
+        cut.WaitForAssertion(() =>
+        {
+            cut.FindComponents<Details>().ShouldBeEmpty();
+            cut.Markup.ShouldContain("Not authorized", StringComparison.Ordinal);
+        });
     }
 
     [Fact]
@@ -106,6 +137,8 @@ public sealed class DetailsPageTests : BunitContext
         cut.FindAll("label").ShouldBeEmpty();
         cut.FindAll("a").ShouldContain(link =>
             link.GetAttribute("href") == $"/documents/{document.Id}/download"
+            && link.HasAttribute("download")
+            && link.GetAttribute("data-enhance-nav") == "false"
             && link.TextContent.Contains("Download artifact", StringComparison.Ordinal));
     }
 
@@ -211,6 +244,105 @@ public sealed class DetailsPageTests : BunitContext
         // Assert
         cut.Find("button[aria-label='Save Greeting']").ShouldNotBeNull();
         cut.Find("button[aria-label='Save Trip note']").ShouldNotBeNull();
+    }
+
+    [Theory]
+    [InlineData(DocumentStatusDto.DraftGenerated, "Start review", true)]
+    [InlineData(DocumentStatusDto.InReview, "Request changes|Approve", true)]
+    [InlineData(DocumentStatusDto.ChangesRequested, "Start review", true)]
+    [InlineData(DocumentStatusDto.Approved, "Request changes|Finalize", true)]
+    [InlineData(DocumentStatusDto.Finalized, "Download artifact|Regenerate|Void", false)]
+    [InlineData(DocumentStatusDto.Superseded, "", false)]
+    [InlineData(DocumentStatusDto.Voided, "", false)]
+    public async Task Actions_and_editability_match_document_status(
+        DocumentStatusDto status,
+        string expectedActions,
+        bool expectsEditableField)
+    {
+        // Arrange
+        ArgumentNullException.ThrowIfNull(expectedActions);
+        var document = DocumentDetailsTestData.Create(
+            status,
+            hasFinalizedArtifact: status == DocumentStatusDto.Finalized);
+        documentsApiClient.AddDocument(document);
+
+        // Act
+        var cut = Render<Details>(parameters => parameters.Add(page => page.Id, document.Id));
+        await cut.WaitForAssertionAsync(() => cut.Find("h1"));
+
+        // Assert
+        var expectedActionNames = expectedActions.Split(
+            '|',
+            StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
+        var actualActionNames = cut
+            .FindAll("[aria-label='Document actions'] button, [aria-label='Document actions'] a")
+            .Select(action => action.TextContent.Trim())
+            .ToArray();
+        actualActionNames.ShouldBeEquivalentTo(expectedActionNames);
+        cut.FindAll("input[id^='document-field-']").Any().ShouldBe(expectsEditableField);
+    }
+
+    [Fact]
+    public async Task Saving_an_editable_field_sends_the_value_and_refreshes_the_document()
+    {
+        // Arrange
+        const string reviewedValue = "Reviewed customer greeting";
+        var original = DocumentDetailsTestData.Create(DocumentStatusDto.DraftGenerated);
+        var updated = original with
+        {
+            Status = DocumentStatusDto.InReview,
+            Fields = [original.Fields[0] with { RenderedValue = reviewedValue }]
+        };
+        documentsApiClient.AddDocument(original);
+        documentsApiClient.UpdatedDocument = updated;
+        var cut = Render<Details>(parameters => parameters.Add(page => page.Id, original.Id));
+        await cut.WaitForAssertionAsync(() => cut.Find("#document-field-greeting"));
+
+        // Act
+        await cut.InvokeAsync(() => cut.Find("#document-field-greeting").Change(reviewedValue));
+        await cut.InvokeAsync(() => cut.Find("button[aria-label='Save Greeting']").Click());
+
+        // Assert
+        documentsApiClient.LastUpdatedDocumentId.ShouldBe(original.Id);
+        documentsApiClient.LastUpdatedFieldId.ShouldBe("greeting");
+        documentsApiClient.LastUpdatedFieldValue.ShouldBe(reviewedValue);
+        cut.FindAll("dd")[0].TextContent.Trim().ShouldBe("InReview");
+        cut.Find("#document-field-greeting").GetAttribute("value").ShouldBe(reviewedValue);
+    }
+
+    [Fact]
+    public async Task Finalized_document_without_an_artifact_hides_the_download_link()
+    {
+        // Arrange
+        var document = DocumentDetailsTestData.Create(
+            DocumentStatusDto.Finalized,
+            hasFinalizedArtifact: false,
+            fields: []);
+        documentsApiClient.AddDocument(document);
+
+        // Act
+        var cut = Render<Details>(parameters => parameters.Add(page => page.Id, document.Id));
+        await cut.WaitForAssertionAsync(() => cut.Find("h1"));
+
+        // Assert
+        cut.FindAll($"a[href='/documents/{document.Id}/download']").ShouldBeEmpty();
+        cut.FindAll("button").ShouldContain(button =>
+            button.TextContent.Contains("Regenerate", StringComparison.Ordinal));
+    }
+
+    [Fact]
+    public async Task Document_actions_are_exposed_as_a_named_group()
+    {
+        // Arrange
+        var document = DocumentDetailsTestData.Create(DocumentStatusDto.DraftGenerated, fields: []);
+        documentsApiClient.AddDocument(document);
+
+        // Act
+        var cut = Render<Details>(parameters => parameters.Add(page => page.Id, document.Id));
+        await cut.WaitForAssertionAsync(() => cut.Find("h1"));
+
+        // Assert
+        cut.Find("[role='group'][aria-label='Document actions']").ShouldNotBeNull();
     }
 
     [Fact]

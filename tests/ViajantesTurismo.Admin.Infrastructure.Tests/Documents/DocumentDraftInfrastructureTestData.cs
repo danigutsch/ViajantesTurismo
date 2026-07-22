@@ -1,3 +1,4 @@
+using System.Globalization;
 using ViajantesTurismo.Admin.Domain.Documents;
 
 namespace ViajantesTurismo.Admin.Infrastructure.Tests.Documents;
@@ -39,6 +40,29 @@ internal static class DocumentDraftInfrastructureTestData
         result.IsSuccess.ShouldBeTrue();
         result.Value.ClearDomainEvents();
         return result.Value;
+    }
+
+    public static DocumentLineage CreateLineageWithRevisions(DateTime firstCreatedAt, int revisionCount)
+    {
+        ArgumentOutOfRangeException.ThrowIfLessThan(revisionCount, 1);
+
+        var lineage = CreateLineage(firstCreatedAt);
+        var previous = lineage.Revisions.ShouldHaveSingleItem();
+        var auditContext = CreateAuditContext();
+
+        for (var revision = 2; revision <= revisionCount; revision++)
+        {
+            var result = lineage.CreateRevision(
+                previous.Id,
+                CreateContent(revision.ToString(CultureInfo.InvariantCulture)),
+                firstCreatedAt.AddMinutes(revision - 1),
+                auditContext);
+            result.IsSuccess.ShouldBeTrue();
+            previous = result.Value;
+        }
+
+        lineage.ClearDomainEvents();
+        return lineage;
     }
 
     public static DocumentDraft CreateDraft(DateTime createdAt, Guid? bookingId = null)

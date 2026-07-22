@@ -1,10 +1,12 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
+using Npgsql;
 using SharedKernel.DomainEvents.EntityFrameworkCore;
 using SharedKernel.EntityFrameworkCore;
 using SharedKernel.IntegrationTesting;
 using SharedKernel.Messaging.IntegrationEvents.EntityFrameworkCore;
 using ViajantesTurismo.Admin.Application.Documents;
+using ViajantesTurismo.Admin.Contracts.Application;
 using ViajantesTurismo.Admin.Domain.Documents;
 using ViajantesTurismo.Admin.Domain.Tours;
 using ViajantesTurismo.Admin.Infrastructure.Documents;
@@ -64,13 +66,20 @@ internal sealed class PostgreSqlDocumentStoreScenario : IAsyncDisposable
         _ = await dbContext.SaveChangesAsync(TestContext.Current.CancellationToken);
     }
 
-    public async ValueTask SeedAudit(DocumentAuditRecord record)
+    public async ValueTask SeedAudits(params DocumentAuditRecord[] records)
     {
         await using var dbContext = CreateDbContext();
         await dbContext.Database.MigrateAsync(TestContext.Current.CancellationToken);
-        new DocumentAuditStore(dbContext).Add(record);
+        var store = new DocumentAuditStore(dbContext);
+        foreach (var record in records)
+        {
+            store.Add(record);
+        }
+
         _ = await dbContext.SaveChangesAsync(TestContext.Current.CancellationToken);
     }
+
+    public ValueTask SeedAudit(DocumentAuditRecord record) => SeedAudits(record);
 
     public async ValueTask<int> PurgeExpiredDrafts(DateTime now, CancellationToken ct)
     {
@@ -171,6 +180,12 @@ internal sealed class PostgreSqlDocumentStoreScenario : IAsyncDisposable
         return await new DocumentQueryService(dbContext).GetAuditMetadataById(id, ct);
     }
 
+    public async ValueTask<GetDocumentDto?> GetDocumentProjectionById(Guid id, CancellationToken ct)
+    {
+        await using var dbContext = CreateReadDbContext();
+        return await new DocumentQueryService(dbContext).GetById(id, ct);
+    }
+
     public async ValueTask<bool> HasConcurrentLineageUpdateConflict(Guid documentId, DateTime now, CancellationToken ct)
     {
         await using var firstContext = CreateDbContext();
@@ -220,6 +235,20 @@ internal sealed class PostgreSqlDocumentStoreScenario : IAsyncDisposable
         await dbContext.SaveEntities(ct);
     }
 
+    public async Task SaveDuplicateRevision(
+        Guid documentLineageId,
+        DocumentDraft duplicate,
+        CancellationToken ct)
+    {
+        await using var dbContext = CreateDbContext();
+        dbContext.DocumentDrafts.Add(duplicate);
+        dbContext.Entry(duplicate)
+            .Property(document => document.DocumentLineageId)
+            .CurrentValue = documentLineageId;
+
+        await dbContext.SaveEntities(ct);
+    }
+
     public async Task SaveDocumentForBookingStatus(
         DocumentDraft document,
         BookingStatus? bookingStatus,
@@ -261,6 +290,12 @@ internal sealed class PostgreSqlDocumentStoreScenario : IAsyncDisposable
     {
         await using var dbContext = CreateDbContext();
         return await new DocumentAuditStore(dbContext).PurgeExpiredRecords(now, ct);
+    }
+
+    public async Task ResetMutableDataPreservingDocumentAudits(CancellationToken ct)
+    {
+        await using var connection = new NpgsqlConnection(connectionString);
+        await PostgreSqlPublicSchemaReset.Reset(connection, ["DocumentAuditRecords"], ct);
     }
 
     public async Task UpdateAuditActor(Guid id, string actorId, CancellationToken ct)

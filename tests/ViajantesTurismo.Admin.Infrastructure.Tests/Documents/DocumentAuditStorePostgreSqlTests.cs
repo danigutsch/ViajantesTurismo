@@ -1,5 +1,6 @@
 using Npgsql;
 using SharedKernel.Testing;
+using ViajantesTurismo.Admin.Domain.Documents;
 
 namespace ViajantesTurismo.Admin.Infrastructure.Tests.Documents;
 
@@ -144,5 +145,132 @@ public sealed class DocumentAuditStorePostgreSqlTests : IAsyncLifetime
         removedCount.ShouldBe(1);
         expiredRecord.ShouldBeNull();
         currentRecord.ShouldNotBeNull();
+    }
+
+    [Fact]
+    public async Task PurgeExpiredRecords_deletes_the_boundary_in_bounded_batches_and_then_becomes_a_no_op()
+    {
+        // Arrange
+        var now = new DateTime(2025, 1, 15, 12, 0, 0, DateTimeKind.Utc);
+        var earlier = Enumerable.Range(0, 500)
+            .Select(index => DocumentAuditInfrastructureTestData.CreateRecord(
+                now.AddMonths(-DocumentAuditLimits.RetentionMonths - 1).AddMinutes(index)))
+            .ToArray();
+        var boundary = DocumentAuditInfrastructureTestData.CreateRecord(
+            now.AddMonths(-DocumentAuditLimits.RetentionMonths));
+        var future = DocumentAuditInfrastructureTestData.CreateRecord(
+            now.AddMonths(-DocumentAuditLimits.RetentionMonths).AddDays(1));
+        await Scenario.SeedAudits([.. earlier, boundary, future]);
+
+        // Act
+        var firstRemovedCount = await Scenario.PurgeExpiredAuditRecords(
+            now,
+            TestContext.Current.CancellationToken);
+        var boundaryAfterFirstBatch = await Scenario.GetAuditRecord(
+            boundary.Id,
+            TestContext.Current.CancellationToken);
+        var futureAfterFirstBatch = await Scenario.GetAuditRecord(
+            future.Id,
+            TestContext.Current.CancellationToken);
+        var secondRemovedCount = await Scenario.PurgeExpiredAuditRecords(
+            now,
+            TestContext.Current.CancellationToken);
+        var boundaryAfterSecondBatch = await Scenario.GetAuditRecord(
+            boundary.Id,
+            TestContext.Current.CancellationToken);
+        var futureAfterSecondBatch = await Scenario.GetAuditRecord(
+            future.Id,
+            TestContext.Current.CancellationToken);
+        var thirdRemovedCount = await Scenario.PurgeExpiredAuditRecords(
+            now,
+            TestContext.Current.CancellationToken);
+
+        // Assert
+        boundary.RetentionExpiresAt.ShouldBe(now);
+        firstRemovedCount.ShouldBe(500);
+        boundaryAfterFirstBatch.ShouldNotBeNull();
+        futureAfterFirstBatch.ShouldNotBeNull();
+        secondRemovedCount.ShouldBe(1);
+        boundaryAfterSecondBatch.ShouldBeNull();
+        futureAfterSecondBatch.ShouldNotBeNull();
+        thirdRemovedCount.ShouldBe(0);
+    }
+
+    [Fact]
+    public async Task Audit_record_survives_document_lineage_deletion()
+    {
+        // Arrange
+        var now = DateTime.UtcNow;
+        now = now.AddTicks(-(now.Ticks % TimeSpan.TicksPerSecond));
+        var document = DocumentDraftInfrastructureTestData.CreateDraft(
+            now.AddDays(-DocumentLimits.DraftRetentionDays - 1));
+        var auditResult = DocumentAuditRecord.Create(
+            "9c5ff2e6-8b35-4f78-9df3-ef15af8e92a4",
+            document.Id,
+            document.BookingId,
+            document.Revision,
+            DocumentAuditOperation.Generate,
+            DocumentAuditOutcome.Succeeded,
+            DocumentAuditReasonCode.ManualOperation,
+            "9a3ca841b4354928861c660a6e4e1b99",
+            now);
+        auditResult.IsSuccess.ShouldBeTrue();
+        var audit = auditResult.Value;
+        await Scenario.Seed(document);
+        await Scenario.SeedAudit(audit);
+
+        // Act
+        var removedCount = await Scenario.PurgeExpiredDrafts(
+            now,
+            TestContext.Current.CancellationToken);
+
+        // Assert
+        removedCount.ShouldBe(1);
+        var persistedDocument = await Scenario.GetDocumentById(
+            document.Id,
+            TestContext.Current.CancellationToken);
+        persistedDocument.ShouldBeNull();
+        var lineageCount = await Scenario.GetLineageCount(TestContext.Current.CancellationToken);
+        lineageCount.ShouldBe(0);
+        var persistedAudit = await Scenario.GetAuditRecord(
+            audit.Id,
+            TestContext.Current.CancellationToken);
+        var retainedAudit = persistedAudit.ShouldNotBeNull();
+        retainedAudit.DocumentId.ShouldBe(document.Id);
+        retainedAudit.BookingId.ShouldBe(document.BookingId);
+        retainedAudit.DocumentRevision.ShouldBe(document.Revision);
+        retainedAudit.Operation.ShouldBe(DocumentAuditOperation.Generate);
+        retainedAudit.Outcome.ShouldBe(DocumentAuditOutcome.Succeeded);
+        retainedAudit.ReasonCode.ShouldBe(DocumentAuditReasonCode.ManualOperation);
+        retainedAudit.RetentionExpiresAt.ShouldBe(audit.RetentionExpiresAt);
+    }
+
+    [Fact]
+    public async Task Reset_removes_mutable_document_data_and_preserves_audit_records()
+    {
+        // Arrange
+        var now = new DateTime(2026, 7, 21, 12, 0, 0, DateTimeKind.Utc);
+        var document = DocumentDraftInfrastructureTestData.CreateDraft(now);
+        var audit = DocumentAuditInfrastructureTestData.CreateRecord(
+            now,
+            document.Id,
+            document.BookingId,
+            document.Revision);
+        await Scenario.Seed(document);
+        await Scenario.SeedAudit(audit);
+
+        // Act
+        await Scenario.ResetMutableDataPreservingDocumentAudits(TestContext.Current.CancellationToken);
+        var remainingDocuments = await Scenario.GetDocuments(TestContext.Current.CancellationToken);
+        var remainingLineageCount = await Scenario.GetLineageCount(TestContext.Current.CancellationToken);
+        var persistedAudit = await Scenario.GetAuditRecord(audit.Id, TestContext.Current.CancellationToken);
+
+        // Assert
+        remainingDocuments.ShouldBeEmpty();
+        remainingLineageCount.ShouldBe(0);
+        var retainedAudit = persistedAudit.ShouldNotBeNull();
+        retainedAudit.ActorId.ShouldBe(audit.ActorId);
+        retainedAudit.DocumentId.ShouldBe(document.Id);
+        retainedAudit.BookingId.ShouldBe(document.BookingId);
     }
 }

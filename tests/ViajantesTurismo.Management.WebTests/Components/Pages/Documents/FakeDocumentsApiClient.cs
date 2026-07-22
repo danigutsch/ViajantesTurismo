@@ -10,7 +10,15 @@ internal sealed class FakeDocumentsApiClient : IDocumentsApiClient
 
     public GetDocumentDto? RegeneratedDocument { get; set; }
 
+    public GetDocumentDto? UpdatedDocument { get; set; }
+
     public Guid? LastBeginReviewDocumentId { get; private set; }
+
+    public Guid? LastUpdatedDocumentId { get; private set; }
+
+    public string? LastUpdatedFieldId { get; private set; }
+
+    public string? LastUpdatedFieldValue { get; private set; }
 
     public DocumentArtifactResponse? Artifact { get; set; }
 
@@ -35,8 +43,13 @@ internal sealed class FakeDocumentsApiClient : IDocumentsApiClient
     public Task<GetDocumentDto> RequestChanges(Guid documentId, CancellationToken ct) =>
         Task.FromResult(GetRequiredDocument(documentId));
 
-    public Task<GetDocumentDto> UpdateField(Guid documentId, string fieldId, UpdateDocumentFieldDto dto, CancellationToken ct) =>
-        Task.FromResult(GetRequiredDocument(documentId));
+    public Task<GetDocumentDto> UpdateField(Guid documentId, string fieldId, UpdateDocumentFieldDto dto, CancellationToken ct)
+    {
+        LastUpdatedDocumentId = documentId;
+        LastUpdatedFieldId = fieldId;
+        LastUpdatedFieldValue = dto.Value;
+        return Task.FromResult(UpdatedDocument ?? GetRequiredDocument(documentId));
+    }
 
     public Task<GetDocumentDto> Approve(Guid documentId, CancellationToken ct) =>
         Task.FromResult(GetRequiredDocument(documentId));

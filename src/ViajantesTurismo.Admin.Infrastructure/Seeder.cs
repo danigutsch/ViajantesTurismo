@@ -213,6 +213,12 @@ public sealed class Seeder
         )
     ];
 
+    private static readonly string[] BaselineTourIdentifiers =
+        Tours.Select(static tour => tour.Identifier).ToArray();
+
+    private static readonly string[] BaselineCustomerNationalIds =
+        Customers.Select(static customer => customer.IdentificationInfo.NationalId).ToArray();
+
     internal Seeder(AdminWriteDbContext dbContext)
     {
         ArgumentNullException.ThrowIfNull(dbContext);
@@ -221,7 +227,7 @@ public sealed class Seeder
     }
 
     /// <summary>
-    /// Applies Admin database migrations and inserts baseline development data when empty.
+    /// Applies Admin database migrations and resumes known development baseline seeding.
     /// </summary>
     /// <param name="ct">The cancellation token.</param>
     public async Task Seed(CancellationToken ct)
@@ -231,53 +237,112 @@ public sealed class Seeder
             await dbContext.Database.MigrateAsync(ct);
         }
 
-        if (await dbContext.Tours.AnyAsync(ct))
+        var existingTourIdentifiers = await dbContext.Tours
+            .Select(static tour => tour.Identifier)
+            .ToArrayAsync(ct);
+
+        Tour[] baselineTours;
+        if (existingTourIdentifiers.Length == 0)
+        {
+            baselineTours = Tours
+                .Select(static tour => Tour.Create(new TourDefinition(
+                    tour.Identifier,
+                    tour.Name,
+                    new TourScheduleDefinition(tour.Schedule.StartDate, tour.Schedule.EndDate),
+                    new TourPricingDefinition(
+                        tour.Pricing.BasePrice,
+                        tour.Pricing.SingleRoomSupplementPrice,
+                        tour.Pricing.RegularBikePrice,
+                        tour.Pricing.EBikePrice,
+                        tour.Pricing.Currency),
+                    new TourCapacityDefinition(tour.Capacity.MinCustomers, tour.Capacity.MaxCustomers),
+                    tour.IncludedServices)).Value)
+                .OrderBy(static tour => tour.Identifier)
+                .ToArray();
+
+            dbContext.Tours.AddRange(baselineTours);
+            await dbContext.SaveChangesAsync(ct);
+        }
+        else
+        {
+            var containsCompleteBaseline = existingTourIdentifiers.Length == BaselineTourIdentifiers.Length &&
+                BaselineTourIdentifiers.All(
+                    identifier => existingTourIdentifiers.Contains(identifier, StringComparer.Ordinal));
+            if (!containsCompleteBaseline)
+            {
+                return;
+            }
+
+            baselineTours = await dbContext.Tours
+                .Where(tour => BaselineTourIdentifiers.Contains(tour.Identifier))
+                .OrderBy(static tour => tour.Identifier)
+                .ToArrayAsync(ct);
+            if (baselineTours.Length != Tours.Length)
+            {
+                return;
+            }
+        }
+
+        var existingCustomerNationalIds = await dbContext.Customers
+            .Select(static customer => customer.IdentificationInfo.NationalId)
+            .ToArrayAsync(ct);
+
+        Customer[] baselineCustomers;
+        if (existingCustomerNationalIds.Length == 0)
+        {
+            baselineCustomers = Customers
+                .Select(static customer => new Customer(
+                    customer.PersonalInfo,
+                    customer.IdentificationInfo,
+                    customer.ContactInfo,
+                    customer.Address,
+                    customer.PhysicalInfo,
+                    customer.AccommodationPreferences,
+                    customer.EmergencyContact,
+                    customer.MedicalInfo))
+                .OrderBy(static customer => customer.Id)
+                .ToArray();
+
+            dbContext.Customers.AddRange(baselineCustomers);
+            await dbContext.SaveChangesAsync(ct);
+        }
+        else
+        {
+            var containsCompleteBaseline = BaselineCustomerNationalIds.All(
+                nationalId => existingCustomerNationalIds.Contains(nationalId, StringComparer.Ordinal));
+            if (!containsCompleteBaseline)
+            {
+                return;
+            }
+
+            baselineCustomers = await dbContext.Customers
+                .Where(customer => BaselineCustomerNationalIds.Contains(customer.IdentificationInfo.NationalId))
+                .OrderBy(static customer => customer.Id)
+                .ToArrayAsync(ct);
+            if (baselineCustomers.Length != Customers.Length)
+            {
+                return;
+            }
+        }
+
+        var baselineTourIds = baselineTours.Select(static tour => tour.Id).ToArray();
+        var hasBaselineBookings = await dbContext.Tours
+            .Where(tour => baselineTourIds.Contains(tour.Id))
+            .SelectMany(static tour => tour.Bookings)
+            .AnyAsync(ct);
+        if (hasBaselineBookings)
         {
             return;
         }
 
-        var toursToAdd = Tours.Select(t => Tour.Create(new TourDefinition(
-            t.Identifier,
-            t.Name,
-            new TourScheduleDefinition(t.Schedule.StartDate, t.Schedule.EndDate),
-            new TourPricingDefinition(
-                t.Pricing.BasePrice,
-                t.Pricing.SingleRoomSupplementPrice,
-                t.Pricing.RegularBikePrice,
-                t.Pricing.EBikePrice,
-                t.Pricing.Currency),
-            new TourCapacityDefinition(t.Capacity.MinCustomers, t.Capacity.MaxCustomers),
-            t.IncludedServices)).Value);
-
-        dbContext.Tours.AddRange(toursToAdd);
-
-        await dbContext.SaveChangesAsync(ct);
-
-        var customersToAdd = Customers.Select(c => new Customer(
-            c.PersonalInfo,
-            c.IdentificationInfo,
-            c.ContactInfo,
-            c.Address,
-            c.PhysicalInfo,
-            c.AccommodationPreferences,
-            c.EmergencyContact,
-            c.MedicalInfo
-        ));
-
-        dbContext.Customers.AddRange(customersToAdd);
-
-        await dbContext.SaveChangesAsync(ct);
-
-        await SeedBookings(ct);
-
+        SeedBookings(baselineTours, baselineCustomers);
         await dbContext.SaveChangesAsync(ct);
     }
 
-    private async Task SeedBookings(CancellationToken ct)
+    private static void SeedBookings(
+        Tour[] tours,
+        Customer[] customers)
     {
-        var tours = await dbContext.Tours.OrderBy(t => t.Identifier).ToArrayAsync(ct);
-        var customers = await dbContext.Customers.OrderBy(c => c.Id).ToArrayAsync(ct);
-
         if (tours.Length < 5 || customers.Length < 15)
         {
             return;
@@ -339,8 +404,6 @@ public sealed class Seeder
             customers[8].PhysicalInfo.BikeType,
             customers[8].AccommodationPreferences.RoomType,
             notes: "Payment pending bank transfer")).Value;
-
-        await dbContext.SaveChangesAsync(ct);
 
         var timeProvider = TimeProvider.System;
 

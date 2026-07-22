@@ -4,13 +4,17 @@ namespace ViajantesTurismo.Admin.Infrastructure.Tests.Documents;
 
 internal static class DocumentAuditInfrastructureTestData
 {
-    public static DocumentAuditRecord CreateRecord(DateTime occurredAtUtc)
+    public static DocumentAuditRecord CreateRecord(
+        DateTime occurredAtUtc,
+        Guid? documentId = null,
+        Guid? bookingId = null,
+        int documentRevision = 1)
     {
         var result = DocumentAuditRecord.Create(
             "9c5ff2e6-8b35-4f78-9df3-ef15af8e92a4",
-            Guid.CreateVersion7(),
-            Guid.CreateVersion7(),
-            1,
+            documentId ?? Guid.CreateVersion7(),
+            bookingId ?? Guid.CreateVersion7(),
+            documentRevision,
             DocumentAuditOperation.Finalize,
             DocumentAuditOutcome.Succeeded,
             DocumentAuditReasonCode.ManualFinalize,

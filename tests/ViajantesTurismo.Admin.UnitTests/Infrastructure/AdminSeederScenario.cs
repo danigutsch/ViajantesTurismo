@@ -60,14 +60,46 @@ internal sealed class AdminSeederScenario : IAsyncDisposable
         bookingCount.ShouldBe(10);
     }
 
-    public async Task ShouldContainOnlyExistingTour(CancellationToken ct)
+    public async Task ShouldContainOnlyTours(int expectedTourCount, CancellationToken ct)
     {
         var tourCount = await DbContext.Tours.CountAsync(ct);
         var customerCount = await DbContext.Customers.CountAsync(ct);
+        var bookingCount = await DbContext.Tours.SelectMany(tour => tour.Bookings).CountAsync(ct);
 
-        tourCount.ShouldBe(1);
+        tourCount.ShouldBe(expectedTourCount);
         customerCount.ShouldBe(0);
+        bookingCount.ShouldBe(0);
     }
+
+    public async Task KeepOnlyBaselineTours(CancellationToken ct)
+    {
+        var bookings = await DbContext.Set<Booking>().ToArrayAsync(ct);
+        var customers = await DbContext.Customers.ToArrayAsync(ct);
+        DbContext.RemoveRange(bookings);
+        DbContext.RemoveRange(customers);
+        await DbContext.SaveChangesAsync(ct);
+        DbContext.ChangeTracker.Clear();
+    }
+
+    public async Task RemoveBaselineBookings(CancellationToken ct)
+    {
+        var bookings = await DbContext.Set<Booking>().ToArrayAsync(ct);
+        DbContext.RemoveRange(bookings);
+        await DbContext.SaveChangesAsync(ct);
+        DbContext.ChangeTracker.Clear();
+    }
+
+    public async Task<Guid[]> GetTourIds(CancellationToken ct) =>
+        await DbContext.Tours
+            .OrderBy(static tour => tour.Id)
+            .Select(static tour => tour.Id)
+            .ToArrayAsync(ct);
+
+    public async Task<Guid[]> GetCustomerIds(CancellationToken ct) =>
+        await DbContext.Customers
+            .OrderBy(static customer => customer.Id)
+            .Select(static customer => customer.Id)
+            .ToArrayAsync(ct);
 
     public async ValueTask DisposeAsync()
     {
