@@ -266,41 +266,10 @@ public sealed class Seeder
             return;
         }
 
-        Tour[] baselineTours;
-        if (hasNoTours)
-        {
-            baselineTours = Tours
-                .Select(static tour => Tour.Create(new TourDefinition(
-                    tour.Identifier,
-                    tour.Name,
-                    new TourScheduleDefinition(tour.Schedule.StartDate, tour.Schedule.EndDate),
-                    new TourPricingDefinition(
-                        tour.Pricing.BasePrice,
-                        tour.Pricing.SingleRoomSupplementPrice,
-                        tour.Pricing.RegularBikePrice,
-                        tour.Pricing.EBikePrice,
-                        tour.Pricing.Currency),
-                    new TourCapacityDefinition(tour.Capacity.MinCustomers, tour.Capacity.MaxCustomers),
-                    tour.IncludedServices)).Value)
-                .OrderBy(static tour => tour.Identifier)
-                .ToArray();
-        }
-        else
-        {
-            baselineTours = await dbContext.Tours
-                .Where(tour => BaselineTourIdentifiers.Contains(tour.Identifier))
-                .OrderBy(static tour => tour.Identifier)
-                .ToArrayAsync(ct);
-        }
-
-        if (baselineTours.Length != Tours.Length || baselineTours.Any(static tour => !MatchesBaselineTour(tour)))
+        var baselineTours = await ResolveBaselineTours(hasNoTours, ct);
+        if (baselineTours is null)
         {
             return;
-        }
-
-        if (hasNoTours)
-        {
-            dbContext.Tours.AddRange(baselineTours);
         }
 
         Customer[] baselineCustomers;
@@ -373,6 +342,39 @@ public sealed class Seeder
     private static bool HasExactValues(string[] actual, string[] expected) =>
         actual.Length == expected.Length &&
         actual.ToHashSet(StringComparer.Ordinal).SetEquals(expected);
+
+    private async Task<Tour[]?> ResolveBaselineTours(bool hasNoTours, CancellationToken ct)
+    {
+        if (hasNoTours)
+        {
+            var newTours = Tours
+                .Select(static tour => Tour.Create(new TourDefinition(
+                    tour.Identifier,
+                    tour.Name,
+                    new TourScheduleDefinition(tour.Schedule.StartDate, tour.Schedule.EndDate),
+                    new TourPricingDefinition(
+                        tour.Pricing.BasePrice,
+                        tour.Pricing.SingleRoomSupplementPrice,
+                        tour.Pricing.RegularBikePrice,
+                        tour.Pricing.EBikePrice,
+                        tour.Pricing.Currency),
+                    new TourCapacityDefinition(tour.Capacity.MinCustomers, tour.Capacity.MaxCustomers),
+                    tour.IncludedServices)).Value)
+                .OrderBy(static tour => tour.Identifier)
+                .ToArray();
+            dbContext.Tours.AddRange(newTours);
+            return newTours;
+        }
+
+        var existingTours = await dbContext.Tours
+            .Where(tour => BaselineTourIdentifiers.Contains(tour.Identifier))
+            .OrderBy(static tour => tour.Identifier)
+            .ToArrayAsync(ct);
+        return existingTours.Length == Tours.Length &&
+            existingTours.All(static tour => MatchesBaselineTour(tour))
+                ? existingTours
+                : null;
+    }
 
     private static void SeedBookings(
         Tour[] tours,
