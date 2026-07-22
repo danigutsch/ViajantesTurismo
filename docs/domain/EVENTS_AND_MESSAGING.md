@@ -43,6 +43,8 @@ Owns DDD primitives:
 - `IAggregateRoot<TId>`.
 - `IDomainEvent`.
 - Domain event recording and dequeueing.
+- `IDomainEventDispatcher`, `IDomainEventDispatchHandler`, and `CompositeDomainEventDispatcher`.
+- Generated typed outbox and audit dispatch composition.
 
 ### `SharedKernel.BuildingBlocks`
 
@@ -53,15 +55,10 @@ Owns reusable identity interfaces, value objects, and small cross-context primit
 - `DateRange`.
 - Future source-generated value-object conventions.
 
-### `SharedKernel.DomainEvents`
-
-Owns the transaction-boundary domain event dispatch contract:
-
-- `IDomainEventDispatcher`.
-- The EF Core interceptor contract used before the owning `SaveChanges` transaction commits.
-
-The integration-event source generator owns exhaustive domain-event-to-outbox mapping calls. The
-mediator generator does not discover domain event handlers or register a competing dispatcher.
+`SharedKernel.Domain.EntityFrameworkCore` owns the SaveChanges interceptor used before the owning
+transaction commits. The integration-event source generator owns exhaustive domain-event-to-outbox
+mapping calls. The mediator generator does not discover domain event handlers or register a competing
+dispatcher.
 
 ### `SharedKernel.Messaging.IntegrationEvents`
 
@@ -102,7 +99,7 @@ integration events, or event sourcing:
 
 Provider-specific persistence remains outside this module. EF Core messaging providers live in
 `SharedKernel.Messaging.IntegrationEvents.EntityFrameworkCore`,
-`SharedKernel.Idempotency.EntityFrameworkCore`, and `SharedKernel.DomainEvents.EntityFrameworkCore`.
+`SharedKernel.Idempotency.EntityFrameworkCore`, and `SharedKernel.Domain.EntityFrameworkCore`.
 
 ### `SharedKernel.Idempotency`
 

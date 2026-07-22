@@ -1,6 +1,4 @@
-using SharedKernel.Domain;
-
-namespace SharedKernel.DomainEvents.Tests;
+namespace SharedKernel.Domain.Tests;
 
 public sealed class DomainEventDispatchTests
 {
@@ -29,5 +27,7 @@ public sealed class DomainEventDispatchTests
         exportedTypeNames.ShouldNotContain("MediatorDomainEventDispatcher");
         dispatcherMethod.IsGenericMethodDefinition.ShouldBeTrue();
         dispatcherMethod.GetGenericArguments().Single().GetGenericParameterConstraints().ShouldContain(typeof(IDomainEvent));
+        typeof(IDomainEventDispatcher).Assembly.ShouldBe(typeof(IDomainEvent).Assembly);
+        typeof(IDomainEventDispatcher).Namespace.ShouldBe("SharedKernel.Domain");
     }
 }

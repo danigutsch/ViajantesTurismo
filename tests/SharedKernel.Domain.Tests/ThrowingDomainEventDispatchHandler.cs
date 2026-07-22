@@ -1,6 +1,4 @@
-using SharedKernel.Domain;
-
-namespace SharedKernel.DomainEvents.Tests;
+namespace SharedKernel.Domain.Tests;
 
 internal sealed class ThrowingDomainEventDispatchHandler : IDomainEventDispatchHandler
 {

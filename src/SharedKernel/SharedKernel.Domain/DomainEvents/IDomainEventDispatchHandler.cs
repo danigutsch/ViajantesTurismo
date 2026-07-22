@@ -1,6 +1,4 @@
-using SharedKernel.Domain;
-
-namespace SharedKernel.DomainEvents;
+namespace SharedKernel.Domain;
 
 /// <summary>Handles an untyped domain event as part of a composite dispatch operation.</summary>
 public interface IDomainEventDispatchHandler

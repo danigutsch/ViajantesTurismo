@@ -249,12 +249,6 @@
           "SharedKernel.BuildingBlocks": "[0.1.0-alpha.0, )"
         }
       },
-      "sharedkernel.domainevents": {
-        "type": "Project",
-        "dependencies": {
-          "SharedKernel.Domain": "[0.1.0-alpha.0, )"
-        }
-      },
       "sharedkernel.httpclients": {
         "type": "Project",
         "dependencies": {
@@ -289,7 +283,7 @@
           "SharedKernel.Branding": "[0.1.0-alpha.0, )",
           "SharedKernel.BuildingBlocks": "[0.1.0-alpha.0, )",
           "SharedKernel.DocumentRendering": "[0.1.0-alpha.0, )",
-          "SharedKernel.DomainEvents": "[0.1.0-alpha.0, )",
+          "SharedKernel.Domain": "[0.1.0-alpha.0, )",
           "SharedKernel.InputNormalization": "[0.1.0-alpha.0, )",
           "SharedKernel.Messaging.IntegrationEvents": "[0.1.0-alpha.0, )",
           "SharedKernel.Results": "[0.1.0-alpha.0, )",

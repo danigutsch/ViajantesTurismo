@@ -368,18 +368,11 @@
           "SharedKernel.BuildingBlocks": "[0.1.0-alpha.0, )"
         }
       },
-      "sharedkernel.domainevents": {
-        "type": "Project",
-        "dependencies": {
-          "SharedKernel.Domain": "[0.1.0-alpha.0, )"
-        }
-      },
-      "sharedkernel.domainevents.entityframeworkcore": {
+      "sharedkernel.domain.entityframeworkcore": {
         "type": "Project",
         "dependencies": {
           "Microsoft.EntityFrameworkCore.Relational": "[10.0.10, )",
           "SharedKernel.Domain": "[0.1.0-alpha.0, )",
-          "SharedKernel.DomainEvents": "[0.1.0-alpha.0, )",
           "SharedKernel.EntityFrameworkCore": "[0.1.0-alpha.0, )"
         }
       },
@@ -521,7 +514,7 @@
           "SharedKernel.Branding": "[0.1.0-alpha.0, )",
           "SharedKernel.BuildingBlocks": "[0.1.0-alpha.0, )",
           "SharedKernel.DocumentRendering": "[0.1.0-alpha.0, )",
-          "SharedKernel.DomainEvents": "[0.1.0-alpha.0, )",
+          "SharedKernel.Domain": "[0.1.0-alpha.0, )",
           "SharedKernel.InputNormalization": "[0.1.0-alpha.0, )",
           "SharedKernel.Messaging.IntegrationEvents": "[0.1.0-alpha.0, )",
           "SharedKernel.Results": "[0.1.0-alpha.0, )",
@@ -562,8 +555,8 @@
         "dependencies": {
           "Aspire.Npgsql.EntityFrameworkCore.PostgreSQL": "[13.4.6, )",
           "SharedKernel.AuditTrail": "[0.1.0-alpha.0, )",
-          "SharedKernel.DomainEvents": "[0.1.0-alpha.0, )",
-          "SharedKernel.DomainEvents.EntityFrameworkCore": "[0.1.0-alpha.0, )",
+          "SharedKernel.Domain": "[0.1.0-alpha.0, )",
+          "SharedKernel.Domain.EntityFrameworkCore": "[0.1.0-alpha.0, )",
           "SharedKernel.EntityFrameworkCore": "[0.1.0-alpha.0, )",
           "SharedKernel.InputNormalization": "[0.1.0-alpha.0, )",
           "SharedKernel.Messaging.IntegrationEvents": "[0.1.0-alpha.0, )",
@@ -578,7 +571,7 @@
       "viajantesturismo.admin.testing": {
         "type": "Project",
         "dependencies": {
-          "SharedKernel.DomainEvents": "[0.1.0-alpha.0, )",
+          "SharedKernel.Domain": "[0.1.0-alpha.0, )",
           "ViajantesTurismo.Admin.Application": "[0.1.0-alpha.0, )",
           "ViajantesTurismo.Admin.Contracts.Application": "[0.1.0-alpha.0, )",
           "ViajantesTurismo.Admin.Contracts.Http": "[0.1.0-alpha.0, )",

@@ -307,7 +307,7 @@ public sealed class LayerDependencyTests
         var eventsAndMessaging = File.ReadAllText(
             Path.Combine(repositoryRoot, "docs", "domain", "EVENTS_AND_MESSAGING.md"));
         var domainEventsReadme = File.ReadAllText(
-            Path.Combine(repositoryRoot, "src", "SharedKernel", "SharedKernel.DomainEvents", "README.md"));
+            Path.Combine(repositoryRoot, "src", "SharedKernel", "SharedKernel.Domain", "README.md"));
 
         // Act
         var mediatorReferences = adminAssemblies

@@ -1,7 +1,7 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Npgsql;
-using SharedKernel.DomainEvents.EntityFrameworkCore;
+using SharedKernel.Domain.EntityFrameworkCore;
 using SharedKernel.EntityFrameworkCore;
 using SharedKernel.IntegrationTesting;
 using SharedKernel.Messaging.IntegrationEvents.EntityFrameworkCore;

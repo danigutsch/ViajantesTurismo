@@ -1,6 +1,4 @@
-using SharedKernel.Domain;
-
-namespace SharedKernel.DomainEvents;
+namespace SharedKernel.Domain;
 
 /// <summary>Dispatches each domain event through registered handlers in registration order.</summary>
 public sealed class CompositeDomainEventDispatcher : IDomainEventDispatcher

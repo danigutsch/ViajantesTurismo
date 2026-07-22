@@ -1,4 +1,4 @@
-namespace SharedKernel.DomainEvents.Tests;
+namespace SharedKernel.Domain.Tests;
 
 public sealed class CompositeDomainEventDispatcherTests
 {
@@ -37,6 +37,24 @@ public sealed class CompositeDomainEventDispatcherTests
         // Assert
         first.CapturedToken.ShouldBe(cancellationTokenSource.Token);
         second.CapturedToken.ShouldBe(cancellationTokenSource.Token);
+    }
+
+    [Fact]
+    public async Task Dispatch_invokes_registered_handlers_for_untyped_events()
+    {
+        // Arrange
+        var calls = new List<string>();
+        var dispatcher = new CompositeDomainEventDispatcher(
+        [
+            new CapturingDomainEventDispatchHandler("audit", calls),
+        ]);
+        Domain.IDomainEvent domainEvent = new TestDomainEvent("document-finalized");
+
+        // Act
+        await dispatcher.Dispatch(domainEvent, CancellationToken.None);
+
+        // Assert
+        calls.ShouldHaveSingleItem().ShouldBe("audit");
     }
 
     [Fact]
@@ -81,6 +99,21 @@ public sealed class CompositeDomainEventDispatcherTests
         var dispatcher = new CompositeDomainEventDispatcher([]);
         Func<Task> dispatch = async () =>
             await dispatcher.Dispatch((Domain.IDomainEvent)null!, TestContext.Current.CancellationToken);
+
+        // Act
+        var exception = await dispatch.ShouldThrow<ArgumentNullException>();
+
+        // Assert
+        exception.ParamName.ShouldBe("domainEvent");
+    }
+
+    [Fact]
+    public async Task Dispatch_rejects_a_null_typed_domain_event()
+    {
+        // Arrange
+        var dispatcher = new CompositeDomainEventDispatcher([]);
+        Func<Task> dispatch = async () =>
+            await dispatcher.Dispatch<TestDomainEvent>(null!, TestContext.Current.CancellationToken);
 
         // Act
         var exception = await dispatch.ShouldThrow<ArgumentNullException>();

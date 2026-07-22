@@ -22,7 +22,7 @@ model instead of introducing a disconnected event bus.
 
 Create separate typed dispatch modules for domain events and integration events.
 
-- `SharedKernel.DomainEvents` owns `IDomainEventDispatcher` and
+- A dedicated domain-event module owns `IDomainEventDispatcher` and
   `IDomainEventHandler<TDomainEvent>`.
 - `SharedKernel.Messaging.IntegrationEvents` owns `IIntegrationEventDispatcher` and
   `IIntegrationEventHandler<TIntegrationEvent>`.

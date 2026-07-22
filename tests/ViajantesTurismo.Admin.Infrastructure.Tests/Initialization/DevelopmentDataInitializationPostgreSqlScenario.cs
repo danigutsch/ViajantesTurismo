@@ -3,7 +3,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Diagnostics;
 using Microsoft.Extensions.DependencyInjection;
 using SharedKernel.AuditTrail;
-using SharedKernel.DomainEvents.EntityFrameworkCore;
+using SharedKernel.Domain.EntityFrameworkCore;
 using SharedKernel.EntityFrameworkCore;
 using SharedKernel.IntegrationTesting;
 using SharedKernel.Messaging.IntegrationEvents;

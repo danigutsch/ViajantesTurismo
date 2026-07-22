@@ -1,6 +1,4 @@
-using SharedKernel.Domain;
-
-namespace SharedKernel.DomainEvents;
+namespace SharedKernel.Domain;
 
 /// <summary>
 /// Dispatches domain events raised inside one bounded context.

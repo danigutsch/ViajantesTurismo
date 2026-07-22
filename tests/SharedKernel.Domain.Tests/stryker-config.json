@@ -1,7 +1,7 @@
 {
   "stryker-config": {
     "test-runner": "mtp",
-    "project": "SharedKernel.DomainEvents.csproj",
+    "project": "SharedKernel.Domain.csproj",
     "mutate": [
       "**/*.cs"
     ],

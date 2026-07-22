@@ -2,7 +2,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using SharedKernel.EntityFrameworkCore;
 
-namespace SharedKernel.DomainEvents.EntityFrameworkCore;
+namespace SharedKernel.Domain.EntityFrameworkCore;
 
 /// <summary>
 /// Provides service registration helpers for EF Core domain-event dispatching.

@@ -17,7 +17,7 @@ configs=(
     "tests/ViajantesTurismo.Catalog.UnitTests/stryker-application-config.json"
     "tests/ViajantesTurismo.Admin.UnitTests/stryker-application-config.json"
     "tests/SharedKernel.BuildingBlocks.Tests/stryker-config.json"
-    "tests/SharedKernel.DomainEvents.Tests/stryker-config.json"
+    "tests/SharedKernel.Domain.Tests/stryker-config.json"
     "tests/SharedKernel.EventSourcing.Tests/stryker-config.json"
     "tests/SharedKernel.Functional.Tests/stryker-config.json"
     "tests/SharedKernel.Idempotency.Tests/stryker-config.json"

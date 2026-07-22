@@ -1,7 +1,7 @@
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using SharedKernel.Branding;
-using SharedKernel.DomainEvents;
+using SharedKernel.Domain;
 using SharedKernel.EntityFrameworkCore;
 using SharedKernel.Idempotency;
 using SharedKernel.Messaging.IntegrationEvents;

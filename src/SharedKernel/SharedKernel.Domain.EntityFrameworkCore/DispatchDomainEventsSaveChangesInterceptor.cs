@@ -4,10 +4,9 @@ using Microsoft.EntityFrameworkCore.ChangeTracking;
 using Microsoft.EntityFrameworkCore.Diagnostics;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.Extensions.DependencyInjection;
-using SharedKernel.Domain;
 using SharedKernel.EntityFrameworkCore;
 
-namespace SharedKernel.DomainEvents.EntityFrameworkCore;
+namespace SharedKernel.Domain.EntityFrameworkCore;
 
 /// <summary>
 /// Dispatches aggregate domain events before EF Core saves changes and clears them after a successful save.

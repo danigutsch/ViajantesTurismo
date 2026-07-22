@@ -18,8 +18,7 @@ transport adapters. The language must separate facts, envelopes, messages, and p
 Use messaging language for transport/runtime abstractions and event language for facts/contracts.
 
 - Keep typed event contracts in explicit conceptual modules:
-    - `SharedKernel.Domain` for `IDomainEvent`.
-    - `SharedKernel.DomainEvents` for in-process domain-event dispatch.
+    - `SharedKernel.Domain` for domain event contracts, recording, and in-process dispatch.
     - `SharedKernel.Messaging.IntegrationEvents` for typed cross-boundary event contracts and handlers.
     - `SharedKernel.EventSourcing` for event-stream persistence and projections.
 - Introduce `SharedKernel.Messaging` as the storage-neutral home for message and envelope concepts

@@ -25,7 +25,8 @@ adoption of another mediator framework or generation of business logic.
   scoped resolution until dispatch, avoiding constructor cycles without a general runtime registry.
 - Domain-event provider generators emit closed `IDomainEventDispatchHandler` implementations. The
   scoped `CompositeDomainEventDispatcher` composes outbox and audit handlers without registration-order
-  ownership of `IDomainEventDispatcher`.
+  ownership of `IDomainEventDispatcher`. These APIs belong to `SharedKernel.Domain`; the EF integration
+  belongs to `SharedKernel.Domain.EntityFrameworkCore`.
 - Each host supplies explicit `JsonTypeInfo<T>` metadata. Generated serializers and envelope publishers
   use closed typed cases instead of contract registration objects or dictionaries.
 - Background consumers retain the genuine scope boundary. One scope owns each claimed batch and
@@ -34,6 +35,15 @@ adoption of another mediator framework or generation of business logic.
   logic.
 - Outbox and inbox registration remain separate. Producer contexts do not acquire inbox schema or
   idempotency services implicitly.
+
+### Breaking package migration
+
+- Replace `SharedKernel.DomainEvents` package and project references with `SharedKernel.Domain`.
+- Replace `SharedKernel.DomainEvents` namespace imports with `SharedKernel.Domain`.
+- Replace `SharedKernel.DomainEvents.EntityFrameworkCore` package, project, and namespace references
+  with `SharedKernel.Domain.EntityFrameworkCore`.
+- No forwarding package, type forwarder, or compatibility namespace remains. Consumers must update
+  their references and `using` directives as part of the migration.
 
 ## Measured shape
 
