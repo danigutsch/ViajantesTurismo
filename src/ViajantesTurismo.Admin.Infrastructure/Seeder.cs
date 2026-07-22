@@ -245,18 +245,23 @@ public sealed class Seeder
             .Select(static tour => tour.Identifier)
             .ToArrayAsync(ct);
         var hasNoCustomers = existingCustomerNationalIds.Length == 0;
-        var hasExactBaselineCustomers =
-            existingCustomerNationalIds.Length == BaselineCustomerNationalIds.Length &&
-            BaselineCustomerNationalIds.All(
-                nationalId => existingCustomerNationalIds.Contains(nationalId, StringComparer.Ordinal));
+        var hasExactBaselineCustomers = HasExactValues(
+            existingCustomerNationalIds,
+            BaselineCustomerNationalIds);
         var hasNoTours = existingTourIdentifiers.Length == 0;
-        var hasExactBaselineTours = existingTourIdentifiers.Length == BaselineTourIdentifiers.Length &&
-            BaselineTourIdentifiers.All(
-                identifier => existingTourIdentifiers.Contains(identifier, StringComparer.Ordinal));
-        var isEmptyDatabase = hasNoTours && hasNoCustomers;
-        var isToursOnlyCheckpoint = hasExactBaselineTours && hasNoCustomers;
-        var isToursAndCustomersCheckpoint = hasExactBaselineTours && hasExactBaselineCustomers;
-        if (!isEmptyDatabase && !isToursOnlyCheckpoint && !isToursAndCustomersCheckpoint)
+        var hasExactBaselineTours = HasExactValues(existingTourIdentifiers, BaselineTourIdentifiers);
+        var isRecognizedCheckpoint = (
+            hasNoTours,
+            hasExactBaselineTours,
+            hasNoCustomers,
+            hasExactBaselineCustomers) switch
+        {
+            (true, _, true, _) => true,
+            (false, true, true, _) => true,
+            (false, true, false, true) => true,
+            _ => false
+        };
+        if (!isRecognizedCheckpoint)
         {
             return;
         }
@@ -279,8 +284,6 @@ public sealed class Seeder
                     tour.IncludedServices)).Value)
                 .OrderBy(static tour => tour.Identifier)
                 .ToArray();
-
-            dbContext.Tours.AddRange(baselineTours);
         }
         else
         {
@@ -288,10 +291,16 @@ public sealed class Seeder
                 .Where(tour => BaselineTourIdentifiers.Contains(tour.Identifier))
                 .OrderBy(static tour => tour.Identifier)
                 .ToArrayAsync(ct);
-            if (baselineTours.Length != Tours.Length || baselineTours.Any(static tour => !MatchesBaselineTour(tour)))
-            {
-                return;
-            }
+        }
+
+        if (baselineTours.Length != Tours.Length || baselineTours.Any(static tour => !MatchesBaselineTour(tour)))
+        {
+            return;
+        }
+
+        if (hasNoTours)
+        {
+            dbContext.Tours.AddRange(baselineTours);
         }
 
         Customer[] baselineCustomers;
@@ -309,8 +318,6 @@ public sealed class Seeder
                     customer.MedicalInfo))
                 .OrderBy(static customer => customer.Id)
                 .ToArray();
-
-            dbContext.Customers.AddRange(baselineCustomers);
         }
         else
         {
@@ -318,11 +325,17 @@ public sealed class Seeder
                 .Where(customer => BaselineCustomerNationalIds.Contains(customer.IdentificationInfo.NationalId))
                 .OrderBy(static customer => customer.Id)
                 .ToArrayAsync(ct);
-            if (baselineCustomers.Length != Customers.Length ||
-                baselineCustomers.Any(static customer => !MatchesBaselineCustomer(customer)))
-            {
-                return;
-            }
+        }
+
+        if (baselineCustomers.Length != Customers.Length ||
+            baselineCustomers.Any(static customer => !MatchesBaselineCustomer(customer)))
+        {
+            return;
+        }
+
+        if (hasNoCustomers)
+        {
+            dbContext.Customers.AddRange(baselineCustomers);
         }
 
         var baselineTourIds = baselineTours.Select(static tour => tour.Id).ToArray();
@@ -330,32 +343,36 @@ public sealed class Seeder
             .Where(tour => baselineTourIds.Contains(tour.Id))
             .SelectMany(static tour => tour.Bookings)
             .AnyAsync(ct);
-        if (hasBaselineBookings)
+        if (!hasBaselineBookings)
         {
-            baselineTours = await dbContext.Tours
-                .Where(tour => baselineTourIds.Contains(tour.Id))
-                .Include(static tour => tour.Bookings)
-                .ThenInclude(static booking => booking.Payments)
-                .OrderBy(static tour => tour.Identifier)
-                .ToArrayAsync(ct);
-            var baselineBookings = baselineTours
-                .SelectMany(static tour => tour.Bookings)
-                .ToArray();
-            var isPendingBookingCheckpoint = baselineBookings.Length == 10 &&
-                baselineBookings.All(static booking =>
-                    booking.Status == BookingStatus.Pending && booking.Payments.Count == 0);
-            if (!isPendingBookingCheckpoint || !TryCompleteBookingStates(baselineTours, baselineCustomers))
-            {
-                return;
-            }
-
+            SeedBookings(baselineTours, baselineCustomers);
             await dbContext.SaveChangesAsync(ct);
             return;
         }
 
-        SeedBookings(baselineTours, baselineCustomers);
+        baselineTours = await dbContext.Tours
+            .Where(tour => baselineTourIds.Contains(tour.Id))
+            .Include(static tour => tour.Bookings)
+            .ThenInclude(static booking => booking.Payments)
+            .OrderBy(static tour => tour.Identifier)
+            .ToArrayAsync(ct);
+        var baselineBookings = baselineTours
+            .SelectMany(static tour => tour.Bookings)
+            .ToArray();
+        var isPendingBookingCheckpoint = baselineBookings.Length == 10 &&
+            baselineBookings.All(static booking =>
+                booking.Status == BookingStatus.Pending && booking.Payments.Count == 0);
+        if (!isPendingBookingCheckpoint || !TryCompleteBookingStates(baselineTours, baselineCustomers))
+        {
+            return;
+        }
+
         await dbContext.SaveChangesAsync(ct);
     }
+
+    private static bool HasExactValues(string[] actual, string[] expected) =>
+        actual.Length == expected.Length &&
+        actual.ToHashSet(StringComparer.Ordinal).SetEquals(expected);
 
     private static void SeedBookings(
         Tour[] tours,
