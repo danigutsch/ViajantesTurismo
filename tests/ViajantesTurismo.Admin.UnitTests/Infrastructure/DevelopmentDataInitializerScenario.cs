@@ -12,6 +12,12 @@ namespace ViajantesTurismo.Admin.UnitTests.Infrastructure;
 internal sealed class DevelopmentDataInitializerScenario : IAsyncDisposable
 {
     private static readonly DateTimeOffset CurrentTime = new(2026, 7, 20, 12, 0, 0, TimeSpan.Zero);
+    private static readonly string[] ExpectedTourIdentifiers = ["CITY001", "CULT001", "FOWI003", "HIST002", "NATR001"];
+    private static readonly BookingStatus[] CityBookingStatuses = [BookingStatus.Confirmed, BookingStatus.Confirmed, BookingStatus.Cancelled];
+    private static readonly BookingStatus[] CultureBookingStatuses = [BookingStatus.Confirmed, BookingStatus.Confirmed];
+    private static readonly BookingStatus[] FoodAndWineBookingStatuses = [BookingStatus.Pending];
+    private static readonly BookingStatus[] HistoryBookingStatuses = [BookingStatus.Pending, BookingStatus.Confirmed];
+    private static readonly BookingStatus[] NatureBookingStatuses = [BookingStatus.Confirmed, BookingStatus.Completed];
     private readonly DevelopmentDataInitializer initializer;
     private readonly ServiceProvider provider;
 
@@ -98,12 +104,12 @@ internal sealed class DevelopmentDataInitializerScenario : IAsyncDisposable
             .OrderBy(static tour => tour.Identifier)
             .ToArrayAsync(ct);
 
-        tours.Select(static tour => tour.Identifier).ShouldBe(new[] { "CITY001", "CULT001", "FOWI003", "HIST002", "NATR001" });
-        tours[0].Bookings.Select(static booking => booking.Status).Order().ToArray().ShouldBe(new[] { BookingStatus.Confirmed, BookingStatus.Confirmed, BookingStatus.Cancelled }.Order().ToArray());
-        tours[1].Bookings.Select(static booking => booking.Status).Order().ToArray().ShouldBe(new[] { BookingStatus.Confirmed, BookingStatus.Confirmed });
-        tours[2].Bookings.Select(static booking => booking.Status).ToArray().ShouldBe(new[] { BookingStatus.Pending });
-        tours[3].Bookings.Select(static booking => booking.Status).Order().ToArray().ShouldBe(new[] { BookingStatus.Pending, BookingStatus.Confirmed }.Order().ToArray());
-        tours[4].Bookings.Select(static booking => booking.Status).Order().ToArray().ShouldBe(new[] { BookingStatus.Confirmed, BookingStatus.Completed }.Order().ToArray());
+        tours.Select(static tour => tour.Identifier).ShouldBe(ExpectedTourIdentifiers);
+        tours[0].Bookings.Select(static booking => booking.Status).Order().ToArray().ShouldBe(CityBookingStatuses);
+        tours[1].Bookings.Select(static booking => booking.Status).Order().ToArray().ShouldBe(CultureBookingStatuses);
+        tours[2].Bookings.Select(static booking => booking.Status).ToArray().ShouldBe(FoodAndWineBookingStatuses);
+        tours[3].Bookings.Select(static booking => booking.Status).Order().ToArray().ShouldBe(HistoryBookingStatuses);
+        tours[4].Bookings.Select(static booking => booking.Status).Order().ToArray().ShouldBe(NatureBookingStatuses);
     }
 
     public async Task ShouldContainOnlyTours(int expectedTourCount, CancellationToken ct)

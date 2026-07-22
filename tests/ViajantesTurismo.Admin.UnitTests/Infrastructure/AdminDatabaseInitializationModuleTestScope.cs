@@ -2,6 +2,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using SharedKernel.DomainEvents;
 using SharedKernel.Messaging.IntegrationEvents;
+using ViajantesTurismo.Admin.Infrastructure;
 
 namespace ViajantesTurismo.Admin.UnitTests.Infrastructure;
 

@@ -2,6 +2,7 @@ using System.Text.Json.Serialization.Metadata;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Diagnostics;
 using Microsoft.Extensions.DependencyInjection;
+using SharedKernel.AuditTrail;
 using SharedKernel.DomainEvents.EntityFrameworkCore;
 using SharedKernel.EntityFrameworkCore;
 using SharedKernel.IntegrationTesting;
@@ -10,7 +11,9 @@ using SharedKernel.Messaging.IntegrationEvents.EntityFrameworkCore;
 using ViajantesTurismo.Admin.Application;
 using ViajantesTurismo.Admin.Contracts.IntegrationEvents;
 using ViajantesTurismo.Admin.Contracts.IntegrationEvents.Tours;
+using ViajantesTurismo.Admin.Domain.Documents;
 using ViajantesTurismo.Admin.Domain.Tours;
+using ViajantesTurismo.Admin.Infrastructure.Documents;
 using ViajantesTurismo.Resources;
 
 namespace ViajantesTurismo.Admin.Infrastructure.Tests.Initialization;
@@ -31,7 +34,7 @@ internal sealed class DevelopmentDataInitializationPostgreSqlScenario : IAsyncDi
 
     public static async ValueTask<DevelopmentDataInitializationPostgreSqlScenario> Create(CancellationToken ct)
     {
-        var appBuilder = DistributedApplication.CreateBuilder([]);
+        var appBuilder = AspireTestApplication.CreateBuilder();
         var databaseServer = appBuilder.AddPostgres(PostgreSqlResourceName);
         _ = databaseServer.AddDatabase(DatabaseResourceName);
 
@@ -118,6 +121,7 @@ internal sealed class DevelopmentDataInitializationPostgreSqlScenario : IAsyncDi
         services.AddIntegrationEventContract(
             AdminTourCreatedIntegrationEvent.EventType,
             adminTourCreatedJsonTypeInfo);
+        services.AddSingleton<IAuditTrailSink<DocumentAuditRecord>, DocumentAuditTrailSink>();
         services.AddDomainEventProcessing();
         services.AddDomainEventDispatch<AdminWriteDbContext>();
         services.AddIntegrationEventOutbox<AdminWriteDbContext>();

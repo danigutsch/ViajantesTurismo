@@ -606,9 +606,6 @@
           "SharedKernel.OpenApi": "[0.1.0-alpha.0, )"
         }
       },
-      "sharedkernel.mediator.abstractions": {
-        "type": "Project"
-      },
       "sharedkernel.messaging": {
         "type": "Project"
       },
@@ -616,7 +613,6 @@
         "type": "Project",
         "dependencies": {
           "Microsoft.Extensions.DependencyInjection.Abstractions": "[10.0.10, )",
-          "SharedKernel.Mediator.Abstractions": "[0.1.0-alpha.0, )",
           "SharedKernel.Messaging": "[0.1.0-alpha.0, )"
         }
       },
@@ -676,7 +672,6 @@
           "SharedKernel.Idempotency": "[0.1.0-alpha.0, )",
           "SharedKernel.ImageProcessing": "[0.1.0-alpha.0, )",
           "SharedKernel.InputNormalization": "[0.1.0-alpha.0, )",
-          "SharedKernel.Mediator.Abstractions": "[0.1.0-alpha.0, )",
           "SharedKernel.Messaging": "[0.1.0-alpha.0, )",
           "SharedKernel.Messaging.IntegrationEvents": "[0.1.0-alpha.0, )",
           "SharedKernel.Results": "[0.1.0-alpha.0, )",

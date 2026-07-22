@@ -3,6 +3,7 @@ using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using SharedKernel.Testing;
 using ViajantesTurismo.Admin.UnitTests.Infrastructure;
+using ViajantesTurismo.MigrationService;
 
 namespace ViajantesTurismo.Admin.UnitTests.MigrationService;
 
@@ -21,7 +22,7 @@ public sealed class DatabaseInitializationWorkerTelemetryTests
             initializationCalled = true;
             return Task.CompletedTask;
         });
-        using var worker = harness.CreateWorker();
+        var worker = harness.CreateWorker();
 
         // Act
         await DatabaseInitializationWorkerTestHelpers.ExecuteWorker(worker, CancellationToken.None);
@@ -50,7 +51,7 @@ public sealed class DatabaseInitializationWorkerTelemetryTests
             initializationCalled = true;
             throw new InvalidOperationException("boom");
         });
-        using var worker = harness.CreateWorker();
+        var worker = harness.CreateWorker();
 
         // Act
         var exception = await ((Func<Task>)(() => DatabaseInitializationWorkerTestHelpers.ExecuteWorker(worker, CancellationToken.None))).ShouldThrow<InvalidOperationException>();
@@ -91,7 +92,7 @@ public sealed class DatabaseInitializationWorkerTelemetryTests
             ct.ThrowIfCancellationRequested();
             return Task.CompletedTask;
         });
-        using var worker = harness.CreateWorker();
+        var worker = harness.CreateWorker();
 
         // Act
         await ((Func<Task>)(() => DatabaseInitializationWorkerTestHelpers.ExecuteWorker(worker, cancellation.Token))).ShouldThrow<OperationCanceledException>();
@@ -115,7 +116,7 @@ public sealed class DatabaseInitializationWorkerTelemetryTests
         List<Activity> stoppedActivities = [];
         using var listener = DatabaseInitializationWorkerTestHelpers.CreateCapturingListener(stoppedActivities);
         using var harness = DatabaseInitializationWorkerHarness.Create(_ => throw new OperationCanceledException("unexpected"));
-        using var worker = harness.CreateWorker();
+        var worker = harness.CreateWorker();
 
         // Act
         _ = await ((Func<Task>)(() => DatabaseInitializationWorkerTestHelpers.ExecuteWorker(worker, CancellationToken.None))).ShouldThrow<OperationCanceledException>();
@@ -132,7 +133,7 @@ public sealed class DatabaseInitializationWorkerTelemetryTests
     {
         // Arrange
         using var harness = DatabaseInitializationWorkerHarness.CreateWithDefaultInitialization(Environments.Development);
-        using var worker = harness.CreateDefaultWorker();
+        var worker = harness.CreateDefaultWorker();
 
         // Act
         await DatabaseInitializationWorkerTestHelpers.ExecuteWorker(worker, CancellationToken.None);
@@ -150,7 +151,7 @@ public sealed class DatabaseInitializationWorkerTelemetryTests
     {
         // Arrange
         using var harness = DatabaseInitializationWorkerHarness.CreateWithDefaultInitialization(Environments.Production);
-        using var worker = harness.CreateDefaultWorker();
+        var worker = harness.CreateDefaultWorker();
 
         // Act
         await DatabaseInitializationWorkerTestHelpers.ExecuteWorker(worker, CancellationToken.None);
@@ -177,7 +178,7 @@ public sealed class DatabaseInitializationWorkerTelemetryTests
                 developmentDataCalled = true;
                 return Task.CompletedTask;
             });
-        using var worker = harness.CreateWorker();
+        var worker = harness.CreateWorker();
 
         // Act
         await DatabaseInitializationWorkerTestHelpers.ExecuteWorker(worker, CancellationToken.None);
@@ -205,7 +206,7 @@ public sealed class DatabaseInitializationWorkerTelemetryTests
                 developmentDataCalled = true;
                 return Task.CompletedTask;
             });
-        using var worker = harness.CreateWorker();
+        var worker = harness.CreateWorker();
 
         // Act
         await DatabaseInitializationWorkerTestHelpers.ExecuteWorker(worker, CancellationToken.None);

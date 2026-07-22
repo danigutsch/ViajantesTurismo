@@ -13,6 +13,7 @@ namespace ViajantesTurismo.Admin.Infrastructure.Migrations
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
         {
+            // EF cannot scaffold the data-safety precondition for dropping an obsolete table.
             migrationBuilder.Sql(
                 """
                 LOCK TABLE messaging.idempotency_keys IN ACCESS EXCLUSIVE MODE;

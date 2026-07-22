@@ -19,8 +19,8 @@ internal sealed class AdminMessagingMigrationScenario : IAsyncDisposable
     private const int AdvisoryLockClassId = 1126;
     private const int AdvisoryLockObjectId = 20260719;
 
-    public const string InitialMigration = "20260714160424_InitialAdmin";
-    public const string LatestMigration = "20260719010857_RemoveUnusedAdminIdempotencyKeys";
+    public const string InitialMigration = "20260720203807_InitialAdmin";
+    public const string LatestMigration = "20260721193433_RemoveUnusedAdminIdempotencyKeys";
 
     private readonly AspireTestApplication app;
     private readonly string connectionString;
@@ -33,7 +33,7 @@ internal sealed class AdminMessagingMigrationScenario : IAsyncDisposable
 
     public static async ValueTask<AdminMessagingMigrationScenario> Create(CancellationToken ct)
     {
-        var appBuilder = DistributedApplication.CreateBuilder([]);
+        var appBuilder = AspireTestApplication.CreateBuilder();
         var databaseServer = appBuilder.AddPostgres(PostgreSqlResourceName);
         _ = databaseServer.AddDatabase(DatabaseResourceName);
 

@@ -12,6 +12,7 @@ using ViajantesTurismo.Admin.Infrastructure;
 using ViajantesTurismo.Branding.Infrastructure;
 using ViajantesTurismo.Catalog.Infrastructure;
 using ViajantesTurismo.Management.Security;
+using ViajantesTurismo.MigrationService;
 
 namespace ViajantesTurismo.Admin.UnitTests.MigrationService;
 

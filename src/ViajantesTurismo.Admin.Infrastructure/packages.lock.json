@@ -472,8 +472,7 @@
       "sharedkernel.domainevents": {
         "type": "Project",
         "dependencies": {
-          "SharedKernel.Domain": "[0.1.0-alpha.0, )",
-          "SharedKernel.Mediator.Abstractions": "[0.1.0-alpha.0, )"
+          "SharedKernel.Domain": "[0.1.0-alpha.0, )"
         }
       },
       "sharedkernel.domainevents.entityframeworkcore": {
@@ -518,17 +517,6 @@
       "sharedkernel.inputnormalization": {
         "type": "Project"
       },
-      "sharedkernel.mediator.abstractions": {
-        "type": "Project"
-      },
-      "sharedkernel.mediator.entityframeworkcore": {
-        "type": "Project",
-        "dependencies": {
-          "Microsoft.EntityFrameworkCore.Relational": "[10.0.10, )",
-          "SharedKernel.EntityFrameworkCore": "[0.1.0-alpha.0, )",
-          "SharedKernel.Mediator.Abstractions": "[0.1.0-alpha.0, )"
-        }
-      },
       "sharedkernel.messaging": {
         "type": "Project"
       },
@@ -536,7 +524,6 @@
         "type": "Project",
         "dependencies": {
           "Microsoft.Extensions.DependencyInjection.Abstractions": "[10.0.10, )",
-          "SharedKernel.Mediator.Abstractions": "[0.1.0-alpha.0, )",
           "SharedKernel.Messaging": "[0.1.0-alpha.0, )"
         }
       },
@@ -581,7 +568,6 @@
           "SharedKernel.DocumentRendering": "[0.1.0-alpha.0, )",
           "SharedKernel.DomainEvents": "[0.1.0-alpha.0, )",
           "SharedKernel.InputNormalization": "[0.1.0-alpha.0, )",
-          "SharedKernel.Mediator.Abstractions": "[0.1.0-alpha.0, )",
           "SharedKernel.Messaging.IntegrationEvents": "[0.1.0-alpha.0, )",
           "SharedKernel.Results": "[0.1.0-alpha.0, )",
           "ViajantesTurismo.Admin.Contracts.Application": "[0.1.0-alpha.0, )",

@@ -117,8 +117,7 @@
       "sharedkernel.domainevents": {
         "type": "Project",
         "dependencies": {
-          "SharedKernel.Domain": "[0.1.0-alpha.0, )",
-          "SharedKernel.Mediator.Abstractions": "[0.1.0-alpha.0, )"
+          "SharedKernel.Domain": "[0.1.0-alpha.0, )"
         }
       },
       "sharedkernel.entityframeworkcore": {
@@ -127,9 +126,6 @@
           "Microsoft.EntityFrameworkCore.Relational": "[10.0.10, )",
           "Microsoft.Extensions.DependencyInjection.Abstractions": "[10.0.10, )"
         }
-      },
-      "sharedkernel.mediator.abstractions": {
-        "type": "Project"
       },
       "sharedkernel.results": {
         "type": "Project"

@@ -428,13 +428,21 @@ dotnet tool run dotnet-ef migrations add <MigrationName> \
 - Change the domain model and EF configuration first, then scaffold the migration with `dotnet ef`.
 - Review scaffolded migrations before committing, but do not hand-write migrations by default.
 - Hand-edit migration code only when EF cannot infer intent, such as data-preserving transforms,
-  column renames that would otherwise become drop/add operations, or database objects outside the EF model.
+  data-safety preconditions, column renames that would otherwise become drop/add operations, or database
+  objects outside the EF model. Keep the customization minimal, explain why EF cannot scaffold it, and cover
+  the apply, rollback, and guarded failure paths with database integration tests.
+- Do not hand-edit migration timestamps, designer files, or model snapshots. For migration-tree conflicts,
+  remove the unshared migration with `dotnet ef migrations remove`, integrate the other branch, then scaffold
+  the migration again. Reapply any reviewed custom migration code after scaffolding.
+- Generate and inspect the migration SQL before deployment, especially when EF warns about possible data loss.
 - Prefer model-driven constructs for dynamic concepts, such as owned collections for localized variants,
   instead of hardcoded per-language columns.
 - Keep generated migration files in source control with the model snapshot.
 
 References: [EF Core migrations overview](https://learn.microsoft.com/ef/core/managing-schemas/migrations/),
-[managing migrations](https://learn.microsoft.com/ef/core/managing-schemas/migrations/managing), and
+[managing migrations](https://learn.microsoft.com/ef/core/managing-schemas/migrations/managing),
+[migrations in team environments](https://learn.microsoft.com/ef/core/managing-schemas/migrations/teams),
+[applying migrations](https://learn.microsoft.com/ef/core/managing-schemas/migrations/applying), and
 [owned entity collections](https://learn.microsoft.com/ef/core/modeling/owned-entities#collections-of-owned-types).
 
 ### CreateSlimBuilder
