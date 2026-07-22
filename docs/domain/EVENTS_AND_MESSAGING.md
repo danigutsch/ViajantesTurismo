@@ -7,7 +7,7 @@ This document defines the durable event and messaging direction for ViajantesTur
 - Domain events and integration events are separate concepts.
 - Domain events belong to DDD aggregate logic and stay inside one bounded context.
 - Integration events are explicit cross-boundary contracts.
-- Event dispatch should extend `SharedKernel.Mediator` instead of creating a disconnected bus.
+- Event dispatch stays in its owning module and uses generated typed dispatch instead of mediator composition.
 - Event dispatch APIs must remain typed and compiler-safe.
 - CloudEvents are transport envelopes for integration events, not domain model primitives.
 - Inbox, outbox, idempotency, and projections are infrastructure/runtime concerns, not aggregate

@@ -304,6 +304,8 @@ public sealed class LayerDependencyTests
             Assembly.Load("ViajantesTurismo.Admin.Infrastructure")
         };
         var flows = File.ReadAllText(Path.Combine(repositoryRoot, "docs", "architecture", "FLOWS.md"));
+        var eventsAndMessaging = File.ReadAllText(
+            Path.Combine(repositoryRoot, "docs", "domain", "EVENTS_AND_MESSAGING.md"));
 
         // Act
         var mediatorReferences = adminAssemblies
@@ -316,6 +318,9 @@ public sealed class LayerDependencyTests
         mediatorReferences.ShouldBeEmpty();
         flows.ShouldNotContain("SharedKernel.Mediator", StringComparison.Ordinal);
         flows.ShouldNotContain("ServiceProviderIntegrationEventDispatcher", StringComparison.Ordinal);
+        eventsAndMessaging.ShouldNotContain(
+            "Event dispatch should extend `SharedKernel.Mediator`",
+            StringComparison.Ordinal);
     }
 
     [Fact]
