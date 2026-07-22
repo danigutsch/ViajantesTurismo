@@ -27,6 +27,7 @@ public static class BrandingInfrastructureDependencyInjection
 
         builder.AddNpgsqlDbContext<BrandingDbContext>(
             ResourceNames.CatalogDatabase,
+            configureSettings: settings => settings.DisableTracing = true,
             configureDbContextOptions: options => ConfigureBrandingDatabaseOptions<BrandingDbContext, TBuilder>(builder, options));
 
         builder.Services.AddScoped<IBrandingSettingsStore, EfBrandingSettingsStore>();

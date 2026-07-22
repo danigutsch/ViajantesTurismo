@@ -107,7 +107,7 @@ public sealed class IdempotentIntegrationHandler<TIntegrationEvent>(
     private static void SetError(Activity? activity, Exception exception)
     {
         activity?.SetTag(CatalogTelemetry.TagOutcome, CatalogTelemetry.OutcomeError);
-        activity?.SetStatus(ActivityStatusCode.Error, exception.Message);
-        activity?.AddException(exception);
+        activity?.SetTag(CatalogTelemetry.TagErrorType, exception.GetType().Name);
+        activity?.SetStatus(ActivityStatusCode.Error);
     }
 }

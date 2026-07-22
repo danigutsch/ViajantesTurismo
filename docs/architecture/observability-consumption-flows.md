@@ -68,7 +68,7 @@ contract.
 ## Cancellation and error interpretation
 
 Cooperative cancellation is not an application failure. Custom telemetry should leave cancelled
-spans with unset status, no exception event, and no error metric increments. Failure paths should
-record error status, one exception event, and the surface-owned error outcome metric where defined.
+spans with unset status, no exception content, and no error metric increments. Failure paths should
+record error status, bounded `error.type`, and the surface-owned error outcome metric where defined.
 Cancellation logs should not use error severity when the operation's cancellation token is signaled.
 Unexpected `OperationCanceledException` with an unsignaled token should follow the normal error path.

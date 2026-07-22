@@ -31,9 +31,13 @@ internal static class AdminApiTestHost
     private const string Audience = "admin-api";
 
     public static WebApplicationFactory<AdminApiHostEntryPoint> Create(
-        Action<IServiceCollection>? configureTestServices = null)
+        Action<IServiceCollection>? configureTestServices = null,
+        string? environment = null)
     {
+        var disableMalwareScanner = !string.Equals(environment, Environments.Production, StringComparison.Ordinal);
+
         return WebApplicationTestHost.Create<AdminApiHostEntryPoint>(
+            environment: environment,
             configureTestServices: services =>
             {
                 services.Configure<HealthCheckServiceOptions>(options => options.Registrations.Clear());
@@ -46,7 +50,9 @@ internal static class AdminApiTestHost
                 [$"ConnectionStrings:{ResourceNames.AdminDatabase}"] = "Host=localhost;Database=viajantes-admin",
                 [ApiAuthenticationDefaults.AuthorityConfigurationKey] = ApiTestAuthentication.Authority,
                 [ApiAuthenticationDefaults.IssuerConfigurationKey] = ApiTestAuthentication.Authority,
-                [ClamAvMalwareScannerConfigurationKeys.DisabledConfigurationKey] = bool.TrueString
+                [ClamAvMalwareScannerConfigurationKeys.DisabledConfigurationKey] = disableMalwareScanner.ToString(),
+                [ClamAvMalwareScannerConfigurationKeys.HostConfigurationKey] = "clamav",
+                [ClamAvMalwareScannerConfigurationKeys.PortConfigurationKey] = "3310"
             });
     }
 

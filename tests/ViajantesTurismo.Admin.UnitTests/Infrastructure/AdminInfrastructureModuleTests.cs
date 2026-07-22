@@ -14,6 +14,39 @@ namespace ViajantesTurismo.Admin.UnitTests.Infrastructure;
 [Trait(SharedKernelTestTraitNames.CategoryName, TestTraitValues.DependencyInjectionCategory)]
 public sealed class AdminInfrastructureModuleTests
 {
+    [Theory]
+    [InlineData("Development", true)]
+    [InlineData("Production", false)]
+    public void AddInfrastructure_gates_sensitive_logging_for_admin_contexts(string environmentName, bool expected)
+    {
+        // Arrange
+        using var services = AdminInfrastructureModuleTestServices.CreateWithInfrastructureModule(environmentName);
+
+        // Act
+        var writeSensitiveLogging = services.IsSensitiveDataLoggingEnabled<AdminWriteDbContext>();
+        var readSensitiveLogging = services.IsSensitiveDataLoggingEnabled<AdminReadDbContext>();
+
+        // Assert
+        writeSensitiveLogging.ShouldBe(expected);
+        readSensitiveLogging.ShouldBe(expected);
+    }
+
+    [Fact]
+    [Trait(SharedKernelTestTraitNames.CategoryName, TestTraitValues.SecurityCategory)]
+    public void AddInfrastructure_does_not_subscribe_to_exception_bearing_npgsql_traces()
+    {
+        // Arrange
+        using var services = AdminInfrastructureModuleTestServices.CreateWithInfrastructureModule();
+
+        // Act
+        var sourceEnabled = services.IsActivitySourceEnabled("Npgsql");
+        var hasMeterProvider = services.HasMeterProvider();
+
+        // Assert
+        sourceEnabled.ShouldBeFalse();
+        hasMeterProvider.ShouldBeTrue();
+    }
+
     [Fact]
     public void AddApplication_requires_an_integration_event_outbox_to_resolve_domain_dispatching()
     {

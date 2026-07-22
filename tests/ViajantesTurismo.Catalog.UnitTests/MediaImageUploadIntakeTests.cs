@@ -1,12 +1,47 @@
 using ViajantesTurismo.Catalog.Application.Media;
 using ViajantesTurismo.Catalog.Contracts.IntegrationEvents.Media;
 using ViajantesTurismo.Catalog.Domain.Media;
+using ViajantesTurismo.Catalog.Testing.Infrastructure;
 using SharedKernel.Results;
 
 namespace ViajantesTurismo.Catalog.UnitTests;
 
 public sealed class MediaImageUploadIntakeTests
 {
+    [Fact]
+    [Trait(SharedKernel.Testing.TestTraitNames.CategoryName, SharedKernel.Testing.TestTraitValues.SecurityCategory)]
+    public async Task Accept_does_not_log_raw_scanner_messages()
+    {
+        // Arrange
+        const string scannerMessage = "traveler@example.com in media/customer/private-image.jpg";
+        var originalImage = PublicMediaImageTestFactory.CreatePendingImage(Guid.CreateVersion7(), 1);
+        var content = CatalogTestImages.CreateJpeg(320, 160);
+        var logger = new CollectingLogger<MediaImageUploadIntake>();
+        var intake = MediaImageUploadIntakeTestFactory.Create(
+            new StubMediaUploadScanner(new MediaUploadScanResult(MediaUploadScanStatus.Rejected, scannerMessage)),
+            new InMemoryMediaObjectStore(),
+            new InMemoryPublicMediaImageStore(originalImage),
+            logger: logger);
+        var request = new MediaImageUploadIntakeRequest(
+            Guid.CreateVersion7(),
+            new MemoryStream(content),
+            "photo.jpg",
+            "image/jpeg",
+            content.Length,
+            "Cyclists in the mountains",
+            [new MediaImageTourLink(Guid.CreateVersion7(), 0, true)]);
+
+        // Act
+        var result = await intake.Accept(request, TestContext.Current.CancellationToken);
+
+        // Assert
+        result.IsFailure.ShouldBeTrue();
+        var message = logger.Messages.ShouldHaveSingleItem();
+        message.ShouldContain(nameof(MediaUploadScanStatus.Rejected), StringComparison.Ordinal);
+        message.ShouldNotContain(scannerMessage, StringComparison.Ordinal);
+        logger.StructuredValues.ShouldNotContain(value => string.Equals(value.Value as string, scannerMessage, StringComparison.Ordinal));
+    }
+
     [Fact]
     public async Task Accept_stores_metadata_with_generated_object_key_when_scan_passes()
     {

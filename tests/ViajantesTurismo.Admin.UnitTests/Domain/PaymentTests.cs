@@ -17,7 +17,6 @@ public class PaymentTests
         (result.IsSuccess).ShouldBeFalse();
         (result.ErrorDetails).ShouldNotBeNull();
         (result.ErrorDetails.Detail).ShouldContain("Payment amount must be greater than zero", StringComparison.Ordinal);
-        (result.ErrorDetails.Detail).ShouldContain("0", StringComparison.Ordinal);
         (result.ErrorDetails.ValidationErrors).ShouldNotBeNull();
         (result.ErrorDetails.ValidationErrors.ContainsKey("amount")).ShouldBeTrue();
         (result.ErrorDetails.ValidationErrors["amount"][0]).ShouldBe("Payment amount must be greater than zero.");
@@ -74,7 +73,6 @@ public class PaymentTests
         (result.IsSuccess).ShouldBeFalse();
         (result.ErrorDetails).ShouldNotBeNull();
         (result.ErrorDetails.Detail).ShouldContain("Payment date cannot be in the future", StringComparison.Ordinal);
-        (result.ErrorDetails.Detail).ShouldContain("2026", StringComparison.Ordinal);
         (result.ErrorDetails.ValidationErrors).ShouldNotBeNull();
         (result.ErrorDetails.ValidationErrors.ContainsKey("paymentDate")).ShouldBeTrue();
         (result.ErrorDetails.ValidationErrors["paymentDate"][0]).ShouldBe("Payment date cannot be in the future.");
@@ -94,12 +92,9 @@ public class PaymentTests
         (result.IsSuccess).ShouldBeFalse();
         (result.ErrorDetails).ShouldNotBeNull();
         (result.ErrorDetails.Detail).ShouldContain("exceeds remaining balance", StringComparison.Ordinal);
-        (result.ErrorDetails.Detail).ShouldContain("500", StringComparison.Ordinal);
-        (result.ErrorDetails.Detail).ShouldContain("300", StringComparison.Ordinal);
         (result.ErrorDetails.ValidationErrors).ShouldNotBeNull();
         (result.ErrorDetails.ValidationErrors.ContainsKey("amount")).ShouldBeTrue();
         (result.ErrorDetails.ValidationErrors["amount"][0]).ShouldContain("cannot exceed remaining balance", StringComparison.Ordinal);
-        (result.ErrorDetails.ValidationErrors["amount"][0]).ShouldContain("300", StringComparison.Ordinal);
     }
 
     [Fact]
@@ -114,8 +109,7 @@ public class PaymentTests
         // Assert
         (result.IsSuccess).ShouldBeFalse();
         (result.ErrorDetails).ShouldNotBeNull();
-        (result.ErrorDetails.Detail).ShouldContain("Payment with ID", StringComparison.Ordinal);
-        (result.ErrorDetails.Detail).ShouldContain(paymentId.ToString(), StringComparison.Ordinal);
+        (result.ErrorDetails.Detail).ShouldBe("Payment was not found.");
         (result.ErrorDetails.Detail).ShouldContain("was not found", StringComparison.Ordinal);
     }
 }

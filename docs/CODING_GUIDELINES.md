@@ -321,8 +321,8 @@ internal static partial class DatabaseInitializationWorkerLogger
   dashboards, alerts, or support workflows.
 - Use static message templates with named placeholders. Placeholder names are structured field
   contracts.
-- Pass exceptions through the logger exception parameter; do not duplicate stack traces or exception
-  messages as custom fields.
+- Do not pass exception objects, messages, or stack traces to production logs. Emit a bounded
+  exception type field when operators need failure classification.
 - If source generation cannot express a needed logging shape, keep the exception local and documented
   in code near the call site.
 

@@ -5,7 +5,9 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Diagnostics.HealthChecks;
 using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Logging;
 using OpenTelemetry;
+using OpenTelemetry.Logs;
 using OpenTelemetry.Metrics;
 using OpenTelemetry.Trace;
 using SharedKernel.Observability;
@@ -70,8 +72,8 @@ public static class ServiceDefaultsExtensions
     /// Configures OpenTelemetry logging, metrics, and tracing for the application builder.
     /// </summary>
     /// <remarks>This method adds OpenTelemetry instrumentation for ASP.NET Core requests,
-    /// runtime metrics, gRPC client calls, and Entity Framework Core operations. It also configures logging to include
-    /// formatted messages and scopes. Health check and aliveness endpoints are excluded from tracing by default.</remarks>
+    /// runtime metrics, gRPC client calls, and Entity Framework Core operations. OTLP-bound logs omit preformatted
+    /// messages, scopes, and exception payloads. Health check and aliveness endpoints are excluded from tracing by default.</remarks>
     /// <typeparam name="TBuilder">The type of the application builder to configure. Must implement <see cref="IHostApplicationBuilder"/>.</typeparam>
     /// <param name="builder">The application builder to configure with OpenTelemetry services and instrumentation.</param>
     /// <returns>The same application builder instance, configured with OpenTelemetry logging, metrics, and tracing.</returns>
@@ -79,7 +81,14 @@ public static class ServiceDefaultsExtensions
     {
         ArgumentNullException.ThrowIfNull(builder);
 
+        builder.Logging.ClearProviders();
         ObservabilityBuilderExtensions.ConfigureOpenTelemetry(builder);
+        builder.Logging.AddOpenTelemetry(logging =>
+        {
+            logging.IncludeFormattedMessage = false;
+            logging.IncludeScopes = false;
+            logging.AddProcessor(_ => new LogRecordPrivacyProcessor());
+        });
 
         builder.Services.AddOpenTelemetry()
             .WithMetrics(metrics =>
@@ -91,7 +100,8 @@ public static class ServiceDefaultsExtensions
             })
             .WithTracing(tracing =>
             {
-                tracing.AddSource(builder.Environment.ApplicationName)
+                tracing.AddProcessor(new ActivityPrivacyProcessor())
+                    .AddSource(builder.Environment.ApplicationName)
                     .AddCatalogTracing()
                     .AddSharedKernelMediatorTracing()
                     .AddSharedKernelProviderTracing()

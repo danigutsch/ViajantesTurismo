@@ -5,18 +5,13 @@ namespace ViajantesTurismo.Catalog.Application.Media;
 /// <summary>
 /// Reconciles media metadata references with object storage inventory.
 /// </summary>
-public sealed class MediaObjectReconciliationService(
+public sealed partial class MediaObjectReconciliationService(
     IMediaObjectStore objectStore,
     IPublicMediaImageStore imageStore,
     TimeProvider? timeProvider = null,
     ILogger<MediaObjectReconciliationService>? logger = null)
 {
     private const string DefaultPrefix = "media/";
-
-    private static readonly Action<ILogger, string, Exception?> DeleteFailed = LoggerMessage.Define<string>(
-        LogLevel.Warning,
-        new EventId(1, nameof(LogDeleteFailed)),
-        "Failed to delete orphan media object {ObjectKey} during reconciliation.");
 
     private readonly TimeProvider timeProvider = timeProvider ?? TimeProvider.System;
 
@@ -101,15 +96,14 @@ public sealed class MediaObjectReconciliationService(
     private void RecordDeleteFailure(string orphan, List<string> failed, Exception exception)
     {
         failed.Add(orphan);
-        LogDeleteFailed(logger, exception, orphan);
+        if (logger is not null)
+        {
+            LogDeleteFailed(logger, exception.GetType().Name);
+        }
+
         CatalogTelemetry.MediaObjectReconciliationObjects.Add(1, CreateTags(CatalogTelemetry.OutcomeError, "delete"));
     }
 
-    private static void LogDeleteFailed(ILogger? logger, Exception exception, string objectKey)
-    {
-        if (logger is not null)
-        {
-            DeleteFailed(logger, objectKey, exception);
-        }
-    }
+    [LoggerMessage(1, LogLevel.Warning, "Failed to delete orphan media object during reconciliation. Failure type: {FailureType}.")]
+    private static partial void LogDeleteFailed(ILogger logger, string failureType);
 }

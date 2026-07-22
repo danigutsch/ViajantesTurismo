@@ -89,9 +89,10 @@ internal sealed class DatabaseInitializationWorker
         }
         catch (Exception exception)
         {
-            activity?.SetStatus(ActivityStatusCode.Error, exception.Message);
-            activity?.AddException(exception);
-            logger.InitializationFailed(exception);
+            activity?.SetTag("error.type", exception.GetType().Name);
+            activity?.SetStatus(ActivityStatusCode.Error);
+
+            logger.InitializationFailed(exception.GetType().Name);
             throw;
         }
     }

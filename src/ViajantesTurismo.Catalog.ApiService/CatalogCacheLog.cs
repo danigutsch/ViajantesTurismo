@@ -13,13 +13,13 @@ internal static partial class CatalogCacheLog
         EventId = 2,
         EventName = nameof(TourProjectionPending),
         Level = LogLevel.Warning,
-        Message = "Catalog tour {CatalogTourId} was committed but its inline projection is pending.")]
-    public static partial void TourProjectionPending(this ILogger logger, Guid catalogTourId, Exception exception);
+        Message = "A catalog tour was committed but its inline projection is pending. Failure type: {FailureType}.")]
+    public static partial void TourProjectionPending(this ILogger logger, string failureType);
 
     [LoggerMessage(
         EventId = 3,
         EventName = nameof(PublicCacheAreaInvalidationFailed),
         Level = LogLevel.Warning,
-        Message = "Could not invalidate public cache area {CacheArea}.")]
-    public static partial void PublicCacheAreaInvalidationFailed(this ILogger logger, string cacheArea, Exception exception);
+        Message = "Could not invalidate public cache area {CacheArea}. Failure type: {FailureType}.")]
+    public static partial void PublicCacheAreaInvalidationFailed(this ILogger logger, string cacheArea, string failureType);
 }

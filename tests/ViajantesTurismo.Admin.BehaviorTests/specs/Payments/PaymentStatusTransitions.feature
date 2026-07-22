@@ -50,7 +50,7 @@ So that I can quickly see booking payment progress
         Given I record a payment of 1000.00 on 2025-01-15 using CreditCard
         And the booking payment status is "Paid"
         When I attempt to record a payment of 1.00 on 2025-01-16 using Cash
-        Then the payment should be rejected with error "Payment amount $1.00 exceeds remaining balance $0.00"
+        Then the payment should be rejected with error "Payment amount exceeds remaining balance"
 
     Scenario: Payment status never goes backwards
         Given I record a payment of 600.00 on 2025-01-15 using CreditCard

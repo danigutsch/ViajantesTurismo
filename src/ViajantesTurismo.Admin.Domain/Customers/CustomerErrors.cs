@@ -392,7 +392,7 @@ public static class CustomerErrors
     /// </summary>
     /// <param name="id">The ID of the customer that was not found.</param>
     /// <returns>A Result representing the error.</returns>
-    public static Result CustomerNotFound(Guid id) => Result.NotFound(detail: $"Customer with ID {id} was not found.");
+    public static Result CustomerNotFound(Guid id) => Result.NotFound(detail: "Customer was not found.");
 
     /// <summary>
     /// Indicates that the email format is invalid.
@@ -418,15 +418,14 @@ public static class CustomerErrors
     /// <param name="age">The calculated age of the customer.</param>
     /// <returns>A Result representing the error.</returns>
     public static Result AgeTooYoung(int age) => Result.Invalid(
-        detail: $"Customer must be at least 10 years old. Current age: {age}.",
+        detail: "Customer must meet the minimum age requirement.",
         field: "BirthDate",
-        message: $"Customer must be at least 10 years old. Current age: {age}.");
+        message: "Customer must meet the minimum age requirement.");
 
     /// <summary>
     /// Indicates that a customer with the specified email already exists.
     /// </summary>
-    /// <param name="email">The email address that already exists.</param>
     /// <returns>A Result representing the error.</returns>
-    public static Result EmailAlreadyExists(string email) => Result.Conflict(
-        detail: $"A customer with email '{email}' already exists.");
+    public static Result EmailAlreadyExists() => Result.Conflict(
+        detail: "A customer with this email already exists.");
 }

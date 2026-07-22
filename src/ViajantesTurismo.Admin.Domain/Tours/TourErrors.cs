@@ -13,7 +13,7 @@ public static class TourErrors
     /// <param name="bookingId">The ID of the booking that was not found.</param>
     /// <returns>A Result representing the error.</returns>
     public static Result BookingNotFound(Guid bookingId) => Result.NotFound(
-        detail: $"Booking with ID {bookingId} not found in this tour.");
+        detail: "Booking was not found in this tour.");
 
     /// <summary>
     /// Indicates that a tour with the specified identifier already exists.
@@ -21,7 +21,7 @@ public static class TourErrors
     /// <param name="identifier">The identifier that already exists.</param>
     /// <returns>A Result representing the error.</returns>
     public static Result IdentifierAlreadyExists(string identifier) => Result.Conflict(
-        detail: $"A tour with identifier '{identifier}' already exists.");
+        detail: "A tour with this identifier already exists.");
 
     /// <summary>
     /// Indicates that the tour identifier is empty or whitespace.
@@ -81,9 +81,9 @@ public static class TourErrors
     /// <param name="value">The invalid price value.</param>
     /// <returns>A Result representing the error.</returns>
     public static Result InvalidPrice(string priceType, decimal value) => Result.Invalid(
-        detail: $"{priceType} must be greater than or equal to zero. Received: {value}.",
+        detail: $"{GetSafePriceType(priceType)} must be greater than or equal to zero.",
         field: "price",
-        message: $"{priceType} must be greater than or equal to zero.");
+        message: $"{GetSafePriceType(priceType)} must be greater than or equal to zero.");
 
     /// <summary>
     /// Indicates that a price value exceeds the maximum allowed value.
@@ -93,16 +93,16 @@ public static class TourErrors
     /// <param name="value">The actual price value.</param>
     /// <returns>A Result representing the error.</returns>
     public static Result PriceTooHigh(string priceType, decimal maxPrice, decimal value) => Result.Invalid(
-        detail: $"{priceType} cannot exceed {maxPrice}. Received: {value}.",
+        detail: $"{GetSafePriceType(priceType)} exceeds the maximum allowed value.",
         field: "price",
-        message: $"{priceType} cannot exceed {maxPrice}.");
+        message: $"{GetSafePriceType(priceType)} exceeds the maximum allowed value.");
 
     /// <summary>
     /// Indicates that a tour with the specified ID was not found.
     /// </summary>
     /// <param name="id">The ID of the tour that was not found.</param>
     /// <returns>A Result representing the error.</returns>
-    public static Result TourNotFound(Guid id) => Result.NotFound(detail: $"Tour with ID {id} was not found.");
+    public static Result TourNotFound(Guid id) => Result.NotFound(detail: "Tour was not found.");
 
     /// <summary>
     /// Indicates that the principal customer and companion cannot be the same person.
@@ -162,7 +162,7 @@ public static class TourErrors
     /// <param name="currentStatus">The current booking status.</param>
     /// <returns>A Result representing the error.</returns>
     public static Result CannotRemoveNonPendingBooking(Guid bookingId, BookingStatus currentStatus) => Result.Conflict(
-        $"Booking {bookingId} has status {currentStatus} and cannot be removed. Only pending bookings can be removed.");
+        $"Booking has status {currentStatus} and cannot be removed. Only pending bookings can be removed.");
 
     /// <summary>
     /// Indicates that a tour cannot be deleted because it has confirmed bookings.
@@ -200,4 +200,16 @@ public static class TourErrors
     /// <returns>A Result representing the error.</returns>
     public static Result CurrencyCannotBeChangedWithBookings() => Result.Conflict(
         detail: "Tour currency cannot be changed if bookings exist.");
+
+    private static string GetSafePriceType(string priceType)
+    {
+        return priceType switch
+        {
+            "Base price" => "Base price",
+            "Single room supplement price" => "Single room supplement price",
+            "Regular bike price" => "Regular bike price",
+            "E-bike price" => "E-bike price",
+            _ => "Tour price"
+        };
+    }
 }

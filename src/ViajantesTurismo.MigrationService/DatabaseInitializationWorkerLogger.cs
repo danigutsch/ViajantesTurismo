@@ -8,8 +8,8 @@ internal static partial class DatabaseInitializationWorkerLogger
     [LoggerMessage(2, LogLevel.Information, "Database initialization completed.")]
     public static partial void InitializationCompleted(this ILogger logger);
 
-    [LoggerMessage(3, LogLevel.Error, "Database initialization failed")]
-    public static partial void InitializationFailed(this ILogger logger, Exception exception);
+    [LoggerMessage(3, LogLevel.Error, "Database initialization failed. Failure type: {FailureType}.")]
+    public static partial void InitializationFailed(this ILogger logger, string failureType);
 
     [LoggerMessage(4, LogLevel.Information, "Database initialization cancelled.")]
     public static partial void InitializationCancelled(this ILogger logger);

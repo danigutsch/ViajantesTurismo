@@ -33,7 +33,7 @@ public sealed class UpdateCustomerCommandHandler(
 
         if (await customerStore.EmailExistsExcluding(sanitizedEmail, command.CustomerId, ct))
         {
-            return CustomerErrors.EmailAlreadyExists(command.ContactInfo.Email);
+            return CustomerErrors.EmailAlreadyExists();
         }
 
         var errors = new ValidationErrors();

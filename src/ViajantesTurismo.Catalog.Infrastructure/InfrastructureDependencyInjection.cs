@@ -139,9 +139,12 @@ public static class InfrastructureDependencyInjection
     private static TApplicationBuilder AddCatalogPersistence<TApplicationBuilder>(this TApplicationBuilder builder)
         where TApplicationBuilder : IHostApplicationBuilder
     {
-        builder.AddNpgsqlDataSource(ResourceNames.CatalogDatabase);
+        builder.AddNpgsqlDataSource(
+            ResourceNames.CatalogDatabase,
+            configureSettings: settings => settings.DisableTracing = true);
         builder.AddKeyedNpgsqlDataSource(
             ResourceNames.CatalogDatabase,
+            configureSettings: settings => settings.DisableTracing = true,
             configureDataSourceBuilder: dataSourceBuilder =>
             {
                 dataSourceBuilder.ConnectionStringBuilder.MaxPoolSize = Math.Min(
@@ -192,6 +195,7 @@ public static class InfrastructureDependencyInjection
     {
         builder.AddNpgsqlDbContext<CatalogIntegrationTransportDbContext>(
             ResourceNames.AdminDatabase,
+            configureSettings: settings => settings.DisableTracing = true,
             configureDbContextOptions: options => ConfigureDevelopmentDatabaseOptions<CatalogIntegrationTransportDbContext, TApplicationBuilder>(builder, options));
 
         return builder;

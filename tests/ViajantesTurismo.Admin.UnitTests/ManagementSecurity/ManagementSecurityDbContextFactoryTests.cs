@@ -55,4 +55,14 @@ public sealed class ManagementSecurityDbContextFactoryTests
         // Assert
         hasUnkeyedDataSource.ShouldBeFalse();
     }
+
+    [Fact]
+    public void Registered_security_context_keeps_sensitive_logging_disabled()
+    {
+        // Act
+        var sensitiveLogging = ManagementSecurityPersistenceRegistrationTestContext.IsSensitiveDataLoggingEnabled();
+
+        // Assert
+        sensitiveLogging.ShouldBeFalse();
+    }
 }

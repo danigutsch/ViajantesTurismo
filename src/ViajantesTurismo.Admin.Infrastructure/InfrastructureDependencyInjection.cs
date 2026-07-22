@@ -161,6 +161,7 @@ public static class InfrastructureDependencyInjection
 
         builder.AddNpgsqlDbContext<AdminWriteDbContext>(
             ResourceNames.AdminDatabase,
+            configureSettings: settings => settings.DisableTracing = true,
             configureDbContextOptions: options => ConfigureAdminWriteDbContext(builder, options));
     }
 
@@ -169,6 +170,7 @@ public static class InfrastructureDependencyInjection
     {
         builder.AddNpgsqlDbContext<AdminReadDbContext>(
             ResourceNames.AdminDatabase,
+            configureSettings: settings => settings.DisableTracing = true,
             configureDbContextOptions: options => ConfigureReadDatabaseOptions(builder, options));
     }
 

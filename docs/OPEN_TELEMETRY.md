@@ -130,6 +130,10 @@ when a log is written inside an `Activity`.
 `ViajantesTurismo.ServiceDefaults` centralizes shared registration used by services calling
 `builder.AddServiceDefaults()`.
 
+Service defaults remove preconfigured logging providers before adding OpenTelemetry. This keeps the
+sanitized OpenTelemetry pipeline as the sole default logging provider; hosts must not add console,
+debug, or other providers unless those providers enforce the same privacy boundary.
+
 - Metrics registration:
     - `src/ViajantesTurismo.ServiceDefaults/OpenTelemetryBuilderExtensions.cs`
     - `AddSharedKernelMediatorMetrics()` -> `metrics.AddMeter(SharedKernel.Mediator.MediatorTelemetry.Name)`
@@ -167,19 +171,26 @@ cancellation, and failure paths.
 | --- | --- | --- | --- | --- |
 | Success | `ActivityStatusCode.Ok` | `null` | Do not record one | Keep the surface's success/outcome tags when that surface defines them |
 | Cancellation | Leave status unset | `null` | Do not record one | Keep the surface's cancellation/outcome tags when that surface defines them |
-| Failure | `ActivityStatusCode.Error` | Use the thrown exception message | Record exactly one exception event | Keep the surface's error/outcome tags when that surface defines them |
+| Failure | `ActivityStatusCode.Error` | `null` | Do not record exception content | Keep bounded `error.type` and the surface's error/outcome tags |
 
 ### Status description rules
 
 - Success spans must leave `StatusDescription` as `null`.
 - Cancellation spans must leave `StatusDescription` as `null`.
-- Failure spans must populate `StatusDescription` with the thrown exception message.
+- Failure spans must leave `StatusDescription` as `null`.
 
 ### Exception recording rules
 
-- Failure spans must record one exception event with OpenTelemetry-standard exception tags.
-- Success and cancellation spans must not record exception events.
-- Repo-specific error tags do not replace the exception event; they complement it.
+- Repository-owned spans must not record exception messages, stack traces, or exception events.
+- Failure spans retain a bounded `error.type`; success and cancellation spans omit it.
+- Export processors remove raw paths, query values, identifiers, and status descriptions before OTLP
+  export as defense in depth.
+- Do not enable third-party tracing that records immutable exception events without a producer-side
+  suppression option. SeaweedFS keeps AWS SDK metrics enabled but intentionally omits AWS SDK tracing
+  because that instrumentation records raw exception messages and stack traces on failed S3 spans.
+- Aspire Npgsql registrations keep Npgsql metrics enabled but disable automatic Npgsql tracing because
+  failed database spans contain immutable exception events and raw query text. Repository-owned
+  `SharedKernel.EventSourcing.Npgsql` spans remain enabled and follow the bounded telemetry contract.
 
 ### Repo-specific tag policy
 
@@ -216,7 +227,7 @@ diagnostic context, then correlate to traces and metrics through trace context a
 | Message template | Use static templates with named placeholders. Placeholder names become structured fields; changing them is a contract change. |
 | Structured fields | Use low-cardinality fields such as `operation`, `outcome`, `provider`, `area`, and bounded enum-like values. |
 | Scopes | Use scopes for values that apply to a whole operation, not for high-cardinality values or user content. |
-| Exceptions | Pass exceptions through the logger exception parameter. Do not duplicate stack traces or exception messages as custom fields. |
+| Exceptions | Do not pass exception objects, messages, or stack traces to production logs. Emit a bounded exception type only when it helps operators. |
 | Correlation | Emit logs inside the active `Activity` when possible so `TraceId`, `SpanId`, and trace flags can correlate logs to spans. |
 | Resource identity | Rely on shared OpenTelemetry resource identity for service name/version/environment instead of repeating those values as custom fields. |
 
@@ -246,18 +257,16 @@ structured fields reviewable as telemetry contracts.
   `CancellationToken` is signaled.
 - Unexpected `OperationCanceledException` with an unsignaled token should follow the ordinary error
   path.
-- Failure logs should pair with failure spans: one logged exception and one span exception event are
-  acceptable because they serve different consumers, but avoid extra duplicate error logs in nested
-  layers unless they add new operational context.
+- Failure logs should pair with failure spans through bounded exception type and outcome fields. Avoid
+  duplicate error logs in nested layers unless they add new operational context.
 
 ### Current repository examples
 
-- Mediator request, notification, and stream spans use `AddException(ex)` plus
-  `SetStatus(ActivityStatusCode.Error, ...)` on failures, leave cancellation status unset,
-  and emit outcome tags.
-- Database initialization spans use the same failure-status and exception-event pattern while
-  retaining initialization-specific operation tags on all paths. Synthetic Admin data initialization
-  runs atomically only in Development; migrations run in every environment.
+- Mediator request, notification, and stream spans set error status and bounded `error.type` on
+  failures, leave cancellation status unset, and emit outcome tags without exception content.
+- Database initialization spans use the same failure-status and bounded-type pattern while retaining
+  initialization-specific operation tags on all paths. Synthetic Admin data initialization runs
+  atomically only in Development; migrations run in every environment.
 - Catalog and PostgreSQL event-sourcing surfaces are registered through service defaults, leave
   cooperative cancellation out of error metrics, and keep their tag sets low-cardinality because
   they are used by traces and metrics.

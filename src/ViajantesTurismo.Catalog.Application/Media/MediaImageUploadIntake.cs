@@ -181,7 +181,7 @@ public sealed partial class MediaImageUploadIntake(
         }
         catch (Exception exception) when (exception.ShouldHandleAsFailure(ct))
         {
-            LogScannerFailure(logger, exception);
+            LogScannerFailure(logger, exception.GetType().Name);
             content.Position = 0;
             return new MediaUploadScanResult(MediaUploadScanStatus.Failed, ScannerUnavailableMessage);
         }
@@ -245,15 +245,15 @@ public sealed partial class MediaImageUploadIntake(
     {
         if (!string.IsNullOrWhiteSpace(scanResult.Message))
         {
-            LogScanDiagnostic(logger, scanResult.Status, scanResult.Message);
+            LogScanDiagnostic(logger, scanResult.Status);
         }
     }
 
-    [LoggerMessage(LogLevel.Warning, "Media upload scanner failed.")]
-    private static partial void LogScannerFailure(ILogger logger, Exception exception);
+    [LoggerMessage(LogLevel.Warning, "Media upload scanner failed. Failure type: {FailureType}.")]
+    private static partial void LogScannerFailure(ILogger logger, string failureType);
 
-    [LoggerMessage(LogLevel.Warning, "Media upload scanner returned {ScanStatus}: {ScanMessage}")]
-    private static partial void LogScanDiagnostic(ILogger logger, MediaUploadScanStatus scanStatus, string scanMessage);
+    [LoggerMessage(LogLevel.Warning, "Media upload scanner returned {ScanStatus}.")]
+    private static partial void LogScanDiagnostic(ILogger logger, MediaUploadScanStatus scanStatus);
 
     private static string CreateOriginalObjectKey(Guid mediaImageId, Guid uploadAttemptId, string contentType)
         => string.Create(CultureInfo.InvariantCulture, $"media/{mediaImageId:N}/original-{uploadAttemptId:N}{GetFileExtension(contentType)}");

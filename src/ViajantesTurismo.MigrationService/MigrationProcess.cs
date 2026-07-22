@@ -70,5 +70,11 @@ internal static class MigrationProcess
         return 1;
     }
 
-    private static void ReportFailure(Exception exception) => Console.Error.WriteLine(exception);
+    internal static string FormatFailure(Exception exception)
+    {
+        ArgumentNullException.ThrowIfNull(exception);
+        return exception.GetType().FullName ?? exception.GetType().Name;
+    }
+
+    private static void ReportFailure(Exception exception) => Console.Error.WriteLine(FormatFailure(exception));
 }

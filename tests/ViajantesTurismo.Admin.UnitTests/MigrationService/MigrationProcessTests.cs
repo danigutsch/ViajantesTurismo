@@ -51,6 +51,21 @@ public sealed class MigrationProcessTests
     }
 
     [Fact]
+    [Trait(SharedKernel.Testing.TestTraitNames.CategoryName, SharedKernel.Testing.TestTraitValues.SecurityCategory)]
+    public void Formats_failure_as_exception_type_without_sensitive_content()
+    {
+        // Arrange
+        const string sensitiveMessage = "traveler@example.com at /customers/private";
+        var failure = new InvalidOperationException(sensitiveMessage);
+
+        // Act
+        var formattedFailure = MigrationProcess.FormatFailure(failure);
+
+        // Assert
+        formattedFailure.ShouldBe("System.InvalidOperationException");
+    }
+
+    [Fact]
     public async Task Returns_one_and_cleans_up_after_cancellation()
     {
         // Arrange

@@ -1,4 +1,5 @@
 using ViajantesTurismo.Catalog.Application.Media;
+using ViajantesTurismo.Catalog.Testing.Infrastructure;
 
 namespace ViajantesTurismo.Catalog.UnitTests;
 
@@ -125,28 +126,36 @@ public sealed class MediaObjectReconciliationServiceTests
     }
 
     [Fact]
+    [Trait(SharedKernel.Testing.TestTraitNames.CategoryName, SharedKernel.Testing.TestTraitValues.SecurityCategory)]
     public async Task Reconcile_records_delete_failures_and_can_retry_later()
     {
         // Arrange
+        const string objectKey = "media/traveler@example.com/private.jpg";
         var image = PublicMediaImageTestFactory.CreatePendingImage(Guid.CreateVersion7(), 1024);
         var objectStore = new InMemoryMediaObjectStore();
         await objectStore.Put(
-            new MediaObjectWriteRequest("media/retry-orphan.jpg", new MemoryStream([2]), "image/jpeg", 1),
+            new MediaObjectWriteRequest(objectKey, new MemoryStream([2]), "image/jpeg", 1),
             TestContext.Current.CancellationToken);
-        objectStore.FailNextDelete("media/retry-orphan.jpg");
+        objectStore.FailNextDelete(objectKey);
         var imageStore = new InMemoryPublicMediaImageStore(image);
-        var service = new MediaObjectReconciliationService(objectStore, imageStore);
+        var logger = new CollectingLogger<MediaObjectReconciliationService>();
+        var service = new MediaObjectReconciliationService(objectStore, imageStore, logger: logger);
 
         // Act
         var failedReport = await service.Reconcile(deleteOrphans: true, TestContext.Current.CancellationToken);
         var retryReport = await service.Reconcile(deleteOrphans: true, TestContext.Current.CancellationToken);
 
         // Assert
-        failedReport.FailedDeleteObjectKeys.ShouldContain("media/retry-orphan.jpg");
+        failedReport.FailedDeleteObjectKeys.ShouldContain(objectKey);
         failedReport.DeletedOrphanObjectKeys.ShouldBeEmpty();
-        retryReport.DeletedOrphanObjectKeys.ShouldContain("media/retry-orphan.jpg");
+        retryReport.DeletedOrphanObjectKeys.ShouldContain(objectKey);
         retryReport.FailedDeleteObjectKeys.ShouldBeEmpty();
-        objectStore.ObjectKeys.ShouldNotContain("media/retry-orphan.jpg");
+        objectStore.ObjectKeys.ShouldNotContain(objectKey);
+        var logMessage = logger.Messages.ShouldHaveSingleItem();
+        logMessage.ShouldContain(nameof(IOException), StringComparison.Ordinal);
+        logMessage.ShouldNotContain(objectKey, StringComparison.Ordinal);
+        logger.StructuredValues.ShouldNotContain(value => string.Equals(value.Value as string, objectKey, StringComparison.Ordinal));
+        logger.Exceptions.ShouldBeEmpty();
     }
 
     [Fact]

@@ -54,9 +54,9 @@ internal static class AdminInfrastructureModuleTestServices
         return CreateScope(services.BuildServiceProvider());
     }
 
-    public static AdminInfrastructureModuleTestScope CreateWithInfrastructureModule()
+    public static AdminInfrastructureModuleTestScope CreateWithInfrastructureModule(string environmentName = "Production")
     {
-        var builder = CreateConfiguredApplicationBuilder();
+        var builder = CreateConfiguredApplicationBuilder(environmentName);
         builder.AddApplication();
         builder.AddInfrastructure();
 
@@ -112,6 +112,7 @@ internal static class AdminInfrastructureModuleTestServices
         {
             [$"ConnectionStrings:{ResourceNames.AdminDatabase}"] = "Host=localhost;Database=viajantes-admin;Username=test;Password=test"
         });
+        builder.Services.AddOpenTelemetry().WithTracing(static _ => { });
 
         return builder;
     }
