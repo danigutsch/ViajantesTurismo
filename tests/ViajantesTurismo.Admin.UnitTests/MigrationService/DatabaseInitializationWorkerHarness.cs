@@ -7,6 +7,7 @@ using Microsoft.Extensions.Hosting;
 using SharedKernel.EntityFrameworkCore;
 using SharedKernel.Branding;
 using SharedKernel.Messaging.IntegrationEvents.EntityFrameworkCore;
+using SharedKernel.Testing.AspNetCore;
 using ViajantesTurismo.Admin.Domain.Tours;
 using ViajantesTurismo.Admin.Infrastructure;
 using ViajantesTurismo.Branding.Infrastructure;
@@ -58,7 +59,10 @@ internal sealed class DatabaseInitializationWorkerHarness : IDisposable
 
         var services = new ServiceCollection();
         services.AddDbContext<CatalogDbContext>(options => options.UseInMemoryDatabase(Guid.NewGuid().ToString()));
-        var environment = new TestHostEnvironment(environmentName);
+        var environment = new TestHostEnvironment("ViajantesTurismo.MigrationService.Tests")
+        {
+            EnvironmentName = environmentName,
+        };
 
         return new DatabaseInitializationWorkerHarness(
             services.BuildServiceProvider(),
@@ -97,7 +101,10 @@ internal sealed class DatabaseInitializationWorkerHarness : IDisposable
             probe.RecordManagementSecurity();
             return new ManagementSecurityDbContext(securityOptions);
         });
-        services.AddSingleton<IHostEnvironment>(new TestHostEnvironment(environmentName));
+        services.AddSingleton<IHostEnvironment>(new TestHostEnvironment("ViajantesTurismo.MigrationService.Tests")
+        {
+            EnvironmentName = environmentName,
+        });
         services.AddScoped<IBrandingSettingsStore, EmptyBrandingSettingsStore>();
         services.AddIntegrationEventOutbox<AdminWriteDbContext>();
         services.AddDbContext<AdminWriteDbContext>(options =>

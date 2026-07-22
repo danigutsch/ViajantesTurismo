@@ -3,6 +3,7 @@ using System.Diagnostics;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging.Abstractions;
+using SharedKernel.Testing.AspNetCore;
 using ViajantesTurismo.MigrationService;
 
 namespace ViajantesTurismo.Admin.UnitTests.MigrationService;
@@ -36,7 +37,10 @@ internal sealed class MigrationProcessTestHost : IHost
 
         var services = new ServiceCollection();
         services.AddSingleton<IHostApplicationLifetime>(lifetime);
-        services.AddSingleton<IHostEnvironment>(new TestHostEnvironment(Environments.Production));
+        services.AddSingleton<IHostEnvironment>(new TestHostEnvironment("ViajantesTurismo.MigrationService.Tests")
+        {
+            EnvironmentName = Environments.Production,
+        });
         services.AddSingleton(serviceProvider => new DatabaseInitializationWorker(
             serviceProvider.GetRequiredService<IServiceScopeFactory>(),
             serviceProvider.GetRequiredService<IHostEnvironment>(),
