@@ -214,4 +214,74 @@ public sealed class AdminTourCreatedIntegrationHandlerTests
         eventStore.Events.ShouldHaveSingleItem();
         idempotencyStore.CompletedState.ShouldBe(IdempotencyEntryState.Completed);
     }
+
+    [Fact]
+    [Trait(SharedKernelTestTraitNames.CapabilityName, TestTraits.IntegrationEventTransportCapability)]
+    public async Task Handle_completes_retry_when_append_succeeded_before_idempotency_completion_failed()
+    {
+        // Arrange
+        var idempotencyStore = new CapturingIdempotencyStore(completeFailures: 1);
+        var eventStore = new CapturingEventStore();
+        var handler = new IdempotentIntegrationHandler<AdminTourCreatedIntegrationEvent>(
+            new AdminTourCreatedIntegrationHandler(eventStore, new TestCatalogTourSlugLock()),
+            idempotencyStore,
+            Options.Create(new IntegrationEventOptions()));
+        var integrationEvent = new AdminTourCreatedIntegrationEvent(
+            Guid.CreateVersion7(),
+            DateTimeOffset.UtcNow,
+            Guid.CreateVersion7(),
+            "andes-2026",
+            "Andes 2026");
+
+        // Act
+        Func<Task> firstAttempt = () => handler.Handle(integrationEvent, CancellationToken.None).AsTask();
+        _ = await firstAttempt.ShouldThrow<InvalidOperationException>();
+        idempotencyStore.SimulateExpiredLease();
+        await handler.Handle(integrationEvent, CancellationToken.None);
+
+        // Assert
+        eventStore.AppendAttempts.ShouldBe(2);
+        var draftCreated = eventStore.Events.ShouldHaveSingleItem().ShouldBeOfType<CatalogTourDraftCreated>();
+        draftCreated.SourceEventId.ShouldBe(integrationEvent.EventId);
+        idempotencyStore.CompletedState.ShouldBe(IdempotencyEntryState.Completed);
+    }
+
+    [Fact]
+    [Trait(SharedKernelTestTraitNames.CapabilityName, TestTraits.IntegrationEventTransportCapability)]
+    public async Task Handle_preserves_conflict_when_existing_initial_event_has_a_different_source_event_id()
+    {
+        // Arrange
+        var eventStore = new CapturingEventStore();
+        var integrationEvent = new AdminTourCreatedIntegrationEvent(
+            Guid.CreateVersion7(),
+            DateTimeOffset.UtcNow,
+            Guid.CreateVersion7(),
+            "andes-2026",
+            "Andes 2026");
+        var streamId = CatalogTourStreamIds.FromAdminTourId(integrationEvent.AdminTourId);
+        eventStore.AddReplayEvent(new EventEnvelope(
+            streamId,
+            1,
+            StreamRevision.From(1),
+            Guid.CreateVersion7(),
+            typeof(CatalogTourDraftCreated).FullName ?? nameof(CatalogTourDraftCreated),
+            new CatalogTourDraftCreated(
+                Guid.CreateVersion7(),
+                integrationEvent.AdminTourId,
+                integrationEvent.Identifier,
+                integrationEvent.Name,
+                Guid.CreateVersion7(),
+                integrationEvent.Identifier),
+            DateTimeOffset.UtcNow));
+        var handler = new AdminTourCreatedIntegrationHandler(eventStore, new TestCatalogTourSlugLock());
+
+        // Act
+        Func<Task> handle = () => handler.Handle(integrationEvent, CancellationToken.None).AsTask();
+        var exception = await handle.ShouldThrow<ExpectedStreamRevisionConflictException>();
+
+        // Assert
+        exception.StreamId.ShouldBe(streamId);
+        exception.ExpectedRevision.ShouldBe(ExpectedStreamRevision.NoStream);
+        eventStore.Events.ShouldBeEmpty();
+    }
 }

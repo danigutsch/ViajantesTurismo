@@ -306,6 +306,8 @@ public sealed class LayerDependencyTests
         var flows = File.ReadAllText(Path.Combine(repositoryRoot, "docs", "architecture", "FLOWS.md"));
         var eventsAndMessaging = File.ReadAllText(
             Path.Combine(repositoryRoot, "docs", "domain", "EVENTS_AND_MESSAGING.md"));
+        var domainEventsReadme = File.ReadAllText(
+            Path.Combine(repositoryRoot, "src", "SharedKernel", "SharedKernel.DomainEvents", "README.md"));
 
         // Act
         var mediatorReferences = adminAssemblies
@@ -321,6 +323,7 @@ public sealed class LayerDependencyTests
         eventsAndMessaging.ShouldNotContain(
             "Event dispatch should extend `SharedKernel.Mediator`",
             StringComparison.Ordinal);
+        domainEventsReadme.ShouldNotContain("SharedKernel.Mediator", StringComparison.Ordinal);
     }
 
     [Fact]

@@ -21,10 +21,11 @@ adoption of another mediator framework or generation of business logic.
 - The mediator generator emits typed request, stream, notification, handler, and pipeline paths.
   Generic sender and publisher APIs remain for real interface-typed and object-dispatch callers, and
   forward through exhaustive generated cases.
-- `AppMediator` receives typed handlers and pipelines through scoped constructor injection. Ordinary
-  dispatch does not call `IServiceProvider`.
-- The integration-event generator is the sole owner of domain-event-to-outbox mappings and the
-  generated `IDomainEventDispatcher` implementation.
+- `AppMediator` receives closed typed `Func<T>` handler and pipeline dependencies. The factories defer
+  scoped resolution until dispatch, avoiding constructor cycles without a general runtime registry.
+- Domain-event provider generators emit closed `IDomainEventDispatchHandler` implementations. The
+  scoped `CompositeDomainEventDispatcher` composes outbox and audit handlers without registration-order
+  ownership of `IDomainEventDispatcher`.
 - Each host supplies explicit `JsonTypeInfo<T>` metadata. Generated serializers and envelope publishers
   use closed typed cases instead of contract registration objects or dictionaries.
 - Background consumers retain the genuine scope boundary. One scope owns each claimed batch and
@@ -53,8 +54,8 @@ idempotency is the acceptance boundary.
 - Missing and duplicate integration-event consumer handlers fail compilation with `SKMSG001` and
   `SKMSG002`; duplicate consumer event types fail compilation with `SKMSG003`; invalid registered
   contract types fail compilation with `SKMSG006`.
-- Generated constructor size grows with the closed handler set, but dependencies and lifetimes become
-  visible to DI validation.
+- Generated constructor size grows with the closed handler-factory set, while concrete handler and
+  pipeline registrations remain scoped and visible to DI validation.
 - Adding a contract requires explicit metadata and generated host composition.
 - Dynamic runtime registries are not retained without a demonstrated dynamic caller.
 

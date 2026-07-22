@@ -253,6 +253,11 @@ public sealed class DevelopmentDataInitializer
                 or InvalidOperationException { InnerException: DbUpdateException })
             {
                 dbContext.ChangeTracker.Clear();
+                if (await IsInitialized(ct))
+                {
+                    return;
+                }
+
                 if (concurrentRetries++ >= 1)
                 {
                     throw;
@@ -366,6 +371,24 @@ public sealed class DevelopmentDataInitializer
 
         await dbContext.SaveChangesAsync(ct);
         return true;
+    }
+
+    private async ValueTask<bool> IsInitialized(CancellationToken ct)
+    {
+        var customerNationalIds = await dbContext.Customers
+            .Select(static customer => customer.IdentificationInfo.NationalId)
+            .ToArrayAsync(ct);
+        var tourIdentifiers = await dbContext.Tours
+            .Select(static tour => tour.Identifier)
+            .ToArrayAsync(ct);
+        if (!HasExactValues(customerNationalIds, BaselineCustomerNationalIds)
+            || !HasExactValues(tourIdentifiers, BaselineTourIdentifiers))
+        {
+            return false;
+        }
+
+        var bookingCount = await dbContext.Tours.SelectMany(static tour => tour.Bookings).CountAsync(ct);
+        return bookingCount == 10;
     }
 
     private static bool HasExactValues(string[] actual, string[] expected) =>

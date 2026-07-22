@@ -34,7 +34,7 @@ public sealed class AdminTourCreatedIntegrationHandler(
                 notification.Identifier,
                 notification.Name,
                 notification.EventId);
-            if (!await TryPersist(preferredTour, ct).ConfigureAwait(false))
+            if (!await TryPersist(preferredTour, notification.EventId, ct).ConfigureAwait(false))
             {
                 var fallbackTour = CatalogTour.CreateDraft(
                     preferredTour.Id,
@@ -43,7 +43,7 @@ public sealed class AdminTourCreatedIntegrationHandler(
                     notification.Name,
                     notification.EventId,
                     $"tour-{preferredTour.Id:N}");
-                if (!await TryPersist(fallbackTour, ct).ConfigureAwait(false))
+                if (!await TryPersist(fallbackTour, notification.EventId, ct).ConfigureAwait(false))
                 {
                     throw new CatalogTourSlugConflictException();
                 }
@@ -75,7 +75,7 @@ public sealed class AdminTourCreatedIntegrationHandler(
         }
     }
 
-    private async ValueTask<bool> TryPersist(CatalogTour catalogTour, CancellationToken ct)
+    private async ValueTask<bool> TryPersist(CatalogTour catalogTour, Guid sourceEventId, CancellationToken ct)
     {
         await using var slugLease = await slugLock.Acquire(catalogTour.Slug, ct).ConfigureAwait(false);
         if (!await CatalogTourSlugAvailability.IsAvailable(
@@ -88,11 +88,26 @@ public sealed class AdminTourCreatedIntegrationHandler(
         }
 
         var pendingEvents = catalogTour.GetUncommittedEvents();
-        await eventStore.Append(
-            CatalogTourStreamIds.FromAdminTourId(catalogTour.AdminTourId),
-            ExpectedStreamRevision.NoStream,
-            pendingEvents,
-            ct).ConfigureAwait(false);
+        var streamId = CatalogTourStreamIds.FromAdminTourId(catalogTour.AdminTourId);
+        try
+        {
+            await eventStore.Append(
+                streamId,
+                ExpectedStreamRevision.NoStream,
+                pendingEvents,
+                ct).ConfigureAwait(false);
+        }
+        catch (ExpectedStreamRevisionConflictException)
+        {
+            var existingEvents = await eventStore.Load(streamId, afterRevision: null, ct).ConfigureAwait(false);
+            var initialEvent = existingEvents.FirstOrDefault(static envelope => envelope.Revision.Value == 1);
+            if (initialEvent?.Data is not CatalogTourDraftCreated draftCreated
+                || draftCreated.SourceEventId != sourceEventId)
+            {
+                throw;
+            }
+        }
+
         catalogTour.ClearUncommittedEvents();
         return true;
     }

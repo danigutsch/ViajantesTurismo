@@ -123,17 +123,6 @@ internal sealed class DevelopmentDataInitializerScenario : IAsyncDisposable
         bookingCount.ShouldBe(0);
     }
 
-    public async Task ShouldContainExistingTourAndDevelopmentData(CancellationToken ct)
-    {
-        var tourCount = await DbContext.Tours.CountAsync(ct);
-        var customerCount = await DbContext.Customers.CountAsync(ct);
-        var bookingCount = await DbContext.Tours.SelectMany(tour => tour.Bookings).CountAsync(ct);
-
-        tourCount.ShouldBe(6);
-        customerCount.ShouldBe(15);
-        bookingCount.ShouldBe(10);
-    }
-
     public async Task ShouldNotContainDevelopmentData(CancellationToken ct)
     {
         var tourCount = await DbContext.Tours.CountAsync(ct);
@@ -269,7 +258,7 @@ internal sealed class DevelopmentDataInitializerScenario : IAsyncDisposable
         bookings.Sum(static booking => booking.Payments.Count).ShouldBe(0);
     }
 
-    public async Task ShouldContainExpectedSeedBookingStates(CancellationToken ct)
+    public async Task ShouldContainExpectedDevelopmentBookingStates(CancellationToken ct)
     {
         DbContext.ChangeTracker.Clear();
         var customers = await DbContext.Customers

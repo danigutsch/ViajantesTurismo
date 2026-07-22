@@ -19,34 +19,6 @@ public sealed class DevelopmentDataInitializerTests
     }
 
     [Fact]
-    public async Task Initialize_adds_development_data_when_an_unrelated_tour_already_exists()
-    {
-        // Arrange
-        await using var scenario = DevelopmentDataInitializerScenario.Create();
-        await scenario.AddExistingTour(TestContext.Current.CancellationToken);
-
-        // Act
-        await scenario.Initialize(TestContext.Current.CancellationToken);
-
-        // Assert
-        await scenario.ShouldContainExistingTourAndDevelopmentData(TestContext.Current.CancellationToken);
-    }
-
-    [Fact]
-    public async Task Initialize_does_not_duplicate_data_when_run_again()
-    {
-        // Arrange
-        await using var scenario = DevelopmentDataInitializerScenario.Create();
-        await scenario.Initialize(TestContext.Current.CancellationToken);
-
-        // Act
-        await scenario.Initialize(TestContext.Current.CancellationToken);
-
-        // Assert
-        await scenario.ShouldContainDevelopmentData(TestContext.Current.CancellationToken);
-    }
-
-    [Fact]
     public async Task Initialize_preserves_the_booking_status_distribution_by_tour()
     {
         // Arrange

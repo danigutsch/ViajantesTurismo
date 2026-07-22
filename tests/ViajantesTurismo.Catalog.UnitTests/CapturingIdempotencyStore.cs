@@ -4,9 +4,11 @@ namespace ViajantesTurismo.Catalog.UnitTests;
 
 public sealed class CapturingIdempotencyStore(
     bool started = true,
-    IdempotencyEntryState existingState = IdempotencyEntryState.Completed) : IIdempotencyStore
+    IdempotencyEntryState existingState = IdempotencyEntryState.Completed,
+    int completeFailures = 0) : IIdempotencyStore
 {
     private readonly Dictionary<IdempotencyOperation, IdempotencyEntry> entries = [];
+    private int remainingCompleteFailures = completeFailures;
 
     public IdempotencyEntryState? CompletedState { get; private set; }
 
@@ -54,6 +56,12 @@ public sealed class CapturingIdempotencyStore(
         string? resultFingerprint,
         CancellationToken ct)
     {
+        if (remainingCompleteFailures > 0)
+        {
+            remainingCompleteFailures--;
+            throw new InvalidOperationException("complete failed");
+        }
+
         CompletedState = IdempotencyEntryState.Completed;
         entries[operation] = new IdempotencyEntry(
             operation,

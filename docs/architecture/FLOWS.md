@@ -94,15 +94,21 @@ sequenceDiagram
     participant Aggregate as Aggregate
     participant Context as AdminWriteDbContext
     participant Interceptor as SaveChanges interceptor
-    participant Dispatcher as Domain event dispatcher
+    participant Dispatcher as Composite domain event dispatcher
+    participant Mapper as Generated outbox mapper
+    participant Audit as Generated audit handler
     participant Outbox as messaging.outbox_messages
+    participant AuditRows as Admin audit records
     participant Db as Admin PostgreSQL
 
     Handler->>Aggregate: mutate; record domain event
     Handler->>Context: SaveEntities(ct)
     Context->>Interceptor: SavingChanges
     Interceptor->>Dispatcher: Dispatch(domain events)
-    Dispatcher->>Outbox: Enqueue serialized integration events
+    Dispatcher->>Mapper: Dispatch mapped domain events
+    Mapper->>Outbox: Enqueue serialized integration events
+    Dispatcher->>Audit: Dispatch auditable domain events
+    Audit->>AuditRows: Add audit records
     Context->>Db: save aggregate rows + outbox rows
     alt save succeeds
         Db-->>Context: commit ok
