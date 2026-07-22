@@ -1,13 +1,74 @@
+using System.Globalization;
 using ViajantesTurismo.Admin.Domain.Documents;
 
 namespace ViajantesTurismo.Admin.Infrastructure.Tests.Documents;
 
 internal static class DocumentDraftInfrastructureTestData
 {
-    public static DocumentDraft CreateDraft(DateTime createdAt)
+    public static DocumentDraftContent CreateContent(string templateVersion = "1") => new(
+        "tour-service-contract",
+        templateVersion,
+        Guid.CreateVersion7().ToString("N"),
+        [
+            DocumentField.Create("booking-reference", "Booking reference", "ABC123", DocumentPrivacyClassification.Operational, false).Value,
+            DocumentField.Create("greeting", "Greeting", "Dear customer", DocumentPrivacyClassification.PersonalData, true).Value,
+        ],
+        Guid.CreateVersion7().ToString("N"),
+        "Viajantes Turismo",
+        new Uri("/logo.svg", UriKind.Relative),
+        "#000000",
+        "#000000",
+        "#ffffff",
+        "#000000",
+        "system-ui, sans-serif",
+        "system-ui, sans-serif",
+        "Viajantes Turismo");
+
+    public static DocumentAuditContext CreateAuditContext() => DocumentAuditContext.Create(
+        "9c5ff2e6-8b35-4f78-9df3-ef15af8e92a4",
+        "9a3ca841b4354928861c660a6e4e1b99").Value;
+
+    public static DocumentLineage CreateLineage(DateTime createdAt, Guid? bookingId = null)
+    {
+        var result = DocumentLineage.Create(
+            bookingId ?? Guid.CreateVersion7(),
+            DocumentType.BookingConfirmationContract,
+            DocumentAudience.Customer,
+            CreateContent(),
+            createdAt,
+            CreateAuditContext());
+        result.IsSuccess.ShouldBeTrue();
+        result.Value.ClearDomainEvents();
+        return result.Value;
+    }
+
+    public static DocumentLineage CreateLineageWithRevisions(DateTime firstCreatedAt, int revisionCount)
+    {
+        ArgumentOutOfRangeException.ThrowIfLessThan(revisionCount, 1);
+
+        var lineage = CreateLineage(firstCreatedAt);
+        var previous = lineage.Revisions.ShouldHaveSingleItem();
+        var auditContext = CreateAuditContext();
+
+        for (var revision = 2; revision <= revisionCount; revision++)
+        {
+            var result = lineage.CreateRevision(
+                previous.Id,
+                CreateContent(revision.ToString(CultureInfo.InvariantCulture)),
+                firstCreatedAt.AddMinutes(revision - 1),
+                auditContext);
+            result.IsSuccess.ShouldBeTrue();
+            previous = result.Value;
+        }
+
+        lineage.ClearDomainEvents();
+        return lineage;
+    }
+
+    public static DocumentDraft CreateDraft(DateTime createdAt, Guid? bookingId = null)
     {
         var result = DocumentDraft.Create(
-            Guid.CreateVersion7(),
+            bookingId ?? Guid.CreateVersion7(),
             DocumentType.BookingConfirmationContract,
             DocumentAudience.Customer,
             "tour-service-contract",
@@ -26,9 +87,9 @@ internal static class DocumentDraftInfrastructureTestData
         return result.Value;
     }
 
-    public static DocumentDraft CreateFinalizedDraft(DateTime createdAt)
+    public static DocumentDraft CreateFinalizedDraft(DateTime createdAt, Guid? bookingId = null)
     {
-        var document = CreateDraft(createdAt);
+        var document = CreateDraft(createdAt, bookingId);
         document.BeginReview(createdAt).IsSuccess.ShouldBeTrue();
         document.Approve(createdAt).IsSuccess.ShouldBeTrue();
         document.Finalize("artifact"u8.ToArray(), createdAt).IsSuccess.ShouldBeTrue();

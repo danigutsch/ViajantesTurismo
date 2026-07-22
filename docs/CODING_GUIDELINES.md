@@ -308,7 +308,7 @@ Production logging should use source-generated `LoggerMessage` methods for stabl
 names, message templates, severity, and structured fields.
 
 ```csharp
-internal static partial class SeederWorkerLog
+internal static partial class MigrationRunnerLogger
 {
     [LoggerMessage(EventId = 1, EventName = nameof(SeedingStarted), Level = LogLevel.Information,
         Message = "Starting database seeding...")]

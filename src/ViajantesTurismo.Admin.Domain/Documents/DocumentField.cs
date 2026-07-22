@@ -86,9 +86,9 @@ public sealed class DocumentField
             return DocumentErrors.ValueTooLong("label", DocumentLimits.MaxFieldLabelLength).ConvertError<DocumentField>();
         }
 
-        if (value.Length > DocumentLimits.MaxFieldValueLength)
+        if (!Enum.IsDefined(privacyClassification))
         {
-            return DocumentErrors.ValueTooLong("value", DocumentLimits.MaxFieldValueLength).ConvertError<DocumentField>();
+            return DocumentErrors.InvalidValue("privacyClassification").ConvertError<DocumentField>();
         }
 
         if (privacyClassification == DocumentPrivacyClassification.Unclassified)
@@ -105,7 +105,7 @@ public sealed class DocumentField
     }
 
     /// <summary>Sets a staff override for an editable field.</summary>
-    public Result SetStaffOverride(string value)
+    internal Result SetStaffOverride(string value)
     {
         ArgumentNullException.ThrowIfNull(value);
 
@@ -114,29 +114,28 @@ public sealed class DocumentField
             return DocumentErrors.FieldIsNotEditable(FieldId);
         }
 
-        if (value.Length > DocumentLimits.MaxFieldValueLength)
+        if (value.Length > DocumentLimits.MaxStaffOverrideLength)
         {
-            return DocumentErrors.ValueTooLong("value", DocumentLimits.MaxFieldValueLength);
+            return DocumentErrors.ValueTooLong("value", DocumentLimits.MaxStaffOverrideLength);
         }
 
         StaffOverride = value;
         return Result.Ok();
     }
 
-    internal DocumentField CopyWithCompatibleOverride(DocumentField previous)
+    internal DocumentField CopyForOwnership(int sortOrder, DocumentField? previous = null)
     {
-        if (previous.IsEditable && IsEditable && previous.StaffOverride is not null &&
+        var copy = new DocumentField(FieldId, Label, Value, PrivacyClassification, IsEditable)
+        {
+            SortOrder = sortOrder,
+        };
+
+        if (previous is not null && previous.IsEditable && IsEditable && previous.StaffOverride is not null &&
             string.Equals(previous.Value, Value, StringComparison.Ordinal))
         {
-            StaffOverride = previous.StaffOverride;
+            copy.StaffOverride = previous.StaffOverride;
         }
 
-        return this;
-    }
-
-    internal DocumentField SetSortOrder(int sortOrder)
-    {
-        SortOrder = sortOrder;
-        return this;
+        return copy;
     }
 }

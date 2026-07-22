@@ -12,9 +12,10 @@ internal sealed class UiFeedbackAssertions(IPage page)
     /// <param name="expectedText">The expected toast text.</param>
     public async Task ExpectToast(string expectedText)
     {
-        var toast = page.Locator(".toast.show").Filter(new LocatorFilterOptions { HasText = expectedText });
-        await toast.First.WaitForAsync();
-        (await toast.First.InnerTextAsync()).ShouldContain(expectedText, StringComparison.Ordinal);
+        var toast = page.GetByRole(AriaRole.Alert)
+            .Filter(new LocatorFilterOptions { HasText = expectedText });
+        await Assertions.Expect(toast).ToBeVisibleAsync();
+        await Assertions.Expect(toast).ToContainTextAsync(expectedText);
     }
 
     /// <summary>
@@ -24,10 +25,11 @@ internal sealed class UiFeedbackAssertions(IPage page)
     /// <param name="timeoutMilliseconds">The maximum time to wait for the toast to hide.</param>
     public async Task ExpectToastThenHide(string expectedText, int timeoutMilliseconds = 10_000)
     {
-        var toast = page.Locator(".toast").Filter(new LocatorFilterOptions { HasText = expectedText });
-        await toast.First.WaitForAsync();
-        (await toast.First.InnerTextAsync()).ShouldContain(expectedText, StringComparison.Ordinal);
-        await toast.First.WaitForAsync(new LocatorWaitForOptions
+        var toast = page.GetByRole(AriaRole.Alert)
+            .Filter(new LocatorFilterOptions { HasText = expectedText });
+        await Assertions.Expect(toast).ToBeVisibleAsync();
+        await Assertions.Expect(toast).ToContainTextAsync(expectedText);
+        await toast.WaitForAsync(new LocatorWaitForOptions
         {
             State = WaitForSelectorState.Hidden,
             Timeout = timeoutMilliseconds

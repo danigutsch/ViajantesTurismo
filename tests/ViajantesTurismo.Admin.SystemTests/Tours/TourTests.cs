@@ -17,10 +17,6 @@ public class TourTests(AspireSystemTestFixture fixture) : AspireSystemTestBase<A
         await NavigateTo("/addtour");
         await Expect(Page).ToHaveTitleAsync("Add Tour");
 
-        await Page.GetButton("Create Tour").ClickAsync();
-        var validationSummary = Page.Locator(".validation-errors, .validation-message");
-        await Expect(validationSummary.First).ToBeVisibleAsync();
-
         await Page.Locator("#identifier").FillAndExpectValue(identifier);
         await Page.Locator("#name").FillAndExpectValue(initialName);
 

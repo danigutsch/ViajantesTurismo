@@ -7,40 +7,74 @@ namespace ViajantesTurismo.Admin.Application.Documents;
 public sealed class FinalizeDocumentCommandHandler(
     IDocumentStore documentStore,
     IUnitOfWork unitOfWork,
-    TimeProvider timeProvider)
+    TimeProvider timeProvider,
+    DocumentAuditWriter documentAuditWriter)
 {
-    /// <summary>Finalizes the artifact and supersedes its predecessor only after success.</summary>
+    /// <summary>Finalizes the artifact and supersedes older finalized revisions only after success.</summary>
     public async Task<Result> Handle(FinalizeDocumentCommand command, CancellationToken ct)
     {
         ArgumentNullException.ThrowIfNull(command);
-
-        var document = await documentStore.GetById(command.DocumentId, ct);
-        if (document is null)
+        var auditContext = command.AuditContext;
+        if (auditContext is null)
         {
-            return DocumentErrors.DocumentNotFound(command.DocumentId);
+            return DocumentAuditErrors.AuditContextRequired();
         }
 
         var now = timeProvider.GetUtcNow().UtcDateTime;
-        var result = document.Finalize(DocumentArtifactRenderer.Render(document), now);
-        if (result.IsFailure)
+        var lineage = await documentStore.GetByDocumentId(command.DocumentId, ct);
+        var document = lineage?.GetRevision(command.DocumentId);
+        if (lineage is null || document is null)
         {
-            return result;
+            return await RecordAndReturn(
+                DocumentErrors.DocumentNotFound(command.DocumentId),
+                auditContext,
+                command.DocumentId,
+                null,
+                null,
+                DocumentAuditReasonCode.DocumentNotFound,
+                ct);
         }
 
-        if (document.ReplacesDocumentId is Guid previousDocumentId)
+        var result = lineage.Finalize(document.Id, DocumentArtifactRenderer.Render(document), now, auditContext);
+        if (result.IsFailure)
         {
-            var previous = await documentStore.GetById(previousDocumentId, ct);
-            if (previous is not null && previous.Status == DocumentStatus.Finalized)
-            {
-                var supersedeResult = previous.Supersede(now);
-                if (supersedeResult.IsFailure)
-                {
-                    return supersedeResult;
-                }
-            }
+            return await RecordAndReturn(
+                result,
+                auditContext,
+                document.Id,
+                document.BookingId,
+                document.Revision,
+                DocumentAuditReasonCode.StateConflict,
+                ct);
         }
 
         await unitOfWork.SaveEntities(ct);
         return Result.Ok();
+    }
+
+    private async Task<Result> RecordAndReturn(
+        Result operationResult,
+        DocumentAuditContext auditContext,
+        Guid? documentId,
+        Guid? bookingId,
+        int? documentRevision,
+        DocumentAuditReasonCode reasonCode,
+        CancellationToken ct)
+    {
+        var auditResult = await documentAuditWriter.Add(
+            auditContext,
+            DocumentAuditOperation.Finalize,
+            documentId,
+            bookingId,
+            documentRevision,
+            DocumentAuditOutcome.Rejected,
+            reasonCode,
+            ct);
+        if (auditResult.IsFailure)
+        {
+            return auditResult;
+        }
+
+        return operationResult;
     }
 }

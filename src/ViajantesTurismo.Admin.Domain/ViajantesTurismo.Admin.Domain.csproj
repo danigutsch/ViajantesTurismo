@@ -1,6 +1,11 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
     <ItemGroup>
+        <InternalsVisibleTo Include="ViajantesTurismo.Admin.UnitTests" />
+        <InternalsVisibleTo Include="ViajantesTurismo.Admin.Infrastructure.Tests" />
+    </ItemGroup>
+    <ItemGroup>
         <ProjectReference Include="..\SharedKernel\SharedKernel.BuildingBlocks\SharedKernel.BuildingBlocks.csproj"/>
+        <ProjectReference Include="..\SharedKernel\SharedKernel.AuditTrail\SharedKernel.AuditTrail.csproj"/>
         <ProjectReference Include="..\SharedKernel\SharedKernel.Domain\SharedKernel.Domain.csproj"/>
         <ProjectReference Include="..\SharedKernel\SharedKernel.InputNormalization\SharedKernel.InputNormalization.csproj"/>
         <ProjectReference Include="..\SharedKernel\SharedKernel.Results\SharedKernel.Results.csproj"/>

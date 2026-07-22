@@ -15,12 +15,16 @@ internal sealed class DocumentDraftConfiguration : IEntityTypeConfiguration<Docu
     {
         entity.HasKey(document => document.Id);
         entity.Property(document => document.Id).ValueGeneratedNever();
+        entity.Property(document => document.DocumentLineageId).IsRequired();
         entity.Property(document => document.BookingId).IsRequired();
         entity.Property(document => document.Type).HasConversion<string>().IsRequired();
         entity.Property(document => document.Audience).HasConversion<string>().IsRequired();
         entity.Property(document => document.TemplateId).HasMaxLength(DocumentLimits.MaxTemplateIdLength).IsRequired();
         entity.Property(document => document.TemplateVersion).HasMaxLength(DocumentLimits.MaxTemplateVersionLength).IsRequired();
         entity.Property(document => document.Revision).IsRequired();
+        entity.HasIndex(document => new { document.DocumentLineageId, document.Revision })
+            .IsUnique()
+            .HasDatabaseName(DocumentDraftSchema.RevisionUniqueIndex);
         entity.Property(document => document.SourceVersion).HasMaxLength(DocumentLimits.MaxSourceVersionLength).IsRequired();
         entity.Property(document => document.BrandingVersion).HasMaxLength(DocumentLimits.MaxBrandingVersionLength).IsRequired();
         entity.Property(document => document.BrandingName).HasMaxLength(DocumentLimits.MaxBrandingNameLength).IsRequired();
@@ -39,7 +43,7 @@ internal sealed class DocumentDraftConfiguration : IEntityTypeConfiguration<Docu
         entity.Property(document => document.Status).HasConversion<string>().IsRequired();
         entity.Property(document => document.CreatedAt).IsRequired();
         entity.Property(document => document.UpdatedAt).IsRequired();
-        entity.Property(document => document.RetentionExpiresAt).IsRequired();
+        entity.Property(document => document.RetentionExpiresAt);
         entity.HasIndex(document => document.RetentionExpiresAt)
             .HasDatabaseName("IX_DocumentDrafts_RetentionExpiresAt_Unfinalized")
             .HasFilter("\"FinalizedAt\" IS NULL");
@@ -55,8 +59,8 @@ internal sealed class DocumentDraftConfiguration : IEntityTypeConfiguration<Docu
             field.Property(documentField => documentField.FieldId).HasMaxLength(DocumentLimits.MaxFieldIdLength).IsRequired();
             field.Property(documentField => documentField.SortOrder).IsRequired();
             field.Property(documentField => documentField.Label).HasMaxLength(DocumentLimits.MaxFieldLabelLength).IsRequired();
-            field.Property(documentField => documentField.Value).HasMaxLength(DocumentLimits.MaxFieldValueLength).IsRequired();
-            field.Property(documentField => documentField.StaffOverride).HasMaxLength(DocumentLimits.MaxFieldValueLength);
+            field.Property(documentField => documentField.Value).HasColumnType("text").IsRequired();
+            field.Property(documentField => documentField.StaffOverride).HasMaxLength(DocumentLimits.MaxStaffOverrideLength);
             field.Property(documentField => documentField.PrivacyClassification).HasConversion<string>().IsRequired();
             field.Property(documentField => documentField.IsEditable).IsRequired();
         });

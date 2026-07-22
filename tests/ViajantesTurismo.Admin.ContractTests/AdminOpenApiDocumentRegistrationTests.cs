@@ -47,6 +47,92 @@ public sealed class AdminOpenApiDocumentRegistrationTests
     }
 
     [Fact]
+    public async Task Generates_a_documents_document_containing_only_document_paths()
+    {
+        // Act
+        var document = await AdminOpenApiDocumentFactory.CreateDocument(
+            "documents",
+            TestContext.Current.CancellationToken,
+            "MapDocumentEndpoints",
+            "MapBookingEndpoints",
+            "MapCustomerEndpoints");
+
+        // Assert
+        document.Paths.Keys.ShouldContain("/api/v1/documents/{id}");
+        document.Paths.Keys.ShouldContain("/api/v1/documents/{id}/download");
+        document.Paths.Keys.ShouldContain("/api/v1/documents/bookings/{bookingId}/contract-drafts");
+        document.Paths.Keys.ShouldNotContain("/api/v1/bookings");
+        document.Paths.Keys.ShouldNotContain("/api/v1/customers");
+    }
+
+    [Fact]
+    public void Documents_document_describes_validation_problems_for_generate_regenerate_and_update()
+    {
+        // Arrange
+        var document = AdminOpenApiArtifactDriftGuard.CreateSnapshotSet()
+            .GetCanonicalSnapshot("documents")
+            .AsObject();
+        var paths = document["paths"].ShouldNotBeNull().AsObject();
+        (string Path, string Method)[] validationOperations =
+        [
+            ("/api/v1/documents/bookings/{bookingId}/contract-drafts", "post"),
+            ("/api/v1/documents/{id}/regenerate", "post"),
+            ("/api/v1/documents/{id}/fields/{fieldId}", "patch")
+        ];
+
+        // Act
+        var validationResponses = validationOperations.Select(operation =>
+        {
+            var path = paths[operation.Path].ShouldNotBeNull().AsObject();
+            var endpoint = path[operation.Method].ShouldNotBeNull().AsObject();
+            return endpoint["responses"].ShouldNotBeNull().AsObject()["400"].ShouldNotBeNull().AsObject();
+        }).ToArray();
+
+        // Assert
+        foreach (var response in validationResponses)
+        {
+            var content = response["content"].ShouldNotBeNull().AsObject();
+            var problem = content["application/problem+json"].ShouldNotBeNull().AsObject();
+            var schema = problem["schema"].ShouldNotBeNull().AsObject();
+            schema["$ref"].ShouldNotBeNull().GetValue<string>()
+                .ShouldBe("#/components/schemas/HttpValidationProblemDetails");
+        }
+
+        var components = document["components"].ShouldNotBeNull().AsObject();
+        var schemas = components["schemas"].ShouldNotBeNull().AsObject();
+        var validationProblem = schemas["HttpValidationProblemDetails"].ShouldNotBeNull().AsObject();
+        var properties = validationProblem["properties"].ShouldNotBeNull().AsObject();
+        properties.ContainsKey("errors").ShouldBeTrue();
+    }
+
+    [Fact]
+    public void Documents_document_describes_html_download_as_binary()
+    {
+        // Arrange
+        var document = AdminOpenApiArtifactDriftGuard.CreateSnapshotSet()
+            .GetCanonicalSnapshot("documents")
+            .AsObject();
+        var paths = document["paths"].ShouldNotBeNull().AsObject();
+
+        // Act
+        var path = paths["/api/v1/documents/{id}/download"].ShouldNotBeNull().AsObject();
+        var endpoint = path["get"].ShouldNotBeNull().AsObject();
+        var responses = endpoint["responses"].ShouldNotBeNull().AsObject();
+        var success = responses["200"].ShouldNotBeNull().AsObject();
+        var content = success["content"].ShouldNotBeNull().AsObject();
+        var html = content["text/html"].ShouldNotBeNull().AsObject();
+        var schema = html["schema"].ShouldNotBeNull().AsObject();
+        var components = document["components"].ShouldNotBeNull().AsObject();
+        var schemas = components["schemas"].ShouldNotBeNull().AsObject();
+        var stream = schemas["Stream"].ShouldNotBeNull().AsObject();
+
+        // Assert
+        schema["$ref"].ShouldNotBeNull().GetValue<string>().ShouldBe("#/components/schemas/Stream");
+        stream["type"].ShouldNotBeNull().GetValue<string>().ShouldBe("string");
+        stream["format"].ShouldNotBeNull().GetValue<string>().ShouldBe("binary");
+    }
+
+    [Fact]
     public async Task Generates_a_v1_document_including_error_documentation_paths()
     {
         var document = await AdminOpenApiDocumentFactory.CreateDocument(

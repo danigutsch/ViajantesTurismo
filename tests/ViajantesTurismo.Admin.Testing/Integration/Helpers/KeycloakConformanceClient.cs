@@ -11,6 +11,12 @@ public static class KeycloakConformanceClient
     private const string ClientId = "conformance-test-client";
     private const string Username = "conformance";
 
+    /// <summary>Gets the local Keycloak username for the Operator conformance user.</summary>
+    public const string OperatorUsername = "operator-conformance";
+
+    /// <summary>Gets the opaque Keycloak identifier for the local conformance user.</summary>
+    public const string ConformanceUserId = "9f0e2348-6f2d-4d67-a6e4-18bf9d4b7f23";
+
     /// <summary>
     /// Requests an access token for the supplied local API scopes.
     /// </summary>
@@ -18,15 +24,18 @@ public static class KeycloakConformanceClient
     /// <param name="password">The generated conformance-user password.</param>
     /// <param name="scopes">The API client scopes to request.</param>
     /// <param name="ct">A cancellation token.</param>
+    /// <param name="username">The local Keycloak username.</param>
     /// <returns>The issued access token.</returns>
     public static async Task<string> RequestAccessToken(
         Uri identityProviderEndpoint,
         string password,
         IReadOnlyCollection<string> scopes,
-        CancellationToken ct)
+        CancellationToken ct,
+        string username = Username)
     {
         ArgumentNullException.ThrowIfNull(identityProviderEndpoint);
         ArgumentException.ThrowIfNullOrWhiteSpace(password);
+        ArgumentException.ThrowIfNullOrWhiteSpace(username);
         ArgumentNullException.ThrowIfNull(scopes);
 
         using var client = new HttpClient { BaseAddress = identityProviderEndpoint };
@@ -36,7 +45,7 @@ public static class KeycloakConformanceClient
             [
                 KeyValuePair.Create("grant_type", "password"),
                 KeyValuePair.Create("client_id", ClientId),
-                KeyValuePair.Create("username", Username),
+                KeyValuePair.Create("username", username),
                 KeyValuePair.Create("password", password),
                 KeyValuePair.Create("scope", string.Join(' ', scopes))
             ])

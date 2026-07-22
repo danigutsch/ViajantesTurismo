@@ -66,8 +66,8 @@ public sealed class ManagementBffConformanceTests(AspireSystemTestFixture fixtur
         var bookingsTableCount = await Page.GetByRole(AriaRole.Table).CountAsync();
 
         await NavigateTo("/catalog/tours");
-        await Page.WaitForFunctionAsync(
-            "() => document.querySelector('[role=\"alert\"]')?.textContent?.includes('Catalog tours could not be loaded.') || document.querySelector('[role=\"status\"]') !== null || document.querySelector('table') !== null");
+        var catalogLoading = Page.GetByText("Loading...", new PageGetByTextOptions { Exact = true });
+        await Expect(catalogLoading).Not.ToBeVisibleAsync();
         var catalogErrorCount = await Page.GetByText(
             "Catalog tours could not be loaded. Try again later.",
             new PageGetByTextOptions { Exact = true }).CountAsync();
@@ -126,5 +126,24 @@ public sealed class ManagementBffConformanceTests(AspireSystemTestFixture fixtur
         adminResponse.StatusCode.ShouldBe(HttpStatusCode.Unauthorized);
         catalogResponse.StatusCode.ShouldBe(HttpStatusCode.Unauthorized);
         brandingResponse.StatusCode.ShouldBe(HttpStatusCode.Unauthorized);
+    }
+
+    [Fact]
+    public async Task Preserves_the_opaque_subject_through_bff_token_exchange_to_document_audit()
+    {
+        // Arrange
+        var documentId = Guid.CreateVersion7();
+
+        // Act
+        await ManagementLogin.SignIn(Fixture.WebAppUrl, Fixture.ConformanceUserPassword);
+        await NavigateTo($"/documents/{documentId}");
+        var expectedUrl = new Uri(Fixture.WebAppUrl, $"/documents/{documentId}").ToString();
+        Page.Url.ShouldBe(expectedUrl);
+        var missingDocumentAlert = Page.GetByRole(AriaRole.Alert);
+        await Expect(missingDocumentAlert).ToContainTextAsync("Document not found.");
+        var actorId = await Fixture.GetRejectedDocumentReadAuditActor(documentId, TestContext.Current.CancellationToken);
+
+        // Assert
+        actorId.ShouldBe(KeycloakConformanceClient.ConformanceUserId);
     }
 }

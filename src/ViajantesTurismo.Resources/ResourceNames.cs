@@ -56,6 +56,11 @@ public static class ResourceNames
     public const string IdentityProviderConformanceUserPassword = "identity-provider-conformance-user-password";
 
     /// <summary>
+    /// The name of the local OIDC Operator conformance-user password parameter.
+    /// </summary>
+    public const string IdentityProviderOperatorConformanceUserPassword = "identity-provider-operator-conformance-user-password";
+
+    /// <summary>
     /// The name of the Management Web OIDC client-secret parameter.
     /// </summary>
     public const string ManagementWebClientSecret = "management-web-client-secret";

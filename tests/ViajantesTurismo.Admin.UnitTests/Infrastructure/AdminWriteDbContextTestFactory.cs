@@ -2,6 +2,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Diagnostics;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using SharedKernel.AuditTrail;
 using SharedKernel.DomainEvents;
 using SharedKernel.DomainEvents.EntityFrameworkCore;
 using SharedKernel.EntityFrameworkCore;
@@ -11,6 +12,7 @@ using SharedKernel.Messaging.IntegrationEvents.CloudEvents;
 using SharedKernel.Messaging.IntegrationEvents.EntityFrameworkCore;
 using ViajantesTurismo.Admin.Application;
 using ViajantesTurismo.Admin.Contracts.IntegrationEvents.Tours;
+using ViajantesTurismo.Admin.Domain.Documents;
 using ViajantesTurismo.Admin.Infrastructure;
 using ViajantesTurismo.Catalog.Infrastructure;
 using ViajantesTurismo.Resources;
@@ -29,12 +31,14 @@ internal static class AdminWriteDbContextTestFactory
         services.AddSingleton(dispatcher);
         services.AddDomainEventDispatch<AdminWriteDbContext>();
         services.AddIntegrationEventOutbox<AdminWriteDbContext>();
-        services.AddDbContext<AdminWriteDbContext>((provider, options) =>
-        {
-            options.UseInMemoryDatabase(Guid.NewGuid().ToString("N"));
-            services.ApplyDbContextOptionConfigurations<AdminWriteDbContext>(options);
-            options.AddInterceptors(additionalInterceptors);
-        });
+        services.AddDbContextPool<AdminWriteDbContext>(
+            (provider, options) =>
+            {
+                options.UseInMemoryDatabase(Guid.NewGuid().ToString("N"));
+                services.ApplyDbContextOptionConfigurations<AdminWriteDbContext>(options);
+                options.AddInterceptors(additionalInterceptors);
+            },
+            poolSize: 1);
 
         var provider = services.BuildServiceProvider();
         try
@@ -48,18 +52,30 @@ internal static class AdminWriteDbContextTestFactory
         }
     }
 
-    public static AdminWriteDbContextTestScope CreateWithGeneratedIntegrationEventDispatcher()
+    public static AdminWriteDbContextTestScope CreateWithGeneratedIntegrationEventDispatcher(
+        DomainEventDispatchLifecycleProbe? probe = null,
+        params IInterceptor[] additionalInterceptors)
     {
         var services = new ServiceCollection();
         services.AddAdminIntegrationEventContract();
+        if (probe is not null)
+        {
+            services.AddSingleton(probe);
+            services.AddScoped<IDomainEventDispatchHandler, AsyncOnlyDomainEventDispatchProbeHandler>();
+        }
+
         services.AddDomainEventProcessing();
+        services.AddSingleton<IAuditTrailSink<DocumentAuditRecord>, CapturingDocumentAuditTrailSink>();
         services.AddDomainEventDispatch<AdminWriteDbContext>();
         services.AddIntegrationEventOutbox<AdminWriteDbContext>();
-        services.AddDbContext<AdminWriteDbContext>((provider, options) =>
-        {
-            options.UseInMemoryDatabase(Guid.NewGuid().ToString("N"));
-            services.ApplyDbContextOptionConfigurations<AdminWriteDbContext>(options);
-        });
+        services.AddDbContextPool<AdminWriteDbContext>(
+            (provider, options) =>
+            {
+                options.UseInMemoryDatabase(Guid.NewGuid().ToString("N"));
+                services.ApplyDbContextOptionConfigurations<AdminWriteDbContext>(options);
+                options.AddInterceptors(additionalInterceptors);
+            },
+            poolSize: 1);
 
         var provider = services.BuildServiceProvider(new ServiceProviderOptions
         {

@@ -12,10 +12,11 @@ public class UiFeedbackTests(AspireSystemTestFixture fixture) : AspireSystemTest
 
         // Act
         await BookingWorkflow.NavigateToEdit(booking.Id);
+        var toastTask = UiFeedback.ExpectToast("Booking confirmed successfully");
         await Page.GetButton("Confirm Booking").ClickAsync();
 
         // Assert
-        await UiFeedback.ExpectToast("Booking confirmed successfully");
+        await toastTask;
     }
 
     [Fact]

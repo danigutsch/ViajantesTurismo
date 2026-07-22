@@ -20,6 +20,16 @@ public sealed class AdminEndpointDependencyCompositionTests
     }
 
     [Fact]
+    public async Task Mapped_document_endpoint_dependencies_resolve_from_the_composed_host()
+    {
+        // Arrange
+        await using var factory = AdminApiTestHost.Create();
+
+        // Assert
+        AdminApiTestHost.VerifyMappedDocumentDependencies(factory);
+    }
+
+    [Fact]
     public async Task Missing_create_tour_handler_causes_the_create_tour_endpoint_to_fail()
     {
         // Arrange

@@ -4,8 +4,8 @@ Database migration and seeding service for application startup.
 
 ## Purpose
 
-Background service that runs Entity Framework Core migrations and seeds initial data. Ensures database schema is
-up-to-date before the API starts.
+Short-lived process that runs Entity Framework Core migrations and seeds initial data. Ensures database schema is
+up-to-date before dependent services start.
 
 ## Responsibilities
 
@@ -20,20 +20,19 @@ This project **must** be used as the `--startup-project` when running EF Core co
 
 ```powershell
 # From repository root:
-dotnet ef migrations add MigrationName --project src/ViajantesTurismo.Admin.Infrastructure --startup-project src/ViajantesTurismo.MigrationService
-
-# From Infrastructure directory:
-cd src/ViajantesTurismo.Admin.Infrastructure
-dotnet ef migrations add MigrationName --startup-project ../ViajantesTurismo.MigrationService
+dotnet ef migrations add MigrationName --project src/ViajantesTurismo.Admin.Infrastructure --startup-project src/ViajantesTurismo.MigrationService --context AdminWriteDbContext
+dotnet ef migrations add MigrationName --project src/ViajantesTurismo.Catalog.Infrastructure --startup-project src/ViajantesTurismo.MigrationService --context CatalogDbContext
+dotnet ef migrations add MigrationName --project src/ViajantesTurismo.Branding.Infrastructure --startup-project src/ViajantesTurismo.MigrationService --context BrandingDbContext
+dotnet ef migrations add MigrationName --project src/ViajantesTurismo.Management.Security --startup-project src/ViajantesTurismo.MigrationService --context ManagementSecurityDbContext
 ```
 
 ## Execution
 
-Runs as a hosted service, executes migrations and seeding, then completes. The API service waits for this service to
-finish before accepting requests.
+Starts the Generic Host, executes migrations and seeding through `MigrationRunner`, stops the host, and returns an
+explicit process status. Dependent services wait for successful completion before starting.
 
 ## Dependencies
 
-- **ViajantesTurismo.Admin.Infrastructure**: Database context and migrations
+- **Admin, Catalog, Branding, and Management Security Infrastructure**: Database contexts and migrations
 - **ViajantesTurismo.ServiceDefaults**: Service discovery and telemetry
 - **Entity Framework Core**: Migration execution

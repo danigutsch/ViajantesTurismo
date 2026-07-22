@@ -24,7 +24,7 @@ internal sealed class GalleryPlacementPostgreSqlScenario : IAsyncDisposable
 
     public static async ValueTask<GalleryPlacementPostgreSqlScenario> Create(CancellationToken ct)
     {
-        var appBuilder = DistributedApplication.CreateBuilder([]);
+        var appBuilder = AspireTestApplication.CreateBuilder();
         var databaseServer = appBuilder.AddPostgres(PostgreSqlResourceName);
         _ = databaseServer.AddDatabase(DatabaseResourceName);
 

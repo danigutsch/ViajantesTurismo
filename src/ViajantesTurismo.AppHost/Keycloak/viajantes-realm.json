@@ -15,7 +15,24 @@
       "attributes": {
         "display.on.consent.screen": "false",
         "include.in.token.scope": "true"
-      }
+      },
+      "protocolMappers": [
+        {
+          "name": "keycloak-user-id-as-sub",
+          "protocol": "openid-connect",
+          "protocolMapper": "oidc-usermodel-property-mapper",
+          "consentRequired": false,
+          "config": {
+            "user.attribute": "id",
+            "claim.name": "sub",
+            "jsonType.label": "String",
+            "access.token.claim": "true",
+            "id.token.claim": "true",
+            "userinfo.token.claim": "true",
+            "introspection.token.claim": "true"
+          }
+        }
+      ]
     },
     {
       "name": "email",
@@ -225,6 +242,7 @@
   ],
   "users": [
     {
+      "id": "9f0e2348-6f2d-4d67-a6e4-18bf9d4b7f23",
       "username": "conformance",
       "enabled": true,
       "firstName": "Conformance",
@@ -240,6 +258,26 @@
       ],
       "realmRoles": [
         "Admin",
+        "offline_access"
+      ]
+    },
+    {
+      "id": "e262e752-a69a-4455-a0ee-ec35a0cb6e55",
+      "username": "operator-conformance",
+      "enabled": true,
+      "firstName": "Operator",
+      "lastName": "Conformance",
+      "email": "operator-conformance@example.test",
+      "emailVerified": true,
+      "credentials": [
+        {
+          "type": "password",
+          "value": "${LOCAL_OPERATOR_CONFORMANCE_PASSWORD}",
+          "temporary": false
+        }
+      ],
+      "realmRoles": [
+        "Operator",
         "offline_access"
       ]
     }

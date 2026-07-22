@@ -1,4 +1,5 @@
 using Microsoft.EntityFrameworkCore;
+using SharedKernel.Results;
 using ViajantesTurismo.Admin.Domain.Customers;
 using ViajantesTurismo.Admin.Domain.Shared;
 using ViajantesTurismo.Admin.Domain.Tours;
@@ -213,6 +214,12 @@ public sealed class Seeder
         )
     ];
 
+    private static readonly string[] BaselineTourIdentifiers =
+        Tours.Select(static tour => tour.Identifier).ToArray();
+
+    private static readonly string[] BaselineCustomerNationalIds =
+        Customers.Select(static customer => customer.IdentificationInfo.NationalId).ToArray();
+
     internal Seeder(AdminWriteDbContext dbContext)
     {
         ArgumentNullException.ThrowIfNull(dbContext);
@@ -221,33 +228,7 @@ public sealed class Seeder
     }
 
     /// <summary>
-    /// Clears all Admin database data while preserving migration history.
-    /// </summary>
-    /// <param name="ct">The cancellation token.</param>
-    public async Task ClearDatabase(CancellationToken ct)
-    {
-        const string sql = """
-                           DO $$
-                           DECLARE
-                               tables_to_truncate text;
-                           BEGIN
-                               SELECT string_agg('"' || tablename || '"', ', ')
-                               INTO tables_to_truncate
-                               FROM pg_tables
-                               WHERE schemaname = 'public'
-                                 AND tablename <> '__EFMigrationsHistory';
-
-                               IF tables_to_truncate IS NOT NULL THEN
-                                   EXECUTE 'TRUNCATE TABLE ' || tables_to_truncate || ' RESTART IDENTITY CASCADE';
-                               END IF;
-                           END $$;
-                           """;
-
-        await dbContext.Database.ExecuteSqlRawAsync(sql, ct);
-    }
-
-    /// <summary>
-    /// Applies Admin database migrations and inserts baseline development data when empty.
+    /// Applies Admin database migrations and resumes known development baseline seeding.
     /// </summary>
     /// <param name="ct">The cancellation token.</param>
     public async Task Seed(CancellationToken ct)
@@ -257,93 +238,188 @@ public sealed class Seeder
             await dbContext.Database.MigrateAsync(ct);
         }
 
-        if (await dbContext.Tours.AnyAsync(ct))
+        var existingCustomerNationalIds = await dbContext.Customers
+            .Select(static customer => customer.IdentificationInfo.NationalId)
+            .ToArrayAsync(ct);
+        var existingTourIdentifiers = await dbContext.Tours
+            .Select(static tour => tour.Identifier)
+            .ToArrayAsync(ct);
+        var hasNoCustomers = existingCustomerNationalIds.Length == 0;
+        var hasExactBaselineCustomers = HasExactValues(
+            existingCustomerNationalIds,
+            BaselineCustomerNationalIds);
+        var hasNoTours = existingTourIdentifiers.Length == 0;
+        var hasExactBaselineTours = HasExactValues(existingTourIdentifiers, BaselineTourIdentifiers);
+        var isRecognizedCheckpoint = (
+            hasNoTours,
+            hasExactBaselineTours,
+            hasNoCustomers,
+            hasExactBaselineCustomers) switch
+        {
+            (true, _, true, _) => true,
+            (false, true, true, _) => true,
+            (false, true, false, true) => true,
+            _ => false
+        };
+        if (!isRecognizedCheckpoint)
         {
             return;
         }
 
-        var toursToAdd = Tours.Select(t => Tour.Create(new TourDefinition(
-            t.Identifier,
-            t.Name,
-            new TourScheduleDefinition(t.Schedule.StartDate, t.Schedule.EndDate),
-            new TourPricingDefinition(
-                t.Pricing.BasePrice,
-                t.Pricing.SingleRoomSupplementPrice,
-                t.Pricing.RegularBikePrice,
-                t.Pricing.EBikePrice,
-                t.Pricing.Currency),
-            new TourCapacityDefinition(t.Capacity.MinCustomers, t.Capacity.MaxCustomers),
-            t.IncludedServices)).Value);
+        var baselineTours = await ResolveBaselineTours(hasNoTours, ct);
+        if (baselineTours is null)
+        {
+            return;
+        }
 
-        dbContext.Tours.AddRange(toursToAdd);
+        Customer[] baselineCustomers;
+        if (hasNoCustomers)
+        {
+            baselineCustomers = Customers
+                .Select(static customer => new Customer(
+                    customer.PersonalInfo,
+                    customer.IdentificationInfo,
+                    customer.ContactInfo,
+                    customer.Address,
+                    customer.PhysicalInfo,
+                    customer.AccommodationPreferences,
+                    customer.EmergencyContact,
+                    customer.MedicalInfo))
+                .OrderBy(static customer => customer.Id)
+                .ToArray();
+        }
+        else
+        {
+            baselineCustomers = await dbContext.Customers
+                .Where(customer => BaselineCustomerNationalIds.Contains(customer.IdentificationInfo.NationalId))
+                .OrderBy(static customer => customer.Id)
+                .ToArrayAsync(ct);
+        }
 
-        await dbContext.SaveChangesAsync(ct);
+        if (baselineCustomers.Length != Customers.Length ||
+            baselineCustomers.Any(static customer => !MatchesBaselineCustomer(customer)))
+        {
+            return;
+        }
 
-        var customersToAdd = Customers.Select(c => new Customer(
-            c.PersonalInfo,
-            c.IdentificationInfo,
-            c.ContactInfo,
-            c.Address,
-            c.PhysicalInfo,
-            c.AccommodationPreferences,
-            c.EmergencyContact,
-            c.MedicalInfo
-        ));
+        if (hasNoCustomers)
+        {
+            dbContext.Customers.AddRange(baselineCustomers);
+        }
 
-        dbContext.Customers.AddRange(customersToAdd);
+        var baselineTourIds = baselineTours.Select(static tour => tour.Id).ToArray();
+        var hasBaselineBookings = await dbContext.Tours
+            .Where(tour => baselineTourIds.Contains(tour.Id))
+            .SelectMany(static tour => tour.Bookings)
+            .AnyAsync(ct);
+        if (!hasBaselineBookings)
+        {
+            SeedBookings(baselineTours, baselineCustomers);
+            await dbContext.SaveChangesAsync(ct);
+            return;
+        }
 
-        await dbContext.SaveChangesAsync(ct);
-
-        SeedBookings();
+        baselineTours = await dbContext.Tours
+            .Where(tour => baselineTourIds.Contains(tour.Id))
+            .Include(static tour => tour.Bookings)
+            .ThenInclude(static booking => booking.Payments)
+            .OrderBy(static tour => tour.Identifier)
+            .ToArrayAsync(ct);
+        var baselineBookings = baselineTours
+            .SelectMany(static tour => tour.Bookings)
+            .ToArray();
+        var isPendingBookingCheckpoint = baselineBookings.Length == 10 &&
+            baselineBookings.All(static booking =>
+                booking.Status == BookingStatus.Pending && booking.Payments.Count == 0);
+        if (!isPendingBookingCheckpoint || !TryCompleteBookingStates(baselineTours, baselineCustomers))
+        {
+            return;
+        }
 
         await dbContext.SaveChangesAsync(ct);
     }
 
-    private void SeedBookings()
-    {
-        var tours = dbContext.Tours.OrderBy(t => t.Identifier).ToArray();
-        var customers = dbContext.Customers.OrderBy(c => c.Id).ToArray();
+    private static bool HasExactValues(string[] actual, string[] expected) =>
+        actual.Length == expected.Length &&
+        actual.ToHashSet(StringComparer.Ordinal).SetEquals(expected);
 
+    private async Task<Tour[]?> ResolveBaselineTours(bool hasNoTours, CancellationToken ct)
+    {
+        if (hasNoTours)
+        {
+            var newTours = Tours
+                .Select(static tour => Tour.Create(new TourDefinition(
+                    tour.Identifier,
+                    tour.Name,
+                    new TourScheduleDefinition(tour.Schedule.StartDate, tour.Schedule.EndDate),
+                    new TourPricingDefinition(
+                        tour.Pricing.BasePrice,
+                        tour.Pricing.SingleRoomSupplementPrice,
+                        tour.Pricing.RegularBikePrice,
+                        tour.Pricing.EBikePrice,
+                        tour.Pricing.Currency),
+                    new TourCapacityDefinition(tour.Capacity.MinCustomers, tour.Capacity.MaxCustomers),
+                    tour.IncludedServices)).Value)
+                .OrderBy(static tour => tour.Identifier)
+                .ToArray();
+            dbContext.Tours.AddRange(newTours);
+            return newTours;
+        }
+
+        var existingTours = await dbContext.Tours
+            .Where(tour => BaselineTourIdentifiers.Contains(tour.Identifier))
+            .OrderBy(static tour => tour.Identifier)
+            .ToArrayAsync(ct);
+        return existingTours.Length == Tours.Length &&
+            existingTours.All(static tour => MatchesBaselineTour(tour))
+                ? existingTours
+                : null;
+    }
+
+    private static void SeedBookings(
+        Tour[] tours,
+        Customer[] customers)
+    {
         if (tours.Length < 5 || customers.Length < 15)
         {
             return;
         }
 
-        var booking1 = tours[0].AddBooking(TourBookingRequest.CreateSingle(
+        _ = tours[0].AddBooking(TourBookingRequest.CreateSingle(
             customers[0].Id,
             customers[0].PhysicalInfo.BikeType,
             customers[0].AccommodationPreferences.RoomType,
             notes: "Early bird discount applied")).Value;
-        var booking2 = tours[1].AddBooking(TourBookingRequest.CreateDouble(
+        _ = tours[1].AddBooking(TourBookingRequest.CreateDouble(
             customers[1].Id,
             customers[1].PhysicalInfo.BikeType,
             customers[0].Id,
             customers[0].PhysicalInfo.BikeType,
             RoomType.DoubleOccupancy,
             notes: "Traveling together as a couple")).Value;
-        var booking3 = tours[2].AddBooking(TourBookingRequest.CreateSingle(
+        _ = tours[2].AddBooking(TourBookingRequest.CreateSingle(
             customers[2].Id,
             customers[2].PhysicalInfo.BikeType,
             customers[2].AccommodationPreferences.RoomType,
             notes: "Pending with partial payment, awaiting full payment")).Value;
-        var booking4 = tours[3].AddBooking(TourBookingRequest.CreateDouble(
+        _ = tours[3].AddBooking(TourBookingRequest.CreateDouble(
             customers[3].Id,
             customers[3].PhysicalInfo.BikeType,
             customers[4].Id,
             customers[4].PhysicalInfo.BikeType,
             RoomType.DoubleOccupancy,
             notes: "Upgraded to premium accommodation")).Value;
-        var booking5 = tours[4].AddBooking(TourBookingRequest.CreateSingle(
+        _ = tours[4].AddBooking(TourBookingRequest.CreateSingle(
             customers[5].Id,
             customers[5].PhysicalInfo.BikeType,
             customers[5].AccommodationPreferences.RoomType,
             notes: "Excellent tour experience")).Value;
-        var booking6 = tours[0].AddBooking(TourBookingRequest.CreateSingle(
+        _ = tours[0].AddBooking(TourBookingRequest.CreateSingle(
             customers[6].Id,
             customers[6].PhysicalInfo.BikeType,
             customers[6].AccommodationPreferences.RoomType,
             notes: "Cancelled due to personal reasons")).Value;
-        var booking7 = tours[1].AddBooking(TourBookingRequest.CreateDouble(
+        _ = tours[1].AddBooking(TourBookingRequest.CreateDouble(
             customers[7].Id,
             customers[7].PhysicalInfo.BikeType,
             customers[8].Id,
@@ -355,47 +431,316 @@ public sealed class Seeder
             customers[9].PhysicalInfo.BikeType,
             customers[9].AccommodationPreferences.RoomType,
             notes: "Interested in photography opportunities"));
-        var booking9 = tours[0].AddBooking(TourBookingRequest.CreateSingle(
+        _ = tours[0].AddBooking(TourBookingRequest.CreateSingle(
             customers[4].Id,
             customers[4].PhysicalInfo.BikeType,
             RoomType.SingleOccupancy,
             notes: "Solo traveler, single room supplement included")).Value;
-        var booking10 = tours[4].AddBooking(TourBookingRequest.CreateSingle(
+        _ = tours[4].AddBooking(TourBookingRequest.CreateSingle(
             customers[8].Id,
             customers[8].PhysicalInfo.BikeType,
             customers[8].AccommodationPreferences.RoomType,
             notes: "Payment pending bank transfer")).Value;
 
-        dbContext.SaveChanges();
+        if (!TryCompleteBookingStates(tours, customers))
+        {
+            throw new InvalidOperationException("The baseline booking graph could not be completed.");
+        }
+    }
+
+    private static bool TryCompleteBookingStates(Tour[] tours, Customer[] customers)
+    {
+        var booking1 = tours[0].Bookings.FirstOrDefault(
+            booking => MatchesBaselineBooking(
+                booking,
+                tours[0],
+                customers[0],
+                null,
+                customers[0].AccommodationPreferences.RoomType,
+                "Early bird discount applied"));
+        var booking2 = tours[1].Bookings.FirstOrDefault(
+            booking => MatchesBaselineBooking(
+                booking,
+                tours[1],
+                customers[1],
+                customers[0],
+                RoomType.DoubleOccupancy,
+                "Traveling together as a couple"));
+        var booking3 = tours[2].Bookings.FirstOrDefault(
+            booking => MatchesBaselineBooking(
+                booking,
+                tours[2],
+                customers[2],
+                null,
+                customers[2].AccommodationPreferences.RoomType,
+                "Pending with partial payment, awaiting full payment"));
+        var booking4 = tours[3].Bookings.FirstOrDefault(
+            booking => MatchesBaselineBooking(
+                booking,
+                tours[3],
+                customers[3],
+                customers[4],
+                RoomType.DoubleOccupancy,
+                "Upgraded to premium accommodation"));
+        var booking5 = tours[4].Bookings.FirstOrDefault(
+            booking => MatchesBaselineBooking(
+                booking,
+                tours[4],
+                customers[5],
+                null,
+                customers[5].AccommodationPreferences.RoomType,
+                "Excellent tour experience"));
+        var booking6 = tours[0].Bookings.FirstOrDefault(
+            booking => MatchesBaselineBooking(
+                booking,
+                tours[0],
+                customers[6],
+                null,
+                customers[6].AccommodationPreferences.RoomType,
+                "Cancelled due to personal reasons"));
+        var booking7 = tours[1].Bookings.FirstOrDefault(
+            booking => MatchesBaselineBooking(
+                booking,
+                tours[1],
+                customers[7],
+                customers[8],
+                RoomType.DoubleOccupancy,
+                "Special dietary requirements noted"));
+        var booking8 = tours[3].Bookings.FirstOrDefault(
+            booking => MatchesBaselineBooking(
+                booking,
+                tours[3],
+                customers[9],
+                null,
+                customers[9].AccommodationPreferences.RoomType,
+                "Interested in photography opportunities"));
+        var booking9 = tours[0].Bookings.FirstOrDefault(
+            booking => MatchesBaselineBooking(
+                booking,
+                tours[0],
+                customers[4],
+                null,
+                RoomType.SingleOccupancy,
+                "Solo traveler, single room supplement included"));
+        var booking10 = tours[4].Bookings.FirstOrDefault(
+            booking => MatchesBaselineBooking(
+                booking,
+                tours[4],
+                customers[8],
+                null,
+                customers[8].AccommodationPreferences.RoomType,
+                "Payment pending bank transfer"));
+        if (booking1 is null ||
+            booking2 is null ||
+            booking3 is null ||
+            booking4 is null ||
+            booking5 is null ||
+            booking6 is null ||
+            booking7 is null ||
+            booking8 is null ||
+            booking9 is null ||
+            booking10 is null)
+        {
+            return false;
+        }
 
         var timeProvider = TimeProvider.System;
 
-        _ = tours[0].UpdateBookingNotes(booking1.Id, "Early bird discount applied");
-        _ = tours[0].ConfirmBooking(booking1.Id);
-        _ = tours[0].RecordBookingPayment(booking1.Id, booking1.TotalPrice, DateTime.UtcNow, PaymentMethod.CreditCard, timeProvider, "CC-2024-001");
+        EnsureSeedOperationSucceeded(tours[0].ConfirmBooking(booking1.Id));
+        EnsureSeedOperationSucceeded(tours[0].RecordBookingPayment(
+            booking1.Id,
+            booking1.TotalPrice,
+            DateTime.UtcNow,
+            PaymentMethod.CreditCard,
+            timeProvider,
+            "CC-2024-001"));
 
-        _ = tours[1].UpdateBookingNotes(booking2.Id, "Traveling together as a couple");
-        _ = tours[1].ConfirmBooking(booking2.Id);
-        _ = tours[1].RecordBookingPayment(booking2.Id, booking2.TotalPrice * 0.5m, DateTime.UtcNow, PaymentMethod.BankTransfer, timeProvider, "BT-2024-002", "50% deposit paid");
+        EnsureSeedOperationSucceeded(tours[1].ConfirmBooking(booking2.Id));
+        EnsureSeedOperationSucceeded(tours[1].RecordBookingPayment(
+            booking2.Id,
+            booking2.TotalPrice * 0.5m,
+            DateTime.UtcNow,
+            PaymentMethod.BankTransfer,
+            timeProvider,
+            "BT-2024-002",
+            "50% deposit paid"));
 
-        _ = tours[3].UpdateBookingNotes(booking4.Id, "Upgraded to premium accommodation");
-        _ = tours[3].ConfirmBooking(booking4.Id);
-        _ = tours[3].RecordBookingPayment(booking4.Id, booking4.TotalPrice, DateTime.UtcNow, PaymentMethod.CreditCard, timeProvider, "CC-2024-003");
+        EnsureSeedOperationSucceeded(tours[3].ConfirmBooking(booking4.Id));
+        EnsureSeedOperationSucceeded(tours[3].RecordBookingPayment(
+            booking4.Id,
+            booking4.TotalPrice,
+            DateTime.UtcNow,
+            PaymentMethod.CreditCard,
+            timeProvider,
+            "CC-2024-003"));
 
-        _ = tours[4].ConfirmBooking(booking5.Id);
-        _ = tours[4].CompleteBooking(booking5.Id);
-        _ = tours[0].CancelBooking(booking6.Id);
+        EnsureSeedOperationSucceeded(tours[4].ConfirmBooking(booking5.Id));
+        EnsureSeedOperationSucceeded(tours[4].CompleteBooking(booking5.Id));
+        EnsureSeedOperationSucceeded(tours[0].CancelBooking(booking6.Id));
 
-        _ = tours[1].UpdateBookingNotes(booking7.Id, "Special dietary requirements noted");
-        _ = tours[1].ConfirmBooking(booking7.Id);
-        _ = tours[1].RecordBookingPayment(booking7.Id, booking7.TotalPrice * 0.75m, DateTime.UtcNow, PaymentMethod.BankTransfer, timeProvider, "BT-2024-004", "75% deposit paid");
+        EnsureSeedOperationSucceeded(tours[1].ConfirmBooking(booking7.Id));
+        EnsureSeedOperationSucceeded(tours[1].RecordBookingPayment(
+            booking7.Id,
+            booking7.TotalPrice * 0.75m,
+            DateTime.UtcNow,
+            PaymentMethod.BankTransfer,
+            timeProvider,
+            "BT-2024-004",
+            "75% deposit paid"));
 
-        _ = tours[0].UpdateBookingNotes(booking9.Id, "Solo traveler, single room supplement included");
-        _ = tours[0].ConfirmBooking(booking9.Id);
-        _ = tours[0].RecordBookingPayment(booking9.Id, booking9.TotalPrice, DateTime.UtcNow, PaymentMethod.Cash, timeProvider);
+        EnsureSeedOperationSucceeded(tours[0].ConfirmBooking(booking9.Id));
+        EnsureSeedOperationSucceeded(tours[0].RecordBookingPayment(
+            booking9.Id,
+            booking9.TotalPrice,
+            DateTime.UtcNow,
+            PaymentMethod.Cash,
+            timeProvider));
 
-        _ = tours[4].ConfirmBooking(booking10.Id);
+        EnsureSeedOperationSucceeded(tours[4].ConfirmBooking(booking10.Id));
 
-        _ = tours[2].RecordBookingPayment(booking3.Id, booking3.TotalPrice * 0.25m, DateTime.UtcNow, PaymentMethod.CreditCard, timeProvider, "CC-2024-006", "25% deposit paid");
+        EnsureSeedOperationSucceeded(tours[2].RecordBookingPayment(
+            booking3.Id,
+            booking3.TotalPrice * 0.25m,
+            DateTime.UtcNow,
+            PaymentMethod.CreditCard,
+            timeProvider,
+            "CC-2024-006",
+            "25% deposit paid"));
+
+        return true;
+    }
+
+    private static void EnsureSeedOperationSucceeded(Result result)
+    {
+        if (result.IsFailure)
+        {
+            throw new InvalidOperationException("A baseline booking operation failed.");
+        }
+    }
+
+    private static void EnsureSeedOperationSucceeded<T>(Result<T> result)
+        where T : notnull
+    {
+        if (result.IsFailure)
+        {
+            throw new InvalidOperationException("A baseline booking operation failed.");
+        }
+    }
+
+    private static bool MatchesBaselineBooking(
+        Booking booking,
+        Tour tour,
+        Customer principalCustomer,
+        Customer? companionCustomer,
+        RoomType roomType,
+        string notes)
+    {
+        var expectedPrincipalBikePrice = principalCustomer.PhysicalInfo.BikeType switch
+        {
+            BikeType.Regular => tour.Pricing.RegularBikePrice,
+            BikeType.EBike => tour.Pricing.EBikePrice,
+            _ => 0m
+        };
+        var principalMatches = booking.PrincipalCustomer.CustomerId == principalCustomer.Id &&
+            booking.PrincipalCustomer.BikeType == principalCustomer.PhysicalInfo.BikeType &&
+            booking.PrincipalCustomer.BikePrice == expectedPrincipalBikePrice;
+        var companionMatches = companionCustomer is null
+            ? booking.CompanionCustomer is null
+            : booking.CompanionCustomer is not null &&
+              booking.CompanionCustomer.CustomerId == companionCustomer.Id &&
+              booking.CompanionCustomer.BikeType == companionCustomer.PhysicalInfo.BikeType &&
+              booking.CompanionCustomer.BikePrice == (companionCustomer.PhysicalInfo.BikeType switch
+              {
+                  BikeType.Regular => tour.Pricing.RegularBikePrice,
+                  BikeType.EBike => tour.Pricing.EBikePrice,
+                  _ => 0m
+              });
+        var expectedRoomAdditionalCost = roomType == RoomType.SingleOccupancy
+            ? tour.Pricing.SingleRoomSupplementPrice
+            : 0m;
+
+        return booking.TourId == tour.Id &&
+            booking.BasePrice == tour.Pricing.BasePrice &&
+            principalMatches &&
+            companionMatches &&
+            booking.RoomType == roomType &&
+            booking.RoomAdditionalCost == expectedRoomAdditionalCost &&
+            booking.Discount.Type == DiscountType.None &&
+            booking.Discount.Amount == 0m &&
+            booking.Discount.Reason is null &&
+            string.Equals(booking.Notes, notes, StringComparison.Ordinal);
+    }
+
+    private static bool MatchesBaselineTour(Tour actual)
+    {
+        var expected = Tours.FirstOrDefault(
+            tour => string.Equals(tour.Identifier, actual.Identifier, StringComparison.Ordinal));
+        if (expected is null)
+        {
+            return false;
+        }
+
+        var actualDuration = actual.Schedule.EndDate - actual.Schedule.StartDate;
+        var expectedDuration = expected.Schedule.EndDate - expected.Schedule.StartDate;
+        var actualSubDayTicks = actualDuration.Ticks - TimeSpan.FromDays(actualDuration.Days).Ticks;
+        var expectedSubDayTicks = expectedDuration.Ticks - TimeSpan.FromDays(expectedDuration.Days).Ticks;
+        var durationMatches = actualDuration.Days == expectedDuration.Days &&
+            Math.Abs(actualSubDayTicks) < TimeSpan.TicksPerSecond &&
+            Math.Abs(expectedSubDayTicks) < TimeSpan.TicksPerSecond;
+
+        return string.Equals(actual.Name, expected.Name, StringComparison.Ordinal) &&
+            durationMatches &&
+            actual.Pricing.BasePrice == expected.Pricing.BasePrice &&
+            actual.Pricing.SingleRoomSupplementPrice == expected.Pricing.SingleRoomSupplementPrice &&
+            actual.Pricing.RegularBikePrice == expected.Pricing.RegularBikePrice &&
+            actual.Pricing.EBikePrice == expected.Pricing.EBikePrice &&
+            actual.Pricing.Currency == expected.Pricing.Currency &&
+            actual.Capacity.MinCustomers == expected.Capacity.MinCustomers &&
+            actual.Capacity.MaxCustomers == expected.Capacity.MaxCustomers &&
+            actual.IncludedServices.SequenceEqual(expected.IncludedServices, StringComparer.Ordinal);
+    }
+
+    private static bool MatchesBaselineCustomer(Customer actual)
+    {
+        var expected = Customers.FirstOrDefault(customer => string.Equals(
+            customer.IdentificationInfo.NationalId,
+            actual.IdentificationInfo.NationalId,
+            StringComparison.Ordinal));
+        if (expected is null)
+        {
+            return false;
+        }
+
+        return string.Equals(actual.PersonalInfo.FirstName, expected.PersonalInfo.FirstName, StringComparison.Ordinal) &&
+            string.Equals(actual.PersonalInfo.LastName, expected.PersonalInfo.LastName, StringComparison.Ordinal) &&
+            string.Equals(actual.PersonalInfo.Gender, expected.PersonalInfo.Gender, StringComparison.Ordinal) &&
+            actual.PersonalInfo.BirthDate == expected.PersonalInfo.BirthDate &&
+            string.Equals(actual.PersonalInfo.Nationality, expected.PersonalInfo.Nationality, StringComparison.Ordinal) &&
+            string.Equals(actual.PersonalInfo.Occupation, expected.PersonalInfo.Occupation, StringComparison.Ordinal) &&
+            string.Equals(
+                actual.IdentificationInfo.IdNationality,
+                expected.IdentificationInfo.IdNationality,
+                StringComparison.Ordinal) &&
+            string.Equals(actual.ContactInfo.Email, expected.ContactInfo.Email, StringComparison.Ordinal) &&
+            string.Equals(actual.ContactInfo.Mobile, expected.ContactInfo.Mobile, StringComparison.Ordinal) &&
+            string.Equals(actual.ContactInfo.Instagram, expected.ContactInfo.Instagram, StringComparison.Ordinal) &&
+            string.Equals(actual.ContactInfo.Facebook, expected.ContactInfo.Facebook, StringComparison.Ordinal) &&
+            string.Equals(actual.Address.Street, expected.Address.Street, StringComparison.Ordinal) &&
+            string.Equals(actual.Address.Complement, expected.Address.Complement, StringComparison.Ordinal) &&
+            string.Equals(actual.Address.Neighborhood, expected.Address.Neighborhood, StringComparison.Ordinal) &&
+            string.Equals(actual.Address.PostalCode, expected.Address.PostalCode, StringComparison.Ordinal) &&
+            string.Equals(actual.Address.City, expected.Address.City, StringComparison.Ordinal) &&
+            string.Equals(actual.Address.State, expected.Address.State, StringComparison.Ordinal) &&
+            string.Equals(actual.Address.Country, expected.Address.Country, StringComparison.Ordinal) &&
+            actual.PhysicalInfo.WeightKg == expected.PhysicalInfo.WeightKg &&
+            actual.PhysicalInfo.HeightCentimeters == expected.PhysicalInfo.HeightCentimeters &&
+            actual.PhysicalInfo.BikeType == expected.PhysicalInfo.BikeType &&
+            actual.AccommodationPreferences.RoomType == expected.AccommodationPreferences.RoomType &&
+            actual.AccommodationPreferences.BedType == expected.AccommodationPreferences.BedType &&
+            actual.AccommodationPreferences.CompanionId == expected.AccommodationPreferences.CompanionId &&
+            string.Equals(actual.EmergencyContact.Name, expected.EmergencyContact.Name, StringComparison.Ordinal) &&
+            string.Equals(actual.EmergencyContact.Mobile, expected.EmergencyContact.Mobile, StringComparison.Ordinal) &&
+            string.Equals(actual.MedicalInfo.Allergies, expected.MedicalInfo.Allergies, StringComparison.Ordinal) &&
+            string.Equals(actual.MedicalInfo.AdditionalInfo, expected.MedicalInfo.AdditionalInfo, StringComparison.Ordinal);
     }
 }

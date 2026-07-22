@@ -2,25 +2,17 @@ using Npgsql;
 using Projects;
 using SharedKernel.IntegrationTesting;
 using ViajantesTurismo.Admin.Contracts.IntegrationEvents.Tours;
-using ViajantesTurismo.Catalog.Contracts.Http;
 using ViajantesTurismo.Resources;
 
 namespace ViajantesTurismo.Admin.SystemTests.Infrastructure.Fixtures;
 
-public sealed class AspireSystemTestFixture : IAspireSystemTestFixture, IAsyncLifetime, IDisposable
+public sealed class AspireSystemTestFixture : IAspireSystemTestFixture, IAsyncLifetime
 {
     private static readonly TimeSpan SystemResourceStartupTimeout = TimeSpan.FromMinutes(3);
 
     private AspireTestApplication? _app;
-    private HttpClient? _apiClient;
-    private HttpClient? _catalogApiClient;
-    private CatalogToursApiClient? _catalogTours;
     private string? _databaseConnectionString;
     private string? _catalogDatabaseConnectionString;
-
-    public HttpClient ApiClient => _apiClient ?? throw new InvalidOperationException("Fixture is not initialized.");
-
-    public Uri ApiBaseUri => ApiClient.BaseAddress ?? throw new InvalidOperationException("API client base address is not configured.");
 
     public Uri WebAppUrl { get; private set; } = null!;
 
@@ -28,11 +20,15 @@ public sealed class AspireSystemTestFixture : IAspireSystemTestFixture, IAsyncLi
 
     public string ConformanceUserPassword { get; private set; } = string.Empty;
 
-    public ICatalogToursApiClient CatalogTours => _catalogTours ?? throw new InvalidOperationException("Fixture is not initialized.");
-    ICatalogToursApiClient IAspireSystemTestFixture.CatalogTours => CatalogTours;
-
     internal Uri IdentityProviderEndpoint => (_app ?? throw new InvalidOperationException("Fixture is not initialized."))
         .GetEndpoint(ResourceNames.IdentityProvider, "http");
+
+    /// <inheritdoc />
+    public Task<HttpClient> CreateApiClient(CancellationToken ct) =>
+        CreateAuthenticatedResourceClient(ResourceNames.Api, ApiAudienceNames.Admin, ct);
+
+    internal Task<HttpClient> CreateCatalogApiClient(CancellationToken ct) =>
+        CreateAuthenticatedResourceClient(ResourceNames.CatalogApi, ApiAudienceNames.Catalog, ct);
 
     internal HttpClient CreateResourceClient(string resourceName)
     {
@@ -54,22 +50,6 @@ public sealed class AspireSystemTestFixture : IAspireSystemTestFixture, IAsyncLi
             appHostArguments,
             TestContext.Current.CancellationToken);
 
-        _apiClient = _app.CreateHttpClient(ResourceNames.Api);
-        _catalogApiClient = _app.CreateHttpClient(ResourceNames.CatalogApi);
-        var identityProviderEndpoint = IdentityProviderEndpoint;
-        var adminAccessToken = await KeycloakConformanceClient.RequestAccessToken(
-            identityProviderEndpoint,
-            testConfiguration.ConformanceUserPassword,
-            [ApiAudienceNames.Admin],
-            TestContext.Current.CancellationToken);
-        var catalogAccessToken = await KeycloakConformanceClient.RequestAccessToken(
-            identityProviderEndpoint,
-            testConfiguration.ConformanceUserPassword,
-            [ApiAudienceNames.Catalog],
-            TestContext.Current.CancellationToken);
-        _apiClient.DefaultRequestHeaders.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", adminAccessToken);
-        _catalogApiClient.DefaultRequestHeaders.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", catalogAccessToken);
-        _catalogTours = new CatalogToursApiClient(_catalogApiClient);
         WebAppUrl = _app.GetEndpoint(ResourceNames.WebApp, "https");
         PublicWebAppUrl = _app.GetEndpoint(ResourceNames.PublicWebApp, "https");
         _databaseConnectionString = await _app.GetConnectionString(ResourceNames.AdminDatabase, TestContext.Current.CancellationToken);
@@ -82,11 +62,6 @@ public sealed class AspireSystemTestFixture : IAspireSystemTestFixture, IAsyncLi
 
     public async ValueTask DisposeAsync()
     {
-        _apiClient?.Dispose();
-        _catalogApiClient?.Dispose();
-        _apiClient = null;
-        _catalogApiClient = null;
-        _catalogTours = null;
         ConformanceUserPassword = string.Empty;
         _databaseConnectionString = null;
         _catalogDatabaseConnectionString = null;
@@ -96,11 +71,8 @@ public sealed class AspireSystemTestFixture : IAspireSystemTestFixture, IAsyncLi
             await _app.DisposeAsync();
             _app = null;
         }
-    }
 
-    public void Dispose()
-    {
-        DisposeAsync().AsTask().GetAwaiter().GetResult();
+        GC.SuppressFinalize(this);
     }
 
     internal async Task ResetToKnownBaseline(CancellationToken ct)
@@ -108,11 +80,33 @@ public sealed class AspireSystemTestFixture : IAspireSystemTestFixture, IAsyncLi
         ArgumentNullException.ThrowIfNull(_databaseConnectionString);
 
         await using var connection = new NpgsqlConnection(_databaseConnectionString);
-        await PostgreSqlPublicSchemaReset.Reset(connection, ct);
+        await PostgreSqlPublicSchemaReset.Reset(connection, ["DocumentAuditRecords"], ct);
 
         await using var catalogConnection = new NpgsqlConnection(_catalogDatabaseConnectionString);
         await PostgreSqlPublicSchemaReset.Reset(catalogConnection, ct);
         await PostgreSqlEventSourcingSchemaReset.Reset(catalogConnection, ct);
+    }
+
+    internal async Task<string?> GetRejectedDocumentReadAuditActor(Guid documentId, CancellationToken ct)
+    {
+        ArgumentNullException.ThrowIfNull(_databaseConnectionString);
+
+        const string sql = """
+            SELECT "ActorId"
+            FROM "DocumentAuditRecords"
+            WHERE "DocumentId" = @documentId
+              AND "Operation" = 'Read'
+              AND "Outcome" = 'Rejected'
+              AND "ReasonCode" = 'DocumentNotFound'
+            ORDER BY "OccurredAtUtc" DESC
+            LIMIT 1;
+            """;
+
+        await using var connection = new NpgsqlConnection(_databaseConnectionString);
+        await connection.OpenAsync(ct);
+        await using var command = new NpgsqlCommand(sql, connection);
+        command.Parameters.AddWithValue("documentId", documentId);
+        return await command.ExecuteScalarAsync(ct) as string;
     }
 
     internal async Task RequeueCatalogTransportMessageForAdminTour(Guid adminTourId, CancellationToken ct)
@@ -205,6 +199,30 @@ public sealed class AspireSystemTestFixture : IAspireSystemTestFixture, IAsyncLi
         var processedAt = await reader.IsDBNullAsync(0, ct) ? (DateTimeOffset?)null : await reader.GetFieldValueAsync<DateTimeOffset>(0, ct);
         var lastConsumeError = await reader.IsDBNullAsync(1, ct) ? null : await reader.GetFieldValueAsync<string>(1, ct);
         return (processedAt, lastConsumeError);
+    }
+
+    private async Task<HttpClient> CreateAuthenticatedResourceClient(
+        string resourceName,
+        string audience,
+        CancellationToken ct)
+    {
+        var accessToken = await KeycloakConformanceClient.RequestAccessToken(
+            IdentityProviderEndpoint,
+            ConformanceUserPassword,
+            [audience],
+            ct);
+        var client = CreateResourceClient(resourceName);
+        try
+        {
+            client.DefaultRequestHeaders.Authorization =
+                new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", accessToken);
+            return client;
+        }
+        catch (FormatException)
+        {
+            client.Dispose();
+            throw;
+        }
     }
 
     private async Task WarmUpWebApp(CancellationToken ct)

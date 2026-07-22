@@ -17,7 +17,10 @@ internal static class ManagementWebEndpointTestHost
     private const string AntiforgeryRequestTokenHeader = "X-Test-Antiforgery-Request-Token";
     private const string AntiforgeryTokenPath = "/_test/antiforgery";
 
-    public static async Task<IHost> StartWithRecordingAuthentication(CancellationToken ct, ICatalogToursApiClient? catalogToursApi = null)
+    public static async Task<IHost> StartWithRecordingAuthentication(
+        CancellationToken ct,
+        ICatalogToursApiClient? catalogToursApi = null,
+        IDocumentsApiClient? documentsApiClient = null)
     {
         return await new HostBuilder()
             .ConfigureWebHost(webBuilder => webBuilder
@@ -34,6 +37,11 @@ internal static class ManagementWebEndpointTestHost
                     if (catalogToursApi is not null)
                     {
                         services.AddSingleton(catalogToursApi);
+                    }
+
+                    if (documentsApiClient is not null)
+                    {
+                        services.AddSingleton(documentsApiClient);
                     }
                 })
                 .Configure(app =>

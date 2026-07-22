@@ -1,6 +1,7 @@
 using Microsoft.EntityFrameworkCore;
 using SharedKernel.EntityFrameworkCore;
 using ViajantesTurismo.Admin.Application;
+using ViajantesTurismo.Admin.Application.Documents;
 using ViajantesTurismo.Admin.Domain.Customers;
 using ViajantesTurismo.Admin.Domain.Documents;
 using ViajantesTurismo.Admin.Infrastructure.Documents;
@@ -16,11 +17,28 @@ internal sealed class AdminWriteDbContext(
 {
     public DbSet<Tour> Tours => Set<Tour>();
     public DbSet<Customer> Customers => Set<Customer>();
+    public DbSet<DocumentLineage> DocumentLineages => Set<DocumentLineage>();
     public DbSet<DocumentDraft> DocumentDrafts => Set<DocumentDraft>();
+    public DbSet<DocumentAuditRecord> DocumentAuditRecords => Set<DocumentAuditRecord>();
 
     public async Task SaveEntities(CancellationToken ct)
     {
-        _ = await SaveChangesAsync(ct);
+        try
+        {
+            _ = await SaveChangesAsync(ct);
+        }
+        catch (DbUpdateException exception) when (DocumentDraftSchema.IsRevisionConflict(exception))
+        {
+            throw new DocumentRevisionConflictException(exception);
+        }
+        catch (DbUpdateException exception) when (DocumentDraftSchema.IsBookingEligibilityConflict(exception))
+        {
+            throw new DocumentBookingEligibilityConflictException(exception);
+        }
+        catch (Npgsql.PostgresException exception) when (DocumentDraftSchema.IsRevisionConflict(exception))
+        {
+            throw new DocumentRevisionConflictException(exception);
+        }
     }
 
     protected override void ConfigureConventions(ModelConfigurationBuilder configurationBuilder)
@@ -44,7 +62,9 @@ internal sealed class AdminWriteDbContext(
         modelBuilder.ApplyConfiguration(new CustomerConfiguration());
         modelBuilder.ApplyConfiguration(new BookingConfiguration());
         modelBuilder.ApplyConfiguration(new PaymentConfiguration());
+        modelBuilder.ApplyConfiguration(new DocumentLineageConfiguration());
         modelBuilder.ApplyConfiguration(new DocumentDraftConfiguration());
+        modelBuilder.ApplyConfiguration(new DocumentAuditConfiguration());
         if (configurations is not null)
         {
             foreach (var configuration in configurations)

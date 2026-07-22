@@ -11,11 +11,13 @@ tests/SharedKernel.Mediator.Analyzers.Tests/SharedKernel.Mediator.Analyzers.Test
 tests/ViajantesTurismo.Public.WebTests/ViajantesTurismo.Public.WebTests.csproj
 tests/SharedKernel.EventSourcing.Tests/SharedKernel.EventSourcing.Tests.csproj
 tests/SharedKernel.Domain.GeneratorTests/SharedKernel.Domain.GeneratorTests.csproj
+tests/SharedKernel.AuditTrail.GeneratorTests/SharedKernel.AuditTrail.GeneratorTests.csproj
 tests/SharedKernel.BuildingBlocks.Tests/SharedKernel.BuildingBlocks.Tests.csproj
 tests/SharedKernel.HttpClients.Tests/SharedKernel.HttpClients.Tests.csproj
 tests/SharedKernel.Aspire.CodeFixes.Tests/SharedKernel.Aspire.CodeFixes.Tests.csproj
 tests/ViajantesTurismo.Catalog.UnitTests/ViajantesTurismo.Catalog.UnitTests.csproj
 tests/SharedKernel.Results.GeneratorTests/SharedKernel.Results.GeneratorTests.csproj
+tests/ViajantesTurismo.Admin.ApiServiceTests/ViajantesTurismo.Admin.ApiServiceTests.csproj
 tests/ViajantesTurismo.Catalog.ApiServiceTests/ViajantesTurismo.Catalog.ApiServiceTests.csproj
 tests/ViajantesTurismo.Branding.ApiServiceTests/ViajantesTurismo.Branding.ApiServiceTests.csproj
 tests/ViajantesTurismo.Admin.BehaviorTests/ViajantesTurismo.Admin.BehaviorTests.csproj

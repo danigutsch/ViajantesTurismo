@@ -1,3 +1,5 @@
+using ViajantesTurismo.Admin.Contracts.Application;
+
 namespace ViajantesTurismo.Admin.SystemTests.Shared;
 
 /// <summary>
@@ -12,10 +14,12 @@ public class ListInteractionTests(AspireSystemTestFixture fixture) : AspireSyste
     {
         // Arrange
         var uid = Guid.NewGuid().ToString("N")[..8];
+        var ascendingSentinelName = $"00000000 Sort Smoke {uid} A";
+        var descendingSentinelName = $"zzzzzzzz Sort Smoke {uid} Z";
         _ = await ApiClient.CreateTour(new CreateTourOptions
         {
             Identifier = $"SRT-{uid}-A",
-            Name = $"Sort Smoke {uid} A",
+            Name = ascendingSentinelName,
             StartDate = DateTime.UtcNow.AddDays(10),
             EndDate = DateTime.UtcNow.AddDays(17),
             Price = 500m
@@ -23,9 +27,10 @@ public class ListInteractionTests(AspireSystemTestFixture fixture) : AspireSyste
         _ = await ApiClient.CreateTour(new CreateTourOptions
         {
             Identifier = $"SRT-{uid}-Z",
-            Name = $"Sort Smoke {uid} Z",
+            Name = descendingSentinelName,
             StartDate = DateTime.UtcNow.AddDays(40),
             EndDate = DateTime.UtcNow.AddDays(47),
+            Currency = CurrencyDto.Real,
             Price = 1500m
         });
 
@@ -39,10 +44,21 @@ public class ListInteractionTests(AspireSystemTestFixture fixture) : AspireSyste
         // Assert: tours sort by Name ascending / descending.
         await toursTable.GetButton("Name").ClickAsync();
         await Expect(toursTable.Locator("th[aria-sort='ascending']")).ToContainTextAsync("Name");
+        await Expect(toursTable.GetByText(
+                ascendingSentinelName,
+                new LocatorGetByTextOptions { Exact = true }))
+            .ToBeVisibleAsync();
         await ListInteractionTestHelpers.AssertVisibleCellTextsAreSorted(tourNameCells, descending: false);
 
         await toursTable.GetButton("Name").ClickAsync();
         await Expect(toursTable.Locator(DescendingSortSelector)).ToContainTextAsync("Name");
+        await Expect(toursTable.GetByText(
+                descendingSentinelName,
+                new LocatorGetByTextOptions { Exact = true }))
+            .ToBeVisibleAsync();
+        var descendingSentinelRow = toursTable.Locator($"tbody tr:has-text('{descendingSentinelName}')");
+        await Expect(descendingSentinelRow).ToContainTextAsync("R$");
+        await Expect(descendingSentinelRow.GetByText(ConsistencyTestRegexes.DateFormat()).First).ToBeVisibleAsync();
         await ListInteractionTestHelpers.AssertVisibleCellTextsAreSorted(tourNameCells, descending: true);
     }
 

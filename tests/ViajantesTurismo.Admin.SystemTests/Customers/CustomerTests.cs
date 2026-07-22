@@ -92,11 +92,15 @@ public class CustomerTests(AspireSystemTestFixture fixture) : AspireSystemTestBa
 
         var weightInput = Page.Locator("#weightKg");
         var heightInput = Page.Locator("#heightCm");
-        await weightInput.FillAndExpectValue("65");
-        await heightInput.FillAndExpectValue("170");
-        await heightInput.BlurAsync();
+        await weightInput.FillAsync("65");
+        await weightInput.PressAsync("Tab");
+        await Expect(Page.Locator("#weightKg.modified.valid")).ToBeVisibleAsync();
+        await heightInput.FillAsync("170");
+        await heightInput.PressAsync("Tab");
+        await Expect(Page.Locator("#heightCm.modified.valid")).ToBeVisibleAsync();
         var bikeTypeInput = Page.Locator("#bikeType");
         await bikeTypeInput.SelectOptionAsync("Regular");
+        await Expect(Page.Locator("#bikeType.modified.valid")).ToBeVisibleAsync();
         await Expect(weightInput).ToHaveValueAsync("65");
         await Expect(heightInput).ToHaveValueAsync("170");
         await Expect(bikeTypeInput).ToHaveValueAsync("Regular");
@@ -126,10 +130,9 @@ public class CustomerTests(AspireSystemTestFixture fixture) : AspireSystemTestBa
         var emergencyMobileNumber = "+55 11 98888-0001";
         await emergencyNameInput.FillAndExpectValue(emergencyContactName);
         await emergencyMobileInput.FillAndExpectValue(emergencyMobileNumber);
-        await emergencyNameInput.FillAndExpectValue(emergencyContactName);
         await Expect(emergencyNameInput).ToHaveValueAsync(emergencyContactName);
         await Expect(emergencyMobileInput).ToHaveValueAsync(emergencyMobileNumber);
-        await Expect(Page.Locator(".validation-message")).ToBeHiddenAsync();
+        await Expect(emergencyStep.Locator("input.modified.valid")).ToHaveCountAsync(2);
 
         await Page.GetButton("Next").ClickAsync();
 

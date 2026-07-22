@@ -7,26 +7,73 @@ namespace ViajantesTurismo.Admin.Application.Documents;
 public sealed class ApproveDocumentCommandHandler(
     IDocumentStore documentStore,
     IUnitOfWork unitOfWork,
-    TimeProvider timeProvider)
+    TimeProvider timeProvider,
+    DocumentAuditWriter documentAuditWriter)
 {
     /// <summary>Approves a reviewable document draft.</summary>
     public async Task<Result> Handle(ApproveDocumentCommand command, CancellationToken ct)
     {
         ArgumentNullException.ThrowIfNull(command);
-
-        var document = await documentStore.GetById(command.DocumentId, ct);
-        if (document is null)
+        if (command.AuditContext is null)
         {
-            return DocumentErrors.DocumentNotFound(command.DocumentId);
+            return DocumentAuditErrors.AuditContextRequired();
         }
 
-        var result = document.Approve(timeProvider.GetUtcNow().UtcDateTime);
+        var now = timeProvider.GetUtcNow().UtcDateTime;
+        var lineage = await documentStore.GetByDocumentId(command.DocumentId, ct);
+        var document = lineage?.GetRevision(command.DocumentId);
+        if (lineage is null || document is null)
+        {
+            return await RecordAndReturn(
+                DocumentErrors.DocumentNotFound(command.DocumentId),
+                command.AuditContext,
+                command.DocumentId,
+                null,
+                null,
+                DocumentAuditReasonCode.DocumentNotFound,
+                ct);
+        }
+
+        var result = lineage.Approve(document.Id, now, command.AuditContext);
         if (result.IsFailure)
         {
-            return result;
+            return await RecordAndReturn(
+                result,
+                command.AuditContext,
+                document.Id,
+                document.BookingId,
+                document.Revision,
+                DocumentAuditReasonCode.StateConflict,
+                ct);
         }
 
         await unitOfWork.SaveEntities(ct);
         return Result.Ok();
+    }
+
+    private async Task<Result> RecordAndReturn(
+        Result operationResult,
+        DocumentAuditContext auditContext,
+        Guid? documentId,
+        Guid? bookingId,
+        int? documentRevision,
+        DocumentAuditReasonCode reasonCode,
+        CancellationToken ct)
+    {
+        var auditResult = await documentAuditWriter.Add(
+            auditContext,
+            DocumentAuditOperation.Approve,
+            documentId,
+            bookingId,
+            documentRevision,
+            DocumentAuditOutcome.Rejected,
+            reasonCode,
+            ct);
+        if (auditResult.IsFailure)
+        {
+            return auditResult;
+        }
+
+        return operationResult;
     }
 }

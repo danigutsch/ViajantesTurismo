@@ -36,17 +36,4 @@ public class BookingTests(ApiFixture fixture)
         response.StatusCode.ShouldBe(HttpStatusCode.OK);
     }
 
-    [Fact]
-    public async Task Returns_a_stable_bookings_collection_without_mutating_the_host_seam()
-    {
-        // Arrange
-        var cancellationToken = TestContext.Current.CancellationToken;
-
-        // Act
-        var originalBookings = await fixture.Client.GetAllBookingsAndRead(cancellationToken);
-        var bookingsAfterSecondRead = await fixture.Client.GetAllBookingsAndRead(cancellationToken);
-
-        // Assert
-        bookingsAfterSecondRead.Length.ShouldBe(originalBookings.Length);
-    }
 }

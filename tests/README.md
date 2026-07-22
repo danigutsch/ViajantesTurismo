@@ -60,7 +60,7 @@ The canonical seams for hosted Admin tests are:
     - browser-visible web entrypoint only, such as `Uri WebAppUri`
     - no generic API or DI reach-through as part of the browser SUT seam
 - UI support seam for deterministic setup:
-    - fixture-owned typed contract clients and infrastructure-owned baseline control
+    - fixture-created, test-owned typed contract clients and infrastructure-owned baseline control
     - a narrow shared host contract only when it usefully standardizes a hosted support seam across fixtures
     - kept separate from the browser SUT seam
 
@@ -120,7 +120,7 @@ fixture contract as a repository-wide test abstraction.
 
 - Verify real user journeys through Playwright against the Admin web app.
 - Canonical browser SUT seam: hosted web entrypoint only.
-- Canonical support seam: fixture-owned typed contract clients plus infrastructure-owned deterministic baseline control.
+- Canonical support seam: fixture-created, test-owned typed contract clients plus infrastructure-owned deterministic baseline control.
 - A narrow shared host contract is optional here when it helps align hosted support seams across fixtures without broadening browser tests.
 - Prefer deterministic navigation by known IDs/routes and semantic UI assertions.
 - Use serial execution only for justified clean-slate or destructive-reset scenarios, with reset behavior owned by infrastructure rather than by the test body.

@@ -88,6 +88,7 @@
       "routePrefixes": {
         "bookingsGroup": "/api/v1/bookings",
         "customersGroup": "/api/v1/customers",
+        "documentsGroup": "/api/v1/documents",
         "errorDocumentationGroup": "/api/v1/docs/errors",
         "importGroup": "/api/v1/customers/import",
         "managementBranding": "/api/v1/branding/settings",

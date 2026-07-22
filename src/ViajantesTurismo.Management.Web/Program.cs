@@ -30,6 +30,9 @@ builder.Services.AddHttpClient<ICustomersApiClient, CustomersApiClient>(client =
 builder.Services.AddHttpClient<IBookingsApiClient, BookingsApiClient>(client => client.BaseAddress = new Uri($"https+http://{ResourceNames.Api}"))
     .AddUserAccessTokenHandler()
     .AddKeycloakAudienceTokenExchangeHandler(ApiAudienceNames.Admin);
+builder.Services.AddHttpClient<IDocumentsApiClient, DocumentsApiClient>(client => client.BaseAddress = new Uri($"https+http://{ResourceNames.Api}"))
+    .AddUserAccessTokenHandler()
+    .AddKeycloakAudienceTokenExchangeHandler(ApiAudienceNames.Admin);
 builder.Services.AddHttpClient<ICatalogToursApiClient, CatalogToursApiClient>(client => client.BaseAddress = new Uri($"https+http://{ResourceNames.CatalogApi}"))
     .AddUserAccessTokenHandler()
     .AddKeycloakAudienceTokenExchangeHandler(ApiAudienceNames.Catalog);

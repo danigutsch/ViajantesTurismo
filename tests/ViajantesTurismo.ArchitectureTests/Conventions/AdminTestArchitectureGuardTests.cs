@@ -1,4 +1,3 @@
-using System.Text.RegularExpressions;
 using static ViajantesTurismo.ArchitectureTests.Conventions.AdminTestArchitectureGuardTestsHelpers;
 
 namespace ViajantesTurismo.ArchitectureTests.Conventions;
@@ -41,16 +40,18 @@ public sealed partial class AdminTestArchitectureGuardTests
             "SharedKernel",
             "SharedKernel.IntegrationTesting",
             "PostgreSqlPublicSchemaReset.cs"));
-        var serialIntegrationCollectionText = File.ReadAllText(Path.Combine(
+        var serialIntegrationCollectionExists = File.Exists(Path.Combine(
             integrationInfrastructurePath,
             "Fixtures",
             "AspireSerialIntegrationTestCollection.cs"));
-        var serialIntegrationBaseText = File.ReadAllText(Path.Combine(
+        var serialIntegrationBaseExists = File.Exists(Path.Combine(
             integrationInfrastructurePath,
             "Bases",
             "AspireSerialIntegrationTestBase.cs"));
         var systemTestBaseText = File.ReadAllText(Path.Combine(systemTestBasesPath, "AspireSystemTestBase.cs"));
-        var serialSystemTestBaseText = File.ReadAllText(Path.Combine(systemTestBasesPath, "AspireSerialSystemTestBase.cs"));
+        var serialSystemTestBaseExists = File.Exists(Path.Combine(systemTestBasesPath, "AspireSerialSystemTestBase.cs"));
+        var serialReasonAttributeExists = File.Exists(Path.Combine(systemTestBasesPath, "SerialE2EReasonAttribute.cs"));
+        var e2eTestCollectionsExists = File.Exists(Path.Combine(systemTestBasesPath, "E2ETestCollections.cs"));
         var systemFixtureText = File.ReadAllText(Path.Combine(systemTestFixturesPath, "AspireSystemTestFixture.cs"));
         var obsoleteIntegrationFixtureExists = File.Exists(Path.Combine(
             integrationInfrastructurePath,
@@ -78,39 +79,31 @@ public sealed partial class AdminTestArchitectureGuardTests
         publicSchemaResetText.ShouldContain(
             "public static async Task Reset(DbConnection connection, CancellationToken ct)",
             StringComparison.Ordinal);
-        apiFixtureText.ShouldContain("await PostgreSqlPublicSchemaReset.Reset(connection, ct);", StringComparison.Ordinal);
-        serialIntegrationCollectionText.ShouldContain(
-            "[CollectionDefinition(IntegrationTestCollections.Serial, DisableParallelization = true)]",
-            StringComparison.Ordinal);
-
-        serialIntegrationCollectionText.ShouldNotMatch(new Regex("ICollectionFixture<", RegexOptions.CultureInvariant));
-
-        serialIntegrationBaseText.ShouldContain("public abstract class AspireSerialIntegrationTestBase(", StringComparison.Ordinal);
-        serialIntegrationBaseText.ShouldContain("ApiFixture fixture) : IAsyncLifetime", StringComparison.Ordinal);
-        serialIntegrationBaseText.ShouldContain("await fixture.ResetToKnownBaseline(cts.Token);", StringComparison.Ordinal);
-
-        serialIntegrationBaseText.ShouldNotMatch(
-            new Regex(
-                @"public\s+virtual\s+async\s+ValueTask\s+DisposeAsync\s*\(\s*\)\s*\{[^}]*ResetDatabase\(",
-                RegexOptions.Singleline | RegexOptions.CultureInvariant));
+        apiFixtureText.ShouldNotContain("ResetToKnownBaseline", StringComparison.Ordinal);
+        serialIntegrationCollectionExists.ShouldBeFalse();
+        serialIntegrationBaseExists.ShouldBeFalse();
 
         obsoleteIntegrationFixtureExists.ShouldBeFalse();
 
         systemTestBaseText.ShouldContain(
             "public abstract class AspireSystemTestBase<TFixture>(TFixture fixture) : PageTest",
             StringComparison.Ordinal);
-        systemTestBaseText.ShouldContain("protected Uri ApiBaseUri => Fixture.ApiBaseUri;", StringComparison.Ordinal);
-        serialSystemTestBaseText.ShouldContain("[Collection(E2ETestCollections.Serial)]", StringComparison.Ordinal);
-        serialSystemTestBaseText.ShouldContain(
-            "public abstract class AspireSerialSystemTestBase(AspireSystemTestFixture fixture) : AspireSystemTestBase<AspireSystemTestFixture>(fixture)",
+        systemTestBaseText.ShouldNotContain(
+            "[assembly: CollectionBehavior(DisableTestParallelization = true)]",
             StringComparison.Ordinal);
-        systemFixtureText.ShouldContain("await PostgreSqlPublicSchemaReset.Reset(connection, ct);", StringComparison.Ordinal);
-        serialSystemTestBaseText.ShouldContain("await Fixture.ResetToKnownBaseline(cts.Token);", StringComparison.Ordinal);
-
-        serialSystemTestBaseText.ShouldNotMatch(ProtectedClearDatabaseMemberRegex());
+        systemTestBaseText.ShouldContain("protected Uri ApiBaseUri => ApiClient.BaseAddress", StringComparison.Ordinal);
+        systemFixtureText.ShouldContain("public Task<HttpClient> CreateApiClient(CancellationToken ct)", StringComparison.Ordinal);
+        systemFixtureText.ShouldNotContain("private HttpClient? _apiClient;", StringComparison.Ordinal);
+        systemFixtureText.ShouldNotContain("private HttpClient? _catalogApiClient;", StringComparison.Ordinal);
+        serialSystemTestBaseExists.ShouldBeFalse();
+        serialReasonAttributeExists.ShouldBeFalse();
+        e2eTestCollectionsExists.ShouldBeFalse();
+        systemFixtureText.ShouldContain(
+            "await PostgreSqlPublicSchemaReset.Reset(connection, [\"DocumentAuditRecords\"], ct);",
+            StringComparison.Ordinal);
 
         systemFixtureText.ShouldContain(
-            "public sealed class AspireSystemTestFixture : IAspireSystemTestFixture, IAsyncLifetime, IDisposable",
+            "public sealed class AspireSystemTestFixture : IAspireSystemTestFixture, IAsyncLifetime",
             StringComparison.Ordinal);
 
         obsoleteSystemFixtureExists.ShouldBeFalse();
@@ -120,20 +113,35 @@ public sealed partial class AdminTestArchitectureGuardTests
     }
 
     [Fact]
-    public void SystemTests_should_keep_serial_collection_control_in_base_classes_only()
+    public void SystemTests_should_use_repository_parallelism_without_a_local_override()
     {
-        var systemTestsPath = Path.Combine(GetRepositoryRoot(), "tests", "ViajantesTurismo.Admin.SystemTests");
+        // Arrange
+        var repositoryRoot = GetRepositoryRoot();
+        var systemTestsPath = Path.Combine(repositoryRoot, "tests", "ViajantesTurismo.Admin.SystemTests");
+        var runnerConfigurationPath = Path.Combine(repositoryRoot, "tests", "xunit.runner.json");
+        var localRunnerConfigurationPaths = Directory.GetFiles(
+            systemTestsPath,
+            "*xunit.runner.json",
+            SearchOption.TopDirectoryOnly);
 
-        var violatingFiles = Directory.GetFiles(systemTestsPath, "*.cs", SearchOption.AllDirectories)
+        // Act
+        var violatingLines = Directory.GetFiles(systemTestsPath, "*.cs", SearchOption.AllDirectories)
             .Where(path => !IsGeneratedTestPath(path))
-            .Where(path => !path.Contains("/Infrastructure/", StringComparison.Ordinal)
-                && !path.Contains("\\Infrastructure\\", StringComparison.Ordinal))
-            .Where(path => File.ReadAllText(path).Contains("[Collection(E2ETestCollections.Serial)]", StringComparison.Ordinal))
-            .Select(path => Path.GetRelativePath(GetRepositoryRoot(), path).Replace('\\', '/'))
+            .SelectMany(path => File.ReadAllLines(path)
+                .Select((line, index) => (line, index))
+                .Where(candidate =>
+                    candidate.line.Contains("DisableTestParallelization = true", StringComparison.Ordinal) ||
+                    candidate.line.Contains("DisableParallelization = true", StringComparison.Ordinal))
+                .Select(candidate =>
+                    $"{Path.GetRelativePath(repositoryRoot, path).Replace('\\', '/')}:L{candidate.index + 1} {candidate.line.Trim()}"))
             .ToArray();
+        var runnerConfiguration = File.ReadAllText(runnerConfigurationPath);
 
-        (violatingFiles.Length == 0).ShouldBeTrue(
-            $"Expected serial collection ownership to stay in base-class infrastructure, but found direct usage in:{Environment.NewLine}{string.Join(Environment.NewLine, violatingFiles)}");
+        // Assert
+        violatingLines.ShouldBeEmpty();
+        runnerConfiguration.ShouldContain("\"parallelizeTestCollections\": true", StringComparison.Ordinal);
+        runnerConfiguration.ShouldContain("\"maxParallelThreads\": 0", StringComparison.Ordinal);
+        localRunnerConfigurationPaths.ShouldBeEmpty();
     }
 
     [Fact]
@@ -148,6 +156,13 @@ public sealed partial class AdminTestArchitectureGuardTests
         var appStylesPath = Path.Combine(repositoryRoot, "src", "ViajantesTurismo.Management.Web", "wwwroot", "app.css");
         var noScriptStylesPath = Path.Combine(repositoryRoot, "src", "ViajantesTurismo.Management.Web", "wwwroot", "app-noscript.css");
         var interactiveReadyPath = Path.Combine(componentsPath, "InteractiveReady.razor");
+        var systemTestBasePath = Path.Combine(
+            repositoryRoot,
+            "tests",
+            "ViajantesTurismo.Admin.SystemTests",
+            "Infrastructure",
+            "Bases",
+            "AspireSystemTestBase.cs");
 
         // Act
         var appMarkup = File.ReadAllText(appPath);
@@ -156,6 +171,7 @@ public sealed partial class AdminTestArchitectureGuardTests
         var noScriptStylesExists = File.Exists(noScriptStylesPath);
         var noScriptStyles = noScriptStylesExists ? File.ReadAllText(noScriptStylesPath) : string.Empty;
         var interactiveReadyExists = File.Exists(interactiveReadyPath);
+        var systemTestBase = File.ReadAllText(systemTestBasePath);
         var pagesWithRouteRenderModes = Directory.GetFiles(pagesPath, "*.razor", SearchOption.AllDirectories)
             .Where(path => File.ReadAllText(path).Contains("@rendermode", StringComparison.Ordinal))
             .Select(path => Path.GetRelativePath(repositoryRoot, path).Replace('\\', '/'))
@@ -169,7 +185,12 @@ public sealed partial class AdminTestArchitectureGuardTests
         (appMarkup).ShouldContain("<link rel=\"stylesheet\" href=\"@Assets[\"app-noscript.css\"]\" />", StringComparison.Ordinal);
         (mainLayoutMarkup).ShouldContain("inert=\"@(!RendererInfo.IsInteractive ? \"inert\" : null)\"", StringComparison.Ordinal);
         (mainLayoutMarkup).ShouldContain("aria-busy=\"@(!RendererInfo.IsInteractive ? \"true\" : \"false\")\"", StringComparison.Ordinal);
-        (appStyles).ShouldContain("body:has(.page:not([inert])) .app-startup-status", StringComparison.Ordinal);
+        (mainLayoutMarkup).ShouldContain("data-interactive=\"@RendererInfo.IsInteractive.ToString().ToLowerInvariant()\"", StringComparison.Ordinal);
+        (appStyles).ShouldContain("body:has(.page[data-interactive=\"true\"]) .app-startup-status", StringComparison.Ordinal);
+        systemTestBase.ShouldContain(".page[data-interactive=\\\"true\\\"]", StringComparison.Ordinal);
+        systemTestBase.ShouldContain("DeveloperExceptionPageSelector", StringComparison.Ordinal);
+        systemTestBase.ShouldNotContain(".page:not([inert])", StringComparison.Ordinal);
+        systemTestBase.ShouldNotContain("maxAttempts", StringComparison.Ordinal);
         noScriptStylesExists.ShouldBeTrue();
         (noScriptStyles).ShouldContain(".app-startup-status { display: none; }", StringComparison.Ordinal);
         interactiveReadyExists.ShouldBeFalse();
@@ -177,19 +198,37 @@ public sealed partial class AdminTestArchitectureGuardTests
     }
 
     [Fact]
-    public void SystemTests_should_document_each_serial_test_with_a_reason()
+    public void Customer_wizard_forms_should_have_unique_form_names()
     {
-        var systemTestsPath = Path.Combine(GetRepositoryRoot(), "tests", "ViajantesTurismo.Admin.SystemTests");
+        // Arrange
+        var createPagesPath = Path.Combine(
+            GetRepositoryRoot(),
+            "src",
+            "ViajantesTurismo.Management.Web",
+            "Components",
+            "Pages",
+            "Customers",
+            "Create");
+        Dictionary<string, string> expectedFormNames = new(StringComparer.Ordinal)
+        {
+            ["Accommodation.razor"] = "createCustomerAccommodation",
+            ["Address.razor"] = "createCustomerAddress",
+            ["Contact.razor"] = "createCustomerContact",
+            ["EmergencyContact.razor"] = "createCustomerEmergencyContact",
+            ["Identification.razor"] = "createCustomerIdentification",
+            ["Medical.razor"] = "createCustomerMedical",
+            ["PersonalInfo.razor"] = "createCustomerPersonalInfo",
+            ["Physical.razor"] = "createCustomerPhysical",
+        };
 
-        var undocumentedSerialTests = Directory.GetFiles(systemTestsPath, "*.cs", SearchOption.AllDirectories)
-            .Where(path => !IsGeneratedTestPath(path))
-            .Where(path => !path.Contains("/Infrastructure/", StringComparison.Ordinal)
-                && !path.Contains("\\Infrastructure\\", StringComparison.Ordinal))
-            .SelectMany(FindUndocumentedSerialTests)
-            .ToArray();
+        foreach (var expectedFormName in expectedFormNames)
+        {
+            // Act
+            var pageMarkup = File.ReadAllText(Path.Combine(createPagesPath, expectedFormName.Key));
 
-        (undocumentedSerialTests.Length == 0).ShouldBeTrue(
-            $"Expected each serial E2E test to declare [SerialE2EReason], but found:{Environment.NewLine}{string.Join(Environment.NewLine, undocumentedSerialTests)}");
+            // Assert
+            pageMarkup.ShouldContain($"FormName=\"{expectedFormName.Value}\"", StringComparison.Ordinal);
+        }
     }
 
     [Fact]
@@ -238,6 +277,24 @@ public sealed partial class AdminTestArchitectureGuardTests
 
         (offendingLines.Length != 0).ShouldBeFalse(
             $"Expected concrete test methods to use typed helpers instead of raw DI/scope plumbing, but found:{Environment.NewLine}{string.Join(Environment.NewLine, offendingLines)}");
+    }
+
+    [Fact]
+    public void Admin_module_test_helpers_should_return_typed_scopes()
+    {
+        // Arrange
+        var helperPath = Path.Combine(
+            GetRepositoryRoot(),
+            "tests",
+            "ViajantesTurismo.Admin.UnitTests",
+            "Infrastructure",
+            "AdminInfrastructureModuleTestServices.cs");
+
+        // Act
+        var helperText = File.ReadAllText(helperPath);
+
+        // Assert
+        helperText.ShouldNotContain("public static ServiceProvider", StringComparison.Ordinal);
     }
 
     [Fact]

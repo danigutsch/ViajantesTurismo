@@ -19,6 +19,7 @@ using ViajantesTurismo.Admin.Application.Bookings.UpdateBookingNotes;
 using ViajantesTurismo.Admin.Application.Customers.CreateCustomer;
 using ViajantesTurismo.Admin.Application.Customers.Import;
 using ViajantesTurismo.Admin.Application.Customers.UpdateCustomer;
+using ViajantesTurismo.Admin.Application.Documents;
 using ViajantesTurismo.Admin.Application.Tours.CreateTour;
 using ViajantesTurismo.Admin.Application.Tours.UpdateTour;
 using ViajantesTurismo.Resources;
@@ -75,5 +76,23 @@ internal static class AdminApiTestHost
         _ = scope.ServiceProvider.GetRequiredService<RecordPaymentCommandHandler>();
         _ = scope.ServiceProvider.GetRequiredService<CompleteBookingCommandHandler>();
         _ = scope.ServiceProvider.GetRequiredService<DeleteBookingCommandHandler>();
+    }
+
+    public static void VerifyMappedDocumentDependencies(WebApplicationFactory<AdminApiHostEntryPoint> factory)
+    {
+        ArgumentNullException.ThrowIfNull(factory);
+
+        using var scope = factory.Services.CreateScope();
+        _ = scope.ServiceProvider.GetRequiredService<IDocumentQueryService>();
+        _ = scope.ServiceProvider.GetRequiredService<DocumentAuditWriter>();
+        _ = scope.ServiceProvider.GetRequiredService<GenerateContractDraftCommandHandler>();
+        _ = scope.ServiceProvider.GetRequiredService<BeginDocumentReviewCommandHandler>();
+        _ = scope.ServiceProvider.GetRequiredService<RequestDocumentChangesCommandHandler>();
+        _ = scope.ServiceProvider.GetRequiredService<UpdateDocumentFieldCommandHandler>();
+        _ = scope.ServiceProvider.GetRequiredService<ApproveDocumentCommandHandler>();
+        _ = scope.ServiceProvider.GetRequiredService<FinalizeDocumentCommandHandler>();
+        _ = scope.ServiceProvider.GetRequiredService<GetFinalizedDocumentArtifactHandler>();
+        _ = scope.ServiceProvider.GetRequiredService<RegenerateDocumentDraftCommandHandler>();
+        _ = scope.ServiceProvider.GetRequiredService<VoidDocumentCommandHandler>();
     }
 }

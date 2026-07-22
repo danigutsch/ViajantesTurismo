@@ -31,11 +31,13 @@ internal sealed class BookingWorkflow(IPage page, Func<string, Task> navigateTo)
     /// <param name="tour">The tour that will receive the new booking.</param>
     /// <param name="customerFullName">The owned test customer full name used to identify the new row.</param>
     /// <param name="customerSelectionLabel">The select option label shown in the booking form.</param>
+    /// <param name="expectedFinalTotal">The rendered total that proves the server processed the selected options.</param>
     /// <returns>The identifier of the created booking.</returns>
     public async Task<Guid> CreateFromTourDetails(
         GetTourDto tour,
         string customerFullName,
-        string customerSelectionLabel)
+        string customerSelectionLabel,
+        string expectedFinalTotal)
     {
         await navigateTo($"/tours/{tour.Id}");
         await Expect(page).ToHaveTitleAsync("Tour Details");
@@ -62,10 +64,16 @@ internal sealed class BookingWorkflow(IPage page, Func<string, Task> navigateTo)
             .Filter(new LocatorFilterOptions { HasText = "Principal Customer Bike" });
         await bikeTypeField.Locator("select").SelectOptionAsync("EBike");
 
+        var finalTotal = bookingForm.Locator("dt")
+            .Filter(new LocatorFilterOptions { HasText = "Final Total:" })
+            .Locator("xpath=following-sibling::dd[1]");
+        await Expect(finalTotal).ToHaveTextAsync(expectedFinalTotal);
+
         await bookingForm.Locator("#notes").FillAsync("E2E test booking created from tour details");
+        var toastTask = UiFeedback.ExpectToast("Booking created successfully");
         await bookingForm.GetButton("Create Booking").ClickAsync();
 
-        await UiFeedback.ExpectToast("Booking created successfully");
+        await toastTask;
 
         var createdBookingRow = page.Locator("table tbody tr")
             .Filter(new LocatorFilterOptions { HasText = customerFullName });
@@ -99,22 +107,28 @@ internal sealed class BookingWorkflow(IPage page, Func<string, Task> navigateTo)
     {
         await NavigateToEdit(bookingId);
 
-        await page.Locator("#notes").FillAsync("E2E test booking - notes updated during edit");
         var discountType = page.Locator("#discountType");
         await discountType.SelectOptionAsync("Percentage");
         await discountType.BlurAsync();
         await Expect(discountType).ToHaveValueAsync("Percentage");
         await page.Locator("#discountAmount").WaitForAsync();
-        await page.FillAsync("#discountAmount", "10");
-        await page.FillAsync("#discountReason", "E2E test discount applied for loyal customer testing");
+        var discountAmount = page.Locator("#discountAmount");
+        await discountAmount.FillAsync("10");
+        await discountAmount.BlurAsync();
+        await Expect(discountAmount).ToHaveValueAsync("10");
 
+        const string discountReasonText = "E2E test discount applied for loyal customer testing";
+        var discountReason = page.Locator("#discountReason");
+        await discountReason.FillAsync(discountReasonText);
+        await discountReason.BlurAsync();
+        await Expect(discountReason).ToHaveValueAsync(discountReasonText);
+
+        var successAlert = page.GetByRole(AriaRole.Alert)
+            .Filter(new LocatorFilterOptions { HasText = "Booking updated successfully!" });
+        var successTask = Expect(successAlert).ToBeVisibleAsync();
         await page.GetButton("Update Booking").ClickAsync();
-
-        var successAlert = page.Locator(".alert-success");
-        await successAlert.WaitForAsync();
-        (await successAlert.InnerTextAsync()).ShouldContain("Booking updated successfully!", StringComparison.Ordinal);
-
-        await page.CancelTimedRedirect();
+        await successTask;
+        await NavigateToDetails(bookingId);
     }
 
     /// <summary>
@@ -125,9 +139,10 @@ internal sealed class BookingWorkflow(IPage page, Func<string, Task> navigateTo)
     {
         await NavigateToEdit(bookingId);
 
+        var toastTask = UiFeedback.ExpectToast("Booking confirmed successfully");
         await page.GetButton("Confirm Booking").ClickAsync();
 
-        await UiFeedback.ExpectToast("Booking confirmed successfully");
+        await toastTask;
         await page.GetButton("Complete Booking").WaitForAsync();
     }
 
@@ -145,9 +160,10 @@ internal sealed class BookingWorkflow(IPage page, Func<string, Task> navigateTo)
         await paymentCard.Locator("#paymentDate").FillAsync(DateTime.UtcNow.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture));
         await paymentCard.Locator("#method").SelectOptionAsync("Cash");
 
+        var toastTask = UiFeedback.ExpectToastThenHide("Payment recorded successfully");
         await paymentCard.GetButton("Record Payment").ClickAsync();
 
-        await UiFeedback.ExpectToastThenHide("Payment recorded successfully");
+        await toastTask;
     }
 
     /// <summary>
@@ -155,8 +171,9 @@ internal sealed class BookingWorkflow(IPage page, Func<string, Task> navigateTo)
     /// </summary>
     public async Task CompleteBooking()
     {
+        var toastTask = UiFeedback.ExpectToast("Booking completed successfully");
         await page.GetButton("Complete Booking").ClickAsync();
 
-        await UiFeedback.ExpectToast("Booking completed successfully");
+        await toastTask;
     }
 }

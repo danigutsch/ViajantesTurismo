@@ -1,6 +1,6 @@
 # ADR-018: Test Parallelization with xUnit v3 Assembly Fixtures
 
-**Status**: Accepted — 2026-02-28
+**Status**: Accepted — 2026-02-28; amended 2026-07-19
 
 ## Context
 
@@ -34,16 +34,16 @@ We implement test parallelization using:
 
 2. **Hybrid Parallel/Serial Shape**:
    - **Parallel Tests**: ordinary integration and browser system classes run concurrently by default.
-   - **Serial Tests**: only the narrow clean-slate lanes opt in to sequential execution via
-      `AspireSerialSystemTestBase` or the corresponding serial integration collection.
+   - **Serial Tests**: no Admin hosted tests currently require a serial lane. Tests use owned data and normal
+      collection parallelism instead of retaining unused clean-slate base classes.
 
-3. **Fixture-Owned Baseline Control**: Seeded defaults can be shared for parallel-safe reads, while destructive
-   clean-slate reset stays inside serial fixture or base-class infrastructure.
+3. **Fixture-Owned Baseline Control**: Seeded defaults can support parallel-safe reads. Mutating tests create and
+   assert against owned data rather than destructively resetting shared state.
 
 4. **Parallel-Safe Patterns**:
    - Read-only tests use shared seeded data without mutation.
    - Data-mutator tests create unique data via HTTP API helpers rather than modifying seeded records.
-   - Serial tests use infrastructure-owned reset paths for exact-count assertions and destructive database operations.
+   - List tests target owned scoped rows; other scenarios navigate directly by known identifiers.
 
 5. **API Helpers**: A new `ApiTestHelper` class provides methods to create data (tours, customers, bookings) via the
    Admin API, enabling tests to be independent and concurrent.
@@ -52,10 +52,8 @@ We implement test parallelization using:
 
 ### Pros
 
-- **Speed**: Full system-test suite runs ~30% faster (18 tests in parallel vs. sequential); integration suite similarly
-improved.
-- **Clarity**: Tests declare intent—parallel tests are explicitly data-independent; serial tests are marked with a
-  collection.
+- **Speed**: Default concurrency avoids serial bottlenecks while endpoint isolation prevents AppHost port collisions.
+- **Clarity**: Tests declare intent through owned data and deterministic routes rather than global serialization.
 - **Maintainability**: No per-test fixture lifecycle overhead; shared infrastructure is initialized once.
 - **Scalability**: New tests naturally run in parallel unless they need serial execution.
 - **Single Source of Truth**: Aspire-managed fixtures define the canonical hosted test model.

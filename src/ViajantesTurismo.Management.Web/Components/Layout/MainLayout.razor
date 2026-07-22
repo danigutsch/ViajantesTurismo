@@ -2,7 +2,8 @@
 
 <div class="page"
      inert="@(!RendererInfo.IsInteractive ? "inert" : null)"
-     aria-busy="@(!RendererInfo.IsInteractive ? "true" : "false")">
+     aria-busy="@(!RendererInfo.IsInteractive ? "true" : "false")"
+     data-interactive="@RendererInfo.IsInteractive.ToString().ToLowerInvariant()">
     <div class="sidebar">
         <NavMenu />
     </div>

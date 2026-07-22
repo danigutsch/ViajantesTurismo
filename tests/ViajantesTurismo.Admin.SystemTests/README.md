@@ -48,7 +48,8 @@ dotnet test --project tests/ViajantesTurismo.Admin.SystemTests --filter-method "
 
 ## Notes
 
-- `AspireSystemTestFixture` launches the AppHost-managed stack once for the assembly; each test gets a fresh `BrowserContext`.
+- `AspireSystemTestFixture` launches the AppHost-managed stack once for the assembly; each test gets a fresh
+  `BrowserContext` and fresh authenticated API clients that it owns and disposes.
 - Tests seed their own data and don't depend on each other.
 - `Shared.NavigationTests` is the canonical first parallel-safe Aspire-hosted migration slice for narrow reliability checks.
 - `ViajantesTurismo.Management.Web` prerenders routes but keeps the layout inert until the
@@ -67,11 +68,8 @@ dotnet test --project tests/ViajantesTurismo.Admin.SystemTests/ViajantesTurismo.
 ## Parallel safety guidance
 
 - Default to `AspireSystemTestBase<TFixture>` when a test owns its own data and does not require DB resets.
-- Use `AspireSerialSystemTestBase` when a test needs strict baseline isolation (for example exact counts or
-  destructive shared-state operations). The serial base owns the reset automatically; test bodies should not call
-  reset helpers directly.
-- Current intentional browser serial cases are narrow: empty-state smoke checks that must verify a real clean database
-  response after destructive reset.
+- No serial system-test base or serial browser tests currently exist. Keep scenarios parallel-safe through owned data
+  instead of destructive shared-state resets.
 - Prefer API-assisted setup (`ApiTestExtensions`) and navigate by known IDs (`/tours/{id}`, `/bookings/{id}`).
 - Make assertions deterministic: prefer known routes, hrefs, unique identifiers,
   explicit search/filter state, or other stable semantic locators.

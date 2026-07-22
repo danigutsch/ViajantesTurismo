@@ -145,9 +145,9 @@ and connection-resiliency guidance on transaction commit ambiguity:
 
 ### Migration service seeding
 
-- Trigger: `SeederWorker.ExecuteAsync`.
-- Code: `src/ViajantesTurismo.MigrationService/SeederWorker.cs`.
-- Systems touched: Catalog migrations plus Admin seeding through `ISeeder`.
+- Trigger: `MigrationRunner.Run`.
+- Code: `src/ViajantesTurismo.MigrationService/MigrationRunner.cs`.
+- Systems touched: Catalog, Branding, and Management Security migrations plus Admin migration and seeding.
 - Failure window: startup seeding can partially apply if later seed steps fail.
 - Existing mitigation: intended local/startup migration workflow; EF migrations are idempotent.
 - Recommendation: no production outbox/inbox. Keep seed methods idempotent and re-runnable.

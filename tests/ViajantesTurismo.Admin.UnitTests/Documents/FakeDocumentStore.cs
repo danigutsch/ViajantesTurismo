@@ -8,14 +8,39 @@ internal sealed class FakeDocumentStore : IDocumentStore
 
     public Dictionary<Guid, DocumentDraft> Documents { get; } = [];
 
-    public void Add(DocumentDraft document)
+    public List<DocumentLineage> AddedLineages { get; } = [];
+
+    public DocumentLineage? LastLoadedLineage { get; private set; }
+
+    public void Add(DocumentLineage lineage)
     {
-        AddedDocuments.Add(document);
-        Documents.Add(document.Id, document);
+        AddedLineages.Add(lineage);
+        foreach (var document in lineage.Revisions)
+        {
+            AddedDocuments.Add(document);
+            Documents.Add(document.Id, document);
+        }
     }
 
-    public Task<DocumentDraft?> GetById(Guid id, CancellationToken ct) =>
-        Task.FromResult(Documents.GetValueOrDefault(id));
+    public Task<DocumentLineage?> GetByDocumentId(Guid documentId, CancellationToken ct)
+    {
+        var targetDocument = Documents.GetValueOrDefault(documentId);
+        if (targetDocument is null)
+        {
+            return Task.FromResult<DocumentLineage?>(null);
+        }
+
+        var lineage = AddedLineages.FirstOrDefault(candidate => candidate.Id == targetDocument.DocumentLineageId);
+        if (lineage is null)
+        {
+            lineage = DocumentLineage.Restore(Documents.Values
+                .Where(revision => revision.DocumentLineageId == targetDocument.DocumentLineageId));
+            AddedLineages.Add(lineage);
+        }
+
+        LastLoadedLineage = lineage;
+        return Task.FromResult<DocumentLineage?>(lineage);
+    }
 
     public Task<int> PurgeExpiredDrafts(DateTime now, CancellationToken ct)
     {

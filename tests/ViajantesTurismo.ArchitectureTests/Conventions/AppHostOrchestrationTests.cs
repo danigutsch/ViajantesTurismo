@@ -211,7 +211,7 @@ public sealed partial class AppHostOrchestrationTests
             StringComparison.Ordinal)
             && fixtureText.Contains("TimeSpan.FromMinutes(3)", StringComparison.Ordinal)
             && fixtureText.Contains(
-                "[ResourceNames.Api],\n            ApiResourceStartupTimeout,\n            appHostArguments,",
+                "[ResourceNames.Api, ResourceNames.DatabaseServer],\n            ApiResourceStartupTimeout,\n            appHostArguments,",
                 StringComparison.Ordinal);
 
         // Assert
@@ -245,7 +245,7 @@ public sealed partial class AppHostOrchestrationTests
     }
 
     [Fact]
-    public void Aspire_test_application_bounds_resource_teardown()
+    public void Aspire_test_application_awaits_uncancellable_resource_teardown()
     {
         // Arrange
         var testApplicationText = File.ReadAllText(Path.Combine(
@@ -256,18 +256,62 @@ public sealed partial class AppHostOrchestrationTests
             "AspireTestApplication.cs"));
 
         // Act
-        var usesBoundedTeardown = testApplicationText.Contains("DefaultResourceTeardownTimeout", StringComparison.Ordinal)
-            && testApplicationText.Contains("RunWithResourceTeardownTimeout", StringComparison.Ordinal)
-            && testApplicationText.Contains("app.StopAsync(teardownCt)", StringComparison.Ordinal)
+        var awaitsUncancellableTeardown = testApplicationText.Contains(
+            "RunWithResourceTeardownTimeout(app.StopAsync)",
+            StringComparison.Ordinal)
+            && testApplicationText.Contains("await operation(timeoutCts.Token)", StringComparison.Ordinal)
             && testApplicationText.Contains(
-                "operation(timeoutCts.Token).WaitAsync(timeoutCts.Token)",
+                "CaptureTeardownFailure(() => app.DisposeAsync().AsTask()",
+                StringComparison.Ordinal)
+            && testApplicationText.Contains(
+                "CaptureTeardownFailure(() => appBuilder.DisposeAsync().AsTask()",
                 StringComparison.Ordinal);
 
         // Assert
-        usesBoundedTeardown.ShouldBeTrue();
+        awaitsUncancellableTeardown.ShouldBeTrue();
+        testApplicationText.ShouldNotContain(".WaitAsync(", StringComparison.Ordinal);
         testApplicationText.ShouldContain("CaptureTeardownFailure", StringComparison.Ordinal);
         testApplicationText.ShouldContain("new AggregateException(", StringComparison.Ordinal);
         testApplicationText.ShouldContain("var teardownFailures = await DisposeAfterFailedStart", StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public void Aspire_test_application_preserves_aspire_testing_concurrency_defaults()
+    {
+        // Arrange
+        var repositoryRoot = GetRepositoryRoot();
+        var testApplicationText = File.ReadAllText(Path.Combine(
+            repositoryRoot,
+            "src",
+            "SharedKernel",
+            "SharedKernel.IntegrationTesting",
+            "AspireTestApplication.cs"));
+        var endpointLeasePath = Path.Combine(
+            repositoryRoot,
+            "src",
+            "SharedKernel",
+            "SharedKernel.IntegrationTesting",
+            "AspireTestEndpointLease.cs");
+        var publicApiText = File.ReadAllText(Path.Combine(
+            repositoryRoot,
+            "src",
+            "SharedKernel",
+            "SharedKernel.IntegrationTesting",
+            "PublicAPI.Unshipped.txt"));
+
+        // Act
+        var usesTestingBuilder = testApplicationText.Contains(
+            "DistributedApplicationTestingBuilder",
+            StringComparison.Ordinal);
+
+        // Assert
+        usesTestingBuilder.ShouldBeTrue();
+        File.Exists(endpointLeasePath).ShouldBeFalse();
+        testApplicationText.ShouldNotContain("AspireTestEndpointLease", StringComparison.Ordinal);
+        testApplicationText.ShouldNotContain("DcpPublisher:RandomizePorts", StringComparison.Ordinal);
+        publicApiText.ShouldNotContain(
+            "Aspire.Hosting.IDistributedApplicationBuilder! builder",
+            StringComparison.Ordinal);
     }
 
     [Fact]

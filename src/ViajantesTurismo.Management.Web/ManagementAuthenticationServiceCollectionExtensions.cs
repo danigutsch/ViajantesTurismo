@@ -98,6 +98,7 @@ internal static class ManagementAuthenticationServiceCollectionExtensions
                 options.SaveTokens = false;
                 options.EventsType = typeof(ManagementOpenIdConnectEvents);
                 options.MapInboundClaims = false;
+                options.TokenValidationParameters.RoleClaimType = ApiAuthenticationDefaults.RolesClaimType;
                 options.RequireHttpsMetadata = !(environment.IsDevelopment() && allowHttpDevelopmentAuthority);
                 options.Scope.Clear();
                 options.Scope.Add("openid");

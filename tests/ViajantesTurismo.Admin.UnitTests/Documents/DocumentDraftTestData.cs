@@ -1,10 +1,22 @@
+using SharedKernel.Branding;
 using ViajantesTurismo.Admin.Domain.Documents;
 
 namespace ViajantesTurismo.Admin.UnitTests.Documents;
 
 internal static class DocumentDraftTestData
 {
-    public static DocumentDraft Create(DateTime createdAt)
+    public static BrandingSettingsDto CreateBrandingSettings() => new()
+    {
+        BrandName = "Viajantes",
+        PrimaryColor = "#102030",
+        AccentColor = "#405060",
+        BackgroundColor = "#fdfdfd",
+        TextColor = "#111111",
+        HeadingFontFamily = "Montserrat",
+        BodyFontFamily = "Inter"
+    };
+
+    public static DocumentDraft Create(DateTime createdAt, Uri? brandingLogoUri = null)
     {
         var result = DocumentDraft.Create(
             Guid.CreateVersion7(),
@@ -19,7 +31,7 @@ internal static class DocumentDraftTestData
             ],
             "BRANDING-VERSION",
             "Viajantes Turismo",
-            new Uri("/logo.svg", UriKind.Relative),
+            brandingLogoUri ?? new Uri("/logo.svg", UriKind.Relative),
             createdAt);
 
         result.IsSuccess.ShouldBeTrue();

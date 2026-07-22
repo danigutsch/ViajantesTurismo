@@ -471,17 +471,17 @@ public void Map_With_Invalid_Value_Should_Throw_Argument_Out_Of_Range_Exception(
 ### Approach by Test Type
 
 - **Unit Tests:** Direct instantiation with factory methods (e.g., `Tour.Create()`)
-- **Integration Tests:** Fixture-owned HTTP entrypoints plus infrastructure-owned baseline control where clean-slate behavior is required
+- **Integration Tests:** Fixture-owned HTTP entrypoints with test-owned data
 - **Behaviour Tests:** Context objects to share state between steps
-- **System Tests:** Playwright plus deterministic helper/page abstractions backed by fixture-owned baseline control
+- **System Tests:** Playwright plus deterministic helper/page abstractions and fixture-created, test-owned HTTP clients
 
 ### Best Practices
 
 - **Prefer object mothers/builders** for complex aggregates and value objects
 - **Keep test data in code** (avoid external files unless absolutely necessary)
 - **Avoid shared mutable state** between tests
-- **Use fixture-owned ephemeral resources** for integration and system tests instead of exposing raw container or DI
-  plumbing to test bodies
+- **Use fixture-created, test-owned ephemeral resources** for integration and system tests instead of exposing raw
+  container or DI plumbing to test bodies
 - **Use FakeTimeProvider** instead of `DateTime.UtcNow` for deterministic time-based tests
 
 **Example Object Mother:**
@@ -535,6 +535,8 @@ Use these rules to avoid flaky behaviour:
   record why it remains and what would allow it to be rewritten.
 - **Do not scan paginated lists for non-pagination behaviour**: if the scenario is not about paging,
   navigate directly by known ID/route or use deterministic owned-data row targeting.
+- **Use `AspireTestApplication` for concurrent AppHosts**: it keeps DCP resource names suffixed and
+  preserves Aspire testing defaults that disable the dashboard and randomize resource ports.
 
 Antipatterns to avoid:
 
@@ -544,10 +546,28 @@ Antipatterns to avoid:
 - assertions that only pass because the item happened to land on page 1
 - pagination traversal helpers that click through pages until a matching row eventually appears
 
+### Parallel-safe telemetry tests
+
+`ActivityListener` is process-global. A listener that matches only `ActivitySource.Name` can capture activities from
+another parallel test that creates a distinct source with the same stable production name.
+
+- Prefer a test-owned, injected `ActivitySource` and match the exact instance with `ReferenceEquals`.
+- Keep the listener and source scoped to one test and dispose both after all instrumented work completes.
+- Capture stopped activities, when tags and status are complete, rather than started activities.
+- Use thread-safe capture storage when callbacks can overlap.
+- When the production source is static and cannot be injected, give the operation a test-owned parent
+  `ActivityContext` and filter assertions by its trace and parent-span identifiers.
+- A per-test OpenTelemetry provider with an in-memory exporter is appropriate for exporter-pipeline tests. Use a
+  unique source name when the test owns the source.
+- Reference matching does not isolate tests that intentionally share the same source instance. Retain trace
+  correlation or a narrowly justified serial collection for those genuinely global instrumentation tests.
+- Do not add a shared process-wide listener fixture or assume listener disposal cancels callbacks already in flight.
+
 ### System-test-specific base class guidance
 
 - Use `AspireSystemTestBase<TFixture>` for tests that can safely run in parallel with owned data.
-- Use `AspireSerialSystemTestBase` for tests that require infrastructure-owned clean-slate isolation.
+- The Admin system-test project currently has no serial base or serial test classes. Prefer owned-data tests rather
+  than introducing destructive baseline resets.
 
 ### Intentional serial exception patterns
 
@@ -561,11 +581,7 @@ In this repository, the acceptable survivor patterns are:
 - **explicit empty-list API contract smokes** when a real empty database response
   must be verified for status code and array contract shape
 
-The current audited repository survivors are:
-
-- `ErrorHandlingTests` for destructive-reset browser empty-state smoke coverage
-- `GetAllToursEmptyListTests`, `GetAllCustomersEmptyListTests`, and `GetAllBookingsEmptyListTests`
-  for explicit empty-list API contract smokes
+The current Admin integration and system-test projects have no serial survivors.
 
 If a test does not fit one of those patterns, prefer rewriting it to owned-data
 parallel execution before accepting a serial exception.
@@ -698,8 +714,8 @@ System tests should:
 
 - exercise the system through Playwright and visible business behavior
 - treat the browser-visible web entrypoint as the SUT seam
-- keep deterministic setup or reset work behind fixture-owned support seams and base-class infrastructure, using a
-  shared hosted contract only when it is genuinely useful
+- use fixture-created, test-owned clients for deterministic API setup; keep reset work behind fixture and base-class
+  infrastructure, using a shared hosted contract only when it is genuinely useful
 - navigate by deterministic IDs, routes, and semantic selectors
 - keep application-host details behind Aspire-backed fixtures, page objects, and workflow helpers
 - treat direct service access as fixture-internal plumbing, not as a public test seam

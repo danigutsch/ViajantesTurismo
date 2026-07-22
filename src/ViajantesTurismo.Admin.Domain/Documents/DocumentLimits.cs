@@ -32,8 +32,8 @@ public static class DocumentLimits
     /// <summary>The maximum field label length.</summary>
     public const int MaxFieldLabelLength = 128;
 
-    /// <summary>The maximum field value length.</summary>
-    public const int MaxFieldValueLength = 4_000;
+    /// <summary>The maximum staff-entered field override length.</summary>
+    public const int MaxStaffOverrideLength = 4_000;
 
     /// <summary>The maximum void reason length.</summary>
     public const int MaxVoidReasonLength = 512;
@@ -41,6 +41,4 @@ public static class DocumentLimits
     /// <summary>The retention period for unfinalized drafts.</summary>
     public const int DraftRetentionDays = 30;
 
-    /// <summary>The provisional retention period for finalized artifacts.</summary>
-    public const int FinalizedRetentionYears = 7;
 }

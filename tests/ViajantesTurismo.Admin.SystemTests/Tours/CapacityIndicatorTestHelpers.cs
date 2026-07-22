@@ -12,15 +12,24 @@ public static class CapacityIndicatorTestHelpers
         await page.GetLink("Edit Tour").ClickAsync();
         await Expect(page).ToHaveTitleAsync("Edit Tour");
 
-        await page.Locator("#minCustomers").FillAsync(minCustomers.ToString(CultureInfo.InvariantCulture));
-        await page.Locator("#maxCustomers").FillAsync(maxCustomers.ToString(CultureInfo.InvariantCulture));
+        var maximumCustomers = page.GetByLabel("Maximum Customers");
+        var maximumCustomersText = maxCustomers.ToString(CultureInfo.InvariantCulture);
+        await maximumCustomers.FillAsync(maximumCustomersText);
+        await maximumCustomers.BlurAsync();
+        await Expect(maximumCustomers).ToHaveValueAsync(maximumCustomersText);
+
+        var minimumCustomers = page.GetByLabel("Minimum Customers");
+        var minimumCustomersText = minCustomers.ToString(CultureInfo.InvariantCulture);
+        await minimumCustomers.FillAsync(minimumCustomersText);
+        await minimumCustomers.BlurAsync();
+        await Expect(minimumCustomers).ToHaveValueAsync(minimumCustomersText);
+
         await page.GetButton("Update Tour").ClickAsync();
 
         var editSuccess = page.Locator(".alert-success");
         await Expect(editSuccess).ToBeVisibleAsync();
         await Expect(editSuccess).ToContainTextAsync("Tour updated successfully!");
 
-        await page.CancelTimedRedirect();
     }
 
     public static async Task ExpectCapacitySummary(IPage page, string expectedText)
@@ -43,9 +52,12 @@ public static class CapacityIndicatorTestHelpers
 
         await navigateToDetails();
         await Expect(page.GetHeading(tourName)).ToBeVisibleAsync();
-        await Expect(page.Locator("h5:has-text('Capacity') + dl").Locator(expectation.DetailsBadgeSelector))
-            .ToContainTextAsync(expectation.DetailsBadgeText);
-        await Expect(page.Locator("h5:has-text('Capacity') + dl").GetByText(expectation.DetailsCapacityText))
+        var capacitySection = page.Locator("h5:has-text('Capacity') + dl");
+        await Expect(capacitySection.GetByText(
+                expectation.DetailsBadgeText,
+                new LocatorGetByTextOptions { Exact = true }))
+            .ToBeVisibleAsync();
+        await Expect(capacitySection.GetByText(expectation.DetailsCapacityText))
             .ToBeVisibleAsync();
     }
 }

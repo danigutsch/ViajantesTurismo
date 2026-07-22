@@ -26,13 +26,11 @@ public sealed class MediaInfrastructureContainerFixture : IAsyncLifetime
         var secretKey = CreateCredential(32);
         var bucket = $"media-{Guid.NewGuid():N}";
         var resourceNameSuffix = $"media-{Guid.NewGuid():N}";
-        var builder = DistributedApplication.CreateBuilder(
-        [
+        var builder = AspireTestApplication.CreateBuilder(
             $"--Parameters:{SeaweedFsResourceName}-access-key={accessKey}",
             $"--Parameters:{SeaweedFsResourceName}-secret-key={secretKey}",
             $"--Parameters:{SeaweedFsResourceName}-bucket={bucket}",
-            $"--DcpPublisher:ResourceNameSuffix={resourceNameSuffix}"
-        ]);
+            $"--DcpPublisher:ResourceNameSuffix={resourceNameSuffix}");
         _ = builder.AddClamAv(ClamAvResourceName);
         _ = builder.AddSeaweedFs(SeaweedFsResourceName, bucket);
 

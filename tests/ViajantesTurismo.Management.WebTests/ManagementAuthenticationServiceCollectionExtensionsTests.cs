@@ -1,5 +1,6 @@
 using System.Net;
 using Microsoft.Extensions.Hosting;
+using SharedKernel.AspNetCore;
 using ViajantesTurismo.Management.Web;
 
 namespace ViajantesTurismo.Management.WebTests;
@@ -145,6 +146,7 @@ public sealed class ManagementAuthenticationServiceCollectionExtensionsTests
 
         // Assert
         options.RequireHttpsMetadata.ShouldBeFalse();
+        options.TokenValidationParameters.RoleClaimType.ShouldBe(ApiAuthenticationDefaults.RolesClaimType);
         options.UsePkce.ShouldBeTrue();
         options.SaveTokens.ShouldBeFalse();
         options.EventsType.ShouldBe(typeof(ManagementOpenIdConnectEvents));

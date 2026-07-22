@@ -6,24 +6,29 @@ namespace ViajantesTurismo.Admin.UnitTests.Infrastructure;
 internal sealed class AdminWriteDbContextTestScope : IAsyncDisposable
 {
     private readonly ServiceProvider provider;
-    private readonly IServiceScope scope;
-    private readonly AdminWriteDbContext dbContext;
+    private AsyncServiceScope scope;
 
     public AdminWriteDbContextTestScope(ServiceProvider provider)
     {
         ArgumentNullException.ThrowIfNull(provider);
 
         this.provider = provider;
-        scope = provider.CreateScope();
-        dbContext = scope.ServiceProvider.GetRequiredService<AdminWriteDbContext>();
+        scope = provider.CreateAsyncScope();
     }
 
-    public AdminWriteDbContext DbContext => dbContext;
+    public AdminWriteDbContext DbContext => scope.ServiceProvider.GetRequiredService<AdminWriteDbContext>();
+
+    public async ValueTask<AdminWriteDbContext> LeaseNextDbContext()
+    {
+        await scope.DisposeAsync().ConfigureAwait(false);
+        scope = provider.CreateAsyncScope();
+
+        return DbContext;
+    }
 
     public async ValueTask DisposeAsync()
     {
-        await dbContext.DisposeAsync();
-        scope.Dispose();
-        await provider.DisposeAsync();
+        await scope.DisposeAsync().ConfigureAwait(false);
+        await provider.DisposeAsync().ConfigureAwait(false);
     }
 }

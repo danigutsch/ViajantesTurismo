@@ -4,6 +4,7 @@
         <ProjectReference Include="..\ViajantesTurismo.Admin.Contracts.Application\ViajantesTurismo.Admin.Contracts.Application.csproj"/>
         <ProjectReference Include="..\ViajantesTurismo.Admin.Contracts.IntegrationEvents\ViajantesTurismo.Admin.Contracts.IntegrationEvents.csproj"/>
         <ProjectReference Include="..\SharedKernel\SharedKernel.Mediator.Abstractions\SharedKernel.Mediator.Abstractions.csproj"/>
+        <ProjectReference Include="..\SharedKernel\SharedKernel.AuditTrail\SharedKernel.AuditTrail.csproj" />
         <ProjectReference Include="..\SharedKernel\SharedKernel.DomainEvents\SharedKernel.DomainEvents.csproj" />
         <ProjectReference Include="..\SharedKernel\SharedKernel.Messaging.IntegrationEvents\SharedKernel.Messaging.IntegrationEvents.csproj"/>
         <ProjectReference Include="..\SharedKernel\SharedKernel.Results\SharedKernel.Results.csproj"/>
@@ -17,6 +18,11 @@
             PrivateAssets="all"
             IsAspireProjectResource="false" />
         <ProjectReference Include="..\SharedKernel\SharedKernel.Messaging.IntegrationEvents.SourceGenerator\SharedKernel.Messaging.IntegrationEvents.SourceGenerator.csproj"
+            OutputItemType="Analyzer"
+            ReferenceOutputAssembly="false"
+            PrivateAssets="all"
+            IsAspireProjectResource="false" />
+        <ProjectReference Include="..\SharedKernel\SharedKernel.AuditTrail.SourceGenerator\SharedKernel.AuditTrail.SourceGenerator.csproj"
             OutputItemType="Analyzer"
             ReferenceOutputAssembly="false"
             PrivateAssets="all"

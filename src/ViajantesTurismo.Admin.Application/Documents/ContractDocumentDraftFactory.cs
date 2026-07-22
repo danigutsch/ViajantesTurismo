@@ -12,7 +12,7 @@ namespace ViajantesTurismo.Admin.Application.Documents;
 /// </summary>
 internal static class ContractDocumentDraftFactory
 {
-    public static Result<DocumentDraft> Create(
+    public static Result<DocumentDraftContent> Create(
         GetBookingDto booking,
         GetTourDto tour,
         string templateId,
@@ -27,13 +27,10 @@ internal static class ContractDocumentDraftFactory
         var fieldsResult = CreateFields(booking, tour);
         if (fieldsResult.IsFailure)
         {
-            return fieldsResult.ConvertError<IReadOnlyList<DocumentField>, DocumentDraft>();
+            return fieldsResult.ConvertError<IReadOnlyList<DocumentField>, DocumentDraftContent>();
         }
 
-        return DocumentDraft.Create(
-            booking.Id,
-            DocumentType.BookingConfirmationContract,
-            DocumentAudience.Customer,
+        return Result.Ok(new DocumentDraftContent(
             templateId,
             templateVersion,
             CreateSourceVersion(booking, tour),
@@ -47,46 +44,7 @@ internal static class ContractDocumentDraftFactory
             branding.TextColor,
             branding.HeadingFontFamily,
             branding.BodyFontFamily,
-            branding.FooterText,
-            now);
-    }
-
-    public static Result<DocumentDraft> CreateRevision(
-        DocumentDraft current,
-        GetBookingDto booking,
-        GetTourDto tour,
-        string templateId,
-        string templateVersion,
-        DocumentBrandingSnapshotValues branding,
-        DateTime now)
-    {
-        ArgumentNullException.ThrowIfNull(current);
-        ArgumentNullException.ThrowIfNull(booking);
-        ArgumentNullException.ThrowIfNull(tour);
-        ArgumentNullException.ThrowIfNull(branding);
-
-        var fieldsResult = CreateFields(booking, tour);
-        if (fieldsResult.IsFailure)
-        {
-            return fieldsResult.ConvertError<IReadOnlyList<DocumentField>, DocumentDraft>();
-        }
-
-        return current.CreateRevision(
-            templateId,
-            templateVersion,
-            CreateSourceVersion(booking, tour),
-            fieldsResult.Value,
-            branding.Version,
-            branding.BrandName,
-            branding.LogoUri,
-            branding.PrimaryColor,
-            branding.AccentColor,
-            branding.BackgroundColor,
-            branding.TextColor,
-            branding.HeadingFontFamily,
-            branding.BodyFontFamily,
-            branding.FooterText,
-            now);
+            branding.FooterText));
     }
 
     private static Result<IReadOnlyList<DocumentField>> CreateFields(GetBookingDto booking, GetTourDto tour)

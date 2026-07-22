@@ -29,7 +29,8 @@ one path without blocking later document types.
 
 ### Customer-facing tour service contract draft
 
-Purpose: prepare a reviewed customer-facing tour service contract draft after the booking is accepted.
+Purpose: prepare a reviewed customer-facing tour service contract draft after the booking is confirmed or
+completed.
 
 Expected content:
 
@@ -145,6 +146,10 @@ Documents move through explicit states:
 Rules:
 
 - Only authorized staff can generate, edit, approve, finalize, download, void, or regenerate.
+- The first vertical slice is Admin-only with global staff scope; it does not introduce a per-booking
+  assignment model.
+- Customer-facing contract drafts can be generated or regenerated only for `Confirmed` or `Completed`
+  bookings; `Pending` and `Cancelled` bookings are ineligible.
 - Authorization must evaluate the actor role, document audience, operation, and booking/document scope.
 - Review must show the source-data timestamp/version used by the draft.
 - Staff edits must be limited to fields declared editable for the document type.
@@ -173,6 +178,10 @@ finalized documents that have operational, contractual, legal, or accounting val
 Drafts that were never finalized should be purgeable after a short period. Finalized artifacts should
 support legal hold and supervised deletion.
 
+Legal hold and finalized-artifact deletion are out of scope for the first vertical slice; it exposes no
+document deletion endpoint. Finalized artifacts therefore have no automatic retention expiry until that
+policy exists.
+
 ### Audit
 
 Audit events should capture:
@@ -189,6 +198,9 @@ Audit events should capture:
 Audit events must not include document body, customer notes, personal data, payment details, binary
 artifact content, rendered text excerpts, names, email addresses, phone numbers, or external booking
 references.
+
+The first vertical slice stores immutable metadata-only audit records for 24 months. A daily retention
+job purges records only after that period; database protections reject updates and pre-expiry deletion.
 
 ### Regeneration
 

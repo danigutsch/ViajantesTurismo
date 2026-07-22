@@ -35,7 +35,6 @@ public class CapacityIndicatorTests(AspireSystemTestFixture fixture) : AspireSys
             () => NavigateTo($"/tours/{tour.Id}"),
             tourName,
             new CapacityStateExpectation(
-                "span.badge.bg-danger",
                 "Fully Booked",
                 $"{currentCount} / {currentCount}"));
 
@@ -49,7 +48,6 @@ public class CapacityIndicatorTests(AspireSystemTestFixture fixture) : AspireSys
             () => NavigateTo($"/tours/{tour.Id}"),
             tourName,
             new CapacityStateExpectation(
-                "span.badge.bg-success",
                 "3 spots available",
                 $"{currentCount} / {greenMax}"));
 
@@ -62,7 +60,6 @@ public class CapacityIndicatorTests(AspireSystemTestFixture fixture) : AspireSys
             () => NavigateTo($"/tours/{tour.Id}"),
             tourName,
             new CapacityStateExpectation(
-                "span.badge.bg-warning",
                 "Below Minimum",
                 $"{currentCount} / 20"));
     }

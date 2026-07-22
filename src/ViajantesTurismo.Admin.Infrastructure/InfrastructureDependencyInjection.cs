@@ -1,6 +1,8 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Hosting;
+using SharedKernel.AuditTrail;
 using SharedKernel.DomainEvents.EntityFrameworkCore;
 using SharedKernel.EntityFrameworkCore;
 using SharedKernel.Messaging.IntegrationEvents;
@@ -9,6 +11,7 @@ using SharedKernel.OpenApi;
 using ViajantesTurismo.Admin.Contracts.IntegrationEvents;
 using ViajantesTurismo.Admin.Contracts.IntegrationEvents.Tours;
 using ViajantesTurismo.Admin.Application;
+using ViajantesTurismo.Admin.Application.Documents;
 using ViajantesTurismo.Admin.Domain.Customers;
 using ViajantesTurismo.Admin.Domain.Documents;
 using ViajantesTurismo.Admin.Infrastructure.Documents;
@@ -59,9 +62,11 @@ public static class InfrastructureDependencyInjection
 
         builder.Services.AddScoped<IUnitOfWork>(sp => sp.GetRequiredService<AdminWriteDbContext>());
         builder.Services.AddScoped<IQueryService, QueryService>();
+        builder.Services.AddScoped<IDocumentQueryService, DocumentQueryService>();
         builder.Services.AddScoped<ITourStore, TourStore>();
         builder.Services.AddScoped<ICustomerStore, CustomerStore>();
         builder.Services.AddScoped<IDocumentStore, DocumentStore>();
+        builder.Services.AddScoped<IDocumentAuditStore, DocumentAuditStore>();
         builder.Services.AddIntegrationEventContract(
             AdminTourCreatedIntegrationEvent.EventType,
             AdminIntegrationEventJsonContext.Default.AdminTourCreatedIntegrationEvent);
@@ -109,6 +114,7 @@ public static class InfrastructureDependencyInjection
         if (addRuntimeBackgroundServices)
         {
             builder.Services.AddHostedService<DocumentDraftRetentionHostedService>();
+            builder.Services.AddHostedService<DocumentAuditRetentionHostedService>();
             builder.Services.AddIntegrationEventOutboxRelay<AdminWriteDbContext>();
             builder.Services.AddPostgreSqlIntegrationEventOutboxRelayAtomicClaims<AdminWriteDbContext>();
         }
@@ -119,6 +125,7 @@ public static class InfrastructureDependencyInjection
     private static void AddAdminWriteDbContext<TApplicationBuilder>(this TApplicationBuilder builder)
         where TApplicationBuilder : IHostApplicationBuilder
     {
+        builder.Services.TryAddSingleton<IAuditTrailSink<DocumentAuditRecord>, DocumentAuditTrailSink>();
         builder.Services.AddDomainEventDispatch<AdminWriteDbContext>();
 
         builder.AddNpgsqlDbContext<AdminWriteDbContext>(

@@ -48,6 +48,16 @@ Source: `src/**/*.cs` route declarations plus route-group prefixes in
 | `PUT` | `/api/v1/customers/{id:guid}` | UpdateCustomer | management/internal | required | `ViajantesTurismo.Admin.ApiService/Customers/CustomerEndpoints.cs` |
 | `GET` | `/api/v1/docs/errors` | GetErrorDocumentation | management/internal | not declared | `ViajantesTurismo.Admin.ApiService/Errors/ErrorDocumentationEndpoints.cs` |
 | `GET` | `/api/v1/docs/errors/{identifier}` | GetErrorDocumentationByIdentifier | management/internal | not declared | `ViajantesTurismo.Admin.ApiService/Errors/ErrorDocumentationEndpoints.cs` |
+| `POST` | `/api/v1/documents/bookings/{bookingId:guid}/contract-drafts` | GenerateDocumentContractDraft | management/internal | required | `ViajantesTurismo.Admin.ApiService/Documents/DocumentEndpoints.cs` |
+| `GET` | `/api/v1/documents/{id:guid}` | GetDocumentById | management/internal | required | `ViajantesTurismo.Admin.ApiService/Documents/DocumentEndpoints.cs` |
+| `POST` | `/api/v1/documents/{id:guid}/approve` | ApproveDocument | management/internal | required | `ViajantesTurismo.Admin.ApiService/Documents/DocumentEndpoints.cs` |
+| `POST` | `/api/v1/documents/{id:guid}/changes-requested` | RequestDocumentChanges | management/internal | required | `ViajantesTurismo.Admin.ApiService/Documents/DocumentEndpoints.cs` |
+| `GET` | `/api/v1/documents/{id:guid}/download` | DownloadDocumentArtifact | management/internal | required | `ViajantesTurismo.Admin.ApiService/Documents/DocumentEndpoints.cs` |
+| `PATCH` | `/api/v1/documents/{id:guid}/fields/{fieldId}` | UpdateDocumentField | management/internal | required | `ViajantesTurismo.Admin.ApiService/Documents/DocumentEndpoints.cs` |
+| `POST` | `/api/v1/documents/{id:guid}/finalize` | FinalizeDocument | management/internal | required | `ViajantesTurismo.Admin.ApiService/Documents/DocumentEndpoints.cs` |
+| `POST` | `/api/v1/documents/{id:guid}/regenerate` | RegenerateDocument | management/internal | required | `ViajantesTurismo.Admin.ApiService/Documents/DocumentEndpoints.cs` |
+| `POST` | `/api/v1/documents/{id:guid}/review` | BeginDocumentReview | management/internal | required | `ViajantesTurismo.Admin.ApiService/Documents/DocumentEndpoints.cs` |
+| `POST` | `/api/v1/documents/{id:guid}/void` | VoidDocument | management/internal | required | `ViajantesTurismo.Admin.ApiService/Documents/DocumentEndpoints.cs` |
 | `GET` | `/api/v1/public/branding` | GetPublicSettings | public API | not declared | `ViajantesTurismo.Branding.ApiService/BrandingEndpoints.cs` |
 | `GET` | `/api/v1/public/catalog/content/{**key}` | GetPublicContent | public API | anonymous | `ViajantesTurismo.Catalog.ApiService/CatalogEndpoints.cs` |
 | `GET` | `/api/v1/public/catalog/media/{id:guid}/{width:int}/{format}` | GetPublicMedia | public API | anonymous | `ViajantesTurismo.Catalog.ApiService/CatalogEndpoints.cs` |
@@ -59,6 +69,7 @@ Source: `src/**/*.cs` route declarations plus route-group prefixes in
 | `PUT` | `/api/v1/tours/{id:guid}` | UpdateTour | management/internal | required | `ViajantesTurismo.Admin.ApiService/Tours/ToursUpdateTourEndpoint.cs` |
 | `GET` | `/catalog/media/images/{id:guid}/preview/{width:int}/{format}` | inline | management/internal | required | `ViajantesTurismo.Management.Web/ManagementWebEndpoints.cs` |
 | `GET` | `/catalog/media/{id:guid}/{width:int}/{format}` | GetPublicMedia | public web | not declared | `ViajantesTurismo.Public.Web/PublicWebEndpoints.cs` |
+| `GET` | `/documents/{id:guid}/download` | Download | management/internal | required | `ViajantesTurismo.Management.Web/DocumentArtifactProxyEndpoints.cs` |
 <!-- generated:api-endpoints:end -->
 
 ## Notes

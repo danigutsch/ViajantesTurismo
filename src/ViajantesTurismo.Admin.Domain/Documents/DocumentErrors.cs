@@ -10,6 +10,10 @@ public static class DocumentErrors
     /// <summary>Returns a document-not-found failure.</summary>
     public static Result DocumentNotFound(Guid id) => Result.NotFound(detail: $"Document with ID {id} was not found.");
 
+    /// <summary>Returns a failure for a booking that cannot produce a customer-facing document draft.</summary>
+    public static Result BookingIsNotAccepted() => Result.Conflict(
+        detail: "A customer-facing document draft requires a confirmed or completed booking.");
+
     /// <summary>Returns an unclassified-field failure.</summary>
     public static Result UnclassifiedField(string fieldId) => Result.Invalid(
         detail: $"Document field '{fieldId}' must have a privacy classification.",
@@ -55,6 +59,18 @@ public static class DocumentErrors
         detail: "Finalized artifact content is required.",
         field: "artifact",
         message: "Artifact content is required.");
+
+    /// <summary>Returns a failure when a document has no sealed artifact available for download.</summary>
+    public static Result FinalizedArtifactNotAvailable() => Result.Conflict(
+        detail: "A finalized document artifact is not available.");
+
+    /// <summary>Returns a conflict when a concurrent request changed the document revision.</summary>
+    public static Result DocumentChangedByAnotherRequest() => Result.Conflict(
+        detail: "The document was changed by another request. Reload and retry.");
+
+    /// <summary>Returns a conflict when a document revision lineage key already exists.</summary>
+    public static Result DocumentRevisionAlreadyExists() => Result.Conflict(
+        detail: "A document revision already exists for this booking. Reload and retry.");
 
     /// <summary>Returns a length-validation failure.</summary>
     public static Result ValueTooLong(string field, int maxLength) => Result.Invalid(

@@ -148,35 +148,6 @@ internal static partial class AdminTestArchitectureGuardTestsHelpers
         return [.. offenses];
     }
 
-    public static string[] FindUndocumentedSerialTests(string filePath)
-    {
-        var fileContents = File.ReadAllText(filePath);
-        if (!fileContents.Contains("AspireSerialSystemTestBase", StringComparison.Ordinal))
-        {
-            return [];
-        }
-
-        var repositoryRoot = GetRepositoryRoot();
-        var offenses = new List<string>();
-        foreach (Match match in SerialTestMethodRegex().Matches(fileContents))
-        {
-            var attributes = match.Groups["attributes"].Value;
-            if (!TestAttributeRegex().IsMatch(attributes))
-            {
-                continue;
-            }
-
-            if (SerialReasonAttributeRegex().IsMatch(attributes))
-            {
-                continue;
-            }
-
-            offenses.Add($"{Path.GetRelativePath(repositoryRoot, filePath).Replace('\\', '/')}: {match.Groups["method"].Value}");
-        }
-
-        return [.. offenses];
-    }
-
     public static string[] FindUndocumentedSerialCollectionDefinitions(string filePath)
     {
         var repositoryRoot = GetRepositoryRoot();
@@ -238,9 +209,6 @@ internal static partial class AdminTestArchitectureGuardTestsHelpers
             || normalizedPath.EndsWith(".feature.cs", StringComparison.Ordinal);
     }
 
-    [GeneratedRegex(@"^\s*protected\s+.*\bClearDatabase(?:Async)?\s*\(", RegexOptions.Compiled | RegexOptions.Multiline)]
-    public static partial Regex ProtectedClearDatabaseMemberRegex();
-
     [GeneratedRegex(@"\b(?:new\s+ServiceCollection\s*\(|BuildServiceProvider\s*\(|CreateScope\s*\(|CreateAsyncScope\s*\()", RegexOptions.Compiled)]
     private static partial Regex RawServiceProviderPlumbingRegex();
 
@@ -249,15 +217,6 @@ internal static partial class AdminTestArchitectureGuardTestsHelpers
 
     [GeneratedRegex(@"^\s*public\s+.*\b(?:IServiceProvider|IServiceScope|CreateScope|CreateAsyncScope|RunInScope)\b", RegexOptions.Compiled)]
     private static partial Regex PublicServiceProviderReachThroughRegex();
-
-    [GeneratedRegex(@"(?<attributes>(?:\s*\[[^\]]+\]\s*)+)\s*public\s+(?:async\s+)?(?:Task|ValueTask|void)\s+(?<method>\w+)\s*\(", RegexOptions.Compiled)]
-    private static partial Regex SerialTestMethodRegex();
-
-    [GeneratedRegex(@"\[(?:Fact|Theory)(?:\(|\])", RegexOptions.Compiled)]
-    private static partial Regex TestAttributeRegex();
-
-    [GeneratedRegex(@"\[SerialE2EReason\(\s*""[^""\r\n\s][^""\r\n]*""", RegexOptions.Compiled)]
-    private static partial Regex SerialReasonAttributeRegex();
 
     [GeneratedRegex(@"const\s+string\s+\w+\s*=\s*(?:(?:global::)?SharedKernel\.Testing\.)?(?:TestTraitNames|SharedKernelTestTraitNames)\.\w+\s*;", RegexOptions.Compiled | RegexOptions.CultureInvariant)]
     private static partial Regex RedirectingCanonicalTraitNameRegex();

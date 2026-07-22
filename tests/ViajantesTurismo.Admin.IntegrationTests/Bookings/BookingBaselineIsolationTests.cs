@@ -4,18 +4,21 @@ namespace ViajantesTurismo.Admin.IntegrationTests.Bookings;
 [Trait(SharedKernel.Testing.TestTraitNames.ScopeName, TestTraits.IntegrationScope)]
 [Trait(SharedKernel.Testing.TestTraitNames.AreaName, TestTraits.BookingsArea)]
 public sealed class BookingBaselineIsolationTests(ApiFixture fixture)
-    : AspireSerialIntegrationTestBase(fixture)
 {
     [Fact]
-    public async Task Can_exercise_an_empty_bookings_baseline_through_fixture_owned_reset_control()
+    public async Task New_tour_has_no_bookings()
     {
         // Arrange
         var cancellationToken = TestContext.Current.CancellationToken;
+        var tour = await fixture.Client.CreateTestTour(
+            "empty-bookings",
+            "Empty bookings",
+            cancellationToken);
 
         // Act
-        var bookings = await Client.GetAllBookingsAndRead(cancellationToken);
+        var bookings = await fixture.Client.GetBookingsByTourAndRead(tour.Id, cancellationToken);
 
         // Assert
-        (bookings).ShouldBeEmpty();
+        bookings.ShouldBeEmpty();
     }
 }

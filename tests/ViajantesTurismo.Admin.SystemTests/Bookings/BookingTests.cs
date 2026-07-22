@@ -1,3 +1,4 @@
+using System.Globalization;
 using ViajantesTurismo.Admin.Contracts.Application;
 
 namespace ViajantesTurismo.Admin.SystemTests.Bookings;
@@ -14,7 +15,11 @@ public class BookingTests(AspireSystemTestFixture fixture) : AspireSystemTestBas
         var customerSelectionLabel = $"{customerFullName} ({customer.Email})";
 
         // Act
-        var createdBookingId = await BookingWorkflow.CreateFromTourDetails(tour, customerFullName, customerSelectionLabel);
+        var createdBookingId = await BookingWorkflow.CreateFromTourDetails(
+            tour,
+            customerFullName,
+            customerSelectionLabel,
+            "$ 1,300.00");
         await BookingWorkflow.NavigateToDetails(createdBookingId);
 
         // Assert
@@ -35,7 +40,11 @@ public class BookingTests(AspireSystemTestFixture fixture) : AspireSystemTestBas
         var customer = await ApiClient.CreateCustomer();
         var customerFullName = $"{customer.FirstName} {customer.LastName}";
         var customerSelectionLabel = $"{customerFullName} ({customer.Email})";
-        var createdBookingId = await BookingWorkflow.CreateFromTourDetails(tour, customerFullName, customerSelectionLabel);
+        var createdBookingId = await BookingWorkflow.CreateFromTourDetails(
+            tour,
+            customerFullName,
+            customerSelectionLabel,
+            "$ 1,300.00");
 
         // Act
         await BookingWorkflow.ApplyDiscount(createdBookingId);
@@ -44,10 +53,16 @@ public class BookingTests(AspireSystemTestFixture fixture) : AspireSystemTestBas
 
         // Assert
         await BookingWorkflow.NavigateToDetails(createdBookingId);
-        await Expect(Page.GetByText("10").First).ToBeVisibleAsync();
-        var paymentsTable = Page.Locator("table").Filter(new LocatorFilterOptions { HasText = "Cash" });
-        await Expect(paymentsTable.First).ToBeVisibleAsync();
-        await Expect(Page.GetByText("$ 1,000.00").First).ToBeVisibleAsync();
+        var financialDetails = Page.Locator(".card").Filter(new LocatorFilterOptions { HasText = "Financial Details" });
+        await Expect(financialDetails.GetByText(
+                "Reason: E2E test discount applied for loyal customer testing",
+                new LocatorGetByTextOptions { Exact = true }))
+            .ToBeVisibleAsync();
+        await Expect(financialDetails.GetByText("$ 1,170.00", new LocatorGetByTextOptions { Exact = true }))
+            .ToBeVisibleAsync();
+        var paymentRow = Page.GetByRole(AriaRole.Row).Filter(new LocatorFilterOptions { HasText = "Cash" });
+        await Expect(paymentRow.GetByText("$ 1,000.00", new LocatorGetByTextOptions { Exact = true }))
+            .ToBeVisibleAsync();
     }
 
     [Fact]
@@ -57,22 +72,26 @@ public class BookingTests(AspireSystemTestFixture fixture) : AspireSystemTestBas
         var tour = await ApiClient.CreateTour(new CreateTourOptions { Currency = CurrencyDto.UsDollar });
         var customer = await ApiClient.CreateCustomer();
         var customerFullName = $"{customer.FirstName} {customer.LastName}";
-        var customerSelectionLabel = $"{customerFullName} ({customer.Email})";
-        var createdBookingId = await BookingWorkflow.CreateFromTourDetails(tour, customerFullName, customerSelectionLabel);
+        var booking = await ApiClient.CreateConfirmedPaidBooking(tour.Id, customer.Id);
+        var expectedTotal = $"$ {booking.TotalPrice.ToString("N2", CultureInfo.InvariantCulture)}";
+        await BookingWorkflow.NavigateToEdit(booking.Id);
+        await Expect(Page.GetButton("Complete Booking")).ToBeEnabledAsync();
 
         // Act
-        await BookingWorkflow.ApplyDiscount(createdBookingId);
-        await BookingWorkflow.ConfirmBooking(createdBookingId);
-        await BookingWorkflow.RecordPayment();
         await BookingWorkflow.CompleteBooking();
-        await BookingWorkflow.NavigateToDetails(createdBookingId);
+        await BookingWorkflow.NavigateToDetails(booking.Id);
         await Page.ReloadAsync();
 
         // Assert
         await Expect(Page).ToHaveTitleAsync("Booking Details");
-        await Expect(Page.GetByText("completed").First).ToBeVisibleAsync();
+        var generalInformation = Page.Locator(".card")
+            .Filter(new LocatorFilterOptions { HasText = "General Information" });
+        await Expect(generalInformation.GetByText(
+                "Completed",
+                new LocatorGetByTextOptions { Exact = true }))
+            .ToBeVisibleAsync();
         await Expect(Page.GetByText(tour.Name).First).ToBeVisibleAsync();
         await Expect(Page.GetByText(customerFullName).First).ToBeVisibleAsync();
-        await Expect(Page.GetByText("$ 1,000.00").First).ToBeVisibleAsync();
+        await Expect(Page.GetByText(expectedTotal).First).ToBeVisibleAsync();
     }
 }

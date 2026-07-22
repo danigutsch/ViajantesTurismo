@@ -540,6 +540,40 @@ public sealed class DocumentDraftTests
     }
 
     [Fact]
+    public void Create_field_rejects_undefined_privacy_classification()
+    {
+        // Act
+        var result = DocumentField.Create(
+            "greeting",
+            "Greeting",
+            "Dear customer",
+            (DocumentPrivacyClassification)999,
+            true);
+
+        // Assert
+        result.IsFailure.ShouldBeTrue();
+    }
+
+    [Fact]
+    public void Create_field_accepts_generated_value_above_the_staff_override_limit()
+    {
+        // Arrange
+        var generatedValue = new string('x', 4_001);
+
+        // Act
+        var result = DocumentField.Create(
+            "included-services",
+            "Included services",
+            generatedValue,
+            DocumentPrivacyClassification.Operational,
+            false);
+
+        // Assert
+        result.IsSuccess.ShouldBeTrue();
+        result.Value.Value.ShouldBe(generatedValue);
+    }
+
+    [Fact]
     public void CreateRevision_discards_override_when_the_generated_value_changes()
     {
         // Arrange
@@ -653,7 +687,7 @@ public sealed class DocumentDraftTests
 
         // Act
         var expiredDraft = draft.IsExpiredDraft(createdAt.AddDays(DocumentLimits.DraftRetentionDays));
-        var expiredFinalized = finalized.IsExpiredDraft(createdAt.AddYears(DocumentLimits.FinalizedRetentionYears + 1));
+        var expiredFinalized = finalized.IsExpiredDraft(createdAt.AddYears(1));
 
         // Assert
         beginReview.IsSuccess.ShouldBeTrue();
@@ -661,5 +695,6 @@ public sealed class DocumentDraftTests
         finalize.IsSuccess.ShouldBeTrue();
         expiredDraft.ShouldBeTrue();
         expiredFinalized.ShouldBeFalse();
+        finalized.RetentionExpiresAt.ShouldBeNull();
     }
 }
