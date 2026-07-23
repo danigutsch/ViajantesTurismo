@@ -54,6 +54,28 @@ Aspire provider wrappers are clearer when the module owns the final callback. Do
 interception should live in a separate package over these EF Core primitives, not in
 `SharedKernel.EntityFrameworkCore`.
 
+```mermaid
+sequenceDiagram
+    participant API as Admin.ApiService
+    participant Handler as CreateTourCommandHandler
+    participant Store as ITourStore
+    participant Tour as Tour aggregate
+    participant Context as AdminWriteDbContext
+    participant Interceptor as Domain event/outbox interceptor
+    participant Outbox as messaging.outbox_messages
+    participant Db as Admin PostgreSQL
+
+    API->>Handler: CreateTourCommand
+    Handler->>Store: IdentifierExists(identifier)
+    Handler->>Tour: Tour.Create(definition)
+    Tour-->>Handler: Result<Tour>
+    Handler->>Context: SaveEntities(ct)
+    Context->>Interceptor: Dispatch TourCreatedDomainEvent
+    Interceptor->>Outbox: Enqueue AdminTourCreatedIntegrationEvent
+    Context->>Db: Commit tour and outbox row atomically
+    Handler-->>API: Result<Guid>
+```
+
 ### Current durable boundary
 
 Admin tour creation persists integration events through the EF Core outbox provider. Admin and Catalog
@@ -63,6 +85,21 @@ transport table. `IntegrationEventWorker` claims a batch with `FOR UPDATE SKIP L
 for that batch, processes its messages sequentially, and records lease/retry state. The generated typed
 publisher resolves the Catalog handler, whose idempotency wrapper writes Catalog
 `messaging.idempotency_keys`.
+
+<!-- doc-fact:admin-catalog-runtime:start -->
+- current-runtime: `AddAdminRuntimeBackgroundServices`
+- current-runtime: `AddCatalogHostedIntegrationEventTransport`
+- current-runtime: `AddCatalogIntegrationEventTransportConsumer`
+- current-runtime: `AddCatalogIntegrationEventTransportContext`
+- current-runtime: `AddCatalogIntegrationEventWorkerInfrastructure`
+- current-runtime: `AddIntegrationEventContract`
+- current-runtime: `AddIntegrationEventOutbox`
+- current-runtime: `AddIntegrationEventOutboxRelay`
+- current-runtime: `AddPostgreSqlIntegrationEventOutboxRelayAtomicClaims`
+- current-runtime: `AddPostgreSqlIntegrationEventTransportConsumer`
+- current-runtime: `AddPostgreSqlIntegrationEventTransportProducer`
+- current-runtime: `CatalogProjectionHostedService`
+<!-- doc-fact:admin-catalog-runtime:end -->
 
 ```mermaid
 flowchart LR
@@ -74,6 +111,7 @@ flowchart LR
     worker[IntegrationEventWorker batch consumer]
     inbox[(Catalog messaging.idempotency_keys)]
     catalogConsumer[Catalog consumer]
+    catalogEvents[(Catalog event streams)]
 
     adminHandler --> adminDb
     adminHandler --> outbox
@@ -82,6 +120,7 @@ flowchart LR
     transport --> worker
     worker --> inbox
     inbox --> catalogConsumer
+    catalogConsumer --> catalogEvents
 ```
 
 Admin write-side domain-event dispatch uses SaveChanges interception to write outbox rows in the same
@@ -125,10 +164,18 @@ sequenceDiagram
 
 ### Current implementation
 
-Catalog has event-sourcing abstractions and tested application components for consuming
-`AdminTourCreatedIntegrationEvent`, creating a `CatalogTourDraftCreated` event, and projecting it into
-`CatalogTourReadModels`. The Catalog API currently exposes read-model CRUD-style endpoints for tour
-presentation and public published tour reads.
+Catalog consumes `AdminTourCreatedIntegrationEvent`, appends `CatalogTourDraftCreated`, and projects
+the stream into `CatalogTourReadModels`. Management presentation edits and publish/unpublish actions
+rehydrate the aggregate, append versioned events, and attempt inline projection. If the append commits
+but projection is deferred, the API returns `202 Accepted`; the background projection runner retries
+from the unchanged checkpoint.
+
+<!-- doc-fact:catalog-tour-events:start -->
+- current-event: `CatalogTourDraftCreated`
+- current-event: `CatalogTourPresentationChanged`
+- current-event: `CatalogTourPublished`
+- current-event: `CatalogTourUnpublished`
+<!-- doc-fact:catalog-tour-events:end -->
 
 ```mermaid
 sequenceDiagram
@@ -138,6 +185,7 @@ sequenceDiagram
     participant Handler as AdminTourCreatedIntegrationHandler
     participant Aggregate as CatalogTour.CreateDraft
     participant Store as IEventStore
+    participant Management as Management mutation
     participant Runner as CatalogProjectionRunner
     participant Projection as CatalogTourReadModelProjection
     participant ReadModel as ICatalogTourReadModelStore
@@ -148,6 +196,11 @@ sequenceDiagram
     Handler->>Aggregate: Create draft
     Aggregate-->>Handler: CatalogTourDraftCreated
     Handler->>Store: Append(stream, NoStream, events)
+    Management->>Store: Load stream and expected version
+    Management->>Aggregate: Edit, publish, or unpublish
+    Aggregate-->>Management: Versioned Catalog tour event
+    Management->>Store: Append(stream, expected version, events)
+    Management->>Projection: Attempt inline projection
     Runner->>Store: LoadAfter(checkpoint, 100)
     Runner->>Projection: Apply(envelope)
     Projection->>ReadModel: UpsertDraft(...)
@@ -155,27 +208,29 @@ sequenceDiagram
     Runner->>Runner: Save projection checkpoint
 ```
 
-Current runtime limits:
+Current runtime behavior:
 
-- `CatalogTour` currently applies `CatalogTourDraftCreated` only.
-- `PUT /catalog/tours/{id}/presentation` updates the read model directly; it does not append a
-  Catalog tour presentation event yet.
+- `CatalogTour` applies draft creation, presentation change, publish, and unpublish events.
+- Management presentation and publication mutations append to the tour stream with optimistic
+  expected-version checks.
 - Public endpoints read only rows marked `IsPublished` from the read model.
-- `IntegrationEventWorker` hosts PostgreSQL transport consumption and background projection execution.
-  A claimed transport batch shares one DI scope and is processed sequentially.
+- `IntegrationEventWorker` hosts PostgreSQL transport consumption, background projection execution,
+  and media reconciliation. A claimed transport batch shares one DI scope and is processed sequentially.
+- A committed mutation with deferred projection returns `202 Accepted` and a management-detail
+  `Location`; background projection retries it.
 - `CatalogTelemetry` emits OpenTelemetry activities and counters around integration event handling,
   idempotency decisions, tour stream updates, and projection batches.
 
-### Planned/evolving
+### Remaining evolution
 
-ADR-025 remains the direction for versioned Catalog tour presentation. Future slices should move
-presentation edits and publication transitions behind event-sourced aggregate commands before treating
-read models as rebuildable source-of-truth projections.
+Tour presentation and publication read models are rebuildable from Catalog tour streams. Tour gallery
+associations and ordering still use media metadata outside those streams; a future event-sourced gallery
+transition is required before claiming the complete visual presentation is stream-rebuildable.
 
 ```mermaid
 flowchart TB
     edit[Management presentation edit]
-    command[Catalog command handler planned]
+    command[Catalog presentation service]
     aggregate[CatalogTour aggregate]
     events[(catalog.events)]
     projector[Projection runner]
@@ -183,13 +238,13 @@ flowchart TB
     publicRead[(Published public read model)]
     publicWeb[Public.Web]
 
-    edit -. planned .-> command
-    command -. planned .-> aggregate
-    aggregate -. planned .-> events
-    events -. planned .-> projector
-    projector -. planned .-> managementRead
-    projector -. planned .-> publicRead
-    publicWeb -. planned .-> publicRead
+    edit --> command
+    command --> aggregate
+    aggregate --> events
+    events --> projector
+    projector --> managementRead
+    projector --> publicRead
+    publicWeb --> publicRead
 ```
 
 ## Public content localization and review flows
@@ -324,76 +379,62 @@ Current constraints visible in contracts:
 - Media object reconciliation scans deterministic `media/` object keys, reports missing references and
   orphaned objects, applies a grace period for in-flight work, and retries deletion failures on later runs.
 
-### Planned/evolving
+### Current asynchronous processing
 
-Future media work should move gallery metadata changes behind Catalog event-sourced commands if tour
-presentation read models become rebuildable from event streams.
-
-Image processing should remain asynchronous after the original upload is accepted and stored. The upload
-flow should raise a domain event, and the domain event dispatch path should save an integration event to
-the Catalog outbox only when downstream image processing is required. A background publisher can then
-deliver the typed event through the transport adapter, where CloudEvents becomes the external envelope.
-The image processor consumes the stored original, creates thumbnails, icons, and responsive variants, and
-then records processing status and generated variant metadata.
-
-The async processing consumer must assume at-least-once delivery. It should use the typed integration
-event id or CloudEvents `source` plus `id` as the inbox/idempotency key, then make image outputs
-deterministic so replay is safe. Variant object keys should be derived from media id, processing version,
-variant name, and format. Variant metadata should be upserted with a unique key such as media id,
-processing version, variant name, and format rather than appended blindly.
+Upload intake validates, scans, probes, and stores the original object before atomically persisting media
+metadata with `MediaImageOriginalStoredIntegrationEvent` in the Catalog outbox. The Catalog API outbox
+relay dispatches the event to an idempotent in-process consumer. Processing creates deterministic thumbnail,
+icon, AVIF, WebP, and JPEG variants keyed by media id, processing version, variant name, and format, then
+records ready/failed status and responsive metadata. Reconciliation reports missing references and
+orphaned objects.
 
 ```mermaid
 flowchart TB
-    upload[Media upload/storage adapter planned]
-    asset[(Stored media asset planned)]
-    domainEvent[Media uploaded domain event planned]
-    domainDispatch[Domain event dispatch planned]
-    outbox[(Catalog integration outbox planned)]
-    inbox[(Image processing inbox planned)]
-    processor[Async image processor planned]
-    variants[(Generated variants planned)]
+    upload[Media upload intake]
+    asset[(Stored original media object)]
+    outbox[(Catalog integration outbox)]
+    inbox[(Idempotent media consumer)]
+    processor[Media image processor]
+    variants[(Deterministic public variants)]
     metadata[Catalog image metadata]
     ai[LiteLLM-compatible AI alt text and caption draft]
     eval[AI output evaluation planned]
     telemetry[OpenTelemetry metrics planned]
     grafana[Grafana dashboards planned]
-    review[Alt text/caption review planned]
-    projection[Published tour projection planned]
+    review[Alt text/caption review]
+    tourRead[(Published tour read model)]
+    publicRead[Catalog public-read composition]
+    galleryProjection[Event-sourced gallery projection planned]
     publicWeb[Public.Web gallery]
 
-    upload -. planned .-> asset
-    upload -. records .-> domainEvent
-    domainEvent -. dispatch .-> domainDispatch
-    domainDispatch -. save original-stored integration event .-> outbox
-    outbox -. publish .-> inbox
-    inbox -. first source+id wins .-> processor
-    asset -. original image .-> processor
-    processor -. thumbnails/icons/responsive variants .-> variants
-    processor -. processing status + variant metadata .-> metadata
-    asset -. public URI .-> metadata
-    metadata -. image + context metadata .-> ai
-    ai -. generated draft .-> eval
-    eval -. review-required text .-> review
+    upload --> asset
+    upload -->|save original-stored event| outbox
+    outbox --> inbox
+    inbox -->|first source+id wins| processor
+    asset --> processor
+    processor --> variants
+    processor -->|processing status + variant metadata| metadata
+    metadata --> ai
+    ai -->|review-required draft| review
     ai -. generation metrics .-> telemetry
     eval -. quality metrics .-> telemetry
     review -. approval/edit/reject metrics .-> telemetry
     telemetry -. dashboards .-> grafana
-    metadata -. requires alt text .-> review
-    review -. approved .-> projection
-    metadata -. event-sourced changes planned .-> projection
-    publicWeb --> projection
+    metadata -->|requires alt text| review
+    review -->|persist approved text| metadata
+    metadata --> publicRead
+    tourRead --> publicRead
+    metadata -. gallery changes planned .-> galleryProjection
+    galleryProjection -. future read input .-> publicRead
+    publicRead --> publicWeb
 ```
 
-Open design points for future issues:
+Remaining design points:
 
-- Storage provider and upload policy.
-- Image ordering, hero-image selection, and removal behavior.
-- Whether image metadata changes are Catalog tour events or a separate media stream.
-- Final transport for media processing integration events after outbox publication.
-- Whether AI alt text orchestration needs Semantic Kernel beyond the smaller LiteLLM-compatible adapter.
+- Whether gallery metadata changes become Catalog tour events or a separate media stream.
 - Evaluation rubric and golden fixture shape for AI-generated accessibility text.
 - Grafana dashboard panels for generation quality, review outcomes, and publication blockers.
-- Accessibility review requirements beyond required `AltText`.
+- Policy for optional geolocation context and future storage adapters.
 
 ## References
 

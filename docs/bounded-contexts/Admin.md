@@ -30,10 +30,11 @@ None (Admin is a core context)
 
 ### Integration Events Published
 
-- `TourCreated`, `TourUpdated` — Tour catalog changes
-- `BookingConfirmed`, `BookingCancelled`, `BookingCompleted` — Booking lifecycle events
-- `PaymentRecorded` — Payment transactions
-- `CustomerCreated`, `CustomerUpdated` — Customer profile changes
+- `AdminTourCreatedIntegrationEvent` — durable Catalog draft creation.
+
+The [generated event and message flow map](../architecture/generated-event-message-flow-map.md) is the
+current source-derived contract, producer, consumer, and handler inventory. Future event families stay
+out of this current-contract list until implemented.
 
 ## Aggregates
 
@@ -55,45 +56,10 @@ For detailed aggregate documentation (invariants, commands, events), see
 
 ## Application Services
 
-### Commands (CQRS Write Side)
-
-**Tour Commands:**
-
-- `CreateTourCommand`, `UpdateTourDetailsCommand`, `UpdateTourScheduleCommand`
-- `UpdateTourPricingCommand`, `UpdateTourCapacityCommand`
-- `DeleteTourCommand`
-
-**Booking Commands:**
-
-- `AddBookingCommand`, `ConfirmBookingCommand`, `CancelBookingCommand`, `CompleteBookingCommand`
-- `UpdateBookingNotesCommand`, `UpdateBookingDiscountCommand`, `UpdateBookingDetailsCommand`
-- `RemoveBookingCommand`
-
-**Payment Commands:**
-
-- `RecordPaymentCommand`
-
-**Customer Commands:**
-
-- `CreateCustomerCommand`
-- `UpdateCustomerPersonalInfoCommand`, `UpdateCustomerContactInfoCommand`
-- `UpdateCustomerAddressCommand`, `UpdateCustomerPhysicalInfoCommand`
-- `UpdateCustomerIdentificationInfoCommand`, `UpdateCustomerMedicalInfoCommand`
-- `UpdateCustomerEmergencyContactCommand`, `UpdateCustomerAccommodationPreferencesCommand`
-
-### Queries (CQRS Read Side)
-
-**Tour Queries:**
-
-- `GetTourByIdQuery`, `GetAllToursQuery`, `GetToursByDateRangeQuery`
-
-**Customer Queries:**
-
-- `GetCustomerByIdQuery`, `GetAllCustomersQuery`, `GetCustomerByEmailQuery`
-
-**Booking Queries:**
-
-- `GetBookingByIdQuery`, `GetBookingsByTourQuery`, `GetBookingsByCustomerQuery`
+Admin application slices own tour, booking/payment, customer/import, and document workflows. Their
+source folders and the [generated endpoint route map](../architecture/generated-endpoint-route-map.md)
+are the current inventories; this bounded-context page documents responsibilities rather than
+duplicating every command, query, or endpoint type.
 
 ## Domain Validation
 
@@ -112,29 +78,22 @@ for specific invariants.
 ### Persistence
 
 - **Database:** PostgreSQL (Entity Framework Core via Npgsql)
-- **Repositories:** `ITourRepository`, `ICustomerRepository`
+- **Stores:** `ITourStore`, `ICustomerStore`, `IDocumentStore`
 - **Unit of Work:** `IUnitOfWork` for transactional consistency
 
 ### API
 
 - **Style:** Minimal APIs (ASP.NET Core)
-- **Endpoints:** `/tours`, `/customers`, `/bookings`
+- **Endpoints:** versioned Minimal APIs listed in the
+  [generated endpoint route map](../architecture/generated-endpoint-route-map.md)
 - **Contracts:** split across `ViajantesTurismo.Admin.Contracts.Application`,
   `ViajantesTurismo.Admin.Contracts.Http`, and `ViajantesTurismo.Admin.Contracts.IntegrationEvents`
 
 ## Testing
 
-**Behavior Tests:** `tests/ViajantesTurismo.Admin.BehaviorTests/specs/`
-
-- `Tour*.feature` — Tour aggregate scenarios
-- `Booking*.feature` — Booking lifecycle scenarios
-- `Payment*.feature` — Payment recording scenarios
-- `Customer*.feature` — Customer aggregate scenarios
-- `*Validation.feature` — Cross-cutting validation scenarios
-
-**Unit Tests:** `tests/ViajantesTurismo.Admin.UnitTests/`
-
-**Integration Tests:** `tests/ViajantesTurismo.Admin.IntegrationTests/`
+Admin behavior, unit, API, contract, infrastructure, integration, and system test projects validate
+their matching runtime boundaries. See [test guidelines](../TEST_GUIDELINES.md) and the
+[tests README](../../tests/README.md) instead of maintaining another project inventory here.
 
 ## Related Documentation
 

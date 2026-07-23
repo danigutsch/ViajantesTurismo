@@ -6,6 +6,8 @@ internal sealed class DocumentationGeneratorBlock
 
     public string Kind { get; set; } = string.Empty;
 
+    public string TargetPath { get; set; } = string.Empty;
+
     public string Flowchart { get; set; } = MermaidDiagram.LeftRight;
 
     public List<string> Lines { get; set; } = [];

@@ -7,7 +7,6 @@ namespace SharedKernel.Documentation;
 /// </summary>
 public static class DocumentationGenerator
 {
-
     /// <summary>
     /// Runs documentation generation from a JSON config file.
     /// </summary>
@@ -23,7 +22,7 @@ public static class DocumentationGenerator
         ValidateConfig(config);
 
         var replacements = config.Blocks
-            .Select(block => KeyValuePair.Create(block.Name, GenerateBlock(fullRootPath, block)))
+            .Select(block => (block.Name, block.TargetPath, Replacement: GenerateBlock(fullRootPath, block)))
             .ToList();
         var updater = new GeneratedMarkdownUpdater(fullRootPath, config.DocsPath, config.GeneratorName);
         return new DocumentationGenerationResult(updater.Update(checkOnly, replacements));
@@ -49,6 +48,13 @@ public static class DocumentationGenerator
         if (config.Blocks.Select(block => block.Name).Distinct(StringComparer.Ordinal).Count() != config.Blocks.Count)
         {
             throw new InvalidOperationException("Generated block names must be unique.");
+        }
+
+        var blockWithoutTarget = config.Blocks.FirstOrDefault(block => string.IsNullOrWhiteSpace(block.TargetPath));
+        if (blockWithoutTarget is not null)
+        {
+            throw new InvalidOperationException(
+                $"Generated block '{blockWithoutTarget.Name}' is missing required targetPath.");
         }
     }
 

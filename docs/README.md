@@ -23,6 +23,26 @@ specialized docs instead of repeating the same policy.
 | FOSS compliance | [FOSS compliance](FOSS_COMPLIANCE.md) | [SharedKernel packaging](SHAREDKERNEL_PACKAGING.md), [Local tool security](local-tool-security.md) |
 | Production operations | [Production readiness and operations](operations/production-readiness.md) | [Document retention and legal-hold proposal](operations/document-retention-and-legal-hold.md), [Runtime wiring and deployment mapping](architecture/runtime-wiring-and-deployment.md) |
 
+Machine-readable conformance identifiers:
+
+<!-- doc-fact:documentation-index:start -->
+- current-requirement: `api-and-client-boundaries`
+- current-requirement: `architecture-and-adrs`
+- current-requirement: `async-integration-contracts`
+- current-requirement: `ci-release-and-contribution-workflow`
+- current-requirement: `coding-standards`
+- current-requirement: `configuration-and-feature-flags`
+- current-requirement: `deprecated-docs-reviewed`
+- current-requirement: `documentation-governance`
+- current-requirement: `domain-validation`
+- current-requirement: `foss-compliance`
+- current-requirement: `guidance-centralized`
+- current-requirement: `production-operations`
+- current-requirement: `roadmap-and-prioritization`
+- current-requirement: `setup-and-tooling`
+- current-requirement: `testing`
+<!-- doc-fact:documentation-index:end -->
+
 Deprecated docs: none identified.
 
 Centralized guidance:

@@ -6,8 +6,9 @@ documents navigable and reviewable without forcing every Markdown file into one 
 ## Contents
 
 - [Goals and non-goals](#goals-and-non-goals)
-- [Document classification](#document-classification)
+- [Required sections by document type](#required-sections-by-document-type)
 - [Composable schema blocks](#composable-schema-blocks)
+- [Authorship, generation, and provenance](#authorship-generation-and-provenance)
 - [Composition and incremental adoption](#composition-and-incremental-adoption)
 - [Table of contents policy](#table-of-contents-policy)
 - [Validation and tooling](#validation-and-tooling)
@@ -31,12 +32,20 @@ documents navigable and reviewable without forcing every Markdown file into one 
 - Do not replace the established ADR, Markdown lint, link validation, or generated-diagram policies.
 - Do not add a shell, Python, npm, or transient helper solely for documentation schema validation.
 
-## Document classification
+Machine-readable standards guarded by the documentation conformance check:
+
+<!-- doc-fact:documentation-governance:start -->
+- current-standard: `generated-manual-provenance-explicit`
+- current-standard: `required-sections-by-document-type`
+- current-standard: `small-focused-docs-exempt`
+<!-- doc-fact:documentation-governance:end -->
+
+## Required sections by document type
 
 Classify maintained documentation by its primary purpose. A document may compose more than one
 block when that improves its reviewability.
 
-| Class | Typical repository locations | Expected blocks | Explicit exemption or note |
+| Class | Typical repository locations | Required blocks | Explicit exemption or note |
 | --- | --- | --- | --- |
 | Standard or reference | `docs/CODING_GUIDELINES.md`, `docs/CONFIGURATION.md`, `docs/TEST_GUIDELINES.md` | Common metadata when durable ownership matters; link policy; optional inventory | TOC policy applies. |
 | Decision record | `docs/adr/*.md` | Durable decision; links | Existing ADR conventions remain canonical. Short ADRs are TOC-exempt. |
@@ -97,6 +106,22 @@ Use wherever references form part of the document's contract:
 - Keep generated-document sources and generated outputs linked through their existing ownership path.
 - Rely on the existing link validation path for local links and durable-reference policy.
 
+## Authorship, generation, and provenance
+
+State ownership where a reader could otherwise mistake generated content for manually maintained
+guidance:
+
+- Manually maintained documents treat their tracked Markdown as the source and are edited with the
+  code or workflow they describe.
+- Generated documents identify the owning generator and source or configuration. Do not edit their
+  generated blocks by hand; refresh them through the documented .NET tool command.
+- Hybrid documents keep manual prose outside explicit generated markers. The generator owns only
+  the marked blocks, while reviewers own the surrounding explanation.
+- Curated inventories identify the repository source used to verify each claim, even when the tool
+  cannot derive the claim automatically.
+- Imported or adapted material records its durable source and any applicable attribution or license
+  evidence. Unverifiable copied guidance is not accepted as repository provenance.
+
 ## Composition and incremental adoption
 
 New or substantively revised durable documents should select the smallest useful set of blocks.
@@ -148,9 +173,10 @@ The current repository checks remain authoritative for their distinct responsibi
   repository wrapper.
 - `SharedKernel.Documentation.Tool` owns its configured generated-document outputs.
 
-Documentation schema validation is deferred until a concrete machine-readable documentation source
-has a real consumer. That future capability must use the existing .NET local-tool model, extending
-`SharedKernel.RepoConfig.Tool` or `SharedKernel.Documentation.Tool` only when the boundary is clear.
+`SharedKernel.Documentation.Tool check` validates the small set of machine-readable governance and
+architecture facts that have concrete consumers. Keep broader schema enforcement deferred until a
+new durable fact has a real consumer; extend the existing .NET tool rather than adding another
+script or tool.
 
 ## Ownership and review
 

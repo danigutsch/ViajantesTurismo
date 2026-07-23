@@ -14,7 +14,6 @@
         <PackageReference Include="Microsoft.Testing.Extensions.CodeCoverage">
             <PrivateAssets>all</PrivateAssets>
         </PackageReference>
-        <PackageReference Include="Microsoft.CodeAnalysis.CSharp" PrivateAssets="all" />
         <PackageReference Include="TngTech.ArchUnitNET.xUnitV3"/>
         <PackageReference Include="xunit.v3.mtp-v2"/>
     </ItemGroup>
@@ -41,6 +40,7 @@
         <ProjectReference Include="..\..\src\SharedKernel\SharedKernel.Aspire.Hosting.ClamAv\SharedKernel.Aspire.Hosting.ClamAv.csproj" />
         <ProjectReference Include="..\..\src\SharedKernel\SharedKernel.Aspire.Hosting.SeaweedFs\SharedKernel.Aspire.Hosting.SeaweedFs.csproj" />
         <ProjectReference Include="..\..\src\SharedKernel\SharedKernel.BuildingBlocks\SharedKernel.BuildingBlocks.csproj"/>
+        <ProjectReference Include="..\..\src\SharedKernel\SharedKernel.Documentation\SharedKernel.Documentation.csproj" />
         <ProjectReference Include="..\..\src\SharedKernel\SharedKernel.Messaging.IntegrationEvents\SharedKernel.Messaging.IntegrationEvents.csproj" />
     </ItemGroup>
 </Project>

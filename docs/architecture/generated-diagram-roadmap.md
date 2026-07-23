@@ -9,11 +9,12 @@ metadata the code does not expose.
 | System overview | Curated block in `docs/architecture/generated-diagrams.json`. | `system-overview.md` | `tools/SharedKernel.Documentation.Tool` through the existing diagram refresh path. | Generated from curated architecture data. |
 | Project dependencies | `*.csproj` project references. | `boundaries-and-dependencies.md` | Same generator config. | Generated. |
 | SharedKernel dependencies | `src/SharedKernel/**/*.csproj` project references. | `boundaries-and-dependencies.md` | Same generator config. | Generated. |
-| AppHost runtime wiring | `src/ViajantesTurismo.AppHost/AppHost.cs`. | `runtime-wiring-and-deployment.md` | Same generator config. | Generated. |
+| AppHost runtime wiring | `src/ViajantesTurismo.AppHost/AppHostComposition.cs`. | `runtime-wiring-and-deployment.md` | Same generator config. | Generated. |
 | CI main workflow | `.github/workflows/ci.yml` jobs and `needs`. | `ci-validation-flows.md` | Same generator config. | Generated. |
 | Supplemental workflows | `.github/workflows/*.yml` workflow names. | `ci-validation-flows.md` | Same generator config. | Generated. |
 | Minimal API endpoints | `MapGet`, `MapPost`, `MapPut`, `MapPatch`, and `MapDelete` declarations. | `generated-endpoint-route-map.md` | Same generator config; stale output fails the existing lint path. | Generated. |
 | Events and messages | Integration-event contracts, event creation sites, consumer registrations, and handlers. | `generated-event-message-flow-map.md` | Same generator config; missing metadata is shown as missing. | Generated. |
+| Machine-readable architecture facts | Stable fact markers plus configured C# switches, registrations, and required invocations. | `FLOWS.md` and the documentation index. | `SharedKernel.Documentation.Tool check` through `scripts/lint-all.sh`. | Source-conformance checked. |
 | Mediator workflows | Existing mediator generator output and request/handler source. | No generated diagram yet. | Research only until request, handler, pipeline, notification, and stream metadata are explicit. | Deferred. |
 | Code-generation strategy | Repository .NET tool model and local tool security policy. | This roadmap and `diagram-guidance.md`. | No new scripts, Python, npm, or transient tooling. | Use existing .NET generator. |
 

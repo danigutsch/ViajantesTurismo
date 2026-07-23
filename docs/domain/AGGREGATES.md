@@ -281,10 +281,12 @@ Current implementation:
 - Stores the editor source language.
 - Marks content `ReviewRequired` when any variant requires human review.
 - Blocks `Publish()` while review-required variants remain.
+- Management can create and update localized content through Catalog endpoints.
+- Public reads return published content variants only and use language-aware cache metadata.
 
 Planned/evolving:
 
-- Approval, publication endpoints, and published-only public rendering are still future slices.
+- Dedicated approval workflow and richer editorial history remain future slices.
 
 ---
 
