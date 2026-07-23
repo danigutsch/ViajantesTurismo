@@ -1,7 +1,10 @@
+using SharedKernel.Testing;
+using ViajantesTurismo.Admin.UnitTests.Infrastructure;
 using ViajantesTurismo.MigrationService;
 
 namespace ViajantesTurismo.Admin.UnitTests.MigrationService;
 
+[Trait(SharedKernelTestTraitNames.CategoryName, TestTraits.PersistenceCategory)]
 public sealed class MigrationProcessTests
 {
     [Fact]

@@ -1,9 +1,12 @@
 using System.Globalization;
 using System.Text.Json;
+using SharedKernel.Testing;
 using ViajantesTurismo.Admin.Contracts.IntegrationEvents.Tours;
 
 namespace ViajantesTurismo.Admin.UnitTests.Infrastructure;
 
+[Trait(SharedKernelTestTraitNames.CategoryName, TestTraits.OutboxCategory)]
+[Trait(SharedKernelTestTraitNames.CapabilityName, TestTraits.IntegrationEventRelayCapability)]
 public sealed class GeneratedIntegrationEventSerializerTests
 {
     [Fact]
