@@ -4,6 +4,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.Extensions.DependencyInjection;
 using Npgsql;
 using SharedKernel.EntityFrameworkCore;
+using SharedKernel.Idempotency.EntityFrameworkCore;
 using SharedKernel.IntegrationTesting;
 using SharedKernel.Messaging.IntegrationEvents.EntityFrameworkCore;
 using ViajantesTurismo.Resources;
@@ -20,7 +21,8 @@ internal sealed class AdminMessagingMigrationScenario : IAsyncDisposable
     private const int AdvisoryLockObjectId = 20260719;
 
     public const string InitialMigration = "20260720203807_InitialAdmin";
-    public const string LatestMigration = "20260721193433_RemoveUnusedAdminIdempotencyKeys";
+    public const string RemovalMigration = "20260721193433_RemoveUnusedAdminIdempotencyKeys";
+    public const string IdempotencyRestoreMigration = "20260723174241_EnforceUniqueDocumentRevisionsAndRestoreIdempotency";
 
     private readonly AspireTestApplication app;
     private readonly string connectionString;
@@ -50,13 +52,20 @@ internal sealed class AdminMessagingMigrationScenario : IAsyncDisposable
         await migrator.MigrateAsync(InitialMigration, ct);
     }
 
+    public async Task ApplyRemovalMigration(CancellationToken ct)
+    {
+        await using var dbContext = CreateDbContext();
+        var migrator = dbContext.Database.GetService<IMigrator>();
+        await migrator.MigrateAsync(RemovalMigration, ct);
+    }
+
     public async Task ApplyLatestMigration(CancellationToken ct)
     {
         await using var dbContext = CreateDbContext();
         await dbContext.Database.MigrateAsync(ct);
     }
 
-    public async Task<PostgresException> ApplyLatestMigrationWithConcurrentInboxInsert(CancellationToken ct)
+    public async Task<PostgresException> ApplyRemovalMigrationWithConcurrentInboxInsert(CancellationToken ct)
     {
         await using var barrierConnection = CreateConnection("admin-messaging-migration-barrier");
         await barrierConnection.OpenAsync(ct);
@@ -66,7 +75,7 @@ internal sealed class AdminMessagingMigrationScenario : IAsyncDisposable
 
         try
         {
-            var migrationTask = ApplyLatestMigration(MigrationApplicationName, ct);
+            var migrationTask = ApplyRemovalMigration(MigrationApplicationName, ct);
             await WaitForAdvisoryBarrier(MigrationApplicationName, migrationTask, ct);
 
             var insertTask = InsertUnexpectedInboxRow(InsertApplicationName, ct);
@@ -191,10 +200,11 @@ internal sealed class AdminMessagingMigrationScenario : IAsyncDisposable
         return app.DisposeAsync();
     }
 
-    private async Task ApplyLatestMigration(string applicationName, CancellationToken ct)
+    private async Task ApplyRemovalMigration(string applicationName, CancellationToken ct)
     {
         await using var dbContext = CreateDbContext(applicationName);
-        await dbContext.Database.MigrateAsync(ct);
+        var migrator = dbContext.Database.GetService<IMigrator>();
+        await migrator.MigrateAsync(RemovalMigration, ct);
     }
 
     private async Task InsertUnexpectedInboxRow(string applicationName, CancellationToken ct)
@@ -344,6 +354,7 @@ internal sealed class AdminMessagingMigrationScenario : IAsyncDisposable
     private AdminWriteDbContext CreateDbContext(string? applicationName = null)
     {
         var services = new ServiceCollection();
+        services.AddIdempotencyStore<AdminWriteDbContext>();
         services.AddIntegrationEventOutbox<AdminWriteDbContext>();
         services.AddPostgreSqlIntegrationEventTransportProducer<AdminWriteDbContext>(IntegrationEventConsumerNames.Catalog);
         using var provider = services.BuildServiceProvider();

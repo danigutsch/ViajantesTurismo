@@ -80,37 +80,44 @@ public sealed class DocumentEndpointFailureTests
         "/review",
         DocumentAuditOperation.BeginReview,
         nameof(DbUpdateConcurrencyException),
-        "The document was changed by another request. Reload and retry.")]
+        "The document was changed by another request. Reload and retry.",
+        true)]
     [InlineData(
         "/regenerate",
         DocumentAuditOperation.Regenerate,
         nameof(DbUpdateConcurrencyException),
-        "The document was changed by another request. Reload and retry.")]
+        "The document was changed by another request. Reload and retry.",
+        false)]
     [InlineData(
         "/review",
         DocumentAuditOperation.BeginReview,
         nameof(DocumentRevisionConflictException),
-        "A document revision already exists for this booking. Reload and retry.")]
+        "A document revision already exists for this booking. Reload and retry.",
+        true)]
     [InlineData(
         "/regenerate",
         DocumentAuditOperation.Regenerate,
         nameof(DocumentRevisionConflictException),
-        "A document revision already exists for this booking. Reload and retry.")]
+        "A document revision already exists for this booking. Reload and retry.",
+        false)]
     [InlineData(
         "/review",
         DocumentAuditOperation.BeginReview,
         nameof(DocumentBookingEligibilityConflictException),
-        "A customer-facing document draft requires a confirmed or completed booking.")]
+        "A customer-facing document draft requires a confirmed or completed booking.",
+        true)]
     [InlineData(
         "/regenerate",
         DocumentAuditOperation.Regenerate,
         nameof(DocumentBookingEligibilityConflictException),
-        "A customer-facing document draft requires a confirmed or completed booking.")]
-    public async Task Document_command_exception_families_return_conflict_and_persist_rejected_audits(
+        "A customer-facing document draft requires a confirmed or completed booking.",
+        true)]
+    public async Task Document_command_exception_families_return_conflict_with_the_required_audit_behavior(
         string suffix,
         DocumentAuditOperation expectedOperation,
         string exceptionFamily,
-        string expectedDetail)
+        string expectedDetail,
+        bool shouldPersistRejectedAudit)
     {
         // Arrange
         var documentId = Guid.CreateVersion7();
@@ -155,6 +162,14 @@ public sealed class DocumentEndpointFailureTests
         problem.Status.ShouldBe((int?)HttpStatusCode.Conflict);
         problem.Title.ShouldBe("Conflict");
         problem.Detail.ShouldBe(expectedDetail);
+
+        if (!shouldPersistRejectedAudit)
+        {
+            auditStore.Records.ShouldBeEmpty();
+            unitOfWork.SaveEntitiesCallCount.ShouldBe(0);
+            return;
+        }
+
         var audit = auditStore.Records.ShouldHaveSingleItem();
         audit.Operation.ShouldBe(expectedOperation);
         audit.Outcome.ShouldBe(DocumentAuditOutcome.Rejected);

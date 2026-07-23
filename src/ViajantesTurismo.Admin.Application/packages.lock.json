@@ -278,6 +278,9 @@
           "OpenTelemetry.Instrumentation.Http": "[1.16.0, )"
         }
       },
+      "sharedkernel.idempotency": {
+        "type": "Project"
+      },
       "sharedkernel.inputnormalization": {
         "type": "Project"
       },

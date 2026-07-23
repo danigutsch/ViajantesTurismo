@@ -128,6 +128,7 @@ public sealed class AdminInfrastructureModuleTests
         var customerStore = services.CustomerStore;
         var documentStore = services.DocumentStore;
         var outbox = services.Outbox;
+        var idempotencyStore = services.IdempotencyStore;
         var brandingApiClient = services.BrandingApiClient;
         var hostedServices = services.HostedServices;
 
@@ -138,6 +139,7 @@ public sealed class AdminInfrastructureModuleTests
         customerStore.ShouldBeOfType<CustomerStore>();
         documentStore.ShouldBeOfType<DocumentStore>();
         outbox.ShouldBeOfType<EfIntegrationEventOutbox<AdminWriteDbContext>>();
+        idempotencyStore.ShouldNotBeNull();
         brandingApiClient.ShouldBeOfType<FakeBrandingApiClient>();
         hostedServices.ShouldContain(service => service is DocumentDraftRetentionHostedService);
         hostedServices.ShouldContain(service => service is DocumentAuditRetentionHostedService);

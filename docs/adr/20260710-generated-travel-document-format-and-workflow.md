@@ -145,4 +145,5 @@ types prove shared needs.
 
 - [ADR Index](../ARCHITECTURE_DECISIONS.md)
 - [Generated travel documents](../generated-travel-documents.md)
+- [Document retention and legal-hold policy proposal](../operations/document-retention-and-legal-hold.md)
 - [Privacy classification and redaction](../privacy-classification.md)

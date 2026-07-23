@@ -63,6 +63,28 @@ public sealed class ApiFixture : Testing.Integration.IAdminTestHost, IAsyncLifet
         CancellationToken ct) =>
         DocumentAuditInsertFailureScenario.Create(GetDatabaseConnectionString(), bookingId, ct);
 
+    internal Task<DocumentIdempotencyCompletionFailureScenario> CreateDocumentIdempotencyCompletionFailureScenario(
+        string scope,
+        Guid idempotencyKey,
+        CancellationToken ct) =>
+        DocumentIdempotencyCompletionFailureScenario.Create(
+            GetDatabaseConnectionString(),
+            scope,
+            idempotencyKey,
+            failOnceWithRetryableError: false,
+            ct);
+
+    internal Task<DocumentIdempotencyCompletionFailureScenario> CreateDocumentIdempotencyTransientCompletionFailureScenario(
+        string scope,
+        Guid idempotencyKey,
+        CancellationToken ct) =>
+        DocumentIdempotencyCompletionFailureScenario.Create(
+            GetDatabaseConnectionString(),
+            scope,
+            idempotencyKey,
+            failOnceWithRetryableError: true,
+            ct);
+
     internal Task<BookingCancellationAtDocumentPersistenceScenario> CreateBookingCancellationAtDocumentPersistenceScenario(
         Guid bookingId,
         CancellationToken ct) =>

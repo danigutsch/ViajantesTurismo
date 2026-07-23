@@ -259,6 +259,9 @@
           "OpenTelemetry.Instrumentation.Http": "[1.16.0, )"
         }
       },
+      "sharedkernel.idempotency": {
+        "type": "Project"
+      },
       "sharedkernel.inputnormalization": {
         "type": "Project"
       },
@@ -284,6 +287,7 @@
           "SharedKernel.BuildingBlocks": "[0.1.0-alpha.0, )",
           "SharedKernel.DocumentRendering": "[0.1.0-alpha.0, )",
           "SharedKernel.Domain": "[0.1.0-alpha.0, )",
+          "SharedKernel.Idempotency": "[0.1.0-alpha.0, )",
           "SharedKernel.InputNormalization": "[0.1.0-alpha.0, )",
           "SharedKernel.Messaging.IntegrationEvents": "[0.1.0-alpha.0, )",
           "SharedKernel.Results": "[0.1.0-alpha.0, )",

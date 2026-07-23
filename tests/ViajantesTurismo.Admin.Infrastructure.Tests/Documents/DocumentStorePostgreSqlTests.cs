@@ -405,6 +405,43 @@ public sealed class DocumentStorePostgreSqlTests : IAsyncLifetime
     }
 
     [Fact]
+    public async Task SaveEntities_translates_duplicate_booking_type_revision_constraint()
+    {
+        // Arrange
+        var now = new DateTime(2026, 7, 22, 12, 0, 0, DateTimeKind.Utc);
+        var first = DocumentDraftInfrastructureTestData.CreateDraft(now);
+        var second = DocumentDraftInfrastructureTestData.CreateDraft(now.AddMinutes(1));
+
+        // Act
+        Func<Task> save = async () => await Scenario.SaveDuplicateBookingTypeRevision(
+            first,
+            second,
+            TestContext.Current.CancellationToken);
+
+        // Assert
+        var conflict = await save.ShouldThrow<DocumentRevisionConflictException>();
+        var updateException = conflict.InnerException.ShouldBeOfType<DbUpdateException>();
+        var postgresException = updateException.InnerException.ShouldBeOfType<PostgresException>();
+        postgresException.SqlState.ShouldBe(PostgresErrorCodes.UniqueViolation);
+        postgresException.ConstraintName.ShouldBe("UX_DocumentDrafts_BookingId_Type_Revision");
+    }
+
+    [Fact]
+    public async Task SaveEntities_does_not_translate_an_unrelated_unique_constraint()
+    {
+        // Act
+        Func<Task> save = async () => await Scenario.SaveDuplicateTourIdentifier(
+            TestContext.Current.CancellationToken);
+
+        // Assert
+        var updateException = await save.ShouldThrow<DbUpdateException>();
+        updateException.ShouldNotBeOfType<DocumentRevisionConflictException>();
+        var postgresException = updateException.InnerException.ShouldBeOfType<PostgresException>();
+        postgresException.SqlState.ShouldBe(PostgresErrorCodes.UniqueViolation);
+        postgresException.ConstraintName.ShouldBe("IX_Tours_Identifier");
+    }
+
+    [Fact]
     public async Task SaveEntities_rejects_multiple_active_finalized_revisions_in_one_lineage()
     {
         // Arrange

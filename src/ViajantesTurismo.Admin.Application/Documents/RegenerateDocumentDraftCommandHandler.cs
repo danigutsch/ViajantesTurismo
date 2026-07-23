@@ -1,5 +1,6 @@
-using SharedKernel.Results;
 using SharedKernel.Branding;
+using SharedKernel.Idempotency;
+using SharedKernel.Results;
 using ViajantesTurismo.Admin.Application.Mappings;
 using ViajantesTurismo.Admin.Domain.Documents;
 using ViajantesTurismo.Admin.Domain.Tours;
@@ -11,9 +12,9 @@ public sealed class RegenerateDocumentDraftCommandHandler(
     IDocumentStore documentStore,
     IQueryService queryService,
     IBrandingApiClient brandingApiClient,
-    IUnitOfWork unitOfWork,
     TimeProvider timeProvider,
-    DocumentAuditWriter documentAuditWriter)
+    DocumentAuditWriter documentAuditWriter,
+    DocumentCommandIdempotency documentCommandIdempotency)
 {
     /// <summary>Generates and persists the replacement revision.</summary>
     public async Task<Result<Guid>> Handle(RegenerateDocumentDraftCommand command, CancellationToken ct)
@@ -22,6 +23,16 @@ public sealed class RegenerateDocumentDraftCommandHandler(
         if (command.AuditContext is null)
         {
             return DocumentAuditErrors.AuditContextRequired().ConvertError<Guid>();
+        }
+
+        var idempotencyScope = IdempotencyScope.From($"admin.documents.regenerate-draft:{command.DocumentId:N}");
+        var existingResult = await documentCommandIdempotency.GetExistingResult(
+            idempotencyScope,
+            command.IdempotencyKey,
+            ct);
+        if (existingResult is not null)
+        {
+            return (Result<Guid>)existingResult;
         }
 
         var now = timeProvider.GetUtcNow().UtcDateTime;
@@ -97,21 +108,27 @@ public sealed class RegenerateDocumentDraftCommandHandler(
                 ct);
         }
 
-        var replacementResult = lineage.CreateRevision(current.Id, contentResult.Value, now, command.AuditContext);
-        if (replacementResult.IsFailure)
-        {
-            return await RecordAndReturn(
-                replacementResult.ConvertError<DocumentDraft, Guid>(),
-                command.AuditContext,
-                current.Id,
-                current.BookingId,
-                current.Revision,
-                DocumentAuditReasonCode.ValidationRejected,
-                ct);
-        }
+        return await documentCommandIdempotency.Execute(
+            idempotencyScope,
+            command.IdempotencyKey,
+            async () =>
+            {
+                var replacementResult = lineage.CreateRevision(current.Id, contentResult.Value, now, command.AuditContext);
+                if (replacementResult.IsFailure)
+                {
+                    return await RecordAndReturn(
+                        replacementResult.ConvertError<DocumentDraft, Guid>(),
+                        command.AuditContext,
+                        current.Id,
+                        current.BookingId,
+                        current.Revision,
+                        DocumentAuditReasonCode.ValidationRejected,
+                        ct);
+                }
 
-        await unitOfWork.SaveEntities(ct);
-        return Result.Ok(replacementResult.Value.Id);
+                return Result.Ok(replacementResult.Value.Id);
+            },
+            ct);
     }
 
     private async Task<Result<Guid>> RecordAndReturn(

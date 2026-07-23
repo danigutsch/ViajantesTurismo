@@ -29,7 +29,12 @@ public static class SharedKernelPackagingConventionTests
         var repositoryRoot = SharedKernelPackagingConventionTestFiles.GetRepositoryRoot();
         var script = File.ReadAllText(Path.Combine(repositoryRoot, "scripts", "detect-changes.sh"));
         var activePatterns = SharedKernelPackagingConventionTestFiles.GetActiveQuotedEntries(script);
-        var packageDirectories = Directory.GetDirectories(Path.Combine(repositoryRoot, "src", "SharedKernel"))
+        var packageDirectories = Directory.GetFiles(
+                Path.Combine(repositoryRoot, "src", "SharedKernel"),
+                "*.csproj",
+                SearchOption.AllDirectories)
+            .Select(static projectFile => Path.GetDirectoryName(projectFile)
+                ?? throw new InvalidOperationException($"Project path '{projectFile}' has no directory."))
             .Select(directory => Path.GetRelativePath(repositoryRoot, directory).Replace('\\', '/') + "/**")
             .Order(StringComparer.Ordinal)
             .ToArray();

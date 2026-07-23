@@ -119,6 +119,11 @@ Follow-up implementation issues are required after the hosting platform and reco
 chosen. No hard RPO, RTO, frequency, retention period, or backup product is encoded here because those
 are product and operations decisions.
 
+The [document retention and legal-hold policy proposal](document-retention-and-legal-hold.md) defines
+the additional decisions required for generated artifacts, audit records, held data, backup expiry,
+and restore-time suppression. It remains pending legal review and does not establish production
+authority.
+
 ## Common failures
 
 ### Migration failure

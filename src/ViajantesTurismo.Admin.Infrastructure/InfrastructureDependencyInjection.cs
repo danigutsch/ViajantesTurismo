@@ -6,6 +6,7 @@ using Microsoft.Extensions.Hosting;
 using SharedKernel.AuditTrail;
 using SharedKernel.Domain.EntityFrameworkCore;
 using SharedKernel.EntityFrameworkCore;
+using SharedKernel.Idempotency.EntityFrameworkCore;
 using SharedKernel.Messaging.IntegrationEvents;
 using SharedKernel.Messaging.IntegrationEvents.EntityFrameworkCore;
 using SharedKernel.OpenApi;
@@ -156,6 +157,7 @@ public static class InfrastructureDependencyInjection
     {
         builder.Services.TryAddSingleton<IAuditTrailSink<DocumentAuditRecord>, DocumentAuditTrailSink>();
         builder.Services.AddDomainEventDispatch<AdminWriteDbContext>();
+        builder.Services.AddIdempotencyStore<AdminWriteDbContext>();
 
         builder.AddNpgsqlDbContext<AdminWriteDbContext>(
             ResourceNames.AdminDatabase,
