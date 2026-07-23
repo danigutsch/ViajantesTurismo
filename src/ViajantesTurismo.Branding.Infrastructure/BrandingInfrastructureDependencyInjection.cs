@@ -1,6 +1,7 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using Npgsql;
 using SharedKernel.Branding;
 using SharedKernel.EntityFrameworkCore;
 using ViajantesTurismo.Resources;
@@ -45,8 +46,7 @@ public static class BrandingInfrastructureDependencyInjection
             providerOptions.MigrationsHistoryTable(
                 MigrationsHistoryTable,
                 schema: BrandingDbContext.MigrationsHistorySchemaName);
-            providerOptions.ConfigureDataSource(dataSourceBuilder =>
-                dataSourceBuilder.ConfigureTracing(tracing => tracing.EnableFirstResponseEvent(enable: false)));
+            providerOptions.ConfigureDataSource(ConfigureNpgsqlDataSource);
         });
 
         if (!builder.Environment.IsDevelopment())
@@ -58,5 +58,10 @@ public static class BrandingInfrastructureDependencyInjection
         options.EnableDetailedErrors();
         options.EnableSensitiveDataLogging();
         builder.Services.ApplyDbContextOptionConfigurations<TContext>(options);
+    }
+
+    private static void ConfigureNpgsqlDataSource(NpgsqlDataSourceBuilder dataSourceBuilder)
+    {
+        dataSourceBuilder.ConfigureTracing(tracing => tracing.EnableFirstResponseEvent(enable: false));
     }
 }

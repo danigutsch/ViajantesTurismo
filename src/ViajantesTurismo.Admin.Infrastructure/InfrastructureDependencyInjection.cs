@@ -3,6 +3,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Hosting;
+using Npgsql;
 using SharedKernel.AuditTrail;
 using SharedKernel.Domain.EntityFrameworkCore;
 using SharedKernel.EntityFrameworkCore;
@@ -193,8 +194,12 @@ public static class InfrastructureDependencyInjection
 
     private static void ConfigureNpgsqlTracing(DbContextOptionsBuilder options)
     {
-        options.UseNpgsql(providerOptions => providerOptions.ConfigureDataSource(dataSourceBuilder =>
-            dataSourceBuilder.ConfigureTracing(tracing => tracing.EnableFirstResponseEvent(enable: false))));
+        options.UseNpgsql(providerOptions => providerOptions.ConfigureDataSource(ConfigureNpgsqlDataSource));
+    }
+
+    private static void ConfigureNpgsqlDataSource(NpgsqlDataSourceBuilder dataSourceBuilder)
+    {
+        dataSourceBuilder.ConfigureTracing(tracing => tracing.EnableFirstResponseEvent(enable: false));
     }
 
 }
