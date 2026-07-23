@@ -165,9 +165,9 @@ Exporter wiring remains service-default driven and exporter-neutral:
 - AppHost's collector forwarding contract overwrites the standard OTLP endpoint for compatible
   resources carrying Aspire's `OtlpExporterAnnotation`, for every hosted profile. It maps standard
   `grpc`, `http/protobuf`, and `http/json` protocol values to the Collector's matching endpoint.
-- The collector drops every span event, clears status descriptions, and removes explicit sensitive
-  or high-cardinality span attributes before forwarding traces to the Aspire dashboard, Tempo, or
-  another configured downstream backend.
+- The collector removes sensitive resource attributes from traces, logs, and metrics. It also drops
+  every span event, clears status descriptions, and removes explicit sensitive or high-cardinality
+  span attributes before forwarding telemetry to configured downstream backends.
 - Raw telemetry still exists inside the trusted application-to-Collector hop. Protect that hop with
   trusted networking and transport controls.
 - A manually constructed exporter or a process run outside this AppHost contract can target a backend

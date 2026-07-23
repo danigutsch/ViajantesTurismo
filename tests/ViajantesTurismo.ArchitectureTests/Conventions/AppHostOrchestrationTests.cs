@@ -441,7 +441,7 @@ public sealed partial class AppHostOrchestrationTests
 
     [Fact]
     [Trait(SharedKernel.Testing.TestTraitNames.CategoryName, SharedKernel.Testing.TestTraitValues.SecurityCategory)]
-    public void Collector_trace_pipeline_drops_events_and_sanitizes_spans_before_export()
+    public void Collector_pipelines_sanitize_resources_and_trace_payloads_before_export()
     {
         // Arrange
         var collectorRoot = Path.Combine(GetRepositoryRoot(), "observability", "otel-collector");
@@ -453,19 +453,31 @@ public sealed partial class AppHostOrchestrationTests
             .ReplaceLineEndings("\n");
 
         // Act
-        var aspirePipelineUsesPrivacyProcessors = aspireRoutingConfig.Contains(
-            "processors: [memory_limiter, transform/sanitize_traces, filter/drop_span_events, batch]",
+        var aspireTracePipelineUsesPrivacyProcessors = aspireRoutingConfig.Contains(
+            "processors: [memory_limiter, transform/sanitize_resources, transform/sanitize_traces, filter/drop_span_events, batch]",
             StringComparison.Ordinal);
-        var backendPipelineUsesPrivacyProcessors = backendRoutingConfig.Contains(
-            "processors: [memory_limiter, transform/sanitize_traces, filter/drop_span_events, batch]",
+        var backendTracePipelineUsesPrivacyProcessors = backendRoutingConfig.Contains(
+            "processors: [memory_limiter, transform/sanitize_resources, transform/sanitize_traces, filter/drop_span_events, batch]",
             StringComparison.Ordinal);
+        const string nonTracePrivacyProcessors =
+            "processors: [memory_limiter, transform/sanitize_resources, batch]";
+        const string resourceAttributeSanitizer =
+            "delete_matching_keys(resource.attributes, \"(?i)(^|[._-])(authorization|cookie|password|token|api[._-]?key|secret)([._-]|$)\")";
 
         // Assert
-        aspirePipelineUsesPrivacyProcessors.ShouldBeTrue();
-        backendPipelineUsesPrivacyProcessors.ShouldBeTrue();
+        aspireTracePipelineUsesPrivacyProcessors.ShouldBeTrue();
+        backendTracePipelineUsesPrivacyProcessors.ShouldBeTrue();
+        (aspireRoutingConfig.Split(nonTracePrivacyProcessors, StringSplitOptions.None).Length - 1).ShouldBe(2);
+        (backendRoutingConfig.Split(nonTracePrivacyProcessors, StringSplitOptions.None).Length - 1).ShouldBe(2);
         privacyConfig.ShouldContain("memory_limiter:", StringComparison.Ordinal);
         privacyConfig.ShouldContain("limit_mib: 256", StringComparison.Ordinal);
         privacyConfig.ShouldContain("spike_limit_mib: 64", StringComparison.Ordinal);
+        privacyConfig.ShouldContain("transform/sanitize_resources:", StringComparison.Ordinal);
+        privacyConfig.ShouldContain("trace_statements:", StringComparison.Ordinal);
+        privacyConfig.ShouldContain("log_statements:", StringComparison.Ordinal);
+        privacyConfig.ShouldContain("metric_statements:", StringComparison.Ordinal);
+        (privacyConfig.Split("- context: resource", StringSplitOptions.None).Length - 1).ShouldBe(3);
+        (privacyConfig.Split(resourceAttributeSanitizer, StringSplitOptions.None).Length - 1).ShouldBe(3);
         privacyConfig.ShouldContain("filter/drop_span_events:", StringComparison.Ordinal);
         privacyConfig.ShouldContain("spanevent:\n        - 'true'", StringComparison.Ordinal);
         privacyConfig.ShouldNotContain("\n      span:\n", StringComparison.Ordinal);
@@ -477,14 +489,11 @@ public sealed partial class AppHostOrchestrationTests
         privacyConfig.ShouldContain("delete_matching_keys(span.attributes, \"(?i)(^|[._])headers?([._]|$)\")", StringComparison.Ordinal);
         privacyConfig.ShouldContain("delete_matching_keys(span.attributes, \"(?i)^aws\\\\.(s3|sqs|sns)\\\\.\")", StringComparison.Ordinal);
         privacyConfig.ShouldContain("delete_matching_keys(span.attributes, \"(?i)(^|[._-])(authorization|cookie|password|token|api[._-]?key|secret)([._-]|$)\")", StringComparison.Ordinal);
-        privacyConfig.ShouldContain("delete_matching_keys(resource.attributes, \"(?i)(^|[._-])(authorization|cookie|password|token|api[._-]?key|secret)([._-]|$)\")", StringComparison.Ordinal);
         privacyConfig.ShouldNotContain("set(span.name", StringComparison.Ordinal);
         privacyConfig.ShouldNotContain("delete_key(span.attributes, \"http.route\")", StringComparison.Ordinal);
         privacyConfig.ShouldNotContain("delete_key(span.attributes, \"error.type\")", StringComparison.Ordinal);
         aspireRoutingConfig.ShouldContain("exporters: [otlp/aspire]", StringComparison.Ordinal);
         backendRoutingConfig.ShouldContain("exporters: [otlp/aspire, otlp/tempo]", StringComparison.Ordinal);
-        (aspireRoutingConfig.Split("processors: [memory_limiter, batch]", StringSplitOptions.None).Length - 1).ShouldBe(2);
-        (backendRoutingConfig.Split("processors: [memory_limiter, batch]", StringSplitOptions.None).Length - 1).ShouldBe(2);
     }
 
     [Fact]

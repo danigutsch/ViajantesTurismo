@@ -68,9 +68,10 @@ redaction. Npgsql does not enable parameter logging and suppresses its optional 
 
 Provider failure spans can contain immutable exception events that an application processor cannot
 remove after the activity stops. Every supported AppHost profile therefore routes normal
-Aspire-annotated OTLP traffic through the pinned trusted Collector. The Collector drops all span events,
-clears status descriptions, and removes explicit URL, header, body, query, parameter, identifier, and
-AWS resource attributes before forwarding traces to the Aspire dashboard or optional backends. Raw
+Aspire-annotated OTLP traffic through the pinned trusted Collector. The Collector removes sensitive
+resource attributes from traces, logs, and metrics. It also drops all span events, clears status
+descriptions, and removes explicit URL, header, body, query, parameter, identifier, and AWS span
+attributes before forwarding telemetry to the Aspire dashboard or optional backends. Raw
 telemetry exists on the trusted application-to-Collector hop. A manually constructed direct exporter or
 a process outside AppHost can bypass this boundary. Signal-specific OTLP endpoint variables can also
 override the generic endpoint rewritten by AppHost. Deployments must reject or rewrite those overrides,

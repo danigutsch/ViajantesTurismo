@@ -8,13 +8,13 @@ service:
   pipelines:
     traces:
       receivers: [otlp]
-      processors: [memory_limiter, transform/sanitize_traces, filter/drop_span_events, batch]
+      processors: [memory_limiter, transform/sanitize_resources, transform/sanitize_traces, filter/drop_span_events, batch]
       exporters: [otlp/aspire]
     logs:
       receivers: [otlp]
-      processors: [memory_limiter, batch]
+      processors: [memory_limiter, transform/sanitize_resources, batch]
       exporters: [otlp/aspire]
     metrics:
       receivers: [otlp]
-      processors: [memory_limiter, batch]
+      processors: [memory_limiter, transform/sanitize_resources, batch]
       exporters: [otlp/aspire]

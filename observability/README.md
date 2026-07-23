@@ -16,12 +16,13 @@ ASPIRE_ENABLE_OBSERVABILITY_STACK=1 dotnet tool run aspire run
 ```
 
 Grafana, Loki, Tempo, and Prometheus are disabled by default. The Collector remains present because it
-is the trace privacy boundary.
+is the telemetry privacy boundary.
 
 ## Resources
 
-- Always present: `opentelemetry-collector` receives OTLP telemetry, drops all span events, sanitizes
-  trace status/attributes, and forwards signals to the Aspire dashboard.
+- Always present: `opentelemetry-collector` receives OTLP telemetry, removes sensitive resource
+  attributes from every signal, drops all span events, sanitizes trace status/attributes, and forwards
+  signals to the Aspire dashboard.
 - Optional: `grafana` provides the provisioned local UI.
 - Optional: `loki` stores logs.
 - Optional: `tempo` stores sanitized traces.
@@ -32,8 +33,8 @@ contract covers resources carrying Aspire's standard OTLP annotation; a manually
 exporter can bypass it. Keep backend endpoints inaccessible to application workloads except through
 the gateway.
 
-The trace processors use `error_mode: propagate` so an expression failure rejects the affected OTLP
-payload instead of forwarding an unsanitized trace. This deliberately trades telemetry availability
+The privacy processors use `error_mode: propagate` so an expression failure rejects the affected OTLP
+payload instead of forwarding unsanitized telemetry. This deliberately trades telemetry availability
 for privacy. Monitor Collector processor and receiver errors so rejected telemetry is visible to
 operators.
 

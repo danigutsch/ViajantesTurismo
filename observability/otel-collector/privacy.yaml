@@ -11,6 +11,20 @@ processors:
     check_interval: 1s
     limit_mib: 256
     spike_limit_mib: 64
+  transform/sanitize_resources:
+    error_mode: propagate
+    trace_statements:
+      - context: resource
+        statements:
+          - delete_matching_keys(resource.attributes, "(?i)(^|[._-])(authorization|cookie|password|token|api[._-]?key|secret)([._-]|$)")
+    log_statements:
+      - context: resource
+        statements:
+          - delete_matching_keys(resource.attributes, "(?i)(^|[._-])(authorization|cookie|password|token|api[._-]?key|secret)([._-]|$)")
+    metric_statements:
+      - context: resource
+        statements:
+          - delete_matching_keys(resource.attributes, "(?i)(^|[._-])(authorization|cookie|password|token|api[._-]?key|secret)([._-]|$)")
   filter/drop_span_events:
     error_mode: propagate
     traces:
@@ -46,7 +60,6 @@ processors:
           - delete_matching_keys(span.attributes, "(?i)(^|[._])headers?([._]|$)")
           - delete_matching_keys(span.attributes, "(?i)(^|[._])(body|payload)([._]|$)")
           - delete_matching_keys(span.attributes, "(?i)(^|[._-])(authorization|cookie|password|token|api[._-]?key|secret)([._-]|$)")
-          - delete_matching_keys(resource.attributes, "(?i)(^|[._-])(authorization|cookie|password|token|api[._-]?key|secret)([._-]|$)")
           - delete_matching_keys(span.attributes, "(?i)^db\\.query\\.parameter\\.")
           - delete_matching_keys(span.attributes, "(?i)(^|[._])id$")
           - delete_matching_keys(span.attributes, "Id$")
