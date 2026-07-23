@@ -19,7 +19,7 @@ public sealed class BrandingDbContextDiagnosticsTests
     }
 
     [Fact]
-    public void Branding_context_does_not_subscribe_to_exception_bearing_npgsql_traces()
+    public void Branding_context_registers_npgsql_tracing_and_metrics()
     {
         // Arrange
         using var scope = BrandingInfrastructureRegistrationScope.Create();
@@ -29,7 +29,7 @@ public sealed class BrandingDbContextDiagnosticsTests
         var hasMeterProvider = scope.HasMeterProvider();
 
         // Assert
-        sourceEnabled.ShouldBeFalse();
+        sourceEnabled.ShouldBeTrue();
         hasMeterProvider.ShouldBeTrue();
     }
 }

@@ -161,7 +161,6 @@ public static class InfrastructureDependencyInjection
 
         builder.AddNpgsqlDbContext<AdminWriteDbContext>(
             ResourceNames.AdminDatabase,
-            configureSettings: settings => settings.DisableTracing = true,
             configureDbContextOptions: options => ConfigureAdminWriteDbContext(builder, options));
     }
 
@@ -170,7 +169,6 @@ public static class InfrastructureDependencyInjection
     {
         builder.AddNpgsqlDbContext<AdminReadDbContext>(
             ResourceNames.AdminDatabase,
-            configureSettings: settings => settings.DisableTracing = true,
             configureDbContextOptions: options => ConfigureReadDatabaseOptions(builder, options));
     }
 
@@ -179,6 +177,7 @@ public static class InfrastructureDependencyInjection
         DbContextOptionsBuilder options)
         where TApplicationBuilder : IHostApplicationBuilder
     {
+        ConfigureNpgsqlTracing(options);
         options.UseQueryTrackingBehavior(QueryTrackingBehavior.NoTracking);
         builder.Services.ApplyDbContextOptionConfigurations<AdminReadDbContext>(options);
     }
@@ -188,7 +187,14 @@ public static class InfrastructureDependencyInjection
         DbContextOptionsBuilder options)
         where TApplicationBuilder : IHostApplicationBuilder
     {
+        ConfigureNpgsqlTracing(options);
         builder.Services.ApplyDbContextOptionConfigurations<AdminWriteDbContext>(options);
+    }
+
+    private static void ConfigureNpgsqlTracing(DbContextOptionsBuilder options)
+    {
+        options.UseNpgsql(providerOptions => providerOptions.ConfigureDataSource(dataSourceBuilder =>
+            dataSourceBuilder.ConfigureTracing(tracing => tracing.EnableFirstResponseEvent(enable: false))));
     }
 
 }

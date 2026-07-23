@@ -95,7 +95,7 @@ public sealed class InfrastructureDependencyInjectionTests
 
     [Fact]
     [Trait(TestTraitNames.CategoryName, TestTraitValues.SecurityCategory)]
-    public void Seaweedfs_storage_keeps_aws_metrics_without_subscribing_to_exception_bearing_traces()
+    public void Seaweedfs_storage_registers_aws_tracing_and_metrics()
     {
         // Arrange
         using var scenario = CatalogInfrastructureTestServices.CreateSeaweedFsScenario();
@@ -107,12 +107,12 @@ public sealed class InfrastructureDependencyInjectionTests
         using var activity = activitySource.StartActivity("S3.PutObject", ActivityKind.Client);
 
         // Assert
-        activity.ShouldBeNull();
+        activity.ShouldNotBeNull();
     }
 
     [Fact]
     [Trait(TestTraitNames.CategoryName, TestTraitValues.SecurityCategory)]
-    public void Catalog_persistence_does_not_subscribe_to_exception_bearing_npgsql_traces()
+    public void Catalog_persistence_registers_npgsql_tracing_and_metrics()
     {
         // Arrange
         using var scenario = CatalogInfrastructureTestServices.CreateScenario();
@@ -124,7 +124,7 @@ public sealed class InfrastructureDependencyInjectionTests
         using var activity = activitySource.StartActivity("postgresql.query", ActivityKind.Client);
 
         // Assert
-        activity.ShouldBeNull();
+        activity.ShouldNotBeNull();
     }
 
     [Fact]

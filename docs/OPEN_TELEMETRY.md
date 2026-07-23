@@ -96,11 +96,12 @@ Dashboard design rules:
 - alerts should be added separately from dashboard panels so alert policy can be reviewed on its own
 - JSON/config validation must be wired into local scripts before dashboard assets become required CI
 
-The repository now provides an opt-in local Grafana LGTM stack through the Aspire AppHost. Set
-`ASPIRE_ENABLE_OBSERVABILITY_STACK=1` before startup to add the OpenTelemetry Collector,
-Grafana, Loki, Tempo, and Prometheus resources. Reusable resource wiring lives in
-`SharedKernel.Aspire.Hosting.Grafana`, an Aspire hosting library. The stack remains
-local-development infrastructure and stays out of `SharedKernel.*` runtime packages.
+The Aspire AppHost now places a pinned OpenTelemetry Collector gateway in front of the built-in
+dashboard for every supported hosted profile. Set `ASPIRE_ENABLE_OBSERVABILITY_STACK=1` before
+startup to add the optional Grafana, Loki, Tempo, and Prometheus resources behind the same gateway.
+Reusable resource wiring lives in `SharedKernel.Aspire.Hosting.Grafana`, an Aspire hosting library.
+The gateway and optional stack remain local-development infrastructure and stay out of
+`SharedKernel.*` runtime packages.
 
 Telemetry instrumentation should stay with the component being instrumented: `SharedKernel.Mediator`
 owns mediator sources/meters, `SharedKernel.EventSourcing.Npgsql` owns provider telemetry,
@@ -161,6 +162,34 @@ Exporter wiring remains service-default driven and exporter-neutral:
 
 - `src/ViajantesTurismo.ServiceDefaults/ServiceDefaultsExtensions.cs`
 - OTLP exporter is enabled only when `OTEL_EXPORTER_OTLP_ENDPOINT` is configured.
+- AppHost's collector forwarding contract overwrites the standard OTLP endpoint for compatible
+  resources carrying Aspire's `OtlpExporterAnnotation`, for every hosted profile. It maps standard
+  `grpc`, `http/protobuf`, and `http/json` protocol values to the Collector's matching endpoint.
+- The collector drops every span event, clears status descriptions, and removes explicit sensitive
+  or high-cardinality span attributes before forwarding traces to the Aspire dashboard, Tempo, or
+  another configured downstream backend.
+- Raw telemetry still exists inside the trusted application-to-Collector hop. Protect that hop with
+  trusted networking and transport controls.
+- A manually constructed exporter or a process run outside this AppHost contract can target a backend
+  directly and bypass the gateway. Deployment controls must restrict direct backend endpoints; the
+  repository cannot intercept arbitrary exporter instances.
+- Signal-specific variables such as `OTEL_EXPORTER_OTLP_TRACES_ENDPOINT`,
+  `OTEL_EXPORTER_OTLP_LOGS_ENDPOINT`, and `OTEL_EXPORTER_OTLP_METRICS_ENDPOINT` take precedence over the
+  generic endpoint rewritten by AppHost forwarding. Deployment policy must reject or rewrite those
+  variables and code-configured exporter endpoints for AppHost-managed workloads.
+- The Collector privacy processors use `error_mode: propagate`. A transform/filter expression failure
+  rejects the affected payload rather than forwarding an unsanitized trace. Operators must alert on
+  Collector processor and receiver errors because this fail-closed policy can reduce telemetry
+  availability.
+
+### Gateway operator responsibilities
+
+The trusted Collector is an export boundary, not a replacement for deployment network controls.
+Operators must expose only approved Collector ingress to application workloads, restrict direct
+backend egress, configure TLS and authentication for Collector ingress and downstream exporters, and
+review sanitizer rules whenever instrumentation or exporter configuration changes. The checked-in
+Collector, Tempo, Loki, and Grafana wiring is local-only and is not a production transport-security
+configuration.
 
 ## Repository custom span contract
 
@@ -183,14 +212,17 @@ cancellation, and failure paths.
 
 - Repository-owned spans must not record exception messages, stack traces, or exception events.
 - Failure spans retain a bounded `error.type`; success and cancellation spans omit it.
-- Export processors remove raw paths, query values, identifiers, and status descriptions before OTLP
-  export as defense in depth.
-- Do not enable third-party tracing that records immutable exception events without a producer-side
-  suppression option. SeaweedFS keeps AWS SDK metrics enabled but intentionally omits AWS SDK tracing
-  because that instrumentation records raw exception messages and stack traces on failed S3 spans.
-- Aspire Npgsql registrations keep Npgsql metrics enabled but disable automatic Npgsql tracing because
-  failed database spans contain immutable exception events and raw query text. Repository-owned
-  `SharedKernel.EventSourcing.Npgsql` spans remain enabled and follow the bounded telemetry contract.
+- Source processors remove mutable raw paths, query text, identifiers, and status descriptions before
+  application OTLP export as defense in depth. They cannot remove immutable provider `ActivityEvent`
+  payloads after an activity stops.
+- ASP.NET Core, HttpClient, gRPC, Entity Framework Core, Npgsql, AWS SDK, and repository-owned tracing
+  remain enabled. ASP.NET Core exception recording is disabled without suppressing request spans.
+- AWS SDK tracing suppresses duplicate downstream HTTP instrumentation and retains the S3 source-tag
+  redaction processor. Npgsql disables its optional first-response event and does not enable parameter
+  logging; database spans and metrics remain enabled.
+- The trusted Collector therefore drops every span event and repeats mutable attribute/status
+  sanitization before any downstream trace exporter. This preserves parent/provider spans, useful span
+  names, and bounded method, route, status, operation, service/system, outcome, and `error.type` fields.
 
 ### Repo-specific tag policy
 
@@ -328,9 +360,12 @@ least two production surfaces need the same lifecycle API and tag contract.
         - `ViajantesTurismo.Catalog`
         - `SharedKernel.EventSourcing.Npgsql`
 
-6. Optional OTLP path check:
-    - Set `OTEL_EXPORTER_OTLP_ENDPOINT` to your collector endpoint before startup.
-    - Re-run `dotnet tool run aspire run` and confirm logs/traces/metrics arrive in the configured backend.
+6. OTLP gateway path check:
+    - Run any supported AppHost profile and confirm application resources wait for and export through
+      `opentelemetry-collector` before telemetry appears in the Aspire dashboard.
+    - Set `ASPIRE_ENABLE_OBSERVABILITY_STACK=1`, restart AppHost, and confirm sanitized telemetry also
+      arrives in the optional backends.
+    - Treat any manually configured direct exporter as outside this enforceable AppHost contract.
 
 ## Quick code map
 

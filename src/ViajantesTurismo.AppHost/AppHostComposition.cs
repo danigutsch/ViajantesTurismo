@@ -21,6 +21,7 @@ internal static class AppHostComposition
             throw new ArgumentOutOfRangeException(nameof(profile), profile, "Unsupported hosted profile.");
         }
 
+        builder.AddObservabilityStack();
         var includeDeveloperTooling = profile.IncludesDeveloperTooling();
         var databaseServer = builder.AddDatabaseServer(includePgWeb: includeDeveloperTooling);
         var adminDatabase = databaseServer.AddDatabase(ResourceNames.AdminDatabase);
@@ -54,7 +55,6 @@ internal static class AppHostComposition
         if (includeDeveloperTooling)
         {
             builder.AddAdminPerformanceSmoke(apiService);
-            builder.AddObservabilityStack();
         }
     }
 }

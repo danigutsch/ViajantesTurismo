@@ -26,6 +26,14 @@ internal static class TelemetryPrivacyAttributeClassifier
         "http.target",
         "http.url",
         "http.user_agent",
+        "db.connection_string",
+        "db.npgsql.connection_id",
+        "db.npgsql.data_source",
+        "db.parameters",
+        "db.query.parameter",
+        "db.query.parameters",
+        "db.query.text",
+        "db.statement",
         "media.object.key",
         "media.object_key",
         "object.key",
@@ -48,9 +56,22 @@ internal static class TelemetryPrivacyAttributeClassifier
         "url.query",
         "user_agent.original",
         "user.id",
+        "aws.extended_request_id",
+        "aws.request_id",
+        "aws.s3.bucket",
+        "aws.s3.bucket.name",
         "aws.s3.copy_source",
+        "aws.s3.delete",
         "aws.s3.key",
-        "aws.s3.upload_id"
+        "aws.s3.part_number",
+        "aws.s3.upload_id",
+        "aws.sns.topic.arn",
+        "aws.sns.topic.name",
+        "aws.sqs.queue.name",
+        "aws.sqs.queue.url",
+        "messaging.destination.name",
+        "messaging.destination.subscription.name",
+        "messaging.message.id"
     };
 
     public static bool IsSensitive(string name)

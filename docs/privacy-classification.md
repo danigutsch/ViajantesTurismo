@@ -62,10 +62,20 @@ messages and structured state before providers receive them. Service defaults re
 logging providers so only the sanitized OpenTelemetry pipeline is enabled by default, and also remove exception
 payloads, raw paths, query values, and customer or booking identifiers from OTLP-bound logs and traces.
 Scanner diagnostics retain status and bounded failure type only; scanner messages and storage keys are
-not logged. AWS SDK metrics remain enabled for SeaweedFS, but AWS SDK tracing remains disabled because
-its failed spans contain immutable exception events that cannot be safely redacted before export.
-Npgsql metrics likewise remain enabled while automatic Npgsql tracing stays disabled; repository-owned
-PostgreSQL spans expose only reviewed, bounded operational fields.
+not logged. ASP.NET Core, HttpClient, gRPC, Entity Framework Core, Npgsql, AWS SDK, and custom tracing
+remain enabled. AWS tracing suppresses duplicate downstream HTTP spans and retains S3 source-tag
+redaction. Npgsql does not enable parameter logging and suppresses its optional first-response event.
+
+Provider failure spans can contain immutable exception events that an application processor cannot
+remove after the activity stops. Every supported AppHost profile therefore routes normal
+Aspire-annotated OTLP traffic through the pinned trusted Collector. The Collector drops all span events,
+clears status descriptions, and removes explicit URL, header, body, query, parameter, identifier, and
+AWS resource attributes before forwarding traces to the Aspire dashboard or optional backends. Raw
+telemetry exists on the trusted application-to-Collector hop. A manually constructed direct exporter or
+a process outside AppHost can bypass this boundary. Signal-specific OTLP endpoint variables can also
+override the generic endpoint rewritten by AppHost. Deployments must reject or rewrite those overrides,
+restrict direct backend access, and configure authenticated and encrypted Collector ingress and
+downstream transport.
 
 ## References
 

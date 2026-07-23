@@ -4,6 +4,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Options;
 using OpenTelemetry.Metrics;
+using OpenTelemetry.Trace;
 using ViajantesTurismo.Catalog.Application.Media;
 
 namespace ViajantesTurismo.Catalog.Infrastructure;
@@ -29,7 +30,10 @@ internal static class SeaweedFsMediaObjectStorageDependencyInjection
             });
         });
         services.AddOpenTelemetry()
-            .WithMetrics(metrics => metrics.AddAWSInstrumentation());
+            .WithMetrics(metrics => metrics.AddAWSInstrumentation())
+            .WithTracing(tracing => tracing
+                .AddAWSInstrumentation(options => options.SuppressDownstreamInstrumentation = true)
+                .AddProcessor(new SeaweedFsS3SensitiveAttributeRedactionProcessor()));
         services.AddSingleton<IMediaObjectStore, SeaweedFsMediaObjectStore>();
 
         return services;

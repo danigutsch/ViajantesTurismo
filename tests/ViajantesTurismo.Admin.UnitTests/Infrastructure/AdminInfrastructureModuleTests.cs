@@ -33,7 +33,7 @@ public sealed class AdminInfrastructureModuleTests
 
     [Fact]
     [Trait(SharedKernelTestTraitNames.CategoryName, TestTraitValues.SecurityCategory)]
-    public void AddInfrastructure_does_not_subscribe_to_exception_bearing_npgsql_traces()
+    public void AddInfrastructure_registers_npgsql_tracing_and_metrics()
     {
         // Arrange
         using var services = AdminInfrastructureModuleTestServices.CreateWithInfrastructureModule();
@@ -43,7 +43,7 @@ public sealed class AdminInfrastructureModuleTests
         var hasMeterProvider = services.HasMeterProvider();
 
         // Assert
-        sourceEnabled.ShouldBeFalse();
+        sourceEnabled.ShouldBeTrue();
         hasMeterProvider.ShouldBeTrue();
     }
 

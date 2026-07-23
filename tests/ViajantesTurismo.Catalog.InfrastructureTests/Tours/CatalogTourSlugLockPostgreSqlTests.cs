@@ -1,3 +1,5 @@
+using System.Collections.Concurrent;
+using System.Diagnostics;
 using SharedKernel.Testing;
 using ViajantesTurismo.Admin.Contracts.IntegrationEvents.Tours;
 using ViajantesTurismo.Catalog.Application.Tours;
@@ -52,5 +54,50 @@ public sealed class CatalogTourSlugLockPostgreSqlTests : IAsyncLifetime
         var envelope = events.ShouldHaveSingleItem();
         var draftCreated = envelope.Data.ShouldBeOfType<CatalogTourDraftCreated>();
         draftCreated.AdminTourId.ShouldBe(integrationEvent.AdminTourId);
+    }
+
+    [Fact]
+    [Trait(TestTraitNames.CategoryName, TestTraitValues.SecurityCategory)]
+    public async Task Catalog_npgsql_tracing_remains_enabled_without_first_response_or_parameter_values()
+    {
+        // Arrange
+        var sentinel = $"private-{Guid.CreateVersion7()}";
+        var stoppedActivities = new ConcurrentQueue<Activity>();
+        using var listener = new ActivityListener
+        {
+            ShouldListenTo = static source => string.Equals(source.Name, "Npgsql", StringComparison.Ordinal),
+            Sample = static (ref ActivityCreationOptions<ActivityContext> _) => ActivitySamplingResult.AllDataAndRecorded,
+            SampleUsingParentId = static (ref ActivityCreationOptions<string> _) => ActivitySamplingResult.AllDataAndRecorded,
+            ActivityStopped = stoppedActivities.Enqueue,
+        };
+        ActivitySource.AddActivityListener(listener);
+        using var parent = new Activity("catalog.npgsql.privacy-test");
+        parent.SetIdFormat(ActivityIdFormat.W3C);
+        parent.Start();
+        var parentSpanId = parent.SpanId;
+        var traceId = parent.TraceId;
+
+        // Act
+        var result = await Scenario.ExecuteParameterizedTracingProbe(
+            sentinel,
+            TestContext.Current.CancellationToken);
+
+        // Assert
+        result.ShouldBe(sentinel);
+        var commandActivity = stoppedActivities.ShouldHaveSingleItem(activity =>
+            activity.TraceId == traceId
+            && activity.ParentSpanId == parentSpanId
+            && activity.GetTagItem("db.query.text") is not null);
+        commandActivity.Source.Name.ShouldBe("Npgsql");
+        commandActivity.Kind.ShouldBe(ActivityKind.Client);
+        commandActivity.GetTagItem("db.query.text").ShouldBe("SELECT CAST(@sentinel AS text);");
+        commandActivity.Events.ShouldNotContain(static activityEvent =>
+            string.Equals(activityEvent.Name, "received-first-response", StringComparison.Ordinal));
+        commandActivity.TagObjects.ShouldNotContain(attribute =>
+            attribute.Key.Contains(sentinel, StringComparison.Ordinal)
+            || (attribute.Value?.ToString()?.Contains(sentinel, StringComparison.Ordinal) ?? false));
+        commandActivity.Events.SelectMany(static activityEvent => activityEvent.Tags).ShouldNotContain(attribute =>
+            attribute.Key.Contains(sentinel, StringComparison.Ordinal)
+            || (attribute.Value?.ToString()?.Contains(sentinel, StringComparison.Ordinal) ?? false));
     }
 }

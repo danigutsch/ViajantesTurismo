@@ -354,7 +354,7 @@ public sealed partial class AppHostOrchestrationTests
     }
 
     [Fact]
-    public void Observability_stack_is_opt_in_and_routes_through_collector()
+    public void Observability_backends_are_opt_in_and_route_through_collector()
     {
         // Arrange
         var appHostText = File.ReadAllText(Path.Combine(
@@ -392,14 +392,99 @@ public sealed partial class AppHostOrchestrationTests
         sharedDefaultsText.ShouldContain("\"loki\"", StringComparison.Ordinal);
         sharedDefaultsText.ShouldContain("\"tempo\"", StringComparison.Ordinal);
         sharedDefaultsText.ShouldContain("\"prometheus\"", StringComparison.Ordinal);
-        sharedHostingText.ShouldContain("AddOpenTelemetryCollector(resourceNames.OpenTelemetryCollector)", StringComparison.Ordinal);
-        sharedHostingText.ShouldContain("WithAppForwarding()", StringComparison.Ordinal);
+        sharedHostingText.ShouldContain("AddOpenTelemetryCollectorGateway(", StringComparison.Ordinal);
+        sharedHostingText.ShouldContain("ConfigureAppForwarding(collector)", StringComparison.Ordinal);
+        sharedHostingText.ShouldContain("ResolveCollectorEndpointName", StringComparison.Ordinal);
         (sharedHostingText.Split("ExcludeFromManifest()").Length - 1).ShouldBe(5);
         sharedHostingText.ShouldNotContain("AddContainer(", StringComparison.Ordinal);
         sharedHostingText.ShouldContain("AddGrafana(resourceNames.Grafana", StringComparison.Ordinal);
         sharedHostingText.ShouldContain("AddLoki(resourceNames.Loki", StringComparison.Ordinal);
         sharedHostingText.ShouldContain("AddTempo(resourceNames.Tempo", StringComparison.Ordinal);
         sharedHostingText.ShouldContain("AddPrometheus(", StringComparison.Ordinal);
+    }
+
+    [Fact]
+    [Trait(SharedKernel.Testing.TestTraitNames.CategoryName, SharedKernel.Testing.TestTraitValues.SecurityCategory)]
+    public void Every_hosted_profile_routes_through_the_trusted_collector_gateway()
+    {
+        // Arrange
+        var compositionText = File.ReadAllText(Path.Combine(
+            GetRepositoryRoot(),
+            "src",
+            "ViajantesTurismo.AppHost",
+            "AppHostComposition.cs"));
+        var observabilityStackText = File.ReadAllText(Path.Combine(
+            GetRepositoryRoot(),
+            "src",
+            "ViajantesTurismo.AppHost",
+            "ObservabilityStackResourceExtensions.cs"));
+        var sharedHostingText = File.ReadAllText(Path.Combine(
+            GetRepositoryRoot(),
+            "src",
+            "SharedKernel",
+            "SharedKernel.Aspire.Hosting.Grafana",
+            "GrafanaLgtmStackResourceExtensions.cs"));
+
+        // Act
+        var gatewayCallIndex = compositionText.IndexOf("builder.AddObservabilityStack();", StringComparison.Ordinal);
+        var adminProfileReturnIndex = compositionText.IndexOf("if (profile is HostedProfile.Admin)", StringComparison.Ordinal);
+        var gatewayCallCount = compositionText.Split("builder.AddObservabilityStack();", StringSplitOptions.None).Length - 1;
+
+        // Assert
+        gatewayCallIndex.ShouldBeGreaterThan(-1);
+        gatewayCallIndex.ShouldBeLessThan(adminProfileReturnIndex);
+        gatewayCallCount.ShouldBe(1);
+        observabilityStackText.ShouldContain("AddOpenTelemetryCollectorGateway", StringComparison.Ordinal);
+        sharedHostingText.ShouldContain("WithConfig(privacyConfigurationFile)", StringComparison.Ordinal);
+        sharedHostingText.ShouldContain("WithConfig(routingConfigurationFile)", StringComparison.Ordinal);
+    }
+
+    [Fact]
+    [Trait(SharedKernel.Testing.TestTraitNames.CategoryName, SharedKernel.Testing.TestTraitValues.SecurityCategory)]
+    public void Collector_trace_pipeline_drops_events_and_sanitizes_spans_before_export()
+    {
+        // Arrange
+        var collectorRoot = Path.Combine(GetRepositoryRoot(), "observability", "otel-collector");
+        var privacyConfig = File.ReadAllText(Path.Combine(collectorRoot, "privacy.yaml"))
+            .ReplaceLineEndings("\n");
+        var aspireRoutingConfig = File.ReadAllText(Path.Combine(collectorRoot, "aspire.yaml"))
+            .ReplaceLineEndings("\n");
+        var backendRoutingConfig = File.ReadAllText(Path.Combine(collectorRoot, "config.yaml"))
+            .ReplaceLineEndings("\n");
+
+        // Act
+        var aspirePipelineUsesPrivacyProcessors = aspireRoutingConfig.Contains(
+            "processors: [memory_limiter, transform/sanitize_traces, filter/drop_span_events, batch]",
+            StringComparison.Ordinal);
+        var backendPipelineUsesPrivacyProcessors = backendRoutingConfig.Contains(
+            "processors: [memory_limiter, transform/sanitize_traces, filter/drop_span_events, batch]",
+            StringComparison.Ordinal);
+
+        // Assert
+        aspirePipelineUsesPrivacyProcessors.ShouldBeTrue();
+        backendPipelineUsesPrivacyProcessors.ShouldBeTrue();
+        privacyConfig.ShouldContain("memory_limiter:", StringComparison.Ordinal);
+        privacyConfig.ShouldContain("limit_mib: 256", StringComparison.Ordinal);
+        privacyConfig.ShouldContain("spike_limit_mib: 64", StringComparison.Ordinal);
+        privacyConfig.ShouldContain("filter/drop_span_events:", StringComparison.Ordinal);
+        privacyConfig.ShouldContain("spanevent:\n        - 'true'", StringComparison.Ordinal);
+        privacyConfig.ShouldNotContain("\n      span:\n", StringComparison.Ordinal);
+        privacyConfig.ShouldContain("transform/sanitize_traces:", StringComparison.Ordinal);
+        privacyConfig.ShouldContain("set(span.status.message, \"\")", StringComparison.Ordinal);
+        privacyConfig.ShouldContain("delete_key(span.attributes, \"url.path\")", StringComparison.Ordinal);
+        privacyConfig.ShouldContain("delete_key(span.attributes, \"db.query.text\")", StringComparison.Ordinal);
+        privacyConfig.ShouldContain("delete_key(span.attributes, \"parameters\")", StringComparison.Ordinal);
+        privacyConfig.ShouldContain("delete_matching_keys(span.attributes, \"(?i)(^|[._])headers?([._]|$)\")", StringComparison.Ordinal);
+        privacyConfig.ShouldContain("delete_matching_keys(span.attributes, \"(?i)^aws\\\\.(s3|sqs|sns)\\\\.\")", StringComparison.Ordinal);
+        privacyConfig.ShouldContain("delete_matching_keys(span.attributes, \"(?i)(^|[._-])(authorization|cookie|password|token|api[._-]?key|secret)([._-]|$)\")", StringComparison.Ordinal);
+        privacyConfig.ShouldContain("delete_matching_keys(resource.attributes, \"(?i)(^|[._-])(authorization|cookie|password|token|api[._-]?key|secret)([._-]|$)\")", StringComparison.Ordinal);
+        privacyConfig.ShouldNotContain("set(span.name", StringComparison.Ordinal);
+        privacyConfig.ShouldNotContain("delete_key(span.attributes, \"http.route\")", StringComparison.Ordinal);
+        privacyConfig.ShouldNotContain("delete_key(span.attributes, \"error.type\")", StringComparison.Ordinal);
+        aspireRoutingConfig.ShouldContain("exporters: [otlp/aspire]", StringComparison.Ordinal);
+        backendRoutingConfig.ShouldContain("exporters: [otlp/aspire, otlp/tempo]", StringComparison.Ordinal);
+        (aspireRoutingConfig.Split("processors: [memory_limiter, batch]", StringSplitOptions.None).Length - 1).ShouldBe(2);
+        (backendRoutingConfig.Split("processors: [memory_limiter, batch]", StringSplitOptions.None).Length - 1).ShouldBe(2);
     }
 
     [Fact]

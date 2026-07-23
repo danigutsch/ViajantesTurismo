@@ -27,7 +27,6 @@ public static class BrandingInfrastructureDependencyInjection
 
         builder.AddNpgsqlDbContext<BrandingDbContext>(
             ResourceNames.CatalogDatabase,
-            configureSettings: settings => settings.DisableTracing = true,
             configureDbContextOptions: options => ConfigureBrandingDatabaseOptions<BrandingDbContext, TBuilder>(builder, options));
 
         builder.Services.AddScoped<IBrandingSettingsStore, EfBrandingSettingsStore>();
@@ -41,9 +40,14 @@ public static class BrandingInfrastructureDependencyInjection
         where TContext : DbContext
         where TBuilder : IHostApplicationBuilder
     {
-        options.UseNpgsql(providerOptions => providerOptions.MigrationsHistoryTable(
-            MigrationsHistoryTable,
-            schema: BrandingDbContext.MigrationsHistorySchemaName));
+        options.UseNpgsql(providerOptions =>
+        {
+            providerOptions.MigrationsHistoryTable(
+                MigrationsHistoryTable,
+                schema: BrandingDbContext.MigrationsHistorySchemaName);
+            providerOptions.ConfigureDataSource(dataSourceBuilder =>
+                dataSourceBuilder.ConfigureTracing(tracing => tracing.EnableFirstResponseEvent(enable: false)));
+        });
 
         if (!builder.Environment.IsDevelopment())
         {

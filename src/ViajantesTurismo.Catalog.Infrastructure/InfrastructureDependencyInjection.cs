@@ -141,12 +141,12 @@ public static class InfrastructureDependencyInjection
     {
         builder.AddNpgsqlDataSource(
             ResourceNames.CatalogDatabase,
-            configureSettings: settings => settings.DisableTracing = true);
+            configureDataSourceBuilder: ConfigureNpgsqlDataSource);
         builder.AddKeyedNpgsqlDataSource(
             ResourceNames.CatalogDatabase,
-            configureSettings: settings => settings.DisableTracing = true,
             configureDataSourceBuilder: dataSourceBuilder =>
             {
+                ConfigureNpgsqlDataSource(dataSourceBuilder);
                 dataSourceBuilder.ConnectionStringBuilder.MaxPoolSize = Math.Min(
                     CatalogSlugLockMaximumPoolSize,
                     dataSourceBuilder.ConnectionStringBuilder.MaxPoolSize);
@@ -195,10 +195,23 @@ public static class InfrastructureDependencyInjection
     {
         builder.AddNpgsqlDbContext<CatalogIntegrationTransportDbContext>(
             ResourceNames.AdminDatabase,
-            configureSettings: settings => settings.DisableTracing = true,
-            configureDbContextOptions: options => ConfigureDevelopmentDatabaseOptions<CatalogIntegrationTransportDbContext, TApplicationBuilder>(builder, options));
+            configureDbContextOptions: options => ConfigureCatalogIntegrationTransportDbContext(builder, options));
 
         return builder;
+    }
+
+    private static void ConfigureCatalogIntegrationTransportDbContext<TApplicationBuilder>(
+        TApplicationBuilder builder,
+        DbContextOptionsBuilder options)
+        where TApplicationBuilder : IHostApplicationBuilder
+    {
+        options.UseNpgsql(providerOptions => providerOptions.ConfigureDataSource(ConfigureNpgsqlDataSource));
+        ConfigureDevelopmentDatabaseOptions<CatalogIntegrationTransportDbContext, TApplicationBuilder>(builder, options);
+    }
+
+    private static void ConfigureNpgsqlDataSource(NpgsqlDataSourceBuilder dataSourceBuilder)
+    {
+        dataSourceBuilder.ConfigureTracing(tracing => tracing.EnableFirstResponseEvent(enable: false));
     }
 
     private static TApplicationBuilder AddCatalogIntegrationEventTransportConsumer<TApplicationBuilder>(this TApplicationBuilder builder)
