@@ -5,7 +5,7 @@
         <ProjectReference Include="..\..\src\ViajantesTurismo.Admin.Contracts.Http\ViajantesTurismo.Admin.Contracts.Http.csproj"/>
         <ProjectReference Include="..\..\src\ViajantesTurismo.Admin.Contracts.IntegrationEvents\ViajantesTurismo.Admin.Contracts.IntegrationEvents.csproj"/>
         <ProjectReference Include="..\..\src\ViajantesTurismo.Admin.Domain\ViajantesTurismo.Admin.Domain.csproj"/>
-        <ProjectReference Include="..\..\src\SharedKernel\SharedKernel.DomainEvents\SharedKernel.DomainEvents.csproj" />
+        <ProjectReference Include="..\..\src\SharedKernel\SharedKernel.Domain\SharedKernel.Domain.csproj" />
     </ItemGroup>
 
     <ItemGroup>

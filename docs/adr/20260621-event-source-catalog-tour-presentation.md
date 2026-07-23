@@ -18,8 +18,9 @@ Use event sourcing for Catalog tours and related customer-facing Catalog entitie
 versioned presentation history.
 
 `CatalogTour` is modeled as an event-sourced aggregate. Catalog stores append-only event streams,
-enforces optimistic stream versioning, and builds read models through projections. Catalog may use the
-same physical PostgreSQL resource as Admin initially, but it owns separate schema and tables.
+enforces optimistic stream versioning, and builds read models through projections. Storage placement
+follows ADR-034: Catalog and Admin use separate databases, which may share one PostgreSQL server, and
+each context owns its schemas, tables, and migration history.
 
 Unpublished presentation edits and explicit publish/unpublish transitions append
 `CatalogTourPresentationChanged`, `CatalogTourPublished`, and `CatalogTourUnpublished` events. Public
@@ -63,3 +64,4 @@ projects.
 - [Back to ADR Index](../ARCHITECTURE_DECISIONS.md)
 - Related: [Catalog Bounded Context](../bounded-contexts/Catalog.md)
 - Related: [Events and Messaging](../domain/EVENTS_AND_MESSAGING.md)
+- Related: [ADR-034: Bounded Context Databases and Outbox Ownership](20260705-bounded-context-databases-and-outbox-ownership.md)

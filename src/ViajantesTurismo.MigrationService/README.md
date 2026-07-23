@@ -1,16 +1,18 @@
 # ViajantesTurismo.MigrationService
 
-Database migration and seeding service for application startup.
+Database initialization service for application startup.
 
 ## Purpose
 
-Short-lived process that runs Entity Framework Core migrations and seeds initial data. Ensures database schema is
-up-to-date before dependent services start.
+Short-lived process that runs Entity Framework Core migrations in every environment and atomically
+initializes synthetic Admin data only in Development. It ensures database schemas are up to date
+before the APIs start.
 
 ## Responsibilities
 
 - **Migrations**: Apply pending EF Core migrations to database
-- **Seeding**: Populate initial data for development/testing
+- **Development data initialization**: Atomically populate the complete synthetic Admin data set only
+  in Development
 - **Startup Order**: Runs before API service starts (via `WaitForCompletion()`)
 - **EF Core Tooling**: Serves as startup project for `dotnet ef` commands
 
@@ -28,8 +30,8 @@ dotnet ef migrations add MigrationName --project src/ViajantesTurismo.Management
 
 ## Execution
 
-Starts the Generic Host, executes migrations and seeding through `MigrationRunner`, stops the host, and returns an
-explicit process status. Dependent services wait for successful completion before starting.
+Starts the Generic Host, runs `DatabaseInitializationWorker` through `MigrationProcess`, stops the host,
+and returns an explicit process status. Dependent services wait for successful completion before starting.
 
 ## Dependencies
 

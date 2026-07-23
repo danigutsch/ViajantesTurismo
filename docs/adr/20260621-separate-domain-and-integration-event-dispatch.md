@@ -1,6 +1,12 @@
 # ADR-023: Separate Domain and Integration Event Dispatch
 
-**Status**: Accepted - 2026-06-21
+**Status**: Superseded - 2026-07-19
+
+**Superseded by**: [ADR-039: Generated Messaging Dispatch Ownership](20260719-generated-messaging-dispatch-ownership.md)
+
+ADR-039 preserves the conceptual separation between domain and integration events while replacing the
+dispatcher and handler adapters described here with direct generated domain-event-to-outbox mapping and
+closed typed integration-event delivery.
 
 ## Context
 
@@ -16,7 +22,7 @@ model instead of introducing a disconnected event bus.
 
 Create separate typed dispatch modules for domain events and integration events.
 
-- `SharedKernel.DomainEvents` owns `IDomainEventDispatcher` and
+- A dedicated domain-event module owns `IDomainEventDispatcher` and
   `IDomainEventHandler<TDomainEvent>`.
 - `SharedKernel.Messaging.IntegrationEvents` owns `IIntegrationEventDispatcher` and
   `IIntegrationEventHandler<TIntegrationEvent>`.

@@ -71,7 +71,7 @@ public static class InfrastructureDependencyInjection
     /// <param name="builder">The application builder to configure.</param>
     /// <typeparam name="TApplicationBuilder">The application builder type.</typeparam>
     /// <returns>The updated application builder.</returns>
-    public static TApplicationBuilder AddCatalogSeeding<TApplicationBuilder>(this TApplicationBuilder builder)
+    public static TApplicationBuilder AddCatalogDatabaseInitialization<TApplicationBuilder>(this TApplicationBuilder builder)
         where TApplicationBuilder : IHostApplicationBuilder
     {
         ArgumentNullException.ThrowIfNull(builder);
@@ -177,6 +177,7 @@ public static class InfrastructureDependencyInjection
         where TApplicationBuilder : IHostApplicationBuilder
     {
         builder.Services.AddIntegrationEventOutbox<CatalogDbContext>();
+        builder.Services.AddIntegrationEventInbox<CatalogDbContext>();
         if (addOutboxRelay)
         {
             builder.Services.AddIntegrationEventOutboxRelay<CatalogDbContext>();

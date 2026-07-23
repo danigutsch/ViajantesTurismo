@@ -1,6 +1,6 @@
 # ADR-033: Messaging Event Abstractions and CloudEvents Boundary
 
-**Status**: Proposed - 2026-07-05
+**Status**: Accepted - 2026-07-19
 
 ## Context
 
@@ -18,8 +18,7 @@ transport adapters. The language must separate facts, envelopes, messages, and p
 Use messaging language for transport/runtime abstractions and event language for facts/contracts.
 
 - Keep typed event contracts in explicit conceptual modules:
-    - `SharedKernel.Domain` for `IDomainEvent`.
-    - `SharedKernel.DomainEvents` for in-process domain-event dispatch.
+    - `SharedKernel.Domain` for domain event contracts, recording, and in-process dispatch.
     - `SharedKernel.Messaging.IntegrationEvents` for typed cross-boundary event contracts and handlers.
     - `SharedKernel.EventSourcing` for event-stream persistence and projections.
 - Introduce `SharedKernel.Messaging` as the storage-neutral home for message and envelope concepts
@@ -92,11 +91,12 @@ simple composition while there are only a few concrete message records. Keep gen
 mechanical mapping, diagnostics, and serializer registration, not business validation or persistence
 state machines.
 
-Potential generator candidates later:
+Adopted generator responsibilities:
 
-- `IIntegrationEvent` to `EventEnvelope` metadata mapping.
-- AOT-safe serializer context registration for known event contracts.
-- Compile-time diagnostics for missing event type, event version, source, or serializer support.
+- Direct exhaustive domain-event-to-outbox mapping.
+- AOT-safe typed serialization and envelope delivery for known event contracts.
+- Compile-time diagnostics for missing or duplicate consumer handlers and duplicate consumer event
+  types.
 
 Non-candidates for now:
 

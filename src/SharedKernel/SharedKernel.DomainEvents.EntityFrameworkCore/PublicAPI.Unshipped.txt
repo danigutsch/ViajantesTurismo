@@ -1,3 +1,0 @@
-#nullable enable
-SharedKernel.DomainEvents.EntityFrameworkCore.DomainEventDispatchServiceCollectionExtensions
-static SharedKernel.DomainEvents.EntityFrameworkCore.DomainEventDispatchServiceCollectionExtensions.AddDomainEventDispatch<TContext>(this Microsoft.Extensions.DependencyInjection.IServiceCollection! services) -> Microsoft.Extensions.DependencyInjection.IServiceCollection!

@@ -1,7 +1,7 @@
 # Architecture Flows
 
-These diagrams separate implemented behavior from planned/evolving behavior. They are source-controlled
-Mermaid diagrams so they can be reviewed with the surrounding Markdown.
+These source-controlled Mermaid diagrams identify implemented behavior and explicitly mark only future
+behavior as planned.
 
 ## Admin workflows
 
@@ -39,17 +39,13 @@ Implemented workflow groups:
 - Payments: recorded through the booking aggregate; payment status is calculated from payments and
   booking total.
 
-Tour creation currently dispatches `AdminTourCreatedIntegrationEvent` after `SaveEntities(ct)` through
-the in-process `ServiceProviderIntegrationEventDispatcher`.
+Tour creation uses a directly resolved scoped `CreateTourCommandHandler`. `SaveEntities(ct)` invokes the
+EF Core domain-event interceptor; the generated exhaustive mapper enqueues
+`AdminTourCreatedIntegrationEvent` in the transactional outbox before the same save commits.
 
-When Admin intentionally migrates a workflow to `SharedKernel.Mediator`, mediator commands can opt into
-the shared EF Core command transaction behavior bound to `AdminWriteDbContext`. The behavior wraps
-commands only, leaves queries on the normal read path, and opens the transaction inside the DbContext
-execution strategy so explicit transactions remain compatible with EF Core retry strategies. Existing
-direct command handlers keep their current `SaveEntities(ct)` pattern until they are intentionally
-migrated to mediator dispatch. Stores may still use a local transaction when a use case is not
-dispatched through the command pipeline or when a store must make multiple `SaveChanges` calls atomic
-inside one persistence operation.
+Admin command handlers remain direct scoped services. They retain their explicit `SaveEntities(ct)`
+pattern; stores may still use a local transaction when one persistence operation requires multiple
+`SaveChanges` calls to remain atomic.
 
 Each module owns one DbContext registration method that applies all module options inside the actual
 provider registration callback. EF Core `ConfigureDbContext<TContext>()` can compose options for
@@ -58,46 +54,34 @@ Aspire provider wrappers are clearer when the module owns the final callback. Do
 interception should live in a separate package over these EF Core primitives, not in
 `SharedKernel.EntityFrameworkCore`.
 
-```mermaid
-sequenceDiagram
-    participant API as Admin.ApiService
-    participant Handler as CreateTourCommandHandler
-    participant Store as ITourStore
-    participant Tour as Tour aggregate
-    participant Db as Admin PostgreSQL
-    participant Dispatcher as In-process integration dispatcher
-
-    API->>Handler: CreateTourCommand
-    Handler->>Store: IdentifierExists(identifier)
-    Handler->>Tour: Tour.Create(definition)
-    Tour-->>Handler: Result<Tour>
-    Handler->>Db: SaveEntities(ct)
-    Handler->>Dispatcher: Dispatch(AdminTourCreatedIntegrationEvent)
-    Dispatcher-->>Handler: Returns after registered local handlers run
-    Handler-->>API: Result<Guid>
-```
-
 ### Current durable boundary
 
-Admin tour creation persists integration events through the EF Core outbox provider. The reusable
-provider maps Admin outbox rows to `messaging.outbox_messages`; Catalog maps inbox idempotency rows to
-`messaging.idempotency_keys`. Transport publication from the outbox to Catalog.ApiService remains a
-follow-up.
+Admin tour creation persists integration events through the EF Core outbox provider. Admin and Catalog
+use separate databases, which may share one PostgreSQL server; each database owns its own `messaging`
+schema. The Admin relay moves envelopes from `messaging.outbox_messages` into the Admin PostgreSQL
+transport table. `IntegrationEventWorker` claims a batch with `FOR UPDATE SKIP LOCKED`, keeps one scope
+for that batch, processes its messages sequentially, and records lease/retry state. The generated typed
+publisher resolves the Catalog handler, whose idempotency wrapper writes Catalog
+`messaging.idempotency_keys`.
 
 ```mermaid
 flowchart LR
     adminHandler[Admin handler]
     adminDb[(Admin tables)]
     outbox[(messaging.outbox_messages)]
-    transport[Transport adapter planned]
+    relay[Admin outbox relay]
+    transport[(Admin PostgreSQL transport)]
+    worker[IntegrationEventWorker batch consumer]
     inbox[(Catalog messaging.idempotency_keys)]
     catalogConsumer[Catalog consumer]
 
     adminHandler --> adminDb
     adminHandler --> outbox
-    outbox -. planned .-> transport
-    transport -. planned .-> inbox
-    inbox -. planned .-> catalogConsumer
+    outbox --> relay
+    relay --> transport
+    transport --> worker
+    worker --> inbox
+    inbox --> catalogConsumer
 ```
 
 Admin write-side domain-event dispatch uses SaveChanges interception to write outbox rows in the same
@@ -110,15 +94,21 @@ sequenceDiagram
     participant Aggregate as Aggregate
     participant Context as AdminWriteDbContext
     participant Interceptor as SaveChanges interceptor
-    participant Dispatcher as Domain event dispatcher
+    participant Dispatcher as Composite domain event dispatcher
+    participant Mapper as Generated outbox mapper
+    participant Audit as Generated audit handler
     participant Outbox as messaging.outbox_messages
+    participant AuditRows as Admin audit records
     participant Db as Admin PostgreSQL
 
     Handler->>Aggregate: mutate; record domain event
     Handler->>Context: SaveEntities(ct)
     Context->>Interceptor: SavingChanges
     Interceptor->>Dispatcher: Dispatch(domain events)
-    Dispatcher->>Outbox: Enqueue serialized integration events
+    Dispatcher->>Mapper: Dispatch mapped domain events
+    Mapper->>Outbox: Enqueue serialized integration events
+    Dispatcher->>Audit: Dispatch auditable domain events
+    Audit->>AuditRows: Add audit records
     Context->>Db: save aggregate rows + outbox rows
     alt save succeeds
         Db-->>Context: commit ok
@@ -171,8 +161,8 @@ Current runtime limits:
 - `PUT /catalog/tours/{id}/presentation` updates the read model directly; it does not append a
   Catalog tour presentation event yet.
 - Public endpoints read only rows marked `IsPublished` from the read model.
-- Projection runner and integration consumer are application components with unit coverage; production
-  transport and background projection execution are still evolving.
+- `IntegrationEventWorker` hosts PostgreSQL transport consumption and background projection execution.
+  A claimed transport batch shares one DI scope and is processed sequentially.
 - `CatalogTelemetry` emits OpenTelemetry activities and counters around integration event handling,
   idempotency decisions, tour stream updates, and projection batches.
 

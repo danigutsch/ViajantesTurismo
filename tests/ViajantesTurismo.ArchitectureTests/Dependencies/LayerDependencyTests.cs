@@ -294,6 +294,60 @@ public sealed class LayerDependencyTests
     }
 
     [Fact]
+    public void Admin_projects_and_flow_documentation_should_not_describe_mediator_composition()
+    {
+        // Arrange
+        var repositoryRoot = GetRepositoryRoot();
+        var adminAssemblies = new[]
+        {
+            Assembly.Load("ViajantesTurismo.Admin.Application"),
+            Assembly.Load("ViajantesTurismo.Admin.Infrastructure")
+        };
+        var flows = File.ReadAllText(Path.Combine(repositoryRoot, "docs", "architecture", "FLOWS.md"));
+        var eventsAndMessaging = File.ReadAllText(
+            Path.Combine(repositoryRoot, "docs", "domain", "EVENTS_AND_MESSAGING.md"));
+        var domainEventsReadme = File.ReadAllText(
+            Path.Combine(repositoryRoot, "src", "SharedKernel", "SharedKernel.Domain", "README.md"));
+
+        // Act
+        var mediatorReferences = adminAssemblies
+            .SelectMany(assembly => assembly.GetReferencedAssemblies()
+                .Where(reference => reference.Name?.StartsWith("SharedKernel.Mediator", StringComparison.Ordinal) == true)
+                .Select(reference => $"{assembly.GetName().Name} -> {reference.Name}"))
+            .ToArray();
+
+        // Assert
+        mediatorReferences.ShouldBeEmpty();
+        flows.ShouldNotContain("SharedKernel.Mediator", StringComparison.Ordinal);
+        flows.ShouldNotContain("ServiceProviderIntegrationEventDispatcher", StringComparison.Ordinal);
+        eventsAndMessaging.ShouldNotContain(
+            "Event dispatch should extend `SharedKernel.Mediator`",
+            StringComparison.Ordinal);
+        domainEventsReadme.ShouldNotContain("SharedKernel.Mediator", StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public void Integration_event_contracts_and_catalog_application_should_not_reference_mediator_abstractions()
+    {
+        // Arrange
+        var assemblies = new[]
+        {
+            Assembly.Load("SharedKernel.Messaging.IntegrationEvents"),
+            Assembly.Load("ViajantesTurismo.Catalog.Application")
+        };
+
+        // Act
+        var mediatorReferences = assemblies
+            .SelectMany(assembly => assembly.GetReferencedAssemblies()
+                .Where(reference => reference.Name?.StartsWith("SharedKernel.Mediator", StringComparison.Ordinal) == true)
+                .Select(reference => $"{assembly.GetName().Name} -> {reference.Name}"))
+            .ToArray();
+
+        // Assert
+        mediatorReferences.ShouldBeEmpty();
+    }
+
+    [Fact]
     public void Module_boundary_documentation_should_describe_enforced_rules()
     {
         // Arrange

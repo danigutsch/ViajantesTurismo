@@ -30,7 +30,6 @@ public sealed class TourContext
     public CreateTourCommandHandler CreateTourCommandHandler => new(TourStore, UnitOfWork);
     public DeleteTourCommandHandler DeleteTourCommandHandler => new(TourStore, UnitOfWork);
     public UpdateTourCommandHandler UpdateTourCommandHandler => new(TourStore, UnitOfWork);
-    public CapturingIntegrationEventDispatcher IntegrationEventDispatcher { get; } = new();
     public Result<Guid>? CommandResult { get; set; }
     public Result? DeleteResult { get; set; }
 }

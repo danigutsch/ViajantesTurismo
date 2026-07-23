@@ -1,4 +1,3 @@
-using ViajantesTurismo.Admin.Application;
 using ViajantesTurismo.Admin.Infrastructure;
 using ViajantesTurismo.Branding.Infrastructure;
 using ViajantesTurismo.Catalog.Infrastructure;
@@ -12,19 +11,18 @@ return await MigrationProcess.Run(() =>
     var builder = Host.CreateApplicationBuilder(args);
 
     builder.Services.AddOpenTelemetry()
-        .WithTracing(tracingBuilder => { tracingBuilder.AddSource(MigrationRunner.ActivitySourceName); });
+        .WithTracing(tracingBuilder => { tracingBuilder.AddSource(DatabaseInitializationWorker.ActivitySourceName); });
 
     builder.AddServiceDefaults();
 
-    builder.Services.AddDomainEventProcessing();
-    builder.AddAdminSeeding();
+    builder.AddAdminDatabaseInitialization();
     builder.AddBrandingInfrastructure();
-    builder.AddCatalogSeeding();
+    builder.AddCatalogDatabaseInitialization();
     builder.Services.AddManagementSecurityPersistence(
         builder.Configuration.GetConnectionString(ResourceNames.SecurityDatabase)
         ?? throw new InvalidOperationException("The security database connection string is required."));
 
-    builder.Services.AddSingleton<MigrationRunner>();
+    builder.Services.AddSingleton<DatabaseInitializationWorker>();
 
     return builder.Build();
 });

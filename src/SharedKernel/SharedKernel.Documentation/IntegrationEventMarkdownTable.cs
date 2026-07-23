@@ -127,7 +127,7 @@ internal static partial class IntegrationEventMarkdownTable
         TimeSpan.FromSeconds(1));
 
     private static Regex ConsumerRegex(string eventName) => new(
-        $@"AddIntegrationEventConsumer\(\s*{Regex.Escape(eventName)}\.EventType",
+        $@"AddIntegrationEventConsumer(?:<\s*{Regex.Escape(eventName)}\s*>)?\(\s*{Regex.Escape(eventName)}\.EventType",
         RegexOptions.Singleline | RegexOptions.CultureInvariant,
         TimeSpan.FromSeconds(1));
 }

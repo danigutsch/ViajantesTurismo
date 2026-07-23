@@ -15,7 +15,7 @@ OpenAPI, and observability. Reusable DDD primitives should follow the same focus
 
 Create focused SharedKernel projects for DDD primitives and reusable value objects.
 
-- `SharedKernel.Domain` owns aggregate-root contracts and `IDomainEvent`.
+- `SharedKernel.Domain` owns aggregate-root contracts, `IDomainEvent`, and typed domain-event dispatch.
 - `SharedKernel.BuildingBlocks` owns reusable identity interfaces and value objects such as `ValueObject` and `DateRange`.
 
 Move existing primitives gradually into these projects. Decide separately whether `Currency` and

@@ -1,9 +1,10 @@
+using System.Text.Json.Serialization.Metadata;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Hosting;
 using SharedKernel.AuditTrail;
-using SharedKernel.DomainEvents.EntityFrameworkCore;
+using SharedKernel.Domain.EntityFrameworkCore;
 using SharedKernel.EntityFrameworkCore;
 using SharedKernel.Messaging.IntegrationEvents;
 using SharedKernel.Messaging.IntegrationEvents.EntityFrameworkCore;
@@ -25,6 +26,23 @@ namespace ViajantesTurismo.Admin.Infrastructure;
 /// </summary>
 public static class InfrastructureDependencyInjection
 {
+    /// <summary>
+    /// Applies Admin migrations from the dedicated database initialization application.
+    /// </summary>
+    /// <param name="serviceProvider">The scoped service provider containing the Admin write context.</param>
+    /// <param name="ct">The cancellation token.</param>
+    /// <returns>A task that represents the migration operation.</returns>
+    public static async Task MigrateAdminDatabase(this IServiceProvider serviceProvider, CancellationToken ct)
+    {
+        ArgumentNullException.ThrowIfNull(serviceProvider);
+
+        var dbContext = serviceProvider.GetRequiredService<AdminWriteDbContext>();
+        if (dbContext.Database.IsRelational())
+        {
+            await dbContext.Database.MigrateAsync(ct);
+        }
+    }
+
     /// <summary>
     /// Adds the Infrastructure layer services to the application builder.
     /// </summary>
@@ -67,9 +85,12 @@ public static class InfrastructureDependencyInjection
         builder.Services.AddScoped<ICustomerStore, CustomerStore>();
         builder.Services.AddScoped<IDocumentStore, DocumentStore>();
         builder.Services.AddScoped<IDocumentAuditStore, DocumentAuditStore>();
+        JsonTypeInfo<AdminTourCreatedIntegrationEvent> adminTourCreatedJsonTypeInfo =
+            AdminIntegrationEventJsonContext.Default.AdminTourCreatedIntegrationEvent;
         builder.Services.AddIntegrationEventContract(
             AdminTourCreatedIntegrationEvent.EventType,
-            AdminIntegrationEventJsonContext.Default.AdminTourCreatedIntegrationEvent);
+            adminTourCreatedJsonTypeInfo);
+        builder.Services.AddDomainEventProcessing();
         builder.Services.AddIntegrationEventOutbox<AdminWriteDbContext>();
         builder.Services.AddPostgreSqlIntegrationEventTransportProducer<AdminWriteDbContext>(IntegrationEventConsumerNames.Catalog);
 
@@ -80,12 +101,12 @@ public static class InfrastructureDependencyInjection
     }
 
     /// <summary>
-    /// Adds the seeding services to the application builder, including the database context and seeder implementation.
+    /// Adds Admin persistence services used by the dedicated database initialization application.
     /// </summary>
     /// <param name="builder">The application builder to configure.</param>
     /// <typeparam name="TApplicationBuilder">The type of the application builder, constrained to <see cref="IHostApplicationBuilder"/>.</typeparam>
     /// <returns>The updated application builder.</returns>
-    public static TApplicationBuilder AddAdminSeeding<TApplicationBuilder>(this TApplicationBuilder builder)
+    public static TApplicationBuilder AddAdminDatabaseInitialization<TApplicationBuilder>(this TApplicationBuilder builder)
         where TApplicationBuilder : IHostApplicationBuilder
     {
         ArgumentNullException.ThrowIfNull(builder);
@@ -96,12 +117,20 @@ public static class InfrastructureDependencyInjection
         }
 
         builder.AddAdminWriteDbContext();
+        JsonTypeInfo<AdminTourCreatedIntegrationEvent> adminTourCreatedJsonTypeInfo =
+            AdminIntegrationEventJsonContext.Default.AdminTourCreatedIntegrationEvent;
         builder.Services.AddIntegrationEventContract(
             AdminTourCreatedIntegrationEvent.EventType,
-            AdminIntegrationEventJsonContext.Default.AdminTourCreatedIntegrationEvent);
+            adminTourCreatedJsonTypeInfo);
+        builder.Services.AddDomainEventProcessing();
         builder.Services.AddIntegrationEventOutbox<AdminWriteDbContext>();
         builder.Services.AddPostgreSqlIntegrationEventTransportProducer<AdminWriteDbContext>(IntegrationEventConsumerNames.Catalog);
-        builder.Services.AddScoped(sp => new Seeder(sp.GetRequiredService<AdminWriteDbContext>()));
+        if (builder.Environment.IsDevelopment())
+        {
+            builder.Services.AddScoped(sp => new DevelopmentDataInitializer(
+                sp.GetRequiredService<AdminWriteDbContext>(),
+                sp.GetRequiredService<TimeProvider>()));
+        }
 
         return builder;
     }

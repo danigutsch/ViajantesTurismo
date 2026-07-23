@@ -1,5 +1,4 @@
 using SharedKernel.Domain;
-using SharedKernel.DomainEvents;
 using SharedKernel.EntityFrameworkCore;
 
 namespace ViajantesTurismo.Admin.UnitTests.Infrastructure;

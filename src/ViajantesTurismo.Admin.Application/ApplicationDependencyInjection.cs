@@ -79,7 +79,7 @@ public static class ApplicationDependencyInjection
         ArgumentNullException.ThrowIfNull(services);
 
         services.AddGeneratedAuditTrailMappings();
-        services.AddGeneratedIntegrationEventMappings();
+        services.AddGeneratedIntegrationEvents();
 
         return services;
     }

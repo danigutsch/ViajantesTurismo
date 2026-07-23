@@ -1,0 +1,31 @@
+using System.Text.Json.Serialization.Metadata;
+using Microsoft.Extensions.DependencyInjection;
+using SharedKernel.Messaging.IntegrationEvents;
+using ViajantesTurismo.Admin.Contracts.IntegrationEvents;
+using ViajantesTurismo.Admin.Contracts.IntegrationEvents.Tours;
+
+namespace ViajantesTurismo.Admin.UnitTests.Infrastructure;
+
+internal static class GeneratedIntegrationEventSerializerTestServices
+{
+    public static IIntegrationEventSerializer CreateSerializer()
+    {
+        var services = new ServiceCollection();
+        services.AddAdminIntegrationEventContract();
+
+        using var provider = services.BuildServiceProvider();
+        return provider.GetRequiredService<IIntegrationEventSerializer>();
+    }
+
+    public static IServiceCollection AddAdminIntegrationEventContract(this IServiceCollection services)
+    {
+        JsonTypeInfo<AdminTourCreatedIntegrationEvent> adminTourCreatedJsonTypeInfo =
+            AdminIntegrationEventJsonContext.Default.AdminTourCreatedIntegrationEvent;
+        services.AddIntegrationEventContract(
+            AdminTourCreatedIntegrationEvent.EventType,
+            adminTourCreatedJsonTypeInfo);
+        services.AddGeneratedIntegrationEvents();
+
+        return services;
+    }
+}

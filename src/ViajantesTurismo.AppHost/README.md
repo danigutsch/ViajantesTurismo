@@ -22,7 +22,8 @@ projects, and reusable service defaults belong in `ViajantesTurismo.ServiceDefau
 
 ### Application Services
 
-- **MigrationService**: applies database migrations and seed data, then exits
+- **MigrationService**: applies database migrations, atomically initializes synthetic Admin data only
+  in Development, then exits
 - **DatabaseObservability**: waits for migrations and optionally collects read-only index-health
   evidence for both PostgreSQL databases
 - **Admin.ApiService**: Admin REST API; waits for the database and migration completion

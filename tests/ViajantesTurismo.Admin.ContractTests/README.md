@@ -35,7 +35,7 @@ comparison inputs for drift guards, but the committed canonical artifacts remain
 Not allowed for this project:
 
 - direct calls to business endpoints such as `/tours`, `/bookings`, or `/customers` to prove behavior
-- database seeding or reset flows for contract-only tests
+- database initialization or reset flows for contract-only tests
 - generic DI reach-through from tests
 
 ## First slice

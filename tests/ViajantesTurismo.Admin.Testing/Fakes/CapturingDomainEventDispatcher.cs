@@ -1,5 +1,4 @@
 using SharedKernel.Domain;
-using SharedKernel.DomainEvents;
 
 namespace ViajantesTurismo.Admin.Testing.Fakes;
 

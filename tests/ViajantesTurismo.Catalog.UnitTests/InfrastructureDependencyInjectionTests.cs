@@ -74,7 +74,7 @@ public sealed class InfrastructureDependencyInjectionTests
     }
 
     [Fact]
-    public void AddCatalogSeeding_does_not_require_malware_scanner_configuration()
+    public void AddCatalogDatabaseInitialization_does_not_require_malware_scanner_configuration()
     {
         // Arrange
         using var scenario = CatalogInfrastructureTestServices.CreateSeedingScenario();

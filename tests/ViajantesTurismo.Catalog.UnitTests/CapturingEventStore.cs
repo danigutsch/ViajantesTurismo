@@ -2,10 +2,12 @@ using SharedKernel.EventSourcing;
 
 namespace ViajantesTurismo.Catalog.UnitTests;
 
-public sealed class CapturingEventStore : IEventStore
+public sealed class CapturingEventStore(int appendFailures = 0) : IEventStore
 {
     private readonly List<object> appendedEvents = [];
+    private readonly List<EventEnvelope> appendedEnvelopes = [];
     private readonly List<EventEnvelope> replayEvents = [];
+    private int remainingAppendFailures = appendFailures;
 
     public StreamId StreamId { get; private set; }
 
@@ -15,6 +17,8 @@ public sealed class CapturingEventStore : IEventStore
 
     public long? LoadedAfterPosition { get; private set; }
 
+    public int AppendAttempts { get; private set; }
+
     public void AddReplayEvent(EventEnvelope envelope) => replayEvents.Add(envelope);
 
     public ValueTask<IReadOnlyCollection<EventEnvelope>> Append(
@@ -23,6 +27,26 @@ public sealed class CapturingEventStore : IEventStore
         IReadOnlyCollection<object> events,
         CancellationToken ct)
     {
+        AppendAttempts++;
+        if (remainingAppendFailures > 0)
+        {
+            remainingAppendFailures--;
+            throw new InvalidOperationException("append failed");
+        }
+
+        var currentStream = appendedEnvelopes
+            .Concat(replayEvents)
+            .Where(envelope => envelope.StreamId == streamId)
+            .OrderBy(static envelope => envelope.Revision.Value)
+            .ToArray();
+        if (expectedRevision.RequiresEmptyStream && currentStream.Length > 0)
+        {
+            throw new ExpectedStreamRevisionConflictException(
+                streamId,
+                expectedRevision,
+                currentStream[^1].Revision);
+        }
+
         StreamId = streamId;
         ExpectedRevision = expectedRevision;
         appendedEvents.AddRange(events);
@@ -37,6 +61,7 @@ public sealed class CapturingEventStore : IEventStore
                 domainEvent,
                 DateTimeOffset.UtcNow))
             .ToArray();
+        appendedEnvelopes.AddRange(envelopes);
 
         return ValueTask.FromResult(envelopes);
     }
@@ -44,7 +69,17 @@ public sealed class CapturingEventStore : IEventStore
     public ValueTask<IReadOnlyCollection<EventEnvelope>> Load(
         StreamId streamId,
         StreamRevision? afterRevision,
-        CancellationToken ct) => ValueTask.FromResult<IReadOnlyCollection<EventEnvelope>>([]);
+        CancellationToken ct)
+    {
+        var events = appendedEnvelopes
+            .Concat(replayEvents)
+            .Where(envelope => envelope.StreamId == streamId)
+            .Where(envelope => afterRevision is null || envelope.Revision.Value > afterRevision.Value.Value)
+            .OrderBy(static envelope => envelope.Revision.Value)
+            .ToArray();
+
+        return ValueTask.FromResult<IReadOnlyCollection<EventEnvelope>>(events);
+    }
 
     public ValueTask<IReadOnlyCollection<EventEnvelope>> LoadAfter(
         long position,

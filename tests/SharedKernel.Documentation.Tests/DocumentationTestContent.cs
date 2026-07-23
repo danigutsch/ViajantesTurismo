@@ -323,7 +323,7 @@ internal static class DocumentationTestContent
         {
             public static void Add(IServiceCollection services)
             {
-                services.AddIntegrationEventConsumer(
+                services.AddIntegrationEventConsumer<AdminTourCreatedIntegrationEvent>(
                     AdminTourCreatedIntegrationEvent.EventType,
                     AdminIntegrationEventJsonContext.Default.AdminTourCreatedIntegrationEvent);
             }

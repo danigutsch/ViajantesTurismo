@@ -54,8 +54,8 @@ flowchart LR
     catalogApi -- media metadata and planned binary adapter --> mediaStorage
     worker -- reads durable Admin outbox --> outbox
     worker -- projects Catalog read models --> catalogDatabase
-    migration -- applies migrations and seed data --> adminDatabase
-    migration -- applies migrations and seed data --> catalogDatabase
+    migration -- applies migrations and Development-only sample data --> adminDatabase
+    migration -- applies migrations and event-store schema --> catalogDatabase
     adminDatabase --> databaseServer
     catalogDatabase --> databaseServer
     adminApi -. uses .-> sharedKernel

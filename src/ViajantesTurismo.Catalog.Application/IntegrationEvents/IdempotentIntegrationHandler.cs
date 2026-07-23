@@ -20,9 +20,9 @@ public sealed class IdempotentIntegrationHandler<TIntegrationEvent>(
         $"catalog.integration-event.{TIntegrationEvent.EventType}.v{TIntegrationEvent.EventVersion}");
 
     /// <inheritdoc />
-    public async ValueTask Handle(TIntegrationEvent notification, CancellationToken ct)
+    public async ValueTask Handle(TIntegrationEvent integrationEvent, CancellationToken ct)
     {
-        ArgumentNullException.ThrowIfNull(notification);
+        ArgumentNullException.ThrowIfNull(integrationEvent);
 
         using var activity = CatalogTelemetry.ActivitySource.StartActivity(
             CatalogTelemetry.ActivityIntegrationEventHandle,
@@ -31,7 +31,7 @@ public sealed class IdempotentIntegrationHandler<TIntegrationEvent>(
         activity?.SetTag(CatalogTelemetry.TagIntegrationEventType, TIntegrationEvent.EventType);
         activity?.SetTag(CatalogTelemetry.TagIntegrationEventVersion, TIntegrationEvent.EventVersion);
 
-        var operation = new IdempotencyOperation(Scope, IdempotencyKey.From(notification.EventId.ToString("N")));
+        var operation = new IdempotencyOperation(Scope, IdempotencyKey.From(integrationEvent.EventId.ToString("N")));
         try
         {
             var startResult = await idempotencyStore.TryStart(
@@ -41,6 +41,12 @@ public sealed class IdempotentIntegrationHandler<TIntegrationEvent>(
                 ct);
             if (!startResult.Started)
             {
+                if (startResult.ExistingEntry?.State is not IdempotencyEntryState.Completed)
+                {
+                    throw new InvalidOperationException(
+                        $"Integration event '{integrationEvent.EventId}' is already being processed.");
+                }
+
                 SetOutcome(activity, CatalogTelemetry.OutcomeSkipped);
                 activity?.SetTag(CatalogTelemetry.TagIdempotencyOutcome, CatalogTelemetry.OutcomeSkipped);
                 CatalogTelemetry.IdempotencyOperations.Add(1, CreateEventTags(CatalogTelemetry.OutcomeSkipped));
@@ -52,8 +58,8 @@ public sealed class IdempotentIntegrationHandler<TIntegrationEvent>(
             activity?.SetTag(CatalogTelemetry.TagIdempotencyOutcome, CatalogTelemetry.OutcomeAcquired);
             CatalogTelemetry.IdempotencyOperations.Add(1, CreateEventTags(CatalogTelemetry.OutcomeAcquired));
 
-            await inner.Handle(notification, ct);
-            await idempotencyStore.Complete(operation, DateTimeOffset.UtcNow, notification.EventId.ToString("N"), ct);
+            await inner.Handle(integrationEvent, ct);
+            await idempotencyStore.Complete(operation, DateTimeOffset.UtcNow, integrationEvent.EventId.ToString("N"), ct);
 
             SetOutcome(activity, CatalogTelemetry.OutcomeSuccess);
             activity?.SetTag(CatalogTelemetry.TagIdempotencyOutcome, CatalogTelemetry.OutcomeCompleted);

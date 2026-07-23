@@ -40,8 +40,7 @@
         <Project Path="src/SharedKernel/SharedKernel.MalwareScanning.ClamAv/SharedKernel.MalwareScanning.ClamAv.csproj" />
         <Project Path="src/SharedKernel/SharedKernel.Aspire.Hosting.SeaweedFs/SharedKernel.Aspire.Hosting.SeaweedFs.csproj" />
         <Project Path="src/SharedKernel/SharedKernel.BuildingBlocks/SharedKernel.BuildingBlocks.csproj" />
-        <Project Path="src/SharedKernel/SharedKernel.DomainEvents/SharedKernel.DomainEvents.csproj" />
-        <Project Path="src/SharedKernel/SharedKernel.DomainEvents.EntityFrameworkCore/SharedKernel.DomainEvents.EntityFrameworkCore.csproj" />
+        <Project Path="src/SharedKernel/SharedKernel.Domain.EntityFrameworkCore/SharedKernel.Domain.EntityFrameworkCore.csproj" />
         <Project Path="src/SharedKernel/SharedKernel.AuditTrail/SharedKernel.AuditTrail.csproj" />
         <Project Path="src/SharedKernel/SharedKernel.AuditTrail.SourceGenerator/SharedKernel.AuditTrail.SourceGenerator.csproj" />
         <Project Path="src/SharedKernel/SharedKernel.Messaging/SharedKernel.Messaging.csproj" />
@@ -121,7 +120,7 @@
         <Project Path="tests/SharedKernel.Testing.System/SharedKernel.Testing.System.csproj" />
         <Project Path="src/SharedKernel/SharedKernel.Testing.Web/SharedKernel.Testing.Web.csproj" />
         <Project Path="tests/SharedKernel.BuildingBlocks.Tests/SharedKernel.BuildingBlocks.Tests.csproj" />
-        <Project Path="tests/SharedKernel.DomainEvents.Tests/SharedKernel.DomainEvents.Tests.csproj" />
+        <Project Path="tests/SharedKernel.Domain.Tests/SharedKernel.Domain.Tests.csproj" />
         <Project Path="tests/SharedKernel.Messaging.Tests/SharedKernel.Messaging.Tests.csproj" />
         <Project Path="tests/SharedKernel.Messaging.IntegrationEvents.Tests/SharedKernel.Messaging.IntegrationEvents.Tests.csproj" />
         <Project Path="tests/SharedKernel.ImageProcessing.Tests/SharedKernel.ImageProcessing.Tests.csproj" />

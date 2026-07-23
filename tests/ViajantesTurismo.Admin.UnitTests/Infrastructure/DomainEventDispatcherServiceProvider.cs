@@ -1,5 +1,5 @@
 using Microsoft.Extensions.DependencyInjection;
-using SharedKernel.DomainEvents;
+using SharedKernel.Domain;
 
 namespace ViajantesTurismo.Admin.UnitTests.Infrastructure;
 

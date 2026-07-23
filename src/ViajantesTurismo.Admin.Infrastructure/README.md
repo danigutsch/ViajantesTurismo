@@ -4,8 +4,8 @@ Data access layer implementing repositories and database operations with Entity 
 
 ## Purpose
 
-Persistence layer managing database operations, migrations, and data seeding. Implements repository pattern for domain
-entities.
+Persistence layer managing database operations, migrations, and Development-only data initialization.
+Implements repository patterns for domain entities.
 
 ## Components
 
@@ -21,10 +21,10 @@ entities.
 - **CustomerStore**: Customer persistence
 - **QueryService**: Read operations for API queries
 
-### Seeding
+### Development data initialization
 
-- Initial data population for development
-- Test data generation
+- `DevelopmentDataInitializer` atomically inserts the complete synthetic Admin data set.
+- `DatabaseInitializationWorker` invokes it only in Development after migrations complete.
 
 ### Migrations
 

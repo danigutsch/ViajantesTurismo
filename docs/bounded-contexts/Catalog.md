@@ -66,10 +66,13 @@ Public.Web renders published tours
 
 Current runtime notes:
 
-- `AdminTourCreatedIntegrationEvent` exists and Admin dispatches it in-process after tour creation.
-- Catalog has a tested consumer that can append a `CatalogTourDraftCreated` event.
-- The durable outbox/transport/inbox path between running Admin.ApiService and Catalog.ApiService is
-  still planned/evolving.
+- Admin maps a tour-created domain event into `AdminTourCreatedIntegrationEvent` during `SaveChanges`
+  and commits it with the Admin outbox row.
+- The Admin relay writes the Admin PostgreSQL transport table. `IntegrationEventWorker` claims batches,
+  invokes the generated typed Catalog publisher, and applies Catalog inbox/idempotency before appending
+  `CatalogTourDraftCreated`.
+- Admin and Catalog use separate databases, which may share one PostgreSQL server. Each database owns
+  its own `messaging` schema and migrations.
 
 See [Architecture flows](../architecture/FLOWS.md#catalog-event-sourcing-and-projection-flows)
 for current and planned event-sourcing diagrams.
@@ -262,14 +265,16 @@ Planned/evolving Admin event contracts:
 - `AdminTourScheduleChangedIntegrationEvent`.
 - `AdminTourArchivedIntegrationEvent`.
 
-Catalog consumers must be idempotent. The consumer wrapper uses `IIdempotencyStore`; EF Core durable
-idempotency entries are mapped to `messaging.idempotency_keys`. Broker ingress is still part of the
-planned/evolving runtime path.
+Catalog consumers must be idempotent. The consumer wrapper uses `IIdempotencyStore`; the
+`SharedKernel.Idempotency.EntityFrameworkCore` provider maps durable entries to Catalog's
+`messaging.idempotency_keys`. PostgreSQL ingress claims with `FOR UPDATE SKIP LOCKED`, lease, and retry
+state. One worker scope owns a claimed batch, and messages are passed sequentially to the generated
+typed envelope publisher and closed handler cases.
 
 ## Persistence
 
-Catalog may share the same physical PostgreSQL resource as Admin initially, but it owns separate
-schema and tables.
+Catalog and Admin use separate PostgreSQL databases. Those databases may share one PostgreSQL server,
+but each bounded context owns its own schemas, tables, and migration history.
 
 Expected tables:
 
@@ -277,7 +282,7 @@ Expected tables:
 - `catalog.events`.
 - `catalog.projection_checkpoints`.
 - `messaging.idempotency_keys` for integration-event delivery guards.
-- Catalog `messaging.outbox_messages` only if Catalog publishes integration events later.
+- `messaging.outbox_messages` for Catalog media integration events and relay retry state.
 - Catalog read-model tables for management and public projections.
 
 ## API Surface

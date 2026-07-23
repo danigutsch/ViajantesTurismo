@@ -32,6 +32,7 @@ internal sealed class GalleryPlacementPostgreSqlScenario : IAsyncDisposable
         var connectionString = await app.GetConnectionString(DatabaseResourceName, ct);
         var services = new ServiceCollection();
         services.AddIntegrationEventOutbox<CatalogDbContext>();
+        services.AddIntegrationEventInbox<CatalogDbContext>();
         var serviceProvider = services.BuildServiceProvider();
 
         return new GalleryPlacementPostgreSqlScenario(app, connectionString, serviceProvider);
