@@ -39,9 +39,8 @@ owners must approve a versioned policy and its jurisdiction-specific exceptions.
 If the lifecycle is already deployed with real personal data, obtain an approved interim instruction.
 Do not unilaterally continue, disable, or change destructive behavior.
 
-This proposal does not complete `#945` or `#992`. `#945` remains blocked on approved finalized-artifact
-retention and legal-hold rules. `#992` remains blocked on an approved audit lifecycle and its
-jurisdiction-specific exceptions. Neither parent issue is closed by this proposal.
+This proposal does not approve finalized-artifact retention or legal-hold rules. The audit lifecycle
+and its jurisdiction-specific exceptions also remain pending approval.
 
 ## Purpose and scope
 

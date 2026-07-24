@@ -176,15 +176,14 @@ The validator checks stable PR-gating rules:
 
 - local relative Markdown and selected text links resolve to files inside the repository
 - Markdown heading anchors resolve when the target is a Markdown file
-- maintained docs do not link directly to GitHub issue or pull request URLs
-- maintained docs do not use repo-relative issue or pull request links such as `issues/123` or
-  `pull/123`
+- maintained docs do not refer to GitHub issues or pull requests by direct URL, repository-relative
+  path, or bare numeric shorthand
 
 External URLs are intentionally not probed by the required lint path because network checks are
 slow and flaky. If external URL checking is added later, prefer a scheduled or opt-in workflow with
 a documented allowlist for confirmed false positives.
 
-When the durable GitHub issue or pull request rule fails, replace the link with durable context in
+When the durable GitHub issue or pull request rule fails, replace the reference with durable context in
 the document, link to an ADR or maintained doc, or move short-lived tracking details to an excluded
 template, changelog, or test fixture when that file type is the correct home.
 
@@ -464,14 +463,14 @@ Measured on this worktree on 2026-06-29:
 
 | Phase | Command | Duration | Status |
 | --- | --- | ---: | --- |
-| Restore | `bash scripts/benchmark-local-validation.sh --skip-build --skip-tests --output TestResults/issue-426-restore-benchmark.tsv` | 2s | success |
-| Build, warm repeat | `bash scripts/benchmark-local-validation.sh --skip-restore --skip-tests --output TestResults/issue-426-build-benchmark.tsv` | 26s | success |
-| Fast validation slice | `bash scripts/benchmark-local-validation.sh --skip-restore --skip-build --slice fast-validation --output TestResults/issue-426-fast-validation-benchmark.tsv` | 167s | success |
-| Admin integration slice | `bash scripts/benchmark-local-validation.sh --skip-restore --skip-build --slice admin-integration --output TestResults/issue-426-admin-integration-benchmark.tsv` | 100s | success |
-| Mediator heavy slice | `bash scripts/benchmark-local-validation.sh --skip-restore --skip-build --slice mediator-heavy --output TestResults/issue-426-mediator-heavy-benchmark.tsv` | 65s | success |
-| Admin system slice | `bash scripts/benchmark-local-validation.sh --skip-restore --skip-build --slice admin-system --output TestResults/issue-426-admin-system-benchmark.tsv` | 71s | success |
-| Solution all-tests baseline | `bash scripts/benchmark-local-validation.sh --skip-restore --skip-build --solution-tests --output TestResults/issue-438-solution-tests-baseline.tsv` | 131s | failure; hosted/system concurrency conflict |
-| Admin integration plus PostgreSQL event sourcing | `bash scripts/benchmark-local-validation.sh --skip-restore --skip-build --slice admin-integration --output TestResults/issue-438-admin-integration-with-postgres.tsv` | 212s | success |
+| Restore | `bash scripts/benchmark-local-validation.sh --skip-build --skip-tests --output TestResults/local-validation-restore-benchmark.tsv` | 2s | success |
+| Build, warm repeat | `bash scripts/benchmark-local-validation.sh --skip-restore --skip-tests --output TestResults/local-validation-build-benchmark.tsv` | 26s | success |
+| Fast validation slice | `bash scripts/benchmark-local-validation.sh --skip-restore --skip-build --slice fast-validation --output TestResults/local-validation-fast-benchmark.tsv` | 167s | success |
+| Admin integration slice | `bash scripts/benchmark-local-validation.sh --skip-restore --skip-build --slice admin-integration --output TestResults/local-validation-admin-integration.tsv` | 100s | success |
+| Mediator heavy slice | `bash scripts/benchmark-local-validation.sh --skip-restore --skip-build --slice mediator-heavy --output TestResults/local-validation-mediator-heavy.tsv` | 65s | success |
+| Admin system slice | `bash scripts/benchmark-local-validation.sh --skip-restore --skip-build --slice admin-system --output TestResults/local-validation-admin-system.tsv` | 71s | success |
+| Solution all-tests baseline | `bash scripts/benchmark-local-validation.sh --skip-restore --skip-build --solution-tests --output TestResults/local-validation-solution-baseline.tsv` | 131s | failure; hosted/system concurrency conflict |
+| Admin integration plus PostgreSQL event sourcing | `bash scripts/benchmark-local-validation.sh --skip-restore --skip-build --slice admin-integration --output TestResults/local-validation-admin-integration-postgres.tsv` | 212s | success |
 
 Low-risk improvement implemented here: local timing can run test slices without coverage collection
 while CI keeps its existing coverage collection and required checks intact.

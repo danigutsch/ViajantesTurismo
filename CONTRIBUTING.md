@@ -112,7 +112,7 @@ Run the checks relevant to your changes:
 - Tests: `dotnet test --solution ViajantesTurismo.slnx`
 - Docs, scripts, specs: CI runs `bash scripts/lint-all.sh`
 - Documentation links: `bash scripts/lint-links.sh` for focused local relative link, anchor, and
-  durable GitHub issue/PR link policy checks
+  durable GitHub issue/PR reference policy checks
 
 Use the tooling inventory in `README.md` when deciding whether a missing tool is
 required locally, optional for a specific task, CI-only, or already provided by

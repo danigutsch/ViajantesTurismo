@@ -2,13 +2,13 @@
 
 ## Scope and sources
 
-Epic #983/#984 provides opt-in, advisory PostgreSQL index-health collection through
-`SharedKernel.Observability.Npgsql`. `ViajantesTurismo.DatabaseObservability` applies the reusable
-host once to both production databases: `admin-database` and `catalog-database`.
+The repository provides opt-in, advisory PostgreSQL index-health collection through
+`SharedKernel.Observability.Npgsql`. `ViajantesTurismo.DatabaseObservability` applies the reusable host
+once to both production databases: `admin-database` and `catalog-database`.
 
 Assumptions:
 
-- Locally tested with PostgreSQL 18.4; compatibility with other PostgreSQL versions is tracked in #1052.
+- Locally tested with PostgreSQL 18.4; compatibility with other PostgreSQL versions requires validation.
 - a dedicated, least-privilege monitoring `NpgsqlDataSource`
 - PostgreSQL cumulative statistics are reset-dependent and are not workload history
 
