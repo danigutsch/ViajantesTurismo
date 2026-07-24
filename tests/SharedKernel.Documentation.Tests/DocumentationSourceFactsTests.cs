@@ -207,6 +207,58 @@ public sealed class DocumentationSourceFactsTests
     }
 
     [Fact]
+    public void Invocation_argument_extraction_should_normalize_semantically_equivalent_wrapping()
+    {
+        // Arrange
+        const string oneLineSource = """"
+            internal static class Sample
+            {
+                private static void Configure(ref int count) => Track(count: ref count, transform: value => value.Trim(), text: "value  with  spaces", raw: """raw  value""");
+            }
+            """";
+        const string wrappedSource = """"
+            internal static class Sample
+            {
+                private static void Configure(ref int count) => Track(
+                    count:
+                        ref
+                            count,
+                    transform:
+                        value =>
+                            value.Trim(),
+                    text:
+                        "value  with  spaces",
+                    raw:
+                        """raw  value""");
+            }
+            """";
+        using var oneLineDocument = new TemporaryTextDocument(oneLineSource);
+        using var wrappedDocument = new TemporaryTextDocument(wrappedSource);
+
+        // Act
+        var oneLineArguments = ReadMethodInvocationArguments(
+            oneLineDocument.Path,
+            "Configure",
+            parameterCount: 1,
+            invokedMethodName: "Track");
+        var wrappedArguments = ReadMethodInvocationArguments(
+            wrappedDocument.Path,
+            "Configure",
+            parameterCount: 1,
+            invokedMethodName: "Track");
+
+        // Assert
+        oneLineArguments.ShouldBe(
+        [
+            "count: ref count",
+            "transform: value => value.Trim()",
+            "text: \"value  with  spaces\"",
+            "raw: \"\"\"raw  value\"\"\""
+        ]);
+        wrappedArguments.ShouldBe(oneLineArguments);
+    }
+
+    [Fact]
     public void Invocation_extraction_should_support_direct_and_generic_calls()
     {
         // Arrange

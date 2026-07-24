@@ -77,7 +77,7 @@ internal static class DocumentationSourceFacts
                 _ => false
             })
             .SelectMany(invocation => invocation.ArgumentList.Arguments)
-            .Select(argument => argument.ToString())
+            .Select(argument => argument.NormalizeWhitespace().ToString())
             .ToArray();
     }
 
