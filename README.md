@@ -41,44 +41,17 @@ manage tours, travellers, bookings, payments, and customer-facing tour content i
 
 ```text
 ViajantesTurismo/
-├── src/
-│   ├── ViajantesTurismo.Admin.Domain/              # Domain entities and business logic
-│   ├── ViajantesTurismo.Admin.Application/         # Application layer (mappers, interfaces)
-│   ├── ViajantesTurismo.Admin.Infrastructure/      # Infrastructure (EF Core, DB context, stores)
-│   ├── ViajantesTurismo.Admin.Contracts.Application/ # Admin DTOs and request validation
-│   ├── ViajantesTurismo.Admin.Contracts.Http/      # Admin HTTP clients and OpenAPI artifacts
-│   ├── ViajantesTurismo.Admin.Contracts.IntegrationEvents/ # Admin integration events
-│   ├── ViajantesTurismo.Admin.ApiService/          # Main API service
-│   ├── ViajantesTurismo.Catalog.Domain/            # Public tour presentation domain
-│   ├── ViajantesTurismo.Catalog.Application/       # Catalog application services and projections
-│   ├── ViajantesTurismo.Catalog.Infrastructure/    # Catalog EF Core persistence and read models
-│   ├── ViajantesTurismo.Catalog.Contracts.Application/ # Catalog DTOs and request validation
-│   ├── ViajantesTurismo.Catalog.Contracts.Http/    # Catalog HTTP clients and OpenAPI artifacts
-│   ├── ViajantesTurismo.Catalog.Contracts.IntegrationEvents/ # Catalog integration events
-│   ├── ViajantesTurismo.Catalog.ApiService/        # Catalog public content API
-│   ├── ViajantesTurismo.Management.Web/            # Blazor management web frontend
-│   ├── ViajantesTurismo.Public.Web/                # Blazor public website frontend
-│   ├── ViajantesTurismo.AppHost/                   # Aspire orchestration
-│   ├── SharedKernel/                               # Shared kernel packages
-│   ├── ViajantesTurismo.MigrationService/          # Database migration worker
-│   ├── ViajantesTurismo.Resources/                 # Resource definitions
-│   └── ViajantesTurismo.ServiceDefaults/           # Service defaults and extensions
-├── tests/
-│   ├── ViajantesTurismo.Admin.UnitTests/           # Domain unit tests
-│   ├── ViajantesTurismo.Admin.BehaviorTests/       # BDD/Gherkin tests
-│   ├── ViajantesTurismo.Admin.IntegrationTests/    # API integration tests
-│   ├── SharedKernel.InputNormalization.Tests/      # Input normalization tests
-│   ├── SharedKernel.HttpClients.Tests/             # Shared HTTP client helper tests
-│   └── ViajantesTurismo.ServiceDefaults.Tests/     # Service defaults telemetry tests
-├── benchmarks/
-│   ├── SharedKernel.Mediator.Benchmarks/           # Source-generator benchmark harness
-│   ├── SharedKernel.Functional.Benchmarks/         # Result/functional benchmark harness
-│   ├── ViajantesTurismo.FileScanning.Benchmarks/   # Local file scan baselines
-│   └── ViajantesTurismo.FileUpload.BenchmarkHost/  # Kestrel upload scan benchmark host
-└── samples/
-    └── Mediator/
-        └── Mediator.Sample/                        # Generated mediator CQRS sample
+├── src/            # Application, service, contract, hosting, and SharedKernel projects
+├── tests/          # Unit, contract, behavior, integration, system, and tooling tests
+├── tools/          # Repository-owned .NET tools
+├── benchmarks/     # Maintained performance harnesses
+├── samples/        # Focused package and source-generation samples
+└── docs/           # Canonical architecture, domain, workflow, and operations guidance
 ```
+
+`ViajantesTurismo.slnx` is the current project inventory. The
+[generated dependency map](docs/architecture/boundaries-and-dependencies.md) provides a refreshable
+view of project relationships; avoid duplicating that volatile list in this README.
 
 ## Getting Started
 

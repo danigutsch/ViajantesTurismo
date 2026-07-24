@@ -5,6 +5,64 @@ namespace SharedKernel.Documentation.Tests;
 public sealed class DocumentationGeneratorTests
 {
     [Fact]
+    public void WriteAtomically_replaces_the_target_and_removes_the_temporary_file()
+    {
+        // Arrange
+        using var workspace = new TemporaryDocumentationWorkspace();
+        const string fileName = "overview.md";
+        var architecturePath = Path.Combine(workspace.RootPath, "docs", "architecture");
+        var targetPath = Path.Combine(architecturePath, fileName);
+        workspace.WriteArchitectureDoc(fileName, "old content");
+
+        // Act
+        GeneratedMarkdownUpdater.WriteAtomically(targetPath, "new content");
+        var updatedContent = File.ReadAllText(targetPath);
+        var remainingFiles = Directory.GetFiles(architecturePath)
+            .Select(Path.GetFileName)
+            .ToArray();
+
+        // Assert
+        updatedContent.ShouldBe("new content");
+        remainingFiles.ShouldBe([fileName]);
+    }
+
+    [Fact]
+    public void WriteAtomically_removes_the_temporary_file_when_replacement_fails()
+    {
+        // Arrange
+        using var workspace = new TemporaryDocumentationWorkspace();
+        var architecturePath = Path.Combine(workspace.RootPath, "docs", "architecture");
+        var targetPath = Path.Combine(architecturePath, "target.md");
+        Directory.CreateDirectory(targetPath);
+        Action act = () => GeneratedMarkdownUpdater.WriteAtomically(targetPath, "new content");
+
+        // Act
+        act.ShouldThrow<UnauthorizedAccessException>();
+        var remainingFiles = Directory.GetFiles(architecturePath);
+
+        // Assert
+        remainingFiles.ShouldBe([]);
+    }
+
+    [Fact]
+    public void WriteAtomically_preserves_the_primary_write_failure_when_cleanup_also_fails()
+    {
+        // Arrange
+        using var workspace = new TemporaryDocumentationWorkspace();
+        var architecturePath = Path.Combine(workspace.RootPath, "docs", "architecture");
+        var targetPath = Path.Combine(architecturePath, $"{new string('x', 300)}.md");
+        using var exceptionCapture = new PathTooLongExceptionCapture();
+        Action act = () => GeneratedMarkdownUpdater.WriteAtomically(targetPath, "new content");
+
+        // Act
+        var observedException = act.ShouldThrow<PathTooLongException>();
+
+        // Assert
+        var capturedPrimaryException = exceptionCapture.FirstException.ShouldNotBeNull();
+        observedException.ShouldBeSameAs(capturedPrimaryException);
+    }
+
+    [Fact]
     public void Run_updates_configured_generated_block()
     {
         // Arrange
@@ -75,6 +133,253 @@ public sealed class DocumentationGeneratorTests
         // Assert
         result.ChangedFiles.ShouldBe(["docs/architecture/overview.md"]);
         updated.ShouldContain("newNode[New node]", StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public void Run_rejects_a_block_without_a_target_path()
+    {
+        // Arrange
+        using var workspace = new TemporaryDocumentationWorkspace();
+        workspace.WriteArchitectureDoc("overview.md", DocumentationTestContent.GeneratedBlockDocument("old[Old]"));
+        workspace.WriteConfig(DocumentationTestContent.MissingTargetPathConfig());
+        Action act = () => DocumentationGenerator.Run(workspace.RootPath, "docs/architecture/generated-diagrams.json", checkOnly: true);
+
+        // Act
+        var exception = act.ShouldThrow<InvalidOperationException>();
+
+        // Assert
+        exception.Message.ShouldContain("sample", StringComparison.Ordinal);
+        exception.Message.ShouldContain("targetPath", StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public void Run_rejects_a_target_outside_the_docs_path()
+    {
+        // Arrange
+        using var workspace = new TemporaryDocumentationWorkspace();
+        workspace.WriteFile("docs/outside.md", DocumentationTestContent.GeneratedBlockDocument("old[Old]"));
+        workspace.WriteConfig(DocumentationTestContent.GeneratorConfig("newNode[New node]", "../outside.md"));
+        Action act = () => DocumentationGenerator.Run(workspace.RootPath, "docs/architecture/generated-diagrams.json", checkOnly: true);
+
+        // Act
+        var exception = act.ShouldThrow<InvalidOperationException>();
+
+        // Assert
+        exception.Message.ShouldContain("sample", StringComparison.Ordinal);
+        exception.Message.ShouldContain("../outside.md", StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public void Run_rejects_a_rooted_target_path()
+    {
+        // Arrange
+        using var workspace = new TemporaryDocumentationWorkspace();
+        var originalDocument = DocumentationTestContent.GeneratedBlockDocument("old[Old]");
+        workspace.WriteArchitectureDoc("overview.md", originalDocument);
+        var targetPath = Path.Combine(workspace.RootPath, "docs", "architecture", "overview.md")
+            .Replace("\\", "\\\\", StringComparison.Ordinal);
+        workspace.WriteConfig(DocumentationTestContent.GeneratorConfig("newNode[New node]", targetPath));
+        Action act = () => DocumentationGenerator.Run(
+            workspace.RootPath,
+            "docs/architecture/generated-diagrams.json",
+            checkOnly: false);
+
+        // Act
+        var exception = act.ShouldThrow<InvalidOperationException>();
+        var unchangedDocument = workspace.ReadArchitectureDoc("overview.md");
+
+        // Assert
+        exception.Message.ShouldContain("targetPath", StringComparison.Ordinal);
+        unchangedDocument.ShouldBe(originalDocument);
+    }
+
+    [Fact]
+    public void Run_rejects_a_symbolic_link_target_without_writing_through_it()
+    {
+        // Arrange
+        using var workspace = new TemporaryDocumentationWorkspace();
+        var originalDocument = DocumentationTestContent.GeneratedBlockDocument("old[Old]");
+        var outsidePath = Path.Combine(workspace.RootPath, "outside.md");
+        var linkPath = Path.Combine(workspace.RootPath, "docs", "architecture", "linked.md");
+        workspace.WriteFile("outside.md", originalDocument);
+        File.CreateSymbolicLink(linkPath, outsidePath);
+        workspace.WriteConfig(DocumentationTestContent.GeneratorConfig("newNode[New node]", "linked.md"));
+        Action act = () => DocumentationGenerator.Run(
+            workspace.RootPath,
+            "docs/architecture/generated-diagrams.json",
+            checkOnly: false);
+
+        // Act
+        var exception = act.ShouldThrow<InvalidOperationException>();
+        var unchangedDocument = File.ReadAllText(outsidePath);
+
+        // Assert
+        exception.Message.ShouldContain("symbolic link", StringComparison.OrdinalIgnoreCase);
+        unchangedDocument.ShouldBe(originalDocument);
+    }
+
+    [Fact]
+    public void Run_rejects_a_docs_path_outside_the_repository_root()
+    {
+        // Arrange
+        using var workspace = new TemporaryDocumentationWorkspace();
+        workspace.WriteConfig(DocumentationTestContent.EscapingDocsPathConfig());
+        Action act = () => DocumentationGenerator.Run(workspace.RootPath, "docs/architecture/generated-diagrams.json", checkOnly: true);
+
+        // Act
+        var exception = act.ShouldThrow<InvalidOperationException>();
+
+        // Assert
+        exception.Message.ShouldContain("docsPath", StringComparison.Ordinal);
+        exception.Message.ShouldContain("../outside", StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public void Run_rejects_a_target_without_generated_markers()
+    {
+        // Arrange
+        using var workspace = new TemporaryDocumentationWorkspace();
+        workspace.WriteArchitectureDoc("overview.md", "# Overview");
+        workspace.WriteConfig(DocumentationTestContent.GeneratorConfig("newNode[New node]"));
+        Action act = () => DocumentationGenerator.Run(workspace.RootPath, "docs/architecture/generated-diagrams.json", checkOnly: true);
+
+        // Act
+        var exception = act.ShouldThrow<InvalidOperationException>();
+
+        // Assert
+        exception.Message.ShouldContain("sample", StringComparison.Ordinal);
+        exception.Message.ShouldContain("overview.md", StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public void Run_rejects_duplicate_generated_marker_pairs()
+    {
+        // Arrange
+        using var workspace = new TemporaryDocumentationWorkspace();
+        var duplicateBlocks = string.Join(
+            Environment.NewLine,
+            DocumentationTestContent.GeneratedBlockDocument("first[First]"),
+            DocumentationTestContent.GeneratedBlockDocument("second[Second]"));
+        workspace.WriteArchitectureDoc("overview.md", duplicateBlocks);
+        workspace.WriteConfig(DocumentationTestContent.GeneratorConfig("newNode[New node]"));
+        Action act = () => DocumentationGenerator.Run(workspace.RootPath, "docs/architecture/generated-diagrams.json", checkOnly: false);
+
+        // Act
+        var exception = act.ShouldThrow<InvalidOperationException>();
+
+        // Assert
+        exception.Message.ShouldContain("sample", StringComparison.Ordinal);
+        exception.Message.ShouldContain("overview.md", StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public void Run_rejects_reversed_generated_markers()
+    {
+        // Arrange
+        using var workspace = new TemporaryDocumentationWorkspace();
+        workspace.WriteArchitectureDoc(
+            "overview.md",
+            "<!-- generated:sample:end -->\nold\n<!-- generated:sample:start -->");
+        workspace.WriteConfig(DocumentationTestContent.GeneratorConfig("newNode[New node]"));
+        Action act = () => DocumentationGenerator.Run(workspace.RootPath, "docs/architecture/generated-diagrams.json", checkOnly: true);
+
+        // Act
+        var exception = act.ShouldThrow<InvalidOperationException>();
+
+        // Assert
+        exception.Message.ShouldContain("sample", StringComparison.Ordinal);
+        exception.Message.ShouldContain("overview.md", StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public void Run_rejects_generated_markers_outside_the_configured_target()
+    {
+        // Arrange
+        using var workspace = new TemporaryDocumentationWorkspace();
+        workspace.WriteArchitectureDoc("overview.md", "# Overview");
+        workspace.WriteArchitectureDoc("other.md", DocumentationTestContent.GeneratedBlockDocument("old[Old]"));
+        workspace.WriteConfig(DocumentationTestContent.GeneratorConfig("newNode[New node]"));
+        Action act = () => DocumentationGenerator.Run(workspace.RootPath, "docs/architecture/generated-diagrams.json", checkOnly: false);
+
+        // Act
+        var exception = act.ShouldThrow<InvalidOperationException>();
+
+        // Assert
+        exception.Message.ShouldContain("sample", StringComparison.Ordinal);
+        exception.Message.ShouldContain("overview.md", StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public void Run_validates_every_block_before_writing_any_target()
+    {
+        // Arrange
+        using var workspace = new TemporaryDocumentationWorkspace();
+        var originalFirstDocument = DocumentationTestContent.GeneratedBlocksDocument("first");
+        workspace.WriteArchitectureDoc("first.md", originalFirstDocument);
+        workspace.WriteArchitectureDoc("second.md", "# Second");
+        workspace.WriteConfig(DocumentationTestContent.TwoBlockConfig());
+        Action act = () => DocumentationGenerator.Run(workspace.RootPath, "docs/architecture/generated-diagrams.json", checkOnly: false);
+
+        // Act
+        var exception = act.ShouldThrow<InvalidOperationException>();
+        var unchangedFirstDocument = workspace.ReadArchitectureDoc("first.md");
+
+        // Assert
+        exception.Message.ShouldContain("second", StringComparison.Ordinal);
+        unchangedFirstDocument.ShouldBe(originalFirstDocument);
+    }
+
+    [Fact]
+    public void Run_rejects_crossed_generated_blocks_before_writing()
+    {
+        // Arrange
+        using var workspace = new TemporaryDocumentationWorkspace();
+        const string originalDocument = """
+            <!-- generated:first:start -->
+            old first
+            <!-- generated:second:start -->
+            old second
+            <!-- generated:first:end -->
+            <!-- generated:second:end -->
+            """;
+        workspace.WriteArchitectureDoc("overview.md", originalDocument);
+        workspace.WriteConfig(DocumentationTestContent.TwoBlocksSameTargetConfig());
+        Action act = () => DocumentationGenerator.Run(
+            workspace.RootPath,
+            "docs/architecture/generated-diagrams.json",
+            checkOnly: false);
+
+        // Act
+        var exception = act.ShouldThrow<InvalidOperationException>();
+        var unchangedDocument = workspace.ReadArchitectureDoc("overview.md");
+
+        // Assert
+        exception.Message.ShouldContain("generated", StringComparison.OrdinalIgnoreCase);
+        unchangedDocument.ShouldBe(originalDocument);
+    }
+
+    [Fact]
+    public void Run_rejects_generated_marker_text_in_replacement_content_before_writing()
+    {
+        // Arrange
+        using var workspace = new TemporaryDocumentationWorkspace();
+        var originalDocument = DocumentationTestContent.GeneratedBlockDocument("old[Old]");
+        workspace.WriteArchitectureDoc("overview.md", originalDocument);
+        workspace.WriteConfig(DocumentationTestContent.GeneratorConfig(
+            "injected[<!-- generated:sample:end -->]"));
+        Action act = () => DocumentationGenerator.Run(
+            workspace.RootPath,
+            "docs/architecture/generated-diagrams.json",
+            checkOnly: false);
+
+        // Act
+        var exception = act.ShouldThrow<InvalidOperationException>();
+        var unchangedDocument = workspace.ReadArchitectureDoc("overview.md");
+
+        // Assert
+        exception.Message.ShouldContain("sample", StringComparison.Ordinal);
+        exception.Message.ShouldContain("marker", StringComparison.OrdinalIgnoreCase);
+        unchangedDocument.ShouldBe(originalDocument);
     }
 
     [Fact]
@@ -151,6 +456,45 @@ public sealed class DocumentationGeneratorTests
     }
 
     [Fact]
+    public void Run_generates_sharedkernel_project_references()
+    {
+        // Arrange
+        using var workspace = new TemporaryDocumentationWorkspace();
+        workspace.WriteArchitectureDoc("overview.md", DocumentationTestContent.GeneratedBlocksDocument("projects"));
+        workspace.WriteConfig(DocumentationTestContent.SharedKernelProjectFilterConfig());
+        workspace.WriteFile("src/SharedKernel/App/App.csproj", DocumentationTestContent.AppProject());
+        workspace.WriteFile("src/SharedKernel/Lib/Lib.csproj", DocumentationTestContent.EmptyProject());
+        workspace.WriteFile("Outside.csproj", DocumentationTestContent.EmptyProject());
+
+        // Act
+        DocumentationGenerator.Run(workspace.RootPath, "docs/architecture/generated-diagrams.json", checkOnly: false);
+        var updated = workspace.ReadArchitectureDoc("overview.md");
+
+        // Assert
+        updated.ShouldContain("App[App] --> Lib[Lib]", StringComparison.Ordinal);
+        updated.ShouldNotContain("Outside", StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public void Run_rejects_unknown_block_kinds()
+    {
+        // Arrange
+        using var workspace = new TemporaryDocumentationWorkspace();
+        workspace.WriteArchitectureDoc("overview.md", DocumentationTestContent.GeneratedBlockDocument("old[Old]"));
+        workspace.WriteConfig(DocumentationTestContent.UnknownBlockKindConfig());
+        Action act = () => DocumentationGenerator.Run(
+            workspace.RootPath,
+            "docs/architecture/generated-diagrams.json",
+            checkOnly: true);
+
+        // Act
+        var exception = act.ShouldThrow<InvalidOperationException>();
+
+        // Assert
+        exception.Message.ShouldContain("unknown", StringComparison.Ordinal);
+    }
+
+    [Fact]
     public void Run_rejects_missing_docs_path()
     {
         // Arrange
@@ -208,6 +552,23 @@ public sealed class DocumentationGeneratorTests
 
         // Assert
         exception.Message.ShouldContain("Missing required blocks.", StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public void Run_rejects_a_null_block_entry()
+    {
+        // Arrange
+        const string configPath = "docs/architecture/generated-diagrams.json";
+        using var workspace = new TemporaryDocumentationWorkspace();
+        workspace.WriteConfig(DocumentationTestContent.NullBlockEntryConfig());
+        Action act = () => DocumentationGenerator.Run(workspace.RootPath, configPath, checkOnly: false);
+
+        // Act
+        var exception = act.ShouldThrow<InvalidOperationException>();
+
+        // Assert
+        exception.Message.ShouldBe(
+            "Block at index 0 in documentation generator config 'docs/architecture/generated-diagrams.json' must not be null.");
     }
 
     [Fact]

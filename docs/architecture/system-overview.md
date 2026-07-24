@@ -21,6 +21,7 @@ flowchart LR
     end
     subgraph internalBoundary[Internal service boundary]
         adminApi[Admin.ApiService internal API]
+        brandingApi[Branding.ApiService internal API]
         catalogApi[Catalog.ApiService internal API]
         worker[IntegrationEventWorker]
         migration[MigrationService]
@@ -30,9 +31,12 @@ flowchart LR
         databaseServer[(PostgreSQL server)]
         adminDatabase[(Admin database)]
         catalogDatabase[(Catalog database)]
-        outbox[(Outbox and event tables)]
+        securityDatabase[(Management security database)]
+        adminOutbox[(Admin integration outbox)]
+        catalogTransport[(Catalog transport queue)]
+        catalogOutbox[(Catalog media-processing outbox)]
         cache[(Redis cache)]
-        mediaStorage[(Media object storage adapter planned)]
+        mediaStorage[(SeaweedFS or local media object storage)]
     end
     subgraph externalBoundary[External dependency boundary]
         github[GitHub Actions]
@@ -44,20 +48,30 @@ flowchart LR
     maintainer -- pull request and release workflows --> github
     github -- package restore --> packageFeeds
     publicWeb -- service discovery HTTPS --> catalogApi
+    publicWeb -- service discovery HTTPS --> brandingApi
     managementWeb -- service discovery HTTPS --> adminApi
+    managementWeb -- service discovery HTTPS --> brandingApi
     managementWeb -- service discovery HTTPS --> catalogApi
     managementWeb -- distributed cache --> cache
+    managementWeb -- EF Core SQL and security state --> securityDatabase
     adminApi -- EF Core SQL and PII booking data --> adminDatabase
-    adminApi -- transactional integration events --> outbox
-    outbox -- belongs to --> adminDatabase
+    adminApi -- transactional integration events --> adminOutbox
+    adminOutbox -- relay publishes --> catalogTransport
+    adminOutbox -- belongs to --> adminDatabase
+    catalogTransport -- belongs to --> adminDatabase
     catalogApi -- EF Core SQL and public content --> catalogDatabase
-    catalogApi -- media metadata and planned binary adapter --> mediaStorage
-    worker -- reads durable Admin outbox --> outbox
+    brandingApi -- EF Core SQL and branding settings --> catalogDatabase
+    catalogApi -- binary media objects --> mediaStorage
+    catalogApi -- transactional media events and relay --> catalogOutbox
+    catalogOutbox -- belongs to --> catalogDatabase
+    worker -- reads durable Catalog transport queue --> catalogTransport
     worker -- projects Catalog read models --> catalogDatabase
     migration -- applies migrations and Development-only sample data --> adminDatabase
     migration -- applies migrations and event-store schema --> catalogDatabase
+    migration -- applies Management security migrations --> securityDatabase
     adminDatabase --> databaseServer
     catalogDatabase --> databaseServer
+    securityDatabase --> databaseServer
     adminApi -. uses .-> sharedKernel
     catalogApi -. uses .-> sharedKernel
     worker -. uses .-> sharedKernel
@@ -77,8 +91,8 @@ flowchart LR
     classDef external fill:#f8f9fa,stroke:#868e96,stroke-width:2px,stroke-dasharray: 5 5
     class publicWeb public
     class managementWeb management
-    class adminApi,catalogApi,worker,migration,sharedKernel internal
-    class databaseServer,adminDatabase,catalogDatabase,outbox,cache,mediaStorage data
+    class adminApi,brandingApi,catalogApi,worker,migration,sharedKernel internal
+    class databaseServer,adminDatabase,catalogDatabase,securityDatabase,adminOutbox,catalogTransport,catalogOutbox,cache,mediaStorage data
     class github,packageFeeds,observability external
 ```
 <!-- generated:system-overview:end -->

@@ -24,12 +24,9 @@ ViajantesTurismo app APIs use URL path versioning. The current public contract v
 While the app remains alpha, `v1` identifies the active route shape; it does not promise that earlier
 alpha contracts remain available.
 
-Current route prefixes:
-
-- Admin: `/api/v1/tours`, `/api/v1/customers`, `/api/v1/customers/import`, `/api/v1/bookings`, and
-  `/api/v1/docs/errors`
-- Catalog management: `/api/v1/catalog/...`
-- Public catalog: `/api/v1/public/catalog/...`
+The [generated endpoint route map](architecture/generated-endpoint-route-map.md) is the current
+source-derived inventory of route prefixes and owning services. Do not duplicate that volatile list
+here; committed OpenAPI artifacts remain the contract-review boundary.
 
 The unversioned API routes are not part of the supported HTTP contract. Browser-facing Management and Public Web routes
 remain unversioned UI routes; typed API clients translate API calls to the versioned service endpoints.

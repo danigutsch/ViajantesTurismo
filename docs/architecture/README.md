@@ -89,6 +89,7 @@ claimed batch. See [Events and messaging](../domain/EVENTS_AND_MESSAGING.md) and
 - Configurable branding now belongs to `SharedKernel.Branding` plus the ViajantesTurismo Branding API
   adapter. Catalog does not own Branding routes or clients.
 - Catalog media upload, management metadata, accessibility drafts, processing, reconciliation, and
-  public ready-image filtering are implemented; event-sourced gallery editing remains planned.
+  public ready-image filtering are implemented; event-sourced gallery editing, evaluation dashboards,
+  and optional storage adapters remain planned.
 - Adapter package splits should follow ADR-027's capability-first naming, dependency-direction, and
   split-threshold rules.

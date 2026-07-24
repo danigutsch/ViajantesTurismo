@@ -1,0 +1,152 @@
+{
+  "checks": [
+    {
+      "name": "documentation-index",
+      "documentPath": "docs/README.md",
+      "markerName": "documentation-index",
+      "factName": "current-requirement",
+      "contentBlockMarkers": ["documentation-index-table"],
+      "expectedIdentifiers": [
+        "api-and-client-boundaries",
+        "architecture-and-adrs",
+        "async-integration-contracts",
+        "ci-release-and-contribution-workflow",
+        "coding-standards",
+        "configuration-and-feature-flags",
+        "deprecated-docs-reviewed",
+        "documentation-governance",
+        "domain-validation",
+        "foss-compliance",
+        "guidance-centralized",
+        "production-operations",
+        "roadmap-and-prioritization",
+        "setup-and-tooling",
+        "testing"
+      ]
+    },
+    {
+      "name": "catalog-tour-events",
+      "documentPath": "docs/architecture/FLOWS.md",
+      "markerName": "catalog-tour-events",
+      "factName": "current-event",
+      "switchSources": [
+        {
+          "sourcePath": "src/ViajantesTurismo.Catalog.Domain/Tours/CatalogTour.cs",
+          "methodName": "ApplyEvent",
+          "parameterCount": 1
+        },
+        {
+          "sourcePath": "src/ViajantesTurismo.Catalog.Application/Tours/CatalogTourReadModelProjection.cs",
+          "methodName": "Apply",
+          "parameterCount": 2
+        }
+      ]
+    },
+    {
+      "name": "documentation-governance",
+      "documentPath": "docs/DOCUMENTATION_GOVERNANCE.md",
+      "markerName": "documentation-governance",
+      "factName": "current-standard",
+      "contentBlockMarkers": [
+        "provenance-expectations",
+        "required-sections-checklist",
+        "small-doc-exemption"
+      ],
+      "expectedIdentifiers": [
+        "generated-manual-provenance-explicit",
+        "required-sections-by-document-type",
+        "small-focused-docs-exempt"
+      ]
+    },
+    {
+      "name": "admin-catalog-runtime",
+      "documentPath": "docs/architecture/FLOWS.md",
+      "markerName": "admin-catalog-runtime",
+      "factName": "current-runtime",
+      "registrationSources": [
+        {
+          "sourcePath": "src/ViajantesTurismo.Admin.Infrastructure/InfrastructureDependencyInjection.cs",
+          "methodName": "AddInfrastructure",
+          "parameterCount": 2
+        },
+        {
+          "sourcePath": "src/ViajantesTurismo.Admin.Infrastructure/InfrastructureDependencyInjection.cs",
+          "methodName": "AddAdminRuntimeBackgroundServices",
+          "parameterCount": 2
+        },
+        {
+          "sourcePath": "src/ViajantesTurismo.IntegrationEventWorker/Program.cs"
+        },
+        {
+          "sourcePath": "src/ViajantesTurismo.Catalog.Infrastructure/InfrastructureDependencyInjection.cs",
+          "methodName": "AddCatalogIntegrationEventWorkerInfrastructure",
+          "parameterCount": 1
+        },
+        {
+          "sourcePath": "src/ViajantesTurismo.Catalog.Infrastructure/InfrastructureDependencyInjection.cs",
+          "methodName": "AddCatalogHostedIntegrationEventTransport",
+          "parameterCount": 1
+        },
+        {
+          "sourcePath": "src/ViajantesTurismo.Catalog.Infrastructure/InfrastructureDependencyInjection.cs",
+          "methodName": "AddCatalogIntegrationEventTransportConsumer",
+          "parameterCount": 1
+        }
+      ],
+      "includedIdentifierFragments": ["IntegrationEvent"],
+      "includedIdentifiers": [
+        "AddAdminRuntimeBackgroundServices",
+        "CatalogProjectionHostedService"
+      ],
+      "invocationRequirements": [
+        {
+          "sourcePath": "src/ViajantesTurismo.Admin.ApiService/Program.cs",
+          "invokedMethodName": "AddInfrastructure",
+          "expectedCount": 1
+        },
+        {
+          "sourcePath": "src/ViajantesTurismo.Admin.Infrastructure/InfrastructureDependencyInjection.cs",
+          "methodName": "AddInfrastructure",
+          "parameterCount": 1,
+          "invokedMethodName": "AddInfrastructure",
+          "expectedCount": 1,
+          "expectedArguments": ["addRuntimeBackgroundServices: null"]
+        },
+        {
+          "sourcePath": "src/ViajantesTurismo.Admin.Infrastructure/InfrastructureDependencyInjection.cs",
+          "methodName": "AddInfrastructure",
+          "parameterCount": 2,
+          "invokedMethodName": "AddAdminRuntimeBackgroundServices",
+          "expectedCount": 1
+        },
+        {
+          "sourcePath": "src/ViajantesTurismo.IntegrationEventWorker/Program.cs",
+          "invokedMethodName": "AddCatalogIntegrationEventWorkerInfrastructure",
+          "expectedCount": 1
+        },
+        {
+          "sourcePath": "src/ViajantesTurismo.Catalog.Infrastructure/InfrastructureDependencyInjection.cs",
+          "methodName": "AddCatalogIntegrationEventWorkerInfrastructure",
+          "parameterCount": 1,
+          "invokedMethodName": "AddCatalogHostedIntegrationEventTransport",
+          "expectedCount": 1
+        },
+        {
+          "sourcePath": "src/ViajantesTurismo.Catalog.Infrastructure/InfrastructureDependencyInjection.cs",
+          "methodName": "AddCatalogHostedIntegrationEventTransport",
+          "parameterCount": 1,
+          "invokedMethodName": "AddCatalogIntegrationEventTransportConsumer",
+          "expectedCount": 1
+        },
+        {
+          "sourcePath": "src/ViajantesTurismo.MigrationService/DatabaseInitializationWorker.cs",
+          "methodName": "RunMigrations",
+          "parameterCount": 2,
+          "invokedMethodName": "Initialize",
+          "expectedCount": 1,
+          "expectedArguments": ["catalogDataSource", "options: null", "ct"]
+        }
+      ]
+    }
+  ]
+}

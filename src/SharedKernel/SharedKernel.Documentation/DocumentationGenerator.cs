@@ -7,7 +7,6 @@ namespace SharedKernel.Documentation;
 /// </summary>
 public static class DocumentationGenerator
 {
-
     /// <summary>
     /// Runs documentation generation from a JSON config file.
     /// </summary>
@@ -20,16 +19,16 @@ public static class DocumentationGenerator
         var fullConfigPath = Path.GetFullPath(configPath, fullRootPath);
         var config = JsonSerializer.Deserialize(File.ReadAllText(fullConfigPath), DocumentationGeneratorJsonContext.Default.DocumentationGeneratorConfig)
             ?? throw new InvalidOperationException($"Could not read documentation generator config: {configPath}");
-        ValidateConfig(config);
+        ValidateConfig(config, configPath);
 
         var replacements = config.Blocks
-            .Select(block => KeyValuePair.Create(block.Name, GenerateBlock(fullRootPath, block)))
+            .Select(block => (block.Name, block.TargetPath, Replacement: GenerateBlock(fullRootPath, block)))
             .ToList();
         var updater = new GeneratedMarkdownUpdater(fullRootPath, config.DocsPath, config.GeneratorName);
         return new DocumentationGenerationResult(updater.Update(checkOnly, replacements));
     }
 
-    private static void ValidateConfig(DocumentationGeneratorConfig config)
+    private static void ValidateConfig(DocumentationGeneratorConfig config, string configPath)
     {
         if (string.IsNullOrWhiteSpace(config.DocsPath))
         {
@@ -46,9 +45,25 @@ public static class DocumentationGenerator
             throw new InvalidOperationException("Missing required blocks.");
         }
 
+        for (var blockIndex = 0; blockIndex < config.Blocks.Count; blockIndex++)
+        {
+            if (config.Blocks[blockIndex] is null)
+            {
+                throw new InvalidOperationException(
+                    $"Block at index {blockIndex} in documentation generator config '{configPath}' must not be null.");
+            }
+        }
+
         if (config.Blocks.Select(block => block.Name).Distinct(StringComparer.Ordinal).Count() != config.Blocks.Count)
         {
             throw new InvalidOperationException("Generated block names must be unique.");
+        }
+
+        var blockWithoutTarget = config.Blocks.FirstOrDefault(block => string.IsNullOrWhiteSpace(block.TargetPath));
+        if (blockWithoutTarget is not null)
+        {
+            throw new InvalidOperationException(
+                $"Generated block '{blockWithoutTarget.Name}' is missing required targetPath.");
         }
     }
 

@@ -78,41 +78,15 @@ flowchart LR
 Current AppHost rules:
 
 - Infrastructure resources are declared before services.
-- `MigrationService` waits for the database.
-- Admin and Catalog APIs wait for database migration completion.
-- Management Web waits for Redis, Admin API, and Catalog API.
-- Public Web waits for Catalog API.
-- `IntegrationEventWorker` waits for migration completion and receives both Admin and Catalog database
-  references. It reads Admin transport rows and writes Catalog idempotency/event-store state.
+- Service-specific references and startup dependencies are shown in the generated graph above; do not
+  maintain a second edge list here.
+- `IntegrationEventWorker` reads Admin transport rows and writes Catalog idempotency/event-store state.
 - API services stay internal; web frontends expose external HTTP endpoints.
 - ClamAV stays private on TCP; Admin API, Catalog API, and Integration Event Worker receive its
   private host and port and wait for its PING/PONG health check.
 - The performance smoke resource is opt-in through `VT_ASPIRE_ENABLE_PERFORMANCE_TESTS=1`.
 
-## Current service references
-
-```mermaid
-flowchart TB
-    appHost[AppHost]
-    databaseRef[PostgreSQL connection reference]
-    cacheRef[Redis connection reference]
-    adminDiscovery[Admin API service discovery]
-    catalogDiscovery[Catalog API service discovery]
-
-    appHost --> databaseRef
-    appHost --> cacheRef
-    appHost --> adminDiscovery
-    appHost --> catalogDiscovery
-    databaseRef --> migration[MigrationService]
-    databaseRef --> adminApi[Admin.ApiService]
-    databaseRef --> catalogApi[Catalog.ApiService]
-    cacheRef --> management[Management.Web]
-    adminDiscovery --> management
-    catalogDiscovery --> management
-    catalogDiscovery --> publicWeb[Public.Web]
-```
-
-Reference rules:
+## Reference rules
 
 - Use `.WithReference(...)` for connection strings and service discovery injection.
 - Do not copy generated connection strings or endpoint URLs into docs or settings files.
@@ -143,8 +117,8 @@ Current behavior:
 
 - `MigrationService` applies database migrations in every environment, atomically initializes the
   synthetic Admin data set only in Development, then exits.
-- `InitializeCatalogEventSourcingSchema` invokes `PostgreSqlEventSourcingSchema.Initialize` after the
-  Catalog EF migration; the initializer is rerunnable and owns the Catalog event-store schema only.
+- `DatabaseInitializationWorker.RunMigrations` calls `PostgreSqlEventSourcingSchema.Initialize` after
+  the Catalog EF migration; the initializer is rerunnable and owns the Catalog event-store schema only.
 - Admin, Catalog, Branding, and Management Security wait for `MigrationService` completion before starting.
 - The Admin, Catalog, Branding, and Management Security infrastructure projects are referenced by the migration service.
 

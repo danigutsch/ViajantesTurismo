@@ -10,26 +10,12 @@ infrastructure, service relationships, health checks, startup order, and opt-in 
 Keep application behavior out of this project. Business rules belong in the domain/application
 projects, and reusable service defaults belong in `ViajantesTurismo.ServiceDefaults`.
 
-## Services Orchestrated
+## Current resource graph
 
-### Infrastructure
-
-- **PostgreSQL**: database server with PgWeb admin interface
-- **Redis**: cache server with RedisInsight admin interface
-- **ClamAV**: private TCP malware scanner for untrusted uploads
-- **Keycloak**: local OIDC conformance identity provider; browser-facing because it hosts the
-  Management Web authorization endpoint
-
-### Application Services
-
-- **MigrationService**: applies database migrations, atomically initializes synthetic Admin data only
-  in Development, then exits
-- **DatabaseObservability**: waits for migrations and optionally collects read-only index-health
-  evidence for both PostgreSQL databases
-- **Admin.ApiService**: Admin REST API; waits for the database and migration completion
-- **Catalog.ApiService**: localized public content and public theme API
-- **Management.Web**: Blazor management UI; waits for Redis, the Admin API, and the Catalog API
-- **Public.Web**: public-facing Blazor UI; waits for the Catalog API and exposes an external HTTP endpoint
+The [generated runtime wiring map](../../docs/architecture/runtime-wiring-and-deployment.md) is the
+current source-derived inventory of infrastructure, application services, references, and startup
+dependencies declared by `AppHostComposition.cs`. Keep conceptual operating guidance here; do not
+duplicate the volatile resource list or dependency graph.
 
 ### Optional Developer Tooling
 
@@ -38,24 +24,6 @@ projects, and reusable service defaults belong in `ViajantesTurismo.ServiceDefau
   before AppHost starts
 - **Grafana LGTM observability stack**: opt-in local telemetry backend; enabled only when
   `ASPIRE_ENABLE_OBSERVABILITY_STACK=1` is set before AppHost starts
-
-## Service Dependencies
-
-```text
-PostgreSQL → Database → MigrationService
-                      ↓
-              DatabaseObservability (optional collection)
-                      ↓
-                   Admin.ApiService → Management.Web ← Redis
-                         ↓
-               admin-performance-smoke (opt-in)
-
-Catalog.ApiService → Management.Web
-        ↓
-    Public.Web
-
-ClamAV (private TCP) → Admin.ApiService, Catalog.ApiService, Integration Event Worker
-```
 
 ## Resource Names
 
@@ -149,7 +117,8 @@ Reference APIs researched for the pinned `aspire.cli` `13.4.6` toolchain:
 
 ## Code Organization
 
-- `AppHost.cs`: primary orchestration map, kept short and dependency ordered
+- `AppHost.cs`: bootstrap and hosted-profile selection
+- `AppHostComposition.cs`: primary orchestration map, kept short and dependency ordered
 - `AppHostResourceExtensions.cs`: infrastructure and service resource wiring, including core tag and digest pins
 - `DevelopmentProjectResourceExtensions.cs`: development endpoint and environment defaults
 - `PerformanceTestingResourceExtensions.cs`: opt-in performance-testing executable resource wiring

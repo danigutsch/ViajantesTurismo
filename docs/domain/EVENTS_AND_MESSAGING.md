@@ -290,27 +290,14 @@ Runtime shape:
   store and inbox table model configuration.
 - Admin supplies AOT-safe `JsonTypeInfo<T>` metadata; generated composition registers the closed
   `IIntegrationEventSerializer` before the EF outbox resolves it.
-
-Recommended columns:
-
-- `id`.
-- `event_type`.
-- `event_version`.
-- `source`.
-- `subject`.
-- `occurred_at_utc`.
-- `payload_json`.
-- `metadata_json`.
-- `correlation_id`.
-- `causation_id`.
-- `attempt_count`.
-- `next_attempt_at_utc`.
-- `processed_at_utc`.
-- `failed_at_utc`.
-- `last_error`.
-
-The current EF provider stores the complete envelope plus publish attempts, next-attempt time, claim
-owner/lease, publication time, and last error required by the PostgreSQL relay.
+- Provider models and EF migrations are authoritative for envelope, payload, publication, retry/error,
+  and claim fields; do not duplicate their volatile column inventory here.
+- Admin runtime registers the PostgreSQL transport producer and outbox relay. Relayed Admin events enter
+  the durable Catalog transport queue claimed by `IntegrationEventWorker`.
+- Catalog API runs its own outbox relay for Catalog-originated media processing events and dispatches
+  them to registered in-process handlers.
+- The [generated event/message flow map](../architecture/generated-event-message-flow-map.md) is the
+  source-derived contract, mapping, registration, and handler inventory.
 
 ### Inbox
 

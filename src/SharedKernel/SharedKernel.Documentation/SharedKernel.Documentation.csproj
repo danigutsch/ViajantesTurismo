@@ -2,7 +2,7 @@
 
     <PropertyGroup>
         <PackageId>SharedKernel.Documentation</PackageId>
-        <Description>Reusable documentation automation primitives for generated Markdown blocks and Mermaid diagrams.</Description>
+        <Description>Reusable primitives for generated Markdown and source-backed documentation conformance checks.</Description>
         <RootNamespace>SharedKernel.Documentation</RootNamespace>
         <PackageReadmeFile>README.md</PackageReadmeFile>
         <PackageLicenseExpression>MIT</PackageLicenseExpression>
@@ -12,7 +12,12 @@
     </PropertyGroup>
 
     <ItemGroup>
+        <InternalsVisibleTo Include="SharedKernel.Documentation.Tests" />
         <None Include="README.md" Pack="true" PackagePath="\" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <PackageReference Include="Microsoft.CodeAnalysis.CSharp" />
     </ItemGroup>
 
 </Project>

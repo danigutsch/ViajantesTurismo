@@ -4,11 +4,14 @@ Reusable documentation automation primitives for Markdown generated blocks and M
 
 ## Scope
 
-- generated Markdown block replacement by marker name
+- generated Markdown block replacement by marker name and configured target
 - config-driven Mermaid flowchart blocks
 - project-reference diagrams from SDK-style project references
 - simple GitHub Actions workflow diagrams
 - simple .NET Aspire AppHost runtime-resource diagrams for local orchestration docs
+- Minimal API endpoint inventories
+- integration-event contract and handler inventories
+- machine-readable documentation fact checks against configured C# switches and registrations
 
 Keep application-specific labels, trust boundaries, actors, and data classifications in config files
 owned by the consuming repository.
@@ -25,8 +28,10 @@ generated content
 <!-- generated:block-name:end -->
 ```
 
-The updater replaces only content between matching markers. Manual explanation stays outside those
-markers.
+Each configured block owns one `targetPath` relative to `docsPath`. The updater fails before writing
+when that target is missing, markers are missing, duplicated, reversed, or found in another document.
+Rooted targets, symbolic-link or junction paths, and generated marker text in replacement content are
+rejected. It replaces only content between the owned markers; manual explanation stays outside them.
 
 ## Config model
 
@@ -38,8 +43,34 @@ file supplies repository-specific inputs and generated block definitions. The ge
 | `mermaid-flowchart` | configured lines | Curated diagrams, trust boundaries, external dependencies. |
 | `project-references` | project tree plus project filter | Project and package dependency diagrams. |
 | `apphost-resources` | AppHost source path plus labels | Local Aspire runtime wiring diagrams. |
+| `endpoint-routes` | Minimal API source tree plus configured route prefixes | Endpoint inventory tables. |
+| `integration-events` | Integration-event source tree | Contract, mapping, registration, and handler tables. |
 | `github-actions-jobs` | one workflow file | Job dependency diagrams. |
 | `github-actions-workflows` | workflow directory | Workflow inventory diagrams. |
+
+## Conformance checks
+
+`DocumentationConformanceChecker.Check(rootPath, configPath)` validates marked Markdown facts without
+matching surrounding prose. A conformance config can compare a fact block with:
+
+- explicit stable identifiers
+- event types handled by configured C# switch methods
+- filtered registrations from configured top-level statements or methods
+
+Registration checks can also require exact runtime invocation counts and arguments. Diagnostics name
+the configured document or source path. The existing CLI exposes this through
+`sharedkernel-docs check --config <path>`; shell wrappers should only invoke that command.
+
+Checks can also associate facts with governed content blocks:
+
+```markdown
+<!-- doc-content:block-name:start -->
+maintained table, checklist, or policy body
+<!-- doc-content:block-name:end -->
+```
+
+Each configured content block must have one balanced marker pair and meaningful non-comment body
+content. This protects the governed structure without matching headings or prose.
 
 ## Design rules
 

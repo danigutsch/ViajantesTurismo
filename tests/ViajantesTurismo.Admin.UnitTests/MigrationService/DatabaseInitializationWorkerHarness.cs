@@ -1,3 +1,4 @@
+using System.Diagnostics;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Storage;
 using Microsoft.Extensions.DependencyInjection;
@@ -19,6 +20,7 @@ namespace ViajantesTurismo.Admin.UnitTests.MigrationService;
 
 internal sealed class DatabaseInitializationWorkerHarness : IDisposable
 {
+    private readonly ActivitySource activitySource = new(DatabaseInitializationWorker.ActivitySourceName);
     private readonly Func<IServiceProvider, CancellationToken, Task> developmentDataOperation;
     private readonly IHostEnvironment environment;
     private readonly Func<IServiceProvider, CancellationToken, Task> migrationOperation;
@@ -39,6 +41,8 @@ internal sealed class DatabaseInitializationWorkerHarness : IDisposable
     }
 
     public MigrationStoreResolutionProbe? StoreProbe { get; }
+
+    public ActivitySource ActivitySource => activitySource;
 
     public static DatabaseInitializationWorkerHarness Create(Func<CancellationToken, Task> initializationOperation)
     {
@@ -137,7 +141,8 @@ internal sealed class DatabaseInitializationWorkerHarness : IDisposable
             environment,
             NullLogger<DatabaseInitializationWorker>.Instance,
             migrationOperation,
-            developmentDataOperation);
+            developmentDataOperation,
+            activitySource);
     }
 
     public DatabaseInitializationWorker CreateDefaultWorker()
@@ -186,6 +191,13 @@ internal sealed class DatabaseInitializationWorkerHarness : IDisposable
 
     public void Dispose()
     {
-        serviceProvider.Dispose();
+        try
+        {
+            serviceProvider.Dispose();
+        }
+        finally
+        {
+            activitySource.Dispose();
+        }
     }
 }

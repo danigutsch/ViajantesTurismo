@@ -11,17 +11,33 @@ namespace ViajantesTurismo.Admin.UnitTests.MigrationService;
 public sealed class DatabaseInitializationWorkerTelemetryTests
 {
     [Fact]
+    public void Does_not_capture_an_unrelated_activity_source_with_the_same_name()
+    {
+        // Arrange
+        List<Activity> stoppedActivities = [];
+        using var harness = DatabaseInitializationWorkerHarness.Create(static _ => Task.CompletedTask);
+        using var listener = DatabaseInitializationWorkerTestHelpers.CreateCapturingListener(harness.ActivitySource, stoppedActivities);
+        using var unrelatedSource = new ActivitySource(DatabaseInitializationWorker.ActivitySourceName);
+
+        // Act
+        unrelatedSource.StartActivity("Unrelated")?.Dispose();
+
+        // Assert
+        stoppedActivities.ShouldBeEmpty();
+    }
+
+    [Fact]
     public async Task Records_a_successful_initialization_span_without_an_exception_event()
     {
         // Arrange
         List<Activity> stoppedActivities = [];
-        using var listener = DatabaseInitializationWorkerTestHelpers.CreateCapturingListener(stoppedActivities);
         var initializationCalled = false;
         using var harness = DatabaseInitializationWorkerHarness.Create(_ =>
         {
             initializationCalled = true;
             return Task.CompletedTask;
         });
+        using var listener = DatabaseInitializationWorkerTestHelpers.CreateCapturingListener(harness.ActivitySource, stoppedActivities);
         var worker = harness.CreateWorker();
 
         // Act
@@ -44,13 +60,13 @@ public sealed class DatabaseInitializationWorkerTelemetryTests
     {
         // Arrange
         List<Activity> stoppedActivities = [];
-        using var listener = DatabaseInitializationWorkerTestHelpers.CreateCapturingListener(stoppedActivities);
         var initializationCalled = false;
         using var harness = DatabaseInitializationWorkerHarness.Create(_ =>
         {
             initializationCalled = true;
             throw new InvalidOperationException("boom");
         });
+        using var listener = DatabaseInitializationWorkerTestHelpers.CreateCapturingListener(harness.ActivitySource, stoppedActivities);
         var worker = harness.CreateWorker();
 
         // Act
@@ -76,7 +92,6 @@ public sealed class DatabaseInitializationWorkerTelemetryTests
     {
         // Arrange
         List<Activity> stoppedActivities = [];
-        using var listener = DatabaseInitializationWorkerTestHelpers.CreateCapturingListener(stoppedActivities);
         var initializationCalled = false;
         using var cancellation = new CancellationTokenSource();
         await cancellation.CancelAsync();
@@ -86,6 +101,7 @@ public sealed class DatabaseInitializationWorkerTelemetryTests
             ct.ThrowIfCancellationRequested();
             return Task.CompletedTask;
         });
+        using var listener = DatabaseInitializationWorkerTestHelpers.CreateCapturingListener(harness.ActivitySource, stoppedActivities);
         var worker = harness.CreateWorker();
 
         // Act
@@ -108,8 +124,8 @@ public sealed class DatabaseInitializationWorkerTelemetryTests
     {
         // Arrange
         List<Activity> stoppedActivities = [];
-        using var listener = DatabaseInitializationWorkerTestHelpers.CreateCapturingListener(stoppedActivities);
         using var harness = DatabaseInitializationWorkerHarness.Create(_ => throw new OperationCanceledException("unexpected"));
+        using var listener = DatabaseInitializationWorkerTestHelpers.CreateCapturingListener(harness.ActivitySource, stoppedActivities);
         var worker = harness.CreateWorker();
 
         // Act

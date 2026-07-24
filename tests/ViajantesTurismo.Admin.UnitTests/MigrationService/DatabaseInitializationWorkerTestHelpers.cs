@@ -10,11 +10,13 @@ internal static class DatabaseInitializationWorkerTestHelpers
         await worker.Run(ct);
     }
 
-    public static ActivityListener CreateCapturingListener(List<Activity> stoppedActivities)
+    public static ActivityListener CreateCapturingListener(
+        ActivitySource activitySource,
+        List<Activity> stoppedActivities)
     {
         var listener = new ActivityListener
         {
-            ShouldListenTo = static source => source.Name == DatabaseInitializationWorker.ActivitySourceName,
+            ShouldListenTo = source => ReferenceEquals(source, activitySource),
             Sample = static (ref ActivityCreationOptions<ActivityContext> _) => ActivitySamplingResult.AllDataAndRecorded,
             SampleUsingParentId = static (ref ActivityCreationOptions<string> _) => ActivitySamplingResult.AllDataAndRecorded,
             ActivityStopped = stoppedActivities.Add,

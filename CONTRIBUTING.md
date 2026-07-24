@@ -143,9 +143,10 @@ the lock-file helper solely for those changes.
 
 ### Updating the .NET SDK
 
-The repository pins a specific SDK version in `global.json` with `"rollForward": "patch"`, so CI
-only rolls forward within the same patch band. Update `global.json`, run
-`bash scripts/refresh-dependency-lockfiles.sh`, and commit the SDK input with the regenerated lock
-files.
+The repository pins the exact build SDK in `global.json` with `"rollForward": "disable"`.
+Contributors and CI must install that SDK before restore so a later installed SDK cannot change
+SDK-injected dependencies. Apply SDK servicing updates by changing `global.json` intentionally;
+this build-tooling pin does not alter application runtime roll-forward policy. Then run
+`bash scripts/refresh-dependency-lockfiles.sh` and commit the SDK input with the regenerated lock files.
 
 See `docs/CODE_QUALITY.md` for the full local tooling reference.

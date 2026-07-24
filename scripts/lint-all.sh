@@ -87,6 +87,8 @@ if [[ "${fix_mode}" == true ]]; then
 else
     bash scripts/update-architecture-diagrams.sh --check
 fi
+dotnet run --project tools/SharedKernel.Documentation.Tool -- \
+    check --config docs/architecture/documentation-conformance.json
 
 if [[ "${skip_markdown}" != true ]]; then
     if ! command -v docker > /dev/null 2>&1; then

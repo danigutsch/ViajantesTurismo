@@ -16,7 +16,7 @@ internal static class DocumentationTestContent
         <!-- generated:sample:end -->
         """;
 
-    public static string GeneratorConfig(string line) =>
+    public static string GeneratorConfig(string line, string targetPath = "overview.md") =>
         $$"""
         {
           "docsPath": "docs/architecture",
@@ -24,9 +24,85 @@ internal static class DocumentationTestContent
           "blocks": [
             {
               "name": "sample",
+              "targetPath": "{{targetPath}}",
               "kind": "mermaid-flowchart",
               "flowchart": "flowchart LR",
               "lines": ["    {{line}}"]
+            }
+          ]
+        }
+        """;
+
+    public static string MissingTargetPathConfig() =>
+        """
+        {
+          "docsPath": "docs/architecture",
+          "generatorName": "test-generator",
+          "blocks": [
+            {
+              "name": "sample",
+              "kind": "mermaid-flowchart",
+              "lines": []
+            }
+          ]
+        }
+        """;
+
+    public static string EscapingDocsPathConfig() =>
+        """
+        {
+          "docsPath": "../outside",
+          "generatorName": "test-generator",
+          "blocks": [
+            {
+              "name": "sample",
+              "targetPath": "overview.md",
+              "kind": "mermaid-flowchart",
+              "lines": []
+            }
+          ]
+        }
+        """;
+
+    public static string TwoBlockConfig() =>
+        """
+        {
+          "docsPath": "docs/architecture",
+          "generatorName": "test-generator",
+          "blocks": [
+            {
+              "name": "first",
+              "targetPath": "first.md",
+              "kind": "mermaid-flowchart",
+              "lines": ["    first[First]"]
+            },
+            {
+              "name": "second",
+              "targetPath": "second.md",
+              "kind": "mermaid-flowchart",
+              "lines": ["    second[Second]"]
+            }
+          ]
+        }
+        """;
+
+    public static string TwoBlocksSameTargetConfig() =>
+        """
+        {
+          "docsPath": "docs/architecture",
+          "generatorName": "test-generator",
+          "blocks": [
+            {
+              "name": "first",
+              "targetPath": "overview.md",
+              "kind": "mermaid-flowchart",
+              "lines": ["    first[First]"]
+            },
+            {
+              "name": "second",
+              "targetPath": "overview.md",
+              "kind": "mermaid-flowchart",
+              "lines": ["    second[Second]"]
             }
           ]
         }
@@ -55,6 +131,7 @@ internal static class DocumentationTestContent
           "blocks": [
             {
               "name": "apphost",
+              "targetPath": "overview.md",
               "kind": "apphost-resources",
               "sourcePath": "apphost/Program.cs",
               "labels": {
@@ -64,12 +141,14 @@ internal static class DocumentationTestContent
             },
             {
               "name": "projects",
+              "targetPath": "overview.md",
               "kind": "project-references",
               "sourcePath": "src",
               "projectFilter": "src-excluding-sharedkernel"
             },
             {
               "name": "endpoints",
+              "targetPath": "overview.md",
               "kind": "endpoint-routes",
               "sourcePath": "src",
               "routePrefixes": {
@@ -80,17 +159,20 @@ internal static class DocumentationTestContent
             },
             {
               "name": "events",
+              "targetPath": "overview.md",
               "kind": "integration-events",
               "sourcePath": "src"
             },
             {
               "name": "jobs",
+              "targetPath": "overview.md",
               "kind": "github-actions-jobs",
               "sourcePath": ".github/workflows/ci.yml",
               "triggerLabel": "Pull request"
             },
             {
               "name": "workflows",
+              "targetPath": "overview.md",
               "kind": "github-actions-workflows",
               "sourcePath": ".github/workflows",
               "rootLabel": "Repository",
@@ -108,9 +190,42 @@ internal static class DocumentationTestContent
           "blocks": [
             {
               "name": "projects",
+              "targetPath": "overview.md",
               "kind": "project-references",
               "sourcePath": "src",
               "projectFilter": "unknown"
+            }
+          ]
+        }
+        """;
+
+    public static string SharedKernelProjectFilterConfig() =>
+        """
+        {
+          "docsPath": "docs/architecture",
+          "generatorName": "test-generator",
+          "blocks": [
+            {
+              "name": "projects",
+              "targetPath": "overview.md",
+              "kind": "project-references",
+              "sourcePath": ".",
+              "projectFilter": "sharedkernel"
+            }
+          ]
+        }
+        """;
+
+    public static string UnknownBlockKindConfig() =>
+        """
+        {
+          "docsPath": "docs/architecture",
+          "generatorName": "test-generator",
+          "blocks": [
+            {
+              "name": "sample",
+              "targetPath": "overview.md",
+              "kind": "unknown"
             }
           ]
         }
@@ -123,6 +238,7 @@ internal static class DocumentationTestContent
           "blocks": [
             {
               "name": "sample",
+              "targetPath": "overview.md",
               "kind": "mermaid-flowchart",
               "lines": []
             }
@@ -137,6 +253,7 @@ internal static class DocumentationTestContent
           "blocks": [
             {
               "name": "sample",
+              "targetPath": "overview.md",
               "kind": "mermaid-flowchart",
               "lines": []
             }
@@ -161,6 +278,15 @@ internal static class DocumentationTestContent
         }
         """;
 
+    public static string NullBlockEntryConfig() =>
+        """
+        {
+          "docsPath": "docs/architecture",
+          "generatorName": "test-generator",
+          "blocks": [null]
+        }
+        """;
+
     public static string DuplicateBlockNamesConfig() =>
         """
         {
@@ -169,15 +295,209 @@ internal static class DocumentationTestContent
           "blocks": [
             {
               "name": "sample",
+              "targetPath": "overview.md",
               "kind": "mermaid-flowchart",
               "lines": []
             },
             {
               "name": "sample",
+              "targetPath": "overview.md",
               "kind": "mermaid-flowchart",
               "lines": []
             }
           ]
+        }
+        """;
+
+    public static string SwitchFactConformanceConfig() =>
+        """
+        {
+          "checks": [
+            {
+              "name": "sample-events",
+              "documentPath": "docs/architecture/FLOWS.md",
+              "markerName": "sample-events",
+              "factName": "current-event",
+              "switchSources": [
+                {
+                  "sourcePath": "src/SampleAggregate.cs",
+                  "methodName": "Apply",
+                  "parameterCount": 1
+                },
+                {
+                  "sourcePath": "src/SampleProjection.cs",
+                  "methodName": "Apply",
+                  "parameterCount": 1
+                }
+              ]
+            }
+          ]
+        }
+        """;
+
+    public static string RegistrationFactConformanceConfig(bool requireMissingInvocation = false) =>
+        $$"""
+        {
+          "checks": [
+            {
+              "name": "sample-runtime",
+              "documentPath": "docs/architecture/FLOWS.md",
+              "markerName": "sample-runtime",
+              "factName": "current-runtime",
+              "registrationSources": [
+                {
+                  "sourcePath": "src/SampleRuntime.cs",
+                  "methodName": "Configure",
+                  "parameterCount": 1
+                }
+              ],
+              "includedIdentifierFragments": ["IntegrationEvent"],
+              "includedIdentifiers": ["CatalogProjectionHostedService"],
+              "invocationRequirements": [
+                {
+                  "sourcePath": "src/SampleRuntime.cs",
+                  "methodName": "Entry",
+                  "parameterCount": 1,
+                  "invokedMethodName": "{{(requireMissingInvocation ? "Missing" : "Configure")}}",
+                  "expectedCount": 1,
+                  "expectedArguments": ["addRuntime: null"]
+                }
+              ]
+            }
+          ]
+        }
+        """;
+
+    public static string ExpectedFactConformanceConfig() =>
+        """
+        {
+          "checks": [
+            {
+              "name": "documentation-index",
+              "documentPath": "docs/README.md",
+              "markerName": "documentation-index",
+              "factName": "current-requirement",
+              "contentBlockMarkers": ["documentation-index-table"],
+              "expectedIdentifiers": [
+                "deprecated-docs-reviewed",
+                "guidance-centralized"
+              ]
+            }
+          ]
+        }
+        """;
+
+    public static string GovernanceFactConformanceConfig() =>
+        """
+        {
+          "checks": [
+            {
+              "name": "documentation-governance",
+              "documentPath": "docs/DOCUMENTATION_GOVERNANCE.md",
+              "markerName": "documentation-governance",
+              "factName": "current-standard",
+              "contentBlockMarkers": [
+                "required-sections-checklist",
+                "provenance-expectations",
+                "small-doc-exemption"
+              ],
+              "expectedIdentifiers": [
+                "generated-manual-provenance-explicit",
+                "required-sections-by-document-type",
+                "small-focused-docs-exempt"
+              ]
+            }
+          ]
+        }
+        """;
+
+    public static string GovernanceDocumentWithoutContent(string removedBlock)
+    {
+        var requiredSections = removedBlock == "required-sections-checklist"
+            ? string.Empty
+            : "| Class | Required blocks |";
+        var provenance = removedBlock == "provenance-expectations"
+            ? string.Empty
+            : "- Generated documents identify their owning generator.";
+        var exemption = removedBlock == "small-doc-exemption"
+            ? string.Empty
+            : "Short focused documents remain exempt.";
+
+        return $$"""
+        <!-- doc-fact:documentation-governance:start -->
+        - current-standard: `generated-manual-provenance-explicit`
+        - current-standard: `required-sections-by-document-type`
+        - current-standard: `small-focused-docs-exempt`
+        <!-- doc-fact:documentation-governance:end -->
+
+        <!-- doc-content:required-sections-checklist:start -->
+        {{requiredSections}}
+        <!-- doc-content:required-sections-checklist:end -->
+
+        <!-- doc-content:provenance-expectations:start -->
+        {{provenance}}
+        <!-- doc-content:provenance-expectations:end -->
+
+        <!-- doc-content:small-doc-exemption:start -->
+        {{exemption}}
+        <!-- doc-content:small-doc-exemption:end -->
+        """;
+    }
+
+    public static string SampleAggregateSource() =>
+        """
+        internal sealed class SampleAggregate
+        {
+            private static int Apply(object value)
+            {
+                if (value is bool flag)
+                {
+                    return flag ? 1 : 0;
+                }
+
+                return value switch
+                {
+                    FirstEvent { } => 1,
+                    SecondEvent { } => 2,
+                    _ => 0
+                };
+            }
+        }
+        """;
+
+    public static string SampleProjectionSource() =>
+        """
+        internal sealed class SampleProjection
+        {
+            private static int Apply(object value)
+            {
+                switch (value)
+                {
+                    case FirstEvent firstEvent:
+                        _ = firstEvent;
+                        return 1;
+                    case SecondEvent { }:
+                        return 2;
+                    default:
+                        return 0;
+                }
+            }
+        }
+        """;
+
+    public static string SampleRuntimeSource() =>
+        """
+        internal static class SampleRuntime
+        {
+            public static object Entry(object builder) =>
+                builder.Configure(addRuntime: null);
+
+            private static void Configure(object services)
+            {
+                services.AddHostedService<DocumentAuditRetentionHostedService>();
+                services.AddIntegrationEventOutbox();
+                services.AddHostedService<CatalogProjectionHostedService>();
+            }
         }
         """;
 
