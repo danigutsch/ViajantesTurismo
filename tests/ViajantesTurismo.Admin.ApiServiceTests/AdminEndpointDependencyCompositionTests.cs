@@ -1,5 +1,6 @@
 using System.Net.Http.Json;
 using Microsoft.Extensions.DependencyInjection.Extensions;
+using SharedKernel.MalwareScanning;
 using ViajantesTurismo.Admin.Application.Tours.CreateTour;
 using ViajantesTurismo.Admin.Contracts.Application;
 
@@ -27,6 +28,19 @@ public sealed class AdminEndpointDependencyCompositionTests
 
         // Assert
         AdminApiTestHost.VerifyMappedDocumentDependencies(factory);
+    }
+
+    [Fact]
+    public async Task Non_production_host_uses_the_explicitly_disabled_malware_scanner()
+    {
+        // Arrange
+        await using var factory = AdminApiTestHost.Create();
+
+        // Act
+        var result = await AdminApiTestHost.ScanEmptyContent(factory, TestContext.Current.CancellationToken);
+
+        // Assert
+        result.Status.ShouldBe(MalwareScanStatus.Disabled);
     }
 
     [Fact]
