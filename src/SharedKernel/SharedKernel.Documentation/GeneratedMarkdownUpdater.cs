@@ -123,8 +123,6 @@ internal sealed class GeneratedMarkdownUpdater(string rootPath, string docsRelat
 
             throw;
         }
-
-        File.Delete(temporaryPath);
     }
 
     private IEnumerable<FileInfo> MarkdownDocs()

@@ -555,6 +555,23 @@ public sealed class DocumentationGeneratorTests
     }
 
     [Fact]
+    public void Run_rejects_a_null_block_entry()
+    {
+        // Arrange
+        const string configPath = "docs/architecture/generated-diagrams.json";
+        using var workspace = new TemporaryDocumentationWorkspace();
+        workspace.WriteConfig(DocumentationTestContent.NullBlockEntryConfig());
+        Action act = () => DocumentationGenerator.Run(workspace.RootPath, configPath, checkOnly: false);
+
+        // Act
+        var exception = act.ShouldThrow<InvalidOperationException>();
+
+        // Assert
+        exception.Message.ShouldBe(
+            "Block at index 0 in documentation generator config 'docs/architecture/generated-diagrams.json' must not be null.");
+    }
+
+    [Fact]
     public void Run_rejects_duplicate_block_names()
     {
         // Arrange

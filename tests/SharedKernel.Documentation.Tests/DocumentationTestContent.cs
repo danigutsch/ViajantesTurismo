@@ -278,6 +278,15 @@ internal static class DocumentationTestContent
         }
         """;
 
+    public static string NullBlockEntryConfig() =>
+        """
+        {
+          "docsPath": "docs/architecture",
+          "generatorName": "test-generator",
+          "blocks": [null]
+        }
+        """;
+
     public static string DuplicateBlockNamesConfig() =>
         """
         {
