@@ -7,6 +7,8 @@ Start here when looking for repository-wide guidance.
 Use this map before adding or changing repository-wide guidance. Keep the canonical page focused, and link to it from
 specialized docs instead of repeating the same policy.
 
+<!-- doc-content:documentation-index-table:start -->
+
 | Topic | Canonical source | Related detail |
 | --- | --- | --- |
 | Setup and tooling | [README](../README.md#getting-started) | [Local tool security](local-tool-security.md), [Dev containers](DEVCONTAINERS.md) |
@@ -22,6 +24,8 @@ specialized docs instead of repeating the same policy.
 | CI, release, and contribution workflow | [Contributing](../CONTRIBUTING.md) | [CI overview](ci/overview.md), [CI governance](ci/governance.md), [Pull request template](pull_request_template.md) |
 | FOSS compliance | [FOSS compliance](FOSS_COMPLIANCE.md) | [SharedKernel packaging](SHAREDKERNEL_PACKAGING.md), [Local tool security](local-tool-security.md) |
 | Production operations | [Production readiness and operations](operations/production-readiness.md) | [Document retention and legal-hold proposal](operations/document-retention-and-legal-hold.md), [Runtime wiring and deployment mapping](architecture/runtime-wiring-and-deployment.md) |
+
+<!-- doc-content:documentation-index-table:end -->
 
 Machine-readable conformance identifiers:
 

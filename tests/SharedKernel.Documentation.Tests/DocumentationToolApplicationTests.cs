@@ -412,7 +412,7 @@ public sealed class DocumentationToolApplicationTests
         workspace.WriteFile("docs/architecture/documentation-conformance.json", DocumentationTestContent.ExpectedFactConformanceConfig());
         workspace.WriteFile(
             "docs/README.md",
-            "<!-- doc-fact:documentation-index:start -->\n- current-requirement: `deprecated-docs-reviewed`\n- current-requirement: `guidance-centralized`\n<!-- doc-fact:documentation-index:end -->");
+            "<!-- doc-content:documentation-index-table:start -->\n| Topic | Canonical source |\n| --- | --- |\n| Guidance | `docs/GUIDANCE.md` |\n<!-- doc-content:documentation-index-table:end -->\n\n<!-- doc-fact:documentation-index:start -->\n- current-requirement: `deprecated-docs-reviewed`\n- current-requirement: `guidance-centralized`\n<!-- doc-fact:documentation-index:end -->");
         await using var output = new StringWriter(CultureInfo.InvariantCulture);
         await using var error = new StringWriter(CultureInfo.InvariantCulture);
 

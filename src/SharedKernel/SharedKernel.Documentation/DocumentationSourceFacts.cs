@@ -138,6 +138,39 @@ internal static class DocumentationSourceFacts
         return identifiers.Order(StringComparer.Ordinal).ToArray();
     }
 
+    public static void ValidateMarkedContentBlock(
+        string fullDocumentPath,
+        string documentPath,
+        string markerName)
+    {
+        var document = File.ReadAllText(fullDocumentPath);
+        var startMarker = $"<!-- doc-content:{markerName}:start -->";
+        var endMarker = $"<!-- doc-content:{markerName}:end -->";
+        var startCount = CountOccurrences(document, startMarker);
+        var endCount = CountOccurrences(document, endMarker);
+        var startIndex = document.IndexOf(startMarker, StringComparison.Ordinal);
+        var endIndex = document.IndexOf(endMarker, StringComparison.Ordinal);
+        if (startCount != 1 || endCount != 1 || startIndex < 0 || endIndex <= startIndex)
+        {
+            throw new InvalidOperationException(
+                $"Documentation content block '{markerName}' is missing or malformed in '{documentPath}'.");
+        }
+
+        var section = document[(startIndex + startMarker.Length)..endIndex];
+        var hasMeaningfulContent = section
+            .Split('\n')
+            .Select(line => line.Trim())
+            .Any(line =>
+                line.Length > 0
+                && !(line.StartsWith("<!--", StringComparison.Ordinal) && line.EndsWith("-->", StringComparison.Ordinal))
+                && line.Any(char.IsLetterOrDigit));
+        if (!hasMeaningfulContent)
+        {
+            throw new InvalidOperationException(
+                $"Documentation content block '{markerName}' must contain meaningful non-marker content in '{documentPath}'.");
+        }
+    }
+
     private static MethodDeclarationSyntax ReadMethod(
         SyntaxNode syntaxRoot,
         string sourcePath,

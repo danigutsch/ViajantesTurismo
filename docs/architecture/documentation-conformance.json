@@ -5,6 +5,7 @@
       "documentPath": "docs/README.md",
       "markerName": "documentation-index",
       "factName": "current-requirement",
+      "contentBlockMarkers": ["documentation-index-table"],
       "expectedIdentifiers": [
         "api-and-client-boundaries",
         "architecture-and-adrs",
@@ -46,6 +47,11 @@
       "documentPath": "docs/DOCUMENTATION_GOVERNANCE.md",
       "markerName": "documentation-governance",
       "factName": "current-standard",
+      "contentBlockMarkers": [
+        "provenance-expectations",
+        "required-sections-checklist",
+        "small-doc-exemption"
+      ],
       "expectedIdentifiers": [
         "generated-manual-provenance-explicit",
         "required-sections-by-document-type",
@@ -131,6 +137,14 @@
           "parameterCount": 1,
           "invokedMethodName": "AddCatalogIntegrationEventTransportConsumer",
           "expectedCount": 1
+        },
+        {
+          "sourcePath": "src/ViajantesTurismo.MigrationService/DatabaseInitializationWorker.cs",
+          "methodName": "RunMigrations",
+          "parameterCount": 2,
+          "invokedMethodName": "Initialize",
+          "expectedCount": 1,
+          "expectedArguments": ["catalogDataSource", "options: null", "ct"]
         }
       ]
     }

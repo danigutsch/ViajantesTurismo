@@ -117,8 +117,8 @@ Current behavior:
 
 - `MigrationService` applies database migrations in every environment, atomically initializes the
   synthetic Admin data set only in Development, then exits.
-- `InitializeCatalogEventSourcingSchema` invokes `PostgreSqlEventSourcingSchema.Initialize` after the
-  Catalog EF migration; the initializer is rerunnable and owns the Catalog event-store schema only.
+- `DatabaseInitializationWorker.RunMigrations` calls `PostgreSqlEventSourcingSchema.Initialize` after
+  the Catalog EF migration; the initializer is rerunnable and owns the Catalog event-store schema only.
 - Admin, Catalog, Branding, and Management Security wait for `MigrationService` completion before starting.
 - The Admin, Catalog, Branding, and Management Security infrastructure projects are referenced by the migration service.
 

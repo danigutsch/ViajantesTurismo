@@ -368,6 +368,7 @@ internal static class DocumentationTestContent
               "documentPath": "docs/README.md",
               "markerName": "documentation-index",
               "factName": "current-requirement",
+              "contentBlockMarkers": ["documentation-index-table"],
               "expectedIdentifiers": [
                 "deprecated-docs-reviewed",
                 "guidance-centralized"
@@ -376,6 +377,63 @@ internal static class DocumentationTestContent
           ]
         }
         """;
+
+    public static string GovernanceFactConformanceConfig() =>
+        """
+        {
+          "checks": [
+            {
+              "name": "documentation-governance",
+              "documentPath": "docs/DOCUMENTATION_GOVERNANCE.md",
+              "markerName": "documentation-governance",
+              "factName": "current-standard",
+              "contentBlockMarkers": [
+                "required-sections-checklist",
+                "provenance-expectations",
+                "small-doc-exemption"
+              ],
+              "expectedIdentifiers": [
+                "generated-manual-provenance-explicit",
+                "required-sections-by-document-type",
+                "small-focused-docs-exempt"
+              ]
+            }
+          ]
+        }
+        """;
+
+    public static string GovernanceDocumentWithoutContent(string removedBlock)
+    {
+        var requiredSections = removedBlock == "required-sections-checklist"
+            ? string.Empty
+            : "| Class | Required blocks |";
+        var provenance = removedBlock == "provenance-expectations"
+            ? string.Empty
+            : "- Generated documents identify their owning generator.";
+        var exemption = removedBlock == "small-doc-exemption"
+            ? string.Empty
+            : "Short focused documents remain exempt.";
+
+        return $$"""
+        <!-- doc-fact:documentation-governance:start -->
+        - current-standard: `generated-manual-provenance-explicit`
+        - current-standard: `required-sections-by-document-type`
+        - current-standard: `small-focused-docs-exempt`
+        <!-- doc-fact:documentation-governance:end -->
+
+        <!-- doc-content:required-sections-checklist:start -->
+        {{requiredSections}}
+        <!-- doc-content:required-sections-checklist:end -->
+
+        <!-- doc-content:provenance-expectations:start -->
+        {{provenance}}
+        <!-- doc-content:provenance-expectations:end -->
+
+        <!-- doc-content:small-doc-exemption:start -->
+        {{exemption}}
+        <!-- doc-content:small-doc-exemption:end -->
+        """;
+    }
 
     public static string SampleAggregateSource() =>
         """

@@ -31,6 +31,7 @@ flowchart LR
         databaseServer[(PostgreSQL server)]
         adminDatabase[(Admin database)]
         catalogDatabase[(Catalog database)]
+        securityDatabase[(Management security database)]
         adminOutbox[(Admin integration outbox)]
         catalogTransport[(Catalog transport queue)]
         catalogOutbox[(Catalog media-processing outbox)]
@@ -52,6 +53,7 @@ flowchart LR
     managementWeb -- service discovery HTTPS --> brandingApi
     managementWeb -- service discovery HTTPS --> catalogApi
     managementWeb -- distributed cache --> cache
+    managementWeb -- EF Core SQL and security state --> securityDatabase
     adminApi -- EF Core SQL and PII booking data --> adminDatabase
     adminApi -- transactional integration events --> adminOutbox
     adminOutbox -- relay publishes --> catalogTransport
@@ -66,8 +68,10 @@ flowchart LR
     worker -- projects Catalog read models --> catalogDatabase
     migration -- applies migrations and Development-only sample data --> adminDatabase
     migration -- applies migrations and event-store schema --> catalogDatabase
+    migration -- applies Management security migrations --> securityDatabase
     adminDatabase --> databaseServer
     catalogDatabase --> databaseServer
+    securityDatabase --> databaseServer
     adminApi -. uses .-> sharedKernel
     catalogApi -. uses .-> sharedKernel
     worker -. uses .-> sharedKernel
@@ -88,7 +92,7 @@ flowchart LR
     class publicWeb public
     class managementWeb management
     class adminApi,brandingApi,catalogApi,worker,migration,sharedKernel internal
-    class databaseServer,adminDatabase,catalogDatabase,adminOutbox,catalogTransport,catalogOutbox,cache,mediaStorage data
+    class databaseServer,adminDatabase,catalogDatabase,securityDatabase,adminOutbox,catalogTransport,catalogOutbox,cache,mediaStorage data
     class github,packageFeeds,observability external
 ```
 <!-- generated:system-overview:end -->

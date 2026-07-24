@@ -45,6 +45,8 @@ Machine-readable standards guarded by the documentation conformance check:
 Classify maintained documentation by its primary purpose. A document may compose more than one
 block when that improves its reviewability.
 
+<!-- doc-content:required-sections-checklist:start -->
+
 | Class | Typical repository locations | Required blocks | Explicit exemption or note |
 | --- | --- | --- | --- |
 | Standard or reference | `docs/CODING_GUIDELINES.md`, `docs/CONFIGURATION.md`, `docs/TEST_GUIDELINES.md` | Common metadata when durable ownership matters; link policy; optional inventory | TOC policy applies. |
@@ -52,6 +54,8 @@ block when that improves its reviewability.
 | Operational workflow | `docs/operations/`, contributor workflows, runbooks | Workflow; link policy; optional common metadata | Include validation and rollback only when the workflow changes state. |
 | Index or inventory | `docs/README.md`, architecture maps, generated-diagram roadmap | Inventory; link policy; optional common metadata | Landing pages are TOC-optional. Generated outputs retain their generator ownership. |
 | Short how-to or release note | Focused README sections, changelog entries, concise guides | Link policy only when references need governance | Exempt from metadata and TOC requirements unless the document grows into a reference. |
+
+<!-- doc-content:required-sections-checklist:end -->
 
 ## Composable schema blocks
 
@@ -111,6 +115,8 @@ Use wherever references form part of the document's contract:
 State ownership where a reader could otherwise mistake generated content for manually maintained
 guidance:
 
+<!-- doc-content:provenance-expectations:start -->
+
 - Manually maintained documents treat their tracked Markdown as the source and are edited with the
   code or workflow they describe.
 - Generated documents identify the owning generator and source or configuration. Do not edit their
@@ -122,16 +128,22 @@ guidance:
 - Imported or adapted material records its durable source and any applicable attribution or license
   evidence. Unverifiable copied guidance is not accepted as repository provenance.
 
+<!-- doc-content:provenance-expectations:end -->
+
 ## Composition and incremental adoption
 
 New or substantively revised durable documents should select the smallest useful set of blocks.
 For example, an ADR composes durable decision and link policy; a runbook composes workflow and
 link policy; an architecture map composes inventory and link policy.
 
+<!-- doc-content:small-doc-exemption:start -->
+
 Existing documents adopt the model incrementally. The classification above records the current
 path-level intent; authors do not need to add metadata or rewrite content until a document has a
 real maintenance need. An explicit exemption remains valid while the document stays short,
 generated, or narrowly scoped.
+
+<!-- doc-content:small-doc-exemption:end -->
 
 ## Table of contents policy
 

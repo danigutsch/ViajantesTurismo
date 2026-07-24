@@ -10,6 +10,8 @@ internal sealed class DocumentationFactCheck
 
     public string FactName { get; set; } = string.Empty;
 
+    public List<string> ContentBlockMarkers { get; set; } = [];
+
     public List<string> ExpectedIdentifiers { get; set; } = [];
 
     public List<DocumentationSourceMethod> SwitchSources { get; set; } = [];

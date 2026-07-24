@@ -61,6 +61,17 @@ Registration checks can also require exact runtime invocation counts and argumen
 the configured document or source path. The existing CLI exposes this through
 `sharedkernel-docs check --config <path>`; shell wrappers should only invoke that command.
 
+Checks can also associate facts with governed content blocks:
+
+```markdown
+<!-- doc-content:block-name:start -->
+maintained table, checklist, or policy body
+<!-- doc-content:block-name:end -->
+```
+
+Each configured content block must have one balanced marker pair and meaningful non-comment body
+content. This protects the governed structure without matching headings or prose.
+
 ## Design rules
 
 - Use deterministic ordering for generated output.

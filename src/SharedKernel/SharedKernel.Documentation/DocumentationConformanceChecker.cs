@@ -42,6 +42,14 @@ public static class DocumentationConformanceChecker
             check.DocumentPath,
             check.MarkerName,
             check.FactName);
+        foreach (var contentBlockMarker in check.ContentBlockMarkers)
+        {
+            DocumentationSourceFacts.ValidateMarkedContentBlock(
+                fullDocumentPath,
+                check.DocumentPath,
+                contentBlockMarker);
+        }
+
         var expectedIdentifiers = ExpectedIdentifiers(rootPath, check);
 
         if (!documentedIdentifiers.SequenceEqual(expectedIdentifiers, StringComparer.Ordinal))
@@ -197,6 +205,7 @@ public static class DocumentationConformanceChecker
     private static void ValidateCheck(DocumentationFactCheck check, string configPath)
     {
         if (check.ExpectedIdentifiers is null
+            || check.ContentBlockMarkers is null
             || check.SwitchSources is null
             || check.RegistrationSources is null
             || check.IncludedIdentifierFragments is null
@@ -242,6 +251,7 @@ public static class DocumentationConformanceChecker
         }
 
         ValidateIdentifiers(check.ExpectedIdentifiers, check.Name, "expected identifiers");
+        ValidateIdentifiers(check.ContentBlockMarkers, check.Name, "content block markers");
         ValidateIdentifiers(check.IncludedIdentifiers, check.Name, "included identifiers");
         ValidateIdentifiers(check.IncludedIdentifierFragments, check.Name, "included identifier fragments");
         ValidateSourceMethods(check.SwitchSources, check.Name, requireMethod: true);
