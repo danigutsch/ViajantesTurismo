@@ -14,6 +14,16 @@ internal static class DocumentIdempotencyTestData
         IdempotencyScope scope,
         IdempotencyKey key,
         Guid documentId,
+        IUnitOfWork unitOfWork) => CreateCompletedWithFingerprint(
+            scope,
+            key,
+            documentId.ToString("N"),
+            unitOfWork);
+
+    internal static DocumentCommandIdempotency CreateCompletedWithFingerprint(
+        IdempotencyScope scope,
+        IdempotencyKey key,
+        string? resultFingerprint,
         IUnitOfWork unitOfWork)
     {
         var operation = new IdempotencyOperation(scope, key);
@@ -23,7 +33,7 @@ internal static class DocumentIdempotencyTestData
             IdempotencyEntryState.Completed,
             completedAt.AddMinutes(-1),
             completedAt,
-            documentId.ToString("N"));
+            resultFingerprint);
         return new DocumentCommandIdempotency(new ExistingIdempotencyStore(entry), unitOfWork, TimeProvider.System);
     }
 

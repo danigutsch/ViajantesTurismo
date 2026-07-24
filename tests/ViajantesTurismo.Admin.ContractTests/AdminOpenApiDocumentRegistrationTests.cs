@@ -106,6 +106,40 @@ public sealed class AdminOpenApiDocumentRegistrationTests
     }
 
     [Fact]
+    public void Documents_document_describes_optional_idempotency_headers_for_generate_and_regenerate()
+    {
+        // Arrange
+        var document = AdminOpenApiArtifactDriftGuard.CreateSnapshotSet()
+            .GetCanonicalSnapshot("documents")
+            .AsObject();
+        var paths = document["paths"].ShouldNotBeNull().AsObject();
+        (string Path, string Method)[] idempotentOperations =
+        [
+            ("/api/v1/documents/bookings/{bookingId}/contract-drafts", "post"),
+            ("/api/v1/documents/{id}/regenerate", "post")
+        ];
+
+        foreach (var operation in idempotentOperations)
+        {
+            // Act
+            var path = paths[operation.Path].ShouldNotBeNull().AsObject();
+            var endpoint = path[operation.Method].ShouldNotBeNull().AsObject();
+            var parameters = endpoint["parameters"].ShouldNotBeNull().AsArray();
+            var idempotencyHeaders = parameters
+                .Select(parameter => parameter.ShouldNotBeNull().AsObject())
+                .Where(parameter => parameter["name"]?.GetValue<string>() == "Idempotency-Key")
+                .ToArray();
+            var header = idempotencyHeaders.ShouldHaveSingleItem();
+
+            // Assert
+            header["in"].ShouldNotBeNull().GetValue<string>().ShouldBe("header");
+            (header["required"]?.GetValue<bool>() ?? false).ShouldBeFalse();
+            var schema = header["schema"].ShouldNotBeNull().AsObject();
+            schema["type"].ShouldNotBeNull().GetValue<string>().ShouldBe("string");
+        }
+    }
+
+    [Fact]
     public void Documents_document_describes_html_download_as_binary()
     {
         // Arrange

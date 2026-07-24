@@ -8,7 +8,11 @@ internal sealed class ExistingIdempotencyStore(IdempotencyEntry entry) : IIdempo
         IdempotencyOperation operation,
         DateTimeOffset startedAt,
         TimeSpan? lockDuration,
-        CancellationToken ct) => ValueTask.FromResult(IdempotencyStartResult.AlreadyStarted(entry));
+        CancellationToken ct)
+    {
+        EnsureExpectedOperation(operation);
+        return ValueTask.FromResult(IdempotencyStartResult.AlreadyStarted(entry));
+    }
 
     public ValueTask Complete(
         IdempotencyOperation operation,
@@ -24,5 +28,17 @@ internal sealed class ExistingIdempotencyStore(IdempotencyEntry entry) : IIdempo
 
     public ValueTask<IdempotencyEntry?> Get(
         IdempotencyOperation operation,
-        CancellationToken ct) => ValueTask.FromResult<IdempotencyEntry?>(entry);
+        CancellationToken ct)
+    {
+        EnsureExpectedOperation(operation);
+        return ValueTask.FromResult<IdempotencyEntry?>(entry);
+    }
+
+    private void EnsureExpectedOperation(IdempotencyOperation operation)
+    {
+        if (operation != entry.Operation)
+        {
+            throw new InvalidOperationException("The idempotency operation did not match the configured entry.");
+        }
+    }
 }
