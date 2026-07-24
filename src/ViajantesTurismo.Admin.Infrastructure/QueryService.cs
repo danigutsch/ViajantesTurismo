@@ -194,6 +194,11 @@ internal sealed class QueryService(AdminReadDbContext dbContext) : IQueryService
                     CompanionName = companion != null
                         ? $"{companion.PersonalInfo.FirstName} {companion.PersonalInfo.LastName}"
                         : null,
+                    RoomType = BookingMapper.MapToRoomTypeDto(b.RoomType),
+                    PrincipalBikeType = BookingMapper.MapToBikeTypeDto(b.PrincipalCustomer.BikeType),
+                    CompanionBikeType = b.CompanionCustomer is not null
+                        ? BookingMapper.MapToBikeTypeDto(b.CompanionCustomer.BikeType)
+                        : null,
                     BookingDate = b.BookingDate,
                     Status = BookingMapper.MapToBookingStatusDto(b.Status),
                     PaymentStatus = BookingMapper.MapToPaymentStatusDto(b.PaymentStatus),
@@ -242,6 +247,11 @@ internal sealed class QueryService(AdminReadDbContext dbContext) : IQueryService
             CompanionId = booking.CompanionCustomer?.CustomerId,
             CompanionName = companion is not null
                 ? $"{companion.PersonalInfo.FirstName} {companion.PersonalInfo.LastName}"
+                : null,
+            RoomType = BookingMapper.MapToRoomTypeDto(booking.RoomType),
+            PrincipalBikeType = BookingMapper.MapToBikeTypeDto(booking.PrincipalCustomer.BikeType),
+            CompanionBikeType = booking.CompanionCustomer is not null
+                ? BookingMapper.MapToBikeTypeDto(booking.CompanionCustomer.BikeType)
                 : null,
             BookingDate = booking.BookingDate,
             Status = BookingMapper.MapToBookingStatusDto(booking.Status),
@@ -299,6 +309,11 @@ internal sealed class QueryService(AdminReadDbContext dbContext) : IQueryService
                         CompanionId = b.CompanionCustomer?.CustomerId,
                         CompanionName = companion is not null
                             ? $"{companion.PersonalInfo.FirstName} {companion.PersonalInfo.LastName}"
+                            : null,
+                        RoomType = BookingMapper.MapToRoomTypeDto(b.RoomType),
+                        PrincipalBikeType = BookingMapper.MapToBikeTypeDto(b.PrincipalCustomer.BikeType),
+                        CompanionBikeType = b.CompanionCustomer is not null
+                            ? BookingMapper.MapToBikeTypeDto(b.CompanionCustomer.BikeType)
                             : null,
                         BookingDate = b.BookingDate,
                         Status = BookingMapper.MapToBookingStatusDto(b.Status),
@@ -359,6 +374,11 @@ internal sealed class QueryService(AdminReadDbContext dbContext) : IQueryService
                     CompanionId = b.CompanionCustomer?.CustomerId,
                     CompanionName = companion != null
                         ? $"{companion.PersonalInfo.FirstName} {companion.PersonalInfo.LastName}"
+                        : null,
+                    RoomType = BookingMapper.MapToRoomTypeDto(b.RoomType),
+                    PrincipalBikeType = BookingMapper.MapToBikeTypeDto(b.PrincipalCustomer.BikeType),
+                    CompanionBikeType = b.CompanionCustomer is not null
+                        ? BookingMapper.MapToBikeTypeDto(b.CompanionCustomer.BikeType)
                         : null,
                     BookingDate = b.BookingDate,
                     Status = BookingMapper.MapToBookingStatusDto(b.Status),

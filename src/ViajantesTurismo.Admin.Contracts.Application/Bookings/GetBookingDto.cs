@@ -29,6 +29,15 @@ public sealed record GetBookingDto
     /// <summary>The companion's full name, if any.</summary>
     public string? CompanionName { get; init; }
 
+    /// <summary>The room type selected for the booking.</summary>
+    public required RoomTypeDto RoomType { get; init; }
+
+    /// <summary>The bike type selected for the principal customer.</summary>
+    public required BikeTypeDto PrincipalBikeType { get; init; }
+
+    /// <summary>The bike type selected for the companion, if any.</summary>
+    public BikeTypeDto? CompanionBikeType { get; init; }
+
     /// <summary>The date when the booking was made.</summary>
     public required DateTime BookingDate { get; init; }
 

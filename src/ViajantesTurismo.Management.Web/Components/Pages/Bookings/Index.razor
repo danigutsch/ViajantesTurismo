@@ -1,5 +1,6 @@
 @page "/bookings"
 @using ViajantesTurismo.Admin.Contracts.Application
+@using ViajantesTurismo.Management.Web.Helpers
 
 @inject IBookingsApiClient BookingsApi
 
@@ -13,6 +14,12 @@
     @if (_loading)
     {
         <p><em>Loading bookings...</em></p>
+    }
+    else if (!string.IsNullOrEmpty(_errorMessage))
+    {
+        <div class="alert alert-danger" role="alert">
+            @_errorMessage
+        </div>
     }
     else
     {
@@ -41,6 +48,7 @@
 @code {
     private GetBookingDto[]? _bookings;
     private bool _loading = true;
+    private string? _errorMessage;
 
     protected override async Task OnInitializedAsync()
     {
@@ -50,9 +58,14 @@
     private async Task LoadBookings()
     {
         _loading = true;
+        _errorMessage = null;
         try
         {
             _bookings = await BookingsApi.GetAllBookings(CancellationToken.None);
+        }
+        catch (Exception)
+        {
+            _errorMessage = UserFacingErrorMessage.ForOperation("load bookings");
         }
         finally
         {

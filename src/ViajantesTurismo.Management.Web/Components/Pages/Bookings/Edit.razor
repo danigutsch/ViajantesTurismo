@@ -4,6 +4,7 @@
 @using ViajantesTurismo.Admin.Contracts.Application
 @using ViajantesTurismo.Management.Web.Helpers
 @inject IBookingsApiClient BookingsApi
+@inject ICustomersApiClient CustomersApi
 @inject NavigationManager Navigation
 
 <PageTitle>Edit Booking</PageTitle>
@@ -24,10 +25,10 @@ else if (_notFound)
     </div>
     <NavLink href="/bookings" class="btn btn-secondary">Back to Bookings</NavLink>
 }
-else if (!string.IsNullOrEmpty(_errorMessage))
+else if (!string.IsNullOrEmpty(_loadErrorMessage))
 {
     <div class="alert alert-danger" role="alert">
-        @_errorMessage
+        @_loadErrorMessage
     </div>
     <NavLink href="/bookings" class="btn btn-secondary">Back to Bookings</NavLink>
 }
@@ -44,6 +45,13 @@ else
     {
         <div class="alert alert-danger" role="alert">
             @_errorMessage
+        </div>
+    }
+
+    @if (!string.IsNullOrEmpty(_refreshWarningMessage))
+    {
+        <div class="alert alert-warning" role="alert">
+            @_refreshWarningMessage
         </div>
     }
 
@@ -75,6 +83,12 @@ else
 
                 <dt class="col-sm-3">Booking Date:</dt>
                 <dd class="col-sm-9">@DateFormatter.FormatDateTime(_booking.BookingDate)</dd>
+
+                <dt class="col-sm-3">Status:</dt>
+                <dd class="col-sm-9"><BookingStatusBadge Status="@_booking.Status" /></dd>
+
+                <dt class="col-sm-3">Payment Status:</dt>
+                <dd class="col-sm-9"><PaymentStatusBadge Status="@_booking.PaymentStatus" /></dd>
             </dl>
         </div>
     </div>
@@ -97,32 +111,73 @@ else
                     </div>
 
                     <div class="col-md-6 mb-3">
-                        <label for="status" class="form-label">Status</label>
-                        <InputSelect id="status" class="form-control" @bind-Value="_model.Status"
-                                     disabled="@(_booking.Status == BookingStatusDto.Completed || _booking.Status == BookingStatusDto.Cancelled)">
-                            <option value="@BookingStatusDto.Pending">Pending</option>
-                            <option value="@BookingStatusDto.Confirmed">Confirmed</option>
-                            <option value="@BookingStatusDto.Completed">Completed</option>
-                            <option value="@BookingStatusDto.Cancelled">Cancelled</option>
+                        <label for="roomType" class="form-label">Room Type <span class="text-danger">*</span></label>
+                        <InputSelect id="roomType" class="form-select" @bind-Value="_model.RoomType"
+                                     @bind-Value:after="OnRoomTypeChanged" disabled="@AreEditControlsDisabled">
+                            <option value="@RoomTypeDto.DoubleOccupancy">Double Room</option>
+                            <option value="@RoomTypeDto.SingleOccupancy">Single Room</option>
                         </InputSelect>
+                        <ValidationMessage For="@(() => _model.RoomType)"/>
                     </div>
                 </div>
 
-                <div class="mb-3">
-                    <label for="paymentStatus" class="form-label">Payment Status</label>
-                    <InputSelect id="paymentStatus" class="form-control" @bind-Value="_model.PaymentStatus"
-                                 disabled="@(_booking.Status == BookingStatusDto.Completed || _booking.Status == BookingStatusDto.Cancelled)">
-                        <option value="@PaymentStatusDto.Unpaid">Unpaid</option>
-                        <option value="@PaymentStatusDto.PartiallyPaid">Partially Paid</option>
-                        <option value="@PaymentStatusDto.Paid">Paid</option>
-                        <option value="@PaymentStatusDto.Refunded">Refunded</option>
-                    </InputSelect>
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label for="principalBikeType" class="form-label">Principal Bike <span class="text-danger">*</span></label>
+                        <InputSelect id="principalBikeType" class="form-select" @bind-Value="_model.PrincipalBikeType" disabled="@AreEditControlsDisabled">
+                            <option value="@BikeTypeDto.None">-- Select Bike Type --</option>
+                            <option value="@BikeTypeDto.Regular">Regular Bike</option>
+                            <option value="@BikeTypeDto.EBike">E-Bike</option>
+                        </InputSelect>
+                        <ValidationMessage For="@(() => _model.PrincipalBikeType)"/>
+                    </div>
+
+                    @if (_model.RoomType == RoomTypeDto.DoubleOccupancy)
+                    {
+                        <div class="col-md-6 mb-3">
+                            <label for="companionId" class="form-label">Companion (Optional)</label>
+                             <InputSelect id="companionId" class="form-select" @bind-Value="_model.CompanionId"
+                                          @bind-Value:after="OnCompanionChanged" disabled="@AreEditControlsDisabled">
+                                 <option value="">-- No Companion --</option>
+                                 @if (_booking.CompanionId.HasValue &&
+                                      _customers.All(customer => customer.Id != _booking.CompanionId.Value))
+                                 {
+                                     <option value="@_booking.CompanionId">@_booking.CompanionName</option>
+                                 }
+                                 @foreach (var customer in _customers.Where(customer => customer.Id != _booking.CustomerId))
+                                 {
+                                     <option value="@customer.Id">@customer.FirstName @customer.LastName</option>
+                                 }
+                             </InputSelect>
+                             <ValidationMessage For="@(() => _model.CompanionId)"/>
+                             @if (_companionChoicesUnavailable)
+                             {
+                                 <div class="form-text text-warning" role="status">
+                                     Other companion choices are unavailable. The current companion can still be kept or removed.
+                                 </div>
+                             }
+                        </div>
+                    }
                 </div>
+
+                @if (_model is { RoomType: RoomTypeDto.DoubleOccupancy, CompanionId: not null })
+                {
+                    <div class="mb-3">
+                        <label for="companionBikeType" class="form-label">Companion Bike <span class="text-danger">*</span></label>
+                        <InputSelect id="companionBikeType" class="form-select" @bind-Value="_model.CompanionBikeType" disabled="@AreEditControlsDisabled">
+                            <option value="">-- Select Bike Type --</option>
+                            <option value="@BikeTypeDto.Regular">Regular Bike</option>
+                            <option value="@BikeTypeDto.EBike">E-Bike</option>
+                        </InputSelect>
+                        <ValidationMessage For="@(() => _model.CompanionBikeType)"/>
+                    </div>
+                }
 
                 <div class="mb-3">
                     <label for="notes" class="form-label">Notes</label>
                     <InputTextArea id="notes" class="form-control" @bind-Value="_model.Notes" rows="4" placeholder="Additional notes or comments..."
-                                   disabled="@(_booking.Status == BookingStatusDto.Completed || _booking.Status == BookingStatusDto.Cancelled)"/>
+                                   disabled="@AreEditControlsDisabled"/>
+                    <ValidationMessage For="@(() => _model.Notes)"/>
                 </div>
 
                 <div class="card mb-3">
@@ -133,7 +188,7 @@ else
                         <div class="mb-3">
                             <label for="discountType" class="form-label">Discount Type</label>
                             <InputSelect id="discountType" class="form-select" @bind-Value="_model.DiscountType"
-                                         disabled="@(_booking.Status == BookingStatusDto.Completed || _booking.Status == BookingStatusDto.Cancelled)">
+                                         disabled="@AreEditControlsDisabled">
                                 <option value="@DiscountTypeDto.None">No Discount</option>
                                 <option value="@DiscountTypeDto.Percentage">Percentage (0-100%)</option>
                                 <option value="@DiscountTypeDto.Absolute">Absolute Amount</option>
@@ -156,7 +211,7 @@ else
                                 </label>
                                 <InputNumber id="discountAmount" class="form-control" @bind-Value="_model.DiscountAmount"
                                              step="0.01"
-                                             disabled="@(_booking.Status == BookingStatusDto.Completed || _booking.Status == BookingStatusDto.Cancelled)"/>
+                                             disabled="@AreEditControlsDisabled"/>
                                 <ValidationMessage For="@(() => _model.DiscountAmount)"/>
                                 @if (_model.DiscountType == DiscountTypeDto.Percentage)
                                 {
@@ -168,7 +223,7 @@ else
                                 <label for="discountReason" class="form-label">Discount Reason <span class="text-danger">*</span></label>
                                 <InputTextArea id="discountReason" class="form-control" @bind-Value="_model.DiscountReason"
                                                rows="2" placeholder="e.g., Early bird discount, Loyalty customer, Group discount"
-                                               disabled="@(_booking.Status == BookingStatusDto.Completed || _booking.Status == BookingStatusDto.Cancelled)"/>
+                                               disabled="@AreEditControlsDisabled"/>
                                 <ValidationMessage For="@(() => _model.DiscountReason)"/>
                                 <div class="form-text">Required for audit purposes (10-500 characters)</div>
                             </div>
@@ -180,7 +235,7 @@ else
 
         <div class="d-flex gap-2">
             <button type="submit" class="btn btn-primary"
-                    disabled="@(_isSubmitting || _redirectState.IsPending || _booking.Status == BookingStatusDto.Completed || _booking.Status == BookingStatusDto.Cancelled)">
+                    disabled="@(_redirectState.IsPending || AreEditControlsDisabled)">
                 @if (_isSubmitting)
                 {
                     <span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
@@ -192,7 +247,7 @@ else
                 }
             </button>
             <NavLink href="/bookings"
-                     class="@($"btn btn-secondary {(_isSubmitting || _redirectState.IsPending ? "disabled" : "")}")">
+                     class="@($"btn btn-secondary {(IsMutationInFlight || _redirectState.IsPending ? "disabled" : "")}")">
                 Cancel
             </NavLink>
         </div>
@@ -201,7 +256,7 @@ else
     <div class="card mt-4">
         <div class="card-header d-flex justify-content-between align-items-center">
             <h5 class="card-title mb-0"><i class="bi bi-cash-stack"></i> Payments</h5>
-            @if (!_paymentState.IsFormVisible && _booking.RemainingBalance > 0 && _booking.Status != BookingStatusDto.Cancelled)
+            @if (!_paymentState.IsFormVisible && _booking.RemainingBalance > 0 && _booking.Status != BookingStatusDto.Cancelled && !AreMutationsBlocked)
             {
                 <button type="button" class="btn btn-sm btn-success" @onclick="ShowPaymentForm">
                     <i class="bi bi-plus-circle"></i> Record Payment
@@ -247,7 +302,7 @@ else
                                      Currency="_booking.Currency"
                                      OnValidSubmit="@HandleSavePayment"
                                      OnCancel="@HidePaymentForm"
-                                     IsSubmitting="_paymentState.IsSubmitting" />
+                                     IsSubmitting="@AreMutationsBlocked" />
                     </div>
                 </div>
             }
@@ -258,7 +313,7 @@ else
 
     <BookingEditActionPanel
         Status="@_booking.Status"
-        IsSubmitting="@_isSubmitting"
+        IsSubmitting="@AreMutationsBlocked"
         Confirm="HandleConfirm"
         Complete="HandleComplete"
         Cancel="HandleCancel"
@@ -291,20 +346,34 @@ else
 
     private GetBookingDto? _booking;
     private readonly BookingFormModel _model = new();
+    private IReadOnlyList<GetCustomerDto> _customers = [];
     private bool _loading = true;
     private bool _notFound;
     private bool _isSubmitting;
     private bool _success;
+    private bool _companionChoicesUnavailable;
     private readonly BookingEditRedirectState _redirectState = new();
+    private string? _loadErrorMessage;
     private string? _errorMessage;
+    private string? _refreshWarningMessage;
 
     private readonly BookingEditPaymentState _paymentState = new();
 
     private ConfirmDialog _confirmDialog = null!;
     private ToastNotification _toast = null!;
 
+    private bool IsMutationInFlight => _isSubmitting || _paymentState.IsSubmitting;
+
+    private bool AreMutationsBlocked => RequiresReload || IsMutationInFlight;
+
+    private bool AreEditControlsDisabled => AreMutationsBlocked ||
+                                            _booking?.Status is BookingStatusDto.Completed or BookingStatusDto.Cancelled;
+
+    private bool RequiresReload => !string.IsNullOrEmpty(_refreshWarningMessage);
+
     protected override async Task OnInitializedAsync()
     {
+        _loadErrorMessage = null;
         try
         {
             _booking = await BookingsApi.GetBookingById(Id, CancellationToken.None);
@@ -316,10 +385,11 @@ else
             }
 
             SyncModelFromBooking();
+            await LoadCompanionChoices();
         }
         catch (Exception)
         {
-            _errorMessage = UserFacingErrorMessage.ForOperation("load the booking");
+            _loadErrorMessage = UserFacingErrorMessage.ForOperation("load the booking");
         }
         finally
         {
@@ -329,51 +399,85 @@ else
 
     private async Task HandleSubmit()
     {
+        if (AreEditControlsDisabled)
+        {
+            return;
+        }
+
         _isSubmitting = true;
         _success = false;
         _errorMessage = null;
+        _refreshWarningMessage = null;
         await _redirectState.Reset();
+        var mutationAttempted = false;
 
         try
         {
+            var normalizedDiscountReason = string.IsNullOrWhiteSpace(_model.DiscountReason)
+                ? null
+                : _model.DiscountReason;
+
+            if (_model.RoomType != _booking!.RoomType ||
+                _model.PrincipalBikeType != _booking.PrincipalBikeType ||
+                _model.CompanionId != _booking.CompanionId ||
+                _model.CompanionBikeType != _booking.CompanionBikeType)
+            {
+                var detailsDto = new UpdateBookingDetailsDto
+                {
+                    RoomType = _model.RoomType,
+                    PrincipalBikeType = _model.PrincipalBikeType,
+                    CompanionCustomerId = _model.CompanionId,
+                    CompanionBikeType = _model.CompanionBikeType
+                };
+                mutationAttempted = true;
+                await BookingsApi.UpdateBookingDetails(Id, detailsDto, CancellationToken.None);
+                var companionName = _model.CompanionId == _booking.CompanionId
+                    ? _booking.CompanionName
+                    : _customers
+                        .Where(customer => customer.Id == _model.CompanionId)
+                        .Select(customer => $"{customer.FirstName} {customer.LastName}")
+                        .FirstOrDefault();
+                _booking = _booking with
+                {
+                    RoomType = _model.RoomType,
+                    PrincipalBikeType = _model.PrincipalBikeType,
+                    CompanionId = _model.CompanionId,
+                    CompanionName = companionName,
+                    CompanionBikeType = _model.CompanionBikeType
+                };
+            }
+
             // Update discount if changed
-            if (_model.DiscountType != _booking!.DiscountType ||
+            if (_model.DiscountType != _booking.DiscountType ||
                 _model.DiscountAmount != _booking.DiscountAmount ||
-                _model.DiscountReason != _booking.DiscountReason)
+                normalizedDiscountReason != _booking.DiscountReason)
             {
                 var discountDto = new UpdateBookingDiscountDto
                 {
                     DiscountType = _model.DiscountType,
                     DiscountAmount = _model.DiscountAmount,
-                    DiscountReason = _model.DiscountReason
+                    DiscountReason = normalizedDiscountReason
                 };
+                mutationAttempted = true;
                 await BookingsApi.UpdateBookingDiscount(Id, discountDto, CancellationToken.None);
+                _booking = _booking with
+                {
+                    DiscountType = _model.DiscountType,
+                    DiscountAmount = _model.DiscountAmount,
+                    DiscountReason = normalizedDiscountReason
+                };
             }
 
             // Update notes if changed
             if (_model.Notes != _booking.Notes)
             {
                 var notesDto = new UpdateBookingNotesDto { Notes = _model.Notes };
+                mutationAttempted = true;
                 await BookingsApi.UpdateBookingNotes(Id, notesDto, CancellationToken.None);
+                _booking = _booking with { Notes = _model.Notes };
             }
 
-            // Handle status transitions if changed
-            if (_model.Status != _booking.Status)
-            {
-                switch (_model.Status)
-                {
-                    case BookingStatusDto.Confirmed:
-                        await BookingsApi.ConfirmBooking(Id, CancellationToken.None);
-                        break;
-                    case BookingStatusDto.Cancelled:
-                        await BookingsApi.CancelBooking(Id, CancellationToken.None);
-                        break;
-                    case BookingStatusDto.Completed:
-                        await BookingsApi.CompleteBooking(Id, CancellationToken.None);
-                        break;
-                }
-            }
-
+            await TryRefreshBookingAndSyncModel();
             _success = true;
             var token = _redirectState.BeginPendingRedirect();
             StateHasChanged();
@@ -398,6 +502,10 @@ else
         catch (Exception)
         {
             _errorMessage = UserFacingErrorMessage.ForOperation("update the booking");
+            if (mutationAttempted)
+            {
+                await ReconcileAfterFailedMutation();
+            }
         }
         finally
         {
@@ -423,6 +531,11 @@ else
 
     private void ShowPaymentForm()
     {
+        if (AreMutationsBlocked)
+        {
+            return;
+        }
+
         _paymentState.ShowForm();
     }
 
@@ -433,6 +546,11 @@ else
 
     private async Task HandleSavePayment()
     {
+        if (AreMutationsBlocked)
+        {
+            return;
+        }
+
         _paymentState.BeginSubmission();
         try
         {
@@ -440,17 +558,25 @@ else
             var outcome = await BookingsApi.RecordPayment(Id, createDto, CancellationToken.None);
             if (outcome.Kind != ContractCommandOutcomeKind.Succeeded)
             {
-                _toast.ShowError(UserFacingErrorMessage.ForOperation("record the payment"));
+                if (outcome.Kind == ContractCommandOutcomeKind.UnexpectedStatus)
+                {
+                    MarkPaymentResultUncertain();
+                }
+                else
+                {
+                    _toast.ShowError(UserFacingErrorMessage.ForOperation("record the payment"));
+                }
+
                 return;
             }
 
-            await RefreshBookingAndSyncModel();
+            await TryRefreshBookingAndSyncModel();
             _toast.ShowSuccess("Payment recorded successfully.");
             HidePaymentForm();
         }
         catch (Exception)
         {
-            _toast.ShowError(UserFacingErrorMessage.ForOperation("record the payment"));
+            MarkPaymentResultUncertain();
         }
         finally
         {
@@ -517,18 +643,103 @@ else
             return;
         }
 
-        _model.Status = _booking.Status;
-        _model.PaymentStatus = _booking.PaymentStatus;
-        _model.Notes = _booking.Notes ?? string.Empty;
+        _model.RoomType = _booking.RoomType;
+        _model.PrincipalBikeType = _booking.PrincipalBikeType;
+        _model.TourId = _booking.TourId;
+        _model.CustomerId = _booking.CustomerId;
+        _model.CompanionId = _booking.CompanionId;
+        _model.CompanionBikeType = _booking.CompanionBikeType;
+        _model.Notes = _booking.Notes;
         _model.DiscountType = _booking.DiscountType;
         _model.DiscountAmount = _booking.DiscountAmount;
         _model.DiscountReason = _booking.DiscountReason ?? string.Empty;
     }
 
-    private async Task RefreshBookingAndSyncModel()
+    private void OnRoomTypeChanged()
     {
-        _booking = await BookingsApi.GetBookingById(Id, CancellationToken.None);
-        SyncModelFromBooking();
+        if (_model.RoomType != RoomTypeDto.SingleOccupancy)
+        {
+            return;
+        }
+
+        _model.CompanionId = null;
+        _model.CompanionBikeType = null;
+    }
+
+    private void OnCompanionChanged()
+    {
+        if (!_model.CompanionId.HasValue)
+        {
+            _model.CompanionBikeType = null;
+            return;
+        }
+
+        var companion = _customers.FirstOrDefault(customer => customer.Id == _model.CompanionId.Value);
+        if (companion is not null)
+        {
+            _model.CompanionBikeType = companion.BikeType;
+        }
+    }
+
+    private async Task LoadCompanionChoices()
+    {
+        try
+        {
+            _customers = await CustomersApi.GetCustomers(CancellationToken.None, maxItems: int.MaxValue);
+        }
+        catch (Exception)
+        {
+            _customers = [];
+            _companionChoicesUnavailable = true;
+        }
+    }
+
+    private async Task<bool> TryRefreshBookingAndSyncModel()
+    {
+        try
+        {
+            var refreshedBooking = await BookingsApi.GetBookingById(Id, CancellationToken.None);
+            if (refreshedBooking is null)
+            {
+                _refreshWarningMessage = "The change was saved, but we couldn't refresh the booking. Reload the page to see the latest calculated values.";
+                return false;
+            }
+
+            _booking = refreshedBooking;
+            SyncModelFromBooking();
+            return true;
+        }
+        catch (Exception)
+        {
+            _refreshWarningMessage = "The change was saved, but we couldn't refresh the booking. Reload the page to see the latest calculated values.";
+            return false;
+        }
+    }
+
+    private void MarkPaymentResultUncertain()
+    {
+        _refreshWarningMessage = "The payment may have been recorded, but we couldn't confirm the result. Reload the booking before recording another payment.";
+        _toast.ShowError("We couldn't confirm whether the payment was recorded. Reload the booking before trying again.");
+        HidePaymentForm();
+    }
+
+    private async Task ReconcileAfterFailedMutation()
+    {
+        try
+        {
+            var refreshedBooking = await BookingsApi.GetBookingById(Id, CancellationToken.None);
+            if (refreshedBooking is null)
+            {
+                _refreshWarningMessage = "Some changes may have been saved, but we couldn't refresh the booking. Reload the page before making another change.";
+                return;
+            }
+
+            _booking = refreshedBooking;
+        }
+        catch (Exception)
+        {
+            _refreshWarningMessage = "Some changes may have been saved, but we couldn't refresh the booking. Reload the page before making another change.";
+        }
     }
 
     private async Task ExecuteBookingAction(
@@ -538,12 +749,19 @@ else
         bool refreshBooking = true,
         Action? onSuccess = null)
     {
+        if (AreMutationsBlocked)
+        {
+            return;
+        }
+
+        _isSubmitting = true;
+        StateHasChanged();
         try
         {
             await action(CancellationToken.None);
             if (refreshBooking)
             {
-                await RefreshBookingAndSyncModel();
+                await TryRefreshBookingAndSyncModel();
             }
 
             _toast.ShowSuccess(successMessage);
@@ -552,6 +770,11 @@ else
         catch (Exception)
         {
             _toast.ShowError(UserFacingErrorMessage.ForOperation(operationDescription));
+        }
+        finally
+        {
+            _isSubmitting = false;
+            StateHasChanged();
         }
     }
 
@@ -564,13 +787,4 @@ else
         return _confirmDialog.ShowAsync(message, title, confirmText, "No", confirmButtonCssClass);
     }
 
-    private sealed class BookingFormModel
-    {
-        public string Notes { get; set; } = string.Empty;
-        public BookingStatusDto Status { get; set; }
-        public PaymentStatusDto PaymentStatus { get; set; }
-        public DiscountTypeDto DiscountType { get; set; } = DiscountTypeDto.None;
-        public decimal DiscountAmount { get; set; }
-        public string DiscountReason { get; set; } = string.Empty;
-    }
 }

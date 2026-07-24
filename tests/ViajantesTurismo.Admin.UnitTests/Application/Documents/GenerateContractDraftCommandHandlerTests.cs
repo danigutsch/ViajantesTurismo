@@ -128,7 +128,7 @@ public sealed class GenerateContractDraftCommandHandlerTests
         var bookingId = Guid.CreateVersion7();
         var tourId = Guid.CreateVersion7();
         var queryService = new FakeQueryService(
-            new GetBookingDto { Id = bookingId, TourId = tourId, TourIdentifier = "andes", TourName = "Andes", CustomerId = Guid.CreateVersion7(), CustomerName = "Ada", BookingDate = DateTime.UtcNow, Status = bookingStatus, PaymentStatus = default, TotalPrice = 1200m, DiscountType = default, DiscountAmount = 0m, Currency = default, Payments = [], AmountPaid = 0m, RemainingBalance = 1200m },
+            new GetBookingDto { Id = bookingId, TourId = tourId, TourIdentifier = "andes", TourName = "Andes", CustomerId = Guid.CreateVersion7(), CustomerName = "Ada", RoomType = RoomTypeDto.DoubleOccupancy, PrincipalBikeType = BikeTypeDto.Regular, BookingDate = DateTime.UtcNow, Status = bookingStatus, PaymentStatus = default, TotalPrice = 1200m, DiscountType = default, DiscountAmount = 0m, Currency = default, Payments = [], AmountPaid = 0m, RemainingBalance = 1200m },
             new GetTourDto { Id = tourId, Identifier = "andes", Name = "Andes", StartDate = DateTime.UtcNow, EndDate = DateTime.UtcNow.AddDays(7), Price = 1200m, SingleRoomSupplementPrice = 0m, RegularBikePrice = 0m, EBikePrice = 0m, Currency = default, IncludedServices = ["Guide"], MinCustomers = 1, MaxCustomers = 10, CurrentCustomerCount = 1 });
         var store = new FakeDocumentStore();
         var auditStore = new FakeDocumentAuditStore();
@@ -272,7 +272,7 @@ public sealed class GenerateContractDraftCommandHandlerTests
         var bookingId = Guid.CreateVersion7();
         var tourId = Guid.CreateVersion7();
         var queryService = new FakeQueryService(
-            new GetBookingDto { Id = bookingId, TourId = tourId, TourIdentifier = "andes", TourName = "Andes", CustomerId = Guid.CreateVersion7(), CustomerName = "Ada", BookingDate = DateTime.UtcNow, Status = BookingStatusDto.Confirmed, PaymentStatus = default, TotalPrice = 1200m, DiscountType = default, DiscountAmount = 0m, Currency = default, Payments = [], AmountPaid = 0m, RemainingBalance = 1200m },
+            new GetBookingDto { Id = bookingId, TourId = tourId, TourIdentifier = "andes", TourName = "Andes", CustomerId = Guid.CreateVersion7(), CustomerName = "Ada", RoomType = RoomTypeDto.DoubleOccupancy, PrincipalBikeType = BikeTypeDto.Regular, BookingDate = DateTime.UtcNow, Status = BookingStatusDto.Confirmed, PaymentStatus = default, TotalPrice = 1200m, DiscountType = default, DiscountAmount = 0m, Currency = default, Payments = [], AmountPaid = 0m, RemainingBalance = 1200m },
             new GetTourDto { Id = tourId, Identifier = "andes", Name = "Andes", StartDate = DateTime.UtcNow, EndDate = DateTime.UtcNow.AddDays(7), Price = 1200m, SingleRoomSupplementPrice = 0m, RegularBikePrice = 0m, EBikePrice = 0m, Currency = default, IncludedServices = ["Guide"], MinCustomers = 1, MaxCustomers = 10, CurrentCustomerCount = 1 });
         var store = new FakeDocumentStore();
         var auditStore = new FakeDocumentAuditStore();

@@ -79,7 +79,10 @@ public static class DtoBuilders
         IReadOnlyCollection<GetPaymentDto>? payments = null,
         decimal? amountPaid = null,
         decimal? remainingBalance = null,
-        CurrencyDto? currency = null)
+        CurrencyDto? currency = null,
+        RoomTypeDto? roomType = null,
+        BikeTypeDto? principalBikeType = null,
+        BikeTypeDto? companionBikeType = null)
     {
         var bookingTotalPrice = totalPrice ?? 1000m;
         var bookingAmountPaid = amountPaid ?? 0m;
@@ -94,6 +97,9 @@ public static class DtoBuilders
             CustomerName = customerName ?? "John Doe",
             CompanionId = companionId,
             CompanionName = companionName,
+            RoomType = roomType ?? RoomTypeDto.DoubleOccupancy,
+            PrincipalBikeType = principalBikeType ?? BikeTypeDto.Regular,
+            CompanionBikeType = companionBikeType ?? (companionId.HasValue ? BikeTypeDto.Regular : null),
             BookingDate = bookingDate ?? DateTime.UtcNow,
             Status = status ?? BookingStatusDto.Pending,
             PaymentStatus = paymentStatus ?? PaymentStatusDto.Unpaid,

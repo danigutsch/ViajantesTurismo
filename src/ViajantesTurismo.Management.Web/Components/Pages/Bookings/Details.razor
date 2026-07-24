@@ -13,6 +13,15 @@
         <h1><i class="bi bi-calendar-check"></i> Booking Details</h1>
         <p><em>Loading...</em></p>
     }
+    else if (!string.IsNullOrEmpty(_loadErrorMessage))
+    {
+        <div class="alert alert-danger" role="alert">
+            @_loadErrorMessage
+        </div>
+        <NavLink href="/bookings" class="btn btn-outline-secondary">
+            <i class="bi bi-arrow-left"></i> Back to List
+        </NavLink>
+    }
     else if (_notFound)
     {
         <div class="alert alert-danger" role="alert">
@@ -79,12 +88,24 @@
                                 <a href="/customers/@_booking.CustomerId">@_booking.CustomerName</a>
                             </dd>
 
+                            <dt class="col-sm-4">Room Type</dt>
+                            <dd class="col-sm-8">@EnumFormatter.Format(_booking.RoomType)</dd>
+
+                            <dt class="col-sm-4">Principal Bike</dt>
+                            <dd class="col-sm-8">@EnumFormatter.Format(_booking.PrincipalBikeType)</dd>
+
                             @if (_booking.CompanionId.HasValue)
                             {
                                 <dt class="col-sm-4">Companion</dt>
                                 <dd class="col-sm-8">
                                     <a href="/customers/@_booking.CompanionId">@_booking.CompanionName</a>
                                 </dd>
+
+                                @if (_booking.CompanionBikeType.HasValue)
+                                {
+                                    <dt class="col-sm-4">Companion Bike</dt>
+                                    <dd class="col-sm-8">@EnumFormatter.Format(_booking.CompanionBikeType.Value)</dd>
+                                }
                             }
                         </dl>
                     </div>
@@ -158,10 +179,13 @@
     private GetBookingDto? _booking;
     private bool _loading = true;
     private bool _notFound;
+    private string? _loadErrorMessage;
     private string? _documentError;
 
     protected override async Task OnInitializedAsync()
     {
+        _loadErrorMessage = null;
+        _notFound = false;
         try
         {
             _booking = await BookingsApi.GetBookingById(Id, CancellationToken.None);
@@ -172,7 +196,7 @@
         }
         catch (Exception)
         {
-            _notFound = true;
+            _loadErrorMessage = UserFacingErrorMessage.ForOperation("load the booking");
         }
         finally
         {

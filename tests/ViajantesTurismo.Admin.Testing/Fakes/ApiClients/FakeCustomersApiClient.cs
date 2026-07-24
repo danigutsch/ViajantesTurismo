@@ -12,6 +12,7 @@ public sealed class FakeCustomersApiClient : ICustomersApiClient
     private Exception? _createCustomerException;
     private ContractCommandOutcomeDto? _createCustomerOutcome;
     private Exception? _getCustomerByIdException;
+    private Exception? _getCustomersException;
     private Exception? _importCustomersException;
     private ImportResultDto? _importResult;
     private Exception? _updateCustomerException;
@@ -23,7 +24,14 @@ public sealed class FakeCustomersApiClient : ICustomersApiClient
     public IReadOnlyDictionary<string, string>? LastCommitConflictResolutions { get; private set; }
 
     public Task<IReadOnlyList<GetCustomerDto>> GetCustomers(CancellationToken ct, int maxItems = 100)
-        => Task.FromResult<IReadOnlyList<GetCustomerDto>>([.. _customers.Take(maxItems)]);
+    {
+        if (_getCustomersException is not null)
+        {
+            throw _getCustomersException;
+        }
+
+        return Task.FromResult<IReadOnlyList<GetCustomerDto>>([.. _customers.Take(maxItems)]);
+    }
 
     public Task<CustomerDetailsDto?> GetCustomerById(Guid id, CancellationToken ct)
     {
@@ -95,6 +103,8 @@ public sealed class FakeCustomersApiClient : ICustomersApiClient
     public void AddCustomerDetails(CustomerDetailsDto customer) => _customerDetails.Add(customer);
 
     public void SetGetCustomerByIdException(Exception exception) => _getCustomerByIdException = exception;
+
+    public void SetGetCustomersException(Exception exception) => _getCustomersException = exception;
 
     public void SetCreateCustomerException(Exception exception) => _createCustomerException = exception;
 

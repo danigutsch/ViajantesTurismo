@@ -977,6 +977,8 @@
           "tourName",
           "customerId",
           "customerName",
+          "roomType",
+          "principalBikeType",
           "bookingDate",
           "status",
           "paymentStatus",
@@ -1022,6 +1024,22 @@
             "type": [
               "null",
               "string"
+            ]
+          },
+          "roomType": {
+            "$ref": "#/components/schemas/RoomTypeDto"
+          },
+          "principalBikeType": {
+            "$ref": "#/components/schemas/BikeTypeDto"
+          },
+          "companionBikeType": {
+            "oneOf": [
+              {
+                "type": "null"
+              },
+              {
+                "$ref": "#/components/schemas/BikeTypeDto"
+              }
             ]
           },
           "bookingDate": {
