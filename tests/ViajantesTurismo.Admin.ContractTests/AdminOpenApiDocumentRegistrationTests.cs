@@ -42,9 +42,8 @@ public sealed class AdminOpenApiDocumentRegistrationTests
         var commitImportOperations = commitImportPath.Operations.ShouldNotBeNull();
         (commitImportOperations.TryGetValue(HttpMethod.Post, out var commitImportOperation)).ShouldBeTrue();
         var commitImport = commitImportOperation.ShouldNotBeNull();
-        var commitImportParameterNames = (commitImport.Parameters ?? [])
-            .Select(parameter => parameter.Name)
-            .ToArray();
+        var commitImportRequestBody = commitImport.RequestBody.ShouldNotBeNull();
+        var commitImportContent = commitImportRequestBody.Content.ShouldNotBeNull();
 
         // Assert
         document.Paths.Keys.ShouldContain("/api/v1/customers");
@@ -58,9 +57,9 @@ public sealed class AdminOpenApiDocumentRegistrationTests
         var properties = importSchema.Properties.ShouldNotBeNull();
         properties.ContainsKey("file").ShouldBeTrue();
         properties.ContainsKey("conflictResolutions").ShouldBeTrue();
-        commitImport.RequestBody.ShouldNotBeNull().Content.ShouldNotBeNull().ContainsKey("multipart/form-data").ShouldBeTrue();
-        commitImportParameterNames.ShouldNotContain("file");
-        commitImportParameterNames.ShouldNotContain("conflictResolutions");
+        commitImportRequestBody.Required.ShouldBeTrue();
+        commitImportContent.Count.ShouldBe(1);
+        commitImportContent.Keys.ShouldHaveSingleItem().ShouldBe("multipart/form-data");
     }
 
     [Fact]
@@ -166,7 +165,7 @@ public sealed class AdminOpenApiDocumentRegistrationTests
     [Fact]
     [Trait(SharedKernel.Testing.TestTraitNames.CategoryName, TestTraits.DriftGuardCategory)]
     [Trait(SharedKernel.Testing.TestTraitNames.SurfaceName, TestTraits.OpenApiSurface)]
-    public void Customers_document_keeps_sensitive_command_state_in_required_json_bodies_and_out_of_URL_parameters()
+    public void Customer_create_operation_uses_required_JSON_body_and_no_URL_parameters()
     {
         // Arrange
         var document = AdminOpenApiArtifactDriftGuard.CreateSnapshotSet()
@@ -174,54 +173,68 @@ public sealed class AdminOpenApiDocumentRegistrationTests
             .AsObject();
         var paths = document["paths"].ShouldNotBeNull().AsObject();
         var customersPath = paths["/api/v1/customers"].ShouldNotBeNull().AsObject();
-        var customerByIdPath = paths["/api/v1/customers/{id}"].ShouldNotBeNull().AsObject();
         var createOperation = customersPath["post"].ShouldNotBeNull().AsObject();
-        var updateOperation = customerByIdPath["put"].ShouldNotBeNull().AsObject();
         var createRequestBody = createOperation["requestBody"].ShouldNotBeNull().AsObject();
-        var updateRequestBody = updateOperation["requestBody"].ShouldNotBeNull().AsObject();
-        string[] sensitiveCommandFields =
-        [
-            "personalInfo",
-            "identificationInfo",
-            "contactInfo",
-            "address",
-            "physicalInfo",
-            "accommodationPreferences",
-            "emergencyContact",
-            "medicalInfo"
-        ];
 
         // Act
         var createSchema = createRequestBody["content"].ShouldNotBeNull().AsObject()["application/json"]
-            .ShouldNotBeNull().AsObject()["schema"].ShouldNotBeNull().AsObject();
-        var updateSchema = updateRequestBody["content"].ShouldNotBeNull().AsObject()["application/json"]
             .ShouldNotBeNull().AsObject()["schema"].ShouldNotBeNull().AsObject();
         var createParameters = createOperation["parameters"] is { } createParameterNode
             ? createParameterNode.AsArray()
                 .Select(parameter => parameter.ShouldNotBeNull().AsObject())
                 .ToArray()
             : [];
-        var updateParameters = updateOperation["parameters"].ShouldNotBeNull().AsArray()
-            .Select(parameter => parameter.ShouldNotBeNull().AsObject())
+        var createPathParameters = createParameters
+            .Where(parameter => parameter["in"]?.GetValue<string>() == "path")
             .ToArray();
-        var routeParameter = updateParameters.ShouldHaveSingleItem(parameter => parameter["name"]?.GetValue<string>() == "id");
-        var urlParameterNames = createParameters
-            .Concat(updateParameters)
-            .Where(parameter => parameter["in"]?.GetValue<string>() is "path" or "query")
-            .Select(parameter => parameter["name"].ShouldNotBeNull().GetValue<string>())
+        var createQueryParameters = createParameters
+            .Where(parameter => parameter["in"]?.GetValue<string>() == "query")
             .ToArray();
 
         // Assert
+        createOperation["operationId"].ShouldNotBeNull().GetValue<string>().ShouldBe("CreateCustomer");
         createRequestBody["required"].ShouldNotBeNull().GetValue<bool>().ShouldBeTrue();
-        updateRequestBody["required"].ShouldNotBeNull().GetValue<bool>().ShouldBeTrue();
         createSchema["$ref"].ShouldNotBeNull().GetValue<string>().ShouldBe("#/components/schemas/CreateCustomerDto");
+        createPathParameters.ShouldBeEmpty();
+        createQueryParameters.ShouldBeEmpty();
+    }
+
+    [Fact]
+    [Trait(SharedKernel.Testing.TestTraitNames.CategoryName, TestTraits.DriftGuardCategory)]
+    [Trait(SharedKernel.Testing.TestTraitNames.SurfaceName, TestTraits.OpenApiSurface)]
+    public void Customer_update_operation_uses_required_JSON_body_and_only_required_id_path_parameter()
+    {
+        // Arrange
+        var document = AdminOpenApiArtifactDriftGuard.CreateSnapshotSet()
+            .GetCanonicalSnapshot("customers")
+            .AsObject();
+        var paths = document["paths"].ShouldNotBeNull().AsObject();
+        var customerByIdPath = paths["/api/v1/customers/{id}"].ShouldNotBeNull().AsObject();
+        var updateOperation = customerByIdPath["put"].ShouldNotBeNull().AsObject();
+        var updateRequestBody = updateOperation["requestBody"].ShouldNotBeNull().AsObject();
+
+        // Act
+        var updateSchema = updateRequestBody["content"].ShouldNotBeNull().AsObject()["application/json"]
+            .ShouldNotBeNull().AsObject()["schema"].ShouldNotBeNull().AsObject();
+        var updateParameters = updateOperation["parameters"].ShouldNotBeNull().AsArray()
+            .Select(parameter => parameter.ShouldNotBeNull().AsObject())
+            .ToArray();
+        var updatePathParameters = updateParameters
+            .Where(parameter => parameter["in"]?.GetValue<string>() == "path")
+            .ToArray();
+        var updateQueryParameters = updateParameters
+            .Where(parameter => parameter["in"]?.GetValue<string>() == "query")
+            .ToArray();
+        var routeParameter = updatePathParameters.ShouldHaveSingleItem();
+
+        // Assert
+        updateOperation["operationId"].ShouldNotBeNull().GetValue<string>().ShouldBe("UpdateCustomer");
+        updateRequestBody["required"].ShouldNotBeNull().GetValue<bool>().ShouldBeTrue();
         updateSchema["$ref"].ShouldNotBeNull().GetValue<string>().ShouldBe("#/components/schemas/UpdateCustomerDto");
+        routeParameter["name"].ShouldNotBeNull().GetValue<string>().ShouldBe("id");
         routeParameter["in"].ShouldNotBeNull().GetValue<string>().ShouldBe("path");
         routeParameter["required"].ShouldNotBeNull().GetValue<bool>().ShouldBeTrue();
-        foreach (var sensitiveCommandField in sensitiveCommandFields)
-        {
-            urlParameterNames.ShouldNotContain(sensitiveCommandField);
-        }
+        updateQueryParameters.ShouldBeEmpty();
     }
 
     [Fact]

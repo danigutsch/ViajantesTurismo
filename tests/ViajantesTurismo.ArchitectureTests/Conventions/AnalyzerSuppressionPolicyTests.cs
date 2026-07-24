@@ -85,58 +85,102 @@ public sealed partial class AnalyzerSuppressionPolicyTests
     }
 
     [Fact]
-    public void Repository_global_analyzers_and_configuration_should_not_enforce_API_request_locations()
+    public void Global_analyzer_registration_and_configuration_surfaces_should_match_the_allowlist()
     {
         // Arrange
         var repositoryRoot = AnalyzerSuppressionPolicyTestsHelpers.GetRepositoryRoot();
-        var globalBuildPropsPath = Path.Combine(repositoryRoot, "Directory.Build.props");
-        var globalBuildProps = XDocument.Load(globalBuildPropsPath);
-        var globalAnalyzerDirectories = globalBuildProps.Descendants("ProjectReference")
-            .Where(reference => string.Equals(reference.Attribute("OutputItemType")?.Value, "Analyzer", StringComparison.Ordinal))
-            .Select(reference => reference.Attribute("Include")?.Value
-                ?? throw new InvalidOperationException("A global analyzer project reference must declare Include."))
-            .Select(include => include.Replace(
-                "$(MSBuildThisFileDirectory)",
-                repositoryRoot + Path.DirectorySeparatorChar,
-                StringComparison.Ordinal))
-            .Select(include => Path.GetDirectoryName(Path.GetFullPath(include, repositoryRoot))
-                ?? throw new InvalidOperationException($"Could not resolve the global analyzer path '{include}'."))
-            .Distinct(StringComparer.Ordinal)
-            .ToArray();
-        string[] requestBindingTokens =
+        string[] expectedSurfaces =
         [
-            "AsParameters",
-            "FromBody",
-            "FromForm",
-            "FromHeader",
-            "FromQuery",
-            "FromRoute",
-            "body-only",
-            "body only",
-            "BodyOnly"
+            "build:Directory.Build.props",
+            "build:src/Directory.Build.props",
+            "build:src/Directory.Build.targets",
+            "build:tests/Directory.Build.props",
+            "custom-config:.editorconfig:SKSTYLE001",
+            "custom-config:.editorconfig:SKSTYLE002",
+            "custom-config:.editorconfig:SKSTYLE003",
+            "custom-config:.editorconfig:SKSTYLE004",
+            "custom-config:.editorconfig:SKTEST001",
+            "custom-config:.editorconfig:SKTEST002",
+            "custom-config:.editorconfig:SKTEST003",
+            "custom-config:.editorconfig:SKTEST004",
+            "custom-config:.editorconfig:SKTEST005",
+            "custom-config:.editorconfig:SKTEST006",
+            "import:src/Directory.Build.props:$([MSBuild]::GetPathOfFileAbove('Directory.Build.props', '$(MSBuildThisFileDirectory)..'))",
+            "import:tests/Directory.Build.props:$([MSBuild]::GetPathOfFileAbove('Directory.Build.props', '$(MSBuildThisFileDirectory)../'))",
+            "package:Directory.Build.props:SonarAnalyzer.CSharp",
+            "package:src/Directory.Build.props:Microsoft.CodeAnalysis.PublicApiAnalyzers",
+            "project:Directory.Build.props:$(MSBuildThisFileDirectory)src/SharedKernel/SharedKernel.Style.Analyzers/SharedKernel.Style.Analyzers.csproj:Analyzer",
+            "project:Directory.Build.props:$(MSBuildThisFileDirectory)src/SharedKernel/SharedKernel.Style.CodeFixes/SharedKernel.Style.CodeFixes.csproj:Analyzer",
+            "project:tests/Directory.Build.props:$(MSBuildThisFileDirectory)../src/SharedKernel/SharedKernel.Testing.Analyzers/SharedKernel.Testing.Analyzers.csproj:Analyzer"
         ];
+        var buildFiles = AnalyzerSuppressionPolicyTestsHelpers.EnumerateRepositoryFiles(repositoryRoot, "Directory.Build.props")
+            .Concat(AnalyzerSuppressionPolicyTestsHelpers.EnumerateRepositoryFiles(repositoryRoot, "Directory.Build.targets"))
+            .OrderBy(path => path, StringComparer.Ordinal)
+            .ToArray();
+        var actualSurfaces = new List<string>();
 
         // Act
-        var analyzerEvidence = globalAnalyzerDirectories
-            .SelectMany(directory => Directory.EnumerateFiles(directory, "*.cs", SearchOption.AllDirectories))
-            .SelectMany(path => requestBindingTokens
-                .Where(token => File.ReadAllText(path).Contains(token, StringComparison.OrdinalIgnoreCase))
-                .Select(token => $"{Path.GetRelativePath(repositoryRoot, path).Replace('\\', '/')}:{token}"))
-            .ToArray();
-        var configurationEvidence = AnalyzerSuppressionPolicyTestsHelpers.EnumerateRepositoryFiles(repositoryRoot, ".editorconfig")
-            .Concat(AnalyzerSuppressionPolicyTestsHelpers.EnumerateRepositoryFiles(repositoryRoot, "*.props"))
-            .Concat(AnalyzerSuppressionPolicyTestsHelpers.EnumerateRepositoryFiles(repositoryRoot, "*.targets"))
-            .SelectMany(path => requestBindingTokens
-                .Where(token => File.ReadAllText(path).Contains(token, StringComparison.OrdinalIgnoreCase))
-                .Select(token => $"{Path.GetRelativePath(repositoryRoot, path).Replace('\\', '/')}:{token}"))
-            .ToArray();
+        foreach (var buildFile in buildFiles)
+        {
+            var relativePath = Path.GetRelativePath(repositoryRoot, buildFile).Replace('\\', '/');
+            var document = XDocument.Load(buildFile);
+            actualSurfaces.Add($"build:{relativePath}");
+
+            foreach (var import in document.Descendants().Where(element => element.Name.LocalName == "Import"))
+            {
+                var project = import.Attribute("Project")?.Value
+                    ?? throw new InvalidOperationException($"Import in '{relativePath}' must declare Project.");
+                actualSurfaces.Add($"import:{relativePath}:{project.Replace('\\', '/')}");
+            }
+
+            foreach (var packageReference in document.Descendants().Where(element => element.Name.LocalName == "PackageReference"))
+            {
+                var include = packageReference.Attribute("Include")?.Value
+                    ?? throw new InvalidOperationException($"PackageReference in '{relativePath}' must declare Include.");
+                actualSurfaces.Add($"package:{relativePath}:{include}");
+            }
+
+            foreach (var projectReference in document.Descendants().Where(element => element.Name.LocalName == "ProjectReference"))
+            {
+                var outputItemType = projectReference.Attribute("OutputItemType")?.Value
+                    ?? projectReference.Elements().FirstOrDefault(element => element.Name.LocalName == "OutputItemType")?.Value
+                    ?? "default";
+                var include = projectReference.Attribute("Include")?.Value
+                    ?? throw new InvalidOperationException($"ProjectReference in '{relativePath}' must declare Include.");
+                actualSurfaces.Add($"project:{relativePath}:{include.Replace('\\', '/')}:{outputItemType}");
+            }
+
+            foreach (var analyzer in document.Descendants().Where(element => element.Name.LocalName == "Analyzer"))
+            {
+                var include = analyzer.Attribute("Include")?.Value
+                    ?? throw new InvalidOperationException($"Analyzer in '{relativePath}' must declare Include.");
+                actualSurfaces.Add($"analyzer:{relativePath}:{include.Replace('\\', '/')}");
+            }
+
+            foreach (var globalConfig in document.Descendants().Where(element => element.Name.LocalName == "GlobalAnalyzerConfigFiles"))
+            {
+                var include = globalConfig.Attribute("Include")?.Value
+                    ?? throw new InvalidOperationException($"GlobalAnalyzerConfigFiles in '{relativePath}' must declare Include.");
+                actualSurfaces.Add($"global-config-item:{relativePath}:{include.Replace('\\', '/')}");
+            }
+        }
+
+        actualSurfaces.AddRange(AnalyzerSuppressionPolicyTestsHelpers.EnumerateRepositoryFiles(repositoryRoot, "*.globalconfig")
+            .Select(path => $"global-config-file:{Path.GetRelativePath(repositoryRoot, path).Replace('\\', '/')}"));
+
+        const string diagnosticPrefix = "dotnet_diagnostic.";
+        var configuredCustomDiagnostics = File.ReadLines(Path.Combine(repositoryRoot, ".editorconfig"))
+            .Select(line => line.Trim())
+            .Where(line => line.StartsWith(diagnosticPrefix + "SK", StringComparison.Ordinal))
+            .Select(line => line[diagnosticPrefix.Length..])
+            .Select(value => value[..value.IndexOf('.', StringComparison.Ordinal)])
+            .Distinct(StringComparer.Ordinal)
+            .Select(diagnosticId => $"custom-config:.editorconfig:{diagnosticId}");
+        actualSurfaces.AddRange(configuredCustomDiagnostics);
 
         // Assert
-        globalAnalyzerDirectories.ShouldNotBeEmpty();
-        (analyzerEvidence.Length == 0).ShouldBeTrue(
-            $"Expected repository-global analyzers not to enforce API request locations, but found:{Environment.NewLine}{string.Join(Environment.NewLine, analyzerEvidence)}");
-        (configurationEvidence.Length == 0).ShouldBeTrue(
-            $"Expected analyzer configuration not to enable a body-only request rule, but found:{Environment.NewLine}{string.Join(Environment.NewLine, configurationEvidence)}");
+        actualSurfaces.OrderBy(value => value, StringComparer.Ordinal)
+            .ShouldBe(expectedSurfaces.OrderBy(value => value, StringComparer.Ordinal));
     }
 
 }

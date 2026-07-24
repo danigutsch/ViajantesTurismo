@@ -72,11 +72,12 @@ only when intentional, and update contract-owned clients and tests together. See
 
 ## Analyzer decision
 
-Do not add a global body-only, no-route, or no-query analyzer or configuration. The repository-owned
-global analyzer is the style analyzer registered by `Directory.Build.props`; its supported diagnostic
-contract contains no request-location rule. Architecture coverage guards its source and analyzer
-configuration against body-only binding policy, while Admin and Catalog contract tests prove the
-intentional mixed request locations above.
+Do not add a global body-only, no-route, or no-query analyzer or configuration. Architecture coverage
+deterministically allowlists the global build/import surfaces, analyzer package and project
+registrations, `.globalconfig` files, and configured repository diagnostic IDs. It does not infer rule
+intent from source-token text. The owning style and testing analyzer tests enumerate their supported
+diagnostic contracts; neither contains a request-location rule. Admin and Catalog contract tests prove
+the intentional mixed request locations above.
 
 A future request-shape analyzer needs all of the following evidence:
 
