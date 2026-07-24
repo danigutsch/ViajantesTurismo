@@ -435,8 +435,8 @@ public sealed partial class AppHostOrchestrationTests
         gatewayCallIndex.ShouldBeLessThan(adminProfileReturnIndex);
         gatewayCallCount.ShouldBe(1);
         observabilityStackText.ShouldContain("AddOpenTelemetryCollectorGateway", StringComparison.Ordinal);
-        sharedHostingText.ShouldContain("WithConfig(privacyConfigurationFile)", StringComparison.Ordinal);
-        sharedHostingText.ShouldContain("WithConfig(routingConfigurationFile)", StringComparison.Ordinal);
+        sharedHostingText.ShouldContain("WithConfig(Path.GetFullPath(privacyConfigurationFile))", StringComparison.Ordinal);
+        sharedHostingText.ShouldContain("WithConfig(Path.GetFullPath(routingConfigurationFile))", StringComparison.Ordinal);
     }
 
     [Fact]
