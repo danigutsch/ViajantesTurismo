@@ -127,20 +127,32 @@ internal static class DocumentationToolApplication
     {
         configPath = string.Empty;
         error = string.Empty;
-        if (args is ["--config", var configValue] && !configValue.StartsWith("--", StringComparison.Ordinal))
+        if (args.Length == 0)
         {
-            configPath = configValue;
-            return true;
+            error = "Missing required --config <path>.";
+            return false;
         }
 
-        error = args switch
+        if (args[0] != "--config")
         {
-            [] => "Missing required --config <path>.",
-            ["--config"] => "Missing required value for --config.",
-            ["--config", var optionValue] when optionValue.StartsWith("--", StringComparison.Ordinal) => "Missing required value for --config.",
-            _ => $"Unknown argument: {args[0]}"
-        };
-        return false;
+            error = $"Unknown argument: {args[0]}";
+            return false;
+        }
+
+        if (args.Length == 1 || args[1].StartsWith("--", StringComparison.Ordinal))
+        {
+            error = "Missing required value for --config.";
+            return false;
+        }
+
+        if (args.Length > 2)
+        {
+            error = $"Unknown argument: {args[2]}";
+            return false;
+        }
+
+        configPath = args[1];
+        return true;
     }
 
     private static async Task WriteUsageError(TextWriter error, string message)

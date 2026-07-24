@@ -10,5 +10,19 @@ internal sealed class TemporaryTextDocument : IDisposable
 
     public string Path { get; }
 
-    public void Dispose() => File.Delete(Path);
+    public void Dispose()
+    {
+        try
+        {
+            File.Delete(Path);
+        }
+        catch (IOException)
+        {
+            // Test cleanup is best-effort so teardown does not hide assertion failures.
+        }
+        catch (UnauthorizedAccessException)
+        {
+            // Test cleanup is best-effort so teardown does not hide assertion failures.
+        }
+    }
 }

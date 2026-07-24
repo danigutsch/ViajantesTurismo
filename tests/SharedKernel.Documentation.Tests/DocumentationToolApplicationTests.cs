@@ -155,11 +155,17 @@ public sealed class DocumentationToolApplicationTests
     }
 
     [Fact]
-    public async Task Check_returns_error_when_config_value_is_missing()
+    public async Task Check_returns_exact_error_when_config_value_is_missing()
     {
         // Arrange
         await using var output = new StringWriter(CultureInfo.InvariantCulture);
         await using var error = new StringWriter(CultureInfo.InvariantCulture);
+        var expectedError = string.Join(
+            Environment.NewLine,
+            "Missing required value for --config.",
+            "Usage: sharedkernel-docs generate --config <path> [--check]",
+            "       sharedkernel-docs check --config <path>",
+            string.Empty);
 
         // Act
         var exitCode = await DocumentationToolApplication.Run(
@@ -167,12 +173,37 @@ public sealed class DocumentationToolApplicationTests
             output,
             error,
             Directory.GetCurrentDirectory());
-        var errorText = error.ToString();
 
         // Assert
         exitCode.ShouldBe(1);
-        errorText.ShouldContain("Missing required value for --config.", StringComparison.Ordinal);
-        errorText.ShouldContain("sharedkernel-docs check --config <path>", StringComparison.Ordinal);
+        output.ToString().ShouldBe(string.Empty);
+        error.ToString().ShouldBe(expectedError);
+    }
+
+    [Fact]
+    public async Task Check_reports_the_first_extra_argument_exactly()
+    {
+        // Arrange
+        await using var output = new StringWriter(CultureInfo.InvariantCulture);
+        await using var error = new StringWriter(CultureInfo.InvariantCulture);
+        var expectedError = string.Join(
+            Environment.NewLine,
+            "Unknown argument: --unknown",
+            "Usage: sharedkernel-docs generate --config <path> [--check]",
+            "       sharedkernel-docs check --config <path>",
+            string.Empty);
+
+        // Act
+        var exitCode = await DocumentationToolApplication.Run(
+            ["check", "--config", "docs/architecture/documentation-conformance.json", "--unknown"],
+            output,
+            error,
+            Directory.GetCurrentDirectory());
+
+        // Assert
+        exitCode.ShouldBe(1);
+        output.ToString().ShouldBe(string.Empty);
+        error.ToString().ShouldBe(expectedError);
     }
 
     [Fact]

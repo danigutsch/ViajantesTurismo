@@ -89,11 +89,30 @@ internal sealed class GeneratedMarkdownUpdater(string rootPath, string docsRelat
         {
             foreach (var update in changed)
             {
-                File.WriteAllText(update.Path, update.Content, Utf8NoBom);
+                WriteAtomically(update.Path, update.Content);
             }
         }
 
         return changed.Select(update => RepositoryRelativePath(update.Path)).ToList();
+    }
+
+    internal static void WriteAtomically(string path, string content)
+    {
+        var directoryPath = Path.GetDirectoryName(path)
+            ?? throw new InvalidOperationException($"Cannot determine the directory for '{path}'.");
+        var temporaryPath = Path.Combine(
+            directoryPath,
+            $".{Path.GetFileName(path)}.{Guid.NewGuid():N}.tmp");
+
+        try
+        {
+            File.WriteAllText(temporaryPath, content, Utf8NoBom);
+            File.Replace(temporaryPath, path, destinationBackupFileName: null);
+        }
+        finally
+        {
+            File.Delete(temporaryPath);
+        }
     }
 
     private IEnumerable<FileInfo> MarkdownDocs()

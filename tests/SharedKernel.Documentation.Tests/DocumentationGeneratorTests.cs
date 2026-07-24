@@ -5,6 +5,46 @@ namespace SharedKernel.Documentation.Tests;
 public sealed class DocumentationGeneratorTests
 {
     [Fact]
+    public void WriteAtomically_replaces_the_target_and_removes_the_temporary_file()
+    {
+        // Arrange
+        using var workspace = new TemporaryDocumentationWorkspace();
+        const string fileName = "overview.md";
+        var architecturePath = Path.Combine(workspace.RootPath, "docs", "architecture");
+        var targetPath = Path.Combine(architecturePath, fileName);
+        workspace.WriteArchitectureDoc(fileName, "old content");
+
+        // Act
+        GeneratedMarkdownUpdater.WriteAtomically(targetPath, "new content");
+        var updatedContent = File.ReadAllText(targetPath);
+        var remainingFiles = Directory.GetFiles(architecturePath)
+            .Select(Path.GetFileName)
+            .ToArray();
+
+        // Assert
+        updatedContent.ShouldBe("new content");
+        remainingFiles.ShouldBe([fileName]);
+    }
+
+    [Fact]
+    public void WriteAtomically_removes_the_temporary_file_when_replacement_fails()
+    {
+        // Arrange
+        using var workspace = new TemporaryDocumentationWorkspace();
+        var architecturePath = Path.Combine(workspace.RootPath, "docs", "architecture");
+        var targetPath = Path.Combine(architecturePath, "target.md");
+        Directory.CreateDirectory(targetPath);
+        Action act = () => GeneratedMarkdownUpdater.WriteAtomically(targetPath, "new content");
+
+        // Act
+        act.ShouldThrow<UnauthorizedAccessException>();
+        var remainingFiles = Directory.GetFiles(architecturePath);
+
+        // Assert
+        remainingFiles.ShouldBe([]);
+    }
+
+    [Fact]
     public void Run_updates_configured_generated_block()
     {
         // Arrange
