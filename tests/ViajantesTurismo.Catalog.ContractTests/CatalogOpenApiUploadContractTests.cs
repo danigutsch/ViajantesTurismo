@@ -20,6 +20,9 @@ public sealed class CatalogOpenApiUploadContractTests
         var requestBody = uploadOperation["requestBody"].ShouldNotBeNull().AsObject();
         var content = requestBody["content"].ShouldNotBeNull().AsObject();
         var responses = uploadOperation["responses"].ShouldNotBeNull().AsObject();
+        var parameters = uploadOperation["parameters"].ShouldNotBeNull().AsArray()
+            .Select(parameter => parameter.ShouldNotBeNull().AsObject())
+            .ToArray();
         var multipartSchema = content["multipart/form-data"].ShouldNotBeNull().AsObject()["schema"].ShouldNotBeNull().AsObject();
         var properties = multipartSchema["properties"].ShouldNotBeNull().AsObject();
         var requiredFields = multipartSchema["required"].ShouldNotBeNull().AsArray()
@@ -28,10 +31,22 @@ public sealed class CatalogOpenApiUploadContractTests
 
         // Act
         var mediaTypes = content.Select(item => item.Key).ToArray();
+        var routeParameter = parameters.ShouldHaveSingleItem(parameter => parameter["name"]?.GetValue<string>() == "id");
+        var urlParameterNames = parameters
+            .Where(parameter => parameter["in"]?.GetValue<string>() is "path" or "query")
+            .Select(parameter => parameter["name"].ShouldNotBeNull().GetValue<string>())
+            .ToArray();
 
         // Assert
         mediaTypes.ShouldContain("multipart/form-data");
         mediaTypes.ShouldNotContain("application/x-www-form-urlencoded");
+        routeParameter["in"].ShouldNotBeNull().GetValue<string>().ShouldBe("path");
+        routeParameter["required"].ShouldNotBeNull().GetValue<bool>().ShouldBeTrue();
+        urlParameterNames.ShouldNotContain("file");
+        urlParameterNames.ShouldNotContain("altText");
+        urlParameterNames.ShouldNotContain("caption");
+        urlParameterNames.ShouldNotContain("attribution");
+        urlParameterNames.ShouldNotContain("copyright");
         requiredFields.ShouldContain("file");
         requiredFields.ShouldContain("altText");
         properties.ContainsKey("file").ShouldBeTrue();
@@ -40,6 +55,40 @@ public sealed class CatalogOpenApiUploadContractTests
         properties.ContainsKey("attribution").ShouldBeTrue();
         properties.ContainsKey("copyright").ShouldBeTrue();
         responses.ContainsKey("201").ShouldBeTrue();
+    }
+
+    [Fact]
+    [Trait(SharedKernel.Testing.TestTraitNames.CategoryName, TestTraits.DriftGuardCategory)]
+    [Trait(SharedKernel.Testing.TestTraitNames.SurfaceName, TestTraits.OpenApiSurface)]
+    public void Public_content_uses_required_route_identity_and_optional_localization_query_parameters()
+    {
+        // Arrange
+        var document = CatalogOpenApiSnapshots.CreateSnapshotSet().GetCanonicalSnapshot("public-catalog").AsObject();
+        var paths = document["paths"].ShouldNotBeNull().AsObject();
+        var contentPath = paths["/api/v1/public/catalog/content/{key}"].ShouldNotBeNull().AsObject();
+        var operation = contentPath["get"].ShouldNotBeNull().AsObject();
+        var parameters = operation["parameters"].ShouldNotBeNull().AsArray()
+            .Select(parameter => parameter.ShouldNotBeNull().AsObject())
+            .ToArray();
+
+        // Act
+        var keyParameter = parameters.ShouldHaveSingleItem(parameter => parameter["name"]?.GetValue<string>() == "key");
+        var localizationParameters = parameters
+            .Where(parameter => parameter["in"]?.GetValue<string>() == "query")
+            .ToArray();
+        var localizationParameterNames = localizationParameters
+            .Select(parameter => parameter["name"].ShouldNotBeNull().GetValue<string>())
+            .ToArray();
+
+        // Assert
+        keyParameter["in"].ShouldNotBeNull().GetValue<string>().ShouldBe("path");
+        keyParameter["required"].ShouldNotBeNull().GetValue<bool>().ShouldBeTrue();
+        localizationParameterNames.ShouldContain("language");
+        localizationParameterNames.ShouldContain("culture");
+        foreach (var parameter in localizationParameters)
+        {
+            (parameter["required"]?.GetValue<bool>() ?? false).ShouldBeFalse();
+        }
     }
 
     [Fact]

@@ -274,6 +274,8 @@ domain invariant or application invariant.
 - Use application handlers/services for persistence-backed checks such as uniqueness.
 - Keep endpoint-only checks, such as upload content type, file extension, and multipart request limits,
   in the endpoint slice that consumes the request.
+- Choose route, query, header, form, body, and stream binding by the
+  [API request shape policy](API_REQUEST_SHAPES.md); validation ownership does not imply body binding.
 - Prefer typed Minimal API results (`TypedResults` and `Results<T1, TN>`) so OpenAPI metadata stays precise.
 - Return RFC 7807 problem details for API validation failures.
 - Do not create standalone validation classes for a single endpoint; extract only when the same validation has
