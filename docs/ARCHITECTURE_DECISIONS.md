@@ -76,6 +76,8 @@ Decisions about application architecture and layer responsibilities.
   Deterministic, No-Network Build-Time OpenAPI Generation
 - **[ADR-039](adr/20260719-generated-messaging-dispatch-ownership.md)** — Generated Messaging Dispatch
   Ownership
+- **[ADR-040](adr/20260724-branding-module-co-hosting-and-state-distribution.md)** — Branding Module
+  Co-hosting and State Distribution
 
 ### Versioning & Release
 

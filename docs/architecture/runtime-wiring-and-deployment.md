@@ -86,6 +86,25 @@ Current AppHost rules:
   private host and port and wait for its PING/PONG health check.
 - The performance smoke resource is opt-in through `VT_ASPIRE_ENABLE_PERFORMANCE_TESTS=1`.
 
+## Accepted Branding runtime transition
+
+The generated graph remains the source of truth for the current local runtime: Branding still has a
+standalone executable. ADR-040 accepts a later target in which the independent Branding ASP.NET module
+and `BrandingDbContext` are composed in `ViajantesTurismo.Catalog.ApiService`. Catalog hosts the module
+but does not own its contracts, `branding` schema, outbox, permissions, or application behavior.
+
+In the target flow, Public.Web and Management.Web keep Branding HTTP against the Catalog host.
+`IntegrationEventWorker` carries full-state, revisioned Branding events to an Admin-owned inbox and
+local projection. Admin API reads that projection and has no Catalog/Branding HTTP or database
+credential. Ordinary production API-to-API HTTP is not used for Branding state transfer.
+
+Do not edit the generated graph to show the target before source wiring changes. The standalone
+resource remains the rollback host until forward-compatible schema, dual-host writer, audience/session
+drain, zero-traffic observation, rollback drill, retained release artifact, watermark/replay health,
+and private-exposure gates pass. The production platform and concrete runtime/database roles remain
+undecided; see [ADR-040](../adr/20260724-branding-module-co-hosting-and-state-distribution.md) and
+[production readiness](../operations/production-readiness.md#branding-co-hosting-readiness).
+
 ## Reference rules
 
 - Use `.WithReference(...)` for connection strings and service discovery injection.

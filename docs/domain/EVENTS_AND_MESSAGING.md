@@ -145,8 +145,20 @@ context-specific operational policy. Generated and runtime ownership is explicit
 | Domain event handling and transactional outbox mapping | Domain-event provider generators | A scoped `CompositeDomainEventDispatcher` invokes generated typed handlers for outbox and audit mappings. |
 | Integration-event serialization | `SharedKernel.Messaging.IntegrationEvents.SourceGenerator` | `IIntegrationEventSerializer` is singleton and receives closed `JsonTypeInfo<T>` dependencies. |
 | Background envelope delivery | `SharedKernel.Messaging.IntegrationEvents.SourceGenerator` | One consumer scope owns each claimed batch and generated publisher. Each envelope gets an asynchronously disposed child scope that resolves its closed typed handler; messages remain sequential. |
-| Outbox persistence and relay | `SharedKernel.Messaging.IntegrationEvents.EntityFrameworkCore` | Context configuration and outbox services are explicit; relay/retry remains infrastructure-owned. |
+| Outbox persistence and relay | `SharedKernel.Messaging.IntegrationEvents.EntityFrameworkCore` | Co-hosting requires context-qualified mapping and registration; each module chooses its schema/table and relay/retry policy. |
 | Inbox idempotency | `SharedKernel.Idempotency.EntityFrameworkCore` | Owns `EfIdempotencyStore<TContext>` and its model configuration. `SharedKernel.Messaging.IntegrationEvents.EntityFrameworkCore` exposes `AddIntegrationEventInbox<TContext>()` as the integration-event composition call; inbox registration is not implied by outbox registration. |
+
+ADR-040 requires context qualification before one process composes multiple module DbContexts. Generic
+EF messaging code must provide keyed/qualified mapping and registration mechanics without collapsing
+module storage into one implicit `messaging.outbox_messages` owner. In the target, Catalog retains its
+outbox mapping and Branding owns a distinct mapping/table in the `branding` schema. Co-hosting both in
+Catalog.ApiService does not change either transaction boundary.
+
+Branding state distribution follows ADR-040: a Branding write atomically saves current state, appends
+an immutable full-state revision, and enqueues a full-state event with a monotonic source revision.
+`IntegrationEventWorker` delivers the event to an Admin inbox/projection and persisted watermark.
+This is event-carried state transfer, not event sourcing; Admin receives no source database or HTTP
+credential.
 
 See
 [ADR-027](../adr/20260624-provider-specific-sharedkernel-infrastructure-modules.md) for naming and
@@ -440,6 +452,7 @@ Transport adapters should remain replaceable:
 - [ADR-023: Separate Domain and Integration Event Dispatch](../adr/20260621-separate-domain-and-integration-event-dispatch.md)
 - [ADR-024: CloudEvents as Integration Event Adapter](../adr/20260621-cloudevents-as-integration-event-adapter.md)
 - [ADR-025: Event Source Catalog Tour Presentation](../adr/20260621-event-source-catalog-tour-presentation.md)
+- [ADR-040: Branding Module Co-hosting and State Distribution](../adr/20260724-branding-module-co-hosting-and-state-distribution.md)
 - [Catalog Bounded Context](../bounded-contexts/Catalog.md)
 - [Generated messaging dispatch ownership](../adr/20260719-generated-messaging-dispatch-ownership.md)
 - [SharedKernel packaging and source-generator contracts](../SHAREDKERNEL_PACKAGING.md)

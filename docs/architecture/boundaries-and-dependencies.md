@@ -5,10 +5,12 @@ separately so diagrams can stay useful as repository structure evolves.
 
 ## Current bounded-context ownership
 
-Admin owns booking and management workflows. Catalog owns public tour presentation. Branding rules
-live in `SharedKernel.Branding`; the ViajantesTurismo Branding adapter owns app-specific persistence,
-routes, defaults, and cache policy. Admin publishes integration events; Catalog consumes them and builds
-public read models.
+Admin owns booking and management workflows. Catalog owns public tour presentation. Branding is an
+independent logical module: `SharedKernel.Branding` owns pure validation/normalization, while the
+ViajantesTurismo Branding module owns contracts, application behavior, persistence, routes, defaults,
+permissions, and cache policy. The current executable is separate; ADR-040's target composes the module
+inside Catalog.ApiService without transferring ownership to Catalog. Admin publishes integration events;
+Catalog consumes them and builds public read models.
 
 ```mermaid
 flowchart LR
@@ -21,7 +23,7 @@ flowchart LR
     catalogAppContracts[Catalog application contracts]
     catalogHttpContracts[Catalog HTTP contracts]
     catalogEventContracts[Catalog integration-event contracts]
-    branding[Branding adapter]
+    branding[Branding module]
     brandingCore[SharedKernel.Branding]
     publicRead[Public tour presentation]
 
@@ -41,9 +43,11 @@ Boundary rules:
 
 - Admin business rules stay in `src/ViajantesTurismo.Admin.Domain`.
 - Catalog presentation rules stay in `src/ViajantesTurismo.Catalog.Domain`.
-- Reusable branding validation and public-safe contract rules stay in `SharedKernel.Branding`.
-- ViajantesTurismo Branding API schema, persistence adapter, UI interpretation, and defaults stay outside SharedKernel.
-- Catalog must not receive new branding behavior.
+- Reusable Branding validation and normalization stay in `SharedKernel.Branding`.
+- ViajantesTurismo Branding HTTP/integration contracts, schema, persistence, ASP.NET module, UI
+  interpretation, and defaults stay outside SharedKernel.
+- Catalog.ApiService may host the Branding module; Catalog domain and application projects must not
+  absorb Branding behavior, contracts, permissions, or tables.
 - Cross-context interaction uses contracts and integration events, not direct domain references.
 - Public web reads Catalog contracts; it does not reference Admin projects.
 

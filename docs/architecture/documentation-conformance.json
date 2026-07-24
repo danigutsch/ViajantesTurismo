@@ -147,6 +147,22 @@
           "expectedArguments": ["catalogDataSource", "options: null", "ct"]
         }
       ]
+    },
+    {
+      "name": "branding-architecture",
+      "documentPath": "docs/branding.md",
+      "markerName": "branding-architecture",
+      "factName": "current-decision",
+      "expectedIdentifiers": [
+        "admin-local-projection",
+        "app-owned-contracts",
+        "branding-owned-outbox",
+        "catalog-api-cohost",
+        "independent-logical-module",
+        "no-ordinary-api-http",
+        "production-platform-undecided",
+        "public-cache-60-300"
+      ]
     }
   ]
 }

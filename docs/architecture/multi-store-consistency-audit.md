@@ -128,14 +128,26 @@ and connection-resiliency guidance on transaction commit ambiguity:
 - Existing mitigation: validates every tour link before saving metadata.
 - Recommendation: no change.
 
-### Public content and Branding settings management
+### Public content management
 
 - Trigger: `CatalogEndpoints.UpsertPublicContent`.
 - Code: `src/ViajantesTurismo.Catalog.ApiService/CatalogEndpoints.cs`.
 - Systems touched: Catalog database only.
 - Failure window: single durable store.
-- Recommendation: no multi-store pattern. Branding settings persistence belongs to the
-  ViajantesTurismo Branding adapter.
+- Recommendation: no multi-store pattern.
+
+### Branding settings management
+
+- Current trigger: `BrandingEndpoints.SaveSettings` in the standalone Branding host.
+- Target trigger: the same logical Branding endpoint module hosted by Catalog.ApiService.
+- Systems touched by the target write: Branding current state, append-only full-state revision, and
+  Branding-owned outbox in one local transaction; later delivery updates the Admin Branding inbox,
+  projection, and watermark in one Admin transaction.
+- Failure window: the source write can commit before Admin delivery. Admin then serves its last applied
+  projection while producer/consumer watermark and retry/poison health expose lag.
+- Recommendation: use the Branding transactional outbox and Admin inbox/idempotency boundary from
+  [ADR-040](../adr/20260724-branding-module-co-hosting-and-state-distribution.md). Do not use a dual
+  write, Admin-to-Catalog HTTP, or a cross-database transaction.
 
 ### Admin customer, booking, tour, and import mutations
 

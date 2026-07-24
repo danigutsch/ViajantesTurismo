@@ -17,10 +17,13 @@ project. Apps configure base addresses and keep UI fallback behavior local.
 - `PublicContentApiClient`
 - `PublicCatalogApiClient`
 
-Branding client contracts belong with the Branding API surface. `SharedKernel.Branding` owns the
-reusable safe DTO shapes, typed client contract, typed client implementation, and relative route
-segments. The ViajantesTurismo Branding API adapter owns endpoint hosting, API version prefix
-mounting, base-address wiring, defaults, persistence behavior, and cache policy.
+Branding HTTP DTOs, typed clients, and route segments belong to ViajantesTurismo-owned Branding
+contract modules. `SharedKernel.Branding` owns only pure validation and normalization. Existing
+app-specific HTTP types in `SharedKernel.Branding` are transitional and move with the Branding module;
+they are not a reusable-library ownership precedent. The standalone Branding host mounts the current
+routes; the accepted target mounts the same logical surface in `ViajantesTurismo.Catalog.ApiService`.
+The host owns the API version prefix and base-address wiring, while the Branding module owns its route
+segments, defaults, persistence behavior, authorization, and cache policy.
 
 Contract test projects also contain OpenAPI document clients that are test-local helpers, not app clients.
 
@@ -29,8 +32,8 @@ Contract test projects also contain OpenAPI document clients that are test-local
 - Put shared `I*ApiClient` interfaces and implementations in the owning `.Contracts.Http` project when apps or tests consume the seam.
 - A contract project owns a client only for the API surface it also owns. Cross-context or cross-app convenience clients stay in
   the consuming app until the API contract owner accepts the seam.
-- Do not add branding operations to Catalog clients. Branding client contracts belong to
-  `SharedKernel.Branding` and the ViajantesTurismo Branding API adapter.
+- Do not add Branding operations to Catalog contract clients merely because Catalog.ApiService hosts
+  the target module. Branding keeps its ViajantesTurismo-owned HTTP contract and client boundary.
 - Keep one interface per cohesive API seam. Do not add broad gateway or facade clients just to group unrelated endpoints.
 - Put DTOs and response outcome shapes in `.Contracts.Application` when callers must handle stable API outcomes without
   knowing HTTP implementation details.

@@ -30,7 +30,7 @@ or forbidden dependency directions, see [Architecture boundaries and dependency 
 
 See [Architecture flows](FLOWS.md) for Admin workflows, the implemented Admin-to-Catalog transport,
 Catalog event-sourcing/projection flows, localized public-content review flows, media/gallery metadata
-flows, and Branding adapter flows. Planned behavior remains explicitly marked.
+flows, and Branding module flows. Planned behavior remains explicitly marked.
 
 ### Implemented Admin-to-Catalog publication
 
@@ -86,8 +86,11 @@ claimed batch. See [Events and messaging](../domain/EVENTS_AND_MESSAGING.md) and
 
 - Core public website content variants and localization are implemented through Catalog-owned content
   contracts and Public.Web rendering, separate from core Admin CRUD.
-- Configurable branding now belongs to `SharedKernel.Branding` plus the ViajantesTurismo Branding API
-  adapter. Catalog does not own Branding routes or clients.
+- Configurable Branding is an independent ViajantesTurismo module; `SharedKernel.Branding` retains
+  only pure validation/normalization. The standalone API is current, while
+  [ADR-040](../adr/20260724-branding-module-co-hosting-and-state-distribution.md) accepts a gated move
+  into Catalog.ApiService without transferring contracts, routes, permissions, schema, or outbox
+  ownership to Catalog.
 - Catalog media upload, management metadata, accessibility drafts, processing, reconciliation, and
   public ready-image filtering are implemented; event-sourced gallery editing, evaluation dashboards,
   and optional storage adapters remain planned.

@@ -3,9 +3,10 @@
 The Catalog bounded context owns customer-facing tour presentation for public discovery and public
 website experiences.
 
-Catalog does not own branding changes. Shared branding rules belong in `SharedKernel.Branding`, and
-the ViajantesTurismo Branding adapter owns app-specific persistence, API routes, defaults, and public
-rendering contracts.
+Catalog does not own Branding changes. `SharedKernel.Branding` supplies pure validation and
+normalization; the ViajantesTurismo Branding module owns its contracts, application behavior,
+permissions, `branding` schema, outbox, and rendering contract. Catalog.ApiService is the accepted
+process host, not the Branding domain or data owner.
 
 ## Context Overview
 
@@ -28,7 +29,9 @@ presentation model.
   diagnostics, and projection rebuilds.
 - **Editable public website content** - Own business-editable website text and SEO content for
   English and Brazilian Portuguese variants.
-- **Branding relationship** - Do not add branding behavior to Catalog. Use the Branding adapter.
+- **Branding relationship** - In ADR-040's accepted target, Catalog.ApiService composes the
+  independent Branding ASP.NET module; Catalog domain and application code do not absorb Branding
+  behavior or data ownership.
 
 ## Bounded Context Map
 
@@ -315,5 +318,6 @@ contains title, slug, summary, reviewed images, and `UpdatedAt`.
 - [ADR-021: Catalog Bounded Context for Public Tour Presentation](../adr/20260621-catalog-bounded-context-for-public-tour-presentation.md)
 - [ADR-025: Event Source Catalog Tour Presentation](../adr/20260621-event-source-catalog-tour-presentation.md)
 - [ADR-020: Web Frontends by Audience, Not by Bounded Context](../adr/20260523-web-frontends-by-audience-not-by-bounded-context.md)
+- [ADR-040: Branding Module Co-hosting and State Distribution](../adr/20260724-branding-module-co-hosting-and-state-distribution.md)
 - [Events and Messaging](../domain/EVENTS_AND_MESSAGING.md)
 - [Branding](../branding.md)

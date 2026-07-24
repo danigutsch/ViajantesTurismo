@@ -127,6 +127,48 @@ the additional decisions required for generated artifacts, audit records, held d
 and restore-time suppression. It remains pending legal review and does not establish production
 authority.
 
+## Branding co-hosting readiness
+
+[ADR-040](../adr/20260724-branding-module-co-hosting-and-state-distribution.md) accepts
+Catalog.ApiService as the future host for the independent Branding module. The current standalone
+Branding executable remains in the AppHost and is the rollback path. The production platform,
+identity provider, concrete identity names, database role names, alert thresholds, and traffic-shift
+mechanism are undecided. Therefore the target is not yet production-ready.
+
+The selected platform must provide least-privilege capabilities equivalent to:
+
+| Capability | Required access | Explicitly excluded |
+| --- | --- | --- |
+| Branding runtime writer | Branding current state, full-state revisions, and Branding outbox DML | Admin data, Catalog domain tables, schema DDL |
+| Branding migration identity | Approved `branding` schema and migration-history DDL/DML during deployment | Runtime use, Admin data |
+| Branding outbox relay | Claim/update Branding outbox delivery state and publish the immutable envelope | Branding settings mutation, Catalog domain tables |
+| Integration Event Worker Branding consumer | Read the transport envelope; write Admin Branding inbox, projection, watermark, retry, and poison state | Catalog/Branding source reads outside delivery, unrelated Admin writes |
+| Admin API | Read the local Admin Branding projection | Catalog/Branding HTTP credentials and source database credentials |
+| Replay operator | Audited poison inspection and replay by immutable envelope/event identity | Ordinary application runtime access, untracked payload editing |
+
+These capability labels are requirements, not deployed role names. Co-hosting does not justify one
+broad database owner credential. Runtime credentials do not apply migrations. Production OIDC clients,
+audiences, and role mappings must be provisioned in a provider separate from local/CI Keycloak.
+
+Before removing the standalone executable:
+
+1. apply only forward-compatible schema expansion that the retained rollback artifact can use;
+2. deploy the upgraded writer in both hosts and verify atomic current/revision/outbox writes;
+3. verify Admin inbox/projection atomicity, source/applied watermarks, bounded retry, poison visibility,
+   and audited replay;
+4. move Public.Web and Management.Web traffic, then drain old-audience tokens and active sessions;
+5. observe zero standalone traffic for the approved rollback window;
+6. run a rollback drill against the retained standalone release artifact, including write, event
+   delivery, and Admin projection recovery;
+7. confirm the Catalog API remains privately exposed as intended; an anonymous Branding route does not
+   by itself require public backend ingress; and
+8. record the platform-specific roles, alert thresholds, traffic controls, and operator owners in the
+   deployment runbook.
+
+Failure of any gate keeps the standalone host and compatibility policy in place. Do not remove the old
+artifact, AppHost resource, service-discovery reference, or legacy audience policy in the expansion
+release.
+
 ## Common failures
 
 ### Migration failure

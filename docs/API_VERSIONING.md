@@ -11,7 +11,8 @@ API versions are public contract versions. They do not follow application, assem
 ## SharedKernel packages
 
 - `SharedKernel.ApiVersioning` owns host-agnostic API version, lifecycle, deprecation, and selection primitives.
-- `SharedKernel.ApiVersioning.AspNetCore` owns ASP.NET Core route metadata and `/api/v1` style route helpers.
+- `SharedKernel.ApiVersioning.AspNetCore` owns generic ASP.NET Core route metadata and version-group
+  composition helpers. It does not own application API prefixes or module route segments.
 - `SharedKernel.OpenApi` owns OpenAPI document registration for versioned API contracts.
 
 Keep app-specific boundary names, domain policy, and business compatibility rules in the consuming application.

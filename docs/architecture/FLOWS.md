@@ -306,15 +306,18 @@ flowchart LR
 
 ## Branding settings rendering flow
 
-Branding uses reusable validation and public-safe contracts from `SharedKernel.Branding`. The
-ViajantesTurismo Branding API adapter owns app-specific persistence, API routes, default values, and
-cache invalidation. It keeps a separate `BrandingDbContext` while storing its tables in the existing
-Catalog physical database.
+### Current implementation
+
+The current standalone Branding API uses validation from `SharedKernel.Branding` and owns persistence,
+endpoint hosting, defaults, authorization, and cache invalidation. It keeps a separate
+`BrandingDbContext` and `branding` schema in the Catalog physical database. Existing app-specific DTO,
+client, and route types in `SharedKernel.Branding` are transitional; ADR-040 assigns them to the
+ViajantesTurismo Branding module.
 
 ```mermaid
 sequenceDiagram
     participant Editor as Management.Web branding editor
-    participant API as Branding API adapter
+    participant API as Standalone Branding API
     participant Core as SharedKernel.Branding
     participant Store as Branding settings store
     participant Public as Public.Web
@@ -330,12 +333,58 @@ sequenceDiagram
 
 Current rendering rules:
 
-- `SharedKernel.Branding` owns base identity tokens only: brand name, logo URI, palette, and typography.
+- `SharedKernel.Branding` owns pure validation/normalization for brand name, logo URI, palette, and
+  typography; ViajantesTurismo owns the HTTP contract and route surface.
 - Management.Web uses the tokens as functional editable configuration; Public.Web uses them for richer
   customer-facing presentation.
 - No arbitrary user-editable CSS is accepted. Editors choose constrained values; Public.Web renders
   fixed CSS custom-property names with validated values.
 - Preview, review, scheduled publish, and approval workflows are deferred until implemented.
+
+### Accepted target
+
+Branding remains a logical module but is hosted by Catalog.ApiService. A write commits current state,
+an immutable full-state revision, and a Branding-owned outbox event in one transaction. The event
+carries the source revision and complete immutable document snapshot. `IntegrationEventWorker` applies
+it through an Admin inbox to a local Admin projection; Admin API never calls Catalog HTTP or reads the
+Catalog database for Branding.
+
+```mermaid
+flowchart LR
+    management[Management.Web]
+    public[Public.Web]
+    catalogHost[Catalog.ApiService host]
+    brandingModule[Branding ASP.NET/application module]
+    current[(Branding current state)]
+    revisions[(Append-only full-state revisions)]
+    outbox[(Branding-owned outbox)]
+    worker[IntegrationEventWorker]
+    adminInbox[(Admin Branding inbox + watermark)]
+    adminProjection[(Admin Branding projection)]
+    adminApi[Admin.ApiService]
+
+    management -->|uncached management HTTP| catalogHost
+    public -->|60s fresh / 300s stale public HTTP| catalogHost
+    catalogHost --> brandingModule
+    brandingModule -->|one transaction| current
+    brandingModule -->|one transaction| revisions
+    brandingModule -->|full snapshot + revision| outbox
+    outbox --> worker
+    worker --> adminInbox
+    adminInbox --> adminProjection
+    adminApi --> adminProjection
+```
+
+Target delivery rules:
+
+- A non-null source revision applies only above the Admin watermark. Older/duplicate revisions are
+  acknowledged; full-state transfer allows a newer revision to close a gap.
+- A legacy `null` revision is idempotent by event identity, never advances the watermark, and cannot
+  overwrite a versioned projection.
+- Retry is bounded. Exhausted events enter visible poison state; audited replay retains the immutable
+  envelope and remains guarded by inbox idempotency and revision comparison.
+- This is event-carried state transfer, not event sourcing. No projection framework, distributed cache,
+  SignalR, SSE, WebSockets, HTTP/3 requirement, or ordinary API-to-API HTTP is introduced.
 
 ## Media, gallery, and image metadata flows
 
@@ -446,3 +495,4 @@ Remaining design points:
 - [ADR-020: Web Frontends by Audience, Not by Bounded Context](../adr/20260523-web-frontends-by-audience-not-by-bounded-context.md)
 - [ADR-021: Catalog Bounded Context for Public Tour Presentation](../adr/20260621-catalog-bounded-context-for-public-tour-presentation.md)
 - [ADR-025: Event Source Catalog Tour Presentation](../adr/20260621-event-source-catalog-tour-presentation.md)
+- [ADR-040: Branding Module Co-hosting and State Distribution](../adr/20260724-branding-module-co-hosting-and-state-distribution.md)
