@@ -32,9 +32,9 @@ public sealed class GenerateContractDraftCommandHandler(
             idempotencyScope,
             command.IdempotencyKey,
             ct);
-        if (existingResult is not null)
+        if (existingResult is { } replayedResult)
         {
-            return (Result<Guid>)existingResult;
+            return replayedResult;
         }
 
         var now = timeProvider.GetUtcNow().UtcDateTime;
