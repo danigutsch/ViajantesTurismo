@@ -45,6 +45,24 @@ public sealed class DocumentationGeneratorTests
     }
 
     [Fact]
+    public void WriteAtomically_preserves_the_primary_write_failure_when_cleanup_also_fails()
+    {
+        // Arrange
+        using var workspace = new TemporaryDocumentationWorkspace();
+        var architecturePath = Path.Combine(workspace.RootPath, "docs", "architecture");
+        var targetPath = Path.Combine(architecturePath, $"{new string('x', 300)}.md");
+        using var exceptionCapture = new PathTooLongExceptionCapture();
+        Action act = () => GeneratedMarkdownUpdater.WriteAtomically(targetPath, "new content");
+
+        // Act
+        var observedException = act.ShouldThrow<PathTooLongException>();
+
+        // Assert
+        var capturedPrimaryException = exceptionCapture.FirstException.ShouldNotBeNull();
+        observedException.ShouldBeSameAs(capturedPrimaryException);
+    }
+
+    [Fact]
     public void Run_updates_configured_generated_block()
     {
         // Arrange

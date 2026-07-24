@@ -109,10 +109,22 @@ internal sealed class GeneratedMarkdownUpdater(string rootPath, string docsRelat
             File.WriteAllText(temporaryPath, content, Utf8NoBom);
             File.Replace(temporaryPath, path, destinationBackupFileName: null);
         }
-        finally
+        catch
         {
-            File.Delete(temporaryPath);
+            try
+            {
+                File.Delete(temporaryPath);
+            }
+            catch (Exception cleanupException)
+                when (cleanupException is IOException or UnauthorizedAccessException)
+            {
+                // Preserve the primary write or replacement exception.
+            }
+
+            throw;
         }
+
+        File.Delete(temporaryPath);
     }
 
     private IEnumerable<FileInfo> MarkdownDocs()
