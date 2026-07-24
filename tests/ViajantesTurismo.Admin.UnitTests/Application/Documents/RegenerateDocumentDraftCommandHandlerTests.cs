@@ -1,4 +1,6 @@
 using SharedKernel.Branding;
+using SharedKernel.Idempotency;
+using SharedKernel.Results;
 using SharedKernel.Testing;
 using ViajantesTurismo.Admin.Application.Documents;
 using ViajantesTurismo.Admin.Contracts.Application;
@@ -13,6 +15,84 @@ namespace ViajantesTurismo.Admin.UnitTests.Application.Documents;
 [Trait(SharedKernelTestTraitNames.CapabilityName, Testing.AdminTestTraitValues.GeneratedDocumentsCapability)]
 public sealed class RegenerateDocumentDraftCommandHandlerTests
 {
+    [Fact]
+    public async Task Handle_returns_conflict_for_an_active_regeneration_key_before_mutable_document_validation()
+    {
+        // Arrange
+        var sourceDocumentId = Guid.CreateVersion7();
+        var idempotencyKey = IdempotencyKey.From(Guid.CreateVersion7().ToString("N"));
+        var idempotencyScope = IdempotencyScope.From($"admin.documents.regenerate-draft:{sourceDocumentId:N}");
+        var store = new FakeDocumentStore();
+        var auditStore = new FakeDocumentAuditStore();
+        var unitOfWork = new FakeUnitOfWork();
+        var handler = new RegenerateDocumentDraftCommandHandler(
+            store,
+            new FakeQueryService(null),
+            new FakeBrandingApiClient(new BrandingSettingsDto()),
+            TimeProvider.System,
+            DocumentAuditTestData.CreateWriter(auditStore, unitOfWork),
+            DocumentIdempotencyTestData.CreateStarted(idempotencyScope, idempotencyKey, unitOfWork));
+
+        // Act
+        var result = await handler.Handle(
+            new RegenerateDocumentDraftCommand(
+                sourceDocumentId,
+                "booking-confirmation",
+                "2",
+                DocumentAuditTestData.CreateContext(),
+                idempotencyKey),
+            CancellationToken.None);
+
+        // Assert
+        result.Status.ShouldBe(ResultStatus.Conflict);
+        result.ErrorDetails.ShouldNotBeNull().Detail.ShouldBe(
+            "A document revision already exists for this booking. Reload and retry.");
+        store.AddedDocuments.ShouldBeEmpty();
+        auditStore.Records.ShouldBeEmpty();
+        unitOfWork.SaveEntitiesCallCount.ShouldBe(0);
+    }
+
+    [Fact]
+    public async Task Handle_replays_completed_regeneration_before_mutable_document_validation()
+    {
+        // Arrange
+        var sourceDocumentId = Guid.CreateVersion7();
+        var replacementDocumentId = Guid.CreateVersion7();
+        var idempotencyKey = IdempotencyKey.From(Guid.CreateVersion7().ToString("N"));
+        var idempotencyScope = IdempotencyScope.From($"admin.documents.regenerate-draft:{sourceDocumentId:N}");
+        var store = new FakeDocumentStore();
+        var auditStore = new FakeDocumentAuditStore();
+        var unitOfWork = new FakeUnitOfWork();
+        var handler = new RegenerateDocumentDraftCommandHandler(
+            store,
+            new FakeQueryService(null),
+            new FakeBrandingApiClient(new BrandingSettingsDto()),
+            TimeProvider.System,
+            DocumentAuditTestData.CreateWriter(auditStore, unitOfWork),
+            DocumentIdempotencyTestData.CreateCompleted(
+                idempotencyScope,
+                idempotencyKey,
+                replacementDocumentId,
+                unitOfWork));
+
+        // Act
+        var result = await handler.Handle(
+            new RegenerateDocumentDraftCommand(
+                sourceDocumentId,
+                "booking-confirmation",
+                "2",
+                DocumentAuditTestData.CreateContext(),
+                idempotencyKey),
+            CancellationToken.None);
+
+        // Assert
+        result.IsSuccess.ShouldBeTrue();
+        result.Value.ShouldBe(replacementDocumentId);
+        store.AddedDocuments.ShouldBeEmpty();
+        auditStore.Records.ShouldBeEmpty();
+        unitOfWork.SaveEntitiesCallCount.ShouldBe(0);
+    }
+
     [Fact]
     public async Task Handle_rejects_missing_audit_context_before_adding_a_revision()
     {
@@ -31,9 +111,9 @@ public sealed class RegenerateDocumentDraftCommandHandlerTests
             store,
             new FakeQueryService(booking, DtoBuilders.BuildTourDto(id: tourId)),
             new FakeBrandingApiClient(DocumentDraftTestData.CreateBrandingSettings()),
-            unitOfWork,
             TimeProvider.System,
-            DocumentAuditTestData.CreateWriter(auditStore, unitOfWork));
+            DocumentAuditTestData.CreateWriter(auditStore, unitOfWork),
+            DocumentIdempotencyTestData.Create(unitOfWork));
 
         // Act
         var result = await handler.Handle(
@@ -60,9 +140,9 @@ public sealed class RegenerateDocumentDraftCommandHandlerTests
             store,
             new FakeQueryService(null),
             new FakeBrandingApiClient(DocumentDraftTestData.CreateBrandingSettings()),
-            unitOfWork,
             TimeProvider.System,
-            DocumentAuditTestData.CreateWriter(auditStore, unitOfWork));
+            DocumentAuditTestData.CreateWriter(auditStore, unitOfWork),
+            DocumentIdempotencyTestData.Create(unitOfWork));
 
         // Act
         var result = await handler.Handle(
@@ -103,9 +183,9 @@ public sealed class RegenerateDocumentDraftCommandHandlerTests
             store,
             new FakeQueryService(booking, tour),
             new FakeBrandingApiClient(DocumentDraftTestData.CreateBrandingSettings()),
-            unitOfWork,
             TimeProvider.System,
-            DocumentAuditTestData.CreateWriter(auditStore, unitOfWork));
+            DocumentAuditTestData.CreateWriter(auditStore, unitOfWork),
+            DocumentIdempotencyTestData.Create(unitOfWork));
 
         // Act
         var result = await handler.Handle(
@@ -141,9 +221,9 @@ public sealed class RegenerateDocumentDraftCommandHandlerTests
             store,
             new FakeQueryService(booking, tour),
             new FakeBrandingApiClient(DocumentDraftTestData.CreateBrandingSettings()),
-            unitOfWork,
             TimeProvider.System,
-            DocumentAuditTestData.CreateWriter(auditStore, unitOfWork));
+            DocumentAuditTestData.CreateWriter(auditStore, unitOfWork),
+            DocumentIdempotencyTestData.Create(unitOfWork));
 
         // Act
         var result = await handler.Handle(
@@ -179,9 +259,9 @@ public sealed class RegenerateDocumentDraftCommandHandlerTests
             store,
             new FakeQueryService(null),
             new FakeBrandingApiClient(new BrandingSettingsDto()),
-            unitOfWork,
             TimeProvider.System,
-            DocumentAuditTestData.CreateWriter(auditStore, unitOfWork));
+            DocumentAuditTestData.CreateWriter(auditStore, unitOfWork),
+            DocumentIdempotencyTestData.Create(unitOfWork));
 
         // Act
         var result = await handler.Handle(
@@ -218,9 +298,9 @@ public sealed class RegenerateDocumentDraftCommandHandlerTests
             store,
             new FakeQueryService(booking),
             new FakeBrandingApiClient(new BrandingSettingsDto()),
-            unitOfWork,
             TimeProvider.System,
-            DocumentAuditTestData.CreateWriter(auditStore, unitOfWork));
+            DocumentAuditTestData.CreateWriter(auditStore, unitOfWork),
+            DocumentIdempotencyTestData.Create(unitOfWork));
 
         // Act
         var result = await handler.Handle(

@@ -3,6 +3,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Npgsql;
 using SharedKernel.Domain.EntityFrameworkCore;
 using SharedKernel.EntityFrameworkCore;
+using SharedKernel.Idempotency.EntityFrameworkCore;
 using SharedKernel.IntegrationTesting;
 using SharedKernel.Messaging.IntegrationEvents.EntityFrameworkCore;
 using ViajantesTurismo.Admin.Application.Documents;
@@ -10,6 +11,7 @@ using ViajantesTurismo.Admin.Contracts.Application;
 using ViajantesTurismo.Admin.Domain.Documents;
 using ViajantesTurismo.Admin.Domain.Tours;
 using ViajantesTurismo.Admin.Infrastructure.Documents;
+using ViajantesTurismo.Admin.Testing.Behavior;
 using ViajantesTurismo.Resources;
 
 namespace ViajantesTurismo.Admin.Infrastructure.Tests.Documents;
@@ -249,6 +251,35 @@ internal sealed class PostgreSqlDocumentStoreScenario : IAsyncDisposable
         await dbContext.SaveEntities(ct);
     }
 
+    public async Task SaveDuplicateBookingTypeRevision(
+        DocumentDraft first,
+        DocumentDraft second,
+        CancellationToken ct)
+    {
+        await using var dbContext = CreateDbContext();
+        await dbContext.Database.MigrateAsync(ct);
+        await SeedBookings(dbContext, [first.BookingId, second.BookingId], BookingStatus.Confirmed, ct);
+        var lineages = CreateLineages([first, second]);
+        dbContext.DocumentLineages.AddRange(lineages);
+        dbContext.Entry(second)
+            .Property(document => document.BookingId)
+            .CurrentValue = first.BookingId;
+
+        await dbContext.SaveEntities(ct);
+    }
+
+    public async Task SaveDuplicateTourIdentifier(CancellationToken ct)
+    {
+        await using var dbContext = CreateDbContext();
+        await dbContext.Database.MigrateAsync(ct);
+        var identifier = $"duplicate-document-test-{Guid.CreateVersion7():N}";
+        dbContext.Tours.AddRange(
+            EntityBuilders.BuildTour(new TourOptions(Identifier: identifier, Name: $"First {identifier}")),
+            EntityBuilders.BuildTour(new TourOptions(Identifier: identifier, Name: $"Second {identifier}")));
+
+        await dbContext.SaveEntities(ct);
+    }
+
     public async Task SaveDocumentForBookingStatus(
         DocumentDraft document,
         BookingStatus? bookingStatus,
@@ -355,6 +386,7 @@ internal sealed class PostgreSqlDocumentStoreScenario : IAsyncDisposable
     {
         var services = new ServiceCollection();
         services.AddDomainEventDispatch<AdminWriteDbContext>();
+        services.AddIdempotencyStore<AdminWriteDbContext>();
         services.AddIntegrationEventOutbox<AdminWriteDbContext>();
         services.AddPostgreSqlIntegrationEventTransportProducer<AdminWriteDbContext>(IntegrationEventConsumerNames.Catalog);
         using var provider = services.BuildServiceProvider();

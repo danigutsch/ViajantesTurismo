@@ -52,7 +52,19 @@ EXCLUDED_RELATIVE_PATTERNS = (
 
 REFERENCE_DEFINITION = re.compile(r"^\s{0,3}\[[^\]]+\]:\s+(\S+)")
 AUTOLINK = re.compile(r'<([^<>"]+)>')
-REPO_RELATIVE_ISSUE_OR_PR = re.compile(r"(?:^|[\s(])(?:\.{0,2}/)*(?:issues|pull)/\d+\b")
+REPO_RELATIVE_ISSUE_OR_PR = re.compile(
+    r"(?:^|[\s(`])(?:\.{0,2}/)*(?:issues|pull)/\d+\b"
+)
+ISSUE_OR_PR_IDENTIFIER = re.compile(
+    r"(?i)(?:\b(?:GH|PR)-\d+\b|\bissue-\d+\b|\b[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+#\d+\b)"
+)
+BARE_ISSUE_OR_PR_REFERENCE = re.compile(r"(?<![A-Za-z0-9])#\d+\b")
+EXTERNAL_URL = re.compile(r"(?i)\b[a-z][a-z0-9+.-]*://[^\s<>()`]+")
+COLOR_VALUE = re.compile(
+    r"(?i)\b(?:fill|stroke|color|background(?:-color)?|border(?:-color)?)"
+    r"\s*[:=]\s*#[0-9a-f]{3,8}\b"
+)
+NON_TRACKER_NUMERIC_HASH = re.compile(r"(?i)\b(?:Unicode Standard Annex|UAX)\s+#\d+\b")
 
 
 def main() -> int:
@@ -103,6 +115,11 @@ def validate_policy_lines(relative: str, lines: list[str]) -> list[str]:
         if REPO_RELATIVE_ISSUE_OR_PR.search(line):
             errors.append(
                 f"{relative}:{line_number}: repo-relative issue/PR link is not allowed; "
+                "summarize durable context or link a maintained doc instead"
+            )
+        if has_bare_issue_or_pr_reference(line):
+            errors.append(
+                f"{relative}:{line_number}: bare issue/PR reference is not allowed; "
                 "summarize durable context or link a maintained doc instead"
             )
     return errors
@@ -229,9 +246,19 @@ def has_github_issue_or_pr_url(line: str) -> bool:
     return any(is_github_issue_or_pr_url(token) for token in line_tokens(line))
 
 
+def has_bare_issue_or_pr_reference(line: str) -> bool:
+    without_urls = EXTERNAL_URL.sub("", line)
+    without_colors = COLOR_VALUE.sub("", without_urls)
+    without_non_tracker_hashes = NON_TRACKER_NUMERIC_HASH.sub("", without_colors)
+    return bool(
+        ISSUE_OR_PR_IDENTIFIER.search(without_non_tracker_hashes)
+        or BARE_ISSUE_OR_PR_REFERENCE.search(without_non_tracker_hashes)
+    )
+
+
 def line_tokens(line: str):
     for token in line.split():
-        yield token.strip("<>()[]{}\"'.,;")
+        yield token.strip("<>()[]{}\"'`.,;")
 
 
 def is_github_issue_or_pr_url(value: str) -> bool:

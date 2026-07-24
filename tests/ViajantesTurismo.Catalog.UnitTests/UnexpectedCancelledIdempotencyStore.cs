@@ -21,6 +21,12 @@ public sealed class UnexpectedCancelledIdempotencyStore : IIdempotencyStore
         DateTimeOffset completedAt,
         CancellationToken ct) => Complete(operation, completedAt, resultFingerprint: null, ct);
 
+    public ValueTask StageCompletion(
+        IdempotencyOperation operation,
+        DateTimeOffset completedAt,
+        string? resultFingerprint,
+        CancellationToken ct) => Complete(operation, completedAt, resultFingerprint, ct);
+
     public ValueTask<IdempotencyEntry?> Get(
         IdempotencyOperation operation,
         CancellationToken ct) => ValueTask.FromResult<IdempotencyEntry?>(null);

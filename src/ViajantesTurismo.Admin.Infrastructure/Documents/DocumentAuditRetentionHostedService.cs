@@ -5,7 +5,7 @@ using ViajantesTurismo.Admin.Application.Documents;
 
 namespace ViajantesTurismo.Admin.Infrastructure.Documents;
 
-/// <summary>Purges expired document audit metadata on the approved daily schedule.</summary>
+/// <summary>Purges expired document audit metadata on the currently configured daily schedule.</summary>
 internal sealed class DocumentAuditRetentionHostedService(
     IServiceScopeFactory scopeFactory,
     ILogger<DocumentAuditRetentionHostedService> logger)

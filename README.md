@@ -157,8 +157,8 @@ The supported local helper-tool model is intentionally npm-minimized. Prefer rep
 execution. See [docs/local-tool-security.md](docs/local-tool-security.md).
 
 Documentation link checks use `bash scripts/lint-links.sh`. The check validates local Markdown and
-selected text links and anchors, blocks direct GitHub issue and pull request links in maintained
-docs, and avoids external URL probing in PR gating to keep lint stable.
+selected text links and anchors, blocks GitHub issue and pull request references by URL, path, or bare
+numeric shorthand in maintained docs, and avoids external URL probing in PR gating to keep lint stable.
 
 ### Manual Setup (Alternative)
 

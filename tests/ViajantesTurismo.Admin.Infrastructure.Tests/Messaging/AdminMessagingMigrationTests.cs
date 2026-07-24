@@ -41,7 +41,7 @@ public sealed class AdminMessagingMigrationTests : IAsyncLifetime
         var migrationHistoryBefore = await Scenario.GetMigrationHistory(ct);
 
         // Act
-        Func<Task> migrate = () => Scenario.ApplyLatestMigration(ct);
+        Func<Task> migrate = () => Scenario.ApplyRemovalMigration(ct);
         var exception = await migrate.ShouldThrow<PostgresException>();
         var inboxTableExists = await Scenario.InboxTableExists(ct);
         var inboxRowAfter = await Scenario.GetInboxRow(ct);
@@ -68,7 +68,7 @@ public sealed class AdminMessagingMigrationTests : IAsyncLifetime
         var outboxRowBefore = await Scenario.GetOutboxRow(outboxId, ct);
 
         // Act
-        await Scenario.ApplyLatestMigration(ct);
+        await Scenario.ApplyRemovalMigration(ct);
         var inboxTableExists = await Scenario.InboxTableExists(ct);
         var outboxTableExists = await Scenario.OutboxTableExists(ct);
         var outboxRowAfter = await Scenario.GetOutboxRow(outboxId, ct);
@@ -78,7 +78,7 @@ public sealed class AdminMessagingMigrationTests : IAsyncLifetime
         inboxTableExists.ShouldBeFalse();
         outboxTableExists.ShouldBeTrue();
         outboxRowAfter.ShouldBe(outboxRowBefore);
-        migrationHistory.ShouldContain(AdminMessagingMigrationScenario.LatestMigration);
+        migrationHistory.ShouldContain(AdminMessagingMigrationScenario.RemovalMigration);
     }
 
     [Fact]
@@ -91,7 +91,7 @@ public sealed class AdminMessagingMigrationTests : IAsyncLifetime
         var outboxRowBefore = await Scenario.GetOutboxRow(outboxId, ct);
 
         // Act
-        var insertException = await Scenario.ApplyLatestMigrationWithConcurrentInboxInsert(ct);
+        var insertException = await Scenario.ApplyRemovalMigrationWithConcurrentInboxInsert(ct);
         var inboxTableExists = await Scenario.InboxTableExists(ct);
         var outboxRowAfter = await Scenario.GetOutboxRow(outboxId, ct);
         var migrationHistory = await Scenario.GetMigrationHistory(ct);
@@ -100,7 +100,7 @@ public sealed class AdminMessagingMigrationTests : IAsyncLifetime
         insertException.SqlState.ShouldBe(PostgresErrorCodes.UndefinedTable);
         inboxTableExists.ShouldBeFalse();
         outboxRowAfter.ShouldBe(outboxRowBefore);
-        migrationHistory.ShouldContain(AdminMessagingMigrationScenario.LatestMigration);
+        migrationHistory.ShouldContain(AdminMessagingMigrationScenario.RemovalMigration);
     }
 
     [Fact]
@@ -111,14 +111,14 @@ public sealed class AdminMessagingMigrationTests : IAsyncLifetime
         await Scenario.ApplyInitialMigration(ct);
         var outboxId = await Scenario.InsertOutboxRow(ct);
         var outboxRowBefore = await Scenario.GetOutboxRow(outboxId, ct);
-        await Scenario.ApplyLatestMigration(ct);
+        await Scenario.ApplyRemovalMigration(ct);
 
         // Act
         await Scenario.ApplyInitialMigration(ct);
         var inboxExistsAfterDown = await Scenario.InboxTableExists(ct);
         var inboxRowsAfterDown = await Scenario.InboxRowCount(ct);
         var historyAfterDown = await Scenario.GetMigrationHistory(ct);
-        await Scenario.ApplyLatestMigration(ct);
+        await Scenario.ApplyRemovalMigration(ct);
         var inboxExistsAfterRetry = await Scenario.InboxTableExists(ct);
         var outboxRowAfterRetry = await Scenario.GetOutboxRow(outboxId, ct);
         var historyAfterRetry = await Scenario.GetMigrationHistory(ct);
@@ -131,7 +131,35 @@ public sealed class AdminMessagingMigrationTests : IAsyncLifetime
         outboxRowAfterRetry.ShouldBe(outboxRowBefore);
         historyAfterRetry.ShouldBe([
             AdminMessagingMigrationScenario.InitialMigration,
-            AdminMessagingMigrationScenario.LatestMigration
+            AdminMessagingMigrationScenario.RemovalMigration
+        ]);
+    }
+
+    [Fact]
+    public async Task Restoring_required_admin_idempotency_creates_an_empty_table_and_preserves_the_outbox()
+    {
+        // Arrange
+        var ct = TestContext.Current.CancellationToken;
+        await Scenario.ApplyInitialMigration(ct);
+        var outboxId = await Scenario.InsertOutboxRow(ct);
+        var outboxRowBefore = await Scenario.GetOutboxRow(outboxId, ct);
+        await Scenario.ApplyRemovalMigration(ct);
+
+        // Act
+        await Scenario.ApplyLatestMigration(ct);
+        var inboxTableExists = await Scenario.InboxTableExists(ct);
+        var inboxRowCount = await Scenario.InboxRowCount(ct);
+        var outboxRowAfter = await Scenario.GetOutboxRow(outboxId, ct);
+        var migrationHistory = await Scenario.GetMigrationHistory(ct);
+
+        // Assert
+        inboxTableExists.ShouldBeTrue();
+        inboxRowCount.ShouldBe(0);
+        outboxRowAfter.ShouldBe(outboxRowBefore);
+        migrationHistory.ShouldBe([
+            AdminMessagingMigrationScenario.InitialMigration,
+            AdminMessagingMigrationScenario.RemovalMigration,
+            AdminMessagingMigrationScenario.IdempotencyRestoreMigration
         ]);
     }
 }

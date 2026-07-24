@@ -2,7 +2,7 @@ using ViajantesTurismo.Admin.Domain.Documents;
 
 namespace ViajantesTurismo.Admin.Application.Documents;
 
-/// <summary>Purges document audit records only after their approved retention period.</summary>
+/// <summary>Purges document audit records only after their currently configured retention period.</summary>
 public sealed class PurgeExpiredDocumentAuditsCommandHandler(
     IDocumentAuditStore auditStore,
     TimeProvider timeProvider)

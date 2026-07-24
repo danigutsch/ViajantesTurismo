@@ -7,7 +7,8 @@ docker_gid="$(id -g)"
 docker_user="${docker_uid}:${docker_gid}"
 
 if command -v python3 > /dev/null 2>&1; then
-    python3 scripts/lint-links.py "$@"
+    python3 -B scripts/test-lint-links.py
+    python3 -B scripts/lint-links.py "$@"
     exit 0
 fi
 
@@ -19,7 +20,7 @@ if command -v docker > /dev/null 2>&1; then
         --volume "${PWD}:/workspace" \
         --workdir /workspace \
         python:3.13-alpine \
-        python3 -B scripts/lint-links.py "$@"
+        sh -c 'python3 -B scripts/test-lint-links.py && python3 -B scripts/lint-links.py "$@"' sh "$@"
     exit 0
 fi
 

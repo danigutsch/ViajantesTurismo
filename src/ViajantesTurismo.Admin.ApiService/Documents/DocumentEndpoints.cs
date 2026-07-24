@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using SharedKernel.Idempotency;
 using SharedKernel.Results;
 using ViajantesTurismo.Admin.Application.Documents;
 using ViajantesTurismo.Admin.Contracts.Application;
@@ -14,6 +15,7 @@ internal static class DocumentEndpoints
     private const string ContractTemplateVersion = "1";
     private const string AdministrativeVoidReasonCode = "administrative-void";
     private const string HtmlMediaType = "text/html; charset=utf-8";
+    private const string IdempotencyKeyHeaderName = "Idempotency-Key";
 
     /// <summary>Maps generated-document endpoints to the Admin API.</summary>
     public static void MapDocumentEndpoints(this WebApplication app)
@@ -105,19 +107,33 @@ internal static class DocumentEndpoints
 
     private static async Task<IResult> GenerateContractDraft(
         [FromRoute] Guid bookingId,
+        [FromHeader(Name = IdempotencyKeyHeaderName)] string? idempotencyKey,
         [FromServices] GenerateContractDraftCommandHandler handler,
         [FromServices] IDocumentQueryService queryService,
         [FromServices] IServiceScopeFactory scopeFactory,
         HttpContext httpContext,
         CancellationToken ct)
     {
+        IdempotencyKey? parsedIdempotencyKey = null;
+        if (idempotencyKey is not null)
+        {
+            var keyResult = ParseIdempotencyKey(idempotencyKey);
+            if (keyResult.IsFailure)
+            {
+                return ToError(keyResult.ConvertError());
+            }
+
+            parsedIdempotencyKey = keyResult.Value;
+        }
+
         var auditContext = CreateAuditContext(httpContext);
         var result = await ExecuteDocumentCommand(() => handler.Handle(
             new GenerateContractDraftCommand(
                 bookingId,
                 ContractTemplateId,
                 ContractTemplateVersion,
-                auditContext),
+                auditContext,
+                parsedIdempotencyKey),
             ct),
             new DocumentCommandAuditMetadata(auditContext, DocumentAuditOperation.Generate, null, bookingId),
             scopeFactory,
@@ -274,15 +290,28 @@ internal static class DocumentEndpoints
 
     private static async Task<IResult> Regenerate(
         [FromRoute] Guid id,
+        [FromHeader(Name = IdempotencyKeyHeaderName)] string? idempotencyKey,
         [FromServices] RegenerateDocumentDraftCommandHandler handler,
         [FromServices] IDocumentQueryService queryService,
         [FromServices] IServiceScopeFactory scopeFactory,
         HttpContext httpContext,
         CancellationToken ct)
     {
+        IdempotencyKey? parsedIdempotencyKey = null;
+        if (idempotencyKey is not null)
+        {
+            var keyResult = ParseIdempotencyKey(idempotencyKey);
+            if (keyResult.IsFailure)
+            {
+                return ToError(keyResult.ConvertError());
+            }
+
+            parsedIdempotencyKey = keyResult.Value;
+        }
+
         var auditContext = CreateAuditContext(httpContext);
         var result = await ExecuteDocumentCommand(() => handler.Handle(
-            new RegenerateDocumentDraftCommand(id, ContractTemplateId, ContractTemplateVersion, auditContext),
+            new RegenerateDocumentDraftCommand(id, ContractTemplateId, ContractTemplateVersion, auditContext, parsedIdempotencyKey),
             ct),
             new DocumentCommandAuditMetadata(auditContext, DocumentAuditOperation.Regenerate, id, null),
             scopeFactory,
@@ -425,17 +454,11 @@ internal static class DocumentEndpoints
         }
         catch (DbUpdateConcurrencyException)
         {
-            var auditResult = await RecordRejectedConcurrencyAudit(scopeFactory, auditMetadata, ct);
-            return auditResult.IsFailure
-                ? auditResult.ConvertError<T>()
-                : DocumentErrors.DocumentChangedByAnotherRequest().ConvertError<T>();
+            return DocumentErrors.DocumentChangedByAnotherRequest().ConvertError<T>();
         }
         catch (DocumentRevisionConflictException)
         {
-            var auditResult = await RecordRejectedConcurrencyAudit(scopeFactory, auditMetadata, ct);
-            return auditResult.IsFailure
-                ? auditResult.ConvertError<T>()
-                : DocumentErrors.DocumentRevisionAlreadyExists().ConvertError<T>();
+            return DocumentErrors.DocumentRevisionAlreadyExists().ConvertError<T>();
         }
         catch (DocumentBookingEligibilityConflictException)
         {
@@ -494,6 +517,20 @@ internal static class DocumentEndpoints
         }
 
         return auditContextResult.Value;
+    }
+
+    private static Result<IdempotencyKey> ParseIdempotencyKey(string value)
+    {
+        if (IdempotencyKey.TryFrom(value, out var key))
+        {
+            return Result.Ok(key);
+        }
+
+        return Result.Invalid(
+            detail: $"{IdempotencyKeyHeaderName} must use the supported opaque token format.",
+            field: IdempotencyKeyHeaderName,
+            message: $"{IdempotencyKeyHeaderName} is invalid.")
+            .ConvertError<IdempotencyKey>();
     }
 
     private static DocumentAuditReasonCode GetFailureReasonCode(Result result) => result.Status switch

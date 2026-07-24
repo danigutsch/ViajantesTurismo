@@ -9,6 +9,7 @@ internal static class DocumentDraftSchema
     public const string ActiveFinalizedLineageConstraint = "UQ_DocumentDrafts_ActiveFinalizedLineage";
     public const string LineageUniqueIndex = "UX_DocumentLineages_BookingId_Type";
     public const string RevisionUniqueIndex = "UX_DocumentDrafts_DocumentLineageId_Revision";
+    public const string BookingTypeRevisionUniqueIndex = "UX_DocumentDrafts_BookingId_Type_Revision";
 
     public static bool IsBookingEligibilityConflict(DbUpdateException exception)
     {
@@ -36,7 +37,7 @@ internal static class DocumentDraftSchema
         return exception is
         {
             SqlState: PostgresErrorCodes.UniqueViolation,
-            ConstraintName: LineageUniqueIndex or RevisionUniqueIndex or ActiveFinalizedLineageConstraint,
+            ConstraintName: LineageUniqueIndex or RevisionUniqueIndex or BookingTypeRevisionUniqueIndex or ActiveFinalizedLineageConstraint,
         };
     }
 }

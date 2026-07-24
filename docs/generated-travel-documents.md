@@ -171,16 +171,14 @@ authorized UI responses.
 
 ### Retention
 
-Retention must follow the business retention policy for travel and accounting records. Until that
-policy is explicit, use the smallest practical retention for drafts and a longer retention only for
-finalized documents that have operational, contractual, legal, or accounting value.
+The [document retention and legal-hold policy proposal](operations/document-retention-and-legal-hold.md)
+is **pending legal review and not approved**. Current 30-day draft and 24-month audit behaviors are
+provisional technical behavior, not GDPR/LGPD minima or approved retention decisions.
 
-Drafts that were never finalized should be purgeable after a short period. Finalized artifacts should
-support legal hold and supervised deletion.
-
-Legal hold and finalized-artifact deletion are out of scope for the first vertical slice; it exposes no
-document deletion endpoint. Finalized artifacts therefore have no automatic retention expiry until that
-policy exists.
+Unfinalized drafts currently become purge-eligible after 30 days. Finalized, superseded, and voided
+artifacts have no automatic retention expiry or deletion endpoint. No legal-hold workflow exists.
+Product and counsel must approve the lifecycle, exceptions, hold authority, and backup/replica rules
+before these defaults are treated as production policy.
 
 ### Audit
 

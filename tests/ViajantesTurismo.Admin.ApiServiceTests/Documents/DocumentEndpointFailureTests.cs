@@ -1,4 +1,5 @@
 using System.Net.Http.Json;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection.Extensions;
@@ -16,6 +17,54 @@ namespace ViajantesTurismo.Admin.ApiServiceTests.Documents;
 [Trait(SharedKernelTestTraitNames.CapabilityName, AdminTestTraitValues.GeneratedDocumentsCapability)]
 public sealed class DocumentEndpointFailureTests
 {
+    [Theory]
+    [InlineData("generate")]
+    [InlineData("regenerate")]
+    public async Task Malformed_idempotency_keys_are_rejected_before_document_commands_run(string operation)
+    {
+        // Arrange
+        var resourceId = Guid.CreateVersion7();
+        var route = operation switch
+        {
+            "generate" => $"/api/v1/documents/bookings/{resourceId}/contract-drafts",
+            "regenerate" => $"/api/v1/documents/{resourceId}/regenerate",
+            _ => throw new ArgumentOutOfRangeException(nameof(operation), operation, "Unsupported document operation.")
+        };
+        var missingDocuments = new MissingDocumentServices();
+        var auditStore = new CapturingDocumentAuditStore();
+        var unitOfWork = new FakeUnitOfWork();
+        await using var factory = AdminApiTestHost.Create(services =>
+        {
+            services.RemoveAll<IDocumentStore>();
+            services.AddSingleton<IDocumentStore>(missingDocuments);
+            services.RemoveAll<IDocumentQueryService>();
+            services.AddSingleton<IDocumentQueryService>(missingDocuments);
+            services.RemoveAll<IDocumentAuditStore>();
+            services.AddSingleton<IDocumentAuditStore>(auditStore);
+            services.RemoveAll<IUnitOfWork>();
+            services.AddSingleton<IUnitOfWork>(unitOfWork);
+        });
+        using var client = factory.CreateClient();
+        AdminApiTestHost.ConfigureAuthenticatedClient(client, "Admin");
+        using var request = new HttpRequestMessage(HttpMethod.Post, new Uri(route, UriKind.Relative));
+        _ = request.Headers.TryAddWithoutValidation("Idempotency-Key", "invalid key");
+
+        // Act
+        using var response = await client.SendAsync(request, TestContext.Current.CancellationToken);
+        var problem = await response.Content.ReadFromJsonAsync<HttpValidationProblemDetails>(
+            TestContext.Current.CancellationToken);
+
+        // Assert
+        response.StatusCode.ShouldBe(HttpStatusCode.BadRequest);
+        response.Content.Headers.ContentType.ShouldNotBeNull().MediaType.ShouldBe("application/problem+json");
+        problem.ShouldNotBeNull();
+        problem.Status.ShouldBe((int?)HttpStatusCode.BadRequest);
+        problem.Errors.ContainsKey("Idempotency-Key").ShouldBeTrue();
+        problem.Errors["Idempotency-Key"].ShouldHaveSingleItem().ShouldBe("Idempotency-Key is invalid.");
+        auditStore.Records.ShouldBeEmpty();
+        unitOfWork.SaveEntitiesCallCount.ShouldBe(0);
+    }
+
     [Theory]
     [InlineData("GET", "", DocumentAuditOperation.Read)]
     [InlineData("POST", "/review", DocumentAuditOperation.BeginReview)]
@@ -80,37 +129,44 @@ public sealed class DocumentEndpointFailureTests
         "/review",
         DocumentAuditOperation.BeginReview,
         nameof(DbUpdateConcurrencyException),
-        "The document was changed by another request. Reload and retry.")]
+        "The document was changed by another request. Reload and retry.",
+        true)]
     [InlineData(
         "/regenerate",
         DocumentAuditOperation.Regenerate,
         nameof(DbUpdateConcurrencyException),
-        "The document was changed by another request. Reload and retry.")]
+        "The document was changed by another request. Reload and retry.",
+        false)]
     [InlineData(
         "/review",
         DocumentAuditOperation.BeginReview,
         nameof(DocumentRevisionConflictException),
-        "A document revision already exists for this booking. Reload and retry.")]
+        "A document revision already exists for this booking. Reload and retry.",
+        true)]
     [InlineData(
         "/regenerate",
         DocumentAuditOperation.Regenerate,
         nameof(DocumentRevisionConflictException),
-        "A document revision already exists for this booking. Reload and retry.")]
+        "A document revision already exists for this booking. Reload and retry.",
+        false)]
     [InlineData(
         "/review",
         DocumentAuditOperation.BeginReview,
         nameof(DocumentBookingEligibilityConflictException),
-        "A customer-facing document draft requires a confirmed or completed booking.")]
+        "A customer-facing document draft requires a confirmed or completed booking.",
+        true)]
     [InlineData(
         "/regenerate",
         DocumentAuditOperation.Regenerate,
         nameof(DocumentBookingEligibilityConflictException),
-        "A customer-facing document draft requires a confirmed or completed booking.")]
-    public async Task Document_command_exception_families_return_conflict_and_persist_rejected_audits(
+        "A customer-facing document draft requires a confirmed or completed booking.",
+        true)]
+    public async Task Document_command_exception_families_return_conflict_with_the_required_audit_behavior(
         string suffix,
         DocumentAuditOperation expectedOperation,
         string exceptionFamily,
-        string expectedDetail)
+        string expectedDetail,
+        bool shouldPersistRejectedAudit)
     {
         // Arrange
         var documentId = Guid.CreateVersion7();
@@ -155,6 +211,14 @@ public sealed class DocumentEndpointFailureTests
         problem.Status.ShouldBe((int?)HttpStatusCode.Conflict);
         problem.Title.ShouldBe("Conflict");
         problem.Detail.ShouldBe(expectedDetail);
+
+        if (!shouldPersistRejectedAudit)
+        {
+            auditStore.Records.ShouldBeEmpty();
+            unitOfWork.SaveEntitiesCallCount.ShouldBe(0);
+            return;
+        }
+
         var audit = auditStore.Records.ShouldHaveSingleItem();
         audit.Operation.ShouldBe(expectedOperation);
         audit.Outcome.ShouldBe(DocumentAuditOutcome.Rejected);

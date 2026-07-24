@@ -1,3 +1,4 @@
+using SharedKernel.Idempotency;
 using ViajantesTurismo.Admin.Domain.Documents;
 
 namespace ViajantesTurismo.Admin.Application.Documents;
@@ -7,4 +8,5 @@ public sealed record RegenerateDocumentDraftCommand(
     Guid DocumentId,
     string TemplateId,
     string TemplateVersion,
-    DocumentAuditContext AuditContext);
+    DocumentAuditContext AuditContext,
+    IdempotencyKey? IdempotencyKey = null);

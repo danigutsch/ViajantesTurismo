@@ -3,6 +3,7 @@ using Microsoft.EntityFrameworkCore.Design;
 using Microsoft.Extensions.DependencyInjection;
 using SharedKernel.Domain.EntityFrameworkCore;
 using SharedKernel.EntityFrameworkCore;
+using SharedKernel.Idempotency.EntityFrameworkCore;
 using SharedKernel.Messaging.IntegrationEvents.EntityFrameworkCore;
 using ViajantesTurismo.Resources;
 
@@ -18,6 +19,7 @@ internal sealed class AdminWriteDbContextDesignTimeFactory : IDesignTimeDbContex
     {
         var services = new ServiceCollection();
         services.AddDomainEventDispatch<AdminWriteDbContext>();
+        services.AddIdempotencyStore<AdminWriteDbContext>();
         services.AddIntegrationEventOutbox<AdminWriteDbContext>();
         services.AddPostgreSqlIntegrationEventTransportProducer<AdminWriteDbContext>(IntegrationEventConsumerNames.Catalog);
 

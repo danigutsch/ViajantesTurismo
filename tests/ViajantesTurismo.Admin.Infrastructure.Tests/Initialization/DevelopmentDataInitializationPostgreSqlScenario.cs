@@ -5,6 +5,7 @@ using Microsoft.Extensions.DependencyInjection;
 using SharedKernel.AuditTrail;
 using SharedKernel.Domain.EntityFrameworkCore;
 using SharedKernel.EntityFrameworkCore;
+using SharedKernel.Idempotency.EntityFrameworkCore;
 using SharedKernel.IntegrationTesting;
 using SharedKernel.Messaging.IntegrationEvents;
 using SharedKernel.Messaging.IntegrationEvents.EntityFrameworkCore;
@@ -124,6 +125,7 @@ internal sealed class DevelopmentDataInitializationPostgreSqlScenario : IAsyncDi
         services.AddSingleton<IAuditTrailSink<DocumentAuditRecord>, DocumentAuditTrailSink>();
         services.AddDomainEventProcessing();
         services.AddDomainEventDispatch<AdminWriteDbContext>();
+        services.AddIdempotencyStore<AdminWriteDbContext>();
         services.AddIntegrationEventOutbox<AdminWriteDbContext>();
         services.AddPostgreSqlIntegrationEventTransportProducer<AdminWriteDbContext>(IntegrationEventConsumerNames.Catalog);
         services.AddDbContext<AdminWriteDbContext>((_, options) =>

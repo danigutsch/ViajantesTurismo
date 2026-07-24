@@ -34,5 +34,6 @@ messages before providers and OpenTelemetry exporters receive them.
 - Microsoft Learn: <https://learn.microsoft.com/en-us/dotnet/core/extensions/compliance>
 - Microsoft Learn data classification: <https://learn.microsoft.com/en-us/dotnet/core/extensions/data-classification>
 - Microsoft Learn data redaction: <https://learn.microsoft.com/en-us/dotnet/core/extensions/data-redaction>
+- [Document retention and legal-hold policy proposal](operations/document-retention-and-legal-hold.md)
 - GDPR Article 5, 9, 25, and 32: <https://eur-lex.europa.eu/eli/reg/2016/679/oj/eng>
 - Brazil LGPD law: <https://www.planalto.gov.br/ccivil_03/_ato2015-2018/2018/lei/l13709.htm>

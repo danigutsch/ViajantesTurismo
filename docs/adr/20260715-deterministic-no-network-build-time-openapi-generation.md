@@ -7,7 +7,7 @@ authentication. The supported ASP.NET Core generator launches the application en
 startup registration can otherwise load credentials, configure telemetry, register external integrations,
 or perform OpenID Connect discovery.
 
-Issue #1047 required a durable decision for safe generation of Admin, Catalog, and Branding documents.
+Safe generation of Admin, Catalog, and Branding documents requires a durable architecture decision.
 
 ## Decision
 
@@ -76,4 +76,3 @@ Accepted.
 - [Architecture decision index](../ARCHITECTURE_DECISIONS.md)
 - [API compatibility workflow](../API_COMPATIBILITY.md)
 - [ASP.NET Core build-time OpenAPI generation](https://learn.microsoft.com/en-us/aspnet/core/fundamentals/openapi/aspnetcore-openapi?view=aspnetcore-10.0)
-- #1047

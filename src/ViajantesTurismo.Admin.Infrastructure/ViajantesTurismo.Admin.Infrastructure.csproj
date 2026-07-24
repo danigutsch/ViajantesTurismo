@@ -24,6 +24,7 @@
         <ProjectReference Include="..\SharedKernel\SharedKernel.AuditTrail\SharedKernel.AuditTrail.csproj" />
         <ProjectReference Include="..\SharedKernel\SharedKernel.Domain.EntityFrameworkCore\SharedKernel.Domain.EntityFrameworkCore.csproj" />
         <ProjectReference Include="..\SharedKernel\SharedKernel.EntityFrameworkCore\SharedKernel.EntityFrameworkCore.csproj" />
+        <ProjectReference Include="..\SharedKernel\SharedKernel.Idempotency.EntityFrameworkCore\SharedKernel.Idempotency.EntityFrameworkCore.csproj" />
         <ProjectReference Include="..\SharedKernel\SharedKernel.InputNormalization\SharedKernel.InputNormalization.csproj" />
         <ProjectReference Include="..\SharedKernel\SharedKernel.Messaging.IntegrationEvents\SharedKernel.Messaging.IntegrationEvents.csproj" />
         <ProjectReference Include="..\SharedKernel\SharedKernel.Messaging.IntegrationEvents.EntityFrameworkCore\SharedKernel.Messaging.IntegrationEvents.EntityFrameworkCore.csproj" />

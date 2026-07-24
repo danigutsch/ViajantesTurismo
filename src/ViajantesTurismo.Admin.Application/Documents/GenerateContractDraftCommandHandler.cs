@@ -1,5 +1,6 @@
-using SharedKernel.Results;
 using SharedKernel.Branding;
+using SharedKernel.Idempotency;
+using SharedKernel.Results;
 using ViajantesTurismo.Admin.Application.Mappings;
 using ViajantesTurismo.Admin.Domain.Documents;
 using ViajantesTurismo.Admin.Domain.Tours;
@@ -13,9 +14,9 @@ public sealed class GenerateContractDraftCommandHandler(
     IQueryService queryService,
     IDocumentStore documentStore,
     IBrandingApiClient brandingApiClient,
-    IUnitOfWork unitOfWork,
     TimeProvider timeProvider,
-    DocumentAuditWriter documentAuditWriter)
+    DocumentAuditWriter documentAuditWriter,
+    DocumentCommandIdempotency documentCommandIdempotency)
 {
     /// <summary>Generates and persists a new draft revision.</summary>
     public async Task<Result<Guid>> Handle(GenerateContractDraftCommand command, CancellationToken ct)
@@ -24,6 +25,16 @@ public sealed class GenerateContractDraftCommandHandler(
         if (command.AuditContext is null)
         {
             return DocumentAuditErrors.AuditContextRequired().ConvertError<Guid>();
+        }
+
+        var idempotencyScope = IdempotencyScope.From($"admin.documents.generate-contract-draft:{command.BookingId:N}");
+        var existingResult = await documentCommandIdempotency.GetExistingResult(
+            idempotencyScope,
+            command.IdempotencyKey,
+            ct);
+        if (existingResult is { } replayedResult)
+        {
+            return replayedResult;
         }
 
         var now = timeProvider.GetUtcNow().UtcDateTime;
@@ -106,9 +117,15 @@ public sealed class GenerateContractDraftCommandHandler(
 
         var lineage = lineageResult.Value;
         var draft = lineage.Revisions[0];
-        documentStore.Add(lineage);
-        await unitOfWork.SaveEntities(ct);
-        return Result.Ok(draft.Id);
+        return await documentCommandIdempotency.Execute(
+            idempotencyScope,
+            command.IdempotencyKey,
+            () =>
+            {
+                documentStore.Add(lineage);
+                return Task.FromResult(Result.Ok(draft.Id));
+            },
+            ct);
     }
 
     private async Task<Result<Guid>> RecordAndReturn(

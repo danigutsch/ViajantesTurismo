@@ -9,6 +9,7 @@
         <ProjectReference Include="..\SharedKernel\SharedKernel.Results\SharedKernel.Results.csproj"/>
         <ProjectReference Include="..\SharedKernel\SharedKernel.BuildingBlocks\SharedKernel.BuildingBlocks.csproj" />
         <ProjectReference Include="..\SharedKernel\SharedKernel.InputNormalization\SharedKernel.InputNormalization.csproj" />
+        <ProjectReference Include="..\SharedKernel\SharedKernel.Idempotency\SharedKernel.Idempotency.csproj" />
         <ProjectReference Include="..\SharedKernel\SharedKernel.DocumentRendering\SharedKernel.DocumentRendering.csproj" />
         <ProjectReference Include="..\SharedKernel\SharedKernel.Branding\SharedKernel.Branding.csproj" />
         <ProjectReference Include="..\SharedKernel\SharedKernel.Results.SourceGenerator\SharedKernel.Results.SourceGenerator.csproj"

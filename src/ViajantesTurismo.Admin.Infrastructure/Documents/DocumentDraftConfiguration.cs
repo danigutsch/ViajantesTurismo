@@ -25,6 +25,9 @@ internal sealed class DocumentDraftConfiguration : IEntityTypeConfiguration<Docu
         entity.HasIndex(document => new { document.DocumentLineageId, document.Revision })
             .IsUnique()
             .HasDatabaseName(DocumentDraftSchema.RevisionUniqueIndex);
+        entity.HasIndex(document => new { document.BookingId, document.Type, document.Revision })
+            .IsUnique()
+            .HasDatabaseName(DocumentDraftSchema.BookingTypeRevisionUniqueIndex);
         entity.Property(document => document.SourceVersion).HasMaxLength(DocumentLimits.MaxSourceVersionLength).IsRequired();
         entity.Property(document => document.BrandingVersion).HasMaxLength(DocumentLimits.MaxBrandingVersionLength).IsRequired();
         entity.Property(document => document.BrandingName).HasMaxLength(DocumentLimits.MaxBrandingNameLength).IsRequired();

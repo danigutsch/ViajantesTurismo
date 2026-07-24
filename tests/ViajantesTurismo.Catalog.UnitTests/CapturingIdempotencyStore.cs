@@ -81,6 +81,12 @@ public sealed class CapturingIdempotencyStore(
         return Complete(operation, completedAt, resultFingerprint: null, ct);
     }
 
+    public ValueTask StageCompletion(
+        IdempotencyOperation operation,
+        DateTimeOffset completedAt,
+        string? resultFingerprint,
+        CancellationToken ct) => Complete(operation, completedAt, resultFingerprint, ct);
+
     public ValueTask<IdempotencyEntry?> Get(
         IdempotencyOperation operation,
         CancellationToken ct)
