@@ -1,3 +1,5 @@
+using TestTraits = ViajantesTurismo.Admin.ContractTests.Infrastructure.TestTraits;
+
 namespace ViajantesTurismo.Admin.ContractTests;
 
 /// <summary>
@@ -23,8 +25,11 @@ public sealed class AdminOpenApiDocumentRegistrationTests
     }
 
     [Fact]
+    [Trait(SharedKernel.Testing.TestTraitNames.CategoryName, TestTraits.DriftGuardCategory)]
+    [Trait(SharedKernel.Testing.TestTraitNames.SurfaceName, TestTraits.OpenApiSurface)]
     public async Task Generates_a_customers_document_including_import_paths()
     {
+        // Act
         var document = await AdminOpenApiDocumentFactory.CreateDocument(
             "customers",
             TestContext.Current.CancellationToken,
@@ -32,6 +37,16 @@ public sealed class AdminOpenApiDocumentRegistrationTests
             "MapCustomerImportEndpoints",
             "MapToursEndpoints");
 
+        var importSchema = AdminOpenApiDocumentRegistrationTestHelpers.GetMultipartSchema(document, "/api/v1/customers/import/commit");
+        var commitImportPath = document.Paths["/api/v1/customers/import/commit"];
+        var commitImportOperations = commitImportPath.Operations.ShouldNotBeNull();
+        (commitImportOperations.TryGetValue(HttpMethod.Post, out var commitImportOperation)).ShouldBeTrue();
+        var commitImport = commitImportOperation.ShouldNotBeNull();
+        var commitImportParameterNames = (commitImport.Parameters ?? [])
+            .Select(parameter => parameter.Name)
+            .ToArray();
+
+        // Assert
         document.Paths.Keys.ShouldContain("/api/v1/customers");
         document.Paths.Keys.ShouldContain("/api/v1/customers/{id}");
         document.Paths.Keys.ShouldContain("/api/v1/customers/import");
@@ -39,11 +54,13 @@ public sealed class AdminOpenApiDocumentRegistrationTests
         document.Paths.Keys.ShouldNotContain("/customers");
         document.Paths.Keys.ShouldNotContain("/api/v1/tours");
 
-        var importSchema = AdminOpenApiDocumentRegistrationTestHelpers.GetMultipartSchema(document, "/api/v1/customers/import/commit");
         importSchema.AllOf.ShouldBeNull();
         var properties = importSchema.Properties.ShouldNotBeNull();
         properties.ContainsKey("file").ShouldBeTrue();
         properties.ContainsKey("conflictResolutions").ShouldBeTrue();
+        commitImport.RequestBody.ShouldNotBeNull().Content.ShouldNotBeNull().ContainsKey("multipart/form-data").ShouldBeTrue();
+        commitImportParameterNames.ShouldNotContain("file");
+        commitImportParameterNames.ShouldNotContain("conflictResolutions");
     }
 
     [Fact]
@@ -106,17 +123,19 @@ public sealed class AdminOpenApiDocumentRegistrationTests
     }
 
     [Fact]
-    public void Documents_document_describes_optional_idempotency_headers_for_generate_and_regenerate()
+    [Trait(SharedKernel.Testing.TestTraitNames.CategoryName, TestTraits.DriftGuardCategory)]
+    [Trait(SharedKernel.Testing.TestTraitNames.SurfaceName, TestTraits.OpenApiSurface)]
+    public void Documents_document_describes_required_route_identity_and_optional_idempotency_headers()
     {
         // Arrange
         var document = AdminOpenApiArtifactDriftGuard.CreateSnapshotSet()
             .GetCanonicalSnapshot("documents")
             .AsObject();
         var paths = document["paths"].ShouldNotBeNull().AsObject();
-        (string Path, string Method)[] idempotentOperations =
+        (string Path, string Method, string RouteParameterName)[] idempotentOperations =
         [
-            ("/api/v1/documents/bookings/{bookingId}/contract-drafts", "post"),
-            ("/api/v1/documents/{id}/regenerate", "post")
+            ("/api/v1/documents/bookings/{bookingId}/contract-drafts", "post", "bookingId"),
+            ("/api/v1/documents/{id}/regenerate", "post", "id")
         ];
 
         foreach (var operation in idempotentOperations)
@@ -130,12 +149,78 @@ public sealed class AdminOpenApiDocumentRegistrationTests
                 .Where(parameter => parameter["name"]?.GetValue<string>() == "Idempotency-Key")
                 .ToArray();
             var header = idempotencyHeaders.ShouldHaveSingleItem();
+            var routeParameter = parameters
+                .Select(parameter => parameter.ShouldNotBeNull().AsObject())
+                .ShouldHaveSingleItem(parameter => parameter["name"]?.GetValue<string>() == operation.RouteParameterName);
 
             // Assert
+            routeParameter["in"].ShouldNotBeNull().GetValue<string>().ShouldBe("path");
+            routeParameter["required"].ShouldNotBeNull().GetValue<bool>().ShouldBeTrue();
             header["in"].ShouldNotBeNull().GetValue<string>().ShouldBe("header");
             (header["required"]?.GetValue<bool>() ?? false).ShouldBeFalse();
             var schema = header["schema"].ShouldNotBeNull().AsObject();
             schema["type"].ShouldNotBeNull().GetValue<string>().ShouldBe("string");
+        }
+    }
+
+    [Fact]
+    [Trait(SharedKernel.Testing.TestTraitNames.CategoryName, TestTraits.DriftGuardCategory)]
+    [Trait(SharedKernel.Testing.TestTraitNames.SurfaceName, TestTraits.OpenApiSurface)]
+    public void Customers_document_keeps_sensitive_command_state_in_required_json_bodies_and_out_of_URL_parameters()
+    {
+        // Arrange
+        var document = AdminOpenApiArtifactDriftGuard.CreateSnapshotSet()
+            .GetCanonicalSnapshot("customers")
+            .AsObject();
+        var paths = document["paths"].ShouldNotBeNull().AsObject();
+        var customersPath = paths["/api/v1/customers"].ShouldNotBeNull().AsObject();
+        var customerByIdPath = paths["/api/v1/customers/{id}"].ShouldNotBeNull().AsObject();
+        var createOperation = customersPath["post"].ShouldNotBeNull().AsObject();
+        var updateOperation = customerByIdPath["put"].ShouldNotBeNull().AsObject();
+        var createRequestBody = createOperation["requestBody"].ShouldNotBeNull().AsObject();
+        var updateRequestBody = updateOperation["requestBody"].ShouldNotBeNull().AsObject();
+        string[] sensitiveCommandFields =
+        [
+            "personalInfo",
+            "identificationInfo",
+            "contactInfo",
+            "address",
+            "physicalInfo",
+            "accommodationPreferences",
+            "emergencyContact",
+            "medicalInfo"
+        ];
+
+        // Act
+        var createSchema = createRequestBody["content"].ShouldNotBeNull().AsObject()["application/json"]
+            .ShouldNotBeNull().AsObject()["schema"].ShouldNotBeNull().AsObject();
+        var updateSchema = updateRequestBody["content"].ShouldNotBeNull().AsObject()["application/json"]
+            .ShouldNotBeNull().AsObject()["schema"].ShouldNotBeNull().AsObject();
+        var createParameters = createOperation["parameters"] is { } createParameterNode
+            ? createParameterNode.AsArray()
+                .Select(parameter => parameter.ShouldNotBeNull().AsObject())
+                .ToArray()
+            : [];
+        var updateParameters = updateOperation["parameters"].ShouldNotBeNull().AsArray()
+            .Select(parameter => parameter.ShouldNotBeNull().AsObject())
+            .ToArray();
+        var routeParameter = updateParameters.ShouldHaveSingleItem(parameter => parameter["name"]?.GetValue<string>() == "id");
+        var urlParameterNames = createParameters
+            .Concat(updateParameters)
+            .Where(parameter => parameter["in"]?.GetValue<string>() is "path" or "query")
+            .Select(parameter => parameter["name"].ShouldNotBeNull().GetValue<string>())
+            .ToArray();
+
+        // Assert
+        createRequestBody["required"].ShouldNotBeNull().GetValue<bool>().ShouldBeTrue();
+        updateRequestBody["required"].ShouldNotBeNull().GetValue<bool>().ShouldBeTrue();
+        createSchema["$ref"].ShouldNotBeNull().GetValue<string>().ShouldBe("#/components/schemas/CreateCustomerDto");
+        updateSchema["$ref"].ShouldNotBeNull().GetValue<string>().ShouldBe("#/components/schemas/UpdateCustomerDto");
+        routeParameter["in"].ShouldNotBeNull().GetValue<string>().ShouldBe("path");
+        routeParameter["required"].ShouldNotBeNull().GetValue<bool>().ShouldBeTrue();
+        foreach (var sensitiveCommandField in sensitiveCommandFields)
+        {
+            urlParameterNames.ShouldNotContain(sensitiveCommandField);
         }
     }
 

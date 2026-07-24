@@ -46,4 +46,23 @@ public sealed class DocumentationSourceOfTruthTests
         // Assert
         checkCount.ShouldBe(4);
     }
+
+    [Fact]
+    public void API_request_shape_policy_should_be_canonical_and_linked()
+    {
+        // Arrange
+        var repositoryRoot = GetRepositoryRoot();
+        var policyPath = Path.Combine(repositoryRoot, "docs", "API_REQUEST_SHAPES.md");
+        var documentationIndex = File.ReadAllText(Path.Combine(repositoryRoot, "docs", "README.md"));
+
+        // Act
+        var policyExists = File.Exists(policyPath);
+
+        // Assert
+        policyExists.ShouldBeTrue("Expected docs/API_REQUEST_SHAPES.md to own the API request-shape policy.");
+        var policy = File.ReadAllText(policyPath);
+        documentationIndex.ShouldContain("[API request shape policy](API_REQUEST_SHAPES.md)", StringComparison.Ordinal);
+        policy.ShouldContain("<!-- api-request-shape-policy:start -->", StringComparison.Ordinal);
+        policy.ShouldContain("<!-- api-request-shape-policy:end -->", StringComparison.Ordinal);
+    }
 }

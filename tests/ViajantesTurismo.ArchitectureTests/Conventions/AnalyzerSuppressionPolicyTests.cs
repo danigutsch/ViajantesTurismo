@@ -1,3 +1,5 @@
+using System.Xml.Linq;
+
 namespace ViajantesTurismo.ArchitectureTests.Conventions;
 
 public sealed partial class AnalyzerSuppressionPolicyTests
@@ -80,6 +82,61 @@ public sealed partial class AnalyzerSuppressionPolicyTests
 
         (filesWithSuppressMessage.Length == 0).ShouldBeTrue(
             $"Expected SuppressMessage attributes to stay on the approved analyzer policy allowlist, but found:{Environment.NewLine}{string.Join(Environment.NewLine, filesWithSuppressMessage)}");
+    }
+
+    [Fact]
+    public void Repository_global_analyzers_and_configuration_should_not_enforce_API_request_locations()
+    {
+        // Arrange
+        var repositoryRoot = AnalyzerSuppressionPolicyTestsHelpers.GetRepositoryRoot();
+        var globalBuildPropsPath = Path.Combine(repositoryRoot, "Directory.Build.props");
+        var globalBuildProps = XDocument.Load(globalBuildPropsPath);
+        var globalAnalyzerDirectories = globalBuildProps.Descendants("ProjectReference")
+            .Where(reference => string.Equals(reference.Attribute("OutputItemType")?.Value, "Analyzer", StringComparison.Ordinal))
+            .Select(reference => reference.Attribute("Include")?.Value
+                ?? throw new InvalidOperationException("A global analyzer project reference must declare Include."))
+            .Select(include => include.Replace(
+                "$(MSBuildThisFileDirectory)",
+                repositoryRoot + Path.DirectorySeparatorChar,
+                StringComparison.Ordinal))
+            .Select(include => Path.GetDirectoryName(Path.GetFullPath(include, repositoryRoot))
+                ?? throw new InvalidOperationException($"Could not resolve the global analyzer path '{include}'."))
+            .Distinct(StringComparer.Ordinal)
+            .ToArray();
+        string[] requestBindingTokens =
+        [
+            "AsParameters",
+            "FromBody",
+            "FromForm",
+            "FromHeader",
+            "FromQuery",
+            "FromRoute",
+            "body-only",
+            "body only",
+            "BodyOnly"
+        ];
+
+        // Act
+        var analyzerEvidence = globalAnalyzerDirectories
+            .SelectMany(directory => Directory.EnumerateFiles(directory, "*.cs", SearchOption.AllDirectories))
+            .SelectMany(path => requestBindingTokens
+                .Where(token => File.ReadAllText(path).Contains(token, StringComparison.OrdinalIgnoreCase))
+                .Select(token => $"{Path.GetRelativePath(repositoryRoot, path).Replace('\\', '/')}:{token}"))
+            .ToArray();
+        var configurationEvidence = AnalyzerSuppressionPolicyTestsHelpers.EnumerateRepositoryFiles(repositoryRoot, ".editorconfig")
+            .Concat(AnalyzerSuppressionPolicyTestsHelpers.EnumerateRepositoryFiles(repositoryRoot, "*.props"))
+            .Concat(AnalyzerSuppressionPolicyTestsHelpers.EnumerateRepositoryFiles(repositoryRoot, "*.targets"))
+            .SelectMany(path => requestBindingTokens
+                .Where(token => File.ReadAllText(path).Contains(token, StringComparison.OrdinalIgnoreCase))
+                .Select(token => $"{Path.GetRelativePath(repositoryRoot, path).Replace('\\', '/')}:{token}"))
+            .ToArray();
+
+        // Assert
+        globalAnalyzerDirectories.ShouldNotBeEmpty();
+        (analyzerEvidence.Length == 0).ShouldBeTrue(
+            $"Expected repository-global analyzers not to enforce API request locations, but found:{Environment.NewLine}{string.Join(Environment.NewLine, analyzerEvidence)}");
+        (configurationEvidence.Length == 0).ShouldBeTrue(
+            $"Expected analyzer configuration not to enable a body-only request rule, but found:{Environment.NewLine}{string.Join(Environment.NewLine, configurationEvidence)}");
     }
 
 }
