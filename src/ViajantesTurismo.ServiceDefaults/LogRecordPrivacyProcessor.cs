@@ -17,39 +17,61 @@ internal sealed class LogRecordPrivacyProcessor : BaseProcessor<LogRecord>
         }
 
         var attributes = data.Attributes;
-        string? originalFormat = null;
-        Exception? structuredException = null;
-        var requiresSanitization = data.Exception is not null;
-
-        if (attributes is not null)
-        {
-            foreach (var attribute in attributes)
-            {
-                if (string.Equals(attribute.Key, OriginalFormatAttribute, StringComparison.Ordinal))
-                {
-                    originalFormat = attribute.Value as string;
-                }
-
-                requiresSanitization |= TelemetryPrivacyAttributeClassifier.IsSensitive(attribute.Key)
-                    || IsOversizedErrorType(attribute)
-                    || attribute.Value is Exception;
-                if (structuredException is null && attribute.Value is Exception exception)
-                {
-                    structuredException = exception;
-                }
-            }
-        }
+        var attributesRequireSanitization = AnalyzeAttributes(
+            attributes,
+            out var originalFormat,
+            out var structuredException);
 
         data.Body = originalFormat;
         data.FormattedMessage = null;
 
-        if (!requiresSanitization)
+        if (data.Exception is null && !attributesRequireSanitization)
         {
             return;
         }
 
         var exceptionType = GetExceptionType(data.Exception ?? structuredException);
         data.Exception = null;
+        data.Attributes = CreateSanitizedAttributes(attributes, exceptionType);
+    }
+
+    private static bool AnalyzeAttributes(
+        IReadOnlyList<KeyValuePair<string, object?>>? attributes,
+        out string? originalFormat,
+        out Exception? structuredException)
+    {
+        originalFormat = null;
+        structuredException = null;
+        var requiresSanitization = false;
+
+        if (attributes is null)
+        {
+            return requiresSanitization;
+        }
+
+        foreach (var attribute in attributes)
+        {
+            if (string.Equals(attribute.Key, OriginalFormatAttribute, StringComparison.Ordinal))
+            {
+                originalFormat = attribute.Value as string;
+            }
+
+            requiresSanitization |= TelemetryPrivacyAttributeClassifier.IsSensitive(attribute.Key)
+                || IsOversizedErrorType(attribute)
+                || attribute.Value is Exception;
+            if (structuredException is null && attribute.Value is Exception exception)
+            {
+                structuredException = exception;
+            }
+        }
+
+        return requiresSanitization;
+    }
+
+    private static List<KeyValuePair<string, object?>> CreateSanitizedAttributes(
+        IReadOnlyList<KeyValuePair<string, object?>>? attributes,
+        string? exceptionType)
+    {
         var capacity = (attributes?.Count ?? 0) + (exceptionType is null ? 0 : 1);
         var sanitizedAttributes = new List<KeyValuePair<string, object?>>(capacity);
 
@@ -57,9 +79,7 @@ internal sealed class LogRecordPrivacyProcessor : BaseProcessor<LogRecord>
         {
             foreach (var attribute in attributes)
             {
-                if (TelemetryPrivacyAttributeClassifier.IsSensitive(attribute.Key)
-                    || attribute.Value is Exception
-                    || (exceptionType is not null && string.Equals(attribute.Key, ExceptionTypeAttribute, StringComparison.OrdinalIgnoreCase)))
+                if (ShouldRemoveAttribute(attribute, exceptionType))
                 {
                     continue;
                 }
@@ -73,7 +93,17 @@ internal sealed class LogRecordPrivacyProcessor : BaseProcessor<LogRecord>
             sanitizedAttributes.Add(new KeyValuePair<string, object?>(ExceptionTypeAttribute, exceptionType));
         }
 
-        data.Attributes = sanitizedAttributes;
+        return sanitizedAttributes;
+    }
+
+    private static bool ShouldRemoveAttribute(
+        KeyValuePair<string, object?> attribute,
+        string? exceptionType)
+    {
+        return TelemetryPrivacyAttributeClassifier.IsSensitive(attribute.Key)
+            || attribute.Value is Exception
+            || (exceptionType is not null
+                && string.Equals(attribute.Key, ExceptionTypeAttribute, StringComparison.OrdinalIgnoreCase));
     }
 
     private static string? GetExceptionType(Exception? exception)
