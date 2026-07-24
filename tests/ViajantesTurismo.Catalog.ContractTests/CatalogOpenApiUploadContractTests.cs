@@ -31,22 +31,21 @@ public sealed class CatalogOpenApiUploadContractTests
 
         // Act
         var mediaTypes = content.Select(item => item.Key).ToArray();
-        var routeParameter = parameters.ShouldHaveSingleItem(parameter => parameter["name"]?.GetValue<string>() == "id");
-        var urlParameterNames = parameters
-            .Where(parameter => parameter["in"]?.GetValue<string>() is "path" or "query")
-            .Select(parameter => parameter["name"].ShouldNotBeNull().GetValue<string>())
+        var pathParameters = parameters
+            .Where(parameter => parameter["in"]?.GetValue<string>() == "path")
             .ToArray();
+        var queryParameters = parameters
+            .Where(parameter => parameter["in"]?.GetValue<string>() == "query")
+            .ToArray();
+        var routeParameter = pathParameters.ShouldHaveSingleItem();
 
         // Assert
-        mediaTypes.ShouldContain("multipart/form-data");
-        mediaTypes.ShouldNotContain("application/x-www-form-urlencoded");
+        requestBody["required"].ShouldNotBeNull().GetValue<bool>().ShouldBeTrue();
+        mediaTypes.ShouldHaveSingleItem().ShouldBe("multipart/form-data");
+        routeParameter["name"].ShouldNotBeNull().GetValue<string>().ShouldBe("id");
         routeParameter["in"].ShouldNotBeNull().GetValue<string>().ShouldBe("path");
         routeParameter["required"].ShouldNotBeNull().GetValue<bool>().ShouldBeTrue();
-        urlParameterNames.ShouldNotContain("file");
-        urlParameterNames.ShouldNotContain("altText");
-        urlParameterNames.ShouldNotContain("caption");
-        urlParameterNames.ShouldNotContain("attribution");
-        urlParameterNames.ShouldNotContain("copyright");
+        queryParameters.ShouldBeEmpty();
         requiredFields.ShouldContain("file");
         requiredFields.ShouldContain("altText");
         properties.ContainsKey("file").ShouldBeTrue();
