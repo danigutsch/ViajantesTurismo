@@ -15,6 +15,7 @@ internal static class DocumentEndpoints
     private const string ContractTemplateVersion = "1";
     private const string AdministrativeVoidReasonCode = "administrative-void";
     private const string HtmlMediaType = "text/html; charset=utf-8";
+    private const string IdempotencyKeyHeaderName = "Idempotency-Key";
 
     /// <summary>Maps generated-document endpoints to the Admin API.</summary>
     public static void MapDocumentEndpoints(this WebApplication app)
@@ -106,7 +107,7 @@ internal static class DocumentEndpoints
 
     private static async Task<IResult> GenerateContractDraft(
         [FromRoute] Guid bookingId,
-        [FromHeader(Name = "Idempotency-Key")] string? idempotencyKey,
+        [FromHeader(Name = IdempotencyKeyHeaderName)] string? idempotencyKey,
         [FromServices] GenerateContractDraftCommandHandler handler,
         [FromServices] IDocumentQueryService queryService,
         [FromServices] IServiceScopeFactory scopeFactory,
@@ -289,7 +290,7 @@ internal static class DocumentEndpoints
 
     private static async Task<IResult> Regenerate(
         [FromRoute] Guid id,
-        [FromHeader(Name = "Idempotency-Key")] string? idempotencyKey,
+        [FromHeader(Name = IdempotencyKeyHeaderName)] string? idempotencyKey,
         [FromServices] RegenerateDocumentDraftCommandHandler handler,
         [FromServices] IDocumentQueryService queryService,
         [FromServices] IServiceScopeFactory scopeFactory,
@@ -526,9 +527,9 @@ internal static class DocumentEndpoints
         }
 
         return Result.Invalid(
-            detail: "Idempotency-Key must use the supported opaque token format.",
-            field: "Idempotency-Key",
-            message: "Idempotency-Key is invalid.")
+            detail: $"{IdempotencyKeyHeaderName} must use the supported opaque token format.",
+            field: IdempotencyKeyHeaderName,
+            message: $"{IdempotencyKeyHeaderName} is invalid.")
             .ConvertError<IdempotencyKey>();
     }
 
