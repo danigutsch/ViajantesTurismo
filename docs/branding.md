@@ -13,13 +13,13 @@ module in `ViajantesTurismo.Catalog.ApiService` without moving it into the Catal
 - current-decision: `catalog-transport-table`
 - current-decision: `exact-route-audiences`
 - current-decision: `independent-logical-module`
-- current-decision: `management-if-match`
 - current-decision: `no-ordinary-api-http`
 - current-decision: `openapi-retarget-gate`
 - current-decision: `positive-event-revision`
 - current-decision: `production-platform-undecided`
 - current-decision: `public-cache-60-300`
 - current-decision: `recovery-gates-document-generation`
+- current-decision: `rfc9110-strong-if-match`
 - current-decision: `shared-process-blast-radius`
 - current-decision: `transport-ack-boundary`
 <!-- doc-fact:branding-architecture:end -->
@@ -153,15 +153,17 @@ Current workflow:
 
 The target keeps this route and full-state replacement shape but adds optimistic concurrency.
 Management `GET` returns `SourceEpoch`, `SourceRevision`, and strong opaque
-`ETag: "<epoch>:<positive-revision>"`. `PUT` requires the same strong value in `If-Match`; missing
-preconditions return 428. A stale epoch/revision returns 409 with
-`branding.revision_conflict`, writes no current/history/outbox state, and is not retried automatically.
-Malformed, weak, wildcard, or multiple preconditions return 400 with
-`branding.invalid_revision_precondition`.
-The editor reloads and deliberately reapplies or merges changes. A successful `PUT` returns the epoch,
-new revision, and ETag. Typed clients expose the expected opaque validator and conflict outcome;
-Branding OpenAPI documents describe `If-Match`, `ETag`, 400, 409, and 428. A two-editor contract test
-proves stale full-state replacement cannot overwrite the first editor.
+`ETag: "<epoch>:<positive-revision>"`. `PUT` requires `If-Match`; absence returns 428. RFC 9110
+strong comparison applies: any strongly matching member of a valid entity-tag list succeeds, while a
+valid nonmatching list or weak tag returns 412. `If-Match: *` succeeds for the existing singleton and
+would return 412 if it did not exist. Only malformed field syntax, including an invalid mixture of
+the alternative `*` and list forms, returns 400.
+
+A false precondition writes no current/history/outbox state and is not retried automatically. The
+editor reloads and deliberately reapplies or merges changes. A successful `PUT` returns the epoch, new
+revision, and ETag. Typed clients keep the validator opaque and expose 400/412/428 outcomes. Branding
+OpenAPI documents describe the conditional headers and responses. Tests cover two editors,
+matching/nonmatching lists, wildcard, weak tags, missing headers, and malformed syntax.
 
 Management.Web treats Branding as operational configuration. It should keep the edit UI functional:
 clear forms, validation messages, simple swatches, and previews of the saved values. It should not

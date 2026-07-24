@@ -140,22 +140,28 @@ that the target topology is deployed or production-ready.
 ### Management optimistic concurrency contract
 
 - Management `GET` returns the full settings document with `SourceEpoch`, `SourceRevision`, and a strong opaque
-  `ETag` whose canonical value includes both, for example `ETag: "<epoch>:42"`. Epoch participation prevents a
-  restored source lineage from reusing a pre-restore validator.
-- Management `PUT` keeps full-state replacement semantics and the existing route, but requires exactly one
-  strong `If-Match` value from the preceding `GET`. Wildcards and weak validators are rejected; a missing
-  precondition returns `428 Precondition Required`, while malformed, weak, wildcard, or multiple values return
-  `400 Bad Request` with `branding.invalid_revision_precondition`.
-- The application compares the `If-Match` epoch and revision with current state inside the write transaction. A
-  stale expected value returns `409 Conflict` with the stable `branding.revision_conflict` problem code,
-  performs no state, history, or outbox write, and is never retried blindly by the server or typed client. The
-  editor must reload and deliberately reapply or merge its changes.
+  `ETag` whose canonical quoted value contains the stable epoch token and invariant positive revision, for
+  example `ETag: "<epoch>:42"`. Epoch participation prevents a restored source lineage from reusing a
+  pre-restore validator.
+- Management `PUT` keeps full-state replacement semantics and the existing route, but requires `If-Match`.
+  Absence returns `428 Precondition Required` with `branding.precondition_required`.
+- The server parses `If-Match` using RFC 9110 grammar and evaluates it with strong comparison inside the write
+  transaction. Multiple entity tags form a valid list; any strongly matching member makes the condition true.
+  Weak tags are valid list members but never strongly match; a valid list with no strong match returns
+  `412 Precondition Failed`.
+- `If-Match: *` succeeds because the singleton Branding settings resource exists after expansion; it would return
+  412 if the resource did not exist. A list and `*` are the grammar's alternative forms, so a field value that
+  combines them is malformed rather than a list match.
+- Only malformed conditional-header syntax returns `400 Bad Request` with `branding.invalid_if_match`. A
+  syntactically valid but false condition—including a stale strong tag, a nonmatching list, or weak-only
+  matches—returns 412 with `branding.precondition_failed`, performs no state/history/outbox write, and is never
+  retried blindly. The editor reloads and deliberately reapplies or merges its changes.
 - A successful `PUT` returns the saved document with its `SourceEpoch`, new `SourceRevision`, and matching
-  `ETag`. Management clients expose the expected validator and conflict as contract outcomes rather than raw header
-  parsing.
-- Branding OpenAPI documents retain the route but add `If-Match`, `ETag`, `400`, `409`, and `428` contract metadata.
-  Contract/client tests cover two editors reading revision N, editor A writing N+1, and editor B receiving 409
-  without overwriting A.
+  `ETag`. Management clients treat the validator as opaque and expose malformed, required, and failed
+  preconditions as contract outcomes rather than reimplementing entity-tag parsing.
+- Branding OpenAPI documents retain the route but add `If-Match`, `ETag`, `400`, `412`, and `428` contract
+  metadata. Contract/client tests cover two editors reading revision N, editor A writing N+1, and editor B
+  receiving 412 without overwriting A, plus wildcard, matching/nonmatching lists, weak tags, and malformed syntax.
 
 ### HTTP, caching, and synchronous seams
 
@@ -262,8 +268,9 @@ expanded into Branding by this decision.
   tests prove transition to poison and audited replay.
 - Contract tests prove every `BrandingSettingsChangedV1` has a non-empty epoch and positive revision, while only
   pre-rollout document rows may retain null Branding revision provenance.
-- Management API/client/OpenAPI tests exercise required strong `If-Match`, `ETag`, 400, 428, 409, no blind
-  retry, and the two-editor lost-update scenario.
+- Management API/client/OpenAPI tests verify epoch/revision strong ETags, missing-header 428, malformed-syntax
+  400, valid nonmatch 412, weak-tag strong comparison, existing-resource `*`, matching/nonmatching lists, no
+  blind retry, and the two-editor lost-update scenario.
 - Recovery tests cover source restore with epoch rotation, current-snapshot republish, lost projection with
   retained inbox/watermark state, complete projection/inbox/watermark rebuild, atomic reseed audit, old-epoch
   outbox supersession/transport quarantine, and document-generation/write/relay gating until `Ready`.

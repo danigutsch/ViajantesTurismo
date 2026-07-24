@@ -40,6 +40,10 @@ That mode preserves canonical `branding`, `public-branding`, and Branding-only `
 Branding contract-test ownership. Catalog-hosted generation must not merge Branding artifacts into
 Catalog ownership or include unrelated Catalog routes in the Branding-only documents.
 
+Branding generation also preserves the Management conditional contract: strong `ETag`, required
+`If-Match`, RFC 9110 entity-tag list/weak-tag/`*` semantics, and distinct 400 malformed-syntax, 412
+false-precondition, and 428 missing-precondition responses.
+
 The contraction gate updates tool target tests, generated filename mapping, drift guards, refresh
 hints, and contract tests before deleting the standalone project. Trusted generation still omits
 runtime relays, database access, service discovery, and OIDC/JWT registration while retaining both

@@ -38,6 +38,11 @@ shared process may generate more than one logical `v1` artifact: ADR-040 preserv
 Branding-only canonical `v1` after Catalog.ApiService co-hosting rather than merging contract ownership.
 Refresh committed artifacts only when the HTTP contract changes intentionally.
 
+Conditional request semantics are part of the versioned HTTP contract. Branding management v1 uses
+RFC 9110 strong ETag/`If-Match` comparison: valid false conditions return 412, missing required
+preconditions return 428, and only malformed field syntax returns 400. Entity-tag lists, weak tags,
+and `*` retain their standards-defined meanings; they are not alternate application-version signals.
+
 ## Alpha evolution
 
 While the app API is alpha, evolve its active route and implementation directly. Do not retain old

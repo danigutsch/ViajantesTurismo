@@ -393,7 +393,9 @@ Target delivery rules:
   immutable envelope and remains guarded by inbox identity and epoch/revision comparison.
 - Reseed gates document generation in `Recovering`, rotates source epoch for a source rewind, and
   commits inbox, full projection, watermark, old/new audit, and return to `Ready` atomically.
-- Management uses strong ETag/`If-Match`; a stale full-state PUT returns 409 and is not blindly retried.
+- Management uses RFC 9110 strong ETag/`If-Match`: missing returns 428, malformed syntax 400, a valid
+  false condition 412, and `*` succeeds for the existing singleton. Failed preconditions are not
+  blindly retried.
 - This is event-carried state transfer, not event sourcing. No projection framework, distributed cache,
   SignalR, SSE, WebSockets, HTTP/3 requirement, or ordinary API-to-API HTTP is introduced.
 

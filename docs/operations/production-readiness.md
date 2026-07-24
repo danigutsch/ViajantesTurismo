@@ -161,7 +161,8 @@ Before removing the standalone executable:
 
 1. apply only forward-compatible schema expansion that the retained rollback artifact can use;
 2. deploy the upgraded writer in both hosts and verify atomic current/revision/outbox writes plus
-   strong ETag/`If-Match` two-editor conflict behavior;
+   RFC 9110 strong ETag/`If-Match` two-editor, wildcard, matching/nonmatching list, weak-tag, 400, 412,
+   and 428 behavior;
 3. verify atomic Branding outbox-to-Catalog-transport handoff and both worker crash boundaries, including
    idempotent redelivery after Admin commit and before transport acknowledgement;
 4. verify finite retry/poison/replay, source/applied epoch/revision watermarks, source-rewind epoch

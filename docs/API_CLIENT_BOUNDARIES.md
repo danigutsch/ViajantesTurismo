@@ -26,10 +26,11 @@ The host owns the API version prefix and base-address wiring, while the Branding
 segments, defaults, persistence behavior, authorization, and cache policy.
 
 The target Management Branding client returns source epoch/revision plus a strong opaque ETag from
-`GET` and requires that epoch/revision validator for full-state `PUT` through `If-Match`. It exposes
-409 revision conflict and 400 invalid precondition plus 428 missing precondition as explicit outcomes.
-Neither the HTTP client nor resilience handlers retry a stale full-state mutation automatically; the
-editor reloads and deliberately reapplies or merges.
+`GET` and sends an RFC 9110 `If-Match` precondition for full-state `PUT`. It treats entity tags as
+opaque, defaults to the exact GET validator, and does not reimplement strong comparison or classify
+valid lists, weak tags, or `*` as malformed. It exposes 400 malformed syntax, 412 false precondition,
+and 428 missing precondition as explicit outcomes. Neither the HTTP client nor resilience handlers
+retry a 412 full-state mutation automatically; the editor reloads and deliberately reapplies or merges.
 
 Contract test projects also contain OpenAPI document clients that are test-local helpers, not app clients.
 

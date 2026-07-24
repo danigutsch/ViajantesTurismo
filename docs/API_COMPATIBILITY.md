@@ -107,10 +107,10 @@ Branding-only generation. Preserve `branding`, `public-branding`, and Branding-o
 do not replace them with Catalog-owned or mixed-route snapshots.
 
 The Management Branding optimistic-concurrency change keeps the route and full-state PUT but adds
-`SourceEpoch`, `SourceRevision`, strong `ETag`/`If-Match`, 400 invalid-precondition, 409 conflict, and 428 missing
-precondition metadata. Refresh the
-canonical Branding artifacts and typed clients together; clients must expose conflict as an outcome
-and must not auto-retry stale full-state writes.
+`SourceEpoch`, `SourceRevision`, strong `ETag`/`If-Match`, 400 malformed syntax, 412 false
+precondition, and 428 missing precondition metadata. OpenAPI descriptions preserve RFC 9110 list,
+weak-tag strong-comparison, and existing-singleton `*` semantics. Refresh canonical Branding artifacts
+and typed clients together; clients expose precondition failure as an outcome and never auto-retry it.
 
 Then run:
 

@@ -162,13 +162,13 @@
         "catalog-transport-table",
         "exact-route-audiences",
         "independent-logical-module",
-        "management-if-match",
         "no-ordinary-api-http",
         "openapi-retarget-gate",
         "positive-event-revision",
         "production-platform-undecided",
         "public-cache-60-300",
         "recovery-gates-document-generation",
+        "rfc9110-strong-if-match",
         "shared-process-blast-radius",
         "transport-ack-boundary"
       ]

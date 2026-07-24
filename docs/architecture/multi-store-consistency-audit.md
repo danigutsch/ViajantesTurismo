@@ -141,8 +141,9 @@ and connection-resiliency guidance on transaction commit ambiguity:
 - Current trigger: `BrandingEndpoints.SaveSettings` in the standalone Branding host.
 - Target trigger: the same logical Branding endpoint module hosted by Catalog.ApiService.
 - Concurrent editor boundary: Management `GET` returns source epoch/revision and a strong opaque ETag; full-state
-  `PUT` requires matching `If-Match`; a stale write returns 409 without current/history/outbox changes
-  or automatic retry.
+  `PUT` requires `If-Match`. A syntactically valid false condition returns 412 without
+  current/history/outbox changes or automatic retry; RFC 9110 list and existing-singleton `*` semantics
+  remain valid.
 - Systems touched by the target write: Branding current state, append-only full-state revision, and
   context-qualified `branding.outbox_messages` in one local transaction. The relay later inserts a
   `ConsumerName = 'admin'` row into the Catalog database's default
@@ -199,8 +200,10 @@ and connection-resiliency guidance on transaction commit ambiguity:
   `SharedKernel.Messaging.IntegrationEvents.EntityFrameworkCore` and
   `SharedKernel.Idempotency.EntityFrameworkCore`; storage-neutral contracts live in
   `SharedKernel.Messaging.IntegrationEvents` and `SharedKernel.Idempotency`.
-- Shared EF messaging tables use the `messaging` schema to group asynchronous delivery and idempotency
-  infrastructure separately from domain tables.
+- The SharedKernel EF provider defaults used by current Admin and Catalog mappings place messaging
+  tables in the `messaging` schema. ADR-040's context-qualified Branding outbox is the explicit
+  `branding.outbox_messages` exception; Branding-to-Admin transport still uses the Catalog database's
+  default `messaging.transport_messages` mapping.
 
 ## Follow-up implementation candidates
 
