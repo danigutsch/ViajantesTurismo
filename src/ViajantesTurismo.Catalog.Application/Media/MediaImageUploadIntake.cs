@@ -83,13 +83,13 @@ public sealed partial class MediaImageUploadIntake(
         var scanResult = await Scan(objectKey, content, request.ContentType, actualLength, ct).ConfigureAwait(false);
         if (scanResult.Status is MediaUploadScanStatus.Failed)
         {
-            LogScanDiagnostic(scanResult);
+            LogScanDiagnostic(scanResult.Status);
             return Result.Unavailable<MediaImageUploadIntakeResult>(ScannerUnavailableMessage);
         }
 
         if (scanResult.Status is MediaUploadScanStatus.Rejected or MediaUploadScanStatus.Pending)
         {
-            LogScanDiagnostic(scanResult);
+            LogScanDiagnostic(scanResult.Status);
             return Result.Invalid<MediaImageUploadIntakeResult>(
                 InvalidUploadMessage,
                 nameof(scanResult.Status),
@@ -241,13 +241,7 @@ public sealed partial class MediaImageUploadIntake(
         return string.Create(CultureInfo.InvariantCulture, $"sha256:{Convert.ToHexString(hash).ToUpperInvariant()}");
     }
 
-    private void LogScanDiagnostic(MediaUploadScanResult scanResult)
-    {
-        if (!string.IsNullOrWhiteSpace(scanResult.Message))
-        {
-            LogScanDiagnostic(logger, scanResult.Status);
-        }
-    }
+    private void LogScanDiagnostic(MediaUploadScanStatus scanStatus) => LogScanDiagnostic(logger, scanStatus);
 
     [LoggerMessage(LogLevel.Warning, "Media upload scanner failed. Failure type: {FailureType}.")]
     private static partial void LogScannerFailure(ILogger logger, string failureType);

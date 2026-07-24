@@ -43,6 +43,36 @@ public sealed class MediaImageUploadIntakeTests
     }
 
     [Fact]
+    public async Task Accept_logs_the_scan_status_when_the_scanner_message_is_missing()
+    {
+        // Arrange
+        var originalImage = PublicMediaImageTestFactory.CreatePendingImage(Guid.CreateVersion7(), 1);
+        var content = CatalogTestImages.CreateJpeg(320, 160);
+        var logger = new CollectingLogger<MediaImageUploadIntake>();
+        var intake = MediaImageUploadIntakeTestFactory.Create(
+            new StubMediaUploadScanner(new MediaUploadScanResult(MediaUploadScanStatus.Rejected)),
+            new InMemoryMediaObjectStore(),
+            new InMemoryPublicMediaImageStore(originalImage),
+            logger: logger);
+        var request = new MediaImageUploadIntakeRequest(
+            Guid.CreateVersion7(),
+            new MemoryStream(content),
+            "photo.jpg",
+            "image/jpeg",
+            content.Length,
+            "Cyclists in the mountains",
+            [new MediaImageTourLink(Guid.CreateVersion7(), 0, true)]);
+
+        // Act
+        var result = await intake.Accept(request, TestContext.Current.CancellationToken);
+
+        // Assert
+        result.IsFailure.ShouldBeTrue();
+        var message = logger.Messages.ShouldHaveSingleItem();
+        message.ShouldContain(nameof(MediaUploadScanStatus.Rejected), StringComparison.Ordinal);
+    }
+
+    [Fact]
     public async Task Accept_stores_metadata_with_generated_object_key_when_scan_passes()
     {
         // Arrange
