@@ -136,7 +136,7 @@ public sealed class DocumentEndpointFailureTests
         DocumentAuditOperation.Regenerate,
         nameof(DbUpdateConcurrencyException),
         "The document was changed by another request. Reload and retry.",
-        false)]
+        true)]
     [InlineData(
         "/review",
         DocumentAuditOperation.BeginReview,
@@ -148,7 +148,7 @@ public sealed class DocumentEndpointFailureTests
         DocumentAuditOperation.Regenerate,
         nameof(DocumentRevisionConflictException),
         "A document revision already exists for this booking. Reload and retry.",
-        false)]
+        true)]
     [InlineData(
         "/review",
         DocumentAuditOperation.BeginReview,

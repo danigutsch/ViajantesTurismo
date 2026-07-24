@@ -590,7 +590,7 @@ public sealed class DocumentApiEndpointTests(ApiFixture fixture)
     }
 
     [Fact]
-    public async Task Concurrent_contract_generation_returns_conflict_without_duplicate_audits()
+    public async Task Concurrent_contract_generation_persists_one_success_and_one_rejection_without_duplicate_state()
     {
         // Arrange
         var cancellationToken = TestContext.Current.CancellationToken;
@@ -627,13 +627,14 @@ public sealed class DocumentApiEndpointTests(ApiFixture fixture)
         bookingStatus.ShouldBe("Confirmed");
         draftCount.ShouldBe(1);
         var generationAudits = audits.Where(audit => audit.Operation == "Generate").ToArray();
-        var generationAudit = generationAudits.ShouldHaveSingleItem();
-        generationAudit.Outcome.ShouldBe("Succeeded");
-        generationAudit.ReasonCode.ShouldBe("ManualOperation");
+        var successfulAudit = generationAudits.ShouldHaveSingleItem(audit => audit.Outcome == "Succeeded");
+        successfulAudit.ReasonCode.ShouldBe("ManualOperation");
+        var rejectedAudit = generationAudits.ShouldHaveSingleItem(audit => audit.Outcome == "Rejected");
+        rejectedAudit.ReasonCode.ShouldBe("StateConflict");
     }
 
     [Fact]
-    public async Task Concurrent_regeneration_returns_conflict_without_a_sibling_revision_or_duplicate_audit()
+    public async Task Concurrent_regeneration_persists_one_success_and_one_rejection_without_a_sibling_revision()
     {
         // Arrange
         var cancellationToken = TestContext.Current.CancellationToken;
@@ -673,9 +674,12 @@ public sealed class DocumentApiEndpointTests(ApiFixture fixture)
         bookingStatus.ShouldBe("Confirmed");
         draftCount.ShouldBe(2);
         var regenerationAudits = audits.Where(audit => audit.Operation == "Regenerate").ToArray();
-        var regenerationAudit = regenerationAudits.ShouldHaveSingleItem();
-        regenerationAudit.Outcome.ShouldBe("Succeeded");
-        regenerationAudit.DocumentRevision.ShouldBe(2);
+        var successfulAudit = regenerationAudits.ShouldHaveSingleItem(audit => audit.Outcome == "Succeeded");
+        successfulAudit.DocumentRevision.ShouldBe(2);
+        successfulAudit.ReasonCode.ShouldBe("ManualRegeneration");
+        var rejectedAudit = regenerationAudits.ShouldHaveSingleItem(audit => audit.Outcome == "Rejected");
+        rejectedAudit.DocumentRevision.ShouldBe(1);
+        rejectedAudit.ReasonCode.ShouldBe("StateConflict");
     }
 
     [Fact]

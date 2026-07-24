@@ -4,9 +4,11 @@ using Microsoft.Extensions.DependencyInjection;
 using Npgsql;
 using SharedKernel.Domain.EntityFrameworkCore;
 using SharedKernel.EntityFrameworkCore;
+using SharedKernel.Idempotency;
 using SharedKernel.Idempotency.EntityFrameworkCore;
 using SharedKernel.IntegrationTesting;
 using SharedKernel.Messaging.IntegrationEvents.EntityFrameworkCore;
+using SharedKernel.Results;
 using ViajantesTurismo.Admin.Application.Documents;
 using ViajantesTurismo.Admin.Contracts.Application;
 using ViajantesTurismo.Admin.Domain.Documents;
@@ -223,6 +225,151 @@ internal sealed class PostgreSqlDocumentStoreScenario : IAsyncDisposable
         }
     }
 
+    public async Task<Exception?[]> SaveInitialRevisionsConcurrently(
+        DocumentDraft first,
+        DocumentDraft second,
+        CancellationToken ct)
+    {
+        await using (var setupContext = CreateDbContext())
+        {
+            await setupContext.Database.MigrateAsync(ct);
+            await SeedBookings(
+                setupContext,
+                [first.BookingId, second.BookingId],
+                BookingStatus.Confirmed,
+                ct);
+        }
+
+        var barrier = new DocumentSaveBarrierInterceptor();
+        var firstSave = CaptureConcurrentInitialSave(first, barrier, ct);
+        var secondSave = CaptureConcurrentInitialSave(second, barrier, ct);
+        try
+        {
+            await barrier.BothSaving.WaitAsync(TimeSpan.FromSeconds(10), ct);
+        }
+        finally
+        {
+            barrier.Release();
+        }
+
+        return await Task.WhenAll(firstSave, secondSave);
+    }
+
+    public async Task<Exception?[]> SaveReplacementRevisionsConcurrently(
+        Guid documentId,
+        DateTime createdAt,
+        CancellationToken ct)
+    {
+        var barrier = new DocumentSaveBarrierInterceptor();
+        var firstSave = CaptureConcurrentReplacementSave(documentId, createdAt, barrier, ct);
+        var secondSave = CaptureConcurrentReplacementSave(documentId, createdAt, barrier, ct);
+        try
+        {
+            await barrier.BothSaving.WaitAsync(TimeSpan.FromSeconds(10), ct);
+        }
+        finally
+        {
+            barrier.Release();
+        }
+
+        return await Task.WhenAll(firstSave, secondSave);
+    }
+
+    public async Task<(Result<Guid>[] Attempts, Result<Guid> Replay)> GenerateWithSameKeyConcurrently(
+        DocumentDraft first,
+        DocumentDraft second,
+        IdempotencyKey key,
+        string requestFingerprint,
+        CancellationToken ct)
+    {
+        await using (var setupContext = CreateDbContext())
+        {
+            await setupContext.Database.MigrateAsync(ct);
+            await SeedBookings(
+                setupContext,
+                [first.BookingId, second.BookingId],
+                BookingStatus.Confirmed,
+                ct);
+        }
+
+        var barrier = new DocumentSaveBarrierInterceptor();
+        var services = new ServiceCollection();
+        services.AddSingleton(barrier);
+        services.AddIdempotencyStore<AdminWriteDbContext>();
+        services.AddDbContext<AdminWriteDbContext>((serviceProvider, options) =>
+        {
+            options.UseNpgsql(connectionString);
+            options.AddInterceptors(serviceProvider.GetRequiredService<DocumentSaveBarrierInterceptor>());
+        });
+        await using var serviceProvider = services.BuildServiceProvider(new ServiceProviderOptions
+        {
+            ValidateOnBuild = true,
+            ValidateScopes = true,
+        });
+        var scope = IdempotencyScope.From($"admin.documents.generate-contract-draft:{first.BookingId:N}");
+        await using var firstOperationScope = serviceProvider.CreateAsyncScope();
+        await using var secondOperationScope = serviceProvider.CreateAsyncScope();
+        var firstAttempt = CaptureSameKeyGeneration(
+            first,
+            scope,
+            key,
+            requestFingerprint,
+            firstOperationScope.ServiceProvider,
+            ct);
+        var secondAttempt = CaptureSameKeyGeneration(
+            second,
+            scope,
+            key,
+            requestFingerprint,
+            secondOperationScope.ServiceProvider,
+            ct);
+        try
+        {
+            await barrier.BothSaving.WaitAsync(TimeSpan.FromSeconds(10), ct);
+        }
+        finally
+        {
+            barrier.Release();
+        }
+
+        var attempts = await Task.WhenAll(firstAttempt, secondAttempt);
+        await using var replayScope = serviceProvider.CreateAsyncScope();
+        var replayStore = replayScope.ServiceProvider.GetRequiredService<IIdempotencyStore>();
+        var replayContext = replayScope.ServiceProvider.GetRequiredService<AdminWriteDbContext>();
+        var replayCoordinator = new DocumentCommandIdempotency(replayStore, replayContext, TimeProvider.System);
+        var replay = await replayCoordinator.GetExistingResult(scope, key, requestFingerprint, ct)
+            ?? throw new InvalidOperationException("The completed document idempotency key did not produce a replay.");
+        return (attempts, replay);
+    }
+
+    public async Task<DocumentAuditRecord[]> GetDocumentAuditsForBooking(Guid bookingId, CancellationToken ct)
+    {
+        await using var dbContext = CreateDbContext();
+        return await dbContext.DocumentAuditRecords
+            .Where(record => record.BookingId == bookingId)
+            .OrderBy(record => record.OccurredAtUtc)
+            .ToArrayAsync(ct);
+    }
+
+    public async Task<string?> GetIdempotencyState(
+        Guid bookingId,
+        IdempotencyKey key,
+        CancellationToken ct)
+    {
+        await using var dbContext = CreateDbContext();
+        var scope = $"admin.documents.generate-contract-draft:{bookingId:N}";
+        return await dbContext.Database.SqlQueryRaw<string>(
+                """
+                SELECT "State" AS "Value"
+                FROM "messaging"."idempotency_keys"
+                WHERE "Scope" = {0}
+                  AND "Key" = {1}
+                """,
+                scope,
+                key.Value)
+            .SingleOrDefaultAsync(ct);
+    }
+
     public async Task SaveDuplicateRevisions(
         DocumentDraft first,
         DocumentDraft second,
@@ -381,7 +528,92 @@ internal sealed class PostgreSqlDocumentStoreScenario : IAsyncDisposable
 
     public async ValueTask DisposeAsync() => await database.DisposeAsync();
 
-    private AdminWriteDbContext CreateDbContext(bool enableRetryOnFailure = false)
+    private async Task<Exception?> CaptureConcurrentInitialSave(
+        DocumentDraft document,
+        DocumentSaveBarrierInterceptor barrier,
+        CancellationToken ct)
+    {
+        await using var dbContext = CreateDbContext(saveBarrier: barrier);
+        dbContext.DocumentLineages.Add(DocumentLineage.Restore([document]));
+        return await CaptureExpectedConflict(() => dbContext.SaveEntities(ct));
+    }
+
+    private async Task<Exception?> CaptureConcurrentReplacementSave(
+        Guid documentId,
+        DateTime createdAt,
+        DocumentSaveBarrierInterceptor barrier,
+        CancellationToken ct)
+    {
+        await using var dbContext = CreateDbContext(saveBarrier: barrier);
+        var lineage = await new DocumentStore(dbContext).GetByDocumentId(documentId, ct);
+        var loadedLineage = lineage.ShouldNotBeNull();
+        var replacement = loadedLineage.CreateRevision(
+            documentId,
+            DocumentDraftInfrastructureTestData.CreateContent("2"),
+            createdAt,
+            DocumentDraftInfrastructureTestData.CreateAuditContext());
+        replacement.IsSuccess.ShouldBeTrue();
+        loadedLineage.ClearDomainEvents();
+        return await CaptureExpectedConflict(() => dbContext.SaveEntities(ct));
+    }
+
+    private static async Task<Exception?> CaptureExpectedConflict(Func<Task> save)
+    {
+        try
+        {
+            await save();
+            return null;
+        }
+        catch (Exception exception) when (exception is DocumentRevisionConflictException or DbUpdateConcurrencyException)
+        {
+            return exception;
+        }
+    }
+
+    private static async Task<Result<Guid>> CaptureSameKeyGeneration(
+        DocumentDraft document,
+        IdempotencyScope scope,
+        IdempotencyKey key,
+        string requestFingerprint,
+        IServiceProvider serviceProvider,
+        CancellationToken ct)
+    {
+        var idempotencyStore = serviceProvider.GetRequiredService<IIdempotencyStore>();
+        var dbContext = serviceProvider.GetRequiredService<AdminWriteDbContext>();
+        var coordinator = new DocumentCommandIdempotency(idempotencyStore, dbContext, TimeProvider.System);
+        var existing = await coordinator.GetExistingResult(scope, key, requestFingerprint, ct);
+        if (existing is { } replay)
+        {
+            return replay;
+        }
+
+        return await coordinator.Execute(
+            scope,
+            key,
+            requestFingerprint,
+            () =>
+            {
+                var lineage = DocumentLineage.Restore([document]);
+                dbContext.DocumentLineages.Add(lineage);
+                var audit = DocumentAuditRecord.Create(
+                    Guid.CreateVersion7().ToString("N"),
+                    document.Id,
+                    document.BookingId,
+                    document.Revision,
+                    DocumentAuditOperation.Generate,
+                    DocumentAuditOutcome.Succeeded,
+                    DocumentAuditReasonCode.ManualOperation,
+                    Guid.CreateVersion7().ToString("N"),
+                    document.CreatedAt).Value;
+                dbContext.DocumentAuditRecords.Add(audit);
+                return Task.FromResult(Result.Ok(document.Id));
+            },
+            ct);
+    }
+
+    private AdminWriteDbContext CreateDbContext(
+        bool enableRetryOnFailure = false,
+        DocumentSaveBarrierInterceptor? saveBarrier = null)
     {
         var services = new ServiceCollection();
         services.AddDomainEventDispatch<AdminWriteDbContext>();
@@ -399,6 +631,13 @@ internal sealed class PostgreSqlDocumentStoreScenario : IAsyncDisposable
                 }
             })
             .Options;
+
+        if (saveBarrier is not null)
+        {
+            options = new DbContextOptionsBuilder<AdminWriteDbContext>(options)
+                .AddInterceptors(saveBarrier)
+                .Options;
+        }
 
         return new AdminWriteDbContext(options, configurations);
     }
