@@ -10,7 +10,6 @@ public sealed class CatalogCacheLogPrivacyTests
     {
         // Arrange
         var logger = new CollectingLogger<CatalogCacheLogPrivacyTests>();
-        var tourId = Guid.CreateVersion7();
 
         // Act
         logger.TourProjectionPending(nameof(TimeoutException));
@@ -19,7 +18,6 @@ public sealed class CatalogCacheLogPrivacyTests
         var logText = string.Join(
             '|',
             logger.Messages.Concat(logger.StructuredValues.Select(value => value.Value?.ToString() ?? string.Empty)));
-        logText.ShouldNotContain(tourId.ToString(), StringComparison.OrdinalIgnoreCase);
         logger.StructuredValues.ShouldNotContain(value =>
             string.Equals(value.Key, "CatalogTourId", StringComparison.Ordinal));
         logText.ShouldContain(nameof(TimeoutException), StringComparison.Ordinal);
