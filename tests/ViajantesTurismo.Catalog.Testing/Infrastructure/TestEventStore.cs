@@ -10,6 +10,8 @@ internal sealed class TestEventStore : IEventStore
     private readonly Dictionary<StreamId, List<EventEnvelope>> streams = [];
     private long position;
 
+    public Exception? LoadException { get; set; }
+
     public ValueTask<IReadOnlyCollection<EventEnvelope>> Append(
         StreamId streamId,
         ExpectedStreamRevision expectedRevision,
@@ -31,6 +33,11 @@ internal sealed class TestEventStore : IEventStore
         CancellationToken ct)
     {
         ct.ThrowIfCancellationRequested();
+
+        if (LoadException is not null)
+        {
+            throw LoadException;
+        }
 
         lock (gate)
         {

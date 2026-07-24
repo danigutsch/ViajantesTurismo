@@ -1,0 +1,68 @@
+receivers:
+  otlp:
+    protocols:
+      grpc:
+        endpoint: 0.0.0.0:4317
+      http:
+        endpoint: 0.0.0.0:4318
+
+processors:
+  memory_limiter:
+    check_interval: 1s
+    limit_mib: 256
+    spike_limit_mib: 64
+  transform/sanitize_resources:
+    error_mode: propagate
+    trace_statements:
+      - context: resource
+        statements:
+          - delete_matching_keys(resource.attributes, "(?i)(^|[._-])(authorization|cookie|password|token|api[._-]?key|secret)([._-]|$)")
+    log_statements:
+      - context: resource
+        statements:
+          - delete_matching_keys(resource.attributes, "(?i)(^|[._-])(authorization|cookie|password|token|api[._-]?key|secret)([._-]|$)")
+    metric_statements:
+      - context: resource
+        statements:
+          - delete_matching_keys(resource.attributes, "(?i)(^|[._-])(authorization|cookie|password|token|api[._-]?key|secret)([._-]|$)")
+  filter/drop_span_events:
+    error_mode: propagate
+    traces:
+      spanevent:
+        - 'true'
+  transform/sanitize_traces:
+    error_mode: propagate
+    trace_statements:
+      - context: span
+        statements:
+          - set(span.status.message, "")
+          - delete_key(span.attributes, "url.full")
+          - delete_key(span.attributes, "url.path")
+          - delete_key(span.attributes, "url.query")
+          - delete_key(span.attributes, "http.url")
+          - delete_key(span.attributes, "http.target")
+          - delete_key(span.attributes, "authorization")
+          - delete_key(span.attributes, "cookie")
+          - delete_key(span.attributes, "set-cookie")
+          - delete_key(span.attributes, "db.connection_string")
+          - delete_key(span.attributes, "db.npgsql.data_source")
+          - delete_key(span.attributes, "db.parameters")
+          - delete_key(span.attributes, "db.query.parameter")
+          - delete_key(span.attributes, "db.query.parameters")
+          - delete_key(span.attributes, "db.query.text")
+          - delete_key(span.attributes, "db.statement")
+          - delete_key(span.attributes, "sql.query")
+          - delete_key(span.attributes, "query.text")
+          - delete_key(span.attributes, "commandText")
+          - delete_key(span.attributes, "parameters")
+          - delete_key(span.attributes, "messaging.destination.name")
+          - delete_key(span.attributes, "messaging.destination.subscription.name")
+          - delete_matching_keys(span.attributes, "(?i)(^|[._])headers?([._]|$)")
+          - delete_matching_keys(span.attributes, "(?i)(^|[._])(body|payload)([._]|$)")
+          - delete_matching_keys(span.attributes, "(?i)(^|[._-])(authorization|cookie|password|token|api[._-]?key|secret)([._-]|$)")
+          - delete_matching_keys(span.attributes, "(?i)^db\\.query\\.parameter\\.")
+          - delete_matching_keys(span.attributes, "(?i)(^|[._])id$")
+          - delete_matching_keys(span.attributes, "Id$")
+          - delete_matching_keys(span.attributes, "(?i)(^|[._])arn$")
+          - delete_matching_keys(span.attributes, "(?i)^aws\\.(s3|sqs|sns)\\.")
+  batch:

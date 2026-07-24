@@ -1,5 +1,10 @@
+using System.Diagnostics;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using OpenTelemetry.Metrics;
+using OpenTelemetry.Trace;
 using SharedKernel.Branding;
 using SharedKernel.Domain;
 using SharedKernel.EntityFrameworkCore;
@@ -53,6 +58,25 @@ internal sealed class AdminInfrastructureModuleTestScope(ServiceProvider service
         var secondHandler = secondScope.ServiceProvider.GetRequiredService<CreateTourCommandHandler>();
 
         return ReferenceEquals(firstHandler, sameScopeHandler) && !ReferenceEquals(firstHandler, secondHandler);
+    }
+
+    public bool IsSensitiveDataLoggingEnabled<TContext>() where TContext : DbContext
+    {
+        var options = scope.ServiceProvider.GetRequiredService<DbContextOptions<TContext>>();
+        return options.FindExtension<CoreOptionsExtension>()?.IsSensitiveDataLoggingEnabled ?? false;
+    }
+
+    public bool IsActivitySourceEnabled(string sourceName)
+    {
+        _ = serviceProvider.GetRequiredService<TracerProvider>();
+        using var activitySource = new ActivitySource(sourceName);
+        using var activity = activitySource.StartActivity("privacy-test", ActivityKind.Client);
+        return activity is not null;
+    }
+
+    public bool HasMeterProvider()
+    {
+        return serviceProvider.GetService<MeterProvider>() is not null;
     }
 
     public void Dispose()

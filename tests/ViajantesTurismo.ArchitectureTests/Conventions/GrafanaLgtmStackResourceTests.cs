@@ -52,6 +52,43 @@ public sealed class GrafanaLgtmStackResourceTests
     }
 
     [Fact]
+    public async Task Collector_gateway_routes_http_protobuf_to_the_http_endpoint_and_adds_a_health_wait()
+    {
+        // Arrange
+        var builder = DistributedApplication.CreateBuilder([]);
+        var configurationRoot = Path.Combine(Path.GetTempPath(), "collector-routing-test");
+        var collector = builder.AddOpenTelemetryCollectorGateway(
+            "collector-test",
+            Path.Combine(configurationRoot, "privacy.yaml"),
+            Path.Combine(configurationRoot, "aspire.yaml"));
+        var sender = builder.AddContainer("sender-test", "test-image")
+            .WithEnvironment("OTEL_EXPORTER_OTLP_PROTOCOL", "http/protobuf");
+        GrafanaLgtmStackResourceExtensions.ConfigureOpenTelemetryCollectorRouting(sender, collector);
+        var environmentVariables = new Dictionary<string, object>();
+        var executionContext = new DistributedApplicationExecutionContext(DistributedApplicationOperation.Run);
+
+        // Act
+        foreach (var annotation in sender.Resource.Annotations.OfType<EnvironmentCallbackAnnotation>())
+        {
+            await annotation.Callback(new EnvironmentCallbackContext(
+                executionContext,
+                sender.Resource,
+                environmentVariables,
+                TestContext.Current.CancellationToken));
+        }
+
+        var wait = sender.Resource.Annotations.OfType<WaitAnnotation>().ShouldHaveSingleItem();
+
+        // Assert
+        environmentVariables["OTEL_EXPORTER_OTLP_PROTOCOL"].ShouldBe("http/protobuf");
+        var endpoint = environmentVariables["OTEL_EXPORTER_OTLP_ENDPOINT"].ShouldBeOfType<EndpointReference>();
+        endpoint.Resource.ShouldBeSameAs(collector.Resource);
+        endpoint.EndpointName.ShouldBe("http");
+        wait.Resource.ShouldBeSameAs(collector.Resource);
+        wait.WaitType.ShouldBe(WaitType.WaitUntilHealthy);
+    }
+
+    [Fact]
     public async Task Add_grafana_enables_anonymous_local_access()
     {
         // Arrange

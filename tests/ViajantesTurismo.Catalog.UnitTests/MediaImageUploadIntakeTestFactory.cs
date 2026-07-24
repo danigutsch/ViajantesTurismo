@@ -1,5 +1,6 @@
 using Microsoft.Extensions.Options;
 using Microsoft.Extensions.Logging.Abstractions;
+using Microsoft.Extensions.Logging;
 using ViajantesTurismo.Catalog.Application.Media;
 
 namespace ViajantesTurismo.Catalog.UnitTests;
@@ -18,7 +19,8 @@ internal static class MediaImageUploadIntakeTestFactory
         IMediaObjectStore objectStore,
         IPublicMediaImageStore imageStore,
         CapturingIntegrationEventOutbox? outbox = null,
-        MediaUploadValidationOptions? options = null)
+        MediaUploadValidationOptions? options = null,
+        ILogger<MediaImageUploadIntake>? logger = null)
     {
         var validationOptions = options ?? new MediaUploadValidationOptions();
 
@@ -29,6 +31,6 @@ internal static class MediaImageUploadIntakeTestFactory
             imageStore,
             outbox ?? new CapturingIntegrationEventOutbox(),
             Options.Create(validationOptions),
-            NullLogger<MediaImageUploadIntake>.Instance);
+            logger ?? NullLogger<MediaImageUploadIntake>.Instance);
     }
 }

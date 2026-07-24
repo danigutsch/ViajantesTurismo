@@ -3,12 +3,14 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Hosting;
+using Npgsql;
 using SharedKernel.AuditTrail;
 using SharedKernel.Domain.EntityFrameworkCore;
 using SharedKernel.EntityFrameworkCore;
 using SharedKernel.Idempotency.EntityFrameworkCore;
 using SharedKernel.Messaging.IntegrationEvents;
 using SharedKernel.Messaging.IntegrationEvents.EntityFrameworkCore;
+using SharedKernel.Npgsql;
 using SharedKernel.OpenApi;
 using ViajantesTurismo.Admin.Contracts.IntegrationEvents;
 using ViajantesTurismo.Admin.Contracts.IntegrationEvents.Tours;
@@ -177,6 +179,7 @@ public static class InfrastructureDependencyInjection
         DbContextOptionsBuilder options)
         where TApplicationBuilder : IHostApplicationBuilder
     {
+        ConfigureNpgsqlTracing(options);
         options.UseQueryTrackingBehavior(QueryTrackingBehavior.NoTracking);
         builder.Services.ApplyDbContextOptionConfigurations<AdminReadDbContext>(options);
     }
@@ -186,7 +189,18 @@ public static class InfrastructureDependencyInjection
         DbContextOptionsBuilder options)
         where TApplicationBuilder : IHostApplicationBuilder
     {
+        ConfigureNpgsqlTracing(options);
         builder.Services.ApplyDbContextOptionConfigurations<AdminWriteDbContext>(options);
+    }
+
+    private static void ConfigureNpgsqlTracing(DbContextOptionsBuilder options)
+    {
+        options.UseNpgsql(providerOptions => providerOptions.ConfigureDataSource(ConfigureNpgsqlDataSource));
+    }
+
+    private static void ConfigureNpgsqlDataSource(NpgsqlDataSourceBuilder dataSourceBuilder)
+    {
+        dataSourceBuilder.ConfigureTracingWithoutFirstResponseEvent();
     }
 
 }

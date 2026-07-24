@@ -14,7 +14,7 @@ public static class PaymentErrors
     /// <returns>A Result representing the error.</returns>
     public static Result InvalidAmount(decimal amount) =>
         Result.Invalid(
-            detail: $"Payment amount must be greater than zero. Received: {amount}.",
+            detail: "Payment amount must be greater than zero.",
             field: "amount",
             message: "Payment amount must be greater than zero.");
 
@@ -36,7 +36,7 @@ public static class PaymentErrors
     /// <returns>A Result representing the error.</returns>
     public static Result FuturePaymentDate(DateTime date) =>
         Result.Invalid(
-            detail: $"Payment date cannot be in the future. Received: {date}.",
+            detail: "Payment date cannot be in the future.",
             field: "paymentDate",
             message: "Payment date cannot be in the future.");
 
@@ -48,14 +48,14 @@ public static class PaymentErrors
     /// <returns>A Result representing the error.</returns>
     public static Result ExceedsRemainingBalance(decimal paymentAmount, decimal remainingBalance) =>
         Result.Invalid(
-            detail: $"Payment amount {paymentAmount:C} exceeds remaining balance {remainingBalance:C}.",
+            detail: "Payment amount exceeds remaining balance.",
             field: "amount",
-            message: $"Payment amount cannot exceed remaining balance of {remainingBalance:C}.");
+            message: "Payment amount cannot exceed remaining balance.");
 
     /// <summary>
     /// Indicates that a payment with the specified ID was not found.
     /// </summary>
     /// <param name="id">The ID of the payment that was not found.</param>
     /// <returns>A Result representing the error.</returns>
-    public static Result PaymentNotFound(Guid id) => Result.NotFound(detail: $"Payment with ID {id} was not found.");
+    public static Result PaymentNotFound(Guid id) => Result.NotFound(detail: "Payment was not found.");
 }

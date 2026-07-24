@@ -7,11 +7,15 @@ internal sealed class SeaweedFsS3SensitiveAttributeRedactionProcessor : BaseProc
 {
     private static string[] SensitiveAttributes { get; } =
     [
+        "aws.s3.bucket",
+        "aws.s3.bucket.name",
         "aws.s3.key",
         "aws.s3.copy_source",
         "aws.s3.delete",
         "aws.s3.upload_id",
         "aws.s3.part_number",
+        "aws.request_id",
+        "aws.extended_request_id",
         "url.full",
         "http.url"
     ];
@@ -20,7 +24,8 @@ internal sealed class SeaweedFsS3SensitiveAttributeRedactionProcessor : BaseProc
     {
         ArgumentNullException.ThrowIfNull(data);
 
-        if (data.GetTagItem("aws.s3.bucket") is null)
+        if (!data.TagObjects.Any(static attribute =>
+                attribute.Key.StartsWith("aws.", StringComparison.OrdinalIgnoreCase)))
         {
             return;
         }

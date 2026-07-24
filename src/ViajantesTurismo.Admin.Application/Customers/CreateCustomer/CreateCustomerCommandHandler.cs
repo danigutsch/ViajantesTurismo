@@ -27,7 +27,7 @@ public sealed class CreateCustomerCommandHandler(
 
         if (await customerStore.EmailExists(sanitizedEmail, ct))
         {
-            return CustomerErrors.EmailAlreadyExists(command.ContactInfo.Email).ConvertError<Guid>();
+            return CustomerErrors.EmailAlreadyExists().ConvertError<Guid>();
         }
 
         var errors = new ValidationErrors();

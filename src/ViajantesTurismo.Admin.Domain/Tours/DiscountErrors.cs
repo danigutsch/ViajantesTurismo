@@ -25,7 +25,7 @@ public static class DiscountErrors
     /// <returns>A Result representing the error.</returns>
     public static Result NegativeDiscountAmount(decimal amount) =>
         Result.Invalid(
-            detail: $"Discount amount cannot be negative. Received: {amount}.",
+            detail: "Discount amount cannot be negative.",
             field: "discountAmount",
             message: "Discount amount cannot be negative.");
 
@@ -37,9 +37,9 @@ public static class DiscountErrors
     /// <returns>A Result representing the error.</returns>
     public static Result PercentageExceedsMaximum(decimal amount, decimal maxPercentage) =>
         Result.Invalid(
-            detail: $"Percentage discount cannot exceed {maxPercentage}%. Received: {amount}%.",
+            detail: "Percentage discount cannot exceed the maximum allowed value.",
             field: "discountAmount",
-            message: $"Percentage discount cannot exceed {maxPercentage}%.");
+            message: "Percentage discount cannot exceed the maximum allowed value.");
 
     /// <summary>
     /// Indicates that an absolute discount amount exceeds the subtotal.
@@ -49,7 +49,7 @@ public static class DiscountErrors
     /// <returns>A Result representing the error.</returns>
     public static Result AbsoluteDiscountExceedsSubtotal(decimal amount, decimal subtotal) =>
         Result.Invalid(
-            detail: $"Absolute discount amount ({amount}) cannot exceed subtotal ({subtotal}).",
+            detail: "Absolute discount amount cannot exceed subtotal.",
             field: "discountAmount",
             message: "Discount amount cannot exceed subtotal.");
 
@@ -60,7 +60,7 @@ public static class DiscountErrors
     /// <returns>A Result representing the error.</returns>
     public static Result FinalPriceNotPositive(decimal finalPrice) =>
         Result.Invalid(
-            detail: $"Final price after discount must be greater than zero. Calculated: {finalPrice}.",
+            detail: "Final price after discount must be greater than zero.",
             field: "discount",
             message: "Final price after discount must be greater than zero.");
 

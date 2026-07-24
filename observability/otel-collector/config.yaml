@@ -1,15 +1,8 @@
-receivers:
-  otlp:
-    protocols:
-      grpc:
-        endpoint: 0.0.0.0:4317
-      http:
-        endpoint: 0.0.0.0:4318
-
-processors:
-  batch:
-
 exporters:
+  otlp/aspire:
+    endpoint: ${env:ASPIRE_ENDPOINT}
+    headers:
+      x-otlp-api-key: ${env:ASPIRE_API_KEY}
   otlp/tempo:
     endpoint: tempo:4317
     tls:
@@ -23,13 +16,13 @@ service:
   pipelines:
     traces:
       receivers: [otlp]
-      processors: [batch]
-      exporters: [otlp/tempo]
+      processors: [memory_limiter, transform/sanitize_resources, transform/sanitize_traces, filter/drop_span_events, batch]
+      exporters: [otlp/aspire, otlp/tempo]
     logs:
       receivers: [otlp]
-      processors: [batch]
-      exporters: [otlphttp/loki]
+      processors: [memory_limiter, transform/sanitize_resources, batch]
+      exporters: [otlp/aspire, otlphttp/loki]
     metrics:
       receivers: [otlp]
-      processors: [batch]
-      exporters: [prometheus]
+      processors: [memory_limiter, transform/sanitize_resources, batch]
+      exporters: [otlp/aspire, prometheus]

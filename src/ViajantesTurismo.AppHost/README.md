@@ -262,28 +262,39 @@ It uses the repository-owned .NET performance tool rather than shell wrappers, s
 default and Docker mode remains explicit opt-in. For profiles, thresholds, security defaults, and result
 output, see `tests/performance/README.md` and `tests/performance/k6/README.md`.
 
-## Observability Stack Resource
+## Trusted Telemetry Gateway and Observability Stack
 
-The AppHost can run a local Grafana LGTM stack and route application telemetry through an
-OpenTelemetry Collector:
+Every supported AppHost profile starts the pinned OpenTelemetry Collector and uses the repository-owned
+forwarding contract to route compatible Aspire-annotated application telemetry through it before
+the Aspire dashboard. Add the local Grafana LGTM backends with:
 
 ```bash
 ASPIRE_ENABLE_OBSERVABILITY_STACK=1 dotnet tool run aspire run
 ```
 
-The optional stack includes:
+The resources are:
 
-- `opentelemetry-collector`: receives OTLP telemetry from AppHost resources and routes signals
-- `grafana`: local dashboard UI with provisioned datasources and dashboards
-- `loki`: log backend
-- `tempo`: trace backend
-- `prometheus`: metric backend scraping the collector's Prometheus exporter
+- always-on `opentelemetry-collector`: drops all span events, clears trace status descriptions,
+  removes explicit sensitive/high-cardinality trace attributes, and routes sanitized signals
+- optional `grafana`: local dashboard UI with provisioned datasources and dashboards
+- optional `loki`: log backend
+- optional `tempo`: sanitized trace backend
+- optional `prometheus`: metric backend scraping the Collector's Prometheus exporter
 
-The Aspire dashboard remains available for local inspection. Grafana is added for source-controlled
-datasource, provisioning, and dashboard validation work. Provisioning files live under
-`observability/` at the repository root. The reusable stack wiring lives in
-`SharedKernel.Aspire.Hosting.Grafana`; the AppHost only owns the opt-in environment gate and
-configuration path.
+Raw telemetry exists on the trusted application-to-Collector hop. AppHost forwarding covers the
+normal AppHost OTLP annotation contract, but a manually constructed exporter or a process outside this
+AppHost can send directly to another endpoint and bypass the gateway. Restrict backend network access
+accordingly. The Aspire dashboard remains available for local inspection. Grafana is added for
+source-controlled datasource, provisioning, and dashboard validation work. Configuration lives under
+`observability/` at the repository root; reusable gateway/stack wiring lives in
+`SharedKernel.Aspire.Hosting.Grafana`.
+
+The checked-in gateway and backend configuration is local-only: its YAML does not require Collector
+receiver TLS or client authentication, although Aspire may inject development-certificate TLS under an
+HTTPS launch profile. Tempo transport is insecure, Loki uses HTTP, and Grafana permits anonymous local
+Administrator access. Deployments must provide authenticated and encrypted Collector ingress and
+downstream transport, restrict direct backend endpoints, use non-anonymous backend access, and keep
+credentials out of source-controlled configuration.
 
 ## Database Observability Resource
 

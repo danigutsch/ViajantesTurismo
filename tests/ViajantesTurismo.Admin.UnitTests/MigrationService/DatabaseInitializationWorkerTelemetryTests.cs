@@ -40,7 +40,7 @@ public sealed class DatabaseInitializationWorkerTelemetryTests
     }
 
     [Fact]
-    public async Task Records_a_failed_initialization_span_with_an_exception_event()
+    public async Task Records_a_failed_initialization_span_without_exception_content()
     {
         // Arrange
         List<Activity> stoppedActivities = [];
@@ -62,18 +62,12 @@ public sealed class DatabaseInitializationWorkerTelemetryTests
         (activity.OperationName).ShouldBe("DatabaseInitialization");
         (activity.Source.Name).ShouldBe(DatabaseInitializationWorker.ActivitySourceName);
         (activity.Status).ShouldBe(ActivityStatusCode.Error);
-        (activity.StatusDescription).ShouldBe("boom");
+        (activity.StatusDescription).ShouldBeNull();
         (activity.Tags).ShouldContain(static tag => tag.Key == "operation.type" && tag.Value == "database_initialization");
         (activity.Tags).ShouldContain(static tag => tag.Key == "worker.type" && tag.Value == "migration");
+        (activity.Tags).ShouldContain(static tag => tag.Key == "error.type" && tag.Value == nameof(InvalidOperationException));
         (activity.Tags).ShouldNotContain(static tag => tag.Key.StartsWith("exception.", StringComparison.Ordinal));
-
-        var exceptionEvent = (activity.Events).ShouldHaveSingleItem(static activityEvent => activityEvent.Name == "exception");
-        var exceptionTags = exceptionEvent.Tags;
-        _ = (exceptionTags).ShouldNotBeNull();
-        (exceptionTags).ShouldContain(static tag =>
-            tag.Key == "exception.type" && string.Equals(tag.Value as string, typeof(InvalidOperationException).FullName, StringComparison.Ordinal));
-        (exceptionTags).ShouldContain(static tag =>
-            tag.Key == "exception.message" && string.Equals(tag.Value as string, "boom", StringComparison.Ordinal));
+        (activity.Events).ShouldNotContain(static activityEvent => activityEvent.Name == "exception");
         (initializationCalled).ShouldBeTrue();
     }
 
@@ -124,8 +118,10 @@ public sealed class DatabaseInitializationWorkerTelemetryTests
         // Assert
         var activity = stoppedActivities.ShouldHaveSingleItem();
         activity.Status.ShouldBe(ActivityStatusCode.Error);
-        activity.StatusDescription.ShouldBe("unexpected");
-        activity.Events.ShouldHaveSingleItem(activityEvent => activityEvent.Name == "exception");
+        activity.StatusDescription.ShouldBeNull();
+        activity.Tags.ShouldContain(static tag =>
+            tag.Key == "error.type" && tag.Value == nameof(OperationCanceledException));
+        activity.Events.ShouldNotContain(static activityEvent => activityEvent.Name == "exception");
     }
 
     [Fact]

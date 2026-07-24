@@ -14,9 +14,11 @@ flowchart LR
 
     defaults[ViajantesTurismo.ServiceDefaults]
     migrationStartup[MigrationService Program]
-    otlp[OTLP exporter]
+    otlp[Application OTLP exporter]
+    collector[Trusted Collector gateway]
     aspire[Aspire dashboard]
-    future[Future Grafana dashboards]
+    optional[Optional Tempo/Loki/Prometheus]
+    manual[Manual/direct exporter]
 
     mediator --> defaults
     catalog --> defaults
@@ -24,13 +26,20 @@ flowchart LR
     migration --> migrationStartup
     defaults --> otlp
     migrationStartup --> otlp
-    otlp --> aspire
-    otlp --> future
+    otlp -->|raw telemetry on trusted hop| collector
+    collector -->|sanitized signals| aspire
+    collector -->|sanitized signals| optional
+    manual -. residual bypass risk .-> aspire
+    manual -. residual bypass risk .-> optional
 ```
 
 Service defaults register shared ActivitySource and Meter names for application services. The
 migration service registers its database-initialization ActivitySource explicitly because it owns the
 worker span.
+For every supported AppHost profile, the repository-owned Collector forwarding contract routes
+compatible Aspire-annotated resources through the Collector. The Collector removes span events and
+sensitive trace fields before the dashboard or optional backends receive them; it does not intercept
+manually constructed direct exporters.
 
 ## Consumer boundaries
 
@@ -68,7 +77,7 @@ contract.
 ## Cancellation and error interpretation
 
 Cooperative cancellation is not an application failure. Custom telemetry should leave cancelled
-spans with unset status, no exception event, and no error metric increments. Failure paths should
-record error status, one exception event, and the surface-owned error outcome metric where defined.
+spans with unset status, no exception content, and no error metric increments. Failure paths should
+record error status, bounded `error.type`, and the surface-owned error outcome metric where defined.
 Cancellation logs should not use error severity when the operation's cancellation token is signaled.
 Unexpected `OperationCanceledException` with an unsignaled token should follow the normal error path.

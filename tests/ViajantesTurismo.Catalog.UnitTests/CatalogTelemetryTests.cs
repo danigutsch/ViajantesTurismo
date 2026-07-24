@@ -142,9 +142,10 @@ public sealed class CatalogTelemetryTests
         // Assert
         var handlingActivity = CatalogTelemetryTestsHelpers.SingleActivity(stoppedActivities, rootActivity, CatalogTelemetry.ActivityIntegrationEventHandle);
         (handlingActivity.Status).ShouldBe(ActivityStatusCode.Error);
-        (handlingActivity.StatusDescription).ShouldBe(exception.Message);
+        (handlingActivity.StatusDescription).ShouldBeNull();
         (CatalogTelemetryTestsHelpers.HasTag(handlingActivity, CatalogTelemetry.TagOutcome, CatalogTelemetry.OutcomeError)).ShouldBeTrue();
-        (handlingActivity.Events).ShouldContain(activityEvent => string.Equals(activityEvent.Name, "exception", StringComparison.Ordinal));
+        (CatalogTelemetryTestsHelpers.HasTag(handlingActivity, CatalogTelemetry.TagErrorType, exception.GetType().Name)).ShouldBeTrue();
+        (handlingActivity.Events).ShouldNotContain(activityEvent => string.Equals(activityEvent.Name, "exception", StringComparison.Ordinal));
         (measurements).ShouldContain(CatalogTelemetry.MetricIntegrationEvent, StringComparer.Ordinal);
         (measurements).ShouldContain(CatalogTelemetry.MetricIdempotencyOperation, StringComparer.Ordinal);
         (measurements).ShouldContain(CatalogTelemetry.MetricTourStreamUpdate, StringComparer.Ordinal);
@@ -179,10 +180,14 @@ public sealed class CatalogTelemetryTests
         var streamActivity = CatalogTelemetryTestsHelpers.SingleActivity(stoppedActivities, rootActivity, CatalogTelemetry.ActivityTourStreamUpdate);
         (handlingActivity.Status).ShouldBe(ActivityStatusCode.Error);
         (streamActivity.Status).ShouldBe(ActivityStatusCode.Error);
-        (handlingActivity.StatusDescription).ShouldBe(exception.Message);
-        (streamActivity.StatusDescription).ShouldBe(exception.Message);
+        (handlingActivity.StatusDescription).ShouldBeNull();
+        (streamActivity.StatusDescription).ShouldBeNull();
         (CatalogTelemetryTestsHelpers.HasTag(handlingActivity, CatalogTelemetry.TagOutcome, CatalogTelemetry.OutcomeError)).ShouldBeTrue();
         (CatalogTelemetryTestsHelpers.HasTag(streamActivity, CatalogTelemetry.TagOutcome, CatalogTelemetry.OutcomeError)).ShouldBeTrue();
+        (CatalogTelemetryTestsHelpers.HasTag(handlingActivity, CatalogTelemetry.TagErrorType, exception.GetType().Name)).ShouldBeTrue();
+        (CatalogTelemetryTestsHelpers.HasTag(streamActivity, CatalogTelemetry.TagErrorType, exception.GetType().Name)).ShouldBeTrue();
+        (handlingActivity.Events).ShouldNotContain(activityEvent => string.Equals(activityEvent.Name, "exception", StringComparison.Ordinal));
+        (streamActivity.Events).ShouldNotContain(activityEvent => string.Equals(activityEvent.Name, "exception", StringComparison.Ordinal));
         (measurements).ShouldContain(CatalogTelemetry.MetricIntegrationEvent, StringComparer.Ordinal);
         (measurements).ShouldContain(CatalogTelemetry.MetricIdempotencyOperation, StringComparer.Ordinal);
         (measurements).ShouldContain(CatalogTelemetry.MetricTourStreamUpdate, StringComparer.Ordinal);
@@ -215,8 +220,10 @@ public sealed class CatalogTelemetryTests
         // Assert
         var handlingActivity = CatalogTelemetryTestsHelpers.SingleActivity(stoppedActivities, rootActivity, CatalogTelemetry.ActivityIntegrationEventHandle);
         (handlingActivity.Status).ShouldBe(ActivityStatusCode.Error);
-        (handlingActivity.StatusDescription).ShouldBe(exception.Message);
+        (handlingActivity.StatusDescription).ShouldBeNull();
         (CatalogTelemetryTestsHelpers.HasTag(handlingActivity, CatalogTelemetry.TagOutcome, CatalogTelemetry.OutcomeError)).ShouldBeTrue();
+        (CatalogTelemetryTestsHelpers.HasTag(handlingActivity, CatalogTelemetry.TagErrorType, exception.GetType().Name)).ShouldBeTrue();
+        (handlingActivity.Events).ShouldNotContain(activityEvent => string.Equals(activityEvent.Name, "exception", StringComparison.Ordinal));
         (measurements).ShouldContain(CatalogTelemetry.MetricIntegrationEvent, StringComparer.Ordinal);
         (measurements).ShouldContain(CatalogTelemetry.MetricIdempotencyOperation, StringComparer.Ordinal);
         (measurements).ShouldNotContain(CatalogTelemetry.MetricTourStreamUpdate, StringComparer.Ordinal);
@@ -246,8 +253,10 @@ public sealed class CatalogTelemetryTests
         // Assert
         var streamActivity = CatalogTelemetryTestsHelpers.SingleActivity(stoppedActivities, rootActivity, CatalogTelemetry.ActivityTourStreamUpdate);
         (streamActivity.Status).ShouldBe(ActivityStatusCode.Error);
-        (streamActivity.StatusDescription).ShouldBe(exception.Message);
+        (streamActivity.StatusDescription).ShouldBeNull();
         (CatalogTelemetryTestsHelpers.HasTag(streamActivity, CatalogTelemetry.TagOutcome, CatalogTelemetry.OutcomeError)).ShouldBeTrue();
+        (CatalogTelemetryTestsHelpers.HasTag(streamActivity, CatalogTelemetry.TagErrorType, exception.GetType().Name)).ShouldBeTrue();
+        (streamActivity.Events).ShouldNotContain(activityEvent => string.Equals(activityEvent.Name, "exception", StringComparison.Ordinal));
         (measurements).ShouldContain(CatalogTelemetry.MetricTourStreamUpdate, StringComparer.Ordinal);
         (measurements).ShouldNotContain(CatalogTelemetry.MetricIntegrationEvent, StringComparer.Ordinal);
     }
@@ -280,10 +289,11 @@ public sealed class CatalogTelemetryTests
         // Assert
         var projectionActivity = CatalogTelemetryTestsHelpers.SingleActivity(stoppedActivities, rootActivity, CatalogTelemetry.ActivityProjectionProcess);
         (projectionActivity.Status).ShouldBe(ActivityStatusCode.Error);
-        (projectionActivity.StatusDescription).ShouldBe(exception.Message);
+        (projectionActivity.StatusDescription).ShouldBeNull();
         (CatalogTelemetryTestsHelpers.HasTag(projectionActivity, CatalogTelemetry.TagProjectionName, projection.Name)).ShouldBeTrue();
         (CatalogTelemetryTestsHelpers.HasTag(projectionActivity, CatalogTelemetry.TagOutcome, CatalogTelemetry.OutcomeError)).ShouldBeTrue();
-        (projectionActivity.Events).ShouldContain(activityEvent => string.Equals(activityEvent.Name, "exception", StringComparison.Ordinal));
+        (CatalogTelemetryTestsHelpers.HasTag(projectionActivity, CatalogTelemetry.TagErrorType, exception.GetType().Name)).ShouldBeTrue();
+        (projectionActivity.Events).ShouldNotContain(activityEvent => string.Equals(activityEvent.Name, "exception", StringComparison.Ordinal));
         (measurements).ShouldContain(CatalogTelemetry.MetricProjectionBatch, StringComparer.Ordinal);
     }
 
@@ -315,8 +325,10 @@ public sealed class CatalogTelemetryTests
         // Assert
         var projectionActivity = CatalogTelemetryTestsHelpers.SingleActivity(stoppedActivities, rootActivity, CatalogTelemetry.ActivityProjectionProcess);
         (projectionActivity.Status).ShouldBe(ActivityStatusCode.Error);
-        (projectionActivity.StatusDescription).ShouldBe(exception.Message);
+        (projectionActivity.StatusDescription).ShouldBeNull();
         (CatalogTelemetryTestsHelpers.HasTag(projectionActivity, CatalogTelemetry.TagOutcome, CatalogTelemetry.OutcomeError)).ShouldBeTrue();
+        (CatalogTelemetryTestsHelpers.HasTag(projectionActivity, CatalogTelemetry.TagErrorType, exception.GetType().Name)).ShouldBeTrue();
+        (projectionActivity.Events).ShouldNotContain(activityEvent => string.Equals(activityEvent.Name, "exception", StringComparison.Ordinal));
         (measurements).ShouldContain(CatalogTelemetry.MetricProjectionBatch, StringComparer.Ordinal);
     }
 
@@ -341,8 +353,10 @@ public sealed class CatalogTelemetryTests
         // Assert
         var projectionActivity = CatalogTelemetryTestsHelpers.SingleActivity(stoppedActivities, rootActivity, CatalogTelemetry.ActivityProjectionProcess);
         (projectionActivity.Status).ShouldBe(ActivityStatusCode.Error);
-        (projectionActivity.StatusDescription).ShouldBe(exception.Message);
+        (projectionActivity.StatusDescription).ShouldBeNull();
         (CatalogTelemetryTestsHelpers.HasTag(projectionActivity, CatalogTelemetry.TagOutcome, CatalogTelemetry.OutcomeError)).ShouldBeTrue();
+        (CatalogTelemetryTestsHelpers.HasTag(projectionActivity, CatalogTelemetry.TagErrorType, exception.GetType().Name)).ShouldBeTrue();
+        (projectionActivity.Events).ShouldNotContain(activityEvent => string.Equals(activityEvent.Name, "exception", StringComparison.Ordinal));
         (measurements).ShouldContain(CatalogTelemetry.MetricProjectionBatch, StringComparer.Ordinal);
     }
 

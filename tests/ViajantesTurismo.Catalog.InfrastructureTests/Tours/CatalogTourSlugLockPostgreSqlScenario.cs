@@ -89,6 +89,21 @@ internal sealed class CatalogTourSlugLockPostgreSqlScenario : IAsyncDisposable
     public ValueTask<IReadOnlyCollection<EventEnvelope>> Load(StreamId streamId, CancellationToken ct) =>
         eventStore.Load(streamId, afterRevision: null, ct);
 
+    public async Task<string> ExecuteParameterizedTracingProbe(string sentinel, CancellationToken ct)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(sentinel);
+
+        var dataSource = serviceProvider.GetRequiredService<NpgsqlDataSource>();
+        await using var connection = await dataSource.OpenConnectionAsync(ct);
+        await using var command = connection.CreateCommand();
+        command.CommandText = "SELECT CAST(@sentinel AS text);";
+        command.Parameters.AddWithValue("sentinel", sentinel);
+
+        var result = await command.ExecuteScalarAsync(ct);
+        return result as string
+            ?? throw new InvalidOperationException("The Npgsql tracing probe returned no text.");
+    }
+
     public async ValueTask DisposeAsync()
     {
         await serviceProvider.DisposeAsync();

@@ -379,6 +379,12 @@
       "sharedkernel.mediator.abstractions": {
         "type": "Project"
       },
+      "sharedkernel.npgsql": {
+        "type": "Project",
+        "dependencies": {
+          "Npgsql": "[10.0.3, )"
+        }
+      },
       "sharedkernel.observability": {
         "type": "Project",
         "dependencies": {
@@ -438,6 +444,7 @@
           "Aspire.Npgsql.EntityFrameworkCore.PostgreSQL": "[13.4.6, )",
           "SharedKernel.Branding": "[0.1.0-alpha.0, )",
           "SharedKernel.EntityFrameworkCore": "[0.1.0-alpha.0, )",
+          "SharedKernel.Npgsql": "[0.1.0-alpha.0, )",
           "ViajantesTurismo.Resources": "[0.1.0-alpha.0, )"
         }
       },

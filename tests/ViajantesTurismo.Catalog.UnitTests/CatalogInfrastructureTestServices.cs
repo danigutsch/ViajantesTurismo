@@ -18,6 +18,7 @@ internal static class CatalogInfrastructureTestServices
             [ClamAvMalwareScannerConfigurationKeys.HostConfigurationKey] = "clamav",
             [ClamAvMalwareScannerConfigurationKeys.PortConfigurationKey] = "3310"
         });
+        builder.Services.AddOpenTelemetry().WithTracing(static _ => { });
 
         builder.AddCatalogInfrastructure();
 
@@ -87,6 +88,7 @@ internal static class CatalogInfrastructureTestServices
             [$"{SeaweedFsMediaObjectStorageOptions.SectionName}:AccessKey"] = "access",
             [$"{SeaweedFsMediaObjectStorageOptions.SectionName}:SecretKey"] = "secret"
         });
+        builder.Services.AddOpenTelemetry().WithTracing(static _ => { });
 
         builder.AddCatalogInfrastructure();
 
@@ -106,9 +108,12 @@ internal static class CatalogInfrastructureTestServices
         return new CatalogInfrastructureScenario(builder.Services.BuildServiceProvider());
     }
 
-    public static CatalogInfrastructureScenario CreateWorkerScenario()
+    public static CatalogInfrastructureScenario CreateWorkerScenario(string environmentName = "Production")
     {
-        var builder = Host.CreateApplicationBuilder();
+        var builder = Host.CreateApplicationBuilder(new HostApplicationBuilderSettings
+        {
+            EnvironmentName = environmentName
+        });
         builder.Configuration.AddInMemoryCollection(new Dictionary<string, string?>
         {
             [$"ConnectionStrings:{ResourceNames.CatalogDatabase}"] = "Host=localhost;Database=viajantes-catalog;Username=test;Password=test",
@@ -179,6 +184,13 @@ internal sealed class CatalogInfrastructureScenario(ServiceProvider provider) : 
         where TContext : Microsoft.EntityFrameworkCore.DbContext
     {
         provider.GetRequiredService<Microsoft.EntityFrameworkCore.DbContextOptions<TContext>>().ShouldNotBeNull();
+    }
+
+    public bool IsSensitiveDataLoggingEnabled<TContext>()
+        where TContext : Microsoft.EntityFrameworkCore.DbContext
+    {
+        var options = provider.GetRequiredService<Microsoft.EntityFrameworkCore.DbContextOptions<TContext>>();
+        return options.FindExtension<Microsoft.EntityFrameworkCore.Infrastructure.CoreOptionsExtension>()?.IsSensitiveDataLoggingEnabled ?? false;
     }
 
     public void ShouldResolveAs<TService, TImplementation>()

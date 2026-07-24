@@ -5,7 +5,10 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Diagnostics.HealthChecks;
 using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Logging;
 using OpenTelemetry;
+using OpenTelemetry.Instrumentation.AspNetCore;
+using OpenTelemetry.Logs;
 using OpenTelemetry.Metrics;
 using OpenTelemetry.Trace;
 using SharedKernel.Observability;
@@ -21,6 +24,8 @@ namespace ViajantesTurismo.ServiceDefaults;
 [PublicAPI]
 public static class ServiceDefaultsExtensions
 {
+    private const string OtlpExporterEndpointVariableName = "OTEL_EXPORTER_OTLP_ENDPOINT";
+
     /// <summary>
     /// Adds a set of default services and configurations to the host builder, including OpenTelemetry,
     /// health checks, and service discovery.
@@ -70,8 +75,8 @@ public static class ServiceDefaultsExtensions
     /// Configures OpenTelemetry logging, metrics, and tracing for the application builder.
     /// </summary>
     /// <remarks>This method adds OpenTelemetry instrumentation for ASP.NET Core requests,
-    /// runtime metrics, gRPC client calls, and Entity Framework Core operations. It also configures logging to include
-    /// formatted messages and scopes. Health check and aliveness endpoints are excluded from tracing by default.</remarks>
+    /// runtime metrics, gRPC client calls, and Entity Framework Core operations. OTLP-bound logs omit preformatted
+    /// messages, scopes, and exception payloads. Health check and aliveness endpoints are excluded from tracing by default.</remarks>
     /// <typeparam name="TBuilder">The type of the application builder to configure. Must implement <see cref="IHostApplicationBuilder"/>.</typeparam>
     /// <param name="builder">The application builder to configure with OpenTelemetry services and instrumentation.</param>
     /// <returns>The same application builder instance, configured with OpenTelemetry logging, metrics, and tracing.</returns>
@@ -79,39 +84,58 @@ public static class ServiceDefaultsExtensions
     {
         ArgumentNullException.ThrowIfNull(builder);
 
+        builder.Logging.ClearProviders();
         ObservabilityBuilderExtensions.ConfigureOpenTelemetry(builder);
+        builder.Logging.AddOpenTelemetry(ConfigureOpenTelemetryLogging);
 
         builder.Services.AddOpenTelemetry()
-            .WithMetrics(metrics =>
-            {
-                metrics.AddAspNetCoreInstrumentation()
-                    .AddCatalogMetrics()
-                    .AddSharedKernelMediatorMetrics()
-                    .AddSharedKernelProviderMetrics();
-            })
-            .WithTracing(tracing =>
-            {
-                tracing.AddSource(builder.Environment.ApplicationName)
-                    .AddCatalogTracing()
-                    .AddSharedKernelMediatorTracing()
-                    .AddSharedKernelProviderTracing()
-                    .AddAspNetCoreInstrumentation(options =>
-                        options.Filter = context =>
-                            !context.Request.Path.StartsWithSegments(EndpointPaths.Health, StringComparison.OrdinalIgnoreCase)
-                            && !context.Request.Path.StartsWithSegments(EndpointPaths.Aliveness, StringComparison.OrdinalIgnoreCase)
-                    )
-                    .AddGrpcClientInstrumentation()
-                    .AddEntityFrameworkCoreInstrumentation();
-            });
+            .WithMetrics(ConfigureOpenTelemetryMetrics)
+            .WithTracing(tracing => ConfigureOpenTelemetryTracing(tracing, builder.Environment.ApplicationName));
+        builder.Services.PostConfigureAll<AspNetCoreTraceInstrumentationOptions>(
+            static options => options.RecordException = false);
 
         builder.AddOpenTelemetryExporters();
 
         return builder;
     }
 
+    private static void ConfigureOpenTelemetryLogging(OpenTelemetryLoggerOptions logging)
+    {
+        logging.IncludeFormattedMessage = false;
+        logging.IncludeScopes = false;
+        logging.AddProcessor(_ => new LogRecordPrivacyProcessor());
+    }
+
+    private static void ConfigureOpenTelemetryMetrics(MeterProviderBuilder metrics)
+    {
+        metrics.AddAspNetCoreInstrumentation()
+            .AddCatalogMetrics()
+            .AddSharedKernelMediatorMetrics()
+            .AddSharedKernelProviderMetrics();
+    }
+
+    private static void ConfigureOpenTelemetryTracing(TracerProviderBuilder tracing, string applicationName)
+    {
+        tracing.AddProcessor(new ActivityPrivacyProcessor())
+            .AddSource(applicationName)
+            .AddCatalogTracing()
+            .AddSharedKernelMediatorTracing()
+            .AddSharedKernelProviderTracing()
+            .AddAspNetCoreInstrumentation(options => options.Filter = ShouldTraceRequest)
+            .AddGrpcClientInstrumentation()
+            .AddEntityFrameworkCoreInstrumentation();
+    }
+
+    private static bool ShouldTraceRequest(HttpContext context)
+    {
+        return !context.Request.Path.StartsWithSegments(EndpointPaths.Health, StringComparison.OrdinalIgnoreCase)
+            && !context.Request.Path.StartsWithSegments(EndpointPaths.Aliveness, StringComparison.OrdinalIgnoreCase);
+    }
+
     private static void AddOpenTelemetryExporters<TBuilder>(this TBuilder builder) where TBuilder : IHostApplicationBuilder
     {
-        var useOtlpExporter = !string.IsNullOrWhiteSpace(builder.Configuration["OTEL_EXPORTER_OTLP_ENDPOINT"]);
+        var useOtlpExporter = !string.IsNullOrWhiteSpace(
+            builder.Configuration[OtlpExporterEndpointVariableName]);
         if (useOtlpExporter)
         {
             builder.Services.AddOpenTelemetry().UseOtlpExporter();

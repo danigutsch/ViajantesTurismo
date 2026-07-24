@@ -439,9 +439,11 @@ internal static class CatalogEndpoints
         {
             return Results.Problem("The public tour slug is already in use.", statusCode: StatusCodes.Status409Conflict);
         }
-        catch (CatalogTourPublishedPresentationChangeException exception)
+        catch (CatalogTourPublishedPresentationChangeException)
         {
-            return Results.Problem(exception.Message, statusCode: StatusCodes.Status409Conflict);
+            return Results.Problem(
+                "Published tours must be unpublished before their presentation can change.",
+                statusCode: StatusCodes.Status409Conflict);
         }
         catch (ExpectedStreamRevisionConflictException)
         {
@@ -449,7 +451,7 @@ internal static class CatalogEndpoints
         }
         catch (CatalogTourProjectionPendingException exception)
         {
-            logger.TourProjectionPending(id, exception);
+            logger.TourProjectionPending(exception.GetType().Name);
             return await AcceptPendingProjection(id, outputCacheStore, logger);
         }
 
@@ -487,11 +489,11 @@ internal static class CatalogEndpoints
                 return Results.NotFound();
             }
         }
-        catch (CatalogTourPublicationNotReadyException exception)
+        catch (CatalogTourPublicationNotReadyException)
         {
             return Results.ValidationProblem(new Dictionary<string, string[]>
             {
-                [nameof(CatalogTourDto.Summary)] = [exception.Message]
+                [nameof(CatalogTourDto.Summary)] = ["Catalog tours require a title, summary, and slug before publication."]
             });
         }
         catch (ExpectedStreamRevisionConflictException)
@@ -500,7 +502,7 @@ internal static class CatalogEndpoints
         }
         catch (CatalogTourProjectionPendingException exception)
         {
-            logger.TourProjectionPending(id, exception);
+            logger.TourProjectionPending(exception.GetType().Name);
             return await AcceptPendingProjection(id, outputCacheStore, logger);
         }
 
@@ -539,7 +541,7 @@ internal static class CatalogEndpoints
         }
         catch (CatalogTourProjectionPendingException exception)
         {
-            logger.TourProjectionPending(id, exception);
+            logger.TourProjectionPending(exception.GetType().Name);
             return await AcceptPendingProjection(id, outputCacheStore, logger);
         }
 
@@ -698,7 +700,7 @@ internal static class CatalogEndpoints
         }
         catch (Exception exception) when (exception.ShouldHandleAsFailure(CancellationToken.None))
         {
-            logger.PublicCacheAreaInvalidationFailed(PublicCatalogHttpCache.Area, exception);
+            logger.PublicCacheAreaInvalidationFailed(PublicCatalogHttpCache.Area, exception.GetType().Name);
         }
     }
 
@@ -737,7 +739,7 @@ internal static class CatalogEndpoints
         }
         catch (Exception exception) when (exception.ShouldHandleAsFailure(CancellationToken.None))
         {
-            logger.PublicCacheAreaInvalidationFailed(PublicContentHttpCache.Area, exception);
+            logger.PublicCacheAreaInvalidationFailed(PublicContentHttpCache.Area, exception.GetType().Name);
         }
     }
 

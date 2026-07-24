@@ -31,9 +31,18 @@ internal static class AdminApiTestHost
     private const string Audience = "admin-api";
 
     public static WebApplicationFactory<AdminApiHostEntryPoint> Create(
-        Action<IServiceCollection>? configureTestServices = null)
+        Action<IServiceCollection>? configureTestServices = null,
+        string? environment = null)
     {
+        var hostEnvironment = environment ?? Environments.Development;
+        var disableMalwareScanner = !string.Equals(
+            hostEnvironment,
+            Environments.Production,
+            StringComparison.Ordinal);
+        var configuration = CreateConfiguration(disableMalwareScanner);
+
         return WebApplicationTestHost.Create<AdminApiHostEntryPoint>(
+            environment: hostEnvironment,
             configureTestServices: services =>
             {
                 services.Configure<HealthCheckServiceOptions>(options => options.Registrations.Clear());
@@ -41,18 +50,53 @@ internal static class AdminApiTestHost
                 services.RemoveAll<IHostedService>();
                 configureTestServices?.Invoke(services);
             },
-            configuration: new Dictionary<string, string?>
-            {
-                [$"ConnectionStrings:{ResourceNames.AdminDatabase}"] = "Host=localhost;Database=viajantes-admin",
-                [ApiAuthenticationDefaults.AuthorityConfigurationKey] = ApiTestAuthentication.Authority,
-                [ApiAuthenticationDefaults.IssuerConfigurationKey] = ApiTestAuthentication.Authority,
-                [ClamAvMalwareScannerConfigurationKeys.DisabledConfigurationKey] = bool.TrueString
-            });
+            configuration: configuration);
+    }
+
+    private static Dictionary<string, string?> CreateConfiguration(bool disableMalwareScanner)
+    {
+        var configuration = new Dictionary<string, string?>
+        {
+            [$"ConnectionStrings:{ResourceNames.AdminDatabase}"] = "Host=localhost;Database=viajantes-admin",
+            [ApiAuthenticationDefaults.AuthorityConfigurationKey] = ApiTestAuthentication.Authority,
+            [ApiAuthenticationDefaults.IssuerConfigurationKey] = ApiTestAuthentication.Authority
+        };
+
+        if (disableMalwareScanner)
+        {
+            configuration[ClamAvMalwareScannerConfigurationKeys.DisabledConfigurationKey] = bool.TrueString;
+            return configuration;
+        }
+
+        configuration[ClamAvMalwareScannerConfigurationKeys.HostConfigurationKey] = "clamav";
+        configuration[ClamAvMalwareScannerConfigurationKeys.PortConfigurationKey] = "3310";
+
+        return configuration;
+    }
+
+    public static string GetEnvironmentName(WebApplicationFactory<AdminApiHostEntryPoint> factory)
+    {
+        ArgumentNullException.ThrowIfNull(factory);
+
+        return factory.Services.GetRequiredService<IHostEnvironment>().EnvironmentName;
     }
 
     public static void ConfigureAuthenticatedClient(HttpClient client, string role)
     {
         ApiTestAuthentication.ConfigureAuthenticatedClient(client, Audience, role);
+    }
+
+    public static async ValueTask<MalwareScanResult> ScanEmptyContent(
+        WebApplicationFactory<AdminApiHostEntryPoint> factory,
+        CancellationToken ct)
+    {
+        ArgumentNullException.ThrowIfNull(factory);
+
+        using var scope = factory.Services.CreateScope();
+        var scanner = scope.ServiceProvider.GetRequiredService<IMalwareScanner>();
+        await using var content = new MemoryStream();
+
+        return await scanner.Scan(content, length: 0, ct);
     }
 
     public static void VerifyMappedMutationDependencies(WebApplicationFactory<AdminApiHostEntryPoint> factory)

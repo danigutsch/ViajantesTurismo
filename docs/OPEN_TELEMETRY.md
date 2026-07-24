@@ -96,11 +96,12 @@ Dashboard design rules:
 - alerts should be added separately from dashboard panels so alert policy can be reviewed on its own
 - JSON/config validation must be wired into local scripts before dashboard assets become required CI
 
-The repository now provides an opt-in local Grafana LGTM stack through the Aspire AppHost. Set
-`ASPIRE_ENABLE_OBSERVABILITY_STACK=1` before startup to add the OpenTelemetry Collector,
-Grafana, Loki, Tempo, and Prometheus resources. Reusable resource wiring lives in
-`SharedKernel.Aspire.Hosting.Grafana`, an Aspire hosting library. The stack remains
-local-development infrastructure and stays out of `SharedKernel.*` runtime packages.
+The Aspire AppHost now places a pinned OpenTelemetry Collector gateway in front of the built-in
+dashboard for every supported hosted profile. Set `ASPIRE_ENABLE_OBSERVABILITY_STACK=1` before
+startup to add the optional Grafana, Loki, Tempo, and Prometheus resources behind the same gateway.
+Reusable resource wiring lives in `SharedKernel.Aspire.Hosting.Grafana`, an Aspire hosting library.
+The gateway and optional stack remain local-development infrastructure and stay out of
+`SharedKernel.*` runtime packages.
 
 Telemetry instrumentation should stay with the component being instrumented: `SharedKernel.Mediator`
 owns mediator sources/meters, `SharedKernel.EventSourcing.Npgsql` owns provider telemetry,
@@ -130,6 +131,10 @@ when a log is written inside an `Activity`.
 `ViajantesTurismo.ServiceDefaults` centralizes shared registration used by services calling
 `builder.AddServiceDefaults()`.
 
+Service defaults remove preconfigured logging providers before adding OpenTelemetry. This keeps the
+sanitized OpenTelemetry pipeline as the sole default logging provider; hosts must not add console,
+debug, or other providers unless those providers enforce the same privacy boundary.
+
 - Metrics registration:
     - `src/ViajantesTurismo.ServiceDefaults/OpenTelemetryBuilderExtensions.cs`
     - `AddSharedKernelMediatorMetrics()` -> `metrics.AddMeter(SharedKernel.Mediator.MediatorTelemetry.Name)`
@@ -157,6 +162,34 @@ Exporter wiring remains service-default driven and exporter-neutral:
 
 - `src/ViajantesTurismo.ServiceDefaults/ServiceDefaultsExtensions.cs`
 - OTLP exporter is enabled only when `OTEL_EXPORTER_OTLP_ENDPOINT` is configured.
+- AppHost's collector forwarding contract overwrites the standard OTLP endpoint for compatible
+  resources carrying Aspire's `OtlpExporterAnnotation`, for every hosted profile. It maps standard
+  `grpc`, `http/protobuf`, and `http/json` protocol values to the Collector's matching endpoint.
+- The collector removes sensitive resource attributes from traces, logs, and metrics. It also drops
+  every span event, clears status descriptions, and removes explicit sensitive or high-cardinality
+  span attributes before forwarding telemetry to configured downstream backends.
+- Raw telemetry still exists inside the trusted application-to-Collector hop. Protect that hop with
+  trusted networking and transport controls.
+- A manually constructed exporter or a process run outside this AppHost contract can target a backend
+  directly and bypass the gateway. Deployment controls must restrict direct backend endpoints; the
+  repository cannot intercept arbitrary exporter instances.
+- Signal-specific variables such as `OTEL_EXPORTER_OTLP_TRACES_ENDPOINT`,
+  `OTEL_EXPORTER_OTLP_LOGS_ENDPOINT`, and `OTEL_EXPORTER_OTLP_METRICS_ENDPOINT` take precedence over the
+  generic endpoint rewritten by AppHost forwarding. Deployment policy must reject or rewrite those
+  variables and code-configured exporter endpoints for AppHost-managed workloads.
+- The Collector privacy processors use `error_mode: propagate`. A transform/filter expression failure
+  rejects the affected payload rather than forwarding an unsanitized trace. Operators must alert on
+  Collector processor and receiver errors because this fail-closed policy can reduce telemetry
+  availability.
+
+### Gateway operator responsibilities
+
+The trusted Collector is an export boundary, not a replacement for deployment network controls.
+Operators must expose only approved Collector ingress to application workloads, restrict direct
+backend egress, configure TLS and authentication for Collector ingress and downstream exporters, and
+review sanitizer rules whenever instrumentation or exporter configuration changes. The checked-in
+Collector, Tempo, Loki, and Grafana wiring is local-only and is not a production transport-security
+configuration.
 
 ## Repository custom span contract
 
@@ -167,19 +200,29 @@ cancellation, and failure paths.
 | --- | --- | --- | --- | --- |
 | Success | `ActivityStatusCode.Ok` | `null` | Do not record one | Keep the surface's success/outcome tags when that surface defines them |
 | Cancellation | Leave status unset | `null` | Do not record one | Keep the surface's cancellation/outcome tags when that surface defines them |
-| Failure | `ActivityStatusCode.Error` | Use the thrown exception message | Record exactly one exception event | Keep the surface's error/outcome tags when that surface defines them |
+| Failure | `ActivityStatusCode.Error` | `null` | Do not record exception content | Keep bounded `error.type` and the surface's error/outcome tags |
 
 ### Status description rules
 
 - Success spans must leave `StatusDescription` as `null`.
 - Cancellation spans must leave `StatusDescription` as `null`.
-- Failure spans must populate `StatusDescription` with the thrown exception message.
+- Failure spans must leave `StatusDescription` as `null`.
 
 ### Exception recording rules
 
-- Failure spans must record one exception event with OpenTelemetry-standard exception tags.
-- Success and cancellation spans must not record exception events.
-- Repo-specific error tags do not replace the exception event; they complement it.
+- Repository-owned spans must not record exception messages, stack traces, or exception events.
+- Failure spans retain a bounded `error.type`; success and cancellation spans omit it.
+- Source processors remove mutable raw paths, query text, identifiers, and status descriptions before
+  application OTLP export as defense in depth. They cannot remove immutable provider `ActivityEvent`
+  payloads after an activity stops.
+- ASP.NET Core, HttpClient, gRPC, Entity Framework Core, Npgsql, AWS SDK, and repository-owned tracing
+  remain enabled. ASP.NET Core exception recording is disabled without suppressing request spans.
+- AWS SDK tracing suppresses duplicate downstream HTTP instrumentation and retains the S3 source-tag
+  redaction processor. Npgsql disables its optional first-response event and does not enable parameter
+  logging; database spans and metrics remain enabled.
+- The trusted Collector therefore drops every span event and repeats mutable attribute/status
+  sanitization before any downstream trace exporter. This preserves parent/provider spans, useful span
+  names, and bounded method, route, status, operation, service/system, outcome, and `error.type` fields.
 
 ### Repo-specific tag policy
 
@@ -216,7 +259,7 @@ diagnostic context, then correlate to traces and metrics through trace context a
 | Message template | Use static templates with named placeholders. Placeholder names become structured fields; changing them is a contract change. |
 | Structured fields | Use low-cardinality fields such as `operation`, `outcome`, `provider`, `area`, and bounded enum-like values. |
 | Scopes | Use scopes for values that apply to a whole operation, not for high-cardinality values or user content. |
-| Exceptions | Pass exceptions through the logger exception parameter. Do not duplicate stack traces or exception messages as custom fields. |
+| Exceptions | Do not pass exception objects, messages, or stack traces to production logs. Emit a bounded exception type only when it helps operators. |
 | Correlation | Emit logs inside the active `Activity` when possible so `TraceId`, `SpanId`, and trace flags can correlate logs to spans. |
 | Resource identity | Rely on shared OpenTelemetry resource identity for service name/version/environment instead of repeating those values as custom fields. |
 
@@ -246,18 +289,16 @@ structured fields reviewable as telemetry contracts.
   `CancellationToken` is signaled.
 - Unexpected `OperationCanceledException` with an unsignaled token should follow the ordinary error
   path.
-- Failure logs should pair with failure spans: one logged exception and one span exception event are
-  acceptable because they serve different consumers, but avoid extra duplicate error logs in nested
-  layers unless they add new operational context.
+- Failure logs should pair with failure spans through bounded exception type and outcome fields. Avoid
+  duplicate error logs in nested layers unless they add new operational context.
 
 ### Current repository examples
 
-- Mediator request, notification, and stream spans use `AddException(ex)` plus
-  `SetStatus(ActivityStatusCode.Error, ...)` on failures, leave cancellation status unset,
-  and emit outcome tags.
-- Database initialization spans use the same failure-status and exception-event pattern while
-  retaining initialization-specific operation tags on all paths. Synthetic Admin data initialization
-  runs atomically only in Development; migrations run in every environment.
+- Mediator request, notification, and stream spans set error status and bounded `error.type` on
+  failures, leave cancellation status unset, and emit outcome tags without exception content.
+- Database initialization spans use the same failure-status and bounded-type pattern while retaining
+  initialization-specific operation tags on all paths. Synthetic Admin data initialization runs
+  atomically only in Development; migrations run in every environment.
 - Catalog and PostgreSQL event-sourcing surfaces are registered through service defaults, leave
   cooperative cancellation out of error metrics, and keep their tag sets low-cardinality because
   they are used by traces and metrics.
@@ -319,9 +360,12 @@ least two production surfaces need the same lifecycle API and tag contract.
         - `ViajantesTurismo.Catalog`
         - `SharedKernel.EventSourcing.Npgsql`
 
-6. Optional OTLP path check:
-    - Set `OTEL_EXPORTER_OTLP_ENDPOINT` to your collector endpoint before startup.
-    - Re-run `dotnet tool run aspire run` and confirm logs/traces/metrics arrive in the configured backend.
+6. OTLP gateway path check:
+    - Run any supported AppHost profile and confirm application resources wait for and export through
+      `opentelemetry-collector` before telemetry appears in the Aspire dashboard.
+    - Set `ASPIRE_ENABLE_OBSERVABILITY_STACK=1`, restart AppHost, and confirm sanitized telemetry also
+      arrives in the optional backends.
+    - Treat any manually configured direct exporter as outside this enforceable AppHost contract.
 
 ## Quick code map
 

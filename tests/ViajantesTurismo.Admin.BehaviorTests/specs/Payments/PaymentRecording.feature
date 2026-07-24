@@ -93,7 +93,7 @@ automatically update payment status, and prevent overpayments to maintain accura
         Scenario: Reject payment exceeding remaining balance
             Given I record a payment of 600.00 on 2025-01-15 using CreditCard
             When I attempt to record a payment of 500.00 on 2025-02-01 using Cash
-            Then the payment should be rejected with error "Payment amount $500.00 exceeds remaining balance $400.00"
+            Then the payment should be rejected with error "Payment amount exceeds remaining balance"
             And the amount paid should be 600.00
             And the remaining balance should be 400.00
 

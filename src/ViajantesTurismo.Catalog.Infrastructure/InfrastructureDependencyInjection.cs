@@ -8,6 +8,7 @@ using SharedKernel.EventSourcing;
 using SharedKernel.EventSourcing.Npgsql;
 using SharedKernel.MalwareScanning.ClamAv;
 using SharedKernel.Messaging.IntegrationEvents.EntityFrameworkCore;
+using SharedKernel.Npgsql;
 using SharedKernel.OpenApi;
 using ViajantesTurismo.Catalog.Application;
 using ViajantesTurismo.Catalog.Application.Media;
@@ -139,11 +140,14 @@ public static class InfrastructureDependencyInjection
     private static TApplicationBuilder AddCatalogPersistence<TApplicationBuilder>(this TApplicationBuilder builder)
         where TApplicationBuilder : IHostApplicationBuilder
     {
-        builder.AddNpgsqlDataSource(ResourceNames.CatalogDatabase);
+        builder.AddNpgsqlDataSource(
+            ResourceNames.CatalogDatabase,
+            configureDataSourceBuilder: ConfigureNpgsqlDataSource);
         builder.AddKeyedNpgsqlDataSource(
             ResourceNames.CatalogDatabase,
             configureDataSourceBuilder: dataSourceBuilder =>
             {
+                ConfigureNpgsqlDataSource(dataSourceBuilder);
                 dataSourceBuilder.ConnectionStringBuilder.MaxPoolSize = Math.Min(
                     CatalogSlugLockMaximumPoolSize,
                     dataSourceBuilder.ConnectionStringBuilder.MaxPoolSize);
@@ -192,9 +196,23 @@ public static class InfrastructureDependencyInjection
     {
         builder.AddNpgsqlDbContext<CatalogIntegrationTransportDbContext>(
             ResourceNames.AdminDatabase,
-            configureDbContextOptions: options => ConfigureDevelopmentDatabaseOptions<CatalogIntegrationTransportDbContext, TApplicationBuilder>(builder, options));
+            configureDbContextOptions: options => ConfigureCatalogIntegrationTransportDbContext(builder, options));
 
         return builder;
+    }
+
+    private static void ConfigureCatalogIntegrationTransportDbContext<TApplicationBuilder>(
+        TApplicationBuilder builder,
+        DbContextOptionsBuilder options)
+        where TApplicationBuilder : IHostApplicationBuilder
+    {
+        options.UseNpgsql(providerOptions => providerOptions.ConfigureDataSource(ConfigureNpgsqlDataSource));
+        ConfigureDevelopmentDatabaseOptions<CatalogIntegrationTransportDbContext, TApplicationBuilder>(builder, options);
+    }
+
+    private static void ConfigureNpgsqlDataSource(NpgsqlDataSourceBuilder dataSourceBuilder)
+    {
+        dataSourceBuilder.ConfigureTracingWithoutFirstResponseEvent();
     }
 
     private static TApplicationBuilder AddCatalogIntegrationEventTransportConsumer<TApplicationBuilder>(this TApplicationBuilder builder)

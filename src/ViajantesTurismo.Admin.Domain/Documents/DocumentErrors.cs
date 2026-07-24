@@ -8,7 +8,7 @@ namespace ViajantesTurismo.Admin.Domain.Documents;
 public static class DocumentErrors
 {
     /// <summary>Returns a document-not-found failure.</summary>
-    public static Result DocumentNotFound(Guid id) => Result.NotFound(detail: $"Document with ID {id} was not found.");
+    public static Result DocumentNotFound(Guid id) => Result.NotFound(detail: "Document was not found.");
 
     /// <summary>Returns a failure for a booking that cannot produce a customer-facing document draft.</summary>
     public static Result BookingIsNotAccepted() => Result.Conflict(

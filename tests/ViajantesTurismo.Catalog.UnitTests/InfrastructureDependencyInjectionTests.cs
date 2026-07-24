@@ -1,3 +1,6 @@
+using System.Diagnostics;
+using OpenTelemetry.Metrics;
+using OpenTelemetry.Trace;
 using SharedKernel.Testing;
 using SharedKernel.EventSourcing;
 using SharedKernel.EventSourcing.Npgsql;
@@ -14,6 +17,23 @@ namespace ViajantesTurismo.Catalog.UnitTests;
 [Trait(SharedKernelTestTraitNames.CategoryName, TestTraitValues.DependencyInjectionCategory)]
 public sealed class InfrastructureDependencyInjectionTests
 {
+    [Theory]
+    [InlineData("Development", true)]
+    [InlineData("Production", false)]
+    public void Catalog_worker_gates_sensitive_logging_for_catalog_and_transport_contexts(string environmentName, bool expected)
+    {
+        // Arrange
+        using var scenario = CatalogInfrastructureTestServices.CreateWorkerScenario(environmentName);
+
+        // Act
+        var catalogSensitiveLogging = scenario.IsSensitiveDataLoggingEnabled<CatalogDbContext>();
+        var transportSensitiveLogging = scenario.IsSensitiveDataLoggingEnabled<CatalogIntegrationTransportDbContext>();
+
+        // Assert
+        catalogSensitiveLogging.ShouldBe(expected);
+        transportSensitiveLogging.ShouldBe(expected);
+    }
+
     [Fact]
     public void AddCatalogInfrastructure_registers_catalog_services()
     {
@@ -71,6 +91,40 @@ public sealed class InfrastructureDependencyInjectionTests
         // Assert
         scenario.ShouldResolveAs<IMediaObjectStore, SeaweedFsMediaObjectStore>();
         scenario.ShouldResolveSingleton<IMediaObjectStore>();
+    }
+
+    [Fact]
+    [Trait(TestTraitNames.CategoryName, TestTraitValues.SecurityCategory)]
+    public void Seaweedfs_storage_registers_aws_tracing_and_metrics()
+    {
+        // Arrange
+        using var scenario = CatalogInfrastructureTestServices.CreateSeaweedFsScenario();
+        _ = scenario.ShouldResolve<TracerProvider>();
+        _ = scenario.ShouldResolve<MeterProvider>();
+        using var activitySource = new ActivitySource("AWSSDK.S3");
+
+        // Act
+        using var activity = activitySource.StartActivity("S3.PutObject", ActivityKind.Client);
+
+        // Assert
+        activity.ShouldNotBeNull();
+    }
+
+    [Fact]
+    [Trait(TestTraitNames.CategoryName, TestTraitValues.SecurityCategory)]
+    public void Catalog_persistence_registers_npgsql_tracing_and_metrics()
+    {
+        // Arrange
+        using var scenario = CatalogInfrastructureTestServices.CreateScenario();
+        _ = scenario.ShouldResolve<TracerProvider>();
+        _ = scenario.ShouldResolve<MeterProvider>();
+        using var activitySource = new ActivitySource("Npgsql");
+
+        // Act
+        using var activity = activitySource.StartActivity("postgresql.query", ActivityKind.Client);
+
+        // Assert
+        activity.ShouldNotBeNull();
     }
 
     [Fact]

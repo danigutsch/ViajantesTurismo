@@ -84,6 +84,11 @@ public static class CatalogTelemetry
     public static string TagOutcome => "catalog.outcome";
 
     /// <summary>
+    /// Gets the bounded exception type tag name used for failed operations.
+    /// </summary>
+    public static string TagErrorType => "error.type";
+
+    /// <summary>
     /// Gets the projection name tag name.
     /// </summary>
     public static string TagProjectionName => "catalog.projection.name";
