@@ -7,7 +7,8 @@ authentication. The supported ASP.NET Core generator launches the application en
 startup registration can otherwise load credentials, configure telemetry, register external integrations,
 or perform OpenID Connect discovery.
 
-Safe generation of Admin, Catalog, and Branding documents requires a durable architecture decision.
+Safe generation of logical Admin, Catalog, and Branding documents requires a durable architecture
+decision even when one executable hosts more than one logical boundary.
 
 ## Decision
 
@@ -31,6 +32,19 @@ telemetry, service discovery, and runtime worker relays.
 from endpoint authorization metadata and the authenticated fallback policy; it does not require a JWT
 handler or identity-provider configuration.
 
+OpenAPI tool targets are logical contract owners, not permanent executable owners. The stable
+`generate branding` command currently builds `ViajantesTurismo.Branding.ApiService`; before ADR-040
+removes that executable, the command must build Catalog.ApiService in a Branding-only generation mode.
+That mode preserves canonical `branding`, `public-branding`, and Branding-only `v1` artifacts under
+`ViajantesTurismo.Branding.Contracts.Http/OpenApi`, including their existing refresh command and
+Branding contract-test ownership. Catalog-hosted generation must not merge Branding artifacts into
+Catalog ownership or include unrelated Catalog routes in the Branding-only documents.
+
+The contraction gate updates tool target tests, generated filename mapping, drift guards, refresh
+hints, and contract tests before deleting the standalone project. Trusted generation still omits
+runtime relays, database access, service discovery, and OIDC/JWT registration while retaining both
+named route schemes' authorization metadata.
+
 ## Consequences
 
 ### Positive
@@ -40,6 +54,8 @@ handler or identity-provider configuration.
 - Normal API startup remains fail-closed: a configuration marker or environment name alone cannot omit
   bearer authentication because it cannot satisfy the `GetDocument.Insider` identity check.
 - Contract drift tests consume the same generated Admin, Catalog, and Branding artifacts that CI creates.
+- Branding artifact ownership survives process co-hosting; executable removal cannot silently delete or
+  merge the logical contract boundary.
 - Runtime OpenAPI inspection remains development-only; artifact production stays build-time and explicit.
 
 ### Negative
@@ -75,4 +91,5 @@ Accepted.
 
 - [Architecture decision index](../ARCHITECTURE_DECISIONS.md)
 - [API compatibility workflow](../API_COMPATIBILITY.md)
+- [ADR-040: Branding Module Co-hosting and State Distribution](20260724-branding-module-co-hosting-and-state-distribution.md)
 - [ASP.NET Core build-time OpenAPI generation](https://learn.microsoft.com/en-us/aspnet/core/fundamentals/openapi/aspnetcore-openapi?view=aspnetcore-10.0)

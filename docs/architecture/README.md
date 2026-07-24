@@ -90,7 +90,8 @@ claimed batch. See [Events and messaging](../domain/EVENTS_AND_MESSAGING.md) and
   only pure validation/normalization. The standalone API is current, while
   [ADR-040](../adr/20260724-branding-module-co-hosting-and-state-distribution.md) accepts a gated move
   into Catalog.ApiService without transferring contracts, routes, permissions, schema, or outbox
-  ownership to Catalog.
+  ownership to Catalog. The separation remains logical; the co-hosted modules share one process and
+  credential blast radius.
 - Catalog media upload, management metadata, accessibility drafts, processing, reconciliation, and
   public ready-image filtering are implemented; event-sourced gallery editing, evaluation dashboards,
   and optional storage adapters remain planned.

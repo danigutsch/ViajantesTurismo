@@ -140,34 +140,48 @@ The selected platform must provide least-privilege capabilities equivalent to:
 | Capability | Required access | Explicitly excluded |
 | --- | --- | --- |
 | Branding runtime writer | Branding current state, full-state revisions, and Branding outbox DML | Admin data, Catalog domain tables, schema DDL |
-| Branding migration identity | Approved `branding` schema and migration-history DDL/DML during deployment | Runtime use, Admin data |
-| Branding outbox relay | Claim/update Branding outbox delivery state and publish the immutable envelope | Branding settings mutation, Catalog domain tables |
-| Integration Event Worker Branding consumer | Read the transport envelope; write Admin Branding inbox, projection, watermark, retry, and poison state | Catalog/Branding source reads outside delivery, unrelated Admin writes |
+| Branding migration identity | Approved `branding` schema, migration history, and sole Catalog-database `messaging.transport_messages` migration DDL/DML during deployment | Runtime use, Admin data, Catalog domain tables |
+| Branding outbox relay | Claim/update `branding.outbox_messages`; insert `ConsumerName = 'admin'` into Catalog-database `messaging.transport_messages` | Branding settings mutation, Catalog domain tables, Admin data |
+| Integration Event Worker transport | `SELECT`/`UPDATE` Catalog-database `messaging.transport_messages` claims, retry, poison, and `ProcessedAt` | Branding current/history/outbox, Catalog domain tables, schema DDL |
+| Integration Event Worker Admin projection | Branding inbox, projection, epoch/revision watermark, recovery, and replay-audit DML | Unrelated Admin writes, source database reads, schema DDL |
 | Admin API | Read the local Admin Branding projection | Catalog/Branding HTTP credentials and source database credentials |
-| Replay operator | Audited poison inspection and replay by immutable envelope/event identity | Ordinary application runtime access, untracked payload editing |
+| Recovery operator | Audited poison replay, reseed authorization, and source-epoch rotation | Ordinary application runtime access, untracked payload editing |
 
 These capability labels are requirements, not deployed role names. Co-hosting does not justify one
 broad database owner credential. Runtime credentials do not apply migrations. Production OIDC clients,
 audiences, and role mappings must be provisioned in a provider separate from local/CI Keycloak.
 
+Separate roles and DbContexts mitigate accidental access, but Catalog and Branding still share one
+process and all credentials loaded into it. A process compromise or process-wide failure can affect both
+modules. Re-extract Branding when credentials must not coexist, independent availability/scaling/deploy
+is required, regulatory/tenant or backup/retention isolation differs, or measured contention justifies
+the extra process.
+
 Before removing the standalone executable:
 
 1. apply only forward-compatible schema expansion that the retained rollback artifact can use;
-2. deploy the upgraded writer in both hosts and verify atomic current/revision/outbox writes;
-3. verify Admin inbox/projection atomicity, source/applied watermarks, bounded retry, poison visibility,
-   and audited replay;
-4. move Public.Web and Management.Web traffic, then drain old-audience tokens and active sessions;
-5. observe zero standalone traffic for the approved rollback window;
-6. run a rollback drill against the retained standalone release artifact, including write, event
+2. deploy the upgraded writer in both hosts and verify atomic current/revision/outbox writes plus
+   strong ETag/`If-Match` two-editor conflict behavior;
+3. verify atomic Branding outbox-to-Catalog-transport handoff and both worker crash boundaries, including
+   idempotent redelivery after Admin commit and before transport acknowledgement;
+4. verify finite retry/poison/replay, source/applied epoch/revision watermarks, source-rewind epoch
+   rotation, old-epoch outbox supersession/transport quarantine, lost-projection reseed, atomic
+   recovery audit, and Management-write/relay/document-generation gating;
+5. move Public.Web and Management.Web traffic while preserving the exact `branding-api` audience;
+6. stop issuing standalone endpoint references and wait through the maximum token/session lifetime;
+7. observe zero standalone traffic for the approved rollback window;
+8. run a rollback drill against the retained standalone release artifact, including write, event
    delivery, and Admin projection recovery;
-7. confirm the Catalog API remains privately exposed as intended; an anonymous Branding route does not
-   by itself require public backend ingress; and
-8. record the platform-specific roles, alert thresholds, traffic controls, and operator owners in the
+9. confirm the Catalog API remains privately exposed as intended; an anonymous Branding route does not
+   by itself require public backend ingress;
+10. retarget `generate branding`, generated filename mappings, Branding drift tests, and refresh hints to
+    Catalog.ApiService while preserving Branding-owned canonical artifacts and route-only content; and
+11. record the platform-specific roles, alert thresholds, traffic controls, and operator owners in the
    deployment runbook.
 
 Failure of any gate keeps the standalone host and compatibility policy in place. Do not remove the old
-artifact, AppHost resource, service-discovery reference, or legacy audience policy in the expansion
-release.
+artifact, AppHost resource, service-discovery reference, or standalone endpoint/scheme registration in
+the expansion release.
 
 ## Common failures
 

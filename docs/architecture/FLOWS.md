@@ -345,9 +345,9 @@ Current rendering rules:
 
 Branding remains a logical module but is hosted by Catalog.ApiService. A write commits current state,
 an immutable full-state revision, and a Branding-owned outbox event in one transaction. The event
-carries the source revision and complete immutable document snapshot. `IntegrationEventWorker` applies
-it through an Admin inbox to a local Admin projection; Admin API never calls Catalog HTTP or reads the
-Catalog database for Branding.
+is `BrandingSettingsChangedV1` and carries a non-empty source epoch, positive source revision, and
+complete immutable document snapshot. `IntegrationEventWorker` applies it through an Admin inbox to a
+local Admin projection; Admin API never calls Catalog HTTP or reads the Catalog database for Branding.
 
 ```mermaid
 flowchart LR
@@ -357,32 +357,43 @@ flowchart LR
     brandingModule[Branding ASP.NET/application module]
     current[(Branding current state)]
     revisions[(Append-only full-state revisions)]
-    outbox[(Branding-owned outbox)]
+    outbox[(branding.outbox_messages)]
+    relay[Branding outbox relay]
+    transport[(Catalog DB messaging.transport_messages\nConsumerName = admin)]
     worker[IntegrationEventWorker]
     adminInbox[(Admin Branding inbox + watermark)]
     adminProjection[(Admin Branding projection)]
     adminApi[Admin.ApiService]
 
-    management -->|uncached management HTTP| catalogHost
+    management -->|GET ETag / PUT If-Match; uncached| catalogHost
     public -->|60s fresh / 300s stale public HTTP| catalogHost
     catalogHost --> brandingModule
     brandingModule -->|one transaction| current
     brandingModule -->|one transaction| revisions
     brandingModule -->|full snapshot + revision| outbox
-    outbox --> worker
-    worker --> adminInbox
+    outbox --> relay
+    relay -->|atomic transport insert + outbox PublishedAt| transport
+    transport -->|claim + lease| worker
+    worker -->|Admin transaction| adminInbox
     adminInbox --> adminProjection
+    worker -->|ProcessedAt after Admin commit| transport
     adminApi --> adminProjection
 ```
 
 Target delivery rules:
 
-- A non-null source revision applies only above the Admin watermark. Older/duplicate revisions are
-  acknowledged; full-state transfer allows a newer revision to close a gap.
-- A legacy `null` revision is idempotent by event identity, never advances the watermark, and cannot
-  overwrite a versioned projection.
-- Retry is bounded. Exhausted events enter visible poison state; audited replay retains the immutable
-  envelope and remains guarded by inbox idempotency and revision comparison.
+- No Branding integration event predates `BrandingSettingsChangedV1`, and every valid event has a
+  positive revision. Only pre-rollout document rows may have nullable Branding revision provenance.
+- Within one source epoch, a higher revision replaces the Admin projection; older/duplicate revisions
+  are acknowledged. A new epoch requires audited recovery rather than an implicit switch.
+- Relay enqueue and outbox `PublishedAt` commit atomically. The worker commits Admin
+  inbox/projection/watermark before transport `ProcessedAt`; a crash between those commits redelivers
+  idempotently after lease expiry.
+- Retry is finite. Exhausted transport rows enter visible poison state; audited replay retains the
+  immutable envelope and remains guarded by inbox identity and epoch/revision comparison.
+- Reseed gates document generation in `Recovering`, rotates source epoch for a source rewind, and
+  commits inbox, full projection, watermark, old/new audit, and return to `Ready` atomically.
+- Management uses strong ETag/`If-Match`; a stale full-state PUT returns 409 and is not blindly retried.
 - This is event-carried state transfer, not event sourcing. No projection framework, distributed cache,
   SignalR, SSE, WebSockets, HTTP/3 requirement, or ordinary API-to-API HTTP is introduced.
 

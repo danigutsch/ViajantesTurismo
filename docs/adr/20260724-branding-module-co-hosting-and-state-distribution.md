@@ -24,6 +24,9 @@ that the target topology is deployed or production-ready.
 - Branding remains an independent logical module and owns the `branding` schema. It is co-hosted in
   `ViajantesTurismo.Catalog.ApiService`; co-hosting does not transfer Branding behavior, contracts, data,
   or permissions to the Catalog bounded context.
+- Catalog and Branding deliberately share one process, failure domain, memory space, and credential blast
+  radius. Separate DbContexts, connection roles, schemas, transactions, route policies, and module dependencies
+  reduce accidental coupling; they do not provide process isolation after code execution is compromised.
 - The standalone Branding executable remains available during an expand/contract migration. It is removed
   only after every rollback and exposure gate below passes.
 - `SharedKernel.Branding` retains only host-agnostic, pure validation and normalization rules. Branding's
@@ -34,11 +37,13 @@ that the target topology is deployed or production-ready.
 
 ### State, revisions, and outbox
 
-- Branding stores one authoritative current-state record with a monotonically increasing source revision.
-  Each successful write also appends an immutable full-state revision record.
+- Branding stores one authoritative current-state record with a non-empty source epoch and a monotonically
+  increasing positive source revision. Each successful write also appends an immutable full-state revision
+  record. Expansion assigns the existing settings row an initial epoch and revision before emitting the first
+  state-transfer event.
 - Dual-host writes use database-enforced optimistic concurrency against the expected current revision.
   Revision allocation, current-state replacement, history append, and outbox enqueue are one transaction;
-  a conflict is returned or retried explicitly rather than losing an update through a process-local lock.
+  a conflict is returned rather than losing an update through a process-local lock or blind retry.
 - The current row, full-state revision, and outbound integration event commit in one Branding transaction.
   Branding owns its outbox table and mapping in its schema; it does not share Catalog's outbox table merely
   because both modules use one process and physical database.
@@ -48,29 +53,109 @@ that the target topology is deployed or production-ready.
 - This is event-carried state transfer, not event sourcing. The current-state record is authoritative; the
   append-only revisions provide immutable history and replay inputs, not aggregate reconstruction.
 
+### PostgreSQL transport and acknowledgement boundaries
+
+- Branding-to-Admin envelopes use the existing SharedKernel default PostgreSQL transport mapping in the
+  **Catalog database**, `messaging.transport_messages`, with stable consumer name `admin`. Branding owns
+  `branding.outbox_messages`; it does not create a second Branding transport table. The Branding Infrastructure
+  migration is the single Catalog-database migration owner for this transport table; the worker transport
+  DbContext maps it with migrations excluded.
+- The Branding outbox relay owns the complete producer handoff. It first acquires the existing durable outbox
+  claim lease. It then uses one `BrandingDbContext` transaction to insert the envelope into
+  `messaging.transport_messages` and mark the outbox row published. The unique `(ConsumerName, EventId)`
+  transport key is retained as a duplicate guard.
+- There is no committed "transport enqueue but outbox not acknowledged" state. A crash or injected failure before
+  that handoff transaction commits leaves neither the transport insert nor `PublishedAt`; the durable outbox
+  claim remains until its lease expires and the relay retries. A crash after commit leaves both durable and needs
+  no republish.
+- `IntegrationEventWorker` connects to the Catalog database to claim `ConsumerName = 'admin'` rows with the
+  existing lease/`FOR UPDATE SKIP LOCKED` pattern. It updates transport claim, retry, poison, and final
+  `ProcessedAt` acknowledgement state there. A finite configured attempt limit moves an exhausted row to an
+  explicit poison state; poison rows are never selected as ordinary pending work.
+- The worker's source credential has `SELECT`/`UPDATE` only on Catalog-database
+  `messaging.transport_messages`; it cannot read Branding current/history/outbox tables or Catalog domain tables.
+  The relay credential can claim/update `branding.outbox_messages` and insert into the transport table, but cannot
+  write Admin data. The worker's separate Admin credential can write only the Branding inbox, projection,
+  watermark, recovery audit, and poison/replay audit surfaces needed by the consumer.
+- Admin projection/inbox commit and Catalog transport acknowledgement are intentionally separate database
+  transactions. If handling fails before the Admin commit, the transport row records a retry. If the process
+  crashes after the Admin commit but before `ProcessedAt`, the claim lease expires and the row is redelivered;
+  Admin inbox identity plus epoch/revision comparison makes the second delivery a no-op before the worker
+  acknowledges transport.
+
 ### Admin projection and delivery policy
 
-- A Branding state-transfer event carries its source revision and the complete immutable Branding document
-  snapshot. During compatibility rollout, a legacy event has a `null` source revision.
+- `BrandingSettingsChangedV1` carries a non-empty source epoch, a positive source revision, and the complete
+  immutable Branding document snapshot. No Branding integration event predates this contract and no valid event
+  has a null or zero revision.
 - `IntegrationEventWorker` delivers Branding events through an Admin-owned inbox into an Admin-owned local
   projection. Inbox completion, projection replacement, and consumer-watermark advancement are one Admin
   transaction.
-- A non-null revision applies only when it is greater than the persisted Admin watermark. Duplicate or older
-  revisions are acknowledged without replacing state. Because every event carries full state, a newer
-  revision may safely close a revision gap.
-- A legacy `null` revision is idempotent by event identity, does not advance the revision watermark, and must
-  not overwrite a projection after any non-null revision has applied. Cutover seeds at least one versioned
-  full-state event before the legacy path is retired.
-- Consumer health records the highest observed source revision, highest applied source revision, last
+- Within the accepted source epoch, a revision applies only when it is greater than the persisted Admin
+  watermark. Duplicate or older revisions are acknowledged without replacing state. Because every event carries
+  full state, a newer revision may safely close a revision gap. An unexpected epoch fails closed into recovery;
+  ordinary delivery never switches source lineage implicitly.
+- Only Admin document rows created before this rollout may have nullable `BrandingSourceRevision` provenance.
+  Null means the immutable document snapshot predates revision capture; it is not an event ordering rule and
+  must not be synthesized into a `BrandingSettingsChangedV1` envelope.
+- Consumer health records the accepted source epoch, highest observed revision, highest applied revision, last
   successful apply time, retry state, and poison backlog. Operations compare producer delivery and consumer
-  watermarks without giving Admin direct source-store access. Exact production alert thresholds remain an
-  SLO/platform decision and must be set before standalone-host removal.
+  epoch/revision watermarks without giving Admin direct source-store access. Exact production alert thresholds
+  remain an SLO/platform decision and must be set before standalone-host removal.
 - Delivery uses bounded retries. Exhausted messages move to an explicit poison state; they do not retry
   forever or block unrelated later full-state revisions. Replay is an audited operator action by immutable
   envelope/event identity after the cause is corrected, and remains safe through inbox idempotency and
   revision checks.
 - Admin API reads only its local Branding projection. It receives no Catalog/Branding database credential and
   no Branding HTTP credential.
+
+### Projection recovery and source rewind
+
+- Admin persists a projection state of `Ready` or `Recovering`. Document generation and regeneration fail
+  closed with an explicit recovery-unavailable outcome whenever Branding projection state is not `Ready`; they
+  never capture a stale or partially reseeded snapshot. Each generation transaction reads `Ready`, projection,
+  epoch, and revision together before recording its immutable document snapshot.
+- Recovery first commits the `Recovering` fence, waits for in-flight document-generation transactions to finish,
+  pauses new Branding transport claims, and lets active claim leases finish or expire. An audited operator
+  request names the expected old epoch/watermark, reason, source backup or incident reference, and intended new
+  epoch/revision.
+- For a lost Admin projection/inbox/watermark with an intact source lineage, Branding republishes its current
+  immutable snapshot with the same epoch and positive revision under a new event identity. For an intentional
+  source restore that rewinds revision, operations first stop Management writes and the Branding relay. A
+  privileged Branding recovery transaction rotates the source epoch, marks restored old-epoch pending outbox
+  rows superseded, appends the new-epoch full-state reseed revision, records the rewind audit, and enqueues the
+  restored current snapshot with its positive revision. Normal writes cannot rotate the epoch.
+- The same-epoch recovery path also rebuilds a lost/corrupt projection when inbox and watermark survived; only
+  this authorized reseed may reapply the current equal revision. The ordinary consumer still requires a greater
+  revision.
+- The Admin reseed transaction verifies the authorized same-epoch reseed or epoch transition, records the reseed
+  envelope in the inbox, replaces the projection, sets the epoch/revision watermark, appends old/new watermark
+  and operator audit data, and returns projection state to `Ready` atomically. It does not delete prior inbox or
+  recovery history.
+- Pending rows from an old epoch are quarantined as poison before claims resume. Replaying the authorized reseed
+  event is idempotent: the inbox identity and epoch/revision watermark preserve the already committed projection.
+  The worker acknowledges the transport row only after the Admin reseed transaction commits. Management writes
+  and the relay resume only after Admin returns to `Ready`.
+
+### Management optimistic concurrency contract
+
+- Management `GET` returns the full settings document with `SourceEpoch`, `SourceRevision`, and a strong opaque
+  `ETag` whose canonical value includes both, for example `ETag: "<epoch>:42"`. Epoch participation prevents a
+  restored source lineage from reusing a pre-restore validator.
+- Management `PUT` keeps full-state replacement semantics and the existing route, but requires exactly one
+  strong `If-Match` value from the preceding `GET`. Wildcards and weak validators are rejected; a missing
+  precondition returns `428 Precondition Required`, while malformed, weak, wildcard, or multiple values return
+  `400 Bad Request` with `branding.invalid_revision_precondition`.
+- The application compares the `If-Match` epoch and revision with current state inside the write transaction. A
+  stale expected value returns `409 Conflict` with the stable `branding.revision_conflict` problem code,
+  performs no state, history, or outbox write, and is never retried blindly by the server or typed client. The
+  editor must reload and deliberately reapply or merge its changes.
+- A successful `PUT` returns the saved document with its `SourceEpoch`, new `SourceRevision`, and matching
+  `ETag`. Management clients expose the expected validator and conflict as contract outcomes rather than raw header
+  parsing.
+- Branding OpenAPI documents retain the route but add `If-Match`, `ETag`, `400`, `409`, and `428` contract metadata.
+  Contract/client tests cover two editors reading revision N, editor A writing N+1, and editor B receiving 409
+  without overwriting A.
 
 ### HTTP, caching, and synchronous seams
 
@@ -85,15 +170,19 @@ that the target topology is deployed or production-ready.
 
 ### Authorization and identity
 
-- Catalog-hosted Branding routes use named, route-specific audience and authorization policies. Public reads
-  remain explicitly anonymous; protected routes retain `branding.read` and `branding.write` permission checks
-  and do not inherit broader Catalog permissions merely because they share a host.
+- Catalog.ApiService registers separate named bearer schemes: `CatalogBearer` validates only
+  `catalog-api`, and `BrandingBearer` validates only `branding-api`. Catalog routes select
+  `CatalogBearer`; protected Branding routes select `BrandingBearer`, retain `branding.read` and
+  `branding.write`, and do not inherit Catalog permissions merely because they share a host. Public Branding
+  reads remain explicitly anonymous.
 - The mounted module preserves Branding validation, the configured CORS allow-list, separate public-read and
   management-mutation rate limits, management `no-store` responses, and the authenticated fallback policy.
   Host defaults must not make a protected Branding route anonymous or broaden an allowed origin.
-- During dual-host cutover, only explicitly named legacy and target audiences may be accepted on the matching
-  Branding routes. The fallback policy remains fail closed. Old-audience acceptance is removed only after
-  token lifetime and active-session drain are complete.
+- Dual-host cutover does not introduce a second Branding audience or a policy that accepts both API audiences.
+  Standalone and Catalog-hosted Branding routes validate the same `branding-api` tokens while Management
+  retargets the base address. The standalone endpoint remains until the maximum token/session lifetime has
+  drained and telemetry shows zero requests; then its scheme/endpoint registration is removed. The fallback
+  policy remains fail closed throughout.
 - Local Keycloak remains a local/CI conformance provider. Production uses a separately selected and provisioned
   identity provider; this ADR does not claim that provider, its clients, or its roles exist.
 
@@ -104,19 +193,24 @@ Removal of `ViajantesTurismo.Branding.ApiService` is a later contraction step. B
 1. apply forward-compatible additive schema changes that both the rollback artifact and upgraded writer can use;
 2. deploy the upgraded Branding writer in both standalone and Catalog hosts against the same transactional
    revision, history, and outbox rules;
-3. verify state-transfer events, Admin inbox/projection updates, watermark telemetry, bounded retry, poison,
-   and replay behavior;
+3. verify state-transfer events, relay/consumer crash boundaries, Admin inbox/projection updates, watermark
+   telemetry, bounded retry, poison, replay, source rewind, and lost-projection reseed behavior;
 4. move Public.Web and Management.Web traffic to the Catalog-hosted routes while retaining the standalone host;
-5. drain legacy-audience tokens and sessions, then remove temporary audience acceptance;
+5. stop issuing standalone endpoint references, preserve the `branding-api` audience, and wait through the
+   maximum token/session lifetime before removing standalone endpoint/scheme registration;
 6. observe zero standalone Branding traffic for the agreed rollback window;
 7. complete a rollback drill that routes traffic to the retained standalone release artifact and proves
    read, write, event delivery, and Admin projection recovery;
-8. retain a deployable previous standalone release artifact until the contraction release is accepted; and
+8. retain a deployable previous standalone release artifact until the contraction release is accepted;
 9. prove the Catalog API and its Branding routes have the intended private/public exposure, with no accidental
-   backend ingress expansion caused by co-hosting.
+   backend ingress expansion caused by co-hosting; and
+10. retarget the stable `generate branding` OpenAPI tool command and Branding contract drift tests to
+    Catalog.ApiService generation, preserve Branding-owned canonical `branding`, `public-branding`, and
+    Branding-only `v1` artifacts under `ViajantesTurismo.Branding.Contracts.Http/OpenApi`, and prove no
+    generator, test, or refresh hint still requires the standalone project.
 
 Only after all gates pass may a later change remove the executable, AppHost resource, old service-discovery
-reference, legacy audience policy, and rollback artifact.
+reference, standalone scheme/endpoint registration, and rollback artifact.
 
 ### Required production roles, still undecided
 
@@ -125,23 +219,57 @@ least-privilege capabilities for:
 
 - a Branding runtime writer that can read/write current state, append revisions, and enqueue only into the
   Branding outbox;
-- a deployment-time migration identity that can apply approved Branding schema changes but is not used by the
-  runtime;
-- producer/relay access that can claim and update Branding outbox delivery state without broad Catalog-domain
-  table access;
-- `IntegrationEventWorker` consumer access that can read the transport envelope and write only Admin Branding
-  inbox, projection, watermark, retry, and poison state;
+- a deployment-time migration identity that can apply approved Branding schema changes and the sole
+  Catalog-database `messaging.transport_messages` migration owned by Branding Infrastructure, but is not used by
+  the runtime;
+- producer/relay access that can claim/update `branding.outbox_messages` and insert
+  `ConsumerName = 'admin'` rows into Catalog-database `messaging.transport_messages`, without Catalog-domain or
+  Admin access;
+- an `IntegrationEventWorker` Catalog-database credential limited to `SELECT`/`UPDATE` on
+  `messaging.transport_messages`, plus a separate Admin credential limited to Branding inbox, projection,
+  watermark, recovery, and replay-audit DML;
 - Admin API read access to its local Branding projection only;
-- audited operator access for poison inspection and replay, separate from ordinary application identities; and
+- audited operator access for poison inspection, replay, reseed authorization, and source-epoch rotation,
+  separate from ordinary application identities; and
 - route identities whose permissions remain scoped to `branding.read` and `branding.write`.
 
 These are requirements for a future deployment design, not evidence that production roles are provisioned.
+
+### Shared-process extraction criteria
+
+Co-hosting accepts that a Catalog.ApiService compromise, memory leak, resource exhaustion, or bad deployment can
+affect both modules and reach every credential granted to that process. Logical schemas and DI boundaries are
+maintainability and least-privilege controls, not a security sandbox.
+
+Reconsider a standalone Branding process or database when a demonstrated requirement needs credentials that
+must not coexist in one process, independent availability/scaling/deployment, tenant or regulatory isolation,
+different backup/retention policy, or measured resource/blast-radius contention. Extraction must preserve the
+same Branding contracts, source revision/epoch, outbox, transport, and Admin projection semantics; it is not
+triggered solely by folder count or hypothetical reuse.
 
 ### Explicit non-decisions
 
 This seam adds no SignalR, SSE, WebSockets, HTTP/3 requirement, distributed cache, event-sourcing model,
 projection framework, or new real-time transport. Existing technologies elsewhere in the solution are not
 expanded into Branding by this decision.
+
+### Required implementation tests
+
+- PostgreSQL relay tests inject failure after the transport entity is added but before SaveChanges and after
+  commit; they prove atomic transport/outbox acknowledgement, lease recovery, and one logical transport event.
+- Worker tests cover failure before Admin commit and a crash after Admin inbox/projection/watermark commit but
+  before transport `ProcessedAt`; redelivery must be idempotent and eventually acknowledge transport. Retry-limit
+  tests prove transition to poison and audited replay.
+- Contract tests prove every `BrandingSettingsChangedV1` has a non-empty epoch and positive revision, while only
+  pre-rollout document rows may retain null Branding revision provenance.
+- Management API/client/OpenAPI tests exercise required strong `If-Match`, `ETag`, 400, 428, 409, no blind
+  retry, and the two-editor lost-update scenario.
+- Recovery tests cover source restore with epoch rotation, current-snapshot republish, lost projection with
+  retained inbox/watermark state, complete projection/inbox/watermark rebuild, atomic reseed audit, old-epoch
+  outbox supersession/transport quarantine, and document-generation/write/relay gating until `Ready`.
+- OpenAPI tool and drift tests prove `generate branding` runs against Catalog.ApiService after contraction while
+  preserving Branding-owned artifact names/content boundaries. Authorization tests prove Catalog and Branding
+  routes select only their named exact-audience scheme.
 
 ## Consequences
 
@@ -158,13 +286,15 @@ expanded into Branding by this decision.
 
 ### Negative
 
-- The expand/contract period runs two hosts and temporary audience compatibility, increasing rollout and
-  observability work.
+- The expand/contract period runs two endpoints with shared `branding-api` audience semantics, increasing
+  routing, rollout, and observability work.
 - Full-state revision and event records duplicate a small document by design and require retention sizing.
 - Admin may serve its last applied Branding projection while delivery is delayed; watermark and poison health
   must make that staleness visible.
 - SharedKernel EF messaging needs context-qualified composition before Branding and Catalog outboxes can safely
   coexist in one host.
+- Catalog and Branding share one process and all credentials available to it; logical module boundaries cannot
+  contain a full process compromise or process-wide availability failure.
 
 ## Alternatives Considered
 
@@ -188,5 +318,8 @@ expanded into Branding by this decision.
 - [Caching strategy](../caching-strategy.md)
 - [Runtime wiring and deployment mapping](../architecture/runtime-wiring-and-deployment.md)
 - [Production readiness and operations](../operations/production-readiness.md)
+- Related: [ADR-024: CloudEvents as Integration Event Adapter](20260621-cloudevents-as-integration-event-adapter.md)
+- Related: [ADR-026: Domain Materialization and SharedKernel Persistence Boundaries](20260621-domain-materialization-and-sharedkernel-persistence-boundaries.md)
 - Related: [ADR-034: Bounded Context Databases and Outbox Ownership](20260705-bounded-context-databases-and-outbox-ownership.md)
+- Related: [ADR-037: Deterministic, No-Network Build-Time OpenAPI Generation](20260715-deterministic-no-network-build-time-openapi-generation.md)
 - Related: [Provider-neutral OIDC BFF authorization](20260711-provider-neutral-oidc-bff-authorization.md)

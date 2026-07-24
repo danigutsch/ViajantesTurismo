@@ -80,7 +80,7 @@ truth for bookings, customers, tours, pricing, payments, or operational data.
 | Pricing and payment state | Admin pricing/payment model | Use booking price snapshots and coarse payment state. Do not include payment secrets, card data, or processor payloads. |
 | Discount data | Admin pricing/discount model | Read discount labels or totals only when required for customer-facing explanation or finance traceability. Do not expose internal approval notes or rules. |
 | Localization data | Localization resources or content owner | Render in the requested supported language with safe fallback rules. Track language and template version; do not auto-publish machine-translated legal or customer text without human review. |
-| Branding data | Branding/public presentation owner | Apply approved logo, color, typography, contact, and legal footer values through the owning contract. Do not duplicate branding settings into source records. |
+| Branding data | Admin-owned local Branding projection | Apply the projected immutable values and record source epoch/revision. New documents require positive revision provenance; only rows created before ADR-040 rollout may retain null Branding revision. Gate generation while projection recovery is active. |
 | Staff-entered document edits | Document draft | Store only approved document-specific text. Do not write edits back to booking, customer, tour, or payment records. |
 | Template metadata | Document template record or deployed template version | Record template identifier and version used for draft and PDF generation. |
 
@@ -280,6 +280,8 @@ Acceptance criteria:
 
 - Generated draft includes required customer-facing fields.
 - Draft generation fails safely when required source data is missing.
+- Draft generation fails closed while the Branding projection is `Recovering` and resumes only after
+  projection, inbox, watermark, and reseed audit commit atomically.
 - Logs contain no personal data.
 
 ### 3. Add manual review and editable-field update path

@@ -48,6 +48,9 @@ Boundary rules:
   interpretation, and defaults stay outside SharedKernel.
 - Catalog.ApiService may host the Branding module; Catalog domain and application projects must not
   absorb Branding behavior, contracts, permissions, or tables.
+- Co-hosting is not process isolation. Catalog and Branding share process availability, memory, and
+  every credential loaded into Catalog.ApiService; separate DbContexts/schema grants mitigate accidental
+  access only.
 - Cross-context interaction uses contracts and integration events, not direct domain references.
 - Public web reads Catalog contracts; it does not reference Admin projects.
 

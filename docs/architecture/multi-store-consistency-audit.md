@@ -140,14 +140,25 @@ and connection-resiliency guidance on transaction commit ambiguity:
 
 - Current trigger: `BrandingEndpoints.SaveSettings` in the standalone Branding host.
 - Target trigger: the same logical Branding endpoint module hosted by Catalog.ApiService.
+- Concurrent editor boundary: Management `GET` returns source epoch/revision and a strong opaque ETag; full-state
+  `PUT` requires matching `If-Match`; a stale write returns 409 without current/history/outbox changes
+  or automatic retry.
 - Systems touched by the target write: Branding current state, append-only full-state revision, and
-  Branding-owned outbox in one local transaction; later delivery updates the Admin Branding inbox,
-  projection, and watermark in one Admin transaction.
-- Failure window: the source write can commit before Admin delivery. Admin then serves its last applied
-  projection while producer/consumer watermark and retry/poison health expose lag.
+  context-qualified `branding.outbox_messages` in one local transaction. The relay later inserts a
+  `ConsumerName = 'admin'` row into the Catalog database's default
+  `messaging.transport_messages` mapping and marks the Branding outbox row published in one
+  `BrandingDbContext` transaction.
+- Consumer transactions: `IntegrationEventWorker` claims and updates retry/poison/`ProcessedAt` in
+  Catalog-database `messaging.transport_messages`; a separate Admin transaction commits Branding
+  inbox, projection, source epoch/revision watermark, and audit state.
+- Failure windows: a relay crash before its commit leaves neither transport enqueue nor outbox ack. A
+  worker crash after the Admin commit but before transport ack causes lease-expiry redelivery; Admin
+  inbox identity and epoch/revision comparison make it a no-op. Source-to-Admin lag remains visible in
+  producer/consumer watermarks and poison health.
 - Recommendation: use the Branding transactional outbox and Admin inbox/idempotency boundary from
   [ADR-040](../adr/20260724-branding-module-co-hosting-and-state-distribution.md). Do not use a dual
-  write, Admin-to-Catalog HTTP, or a cross-database transaction.
+  write, Admin-to-Catalog HTTP, or a cross-database transaction. Gate document generation during an
+  audited atomic reseed or source-epoch rewind.
 
 ### Admin customer, booking, tour, and import mutations
 

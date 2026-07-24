@@ -32,9 +32,11 @@ here; committed OpenAPI artifacts remain the contract-review boundary.
 The unversioned API routes are not part of the supported HTTP contract. Browser-facing Management and Public Web routes
 remain unversioned UI routes; typed API clients translate API calls to the versioned service endpoints.
 
-OpenAPI artifacts keep the existing boundary files (`tours`, `customers`, `bookings`, `catalog`, and `public-catalog`)
-and add a service-wide `v1` document for version-level review. Refresh committed artifacts only when the HTTP contract
-changes intentionally.
+OpenAPI artifacts keep the existing logical boundary files (`tours`, `customers`, `bookings`, `catalog`,
+`public-catalog`, `branding`, and `public-branding`) plus their version-level review documents. A
+shared process may generate more than one logical `v1` artifact: ADR-040 preserves Branding's
+Branding-only canonical `v1` after Catalog.ApiService co-hosting rather than merging contract ownership.
+Refresh committed artifacts only when the HTTP contract changes intentionally.
 
 ## Alpha evolution
 

@@ -25,6 +25,12 @@ routes; the accepted target mounts the same logical surface in `ViajantesTurismo
 The host owns the API version prefix and base-address wiring, while the Branding module owns its route
 segments, defaults, persistence behavior, authorization, and cache policy.
 
+The target Management Branding client returns source epoch/revision plus a strong opaque ETag from
+`GET` and requires that epoch/revision validator for full-state `PUT` through `If-Match`. It exposes
+409 revision conflict and 400 invalid precondition plus 428 missing precondition as explicit outcomes.
+Neither the HTTP client nor resilience handlers retry a stale full-state mutation automatically; the
+editor reloads and deliberately reapplies or merges.
+
 Contract test projects also contain OpenAPI document clients that are test-local helpers, not app clients.
 
 ## Contract-owned rules

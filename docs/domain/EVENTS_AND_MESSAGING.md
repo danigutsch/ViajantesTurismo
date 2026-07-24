@@ -62,7 +62,8 @@ dispatcher.
 
 ### `SharedKernel.Messaging.IntegrationEvents`
 
-Owns typed integration event contracts and transport boundaries:
+Owns typed integration-event abstractions, conventions, and transport boundaries. Concrete event
+payload contracts remain in their application/bounded-context contract modules:
 
 - `IIntegrationEvent`.
 - `IIntegrationEventHandler<TIntegrationEvent>`.
@@ -148,17 +149,20 @@ context-specific operational policy. Generated and runtime ownership is explicit
 | Outbox persistence and relay | `SharedKernel.Messaging.IntegrationEvents.EntityFrameworkCore` | Co-hosting requires context-qualified mapping and registration; each module chooses its schema/table and relay/retry policy. |
 | Inbox idempotency | `SharedKernel.Idempotency.EntityFrameworkCore` | Owns `EfIdempotencyStore<TContext>` and its model configuration. `SharedKernel.Messaging.IntegrationEvents.EntityFrameworkCore` exposes `AddIntegrationEventInbox<TContext>()` as the integration-event composition call; inbox registration is not implied by outbox registration. |
 
-ADR-040 requires context qualification before one process composes multiple module DbContexts. Generic
-EF messaging code must provide keyed/qualified mapping and registration mechanics without collapsing
-module storage into one implicit `messaging.outbox_messages` owner. In the target, Catalog retains its
-outbox mapping and Branding owns a distinct mapping/table in the `branding` schema. Co-hosting both in
-Catalog.ApiService does not change either transaction boundary.
+ADR-040 requires context qualification before one process composes multiple module DbContexts. The
+SharedKernel default outbox mapping is `messaging.outbox_messages`; current Admin and Catalog contexts
+use that default in their separate databases. Generic EF messaging code must also permit a qualified
+exception without changing the default: target Branding owns `branding.outbox_messages` in the Catalog
+database. Co-hosting does not merge the Catalog and Branding outbox transactions.
 
 Branding state distribution follows ADR-040: a Branding write atomically saves current state, appends
-an immutable full-state revision, and enqueues a full-state event with a monotonic source revision.
-`IntegrationEventWorker` delivers the event to an Admin inbox/projection and persisted watermark.
-This is event-carried state transfer, not event sourcing; Admin receives no source database or HTTP
-credential.
+an immutable full-state revision, and enqueues `BrandingSettingsChangedV1` with a non-empty source
+epoch, positive source revision, and immutable full snapshot. The Branding relay atomically inserts the
+`ConsumerName = 'admin'` envelope into the Catalog database's default
+`messaging.transport_messages` table and marks the Branding outbox row published. The worker commits
+Admin inbox/projection/watermark before transport acknowledgement; lease-expiry redelivery is safe when
+a crash occurs between those commits. This is event-carried state transfer, not event sourcing; Admin
+receives no source database or HTTP credential.
 
 See
 [ADR-027](../adr/20260624-provider-specific-sharedkernel-infrastructure-modules.md) for naming and
@@ -174,6 +178,7 @@ not part of the generated path.
 | Regular mediator use case | Caller to scoped `AppMediator` | Closed request/stream/notification and pipeline calls | Handler business behavior and configured pipeline semantics. |
 | Admin persistence | `SaveChanges` interceptor to composite domain-event dispatcher | Exhaustive typed outbox and audit mappings plus typed serialization | EF transaction, aggregate state, outbox/audit atomicity, and post-save domain-event clearing. |
 | Durable delivery | Admin relay to PostgreSQL transport to worker batch to generated publisher | Closed envelope deserialization and typed handler selection | `FOR UPDATE SKIP LOCKED`, batch claim/publisher scope, per-envelope handler scope, sequential processing, lease/retry, Catalog idempotency, and handler side effects. |
+| Branding-to-Admin delivery | Branding relay to Catalog-database PostgreSQL transport to worker to Admin projection | Closed `BrandingSettingsChangedV1` serialization and handler selection | Atomic outbox/transport handoff, separate Admin commit and transport ack, epoch/revision watermark, finite retry/poison/replay, and reseed audit. |
 
 ## Domain Events
 
@@ -290,13 +295,15 @@ Purpose:
 Runtime shape:
 
 - Core contracts live in SharedKernel abstractions.
-- Storage-neutral integration-event contracts live in `SharedKernel.Messaging.IntegrationEvents`.
+- Storage-neutral integration-event abstractions and envelope contracts live in
+  `SharedKernel.Messaging.IntegrationEvents`; concrete application event payloads stay with their owner.
 - EF Core outbox provider code lives in `SharedKernel.Messaging.IntegrationEvents.EntityFrameworkCore`.
 - EF Core idempotency provider code lives in `SharedKernel.Idempotency.EntityFrameworkCore`.
 - EF outbox messages default to `messaging.outbox_messages`.
 - `AddIntegrationEventOutbox<TContext>()` registers only the EF outbox and its default model
   configuration. Its storage overload accepts `IntegrationEventStorageOptions` for a context-owned
   schema, outbox table, and transport table.
+- Branding owns `branding.outbox_messages`; Admin and Catalog keep the default in their respective databases.
 - `SharedKernel.Messaging.IntegrationEvents.EntityFrameworkCore` exposes
   `AddIntegrationEventInbox<TContext>()`; it delegates to the
   `SharedKernel.Idempotency.EntityFrameworkCore` provider and registers only the shared idempotency
@@ -307,9 +314,13 @@ Runtime shape:
 - Provider models and EF migrations are authoritative for envelope, payload, publication, retry/error,
   and claim fields; do not duplicate their volatile column inventory here.
 - Admin runtime registers the PostgreSQL transport producer and outbox relay. Relayed Admin events enter
-  the durable Catalog transport queue claimed by `IntegrationEventWorker`.
+  Admin-database `messaging.transport_messages` with `ConsumerName = 'catalog'`, claimed by
+  `IntegrationEventWorker`.
 - Catalog API runs its own outbox relay for Catalog-originated media processing events and dispatches
   them to registered in-process handlers.
+- Target Branding uses Catalog-database `messaging.transport_messages` with
+  `ConsumerName = 'admin'`; the default transport table name is not changed by Branding's qualified
+  outbox mapping.
 - The [generated event/message flow map](../architecture/generated-event-message-flow-map.md) is the
   source-derived contract, mapping, registration, and handler inventory.
 

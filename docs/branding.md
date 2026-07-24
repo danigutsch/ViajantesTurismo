@@ -7,12 +7,21 @@ module in `ViajantesTurismo.Catalog.ApiService` without moving it into the Catal
 <!-- doc-fact:branding-architecture:start -->
 - current-decision: `admin-local-projection`
 - current-decision: `app-owned-contracts`
+- current-decision: `atomic-reseed`
 - current-decision: `branding-owned-outbox`
 - current-decision: `catalog-api-cohost`
+- current-decision: `catalog-transport-table`
+- current-decision: `exact-route-audiences`
 - current-decision: `independent-logical-module`
+- current-decision: `management-if-match`
 - current-decision: `no-ordinary-api-http`
+- current-decision: `openapi-retarget-gate`
+- current-decision: `positive-event-revision`
 - current-decision: `production-platform-undecided`
 - current-decision: `public-cache-60-300`
+- current-decision: `recovery-gates-document-generation`
+- current-decision: `shared-process-blast-radius`
+- current-decision: `transport-ack-boundary`
 <!-- doc-fact:branding-architecture:end -->
 
 ## Responsibility map
@@ -51,7 +60,8 @@ co-location does not permit shared Catalog tables or a shared Catalog outbox.
 `ViajantesTurismo.Catalog.ApiService` is the target process host. Catalog does not own Branding
 fields, validation rules, workflows, contracts, permissions, tables, or public-rendering behavior.
 The Catalog host composes the Branding ASP.NET module and its separate DbContext; the Catalog domain
-does not reference Branding.
+does not reference Branding. This is logical separation only: both modules share one process, failure
+domain, memory space, and the blast radius of every credential available to that process.
 
 ## Current and target runtime
 
@@ -62,23 +72,38 @@ does not reference Branding.
   `IntegrationEventWorker` and has no Catalog/Branding HTTP or database credential.
 - **Contraction**: the standalone executable is removed only after forward-compatible schema,
   dual-host writer, token/session drain, zero-traffic observation, rollback drill, retained release
-  artifact, and private-exposure gates pass.
+  artifact, private-exposure, recovery, and Branding OpenAPI retarget gates pass.
 
 Ordinary production API-to-API HTTP is not a Branding state-distribution mechanism. A future gRPC
 seam requires demonstrated synchronous need and a separate decision.
 
 ## State and delivery
 
-Branding stores the current document with a monotonically increasing revision. Each write appends an
-immutable full-state revision and enqueues a full-state integration event in the same Branding
-transaction. Branding owns its outbox mapping/table. SharedKernel EF messaging supplies generic
-context-qualified mapping and registration mechanics; it does not choose the module's schema or table.
+Branding stores the current document with a source epoch and monotonically increasing positive
+revision. Each write appends an immutable full-state revision and enqueues
+`BrandingSettingsChangedV1`, carrying that epoch, positive revision, and full immutable snapshot, in
+the same Branding transaction. No earlier Branding integration event exists. Only document rows made
+before rollout may have nullable Branding revision provenance.
 
-`IntegrationEventWorker` applies events through an Admin inbox to an Admin projection. A versioned
-event replaces the projection only when its revision exceeds the persisted watermark. A legacy event
-has a `null` revision, remains idempotent by event identity, does not advance the watermark, and cannot
-overwrite a versioned projection. Retry is bounded; exhausted events enter visible poison state and
-are replayed only by an audited operator after correction.
+Branding owns `branding.outbox_messages`. Its relay atomically inserts the `ConsumerName = 'admin'`
+envelope into the Catalog database's default `messaging.transport_messages` table and marks the
+outbox row published. A crash before commit leaves neither change; a crash after commit leaves both.
+SharedKernel EF messaging supplies context-qualified registration/mapping mechanics rather than one
+universal outbox table.
+
+`IntegrationEventWorker` claims and updates transport lease/retry/poison/`ProcessedAt` state in the
+Catalog database, then applies through an Admin inbox to the local projection. Admin inbox,
+projection, and epoch/revision watermark commit atomically. A crash after that Admin commit but before
+transport acknowledgement redelivers after lease expiry; inbox identity and watermark comparison make
+recovery idempotent. Retry is finite, exhausted rows become poison, and replay is audited.
+
+Projection reseed sets Admin state to `Recovering`, gates document generation, pauses claims, and
+atomically applies an authorized full snapshot with inbox, projection, watermark, and old/new audit.
+A source restore that rewinds revision rotates the source epoch through a privileged audited operation;
+ordinary delivery cannot change epochs. Source rewind stops Management writes and the relay, supersedes
+restored old-epoch pending outbox rows, and quarantines old-epoch transport before reseed. Lost
+projection/inbox/watermark recovery republishes the current full snapshot with a new event identity.
+Writes, relay, claims, and document generation resume only after atomic return to `Ready`.
 
 This is event-carried state transfer. Branding current state remains authoritative; append-only
 full-state revisions are not an event-sourced aggregate, and the Admin projection needs no projection
@@ -86,13 +111,14 @@ framework.
 
 ## Authorization boundary
 
-Catalog-hosted Branding routes use named, route-specific audience and authorization policies. Public
-reads remain explicitly anonymous. Management routes preserve `branding.read` and `branding.write`;
-sharing a process does not grant Catalog permissions. The mounted module retains its configured CORS
-allow-list, public/mutation rate limits, management `no-store` behavior, validation, and authenticated
-fallback policy. Temporary legacy/target audience acceptance is removed after token and session drain.
-Local Keycloak remains local/CI infrastructure; the production identity provider and concrete roles
-are undecided.
+Catalog.ApiService uses `CatalogBearer` for exact `catalog-api` audience routes and `BrandingBearer`
+for exact `branding-api` audience routes. Public Branding reads remain explicitly anonymous;
+Management routes preserve `branding.read` and `branding.write`. No route accepts both audiences.
+Standalone and co-hosted Branding use the same Branding audience while Management retargets its base
+address; standalone removal waits through the maximum token/session lifetime and zero-traffic window.
+The mounted module retains its configured CORS allow-list, public/mutation rate limits, management
+`no-store` behavior, validation, and authenticated fallback policy. Local Keycloak remains local/CI
+infrastructure; the production identity provider and concrete roles are undecided.
 
 ## Styling safety
 
@@ -124,6 +150,18 @@ Current workflow:
 4. The server validates all values with `SharedKernel.Branding` rules.
 5. Valid settings are saved by the ViajantesTurismo Branding module.
 6. Invalid settings return a validation problem; callers show safe field-level messages.
+
+The target keeps this route and full-state replacement shape but adds optimistic concurrency.
+Management `GET` returns `SourceEpoch`, `SourceRevision`, and strong opaque
+`ETag: "<epoch>:<positive-revision>"`. `PUT` requires the same strong value in `If-Match`; missing
+preconditions return 428. A stale epoch/revision returns 409 with
+`branding.revision_conflict`, writes no current/history/outbox state, and is not retried automatically.
+Malformed, weak, wildcard, or multiple preconditions return 400 with
+`branding.invalid_revision_precondition`.
+The editor reloads and deliberately reapplies or merges changes. A successful `PUT` returns the epoch,
+new revision, and ETag. Typed clients expose the expected opaque validator and conflict outcome;
+Branding OpenAPI documents describe `If-Match`, `ETag`, 400, 409, and 428. A two-editor contract test
+proves stale full-state replacement cannot overwrite the first editor.
 
 Management.Web treats Branding as operational configuration. It should keep the edit UI functional:
 clear forms, validation messages, simple swatches, and previews of the saved values. It should not
@@ -158,6 +196,20 @@ cards, navigation, and responsive spacing without adding public-only styling fie
 
 Public renderers must not emit user-provided CSS blocks, selectors, style attributes, `<style>`
 payloads, scripts, or arbitrary URL-bearing CSS.
+
+## OpenAPI ownership through co-hosting
+
+`dotnet run --project tools/ViajantesTurismo.OpenApi.Tool --no-restore -- generate branding` remains
+the stable generation command. During contraction its target changes from the standalone project to
+Catalog.ApiService's Branding-only document generation mode. Canonical `branding`, `public-branding`,
+and Branding-only `v1` artifacts remain under
+`ViajantesTurismo.Branding.Contracts.Http/OpenApi` and remain owned by Branding contracts; co-hosting
+does not merge them into Catalog contract ownership.
+
+The standalone executable cannot be removed while the OpenAPI tool, generated filename mapping,
+Branding drift guards, refresh hints, or contract tests still reference it. Generation from the
+Catalog host must retain the trusted no-network/fail-closed metadata rules and prove the Branding
+artifacts contain only the intended Branding routes.
 
 ## Related documentation
 
