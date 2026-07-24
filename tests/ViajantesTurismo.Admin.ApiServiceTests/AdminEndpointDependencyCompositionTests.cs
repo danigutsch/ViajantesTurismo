@@ -1,5 +1,6 @@
 using System.Net.Http.Json;
 using Microsoft.Extensions.DependencyInjection.Extensions;
+using Microsoft.Extensions.Hosting;
 using SharedKernel.MalwareScanning;
 using ViajantesTurismo.Admin.Application.Tours.CreateTour;
 using ViajantesTurismo.Admin.Contracts.Application;
@@ -41,6 +42,7 @@ public sealed class AdminEndpointDependencyCompositionTests
 
         // Assert
         result.Status.ShouldBe(MalwareScanStatus.Disabled);
+        AdminApiTestHost.GetEnvironmentName(factory).ShouldBe(Environments.Development);
     }
 
     [Fact]

@@ -34,11 +34,15 @@ internal static class AdminApiTestHost
         Action<IServiceCollection>? configureTestServices = null,
         string? environment = null)
     {
-        var disableMalwareScanner = !string.Equals(environment, Environments.Production, StringComparison.Ordinal);
+        var hostEnvironment = environment ?? Environments.Development;
+        var disableMalwareScanner = !string.Equals(
+            hostEnvironment,
+            Environments.Production,
+            StringComparison.Ordinal);
         var configuration = CreateConfiguration(disableMalwareScanner);
 
         return WebApplicationTestHost.Create<AdminApiHostEntryPoint>(
-            environment: environment,
+            environment: hostEnvironment,
             configureTestServices: services =>
             {
                 services.Configure<HealthCheckServiceOptions>(options => options.Registrations.Clear());
@@ -68,6 +72,13 @@ internal static class AdminApiTestHost
         configuration[ClamAvMalwareScannerConfigurationKeys.PortConfigurationKey] = "3310";
 
         return configuration;
+    }
+
+    public static string GetEnvironmentName(WebApplicationFactory<AdminApiHostEntryPoint> factory)
+    {
+        ArgumentNullException.ThrowIfNull(factory);
+
+        return factory.Services.GetRequiredService<IHostEnvironment>().EnvironmentName;
     }
 
     public static void ConfigureAuthenticatedClient(HttpClient client, string role)
