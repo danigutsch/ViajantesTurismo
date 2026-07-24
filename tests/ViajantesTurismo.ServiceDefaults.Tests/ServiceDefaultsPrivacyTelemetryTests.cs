@@ -192,6 +192,7 @@ public sealed class ServiceDefaultsPrivacyTelemetryTests
         const string sensitiveMessage = "Duplicate email traveler@example.com";
         const string email = "traveler@example.com";
         const string objectKey = "customers/private/media/passport.jpg";
+        var oversizedExceptionType = new string('x', 257);
 
         // Act
         using (var activity = activitySource.StartActivity("privacy.failure", ActivityKind.Internal))
@@ -227,6 +228,7 @@ public sealed class ServiceDefaultsPrivacyTelemetryTests
             activity.SetTag("exception.stacktrace", $"at CustomerHandler({sensitiveMessage})");
             activity.SetTag("diagnostic.failure", new InvalidOperationException(sensitiveMessage));
             activity.SetTag("error.type", nameof(InvalidOperationException));
+            activity.SetTag("EXCEPTION.TYPE", oversizedExceptionType);
             activity.SetStatus(ActivityStatusCode.Error, sensitiveMessage);
         }
         tracerProvider.ForceFlush();
@@ -236,6 +238,10 @@ public sealed class ServiceDefaultsPrivacyTelemetryTests
         exported.Status.ShouldBe(ActivityStatusCode.Error);
         exported.StatusDescription.ShouldBeNull();
         exported.GetTagItem("error.type").ShouldBe(nameof(InvalidOperationException));
+        var exceptionType = exported.TagObjects.ShouldHaveSingleItem(attribute =>
+            string.Equals(attribute.Key, "exception.type", StringComparison.OrdinalIgnoreCase));
+        var exceptionTypeValue = exceptionType.Value.ShouldBeOfType<string>();
+        exceptionTypeValue.Length.ShouldBe(256);
         exported.GetTagItem("customer.id").ShouldBeNull();
         exported.GetTagItem("customerId").ShouldBeNull();
         exported.GetTagItem("booking.id").ShouldBeNull();

@@ -36,15 +36,22 @@ internal sealed class ActivityPrivacyProcessor : BaseProcessor<Activity>
 
     private static void LimitErrorType(Activity activity, string attributeName)
     {
+        (string Name, string Value)? limitedAttribute = null;
+
         foreach (var attribute in activity.TagObjects)
         {
             if (string.Equals(attribute.Key, attributeName, StringComparison.OrdinalIgnoreCase)
                 && attribute.Value is string value
                 && value.Length > MaximumErrorTypeLength)
             {
-                activity.SetTag(attribute.Key, value[..MaximumErrorTypeLength]);
-                return;
+                limitedAttribute = (attribute.Key, value[..MaximumErrorTypeLength]);
+                break;
             }
+        }
+
+        if (limitedAttribute is { } attributeToUpdate)
+        {
+            activity.SetTag(attributeToUpdate.Name, attributeToUpdate.Value);
         }
     }
 }
