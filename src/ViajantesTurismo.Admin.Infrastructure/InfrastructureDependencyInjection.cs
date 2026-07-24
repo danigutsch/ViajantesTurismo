@@ -10,6 +10,7 @@ using SharedKernel.EntityFrameworkCore;
 using SharedKernel.Idempotency.EntityFrameworkCore;
 using SharedKernel.Messaging.IntegrationEvents;
 using SharedKernel.Messaging.IntegrationEvents.EntityFrameworkCore;
+using SharedKernel.Npgsql;
 using SharedKernel.OpenApi;
 using ViajantesTurismo.Admin.Contracts.IntegrationEvents;
 using ViajantesTurismo.Admin.Contracts.IntegrationEvents.Tours;
@@ -199,7 +200,7 @@ public static class InfrastructureDependencyInjection
 
     private static void ConfigureNpgsqlDataSource(NpgsqlDataSourceBuilder dataSourceBuilder)
     {
-        dataSourceBuilder.ConfigureTracing(tracing => tracing.EnableFirstResponseEvent(enable: false));
+        dataSourceBuilder.ConfigureTracingWithoutFirstResponseEvent();
     }
 
 }

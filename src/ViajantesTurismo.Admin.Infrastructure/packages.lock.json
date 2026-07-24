@@ -533,6 +533,12 @@
           "SharedKernel.Scheduling": "[0.1.0-alpha.0, )"
         }
       },
+      "sharedkernel.npgsql": {
+        "type": "Project",
+        "dependencies": {
+          "Npgsql": "[10.0.3, )"
+        }
+      },
       "sharedkernel.openapi": {
         "type": "Project",
         "dependencies": {

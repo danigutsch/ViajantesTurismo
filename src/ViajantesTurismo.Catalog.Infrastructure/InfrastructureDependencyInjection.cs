@@ -8,6 +8,7 @@ using SharedKernel.EventSourcing;
 using SharedKernel.EventSourcing.Npgsql;
 using SharedKernel.MalwareScanning.ClamAv;
 using SharedKernel.Messaging.IntegrationEvents.EntityFrameworkCore;
+using SharedKernel.Npgsql;
 using SharedKernel.OpenApi;
 using ViajantesTurismo.Catalog.Application;
 using ViajantesTurismo.Catalog.Application.Media;
@@ -211,7 +212,7 @@ public static class InfrastructureDependencyInjection
 
     private static void ConfigureNpgsqlDataSource(NpgsqlDataSourceBuilder dataSourceBuilder)
     {
-        dataSourceBuilder.ConfigureTracing(tracing => tracing.EnableFirstResponseEvent(enable: false));
+        dataSourceBuilder.ConfigureTracingWithoutFirstResponseEvent();
     }
 
     private static TApplicationBuilder AddCatalogIntegrationEventTransportConsumer<TApplicationBuilder>(this TApplicationBuilder builder)

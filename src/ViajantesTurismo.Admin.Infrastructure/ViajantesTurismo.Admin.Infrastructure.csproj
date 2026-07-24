@@ -28,6 +28,7 @@
         <ProjectReference Include="..\SharedKernel\SharedKernel.InputNormalization\SharedKernel.InputNormalization.csproj" />
         <ProjectReference Include="..\SharedKernel\SharedKernel.Messaging.IntegrationEvents\SharedKernel.Messaging.IntegrationEvents.csproj" />
         <ProjectReference Include="..\SharedKernel\SharedKernel.Messaging.IntegrationEvents.EntityFrameworkCore\SharedKernel.Messaging.IntegrationEvents.EntityFrameworkCore.csproj" />
+        <ProjectReference Include="..\SharedKernel\SharedKernel.Npgsql\SharedKernel.Npgsql.csproj" />
         <ProjectReference Include="..\SharedKernel\SharedKernel.OpenApi\SharedKernel.OpenApi.csproj" />
         <ProjectReference Include="..\ViajantesTurismo.Resources\ViajantesTurismo.Resources.csproj"/>
         <ProjectReference Include="..\SharedKernel\SharedKernel.Domain\SharedKernel.Domain.csproj" />

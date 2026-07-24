@@ -4,6 +4,7 @@ using Microsoft.Extensions.Hosting;
 using Npgsql;
 using SharedKernel.Branding;
 using SharedKernel.EntityFrameworkCore;
+using SharedKernel.Npgsql;
 using ViajantesTurismo.Resources;
 
 namespace ViajantesTurismo.Branding.Infrastructure;
@@ -62,6 +63,6 @@ public static class BrandingInfrastructureDependencyInjection
 
     private static void ConfigureNpgsqlDataSource(NpgsqlDataSourceBuilder dataSourceBuilder)
     {
-        dataSourceBuilder.ConfigureTracing(tracing => tracing.EnableFirstResponseEvent(enable: false));
+        dataSourceBuilder.ConfigureTracingWithoutFirstResponseEvent();
     }
 }

@@ -6,7 +6,7 @@ namespace ViajantesTurismo.ArchitectureTests.Conventions;
 public sealed class TelemetryPrivacyConfigurationTests
 {
     [Fact]
-    public void Npgsql_registrations_disable_first_response_events_without_disabling_tracing_or_enabling_parameter_logging()
+    public void Npgsql_registrations_share_tracing_privacy_configuration_without_disabling_tracing_or_parameter_logging()
     {
         // Arrange
         var repositoryRoot = GetRepositoryRoot();
@@ -25,15 +25,23 @@ public sealed class TelemetryPrivacyConfigurationTests
             "src",
             "ViajantesTurismo.Catalog.Infrastructure",
             "InfrastructureDependencyInjection.cs"));
+        var sharedNpgsql = File.ReadAllText(Path.Combine(
+            repositoryRoot,
+            "src",
+            "SharedKernel",
+            "SharedKernel.Npgsql",
+            "NpgsqlDataSourceBuilderExtensions.cs"));
 
         // Act
         var combinedSource = string.Concat(adminInfrastructure, brandingInfrastructure, catalogInfrastructure);
+        var tracingConfigurationSource = string.Concat(sharedNpgsql, combinedSource);
 
         // Assert
-        adminInfrastructure.ShouldContain("EnableFirstResponseEvent(enable: false)", StringComparison.Ordinal);
-        brandingInfrastructure.ShouldContain("EnableFirstResponseEvent(enable: false)", StringComparison.Ordinal);
-        catalogInfrastructure.ShouldContain("EnableFirstResponseEvent(enable: false)", StringComparison.Ordinal);
-        combinedSource.ShouldNotContain("DisableTracing = true", StringComparison.Ordinal);
-        combinedSource.ShouldNotContain("EnableParameterLogging", StringComparison.Ordinal);
+        sharedNpgsql.ShouldContain("ConfigureTracingWithoutFirstResponseEvent", StringComparison.Ordinal);
+        sharedNpgsql.ShouldContain("EnableFirstResponseEvent(enable: false)", StringComparison.Ordinal);
+        (combinedSource.Split("ConfigureTracingWithoutFirstResponseEvent()", StringSplitOptions.None).Length - 1).ShouldBe(3);
+        combinedSource.ShouldNotContain("EnableFirstResponseEvent", StringComparison.Ordinal);
+        tracingConfigurationSource.ShouldNotContain("DisableTracing = true", StringComparison.Ordinal);
+        tracingConfigurationSource.ShouldNotContain("EnableParameterLogging", StringComparison.Ordinal);
     }
 }
