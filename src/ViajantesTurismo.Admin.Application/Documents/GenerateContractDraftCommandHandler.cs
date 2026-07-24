@@ -28,9 +28,13 @@ public sealed class GenerateContractDraftCommandHandler(
         }
 
         var idempotencyScope = IdempotencyScope.From($"admin.documents.generate-contract-draft:{command.BookingId:N}");
+        var requestFingerprint = DocumentCommandIdempotency.CreateRequestFingerprint(
+            command.TemplateId,
+            command.TemplateVersion);
         var existingResult = await documentCommandIdempotency.GetExistingResult(
             idempotencyScope,
             command.IdempotencyKey,
+            requestFingerprint,
             ct);
         if (existingResult is { } replayedResult)
         {
@@ -120,6 +124,7 @@ public sealed class GenerateContractDraftCommandHandler(
         return await documentCommandIdempotency.Execute(
             idempotencyScope,
             command.IdempotencyKey,
+            requestFingerprint,
             () =>
             {
                 documentStore.Add(lineage);

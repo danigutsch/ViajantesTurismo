@@ -26,9 +26,13 @@ public sealed class RegenerateDocumentDraftCommandHandler(
         }
 
         var idempotencyScope = IdempotencyScope.From($"admin.documents.regenerate-draft:{command.DocumentId:N}");
+        var requestFingerprint = DocumentCommandIdempotency.CreateRequestFingerprint(
+            command.TemplateId,
+            command.TemplateVersion);
         var existingResult = await documentCommandIdempotency.GetExistingResult(
             idempotencyScope,
             command.IdempotencyKey,
+            requestFingerprint,
             ct);
         if (existingResult is { } replayedResult)
         {
@@ -111,6 +115,7 @@ public sealed class RegenerateDocumentDraftCommandHandler(
         return await documentCommandIdempotency.Execute(
             idempotencyScope,
             command.IdempotencyKey,
+            requestFingerprint,
             async () =>
             {
                 var replacementResult = lineage.CreateRevision(current.Id, contentResult.Value, now, command.AuditContext);

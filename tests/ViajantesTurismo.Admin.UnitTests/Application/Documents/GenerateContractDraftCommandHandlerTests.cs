@@ -90,6 +90,51 @@ public sealed class GenerateContractDraftCommandHandlerTests
     }
 
     [Fact]
+    public async Task Handle_rejects_a_completed_idempotency_key_reused_with_different_template_input()
+    {
+        // Arrange
+        var bookingId = Guid.CreateVersion7();
+        var tourId = Guid.CreateVersion7();
+        var booking = DtoBuilders.BuildBookingDto(
+            id: bookingId,
+            tourId: tourId,
+            customerName: "Synthetic Traveler",
+            status: BookingStatusDto.Confirmed);
+        var tour = DtoBuilders.BuildTourDto(
+            id: tourId,
+            identifier: "synthetic-idempotency-input",
+            name: "Synthetic idempotency input");
+        var store = new FakeDocumentStore();
+        var auditStore = new FakeDocumentAuditStore();
+        var unitOfWork = new FakeUnitOfWork();
+        var idempotencyStore = new CapturingNewIdempotencyStore(unitOfWork);
+        var handler = new GenerateContractDraftCommandHandler(
+            new FakeQueryService(booking, tour),
+            store,
+            new FakeBrandingApiClient(DocumentDraftTestData.CreateBrandingSettings()),
+            TimeProvider.System,
+            DocumentAuditTestData.CreateWriter(auditStore, unitOfWork),
+            new DocumentCommandIdempotency(idempotencyStore, unitOfWork, TimeProvider.System));
+        var key = IdempotencyKey.From(Guid.CreateVersion7().ToString("N"));
+        var auditContext = DocumentAuditTestData.CreateContext();
+
+        // Act
+        var first = await handler.Handle(
+            new GenerateContractDraftCommand(bookingId, "booking-confirmation", "1", auditContext, key),
+            CancellationToken.None);
+        var conflicting = await handler.Handle(
+            new GenerateContractDraftCommand(bookingId, "booking-confirmation", "2", auditContext, key),
+            CancellationToken.None);
+
+        // Assert
+        first.IsSuccess.ShouldBeTrue();
+        conflicting.Status.ShouldBe(ResultStatus.Conflict);
+        store.AddedLineages.Count.ShouldBe(1);
+        idempotencyStore.StageCompletionCallCount.ShouldBe(1);
+        unitOfWork.SaveEntitiesCallCount.ShouldBe(1);
+    }
+
+    [Fact]
     public async Task Handle_rejects_missing_audit_context_before_adding_a_draft()
     {
         // Arrange

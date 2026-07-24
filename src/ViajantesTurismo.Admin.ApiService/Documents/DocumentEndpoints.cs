@@ -454,11 +454,17 @@ internal static class DocumentEndpoints
         }
         catch (DbUpdateConcurrencyException)
         {
-            return DocumentErrors.DocumentChangedByAnotherRequest().ConvertError<T>();
+            var auditResult = await RecordRejectedConcurrencyAudit(scopeFactory, auditMetadata, ct);
+            return auditResult.IsFailure
+                ? auditResult.ConvertError<T>()
+                : DocumentErrors.DocumentChangedByAnotherRequest().ConvertError<T>();
         }
         catch (DocumentRevisionConflictException)
         {
-            return DocumentErrors.DocumentRevisionAlreadyExists().ConvertError<T>();
+            var auditResult = await RecordRejectedConcurrencyAudit(scopeFactory, auditMetadata, ct);
+            return auditResult.IsFailure
+                ? auditResult.ConvertError<T>()
+                : DocumentErrors.DocumentRevisionAlreadyExists().ConvertError<T>();
         }
         catch (DocumentBookingEligibilityConflictException)
         {

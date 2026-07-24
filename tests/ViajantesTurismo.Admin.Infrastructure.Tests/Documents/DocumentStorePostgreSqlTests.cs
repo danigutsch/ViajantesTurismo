@@ -1,5 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using Npgsql;
+using SharedKernel.Idempotency;
 using SharedKernel.Testing;
 using ViajantesTurismo.Admin.Application.Documents;
 using ViajantesTurismo.Admin.Contracts.Application;
@@ -356,6 +357,102 @@ public sealed class DocumentStorePostgreSqlTests(PostgreSqlTestServerFixture fix
 
         // Assert
         conflictDetected.ShouldBeTrue();
+    }
+
+    [Fact]
+    public async Task Concurrent_initial_generation_persists_exactly_one_revision_one()
+    {
+        // Arrange
+        var bookingId = Guid.CreateVersion7();
+        var now = new DateTime(2026, 7, 24, 12, 0, 0, DateTimeKind.Utc);
+        var first = DocumentDraftInfrastructureTestData.CreateDraft(now, bookingId);
+        var second = DocumentDraftInfrastructureTestData.CreateDraft(now, bookingId);
+
+        // Act
+        var errors = await Scenario.SaveInitialRevisionsConcurrently(
+            first,
+            second,
+            TestContext.Current.CancellationToken);
+        var persisted = await Scenario.GetDocuments(TestContext.Current.CancellationToken);
+
+        // Assert
+        errors.Count(error => error is null).ShouldBe(1);
+        errors.ShouldHaveSingleItem(error => error is DocumentRevisionConflictException);
+        var document = persisted.ShouldHaveSingleItem(item => item.BookingId == bookingId);
+        document.Revision.ShouldBe(1);
+    }
+
+    [Fact]
+    public async Task Concurrent_regeneration_allocates_exactly_one_revision_two()
+    {
+        // Arrange
+        var now = new DateTime(2026, 7, 24, 12, 0, 0, DateTimeKind.Utc);
+        var lineage = DocumentDraftInfrastructureTestData.CreateLineage(now);
+        var initial = lineage.Revisions.ShouldHaveSingleItem();
+        await Scenario.Seed(lineage);
+
+        // Act
+        var errors = await Scenario.SaveReplacementRevisionsConcurrently(
+            initial.Id,
+            now.AddMinutes(1),
+            TestContext.Current.CancellationToken);
+        var persisted = await Scenario.GetDocuments(TestContext.Current.CancellationToken);
+        var lineageDocuments = persisted
+            .Where(document => document.DocumentLineageId == lineage.Id)
+            .OrderBy(document => document.Revision)
+            .ToArray();
+
+        // Assert
+        errors.Count(error => error is null).ShouldBe(1);
+        errors.ShouldHaveSingleItem(error => error is DocumentRevisionConflictException or DbUpdateConcurrencyException);
+        lineageDocuments.Select(document => document.Revision).ShouldBe([1, 2]);
+    }
+
+    [Fact]
+    public async Task Concurrent_same_key_generation_persists_one_document_audit_and_completed_replay()
+    {
+        // Arrange
+        var bookingId = Guid.CreateVersion7();
+        var now = new DateTime(2026, 7, 24, 12, 0, 0, DateTimeKind.Utc);
+        var first = DocumentDraftInfrastructureTestData.CreateDraft(now, bookingId);
+        var second = DocumentDraftInfrastructureTestData.CreateDraft(now, bookingId);
+        var key = IdempotencyKey.From(Guid.CreateVersion7().ToString("N"));
+        var requestFingerprint = DocumentCommandIdempotency.CreateRequestFingerprint(
+            "tour-service-contract",
+            "1");
+
+        // Act
+        var result = await Scenario.GenerateWithSameKeyConcurrently(
+            first,
+            second,
+            key,
+            requestFingerprint,
+            TestContext.Current.CancellationToken);
+        var persisted = await Scenario.GetDocuments(TestContext.Current.CancellationToken);
+        var audits = await Scenario.GetDocumentAuditsForBooking(bookingId, TestContext.Current.CancellationToken);
+        var idempotencyState = await Scenario.GetIdempotencyState(
+            bookingId,
+            key,
+            TestContext.Current.CancellationToken);
+
+        // Assert
+        result.Attempts.Count(attempt => attempt.IsSuccess).ShouldBeGreaterThanOrEqualTo(1);
+        result.Attempts.Where(attempt => attempt.IsFailure)
+            .All(attempt => attempt.Status == SharedKernel.Results.ResultStatus.Conflict)
+            .ShouldBeTrue();
+        var returnedDocumentIds = result.Attempts
+            .Where(attempt => attempt.IsSuccess)
+            .Select(attempt => attempt.Value)
+            .Append(result.Replay.Value)
+            .Distinct()
+            .ToArray();
+        returnedDocumentIds.ShouldHaveSingleItem();
+        persisted.ShouldHaveSingleItem(document => document.BookingId == bookingId)
+            .Id.ShouldBe(returnedDocumentIds[0]);
+        var audit = audits.ShouldHaveSingleItem();
+        audit.Operation.ShouldBe(DocumentAuditOperation.Generate);
+        audit.Outcome.ShouldBe(DocumentAuditOutcome.Succeeded);
+        idempotencyState.ShouldBe("Completed");
     }
 
     [Fact]

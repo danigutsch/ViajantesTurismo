@@ -10,6 +10,9 @@ namespace ViajantesTurismo.Admin.UnitTests.Application.Documents;
 [Trait(SharedKernelTestTraitNames.CapabilityName, Testing.AdminTestTraitValues.GeneratedDocumentsCapability)]
 public sealed class DocumentCommandIdempotencyTests
 {
+    private static readonly string RequestFingerprint =
+        DocumentCommandIdempotency.CreateRequestFingerprint("tour-service-contract", "1");
+
     [Fact]
     public async Task Fresh_key_acquires_ownership_stages_completion_before_save_and_returns_the_document_id()
     {
@@ -25,10 +28,15 @@ public sealed class DocumentCommandIdempotencyTests
         var operationCallCount = 0;
 
         // Act
-        var existingResult = await coordinator.GetExistingResult(scope, key, CancellationToken.None);
+        var existingResult = await coordinator.GetExistingResult(
+            scope,
+            key,
+            RequestFingerprint,
+            CancellationToken.None);
         var result = await coordinator.Execute(
             scope,
             key,
+            RequestFingerprint,
             () =>
             {
                 operationCallCount++;
@@ -49,7 +57,7 @@ public sealed class DocumentCommandIdempotencyTests
         store.StageCompletionCallCount.ShouldBe(1);
         store.StagedOperation.ShouldBe(operation);
         store.CompletedAt.ShouldBe(now);
-        store.StagedResultFingerprint.ShouldBe(documentId.ToString("N"));
+        store.StagedResultFingerprint.ShouldBe($"{RequestFingerprint}:{documentId:N}");
         store.WasCompletionStagedBeforeSave.ShouldBeTrue();
         unitOfWork.SaveEntitiesCallCount.ShouldBe(1);
     }
@@ -69,6 +77,7 @@ public sealed class DocumentCommandIdempotencyTests
         var result = await coordinator.Execute(
             scope,
             key,
+            RequestFingerprint,
             () =>
             {
                 operationWasInvoked = true;
@@ -98,6 +107,7 @@ public sealed class DocumentCommandIdempotencyTests
         var result = await coordinator.Execute(
             scope,
             key,
+            RequestFingerprint,
             () =>
             {
                 operationCallCount++;
@@ -131,10 +141,15 @@ public sealed class DocumentCommandIdempotencyTests
         var operationWasInvoked = false;
 
         // Act
-        var existingResult = await coordinator.GetExistingResult(scope, key, CancellationToken.None);
+        var existingResult = await coordinator.GetExistingResult(
+            scope,
+            key,
+            RequestFingerprint,
+            CancellationToken.None);
         var executionResult = await coordinator.Execute(
             scope,
             key,
+            RequestFingerprint,
             () =>
             {
                 operationWasInvoked = true;
@@ -159,10 +174,15 @@ public sealed class DocumentCommandIdempotencyTests
         var operationCallCount = 0;
 
         // Act
-        var existingResult = await coordinator.GetExistingResult(scope, null, CancellationToken.None);
+        var existingResult = await coordinator.GetExistingResult(
+            scope,
+            null,
+            RequestFingerprint,
+            CancellationToken.None);
         var executionResult = await coordinator.Execute(
             scope,
             null,
+            RequestFingerprint,
             () =>
             {
                 operationCallCount++;
@@ -187,7 +207,11 @@ public sealed class DocumentCommandIdempotencyTests
         var coordinator = DocumentIdempotencyTestData.CreateStarted(scope, key, new FakeUnitOfWork(), elapsed);
 
         // Act
-        var result = await coordinator.GetExistingResult(scope, key, CancellationToken.None);
+        var result = await coordinator.GetExistingResult(
+            scope,
+            key,
+            RequestFingerprint,
+            CancellationToken.None);
 
         // Assert
         result.ShouldNotBeNull().Status.ShouldBe(ResultStatus.Conflict);
@@ -206,7 +230,11 @@ public sealed class DocumentCommandIdempotencyTests
             TimeSpan.FromMinutes(5));
 
         // Act
-        var result = await coordinator.GetExistingResult(scope, key, CancellationToken.None);
+        var result = await coordinator.GetExistingResult(
+            scope,
+            key,
+            RequestFingerprint,
+            CancellationToken.None);
 
         // Assert
         result.ShouldBeNull();
@@ -225,6 +253,7 @@ public sealed class DocumentCommandIdempotencyTests
         var result = await coordinator.Execute(
             scope,
             key,
+            RequestFingerprint,
             () =>
             {
                 operationWasInvoked = true;

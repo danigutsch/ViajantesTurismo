@@ -94,6 +94,57 @@ public sealed class RegenerateDocumentDraftCommandHandlerTests
     }
 
     [Fact]
+    public async Task Handle_replays_matching_input_and_rejects_conflicting_input_for_a_completed_key()
+    {
+        // Arrange
+        var document = DocumentDraftTestData.Create(DateTime.UtcNow);
+        var tourId = Guid.CreateVersion7();
+        var booking = DtoBuilders.BuildBookingDto(
+            id: document.BookingId,
+            tourId: tourId,
+            customerName: "Synthetic Traveler",
+            status: BookingStatusDto.Confirmed);
+        var tour = DtoBuilders.BuildTourDto(
+            id: tourId,
+            identifier: "synthetic-regeneration-input",
+            name: "Synthetic regeneration input");
+        var store = new FakeDocumentStore();
+        store.Documents.Add(document.Id, document);
+        var auditStore = new FakeDocumentAuditStore();
+        var unitOfWork = new FakeUnitOfWork();
+        var idempotencyStore = new CapturingNewIdempotencyStore(unitOfWork);
+        var handler = new RegenerateDocumentDraftCommandHandler(
+            store,
+            new FakeQueryService(booking, tour),
+            new FakeBrandingApiClient(DocumentDraftTestData.CreateBrandingSettings()),
+            TimeProvider.System,
+            DocumentAuditTestData.CreateWriter(auditStore, unitOfWork),
+            new DocumentCommandIdempotency(idempotencyStore, unitOfWork, TimeProvider.System));
+        var key = IdempotencyKey.From(Guid.CreateVersion7().ToString("N"));
+        var auditContext = DocumentAuditTestData.CreateContext();
+
+        // Act
+        var first = await handler.Handle(
+            new RegenerateDocumentDraftCommand(document.Id, "booking-confirmation", "2", auditContext, key),
+            CancellationToken.None);
+        var replay = await handler.Handle(
+            new RegenerateDocumentDraftCommand(document.Id, "booking-confirmation", "2", auditContext, key),
+            CancellationToken.None);
+        var conflicting = await handler.Handle(
+            new RegenerateDocumentDraftCommand(document.Id, "booking-confirmation", "3", auditContext, key),
+            CancellationToken.None);
+
+        // Assert
+        first.IsSuccess.ShouldBeTrue();
+        replay.IsSuccess.ShouldBeTrue();
+        replay.Value.ShouldBe(first.Value);
+        conflicting.Status.ShouldBe(ResultStatus.Conflict);
+        store.LastLoadedLineage.ShouldNotBeNull().Revisions.Count.ShouldBe(2);
+        idempotencyStore.StageCompletionCallCount.ShouldBe(1);
+        unitOfWork.SaveEntitiesCallCount.ShouldBe(1);
+    }
+
+    [Fact]
     public async Task Handle_rejects_missing_audit_context_before_adding_a_revision()
     {
         // Arrange
