@@ -21,6 +21,12 @@ internal sealed class TourStore(AdminWriteDbContext dbContext) : ITourStore
             .AsSplitQuery()
             .FirstOrDefaultAsync(t => t.Bookings.Any(b => b.Id == bookingId), ct);
 
+    public async Task<Guid?> GetTourIdByBookingId(Guid bookingId, CancellationToken ct) =>
+        await dbContext.Tours
+            .Where(t => t.Bookings.Any(b => b.Id == bookingId))
+            .Select(t => (Guid?)t.Id)
+            .SingleOrDefaultAsync(ct);
+
     public async Task<bool> IdentifierExists(string identifier, CancellationToken ct) =>
         await dbContext.Tours.AnyAsync(t => t.Identifier == identifier, ct);
 

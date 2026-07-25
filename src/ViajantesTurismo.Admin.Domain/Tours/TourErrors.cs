@@ -156,6 +156,18 @@ public static class TourErrors
         $"Tour is fully booked. Maximum capacity: {maxCustomers}, Current bookings: {currentCount}. Cannot accept more bookings.");
 
     /// <summary>
+    /// Indicates that confirming the proposed participant count would exceed tour capacity.
+    /// </summary>
+    /// <param name="maxCustomers">The maximum capacity.</param>
+    /// <param name="currentCount">The current confirmed participant count.</param>
+    /// <param name="proposedCount">The proposed confirmed participant count.</param>
+    /// <returns>A conflict result.</returns>
+    public static Result ConfirmedCapacityExceeded(int maxCustomers, int currentCount, int proposedCount) =>
+        Result.Conflict(
+            $"The booking would exceed tour capacity. Maximum capacity: {maxCustomers}, "
+            + $"Current confirmed participants: {currentCount}, Proposed confirmed participants: {proposedCount}.");
+
+    /// <summary>
     /// Indicates that only pending bookings can be removed.
     /// </summary>
     /// <param name="bookingId">The booking ID.</param>

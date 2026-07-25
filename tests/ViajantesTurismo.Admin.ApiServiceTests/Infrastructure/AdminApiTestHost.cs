@@ -20,8 +20,10 @@ using ViajantesTurismo.Admin.Application.Customers.CreateCustomer;
 using ViajantesTurismo.Admin.Application.Customers.Import;
 using ViajantesTurismo.Admin.Application.Customers.UpdateCustomer;
 using ViajantesTurismo.Admin.Application.Documents;
+using ViajantesTurismo.Admin.Application.Tours;
 using ViajantesTurismo.Admin.Application.Tours.CreateTour;
 using ViajantesTurismo.Admin.Application.Tours.UpdateTour;
+using ViajantesTurismo.Admin.Testing.Fakes;
 using ViajantesTurismo.Resources;
 
 namespace ViajantesTurismo.Admin.ApiServiceTests.Infrastructure;
@@ -48,6 +50,8 @@ internal static class AdminApiTestHost
                 services.Configure<HealthCheckServiceOptions>(options => options.Registrations.Clear());
                 ApiTestAuthentication.ConfigureJwtBearer(services, Audience);
                 services.RemoveAll<IHostedService>();
+                services.Replace(
+                    ServiceDescriptor.Singleton<ITourCapacityMutationLock, NoOpTourCapacityMutationLock>());
                 configureTestServices?.Invoke(services);
             },
             configuration: configuration);
@@ -120,6 +124,8 @@ internal static class AdminApiTestHost
         _ = scope.ServiceProvider.GetRequiredService<RecordPaymentCommandHandler>();
         _ = scope.ServiceProvider.GetRequiredService<CompleteBookingCommandHandler>();
         _ = scope.ServiceProvider.GetRequiredService<DeleteBookingCommandHandler>();
+        scope.ServiceProvider.GetRequiredService<ITourCapacityMutationLock>()
+            .ShouldBeOfType<NoOpTourCapacityMutationLock>();
     }
 
     public static void VerifyMappedDocumentDependencies(WebApplicationFactory<AdminApiHostEntryPoint> factory)
