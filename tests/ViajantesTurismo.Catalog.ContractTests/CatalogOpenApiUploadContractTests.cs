@@ -50,15 +50,15 @@ public sealed class CatalogOpenApiUploadContractTests
         // Arrange
         var document = CatalogOpenApiSnapshots.CreateSnapshotSet().GetCanonicalSnapshot("catalog").AsObject();
         var paths = document["paths"].ShouldNotBeNull().AsObject();
-        (string Path, string Method, string SuccessStatus)[] mutationOperations =
+        (string Path, string Method, string SuccessStatus, string[] ExpectedStatuses)[] mutationOperations =
         [
-            ("/api/v1/catalog/tours/{id}/presentation", "put", "200"),
-            ("/api/v1/catalog/tours/{id}/publish", "post", "204"),
-            ("/api/v1/catalog/tours/{id}/unpublish", "post", "204"),
-            ("/api/v1/catalog/tours/{id}/images", "post", "201"),
-            ("/api/v1/catalog/media/images/{id}/accessibility-draft", "post", "200"),
-            ("/api/v1/catalog/media/images/{id}/accessibility-review", "put", "200"),
-            ("/api/v1/catalog/public-content/{key}", "put", "200")
+            ("/api/v1/catalog/tours/{id}/presentation", "put", "200", ["200", "202", "400", "401", "403", "404", "409"]),
+            ("/api/v1/catalog/tours/{id}/publish", "post", "204", ["202", "204", "400", "401", "403", "404", "409"]),
+            ("/api/v1/catalog/tours/{id}/unpublish", "post", "204", ["202", "204", "400", "401", "403", "404", "409"]),
+            ("/api/v1/catalog/tours/{id}/images", "post", "201", ["201", "400", "401", "403"]),
+            ("/api/v1/catalog/media/images/{id}/accessibility-draft", "post", "200", ["200", "400", "401", "403"]),
+            ("/api/v1/catalog/media/images/{id}/accessibility-review", "put", "200", ["200", "400", "401", "403"]),
+            ("/api/v1/catalog/public-content/{key}", "put", "200", ["200", "400", "401", "403"])
         ];
 
         // Act
@@ -66,13 +66,15 @@ public sealed class CatalogOpenApiUploadContractTests
         {
             var path = paths[operation.Path].ShouldNotBeNull().AsObject();
             var endpoint = path[operation.Method].ShouldNotBeNull().AsObject();
-            return (operation.SuccessStatus, Responses: endpoint["responses"].ShouldNotBeNull().AsObject());
+            return (operation.SuccessStatus, operation.ExpectedStatuses, Responses: endpoint["responses"].ShouldNotBeNull().AsObject());
         }).ToArray();
 
         // Assert
-        foreach (var (successStatus, responses) in validationResponses)
+        foreach (var (successStatus, expectedStatuses, responses) in validationResponses)
         {
             responses.ContainsKey(successStatus).ShouldBeTrue();
+            var responseStatuses = responses.Select(response => response.Key).Order(StringComparer.Ordinal).ToArray();
+            responseStatuses.ShouldBe(expectedStatuses);
             var validationResponse = responses["400"].ShouldNotBeNull().AsObject();
             validationResponse["description"].ShouldNotBeNull().GetValue<string>().ShouldBe("Bad Request");
             var content = validationResponse["content"].ShouldNotBeNull().AsObject();

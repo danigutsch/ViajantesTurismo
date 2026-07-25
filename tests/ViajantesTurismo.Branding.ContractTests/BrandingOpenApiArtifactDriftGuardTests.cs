@@ -22,4 +22,24 @@ public sealed class BrandingOpenApiArtifactDriftGuardTests
         // Assert
         actualDrift.ShouldBe(expectedDrift);
     }
+
+    [Fact]
+    [Trait(SharedKernel.Testing.TestTraitNames.CategoryName, TestTraits.DriftGuardCategory)]
+    [Trait(SharedKernel.Testing.TestTraitNames.SurfaceName, TestTraits.OpenApiSurface)]
+    public void Branding_mutation_keeps_its_published_response_contract()
+    {
+        // Arrange
+        var document = BrandingOpenApiArtifactDriftGuard.CreateSnapshotSet().GetCanonicalSnapshot("branding").AsObject();
+        var operation = document["paths"].ShouldNotBeNull().AsObject()
+            ["/api/v1/branding/settings"].ShouldNotBeNull().AsObject()
+            ["put"].ShouldNotBeNull().AsObject();
+
+        // Act
+        var responses = operation["responses"].ShouldNotBeNull().AsObject();
+        var responseStatuses = responses.Select(response => response.Key).Order(StringComparer.Ordinal).ToArray();
+
+        // Assert
+        responseStatuses.ShouldBe(["200", "401", "403"]);
+        responses["200"].ShouldNotBeNull().AsObject().ContainsKey("content").ShouldBeFalse();
+    }
 }
