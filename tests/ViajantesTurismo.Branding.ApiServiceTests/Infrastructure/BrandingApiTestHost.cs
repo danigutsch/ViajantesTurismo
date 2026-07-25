@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.OutputCaching;
 using Microsoft.Extensions.Diagnostics.HealthChecks;
 using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Logging;
 using SharedKernel.AspNetCore;
 using SharedKernel.Testing.AspNetCore;
 using ViajantesTurismo.Branding.ApiService;
@@ -16,12 +17,20 @@ internal static class BrandingApiTestHost
 
     public static WebApplicationFactory<BrandingApiHostEntryPoint> Create(string? environment = null)
     {
-        return Create(environment, null);
+        return Create(environment, null, null, null);
     }
 
     public static WebApplicationFactory<BrandingApiHostEntryPoint> Create(TestBrandingSettingsStore store)
     {
-        return Create(null, store);
+        return Create(null, store, null, null);
+    }
+
+    public static WebApplicationFactory<BrandingApiHostEntryPoint> Create(
+        TestBrandingSettingsStore store,
+        RecordingOutputCacheStore outputCacheStore,
+        CollectingLogger<BrandingApiHostEntryPoint>? logger = null)
+    {
+        return Create(null, store, outputCacheStore, logger);
     }
 
     public static WebApplicationFactory<BrandingApiHostEntryPoint> CreateProductionComposition()
@@ -45,6 +54,8 @@ internal static class BrandingApiTestHost
     private static WebApplicationFactory<BrandingApiHostEntryPoint> Create(
         string? environment,
         TestBrandingSettingsStore? store,
+        RecordingOutputCacheStore? outputCacheStore,
+        CollectingLogger<BrandingApiHostEntryPoint>? logger,
         bool authenticateClient = true)
     {
         return WebApplicationTestHost.Create<BrandingApiHostEntryPoint>(
@@ -52,6 +63,16 @@ internal static class BrandingApiTestHost
             services =>
             {
                 services.Replace(ServiceDescriptor.Singleton<IBrandingSettingsStore>(store ?? new TestBrandingSettingsStore()));
+                if (outputCacheStore is not null)
+                {
+                    services.Replace(ServiceDescriptor.Singleton<IOutputCacheStore>(_ => outputCacheStore));
+                }
+
+                if (logger is not null)
+                {
+                    services.Replace(ServiceDescriptor.Singleton<ILogger<BrandingApiHostEntryPoint>>(_ => logger));
+                }
+
                 services.Configure<HealthCheckServiceOptions>(options => options.Registrations.Clear());
                 ApiTestAuthentication.ConfigureJwtBearer(services, Audience);
             },
@@ -67,7 +88,7 @@ internal static class BrandingApiTestHost
 
     public static WebApplicationFactory<BrandingApiHostEntryPoint> CreateAnonymous()
     {
-        return Create(null, null, authenticateClient: false);
+        return Create(null, null, null, null, authenticateClient: false);
     }
 
     public static void ConfigureAuthenticatedClient(HttpClient client, string role)

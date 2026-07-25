@@ -106,6 +106,83 @@ public sealed class BrandingApiEndpointTests
     }
 
     [Fact]
+    public async Task Branding_management_endpoint_uses_detached_post_commit_cache_eviction()
+    {
+        // Arrange
+        var store = new TestBrandingSettingsStore();
+        var outputCacheStore = new RecordingOutputCacheStore();
+        await using var factory = BrandingApiTestHost.Create(store, outputCacheStore);
+        using var client = factory.CreateClient();
+
+        // Act
+        using var response = await client.PutAsJsonAsync(
+            new Uri(ManagementSettingsPath, UriKind.Relative),
+            BrandingSettingsTestData.CreateDto(),
+            TestContext.Current.CancellationToken);
+
+        // Assert
+        response.StatusCode.ShouldBe(HttpStatusCode.OK);
+        outputCacheStore.EvictionObserved.ShouldBeTrue();
+        outputCacheStore.EvictionTag.ShouldBe(BrandingHttpCache.PublicBrandingTag);
+        outputCacheStore.EvictionCancellationToken.ShouldBe(CancellationToken.None);
+    }
+
+    [Fact]
+    public async Task Branding_management_endpoint_returns_success_and_logs_bounded_cache_failure_metadata()
+    {
+        // Arrange
+        const string sensitiveFailureMessage = "synthetic cache message must not be logged";
+        var store = new TestBrandingSettingsStore();
+        var outputCacheStore = new RecordingOutputCacheStore
+        {
+            EvictionException = new IOException(sensitiveFailureMessage)
+        };
+        var logger = new CollectingLogger<BrandingApiHostEntryPoint>();
+        await using var factory = BrandingApiTestHost.Create(store, outputCacheStore, logger);
+        using var client = factory.CreateClient();
+
+        // Act
+        using var response = await client.PutAsJsonAsync(
+            new Uri(ManagementSettingsPath, UriKind.Relative),
+            BrandingSettingsTestData.CreateDto(),
+            TestContext.Current.CancellationToken);
+
+        // Assert
+        response.StatusCode.ShouldBe(HttpStatusCode.OK);
+        store.Settings.ShouldNotBeNull();
+        outputCacheStore.EvictionObserved.ShouldBeTrue();
+        logger.StructuredValues.ShouldContain(value =>
+            value.Key == "CacheArea" && Equals(value.Value, BrandingHttpCache.PublicBrandingArea));
+        logger.StructuredValues.ShouldContain(value =>
+            value.Key == "FailureType" && Equals(value.Value, nameof(IOException)));
+        logger.Messages.ShouldNotContain(message => message.Contains(sensitiveFailureMessage, StringComparison.Ordinal));
+        logger.Exceptions.ShouldBeEmpty();
+    }
+
+    [Fact]
+    public async Task Branding_management_endpoint_does_not_evict_cache_when_settings_save_fails()
+    {
+        // Arrange
+        var store = new TestBrandingSettingsStore
+        {
+            SaveException = new IOException("synthetic settings failure")
+        };
+        var outputCacheStore = new RecordingOutputCacheStore();
+        await using var factory = BrandingApiTestHost.Create(store, outputCacheStore);
+        using var client = factory.CreateClient();
+
+        // Act
+        using var response = await client.PutAsJsonAsync(
+            new Uri(ManagementSettingsPath, UriKind.Relative),
+            BrandingSettingsTestData.CreateDto(),
+            TestContext.Current.CancellationToken);
+
+        // Assert
+        response.StatusCode.ShouldBe(HttpStatusCode.InternalServerError);
+        outputCacheStore.EvictionObserved.ShouldBeFalse();
+    }
+
+    [Fact]
     public async Task Branding_management_endpoint_rejects_unsafe_values()
     {
         // Arrange
