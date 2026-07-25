@@ -1,3 +1,4 @@
+using Microsoft.OpenApi;
 using TestTraits = ViajantesTurismo.Admin.ContractTests.Infrastructure.TestTraits;
 
 namespace ViajantesTurismo.Admin.ContractTests;
@@ -44,6 +45,12 @@ public sealed class AdminOpenApiDocumentRegistrationTests
         var commitImport = commitImportOperation.ShouldNotBeNull();
         var commitImportRequestBody = commitImport.RequestBody.ShouldNotBeNull();
         var commitImportContent = commitImportRequestBody.Content.ShouldNotBeNull();
+        var commitImportPathParameters = commitImport.Parameters?
+            .Where(parameter => parameter.In == ParameterLocation.Path)
+            .ToArray() ?? [];
+        var commitImportQueryParameters = commitImport.Parameters?
+            .Where(parameter => parameter.In == ParameterLocation.Query)
+            .ToArray() ?? [];
 
         // Assert
         document.Paths.Keys.ShouldContain("/api/v1/customers");
@@ -60,6 +67,8 @@ public sealed class AdminOpenApiDocumentRegistrationTests
         commitImportRequestBody.Required.ShouldBeTrue();
         commitImportContent.Count.ShouldBe(1);
         commitImportContent.Keys.ShouldHaveSingleItem().ShouldBe("multipart/form-data");
+        commitImportPathParameters.ShouldBeEmpty();
+        commitImportQueryParameters.ShouldBeEmpty();
     }
 
     [Fact]
