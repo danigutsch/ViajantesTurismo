@@ -21,6 +21,7 @@ internal sealed class AdminReadDbContext(DbContextOptions<AdminReadDbContext> op
     {
         base.OnModelCreating(modelBuilder);
 
+        modelBuilder.HasPostgresExtension("citext");
         modelBuilder.ApplyConfiguration(new TourConfiguration());
         modelBuilder.ApplyConfiguration(new CustomerConfiguration());
         modelBuilder.ApplyConfiguration(new BookingConfiguration());

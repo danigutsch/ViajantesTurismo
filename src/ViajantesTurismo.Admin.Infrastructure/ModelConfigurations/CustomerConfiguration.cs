@@ -13,7 +13,15 @@ internal sealed class CustomerConfiguration : IEntityTypeConfiguration<Customer>
 
         entity.OwnsOne(customer => customer.PersonalInfo, builder => builder.ToTable("CustomerPersonalInfo"));
         entity.OwnsOne(customer => customer.IdentificationInfo, builder => builder.ToTable("CustomerIdentificationInfo"));
-        entity.OwnsOne(customer => customer.ContactInfo, builder => builder.ToTable("CustomerContactInfo"));
+        entity.OwnsOne(customer => customer.ContactInfo, builder =>
+        {
+            builder.ToTable("CustomerContactInfo");
+            builder.Property(contactInfo => contactInfo.Email)
+                .HasColumnType("citext");
+            builder.HasIndex(contactInfo => contactInfo.Email)
+                .IsUnique()
+                .HasDatabaseName(CustomerSchema.EmailUniqueIndex);
+        });
         entity.OwnsOne(customer => customer.Address, builder => builder.ToTable("CustomerAddress"));
         entity.OwnsOne(customer => customer.PhysicalInfo, builder => builder.ToTable("CustomerPhysicalInfo"));
         entity.OwnsOne(customer => customer.AccommodationPreferences, builder => builder.ToTable("CustomerAccommodationPreferences"));

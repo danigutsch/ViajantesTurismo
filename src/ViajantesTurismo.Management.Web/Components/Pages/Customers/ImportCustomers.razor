@@ -438,7 +438,9 @@
 
         try
         {
-            var fileBytes = ApplyCurrentMapping();
+            var fileBytes = _state.ConflictSourceFileBytes.Length > 0
+                ? _state.ConflictSourceFileBytes
+                : ApplyCurrentMapping();
 
             var hasMixedDecision = _state.ConflictStates.Any(state => state.HasMixedDecision);
             if (hasMixedDecision)
@@ -449,8 +451,17 @@
             }
 
             var conflictDecisions = BuildConflictDecisions();
-            _state.Result = await CustomersApi.CommitImportWithResolutions(
+            var result = await CustomersApi.CommitImportWithResolutions(
                 fileBytes, _state.PendingFileName, conflictDecisions, CancellationToken.None);
+            if (result.Conflicts is { Count: > 0 } conflicts)
+            {
+                await InitializeConflictResolutionData(conflicts, fileBytes);
+                _state.Step = ImportCustomersWorkflowStep.DuplicateResolution;
+            }
+            else
+            {
+                _state.Result = result;
+            }
         }
         catch (Exception)
         {
@@ -592,6 +603,7 @@
 
     private async Task InitializeConflictResolutionData(IReadOnlyList<ImportConflictDto> conflicts, byte[] mappedFileBytes)
     {
+        _state.ConflictSourceFileBytes = mappedFileBytes;
         _state.ConflictStates = await ImportCustomersConflictLoader.LoadConflictStates(
             CustomersApi,
             conflicts,

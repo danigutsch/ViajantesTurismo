@@ -92,7 +92,14 @@ public sealed class UpdateCustomerCommandHandler(
         customer.UpdateEmergencyContact(emergencyContact);
         customer.UpdateMedicalInfo(medicalInfo);
 
-        await unitOfWork.SaveEntities(ct);
+        try
+        {
+            await unitOfWork.SaveEntities(ct);
+        }
+        catch (CustomerEmailConflictException)
+        {
+            return CustomerErrors.EmailAlreadyExists();
+        }
 
         return Result.Ok();
     }

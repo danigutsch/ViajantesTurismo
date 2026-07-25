@@ -1,4 +1,5 @@
 using System.Net.Http.Json;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Hosting;
@@ -6,6 +7,7 @@ using ViajantesTurismo.Admin.Application;
 using ViajantesTurismo.Admin.Application.Tours.CreateTour;
 using ViajantesTurismo.Admin.Domain.Customers;
 using ViajantesTurismo.Admin.Domain.Tours;
+using ViajantesTurismo.Admin.Testing.Behavior;
 using ViajantesTurismo.Admin.Testing.Builders;
 using ViajantesTurismo.Admin.Testing.Fakes;
 
@@ -42,6 +44,41 @@ public sealed class AdminApiPrivacyTests
         problem.ShouldNotBeNull();
         problem.Detail.ShouldContain("email", StringComparison.OrdinalIgnoreCase);
         body.ShouldNotContain(email, StringComparison.OrdinalIgnoreCase);
+    }
+
+    [Fact]
+    public async Task Update_customer_duplicate_email_returns_conflict_without_reflecting_the_email()
+    {
+        // Arrange
+        const string originalEmail = "target.traveler@example.com";
+        const string duplicateEmail = "duplicate.traveler@example.com";
+        var customerStore = new FakeCustomerStore();
+        var targetCustomer = EntityBuilders.BuildCustomer(new CustomerOptions(Email: originalEmail));
+        customerStore.AddExistingCustomer(targetCustomer);
+        customerStore.AddExistingCustomer(EntityBuilders.BuildCustomer(new CustomerOptions(Email: duplicateEmail)));
+        await using var factory = AdminApiTestHost.Create(services =>
+        {
+            services.Replace(ServiceDescriptor.Scoped<ICustomerStore>(_ => customerStore));
+            services.Replace(ServiceDescriptor.Scoped<IUnitOfWork, FakeUnitOfWork>());
+        });
+        using var client = factory.CreateClient();
+        AdminApiTestHost.ConfigureAuthenticatedClient(client, "Admin");
+        var request = DtoBuilders.BuildUpdateCustomerDto(email: duplicateEmail);
+
+        // Act
+        using var response = await client.PutAsJsonAsync(
+            new Uri($"/api/v1/customers/{targetCustomer.Id}", UriKind.Relative),
+            request,
+            TestContext.Current.CancellationToken);
+        var body = await response.Content.ReadAsStringAsync(TestContext.Current.CancellationToken);
+        var problem = await response.Content.ReadFromJsonAsync<ProblemDetails>(TestContext.Current.CancellationToken);
+
+        // Assert
+        response.StatusCode.ShouldBe(HttpStatusCode.Conflict);
+        problem.ShouldNotBeNull();
+        problem.Status.ShouldBe(StatusCodes.Status409Conflict);
+        body.ShouldNotContain(duplicateEmail, StringComparison.OrdinalIgnoreCase);
+        targetCustomer.ContactInfo.Email.ShouldBe(originalEmail);
     }
 
     [Fact]

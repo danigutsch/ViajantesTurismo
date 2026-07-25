@@ -34,7 +34,16 @@ public sealed class CustomerImportWorkflowService(
 
         var summary = await AnalyzeRowsForSummary(csvText, conflictResolutions: null, ct);
 
-        var result = await commandHandler.Handle(new CustomerImportCommand(csvText, false), ct);
+        ImportResult result;
+        try
+        {
+            result = await commandHandler.Handle(new CustomerImportCommand(csvText, false), ct);
+        }
+        catch (CustomerEmailConflictException)
+        {
+            return await CreatePersistenceConflictResult(csvText, summary.SuccessCandidates, ct);
+        }
+
         var successRows = await BuildSuccessRows(summary.SuccessCandidates, ct);
 
         return new ImportResultDto(
@@ -61,10 +70,18 @@ public sealed class CustomerImportWorkflowService(
 
         var summary = await AnalyzeRowsForSummary(csvText, conflictResolutions, ct);
 
-        var result = await commandHandler.Handle(
-            new CustomerImportCommand(csvText, false),
-            ct,
-            conflictResolutions);
+        ImportResult result;
+        try
+        {
+            result = await commandHandler.Handle(
+                new CustomerImportCommand(csvText, false),
+                ct,
+                conflictResolutions);
+        }
+        catch (CustomerEmailConflictException)
+        {
+            return await CreatePersistenceConflictResult(csvText, summary.SuccessCandidates, ct);
+        }
 
         var successRows = await BuildSuccessRows(summary.SuccessCandidates, ct);
 
@@ -74,6 +91,40 @@ public sealed class CustomerImportWorkflowService(
             null,
             successRows,
             summary.ErrorRows);
+    }
+
+    private async Task<ImportResultDto> CreatePersistenceConflictResult(
+        string csvText,
+        IReadOnlyList<ImportSuccessCandidate> successCandidates,
+        CancellationToken ct)
+    {
+        var conflicts = await conflictDetector.FindDatabaseEmailConflicts(csvText, ct);
+        if (conflicts.Count > 0)
+        {
+            return new ImportResultDto(0, 0, conflicts);
+        }
+
+        var persistenceErrors = successCandidates
+            .GroupBy(candidate => candidate.Email, StringComparer.OrdinalIgnoreCase)
+            .Select(group => group.First())
+            .Select(candidate => new ImportErrorRowDto(
+                candidate.LineNumber,
+                EmailFieldName,
+                "Persistence rejected a duplicate Customer email. Retry the import.",
+                candidate.Email))
+            .ToArray();
+        if (persistenceErrors.Length == 0)
+        {
+            persistenceErrors =
+            [
+                new ImportErrorRowDto(
+                    1,
+                    EmailFieldName,
+                    "Persistence rejected a duplicate Customer email. Retry the import.")
+            ];
+        }
+
+        return new ImportResultDto(0, persistenceErrors.Length, null, null, persistenceErrors);
     }
 
     private async Task<IReadOnlyList<ImportSuccessRowDto>> BuildSuccessRows(
@@ -151,7 +202,7 @@ public sealed class CustomerImportWorkflowService(
                     case ConflictDecision.Skip:
                         continue;
                     case ConflictDecision.Update:
-                        successCandidates.Add(new ImportSuccessCandidate(email, OutcomeUpdated));
+                        successCandidates.Add(new ImportSuccessCandidate(lineNumber, email, OutcomeUpdated));
                         continue;
                     default:
                         errorRows.Add(new ImportErrorRowDto(
@@ -163,7 +214,7 @@ public sealed class CustomerImportWorkflowService(
                 }
             }
 
-            successCandidates.Add(new ImportSuccessCandidate(email, OutcomeCreated));
+            successCandidates.Add(new ImportSuccessCandidate(lineNumber, email, OutcomeCreated));
         }
 
         return new ImportSummaryAnalysis(successCandidates, errorRows);
@@ -207,7 +258,7 @@ public sealed class CustomerImportWorkflowService(
             : ConflictDecision.Skip;
     }
 
-    private sealed record ImportSuccessCandidate(string Email, string Outcome);
+    private sealed record ImportSuccessCandidate(int LineNumber, string Email, string Outcome);
 
     private sealed record ImportSummaryAnalysis(
         IReadOnlyList<ImportSuccessCandidate> SuccessCandidates,

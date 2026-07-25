@@ -125,7 +125,8 @@ internal static class CustomerEndpoints
         return TypedResults.Created($"/api/v1/customers/{result.Value}", getCustomerDto);
     }
 
-    private static async Task<Results<NoContent, NotFound<ProblemDetails>, ValidationProblem>> UpdateCustomer(
+    private static async Task<Results<NoContent, NotFound<ProblemDetails>, Conflict<ProblemDetails>, ValidationProblem>>
+        UpdateCustomer(
         [FromRoute] Guid id,
         [FromBody] UpdateCustomerDto dto,
         [FromServices] UpdateCustomerCommandHandler handler,
@@ -151,6 +152,7 @@ internal static class CustomerEndpoints
             return result.Status switch
             {
                 ResultStatus.NotFound => result.ToNotFound(),
+                ResultStatus.Conflict => result.ToConflict(),
                 _ => result.ToValidationProblem()
             };
         }
