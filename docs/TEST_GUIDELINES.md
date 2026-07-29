@@ -123,6 +123,8 @@ dependency-heavy slice even when the test count is small. Splitting dependency-h
 jobs is only a win when measurements show the parallel wall-clock gain is larger than duplicated
 restore, build, AppHost, container, database, or browser startup. Otherwise prefer one bundled lane
 or shared project fixtures that pay the dependency startup cost once.
+Follow the [assembly fixture guidance](../tests/ASSEMBLY_FIXTURE_GUIDANCE.md) when sharing a provider
+server; keep mutable state and GUID-owned databases isolated per test.
 
 Current external guidance behind this policy:
 

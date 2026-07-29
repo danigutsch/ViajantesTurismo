@@ -1,55 +1,79 @@
+using System.Diagnostics.CodeAnalysis;
 using System.Security.Claims;
 using Microsoft.AspNetCore.DataProtection;
-using SharedKernel.IntegrationTesting;
 using ViajantesTurismo.Management.Web;
 
 namespace ViajantesTurismo.Management.WebIntegrationTests;
 
+[SuppressMessage(
+    "Usage",
+    "CA2213:Disposable fields should be disposed",
+    Justification = "DisposeAsync passes the provider and data source to the ordered independent cleanup helper.")]
 internal sealed class PostgreSqlManagementUserTokenStoreScenario : IAsyncDisposable
 {
-    private const string PostgreSqlResourceName = "postgres";
-    private const string DatabaseResourceName = "managementsecurity";
     private const string CacheSchemaName = "public";
     private const string CacheTableName = "user_token_store_test_cache";
 
-    private AspireTestApplication? _app;
     private BlockingFirstSetDistributedCache? _blockingCache;
     private IDistributedCache? _cache;
     private IDataProtectionProvider? _dataProtectionProvider;
+    private PostgreSqlTestDatabase? _database;
     private NpgsqlDataSource? _dataSource;
+    private readonly PostgreSqlTestServerFixture _fixture;
     private ServiceProvider? _serviceProvider;
+
+    internal PostgreSqlManagementUserTokenStoreScenario(PostgreSqlTestServerFixture fixture)
+    {
+        _fixture = fixture;
+    }
 
     public BlockingFirstSetDistributedCache BlockingCache => _blockingCache is not null
         ? _blockingCache
         : throw new InvalidOperationException("The PostgreSQL user-token-store test scenario has not started.");
 
+    [SuppressMessage(
+        "Design",
+        "CA1031:Do not catch general exception types",
+        Justification = "Failed setup must attempt every cleanup and preserve all failures.")]
+    [SuppressMessage(
+        "Reliability",
+        "CA2000:Dispose objects before losing scope",
+        Justification = "Successful setup transfers database, data-source, and provider ownership to the scenario.")]
     public async ValueTask InitializeAsync()
     {
-        var appBuilder = AspireTestApplication.CreateBuilder();
-        var databaseServer = appBuilder.AddPostgres(PostgreSqlResourceName);
-        _ = databaseServer.AddDatabase(DatabaseResourceName);
-
-        _app = await AspireTestApplication.Start(
-            appBuilder,
-            [PostgreSqlResourceName],
-            null,
-            TestContext.Current.CancellationToken);
-        var connectionString = await _app.GetConnectionString(DatabaseResourceName, TestContext.Current.CancellationToken);
-        _dataSource = NpgsqlDataSource.Create(connectionString);
-
-        var services = new ServiceCollection();
-        services.AddDistributedPostgresCache(options =>
+        var ct = TestContext.Current.CancellationToken;
+        var database = await _fixture.CreateDatabase(ct);
+        NpgsqlDataSource? dataSource = null;
+        ServiceProvider? serviceProvider = null;
+        try
         {
-            options.ConnectionString = connectionString;
-            options.SchemaName = CacheSchemaName;
-            options.TableName = CacheTableName;
-            options.CreateIfNotExists = true;
-            options.UseWAL = true;
-        });
-        _serviceProvider = services.BuildServiceProvider();
-        _cache = _serviceProvider.GetRequiredService<IDistributedCache>();
-        _blockingCache = new BlockingFirstSetDistributedCache(_cache);
-        _dataProtectionProvider = new EphemeralDataProtectionProvider();
+            dataSource = NpgsqlDataSource.Create(database.ConnectionString);
+            var services = new ServiceCollection();
+            services.AddDistributedPostgresCache(options =>
+            {
+                options.ConnectionString = database.ConnectionString;
+                options.SchemaName = CacheSchemaName;
+                options.TableName = CacheTableName;
+                options.CreateIfNotExists = true;
+                options.UseWAL = true;
+            });
+            serviceProvider = services.BuildServiceProvider();
+            var cache = serviceProvider.GetRequiredService<IDistributedCache>();
+            var blockingCache = new BlockingFirstSetDistributedCache(cache);
+            var dataProtectionProvider = new EphemeralDataProtectionProvider();
+
+            _database = database;
+            _dataSource = dataSource;
+            _serviceProvider = serviceProvider;
+            _cache = cache;
+            _blockingCache = blockingCache;
+            _dataProtectionProvider = dataProtectionProvider;
+        }
+        catch (Exception creationFailure)
+        {
+            await PostgreSqlTestCleanup.DisposeResources(creationFailure, serviceProvider, dataSource, database);
+            throw;
+        }
     }
 
     public ProtectedDistributedUserTokenStore CreateStore()
@@ -194,27 +218,14 @@ internal sealed class PostgreSqlManagementUserTokenStoreScenario : IAsyncDisposa
     {
         var serviceProvider = _serviceProvider;
         var dataSource = _dataSource;
-        var app = _app;
+        var database = _database;
         _serviceProvider = null;
         _dataSource = null;
+        _database = null;
         _dataProtectionProvider = null;
         _blockingCache = null;
         _cache = null;
-        _app = null;
 
-        if (serviceProvider is not null)
-        {
-            await serviceProvider.DisposeAsync();
-        }
-
-        if (dataSource is not null)
-        {
-            await dataSource.DisposeAsync();
-        }
-
-        if (app is not null)
-        {
-            await app.DisposeAsync();
-        }
+        await PostgreSqlTestCleanup.DisposeResources(null, serviceProvider, dataSource, database);
     }
 }

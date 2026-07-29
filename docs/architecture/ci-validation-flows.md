@@ -49,8 +49,9 @@ Workflow details: [CI overview](../ci/overview.md) and [main workflow](../ci/mai
 | `Secret Scan` | Detect committed secrets and publish SARIF when allowed. | Fast security lane. |
 | `SonarCloud` | Aggregate coverage and run hosted analysis. | Dependency-heavy; secret-aware. |
 
-`scripts/detect-changes.sh` owns the path decisions. If diff detection is uncertain, it fails open so
-CI runs more work rather than skipping a needed check.
+The `select-ci-test-projects` command in `SharedKernel.RepoConfig.Tool` owns path decisions. If diff
+or project-graph detection is uncertain, it fails open so CI runs more work rather than skipping a
+needed check.
 
 ## Supplemental workflows
 
@@ -95,7 +96,7 @@ Use the narrowest command that reproduces the failing lane.
 | Full build | `dotnet build ViajantesTurismo.slnx` |
 | Full test suite | `dotnet test --solution ViajantesTurismo.slnx` |
 | Repository docs/scripts/spec lint | `bash scripts/lint-all.sh` |
-| CI change classification | `bash scripts/detect-changes.sh` |
+| CI change classification | `dotnet run --project tools/SharedKernel.RepoConfig.Tool -- select-ci-test-projects --mode full` |
 | Devcontainer smoke | `bash scripts/run-devcontainer-smoke.sh` |
 | Devcontainer deeper validation | `bash scripts/run-devcontainer-smoke.sh --run-tests` |
 | Aspire local run | `dotnet tool run aspire run` |

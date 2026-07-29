@@ -23,32 +23,6 @@ public static class SharedKernelPackagingConventionTests
     }
 
     [Fact]
-    public static void SharedKernel_change_detection_covers_current_package_projects()
-    {
-        // Arrange
-        var repositoryRoot = SharedKernelPackagingConventionTestFiles.GetRepositoryRoot();
-        var script = File.ReadAllText(Path.Combine(repositoryRoot, "scripts", "detect-changes.sh"));
-        var activePatterns = SharedKernelPackagingConventionTestFiles.GetActiveQuotedEntries(script);
-        var packageDirectories = Directory.GetFiles(
-                Path.Combine(repositoryRoot, "src", "SharedKernel"),
-                "*.csproj",
-                SearchOption.AllDirectories)
-            .Select(static projectFile => Path.GetDirectoryName(projectFile)
-                ?? throw new InvalidOperationException($"Project path '{projectFile}' has no directory."))
-            .Select(directory => Path.GetRelativePath(repositoryRoot, directory).Replace('\\', '/') + "/**")
-            .Order(StringComparer.Ordinal)
-            .ToArray();
-
-        // Act
-        var missingPatterns = packageDirectories
-            .Where(pattern => !activePatterns.Contains(pattern))
-            .ToArray();
-
-        // Assert
-        missingPatterns.ShouldBe([]);
-    }
-
-    [Fact]
     public static void Release_prep_workflow_covers_packaging_inputs()
     {
         // Arrange

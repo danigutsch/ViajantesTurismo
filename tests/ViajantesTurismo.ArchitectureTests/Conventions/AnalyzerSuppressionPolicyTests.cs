@@ -11,9 +11,30 @@ public sealed partial class AnalyzerSuppressionPolicyTests
         "src/ViajantesTurismo.Admin.ApiService/Customers/CustomerImportEndpoints.cs",
         "src/SharedKernel/SharedKernel.IntegrationTesting/AspireTestApplication.cs",
         "src/ViajantesTurismo.MigrationService/MigrationProcess.cs",
+        "tests/SharedKernel.EntityFrameworkCore.Tests/EfCoreCommandTransactionScopeTests.cs",
+        "tests/SharedKernel.EntityFrameworkCore.Tests/PostgreSqlFixture.cs",
+        "tests/SharedKernel.EntityFrameworkCore.Tests/PostgreSqlIntegrationEventTransportScenario.cs",
+        "tests/SharedKernel.EntityFrameworkCore.Tests/PostgreSqlScenarioCleanup.cs",
+        "tests/SharedKernel.EntityFrameworkCore.Tests/PostgreSqlTestDatabase.cs",
+        "tests/SharedKernel.EventSourcing.Npgsql.Tests/PostgreSqlTestDatabaseLease.cs",
+        "tests/SharedKernel.EventSourcing.Npgsql.Tests/PostgreSqlTestServerFixture.cs",
+        "tests/SharedKernel.EventSourcing.Npgsql.Tests/PostgreSqlTestCleanup.cs",
+        "tests/SharedKernel.Npgsql.Tests/PostgreSqlTestDatabaseLease.cs",
+        "tests/SharedKernel.Npgsql.Tests/PostgreSqlTestServerFixture.cs",
+        "tests/SharedKernel.Npgsql.Tests/PostgreSqlTestCleanup.cs",
+        "tests/ViajantesTurismo.Admin.Infrastructure.Tests/Documents/PostgreSqlDocumentStoreScenario.cs",
+        "tests/ViajantesTurismo.Admin.Infrastructure.Tests/Initialization/DevelopmentDataInitializationPostgreSqlScenario.cs",
+        "tests/ViajantesTurismo.Admin.Infrastructure.Tests/Messaging/AdminMessagingMigrationScenario.cs",
+        "tests/ViajantesTurismo.Admin.Infrastructure.Tests/PostgreSqlTestCleanup.cs",
+        "tests/ViajantesTurismo.Admin.Infrastructure.Tests/PostgreSqlTestDatabase.cs",
+        "tests/ViajantesTurismo.Admin.Infrastructure.Tests/PostgreSqlTestServerFixture.cs",
         "tests/ViajantesTurismo.Admin.IntegrationTests/Infrastructure/PostgreSqlTestDatabase.cs",
         "tests/ViajantesTurismo.Admin.IntegrationTests/Observability/PostgreSqlIndexHealthCollectorScenario.cs",
-        "tests/ViajantesTurismo.Admin.UnitTests/MigrationService/MigrationProcessTestHost.cs"
+        "tests/ViajantesTurismo.Admin.UnitTests/MigrationService/MigrationProcessTestHost.cs",
+        "tests/ViajantesTurismo.Management.WebIntegrationTests/PostgreSqlManagementUserTokenStoreScenario.cs",
+        "tests/ViajantesTurismo.Management.WebIntegrationTests/PostgreSqlTestCleanup.cs",
+        "tests/ViajantesTurismo.Management.WebIntegrationTests/PostgreSqlTestDatabase.cs",
+        "tests/ViajantesTurismo.Management.WebIntegrationTests/PostgreSqlTestServerFixture.cs"
     ];
 
     [Fact]

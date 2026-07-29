@@ -442,8 +442,9 @@ Useful focused runs:
 # Restore and build only. This is the safe default.
 bash scripts/benchmark-local-validation.sh
 
-# One CI test slice only, after a successful build
-bash scripts/benchmark-local-validation.sh --skip-restore --skip-build --slice fast-validation
+# One Fast Validation execution shard, after a successful build
+bash scripts/benchmark-local-validation.sh --skip-restore --skip-build --slice fast-validation-1
+bash scripts/benchmark-local-validation.sh --skip-restore --skip-build --slice fast-validation-2
 
 # Full measured path with a custom output file
 bash scripts/benchmark-local-validation.sh --all-slices --output TestResults/local-validation-$(date +%Y%m%d-%H%M%S).tsv
@@ -465,7 +466,7 @@ Measured on this worktree on 2026-06-29:
 | --- | --- | ---: | --- |
 | Restore | `bash scripts/benchmark-local-validation.sh --skip-build --skip-tests --output TestResults/local-validation-restore-benchmark.tsv` | 2s | success |
 | Build, warm repeat | `bash scripts/benchmark-local-validation.sh --skip-restore --skip-tests --output TestResults/local-validation-build-benchmark.tsv` | 26s | success |
-| Fast validation slice | `bash scripts/benchmark-local-validation.sh --skip-restore --skip-build --slice fast-validation --output TestResults/local-validation-fast-benchmark.tsv` | 167s | success |
+| Fast validation slice, pre-shard historical baseline | `--slice fast-validation` with the former single manifest | 167s | success |
 | Admin integration slice | `bash scripts/benchmark-local-validation.sh --skip-restore --skip-build --slice admin-integration --output TestResults/local-validation-admin-integration.tsv` | 100s | success |
 | Mediator heavy slice | `bash scripts/benchmark-local-validation.sh --skip-restore --skip-build --slice mediator-heavy --output TestResults/local-validation-mediator-heavy.tsv` | 65s | success |
 | Admin system slice | `bash scripts/benchmark-local-validation.sh --skip-restore --skip-build --slice admin-system --output TestResults/local-validation-admin-system.tsv` | 71s | success |
@@ -474,6 +475,28 @@ Measured on this worktree on 2026-06-29:
 
 Low-risk improvement implemented here: local timing can run test slices without coverage collection
 while CI keeps its existing coverage collection and required checks intact.
+
+After `SharedKernel.EventSourcing.Npgsql.Tests` moved from one PostgreSQL container per test to one
+assembly server with isolated databases, two local Release runs completed all 22 cases in 22.0 and
+15.6 seconds. Hosted slice timing remains the authoritative comparison because the historical
+212-second row includes the other Admin Integration projects and coverage collection.
+
+Measured locally on 2026-07-24, the full build-plus-coverage path completed `fast-validation-1` in
+64 seconds and `fast-validation-2` in 44 seconds. These warm local numbers validate both shard paths;
+hosted timings remain authoritative for the split's wall-clock benefit because each hosted shard pays
+its own setup cost.
+
+`SharedKernel.EntityFrameworkCore.Tests` now lazily shares one PostgreSQL server while allocating a
+GUID-owned database per database-backed fact. This reduces ten full-run server starts to one without
+starting PostgreSQL for focused database-free runs. Two final local Release runs completed all 34
+cases in 15.9 and 18.0 seconds.
+
+On 2026-07-25, the Admin Integration build-plus-coverage path fell from 330 seconds to 89 seconds
+after Admin Infrastructure and Management Web Integration each moved to one assembly PostgreSQL
+server with per-test databases. Coverage execution fell from 315 to 60 seconds; Admin Infrastructure
+fell from 313 to 58 seconds and Management Web Integration from 165 to 39 seconds. Catalog
+Infrastructure completed in 52 seconds and no longer controls the lane, so its three-start fixture
+migration remains deferred until hosted timing shows a wall-clock need.
 
 #### Analyzer and code-fix runner measurements
 

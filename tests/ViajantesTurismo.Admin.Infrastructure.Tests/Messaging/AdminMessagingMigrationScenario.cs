@@ -1,3 +1,4 @@
+using System.Diagnostics.CodeAnalysis;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Migrations;
@@ -5,7 +6,6 @@ using Microsoft.Extensions.DependencyInjection;
 using Npgsql;
 using SharedKernel.EntityFrameworkCore;
 using SharedKernel.Idempotency.EntityFrameworkCore;
-using SharedKernel.IntegrationTesting;
 using SharedKernel.Messaging.IntegrationEvents.EntityFrameworkCore;
 using ViajantesTurismo.Resources;
 
@@ -13,8 +13,6 @@ namespace ViajantesTurismo.Admin.Infrastructure.Tests.Messaging;
 
 internal sealed class AdminMessagingMigrationScenario : IAsyncDisposable
 {
-    private const string PostgreSqlResourceName = "postgres";
-    private const string DatabaseResourceName = "admin-messaging-migration";
     private const string MigrationApplicationName = "admin-messaging-migration-lock";
     private const string InsertApplicationName = "admin-messaging-concurrent-insert";
     private const int AdvisoryLockClassId = 1126;
@@ -24,25 +22,25 @@ internal sealed class AdminMessagingMigrationScenario : IAsyncDisposable
     public const string RemovalMigration = "20260721193433_RemoveUnusedAdminIdempotencyKeys";
     public const string IdempotencyRestoreMigration = "20260723174241_EnforceUniqueDocumentRevisionsAndRestoreIdempotency";
 
-    private readonly AspireTestApplication app;
+    private readonly PostgreSqlTestDatabase database;
     private readonly string connectionString;
 
-    private AdminMessagingMigrationScenario(AspireTestApplication app, string connectionString)
+    private AdminMessagingMigrationScenario(PostgreSqlTestDatabase database)
     {
-        this.app = app;
-        this.connectionString = connectionString;
+        this.database = database;
+        connectionString = database.ConnectionString;
     }
 
-    public static async ValueTask<AdminMessagingMigrationScenario> Create(CancellationToken ct)
+    [SuppressMessage(
+        "Reliability",
+        "CA2000:Dispose objects before losing scope",
+        Justification = "The returned scenario owns and disposes the fixture-issued database.")]
+    public static async ValueTask<AdminMessagingMigrationScenario> Create(
+        PostgreSqlTestServerFixture fixture,
+        CancellationToken ct)
     {
-        var appBuilder = AspireTestApplication.CreateBuilder();
-        var databaseServer = appBuilder.AddPostgres(PostgreSqlResourceName);
-        _ = databaseServer.AddDatabase(DatabaseResourceName);
-
-        var app = await AspireTestApplication.Start(appBuilder, [PostgreSqlResourceName], null, ct);
-        var connectionString = await app.GetConnectionString(DatabaseResourceName, ct);
-
-        return new AdminMessagingMigrationScenario(app, connectionString);
+        var database = await fixture.CreateDatabase(ct);
+        return new AdminMessagingMigrationScenario(database);
     }
 
     public async Task ApplyInitialMigration(CancellationToken ct)
@@ -197,7 +195,7 @@ internal sealed class AdminMessagingMigrationScenario : IAsyncDisposable
 
     public ValueTask DisposeAsync()
     {
-        return app.DisposeAsync();
+        return database.DisposeAsync();
     }
 
     private async Task ApplyRemovalMigration(string applicationName, CancellationToken ct)

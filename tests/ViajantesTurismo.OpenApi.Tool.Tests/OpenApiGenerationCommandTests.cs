@@ -1,4 +1,5 @@
 using System.Diagnostics;
+using System.Xml.Linq;
 
 namespace ViajantesTurismo.OpenApi.Tool.Tests;
 
@@ -93,6 +94,69 @@ public sealed class OpenApiGenerationCommandTests
 
         // Assert
         startInfo.ArgumentList.ShouldContain("-p:GenerateBrandingOpenApiArtifacts=true");
+    }
+
+    [Fact]
+    public void All_generation_uses_one_parallel_msbuild_graph()
+    {
+        // Arrange
+        var options = OpenApiGenerationOptions.Parse(["generate", "all"], "/repo");
+
+        // Act
+        var startInfo = OpenApiGenerationCommand.CreateStartInfo(options, Path.Combine(Path.GetTempPath(), "dotnet"));
+
+        // Assert
+        startInfo.ArgumentList.Count.ShouldBe(7);
+        startInfo.ArgumentList[0].ShouldBe("build");
+        startInfo.ArgumentList[1].ShouldBe("--no-restore");
+        startInfo.ArgumentList[2].ShouldBe("tools/ViajantesTurismo.OpenApi.Tool/OpenApiGeneration.slnx");
+        startInfo.ArgumentList[3].ShouldBe("-p:GenerateAdminOpenApiArtifacts=true");
+        startInfo.ArgumentList[4].ShouldBe("-p:GenerateCatalogOpenApiArtifacts=true");
+        startInfo.ArgumentList[5].ShouldBe("-p:GenerateBrandingOpenApiArtifacts=true");
+        startInfo.ArgumentList[6].ShouldBe("-maxcpucount");
+    }
+
+    [Fact]
+    public void All_refresh_requests_every_refresh_target()
+    {
+        // Arrange
+        var options = OpenApiGenerationOptions.Parse(["generate", "all", "--refresh"], "/repo");
+
+        // Act
+        var startInfo = OpenApiGenerationCommand.CreateStartInfo(options, Path.Combine(Path.GetTempPath(), "dotnet"));
+
+        // Assert
+        startInfo.ArgumentList.ShouldContain("-p:RefreshAdminOpenApiArtifacts=true");
+        startInfo.ArgumentList.ShouldContain("-p:RefreshCatalogOpenApiArtifacts=true");
+        startInfo.ArgumentList.ShouldContain("-p:RefreshBrandingOpenApiArtifacts=true");
+        startInfo.ArgumentList.Any(static argument => argument.StartsWith("-p:Generate", StringComparison.Ordinal)).ShouldBeFalse();
+    }
+
+    [Fact]
+    public void All_generation_graph_contains_exactly_the_three_api_projects()
+    {
+        // Arrange
+        var repositoryRoot = OpenApiToolApplication.FindRepositoryRoot(AppContext.BaseDirectory);
+        var graphPath = Path.Combine(
+            repositoryRoot,
+            "tools",
+            "ViajantesTurismo.OpenApi.Tool",
+            "OpenApiGeneration.slnx");
+
+        // Act
+        var projects = XDocument.Load(graphPath)
+            .Descendants("Project")
+            .Select(static project => project.Attribute("Path")?.Value)
+            .OfType<string>()
+            .ToArray();
+
+        // Assert
+        projects.ShouldBe(
+        [
+            "../../src/ViajantesTurismo.Admin.ApiService/ViajantesTurismo.Admin.ApiService.csproj",
+            "../../src/ViajantesTurismo.Catalog.ApiService/ViajantesTurismo.Catalog.ApiService.csproj",
+            "../../src/ViajantesTurismo.Branding.ApiService/ViajantesTurismo.Branding.ApiService.csproj"
+        ]);
     }
 
     [Fact]
@@ -317,7 +381,7 @@ public sealed class OpenApiGenerationCommandTests
         var exception = parse.ShouldThrow<ArgumentException>();
 
         // Assert
-        exception.Message.ShouldContain("generate <admin|catalog|branding> [--refresh]", StringComparison.Ordinal);
+        exception.Message.ShouldContain("generate <admin|catalog|branding|all> [--refresh]", StringComparison.Ordinal);
     }
 
     [Fact]
@@ -337,7 +401,7 @@ public sealed class OpenApiGenerationCommandTests
         // Assert
         exitCode.ShouldBe(2);
         output.ToString().ShouldBeEmpty();
-        error.ToString().ShouldContain("Error: Expected: generate <admin|catalog|branding> [--refresh].", StringComparison.Ordinal);
+        error.ToString().ShouldContain("Error: Expected: generate <admin|catalog|branding|all> [--refresh].", StringComparison.Ordinal);
     }
 
     [Fact]

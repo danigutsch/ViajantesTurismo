@@ -4,7 +4,7 @@ namespace ViajantesTurismo.Admin.Infrastructure.Tests.Initialization;
 
 [Trait(SharedKernelTestTraitNames.CategoryName, TestTraits.DatabaseIntegrationCategory)]
 [Trait(SharedKernelTestTraitNames.CapabilityName, TestTraits.DatabaseInitializationCapability)]
-public sealed class DevelopmentDataInitializationPostgreSqlTests : IAsyncLifetime
+public sealed class DevelopmentDataInitializationPostgreSqlTests(PostgreSqlTestServerFixture fixture) : IAsyncLifetime
 {
     private DevelopmentDataInitializationPostgreSqlScenario? scenario;
 
@@ -13,7 +13,9 @@ public sealed class DevelopmentDataInitializationPostgreSqlTests : IAsyncLifetim
 
     public async ValueTask InitializeAsync()
     {
-        scenario = await DevelopmentDataInitializationPostgreSqlScenario.Create(TestContext.Current.CancellationToken);
+        scenario = await DevelopmentDataInitializationPostgreSqlScenario.Create(
+            fixture,
+            TestContext.Current.CancellationToken);
     }
 
     public async ValueTask DisposeAsync()

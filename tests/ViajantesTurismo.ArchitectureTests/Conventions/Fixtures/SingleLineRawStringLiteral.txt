@@ -1,0 +1,15 @@
+namespace NamingConventionFixture;
+
+public sealed class RawStringLiteralTests
+{
+    private const string Json = """{"ok":true}""";
+
+    [Fact]
+    public void InvalidName()
+    {
+    }
+
+    private const string Template = """
+        ignored
+        """;
+}

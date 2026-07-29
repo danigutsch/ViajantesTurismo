@@ -8,7 +8,7 @@ public sealed class CiTestSliceManifestTests
     public void Every_solution_test_project_is_assigned_to_exactly_one_ci_slice()
     {
         // Arrange
-        var repositoryRoot = DetectChangesScriptTestProcess.GetRepositoryRoot();
+        var repositoryRoot = CiTestSelectionTestProcess.GetRepositoryRoot();
         var solution = XDocument.Load(Path.Combine(repositoryRoot, "ViajantesTurismo.slnx"));
         var expectedProjects = solution
             .Descendants("Project")
@@ -36,5 +36,30 @@ public sealed class CiTestSliceManifestTests
 
         // Assert
         assignedProjects.ShouldBe(expectedProjects);
+    }
+
+    [Fact]
+    public void OpenApi_contract_projects_share_a_fast_shard_with_the_generation_tool_tests()
+    {
+        // Arrange
+        var repositoryRoot = CiTestSelectionTestProcess.GetRepositoryRoot();
+        var manifestPath = Path.Combine(
+            repositoryRoot,
+            "scripts",
+            "ci-test-slices",
+            "fast-validation-1.txt");
+
+        // Act
+        var assignedProjects = File.ReadAllLines(manifestPath);
+
+        // Assert
+        assignedProjects.ShouldContain(
+            "tests/ViajantesTurismo.OpenApi.Tool.Tests/ViajantesTurismo.OpenApi.Tool.Tests.csproj");
+        assignedProjects.ShouldContain(
+            "tests/ViajantesTurismo.Admin.ContractTests/ViajantesTurismo.Admin.ContractTests.csproj");
+        assignedProjects.ShouldContain(
+            "tests/ViajantesTurismo.Catalog.ContractTests/ViajantesTurismo.Catalog.ContractTests.csproj");
+        assignedProjects.ShouldContain(
+            "tests/ViajantesTurismo.Branding.ContractTests/ViajantesTurismo.Branding.ContractTests.csproj");
     }
 }

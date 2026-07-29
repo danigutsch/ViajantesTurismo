@@ -45,12 +45,18 @@ flowchart TD
 ```
 
 - `Fast Validation` must stay no-host and no-container. Small test count does not make a hosted test fast.
+- Fast Validation remains one logical lane but uses two fixed execution shards after hosted CI measured
+  the former row as the critical path. Both shards share one gate and required aggregate; their union
+  contains every fast project exactly once.
 - Hosted/database/API tests are bundled before adding a new matrix row unless measured timing shows a split wins.
 - Browser/system tests stay separate from API integration tests because they use a different entrypoint, failure mode, and concurrency model.
 - `ViajantesTurismo.Admin.IntegrationTests` runs in the dedicated `Admin API Integration Tests`
   slice. The residual `Admin Integration Tests` slice retains provider/database tests. Both slices use
-  the existing `admin_integration_required` gate. The required `Build and Test` aggregate fails when
-  either matrix row fails, and SonarCloud discovers both results artifacts by convention.
+  graph-derived independent gates. The required `Build and Test` aggregate fails when either selected
+  matrix row fails, and SonarCloud discovers both results artifacts by convention.
+- Pull requests derive affected projects through transitive `ProjectReference` closure, then run the
+  complete manifest for every affected slice. Generated project-level plans remain diagnostic until
+  partial coverage can be consumed without corrupting repository-wide Sonar trends.
 - Package-consumption tests move out of fast validation only when they are measured hotspots or protect packaging behavior that deserves separate failure
   visibility.
 - The current `mediator-heavy` lane is a tooling-heavy lane in practice. It is mediator-specific today because that is the only package-consumption hotspot
@@ -61,6 +67,7 @@ flowchart TD
 ### Positive
 
 - Fast validation remains meaningful as a no-host feedback lane.
+- Two execution shards reduce its critical path without changing logical lane ownership or branch protection.
 - CI avoids the false baseline of running all tests concurrently when hosted tests conflict.
 - New lanes require evidence, not intuition.
 - Local benchmark output can justify lane changes before CI is touched.
