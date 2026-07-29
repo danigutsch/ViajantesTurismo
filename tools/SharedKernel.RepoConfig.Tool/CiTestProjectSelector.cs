@@ -184,10 +184,7 @@ internal static class CiTestProjectSelector
                 _ = selectedProjects.Add(OpenApiToolTests);
             }
 
-            if (manifestProjects.Contains(ArchitectureTests))
-            {
-                _ = selectedProjects.Add(ArchitectureTests);
-            }
+            _ = selectedProjects.Add(ArchitectureTests);
 
             var selectedBySlice = slices.ToDictionary(
                 static pair => pair.Key,
