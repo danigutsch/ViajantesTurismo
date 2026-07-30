@@ -1,0 +1,16 @@
+using TestCase = Xunit.FactAttribute;
+
+namespace NamingConventionFixture;
+
+public sealed class AttributeAliasTests
+{
+    [TestCase]
+    public void AliasInvalidName()
+    {
+    }
+
+    [Other.Fact]
+    public void UnrelatedFactName()
+    {
+    }
+}

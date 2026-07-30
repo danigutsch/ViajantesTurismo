@@ -7,12 +7,13 @@ local commands used to reproduce common failures.
 
 When CI executes a test-slice matrix row, it uploads its own `ci-test-slice-<id>-results` artifact with
 `if: always()` so test outputs and coverage XML survive both passing and failing runs.
-For documentation-only changes, the lightweight skip path runs instead and no slice
-artifacts are produced. Each row also uploads a focused `ci-test-slice-<id>-diagnostics` artifact only
-when that job fails.
+For documentation-only pull requests, the lightweight skip path runs instead and no slice
+artifacts are produced. Each row uploads a focused `ci-test-slice-<id>-diagnostics` artifact only when
+its `Run test slice` step fails.
 
 | Artifact name | Contents | Retention |
 | --- | --- | --- |
+| `ci-selected-test-projects` | Generated project-level selection plan for every fixed test slice | 1 day |
 | `ci-test-slice-<id>-results` | `**/TestResults/**` produced by one test-slice matrix row | 7 days |
 | `sonar-coverage` | Aggregated SonarCloud coverage input at `TestResults/sonar-coverage.xml` | 7 days |
 | `sonar-analysis-log` | Raw SonarCloud analysis log from the dedicated Sonar job | 7 days |
@@ -22,8 +23,7 @@ when that job fails.
 
 The slice result artifacts also include machine-readable helper outputs such as
 `*-phase-timings.tsv` and `*-manifest.json`, alongside the per-project `TestResults`
-folders that contain `.trx` result files and `coverage.cobertura.xml` when coverage
-collection is enabled.
+folders that contain `coverage.cobertura.xml` when coverage collection is enabled.
 
 For local validation, missing result files are treated as an error because that indicates
 the test infrastructure did not produce the expected outputs. In CI, artifact upload is
@@ -70,6 +70,8 @@ builds multi-project slices through one temporary solution, runs them with cover
 per-slice timing information. Aggregated HTML coverage is generated once later by the `SonarCloud`
 job. Replace `<slice-id>` with a file basename from `scripts/ci-test-slices`; add
 `--install-playwright` only for a matrix row that enables it in `.github/workflows/ci.yml`.
+The logical fast lane uses the `fast-validation-1` and `fast-validation-2` basenames and produces
+separate result and diagnostic artifacts for each shard.
 
 To reproduce the SonarCloud analysis flow locally after configuring the required
 environment variables, run:
@@ -99,8 +101,8 @@ bash scripts/generate-sonar-coverage-report.sh
 SONAR_ANALYSIS_SKIP_TESTS=true bash scripts/run-sonar-analysis.sh
 ```
 
-For documentation-only or low-risk contributor-maintenance changes (`docs/**`, `README.md`,
-`CONTRIBUTING.md`, and the allowlisted scripts in `scripts/detect-changes.sh`), CI skips the
+For documentation-only or low-risk contributor-maintenance pull requests (`docs/**`, `README.md`,
+`CONTRIBUTING.md`, and the allowlisted files in the `select-ci-test-projects` command), CI skips the
 validation commands above. The affected test jobs use lightweight skip paths, and the required
 `Build and Test` aggregate records their successful outcomes.
 

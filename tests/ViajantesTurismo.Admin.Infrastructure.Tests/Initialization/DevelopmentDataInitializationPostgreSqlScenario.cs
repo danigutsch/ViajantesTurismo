@@ -1,3 +1,4 @@
+using System.Diagnostics.CodeAnalysis;
 using System.Text.Json.Serialization.Metadata;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Diagnostics;
@@ -6,7 +7,6 @@ using SharedKernel.AuditTrail;
 using SharedKernel.Domain.EntityFrameworkCore;
 using SharedKernel.EntityFrameworkCore;
 using SharedKernel.Idempotency.EntityFrameworkCore;
-using SharedKernel.IntegrationTesting;
 using SharedKernel.Messaging.IntegrationEvents;
 using SharedKernel.Messaging.IntegrationEvents.EntityFrameworkCore;
 using ViajantesTurismo.Admin.Application;
@@ -21,28 +21,38 @@ namespace ViajantesTurismo.Admin.Infrastructure.Tests.Initialization;
 
 internal sealed class DevelopmentDataInitializationPostgreSqlScenario : IAsyncDisposable
 {
-    private const string PostgreSqlResourceName = "postgres";
-    private const string DatabaseResourceName = "admin-initialization";
-
-    private readonly AspireTestApplication app;
+    private readonly PostgreSqlTestDatabase database;
     private readonly string connectionString;
 
-    private DevelopmentDataInitializationPostgreSqlScenario(AspireTestApplication app, string connectionString)
+    private DevelopmentDataInitializationPostgreSqlScenario(PostgreSqlTestDatabase database)
     {
-        this.app = app;
-        this.connectionString = connectionString;
+        this.database = database;
+        connectionString = database.ConnectionString;
     }
 
-    public static async ValueTask<DevelopmentDataInitializationPostgreSqlScenario> Create(CancellationToken ct)
+    [SuppressMessage(
+        "Design",
+        "CA1031:Do not catch general exception types",
+        Justification = "Failed migration setup must independently clean its database and preserve both failures.")]
+    [SuppressMessage(
+        "Reliability",
+        "CA2000:Dispose objects before losing scope",
+        Justification = "The returned scenario owns and disposes the fixture-issued database.")]
+    public static async ValueTask<DevelopmentDataInitializationPostgreSqlScenario> Create(
+        PostgreSqlTestServerFixture fixture,
+        CancellationToken ct)
     {
-        var appBuilder = AspireTestApplication.CreateBuilder();
-        var databaseServer = appBuilder.AddPostgres(PostgreSqlResourceName);
-        _ = databaseServer.AddDatabase(DatabaseResourceName);
-
-        var app = await AspireTestApplication.Start(appBuilder, [PostgreSqlResourceName], null, ct);
-        var connectionString = await app.GetConnectionString(DatabaseResourceName, ct);
-        var scenario = new DevelopmentDataInitializationPostgreSqlScenario(app, connectionString);
-        await scenario.MigrateToLatest(ct);
+        var database = await fixture.CreateDatabase(ct);
+        var scenario = new DevelopmentDataInitializationPostgreSqlScenario(database);
+        try
+        {
+            await scenario.MigrateToLatest(ct);
+        }
+        catch (Exception creationFailure)
+        {
+            await PostgreSqlTestCleanup.DisposeResources(creationFailure, scenario);
+            throw;
+        }
 
         return scenario;
     }
@@ -104,7 +114,7 @@ internal sealed class DevelopmentDataInitializationPostgreSqlScenario : IAsyncDi
         return (tours, customers, bookings, outbox);
     }
 
-    public async ValueTask DisposeAsync() => await app.DisposeAsync();
+    public async ValueTask DisposeAsync() => await database.DisposeAsync();
 
     private async Task MigrateToLatest(CancellationToken ct)
     {

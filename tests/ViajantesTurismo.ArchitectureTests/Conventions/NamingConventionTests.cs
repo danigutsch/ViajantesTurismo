@@ -77,6 +77,50 @@ public sealed partial class NamingConventionTests
     }
 
     [Fact]
+    public void Xunit_method_scanner_resumes_after_single_line_raw_string_literal()
+    {
+        // Arrange
+        var repositoryRoot = GetRepositoryRoot();
+        var fixturePath = Path.Combine(
+            repositoryRoot,
+            "tests",
+            "ViajantesTurismo.ArchitectureTests",
+            "Conventions",
+            "Fixtures",
+            "SingleLineRawStringLiteral.txt");
+        const string expected =
+            "tests/ViajantesTurismo.ArchitectureTests/Conventions/Fixtures/SingleLineRawStringLiteral.txt:L8 InvalidName";
+
+        // Act
+        var offendingMethods = FindOffendingXunitMethods(repositoryRoot, fixturePath);
+
+        // Assert
+        offendingMethods.ShouldHaveSingleItem().ShouldBe(expected);
+    }
+
+    [Fact]
+    public void Xunit_method_scanner_resolves_aliases_without_matching_unrelated_attributes()
+    {
+        // Arrange
+        var repositoryRoot = GetRepositoryRoot();
+        var fixturePath = Path.Combine(
+            repositoryRoot,
+            "tests",
+            "ViajantesTurismo.ArchitectureTests",
+            "Conventions",
+            "Fixtures",
+            "XunitAttributeAliases.txt");
+        const string expected =
+            "tests/ViajantesTurismo.ArchitectureTests/Conventions/Fixtures/XunitAttributeAliases.txt:L8 AliasInvalidName";
+
+        // Act
+        var offendingMethods = FindOffendingXunitMethods(repositoryRoot, fixturePath);
+
+        // Assert
+        offendingMethods.ShouldHaveSingleItem().ShouldBe(expected);
+    }
+
+    [Fact]
     public void Behavior_feature_files_should_use_a_recognized_naming_style()
     {
         var repositoryRoot = GetRepositoryRoot();

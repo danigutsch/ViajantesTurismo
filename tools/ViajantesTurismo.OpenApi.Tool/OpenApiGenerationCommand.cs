@@ -25,17 +25,36 @@ internal static class OpenApiGenerationCommand
             throw new ArgumentException("The dotnet host path must be absolute.", nameof(dotnetHostPath));
         }
 
-        var (project, property) = options.Target switch
+        var (project, properties, useParallelGraph) = options.Target switch
         {
             OpenApiTarget.Admin => (
                 "src/ViajantesTurismo.Admin.ApiService/ViajantesTurismo.Admin.ApiService.csproj",
-                options.Refresh ? "RefreshAdminOpenApiArtifacts" : "GenerateAdminOpenApiArtifacts"),
+                new[] { options.Refresh ? "RefreshAdminOpenApiArtifacts" : "GenerateAdminOpenApiArtifacts" },
+                false),
             OpenApiTarget.Catalog => (
                 "src/ViajantesTurismo.Catalog.ApiService/ViajantesTurismo.Catalog.ApiService.csproj",
-                options.Refresh ? "RefreshCatalogOpenApiArtifacts" : "GenerateCatalogOpenApiArtifacts"),
+                new[] { options.Refresh ? "RefreshCatalogOpenApiArtifacts" : "GenerateCatalogOpenApiArtifacts" },
+                false),
             OpenApiTarget.Branding => (
                 "src/ViajantesTurismo.Branding.ApiService/ViajantesTurismo.Branding.ApiService.csproj",
-                options.Refresh ? "RefreshBrandingOpenApiArtifacts" : "GenerateBrandingOpenApiArtifacts"),
+                new[] { options.Refresh ? "RefreshBrandingOpenApiArtifacts" : "GenerateBrandingOpenApiArtifacts" },
+                false),
+            OpenApiTarget.All => (
+                "tools/ViajantesTurismo.OpenApi.Tool/OpenApiGeneration.slnx",
+                options.Refresh
+                    ? new[]
+                    {
+                        "RefreshAdminOpenApiArtifacts",
+                        "RefreshCatalogOpenApiArtifacts",
+                        "RefreshBrandingOpenApiArtifacts"
+                    }
+                    : new[]
+                    {
+                        "GenerateAdminOpenApiArtifacts",
+                        "GenerateCatalogOpenApiArtifacts",
+                        "GenerateBrandingOpenApiArtifacts"
+                    },
+                true),
             _ => throw new ArgumentOutOfRangeException(
                 nameof(options),
                 options.Target,
@@ -50,7 +69,16 @@ internal static class OpenApiGenerationCommand
         startInfo.ArgumentList.Add("build");
         startInfo.ArgumentList.Add("--no-restore");
         startInfo.ArgumentList.Add(project);
-        startInfo.ArgumentList.Add($"-p:{property}=true");
+        foreach (var property in properties)
+        {
+            startInfo.ArgumentList.Add($"-p:{property}=true");
+        }
+
+        if (useParallelGraph)
+        {
+            startInfo.ArgumentList.Add("-maxcpucount");
+        }
+
         ApplyGenerationEnvironment(startInfo);
 
         return startInfo;

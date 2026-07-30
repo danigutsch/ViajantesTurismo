@@ -53,7 +53,8 @@ and summary steps for every row.
 their artifacts and diagnostics. The matrix does not set `max-parallel` or
 `CI_TEST_PROJECT_PARALLELISM`, so job-level and project-level parallelism remain unchanged.
 
-The fast row remains no-host and no-container. The provider/database and full-host Admin API rows
+The two Fast Validation rows form one logical no-host/no-container lane and share the same change
+gate. The provider/database and full-host Admin API rows
 remain separate because DCP runner-capacity isolation was measured to be more reliable than sharing
 one lane. Browser/system and tooling-heavy rows retain their dedicated runtime boundaries. The
 matrix is an execution mechanism; [ADR-030](../adr/20260629-ci-test-lane-selection.md) remains the
@@ -91,27 +92,50 @@ that CI can combine `actions/setup-dotnet` built-in caching with locked-mode res
 keeps the dependency graph reproducible across pull requests and merge commits while giving
 the cache a stable key source.
 
-For pull requests and pushes that only modify `docs/**`, `README.md`, `CONTRIBUTING.md`, or
-the small allowlist of low-risk contributor-maintenance scripts in
-`scripts/detect-changes.sh` (for example `scripts/lint-all.sh` or
-`scripts/validate-commit-message.sh`), the affected matrix rows still run and report successful
+For pull requests that only modify `docs/**`, `README.md`, `CONTRIBUTING.md`, or the small
+allowlist of low-risk contributor-maintenance files, the matrix rows still run and report successful
 outcomes to the required `Build and Test` aggregate through lightweight skip steps,
 but they skip the expensive restore, build, Playwright, and test steps. This avoids the pending
 required-check problem
-caused by trigger-level `paths` or `paths-ignore` filters. The fast row is independently
-path-gated, so heavier hosted or tooling changes do not automatically re-run it.
+caused by trigger-level `paths` or `paths-ignore` filters. The logical fast lane is independently
+path-gated, but every build-relevant project change also selects the Architecture Tests sentinel.
+This activates both complete fast shards for structural validation while dependency-heavy rows use
+their own graph-derived gates.
 
-The change classification logic is implemented in `scripts/detect-changes.sh`, not inline
-in the workflow YAML. If the script cannot determine the diff range reliably, it fails
-open by setting all validation outputs to `true` so CI prefers extra work over a false
-skip.
+The required change-classification path is the `select-ci-test-projects` command in
+`SharedKernel.RepoConfig.Tool`. It maps changed files to owning solution projects, follows reverse
+transitive `ProjectReference` dependencies, and maps affected tests back to the fixed slice
+manifests. Missing ranges, unknown paths, unresolved references, and malformed graphs fail open to
+full validation. Pull requests use a merge-base range; `main`, merge-queue, and manual runs validate
+all slices.
+
+The generated project-level plan is uploaded as `ci-selected-test-projects` for timing and coverage
+evaluation. CI currently uses it to decide which complete slices run, while each active row still
+executes its checked-in source manifest. This preserves repository-wide Sonar coverage semantics;
+project-level enforcement remains deferred until selected coverage can be combined without making
+unaffected source appear uncovered.
 
 Test-slice project membership is now centralized under `scripts/ci-test-slices/*.txt` so the
 restore, build, test, and Sonar coverage inputs for each slice stay aligned instead of
 duplicating project lists in multiple workflow locations.
 
+Multi-project slice manifests restore through one temporary solution. This lets MSBuild schedule
+the selected restore graph in parallel while preserving locked-mode restore and slice isolation.
+Jobs that invoke only project-based tools skip `dotnet tool restore`; SonarCloud and release
+preparation retain local-tool restore because they use manifest tools.
+
 Project order in those slice files is also a scheduling hint for bounded local runs: keep slower
 projects first so the parallel test worker pool does not leave long-running projects until the end.
+
+Fast Validation is split into two fixed 28-project execution shards. Run `30085894084` measured the
+former single row at about 138 seconds of setup plus 518 seconds for build, OpenAPI preparation, and
+coverage tests. The split duplicates setup but allows those phases to proceed on two runners while
+the stable `fast_validation_required` gate, `Build and Test` aggregate, and Sonar artifact pattern
+continue to represent one logical lane.
+
+The shard containing all three HTTP contract projects prepares Admin, Catalog, and Branding OpenAPI
+artifacts through one parallel MSBuild graph. Focused local slices that contain only a subset keep the
+individual generation commands.
 
 When a slice contains more than one project, `scripts/run-ci-test-slice.sh` builds the selected
 test projects through one temporary solution so MSBuild owns graph scheduling. It then uses
@@ -124,7 +148,7 @@ Benchmark locally with `scripts/benchmark-local-validation.sh` before changing C
 
 Fast-slice membership is intentionally stricter than "small test count." A project that starts an
 AppHost, container, database, browser, queue, or other external dependency is dependency-heavy and
-must not be added to `scripts/ci-test-slices/fast-validation.txt`. Prefer bundling tests that share a
+must not be added to `scripts/ci-test-slices/fast-validation-*.txt`. Prefer bundling tests that share a
 slow dependency class into an existing dependency-heavy lane before adding another parallel job;
 split only after CI timing data shows duplicated setup is cheaper than serial execution.
 
@@ -151,7 +175,7 @@ must review regenerated locks and follow the canonical
 **Steps:**
 
 1. Wait for all validation slices.
-2. If only documentation changed, resolve the required check through a lightweight skip
+2. For a documentation-only pull request, resolve the required check through a lightweight skip
    step.
 3. Checkout repository and validate SonarCloud configuration.
 4. Restore repository prerequisites and cache SonarCloud packages.

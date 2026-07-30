@@ -10,7 +10,7 @@ namespace ViajantesTurismo.Admin.Infrastructure.Tests.Documents;
 
 [Trait(SharedKernelTestTraitNames.CategoryName, TestTraits.DatabaseIntegrationCategory)]
 [Trait(SharedKernelTestTraitNames.CapabilityName, Testing.AdminTestTraitValues.GeneratedDocumentsCapability)]
-public sealed class DocumentStorePostgreSqlTests : IAsyncLifetime
+public sealed class DocumentStorePostgreSqlTests(PostgreSqlTestServerFixture fixture) : IAsyncLifetime
 {
     private PostgreSqlDocumentStoreScenario? scenario;
 
@@ -19,7 +19,7 @@ public sealed class DocumentStorePostgreSqlTests : IAsyncLifetime
 
     public async ValueTask InitializeAsync()
     {
-        scenario = await PostgreSqlDocumentStoreScenario.Create(TestContext.Current.CancellationToken);
+        scenario = await PostgreSqlDocumentStoreScenario.Create(fixture, TestContext.Current.CancellationToken);
     }
 
     public async ValueTask DisposeAsync()

@@ -1,0 +1,5 @@
+<Solution>
+  <Project Path="../../src/ViajantesTurismo.Admin.ApiService/ViajantesTurismo.Admin.ApiService.csproj" />
+  <Project Path="../../src/ViajantesTurismo.Catalog.ApiService/ViajantesTurismo.Catalog.ApiService.csproj" />
+  <Project Path="../../src/ViajantesTurismo.Branding.ApiService/ViajantesTurismo.Branding.ApiService.csproj" />
+</Solution>

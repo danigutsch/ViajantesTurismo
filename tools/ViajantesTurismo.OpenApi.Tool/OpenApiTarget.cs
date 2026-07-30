@@ -4,5 +4,6 @@ internal enum OpenApiTarget
 {
     Admin,
     Catalog,
-    Branding
+    Branding,
+    All
 }

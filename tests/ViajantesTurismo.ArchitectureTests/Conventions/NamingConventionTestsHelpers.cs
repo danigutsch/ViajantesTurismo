@@ -1,4 +1,6 @@
 using System.Text.RegularExpressions;
+using Microsoft.CodeAnalysis.CSharp;
+using Microsoft.CodeAnalysis.CSharp.Syntax;
 
 namespace ViajantesTurismo.ArchitectureTests.Conventions;
 
@@ -12,62 +14,51 @@ internal static partial class NamingConventionTestsHelpers
 
     public static string[] FindOffendingXunitMethods(string repositoryRoot, string filePath)
     {
-        var lines = File.ReadAllLines(filePath);
+        var root = CSharpSyntaxTree.ParseText(File.ReadAllText(filePath), path: filePath).GetRoot();
+        var relativePath = Path.GetRelativePath(repositoryRoot, filePath).Replace('\\', '/');
         var offendingMethods = new List<string>();
+        var xunitAliases = root.DescendantNodes()
+            .OfType<UsingDirectiveSyntax>()
+            .Where(static directive => directive.Alias is not null && directive.Name is not null)
+            .Where(static directive => IsQualifiedXunitAttribute(directive.Name?.ToString()))
+            .Select(static directive => directive.Alias?.Name.Identifier.ValueText)
+            .OfType<string>()
+            .ToHashSet(StringComparer.Ordinal);
 
-        var lineIndex = 0;
-        while (lineIndex < lines.Length)
+        foreach (var method in root.DescendantNodes().OfType<MethodDeclarationSyntax>())
         {
-            if (IsRawStringBoundary(lines[lineIndex]))
+            var isXunitMethod = method.AttributeLists
+                .SelectMany(static list => list.Attributes)
+                .Any(attribute => IsXunitAttribute(attribute.Name, xunitAliases));
+            var methodName = method.Identifier.ValueText;
+            if (!isXunitMethod || XunitMethodNamingRegex().IsMatch(methodName))
             {
-                lineIndex = SkipRawString(lines, lineIndex);
-                lineIndex++;
                 continue;
             }
 
-            if (!XunitAttributeRegex().IsMatch(lines[lineIndex]))
-            {
-                lineIndex++;
-                continue;
-            }
-
-            for (var candidateIndex = lineIndex + 1; candidateIndex < Math.Min(lineIndex + 6, lines.Length); candidateIndex++)
-            {
-                var match = XunitMethodRegex().Match(lines[candidateIndex]);
-                if (!match.Success)
-                {
-                    continue;
-                }
-
-                var methodName = match.Groups[1].Value;
-                if (!XunitMethodNamingRegex().IsMatch(methodName))
-                {
-                    offendingMethods.Add($"{Path.GetRelativePath(repositoryRoot, filePath).Replace('\\', '/')}:L{candidateIndex + 1} {methodName}");
-                }
-
-                break;
-            }
-
-            lineIndex++;
+            var lineNumber = method.Identifier.GetLocation().GetLineSpan().StartLinePosition.Line + 1;
+            offendingMethods.Add($"{relativePath}:L{lineNumber} {methodName}");
         }
 
         return [.. offendingMethods];
     }
 
-    private static int SkipRawString(string[] lines, int lineIndex)
+    private static bool IsXunitAttribute(NameSyntax name, HashSet<string> aliases)
     {
-        for (var candidateIndex = lineIndex + 1; candidateIndex < lines.Length; candidateIndex++)
-        {
-            if (IsRawStringBoundary(lines[candidateIndex]))
-            {
-                return candidateIndex;
-            }
-        }
-
-        return lineIndex;
+        var attributeName = name.ToString();
+        return aliases.Contains(attributeName)
+            || attributeName is "Fact" or "FactAttribute" or "Theory" or "TheoryAttribute"
+            || IsQualifiedXunitAttribute(attributeName);
     }
 
-    private static bool IsRawStringBoundary(string line) => line.Contains("\"\"\"", StringComparison.Ordinal);
+    private static bool IsQualifiedXunitAttribute(string? name)
+    {
+        var normalizedName = name?.Replace("global::", string.Empty, StringComparison.Ordinal);
+        return normalizedName is "Xunit.Fact"
+            or "Xunit.FactAttribute"
+            or "Xunit.Theory"
+            or "Xunit.TheoryAttribute";
+    }
 
     public static string[] FindOffendingAssertionMethodCalls(string repositoryRoot, string filePath)
     {
@@ -112,7 +103,8 @@ internal static partial class NamingConventionTestsHelpers
         var normalizedPath = path.Replace('\\', '/');
 
         return normalizedPath.Contains("/bin/", StringComparison.Ordinal)
-            || normalizedPath.Contains("/obj/", StringComparison.Ordinal);
+            || normalizedPath.Contains("/obj/", StringComparison.Ordinal)
+            || normalizedPath.EndsWith(".feature.cs", StringComparison.Ordinal);
     }
 
     [GeneratedRegex(@"^[a-z0-9]+(?:-[a-z0-9]+)+\.feature$", RegexOptions.Compiled)]
@@ -120,12 +112,6 @@ internal static partial class NamingConventionTestsHelpers
 
     [GeneratedRegex(@"^[A-Z][A-Za-z0-9]+\.feature$", RegexOptions.Compiled)]
     public static partial Regex PascalCaseFeatureFileRegex();
-
-    [GeneratedRegex(@"^\s*\[(Fact|Theory)\b", RegexOptions.Compiled)]
-    private static partial Regex XunitAttributeRegex();
-
-    [GeneratedRegex(@"^\s*public\s+(?:async\s+)?(?:Task|ValueTask|void)\s+([A-Za-z0-9_]+)\s*\(", RegexOptions.Compiled)]
-    private static partial Regex XunitMethodRegex();
 
     [GeneratedRegex(@"^[A-Z][A-Za-z0-9]*(?:_[A-Za-z0-9][A-Za-z0-9]*)+$", RegexOptions.Compiled)]
     private static partial Regex XunitMethodNamingRegex();

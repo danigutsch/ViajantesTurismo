@@ -97,24 +97,6 @@ internal static class SharedKernelPackagingConventionTestFiles
         }
     }
 
-    public static HashSet<string> GetActiveQuotedEntries(string content)
-    {
-        var entries = new HashSet<string>(StringComparer.Ordinal);
-        foreach (var line in content.Split(Environment.NewLine))
-        {
-            var trimmed = line.Trim();
-            if (trimmed.Length == 0 || trimmed.StartsWith('#'))
-            {
-                continue;
-            }
-
-            AddQuotedEntry(entries, trimmed, '"');
-            AddQuotedEntry(entries, trimmed, '\'');
-        }
-
-        return entries;
-    }
-
     public static HashSet<string> GetYamlPathEntries(string content)
     {
         var entries = new HashSet<string>(StringComparer.Ordinal);
@@ -180,22 +162,6 @@ internal static class SharedKernelPackagingConventionTestFiles
             .Where(static element => element.Attribute("Include")?.Value.EndsWith(".dll", StringComparison.OrdinalIgnoreCase) ?? false)
             .Where(static element => element.Attribute("PackagePath")?.Value.StartsWith("lib/", StringComparison.OrdinalIgnoreCase) ?? false)
             .Select(static element => element.Attribute("Include")?.Value ?? string.Empty);
-    }
-
-    private static void AddQuotedEntry(HashSet<string> entries, string line, char quote)
-    {
-        var quoteText = quote.ToString();
-        var start = line.IndexOf(quoteText, StringComparison.Ordinal);
-        if (start < 0)
-        {
-            return;
-        }
-
-        var end = line.IndexOf(quoteText, start + 1, StringComparison.Ordinal);
-        if (end > start)
-        {
-            entries.Add(line[(start + 1)..end]);
-        }
     }
 
     private static bool IsRoslynPackage(string packageId) =>

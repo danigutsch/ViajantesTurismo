@@ -3,7 +3,6 @@ using System.Globalization;
 namespace SharedKernel.RepoConfig.Tests;
 
 [Trait(TestTraitNames.CategoryName, TestTraits.CommandLineCategory)]
-[Collection("Repo config tool environment")]
 public sealed class GitHubRoadmapIntakeIntegrityTests
 {
     [Fact]

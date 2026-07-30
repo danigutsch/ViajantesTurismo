@@ -31,24 +31,50 @@ jobs:
       build_required: ${{ steps.change-scope.outputs.build_required }}
       fast_validation_required: ${{ steps.change-scope.outputs.fast_validation_required }}
       admin_integration_required: ${{ steps.change-scope.outputs.admin_integration_required }}
+      admin_api_integration_required: ${{ steps.change-scope.outputs.admin_api_integration_required }}
       admin_system_required: ${{ steps.change-scope.outputs.admin_system_required }}
       mediator_heavy_required: ${{ steps.change-scope.outputs.mediator_heavy_required }}
+      openapi_tool_windows_required: ${{ steps.change-scope.outputs.openapi_tool_windows_required }}
     steps:
       - name: Checkout repository
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
         with:
           fetch-depth: 0
+          persist-credentials: false
 
-      - name: Detect docs-only changes
+      - name: Set up CI selection tool
+        uses: ./.github/actions/setup-ci-prerequisites
+        with:
+          restore-local-tools: "false"
+          restore-targets: tools/SharedKernel.RepoConfig.Tool/SharedKernel.RepoConfig.Tool.csproj
+          trust-dev-certificate: "false"
+
+      - name: Select affected CI test projects
         id: change-scope
         shell: bash
         env:
-          GITHUB_EVENT_NAME: ${{ github.event_name }}
-          GITHUB_BASE_SHA: ${{ github.event.pull_request.base.sha }}
-          GITHUB_HEAD_SHA: ${{ github.event.pull_request.head.sha }}
-          GITHUB_BEFORE_SHA: ${{ github.event.before }}
-          GITHUB_AFTER_SHA: ${{ github.event.after }}
-        run: bash scripts/detect-changes.sh
+          SELECTION_MODE: ${{ github.event_name == 'pull_request' && github.event.pull_request.base.sha != '' && github.event.pull_request.head.sha != '' && 'merge-base' || 'full' }}
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+        run: |
+          dotnet run \
+            --project tools/SharedKernel.RepoConfig.Tool/SharedKernel.RepoConfig.Tool.csproj \
+            --no-restore \
+            -- \
+            select-ci-test-projects \
+            --mode "${SELECTION_MODE}" \
+            --base "${BASE_SHA}" \
+            --head "${HEAD_SHA}" \
+            --output-directory TestResults/selected-ci-test-slices \
+            --github-output "${GITHUB_OUTPUT}"
+
+      - name: Upload selected CI test projects
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
+        with:
+          if-no-files-found: error
+          name: ci-selected-test-projects
+          path: TestResults/selected-ci-test-slices/*.txt
+          retention-days: 1
 
   calculate-version:
     name: Calculate Version
@@ -76,6 +102,7 @@ jobs:
       - name: Set up CI prerequisites
         uses: ./.github/actions/setup-ci-prerequisites
         with:
+          restore-local-tools: "false"
           restore-targets: tools/SharedKernel.Versioning.Tool/SharedKernel.Versioning.Tool.csproj
           trust-dev-certificate: "false"
 
@@ -103,22 +130,23 @@ jobs:
       contents: read
     steps:
       - name: Skip OpenAPI tool tests when not required
-        if: ${{ needs.detect-changes.outputs.build_required != 'true' }}
+        if: ${{ needs.detect-changes.outputs.openapi_tool_windows_required != 'true' }}
         shell: bash
         run: |
           echo "OpenAPI tool tests were not required for this change set."
 
       - name: Checkout repository
-        if: ${{ needs.detect-changes.outputs.build_required == 'true' }}
+        if: ${{ needs.detect-changes.outputs.openapi_tool_windows_required == 'true' }}
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
         with:
           fetch-depth: 0
           persist-credentials: false
 
       - name: Set up CI prerequisites
-        if: ${{ needs.detect-changes.outputs.build_required == 'true' }}
+        if: ${{ needs.detect-changes.outputs.openapi_tool_windows_required == 'true' }}
         uses: ./.github/actions/setup-ci-prerequisites
         with:
+          restore-local-tools: "false"
           restore-targets: |
             tests/ViajantesTurismo.OpenApi.Tool.Tests/ViajantesTurismo.OpenApi.Tool.Tests.csproj
             src/ViajantesTurismo.Admin.ApiService/ViajantesTurismo.Admin.ApiService.csproj
@@ -127,7 +155,7 @@ jobs:
           trust-dev-certificate: "false"
 
       - name: Run OpenAPI tool tests
-        if: ${{ needs.detect-changes.outputs.build_required == 'true' }}
+        if: ${{ needs.detect-changes.outputs.openapi_tool_windows_required == 'true' }}
         run: dotnet test --project tests/ViajantesTurismo.OpenApi.Tool.Tests/ViajantesTurismo.OpenApi.Tool.Tests.csproj --no-restore
 
   test-slices:
@@ -143,10 +171,17 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          - id: fast-validation
-            display_name: Fast Validation
+          - id: fast-validation-1
+            display_name: Fast Validation 1
             change_output: fast_validation_required
-            projects_file: scripts/ci-test-slices/fast-validation.txt
+            projects_file: scripts/ci-test-slices/fast-validation-1.txt
+            timeout_minutes: 15
+            install_playwright: false
+            playwright_outcome: not-applicable
+          - id: fast-validation-2
+            display_name: Fast Validation 2
+            change_output: fast_validation_required
+            projects_file: scripts/ci-test-slices/fast-validation-2.txt
             timeout_minutes: 15
             install_playwright: false
             playwright_outcome: not-applicable
@@ -159,7 +194,7 @@ jobs:
             playwright_outcome: not-applicable
           - id: admin-api-integration
             display_name: Admin API Integration Tests
-            change_output: admin_integration_required
+            change_output: admin_api_integration_required
             projects_file: scripts/ci-test-slices/admin-api-integration.txt
             timeout_minutes: 15
             install_playwright: false
@@ -208,6 +243,7 @@ jobs:
         if: ${{ needs.detect-changes.result == 'success' && needs.detect-changes.outputs[matrix.change_output] == 'true' }}
         uses: ./.github/actions/setup-ci-prerequisites
         with:
+          restore-local-tools: "false"
           restore-targets-file: ${{ matrix.projects_file }}
 
       - name: Run test slice
@@ -320,6 +356,7 @@ jobs:
       - name: Set up CI prerequisites
         uses: ./.github/actions/setup-ci-prerequisites
         with:
+          restore-local-tools: "false"
           restore-targets: tools/SharedKernel.Versioning.Tool/SharedKernel.Versioning.Tool.csproj
           trust-dev-certificate: "false"
 

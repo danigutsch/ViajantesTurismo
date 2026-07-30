@@ -1,3 +1,4 @@
+using System.Diagnostics.CodeAnalysis;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Npgsql;
@@ -18,28 +19,25 @@ namespace ViajantesTurismo.Admin.Infrastructure.Tests.Documents;
 
 internal sealed class PostgreSqlDocumentStoreScenario : IAsyncDisposable
 {
-    private const string PostgreSqlResourceName = "postgres";
-    private const string DatabaseResourceName = "admin";
-
-    private readonly AspireTestApplication app;
+    private readonly PostgreSqlTestDatabase database;
     private readonly string connectionString;
 
-    private PostgreSqlDocumentStoreScenario(AspireTestApplication app, string connectionString)
+    private PostgreSqlDocumentStoreScenario(PostgreSqlTestDatabase database)
     {
-        this.app = app;
-        this.connectionString = connectionString;
+        this.database = database;
+        connectionString = database.ConnectionString;
     }
 
-    public static async ValueTask<PostgreSqlDocumentStoreScenario> Create(CancellationToken ct)
+    [SuppressMessage(
+        "Reliability",
+        "CA2000:Dispose objects before losing scope",
+        Justification = "The returned scenario owns and disposes the fixture-issued database.")]
+    public static async ValueTask<PostgreSqlDocumentStoreScenario> Create(
+        PostgreSqlTestServerFixture fixture,
+        CancellationToken ct)
     {
-        var appBuilder = AspireTestApplication.CreateBuilder();
-        var databaseServer = appBuilder.AddPostgres(PostgreSqlResourceName);
-        _ = databaseServer.AddDatabase(DatabaseResourceName);
-
-        var app = await AspireTestApplication.Start(appBuilder, [PostgreSqlResourceName], null, ct);
-        var connectionString = await app.GetConnectionString(DatabaseResourceName, ct);
-
-        return new PostgreSqlDocumentStoreScenario(app, connectionString);
+        var database = await fixture.CreateDatabase(ct);
+        return new PostgreSqlDocumentStoreScenario(database);
     }
 
     public async ValueTask Seed(params DocumentDraft[] documents)
@@ -380,7 +378,7 @@ internal sealed class PostgreSqlDocumentStoreScenario : IAsyncDisposable
         return count == 1;
     }
 
-    public async ValueTask DisposeAsync() => await app.DisposeAsync();
+    public async ValueTask DisposeAsync() => await database.DisposeAsync();
 
     private AdminWriteDbContext CreateDbContext(bool enableRetryOnFailure = false)
     {

@@ -18,6 +18,7 @@ dotnet run --project tools/SharedKernel.RepoConfig.Tool/SharedKernel.RepoConfig.
 dotnet run --project tools/SharedKernel.RepoConfig.Tool/SharedKernel.RepoConfig.Tool.csproj -- reconcile github --apply
 dotnet run --project tools/SharedKernel.RepoConfig.Tool/SharedKernel.RepoConfig.Tool.csproj -- intake github --dry-run
 dotnet run --project tools/SharedKernel.RepoConfig.Tool/SharedKernel.RepoConfig.Tool.csproj -- intake github --apply
+dotnet run --project tools/SharedKernel.RepoConfig.Tool/SharedKernel.RepoConfig.Tool.csproj -- select-ci-test-projects --mode full
 ```
 
 Pass `--root <path>` after the command to target another repository root.
@@ -50,6 +51,14 @@ Pass `--root <path>` after the command to target another repository root.
 | `reconcile github --apply` | Atomically updates only the existing reconciliation manifest; it never mutates GitHub or roadmap items. |
 | `intake github --dry-run` | Default. Requires a matching `snapshotDigest`, reads the current full structural reconciliation snapshot, and previews local roadmap changes without writing. |
 | `intake github --apply` | Writes only local roadmap items and `roadmap/order.json`; it never mutates GitHub. |
+| `select-ci-test-projects` | Maps a Git range through transitive project references to affected test projects and CI slice outputs. Uncertain graphs fail open to full validation. |
+
+CI uses `--mode merge-base --base <sha> --head <sha>` for pull requests and `--mode full`
+for trusted-branch, merge-queue, and manual runs. The command writes one selected project file per
+source manifest under `scripts/ci-test-slices/`. Pass `--github-output <path>` to emit workflow
+booleans and `--output-directory <path>` to choose the generated-plan location.
+Before selection, it requires the six fixed manifests and assigns every solution xUnit project to
+exactly one of them; manifest drift fails the detection job rather than skipping validation.
 
 ## Exit codes
 

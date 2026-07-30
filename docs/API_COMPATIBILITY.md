@@ -91,15 +91,13 @@ Release-candidate and stable compatibility failures still block even when a mark
 The Admin, Catalog, and Branding contract tests read the committed OpenAPI artifacts and compare them
 with generated documents. Regenerate the committed artifacts intentionally when HTTP contracts change:
 
-After a locked restore, the .NET tool runs the supported build generator with a minimal child environment.
-Trusted generation omits JWT/OIDC registration while retaining authorization metadata for the generated
-Bearer security documents. Normal application runs remain fail-closed when authentication configuration
-is missing.
+After a locked restore, the .NET tool runs the three API generators through one parallel MSBuild graph
+with a minimal child environment. Trusted generation omits JWT/OIDC registration while retaining
+authorization metadata for the generated Bearer security documents. Normal application runs remain
+fail-closed when authentication configuration is missing.
 
 ```bash
-dotnet run --project tools/ViajantesTurismo.OpenApi.Tool --no-restore -- generate admin --refresh
-dotnet run --project tools/ViajantesTurismo.OpenApi.Tool --no-restore -- generate catalog --refresh
-dotnet run --project tools/ViajantesTurismo.OpenApi.Tool --no-restore -- generate branding --refresh
+dotnet run --project tools/ViajantesTurismo.OpenApi.Tool --no-restore -- generate all --refresh
 ```
 
 Then run:

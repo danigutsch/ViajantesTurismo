@@ -4,7 +4,7 @@ namespace ViajantesTurismo.OpenApi.Tool;
 
 internal static class OpenApiToolApplication
 {
-    private const string Usage = "Usage: dotnet run --project tools/ViajantesTurismo.OpenApi.Tool --no-restore -- generate <admin|catalog|branding> [--refresh]";
+    private const string Usage = "Usage: dotnet run --project tools/ViajantesTurismo.OpenApi.Tool --no-restore -- generate <admin|catalog|branding|all> [--refresh]";
     private static readonly TimeSpan GenerationTimeout = TimeSpan.FromMinutes(10);
 
     public static Task<int> Run(

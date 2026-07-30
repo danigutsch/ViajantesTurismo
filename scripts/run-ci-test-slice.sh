@@ -204,6 +204,11 @@ prepare_openapi_artifacts() {
         esac
     done
 
+    if [[ "${prepare_admin}" == "true" && "${prepare_branding}" == "true" && "${prepare_catalog}" == "true" ]]; then
+        dotnet run --project tools/ViajantesTurismo.OpenApi.Tool --no-restore -- generate all
+        return $?
+    fi
+
     if [[ "${prepare_admin}" == "true" ]]; then
         dotnet run --project tools/ViajantesTurismo.OpenApi.Tool --no-restore -- generate admin || return $?
     fi

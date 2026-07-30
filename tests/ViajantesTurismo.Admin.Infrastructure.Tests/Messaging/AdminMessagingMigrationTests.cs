@@ -5,7 +5,7 @@ namespace ViajantesTurismo.Admin.Infrastructure.Tests.Messaging;
 
 [Trait(SharedKernelTestTraitNames.CategoryName, TestTraits.DatabaseIntegrationCategory)]
 [Trait(SharedKernelTestTraitNames.CapabilityName, TestTraits.MessagingMigrationCapability)]
-public sealed class AdminMessagingMigrationTests : IAsyncLifetime
+public sealed class AdminMessagingMigrationTests(PostgreSqlTestServerFixture fixture) : IAsyncLifetime
 {
     private AdminMessagingMigrationScenario? scenario;
 
@@ -14,7 +14,7 @@ public sealed class AdminMessagingMigrationTests : IAsyncLifetime
 
     public async ValueTask InitializeAsync()
     {
-        scenario = await AdminMessagingMigrationScenario.Create(TestContext.Current.CancellationToken);
+        scenario = await AdminMessagingMigrationScenario.Create(fixture, TestContext.Current.CancellationToken);
     }
 
     public async ValueTask DisposeAsync()

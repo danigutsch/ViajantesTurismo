@@ -5,7 +5,6 @@ using System.Text.Json;
 namespace SharedKernel.RepoConfig.Tests;
 
 [Trait(TestTraitNames.CategoryName, TestTraits.CommandLineCategory)]
-[Collection("Repo config tool environment")]
 public sealed class GitHubRoadmapIntakeTests
 {
     [Fact]

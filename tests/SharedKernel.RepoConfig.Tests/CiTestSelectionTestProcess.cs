@@ -3,7 +3,7 @@ using System.Diagnostics;
 
 namespace SharedKernel.RepoConfig.Tests;
 
-internal static class DetectChangesScriptTestProcess
+internal static class CiTestSelectionTestProcess
 {
     public static async Task<ProcessResult> Run(
         string fileName,
