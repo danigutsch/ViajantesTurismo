@@ -1,3 +1,4 @@
+using System.Diagnostics.CodeAnalysis;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Migrations;
@@ -6,7 +7,6 @@ using Npgsql;
 using SharedKernel.Domain.EntityFrameworkCore;
 using SharedKernel.EntityFrameworkCore;
 using SharedKernel.Idempotency.EntityFrameworkCore;
-using SharedKernel.IntegrationTesting;
 using SharedKernel.Messaging.IntegrationEvents.EntityFrameworkCore;
 using ViajantesTurismo.Admin.Domain.Customers;
 using ViajantesTurismo.Admin.Testing.Behavior;
@@ -16,27 +16,25 @@ namespace ViajantesTurismo.Admin.Infrastructure.Tests.Customers;
 
 internal sealed class CustomerEmailPostgreSqlScenario : IAsyncDisposable
 {
-    private const string PostgreSqlResourceName = "postgres";
-    private const string DatabaseResourceName = "admin";
-
-    private readonly AspireTestApplication app;
+    private readonly PostgreSqlTestDatabase database;
     private readonly string connectionString;
 
-    private CustomerEmailPostgreSqlScenario(AspireTestApplication app, string connectionString)
+    private CustomerEmailPostgreSqlScenario(PostgreSqlTestDatabase database)
     {
-        this.app = app;
-        this.connectionString = connectionString;
+        this.database = database;
+        connectionString = database.ConnectionString;
     }
 
-    public static async ValueTask<CustomerEmailPostgreSqlScenario> Create(CancellationToken ct)
+    [SuppressMessage(
+        "Reliability",
+        "CA2000:Dispose objects before losing scope",
+        Justification = "The returned scenario owns and disposes the fixture-issued database.")]
+    public static async ValueTask<CustomerEmailPostgreSqlScenario> Create(
+        PostgreSqlTestServerFixture fixture,
+        CancellationToken ct)
     {
-        var appBuilder = AspireTestApplication.CreateBuilder();
-        var databaseServer = appBuilder.AddPostgres(PostgreSqlResourceName);
-        _ = databaseServer.AddDatabase(DatabaseResourceName);
-
-        var app = await AspireTestApplication.Start(appBuilder, [PostgreSqlResourceName], null, ct);
-        var connectionString = await app.GetConnectionString(DatabaseResourceName, ct);
-        return new CustomerEmailPostgreSqlScenario(app, connectionString);
+        var database = await fixture.CreateDatabase(ct);
+        return new CustomerEmailPostgreSqlScenario(database);
     }
 
     public async Task ApplyLatestMigration(CancellationToken ct)
@@ -91,7 +89,7 @@ internal sealed class CustomerEmailPostgreSqlScenario : IAsyncDisposable
         return await dbContext.Customers.CountAsync(ct);
     }
 
-    public ValueTask DisposeAsync() => app.DisposeAsync();
+    public ValueTask DisposeAsync() => database.DisposeAsync();
 
     private AdminWriteDbContext CreateDbContext()
     {

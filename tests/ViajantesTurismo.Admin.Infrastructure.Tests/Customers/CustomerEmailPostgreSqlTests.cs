@@ -6,7 +6,7 @@ using ViajantesTurismo.Admin.Application.Customers;
 namespace ViajantesTurismo.Admin.Infrastructure.Tests.Customers;
 
 [Trait(SharedKernelTestTraitNames.CategoryName, TestTraits.DatabaseIntegrationCategory)]
-public sealed class CustomerEmailPostgreSqlTests : IAsyncLifetime
+public sealed class CustomerEmailPostgreSqlTests(PostgreSqlTestServerFixture fixture) : IAsyncLifetime
 {
     private CustomerEmailPostgreSqlScenario? scenario;
 
@@ -15,7 +15,7 @@ public sealed class CustomerEmailPostgreSqlTests : IAsyncLifetime
 
     public async ValueTask InitializeAsync()
     {
-        scenario = await CustomerEmailPostgreSqlScenario.Create(TestContext.Current.CancellationToken);
+        scenario = await CustomerEmailPostgreSqlScenario.Create(fixture, TestContext.Current.CancellationToken);
     }
 
     public async ValueTask DisposeAsync()
