@@ -121,6 +121,41 @@ public sealed partial class AppHostOrchestrationTests
     }
 
     [Fact]
+    public void Local_oidc_provider_uses_an_explicit_registry_and_pinned_image()
+    {
+        // Arrange
+        var resourceExtensionsText = File.ReadAllText(Path.Combine(
+            GetRepositoryRoot(),
+            "src",
+            "ViajantesTurismo.AppHost",
+            "AppHostResourceExtensions.cs"));
+
+        // Act
+        var identityProviderBlock = IdentityProviderResourceRegex().Match(resourceExtensionsText).Value;
+
+        // Assert
+        identityProviderBlock.ShouldNotBeEmpty();
+        identityProviderBlock.ShouldContain(
+            "builder.AddContainer(ResourceNames.IdentityProvider, KeycloakImageName)",
+            StringComparison.Ordinal);
+        identityProviderBlock.ShouldContain(".WithImageRegistry(KeycloakImageRegistry)", StringComparison.Ordinal);
+        identityProviderBlock.ShouldContain(".WithImageTag(KeycloakImageTag)", StringComparison.Ordinal);
+        identityProviderBlock.ShouldContain(".WithImageSHA256(OidcProviderImageDigest)", StringComparison.Ordinal);
+        resourceExtensionsText.ShouldContain(
+            "private const string KeycloakImageRegistry = \"quay.io\";",
+            StringComparison.Ordinal);
+        resourceExtensionsText.ShouldContain(
+            "private const string KeycloakImageName = \"keycloak/keycloak\";",
+            StringComparison.Ordinal);
+        resourceExtensionsText.ShouldContain(
+            "private const string KeycloakImageTag = \"26.7.0\";",
+            StringComparison.Ordinal);
+        resourceExtensionsText.ShouldContain(
+            "private const string OidcProviderImageDigest = \"2eb3cd316835c990e69e26ade292ffa78f6fb0db7d5fc6377463c162e1979ac0\";",
+            StringComparison.Ordinal);
+    }
+
+    [Fact]
     public void Local_postgresql_capacity_supports_the_system_test_resource_model()
     {
         // Arrange

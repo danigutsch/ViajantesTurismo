@@ -32,6 +32,7 @@ public sealed class ClamAvResourceTests
 
         // Assert
         clamAv.Resource.ShouldBeOfType<ClamAvResource>();
+        image.Registry.ShouldBe("docker.io");
         image.Image.ShouldBe("clamav/clamav");
         image.SHA256.ShouldBe("6f4a9e7d616ffc8d1070200fe35ac860735fdd522161a1043f94856e6ee13c28");
         endpoint.Name.ShouldBe(ClamAvResource.TcpEndpointName);

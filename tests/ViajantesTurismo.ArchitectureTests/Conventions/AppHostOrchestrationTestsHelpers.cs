@@ -20,4 +20,7 @@ internal static partial class AppHostOrchestrationTestsHelpers
 
     [GeneratedRegex(@"public\s+static\s+IResourceBuilder<ProjectResource>\s+AddDatabaseObservability[\s\S]+?;\s*\n\s*}", RegexOptions.CultureInvariant)]
     public static partial Regex DatabaseObservabilityResourceRegex();
+
+    [GeneratedRegex(@"private\s+static\s+IResourceBuilder<ContainerResource>\s+AddIdentityProvider[\s\S]+?;\s*\n\s*}", RegexOptions.CultureInvariant)]
+    public static partial Regex IdentityProviderResourceRegex();
 }
