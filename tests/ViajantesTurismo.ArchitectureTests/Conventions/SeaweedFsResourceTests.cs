@@ -16,6 +16,9 @@ public sealed class SeaweedFsResourceTests
 
         // Act
         var seaweedFs = builder.AddSeaweedFs("seaweed", "media");
+        var image = seaweedFs.Resource.Annotations
+            .OfType<ContainerImageAnnotation>()
+            .ShouldHaveSingleItem();
         var volume = seaweedFs.Resource.Annotations
             .OfType<ContainerMountAnnotation>()
             .ShouldHaveSingleItem();
@@ -31,6 +34,9 @@ public sealed class SeaweedFsResourceTests
             .ShouldHaveSingleItem();
 
         // Assert
+        image.Registry.ShouldBe("docker.io");
+        image.Image.ShouldBe("chrislusf/seaweedfs");
+        image.SHA256.ShouldBe("c7d6c721b30ae711db766bbbfd40192776e263d4e51e22f57baef7bef93c12c6");
         volume.Source.ShouldBe("seaweed-data");
         volume.Target.ShouldBe("/data");
         volume.Type.ShouldBe(ContainerMountType.Volume);

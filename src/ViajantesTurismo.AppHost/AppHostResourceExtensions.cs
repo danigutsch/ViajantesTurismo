@@ -153,7 +153,8 @@ internal static class AppHostResourceExtensions
         var bootstrapAdminPassword = builder.AddParameter(ResourceNames.IdentityProviderAdminPassword, secret: true);
         var realmImportPath = Path.Combine(AppContext.BaseDirectory, "Keycloak");
 
-        return builder.AddContainer(ResourceNames.IdentityProvider, KeycloakImageName, KeycloakImageRegistry)
+        return builder.AddContainer(ResourceNames.IdentityProvider, KeycloakImageName)
+            .WithImageRegistry(KeycloakImageRegistry)
             .WithImageTag(KeycloakImageTag)
             .WithImageSHA256(OidcProviderImageDigest)
             .WithExternalHttpEndpoints()
