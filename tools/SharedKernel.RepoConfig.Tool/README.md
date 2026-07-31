@@ -8,6 +8,7 @@ structure without adding regular helper scripts.
 ```bash
 dotnet run --project tools/SharedKernel.RepoConfig.Tool/SharedKernel.RepoConfig.Tool.csproj -- verify
 dotnet run --project tools/SharedKernel.RepoConfig.Tool/SharedKernel.RepoConfig.Tool.csproj -- diff
+dotnet run --project tools/SharedKernel.RepoConfig.Tool/SharedKernel.RepoConfig.Tool.csproj -- text-encoding --root .
 dotnet run --project tools/SharedKernel.RepoConfig.Tool/SharedKernel.RepoConfig.Tool.csproj -- init
 dotnet run --project tools/SharedKernel.RepoConfig.Tool/SharedKernel.RepoConfig.Tool.csproj -- set github.repository owner/repository
 dotnet run --project tools/SharedKernel.RepoConfig.Tool/SharedKernel.RepoConfig.Tool.csproj -- get next-priority
@@ -33,6 +34,7 @@ Pass `--root <path>` after the command to target another repository root.
 | `init` | Creates missing roadmap directories and default files. Existing files are not overwritten. |
 | `verify` | Checks roadmap structure, config, item metadata, triage state, scoring values, and dependencies. |
 | `diff` | Reports verification drift using the same checks as `verify`. |
+| `text-encoding` | Verifies that stage-0 regular Git index blobs contain no NUL bytes and decode as strict UTF-8. |
 | `set github.repository <owner/repo>` | Updates the GitHub projection repository in `roadmap/config.json`. |
 | `get next-priority` | Lists open triaged items by explicit order and RICE score. |
 | `get next-unblocked` | Lists open triaged items with no open blockers. Supports `--type <type>`. |
@@ -67,6 +69,18 @@ exactly one of them; manifest drift fails the detection job rather than skipping
 | `0` | Command completed successfully. |
 | `1` | Verification failed or command execution failed. |
 | `2` | Command syntax is invalid. |
+
+`text-encoding` reads the Git index rather than following working-tree paths. It accepts stage-0
+regular modes `100644` and `100755`, skips symlink and gitlink modes, and reads content by object ID
+through `git cat-file --batch`. Binary content is skipped only when the index version of
+`.gitattributes` makes `git check-attr --cached` report `binary` as exactly `set`; values such as
+`unset`, `unspecified`, assigned values, and `merge=binary` remain scanned. Valid UTF-8 BOMs are
+accepted during the current incremental migration. Each text blob is streamed and capped at 64 MiB.
+Attribute and blob commands run through a private temporary bare Git directory that copies the
+worktree-specific index and any split-index companion, matches the source object format, uses the
+source object directory, and supplies empty info, global, and core attribute files. Inherited Git
+routing, alternate-object, configuration, attribute, index, and replacement variables are cleared;
+repository-declared object alternates remain available through the source object directory.
 
 Set `integrations.github.issue` to `"create"` to create an issue; `sync github --apply` replaces it
 with the created issue number.

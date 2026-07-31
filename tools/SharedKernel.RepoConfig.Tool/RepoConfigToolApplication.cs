@@ -1,3 +1,4 @@
+using System.Buffers;
 using System.Globalization;
 using System.Text;
 using System.Text.Json;
@@ -7,7 +8,7 @@ namespace SharedKernel.RepoConfig.Tool;
 internal static class RepoConfigToolApplication
 {
     private const decimal ParetoFraction = 0.2m;
-    private const string Usage = "Usage: sharedkernel-repo <init|verify|diff|set|get|sync|reconcile|intake|select-ci-test-projects> [--root <path>]";
+    private const string Usage = "Usage: sharedkernel-repo <init|verify|diff|text-encoding|set|get|sync|reconcile|intake|select-ci-test-projects> [--root <path>]";
 
     public static Task<int> Run(string[] args, TextWriter output, TextWriter error, string workingDirectory, CancellationToken cancellationToken) =>
         Run(args, output, error, workingDirectory, httpClient: null, cancellationToken);
@@ -22,7 +23,7 @@ internal static class RepoConfigToolApplication
         if (args is [] or ["--help"] or ["-h"])
         {
             await output.WriteLineAsync(Usage.AsMemory(), cancellationToken).ConfigureAwait(false);
-            await output.WriteLineAsync("Commands: init, verify, diff, set github.repository <owner/repo>, get <query>, sync github, reconcile github, intake github, select-ci-test-projects.".AsMemory(), cancellationToken).ConfigureAwait(false);
+            await output.WriteLineAsync("Commands: init, verify, diff, text-encoding, set github.repository <owner/repo>, get <query>, sync github, reconcile github, intake github, select-ci-test-projects.".AsMemory(), cancellationToken).ConfigureAwait(false);
             return 0;
         }
 
@@ -34,7 +35,7 @@ internal static class RepoConfigToolApplication
                 "reconcile" => await RunGitHubReconciliation(args[1..], output, error, workingDirectory, httpClient, cancellationToken).ConfigureAwait(false),
                 "intake" => await RunGitHubIntake(args[1..], output, error, workingDirectory, httpClient, cancellationToken).ConfigureAwait(false),
                 "select-ci-test-projects" => await CiTestProjectSelectionCommand.Run(args[1..], output, error, workingDirectory, cancellationToken).ConfigureAwait(false),
-                _ => RunCommand(args, output, error, workingDirectory)
+                _ => await RunCommand(args, output, error, workingDirectory, cancellationToken).ConfigureAwait(false)
             };
         }
         catch (TimeoutException exception)
@@ -64,18 +65,53 @@ internal static class RepoConfigToolApplication
         }
     }
 
-    private static int RunCommand(string[] args, TextWriter output, TextWriter error, string workingDirectory)
+    private static Task<int> RunCommand(
+        string[] args,
+        TextWriter output,
+        TextWriter error,
+        string workingDirectory,
+        CancellationToken cancellationToken)
     {
         var command = args[0];
-        return command switch
+        return command == "text-encoding"
+            ? RunTextEncoding(args[1..], output, error, workingDirectory, cancellationToken)
+            : Task.FromResult(command switch
+            {
+                "init" => RunInit(args[1..], output, error, workingDirectory),
+                "verify" => RunVerify(args[1..], output, error, workingDirectory),
+                "diff" => RunDiff(args[1..], output, error, workingDirectory),
+                "set" => RunSet(args[1..], output, error, workingDirectory),
+                "get" => RunGet(args[1..], output, error, workingDirectory),
+                _ => WriteUsageError(error, $"Unknown command: {command}")
+            });
+    }
+
+    private static async Task<int> RunTextEncoding(
+        string[] args,
+        TextWriter output,
+        TextWriter error,
+        string workingDirectory,
+        CancellationToken cancellationToken)
+    {
+        if (!TryParseRootOption(args, workingDirectory, error, out var rootPath, out var remaining))
         {
-            "init" => RunInit(args[1..], output, error, workingDirectory),
-            "verify" => RunVerify(args[1..], output, error, workingDirectory),
-            "diff" => RunDiff(args[1..], output, error, workingDirectory),
-            "set" => RunSet(args[1..], output, error, workingDirectory),
-            "get" => RunGet(args[1..], output, error, workingDirectory),
-            _ => WriteUsageError(error, $"Unknown command: {command}")
-        };
+            return 2;
+        }
+
+        if (remaining.Length > 0)
+        {
+            return WriteUsageError(error, $"Unknown argument: {remaining[0]}");
+        }
+
+        var issues = await TextEncodingVerifier.Verify(rootPath, cancellationToken).ConfigureAwait(false);
+        if (issues.Count == 0)
+        {
+            await output.WriteLineAsync("Repository text encoding is valid.".AsMemory(), cancellationToken).ConfigureAwait(false);
+            return 0;
+        }
+
+        WriteIssues(error, "Repository text encoding verification failed:", issues);
+        return 1;
     }
 
     private static int RunInit(string[] args, TextWriter output, TextWriter error, string workingDirectory)
@@ -582,20 +618,37 @@ internal static class RepoConfigToolApplication
         }
     }
 
-    private static string EscapeControlCharacters(string value)
+    internal static string EscapeControlCharacters(string value)
     {
         StringBuilder? escaped = null;
-        for (var index = 0; index < value.Length; index++)
+        var index = 0;
+        while (index < value.Length)
         {
-            var character = value[index];
-            if (!char.IsControl(character))
+            var status = Rune.DecodeFromUtf16(value.AsSpan(index), out var rune, out var consumed);
+            if (status != OperationStatus.Done)
             {
-                escaped?.Append(character);
+                escaped ??= new StringBuilder(value.Length + 6).Append(value, 0, index);
+                escaped.Append("\\u").Append(((int)value[index]).ToString("X4", CultureInfo.InvariantCulture));
+                index++;
+                continue;
+            }
+
+            var category = Rune.GetUnicodeCategory(rune);
+            if (category is not UnicodeCategory.Control
+                    and not UnicodeCategory.Format
+                    and not UnicodeCategory.LineSeparator
+                    and not UnicodeCategory.ParagraphSeparator)
+            {
+                escaped?.Append(value, index, consumed);
+                index += consumed;
                 continue;
             }
 
             escaped ??= new StringBuilder(value.Length + 6).Append(value, 0, index);
-            escaped.Append("\\u").Append(((int)character).ToString("X4", CultureInfo.InvariantCulture));
+            escaped
+                .Append(rune.IsBmp ? "\\u" : "\\U")
+                .Append(rune.Value.ToString(rune.IsBmp ? "X4" : "X8", CultureInfo.InvariantCulture));
+            index += consumed;
         }
 
         return escaped?.ToString() ?? value;

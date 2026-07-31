@@ -23,7 +23,7 @@ public sealed class CiChangedPathReaderTests
         }
 
         // Act
-        var resolvedPath = CiChangedPathReader.ResolveExecutable(
+        var resolvedPath = ExecutableResolver.Resolve(
             "git",
             repository.RootPath,
             isWindows);
@@ -52,7 +52,7 @@ public sealed class CiChangedPathReaderTests
         var path = $"{relativeDirectory}{Path.PathSeparator}{repository.RootPath}";
 
         // Act
-        var resolvedPath = CiChangedPathReader.ResolveExecutable("git", path, isWindows);
+        var resolvedPath = ExecutableResolver.Resolve("git", path, isWindows);
 
         // Assert
         resolvedPath.ShouldBe(expectedPath);
@@ -64,7 +64,7 @@ public sealed class CiChangedPathReaderTests
     public void Resolve_executable_rejects_a_relative_only_path(bool isWindows)
     {
         // Act
-        var resolvedPath = CiChangedPathReader.ResolveExecutable("git", "relative", isWindows);
+        var resolvedPath = ExecutableResolver.Resolve("git", "relative", isWindows);
 
         // Assert
         resolvedPath.ShouldBeNull();
@@ -78,7 +78,7 @@ public sealed class CiChangedPathReaderTests
     public void Unix_execute_permission_requires_an_execute_bit(UnixFileMode mode, bool expected)
     {
         // Act
-        var hasExecutePermission = CiChangedPathReader.HasUnixExecutePermission(mode);
+        var hasExecutePermission = ExecutableResolver.HasUnixExecutePermission(mode);
 
         // Assert
         hasExecutePermission.ShouldBe(expected);
