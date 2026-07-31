@@ -3,7 +3,9 @@ using ViajantesTurismo.Admin.Testing.Fakes;
 
 namespace ViajantesTurismo.Admin.UnitTests.Documents;
 
-internal sealed class CapturingNewIdempotencyStore(FakeUnitOfWork unitOfWork) : IIdempotencyStore
+internal sealed class CapturingNewIdempotencyStore(
+    FakeUnitOfWork unitOfWork,
+    IdempotencyEntry? competingEntry = null) : IIdempotencyStore
 {
     private IdempotencyEntry? entry;
 
@@ -40,6 +42,12 @@ internal sealed class CapturingNewIdempotencyStore(FakeUnitOfWork unitOfWork) : 
         if (entry is not null)
         {
             return ValueTask.FromResult(IdempotencyStartResult.AlreadyStarted(entry));
+        }
+
+        if (competingEntry is not null)
+        {
+            entry = competingEntry;
+            return ValueTask.FromResult(IdempotencyStartResult.AlreadyStarted(competingEntry));
         }
 
         entry = new IdempotencyEntry(

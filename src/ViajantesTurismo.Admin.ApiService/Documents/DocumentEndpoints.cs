@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using SharedKernel.HttpCaching.AspNetCore;
 using SharedKernel.Idempotency;
 using SharedKernel.Results;
 using ViajantesTurismo.Admin.Application.Documents;
@@ -22,7 +23,7 @@ internal static class DocumentEndpoints
     {
         ArgumentNullException.ThrowIfNull(app);
 
-        var documentsGroup = app.MapDocumentsGroup();
+        var documentsGroup = app.MapDocumentsGroup().WithNoStoreResponses();
 
         documentsGroup.MapPost("/bookings/{bookingId:guid}/contract-drafts", GenerateContractDraft)
             .RequireRateLimiting(AdminSecurityBaseline.MutationRateLimitPolicy)

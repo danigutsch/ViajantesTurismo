@@ -1,3 +1,4 @@
+using System.Text.Json;
 using Microsoft.EntityFrameworkCore;
 using Npgsql;
 using SharedKernel.Idempotency;
@@ -409,16 +410,17 @@ public sealed class DocumentStorePostgreSqlTests(PostgreSqlTestServerFixture fix
     }
 
     [Fact]
-    public async Task Concurrent_same_key_generation_persists_one_document_audit_and_completed_replay()
+    public async Task Concurrent_same_key_generation_persists_one_success_one_conflict_and_no_replay_audit()
     {
         // Arrange
+        const string requestMarker = "SYNTHETIC_TEMPLATE_INPUT_942C";
         var bookingId = Guid.CreateVersion7();
         var now = new DateTime(2026, 7, 24, 12, 0, 0, DateTimeKind.Utc);
         var first = DocumentDraftInfrastructureTestData.CreateDraft(now, bookingId);
         var second = DocumentDraftInfrastructureTestData.CreateDraft(now, bookingId);
         var key = IdempotencyKey.From(Guid.CreateVersion7().ToString("N"));
         var requestFingerprint = DocumentCommandIdempotency.CreateRequestFingerprint(
-            "tour-service-contract",
+            requestMarker,
             "1");
 
         // Act
@@ -436,10 +438,9 @@ public sealed class DocumentStorePostgreSqlTests(PostgreSqlTestServerFixture fix
             TestContext.Current.CancellationToken);
 
         // Assert
-        result.Attempts.Count(attempt => attempt.IsSuccess).ShouldBeGreaterThanOrEqualTo(1);
-        result.Attempts.Where(attempt => attempt.IsFailure)
-            .All(attempt => attempt.Status == SharedKernel.Results.ResultStatus.Conflict)
-            .ShouldBeTrue();
+        result.Attempts.Count(attempt => attempt.IsSuccess).ShouldBe(1);
+        result.Attempts.ShouldHaveSingleItem(attempt => attempt.IsFailure)
+            .Status.ShouldBe(SharedKernel.Results.ResultStatus.Conflict);
         var returnedDocumentIds = result.Attempts
             .Where(attempt => attempt.IsSuccess)
             .Select(attempt => attempt.Value)
@@ -449,9 +450,17 @@ public sealed class DocumentStorePostgreSqlTests(PostgreSqlTestServerFixture fix
         returnedDocumentIds.ShouldHaveSingleItem();
         persisted.ShouldHaveSingleItem(document => document.BookingId == bookingId)
             .Id.ShouldBe(returnedDocumentIds[0]);
-        var audit = audits.ShouldHaveSingleItem();
-        audit.Operation.ShouldBe(DocumentAuditOperation.Generate);
-        audit.Outcome.ShouldBe(DocumentAuditOutcome.Succeeded);
+        var successfulAudit = audits.ShouldHaveSingleItem(audit => audit.Outcome == DocumentAuditOutcome.Succeeded);
+        successfulAudit.Operation.ShouldBe(DocumentAuditOperation.Generate);
+        var rejectedAudit = audits.ShouldHaveSingleItem(audit => audit.Outcome == DocumentAuditOutcome.Rejected);
+        rejectedAudit.Operation.ShouldBe(DocumentAuditOperation.Generate);
+        rejectedAudit.ReasonCode.ShouldBe(DocumentAuditReasonCode.StateConflict);
+        rejectedAudit.DocumentId.ShouldBeNull();
+        rejectedAudit.BookingId.ShouldBe(bookingId);
+        rejectedAudit.DocumentRevision.ShouldBeNull();
+        var auditJson = JsonSerializer.Serialize(audits);
+        auditJson.ShouldNotContain(requestMarker, StringComparison.Ordinal);
+        auditJson.ShouldNotContain(requestFingerprint, StringComparison.Ordinal);
         idempotencyState.ShouldBe("Completed");
     }
 
