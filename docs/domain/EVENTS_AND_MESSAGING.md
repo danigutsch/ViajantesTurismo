@@ -334,6 +334,8 @@ The first outbox/idempotency registration remains available unkeyed for single-c
 A producer supplies an unkeyed `IEventEnvelopePublisher` only when no application publisher was
 already registered. Every relay resolves its context-keyed publisher explicitly; when no keyed
 publisher exists, registration preserves the unkeyed application publisher as that context's fallback.
+The producer's unkeyed compatibility alias is not an application dispatcher; relays and consumers
+reject that alias before claiming a message.
 
 Each physical table must have one migrations owner. A context that only reads a shared transport table
 may map it for runtime consumption, but its migrations must not create that producer-owned table.
