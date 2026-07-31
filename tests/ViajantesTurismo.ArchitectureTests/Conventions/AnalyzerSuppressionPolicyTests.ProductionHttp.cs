@@ -88,6 +88,28 @@ public sealed partial class AnalyzerSuppressionPolicyTests
                 private void RegisterSecond() { }
             }
             """;
+        const string multipleInvocationSuppression = """
+            public sealed class Registration
+            {
+                public void Configure(ServiceCollection services)
+                {
+            #pragma warning disable VTARCH001 // Justification: approved synchronous exception reviewed by architecture owners.
+                    _ = (services.AddHttpClient("catalog-api"), services.AddHttpClient("branding-api"));
+            #pragma warning restore VTARCH001
+                }
+            }
+            """;
+        const string conditionalExpressionSuppression = """
+            public sealed class Registration
+            {
+                public void Configure(ServiceCollection services, bool useCatalog)
+                {
+            #pragma warning disable VTARCH001 // Justification: approved synchronous exception reviewed by architecture owners.
+                    _ = useCatalog ? services.AddHttpClient("catalog-api") : services.AddHttpClient("branding-api");
+            #pragma warning restore VTARCH001
+                }
+            }
+            """;
         const string exactExpressionSuppression = """
             public sealed class Registration
             {
@@ -134,6 +156,8 @@ public sealed partial class AnalyzerSuppressionPolicyTests
         var blockPragmaViolations = AnalyzerSuppressionPolicyTestsHelpers.FindUnapprovedPragmaWarningSuppressionsInSource(blockSuppression, "BlockSuppression.cs");
         var controlFlowViolations = AnalyzerSuppressionPolicyTestsHelpers.FindUnapprovedPragmaWarningSuppressionsInSource(controlFlowSuppression, "ControlFlowSuppression.cs");
         var nestedBlockViolations = AnalyzerSuppressionPolicyTestsHelpers.FindUnapprovedPragmaWarningSuppressionsInSource(nestedBlockSuppression, "NestedBlockSuppression.cs");
+        var multipleInvocationViolations = AnalyzerSuppressionPolicyTestsHelpers.FindUnapprovedPragmaWarningSuppressionsInSource(multipleInvocationSuppression, "MultipleInvocationSuppression.cs");
+        var conditionalExpressionViolations = AnalyzerSuppressionPolicyTestsHelpers.FindUnapprovedPragmaWarningSuppressionsInSource(conditionalExpressionSuppression, "ConditionalExpressionSuppression.cs");
         var exactExpressionViolations = AnalyzerSuppressionPolicyTestsHelpers.FindUnapprovedPragmaWarningSuppressionsInSource(exactExpressionSuppression, "ExactExpressionSuppression.cs");
         var exactLocalViolations = AnalyzerSuppressionPolicyTestsHelpers.FindUnapprovedPragmaWarningSuppressionsInSource(exactLocalSuppression, "ExactLocalSuppression.cs");
         var exactReturnViolations = AnalyzerSuppressionPolicyTestsHelpers.FindUnapprovedPragmaWarningSuppressionsInSource(exactReturnSuppression, "ExactReturnSuppression.cs");
@@ -144,6 +168,8 @@ public sealed partial class AnalyzerSuppressionPolicyTests
         blockPragmaViolations.ShouldNotBeEmpty();
         controlFlowViolations.ShouldNotBeEmpty();
         nestedBlockViolations.ShouldNotBeEmpty();
+        multipleInvocationViolations.ShouldNotBeEmpty();
+        conditionalExpressionViolations.ShouldNotBeEmpty();
         exactExpressionViolations.ShouldBeEmpty();
         exactLocalViolations.ShouldBeEmpty();
         exactReturnViolations.ShouldBeEmpty();
@@ -164,7 +190,6 @@ public sealed partial class AnalyzerSuppressionPolicyTests
             .SelectMany(path => AnalyzerSuppressionPolicyTestsHelpers.FindProductionHttpPragmaSuppressions(repositoryRoot, path))
             .ToHashSet(StringComparer.Ordinal);
         var attributeSuppressions = sourceFiles
-            .Where(path => File.ReadAllText(path).Contains("SuppressMessage", StringComparison.Ordinal))
             .SelectMany(path => AnalyzerSuppressionPolicyTestsHelpers.FindProductionHttpSuppressMessageSuppressions(repositoryRoot, path))
             .ToArray();
         var matchesAllowlist = actualSuppressions.SetEquals(ApprovedProductionHttpPragmaSuppressions);
@@ -193,6 +218,25 @@ public sealed partial class AnalyzerSuppressionPolicyTests
     }
 
     [Theory]
+    [InlineData("SuppressMessageAttribute")]
+    [InlineData("UnconditionalSuppressMessageAttribute")]
+    public void Global_suppression_aliases_should_be_rejected_across_source_files(string attributeType)
+    {
+        // Arrange
+        ArgumentException.ThrowIfNullOrWhiteSpace(attributeType);
+        var aliasSource = $"global using Ignore = System.Diagnostics.CodeAnalysis.{attributeType};";
+        const string consumerSource = "[assembly: Ignore(\"Architecture\", \"VTARCH001\")]";
+
+        // Act
+        var violations = AnalyzerSuppressionPolicyTestsHelpers.FindProductionHttpSuppressMessageSuppressionsInSource(aliasSource, "GlobalAliases.cs")
+            .Concat(AnalyzerSuppressionPolicyTestsHelpers.FindProductionHttpSuppressMessageSuppressionsInSource(consumerSource, "GlobalSuppressions.cs"))
+            .ToArray();
+
+        // Assert
+        violations.ShouldNotBeEmpty();
+    }
+
+    [Theory]
     [InlineData("dotnet_diagnostic.VTARCH001.severity = none")]
     [InlineData("dotnet_diagnostic.VTARCH001.severity = silent")]
     [InlineData("dotnet_diagnostic.VTARCH001.severity = suggestion")]
@@ -218,6 +262,8 @@ public sealed partial class AnalyzerSuppressionPolicyTests
     [InlineData("<NoWarn>vtarch001</NoWarn>")]
     [InlineData("<WarningsNotAsErrors>CS0001,VTARCH001</WarningsNotAsErrors>")]
     [InlineData("<warningsnotaserrors>$(WarningsNotAsErrors);vtarch001</warningsnotaserrors>")]
+    [InlineData("<Project><ItemGroup><GlobalAnalyzerConfigFiles Include=\"policy.txt\" /></ItemGroup></Project>")]
+    [InlineData("<Project><PropertyGroup><CodeAnalysisRuleSet>disable-vtarch001.ruleset</CodeAnalysisRuleSet></PropertyGroup></Project>")]
     public void Production_http_msbuild_suppressions_should_be_rejected(string setting)
     {
         // Arrange

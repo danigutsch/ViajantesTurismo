@@ -1,4 +1,5 @@
 using System.Collections.Immutable;
+using System.Text;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.Diagnostics;
 using Microsoft.CodeAnalysis.Operations;
@@ -12,10 +13,13 @@ namespace ViajantesTurismo.Architecture.Analyzers;
 public sealed class ProductionApiHttpAnalyzer : DiagnosticAnalyzer
 {
     private const string AddHttpClientMethodName = "AddHttpClient";
+    private const string AdminResourceValue = "api";
     private const string BaseAddressPropertyName = "BaseAddress";
+    private const string BrandingResourceValue = "branding-api";
     private const string BrandingApiClientInterfaceTypeName = "IBrandingApiClient";
     private const string BrandingApiClientTypeName = "BrandingApiClient";
     private const string CreateClientMethodName = "CreateClient";
+    private const string CatalogResourceValue = "catalog-api";
     private const string HttpClientFactoryExtensionsTypeName = "HttpClientFactoryServiceCollectionExtensions";
     private const string HttpClientTypeName = "HttpClient";
     private const string HttpClientFactoryTypeName = "IHttpClientFactory";
@@ -63,8 +67,9 @@ public sealed class ProductionApiHttpAnalyzer : DiagnosticAnalyzer
                 operationContext => AnalyzeInvocation(operationContext, sourceApi),
                 OperationKind.Invocation);
             compilationContext.RegisterOperationAction(
-                operationContext => AnalyzeSimpleAssignment(operationContext, sourceApi),
-                OperationKind.SimpleAssignment);
+                operationContext => AnalyzeAssignment(operationContext, sourceApi),
+                OperationKind.SimpleAssignment,
+                OperationKind.CoalesceAssignment);
         });
     }
 
@@ -181,9 +186,9 @@ public sealed class ProductionApiHttpAnalyzer : DiagnosticAnalyzer
         }
     }
 
-    private static void AnalyzeSimpleAssignment(OperationAnalysisContext context, ApiDestination sourceApi)
+    private static void AnalyzeAssignment(OperationAnalysisContext context, ApiDestination sourceApi)
     {
-        if (context.Operation is not ISimpleAssignmentOperation assignment)
+        if (context.Operation is not IAssignmentOperation assignment)
         {
             return;
         }
@@ -211,7 +216,7 @@ public sealed class ProductionApiHttpAnalyzer : DiagnosticAnalyzer
         IDictionary<ApiDestination, Location> destinations,
         ApiDestination sourceApi)
     {
-        if (operation is ISimpleAssignmentOperation assignment && IsHttpClientBaseAddress(assignment.Target))
+        if (operation is IAssignmentOperation assignment && IsHttpClientBaseAddress(assignment.Target))
         {
             AddResolvedDestination(
                 assignment.Value,
@@ -286,8 +291,20 @@ public sealed class ProductionApiHttpAnalyzer : DiagnosticAnalyzer
                 visitedSymbols,
                 sourceApi,
                 allowBareResourceName),
-            IInterpolatedStringOperation interpolatedString => ResolveFirstDestination(interpolatedString.Parts, visitedSymbols, sourceApi, allowBareResourceName),
+            IInterpolatedStringOperation interpolatedString when allowBareResourceName => ResolveFirstDestination(
+                interpolatedString.Parts,
+                visitedSymbols,
+                sourceApi,
+                allowBareResourceName),
+            IInterpolatedStringOperation interpolatedString => ResolveComposedUriDestination(
+                interpolatedString,
+                visitedSymbols,
+                sourceApi),
             IInterpolationOperation interpolation => ResolveDestination(interpolation.Expression, visitedSymbols, sourceApi, allowBareResourceName),
+            IBinaryOperation binary when !allowBareResourceName && binary.Type?.SpecialType == SpecialType.System_String => ResolveComposedUriDestination(
+                binary,
+                visitedSymbols,
+                sourceApi),
             IBinaryOperation binary => ResolveFirstDestination([binary.LeftOperand, binary.RightOperand], visitedSymbols, sourceApi, allowBareResourceName),
             IConditionalOperation conditional => ResolveBranchDestination([conditional.WhenTrue, conditional.WhenFalse], visitedSymbols, sourceApi, allowBareResourceName),
             ICoalesceOperation coalesce => ResolveBranchDestination([coalesce.Value, coalesce.WhenNull], visitedSymbols, sourceApi, allowBareResourceName),
@@ -316,6 +333,106 @@ public sealed class ProductionApiHttpAnalyzer : DiagnosticAnalyzer
         }
 
         return ApiDestination.None;
+    }
+
+    private static ApiDestination ResolveComposedUriDestination(
+        IOperation operation,
+        ISet<ISymbol> visitedSymbols,
+        ApiDestination sourceApi)
+    {
+        var candidate = new StringBuilder();
+        var resolvedDestination = AppendUriComponent(
+            operation,
+            candidate,
+            visitedSymbols,
+            sourceApi);
+
+        return resolvedDestination
+            ?? GetKnownValueDestination(candidate.ToString(), allowBareResourceName: false);
+    }
+
+    private static ApiDestination? AppendUriComponent(
+        IOperation operation,
+        StringBuilder candidate,
+        ISet<ISymbol> visitedSymbols,
+        ApiDestination sourceApi)
+    {
+        if (operation is IBinaryOperation binary)
+        {
+            var leftDestination = AppendUriComponent(binary.LeftOperand, candidate, visitedSymbols, sourceApi);
+            return leftDestination
+                ?? AppendUriComponent(binary.RightOperand, candidate, visitedSymbols, sourceApi);
+        }
+
+        if (operation is IInterpolatedStringOperation interpolatedString)
+        {
+            foreach (var part in interpolatedString.Parts)
+            {
+                var partDestination = AppendUriComponent(part, candidate, visitedSymbols, sourceApi);
+                if (partDestination is not null)
+                {
+                    return partDestination;
+                }
+            }
+
+            return null;
+        }
+
+        if (operation is IInterpolatedStringTextOperation textOperation
+            && textOperation.Text.ConstantValue is { HasValue: true, Value: string text })
+        {
+            candidate.Append(text);
+        }
+        else if (operation is IInterpolationOperation interpolation)
+        {
+            return AppendUriComponent(interpolation.Expression, candidate, visitedSymbols, sourceApi);
+        }
+        else if (operation.ConstantValue is { HasValue: true, Value: string constantValue })
+        {
+            candidate.Append(constantValue);
+        }
+        else
+        {
+            var destination = ResolveDestination(
+                operation,
+                visitedSymbols,
+                sourceApi,
+                allowBareResourceName: true);
+            if (destination == ApiDestination.None)
+            {
+                return ApiDestination.None;
+            }
+
+            candidate.Append(GetResourceValue(destination));
+        }
+
+        return TryResolveCompletedUriAuthority(candidate, out var completedDestination)
+            ? completedDestination
+            : null;
+    }
+
+    private static bool TryResolveCompletedUriAuthority(
+        StringBuilder candidate,
+        out ApiDestination destination)
+    {
+        var value = candidate.ToString();
+        var schemeSeparator = value.IndexOf("://", StringComparison.Ordinal);
+        if (schemeSeparator < 0)
+        {
+            destination = ApiDestination.None;
+            return false;
+        }
+
+        var authorityStart = schemeSeparator + 3;
+        var authorityEnd = value.IndexOfAny(['/', '?', '#'], authorityStart);
+        if (authorityEnd < 0)
+        {
+            destination = ApiDestination.None;
+            return false;
+        }
+
+        destination = GetKnownValueDestination(value.Substring(0, authorityEnd), allowBareResourceName: false);
+        return true;
     }
 
     private static ApiDestination ResolveBranchDestination(
@@ -377,7 +494,7 @@ public sealed class ProductionApiHttpAnalyzer : DiagnosticAnalyzer
 
         foreach (var operation in objectCreation.Initializer.ChildOperations)
         {
-            if (operation is not ISimpleAssignmentOperation assignment || !IsHttpRequestUri(assignment.Target))
+            if (operation is not IAssignmentOperation assignment || !IsHttpRequestUri(assignment.Target))
             {
                 continue;
             }
@@ -410,15 +527,20 @@ public sealed class ProductionApiHttpAnalyzer : DiagnosticAnalyzer
         }
 
         IOperation? initializer = null;
-        var hasStableInitializer = TryFindStableLocalInitializer(root, localReference.Local, ref initializer);
-        return !hasStableInitializer || initializer is null
+        var hasReachingInitializer = TryFindReachingLocalInitializer(
+            root,
+            localReference.Local,
+            localReference.Syntax.SpanStart,
+            ref initializer);
+        return !hasReachingInitializer || initializer is null
             ? ApiDestination.None
             : ResolveDestination(initializer, visitedSymbols, sourceApi, allowBareResourceName);
     }
 
-    private static bool TryFindStableLocalInitializer(
+    private static bool TryFindReachingLocalInitializer(
         IOperation operation,
         ILocalSymbol local,
+        int usePosition,
         ref IOperation? initializer)
     {
         if (operation is IVariableDeclaratorOperation declarator
@@ -426,14 +548,14 @@ public sealed class ProductionApiHttpAnalyzer : DiagnosticAnalyzer
         {
             initializer = declarator.Initializer?.Value;
         }
-        else if (IsWriteToLocal(operation, local))
+        else if (operation.Syntax.SpanStart < usePosition && IsWriteToLocal(operation, local))
         {
             return false;
         }
 
         foreach (var child in operation.ChildOperations)
         {
-            if (!TryFindStableLocalInitializer(child, local, ref initializer))
+            if (!TryFindReachingLocalInitializer(child, local, usePosition, ref initializer))
             {
                 return false;
             }
@@ -483,19 +605,30 @@ public sealed class ProductionApiHttpAnalyzer : DiagnosticAnalyzer
 
     private static ApiDestination GetResourceValueDestination(string value)
     {
-        if (string.Equals(value, "api", StringComparison.OrdinalIgnoreCase))
+        if (string.Equals(value, AdminResourceValue, StringComparison.OrdinalIgnoreCase))
         {
             return ApiDestination.Admin;
         }
 
-        if (string.Equals(value, "catalog-api", StringComparison.OrdinalIgnoreCase))
+        if (string.Equals(value, CatalogResourceValue, StringComparison.OrdinalIgnoreCase))
         {
             return ApiDestination.Catalog;
         }
 
-        return string.Equals(value, "branding-api", StringComparison.OrdinalIgnoreCase)
+        return string.Equals(value, BrandingResourceValue, StringComparison.OrdinalIgnoreCase)
             ? ApiDestination.Branding
             : ApiDestination.None;
+    }
+
+    private static string GetResourceValue(ApiDestination destination)
+    {
+        return destination switch
+        {
+            ApiDestination.Admin => AdminResourceValue,
+            ApiDestination.Catalog => CatalogResourceValue,
+            ApiDestination.Branding => BrandingResourceValue,
+            _ => string.Empty
+        };
     }
 
     private static ApiDestination GetResourceNameDestination(IFieldSymbol field)

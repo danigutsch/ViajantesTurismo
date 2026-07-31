@@ -132,6 +132,7 @@ internal static partial class AnalyzerSuppressionPolicyTestsHelpers
             .Where(static entry => string.Equals(entry, ProductionApiHttpDiagnosticId, StringComparison.OrdinalIgnoreCase))
             .Select(entry => $"{displayPath}:{entry}")
             .ToList();
+        violations.AddRange(FindForbiddenAnalyzerPolicyInputs(text, displayPath));
         var lines = text.Replace("\r\n", "\n", StringComparison.Ordinal).Split('\n');
 
         for (var index = 0; index < lines.Length; index++)
@@ -173,8 +174,10 @@ internal static partial class AnalyzerSuppressionPolicyTestsHelpers
     {
         var syntaxTree = CSharpSyntaxTree.ParseText(source);
         var root = syntaxTree.GetRoot();
-        var suppressionAliases = root.DescendantNodes()
+        var usingDirectives = root.DescendantNodes()
             .OfType<UsingDirectiveSyntax>()
+            .ToArray();
+        var suppressionAliases = usingDirectives
             .Select(static directive => directive.Alias is not null
                 && directive.Name is not null
                 && directive.Name.ToString().EndsWith("SuppressMessageAttribute", StringComparison.Ordinal)
@@ -182,18 +185,34 @@ internal static partial class AnalyzerSuppressionPolicyTestsHelpers
                     : null)
             .OfType<string>()
             .ToHashSet(StringComparer.Ordinal);
+        var violations = usingDirectives
+            .Where(static directive => directive.GlobalKeyword.IsKind(SyntaxKind.GlobalKeyword)
+                && directive.Alias is not null
+                && directive.Name is not null
+                && directive.Name.ToString().EndsWith("SuppressMessageAttribute", StringComparison.Ordinal))
+            .Select(directive => $"{displayPath}:L{syntaxTree.GetLineSpan(directive.Span).StartLinePosition.Line + 1}")
+            .ToList();
+        var suppressionAttributes = root
+            .DescendantNodes()
+            .OfType<AttributeSyntax>()
+            .Where(attribute => IsSuppressMessageAttribute(attribute, suppressionAliases))
+            .ToArray();
+
+        if (suppressionAttributes.Length == 0)
+        {
+            return [.. violations];
+        }
+
         var semanticModel = CSharpCompilation.Create(
             "AnalyzerSuppressionPolicy",
             [syntaxTree],
             [CoreLibraryReference]).GetSemanticModel(syntaxTree);
 
-        return root
-            .DescendantNodes()
-            .OfType<AttributeSyntax>()
-            .Where(attribute => IsSuppressMessageAttribute(attribute, suppressionAliases))
+        violations.AddRange(suppressionAttributes
             .Where(attribute => attribute.ArgumentList?.Arguments.Any(argument => IsProductionHttpDiagnostic(argument, semanticModel)) == true)
-            .Select(attribute => $"{displayPath}:L{syntaxTree.GetLineSpan(attribute.Span).StartLinePosition.Line + 1}")
-            .ToArray();
+            .Select(attribute => $"{displayPath}:L{syntaxTree.GetLineSpan(attribute.Span).StartLinePosition.Line + 1}"));
+
+        return [.. violations];
     }
 
     public static bool EnablesProductionHttpAnalyzer(string filePath)
@@ -297,7 +316,22 @@ internal static partial class AnalyzerSuppressionPolicyTestsHelpers
 
     private static bool IsExactSiteStatement(StatementSyntax statement)
     {
-        if (statement.DescendantNodes().OfType<StatementSyntax>().Any())
+        var descendantNodes = statement.DescendantNodes().ToArray();
+        if (descendantNodes.OfType<StatementSyntax>().Any()
+            || descendantNodes.Any(static node => node is ConditionalExpressionSyntax
+                or SwitchExpressionSyntax
+                or ConditionalAccessExpressionSyntax
+                || node.IsKind(SyntaxKind.CoalesceExpression)
+                || node.IsKind(SyntaxKind.LogicalAndExpression)
+                || node.IsKind(SyntaxKind.LogicalOrExpression)))
+        {
+            return false;
+        }
+
+        var invocationSites = descendantNodes.OfType<InvocationExpressionSyntax>().Count();
+        var objectCreationSites = descendantNodes.Count(static node => (node is ObjectCreationExpressionSyntax or ImplicitObjectCreationExpressionSyntax)
+            && !node.Ancestors().OfType<InvocationExpressionSyntax>().Any());
+        if (invocationSites + objectCreationSites != 1)
         {
             return false;
         }
@@ -378,5 +412,25 @@ internal static partial class AnalyzerSuppressionPolicyTestsHelpers
                 .Replace("$(NoWarn)", string.Empty, StringComparison.Ordinal)
                 .Replace("$(WarningsNotAsErrors)", string.Empty, StringComparison.Ordinal)
                 .Split([';', ','], StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries));
+    }
+
+    private static IEnumerable<string> FindForbiddenAnalyzerPolicyInputs(string text, string displayPath)
+    {
+        if (!text.TrimStart().StartsWith('<'))
+        {
+            return [];
+        }
+
+        var project = XDocument.Parse(text);
+        return project.Descendants()
+            .Where(static element =>
+                (string.Equals(element.Name.LocalName, "GlobalAnalyzerConfigFiles", StringComparison.OrdinalIgnoreCase)
+                    && element.Attributes().Any(static attribute =>
+                        (string.Equals(attribute.Name.LocalName, "Include", StringComparison.OrdinalIgnoreCase)
+                            || string.Equals(attribute.Name.LocalName, "Update", StringComparison.OrdinalIgnoreCase))
+                        && !string.IsNullOrWhiteSpace(attribute.Value)))
+                || (string.Equals(element.Name.LocalName, "CodeAnalysisRuleSet", StringComparison.OrdinalIgnoreCase)
+                    && !string.IsNullOrWhiteSpace(element.Value)))
+            .Select(element => $"{displayPath}:{element.Name.LocalName}");
     }
 }
