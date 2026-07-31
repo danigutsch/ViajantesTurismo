@@ -1,0 +1,7 @@
+#nullable enable
+const ViajantesTurismo.Architecture.Analyzers.ArchitectureDiagnosticIds.ProductionApiHttp = "VTARCH001" -> string!
+ViajantesTurismo.Architecture.Analyzers.ArchitectureDiagnosticIds
+ViajantesTurismo.Architecture.Analyzers.ProductionApiHttpAnalyzer
+ViajantesTurismo.Architecture.Analyzers.ProductionApiHttpAnalyzer.ProductionApiHttpAnalyzer() -> void
+override ViajantesTurismo.Architecture.Analyzers.ProductionApiHttpAnalyzer.Initialize(Microsoft.CodeAnalysis.Diagnostics.AnalysisContext! context) -> void
+override ViajantesTurismo.Architecture.Analyzers.ProductionApiHttpAnalyzer.SupportedDiagnostics.get -> System.Collections.Immutable.ImmutableArray<Microsoft.CodeAnalysis.DiagnosticDescriptor!>

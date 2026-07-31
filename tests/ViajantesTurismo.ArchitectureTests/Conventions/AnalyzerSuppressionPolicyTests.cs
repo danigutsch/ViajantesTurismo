@@ -53,18 +53,17 @@ public sealed partial class AnalyzerSuppressionPolicyTests
     }
 
     [Fact]
-    public void Hand_written_source_should_not_use_pragma_warning_suppressions()
+    public void Hand_written_source_should_only_use_approved_exact_site_pragma_suppressions()
     {
         var repositoryRoot = AnalyzerSuppressionPolicyTestsHelpers.GetRepositoryRoot();
-        var filesWithPragmas = AnalyzerSuppressionPolicyTestsHelpers.EnumerateRepositoryFiles(repositoryRoot, "*.cs")
+        var unapprovedPragmas = AnalyzerSuppressionPolicyTestsHelpers.EnumerateRepositoryFiles(repositoryRoot, "*.cs")
             .Where(path => !AnalyzerSuppressionPolicyTestsHelpers.IsIgnoredPath(path))
             .Where(path => !AnalyzerSuppressionPolicyTestsHelpers.IsGeneratedSource(repositoryRoot, path))
-            .Where(AnalyzerSuppressionPolicyTestsHelpers.ContainsPragmaWarningDirective)
-            .Select(path => Path.GetRelativePath(repositoryRoot, path).Replace('\\', '/'))
+            .SelectMany(path => AnalyzerSuppressionPolicyTestsHelpers.FindUnapprovedPragmaWarningSuppressions(repositoryRoot, path))
             .ToArray();
 
-        (filesWithPragmas.Length == 0).ShouldBeTrue(
-            $"Expected hand-written source not to use pragma warning suppressions, but found:{Environment.NewLine}{string.Join(Environment.NewLine, filesWithPragmas)}");
+        (unapprovedPragmas.Length == 0).ShouldBeTrue(
+            $"Expected hand-written source to use only approved exact-site pragma warning suppressions, but found:{Environment.NewLine}{string.Join(Environment.NewLine, unapprovedPragmas)}");
     }
 
     [Fact]
