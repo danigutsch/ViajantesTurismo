@@ -336,60 +336,84 @@ internal static class TextEncodingVerifier
                 return false;
             }
 
-            var record = output.AsSpan(offset, terminator - offset);
-            var separator = record.IndexOf((byte)'\t');
-            if (separator <= 0 || separator == record.Length - 1)
+            if (!TryParseIndexRecord(
+                output.AsSpan(offset, terminator - offset),
+                paths,
+                out var entry))
             {
                 return false;
             }
 
-            if (!TryDecodeAscii(record[..separator], out var metadata))
+            if (entry is not null)
             {
-                return false;
-            }
-
-            var metadataParts = metadata.Split(' ');
-            if (metadataParts is not [var mode, var objectId, "0"]
-                || !IsObjectId(objectId))
-            {
-                return false;
-            }
-
-            var rawPath = record[(separator + 1)..].ToArray();
-            string path;
-            try
-            {
-                path = StrictUtf8.GetString(rawPath);
-            }
-            catch (DecoderFallbackException)
-            {
-                return false;
-            }
-
-            if (string.IsNullOrEmpty(path) || !paths.Add(path))
-            {
-                return false;
-            }
-
-            switch (mode)
-            {
-                case "100644":
-                case "100755":
-                    regularEntries.Add(new IndexEntry(path, rawPath, objectId));
-                    break;
-
-                case "120000":
-                case "160000":
-                    break;
-
-                default:
-                    return false;
+                regularEntries.Add(entry);
             }
 
             offset = terminator + 1;
         }
 
         return true;
+    }
+
+    private static bool TryParseIndexRecord(
+        ReadOnlySpan<byte> record,
+        HashSet<string> paths,
+        out IndexEntry? entry)
+    {
+        entry = null;
+        var separator = record.IndexOf((byte)'\t');
+        if (separator <= 0 || separator == record.Length - 1
+            || !TryParseIndexMetadata(record[..separator], out var mode, out var objectId)
+            || !TryDecodeIndexPath(record[(separator + 1)..], out var path, out var rawPath)
+            || !paths.Add(path))
+        {
+            return false;
+        }
+
+        if (mode is "100644" or "100755")
+        {
+            entry = new IndexEntry(path, rawPath, objectId);
+            return true;
+        }
+
+        return mode is "120000" or "160000";
+    }
+
+    private static bool TryParseIndexMetadata(
+        ReadOnlySpan<byte> value,
+        out string mode,
+        out string objectId)
+    {
+        mode = string.Empty;
+        objectId = string.Empty;
+        if (!TryDecodeAscii(value, out var metadata)
+            || metadata.Split(' ') is not [var parsedMode, var parsedObjectId, "0"]
+            || !IsObjectId(parsedObjectId))
+        {
+            return false;
+        }
+
+        mode = parsedMode;
+        objectId = parsedObjectId;
+        return true;
+    }
+
+    private static bool TryDecodeIndexPath(
+        ReadOnlySpan<byte> value,
+        out string path,
+        out byte[] rawPath)
+    {
+        rawPath = value.ToArray();
+        try
+        {
+            path = StrictUtf8.GetString(rawPath);
+            return !string.IsNullOrEmpty(path);
+        }
+        catch (DecoderFallbackException)
+        {
+            path = string.Empty;
+            return false;
+        }
     }
 
     private static byte[] BuildPathInput(IReadOnlyCollection<IndexEntry> entries)
@@ -483,40 +507,27 @@ internal static class TextEncodingVerifier
             List<RepoConfigIssue> issues = [];
             foreach (var entry in entries)
             {
-                await WriteBlobRequest(
-                    process.StandardInput.BaseStream,
-                    entry.ObjectId,
-                    cancellationToken).ConfigureAwait(false);
-                var header = await ReadLine(process.StandardOutput.BaseStream, MaxHeaderBytes, cancellationToken).ConfigureAwait(false);
-                if (header is null
-                    || !TryParseBlobHeader(header, entry.ObjectId, out var blobSize))
-                {
-                    return [new RepoConfigIssue(".", "Git blob inspection failed.")];
-                }
-
-                if (blobSize > MaxBlobBytes)
-                {
-                    return [new RepoConfigIssue(entry.Path, "Blob exceeds the 64 MiB text scan limit.")];
-                }
-
-                var contentResult = await InspectBlob(
-                    process.StandardOutput.BaseStream,
-                    blobSize,
+                var result = await VerifyBlob(
+                    process,
+                    entry,
                     byteBuffer,
                     charBuffer,
                     cancellationToken).ConfigureAwait(false);
-                if (contentResult == BlobContentResult.Malformed)
+                if (!result.Success)
                 {
                     return [new RepoConfigIssue(".", "Git blob inspection failed.")];
                 }
 
-                if (contentResult == BlobContentResult.ContainsNul)
+                if (!result.ShouldContinue)
                 {
-                    issues.Add(new RepoConfigIssue(entry.Path, "Contains NUL byte."));
+                    return result.Issue is null
+                        ? [new RepoConfigIssue(".", "Git blob inspection failed.")]
+                        : [result.Issue];
                 }
-                else if (contentResult == BlobContentResult.InvalidUtf8)
+
+                if (result.Issue is not null)
                 {
-                    issues.Add(new RepoConfigIssue(entry.Path, "Is not valid UTF-8."));
+                    issues.Add(result.Issue);
                 }
             }
 
@@ -555,6 +566,46 @@ internal static class TextEncodingVerifier
 
             process.Dispose();
         }
+    }
+
+    private static async Task<(bool Success, bool ShouldContinue, RepoConfigIssue? Issue)> VerifyBlob(
+        Process process,
+        IndexEntry entry,
+        byte[] byteBuffer,
+        char[] charBuffer,
+        CancellationToken cancellationToken)
+    {
+        await WriteBlobRequest(
+            process.StandardInput.BaseStream,
+            entry.ObjectId,
+            cancellationToken).ConfigureAwait(false);
+        var header = await ReadLine(
+            process.StandardOutput.BaseStream,
+            MaxHeaderBytes,
+            cancellationToken).ConfigureAwait(false);
+        if (header is null || !TryParseBlobHeader(header, entry.ObjectId, out var blobSize))
+        {
+            return (false, false, null);
+        }
+
+        if (blobSize > MaxBlobBytes)
+        {
+            return (true, false, new RepoConfigIssue(entry.Path, "Blob exceeds the 64 MiB text scan limit."));
+        }
+
+        var contentResult = await InspectBlob(
+            process.StandardOutput.BaseStream,
+            blobSize,
+            byteBuffer,
+            charBuffer,
+            cancellationToken).ConfigureAwait(false);
+        return contentResult switch
+        {
+            BlobContentResult.Valid => (true, true, null),
+            BlobContentResult.ContainsNul => (true, true, new RepoConfigIssue(entry.Path, "Contains NUL byte.")),
+            BlobContentResult.InvalidUtf8 => (true, true, new RepoConfigIssue(entry.Path, "Is not valid UTF-8.")),
+            _ => (false, false, null)
+        };
     }
 
     private static async Task WriteBlobRequest(
