@@ -22,7 +22,7 @@ namespace ViajantesTurismo.Admin.Infrastructure.Migrations
                 DO $$
                 BEGIN
                     IF (SELECT datctype FROM pg_database WHERE datname = current_database())
-                        NOT IN ('C.UTF-8', 'C.utf8', 'en_US.utf8') THEN
+                        NOT IN ('C.UTF-8', 'C.utf8', 'en_US.UTF-8', 'en_US.utf8') THEN
                         RAISE EXCEPTION 'Unsupported PostgreSQL LC_CTYPE for customer email uniqueness.';
                     END IF;
                 END;

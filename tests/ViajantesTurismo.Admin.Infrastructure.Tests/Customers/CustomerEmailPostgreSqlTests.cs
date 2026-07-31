@@ -90,4 +90,17 @@ public sealed class CustomerEmailPostgreSqlTests(PostgreSqlTestServerFixture fix
         foundAfterReapply.ShouldNotBeNull();
         foundAfterReapply.Id.ShouldBe(readded.Id);
     }
+
+    [Fact]
+    public void Fresh_admin_migration_allows_common_us_english_utf8_spelling()
+    {
+        // Arrange
+        const string locale = "'en_US.UTF-8'";
+
+        // Act
+        var migrationScript = Scenario.GenerateLatestMigrationScript();
+
+        // Assert
+        migrationScript.ShouldContain(locale, StringComparison.Ordinal);
+    }
 }

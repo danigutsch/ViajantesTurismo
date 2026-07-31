@@ -68,6 +68,13 @@ internal sealed class CustomerEmailPostgreSqlScenario : IAsyncDisposable
         await migrator.MigrateAsync(migration, ct);
     }
 
+    public string GenerateLatestMigrationScript()
+    {
+        using var dbContext = CreateDbContext();
+        var migrator = dbContext.Database.GetService<IMigrator>();
+        return migrator.GenerateScript();
+    }
+
     public async Task<Customer> AddCustomer(string email, CancellationToken ct)
     {
         await using var dbContext = CreateDbContext();

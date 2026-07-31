@@ -101,9 +101,9 @@ Persistent inventory:
 
 Minimum backup expectations until platform selection:
 
-- Provision the Admin PostgreSQL database with `LC_CTYPE` set to `C.UTF-8`, `C.utf8`, or
-  `en_US.utf8`. The initial migration rejects other locales because Customer email uniqueness uses
-  `citext`, whose case folding is fixed when the database is created.
+- Provision the Admin PostgreSQL database with `LC_CTYPE` set to `C.UTF-8`, `C.utf8`,
+  `en_US.UTF-8`, or `en_US.utf8`. The initial migration rejects other locales because Customer email
+  uniqueness uses `citext`, whose case folding is fixed when the database is created.
 - Back up PostgreSQL before destructive migrations and before production promotion.
 - Retain enough restore points to return to the previous known-good release window.
 - Store backups outside the application runtime environment.
