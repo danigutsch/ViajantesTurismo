@@ -1,4 +1,6 @@
 using System.Text.RegularExpressions;
+using System.Xml.Linq;
+using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 
@@ -6,6 +8,10 @@ namespace ViajantesTurismo.ArchitectureTests.Conventions;
 
 internal static partial class AnalyzerSuppressionPolicyTestsHelpers
 {
+    private const string ProductionApiHttpDiagnosticId = "VTARCH001";
+
+    private static readonly MetadataReference CoreLibraryReference = MetadataReference.CreateFromFile(typeof(object).Assembly.Location);
+
     public static IEnumerable<string> EnumerateRepositoryFiles(string repositoryRoot, string searchPattern)
     {
         return EnumerateRepositoryFiles(new DirectoryInfo(repositoryRoot), searchPattern);
@@ -48,12 +54,157 @@ internal static partial class AnalyzerSuppressionPolicyTestsHelpers
         return [.. entries];
     }
 
-    public static bool ContainsPragmaWarningDirective(string filePath)
+    public static string[] FindUnapprovedPragmaWarningSuppressions(string repositoryRoot, string filePath)
+    {
+        var relativePath = Path.GetRelativePath(repositoryRoot, filePath).Replace('\\', '/');
+        return FindUnapprovedPragmaWarningSuppressionsInSource(File.ReadAllText(filePath), relativePath);
+    }
+
+    public static string[] FindUnapprovedPragmaWarningSuppressionsInSource(string source, string displayPath)
+    {
+        var syntaxTree = CSharpSyntaxTree.ParseText(source);
+        var root = syntaxTree.GetRoot();
+        var directives = root
+            .DescendantTrivia(descendIntoTrivia: true)
+            .Select(static trivia => trivia.GetStructure())
+            .OfType<PragmaWarningDirectiveTriviaSyntax>()
+            .OrderBy(static directive => directive.SpanStart)
+            .ToArray();
+        var violations = new List<string>();
+
+        var index = 0;
+        while (index < directives.Length)
+        {
+            var disable = directives[index];
+            var lineNumber = syntaxTree.GetLineSpan(disable.Span).StartLinePosition.Line + 1;
+
+            if (!IsDirectiveFor(disable, SyntaxKind.DisableKeyword, ProductionApiHttpDiagnosticId))
+            {
+                violations.Add($"{displayPath}:L{lineNumber} {disable.ToString().Trim()}");
+                index++;
+                continue;
+            }
+
+            if (!HasJustification(syntaxTree, disable))
+            {
+                violations.Add($"{displayPath}:L{lineNumber} missing '// Justification: ...'");
+            }
+
+            if (index + 1 >= directives.Length
+                || !IsDirectiveFor(directives[index + 1], SyntaxKind.RestoreKeyword, ProductionApiHttpDiagnosticId))
+            {
+                violations.Add($"{displayPath}:L{lineNumber} must be followed by '#pragma warning restore {ProductionApiHttpDiagnosticId}'");
+                index++;
+                continue;
+            }
+
+            var restore = directives[index + 1];
+            var enclosedStatements = root.DescendantNodes()
+                .OfType<StatementSyntax>()
+                .Where(statement => statement.SpanStart >= disable.FullSpan.End && statement.Span.End <= restore.FullSpan.Start)
+                .Where(statement => !statement.Ancestors()
+                    .OfType<StatementSyntax>()
+                    .Any(ancestor => ancestor.SpanStart >= disable.FullSpan.End && ancestor.Span.End <= restore.FullSpan.Start))
+                .ToArray();
+
+            if (enclosedStatements.Length != 1 || !IsExactSiteStatement(enclosedStatements[0]))
+            {
+                violations.Add($"{displayPath}:L{lineNumber} must suppress exactly one statement");
+            }
+
+            index += 2;
+        }
+
+        return [.. violations];
+    }
+
+    public static string[] FindBroadProductionHttpSuppressions(string repositoryRoot, string filePath)
+    {
+        var text = File.ReadAllText(filePath);
+        var relativePath = Path.GetRelativePath(repositoryRoot, filePath).Replace('\\', '/');
+        return FindBroadProductionHttpSuppressionsInSource(text, relativePath);
+    }
+
+    public static string[] FindBroadProductionHttpSuppressionsInSource(string text, string displayPath)
+    {
+        var violations = FindMsBuildDiagnosticEntries(text, NoWarnRegex())
+            .Concat(FindMsBuildDiagnosticEntries(text, WarningsNotAsErrorsRegex()))
+            .Where(static entry => string.Equals(entry, ProductionApiHttpDiagnosticId, StringComparison.OrdinalIgnoreCase))
+            .Select(entry => $"{displayPath}:{entry}")
+            .ToList();
+        var lines = text.Replace("\r\n", "\n", StringComparison.Ordinal).Split('\n');
+
+        for (var index = 0; index < lines.Length; index++)
+        {
+            var normalizedLine = string.Concat(lines[index].Where(static character => !char.IsWhiteSpace(character)));
+            var commentIndex = normalizedLine.IndexOfAny(['#', ';']);
+            var setting = commentIndex < 0 ? normalizedLine : normalizedLine.Substring(0, commentIndex);
+            if (IsBroadAnalyzerSeveritySuppression(setting))
+            {
+                violations.Add($"{displayPath}:L{index + 1} {lines[index].Trim()}");
+            }
+        }
+
+        return [.. violations];
+    }
+
+    public static string[] FindProductionHttpPragmaSuppressions(string repositoryRoot, string filePath)
     {
         var syntaxTree = CSharpSyntaxTree.ParseText(File.ReadAllText(filePath));
+        var relativePath = Path.GetRelativePath(repositoryRoot, filePath).Replace('\\', '/');
+
         return syntaxTree.GetRoot()
             .DescendantTrivia(descendIntoTrivia: true)
-            .Any(static trivia => trivia.GetStructure() is PragmaWarningDirectiveTriviaSyntax);
+            .Select(static trivia => trivia.GetStructure())
+            .OfType<PragmaWarningDirectiveTriviaSyntax>()
+            .Where(static directive => directive.DisableOrRestoreKeyword.IsKind(SyntaxKind.DisableKeyword)
+                && directive.ErrorCodes.Any(static code => string.Equals(code.ToString(), ProductionApiHttpDiagnosticId, StringComparison.Ordinal)))
+            .Select(directive => $"{relativePath}:L{syntaxTree.GetLineSpan(directive.Span).StartLinePosition.Line + 1}")
+            .ToArray();
+    }
+
+    public static string[] FindProductionHttpSuppressMessageSuppressions(string repositoryRoot, string filePath)
+    {
+        var relativePath = Path.GetRelativePath(repositoryRoot, filePath).Replace('\\', '/');
+        return FindProductionHttpSuppressMessageSuppressionsInSource(File.ReadAllText(filePath), relativePath);
+    }
+
+    public static string[] FindProductionHttpSuppressMessageSuppressionsInSource(string source, string displayPath)
+    {
+        var syntaxTree = CSharpSyntaxTree.ParseText(source);
+        var root = syntaxTree.GetRoot();
+        var suppressionAliases = root.DescendantNodes()
+            .OfType<UsingDirectiveSyntax>()
+            .Select(static directive => directive.Alias is not null
+                && directive.Name is not null
+                && directive.Name.ToString().EndsWith("SuppressMessageAttribute", StringComparison.Ordinal)
+                    ? directive.Alias.Name.Identifier.ValueText
+                    : null)
+            .OfType<string>()
+            .ToHashSet(StringComparer.Ordinal);
+        var semanticModel = CSharpCompilation.Create(
+            "AnalyzerSuppressionPolicy",
+            [syntaxTree],
+            [CoreLibraryReference]).GetSemanticModel(syntaxTree);
+
+        return root
+            .DescendantNodes()
+            .OfType<AttributeSyntax>()
+            .Where(attribute => IsSuppressMessageAttribute(attribute, suppressionAliases))
+            .Where(attribute => attribute.ArgumentList?.Arguments.Any(argument => IsProductionHttpDiagnostic(argument, semanticModel)) == true)
+            .Select(attribute => $"{displayPath}:L{syntaxTree.GetLineSpan(attribute.Span).StartLinePosition.Line + 1}")
+            .ToArray();
+    }
+
+    public static bool EnablesProductionHttpAnalyzer(string filePath)
+    {
+        return EnablesProductionHttpAnalyzer(XDocument.Load(filePath));
+    }
+
+    public static bool EnablesProductionHttpAnalyzerInProject(string projectXml)
+    {
+        ArgumentNullException.ThrowIfNull(projectXml);
+        return EnablesProductionHttpAnalyzer(XDocument.Parse(projectXml));
     }
 
     public static string GetRepositoryRoot()
@@ -74,13 +225,35 @@ internal static partial class AnalyzerSuppressionPolicyTestsHelpers
         throw new InvalidOperationException("Could not locate the repository root from the test output directory.");
     }
 
-    [GeneratedRegex(@"<NoWarn(?:\s+[^>]*)?>\s*([^<]+)</NoWarn>", RegexOptions.CultureInvariant)]
+    [GeneratedRegex(@"<NoWarn(?:\s+[^>]*)?>\s*([^<]+)</NoWarn>", RegexOptions.IgnoreCase | RegexOptions.CultureInvariant)]
     public static partial Regex NoWarnRegex();
+
+    [GeneratedRegex(@"<WarningsNotAsErrors(?:\s+[^>]*)?>\s*([^<]+)</WarningsNotAsErrors>", RegexOptions.IgnoreCase | RegexOptions.CultureInvariant)]
+    public static partial Regex WarningsNotAsErrorsRegex();
 
     [GeneratedRegex(
         @"^\s*\[\s*(?:assembly:\s*)?(?:(?:global::)?System\.Diagnostics\.CodeAnalysis\.)?SuppressMessage(?:Attribute)?\s*\(",
         RegexOptions.Multiline | RegexOptions.CultureInvariant)]
     public static partial Regex SuppressMessageAttributeRegex();
+
+    private static bool EnablesProductionHttpAnalyzer(XDocument project)
+    {
+        return project.Descendants().Any(static element =>
+        {
+            var itemPath = (element.Attribute("Include")?.Value ?? element.Attribute("Update")?.Value)?.Replace('\\', '/');
+
+            if (string.Equals(element.Name.LocalName, "ProjectReference", StringComparison.OrdinalIgnoreCase))
+            {
+                var outputItemType = element.Attribute("OutputItemType")?.Value
+                    ?? element.Elements().FirstOrDefault(static child => string.Equals(child.Name.LocalName, "OutputItemType", StringComparison.OrdinalIgnoreCase))?.Value;
+                return itemPath?.EndsWith("/ViajantesTurismo.Architecture.Analyzers.csproj", StringComparison.OrdinalIgnoreCase) == true
+                    && string.Equals(outputItemType, "Analyzer", StringComparison.OrdinalIgnoreCase);
+            }
+
+            return string.Equals(element.Name.LocalName, "Analyzer", StringComparison.OrdinalIgnoreCase)
+                && itemPath?.Contains("ViajantesTurismo.Architecture.Analyzers", StringComparison.OrdinalIgnoreCase) == true;
+        });
+    }
 
     private static IEnumerable<string> EnumerateRepositoryFiles(DirectoryInfo directory, string searchPattern)
     {
@@ -113,5 +286,97 @@ internal static partial class AnalyzerSuppressionPolicyTestsHelpers
         return path.Contains(
             $"{Path.DirectorySeparatorChar}{directoryName}{Path.DirectorySeparatorChar}",
             StringComparison.Ordinal);
+    }
+
+    private static bool IsDirectiveFor(PragmaWarningDirectiveTriviaSyntax directive, SyntaxKind keyword, string diagnosticId)
+    {
+        return directive.DisableOrRestoreKeyword.IsKind(keyword)
+            && directive.ErrorCodes.Count == 1
+            && string.Equals(directive.ErrorCodes[0].ToString(), diagnosticId, StringComparison.Ordinal);
+    }
+
+    private static bool IsExactSiteStatement(StatementSyntax statement)
+    {
+        if (statement.DescendantNodes().OfType<StatementSyntax>().Any())
+        {
+            return false;
+        }
+
+        return statement switch
+        {
+            ExpressionStatementSyntax => true,
+            LocalDeclarationStatementSyntax localDeclaration => localDeclaration.Declaration.Variables.Count == 1,
+            ReturnStatementSyntax => true,
+            _ => false
+        };
+    }
+
+    private static bool IsSuppressMessageAttribute(AttributeSyntax attribute, HashSet<string> suppressionAliases)
+    {
+        var attributeName = attribute.Name switch
+        {
+            IdentifierNameSyntax identifier => identifier.Identifier.ValueText,
+            QualifiedNameSyntax qualified => qualified.Right.Identifier.ValueText,
+            AliasQualifiedNameSyntax aliasQualified => aliasQualified.Name.Identifier.ValueText,
+            _ => attribute.Name.ToString()
+        };
+
+        return attributeName is "SuppressMessage"
+            or "SuppressMessageAttribute"
+            or "UnconditionalSuppressMessage"
+            or "UnconditionalSuppressMessageAttribute"
+            || suppressionAliases.Contains(attributeName);
+    }
+
+    private static bool IsProductionHttpDiagnostic(AttributeArgumentSyntax argument, SemanticModel semanticModel)
+    {
+        var constantValue = semanticModel.GetConstantValue(argument.Expression);
+        if (constantValue is { HasValue: true, Value: string value }
+            && (string.Equals(value, ProductionApiHttpDiagnosticId, StringComparison.OrdinalIgnoreCase)
+                || value.StartsWith(ProductionApiHttpDiagnosticId + ":", StringComparison.OrdinalIgnoreCase)))
+        {
+            return true;
+        }
+
+        return argument.Expression.ToString().Contains("ProductionApiHttp", StringComparison.Ordinal);
+    }
+
+    private static bool IsBroadAnalyzerSeveritySuppression(string setting)
+    {
+        var separatorIndex = setting.IndexOf('=', StringComparison.Ordinal);
+        if (separatorIndex < 0)
+        {
+            return false;
+        }
+
+        var key = setting.Substring(0, separatorIndex);
+        var severity = setting.Substring(separatorIndex + 1);
+        var suppressesDiagnostics = string.Equals(severity, "none", StringComparison.OrdinalIgnoreCase)
+            || string.Equals(severity, "silent", StringComparison.OrdinalIgnoreCase)
+            || string.Equals(severity, "suggestion", StringComparison.OrdinalIgnoreCase);
+
+        return suppressesDiagnostics
+            && (string.Equals(key, $"dotnet_diagnostic.{ProductionApiHttpDiagnosticId}.severity", StringComparison.OrdinalIgnoreCase)
+                || string.Equals(key, "dotnet_analyzer_diagnostic.category-Architecture.severity", StringComparison.OrdinalIgnoreCase)
+                || string.Equals(key, "dotnet_analyzer_diagnostic.severity", StringComparison.OrdinalIgnoreCase));
+    }
+
+    private static bool HasJustification(SyntaxTree syntaxTree, PragmaWarningDirectiveTriviaSyntax directive)
+    {
+        const string justificationMarker = "// Justification:";
+        var sourceLine = syntaxTree.GetText().Lines.GetLineFromPosition(directive.SpanStart).ToString();
+        var markerIndex = sourceLine.IndexOf(justificationMarker, StringComparison.Ordinal);
+
+        return markerIndex >= 0
+            && sourceLine[(markerIndex + justificationMarker.Length)..].Trim().Length >= 12;
+    }
+
+    private static IEnumerable<string> FindMsBuildDiagnosticEntries(string text, Regex regex)
+    {
+        return regex.Matches(text)
+            .SelectMany(static match => match.Groups[1].Value
+                .Replace("$(NoWarn)", string.Empty, StringComparison.Ordinal)
+                .Replace("$(WarningsNotAsErrors)", string.Empty, StringComparison.Ordinal)
+                .Split([';', ','], StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries));
     }
 }
