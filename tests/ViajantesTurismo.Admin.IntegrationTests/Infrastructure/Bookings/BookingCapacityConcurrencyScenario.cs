@@ -63,10 +63,10 @@ internal sealed class BookingCapacityConcurrencyScenario : IAsyncDisposable
             command.Parameters.AddWithValue("firstBookingId", firstBookingId);
             command.Parameters.AddWithValue("secondBookingId", secondBookingId);
             var tourIdValue = await command.ExecuteScalarAsync(ct);
-            if (tourIdValue is not Guid tourId)
-            {
-                throw new InvalidOperationException("The capacity concurrency scenario requires two bookings on one Tour.");
-            }
+            var tourId = tourIdValue is Guid value
+                ? value
+                : throw new InvalidOperationException(
+                    "The capacity concurrency scenario requires two bookings on one Tour.");
 
             return new BookingCapacityConcurrencyScenario(
                 dataSource,

@@ -720,17 +720,15 @@ public sealed partial class Tour : IAggregateRoot<Guid>
             return BookingErrors.SingleRoomCannotHaveCompanion();
         }
 
-        if (booking.Status == BookingStatus.Confirmed)
+        var proposedParticipantCount = companionCustomer is null ? 1 : 2;
+        var proposedCount = CurrentCustomerCount - booking.ParticipantCount + proposedParticipantCount;
+
+        if (booking.Status == BookingStatus.Confirmed && proposedCount > Capacity.MaxCustomers)
         {
-            var proposedParticipantCount = companionCustomer is null ? 1 : 2;
-            var proposedCount = CurrentCustomerCount - booking.ParticipantCount + proposedParticipantCount;
-            if (proposedCount > Capacity.MaxCustomers)
-            {
-                return TourErrors.ConfirmedCapacityExceeded(
-                    Capacity.MaxCustomers,
-                    CurrentCustomerCount,
-                    proposedCount);
-            }
+            return TourErrors.ConfirmedCapacityExceeded(
+                Capacity.MaxCustomers,
+                CurrentCustomerCount,
+                proposedCount);
         }
 
         var updateRoomResult = booking.UpdateRoom(roomType, roomAdditionalCost, companionCustomer);

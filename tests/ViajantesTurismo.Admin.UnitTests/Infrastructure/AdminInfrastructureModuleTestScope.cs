@@ -11,6 +11,7 @@ using SharedKernel.EntityFrameworkCore;
 using SharedKernel.Idempotency;
 using SharedKernel.Messaging.IntegrationEvents;
 using ViajantesTurismo.Admin.Application;
+using ViajantesTurismo.Admin.Application.Tours;
 using ViajantesTurismo.Admin.Application.Tours.CreateTour;
 using ViajantesTurismo.Admin.Domain.Customers;
 using ViajantesTurismo.Admin.Domain.Documents;
@@ -33,6 +34,9 @@ internal sealed class AdminInfrastructureModuleTestScope(ServiceProvider service
     public IQueryService QueryService => scope.ServiceProvider.GetRequiredService<IQueryService>();
 
     public ITourStore TourStore => scope.ServiceProvider.GetRequiredService<ITourStore>();
+
+    public ITourCapacityMutationLock TourCapacityMutationLock =>
+        scope.ServiceProvider.GetRequiredService<ITourCapacityMutationLock>();
 
     public ICustomerStore CustomerStore => scope.ServiceProvider.GetRequiredService<ICustomerStore>();
 
