@@ -49,9 +49,9 @@ internal sealed class PostgreSqlManagementSecurityPersistenceScenario : IAsyncDi
             await dbContext.Database.MigrateAsync(ct);
             return new PostgreSqlManagementSecurityPersistenceScenario(app, connectionString);
         }
-        catch
+        catch (Exception initializationFailure)
         {
-            await app.DisposeAsync();
+            await PostgreSqlTestCleanup.DisposeResources(initializationFailure, app);
             throw;
         }
     }
