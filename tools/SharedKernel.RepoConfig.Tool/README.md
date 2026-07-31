@@ -64,6 +64,25 @@ booleans and `--output-directory <path>` to choose the generated-plan location.
 Before selection, it requires the six fixed manifests and assigns every solution xUnit project to
 exactly one of them; manifest drift fails the detection job rather than skipping validation.
 
+## Protected workflow commands
+
+The `automation` command group is reserved for
+`.github/workflows/roadmap-maintenance.yml`. It binds each phase to fixed GitHub Actions environment
+values and the fixed `artifacts/roadmap-maintenance/roadmap-plan.json` path:
+
+| Command | Behavior |
+| --- | --- |
+| `automation plan-github` | Creates a self-digested plan from `GITHUB_RUN_ID`, `GITHUB_REPOSITORY`, the clean checkout, and live restricted issue structure. |
+| `automation validate-plan` | Revalidates `ROADMAP_PLAN_DIGEST` and all live inputs before writes. |
+| `automation apply-plan` | Adds only closure transitions named exactly by the approved plan. |
+| `automation seal-result` | Rejects changes outside `roadmap/**` and binds the result to `ROADMAP_ARTIFACT_DIGEST`. |
+| `automation ensure-branch-available` | Rejects an existing generated branch before pull-request creation. |
+| `automation verify-result` | Repeats live and local validation using `ROADMAP_RESULT_DIGEST` immediately before push. |
+
+Plan and result outputs are written only through `GITHUB_OUTPUT`; summaries contain validated digests,
+counts, and SHAs rather than issue metadata. These commands do not replace the protected environment or
+the reviewed workflow sequence.
+
 ## Exit codes
 
 | Code | Meaning |

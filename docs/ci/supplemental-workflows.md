@@ -141,6 +141,47 @@ The current optimization stance is intentionally conservative: the workflow keep
 Dev Container CLI path, but broader startup work stays deferred unless devcontainer latency
 becomes a demonstrated contributor pain point.
 
+## Roadmap maintenance workflow
+
+`.github/workflows/roadmap-maintenance.yml` is a manual-only plan/apply workflow. It reads the
+current `main` branch and restricted GitHub issue structure, but never mutates issues. Its only
+writable outcome is a draft pull request containing changes under `roadmap/**`.
+
+The workflow has one Boolean dispatch input, `apply_changes`, which defaults to `false`:
+
+- `false` creates and uploads an integrity-bound plan for one day; no privileged token is minted;
+- `true` creates a fresh plan, then waits at the protected `roadmap-maintenance` environment before
+  applying it and opening a pull request when changes remain.
+
+The apply job revalidates the plan, default-branch OID, repository inputs, live issue snapshot, and
+explicit closure approvals before writing. It runs reconciliation and intake locally, validates the
+result, confines changed paths to regular files under `roadmap/**`, seals the resulting digest, and
+repeats the live validation immediately before the pull-request action. An existing generated branch
+causes a hard failure rather than an update or overwrite. Normal `pull_request` CI is expected to run
+for the App-authored branch.
+
+### Required repository setup
+
+1. Create a GitHub App dedicated to roadmap maintenance and install it only on this repository.
+2. Grant the App repository permissions `Contents: Read and write`, `Issues: Read-only`, and
+   `Pull requests: Read and write`. Do not grant organization or account permissions.
+3. Create the `roadmap-maintenance` Actions environment. Require maintainer review, prevent
+   self-review where available, and restrict deployment branches to `main`.
+4. Add `ROADMAP_MAINTENANCE_APP_CLIENT_ID` as an environment variable and
+   `ROADMAP_MAINTENANCE_APP_PRIVATE_KEY` as an environment secret. Never store the private key in a
+   repository variable, file, artifact, or log.
+5. Keep `CI_UBUNTU_RUNNER` set to the repository's supported hosted Linux runner.
+6. Ensure the repository permits the installed App to create pull requests. The workflow's own
+   `GITHUB_TOKEN` remains read-only.
+
+Dispatch the workflow from `main`. Review the plan summary and
+`roadmap-plan-<run-id>-<run-attempt>` artifact before approving the environment. The App token is minted
+only after local validation, is scoped to the current repository with the three permissions above, and
+is revoked by the token action after the job.
+
+No personal access token is supported. Failed validation, stale `main`, an altered artifact, an existing
+automation branch, a non-roadmap change, or a changed live snapshot stops the run without pushing.
+
 ## Release prep workflow
 
 A separate workflow (`.github/workflows/release-prep.yml`) prepares release artifacts without

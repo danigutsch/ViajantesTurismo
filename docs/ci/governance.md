@@ -105,10 +105,12 @@ The workflow uses a small reviewed action set.
 | `actions/checkout` | Repository checkout |
 | `actions/setup-dotnet` | .NET SDK provisioning |
 | `actions/cache` | Reviewed dependency caching where configured |
-| `actions/download-artifact` | Retrieve SARIF artifact for the dedicated code-scanning upload job |
-| `actions/upload-artifact` | Test result artifact upload |
+| `actions/create-github-app-token` | Mint a short-lived, repository-scoped roadmap pull-request token after environment approval |
+| `actions/download-artifact` | Retrieve immutable artifacts between jobs in the same workflow run |
+| `actions/upload-artifact` | Upload bounded test, scan, release, and roadmap-plan artifacts |
 | `actions/dependency-review-action` | PR dependency and license review |
 | `github/codeql-action/upload-sarif` | Upload SARIF results from secret scanning |
+| `peter-evans/create-pull-request` | Commit confined roadmap changes to a signed App-authored pull-request branch |
 
 Coverage collection uses `coverlet.MTP` 10.1.0 and the pinned local
 `dotnet-reportgenerator-globaltool` 5.5.11 for HTML and merged Cobertura. The C# repository tool
