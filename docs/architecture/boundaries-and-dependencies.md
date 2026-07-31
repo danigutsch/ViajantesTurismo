@@ -131,6 +131,7 @@ flowchart TB
     ViajantesTurismo_Branding_ApiService[ViajantesTurismo.Branding.ApiService] --> SharedKernel_ApiVersioning_AspNetCore[SharedKernel.ApiVersioning.AspNetCore]
     ViajantesTurismo_Branding_ApiService[ViajantesTurismo.Branding.ApiService] --> SharedKernel_AspNetCore[SharedKernel.AspNetCore]
     ViajantesTurismo_Branding_ApiService[ViajantesTurismo.Branding.ApiService] --> SharedKernel_Branding[SharedKernel.Branding]
+    ViajantesTurismo_Branding_ApiService[ViajantesTurismo.Branding.ApiService] --> SharedKernel_BuildingBlocks[SharedKernel.BuildingBlocks]
     ViajantesTurismo_Branding_ApiService[ViajantesTurismo.Branding.ApiService] --> SharedKernel_HttpCaching_AspNetCore[SharedKernel.HttpCaching.AspNetCore]
     ViajantesTurismo_Branding_ApiService[ViajantesTurismo.Branding.ApiService] --> SharedKernel_OpenApi[SharedKernel.OpenApi]
     ViajantesTurismo_Branding_ApiService[ViajantesTurismo.Branding.ApiService] --> ViajantesTurismo_Branding_Infrastructure[ViajantesTurismo.Branding.Infrastructure]

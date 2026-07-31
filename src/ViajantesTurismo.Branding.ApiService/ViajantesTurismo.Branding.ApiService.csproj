@@ -23,6 +23,7 @@
         <ProjectReference Include="..\ViajantesTurismo.Branding.Infrastructure\ViajantesTurismo.Branding.Infrastructure.csproj" />
         <ProjectReference Include="..\ViajantesTurismo.Resources\ViajantesTurismo.Resources.csproj" />
         <ProjectReference Include="..\ViajantesTurismo.ServiceDefaults\ViajantesTurismo.ServiceDefaults.csproj" />
+        <ProjectReference Include="..\SharedKernel\SharedKernel.BuildingBlocks\SharedKernel.BuildingBlocks.csproj" />
     </ItemGroup>
 
     <ItemGroup>

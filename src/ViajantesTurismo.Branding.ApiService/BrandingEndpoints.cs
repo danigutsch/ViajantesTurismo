@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.OutputCaching;
 using SharedKernel.ApiVersioning.AspNetCore;
 using SharedKernel.Branding;
+using SharedKernel.BuildingBlocks;
 using SharedKernel.HttpCaching.AspNetCore;
 using SharedKernel.Results;
 
@@ -63,7 +64,7 @@ internal static class BrandingEndpoints
         }
 
         await store.SaveSettings(settings.Value, ct).ConfigureAwait(false);
-        await InvalidatePublicBrandingCache(outputCacheStore, logger, ct).ConfigureAwait(false);
+        await InvalidatePublicBrandingCache(outputCacheStore, logger).ConfigureAwait(false);
         return Results.Ok(ToDto(settings.Value));
     }
 
@@ -72,10 +73,21 @@ internal static class BrandingEndpoints
         return await store.GetSettings(ct).ConfigureAwait(false) ?? BrandingDefaults.CreateSettings();
     }
 
-    private static async Task InvalidatePublicBrandingCache(IOutputCacheStore outputCacheStore, ILogger logger, CancellationToken ct)
+    private static async Task InvalidatePublicBrandingCache(IOutputCacheStore outputCacheStore, ILogger logger)
     {
-        await outputCacheStore.EvictByTagAsync(BrandingHttpCache.PublicBrandingTag, ct).ConfigureAwait(false);
-        logger.PublicCacheAreaInvalidated(BrandingHttpCache.PublicBrandingArea);
+        try
+        {
+            await outputCacheStore
+                .EvictByTagAsync(BrandingHttpCache.PublicBrandingTag, CancellationToken.None)
+                .ConfigureAwait(false);
+            logger.PublicCacheAreaInvalidated(BrandingHttpCache.PublicBrandingArea);
+        }
+        catch (Exception exception) when (exception.ShouldHandleAsFailure(CancellationToken.None))
+        {
+            logger.PublicCacheAreaInvalidationFailed(
+                BrandingHttpCache.PublicBrandingArea,
+                exception.GetType().Name);
+        }
     }
 
     private static BrandingSettingsDto ToDto(BrandingSettings settings)

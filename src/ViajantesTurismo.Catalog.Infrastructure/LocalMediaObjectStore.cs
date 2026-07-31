@@ -8,6 +8,8 @@ namespace ViajantesTurismo.Catalog.Infrastructure;
 internal sealed class LocalMediaObjectStore(IOptions<LocalMediaObjectStorageOptions> storageOptions) : IMediaObjectStore
 {
     private const string UriPathSeparator = "/";
+    private const string TemporaryFilePrefix = ".viajantes-";
+    private const string TemporaryFileSuffix = ".tmp";
 
     private readonly LocalMediaObjectStorageOptions options = storageOptions.Value;
 
@@ -16,17 +18,42 @@ internal sealed class LocalMediaObjectStore(IOptions<LocalMediaObjectStorageOpti
         ArgumentNullException.ThrowIfNull(request);
 
         var path = GetSafeObjectPath(request.ObjectKey);
-        Directory.CreateDirectory(Path.GetDirectoryName(path) ?? throw new InvalidOperationException("Media object path must include a directory."));
-
-        using var destination = new FileStream(path, new FileStreamOptions
+        if (IsTemporaryArtifact(path))
         {
-            Mode = FileMode.Create,
-            Access = FileAccess.Write,
-            Share = FileShare.None,
-            BufferSize = 81920,
-            Options = FileOptions.Asynchronous
-        });
-        await request.Content.CopyToAsync(destination, ct).ConfigureAwait(false);
+            throw new ArgumentException("The object key uses a reserved temporary-file name.", nameof(request));
+        }
+
+        var directoryPath = Path.GetDirectoryName(path)
+            ?? throw new InvalidOperationException("Media object path must include a directory.");
+        Directory.CreateDirectory(directoryPath);
+        var temporaryPath = Path.Combine(
+            directoryPath,
+            $"{TemporaryFilePrefix}{Guid.CreateVersion7():N}{TemporaryFileSuffix}");
+
+        try
+        {
+            var destination = new FileStream(temporaryPath, new FileStreamOptions
+            {
+                Mode = FileMode.CreateNew,
+                Access = FileAccess.Write,
+                Share = FileShare.None,
+                BufferSize = 81920,
+                Options = FileOptions.Asynchronous
+            });
+            await using (destination.ConfigureAwait(false))
+            {
+                await request.Content.CopyToAsync(destination, ct).ConfigureAwait(false);
+                await destination.FlushAsync(ct).ConfigureAwait(false);
+            }
+
+            ct.ThrowIfCancellationRequested();
+            File.Move(temporaryPath, path, overwrite: true);
+        }
+        catch
+        {
+            DeleteTemporaryFileAfterFailure(temporaryPath);
+            throw;
+        }
 
         return new MediaObjectWriteResult(
             request.ObjectKey,
@@ -46,7 +73,7 @@ internal sealed class LocalMediaObjectStore(IOptions<LocalMediaObjectStorageOpti
         {
             Mode = FileMode.Open,
             Access = FileAccess.Read,
-            Share = FileShare.Read,
+            Share = FileShare.Read | FileShare.Delete,
             BufferSize = 81920,
             Options = FileOptions.Asynchronous
         });
@@ -73,6 +100,7 @@ internal sealed class LocalMediaObjectStore(IOptions<LocalMediaObjectStorageOpti
 
         var normalizedPrefix = NormalizePrefix(prefix);
         var keys = Directory.EnumerateFiles(root, "*", SearchOption.AllDirectories)
+            .Where(path => !IsTemporaryArtifact(path))
             .Select(path => Path.GetRelativePath(root, path).Replace(Path.DirectorySeparatorChar, '/'))
             .Where(key => key.StartsWith(normalizedPrefix, StringComparison.Ordinal))
             .Order(StringComparer.Ordinal)
@@ -93,6 +121,7 @@ internal sealed class LocalMediaObjectStore(IOptions<LocalMediaObjectStorageOpti
 
         var normalizedPrefix = NormalizePrefix(prefix);
         var objects = Directory.EnumerateFiles(root, "*", SearchOption.AllDirectories)
+            .Where(path => !IsTemporaryArtifact(path))
             .Select(path => new MediaObjectInventoryItem(
                 Path.GetRelativePath(root, path).Replace(Path.DirectorySeparatorChar, '/'),
                 new DateTimeOffset(File.GetLastWriteTimeUtc(path))))
@@ -185,4 +214,34 @@ internal sealed class LocalMediaObjectStore(IOptions<LocalMediaObjectStorageOpti
         ".WEBP" => "image/webp",
         _ => "application/octet-stream"
     };
+
+    private static bool IsTemporaryArtifact(string path)
+    {
+        var fileName = Path.GetFileName(path);
+        var expectedLength = TemporaryFilePrefix.Length + 32 + TemporaryFileSuffix.Length;
+        if (fileName.Length != expectedLength ||
+            !fileName.StartsWith(TemporaryFilePrefix, StringComparison.Ordinal) ||
+            !fileName.EndsWith(TemporaryFileSuffix, StringComparison.Ordinal))
+        {
+            return false;
+        }
+
+        return Guid.TryParseExact(fileName.AsSpan(TemporaryFilePrefix.Length, 32), "N", out _);
+    }
+
+    private static void DeleteTemporaryFileAfterFailure(string temporaryPath)
+    {
+        try
+        {
+            File.Delete(temporaryPath);
+        }
+        catch (IOException)
+        {
+            // Preserve the primary write failure; reserved artifacts remain hidden from object inventory.
+        }
+        catch (UnauthorizedAccessException)
+        {
+            // Preserve the primary write failure; reserved artifacts remain hidden from object inventory.
+        }
+    }
 }
