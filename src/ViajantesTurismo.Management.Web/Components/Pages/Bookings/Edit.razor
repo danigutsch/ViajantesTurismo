@@ -338,6 +338,8 @@ else
 }
 
 @code {
+    private const int MaxCompanionChoices = 500;
+
     /// <summary>
     /// The ID of the booking to edit.
     /// </summary>
@@ -685,7 +687,7 @@ else
     {
         try
         {
-            _customers = await CustomersApi.GetCustomers(CancellationToken.None, maxItems: int.MaxValue);
+            _customers = await CustomersApi.GetCustomers(CancellationToken.None, maxItems: MaxCompanionChoices);
         }
         catch (Exception)
         {

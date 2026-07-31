@@ -359,6 +359,24 @@ public sealed class EditPageTests : BunitContext
     [Trait(SharedKernel.Testing.TestTraitNames.ScopeName, TestTraits.ComponentScope)]
     [Trait(SharedKernel.Testing.TestTraitNames.AreaName, TestTraits.ManagementWebArea)]
     [Trait(SharedKernel.Testing.TestTraitNames.CategoryName, TestTraits.ComponentCategory)]
+    public void Companion_choice_loading_uses_the_bounded_limit()
+    {
+        // Arrange
+        var booking = BuildBookingDto();
+        _fakeBookingsApi.AddBooking(booking);
+
+        // Act
+        var cut = Render<Edit>(parameters => parameters.Add(page => page.Id, booking.Id));
+        cut.WaitForAssertion(() => cut.Find("#roomType"));
+
+        // Assert
+        _fakeCustomersApi.LastGetCustomersMaxItems.ShouldBe(500);
+    }
+
+    [Fact]
+    [Trait(SharedKernel.Testing.TestTraitNames.ScopeName, TestTraits.ComponentScope)]
+    [Trait(SharedKernel.Testing.TestTraitNames.AreaName, TestTraits.ManagementWebArea)]
+    [Trait(SharedKernel.Testing.TestTraitNames.CategoryName, TestTraits.ComponentCategory)]
     public async Task Selecting_single_room_removes_companion_controls()
     {
         // Arrange

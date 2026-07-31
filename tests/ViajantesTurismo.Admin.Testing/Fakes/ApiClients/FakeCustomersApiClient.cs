@@ -23,8 +23,12 @@ public sealed class FakeCustomersApiClient : ICustomersApiClient
 
     public IReadOnlyDictionary<string, string>? LastCommitConflictResolutions { get; private set; }
 
+    public int? LastGetCustomersMaxItems { get; private set; }
+
     public Task<IReadOnlyList<GetCustomerDto>> GetCustomers(CancellationToken ct, int maxItems = 100)
     {
+        LastGetCustomersMaxItems = maxItems;
+
         if (_getCustomersException is not null)
         {
             throw _getCustomersException;
