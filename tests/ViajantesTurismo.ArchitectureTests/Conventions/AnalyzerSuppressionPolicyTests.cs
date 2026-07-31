@@ -25,6 +25,7 @@ public sealed partial class AnalyzerSuppressionPolicyTests
         "tests/ViajantesTurismo.Admin.Infrastructure.Tests/Documents/PostgreSqlDocumentStoreScenario.cs",
         "tests/ViajantesTurismo.Admin.Infrastructure.Tests/Initialization/DevelopmentDataInitializationPostgreSqlScenario.cs",
         "tests/ViajantesTurismo.Admin.Infrastructure.Tests/Messaging/AdminMessagingMigrationScenario.cs",
+        "tests/ViajantesTurismo.Admin.Infrastructure.Tests/Tours/TourStorePostgreSqlScenario.cs",
         "tests/ViajantesTurismo.Admin.Infrastructure.Tests/PostgreSqlTestCleanup.cs",
         "tests/ViajantesTurismo.Admin.Infrastructure.Tests/PostgreSqlTestDatabase.cs",
         "tests/ViajantesTurismo.Admin.Infrastructure.Tests/PostgreSqlTestServerFixture.cs",

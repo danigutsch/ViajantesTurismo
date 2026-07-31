@@ -1,3 +1,5 @@
+using SharedKernel.Results;
+
 namespace ViajantesTurismo.Admin.Domain.Tours;
 
 /// <summary>
@@ -32,8 +34,8 @@ public interface ITourStore
     /// </summary>
     /// <param name="bookingId">The booking ID.</param>
     /// <param name="ct">The cancellation token.</param>
-    /// <returns>The owning Tour ID when found; otherwise, null.</returns>
-    Task<Guid?> GetTourIdByBookingId(Guid bookingId, CancellationToken ct);
+    /// <returns>The owning Tour ID when found; otherwise, an empty option.</returns>
+    Task<Option<Guid>> GetTourIdByBookingId(Guid bookingId, CancellationToken ct);
 
     /// <summary>
     /// Checks if a tour with the specified identifier already exists.

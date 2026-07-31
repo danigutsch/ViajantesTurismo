@@ -23,7 +23,7 @@ public sealed class DeleteBookingCommandHandler(
         ArgumentNullException.ThrowIfNull(command);
 
         var tourId = await tourStore.GetTourIdByBookingId(command.BookingId, ct);
-        if (tourId is not { } owningTourId)
+        if (!tourId.TryGetValue(out var owningTourId))
         {
             return BookingErrors.BookingNotFound(command.BookingId);
         }

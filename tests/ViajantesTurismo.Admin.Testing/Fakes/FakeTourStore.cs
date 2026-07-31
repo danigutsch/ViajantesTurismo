@@ -1,3 +1,4 @@
+using SharedKernel.Results;
 using ViajantesTurismo.Admin.Domain.Tours;
 
 namespace ViajantesTurismo.Admin.Testing.Fakes;
@@ -14,8 +15,10 @@ public sealed class FakeTourStore : ITourStore
     public Task<Tour?> GetByBookingId(Guid bookingId, CancellationToken ct) =>
         Task.FromResult(_tours.SingleOrDefault(t => t.Bookings.Any(b => b.Id == bookingId)));
 
-    public Task<Guid?> GetTourIdByBookingId(Guid bookingId, CancellationToken ct) =>
-        Task.FromResult(_tours.SingleOrDefault(t => t.Bookings.Any(b => b.Id == bookingId))?.Id);
+    public Task<Option<Guid>> GetTourIdByBookingId(Guid bookingId, CancellationToken ct) =>
+        Task.FromResult(
+            Option.FromNullable(_tours.SingleOrDefault(tour => tour.Bookings.Any(booking => booking.Id == bookingId)))
+                .Map(tour => tour.Id));
 
     public Task<bool> IdentifierExists(string identifier, CancellationToken ct) =>
         Task.FromResult(_tours.Any(t =>
