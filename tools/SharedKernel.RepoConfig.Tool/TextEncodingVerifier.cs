@@ -520,9 +520,7 @@ internal static class TextEncodingVerifier
 
                 if (!result.ShouldContinue)
                 {
-                    return result.Issue is null
-                        ? [new RepoConfigIssue(".", "Git blob inspection failed.")]
-                        : [result.Issue];
+                    return [result.Issue ?? new RepoConfigIssue(".", "Git blob inspection failed.")];
                 }
 
                 if (result.Issue is not null)
