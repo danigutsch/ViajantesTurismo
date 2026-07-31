@@ -34,9 +34,21 @@ public sealed class RegenerateDocumentDraftCommandHandler(
             command.IdempotencyKey,
             requestFingerprint,
             ct);
-        if (existingResult is { } replayedResult)
+        if (existingResult is { IsSuccess: true } replayedResult)
         {
             return replayedResult;
+        }
+
+        if (existingResult is { } conflictResult)
+        {
+            return await RecordAndReturn(
+                conflictResult,
+                command.AuditContext,
+                command.DocumentId,
+                null,
+                null,
+                DocumentAuditReasonCode.StateConflict,
+                ct);
         }
 
         var now = timeProvider.GetUtcNow().UtcDateTime;
@@ -112,12 +124,14 @@ public sealed class RegenerateDocumentDraftCommandHandler(
                 ct);
         }
 
-        return await documentCommandIdempotency.Execute(
+        var operationWasInvoked = false;
+        var result = await documentCommandIdempotency.Execute(
             idempotencyScope,
             command.IdempotencyKey,
             requestFingerprint,
             async () =>
             {
+                operationWasInvoked = true;
                 var replacementResult = lineage.CreateRevision(current.Id, contentResult.Value, now, command.AuditContext);
                 if (replacementResult.IsFailure)
                 {
@@ -134,6 +148,16 @@ public sealed class RegenerateDocumentDraftCommandHandler(
                 return Result.Ok(replacementResult.Value.Id);
             },
             ct);
+        return result.IsFailure && !operationWasInvoked
+            ? await RecordAndReturn(
+                result,
+                command.AuditContext,
+                current.Id,
+                current.BookingId,
+                current.Revision,
+                DocumentAuditReasonCode.StateConflict,
+                ct)
+            : result;
     }
 
     private async Task<Result<Guid>> RecordAndReturn(

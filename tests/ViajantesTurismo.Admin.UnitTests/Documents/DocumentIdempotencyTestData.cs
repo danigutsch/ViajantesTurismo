@@ -14,10 +14,11 @@ internal static class DocumentIdempotencyTestData
         IdempotencyScope scope,
         IdempotencyKey key,
         Guid documentId,
+        string requestFingerprint,
         IUnitOfWork unitOfWork) => CreateCompletedWithFingerprint(
             scope,
             key,
-            documentId.ToString("N"),
+            $"{requestFingerprint}:{documentId:N}",
             unitOfWork);
 
     internal static DocumentCommandIdempotency CreateCompletedWithFingerprint(

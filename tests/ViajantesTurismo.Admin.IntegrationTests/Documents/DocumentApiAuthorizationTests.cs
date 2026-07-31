@@ -17,6 +17,7 @@ public sealed class DocumentApiAuthorizationTests(ApiFixture fixture)
 
         // Assert
         response.StatusCode.ShouldBe(HttpStatusCode.Unauthorized);
+        DocumentNoStoreHeaders.ArePresent(response).ShouldBeTrue();
     }
 
     [Theory]
@@ -32,5 +33,6 @@ public sealed class DocumentApiAuthorizationTests(ApiFixture fixture)
 
         // Assert
         response.StatusCode.ShouldBe(HttpStatusCode.Forbidden);
+        DocumentNoStoreHeaders.ArePresent(response).ShouldBeTrue();
     }
 }

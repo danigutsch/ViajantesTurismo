@@ -81,6 +81,116 @@ public sealed class DocumentApiEndpointTests(ApiFixture fixture)
     }
 
     [Fact]
+    public async Task Successful_document_routes_return_standard_no_store_headers()
+    {
+        // Arrange
+        var cancellationToken = TestContext.Current.CancellationToken;
+        var tour = await fixture.Client.CreateTestTour("document-no-store", "Document no store", cancellationToken);
+        var customer = await fixture.Client.CreateTestCustomer("Document", "No store", cancellationToken);
+        var booking = await fixture.Client.CreateTestBooking(tour.Id, customer.Id, null, cancellationToken);
+        using var confirmResponse = await fixture.Client.ConfirmBooking(booking.Id, cancellationToken);
+        confirmResponse.StatusCode.ShouldBe(HttpStatusCode.OK);
+
+        // Act
+        using var generateResponse = await fixture.Client.PostAsync(
+            new Uri($"/api/v1/documents/bookings/{booking.Id}/contract-drafts", UriKind.Relative),
+            null,
+            cancellationToken);
+        var generated = await generateResponse.Content.ReadFromJsonAsync<GetDocumentDto>(cancellationToken)
+            ?? throw new InvalidOperationException("Document generation did not return a document.");
+        using var getResponse = await fixture.Client.GetAsync(
+            new Uri($"/api/v1/documents/{generated.Id}", UriKind.Relative),
+            cancellationToken);
+        using var updateResponse = await fixture.Client.PatchAsJsonAsync(
+            new Uri($"/api/v1/documents/{generated.Id}/fields/greeting", UriKind.Relative),
+            new UpdateDocumentFieldDto { Value = "No-store response value" },
+            cancellationToken);
+        using var approveResponse = await fixture.Client.PostAsync(
+            new Uri($"/api/v1/documents/{generated.Id}/approve", UriKind.Relative),
+            null,
+            cancellationToken);
+        using var finalizeResponse = await fixture.Client.PostAsync(
+            new Uri($"/api/v1/documents/{generated.Id}/finalize", UriKind.Relative),
+            null,
+            cancellationToken);
+        using var downloadResponse = await fixture.Client.GetAsync(
+            new Uri($"/api/v1/documents/{generated.Id}/download", UriKind.Relative),
+            cancellationToken);
+        using var regenerateResponse = await fixture.Client.PostAsync(
+            new Uri($"/api/v1/documents/{generated.Id}/regenerate", UriKind.Relative),
+            null,
+            cancellationToken);
+        var replacement = await regenerateResponse.Content.ReadFromJsonAsync<GetDocumentDto>(cancellationToken)
+            ?? throw new InvalidOperationException("Document regeneration did not return a document.");
+        using var beginReviewResponse = await fixture.Client.PostAsync(
+            new Uri($"/api/v1/documents/{replacement.Id}/review", UriKind.Relative),
+            null,
+            cancellationToken);
+        using var requestChangesResponse = await fixture.Client.PostAsync(
+            new Uri($"/api/v1/documents/{replacement.Id}/changes-requested", UriKind.Relative),
+            null,
+            cancellationToken);
+        using var resumeReviewResponse = await fixture.Client.PostAsync(
+            new Uri($"/api/v1/documents/{replacement.Id}/review", UriKind.Relative),
+            null,
+            cancellationToken);
+        using var replacementApproveResponse = await fixture.Client.PostAsync(
+            new Uri($"/api/v1/documents/{replacement.Id}/approve", UriKind.Relative),
+            null,
+            cancellationToken);
+        using var replacementFinalizeResponse = await fixture.Client.PostAsync(
+            new Uri($"/api/v1/documents/{replacement.Id}/finalize", UriKind.Relative),
+            null,
+            cancellationToken);
+        using var voidResponse = await fixture.Client.PostAsync(
+            new Uri($"/api/v1/documents/{replacement.Id}/void", UriKind.Relative),
+            null,
+            cancellationToken);
+        var responses = new[]
+        {
+            generateResponse,
+            getResponse,
+            updateResponse,
+            approveResponse,
+            finalizeResponse,
+            downloadResponse,
+            regenerateResponse,
+            beginReviewResponse,
+            requestChangesResponse,
+            resumeReviewResponse,
+            replacementApproveResponse,
+            replacementFinalizeResponse,
+            voidResponse,
+        };
+        var coveredRoutes = responses
+            .Select(response =>
+            {
+                var request = response.RequestMessage
+                    ?? throw new InvalidOperationException("A document response did not retain its request metadata.");
+                return (
+                    request.Method.Method,
+                    DocumentApiRouteCases.Normalize(
+                        request.RequestUri?.AbsolutePath ?? string.Empty,
+                        booking.Id,
+                        generated.Id,
+                        replacement.Id));
+            })
+            .Distinct()
+            .OrderBy(route => route.Item2, StringComparer.Ordinal)
+            .ThenBy(route => route.Method, StringComparer.Ordinal)
+            .ToArray();
+        var expectedRoutes = DocumentApiRouteCases.Expected
+            .OrderBy(route => route.Route, StringComparer.Ordinal)
+            .ThenBy(route => route.Method, StringComparer.Ordinal)
+            .ToArray();
+
+        // Assert
+        coveredRoutes.ShouldBe(expectedRoutes);
+        responses.All(response => response.IsSuccessStatusCode).ShouldBeTrue();
+        responses.All(DocumentNoStoreHeaders.ArePresent).ShouldBeTrue();
+    }
+
+    [Fact]
     public async Task Contract_draft_generation_replays_a_completed_idempotency_key_without_duplicate_state_or_audit()
     {
         // Arrange
@@ -857,9 +967,7 @@ public sealed class DocumentApiEndpointTests(ApiFixture fixture)
         finalized.FinalizedAt.ShouldNotBeNull();
 
         artifactResponse.StatusCode.ShouldBe(HttpStatusCode.OK);
-        artifactResponse.Headers.CacheControl.ShouldNotBeNull().NoStore.ShouldBeTrue();
-        artifactResponse.Headers.Pragma.Select(value => value.Name).ShouldContain("no-cache");
-        artifactResponse.Content.Headers.GetValues("Expires").ShouldContain("0");
+        DocumentNoStoreHeaders.ArePresent(artifactResponse).ShouldBeTrue();
         artifactResponse.Headers.GetValues("X-Content-Type-Options").ShouldContain("nosniff");
         artifactResponse.Content.Headers.ContentType.ShouldNotBeNull().MediaType.ShouldBe("text/html");
         var contentDisposition = artifactResponse.Content.Headers.ContentDisposition.ShouldNotBeNull();

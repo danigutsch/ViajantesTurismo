@@ -153,11 +153,6 @@ public sealed class DocumentCommandIdempotency(
             return false;
         }
 
-        if (Guid.TryParseExact(resultFingerprint, "N", out documentId))
-        {
-            return true;
-        }
-
         return resultFingerprint.Length == Sha256HexLength + 1 + GuidNLength
             && resultFingerprint[Sha256HexLength] == FingerprintSeparator
             && resultFingerprint.AsSpan(0, Sha256HexLength).Equals(

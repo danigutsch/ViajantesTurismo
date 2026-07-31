@@ -307,6 +307,7 @@ internal sealed class PostgreSqlDocumentStoreScenario : IAsyncDisposable
             ValidateScopes = true,
         });
         var scope = IdempotencyScope.From($"admin.documents.generate-contract-draft:{first.BookingId:N}");
+        var competingAttemptCompleted = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
         await using var firstOperationScope = serviceProvider.CreateAsyncScope();
         await using var secondOperationScope = serviceProvider.CreateAsyncScope();
         var firstAttempt = CaptureSameKeyGeneration(
@@ -314,6 +315,7 @@ internal sealed class PostgreSqlDocumentStoreScenario : IAsyncDisposable
             scope,
             key,
             requestFingerprint,
+            competingAttemptCompleted,
             firstOperationScope.ServiceProvider,
             ct);
         var secondAttempt = CaptureSameKeyGeneration(
@@ -321,6 +323,7 @@ internal sealed class PostgreSqlDocumentStoreScenario : IAsyncDisposable
             scope,
             key,
             requestFingerprint,
+            competingAttemptCompleted,
             secondOperationScope.ServiceProvider,
             ct);
         try
@@ -575,6 +578,7 @@ internal sealed class PostgreSqlDocumentStoreScenario : IAsyncDisposable
         IdempotencyScope scope,
         IdempotencyKey key,
         string requestFingerprint,
+        TaskCompletionSource competingAttemptCompleted,
         IServiceProvider serviceProvider,
         CancellationToken ct)
     {
@@ -587,12 +591,15 @@ internal sealed class PostgreSqlDocumentStoreScenario : IAsyncDisposable
             return replay;
         }
 
-        return await coordinator.Execute(
+        var operationWasInvoked = false;
+        var result = await coordinator.Execute(
             scope,
             key,
             requestFingerprint,
-            () =>
+            async () =>
             {
+                operationWasInvoked = true;
+                await competingAttemptCompleted.Task.WaitAsync(TimeSpan.FromSeconds(10), ct);
                 var lineage = DocumentLineage.Restore([document]);
                 dbContext.DocumentLineages.Add(lineage);
                 var audit = DocumentAuditRecord.Create(
@@ -606,9 +613,44 @@ internal sealed class PostgreSqlDocumentStoreScenario : IAsyncDisposable
                     Guid.CreateVersion7().ToString("N"),
                     document.CreatedAt).Value;
                 dbContext.DocumentAuditRecords.Add(audit);
-                return Task.FromResult(Result.Ok(document.Id));
+                return Result.Ok(document.Id);
             },
             ct);
+
+        if (operationWasInvoked)
+        {
+            return result;
+        }
+
+        try
+        {
+            if (result.IsSuccess)
+            {
+                return result;
+            }
+
+            var auditContext = DocumentAuditContext.Create(
+                Guid.CreateVersion7().ToString("N"),
+                Guid.CreateVersion7().ToString("N")).Value;
+            var auditWriter = new DocumentAuditWriter(
+                new DocumentAuditStore(dbContext),
+                dbContext,
+                TimeProvider.System);
+            var auditResult = await auditWriter.Add(
+                auditContext,
+                DocumentAuditOperation.Generate,
+                null,
+                document.BookingId,
+                null,
+                DocumentAuditOutcome.Rejected,
+                DocumentAuditReasonCode.StateConflict,
+                ct);
+            return auditResult.IsFailure ? auditResult.ConvertError<Guid>() : result;
+        }
+        finally
+        {
+            competingAttemptCompleted.TrySetResult();
+        }
     }
 
     private AdminWriteDbContext CreateDbContext(

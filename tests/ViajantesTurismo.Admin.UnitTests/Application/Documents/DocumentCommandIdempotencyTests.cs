@@ -70,7 +70,12 @@ public sealed class DocumentCommandIdempotencyTests
         var key = IdempotencyKey.From(Guid.CreateVersion7().ToString("N"));
         var completedDocumentId = Guid.CreateVersion7();
         var unitOfWork = new FakeUnitOfWork();
-        var coordinator = DocumentIdempotencyTestData.CreateCompleted(scope, key, completedDocumentId, unitOfWork);
+        var coordinator = DocumentIdempotencyTestData.CreateCompleted(
+            scope,
+            key,
+            completedDocumentId,
+            RequestFingerprint,
+            unitOfWork);
         var operationWasInvoked = false;
 
         // Act
@@ -161,6 +166,34 @@ public sealed class DocumentCommandIdempotencyTests
         existingResult.ShouldNotBeNull().Status.ShouldBe(ResultStatus.Conflict);
         executionResult.Status.ShouldBe(ResultStatus.Conflict);
         operationWasInvoked.ShouldBeFalse();
+        unitOfWork.SaveEntitiesCallCount.ShouldBe(0);
+    }
+
+    [Fact]
+    public async Task Legacy_bare_guid_entry_conflicts_when_template_inputs_change()
+    {
+        // Arrange
+        var scope = IdempotencyScope.From($"admin.documents.generate-contract-draft:{Guid.CreateVersion7():N}");
+        var key = IdempotencyKey.From(Guid.CreateVersion7().ToString("N"));
+        var unitOfWork = new FakeUnitOfWork();
+        var coordinator = DocumentIdempotencyTestData.CreateCompletedWithFingerprint(
+            scope,
+            key,
+            Guid.CreateVersion7().ToString("N"),
+            unitOfWork);
+        var changedRequestFingerprint = DocumentCommandIdempotency.CreateRequestFingerprint(
+            "tour-service-contract",
+            "2");
+
+        // Act
+        var result = await coordinator.GetExistingResult(
+            scope,
+            key,
+            changedRequestFingerprint,
+            CancellationToken.None);
+
+        // Assert
+        result.ShouldNotBeNull().Status.ShouldBe(ResultStatus.Conflict);
         unitOfWork.SaveEntitiesCallCount.ShouldBe(0);
     }
 
