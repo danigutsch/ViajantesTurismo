@@ -22,6 +22,7 @@ public sealed partial class AnalyzerSuppressionPolicyTests
         "tests/SharedKernel.Npgsql.Tests/PostgreSqlTestDatabaseLease.cs",
         "tests/SharedKernel.Npgsql.Tests/PostgreSqlTestServerFixture.cs",
         "tests/SharedKernel.Npgsql.Tests/PostgreSqlTestCleanup.cs",
+        "tests/ViajantesTurismo.Admin.Infrastructure.Tests/Customers/CustomerEmailPostgreSqlScenario.cs",
         "tests/ViajantesTurismo.Admin.Infrastructure.Tests/Documents/PostgreSqlDocumentStoreScenario.cs",
         "tests/ViajantesTurismo.Admin.Infrastructure.Tests/Initialization/DevelopmentDataInitializationPostgreSqlScenario.cs",
         "tests/ViajantesTurismo.Admin.Infrastructure.Tests/Messaging/AdminMessagingMigrationScenario.cs",
