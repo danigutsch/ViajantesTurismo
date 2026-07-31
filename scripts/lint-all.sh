@@ -79,6 +79,7 @@ fi
 
 run_shellcheck "${shellcheck_targets[@]}"
 bash scripts/check-line-endings.sh
+dotnet run --project tools/SharedKernel.RepoConfig.Tool -- text-encoding --root .
 bash scripts/lint-json.sh
 bash scripts/lint-gherkin.sh tests/**/*.feature
 bash scripts/lint-links.sh
