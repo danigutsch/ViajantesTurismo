@@ -57,7 +57,7 @@ public class ConditionalStateTests(AspireSystemTestFixture fixture) : AspireSyst
         await BookingWorkflow.NavigateToEdit(pendingBooking.Id);
 
         // Assert
-        await Expect(Page.Locator("#status")).ToBeEnabledAsync();
+        await Expect(Page.Locator(".booking-status-badge")).ToContainTextAsync("Pending");
         await Expect(Page.Locator("#notes")).ToBeEnabledAsync();
         await Expect(Page.Locator("#discountType")).ToBeEnabledAsync();
         await Expect(Page.GetButton("Update Booking")).ToBeEnabledAsync();

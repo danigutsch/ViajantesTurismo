@@ -16,7 +16,7 @@ public static class ConditionalStateTestHelpers
         await navigateToEdit(bookingId);
 
         await Expect(page.Locator(".alert-warning")).ToContainTextAsync(terminalStateText);
-        await Expect(page.Locator("#status")).ToBeDisabledAsync();
+        await Expect(page.Locator(".booking-status-badge")).ToContainTextAsync(terminalStateText);
         await Expect(page.Locator("#notes")).ToBeDisabledAsync();
         await Expect(page.Locator("#discountType")).ToBeDisabledAsync();
         await Expect(page.GetButton("Update Booking")).ToBeDisabledAsync();
