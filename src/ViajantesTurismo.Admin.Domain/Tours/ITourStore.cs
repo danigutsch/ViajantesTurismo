@@ -1,3 +1,5 @@
+using SharedKernel.Results;
+
 namespace ViajantesTurismo.Admin.Domain.Tours;
 
 /// <summary>
@@ -26,6 +28,14 @@ public interface ITourStore
     /// <param name="ct">Cancellation token to cancel the operation.</param>
     /// <returns>The tour that owns the booking if found; otherwise, null.</returns>
     Task<Tour?> GetByBookingId(Guid bookingId, CancellationToken ct);
+
+    /// <summary>
+    /// Gets the owning Tour ID for a booking without loading the aggregate.
+    /// </summary>
+    /// <param name="bookingId">The booking ID.</param>
+    /// <param name="ct">The cancellation token.</param>
+    /// <returns>The owning Tour ID when found; otherwise, an empty option.</returns>
+    Task<Option<Guid>> GetTourIdByBookingId(Guid bookingId, CancellationToken ct);
 
     /// <summary>
     /// Checks if a tour with the specified identifier already exists.

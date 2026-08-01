@@ -1224,6 +1224,7 @@
       "viajantesturismo.admin.infrastructure": {
         "type": "Project",
         "dependencies": {
+          "Aspire.Npgsql": "[13.4.6, )",
           "Aspire.Npgsql.EntityFrameworkCore.PostgreSQL": "[13.4.6, )",
           "SharedKernel.AuditTrail": "[0.1.0-alpha.0, )",
           "SharedKernel.Domain": "[0.1.0-alpha.0, )",

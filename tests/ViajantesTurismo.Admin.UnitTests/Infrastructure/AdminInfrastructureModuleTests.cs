@@ -48,6 +48,19 @@ public sealed class AdminInfrastructureModuleTests
     }
 
     [Fact]
+    public void AddInfrastructure_registers_the_tour_capacity_mutation_lock()
+    {
+        // Arrange
+        using var services = AdminInfrastructureModuleTestServices.CreateWithInfrastructureModule();
+
+        // Act
+        var capacityMutationLock = services.TourCapacityMutationLock;
+
+        // Assert
+        capacityMutationLock.ShouldNotBeNull();
+    }
+
+    [Fact]
     public void AddApplication_requires_an_integration_event_outbox_to_resolve_domain_dispatching()
     {
         using var services = AdminInfrastructureModuleTestServices.CreateWithoutOutbox();

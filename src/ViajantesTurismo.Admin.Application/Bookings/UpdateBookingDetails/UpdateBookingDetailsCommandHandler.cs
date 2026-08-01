@@ -1,4 +1,5 @@
 using ViajantesTurismo.Admin.Application.Mappings;
+using ViajantesTurismo.Admin.Application.Tours;
 using SharedKernel.Results;
 using ViajantesTurismo.Admin.Domain.Tours;
 
@@ -9,6 +10,7 @@ namespace ViajantesTurismo.Admin.Application.Bookings.UpdateBookingDetails;
 /// </summary>
 public sealed class UpdateBookingDetailsCommandHandler(
     ITourStore tourStore,
+    ITourCapacityMutationLock capacityMutationLock,
     IUnitOfWork unitOfWork)
 {
     /// <summary>
@@ -21,7 +23,14 @@ public sealed class UpdateBookingDetailsCommandHandler(
     {
         ArgumentNullException.ThrowIfNull(command);
 
-        var tour = await tourStore.GetByBookingId(command.BookingId, ct);
+        var tourId = await tourStore.GetTourIdByBookingId(command.BookingId, ct);
+        if (!tourId.TryGetValue(out var owningTourId))
+        {
+            return BookingErrors.BookingNotFound(command.BookingId);
+        }
+
+        await using var capacityLease = await capacityMutationLock.Acquire(owningTourId, ct);
+        var tour = await tourStore.GetById(owningTourId, ct);
         if (tour is null)
         {
             return BookingErrors.BookingNotFound(command.BookingId);

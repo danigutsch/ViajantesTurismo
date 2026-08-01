@@ -555,7 +555,20 @@ public sealed partial class Tour : IAggregateRoot<Guid>
             return bookingResult.ConvertError();
         }
 
-        return bookingResult.Value.Confirm();
+        var booking = bookingResult.Value;
+        if (booking.Status == BookingStatus.Pending)
+        {
+            var proposedCount = CurrentCustomerCount + booking.ParticipantCount;
+            if (proposedCount > Capacity.MaxCustomers)
+            {
+                return TourErrors.ConfirmedCapacityExceeded(
+                    Capacity.MaxCustomers,
+                    CurrentCustomerCount,
+                    proposedCount);
+            }
+        }
+
+        return booking.Confirm();
     }
 
     /// <summary>
@@ -701,6 +714,22 @@ public sealed partial class Tour : IAggregateRoot<Guid>
 
         var companionOption = companionCustomerResult.Value;
         var companionCustomer = companionOption.HasValue ? companionOption.Value : null;
+
+        if (roomType == RoomType.SingleOccupancy && companionCustomer is not null)
+        {
+            return BookingErrors.SingleRoomCannotHaveCompanion();
+        }
+
+        var proposedParticipantCount = companionCustomer is null ? 1 : 2;
+        var proposedCount = CurrentCustomerCount - booking.ParticipantCount + proposedParticipantCount;
+
+        if (booking.Status == BookingStatus.Confirmed && proposedCount > Capacity.MaxCustomers)
+        {
+            return TourErrors.ConfirmedCapacityExceeded(
+                Capacity.MaxCustomers,
+                CurrentCustomerCount,
+                proposedCount);
+        }
 
         var updateRoomResult = booking.UpdateRoom(roomType, roomAdditionalCost, companionCustomer);
         if (updateRoomResult.IsFailure)

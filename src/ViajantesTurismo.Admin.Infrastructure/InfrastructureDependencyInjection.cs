@@ -16,6 +16,7 @@ using ViajantesTurismo.Admin.Contracts.IntegrationEvents;
 using ViajantesTurismo.Admin.Contracts.IntegrationEvents.Tours;
 using ViajantesTurismo.Admin.Application;
 using ViajantesTurismo.Admin.Application.Documents;
+using ViajantesTurismo.Admin.Application.Tours;
 using ViajantesTurismo.Admin.Domain.Customers;
 using ViajantesTurismo.Admin.Domain.Documents;
 using ViajantesTurismo.Admin.Infrastructure.Documents;
@@ -29,6 +30,8 @@ namespace ViajantesTurismo.Admin.Infrastructure;
 /// </summary>
 public static class InfrastructureDependencyInjection
 {
+    private const int TourCapacityLockMaximumPoolSize = 8;
+
     /// <summary>
     /// Applies Admin migrations from the dedicated database initialization application.
     /// </summary>
@@ -78,6 +81,7 @@ public static class InfrastructureDependencyInjection
             builder.Services.AddDbContextDevelopmentDiagnostics<AdminReadDbContext>();
         }
 
+        builder.AddTourCapacityMutationLock();
         builder.AddAdminWriteDbContext();
         builder.AddAdminReadDbContext();
 
@@ -164,6 +168,23 @@ public static class InfrastructureDependencyInjection
         builder.AddNpgsqlDbContext<AdminWriteDbContext>(
             ResourceNames.AdminDatabase,
             configureDbContextOptions: options => ConfigureAdminWriteDbContext(builder, options));
+    }
+
+    private static void AddTourCapacityMutationLock<TApplicationBuilder>(this TApplicationBuilder builder)
+        where TApplicationBuilder : IHostApplicationBuilder
+    {
+        builder.AddKeyedNpgsqlDataSource(
+            ResourceNames.AdminDatabase,
+            configureDataSourceBuilder: dataSourceBuilder =>
+            {
+                ConfigureNpgsqlDataSource(dataSourceBuilder);
+                dataSourceBuilder.ConnectionStringBuilder.MaxPoolSize = Math.Min(
+                    TourCapacityLockMaximumPoolSize,
+                    dataSourceBuilder.ConnectionStringBuilder.MaxPoolSize);
+            });
+        builder.Services.AddSingleton<ITourCapacityMutationLock>(serviceProvider =>
+            new PostgreSqlTourCapacityMutationLock(
+                serviceProvider.GetRequiredKeyedService<NpgsqlDataSource>(ResourceNames.AdminDatabase)));
     }
 
     private static void AddAdminReadDbContext<TApplicationBuilder>(this TApplicationBuilder builder)

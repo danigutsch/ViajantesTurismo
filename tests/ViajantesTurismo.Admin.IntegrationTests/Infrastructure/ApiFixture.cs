@@ -1,6 +1,7 @@
 using Npgsql;
 using Projects;
 using SharedKernel.IntegrationTesting;
+using ViajantesTurismo.Admin.IntegrationTests.Infrastructure.Bookings;
 using ViajantesTurismo.Admin.IntegrationTests.Infrastructure.Documents;
 using ViajantesTurismo.Resources;
 
@@ -57,6 +58,16 @@ public sealed class ApiFixture : Testing.Integration.IAdminTestHost, IAsyncLifet
         Guid documentId,
         CancellationToken ct) =>
         DocumentMutationConcurrencyScenario.Create(GetDatabaseConnectionString(), documentId, ct);
+
+    internal Task<BookingCapacityConcurrencyScenario> CreateBookingCapacityConcurrencyScenario(
+        Guid firstBookingId,
+        Guid secondBookingId,
+        CancellationToken ct) =>
+        BookingCapacityConcurrencyScenario.Create(
+            GetDatabaseConnectionString(),
+            firstBookingId,
+            secondBookingId,
+            ct);
 
     internal Task<DocumentAuditInsertFailureScenario> CreateDocumentAuditInsertFailureScenario(
         Guid bookingId,

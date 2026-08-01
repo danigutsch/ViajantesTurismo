@@ -1,6 +1,6 @@
+using SharedKernel.Results;
 using ViajantesTurismo.Admin.Domain.Shared;
 using ViajantesTurismo.Admin.Testing.Behavior;
-using SharedKernel.Results;
 
 namespace ViajantesTurismo.Admin.UnitTests.Domain;
 
@@ -219,6 +219,83 @@ public class TourUpdateBookingDetailsTests
         (booking.RoomType).ShouldBe(RoomType.SingleOccupancy);
         (booking.CompanionCustomer).ShouldBeNull();
         (booking.PrincipalCustomer.BikeType).ShouldBe(BikeType.Regular);
+    }
+
+    [Fact]
+    public void UpdateBookingDetails_when_confirmed_companion_exceeds_capacity_returns_conflict_without_changes()
+    {
+        // Arrange
+        var tour = EntityBuilders.BuildTour(new TourOptions(Capacity: new TourCapacityOptions(1, 1)));
+        var booking = BookingTestHelpers.AddSingleCustomerBooking(tour).Value;
+        tour.ConfirmBooking(booking.Id).IsSuccess.ShouldBeTrue();
+        var companionCustomerId = Guid.CreateVersion7();
+
+        // Act
+        var result = tour.UpdateBookingDetails(
+            booking.Id,
+            RoomType.DoubleOccupancy,
+            BikeType.EBike,
+            companionCustomerId,
+            BikeType.Regular);
+
+        // Assert
+        result.IsSuccess.ShouldBeFalse();
+        result.Status.ShouldBe(ResultStatus.Conflict);
+        booking.RoomType.ShouldBe(RoomType.DoubleOccupancy);
+        booking.PrincipalCustomer.BikeType.ShouldBe(BikeType.Regular);
+        booking.CompanionCustomer.ShouldBeNull();
+        tour.CurrentCustomerCount.ShouldBe(1);
+    }
+
+    [Fact]
+    public void UpdateBookingDetails_when_single_room_companion_also_exceeds_capacity_returns_validation_without_changes()
+    {
+        // Arrange
+        var tour = EntityBuilders.BuildTour(new TourOptions(Capacity: new TourCapacityOptions(1, 1)));
+        var booking = BookingTestHelpers.AddSingleCustomerBooking(tour).Value;
+        tour.ConfirmBooking(booking.Id).IsSuccess.ShouldBeTrue();
+
+        // Act
+        var result = tour.UpdateBookingDetails(
+            booking.Id,
+            RoomType.SingleOccupancy,
+            BikeType.EBike,
+            Guid.CreateVersion7(),
+            BikeType.Regular);
+
+        // Assert
+        result.IsSuccess.ShouldBeFalse();
+        result.Status.ShouldBe(ResultStatus.Invalid);
+        var hasCompanionError = result.ErrorDetails?.ValidationErrors?.ContainsKey("companionCustomerId") ?? false;
+        hasCompanionError.ShouldBeTrue();
+        booking.RoomType.ShouldBe(RoomType.DoubleOccupancy);
+        booking.PrincipalCustomer.BikeType.ShouldBe(BikeType.Regular);
+        booking.CompanionCustomer.ShouldBeNull();
+        tour.CurrentCustomerCount.ShouldBe(1);
+    }
+
+    [Fact]
+    public void UpdateBookingDetails_when_confirmed_companion_fits_capacity_succeeds()
+    {
+        // Arrange
+        var tour = EntityBuilders.BuildTour(new TourOptions(Capacity: new TourCapacityOptions(1, 2)));
+        var booking = BookingTestHelpers.AddSingleCustomerBooking(tour).Value;
+        tour.ConfirmBooking(booking.Id).IsSuccess.ShouldBeTrue();
+        var companionCustomerId = Guid.CreateVersion7();
+
+        // Act
+        var result = tour.UpdateBookingDetails(
+            booking.Id,
+            RoomType.DoubleOccupancy,
+            BikeType.EBike,
+            companionCustomerId,
+            BikeType.Regular);
+
+        // Assert
+        result.IsSuccess.ShouldBeTrue();
+        booking.CompanionCustomer.ShouldNotBeNull();
+        booking.CompanionCustomer.CustomerId.ShouldBe(companionCustomerId);
+        tour.CurrentCustomerCount.ShouldBe(2);
     }
 
 }
