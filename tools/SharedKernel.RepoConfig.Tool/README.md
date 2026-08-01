@@ -76,8 +76,8 @@ values and the fixed `artifacts/roadmap-maintenance/roadmap-plan.json` path:
 | `automation validate-plan` | Revalidates `ROADMAP_PLAN_DIGEST` and all live inputs before writes. |
 | `automation apply-plan` | Adds only closure transitions named exactly by the approved plan. |
 | `automation seal-result` | Rejects changes outside `roadmap/**` and binds the result to `ROADMAP_ARTIFACT_DIGEST`. |
-| `automation ensure-branch-available` | Rejects an existing generated branch before pull-request creation. |
-| `automation verify-result` | Repeats live and local validation using `ROADMAP_RESULT_DIGEST` immediately before push. |
+| `automation verify-result` | Performs a read-only repeat of live and local validation using `ROADMAP_RESULT_DIGEST`. |
+| `automation publish-result` | Revalidates the sealed result, creates a verified exact-base App commit, atomically creates a new branch, and opens one draft pull request. |
 
 Plan and result outputs are written only through `GITHUB_OUTPUT`; summaries contain validated digests,
 counts, and SHAs rather than issue metadata. These commands do not replace the protected environment or

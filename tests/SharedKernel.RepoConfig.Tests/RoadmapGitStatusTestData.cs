@@ -17,5 +17,8 @@ internal static class RoadmapGitStatusTestData
     public static byte[] Rename(string path, string originalPath) =>
         Encoding.UTF8.GetBytes($"2 R. N... 100644 100644 100644 {Hash} {Hash} R100 {path}\0{originalPath}\0");
 
+    public static byte[] Copy(string path, string originalPath) =>
+        Encoding.UTF8.GetBytes($"2 C. N... 100644 100644 100644 {Hash} {Hash} C100 {path}\0{originalPath}\0");
+
     public static byte[] Untracked(string path) => Encoding.UTF8.GetBytes($"? {path}\0");
 }

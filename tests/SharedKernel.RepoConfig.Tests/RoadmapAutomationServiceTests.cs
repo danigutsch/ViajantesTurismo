@@ -1,4 +1,3 @@
-using System.Net;
 using System.Text.Json;
 
 namespace SharedKernel.RepoConfig.Tests;
@@ -65,34 +64,6 @@ public sealed class RoadmapAutomationServiceTests
         transitions.Length.ShouldBe(1);
         transitions[0].GetProperty("issue").GetInt32().ShouldBe(100);
         transitions[0].GetProperty("roadmapItem").GetString().ShouldBe("RM-018");
-    }
-
-    [Fact]
-    public async Task Existing_automation_branch_collision_is_rejected_without_response_content()
-    {
-        // Arrange
-        using var workspace = new TemporaryRepoConfigWorkspace();
-        var plan = RoadmapAutomationTestPlan.Create();
-        var planPath = RoadmapAutomationService.GetPlanPath(workspace.RootPath);
-        plan.Write(planPath);
-        using var handler = new TestHttpMessageHandler();
-        handler.EnqueueJson(HttpStatusCode.OK, "{\"object\":{\"sha\":\"diagnostic-marker\"}}");
-        using var httpClient = new HttpClient(handler);
-        var service = new RoadmapAutomationService(
-            workspace.RootPath,
-            httpClient,
-            RoadmapAutomationTestGit.Create());
-
-        // Act
-        Func<Task> action = async () => await service.EnsureBranchAvailable(
-            plan.PlanDigest,
-            "owner/repository",
-            TestContext.Current.CancellationToken);
-        var exception = await action.ShouldThrow<InvalidOperationException>();
-
-        // Assert
-        exception.Message.ShouldBe("Roadmap automation branch already exists; refusing to overwrite it.");
-        exception.Message.ShouldNotContain("diagnostic-marker", StringComparison.Ordinal);
     }
 
     [Fact]

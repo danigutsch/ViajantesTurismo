@@ -74,6 +74,23 @@ public sealed class RoadmapGitChangeGuardTests
     }
 
     [Fact]
+    public void Git_copy_status_is_rejected_instead_of_deleting_the_source()
+    {
+        // Arrange
+        using var workspace = new TemporaryRepoConfigWorkspace();
+        workspace.WriteFile("roadmap/items/RM-101.json", "{}");
+
+        // Act
+        Action action = () => RoadmapGitChangeGuard.Capture(
+            workspace.RootPath,
+            RoadmapGitStatusTestData.Copy("roadmap/items/RM-101.json", "roadmap/items/RM-100.json"));
+        var exception = action.ShouldThrow<InvalidOperationException>();
+
+        // Assert
+        exception.Message.ShouldBe("Roadmap automation rejects Git copy changes.");
+    }
+
+    [Fact]
     public void Path_traversal_is_rejected()
     {
         // Arrange

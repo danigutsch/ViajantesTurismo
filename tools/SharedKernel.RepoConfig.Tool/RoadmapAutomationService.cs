@@ -1,5 +1,3 @@
-using System.Net;
-
 namespace SharedKernel.RepoConfig.Tool;
 
 internal sealed class RoadmapAutomationService
@@ -121,62 +119,6 @@ internal sealed class RoadmapAutomationService
             validation.InputSnapshot.Verify);
     }
 
-    public async Task EnsureBranchAvailable(
-        string expectedPlanDigest,
-        string expectedRepository,
-        CancellationToken cancellationToken)
-    {
-        ValidateExpectedRepository(expectedRepository);
-        var plan = RoadmapAutomationPlan.Load(GetPlanPath(_rootPath), expectedPlanDigest);
-        if (!string.Equals(plan.Repository, expectedRepository, StringComparison.OrdinalIgnoreCase))
-        {
-            throw new InvalidOperationException("Roadmap automation plan repository does not match the workflow repository.");
-        }
-
-        using var ownedHttpClient = _httpClient is null ? GitHubHttpClient.Create("roadmap branch validation") : null;
-        var httpClient = _httpClient ?? ownedHttpClient
-            ?? throw new InvalidOperationException("Roadmap automation could not create a GitHub client.");
-        var repositoryParts = expectedRepository.Split('/');
-        var endpoint = new Uri(
-            $"https://api.github.com/repos/{Uri.EscapeDataString(repositoryParts[0])}/{Uri.EscapeDataString(repositoryParts[1])}/git/ref/heads/{Uri.EscapeDataString(plan.BranchName)}");
-        using var timeout = new CancellationTokenSource(GitHubRequestTimeout.Duration);
-        using var requestCancellation = CancellationTokenSource.CreateLinkedTokenSource(
-            cancellationToken,
-            timeout.Token);
-        HttpResponseMessage response;
-        try
-        {
-            response = await httpClient.GetAsync(endpoint, requestCancellation.Token).ConfigureAwait(false);
-        }
-        catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
-        {
-            throw new OperationCanceledException(cancellationToken);
-        }
-        catch (OperationCanceledException) when (timeout.IsCancellationRequested)
-        {
-            throw GitHubRequestTimeout.Create("roadmap branch validation");
-        }
-        catch (HttpRequestException)
-        {
-            throw new InvalidOperationException("Roadmap automation branch availability check failed.");
-        }
-
-        using (response)
-        {
-            if (response.StatusCode == HttpStatusCode.NotFound)
-            {
-                return;
-            }
-
-            if (response.IsSuccessStatusCode)
-            {
-                throw new InvalidOperationException("Roadmap automation branch already exists; refusing to overwrite it.");
-            }
-
-            throw new InvalidOperationException("Roadmap automation branch availability check failed.");
-        }
-    }
-
     public async Task<RoadmapAutomationResultSeal> SealResult(
         string expectedPlanDigest,
         string expectedArtifactDigest,
@@ -208,19 +150,42 @@ internal sealed class RoadmapAutomationService
             expectedPlanDigest,
             expectedRepository,
             cancellationToken).ConfigureAwait(false);
-        var seal = RoadmapAutomationResultSeal.Load(
-            GetResultSealPath(_rootPath),
+        _ = ValidateResultSeal(
+            validation,
             expectedPlanDigest,
             expectedArtifactDigest,
             expectedResultDigest);
-        if (!string.Equals(seal.BaseSha, validation.Plan.BaseSha, StringComparison.Ordinal)
-            || !string.Equals(seal.SnapshotDigest, validation.Plan.SnapshotDigest, StringComparison.Ordinal)
-            || seal.HasChanges != validation.Changes.HasChanges
-            || seal.PathCount != validation.Changes.Paths.Count
-            || !string.Equals(seal.ResultDigest, validation.Changes.Digest, StringComparison.Ordinal))
+    }
+
+    public async Task<RoadmapGitHubPublication> PublishResult(
+        string expectedPlanDigest,
+        string expectedArtifactDigest,
+        string expectedResultDigest,
+        string expectedRepository,
+        CancellationToken cancellationToken)
+    {
+        var validation = await CreatePostApplyValidation(
+            expectedPlanDigest,
+            expectedRepository,
+            cancellationToken).ConfigureAwait(false);
+        var seal = ValidateResultSeal(
+            validation,
+            expectedPlanDigest,
+            expectedArtifactDigest,
+            expectedResultDigest);
+        if (!seal.HasChanges)
         {
-            throw new InvalidOperationException("Roadmap automation result changed after validation.");
+            throw new InvalidOperationException("Roadmap publication requires a nonempty sealed result.");
         }
+
+        using var ownedHttpClient = _httpClient is null
+            ? GitHubHttpClient.CreateFromGitHubToken("roadmap publication")
+            : null;
+        var httpClient = _httpClient ?? ownedHttpClient
+            ?? throw new InvalidOperationException("Roadmap automation could not create a GitHub client.");
+        return await new RoadmapGitHubPublisher(_rootPath, httpClient)
+            .Publish(validation.Plan, validation.Changes, cancellationToken)
+            .ConfigureAwait(false);
     }
 
     private async Task<PlanValidation> CreateValidation(
@@ -317,7 +282,9 @@ internal sealed class RoadmapAutomationService
         GitHubRoadmapReconciliation reconciliation,
         CancellationToken cancellationToken)
     {
-        using var ownedHttpClient = _httpClient is null ? GitHubHttpClient.Create("roadmap automation") : null;
+        using var ownedHttpClient = _httpClient is null
+            ? GitHubHttpClient.CreateFromGitHubToken("roadmap automation")
+            : null;
         var httpClient = _httpClient ?? ownedHttpClient
             ?? throw new InvalidOperationException("Roadmap automation could not create a GitHub client.");
         return await new GitHubRoadmapReconcileClient(httpClient)
@@ -336,6 +303,29 @@ internal sealed class RoadmapAutomationService
             snapshot.Issues,
             reconciliation.GetRequiredIssueNumbers(project),
             reconciliation.Repository);
+
+    private RoadmapAutomationResultSeal ValidateResultSeal(
+        PostApplyValidation validation,
+        string expectedPlanDigest,
+        string expectedArtifactDigest,
+        string expectedResultDigest)
+    {
+        var seal = RoadmapAutomationResultSeal.Load(
+            GetResultSealPath(_rootPath),
+            expectedPlanDigest,
+            expectedArtifactDigest,
+            expectedResultDigest);
+        if (!string.Equals(seal.BaseSha, validation.Plan.BaseSha, StringComparison.Ordinal)
+            || !string.Equals(seal.SnapshotDigest, validation.Plan.SnapshotDigest, StringComparison.Ordinal)
+            || seal.HasChanges != validation.Changes.HasChanges
+            || seal.PathCount != validation.Changes.Paths.Count
+            || !string.Equals(seal.ResultDigest, validation.Changes.Digest, StringComparison.Ordinal))
+        {
+            throw new InvalidOperationException("Roadmap automation result changed after validation.");
+        }
+
+        return seal;
+    }
 
     private static string RequireDefaultBranchOid(GitHubRoadmapReconcileSnapshot snapshot)
     {

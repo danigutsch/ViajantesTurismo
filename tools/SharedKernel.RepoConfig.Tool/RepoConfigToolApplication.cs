@@ -417,7 +417,7 @@ internal static class RepoConfigToolApplication
             and not "apply-plan"
             and not "seal-result"
             and not "verify-result"
-            and not "ensure-branch-available")
+            and not "publish-result")
         {
             return WriteUsageError(error, $"Unknown automation command: {remaining[0]}");
         }
@@ -503,12 +503,27 @@ internal static class RepoConfigToolApplication
                 await output.WriteLineAsync("Roadmap automation result verified.".AsMemory(), cancellationToken).ConfigureAwait(false);
                 return 0;
 
-            case "ensure-branch-available":
-                await service.EnsureBranchAvailable(
+            case "publish-result":
+                var publication = await service.PublishResult(
                     RequireEnvironmentVariable("ROADMAP_PLAN_DIGEST"),
+                    RequireEnvironmentVariable("ROADMAP_ARTIFACT_DIGEST"),
+                    RequireEnvironmentVariable("ROADMAP_RESULT_DIGEST"),
                     repository,
                     cancellationToken).ConfigureAwait(false);
-                await output.WriteLineAsync("Roadmap automation branch is available.".AsMemory(), cancellationToken).ConfigureAwait(false);
+                await AppendWorkflowOutput(
+                    [
+                        ("pull_request_url", publication.PullRequestUrl),
+                        ("publication_commit", publication.CommitSha)
+                    ],
+                    cancellationToken).ConfigureAwait(false);
+                await AppendWorkflowSummary(
+                    "Roadmap maintenance publication",
+                    [
+                        ("Pull request", publication.PullRequestUrl),
+                        ("Commit SHA", publication.CommitSha)
+                    ],
+                    cancellationToken).ConfigureAwait(false);
+                await output.WriteLineAsync("Roadmap automation pull request published.".AsMemory(), cancellationToken).ConfigureAwait(false);
                 return 0;
 
             default:

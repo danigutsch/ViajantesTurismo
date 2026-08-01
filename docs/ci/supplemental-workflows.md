@@ -156,9 +156,12 @@ The workflow has one Boolean dispatch input, `apply_changes`, which defaults to 
 The apply job revalidates the plan, default-branch OID, repository inputs, live issue snapshot, and
 explicit closure approvals before writing. It runs reconciliation and intake locally, validates the
 result, confines changed paths to regular files under `roadmap/**`, seals the resulting digest, and
-repeats the live validation immediately before the pull-request action. An existing generated branch
-causes a hard failure rather than an update or overwrite. Normal `pull_request` CI is expected to run
-for the App-authored branch.
+repeats the live validation inside the repository-owned publication command. Publication creates Git
+blobs and a tree from the sealed files, requires GitHub to report the App commit as verified, and sets
+the approved base SHA as its only parent. It rechecks `main` before and after atomically creating a new
+branch with `POST /git/refs`; a `422` collision fails without any ref update, force operation, or branch
+reuse. The draft pull-request response must report the exact planned base, created head, and a nonempty
+URL. The repository tool owns the temporary non-closing issue-reference line in the pull-request body.
 
 ### Required repository setup
 
@@ -180,7 +183,27 @@ only after local validation, is scoped to the current repository with the three 
 is revoked by the token action after the job.
 
 No personal access token is supported. Failed validation, stale `main`, an altered artifact, an existing
-automation branch, a non-roadmap change, or a changed live snapshot stops the run without pushing.
+automation branch, a non-roadmap change, or a changed live snapshot stops publication. If `main` moves
+after the create-only ref succeeds, publication stops before opening a pull request and leaves that new
+branch for explicit sandbox cleanup rather than risking an unguarded delete or update.
+
+### Sandbox publication race checks
+
+Run these checks only in a disposable repository with the sandbox App installation:
+
+1. Complete the plan and local apply phases, then arrange a sandbox test actor to create the exact
+   planned automation ref after result validation but before the publisher's `POST /git/refs`. The
+   publisher must receive `422`, leave the actor's ref unchanged, issue no `PATCH`, and create no pull
+   request. The deterministic repository test
+   `Publication_atomically_rejects_a_branch_created_after_validation` covers the same timing boundary
+   without a live mutation.
+2. Move sandbox `main` after result verification while publication is creating unreferenced Git objects.
+   The pre-ref OID recheck must fail with no branch or pull request. Also exercise movement immediately
+   after ref creation: the post-ref OID recheck must create no pull request and the sandbox branch must
+   be removed manually after evidence is recorded.
+3. On the success path, confirm the generated commit is verified, has the planned base as its sole
+   parent, the pull request is draft, its URL is nonempty, and its body contains the expected temporary
+   non-closing issue linkage.
 
 ## Release prep workflow
 

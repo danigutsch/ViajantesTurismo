@@ -34,7 +34,31 @@ internal static class RoadmapGitChangeGuard
         return new RoadmapGitChangeSet(
             entries.Length > 0,
             ComputeDigest(root, entries),
-            paths);
+            paths,
+            entries);
+    }
+
+    public static void Verify(string rootPath, RoadmapGitChangeSet expected)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(rootPath);
+        ArgumentNullException.ThrowIfNull(expected);
+
+        var root = Path.TrimEndingDirectorySeparator(Path.GetFullPath(rootPath));
+        foreach (var entry in expected.Entries)
+        {
+            ValidateModes(entry);
+            ValidatePath(root, entry.Path, requireCurrentFileSafety: true);
+            if (entry.OriginalPath is not null)
+            {
+                ValidatePath(root, entry.OriginalPath, requireCurrentFileSafety: false);
+            }
+        }
+
+        var digest = ComputeDigest(root, expected.Entries);
+        if (!string.Equals(digest, expected.Digest, StringComparison.Ordinal))
+        {
+            throw new InvalidOperationException("Roadmap automation result changed during publication.");
+        }
     }
 
     private static RoadmapGitStatusEntry[] ParseStatus(byte[] status)
@@ -93,6 +117,18 @@ internal static class RoadmapGitChangeGuard
                     || string.IsNullOrEmpty(fields[9])
                     || index >= records.Length - 1
                     || string.IsNullOrEmpty(records[index]))
+                {
+                    throw CreateParseException();
+                }
+
+                if (fields[8].StartsWith('C'))
+                {
+                    throw new InvalidOperationException("Roadmap automation rejects Git copy changes.");
+                }
+
+                if (fields[8].Length < 2
+                    || fields[8][0] != 'R'
+                    || fields[8][1..].Any(character => character is < '0' or > '9'))
                 {
                     throw CreateParseException();
                 }
