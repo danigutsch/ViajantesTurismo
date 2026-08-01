@@ -1,5 +1,3 @@
-using System.Text;
-
 namespace ViajantesTurismo.Management.WebTests.Components.Pages.Customers;
 
 public sealed class ImportCustomersDuplicateResolutionTests : BunitContext
@@ -78,6 +76,30 @@ public sealed class ImportCustomersDuplicateResolutionTests : BunitContext
 
         cut.WaitForAssertion(() =>
             (cut.Markup).ShouldContain("1 customer(s) imported successfully", StringComparison.Ordinal));
+    }
+
+    [Fact]
+    public void DuplicateResolution_commit_conflict_returns_to_resolution_instead_of_showing_success()
+    {
+        // Arrange
+        _fakeCustomersApi.SetImportCustomersResult(
+            new ImportResultDto(0, 0, [new ImportConflictDto("a@example.com")]));
+        _fakeCustomersApi.SetCommitImportResult(
+            new ImportResultDto(0, 0, [new ImportConflictDto("a@example.com")]));
+        var cut = ImportCustomersPreviewTestHelper.GoToPreview(
+            this,
+            CustomerImportCsvTestData.BuildCsvWithEmail("a@example.com"));
+        ImportCustomersTestDomHelper.FindButtonByText(cut, "Confirm Import").Click();
+        cut.WaitForAssertion(() => cut.Markup.ShouldContain("Resolve Duplicates", StringComparison.Ordinal));
+        cut.Find("button[data-action='keep']").Click();
+
+        // Act
+        cut.Find("button[data-action='confirm-import']").Click();
+
+        // Assert
+        cut.WaitForAssertion(() => _fakeCustomersApi.LastCommitFileContent.ShouldNotBeNull());
+        cut.Markup.ShouldContain("Resolve Duplicates", StringComparison.Ordinal);
+        cut.Markup.ShouldNotContain("Import complete.", StringComparison.Ordinal);
     }
 
     [Fact]
@@ -219,19 +241,63 @@ public sealed class ImportCustomersDuplicateResolutionTests : BunitContext
         (_fakeCustomersApi.LastCommitFileContent).ShouldNotBeNull();
         (_fakeCustomersApi.LastCommitFileName).ShouldBe("customers.csv");
 
-        var committedCsv = Encoding.UTF8.GetString(_fakeCustomersApi.LastCommitFileContent.ToArray());
-        var committedLines = committedCsv.Split(['\r', '\n'], StringSplitOptions.RemoveEmptyEntries);
+        var committedValues = ImportCustomersDuplicateResolutionTestHelper.ParseSingleDataRow(
+            _fakeCustomersApi.LastCommitFileContent.ToArray());
+        committedValues["FirstName"].ShouldBe("IncomingFirst");
+        committedValues["LastName"].ShouldBe("ExistingLast");
+        committedValues["Email"].ShouldBe("a@example.com");
+    }
 
-        (committedLines.Length).ShouldBe(2);
+    [Fact]
+    public void DuplicateResolution_retry_uses_the_effective_mixed_file_displayed_after_a_conflict()
+    {
+        // Arrange
+        _fakeCustomersApi.SetImportCustomersResult(
+            new ImportResultDto(0, 0, [new ImportConflictDto("a@example.com")]));
+        _fakeCustomersApi.SetCommitImportResult(
+            new ImportResultDto(0, 0, [new ImportConflictDto("a@example.com")]));
+        ImportCustomersDuplicateResolutionTestHelper.SeedExistingCustomer(
+            _fakeCustomersApi,
+            "a@example.com",
+            "ExistingFirst",
+            "ExistingLast");
+        var cut = ImportCustomersPreviewTestHelper.GoToPreview(
+            this,
+            CustomerImportCsvTestData.BuildCsvWithOverrides(new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
+            {
+                ["FirstName"] = "IncomingFirst",
+                ["LastName"] = "IncomingLast",
+                ["Email"] = "a@example.com",
+            }));
+        ImportCustomersTestDomHelper.FindButtonByText(cut, "Confirm Import").Click();
+        cut.WaitForAssertion(() => cut.Markup.ShouldContain("Resolve Duplicates", StringComparison.Ordinal));
+        cut.Find("button[data-action='mixed']").Click();
+        var firstNameRow = ImportCustomersTestDomHelper.FindRowContainingText(
+            cut,
+            "table.table.table-sm.mb-0 tbody tr",
+            "First Name");
+        var incomingButton = firstNameRow.QuerySelector("button[data-action='field-incoming']").ShouldNotBeNull();
+        incomingButton.Click();
+        cut.Find("button[data-action='confirm-import']").Click();
+        cut.WaitForAssertion(() => _fakeCustomersApi.LastCommitFileContent.ShouldNotBeNull());
+        var firstCommitFileContent = _fakeCustomersApi.LastCommitFileContent.ShouldNotBeNull();
+        var firstCommitValues = ImportCustomersDuplicateResolutionTestHelper.ParseSingleDataRow(
+            firstCommitFileContent.ToArray());
+        _fakeCustomersApi.SetCommitImportResult(new ImportResultDto(1, 0));
 
-        var committedHeaders = committedLines[0].Split(',');
-        var committedValues = committedLines[1].Split(',');
-        var headerIndexes = committedHeaders
-            .Select((header, index) => new { header, index })
-            .ToDictionary(item => item.header, item => item.index, StringComparer.Ordinal);
+        // Act
+        cut.Find("button[data-action='overwrite']").Click();
+        cut.Find("button[data-action='confirm-import']").Click();
+        cut.WaitForAssertion(() =>
+            cut.Markup.ShouldContain("1 customer(s) imported successfully", StringComparison.Ordinal));
+        var retryFileContent = _fakeCustomersApi.LastCommitFileContent.ShouldNotBeNull();
+        var retryValues = ImportCustomersDuplicateResolutionTestHelper.ParseSingleDataRow(
+            retryFileContent.ToArray());
 
-        (committedValues[headerIndexes["FirstName"]]).ShouldBe("IncomingFirst");
-        (committedValues[headerIndexes["LastName"]]).ShouldBe("ExistingLast");
-        (committedValues[headerIndexes["Email"]]).ShouldBe("a@example.com");
+        // Assert
+        firstCommitValues["FirstName"].ShouldBe("IncomingFirst");
+        firstCommitValues["LastName"].ShouldBe("ExistingLast");
+        retryValues["FirstName"].ShouldBe("IncomingFirst");
+        retryValues["LastName"].ShouldBe("ExistingLast");
     }
 }

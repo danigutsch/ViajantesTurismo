@@ -87,7 +87,14 @@ public sealed class CreateCustomerCommandHandler(
             new CustomerHealthInfo(emergencyContact, medicalInfo));
 
         customerStore.Add(customer);
-        await unitOfWork.SaveEntities(ct);
+        try
+        {
+            await unitOfWork.SaveEntities(ct);
+        }
+        catch (CustomerEmailConflictException)
+        {
+            return CustomerErrors.EmailAlreadyExists().ConvertError<Guid>();
+        }
 
         return Result.Ok(customer.Id);
     }

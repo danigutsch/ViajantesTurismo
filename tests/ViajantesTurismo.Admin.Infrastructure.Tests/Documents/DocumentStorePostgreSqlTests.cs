@@ -386,9 +386,7 @@ public sealed class DocumentStorePostgreSqlTests(PostgreSqlTestServerFixture fix
         var now = new DateTime(2026, 7, 21, 12, 0, 0, DateTimeKind.Utc);
         var existing = DocumentDraftInfrastructureTestData.CreateDraft(now);
         await Scenario.Seed(existing);
-        var duplicate = DocumentDraftInfrastructureTestData.CreateDraft(
-            now.AddMinutes(1),
-            existing.BookingId);
+        var duplicate = DocumentDraftInfrastructureTestData.CreateDraft(now.AddMinutes(1));
 
         // Act
         Func<Task> save = async () => await Scenario.SaveDuplicateRevision(

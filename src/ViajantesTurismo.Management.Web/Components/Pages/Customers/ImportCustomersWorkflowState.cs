@@ -34,6 +34,8 @@ internal sealed class ImportCustomersWorkflowState
 
     internal IReadOnlyList<ImportCustomerConflictState> ConflictStates { get; set; } = [];
 
+    internal byte[] ConflictSourceFileBytes { get; set; } = [];
+
     internal void SetPendingFile(
         string fileName,
         byte[] fileBytes,
@@ -47,6 +49,7 @@ internal sealed class ImportCustomersWorkflowState
         UserMappings = [];
         PreviewRows = [];
         ConflictStates = [];
+        ConflictSourceFileBytes = [];
         Result = null;
         Error = null;
         ValidationError = null;
@@ -59,6 +62,7 @@ internal sealed class ImportCustomersWorkflowState
         Error = null;
         ValidationError = null;
         ConflictStates = [];
+        ConflictSourceFileBytes = [];
         PreviewRows = [];
         Uploading = false;
     }

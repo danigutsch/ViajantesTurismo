@@ -14,6 +14,21 @@ namespace ViajantesTurismo.Admin.Infrastructure.Migrations
             migrationBuilder.EnsureSchema(
                 name: "messaging");
 
+            migrationBuilder.AlterDatabase()
+                .Annotation("Npgsql:PostgresExtension:citext", ",,");
+
+            migrationBuilder.Sql(
+                """
+                DO $$
+                BEGIN
+                    IF (SELECT datctype FROM pg_database WHERE datname = current_database())
+                        NOT IN ('C.UTF-8', 'C.utf8', 'en_US.UTF-8', 'en_US.utf8') THEN
+                        RAISE EXCEPTION 'Unsupported PostgreSQL LC_CTYPE for customer email uniqueness.';
+                    END IF;
+                END;
+                $$;
+                """);
+
             migrationBuilder.CreateTable(
                 name: "Customers",
                 columns: table => new
@@ -219,7 +234,7 @@ namespace ViajantesTurismo.Admin.Infrastructure.Migrations
                 columns: table => new
                 {
                     CustomerId = table.Column<Guid>(type: "uuid", nullable: false),
-                    Email = table.Column<string>(type: "text", nullable: false),
+                    Email = table.Column<string>(type: "citext", nullable: false),
                     Mobile = table.Column<string>(type: "text", nullable: false),
                     Instagram = table.Column<string>(type: "text", nullable: true),
                     Facebook = table.Column<string>(type: "text", nullable: true)
@@ -466,6 +481,12 @@ namespace ViajantesTurismo.Admin.Infrastructure.Migrations
                 column: "TourId");
 
             migrationBuilder.CreateIndex(
+                name: "UX_CustomerContactInfo_Email",
+                table: "CustomerContactInfo",
+                column: "Email",
+                unique: true);
+
+            migrationBuilder.CreateIndex(
                 name: "IX_DocumentAuditRecords_RetentionExpiresAt",
                 table: "DocumentAuditRecords",
                 column: "RetentionExpiresAt");
@@ -475,6 +496,12 @@ namespace ViajantesTurismo.Admin.Infrastructure.Migrations
                 table: "DocumentDrafts",
                 column: "RetentionExpiresAt",
                 filter: "\"FinalizedAt\" IS NULL");
+
+            migrationBuilder.CreateIndex(
+                name: "UX_DocumentDrafts_BookingId_Type_Revision",
+                table: "DocumentDrafts",
+                columns: new[] { "BookingId", "Type", "Revision" },
+                unique: true);
 
             migrationBuilder.CreateIndex(
                 name: "UX_DocumentDrafts_DocumentLineageId_Revision",
@@ -690,6 +717,7 @@ namespace ViajantesTurismo.Admin.Infrastructure.Migrations
 
             migrationBuilder.DropTable(
                 name: "Tours");
+
         }
     }
 }

@@ -2,6 +2,29 @@ namespace ViajantesTurismo.Management.WebTests.Components.Pages.Customers;
 
 internal static class ImportCustomersDuplicateResolutionTestHelper
 {
+    public static IReadOnlyDictionary<string, string> ParseSingleDataRow(byte[] fileContent)
+    {
+        var csv = System.Text.Encoding.UTF8.GetString(fileContent);
+        var lines = csv.Split(['\r', '\n'], StringSplitOptions.RemoveEmptyEntries);
+        if (lines.Length != 2)
+        {
+            throw new InvalidDataException(
+                $"Expected exactly one header row and one data row, but found {lines.Length} non-empty row(s).");
+        }
+
+        var headers = lines[0].Split(',');
+        var values = lines[1].Split(',');
+        if (values.Length != headers.Length)
+        {
+            throw new InvalidDataException(
+                $"Expected {headers.Length} data value(s) to match the headers, but found {values.Length}.");
+        }
+
+        return headers
+            .Select((header, index) => new KeyValuePair<string, string>(header, values[index]))
+            .ToDictionary(StringComparer.Ordinal);
+    }
+
     public static void SeedExistingCustomer(FakeCustomersApiClient fakeCustomersApi, string email, string firstName, string lastName)
     {
         var customerId = Guid.NewGuid();

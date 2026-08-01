@@ -3,6 +3,8 @@ using ViajantesTurismo.Admin.Contracts.Application;
 using ViajantesTurismo.Admin.Testing.Behavior;
 using ViajantesTurismo.Admin.Testing.Fakes;
 using SharedKernel.Results;
+using ViajantesTurismo.Admin.Application.Customers;
+using ViajantesTurismo.Admin.Testing.Builders;
 
 namespace ViajantesTurismo.Admin.UnitTests.Application.Customers;
 
@@ -166,5 +168,36 @@ public sealed class UpdateCustomerCommandHandlerTests
         // Assert
         (result.IsFailure).ShouldBeTrue();
         (result.Status).ShouldBe(ResultStatus.Conflict);
+    }
+
+    [Fact]
+    public async Task Handle_translates_a_persistence_email_conflict()
+    {
+        // Arrange
+        var existing = EntityBuilders.BuildCustomer(new CustomerOptions(Email: "original@example.com"));
+        var store = new FakeCustomerStore();
+        store.Seed(existing);
+        var dto = DtoBuilders.BuildUpdateCustomerDto(email: "updated@example.com");
+        var command = new UpdateCustomerCommand(
+            existing.Id,
+            dto.PersonalInfo,
+            dto.IdentificationInfo,
+            dto.ContactInfo,
+            dto.Address,
+            dto.PhysicalInfo,
+            dto.AccommodationPreferences,
+            dto.EmergencyContact,
+            dto.MedicalInfo);
+        var handler = new UpdateCustomerCommandHandler(
+            store,
+            new ThrowingUnitOfWork(new CustomerEmailConflictException()),
+            TimeProvider.System);
+
+        // Act
+        var result = await handler.Handle(command, TestContext.Current.CancellationToken);
+
+        // Assert
+        result.IsFailure.ShouldBeTrue();
+        result.Status.ShouldBe(ResultStatus.Conflict);
     }
 }

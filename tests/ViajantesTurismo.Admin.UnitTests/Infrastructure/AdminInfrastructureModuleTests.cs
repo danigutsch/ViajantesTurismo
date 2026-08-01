@@ -1,5 +1,3 @@
-using Microsoft.EntityFrameworkCore.Migrations;
-using Microsoft.EntityFrameworkCore.Migrations.Operations;
 using SharedKernel.Messaging.IntegrationEvents;
 using SharedKernel.Messaging.IntegrationEvents.EntityFrameworkCore;
 using SharedKernel.Testing;
@@ -133,32 +131,6 @@ public sealed class AdminInfrastructureModuleTests
 
         // Assert
         entityTypeNames.ShouldNotContain("IdempotencyEntryEntity");
-    }
-
-    [Fact]
-    public void Remove_unused_admin_idempotency_migration_refuses_unexpected_rows()
-    {
-        // Arrange
-        var migrationType = typeof(AdminWriteDbContext).Assembly.GetType(
-            "ViajantesTurismo.Admin.Infrastructure.Migrations.RemoveUnusedAdminIdempotencyKeys");
-
-        // Act
-        var migration = Activator.CreateInstance(migrationType.ShouldNotBeNull()).ShouldBeAssignableTo<Migration>();
-        var migrationBuilder = new MigrationBuilder("Npgsql.EntityFrameworkCore.PostgreSQL");
-        var upMethod = migration.GetType().GetMethod("Up", System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic)
-            .ShouldNotBeNull();
-
-        upMethod.Invoke(migration, [migrationBuilder]);
-        var guard = migrationBuilder.Operations.OfType<SqlOperation>().ShouldHaveSingleItem();
-        var droppedTables = migrationBuilder.Operations.OfType<DropTableOperation>()
-            .Select(static operation => operation.Name)
-            .ToArray();
-
-        // Assert
-        guard.Sql.ShouldContain("RAISE EXCEPTION", StringComparison.Ordinal);
-        guard.Sql.ShouldContain("messaging.idempotency_keys", StringComparison.Ordinal);
-        droppedTables.ShouldContain("idempotency_keys");
-        droppedTables.ShouldNotContain("outbox_messages");
     }
 
     [Fact]

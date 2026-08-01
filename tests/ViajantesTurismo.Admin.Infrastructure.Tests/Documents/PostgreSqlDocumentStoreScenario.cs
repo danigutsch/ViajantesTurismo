@@ -241,6 +241,7 @@ internal sealed class PostgreSqlDocumentStoreScenario : IAsyncDisposable
         CancellationToken ct)
     {
         await using var dbContext = CreateDbContext();
+        await SeedBookings(dbContext, [duplicate.BookingId], BookingStatus.Confirmed, ct);
         dbContext.DocumentDrafts.Add(duplicate);
         dbContext.Entry(duplicate)
             .Property(document => document.DocumentLineageId)

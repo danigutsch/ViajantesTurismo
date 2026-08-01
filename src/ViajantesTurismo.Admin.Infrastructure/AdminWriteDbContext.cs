@@ -1,6 +1,7 @@
 using Microsoft.EntityFrameworkCore;
 using SharedKernel.EntityFrameworkCore;
 using ViajantesTurismo.Admin.Application;
+using ViajantesTurismo.Admin.Application.Customers;
 using ViajantesTurismo.Admin.Application.Documents;
 using ViajantesTurismo.Admin.Domain.Customers;
 using ViajantesTurismo.Admin.Domain.Documents;
@@ -26,6 +27,14 @@ internal sealed class AdminWriteDbContext(
         try
         {
             _ = await SaveChangesAsync(ct);
+        }
+        catch (DbUpdateException exception) when (CustomerSchema.IsEmailConflict(exception))
+        {
+            throw new CustomerEmailConflictException(exception);
+        }
+        catch (Npgsql.PostgresException exception) when (CustomerSchema.IsEmailConflict(exception))
+        {
+            throw new CustomerEmailConflictException(exception);
         }
         catch (DbUpdateException exception) when (DocumentDraftSchema.IsRevisionConflict(exception))
         {
@@ -58,6 +67,7 @@ internal sealed class AdminWriteDbContext(
     {
         base.OnModelCreating(modelBuilder);
 
+        modelBuilder.HasPostgresExtension("citext");
         modelBuilder.ApplyConfiguration(new TourConfiguration());
         modelBuilder.ApplyConfiguration(new CustomerConfiguration());
         modelBuilder.ApplyConfiguration(new BookingConfiguration());

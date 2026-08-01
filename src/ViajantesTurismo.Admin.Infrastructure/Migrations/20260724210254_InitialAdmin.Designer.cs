@@ -12,8 +12,8 @@ using ViajantesTurismo.Admin.Infrastructure;
 namespace ViajantesTurismo.Admin.Infrastructure.Migrations
 {
     [DbContext(typeof(AdminWriteDbContext))]
-    [Migration("20260723174241_EnforceUniqueDocumentRevisionsAndRestoreIdempotency")]
-    partial class EnforceUniqueDocumentRevisionsAndRestoreIdempotency
+    [Migration("20260724210254_InitialAdmin")]
+    partial class InitialAdmin
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -23,6 +23,7 @@ namespace ViajantesTurismo.Admin.Infrastructure.Migrations
                 .HasAnnotation("ProductVersion", "10.0.10")
                 .HasAnnotation("Relational:MaxIdentifierLength", 63);
 
+            NpgsqlModelBuilderExtensions.HasPostgresExtension(modelBuilder, "citext");
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
 
             modelBuilder.Entity("SharedKernel.Idempotency.EntityFrameworkCore.IdempotencyEntryEntity", b =>
@@ -659,7 +660,7 @@ namespace ViajantesTurismo.Admin.Infrastructure.Migrations
 
                             b1.Property<string>("Email")
                                 .IsRequired()
-                                .HasColumnType("text");
+                                .HasColumnType("citext");
 
                             b1.Property<string>("Facebook")
                                 .HasColumnType("text");
@@ -672,6 +673,10 @@ namespace ViajantesTurismo.Admin.Infrastructure.Migrations
                                 .HasColumnType("text");
 
                             b1.HasKey("CustomerId");
+
+                            b1.HasIndex("Email")
+                                .IsUnique()
+                                .HasDatabaseName("UX_CustomerContactInfo_Email");
 
                             b1.ToTable("CustomerContactInfo", (string)null);
 
