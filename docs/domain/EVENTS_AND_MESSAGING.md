@@ -311,7 +311,8 @@ a distinct schema/table pair:
 ```csharp
 services.AddIntegrationEventOutbox<ModuleDbContext>(storage =>
 {
-    storage.Schema = "module_messaging";
+    storage.Schema = "messaging";
+    storage.OutboxSchema = "branding";
     storage.OutboxTableName = "outbox_messages";
     storage.TransportTableName = "transport_messages";
 });
@@ -323,6 +324,11 @@ services.AddIntegrationEventInbox<ModuleDbContext>(storage =>
 services.AddPostgreSqlIntegrationEventTransportProducer<ModuleDbContext>("downstream");
 services.AddIntegrationEventOutboxRelay<ModuleDbContext>();
 ```
+
+`Schema` remains the default for both integration-event tables. A non-null `OutboxSchema` or
+`TransportSchema` overrides that default only for its table; leaving either override null preserves
+the `Schema` mapping. In the example, the context owns `branding.outbox_messages` while publishing to
+`messaging.transport_messages`.
 
 For a transport-consumer-only context, call
 `ConfigureIntegrationEventStorage<TContext>(...)` before
