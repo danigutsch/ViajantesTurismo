@@ -374,8 +374,10 @@ public class AddPageTests : BunitContext
         // Assert
         await cut.WaitForStateAsync(() => cut.FindAll(".alert-success").Count > 0, TimeSpan.FromSeconds(2));
 
-        var createdTours = await _fakeToursApi.GetTours(CancellationToken.None);
-        (createdTours).ShouldHaveSingleItem();
+        var outcome = await _fakeToursApi.GetTours(CancellationToken.None);
+        outcome.Kind.ShouldBe(ContractCommandOutcomeKind.Succeeded);
+        var createdTours = outcome.Value.ShouldNotBeNull();
+        createdTours.ShouldHaveSingleItem();
 
         var tour = createdTours[0];
         (tour.Identifier).ShouldBe("CUBA2024");
@@ -405,7 +407,9 @@ public class AddPageTests : BunitContext
         // Assert
         await cut.WaitForStateAsync(() => cut.FindAll(".alert-success").Count > 0, TimeSpan.FromSeconds(2));
 
-        var createdTours = await _fakeToursApi.GetTours(CancellationToken.None);
+        var outcome = await _fakeToursApi.GetTours(CancellationToken.None);
+        outcome.Kind.ShouldBe(ContractCommandOutcomeKind.Succeeded);
+        var createdTours = outcome.Value.ShouldNotBeNull();
         var tour = createdTours[0];
 
         (tour.IncludedServices.Count).ShouldBe(3);

@@ -159,24 +159,32 @@ else
         _loadFailed = false;
         _tour = null;
 
+        var requestAborted = HttpContext?.RequestAborted ?? CancellationToken.None;
         try
         {
-            var requestAborted = HttpContext?.RequestAborted ?? CancellationToken.None;
-            _tour = await CatalogApi.GetPublishedTourBySlug(Slug, requestAborted);
-            if (_tour is null)
+            var outcome = await CatalogApi.GetPublishedTourBySlug(Slug, requestAborted);
+            if (outcome is { Kind: ContractCommandOutcomeKind.Succeeded, Value: { } tour })
+            {
+                _tour = tour;
+                return;
+            }
+
+            if (outcome.Kind == ContractCommandOutcomeKind.NotFound)
             {
                 Navigation.NotFound();
+                return;
             }
         }
-        catch (OperationCanceledException) when (HttpContext?.RequestAborted.IsCancellationRequested != true)
+        catch (OperationCanceledException) when (!requestAborted.IsCancellationRequested)
         {
-            PublicWebHttpCache.SetServiceUnavailableNoStore(HttpContext);
-            _loadFailed = true;
+            // Preserve the public fallback when an API implementation reports an upstream timeout as cancellation.
         }
         catch (HttpRequestException)
         {
-            PublicWebHttpCache.SetServiceUnavailableNoStore(HttpContext);
-            _loadFailed = true;
+            // Preserve the public fallback for API implementations that have not materialized transport outcomes.
         }
+
+        PublicWebHttpCache.SetServiceUnavailableNoStore(HttpContext);
+        _loadFailed = true;
     }
 }

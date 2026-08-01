@@ -19,9 +19,11 @@ public sealed class ToursApiClientTests
         });
         var sut = new ToursApiClient(httpClient);
 
-        var tours = await sut.GetTours(TestContext.Current.CancellationToken);
+        var outcome = await sut.GetTours(TestContext.Current.CancellationToken);
 
         requestPath.ShouldBe("/api/v1/tours");
+        outcome.Kind.ShouldBe(ContractCommandOutcomeKind.Succeeded);
+        var tours = outcome.Value.ShouldNotBeNull();
         var tour = tours.ShouldHaveSingleItem();
         tour.Identifier.ShouldBe("TOUR-1");
     }
@@ -33,8 +35,9 @@ public sealed class ToursApiClientTests
             CatalogToursApiClientTestsHelpers.JsonResponse($"[{AdminApiClientTestsHelpers.TourJson}, {AdminApiClientTestsHelpers.TourJson}]"));
         var sut = new ToursApiClient(httpClient);
 
-        var tours = await sut.GetTours(TestContext.Current.CancellationToken, maxItems: 1);
+        var outcome = await sut.GetTours(TestContext.Current.CancellationToken, maxItems: 1);
 
+        var tours = outcome.Value.ShouldNotBeNull();
         tours.ShouldHaveSingleItem();
     }
 
@@ -49,8 +52,9 @@ public sealed class ToursApiClientTests
         });
         var sut = new ToursApiClient(httpClient);
 
-        var tours = await sut.GetTours(TestContext.Current.CancellationToken, maxItems: 0);
+        var outcome = await sut.GetTours(TestContext.Current.CancellationToken, maxItems: 0);
 
+        var tours = outcome.Value.ShouldNotBeNull();
         tours.ShouldBeEmpty();
         requestCount.ShouldBe(0);
     }
@@ -67,9 +71,10 @@ public sealed class ToursApiClientTests
         });
         var sut = new ToursApiClient(httpClient);
 
-        var tour = await sut.GetTourById(tourId, TestContext.Current.CancellationToken);
+        var outcome = await sut.GetTourById(tourId, TestContext.Current.CancellationToken);
 
-        tour.ShouldNotBeNull();
+        outcome.Kind.ShouldBe(ContractCommandOutcomeKind.Succeeded);
+        var tour = outcome.Value.ShouldNotBeNull();
         requestPath.ShouldBe("/api/v1/tours/11111111-1111-1111-1111-111111111111");
         tour.Name.ShouldBe("First tour");
     }
@@ -80,21 +85,22 @@ public sealed class ToursApiClientTests
         using var httpClient = CatalogToursApiClientTestsHelpers.CreateClient(_ => new HttpResponseMessage(System.Net.HttpStatusCode.NotFound));
         var sut = new ToursApiClient(httpClient);
 
-        var tour = await sut.GetTourById(Guid.CreateVersion7(), TestContext.Current.CancellationToken);
+        var outcome = await sut.GetTourById(Guid.CreateVersion7(), TestContext.Current.CancellationToken);
 
-        tour.ShouldBeNull();
+        outcome.Kind.ShouldBe(ContractCommandOutcomeKind.NotFound);
+        outcome.Value.ShouldBeNull();
     }
 
     [Fact]
-    public async Task GetTourById_throws_when_admin_api_returns_success_with_null_body()
+    public async Task GetTourById_returns_malformed_outcome_when_admin_api_returns_success_with_null_body()
     {
         using var httpClient = CatalogToursApiClientTestsHelpers.CreateClient(_ => CatalogToursApiClientTestsHelpers.JsonResponse("null"));
         var sut = new ToursApiClient(httpClient);
 
-        Func<Task> act = async () => await sut.GetTourById(Guid.CreateVersion7(), TestContext.Current.CancellationToken);
+        var outcome = await sut.GetTourById(Guid.CreateVersion7(), TestContext.Current.CancellationToken);
 
-        var exception = await act.ShouldThrow<InvalidOperationException>();
-        exception.Message.ShouldBe("The tour response body was empty.");
+        outcome.Kind.ShouldBe(ContractCommandOutcomeKind.MalformedBody);
+        outcome.Value.ShouldBeNull();
     }
 
     [Fact]
@@ -175,9 +181,10 @@ public sealed class ToursApiClientTests
         });
         var sut = new ToursApiClient(httpClient);
 
-        await sut.UpdateTour(tourId, AdminApiClientTestsHelpers.UpdateTour(), TestContext.Current.CancellationToken);
+        var outcome = await sut.UpdateTour(tourId, AdminApiClientTestsHelpers.UpdateTour(), TestContext.Current.CancellationToken);
 
         requestMethod.ShouldBe(HttpMethods.Put);
         requestPath.ShouldBe("/api/v1/tours/11111111-1111-1111-1111-111111111111");
+        outcome.Kind.ShouldBe(ContractCommandOutcomeKind.Succeeded);
     }
 }

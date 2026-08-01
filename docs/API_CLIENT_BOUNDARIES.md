@@ -9,6 +9,7 @@ project. Apps configure base addresses and keep UI fallback behavior local.
 
 - `BookingsApiClient`
 - `CustomersApiClient`
+- `DocumentsApiClient`
 - `ToursApiClient`
 
 `ViajantesTurismo.Catalog.Contracts.Http` owns these typed HTTP client implementations:
@@ -77,15 +78,19 @@ Use this checklist before adding or moving an API client into a contract project
 
 If any item is false, keep the client app-local until the contract boundary is clearer.
 
-## Proven outcome model
+## Shared outcome model
 
-`CustomersApiClient.CreateCustomer` proves the first contract-owned command outcome shape:
+Admin and Catalog JSON clients use the shared contract outcome shape for caller-visible HTTP branches:
 
 - `ContractCommandOutcomeDto` carries `Kind`, `StatusCode`, optional `Location`, optional `ValidationErrors`, and an optional
   diagnostic `Message`.
 - `ContractCommandOutcomeKind` models success, validation problem, not found, unauthorized, forbidden, conflict, empty
-  body, malformed body, and unexpected status.
+  body, malformed body, unsupported content type, unexpected status, timeout, and transport failure.
 - The Web app maps non-success outcomes to user-focused UI errors and keeps navigation fallback local to the component.
+- Caller cancellation, programmer errors, and local upload-stream read failures remain exceptions. This preserves request
+  cancellation and lets upload callers retain their file-specific error messages and progress behavior.
+- Streaming media retains explicit response-stream ownership, while buffered document downloads retain their existing
+  artifact contract. Neither is wrapped in a materialized JSON outcome.
 
 ## Response outcome modeling
 
@@ -98,8 +103,9 @@ Outcome DTOs should:
 - include a short diagnostic `Message` only for non-PII parser state, such as empty or malformed response body;
 - avoid exposing raw response content, headers, route values, or transport implementation details.
 
-Use exceptions for cancellation, programmer errors, and transport failures until a real caller needs those failures as stable
-contract outcomes. Do not replace every HTTP error with a generic result wrapper by default.
+Use exceptions for caller cancellation, programmer errors, and local content failures. Shared materialized JSON clients map
+configured timeout, circuit-breaker, and HTTP transport failures to bounded outcomes because current Web callers need stable
+fallback behavior. Do not replace streaming response ownership or unrelated HTTP errors with a generic result wrapper.
 
 ## Result-based client design note
 
@@ -115,8 +121,8 @@ Recommended outcome shape:
 
 - Return endpoint-specific outcome DTOs when callers must branch on expected HTTP responses, empty bodies, malformed JSON,
   validation problems, or fallback paths.
-- Keep cancellation and programmer errors as exceptions.
-- Keep transport exceptions as exceptions until a real caller needs an explicit transport outcome.
+- Keep caller cancellation, programmer errors, and local upload-content failures as exceptions.
+- Map configured timeout and transport failures only when current callers need explicit fallback outcomes.
 - Put reusable outbound HTTP defaults in `SharedKernel.HttpClients`, starting with service-discovery and resilience defaults.
 - Apps/projects that perform outbound HTTP calls reference `SharedKernel.HttpClients` directly and call `AddHttpClientDefaults()`.
 - `ViajantesTurismo.ServiceDefaults` keeps host-wide service discovery and telemetry, but does not configure outbound

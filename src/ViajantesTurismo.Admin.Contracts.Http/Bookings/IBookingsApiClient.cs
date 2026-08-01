@@ -12,32 +12,32 @@ public interface IBookingsApiClient
     /// Gets all bookings.
     /// </summary>
     /// <param name="ct">Cancellation token for the request.</param>
-    /// <returns>Array of booking DTOs.</returns>
-    Task<GetBookingDto[]> GetAllBookings(CancellationToken ct);
+    /// <returns>The materialized booking-list outcome.</returns>
+    Task<ContractCommandOutcomeDto<GetBookingDto[]>> GetAllBookings(CancellationToken ct);
 
     /// <summary>
     /// Gets a specific booking by its ID.
     /// </summary>
     /// <param name="id">The unique identifier of the booking.</param>
     /// <param name="ct">Cancellation token for the request.</param>
-    /// <returns>The booking DTO if found, null otherwise.</returns>
-    Task<GetBookingDto?> GetBookingById(Guid id, CancellationToken ct);
+    /// <returns>The materialized booking outcome.</returns>
+    Task<ContractCommandOutcomeDto<GetBookingDto>> GetBookingById(Guid id, CancellationToken ct);
 
     /// <summary>
     /// Gets all bookings for a specific tour.
     /// </summary>
     /// <param name="tourId">The unique identifier of the tour.</param>
     /// <param name="ct">Cancellation token for the request.</param>
-    /// <returns>Array of booking DTOs for the specified tour.</returns>
-    Task<GetBookingDto[]> GetBookingsByTourId(Guid tourId, CancellationToken ct);
+    /// <returns>The materialized booking-list outcome.</returns>
+    Task<ContractCommandOutcomeDto<GetBookingDto[]>> GetBookingsByTourId(Guid tourId, CancellationToken ct);
 
     /// <summary>
     /// Gets all bookings for a specific customer.
     /// </summary>
     /// <param name="customerId">The unique identifier of the customer.</param>
     /// <param name="ct">Cancellation token for the request.</param>
-    /// <returns>Array of booking DTOs for the specified customer.</returns>
-    Task<GetBookingDto[]> GetBookingsByCustomerId(Guid customerId, CancellationToken ct);
+    /// <returns>The materialized booking-list outcome.</returns>
+    Task<ContractCommandOutcomeDto<GetBookingDto[]>> GetBookingsByCustomerId(Guid customerId, CancellationToken ct);
 
     /// <summary>
     /// Creates a new booking.
@@ -53,7 +53,8 @@ public interface IBookingsApiClient
     /// <param name="id">The unique identifier of the booking.</param>
     /// <param name="dto">The updated discount data.</param>
     /// <param name="ct">Cancellation token for the request.</param>
-    Task UpdateBookingDiscount(Guid id, UpdateBookingDiscountDto dto, CancellationToken ct);
+    /// <returns>The update outcome returned by the API.</returns>
+    Task<ContractCommandOutcomeDto> UpdateBookingDiscount(Guid id, UpdateBookingDiscountDto dto, CancellationToken ct);
 
     /// <summary>
     /// Updates the details of a booking (companion, notes, bike type, room type).
@@ -61,7 +62,8 @@ public interface IBookingsApiClient
     /// <param name="id">The unique identifier of the booking.</param>
     /// <param name="dto">The updated booking details.</param>
     /// <param name="ct">Cancellation token for the request.</param>
-    Task UpdateBookingDetails(Guid id, UpdateBookingDetailsDto dto, CancellationToken ct);
+    /// <returns>The update outcome returned by the API.</returns>
+    Task<ContractCommandOutcomeDto> UpdateBookingDetails(Guid id, UpdateBookingDetailsDto dto, CancellationToken ct);
 
     /// <summary>
     /// Updates the notes for a booking.
@@ -69,35 +71,40 @@ public interface IBookingsApiClient
     /// <param name="id">The unique identifier of the booking.</param>
     /// <param name="dto">The updated notes data.</param>
     /// <param name="ct">Cancellation token for the request.</param>
-    Task UpdateBookingNotes(Guid id, UpdateBookingNotesDto dto, CancellationToken ct);
+    /// <returns>The update outcome returned by the API.</returns>
+    Task<ContractCommandOutcomeDto> UpdateBookingNotes(Guid id, UpdateBookingNotesDto dto, CancellationToken ct);
 
     /// <summary>
     /// Cancels a booking.
     /// </summary>
     /// <param name="id">The unique identifier of the booking to cancel.</param>
     /// <param name="ct">Cancellation token for the request.</param>
-    Task CancelBooking(Guid id, CancellationToken ct);
+    /// <returns>The command outcome returned by the API.</returns>
+    Task<ContractCommandOutcomeDto> CancelBooking(Guid id, CancellationToken ct);
 
     /// <summary>
     /// Confirms a booking.
     /// </summary>
     /// <param name="id">The unique identifier of the booking to confirm.</param>
     /// <param name="ct">Cancellation token for the request.</param>
-    Task ConfirmBooking(Guid id, CancellationToken ct);
+    /// <returns>The command outcome returned by the API.</returns>
+    Task<ContractCommandOutcomeDto> ConfirmBooking(Guid id, CancellationToken ct);
 
     /// <summary>
     /// Completes a booking.
     /// </summary>
     /// <param name="id">The unique identifier of the booking to complete.</param>
     /// <param name="ct">Cancellation token for the request.</param>
-    Task CompleteBooking(Guid id, CancellationToken ct);
+    /// <returns>The command outcome returned by the API.</returns>
+    Task<ContractCommandOutcomeDto> CompleteBooking(Guid id, CancellationToken ct);
 
     /// <summary>
     /// Deletes a booking.
     /// </summary>
     /// <param name="id">The unique identifier of the booking to delete.</param>
     /// <param name="ct">Cancellation token for the request.</param>
-    Task DeleteBooking(Guid id, CancellationToken ct);
+    /// <returns>The delete outcome returned by the API.</returns>
+    Task<ContractCommandOutcomeDto> DeleteBooking(Guid id, CancellationToken ct);
 
     /// <summary>
     /// Records a payment for a booking.

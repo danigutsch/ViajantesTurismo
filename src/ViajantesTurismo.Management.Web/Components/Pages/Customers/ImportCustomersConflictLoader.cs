@@ -9,6 +9,8 @@ namespace ViajantesTurismo.Management.Web.Components.Pages.Customers;
 /// </summary>
 internal static class ImportCustomersConflictLoader
 {
+    private const string LoadFailureMessage = "Existing customer data could not be loaded.";
+
     internal static async Task<IReadOnlyList<ImportCustomerConflictState>> LoadConflictStates(
         ICustomersApiClient customersApi,
         IReadOnlyList<ImportConflictDto> conflicts,
@@ -31,7 +33,11 @@ internal static class ImportCustomersConflictLoader
         IReadOnlyList<ImportConflictDto> conflicts)
     {
         var result = new Dictionary<string, Dictionary<string, string>>(StringComparer.OrdinalIgnoreCase);
-        var customers = await customersApi.GetCustomers(CancellationToken.None);
+        var customersOutcome = await customersApi.GetCustomers(CancellationToken.None);
+        if (customersOutcome is not { Kind: SharedKernel.HttpClients.ContractCommandOutcomeKind.Succeeded, Value: { } customers })
+        {
+            throw new InvalidOperationException(LoadFailureMessage);
+        }
 
         foreach (var conflictEmail in conflicts.Select(conflict => conflict.Email))
         {
@@ -41,10 +47,15 @@ internal static class ImportCustomersConflictLoader
                 continue;
             }
 
-            var details = await customersApi.GetCustomerById(existingSummary.Id, CancellationToken.None);
-            if (details is null)
+            var detailsOutcome = await customersApi.GetCustomerById(existingSummary.Id, CancellationToken.None);
+            if (detailsOutcome.Kind == SharedKernel.HttpClients.ContractCommandOutcomeKind.NotFound)
             {
                 continue;
+            }
+
+            if (detailsOutcome is not { Kind: SharedKernel.HttpClients.ContractCommandOutcomeKind.Succeeded, Value: { } details })
+            {
+                throw new InvalidOperationException(LoadFailureMessage);
             }
 
             result[conflictEmail] = MapCustomerDetailsToFieldValues(details);

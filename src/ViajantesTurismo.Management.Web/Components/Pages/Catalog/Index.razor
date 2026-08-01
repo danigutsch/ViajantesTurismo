@@ -71,14 +71,14 @@ else
     {
         _errorMessage = null;
 
-        try
+        var outcome = await CatalogToursApi.GetTours(CancellationToken.None);
+        if (outcome is { Kind: ContractCommandOutcomeKind.Succeeded, Value: { } tours })
         {
-            _tours = await CatalogToursApi.GetTours(CancellationToken.None);
+            _tours = tours;
+            return;
         }
-        catch (HttpRequestException)
-        {
-            _errorMessage = "Catalog tours could not be loaded. Try again later.";
-            _tours = [];
-        }
+
+        _errorMessage = HttpOutcomeUserMessage.For(outcome.Kind, "Catalog tours could not be loaded. Try again later.");
+        _tours = [];
     }
 }

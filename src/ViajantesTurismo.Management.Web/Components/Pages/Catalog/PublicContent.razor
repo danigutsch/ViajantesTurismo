@@ -158,19 +158,18 @@
     {
         _errorMessage = null;
 
-        try
+        var outcome = await PublicContentApi.GetContent(CancellationToken.None);
+        if (outcome is { Kind: ContractCommandOutcomeKind.Succeeded, Value: { } content })
         {
-            _content = await PublicContentApi.GetContent(CancellationToken.None);
+            _content = content;
         }
-        catch (HttpRequestException)
+        else
         {
-            _errorMessage = UserFacingErrorMessage.ForOperation("load public content");
+            _errorMessage = HttpOutcomeUserMessage.For(outcome.Kind, UserFacingErrorMessage.ForOperation("load public content"));
             _content = [];
         }
-        finally
-        {
-            _loading = false;
-        }
+
+        _loading = false;
     }
 
     private async Task LoadEntry(string key)
@@ -178,21 +177,17 @@
         _errorMessage = null;
         _successMessage = null;
 
-        try
+        var outcome = await PublicContentApi.GetContent(key, CancellationToken.None);
+        if (outcome is { Kind: ContractCommandOutcomeKind.Succeeded, Value: { } entry })
         {
-            var entry = await PublicContentApi.GetContent(key, CancellationToken.None);
-            if (entry is null)
-            {
-                _errorMessage = "Public content entry was not found.";
-                return;
-            }
-
             _model = PublicContentFormModel.FromDto(entry);
+            return;
         }
-        catch (HttpRequestException)
-        {
-            _errorMessage = UserFacingErrorMessage.ForOperation("load public content");
-        }
+
+        _errorMessage = HttpOutcomeUserMessage.For(
+            outcome.Kind,
+            UserFacingErrorMessage.ForOperation("load public content"),
+            "Public content entry was not found.");
     }
 
     private void GenerateMissingDraft()
@@ -257,24 +252,28 @@
 
         try
         {
-            var saved = await PublicContentApi.SaveContent(
+            var outcome = await PublicContentApi.SaveContent(
                 _model.Key,
                 _model.ToRequest(),
                 CancellationToken.None);
 
+            if (outcome.Kind == ContractCommandOutcomeKind.ValidationProblem)
+            {
+                _errorMessage = outcome.ValidationErrors is null or { Count: 0 }
+                    ? UserFacingErrorMessage.ForOperation("save public content")
+                    : string.Join(" ", outcome.ValidationErrors.SelectMany(error => error.Value));
+                return;
+            }
+
+            if (outcome is not { Kind: ContractCommandOutcomeKind.Succeeded, Value: { } saved })
+            {
+                _errorMessage = HttpOutcomeUserMessage.For(outcome.Kind, UserFacingErrorMessage.ForOperation("save public content"));
+                return;
+            }
+
             _model = PublicContentFormModel.FromDto(saved);
             _successMessage = "Public content saved.";
             await LoadContent();
-        }
-        catch (ContractValidationException ex)
-        {
-            _errorMessage = ex.ValidationErrors.Count == 0
-                ? UserFacingErrorMessage.ForOperation("save public content")
-                : string.Join(" ", ex.ValidationErrors.SelectMany(error => error.Value));
-        }
-        catch (HttpRequestException)
-        {
-            _errorMessage = UserFacingErrorMessage.ForOperation("save public content");
         }
         finally
         {

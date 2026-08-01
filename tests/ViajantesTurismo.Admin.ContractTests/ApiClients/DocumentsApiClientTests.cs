@@ -1,6 +1,7 @@
 using System.Net;
 using System.Net.Http.Headers;
 using System.Text;
+using SharedKernel.HttpClients;
 using SharedKernel.Testing.Contracts;
 using ViajantesTurismo.Admin.Contracts.Http;
 
@@ -26,6 +27,21 @@ public sealed class DocumentsApiClientTests
         """;
 
     [Fact]
+    public async Task GetDocumentById_returns_not_found_outcome()
+    {
+        // Arrange
+        using var httpClient = ContractHttpClientTestHelper.CreateClient(_ => new HttpResponseMessage(HttpStatusCode.NotFound));
+        var sut = new DocumentsApiClient(httpClient);
+
+        // Act
+        var outcome = await sut.GetDocumentById(Guid.CreateVersion7(), TestContext.Current.CancellationToken);
+
+        // Assert
+        outcome.Kind.ShouldBe(ContractCommandOutcomeKind.NotFound);
+        outcome.Value.ShouldBeNull();
+    }
+
+    [Fact]
     public async Task GetDocumentById_requests_the_document_endpoint_and_returns_the_document()
     {
         // Arrange
@@ -39,10 +55,10 @@ public sealed class DocumentsApiClientTests
         var sut = new DocumentsApiClient(httpClient);
 
         // Act
-        var document = await sut.GetDocumentById(documentId, TestContext.Current.CancellationToken);
+        var outcome = await sut.GetDocumentById(documentId, TestContext.Current.CancellationToken);
 
         // Assert
-        var documentDto = document.ShouldNotBeNull();
+        var documentDto = outcome.Value.ShouldNotBeNull();
         requestPath.ShouldBe("/api/v1/documents/11111111-1111-1111-1111-111111111111");
         documentDto.TemplateId.ShouldBe("tour-service-contract");
     }

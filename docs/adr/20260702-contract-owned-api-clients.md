@@ -61,3 +61,19 @@ projects to ASP.NET Core MVC abstractions.
 
 Rejected for this PR. Only one endpoint currently proves a full outcome model. A shared library can
 be revisited after at least two clients share the same response shape.
+
+## Follow-up: shared materialized HTTP outcomes
+
+As of 2026-07-31, the Admin bookings, customers, documents, and tours clients plus the Catalog
+management, public-content, and public-catalog clients have real callers that need the same bounded
+response branches. This satisfies the reuse threshold above.
+
+The clients therefore extend the existing `SharedKernel.HttpClients` outcome implementation rather
+than introducing another result package or client framework. The shared mapper owns materialized JSON
+response parsing, Problem Details validation errors, bounded status classification, timeout and
+transport outcomes, disposal, and privacy-safe method/status/outcome telemetry.
+
+Caller cancellation, programmer errors, and local upload-content failures remain exceptions. Media
+stream responses retain headers-first ownership and explicit asynchronous disposal; buffered document
+downloads retain their existing artifact contract. App routes, DTOs, authentication, caching, retry
+policy, and user-facing messages remain in their owning contract or Web projects.

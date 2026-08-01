@@ -125,15 +125,9 @@ else if (_errorMessage is not null)
     {
         _errorMessage = null;
 
-        try
+        var outcome = await CatalogToursApi.GetTour(Id, CancellationToken.None);
+        if (outcome is { Kind: ContractCommandOutcomeKind.Succeeded, Value: { } tour })
         {
-            var tour = await CatalogToursApi.GetTour(Id, CancellationToken.None);
-            if (tour is null)
-            {
-                _notFound = true;
-                return;
-            }
-
             _model = new CatalogTourPresentationFormModel
             {
                 Title = tour.Title,
@@ -148,14 +142,16 @@ else if (_errorMessage is not null)
             _editContext = new EditContext(_model);
             _isPublished = tour.IsPublished;
         }
-        catch (HttpRequestException)
+        else if (outcome.Kind == ContractCommandOutcomeKind.NotFound)
         {
-            _errorMessage = "Catalog tour presentation could not be loaded. Try again later.";
+            _notFound = true;
         }
-        finally
+        else
         {
-            _loading = false;
+            _errorMessage = HttpOutcomeUserMessage.For(outcome.Kind, "Catalog tour presentation could not be loaded. Try again later.");
         }
+
+        _loading = false;
     }
 
     private async Task HandleSubmit()
@@ -166,7 +162,7 @@ else if (_errorMessage is not null)
 
         try
         {
-            var updated = await CatalogToursApi.UpdatePresentation(
+            var outcome = await CatalogToursApi.UpdatePresentation(
                 Id,
                 new UpsertCatalogTourPresentationRequest
                 {
@@ -181,9 +177,35 @@ else if (_errorMessage is not null)
                 },
                 CancellationToken.None);
 
-            if (updated is null)
+            if (outcome.Kind == ContractCommandOutcomeKind.ValidationProblem)
+            {
+                _errorMessage = outcome.ValidationErrors is null or { Count: 0 }
+                    ? "Catalog tour presentation could not be saved. Try again later."
+                    : string.Join(" ", outcome.ValidationErrors.SelectMany(error => error.Value));
+                return;
+            }
+
+            if (outcome.Kind == ContractCommandOutcomeKind.NotFound)
             {
                 _notFound = true;
+                return;
+            }
+
+            if (outcome.Kind == ContractCommandOutcomeKind.Conflict)
+            {
+                _errorMessage = "This tour changed after it was loaded. Reload it before saving again.";
+                return;
+            }
+
+            if (outcome.StatusCode == System.Net.HttpStatusCode.Accepted)
+            {
+                _successMessage = "Catalog presentation update accepted. Reload shortly to see the projected change.";
+                return;
+            }
+
+            if (outcome is not { Kind: ContractCommandOutcomeKind.Succeeded, Value: { } updated })
+            {
+                _errorMessage = HttpOutcomeUserMessage.For(outcome.Kind, "Catalog tour presentation could not be saved. Try again later.");
                 return;
             }
 
@@ -198,24 +220,6 @@ else if (_errorMessage is not null)
             _editContext?.MarkAsUnmodified();
             _isPublished = updated.IsPublished;
             _successMessage = "Catalog presentation updated.";
-        }
-        catch (ContractValidationException exception)
-        {
-            _errorMessage = exception.ValidationErrors.Count == 0
-                ? "Catalog tour presentation could not be saved. Try again later."
-                : string.Join(" ", exception.ValidationErrors.SelectMany(error => error.Value));
-        }
-        catch (HttpRequestException exception) when (exception.StatusCode == System.Net.HttpStatusCode.Accepted)
-        {
-            _successMessage = "Catalog presentation update accepted. Reload shortly to see the projected change.";
-        }
-        catch (HttpRequestException exception) when (exception.StatusCode == System.Net.HttpStatusCode.Conflict)
-        {
-            _errorMessage = "This tour changed after it was loaded. Reload it before saving again.";
-        }
-        catch (HttpRequestException)
-        {
-            _errorMessage = "Catalog tour presentation could not be saved. Try again later.";
         }
         finally
         {
@@ -236,32 +240,33 @@ else if (_errorMessage is not null)
         try
         {
             var request = new CatalogTourPublicationRequest { ExpectedVersion = _model.ExpectedVersion };
-            if (publish)
+            var outcome = publish
+                ? await CatalogToursApi.Publish(Id, request, CancellationToken.None)
+                : await CatalogToursApi.Unpublish(Id, request, CancellationToken.None);
+
+            if (outcome.Kind == ContractCommandOutcomeKind.ValidationProblem)
             {
-                await CatalogToursApi.Publish(Id, request, CancellationToken.None);
+                _errorMessage = outcome.ValidationErrors is null or { Count: 0 }
+                    ? "Catalog tour publication could not be changed. Try again later."
+                    : string.Join(" ", outcome.ValidationErrors.SelectMany(error => error.Value));
+                return;
             }
-            else
+
+            if (outcome.StatusCode == System.Net.HttpStatusCode.Accepted)
             {
-                await CatalogToursApi.Unpublish(Id, request, CancellationToken.None);
+                _successMessage = "Catalog publication change accepted. Reload shortly to see the projected status.";
+                return;
+            }
+
+            if (outcome.Kind != ContractCommandOutcomeKind.Succeeded)
+            {
+                _errorMessage = HttpOutcomeUserMessage.For(outcome.Kind, "Catalog tour publication could not be changed. Reload the tour and try again.");
+                return;
             }
 
             _isPublished = publish;
             _model.ExpectedVersion++;
             _successMessage = publish ? "Catalog tour published." : "Catalog tour unpublished.";
-        }
-        catch (ContractValidationException exception)
-        {
-            _errorMessage = exception.ValidationErrors.Count == 0
-                ? "Catalog tour publication could not be changed. Try again later."
-                : string.Join(" ", exception.ValidationErrors.SelectMany(error => error.Value));
-        }
-        catch (HttpRequestException exception) when (exception.StatusCode == System.Net.HttpStatusCode.Accepted)
-        {
-            _successMessage = "Catalog publication change accepted. Reload shortly to see the projected status.";
-        }
-        catch (HttpRequestException)
-        {
-            _errorMessage = "Catalog tour publication could not be changed. Reload the tour and try again.";
         }
         finally
         {

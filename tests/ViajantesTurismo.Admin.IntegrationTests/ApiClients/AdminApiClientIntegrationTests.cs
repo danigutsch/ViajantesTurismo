@@ -26,8 +26,9 @@ public sealed class AdminApiClientIntegrationTests(ApiFixture fixture)
         var customerIdText = outcome.Location.OriginalString.Split('/', StringSplitOptions.RemoveEmptyEntries)[^1];
         Guid.TryParse(customerIdText, out var customerId).ShouldBeTrue();
 
-        var customer = await sut.GetCustomerById(customerId, cancellationToken);
-        customer.ShouldNotBeNull();
+        var customerOutcome = await sut.GetCustomerById(customerId, cancellationToken);
+        customerOutcome.Kind.ShouldBe(ContractCommandOutcomeKind.Succeeded);
+        var customer = customerOutcome.Value.ShouldNotBeNull();
         customer.PersonalInfo.FirstName.ShouldBe("Contract");
         customer.PersonalInfo.LastName.ShouldBe("Client");
     }
@@ -49,15 +50,43 @@ public sealed class AdminApiClientIntegrationTests(ApiFixture fixture)
         var tourIdText = outcome.Location.OriginalString.Split('/', StringSplitOptions.RemoveEmptyEntries)[^1];
         Guid.TryParse(tourIdText, out var tourId).ShouldBeTrue();
 
-        var created = await sut.GetTourById(tourId, cancellationToken);
-        created.ShouldNotBeNull();
+        var createdOutcome = await sut.GetTourById(tourId, cancellationToken);
+        createdOutcome.Kind.ShouldBe(ContractCommandOutcomeKind.Succeeded);
+        var created = createdOutcome.Value.ShouldNotBeNull();
         created.Name.ShouldBe("Contract Client Tour");
 
         var updateRequest = DtoBuilders.BuildUpdateTourDto(identifier: created.Identifier, name: "Updated Contract Client Tour");
-        await sut.UpdateTour(tourId, updateRequest, cancellationToken);
+        var updateOutcome = await sut.UpdateTour(tourId, updateRequest, cancellationToken);
 
-        var updated = await sut.GetTourById(tourId, cancellationToken);
-        updated.ShouldNotBeNull();
+        var updatedOutcome = await sut.GetTourById(tourId, cancellationToken);
+        updateOutcome.Kind.ShouldBe(ContractCommandOutcomeKind.Succeeded);
+        updatedOutcome.Kind.ShouldBe(ContractCommandOutcomeKind.Succeeded);
+        var updated = updatedOutcome.Value.ShouldNotBeNull();
         updated.Name.ShouldBe("Updated Contract Client Tour");
+    }
+
+    [Fact]
+    public async Task Bookings_client_updates_notes_through_api_host()
+    {
+        // Arrange
+        var cancellationToken = TestContext.Current.CancellationToken;
+        var tour = await fixture.Client.CreateTestTour("booking-client-notes", "Booking client notes", cancellationToken);
+        var customer = await fixture.Client.CreateTestCustomer("Booking", "Client", cancellationToken);
+        var booking = await fixture.Client.CreateTestBooking(tour.Id, customer.Id, companionId: null, ct: cancellationToken);
+        var sut = new BookingsApiClient(fixture.Client);
+
+        // Act
+        var updateOutcome = await sut.UpdateBookingNotes(
+            booking.Id,
+            DtoBuilders.BuildUpdateBookingNotesDto("Updated through the typed client"),
+            cancellationToken);
+        var readOutcome = await sut.GetBookingById(booking.Id, cancellationToken);
+
+        // Assert
+        updateOutcome.Kind.ShouldBe(ContractCommandOutcomeKind.Succeeded);
+        updateOutcome.StatusCode.ShouldBe(HttpStatusCode.OK);
+        readOutcome.Kind.ShouldBe(ContractCommandOutcomeKind.Succeeded);
+        var updated = readOutcome.Value.ShouldNotBeNull();
+        updated.Notes.ShouldBe("Updated through the typed client");
     }
 }

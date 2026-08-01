@@ -35,37 +35,52 @@ public sealed class FakeBookingsApiClient : IBookingsApiClient
 
     public int UpdateBookingNotesCallCount { get; private set; }
 
-    public Task<GetBookingDto[]> GetAllBookings(CancellationToken ct)
+    public Task<ContractCommandOutcomeDto<GetBookingDto[]>> GetAllBookings(CancellationToken ct)
     {
         if (_getAllBookingsException is not null)
         {
-            throw _getAllBookingsException;
+            return Task.FromResult(new ContractCommandOutcomeDto<GetBookingDto[]>
+            {
+                Kind = ContractCommandOutcomeKind.TransportFailure,
+                Message = "HTTP transport failed."
+            });
         }
 
-        return Task.FromResult(_bookings.ToArray());
+        return Task.FromResult(ContractCommandOutcome.Succeeded(HttpStatusCode.OK, _bookings.ToArray()));
     }
 
-    public Task<GetBookingDto?> GetBookingById(Guid id, CancellationToken ct)
+    public Task<ContractCommandOutcomeDto<GetBookingDto>> GetBookingById(Guid id, CancellationToken ct)
     {
         GetBookingByIdCallCount++;
 
         if (_getBookingByIdException is not null &&
             (!_getBookingByIdExceptionCall.HasValue || _getBookingByIdExceptionCall == GetBookingByIdCallCount))
         {
-            throw _getBookingByIdException;
+            return Task.FromResult(new ContractCommandOutcomeDto<GetBookingDto>
+            {
+                Kind = ContractCommandOutcomeKind.TransportFailure,
+                Message = "HTTP transport failed."
+            });
         }
 
-        return Task.FromResult(_bookings.FirstOrDefault(b => b.Id == id));
+        var booking = _bookings.FirstOrDefault(b => b.Id == id);
+        return Task.FromResult(booking is null
+            ? ContractCommandOutcome.Status<GetBookingDto>(ContractCommandOutcomeKind.NotFound, HttpStatusCode.NotFound)
+            : ContractCommandOutcome.Succeeded(HttpStatusCode.OK, booking));
     }
 
-    public Task<GetBookingDto[]> GetBookingsByTourId(Guid tourId, CancellationToken ct)
+    public Task<ContractCommandOutcomeDto<GetBookingDto[]>> GetBookingsByTourId(Guid tourId, CancellationToken ct)
     {
-        return Task.FromResult(_bookings.Where(b => b.TourId == tourId).ToArray());
+        return Task.FromResult(ContractCommandOutcome.Succeeded(
+            HttpStatusCode.OK,
+            _bookings.Where(b => b.TourId == tourId).ToArray()));
     }
 
-    public Task<GetBookingDto[]> GetBookingsByCustomerId(Guid customerId, CancellationToken ct)
+    public Task<ContractCommandOutcomeDto<GetBookingDto[]>> GetBookingsByCustomerId(Guid customerId, CancellationToken ct)
     {
-        return Task.FromResult(_bookings.Where(b => b.CustomerId == customerId || b.CompanionId == customerId).ToArray());
+        return Task.FromResult(ContractCommandOutcome.Succeeded(
+            HttpStatusCode.OK,
+            _bookings.Where(b => b.CustomerId == customerId || b.CompanionId == customerId).ToArray()));
     }
 
     public Task<ContractCommandOutcomeDto> CreateBooking(CreateBookingDto dto, CancellationToken ct)
@@ -93,7 +108,7 @@ public sealed class FakeBookingsApiClient : IBookingsApiClient
         return Task.FromResult(ContractCommandOutcome.Succeeded(HttpStatusCode.Created, new Uri($"/api/v1/bookings/{newBooking.Id}", UriKind.Relative)));
     }
 
-    public Task UpdateBookingDiscount(Guid id, UpdateBookingDiscountDto dto, CancellationToken ct)
+    public Task<ContractCommandOutcomeDto> UpdateBookingDiscount(Guid id, UpdateBookingDiscountDto dto, CancellationToken ct)
     {
         ArgumentNullException.ThrowIfNull(dto);
         UpdateBookingDiscountCallCount++;
@@ -109,10 +124,10 @@ public sealed class FakeBookingsApiClient : IBookingsApiClient
             };
         }
 
-        return Task.CompletedTask;
+        return Task.FromResult(ContractCommandOutcome.Succeeded(HttpStatusCode.OK, location: null));
     }
 
-    public Task UpdateBookingDetails(Guid id, UpdateBookingDetailsDto dto, CancellationToken ct)
+    public Task<ContractCommandOutcomeDto> UpdateBookingDetails(Guid id, UpdateBookingDetailsDto dto, CancellationToken ct)
     {
         ArgumentNullException.ThrowIfNull(dto);
 
@@ -136,17 +151,21 @@ public sealed class FakeBookingsApiClient : IBookingsApiClient
             };
         }
 
-        return Task.CompletedTask;
+        return Task.FromResult(ContractCommandOutcome.Succeeded(HttpStatusCode.OK, location: null));
     }
 
-    public Task UpdateBookingNotes(Guid id, UpdateBookingNotesDto dto, CancellationToken ct)
+    public Task<ContractCommandOutcomeDto> UpdateBookingNotes(Guid id, UpdateBookingNotesDto dto, CancellationToken ct)
     {
         ArgumentNullException.ThrowIfNull(dto);
         UpdateBookingNotesCallCount++;
 
         if (_updateBookingNotesException is not null)
         {
-            throw _updateBookingNotesException;
+            return Task.FromResult(new ContractCommandOutcomeDto
+            {
+                Kind = ContractCommandOutcomeKind.TransportFailure,
+                Message = "HTTP transport failed."
+            });
         }
 
         var index = _bookings.FindIndex(booking => booking.Id == id);
@@ -155,19 +174,19 @@ public sealed class FakeBookingsApiClient : IBookingsApiClient
             _bookings[index] = _bookings[index] with { Notes = dto.Notes };
         }
 
-        return Task.CompletedTask;
+        return Task.FromResult(ContractCommandOutcome.Succeeded(HttpStatusCode.OK, location: null));
     }
 
-    public Task CancelBooking(Guid id, CancellationToken ct) =>
-        ExecuteBookingAction(() => UpdateBookingStatus(id, BookingStatusDto.Cancelled), ct);
+    public Task<ContractCommandOutcomeDto> CancelBooking(Guid id, CancellationToken ct) =>
+        ExecuteBookingAction(() => UpdateBookingStatus(id, BookingStatusDto.Cancelled), HttpStatusCode.OK, ct);
 
-    public Task ConfirmBooking(Guid id, CancellationToken ct) =>
-        ExecuteBookingAction(() => UpdateBookingStatus(id, BookingStatusDto.Confirmed), ct);
+    public Task<ContractCommandOutcomeDto> ConfirmBooking(Guid id, CancellationToken ct) =>
+        ExecuteBookingAction(() => UpdateBookingStatus(id, BookingStatusDto.Confirmed), HttpStatusCode.OK, ct);
 
-    public Task CompleteBooking(Guid id, CancellationToken ct) =>
-        ExecuteBookingAction(() => UpdateBookingStatus(id, BookingStatusDto.Completed), ct);
+    public Task<ContractCommandOutcomeDto> CompleteBooking(Guid id, CancellationToken ct) =>
+        ExecuteBookingAction(() => UpdateBookingStatus(id, BookingStatusDto.Completed), HttpStatusCode.OK, ct);
 
-    public Task DeleteBooking(Guid id, CancellationToken ct) =>
+    public Task<ContractCommandOutcomeDto> DeleteBooking(Guid id, CancellationToken ct) =>
         ExecuteBookingAction(() =>
         {
             var booking = _bookings.FirstOrDefault(candidate => candidate.Id == id);
@@ -175,7 +194,7 @@ public sealed class FakeBookingsApiClient : IBookingsApiClient
             {
                 _bookings.Remove(booking);
             }
-        }, ct);
+        }, HttpStatusCode.NoContent, ct);
 
     public async Task<ContractCommandOutcomeDto> RecordPayment(Guid bookingId, CreatePaymentDto dto, CancellationToken ct)
     {
@@ -232,11 +251,15 @@ public sealed class FakeBookingsApiClient : IBookingsApiClient
 
     public void SetUpdatedDetailsTotalPrice(decimal totalPrice) => _updatedDetailsTotalPrice = totalPrice;
 
-    private async Task ExecuteBookingAction(Action onCompleted, CancellationToken ct)
+    private async Task<ContractCommandOutcomeDto> ExecuteBookingAction(
+        Action onCompleted,
+        HttpStatusCode statusCode,
+        CancellationToken ct)
     {
         BookingActionCallCount++;
         await _bookingActionTask.WaitAsync(ct);
         onCompleted();
+        return ContractCommandOutcome.Succeeded(statusCode, location: null);
     }
 
     private void UpdateBookingStatus(Guid id, BookingStatusDto newStatus)

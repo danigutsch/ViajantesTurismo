@@ -411,7 +411,13 @@
         try
         {
             var fileBytes = ApplyCurrentMapping();
-            var result = await CustomersApi.ImportCustomers(fileBytes, _state.PendingFileName, CancellationToken.None);
+            var outcome = await CustomersApi.ImportCustomers(fileBytes, _state.PendingFileName, CancellationToken.None);
+            if (outcome is not { Kind: ContractCommandOutcomeKind.Succeeded, Value: { } result })
+            {
+                _state.Error = HttpOutcomeUserMessage.For(outcome.Kind, UserFacingErrorMessage.ForOperation("import the customers"));
+                return;
+            }
+
             if (result.Conflicts is { Count: > 0 } conflicts)
             {
                 await InitializeConflictResolutionData(conflicts, fileBytes);
@@ -451,8 +457,16 @@
             }
 
             var conflictDecisions = BuildConflictDecisions();
-            var result = await CustomersApi.CommitImportWithResolutions(
+            var outcome = await CustomersApi.CommitImportWithResolutions(
                 fileBytes, _state.PendingFileName, conflictDecisions, CancellationToken.None);
+            if (outcome is not { Kind: ContractCommandOutcomeKind.Succeeded, Value: { } result })
+            {
+                _state.Error = HttpOutcomeUserMessage.For(
+                    outcome.Kind,
+                    UserFacingErrorMessage.ForOperation("complete the customer import"));
+                return;
+            }
+
             if (result.Conflicts is { Count: > 0 } conflicts)
             {
                 await InitializeConflictResolutionData(conflicts, fileBytes);

@@ -80,28 +80,29 @@
         try
         {
             await using var content = CatalogImageUploadFileReader.Open(_file);
-            var uploaded = await CatalogToursApi.UploadTourImage(
+            var outcome = await CatalogToursApi.UploadTourImage(
                 Id,
                 new CatalogTourImageUploadRequest(content, _file.Name, _file.ContentType, _model.AltText, _model.Caption),
                 CancellationToken.None);
-            if (uploaded is null)
+            if (outcome.Kind == ContractCommandOutcomeKind.ValidationProblem)
             {
-                _errorMessage = "Catalog tour not found.";
+                _errorMessage = outcome.ValidationErrors is null or { Count: 0 }
+                    ? "Image could not be uploaded. Check the file and try again."
+                    : string.Join(" ", outcome.ValidationErrors.SelectMany(error => error.Value));
+                return;
+            }
+
+            if (outcome.Kind != ContractCommandOutcomeKind.Succeeded)
+            {
+                _errorMessage = HttpOutcomeUserMessage.For(
+                    outcome.Kind,
+                    "Image could not be uploaded. Try again later.",
+                    "Catalog tour not found.");
                 return;
             }
 
             _success = true;
             _file = null;
-        }
-        catch (ContractValidationException exception)
-        {
-            _errorMessage = exception.ValidationErrors.Count == 0
-                ? "Image could not be uploaded. Check the file and try again."
-                : string.Join(" ", exception.ValidationErrors.SelectMany(error => error.Value));
-        }
-        catch (HttpRequestException)
-        {
-            _errorMessage = "Image could not be uploaded. Try again later.";
         }
         catch (IOException)
         {

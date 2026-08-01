@@ -201,8 +201,8 @@ public sealed class DocumentApiEndpointTests(ApiFixture fixture)
         var documents = new DocumentsApiClient(fixture.Client);
 
         // Act
-        var generated = await documents.GenerateContractDraft(booking.Id, cancellationToken);
-        var reloaded = await documents.GetDocumentById(generated.Id, cancellationToken);
+        var generated = await documents.GenerateContractDraft(booking.Id, cancellationToken).RequireSucceededValue();
+        var reloaded = await documents.GetDocumentById(generated.Id, cancellationToken).RequireSucceededValue();
 
         // Assert
         expectedValue.Length.ShouldBe(4_129);
@@ -224,7 +224,7 @@ public sealed class DocumentApiEndpointTests(ApiFixture fixture)
         using var confirmResponse = await fixture.Client.ConfirmBooking(booking.Id, cancellationToken);
         confirmResponse.StatusCode.ShouldBe(HttpStatusCode.OK);
         var documents = new DocumentsApiClient(fixture.Client);
-        var document = await documents.GenerateContractDraft(booking.Id, cancellationToken);
+        var document = await documents.GenerateContractDraft(booking.Id, cancellationToken).RequireSucceededValue();
         var fieldId = document.Fields.First(field => field.IsEditable).FieldId;
         using var content = new StringContent(
             """{"value":null}""",
@@ -335,7 +335,7 @@ public sealed class DocumentApiEndpointTests(ApiFixture fixture)
         confirmResponse.StatusCode.ShouldBe(HttpStatusCode.OK);
 
         var documents = new DocumentsApiClient(fixture.Client);
-        var document = await documents.GenerateContractDraft(booking.Id, cancellationToken);
+        var document = await documents.GenerateContractDraft(booking.Id, cancellationToken).RequireSucceededValue();
         await using var scenario = await fixture.CreateDocumentMutationConcurrencyScenario(document.Id, cancellationToken);
 
         // Act
@@ -368,7 +368,7 @@ public sealed class DocumentApiEndpointTests(ApiFixture fixture)
         using var confirmResponse = await fixture.Client.ConfirmBooking(booking.Id, cancellationToken);
         confirmResponse.StatusCode.ShouldBe(HttpStatusCode.OK);
         var documents = new DocumentsApiClient(fixture.Client);
-        var document = await documents.GenerateContractDraft(booking.Id, cancellationToken);
+        var document = await documents.GenerateContractDraft(booking.Id, cancellationToken).RequireSucceededValue();
 
         // Act
         using var readResponse = await fixture.Client.GetAsync(
@@ -473,7 +473,7 @@ public sealed class DocumentApiEndpointTests(ApiFixture fixture)
         using var confirmResponse = await fixture.Client.ConfirmBooking(booking.Id, cancellationToken);
         confirmResponse.StatusCode.ShouldBe(HttpStatusCode.OK);
         var documents = new DocumentsApiClient(fixture.Client);
-        var generated = await documents.GenerateContractDraft(booking.Id, cancellationToken);
+        var generated = await documents.GenerateContractDraft(booking.Id, cancellationToken).RequireSucceededValue();
         var idempotencyKey = Guid.CreateVersion7();
         var idempotencyScope = $"admin.documents.regenerate-draft:{generated.Id:N}";
         HttpStatusCode responseStatus;
@@ -556,7 +556,7 @@ public sealed class DocumentApiEndpointTests(ApiFixture fixture)
         using var confirmResponse = await fixture.Client.ConfirmBooking(booking.Id, cancellationToken);
         confirmResponse.StatusCode.ShouldBe(HttpStatusCode.OK);
         var documents = new DocumentsApiClient(fixture.Client);
-        var generated = await documents.GenerateContractDraft(booking.Id, cancellationToken);
+        var generated = await documents.GenerateContractDraft(booking.Id, cancellationToken).RequireSucceededValue();
         var idempotencyKey = Guid.CreateVersion7();
         var idempotencyScope = $"admin.documents.regenerate-draft:{generated.Id:N}";
         HttpStatusCode responseStatus;
@@ -643,7 +643,7 @@ public sealed class DocumentApiEndpointTests(ApiFixture fixture)
         using var confirmResponse = await fixture.Client.ConfirmBooking(booking.Id, cancellationToken);
         confirmResponse.StatusCode.ShouldBe(HttpStatusCode.OK);
         var documents = new DocumentsApiClient(fixture.Client);
-        var generated = await documents.GenerateContractDraft(booking.Id, cancellationToken);
+        var generated = await documents.GenerateContractDraft(booking.Id, cancellationToken).RequireSucceededValue();
         var route = new Uri($"/api/v1/documents/{generated.Id}/regenerate", UriKind.Relative);
         await using var scenario = await fixture.CreateBookingCancellationAtDocumentPersistenceScenario(
             booking.Id,
@@ -689,7 +689,7 @@ public sealed class DocumentApiEndpointTests(ApiFixture fixture)
         using var confirmResponse = await fixture.Client.ConfirmBooking(booking.Id, cancellationToken);
         confirmResponse.StatusCode.ShouldBe(HttpStatusCode.OK);
         var documents = new DocumentsApiClient(fixture.Client);
-        var generated = await documents.GenerateContractDraft(booking.Id, cancellationToken);
+        var generated = await documents.GenerateContractDraft(booking.Id, cancellationToken).RequireSucceededValue();
         var route = new Uri($"/api/v1/documents/{generated.Id}/regenerate", UriKind.Relative);
         var idempotencyKey = Guid.CreateVersion7().ToString("N");
         using var firstRequest = new HttpRequestMessage(HttpMethod.Post, route);
@@ -729,7 +729,7 @@ public sealed class DocumentApiEndpointTests(ApiFixture fixture)
         using var confirmResponse = await fixture.Client.ConfirmBooking(booking.Id, cancellationToken);
         confirmResponse.StatusCode.ShouldBe(HttpStatusCode.OK);
         var documents = new DocumentsApiClient(fixture.Client);
-        var document = await documents.GenerateContractDraft(booking.Id, cancellationToken);
+        var document = await documents.GenerateContractDraft(booking.Id, cancellationToken).RequireSucceededValue();
         await using var scenario = await fixture.CreateBookingCancellationAtDocumentPersistenceScenario(booking.Id, cancellationToken);
         await scenario.HoldCancellation(cancellationToken);
 
@@ -768,7 +768,7 @@ public sealed class DocumentApiEndpointTests(ApiFixture fixture)
         using var confirmResponse = await fixture.Client.ConfirmBooking(booking.Id, cancellationToken);
         confirmResponse.StatusCode.ShouldBe(HttpStatusCode.OK);
         var documents = new DocumentsApiClient(fixture.Client);
-        var generated = await documents.GenerateContractDraft(booking.Id, cancellationToken);
+        var generated = await documents.GenerateContractDraft(booking.Id, cancellationToken).RequireSucceededValue();
         var editableField = generated.Fields.First(field => field.IsEditable);
 
         // Act
@@ -776,15 +776,15 @@ public sealed class DocumentApiEndpointTests(ApiFixture fixture)
             generated.Id,
             editableField.FieldId,
             new UpdateDocumentFieldDto { Value = "Reviewed customer-facing value" },
-            cancellationToken);
-        var approved = await documents.Approve(generated.Id, cancellationToken);
-        var finalized = await documents.Finalize(generated.Id, cancellationToken);
-        var replacement = await documents.Regenerate(generated.Id, cancellationToken);
-        var replacementInReview = await documents.BeginReview(replacement.Id, cancellationToken);
-        var replacementApproved = await documents.Approve(replacement.Id, cancellationToken);
-        var replacementFinalized = await documents.Finalize(replacement.Id, cancellationToken);
-        var voided = await documents.Void(replacement.Id, cancellationToken);
-        var superseded = await documents.GetDocumentById(generated.Id, cancellationToken);
+            cancellationToken).RequireSucceededValue();
+        var approved = await documents.Approve(generated.Id, cancellationToken).RequireSucceededValue();
+        var finalized = await documents.Finalize(generated.Id, cancellationToken).RequireSucceededValue();
+        var replacement = await documents.Regenerate(generated.Id, cancellationToken).RequireSucceededValue();
+        var replacementInReview = await documents.BeginReview(replacement.Id, cancellationToken).RequireSucceededValue();
+        var replacementApproved = await documents.Approve(replacement.Id, cancellationToken).RequireSucceededValue();
+        var replacementFinalized = await documents.Finalize(replacement.Id, cancellationToken).RequireSucceededValue();
+        var voided = await documents.Void(replacement.Id, cancellationToken).RequireSucceededValue();
+        var superseded = await documents.GetDocumentById(generated.Id, cancellationToken).RequireSucceededValue();
         var originalAudits = await fixture.GetDocumentAuditMetadata(generated.Id, cancellationToken);
         var replacementAudits = await fixture.GetDocumentAuditMetadata(replacement.Id, cancellationToken);
 
@@ -830,12 +830,12 @@ public sealed class DocumentApiEndpointTests(ApiFixture fixture)
         var documents = new DocumentsApiClient(fixture.Client);
 
         // Act
-        var generated = await documents.GenerateContractDraft(booking.Id, cancellationToken);
-        var inReview = await documents.BeginReview(generated.Id, cancellationToken);
-        var changesRequested = await documents.RequestChanges(generated.Id, cancellationToken);
-        var reviewedAgain = await documents.BeginReview(generated.Id, cancellationToken);
-        var approved = await documents.Approve(generated.Id, cancellationToken);
-        var finalized = await documents.Finalize(generated.Id, cancellationToken);
+        var generated = await documents.GenerateContractDraft(booking.Id, cancellationToken).RequireSucceededValue();
+        var inReview = await documents.BeginReview(generated.Id, cancellationToken).RequireSucceededValue();
+        var changesRequested = await documents.RequestChanges(generated.Id, cancellationToken).RequireSucceededValue();
+        var reviewedAgain = await documents.BeginReview(generated.Id, cancellationToken).RequireSucceededValue();
+        var approved = await documents.Approve(generated.Id, cancellationToken).RequireSucceededValue();
+        var finalized = await documents.Finalize(generated.Id, cancellationToken).RequireSucceededValue();
         using var artifactResponse = await fixture.Client.GetAsync(
             new Uri($"/api/v1/documents/{generated.Id}/download", UriKind.Relative),
             cancellationToken);

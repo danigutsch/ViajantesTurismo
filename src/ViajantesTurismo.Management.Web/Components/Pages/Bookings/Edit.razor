@@ -376,18 +376,26 @@ else if (_booking is not null)
     protected override async Task OnInitializedAsync()
     {
         _loadErrorMessage = null;
+        _notFound = false;
         try
         {
-            _booking = await BookingsApi.GetBookingById(Id, CancellationToken.None);
-
-            if (_booking is null)
+            var outcome = await BookingsApi.GetBookingById(Id, CancellationToken.None);
+            if (outcome is { Kind: ContractCommandOutcomeKind.Succeeded, Value: { } booking })
+            {
+                _booking = booking;
+                SyncModelFromBooking();
+                await LoadCompanionChoices();
+            }
+            else if (outcome.Kind == ContractCommandOutcomeKind.NotFound)
             {
                 _notFound = true;
-                return;
             }
-
-            SyncModelFromBooking();
-            await LoadCompanionChoices();
+            else
+            {
+                _loadErrorMessage = HttpOutcomeUserMessage.For(
+                    outcome.Kind,
+                    UserFacingErrorMessage.ForOperation("load the booking"));
+            }
         }
         catch (Exception)
         {
@@ -432,7 +440,13 @@ else if (_booking is not null)
                     CompanionBikeType = _model.CompanionBikeType
                 };
                 mutationAttempted = true;
-                await BookingsApi.UpdateBookingDetails(Id, detailsDto, CancellationToken.None);
+                var outcome = await BookingsApi.UpdateBookingDetails(Id, detailsDto, CancellationToken.None);
+                if (!EnsureSucceeded(outcome, "update the booking"))
+                {
+                    await ReconcileAfterFailedMutation();
+                    return;
+                }
+
                 var companionName = _model.CompanionId == _booking.CompanionId
                     ? _booking.CompanionName
                     : _customers
@@ -461,7 +475,13 @@ else if (_booking is not null)
                     DiscountReason = normalizedDiscountReason
                 };
                 mutationAttempted = true;
-                await BookingsApi.UpdateBookingDiscount(Id, discountDto, CancellationToken.None);
+                var outcome = await BookingsApi.UpdateBookingDiscount(Id, discountDto, CancellationToken.None);
+                if (!EnsureSucceeded(outcome, "update the booking"))
+                {
+                    await ReconcileAfterFailedMutation();
+                    return;
+                }
+
                 _booking = _booking with
                 {
                     DiscountType = _model.DiscountType,
@@ -475,7 +495,13 @@ else if (_booking is not null)
             {
                 var notesDto = new UpdateBookingNotesDto { Notes = _model.Notes };
                 mutationAttempted = true;
-                await BookingsApi.UpdateBookingNotes(Id, notesDto, CancellationToken.None);
+                var outcome = await BookingsApi.UpdateBookingNotes(Id, notesDto, CancellationToken.None);
+                if (!EnsureSucceeded(outcome, "update the booking"))
+                {
+                    await ReconcileAfterFailedMutation();
+                    return;
+                }
+
                 _booking = _booking with { Notes = _model.Notes };
             }
 
@@ -560,13 +586,17 @@ else if (_booking is not null)
             var outcome = await BookingsApi.RecordPayment(Id, createDto, CancellationToken.None);
             if (outcome.Kind != ContractCommandOutcomeKind.Succeeded)
             {
-                if (outcome.Kind == ContractCommandOutcomeKind.UnexpectedStatus)
+                if (outcome.Kind is ContractCommandOutcomeKind.UnexpectedStatus or
+                    ContractCommandOutcomeKind.TransportFailure or
+                    ContractCommandOutcomeKind.TimedOut)
                 {
                     MarkPaymentResultUncertain();
                 }
                 else
                 {
-                    _toast?.ShowError(UserFacingErrorMessage.ForOperation("record the payment"));
+                    _toast?.ShowError(HttpOutcomeUserMessage.For(
+                        outcome.Kind,
+                        UserFacingErrorMessage.ForOperation("record the payment")));
                 }
 
                 return;
@@ -687,7 +717,16 @@ else if (_booking is not null)
     {
         try
         {
-            _customers = await CustomersApi.GetCustomers(CancellationToken.None, maxItems: MaxCompanionChoices);
+            var outcome = await CustomersApi.GetCustomers(CancellationToken.None, maxItems: MaxCompanionChoices);
+            if (outcome is { Kind: ContractCommandOutcomeKind.Succeeded, Value: { } customers })
+            {
+                _customers = customers;
+                _companionChoicesUnavailable = false;
+                return;
+            }
+
+            _customers = [];
+            _companionChoicesUnavailable = true;
         }
         catch (Exception)
         {
@@ -700,8 +739,8 @@ else if (_booking is not null)
     {
         try
         {
-            var refreshedBooking = await BookingsApi.GetBookingById(Id, CancellationToken.None);
-            if (refreshedBooking is null)
+            var outcome = await BookingsApi.GetBookingById(Id, CancellationToken.None);
+            if (outcome is not { Kind: ContractCommandOutcomeKind.Succeeded, Value: { } refreshedBooking })
             {
                 _refreshWarningMessage = "The change was saved, but we couldn't refresh the booking. Reload the page to see the latest calculated values.";
                 return false;
@@ -729,8 +768,8 @@ else if (_booking is not null)
     {
         try
         {
-            var refreshedBooking = await BookingsApi.GetBookingById(Id, CancellationToken.None);
-            if (refreshedBooking is null)
+            var outcome = await BookingsApi.GetBookingById(Id, CancellationToken.None);
+            if (outcome is not { Kind: ContractCommandOutcomeKind.Succeeded, Value: { } refreshedBooking })
             {
                 _refreshWarningMessage = "Some changes may have been saved, but we couldn't refresh the booking. Reload the page before making another change.";
                 return;
@@ -745,7 +784,7 @@ else if (_booking is not null)
     }
 
     private async Task ExecuteBookingAction(
-        Func<CancellationToken, Task> action,
+        Func<CancellationToken, Task<ContractCommandOutcomeDto>> action,
         string successMessage,
         string operationDescription,
         bool refreshBooking = true,
@@ -760,7 +799,15 @@ else if (_booking is not null)
         StateHasChanged();
         try
         {
-            await action(CancellationToken.None);
+            var outcome = await action(CancellationToken.None);
+            if (outcome.Kind != ContractCommandOutcomeKind.Succeeded)
+            {
+                _toast.ShowError(HttpOutcomeUserMessage.For(
+                    outcome.Kind,
+                    UserFacingErrorMessage.ForOperation(operationDescription)));
+                return;
+            }
+
             if (refreshBooking)
             {
                 await TryRefreshBookingAndSyncModel();
@@ -778,6 +825,19 @@ else if (_booking is not null)
             _isSubmitting = false;
             StateHasChanged();
         }
+    }
+
+    private bool EnsureSucceeded(ContractCommandOutcomeDto outcome, string operationDescription)
+    {
+        if (outcome.Kind == ContractCommandOutcomeKind.Succeeded)
+        {
+            return true;
+        }
+
+        _errorMessage = HttpOutcomeUserMessage.For(
+            outcome.Kind,
+            UserFacingErrorMessage.ForOperation(operationDescription));
+        return false;
     }
 
     private Task<bool> ConfirmBookingAction(

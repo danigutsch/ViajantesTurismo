@@ -1,4 +1,5 @@
 using Microsoft.AspNetCore.Mvc.Testing;
+using SharedKernel.HttpClients;
 using System.Xml.Linq;
 using TestTraits = ViajantesTurismo.Public.WebTests.Infrastructure.TestTraits;
 
@@ -537,13 +538,14 @@ public sealed class PublicWebEndpointTests
         });
 
         // Act
-        var content = await catalogApi.GetPublicContent(
+        var outcome = await catalogApi.GetPublicContent(
             "home\nhero",
             "en-US",
             TestContext.Current.CancellationToken);
 
         // Assert
-        content.ShouldNotBeNull();
+        outcome.Kind.ShouldBe(ContractCommandOutcomeKind.Succeeded);
+        var content = outcome.Value.ShouldNotBeNull();
         content.Title.ShouldBe("Newline key");
     }
 

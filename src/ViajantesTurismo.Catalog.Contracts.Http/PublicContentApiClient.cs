@@ -14,53 +14,56 @@ public sealed class PublicContentApiClient(HttpClient httpClient) : IPublicConte
     private static readonly PublicContentApiClientJsonContext Json = PublicContentApiClientJsonContext.Default;
 
     /// <inheritdoc />
-    public async Task<PublicContentDto[]> GetContent(CancellationToken ct)
+    public async Task<ContractCommandOutcomeDto<PublicContentDto[]>> GetContent(CancellationToken ct)
     {
-        List<PublicContentDto>? content = null;
-
-        await foreach (var entry in httpClient.GetFromJsonAsAsyncEnumerable(RoutePrefix, Json.PublicContentDto, ct).ConfigureAwait(false))
-        {
-            if (entry is null)
-            {
-                continue;
-            }
-
-            content ??= [];
-            content.Add(entry);
-        }
-
-        return content?.ToArray() ?? [];
+        var outcome = await ContractCommandOutcome.Send(
+            httpClient,
+            new HttpRequestMessage(HttpMethod.Get, new Uri(RoutePrefix, UriKind.Relative)),
+            HttpStatusCode.OK,
+            Json.PublicContentDtoArray,
+            Json.ContractValidationProblemDto,
+            ct).ConfigureAwait(false);
+        return outcome.Kind == ContractCommandOutcomeKind.Succeeded
+            ? outcome with { Value = outcome.Value?.OfType<PublicContentDto>().ToArray() ?? [] }
+            : outcome;
     }
 
     /// <inheritdoc />
-    public async Task<PublicContentDto?> GetContent(string key, CancellationToken ct)
+    public async Task<ContractCommandOutcomeDto<PublicContentDto>> GetContent(string key, CancellationToken ct)
     {
         ArgumentNullException.ThrowIfNull(key);
 
         var requestUri = new Uri($"{RoutePrefix}/{EscapePath(key)}", UriKind.Relative);
-        using var response = await httpClient.GetAsync(requestUri, ct).ConfigureAwait(false);
-
-        if (response.StatusCode == HttpStatusCode.NotFound)
-        {
-            return null;
-        }
-
-        response.EnsureSuccessStatusCode();
-        return await response.Content.ReadFromJsonAsync(Json.PublicContentDto, ct).ConfigureAwait(false);
+        return await ContractCommandOutcome.Send(
+            httpClient,
+            new HttpRequestMessage(HttpMethod.Get, requestUri),
+            HttpStatusCode.OK,
+            Json.PublicContentDto,
+            Json.ContractValidationProblemDto,
+            ct).ConfigureAwait(false);
     }
 
     /// <inheritdoc />
-    public async Task<PublicContentDto> SaveContent(string key, UpsertPublicContentRequest request, CancellationToken ct)
+    public async Task<ContractCommandOutcomeDto<PublicContentDto>> SaveContent(
+        string key,
+        UpsertPublicContentRequest request,
+        CancellationToken ct)
     {
         ArgumentNullException.ThrowIfNull(key);
         ArgumentNullException.ThrowIfNull(request);
 
         var requestUri = new Uri($"{RoutePrefix}/{EscapePath(key)}", UriKind.Relative);
-        using var response = await httpClient.PutAsJsonAsync(requestUri, request, Json.UpsertPublicContentRequest, ct).ConfigureAwait(false);
-        await ContractHttpValidation.EnsureSuccessOrThrowValidationException(response, Json.ContractValidationProblemDto, ct).ConfigureAwait(false);
-
-        var content = await response.Content.ReadFromJsonAsync(Json.PublicContentDto, ct).ConfigureAwait(false);
-        return content ?? throw new InvalidOperationException("Catalog API returned an empty content response.");
+        var httpRequest = new HttpRequestMessage(HttpMethod.Put, requestUri)
+        {
+            Content = JsonContent.Create(request, Json.UpsertPublicContentRequest)
+        };
+        return await ContractCommandOutcome.Send(
+            httpClient,
+            httpRequest,
+            HttpStatusCode.OK,
+            Json.PublicContentDto,
+            Json.ContractValidationProblemDto,
+            ct).ConfigureAwait(false);
     }
 
     private static string EscapePath(string path)

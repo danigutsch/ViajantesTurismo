@@ -51,7 +51,7 @@ public sealed class DocumentApiLifecycleRegressionTests(ApiFixture fixture)
             new Uri($"/api/v1/documents/{setup.Document.Id}/approve", UriKind.Relative),
             null,
             cancellationToken);
-        var persisted = await setup.Client.GetDocumentById(setup.Document.Id, cancellationToken);
+        var persisted = await setup.Client.GetDocumentById(setup.Document.Id, cancellationToken).RequireSucceededValue();
         var audits = await fixture.GetDocumentAuditMetadata(setup.Document.Id, cancellationToken);
 
         // Assert
@@ -73,14 +73,14 @@ public sealed class DocumentApiLifecycleRegressionTests(ApiFixture fixture)
             fixture,
             "finalize-gate",
             cancellationToken);
-        _ = await setup.Client.BeginReview(setup.Document.Id, cancellationToken);
+        _ = await setup.Client.BeginReview(setup.Document.Id, cancellationToken).RequireSucceededValue();
 
         // Act
         using var response = await fixture.Client.PostAsync(
             new Uri($"/api/v1/documents/{setup.Document.Id}/finalize", UriKind.Relative),
             null,
             cancellationToken);
-        var persisted = await setup.Client.GetDocumentById(setup.Document.Id, cancellationToken);
+        var persisted = await setup.Client.GetDocumentById(setup.Document.Id, cancellationToken).RequireSucceededValue();
         var audits = await fixture.GetDocumentAuditMetadata(setup.Document.Id, cancellationToken);
 
         // Assert
@@ -102,15 +102,15 @@ public sealed class DocumentApiLifecycleRegressionTests(ApiFixture fixture)
             fixture,
             "void-gate",
             cancellationToken);
-        _ = await setup.Client.BeginReview(setup.Document.Id, cancellationToken);
-        _ = await setup.Client.Approve(setup.Document.Id, cancellationToken);
+        _ = await setup.Client.BeginReview(setup.Document.Id, cancellationToken).RequireSucceededValue();
+        _ = await setup.Client.Approve(setup.Document.Id, cancellationToken).RequireSucceededValue();
 
         // Act
         using var response = await fixture.Client.PostAsync(
             new Uri($"/api/v1/documents/{setup.Document.Id}/void", UriKind.Relative),
             null,
             cancellationToken);
-        var persisted = await setup.Client.GetDocumentById(setup.Document.Id, cancellationToken);
+        var persisted = await setup.Client.GetDocumentById(setup.Document.Id, cancellationToken).RequireSucceededValue();
         var audits = await fixture.GetDocumentAuditMetadata(setup.Document.Id, cancellationToken);
 
         // Assert
@@ -133,22 +133,22 @@ public sealed class DocumentApiLifecycleRegressionTests(ApiFixture fixture)
             "approval-revocation",
             cancellationToken);
         var editableField = setup.Document.Fields.First(field => field.IsEditable);
-        _ = await setup.Client.BeginReview(setup.Document.Id, cancellationToken);
-        _ = await setup.Client.Approve(setup.Document.Id, cancellationToken);
+        _ = await setup.Client.BeginReview(setup.Document.Id, cancellationToken).RequireSucceededValue();
+        _ = await setup.Client.Approve(setup.Document.Id, cancellationToken).RequireSucceededValue();
 
         // Act
         var updated = await setup.Client.UpdateField(
             setup.Document.Id,
             editableField.FieldId,
             new UpdateDocumentFieldDto { Value = "Approval must be renewed" },
-            cancellationToken);
+            cancellationToken).RequireSucceededValue();
         using var rejectedFinalize = await fixture.Client.PostAsync(
             new Uri($"/api/v1/documents/{setup.Document.Id}/finalize", UriKind.Relative),
             null,
             cancellationToken);
-        var afterRejectedFinalize = await setup.Client.GetDocumentById(setup.Document.Id, cancellationToken);
-        _ = await setup.Client.Approve(setup.Document.Id, cancellationToken);
-        var finalized = await setup.Client.Finalize(setup.Document.Id, cancellationToken);
+        var afterRejectedFinalize = await setup.Client.GetDocumentById(setup.Document.Id, cancellationToken).RequireSucceededValue();
+        _ = await setup.Client.Approve(setup.Document.Id, cancellationToken).RequireSucceededValue();
+        var finalized = await setup.Client.Finalize(setup.Document.Id, cancellationToken).RequireSucceededValue();
         var audits = await fixture.GetDocumentAuditMetadata(setup.Document.Id, cancellationToken);
 
         // Assert
@@ -197,7 +197,7 @@ public sealed class DocumentApiLifecycleRegressionTests(ApiFixture fixture)
             new Uri($"/api/v1/documents/{setup.Document.Id}/fields/missing-field", UriKind.Relative),
             unknownContent,
             cancellationToken);
-        var persisted = await setup.Client.GetDocumentById(setup.Document.Id, cancellationToken);
+        var persisted = await setup.Client.GetDocumentById(setup.Document.Id, cancellationToken).RequireSucceededValue();
         var audits = await fixture.GetDocumentAuditMetadata(setup.Document.Id, cancellationToken);
 
         // Assert
@@ -233,12 +233,12 @@ public sealed class DocumentApiLifecycleRegressionTests(ApiFixture fixture)
             setup.Document.Id,
             fieldId,
             new UpdateDocumentFieldDto { Value = acceptedValue },
-            cancellationToken);
+            cancellationToken).RequireSucceededValue();
         using var rejectedResponse = await fixture.Client.PatchAsync(
             new Uri($"/api/v1/documents/{setup.Document.Id}/fields/{fieldId}", UriKind.Relative),
             rejectedContent,
             cancellationToken);
-        var persisted = await setup.Client.GetDocumentById(setup.Document.Id, cancellationToken);
+        var persisted = await setup.Client.GetDocumentById(setup.Document.Id, cancellationToken).RequireSucceededValue();
         var audits = await fixture.GetDocumentAuditMetadata(setup.Document.Id, cancellationToken);
 
         // Assert
@@ -315,9 +315,9 @@ public sealed class DocumentApiLifecycleRegressionTests(ApiFixture fixture)
             setup.Document.Id,
             fieldId,
             new UpdateDocumentFieldDto { Value = maliciousValue },
-            cancellationToken);
-        _ = await setup.Client.Approve(setup.Document.Id, cancellationToken);
-        _ = await setup.Client.Finalize(setup.Document.Id, cancellationToken);
+            cancellationToken).RequireSucceededValue();
+        _ = await setup.Client.Approve(setup.Document.Id, cancellationToken).RequireSucceededValue();
+        _ = await setup.Client.Finalize(setup.Document.Id, cancellationToken).RequireSucceededValue();
         var artifact = await setup.Client.DownloadFinalizedArtifact(setup.Document.Id, cancellationToken);
         var audits = await fixture.GetDocumentAuditMetadata(setup.Document.Id, cancellationToken);
 
@@ -352,21 +352,21 @@ public sealed class DocumentApiLifecycleRegressionTests(ApiFixture fixture)
             setup.Document.Id,
             fieldId,
             new UpdateDocumentFieldDto { Value = firstValue },
-            cancellationToken);
-        _ = await setup.Client.Approve(setup.Document.Id, cancellationToken);
-        _ = await setup.Client.Finalize(setup.Document.Id, cancellationToken);
+            cancellationToken).RequireSucceededValue();
+        _ = await setup.Client.Approve(setup.Document.Id, cancellationToken).RequireSucceededValue();
+        _ = await setup.Client.Finalize(setup.Document.Id, cancellationToken).RequireSucceededValue();
         var artifactBeforeRegeneration = await setup.Client.DownloadFinalizedArtifact(
             setup.Document.Id,
             cancellationToken);
 
         // Act
-        var replacement = await setup.Client.Regenerate(setup.Document.Id, cancellationToken);
+        var replacement = await setup.Client.Regenerate(setup.Document.Id, cancellationToken).RequireSucceededValue();
         var updatedReplacement = await setup.Client.UpdateField(
             replacement.Id,
             fieldId,
             new UpdateDocumentFieldDto { Value = secondValue },
-            cancellationToken);
-        var predecessor = await setup.Client.GetDocumentById(setup.Document.Id, cancellationToken);
+            cancellationToken).RequireSucceededValue();
+        var predecessor = await setup.Client.GetDocumentById(setup.Document.Id, cancellationToken).RequireSucceededValue();
         var artifactAfterRegeneration = await setup.Client.DownloadFinalizedArtifact(
             setup.Document.Id,
             cancellationToken);
@@ -397,12 +397,12 @@ public sealed class DocumentApiLifecycleRegressionTests(ApiFixture fixture)
             fixture,
             "replacement-rollback",
             cancellationToken);
-        _ = await setup.Client.BeginReview(setup.Document.Id, cancellationToken);
-        _ = await setup.Client.Approve(setup.Document.Id, cancellationToken);
-        _ = await setup.Client.Finalize(setup.Document.Id, cancellationToken);
-        var replacement = await setup.Client.Regenerate(setup.Document.Id, cancellationToken);
-        _ = await setup.Client.BeginReview(replacement.Id, cancellationToken);
-        _ = await setup.Client.Approve(replacement.Id, cancellationToken);
+        _ = await setup.Client.BeginReview(setup.Document.Id, cancellationToken).RequireSucceededValue();
+        _ = await setup.Client.Approve(setup.Document.Id, cancellationToken).RequireSucceededValue();
+        _ = await setup.Client.Finalize(setup.Document.Id, cancellationToken).RequireSucceededValue();
+        var replacement = await setup.Client.Regenerate(setup.Document.Id, cancellationToken).RequireSucceededValue();
+        _ = await setup.Client.BeginReview(replacement.Id, cancellationToken).RequireSucceededValue();
+        _ = await setup.Client.Approve(replacement.Id, cancellationToken).RequireSucceededValue();
 
         // Act
         HttpResponseMessage failedResponse;
@@ -417,8 +417,8 @@ public sealed class DocumentApiLifecycleRegressionTests(ApiFixture fixture)
         }
 
         using var response = failedResponse;
-        var predecessor = await setup.Client.GetDocumentById(setup.Document.Id, cancellationToken);
-        var persistedReplacement = await setup.Client.GetDocumentById(replacement.Id, cancellationToken);
+        var predecessor = await setup.Client.GetDocumentById(setup.Document.Id, cancellationToken).RequireSucceededValue();
+        var persistedReplacement = await setup.Client.GetDocumentById(replacement.Id, cancellationToken).RequireSucceededValue();
         var artifact = await setup.Client.DownloadFinalizedArtifact(setup.Document.Id, cancellationToken);
         var replacementAudits = await fixture.GetDocumentAuditMetadata(replacement.Id, cancellationToken);
 
@@ -450,9 +450,9 @@ public sealed class DocumentApiLifecycleRegressionTests(ApiFixture fixture)
             setup.Document.Id,
             fieldId,
             new UpdateDocumentFieldDto { Value = uniqueMarker },
-            cancellationToken);
-        _ = await setup.Client.Approve(setup.Document.Id, cancellationToken);
-        _ = await setup.Client.Finalize(setup.Document.Id, cancellationToken);
+            cancellationToken).RequireSucceededValue();
+        _ = await setup.Client.Approve(setup.Document.Id, cancellationToken).RequireSucceededValue();
+        _ = await setup.Client.Finalize(setup.Document.Id, cancellationToken).RequireSucceededValue();
 
         // Act
         HttpResponseMessage failedResponse;

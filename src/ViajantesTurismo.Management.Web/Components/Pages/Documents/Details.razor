@@ -125,29 +125,25 @@
         _errorMessage = null;
         _loadErrorMessage = null;
 
-        try
+        var outcome = await DocumentsApi.GetDocumentById(Id, CancellationToken.None);
+        _document = outcome is { Kind: ContractCommandOutcomeKind.Succeeded, Value: { } document }
+            ? document
+            : null;
+        _notFound = outcome.Kind == ContractCommandOutcomeKind.NotFound;
+        _fieldValues.Clear();
+        if (_document is not null)
         {
-            _document = await DocumentsApi.GetDocumentById(Id, CancellationToken.None);
-            _notFound = _document is null;
-            _fieldValues.Clear();
-            if (_document is not null)
+            foreach (var field in _document.Fields)
             {
-                foreach (var field in _document.Fields)
-                {
-                    _fieldValues[field.FieldId] = field.RenderedValue;
-                }
+                _fieldValues[field.FieldId] = field.RenderedValue;
             }
         }
-        catch (Exception)
+        else if (!_notFound)
         {
-            _document = null;
-            _fieldValues.Clear();
-            _loadErrorMessage = "The document could not be loaded. Please try again.";
+            _loadErrorMessage = HttpOutcomeUserMessage.For(outcome.Kind, "The document could not be loaded. Please try again.");
         }
-        finally
-        {
-            _loading = false;
-        }
+
+        _loading = false;
     }
 
     private bool CanEdit(GetDocumentFieldDto field) =>
@@ -190,22 +186,22 @@
             "The document field could not be updated.");
     }
 
-    private async Task ExecuteAction(Func<Task<GetDocumentDto>> action, string errorMessage)
+    private async Task ExecuteAction(Func<Task<ContractCommandOutcomeDto<GetDocumentDto>>> action, string errorMessage)
     {
         _errorMessage = null;
 
-        try
+        var outcome = await action();
+        if (outcome is not { Kind: ContractCommandOutcomeKind.Succeeded, Value: { } document })
         {
-            _document = await action();
-            _fieldValues.Clear();
-            foreach (var field in _document.Fields)
-            {
-                _fieldValues[field.FieldId] = field.RenderedValue;
-            }
+            _errorMessage = HttpOutcomeUserMessage.For(outcome.Kind, errorMessage);
+            return;
         }
-        catch (Exception)
+
+        _document = document;
+        _fieldValues.Clear();
+        foreach (var field in _document.Fields)
         {
-            _errorMessage = errorMessage;
+            _fieldValues[field.FieldId] = field.RenderedValue;
         }
     }
 }

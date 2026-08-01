@@ -1,3 +1,4 @@
+using SharedKernel.HttpClients;
 using ViajantesTurismo.Admin.SystemTests.Infrastructure;
 using ViajantesTurismo.Catalog.Contracts.Http;
 
@@ -100,12 +101,14 @@ public sealed class PostTransportValidationTests(AspireSystemTestFixture fixture
         // Act
         await Fixture.RequeueCatalogTransportMessageForAdminTour(adminTour.Id, TestContext.Current.CancellationToken);
         await Fixture.WaitForCatalogTransportMessageProcessed(adminTour.Id, TestContext.Current.CancellationToken);
-        var projectedCatalogTours = await catalogTours.GetTours(TestContext.Current.CancellationToken);
+        var projectedCatalogToursOutcome = await catalogTours.GetTours(TestContext.Current.CancellationToken);
         var eventCountAfterDuplicate = await Fixture.CountCatalogTourEvents(adminTour.Id, TestContext.Current.CancellationToken);
 
         // Assert
         eventCountBeforeDuplicate.ShouldBe(1);
         eventCountAfterDuplicate.ShouldBe(1);
+        projectedCatalogToursOutcome.Kind.ShouldBe(ContractCommandOutcomeKind.Succeeded);
+        var projectedCatalogTours = projectedCatalogToursOutcome.Value.ShouldNotBeNull();
         var projectedTours = projectedCatalogTours.Where(tour => tour.AdminTourId == adminTour.Id).ToArray();
         projectedTours.ShouldHaveSingleItem().Id.ShouldBe(catalogTour.Id);
     }

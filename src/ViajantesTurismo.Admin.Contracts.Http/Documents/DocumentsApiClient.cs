@@ -13,60 +13,65 @@ public sealed class DocumentsApiClient(HttpClient httpClient) : IDocumentsApiCli
     private static readonly DocumentsApiClientJsonContext Json = DocumentsApiClientJsonContext.Default;
 
     /// <inheritdoc />
-    public async Task<GetDocumentDto?> GetDocumentById(Guid id, CancellationToken ct)
+    public async Task<ContractCommandOutcomeDto<GetDocumentDto>> GetDocumentById(Guid id, CancellationToken ct)
     {
-        using var response = await httpClient.GetAsync(new Uri($"{RoutePrefix}/{id}", UriKind.Relative), ct).ConfigureAwait(false);
-        if (response.StatusCode == HttpStatusCode.NotFound)
-        {
-            return null;
-        }
-
-        await EnsureSuccess(response, ct).ConfigureAwait(false);
-        return await ReadDocument(response, ct).ConfigureAwait(false);
+        return await ContractCommandOutcome.Send(
+            httpClient,
+            new HttpRequestMessage(HttpMethod.Get, new Uri($"{RoutePrefix}/{id}", UriKind.Relative)),
+            HttpStatusCode.OK,
+            Json.GetDocumentDto,
+            Json.ContractValidationProblemDto,
+            ct).ConfigureAwait(false);
     }
 
     /// <inheritdoc />
-    public Task<GetDocumentDto> GenerateContractDraft(Guid bookingId, CancellationToken ct) =>
-        PostCommand($"{RoutePrefix}/bookings/{bookingId}/contract-drafts", ct);
+    public async Task<ContractCommandOutcomeDto<GetDocumentDto>> GenerateContractDraft(Guid bookingId, CancellationToken ct) =>
+        await PostCommand($"{RoutePrefix}/bookings/{bookingId}/contract-drafts", HttpStatusCode.Created, ct).ConfigureAwait(false);
 
     /// <inheritdoc />
-    public Task<GetDocumentDto> BeginReview(Guid documentId, CancellationToken ct) =>
-        PostCommand($"{RoutePrefix}/{documentId}/review", ct);
+    public async Task<ContractCommandOutcomeDto<GetDocumentDto>> BeginReview(Guid documentId, CancellationToken ct) =>
+        await PostCommand($"{RoutePrefix}/{documentId}/review", HttpStatusCode.OK, ct).ConfigureAwait(false);
 
     /// <inheritdoc />
-    public Task<GetDocumentDto> RequestChanges(Guid documentId, CancellationToken ct) =>
-        PostCommand($"{RoutePrefix}/{documentId}/changes-requested", ct);
+    public async Task<ContractCommandOutcomeDto<GetDocumentDto>> RequestChanges(Guid documentId, CancellationToken ct) =>
+        await PostCommand($"{RoutePrefix}/{documentId}/changes-requested", HttpStatusCode.OK, ct).ConfigureAwait(false);
 
     /// <inheritdoc />
-    public async Task<GetDocumentDto> UpdateField(Guid documentId, string fieldId, UpdateDocumentFieldDto dto, CancellationToken ct)
+    public async Task<ContractCommandOutcomeDto<GetDocumentDto>> UpdateField(Guid documentId, string fieldId, UpdateDocumentFieldDto dto, CancellationToken ct)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(fieldId);
         ArgumentNullException.ThrowIfNull(dto);
 
-        using var response = await httpClient.PatchAsJsonAsync(
-            $"{RoutePrefix}/{documentId}/fields/{Uri.EscapeDataString(fieldId)}",
-            dto,
-            Json.UpdateDocumentFieldDto,
+        var request = new HttpRequestMessage(
+            HttpMethod.Patch,
+            new Uri($"{RoutePrefix}/{documentId}/fields/{Uri.EscapeDataString(fieldId)}", UriKind.Relative))
+        {
+            Content = JsonContent.Create(dto, Json.UpdateDocumentFieldDto)
+        };
+        return await ContractCommandOutcome.Send(
+            httpClient,
+            request,
+            HttpStatusCode.OK,
+            Json.GetDocumentDto,
+            Json.ContractValidationProblemDto,
             ct).ConfigureAwait(false);
-        await EnsureSuccess(response, ct).ConfigureAwait(false);
-        return await ReadDocument(response, ct).ConfigureAwait(false);
     }
 
     /// <inheritdoc />
-    public Task<GetDocumentDto> Approve(Guid documentId, CancellationToken ct) =>
-        PostCommand($"{RoutePrefix}/{documentId}/approve", ct);
+    public async Task<ContractCommandOutcomeDto<GetDocumentDto>> Approve(Guid documentId, CancellationToken ct) =>
+        await PostCommand($"{RoutePrefix}/{documentId}/approve", HttpStatusCode.OK, ct).ConfigureAwait(false);
 
     /// <inheritdoc />
-    public Task<GetDocumentDto> Finalize(Guid documentId, CancellationToken ct) =>
-        PostCommand($"{RoutePrefix}/{documentId}/finalize", ct);
+    public async Task<ContractCommandOutcomeDto<GetDocumentDto>> Finalize(Guid documentId, CancellationToken ct) =>
+        await PostCommand($"{RoutePrefix}/{documentId}/finalize", HttpStatusCode.OK, ct).ConfigureAwait(false);
 
     /// <inheritdoc />
-    public Task<GetDocumentDto> Regenerate(Guid documentId, CancellationToken ct) =>
-        PostCommand($"{RoutePrefix}/{documentId}/regenerate", ct);
+    public async Task<ContractCommandOutcomeDto<GetDocumentDto>> Regenerate(Guid documentId, CancellationToken ct) =>
+        await PostCommand($"{RoutePrefix}/{documentId}/regenerate", HttpStatusCode.OK, ct).ConfigureAwait(false);
 
     /// <inheritdoc />
-    public Task<GetDocumentDto> Void(Guid documentId, CancellationToken ct) =>
-        PostCommand($"{RoutePrefix}/{documentId}/void", ct);
+    public async Task<ContractCommandOutcomeDto<GetDocumentDto>> Void(Guid documentId, CancellationToken ct) =>
+        await PostCommand($"{RoutePrefix}/{documentId}/void", HttpStatusCode.OK, ct).ConfigureAwait(false);
 
     /// <inheritdoc />
     public async Task<DocumentArtifactResponse?> DownloadFinalizedArtifact(Guid documentId, CancellationToken ct)
@@ -77,7 +82,7 @@ public sealed class DocumentsApiClient(HttpClient httpClient) : IDocumentsApiCli
             return null;
         }
 
-        await EnsureSuccess(response, ct).ConfigureAwait(false);
+        await ContractHttpValidation.EnsureSuccessOrThrowValidationException(response, Json.ContractValidationProblemDto, ct).ConfigureAwait(false);
         if (!string.Equals(response.Content.Headers.ContentType?.MediaType, HtmlMediaType, StringComparison.OrdinalIgnoreCase))
         {
             throw new InvalidOperationException("The document artifact response must be HTML.");
@@ -90,17 +95,17 @@ public sealed class DocumentsApiClient(HttpClient httpClient) : IDocumentsApiCli
         return new DocumentArtifactResponse(content, fileName);
     }
 
-    private async Task<GetDocumentDto> PostCommand(string requestUri, CancellationToken ct)
+    private async Task<ContractCommandOutcomeDto<GetDocumentDto>> PostCommand(
+        string requestUri,
+        HttpStatusCode successStatusCode,
+        CancellationToken ct)
     {
-        using var response = await httpClient.PostAsync(new Uri(requestUri, UriKind.Relative), null, ct).ConfigureAwait(false);
-        await EnsureSuccess(response, ct).ConfigureAwait(false);
-        return await ReadDocument(response, ct).ConfigureAwait(false);
+        return await ContractCommandOutcome.Send(
+            httpClient,
+            new HttpRequestMessage(HttpMethod.Post, new Uri(requestUri, UriKind.Relative)),
+            successStatusCode,
+            Json.GetDocumentDto,
+            Json.ContractValidationProblemDto,
+            ct).ConfigureAwait(false);
     }
-
-    private static async Task<GetDocumentDto> ReadDocument(HttpResponseMessage response, CancellationToken ct) =>
-        await response.Content.ReadFromJsonAsync(Json.GetDocumentDto, ct).ConfigureAwait(false)
-        ?? throw new InvalidOperationException("The document response body was empty.");
-
-    private static async Task EnsureSuccess(HttpResponseMessage response, CancellationToken ct) =>
-        await ContractHttpValidation.EnsureSuccessOrThrowValidationException(response, Json.ContractValidationProblemDto, ct).ConfigureAwait(false);
 }

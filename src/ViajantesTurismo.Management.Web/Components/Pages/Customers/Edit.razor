@@ -21,6 +21,11 @@ else if (_notFound)
     </div>
     <NavLink href="/customers" class="btn btn-secondary">Back to Customers</NavLink>
 }
+else if (_loadFailed)
+{
+    <div class="alert alert-danger" role="alert">@_errorMessage</div>
+    <NavLink href="/customers" class="btn btn-secondary">Back to Customers</NavLink>
+}
 else
 {
     @if (_success)
@@ -378,6 +383,7 @@ else
 
     private CustomerFormModel _model = new();
     private bool _loading = true;
+    private bool _loadFailed;
     private bool _notFound;
     private bool _isSubmitting;
     private bool _success;
@@ -391,39 +397,41 @@ else
     /// <inheritdoc />
     protected override async Task OnInitializedAsync()
     {
-        try
+        var customerOutcome = await CustomersApi.GetCustomerById(Id, CancellationToken.None);
+        if (customerOutcome is not { Kind: ContractCommandOutcomeKind.Succeeded, Value: { } customer })
         {
-            var customer = await CustomersApi.GetCustomerById(Id, CancellationToken.None);
-
-            if (customer is null)
+            if (customerOutcome.Kind == ContractCommandOutcomeKind.NotFound)
             {
                 _notFound = true;
-                return;
+            }
+            else
+            {
+                _errorMessage = HttpOutcomeUserMessage.For(customerOutcome.Kind, UserFacingErrorMessage.ForOperation("load the customer"));
+                _loadFailed = true;
             }
 
-            _model = new CustomerFormModel
-            {
-                PersonalInfo = PersonalInfoFormModel.FromDto(customer.PersonalInfo),
-                IdentificationInfo = IdentificationInfoFormModel.FromDto(customer.IdentificationInfo),
-                ContactInfo = ContactInfoFormModel.FromDto(customer.ContactInfo),
-                Address = AddressFormModel.FromDto(customer.Address),
-                PhysicalInfo = PhysicalInfoFormModel.FromDto(customer.PhysicalInfo),
-                AccommodationPreferences = AccommodationPreferencesFormModel.FromDto(customer.AccommodationPreferences),
-                EmergencyContact = EmergencyContactFormModel.FromDto(customer.EmergencyContact),
-                MedicalInfo = MedicalInfoFormModel.FromDto(customer.MedicalInfo)
-            };
-
-            _customers = await CustomersApi.GetCustomers(CancellationToken.None);
-            _countries = await CountryService.GetCountries(CancellationToken.None);
-        }
-        catch (Exception)
-        {
-            _errorMessage = UserFacingErrorMessage.ForOperation("load the customer");
-        }
-        finally
-        {
             _loading = false;
+            return;
         }
+
+        _model = new CustomerFormModel
+        {
+            PersonalInfo = PersonalInfoFormModel.FromDto(customer.PersonalInfo),
+            IdentificationInfo = IdentificationInfoFormModel.FromDto(customer.IdentificationInfo),
+            ContactInfo = ContactInfoFormModel.FromDto(customer.ContactInfo),
+            Address = AddressFormModel.FromDto(customer.Address),
+            PhysicalInfo = PhysicalInfoFormModel.FromDto(customer.PhysicalInfo),
+            AccommodationPreferences = AccommodationPreferencesFormModel.FromDto(customer.AccommodationPreferences),
+            EmergencyContact = EmergencyContactFormModel.FromDto(customer.EmergencyContact),
+            MedicalInfo = MedicalInfoFormModel.FromDto(customer.MedicalInfo)
+        };
+
+        var customersOutcome = await CustomersApi.GetCustomers(CancellationToken.None);
+        _customers = customersOutcome is { Kind: ContractCommandOutcomeKind.Succeeded, Value: { } customers }
+            ? customers
+            : [];
+        _countries = await CountryService.GetCountries(CancellationToken.None);
+        _loading = false;
     }
 
     private async Task HandleSubmit()
@@ -450,7 +458,12 @@ else
                 MedicalInfo = _model.MedicalInfo.ToDto()
             };
 
-            await CustomersApi.UpdateCustomer(Id, customer, CancellationToken.None);
+            var outcome = await CustomersApi.UpdateCustomer(Id, customer, CancellationToken.None);
+            if (outcome.Kind != ContractCommandOutcomeKind.Succeeded)
+            {
+                _errorMessage = HttpOutcomeUserMessage.For(outcome.Kind, UserFacingErrorMessage.ForOperation("update the customer"));
+                return;
+            }
 
             _success = true;
             _pendingRedirect = true;
@@ -473,10 +486,6 @@ else
             {
                 await DisposeRedirectCancellation();
             }
-        }
-        catch (Exception)
-        {
-            _errorMessage = UserFacingErrorMessage.ForOperation("update the customer");
         }
         finally
         {

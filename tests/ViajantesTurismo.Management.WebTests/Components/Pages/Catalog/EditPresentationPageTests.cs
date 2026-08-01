@@ -148,6 +148,24 @@ public sealed class EditPresentationPageTests : BunitContext
     }
 
     [Fact]
+    public void Shows_not_found_when_catalog_tour_disappears_during_save()
+    {
+        // Arrange
+        var tour = IndexPageTestsHelpers.CreateTour("TOUR-1", "Draft Tour", "draft-tour", isPublished: false);
+        catalogApi.Tours = [tour];
+        var cut = Render<EditPresentation>(parameters => parameters.Add(component => component.Id, tour.Id));
+        cut.WaitForState(() => cut.Markup.Contains("Draft Tour", StringComparison.Ordinal), TimeSpan.FromSeconds(2));
+        catalogApi.Tours = [];
+
+        // Act
+        cut.Find("form").Submit();
+
+        // Assert
+        cut.WaitForState(() => cut.Markup.Contains("Catalog tour not found", StringComparison.Ordinal), TimeSpan.FromSeconds(2));
+        cut.FindAll("form").ShouldBeEmpty();
+    }
+
+    [Fact]
     public void Shows_load_error_when_catalog_api_fails()
     {
         // Arrange

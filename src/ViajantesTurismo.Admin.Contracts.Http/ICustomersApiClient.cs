@@ -13,16 +13,16 @@ public interface ICustomersApiClient
     /// </summary>
     /// <param name="ct">Cancellation token for the request.</param>
     /// <param name="maxItems">Maximum number of items to return (default: 100).</param>
-    /// <returns>Read-only list of customer DTOs.</returns>
-    Task<IReadOnlyList<GetCustomerDto>> GetCustomers(CancellationToken ct, int maxItems = 100);
+    /// <returns>The materialized customer-list outcome.</returns>
+    Task<ContractCommandOutcomeDto<GetCustomerDto[]>> GetCustomers(CancellationToken ct, int maxItems = 100);
 
     /// <summary>
     /// Gets detailed information for a specific customer by their ID.
     /// </summary>
     /// <param name="id">The unique identifier of the customer.</param>
     /// <param name="ct">Cancellation token for the request.</param>
-    /// <returns>The detailed customer DTO if found, null otherwise.</returns>
-    Task<CustomerDetailsDto?> GetCustomerById(Guid id, CancellationToken ct);
+    /// <returns>The materialized customer-details outcome.</returns>
+    Task<ContractCommandOutcomeDto<CustomerDetailsDto>> GetCustomerById(Guid id, CancellationToken ct);
 
     /// <summary>
     /// Creates a new customer.
@@ -38,7 +38,8 @@ public interface ICustomersApiClient
     /// <param name="id">The unique identifier of the customer to update.</param>
     /// <param name="dto">The updated customer data.</param>
     /// <param name="ct">Cancellation token for the request.</param>
-    Task UpdateCustomer(Guid id, UpdateCustomerDto dto, CancellationToken ct);
+    /// <returns>The update outcome returned by the API.</returns>
+    Task<ContractCommandOutcomeDto> UpdateCustomer(Guid id, UpdateCustomerDto dto, CancellationToken ct);
 
     /// <summary>
     /// Imports customers from a CSV file.
@@ -46,8 +47,8 @@ public interface ICustomersApiClient
     /// <param name="fileContent">The CSV file content as a byte array.</param>
     /// <param name="fileName">The original file name.</param>
     /// <param name="ct">Cancellation token for the request.</param>
-    /// <returns>The import result summary.</returns>
-    Task<ImportResultDto> ImportCustomers(byte[] fileContent, string fileName, CancellationToken ct);
+    /// <returns>The materialized import outcome.</returns>
+    Task<ContractCommandOutcomeDto<ImportResultDto>> ImportCustomers(byte[] fileContent, string fileName, CancellationToken ct);
 
     /// <summary>
     /// Commits a customer import applying per-email conflict resolutions decided by the user.
@@ -56,6 +57,6 @@ public interface ICustomersApiClient
     /// <param name="fileName">The original file name.</param>
     /// <param name="conflictResolutions">Map of email address to resolution decision ("keep" or "overwrite").</param>
     /// <param name="ct">Cancellation token for the request.</param>
-    /// <returns>The import result summary.</returns>
-    Task<ImportResultDto> CommitImportWithResolutions(byte[] fileContent, string fileName, IReadOnlyDictionary<string, string> conflictResolutions, CancellationToken ct);
+    /// <returns>The materialized import outcome.</returns>
+    Task<ContractCommandOutcomeDto<ImportResultDto>> CommitImportWithResolutions(byte[] fileContent, string fileName, IReadOnlyDictionary<string, string> conflictResolutions, CancellationToken ct);
 }

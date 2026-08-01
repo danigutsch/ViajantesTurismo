@@ -21,7 +21,8 @@ internal static class EditPageTestsHelper
         };
 
         await fakeToursApi.CreateTour(createDto, CancellationToken.None);
-        var tours = await fakeToursApi.GetTours(CancellationToken.None);
+        var outcome = await fakeToursApi.GetTours(CancellationToken.None);
+        var tours = outcome.Value ?? throw new InvalidOperationException("The fake tours client did not return created tours.");
         return tours[0];
     }
 

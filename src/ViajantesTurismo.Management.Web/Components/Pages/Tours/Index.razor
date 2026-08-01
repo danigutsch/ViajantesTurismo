@@ -9,7 +9,11 @@
 
 <h1><i class="bi bi-list-nested"></i> Tours</h1>
 
-@if (_tours == null)
+@if (_errorMessage is not null)
+{
+    <div class="alert alert-danger" role="alert">@_errorMessage</div>
+}
+else if (_tours == null)
 {
     <p><em>Loading...</em></p>
 }
@@ -91,12 +95,22 @@ else
 
 @code {
     private GetTourDto[]? _tours;
+    private string? _errorMessage;
     private readonly PaginationState _pagination = new() { ItemsPerPage = 10 };
 
     /// <inheritdoc />
     protected override async Task OnInitializedAsync()
     {
-        _tours = await ToursApi.GetTours(CancellationToken.None);
+        _errorMessage = null;
+        var outcome = await ToursApi.GetTours(CancellationToken.None);
+        if (outcome is { Kind: ContractCommandOutcomeKind.Succeeded, Value: { } tours })
+        {
+            _tours = tours;
+            return;
+        }
+
+        _tours = [];
+        _errorMessage = HttpOutcomeUserMessage.For(outcome.Kind, "Tours could not be loaded. Try again later.");
     }
 
     private static string FormatPrice(decimal price, CurrencyDto currency) => CurrencyFormatter.Format(price, currency);

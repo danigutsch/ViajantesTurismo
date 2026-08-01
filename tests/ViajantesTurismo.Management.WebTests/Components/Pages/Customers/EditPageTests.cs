@@ -46,6 +46,7 @@ public class EditPageTests : BunitContext
             var alert = cut.Find(".alert.alert-danger");
             (alert.TextContent).ShouldContain("We couldn't load the customer right now. Please try again.", StringComparison.Ordinal);
             (alert.TextContent).ShouldNotContain("Database unavailable", StringComparison.Ordinal);
+            cut.FindAll("form").ShouldBeEmpty();
         });
     }
 

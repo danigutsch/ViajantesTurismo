@@ -3,6 +3,33 @@ namespace ViajantesTurismo.ArchitectureTests.Conventions;
 public static class SharedKernelPackagingConventionTests
 {
     [Fact]
+    public static void SharedKernel_http_clients_contain_no_application_contracts_routes_or_scopes()
+    {
+        // Arrange
+        var repositoryRoot = SharedKernelPackagingConventionTestFiles.GetRepositoryRoot();
+        var sourceRoot = Path.Combine(repositoryRoot, "src", "SharedKernel", "SharedKernel.HttpClients");
+        string[] forbiddenFragments =
+        [
+            "ViajantesTurismo.",
+            "\"/api/",
+            "admin-api",
+            "branding-api",
+            "catalog-api"
+        ];
+
+        // Act
+        var violations = Directory.GetFiles(sourceRoot, "*.cs", SearchOption.AllDirectories)
+            .SelectMany(file => forbiddenFragments
+                .Where(fragment => File.ReadAllText(file).Contains(fragment, StringComparison.Ordinal))
+                .Select(fragment => $"{Path.GetRelativePath(repositoryRoot, file)} contains '{fragment}'."))
+            .Order(StringComparer.Ordinal)
+            .ToArray();
+
+        // Assert
+        violations.ShouldBe([]);
+    }
+
+    [Fact]
     public static void SharedKernel_source_projects_follow_package_metadata_conventions()
     {
         // Arrange

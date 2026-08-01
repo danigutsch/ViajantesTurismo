@@ -46,10 +46,11 @@ public sealed class CustomersApiClientTests
         var sut = CustomersApiClientTestsHelpers.CreateSut(httpClient);
 
         // Act
-        var customers = await sut.GetCustomers(TestContext.Current.CancellationToken, maxItems: 1);
+        var outcome = await sut.GetCustomers(TestContext.Current.CancellationToken, maxItems: 1);
 
         // Assert
         requestPath.ShouldBe("/api/v1/customers");
+        var customers = outcome.Value.ShouldNotBeNull();
         var customer = customers.ShouldHaveSingleItem();
         customer.FirstName.ShouldBe("Alice");
     }
@@ -67,9 +68,10 @@ public sealed class CustomersApiClientTests
         var sut = CustomersApiClientTestsHelpers.CreateSut(httpClient);
 
         // Act
-        var customers = await sut.GetCustomers(TestContext.Current.CancellationToken, maxItems: 0);
+        var outcome = await sut.GetCustomers(TestContext.Current.CancellationToken, maxItems: 0);
 
         // Assert
+        var customers = outcome.Value.ShouldNotBeNull();
         customers.ShouldBeEmpty();
         requestCount.ShouldBe(0);
     }
@@ -88,26 +90,27 @@ public sealed class CustomersApiClientTests
         var sut = CustomersApiClientTestsHelpers.CreateSut(httpClient);
 
         // Act
-        var customer = await sut.GetCustomerById(customerId, TestContext.Current.CancellationToken);
+        var outcome = await sut.GetCustomerById(customerId, TestContext.Current.CancellationToken);
 
         // Assert
         requestPath.ShouldBe($"/api/v1/customers/{customerId}");
-        customer.ShouldBeNull();
+        outcome.Kind.ShouldBe(ContractCommandOutcomeKind.NotFound);
+        outcome.Value.ShouldBeNull();
     }
 
     [Fact]
-    public async Task GetCustomerById_throws_when_admin_api_returns_success_with_null_body()
+    public async Task GetCustomerById_returns_malformed_outcome_when_admin_api_returns_success_with_null_body()
     {
         // Arrange
         using var httpClient = CatalogToursApiClientTestsHelpers.CreateClient(_ => CatalogToursApiClientTestsHelpers.JsonResponse("null"));
         var sut = CustomersApiClientTestsHelpers.CreateSut(httpClient);
 
         // Act
-        Func<Task> act = async () => await sut.GetCustomerById(Guid.CreateVersion7(), TestContext.Current.CancellationToken);
+        var outcome = await sut.GetCustomerById(Guid.CreateVersion7(), TestContext.Current.CancellationToken);
 
         // Assert
-        var exception = await act.ShouldThrow<InvalidOperationException>();
-        exception.Message.ShouldBe("The customer response body was empty.");
+        outcome.Kind.ShouldBe(ContractCommandOutcomeKind.MalformedBody);
+        outcome.Value.ShouldBeNull();
     }
 
     [Fact]
@@ -311,11 +314,12 @@ public sealed class CustomersApiClientTests
         var sut = CustomersApiClientTestsHelpers.CreateSut(httpClient);
 
         // Act
-        await sut.UpdateCustomer(customerId, BuildUpdateCustomerDto(), TestContext.Current.CancellationToken);
+        var outcome = await sut.UpdateCustomer(customerId, BuildUpdateCustomerDto(), TestContext.Current.CancellationToken);
 
         // Assert
         requestPath.ShouldBe($"/api/v1/customers/{customerId}");
         requestMethod.ShouldBe(HttpMethods.Put);
+        outcome.Kind.ShouldBe(ContractCommandOutcomeKind.Succeeded);
     }
 
     [Fact]
@@ -333,10 +337,11 @@ public sealed class CustomersApiClientTests
         var sut = CustomersApiClientTestsHelpers.CreateSut(httpClient);
 
         // Act
-        var result = await sut.ImportCustomers([1, 2, 3], "customers.csv", TestContext.Current.CancellationToken);
+        var outcome = await sut.ImportCustomers([1, 2, 3], "customers.csv", TestContext.Current.CancellationToken);
 
         // Assert
         requestPath.ShouldBe("/api/v1/customers/import");
+        var result = outcome.Value.ShouldNotBeNull();
         result.SuccessCount.ShouldBe(1);
     }
 
@@ -355,7 +360,7 @@ public sealed class CustomersApiClientTests
         var sut = CustomersApiClientTestsHelpers.CreateSut(httpClient);
 
         // Act
-        var result = await sut.CommitImportWithResolutions(
+        var outcome = await sut.CommitImportWithResolutions(
             [1, 2, 3],
             "customers.csv",
             new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase) { ["alice@example.test"] = "overwrite" },
@@ -363,6 +368,7 @@ public sealed class CustomersApiClientTests
 
         // Assert
         requestPath.ShouldBe("/api/v1/customers/import/commit");
+        var result = outcome.Value.ShouldNotBeNull();
         result.SuccessCount.ShouldBe(2);
     }
 }

@@ -20,7 +20,11 @@
 
 <p>Manage customer information and profiles.</p>
 
-@if (_customers == null)
+@if (_errorMessage is not null)
+{
+    <div class="alert alert-danger" role="alert">@_errorMessage</div>
+}
+else if (_customers == null)
 {
     <p><em>Loading...</em></p>
 }
@@ -69,12 +73,22 @@ else
 
 @code {
     private IReadOnlyList<GetCustomerDto>? _customers;
+    private string? _errorMessage;
     private readonly PaginationState _pagination = new() { ItemsPerPage = 10 };
 
     /// <inheritdoc />
     protected override async Task OnInitializedAsync()
     {
-        _customers = await CustomersApi.GetCustomers(CancellationToken.None);
+        _errorMessage = null;
+        var outcome = await CustomersApi.GetCustomers(CancellationToken.None);
+        if (outcome is { Kind: ContractCommandOutcomeKind.Succeeded, Value: { } customers })
+        {
+            _customers = customers;
+            return;
+        }
+
+        _customers = [];
+        _errorMessage = HttpOutcomeUserMessage.For(outcome.Kind, "Customers could not be loaded. Try again later.");
     }
 
     private static string GetCustomerDetailsUrl(Guid customerId) => $"/customers/{customerId}";

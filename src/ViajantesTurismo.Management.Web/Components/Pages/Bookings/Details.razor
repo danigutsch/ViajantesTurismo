@@ -188,10 +188,20 @@
         _notFound = false;
         try
         {
-            _booking = await BookingsApi.GetBookingById(Id, CancellationToken.None);
-            if (_booking == null)
+            var outcome = await BookingsApi.GetBookingById(Id, CancellationToken.None);
+            if (outcome is { Kind: ContractCommandOutcomeKind.Succeeded, Value: { } booking })
+            {
+                _booking = booking;
+            }
+            else if (outcome.Kind == ContractCommandOutcomeKind.NotFound)
             {
                 _notFound = true;
+            }
+            else
+            {
+                _loadErrorMessage = HttpOutcomeUserMessage.For(
+                    outcome.Kind,
+                    UserFacingErrorMessage.ForOperation("load the booking"));
             }
         }
         catch (Exception)
@@ -210,8 +220,14 @@
 
         try
         {
-            var document = await DocumentsApi.GenerateContractDraft(Id, CancellationToken.None);
-            Navigation.NavigateTo($"/documents/{document.Id}");
+            var outcome = await DocumentsApi.GenerateContractDraft(Id, CancellationToken.None);
+            if (outcome is { Kind: ContractCommandOutcomeKind.Succeeded, Value: { } document })
+            {
+                Navigation.NavigateTo($"/documents/{document.Id}");
+                return;
+            }
+
+            _documentError = HttpOutcomeUserMessage.For(outcome.Kind, "The contract draft could not be generated.");
         }
         catch (Exception)
         {

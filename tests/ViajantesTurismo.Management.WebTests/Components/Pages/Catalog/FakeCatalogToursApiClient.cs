@@ -61,48 +61,54 @@ internal sealed class FakeCatalogToursApiClient : ICatalogToursApiClient
 
     private int getTourImagesRequests;
 
-    public Task<CatalogTourDto[]> GetTours(CancellationToken ct)
+    public Task<ContractCommandOutcomeDto<CatalogTourDto[]>> GetTours(CancellationToken ct)
     {
         ct.ThrowIfCancellationRequested();
 
-        return ThrowOnGetTours
-            ? throw new HttpRequestException("Catalog unavailable.")
-            : Task.FromResult(Tours);
+        return Task.FromResult(ThrowOnGetTours
+            ? TransportFailure<CatalogTourDto[]>()
+            : ContractCommandOutcome.Succeeded(HttpStatusCode.OK, Tours));
     }
 
-    public Task<CatalogTourDto?> GetTour(Guid id, CancellationToken ct)
+    public Task<ContractCommandOutcomeDto<CatalogTourDto>> GetTour(Guid id, CancellationToken ct)
     {
         ct.ThrowIfCancellationRequested();
 
-        return ThrowOnGetTours
-            ? throw new HttpRequestException("Catalog unavailable.")
-            : Task.FromResult(Tours.SingleOrDefault(tour => tour.Id == id));
+        if (ThrowOnGetTours)
+        {
+            return Task.FromResult(TransportFailure<CatalogTourDto>());
+        }
+
+        var tour = Tours.SingleOrDefault(tour => tour.Id == id);
+        return Task.FromResult(tour is null
+            ? ContractCommandOutcome.Status<CatalogTourDto>(ContractCommandOutcomeKind.NotFound, HttpStatusCode.NotFound)
+            : ContractCommandOutcome.Succeeded(HttpStatusCode.OK, tour));
     }
 
-    public Task<CatalogTourDto?> UpdatePresentation(Guid id, UpsertCatalogTourPresentationRequest request, CancellationToken ct)
+    public Task<ContractCommandOutcomeDto<CatalogTourDto>> UpdatePresentation(Guid id, UpsertCatalogTourPresentationRequest request, CancellationToken ct)
     {
         ct.ThrowIfCancellationRequested();
 
         if (ValidationException is not null)
         {
-            throw ValidationException;
+            return Task.FromResult(ValidationFailure<CatalogTourDto>(ValidationException));
         }
 
         LastPresentationRequest = request;
         if (ThrowAcceptedOnUpdate)
         {
-            throw new HttpRequestException("Catalog tour projection pending.", null, HttpStatusCode.Accepted);
+            return Task.FromResult(ContractCommandOutcome.Status<CatalogTourDto>(ContractCommandOutcomeKind.UnexpectedStatus, HttpStatusCode.Accepted));
         }
 
         if (ThrowConflictOnUpdate)
         {
-            throw new HttpRequestException("Catalog tour version conflict.", null, HttpStatusCode.Conflict);
+            return Task.FromResult(ContractCommandOutcome.Status<CatalogTourDto>(ContractCommandOutcomeKind.Conflict, HttpStatusCode.Conflict));
         }
 
         var tour = Tours.SingleOrDefault(tour => tour.Id == id);
         if (tour is null)
         {
-            return Task.FromResult<CatalogTourDto?>(null);
+            return Task.FromResult(ContractCommandOutcome.Status<CatalogTourDto>(ContractCommandOutcomeKind.NotFound, HttpStatusCode.NotFound));
         }
 
         var updated = tour with
@@ -118,27 +124,29 @@ internal sealed class FakeCatalogToursApiClient : ICatalogToursApiClient
         };
 
         Tours = Tours.Select(current => current.Id == id ? updated : current).ToArray();
-        return Task.FromResult<CatalogTourDto?>(updated);
+        return Task.FromResult(ContractCommandOutcome.Succeeded(HttpStatusCode.OK, updated));
     }
 
-    public Task Publish(Guid id, CatalogTourPublicationRequest request, CancellationToken ct)
+    public Task<ContractCommandOutcomeDto> Publish(Guid id, CatalogTourPublicationRequest request, CancellationToken ct)
     {
         return ChangePublication(id, request, isPublished: true, ct);
     }
 
-    public Task Unpublish(Guid id, CatalogTourPublicationRequest request, CancellationToken ct)
+    public Task<ContractCommandOutcomeDto> Unpublish(Guid id, CatalogTourPublicationRequest request, CancellationToken ct)
     {
         return ChangePublication(id, request, isPublished: false, ct);
     }
 
-    public Task<CatalogMediaImageDto?> GenerateMediaImageAccessibilityDraft(Guid id, PublicMediaImageAccessibilityDraftRequest request, CancellationToken ct)
+    public Task<ContractCommandOutcomeDto<CatalogMediaImageDto>> GenerateMediaImageAccessibilityDraft(Guid id, PublicMediaImageAccessibilityDraftRequest request, CancellationToken ct)
     {
         ct.ThrowIfCancellationRequested();
 
-        return Task.FromResult(Draft);
+        return Task.FromResult(Draft is null
+            ? ContractCommandOutcome.Status<CatalogMediaImageDto>(ContractCommandOutcomeKind.NotFound, HttpStatusCode.NotFound)
+            : ContractCommandOutcome.Succeeded(HttpStatusCode.OK, Draft));
     }
 
-    public Task<CatalogMediaImageDto?> UploadTourImage(Guid id, CatalogTourImageUploadRequest request, CancellationToken ct)
+    public Task<ContractCommandOutcomeDto<CatalogMediaImageDto>> UploadTourImage(Guid id, CatalogTourImageUploadRequest request, CancellationToken ct)
     {
         ct.ThrowIfCancellationRequested();
 
@@ -147,39 +155,41 @@ internal sealed class FakeCatalogToursApiClient : ICatalogToursApiClient
         LastUploadedContentType = request.ContentType;
         LastUploadedAltText = request.AltText;
         LastUploadedCaption = request.Caption;
-        return Task.FromResult(UploadedImage);
+        return Task.FromResult(UploadedImage is null
+            ? ContractCommandOutcome.Status<CatalogMediaImageDto>(ContractCommandOutcomeKind.NotFound, HttpStatusCode.NotFound)
+            : ContractCommandOutcome.Succeeded(HttpStatusCode.Created, UploadedImage));
     }
 
-    public Task<IReadOnlyList<CatalogMediaImageDto>> GetTourImages(Guid id, CancellationToken ct)
+    public Task<ContractCommandOutcomeDto<CatalogMediaImageDto[]>> GetTourImages(Guid id, CancellationToken ct)
     {
         ct.ThrowIfCancellationRequested();
 
         if (ThrowOnGetTourImages)
         {
-            throw new HttpRequestException("Catalog unavailable.");
+            return Task.FromResult(TransportFailure<CatalogMediaImageDto[]>());
         }
 
         if (ThrowOnSubsequentGetTourImages && Interlocked.Increment(ref getTourImagesRequests) > 1)
         {
-            throw new HttpRequestException("Catalog unavailable.");
+            return Task.FromResult(TransportFailure<CatalogMediaImageDto[]>());
         }
 
-        return Task.FromResult(Images);
+        return Task.FromResult(ContractCommandOutcome.Succeeded(HttpStatusCode.OK, Images.ToArray()));
     }
 
-    public Task<CatalogMediaImageDto?> ReviewMediaImageAccessibility(Guid id, PublicMediaImageAccessibilityReviewRequest request, CancellationToken ct)
+    public Task<ContractCommandOutcomeDto<CatalogMediaImageDto>> ReviewMediaImageAccessibility(Guid id, PublicMediaImageAccessibilityReviewRequest request, CancellationToken ct)
     {
         ct.ThrowIfCancellationRequested();
 
         if (ValidationException is not null)
         {
-            throw ValidationException;
+            return Task.FromResult(ValidationFailure<CatalogMediaImageDto>(ValidationException));
         }
 
         LastAccessibilityReviewRequest = request;
         if (ReturnNullOnAccessibilityReview)
         {
-            return Task.FromResult<CatalogMediaImageDto?>(null);
+            return Task.FromResult(ContractCommandOutcome.Status<CatalogMediaImageDto>(ContractCommandOutcomeKind.NotFound, HttpStatusCode.NotFound));
         }
 
         var reviewed = AccessibilityReviewResult ?? Images.FirstOrDefault(image => image.Id == id);
@@ -188,7 +198,9 @@ internal sealed class FakeCatalogToursApiClient : ICatalogToursApiClient
             Images = Images.Select(image => image.Id == id ? reviewed : image).ToArray();
         }
 
-        return Task.FromResult(reviewed);
+        return Task.FromResult(reviewed is null
+            ? ContractCommandOutcome.Status<CatalogMediaImageDto>(ContractCommandOutcomeKind.NotFound, HttpStatusCode.NotFound)
+            : ContractCommandOutcome.Succeeded(HttpStatusCode.OK, reviewed));
     }
 
     public Task<PublicMediaObjectResponse?> GetMediaPreview(Guid id, int width, string format, CancellationToken ct)
@@ -206,7 +218,7 @@ internal sealed class FakeCatalogToursApiClient : ICatalogToursApiClient
         return Task.FromResult(Media);
     }
 
-    private Task ChangePublication(
+    private Task<ContractCommandOutcomeDto> ChangePublication(
         Guid id,
         CatalogTourPublicationRequest request,
         bool isPublished,
@@ -218,7 +230,7 @@ internal sealed class FakeCatalogToursApiClient : ICatalogToursApiClient
 
         if (ThrowAcceptedOnPublication)
         {
-            throw new HttpRequestException("Catalog tour projection pending.", null, HttpStatusCode.Accepted);
+            return Task.FromResult(ContractCommandOutcome.Status(ContractCommandOutcomeKind.UnexpectedStatus, HttpStatusCode.Accepted));
         }
 
         var tour = Tours.SingleOrDefault(tour => tour.Id == id);
@@ -228,6 +240,21 @@ internal sealed class FakeCatalogToursApiClient : ICatalogToursApiClient
             Tours = Tours.Select(current => current.Id == id ? updated : current).ToArray();
         }
 
-        return Task.CompletedTask;
+        return Task.FromResult(tour is null
+            ? ContractCommandOutcome.Status(ContractCommandOutcomeKind.NotFound, HttpStatusCode.NotFound)
+            : ContractCommandOutcome.Succeeded(HttpStatusCode.NoContent, location: null));
     }
+
+    private static ContractCommandOutcomeDto<TValue> TransportFailure<TValue>() => new()
+    {
+        Kind = ContractCommandOutcomeKind.TransportFailure,
+        Message = "HTTP transport failed."
+    };
+
+    private static ContractCommandOutcomeDto<TValue> ValidationFailure<TValue>(ContractValidationException exception) => new()
+    {
+        Kind = ContractCommandOutcomeKind.ValidationProblem,
+        StatusCode = HttpStatusCode.BadRequest,
+        ValidationErrors = exception.ValidationErrors
+    };
 }

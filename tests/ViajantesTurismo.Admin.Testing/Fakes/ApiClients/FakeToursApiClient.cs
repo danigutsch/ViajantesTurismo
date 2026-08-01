@@ -13,24 +13,35 @@ public sealed class FakeToursApiClient : IToursApiClient
     private Exception? _getToursException;
     private Exception? _updateTourException;
 
-    public Task<GetTourDto[]> GetTours(CancellationToken cancellationToken, int maxItems = int.MaxValue)
+    public Task<ContractCommandOutcomeDto<GetTourDto[]>> GetTours(CancellationToken cancellationToken, int maxItems = int.MaxValue)
     {
         if (_getToursException is not null)
         {
-            throw _getToursException;
+            return Task.FromResult(new ContractCommandOutcomeDto<GetTourDto[]>
+            {
+                Kind = ContractCommandOutcomeKind.TransportFailure,
+                Message = "HTTP transport failed."
+            });
         }
 
-        return Task.FromResult(_tours.Take(maxItems).ToArray());
+        return Task.FromResult(ContractCommandOutcome.Succeeded(HttpStatusCode.OK, _tours.Take(maxItems).ToArray()));
     }
 
-    public Task<GetTourDto?> GetTourById(Guid id, CancellationToken cancellationToken)
+    public Task<ContractCommandOutcomeDto<GetTourDto>> GetTourById(Guid id, CancellationToken cancellationToken)
     {
         if (_getTourByIdException is not null)
         {
-            throw _getTourByIdException;
+            return Task.FromResult(new ContractCommandOutcomeDto<GetTourDto>
+            {
+                Kind = ContractCommandOutcomeKind.TransportFailure,
+                Message = "HTTP transport failed."
+            });
         }
 
-        return Task.FromResult(_tours.FirstOrDefault(t => t.Id == id));
+        var tour = _tours.FirstOrDefault(t => t.Id == id);
+        return Task.FromResult(tour is null
+            ? ContractCommandOutcome.Status<GetTourDto>(ContractCommandOutcomeKind.NotFound, HttpStatusCode.NotFound)
+            : ContractCommandOutcome.Succeeded(HttpStatusCode.OK, tour));
     }
 
     public Task<ContractCommandOutcomeDto> CreateTour(CreateTourDto dto, CancellationToken cancellationToken)
@@ -70,17 +81,24 @@ public sealed class FakeToursApiClient : IToursApiClient
         return Task.FromResult(ContractCommandOutcome.Succeeded(HttpStatusCode.Created, new Uri($"/api/v1/tours/{newTour.Id}", UriKind.Relative)));
     }
 
-    public Task UpdateTour(Guid id, UpdateTourDto dto, CancellationToken cancellationToken)
+    public Task<ContractCommandOutcomeDto> UpdateTour(Guid id, UpdateTourDto dto, CancellationToken cancellationToken)
     {
         ArgumentNullException.ThrowIfNull(dto);
 
         if (_updateTourException is not null)
         {
-            throw _updateTourException;
+            return Task.FromResult(new ContractCommandOutcomeDto
+            {
+                Kind = ContractCommandOutcomeKind.TransportFailure,
+                Message = "HTTP transport failed."
+            });
         }
 
-        var tour = _tours.FirstOrDefault(t => t.Id == id)
-                   ?? throw new HttpRequestException("Tour not found", null, HttpStatusCode.NotFound);
+        var tour = _tours.FirstOrDefault(t => t.Id == id);
+        if (tour is null)
+        {
+            return Task.FromResult(ContractCommandOutcome.Status(ContractCommandOutcomeKind.NotFound, HttpStatusCode.NotFound));
+        }
 
         var index = _tours.IndexOf(tour);
         _tours[index] = tour with
@@ -99,7 +117,7 @@ public sealed class FakeToursApiClient : IToursApiClient
             MaxCustomers = dto.MaxCustomers
         };
 
-        return Task.CompletedTask;
+        return Task.FromResult(ContractCommandOutcome.Succeeded(HttpStatusCode.NoContent, location: null));
     }
 
     public void AddTour(GetTourDto tour) => _tours.Add(tour);

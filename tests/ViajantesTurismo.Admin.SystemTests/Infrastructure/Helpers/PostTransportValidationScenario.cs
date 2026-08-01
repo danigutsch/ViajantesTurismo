@@ -25,15 +25,18 @@ internal sealed class PostTransportValidationScenario(
         return await Eventually.Until(
             async probeCt =>
             {
-                try
+                var outcome = await catalogTours.GetTours(probeCt);
+                if (outcome is { Kind: SharedKernel.HttpClients.ContractCommandOutcomeKind.Succeeded, Value: { } tours })
                 {
-                    var tours = await catalogTours.GetTours(probeCt);
                     return tours.SingleOrDefault(tour => tour.AdminTourId == adminTourId);
                 }
-                catch (HttpRequestException exception) when (exception.StatusCode == HttpStatusCode.InternalServerError)
+
+                if (outcome.StatusCode == HttpStatusCode.InternalServerError)
                 {
                     return null;
                 }
+
+                throw new HttpRequestException("Catalog request failed.", null, outcome.StatusCode);
             },
             ProjectionTimeout,
             ct);
@@ -41,7 +44,7 @@ internal sealed class PostTransportValidationScenario(
 
     public async Task<CatalogTourDto> PublishCatalogTour(CatalogTourDto tour, string title, string slug, CancellationToken ct)
     {
-        var published = await catalogTours.UpdatePresentation(
+        var publishedOutcome = await catalogTours.UpdatePresentation(
             tour.Id,
             new UpsertCatalogTourPresentationRequest
             {
@@ -51,13 +54,29 @@ internal sealed class PostTransportValidationScenario(
                 ExpectedVersion = tour.Version
             },
             ct);
-        var updated = published ?? throw new InvalidOperationException($"Catalog tour '{tour.Id}' was not found for publication.");
-        await catalogTours.Publish(
+        var updated = publishedOutcome is
+        {
+            Kind: SharedKernel.HttpClients.ContractCommandOutcomeKind.Succeeded,
+            Value: { } published
+        }
+            ? published
+            : throw new InvalidOperationException($"Catalog tour '{tour.Id}' was not found for publication.");
+        var publishOutcome = await catalogTours.Publish(
             tour.Id,
             new CatalogTourPublicationRequest { ExpectedVersion = updated.Version },
             ct);
+        if (publishOutcome.Kind != SharedKernel.HttpClients.ContractCommandOutcomeKind.Succeeded)
+        {
+            throw new HttpRequestException("Catalog publication failed.", null, publishOutcome.StatusCode);
+        }
 
-        return await catalogTours.GetTour(tour.Id, ct)
-            ?? throw new InvalidOperationException($"Catalog tour '{tour.Id}' was not found after publication.");
+        var reloadedOutcome = await catalogTours.GetTour(tour.Id, ct);
+        return reloadedOutcome is
+        {
+            Kind: SharedKernel.HttpClients.ContractCommandOutcomeKind.Succeeded,
+            Value: { } reloaded
+        }
+            ? reloaded
+            : throw new InvalidOperationException($"Catalog tour '{tour.Id}' was not found after publication.");
     }
 }

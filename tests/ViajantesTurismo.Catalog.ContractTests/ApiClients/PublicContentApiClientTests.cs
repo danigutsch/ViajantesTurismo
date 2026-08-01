@@ -34,10 +34,11 @@ public sealed class PublicContentApiClientTests
         var sut = new PublicContentApiClient(httpClient);
 
         // Act
-        var content = await sut.GetContent(TestContext.Current.CancellationToken);
+        var outcome = await sut.GetContent(TestContext.Current.CancellationToken);
 
         // Assert
         requestPath.ShouldBe("/api/v1/catalog/public-content");
+        var content = outcome.Value.ShouldNotBeNull();
         var entry = content.ShouldHaveSingleItem();
         entry.Key.ShouldBe("home.hero");
     }
@@ -50,10 +51,11 @@ public sealed class PublicContentApiClientTests
         var sut = new PublicContentApiClient(httpClient);
 
         // Act
-        var content = await sut.GetContent("home.hero", TestContext.Current.CancellationToken);
+        var outcome = await sut.GetContent("home.hero", TestContext.Current.CancellationToken);
 
         // Assert
-        content.ShouldBeNull();
+        outcome.Kind.ShouldBe(ContractCommandOutcomeKind.NotFound);
+        outcome.Value.ShouldBeNull();
     }
 
     [Theory]
@@ -79,10 +81,10 @@ public sealed class PublicContentApiClientTests
         var sut = new PublicContentApiClient(httpClient);
 
         // Act
-        var content = await sut.GetContent(key, TestContext.Current.CancellationToken);
+        var outcome = await sut.GetContent(key, TestContext.Current.CancellationToken);
 
         // Assert
-        content.ShouldNotBeNull();
+        outcome.Value.ShouldNotBeNull();
         requestPath.ShouldBe(expectedPath);
     }
 
@@ -114,16 +116,17 @@ public sealed class PublicContentApiClientTests
         request.Variants.Add(new PublicContentVariantDto { Language = PublicContentLanguageDto.PtBr, Title = "Bem-vindo", Body = "Pedale conosco", RequiresHumanReview = true });
 
         // Act
-        var saved = await sut.SaveContent("/home//hero/", request, TestContext.Current.CancellationToken);
+        var outcome = await sut.SaveContent("/home//hero/", request, TestContext.Current.CancellationToken);
 
         // Assert
         requestMethod.ShouldBe("PUT");
         requestPath.ShouldBe("/api/v1/catalog/public-content/home/hero");
+        var saved = outcome.Value.ShouldNotBeNull();
         saved.PublicationState.ShouldBe("ReviewRequired");
     }
 
     [Fact]
-    public async Task SaveContent_throws_api_validation_exception_when_server_returns_validation_problem()
+    public async Task SaveContent_returns_validation_problem_outcome_when_server_returns_validation_problem()
     {
         // Arrange
         using var httpClient = CatalogToursApiClientTestsHelpers.CreateClient(_ =>
@@ -147,12 +150,12 @@ public sealed class PublicContentApiClientTests
         request.Variants.Add(new PublicContentVariantDto { Language = PublicContentLanguageDto.PtBr, Title = "Bem-vindo", Body = "Pedale conosco" });
 
         // Act
-        Func<Task> act = () => sut.SaveContent("home.hero", request, TestContext.Current.CancellationToken);
-
-        var exception = await act.ShouldThrow<ContractValidationException>();
+        var outcome = await sut.SaveContent("home.hero", request, TestContext.Current.CancellationToken);
 
         // Assert
-        exception.ValidationErrors.Keys.ShouldContain(nameof(PublicContentVariantDto.Title));
+        outcome.Kind.ShouldBe(ContractCommandOutcomeKind.ValidationProblem);
+        var errors = outcome.ValidationErrors.ShouldNotBeNull();
+        errors.Keys.ShouldContain(nameof(PublicContentVariantDto.Title));
     }
 
 }

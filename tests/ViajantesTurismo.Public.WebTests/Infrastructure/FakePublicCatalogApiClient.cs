@@ -1,4 +1,5 @@
 using System.Collections.Concurrent;
+using SharedKernel.HttpClients;
 
 namespace ViajantesTurismo.Public.WebTests.Infrastructure;
 
@@ -76,7 +77,7 @@ internal sealed class FakePublicCatalogApiClient : IPublicCatalogApiClient
         contentByKeyAndCulture[CreateContentKey(key, culture)] = content;
     }
 
-    public async Task<TourSummaryDto[]> GetPublishedTours(CancellationToken ct)
+    public async Task<ContractCommandOutcomeDto<TourSummaryDto[]>> GetPublishedTours(CancellationToken ct)
     {
         ct.ThrowIfCancellationRequested();
         ListStarted?.TrySetResult(null);
@@ -92,11 +93,11 @@ internal sealed class FakePublicCatalogApiClient : IPublicCatalogApiClient
         }
 
         return FailListRequests
-            ? throw new HttpRequestException("Catalog unavailable.")
-            : tours.ToArray();
+            ? TransportFailure<TourSummaryDto[]>()
+            : ContractCommandOutcome.Succeeded(HttpStatusCode.OK, tours.ToArray());
     }
 
-    public Task<TourDetailsDto?> GetPublishedTourBySlug(string slug, CancellationToken ct)
+    public Task<ContractCommandOutcomeDto<TourDetailsDto>> GetPublishedTourBySlug(string slug, CancellationToken ct)
     {
         ct.ThrowIfCancellationRequested();
 
@@ -107,14 +108,16 @@ internal sealed class FakePublicCatalogApiClient : IPublicCatalogApiClient
 
         if (FailDetailsRequests)
         {
-            throw new HttpRequestException("Catalog unavailable.");
+            return Task.FromResult(TransportFailure<TourDetailsDto>());
         }
 
         var tour = tourDetails.FirstOrDefault(tour => string.Equals(tour.Slug, slug, StringComparison.Ordinal));
-        return Task.FromResult(tour);
+        return Task.FromResult(tour is null
+            ? ContractCommandOutcome.Status<TourDetailsDto>(ContractCommandOutcomeKind.NotFound, HttpStatusCode.NotFound)
+            : ContractCommandOutcome.Succeeded(HttpStatusCode.OK, tour));
     }
 
-    public async Task<PublicContentVariantDto?> GetPublicContent(string key, string? culture, CancellationToken ct)
+    public async Task<ContractCommandOutcomeDto<PublicContentVariantDto>> GetPublicContent(string key, string? culture, CancellationToken ct)
     {
         ct.ThrowIfCancellationRequested();
         ContentStarted?.TrySetResult(null);
@@ -131,12 +134,14 @@ internal sealed class FakePublicCatalogApiClient : IPublicCatalogApiClient
 
         if (FailContentRequests)
         {
-            throw new HttpRequestException("Catalog unavailable.");
+            return TransportFailure<PublicContentVariantDto>();
         }
 
         var requestedCulture = string.IsNullOrWhiteSpace(culture) ? "en-US" : culture;
         contentByKeyAndCulture.TryGetValue(CreateContentKey(key, requestedCulture), out var content);
-        return content;
+        return content is null
+            ? ContractCommandOutcome.Status<PublicContentVariantDto>(ContractCommandOutcomeKind.NotFound, HttpStatusCode.NotFound)
+            : ContractCommandOutcome.Succeeded(HttpStatusCode.OK, content);
     }
 
     public Task<PublicMediaObjectResponse?> GetPublicMedia(Guid id, int width, string format, CancellationToken ct)
@@ -160,4 +165,10 @@ internal sealed class FakePublicCatalogApiClient : IPublicCatalogApiClient
     }
 
     private static string CreateContentKey(string key, string culture) => $"{key}\u001F{culture}";
+
+    private static ContractCommandOutcomeDto<TValue> TransportFailure<TValue>() => new()
+    {
+        Kind = ContractCommandOutcomeKind.TransportFailure,
+        Message = "HTTP transport failed."
+    };
 }

@@ -1,4 +1,6 @@
+using SharedKernel.HttpClients;
 using ViajantesTurismo.Catalog.Contracts.Application;
+
 namespace ViajantesTurismo.Catalog.Contracts.Http;
 
 /// <summary>
@@ -9,17 +11,17 @@ public interface IPublicCatalogApiClient
     /// <summary>
     /// Gets published tours.
     /// </summary>
-    Task<TourSummaryDto[]> GetPublishedTours(CancellationToken ct);
+    Task<ContractCommandOutcomeDto<TourSummaryDto[]>> GetPublishedTours(CancellationToken ct);
 
     /// <summary>
     /// Gets a published tour by slug.
     /// </summary>
-    Task<TourDetailsDto?> GetPublishedTourBySlug(string slug, CancellationToken ct);
+    Task<ContractCommandOutcomeDto<TourDetailsDto>> GetPublishedTourBySlug(string slug, CancellationToken ct);
 
     /// <summary>
     /// Gets public content by key and culture.
     /// </summary>
-    Task<PublicContentVariantDto?> GetPublicContent(string key, string? culture, CancellationToken ct);
+    Task<ContractCommandOutcomeDto<PublicContentVariantDto>> GetPublicContent(string key, string? culture, CancellationToken ct);
 
     /// <summary>
     /// Opens public media content for streaming.

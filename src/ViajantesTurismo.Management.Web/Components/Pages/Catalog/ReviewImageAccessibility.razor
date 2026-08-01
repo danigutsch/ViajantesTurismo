@@ -67,21 +67,19 @@ else
     /// <inheritdoc />
     protected override async Task OnInitializedAsync()
     {
-        try
+        var outcome = await CatalogToursApi.GetTourImages(Id, CancellationToken.None);
+        if (outcome is { Kind: ContractCommandOutcomeKind.Succeeded, Value: { } images })
         {
-            var images = await CatalogToursApi.GetTourImages(Id, CancellationToken.None);
             _image = images.FirstOrDefault(image => image.RequiresHumanReview);
             _altText = _image?.AltText ?? string.Empty;
             _isDecorative = _image?.IsDecorative ?? false;
         }
-        catch (HttpRequestException)
+        else
         {
-            _errorMessage = "Images could not be loaded. Try again later.";
+            _errorMessage = HttpOutcomeUserMessage.For(outcome.Kind, "Images could not be loaded. Try again later.");
         }
-        finally
-        {
-            _loading = false;
-        }
+
+        _loading = false;
     }
 
     private async Task GenerateDraft()
@@ -96,23 +94,22 @@ else
         _errorMessage = null;
         try
         {
-            var draft = await CatalogToursApi.GenerateMediaImageAccessibilityDraft(
+            var outcome = await CatalogToursApi.GenerateMediaImageAccessibilityDraft(
                 _image.Id,
                 new PublicMediaImageAccessibilityDraftRequest { Language = PublicContentLanguageDto.EnUs },
                 CancellationToken.None);
-            if (draft is null)
+            if (outcome is not { Kind: ContractCommandOutcomeKind.Succeeded, Value: { } draft })
             {
-                _errorMessage = "Image was not found.";
+                _errorMessage = HttpOutcomeUserMessage.For(
+                    outcome.Kind,
+                    "Accessibility draft could not be generated. Try again later.",
+                    "Image was not found.");
                 return;
             }
 
             _image = draft;
             _altText = draft.AltText;
             _isDecorative = draft.IsDecorative;
-        }
-        catch (HttpRequestException)
-        {
-            _errorMessage = "Accessibility draft could not be generated. Try again later.";
         }
         finally
         {
@@ -132,7 +129,7 @@ else
         _errorMessage = null;
         try
         {
-            var updated = await CatalogToursApi.ReviewMediaImageAccessibility(
+            var outcome = await CatalogToursApi.ReviewMediaImageAccessibility(
                 _image.Id,
                 new PublicMediaImageAccessibilityReviewRequest
                 {
@@ -142,9 +139,20 @@ else
                     IsDecorative = _isDecorative
                 },
                 CancellationToken.None);
-            if (updated is null)
+            if (outcome.Kind == ContractCommandOutcomeKind.ValidationProblem)
             {
-                _errorMessage = "Image was not found.";
+                _errorMessage = outcome.ValidationErrors is null or { Count: 0 }
+                    ? "Accessibility text could not be saved. Try again later."
+                    : string.Join(" ", outcome.ValidationErrors.SelectMany(error => error.Value));
+                return;
+            }
+
+            if (outcome is not { Kind: ContractCommandOutcomeKind.Succeeded, Value: { } updated })
+            {
+                _errorMessage = HttpOutcomeUserMessage.For(
+                    outcome.Kind,
+                    "Accessibility text could not be saved. Try again later.",
+                    "Image was not found.");
                 return;
             }
 
@@ -152,16 +160,6 @@ else
             _altText = updated.AltText;
             _success = true;
             await LoadNextImage();
-        }
-        catch (ContractValidationException exception)
-        {
-            _errorMessage = exception.ValidationErrors.Count == 0
-                ? "Accessibility text could not be saved. Try again later."
-                : string.Join(" ", exception.ValidationErrors.SelectMany(error => error.Value));
-        }
-        catch (HttpRequestException)
-        {
-            _errorMessage = "Accessibility text could not be saved. Try again later.";
         }
         finally
         {
@@ -171,16 +169,16 @@ else
 
     private async Task LoadNextImage()
     {
-        try
+        var outcome = await CatalogToursApi.GetTourImages(Id, CancellationToken.None);
+        if (outcome is { Kind: ContractCommandOutcomeKind.Succeeded, Value: { } images })
         {
-            var images = await CatalogToursApi.GetTourImages(Id, CancellationToken.None);
             _image = images.FirstOrDefault(image => image.RequiresHumanReview);
             _altText = _image?.AltText ?? string.Empty;
             _isDecorative = _image?.IsDecorative ?? false;
         }
-        catch (HttpRequestException)
+        else
         {
-            _errorMessage = "The next image could not be loaded. Refresh the page and try again.";
+            _errorMessage = HttpOutcomeUserMessage.For(outcome.Kind, "The next image could not be loaded. Refresh the page and try again.");
         }
     }
 

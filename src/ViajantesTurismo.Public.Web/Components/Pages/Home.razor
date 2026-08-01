@@ -66,7 +66,17 @@
     {
         try
         {
-            _hero = await CatalogApi.GetPublicContent("home.hero", PublicCultureQuery.GetRequestedCulture(Navigation.Uri), CancellationToken.None);
+            var outcome = await CatalogApi.GetPublicContent(
+                "home.hero",
+                PublicCultureQuery.GetRequestedCulture(Navigation.Uri),
+                CancellationToken.None);
+            _hero = outcome is { Kind: ContractCommandOutcomeKind.Succeeded, Value: { } hero }
+                ? hero
+                : null;
+        }
+        catch (OperationCanceledException)
+        {
+            _hero = null;
         }
         catch (HttpRequestException)
         {
@@ -76,22 +86,27 @@
 
     private async Task LoadTours()
     {
+        var requestAborted = HttpContext?.RequestAborted ?? CancellationToken.None;
         try
         {
-            var requestAborted = HttpContext?.RequestAborted ?? CancellationToken.None;
-            _tours = await CatalogApi.GetPublishedTours(requestAborted);
+            var outcome = await CatalogApi.GetPublishedTours(requestAborted);
+            if (outcome is { Kind: ContractCommandOutcomeKind.Succeeded, Value: { } tours })
+            {
+                _tours = tours;
+                return;
+            }
         }
-        catch (OperationCanceledException) when (HttpContext?.RequestAborted.IsCancellationRequested != true)
+        catch (OperationCanceledException) when (!requestAborted.IsCancellationRequested)
         {
-            PublicWebHttpCache.SetServiceUnavailableNoStore(HttpContext);
-            _loadFailed = true;
-            _tours = [];
+            // Preserve the public fallback when an API implementation reports an upstream timeout as cancellation.
         }
         catch (HttpRequestException)
         {
-            PublicWebHttpCache.SetServiceUnavailableNoStore(HttpContext);
-            _loadFailed = true;
-            _tours = [];
+            // Preserve the public fallback for API implementations that have not materialized transport outcomes.
         }
+
+        PublicWebHttpCache.SetServiceUnavailableNoStore(HttpContext);
+        _loadFailed = true;
+        _tours = [];
     }
 }

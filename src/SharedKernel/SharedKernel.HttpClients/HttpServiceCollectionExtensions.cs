@@ -26,7 +26,9 @@ public static class HttpServiceCollectionExtensions
 
         services.AddOpenTelemetry()
             .WithMetrics(metrics => metrics.AddHttpClientInstrumentation())
-            .WithTracing(tracing => tracing.AddHttpClientInstrumentation());
+            .WithTracing(tracing => tracing
+                .AddSource(ContractCommandOutcome.ActivitySourceName)
+                .AddHttpClientInstrumentation());
 
         return services;
     }

@@ -1,3 +1,4 @@
+using SharedKernel.HttpClients;
 using Edit = ViajantesTurismo.Management.Web.Components.Pages.Tours.Edit;
 
 namespace ViajantesTurismo.Management.WebTests.Components.Pages.Tours;
@@ -224,10 +225,11 @@ public class EditPageTests : BunitContext
         // Assert
         await cut.WaitForStateAsync(() => cut.FindAll(".alert-success").Count > 0, TimeSpan.FromSeconds(2));
 
-        var updatedTour = await _fakeToursApi.GetTourById(tour.Id, CancellationToken.None);
-        _ = (updatedTour).ShouldNotBeNull();
-        (updatedTour.Name).ShouldBe("Updated Cuba Adventure");
-        (updatedTour.Price).ShouldBe(1750.50m);
+        var outcome = await _fakeToursApi.GetTourById(tour.Id, CancellationToken.None);
+        outcome.Kind.ShouldBe(ContractCommandOutcomeKind.Succeeded);
+        var updatedTour = outcome.Value.ShouldNotBeNull();
+        updatedTour.Name.ShouldBe("Updated Cuba Adventure");
+        updatedTour.Price.ShouldBe(1750.50m);
     }
 
     [Fact]

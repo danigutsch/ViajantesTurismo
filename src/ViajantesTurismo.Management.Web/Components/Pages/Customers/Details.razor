@@ -6,7 +6,6 @@
 @inject ICustomersApiClient CustomersApi
 @inject IBookingsApiClient BookingsApi
 @inject IToursApiClient ToursApi
-@inject ILogger<Details> Logger
 
 <PageTitle>Customer Details</PageTitle>
 
@@ -15,6 +14,11 @@
 @if (_loading)
 {
     <p><em>Loading...</em></p>
+}
+else if (_errorMessage is not null)
+{
+    <div class="alert alert-danger" role="alert">@_errorMessage</div>
+    <NavLink href="/customers" class="btn btn-secondary">Back to Customers</NavLink>
 }
 else if (_notFound)
 {
@@ -300,6 +304,7 @@ else if (_customer != null)
     private CustomerDetailsDto? _customer;
     private bool _loading = true;
     private bool _notFound;
+    private string? _errorMessage;
     private GetBookingDto[]? _bookings;
     private bool _loadingBookings = true;
     private bool _showBookingForm;
@@ -315,27 +320,22 @@ else if (_customer != null)
     /// <inheritdoc />
     protected override async Task OnInitializedAsync()
     {
-        try
+        var outcome = await CustomersApi.GetCustomerById(Id, CancellationToken.None);
+        if (outcome is { Kind: ContractCommandOutcomeKind.Succeeded, Value: { } customer })
         {
-            _customer = await CustomersApi.GetCustomerById(Id, CancellationToken.None);
-
-            if (_customer is null)
-            {
-                _notFound = true;
-            }
-            else
-            {
-                await Task.WhenAll(LoadBookings(), LoadTours(), LoadCustomers());
-            }
+            _customer = customer;
+            await Task.WhenAll(LoadBookings(), LoadTours(), LoadCustomers());
         }
-        catch (Exception)
+        else if (outcome.Kind == ContractCommandOutcomeKind.NotFound)
         {
             _notFound = true;
         }
-        finally
+        else
         {
-            _loading = false;
+            _errorMessage = HttpOutcomeUserMessage.For(outcome.Kind, "The customer could not be loaded.");
         }
+
+        _loading = false;
     }
 
     private async Task LoadBookings()
@@ -343,7 +343,10 @@ else if (_customer != null)
         _loadingBookings = true;
         try
         {
-            _bookings = await BookingsApi.GetBookingsByCustomerId(Id, CancellationToken.None);
+            var outcome = await BookingsApi.GetBookingsByCustomerId(Id, CancellationToken.None);
+            _bookings = outcome is { Kind: ContractCommandOutcomeKind.Succeeded, Value: { } bookings }
+                ? bookings
+                : [];
         }
         finally
         {
@@ -353,26 +356,18 @@ else if (_customer != null)
 
     private async Task LoadTours()
     {
-        try
-        {
-            _tours = await ToursApi.GetTours(CancellationToken.None, maxItems: 100);
-        }
-        catch (Exception)
-        {
-            _tours = [];
-        }
+        var outcome = await ToursApi.GetTours(CancellationToken.None, maxItems: 100);
+        _tours = outcome is { Kind: ContractCommandOutcomeKind.Succeeded, Value: { } tours }
+            ? tours
+            : [];
     }
 
     private async Task LoadCustomers()
     {
-        try
-        {
-            _customers = (await CustomersApi.GetCustomers(CancellationToken.None, maxItems: 100)).ToArray();
-        }
-        catch (Exception)
-        {
-            _customers = [];
-        }
+        var outcome = await CustomersApi.GetCustomers(CancellationToken.None, maxItems: 100);
+        _customers = outcome is { Kind: ContractCommandOutcomeKind.Succeeded, Value: { } customers }
+            ? customers
+            : [];
     }
 
     private void ShowCreateBookingForm()
@@ -406,25 +401,13 @@ else if (_customer != null)
 
             if (outcome.Kind != ContractCommandOutcomeKind.Succeeded)
             {
-                _toast?.ShowError("Failed to create booking. Please try again.");
+                _toast?.ShowError(HttpOutcomeUserMessage.For(outcome.Kind, "Failed to create booking. Please try again."));
                 return;
             }
 
             await LoadBookings();
             HideBookingForm();
             _toast?.ShowSuccess("Booking created successfully.");
-        }
-        catch (ContractValidationException ex)
-        {
-            if (_bookingCreateFormRef?.EditContext is not null)
-            {
-                EditContextValidationHelper.ApplyValidationErrors(_bookingCreateFormRef.EditContext, ex);
-            }
-        }
-        catch (Exception ex)
-        {
-            Logger.LogError(ex, "Unexpected error while creating booking for customer {CustomerId}", Id);
-            _toast?.ShowError("Failed to create booking. Please try again.");
         }
         finally
         {

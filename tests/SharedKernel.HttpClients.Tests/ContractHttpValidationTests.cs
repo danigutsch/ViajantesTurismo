@@ -118,7 +118,7 @@ public sealed class ContractHttpValidationTests
     {
         using var response = new HttpResponseMessage(HttpStatusCode.BadRequest)
         {
-            Content = new StringContent("not json alice@example.test")
+            Content = new StringContent("not json alice@example.test", System.Text.Encoding.UTF8, "application/problem+json")
         };
 
         var outcome = await ContractCommandOutcome.FromResponse(
