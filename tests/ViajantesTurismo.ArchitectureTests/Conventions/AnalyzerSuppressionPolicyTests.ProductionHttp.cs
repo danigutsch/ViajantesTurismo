@@ -110,6 +110,72 @@ public sealed partial class AnalyzerSuppressionPolicyTests
                 }
             }
             """;
+        const string nestedDestinationAssignmentSuppression = """
+            public sealed class Registration
+            {
+                public void Configure(ServiceCollection services)
+                {
+            #pragma warning disable VTARCH001 // Justification: approved synchronous exception reviewed by architecture owners.
+                    services.AddHttpClient(ResourceNames.CatalogApi, client => client.BaseAddress = new Uri($"https+http://{ResourceNames.BrandingApi}"));
+            #pragma warning restore VTARCH001
+                }
+            }
+            """;
+        const string objectCreationAssignmentSuppression = """
+            public sealed class Registration
+            {
+                public void Configure(HttpClient client, HttpRequestMessage request, Uri brandingUri, Uri catalogUri)
+                {
+            #pragma warning disable VTARCH001 // Justification: approved synchronous exception reviewed by architecture owners.
+                    var pair = new Pair(client.BaseAddress = brandingUri, request.RequestUri = catalogUri);
+            #pragma warning restore VTARCH001
+                }
+            }
+            """;
+        const string exactAssignmentSuppression = """
+            public sealed class Registration
+            {
+                public void Configure(HttpClient client)
+                {
+            #pragma warning disable VTARCH001 // Justification: approved synchronous exception reviewed by architecture owners.
+                    client.BaseAddress = new Uri("https+http://branding-api");
+            #pragma warning restore VTARCH001
+                }
+            }
+            """;
+        const string exactAliasAssignmentSuppression = """
+            public sealed class Registration
+            {
+                public void Configure(HttpClient client, Uri brandingUri)
+                {
+            #pragma warning disable VTARCH001 // Justification: approved synchronous exception reviewed by architecture owners.
+                    client.BaseAddress = brandingUri;
+            #pragma warning restore VTARCH001
+                }
+            }
+            """;
+        const string typedNamedClientSuppression = """
+            public sealed class Registration
+            {
+                public void Configure(ServiceCollection services)
+                {
+            #pragma warning disable VTARCH001 // Justification: approved synchronous exception reviewed by architecture owners.
+                    services.AddHttpClient<IBrandingApiClient, BrandingApiClient>(ResourceNames.CatalogApi);
+            #pragma warning restore VTARCH001
+                }
+            }
+            """;
+        const string multipleTypedClientSuppression = """
+            public sealed class Registration
+            {
+                public void Configure(ServiceCollection services)
+                {
+            #pragma warning disable VTARCH001 // Justification: approved synchronous exception reviewed by architecture owners.
+                    services.AddHttpClient<ICatalogClient, BrandingAdapter>();
+            #pragma warning restore VTARCH001
+                }
+            }
+            """;
         const string exactExpressionSuppression = """
             public sealed class Registration
             {
@@ -158,6 +224,12 @@ public sealed partial class AnalyzerSuppressionPolicyTests
         var nestedBlockViolations = AnalyzerSuppressionPolicyTestsHelpers.FindUnapprovedPragmaWarningSuppressionsInSource(nestedBlockSuppression, "NestedBlockSuppression.cs");
         var multipleInvocationViolations = AnalyzerSuppressionPolicyTestsHelpers.FindUnapprovedPragmaWarningSuppressionsInSource(multipleInvocationSuppression, "MultipleInvocationSuppression.cs");
         var conditionalExpressionViolations = AnalyzerSuppressionPolicyTestsHelpers.FindUnapprovedPragmaWarningSuppressionsInSource(conditionalExpressionSuppression, "ConditionalExpressionSuppression.cs");
+        var nestedDestinationAssignmentViolations = AnalyzerSuppressionPolicyTestsHelpers.FindUnapprovedPragmaWarningSuppressionsInSource(nestedDestinationAssignmentSuppression, "NestedDestinationAssignmentSuppression.cs");
+        var objectCreationAssignmentViolations = AnalyzerSuppressionPolicyTestsHelpers.FindUnapprovedPragmaWarningSuppressionsInSource(objectCreationAssignmentSuppression, "ObjectCreationAssignmentSuppression.cs");
+        var exactAssignmentViolations = AnalyzerSuppressionPolicyTestsHelpers.FindUnapprovedPragmaWarningSuppressionsInSource(exactAssignmentSuppression, "ExactAssignmentSuppression.cs");
+        var exactAliasAssignmentViolations = AnalyzerSuppressionPolicyTestsHelpers.FindUnapprovedPragmaWarningSuppressionsInSource(exactAliasAssignmentSuppression, "ExactAliasAssignmentSuppression.cs");
+        var typedNamedClientViolations = AnalyzerSuppressionPolicyTestsHelpers.FindUnapprovedPragmaWarningSuppressionsInSource(typedNamedClientSuppression, "TypedNamedClientSuppression.cs");
+        var multipleTypedClientViolations = AnalyzerSuppressionPolicyTestsHelpers.FindUnapprovedPragmaWarningSuppressionsInSource(multipleTypedClientSuppression, "MultipleTypedClientSuppression.cs");
         var exactExpressionViolations = AnalyzerSuppressionPolicyTestsHelpers.FindUnapprovedPragmaWarningSuppressionsInSource(exactExpressionSuppression, "ExactExpressionSuppression.cs");
         var exactLocalViolations = AnalyzerSuppressionPolicyTestsHelpers.FindUnapprovedPragmaWarningSuppressionsInSource(exactLocalSuppression, "ExactLocalSuppression.cs");
         var exactReturnViolations = AnalyzerSuppressionPolicyTestsHelpers.FindUnapprovedPragmaWarningSuppressionsInSource(exactReturnSuppression, "ExactReturnSuppression.cs");
@@ -170,9 +242,15 @@ public sealed partial class AnalyzerSuppressionPolicyTests
         nestedBlockViolations.ShouldNotBeEmpty();
         multipleInvocationViolations.ShouldNotBeEmpty();
         conditionalExpressionViolations.ShouldNotBeEmpty();
+        nestedDestinationAssignmentViolations.ShouldNotBeEmpty();
+        objectCreationAssignmentViolations.ShouldNotBeEmpty();
         exactExpressionViolations.ShouldBeEmpty();
         exactLocalViolations.ShouldBeEmpty();
         exactReturnViolations.ShouldBeEmpty();
+        exactAssignmentViolations.ShouldBeEmpty();
+        exactAliasAssignmentViolations.ShouldBeEmpty();
+        typedNamedClientViolations.ShouldNotBeEmpty();
+        multipleTypedClientViolations.ShouldNotBeEmpty();
     }
 
     [Fact]
@@ -236,6 +314,46 @@ public sealed partial class AnalyzerSuppressionPolicyTests
         violations.ShouldNotBeEmpty();
     }
 
+    [Fact]
+    public void Unresolved_cross_file_suppress_message_check_ids_should_be_rejected()
+    {
+        // Arrange
+        const string idsSource = "public static class RuleIds { public const string HttpBoundary = \"VTARCH001\"; }";
+        const string suppressionSource = """
+            using Ignore = System.Diagnostics.CodeAnalysis.SuppressMessageAttribute;
+            [assembly: Ignore("Architecture", RuleIds.HttpBoundary)]
+            """;
+
+        // Act
+        var violations = AnalyzerSuppressionPolicyTestsHelpers.FindProductionHttpSuppressMessageSuppressionsInSource(idsSource, "RuleIds.cs")
+            .Concat(AnalyzerSuppressionPolicyTestsHelpers.FindProductionHttpSuppressMessageSuppressionsInSource(suppressionSource, "Suppressions.cs"))
+            .ToArray();
+
+        // Assert
+        violations.ShouldHaveSingleItem();
+    }
+
+    [Fact]
+    public void Resolved_non_target_suppress_message_check_ids_should_remain_allowed()
+    {
+        // Arrange
+        const string source = """
+            using Ignore = System.Diagnostics.CodeAnalysis.SuppressMessageAttribute;
+            [assembly: Ignore("Architecture", RuleIds.OtherBoundary)]
+
+            public static class RuleIds
+            {
+                public const string OtherBoundary = "OTHER001";
+            }
+            """;
+
+        // Act
+        var violations = AnalyzerSuppressionPolicyTestsHelpers.FindProductionHttpSuppressMessageSuppressionsInSource(source, "Suppressions.cs");
+
+        // Assert
+        violations.ShouldBeEmpty();
+    }
+
     [Theory]
     [InlineData("dotnet_diagnostic.VTARCH001.severity = none")]
     [InlineData("dotnet_diagnostic.VTARCH001.severity = silent")]
@@ -274,6 +392,32 @@ public sealed partial class AnalyzerSuppressionPolicyTests
 
         // Assert
         violations.ShouldHaveSingleItem();
+    }
+
+    [Theory]
+    [InlineData("EditorConfigFiles", "Include", "policy.txt")]
+    [InlineData("EditorConfigFiles", "Update", "policy.rules")]
+    [InlineData("GlobalAnalyzerConfigFiles", "Include", "policy.custom")]
+    [InlineData("GlobalAnalyzerConfigFiles", "Update", "policy.settings")]
+    public void Repository_declared_analyzer_config_inputs_should_be_rejected_before_they_can_suppress_the_rule(
+        string itemName,
+        string operation,
+        string path)
+    {
+        // Arrange
+        ArgumentException.ThrowIfNullOrWhiteSpace(itemName);
+        ArgumentException.ThrowIfNullOrWhiteSpace(operation);
+        ArgumentException.ThrowIfNullOrWhiteSpace(path);
+        var project = $"<Project><ItemGroup><{itemName} {operation}=\"{path}\" /></ItemGroup></Project>";
+        const string policy = "dotnet_diagnostic.VTARCH001.severity = none";
+
+        // Act
+        var inputViolations = AnalyzerSuppressionPolicyTestsHelpers.FindBroadProductionHttpSuppressionsInSource(project, "Project.csproj");
+        var policyViolations = AnalyzerSuppressionPolicyTestsHelpers.FindBroadProductionHttpSuppressionsInSource(policy, "policy.txt");
+
+        // Assert
+        inputViolations.ShouldHaveSingleItem();
+        policyViolations.ShouldHaveSingleItem();
     }
 
     [Theory]

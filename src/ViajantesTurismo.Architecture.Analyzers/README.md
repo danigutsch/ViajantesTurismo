@@ -10,17 +10,17 @@ analyzers.
 to another. Approved communication uses a versioned integration event, explicitly approved gRPC, or
 an in-process module call.
 
-The analyzer resolves exact repository symbols, local reaching definitions, and resource tokens in
-absolute URI authorities for known static destinations. Resource-like path, query, and fragment values
-are not destinations. The analyzer does not guess values loaded from runtime configuration, infer a
-destination from a relative path or similar type name, ban `HttpClient` globally, make runtime protocol
-claims, or ship a migration code fix.
+The analyzer resolves exact repository symbols, definite local reaching definitions, recursively
+composed static URI components, and resource tokens in absolute URI authorities for known static
+destinations. Resource-like path, query, and fragment values are not destinations. The analyzer does
+not guess values loaded from runtime configuration, infer a destination from a relative path or similar
+type name, ban `HttpClient` globally, make runtime protocol claims, or ship a migration code fix.
 
 ### Exact-site exception
 
 An approved exception must suppress one allowlisted statement with exactly one eligible diagnostic
-site, name `VTARCH001`, contain no nested expression control flow, and include a code-owner-reviewed
-justification:
+site, name `VTARCH001`, contain no nested expression control flow or nested destination assignment, and
+include a code-owner-reviewed justification:
 
 ```csharp
 #pragma warning disable VTARCH001 // Justification: approved synchronous exception reviewed by architecture owners.
@@ -30,8 +30,8 @@ services.AddHttpClient(ResourceNames.BrandingApi);
 
 Project-wide `NoWarn`, `WarningsNotAsErrors`, and `.editorconfig` severity suppression are prohibited.
 `SuppressMessage` and `UnconditionalSuppressMessage` attributes are also prohibited for this rule.
-Global aliases to those attributes, `GlobalAnalyzerConfigFiles` inputs, and `CodeAnalysisRuleSet`
-inputs are prohibited as broad suppression paths.
+Global aliases to those attributes, unresolved suppression check IDs, `GlobalAnalyzerConfigFiles` and
+`EditorConfigFiles` inputs, and `CodeAnalysisRuleSet` inputs are prohibited as broad suppression paths.
 
 ## Staged rollout: not enabled
 

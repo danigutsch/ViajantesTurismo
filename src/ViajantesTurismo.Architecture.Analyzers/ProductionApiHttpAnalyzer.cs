@@ -378,6 +378,26 @@ public sealed class ProductionApiHttpAnalyzer : DiagnosticAnalyzer
             return null;
         }
 
+        if (operation is ILocalReferenceOperation localReference)
+        {
+            if (!visitedSymbols.Add(localReference.Local))
+            {
+                return ApiDestination.None;
+            }
+
+            try
+            {
+                return TryGetReachingLocalInitializer(localReference, out var initializer)
+                    && initializer is not null
+                        ? AppendUriComponent(initializer, candidate, visitedSymbols, sourceApi)
+                        : ApiDestination.None;
+            }
+            finally
+            {
+                visitedSymbols.Remove(localReference.Local);
+            }
+        }
+
         if (operation is IInterpolatedStringTextOperation textOperation
             && textOperation.Text.ConstantValue is { HasValue: true, Value: string text })
         {
@@ -520,59 +540,207 @@ public sealed class ProductionApiHttpAnalyzer : DiagnosticAnalyzer
             return ApiDestination.None;
         }
 
+        try
+        {
+            return !TryGetReachingLocalInitializer(localReference, out var initializer)
+                || initializer is null
+                ? ApiDestination.None
+                : ResolveDestination(initializer, visitedSymbols, sourceApi, allowBareResourceName);
+        }
+        finally
+        {
+            visitedSymbols.Remove(localReference.Local);
+        }
+    }
+
+    private static bool TryGetReachingLocalInitializer(
+        ILocalReferenceOperation localReference,
+        out IOperation? initializer)
+    {
+        initializer = null;
         var root = (IOperation)localReference;
         while (root.Parent is not null)
         {
             root = root.Parent;
         }
 
-        IOperation? initializer = null;
-        var hasReachingInitializer = TryFindReachingLocalInitializer(
+        var isAmbiguous = false;
+        FindReachingLocalInitializer(
             root,
             localReference.Local,
-            localReference.Syntax.SpanStart,
-            ref initializer);
-        return !hasReachingInitializer || initializer is null
-            ? ApiDestination.None
-            : ResolveDestination(initializer, visitedSymbols, sourceApi, allowBareResourceName);
+            localReference,
+            ref initializer,
+            ref isAmbiguous);
+        return !isAmbiguous && initializer is not null;
     }
 
-    private static bool TryFindReachingLocalInitializer(
+    private static void FindReachingLocalInitializer(
         IOperation operation,
         ILocalSymbol local,
-        int usePosition,
-        ref IOperation? initializer)
+        ILocalReferenceOperation localReference,
+        ref IOperation? initializer,
+        ref bool isAmbiguous)
     {
         if (operation is IVariableDeclaratorOperation declarator
             && SymbolEqualityComparer.Default.Equals(declarator.Symbol, local))
         {
             initializer = declarator.Initializer?.Value;
+            isAmbiguous = false;
         }
-        else if (operation.Syntax.SpanStart < usePosition && IsWriteToLocal(operation, local))
+        else if (operation.Syntax.SpanStart < localReference.Syntax.SpanStart
+            && IsWriteToLocal(operation, local, localReference))
         {
-            return false;
+            if (operation is ISimpleAssignmentOperation assignment
+                && assignment.Target is ILocalReferenceOperation assignedLocal
+                && SymbolEqualityComparer.Default.Equals(assignedLocal.Local, local)
+                && !assignment.Value.Syntax.Span.Contains(localReference.Syntax.Span)
+                && assignment.Parent is IExpressionStatementOperation expressionStatement
+                && expressionStatement.Parent is IBlockOperation assignmentBlock
+                && IsOperationAncestor(assignmentBlock, localReference))
+            {
+                initializer = assignment.Value;
+                isAmbiguous = false;
+            }
+            else
+            {
+                initializer = null;
+                isAmbiguous = true;
+            }
         }
 
         foreach (var child in operation.ChildOperations)
         {
-            if (!TryFindReachingLocalInitializer(child, local, usePosition, ref initializer))
+            FindReachingLocalInitializer(child, local, localReference, ref initializer, ref isAmbiguous);
+        }
+    }
+
+    private static bool IsOperationAncestor(IOperation candidate, IOperation operation)
+    {
+        for (var parent = operation.Parent; parent is not null; parent = parent.Parent)
+        {
+            if (ReferenceEquals(parent, candidate))
             {
-                return false;
+                return true;
             }
         }
 
-        return true;
+        return false;
     }
 
-    private static bool IsWriteToLocal(IOperation operation, ILocalSymbol local)
+    private static bool IsWriteToLocal(
+        IOperation operation,
+        ILocalSymbol local,
+        ILocalReferenceOperation localReference)
+    {
+        return IsWholeLocalWrite(operation, local)
+            || operation is IAssignmentOperation assignment
+                && IsHttpRequestUriMutationOfLocal(assignment.Target, localReference);
+    }
+
+    private static bool IsWholeLocalWrite(IOperation operation, ILocalSymbol local)
     {
         return operation switch
         {
-            IAssignmentOperation assignment => ContainsLocalReference(assignment.Target, local),
+            IAssignmentOperation assignment =>
+                assignment.Target is ILocalReferenceOperation assignedLocal
+                    && SymbolEqualityComparer.Default.Equals(assignedLocal.Local, local),
             IIncrementOrDecrementOperation incrementOrDecrement => ContainsLocalReference(incrementOrDecrement.Target, local),
             IArgumentOperation argument when argument.Parameter?.RefKind is RefKind.Ref or RefKind.Out => ContainsLocalReference(argument.Value, local),
             _ => false
         };
+    }
+
+    private static bool IsHttpRequestUriMutationOfLocal(
+        IOperation target,
+        ILocalReferenceOperation localReference)
+    {
+        return target is IPropertyReferenceOperation { Instance: not null } propertyReference
+            && IsHttpRequestUri(propertyReference)
+            && ReferencesLocalOrDefiniteAlias(
+                propertyReference.Instance,
+                localReference,
+                new HashSet<ILocalSymbol>(SymbolEqualityComparer.Default));
+    }
+
+    private static bool ReferencesLocalOrDefiniteAlias(
+        IOperation operation,
+        ILocalReferenceOperation targetReference,
+        ISet<ILocalSymbol> visitedAliases)
+    {
+        if (operation is IConversionOperation conversion)
+        {
+            return ReferencesLocalOrDefiniteAlias(conversion.Operand, targetReference, visitedAliases);
+        }
+
+        if (operation is IParenthesizedOperation parenthesized)
+        {
+            return ReferencesLocalOrDefiniteAlias(parenthesized.Operand, targetReference, visitedAliases);
+        }
+
+        if (operation is not ILocalReferenceOperation candidateReference)
+        {
+            return false;
+        }
+
+        if (SymbolEqualityComparer.Default.Equals(
+            candidateReference.Local,
+            targetReference.Local))
+        {
+            return IsSameLocalGeneration(candidateReference, targetReference);
+        }
+
+        if (!visitedAliases.Add(candidateReference.Local))
+        {
+            return false;
+        }
+
+        try
+        {
+            return TryGetReachingLocalInitializer(candidateReference, out var initializer)
+                && initializer is not null
+                && ReferencesLocalOrDefiniteAlias(initializer, targetReference, visitedAliases);
+        }
+        finally
+        {
+            visitedAliases.Remove(candidateReference.Local);
+        }
+    }
+
+    private static bool IsSameLocalGeneration(
+        ILocalReferenceOperation capturedReference,
+        ILocalReferenceOperation currentReference)
+    {
+        var root = (IOperation)currentReference;
+        while (root.Parent is not null)
+        {
+            root = root.Parent;
+        }
+
+        return !ContainsWholeLocalWriteBetween(
+            root,
+            currentReference.Local,
+            capturedReference.Syntax.SpanStart,
+            currentReference.Syntax.SpanStart);
+    }
+
+    private static bool ContainsWholeLocalWriteBetween(
+        IOperation operation,
+        ILocalSymbol local,
+        int startPosition,
+        int endPosition)
+    {
+        if (operation.Syntax.SpanStart > startPosition
+            && operation.Syntax.SpanStart < endPosition
+            && IsWholeLocalWrite(operation, local))
+        {
+            return true;
+        }
+
+        return operation.ChildOperations.Any(child => ContainsWholeLocalWriteBetween(
+            child,
+            local,
+            startPosition,
+            endPosition));
     }
 
     private static bool ContainsLocalReference(IOperation operation, ILocalSymbol local)
