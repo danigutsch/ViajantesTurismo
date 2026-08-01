@@ -16,6 +16,19 @@ internal static partial class EnumFormatter
         => PascalCaseBoundary().Replace(value.ToString(), " ");
 
     /// <summary>
+    /// Formats a <see cref="BikeTypeDto"/> value into a human-readable label.
+    /// </summary>
+    /// <param name="bikeType">The bike type to format.</param>
+    /// <returns>The human-readable bike type label.</returns>
+    public static string Format(BikeTypeDto bikeType) => bikeType switch
+    {
+        BikeTypeDto.None => "None",
+        BikeTypeDto.Regular => "Regular Bike",
+        BikeTypeDto.EBike => "E-Bike",
+        _ => bikeType.ToString()
+    };
+
+    /// <summary>
     /// Formats a <see cref="CurrencyDto"/> value into a human-readable label.
     /// </summary>
     public static string Format(CurrencyDto currency) => currency switch

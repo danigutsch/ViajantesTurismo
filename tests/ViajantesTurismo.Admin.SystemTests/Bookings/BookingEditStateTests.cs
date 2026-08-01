@@ -36,7 +36,7 @@ public class BookingEditStateTests(AspireSystemTestFixture fixture) : AspireSyst
 
         // Assert
         await Expect(Page.Locator(".alert-warning")).Not.ToBeVisibleAsync();
-        await Expect(Page.Locator("#status")).ToBeEnabledAsync();
+        await Expect(Page.Locator(".booking-status-badge")).ToContainTextAsync("Confirmed");
         await Expect(Page.Locator("#notes")).ToBeEnabledAsync();
         await Expect(Page.GetButton("Update Booking")).ToBeEnabledAsync();
         await Expect(Page.GetButton("Complete Booking")).ToBeVisibleAsync();

@@ -4,8 +4,8 @@ using ViajantesTurismo.Admin.Contracts.Application;
 namespace ViajantesTurismo.Management.Web.Components.Shared;
 
 /// <summary>
-/// Form model for creating bookings. Provides mutable properties for Blazor binding
-/// and converts to immutable CreateBookingDto for API submission.
+/// Form model for creating or editing bookings. Provides mutable properties for Blazor binding
+/// and converts to an immutable <see cref="CreateBookingDto"/> for creation requests.
 /// </summary>
 public class BookingFormModel : IValidatableObject
 {
@@ -34,7 +34,7 @@ public class BookingFormModel : IValidatableObject
     public string DiscountReason { get; set; } = string.Empty;
 
     /// <summary>
-    /// Validates discount fields using the same rules as CreateBookingDto.
+    /// Validates booking and discount fields using the existing booking contract rules.
     /// </summary>
     public IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
     {
@@ -48,14 +48,38 @@ public class BookingFormModel : IValidatableObject
             yield return new ValidationResult("Customer is required", [nameof(CustomerId)]);
         }
 
-        if (PrincipalBikeType == BikeTypeDto.None)
+        var singleRoomResult = BookingValidation.ValidateSingleRoomNoCompanion(
+            RoomType,
+            CompanionId,
+            nameof(CompanionId));
+        if (singleRoomResult is not null)
         {
-            yield return new ValidationResult("Bike type is required for principal customer", [nameof(PrincipalBikeType)]);
+            yield return singleRoomResult;
         }
 
-        if (CompanionId.HasValue && !CompanionBikeType.HasValue)
+        var companionBikeResult = BookingValidation.ValidateCompanionHasBikeType(
+            CompanionId,
+            CompanionBikeType,
+            nameof(CompanionBikeType));
+        if (companionBikeResult is not null)
         {
-            yield return new ValidationResult("Bike type is required for companion customer", [nameof(CompanionBikeType)]);
+            yield return companionBikeResult;
+        }
+
+        var principalBikeResult = BookingValidation.ValidatePrincipalBikeType(
+            PrincipalBikeType,
+            nameof(PrincipalBikeType));
+        if (principalBikeResult is not null)
+        {
+            yield return principalBikeResult;
+        }
+
+        var companionBikeNoneResult = BookingValidation.ValidateCompanionBikeTypeNotNone(
+            CompanionBikeType,
+            nameof(CompanionBikeType));
+        if (companionBikeNoneResult is not null)
+        {
+            yield return companionBikeNoneResult;
         }
 
         foreach (var result in DiscountValidation.Validate(

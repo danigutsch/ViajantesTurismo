@@ -18,6 +18,26 @@ public class IndexPageTests : BunitContext
     }
 
     [Fact]
+    [Trait(SharedKernel.Testing.TestTraitNames.ScopeName, TestTraits.ComponentScope)]
+    [Trait(SharedKernel.Testing.TestTraitNames.AreaName, TestTraits.ManagementWebArea)]
+    [Trait(SharedKernel.Testing.TestTraitNames.CategoryName, TestTraits.ComponentCategory)]
+    public void Load_failure_shows_a_sanitized_error_instead_of_an_empty_state()
+    {
+        // Arrange
+        _fakeBookingsApi.SetGetAllBookingsException(new InvalidOperationException("database password leaked"));
+
+        // Act
+        var cut = Render<Index>();
+        cut.WaitForAssertion(() => cut.Find("[role='alert']"));
+
+        // Assert
+        var alert = cut.Find("[role='alert']");
+        alert.TextContent.ShouldContain("We couldn't load bookings right now. Please try again.", StringComparison.Ordinal);
+        alert.TextContent.ShouldNotContain("database password leaked", StringComparison.Ordinal);
+        cut.Markup.ShouldNotContain("Bookings Overview", StringComparison.Ordinal);
+    }
+
+    [Fact]
     public void Displays_total_bookings_count()
     {
         // Arrange

@@ -19,6 +19,27 @@ public sealed class DetailsPageTests : BunitContext
     }
 
     [Fact]
+    [Trait(SharedKernel.Testing.TestTraitNames.ScopeName, TestTraits.ComponentScope)]
+    [Trait(SharedKernel.Testing.TestTraitNames.AreaName, TestTraits.ManagementWebArea)]
+    [Trait(SharedKernel.Testing.TestTraitNames.CategoryName, TestTraits.ComponentCategory)]
+    public void Api_failure_shows_a_sanitized_unavailable_message_instead_of_not_found()
+    {
+        // Arrange
+        var bookingId = Guid.NewGuid();
+        _fakeBookingsApi.SetGetBookingByIdException(new InvalidOperationException("connection string leaked"));
+
+        // Act
+        var cut = Render<Details>(parameters => parameters.Add(page => page.Id, bookingId));
+        cut.WaitForAssertion(() => cut.Find("[role='alert']"));
+
+        // Assert
+        var alert = cut.Find("[role='alert']");
+        alert.TextContent.ShouldContain("We couldn't load the booking right now. Please try again.", StringComparison.Ordinal);
+        alert.TextContent.ShouldNotContain("Booking not found.", StringComparison.Ordinal);
+        alert.TextContent.ShouldNotContain("connection string leaked", StringComparison.Ordinal);
+    }
+
+    [Fact]
     public void Booking_found_shows_edit_booking_link()
     {
         // Arrange
@@ -33,6 +54,43 @@ public sealed class DetailsPageTests : BunitContext
         var editLink = cut.FindAll("a").FirstOrDefault(a => a.TextContent.Contains("Edit Booking", StringComparison.Ordinal));
         _ = (editLink).ShouldNotBeNull();
         (editLink.GetAttribute("href")).ShouldBe($"/bookings/{booking.Id}/edit");
+    }
+
+    [Fact]
+    [Trait(SharedKernel.Testing.TestTraitNames.ScopeName, TestTraits.ComponentScope)]
+    [Trait(SharedKernel.Testing.TestTraitNames.AreaName, TestTraits.ManagementWebArea)]
+    [Trait(SharedKernel.Testing.TestTraitNames.CategoryName, TestTraits.ComponentCategory)]
+    public void Booking_details_show_room_and_bike_selections_semantically()
+    {
+        // Arrange
+        var booking = BuildBookingDto(
+            companionId: Guid.NewGuid(),
+            companionName: "Jane Smith",
+            roomType: RoomTypeDto.DoubleOccupancy,
+            principalBikeType: BikeTypeDto.EBike,
+            companionBikeType: BikeTypeDto.Regular);
+        _fakeBookingsApi.AddBooking(booking);
+
+        // Act
+        var cut = Render<Details>(parameters => parameters.Add(page => page.Id, booking.Id));
+        cut.WaitForAssertion(() => cut.Find("h1"));
+
+        // Assert
+        var terms = cut.FindAll("dt");
+        var roomTypeTerm = terms.ShouldHaveSingleItem(term => term.TextContent.Trim() == "Room Type");
+        var roomTypeValue = roomTypeTerm.NextElementSibling;
+        _ = roomTypeValue.ShouldNotBeNull();
+        roomTypeValue.TextContent.ShouldContain("Double Occupancy", StringComparison.Ordinal);
+
+        var principalBikeTerm = terms.ShouldHaveSingleItem(term => term.TextContent.Trim() == "Principal Bike");
+        var principalBikeValue = principalBikeTerm.NextElementSibling;
+        _ = principalBikeValue.ShouldNotBeNull();
+        principalBikeValue.TextContent.ShouldContain("E-Bike", StringComparison.Ordinal);
+
+        var companionBikeTerm = terms.ShouldHaveSingleItem(term => term.TextContent.Trim() == "Companion Bike");
+        var companionBikeValue = companionBikeTerm.NextElementSibling;
+        _ = companionBikeValue.ShouldNotBeNull();
+        companionBikeValue.TextContent.ShouldContain("Regular", StringComparison.Ordinal);
     }
 
     [Theory]

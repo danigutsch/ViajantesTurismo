@@ -60,11 +60,11 @@
     [Parameter, EditorRequired]
     public EventCallback Delete { get; set; }
 
-    private Task OnConfirm() => Confirm.InvokeAsync();
+    private Task OnConfirm() => IsSubmitting ? Task.CompletedTask : Confirm.InvokeAsync();
 
-    private Task OnComplete() => Complete.InvokeAsync();
+    private Task OnComplete() => IsSubmitting ? Task.CompletedTask : Complete.InvokeAsync();
 
-    private Task OnCancel() => Cancel.InvokeAsync();
+    private Task OnCancel() => IsSubmitting ? Task.CompletedTask : Cancel.InvokeAsync();
 
-    private Task OnDelete() => Delete.InvokeAsync();
+    private Task OnDelete() => IsSubmitting ? Task.CompletedTask : Delete.InvokeAsync();
 }
