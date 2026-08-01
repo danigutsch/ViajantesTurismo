@@ -329,13 +329,12 @@ For a transport-consumer-only context, call
 `AddPostgreSqlIntegrationEventTransportConsumer<TContext>(...)`.
 
 `IIntegrationEventOutbox`, `IIdempotencyStore`, and transport producers are keyed by
-`typeof(TContext)`. Resolve that key in the composition root when more than one context is registered.
-The first outbox/idempotency registration remains available unkeyed for single-context compatibility.
-A producer supplies an unkeyed `IEventEnvelopePublisher` only when no application publisher was
-already registered. Every relay resolves its context-keyed publisher explicitly; when no keyed
-publisher exists, registration preserves the unkeyed application publisher as that context's fallback.
-The producer's unkeyed compatibility alias is not an application dispatcher; relays and consumers
-reject that alias before claiming a message.
+`typeof(TContext)`. Resolve outbox/idempotency keys when more than one context is registered; their
+first registration remains available unkeyed for single-context compatibility. Transport producers
+are available only as keyed `IEventEnvelopePublisher` services and must always be resolved by their
+context key; producer registration never occupies the unkeyed publisher service. A relay first resolves
+its exact context key, then falls back to the required unkeyed application publisher. A transport
+consumer always requires the unkeyed application or generated publisher.
 
 Each physical table must have one migrations owner. A context that only reads a shared transport table
 may map it for runtime consumption, but its migrations must not create that producer-owned table.
