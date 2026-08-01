@@ -184,8 +184,12 @@ is revoked by the token action after the job.
 
 No personal access token is supported. Failed validation, stale `main`, an altered artifact, an existing
 automation branch, a non-roadmap change, or a changed live snapshot stops publication. If `main` moves
-after the create-only ref succeeds, publication stops before opening a pull request and leaves that new
-branch for explicit sandbox cleanup rather than risking an unguarded delete or update.
+after the create-only ref succeeds but before the post-ref OID check, publication stops before opening a
+pull request and leaves that new branch for explicit sandbox cleanup. A narrower residual race remains:
+`main` can move after the post-ref GET while `POST /pulls` is in flight. GitHub may then create a draft
+pull request against the moved base before response validation fails, leaving both the draft and branch.
+The workflow never deletes or updates either automatically; sandbox operators must close the draft and
+delete the create-only branch after recording evidence.
 
 ### Sandbox publication race checks
 
@@ -201,7 +205,11 @@ Run these checks only in a disposable repository with the sandbox App installati
    The pre-ref OID recheck must fail with no branch or pull request. Also exercise movement immediately
    after ref creation: the post-ref OID recheck must create no pull request and the sandbox branch must
    be removed manually after evidence is recorded.
-3. On the success path, confirm the generated commit is verified, has the planned base as its sole
+3. In a disposable sandbox, move `main` after the post-ref GET while `POST /pulls` is in flight. Confirm
+   response validation rejects the moved base even though GitHub created the draft, record both the
+   draft and create-only branch, then close the draft and delete the branch manually. The workflow must
+   issue no cleanup mutation, force update, or branch reuse.
+4. On the success path, confirm the generated commit is verified, has the planned base as its sole
    parent, the pull request is draft, its URL is nonempty, and its body contains the expected temporary
    non-closing issue linkage.
 

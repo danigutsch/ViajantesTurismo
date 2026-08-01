@@ -18,13 +18,24 @@ internal sealed class RoadmapGitHubPublisher
 
     private readonly HttpClient _httpClient;
     private readonly string _rootPath;
+    private readonly TimeProvider _timeProvider;
 
     public RoadmapGitHubPublisher(string rootPath, HttpClient httpClient)
+        : this(rootPath, httpClient, TimeProvider.System)
+    {
+    }
+
+    internal RoadmapGitHubPublisher(
+        string rootPath,
+        HttpClient httpClient,
+        TimeProvider timeProvider)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(rootPath);
         ArgumentNullException.ThrowIfNull(httpClient);
+        ArgumentNullException.ThrowIfNull(timeProvider);
         _rootPath = Path.TrimEndingDirectorySeparator(Path.GetFullPath(rootPath));
         _httpClient = httpClient;
+        _timeProvider = timeProvider;
     }
 
     public async Task<RoadmapGitHubPublication> Publish(
@@ -49,7 +60,7 @@ internal sealed class RoadmapGitHubPublisher
             throw new InvalidOperationException("Roadmap publication repository is invalid.");
         }
 
-        using var publicationTimeout = new CancellationTokenSource(PublicationTimeout);
+        using var publicationTimeout = new CancellationTokenSource(PublicationTimeout, _timeProvider);
         using var publicationCancellation = CancellationTokenSource.CreateLinkedTokenSource(
             cancellationToken,
             publicationTimeout.Token);
@@ -84,7 +95,7 @@ internal sealed class RoadmapGitHubPublisher
         }
         catch (OperationCanceledException) when (publicationTimeout.IsCancellationRequested)
         {
-            throw GitHubRequestTimeout.Create("roadmap publication");
+            throw GitHubRequestTimeout.Create("roadmap publication", PublicationTimeout);
         }
     }
 
@@ -366,7 +377,7 @@ internal sealed class RoadmapGitHubPublisher
             request.Content = CreateJsonContent(writeBody);
         }
 
-        using var timeout = new CancellationTokenSource(GitHubRequestTimeout.Duration);
+        using var timeout = new CancellationTokenSource(GitHubRequestTimeout.Duration, _timeProvider);
         using var requestCancellation = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, timeout.Token);
         HttpResponseMessage response;
         try

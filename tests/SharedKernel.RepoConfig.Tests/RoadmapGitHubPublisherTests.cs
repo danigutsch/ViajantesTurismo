@@ -1,5 +1,6 @@
 using System.Net;
 using System.Text.Json;
+using Microsoft.Extensions.Time.Testing;
 
 namespace SharedKernel.RepoConfig.Tests;
 
@@ -284,6 +285,28 @@ public sealed class RoadmapGitHubPublisherTests
     }
 
     [Fact]
+    public async Task Publication_reports_the_aggregate_timeout_duration()
+    {
+        // Arrange
+        using var workspace = new TemporaryRepoConfigWorkspace();
+        var changes = RoadmapGitHubPublicationTestOperations.CreateChanges(workspace);
+        var timeProvider = new FakeTimeProvider();
+        using var handler = new TimingOutHttpMessageHandler(timeProvider, TimeSpan.FromMinutes(10));
+        using var httpClient = new HttpClient(handler);
+        var publisher = new RoadmapGitHubPublisher(workspace.RootPath, httpClient, timeProvider);
+
+        // Act
+        Func<Task> action = async () => _ = await publisher.Publish(
+            RoadmapAutomationTestPlan.Create(),
+            changes,
+            TestContext.Current.CancellationToken);
+        var exception = await action.ShouldThrow<TimeoutException>();
+
+        // Assert
+        exception.Message.ShouldBe("GitHub roadmap publication timed out after 600 seconds.");
+    }
+
+    [Fact]
     public async Task Publication_rejects_an_empty_pull_request_url()
     {
         // Arrange
@@ -335,5 +358,7 @@ public sealed class RoadmapGitHubPublisherTests
 
         // Assert
         exception.Message.ShouldBe("Roadmap publication pull request does not match the approved base and head.");
+        handler.Requests.Count(request => request.Message.Method == HttpMethod.Post
+            && request.PathAndQuery.EndsWith("/pulls", StringComparison.Ordinal)).ShouldBe(1);
     }
 }
