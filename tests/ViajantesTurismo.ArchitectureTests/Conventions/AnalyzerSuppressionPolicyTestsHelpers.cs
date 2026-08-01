@@ -209,7 +209,7 @@ internal static partial class AnalyzerSuppressionPolicyTestsHelpers
             [CoreLibraryReference]).GetSemanticModel(syntaxTree);
 
         violations.AddRange(suppressionAttributes
-            .Where(attribute => attribute.ArgumentList?.Arguments.Any(argument => IsProductionHttpDiagnostic(argument, semanticModel)) == true)
+            .Where(attribute => SuppressesProductionHttpOrHasUnresolvedCheckId(attribute, semanticModel))
             .Select(attribute => $"{displayPath}:L{syntaxTree.GetLineSpan(attribute.Span).StartLinePosition.Line + 1}"));
 
         return [.. violations];
@@ -331,7 +331,30 @@ internal static partial class AnalyzerSuppressionPolicyTestsHelpers
         var invocationSites = descendantNodes.OfType<InvocationExpressionSyntax>().Count();
         var objectCreationSites = descendantNodes.Count(static node => (node is ObjectCreationExpressionSyntax or ImplicitObjectCreationExpressionSyntax)
             && !node.Ancestors().OfType<InvocationExpressionSyntax>().Any());
-        if (invocationSites + objectCreationSites != 1)
+        var topLevelAssignment = (statement as ExpressionStatementSyntax)?.Expression as AssignmentExpressionSyntax;
+        var hasNestedAssignment = descendantNodes
+            .OfType<AssignmentExpressionSyntax>()
+            .Any(assignment => !ReferenceEquals(assignment, topLevelAssignment));
+        var nestedSites = invocationSites + objectCreationSites;
+        var eligibleSites = topLevelAssignment is not null && nestedSites <= 1
+            ? 1
+            : nestedSites;
+        var hasTypedAddHttpClientArguments = descendantNodes
+            .OfType<InvocationExpressionSyntax>()
+            .Any(static invocation =>
+            {
+                var genericName = invocation.Expression switch
+                {
+                    MemberAccessExpressionSyntax { Name: GenericNameSyntax memberName } => memberName,
+                    GenericNameSyntax directName => directName,
+                    _ => null
+                };
+                return genericName is not null
+                    && string.Equals(genericName.Identifier.ValueText, "AddHttpClient", StringComparison.Ordinal)
+                    && (genericName.TypeArgumentList.Arguments.Count > 1
+                        || invocation.ArgumentList.Arguments.Count > 0);
+            });
+        if (eligibleSites != 1 || hasNestedAssignment || hasTypedAddHttpClientArguments)
         {
             return false;
         }
@@ -362,17 +385,36 @@ internal static partial class AnalyzerSuppressionPolicyTestsHelpers
             || suppressionAliases.Contains(attributeName);
     }
 
-    private static bool IsProductionHttpDiagnostic(AttributeArgumentSyntax argument, SemanticModel semanticModel)
+    private static bool SuppressesProductionHttpOrHasUnresolvedCheckId(
+        AttributeSyntax attribute,
+        SemanticModel semanticModel)
     {
-        var constantValue = semanticModel.GetConstantValue(argument.Expression);
-        if (constantValue is { HasValue: true, Value: string value }
-            && (string.Equals(value, ProductionApiHttpDiagnosticId, StringComparison.OrdinalIgnoreCase)
-                || value.StartsWith(ProductionApiHttpDiagnosticId + ":", StringComparison.OrdinalIgnoreCase)))
+        if (attribute.ArgumentList is not { } argumentList)
+        {
+            return false;
+        }
+
+        var arguments = argumentList.Arguments;
+        var checkIdArgument = arguments.FirstOrDefault(static argument =>
+                string.Equals(argument.NameColon?.Name.Identifier.ValueText, "checkId", StringComparison.OrdinalIgnoreCase)
+                || string.Equals(argument.NameEquals?.Name.Identifier.ValueText, "CheckId", StringComparison.OrdinalIgnoreCase))
+            ?? arguments
+                .Where(static argument => argument.NameColon is null && argument.NameEquals is null)
+                .Skip(1)
+                .FirstOrDefault();
+        if (checkIdArgument is null)
+        {
+            return false;
+        }
+
+        var constantValue = semanticModel.GetConstantValue(checkIdArgument.Expression);
+        if (!constantValue.HasValue || constantValue.Value is not string value)
         {
             return true;
         }
 
-        return argument.Expression.ToString().Contains("ProductionApiHttp", StringComparison.Ordinal);
+        return string.Equals(value, ProductionApiHttpDiagnosticId, StringComparison.OrdinalIgnoreCase)
+            || value.StartsWith(ProductionApiHttpDiagnosticId + ":", StringComparison.OrdinalIgnoreCase);
     }
 
     private static bool IsBroadAnalyzerSeveritySuppression(string setting)
@@ -424,7 +466,8 @@ internal static partial class AnalyzerSuppressionPolicyTestsHelpers
         var project = XDocument.Parse(text);
         return project.Descendants()
             .Where(static element =>
-                (string.Equals(element.Name.LocalName, "GlobalAnalyzerConfigFiles", StringComparison.OrdinalIgnoreCase)
+                ((string.Equals(element.Name.LocalName, "GlobalAnalyzerConfigFiles", StringComparison.OrdinalIgnoreCase)
+                        || string.Equals(element.Name.LocalName, "EditorConfigFiles", StringComparison.OrdinalIgnoreCase))
                     && element.Attributes().Any(static attribute =>
                         (string.Equals(attribute.Name.LocalName, "Include", StringComparison.OrdinalIgnoreCase)
                             || string.Equals(attribute.Name.LocalName, "Update", StringComparison.OrdinalIgnoreCase))

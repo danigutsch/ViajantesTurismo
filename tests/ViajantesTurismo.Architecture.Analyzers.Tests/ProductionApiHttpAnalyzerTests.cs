@@ -145,6 +145,77 @@ public sealed class ProductionApiHttpAnalyzerTests
     }
 
     [Fact]
+    public async Task Composed_uri_resolves_a_static_prefix_alias()
+    {
+        // Arrange
+        const string source = """
+            namespace ViajantesTurismo.Admin.ApiService;
+
+            public static class Registration
+            {
+                public static void Configure(HttpClient client)
+                {
+                    var prefix = "https+http://";
+                    client.BaseAddress = new Uri(prefix + ResourceNames.BrandingApi);
+                }
+            }
+            """;
+
+        // Act
+        var diagnostics = await AnalyzerTestHarness.GetAnalyzerDiagnostics(source);
+
+        // Assert
+        diagnostics.ShouldHaveSingleItem(static candidate => candidate.Id == ArchitectureDiagnosticIds.ProductionApiHttp);
+    }
+
+    [Fact]
+    public async Task Composed_uri_does_not_guess_a_runtime_configured_prefix()
+    {
+        // Arrange
+        const string source = """
+            namespace ViajantesTurismo.Admin.ApiService;
+
+            public static class Registration
+            {
+                public static void Configure(HttpClient client, string configuredPrefix)
+                {
+                    client.BaseAddress = new Uri(configuredPrefix + ResourceNames.BrandingApi);
+                }
+            }
+            """;
+
+        // Act
+        var diagnostics = await AnalyzerTestHarness.GetAnalyzerDiagnostics(source);
+
+        // Assert
+        diagnostics.ShouldBeEmpty();
+    }
+
+    [Fact]
+    public async Task Composed_uri_resolves_a_repeated_static_local_component()
+    {
+        // Arrange
+        const string source = """
+            namespace ViajantesTurismo.Admin.ApiService;
+
+            public static class Registration
+            {
+                public static void Configure(HttpClient client)
+                {
+                    var slash = "/";
+                    client.BaseAddress = new Uri("https:" + slash + slash + ResourceNames.BrandingApi);
+                }
+            }
+            """;
+
+        // Act
+        var diagnostics = await AnalyzerTestHarness.GetAnalyzerDiagnostics(source);
+
+        // Assert
+        diagnostics.ShouldHaveSingleItem(static candidate => candidate.Id == ArchitectureDiagnosticIds.ProductionApiHttp);
+    }
+
+    [Fact]
     public async Task An_own_resource_branch_does_not_mask_a_cross_api_destination()
     {
         // Arrange
@@ -347,6 +418,138 @@ public sealed class ProductionApiHttpAnalyzerTests
                 public static Task<HttpResponseMessage> Read(HttpClient client)
                 {
                     {{requestDeclaration}}
+                    return client.SendAsync(request);
+                }
+            }
+            """;
+
+        // Act
+        var diagnostics = await AnalyzerTestHarness.GetAnalyzerDiagnostics(source);
+
+        // Assert
+        diagnostics.ShouldHaveSingleItem(static candidate => candidate.Id == ArchitectureDiagnosticIds.ProductionApiHttp);
+    }
+
+    [Fact]
+    public async Task Unrelated_http_request_message_mutation_preserves_the_known_destination()
+    {
+        // Arrange
+        const string source = """
+            namespace ViajantesTurismo.Admin.ApiService;
+
+            public static class BrandingReader
+            {
+                public static Task<HttpResponseMessage> Read(HttpClient client)
+                {
+                    var request = new HttpRequestMessage(HttpMethod.Get, new Uri($"https+http://{ResourceNames.BrandingApi}/v1/settings"));
+                    request.Method = HttpMethod.Post;
+                    return client.SendAsync(request);
+                }
+            }
+            """;
+
+        // Act
+        var diagnostics = await AnalyzerTestHarness.GetAnalyzerDiagnostics(source);
+
+        // Assert
+        diagnostics.ShouldHaveSingleItem(static candidate => candidate.Id == ArchitectureDiagnosticIds.ProductionApiHttp);
+    }
+
+    [Fact]
+    public async Task Runtime_request_uri_mutation_through_an_alias_invalidates_the_original_destination()
+    {
+        // Arrange
+        const string source = """
+            namespace ViajantesTurismo.Admin.ApiService;
+
+            public static class BrandingReader
+            {
+                public static Task<HttpResponseMessage> Read(HttpClient client, string configuredEndpoint)
+                {
+                    var request = new HttpRequestMessage(HttpMethod.Get, new Uri($"https+http://{ResourceNames.BrandingApi}/v1/settings"));
+                    var alias = request;
+                    alias.RequestUri = new Uri(configuredEndpoint);
+                    return client.SendAsync(request);
+                }
+            }
+            """;
+
+        // Act
+        var diagnostics = await AnalyzerTestHarness.GetAnalyzerDiagnostics(source);
+
+        // Assert
+        diagnostics.ShouldBeEmpty();
+    }
+
+    [Fact]
+    public async Task Alias_mutation_does_not_invalidate_a_request_reassigned_after_alias_capture()
+    {
+        // Arrange
+        const string source = """
+            namespace ViajantesTurismo.Admin.ApiService;
+
+            public static class BrandingReader
+            {
+                public static Task<HttpResponseMessage> Read(HttpClient client, string configuredEndpoint)
+                {
+                    var request = new HttpRequestMessage();
+                    var alias = request;
+                    request = new HttpRequestMessage(HttpMethod.Get, new Uri($"https+http://{ResourceNames.BrandingApi}/v1/settings"));
+                    alias.RequestUri = new Uri(configuredEndpoint);
+                    return client.SendAsync(request);
+                }
+            }
+            """;
+
+        // Act
+        var diagnostics = await AnalyzerTestHarness.GetAnalyzerDiagnostics(source);
+
+        // Assert
+        diagnostics.ShouldHaveSingleItem(static candidate => candidate.Id == ArchitectureDiagnosticIds.ProductionApiHttp);
+    }
+
+    [Fact]
+    public async Task Runtime_request_uri_mutation_through_two_definite_aliases_invalidates_the_original_destination()
+    {
+        // Arrange
+        const string source = """
+            namespace ViajantesTurismo.Admin.ApiService;
+
+            public static class BrandingReader
+            {
+                public static Task<HttpResponseMessage> Read(HttpClient client, string configuredEndpoint)
+                {
+                    var request = new HttpRequestMessage(HttpMethod.Get, new Uri($"https+http://{ResourceNames.BrandingApi}/v1/settings"));
+                    var firstAlias = request;
+                    var secondAlias = firstAlias;
+                    secondAlias.RequestUri = new Uri(configuredEndpoint);
+                    return client.SendAsync(request);
+                }
+            }
+            """;
+
+        // Act
+        var diagnostics = await AnalyzerTestHarness.GetAnalyzerDiagnostics(source);
+
+        // Assert
+        diagnostics.ShouldBeEmpty();
+    }
+
+    [Fact]
+    public async Task Request_alias_reassigned_away_before_mutation_does_not_invalidate_the_original_destination()
+    {
+        // Arrange
+        const string source = """
+            namespace ViajantesTurismo.Admin.ApiService;
+
+            public static class BrandingReader
+            {
+                public static Task<HttpResponseMessage> Read(HttpClient client, string configuredEndpoint)
+                {
+                    var request = new HttpRequestMessage(HttpMethod.Get, new Uri($"https+http://{ResourceNames.BrandingApi}/v1/settings"));
+                    var alias = request;
+                    alias = new HttpRequestMessage();
+                    alias.RequestUri = new Uri(configuredEndpoint);
                     return client.SendAsync(request);
                 }
             }
@@ -652,6 +855,85 @@ public sealed class ProductionApiHttpAnalyzerTests
 
         // Assert
         diagnostics.ShouldHaveSingleItem(static candidate => candidate.Id == ArchitectureDiagnosticIds.ProductionApiHttp);
+    }
+
+    [Fact]
+    public async Task Last_unconditional_pre_use_assignment_is_resolved()
+    {
+        // Arrange
+        const string source = """
+            namespace ViajantesTurismo.Admin.ApiService;
+
+            public static class Registration
+            {
+                public static void Configure(HttpClient client, string configuredEndpoint)
+                {
+                    var destination = configuredEndpoint;
+                    destination = ResourceNames.BrandingApi;
+                    client.BaseAddress = new Uri($"https+http://{destination}");
+                }
+            }
+            """;
+
+        // Act
+        var diagnostics = await AnalyzerTestHarness.GetAnalyzerDiagnostics(source);
+
+        // Assert
+        diagnostics.ShouldHaveSingleItem(static candidate => candidate.Id == ArchitectureDiagnosticIds.ProductionApiHttp);
+    }
+
+    [Fact]
+    public async Task Control_flow_assignments_remain_ambiguous()
+    {
+        // Arrange
+        const string source = """
+            namespace ViajantesTurismo.Admin.ApiService;
+
+            public static class Registration
+            {
+                public static void Configure(HttpClient client, string configuredEndpoint, bool useBranding)
+                {
+                    var destination = configuredEndpoint;
+                    if (useBranding)
+                    {
+                        destination = ResourceNames.BrandingApi;
+                    }
+
+                    client.BaseAddress = new Uri($"https+http://{destination}");
+                }
+            }
+            """;
+
+        // Act
+        var diagnostics = await AnalyzerTestHarness.GetAnalyzerDiagnostics(source);
+
+        // Assert
+        diagnostics.ShouldBeEmpty();
+    }
+
+    [Fact]
+    public async Task Self_referential_local_assignment_remains_unresolved_without_analyzer_failure()
+    {
+        // Arrange
+        const string source = """
+            namespace ViajantesTurismo.Admin.ApiService;
+
+            public static class Registration
+            {
+                public static void Configure(HttpClient client, string configuredSuffix)
+                {
+                    var destination = ResourceNames.BrandingApi;
+                    destination = destination + configuredSuffix;
+                    client.BaseAddress = new Uri($"https+http://{destination}");
+                }
+            }
+            """;
+
+        // Act
+        var diagnostics = await AnalyzerTestHarness.GetAnalyzerDiagnostics(source);
+
+        // Assert
+        diagnostics.ShouldBeEmpty();
     }
 
     [Theory]
