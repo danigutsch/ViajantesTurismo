@@ -12,11 +12,14 @@ public sealed class FakeCustomersApiClient : ICustomersApiClient
     private Exception? _createCustomerException;
     private ContractCommandOutcomeDto? _createCustomerOutcome;
     private Exception? _getCustomerByIdException;
+    private ContractCommandOutcomeDto<CustomerDetailsDto>? _getCustomerByIdOutcome;
     private Exception? _getCustomersException;
     private ContractCommandOutcomeDto<GetCustomerDto[]>? _getCustomersOutcome;
     private Exception? _importCustomersException;
+    private ContractCommandOutcomeDto<ImportResultDto>? _importCustomersOutcome;
     private ImportResultDto? _importResult;
     private Exception? _updateCustomerException;
+    private ContractCommandOutcomeDto? _updateCustomerOutcome;
 
     public IReadOnlyList<byte>? LastCommitFileContent { get; private set; }
 
@@ -28,20 +31,17 @@ public sealed class FakeCustomersApiClient : ICustomersApiClient
 
     public Task<ContractCommandOutcomeDto<GetCustomerDto[]>> GetCustomers(CancellationToken ct, int maxItems = 100)
     {
+        ct.ThrowIfCancellationRequested();
         LastGetCustomersMaxItems = maxItems;
+
+        if (_getCustomersException is not null)
+        {
+            throw _getCustomersException;
+        }
 
         if (_getCustomersOutcome is not null)
         {
             return Task.FromResult(_getCustomersOutcome);
-        }
-
-        if (_getCustomersException is not null)
-        {
-            return Task.FromResult(new ContractCommandOutcomeDto<GetCustomerDto[]>
-            {
-                Kind = ContractCommandOutcomeKind.TransportFailure,
-                Message = "HTTP transport failed."
-            });
         }
 
         return Task.FromResult(ContractCommandOutcome.Succeeded(
@@ -51,13 +51,16 @@ public sealed class FakeCustomersApiClient : ICustomersApiClient
 
     public Task<ContractCommandOutcomeDto<CustomerDetailsDto>> GetCustomerById(Guid id, CancellationToken ct)
     {
+        ct.ThrowIfCancellationRequested();
+
         if (_getCustomerByIdException is not null)
         {
-            return Task.FromResult(new ContractCommandOutcomeDto<CustomerDetailsDto>
-            {
-                Kind = ContractCommandOutcomeKind.TransportFailure,
-                Message = "HTTP transport failed."
-            });
+            throw _getCustomerByIdException;
+        }
+
+        if (_getCustomerByIdOutcome is not null)
+        {
+            return Task.FromResult(_getCustomerByIdOutcome);
         }
 
         var customer = _customerDetails.FirstOrDefault(c => c.Id == id);
@@ -68,6 +71,9 @@ public sealed class FakeCustomersApiClient : ICustomersApiClient
 
     public Task<ContractCommandOutcomeDto> CreateCustomer(CreateCustomerDto dto, CancellationToken ct)
     {
+        ArgumentNullException.ThrowIfNull(dto);
+        ct.ThrowIfCancellationRequested();
+
         if (_createCustomerException is not null)
         {
             throw _createCustomerException;
@@ -84,13 +90,17 @@ public sealed class FakeCustomersApiClient : ICustomersApiClient
 
     public Task<ContractCommandOutcomeDto> UpdateCustomer(Guid id, UpdateCustomerDto dto, CancellationToken ct)
     {
+        ArgumentNullException.ThrowIfNull(dto);
+        ct.ThrowIfCancellationRequested();
+
         if (_updateCustomerException is not null)
         {
-            return Task.FromResult(new ContractCommandOutcomeDto
-            {
-                Kind = ContractCommandOutcomeKind.TransportFailure,
-                Message = "HTTP transport failed."
-            });
+            throw _updateCustomerException;
+        }
+
+        if (_updateCustomerOutcome is not null)
+        {
+            return Task.FromResult(_updateCustomerOutcome);
         }
 
         return Task.FromResult(ContractCommandOutcome.Succeeded(HttpStatusCode.NoContent, location: null));
@@ -98,13 +108,18 @@ public sealed class FakeCustomersApiClient : ICustomersApiClient
 
     public Task<ContractCommandOutcomeDto<ImportResultDto>> ImportCustomers(byte[] fileContent, string fileName, CancellationToken ct)
     {
+        ArgumentNullException.ThrowIfNull(fileContent);
+        ArgumentNullException.ThrowIfNull(fileName);
+        ct.ThrowIfCancellationRequested();
+
         if (_importCustomersException is not null)
         {
-            return Task.FromResult(new ContractCommandOutcomeDto<ImportResultDto>
-            {
-                Kind = ContractCommandOutcomeKind.TransportFailure,
-                Message = "HTTP transport failed."
-            });
+            throw _importCustomersException;
+        }
+
+        if (_importCustomersOutcome is not null)
+        {
+            return Task.FromResult(_importCustomersOutcome);
         }
 
         if (_importResult is not null)
@@ -121,6 +136,11 @@ public sealed class FakeCustomersApiClient : ICustomersApiClient
         IReadOnlyDictionary<string, string> conflictResolutions,
         CancellationToken ct)
     {
+        ArgumentNullException.ThrowIfNull(fileContent);
+        ArgumentNullException.ThrowIfNull(fileName);
+        ArgumentNullException.ThrowIfNull(conflictResolutions);
+        ct.ThrowIfCancellationRequested();
+
         LastCommitFileContent = [.. fileContent];
         LastCommitFileName = fileName;
         LastCommitConflictResolutions = new Dictionary<string, string>(conflictResolutions, StringComparer.OrdinalIgnoreCase);
@@ -139,6 +159,8 @@ public sealed class FakeCustomersApiClient : ICustomersApiClient
 
     public void SetGetCustomerByIdException(Exception exception) => _getCustomerByIdException = exception;
 
+    public void SetGetCustomerByIdOutcome(ContractCommandOutcomeDto<CustomerDetailsDto> outcome) => _getCustomerByIdOutcome = outcome;
+
     public void SetGetCustomersException(Exception exception) => _getCustomersException = exception;
 
     public void SetGetCustomersOutcome(ContractCommandOutcomeDto<GetCustomerDto[]> outcome) => _getCustomersOutcome = outcome;
@@ -149,9 +171,13 @@ public sealed class FakeCustomersApiClient : ICustomersApiClient
 
     public void SetUpdateCustomerException(Exception exception) => _updateCustomerException = exception;
 
+    public void SetUpdateCustomerOutcome(ContractCommandOutcomeDto outcome) => _updateCustomerOutcome = outcome;
+
     public void SetImportCustomersResult(ImportResultDto result) => _importResult = result;
 
     public void SetCommitImportResult(ImportResultDto result) => _commitImportResult = result;
 
     public void SetImportCustomersException(Exception exception) => _importCustomersException = exception;
+
+    public void SetImportCustomersOutcome(ContractCommandOutcomeDto<ImportResultDto> outcome) => _importCustomersOutcome = outcome;
 }

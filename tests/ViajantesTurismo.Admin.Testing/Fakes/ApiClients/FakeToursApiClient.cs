@@ -10,18 +10,24 @@ public sealed class FakeToursApiClient : IToursApiClient
     private Exception? _createTourException;
     private ContractCommandOutcomeDto? _createTourOutcome;
     private Exception? _getTourByIdException;
+    private ContractCommandOutcomeDto<GetTourDto>? _getTourByIdOutcome;
     private Exception? _getToursException;
+    private ContractCommandOutcomeDto<GetTourDto[]>? _getToursOutcome;
     private Exception? _updateTourException;
+    private ContractCommandOutcomeDto? _updateTourOutcome;
 
     public Task<ContractCommandOutcomeDto<GetTourDto[]>> GetTours(CancellationToken cancellationToken, int maxItems = int.MaxValue)
     {
+        cancellationToken.ThrowIfCancellationRequested();
+
         if (_getToursException is not null)
         {
-            return Task.FromResult(new ContractCommandOutcomeDto<GetTourDto[]>
-            {
-                Kind = ContractCommandOutcomeKind.TransportFailure,
-                Message = "HTTP transport failed."
-            });
+            throw _getToursException;
+        }
+
+        if (_getToursOutcome is not null)
+        {
+            return Task.FromResult(_getToursOutcome);
         }
 
         return Task.FromResult(ContractCommandOutcome.Succeeded(HttpStatusCode.OK, _tours.Take(maxItems).ToArray()));
@@ -29,13 +35,16 @@ public sealed class FakeToursApiClient : IToursApiClient
 
     public Task<ContractCommandOutcomeDto<GetTourDto>> GetTourById(Guid id, CancellationToken cancellationToken)
     {
+        cancellationToken.ThrowIfCancellationRequested();
+
         if (_getTourByIdException is not null)
         {
-            return Task.FromResult(new ContractCommandOutcomeDto<GetTourDto>
-            {
-                Kind = ContractCommandOutcomeKind.TransportFailure,
-                Message = "HTTP transport failed."
-            });
+            throw _getTourByIdException;
+        }
+
+        if (_getTourByIdOutcome is not null)
+        {
+            return Task.FromResult(_getTourByIdOutcome);
         }
 
         var tour = _tours.FirstOrDefault(t => t.Id == id);
@@ -47,6 +56,7 @@ public sealed class FakeToursApiClient : IToursApiClient
     public Task<ContractCommandOutcomeDto> CreateTour(CreateTourDto dto, CancellationToken cancellationToken)
     {
         ArgumentNullException.ThrowIfNull(dto);
+        cancellationToken.ThrowIfCancellationRequested();
 
         if (_createTourException is not null)
         {
@@ -84,14 +94,16 @@ public sealed class FakeToursApiClient : IToursApiClient
     public Task<ContractCommandOutcomeDto> UpdateTour(Guid id, UpdateTourDto dto, CancellationToken cancellationToken)
     {
         ArgumentNullException.ThrowIfNull(dto);
+        cancellationToken.ThrowIfCancellationRequested();
 
         if (_updateTourException is not null)
         {
-            return Task.FromResult(new ContractCommandOutcomeDto
-            {
-                Kind = ContractCommandOutcomeKind.TransportFailure,
-                Message = "HTTP transport failed."
-            });
+            throw _updateTourException;
+        }
+
+        if (_updateTourOutcome is not null)
+        {
+            return Task.FromResult(_updateTourOutcome);
         }
 
         var tour = _tours.FirstOrDefault(t => t.Id == id);
@@ -124,11 +136,17 @@ public sealed class FakeToursApiClient : IToursApiClient
 
     public void SetGetTourByIdException(Exception exception) => _getTourByIdException = exception;
 
+    public void SetGetTourByIdOutcome(ContractCommandOutcomeDto<GetTourDto> outcome) => _getTourByIdOutcome = outcome;
+
     public void SetGetToursException(Exception exception) => _getToursException = exception;
+
+    public void SetGetToursOutcome(ContractCommandOutcomeDto<GetTourDto[]> outcome) => _getToursOutcome = outcome;
 
     public void SetCreateTourException(Exception exception) => _createTourException = exception;
 
     public void SetCreateTourOutcome(ContractCommandOutcomeDto outcome) => _createTourOutcome = outcome;
 
     public void SetUpdateTourException(Exception exception) => _updateTourException = exception;
+
+    public void SetUpdateTourOutcome(ContractCommandOutcomeDto outcome) => _updateTourOutcome = outcome;
 }

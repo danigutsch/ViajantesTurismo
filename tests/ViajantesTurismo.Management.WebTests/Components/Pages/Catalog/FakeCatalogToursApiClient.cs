@@ -27,6 +27,8 @@ internal sealed class FakeCatalogToursApiClient : ICatalogToursApiClient
 
     public bool ThrowOnGetTourImages { get; set; }
 
+    public ContractCommandOutcomeDto<CatalogMediaImageDto[]>? GetTourImagesOutcome { get; set; }
+
     public CatalogMediaImageDto? Draft { get; set; }
 
     public CatalogMediaImageDto? UploadedImage { get; set; }
@@ -167,6 +169,11 @@ internal sealed class FakeCatalogToursApiClient : ICatalogToursApiClient
         if (ThrowOnGetTourImages)
         {
             return Task.FromResult(TransportFailure<CatalogMediaImageDto[]>());
+        }
+
+        if (GetTourImagesOutcome is not null)
+        {
+            return Task.FromResult(GetTourImagesOutcome);
         }
 
         if (ThrowOnSubsequentGetTourImages && Interlocked.Increment(ref getTourImagesRequests) > 1)

@@ -76,23 +76,45 @@ public sealed class DocumentsApiClient(HttpClient httpClient) : IDocumentsApiCli
     /// <inheritdoc />
     public async Task<DocumentArtifactResponse?> DownloadFinalizedArtifact(Guid documentId, CancellationToken ct)
     {
-        using var response = await httpClient.GetAsync(new Uri($"{RoutePrefix}/{documentId}/download", UriKind.Relative), ct).ConfigureAwait(false);
-        if (response.StatusCode == HttpStatusCode.NotFound)
-        {
-            return null;
-        }
+        using var request = new HttpRequestMessage(
+            HttpMethod.Get,
+            new Uri($"{RoutePrefix}/{documentId}/download", UriKind.Relative));
+        using var timeoutSource = httpClient.Timeout == Timeout.InfiniteTimeSpan
+            ? null
+            : CancellationTokenSource.CreateLinkedTokenSource(ct);
+        timeoutSource?.CancelAfter(httpClient.Timeout);
+        var requestToken = timeoutSource?.Token ?? ct;
 
-        await ContractHttpValidation.EnsureSuccessOrThrowValidationException(response, Json.ContractValidationProblemDto, ct).ConfigureAwait(false);
-        if (!string.Equals(response.Content.Headers.ContentType?.MediaType, HtmlMediaType, StringComparison.OrdinalIgnoreCase))
+        try
         {
-            throw new InvalidOperationException("The document artifact response must be HTML.");
-        }
+            using var response = await httpClient.SendAsync(
+                request,
+                HttpCompletionOption.ResponseHeadersRead,
+                requestToken).ConfigureAwait(false);
+            if (response.StatusCode == HttpStatusCode.NotFound)
+            {
+                return null;
+            }
 
-        var content = await response.Content.ReadAsByteArrayAsync(ct).ConfigureAwait(false);
-        var fileName = response.Content.Headers.ContentDisposition?.FileNameStar
-            ?? response.Content.Headers.ContentDisposition?.FileName?.Trim('"')
-            ?? $"{documentId:N}.html";
-        return new DocumentArtifactResponse(content, fileName);
+            await ContractHttpValidation.EnsureSuccessOrThrowValidationException(
+                response,
+                Json.ContractValidationProblemDto,
+                requestToken).ConfigureAwait(false);
+            if (!string.Equals(response.Content.Headers.ContentType?.MediaType, HtmlMediaType, StringComparison.OrdinalIgnoreCase))
+            {
+                throw new InvalidOperationException("The document artifact response must be HTML.");
+            }
+
+            var content = await response.Content.ReadAsByteArrayAsync(requestToken).ConfigureAwait(false);
+            var fileName = response.Content.Headers.ContentDisposition?.FileNameStar
+                ?? response.Content.Headers.ContentDisposition?.FileName?.Trim('"')
+                ?? $"{documentId:N}.html";
+            return new DocumentArtifactResponse(content, fileName);
+        }
+        catch (OperationCanceledException exception) when (ct.IsCancellationRequested)
+        {
+            throw new OperationCanceledException(exception.Message, exception, ct);
+        }
     }
 
     private async Task<ContractCommandOutcomeDto<GetDocumentDto>> PostCommand(

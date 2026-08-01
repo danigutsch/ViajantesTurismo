@@ -30,11 +30,11 @@ public class EditPageTests : BunitContext
     }
 
     [Fact]
-    public async Task OnInitializedAsync_when_load_fails_shows_sanitized_error_message()
+    public async Task OnInitializedAsync_when_transport_fails_shows_a_safe_error_message()
     {
         // Arrange
         var customerId = Guid.NewGuid();
-        _fakeCustomersApi.SetGetCustomerByIdException(new InvalidOperationException("Database unavailable"));
+        _fakeCustomersApi.SetGetCustomerByIdOutcome(FakeApiClientOutcomes.TransportFailure<CustomerDetailsDto>());
 
         // Act
         var cut = Render<Edit>(parameters => parameters.Add(p => p.Id, customerId));
@@ -44,19 +44,18 @@ public class EditPageTests : BunitContext
         await cut.WaitForAssertionAsync(() =>
         {
             var alert = cut.Find(".alert.alert-danger");
-            (alert.TextContent).ShouldContain("We couldn't load the customer right now. Please try again.", StringComparison.Ordinal);
-            (alert.TextContent).ShouldNotContain("Database unavailable", StringComparison.Ordinal);
+            alert.TextContent.ShouldBe("We couldn't load the customer right now. Please try again.");
             cut.FindAll("form").ShouldBeEmpty();
         });
     }
 
     [Fact]
-    public async Task HandleSubmit_when_update_fails_shows_sanitized_error_message()
+    public async Task HandleSubmit_when_transport_fails_shows_a_safe_error_message()
     {
         // Arrange
         var customer = BuildCustomerDetailsDto();
         _fakeCustomersApi.AddCustomerDetails(customer);
-        _fakeCustomersApi.SetUpdateCustomerException(new InvalidOperationException("Customer update exploded"));
+        _fakeCustomersApi.SetUpdateCustomerOutcome(FakeApiClientOutcomes.TransportFailure());
 
         var cut = Render<Edit>(parameters => parameters.Add(p => p.Id, customer.Id));
         await cut.InvokeAsync(() => Task.CompletedTask);
@@ -70,8 +69,7 @@ public class EditPageTests : BunitContext
         await cut.WaitForAssertionAsync(() =>
         {
             var alert = cut.Find(".alert.alert-danger");
-            (alert.TextContent).ShouldContain("We couldn't update the customer right now. Please try again.", StringComparison.Ordinal);
-            (alert.TextContent).ShouldNotContain("Customer update exploded", StringComparison.Ordinal);
+            alert.TextContent.ShouldBe("We couldn't update the customer right now. Please try again.");
         });
     }
 

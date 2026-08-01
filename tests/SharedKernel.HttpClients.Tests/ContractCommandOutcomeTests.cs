@@ -2,6 +2,7 @@ using System.Collections.Concurrent;
 using System.Diagnostics;
 using System.Net;
 using System.Net.Http.Headers;
+using System.Text;
 using Polly.CircuitBreaker;
 using Polly.Timeout;
 
@@ -45,8 +46,12 @@ public sealed class ContractCommandOutcomeTests
     public async Task Send_returns_not_found_without_reading_a_body()
     {
         // Arrange
+        using var responseBody = new TrackingReadStream("sensitive missing resource"u8.ToArray());
         using var handler = new ContractCommandOutcomeTestHandler((_, _) => Task.FromResult(
-            new HttpResponseMessage(HttpStatusCode.NotFound)));
+            new HttpResponseMessage(HttpStatusCode.NotFound)
+            {
+                Content = new StreamContent(responseBody)
+            }));
         using var client = new HttpClient(handler, disposeHandler: false) { BaseAddress = new Uri("https://catalog.example.test") };
 
         // Act
@@ -62,6 +67,8 @@ public sealed class ContractCommandOutcomeTests
         outcome.Kind.ShouldBe(ContractCommandOutcomeKind.NotFound);
         outcome.StatusCode.ShouldBe(HttpStatusCode.NotFound);
         outcome.Value.ShouldBeNull();
+        responseBody.ReadCount.ShouldBe(0);
+        responseBody.IsDisposed.ShouldBeTrue();
     }
 
     [Theory]
@@ -171,8 +178,15 @@ public sealed class ContractCommandOutcomeTests
     {
         // Arrange
         const string sensitiveBody = "{\"name\":\"alice@example.test\"}";
+        using var responseBody = new TrackingReadStream(Encoding.UTF8.GetBytes(sensitiveBody));
         using var handler = new ContractCommandOutcomeTestHandler((_, _) => Task.FromResult(
-            ContractCommandOutcomeTestResponses.Json(HttpStatusCode.OK, sensitiveBody, "text/plain")));
+            new HttpResponseMessage(HttpStatusCode.OK)
+            {
+                Content = new StreamContent(responseBody)
+                {
+                    Headers = { ContentType = new MediaTypeHeaderValue("text/plain") }
+                }
+            }));
         using var client = new HttpClient(handler, disposeHandler: false) { BaseAddress = new Uri("https://catalog.example.test") };
 
         // Act
@@ -188,6 +202,106 @@ public sealed class ContractCommandOutcomeTests
         outcome.Kind.ShouldBe(ContractCommandOutcomeKind.UnsupportedContentType);
         outcome.Message.ShouldBe("HTTP response content type was not JSON.");
         outcome.Message.ShouldNotContain("alice@example.test", StringComparison.Ordinal);
+        responseBody.ReadCount.ShouldBe(0);
+        responseBody.IsDisposed.ShouldBeTrue();
+    }
+
+    [Fact]
+    public async Task Send_without_value_does_not_read_an_ignored_success_body()
+    {
+        // Arrange
+        using var responseBody = new TrackingReadStream("ignored response"u8.ToArray());
+        using var handler = new ContractCommandOutcomeTestHandler((_, _) => Task.FromResult(
+            new HttpResponseMessage(HttpStatusCode.Created)
+            {
+                Content = new StreamContent(responseBody)
+            }));
+        using var client = new HttpClient(handler, disposeHandler: false) { BaseAddress = new Uri("https://admin.example.test") };
+
+        // Act
+        var outcome = await ContractCommandOutcome.Send(
+            client,
+            new HttpRequestMessage(HttpMethod.Post, "/customers"),
+            HttpStatusCode.Created,
+            Json.ContractValidationProblemDto,
+            TestContext.Current.CancellationToken);
+
+        // Assert
+        outcome.Kind.ShouldBe(ContractCommandOutcomeKind.Succeeded);
+        responseBody.ReadCount.ShouldBe(0);
+        responseBody.IsDisposed.ShouldBeTrue();
+    }
+
+    [Fact]
+    [Trait(Testing.TestTraitNames.CategoryName, Testing.TestTraitValues.SecurityCategory)]
+    public async Task Send_returns_malformed_body_after_reading_only_the_bounded_oversized_json_prefix()
+    {
+        // Arrange
+        const int responseBodyLimit = 64;
+        var oversizedJson = Encoding.UTF8.GetBytes($"{{\"name\":\"{new string('x', responseBodyLimit * 2)}\"}}");
+        using var responseBody = new TrackingReadStream(oversizedJson);
+        using var handler = new ContractCommandOutcomeTestHandler((_, _) => Task.FromResult(
+            new HttpResponseMessage(HttpStatusCode.OK)
+            {
+                Content = new StreamContent(responseBody)
+                {
+                    Headers = { ContentType = new MediaTypeHeaderValue("application/json") }
+                }
+            }));
+        using var client = new HttpClient(handler, disposeHandler: false)
+        {
+            BaseAddress = new Uri("https://catalog.example.test"),
+            MaxResponseContentBufferSize = responseBodyLimit
+        };
+
+        // Act
+        var outcome = await ContractCommandOutcome.Send(
+            client,
+            new HttpRequestMessage(HttpMethod.Get, "/content"),
+            HttpStatusCode.OK,
+            Json.ContractCommandOutcomeTestPayload,
+            Json.ContractValidationProblemDto,
+            TestContext.Current.CancellationToken);
+
+        // Assert
+        outcome.Kind.ShouldBe(ContractCommandOutcomeKind.MalformedBody);
+        outcome.StatusCode.ShouldBe(HttpStatusCode.OK);
+        outcome.Value.ShouldBeNull();
+        outcome.Message.ShouldBe("HTTP response body was malformed.");
+        responseBody.BytesRead.ShouldBeLessThanOrEqualTo(responseBodyLimit + 1);
+        responseBody.IsDisposed.ShouldBeTrue();
+    }
+
+    [Theory]
+    [InlineData("{\"errors\":{\"Name\":null}}")]
+    [InlineData("{\"errors\":{\"Name\":[]}}")]
+    [InlineData("{\"errors\":{\" \":[\"Name is required.\"]}}")]
+    [InlineData("{\"errors\":{\"Name\":[\" \"]}}")]
+    [InlineData("{\"errors\":{\"Name\":[\"Valid message\",null]}}")]
+    public async Task Send_returns_malformed_body_for_invalid_validation_error_entries(string content)
+    {
+        // Arrange
+        using var handler = new ContractCommandOutcomeTestHandler((_, _) => Task.FromResult(
+            ContractCommandOutcomeTestResponses.Json(
+                HttpStatusCode.BadRequest,
+                content,
+                "application/problem+json")));
+        using var client = new HttpClient(handler, disposeHandler: false) { BaseAddress = new Uri("https://admin.example.test") };
+
+        // Act
+        var outcome = await ContractCommandOutcome.Send(
+            client,
+            new HttpRequestMessage(HttpMethod.Post, "/customers"),
+            HttpStatusCode.Created,
+            Json.ContractCommandOutcomeTestPayload,
+            Json.ContractValidationProblemDto,
+            TestContext.Current.CancellationToken);
+
+        // Assert
+        outcome.Kind.ShouldBe(ContractCommandOutcomeKind.MalformedBody);
+        outcome.StatusCode.ShouldBe(HttpStatusCode.BadRequest);
+        outcome.ValidationErrors.ShouldBeNull();
+        outcome.Message.ShouldBe("Validation problem response body was malformed.");
     }
 
     [Fact]
@@ -235,6 +349,42 @@ public sealed class ContractCommandOutcomeTests
     }
 
     [Fact]
+    public async Task Send_returns_timed_out_when_the_response_body_stalls_after_headers()
+    {
+        // Arrange
+        using var responseBody = new BlockingReadStream();
+        using var handler = new ContractCommandOutcomeTestHandler((_, _) => Task.FromResult(
+            new HttpResponseMessage(HttpStatusCode.OK)
+            {
+                Content = new StreamContent(responseBody)
+                {
+                    Headers = { ContentType = new MediaTypeHeaderValue("application/json") }
+                }
+            }));
+        using var client = new HttpClient(handler, disposeHandler: false)
+        {
+            BaseAddress = new Uri("https://catalog.example.test"),
+            Timeout = TimeSpan.FromMilliseconds(100)
+        };
+
+        // Act
+        var outcome = await ContractCommandOutcome.Send(
+            client,
+            new HttpRequestMessage(HttpMethod.Get, "/content"),
+            HttpStatusCode.OK,
+            Json.ContractCommandOutcomeTestPayload,
+            Json.ContractValidationProblemDto,
+            TestContext.Current.CancellationToken);
+
+        // Assert
+        responseBody.ReadStarted.IsCompletedSuccessfully.ShouldBeTrue();
+        outcome.Kind.ShouldBe(ContractCommandOutcomeKind.TimedOut);
+        outcome.StatusCode.ShouldBeNull();
+        outcome.Message.ShouldBe("HTTP request timed out.");
+        responseBody.IsDisposed.ShouldBeTrue();
+    }
+
+    [Fact]
     public async Task Send_preserves_caller_cancellation()
     {
         // Arrange
@@ -255,6 +405,112 @@ public sealed class ContractCommandOutcomeTests
 
         // Assert
         await action.ShouldThrowAssignableTo<OperationCanceledException>();
+    }
+
+    [Fact]
+    public async Task Send_preserves_caller_cancellation_during_response_body_reading()
+    {
+        // Arrange
+        using var cts = CancellationTokenSource.CreateLinkedTokenSource(TestContext.Current.CancellationToken);
+        using var responseBody = new BlockingReadStream(cts.Cancel);
+        using var handler = new ContractCommandOutcomeTestHandler((_, _) => Task.FromResult(
+            new HttpResponseMessage(HttpStatusCode.OK)
+            {
+                Content = new StreamContent(responseBody)
+                {
+                    Headers = { ContentType = new MediaTypeHeaderValue("application/json") }
+                }
+            }));
+        using var client = new HttpClient(handler, disposeHandler: false)
+        {
+            BaseAddress = new Uri("https://catalog.example.test"),
+            Timeout = TimeSpan.FromMinutes(1)
+        };
+        // Act
+        Func<Task> action = async () => await ContractCommandOutcome.Send(
+                client,
+                new HttpRequestMessage(HttpMethod.Get, "/content"),
+                HttpStatusCode.OK,
+                Json.ContractCommandOutcomeTestPayload,
+                Json.ContractValidationProblemDto,
+                cts.Token)
+            .ConfigureAwait(false);
+        var exception = await action
+            .ShouldThrowAssignableTo<OperationCanceledException>();
+
+        // Assert
+        responseBody.ReadStarted.IsCompletedSuccessfully.ShouldBeTrue();
+        exception.CancellationToken.ShouldBe(cts.Token);
+        responseBody.IsDisposed.ShouldBeTrue();
+    }
+
+    [Fact]
+    public async Task Send_without_value_preserves_caller_cancellation_with_a_finite_timeout()
+    {
+        // Arrange
+        using var cts = CancellationTokenSource.CreateLinkedTokenSource(TestContext.Current.CancellationToken);
+        using var responseBody = new BlockingReadStream(cts.Cancel);
+        using var handler = new ContractCommandOutcomeTestHandler((_, _) => Task.FromResult(
+            new HttpResponseMessage(HttpStatusCode.BadRequest)
+            {
+                Content = new StreamContent(responseBody)
+                {
+                    Headers = { ContentType = new MediaTypeHeaderValue("application/problem+json") }
+                }
+            }));
+        using var client = new HttpClient(handler, disposeHandler: false)
+        {
+            BaseAddress = new Uri("https://admin.example.test"),
+            Timeout = TimeSpan.FromMinutes(1)
+        };
+        Func<Task> action = async () => await ContractCommandOutcome.Send(
+                client,
+                new HttpRequestMessage(HttpMethod.Post, "/customers"),
+                HttpStatusCode.Created,
+                Json.ContractValidationProblemDto,
+                cts.Token)
+            .ConfigureAwait(false);
+
+        // Act
+        var exception = await action.ShouldThrowAssignableTo<OperationCanceledException>();
+
+        // Assert
+        exception.CancellationToken.ShouldBe(cts.Token);
+        responseBody.ReadStarted.IsCompletedSuccessfully.ShouldBeTrue();
+        responseBody.IsDisposed.ShouldBeTrue();
+    }
+
+    [Fact]
+    public async Task Send_rejects_a_known_oversized_json_body_without_reading_it()
+    {
+        // Arrange
+        const int responseBodyLimit = 64;
+        using var responseBody = new TrackingReadStream("{}"u8.ToArray());
+        var content = new StreamContent(responseBody);
+        content.Headers.ContentType = new MediaTypeHeaderValue("application/json");
+        content.Headers.ContentLength = responseBodyLimit + 1;
+        using var handler = new ContractCommandOutcomeTestHandler((_, _) => Task.FromResult(
+            new HttpResponseMessage(HttpStatusCode.OK) { Content = content }));
+        using var client = new HttpClient(handler, disposeHandler: false)
+        {
+            BaseAddress = new Uri("https://catalog.example.test"),
+            MaxResponseContentBufferSize = responseBodyLimit
+        };
+
+        // Act
+        var outcome = await ContractCommandOutcome.Send(
+            client,
+            new HttpRequestMessage(HttpMethod.Get, "/content"),
+            HttpStatusCode.OK,
+            Json.ContractCommandOutcomeTestPayload,
+            Json.ContractValidationProblemDto,
+            TestContext.Current.CancellationToken);
+
+        // Assert
+        outcome.Kind.ShouldBe(ContractCommandOutcomeKind.MalformedBody);
+        outcome.StatusCode.ShouldBe(HttpStatusCode.OK);
+        responseBody.ReadCount.ShouldBe(0);
+        responseBody.IsDisposed.ShouldBeTrue();
     }
 
     [Fact]

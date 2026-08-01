@@ -77,6 +77,24 @@ public sealed class CustomersApiClientTests
     }
 
     [Fact]
+    public async Task GetCustomers_rejects_an_oversized_list_before_applying_max_items()
+    {
+        // Arrange
+        const int oversizedResponseLength = 2 * 1024 * 1024;
+        using var httpClient = CatalogToursApiClientTestsHelpers.CreateClient(_ =>
+            CatalogToursApiClientTestsHelpers.JsonResponse($"[{{\"firstName\":\"{new string('x', oversizedResponseLength)}\"}}]"));
+        var sut = CustomersApiClientTestsHelpers.CreateSut(httpClient);
+
+        // Act
+        var outcome = await sut.GetCustomers(TestContext.Current.CancellationToken, maxItems: 1);
+
+        // Assert
+        outcome.Kind.ShouldBe(ContractCommandOutcomeKind.MalformedBody);
+        outcome.StatusCode.ShouldBe(HttpStatusCode.OK);
+        outcome.Value.ShouldBeNull();
+    }
+
+    [Fact]
     public async Task GetCustomerById_returns_null_when_not_found()
     {
         // Arrange

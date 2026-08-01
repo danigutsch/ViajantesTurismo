@@ -125,4 +125,58 @@ public sealed class DocumentsApiClientTests
         // Assert
         exception.Message.ShouldBe("The document artifact response must be HTML.");
     }
+
+    [Fact]
+    public async Task DownloadFinalizedArtifact_times_out_while_reading_a_stalled_validation_body()
+    {
+        // Arrange
+        var documentId = Guid.CreateVersion7();
+        using var responseBody = new BlockingDocumentReadStream();
+        using var httpClient = ContractHttpClientTestHelper.CreateClient(_ =>
+            new HttpResponseMessage(HttpStatusCode.BadRequest)
+            {
+                Content = new StreamContent(responseBody)
+                {
+                    Headers = { ContentType = new MediaTypeHeaderValue("application/problem+json") }
+                }
+            });
+        httpClient.Timeout = TimeSpan.FromMilliseconds(100);
+        var sut = new DocumentsApiClient(httpClient);
+        Func<Task> download = async () => await sut.DownloadFinalizedArtifact(documentId, TestContext.Current.CancellationToken);
+
+        // Act
+        await download.ShouldThrowAssignableTo<OperationCanceledException>();
+
+        // Assert
+        responseBody.ReadStarted.IsCompletedSuccessfully.ShouldBeTrue();
+        responseBody.IsDisposed.ShouldBeTrue();
+    }
+
+    [Fact]
+    public async Task DownloadFinalizedArtifact_preserves_caller_cancellation_while_reading_validation()
+    {
+        // Arrange
+        var documentId = Guid.CreateVersion7();
+        using var cts = CancellationTokenSource.CreateLinkedTokenSource(TestContext.Current.CancellationToken);
+        using var responseBody = new BlockingDocumentReadStream(cts.Cancel);
+        using var httpClient = ContractHttpClientTestHelper.CreateClient(_ =>
+            new HttpResponseMessage(HttpStatusCode.BadRequest)
+            {
+                Content = new StreamContent(responseBody)
+                {
+                    Headers = { ContentType = new MediaTypeHeaderValue("application/problem+json") }
+                }
+            });
+        httpClient.Timeout = TimeSpan.FromMinutes(1);
+        var sut = new DocumentsApiClient(httpClient);
+        Func<Task> download = async () => await sut.DownloadFinalizedArtifact(documentId, cts.Token);
+
+        // Act
+        var exception = await download.ShouldThrowAssignableTo<OperationCanceledException>();
+
+        // Assert
+        exception.CancellationToken.ShouldBe(cts.Token);
+        responseBody.ReadStarted.IsCompletedSuccessfully.ShouldBeTrue();
+        responseBody.IsDisposed.ShouldBeTrue();
+    }
 }

@@ -73,8 +73,7 @@ public sealed class EditPageTests : BunitContext
             companionName: "Existing Companion",
             companionBikeType: BikeTypeDto.Regular);
         _fakeBookingsApi.AddBooking(booking);
-        _fakeCustomersApi.SetGetCustomersException(
-            new HttpRequestException("customer.read forbidden", null, HttpStatusCode.Forbidden));
+        _fakeCustomersApi.SetGetCustomersOutcome(FakeApiClientOutcomes.TransportFailure<GetCustomerDto[]>());
 
         // Act
         var cut = Render<Edit>(parameters => parameters.Add(page => page.Id, booking.Id));
@@ -83,7 +82,7 @@ public sealed class EditPageTests : BunitContext
         // Assert
         cut.Find("#companionId").GetAttribute(ValueAttributeName).ShouldBe(companionId.ToString());
         cut.Markup.ShouldContain("Other companion choices are unavailable", StringComparison.Ordinal);
-        cut.Markup.ShouldNotContain("customer.read forbidden", StringComparison.Ordinal);
+        cut.Markup.ShouldNotContain("HTTP transport failed.", StringComparison.Ordinal);
         cut.FindAll(".alert.alert-danger").ShouldBeEmpty();
     }
 
@@ -93,7 +92,7 @@ public sealed class EditPageTests : BunitContext
         // Arrange
         var booking = BuildBookingDto(notes: "Original notes");
         _fakeBookingsApi.AddBooking(booking);
-        _fakeBookingsApi.SetUpdateBookingNotesException(new InvalidOperationException("Update failed hard"));
+        _fakeBookingsApi.SetUpdateBookingNotesOutcome(FakeApiClientOutcomes.TransportFailure());
 
         var cut = Render<Edit>(parameters => parameters.Add(p => p.Id, booking.Id));
         await cut.WaitForAssertionAsync(() => cut.Find("form"));
@@ -110,7 +109,7 @@ public sealed class EditPageTests : BunitContext
         {
             var alert = cut.Find(".alert.alert-danger");
             (alert.TextContent).ShouldContain("We couldn't update the booking right now. Please try again.", StringComparison.Ordinal);
-            (alert.TextContent).ShouldNotContain("Update failed hard", StringComparison.Ordinal);
+            alert.TextContent.ShouldNotContain("HTTP transport failed.", StringComparison.Ordinal);
 
             cut.Find("form");
             var retainedNotes = cut.Find("#notes");
@@ -491,7 +490,7 @@ public sealed class EditPageTests : BunitContext
         // Arrange
         var booking = BuildBookingDto(notes: "Original notes");
         _fakeBookingsApi.AddBooking(booking);
-        _fakeBookingsApi.SetGetBookingByIdExceptionOnCall(2, new InvalidOperationException("refresh failed hard"));
+        _fakeBookingsApi.SetGetBookingByIdOutcomeOnCall(2, FakeApiClientOutcomes.TransportFailure<GetBookingDto>());
         var cut = Render<Edit>(parameters => parameters.Add(page => page.Id, booking.Id));
         await cut.WaitForAssertionAsync(() => cut.Find("form"));
         await cut.Find("#notes").ChangeAsync(new ChangeEventArgs { Value = "Updated notes" });
@@ -505,7 +504,7 @@ public sealed class EditPageTests : BunitContext
             cut.Markup.ShouldContain("Booking updated successfully!", StringComparison.Ordinal);
             cut.Markup.ShouldContain("The change was saved, but we couldn't refresh the booking", StringComparison.Ordinal);
             cut.Markup.ShouldNotContain("We couldn't update the booking", StringComparison.Ordinal);
-            cut.Markup.ShouldNotContain("refresh failed hard", StringComparison.Ordinal);
+            cut.Markup.ShouldNotContain("HTTP transport failed.", StringComparison.Ordinal);
             cut.Find("#notes").GetAttribute(ValueAttributeName).ShouldBe("Updated notes");
             cut.Find("button[type='submit']").HasAttribute(DisabledAttributeName).ShouldBeTrue();
         });
@@ -522,7 +521,7 @@ public sealed class EditPageTests : BunitContext
         var booking = BuildBookingDto(notes: "Original notes", totalPrice: 1000m);
         _fakeBookingsApi.AddBooking(booking);
         _fakeBookingsApi.SetUpdatedDetailsTotalPrice(1300m);
-        _fakeBookingsApi.SetUpdateBookingNotesException(new InvalidOperationException("notes failed hard"));
+        _fakeBookingsApi.SetUpdateBookingNotesOutcome(FakeApiClientOutcomes.TransportFailure());
         var cut = Render<Edit>(parameters => parameters.Add(page => page.Id, booking.Id));
         await cut.WaitForAssertionAsync(() => cut.Find("form"));
         await cut.Find("#principalBikeType").ChangeAsync(new ChangeEventArgs { Value = nameof(BikeTypeDto.EBike) });
@@ -538,7 +537,7 @@ public sealed class EditPageTests : BunitContext
         cut.Find("#totalPrice").GetAttribute(ValueAttributeName).ShouldBe("R$ 1,300.00");
         cut.Find("#notes").GetAttribute(ValueAttributeName).ShouldBe("Attempted notes");
         cut.Markup.ShouldContain("We couldn't update the booking", StringComparison.Ordinal);
-        cut.Markup.ShouldNotContain("notes failed hard", StringComparison.Ordinal);
+        cut.Markup.ShouldNotContain("HTTP transport failed.", StringComparison.Ordinal);
         cut.Find("button[type='submit']").HasAttribute(DisabledAttributeName).ShouldBeFalse();
     }
 
@@ -551,8 +550,8 @@ public sealed class EditPageTests : BunitContext
         // Arrange
         var booking = BuildBookingDto(notes: "Original notes");
         _fakeBookingsApi.AddBooking(booking);
-        _fakeBookingsApi.SetUpdateBookingNotesException(new InvalidOperationException("notes failed hard"));
-        _fakeBookingsApi.SetGetBookingByIdExceptionOnCall(2, new InvalidOperationException("readback failed hard"));
+        _fakeBookingsApi.SetUpdateBookingNotesOutcome(FakeApiClientOutcomes.TransportFailure());
+        _fakeBookingsApi.SetGetBookingByIdOutcomeOnCall(2, FakeApiClientOutcomes.TransportFailure<GetBookingDto>());
         var cut = Render<Edit>(parameters => parameters.Add(page => page.Id, booking.Id));
         await cut.WaitForAssertionAsync(() => cut.Find("form"));
         await cut.Find("#principalBikeType").ChangeAsync(new ChangeEventArgs { Value = nameof(BikeTypeDto.EBike) });
@@ -563,7 +562,7 @@ public sealed class EditPageTests : BunitContext
 
         // Assert
         cut.Markup.ShouldContain("Some changes may have been saved, but we couldn't refresh the booking", StringComparison.Ordinal);
-        cut.Markup.ShouldNotContain("readback failed hard", StringComparison.Ordinal);
+        cut.Markup.ShouldNotContain("HTTP transport failed.", StringComparison.Ordinal);
         cut.Find("button[type='submit']").HasAttribute(DisabledAttributeName).ShouldBeTrue();
     }
 
@@ -576,7 +575,7 @@ public sealed class EditPageTests : BunitContext
         // Arrange
         var booking = BuildBookingDto(notes: "Original notes", remainingBalance: 250m);
         _fakeBookingsApi.AddBooking(booking);
-        _fakeBookingsApi.SetGetBookingByIdExceptionOnCall(2, new InvalidOperationException("refresh failed hard"));
+        _fakeBookingsApi.SetGetBookingByIdOutcomeOnCall(2, FakeApiClientOutcomes.TransportFailure<GetBookingDto>());
         var cut = Render<Edit>(parameters => parameters.Add(page => page.Id, booking.Id));
         await cut.WaitForAssertionAsync(() => cut.Find("form"));
         var showPaymentButton = cut.FindAll(ButtonSelector)
@@ -614,7 +613,7 @@ public sealed class EditPageTests : BunitContext
         // Arrange
         var booking = BuildBookingDto(status: BookingStatusDto.Pending, remainingBalance: 250m);
         _fakeBookingsApi.AddBooking(booking);
-        _fakeBookingsApi.SetGetBookingByIdExceptionOnCall(2, new InvalidOperationException("refresh failed hard"));
+        _fakeBookingsApi.SetGetBookingByIdOutcomeOnCall(2, FakeApiClientOutcomes.TransportFailure<GetBookingDto>());
         var cut = Render<Edit>(parameters => parameters.Add(page => page.Id, booking.Id));
         await cut.WaitForAssertionAsync(() => cut.Find(HeadingOrAlertSelector));
         var showPaymentButton = cut.FindAll(ButtonSelector)
@@ -646,7 +645,7 @@ public sealed class EditPageTests : BunitContext
         // Arrange
         var booking = BuildBookingDto(status: BookingStatusDto.Pending, remainingBalance: 250m);
         _fakeBookingsApi.AddBooking(booking);
-        _fakeBookingsApi.SetRecordPaymentExceptionAfterCommit(new HttpRequestException("response lost after commit"));
+        _fakeBookingsApi.SetRecordPaymentOutcomeAfterCommit(FakeApiClientOutcomes.TransportFailure());
         var cut = Render<Edit>(parameters => parameters.Add(page => page.Id, booking.Id));
         await cut.WaitForAssertionAsync(() => cut.Find(HeadingOrAlertSelector));
         var showPaymentButton = cut.FindAll(ButtonSelector)
@@ -663,7 +662,7 @@ public sealed class EditPageTests : BunitContext
         _fakeBookingsApi.RecordPaymentCallCount.ShouldBe(1);
         _fakeBookingsApi.CommittedPaymentCount.ShouldBe(1);
         cut.Markup.ShouldContain("The payment may have been recorded, but we couldn't confirm the result", StringComparison.Ordinal);
-        cut.Markup.ShouldNotContain("response lost after commit", StringComparison.Ordinal);
+        cut.Markup.ShouldNotContain("HTTP transport failed.", StringComparison.Ordinal);
         cut.Markup.ShouldNotContain("We couldn't record the payment right now", StringComparison.Ordinal);
         cut.Find("button[type='submit']").HasAttribute(DisabledAttributeName).ShouldBeTrue();
         var actionButtons = cut.FindAll(".card.border-danger button");

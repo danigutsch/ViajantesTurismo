@@ -163,11 +163,11 @@ public class EditPageTests : BunitContext
     }
 
     [Fact]
-    public async Task API_error_shows_error_message()
+    public async Task API_transport_failure_shows_a_safe_error_message()
     {
         // Arrange
         var tour = await EditPageTestsHelper.CreateTestTour(_fakeToursApi);
-        _fakeToursApi.SetUpdateTourException(new InvalidOperationException("Failed to update tour"));
+        _fakeToursApi.SetUpdateTourOutcome(FakeApiClientOutcomes.TransportFailure());
 
         var cut = Render<Edit>(parameters => parameters
             .Add(p => p.Id, tour.Id));
@@ -182,8 +182,7 @@ public class EditPageTests : BunitContext
         await cut.WaitForStateAsync(() => cut.FindAll(".alert-danger").Count > 0, TimeSpan.FromSeconds(2));
 
         var errorAlert = cut.Find(".alert-danger");
-        (errorAlert.TextContent).ShouldContain("We couldn't update the tour right now. Please try again.", StringComparison.Ordinal);
-        (errorAlert.TextContent).ShouldNotContain("Failed to update tour", StringComparison.Ordinal);
+        errorAlert.TextContent.ShouldBe("We couldn't update the tour right now. Please try again.");
     }
 
     [Fact]
@@ -233,10 +232,10 @@ public class EditPageTests : BunitContext
     }
 
     [Fact]
-    public async Task Load_error_shows_error_message()
+    public async Task Transport_failure_while_loading_shows_a_safe_error_message()
     {
         // Arrange
-        _fakeToursApi.SetGetTourByIdException(new InvalidOperationException("Database error"));
+        _fakeToursApi.SetGetTourByIdOutcome(FakeApiClientOutcomes.TransportFailure<GetTourDto>());
         var tourId = Guid.NewGuid();
 
         // Act
@@ -247,8 +246,7 @@ public class EditPageTests : BunitContext
         await cut.WaitForStateAsync(() => cut.FindAll(".alert-danger").Count > 0, TimeSpan.FromSeconds(2));
 
         var errorAlert = cut.Find(".alert-danger");
-        (errorAlert.TextContent).ShouldContain("We couldn't load the tour right now. Please try again.", StringComparison.Ordinal);
-        (errorAlert.TextContent).ShouldNotContain("Database error", StringComparison.Ordinal);
+        errorAlert.TextContent.ShouldBe("We couldn't load the tour right now. Please try again.");
     }
 
     [Fact]

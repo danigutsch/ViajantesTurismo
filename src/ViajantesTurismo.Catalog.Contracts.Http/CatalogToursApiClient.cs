@@ -145,13 +145,14 @@ public sealed class CatalogToursApiClient(HttpClient httpClient) : ICatalogTours
     /// <inheritdoc />
     public async Task<ContractCommandOutcomeDto<CatalogMediaImageDto[]>> GetTourImages(Guid id, CancellationToken ct)
     {
-        return await ContractCommandOutcome.Send(
+        var outcome = await ContractCommandOutcome.Send(
             httpClient,
             new HttpRequestMessage(HttpMethod.Get, new Uri($"{RoutePrefix}/tours/{id}/images", UriKind.Relative)),
             HttpStatusCode.OK,
             Json.CatalogMediaImageDtoArray,
             Json.ContractValidationProblemDto,
             ct).ConfigureAwait(false);
+        return NormalizeImages(outcome);
     }
 
     /// <inheritdoc />
@@ -259,6 +260,28 @@ public sealed class CatalogToursApiClient(HttpClient httpClient) : ICatalogTours
                 statusCode,
                 "The catalog tour response body was invalid.")
             : outcome with { Value = tours };
+    }
+
+    private static ContractCommandOutcomeDto<CatalogMediaImageDto[]> NormalizeImages(
+        ContractCommandOutcomeDto<CatalogMediaImageDto[]> outcome)
+    {
+        if (outcome is not
+            {
+                Kind: ContractCommandOutcomeKind.Succeeded,
+                StatusCode: { } statusCode,
+                Value: { } value
+            })
+        {
+            return outcome;
+        }
+
+        var images = value.OfType<CatalogMediaImageDto>().ToArray();
+        return images.Length == value.Length
+            ? outcome
+            : ContractCommandOutcome.Status<CatalogMediaImageDto[]>(
+                ContractCommandOutcomeKind.MalformedBody,
+                statusCode,
+                "The catalog image response body was invalid.");
     }
 
     private static void AddOptionalFormValue(MultipartFormDataContent content, string name, string? value)

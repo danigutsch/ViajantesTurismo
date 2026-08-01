@@ -439,6 +439,22 @@ public sealed class CatalogToursApiClientTests
     }
 
     [Fact]
+    public async Task GetTourImages_returns_malformed_body_when_the_payload_contains_a_null_image()
+    {
+        // Arrange
+        using var httpClient = CatalogToursApiClientTestsHelpers.CreateClient(_ =>
+            CatalogToursApiClientTestsHelpers.JsonResponse("[null]"));
+        var sut = new CatalogToursApiClient(httpClient);
+
+        // Act
+        var outcome = await sut.GetTourImages(Guid.CreateVersion7(), TestContext.Current.CancellationToken);
+
+        // Assert
+        outcome.Kind.ShouldBe(SharedKernel.HttpClients.ContractCommandOutcomeKind.MalformedBody);
+        outcome.Value.ShouldBeNull();
+    }
+
+    [Fact]
     public async Task GetMediaPreview_streams_the_catalog_preview_response()
     {
         // Arrange
