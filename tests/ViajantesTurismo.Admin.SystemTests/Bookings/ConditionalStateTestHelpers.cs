@@ -1,4 +1,3 @@
-using System.Text.RegularExpressions;
 using static Microsoft.Playwright.Assertions;
 
 namespace ViajantesTurismo.Admin.SystemTests.Bookings;
@@ -9,7 +8,8 @@ public static class ConditionalStateTestHelpers
         IPage page,
         Func<Guid, Task> navigateToEdit,
         Guid bookingId,
-        string terminalStateText)
+        string terminalStateText,
+        string statusBadgeText)
     {
         ArgumentNullException.ThrowIfNull(page);
         ArgumentNullException.ThrowIfNull(navigateToEdit);
@@ -17,8 +17,7 @@ public static class ConditionalStateTestHelpers
         await navigateToEdit(bookingId);
 
         await Expect(page.Locator(".alert-warning")).ToContainTextAsync(terminalStateText);
-        await Expect(page.Locator(".booking-status-badge")).ToContainTextAsync(
-            new Regex(Regex.Escape(terminalStateText), RegexOptions.IgnoreCase));
+        await Expect(page.Locator(".booking-status-badge")).ToContainTextAsync(statusBadgeText);
         await Expect(page.Locator("#notes")).ToBeDisabledAsync();
         await Expect(page.Locator("#discountType")).ToBeDisabledAsync();
         await Expect(page.GetButton("Update Booking")).ToBeDisabledAsync();

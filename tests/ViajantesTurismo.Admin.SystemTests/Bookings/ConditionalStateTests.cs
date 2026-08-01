@@ -37,12 +37,22 @@ public class ConditionalStateTests(AspireSystemTestFixture fixture) : AspireSyst
         var completedBooking = await ApiClient.CreateCompletedBooking(tour.Id, completedCustomer.Id);
 
         // Act
-        await ConditionalStateTestHelpers.ExpectTerminalBookingEditState(Page, BookingWorkflow.NavigateToEdit, cancelledBooking.Id, "cancelled");
+        await ConditionalStateTestHelpers.ExpectTerminalBookingEditState(
+            Page,
+            BookingWorkflow.NavigateToEdit,
+            cancelledBooking.Id,
+            "cancelled",
+            "Cancelled");
 
         // Assert
         await Expect(Page.GetButton("Cancel Booking")).Not.ToBeVisibleAsync();
         await Expect(Page.GetButton("Confirm Booking")).Not.ToBeVisibleAsync();
-        await ConditionalStateTestHelpers.ExpectTerminalBookingEditState(Page, BookingWorkflow.NavigateToEdit, completedBooking.Id, "completed");
+        await ConditionalStateTestHelpers.ExpectTerminalBookingEditState(
+            Page,
+            BookingWorkflow.NavigateToEdit,
+            completedBooking.Id,
+            "completed",
+            "Completed");
     }
 
     [Fact]
