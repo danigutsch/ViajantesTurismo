@@ -13,8 +13,10 @@ an in-process module call.
 The analyzer resolves exact repository symbols, definite local reaching definitions, recursively
 composed static URI components, and resource tokens in absolute URI authorities for known static
 destinations. Resource-like path, query, and fragment values are not destinations. The analyzer does
-not guess values loaded from runtime configuration, infer a destination from a relative path or similar
-type name, ban `HttpClient` globally, make runtime protocol claims, or ship a migration code fix.
+not guess values loaded from runtime configuration, infer a destination from a relative request URI or
+similar type name, ban `HttpClient` globally, make runtime protocol claims, or ship a migration code fix.
+Bare repository resource symbols count only in named-client and `BaseAddress` resolution; request URI
+positions require an absolute authority.
 
 ### Exact-site exception
 
@@ -28,10 +30,14 @@ services.AddHttpClient(ResourceNames.BrandingApi);
 #pragma warning restore VTARCH001
 ```
 
-Project-wide `NoWarn`, `WarningsNotAsErrors`, and `.editorconfig` severity suppression are prohibited.
-`SuppressMessage` and `UnconditionalSuppressMessage` attributes are also prohibited for this rule.
-Global aliases to those attributes, unresolved suppression check IDs, `GlobalAnalyzerConfigFiles` and
-`EditorConfigFiles` inputs, and `CodeAnalysisRuleSet` inputs are prohibited as broad suppression paths.
+Project-wide `NoWarn` and `.editorconfig` severity suppression, any `WarningsNotAsErrors` declaration,
+and disabling `RunAnalyzers` or `RunAnalyzersDuringBuild` are prohibited. `SuppressMessage` and
+`UnconditionalSuppressMessage` attributes are also prohibited for this rule. Global aliases to those
+attributes, unresolved suppression check IDs, `GlobalAnalyzerConfigFiles` and `EditorConfigFiles`
+inputs, and `CodeAnalysisRuleSet` inputs are prohibited as broad suppression paths.
+
+The centrally pinned `Microsoft.CodeAnalysis.PublicApiAnalyzers` package enforces the committed
+`PublicAPI.Shipped.txt` and `PublicAPI.Unshipped.txt` baselines for this project's public analyzer APIs.
 
 ## Staged rollout: not enabled
 

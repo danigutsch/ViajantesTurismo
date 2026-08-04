@@ -18,6 +18,8 @@ public sealed class ProductionApiHttpAnalyzer : DiagnosticAnalyzer
     private const string BrandingResourceValue = "branding-api";
     private const string BrandingApiClientInterfaceTypeName = "IBrandingApiClient";
     private const string BrandingApiClientTypeName = "BrandingApiClient";
+    private const string ManagementBrandingApiClientInterfaceTypeName = "IManagementBrandingApiClient";
+    private const string ManagementBrandingApiClientTypeName = "ManagementBrandingApiClient";
     private const string CreateClientMethodName = "CreateClient";
     private const string CatalogResourceValue = "catalog-api";
     private const string HttpClientFactoryExtensionsTypeName = "HttpClientFactoryServiceCollectionExtensions";
@@ -27,6 +29,7 @@ public sealed class ProductionApiHttpAnalyzer : DiagnosticAnalyzer
     private const string MicrosoftDependencyInjectionNamespace = "Microsoft.Extensions.DependencyInjection";
     private const string RequestUriParameterName = "requestUri";
     private const string RequestUriPropertyName = "RequestUri";
+    private const string RelativeUriParameterName = "relativeUri";
     private const string SharedKernelBrandingNamespace = "SharedKernel.Branding";
     private const string SystemNetHttpNamespace = "System.Net.Http";
     private const string ResourceNamesTypeName = "ViajantesTurismo.Resources.ResourceNames";
@@ -123,7 +126,7 @@ public sealed class ProductionApiHttpAnalyzer : DiagnosticAnalyzer
                     argument.Value.Syntax.GetLocation(),
                     destinations,
                     sourceApi,
-                    allowBareResourceName: true);
+                    DestinationResolutionMode.NamedClient);
             }
 
             AddBaseAddressDestinations(argument.Value, destinations, sourceApi);
@@ -149,7 +152,7 @@ public sealed class ProductionApiHttpAnalyzer : DiagnosticAnalyzer
                 argumentValue.Syntax.GetLocation(),
                 destinations,
                 sourceApi,
-                allowBareResourceName: true);
+                DestinationResolutionMode.NamedClient);
         }
 
         foreach (var destination in destinations)
@@ -177,7 +180,7 @@ public sealed class ProductionApiHttpAnalyzer : DiagnosticAnalyzer
                 argument.Value.Syntax.GetLocation(),
                 destinations,
                 sourceApi,
-                allowBareResourceName: false);
+                DestinationResolutionMode.RequestUri);
         }
 
         foreach (var destination in destinations)
@@ -206,7 +209,7 @@ public sealed class ProductionApiHttpAnalyzer : DiagnosticAnalyzer
             assignment.Value,
             new HashSet<ISymbol>(SymbolEqualityComparer.Default),
             sourceApi,
-            allowBareResourceName: false);
+            isBaseAddress ? DestinationResolutionMode.BaseAddress : DestinationResolutionMode.RequestUri);
 
         ReportIfCrossApi(context, destination, sourceApi, assignment.Value.Syntax.GetLocation());
     }
@@ -223,7 +226,7 @@ public sealed class ProductionApiHttpAnalyzer : DiagnosticAnalyzer
                 assignment.Value.Syntax.GetLocation(),
                 destinations,
                 sourceApi,
-                allowBareResourceName: false);
+                DestinationResolutionMode.BaseAddress);
         }
 
         foreach (var child in operation.ChildOperations)
@@ -237,13 +240,13 @@ public sealed class ProductionApiHttpAnalyzer : DiagnosticAnalyzer
         Location location,
         IDictionary<ApiDestination, Location> destinations,
         ApiDestination sourceApi,
-        bool allowBareResourceName)
+        DestinationResolutionMode resolutionMode)
     {
         var destination = ResolveDestination(
             operation,
             new HashSet<ISymbol>(SymbolEqualityComparer.Default),
             sourceApi,
-            allowBareResourceName);
+            resolutionMode);
 
         if (destination != ApiDestination.None)
         {
@@ -255,9 +258,10 @@ public sealed class ProductionApiHttpAnalyzer : DiagnosticAnalyzer
         IOperation operation,
         ISet<ISymbol> visitedSymbols,
         ApiDestination sourceApi,
-        bool allowBareResourceName)
+        DestinationResolutionMode resolutionMode)
     {
-        if (operation is IFieldReferenceOperation fieldReference)
+        if (resolutionMode != DestinationResolutionMode.RequestUri
+            && operation is IFieldReferenceOperation fieldReference)
         {
             var resourceNameDestination = GetResourceNameDestination(fieldReference.Field);
             if (resourceNameDestination != ApiDestination.None)
@@ -268,7 +272,9 @@ public sealed class ProductionApiHttpAnalyzer : DiagnosticAnalyzer
 
         if (operation.ConstantValue is { HasValue: true, Value: string constantString })
         {
-            var constantDestination = GetKnownValueDestination(constantString, allowBareResourceName);
+            var constantDestination = resolutionMode == DestinationResolutionMode.NamedClient
+                ? GetNamedClientDestination(constantString)
+                : GetKnownValueDestination(constantString, allowBareResourceName: false);
             if (constantDestination != ApiDestination.None)
             {
                 return constantDestination;
@@ -277,37 +283,48 @@ public sealed class ProductionApiHttpAnalyzer : DiagnosticAnalyzer
 
         return operation switch
         {
-            IConversionOperation conversion => ResolveDestination(conversion.Operand, visitedSymbols, sourceApi, allowBareResourceName),
-            IParenthesizedOperation parenthesized => ResolveDestination(parenthesized.Operand, visitedSymbols, sourceApi, allowBareResourceName),
-            IArgumentOperation argument => ResolveDestination(argument.Value, visitedSymbols, sourceApi, allowBareResourceName),
-            ILocalReferenceOperation localReference => ResolveLocalDestination(localReference, visitedSymbols, sourceApi, allowBareResourceName),
-            IObjectCreationOperation objectCreation when IsUriType(objectCreation.Type) => ResolveFirstDestination(
-                objectCreation.Arguments.Select(static argument => argument.Value),
+            IConversionOperation conversion => ResolveDestination(conversion.Operand, visitedSymbols, sourceApi, resolutionMode),
+            IParenthesizedOperation parenthesized => ResolveDestination(parenthesized.Operand, visitedSymbols, sourceApi, resolutionMode),
+            IArgumentOperation argument => ResolveDestination(argument.Value, visitedSymbols, sourceApi, resolutionMode),
+            ILocalReferenceOperation localReference => ResolveLocalDestination(localReference, visitedSymbols, sourceApi, resolutionMode),
+            IObjectCreationOperation objectCreation when IsUriType(objectCreation.Type) => ResolveUriCreationDestination(
+                objectCreation,
                 visitedSymbols,
                 sourceApi,
-                allowBareResourceName),
+                resolutionMode),
             IObjectCreationOperation objectCreation when IsHttpRequestMessageType(objectCreation.Type) => ResolveHttpRequestMessageDestination(
                 objectCreation,
                 visitedSymbols,
                 sourceApi,
-                allowBareResourceName),
-            IInterpolatedStringOperation interpolatedString when allowBareResourceName => ResolveFirstDestination(
-                interpolatedString.Parts,
-                visitedSymbols,
-                sourceApi,
-                allowBareResourceName),
+                resolutionMode),
+            IInterpolatedStringOperation interpolatedString when resolutionMode == DestinationResolutionMode.NamedClient => ResolveComposedNamedClientDestination(
+                interpolatedString,
+                visitedSymbols),
             IInterpolatedStringOperation interpolatedString => ResolveComposedUriDestination(
                 interpolatedString,
                 visitedSymbols,
                 sourceApi),
-            IInterpolationOperation interpolation => ResolveDestination(interpolation.Expression, visitedSymbols, sourceApi, allowBareResourceName),
-            IBinaryOperation binary when !allowBareResourceName && binary.Type?.SpecialType == SpecialType.System_String => ResolveComposedUriDestination(
+            IInterpolationOperation interpolation => ResolveDestination(interpolation.Expression, visitedSymbols, sourceApi, resolutionMode),
+            IBinaryOperation binary when resolutionMode == DestinationResolutionMode.NamedClient && binary.Type?.SpecialType == SpecialType.System_String => ResolveComposedNamedClientDestination(
+                binary,
+                visitedSymbols),
+            IBinaryOperation binary when binary.Type?.SpecialType == SpecialType.System_String => ResolveComposedUriDestination(
                 binary,
                 visitedSymbols,
                 sourceApi),
-            IBinaryOperation binary => ResolveFirstDestination([binary.LeftOperand, binary.RightOperand], visitedSymbols, sourceApi, allowBareResourceName),
-            IConditionalOperation conditional => ResolveBranchDestination([conditional.WhenTrue, conditional.WhenFalse], visitedSymbols, sourceApi, allowBareResourceName),
-            ICoalesceOperation coalesce => ResolveBranchDestination([coalesce.Value, coalesce.WhenNull], visitedSymbols, sourceApi, allowBareResourceName),
+            IBinaryOperation binary => ResolveFirstDestination([binary.LeftOperand, binary.RightOperand], visitedSymbols, sourceApi, resolutionMode),
+            IConditionalOperation conditional when conditional.Condition.ConstantValue is { HasValue: true, Value: bool condition } => ResolveFirstDestination(
+                [condition ? conditional.WhenTrue : conditional.WhenFalse],
+                visitedSymbols,
+                sourceApi,
+                resolutionMode),
+            IConditionalOperation conditional => ResolveBranchDestination([conditional.WhenTrue, conditional.WhenFalse], visitedSymbols, sourceApi, resolutionMode),
+            ICoalesceOperation coalesce when coalesce.Value.ConstantValue is { HasValue: true } constantValue => ResolveDestination(
+                constantValue.Value is null ? coalesce.WhenNull : coalesce.Value,
+                visitedSymbols,
+                sourceApi,
+                resolutionMode),
+            ICoalesceOperation coalesce => ResolveBranchDestination([coalesce.Value, coalesce.WhenNull], visitedSymbols, sourceApi, resolutionMode),
             _ => ApiDestination.None,
         };
     }
@@ -316,7 +333,7 @@ public sealed class ProductionApiHttpAnalyzer : DiagnosticAnalyzer
         IEnumerable<IOperation?> operations,
         ISet<ISymbol> visitedSymbols,
         ApiDestination sourceApi,
-        bool allowBareResourceName)
+        DestinationResolutionMode resolutionMode)
     {
         foreach (var operation in operations)
         {
@@ -325,7 +342,7 @@ public sealed class ProductionApiHttpAnalyzer : DiagnosticAnalyzer
                 continue;
             }
 
-            var destination = ResolveDestination(operation, visitedSymbols, sourceApi, allowBareResourceName);
+            var destination = ResolveDestination(operation, visitedSymbols, sourceApi, resolutionMode);
             if (destination != ApiDestination.None)
             {
                 return destination;
@@ -333,6 +350,95 @@ public sealed class ProductionApiHttpAnalyzer : DiagnosticAnalyzer
         }
 
         return ApiDestination.None;
+    }
+
+    private static ApiDestination ResolveUriCreationDestination(
+        IObjectCreationOperation objectCreation,
+        ISet<ISymbol> visitedSymbols,
+        ApiDestination sourceApi,
+        DestinationResolutionMode resolutionMode)
+    {
+        foreach (var argument in objectCreation.Arguments)
+        {
+            var argumentMode = string.Equals(argument.Parameter?.Name, RelativeUriParameterName, StringComparison.Ordinal)
+                ? DestinationResolutionMode.RequestUri
+                : resolutionMode;
+            var destination = ResolveDestination(argument.Value, visitedSymbols, sourceApi, argumentMode);
+            if (destination != ApiDestination.None)
+            {
+                return destination;
+            }
+        }
+
+        return ApiDestination.None;
+    }
+
+    private static ApiDestination ResolveComposedNamedClientDestination(
+        IOperation operation,
+        ISet<ISymbol> visitedSymbols)
+    {
+        var candidate = new StringBuilder();
+        return TryAppendNamedClientComponent(operation, candidate, visitedSymbols)
+            ? GetNamedClientDestination(candidate.ToString())
+            : ApiDestination.None;
+    }
+
+    private static bool TryAppendNamedClientComponent(
+        IOperation operation,
+        StringBuilder candidate,
+        ISet<ISymbol> visitedSymbols)
+    {
+        if (operation.ConstantValue is { HasValue: true, Value: string constantValue })
+        {
+            candidate.Append(constantValue);
+            return true;
+        }
+
+        switch (operation)
+        {
+            case IConversionOperation conversion:
+                return TryAppendNamedClientComponent(conversion.Operand, candidate, visitedSymbols);
+            case IParenthesizedOperation parenthesized:
+                return TryAppendNamedClientComponent(parenthesized.Operand, candidate, visitedSymbols);
+            case IBinaryOperation binary when binary.Type?.SpecialType == SpecialType.System_String:
+                return TryAppendNamedClientComponent(binary.LeftOperand, candidate, visitedSymbols)
+                    && TryAppendNamedClientComponent(binary.RightOperand, candidate, visitedSymbols);
+            case IInterpolatedStringOperation interpolatedString:
+                return interpolatedString.Parts.All(part => TryAppendNamedClientComponent(part, candidate, visitedSymbols));
+            case IInterpolatedStringTextOperation textOperation
+                when textOperation.Text.ConstantValue is { HasValue: true, Value: string text }:
+                candidate.Append(text);
+                return true;
+            case IInterpolationOperation interpolation:
+                return TryAppendNamedClientComponent(interpolation.Expression, candidate, visitedSymbols);
+            case IFieldReferenceOperation fieldReference:
+                var fieldDestination = GetResourceNameDestination(fieldReference.Field);
+                if (fieldDestination == ApiDestination.None)
+                {
+                    return false;
+                }
+
+                candidate.Append(GetResourceValue(fieldDestination));
+                return true;
+            case ILocalReferenceOperation localReference:
+                if (!visitedSymbols.Add(localReference.Local))
+                {
+                    return false;
+                }
+
+                try
+                {
+                    return TryGetReachingLocalInitializer(localReference, out var initializer)
+                        && initializer is not null
+                        && TryAppendNamedClientComponent(initializer, candidate, visitedSymbols);
+                }
+                finally
+                {
+                    visitedSymbols.Remove(localReference.Local);
+                }
+            default:
+                return false;
+        }
     }
 
     private static ApiDestination ResolveComposedUriDestination(
@@ -417,7 +523,7 @@ public sealed class ProductionApiHttpAnalyzer : DiagnosticAnalyzer
                 operation,
                 visitedSymbols,
                 sourceApi,
-                allowBareResourceName: true);
+                DestinationResolutionMode.NamedClient);
             if (destination == ApiDestination.None)
             {
                 return ApiDestination.None;
@@ -459,7 +565,7 @@ public sealed class ProductionApiHttpAnalyzer : DiagnosticAnalyzer
         IEnumerable<IOperation?> operations,
         ISet<ISymbol> visitedSymbols,
         ApiDestination sourceApi,
-        bool allowBareResourceName)
+        DestinationResolutionMode resolutionMode)
     {
         var sourceDestination = ApiDestination.None;
 
@@ -470,7 +576,7 @@ public sealed class ProductionApiHttpAnalyzer : DiagnosticAnalyzer
                 continue;
             }
 
-            var destination = ResolveDestination(operation, visitedSymbols, sourceApi, allowBareResourceName);
+            var destination = ResolveDestination(operation, visitedSymbols, sourceApi, resolutionMode);
             if (destination == ApiDestination.None)
             {
                 continue;
@@ -491,7 +597,7 @@ public sealed class ProductionApiHttpAnalyzer : DiagnosticAnalyzer
         IObjectCreationOperation objectCreation,
         ISet<ISymbol> visitedSymbols,
         ApiDestination sourceApi,
-        bool allowBareResourceName)
+        DestinationResolutionMode resolutionMode)
     {
         foreach (var argument in objectCreation.Arguments)
         {
@@ -500,7 +606,7 @@ public sealed class ProductionApiHttpAnalyzer : DiagnosticAnalyzer
                 continue;
             }
 
-            var destination = ResolveDestination(argument.Value, visitedSymbols, sourceApi, allowBareResourceName);
+            var destination = ResolveDestination(argument.Value, visitedSymbols, sourceApi, resolutionMode);
             if (destination != ApiDestination.None)
             {
                 return destination;
@@ -519,7 +625,7 @@ public sealed class ProductionApiHttpAnalyzer : DiagnosticAnalyzer
                 continue;
             }
 
-            var destination = ResolveDestination(assignment.Value, visitedSymbols, sourceApi, allowBareResourceName);
+            var destination = ResolveDestination(assignment.Value, visitedSymbols, sourceApi, resolutionMode);
             if (destination != ApiDestination.None)
             {
                 return destination;
@@ -533,7 +639,7 @@ public sealed class ProductionApiHttpAnalyzer : DiagnosticAnalyzer
         ILocalReferenceOperation localReference,
         ISet<ISymbol> visitedSymbols,
         ApiDestination sourceApi,
-        bool allowBareResourceName)
+        DestinationResolutionMode resolutionMode)
     {
         if (!visitedSymbols.Add(localReference.Local))
         {
@@ -545,7 +651,7 @@ public sealed class ProductionApiHttpAnalyzer : DiagnosticAnalyzer
             return !TryGetReachingLocalInitializer(localReference, out var initializer)
                 || initializer is null
                 ? ApiDestination.None
-                : ResolveDestination(initializer, visitedSymbols, sourceApi, allowBareResourceName);
+                : ResolveDestination(initializer, visitedSymbols, sourceApi, resolutionMode);
         }
         finally
         {
@@ -788,6 +894,23 @@ public sealed class ProductionApiHttpAnalyzer : DiagnosticAnalyzer
             : ApiDestination.None;
     }
 
+    private static ApiDestination GetNamedClientDestination(string value)
+    {
+        if (string.Equals(value, AdminResourceValue, StringComparison.Ordinal))
+        {
+            return ApiDestination.Admin;
+        }
+
+        if (string.Equals(value, CatalogResourceValue, StringComparison.Ordinal))
+        {
+            return ApiDestination.Catalog;
+        }
+
+        return string.Equals(value, BrandingResourceValue, StringComparison.Ordinal)
+            ? ApiDestination.Branding
+            : ApiDestination.None;
+    }
+
     private static string GetResourceValue(ApiDestination destination)
     {
         return destination switch
@@ -830,7 +953,10 @@ public sealed class ProductionApiHttpAnalyzer : DiagnosticAnalyzer
 
         if (IsNamespaceOrChild(namespaceName, "ViajantesTurismo.Branding.Contracts.Http")
             || (string.Equals(namespaceName, SharedKernelBrandingNamespace, StringComparison.Ordinal)
-                && type.Name is BrandingApiClientInterfaceTypeName or BrandingApiClientTypeName))
+                && type.Name is BrandingApiClientInterfaceTypeName
+                    or BrandingApiClientTypeName
+                    or ManagementBrandingApiClientInterfaceTypeName
+                    or ManagementBrandingApiClientTypeName))
         {
             return ApiDestination.Branding;
         }
@@ -1012,6 +1138,13 @@ public sealed class ProductionApiHttpAnalyzer : DiagnosticAnalyzer
             ApiDestination.Branding => "Branding API ('branding-api')",
             _ => "unknown API"
         };
+    }
+
+    private enum DestinationResolutionMode
+    {
+        NamedClient,
+        BaseAddress,
+        RequestUri
     }
 
     private enum ApiDestination

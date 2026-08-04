@@ -11,6 +11,11 @@ internal static partial class AnalyzerSuppressionPolicyTestsHelpers
     private const string ProductionApiHttpDiagnosticId = "VTARCH001";
 
     private static readonly MetadataReference CoreLibraryReference = MetadataReference.CreateFromFile(typeof(object).Assembly.Location);
+    private static readonly CSharpParseOptions RepositoryParseOptions = new(
+        LanguageVersion.Preview,
+        DocumentationMode.Parse,
+        SourceCodeKind.Regular,
+        ["NET10_0"]);
 
     public static IEnumerable<string> EnumerateRepositoryFiles(string repositoryRoot, string searchPattern)
     {
@@ -37,21 +42,10 @@ internal static partial class AnalyzerSuppressionPolicyTestsHelpers
 
     public static string[] FindNoWarnEntries(string repositoryRoot, string filePath)
     {
-        var text = File.ReadAllText(filePath);
         var relativePath = Path.GetRelativePath(repositoryRoot, filePath).Replace('\\', '/');
-        var entries = new List<string>();
-
-        foreach (Match match in NoWarnRegex().Matches(text))
-        {
-            var diagnostics = match.Groups[1].Value
-                .Replace("$(NoWarn)", string.Empty, StringComparison.Ordinal)
-                .Split(';', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
-                .Select(value => $"{relativePath}:{value}");
-
-            entries.AddRange(diagnostics);
-        }
-
-        return [.. entries];
+        return FindNoWarnDiagnosticEntries(XDocument.Load(filePath))
+            .Select(value => $"{relativePath}:{value}")
+            .ToArray();
     }
 
     public static string[] FindUnapprovedPragmaWarningSuppressions(string repositoryRoot, string filePath)
@@ -62,7 +56,7 @@ internal static partial class AnalyzerSuppressionPolicyTestsHelpers
 
     public static string[] FindUnapprovedPragmaWarningSuppressionsInSource(string source, string displayPath)
     {
-        var syntaxTree = CSharpSyntaxTree.ParseText(source);
+        var syntaxTree = CSharpSyntaxTree.ParseText(source, RepositoryParseOptions);
         var root = syntaxTree.GetRoot();
         var directives = root
             .DescendantTrivia(descendIntoTrivia: true)
@@ -115,6 +109,12 @@ internal static partial class AnalyzerSuppressionPolicyTestsHelpers
             index += 2;
         }
 
+        var sourceText = syntaxTree.GetText();
+        violations.AddRange(root.DescendantTrivia(descendIntoTrivia: true)
+            .Where(static trivia => trivia.IsKind(SyntaxKind.DisabledTextTrivia)
+                && ContainsProductionHttpPragmaDisableInAnyBranch(trivia.ToString()))
+            .Select(trivia => $"{displayPath}:L{sourceText.Lines.GetLineFromPosition(trivia.SpanStart).LineNumber + 1} conditional VTARCH001 pragma suppression"));
+
         return [.. violations];
     }
 
@@ -127,8 +127,7 @@ internal static partial class AnalyzerSuppressionPolicyTestsHelpers
 
     public static string[] FindBroadProductionHttpSuppressionsInSource(string text, string displayPath)
     {
-        var violations = FindMsBuildDiagnosticEntries(text, NoWarnRegex())
-            .Concat(FindMsBuildDiagnosticEntries(text, WarningsNotAsErrorsRegex()))
+        var violations = FindNoWarnDiagnosticEntries(text)
             .Where(static entry => string.Equals(entry, ProductionApiHttpDiagnosticId, StringComparison.OrdinalIgnoreCase))
             .Select(entry => $"{displayPath}:{entry}")
             .ToList();
@@ -151,17 +150,23 @@ internal static partial class AnalyzerSuppressionPolicyTestsHelpers
 
     public static string[] FindProductionHttpPragmaSuppressions(string repositoryRoot, string filePath)
     {
-        var syntaxTree = CSharpSyntaxTree.ParseText(File.ReadAllText(filePath));
+        var syntaxTree = CSharpSyntaxTree.ParseText(File.ReadAllText(filePath), RepositoryParseOptions);
         var relativePath = Path.GetRelativePath(repositoryRoot, filePath).Replace('\\', '/');
-
-        return syntaxTree.GetRoot()
+        var root = syntaxTree.GetRoot();
+        var suppressions = root
             .DescendantTrivia(descendIntoTrivia: true)
             .Select(static trivia => trivia.GetStructure())
             .OfType<PragmaWarningDirectiveTriviaSyntax>()
             .Where(static directive => directive.DisableOrRestoreKeyword.IsKind(SyntaxKind.DisableKeyword)
                 && directive.ErrorCodes.Any(static code => string.Equals(code.ToString(), ProductionApiHttpDiagnosticId, StringComparison.Ordinal)))
             .Select(directive => $"{relativePath}:L{syntaxTree.GetLineSpan(directive.Span).StartLinePosition.Line + 1}")
-            .ToArray();
+            .ToList();
+        var sourceText = syntaxTree.GetText();
+        suppressions.AddRange(root.DescendantTrivia(descendIntoTrivia: true)
+            .Where(static trivia => trivia.IsKind(SyntaxKind.DisabledTextTrivia)
+                && ContainsProductionHttpPragmaDisableInAnyBranch(trivia.ToString()))
+            .Select(trivia => $"{relativePath}:L{sourceText.Lines.GetLineFromPosition(trivia.SpanStart).LineNumber + 1}"));
+        return [.. suppressions];
     }
 
     public static string[] FindProductionHttpSuppressMessageSuppressions(string repositoryRoot, string filePath)
@@ -172,41 +177,44 @@ internal static partial class AnalyzerSuppressionPolicyTestsHelpers
 
     public static string[] FindProductionHttpSuppressMessageSuppressionsInSource(string source, string displayPath)
     {
-        var syntaxTree = CSharpSyntaxTree.ParseText(source);
+        var syntaxTree = CSharpSyntaxTree.ParseText(source, RepositoryParseOptions);
         var root = syntaxTree.GetRoot();
         var usingDirectives = root.DescendantNodes()
             .OfType<UsingDirectiveSyntax>()
             .ToArray();
         var suppressionAliases = usingDirectives
-            .Select(static directive => directive.Alias is not null
-                && directive.Name is not null
-                && directive.Name.ToString().EndsWith("SuppressMessageAttribute", StringComparison.Ordinal)
-                    ? directive.Alias.Name.Identifier.ValueText
-                    : null)
+            .Where(static directive => IsSuppressMessageAliasDirective(directive))
+            .Select(static directive => directive.Alias?.Name.Identifier.ValueText)
             .OfType<string>()
             .ToHashSet(StringComparer.Ordinal);
         var violations = usingDirectives
             .Where(static directive => directive.GlobalKeyword.IsKind(SyntaxKind.GlobalKeyword)
-                && directive.Alias is not null
-                && directive.Name is not null
-                && directive.Name.ToString().EndsWith("SuppressMessageAttribute", StringComparison.Ordinal))
+                && IsSuppressMessageAliasDirective(directive))
             .Select(directive => $"{displayPath}:L{syntaxTree.GetLineSpan(directive.Span).StartLinePosition.Line + 1}")
             .ToList();
+        var sourceText = syntaxTree.GetText();
+        foreach (var trivia in root.DescendantTrivia(descendIntoTrivia: true)
+            .Where(static trivia => trivia.IsKind(SyntaxKind.DisabledTextTrivia)))
+        {
+            if (ContainsProductionHttpSuppressionInAnyBranch(trivia.ToString()))
+            {
+                violations.Add($"{displayPath}:L{sourceText.Lines.GetLineFromPosition(trivia.SpanStart).LineNumber + 1}");
+            }
+        }
+        var semanticModel = CSharpCompilation.Create(
+            "AnalyzerSuppressionPolicy",
+            [syntaxTree],
+            [CoreLibraryReference]).GetSemanticModel(syntaxTree);
         var suppressionAttributes = root
             .DescendantNodes()
             .OfType<AttributeSyntax>()
-            .Where(attribute => IsSuppressMessageAttribute(attribute, suppressionAliases))
+            .Where(attribute => IsSuppressMessageAttribute(attribute, suppressionAliases, semanticModel))
             .ToArray();
 
         if (suppressionAttributes.Length == 0)
         {
             return [.. violations];
         }
-
-        var semanticModel = CSharpCompilation.Create(
-            "AnalyzerSuppressionPolicy",
-            [syntaxTree],
-            [CoreLibraryReference]).GetSemanticModel(syntaxTree);
 
         violations.AddRange(suppressionAttributes
             .Where(attribute => SuppressesProductionHttpOrHasUnresolvedCheckId(attribute, semanticModel))
@@ -243,12 +251,6 @@ internal static partial class AnalyzerSuppressionPolicyTestsHelpers
 
         throw new InvalidOperationException("Could not locate the repository root from the test output directory.");
     }
-
-    [GeneratedRegex(@"<NoWarn(?:\s+[^>]*)?>\s*([^<]+)</NoWarn>", RegexOptions.IgnoreCase | RegexOptions.CultureInvariant)]
-    public static partial Regex NoWarnRegex();
-
-    [GeneratedRegex(@"<WarningsNotAsErrors(?:\s+[^>]*)?>\s*([^<]+)</WarningsNotAsErrors>", RegexOptions.IgnoreCase | RegexOptions.CultureInvariant)]
-    public static partial Regex WarningsNotAsErrorsRegex();
 
     [GeneratedRegex(
         @"^\s*\[\s*(?:assembly:\s*)?(?:(?:global::)?System\.Diagnostics\.CodeAnalysis\.)?SuppressMessage(?:Attribute)?\s*\(",
@@ -368,7 +370,10 @@ internal static partial class AnalyzerSuppressionPolicyTestsHelpers
         };
     }
 
-    private static bool IsSuppressMessageAttribute(AttributeSyntax attribute, HashSet<string> suppressionAliases)
+    private static bool IsSuppressMessageAttribute(
+        AttributeSyntax attribute,
+        HashSet<string> suppressionAliases,
+        SemanticModel semanticModel)
     {
         var attributeName = attribute.Name switch
         {
@@ -378,11 +383,100 @@ internal static partial class AnalyzerSuppressionPolicyTestsHelpers
             _ => attribute.Name.ToString()
         };
 
-        return attributeName is "SuppressMessage"
-            or "SuppressMessageAttribute"
-            or "UnconditionalSuppressMessage"
-            or "UnconditionalSuppressMessageAttribute"
-            || suppressionAliases.Contains(attributeName);
+        if (suppressionAliases.Contains(attributeName))
+        {
+            return true;
+        }
+
+        var attributeType = (semanticModel.GetSymbolInfo(attribute).Symbol as IMethodSymbol)?.ContainingType
+            ?? semanticModel.GetTypeInfo(attribute).Type;
+        if (attributeType is not null)
+        {
+            return string.Equals(
+                    attributeType.ContainingNamespace.ToDisplayString(),
+                    "System.Diagnostics.CodeAnalysis",
+                    StringComparison.Ordinal)
+                && attributeType.Name is "SuppressMessageAttribute" or "UnconditionalSuppressMessageAttribute";
+        }
+
+        var normalizedName = string.Concat(attribute.Name.DescendantTokens().Select(static token => token.Text));
+        return normalizedName is
+            "System.Diagnostics.CodeAnalysis.SuppressMessage"
+            or "System.Diagnostics.CodeAnalysis.SuppressMessageAttribute"
+            or "System.Diagnostics.CodeAnalysis.UnconditionalSuppressMessage"
+            or "System.Diagnostics.CodeAnalysis.UnconditionalSuppressMessageAttribute"
+            or "global::System.Diagnostics.CodeAnalysis.SuppressMessage"
+            or "global::System.Diagnostics.CodeAnalysis.SuppressMessageAttribute"
+            or "global::System.Diagnostics.CodeAnalysis.UnconditionalSuppressMessage"
+            or "global::System.Diagnostics.CodeAnalysis.UnconditionalSuppressMessageAttribute";
+    }
+
+    private static bool IsSuppressMessageAliasDirective(UsingDirectiveSyntax directive)
+    {
+        if (directive.Alias is null || directive.Name is null)
+        {
+            return false;
+        }
+
+        var normalizedName = string.Concat(directive.Name.DescendantTokens().Select(static token => token.Text));
+        return normalizedName is
+            "System.Diagnostics.CodeAnalysis.SuppressMessageAttribute"
+            or "global::System.Diagnostics.CodeAnalysis.SuppressMessageAttribute"
+            or "System.Diagnostics.CodeAnalysis.UnconditionalSuppressMessageAttribute"
+            or "global::System.Diagnostics.CodeAnalysis.UnconditionalSuppressMessageAttribute";
+    }
+
+    private static bool ContainsProductionHttpPragmaDisableInAnyBranch(string source)
+    {
+        var syntaxTree = CSharpSyntaxTree.ParseText(source, RepositoryParseOptions);
+        var root = syntaxTree.GetRoot();
+        if (root.DescendantTrivia(descendIntoTrivia: true)
+            .Select(static trivia => trivia.GetStructure())
+            .OfType<PragmaWarningDirectiveTriviaSyntax>()
+            .Any(static directive => directive.DisableOrRestoreKeyword.IsKind(SyntaxKind.DisableKeyword)
+                && directive.ErrorCodes.Any(static code => string.Equals(code.ToString(), ProductionApiHttpDiagnosticId, StringComparison.Ordinal))))
+        {
+            return true;
+        }
+
+        return root.DescendantTrivia(descendIntoTrivia: true)
+            .Where(static trivia => trivia.IsKind(SyntaxKind.DisabledTextTrivia))
+            .Any(static trivia => ContainsProductionHttpPragmaDisableInAnyBranch(trivia.ToString()));
+    }
+
+    private static bool ContainsProductionHttpSuppressionInAnyBranch(string source)
+    {
+        var syntaxTree = CSharpSyntaxTree.ParseText(source, RepositoryParseOptions);
+        var root = syntaxTree.GetRoot();
+        var aliasDirectives = root.DescendantNodes()
+            .OfType<UsingDirectiveSyntax>()
+            .Where(static directive => IsSuppressMessageAliasDirective(directive))
+            .ToArray();
+        if (aliasDirectives.Any(static directive => directive.GlobalKeyword.IsKind(SyntaxKind.GlobalKeyword)))
+        {
+            return true;
+        }
+
+        var aliases = aliasDirectives
+            .Select(static directive => directive.Alias?.Name.Identifier.ValueText)
+            .OfType<string>()
+            .ToHashSet(StringComparer.Ordinal);
+
+        var semanticModel = CSharpCompilation.Create(
+            "AnalyzerSuppressionPolicyConditional",
+            [syntaxTree],
+            [CoreLibraryReference]).GetSemanticModel(syntaxTree);
+        if (root.DescendantNodes()
+            .OfType<AttributeSyntax>()
+            .Any(attribute => IsSuppressMessageAttribute(attribute, aliases, semanticModel)
+                && SuppressesProductionHttpOrHasUnresolvedCheckId(attribute, semanticModel)))
+        {
+            return true;
+        }
+
+        return root.DescendantTrivia(descendIntoTrivia: true)
+            .Where(static trivia => trivia.IsKind(SyntaxKind.DisabledTextTrivia))
+            .Any(static trivia => ContainsProductionHttpSuppressionInAnyBranch(trivia.ToString()));
     }
 
     private static bool SuppressesProductionHttpOrHasUnresolvedCheckId(
@@ -447,12 +541,22 @@ internal static partial class AnalyzerSuppressionPolicyTestsHelpers
             && sourceLine[(markerIndex + justificationMarker.Length)..].Trim().Length >= 12;
     }
 
-    private static IEnumerable<string> FindMsBuildDiagnosticEntries(string text, Regex regex)
+    private static IEnumerable<string> FindNoWarnDiagnosticEntries(string text)
     {
-        return regex.Matches(text)
-            .SelectMany(static match => match.Groups[1].Value
+        if (!text.TrimStart().StartsWith('<'))
+        {
+            return [];
+        }
+
+        return FindNoWarnDiagnosticEntries(XDocument.Parse(text));
+    }
+
+    private static IEnumerable<string> FindNoWarnDiagnosticEntries(XDocument project)
+    {
+        return project.Descendants()
+            .Where(static element => string.Equals(element.Name.LocalName, "NoWarn", StringComparison.OrdinalIgnoreCase))
+            .SelectMany(static element => element.Value
                 .Replace("$(NoWarn)", string.Empty, StringComparison.Ordinal)
-                .Replace("$(WarningsNotAsErrors)", string.Empty, StringComparison.Ordinal)
                 .Split([';', ','], StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries));
     }
 
@@ -464,7 +568,7 @@ internal static partial class AnalyzerSuppressionPolicyTestsHelpers
         }
 
         var project = XDocument.Parse(text);
-        return project.Descendants()
+        return project.Root?.DescendantsAndSelf()
             .Where(static element =>
                 ((string.Equals(element.Name.LocalName, "GlobalAnalyzerConfigFiles", StringComparison.OrdinalIgnoreCase)
                         || string.Equals(element.Name.LocalName, "EditorConfigFiles", StringComparison.OrdinalIgnoreCase))
@@ -473,7 +577,13 @@ internal static partial class AnalyzerSuppressionPolicyTestsHelpers
                             || string.Equals(attribute.Name.LocalName, "Update", StringComparison.OrdinalIgnoreCase))
                         && !string.IsNullOrWhiteSpace(attribute.Value)))
                 || (string.Equals(element.Name.LocalName, "CodeAnalysisRuleSet", StringComparison.OrdinalIgnoreCase)
-                    && !string.IsNullOrWhiteSpace(element.Value)))
-            .Select(element => $"{displayPath}:{element.Name.LocalName}");
+                    && !string.IsNullOrWhiteSpace(element.Value))
+                || (string.Equals(element.Name.LocalName, "WarningsNotAsErrors", StringComparison.OrdinalIgnoreCase)
+                    && !string.IsNullOrWhiteSpace(element.Value))
+                || ((string.Equals(element.Name.LocalName, "RunAnalyzers", StringComparison.OrdinalIgnoreCase)
+                        || string.Equals(element.Name.LocalName, "RunAnalyzersDuringBuild", StringComparison.OrdinalIgnoreCase))
+                    && !string.Equals(element.Value.Trim(), "true", StringComparison.OrdinalIgnoreCase)))
+            .Select(element => $"{displayPath}:{element.Name.LocalName}")
+            ?? [];
     }
 }
