@@ -1,3 +1,5 @@
+using System.Xml.Linq;
+
 namespace ViajantesTurismo.ArchitectureTests.Conventions;
 
 public sealed partial class AnalyzerSuppressionPolicyTests
@@ -254,6 +256,51 @@ public sealed partial class AnalyzerSuppressionPolicyTests
     }
 
     [Fact]
+    public void Active_conditional_pragma_suppressions_should_be_inspected()
+    {
+        // Arrange
+        const string source = """
+            #if NET10_0
+            #pragma warning disable VTARCH001
+            services.AddHttpClient(ResourceNames.BrandingApi);
+            #pragma warning restore VTARCH001
+            #endif
+            """;
+
+        // Act
+        var violations = AnalyzerSuppressionPolicyTestsHelpers.FindUnapprovedPragmaWarningSuppressionsInSource(
+            source,
+            "ConditionalRegistration.cs");
+
+        // Assert
+        violations.ShouldNotBeEmpty();
+    }
+
+    [Theory]
+    [InlineData("NET10_0_OR_GREATER")]
+    [InlineData("NETSTANDARD2_0")]
+    public void Every_conditional_pragma_branch_should_be_inspected(string symbol)
+    {
+        // Arrange
+        ArgumentException.ThrowIfNullOrWhiteSpace(symbol);
+        var source = $$"""
+            #if {{symbol}}
+            #pragma warning disable VTARCH001
+            services.AddHttpClient(ResourceNames.BrandingApi);
+            #pragma warning restore VTARCH001
+            #endif
+            """;
+
+        // Act
+        var violations = AnalyzerSuppressionPolicyTestsHelpers.FindUnapprovedPragmaWarningSuppressionsInSource(
+            source,
+            "ConditionalRegistration.cs");
+
+        // Assert
+        violations.ShouldNotBeEmpty();
+    }
+
+    [Fact]
     public void Production_http_source_suppressions_should_be_exact_site_and_allowlisted()
     {
         // Arrange
@@ -312,6 +359,182 @@ public sealed partial class AnalyzerSuppressionPolicyTests
 
         // Assert
         violations.ShouldNotBeEmpty();
+    }
+
+    [Theory]
+    [InlineData("SuppressMessageAttribute")]
+    [InlineData("UnconditionalSuppressMessageAttribute")]
+    public void Conditional_global_suppression_aliases_should_be_rejected_across_source_files(string attributeType)
+    {
+        // Arrange
+        ArgumentException.ThrowIfNullOrWhiteSpace(attributeType);
+        var aliasSource = $$"""
+            #if NET10_0
+            global using Ignore = System.Diagnostics
+                /* split to exercise disabled trivia */
+                .CodeAnalysis.{{attributeType}};
+            #endif
+            """;
+        const string consumerSource = "[assembly: Ignore(\"Architecture\", \"VTARCH001\")]";
+
+        // Act
+        var violations = AnalyzerSuppressionPolicyTestsHelpers.FindProductionHttpSuppressMessageSuppressionsInSource(aliasSource, "ConditionalGlobalAliases.cs")
+            .Concat(AnalyzerSuppressionPolicyTestsHelpers.FindProductionHttpSuppressMessageSuppressionsInSource(consumerSource, "GlobalSuppressions.cs"))
+            .ToArray();
+
+        // Assert
+        violations.ShouldHaveSingleItem();
+    }
+
+    [Fact]
+    public void Conditional_unrelated_global_aliases_should_not_be_rejected()
+    {
+        // Arrange
+        const string aliasSource = """
+            #if NET10_0
+            global using Ignore = Contoso.SuppressMessageAttribute;
+            #endif
+            """;
+        const string consumerSource = "[assembly: Ignore(\"Architecture\", \"VTARCH001\")]";
+
+        // Act
+        var violations = AnalyzerSuppressionPolicyTestsHelpers.FindProductionHttpSuppressMessageSuppressionsInSource(aliasSource, "ConditionalGlobalAliases.cs")
+            .Concat(AnalyzerSuppressionPolicyTestsHelpers.FindProductionHttpSuppressMessageSuppressionsInSource(consumerSource, "GlobalSuppressions.cs"))
+            .ToArray();
+
+        // Assert
+        violations.ShouldBeEmpty();
+    }
+
+    [Fact]
+    public void Active_conditional_suppress_message_attributes_should_be_rejected()
+    {
+        // Arrange
+        const string suppressionAttributeName = "SuppressMessage";
+        var source = $$"""
+            #if NET10_0
+            [assembly: System.Diagnostics.CodeAnalysis.{{suppressionAttributeName}}("Architecture", "VTARCH001")]
+            #endif
+            """;
+
+        // Act
+        var violations = AnalyzerSuppressionPolicyTestsHelpers.FindProductionHttpSuppressMessageSuppressionsInSource(
+            source,
+            "ConditionalSuppressions.cs");
+
+        // Assert
+        violations.ShouldHaveSingleItem();
+    }
+
+    [Theory]
+    [InlineData("NET10_0_OR_GREATER")]
+    [InlineData("NETSTANDARD2_0")]
+    public void Every_conditional_suppress_message_branch_should_be_inspected(string symbol)
+    {
+        // Arrange
+        ArgumentException.ThrowIfNullOrWhiteSpace(symbol);
+        const string suppressionAttributeName = "SuppressMessage";
+        var source = $$"""
+            #if {{symbol}}
+            [assembly: System.Diagnostics.CodeAnalysis.{{suppressionAttributeName}}("Architecture", "VTARCH001")]
+            #endif
+            """;
+
+        // Act
+        var violations = AnalyzerSuppressionPolicyTestsHelpers.FindProductionHttpSuppressMessageSuppressionsInSource(
+            source,
+            "ConditionalSuppressions.cs");
+
+        // Assert
+        violations.ShouldNotBeEmpty();
+    }
+
+    [Theory]
+    [InlineData("[assembly: System.Diagnostics.CodeAnalysis.SuppressMessage(\"Style\", \"CA1822\")]")]
+    [InlineData("using Ignore = System.Diagnostics.CodeAnalysis.SuppressMessageAttribute;")]
+    public void Unrelated_conditional_suppression_content_should_remain_allowed(string conditionalContent)
+    {
+        // Arrange
+        ArgumentException.ThrowIfNullOrWhiteSpace(conditionalContent);
+        var source = $$"""
+            #if NETSTANDARD2_0
+            {{conditionalContent}}
+            #endif
+            """;
+
+        // Act
+        var violations = AnalyzerSuppressionPolicyTestsHelpers.FindProductionHttpSuppressMessageSuppressionsInSource(
+            source,
+            "ConditionalSuppressions.cs");
+
+        // Assert
+        violations.ShouldBeEmpty();
+    }
+
+    [Fact]
+    public void Custom_same_name_suppress_message_attributes_should_not_be_rejected()
+    {
+        // Arrange
+        const string source = """
+            [assembly: Contoso.SuppressMessage("Architecture", "VTARCH001")]
+
+            namespace Contoso
+            {
+                public sealed class SuppressMessageAttribute : System.Attribute
+                {
+                    public SuppressMessageAttribute(string category, string checkId)
+                    {
+                    }
+                }
+            }
+            """;
+
+        // Act
+        var violations = AnalyzerSuppressionPolicyTestsHelpers.FindProductionHttpSuppressMessageSuppressionsInSource(
+            source,
+            "CustomSuppressions.cs");
+
+        // Assert
+        violations.ShouldBeEmpty();
+    }
+
+    [Fact]
+    public void Multiline_global_suppression_aliases_should_be_rejected()
+    {
+        // Arrange
+        const string aliasSource = """
+            global using Ignore = System.Diagnostics
+                /* split active syntax */
+                .CodeAnalysis.SuppressMessageAttribute;
+            """;
+        const string consumerSource = "[assembly: Ignore(\"Architecture\", \"VTARCH001\")]";
+
+        // Act
+        var violations = AnalyzerSuppressionPolicyTestsHelpers.FindProductionHttpSuppressMessageSuppressionsInSource(aliasSource, "GlobalAliases.cs")
+            .Concat(AnalyzerSuppressionPolicyTestsHelpers.FindProductionHttpSuppressMessageSuppressionsInSource(consumerSource, "GlobalSuppressions.cs"))
+            .ToArray();
+
+        // Assert
+        violations.ShouldHaveSingleItem();
+    }
+
+    [Fact]
+    public void Alias_like_text_inside_disabled_block_comments_should_not_be_rejected()
+    {
+        // Arrange
+        const string source = """
+            #if NET10_0
+            /*
+            global using Ignore = System.Diagnostics.CodeAnalysis.SuppressMessageAttribute;
+            */
+            #endif
+            """;
+
+        // Act
+        var violations = AnalyzerSuppressionPolicyTestsHelpers.FindProductionHttpSuppressMessageSuppressionsInSource(source, "CommentedAliases.cs");
+
+        // Assert
+        violations.ShouldBeEmpty();
     }
 
     [Fact]
@@ -378,8 +601,11 @@ public sealed partial class AnalyzerSuppressionPolicyTests
 
     [Theory]
     [InlineData("<NoWarn>vtarch001</NoWarn>")]
+    [InlineData("<NoWarn>&#x56;TARCH001</NoWarn>")]
+    [InlineData("<NoWarn><![CDATA[VTARCH001]]></NoWarn>")]
     [InlineData("<WarningsNotAsErrors>CS0001,VTARCH001</WarningsNotAsErrors>")]
     [InlineData("<warningsnotaserrors>$(WarningsNotAsErrors);vtarch001</warningsnotaserrors>")]
+    [InlineData("<WarningsNotAsErrors>CS0618</WarningsNotAsErrors>")]
     [InlineData("<Project><ItemGroup><GlobalAnalyzerConfigFiles Include=\"policy.txt\" /></ItemGroup></Project>")]
     [InlineData("<Project><PropertyGroup><CodeAnalysisRuleSet>disable-vtarch001.ruleset</CodeAnalysisRuleSet></PropertyGroup></Project>")]
     public void Production_http_msbuild_suppressions_should_be_rejected(string setting)
@@ -392,6 +618,42 @@ public sealed partial class AnalyzerSuppressionPolicyTests
 
         // Assert
         violations.ShouldHaveSingleItem();
+    }
+
+    [Theory]
+    [InlineData("RunAnalyzers", "false")]
+    [InlineData("RunAnalyzers", "0")]
+    [InlineData("RunAnalyzers", "off")]
+    [InlineData("RunAnalyzersDuringBuild", "false")]
+    [InlineData("RunAnalyzersDuringBuild", "no")]
+    public void Analyzer_execution_disabling_values_should_be_rejected(string propertyName, string value)
+    {
+        // Arrange
+        ArgumentException.ThrowIfNullOrWhiteSpace(propertyName);
+        ArgumentException.ThrowIfNullOrWhiteSpace(value);
+        var project = $"<Project><PropertyGroup><{propertyName}>{value}</{propertyName}></PropertyGroup></Project>";
+
+        // Act
+        var violations = AnalyzerSuppressionPolicyTestsHelpers.FindBroadProductionHttpSuppressionsInSource(project, "Project.csproj");
+
+        // Assert
+        violations.ShouldHaveSingleItem();
+    }
+
+    [Theory]
+    [InlineData("RunAnalyzers")]
+    [InlineData("RunAnalyzersDuringBuild")]
+    public void Explicitly_enabled_analyzer_execution_should_remain_allowed(string propertyName)
+    {
+        // Arrange
+        ArgumentException.ThrowIfNullOrWhiteSpace(propertyName);
+        var project = $"<Project><PropertyGroup><{propertyName}>true</{propertyName}></PropertyGroup></Project>";
+
+        // Act
+        var violations = AnalyzerSuppressionPolicyTestsHelpers.FindBroadProductionHttpSuppressionsInSource(project, "Project.csproj");
+
+        // Assert
+        violations.ShouldBeEmpty();
     }
 
     [Theory]
@@ -479,6 +741,35 @@ public sealed partial class AnalyzerSuppressionPolicyTests
 
         // Assert
         broadSettings.ShouldBeEmpty();
+    }
+
+    [Fact]
+    public void Production_http_analyzer_public_api_baselines_should_be_enforced()
+    {
+        // Arrange
+        var repositoryRoot = AnalyzerSuppressionPolicyTestsHelpers.GetRepositoryRoot();
+        var projectPath = Path.Combine(
+            repositoryRoot,
+            "src",
+            "ViajantesTurismo.Architecture.Analyzers",
+            "ViajantesTurismo.Architecture.Analyzers.csproj");
+
+        // Act
+        var project = XDocument.Load(projectPath);
+        var publicApiAnalyzerReferences = project.Descendants()
+            .Where(static element => string.Equals(element.Name.LocalName, "PackageReference", StringComparison.Ordinal)
+                && string.Equals(
+                    element.Attribute("Include")?.Value,
+                    "Microsoft.CodeAnalysis.PublicApiAnalyzers",
+                    StringComparison.Ordinal))
+            .ToArray();
+
+        // Assert
+        publicApiAnalyzerReferences.ShouldHaveSingleItem(static reference =>
+            string.Equals(reference.Attribute("PrivateAssets")?.Value, "all", StringComparison.OrdinalIgnoreCase)
+            || reference.Elements().Any(static element =>
+                string.Equals(element.Name.LocalName, "PrivateAssets", StringComparison.Ordinal)
+                && string.Equals(element.Value, "all", StringComparison.OrdinalIgnoreCase)));
     }
 
     [Fact]
