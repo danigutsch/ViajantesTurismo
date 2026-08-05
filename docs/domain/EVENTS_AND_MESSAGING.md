@@ -144,7 +144,7 @@ context-specific operational policy. Generated and runtime ownership is explicit
 | Request, stream, and notification dispatch | `SharedKernel.Mediator.SourceGenerator` | `AppMediator` is scoped; closed `Func<T>` dependencies resolve scoped handlers lazily, preserve pipeline order, and avoid a general runtime registry. |
 | Domain event handling and transactional outbox mapping | Domain-event provider generators | A scoped `CompositeDomainEventDispatcher` invokes generated typed handlers for outbox and audit mappings. |
 | Integration-event serialization | `SharedKernel.Messaging.IntegrationEvents.SourceGenerator` | `IIntegrationEventSerializer` is singleton and receives closed `JsonTypeInfo<T>` dependencies. |
-| Background envelope delivery | `SharedKernel.Messaging.IntegrationEvents.SourceGenerator` | One consumer scope owns each claimed batch; its generated `IEventEnvelopePublisher` and typed handlers process messages sequentially. |
+| Background envelope delivery | `SharedKernel.Messaging.IntegrationEvents.SourceGenerator` | One consumer scope owns each claimed batch and generated publisher. Each envelope gets an asynchronously disposed child scope that resolves its closed typed handler; messages remain sequential. |
 | Outbox persistence and relay | `SharedKernel.Messaging.IntegrationEvents.EntityFrameworkCore` | Context configuration and outbox services are explicit; relay/retry remains infrastructure-owned. |
 | Inbox idempotency | `SharedKernel.Idempotency.EntityFrameworkCore` | Owns `EfIdempotencyStore<TContext>` and its model configuration. `SharedKernel.Messaging.IntegrationEvents.EntityFrameworkCore` exposes `AddIntegrationEventInbox<TContext>()` as the integration-event composition call; inbox registration is not implied by outbox registration. |
 
@@ -161,7 +161,7 @@ not part of the generated path.
 | Admin use case | Endpoint to directly resolved scoped handler | None | Handler orchestration, validation, authorization, aggregate behavior, and `SaveEntities(ct)`. |
 | Regular mediator use case | Caller to scoped `AppMediator` | Closed request/stream/notification and pipeline calls | Handler business behavior and configured pipeline semantics. |
 | Admin persistence | `SaveChanges` interceptor to composite domain-event dispatcher | Exhaustive typed outbox and audit mappings plus typed serialization | EF transaction, aggregate state, outbox/audit atomicity, and post-save domain-event clearing. |
-| Durable delivery | Admin relay to PostgreSQL transport to worker batch to generated publisher | Closed envelope deserialization and typed handler selection | `FOR UPDATE SKIP LOCKED`, batch scope, sequential processing, lease/retry, Catalog idempotency, and handler side effects. |
+| Durable delivery | Admin relay to PostgreSQL transport to worker batch to generated publisher | Closed envelope deserialization and typed handler selection | `FOR UPDATE SKIP LOCKED`, batch claim/publisher scope, per-envelope handler scope, sequential processing, lease/retry, Catalog idempotency, and handler side effects. |
 
 ## Domain Events
 
