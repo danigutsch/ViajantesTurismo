@@ -9,6 +9,8 @@ public sealed class BrandingPostgreSqlMigrationScenario(ApiFixture fixture) : IA
 {
     private const string BrandingMigrationsHistoryTable = "__EFMigrationsHistory_Branding";
     private const string BrandingSettingsTableExistsCommandText = "SELECT to_regclass('branding.\"BrandingSettings\"') IS NOT NULL;";
+    private const string BrandingOutboxTableExistsCommandText = "SELECT to_regclass('branding.outbox_messages') IS NOT NULL;";
+    private const string BrandingTransportTableExistsCommandText = "SELECT to_regclass('branding.transport_messages') IS NOT NULL;";
     private const string PublicBrandingSettingsTableExistsCommandText = "SELECT to_regclass('public.\"BrandingSettings\"') IS NOT NULL;";
     private const string ResetBrandingTablesCommandText = """
                                                        DO $$
@@ -67,6 +69,26 @@ public sealed class BrandingPostgreSqlMigrationScenario(ApiFixture fixture) : IA
     public Task<bool> PublicBrandingSettingsTableExists(CancellationToken ct)
     {
         return PublicBrandingSettingsTableExistsCore(ct);
+    }
+
+    public async Task<bool> BrandingOutboxTableExists(CancellationToken ct)
+    {
+        var dataSource = _dataSource ?? throw new InvalidOperationException("The Branding PostgreSQL migration scenario has not started.");
+        await using var connection = await dataSource.OpenConnectionAsync(ct);
+        await using var command = connection.CreateCommand();
+        command.CommandText = BrandingOutboxTableExistsCommandText;
+        var result = await command.ExecuteScalarAsync(ct);
+        return result is true;
+    }
+
+    public async Task<bool> BrandingTransportTableExists(CancellationToken ct)
+    {
+        var dataSource = _dataSource ?? throw new InvalidOperationException("The Branding PostgreSQL migration scenario has not started.");
+        await using var connection = await dataSource.OpenConnectionAsync(ct);
+        await using var command = connection.CreateCommand();
+        command.CommandText = BrandingTransportTableExistsCommandText;
+        var result = await command.ExecuteScalarAsync(ct);
+        return result is true;
     }
 
     public async Task<string[]> GetMigrationHistory(CancellationToken ct)
@@ -128,4 +150,5 @@ public sealed class BrandingPostgreSqlMigrationScenario(ApiFixture fixture) : IA
         var result = await command.ExecuteScalarAsync(ct);
         return result is true;
     }
+
 }

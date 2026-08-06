@@ -42,6 +42,21 @@ public sealed class BrandingPostgreSqlMigrationTests(BrandingPostgreSqlMigration
     }
 
     [Fact]
+    public async Task Branding_migrations_own_dedicated_outbox_and_transport_tables()
+    {
+        // Arrange
+        await scenario.ApplyMigrations(TestContext.Current.CancellationToken);
+
+        // Act
+        var outboxTableExists = await scenario.BrandingOutboxTableExists(TestContext.Current.CancellationToken);
+        var transportTableExists = await scenario.BrandingTransportTableExists(TestContext.Current.CancellationToken);
+
+        // Assert
+        outboxTableExists.ShouldBeTrue();
+        transportTableExists.ShouldBeTrue();
+    }
+
+    [Fact]
     public async Task Schema_reset_preserves_migration_history_and_clears_branding_settings()
     {
         // Arrange

@@ -36,6 +36,21 @@ public sealed class EfBrandingSettingsStoreTests
     }
 
     [Fact]
+    public void Branding_infrastructure_registers_its_context_qualified_messaging_services()
+    {
+        // Arrange
+        using var services = BrandingInfrastructureRegistrationScope.Create();
+
+        // Act
+        var registrations = services.GetMessagingRegistrations();
+
+        // Assert
+        registrations.HasOutbox.ShouldBeTrue();
+        registrations.HasTransportPublisher.ShouldBeTrue();
+        registrations.OutboxRelayCount.ShouldBe(1);
+    }
+
+    [Fact]
     public void Design_time_factory_configures_branding_postgresql_provider()
     {
         // Arrange
