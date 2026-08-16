@@ -42,6 +42,8 @@ Conditional request semantics are part of the versioned HTTP contract. Branding 
 RFC 9110 strong ETag/`If-Match` comparison: valid false conditions return 412, missing required
 preconditions return 428, and only malformed field syntax returns 400. Entity-tag lists, weak tags,
 and `*` retain their standards-defined meanings; they are not alternate application-version signals.
+Management `GET` returns the validator. A normalized successful `PUT` omits it and requires a follow-up
+`GET`, because validators cannot describe a stored representation transformed from the request.
 
 ## Alpha evolution
 

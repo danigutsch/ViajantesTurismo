@@ -125,6 +125,11 @@ that the target topology is deployed or production-ready.
   privileged Branding recovery transaction rotates the source epoch, marks restored old-epoch pending outbox
   rows superseded, appends the new-epoch full-state reseed revision, records the rewind audit, and enqueues the
   restored current snapshot with its positive revision. Normal writes cannot rotate the epoch.
+- `Recovering` fences ordinary relay polling and transport claims, but does not fence its own repair. The
+  recovery authorization persists the exact reseed outbox and event identities. A one-shot recovery publisher
+  may claim only that outbox row, and the worker's recovery claim path may deliver only the matching `admin`
+  transport row. Every other row remains ineligible until `Ready`. Failure leaves the projection in
+  `Recovering` and the authorized row retryable; it never opens an ordinary-delivery bypass.
 - The same-epoch recovery path also rebuilds a lost/corrupt projection when inbox and watermark survived; only
   this authorized reseed may reapply the current equal revision. The ordinary consumer still requires a greater
   revision.
@@ -156,12 +161,17 @@ that the target topology is deployed or production-ready.
   syntactically valid but false condition—including a stale strong tag, a nonmatching list, or weak-only
   matches—returns 412 with `branding.precondition_failed`, performs no state/history/outbox write, and is never
   retried blindly. The editor reloads and deliberately reapplies or merges its changes.
-- A successful `PUT` returns the saved document with its `SourceEpoch`, new `SourceRevision`, and matching
-  `ETag`. Management clients treat the validator as opaque and expose malformed, required, and failed
-  preconditions as contract outcomes rather than reimplementing entity-tag parsing.
-- Branding OpenAPI documents retain the route but add `If-Match`, `ETag`, `400`, `412`, and `428` contract
-  metadata. Contract/client tests cover two editors reading revision N, editor A writing N+1, and editor B
-  receiving 412 without overwriting A, plus wildcard, matching/nonmatching lists, weak tags, and malformed syntax.
+- A successful `PUT` returns the saved document with its `SourceEpoch` and new `SourceRevision`, but omits
+  `ETag`. Branding normalizes values and allocates a revision, so the stored representation is not guaranteed to
+  be byte-for-byte identical to the request representation; RFC 9110 therefore does not permit a response
+  validator. Management performs a follow-up `GET` before another edit and atomically replaces its document,
+  epoch, revision, and opaque validator with that one response. It never combines the earlier `PUT` body with a
+  later validator; an intervening writer therefore becomes visible instead of being overwritten.
+- Branding OpenAPI documents retain the route, document `ETag` on Management `GET`, and add `If-Match`, `400`,
+  `412`, and `428` metadata to `PUT` without advertising a successful-`PUT` validator. Contract/client tests
+  cover two editors reading revision N, editor A writing N+1, editor B receiving 412 without overwriting A,
+  normalization followed by validator refresh through `GET`, wildcard, matching/nonmatching lists, weak tags,
+  and malformed syntax.
 
 ### HTTP, caching, and synchronous seams
 
@@ -270,10 +280,15 @@ expanded into Branding by this decision.
   pre-rollout document rows may retain null Branding revision provenance.
 - Management API/client/OpenAPI tests verify epoch/revision strong ETags, missing-header 428, malformed-syntax
   400, valid nonmatch 412, weak-tag strong comparison, existing-resource `*`, matching/nonmatching lists, no
-  blind retry, and the two-editor lost-update scenario.
+  blind retry, omission of `ETag` from normalized `PUT` responses, follow-up `GET` validator refresh, and the
+  two-editor lost-update scenario. An interleaving test performs writer A's `PUT`, writer C's update, and A's
+  follow-up `GET`, then proves A replaces the whole editor state before another conditional write.
 - Recovery tests cover source restore with epoch rotation, current-snapshot republish, lost projection with
   retained inbox/watermark state, complete projection/inbox/watermark rebuild, atomic reseed audit, old-epoch
-  outbox supersession/transport quarantine, and document-generation/write/relay gating until `Ready`.
+  outbox supersession/transport quarantine, ordinary document-generation/write/relay gating, and the sole
+  authorized transition `Recovering` -> reseed-only publish/claim/delivery -> `Ready`. Failure injection before
+  recovery publish, after publish/before claim, and during delivery proves authorization is retained, the exact
+  reseed row remains retryable, projection state stays `Recovering`, and unrelated rows remain fenced.
 - OpenAPI tool and drift tests prove `generate branding` runs against Catalog.ApiService after contraction while
   preserving Branding-owned artifact names/content boundaries. Authorization tests prove Catalog and Branding
   routes select only their named exact-audience scheme.

@@ -166,8 +166,10 @@
         "openapi-retarget-gate",
         "positive-event-revision",
         "production-platform-undecided",
+        "put-etag-omitted-after-normalization",
         "public-cache-60-300",
         "recovery-gates-document-generation",
+        "reseed-only-recovery-lane",
         "rfc9110-strong-if-match",
         "shared-process-blast-radius",
         "transport-ack-boundary"

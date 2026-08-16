@@ -17,8 +17,10 @@ module in `ViajantesTurismo.Catalog.ApiService` without moving it into the Catal
 - current-decision: `openapi-retarget-gate`
 - current-decision: `positive-event-revision`
 - current-decision: `production-platform-undecided`
+- current-decision: `put-etag-omitted-after-normalization`
 - current-decision: `public-cache-60-300`
 - current-decision: `recovery-gates-document-generation`
+- current-decision: `reseed-only-recovery-lane`
 - current-decision: `rfc9110-strong-if-match`
 - current-decision: `shared-process-blast-radius`
 - current-decision: `transport-ack-boundary`
@@ -97,8 +99,11 @@ projection, and epoch/revision watermark commit atomically. A crash after that A
 transport acknowledgement redelivers after lease expiry; inbox identity and watermark comparison make
 recovery idempotent. Retry is finite, exhausted rows become poison, and replay is audited.
 
-Projection reseed sets Admin state to `Recovering`, gates document generation, pauses claims, and
-atomically applies an authorized full snapshot with inbox, projection, watermark, and old/new audit.
+Projection reseed sets Admin state to `Recovering`, gates document generation, and pauses ordinary
+relay polling and claims. A persisted recovery authorization permits only its exact reseed outbox and
+`admin` transport event through a one-shot publish/claim/delivery lane; every ordinary row remains
+fenced. The Admin transaction atomically applies that full snapshot with inbox, projection, watermark,
+old/new audit, and return to `Ready`; failure leaves the authorized row retryable in `Recovering`.
 A source restore that rewinds revision rotates the source epoch through a privileged audited operation;
 ordinary delivery cannot change epochs. Source rewind stops Management writes and the relay, supersedes
 restored old-epoch pending outbox rows, and quarantines old-epoch transport before reseed. Lost
@@ -160,10 +165,14 @@ would return 412 if it did not exist. Only malformed field syntax, including an 
 the alternative `*` and list forms, returns 400.
 
 A false precondition writes no current/history/outbox state and is not retried automatically. The
-editor reloads and deliberately reapplies or merges changes. A successful `PUT` returns the epoch, new
-revision, and ETag. Typed clients keep the validator opaque and expose 400/412/428 outcomes. Branding
-OpenAPI documents describe the conditional headers and responses. Tests cover two editors,
-matching/nonmatching lists, wildcard, weak tags, missing headers, and malformed syntax.
+editor reloads and deliberately reapplies or merges changes. A successful normalized `PUT` returns the
+epoch and new revision but no `ETag`; the client follows with `GET` to obtain the next opaque validator.
+The `GET` atomically replaces the editor's document, epoch, revision, and validator, so an intervening
+writer is observed rather than paired with stale local content. Branding OpenAPI advertises `ETag` on
+Management `GET`, not successful `PUT`, and describes the
+conditional request outcomes. Tests cover normalization plus validator refresh, two editors,
+an intervening write between `PUT` and `GET`, matching/nonmatching lists, wildcard, weak tags, missing
+headers, and malformed syntax.
 
 Management.Web treats Branding as operational configuration. It should keep the edit UI functional:
 clear forms, validation messages, simple swatches, and previews of the saved values. It should not

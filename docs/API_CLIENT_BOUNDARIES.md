@@ -31,6 +31,10 @@ opaque, defaults to the exact GET validator, and does not reimplement strong com
 valid lists, weak tags, or `*` as malformed. It exposes 400 malformed syntax, 412 false precondition,
 and 428 missing precondition as explicit outcomes. Neither the HTTP client nor resilience handlers
 retry a 412 full-state mutation automatically; the editor reloads and deliberately reapplies or merges.
+Because the server normalizes the document and allocates a revision, successful `PUT` omits `ETag` and
+the client performs `GET` before the next edit. That response atomically replaces the editor's document,
+source epoch, source revision, and validator; the client never attaches a later validator to the earlier
+`PUT` body. Tests cover an intervening writer between `PUT` and `GET`.
 
 Contract test projects also contain OpenAPI document clients that are test-local helpers, not app clients.
 

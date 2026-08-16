@@ -162,12 +162,15 @@ Before removing the standalone executable:
 1. apply only forward-compatible schema expansion that the retained rollback artifact can use;
 2. deploy the upgraded writer in both hosts and verify atomic current/revision/outbox writes plus
    RFC 9110 strong ETag/`If-Match` two-editor, wildcard, matching/nonmatching list, weak-tag, 400, 412,
-   and 428 behavior;
+   and 428 behavior, normalized `PUT` validator omission, and follow-up `GET` refresh;
 3. verify atomic Branding outbox-to-Catalog-transport handoff and both worker crash boundaries, including
    idempotent redelivery after Admin commit and before transport acknowledgement;
 4. verify finite retry/poison/replay, source/applied epoch/revision watermarks, source-rewind epoch
    rotation, old-epoch outbox supersession/transport quarantine, lost-projection reseed, atomic
-   recovery audit, and Management-write/relay/document-generation gating;
+   recovery audit, ordinary Management-write/relay/document-generation gating, and the authorized
+   reseed-only publish/claim/delivery path from `Recovering` to `Ready`; inject failures before recovery
+   publish, between publish and claim, and during delivery, proving authorization retention, exact-row
+   retryability, continued `Recovering`, and unrelated-row fencing;
 5. move Public.Web and Management.Web traffic while preserving the exact `branding-api` audience;
 6. stop issuing standalone endpoint references and wait through the maximum token/session lifetime;
 7. observe zero standalone traffic for the approved rollback window;

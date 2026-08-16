@@ -110,7 +110,10 @@ The Management Branding optimistic-concurrency change keeps the route and full-s
 `SourceEpoch`, `SourceRevision`, strong `ETag`/`If-Match`, 400 malformed syntax, 412 false
 precondition, and 428 missing precondition metadata. OpenAPI descriptions preserve RFC 9110 list,
 weak-tag strong-comparison, and existing-singleton `*` semantics. Refresh canonical Branding artifacts
-and typed clients together; clients expose precondition failure as an outcome and never auto-retry it.
+and typed clients together. Management `GET` owns the response `ETag`; normalized successful `PUT`
+omits it and clients refresh through `GET`, replacing document, epoch, revision, and validator as one
+editor state. Clients expose precondition failure as an outcome and never auto-retry it; an interleaving
+writer between `PUT` and `GET` must be surfaced through the later representation.
 
 Then run:
 

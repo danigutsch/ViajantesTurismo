@@ -391,11 +391,13 @@ Target delivery rules:
   idempotently after lease expiry.
 - Retry is finite. Exhausted transport rows enter visible poison state; audited replay retains the
   immutable envelope and remains guarded by inbox identity and epoch/revision comparison.
-- Reseed gates document generation in `Recovering`, rotates source epoch for a source rewind, and
-  commits inbox, full projection, watermark, old/new audit, and return to `Ready` atomically.
+- Reseed gates ordinary traffic in `Recovering`; a persisted authorization lets only the exact reseed
+  outbox and transport row use a one-shot publish/claim/delivery lane. It rotates source epoch for a
+  source rewind and commits inbox, full projection, watermark, old/new audit, and return to `Ready`
+  atomically.
 - Management uses RFC 9110 strong ETag/`If-Match`: missing returns 428, malformed syntax 400, a valid
   false condition 412, and `*` succeeds for the existing singleton. Failed preconditions are not
-  blindly retried.
+  blindly retried. Normalized successful `PUT` omits `ETag`; Management refreshes it with `GET`.
 - This is event-carried state transfer, not event sourcing. No projection framework, distributed cache,
   SignalR, SSE, WebSockets, HTTP/3 requirement, or ordinary API-to-API HTTP is introduced.
 
