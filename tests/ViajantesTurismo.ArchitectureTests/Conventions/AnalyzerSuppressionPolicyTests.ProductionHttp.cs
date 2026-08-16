@@ -329,6 +329,8 @@ public sealed partial class AnalyzerSuppressionPolicyTests
     [InlineData("[System.Diagnostics.CodeAnalysis.SuppressMessage(\"Architecture\", \"VTARCH001: Production HTTP\")] public sealed class Suppressed { }")]
     [InlineData("[System.Diagnostics.CodeAnalysis.SuppressMessage(\"Architecture\", \"VT\" + \"ARCH001\")] public sealed class Suppressed { }")]
     [InlineData("[System.Diagnostics.CodeAnalysis.UnconditionalSuppressMessage(\"Architecture\", \"VTARCH001\")] public sealed class Suppressed { }")]
+    [InlineData("[System.Diagnostics.CodeAnalysis.SuppressMessage(category: \"Architecture\", \"VTARCH001\")] public sealed class Suppressed { }")]
+    [InlineData("[System.Diagnostics.CodeAnalysis.UnconditionalSuppressMessage(category: \"Architecture\", \"VTARCH001\")] public sealed class Suppressed { }")]
     [InlineData("using Suppress = System.Diagnostics.CodeAnalysis.SuppressMessageAttribute; [Suppress(\"Architecture\", \"VTARCH001\")] public sealed class Suppressed { }")]
     public void Production_http_suppress_message_attributes_should_be_rejected(string source)
     {
@@ -359,6 +361,70 @@ public sealed partial class AnalyzerSuppressionPolicyTests
 
         // Assert
         violations.ShouldNotBeEmpty();
+    }
+
+    [Fact]
+    public void Global_suppression_namespace_imports_should_not_hide_unqualified_attributes()
+    {
+        // Arrange
+        const string globalUsingSource = "global using System.Diagnostics.CodeAnalysis;";
+        const string consumerSource = "[assembly: UnconditionalSuppressMessage(\"Architecture\", \"VTARCH001\")]";
+
+        // Act
+        var violations = AnalyzerSuppressionPolicyTestsHelpers.FindProductionHttpSuppressMessageSuppressionsInSource(
+                globalUsingSource,
+                "GlobalUsings.cs")
+            .Concat(AnalyzerSuppressionPolicyTestsHelpers.FindProductionHttpSuppressMessageSuppressionsInSource(
+                consumerSource,
+                "GlobalSuppressions.cs"))
+            .ToArray();
+
+        // Assert
+        violations.ShouldHaveSingleItem();
+    }
+
+    [Fact]
+    public void Global_suppression_namespace_aliases_should_not_hide_qualified_attributes()
+    {
+        // Arrange
+        const string globalUsingSource = "global using CA = System.Diagnostics.CodeAnalysis;";
+        const string consumerSource = "[assembly: CA::SuppressMessage(\"Architecture\", \"VTARCH001\")]";
+
+        // Act
+        var violations = AnalyzerSuppressionPolicyTestsHelpers.FindProductionHttpSuppressMessageSuppressionsInSource(
+                globalUsingSource,
+                "GlobalUsings.cs")
+            .Concat(AnalyzerSuppressionPolicyTestsHelpers.FindProductionHttpSuppressMessageSuppressionsInSource(
+                consumerSource,
+                "GlobalSuppressions.cs"))
+            .ToArray();
+
+        // Assert
+        violations.ShouldHaveSingleItem();
+    }
+
+    [Fact]
+    public void Conditional_global_suppression_namespace_aliases_should_be_rejected()
+    {
+        // Arrange
+        const string globalUsingSource = """
+            #if NETSTANDARD2_0
+            global using CA = System.Diagnostics.CodeAnalysis;
+            #endif
+            """;
+        const string consumerSource = "[assembly: CA::SuppressMessage(\"Architecture\", \"VTARCH001\")]";
+
+        // Act
+        var violations = AnalyzerSuppressionPolicyTestsHelpers.FindProductionHttpSuppressMessageSuppressionsInSource(
+                globalUsingSource,
+                "ConditionalGlobalUsings.cs")
+            .Concat(AnalyzerSuppressionPolicyTestsHelpers.FindProductionHttpSuppressMessageSuppressionsInSource(
+                consumerSource,
+                "GlobalSuppressions.cs"))
+            .ToArray();
+
+        // Assert
+        violations.ShouldHaveSingleItem();
     }
 
     [Theory]
@@ -499,6 +565,103 @@ public sealed partial class AnalyzerSuppressionPolicyTests
     }
 
     [Fact]
+    public void Cross_file_custom_same_name_suppress_message_attributes_should_not_be_rejected()
+    {
+        // Arrange
+        const string attributeSource = """
+            namespace Contoso;
+
+            public sealed class SuppressMessageAttribute : System.Attribute
+            {
+                public SuppressMessageAttribute(string category, string checkId)
+                {
+                }
+            }
+            """;
+        const string consumerSource = "using Contoso; [assembly: SuppressMessage(\"Architecture\", \"VTARCH001\")]";
+
+        // Act
+        var violations = AnalyzerSuppressionPolicyTestsHelpers.FindProductionHttpSuppressMessageSuppressionsInSource(
+                attributeSource,
+                "CustomAttribute.cs")
+            .Concat(AnalyzerSuppressionPolicyTestsHelpers.FindProductionHttpSuppressMessageSuppressionsInSource(
+                consumerSource,
+                "CustomSuppressions.cs"))
+            .ToArray();
+        var repositoryPolicyMatch = AnalyzerSuppressionPolicyTestsHelpers.ContainsFrameworkSuppressMessageAttribute(
+            consumerSource);
+
+        // Assert
+        violations.ShouldBeEmpty();
+        repositoryPolicyMatch.ShouldBeFalse();
+    }
+
+    [Theory]
+    [InlineData("src/ViajantesTurismo.Admin.ApiService/GeneratedClient.g.cs", "namespace Demo;")]
+    [InlineData("src/ViajantesTurismo.Admin.ApiService/GeneratedClient.g.i.cs", "namespace Demo;")]
+    [InlineData("src/ViajantesTurismo.Admin.ApiService/TemporaryGeneratedFile_Client.cs", "namespace Demo;")]
+    [InlineData("src/ViajantesTurismo.Catalog.ApiService/HiddenClient.cs", "// <auto-generated />\nnamespace Demo;")]
+    [InlineData("src/ViajantesTurismo.Catalog.ApiService/HiddenClient.cs", "// <autogenerated />\nnamespace Demo;")]
+    [InlineData("src/ViajantesTurismo.Branding.ApiService/HiddenClient.cs", "[System.CodeDom.Compiler.GeneratedCode(\"tool\", \"1\")] internal sealed class HiddenClient;")]
+    [InlineData("src/ViajantesTurismo.Branding.ApiService/HiddenClient.cs", "using Generated = System.CodeDom.Compiler.GeneratedCodeAttribute; [Generated(\"tool\", \"1\")] internal sealed class HiddenClient;")]
+    public void Production_api_generated_sources_should_be_rejected(string relativePath, string source)
+    {
+        // Arrange
+        ArgumentException.ThrowIfNullOrWhiteSpace(relativePath);
+        ArgumentException.ThrowIfNullOrWhiteSpace(source);
+
+        // Act
+        var isBypass = AnalyzerSuppressionPolicyTestsHelpers.IsUnapprovedProductionApiGeneratedSource(
+            relativePath,
+            source);
+
+        // Assert
+        isBypass.ShouldBeTrue();
+    }
+
+    [Fact]
+    public void Committed_production_api_sources_should_not_bypass_the_analyzer_as_generated()
+    {
+        // Arrange
+        var repositoryRoot = AnalyzerSuppressionPolicyTestsHelpers.GetRepositoryRoot();
+        var sourceFiles = AnalyzerSuppressionPolicyTestsHelpers.EnumerateRepositoryFiles(repositoryRoot, "*.cs")
+            .Where(path => !AnalyzerSuppressionPolicyTestsHelpers.IsIgnoredPath(path))
+            .ToArray();
+
+        // Act
+        var violations = sourceFiles
+            .Select(path => (
+                RelativePath: Path.GetRelativePath(repositoryRoot, path).Replace('\\', '/'),
+                Source: File.ReadAllText(path)))
+            .Where(candidate => AnalyzerSuppressionPolicyTestsHelpers.IsUnapprovedProductionApiGeneratedSource(
+                candidate.RelativePath,
+                candidate.Source))
+            .Select(static candidate => candidate.RelativePath)
+            .ToArray();
+
+        // Assert
+        violations.ShouldBeEmpty();
+    }
+
+    [Fact]
+    public void General_suppression_policy_should_inspect_inactive_namespace_aliases()
+    {
+        // Arrange
+        const string source = """
+            #if NETSTANDARD2_0
+            using CA = System.Diagnostics.CodeAnalysis;
+            [assembly: CA::SuppressMessage("Style", "CA1822")]
+            #endif
+            """;
+
+        // Act
+        var containsSuppression = AnalyzerSuppressionPolicyTestsHelpers.ContainsFrameworkSuppressMessageAttribute(source);
+
+        // Assert
+        containsSuppression.ShouldBeTrue();
+    }
+
+    [Fact]
     public void Multiline_global_suppression_aliases_should_be_rejected()
     {
         // Arrange
@@ -599,6 +762,24 @@ public sealed partial class AnalyzerSuppressionPolicyTests
         violations.ShouldHaveSingleItem();
     }
 
+    [Fact]
+    public void Production_api_generated_code_sections_should_be_rejected()
+    {
+        // Arrange
+        const string editorConfig = """
+            [src/ViajantesTurismo.Admin.ApiService/**.cs]
+            generated_code = true
+            """;
+
+        // Act
+        var violations = AnalyzerSuppressionPolicyTestsHelpers.FindBroadProductionHttpSuppressionsInSource(
+            editorConfig,
+            ".editorconfig");
+
+        // Assert
+        violations.ShouldHaveSingleItem();
+    }
+
     [Theory]
     [InlineData("<NoWarn>vtarch001</NoWarn>")]
     [InlineData("<NoWarn>&#x56;TARCH001</NoWarn>")]
@@ -606,6 +787,7 @@ public sealed partial class AnalyzerSuppressionPolicyTests
     [InlineData("<WarningsNotAsErrors>CS0001,VTARCH001</WarningsNotAsErrors>")]
     [InlineData("<warningsnotaserrors>$(WarningsNotAsErrors);vtarch001</warningsnotaserrors>")]
     [InlineData("<WarningsNotAsErrors>CS0618</WarningsNotAsErrors>")]
+    [InlineData("<Project><PropertyGroup><TreatWarningsAsErrors>false</TreatWarningsAsErrors></PropertyGroup></Project>")]
     [InlineData("<Project><ItemGroup><GlobalAnalyzerConfigFiles Include=\"policy.txt\" /></ItemGroup></Project>")]
     [InlineData("<Project><PropertyGroup><CodeAnalysisRuleSet>disable-vtarch001.ruleset</CodeAnalysisRuleSet></PropertyGroup></Project>")]
     public void Production_http_msbuild_suppressions_should_be_rejected(string setting)

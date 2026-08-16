@@ -429,6 +429,78 @@ public sealed class ProductionApiHttpAnalyzerTests
         diagnostics.ShouldBeEmpty();
     }
 
+    [Fact]
+    public async Task Definitely_non_null_local_coalesce_fallback_is_not_a_destination()
+    {
+        // Arrange
+        const string source = """
+            namespace ViajantesTurismo.Admin.ApiService;
+
+            public static class Registration
+            {
+                public static void Configure(HttpClient client)
+                {
+                    string? destination = "https+http://api";
+                    client.BaseAddress = new Uri(destination ?? "https+http://branding-api");
+                }
+            }
+            """;
+
+        // Act
+        var diagnostics = await AnalyzerTestHarness.GetAnalyzerDiagnostics(source);
+
+        // Assert
+        diagnostics.ShouldBeEmpty();
+    }
+
+    [Fact]
+    public async Task Definitely_non_null_uri_local_coalesce_fallback_is_not_a_destination()
+    {
+        // Arrange
+        const string source = """
+            namespace ViajantesTurismo.Admin.ApiService;
+
+            public static class Registration
+            {
+                public static void Configure(HttpClient client)
+                {
+                    Uri? destination = new Uri("https+http://api");
+                    client.BaseAddress = destination ?? new Uri("https+http://branding-api");
+                }
+            }
+            """;
+
+        // Act
+        var diagnostics = await AnalyzerTestHarness.GetAnalyzerDiagnostics(source);
+
+        // Assert
+        diagnostics.ShouldBeEmpty();
+    }
+
+    [Fact]
+    public async Task Try_cast_coalesce_fallback_remains_reachable()
+    {
+        // Arrange
+        const string source = """
+            namespace ViajantesTurismo.Admin.ApiService;
+
+            public static class Registration
+            {
+                public static void Configure(HttpClient client)
+                {
+                    object value = new object();
+                    client.BaseAddress = value as Uri ?? new Uri("https+http://branding-api");
+                }
+            }
+            """;
+
+        // Act
+        var diagnostics = await AnalyzerTestHarness.GetAnalyzerDiagnostics(source);
+
+        // Assert
+        diagnostics.ShouldHaveSingleItem(static candidate => candidate.Id == ArchitectureDiagnosticIds.ProductionApiHttp);
+    }
+
     [Theory]
     [InlineData("false ? \"https+http://api\" : \"https+http://branding-api\"")]
     [InlineData("(string?)null ?? \"https+http://branding-api\"")]
@@ -478,6 +550,32 @@ public sealed class ProductionApiHttpAnalyzerTests
         diagnostics.ShouldHaveSingleItem(static candidate => candidate.Id == ArchitectureDiagnosticIds.ProductionApiHttp);
     }
 
+    [Theory]
+    [InlineData("services.AddHttpClient($\"{ResourceNames.BrandingApi,20}\");")]
+    [InlineData("client.BaseAddress = new Uri($\"https+http://{ResourceNames.BrandingApi:ignored}\");")]
+    public async Task Aligned_or_formatted_interpolations_are_not_resolved_as_exact_destinations(string statement)
+    {
+        // Arrange
+        ArgumentException.ThrowIfNullOrWhiteSpace(statement);
+        var source = $$"""
+            namespace ViajantesTurismo.Admin.ApiService;
+
+            public static class Registration
+            {
+                public static void Configure(ServiceCollection services, HttpClient client)
+                {
+                    {{statement}}
+                }
+            }
+            """;
+
+        // Act
+        var diagnostics = await AnalyzerTestHarness.GetAnalyzerDiagnostics(source);
+
+        // Assert
+        diagnostics.ShouldBeEmpty();
+    }
+
     [Fact]
     public async Task Base_address_uri_relative_component_is_not_a_destination()
     {
@@ -524,6 +622,82 @@ public sealed class ProductionApiHttpAnalyzerTests
 
         // Assert
         diagnostics.ShouldHaveSingleItem(static candidate => candidate.Id == ArchitectureDiagnosticIds.ProductionApiHttp);
+    }
+
+    [Fact]
+    public async Task Base_address_uri_kind_relative_component_keeps_the_internal_base_destination()
+    {
+        // Arrange
+        const string source = """
+            namespace ViajantesTurismo.Admin.ApiService;
+
+            public static class Registration
+            {
+                public static void Configure(HttpClient client)
+                {
+                    client.BaseAddress = new Uri(
+                        new Uri($"https+http://{ResourceNames.BrandingApi}"),
+                        new Uri("v1/settings", UriKind.Relative));
+                }
+            }
+            """;
+
+        // Act
+        var diagnostics = await AnalyzerTestHarness.GetAnalyzerDiagnostics(source);
+
+        // Assert
+        diagnostics.ShouldHaveSingleItem(static candidate => candidate.Id == ArchitectureDiagnosticIds.ProductionApiHttp);
+    }
+
+    [Fact]
+    public async Task Uri_kind_relative_rejects_an_absolute_destination_before_it_is_reachable()
+    {
+        // Arrange
+        const string source = """
+            namespace ViajantesTurismo.Admin.ApiService;
+
+            public static class Registration
+            {
+                public static void Configure(HttpClient client)
+                {
+                    client.BaseAddress = new Uri("https+http://branding-api", UriKind.Relative);
+                }
+            }
+            """;
+
+        // Act
+        var diagnostics = await AnalyzerTestHarness.GetAnalyzerDiagnostics(source);
+
+        // Assert
+        diagnostics.ShouldBeEmpty();
+    }
+
+    [Theory]
+    [InlineData("\"https://provider.example/v1/settings\"")]
+    [InlineData("configuredEndpoint")]
+    public async Task Two_argument_uri_absolute_and_runtime_overrides_are_not_guessed(string overrideExpression)
+    {
+        // Arrange
+        ArgumentException.ThrowIfNullOrWhiteSpace(overrideExpression);
+        var source = $$"""
+            namespace ViajantesTurismo.Admin.ApiService;
+
+            public static class Registration
+            {
+                public static void Configure(HttpClient client, string configuredEndpoint)
+                {
+                    client.BaseAddress = new Uri(
+                        new Uri($"https+http://{ResourceNames.BrandingApi}"),
+                        {{overrideExpression}});
+                }
+            }
+            """;
+
+        // Act
+        var diagnostics = await AnalyzerTestHarness.GetAnalyzerDiagnostics(source);
+
+        // Assert
+        diagnostics.ShouldBeEmpty();
     }
 
     [Fact]
@@ -931,11 +1105,11 @@ public sealed class ProductionApiHttpAnalyzerTests
     {
         // Arrange
         const string source = """
-            namespace Demo
+            namespace System.Net.Http
             {
-                public static class HttpClientExtensions
+                public static class TelemetryHttpClientExtensions
                 {
-                    public static void RecordDestination(this HttpClient client, string destination)
+                    public static void RecordDestination(this HttpClient client, string requestUri)
                     {
                     }
                 }
@@ -947,7 +1121,7 @@ public sealed class ProductionApiHttpAnalyzerTests
                 {
                     public static void Record(HttpClient client)
                     {
-                        client.RecordDestination(ResourceNames.BrandingApi);
+                        client.RecordDestination($"https+http://{ResourceNames.BrandingApi}");
                     }
                 }
             }
@@ -958,6 +1132,31 @@ public sealed class ProductionApiHttpAnalyzerTests
 
         // Assert
         diagnostics.ShouldBeEmpty();
+    }
+
+    [Fact]
+    public async Task Delete_from_json_resolves_known_http_destinations()
+    {
+        // Arrange
+        const string source = """
+            using System.Net.Http.Json;
+
+            namespace ViajantesTurismo.Admin.ApiService;
+
+            public static class BrandingWriter
+            {
+                public static Task<object?> Delete(HttpClient client)
+                {
+                    return client.DeleteFromJsonAsync<object>($"https+http://{ResourceNames.BrandingApi}");
+                }
+            }
+            """;
+
+        // Act
+        var diagnostics = await AnalyzerTestHarness.GetAnalyzerDiagnostics(source);
+
+        // Assert
+        diagnostics.ShouldHaveSingleItem(static candidate => candidate.Id == ArchitectureDiagnosticIds.ProductionApiHttp);
     }
 
     [Theory]
