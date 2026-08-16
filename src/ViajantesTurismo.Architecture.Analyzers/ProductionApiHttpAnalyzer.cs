@@ -23,6 +23,7 @@ public sealed class ProductionApiHttpAnalyzer : DiagnosticAnalyzer
     private const string CreateClientMethodName = "CreateClient";
     private const string CatalogResourceValue = "catalog-api";
     private const string HttpClientFactoryExtensionsTypeName = "HttpClientFactoryServiceCollectionExtensions";
+    private const string HttpClientJsonExtensionsMetadataName = "System.Net.Http.Json.HttpClientJsonExtensions";
     private const string HttpClientTypeName = "HttpClient";
     private const string HttpClientFactoryTypeName = "IHttpClientFactory";
     private const string HttpRequestMessageTypeName = "HttpRequestMessage";
@@ -66,8 +67,9 @@ public sealed class ProductionApiHttpAnalyzer : DiagnosticAnalyzer
                 return;
             }
 
+            var httpClientJsonExtensionsType = compilationContext.Compilation.GetTypeByMetadataName(HttpClientJsonExtensionsMetadataName);
             compilationContext.RegisterOperationAction(
-                operationContext => AnalyzeInvocation(operationContext, sourceApi),
+                operationContext => AnalyzeInvocation(operationContext, sourceApi, httpClientJsonExtensionsType),
                 OperationKind.Invocation);
             compilationContext.RegisterOperationAction(
                 operationContext => AnalyzeAssignment(operationContext, sourceApi),
@@ -76,7 +78,10 @@ public sealed class ProductionApiHttpAnalyzer : DiagnosticAnalyzer
         });
     }
 
-    private static void AnalyzeInvocation(OperationAnalysisContext context, ApiDestination sourceApi)
+    private static void AnalyzeInvocation(
+        OperationAnalysisContext context,
+        ApiDestination sourceApi,
+        INamedTypeSymbol? httpClientJsonExtensionsType)
     {
         if (context.Operation is not IInvocationOperation invocation)
         {
@@ -95,7 +100,7 @@ public sealed class ProductionApiHttpAnalyzer : DiagnosticAnalyzer
             return;
         }
 
-        if (IsHttpClientRequestInvocation(invocation))
+        if (IsHttpClientRequestInvocation(invocation, httpClientJsonExtensionsType))
         {
             AnalyzeHttpClientRequestInvocation(context, invocation, sourceApi);
         }
@@ -319,8 +324,8 @@ public sealed class ProductionApiHttpAnalyzer : DiagnosticAnalyzer
                 sourceApi,
                 resolutionMode),
             IConditionalOperation conditional => ResolveBranchDestination([conditional.WhenTrue, conditional.WhenFalse], visitedSymbols, sourceApi, resolutionMode),
-            ICoalesceOperation coalesce when coalesce.Value.ConstantValue is { HasValue: true } constantValue => ResolveDestination(
-                constantValue.Value is null ? coalesce.WhenNull : coalesce.Value,
+            ICoalesceOperation coalesce when IsStaticallyNull(coalesce.Value, visitedSymbols) is bool isNull => ResolveDestination(
+                isNull ? coalesce.WhenNull : coalesce.Value,
                 visitedSymbols,
                 sourceApi,
                 resolutionMode),
@@ -358,12 +363,43 @@ public sealed class ProductionApiHttpAnalyzer : DiagnosticAnalyzer
         ApiDestination sourceApi,
         DestinationResolutionMode resolutionMode)
     {
+        var uriKindArgument = objectCreation.Arguments.FirstOrDefault(static argument =>
+            string.Equals(argument.Parameter?.Name, "uriKind", StringComparison.Ordinal));
+        if (uriKindArgument?.Value.ConstantValue is { HasValue: true, Value: int uriKindValue }
+            && (UriKind)uriKindValue == UriKind.Relative)
+        {
+            return ApiDestination.None;
+        }
+
+        var relativeUriArgument = objectCreation.Arguments.FirstOrDefault(static argument =>
+            string.Equals(argument.Parameter?.Name, RelativeUriParameterName, StringComparison.Ordinal));
+        if (relativeUriArgument is not null)
+        {
+            var overrideDestination = ResolveDestination(
+                relativeUriArgument.Value,
+                visitedSymbols,
+                sourceApi,
+                DestinationResolutionMode.RequestUri);
+            if (overrideDestination != ApiDestination.None)
+            {
+                return overrideDestination;
+            }
+
+            if (IsStaticallyAbsoluteUri(relativeUriArgument.Value, visitedSymbols) is not false)
+            {
+                return ApiDestination.None;
+            }
+
+            var baseUriArgument = objectCreation.Arguments.FirstOrDefault(static argument =>
+                IsUriType(argument.Parameter?.Type));
+            return baseUriArgument is null
+                ? ApiDestination.None
+                : ResolveDestination(baseUriArgument.Value, visitedSymbols, sourceApi, resolutionMode);
+        }
+
         foreach (var argument in objectCreation.Arguments)
         {
-            var argumentMode = string.Equals(argument.Parameter?.Name, RelativeUriParameterName, StringComparison.Ordinal)
-                ? DestinationResolutionMode.RequestUri
-                : resolutionMode;
-            var destination = ResolveDestination(argument.Value, visitedSymbols, sourceApi, argumentMode);
+            var destination = ResolveDestination(argument.Value, visitedSymbols, sourceApi, resolutionMode);
             if (destination != ApiDestination.None)
             {
                 return destination;
@@ -371,6 +407,122 @@ public sealed class ProductionApiHttpAnalyzer : DiagnosticAnalyzer
         }
 
         return ApiDestination.None;
+    }
+
+    private static bool? IsStaticallyAbsoluteUri(IOperation operation, ISet<ISymbol> visitedSymbols)
+    {
+        while (operation is IConversionOperation { IsTryCast: false, OperatorMethod: null } conversion)
+        {
+            operation = conversion.Operand;
+        }
+
+        if (operation is IParenthesizedOperation parenthesized)
+        {
+            return IsStaticallyAbsoluteUri(parenthesized.Operand, visitedSymbols);
+        }
+
+        if (operation.ConstantValue is { HasValue: true, Value: string value })
+        {
+            return Uri.TryCreate(value, UriKind.RelativeOrAbsolute, out var uri)
+                ? uri.IsAbsoluteUri
+                : null;
+        }
+
+        if (operation is ILocalReferenceOperation localReference)
+        {
+            if (!visitedSymbols.Add(localReference.Local))
+            {
+                return null;
+            }
+
+            try
+            {
+                return TryGetReachingLocalInitializer(localReference, out var initializer)
+                    && initializer is not null
+                        ? IsStaticallyAbsoluteUri(initializer, visitedSymbols)
+                        : null;
+            }
+            finally
+            {
+                visitedSymbols.Remove(localReference.Local);
+            }
+        }
+
+        if (operation is not IObjectCreationOperation objectCreation || !IsUriType(objectCreation.Type))
+        {
+            return null;
+        }
+
+        var uriStringArgument = objectCreation.Arguments.FirstOrDefault(static argument =>
+            string.Equals(argument.Parameter?.Name, "uriString", StringComparison.Ordinal));
+        if (uriStringArgument is null)
+        {
+            return null;
+        }
+
+        var inferredKind = IsStaticallyAbsoluteUri(uriStringArgument.Value, visitedSymbols);
+        var uriKindArgument = objectCreation.Arguments.FirstOrDefault(static argument =>
+            string.Equals(argument.Parameter?.Name, "uriKind", StringComparison.Ordinal));
+        if (uriKindArgument is null)
+        {
+            return objectCreation.Arguments.Length == 1 ? inferredKind : null;
+        }
+
+        return uriKindArgument.Value.ConstantValue is { HasValue: true, Value: int uriKindValue }
+            ? (UriKind)uriKindValue switch
+            {
+                UriKind.Relative when inferredKind is false => false,
+                UriKind.Absolute when inferredKind is true => true,
+                UriKind.RelativeOrAbsolute => inferredKind,
+                _ => null
+            }
+            : null;
+    }
+
+    private static bool? IsStaticallyNull(IOperation operation, ISet<ISymbol> visitedSymbols)
+    {
+        while (operation is IConversionOperation { IsTryCast: false, OperatorMethod: null } conversion)
+        {
+            operation = conversion.Operand;
+        }
+
+        if (operation is IParenthesizedOperation parenthesized)
+        {
+            return IsStaticallyNull(parenthesized.Operand, visitedSymbols);
+        }
+
+        if (operation.ConstantValue is { HasValue: true } constantValue)
+        {
+            return constantValue.Value is null;
+        }
+
+        if (operation is IFieldReferenceOperation { Field.HasConstantValue: true } fieldReference)
+        {
+            return fieldReference.Field.ConstantValue is null;
+        }
+
+        if (operation is IObjectCreationOperation)
+        {
+            return false;
+        }
+
+        if (operation is not ILocalReferenceOperation localReference
+            || !visitedSymbols.Add(localReference.Local))
+        {
+            return null;
+        }
+
+        try
+        {
+            return TryGetReachingLocalInitializer(localReference, out var initializer)
+                && initializer is not null
+                    ? IsStaticallyNull(initializer, visitedSymbols)
+                    : null;
+        }
+        finally
+        {
+            visitedSymbols.Remove(localReference.Local);
+        }
     }
 
     private static ApiDestination ResolveComposedNamedClientDestination(
@@ -409,8 +561,11 @@ public sealed class ProductionApiHttpAnalyzer : DiagnosticAnalyzer
                 when textOperation.Text.ConstantValue is { HasValue: true, Value: string text }:
                 candidate.Append(text);
                 return true;
-            case IInterpolationOperation interpolation:
+            case IInterpolationOperation interpolation
+                when interpolation.Alignment is null && interpolation.FormatString is null:
                 return TryAppendNamedClientComponent(interpolation.Expression, candidate, visitedSymbols);
+            case IInterpolationOperation:
+                return false;
             case IFieldReferenceOperation fieldReference:
                 var fieldDestination = GetResourceNameDestination(fieldReference.Field);
                 if (fieldDestination == ApiDestination.None)
@@ -511,6 +666,11 @@ public sealed class ProductionApiHttpAnalyzer : DiagnosticAnalyzer
         }
         else if (operation is IInterpolationOperation interpolation)
         {
+            if (interpolation.Alignment is not null || interpolation.FormatString is not null)
+            {
+                return ApiDestination.None;
+            }
+
             return AppendUriComponent(interpolation.Expression, candidate, visitedSymbols, sourceApi);
         }
         else if (operation.ConstantValue is { HasValue: true, Value: string constantValue })
@@ -993,7 +1153,9 @@ public sealed class ProductionApiHttpAnalyzer : DiagnosticAnalyzer
             && IsExactHttpClientType(method.ReturnType);
     }
 
-    private static bool IsHttpClientRequestInvocation(IInvocationOperation invocation)
+    private static bool IsHttpClientRequestInvocation(
+        IInvocationOperation invocation,
+        INamedTypeSymbol? httpClientJsonExtensionsType)
     {
         if (IsExactHttpClientType(invocation.TargetMethod.ContainingType))
         {
@@ -1002,9 +1164,16 @@ public sealed class ProductionApiHttpAnalyzer : DiagnosticAnalyzer
 
         var definition = invocation.TargetMethod.ReducedFrom ?? invocation.TargetMethod;
         return definition.IsExtensionMethod
+            && httpClientJsonExtensionsType is not null
+            && SymbolEqualityComparer.Default.Equals(definition.ContainingType, httpClientJsonExtensionsType)
+            && definition.Name is "GetFromJsonAsync"
+                or "GetFromJsonAsAsyncEnumerable"
+                or "PostAsJsonAsync"
+                or "PutAsJsonAsync"
+                or "PatchAsJsonAsync"
+                or "DeleteFromJsonAsync"
             && definition.Parameters.Length > 0
-            && IsHttpClientType(definition.Parameters[0].Type)
-            && IsNamespaceOrChild(definition.ContainingNamespace.ToDisplayString(), SystemNetHttpNamespace);
+            && IsHttpClientType(definition.Parameters[0].Type);
     }
 
     private static bool IsRequestDestinationParameter(IParameterSymbol? parameter)

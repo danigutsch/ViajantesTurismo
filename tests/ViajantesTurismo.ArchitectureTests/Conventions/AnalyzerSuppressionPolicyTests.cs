@@ -11,6 +11,7 @@ public sealed partial class AnalyzerSuppressionPolicyTests
         "src/ViajantesTurismo.Admin.ApiService/Customers/CustomerImportEndpoints.cs",
         "src/SharedKernel/SharedKernel.IntegrationTesting/AspireTestApplication.cs",
         "src/ViajantesTurismo.MigrationService/MigrationProcess.cs",
+        "src/ViajantesTurismo.Catalog.Contracts.Application/CatalogTourImageDto.cs",
         "tests/SharedKernel.EntityFrameworkCore.Tests/EfCoreCommandTransactionScopeTests.cs",
         "tests/SharedKernel.EntityFrameworkCore.Tests/PostgreSqlFixture.cs",
         "tests/SharedKernel.EntityFrameworkCore.Tests/PostgreSqlIntegrationEventTransportScenario.cs",
@@ -72,7 +73,7 @@ public sealed partial class AnalyzerSuppressionPolicyTests
         var repositoryRoot = AnalyzerSuppressionPolicyTestsHelpers.GetRepositoryRoot();
         var filesWithSuppressMessage = AnalyzerSuppressionPolicyTestsHelpers.EnumerateRepositoryFiles(repositoryRoot, "*.cs")
             .Where(path => !AnalyzerSuppressionPolicyTestsHelpers.IsIgnoredPath(path))
-            .Where(path => AnalyzerSuppressionPolicyTestsHelpers.SuppressMessageAttributeRegex().IsMatch(File.ReadAllText(path)))
+            .Where(path => AnalyzerSuppressionPolicyTestsHelpers.ContainsFrameworkSuppressMessageAttribute(File.ReadAllText(path)))
             .Select(path => Path.GetRelativePath(repositoryRoot, path).Replace('\\', '/'))
             .Where(path => !ApprovedSuppressMessageFiles.Contains(path))
             .ToArray();
