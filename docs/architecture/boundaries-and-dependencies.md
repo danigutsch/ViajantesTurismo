@@ -137,6 +137,7 @@ flowchart TB
     ViajantesTurismo_Branding_ApiService[ViajantesTurismo.Branding.ApiService] --> ViajantesTurismo_Branding_Infrastructure[ViajantesTurismo.Branding.Infrastructure]
     ViajantesTurismo_Branding_ApiService[ViajantesTurismo.Branding.ApiService] --> ViajantesTurismo_Resources[ViajantesTurismo.Resources]
     ViajantesTurismo_Branding_ApiService[ViajantesTurismo.Branding.ApiService] --> ViajantesTurismo_ServiceDefaults[ViajantesTurismo.ServiceDefaults]
+    ViajantesTurismo_Branding_Contracts_IntegrationEvents[ViajantesTurismo.Branding.Contracts.IntegrationEvents] --> SharedKernel_Messaging_IntegrationEvents[SharedKernel.Messaging.IntegrationEvents]
     ViajantesTurismo_Branding_Infrastructure[ViajantesTurismo.Branding.Infrastructure] --> SharedKernel_Branding[SharedKernel.Branding]
     ViajantesTurismo_Branding_Infrastructure[ViajantesTurismo.Branding.Infrastructure] --> SharedKernel_EntityFrameworkCore[SharedKernel.EntityFrameworkCore]
     ViajantesTurismo_Branding_Infrastructure[ViajantesTurismo.Branding.Infrastructure] --> SharedKernel_Npgsql[SharedKernel.Npgsql]

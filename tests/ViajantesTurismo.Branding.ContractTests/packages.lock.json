@@ -385,6 +385,15 @@
       "sharedkernel.mediator.abstractions": {
         "type": "Project"
       },
+      "sharedkernel.messaging": {
+        "type": "Project"
+      },
+      "sharedkernel.messaging.integrationevents": {
+        "type": "Project",
+        "dependencies": {
+          "SharedKernel.Messaging": "[0.1.0-alpha.0, )"
+        }
+      },
       "sharedkernel.npgsql": {
         "type": "Project",
         "dependencies": {
@@ -443,6 +452,12 @@
       },
       "viajantesturismo.branding.contracts.http": {
         "type": "Project"
+      },
+      "viajantesturismo.branding.contracts.integrationevents": {
+        "type": "Project",
+        "dependencies": {
+          "SharedKernel.Messaging.IntegrationEvents": "[0.1.0-alpha.0, )"
+        }
       },
       "viajantesturismo.branding.infrastructure": {
         "type": "Project",
