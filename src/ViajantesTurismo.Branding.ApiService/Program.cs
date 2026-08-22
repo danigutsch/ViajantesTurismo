@@ -20,7 +20,7 @@ builder.Services.AddApiSecurity(
         BrandingAuthorization.PermissionsByRole)
     .AddPolicy(BrandingAuthorization.BrandingRead, policy => policy.RequirePermission(BrandingAuthorization.BrandingRead))
     .AddPolicy(BrandingAuthorization.BrandingWrite, policy => policy.RequirePermission(BrandingAuthorization.BrandingWrite));
-builder.AddBrandingInfrastructure();
+builder.AddBrandingInfrastructure(addOutboxRelay: !OpenApiGenerationMode.IsEnabled(builder.Environment));
 
 var app = builder.Build();
 

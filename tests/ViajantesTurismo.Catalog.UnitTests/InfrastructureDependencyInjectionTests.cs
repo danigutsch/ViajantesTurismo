@@ -1,4 +1,7 @@
 using System.Diagnostics;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Metadata;
 using OpenTelemetry.Metrics;
 using OpenTelemetry.Trace;
 using SharedKernel.Testing;
@@ -138,11 +141,18 @@ public sealed class InfrastructureDependencyInjectionTests
         // Assert
         var catalogDbContext = scenario.ShouldResolve<CatalogDbContext>();
         scenario.ShouldResolveSingleton<NpgsqlDataSource>();
-        var outboxEntity = catalogDbContext.Model.GetEntityTypes().SingleOrDefault(
+        var designTimeModel = catalogDbContext.GetService<IDesignTimeModel>().Model;
+        var outboxEntity = designTimeModel.GetEntityTypes().SingleOrDefault(
             entity => entity.FindAnnotation("Relational:TableName")?.Value?.Equals("outbox_messages") == true);
+        var transportEntity = designTimeModel.GetEntityTypes().SingleOrDefault(
+            entity => entity.FindAnnotation("Relational:TableName")?.Value?.Equals("transport_messages") == true);
         var mappedOutboxEntity = outboxEntity
             ?? throw new InvalidOperationException("The integration-event outbox entity is not mapped.");
+        var mappedTransportEntity = transportEntity
+            ?? throw new InvalidOperationException("The integration-event transport entity is not mapped.");
 
         mappedOutboxEntity.FindAnnotation("Relational:Schema")?.Value.ShouldBe("messaging");
+        mappedTransportEntity.FindAnnotation("Relational:Schema")?.Value.ShouldBe("messaging");
+        mappedTransportEntity.IsTableExcludedFromMigrations().ShouldBeFalse();
     }
 }

@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 using ViajantesTurismo.Branding.Infrastructure;
@@ -11,9 +12,11 @@ using ViajantesTurismo.Branding.Infrastructure;
 namespace ViajantesTurismo.Branding.Infrastructure.Migrations
 {
     [DbContext(typeof(BrandingDbContext))]
-    partial class BrandingDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260817203853_AddBrandingIntegrationEventOutbox")]
+    partial class AddBrandingIntegrationEventOutbox
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder

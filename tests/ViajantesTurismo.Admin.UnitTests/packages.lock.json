@@ -1011,6 +1011,12 @@
           "ViajantesTurismo.Admin.Domain": "[0.1.0-alpha.0, )"
         }
       },
+      "viajantesturismo.branding.contracts.integrationevents": {
+        "type": "Project",
+        "dependencies": {
+          "SharedKernel.Messaging.IntegrationEvents": "[0.1.0-alpha.0, )"
+        }
+      },
       "viajantesturismo.branding.infrastructure": {
         "type": "Project",
         "dependencies": {
@@ -1018,7 +1024,10 @@
           "Aspire.Npgsql.EntityFrameworkCore.PostgreSQL": "[13.4.6, )",
           "SharedKernel.Branding": "[0.1.0-alpha.0, )",
           "SharedKernel.EntityFrameworkCore": "[0.1.0-alpha.0, )",
+          "SharedKernel.Messaging.IntegrationEvents": "[0.1.0-alpha.0, )",
+          "SharedKernel.Messaging.IntegrationEvents.EntityFrameworkCore": "[0.1.0-alpha.0, )",
           "SharedKernel.Npgsql": "[0.1.0-alpha.0, )",
+          "ViajantesTurismo.Branding.Contracts.IntegrationEvents": "[0.1.0-alpha.0, )",
           "ViajantesTurismo.Resources": "[0.1.0-alpha.0, )"
         }
       },

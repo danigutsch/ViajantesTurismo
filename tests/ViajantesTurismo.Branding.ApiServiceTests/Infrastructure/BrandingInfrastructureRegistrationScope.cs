@@ -1,5 +1,7 @@
 using System.Diagnostics;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Metadata;
 using Microsoft.Extensions.Hosting;
 using OpenTelemetry.Metrics;
 using OpenTelemetry.Trace;
@@ -18,7 +20,9 @@ internal sealed class BrandingInfrastructureRegistrationScope : IDisposable
         this.services = services;
     }
 
-    public static BrandingInfrastructureRegistrationScope Create(string environmentName = "Production")
+    public static BrandingInfrastructureRegistrationScope Create(
+        string environmentName = "Production",
+        bool addOutboxRelay = true)
     {
         var builder = Host.CreateApplicationBuilder(new HostApplicationBuilderSettings
         {
@@ -26,8 +30,7 @@ internal sealed class BrandingInfrastructureRegistrationScope : IDisposable
         });
         builder.Configuration["ConnectionStrings:catalog-database"] = "Host=localhost;Database=catalog-database;Username=postgres";
         builder.Services.AddOpenTelemetry().WithTracing(static _ => { });
-        builder.Services.AddSingleton<IIntegrationEventSerializer, BrandingMessagingTestIntegrationEventSerializer>();
-        builder.AddBrandingInfrastructure();
+        builder.AddBrandingInfrastructure(addOutboxRelay);
 
         return new BrandingInfrastructureRegistrationScope(builder.Services.BuildServiceProvider());
     }
@@ -39,7 +42,7 @@ internal sealed class BrandingInfrastructureRegistrationScope : IDisposable
 
     public bool IsSensitiveDataLoggingEnabled()
     {
-        var options = services.GetRequiredService<Microsoft.EntityFrameworkCore.DbContextOptions<BrandingDbContext>>();
+        var options = services.GetRequiredService<DbContextOptions<BrandingDbContext>>();
         return options.FindExtension<CoreOptionsExtension>()?.IsSensitiveDataLoggingEnabled ?? false;
     }
 
@@ -56,18 +59,39 @@ internal sealed class BrandingInfrastructureRegistrationScope : IDisposable
         return services.GetService<MeterProvider>() is not null;
     }
 
-    public (bool HasOutbox, bool HasTransportPublisher, int OutboxRelayCount) GetMessagingRegistrations()
+    public (
+        bool HasOutbox,
+        bool HasTransportPublisher,
+        bool HasSerializer,
+        int OutboxRelayCount,
+        string? OutboxSchema,
+        string? TransportSchema,
+        bool TransportExcludedFromMigrations) GetMessagingRegistrations()
     {
         using var scope = services.CreateScope();
         var hasOutbox = scope.ServiceProvider.GetKeyedService<IIntegrationEventOutbox>(typeof(BrandingDbContext)) is not null;
         var hasTransportPublisher = scope.ServiceProvider.GetKeyedService<IEventEnvelopePublisher>(typeof(BrandingDbContext)) is not null;
+        var hasSerializer = scope.ServiceProvider.GetKeyedService<IIntegrationEventSerializer>(typeof(BrandingDbContext)) is not null;
         var relayCount = services.GetServices<IHostedService>()
             .Count(static service =>
                 service.GetType().IsGenericType
                 && service.GetType().GetGenericArguments().Contains(typeof(BrandingDbContext))
                 && service.GetType().Name.StartsWith("IntegrationEventOutboxRelayHostedService", StringComparison.Ordinal));
+        var dbContext = scope.ServiceProvider.GetRequiredService<BrandingDbContext>();
+        var model = dbContext.GetService<IDesignTimeModel>().Model;
+        var outbox = model.GetEntityTypes().SingleOrDefault(
+            entity => entity.GetTableName()?.Equals("outbox_messages", StringComparison.Ordinal) == true);
+        var transport = model.GetEntityTypes().SingleOrDefault(
+            entity => entity.GetTableName()?.Equals("transport_messages", StringComparison.Ordinal) == true);
 
-        return (hasOutbox, hasTransportPublisher, relayCount);
+        return (
+            hasOutbox,
+            hasTransportPublisher,
+            hasSerializer,
+            relayCount,
+            outbox?.GetSchema(),
+            transport?.GetSchema(),
+            transport?.IsTableExcludedFromMigrations() ?? false);
     }
 
     public void Dispose()
