@@ -315,6 +315,7 @@ services.AddIntegrationEventOutbox<ModuleDbContext>(storage =>
     storage.OutboxSchema = "branding";
     storage.OutboxTableName = "outbox_messages";
     storage.TransportTableName = "transport_messages";
+    storage.ExcludeTransportFromMigrations = true;
 });
 services.AddIntegrationEventInbox<ModuleDbContext>(storage =>
 {
