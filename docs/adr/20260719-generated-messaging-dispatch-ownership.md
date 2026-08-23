@@ -29,10 +29,11 @@ adoption of another mediator framework or generation of business logic.
   belongs to `SharedKernel.Domain.EntityFrameworkCore`.
 - Each host supplies explicit `JsonTypeInfo<T>` metadata. Generated serializers and envelope publishers
   use closed typed cases instead of contract registration objects or dictionaries.
-- Background consumers retain the genuine scope boundary. One scope owns each claimed batch and
-  resolves one generated publisher with its closed typed handlers. The transport consumer passes that
-  batch's messages to the publisher sequentially and forwards cancellation without generating business
-  logic.
+- Background consumers retain the genuine scope boundaries. One consumer scope owns each claimed
+  batch and its generated publisher. Each envelope delivery creates and asynchronously disposes a child
+  scope, then resolves the closed `IIntegrationEventHandler<T>` from that scope. The transport consumer
+  passes the batch's messages to the publisher sequentially and forwards cancellation without
+  generating business logic.
 - Outbox and inbox registration remain separate. Producer contexts do not acquire inbox schema or
   idempotency services implicitly.
 
@@ -53,19 +54,34 @@ Representative tests measure structure rather than enforce arbitrary line quotas
 | --- | --- | --- |
 | Mediator ordinary dispatch | Typed switch plus dispatch-time `IServiceProvider` recovery in request, stream, pipeline, and notification paths | Same exhaustive generic forwarding with zero service-provider sites in ordinary dispatch |
 | Domain event mapping | Competing mediator adapter and integration-event mapper registrations | One exhaustive generated mapper and one dispatcher registration |
-| Integration envelopes | Four runtime registry/registration types, two dictionaries, and scoped service location | One generated serializer, one generated scoped publisher, typed `JsonTypeInfo<T>` and handler dependencies, no registry |
+| Integration envelopes | Five top-level generated types, including one handler forwarder; one registration method; no delivery scope or service-provider site | Four top-level generated types, no forwarder or other runtime-recovery type; one registration method; one async delivery scope and one closed handler-resolution site |
 
 The external comparison above remains rationale rather than a line-count quota. Counts guide review;
 preserving validation, transactions, cancellation, outbox retry, serialization compatibility, and
 idempotency is the acceptance boundary.
+
+For the representative one-consumer combined-generator composition, nested generated types remain `0`
+and registration methods remain `1`. The forwarder count changes from `1` to `0`, while async
+delivery-scope creation changes from `0` to `1`. The single `GetRequiredService` site is intentional and
+bounded to an envelope's child scope; ordinary mediator dispatch retains zero service-provider sites.
+
+In the separate two-event registration case, one handler implementation that consumes both event types
+changes from one concrete registration plus two generated forwarders to two direct closed
+`IIntegrationEventHandler<T>` registrations. That generated publisher has one delivery-scope and one
+closed handler-resolution site in each event case.
+
+Generated delivery resolves the closed handler interface rather than bypassing it for the concrete
+implementation. Catalog composes idempotency at that closed interface, so concrete-type resolution would
+skip the decorator and weaken duplicate-delivery protection.
 
 ## Consequences
 
 - Missing and duplicate integration-event consumer handlers fail compilation with `SKMSG001` and
   `SKMSG002`; duplicate consumer event types fail compilation with `SKMSG003`; invalid registered
   contract types fail compilation with `SKMSG006`.
-- Generated constructor size grows with the closed handler-factory set, while concrete handler and
-  pipeline registrations remain scoped and visible to DI validation.
+- The generated publisher constructor holds the scope factory and closed JSON metadata, not scoped
+  handlers. Closed handler registrations remain visible to DI validation and are resolved only inside
+  an envelope's asynchronously disposed child scope.
 - Adding a contract requires explicit metadata and generated host composition.
 - Dynamic runtime registries are not retained without a demonstrated dynamic caller.
 
