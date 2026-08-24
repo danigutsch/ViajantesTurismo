@@ -1,4 +1,4 @@
-﻿namespace ViajantesTurismo.Admin.SystemTests.Infrastructure.Helpers;
+namespace ViajantesTurismo.Admin.SystemTests.Infrastructure.Helpers;
 
 /// <summary>
 /// Helper class to provide extension methods for locating elements in Playwright tests, improving readability and maintainability of test code.

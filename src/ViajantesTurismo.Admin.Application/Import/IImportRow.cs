@@ -1,4 +1,4 @@
-﻿namespace ViajantesTurismo.Admin.Application.Import;
+namespace ViajantesTurismo.Admin.Application.Import;
 
 /// <summary>
 /// Represents a single row of data to be imported, providing access by column index and header name.
