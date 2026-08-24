@@ -798,6 +798,57 @@ reportgenerator -reports:"tests/**/TestResults/**/coverage.cobertura.xml" -targe
 
 See [Code Quality](CODE_QUALITY.md#test-coverage-tools) for full coverage tool configuration and report generation.
 
+## Container DNS Fails Across a Whole Suite (Rootless Podman)
+
+**Symptom.** Aspire-backed tests fail to reach a container by name — SeaweedFS,
+a database, an identity provider — and everything downstream of it goes
+unhealthy. Containers start, networks exist, `podman ps` looks right, and the
+same test passes when run alone. netavark may log `aardvark-dns runs in a
+different netns`.
+
+**Mechanism.** Rootless Podman gives every container ONE shared network
+namespace, reference counted at
+`$XDG_RUNTIME_DIR/containers/networks/rootless-netns/ref-count`, and runs the
+`aardvark-dns` daemon inside it. When the last container exits the namespace is
+torn down; the next container creates a fresh one. aardvark-dns is started and
+reconfigured only by netavark, and on the update path Podman rewrites the config
+file and sends `SIGHUP` **without entering the namespace** — so nothing
+re-checks which namespace the daemon is actually in. If a teardown does not
+complete, the daemon survives into a namespace that belongs to nothing, and
+every container started afterwards is handed a DNS server it cannot reach.
+
+Since netavark 1.16 the condition is detected and logged, and deliberately not
+repaired. The upstream reasoning is that a tool cannot know whether other
+containers are still using the old namespace, so killing the daemon could break
+name resolution for something still running. The same fault shows up in Podman's
+own CI as an intermittent teardown failure, so it is a known race rather than a
+misconfiguration on this machine.
+
+**What is NOT the trigger.** Concurrent container creation on its own does not
+cause it. Measured on podman 5.7.0 / netavark 1.16.1 / aardvark-dns 1.16.0: six
+workers creating a network, running two containers, resolving a name and tearing
+down, for three rounds — 18/18 lookups fine, clean teardown. Repeated with
+overlapping lifetimes and `SIGKILL` teardown — 24/24 fine. So do not reach for
+serialization first; check the daemon.
+
+**Check and repair.**
+
+```bash
+bash scripts/podman-dns-preflight.sh --check   # report only, exit 1 if orphaned
+bash scripts/podman-dns-preflight.sh           # repair when nothing is running
+```
+
+The repair refuses while containers are running, for upstream's reason: killing
+the daemon would break name resolution for whatever is still up. Stop them
+first. aardvark-dns restarts by itself with the next container.
+
+Run the check before a full-suite run. If it reports healthy and DNS still
+fails, the fault is elsewhere and serialization is the next thing to try:
+
+```bash
+dotnet test --solution ViajantesTurismo.slnx --max-parallel-test-modules 1
+```
+
 ## Related Documentation
 
 Use the [documentation source-of-truth map](README.md#source-of-truth-map) for related repository guidance.
