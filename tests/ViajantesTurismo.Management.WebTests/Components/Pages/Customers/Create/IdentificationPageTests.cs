@@ -53,7 +53,7 @@ public sealed class IdentificationPageTests : BunitContext
         // Assert
         await cut.WaitForAssertionAsync(() => (navigationManager.Uri).ShouldEndWith("/customers/create/contact", StringComparison.Ordinal));
         (_state.IdentificationInfo).ShouldNotBeNull();
-        (_state.IdentificationInfo!.NationalId).ShouldBe("123456789");
+        (_state.IdentificationInfo.NationalId).ShouldBe("123456789");
         (_state.IdentificationInfo.IdNationality).ShouldBe("Brazil");
         (_state.CurrentStep).ShouldBe(3);
     }

@@ -51,7 +51,7 @@ public sealed class MedicalPageTests : BunitContext
         // Assert
         await cut.WaitForAssertionAsync(() => (navigationManager.Uri).ShouldEndWith("/customers/create/review", StringComparison.Ordinal));
         (_state.MedicalInfo).ShouldNotBeNull();
-        (_state.MedicalInfo!.Allergies).ShouldBe("Peanuts");
+        (_state.MedicalInfo.Allergies).ShouldBe("Peanuts");
         (_state.MedicalInfo.AdditionalInfo).ShouldBe("Carries an epinephrine injector.");
         (_state.CurrentStep).ShouldBe(8);
     }

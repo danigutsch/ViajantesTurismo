@@ -48,7 +48,7 @@ public sealed class EmergencyContactPageTests : BunitContext
         // Assert
         await cut.WaitForAssertionAsync(() => (navigationManager.Uri).ShouldEndWith("/customers/create/medical", StringComparison.Ordinal));
         (_state.EmergencyContact).ShouldNotBeNull();
-        (_state.EmergencyContact!.Name).ShouldBe("Maria Silva");
+        (_state.EmergencyContact.Name).ShouldBe("Maria Silva");
         (_state.EmergencyContact.Mobile).ShouldBe("+55 11 98888-8888");
         (_state.CurrentStep).ShouldBe(8);
     }

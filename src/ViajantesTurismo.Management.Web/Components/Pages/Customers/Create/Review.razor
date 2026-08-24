@@ -22,7 +22,21 @@
             </button>
         </div>
     }
-    else
+    else if (State is
+             {
+                 PersonalInfo: { } personalInfo,
+                 IdentificationInfo: { } identificationInfo,
+                 ContactInfo: { } contactInfo,
+                 Address: { } address,
+                 PhysicalInfo: { } physicalInfo,
+                 AccommodationPreferences:
+                 {
+                     RoomType: { } roomType,
+                     BedType: { } bedType
+                 } accommodationPreferences,
+                 EmergencyContact: { } emergencyContact,
+                 MedicalInfo: { } medicalInfo
+             })
     {
         <div class="card">
             <div class="card-header">
@@ -35,19 +49,19 @@
                         <h5><i class="bi bi-person"></i> Personal Information</h5>
                         <dl class="row">
                             <dt class="col-sm-4">Name:</dt>
-                            <dd class="col-sm-8">@State.PersonalInfo!.FirstName @State.PersonalInfo.LastName</dd>
+                            <dd class="col-sm-8">@personalInfo.FirstName @personalInfo.LastName</dd>
 
                             <dt class="col-sm-4">Birth Date:</dt>
-                            <dd class="col-sm-8">@DateFormatter.FormatDate(State.PersonalInfo.BirthDate)</dd>
+                            <dd class="col-sm-8">@DateFormatter.FormatDate(personalInfo.BirthDate)</dd>
 
                             <dt class="col-sm-4">Gender:</dt>
-                            <dd class="col-sm-8">@State.PersonalInfo.Gender</dd>
+                            <dd class="col-sm-8">@personalInfo.Gender</dd>
 
                             <dt class="col-sm-4">Nationality:</dt>
-                            <dd class="col-sm-8">@State.PersonalInfo.Nationality</dd>
+                            <dd class="col-sm-8">@personalInfo.Nationality</dd>
 
                             <dt class="col-sm-4">Occupation:</dt>
-                            <dd class="col-sm-8">@State.PersonalInfo.Occupation</dd>
+                            <dd class="col-sm-8">@personalInfo.Occupation</dd>
                         </dl>
                         <button @onclick="@(() => Navigation.NavigateTo("/customers/create/personal-info"))"
                                 class="btn btn-sm btn-link">Edit
@@ -58,10 +72,10 @@
                         <h5><i class="bi bi-card-text"></i> Identification</h5>
                         <dl class="row">
                             <dt class="col-sm-4">National ID:</dt>
-                            <dd class="col-sm-8">@State.IdentificationInfo!.NationalId</dd>
+                            <dd class="col-sm-8">@identificationInfo.NationalId</dd>
 
                             <dt class="col-sm-4">ID Nationality:</dt>
-                            <dd class="col-sm-8">@State.IdentificationInfo.IdNationality</dd>
+                            <dd class="col-sm-8">@identificationInfo.IdNationality</dd>
                         </dl>
                         <button @onclick="@(() => Navigation.NavigateTo("/customers/create/identification"))"
                                 class="btn btn-sm btn-link">Edit
@@ -76,21 +90,21 @@
                         <h5><i class="bi bi-envelope"></i> Contact Information</h5>
                         <dl class="row">
                             <dt class="col-sm-4">Email:</dt>
-                            <dd class="col-sm-8">@State.ContactInfo!.Email</dd>
+                            <dd class="col-sm-8">@contactInfo.Email</dd>
 
                             <dt class="col-sm-4">Mobile:</dt>
-                            <dd class="col-sm-8">@State.ContactInfo.Mobile</dd>
+                            <dd class="col-sm-8">@contactInfo.Mobile</dd>
 
-                            @if (!string.IsNullOrWhiteSpace(State.ContactInfo.Instagram))
+                            @if (!string.IsNullOrWhiteSpace(contactInfo.Instagram))
                             {
                                 <dt class="col-sm-4">Instagram:</dt>
-                                <dd class="col-sm-8">@State.ContactInfo.Instagram</dd>
+                                <dd class="col-sm-8">@contactInfo.Instagram</dd>
                             }
 
-                            @if (!string.IsNullOrWhiteSpace(State.ContactInfo.Facebook))
+                            @if (!string.IsNullOrWhiteSpace(contactInfo.Facebook))
                             {
                                 <dt class="col-sm-4">Facebook:</dt>
-                                <dd class="col-sm-8">@State.ContactInfo.Facebook</dd>
+                                <dd class="col-sm-8">@contactInfo.Facebook</dd>
                             }
                         </dl>
                         <button @onclick="@(() => Navigation.NavigateTo("/customers/create/contact"))"
@@ -102,19 +116,19 @@
                         <h5><i class="bi bi-geo-alt"></i> Address</h5>
                         <dl class="row">
                             <dt class="col-sm-4">Street:</dt>
-                            <dd class="col-sm-8">@State.Address!.Street @State.Address.Complement</dd>
+                            <dd class="col-sm-8">@address.Street @address.Complement</dd>
 
                             <dt class="col-sm-4">Neighborhood:</dt>
-                            <dd class="col-sm-8">@State.Address.Neighborhood</dd>
+                            <dd class="col-sm-8">@address.Neighborhood</dd>
 
                             <dt class="col-sm-4">City:</dt>
-                            <dd class="col-sm-8">@State.Address.City, @State.Address.State</dd>
+                            <dd class="col-sm-8">@address.City, @address.State</dd>
 
                             <dt class="col-sm-4">Postal Code:</dt>
-                            <dd class="col-sm-8">@State.Address.PostalCode</dd>
+                            <dd class="col-sm-8">@address.PostalCode</dd>
 
                             <dt class="col-sm-4">Country:</dt>
-                            <dd class="col-sm-8">@State.Address.Country</dd>
+                            <dd class="col-sm-8">@address.Country</dd>
                         </dl>
                         <button @onclick="@(() => Navigation.NavigateTo("/customers/create/address"))"
                                 class="btn btn-sm btn-link">Edit
@@ -129,13 +143,13 @@
                         <h5><i class="bi bi-bicycle"></i> Physical Information</h5>
                         <dl class="row">
                             <dt class="col-sm-4">Weight:</dt>
-                            <dd class="col-sm-8">@State.PhysicalInfo!.WeightKg kg</dd>
+                            <dd class="col-sm-8">@physicalInfo.WeightKg kg</dd>
 
                             <dt class="col-sm-4">Height:</dt>
-                            <dd class="col-sm-8">@State.PhysicalInfo.HeightCentimeters cm</dd>
+                            <dd class="col-sm-8">@physicalInfo.HeightCentimeters cm</dd>
 
                             <dt class="col-sm-4">Bike Type:</dt>
-                            <dd class="col-sm-8">@State.PhysicalInfo.BikeType</dd>
+                            <dd class="col-sm-8">@physicalInfo.BikeType</dd>
                         </dl>
                         <button @onclick="@(() => Navigation.NavigateTo("/customers/create/physical"))"
                                 class="btn btn-sm btn-link">Edit
@@ -146,15 +160,15 @@
                         <h5><i class="bi bi-house"></i> Accommodation</h5>
                         <dl class="row">
                             <dt class="col-sm-4">Room Type:</dt>
-                            <dd class="col-sm-8">@EnumFormatter.Format(State.AccommodationPreferences!.RoomType!.Value)</dd>
+                            <dd class="col-sm-8">@EnumFormatter.Format(roomType)</dd>
 
                             <dt class="col-sm-4">Bed Type:</dt>
-                            <dd class="col-sm-8">@EnumFormatter.Format(State.AccommodationPreferences.BedType!.Value)</dd>
+                            <dd class="col-sm-8">@EnumFormatter.Format(bedType)</dd>
 
-                            @if (State.AccommodationPreferences.CompanionId.HasValue)
+                            @if (accommodationPreferences.CompanionId.HasValue)
                             {
                                 <dt class="col-sm-4">Companion ID:</dt>
-                                <dd class="col-sm-8">@State.AccommodationPreferences.CompanionId</dd>
+                                <dd class="col-sm-8">@accommodationPreferences.CompanionId</dd>
                             }
                         </dl>
                         <button @onclick="@(() => Navigation.NavigateTo("/customers/create/accommodation"))"
@@ -170,10 +184,10 @@
                         <h5><i class="bi bi-telephone"></i> Emergency Contact</h5>
                         <dl class="row">
                             <dt class="col-sm-4">Name:</dt>
-                            <dd class="col-sm-8">@State.EmergencyContact!.Name</dd>
+                            <dd class="col-sm-8">@emergencyContact.Name</dd>
 
                             <dt class="col-sm-4">Mobile:</dt>
-                            <dd class="col-sm-8">@State.EmergencyContact.Mobile</dd>
+                            <dd class="col-sm-8">@emergencyContact.Mobile</dd>
                         </dl>
                         <button @onclick="@(() => Navigation.NavigateTo("/customers/create/emergency-contact"))"
                                 class="btn btn-sm btn-link">Edit
@@ -184,10 +198,10 @@
                         <h5><i class="bi bi-heart-pulse"></i> Medical Information</h5>
                         <dl class="row">
                             <dt class="col-sm-4">Allergies:</dt>
-                            <dd class="col-sm-8">@(string.IsNullOrWhiteSpace(State.MedicalInfo!.Allergies) ? "None reported" : State.MedicalInfo.Allergies)</dd>
+                            <dd class="col-sm-8">@(string.IsNullOrWhiteSpace(medicalInfo.Allergies) ? "None reported" : medicalInfo.Allergies)</dd>
 
                             <dt class="col-sm-4">Additional Info:</dt>
-                            <dd class="col-sm-8">@(string.IsNullOrWhiteSpace(State.MedicalInfo.AdditionalInfo) ? "None reported" : State.MedicalInfo.AdditionalInfo)</dd>
+                            <dd class="col-sm-8">@(string.IsNullOrWhiteSpace(medicalInfo.AdditionalInfo) ? "None reported" : medicalInfo.AdditionalInfo)</dd>
                         </dl>
                         <button @onclick="@(() => Navigation.NavigateTo("/customers/create/medical"))"
                                 class="btn btn-sm btn-link">Edit

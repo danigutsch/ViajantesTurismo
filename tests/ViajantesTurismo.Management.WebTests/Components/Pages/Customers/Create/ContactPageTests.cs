@@ -54,7 +54,7 @@ public sealed class ContactPageTests : BunitContext
         // Assert
         await cut.WaitForAssertionAsync(() => (navigationManager.Uri).ShouldEndWith("/customers/create/address", StringComparison.Ordinal));
         (_state.ContactInfo).ShouldNotBeNull();
-        (_state.ContactInfo!.Email).ShouldBe("ana.silva@example.com");
+        (_state.ContactInfo.Email).ShouldBe("ana.silva@example.com");
         (_state.ContactInfo.Mobile).ShouldBe("+55 11 98765-4321");
         (_state.ContactInfo.Instagram).ShouldBe("@ana.silva");
         (_state.ContactInfo.Facebook).ShouldBe("facebook.com/ana.silva");
