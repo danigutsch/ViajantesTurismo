@@ -454,6 +454,76 @@ public sealed class DetailsPageTests : BunitContext
     }
 
     [Fact]
+    [Trait(SharedKernel.Testing.TestTraitNames.ScopeName, TestTraits.ComponentScope)]
+    [Trait(SharedKernel.Testing.TestTraitNames.AreaName, TestTraits.ManagementWebArea)]
+    [Trait(SharedKernel.Testing.TestTraitNames.CategoryName, TestTraits.ComponentCategory)]
+    public async Task Create_booking_non_success_outcome_shows_sanitized_error()
+    {
+        // Arrange
+        var customer = BuildCustomerDetailsDto();
+        var tour = BuildTourDto();
+        _fakeCustomersApi.AddCustomerDetails(customer);
+        _fakeCustomersApi.AddCustomer(BuildCustomerDto(id: customer.Id));
+        _fakeToursApi.AddTour(tour);
+        _fakeBookingsApi.SetCreateBookingOutcome(
+            ContractCommandOutcome.Status(ContractCommandOutcomeKind.Conflict, HttpStatusCode.Conflict));
+
+        var cut = Render<Details>(parameters => parameters.Add(p => p.Id, customer.Id));
+        await cut.WaitForAssertionAsync(() => cut.Find("button:contains('Add Booking')"));
+
+        // Act
+        await cut.InvokeAsync(() => cut.Find("button:contains('Add Booking')").Click());
+        await cut.WaitForAssertionAsync(() => cut.FindComponent<CustomerBookingCreateForm>());
+
+        var form = cut.FindComponent<CustomerBookingCreateForm>();
+        form.Instance.Model.TourId = tour.Id;
+        form.Instance.Model.PrincipalBikeType = BikeTypeDto.Regular;
+        await cut.InvokeAsync(() => form.Find("form").Submit());
+
+        // Assert
+        await cut.WaitForAssertionAsync(() =>
+        {
+            cut.Markup.ShouldContain("Failed to create booking. Please try again.", StringComparison.Ordinal);
+            cut.Markup.ShouldContain("Create New Booking", StringComparison.Ordinal);
+        });
+    }
+
+    [Fact]
+    [Trait(SharedKernel.Testing.TestTraitNames.ScopeName, TestTraits.ComponentScope)]
+    [Trait(SharedKernel.Testing.TestTraitNames.AreaName, TestTraits.ManagementWebArea)]
+    [Trait(SharedKernel.Testing.TestTraitNames.CategoryName, TestTraits.ComponentCategory)]
+    public async Task Create_booking_success_shows_confirmation_and_closes_form()
+    {
+        // Arrange
+        JSInterop.Mode = JSRuntimeMode.Loose;
+        var customer = BuildCustomerDetailsDto();
+        var tour = BuildTourDto();
+        _fakeCustomersApi.AddCustomerDetails(customer);
+        _fakeCustomersApi.AddCustomer(BuildCustomerDto(id: customer.Id));
+        _fakeToursApi.AddTour(tour);
+
+        var cut = Render<Details>(parameters => parameters.Add(p => p.Id, customer.Id));
+        await cut.WaitForAssertionAsync(() => cut.Find("button:contains('Add Booking')"));
+
+        // Act
+        await cut.InvokeAsync(() => cut.Find("button:contains('Add Booking')").Click());
+        await cut.WaitForAssertionAsync(() => cut.FindComponent<CustomerBookingCreateForm>());
+
+        var form = cut.FindComponent<CustomerBookingCreateForm>();
+        form.Instance.Model.TourId = tour.Id;
+        form.Instance.Model.PrincipalBikeType = BikeTypeDto.Regular;
+        await cut.InvokeAsync(() => form.Find("form").Submit());
+
+        // Assert
+        await cut.WaitForAssertionAsync(() =>
+        {
+            cut.Markup.ShouldContain("Booking created successfully.", StringComparison.Ordinal);
+            cut.Markup.ShouldNotContain("Create New Booking", StringComparison.Ordinal);
+            cut.Markup.ShouldNotContain("No bookings found.", StringComparison.Ordinal);
+        });
+    }
+
+    [Fact]
     public void Has_toastnotification_component()
     {
         // Arrange
