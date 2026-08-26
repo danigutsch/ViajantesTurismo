@@ -60,6 +60,21 @@ public sealed class InfrastructureDependencyInjectionTests
     }
 
     [Fact]
+    [Trait(TestTraitNames.CategoryName, TestTraitValues.SecurityCategory)]
+    public void AddCatalogInfrastructure_rejects_missing_durable_media_storage_in_production()
+    {
+        // Arrange
+        Action action = CatalogInfrastructureTestServices.AddProductionInfrastructureWithoutMediaStorage;
+
+        // Act
+        var exception = action.ShouldThrow<InvalidOperationException>();
+
+        // Assert
+        exception.Message.ShouldBe(
+            $"Catalog durable media object storage requires configuration section '{SeaweedFsMediaObjectStorageOptions.SectionName}'.");
+    }
+
+    [Fact]
     public void AddCatalogInfrastructure_allows_explicitly_disabled_development_scanning()
     {
         // Arrange

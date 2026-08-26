@@ -20,6 +20,7 @@ internal static class CatalogApiTestHost
     private const string AdministratorRole = "Admin";
     private const string UntrustedIssuer = "https://untrusted.test";
     private const string WrongAudience = "wrong-audience";
+    private const string MediaObjectStorageSectionName = "Catalog:MediaObjectStorage:SeaweedFs";
 
     public static WebApplicationFactory<CatalogApiHostEntryPoint> Create(string? environment = null)
     {
@@ -159,6 +160,14 @@ internal static class CatalogApiTestHost
         else
         {
             configuration[ClamAvMalwareScannerConfigurationKeys.HostConfigurationKey] = "test-clamav";
+        }
+
+        if (!string.Equals(hostEnvironment, Environments.Development, StringComparison.OrdinalIgnoreCase))
+        {
+            configuration[$"{MediaObjectStorageSectionName}:Endpoint"] = "https://seaweedfs.example";
+            configuration[$"{MediaObjectStorageSectionName}:Bucket"] = "media";
+            configuration[$"{MediaObjectStorageSectionName}:AccessKey"] = "access";
+            configuration[$"{MediaObjectStorageSectionName}:SecretKey"] = "secret";
         }
 
         return WebApplicationTestHost.Create<CatalogApiHostEntryPoint>(

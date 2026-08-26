@@ -124,9 +124,14 @@ public static class InfrastructureDependencyInjection
         {
             builder.Services.AddSeaweedFsMediaObjectStorage();
         }
-        else
+        else if (builder.Environment.IsDevelopment() || OpenApiGenerationMode.IsEnabled(builder.Environment))
         {
             builder.Services.AddLocalMediaObjectStorage();
+        }
+        else
+        {
+            throw new InvalidOperationException(
+                $"Catalog durable media object storage requires configuration section '{SeaweedFsMediaObjectStorageOptions.SectionName}'.");
         }
         builder.Services.AddConfiguredClamAvMalwareScanner(builder.Configuration, builder.Environment);
         builder.Services.AddSingleton<IMediaUploadScanner, MalwareScannerMediaUploadScanner>();
