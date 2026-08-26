@@ -97,7 +97,7 @@ main() {
     shopt -u globstar nullglob
 
     if [[ ${#coverage_files[@]} -eq 0 ]]; then
-        echo "Coverage collection completed without producing any coverage.cobertura.xml files." >&2
+        echo "Coverage collection completed without producing any Cobertura XML files." >&2
         echo "Expected files under ${results_directory} before generating a coverage report." >&2
         echo "This may indicate that the test run did not complete successfully or that coverage output was not written." >&2
         echo "To reproduce locally, run restore/build first, then run bash scripts/run-tests-with-coverage.sh from the repository root." >&2
