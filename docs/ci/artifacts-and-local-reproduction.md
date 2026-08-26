@@ -22,15 +22,15 @@ its `Run test slice` step fails.
 | `ci-test-slice-<id>-diagnostics` | Focused failure summary for one failed test-slice matrix row | 7 days |
 
 The slice result artifacts also include machine-readable helper outputs such as
-`*-phase-timings.tsv` and `*-manifest.json`, alongside the per-project `TestResults`
-folders that contain `coverage.cobertura.xml` when coverage collection is enabled.
+`*-phase-timings.tsv` and `*-manifest.json`, alongside uniquely named Cobertura XML files in a
+run-specific `TestResults/coverage.*` directory when coverage collection is enabled.
 
 For local validation, missing result files are treated as an error because that indicates
 the test infrastructure did not produce the expected outputs. In CI, artifact upload is
 best-effort (`if-no-files-found: ignore`), so missing result files do not by themselves
 fail the workflow but should still be investigated.
 
-The HTML coverage artifact is generated from those per-project Cobertura files with the
+The HTML coverage artifact is generated from those uniquely named Cobertura files with the
 repo's local `reportgenerator` tool manifest entry.
 
 Coverage now has two consumers inside the same workflow:
