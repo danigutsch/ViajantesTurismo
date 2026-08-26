@@ -131,7 +131,7 @@ public static class InfrastructureDependencyInjection
         else
         {
             throw new InvalidOperationException(
-                $"Catalog production media object storage requires configuration section '{SeaweedFsMediaObjectStorageOptions.SectionName}'.");
+                $"Catalog durable media object storage requires configuration section '{SeaweedFsMediaObjectStorageOptions.SectionName}'.");
         }
         builder.Services.AddConfiguredClamAvMalwareScanner(builder.Configuration, builder.Environment);
         builder.Services.AddSingleton<IMediaUploadScanner, MalwareScannerMediaUploadScanner>();

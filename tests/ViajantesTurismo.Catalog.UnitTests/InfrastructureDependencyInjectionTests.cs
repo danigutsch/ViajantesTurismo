@@ -70,7 +70,8 @@ public sealed class InfrastructureDependencyInjectionTests
         var exception = action.ShouldThrow<InvalidOperationException>();
 
         // Assert
-        exception.Message.ShouldBe("Catalog production media object storage requires configuration section 'Catalog:MediaObjectStorage:SeaweedFs'.");
+        exception.Message.ShouldBe(
+            $"Catalog durable media object storage requires configuration section '{SeaweedFsMediaObjectStorageOptions.SectionName}'.");
     }
 
     [Fact]
