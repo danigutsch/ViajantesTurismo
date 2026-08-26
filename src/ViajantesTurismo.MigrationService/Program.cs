@@ -16,7 +16,7 @@ return await MigrationProcess.Run(() =>
     builder.AddServiceDefaults();
 
     builder.AddAdminDatabaseInitialization();
-    builder.AddBrandingInfrastructure();
+    builder.AddBrandingInfrastructure(addOutboxRelay: false);
     builder.AddCatalogDatabaseInitialization();
     builder.Services.AddManagementSecurityPersistence(
         builder.Configuration.GetConnectionString(ResourceNames.SecurityDatabase)

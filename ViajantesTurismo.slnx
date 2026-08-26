@@ -101,6 +101,7 @@
     <Folder Name="/src/Branding/">
         <Project Path="src/ViajantesTurismo.Branding.ApiService/ViajantesTurismo.Branding.ApiService.csproj" />
         <Project Path="src/ViajantesTurismo.Branding.Contracts.Http/ViajantesTurismo.Branding.Contracts.Http.csproj" />
+        <Project Path="src/ViajantesTurismo.Branding.Contracts.IntegrationEvents/ViajantesTurismo.Branding.Contracts.IntegrationEvents.csproj" />
         <Project Path="src/ViajantesTurismo.Branding.Infrastructure/ViajantesTurismo.Branding.Infrastructure.csproj" />
     </Folder>
     <Folder Name="/src/Public/">

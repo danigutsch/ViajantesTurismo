@@ -182,6 +182,7 @@ public static class InfrastructureDependencyInjection
     {
         builder.Services.AddIntegrationEventOutbox<CatalogDbContext>();
         builder.Services.AddIntegrationEventInbox<CatalogDbContext>();
+        builder.Services.AddIntegrationEventTransportStorage<CatalogDbContext>();
         if (addOutboxRelay)
         {
             builder.Services.AddIntegrationEventOutboxRelay<CatalogDbContext>();

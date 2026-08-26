@@ -27,6 +27,7 @@
         <ProjectReference Include="..\..\src\SharedKernel\SharedKernel.Testing\SharedKernel.Testing.csproj" />
         <ProjectReference Include="..\..\src\ViajantesTurismo.Branding.ApiService\ViajantesTurismo.Branding.ApiService.csproj" />
         <ProjectReference Include="..\..\src\ViajantesTurismo.Branding.Contracts.Http\ViajantesTurismo.Branding.Contracts.Http.csproj" />
+        <ProjectReference Include="..\..\src\ViajantesTurismo.Branding.Contracts.IntegrationEvents\ViajantesTurismo.Branding.Contracts.IntegrationEvents.csproj" />
     </ItemGroup>
 
 </Project>

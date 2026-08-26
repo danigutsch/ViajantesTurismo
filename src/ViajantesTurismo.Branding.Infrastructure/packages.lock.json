@@ -492,8 +492,43 @@
           "OpenTelemetry.Instrumentation.Http": "[1.16.0, )"
         }
       },
+      "sharedkernel.idempotency": {
+        "type": "Project"
+      },
+      "sharedkernel.idempotency.entityframeworkcore": {
+        "type": "Project",
+        "dependencies": {
+          "Microsoft.EntityFrameworkCore.Relational": "[10.0.10, )",
+          "Microsoft.Extensions.DependencyInjection.Abstractions": "[10.0.10, )",
+          "SharedKernel.EntityFrameworkCore": "[0.1.0-alpha.0, )",
+          "SharedKernel.Idempotency": "[0.1.0-alpha.0, )"
+        }
+      },
       "sharedkernel.inputnormalization": {
         "type": "Project"
+      },
+      "sharedkernel.messaging": {
+        "type": "Project"
+      },
+      "sharedkernel.messaging.integrationevents": {
+        "type": "Project",
+        "dependencies": {
+          "Microsoft.Extensions.DependencyInjection.Abstractions": "[10.0.10, )",
+          "SharedKernel.Messaging": "[0.1.0-alpha.0, )"
+        }
+      },
+      "sharedkernel.messaging.integrationevents.entityframeworkcore": {
+        "type": "Project",
+        "dependencies": {
+          "Microsoft.EntityFrameworkCore.Relational": "[10.0.10, )",
+          "Microsoft.Extensions.DependencyInjection.Abstractions": "[10.0.10, )",
+          "Microsoft.Extensions.Hosting.Abstractions": "[10.0.10, )",
+          "SharedKernel.EntityFrameworkCore": "[0.1.0-alpha.0, )",
+          "SharedKernel.Idempotency.EntityFrameworkCore": "[0.1.0-alpha.0, )",
+          "SharedKernel.Messaging": "[0.1.0-alpha.0, )",
+          "SharedKernel.Messaging.IntegrationEvents": "[0.1.0-alpha.0, )",
+          "SharedKernel.Scheduling": "[0.1.0-alpha.0, )"
+        }
       },
       "sharedkernel.npgsql": {
         "type": "Project",
@@ -503,6 +538,19 @@
       },
       "sharedkernel.results": {
         "type": "Project"
+      },
+      "sharedkernel.scheduling": {
+        "type": "Project",
+        "dependencies": {
+          "Microsoft.Extensions.Hosting.Abstractions": "[10.0.10, )",
+          "Microsoft.Extensions.Logging.Abstractions": "[10.0.10, )"
+        }
+      },
+      "viajantesturismo.branding.contracts.integrationevents": {
+        "type": "Project",
+        "dependencies": {
+          "SharedKernel.Messaging.IntegrationEvents": "[0.1.0-alpha.0, )"
+        }
       },
       "viajantesturismo.resources": {
         "type": "Project"

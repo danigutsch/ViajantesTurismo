@@ -10,7 +10,8 @@ internal sealed class IntegrationEventTransportScenario(ServiceProvider provider
 
     public CatalogIntegrationTransportDbContext DbContext => scenarioScope.ServiceProvider.GetRequiredService<CatalogIntegrationTransportDbContext>();
 
-    public IEventEnvelopePublisher Publisher => scenarioScope.ServiceProvider.GetRequiredService<IEventEnvelopePublisher>();
+    public IEventEnvelopePublisher Publisher =>
+        scenarioScope.ServiceProvider.GetRequiredKeyedService<IEventEnvelopePublisher>(typeof(CatalogIntegrationTransportDbContext));
 
     public async ValueTask DisposeAsync()
     {

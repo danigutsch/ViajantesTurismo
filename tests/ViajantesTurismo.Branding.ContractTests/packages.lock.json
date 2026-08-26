@@ -379,11 +379,42 @@
           "OpenTelemetry.Instrumentation.Http": "[1.16.0, )"
         }
       },
+      "sharedkernel.idempotency": {
+        "type": "Project"
+      },
+      "sharedkernel.idempotency.entityframeworkcore": {
+        "type": "Project",
+        "dependencies": {
+          "Microsoft.EntityFrameworkCore.Relational": "[10.0.10, )",
+          "SharedKernel.EntityFrameworkCore": "[0.1.0-alpha.0, )",
+          "SharedKernel.Idempotency": "[0.1.0-alpha.0, )"
+        }
+      },
       "sharedkernel.inputnormalization": {
         "type": "Project"
       },
       "sharedkernel.mediator.abstractions": {
         "type": "Project"
+      },
+      "sharedkernel.messaging": {
+        "type": "Project"
+      },
+      "sharedkernel.messaging.integrationevents": {
+        "type": "Project",
+        "dependencies": {
+          "SharedKernel.Messaging": "[0.1.0-alpha.0, )"
+        }
+      },
+      "sharedkernel.messaging.integrationevents.entityframeworkcore": {
+        "type": "Project",
+        "dependencies": {
+          "Microsoft.EntityFrameworkCore.Relational": "[10.0.10, )",
+          "SharedKernel.EntityFrameworkCore": "[0.1.0-alpha.0, )",
+          "SharedKernel.Idempotency.EntityFrameworkCore": "[0.1.0-alpha.0, )",
+          "SharedKernel.Messaging": "[0.1.0-alpha.0, )",
+          "SharedKernel.Messaging.IntegrationEvents": "[0.1.0-alpha.0, )",
+          "SharedKernel.Scheduling": "[0.1.0-alpha.0, )"
+        }
       },
       "sharedkernel.npgsql": {
         "type": "Project",
@@ -410,6 +441,9 @@
         }
       },
       "sharedkernel.results": {
+        "type": "Project"
+      },
+      "sharedkernel.scheduling": {
         "type": "Project"
       },
       "sharedkernel.testing": {
@@ -444,6 +478,12 @@
       "viajantesturismo.branding.contracts.http": {
         "type": "Project"
       },
+      "viajantesturismo.branding.contracts.integrationevents": {
+        "type": "Project",
+        "dependencies": {
+          "SharedKernel.Messaging.IntegrationEvents": "[0.1.0-alpha.0, )"
+        }
+      },
       "viajantesturismo.branding.infrastructure": {
         "type": "Project",
         "dependencies": {
@@ -451,7 +491,10 @@
           "Aspire.Npgsql.EntityFrameworkCore.PostgreSQL": "[13.4.6, )",
           "SharedKernel.Branding": "[0.1.0-alpha.0, )",
           "SharedKernel.EntityFrameworkCore": "[0.1.0-alpha.0, )",
+          "SharedKernel.Messaging.IntegrationEvents": "[0.1.0-alpha.0, )",
+          "SharedKernel.Messaging.IntegrationEvents.EntityFrameworkCore": "[0.1.0-alpha.0, )",
           "SharedKernel.Npgsql": "[0.1.0-alpha.0, )",
+          "ViajantesTurismo.Branding.Contracts.IntegrationEvents": "[0.1.0-alpha.0, )",
           "ViajantesTurismo.Resources": "[0.1.0-alpha.0, )"
         }
       },
