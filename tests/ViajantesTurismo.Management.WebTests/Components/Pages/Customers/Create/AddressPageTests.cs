@@ -63,7 +63,7 @@ public sealed class AddressPageTests : BunitContext
         // Assert
         await cut.WaitForAssertionAsync(() => (navigationManager.Uri).ShouldEndWith("/customers/create/physical", StringComparison.Ordinal));
         (_state.Address).ShouldNotBeNull();
-        (_state.Address!.Street).ShouldBe("Rua das Flores, 123");
+        (_state.Address.Street).ShouldBe("Rua das Flores, 123");
         (_state.Address.Complement).ShouldBe("Apt 45");
         (_state.Address.Neighborhood).ShouldBe("Centro");
         (_state.Address.PostalCode).ShouldBe("01000-000");

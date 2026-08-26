@@ -32,7 +32,7 @@ else if (!string.IsNullOrEmpty(_loadErrorMessage))
     </div>
     <NavLink href="/bookings" class="btn btn-secondary">Back to Bookings</NavLink>
 }
-else
+else if (_booking is not null)
 {
     @if (_success)
     {
@@ -63,7 +63,7 @@ else
             <dl class="row">
                 <dt class="col-sm-3">Tour:</dt>
                 <dd class="col-sm-9">
-                    <a href="/tours/@_booking!.TourId">@_booking.TourName</a>
+                    <a href="/tours/@_booking.TourId">@_booking.TourName</a>
                     <br/>
                     <small class="text-muted">@_booking.TourIdentifier</small>
                 </dd>
@@ -361,8 +361,8 @@ else
 
     private readonly BookingEditPaymentState _paymentState = new();
 
-    private ConfirmDialog _confirmDialog = null!;
-    private ToastNotification _toast = null!;
+    private ConfirmDialog? _confirmDialog;
+    private ToastNotification? _toast;
 
     private bool IsMutationInFlight => _isSubmitting || _paymentState.IsSubmitting;
 
@@ -401,7 +401,7 @@ else
 
     private async Task HandleSubmit()
     {
-        if (AreEditControlsDisabled)
+        if (_booking is null || AreEditControlsDisabled)
         {
             return;
         }
@@ -419,7 +419,7 @@ else
                 ? null
                 : _model.DiscountReason;
 
-            if (_model.RoomType != _booking!.RoomType ||
+            if (_model.RoomType != _booking.RoomType ||
                 _model.PrincipalBikeType != _booking.PrincipalBikeType ||
                 _model.CompanionId != _booking.CompanionId ||
                 _model.CompanionBikeType != _booking.CompanionBikeType)
@@ -566,14 +566,14 @@ else
                 }
                 else
                 {
-                    _toast.ShowError(UserFacingErrorMessage.ForOperation("record the payment"));
+                    _toast?.ShowError(UserFacingErrorMessage.ForOperation("record the payment"));
                 }
 
                 return;
             }
 
             await TryRefreshBookingAndSyncModel();
-            _toast.ShowSuccess("Payment recorded successfully.");
+            _toast?.ShowSuccess("Payment recorded successfully.");
             HidePaymentForm();
         }
         catch (Exception)
@@ -721,7 +721,7 @@ else
     private void MarkPaymentResultUncertain()
     {
         _refreshWarningMessage = "The payment may have been recorded, but we couldn't confirm the result. Reload the booking before recording another payment.";
-        _toast.ShowError("We couldn't confirm whether the payment was recorded. Reload the booking before trying again.");
+        _toast?.ShowError("We couldn't confirm whether the payment was recorded. Reload the booking before trying again.");
         HidePaymentForm();
     }
 
@@ -766,12 +766,12 @@ else
                 await TryRefreshBookingAndSyncModel();
             }
 
-            _toast.ShowSuccess(successMessage);
+            _toast?.ShowSuccess(successMessage);
             onSuccess?.Invoke();
         }
         catch (Exception)
         {
-            _toast.ShowError(UserFacingErrorMessage.ForOperation(operationDescription));
+            _toast?.ShowError(UserFacingErrorMessage.ForOperation(operationDescription));
         }
         finally
         {
@@ -786,7 +786,8 @@ else
         string confirmText,
         string confirmButtonCssClass)
     {
-        return _confirmDialog.ShowAsync(message, title, confirmText, "No", confirmButtonCssClass);
+        return _confirmDialog?.ShowAsync(message, title, confirmText, "No", confirmButtonCssClass)
+            ?? Task.FromResult(false);
     }
 
 }

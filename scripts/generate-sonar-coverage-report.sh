@@ -10,11 +10,11 @@ main() {
     mkdir -p TestResults
 
     shopt -s globstar nullglob
-    local -a coverage_files=(artifacts/**/coverage.cobertura.xml tests/**/TestResults/**/coverage.cobertura.xml TestResults/**/coverage.cobertura.xml)
+    local -a coverage_files=(artifacts/**/*.cobertura.xml tests/**/TestResults/**/*.cobertura.xml TestResults/**/*.cobertura.xml)
     shopt -u globstar nullglob
 
     if [[ ${#coverage_files[@]} -eq 0 ]]; then
-        echo "Coverage aggregation completed without finding any coverage.cobertura.xml files." >&2
+        echo "Coverage aggregation completed without finding any Cobertura XML files." >&2
         return 1
     fi
 

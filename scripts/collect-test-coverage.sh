@@ -5,7 +5,6 @@ set -euo pipefail
 coverage_args=(
     --coverage
     --coverage-output-format cobertura
-    --coverage-output coverage.cobertura.xml
     --coverage-settings coverage.settings.xml
 )
 
@@ -29,6 +28,9 @@ get_test_project_parallelism() {
 }
 
 run_project_tests() {
+    local results_directory="$1"
+    shift
+
     local max_parallel
     max_parallel="$(get_test_project_parallelism)"
 
@@ -41,7 +43,8 @@ run_project_tests() {
     for project_path in "$@"; do
         (
             echo "==> Testing ${project_path}"
-            dotnet test --project "${project_path}" --no-restore --no-build -- "${coverage_args[@]}"
+            dotnet test --project "${project_path}" --no-restore --no-build \
+                --results-directory "${results_directory}" -- "${coverage_args[@]}"
         ) &
 
         active=$((active + 1))
@@ -75,22 +78,27 @@ main() {
     fi
 
     mkdir -p "$(dirname "${coverage_reports_file}")"
+    mkdir -p TestResults
+
+    local results_directory
+    results_directory="$(mktemp -d "TestResults/coverage.XXXXXX")"
 
     shift
 
     if [[ $# -eq 0 ]]; then
-        dotnet test --solution ViajantesTurismo.slnx --no-restore --no-build -- "${coverage_args[@]}"
+        dotnet test --solution ViajantesTurismo.slnx --no-restore --no-build \
+            --results-directory "${results_directory}" -- "${coverage_args[@]}"
     else
-        run_project_tests "$@"
+        run_project_tests "${results_directory}" "$@"
     fi
 
     shopt -s globstar nullglob
-    local -a coverage_files=(tests/**/TestResults/**/coverage.cobertura.xml)
+    local -a coverage_files=("${results_directory}"/**/*.cobertura.xml)
     shopt -u globstar nullglob
 
     if [[ ${#coverage_files[@]} -eq 0 ]]; then
-        echo "Coverage collection completed without producing any coverage.cobertura.xml files." >&2
-        echo "Expected files under tests/*/TestResults/*/coverage.cobertura.xml before generating a coverage report." >&2
+        echo "Coverage collection completed without producing any Cobertura XML files." >&2
+        echo "Expected files under ${results_directory} before generating a coverage report." >&2
         echo "This may indicate that the test run did not complete successfully or that coverage output was not written." >&2
         echo "To reproduce locally, run restore/build first, then run bash scripts/run-tests-with-coverage.sh from the repository root." >&2
         return 1

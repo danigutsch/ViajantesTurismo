@@ -178,42 +178,20 @@ This repository uses the MTP-native coverage collection for xUnit v3 test projec
 
 Generate fresh Cobertura coverage for the whole solution:
 
-```powershell
-dotnet test --solution ViajantesTurismo.slnx -- --coverage --coverage-output-format cobertura --coverage-output coverage.cobertura.xml --coverage-settings coverage.settings.xml
-```
-
-Generate a single HTML report from all per-project coverage files:
-
-```powershell
-reportgenerator -reports:"tests/**/TestResults/**/coverage.cobertura.xml" -targetdir:"TestResults/CoverageReport" -reporttypes:"Html"
+```bash
+bash scripts/run-tests-with-coverage.sh
 ```
 
 Open `TestResults/CoverageReport/index.html` to inspect the aggregated report.
 
 #### Important MTP behavior
 
-When you run coverage at the **solution** level, MTP writes one
-`coverage.cobertura.xml` file per test project inside that project's `TestResults` folder.
+When `dotnet test` runs multiple projects, do not pass `--coverage-output`. xUnit v3 4.0 and MTP
+otherwise write every project to the same path, so later projects overwrite earlier reports.
 
-Do **not** assume a single file such as:
-
-```text
-TestResults/Coverage/coverage.cobertura.xml
-```
-
-it exists after the solution runs.
-
-Instead, aggregate the per-project files using the glob pattern above:
-
-```text
-tests/**/TestResults/**/coverage.cobertura.xml
-```
-
-#### Why the known filename still matters
-
-Passing `--coverage-output coverage.cobertura.xml` ensures each project emits a predictable filename,
-which makes `reportgenerator` aggregation stable even though the files are produced in different
-project output folders.
+The repository helper creates a run-specific `TestResults/coverage.*` directory, passes it through
+`--results-directory`, lets MTP assign unique Cobertura filenames, and aggregates only that run's
+reports. This avoids parallel collisions and stale coverage from earlier runs.
 
 ### Filtering Tests MTP
 
@@ -750,15 +728,15 @@ root.
 See [xUnit v3 Code Coverage with MTP](https://xunit.net/docs/getting-started/v3/code-coverage-with-mtp) for the
 official guide.
 
-```powershell
-# Collect coverage (cobertura XML)
-dotnet test --solution ViajantesTurismo.slnx -- --coverage --coverage-output-format cobertura --coverage-output coverage.cobertura.xml --coverage-settings coverage.settings.xml
+```bash
+# Collect and aggregate coverage (Cobertura XML + HTML)
+bash scripts/run-tests-with-coverage.sh
 
 # `coverage.settings.xml` excludes migrations and common generated-source patterns during collection
 ```
 
-After a solution-level run, MTP writes one `coverage.cobertura.xml` file per test project under that
-project's `TestResults` folder. Aggregate them with `reportgenerator` using the glob documented above.
+The helper stores uniquely named MTP reports under a run-specific `TestResults/coverage.*` directory
+before aggregating them with ReportGenerator.
 
 ### CI integration
 
@@ -786,12 +764,9 @@ dotnet test --project tests/ViajantesTurismo.Admin.SystemTests --filter-class Co
 
 ### Running Tests with Coverage
 
-```powershell
-# All tests with cobertura coverage (coverage flags are test-host args, passed after --)
-dotnet test --solution ViajantesTurismo.slnx -- --coverage --coverage-output-format cobertura --coverage-output coverage.cobertura.xml --coverage-settings coverage.settings.xml
-
-# Generate HTML report from all per-project coverage files (requires reportgenerator tool)
-reportgenerator -reports:"tests/**/TestResults/**/coverage.cobertura.xml" -targetdir:"TestResults/CoverageReport" -reporttypes:"Html"
+```bash
+# All tests with Cobertura coverage and an aggregated HTML report
+bash scripts/run-tests-with-coverage.sh
 ```
 
 > If `coverage.settings.xml` changed, regenerate the Cobertura files before building the HTML report.

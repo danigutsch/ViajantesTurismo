@@ -1,4 +1,4 @@
-﻿using System.Net;
+using System.Net;
 using SharedKernel.HttpClients;
 using ViajantesTurismo.Admin.Contracts.Application;
 

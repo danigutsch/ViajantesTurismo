@@ -49,22 +49,22 @@ internal sealed class QueryService(AdminReadDbContext dbContext) : IQueryService
         return tour is null
             ? null
             : new GetTourDto
-        {
-            Id = tour.Id,
-            Identifier = tour.Identifier,
-            Name = tour.Name,
-            StartDate = tour.Schedule.StartDate,
-            EndDate = tour.Schedule.EndDate,
-            Price = tour.Pricing.BasePrice,
-            SingleRoomSupplementPrice = tour.Pricing.SingleRoomSupplementPrice,
-            RegularBikePrice = tour.Pricing.RegularBikePrice,
-            EBikePrice = tour.Pricing.EBikePrice,
-            Currency = TourMapper.MapToCurrencyDto(tour.Pricing.Currency),
-            IncludedServices = [.. tour.IncludedServices],
-            MinCustomers = tour.Capacity.MinCustomers,
-            MaxCustomers = tour.Capacity.MaxCustomers,
-            CurrentCustomerCount = tour.CurrentCustomerCount
-        };
+            {
+                Id = tour.Id,
+                Identifier = tour.Identifier,
+                Name = tour.Name,
+                StartDate = tour.Schedule.StartDate,
+                EndDate = tour.Schedule.EndDate,
+                Price = tour.Pricing.BasePrice,
+                SingleRoomSupplementPrice = tour.Pricing.SingleRoomSupplementPrice,
+                RegularBikePrice = tour.Pricing.RegularBikePrice,
+                EBikePrice = tour.Pricing.EBikePrice,
+                Currency = TourMapper.MapToCurrencyDto(tour.Pricing.Currency),
+                IncludedServices = [.. tour.IncludedServices],
+                MinCustomers = tour.Capacity.MinCustomers,
+                MaxCustomers = tour.Capacity.MaxCustomers,
+                CurrentCustomerCount = tour.CurrentCustomerCount
+            };
     }
 
     public async Task<IReadOnlyList<GetCustomerDto>> GetAllCustomers(CancellationToken ct)

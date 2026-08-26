@@ -179,7 +179,7 @@ else if (_tour != null)
     private bool _isSubmitting;
     private BookingCreateForm? _bookingCreateFormRef;
 
-    private ToastNotification _toast = null!;
+    private ToastNotification? _toast;
 
     protected override async Task OnInitializedAsync()
     {
@@ -269,11 +269,11 @@ else if (_tour != null)
 
             if (outcome.Kind != ContractCommandOutcomeKind.Succeeded)
             {
-                _toast.ShowError("Failed to create booking. Please try again.");
+                _toast?.ShowError("Failed to create booking. Please try again.");
                 return;
             }
 
-            _toast.ShowSuccess("Booking created successfully.");
+            _toast?.ShowSuccess("Booking created successfully.");
 
             await LoadBookings();
             HideBookingForm();
@@ -288,7 +288,7 @@ else if (_tour != null)
         catch (Exception ex)
         {
             Logger.LogError(ex, "Unexpected error while creating booking for tour {TourId}", Id);
-            _toast.ShowError("Failed to create booking. Please try again.");
+            _toast?.ShowError("Failed to create booking. Please try again.");
         }
         finally
         {

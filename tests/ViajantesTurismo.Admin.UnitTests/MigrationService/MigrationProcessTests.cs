@@ -51,7 +51,7 @@ public sealed class MigrationProcessTests
     }
 
     [Fact]
-    [Trait(SharedKernel.Testing.TestTraitNames.CategoryName, SharedKernel.Testing.TestTraitValues.SecurityCategory)]
+    [Trait(TestTraitNames.CategoryName, TestTraitValues.SecurityCategory)]
     public void Formats_failure_as_exception_type_without_sensitive_content()
     {
         // Arrange

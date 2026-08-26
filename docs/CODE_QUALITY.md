@@ -567,7 +567,8 @@ official guide.
 **Key Configuration:**
 
 - **Format**: `cobertura` (XML format for CI/CD integration)
-- **Output**: Each test project generates a `coverage.cobertura.xml` in its `TestResults` folder
+- **Output**: MTP assigns each test project a unique Cobertura filename in a run-specific
+  `TestResults/coverage.*` directory
 - **Include**: All `ViajantesTurismo.*` assemblies
 - **Exclude**:
     - Generated files
@@ -583,31 +584,18 @@ official guide.
 | --- | --- |
 | `--coverage` | Enable code coverage collection (required) |
 | `--coverage-output-format` | Output format: `coverage`, `xml`, or `cobertura` |
-| `--coverage-output` | Output filename |
+| `--coverage-output` | Output filename; do not use for multi-project runs |
 | `--coverage-settings` | Path to XML settings file (e.g. `coverage.settings.xml`) |
 
 **Collect coverage:**
 
-```powershell
-dotnet test -- --coverage --coverage-output-format cobertura --coverage-output coverage.cobertura.xml
-
-# With explicit settings file
-dotnet test -- --coverage --coverage-output-format cobertura --coverage-output coverage.cobertura.xml --coverage-settings ../../coverage.settings.xml
+```bash
+bash scripts/run-tests-with-coverage.sh
 ```
 
-**Generate HTML report:**
-
-```powershell
-# Run tests with coverage
-dotnet test -- --coverage --coverage-output-format cobertura --coverage-output coverage.cobertura.xml
-
-# Generate report (requires reportgenerator tool)
-dotnet tool restore
-dotnet reportgenerator -reports:**/TestResults/**/coverage.cobertura.xml -targetdir:TestResults/CoverageReport -reporttypes:Html
-
-# Open report
-start TestResults/CoverageReport/index.html
-```
+The helper runs coverage with a dedicated `--results-directory`, leaves `--coverage-output`
+unset so parallel projects cannot overwrite one another, and generates
+`TestResults/CoverageReport/index.html` with the repository-pinned ReportGenerator tool.
 
 **Or use the VS Code task:**
 

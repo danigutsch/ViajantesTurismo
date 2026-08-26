@@ -143,14 +143,14 @@ internal sealed class CustomerCreationState
     /// <summary>
     /// Checks if all steps in the customer creation process have been completed.
     /// </summary>
-    /// <returns>True if all step data properties are not null; otherwise, false.</returns>
+    /// <returns>True if all required step data is present; otherwise, false.</returns>
     public bool IsComplete() =>
         PersonalInfo is not null &&
         IdentificationInfo is not null &&
         ContactInfo is not null &&
         Address is not null &&
         PhysicalInfo is not null &&
-        AccommodationPreferences is not null &&
+        AccommodationPreferences is { RoomType: not null, BedType: not null } &&
         EmergencyContact is not null &&
         MedicalInfo is not null;
 

@@ -82,7 +82,7 @@ public sealed class AccommodationPageTests : BunitContext
         // Assert
         await cut.WaitForAssertionAsync(() => (navigationManager.Uri).ShouldEndWith("/customers/create/emergency-contact", StringComparison.Ordinal));
         (_state.AccommodationPreferences).ShouldNotBeNull();
-        (_state.AccommodationPreferences!.RoomType).ShouldBe(RoomTypeDto.DoubleOccupancy);
+        (_state.AccommodationPreferences.RoomType).ShouldBe(RoomTypeDto.DoubleOccupancy);
         (_state.AccommodationPreferences.BedType).ShouldBe(BedTypeDto.SingleBed);
         (_state.AccommodationPreferences.CompanionId).ShouldBe(companionId);
         (_state.CurrentStep).ShouldBe(7);
