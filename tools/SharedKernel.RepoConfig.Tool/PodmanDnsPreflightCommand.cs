@@ -113,7 +113,7 @@ internal static class PodmanDnsPreflightCommand
                     quiet = true;
                     break;
 
-                case "-h" or "--help" when args.Length == 1:
+                case "-h" or "--help":
                     await output.WriteLineAsync(Usage.AsMemory(), cancellationToken).ConfigureAwait(false);
                     return (false, quiet, 0);
 
@@ -924,7 +924,9 @@ internal static class PodmanDnsPreflightCommand
             }
         }
 
-        throw new InvalidOperationException("could not compare rootless network namespace identities safely", lastError);
+        throw new InvalidOperationException(
+            $"could not compare rootless network namespace identities safely: {lastError?.Message ?? "unknown failure"}",
+            lastError);
     }
 
     private static async Task<string> QueryNamespaceIdentity(
@@ -950,6 +952,7 @@ internal static class PodmanDnsPreflightCommand
         var identity = result.StandardOutput.TrimEnd('\r', '\n');
         var identityParts = identity.Split(':');
         if (result.ExitCode != 0
+            || result.StandardError.Length > MaximumPodmanOutputLength
             || identity.Length == 0
             || identity.Contains('\r', StringComparison.Ordinal)
             || identity.Contains('\n', StringComparison.Ordinal)
@@ -985,7 +988,9 @@ internal static class PodmanDnsPreflightCommand
         }
 
         var result = await runProcess(startInfo, cancellationToken).ConfigureAwait(false);
-        if (result.ExitCode != 0 || result.StandardOutput.Length > MaximumPodmanOutputLength)
+        if (result.ExitCode != 0
+            || result.StandardOutput.Length > MaximumPodmanOutputLength
+            || result.StandardError.Length > MaximumPodmanOutputLength)
         {
             throw new InvalidOperationException(failureMessage);
         }
@@ -993,17 +998,17 @@ internal static class PodmanDnsPreflightCommand
         return result.StandardOutput;
     }
 
-    private static async Task<PodmanCommandResult> RunProcess(ProcessStartInfo startInfo, CancellationToken cancellationToken)
+    internal static async Task<PodmanCommandResult> RunProcess(ProcessStartInfo startInfo, CancellationToken cancellationToken)
     {
         Process process;
         try
         {
             process = Process.Start(startInfo)
-                ?? throw new InvalidOperationException("could not start podman");
+                ?? throw new InvalidOperationException($"could not start {startInfo.FileName}");
         }
         catch (Win32Exception exception)
         {
-            throw new InvalidOperationException("could not start podman", exception);
+            throw new InvalidOperationException($"could not start {startInfo.FileName}", exception);
         }
 
         using (process)
@@ -1012,8 +1017,8 @@ internal static class PodmanDnsPreflightCommand
             timeout.CancelAfter(PodmanTimeout);
             try
             {
-                var standardOutput = process.StandardOutput.ReadToEndAsync(timeout.Token);
-                var standardError = process.StandardError.ReadToEndAsync(timeout.Token);
+                var standardOutput = ReadBoundedOutput(process.StandardOutput, timeout.Token);
+                var standardError = ReadBoundedOutput(process.StandardError, timeout.Token);
                 await process.WaitForExitAsync(timeout.Token).ConfigureAwait(false);
                 return new PodmanCommandResult(
                     process.ExitCode,
@@ -1033,11 +1038,18 @@ internal static class PodmanDnsPreflightCommand
         }
     }
 
-    private static async Task Stop(Process process)
+    internal static async Task Stop(Process process)
     {
-        if (!process.HasExited)
+        try
         {
-            process.Kill();
+            if (!process.HasExited)
+            {
+                process.Kill();
+            }
+        }
+        catch (Exception exception) when (exception is InvalidOperationException or Win32Exception or NotSupportedException)
+        {
+            // Best-effort cleanup must not replace the timeout or cancellation that reached this path.
         }
 
         using var cleanupTimeout = new CancellationTokenSource(TimeSpan.FromSeconds(5));
@@ -1045,10 +1057,26 @@ internal static class PodmanDnsPreflightCommand
         {
             await process.WaitForExitAsync(cleanupTimeout.Token).ConfigureAwait(false);
         }
-        catch (OperationCanceledException)
+        catch (Exception exception) when (exception is OperationCanceledException or InvalidOperationException or Win32Exception or NotSupportedException)
         {
             // The command-owned process was signalled; cleanup must not block the caller indefinitely.
         }
+    }
+
+    internal static async Task<string> ReadBoundedOutput(StreamReader reader, CancellationToken cancellationToken)
+    {
+        var output = new StringBuilder();
+        var buffer = new char[4096];
+        while (await reader.ReadAsync(buffer.AsMemory(), cancellationToken).ConfigureAwait(false) is var count && count > 0)
+        {
+            var remaining = MaximumPodmanOutputLength + 1 - output.Length;
+            if (remaining > 0)
+            {
+                output.Append(buffer, 0, Math.Min(count, remaining));
+            }
+        }
+
+        return output.ToString();
     }
 
     private static async Task<int> WriteHealthy(

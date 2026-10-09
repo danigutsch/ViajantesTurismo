@@ -1,4 +1,6 @@
+using System.Diagnostics;
 using System.Globalization;
+using System.Text;
 
 namespace SharedKernel.RepoConfig.Tests;
 
@@ -45,6 +47,22 @@ public sealed class PodmanDnsPreflightCommandTests
         exitCode.ShouldBe(0);
         output.ToString().ShouldContain("Usage: sharedkernel-repo podman-dns-preflight", StringComparison.Ordinal);
         error.ToString().ShouldBe(string.Empty);
+    }
+
+    [Fact]
+    public async Task Help_is_recognized_with_other_valid_options()
+    {
+        // Arrange
+        using var context = new PodmanDnsPreflightTestContext();
+
+        // Act
+        var result = await context.Run(["--check", "--help"]);
+
+        // Assert
+        result.ExitCode.ShouldBe(0);
+        result.StandardOutput.ShouldContain("Usage: sharedkernel-repo podman-dns-preflight", StringComparison.Ordinal);
+        result.StandardError.ShouldBe(string.Empty);
+        context.Commands.ShouldBe([]);
     }
 
     [Fact]
@@ -719,6 +737,92 @@ public sealed class PodmanDnsPreflightCommandTests
         result.ExitCode.ShouldBe(1);
         result.StandardError.ShouldBe(
             $"podman dns preflight: unable to verify safely: podman info failed while reading remote-service mode{Environment.NewLine}");
+    }
+
+    [Fact]
+    public async Task Oversized_podman_error_fails_closed_without_echoing_it()
+    {
+        // Arrange
+        using var context = new PodmanDnsPreflightTestContext();
+        var oversizedError = new string('x', 1_048_577);
+        context.SetResponse("info --format {{.Host.ServiceIsRemote}}", "false\n", oversizedError);
+
+        // Act
+        var result = await context.Run();
+
+        // Assert
+        result.ExitCode.ShouldBe(1);
+        result.StandardError.ShouldBe(
+            $"podman dns preflight: unable to verify safely: podman info failed while reading remote-service mode{Environment.NewLine}");
+    }
+
+    [Fact]
+    public async Task Process_start_failure_names_the_executable()
+    {
+        // Arrange
+        var executable = Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString("N"), "missing-command");
+        ProcessStartInfo startInfo = new(executable)
+        {
+            RedirectStandardError = true,
+            RedirectStandardOutput = true,
+            UseShellExecute = false
+        };
+        Func<Task> run = () => PodmanDnsPreflightCommand.RunProcess(startInfo, TestContext.Current.CancellationToken);
+
+        // Act
+        var exception = await run.ShouldThrow<InvalidOperationException>();
+
+        // Assert
+        exception.Message.ShouldContain(executable, StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public async Task Stat_start_failure_names_the_executable_in_command_diagnostics()
+    {
+        // Arrange
+        using var context = new PodmanDnsPreflightTestContext();
+        var statExecutable = Path.Combine(context.RootPath, "missing-stat");
+        context.AddDaemon(1220);
+        context.UseSystemProcessFor(statExecutable);
+
+        // Act
+        var result = await context.Run(statExecutable: statExecutable);
+
+        // Assert
+        result.ExitCode.ShouldBe(1);
+        result.StandardError.ShouldContain(statExecutable, StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public async Task Process_cleanup_ignores_an_already_unavailable_process()
+    {
+        // Arrange
+        using Process process = new();
+        var completed = false;
+
+        // Act
+        await PodmanDnsPreflightCommand.Stop(process);
+        completed = true;
+
+        // Assert
+        completed.ShouldBe(true);
+    }
+
+    [Fact]
+    public async Task Process_output_capture_retains_only_the_limit_marker()
+    {
+        // Arrange
+        var oversizedOutput = new string('x', 1_048_577) + "discarded";
+        await using var stream = new MemoryStream(Encoding.UTF8.GetBytes(oversizedOutput));
+        using var reader = new StreamReader(stream, Encoding.UTF8);
+
+        // Act
+        var capturedOutput = await PodmanDnsPreflightCommand.ReadBoundedOutput(
+            reader,
+            TestContext.Current.CancellationToken);
+
+        // Assert
+        capturedOutput.Length.ShouldBe(1_048_577);
     }
 
     [Theory]

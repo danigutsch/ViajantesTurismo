@@ -11,6 +11,7 @@ internal sealed class PodmanDnsPreflightTestContext : IDisposable
     private readonly Dictionary<string, Queue<PodmanCommandResult>> _responseQueues = new(StringComparer.Ordinal);
     private Action? _onContainerRecheck;
     private Action? _onFinalNamespaceCheck;
+    private string? _systemProcessExecutable;
     private int _containerQueryCount;
     private int _namespaceQueryCount;
 
@@ -111,9 +112,15 @@ internal sealed class PodmanDnsPreflightTestContext : IDisposable
     public void SetResponse(string arguments, string output) =>
         _responses[arguments] = new PodmanCommandResult(0, output, string.Empty);
 
+    public void SetResponse(string arguments, string output, string error) =>
+        _responses[arguments] = new PodmanCommandResult(0, output, error);
+
     public void SetResponses(string arguments, params string[] outputs) =>
         _responseQueues[arguments] = new Queue<PodmanCommandResult>(
             outputs.Select(output => new PodmanCommandResult(0, output, string.Empty)));
+
+    public void UseSystemProcessFor(string executable) =>
+        _systemProcessExecutable = executable;
 
     public void SetProcessNamespaceIdentity(int processId, string identity) =>
         File.WriteAllText(Path.Combine(ProcRoot, processId.ToString(CultureInfo.InvariantCulture), "ns", "net"), identity + "\n");
@@ -208,6 +215,10 @@ internal sealed class PodmanDnsPreflightTestContext : IDisposable
     {
         cancellationToken.ThrowIfCancellationRequested();
         var arguments = startInfo.ArgumentList.ToArray();
+        if (string.Equals(startInfo.FileName, _systemProcessExecutable, StringComparison.Ordinal))
+        {
+            return await PodmanDnsPreflightCommand.RunProcess(startInfo, cancellationToken).ConfigureAwait(false);
+        }
         if (string.Equals(startInfo.FileName, "/usr/bin/stat", StringComparison.Ordinal))
         {
             if (arguments.Length != 5
