@@ -773,6 +773,77 @@ bash scripts/run-tests-with-coverage.sh
 
 See [Code Quality](CODE_QUALITY.md#test-coverage-tools) for full coverage tool configuration and report generation.
 
+## Container DNS Fails Across a Whole Suite (Rootless Podman)
+
+**Symptom.** Aspire-backed tests fail to reach a container by name — SeaweedFS,
+a database, an identity provider — and everything downstream of it goes
+unhealthy. Containers start, networks exist, `podman ps` looks right, and the
+same test passes when run alone. netavark may log `aardvark-dns runs in a
+different netns`.
+
+**Mechanism.** Rootless Podman gives every container one shared network
+namespace, reference counted at
+`$XDG_RUNTIME_DIR/containers/networks/rootless-netns/ref-count`, and runs the
+`aardvark-dns` daemon inside it. When the last container exits the namespace is
+torn down; the next container creates a fresh one. aardvark-dns is started and
+reconfigured only by netavark, and on the update path Podman rewrites the config
+file and sends `SIGHUP` **without entering the namespace** — so nothing
+re-checks which namespace the daemon is actually in. If a teardown does not
+complete, the daemon survives into a namespace that belongs to nothing, and
+every container started afterwards is handed a DNS server it cannot reach.
+
+Since netavark 1.10 the condition is detected and logged, and deliberately not
+repaired. The upstream reasoning is that a tool cannot know whether other
+containers are still using the old namespace, so killing the daemon could break
+name resolution for something still running. A separate process-exit race was
+reported in Podman issue 22103 and fixed by netavark 1.11; it does not provide a
+safe general repair for a daemon serving the wrong namespace.
+
+**What is NOT the trigger.** Concurrent container creation on its own does not
+cause it. Measured on podman 5.7.0 / netavark 1.16.1 / aardvark-dns 1.16.0: six
+workers creating a network, running two containers, resolving a name and tearing
+down, for three rounds — 18/18 lookups fine, clean teardown. Repeated with
+overlapping lifetimes and `SIGKILL` teardown — 24/24 fine. So do not reach for
+serialization first; check the daemon.
+
+**Check and recover.**
+
+```bash
+dotnet run --project tools/SharedKernel.RepoConfig.Tool -- podman-dns-preflight --check
+# exits 1 when stale state is detected
+```
+
+The preflight supports only local rootless Podman and fails closed for remote
+services. It is intentionally check-only. Podman does not expose a lock that
+lets an external process prove no container can start during a repair, so an
+automatic kill or config deletion would race container startup.
+
+Recovery is an explicit maintenance action. Stop all rootless containers and
+ensure no other Podman operation can start. Do not trust `aardvark.pid` alone:
+it may be missing, stale, or point to a reused PID. Recovery tooling must first
+open a Linux pidfd for each candidate PID in the preflight diagnostic. While
+that identity-stable handle remains open, revalidate that the process belongs
+to the current user, `/proc/<pid>/comm` is exactly `aardvark-dns`, and its
+NUL-delimited command line contains an exact `--config` argument for the
+`aardvark-dns` directory under the run root reported by `podman info`. Signal
+only through that same pidfd. Abort on any missing, changed, or ambiguous
+evidence. If no reviewed pidfd-aware recovery tool is available, restart the
+rootless user session or host instead of signalling a bare PID.
+
+After stopping every validated daemon, verify it exited and remove only that
+exact run root's aardvark configuration directory. Do not use a global `pkill`,
+a guessed path, `kill <pid>`, or a PID copied from the stale file. aardvark-dns
+restarts with the next container. See the upstream
+[wrong-namespace detection and recovery rationale](https://github.com/containers/netavark/commit/5a0031a36701492c8ab6f22343e909a21a233aaa)
+and the separate [process-exit race fix](https://github.com/containers/netavark/commit/e18defc3897fee03426405a5255ac9f7c5dcb20c).
+
+Run the check before a full-suite run. If it reports healthy and DNS still
+fails, the fault is elsewhere and serialization is the next thing to try:
+
+```bash
+dotnet test --solution ViajantesTurismo.slnx --max-parallel-test-modules 1
+```
+
 ## Related Documentation
 
 Use the [documentation source-of-truth map](README.md#source-of-truth-map) for related repository guidance.

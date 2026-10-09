@@ -9,6 +9,7 @@ structure without adding regular helper scripts.
 dotnet run --project tools/SharedKernel.RepoConfig.Tool/SharedKernel.RepoConfig.Tool.csproj -- verify
 dotnet run --project tools/SharedKernel.RepoConfig.Tool/SharedKernel.RepoConfig.Tool.csproj -- diff
 dotnet run --project tools/SharedKernel.RepoConfig.Tool/SharedKernel.RepoConfig.Tool.csproj -- text-encoding --root .
+dotnet run --project tools/SharedKernel.RepoConfig.Tool/SharedKernel.RepoConfig.Tool.csproj -- podman-dns-preflight --check
 dotnet run --project tools/SharedKernel.RepoConfig.Tool/SharedKernel.RepoConfig.Tool.csproj -- init
 dotnet run --project tools/SharedKernel.RepoConfig.Tool/SharedKernel.RepoConfig.Tool.csproj -- set github.repository owner/repository
 dotnet run --project tools/SharedKernel.RepoConfig.Tool/SharedKernel.RepoConfig.Tool.csproj -- get next-priority
@@ -35,6 +36,7 @@ Pass `--root <path>` after the command to target another repository root.
 | `verify` | Checks roadmap structure, config, item metadata, triage state, scoring values, and dependencies. |
 | `diff` | Reports verification drift using the same checks as `verify`. |
 | `text-encoding` | Verifies that stage-0 regular Git index blobs contain no NUL bytes and decode as strict UTF-8. |
+| `podman-dns-preflight` | Checks local rootless Podman for stale `aardvark-dns` state without modifying processes, containers, or files. |
 | `set github.repository <owner/repo>` | Updates the GitHub projection repository in `roadmap/config.json`. |
 | `get next-priority` | Lists open triaged items by explicit order and RICE score. |
 | `get next-unblocked` | Lists open triaged items with no open blockers. Supports `--type <type>`. |
@@ -69,6 +71,12 @@ exactly one of them; manifest drift fails the detection job rather than skipping
 | `0` | Command completed successfully. |
 | `1` | Verification failed or command execution failed. |
 | `2` | Command syntax is invalid. |
+
+`podman-dns-preflight` supports only local rootless Podman on Linux and fails closed when it cannot
+inspect the reported run root safely. `--check` makes the command's check-only behavior explicit;
+`--quiet` suppresses healthy output. Namespace identity checks require the Linux `stat` utility with
+the common `-L -c` options supported by GNU coreutils and BusyBox. Stale-state recovery remains a
+separate manual maintenance action.
 
 `text-encoding` reads the Git index rather than following working-tree paths. It accepts stage-0
 regular modes `100644` and `100755`, skips symlink and gitlink modes, and reads content by object ID
