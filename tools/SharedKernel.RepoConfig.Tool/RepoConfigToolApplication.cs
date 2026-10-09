@@ -8,7 +8,7 @@ namespace SharedKernel.RepoConfig.Tool;
 internal static class RepoConfigToolApplication
 {
     private const decimal ParetoFraction = 0.2m;
-    private const string Usage = "Usage: sharedkernel-repo <init|verify|diff|text-encoding|set|get|sync|reconcile|intake|select-ci-test-projects> [--root <path>]";
+    private const string Usage = "Usage: sharedkernel-repo <init|verify|diff|text-encoding|set|get|sync|reconcile|intake|select-ci-test-projects|verify-sharedkernel-candidate> [--root <path>]";
 
     public static Task<int> Run(string[] args, TextWriter output, TextWriter error, string workingDirectory, CancellationToken cancellationToken) =>
         Run(args, output, error, workingDirectory, httpClient: null, cancellationToken);
@@ -23,7 +23,7 @@ internal static class RepoConfigToolApplication
         if (args is [] or ["--help"] or ["-h"])
         {
             await output.WriteLineAsync(Usage.AsMemory(), cancellationToken).ConfigureAwait(false);
-            await output.WriteLineAsync("Commands: init, verify, diff, text-encoding, set github.repository <owner/repo>, get <query>, sync github, reconcile github, intake github, select-ci-test-projects.".AsMemory(), cancellationToken).ConfigureAwait(false);
+            await output.WriteLineAsync("Commands: init, verify, diff, text-encoding, set github.repository <owner/repo>, get <query>, sync github, reconcile github, intake github, select-ci-test-projects, verify-sharedkernel-candidate.".AsMemory(), cancellationToken).ConfigureAwait(false);
             return 0;
         }
 
@@ -34,6 +34,7 @@ internal static class RepoConfigToolApplication
                 "sync" => await RunGitHubProjection(args[1..], output, error, workingDirectory, httpClient, cancellationToken).ConfigureAwait(false),
                 "reconcile" => await RunGitHubReconciliation(args[1..], output, error, workingDirectory, httpClient, cancellationToken).ConfigureAwait(false),
                 "intake" => await RunGitHubIntake(args[1..], output, error, workingDirectory, httpClient, cancellationToken).ConfigureAwait(false),
+                "verify-sharedkernel-candidate" => await CandidateCompatibilityCommand.Run(args[1..], output, error, workingDirectory, cancellationToken).ConfigureAwait(false),
                 "select-ci-test-projects" => await CiTestProjectSelectionCommand.Run(args[1..], output, error, workingDirectory, cancellationToken).ConfigureAwait(false),
                 _ => await RunCommand(args, output, error, workingDirectory, cancellationToken).ConfigureAwait(false)
             };
