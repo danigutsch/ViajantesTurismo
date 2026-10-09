@@ -63,7 +63,7 @@ public sealed partial class AdminTestArchitectureGuardTests
         var obsoleteE2EFixtureExists = File.Exists(Path.Combine(systemTestFixturesPath, "E2EFixture.cs"));
 
         assemblyFixtureText.ShouldContain(
-            "[assembly: Xunit.AssemblyFixture(typeof(ViajantesTurismo.Admin.IntegrationTests.Infrastructure.ApiFixture))]",
+            "[assembly: AssemblyFixture(typeof(ApiFixture))]",
             StringComparison.Ordinal);
         apiFixtureText.ShouldContain(
             "public sealed class ApiFixture : Testing.Integration.IAdminTestHost, IAsyncLifetime",

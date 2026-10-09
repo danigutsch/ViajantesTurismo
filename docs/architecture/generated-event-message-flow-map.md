@@ -12,6 +12,7 @@ Source: `src/**/*.cs` integration-event contracts and registrations.
 | Event | Event type | Version | Producers | Consumers | Handlers |
 | --- | --- | --- | --- | --- | --- |
 | AdminTourCreatedIntegrationEvent | `admin.tour.created` | 1 | `ViajantesTurismo.Admin.Application/Tours/TourIntegrationEventMappings.cs` | `ViajantesTurismo.Catalog.Application/ApplicationDependencyInjection.cs` | `AdminTourCreatedIntegrationHandler` |
+| BrandingSettingsChangedIntegrationEvent | `branding.settings.changed` | 1 | not discovered from source | not registered | not discovered |
 | MediaImageOriginalStoredIntegrationEvent | `catalog.media-image.original-stored` | 1 | `ViajantesTurismo.Catalog.Application/Media/MediaImageUploadIntake.cs` | `ViajantesTurismo.Catalog.Application/Media/MediaDependencyInjection.cs` | `MediaImageOriginalStoredIntegrationHandler` |
 <!-- generated:integration-events:end -->
 

@@ -14,6 +14,27 @@ internal static class ManagementAuthenticationTestConfiguration
         string tokenExchangeEnabled = "true",
         string tokenExchangeProvider = "Keycloak")
     {
+        return new ConfigurationBuilder()
+            .AddInMemoryCollection(CreateSettings(
+                allowHttpDevelopmentAuthority,
+                includeRequiredSettings,
+                authority,
+                issuer,
+                includeTokenExchangeSettings,
+                tokenExchangeEnabled,
+                tokenExchangeProvider))
+            .Build();
+    }
+
+    public static Dictionary<string, string?> CreateSettings(
+        bool allowHttpDevelopmentAuthority = false,
+        bool includeRequiredSettings = true,
+        string authority = "https://identity.example.test/realms/viajantes",
+        string? issuer = null,
+        bool includeTokenExchangeSettings = true,
+        string tokenExchangeEnabled = "true",
+        string tokenExchangeProvider = "Keycloak")
+    {
         var settings = new Dictionary<string, string?>
         {
             [ApiAuthenticationDefaults.AllowHttpDevelopmentAuthorityConfigurationKey] = allowHttpDevelopmentAuthority.ToString()
@@ -34,8 +55,6 @@ internal static class ManagementAuthenticationTestConfiguration
             }
         }
 
-        return new ConfigurationBuilder()
-            .AddInMemoryCollection(settings)
-            .Build();
+        return settings;
     }
 }

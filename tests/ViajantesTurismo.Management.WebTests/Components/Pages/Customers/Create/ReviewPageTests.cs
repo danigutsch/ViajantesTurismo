@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Components;
 using ViajantesTurismo.Management.Web;
 using ViajantesTurismo.Management.Web.Components.Pages.Customers.Create;
+using ViajantesTurismo.Management.Web.Models;
 using ContractCommandOutcomeDto = SharedKernel.HttpClients.ContractCommandOutcomeDto;
 using ContractCommandOutcomeKind = SharedKernel.HttpClients.ContractCommandOutcomeKind;
 
@@ -88,6 +89,29 @@ public sealed class ReviewPageTests : BunitContext
 
         // Assert
         await cut.WaitForAssertionAsync(() => (navigationManager.Uri).ShouldEndWith("/customers/create/personal-info", StringComparison.Ordinal));
+    }
+
+    [Theory]
+    [InlineData(null, BedTypeDto.SingleBed)]
+    [InlineData(RoomTypeDto.DoubleOccupancy, null)]
+    public void Missing_required_accommodation_value_shows_incomplete_warning(
+        RoomTypeDto? roomType,
+        BedTypeDto? bedType)
+    {
+        // Arrange
+        CustomerCreationStateTestHelper.SeedCompletedState(_state);
+        _state.SetAccommodationPreferences(new AccommodationPreferencesFormModel
+        {
+            RoomType = roomType,
+            BedType = bedType,
+        });
+
+        // Act
+        var cut = Render<Review>();
+
+        // Assert
+        cut.Markup.ShouldContain("Please complete all steps before submitting.", StringComparison.Ordinal);
+        cut.FindAll("button.btn-success").ShouldBeEmpty();
     }
 
     [Fact]

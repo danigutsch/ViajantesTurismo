@@ -268,8 +268,9 @@ Planned/evolving Admin event contracts:
 Catalog consumers must be idempotent. The consumer wrapper uses `IIdempotencyStore`; the
 `SharedKernel.Idempotency.EntityFrameworkCore` provider maps durable entries to Catalog's
 `messaging.idempotency_keys`. PostgreSQL ingress claims with `FOR UPDATE SKIP LOCKED`, lease, and retry
-state. One worker scope owns a claimed batch, and messages are passed sequentially to the generated
-typed envelope publisher and closed handler cases.
+state. One worker scope owns a claimed batch and its generated publisher. Messages are passed
+sequentially; each envelope gets an asynchronously disposed child scope that resolves the closed typed
+handler, preserving Catalog's idempotency decorator boundary.
 
 ## Persistence
 

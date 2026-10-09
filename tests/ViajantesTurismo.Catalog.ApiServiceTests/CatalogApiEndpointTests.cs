@@ -73,6 +73,24 @@ public sealed class CatalogApiEndpointTests
         body.ShouldBe("Healthy");
     }
 
+    [Theory]
+    [InlineData("Test")]
+    [InlineData("Testing")]
+    public async Task Supported_non_development_test_environment_starts_with_durable_media_storage(string environment)
+    {
+        // Arrange
+        await using var factory = CatalogApiTestHost.Create(environment);
+        using var client = factory.CreateClient();
+
+        // Act
+        using var response = await client.GetAsync(
+            new Uri("/alive", UriKind.Relative),
+            TestContext.Current.CancellationToken);
+
+        // Assert
+        response.StatusCode.ShouldBe(HttpStatusCode.OK);
+    }
+
     [Fact]
     public async Task Robots_txt_disallows_catalog_api_crawling()
     {

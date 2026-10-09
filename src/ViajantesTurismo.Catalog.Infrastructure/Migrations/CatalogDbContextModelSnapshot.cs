@@ -18,7 +18,7 @@ namespace ViajantesTurismo.Catalog.Infrastructure.Migrations
         {
 #pragma warning disable 612, 618
             modelBuilder
-                .HasAnnotation("ProductVersion", "10.0.9")
+                .HasAnnotation("ProductVersion", "10.0.10")
                 .HasAnnotation("Relational:MaxIdentifierLength", 63);
 
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
@@ -151,6 +151,107 @@ namespace ViajantesTurismo.Catalog.Infrastructure.Migrations
                     b.HasIndex("PublishedAt", "NextPublishAttemptAt", "EnqueuedAt");
 
                     b.ToTable("outbox_messages", "messaging");
+                });
+
+            modelBuilder.Entity("SharedKernel.Messaging.IntegrationEvents.EntityFrameworkCore.IntegrationEventTransportMessage", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("ClaimedBy")
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)");
+
+                    b.Property<DateTimeOffset?>("ClaimedUntil")
+                        .IsConcurrencyToken()
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<int>("ConsumeAttempts")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("ConsumerName")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("character varying(200)");
+
+                    b.Property<string>("DataContentType")
+                        .HasMaxLength(200)
+                        .HasColumnType("character varying(200)");
+
+                    b.Property<string>("DataSchema")
+                        .HasMaxLength(2048)
+                        .HasColumnType("character varying(2048)");
+
+                    b.Property<string>("EnvelopeSpec")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)");
+
+                    b.Property<string>("EnvelopeSpecVersion")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("character varying(20)");
+
+                    b.Property<string>("EventId")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("character varying(200)");
+
+                    b.Property<string>("EventType")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("character varying(200)");
+
+                    b.Property<int?>("EventVersion")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("ExtensionAttributesJson")
+                        .HasColumnType("text");
+
+                    b.Property<DateTimeOffset?>("LastConsumeAttemptAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("LastConsumeError")
+                        .HasMaxLength(2000)
+                        .HasColumnType("character varying(2000)");
+
+                    b.Property<DateTimeOffset?>("NextConsumeAttemptAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("Payload")
+                        .HasColumnType("text");
+
+                    b.Property<string>("PayloadEncoding")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("character varying(20)");
+
+                    b.Property<DateTimeOffset?>("ProcessedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<DateTimeOffset>("ReceivedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("Source")
+                        .IsRequired()
+                        .HasMaxLength(2048)
+                        .HasColumnType("character varying(2048)");
+
+                    b.Property<string>("Subject")
+                        .HasMaxLength(500)
+                        .HasColumnType("character varying(500)");
+
+                    b.Property<DateTimeOffset?>("Time")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ConsumerName", "EventId")
+                        .IsUnique();
+
+                    b.HasIndex("ConsumerName", "ProcessedAt", "NextConsumeAttemptAt", "ReceivedAt");
+
+                    b.ToTable("transport_messages", "messaging");
                 });
 
             modelBuilder.Entity("ViajantesTurismo.Catalog.Domain.Media.PublicMediaImage", b =>

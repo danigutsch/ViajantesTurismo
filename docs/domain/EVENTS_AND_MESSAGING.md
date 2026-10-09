@@ -144,7 +144,7 @@ context-specific operational policy. Generated and runtime ownership is explicit
 | Request, stream, and notification dispatch | `SharedKernel.Mediator.SourceGenerator` | `AppMediator` is scoped; closed `Func<T>` dependencies resolve scoped handlers lazily, preserve pipeline order, and avoid a general runtime registry. |
 | Domain event handling and transactional outbox mapping | Domain-event provider generators | A scoped `CompositeDomainEventDispatcher` invokes generated typed handlers for outbox and audit mappings. |
 | Integration-event serialization | `SharedKernel.Messaging.IntegrationEvents.SourceGenerator` | `IIntegrationEventSerializer` is singleton and receives closed `JsonTypeInfo<T>` dependencies. |
-| Background envelope delivery | `SharedKernel.Messaging.IntegrationEvents.SourceGenerator` | One consumer scope owns each claimed batch; its generated `IEventEnvelopePublisher` and typed handlers process messages sequentially. |
+| Background envelope delivery | `SharedKernel.Messaging.IntegrationEvents.SourceGenerator` | One consumer scope owns each claimed batch and generated publisher. Each envelope gets an asynchronously disposed child scope that resolves its closed typed handler; messages remain sequential. |
 | Outbox persistence and relay | `SharedKernel.Messaging.IntegrationEvents.EntityFrameworkCore` | Context configuration and outbox services are explicit; relay/retry remains infrastructure-owned. |
 | Inbox idempotency | `SharedKernel.Idempotency.EntityFrameworkCore` | Owns `EfIdempotencyStore<TContext>` and its model configuration. `SharedKernel.Messaging.IntegrationEvents.EntityFrameworkCore` exposes `AddIntegrationEventInbox<TContext>()` as the integration-event composition call; inbox registration is not implied by outbox registration. |
 
@@ -161,7 +161,7 @@ not part of the generated path.
 | Admin use case | Endpoint to directly resolved scoped handler | None | Handler orchestration, validation, authorization, aggregate behavior, and `SaveEntities(ct)`. |
 | Regular mediator use case | Caller to scoped `AppMediator` | Closed request/stream/notification and pipeline calls | Handler business behavior and configured pipeline semantics. |
 | Admin persistence | `SaveChanges` interceptor to composite domain-event dispatcher | Exhaustive typed outbox and audit mappings plus typed serialization | EF transaction, aggregate state, outbox/audit atomicity, and post-save domain-event clearing. |
-| Durable delivery | Admin relay to PostgreSQL transport to worker batch to generated publisher | Closed envelope deserialization and typed handler selection | `FOR UPDATE SKIP LOCKED`, batch scope, sequential processing, lease/retry, Catalog idempotency, and handler side effects. |
+| Durable delivery | Admin relay to PostgreSQL transport to worker batch to generated publisher | Closed envelope deserialization and typed handler selection | `FOR UPDATE SKIP LOCKED`, batch claim/publisher scope, per-envelope handler scope, sequential processing, lease/retry, Catalog idempotency, and handler side effects. |
 
 ## Domain Events
 
@@ -281,13 +281,15 @@ Runtime shape:
 - Storage-neutral integration-event contracts live in `SharedKernel.Messaging.IntegrationEvents`.
 - EF Core outbox provider code lives in `SharedKernel.Messaging.IntegrationEvents.EntityFrameworkCore`.
 - EF Core idempotency provider code lives in `SharedKernel.Idempotency.EntityFrameworkCore`.
-- EF outbox messages are stored in `messaging.outbox_messages`.
-- `AddIntegrationEventOutbox<TContext>()` registers only the EF outbox and its
-  `messaging.outbox_messages` model configuration.
+- EF outbox messages default to `messaging.outbox_messages`.
+- `AddIntegrationEventOutbox<TContext>()` registers only the EF outbox and its default model
+  configuration. Its storage overload accepts `IntegrationEventStorageOptions` for a context-owned
+  schema, outbox table, and transport table.
 - `SharedKernel.Messaging.IntegrationEvents.EntityFrameworkCore` exposes
   `AddIntegrationEventInbox<TContext>()`; it delegates to the
   `SharedKernel.Idempotency.EntityFrameworkCore` provider and registers only the shared idempotency
-  store and inbox table model configuration.
+  store and inbox table model configuration. Its storage overload accepts
+  `IdempotencyStorageOptions`.
 - Admin supplies AOT-safe `JsonTypeInfo<T>` metadata; generated composition registers the closed
   `IIntegrationEventSerializer` before the EF outbox resolves it.
 - Provider models and EF migrations are authoritative for envelope, payload, publication, retry/error,
@@ -298,6 +300,53 @@ Runtime shape:
   them to registered in-process handlers.
 - The [generated event/message flow map](../architecture/generated-event-message-flow-map.md) is the
   source-derived contract, mapping, registration, and handler inventory.
+
+### Context-qualified EF composition
+
+The no-argument registrations retain `messaging.outbox_messages`,
+`messaging.transport_messages`, and `messaging.idempotency_keys`, so an existing single-context
+application has no model or migration drift. Co-hosted contexts must give each migration-owned table
+a distinct schema/table pair:
+
+```csharp
+services.AddIntegrationEventOutbox<ModuleDbContext>(storage =>
+{
+    storage.Schema = "messaging";
+    storage.OutboxSchema = "branding";
+    storage.OutboxTableName = "outbox_messages";
+    storage.TransportTableName = "transport_messages";
+    storage.ExcludeTransportFromMigrations = true;
+});
+services.AddIntegrationEventInbox<ModuleDbContext>(storage =>
+{
+    storage.Schema = "module_messaging";
+    storage.TableName = "idempotency_keys";
+});
+services.AddPostgreSqlIntegrationEventTransportProducer<ModuleDbContext>("downstream");
+services.AddIntegrationEventOutboxRelay<ModuleDbContext>();
+```
+
+`Schema` remains the default for both integration-event tables. A non-null `OutboxSchema` or
+`TransportSchema` overrides that default only for its table; leaving either override null preserves
+the `Schema` mapping. In the example, the context owns `branding.outbox_messages` while publishing to
+`messaging.transport_messages`.
+
+For a transport-consumer-only context, call
+`ConfigureIntegrationEventStorage<TContext>(...)` before
+`AddPostgreSqlIntegrationEventTransportConsumer<TContext>(...)`.
+
+`IIntegrationEventOutbox`, `IIdempotencyStore`, and transport producers are keyed by
+`typeof(TContext)`. Resolve outbox/idempotency keys when more than one context is registered; their
+first registration remains available unkeyed for single-context compatibility. Transport producers
+are available only as keyed `IEventEnvelopePublisher` services and must always be resolved by their
+context key; producer registration never occupies the unkeyed publisher service. A relay first resolves
+its exact context key, then falls back to the required unkeyed application publisher. A transport
+consumer always requires the unkeyed application or generated publisher.
+
+Each physical table must have one migrations owner. A context that only reads a shared transport table
+may map it for runtime consumption, but its migrations must not create that producer-owned table.
+Changing a default mapping is an application migration: scaffold and review the owning context's table
+move/rename instead of letting two migration histories create the same table.
 
 ### Inbox
 
@@ -320,7 +369,7 @@ Runtime shape:
 
 - Core idempotency contracts live in `SharedKernel.Idempotency`.
 - EF Core provider code lives in `SharedKernel.Idempotency.EntityFrameworkCore`.
-- Durable idempotency entries are stored in `messaging.idempotency_keys`.
+- Durable idempotency entries default to `messaging.idempotency_keys`.
 - `AddIntegrationEventInbox<TContext>()` is the integration-event adapter's app-facing startup call for
   consumers that need inbox idempotency. `SharedKernel.Idempotency.EntityFrameworkCore` owns the store,
   entity, and model configuration used by that call.

@@ -157,7 +157,7 @@ public sealed class EfIdempotencyStoreTests
     {
         Action create = () =>
         {
-            _ = new IdempotencyEntryEntity(scope!, key!, DateTimeOffset.UtcNow);
+            _ = new IdempotencyEntryEntity(scope, key, DateTimeOffset.UtcNow);
         };
 
         var exception = create.ShouldThrow<ArgumentException>();

@@ -27,7 +27,7 @@ builder.Services.AddSingleton(TimeProvider.System);
 builder.Services.AddHttpClient<IBrandingApiClient, BrandingApiClient>(client => client.BaseAddress = new Uri($"https+http://{ResourceNames.BrandingApi}"));
 
 builder.Services.AddProblemDetails();
-builder.Services.AddConfiguredTrustedForwardedHeaders(builder.Configuration.GetSection("Security:ForwardedHeaders"));
+builder.AddConfiguredTrustedForwardedHeaders();
 builder.Services.AddAdminSecurityBaseline(builder.Configuration);
 builder.Services.AddApiSecurity(
         builder.Configuration,

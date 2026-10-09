@@ -1,4 +1,5 @@
 using Duende.AccessTokenManagement.OpenIdConnect;
+using SharedKernel.AspNetCore;
 using SharedKernel.Branding;
 using SharedKernel.HttpClients;
 using ViajantesTurismo.Management.Web;
@@ -11,6 +12,7 @@ var builder = WebApplication.CreateBuilder(args);
 builder.AddServiceDefaults();
 builder.AddRedisOutputCache(ResourceNames.Cache);
 builder.Services.AddHttpClientDefaults();
+builder.AddConfiguredTrustedForwardedHeaders();
 builder.Services.AddManagementAuthentication(builder.Configuration, builder.Environment);
 
 builder.Services.AddRazorComponents()
@@ -44,6 +46,8 @@ builder.Services.AddHttpClient<IManagementBrandingApiClient, ManagementBrandingA
     .AddKeycloakAudienceTokenExchangeHandler(ApiAudienceNames.Branding);
 
 var app = builder.Build();
+
+app.UseForwardedHeaders();
 
 if (!app.Environment.IsDevelopment())
 {

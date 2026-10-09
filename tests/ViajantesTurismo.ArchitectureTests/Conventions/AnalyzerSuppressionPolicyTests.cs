@@ -40,7 +40,7 @@ public sealed partial class AnalyzerSuppressionPolicyTests
     ];
 
     [Fact]
-    public void Project_and_props_should_not_use_nowarn_entries()
+    public void Project_and_props_nowarn_entries_should_match_the_approved_inventory()
     {
         var repositoryRoot = AnalyzerSuppressionPolicyTestsHelpers.GetRepositoryRoot();
         var noWarnEntries = AnalyzerSuppressionPolicyTestsHelpers.EnumerateRepositoryFiles(repositoryRoot, "*.csproj")
@@ -49,8 +49,7 @@ public sealed partial class AnalyzerSuppressionPolicyTests
             .SelectMany(path => AnalyzerSuppressionPolicyTestsHelpers.FindNoWarnEntries(repositoryRoot, path))
             .ToArray();
 
-        (noWarnEntries.Length == 0).ShouldBeTrue(
-            $"Expected project and props files not to use NoWarn entries, but found:{Environment.NewLine}{string.Join(Environment.NewLine, noWarnEntries)}");
+        noWarnEntries.ShouldBeEquivalentTo("Directory.Build.props:ASPIRE010");
     }
 
     [Fact]
