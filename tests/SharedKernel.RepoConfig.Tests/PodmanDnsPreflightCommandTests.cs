@@ -27,6 +27,27 @@ public sealed class PodmanDnsPreflightCommandTests
     }
 
     [Fact]
+    public async Task Command_help_uses_the_public_preflight_entry_point()
+    {
+        // Arrange
+        using var output = new StringWriter(CultureInfo.InvariantCulture);
+        using var error = new StringWriter(CultureInfo.InvariantCulture);
+
+        // Act
+        var exitCode = await RepoConfigToolApplication.Run(
+            ["podman-dns-preflight", "--help"],
+            output,
+            error,
+            Environment.CurrentDirectory,
+            TestContext.Current.CancellationToken);
+
+        // Assert
+        exitCode.ShouldBe(0);
+        output.ToString().ShouldContain("Usage: sharedkernel-repo podman-dns-preflight", StringComparison.Ordinal);
+        error.ToString().ShouldBe(string.Empty);
+    }
+
+    [Fact]
     public async Task Missing_podman_is_inapplicable()
     {
         // Arrange
@@ -40,6 +61,123 @@ public sealed class PodmanDnsPreflightCommandTests
         result.StandardOutput.ShouldContain("podman is not installed", StringComparison.Ordinal);
         result.StandardError.ShouldBe(string.Empty);
         context.Commands.ShouldBe([]);
+    }
+
+    [Fact]
+    public async Task Relative_podman_executable_fails_closed()
+    {
+        // Arrange
+        using var context = new PodmanDnsPreflightTestContext();
+
+        // Act
+        var result = await context.Run(podmanExecutable: "podman");
+
+        // Assert
+        result.ExitCode.ShouldBe(1);
+        result.StandardError.ShouldContain("executable path is not absolute", StringComparison.Ordinal);
+        context.Commands.ShouldBe([]);
+    }
+
+    [Fact]
+    public async Task Non_linux_host_fails_closed()
+    {
+        // Arrange
+        using var context = new PodmanDnsPreflightTestContext();
+        var executable = Path.Combine(context.RootPath, "podman");
+
+        // Act
+        var result = await context.Run(podmanExecutable: executable, isLinux: false);
+
+        // Assert
+        result.ExitCode.ShouldBe(1);
+        result.StandardError.ShouldContain("only on Linux", StringComparison.Ordinal);
+        context.Commands.ShouldBe([]);
+    }
+
+    [Theory]
+    [InlineData("info --format {{.Host.ServiceIsRemote}}", "unknown\n", "invalid remote-service mode")]
+    [InlineData("info --format {{.Host.Security.Rootless}}", "unknown\n", "invalid rootless mode")]
+    public async Task Invalid_podman_mode_metadata_fails_closed(string query, string response, string expectedMessage)
+    {
+        // Arrange
+        using var context = new PodmanDnsPreflightTestContext();
+        context.SetResponse(query, response);
+
+        // Act
+        var result = await context.Run();
+
+        // Assert
+        result.ExitCode.ShouldBe(1);
+        result.StandardError.ShouldContain(expectedMessage, StringComparison.Ordinal);
+        result.StandardOutput.ShouldBe(string.Empty);
+    }
+
+    [Fact]
+    public async Task Rootful_podman_is_inapplicable_and_quiet()
+    {
+        // Arrange
+        using var context = new PodmanDnsPreflightTestContext();
+        context.SetResponse("info --format {{.Host.Security.Rootless}}", "false\n");
+
+        // Act
+        var result = await context.Run(["--quiet"]);
+
+        // Assert
+        result.ExitCode.ShouldBe(0);
+        result.StandardOutput.ShouldBe(string.Empty);
+        result.StandardError.ShouldBe(string.Empty);
+        context.Commands.ShouldBe(
+        [
+            "--remote=false info --format {{.Host.ServiceIsRemote}}",
+            "--remote=false info --format {{.Host.Security.Rootless}}"
+        ]);
+    }
+
+    [Fact]
+    public async Task Relative_reported_run_root_fails_closed()
+    {
+        // Arrange
+        using var context = new PodmanDnsPreflightTestContext();
+        context.SetResponse("info --format {{.Store.RunRoot}}", "relative-runroot\n");
+
+        // Act
+        var result = await context.Run();
+
+        // Assert
+        result.ExitCode.ShouldBe(1);
+        result.StandardError.ShouldContain("invalid run root", StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public async Task Filesystem_root_reported_as_run_root_fails_closed()
+    {
+        // Arrange
+        using var context = new PodmanDnsPreflightTestContext();
+        var filesystemRoot = Path.GetPathRoot(context.RunRoot) ?? Path.DirectorySeparatorChar.ToString();
+        context.SetResponse("info --format {{.Store.RunRoot}}", filesystemRoot + Environment.NewLine);
+
+        // Act
+        var result = await context.Run();
+
+        // Assert
+        result.ExitCode.ShouldBe(1);
+        result.StandardError.ShouldContain("unsafe run root", StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public async Task Missing_reported_run_root_fails_closed()
+    {
+        // Arrange
+        using var context = new PodmanDnsPreflightTestContext();
+        var missingRunRoot = Path.Combine(context.RootPath, "missing-runroot");
+        context.SetResponse("info --format {{.Store.RunRoot}}", missingRunRoot + Environment.NewLine);
+
+        // Act
+        var result = await context.Run();
+
+        // Assert
+        result.ExitCode.ShouldBe(1);
+        result.StandardError.ShouldContain("run root does not exist", StringComparison.Ordinal);
     }
 
     [Fact]
@@ -169,6 +307,61 @@ public sealed class PodmanDnsPreflightCommandTests
         result.ExitCode.ShouldBe(1);
         result.StandardError.ShouldContain("unable to verify safely", StringComparison.Ordinal);
         result.StandardError.ShouldContain("network namespace identities", StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public async Task Live_daemon_without_active_namespace_is_stale()
+    {
+        // Arrange
+        using var context = new PodmanDnsPreflightTestContext();
+        context.AddDaemon(1214);
+        context.DeleteActiveNamespace();
+        var before = context.Snapshot();
+
+        // Act
+        var result = await context.Run();
+        var after = context.Snapshot();
+
+        // Assert
+        result.ExitCode.ShouldBe(1);
+        result.StandardError.ShouldContain("rootless-netns", StringComparison.Ordinal);
+        result.StandardError.ShouldContain("does not exist", StringComparison.Ordinal);
+        after.ShouldBe(before);
+    }
+
+    [Fact]
+    public async Task Live_daemon_without_stat_fails_closed()
+    {
+        // Arrange
+        using var context = new PodmanDnsPreflightTestContext();
+        context.AddDaemon(1215);
+
+        // Act
+        var result = await context.Run(statExecutable: null);
+
+        // Assert
+        result.ExitCode.ShouldBe(1);
+        result.StandardError.ShouldContain("GNU stat is required", StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public async Task Multiple_live_daemons_are_ambiguous()
+    {
+        // Arrange
+        using var context = new PodmanDnsPreflightTestContext();
+        context.AddDaemon(1216);
+        context.AddDaemon(1217);
+        var before = context.Snapshot();
+
+        // Act
+        var result = await context.Run();
+        var after = context.Snapshot();
+
+        // Assert
+        result.ExitCode.ShouldBe(1);
+        result.StandardError.ShouldContain("multiple aardvark-dns processes", StringComparison.Ordinal);
+        result.StandardError.ShouldContain("1216 1217", StringComparison.Ordinal);
+        after.ShouldBe(before);
     }
 
     [Fact]
@@ -314,6 +507,202 @@ public sealed class PodmanDnsPreflightCommandTests
         // Assert
         result.ExitCode.ShouldBe(1);
         result.StandardError.ShouldContain("contains an invalid PID", StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public async Task Pid_file_for_exited_process_is_rejected()
+    {
+        // Arrange
+        using var context = new PodmanDnsPreflightTestContext();
+        context.WriteConfig("aardvark.pid", "1401\n");
+
+        // Act
+        var result = await context.Run();
+
+        // Assert
+        result.ExitCode.ShouldBe(1);
+        result.StandardError.ShouldContain("PID 1401, which is not running", StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public async Task Pid_file_for_non_aardvark_process_is_rejected()
+    {
+        // Arrange
+        using var context = new PodmanDnsPreflightTestContext();
+        var otherConfig = Path.Combine(context.RootPath, "other-runroot", "networks", "aardvark-dns");
+        context.AddDaemon(1402, otherConfig);
+        context.SetProcessName(1402, "conmon");
+
+        // Act
+        var result = await context.Run();
+
+        // Assert
+        result.ExitCode.ShouldBe(1);
+        result.StandardError.ShouldContain("PID 1402, which is conmon", StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public async Task Pid_file_for_aardvark_using_another_run_root_is_rejected()
+    {
+        // Arrange
+        using var context = new PodmanDnsPreflightTestContext();
+        var otherConfig = Path.Combine(context.RootPath, "other-runroot", "networks", "aardvark-dns");
+        context.AddDaemon(1403, otherConfig);
+
+        // Act
+        var result = await context.Run();
+
+        // Assert
+        result.ExitCode.ShouldBe(1);
+        result.StandardError.ShouldContain("not configured for", StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public async Task Running_container_state_change_during_inspection_fails_closed()
+    {
+        // Arrange
+        using var context = new PodmanDnsPreflightTestContext();
+        context.SetResponses("ps --quiet", "one\n", "two\n");
+
+        // Act
+        var result = await context.Run();
+
+        // Assert
+        result.ExitCode.ShouldBe(1);
+        result.StandardError.ShouldContain("running container state changed", StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public async Task Pid_file_change_during_inspection_fails_closed()
+    {
+        // Arrange
+        using var context = new PodmanDnsPreflightTestContext();
+        context.AddDaemon(1501);
+        context.ChangePidFileOnRecheck("9999\n");
+
+        // Act
+        var result = await context.Run();
+
+        // Assert
+        result.ExitCode.ShouldBe(1);
+        result.StandardError.ShouldContain("PID file changed during inspection", StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public async Task Reference_count_change_during_inspection_fails_closed()
+    {
+        // Arrange
+        using var context = new PodmanDnsPreflightTestContext();
+        context.AddDaemon(1502);
+        context.ChangeRefCountOnRecheck("2\n");
+
+        // Act
+        var result = await context.Run();
+
+        // Assert
+        result.ExitCode.ShouldBe(1);
+        result.StandardError.ShouldContain("reference count changed during inspection", StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public async Task Aardvark_configuration_change_during_inspection_fails_closed()
+    {
+        // Arrange
+        using var context = new PodmanDnsPreflightTestContext();
+        context.AddDaemon(1503);
+        context.ChangeConfigOnRecheck("trip");
+
+        // Act
+        var result = await context.Run();
+
+        // Assert
+        result.ExitCode.ShouldBe(1);
+        result.StandardError.ShouldContain("configuration changed during inspection", StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public async Task Podman_network_state_change_during_inspection_fails_closed()
+    {
+        // Arrange
+        using var context = new PodmanDnsPreflightTestContext();
+        context.AddDaemon(1504);
+        context.WriteConfig("trip");
+        context.SetResponses("network ls --format {{.Name}}", "trip\n", "other\n");
+
+        // Act
+        var result = await context.Run();
+
+        // Assert
+        result.ExitCode.ShouldBe(1);
+        result.StandardError.ShouldContain("Podman network state changed", StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public async Task Podman_run_root_change_during_inspection_fails_closed()
+    {
+        // Arrange
+        using var context = new PodmanDnsPreflightTestContext();
+        var otherRunRoot = Path.Combine(context.RootPath, "other-runroot");
+        context.SetResponses(
+            "info --format {{.Store.RunRoot}}",
+            context.RunRoot + Environment.NewLine,
+            otherRunRoot + Environment.NewLine);
+
+        // Act
+        var result = await context.Run();
+
+        // Assert
+        result.ExitCode.ShouldBe(1);
+        result.StandardError.ShouldContain("Podman run root changed", StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public async Task Run_root_directory_state_change_during_inspection_fails_closed()
+    {
+        // Arrange
+        using var context = new PodmanDnsPreflightTestContext();
+        context.CreateNetworksDirectoryOnRecheck();
+
+        // Act
+        var result = await context.Run();
+
+        // Assert
+        result.ExitCode.ShouldBe(1);
+        result.StandardError.ShouldContain("run-root directory state changed", StringComparison.Ordinal);
+    }
+
+    [Theory]
+    [InlineData("false\ntrue\n")]
+    [InlineData("")]
+    public async Task Invalid_single_value_output_fails_closed(string output)
+    {
+        // Arrange
+        using var context = new PodmanDnsPreflightTestContext();
+        context.SetResponse("info --format {{.Host.ServiceIsRemote}}", output);
+
+        // Act
+        var result = await context.Run();
+
+        // Assert
+        result.ExitCode.ShouldBe(1);
+        result.StandardError.ShouldContain("remote-service mode", StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public async Task Oversized_podman_output_fails_closed_without_echoing_it()
+    {
+        // Arrange
+        using var context = new PodmanDnsPreflightTestContext();
+        var oversizedOutput = new string('x', 1_048_577);
+        context.SetResponse("info --format {{.Host.ServiceIsRemote}}", oversizedOutput);
+
+        // Act
+        var result = await context.Run();
+
+        // Assert
+        result.ExitCode.ShouldBe(1);
+        result.StandardError.ShouldBe(
+            $"podman dns preflight: unable to verify safely: podman info failed while reading remote-service mode{Environment.NewLine}");
     }
 
     [Theory]

@@ -8,6 +8,7 @@ internal sealed class PodmanDnsPreflightTestContext : IDisposable
 {
     private const int CurrentUserId = 1000;
     private readonly Dictionary<string, PodmanCommandResult> _responses = new(StringComparer.Ordinal);
+    private readonly Dictionary<string, Queue<PodmanCommandResult>> _responseQueues = new(StringComparer.Ordinal);
     private Action? _onContainerRecheck;
     private int _containerQueryCount;
 
@@ -108,6 +109,10 @@ internal sealed class PodmanDnsPreflightTestContext : IDisposable
     public void SetResponse(string arguments, string output) =>
         _responses[arguments] = new PodmanCommandResult(0, output, string.Empty);
 
+    public void SetResponses(string arguments, params string[] outputs) =>
+        _responseQueues[arguments] = new Queue<PodmanCommandResult>(
+            outputs.Select(output => new PodmanCommandResult(0, output, string.Empty)));
+
     public void SetProcessNamespaceIdentity(int processId, string identity) =>
         File.WriteAllText(Path.Combine(ProcRoot, processId.ToString(CultureInfo.InvariantCulture), "ns", "net"), identity + "\n");
 
@@ -123,6 +128,27 @@ internal sealed class PodmanDnsPreflightTestContext : IDisposable
     public void ChangeNamespaceIdentityOnRecheck(int processId, string identity) =>
         _onContainerRecheck = () => SetProcessNamespaceIdentity(processId, identity);
 
+    public void ChangePidFileOnRecheck(string content) =>
+        _onContainerRecheck = () => WriteConfig("aardvark.pid", content);
+
+    public void ChangeRefCountOnRecheck(string content) =>
+        _onContainerRecheck = () =>
+            File.WriteAllText(Path.Combine(RunRoot, "networks", "rootless-netns", "ref-count"), content);
+
+    public void ChangeConfigOnRecheck(string name) =>
+        _onContainerRecheck = () => WriteConfig(name);
+
+    public void CreateNetworksDirectoryOnRecheck() =>
+        _onContainerRecheck = () => Directory.CreateDirectory(Path.Combine(RunRoot, "networks"));
+
+    public void DeleteActiveNamespace() =>
+        File.Delete(Path.Combine(RunRoot, "networks", "rootless-netns", "rootless-netns"));
+
+    public void SetProcessName(int processId, string name) =>
+        File.WriteAllText(
+            Path.Combine(ProcRoot, processId.ToString(CultureInfo.InvariantCulture), "comm"),
+            name + Environment.NewLine);
+
     public IReadOnlyDictionary<string, byte[]> Snapshot() =>
         Directory
             .EnumerateFiles(RootPath, "*", SearchOption.AllDirectories)
@@ -134,6 +160,7 @@ internal sealed class PodmanDnsPreflightTestContext : IDisposable
     public async Task<(int ExitCode, string StandardOutput, string StandardError)> Run(
         string[]? arguments = null,
         string? podmanExecutable = "/usr/bin/podman",
+        string? statExecutable = "/usr/bin/stat",
         bool isLinux = true)
     {
         using var output = new StringWriter(CultureInfo.InvariantCulture);
@@ -143,7 +170,7 @@ internal sealed class PodmanDnsPreflightTestContext : IDisposable
             output,
             error,
             podmanExecutable,
-            "/usr/bin/stat",
+            statExecutable,
             ProcRoot,
             isLinux,
             RunProcess,
@@ -204,6 +231,11 @@ internal sealed class PodmanDnsPreflightTestContext : IDisposable
                 _onContainerRecheck?.Invoke();
                 _onContainerRecheck = null;
             }
+        }
+
+        if (_responseQueues.TryGetValue(query, out var configuredResponses) && configuredResponses.Count > 0)
+        {
+            return configuredResponses.Dequeue();
         }
 
         if (_responses.TryGetValue(query, out var configuredResponse))
