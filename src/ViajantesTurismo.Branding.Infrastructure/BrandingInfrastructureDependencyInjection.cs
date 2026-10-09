@@ -4,6 +4,8 @@ using Microsoft.Extensions.Hosting;
 using Npgsql;
 using SharedKernel.Branding;
 using SharedKernel.EntityFrameworkCore;
+using SharedKernel.Messaging.IntegrationEvents;
+using SharedKernel.Messaging.IntegrationEvents.EntityFrameworkCore;
 using SharedKernel.Npgsql;
 using ViajantesTurismo.Resources;
 
@@ -25,6 +27,21 @@ public static class BrandingInfrastructureDependencyInjection
     public static TBuilder AddBrandingInfrastructure<TBuilder>(this TBuilder builder)
         where TBuilder : IHostApplicationBuilder
     {
+        return builder.AddBrandingInfrastructure(addOutboxRelay: true);
+    }
+
+    /// <summary>
+    /// Adds Branding infrastructure services with an explicit outbox-relay registration choice.
+    /// </summary>
+    /// <param name="builder">The application builder to configure.</param>
+    /// <param name="addOutboxRelay">Whether to register the runtime outbox relay.</param>
+    /// <typeparam name="TBuilder">The application builder type.</typeparam>
+    /// <returns>The updated application builder.</returns>
+    public static TBuilder AddBrandingInfrastructure<TBuilder>(
+        this TBuilder builder,
+        bool addOutboxRelay)
+        where TBuilder : IHostApplicationBuilder
+    {
         ArgumentNullException.ThrowIfNull(builder);
 
         builder.AddNpgsqlDbContext<BrandingDbContext>(
@@ -32,8 +49,27 @@ public static class BrandingInfrastructureDependencyInjection
             configureDbContextOptions: options => ConfigureBrandingDatabaseOptions<BrandingDbContext, TBuilder>(builder, options));
 
         builder.Services.AddScoped<IBrandingSettingsStore, EfBrandingSettingsStore>();
+        builder.Services.AddKeyedSingleton<IIntegrationEventSerializer, BrandingIntegrationEventSerializer>(typeof(BrandingDbContext));
+        builder.Services.ConfigureIntegrationEventStorage<BrandingDbContext>(ConfigureBrandingIntegrationEventStorage);
+        builder.Services.AddIntegrationEventOutbox<BrandingDbContext>();
+        builder.Services.AddPostgreSqlIntegrationEventTransportProducer<BrandingDbContext>(IntegrationEventConsumerNames.Admin);
+        if (addOutboxRelay)
+        {
+            builder.Services.AddIntegrationEventOutboxRelay<BrandingDbContext>();
+            builder.Services.AddPostgreSqlIntegrationEventOutboxRelayAtomicClaims<BrandingDbContext>();
+        }
 
         return builder;
+    }
+
+    internal static void ConfigureBrandingIntegrationEventStorage(IntegrationEventStorageOptions options)
+    {
+        ArgumentNullException.ThrowIfNull(options);
+
+        options.Schema = SharedKernelSchemas.Messaging;
+        options.OutboxSchema = BrandingDbContext.SchemaName;
+        options.TransportSchema = SharedKernelSchemas.Messaging;
+        options.ExcludeTransportFromMigrations = true;
     }
 
     private static void ConfigureBrandingDatabaseOptions<TContext, TBuilder>(

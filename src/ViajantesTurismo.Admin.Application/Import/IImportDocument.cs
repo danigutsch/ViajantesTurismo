@@ -1,4 +1,4 @@
-﻿namespace ViajantesTurismo.Admin.Application.Import;
+namespace ViajantesTurismo.Admin.Application.Import;
 
 /// <summary>
 /// Represents a tabular document that can be imported into the system.

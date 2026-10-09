@@ -51,7 +51,7 @@ public sealed class PhysicalPageTests : BunitContext
         // Assert
         await cut.WaitForAssertionAsync(() => (navigationManager.Uri).ShouldEndWith("/customers/create/accommodation", StringComparison.Ordinal));
         (_state.PhysicalInfo).ShouldNotBeNull();
-        (_state.PhysicalInfo!.WeightKg).ShouldBe(68.4m);
+        (_state.PhysicalInfo.WeightKg).ShouldBe(68.4m);
         (_state.PhysicalInfo.HeightCentimeters).ShouldBe(175);
         (_state.PhysicalInfo.BikeType).ShouldBe(BikeTypeDto.Regular);
         (_state.CurrentStep).ShouldBe(6);

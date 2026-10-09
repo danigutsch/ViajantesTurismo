@@ -1,6 +1,9 @@
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.DependencyInjection;
 using Npgsql;
+using SharedKernel.EntityFrameworkCore;
 using SharedKernel.IntegrationTesting;
+using SharedKernel.Messaging.IntegrationEvents.EntityFrameworkCore;
 using ViajantesTurismo.Branding.Infrastructure;
 
 namespace ViajantesTurismo.Admin.IntegrationTests.Branding;
@@ -9,6 +12,9 @@ public sealed class BrandingPostgreSqlMigrationScenario(ApiFixture fixture) : IA
 {
     private const string BrandingMigrationsHistoryTable = "__EFMigrationsHistory_Branding";
     private const string BrandingSettingsTableExistsCommandText = "SELECT to_regclass('branding.\"BrandingSettings\"') IS NOT NULL;";
+    private const string BrandingOutboxTableExistsCommandText = "SELECT to_regclass('branding.outbox_messages') IS NOT NULL;";
+    private const string BrandingTransportTableExistsCommandText = "SELECT to_regclass('branding.transport_messages') IS NOT NULL;";
+    private const string SharedTransportTableExistsCommandText = "SELECT to_regclass('messaging.transport_messages') IS NOT NULL;";
     private const string PublicBrandingSettingsTableExistsCommandText = "SELECT to_regclass('public.\"BrandingSettings\"') IS NOT NULL;";
     private const string ResetBrandingTablesCommandText = """
                                                        DO $$
@@ -38,11 +44,23 @@ public sealed class BrandingPostgreSqlMigrationScenario(ApiFixture fixture) : IA
     public BrandingDbContext CreateDbContext()
     {
         var dataSource = _dataSource ?? throw new InvalidOperationException("The Branding PostgreSQL migration scenario has not started.");
+        var services = new ServiceCollection();
+        services.ConfigureIntegrationEventStorage<BrandingDbContext>(options =>
+        {
+            options.Schema = "messaging";
+            options.OutboxSchema = "branding";
+            options.TransportSchema = "messaging";
+            options.ExcludeTransportFromMigrations = true;
+        });
+        services.AddIntegrationEventOutbox<BrandingDbContext>();
+        services.AddIntegrationEventTransportStorage<BrandingDbContext>();
+        using var provider = services.BuildServiceProvider();
+        var configurations = provider.GetServices<IDbContextConfiguration<BrandingDbContext>>().ToArray();
         var options = new DbContextOptionsBuilder<BrandingDbContext>()
             .UseNpgsql(dataSource, providerOptions => providerOptions.MigrationsHistoryTable(BrandingMigrationsHistoryTable, schema: "public"))
             .Options;
 
-        return new BrandingDbContext(options);
+        return new BrandingDbContext(options, configurations);
     }
 
     public async Task ApplyMigrations(CancellationToken ct)
@@ -67,6 +85,36 @@ public sealed class BrandingPostgreSqlMigrationScenario(ApiFixture fixture) : IA
     public Task<bool> PublicBrandingSettingsTableExists(CancellationToken ct)
     {
         return PublicBrandingSettingsTableExistsCore(ct);
+    }
+
+    public async Task<bool> BrandingOutboxTableExists(CancellationToken ct)
+    {
+        var dataSource = _dataSource ?? throw new InvalidOperationException("The Branding PostgreSQL migration scenario has not started.");
+        await using var connection = await dataSource.OpenConnectionAsync(ct);
+        await using var command = connection.CreateCommand();
+        command.CommandText = BrandingOutboxTableExistsCommandText;
+        var result = await command.ExecuteScalarAsync(ct);
+        return result is true;
+    }
+
+    public async Task<bool> BrandingTransportTableExists(CancellationToken ct)
+    {
+        var dataSource = _dataSource ?? throw new InvalidOperationException("The Branding PostgreSQL migration scenario has not started.");
+        await using var connection = await dataSource.OpenConnectionAsync(ct);
+        await using var command = connection.CreateCommand();
+        command.CommandText = BrandingTransportTableExistsCommandText;
+        var result = await command.ExecuteScalarAsync(ct);
+        return result is true;
+    }
+
+    public async Task<bool> SharedTransportTableExists(CancellationToken ct)
+    {
+        var dataSource = _dataSource ?? throw new InvalidOperationException("The Branding PostgreSQL migration scenario has not started.");
+        await using var connection = await dataSource.OpenConnectionAsync(ct);
+        await using var command = connection.CreateCommand();
+        command.CommandText = SharedTransportTableExistsCommandText;
+        var result = await command.ExecuteScalarAsync(ct);
+        return result is true;
     }
 
     public async Task<string[]> GetMigrationHistory(CancellationToken ct)
@@ -128,4 +176,5 @@ public sealed class BrandingPostgreSqlMigrationScenario(ApiFixture fixture) : IA
         var result = await command.ExecuteScalarAsync(ct);
         return result is true;
     }
+
 }

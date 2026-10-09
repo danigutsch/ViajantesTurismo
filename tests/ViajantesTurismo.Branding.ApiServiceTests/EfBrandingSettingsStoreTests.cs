@@ -36,6 +36,41 @@ public sealed class EfBrandingSettingsStoreTests
     }
 
     [Fact]
+    public void Branding_infrastructure_registers_its_context_qualified_messaging_services()
+    {
+        // Arrange
+        using var services = BrandingInfrastructureRegistrationScope.Create();
+
+        // Act
+        var registrations = services.GetMessagingRegistrations();
+
+        // Assert
+        registrations.HasOutbox.ShouldBeTrue();
+        registrations.HasTransportPublisher.ShouldBeTrue();
+        registrations.HasSerializer.ShouldBeTrue();
+        registrations.OutboxRelayCount.ShouldBe(1);
+        registrations.OutboxSchema.ShouldBe("branding");
+        registrations.TransportSchema.ShouldBe("messaging");
+        registrations.TransportExcludedFromMigrations.ShouldBeTrue();
+    }
+
+    [Fact]
+    public void Branding_infrastructure_can_omit_the_runtime_outbox_relay()
+    {
+        // Arrange
+        using var services = BrandingInfrastructureRegistrationScope.Create(addOutboxRelay: false);
+
+        // Act
+        var registrations = services.GetMessagingRegistrations();
+
+        // Assert
+        registrations.HasOutbox.ShouldBeTrue();
+        registrations.HasTransportPublisher.ShouldBeTrue();
+        registrations.HasSerializer.ShouldBeTrue();
+        registrations.OutboxRelayCount.ShouldBe(0);
+    }
+
+    [Fact]
     public void Design_time_factory_configures_branding_postgresql_provider()
     {
         // Arrange

@@ -27,14 +27,15 @@ internal static class PublicWebEndpointTestsHelpers
             IPublicCatalogApiClient? catalogApiClient = null,
             IBrandingApiClient? brandingApiClient = null,
             string? environment = null,
-            string? canonicalOrigin = null)
+            string? canonicalOrigin = null,
+            IReadOnlyDictionary<string, string?>? configuration = null)
     {
-        IReadOnlyDictionary<string, string?>? configuration = canonicalOrigin is null
-            ? null
-            : new Dictionary<string, string?>
-            {
-                [$"{PublicWebSitemapOptions.SectionName}:CanonicalOrigin"] = canonicalOrigin
-            };
+        var settings = configuration?.ToDictionary(static pair => pair.Key, static pair => pair.Value);
+        if (canonicalOrigin is not null)
+        {
+            settings ??= [];
+            settings[$"{PublicWebSitemapOptions.SectionName}:CanonicalOrigin"] = canonicalOrigin;
+        }
 
         return WebApplicationTestHost.Create<IPublicWebAssemblyMarker>(
             environment,
@@ -45,7 +46,7 @@ internal static class PublicWebEndpointTestsHelpers
                 services.AddSingleton(catalogApiClient ?? new FakePublicCatalogApiClient());
                 services.AddSingleton(brandingApiClient ?? new FakeBrandingApiClient());
             },
-            configuration: configuration);
+            configuration: settings);
     }
 
     public static OptionsValidationException GetProductionSitemapValidationException(string? canonicalOrigin = null)

@@ -87,11 +87,11 @@ Approved broad suppression owners:
 
 The architecture test uses these allowlists as the approved broad-suppression inventory. `NoWarn`
 entries must exactly match current repository suppressions so removed suppressions cannot be
-reintroduced without review. No approved `NoWarn` broad suppressions remain.
+reintroduced without review.
 
 | Surface | Suppression kind | Owner | Removal path |
 | --- | --- | --- | --- |
-| None | `NoWarn` | Not applicable | Not applicable |
+| `Directory.Build.props` | `NoWarn`: `ASPIRE010` | Aspire orchestration dependencies | Remove after CLI bundle delegation is stable and the repository's pinned local-tool path includes the DCP and dashboard bundle |
 
 The architecture-test suppression guard owns this allowlist and should fail if new broad
 suppression surfaces appear without review.

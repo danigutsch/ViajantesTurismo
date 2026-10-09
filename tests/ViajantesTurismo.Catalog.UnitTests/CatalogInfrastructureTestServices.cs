@@ -9,9 +9,28 @@ namespace ViajantesTurismo.Catalog.UnitTests;
 
 internal static class CatalogInfrastructureTestServices
 {
+    public static void AddProductionInfrastructureWithoutMediaStorage()
+    {
+        var builder = Host.CreateApplicationBuilder(new HostApplicationBuilderSettings
+        {
+            EnvironmentName = Environments.Production
+        });
+        builder.Configuration.AddInMemoryCollection(new Dictionary<string, string?>
+        {
+            [$"ConnectionStrings:{ResourceNames.CatalogDatabase}"] = "Host=localhost;Database=viajantes;Username=test;Password=test",
+            [ClamAvMalwareScannerConfigurationKeys.HostConfigurationKey] = "clamav",
+            [ClamAvMalwareScannerConfigurationKeys.PortConfigurationKey] = "3310"
+        });
+
+        builder.AddCatalogInfrastructure();
+    }
+
     public static CatalogInfrastructureScenario CreateScenario()
     {
-        var builder = Host.CreateApplicationBuilder();
+        var builder = Host.CreateApplicationBuilder(new HostApplicationBuilderSettings
+        {
+            EnvironmentName = Environments.Development
+        });
         builder.Configuration.AddInMemoryCollection(new Dictionary<string, string?>
         {
             [$"ConnectionStrings:{ResourceNames.CatalogDatabase}"] = "Host=localhost;Database=viajantes;Username=test;Password=test",
@@ -44,7 +63,10 @@ internal static class CatalogInfrastructureTestServices
 
     public static CatalogInfrastructureScenario CreateOpenApiBuildGenerationScenario()
     {
-        var builder = Host.CreateApplicationBuilder();
+        var builder = Host.CreateApplicationBuilder(new HostApplicationBuilderSettings
+        {
+            EnvironmentName = Environments.Development
+        });
         builder.Configuration.AddInMemoryCollection(new Dictionary<string, string?>
         {
             [$"ConnectionStrings:{ResourceNames.CatalogDatabase}"] = "Host=localhost;Database=viajantes;Username=test;Password=test",
@@ -114,13 +136,21 @@ internal static class CatalogInfrastructureTestServices
         {
             EnvironmentName = environmentName
         });
-        builder.Configuration.AddInMemoryCollection(new Dictionary<string, string?>
+        var configuration = new Dictionary<string, string?>
         {
             [$"ConnectionStrings:{ResourceNames.CatalogDatabase}"] = "Host=localhost;Database=viajantes-catalog;Username=test;Password=test",
             [$"ConnectionStrings:{ResourceNames.AdminDatabase}"] = "Host=localhost;Database=viajantes-admin;Username=test;Password=test",
             [ClamAvMalwareScannerConfigurationKeys.HostConfigurationKey] = "clamav",
             [ClamAvMalwareScannerConfigurationKeys.PortConfigurationKey] = "3310"
-        });
+        };
+        if (!builder.Environment.IsDevelopment())
+        {
+            configuration[$"{SeaweedFsMediaObjectStorageOptions.SectionName}:Endpoint"] = "https://seaweedfs.example";
+            configuration[$"{SeaweedFsMediaObjectStorageOptions.SectionName}:Bucket"] = "media";
+            configuration[$"{SeaweedFsMediaObjectStorageOptions.SectionName}:AccessKey"] = "access";
+            configuration[$"{SeaweedFsMediaObjectStorageOptions.SectionName}:SecretKey"] = "secret";
+        }
+        builder.Configuration.AddInMemoryCollection(configuration);
 
         builder.AddCatalogIntegrationEventWorkerInfrastructure();
 

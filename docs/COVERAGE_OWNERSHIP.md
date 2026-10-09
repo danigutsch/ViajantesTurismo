@@ -38,7 +38,7 @@ coverage exists.
 Useful local command:
 
 ```bash
-dotnet test --solution ViajantesTurismo.slnx -- --coverage --coverage-output-format cobertura --coverage-output coverage.cobertura.xml --coverage-settings coverage.settings.xml
+bash scripts/run-tests-with-coverage.sh
 ```
 
 Aggregation is useful for exploration, but threshold decisions should still be made at the source

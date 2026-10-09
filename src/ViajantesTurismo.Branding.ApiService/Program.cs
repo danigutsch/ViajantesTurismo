@@ -9,7 +9,7 @@ var builder = WebApplication.CreateSlimBuilder(args);
 
 builder.WebHost.UseKestrelHttpsConfiguration();
 builder.AddServiceDefaults();
-builder.Services.AddConfiguredTrustedForwardedHeaders(builder.Configuration.GetSection("Security:ForwardedHeaders"));
+builder.AddConfiguredTrustedForwardedHeaders();
 builder.Services.AddBrandingOpenApiDocuments();
 builder.Services.AddOutputCache();
 builder.Services.AddBrandingSecurityBaseline(builder.Configuration);
@@ -20,7 +20,7 @@ builder.Services.AddApiSecurity(
         BrandingAuthorization.PermissionsByRole)
     .AddPolicy(BrandingAuthorization.BrandingRead, policy => policy.RequirePermission(BrandingAuthorization.BrandingRead))
     .AddPolicy(BrandingAuthorization.BrandingWrite, policy => policy.RequirePermission(BrandingAuthorization.BrandingWrite));
-builder.AddBrandingInfrastructure();
+builder.AddBrandingInfrastructure(addOutboxRelay: !OpenApiGenerationMode.IsEnabled(builder.Environment));
 
 var app = builder.Build();
 
