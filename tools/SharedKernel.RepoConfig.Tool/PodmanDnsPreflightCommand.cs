@@ -55,32 +55,15 @@ internal static class PodmanDnsPreflightCommand
         ArgumentException.ThrowIfNullOrWhiteSpace(procRoot);
         ArgumentNullException.ThrowIfNull(runProcess);
 
-        var quiet = false;
-        foreach (var argument in args)
+        var argumentResult = await ParseArguments(args, output, error, cancellationToken).ConfigureAwait(false);
+        if (!argumentResult.ShouldRun)
         {
-            switch (argument)
-            {
-                case "--check":
-                    break;
-
-                case "--quiet":
-                    quiet = true;
-                    break;
-
-                case "-h" or "--help" when args.Length == 1:
-                    await output.WriteLineAsync(Usage.AsMemory(), cancellationToken).ConfigureAwait(false);
-                    return 0;
-
-                default:
-                    await error.WriteLineAsync($"Unknown argument: {RepoConfigToolApplication.EscapeControlCharacters(argument)}".AsMemory(), cancellationToken).ConfigureAwait(false);
-                    await error.WriteLineAsync(Usage.AsMemory(), cancellationToken).ConfigureAwait(false);
-                    return 2;
-            }
+            return argumentResult.ExitCode;
         }
 
         if (podmanExecutable is null)
         {
-            return await WriteHealthy(output, quiet, "podman is not installed; nothing to check", cancellationToken).ConfigureAwait(false);
+            return await WriteHealthy(output, argumentResult.Quiet, "podman is not installed; nothing to check", cancellationToken).ConfigureAwait(false);
         }
 
         if (!Path.IsPathFullyQualified(podmanExecutable))
@@ -93,290 +76,10 @@ internal static class PodmanDnsPreflightCommand
             return await WriteFailure(error, "local Podman state can be inspected only on Linux", cancellationToken).ConfigureAwait(false);
         }
 
+        InspectionDependencies dependencies = new(podmanExecutable, statExecutable, procRoot, runProcess);
         try
         {
-            var serviceIsRemote = await QuerySingleValue(
-                podmanExecutable,
-                ["info", "--format", "{{.Host.ServiceIsRemote}}"],
-                "podman info failed while reading remote-service mode",
-                runProcess,
-                cancellationToken).ConfigureAwait(false);
-            switch (serviceIsRemote)
-            {
-                case "false":
-                    break;
-
-                case "true":
-                    throw new InvalidOperationException("remote Podman state cannot be verified from the local filesystem");
-
-                default:
-                    throw new InvalidOperationException($"podman reported an invalid remote-service mode: {Display(serviceIsRemote)}");
-            }
-
-            var rootless = await QuerySingleValue(
-                podmanExecutable,
-                ["info", "--format", "{{.Host.Security.Rootless}}"],
-                "podman info failed while reading rootless mode",
-                runProcess,
-                cancellationToken).ConfigureAwait(false);
-            switch (rootless)
-            {
-                case "true":
-                    break;
-
-                case "false":
-                    return await WriteHealthy(
-                        output,
-                        quiet,
-                        "podman is rootful; the shared rootless namespace does not exist",
-                        cancellationToken).ConfigureAwait(false);
-
-                default:
-                    throw new InvalidOperationException($"podman reported an invalid rootless mode: {Display(rootless)}");
-            }
-
-            var reportedRunRoot = await QuerySingleValue(
-                podmanExecutable,
-                ["info", "--format", "{{.Store.RunRoot}}"],
-                "podman info failed while reading the run root",
-                runProcess,
-                cancellationToken).ConfigureAwait(false);
-            if (!Path.IsPathFullyQualified(reportedRunRoot))
-            {
-                throw new InvalidOperationException($"podman reported an invalid run root: {Display(reportedRunRoot)}");
-            }
-
-            var runRoot = Path.TrimEndingDirectorySeparator(Path.GetFullPath(reportedRunRoot));
-            if (string.Equals(runRoot, Path.GetPathRoot(runRoot), StringComparison.Ordinal))
-            {
-                throw new InvalidOperationException($"podman reported an unsafe run root: {Display(reportedRunRoot)}");
-            }
-            if (!DirectoryEntryExists(runRoot))
-            {
-                throw new InvalidOperationException($"podman run root does not exist: {runRoot}");
-            }
-
-            var runningContainerOutput = await Query(
-                podmanExecutable,
-                ["ps", "--quiet"],
-                "podman ps failed while checking running containers",
-                runProcess,
-                cancellationToken).ConfigureAwait(false);
-            var runningContainerCount = SplitLines(runningContainerOutput).Length;
-
-            var networksDirectory = Path.Combine(runRoot, "networks");
-            var networksDirectoryExists = DirectoryEntryExists(networksDirectory);
-            var aardvarkDirectory = Path.Combine(networksDirectory, "aardvark-dns");
-            var pidFile = Path.Combine(aardvarkDirectory, "aardvark.pid");
-            var refCountFile = Path.Combine(networksDirectory, "rootless-netns", "ref-count");
-            var currentUserId = ReadEffectiveUserId(Path.Combine(procRoot, "self", "status"));
-            var runRootDaemons = FindRunRootDaemons(procRoot, currentUserId, aardvarkDirectory);
-            var runRootDaemonPids = runRootDaemons.Keys.ToList();
-            List<string> reasons = [];
-
-            var activeNamespacePath = Path.Combine(networksDirectory, "rootless-netns", "rootless-netns");
-            if (runRootDaemonPids.Count > 0 && !FileSystemEntryExists(activeNamespacePath))
-            {
-                reasons.Add($"aardvark-dns PID(s) {string.Join(' ', runRootDaemonPids)} are running but {activeNamespacePath} does not exist");
-            }
-            else if (runRootDaemonPids.Count > 0)
-            {
-                if (statExecutable is null)
-                {
-                    throw new InvalidOperationException("GNU stat is required to compare network namespace identities");
-                }
-
-                foreach (var processId in runRootDaemonPids)
-                {
-                    var processNamespacePath = Path.Combine(procRoot, processId.ToString(CultureInfo.InvariantCulture), "ns", "net");
-                    var namespaceMatches = await NamespaceMatches(
-                        statExecutable,
-                        activeNamespacePath,
-                        processNamespacePath,
-                        runProcess,
-                        cancellationToken).ConfigureAwait(false);
-                    if (!namespaceMatches)
-                    {
-                        reasons.Add($"aardvark-dns PID {processId.ToString(CultureInfo.InvariantCulture)} runs in a different network namespace than {activeNamespacePath}");
-                    }
-                }
-            }
-
-            var pidFileValue = ReadOptionalFileValue(pidFile, "PID");
-            var aardvarkPid = ReadAndValidatePidFile(pidFile, pidFileValue, procRoot, runRootDaemonPids, aardvarkDirectory, reasons);
-            if (pidFileValue is null && runRootDaemonPids.Count > 0)
-            {
-                reasons.Add($"live aardvark-dns PID(s) {string.Join(' ', runRootDaemonPids)} use {aardvarkDirectory}, but {pidFile} does not exist");
-            }
-
-            if (runRootDaemonPids.Count > 1)
-            {
-                reasons.Add($"multiple aardvark-dns processes use {aardvarkDirectory}: {string.Join(' ', runRootDaemonPids)}");
-            }
-
-            string? refCountValue = null;
-            if (runRootDaemonPids.Count > 0)
-            {
-                if (!FileSystemEntryExists(refCountFile))
-                {
-                    reasons.Add($"aardvark-dns PID(s) {string.Join(' ', runRootDaemonPids)} are running but {refCountFile} does not exist");
-                }
-                else
-                {
-                    refCountValue = ReadFileValue(refCountFile, "reference count");
-                    if (!uint.TryParse(refCountValue, NumberStyles.None, CultureInfo.InvariantCulture, out var parsedRefCount))
-                    {
-                        throw new InvalidOperationException($"{refCountFile} contains an invalid reference count: {Display(refCountValue)}");
-                    }
-
-                    if (parsedRefCount == 0)
-                    {
-                        reasons.Add($"aardvark-dns PID(s) {string.Join(' ', runRootDaemonPids)} are running while the shared namespace reference count is 0");
-                    }
-                }
-            }
-
-            var configEntries = ReadConfigEntries(aardvarkDirectory);
-            string? knownNetworkOutput = null;
-            if (configEntries.Length > 0)
-            {
-                knownNetworkOutput = await Query(
-                    podmanExecutable,
-                    ["network", "ls", "--format", "{{.Name}}"],
-                    "podman network ls failed while checking aardvark-dns configuration",
-                    runProcess,
-                    cancellationToken).ConfigureAwait(false);
-                var knownNetworks = SplitLines(knownNetworkOutput).ToHashSet(StringComparer.Ordinal);
-                var orphanConfigs = configEntries
-                    .Where(entry => !knownNetworks.Contains(RemoveInternalSuffix(entry)))
-                    .ToArray();
-                if (orphanConfigs.Length > 0)
-                {
-                    reasons.Add($"aardvark-dns holds config for networks Podman no longer has: {string.Join(' ', orphanConfigs)}");
-                }
-            }
-
-            if (configEntries.Length > 0 && runRootDaemonPids.Count == 0)
-            {
-                reasons.Add($"{aardvarkDirectory} contains config but {pidFile} does not identify a live aardvark-dns daemon");
-            }
-
-            if (reasons.Count == 0)
-            {
-                var finalRunningContainerOutput = await Query(
-                    podmanExecutable,
-                    ["ps", "--quiet"],
-                    "podman ps failed while rechecking running containers",
-                    runProcess,
-                    cancellationToken).ConfigureAwait(false);
-                if (!string.Equals(runningContainerOutput, finalRunningContainerOutput, StringComparison.Ordinal))
-                {
-                    throw new InvalidOperationException("running container state changed during inspection");
-                }
-
-                var finalRunRootDaemons = FindRunRootDaemons(procRoot, currentUserId, aardvarkDirectory);
-                if (!runRootDaemons.SequenceEqual(finalRunRootDaemons))
-                {
-                    throw new InvalidOperationException("aardvark-dns process identity changed during inspection");
-                }
-
-                var finalPidFileValue = ReadOptionalFileValue(pidFile, "PID");
-                if (!string.Equals(pidFileValue, finalPidFileValue, StringComparison.Ordinal))
-                {
-                    throw new InvalidOperationException("aardvark-dns PID file changed during inspection");
-                }
-
-                var finalRefCountValue = runRootDaemonPids.Count > 0
-                    ? ReadOptionalFileValue(refCountFile, "reference count")
-                    : null;
-                if (!string.Equals(refCountValue, finalRefCountValue, StringComparison.Ordinal))
-                {
-                    throw new InvalidOperationException("rootless network namespace reference count changed during inspection");
-                }
-
-                var finalConfigEntries = ReadConfigEntries(aardvarkDirectory);
-                if (!configEntries.SequenceEqual(finalConfigEntries, StringComparer.Ordinal))
-                {
-                    throw new InvalidOperationException("aardvark-dns configuration changed during inspection");
-                }
-
-                if (configEntries.Length > 0)
-                {
-                    var finalKnownNetworkOutput = await Query(
-                        podmanExecutable,
-                        ["network", "ls", "--format", "{{.Name}}"],
-                        "podman network ls failed while rechecking aardvark-dns configuration",
-                        runProcess,
-                        cancellationToken).ConfigureAwait(false);
-                    if (!string.Equals(knownNetworkOutput, finalKnownNetworkOutput, StringComparison.Ordinal))
-                    {
-                        throw new InvalidOperationException("Podman network state changed during inspection");
-                    }
-                }
-
-                var finalReportedRunRoot = await QuerySingleValue(
-                    podmanExecutable,
-                    ["info", "--format", "{{.Store.RunRoot}}"],
-                    "podman info failed while rechecking the run root",
-                    runProcess,
-                    cancellationToken).ConfigureAwait(false);
-                var finalRunRoot = Path.IsPathFullyQualified(finalReportedRunRoot)
-                    ? Path.TrimEndingDirectorySeparator(Path.GetFullPath(finalReportedRunRoot))
-                    : string.Empty;
-                if (!string.Equals(runRoot, finalRunRoot, StringComparison.Ordinal))
-                {
-                    throw new InvalidOperationException("Podman run root changed during inspection");
-                }
-                if (!DirectoryEntryExists(finalRunRoot)
-                    || networksDirectoryExists != DirectoryEntryExists(Path.Combine(finalRunRoot, "networks")))
-                {
-                    throw new InvalidOperationException("Podman run-root directory state changed during inspection");
-                }
-
-                var lastRunRootDaemons = FindRunRootDaemons(procRoot, currentUserId, aardvarkDirectory);
-                if (!runRootDaemons.SequenceEqual(lastRunRootDaemons))
-                {
-                    throw new InvalidOperationException("aardvark-dns process identity changed during inspection");
-                }
-
-                if (runRootDaemonPids.Count > 0)
-                {
-                    if (!FileSystemEntryExists(activeNamespacePath) || statExecutable is null)
-                    {
-                        throw new InvalidOperationException("active rootless network namespace cannot be revalidated");
-                    }
-
-                    foreach (var processId in runRootDaemonPids)
-                    {
-                        var processNamespacePath = Path.Combine(procRoot, processId.ToString(CultureInfo.InvariantCulture), "ns", "net");
-                        if (!await NamespaceMatches(
-                                statExecutable,
-                                activeNamespacePath,
-                                processNamespacePath,
-                                runProcess,
-                                cancellationToken).ConfigureAwait(false))
-                        {
-                            throw new InvalidOperationException("network namespace identity changed during inspection");
-                        }
-                    }
-                }
-
-                return await WriteHealthy(
-                    output,
-                    quiet,
-                    $"healthy (aardvark-dns pid {aardvarkPid?.ToString(CultureInfo.InvariantCulture) ?? "none"}, {runningContainerCount.ToString(CultureInfo.InvariantCulture)} container(s) running)",
-                    cancellationToken).ConfigureAwait(false);
-            }
-
-            await error.WriteLineAsync("podman dns preflight: stale aardvark-dns state detected".AsMemory(), cancellationToken).ConfigureAwait(false);
-            foreach (var reason in reasons)
-            {
-                await error.WriteLineAsync($"  - {RepoConfigToolApplication.EscapeControlCharacters(reason)}".AsMemory(), cancellationToken).ConfigureAwait(false);
-            }
-
-            await error.WriteLineAsync("No changes were made. Stop all rootless Podman containers and other Podman operations,".AsMemory(), cancellationToken).ConfigureAwait(false);
-            await error.WriteLineAsync("then follow the scoped recovery guidance in docs/TEST_GUIDELINES.md.".AsMemory(), cancellationToken).ConfigureAwait(false);
-            return 1;
+            return await Inspect(dependencies, output, error, argumentResult.Quiet, cancellationToken).ConfigureAwait(false);
         }
         catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
         {
@@ -391,6 +94,511 @@ internal static class PodmanDnsPreflightCommand
             return await WriteFailure(error, exception.Message, cancellationToken).ConfigureAwait(false);
         }
     }
+
+    private static async Task<(bool ShouldRun, bool Quiet, int ExitCode)> ParseArguments(
+        string[] args,
+        TextWriter output,
+        TextWriter error,
+        CancellationToken cancellationToken)
+    {
+        var quiet = false;
+        foreach (var argument in args)
+        {
+            switch (argument)
+            {
+                case "--check":
+                    break;
+
+                case "--quiet":
+                    quiet = true;
+                    break;
+
+                case "-h" or "--help" when args.Length == 1:
+                    await output.WriteLineAsync(Usage.AsMemory(), cancellationToken).ConfigureAwait(false);
+                    return (false, quiet, 0);
+
+                default:
+                    await error.WriteLineAsync($"Unknown argument: {RepoConfigToolApplication.EscapeControlCharacters(argument)}".AsMemory(), cancellationToken).ConfigureAwait(false);
+                    await error.WriteLineAsync(Usage.AsMemory(), cancellationToken).ConfigureAwait(false);
+                    return (false, quiet, 2);
+            }
+        }
+
+        return (true, quiet, 0);
+    }
+
+    private static async Task<int> Inspect(
+        InspectionDependencies dependencies,
+        TextWriter output,
+        TextWriter error,
+        bool quiet,
+        CancellationToken cancellationToken)
+    {
+        await EnsureLocalService(dependencies, cancellationToken).ConfigureAwait(false);
+        if (!await IsRootless(dependencies, cancellationToken).ConfigureAwait(false))
+        {
+            return await WriteHealthy(
+                output,
+                quiet,
+                "podman is rootful; the shared rootless namespace does not exist",
+                cancellationToken).ConfigureAwait(false);
+        }
+
+        var runRoot = await ReadValidatedRunRoot(dependencies, cancellationToken).ConfigureAwait(false);
+        var initial = await CreateInitialInspection(dependencies, runRoot, cancellationToken).ConfigureAwait(false);
+        var evidence = await InspectState(dependencies, initial, cancellationToken).ConfigureAwait(false);
+        if (evidence.Reasons.Count > 0)
+        {
+            return await WriteStale(error, evidence.Reasons, cancellationToken).ConfigureAwait(false);
+        }
+
+        await RevalidateHealthyState(dependencies, initial, evidence, cancellationToken).ConfigureAwait(false);
+        return await WriteHealthy(
+            output,
+            quiet,
+            $"healthy (aardvark-dns pid {evidence.AardvarkPid?.ToString(CultureInfo.InvariantCulture) ?? "none"}, {initial.RunningContainerCount.ToString(CultureInfo.InvariantCulture)} container(s) running)",
+            cancellationToken).ConfigureAwait(false);
+    }
+
+    private static async Task EnsureLocalService(InspectionDependencies dependencies, CancellationToken cancellationToken)
+    {
+        var serviceIsRemote = await QuerySingleValue(
+            dependencies.PodmanExecutable,
+            ["info", "--format", "{{.Host.ServiceIsRemote}}"],
+            "podman info failed while reading remote-service mode",
+            dependencies.ProcessRunner,
+            cancellationToken).ConfigureAwait(false);
+        switch (serviceIsRemote)
+        {
+            case "false":
+                return;
+
+            case "true":
+                throw new InvalidOperationException("remote Podman state cannot be verified from the local filesystem");
+
+            default:
+                throw new InvalidOperationException($"podman reported an invalid remote-service mode: {Display(serviceIsRemote)}");
+        }
+    }
+
+    private static async Task<bool> IsRootless(InspectionDependencies dependencies, CancellationToken cancellationToken)
+    {
+        var rootless = await QuerySingleValue(
+            dependencies.PodmanExecutable,
+            ["info", "--format", "{{.Host.Security.Rootless}}"],
+            "podman info failed while reading rootless mode",
+            dependencies.ProcessRunner,
+            cancellationToken).ConfigureAwait(false);
+        return rootless switch
+        {
+            "true" => true,
+            "false" => false,
+            _ => throw new InvalidOperationException($"podman reported an invalid rootless mode: {Display(rootless)}")
+        };
+    }
+
+    private static async Task<string> ReadValidatedRunRoot(
+        InspectionDependencies dependencies,
+        CancellationToken cancellationToken)
+    {
+        var reportedRunRoot = await QuerySingleValue(
+            dependencies.PodmanExecutable,
+            ["info", "--format", "{{.Store.RunRoot}}"],
+            "podman info failed while reading the run root",
+            dependencies.ProcessRunner,
+            cancellationToken).ConfigureAwait(false);
+        if (!Path.IsPathFullyQualified(reportedRunRoot))
+        {
+            throw new InvalidOperationException($"podman reported an invalid run root: {Display(reportedRunRoot)}");
+        }
+
+        var runRoot = Path.TrimEndingDirectorySeparator(Path.GetFullPath(reportedRunRoot));
+        if (string.Equals(runRoot, Path.GetPathRoot(runRoot), StringComparison.Ordinal))
+        {
+            throw new InvalidOperationException($"podman reported an unsafe run root: {Display(reportedRunRoot)}");
+        }
+        if (!DirectoryEntryExists(runRoot))
+        {
+            throw new InvalidOperationException($"podman run root does not exist: {runRoot}");
+        }
+
+        return runRoot;
+    }
+
+    private static async Task<InitialInspection> CreateInitialInspection(
+        InspectionDependencies dependencies,
+        string runRoot,
+        CancellationToken cancellationToken)
+    {
+        var runningContainerOutput = await Query(
+            dependencies.PodmanExecutable,
+            ["ps", "--quiet"],
+            "podman ps failed while checking running containers",
+            dependencies.ProcessRunner,
+            cancellationToken).ConfigureAwait(false);
+        var paths = CreatePaths(runRoot);
+        var networksDirectoryExists = DirectoryEntryExists(paths.NetworksDirectory);
+        var currentUserId = ReadEffectiveUserId(Path.Combine(dependencies.ProcRoot, "self", "status"));
+        var runRootDaemons = FindRunRootDaemons(dependencies.ProcRoot, currentUserId, paths.AardvarkDirectory);
+        return new InitialInspection(
+            paths,
+            runningContainerOutput,
+            SplitLines(runningContainerOutput).Length,
+            networksDirectoryExists,
+            currentUserId,
+            runRootDaemons,
+            runRootDaemons.Keys.ToList());
+    }
+
+    private static InspectionPaths CreatePaths(string runRoot)
+    {
+        var networksDirectory = Path.Combine(runRoot, "networks");
+        var aardvarkDirectory = Path.Combine(networksDirectory, "aardvark-dns");
+        return new InspectionPaths(
+            runRoot,
+            networksDirectory,
+            aardvarkDirectory,
+            Path.Combine(aardvarkDirectory, "aardvark.pid"),
+            Path.Combine(networksDirectory, "rootless-netns", "ref-count"),
+            Path.Combine(networksDirectory, "rootless-netns", "rootless-netns"));
+    }
+
+    private static async Task<InspectionEvidence> InspectState(
+        InspectionDependencies dependencies,
+        InitialInspection initial,
+        CancellationToken cancellationToken)
+    {
+        List<string> reasons = [];
+        await InspectNamespaceState(dependencies, initial, reasons, cancellationToken).ConfigureAwait(false);
+        var (pidFileValue, aardvarkPid) = InspectPidState(dependencies, initial, reasons);
+        var refCountValue = InspectReferenceCount(initial, reasons);
+        var (configEntries, knownNetworkOutput) = await InspectConfiguration(
+            dependencies,
+            initial,
+            reasons,
+            cancellationToken).ConfigureAwait(false);
+        return new InspectionEvidence(
+            reasons,
+            pidFileValue,
+            aardvarkPid,
+            refCountValue,
+            configEntries,
+            knownNetworkOutput);
+    }
+
+    private static async Task InspectNamespaceState(
+        InspectionDependencies dependencies,
+        InitialInspection initial,
+        List<string> reasons,
+        CancellationToken cancellationToken)
+    {
+        if (initial.RunRootDaemonPids.Count == 0)
+        {
+            return;
+        }
+        if (!FileSystemEntryExists(initial.Paths.ActiveNamespacePath))
+        {
+            reasons.Add($"aardvark-dns PID(s) {string.Join(' ', initial.RunRootDaemonPids)} are running but {initial.Paths.ActiveNamespacePath} does not exist");
+            return;
+        }
+        if (dependencies.StatExecutable is null)
+        {
+            throw new InvalidOperationException("GNU stat is required to compare network namespace identities");
+        }
+
+        foreach (var processId in initial.RunRootDaemonPids)
+        {
+            var processNamespacePath = GetProcessNamespacePath(dependencies.ProcRoot, processId);
+            var namespaceMatches = await NamespaceMatches(
+                dependencies.StatExecutable,
+                initial.Paths.ActiveNamespacePath,
+                processNamespacePath,
+                dependencies.ProcessRunner,
+                cancellationToken).ConfigureAwait(false);
+            if (!namespaceMatches)
+            {
+                reasons.Add($"aardvark-dns PID {processId.ToString(CultureInfo.InvariantCulture)} runs in a different network namespace than {initial.Paths.ActiveNamespacePath}");
+            }
+        }
+    }
+
+    private static (string? PidFileValue, int? AardvarkPid) InspectPidState(
+        InspectionDependencies dependencies,
+        InitialInspection initial,
+        List<string> reasons)
+    {
+        var pidFileValue = ReadOptionalFileValue(initial.Paths.PidFile, "PID");
+        var aardvarkPid = ReadAndValidatePidFile(
+            initial.Paths.PidFile,
+            pidFileValue,
+            dependencies.ProcRoot,
+            initial.RunRootDaemonPids,
+            initial.Paths.AardvarkDirectory,
+            reasons);
+        if (pidFileValue is null && initial.RunRootDaemonPids.Count > 0)
+        {
+            reasons.Add($"live aardvark-dns PID(s) {string.Join(' ', initial.RunRootDaemonPids)} use {initial.Paths.AardvarkDirectory}, but {initial.Paths.PidFile} does not exist");
+        }
+        if (initial.RunRootDaemonPids.Count > 1)
+        {
+            reasons.Add($"multiple aardvark-dns processes use {initial.Paths.AardvarkDirectory}: {string.Join(' ', initial.RunRootDaemonPids)}");
+        }
+
+        return (pidFileValue, aardvarkPid);
+    }
+
+    private static string? InspectReferenceCount(InitialInspection initial, List<string> reasons)
+    {
+        if (initial.RunRootDaemonPids.Count == 0)
+        {
+            return null;
+        }
+        if (!FileSystemEntryExists(initial.Paths.RefCountFile))
+        {
+            reasons.Add($"aardvark-dns PID(s) {string.Join(' ', initial.RunRootDaemonPids)} are running but {initial.Paths.RefCountFile} does not exist");
+            return null;
+        }
+
+        var refCountValue = ReadFileValue(initial.Paths.RefCountFile, "reference count");
+        if (!uint.TryParse(refCountValue, NumberStyles.None, CultureInfo.InvariantCulture, out var parsedRefCount))
+        {
+            throw new InvalidOperationException($"{initial.Paths.RefCountFile} contains an invalid reference count: {Display(refCountValue)}");
+        }
+        if (parsedRefCount == 0)
+        {
+            reasons.Add($"aardvark-dns PID(s) {string.Join(' ', initial.RunRootDaemonPids)} are running while the shared namespace reference count is 0");
+        }
+
+        return refCountValue;
+    }
+
+    private static async Task<(string[] ConfigEntries, string? KnownNetworkOutput)> InspectConfiguration(
+        InspectionDependencies dependencies,
+        InitialInspection initial,
+        List<string> reasons,
+        CancellationToken cancellationToken)
+    {
+        var configEntries = ReadConfigEntries(initial.Paths.AardvarkDirectory);
+        if (configEntries.Length == 0)
+        {
+            return (configEntries, null);
+        }
+
+        var knownNetworkOutput = await Query(
+            dependencies.PodmanExecutable,
+            ["network", "ls", "--format", "{{.Name}}"],
+            "podman network ls failed while checking aardvark-dns configuration",
+            dependencies.ProcessRunner,
+            cancellationToken).ConfigureAwait(false);
+        var knownNetworks = SplitLines(knownNetworkOutput).ToHashSet(StringComparer.Ordinal);
+        var orphanConfigs = configEntries
+            .Where(entry => !knownNetworks.Contains(RemoveInternalSuffix(entry)))
+            .ToArray();
+        if (orphanConfigs.Length > 0)
+        {
+            reasons.Add($"aardvark-dns holds config for networks Podman no longer has: {string.Join(' ', orphanConfigs)}");
+        }
+        if (initial.RunRootDaemonPids.Count == 0)
+        {
+            reasons.Add($"{initial.Paths.AardvarkDirectory} contains config but {initial.Paths.PidFile} does not identify a live aardvark-dns daemon");
+        }
+
+        return (configEntries, knownNetworkOutput);
+    }
+
+    private static async Task RevalidateHealthyState(
+        InspectionDependencies dependencies,
+        InitialInspection initial,
+        InspectionEvidence evidence,
+        CancellationToken cancellationToken)
+    {
+        await RevalidateContainerAndDaemonState(dependencies, initial, cancellationToken).ConfigureAwait(false);
+        await RevalidateFilesAndNetworks(dependencies, initial, evidence, cancellationToken).ConfigureAwait(false);
+        await RevalidateRunRootAndDaemonState(dependencies, initial, cancellationToken).ConfigureAwait(false);
+        await RevalidateNamespaceState(dependencies, initial, cancellationToken).ConfigureAwait(false);
+    }
+
+    private static async Task RevalidateContainerAndDaemonState(
+        InspectionDependencies dependencies,
+        InitialInspection initial,
+        CancellationToken cancellationToken)
+    {
+        var finalRunningContainerOutput = await Query(
+            dependencies.PodmanExecutable,
+            ["ps", "--quiet"],
+            "podman ps failed while rechecking running containers",
+            dependencies.ProcessRunner,
+            cancellationToken).ConfigureAwait(false);
+        if (!string.Equals(initial.RunningContainerOutput, finalRunningContainerOutput, StringComparison.Ordinal))
+        {
+            throw new InvalidOperationException("running container state changed during inspection");
+        }
+
+        EnsureDaemonStateUnchanged(dependencies, initial);
+    }
+
+    private static async Task RevalidateFilesAndNetworks(
+        InspectionDependencies dependencies,
+        InitialInspection initial,
+        InspectionEvidence evidence,
+        CancellationToken cancellationToken)
+    {
+        var finalPidFileValue = ReadOptionalFileValue(initial.Paths.PidFile, "PID");
+        if (!string.Equals(evidence.PidFileValue, finalPidFileValue, StringComparison.Ordinal))
+        {
+            throw new InvalidOperationException("aardvark-dns PID file changed during inspection");
+        }
+
+        var finalRefCountValue = initial.RunRootDaemonPids.Count > 0
+            ? ReadOptionalFileValue(initial.Paths.RefCountFile, "reference count")
+            : null;
+        if (!string.Equals(evidence.RefCountValue, finalRefCountValue, StringComparison.Ordinal))
+        {
+            throw new InvalidOperationException("rootless network namespace reference count changed during inspection");
+        }
+
+        var finalConfigEntries = ReadConfigEntries(initial.Paths.AardvarkDirectory);
+        if (!evidence.ConfigEntries.SequenceEqual(finalConfigEntries, StringComparer.Ordinal))
+        {
+            throw new InvalidOperationException("aardvark-dns configuration changed during inspection");
+        }
+
+        if (evidence.ConfigEntries.Length > 0)
+        {
+            var finalKnownNetworkOutput = await Query(
+                dependencies.PodmanExecutable,
+                ["network", "ls", "--format", "{{.Name}}"],
+                "podman network ls failed while rechecking aardvark-dns configuration",
+                dependencies.ProcessRunner,
+                cancellationToken).ConfigureAwait(false);
+            if (!string.Equals(evidence.KnownNetworkOutput, finalKnownNetworkOutput, StringComparison.Ordinal))
+            {
+                throw new InvalidOperationException("Podman network state changed during inspection");
+            }
+        }
+    }
+
+    private static async Task RevalidateRunRootAndDaemonState(
+        InspectionDependencies dependencies,
+        InitialInspection initial,
+        CancellationToken cancellationToken)
+    {
+        var finalReportedRunRoot = await QuerySingleValue(
+            dependencies.PodmanExecutable,
+            ["info", "--format", "{{.Store.RunRoot}}"],
+            "podman info failed while rechecking the run root",
+            dependencies.ProcessRunner,
+            cancellationToken).ConfigureAwait(false);
+        var finalRunRoot = Path.IsPathFullyQualified(finalReportedRunRoot)
+            ? Path.TrimEndingDirectorySeparator(Path.GetFullPath(finalReportedRunRoot))
+            : string.Empty;
+        if (!string.Equals(initial.Paths.RunRoot, finalRunRoot, StringComparison.Ordinal))
+        {
+            throw new InvalidOperationException("Podman run root changed during inspection");
+        }
+        if (!DirectoryEntryExists(finalRunRoot)
+            || initial.NetworksDirectoryExists != DirectoryEntryExists(Path.Combine(finalRunRoot, "networks")))
+        {
+            throw new InvalidOperationException("Podman run-root directory state changed during inspection");
+        }
+
+        EnsureDaemonStateUnchanged(dependencies, initial);
+    }
+
+    private static async Task RevalidateNamespaceState(
+        InspectionDependencies dependencies,
+        InitialInspection initial,
+        CancellationToken cancellationToken)
+    {
+        if (initial.RunRootDaemonPids.Count == 0)
+        {
+            return;
+        }
+        if (!FileSystemEntryExists(initial.Paths.ActiveNamespacePath) || dependencies.StatExecutable is null)
+        {
+            throw new InvalidOperationException("active rootless network namespace cannot be revalidated");
+        }
+
+        foreach (var processId in initial.RunRootDaemonPids)
+        {
+            var processNamespacePath = GetProcessNamespacePath(dependencies.ProcRoot, processId);
+            if (!await NamespaceMatches(
+                    dependencies.StatExecutable,
+                    initial.Paths.ActiveNamespacePath,
+                    processNamespacePath,
+                    dependencies.ProcessRunner,
+                    cancellationToken).ConfigureAwait(false))
+            {
+                throw new InvalidOperationException("network namespace identity changed during inspection");
+            }
+        }
+
+        EnsureDaemonStateUnchanged(dependencies, initial);
+    }
+
+    private static void EnsureDaemonStateUnchanged(
+        InspectionDependencies dependencies,
+        InitialInspection initial)
+    {
+        var currentDaemons = FindRunRootDaemons(
+            dependencies.ProcRoot,
+            initial.CurrentUserId,
+            initial.Paths.AardvarkDirectory);
+        if (!initial.RunRootDaemons.SequenceEqual(currentDaemons))
+        {
+            throw new InvalidOperationException("aardvark-dns process identity changed during inspection");
+        }
+    }
+
+    private static async Task<int> WriteStale(
+        TextWriter error,
+        List<string> reasons,
+        CancellationToken cancellationToken)
+    {
+        await error.WriteLineAsync("podman dns preflight: stale aardvark-dns state detected".AsMemory(), cancellationToken).ConfigureAwait(false);
+        foreach (var reason in reasons)
+        {
+            await error.WriteLineAsync($"  - {RepoConfigToolApplication.EscapeControlCharacters(reason)}".AsMemory(), cancellationToken).ConfigureAwait(false);
+        }
+
+        await error.WriteLineAsync("No changes were made. Stop all rootless Podman containers and other Podman operations,".AsMemory(), cancellationToken).ConfigureAwait(false);
+        await error.WriteLineAsync("then follow the scoped recovery guidance in docs/TEST_GUIDELINES.md.".AsMemory(), cancellationToken).ConfigureAwait(false);
+        return 1;
+    }
+
+    private static string GetProcessNamespacePath(string procRoot, int processId) =>
+        Path.Combine(procRoot, processId.ToString(CultureInfo.InvariantCulture), "ns", "net");
+
+    private sealed record InspectionDependencies(
+        string PodmanExecutable,
+        string? StatExecutable,
+        string ProcRoot,
+        Func<ProcessStartInfo, CancellationToken, Task<PodmanCommandResult>> ProcessRunner);
+
+    private sealed record InspectionPaths(
+        string RunRoot,
+        string NetworksDirectory,
+        string AardvarkDirectory,
+        string PidFile,
+        string RefCountFile,
+        string ActiveNamespacePath);
+
+    private sealed record InitialInspection(
+        InspectionPaths Paths,
+        string RunningContainerOutput,
+        int RunningContainerCount,
+        bool NetworksDirectoryExists,
+        uint CurrentUserId,
+        SortedDictionary<int, ulong> RunRootDaemons,
+        List<int> RunRootDaemonPids);
+
+    private sealed record InspectionEvidence(
+        List<string> Reasons,
+        string? PidFileValue,
+        int? AardvarkPid,
+        string? RefCountValue,
+        string[] ConfigEntries,
+        string? KnownNetworkOutput);
 
     private static int? ReadAndValidatePidFile(
         string pidFile,

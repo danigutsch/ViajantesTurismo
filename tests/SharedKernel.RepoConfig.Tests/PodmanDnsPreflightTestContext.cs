@@ -10,7 +10,9 @@ internal sealed class PodmanDnsPreflightTestContext : IDisposable
     private readonly Dictionary<string, PodmanCommandResult> _responses = new(StringComparer.Ordinal);
     private readonly Dictionary<string, Queue<PodmanCommandResult>> _responseQueues = new(StringComparer.Ordinal);
     private Action? _onContainerRecheck;
+    private Action? _onFinalNamespaceCheck;
     private int _containerQueryCount;
+    private int _namespaceQueryCount;
 
     public PodmanDnsPreflightTestContext()
     {
@@ -128,6 +130,9 @@ internal sealed class PodmanDnsPreflightTestContext : IDisposable
     public void ChangeNamespaceIdentityOnRecheck(int processId, string identity) =>
         _onContainerRecheck = () => SetProcessNamespaceIdentity(processId, identity);
 
+    public void ChangeProcessStartTimeOnFinalNamespaceCheck(int processId, ulong startTime) =>
+        _onFinalNamespaceCheck = () => SetProcessStartTime(processId, startTime);
+
     public void ChangePidFileOnRecheck(string content) =>
         _onContainerRecheck = () => WriteConfig("aardvark.pid", content);
 
@@ -214,6 +219,13 @@ internal sealed class PodmanDnsPreflightTestContext : IDisposable
                 || !string.Equals(locale, "C", StringComparison.Ordinal))
             {
                 throw new InvalidOperationException("Unexpected stat query shape.");
+            }
+
+            _namespaceQueryCount++;
+            if (_namespaceQueryCount == 4)
+            {
+                _onFinalNamespaceCheck?.Invoke();
+                _onFinalNamespaceCheck = null;
             }
 
             var path = arguments[^1];

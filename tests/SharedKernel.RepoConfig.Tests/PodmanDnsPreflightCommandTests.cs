@@ -396,6 +396,22 @@ public sealed class PodmanDnsPreflightCommandTests
         result.StandardError.ShouldContain("network namespace identity changed during inspection", StringComparison.Ordinal);
     }
 
+    [Fact]
+    public async Task Pid_reuse_during_final_namespace_check_fails_closed()
+    {
+        // Arrange
+        using var context = new PodmanDnsPreflightTestContext();
+        context.AddDaemon(1218, startTime: 100);
+        context.ChangeProcessStartTimeOnFinalNamespaceCheck(1218, 200);
+
+        // Act
+        var result = await context.Run();
+
+        // Assert
+        result.ExitCode.ShouldBe(1);
+        result.StandardError.ShouldContain("process identity changed during inspection", StringComparison.Ordinal);
+    }
+
     [Theory]
     [InlineData("0", "reference count is 0")]
     [InlineData("invalid", "unable to verify safely")]
