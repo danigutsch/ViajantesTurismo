@@ -122,3 +122,9 @@ preflight and `--apply`.
 `Roadmap status` is a safety gate: missing, ambiguous, incompatible, or unaddressable status
 schema/options block all Project membership and field writes. Other incompatible Project fields
 remain report-only drift.
+
+## SharedKernel candidate compatibility
+
+`verify-sharedkernel-candidate --candidate <candidate.json> [--output <evidence.json>]` verifies portable candidate hashes, package minimum versions,
+lock resolution, and absence of extracted library source references before isolated locked restore, Release build, OpenAPI generation, and full MTP
+tests. Run from a clean committed consumer worktree. Results record both repository revisions and remain pending when validation cannot begin.
