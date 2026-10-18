@@ -7,6 +7,8 @@ namespace SharedKernel.RepoConfig.Tool;
 
 internal static class CandidateCompatibilityCommand
 {
+    private const string SolutionFileName = "ViajantesTurismo.slnx";
+    private const string InternalPackagePrefix = "SharedKernel.";
     private static readonly string NuGetSource = string.Concat("https://api.nuget.org", "/v3/index.json");
 
     public static async Task<int> Run(string[] args, TextWriter output, TextWriter error, string workingDirectory, CancellationToken ct)
@@ -53,10 +55,10 @@ internal static class CandidateCompatibilityCommand
             var cache = Path.Combine(scratch, "packages");
             status = "failed";
             string[][] commands = [
-                ["restore", "ViajantesTurismo.slnx", "--locked-mode", "--configfile", config, "--packages", cache, "--no-cache"],
-                ["build", "ViajantesTurismo.slnx", "-c", "Release", "--no-restore"],
+                ["restore", SolutionFileName, "--locked-mode", "--configfile", config, "--packages", cache, "--no-cache"],
+                ["build", SolutionFileName, "-c", "Release", "--no-restore"],
                 ["run", "--project", "tools/ViajantesTurismo.OpenApi.Tool", "-c", "Release", "--no-build", "--no-restore", "--", "generate", "all"],
-                ["test", "--solution", "ViajantesTurismo.slnx", "-c", "Release", "--no-build", "--no-restore"]
+                ["test", "--solution", SolutionFileName, "-c", "Release", "--no-build", "--no-restore"]
             ];
             foreach (var command in commands)
             {
@@ -118,43 +120,44 @@ internal static class CandidateCompatibilityCommand
 
         var version = evidence["packageVersion"]!.GetValue<string>();
         var central = XDocument.Load(Path.Combine(root, "Directory.Packages.props")).Descendants("PackageVersion")
-            .Where(x => ((string?)x.Attribute("Include"))?.StartsWith("SharedKernel.", StringComparison.Ordinal) == true).ToArray();
+            .Where(x => ((string?)x.Attribute("Include"))?.StartsWith(InternalPackagePrefix, StringComparison.Ordinal) == true).ToArray();
         if (central.Length == 0 || central.Any(x => (string?)x.Attribute("Version") != version && (string?)x.Attribute("Version") != "[" + version + "]"))
         {
             throw new ArgumentException("Consumer must declare the tested candidate minimum version.");
         }
 
-        foreach (var project in XDocument.Load(Path.Combine(root, "ViajantesTurismo.slnx")).Descendants("Project"))
+        foreach (var project in XDocument.Load(Path.Combine(root, SolutionFileName)).Descendants("Project"))
         {
             var path = Path.Combine(root, (string)project.Attribute("Path")!);
             foreach (var reference in XDocument.Load(path).Descendants("ProjectReference"))
             {
                 var id = Path.GetFileNameWithoutExtension(((string?)reference.Attribute("Include") ?? string.Empty).Replace('\\', '/'));
-                if (id.StartsWith("SharedKernel.", StringComparison.Ordinal) && id is not "SharedKernel.Documentation" && File.Exists(Path.Combine(root, "src/SharedKernel", id, id + ".csproj")))
-                {
-                    throw new ArgumentException("Consumer still references extracted SharedKernel sources: " + path);
-                }
+                RejectExtractedSource(root, id, path);
             }
 
             var lockPath = Path.Combine(Path.GetDirectoryName(path)!, "packages.lock.json");
             var dependencies = JsonNode.Parse(File.ReadAllText(lockPath))!["dependencies"]!.AsObject();
-            foreach (var (_, framework) in dependencies)
+            foreach (var (id, value) in dependencies.SelectMany(framework => framework.Value!.AsObject())
+                         .Where(dependency => dependency.Key.StartsWith(InternalPackagePrefix, StringComparison.Ordinal)))
             {
-                foreach (var (id, value) in framework!.AsObject())
+                if (value!["type"]!.GetValue<string>() == "Project")
                 {
-                    if (id.StartsWith("SharedKernel.", StringComparison.Ordinal) && id is not "SharedKernel.Documentation"
-                        && value!["type"]!.GetValue<string>() == "Project"
-                        && File.Exists(Path.Combine(root, "src/SharedKernel", id, id + ".csproj")))
-                    {
-                        throw new ArgumentException("Consumer still references extracted SharedKernel sources: " + lockPath);
-                    }
-
-                    if (id.StartsWith("SharedKernel.", StringComparison.Ordinal) && value!["type"]!.GetValue<string>() != "Project" && value["resolved"]!.GetValue<string>() != version)
-                    {
-                        throw new ArgumentException(lockPath + ": " + id + " does not resolve to the tested candidate.");
-                    }
+                    RejectExtractedSource(root, id, lockPath);
+                }
+                else if (value["resolved"]!.GetValue<string>() != version)
+                {
+                    throw new ArgumentException(lockPath + ": " + id + " does not resolve to the tested candidate.");
                 }
             }
+        }
+    }
+
+    private static void RejectExtractedSource(string root, string id, string path)
+    {
+        if (id.StartsWith(InternalPackagePrefix, StringComparison.Ordinal) && id is not "SharedKernel.Documentation"
+            && File.Exists(Path.Combine(root, "src/SharedKernel", id, id + ".csproj")))
+        {
+            throw new ArgumentException("Consumer still references extracted SharedKernel sources: " + path);
         }
     }
 
