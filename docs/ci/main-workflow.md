@@ -116,6 +116,13 @@ Test-slice project membership is now centralized under `scripts/ci-test-slices/*
 restore, build, test, and coverage inputs for each slice stay aligned instead of
 duplicating project lists in multiple workflow locations.
 
+Keep all six canonical slice files when extracting SharedKernel into its own repository. A slice
+may become empty after its last test project leaves the application solution; selection emits
+`<slice>_required=false`, and the existing matrix skip step reports success without restoring or
+running that slice. Every xUnit project still in the application solution must remain assigned
+exactly once. Emptying a manifest while leaving its projects in the solution fails membership
+validation; missing or unexpected slice files also remain errors.
+
 Multi-project slice manifests restore through one temporary solution. This lets MSBuild schedule
 the selected restore graph in parallel while preserving locked-mode restore and slice isolation.
 Jobs that invoke only project-based tools skip `dotnet tool restore`; coverage aggregation and release
