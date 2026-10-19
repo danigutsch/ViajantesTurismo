@@ -136,3 +136,6 @@ remain report-only drift.
 `verify-sharedkernel-candidate --candidate <candidate.json> [--output <evidence.json>]` verifies portable candidate hashes, package minimum versions,
 lock resolution, and absence of extracted library source references before isolated locked restore, Release build, OpenAPI generation, and full MTP
 tests. Run from a clean committed consumer worktree. Results record both repository revisions and remain pending when validation cannot begin.
+
+The isolated package cache and temporary NuGet configuration are deleted after success, failure, or cancellation. Cancellation stops the child
+process before cleanup and records failed evidence. Run a normal restore before subsequent builds that used the isolated cache.

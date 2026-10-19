@@ -42,42 +42,54 @@ internal static class CandidateCompatibilityCommand
         evidence["consumerRevision"] = await RunProcess("git", ["rev-parse", "HEAD"], root, TextWriter.Null, ct).ConfigureAwait(false);
         evidence["consumerDirty"] = (await RunProcess("git", ["status", "--porcelain"], root, TextWriter.Null, ct).ConfigureAwait(false)).Length != 0;
         var status = "pending";
+        string? scratch = null;
         try
         {
-            if (evidence["libraryDirty"]!.GetValue<bool>() || evidence["consumerDirty"]!.GetValue<bool>())
+            try
             {
-                throw new ArgumentException("Compatibility requires committed library and consumer revisions.");
+                if (evidence["libraryDirty"]!.GetValue<bool>() || evidence["consumerDirty"]!.GetValue<bool>())
+                {
+                    throw new ArgumentException("Compatibility requires committed library and consumer revisions.");
+                }
+
+                ValidateConsumer(root, candidate, evidence);
+                scratch = Path.Combine(Path.GetTempPath(), "sharedkernel-consumer-" + Guid.NewGuid().ToString("N"));
+                var config = WriteRestoreConfiguration(candidate, scratch);
+                var cache = Path.Combine(scratch, "packages");
+                status = "failed";
+                string[][] commands = [
+                    ["restore", SolutionFileName, "--locked-mode", "--configfile", config, "--packages", cache, "--no-cache"],
+                    ["build", SolutionFileName, "-c", "Release", "--no-restore"],
+                    ["run", "--project", "tools/ViajantesTurismo.OpenApi.Tool", "-c", "Release", "--no-build", "--no-restore", "--", "generate", "all"],
+                    ["test", "--solution", SolutionFileName, "-c", "Release", "--no-build", "--no-restore"]
+                ];
+                foreach (var command in commands)
+                {
+                    await RunProcess("dotnet", command, root, output, ct).ConfigureAwait(false);
+                }
+
+                status = "passed";
+            }
+            catch (Exception exception) when (exception is ArgumentException or IOException or InvalidOperationException or OperationCanceledException)
+            {
+                evidence["reason"] = exception.Message;
+                await error.WriteLineAsync(exception.Message).ConfigureAwait(false);
             }
 
-            ValidateConsumer(root, candidate, evidence);
-            var scratch = Path.Combine(Path.GetTempPath(), "sharedkernel-consumer-" + Guid.NewGuid().ToString("N"));
-            var config = WriteRestoreConfiguration(candidate, scratch);
-            var cache = Path.Combine(scratch, "packages");
-            status = "failed";
-            string[][] commands = [
-                ["restore", SolutionFileName, "--locked-mode", "--configfile", config, "--packages", cache, "--no-cache"],
-                ["build", SolutionFileName, "-c", "Release", "--no-restore"],
-                ["run", "--project", "tools/ViajantesTurismo.OpenApi.Tool", "-c", "Release", "--no-build", "--no-restore", "--", "generate", "all"],
-                ["test", "--solution", SolutionFileName, "-c", "Release", "--no-build", "--no-restore"]
-            ];
-            foreach (var command in commands)
-            {
-                await RunProcess("dotnet", command, root, output, ct).ConfigureAwait(false);
-            }
-
-            status = "passed";
+            evidence["consumerCompatibility"] = status;
+            Directory.CreateDirectory(Path.GetDirectoryName(destination)!);
+            await File.WriteAllTextAsync(destination, evidence.ToJsonString(new System.Text.Json.JsonSerializerOptions { WriteIndented = true }) + Environment.NewLine, CancellationToken.None).ConfigureAwait(false);
+            await output.WriteLineAsync(evidence["consumerCompatibility"]!.GetValue<string>()).ConfigureAwait(false);
+            ct.ThrowIfCancellationRequested();
+            return evidence["consumerCompatibility"]!.GetValue<string>() == "passed" ? 0 : 1;
         }
-        catch (Exception exception) when (exception is ArgumentException or IOException or InvalidOperationException)
+        finally
         {
-            evidence["reason"] = exception.Message;
-            await error.WriteLineAsync(exception.Message).ConfigureAwait(false);
+            if (scratch is not null && Directory.Exists(scratch))
+            {
+                Directory.Delete(scratch, recursive: true);
+            }
         }
-
-        evidence["consumerCompatibility"] = status;
-        Directory.CreateDirectory(Path.GetDirectoryName(destination)!);
-        await File.WriteAllTextAsync(destination, evidence.ToJsonString(new System.Text.Json.JsonSerializerOptions { WriteIndented = true }) + Environment.NewLine, ct).ConfigureAwait(false);
-        await output.WriteLineAsync(evidence["consumerCompatibility"]!.GetValue<string>()).ConfigureAwait(false);
-        return evidence["consumerCompatibility"]!.GetValue<string>() == "passed" ? 0 : 1;
     }
 
     internal static string WriteRestoreConfiguration(string candidate, string scratch)
@@ -168,7 +180,20 @@ internal static class CandidateCompatibilityCommand
         using var process = Process.Start(info) ?? throw new InvalidOperationException("Could not start " + name);
         var stdout = process.StandardOutput.ReadToEndAsync(ct);
         var stderr = process.StandardError.ReadToEndAsync(ct);
-        await process.WaitForExitAsync(ct).ConfigureAwait(false);
+        try
+        {
+            await process.WaitForExitAsync(ct).ConfigureAwait(false);
+        }
+        catch (OperationCanceledException)
+        {
+            if (!process.HasExited)
+            {
+                process.Kill(entireProcessTree: true);
+                await process.WaitForExitAsync(CancellationToken.None).ConfigureAwait(false);
+            }
+
+            throw;
+        }
         var text = await stdout.ConfigureAwait(false);
         var errors = await stderr.ConfigureAwait(false);
         await output.WriteAsync(text).ConfigureAwait(false);
