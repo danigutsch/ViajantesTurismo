@@ -647,7 +647,10 @@ public static class VersioningToolTests
         var packagePath = Path.Combine(packageDirectory, "SharedKernel.Sample.1.2.3.nupkg");
         exitCode.ShouldBe(0);
         File.Exists(packagePath).ShouldBeTrue();
-        output.ToString().ShouldContain(packageDirectory, StringComparison.Ordinal);
+        var expectedOutput = "SharedKernel packages: "
+            + Path.Combine(temporaryDirectory.Root, "artifacts/packages", "1.2.3")
+            + Environment.NewLine;
+        output.ToString().ShouldBe(expectedOutput);
     }
 
     [Fact]

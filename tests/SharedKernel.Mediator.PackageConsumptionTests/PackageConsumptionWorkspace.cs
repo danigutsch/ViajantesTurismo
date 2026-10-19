@@ -215,6 +215,15 @@ internal sealed class PackageConsumptionWorkspace : IDisposable
                 <add key="local" value="{feedPath}" />
                 <add key="nuget.org" value="https://api.nuget.org/v3/index.json" />
               </packageSources>
+              <packageSourceMapping>
+                <clear />
+                <packageSource key="local">
+                  <package pattern="SharedKernel.*" />
+                </packageSource>
+                <packageSource key="nuget.org">
+                  <package pattern="*" />
+                </packageSource>
+              </packageSourceMapping>
             </configuration>
             """;
     }

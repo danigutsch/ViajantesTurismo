@@ -13,11 +13,8 @@
 6. Run the relevant checks before opening a pull request.
 7. Open a pull request using the repository template and complete the checklist.
 
-Optional local hook path:
-
-- Run `bash scripts/install-git-hooks.sh` to enable the repository-owned `commit-msg` and `pre-commit` hooks.
-- The `commit-msg` hook runs `scripts/validate-commit-message.sh`.
-- The `pre-commit` hook runs an optional local secret scan when `gitleaks` is installed; otherwise it warns and continues.
+Custom Git hooks are not installed or maintained by this repository. Run local checks explicitly;
+CI enforces the required quality gates.
 
 ## Commit Messages
 

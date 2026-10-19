@@ -113,7 +113,7 @@ internal sealed class TemporaryCiTestRepository : IDisposable
 
     public void Dispose()
     {
-        Directory.Delete(RootPath, recursive: true);
+        TemporaryRepositoryDirectory.Delete(RootPath);
     }
 
     private void WriteSolution()
