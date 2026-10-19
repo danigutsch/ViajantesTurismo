@@ -133,9 +133,9 @@ projects first so the parallel test worker pool does not leave long-running proj
 
 Fast Validation is split into two fixed 28-project execution shards. Run `30085894084` measured the
 former single row at about 138 seconds of setup plus 518 seconds for build, OpenAPI preparation, and
-coverage tests. The split duplicates setup but allows those phases to proceed on two runners while
-the stable `fast_validation_required` gate, `Build and Test` aggregate, and coverage artifact pattern
-continue to represent one logical lane.
+coverage tests. The split duplicates setup but allows those phases to proceed on two runners. Each
+shard uses its own `fast_validation_1_required` or `fast_validation_2_required` selection flag.
+The `Build and Test` aggregate and coverage artifact pattern continue to represent one logical lane.
 
 The shard containing all three HTTP contract projects prepares Admin, Catalog, and Branding OpenAPI
 artifacts through one parallel MSBuild graph. Focused local slices that contain only a subset keep the
