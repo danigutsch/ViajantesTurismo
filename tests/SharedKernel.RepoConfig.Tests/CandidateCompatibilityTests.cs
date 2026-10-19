@@ -23,9 +23,9 @@ public sealed class CandidateCompatibilityTests
         config.Descendants("add").ShouldContain(x => (string?)x.Attribute("value") == Path.GetDirectoryName(candidate));
         var sources = config.Descendants("packageSource").ToArray();
         sources.ShouldHaveSingleItem(x => (string?)x.Attribute("key") == "local")
-            .Elements("package").ShouldHaveSingleItem().Attribute("pattern")!.Value.ShouldBe("SharedKernel.*");
+            .Elements("package").ShouldHaveSingleItem().Attribute("pattern").ShouldNotBeNull().Value.ShouldBe("SharedKernel.*");
         sources.ShouldHaveSingleItem(x => (string?)x.Attribute("key") == "nuget.org")
-            .Elements("package").ShouldHaveSingleItem().Attribute("pattern")!.Value.ShouldBe("*");
+            .Elements("package").ShouldHaveSingleItem().Attribute("pattern").ShouldNotBeNull().Value.ShouldBe("*");
         config.Descendants("auditSources").ShouldHaveSingleItem();
     }
 
