@@ -1,14 +1,12 @@
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
-using Microsoft.Extensions.Options;
+using System.Diagnostics;
 
 namespace ViajantesTurismo.Public.WebTests;
 
 internal static class PublicWebEndpointTestsHelpers
 {
-    private const int MaximumProductionStartupAttempts = 3;
-
     public static TourDetailsDto CreateTour(string slug, string title)
     {
         return new TourDetailsDto
@@ -49,25 +47,40 @@ internal static class PublicWebEndpointTestsHelpers
             configuration: settings);
     }
 
-    public static OptionsValidationException GetProductionSitemapValidationException(string? canonicalOrigin = null)
+    public static async Task<(int ExitCode, string Output)> RunProductionStartup(string canonicalOrigin, CancellationToken ct)
     {
-        for (var attempt = 1; attempt <= MaximumProductionStartupAttempts; attempt++)
+        var startInfo = new ProcessStartInfo("dotnet")
         {
-            using var factory = CreateFactory(environment: "Production", canonicalOrigin: canonicalOrigin);
-            try
-            {
-                using var client = factory.CreateClient();
-            }
-            catch (OptionsValidationException exception)
-            {
-                return exception;
-            }
-            catch (ObjectDisposedException) when (attempt < MaximumProductionStartupAttempts)
-            {
-                // Retry the transient deferred-host disposal race without weakening the startup assertion.
-            }
+            WorkingDirectory = AppContext.BaseDirectory,
+            RedirectStandardOutput = true,
+            RedirectStandardError = true,
+            UseShellExecute = false
+        };
+        startInfo.ArgumentList.Add(typeof(IPublicWebAssemblyMarker).Assembly.Location);
+        startInfo.ArgumentList.Add("--environment=Production");
+        startInfo.ArgumentList.Add("--urls=http://127.0.0.1:0");
+        startInfo.ArgumentList.Add("--PublicWeb:Sitemap:CanonicalOrigin=" + canonicalOrigin);
+
+        using var process = new Process { StartInfo = startInfo };
+        if (!process.Start())
+        {
+            throw new InvalidOperationException("The production public web process did not start.");
         }
 
-        throw new InvalidOperationException("Production sitemap validation did not fail during startup.");
+        var standardOutput = process.StandardOutput.ReadToEndAsync(ct);
+        var standardError = process.StandardError.ReadToEndAsync(ct);
+        try
+        {
+            await process.WaitForExitAsync(ct).WaitAsync(TimeSpan.FromSeconds(30), ct);
+            return (process.ExitCode, await standardOutput + await standardError);
+        }
+        finally
+        {
+            if (!process.HasExited)
+            {
+                process.Kill(entireProcessTree: true);
+                await process.WaitForExitAsync(CancellationToken.None);
+            }
+        }
     }
 }
