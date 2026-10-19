@@ -14,7 +14,9 @@ internal sealed class CandidateScratchTestScope : IDisposable, IAsyncDisposable
 
     public async Task<Process> StartBlockedRestore(string destination, CancellationToken ct)
     {
-        var pipeName = "candidate-cleanup-" + Guid.NewGuid().ToString("N");
+        var pipeName = Guid.NewGuid().ToString("N");
+        // Absolute Unix paths avoid the runtime's extra CoreFxPipe_ prefix under long temporary roots.
+        if (!OperatingSystem.IsWindows()) { pipeName = Path.Combine(Path.GetTempPath(), pipeName); }
         pipe = new NamedPipeServerStream(pipeName, PipeDirection.InOut, 1, PipeTransmissionMode.Byte, PipeOptions.Asynchronous);
         BlockRestore(pipeName);
         await Prepare(ct);
