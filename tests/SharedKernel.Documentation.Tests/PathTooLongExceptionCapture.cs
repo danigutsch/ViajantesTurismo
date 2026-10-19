@@ -11,7 +11,9 @@ internal sealed class PathTooLongExceptionCapture : IDisposable
         AppDomain.CurrentDomain.FirstChanceException += Capture;
     }
 
-    public PathTooLongException? FirstException { get; private set; }
+    public IOException? FirstException { get; private set; }
+
+    public IOException? CleanupException { get; private set; }
 
     public void Dispose()
     {
@@ -21,9 +23,16 @@ internal sealed class PathTooLongExceptionCapture : IDisposable
     private void Capture(object? sender, FirstChanceExceptionEventArgs eventArgs)
     {
         if (Environment.CurrentManagedThreadId == threadId
-            && eventArgs.Exception is PathTooLongException exception)
+            && eventArgs.Exception is IOException exception)
         {
-            FirstException ??= exception;
+            if (FirstException is null)
+            {
+                FirstException = exception;
+            }
+            else if (!ReferenceEquals(FirstException, exception))
+            {
+                CleanupException ??= exception;
+            }
         }
     }
 }

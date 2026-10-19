@@ -38,7 +38,7 @@ like [.NET Docs](https://github.com/dotnet/docs), [GitHub Docs](https://github.c
 and [Electron](https://github.com/electron/electron), we use a **multi-layer approach**:
 
 1. **Editor Integration** - Real-time feedback as you type (primary quality gate)
-2. **Pre-commit Hooks** - Optional safety net before committing
+2. **Explicit Local Checks** - Run the relevant scripts before committing
 3. **CI/CD Pipeline** - Enforces standards for all team members
 
 **Note**: We deliberately **do not** run these checks during .NET builds. Documentation and code style quality checks

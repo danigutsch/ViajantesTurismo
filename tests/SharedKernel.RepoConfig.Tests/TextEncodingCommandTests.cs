@@ -429,9 +429,13 @@ public sealed class TextEncodingCommandTests
         var alternateObjectsPath = Path.Combine(alternate.RootPath, ".git", "objects");
         await File.WriteAllTextAsync(
             alternatesPath,
-            alternateObjectsPath + Environment.NewLine,
+            alternateObjectsPath + "\n",
             TestContext.Current.CancellationToken);
         await repository.SetIndexEntry("100644", objectId, "alternate-invalid.txt", TestContext.Current.CancellationToken);
+        var alternateBlob = await repository.RunGit(["cat-file", "-t", objectId], TestContext.Current.CancellationToken);
+        alternateBlob.StandardError.ShouldBe(string.Empty);
+        alternateBlob.ExitCode.ShouldBe(0);
+        alternateBlob.StandardOutput.Trim().ShouldBe("blob");
 
         // Act
         var result = await repository.RunCommand(
