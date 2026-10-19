@@ -8,8 +8,7 @@ namespace ViajantesTurismo.ArchitectureTests.Conventions;
 /// <summary>
 /// Verifies replica configuration without starting application processes or containers.
 /// </summary>
-[Trait(SharedKernel.Testing.TestTraitNames.CategoryName, "Architecture")]
-[Trait(SharedKernel.Testing.TestTraitNames.AreaName, "AppHost")]
+[Trait(SharedKernel.Testing.TestTraitNames.AreaName, TestTraits.AppHostArea)]
 public sealed class PublicWebReplicaModelTests
 {
     [Theory]

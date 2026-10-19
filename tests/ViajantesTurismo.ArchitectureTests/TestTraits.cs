@@ -21,6 +21,11 @@ public static class TestTraits
     public const string SharedArea = "shared";
 
     /// <summary>
+    /// Area value for AppHost orchestration tests.
+    /// </summary>
+    public const string AppHostArea = "apphost";
+
+    /// <summary>
     /// Category value for documentation conformance tests.
     /// </summary>
     public const string DocumentationCategory = "documentation";
