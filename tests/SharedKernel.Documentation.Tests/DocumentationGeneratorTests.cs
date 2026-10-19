@@ -52,13 +52,14 @@ public sealed class DocumentationGeneratorTests
         var architecturePath = Path.Combine(workspace.RootPath, "docs", "architecture");
         var targetPath = Path.Combine(architecturePath, $"{new string('x', 300)}.md");
         using var exceptionCapture = new PathTooLongExceptionCapture();
-        Action act = () => GeneratedMarkdownUpdater.WriteAtomically(targetPath, "new content");
 
         // Act
-        var observedException = act.ShouldThrow<PathTooLongException>();
+        var observedException = Record.Exception(() => GeneratedMarkdownUpdater.WriteAtomically(targetPath, "new content"));
 
         // Assert
+        observedException.ShouldBeOfType<IOException>(exactMatch: false);
         var capturedPrimaryException = exceptionCapture.FirstException.ShouldNotBeNull();
+        exceptionCapture.CleanupException.ShouldNotBeNull();
         observedException.ShouldBeSameAs(capturedPrimaryException);
     }
 

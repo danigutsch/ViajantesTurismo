@@ -117,10 +117,10 @@ dependency.
 
 The current hosted analysis path actively uses:
 
-- `dotnet-sonarscanner` `11.2.1`
-- `dotnet-reportgenerator-globaltool` `5.5.10`
+- `dotnet-sonarscanner` `12.0.0`
+- `dotnet-reportgenerator-globaltool` `5.5.11`
 
-The local tool manifest also contains `dotnet-coverage` `18.8.0` for supported .NET
+The local tool manifest also contains `dotnet-coverage` `18.12.0` for supported .NET
 coverage workflows, but the current SonarCloud workflow does not rely on the direct
 `dotnet-coverage -f xml` path.
 

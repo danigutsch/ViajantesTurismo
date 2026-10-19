@@ -4,8 +4,7 @@ namespace SharedKernel.Documentation.Tool;
 
 internal static class DocumentationToolApplication
 {
-    private const string Usage = "Usage: sharedkernel-docs generate --config <path> [--check]"
-        + "\n       sharedkernel-docs check --config <path>";
+    private const string Usage = "Usage: sharedkernel-docs generate --config <path> [--check]";
 
     public static async Task<int> Run(string[] args, TextWriter output, TextWriter error, string rootPath)
     {
@@ -159,5 +158,6 @@ internal static class DocumentationToolApplication
     {
         await error.WriteLineAsync(message).ConfigureAwait(false);
         await error.WriteLineAsync(Usage).ConfigureAwait(false);
+        await error.WriteLineAsync("       sharedkernel-docs check --config <path>").ConfigureAwait(false);
     }
 }

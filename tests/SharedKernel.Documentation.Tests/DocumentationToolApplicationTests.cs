@@ -154,14 +154,16 @@ public sealed class DocumentationToolApplicationTests
         errorText.ShouldContain("sharedkernel-docs check --config <path>", StringComparison.Ordinal);
     }
 
-    [Fact]
-    public async Task Check_returns_exact_error_when_config_value_is_missing()
+    [Theory]
+    [InlineData("\n")]
+    [InlineData("\r\n")]
+    public async Task Check_returns_exact_error_when_config_value_is_missing(string newLine)
     {
         // Arrange
         await using var output = new StringWriter(CultureInfo.InvariantCulture);
-        await using var error = new StringWriter(CultureInfo.InvariantCulture);
+        await using var error = new StringWriter(CultureInfo.InvariantCulture) { NewLine = newLine };
         var expectedError = string.Join(
-            Environment.NewLine,
+            newLine,
             "Missing required value for --config.",
             "Usage: sharedkernel-docs generate --config <path> [--check]",
             "       sharedkernel-docs check --config <path>",
@@ -180,14 +182,16 @@ public sealed class DocumentationToolApplicationTests
         error.ToString().ShouldBe(expectedError);
     }
 
-    [Fact]
-    public async Task Check_reports_the_first_extra_argument_exactly()
+    [Theory]
+    [InlineData("\n")]
+    [InlineData("\r\n")]
+    public async Task Check_reports_the_first_extra_argument_exactly(string newLine)
     {
         // Arrange
         await using var output = new StringWriter(CultureInfo.InvariantCulture);
-        await using var error = new StringWriter(CultureInfo.InvariantCulture);
+        await using var error = new StringWriter(CultureInfo.InvariantCulture) { NewLine = newLine };
         var expectedError = string.Join(
-            Environment.NewLine,
+            newLine,
             "Unknown argument: --unknown",
             "Usage: sharedkernel-docs generate --config <path> [--check]",
             "       sharedkernel-docs check --config <path>",
