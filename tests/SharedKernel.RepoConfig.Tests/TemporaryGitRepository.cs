@@ -211,23 +211,17 @@ internal sealed class TemporaryGitRepository : IDisposable
     public void DeleteLooseObject(string objectId)
     {
         var objectPath = Path.Combine(RootPath, ".git", "objects", objectId[..2], objectId[2..]);
-        File.Delete(objectPath);
+        TemporaryRepositoryDirectory.DeleteFile(objectPath);
     }
 
     public void Dispose()
     {
         foreach (var linkedWorktreePath in _linkedWorktreePaths)
         {
-            if (Directory.Exists(linkedWorktreePath))
-            {
-                Directory.Delete(linkedWorktreePath, recursive: true);
-            }
+            TemporaryRepositoryDirectory.Delete(linkedWorktreePath);
         }
 
-        if (Directory.Exists(RootPath))
-        {
-            Directory.Delete(RootPath, recursive: true);
-        }
+        TemporaryRepositoryDirectory.Delete(RootPath);
     }
 
     private async Task<CiTestSelectionTestProcess.ProcessResult> RunGitChecked(

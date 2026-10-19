@@ -100,7 +100,7 @@ internal static class SharedKernelPackagingConventionTestFiles
     public static HashSet<string> GetYamlPathEntries(string content)
     {
         var entries = new HashSet<string>(StringComparer.Ordinal);
-        foreach (var line in content.Split(Environment.NewLine))
+        foreach (var line in content.Split('\n'))
         {
             var trimmed = line.Trim();
             if (!trimmed.StartsWith("- ", StringComparison.Ordinal))

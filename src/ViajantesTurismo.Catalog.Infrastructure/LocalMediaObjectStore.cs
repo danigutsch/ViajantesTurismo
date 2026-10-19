@@ -47,7 +47,14 @@ internal sealed class LocalMediaObjectStore(IOptions<LocalMediaObjectStorageOpti
             }
 
             ct.ThrowIfCancellationRequested();
-            File.Move(temporaryPath, path, overwrite: true);
+            try
+            {
+                File.Move(temporaryPath, path);
+            }
+            catch (IOException) when (File.Exists(path))
+            {
+                File.Replace(temporaryPath, path, destinationBackupFileName: null);
+            }
         }
         catch
         {

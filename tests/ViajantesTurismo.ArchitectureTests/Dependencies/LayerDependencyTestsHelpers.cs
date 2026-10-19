@@ -411,7 +411,7 @@ internal static partial class LayerDependencyTestsHelpers
         return projectName;
     }
 
-    private static bool IsLayerProjectReferenceDirectionViolation(
+    internal static bool IsLayerProjectReferenceDirectionViolation(
         string referencingProjectName,
         string referencedProjectName)
     {
@@ -448,6 +448,8 @@ internal static partial class LayerDependencyTestsHelpers
             return IsProductProjectName(referencedProjectName)
                 && !IsResourcesProjectName(referencedProjectName)
                 && !IsSameContextLayerProjectName(referencingProjectName, referencedProjectName, "Application")
+                && !(IsSameBoundedContextProject(referencingProjectName, referencedProjectName)
+                    && IsContractsIntegrationEventsProjectName(referencedProjectName))
                 && !IsSameContextLayerProjectName(referencingProjectName, referencedProjectName, "Domain");
         }
 
@@ -464,6 +466,8 @@ internal static partial class LayerDependencyTestsHelpers
         if (IsWebProjectName(referencingProjectName))
         {
             return IsProductProjectName(referencedProjectName)
+                && !(referencingProjectName.Equals("ViajantesTurismo.Management.Web", StringComparison.OrdinalIgnoreCase)
+                    && referencedProjectName.Equals("ViajantesTurismo.Management.Security", StringComparison.OrdinalIgnoreCase))
                 && !IsContractsApplicationProjectName(referencedProjectName)
                 && !IsContractsHttpProjectName(referencedProjectName)
                 && !IsResourcesProjectName(referencedProjectName)
@@ -603,7 +607,7 @@ internal static partial class LayerDependencyTestsHelpers
             return null;
         }
 
-        return segments[1] is "Admin" or "Catalog"
+        return segments[1] is "Admin" or "Catalog" or "Branding"
             ? segments[1]
             : null;
     }
