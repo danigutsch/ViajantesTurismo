@@ -279,10 +279,19 @@ Forbidden directions:
 - Application must not depend on infrastructure, API, web, AppHost, or migration projects. Application
   may reference same-context `.Contracts.Application` and any `.Contracts.IntegrationEvents` project.
 - Infrastructure must not depend on API or web projects.
+- Infrastructure may reference same-context `.Contracts.IntegrationEvents` for transport serialization
+  and outbox adapters. Branding's serializer uses its published event and generated JSON context;
+  this does not permit HTTP contracts or arbitrary cross-context implementation references.
+- Same-context layer matching includes Admin, Catalog, and the Branding adapter family; Branding API
+  composes its own Infrastructure, not another context's implementation.
 - API services may reference same-context `.Contracts.Application` and `.Contracts.Http` projects.
 - Web frontends may reference `.Contracts.Application` and `.Contracts.Http` projects, but must not
   reference domain, application, infrastructure, API implementation, or integration-event contract
   projects directly.
+- `ViajantesTurismo.Management.Web` may compose `ViajantesTurismo.Management.Security` specifically
+  for BFF Data Protection key persistence and server-side authentication ticket storage. This is
+  host-owned security state, not business persistence; other web hosts and business infrastructure
+  references remain prohibited.
 - Catalog must not call Admin application, domain, infrastructure, API, HTTP contract, or application
   contract code directly. Cross-context Catalog-to-Admin references are limited to
   `ViajantesTurismo.Admin.Contracts.IntegrationEvents`.

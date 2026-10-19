@@ -14,6 +14,7 @@ public sealed class RoadmapWriteInputSnapshotTests
         using var initError = new StringWriter(CultureInfo.InvariantCulture);
         (await RepoConfigToolApplication.Run(["init", "--root", workspace.RootPath], initOutput, initError, workspace.RootPath, TestContext.Current.CancellationToken)).ShouldBe(0);
         var snapshot = RoadmapWriteInputSnapshot.Capture(workspace.RootPath);
+        var deletedPath = Path.Combine(workspace.RootPath, "roadmap", "config.json");
         workspace.DeleteFile("roadmap/config.json");
         Action verify = snapshot.Verify;
 
@@ -22,6 +23,6 @@ public sealed class RoadmapWriteInputSnapshotTests
 
         // Assert
         exception.Message.ShouldContain("changed after the write plan was created", StringComparison.Ordinal);
-        exception.Message.ShouldContain("roadmap/config.json", StringComparison.Ordinal);
+        exception.Message.ShouldContain(deletedPath, StringComparison.Ordinal);
     }
 }

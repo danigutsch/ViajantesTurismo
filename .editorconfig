@@ -194,13 +194,6 @@ insert_final_newline = true
 end_of_line = lf
 insert_final_newline = true
 
-# Git hooks (shell scripts without extension)
-[scripts/{pre-commit,post-commit,prepare-commit-msg,commit-msg}]
-end_of_line = lf
-indent_size = 4
-indent_style = space
-insert_final_newline = true
-
 # EF migrations are generated infrastructure artifacts. Owner: Infrastructure maintainers.
 # Keep generated-shape exceptions here instead of editing migration files by hand; remove a rule
 # only when EF tooling stops generating that diagnostic for new migrations and snapshots.
