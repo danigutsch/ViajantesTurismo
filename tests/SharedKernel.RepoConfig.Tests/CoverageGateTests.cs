@@ -74,6 +74,14 @@ public sealed class CoverageGateTests
     }
 
     [Theory]
+    [InlineData("interface-symbols", 0)]
+    [InlineData("mixed-symbols", 1)]
+    [InlineData("unsupported-hash", 1)]
+    [InlineData("absolute-symbols", 0)]
+    [InlineData("stale-symbols", 1)]
+    [InlineData("executable-symbols", 1)]
+    [InlineData("space-path", 1)]
+    [InlineData("increment", 0)]
     [InlineData("duplicate", 1)]
     [InlineData("rename", 0)]
     [InlineData("delete", 0)]

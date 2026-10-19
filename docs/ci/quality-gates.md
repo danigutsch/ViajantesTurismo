@@ -30,7 +30,9 @@ with broader exclusions.
 
 ReportGenerator 5.5.11 merges Cobertura reports and produces HTML for inspection.
 The `Quality Gate` CI job downloads selected test-slice artifacts and runs without secrets,
-including on fork pull requests. Failed selection or tests fail the aggregate first.
+including on fork pull requests. Failed selection or tests fail the aggregate first. A locked
+restore and Release build of the full solution also cover samples and benchmarks outside test
+dependency graphs. Each collected project writes into its own temporary report directory.
 
 ## Changed-code policy
 
@@ -40,7 +42,11 @@ trends; selected slices do not represent repository-wide trends.
 
 The C# `verify-coverage` command consumes merged Cobertura and a zero-context Git diff. It handles
 duplicate line and branch observations and rejects malformed reports, malformed diffs, and missing
-changed-source evidence. Its JSON output defaults to `TestResults/coverage-gate.json`.
+changed-source evidence. A file without a coverage entry is exempt only when Release portable
+PDBs positively identify the current source checksum and contain no executable sequence points
+for it. Missing, stale, conflicting, or executable symbol evidence still fails. This supports
+interface-only files without hiding uninstrumented application code. Its JSON output defaults
+to `TestResults/coverage-gate.json`.
 
 ```bash
 # Restore and build before collection
@@ -48,6 +54,9 @@ dotnet restore ViajantesTurismo.slnx --locked-mode
 dotnet build ViajantesTurismo.slnx --no-restore
 dotnet tool restore
 bash scripts/run-tests-with-coverage.sh
+
+# Build current Release symbols for non-executable source evidence
+dotnet build ViajantesTurismo.slnx -c Release --no-restore
 
 # Replace origin/main with the actual comparison base when reproducing a CI run
 git -c core.quotePath=false diff --no-ext-diff --unified=0 --find-renames \
