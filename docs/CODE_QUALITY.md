@@ -236,20 +236,13 @@ Preferred patterns:
 
 Keep suppressions narrow and do not use guard clauses instead of domain validation.
 
-### Sonar analysis layers
+### Build analysis and coverage gates
 
-The repository uses a three-layer Sonar model:
-
-- **Build-time analyzer package**: `SonarAnalyzer.CSharp` is referenced centrally through
-  `Directory.Packages.props` and `Directory.Build.props` so C# projects across the repository,
-  including tests, get local Roslyn diagnostics during ordinary builds. Test projects still set
-  `SonarQubeTestProject=true` in `tests/Directory.Build.props` so hosted SonarCloud classifies
-  them as test scope. Low-signal rules for BDD step-definition patterns remain narrowly scoped via
-  `.editorconfig`.
-- **IDE connected mode**: VS Code uses the Sonar connected-mode settings in `.vscode/settings.json`
-  to align local issue visibility with the hosted project configuration.
-- **Hosted quality gate**: CI still runs the repo-pinned `dotnet-sonarscanner` path described in
-  `docs/ci/sonarcloud.md`.
+The SDK analyzers use `AnalysisLevel=latest`, `AnalysisMode=All`, and warnings as errors.
+SharedKernel analyzers and architecture checks remain enabled. SonarAnalyzer and SonarCloud
+have been removed; this does not reproduce every Sonar diagnostic, cognitive-complexity metric,
+duplication metric, or issue classification. See [quality gates](ci/quality-gates.md) for
+removed rules, coverage policy, and the branch-protection migration.
 
 ### NuGet audit and restore policy
 
@@ -555,51 +548,28 @@ All quality tools have VS Code extensions installed for real-time feedback:
 
 ## Test Coverage Tools
 
-### Microsoft Code Coverage Configuration
+### Coverlet MTP configuration
 
-Test coverage is collected using **Microsoft Testing Platform (MTP)** with the
-[`Microsoft.Testing.Extensions.CodeCoverage`](https://learn.microsoft.com/dotnet/core/testing/unit-testing-platform-extensions-code-coverage)
-extension (referenced in all test projects). Settings are defined in `coverage.settings.xml` at the solution root.
+`coverlet.MTP` 10.1.0 collects Cobertura through Microsoft.Testing.Platform.
+`tests/testconfig.json` is authoritative for collection exclusions. Compiler-generated async
+and iterator code stays included. Coverage of separate AppHost child processes is not automatic;
+missing evidence for changed source fails the gate. See [quality gates](ci/quality-gates.md).
 
-See [xUnit v3 Code Coverage with MTP](https://xunit.net/docs/getting-started/v3/code-coverage-with-mtp) for the
-official guide.
+### Running tests with coverage
 
-**Key Configuration:**
-
-- **Format**: `cobertura` (XML format for CI/CD integration)
-- **Output**: MTP assigns each test project a unique Cobertura filename in a run-specific
-  `TestResults/coverage.*` directory
-- **Include**: All `ViajantesTurismo.*` assemblies
-- **Exclude**:
-    - Generated files
-    - Test projects (`*Tests.dll`)
-    - Migrations
-    - AppHost project
-
-### Running Tests with Coverage
-
-**Available coverage switches** (passed after `--` to the test host):
-
-| Switch | Purpose |
-| --- | --- |
-| `--coverage` | Enable code coverage collection (required) |
-| `--coverage-output-format` | Output format: `coverage`, `xml`, or `cobertura` |
-| `--coverage-output` | Output filename; do not use for multi-project runs |
-| `--coverage-settings` | Path to XML settings file (e.g. `coverage.settings.xml`) |
-
-**Collect coverage:**
+Restore and build first, then collect and aggregate:
 
 ```bash
+dotnet tool restore
 bash scripts/run-tests-with-coverage.sh
 ```
 
-The helper runs coverage with a dedicated `--results-directory`, leaves `--coverage-output`
-unset so parallel projects cannot overwrite one another, and generates
-`TestResults/CoverageReport/index.html` with the repository-pinned ReportGenerator tool.
+The helper uses a run-specific results directory and the `--coverlet` test-host switch.
+Reports from parallel projects remain separate until ReportGenerator creates merged Cobertura
+and `TestResults/CoverageReport/index.html`. Use the repository helper rather than old
+Microsoft collector switches such as `--coverage` or `--coverage-settings`.
 
-**Or use the VS Code task:**
-
-Run the "test with coverage" task from the Command Palette (Ctrl+Shift+P > Tasks: Run Task).
+The VS Code "test with coverage" task runs the same helper.
 
 ### Coverage Reports
 

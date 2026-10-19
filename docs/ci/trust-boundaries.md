@@ -19,7 +19,7 @@ write-scoped GitHub token permissions.
 | Workflow | Trigger classes | Code trust level | Token/secrets posture | Notes |
 | --- | --- | --- | --- | --- |
 | `ci.yml` validation slices | `pull_request`, `merge_group`, `push`, `workflow_dispatch` | Fork PRs untrusted; same-repo branches trusted | Read-only `contents`, plus `pull-requests: read` where needed; no write scopes in test jobs | Build/test jobs can execute PR code but should stay read-only. |
-| `ci.yml` SonarCloud | `pull_request`, `merge_group`, `push`, `workflow_dispatch` | Same-repo branches trusted; fork PRs untrusted | Uses `SONAR_TOKEN` and `GITHUB_TOKEN`; fork PRs must skip secret-dependent steps | This is the main secret-bearing CI boundary. |
+| `ci.yml` Quality Gate | `pull_request`, `merge_group`, `push`, `workflow_dispatch` | Fork PRs untrusted; same-repo branches trusted | Read-only `contents`; no analysis secrets | Coverage validation runs for forks too; checkout does not persist credentials. |
 | `dependency-review.yml` | `pull_request`, `merge_group` | PR code not executed as shell logic | Read-only `contents` | Uses GitHub's dependency review action on manifest diffs. |
 | `actionlint.yml` | PRs touching workflow files, `push main`, `workflow_dispatch` | Fork PRs untrusted; same-repo branches trusted | Read-only `contents`; no secrets | Downloads pinned tooling but does not mutate repo state. |
 | `secret-scan.yml` scan job | `pull_request`, `merge_group`, `push`, `workflow_dispatch` | Fork PRs untrusted; same-repo branches trusted | Read-only `contents`; no write scopes | Produces SARIF artifact in a low-privilege job. |
@@ -36,9 +36,8 @@ write-scoped GitHub token permissions.
   itself.
 - Repository-mutation automation (`sync-labels.yml`) is limited to `push` on `main` and
   manual dispatch, which keeps fork pull requests out of that write path.
-- The main remaining trust-boundary clarification needed in CI is the SonarCloud path:
-  fork pull requests do not receive `SONAR_TOKEN`, so the workflow should skip
-  secret-dependent analysis explicitly instead of failing during configuration validation.
+- Quality aggregation no longer sends source-analysis data to SonarCloud or requires its token.
+  Coverage artifacts remain untrusted inputs and are validated by the repository tool.
 
 ## Recommended baseline
 

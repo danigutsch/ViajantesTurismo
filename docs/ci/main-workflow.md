@@ -8,7 +8,7 @@ Operational details for the primary GitHub Actions workflow in
 The CI workflow runs on pull request activity (`opened`, `edited`, `synchronize`,
 `reopened`, and `ready_for_review`), every push to `main`, on merge queue checks
 (`merge_group`), and on `workflow_dispatch`. It defines multiple test slices, a version
-calculation job, a SonarCloud aggregation job, a lint job, and the shared change-detection gate.
+calculation job, a repository-owned coverage aggregation job, a lint job, and the shared change-detection gate.
 
 The workflow-level concurrency policy cancels stale runs for non-`main` refs but preserves
 in-flight `main` runs. This keeps pull request iteration responsive while ensuring the
@@ -83,9 +83,7 @@ merge gate without delaying unrelated test slices.
 
 This is the required non-secret aggregate in the `main` branch-protection rule. It waits for the
 test-slice matrix and Windows OpenAPI validation before succeeding. The component rows and Windows
-job remain parallel; the aggregate only reports their combined result. Because it does not need
-SonarCloud credentials, it blocks a failing test slice on fork pull requests even when
-`SonarCloud` is intentionally skipped.
+job remain parallel; the aggregate only reports their combined result. It uses no analysis secrets and blocks a failing test slice on fork pull requests.
 
 NuGet lock files (`packages.lock.json`) are committed for the projects in this repository so
 that CI can combine `actions/setup-dotnet` built-in caching with locked-mode restore. This
@@ -111,17 +109,16 @@ all slices.
 
 The generated project-level plan is uploaded as `ci-selected-test-projects` for timing and coverage
 evaluation. CI currently uses it to decide which complete slices run, while each active row still
-executes its checked-in source manifest. This preserves repository-wide Sonar coverage semantics;
-project-level enforcement remains deferred until selected coverage can be combined without making
-unaffected source appear uncovered.
+executes its checked-in source manifest. Changed-code coverage is checked against the artifacts from those active slices;
+full-run coverage trends are kept separate from partial selections.
 
 Test-slice project membership is now centralized under `scripts/ci-test-slices/*.txt` so the
-restore, build, test, and Sonar coverage inputs for each slice stay aligned instead of
+restore, build, test, and coverage inputs for each slice stay aligned instead of
 duplicating project lists in multiple workflow locations.
 
 Multi-project slice manifests restore through one temporary solution. This lets MSBuild schedule
 the selected restore graph in parallel while preserving locked-mode restore and slice isolation.
-Jobs that invoke only project-based tools skip `dotnet tool restore`; SonarCloud and release
+Jobs that invoke only project-based tools skip `dotnet tool restore`; coverage aggregation and release
 preparation retain local-tool restore because they use manifest tools.
 
 Project order in those slice files is also a scheduling hint for bounded local runs: keep slower
@@ -130,7 +127,7 @@ projects first so the parallel test worker pool does not leave long-running proj
 Fast Validation is split into two fixed 28-project execution shards. Run `30085894084` measured the
 former single row at about 138 seconds of setup plus 518 seconds for build, OpenAPI preparation, and
 coverage tests. The split duplicates setup but allows those phases to proceed on two runners while
-the stable `fast_validation_required` gate, `Build and Test` aggregate, and Sonar artifact pattern
+the stable `fast_validation_required` gate, `Build and Test` aggregate, and coverage artifact pattern
 continue to represent one logical lane.
 
 The shard containing all three HTTP contract projects prepares Admin, Catalog, and Branding OpenAPI
@@ -164,33 +161,24 @@ must review regenerated locks and follow the canonical
 > `SSL_CERT_DIR=$HOME/.aspnet/dev-certs/trust` via `$GITHUB_ENV` so that .NET HTTP
 > clients in the test run trust the per-user dev certificate.
 
-### SonarCloud
+### Quality Gate
 
 | Attribute | Value |
 | --- | --- |
-| Job key | `sonarcloud` |
-| Job name | `SonarCloud` |
+| Job key | `quality-gate` |
+| Job name | `Quality Gate` |
 | Runner | Repository CI baseline |
 
-**Steps:**
+The job requires successful change detection and test slices. For build-relevant changes it
+merges selected slice Cobertura reports with ReportGenerator and uploads `quality-evidence`.
+Pull requests and merge groups run the C# `verify-coverage` command against a zero-context diff,
+enforcing 80% combined coverage of changed executable lines and conditions. Missing or malformed
+evidence fails. Full runs publish trends without pretending to enforce a global 80% threshold.
+Documentation-only changes use the lightweight success path.
 
-1. Wait for all validation slices.
-2. For a documentation-only pull request, resolve the required check through a lightweight skip
-   step.
-3. Checkout repository and validate SonarCloud configuration.
-4. Restore repository prerequisites and cache SonarCloud packages.
-5. Download all `ci-test-slice-*-results` artifacts from matrix rows that actually ran.
-6. Generate the aggregated `sonar-coverage.xml` and HTML coverage report from the slice
-   artifacts.
-7. Run `bash scripts/run-sonar-analysis.sh` in reuse mode so SonarScanner performs a fresh
-   build and end step but does not rerun tests.
-8. Publish a GitHub summary from `TestResults/sonar-analysis.log` that includes the
-   hosted quality gate status, repository-owned new issue policy status, SonarCloud link,
-   warning count, and captured phase timings, then upload the coverage report,
-   `sonar-coverage`, `sonar-analysis-log`, and `sonar-analysis-manifest` artifacts.
-
-This job remains the dedicated required `SonarCloud` check, but it now aggregates coverage
-from the parallel test slices before performing hosted analysis.
+This job requires no Sonar token or other analysis secret and runs for fork pull requests.
+See [quality gates](quality-gates.md) for analysis gaps, child-process coverage limitations,
+and the required remote branch-protection transition.
 
 ### Lint
 
@@ -207,65 +195,18 @@ from the parallel test slices before performing hosted analysis.
 3. On non-pull-request runs, lint the full repository Markdown scope with `DavidAnson/markdownlint-cli2-action` using the bundled Node.js runtime.
 4. Run `bash scripts/lint-all.sh`.
 
-## Recommended workflow evolution
+## Workflow evolution
 
-The previous split between `.github/workflows/ci.yml` and `.github/workflows/sonar.yml`
-duplicated expensive setup, build, Playwright installation, test, and coverage work on the
-same pull requests and on the subsequent merge commit to `main`.
+Validation remains consolidated in one primary workflow: select changes, execute independent
+slices, aggregate coverage, and report required checks. The historical hosted Sonar analysis
+has been replaced by repository-owned SDK analysis and changed-code coverage; no scanner-wrapped
+rebuild or hosted analysis credentials are needed.
 
-After reviewing current GitHub Actions and SonarQube Cloud guidance, the repository now
-uses the recommended consolidated model: SonarCloud analysis runs inside the main
-validation workflow instead of trying to reuse build artifacts across separate workflows.
+Pull-request validation and post-merge `main` validation serve separate purposes: the latter
+checks the actual merged branch. Keep `merge_group` enabled and preserve in-flight `main` runs.
+Never use `pull_request_target` to execute untrusted pull-request build or test code.
 
-### Recommendation summary
+A maintainer must update the remote required check from `SonarCloud` to `Quality Gate` only
+after the replacement passes. Workflow edits alone do not change branch protection.
 
-- keep validation on both pull requests targeting `main` and pushes to `main`
-- move SonarScanner for .NET execution into the same workflow that performs build, test,
-  and coverage collection
-- keep `Lint` as an independent job if separate status visibility remains useful
-- add the `merge_group` trigger if merge queue is enabled for the repository
-- keep essential SonarCloud configuration in-repo when UI-level administration is limited
-  on the current plan, and prefer UI settings only when they are actually available and
-  sustainable
-
-### Why this is the recommended direction
-
-For .NET repositories, SonarScanner is designed around a `begin` → `build` →
-`test/coverage` → `end` flow. Reusing artifacts from a separate CI workflow would reduce
-YAML duplication at best, but it would not remove the requirement to run a Sonar-wrapped
-build. Consolidating the build, test, coverage, and Sonar steps into one validation
-workflow removes the duplicated runner work while keeping the analysis model aligned with
-Sonar's recommended usage.
-
-The second run after merge is still expected and desirable. GitHub Actions treats
-`pull_request` and `push` as separate events, so a validation run on the PR and a
-follow-up validation run on the merge commit to `main` are normal. The post-merge run
-confirms the actual branch state rather than only the pre-merge PR state.
-
-### Operational guidance
-
-- reusable workflows are appropriate for reducing YAML duplication, but they do not
-  eliminate the compute cost of repeated build/test execution
-- `workflow_run` chaining is not the preferred solution for this repository's SonarCloud
-  path because it adds complexity and security considerations without solving the
-  SonarScanner for .NET build coupling
-- `pull_request_target` should not be used for build, test, or Sonar analysis of
-  untrusted pull request code
-- existing workflow-level `concurrency` remains appropriate for canceling stale runs on
-  the same ref, but `main` should be exempt from cancellation so post-merge validation is
-  not interrupted
-
-### Recovery path for missing PR-context checks
-
-See [Governance](governance.md#recovery-for-missing-pr-checks).
-
-### Recommended target state
-
-The current target state is a single primary validation workflow that:
-
-1. detects docs-only and path-scoped changes
-2. runs fast, integration, mediator-heavy, and system-test slices in parallel when needed
-3. aggregates coverage from those slices into one hosted SonarCloud analysis job
-4. continues to run on pull requests to `main`, pushes to `main`, and manual dispatch
-5. adds `merge_group` coverage if merge queue is adopted
-6. preserves required check names expected by branch protection
+For missing PR-context checks, see [Governance](governance.md#recovery-for-missing-pr-checks).

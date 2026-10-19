@@ -9,8 +9,8 @@ The current CI workflow already provides:
 
 - required-check level job names
 - per-slice artifacts
-- GitHub step summaries for skip paths and SonarCloud
-- phase timing files for slices and SonarCloud
+- GitHub step summaries for skip paths
+- phase timing files for slices
 
 That is a solid base, but the output model is still split across:
 
@@ -96,28 +96,20 @@ Implication for this repo:
 
 - skip steps append short summary notes to `GITHUB_STEP_SUMMARY`
 - `scripts/run-ci-test-slice.sh` appends a small timing table for each slice
-- `scripts/write-github-sonar-summary.sh` emits the richest current summary:
-    - validation outcome
-    - quality gate status
-    - SonarCloud link
-    - warning count
-    - phase timings
-    - parse-warning section
-    - next-place-to-look guidance on failure
+- changed-code coverage emits a result and JSON evidence through `verify-coverage`
 
 ### Machine-facing surfaces
 
 - slice timing files: `TestResults/<slice>-phase-timings.tsv`
-- Sonar timing file: `TestResults/ci-phase-timings.tsv`
 - per-slice test results artifacts
 - per-slice diagnostics artifacts on failure
-- Sonar coverage and Sonar log artifacts
+- `quality-evidence`: merged coverage, diff, and threshold-result JSON
 
 ### Current gaps
 
-- timing schemas are inconsistent between slice and Sonar outputs
+- timing schemas need consistent interpretation across slices
 - there is no single machine-readable CI manifest for the whole run
-- summaries are uneven: Sonar is rich, slice summaries are sparse
+- slice summaries remain sparse
 - diagnostics are useful but not yet normalized for machine consumption
 - console output still mixes progress output and diagnostic output in a mostly free-form way
 
@@ -166,8 +158,8 @@ append-only timing data if the schema is kept consistent.
 
 ### Phase 1: Normalize existing outputs
 
-- align slice and Sonar timing schemas
-- standardize failure summary sections across slice and Sonar helpers
+- align slice timing schemas
+- standardize failure summary sections across slice and coverage helpers
 - standardize "next place to look" guidance
 
 ### Phase 2: Add a machine-readable manifest

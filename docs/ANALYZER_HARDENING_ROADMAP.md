@@ -23,7 +23,9 @@ The repository already has a stronger analyzer baseline than when this roadmap b
 
 - `Directory.Build.props` enables `TreatWarningsAsErrors`, `CodeAnalysisTreatWarningsAsErrors`,
   `EnforceCodeStyleInBuild`, `AnalysisLevel=latest`, and `AnalysisMode=All`.
-- `SonarAnalyzer.CSharp` is referenced centrally for ordinary builds.
+- SDK 10.0.402 and SharedKernel analyzers provide ordinary build diagnostics.
+- SonarAnalyzer and SonarCloud are retired; [quality gates](ci/quality-gates.md) records
+  removed rules and the analysis gaps that are not reproduced.
 - `.editorconfig` owns most scoped severity tuning and exception policy, while test-project-wide
   exceptions still include a small `NoWarn` set in `tests/Directory.Build.props`.
 
@@ -68,7 +70,7 @@ rather than a greenfield analyzer implementation plan.
 
 ## Canonical severity policy
 
-`.editorconfig` is the canonical severity matrix for C#, style, Sonar, and SharedKernel analyzer
+`.editorconfig` is the canonical severity matrix for C#, style, and SharedKernel analyzer
 policy. Project files and `Directory.Build.props` can temporarily carry approved `NoWarn` entries
 only when the exception is tracked by this roadmap and guarded by architecture tests.
 
@@ -117,7 +119,6 @@ The matrix below focuses on the high-value rules and families that matter to rep
 | Stream cancellation semantics | `SKMED007`, `SKMED008` | `SharedKernel.Mediator.Analyzers` | Adopted | `warning` | `.editorconfig`-tunable | Keep active |
 | CQRS strict handler-to-handler send | `SKMED500` | `SharedKernel.Mediator.Analyzers` | Adopted | `warning` | disabled by config if needed | Keep active |
 | General built-in code style | selected `IDE*` rules such as `IDE0005`, `IDE0028` | Built-in Roslyn style analyzers | Adopted selectively | `.editorconfig`-owned severities | `.editorconfig`-owned | Keep tuning by signal |
-| Sonar repository rules | selected `S*` rules | `SonarAnalyzer.CSharp` | Adopted selectively | mixed | narrow file-scope suppressions in tests/steps | Keep scoped and documented |
 
 ## Fixer-first rollout workflow
 
@@ -126,7 +127,7 @@ Every analyzer hardening issue should follow the same remediation order:
 1. Inventory current diagnostics and suppression surfaces.
 2. Run `dotnet format analyzers` for the target diagnostic when the rule is fixable by the SDK or
    installed analyzer packages.
-3. Prefer existing Roslyn, IDE, Sonar, or package-provided code fixes before manual edits.
+3. Prefer existing Roslyn, IDE, or package-provided code fixes before manual edits.
 4. If violations are recurring and mechanical but no safe existing fixer exists, create or extend a
    SharedKernel code-fix package before raising severity.
 5. If the rule is generated-code-only or a one-off exception, document the exception instead of
@@ -320,7 +321,7 @@ Current package split:
 When adopting or tightening analyzer rules:
 
 1. Start with inventory.
-   Identify whether the rule is already covered by built-in analyzers, Sonar, SharedKernel style,
+   Identify whether the rule is already covered by built-in analyzers, SharedKernel style,
    SharedKernel testing, mediator analyzers, or architecture tests.
 2. Prefer the smallest enforcement mechanism.
    Do not build a new custom analyzer if a built-in rule plus scoped configuration already solves
@@ -356,7 +357,7 @@ When adopting or tightening analyzer rules:
 - Treat the shipped style, testing, and cancellation analyzer work as completed slices under that
   roadmap.
 - Prefer adopting and tuning existing analyzers before inventing more custom rules.
-- Keep custom analyzers focused on conventions the built-in and Sonar layers do not enforce well.
+- Keep custom analyzers focused on conventions the built-in layers do not enforce well.
 - Keep analyzer/code-fix packages split by consumer capability and optional dependency needs.
 
 ## References

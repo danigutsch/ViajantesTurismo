@@ -1,0 +1,11 @@
+{
+  "platformOptions": {
+    "Coverlet": {
+      "exclude": "[ViajantesTurismo.AppHost]*,[*.Tests.*]*,[*Tests]*",
+      "excludeByFile": "**/Migrations/**,**/obj/**,**/*.g.cs,**/*.generated.cs",
+      "excludeByAttribute": "ExcludeFromCodeCoverageAttribute,GeneratedCodeAttribute",
+      "includeTestAssembly": false,
+      "format": "cobertura"
+    }
+  }
+}

@@ -418,8 +418,8 @@ jobs:
           path: artifacts/api-compat/**
           retention-days: 14
 
-  sonarcloud:
-    name: SonarCloud
+  quality-gate:
+    name: Quality Gate
     needs:
       - detect-changes
       - test-slices
@@ -428,183 +428,74 @@ jobs:
     timeout-minutes: 10
     permissions:
       contents: read
-      pull-requests: read
-    env:
-      SONAR_ORGANIZATION: ${{ vars.SONAR_ORGANIZATION }}
-      SONAR_PROJECT_KEY: ${{ vars.SONAR_PROJECT_KEY }}
     steps:
-      - name: Determine SonarCloud trust boundary
-        id: sonar-boundary
+      - name: Require successful change selection and tests
         shell: bash
         env:
-          EVENT_NAME: ${{ github.event_name }}
-          HEAD_REPO: ${{ github.event.pull_request.head.repo.full_name || github.repository }}
-          REPOSITORY: ${{ github.repository }}
+          SELECTION_RESULT: ${{ needs.detect-changes.result }}
+          TEST_RESULT: ${{ needs.test-slices.result }}
         run: |
-          if [[ "${EVENT_NAME}" == "pull_request" && "${HEAD_REPO}" != "${REPOSITORY}" ]]; then
-            echo "can_run=false" >> "$GITHUB_OUTPUT"
-            echo "reason=fork-pull-request" >> "$GITHUB_OUTPUT"
-          else
-            echo "can_run=true" >> "$GITHUB_OUTPUT"
-            echo "reason=trusted-ref" >> "$GITHUB_OUTPUT"
-          fi
-
-      - name: Skip SonarCloud for fork pull requests
-        if: ${{ steps.sonar-boundary.outputs.can_run != 'true' }}
-        shell: bash
-        run: |
-          echo "SonarCloud analysis is skipped for fork pull requests because SONAR_TOKEN is not exposed to untrusted forks."
-          {
-            echo "## SonarCloud"
-            echo
-            echo "SonarCloud analysis was skipped because this pull request comes from a fork and the job depends on repository secrets."
-          } >> "$GITHUB_STEP_SUMMARY"
-
-      - name: Skip SonarCloud for docs-only changes
-        if: ${{ steps.sonar-boundary.outputs.can_run == 'true' && needs.detect-changes.outputs.build_required != 'true' }}
-        shell: bash
-        run: |
-          echo "SonarCloud analysis was skipped because only documentation changes were detected."
-          {
-            echo "## SonarCloud"
-            echo
-            echo "Only documentation changes were detected, so hosted analysis was skipped by design."
-          } >> "$GITHUB_STEP_SUMMARY"
+          test "$SELECTION_RESULT" = success
+          test "$TEST_RESULT" = success
 
       - name: Checkout repository
-        if: ${{ steps.sonar-boundary.outputs.can_run == 'true' && needs.detect-changes.outputs.build_required == 'true' }}
+        if: ${{ needs.detect-changes.outputs.build_required == 'true' }}
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
         with:
           fetch-depth: 0
           persist-credentials: false
 
-      - name: Validate SonarCloud configuration
-        if: ${{ steps.sonar-boundary.outputs.can_run == 'true' && needs.detect-changes.outputs.build_required == 'true' }}
-        env:
-          SONAR_ORGANIZATION: ${{ vars.SONAR_ORGANIZATION }}
-          SONAR_PROJECT_KEY: ${{ vars.SONAR_PROJECT_KEY }}
-          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
-        run: bash scripts/validate-sonar-analysis-config.sh
-
-      - name: Set up CI prerequisites
-        if: ${{ steps.sonar-boundary.outputs.can_run == 'true' && needs.detect-changes.outputs.build_required == 'true' }}
+      - name: Set up quality tooling
+        if: ${{ needs.detect-changes.outputs.build_required == 'true' }}
         uses: ./.github/actions/setup-ci-prerequisites
-
-      - name: Cache SonarCloud packages
-        if: ${{ steps.sonar-boundary.outputs.can_run == 'true' && needs.detect-changes.outputs.build_required == 'true' }}
-        uses: actions/cache@27d5ce7f107fe9357f9df03efb73ab90386fccae # v5.0.5
         with:
-          path: ~/.sonar/cache
-          key: ${{ runner.os }}-sonarcloud-cache-v1
-          restore-keys: |
-            ${{ runner.os }}-sonarcloud-cache-
+          restore-targets: tools/SharedKernel.RepoConfig.Tool/SharedKernel.RepoConfig.Tool.csproj
+          trust-dev-certificate: "false"
 
-      - name: Download test slice results
-        if: ${{ steps.sonar-boundary.outputs.can_run == 'true' && needs.detect-changes.outputs.build_required == 'true' && needs.test-slices.result == 'success' }}
+      - name: Download test slice coverage
+        if: ${{ needs.detect-changes.outputs.build_required == 'true' }}
         uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
         with:
           pattern: ci-test-slice-*-results
           path: artifacts
           merge-multiple: false
 
-      - name: Generate Sonar coverage report from test slices
-        if: ${{ steps.sonar-boundary.outputs.can_run == 'true' && needs.detect-changes.outputs.build_required == 'true' && needs.test-slices.result == 'success' }}
-        run: bash scripts/generate-sonar-coverage-report.sh
-
-      - name: Run SonarCloud analysis
-        if: ${{ steps.sonar-boundary.outputs.can_run == 'true' && needs.detect-changes.outputs.build_required == 'true' && needs.test-slices.result == 'success' }}
-        id: run-sonar
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
-          SONAR_ANALYSIS_SKIP_TESTS: true
-          SONAR_PULL_REQUEST_KEY: ${{ github.event.pull_request.number }}
-        run: |
-          set -o pipefail
-          mkdir -p TestResults
-          bash scripts/run-sonar-analysis.sh 2>&1 | tee TestResults/sonar-analysis.log
-
-      - name: Publish SonarCloud summary to GitHub
-        if: ${{ always() && steps.run-sonar.outcome != 'skipped' }}
-        env:
-          VALIDATION_OUTCOME: ${{ steps.run-sonar.outcome }}
-        run: bash scripts/write-github-sonar-summary.sh "$VALIDATION_OUTCOME"
-
-      - name: Upload coverage report
-        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
-        if: ${{ always() && steps.run-sonar.outcome != 'skipped' }}
-        with:
-          if-no-files-found: ignore
-          name: coverage-report
-          path: TestResults/CoverageReport/**
-          retention-days: 7
-
-      - name: Upload Sonar coverage input
-        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
-        if: ${{ always() && steps.run-sonar.outcome != 'skipped' }}
-        with:
-          if-no-files-found: ignore
-          name: sonar-coverage
-          path: TestResults/sonar-coverage.xml
-          retention-days: 7
-
-      - name: Upload Sonar analysis log
-        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
-        if: ${{ always() && steps.run-sonar.outcome != 'skipped' }}
-        with:
-          if-no-files-found: ignore
-          name: sonar-analysis-log
-          path: TestResults/sonar-analysis.log
-          retention-days: 7
-
-      - name: Upload Sonar policy responses
-        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
-        if: ${{ always() && steps.run-sonar.outcome != 'skipped' }}
-        with:
-          if-no-files-found: ignore
-          name: sonar-policy-responses
-          path: TestResults/sonar-policy-*.json
-          retention-days: 7
-
-      - name: Upload Sonar analysis manifest
-        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
-        if: ${{ always() && steps.run-sonar.outcome != 'skipped' }}
-        with:
-          if-no-files-found: ignore
-          name: sonar-analysis-manifest
-          path: TestResults/ci-validation-manifest.json
-          retention-days: 7
-
-      - name: Report SonarCloud status
+      - name: Merge coverage reports
+        if: ${{ needs.detect-changes.outputs.build_required == 'true' }}
         shell: bash
         run: |
-          if [[ "${{ steps.sonar-boundary.outputs.can_run }}" != "true" ]]; then
-              echo "SonarCloud analysis was skipped for a fork pull request because the job depends on repository secrets."
-              exit 0
-          fi
+          dotnet tool run reportgenerator \
+            "-reports:artifacts/**/*.cobertura*.xml" \
+            "-targetdir:TestResults/CoverageReport" \
+            "-reporttypes:Html;Cobertura"
+          test -s TestResults/CoverageReport/Cobertura.xml
 
-          if [[ "${{ needs.detect-changes.result }}" != "success" ]]; then
-              echo "Detect Changes failed." >&2
-              exit 1
-          fi
+      - name: Enforce changed-code coverage
+        if: ${{ needs.detect-changes.outputs.build_required == 'true' && (github.event_name == 'pull_request' || github.event_name == 'merge_group') }}
+        shell: bash
+        env:
+          BASE_SHA: ${{ github.event.pull_request.base.sha || github.event.merge_group.base_sha }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha || github.event.merge_group.head_sha }}
+        run: |
+          test -n "$BASE_SHA"
+          test -n "$HEAD_SHA"
+          git -c core.quotePath=false diff --no-ext-diff --unified=0 --find-renames \
+            "$BASE_SHA...$HEAD_SHA" -- '*.cs' '*.razor' > TestResults/coverage-changes.patch
+          dotnet run --project tools/SharedKernel.RepoConfig.Tool -c Release --no-restore -- \
+            verify-coverage --report TestResults/CoverageReport/Cobertura.xml \
+            --diff TestResults/coverage-changes.patch
 
-          if [[ "${{ needs.detect-changes.outputs.build_required }}" != "true" ]]; then
-              echo "SonarCloud analysis was skipped because only documentation changes were detected."
-              exit 0
-          fi
-
-          if [[ "${{ needs.test-slices.result }}" != "success" ]]; then
-              echo "One or more test slices failed." >&2
-              exit 1
-          fi
-
-          if [[ "${{ steps.run-sonar.outcome }}" == "success" ]]; then
-              echo "SonarCloud analysis completed successfully after aggregating the test slices."
-              exit 0
-          fi
-
-          echo "SonarCloud analysis failed." >&2
-          exit 1
+      - name: Upload quality evidence
+        if: ${{ always() && needs.detect-changes.outputs.build_required == 'true' }}
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
+        with:
+          if-no-files-found: error
+          name: quality-evidence
+          path: |
+            TestResults/CoverageReport/**
+            TestResults/coverage-gate.json
+            TestResults/coverage-changes.patch
+          retention-days: 14
 
   lint:
     name: Lint

@@ -3,9 +3,8 @@
 set -euo pipefail
 
 coverage_args=(
-    --coverage
-    --coverage-output-format cobertura
-    --coverage-settings coverage.settings.xml
+    --coverlet
+    --coverlet-output-format cobertura
 )
 
 get_test_project_parallelism() {
@@ -93,7 +92,7 @@ main() {
     fi
 
     shopt -s globstar nullglob
-    local -a coverage_files=("${results_directory}"/**/*.cobertura.xml)
+    local -a coverage_files=("${results_directory}"/**/*.cobertura*.xml)
     shopt -u globstar nullglob
 
     if [[ ${#coverage_files[@]} -eq 0 ]]; then

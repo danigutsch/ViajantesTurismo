@@ -2,8 +2,6 @@
 
 [![CI](https://github.com/danigutsch/ViajantesTurismo/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/danigutsch/ViajantesTurismo/actions/workflows/ci.yml)
 [![Secret Scan](https://github.com/danigutsch/ViajantesTurismo/actions/workflows/secret-scan.yml/badge.svg?branch=main)](https://github.com/danigutsch/ViajantesTurismo/actions/workflows/secret-scan.yml)
-[![SonarCloud](https://sonarcloud.io/api/project_badges/measure?project=danigutsch_ViajantesTurismo&metric=alert_status)](https://sonarcloud.io/summary/new_code?id=danigutsch_ViajantesTurismo)
-[![Coverage](https://sonarcloud.io/api/project_badges/measure?project=danigutsch_ViajantesTurismo&metric=coverage)](https://sonarcloud.io/summary/new_code?id=danigutsch_ViajantesTurismo)
 [![License](https://img.shields.io/github/license/danigutsch/ViajantesTurismo)](https://github.com/danigutsch/ViajantesTurismo/blob/main/LICENSE.txt)
 
 A modern tourism agency application specialising in group bike tours around the world.
@@ -110,7 +108,6 @@ Optional local tools by task:
 CI-only tools by default:
 
 - Markdown/Gherkin/JSON/link lint containers and wrappers used by `bash scripts/lint-all.sh`
-- SonarCloud scanner and hosted quality-gate processing
 - dependency-review, secret-scanning, and workflow-governance tooling owned by GitHub Actions
 
 Devcontainer-provided tools:
@@ -348,8 +345,10 @@ for the workflow details and merge-method constraints.
 
 The required checks on `main` are documented in [docs/ci/governance.md](docs/ci/governance.md).
 The main CI test slices preserve their required check names and use lightweight success paths when
-path detection shows an expensive slice is not required. The required `SonarCloud` check includes
-the hosted quality gate plus the repository-owned new issue policy fallback.
+path detection shows an expensive slice is not required. The repository-owned `Quality Gate`
+aggregates coverage and enforces 80% coverage on changed executable lines and conditions.
+Switch the branch-protection requirement from `SonarCloud` only after the new check passes;
+see [quality gates](docs/ci/quality-gates.md) for migration limitations.
 
 To reproduce the core checks locally, run:
 
@@ -360,7 +359,7 @@ dotnet test --solution ViajantesTurismo.slnx
 
 For CI internals and maintainer-facing policy — including workflow structure, docs-only
 optimizations, artifact behavior, permissions, fork PR handling, branch protection, and
-SonarCloud operational details — see [docs/ci/overview.md](docs/ci/overview.md).
+local quality-gate details — see [docs/ci/overview.md](docs/ci/overview.md).
 
 ## API Endpoints
 

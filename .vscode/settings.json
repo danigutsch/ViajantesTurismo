@@ -50,10 +50,5 @@
     {
       "text": "Follow `docs/pull_request_template.md` when drafting pull request descriptions. Use the sections `Summary`, `Changes`, `Validation`, and `Checklist`. Preserve the checklist items, record which validation steps actually ran, and mark items that were not run with a brief reason."
     }
-  ],
-
-  "sonarlint.connectedMode.project": {
-    "connectionId": "danigutsch",
-    "projectKey": "danigutsch_ViajantesTurismo"
-  }
+  ]
 }
