@@ -30,6 +30,8 @@ existing `.NET`, Python, shell, or Docker path already covers the same need.
 - Link validation: repository-owned Python wrapper (`scripts/lint-links.sh`), with Docker
   fallback. It validates local Markdown links and enforces durable documentation link rules;
   it does not probe external URLs in PR gating.
+- Podman DNS preflight and its tests: repository-owned C# in `SharedKernel.RepoConfig.Tool` and
+  `SharedKernel.RepoConfig.Tests`; no extra runtime or container image is required.
 - Optional standalone tools such as `PSScriptAnalyzer`, `pwsh`, and `k6`: install only when
   needed for the specific task, using vendor-documented installation guidance.
 - Local k6 performance runs: prefer a user/system installed `k6` binary from a trusted package manager.

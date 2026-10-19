@@ -78,6 +78,8 @@ if [[ "${fix_mode}" == true ]]; then
 fi
 
 run_shellcheck "${shellcheck_targets[@]}"
+dotnet test --project tests/SharedKernel.RepoConfig.Tests/SharedKernel.RepoConfig.Tests.csproj \
+    --filter-class SharedKernel.RepoConfig.Tests.PodmanDnsPreflightCommandTests
 bash scripts/check-line-endings.sh
 dotnet run --project tools/SharedKernel.RepoConfig.Tool -- text-encoding --root .
 bash scripts/lint-json.sh
