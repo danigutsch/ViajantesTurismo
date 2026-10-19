@@ -159,6 +159,38 @@ directly on `PATH`.
 The Aspire dashboard URL is printed when the AppHost starts. Use it to inspect services, logs,
 traces, metrics, endpoints, and health status.
 
+## Public Web replicas
+
+Public Web supports an opt-in positive replica count through `Aspire:Replicas:PublicWeb`.
+The default is one process. For two local instances, use:
+
+```bash
+Aspire__Replicas__PublicWeb=2 dotnet tool run aspire run
+```
+
+Aspire's existing endpoint proxy balances requests between these processes. Public Web currently
+serves read-only static server-rendered pages without interactive circuits or background jobs,
+making it the first service suitable for this local scale-out check. Its health check and waits for
+Catalog and Branding remain in place. Invalid counts fail during AppHost model composition.
+See the [Aspire replica API](https://github.com/microsoft/aspire/blob/v13.6.1/src/Aspire.Hosting/ProjectResourceBuilderExtensions.cs).
+
+Multiple processes on one machine provide process redundancy and a way to test scale-out. They do
+not provide host or availability-zone failover: the local proxy, backend services, and databases
+remain shared points of failure. Production HA requires a deployment target that places replicas
+across independent hosts, health-aware ingress, and resilient shared dependencies. Deployment replica
+settings must be configured and verified for that target; this local setting alone does not establish
+production HA.
+
+Other services retain one instance until their coordination requirements have been addressed:
+
+| Service | Readiness work before replication |
+| --- | --- |
+| Management Web | Blazor circuit routing and reconnect behavior; shared authentication/data-protection state |
+| Catalog and Branding APIs | Cross-instance cache invalidation and shared enforcement of rate limits |
+| Admin API | Coordination of background retention jobs and shared enforcement of rate limits |
+| Integration Event Worker | Verify concurrent claiming, duplicate delivery handling, and cleanup ownership |
+| Databases and object storage | Provider-supported replication, backup, and failover rather than duplicate local containers |
+
 ## Local malware scanning
 
 ClamAV exposes only its private TCP `clamd` endpoint on port `3310`; it has no public endpoint or

@@ -31,6 +31,7 @@
     </ItemGroup>
 
     <ItemGroup>
+        <InternalsVisibleTo Include="ViajantesTurismo.ArchitectureTests" />
         <Content Include="Keycloak\**\*" CopyToOutputDirectory="PreserveNewest" />
     </ItemGroup>
 

@@ -1,3 +1,4 @@
+using Microsoft.Extensions.Configuration;
 using Projects;
 using ViajantesTurismo.Resources;
 
@@ -34,6 +35,7 @@ internal static class AppHostResourceExtensions
 
     /// <summary>Configuration key for Public Web canonical sitemap URLs.</summary>
     private const string PublicWebSitemapCanonicalOriginEnvironmentVariable = "PublicWeb__Sitemap__CanonicalOrigin";
+    private const string PublicWebReplicasConfigurationKey = "Aspire:Replicas:PublicWeb";
     private const string KeycloakImageRegistry = "quay.io";
     private const string KeycloakImageName = "keycloak/keycloak";
     private const string KeycloakImageTag = "26.7.0";
@@ -453,9 +455,16 @@ internal static class AppHostResourceExtensions
         IResourceBuilder<ProjectResource> catalogApiService,
         IResourceBuilder<ProjectResource> brandingApiService)
     {
+        var replicas = builder.Configuration.GetValue(PublicWebReplicasConfigurationKey, 1);
+        if (replicas < 1)
+        {
+            throw new InvalidOperationException($"{PublicWebReplicasConfigurationKey} must be a positive integer.");
+        }
+
         var publicWeb = builder.AddDevelopmentAspNetCoreProject<ViajantesTurismo_Public_Web>(ResourceNames.PublicWebApp);
 
         return publicWeb
+            .WithReplicas(replicas)
             .WithExternalHttpEndpoints()
             .WithEnvironment(PublicWebSitemapCanonicalOriginEnvironmentVariable, publicWeb.GetEndpoint("https"))
             .WithHttpHealthCheck(EndpointPaths.Health)
