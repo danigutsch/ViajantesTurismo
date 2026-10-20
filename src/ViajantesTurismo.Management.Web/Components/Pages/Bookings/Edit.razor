@@ -380,13 +380,13 @@ else if (_booking is not null)
         try
         {
             var outcome = await BookingsApi.GetBookingById(Id, CancellationToken.None);
-            if (outcome is { Kind: ContractCommandOutcomeKind.Succeeded, Value: { } booking })
+            if (outcome is { Kind: HttpOutcomeKind.Succeeded, Value: { } booking })
             {
                 _booking = booking;
                 SyncModelFromBooking();
                 await LoadCompanionChoices();
             }
-            else if (outcome.Kind == ContractCommandOutcomeKind.NotFound)
+            else if (outcome.Kind == HttpOutcomeKind.NotFound)
             {
                 _notFound = true;
             }
@@ -584,11 +584,11 @@ else if (_booking is not null)
         {
             var createDto = _paymentState.FormModel.ToDto();
             var outcome = await BookingsApi.RecordPayment(Id, createDto, CancellationToken.None);
-            if (outcome.Kind != ContractCommandOutcomeKind.Succeeded)
+            if (outcome.Kind != HttpOutcomeKind.Succeeded)
             {
-                if (outcome.Kind is ContractCommandOutcomeKind.UnexpectedStatus or
-                    ContractCommandOutcomeKind.TransportFailure or
-                    ContractCommandOutcomeKind.TimedOut)
+                if (outcome.Kind is HttpOutcomeKind.UnexpectedStatus or
+                    HttpOutcomeKind.TransportFailure or
+                    HttpOutcomeKind.TimedOut)
                 {
                     MarkPaymentResultUncertain();
                 }
@@ -718,7 +718,7 @@ else if (_booking is not null)
         try
         {
             var outcome = await CustomersApi.GetCustomers(CancellationToken.None, maxItems: MaxCompanionChoices);
-            if (outcome is { Kind: ContractCommandOutcomeKind.Succeeded, Value: { } customers })
+            if (outcome is { Kind: HttpOutcomeKind.Succeeded, Value: { } customers })
             {
                 _customers = customers;
                 _companionChoicesUnavailable = false;
@@ -740,7 +740,7 @@ else if (_booking is not null)
         try
         {
             var outcome = await BookingsApi.GetBookingById(Id, CancellationToken.None);
-            if (outcome is not { Kind: ContractCommandOutcomeKind.Succeeded, Value: { } refreshedBooking })
+            if (outcome is not { Kind: HttpOutcomeKind.Succeeded, Value: { } refreshedBooking })
             {
                 _refreshWarningMessage = "The change was saved, but we couldn't refresh the booking. Reload the page to see the latest calculated values.";
                 return false;
@@ -769,7 +769,7 @@ else if (_booking is not null)
         try
         {
             var outcome = await BookingsApi.GetBookingById(Id, CancellationToken.None);
-            if (outcome is not { Kind: ContractCommandOutcomeKind.Succeeded, Value: { } refreshedBooking })
+            if (outcome is not { Kind: HttpOutcomeKind.Succeeded, Value: { } refreshedBooking })
             {
                 _refreshWarningMessage = "Some changes may have been saved, but we couldn't refresh the booking. Reload the page before making another change.";
                 return;
@@ -800,7 +800,7 @@ else if (_booking is not null)
         try
         {
             var outcome = await action(CancellationToken.None);
-            if (outcome.Kind != ContractCommandOutcomeKind.Succeeded)
+            if (outcome.Kind != HttpOutcomeKind.Succeeded)
             {
                 _toast?.ShowError(HttpOutcomeUserMessage.For(
                     outcome.Kind,
@@ -829,7 +829,7 @@ else if (_booking is not null)
 
     private bool EnsureSucceeded(HttpOutcome outcome, string operationDescription)
     {
-        if (outcome.Kind == ContractCommandOutcomeKind.Succeeded)
+        if (outcome.Kind == HttpOutcomeKind.Succeeded)
         {
             return true;
         }

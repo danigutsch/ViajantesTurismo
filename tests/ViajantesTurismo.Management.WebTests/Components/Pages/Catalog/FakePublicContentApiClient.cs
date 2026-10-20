@@ -22,10 +22,10 @@ internal sealed class FakePublicContentApiClient : IPublicContentApiClient
         return Task.FromResult(ThrowOnGetContent
             ? new HttpOutcome<PublicContentDto[]>
             {
-                Kind = ContractCommandOutcomeKind.TransportFailure,
+                Kind = HttpOutcomeKind.TransportFailure,
                 Message = "HTTP transport failed."
             }
-            : ContractCommandOutcome.Succeeded(HttpStatusCode.OK, Content));
+            : HttpOutcomeMapper.Succeeded(HttpStatusCode.OK, Content));
     }
 
     public Task<HttpOutcome<PublicContentDto>> GetContent(string key, CancellationToken ct)
@@ -34,8 +34,8 @@ internal sealed class FakePublicContentApiClient : IPublicContentApiClient
 
         var content = Content.FirstOrDefault(entry => string.Equals(entry.Key, key, StringComparison.Ordinal));
         return Task.FromResult(content is null
-            ? ContractCommandOutcome.Status<PublicContentDto>(ContractCommandOutcomeKind.NotFound, HttpStatusCode.NotFound)
-            : ContractCommandOutcome.Succeeded(HttpStatusCode.OK, content));
+            ? HttpOutcomeMapper.Status<PublicContentDto>(HttpOutcomeKind.NotFound, HttpStatusCode.NotFound)
+            : HttpOutcomeMapper.Succeeded(HttpStatusCode.OK, content));
     }
 
     public Task<HttpOutcome<PublicContentDto>> SaveContent(string key, UpsertPublicContentRequest request, CancellationToken ct)
@@ -46,7 +46,7 @@ internal sealed class FakePublicContentApiClient : IPublicContentApiClient
         {
             return Task.FromResult(new HttpOutcome<PublicContentDto>
             {
-                Kind = ContractCommandOutcomeKind.ValidationProblem,
+                Kind = HttpOutcomeKind.ValidationProblem,
                 StatusCode = HttpStatusCode.BadRequest,
                 ValidationErrors = ValidationException.ValidationErrors
             });
@@ -71,6 +71,6 @@ internal sealed class FakePublicContentApiClient : IPublicContentApiClient
 
         Content = [saved];
 
-        return Task.FromResult(ContractCommandOutcome.Succeeded(HttpStatusCode.OK, saved));
+        return Task.FromResult(HttpOutcomeMapper.Succeeded(HttpStatusCode.OK, saved));
     }
 }

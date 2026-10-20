@@ -43,7 +43,7 @@ else
         try
         {
             var outcome = await CatalogApi.GetPublishedTours(requestAborted);
-            if (outcome is { Kind: ContractCommandOutcomeKind.Succeeded, Value: { } tours })
+            if (outcome is { Kind: HttpOutcomeKind.Succeeded, Value: { } tours })
             {
                 _tours = tours;
                 return;

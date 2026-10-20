@@ -79,7 +79,7 @@ public interface IBookingsApiClient
     /// </summary>
     /// <param name="id">The unique identifier of the booking to cancel.</param>
     /// <param name="ct">Cancellation token for the request.</param>
-    /// <returns>The command outcome returned by the API.</returns>
+    /// <returns>The HTTP outcome mapped by the client.</returns>
     Task<HttpOutcome> CancelBooking(Guid id, CancellationToken ct);
 
     /// <summary>
@@ -87,7 +87,7 @@ public interface IBookingsApiClient
     /// </summary>
     /// <param name="id">The unique identifier of the booking to confirm.</param>
     /// <param name="ct">Cancellation token for the request.</param>
-    /// <returns>The command outcome returned by the API.</returns>
+    /// <returns>The HTTP outcome mapped by the client.</returns>
     Task<HttpOutcome> ConfirmBooking(Guid id, CancellationToken ct);
 
     /// <summary>
@@ -95,7 +95,7 @@ public interface IBookingsApiClient
     /// </summary>
     /// <param name="id">The unique identifier of the booking to complete.</param>
     /// <param name="ct">Cancellation token for the request.</param>
-    /// <returns>The command outcome returned by the API.</returns>
+    /// <returns>The HTTP outcome mapped by the client.</returns>
     Task<HttpOutcome> CompleteBooking(Guid id, CancellationToken ct);
 
     /// <summary>

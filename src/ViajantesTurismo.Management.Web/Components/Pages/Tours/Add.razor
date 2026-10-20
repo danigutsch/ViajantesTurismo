@@ -168,14 +168,14 @@ Bike rental"/>
             };
 
             var outcome = await ToursApi.CreateTour(tour, CancellationToken.None);
-            if (outcome.Kind == ContractCommandOutcomeKind.ValidationProblem && outcome.ValidationErrors is not null)
+            if (outcome.Kind == HttpOutcomeKind.ValidationProblem && outcome.ValidationErrors is not null)
             {
                 _errorMessage = "Please correct the highlighted fields.";
                 EditContextValidationHelper.ApplyValidationErrors(_editContext, outcome.ValidationErrors);
                 return;
             }
 
-            if (outcome.Kind != ContractCommandOutcomeKind.Succeeded)
+            if (outcome.Kind != HttpOutcomeKind.Succeeded)
             {
                 _errorMessage = UserFacingErrorMessage.ForOperation("create the tour");
                 return;

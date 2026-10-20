@@ -11,7 +11,7 @@ internal static class DocumentClientOutcomeExtensions
         ArgumentNullException.ThrowIfNull(outcomeTask);
 
         var outcome = await outcomeTask.ConfigureAwait(false);
-        outcome.Kind.ShouldBe(ContractCommandOutcomeKind.Succeeded);
+        outcome.Kind.ShouldBe(HttpOutcomeKind.Succeeded);
         return outcome.Value.ShouldNotBeNull();
     }
 }

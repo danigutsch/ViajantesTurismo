@@ -1,18 +1,4 @@
 #nullable enable
-SharedKernel.HttpClients.ContractCommandOutcome
-SharedKernel.HttpClients.ContractCommandOutcomeKind
-SharedKernel.HttpClients.ContractCommandOutcomeKind.Conflict = 5 -> SharedKernel.HttpClients.ContractCommandOutcomeKind
-SharedKernel.HttpClients.ContractCommandOutcomeKind.EmptyBody = 6 -> SharedKernel.HttpClients.ContractCommandOutcomeKind
-SharedKernel.HttpClients.ContractCommandOutcomeKind.Forbidden = 4 -> SharedKernel.HttpClients.ContractCommandOutcomeKind
-SharedKernel.HttpClients.ContractCommandOutcomeKind.MalformedBody = 7 -> SharedKernel.HttpClients.ContractCommandOutcomeKind
-SharedKernel.HttpClients.ContractCommandOutcomeKind.NotFound = 2 -> SharedKernel.HttpClients.ContractCommandOutcomeKind
-SharedKernel.HttpClients.ContractCommandOutcomeKind.Succeeded = 0 -> SharedKernel.HttpClients.ContractCommandOutcomeKind
-SharedKernel.HttpClients.ContractCommandOutcomeKind.TimedOut = 10 -> SharedKernel.HttpClients.ContractCommandOutcomeKind
-SharedKernel.HttpClients.ContractCommandOutcomeKind.TransportFailure = 11 -> SharedKernel.HttpClients.ContractCommandOutcomeKind
-SharedKernel.HttpClients.ContractCommandOutcomeKind.Unauthorized = 3 -> SharedKernel.HttpClients.ContractCommandOutcomeKind
-SharedKernel.HttpClients.ContractCommandOutcomeKind.UnexpectedStatus = 8 -> SharedKernel.HttpClients.ContractCommandOutcomeKind
-SharedKernel.HttpClients.ContractCommandOutcomeKind.UnsupportedContentType = 9 -> SharedKernel.HttpClients.ContractCommandOutcomeKind
-SharedKernel.HttpClients.ContractCommandOutcomeKind.ValidationProblem = 1 -> SharedKernel.HttpClients.ContractCommandOutcomeKind
 SharedKernel.HttpClients.ContractHttpValidation
 SharedKernel.HttpClients.ContractValidationException
 SharedKernel.HttpClients.ContractValidationException.ContractValidationException() -> void
@@ -25,7 +11,7 @@ SharedKernel.HttpClients.ContractValidationProblemDto
 SharedKernel.HttpClients.ContractValidationProblemDto.Errors.get -> System.Collections.Generic.Dictionary<string!, string![]!>?
 SharedKernel.HttpClients.ContractValidationProblemDto.Errors.init -> void
 SharedKernel.HttpClients.HttpOutcome
-SharedKernel.HttpClients.HttpOutcome.Kind.get -> SharedKernel.HttpClients.ContractCommandOutcomeKind
+SharedKernel.HttpClients.HttpOutcome.Kind.get -> SharedKernel.HttpClients.HttpOutcomeKind
 SharedKernel.HttpClients.HttpOutcome.Kind.init -> void
 SharedKernel.HttpClients.HttpOutcome.Location.get -> System.Uri?
 SharedKernel.HttpClients.HttpOutcome.Location.init -> void
@@ -36,7 +22,7 @@ SharedKernel.HttpClients.HttpOutcome.StatusCode.init -> void
 SharedKernel.HttpClients.HttpOutcome.ValidationErrors.get -> System.Collections.Generic.IReadOnlyDictionary<string!, string![]!>?
 SharedKernel.HttpClients.HttpOutcome.ValidationErrors.init -> void
 SharedKernel.HttpClients.HttpOutcome<TValue>
-SharedKernel.HttpClients.HttpOutcome<TValue>.Kind.get -> SharedKernel.HttpClients.ContractCommandOutcomeKind
+SharedKernel.HttpClients.HttpOutcome<TValue>.Kind.get -> SharedKernel.HttpClients.HttpOutcomeKind
 SharedKernel.HttpClients.HttpOutcome<TValue>.Kind.init -> void
 SharedKernel.HttpClients.HttpOutcome<TValue>.Location.get -> System.Uri?
 SharedKernel.HttpClients.HttpOutcome<TValue>.Location.init -> void
@@ -48,18 +34,32 @@ SharedKernel.HttpClients.HttpOutcome<TValue>.ValidationErrors.get -> System.Coll
 SharedKernel.HttpClients.HttpOutcome<TValue>.ValidationErrors.init -> void
 SharedKernel.HttpClients.HttpOutcome<TValue>.Value.get -> TValue?
 SharedKernel.HttpClients.HttpOutcome<TValue>.Value.init -> void
+SharedKernel.HttpClients.HttpOutcomeKind
+SharedKernel.HttpClients.HttpOutcomeKind.Conflict = 5 -> SharedKernel.HttpClients.HttpOutcomeKind
+SharedKernel.HttpClients.HttpOutcomeKind.EmptyBody = 6 -> SharedKernel.HttpClients.HttpOutcomeKind
+SharedKernel.HttpClients.HttpOutcomeKind.Forbidden = 4 -> SharedKernel.HttpClients.HttpOutcomeKind
+SharedKernel.HttpClients.HttpOutcomeKind.MalformedBody = 7 -> SharedKernel.HttpClients.HttpOutcomeKind
+SharedKernel.HttpClients.HttpOutcomeKind.NotFound = 2 -> SharedKernel.HttpClients.HttpOutcomeKind
+SharedKernel.HttpClients.HttpOutcomeKind.Succeeded = 0 -> SharedKernel.HttpClients.HttpOutcomeKind
+SharedKernel.HttpClients.HttpOutcomeKind.TimedOut = 10 -> SharedKernel.HttpClients.HttpOutcomeKind
+SharedKernel.HttpClients.HttpOutcomeKind.TransportFailure = 11 -> SharedKernel.HttpClients.HttpOutcomeKind
+SharedKernel.HttpClients.HttpOutcomeKind.Unauthorized = 3 -> SharedKernel.HttpClients.HttpOutcomeKind
+SharedKernel.HttpClients.HttpOutcomeKind.UnexpectedStatus = 8 -> SharedKernel.HttpClients.HttpOutcomeKind
+SharedKernel.HttpClients.HttpOutcomeKind.UnsupportedContentType = 9 -> SharedKernel.HttpClients.HttpOutcomeKind
+SharedKernel.HttpClients.HttpOutcomeKind.ValidationProblem = 1 -> SharedKernel.HttpClients.HttpOutcomeKind
+SharedKernel.HttpClients.HttpOutcomeMapper
 SharedKernel.HttpClients.HttpServiceCollectionExtensions
 SharedKernel.HttpClients.ProgressStreamContent
 SharedKernel.HttpClients.ProgressStreamContent.ProgressStreamContent(System.IO.Stream! content, long contentLength, System.IProgress<long>? progress) -> void
-const SharedKernel.HttpClients.ContractCommandOutcome.ActivitySourceName = "SharedKernel.HttpClients.ContractOutcomes" -> string!
-static SharedKernel.HttpClients.ContractCommandOutcome.FromResponse(System.Net.Http.HttpResponseMessage! response, System.Net.HttpStatusCode successStatusCode, System.Text.Json.Serialization.Metadata.JsonTypeInfo<SharedKernel.HttpClients.ContractValidationProblemDto!>! validationProblemJson, System.Threading.CancellationToken ct) -> System.Threading.Tasks.Task<SharedKernel.HttpClients.HttpOutcome!>!
-static SharedKernel.HttpClients.ContractCommandOutcome.FromResponse(System.Net.Http.HttpResponseMessage! response, System.Text.Json.Serialization.Metadata.JsonTypeInfo<SharedKernel.HttpClients.ContractValidationProblemDto!>! validationProblemJson, System.Threading.CancellationToken ct) -> System.Threading.Tasks.Task<SharedKernel.HttpClients.HttpOutcome!>!
-static SharedKernel.HttpClients.ContractCommandOutcome.FromResponse<TValue>(System.Net.Http.HttpResponseMessage! response, System.Net.HttpStatusCode successStatusCode, System.Text.Json.Serialization.Metadata.JsonTypeInfo<TValue>! valueJson, System.Text.Json.Serialization.Metadata.JsonTypeInfo<SharedKernel.HttpClients.ContractValidationProblemDto!>! validationProblemJson, System.Threading.CancellationToken ct) -> System.Threading.Tasks.Task<SharedKernel.HttpClients.HttpOutcome<TValue>!>!
-static SharedKernel.HttpClients.ContractCommandOutcome.Send(System.Net.Http.HttpClient! httpClient, System.Net.Http.HttpRequestMessage! request, System.Net.HttpStatusCode successStatusCode, System.Text.Json.Serialization.Metadata.JsonTypeInfo<SharedKernel.HttpClients.ContractValidationProblemDto!>! validationProblemJson, System.Threading.CancellationToken ct) -> System.Threading.Tasks.Task<SharedKernel.HttpClients.HttpOutcome!>!
-static SharedKernel.HttpClients.ContractCommandOutcome.Send<TValue>(System.Net.Http.HttpClient! httpClient, System.Net.Http.HttpRequestMessage! request, System.Net.HttpStatusCode successStatusCode, System.Text.Json.Serialization.Metadata.JsonTypeInfo<TValue>! valueJson, System.Text.Json.Serialization.Metadata.JsonTypeInfo<SharedKernel.HttpClients.ContractValidationProblemDto!>! validationProblemJson, System.Threading.CancellationToken ct) -> System.Threading.Tasks.Task<SharedKernel.HttpClients.HttpOutcome<TValue>!>!
-static SharedKernel.HttpClients.ContractCommandOutcome.Status(SharedKernel.HttpClients.ContractCommandOutcomeKind kind, System.Net.HttpStatusCode statusCode, string? message = null) -> SharedKernel.HttpClients.HttpOutcome!
-static SharedKernel.HttpClients.ContractCommandOutcome.Status<TValue>(SharedKernel.HttpClients.ContractCommandOutcomeKind kind, System.Net.HttpStatusCode statusCode, string? message = null) -> SharedKernel.HttpClients.HttpOutcome<TValue>!
-static SharedKernel.HttpClients.ContractCommandOutcome.Succeeded(System.Net.HttpStatusCode statusCode, System.Uri? location) -> SharedKernel.HttpClients.HttpOutcome!
-static SharedKernel.HttpClients.ContractCommandOutcome.Succeeded<TValue>(System.Net.HttpStatusCode statusCode, TValue value, System.Uri? location = null) -> SharedKernel.HttpClients.HttpOutcome<TValue>!
+const SharedKernel.HttpClients.HttpOutcomeMapper.ActivitySourceName = "SharedKernel.HttpClients.ContractOutcomes" -> string!
 static SharedKernel.HttpClients.ContractHttpValidation.EnsureSuccessOrThrowValidationException(System.Net.Http.HttpResponseMessage! response, System.Text.Json.Serialization.Metadata.JsonTypeInfo<SharedKernel.HttpClients.ContractValidationProblemDto!>! jsonTypeInfo, System.Threading.CancellationToken ct) -> System.Threading.Tasks.Task!
+static SharedKernel.HttpClients.HttpOutcomeMapper.FromResponse(System.Net.Http.HttpResponseMessage! response, System.Net.HttpStatusCode successStatusCode, System.Text.Json.Serialization.Metadata.JsonTypeInfo<SharedKernel.HttpClients.ContractValidationProblemDto!>! validationProblemJson, System.Threading.CancellationToken ct) -> System.Threading.Tasks.Task<SharedKernel.HttpClients.HttpOutcome!>!
+static SharedKernel.HttpClients.HttpOutcomeMapper.FromResponse(System.Net.Http.HttpResponseMessage! response, System.Text.Json.Serialization.Metadata.JsonTypeInfo<SharedKernel.HttpClients.ContractValidationProblemDto!>! validationProblemJson, System.Threading.CancellationToken ct) -> System.Threading.Tasks.Task<SharedKernel.HttpClients.HttpOutcome!>!
+static SharedKernel.HttpClients.HttpOutcomeMapper.FromResponse<TValue>(System.Net.Http.HttpResponseMessage! response, System.Net.HttpStatusCode successStatusCode, System.Text.Json.Serialization.Metadata.JsonTypeInfo<TValue>! valueJson, System.Text.Json.Serialization.Metadata.JsonTypeInfo<SharedKernel.HttpClients.ContractValidationProblemDto!>! validationProblemJson, System.Threading.CancellationToken ct) -> System.Threading.Tasks.Task<SharedKernel.HttpClients.HttpOutcome<TValue>!>!
+static SharedKernel.HttpClients.HttpOutcomeMapper.Send(System.Net.Http.HttpClient! httpClient, System.Net.Http.HttpRequestMessage! request, System.Net.HttpStatusCode successStatusCode, System.Text.Json.Serialization.Metadata.JsonTypeInfo<SharedKernel.HttpClients.ContractValidationProblemDto!>! validationProblemJson, System.Threading.CancellationToken ct) -> System.Threading.Tasks.Task<SharedKernel.HttpClients.HttpOutcome!>!
+static SharedKernel.HttpClients.HttpOutcomeMapper.Send<TValue>(System.Net.Http.HttpClient! httpClient, System.Net.Http.HttpRequestMessage! request, System.Net.HttpStatusCode successStatusCode, System.Text.Json.Serialization.Metadata.JsonTypeInfo<TValue>! valueJson, System.Text.Json.Serialization.Metadata.JsonTypeInfo<SharedKernel.HttpClients.ContractValidationProblemDto!>! validationProblemJson, System.Threading.CancellationToken ct) -> System.Threading.Tasks.Task<SharedKernel.HttpClients.HttpOutcome<TValue>!>!
+static SharedKernel.HttpClients.HttpOutcomeMapper.Status(SharedKernel.HttpClients.HttpOutcomeKind kind, System.Net.HttpStatusCode statusCode, string? message = null) -> SharedKernel.HttpClients.HttpOutcome!
+static SharedKernel.HttpClients.HttpOutcomeMapper.Status<TValue>(SharedKernel.HttpClients.HttpOutcomeKind kind, System.Net.HttpStatusCode statusCode, string? message = null) -> SharedKernel.HttpClients.HttpOutcome<TValue>!
+static SharedKernel.HttpClients.HttpOutcomeMapper.Succeeded(System.Net.HttpStatusCode statusCode, System.Uri? location) -> SharedKernel.HttpClients.HttpOutcome!
+static SharedKernel.HttpClients.HttpOutcomeMapper.Succeeded<TValue>(System.Net.HttpStatusCode statusCode, TValue value, System.Uri? location = null) -> SharedKernel.HttpClients.HttpOutcome<TValue>!
 static SharedKernel.HttpClients.HttpServiceCollectionExtensions.AddHttpClientDefaults(this Microsoft.Extensions.DependencyInjection.IServiceCollection! services) -> Microsoft.Extensions.DependencyInjection.IServiceCollection!

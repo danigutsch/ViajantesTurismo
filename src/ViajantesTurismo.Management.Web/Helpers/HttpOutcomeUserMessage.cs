@@ -5,13 +5,13 @@ namespace ViajantesTurismo.Management.Web.Helpers;
 internal static class HttpOutcomeUserMessage
 {
     public static string For(
-        ContractCommandOutcomeKind kind,
+        HttpOutcomeKind kind,
         string fallback,
         string? notFound = null)
     {
         return kind switch
         {
-            ContractCommandOutcomeKind.NotFound => notFound ?? fallback,
+            HttpOutcomeKind.NotFound => notFound ?? fallback,
             _ => fallback
         };
     }

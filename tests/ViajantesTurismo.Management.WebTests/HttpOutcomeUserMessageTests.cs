@@ -8,9 +8,9 @@ namespace ViajantesTurismo.Management.WebTests;
 public sealed class HttpOutcomeUserMessageTests
 {
     [Theory]
-    [InlineData(ContractCommandOutcomeKind.Unauthorized)]
-    [InlineData(ContractCommandOutcomeKind.Forbidden)]
-    public void For_preserves_the_callers_existing_fallback_copy(ContractCommandOutcomeKind kind)
+    [InlineData(HttpOutcomeKind.Unauthorized)]
+    [InlineData(HttpOutcomeKind.Forbidden)]
+    public void For_preserves_the_callers_existing_fallback_copy(HttpOutcomeKind kind)
     {
         // Arrange
         const string fallback = "The booking could not be loaded.";

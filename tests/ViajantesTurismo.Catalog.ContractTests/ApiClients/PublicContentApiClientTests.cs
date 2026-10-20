@@ -54,7 +54,7 @@ public sealed class PublicContentApiClientTests
         var outcome = await sut.GetContent("home.hero", TestContext.Current.CancellationToken);
 
         // Assert
-        outcome.Kind.ShouldBe(ContractCommandOutcomeKind.NotFound);
+        outcome.Kind.ShouldBe(HttpOutcomeKind.NotFound);
         outcome.Value.ShouldBeNull();
     }
 
@@ -153,7 +153,7 @@ public sealed class PublicContentApiClientTests
         var outcome = await sut.SaveContent("home.hero", request, TestContext.Current.CancellationToken);
 
         // Assert
-        outcome.Kind.ShouldBe(ContractCommandOutcomeKind.ValidationProblem);
+        outcome.Kind.ShouldBe(HttpOutcomeKind.ValidationProblem);
         var errors = outcome.ValidationErrors.ShouldNotBeNull();
         errors.Keys.ShouldContain(nameof(PublicContentVariantDto.Title));
     }

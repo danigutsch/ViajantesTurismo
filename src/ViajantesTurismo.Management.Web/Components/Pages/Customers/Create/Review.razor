@@ -262,7 +262,7 @@
             var dto = State.ToCreateCustomerDto();
 
             var outcome = await ApiClient.CreateCustomer(dto, CancellationToken.None);
-            if (outcome.Kind != ContractCommandOutcomeKind.Succeeded)
+            if (outcome.Kind != HttpOutcomeKind.Succeeded)
             {
                 _errorMessage = UserFacingErrorMessage.ForOperation("create the customer");
                 return;

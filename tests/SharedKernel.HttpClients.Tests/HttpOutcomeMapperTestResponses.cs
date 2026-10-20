@@ -3,7 +3,7 @@ using System.Text;
 
 namespace SharedKernel.HttpClients.Tests;
 
-internal static class ContractCommandOutcomeTestResponses
+internal static class HttpOutcomeMapperTestResponses
 {
     public static HttpResponseMessage Json(HttpStatusCode statusCode, string json, string mediaType = "application/json")
     {

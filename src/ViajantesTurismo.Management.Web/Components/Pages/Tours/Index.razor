@@ -103,7 +103,7 @@ else
     {
         _errorMessage = null;
         var outcome = await ToursApi.GetTours(CancellationToken.None);
-        if (outcome is { Kind: ContractCommandOutcomeKind.Succeeded, Value: { } tours })
+        if (outcome is { Kind: HttpOutcomeKind.Succeeded, Value: { } tours })
         {
             _tours = tours;
             return;

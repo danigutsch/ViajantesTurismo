@@ -36,7 +36,7 @@ internal static class ImportCustomersConflictLoader
     {
         var result = new Dictionary<string, Dictionary<string, string>>(StringComparer.OrdinalIgnoreCase);
         var customersOutcome = await customersApi.GetCustomers(ct);
-        if (customersOutcome is not { Kind: SharedKernel.HttpClients.ContractCommandOutcomeKind.Succeeded, Value: { } customers })
+        if (customersOutcome is not { Kind: SharedKernel.HttpClients.HttpOutcomeKind.Succeeded, Value: { } customers })
         {
             throw new InvalidOperationException(LoadFailureMessage);
         }
@@ -50,12 +50,12 @@ internal static class ImportCustomersConflictLoader
             }
 
             var detailsOutcome = await customersApi.GetCustomerById(existingSummary.Id, ct);
-            if (detailsOutcome.Kind == SharedKernel.HttpClients.ContractCommandOutcomeKind.NotFound)
+            if (detailsOutcome.Kind == SharedKernel.HttpClients.HttpOutcomeKind.NotFound)
             {
                 continue;
             }
 
-            if (detailsOutcome is not { Kind: SharedKernel.HttpClients.ContractCommandOutcomeKind.Succeeded, Value: { } details })
+            if (detailsOutcome is not { Kind: SharedKernel.HttpClients.HttpOutcomeKind.Succeeded, Value: { } details })
             {
                 throw new InvalidOperationException(LoadFailureMessage);
             }

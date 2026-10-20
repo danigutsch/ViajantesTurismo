@@ -16,7 +16,7 @@ public sealed class DocumentsApiClient(HttpClient httpClient) : IDocumentsApiCli
     /// <inheritdoc />
     public async Task<HttpOutcome<GetDocumentDto>> GetDocumentById(Guid id, CancellationToken ct)
     {
-        return await ContractCommandOutcome.Send(
+        return await HttpOutcomeMapper.Send(
             httpClient,
             new HttpRequestMessage(HttpMethod.Get, new Uri($"{RoutePrefix}/{id}", UriKind.Relative)),
             HttpStatusCode.OK,
@@ -56,7 +56,7 @@ public sealed class DocumentsApiClient(HttpClient httpClient) : IDocumentsApiCli
         {
             Content = JsonContent.Create(dto, Json.UpdateDocumentFieldDto)
         };
-        return await ContractCommandOutcome.Send(
+        return await HttpOutcomeMapper.Send(
             httpClient,
             request,
             HttpStatusCode.OK,
@@ -144,7 +144,7 @@ public sealed class DocumentsApiClient(HttpClient httpClient) : IDocumentsApiCli
             request.Headers.Add(IdempotencyKeyHeaderName, idempotencyKey);
         }
 
-        return await ContractCommandOutcome.Send(
+        return await HttpOutcomeMapper.Send(
             httpClient,
             request,
             successStatusCode,

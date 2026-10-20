@@ -57,18 +57,18 @@ public sealed class CatalogApiClientIntegrationTests
         var unpublishedOutcome = await publicClient.GetPublishedTourBySlug("contract-client-tour", cancellationToken);
 
         // Assert
-        savedOutcome.Kind.ShouldBe(ContractCommandOutcomeKind.Succeeded);
+        savedOutcome.Kind.ShouldBe(HttpOutcomeKind.Succeeded);
         var saved = savedOutcome.Value.ShouldNotBeNull();
         saved.Title.ShouldBe("Contract Client Tour");
         saved.IsPublished.ShouldBeFalse();
-        publishOutcome.Kind.ShouldBe(ContractCommandOutcomeKind.Succeeded);
-        publishedOutcome.Kind.ShouldBe(ContractCommandOutcomeKind.Succeeded);
+        publishOutcome.Kind.ShouldBe(HttpOutcomeKind.Succeeded);
+        publishedOutcome.Kind.ShouldBe(HttpOutcomeKind.Succeeded);
         var published = publishedOutcome.Value.ShouldNotBeNull();
         published.Title.ShouldBe("Contract Client Tour");
         published.Slug.ShouldBe("contract-client-tour");
         published.Summary.ShouldBe("A contract-tested tour.");
-        unpublishOutcome.Kind.ShouldBe(ContractCommandOutcomeKind.Succeeded);
-        unpublishedOutcome.Kind.ShouldBe(ContractCommandOutcomeKind.NotFound);
+        unpublishOutcome.Kind.ShouldBe(HttpOutcomeKind.Succeeded);
+        unpublishedOutcome.Kind.ShouldBe(HttpOutcomeKind.NotFound);
         unpublishedOutcome.Value.ShouldBeNull();
     }
 
@@ -92,10 +92,10 @@ public sealed class CatalogApiClientIntegrationTests
         var readOutcome = await sut.GetContent("home.hero", cancellationToken);
 
         // Assert
-        savedOutcome.Kind.ShouldBe(ContractCommandOutcomeKind.Succeeded);
+        savedOutcome.Kind.ShouldBe(HttpOutcomeKind.Succeeded);
         var saved = savedOutcome.Value.ShouldNotBeNull();
         saved.Key.ShouldBe("HOME.HERO");
-        readOutcome.Kind.ShouldBe(ContractCommandOutcomeKind.Succeeded);
+        readOutcome.Kind.ShouldBe(HttpOutcomeKind.Succeeded);
         var read = readOutcome.Value.ShouldNotBeNull();
         read.Key.ShouldBe("HOME.HERO");
         read.Variants.ShouldContain(variant => variant.Language == PublicContentLanguageDto.PtBr && variant.Title == "Bem-vindo");

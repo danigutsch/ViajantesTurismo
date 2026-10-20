@@ -42,7 +42,7 @@ public sealed class FakeCustomersApiClient : ICustomersApiClient
 
         if (_getCustomersHandler is not null)
         {
-            return ContractCommandOutcome.Succeeded(HttpStatusCode.OK, (await _getCustomersHandler(ct, maxItems)).ToArray());
+            return HttpOutcomeMapper.Succeeded(HttpStatusCode.OK, (await _getCustomersHandler(ct, maxItems)).ToArray());
         }
 
         if (_getCustomersException is not null)
@@ -55,7 +55,7 @@ public sealed class FakeCustomersApiClient : ICustomersApiClient
             return _getCustomersOutcome;
         }
 
-        return ContractCommandOutcome.Succeeded(HttpStatusCode.OK, _customers.Take(maxItems).ToArray());
+        return HttpOutcomeMapper.Succeeded(HttpStatusCode.OK, _customers.Take(maxItems).ToArray());
     }
 
     public Task<HttpOutcome<CustomerDetailsDto>> GetCustomerById(Guid id, CancellationToken ct)
@@ -74,8 +74,8 @@ public sealed class FakeCustomersApiClient : ICustomersApiClient
 
         var customer = _customerDetails.FirstOrDefault(c => c.Id == id);
         return Task.FromResult(customer is null
-            ? ContractCommandOutcome.Status<CustomerDetailsDto>(ContractCommandOutcomeKind.NotFound, HttpStatusCode.NotFound)
-            : ContractCommandOutcome.Succeeded(HttpStatusCode.OK, customer));
+            ? HttpOutcomeMapper.Status<CustomerDetailsDto>(HttpOutcomeKind.NotFound, HttpStatusCode.NotFound)
+            : HttpOutcomeMapper.Succeeded(HttpStatusCode.OK, customer));
     }
 
     public Task<HttpOutcome> CreateCustomer(CreateCustomerDto dto, CancellationToken ct)
@@ -94,7 +94,7 @@ public sealed class FakeCustomersApiClient : ICustomersApiClient
         }
 
         var customerId = Guid.NewGuid();
-        return Task.FromResult(ContractCommandOutcome.Succeeded(HttpStatusCode.Created, new Uri($"/api/v1/customers/{customerId}", UriKind.Relative)));
+        return Task.FromResult(HttpOutcomeMapper.Succeeded(HttpStatusCode.Created, new Uri($"/api/v1/customers/{customerId}", UriKind.Relative)));
     }
 
     public Task<HttpOutcome> UpdateCustomer(Guid id, UpdateCustomerDto dto, CancellationToken ct)
@@ -112,7 +112,7 @@ public sealed class FakeCustomersApiClient : ICustomersApiClient
             return Task.FromResult(_updateCustomerOutcome);
         }
 
-        return Task.FromResult(ContractCommandOutcome.Succeeded(HttpStatusCode.NoContent, location: null));
+        return Task.FromResult(HttpOutcomeMapper.Succeeded(HttpStatusCode.NoContent, location: null));
     }
 
     public async Task<HttpOutcome<ImportResultDto>> ImportCustomers(byte[] fileContent, string fileName, IProgress<long>? progress, CancellationToken ct)
@@ -126,7 +126,7 @@ public sealed class FakeCustomersApiClient : ICustomersApiClient
         if (_importCustomersHandler is not null)
         {
             var result = await _importCustomersHandler(fileContent, fileName, progress, ct);
-            return ContractCommandOutcome.Succeeded(HttpStatusCode.OK, result);
+            return HttpOutcomeMapper.Succeeded(HttpStatusCode.OK, result);
         }
 
         if (_importCustomersException is not null)
@@ -142,7 +142,7 @@ public sealed class FakeCustomersApiClient : ICustomersApiClient
         if (_importResult is not null)
         {
             progress?.Report(fileContent.LongLength);
-            return ContractCommandOutcome.Succeeded(HttpStatusCode.OK, _importResult);
+            return HttpOutcomeMapper.Succeeded(HttpStatusCode.OK, _importResult);
         }
 
         throw new NotImplementedException();
@@ -168,7 +168,7 @@ public sealed class FakeCustomersApiClient : ICustomersApiClient
         if (_commitImportHandler is not null)
         {
             var result = await _commitImportHandler(fileContent, fileName, conflictResolutions, progress, ct);
-            return ContractCommandOutcome.Succeeded(HttpStatusCode.OK, result);
+            return HttpOutcomeMapper.Succeeded(HttpStatusCode.OK, result);
         }
 
         ct.ThrowIfCancellationRequested();
@@ -176,7 +176,7 @@ public sealed class FakeCustomersApiClient : ICustomersApiClient
         if (_commitImportResult is not null)
         {
             progress?.Report(fileContent.LongLength);
-            return ContractCommandOutcome.Succeeded(HttpStatusCode.OK, _commitImportResult);
+            return HttpOutcomeMapper.Succeeded(HttpStatusCode.OK, _commitImportResult);
         }
 
         throw new NotImplementedException();

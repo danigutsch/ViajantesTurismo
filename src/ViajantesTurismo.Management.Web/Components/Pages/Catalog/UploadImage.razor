@@ -140,9 +140,9 @@
                 return;
             }
 
-            if (outcome.Kind != ContractCommandOutcomeKind.Succeeded)
+            if (outcome.Kind != HttpOutcomeKind.Succeeded)
             {
-                _errorMessage = outcome.Kind == ContractCommandOutcomeKind.ValidationProblem
+                _errorMessage = outcome.Kind == HttpOutcomeKind.ValidationProblem
                     ? outcome.ValidationErrors is null or { Count: 0 }
                         ? "Image could not be uploaded. Check the file and try again."
                         : string.Join(" ", outcome.ValidationErrors.SelectMany(error => error.Value))

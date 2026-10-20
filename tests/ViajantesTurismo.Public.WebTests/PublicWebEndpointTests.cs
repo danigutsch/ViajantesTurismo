@@ -544,7 +544,7 @@ public sealed class PublicWebEndpointTests
             TestContext.Current.CancellationToken);
 
         // Assert
-        outcome.Kind.ShouldBe(ContractCommandOutcomeKind.Succeeded);
+        outcome.Kind.ShouldBe(HttpOutcomeKind.Succeeded);
         var content = outcome.Value.ShouldNotBeNull();
         content.Title.ShouldBe("Newline key");
     }

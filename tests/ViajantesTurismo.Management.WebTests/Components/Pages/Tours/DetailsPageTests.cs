@@ -177,7 +177,7 @@ public class DetailsPageTests : BunitContext
         var customer = BuildCustomerDto();
         TourDetailsPageTestsHelper.SetupSuccessfulTourLoad(_fakeToursApi, tour);
         _fakeCustomersApi.AddCustomer(customer);
-        _fakeBookingsApi.SetCreateBookingOutcome(ContractCommandOutcome.Status(ContractCommandOutcomeKind.Conflict, HttpStatusCode.Conflict));
+        _fakeBookingsApi.SetCreateBookingOutcome(HttpOutcomeMapper.Status(HttpOutcomeKind.Conflict, HttpStatusCode.Conflict));
 
         var cut = Render<Details>(parameters => parameters.Add(p => p.Id, tour.Id));
         await cut.WaitForAssertionAsync(() => cut.Find("button:contains('Add Booking')"));

@@ -18,7 +18,7 @@ public sealed class CatalogToursApiClient(HttpClient httpClient) : ICatalogTours
     /// <inheritdoc />
     public async Task<HttpOutcome<CatalogTourDto[]>> GetTours(CancellationToken ct)
     {
-        var outcome = await ContractCommandOutcome.Send(
+        var outcome = await HttpOutcomeMapper.Send(
             httpClient,
             new HttpRequestMessage(HttpMethod.Get, new Uri($"{RoutePrefix}/tours", UriKind.Relative)),
             HttpStatusCode.OK,
@@ -42,7 +42,7 @@ public sealed class CatalogToursApiClient(HttpClient httpClient) : ICatalogTours
         {
             Content = JsonContent.Create(request, Json.UpsertCatalogTourPresentationRequest)
         };
-        var outcome = await ContractCommandOutcome.Send(
+        var outcome = await HttpOutcomeMapper.Send(
             httpClient,
             httpRequest,
             HttpStatusCode.OK,
@@ -69,7 +69,7 @@ public sealed class CatalogToursApiClient(HttpClient httpClient) : ICatalogTours
     /// <inheritdoc />
     public async Task<HttpOutcome<CatalogTourDto>> GetTour(Guid id, CancellationToken ct)
     {
-        var outcome = await ContractCommandOutcome.Send(
+        var outcome = await HttpOutcomeMapper.Send(
             httpClient,
             new HttpRequestMessage(HttpMethod.Get, new Uri($"{RoutePrefix}/tours/{id}", UriKind.Relative)),
             HttpStatusCode.OK,
@@ -93,7 +93,7 @@ public sealed class CatalogToursApiClient(HttpClient httpClient) : ICatalogTours
         {
             Content = JsonContent.Create(request, Json.PublicMediaImageAccessibilityDraftRequest)
         };
-        return await ContractCommandOutcome.Send(
+        return await HttpOutcomeMapper.Send(
             httpClient,
             httpRequest,
             HttpStatusCode.OK,
@@ -134,7 +134,7 @@ public sealed class CatalogToursApiClient(HttpClient httpClient) : ICatalogTours
         };
         try
         {
-            return await ContractCommandOutcome.Send(
+            return await HttpOutcomeMapper.Send(
                 httpClient,
                 httpRequest,
                 HttpStatusCode.Created,
@@ -152,7 +152,7 @@ public sealed class CatalogToursApiClient(HttpClient httpClient) : ICatalogTours
     /// <inheritdoc />
     public async Task<HttpOutcome<CatalogMediaImageDto[]>> GetTourImages(Guid id, CancellationToken ct)
     {
-        var outcome = await ContractCommandOutcome.Send(
+        var outcome = await HttpOutcomeMapper.Send(
             httpClient,
             new HttpRequestMessage(HttpMethod.Get, new Uri($"{RoutePrefix}/tours/{id}/images", UriKind.Relative)),
             HttpStatusCode.OK,
@@ -176,7 +176,7 @@ public sealed class CatalogToursApiClient(HttpClient httpClient) : ICatalogTours
         {
             Content = JsonContent.Create(request, Json.PublicMediaImageAccessibilityReviewRequest)
         };
-        return await ContractCommandOutcome.Send(
+        return await HttpOutcomeMapper.Send(
             httpClient,
             httpRequest,
             HttpStatusCode.OK,
@@ -225,7 +225,7 @@ public sealed class CatalogToursApiClient(HttpClient httpClient) : ICatalogTours
         {
             Content = JsonContent.Create(request, Json.CatalogTourPublicationRequest)
         };
-        return await ContractCommandOutcome.Send(
+        return await HttpOutcomeMapper.Send(
             httpClient,
             httpRequest,
             HttpStatusCode.NoContent,
@@ -237,12 +237,12 @@ public sealed class CatalogToursApiClient(HttpClient httpClient) : ICatalogTours
     {
         return outcome is
         {
-            Kind: ContractCommandOutcomeKind.Succeeded,
+            Kind: HttpOutcomeKind.Succeeded,
             StatusCode: { } statusCode,
             Value.Version: < 1
         }
-            ? ContractCommandOutcome.Status<CatalogTourDto>(
-                ContractCommandOutcomeKind.MalformedBody,
+            ? HttpOutcomeMapper.Status<CatalogTourDto>(
+                HttpOutcomeKind.MalformedBody,
                 statusCode,
                 "The catalog tour response body was invalid.")
             : outcome;
@@ -252,7 +252,7 @@ public sealed class CatalogToursApiClient(HttpClient httpClient) : ICatalogTours
     {
         if (outcome is not
             {
-                Kind: ContractCommandOutcomeKind.Succeeded,
+                Kind: HttpOutcomeKind.Succeeded,
                 StatusCode: { } statusCode,
                 Value: { } value
             })
@@ -262,8 +262,8 @@ public sealed class CatalogToursApiClient(HttpClient httpClient) : ICatalogTours
 
         var tours = value.OfType<CatalogTourDto>().ToArray();
         return tours.Any(tour => tour.Version < 1)
-            ? ContractCommandOutcome.Status<CatalogTourDto[]>(
-                ContractCommandOutcomeKind.MalformedBody,
+            ? HttpOutcomeMapper.Status<CatalogTourDto[]>(
+                HttpOutcomeKind.MalformedBody,
                 statusCode,
                 "The catalog tour response body was invalid.")
             : outcome with { Value = tours };
@@ -274,7 +274,7 @@ public sealed class CatalogToursApiClient(HttpClient httpClient) : ICatalogTours
     {
         if (outcome is not
             {
-                Kind: ContractCommandOutcomeKind.Succeeded,
+                Kind: HttpOutcomeKind.Succeeded,
                 StatusCode: { } statusCode,
                 Value: { } value
             })
@@ -285,8 +285,8 @@ public sealed class CatalogToursApiClient(HttpClient httpClient) : ICatalogTours
         var images = value.OfType<CatalogMediaImageDto>().ToArray();
         return images.Length == value.Length
             ? outcome
-            : ContractCommandOutcome.Status<CatalogMediaImageDto[]>(
-                ContractCommandOutcomeKind.MalformedBody,
+            : HttpOutcomeMapper.Status<CatalogMediaImageDto[]>(
+                HttpOutcomeKind.MalformedBody,
                 statusCode,
                 "The catalog image response body was invalid.");
     }

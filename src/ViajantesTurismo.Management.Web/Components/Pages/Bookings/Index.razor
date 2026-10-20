@@ -60,7 +60,7 @@
         try
         {
             var outcome = await BookingsApi.GetAllBookings(CancellationToken.None);
-            if (outcome is { Kind: ContractCommandOutcomeKind.Succeeded, Value: { } bookings })
+            if (outcome is { Kind: HttpOutcomeKind.Succeeded, Value: { } bookings })
             {
                 _bookings = bookings;
             }

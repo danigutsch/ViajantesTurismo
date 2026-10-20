@@ -1,5 +1,5 @@
 using Microsoft.AspNetCore.Http;
-using ContractCommandOutcomeKind = SharedKernel.HttpClients.ContractCommandOutcomeKind;
+using HttpOutcomeKind = SharedKernel.HttpClients.HttpOutcomeKind;
 using CatalogToursApiClientTestsHelpers = SharedKernel.Testing.Contracts.ContractHttpClientTestHelper;
 using ViajantesTurismo.Admin.Contracts.Http;
 
@@ -22,7 +22,7 @@ public sealed class ToursApiClientTests
         var outcome = await sut.GetTours(TestContext.Current.CancellationToken);
 
         requestPath.ShouldBe("/api/v1/tours");
-        outcome.Kind.ShouldBe(ContractCommandOutcomeKind.Succeeded);
+        outcome.Kind.ShouldBe(HttpOutcomeKind.Succeeded);
         var tours = outcome.Value.ShouldNotBeNull();
         var tour = tours.ShouldHaveSingleItem();
         tour.Identifier.ShouldBe("TOUR-1");
@@ -73,7 +73,7 @@ public sealed class ToursApiClientTests
 
         var outcome = await sut.GetTourById(tourId, TestContext.Current.CancellationToken);
 
-        outcome.Kind.ShouldBe(ContractCommandOutcomeKind.Succeeded);
+        outcome.Kind.ShouldBe(HttpOutcomeKind.Succeeded);
         var tour = outcome.Value.ShouldNotBeNull();
         requestPath.ShouldBe("/api/v1/tours/11111111-1111-1111-1111-111111111111");
         tour.Name.ShouldBe("First tour");
@@ -87,7 +87,7 @@ public sealed class ToursApiClientTests
 
         var outcome = await sut.GetTourById(Guid.CreateVersion7(), TestContext.Current.CancellationToken);
 
-        outcome.Kind.ShouldBe(ContractCommandOutcomeKind.NotFound);
+        outcome.Kind.ShouldBe(HttpOutcomeKind.NotFound);
         outcome.Value.ShouldBeNull();
     }
 
@@ -99,7 +99,7 @@ public sealed class ToursApiClientTests
 
         var outcome = await sut.GetTourById(Guid.CreateVersion7(), TestContext.Current.CancellationToken);
 
-        outcome.Kind.ShouldBe(ContractCommandOutcomeKind.MalformedBody);
+        outcome.Kind.ShouldBe(HttpOutcomeKind.MalformedBody);
         outcome.Value.ShouldBeNull();
     }
 
@@ -126,7 +126,7 @@ public sealed class ToursApiClientTests
         // Assert
         requestMethod.ShouldBe(HttpMethods.Post);
         requestPath.ShouldBe("/api/v1/tours");
-        outcome.Kind.ShouldBe(ContractCommandOutcomeKind.Succeeded);
+        outcome.Kind.ShouldBe(HttpOutcomeKind.Succeeded);
         outcome.Location.ShouldNotBeNull();
         outcome.Location.ToString().ShouldBe("/api/v1/tours/11111111-1111-1111-1111-111111111111");
     }
@@ -147,7 +147,7 @@ public sealed class ToursApiClientTests
         var outcome = await sut.CreateTour(AdminApiClientTestsHelpers.CreateTour(), TestContext.Current.CancellationToken);
 
         // Assert
-        outcome.Kind.ShouldBe(ContractCommandOutcomeKind.ValidationProblem);
+        outcome.Kind.ShouldBe(HttpOutcomeKind.ValidationProblem);
         outcome.ValidationErrors.ShouldNotBeNull();
         outcome.ValidationErrors["Name"][0].ShouldBe("The Name field is required.");
     }
@@ -163,7 +163,7 @@ public sealed class ToursApiClientTests
         var outcome = await sut.CreateTour(AdminApiClientTestsHelpers.CreateTour(), TestContext.Current.CancellationToken);
 
         // Assert
-        outcome.Kind.ShouldBe(ContractCommandOutcomeKind.Conflict);
+        outcome.Kind.ShouldBe(HttpOutcomeKind.Conflict);
         outcome.StatusCode.ShouldBe(System.Net.HttpStatusCode.Conflict);
     }
 
@@ -185,6 +185,6 @@ public sealed class ToursApiClientTests
 
         requestMethod.ShouldBe(HttpMethods.Put);
         requestPath.ShouldBe("/api/v1/tours/11111111-1111-1111-1111-111111111111");
-        outcome.Kind.ShouldBe(ContractCommandOutcomeKind.Succeeded);
+        outcome.Kind.ShouldBe(HttpOutcomeKind.Succeeded);
     }
 }

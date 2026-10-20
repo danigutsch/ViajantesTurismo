@@ -94,8 +94,8 @@ public sealed class ImportCustomersConflictLoaderTests
         // Arrange
         const string conflictEmail = "existing@example.com";
         var customersApi = new FakeCustomersApiClient();
-        customersApi.SetGetCustomersOutcome(ContractCommandOutcome.Status<GetCustomerDto[]>(
-            ContractCommandOutcomeKind.Unauthorized,
+        customersApi.SetGetCustomersOutcome(HttpOutcomeMapper.Status<GetCustomerDto[]>(
+            HttpOutcomeKind.Unauthorized,
             System.Net.HttpStatusCode.Unauthorized));
         var mappedFileBytes = Encoding.UTF8.GetBytes(
             CustomerImportCsvTestData.AllCanonicalHeaders

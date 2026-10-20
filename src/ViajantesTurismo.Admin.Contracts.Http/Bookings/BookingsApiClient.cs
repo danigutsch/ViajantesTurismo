@@ -22,7 +22,7 @@ public sealed partial class BookingsApiClient(HttpClient httpClient, ILogger<Boo
     /// <inheritdoc />
     public async Task<HttpOutcome<GetBookingDto>> GetBookingById(Guid id, CancellationToken ct)
     {
-        return await ContractCommandOutcome.Send(
+        return await HttpOutcomeMapper.Send(
             httpClient,
             new HttpRequestMessage(HttpMethod.Get, new Uri($"{RoutePrefix}/{id}", UriKind.Relative)),
             HttpStatusCode.OK,
@@ -49,7 +49,7 @@ public sealed partial class BookingsApiClient(HttpClient httpClient, ILogger<Boo
         {
             Content = JsonContent.Create(dto, Json.CreateBookingDto)
         };
-        var outcome = await ContractCommandOutcome.Send(
+        var outcome = await HttpOutcomeMapper.Send(
             httpClient,
             request,
             HttpStatusCode.Created,
@@ -125,7 +125,7 @@ public sealed partial class BookingsApiClient(HttpClient httpClient, ILogger<Boo
         {
             Content = JsonContent.Create(dto, Json.CreatePaymentDto)
         };
-        var outcome = await ContractCommandOutcome.Send(
+        var outcome = await HttpOutcomeMapper.Send(
             httpClient,
             request,
             HttpStatusCode.Created,
@@ -138,7 +138,7 @@ public sealed partial class BookingsApiClient(HttpClient httpClient, ILogger<Boo
 
     private async Task<HttpOutcome<GetBookingDto[]>> ReadBookings(string requestUri, CancellationToken ct)
     {
-        var outcome = await ContractCommandOutcome.Send(
+        var outcome = await HttpOutcomeMapper.Send(
             httpClient,
             new HttpRequestMessage(HttpMethod.Get, new Uri(requestUri, UriKind.Relative)),
             HttpStatusCode.OK,
@@ -146,7 +146,7 @@ public sealed partial class BookingsApiClient(HttpClient httpClient, ILogger<Boo
             Json.ContractValidationProblemDto,
             ct).ConfigureAwait(false);
 
-        return outcome.Kind == ContractCommandOutcomeKind.Succeeded
+        return outcome.Kind == HttpOutcomeKind.Succeeded
             ? outcome with { Value = outcome.Value?.OfType<GetBookingDto>().ToArray() ?? [] }
             : outcome;
     }
@@ -159,7 +159,7 @@ public sealed partial class BookingsApiClient(HttpClient httpClient, ILogger<Boo
         CancellationToken ct)
     {
         var request = new HttpRequestMessage(method, new Uri(requestUri, UriKind.Relative)) { Content = content };
-        return await ContractCommandOutcome.Send(
+        return await HttpOutcomeMapper.Send(
             httpClient,
             request,
             expectedStatusCode,
@@ -178,7 +178,7 @@ public sealed partial class BookingsApiClient(HttpClient httpClient, ILogger<Boo
     private void RecordOutcome(
         Activity? activity,
         HttpOutcome outcome,
-        Action<ILogger, HttpStatusCode?, ContractCommandOutcomeKind> log)
+        Action<ILogger, HttpStatusCode?, HttpOutcomeKind> log)
     {
         if (outcome.StatusCode is not null)
         {
@@ -186,15 +186,15 @@ public sealed partial class BookingsApiClient(HttpClient httpClient, ILogger<Boo
         }
 
         activity?.SetTag(AdminContractsClientTelemetry.CommandOutcomeKindTag, outcome.Kind.ToString());
-        if (outcome.Kind != ContractCommandOutcomeKind.Succeeded && logger is not null)
+        if (outcome.Kind != HttpOutcomeKind.Succeeded && logger is not null)
         {
             log(logger, outcome.StatusCode, outcome.Kind);
         }
     }
 
     [LoggerMessage(1, LogLevel.Warning, "Booking create returned {StatusCode} with outcome {OutcomeKind}.")]
-    private static partial void LogBookingCreateOutcome(ILogger logger, HttpStatusCode? statusCode, ContractCommandOutcomeKind outcomeKind);
+    private static partial void LogBookingCreateOutcome(ILogger logger, HttpStatusCode? statusCode, HttpOutcomeKind outcomeKind);
 
     [LoggerMessage(2, LogLevel.Warning, "Record payment returned {StatusCode} with outcome {OutcomeKind}.")]
-    private static partial void LogRecordPaymentOutcome(ILogger logger, HttpStatusCode? statusCode, ContractCommandOutcomeKind outcomeKind);
+    private static partial void LogRecordPaymentOutcome(ILogger logger, HttpStatusCode? statusCode, HttpOutcomeKind outcomeKind);
 }

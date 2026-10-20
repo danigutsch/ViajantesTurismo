@@ -19,7 +19,7 @@ public sealed class AdminApiClientIntegrationTests(ApiFixture fixture)
         var outcome = await sut.CreateCustomer(request, cancellationToken);
 
         // Assert
-        outcome.Kind.ShouldBe(ContractCommandOutcomeKind.Succeeded);
+        outcome.Kind.ShouldBe(HttpOutcomeKind.Succeeded);
         outcome.StatusCode.ShouldBe(HttpStatusCode.Created);
         outcome.Location.ShouldNotBeNull();
 
@@ -27,7 +27,7 @@ public sealed class AdminApiClientIntegrationTests(ApiFixture fixture)
         Guid.TryParse(customerIdText, out var customerId).ShouldBeTrue();
 
         var customerOutcome = await sut.GetCustomerById(customerId, cancellationToken);
-        customerOutcome.Kind.ShouldBe(ContractCommandOutcomeKind.Succeeded);
+        customerOutcome.Kind.ShouldBe(HttpOutcomeKind.Succeeded);
         var customer = customerOutcome.Value.ShouldNotBeNull();
         customer.PersonalInfo.FirstName.ShouldBe("Contract");
         customer.PersonalInfo.LastName.ShouldBe("Client");
@@ -45,13 +45,13 @@ public sealed class AdminApiClientIntegrationTests(ApiFixture fixture)
         var outcome = await sut.CreateTour(createRequest, cancellationToken);
 
         // Assert
-        outcome.Kind.ShouldBe(ContractCommandOutcomeKind.Succeeded);
+        outcome.Kind.ShouldBe(HttpOutcomeKind.Succeeded);
         outcome.Location.ShouldNotBeNull();
         var tourIdText = outcome.Location.OriginalString.Split('/', StringSplitOptions.RemoveEmptyEntries)[^1];
         Guid.TryParse(tourIdText, out var tourId).ShouldBeTrue();
 
         var createdOutcome = await sut.GetTourById(tourId, cancellationToken);
-        createdOutcome.Kind.ShouldBe(ContractCommandOutcomeKind.Succeeded);
+        createdOutcome.Kind.ShouldBe(HttpOutcomeKind.Succeeded);
         var created = createdOutcome.Value.ShouldNotBeNull();
         created.Name.ShouldBe("Contract Client Tour");
 
@@ -59,8 +59,8 @@ public sealed class AdminApiClientIntegrationTests(ApiFixture fixture)
         var updateOutcome = await sut.UpdateTour(tourId, updateRequest, cancellationToken);
 
         var updatedOutcome = await sut.GetTourById(tourId, cancellationToken);
-        updateOutcome.Kind.ShouldBe(ContractCommandOutcomeKind.Succeeded);
-        updatedOutcome.Kind.ShouldBe(ContractCommandOutcomeKind.Succeeded);
+        updateOutcome.Kind.ShouldBe(HttpOutcomeKind.Succeeded);
+        updatedOutcome.Kind.ShouldBe(HttpOutcomeKind.Succeeded);
         var updated = updatedOutcome.Value.ShouldNotBeNull();
         updated.Name.ShouldBe("Updated Contract Client Tour");
     }
@@ -83,9 +83,9 @@ public sealed class AdminApiClientIntegrationTests(ApiFixture fixture)
         var readOutcome = await sut.GetBookingById(booking.Id, cancellationToken);
 
         // Assert
-        updateOutcome.Kind.ShouldBe(ContractCommandOutcomeKind.Succeeded);
+        updateOutcome.Kind.ShouldBe(HttpOutcomeKind.Succeeded);
         updateOutcome.StatusCode.ShouldBe(HttpStatusCode.OK);
-        readOutcome.Kind.ShouldBe(ContractCommandOutcomeKind.Succeeded);
+        readOutcome.Kind.ShouldBe(HttpOutcomeKind.Succeeded);
         var updated = readOutcome.Value.ShouldNotBeNull();
         updated.Notes.ShouldBe("Updated through the typed client");
     }

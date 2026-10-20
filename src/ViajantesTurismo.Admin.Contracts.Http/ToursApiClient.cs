@@ -20,10 +20,10 @@ public sealed partial class ToursApiClient(HttpClient httpClient, ILogger<ToursA
     {
         if (maxItems <= 0)
         {
-            return ContractCommandOutcome.Succeeded(HttpStatusCode.OK, Array.Empty<GetTourDto>());
+            return HttpOutcomeMapper.Succeeded(HttpStatusCode.OK, Array.Empty<GetTourDto>());
         }
 
-        var outcome = await ContractCommandOutcome.Send(
+        var outcome = await HttpOutcomeMapper.Send(
             httpClient,
             new HttpRequestMessage(HttpMethod.Get, new Uri(RoutePrefix, UriKind.Relative)),
             HttpStatusCode.OK,
@@ -31,7 +31,7 @@ public sealed partial class ToursApiClient(HttpClient httpClient, ILogger<ToursA
             Json.ContractValidationProblemDto,
             cancellationToken).ConfigureAwait(false);
 
-        return outcome.Kind == ContractCommandOutcomeKind.Succeeded
+        return outcome.Kind == HttpOutcomeKind.Succeeded
             ? outcome with { Value = outcome.Value?.OfType<GetTourDto>().Take(maxItems).ToArray() ?? [] }
             : outcome;
     }
@@ -39,7 +39,7 @@ public sealed partial class ToursApiClient(HttpClient httpClient, ILogger<ToursA
     /// <inheritdoc />
     public async Task<HttpOutcome<GetTourDto>> GetTourById(Guid id, CancellationToken cancellationToken)
     {
-        return await ContractCommandOutcome.Send(
+        return await HttpOutcomeMapper.Send(
             httpClient,
             new HttpRequestMessage(HttpMethod.Get, new Uri($"{RoutePrefix}/{id}", UriKind.Relative)),
             HttpStatusCode.OK,
@@ -63,7 +63,7 @@ public sealed partial class ToursApiClient(HttpClient httpClient, ILogger<ToursA
         {
             Content = JsonContent.Create(dto, Json.CreateTourDto)
         };
-        var outcome = await ContractCommandOutcome.Send(
+        var outcome = await HttpOutcomeMapper.Send(
             httpClient,
             request,
             HttpStatusCode.Created,
@@ -76,7 +76,7 @@ public sealed partial class ToursApiClient(HttpClient httpClient, ILogger<ToursA
         }
 
         activity?.SetTag(AdminContractsClientTelemetry.CommandOutcomeKindTag, outcome.Kind.ToString());
-        if (outcome.Kind != ContractCommandOutcomeKind.Succeeded && logger is not null)
+        if (outcome.Kind != HttpOutcomeKind.Succeeded && logger is not null)
         {
             LogTourCreateOutcome(logger, outcome.StatusCode, outcome.Kind);
         }
@@ -93,7 +93,7 @@ public sealed partial class ToursApiClient(HttpClient httpClient, ILogger<ToursA
         {
             Content = JsonContent.Create(dto, Json.UpdateTourDto)
         };
-        return await ContractCommandOutcome.Send(
+        return await HttpOutcomeMapper.Send(
             httpClient,
             request,
             HttpStatusCode.NoContent,
@@ -102,5 +102,5 @@ public sealed partial class ToursApiClient(HttpClient httpClient, ILogger<ToursA
     }
 
     [LoggerMessage(1, LogLevel.Warning, "Tour create returned {StatusCode} with outcome {OutcomeKind}.")]
-    private static partial void LogTourCreateOutcome(ILogger logger, HttpStatusCode? statusCode, ContractCommandOutcomeKind outcomeKind);
+    private static partial void LogTourCreateOutcome(ILogger logger, HttpStatusCode? statusCode, HttpOutcomeKind outcomeKind);
 }

@@ -81,7 +81,7 @@ else
     {
         _errorMessage = null;
         var outcome = await CustomersApi.GetCustomers(CancellationToken.None);
-        if (outcome is { Kind: ContractCommandOutcomeKind.Succeeded, Value: { } customers })
+        if (outcome is { Kind: HttpOutcomeKind.Succeeded, Value: { } customers })
         {
             _customers = customers;
             return;

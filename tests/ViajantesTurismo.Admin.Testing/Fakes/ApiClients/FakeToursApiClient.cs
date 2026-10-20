@@ -30,7 +30,7 @@ public sealed class FakeToursApiClient : IToursApiClient
             return Task.FromResult(_getToursOutcome);
         }
 
-        return Task.FromResult(ContractCommandOutcome.Succeeded(HttpStatusCode.OK, _tours.Take(maxItems).ToArray()));
+        return Task.FromResult(HttpOutcomeMapper.Succeeded(HttpStatusCode.OK, _tours.Take(maxItems).ToArray()));
     }
 
     public Task<HttpOutcome<GetTourDto>> GetTourById(Guid id, CancellationToken cancellationToken)
@@ -49,8 +49,8 @@ public sealed class FakeToursApiClient : IToursApiClient
 
         var tour = _tours.FirstOrDefault(t => t.Id == id);
         return Task.FromResult(tour is null
-            ? ContractCommandOutcome.Status<GetTourDto>(ContractCommandOutcomeKind.NotFound, HttpStatusCode.NotFound)
-            : ContractCommandOutcome.Succeeded(HttpStatusCode.OK, tour));
+            ? HttpOutcomeMapper.Status<GetTourDto>(HttpOutcomeKind.NotFound, HttpStatusCode.NotFound)
+            : HttpOutcomeMapper.Succeeded(HttpStatusCode.OK, tour));
     }
 
     public Task<HttpOutcome> CreateTour(CreateTourDto dto, CancellationToken cancellationToken)
@@ -88,7 +88,7 @@ public sealed class FakeToursApiClient : IToursApiClient
 
         _tours.Add(newTour);
 
-        return Task.FromResult(ContractCommandOutcome.Succeeded(HttpStatusCode.Created, new Uri($"/api/v1/tours/{newTour.Id}", UriKind.Relative)));
+        return Task.FromResult(HttpOutcomeMapper.Succeeded(HttpStatusCode.Created, new Uri($"/api/v1/tours/{newTour.Id}", UriKind.Relative)));
     }
 
     public Task<HttpOutcome> UpdateTour(Guid id, UpdateTourDto dto, CancellationToken cancellationToken)
@@ -109,7 +109,7 @@ public sealed class FakeToursApiClient : IToursApiClient
         var tour = _tours.FirstOrDefault(t => t.Id == id);
         if (tour is null)
         {
-            return Task.FromResult(ContractCommandOutcome.Status(ContractCommandOutcomeKind.NotFound, HttpStatusCode.NotFound));
+            return Task.FromResult(HttpOutcomeMapper.Status(HttpOutcomeKind.NotFound, HttpStatusCode.NotFound));
         }
 
         var index = _tours.IndexOf(tour);
@@ -129,7 +129,7 @@ public sealed class FakeToursApiClient : IToursApiClient
             MaxCustomers = dto.MaxCustomers
         };
 
-        return Task.FromResult(ContractCommandOutcome.Succeeded(HttpStatusCode.NoContent, location: null));
+        return Task.FromResult(HttpOutcomeMapper.Succeeded(HttpStatusCode.NoContent, location: null));
     }
 
     public void AddTour(GetTourDto tour) => _tours.Add(tour);

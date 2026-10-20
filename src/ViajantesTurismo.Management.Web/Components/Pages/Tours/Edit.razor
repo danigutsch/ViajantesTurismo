@@ -195,7 +195,7 @@ Bike rental"/>
     protected override async Task OnInitializedAsync()
     {
         var outcome = await ToursApi.GetTourById(Id, CancellationToken.None);
-        if (outcome is { Kind: ContractCommandOutcomeKind.Succeeded, Value: { } tour })
+        if (outcome is { Kind: HttpOutcomeKind.Succeeded, Value: { } tour })
         {
             _hasBookings = tour.CurrentCustomerCount > 0;
 
@@ -215,7 +215,7 @@ Bike rental"/>
                 MaxCustomers = tour.MaxCustomers
             };
         }
-        else if (outcome.Kind == ContractCommandOutcomeKind.NotFound)
+        else if (outcome.Kind == HttpOutcomeKind.NotFound)
         {
             _notFound = true;
         }
@@ -257,7 +257,7 @@ Bike rental"/>
             };
 
             var outcome = await ToursApi.UpdateTour(Id, tour, CancellationToken.None);
-            if (outcome.Kind != ContractCommandOutcomeKind.Succeeded)
+            if (outcome.Kind != HttpOutcomeKind.Succeeded)
             {
                 _errorMessage = HttpOutcomeUserMessage.For(outcome.Kind, UserFacingErrorMessage.ForOperation("update the tour"));
                 return;

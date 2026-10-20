@@ -189,12 +189,12 @@ else if (_tour != null)
     protected override async Task OnInitializedAsync()
     {
         var outcome = await ToursApi.GetTourById(Id, CancellationToken.None);
-        if (outcome is { Kind: ContractCommandOutcomeKind.Succeeded, Value: { } tour })
+        if (outcome is { Kind: HttpOutcomeKind.Succeeded, Value: { } tour })
         {
             _tour = tour;
             await Task.WhenAll(LoadBookings(), LoadCustomers(), LoadTours());
         }
-        else if (outcome.Kind == ContractCommandOutcomeKind.NotFound)
+        else if (outcome.Kind == HttpOutcomeKind.NotFound)
         {
             _notFound = true;
         }
@@ -212,7 +212,7 @@ else if (_tour != null)
         try
         {
             var outcome = await BookingsApi.GetBookingsByTourId(Id, CancellationToken.None);
-            _bookings = outcome is { Kind: ContractCommandOutcomeKind.Succeeded, Value: { } bookings }
+            _bookings = outcome is { Kind: HttpOutcomeKind.Succeeded, Value: { } bookings }
                 ? bookings
                 : [];
         }
@@ -225,7 +225,7 @@ else if (_tour != null)
     private async Task LoadCustomers()
     {
         var outcome = await CustomersApi.GetCustomers(CancellationToken.None);
-        _customers = outcome is { Kind: ContractCommandOutcomeKind.Succeeded, Value: { } customers }
+        _customers = outcome is { Kind: HttpOutcomeKind.Succeeded, Value: { } customers }
             ? customers
             : [];
     }
@@ -233,7 +233,7 @@ else if (_tour != null)
     private async Task LoadTours()
     {
         var outcome = await ToursApi.GetTours(CancellationToken.None);
-        _tours = outcome is { Kind: ContractCommandOutcomeKind.Succeeded, Value: { } tours }
+        _tours = outcome is { Kind: HttpOutcomeKind.Succeeded, Value: { } tours }
             ? tours
             : [];
     }
@@ -256,13 +256,13 @@ else if (_tour != null)
         {
             var createDto = model.ToDto() with { TourId = Id };
             var outcome = await BookingsApi.CreateBooking(createDto, CancellationToken.None);
-            if (outcome.Kind == ContractCommandOutcomeKind.ValidationProblem)
+            if (outcome.Kind == HttpOutcomeKind.ValidationProblem)
             {
                 ApplyBookingValidationErrors(outcome);
                 return;
             }
 
-            if (outcome.Kind != ContractCommandOutcomeKind.Succeeded)
+            if (outcome.Kind != HttpOutcomeKind.Succeeded)
             {
                 _toast?.ShowError(HttpOutcomeUserMessage.For(outcome.Kind, "Failed to create booking. Please try again."));
                 return;

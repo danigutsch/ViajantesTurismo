@@ -398,9 +398,9 @@ else
     protected override async Task OnInitializedAsync()
     {
         var customerOutcome = await CustomersApi.GetCustomerById(Id, CancellationToken.None);
-        if (customerOutcome is not { Kind: ContractCommandOutcomeKind.Succeeded, Value: { } customer })
+        if (customerOutcome is not { Kind: HttpOutcomeKind.Succeeded, Value: { } customer })
         {
-            if (customerOutcome.Kind == ContractCommandOutcomeKind.NotFound)
+            if (customerOutcome.Kind == HttpOutcomeKind.NotFound)
             {
                 _notFound = true;
             }
@@ -427,7 +427,7 @@ else
         };
 
         var customersOutcome = await CustomersApi.GetCustomers(CancellationToken.None);
-        _customers = customersOutcome is { Kind: ContractCommandOutcomeKind.Succeeded, Value: { } customers }
+        _customers = customersOutcome is { Kind: HttpOutcomeKind.Succeeded, Value: { } customers }
             ? customers
             : [];
         _countries = await CountryService.GetCountries(CancellationToken.None);
@@ -459,7 +459,7 @@ else
             };
 
             var outcome = await CustomersApi.UpdateCustomer(Id, customer, CancellationToken.None);
-            if (outcome.Kind != ContractCommandOutcomeKind.Succeeded)
+            if (outcome.Kind != HttpOutcomeKind.Succeeded)
             {
                 _errorMessage = HttpOutcomeUserMessage.For(outcome.Kind, UserFacingErrorMessage.ForOperation("update the customer"));
                 return;

@@ -6,13 +6,13 @@ public static class FakeApiClientOutcomes
 {
     public static HttpOutcome TransportFailure() => new()
     {
-        Kind = ContractCommandOutcomeKind.TransportFailure,
+        Kind = HttpOutcomeKind.TransportFailure,
         Message = "HTTP transport failed."
     };
 
     public static HttpOutcome<TValue> TransportFailure<TValue>() => new()
     {
-        Kind = ContractCommandOutcomeKind.TransportFailure,
+        Kind = HttpOutcomeKind.TransportFailure,
         Message = "HTTP transport failed."
     };
 }

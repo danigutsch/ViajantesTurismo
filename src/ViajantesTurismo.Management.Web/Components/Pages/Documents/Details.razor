@@ -128,10 +128,10 @@
         _loadErrorMessage = null;
 
         var outcome = await DocumentsApi.GetDocumentById(Id, CancellationToken.None);
-        _document = outcome is { Kind: ContractCommandOutcomeKind.Succeeded, Value: { } document }
+        _document = outcome is { Kind: HttpOutcomeKind.Succeeded, Value: { } document }
             ? document
             : null;
-        _notFound = outcome.Kind == ContractCommandOutcomeKind.NotFound;
+        _notFound = outcome.Kind == HttpOutcomeKind.NotFound;
         _fieldValues.Clear();
         if (_document is not null)
         {
@@ -182,7 +182,7 @@
             await ExecuteAction(async () =>
             {
                 var outcome = await DocumentsApi.Regenerate(resourceId, attempt.Key, CancellationToken.None);
-                if (outcome is { Kind: ContractCommandOutcomeKind.Succeeded, Value: not null })
+                if (outcome is { Kind: HttpOutcomeKind.Succeeded, Value: not null })
                 {
                     _regenerationAttempt = null;
                 }
@@ -220,7 +220,7 @@
         _errorMessage = null;
 
         var outcome = await action();
-        if (outcome is not { Kind: ContractCommandOutcomeKind.Succeeded, Value: { } document })
+        if (outcome is not { Kind: HttpOutcomeKind.Succeeded, Value: { } document })
         {
             _errorMessage = HttpOutcomeUserMessage.For(outcome.Kind, errorMessage);
             return;

@@ -94,7 +94,7 @@ internal sealed class FakePublicCatalogApiClient : IPublicCatalogApiClient
 
         return FailListRequests
             ? TransportFailure<TourSummaryDto[]>()
-            : ContractCommandOutcome.Succeeded(HttpStatusCode.OK, tours.ToArray());
+            : HttpOutcomeMapper.Succeeded(HttpStatusCode.OK, tours.ToArray());
     }
 
     public Task<HttpOutcome<TourDetailsDto>> GetPublishedTourBySlug(string slug, CancellationToken ct)
@@ -113,8 +113,8 @@ internal sealed class FakePublicCatalogApiClient : IPublicCatalogApiClient
 
         var tour = tourDetails.FirstOrDefault(tour => string.Equals(tour.Slug, slug, StringComparison.Ordinal));
         return Task.FromResult(tour is null
-            ? ContractCommandOutcome.Status<TourDetailsDto>(ContractCommandOutcomeKind.NotFound, HttpStatusCode.NotFound)
-            : ContractCommandOutcome.Succeeded(HttpStatusCode.OK, tour));
+            ? HttpOutcomeMapper.Status<TourDetailsDto>(HttpOutcomeKind.NotFound, HttpStatusCode.NotFound)
+            : HttpOutcomeMapper.Succeeded(HttpStatusCode.OK, tour));
     }
 
     public async Task<HttpOutcome<PublicContentVariantDto>> GetPublicContent(string key, string? culture, CancellationToken ct)
@@ -140,8 +140,8 @@ internal sealed class FakePublicCatalogApiClient : IPublicCatalogApiClient
         var requestedCulture = string.IsNullOrWhiteSpace(culture) ? "en-US" : culture;
         contentByKeyAndCulture.TryGetValue(CreateContentKey(key, requestedCulture), out var content);
         return content is null
-            ? ContractCommandOutcome.Status<PublicContentVariantDto>(ContractCommandOutcomeKind.NotFound, HttpStatusCode.NotFound)
-            : ContractCommandOutcome.Succeeded(HttpStatusCode.OK, content);
+            ? HttpOutcomeMapper.Status<PublicContentVariantDto>(HttpOutcomeKind.NotFound, HttpStatusCode.NotFound)
+            : HttpOutcomeMapper.Succeeded(HttpStatusCode.OK, content);
     }
 
     public Task<PublicMediaObjectResponse?> GetPublicMedia(Guid id, int width, string format, CancellationToken ct)
@@ -168,7 +168,7 @@ internal sealed class FakePublicCatalogApiClient : IPublicCatalogApiClient
 
     private static HttpOutcome<TValue> TransportFailure<TValue>() => new()
     {
-        Kind = ContractCommandOutcomeKind.TransportFailure,
+        Kind = HttpOutcomeKind.TransportFailure,
         Message = "HTTP transport failed."
     };
 }

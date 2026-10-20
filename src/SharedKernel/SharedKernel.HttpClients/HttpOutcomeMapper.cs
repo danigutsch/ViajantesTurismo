@@ -10,12 +10,12 @@ using Polly.Timeout;
 namespace SharedKernel.HttpClients;
 
 /// <summary>
-/// Creates contract command outcomes from HTTP requests and responses.
+/// Sends HTTP requests and maps response status, bounded JSON bodies, and transport failures to HTTP outcomes.
 /// </summary>
-public static class ContractCommandOutcome
+public static class HttpOutcomeMapper
 {
     /// <summary>
-    /// The activity source name used for bounded HTTP outcome telemetry.
+    /// Identifies the stable activity source used for bounded HTTP outcome telemetry.
     /// </summary>
     public const string ActivitySourceName = "SharedKernel.HttpClients.ContractOutcomes";
 
@@ -35,36 +35,36 @@ public static class ContractCommandOutcome
     private static readonly ActivitySource OutcomeActivitySource = new(ActivitySourceName);
 
     /// <summary>
-    /// Creates a successful command outcome.
+    /// Creates a successful HTTP outcome.
     /// </summary>
     /// <param name="statusCode">The successful HTTP status code.</param>
-    /// <param name="location">The created resource location, when present.</param>
-    /// <returns>The successful command outcome.</returns>
+    /// <param name="location">The response Location header, when present.</param>
+    /// <returns>The successful HTTP outcome.</returns>
     public static HttpOutcome Succeeded(HttpStatusCode statusCode, Uri? location)
     {
         return new HttpOutcome
         {
-            Kind = ContractCommandOutcomeKind.Succeeded,
+            Kind = HttpOutcomeKind.Succeeded,
             StatusCode = statusCode,
             Location = location
         };
     }
 
     /// <summary>
-    /// Creates a successful materialized command outcome.
+    /// Creates a successful materialized HTTP outcome.
     /// </summary>
     /// <typeparam name="TValue">The materialized response contract type.</typeparam>
     /// <param name="statusCode">The successful HTTP status code.</param>
     /// <param name="value">The materialized response value.</param>
-    /// <param name="location">The created resource location, when present.</param>
-    /// <returns>The successful command outcome.</returns>
+    /// <param name="location">The response Location header, when present.</param>
+    /// <returns>The successful HTTP outcome.</returns>
     public static HttpOutcome<TValue> Succeeded<TValue>(HttpStatusCode statusCode, TValue value, Uri? location = null)
     {
         ArgumentNullException.ThrowIfNull(value);
 
         return new HttpOutcome<TValue>
         {
-            Kind = ContractCommandOutcomeKind.Succeeded,
+            Kind = HttpOutcomeKind.Succeeded,
             StatusCode = statusCode,
             Value = value,
             Location = location
@@ -72,18 +72,22 @@ public static class ContractCommandOutcome
     }
 
     /// <summary>
-    /// Sends an HTTP request and maps its response to a command outcome.
+    /// Sends an HTTP request and maps its response to an HTTP outcome.
     /// </summary>
     /// <remarks>
-    /// This method takes ownership of <paramref name="request" /> and the received response and disposes both.
-    /// Caller cancellation is rethrown; timeout and transport failures are returned as redacted outcomes.
+    /// After argument validation, this method owns and disposes <paramref name="request" /> and the received response.
+    /// The supplied <paramref name="httpClient" /> remains caller-owned.
+    /// The HTTP client timeout covers sending and asynchronous response-body reads. JSON reads are limited to the smaller
+    /// of 1 MiB and the client buffer limit. Caller cancellation is rethrown with its token; recognized timeout and
+    /// transport failures become outcomes with fixed diagnostic messages. Exceptions outside the recognized timeout,
+    /// transport, or parsing failures propagate.
     /// </remarks>
     /// <param name="httpClient">The HTTP client.</param>
     /// <param name="request">The request whose ownership is transferred to this method.</param>
     /// <param name="successStatusCode">The status code that represents success for this operation.</param>
     /// <param name="validationProblemJson">The source-generated validation problem JSON metadata.</param>
-    /// <param name="ct">The caller cancellation token.</param>
-    /// <returns>The command outcome.</returns>
+    /// <param name="ct">The token used while sending the request and reading its response body.</param>
+    /// <returns>The HTTP outcome.</returns>
     public static async Task<HttpOutcome> Send(
         HttpClient httpClient,
         HttpRequestMessage request,
@@ -117,11 +121,11 @@ public static class ContractCommandOutcome
             }
             catch (Exception exception) when (IsTimeout(exception))
             {
-                outcome = Failure(ContractCommandOutcomeKind.TimedOut, TimedOutMessage);
+                outcome = Failure(HttpOutcomeKind.TimedOut, TimedOutMessage);
             }
             catch (Exception exception) when (IsTransportFailure(exception))
             {
-                outcome = Failure(ContractCommandOutcomeKind.TransportFailure, TransportFailureMessage);
+                outcome = Failure(HttpOutcomeKind.TransportFailure, TransportFailureMessage);
             }
 
             RecordOutcome(activity, outcome.Kind, outcome.StatusCode);
@@ -130,11 +134,15 @@ public static class ContractCommandOutcome
     }
 
     /// <summary>
-    /// Sends an HTTP request and maps its materialized JSON response to a command outcome.
+    /// Sends an HTTP request and maps its materialized JSON response to an HTTP outcome.
     /// </summary>
     /// <remarks>
-    /// This method takes ownership of <paramref name="request" /> and the received response and disposes both.
-    /// Caller cancellation is rethrown; timeout and transport failures are returned as redacted outcomes.
+    /// After argument validation, this method owns and disposes <paramref name="request" /> and the received response.
+    /// The supplied <paramref name="httpClient" /> remains caller-owned.
+    /// The HTTP client timeout covers sending and asynchronous response-body reads. JSON reads are limited to the smaller
+    /// of 1 MiB and the client buffer limit. Caller cancellation is rethrown with its token; recognized timeout and
+    /// transport failures become outcomes with fixed diagnostic messages. Exceptions outside the recognized timeout,
+    /// transport, or parsing failures propagate.
     /// </remarks>
     /// <typeparam name="TValue">The materialized response contract type.</typeparam>
     /// <param name="httpClient">The HTTP client.</param>
@@ -142,8 +150,8 @@ public static class ContractCommandOutcome
     /// <param name="successStatusCode">The status code that represents success for this operation.</param>
     /// <param name="valueJson">The source-generated response JSON metadata.</param>
     /// <param name="validationProblemJson">The source-generated validation problem JSON metadata.</param>
-    /// <param name="ct">The caller cancellation token.</param>
-    /// <returns>The materialized command outcome.</returns>
+    /// <param name="ct">The token used while sending the request and reading its response body.</param>
+    /// <returns>The materialized HTTP outcome.</returns>
     public static async Task<HttpOutcome<TValue>> Send<TValue>(
         HttpClient httpClient,
         HttpRequestMessage request,
@@ -180,11 +188,11 @@ public static class ContractCommandOutcome
             }
             catch (Exception exception) when (IsTimeout(exception))
             {
-                outcome = Failure<TValue>(ContractCommandOutcomeKind.TimedOut, TimedOutMessage);
+                outcome = Failure<TValue>(HttpOutcomeKind.TimedOut, TimedOutMessage);
             }
             catch (Exception exception) when (IsTransportFailure(exception))
             {
-                outcome = Failure<TValue>(ContractCommandOutcomeKind.TransportFailure, TransportFailureMessage);
+                outcome = Failure<TValue>(HttpOutcomeKind.TransportFailure, TransportFailureMessage);
             }
 
             RecordOutcome(activity, outcome.Kind, outcome.StatusCode);
@@ -193,13 +201,17 @@ public static class ContractCommandOutcome
     }
 
     /// <summary>
-    /// Creates a command outcome from an HTTP response.
+    /// Creates an HTTP outcome from a response, treating HTTP 201 Created as success.
     /// </summary>
-    /// <remarks>This method takes ownership of <paramref name="response" /> and disposes it.</remarks>
+    /// <remarks>
+    /// After argument validation, this method owns and disposes <paramref name="response" />. JSON reads are limited to 1 MiB.
+    /// The supplied token controls body reads; this overload does not create an HTTP client timeout or tracing activity.
+    /// Cancellation propagates; response-body I/O failures become transport outcomes.
+    /// </remarks>
     /// <param name="response">The HTTP response whose ownership is transferred to this method.</param>
     /// <param name="validationProblemJson">The source-generated validation problem JSON metadata.</param>
     /// <param name="ct">Cancellation token for reading the response body.</param>
-    /// <returns>The command outcome.</returns>
+    /// <returns>The HTTP outcome.</returns>
     public static async Task<HttpOutcome> FromResponse(
         HttpResponseMessage response,
         JsonTypeInfo<ContractValidationProblemDto> validationProblemJson,
@@ -209,14 +221,18 @@ public static class ContractCommandOutcome
     }
 
     /// <summary>
-    /// Creates a command outcome from an HTTP response for an operation-specific success status.
+    /// Creates an HTTP outcome from an HTTP response for an operation-specific success status.
     /// </summary>
-    /// <remarks>This method takes ownership of <paramref name="response" /> and disposes it.</remarks>
+    /// <remarks>
+    /// After argument validation, this method owns and disposes <paramref name="response" />. JSON reads are limited to 1 MiB.
+    /// The supplied token controls body reads; this overload does not create an HTTP client timeout or tracing activity.
+    /// Cancellation propagates; response-body I/O failures become transport outcomes.
+    /// </remarks>
     /// <param name="response">The HTTP response whose ownership is transferred to this method.</param>
     /// <param name="successStatusCode">The status code that represents success for this operation.</param>
     /// <param name="validationProblemJson">The source-generated validation problem JSON metadata.</param>
     /// <param name="ct">Cancellation token for reading the response body.</param>
-    /// <returns>The command outcome.</returns>
+    /// <returns>The HTTP outcome.</returns>
     public static async Task<HttpOutcome> FromResponse(
         HttpResponseMessage response,
         HttpStatusCode successStatusCode,
@@ -238,16 +254,20 @@ public static class ContractCommandOutcome
     }
 
     /// <summary>
-    /// Creates a materialized command outcome from an HTTP response.
+    /// Creates a materialized HTTP outcome from an HTTP response.
     /// </summary>
-    /// <remarks>This method takes ownership of <paramref name="response" /> and disposes it.</remarks>
+    /// <remarks>
+    /// After argument validation, this method owns and disposes <paramref name="response" />. JSON reads are limited to 1 MiB.
+    /// The supplied token controls body reads; this overload does not create an HTTP client timeout or tracing activity.
+    /// Cancellation propagates; response-body I/O failures become transport outcomes.
+    /// </remarks>
     /// <typeparam name="TValue">The materialized response contract type.</typeparam>
     /// <param name="response">The HTTP response whose ownership is transferred to this method.</param>
     /// <param name="successStatusCode">The status code that represents success for this operation.</param>
     /// <param name="valueJson">The source-generated response JSON metadata.</param>
     /// <param name="validationProblemJson">The source-generated validation problem JSON metadata.</param>
     /// <param name="ct">Cancellation token for reading the response body.</param>
-    /// <returns>The materialized command outcome.</returns>
+    /// <returns>The materialized HTTP outcome.</returns>
     public static async Task<HttpOutcome<TValue>> FromResponse<TValue>(
         HttpResponseMessage response,
         HttpStatusCode successStatusCode,
@@ -272,13 +292,13 @@ public static class ContractCommandOutcome
     }
 
     /// <summary>
-    /// Creates a command outcome for a status code.
+    /// Creates an HTTP outcome for a status code.
     /// </summary>
     /// <param name="kind">The outcome kind.</param>
     /// <param name="statusCode">The HTTP status code.</param>
-    /// <param name="message">A non-PII diagnostic message.</param>
-    /// <returns>The command outcome.</returns>
-    public static HttpOutcome Status(ContractCommandOutcomeKind kind, HttpStatusCode statusCode, string? message = null)
+    /// <param name="message">An optional caller-supplied diagnostic message; omit sensitive data and direct UI text.</param>
+    /// <returns>The HTTP outcome.</returns>
+    public static HttpOutcome Status(HttpOutcomeKind kind, HttpStatusCode statusCode, string? message = null)
     {
         return new HttpOutcome
         {
@@ -289,14 +309,14 @@ public static class ContractCommandOutcome
     }
 
     /// <summary>
-    /// Creates a materialized command outcome for a status code.
+    /// Creates a materialized HTTP outcome for a status code.
     /// </summary>
     /// <typeparam name="TValue">The materialized response contract type.</typeparam>
     /// <param name="kind">The outcome kind.</param>
     /// <param name="statusCode">The HTTP status code.</param>
-    /// <param name="message">A non-PII diagnostic message.</param>
-    /// <returns>The materialized command outcome.</returns>
-    public static HttpOutcome<TValue> Status<TValue>(ContractCommandOutcomeKind kind, HttpStatusCode statusCode, string? message = null)
+    /// <param name="message">An optional caller-supplied diagnostic message; omit sensitive data and direct UI text.</param>
+    /// <returns>The materialized HTTP outcome.</returns>
+    public static HttpOutcome<TValue> Status<TValue>(HttpOutcomeKind kind, HttpStatusCode statusCode, string? message = null)
     {
         return new HttpOutcome<TValue>
         {
@@ -360,40 +380,40 @@ public static class ContractCommandOutcome
     {
         if (response.Content.Headers.ContentLength == 0)
         {
-            return Status<TValue>(ContractCommandOutcomeKind.EmptyBody, response.StatusCode, EmptyBodyMessage);
+            return Status<TValue>(HttpOutcomeKind.EmptyBody, response.StatusCode, EmptyBodyMessage);
         }
 
         if (!HasJsonContentType(response.Content))
         {
-            return Status<TValue>(ContractCommandOutcomeKind.UnsupportedContentType, response.StatusCode, UnsupportedContentTypeMessage);
+            return Status<TValue>(HttpOutcomeKind.UnsupportedContentType, response.StatusCode, UnsupportedContentTypeMessage);
         }
 
         var body = await ReadResponseBody(response.Content, responseBodyLimit, ct).ConfigureAwait(false);
         if (body.TransportFailed)
         {
-            return Failure<TValue>(ContractCommandOutcomeKind.TransportFailure, TransportFailureMessage);
+            return Failure<TValue>(HttpOutcomeKind.TransportFailure, TransportFailureMessage);
         }
 
         if (body.Malformed)
         {
-            return Status<TValue>(ContractCommandOutcomeKind.MalformedBody, response.StatusCode, MalformedBodyMessage);
+            return Status<TValue>(HttpOutcomeKind.MalformedBody, response.StatusCode, MalformedBodyMessage);
         }
 
         if (string.IsNullOrWhiteSpace(body.Content))
         {
-            return Status<TValue>(ContractCommandOutcomeKind.EmptyBody, response.StatusCode, EmptyBodyMessage);
+            return Status<TValue>(HttpOutcomeKind.EmptyBody, response.StatusCode, EmptyBodyMessage);
         }
 
         try
         {
             var value = JsonSerializer.Deserialize(body.Content, valueJson);
             return value is null
-                ? Status<TValue>(ContractCommandOutcomeKind.MalformedBody, response.StatusCode, MalformedBodyMessage)
+                ? Status<TValue>(HttpOutcomeKind.MalformedBody, response.StatusCode, MalformedBodyMessage)
                 : Succeeded(response.StatusCode, value, response.Headers.Location);
         }
         catch (Exception exception) when (exception is JsonException or ArgumentException)
         {
-            return Status<TValue>(ContractCommandOutcomeKind.MalformedBody, response.StatusCode, MalformedBodyMessage);
+            return Status<TValue>(HttpOutcomeKind.MalformedBody, response.StatusCode, MalformedBodyMessage);
         }
     }
 
@@ -405,28 +425,28 @@ public static class ContractCommandOutcome
     {
         if (response.Content.Headers.ContentLength == 0)
         {
-            return Status(ContractCommandOutcomeKind.EmptyBody, response.StatusCode, ValidationEmptyBodyMessage);
+            return Status(HttpOutcomeKind.EmptyBody, response.StatusCode, ValidationEmptyBodyMessage);
         }
 
         if (!HasJsonContentType(response.Content))
         {
-            return Status(ContractCommandOutcomeKind.UnsupportedContentType, response.StatusCode, UnsupportedContentTypeMessage);
+            return Status(HttpOutcomeKind.UnsupportedContentType, response.StatusCode, UnsupportedContentTypeMessage);
         }
 
         var body = await ReadResponseBody(response.Content, responseBodyLimit, ct).ConfigureAwait(false);
         if (body.TransportFailed)
         {
-            return Failure(ContractCommandOutcomeKind.TransportFailure, TransportFailureMessage);
+            return Failure(HttpOutcomeKind.TransportFailure, TransportFailureMessage);
         }
 
         if (body.Malformed)
         {
-            return Status(ContractCommandOutcomeKind.MalformedBody, response.StatusCode, ValidationMalformedBodyMessage);
+            return Status(HttpOutcomeKind.MalformedBody, response.StatusCode, ValidationMalformedBodyMessage);
         }
 
         if (string.IsNullOrWhiteSpace(body.Content))
         {
-            return Status(ContractCommandOutcomeKind.EmptyBody, response.StatusCode, ValidationEmptyBodyMessage);
+            return Status(HttpOutcomeKind.EmptyBody, response.StatusCode, ValidationEmptyBodyMessage);
         }
 
         try
@@ -434,24 +454,24 @@ public static class ContractCommandOutcome
             var problem = JsonSerializer.Deserialize(body.Content, validationProblemJson);
             if (problem?.Errors is null or { Count: 0 })
             {
-                return Status(ContractCommandOutcomeKind.MalformedBody, response.StatusCode, ValidationMissingErrorsMessage);
+                return Status(HttpOutcomeKind.MalformedBody, response.StatusCode, ValidationMissingErrorsMessage);
             }
 
             if (!problem.HasWellFormedErrors())
             {
-                return Status(ContractCommandOutcomeKind.MalformedBody, response.StatusCode, ValidationMalformedBodyMessage);
+                return Status(HttpOutcomeKind.MalformedBody, response.StatusCode, ValidationMalformedBodyMessage);
             }
 
             return new HttpOutcome
             {
-                Kind = ContractCommandOutcomeKind.ValidationProblem,
+                Kind = HttpOutcomeKind.ValidationProblem,
                 StatusCode = response.StatusCode,
                 ValidationErrors = new Dictionary<string, string[]>(problem.Errors, StringComparer.Ordinal)
             };
         }
         catch (Exception exception) when (exception is JsonException or ArgumentException)
         {
-            return Status(ContractCommandOutcomeKind.MalformedBody, response.StatusCode, ValidationMalformedBodyMessage);
+            return Status(HttpOutcomeKind.MalformedBody, response.StatusCode, ValidationMalformedBodyMessage);
         }
     }
 
@@ -521,7 +541,7 @@ public static class ContractCommandOutcome
         }
     }
 
-    private static HttpOutcome Failure(ContractCommandOutcomeKind kind, string message)
+    private static HttpOutcome Failure(HttpOutcomeKind kind, string message)
     {
         return new HttpOutcome
         {
@@ -530,7 +550,7 @@ public static class ContractCommandOutcome
         };
     }
 
-    private static HttpOutcome<TValue> Failure<TValue>(ContractCommandOutcomeKind kind, string message)
+    private static HttpOutcome<TValue> Failure<TValue>(HttpOutcomeKind kind, string message)
     {
         return new HttpOutcome<TValue>
         {
@@ -558,7 +578,7 @@ public static class ContractCommandOutcome
         return activity;
     }
 
-    private static void RecordOutcome(Activity? activity, ContractCommandOutcomeKind kind, HttpStatusCode? statusCode)
+    private static void RecordOutcome(Activity? activity, HttpOutcomeKind kind, HttpStatusCode? statusCode)
     {
         if (statusCode is not null)
         {
@@ -610,15 +630,15 @@ public static class ContractCommandOutcome
         return exception is HttpRequestException or BrokenCircuitException;
     }
 
-    private static ContractCommandOutcomeKind MapStatusCode(HttpStatusCode statusCode)
+    private static HttpOutcomeKind MapStatusCode(HttpStatusCode statusCode)
     {
         return statusCode switch
         {
-            HttpStatusCode.NotFound => ContractCommandOutcomeKind.NotFound,
-            HttpStatusCode.Unauthorized => ContractCommandOutcomeKind.Unauthorized,
-            HttpStatusCode.Forbidden => ContractCommandOutcomeKind.Forbidden,
-            HttpStatusCode.Conflict => ContractCommandOutcomeKind.Conflict,
-            _ => ContractCommandOutcomeKind.UnexpectedStatus
+            HttpStatusCode.NotFound => HttpOutcomeKind.NotFound,
+            HttpStatusCode.Unauthorized => HttpOutcomeKind.Unauthorized,
+            HttpStatusCode.Forbidden => HttpOutcomeKind.Forbidden,
+            HttpStatusCode.Conflict => HttpOutcomeKind.Conflict,
+            _ => HttpOutcomeKind.UnexpectedStatus
         };
     }
 }

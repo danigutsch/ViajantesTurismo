@@ -225,7 +225,7 @@ public class EditPageTests : BunitContext
         await cut.WaitForStateAsync(() => cut.FindAll(".alert-success").Count > 0, TimeSpan.FromSeconds(2));
 
         var outcome = await _fakeToursApi.GetTourById(tour.Id, CancellationToken.None);
-        outcome.Kind.ShouldBe(ContractCommandOutcomeKind.Succeeded);
+        outcome.Kind.ShouldBe(HttpOutcomeKind.Succeeded);
         var updatedTour = outcome.Value.ShouldNotBeNull();
         updatedTour.Name.ShouldBe("Updated Cuba Adventure");
         updatedTour.Price.ShouldBe(1750.50m);

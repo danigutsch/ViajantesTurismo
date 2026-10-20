@@ -107,7 +107,7 @@ public sealed class PostTransportValidationTests(AspireSystemTestFixture fixture
         // Assert
         eventCountBeforeDuplicate.ShouldBe(1);
         eventCountAfterDuplicate.ShouldBe(1);
-        projectedCatalogToursOutcome.Kind.ShouldBe(ContractCommandOutcomeKind.Succeeded);
+        projectedCatalogToursOutcome.Kind.ShouldBe(HttpOutcomeKind.Succeeded);
         var projectedCatalogTours = projectedCatalogToursOutcome.Value.ShouldNotBeNull();
         var projectedTours = projectedCatalogTours.Where(tour => tour.AdminTourId == adminTour.Id).ToArray();
         projectedTours.ShouldHaveSingleItem().Id.ShouldBe(catalogTour.Id);

@@ -319,7 +319,7 @@ public sealed class DetailsPageTests : BunitContext
         documentsApiClient.AddDocument(document);
         documentsApiClient.RegenerationOutcome = new HttpOutcome<GetDocumentDto>
         {
-            Kind = ContractCommandOutcomeKind.TransportFailure
+            Kind = HttpOutcomeKind.TransportFailure
         };
         var cut = Render<Details>(parameters => parameters.Add(page => page.Id, document.Id));
         await cut.WaitForAssertionAsync(() => cut.Find("h1"));
@@ -347,7 +347,7 @@ public sealed class DetailsPageTests : BunitContext
         documentsApiClient.AddDocument(other);
         documentsApiClient.RegenerationOutcome = new HttpOutcome<GetDocumentDto>
         {
-            Kind = ContractCommandOutcomeKind.TransportFailure
+            Kind = HttpOutcomeKind.TransportFailure
         };
         var cut = Render<Details>(parameters => parameters.Add(page => page.Id, original.Id));
         await cut.WaitForAssertionAsync(() => cut.Find("h1"));

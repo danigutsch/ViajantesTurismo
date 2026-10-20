@@ -3,7 +3,7 @@ using System.Collections.Concurrent;
 using System.Diagnostics;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
-using ContractCommandOutcomeKind = SharedKernel.HttpClients.ContractCommandOutcomeKind;
+using HttpOutcomeKind = SharedKernel.HttpClients.HttpOutcomeKind;
 using CatalogToursApiClientTestsHelpers = SharedKernel.Testing.Contracts.ContractHttpClientTestHelper;
 using ViajantesTurismo.Admin.Contracts.Http;
 
@@ -103,7 +103,7 @@ public sealed class CustomersApiClientTests
         var outcome = await sut.GetCustomers(TestContext.Current.CancellationToken, maxItems: 1);
 
         // Assert
-        outcome.Kind.ShouldBe(ContractCommandOutcomeKind.MalformedBody);
+        outcome.Kind.ShouldBe(HttpOutcomeKind.MalformedBody);
         outcome.StatusCode.ShouldBe(HttpStatusCode.OK);
         outcome.Value.ShouldBeNull();
     }
@@ -126,7 +126,7 @@ public sealed class CustomersApiClientTests
 
         // Assert
         requestPath.ShouldBe($"/api/v1/customers/{customerId}");
-        outcome.Kind.ShouldBe(ContractCommandOutcomeKind.NotFound);
+        outcome.Kind.ShouldBe(HttpOutcomeKind.NotFound);
         outcome.Value.ShouldBeNull();
     }
 
@@ -141,7 +141,7 @@ public sealed class CustomersApiClientTests
         var outcome = await sut.GetCustomerById(Guid.CreateVersion7(), TestContext.Current.CancellationToken);
 
         // Assert
-        outcome.Kind.ShouldBe(ContractCommandOutcomeKind.MalformedBody);
+        outcome.Kind.ShouldBe(HttpOutcomeKind.MalformedBody);
         outcome.Value.ShouldBeNull();
     }
 
@@ -165,7 +165,7 @@ public sealed class CustomersApiClientTests
 
         // Assert
         requestPath.ShouldBe("/api/v1/customers");
-        outcome.Kind.ShouldBe(ContractCommandOutcomeKind.Succeeded);
+        outcome.Kind.ShouldBe(HttpOutcomeKind.Succeeded);
         outcome.StatusCode.ShouldBe(HttpStatusCode.Created);
         outcome.Location.ShouldBe(new Uri("https://management.example/customers/created", UriKind.Absolute));
     }
@@ -181,7 +181,7 @@ public sealed class CustomersApiClientTests
         var outcome = await sut.CreateCustomer(BuildCreateCustomerDto(), TestContext.Current.CancellationToken);
 
         // Assert
-        outcome.Kind.ShouldBe(ContractCommandOutcomeKind.Succeeded);
+        outcome.Kind.ShouldBe(HttpOutcomeKind.Succeeded);
         outcome.StatusCode.ShouldBe(HttpStatusCode.Created);
         outcome.Location.ShouldBeNull();
     }
@@ -207,7 +207,7 @@ public sealed class CustomersApiClientTests
         var outcome = await sut.CreateCustomer(BuildCreateCustomerDto(), TestContext.Current.CancellationToken);
 
         // Assert
-        outcome.Kind.ShouldBe(ContractCommandOutcomeKind.ValidationProblem);
+        outcome.Kind.ShouldBe(HttpOutcomeKind.ValidationProblem);
         outcome.StatusCode.ShouldBe(HttpStatusCode.BadRequest);
         outcome.ValidationErrors.ShouldNotBeNull();
         outcome.ValidationErrors.ContainsKey("Email").ShouldBeTrue();
@@ -225,7 +225,7 @@ public sealed class CustomersApiClientTests
         var outcome = await sut.CreateCustomer(BuildCreateCustomerDto(), TestContext.Current.CancellationToken);
 
         // Assert
-        outcome.Kind.ShouldBe(ContractCommandOutcomeKind.EmptyBody);
+        outcome.Kind.ShouldBe(HttpOutcomeKind.EmptyBody);
         outcome.StatusCode.ShouldBe(HttpStatusCode.BadRequest);
     }
 
@@ -243,7 +243,7 @@ public sealed class CustomersApiClientTests
         var outcome = await sut.CreateCustomer(BuildCreateCustomerDto(), TestContext.Current.CancellationToken);
 
         // Assert
-        outcome.Kind.ShouldBe(ContractCommandOutcomeKind.MalformedBody);
+        outcome.Kind.ShouldBe(HttpOutcomeKind.MalformedBody);
         outcome.StatusCode.ShouldBe(HttpStatusCode.BadRequest);
     }
 
@@ -260,7 +260,7 @@ public sealed class CustomersApiClientTests
         var outcome = await sut.CreateCustomer(BuildCreateCustomerDto(), TestContext.Current.CancellationToken);
 
         // Assert
-        outcome.Kind.ShouldBe(ContractCommandOutcomeKind.MalformedBody);
+        outcome.Kind.ShouldBe(HttpOutcomeKind.MalformedBody);
         var entry = logger.Entries.ShouldHaveSingleItem();
         entry.LogLevel.ShouldBe(LogLevel.Warning);
         entry.EventId.Id.ShouldBe(1);
@@ -287,7 +287,7 @@ public sealed class CustomersApiClientTests
         var outcome = await sut.CreateCustomer(BuildCreateCustomerDto(), TestContext.Current.CancellationToken);
 
         // Assert
-        outcome.Kind.ShouldBe(ContractCommandOutcomeKind.MalformedBody);
+        outcome.Kind.ShouldBe(HttpOutcomeKind.MalformedBody);
         var activity = AdminContractsClientTelemetryTestsHelpers.SingleActivity(
             stoppedActivities,
             rootActivity,
@@ -307,16 +307,16 @@ public sealed class CustomersApiClientTests
     }
 
     [Theory]
-    [InlineData(HttpStatusCode.OK, ContractCommandOutcomeKind.UnexpectedStatus)]
-    [InlineData(HttpStatusCode.NoContent, ContractCommandOutcomeKind.UnexpectedStatus)]
-    [InlineData(HttpStatusCode.NotFound, ContractCommandOutcomeKind.NotFound)]
-    [InlineData(HttpStatusCode.Unauthorized, ContractCommandOutcomeKind.Unauthorized)]
-    [InlineData(HttpStatusCode.Forbidden, ContractCommandOutcomeKind.Forbidden)]
-    [InlineData(HttpStatusCode.Conflict, ContractCommandOutcomeKind.Conflict)]
-    [InlineData(HttpStatusCode.TooManyRequests, ContractCommandOutcomeKind.UnexpectedStatus)]
+    [InlineData(HttpStatusCode.OK, HttpOutcomeKind.UnexpectedStatus)]
+    [InlineData(HttpStatusCode.NoContent, HttpOutcomeKind.UnexpectedStatus)]
+    [InlineData(HttpStatusCode.NotFound, HttpOutcomeKind.NotFound)]
+    [InlineData(HttpStatusCode.Unauthorized, HttpOutcomeKind.Unauthorized)]
+    [InlineData(HttpStatusCode.Forbidden, HttpOutcomeKind.Forbidden)]
+    [InlineData(HttpStatusCode.Conflict, HttpOutcomeKind.Conflict)]
+    [InlineData(HttpStatusCode.TooManyRequests, HttpOutcomeKind.UnexpectedStatus)]
     public async Task CreateCustomer_returns_status_outcome_for_non_validation_failures(
         HttpStatusCode statusCode,
-        ContractCommandOutcomeKind expectedKind)
+        HttpOutcomeKind expectedKind)
     {
         // Arrange
         using var httpClient = CatalogToursApiClientTestsHelpers.CreateClient(_ => new HttpResponseMessage(statusCode));
@@ -351,7 +351,7 @@ public sealed class CustomersApiClientTests
         // Assert
         requestPath.ShouldBe($"/api/v1/customers/{customerId}");
         requestMethod.ShouldBe(HttpMethods.Put);
-        outcome.Kind.ShouldBe(ContractCommandOutcomeKind.Succeeded);
+        outcome.Kind.ShouldBe(HttpOutcomeKind.Succeeded);
     }
 
     [Fact]

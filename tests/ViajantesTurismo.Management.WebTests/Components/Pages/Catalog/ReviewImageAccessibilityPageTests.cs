@@ -235,8 +235,8 @@ public sealed class ReviewImageAccessibilityPageTests : BunitContext
     public void Shows_a_safe_error_when_the_image_list_is_malformed()
     {
         // Arrange
-        catalogApi.GetTourImagesOutcome = ContractCommandOutcome.Status<CatalogMediaImageDto[]>(
-            ContractCommandOutcomeKind.MalformedBody,
+        catalogApi.GetTourImagesOutcome = HttpOutcomeMapper.Status<CatalogMediaImageDto[]>(
+            HttpOutcomeKind.MalformedBody,
             System.Net.HttpStatusCode.OK,
             "The catalog image response body was invalid.");
 

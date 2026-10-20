@@ -54,7 +54,7 @@ public sealed class FakeBookingsApiClient : IBookingsApiClient
             return Task.FromResult(_getAllBookingsOutcome);
         }
 
-        return Task.FromResult(ContractCommandOutcome.Succeeded(HttpStatusCode.OK, _bookings.ToArray()));
+        return Task.FromResult(HttpOutcomeMapper.Succeeded(HttpStatusCode.OK, _bookings.ToArray()));
     }
 
     public Task<HttpOutcome<GetBookingDto>> GetBookingById(Guid id, CancellationToken ct)
@@ -76,14 +76,14 @@ public sealed class FakeBookingsApiClient : IBookingsApiClient
 
         var booking = _bookings.FirstOrDefault(b => b.Id == id);
         return Task.FromResult(booking is null
-            ? ContractCommandOutcome.Status<GetBookingDto>(ContractCommandOutcomeKind.NotFound, HttpStatusCode.NotFound)
-            : ContractCommandOutcome.Succeeded(HttpStatusCode.OK, booking));
+            ? HttpOutcomeMapper.Status<GetBookingDto>(HttpOutcomeKind.NotFound, HttpStatusCode.NotFound)
+            : HttpOutcomeMapper.Succeeded(HttpStatusCode.OK, booking));
     }
 
     public Task<HttpOutcome<GetBookingDto[]>> GetBookingsByTourId(Guid tourId, CancellationToken ct)
     {
         ct.ThrowIfCancellationRequested();
-        return Task.FromResult(ContractCommandOutcome.Succeeded(
+        return Task.FromResult(HttpOutcomeMapper.Succeeded(
             HttpStatusCode.OK,
             _bookings.Where(b => b.TourId == tourId).ToArray()));
     }
@@ -91,7 +91,7 @@ public sealed class FakeBookingsApiClient : IBookingsApiClient
     public Task<HttpOutcome<GetBookingDto[]>> GetBookingsByCustomerId(Guid customerId, CancellationToken ct)
     {
         ct.ThrowIfCancellationRequested();
-        return Task.FromResult(ContractCommandOutcome.Succeeded(
+        return Task.FromResult(HttpOutcomeMapper.Succeeded(
             HttpStatusCode.OK,
             _bookings.Where(b => b.CustomerId == customerId || b.CompanionId == customerId).ToArray()));
     }
@@ -119,7 +119,7 @@ public sealed class FakeBookingsApiClient : IBookingsApiClient
         );
 
         _bookings.Add(newBooking);
-        return Task.FromResult(ContractCommandOutcome.Succeeded(HttpStatusCode.Created, new Uri($"/api/v1/bookings/{newBooking.Id}", UriKind.Relative)));
+        return Task.FromResult(HttpOutcomeMapper.Succeeded(HttpStatusCode.Created, new Uri($"/api/v1/bookings/{newBooking.Id}", UriKind.Relative)));
     }
 
     public Task<HttpOutcome> UpdateBookingDiscount(Guid id, UpdateBookingDiscountDto dto, CancellationToken ct)
@@ -139,7 +139,7 @@ public sealed class FakeBookingsApiClient : IBookingsApiClient
             };
         }
 
-        return Task.FromResult(ContractCommandOutcome.Succeeded(HttpStatusCode.OK, location: null));
+        return Task.FromResult(HttpOutcomeMapper.Succeeded(HttpStatusCode.OK, location: null));
     }
 
     public Task<HttpOutcome> UpdateBookingDetails(Guid id, UpdateBookingDetailsDto dto, CancellationToken ct)
@@ -167,7 +167,7 @@ public sealed class FakeBookingsApiClient : IBookingsApiClient
             };
         }
 
-        return Task.FromResult(ContractCommandOutcome.Succeeded(HttpStatusCode.OK, location: null));
+        return Task.FromResult(HttpOutcomeMapper.Succeeded(HttpStatusCode.OK, location: null));
     }
 
     public Task<HttpOutcome> UpdateBookingNotes(Guid id, UpdateBookingNotesDto dto, CancellationToken ct)
@@ -192,7 +192,7 @@ public sealed class FakeBookingsApiClient : IBookingsApiClient
             _bookings[index] = _bookings[index] with { Notes = dto.Notes };
         }
 
-        return Task.FromResult(ContractCommandOutcome.Succeeded(HttpStatusCode.OK, location: null));
+        return Task.FromResult(HttpOutcomeMapper.Succeeded(HttpStatusCode.OK, location: null));
     }
 
     public Task<HttpOutcome> CancelBooking(Guid id, CancellationToken ct) =>
@@ -239,7 +239,7 @@ public sealed class FakeBookingsApiClient : IBookingsApiClient
         }
 
         var paymentId = Guid.NewGuid();
-        return ContractCommandOutcome.Succeeded(HttpStatusCode.Created, new Uri($"/api/v1/bookings/{bookingId}/payments/{paymentId}", UriKind.Relative));
+        return HttpOutcomeMapper.Succeeded(HttpStatusCode.Created, new Uri($"/api/v1/bookings/{bookingId}/payments/{paymentId}", UriKind.Relative));
     }
 
     public void AddBooking(GetBookingDto booking) => _bookings.Add(booking);
@@ -305,7 +305,7 @@ public sealed class FakeBookingsApiClient : IBookingsApiClient
         BookingActionCallCount++;
         await _bookingActionTask.WaitAsync(ct);
         onCompleted();
-        return ContractCommandOutcome.Succeeded(statusCode, location: null);
+        return HttpOutcomeMapper.Succeeded(statusCode, location: null);
     }
 
     private void UpdateBookingStatus(Guid id, BookingStatusDto newStatus)

@@ -15,14 +15,14 @@ public sealed class PublicCatalogApiClient(HttpClient httpClient) : IPublicCatal
     /// <inheritdoc />
     public async Task<HttpOutcome<TourSummaryDto[]>> GetPublishedTours(CancellationToken ct)
     {
-        var outcome = await ContractCommandOutcome.Send(
+        var outcome = await HttpOutcomeMapper.Send(
             httpClient,
             new HttpRequestMessage(HttpMethod.Get, new Uri($"{RoutePrefix}/tours", UriKind.Relative)),
             HttpStatusCode.OK,
             Json.TourSummaryDtoArray,
             Json.ContractValidationProblemDto,
             ct).ConfigureAwait(false);
-        return outcome.Kind == ContractCommandOutcomeKind.Succeeded
+        return outcome.Kind == HttpOutcomeKind.Succeeded
             ? outcome with { Value = outcome.Value?.OfType<TourSummaryDto>().ToArray() ?? [] }
             : outcome;
     }
@@ -33,7 +33,7 @@ public sealed class PublicCatalogApiClient(HttpClient httpClient) : IPublicCatal
         ArgumentNullException.ThrowIfNull(slug);
 
         var escapedSlug = Uri.EscapeDataString(slug);
-        return await ContractCommandOutcome.Send(
+        return await HttpOutcomeMapper.Send(
             httpClient,
             new HttpRequestMessage(HttpMethod.Get, new Uri($"{RoutePrefix}/tours/{escapedSlug}", UriKind.Relative)),
             HttpStatusCode.OK,
@@ -52,7 +52,7 @@ public sealed class PublicCatalogApiClient(HttpClient httpClient) : IPublicCatal
 
         var escapedKey = EscapePath(key);
         var escapedCulture = string.IsNullOrWhiteSpace(culture) ? "en-US" : Uri.EscapeDataString(culture);
-        return await ContractCommandOutcome.Send(
+        return await HttpOutcomeMapper.Send(
             httpClient,
             new HttpRequestMessage(
                 HttpMethod.Get,

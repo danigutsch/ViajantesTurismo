@@ -126,7 +126,7 @@ else if (_errorMessage is not null)
         _errorMessage = null;
 
         var outcome = await CatalogToursApi.GetTour(Id, CancellationToken.None);
-        if (outcome is { Kind: ContractCommandOutcomeKind.Succeeded, Value: { } tour })
+        if (outcome is { Kind: HttpOutcomeKind.Succeeded, Value: { } tour })
         {
             _model = new CatalogTourPresentationFormModel
             {
@@ -142,7 +142,7 @@ else if (_errorMessage is not null)
             _editContext = new EditContext(_model);
             _isPublished = tour.IsPublished;
         }
-        else if (outcome.Kind == ContractCommandOutcomeKind.NotFound)
+        else if (outcome.Kind == HttpOutcomeKind.NotFound)
         {
             _notFound = true;
         }
@@ -177,7 +177,7 @@ else if (_errorMessage is not null)
                 },
                 CancellationToken.None);
 
-            if (outcome.Kind == ContractCommandOutcomeKind.ValidationProblem)
+            if (outcome.Kind == HttpOutcomeKind.ValidationProblem)
             {
                 _errorMessage = outcome.ValidationErrors is null or { Count: 0 }
                     ? "Catalog tour presentation could not be saved. Try again later."
@@ -185,13 +185,13 @@ else if (_errorMessage is not null)
                 return;
             }
 
-            if (outcome.Kind == ContractCommandOutcomeKind.NotFound)
+            if (outcome.Kind == HttpOutcomeKind.NotFound)
             {
                 _notFound = true;
                 return;
             }
 
-            if (outcome.Kind == ContractCommandOutcomeKind.Conflict)
+            if (outcome.Kind == HttpOutcomeKind.Conflict)
             {
                 _errorMessage = "This tour changed after it was loaded. Reload it before saving again.";
                 return;
@@ -203,7 +203,7 @@ else if (_errorMessage is not null)
                 return;
             }
 
-            if (outcome is not { Kind: ContractCommandOutcomeKind.Succeeded, Value: { } updated })
+            if (outcome is not { Kind: HttpOutcomeKind.Succeeded, Value: { } updated })
             {
                 _errorMessage = HttpOutcomeUserMessage.For(outcome.Kind, "Catalog tour presentation could not be saved. Try again later.");
                 return;
@@ -244,7 +244,7 @@ else if (_errorMessage is not null)
                 ? await CatalogToursApi.Publish(Id, request, CancellationToken.None)
                 : await CatalogToursApi.Unpublish(Id, request, CancellationToken.None);
 
-            if (outcome.Kind == ContractCommandOutcomeKind.ValidationProblem)
+            if (outcome.Kind == HttpOutcomeKind.ValidationProblem)
             {
                 _errorMessage = outcome.ValidationErrors is null or { Count: 0 }
                     ? "Catalog tour publication could not be changed. Try again later."
@@ -258,7 +258,7 @@ else if (_errorMessage is not null)
                 return;
             }
 
-            if (outcome.Kind != ContractCommandOutcomeKind.Succeeded)
+            if (outcome.Kind != HttpOutcomeKind.Succeeded)
             {
                 _errorMessage = HttpOutcomeUserMessage.For(outcome.Kind, "Catalog tour publication could not be changed. Reload the tour and try again.");
                 return;

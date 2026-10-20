@@ -17,10 +17,10 @@ internal sealed class TransientCatalogToursApiClient(
 
         GetToursCallCount++;
         return GetToursCallCount == 1
-            ? Task.FromResult(ContractCommandOutcome.Status<CatalogTourDto[]>(
+            ? Task.FromResult(HttpOutcomeMapper.Status<CatalogTourDto[]>(
                 MapKind(initialFailureStatusCode),
                 initialFailureStatusCode))
-            : Task.FromResult(ContractCommandOutcome.Succeeded(HttpStatusCode.OK, new[] { tour }));
+            : Task.FromResult(HttpOutcomeMapper.Succeeded(HttpStatusCode.OK, new[] { tour }));
     }
 
     public Task<HttpOutcome<CatalogTourDto>> GetTour(Guid id, CancellationToken ct)
@@ -51,7 +51,7 @@ internal sealed class TransientCatalogToursApiClient(
         ArgumentNullException.ThrowIfNull(request);
         ct.ThrowIfCancellationRequested();
         _ = isPublished;
-        return Task.FromResult(ContractCommandOutcome.Succeeded(HttpStatusCode.NoContent, location: null));
+        return Task.FromResult(HttpOutcomeMapper.Succeeded(HttpStatusCode.NoContent, location: null));
     }
 
     public Task<HttpOutcome<CatalogMediaImageDto>> GenerateMediaImageAccessibilityDraft(
@@ -75,7 +75,7 @@ internal sealed class TransientCatalogToursApiClient(
     {
         ct.ThrowIfCancellationRequested();
 
-        return Task.FromResult(ContractCommandOutcome.Succeeded(HttpStatusCode.OK, Array.Empty<CatalogMediaImageDto>()));
+        return Task.FromResult(HttpOutcomeMapper.Succeeded(HttpStatusCode.OK, Array.Empty<CatalogMediaImageDto>()));
     }
 
     public Task<HttpOutcome<CatalogMediaImageDto>> ReviewMediaImageAccessibility(
@@ -96,17 +96,17 @@ internal sealed class TransientCatalogToursApiClient(
     }
 
     private static HttpOutcome<TValue> NotFound<TValue>() =>
-        ContractCommandOutcome.Status<TValue>(ContractCommandOutcomeKind.NotFound, HttpStatusCode.NotFound);
+        HttpOutcomeMapper.Status<TValue>(HttpOutcomeKind.NotFound, HttpStatusCode.NotFound);
 
-    private static ContractCommandOutcomeKind MapKind(HttpStatusCode statusCode)
+    private static HttpOutcomeKind MapKind(HttpStatusCode statusCode)
     {
         return statusCode switch
         {
-            HttpStatusCode.NotFound => ContractCommandOutcomeKind.NotFound,
-            HttpStatusCode.Unauthorized => ContractCommandOutcomeKind.Unauthorized,
-            HttpStatusCode.Forbidden => ContractCommandOutcomeKind.Forbidden,
-            HttpStatusCode.Conflict => ContractCommandOutcomeKind.Conflict,
-            _ => ContractCommandOutcomeKind.UnexpectedStatus
+            HttpStatusCode.NotFound => HttpOutcomeKind.NotFound,
+            HttpStatusCode.Unauthorized => HttpOutcomeKind.Unauthorized,
+            HttpStatusCode.Forbidden => HttpOutcomeKind.Forbidden,
+            HttpStatusCode.Conflict => HttpOutcomeKind.Conflict,
+            _ => HttpOutcomeKind.UnexpectedStatus
         };
     }
 

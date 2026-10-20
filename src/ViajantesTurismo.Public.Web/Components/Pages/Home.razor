@@ -70,7 +70,7 @@
                 "home.hero",
                 PublicCultureQuery.GetRequestedCulture(Navigation.Uri),
                 CancellationToken.None);
-            _hero = outcome is { Kind: ContractCommandOutcomeKind.Succeeded, Value: { } hero }
+            _hero = outcome is { Kind: HttpOutcomeKind.Succeeded, Value: { } hero }
                 ? hero
                 : null;
         }
@@ -90,7 +90,7 @@
         try
         {
             var outcome = await CatalogApi.GetPublishedTours(requestAborted);
-            if (outcome is { Kind: ContractCommandOutcomeKind.Succeeded, Value: { } tours })
+            if (outcome is { Kind: HttpOutcomeKind.Succeeded, Value: { } tours })
             {
                 _tours = tours;
                 return;

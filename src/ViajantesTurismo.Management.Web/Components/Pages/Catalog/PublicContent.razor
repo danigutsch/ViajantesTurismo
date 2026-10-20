@@ -159,7 +159,7 @@
         _errorMessage = null;
 
         var outcome = await PublicContentApi.GetContent(CancellationToken.None);
-        if (outcome is { Kind: ContractCommandOutcomeKind.Succeeded, Value: { } content })
+        if (outcome is { Kind: HttpOutcomeKind.Succeeded, Value: { } content })
         {
             _content = content;
         }
@@ -178,7 +178,7 @@
         _successMessage = null;
 
         var outcome = await PublicContentApi.GetContent(key, CancellationToken.None);
-        if (outcome is { Kind: ContractCommandOutcomeKind.Succeeded, Value: { } entry })
+        if (outcome is { Kind: HttpOutcomeKind.Succeeded, Value: { } entry })
         {
             _model = PublicContentFormModel.FromDto(entry);
             return;
@@ -257,7 +257,7 @@
                 _model.ToRequest(),
                 CancellationToken.None);
 
-            if (outcome.Kind == ContractCommandOutcomeKind.ValidationProblem)
+            if (outcome.Kind == HttpOutcomeKind.ValidationProblem)
             {
                 _errorMessage = outcome.ValidationErrors is null or { Count: 0 }
                     ? UserFacingErrorMessage.ForOperation("save public content")
@@ -265,7 +265,7 @@
                 return;
             }
 
-            if (outcome is not { Kind: ContractCommandOutcomeKind.Succeeded, Value: { } saved })
+            if (outcome is not { Kind: HttpOutcomeKind.Succeeded, Value: { } saved })
             {
                 _errorMessage = HttpOutcomeUserMessage.For(outcome.Kind, UserFacingErrorMessage.ForOperation("save public content"));
                 return;

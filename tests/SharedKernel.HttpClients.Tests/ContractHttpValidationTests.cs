@@ -175,12 +175,12 @@ public sealed class ContractHttpValidationTests
             Content = new StringContent("not json alice@example.test", Encoding.UTF8, "application/problem+json")
         };
 
-        var outcome = await ContractCommandOutcome.FromResponse(
+        var outcome = await HttpOutcomeMapper.FromResponse(
             response,
             ContractHttpValidationTestsJsonContext.Default.ContractValidationProblemDto,
             TestContext.Current.CancellationToken);
 
-        outcome.Kind.ShouldBe(ContractCommandOutcomeKind.MalformedBody);
+        outcome.Kind.ShouldBe(HttpOutcomeKind.MalformedBody);
         outcome.Message.ShouldBe("Validation problem response body was malformed.");
         outcome.Message.ShouldNotBeNull();
         outcome.Message.Contains("alice@example.test", StringComparison.Ordinal).ShouldBeFalse();

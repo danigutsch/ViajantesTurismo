@@ -441,7 +441,7 @@
                 return;
             }
 
-            if (outcome is not { Kind: ContractCommandOutcomeKind.Succeeded, Value: { } result })
+            if (outcome is not { Kind: HttpOutcomeKind.Succeeded, Value: { } result })
             {
                 _state.Upload.Fail(operationId, HttpOutcomeUserMessage.For(outcome.Kind, UserFacingErrorMessage.ForOperation("import the customers")));
                 return;
@@ -511,7 +511,7 @@
                 return;
             }
 
-            if (outcome is not { Kind: ContractCommandOutcomeKind.Succeeded, Value: { } result })
+            if (outcome is not { Kind: HttpOutcomeKind.Succeeded, Value: { } result })
             {
                 _state.Upload.Fail(operationId, HttpOutcomeUserMessage.For(outcome.Kind, UserFacingErrorMessage.ForOperation("import the customers")));
                 return;

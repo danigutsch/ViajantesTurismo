@@ -61,7 +61,7 @@ internal static class PublicWebEndpoints
         try
         {
             var outcome = await catalogApi.GetPublishedTours(ct);
-            if (outcome is not { Kind: SharedKernel.HttpClients.ContractCommandOutcomeKind.Succeeded, Value: { } publishedTours })
+            if (outcome is not { Kind: SharedKernel.HttpClients.HttpOutcomeKind.Succeeded, Value: { } publishedTours })
             {
                 PublicWebHttpCache.SetServiceUnavailableNoStore(httpContext);
                 return Results.StatusCode(StatusCodes.Status503ServiceUnavailable);

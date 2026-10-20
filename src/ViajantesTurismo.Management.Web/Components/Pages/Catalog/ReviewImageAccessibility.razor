@@ -68,7 +68,7 @@ else
     protected override async Task OnInitializedAsync()
     {
         var outcome = await CatalogToursApi.GetTourImages(Id, CancellationToken.None);
-        if (outcome is { Kind: ContractCommandOutcomeKind.Succeeded, Value: { } images })
+        if (outcome is { Kind: HttpOutcomeKind.Succeeded, Value: { } images })
         {
             _image = images.FirstOrDefault(image => image.RequiresHumanReview);
             _altText = _image?.AltText ?? string.Empty;
@@ -98,7 +98,7 @@ else
                 _image.Id,
                 new PublicMediaImageAccessibilityDraftRequest { Language = PublicContentLanguageDto.EnUs },
                 CancellationToken.None);
-            if (outcome is not { Kind: ContractCommandOutcomeKind.Succeeded, Value: { } draft })
+            if (outcome is not { Kind: HttpOutcomeKind.Succeeded, Value: { } draft })
             {
                 _errorMessage = HttpOutcomeUserMessage.For(
                     outcome.Kind,
@@ -139,7 +139,7 @@ else
                     IsDecorative = _isDecorative
                 },
                 CancellationToken.None);
-            if (outcome.Kind == ContractCommandOutcomeKind.ValidationProblem)
+            if (outcome.Kind == HttpOutcomeKind.ValidationProblem)
             {
                 _errorMessage = outcome.ValidationErrors is null or { Count: 0 }
                     ? "Accessibility text could not be saved. Try again later."
@@ -147,7 +147,7 @@ else
                 return;
             }
 
-            if (outcome is not { Kind: ContractCommandOutcomeKind.Succeeded, Value: { } updated })
+            if (outcome is not { Kind: HttpOutcomeKind.Succeeded, Value: { } updated })
             {
                 _errorMessage = HttpOutcomeUserMessage.For(
                     outcome.Kind,
@@ -170,7 +170,7 @@ else
     private async Task LoadNextImage()
     {
         var outcome = await CatalogToursApi.GetTourImages(Id, CancellationToken.None);
-        if (outcome is { Kind: ContractCommandOutcomeKind.Succeeded, Value: { } images })
+        if (outcome is { Kind: HttpOutcomeKind.Succeeded, Value: { } images })
         {
             _image = images.FirstOrDefault(image => image.RequiresHumanReview);
             _altText = _image?.AltText ?? string.Empty;

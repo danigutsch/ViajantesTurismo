@@ -52,8 +52,8 @@ public sealed class DocumentsApiClientTests
             : await sut.GenerateContractDraft(id, TestContext.Current.CancellationToken);
 
         // Assert
-        first.Kind.ShouldBe(ContractCommandOutcomeKind.Succeeded);
-        second.Kind.ShouldBe(ContractCommandOutcomeKind.Succeeded);
+        first.Kind.ShouldBe(HttpOutcomeKind.Succeeded);
+        second.Kind.ShouldBe(HttpOutcomeKind.Succeeded);
         keys.Count.ShouldBe(2);
         foreach (var key in keys)
         {
@@ -90,8 +90,8 @@ public sealed class DocumentsApiClientTests
             : await sut.GenerateContractDraft(id, key, TestContext.Current.CancellationToken);
 
         // Assert
-        first.Kind.ShouldBe(ContractCommandOutcomeKind.Succeeded);
-        second.Kind.ShouldBe(ContractCommandOutcomeKind.Succeeded);
+        first.Kind.ShouldBe(HttpOutcomeKind.Succeeded);
+        second.Kind.ShouldBe(HttpOutcomeKind.Succeeded);
         keys.ShouldBeEquivalentTo(key, key);
         requestsHaveNoBody.ShouldBeTrue();
     }
@@ -136,7 +136,7 @@ public sealed class DocumentsApiClientTests
         var outcome = await sut.BeginReview(Guid.CreateVersion7(), TestContext.Current.CancellationToken);
 
         // Assert
-        outcome.Kind.ShouldBe(ContractCommandOutcomeKind.Succeeded);
+        outcome.Kind.ShouldBe(HttpOutcomeKind.Succeeded);
         hasIdempotencyKey.ShouldBeFalse();
     }
 
@@ -151,7 +151,7 @@ public sealed class DocumentsApiClientTests
         var outcome = await sut.GetDocumentById(Guid.CreateVersion7(), TestContext.Current.CancellationToken);
 
         // Assert
-        outcome.Kind.ShouldBe(ContractCommandOutcomeKind.NotFound);
+        outcome.Kind.ShouldBe(HttpOutcomeKind.NotFound);
         outcome.Value.ShouldBeNull();
     }
 

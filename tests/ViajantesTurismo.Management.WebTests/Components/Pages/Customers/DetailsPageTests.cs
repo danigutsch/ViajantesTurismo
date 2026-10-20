@@ -425,7 +425,7 @@ public sealed class DetailsPageTests : BunitContext
         _fakeToursApi.AddTour(tour);
         _fakeBookingsApi.SetCreateBookingOutcome(new HttpOutcome
         {
-            Kind = ContractCommandOutcomeKind.ValidationProblem,
+            Kind = HttpOutcomeKind.ValidationProblem,
             StatusCode = HttpStatusCode.BadRequest,
             ValidationErrors = new Dictionary<string, string[]>
             {
@@ -466,7 +466,7 @@ public sealed class DetailsPageTests : BunitContext
         _fakeCustomersApi.AddCustomer(BuildCustomerDto(id: customer.Id));
         _fakeToursApi.AddTour(tour);
         _fakeBookingsApi.SetCreateBookingOutcome(
-            ContractCommandOutcome.Status(ContractCommandOutcomeKind.Conflict, HttpStatusCode.Conflict));
+            HttpOutcomeMapper.Status(HttpOutcomeKind.Conflict, HttpStatusCode.Conflict));
 
         var cut = Render<Details>(parameters => parameters.Add(p => p.Id, customer.Id));
         await cut.WaitForAssertionAsync(() => cut.Find("button:contains('Add Booking')"));

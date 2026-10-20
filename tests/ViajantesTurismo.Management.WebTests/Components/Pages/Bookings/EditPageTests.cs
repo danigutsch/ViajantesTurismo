@@ -1050,7 +1050,7 @@ public sealed class EditPageTests : BunitContext
         // Arrange
         var booking = BuildBookingDto(status: BookingStatusDto.Pending, remainingBalance: 250m);
         _fakeBookingsApi.AddBooking(booking);
-        _fakeBookingsApi.SetRecordPaymentOutcome(ContractCommandOutcome.Status(ContractCommandOutcomeKind.Conflict, HttpStatusCode.Conflict));
+        _fakeBookingsApi.SetRecordPaymentOutcome(HttpOutcomeMapper.Status(HttpOutcomeKind.Conflict, HttpStatusCode.Conflict));
 
         var cut = Render<Edit>(parameters => parameters.Add(p => p.Id, booking.Id));
         await cut.WaitForAssertionAsync(() => cut.Find(HeadingOrAlertSelector));

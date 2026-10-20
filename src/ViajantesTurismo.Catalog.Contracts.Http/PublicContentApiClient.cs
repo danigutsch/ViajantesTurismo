@@ -16,14 +16,14 @@ public sealed class PublicContentApiClient(HttpClient httpClient) : IPublicConte
     /// <inheritdoc />
     public async Task<HttpOutcome<PublicContentDto[]>> GetContent(CancellationToken ct)
     {
-        var outcome = await ContractCommandOutcome.Send(
+        var outcome = await HttpOutcomeMapper.Send(
             httpClient,
             new HttpRequestMessage(HttpMethod.Get, new Uri(RoutePrefix, UriKind.Relative)),
             HttpStatusCode.OK,
             Json.PublicContentDtoArray,
             Json.ContractValidationProblemDto,
             ct).ConfigureAwait(false);
-        return outcome.Kind == ContractCommandOutcomeKind.Succeeded
+        return outcome.Kind == HttpOutcomeKind.Succeeded
             ? outcome with { Value = outcome.Value?.OfType<PublicContentDto>().ToArray() ?? [] }
             : outcome;
     }
@@ -34,7 +34,7 @@ public sealed class PublicContentApiClient(HttpClient httpClient) : IPublicConte
         ArgumentNullException.ThrowIfNull(key);
 
         var requestUri = new Uri($"{RoutePrefix}/{EscapePath(key)}", UriKind.Relative);
-        return await ContractCommandOutcome.Send(
+        return await HttpOutcomeMapper.Send(
             httpClient,
             new HttpRequestMessage(HttpMethod.Get, requestUri),
             HttpStatusCode.OK,
@@ -57,7 +57,7 @@ public sealed class PublicContentApiClient(HttpClient httpClient) : IPublicConte
         {
             Content = JsonContent.Create(request, Json.UpsertPublicContentRequest)
         };
-        return await ContractCommandOutcome.Send(
+        return await HttpOutcomeMapper.Send(
             httpClient,
             httpRequest,
             HttpStatusCode.OK,

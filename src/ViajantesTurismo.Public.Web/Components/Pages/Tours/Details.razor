@@ -163,13 +163,13 @@ else
         try
         {
             var outcome = await CatalogApi.GetPublishedTourBySlug(Slug, requestAborted);
-            if (outcome is { Kind: ContractCommandOutcomeKind.Succeeded, Value: { } tour })
+            if (outcome is { Kind: HttpOutcomeKind.Succeeded, Value: { } tour })
             {
                 _tour = tour;
                 return;
             }
 
-            if (outcome.Kind == ContractCommandOutcomeKind.NotFound)
+            if (outcome.Kind == HttpOutcomeKind.NotFound)
             {
                 Navigation.NotFound();
                 return;

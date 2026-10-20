@@ -191,11 +191,11 @@
         try
         {
             var outcome = await BookingsApi.GetBookingById(Id, CancellationToken.None);
-            if (outcome is { Kind: ContractCommandOutcomeKind.Succeeded, Value: { } booking })
+            if (outcome is { Kind: HttpOutcomeKind.Succeeded, Value: { } booking })
             {
                 _booking = booking;
             }
-            else if (outcome.Kind == ContractCommandOutcomeKind.NotFound)
+            else if (outcome.Kind == HttpOutcomeKind.NotFound)
             {
                 _notFound = true;
             }
@@ -233,7 +233,7 @@
         try
         {
             var outcome = await DocumentsApi.GenerateContractDraft(Id, attempt.Key, CancellationToken.None);
-            if (outcome is { Kind: ContractCommandOutcomeKind.Succeeded, Value: { } document })
+            if (outcome is { Kind: HttpOutcomeKind.Succeeded, Value: { } document })
             {
                 _generationAttempt = null;
                 Navigation.NavigateTo($"/documents/{document.Id}");

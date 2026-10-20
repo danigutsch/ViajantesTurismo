@@ -12,7 +12,7 @@ internal sealed class AbsoluteLocationCustomersApiClient : ICustomersApiClient
     public Task<HttpOutcome> CreateCustomer(CreateCustomerDto dto, CancellationToken ct) =>
         Task.FromResult(new HttpOutcome
         {
-            Kind = ContractCommandOutcomeKind.Succeeded,
+            Kind = HttpOutcomeKind.Succeeded,
             StatusCode = HttpStatusCode.Created,
             Location = new Uri("https://example.test/customers/absolute-id?source=review", UriKind.Absolute)
         });

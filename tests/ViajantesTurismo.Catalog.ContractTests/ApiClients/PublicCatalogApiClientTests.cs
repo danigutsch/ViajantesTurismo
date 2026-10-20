@@ -202,7 +202,7 @@ public sealed class PublicCatalogApiClientTests
         var outcome = await sut.GetPublishedTourBySlug("missing-tour", TestContext.Current.CancellationToken);
 
         // Assert
-        outcome.Kind.ShouldBe(ContractCommandOutcomeKind.NotFound);
+        outcome.Kind.ShouldBe(HttpOutcomeKind.NotFound);
         outcome.Value.ShouldBeNull();
     }
 
@@ -244,8 +244,8 @@ public sealed class PublicCatalogApiClientTests
 
         // Assert
         outcome.Kind.ShouldBe(jsonNull
-            ? ContractCommandOutcomeKind.MalformedBody
-            : ContractCommandOutcomeKind.EmptyBody);
+            ? HttpOutcomeKind.MalformedBody
+            : HttpOutcomeKind.EmptyBody);
         outcome.Value.ShouldBeNull();
     }
 
@@ -260,7 +260,7 @@ public sealed class PublicCatalogApiClientTests
         var outcome = await sut.GetPublishedTourBySlug("error-tour", TestContext.Current.CancellationToken);
 
         // Assert
-        outcome.Kind.ShouldBe(ContractCommandOutcomeKind.UnexpectedStatus);
+        outcome.Kind.ShouldBe(HttpOutcomeKind.UnexpectedStatus);
         outcome.StatusCode.ShouldBe(HttpStatusCode.BadGateway);
     }
 
@@ -310,7 +310,7 @@ public sealed class PublicCatalogApiClientTests
         var outcome = await sut.GetPublicContent("home.hero", "pt-BR", TestContext.Current.CancellationToken);
 
         // Assert
-        outcome.Kind.ShouldBe(ContractCommandOutcomeKind.NotFound);
+        outcome.Kind.ShouldBe(HttpOutcomeKind.NotFound);
         outcome.Value.ShouldBeNull();
     }
 
@@ -330,8 +330,8 @@ public sealed class PublicCatalogApiClientTests
 
         // Assert
         outcome.Kind.ShouldBe(jsonNull
-            ? ContractCommandOutcomeKind.MalformedBody
-            : ContractCommandOutcomeKind.EmptyBody);
+            ? HttpOutcomeKind.MalformedBody
+            : HttpOutcomeKind.EmptyBody);
         outcome.Value.ShouldBeNull();
     }
 }

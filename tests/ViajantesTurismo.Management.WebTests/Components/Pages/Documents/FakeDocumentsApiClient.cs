@@ -96,12 +96,12 @@ internal sealed class FakeDocumentsApiClient : IDocumentsApiClient
         GetDocumentDto? document,
         HttpStatusCode successStatusCode = HttpStatusCode.OK) =>
         document is null
-            ? ContractCommandOutcome.Status<GetDocumentDto>(ContractCommandOutcomeKind.NotFound, HttpStatusCode.NotFound)
-            : ContractCommandOutcome.Succeeded(successStatusCode, document);
+            ? HttpOutcomeMapper.Status<GetDocumentDto>(HttpOutcomeKind.NotFound, HttpStatusCode.NotFound)
+            : HttpOutcomeMapper.Succeeded(successStatusCode, document);
 
     private static HttpOutcome<GetDocumentDto> TransportFailure() => new()
     {
-        Kind = ContractCommandOutcomeKind.TransportFailure,
+        Kind = HttpOutcomeKind.TransportFailure,
         Message = "HTTP transport failed."
     };
 }

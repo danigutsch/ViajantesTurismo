@@ -21,10 +21,10 @@ public sealed partial class CustomersApiClient(HttpClient httpClient, ILogger<Cu
     {
         if (maxItems <= 0)
         {
-            return ContractCommandOutcome.Succeeded(HttpStatusCode.OK, Array.Empty<GetCustomerDto>());
+            return HttpOutcomeMapper.Succeeded(HttpStatusCode.OK, Array.Empty<GetCustomerDto>());
         }
 
-        var outcome = await ContractCommandOutcome.Send(
+        var outcome = await HttpOutcomeMapper.Send(
             httpClient,
             new HttpRequestMessage(HttpMethod.Get, new Uri(RoutePrefix, UriKind.Relative)),
             HttpStatusCode.OK,
@@ -32,7 +32,7 @@ public sealed partial class CustomersApiClient(HttpClient httpClient, ILogger<Cu
             Json.ContractValidationProblemDto,
             ct).ConfigureAwait(false);
 
-        return outcome.Kind == ContractCommandOutcomeKind.Succeeded
+        return outcome.Kind == HttpOutcomeKind.Succeeded
             ? outcome with { Value = outcome.Value?.OfType<GetCustomerDto>().Take(maxItems).ToArray() ?? [] }
             : outcome;
     }
@@ -40,7 +40,7 @@ public sealed partial class CustomersApiClient(HttpClient httpClient, ILogger<Cu
     /// <inheritdoc />
     public async Task<HttpOutcome<CustomerDetailsDto>> GetCustomerById(Guid id, CancellationToken ct)
     {
-        return await ContractCommandOutcome.Send(
+        return await HttpOutcomeMapper.Send(
             httpClient,
             new HttpRequestMessage(HttpMethod.Get, new Uri($"{RoutePrefix}/{id}", UriKind.Relative)),
             HttpStatusCode.OK,
@@ -64,7 +64,7 @@ public sealed partial class CustomersApiClient(HttpClient httpClient, ILogger<Cu
         {
             Content = JsonContent.Create(dto, Json.CreateCustomerDto)
         };
-        var outcome = await ContractCommandOutcome.Send(
+        var outcome = await HttpOutcomeMapper.Send(
             httpClient,
             request,
             HttpStatusCode.Created,
@@ -84,7 +84,7 @@ public sealed partial class CustomersApiClient(HttpClient httpClient, ILogger<Cu
         {
             Content = JsonContent.Create(dto, Json.UpdateCustomerDto)
         };
-        return await ContractCommandOutcome.Send(
+        return await HttpOutcomeMapper.Send(
             httpClient,
             request,
             HttpStatusCode.NoContent,
@@ -146,7 +146,7 @@ public sealed partial class CustomersApiClient(HttpClient httpClient, ILogger<Cu
         }
 
         var request = new HttpRequestMessage(HttpMethod.Post, requestUri) { Content = content };
-        return await ContractCommandOutcome.Send(
+        return await HttpOutcomeMapper.Send(
             httpClient,
             request,
             HttpStatusCode.OK,
@@ -163,14 +163,14 @@ public sealed partial class CustomersApiClient(HttpClient httpClient, ILogger<Cu
         }
 
         activity?.SetTag(AdminContractsClientTelemetry.CommandOutcomeKindTag, outcome.Kind.ToString());
-        if (outcome.Kind != ContractCommandOutcomeKind.Succeeded)
+        if (outcome.Kind != HttpOutcomeKind.Succeeded)
         {
             LogCustomerCreateOutcome(logger, outcome.StatusCode, outcome.Kind);
         }
     }
 
     [LoggerMessage(1, LogLevel.Warning, "Customer create returned {StatusCode} with outcome {OutcomeKind}.")]
-    private static partial void LogCustomerCreateOutcome(ILogger logger, HttpStatusCode? statusCode, ContractCommandOutcomeKind outcomeKind);
+    private static partial void LogCustomerCreateOutcome(ILogger logger, HttpStatusCode? statusCode, HttpOutcomeKind outcomeKind);
 
     /// <inheritdoc />
     public Task<HttpOutcome<ImportResultDto>> ImportCustomers(byte[] fileContent, string fileName, CancellationToken ct)

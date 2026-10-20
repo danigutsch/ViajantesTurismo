@@ -84,7 +84,7 @@ Admin and Catalog JSON clients use the shared contract outcome shape for caller-
 
 - `HttpOutcome` carries `Kind`, `StatusCode`, optional `Location`, optional `ValidationErrors`, and an optional
   diagnostic `Message`.
-- `ContractCommandOutcomeKind` models success, validation problem, not found, unauthorized, forbidden, conflict, empty
+- `HttpOutcomeKind` models success, validation problem, not found, unauthorized, forbidden, conflict, empty
   body, malformed body, unsupported content type, unexpected status, timeout, and transport failure.
 - The Web app maps non-success outcomes to user-focused UI errors and keeps navigation fallback local to the component.
 - Caller cancellation, programmer errors, and local upload-stream read failures remain exceptions. This preserves request

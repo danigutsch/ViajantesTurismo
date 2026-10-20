@@ -4,6 +4,6 @@ using System.Text.Json.Serialization;
 namespace SharedKernel.HttpClients.Tests;
 
 [JsonSourceGenerationOptions(JsonSerializerDefaults.Web)]
-[JsonSerializable(typeof(ContractCommandOutcomeTestPayload))]
+[JsonSerializable(typeof(HttpOutcomeMapperTestPayload))]
 [JsonSerializable(typeof(ContractValidationProblemDto))]
-internal sealed partial class ContractCommandOutcomeTestsJsonContext : JsonSerializerContext;
+internal sealed partial class HttpOutcomeMapperTestsJsonContext : JsonSerializerContext;

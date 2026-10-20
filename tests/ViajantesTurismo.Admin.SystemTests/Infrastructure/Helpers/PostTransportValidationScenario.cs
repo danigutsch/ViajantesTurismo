@@ -26,7 +26,7 @@ internal sealed class PostTransportValidationScenario(
             async probeCt =>
             {
                 var outcome = await catalogTours.GetTours(probeCt);
-                if (outcome is { Kind: SharedKernel.HttpClients.ContractCommandOutcomeKind.Succeeded, Value: { } tours })
+                if (outcome is { Kind: SharedKernel.HttpClients.HttpOutcomeKind.Succeeded, Value: { } tours })
                 {
                     return tours.SingleOrDefault(tour => tour.AdminTourId == adminTourId);
                 }
@@ -56,7 +56,7 @@ internal sealed class PostTransportValidationScenario(
             ct);
         var updated = publishedOutcome is
         {
-            Kind: SharedKernel.HttpClients.ContractCommandOutcomeKind.Succeeded,
+            Kind: SharedKernel.HttpClients.HttpOutcomeKind.Succeeded,
             Value: { } published
         }
             ? published
@@ -65,7 +65,7 @@ internal sealed class PostTransportValidationScenario(
             tour.Id,
             new CatalogTourPublicationRequest { ExpectedVersion = updated.Version },
             ct);
-        if (publishOutcome.Kind != SharedKernel.HttpClients.ContractCommandOutcomeKind.Succeeded)
+        if (publishOutcome.Kind != SharedKernel.HttpClients.HttpOutcomeKind.Succeeded)
         {
             throw new HttpRequestException("Catalog publication failed.", null, publishOutcome.StatusCode);
         }
@@ -73,7 +73,7 @@ internal sealed class PostTransportValidationScenario(
         var reloadedOutcome = await catalogTours.GetTour(tour.Id, ct);
         return reloadedOutcome is
         {
-            Kind: SharedKernel.HttpClients.ContractCommandOutcomeKind.Succeeded,
+            Kind: SharedKernel.HttpClients.HttpOutcomeKind.Succeeded,
             Value: { } reloaded
         }
             ? reloaded
