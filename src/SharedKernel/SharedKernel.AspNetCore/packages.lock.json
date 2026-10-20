@@ -87,6 +87,9 @@
       "sharedkernel.apiversioning": {
         "type": "Project"
       },
+      "sharedkernel.idempotency": {
+        "type": "Project"
+      },
       "sharedkernel.inputnormalization": {
         "type": "Project"
       },
@@ -97,6 +100,9 @@
           "Microsoft.OpenApi": "[2.12.2, )",
           "SharedKernel.ApiVersioning": "[0.1.0-alpha.0, )"
         }
+      },
+      "sharedkernel.results": {
+        "type": "Project"
       },
       "Microsoft.AspNetCore.OpenApi": {
         "type": "CentralTransitive",

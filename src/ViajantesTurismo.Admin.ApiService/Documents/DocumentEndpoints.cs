@@ -1,8 +1,8 @@
 using System.ComponentModel.DataAnnotations;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using SharedKernel.Idempotency;
 using SharedKernel.Results;
+using SharedKernel.AspNetCore;
 using ViajantesTurismo.Admin.Application.Documents;
 using ViajantesTurismo.Admin.Contracts.Application;
 using ViajantesTurismo.Admin.Domain.Documents;
@@ -14,7 +14,6 @@ internal static class DocumentEndpoints
 {
     private const string AdministrativeVoidReasonCode = "administrative-void";
     private const string HtmlMediaType = "text/html; charset=utf-8";
-    private const string IdempotencyKeyHeaderName = "Idempotency-Key";
 
     /// <summary>Maps generated-document endpoints to the Admin API.</summary>
     public static void MapDocumentEndpoints(this WebApplication app)
@@ -106,17 +105,17 @@ internal static class DocumentEndpoints
 
     private static async Task<IResult> GenerateContractDraft(
         [FromRoute] Guid bookingId,
-        [Required, FromHeader(Name = IdempotencyKeyHeaderName)] string? idempotencyKeyHeader,
+        [Required, FromHeader(Name = IdempotencyKeyHeader.Name)] string? idempotencyKeyHeader,
         [FromServices] GenerateContractDraftCommandHandler handler,
         [FromServices] IDocumentQueryService queryService,
         [FromServices] IServiceScopeFactory scopeFactory,
         HttpContext httpContext,
         CancellationToken ct)
     {
-        var keyResult = ParseRequiredIdempotencyKey(idempotencyKeyHeader, out var parsedIdempotencyKey);
+        var keyResult = IdempotencyKeyHeader.Create(idempotencyKeyHeader);
         if (keyResult.IsFailure)
         {
-            return ToError(keyResult);
+            return ToError(keyResult.ConvertError());
         }
 
         var auditContext = CreateAuditContext(httpContext);
@@ -124,7 +123,7 @@ internal static class DocumentEndpoints
             new GenerateContractDraftCommand(
                 bookingId,
                 auditContext,
-                parsedIdempotencyKey),
+                keyResult.Value),
             ct),
             new DocumentCommandAuditMetadata(auditContext, DocumentAuditOperation.Generate, null, bookingId),
             scopeFactory,
@@ -281,22 +280,22 @@ internal static class DocumentEndpoints
 
     private static async Task<IResult> Regenerate(
         [FromRoute] Guid id,
-        [Required, FromHeader(Name = IdempotencyKeyHeaderName)] string? idempotencyKeyHeader,
+        [Required, FromHeader(Name = IdempotencyKeyHeader.Name)] string? idempotencyKeyHeader,
         [FromServices] RegenerateDocumentDraftCommandHandler handler,
         [FromServices] IDocumentQueryService queryService,
         [FromServices] IServiceScopeFactory scopeFactory,
         HttpContext httpContext,
         CancellationToken ct)
     {
-        var keyResult = ParseRequiredIdempotencyKey(idempotencyKeyHeader, out var parsedIdempotencyKey);
+        var keyResult = IdempotencyKeyHeader.Create(idempotencyKeyHeader);
         if (keyResult.IsFailure)
         {
-            return ToError(keyResult);
+            return ToError(keyResult.ConvertError());
         }
 
         var auditContext = CreateAuditContext(httpContext);
         var result = await ExecuteDocumentCommand(() => handler.Handle(
-            new RegenerateDocumentDraftCommand(id, auditContext, parsedIdempotencyKey),
+            new RegenerateDocumentDraftCommand(id, auditContext, keyResult.Value),
             ct),
             new DocumentCommandAuditMetadata(auditContext, DocumentAuditOperation.Regenerate, id, null),
             scopeFactory,
@@ -508,26 +507,6 @@ internal static class DocumentEndpoints
         }
 
         return auditContextResult.Value;
-    }
-
-    private static Result ParseRequiredIdempotencyKey(string? value, out IdempotencyKey parsedKey)
-    {
-        parsedKey = default;
-        if (value is null)
-        {
-            return DocumentCommandIdempotency.RequiredKeyError();
-        }
-
-        if (IdempotencyKey.TryFrom(value, out var key))
-        {
-            parsedKey = key;
-            return Result.Ok();
-        }
-
-        return Result.Invalid(
-            detail: $"{IdempotencyKeyHeaderName} must use the supported opaque token format.",
-            field: IdempotencyKeyHeaderName,
-            message: $"{IdempotencyKeyHeaderName} is invalid.");
     }
 
     private static DocumentAuditReasonCode GetFailureReasonCode(Result result) => result.Status switch

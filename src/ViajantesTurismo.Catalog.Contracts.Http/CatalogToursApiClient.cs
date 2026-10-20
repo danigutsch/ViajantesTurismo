@@ -282,13 +282,12 @@ public sealed class CatalogToursApiClient(HttpClient httpClient) : ICatalogTours
             return outcome;
         }
 
-        var images = value.OfType<CatalogMediaImageDto>().ToArray();
-        return images.Length == value.Length
-            ? outcome
-            : HttpOutcomeMapper.Status<CatalogMediaImageDto[]>(
+        return value.Any(static image => image is null)
+            ? HttpOutcomeMapper.Status<CatalogMediaImageDto[]>(
                 HttpOutcomeKind.MalformedBody,
                 statusCode,
-                "The catalog image response body was invalid.");
+                "The catalog image response body was invalid.")
+            : outcome;
     }
 
     private static void AddOptionalFormValue(MultipartFormDataContent content, string name, string? value)

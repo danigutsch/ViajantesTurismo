@@ -136,7 +136,9 @@ public sealed partial class CustomersApiClient(HttpClient httpClient, ILogger<Cu
         IProgress<long>? progress,
         CancellationToken ct)
     {
-        var fileBytes = new ProgressStreamContent(new MemoryStream(fileContent, writable: false), fileContent.LongLength, progress);
+        HttpContent fileBytes = progress is null
+            ? new ByteArrayContent(fileContent)
+            : new ProgressStreamContent(new MemoryStream(fileContent, writable: false), fileContent.LongLength, progress);
         fileBytes.Headers.ContentType = new System.Net.Http.Headers.MediaTypeHeaderValue(MediaTypeNames.Text.Csv);
         var content = new MultipartFormDataContent();
         content.Add(fileBytes, "file", fileName);

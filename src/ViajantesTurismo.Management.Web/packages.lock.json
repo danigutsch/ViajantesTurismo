@@ -305,8 +305,10 @@
         "type": "Project",
         "dependencies": {
           "Microsoft.AspNetCore.Authentication.JwtBearer": "[10.0.13, )",
+          "SharedKernel.Idempotency": "[0.1.0-alpha.0, )",
           "SharedKernel.InputNormalization": "[0.1.0-alpha.0, )",
-          "SharedKernel.OpenApi": "[0.1.0-alpha.0, )"
+          "SharedKernel.OpenApi": "[0.1.0-alpha.0, )",
+          "SharedKernel.Results": "[0.1.0-alpha.0, )"
         }
       },
       "sharedkernel.branding": {
@@ -334,6 +336,9 @@
           "OpenTelemetry.Extensions.Hosting": "[1.20.0, )",
           "OpenTelemetry.Instrumentation.Http": "[1.20.0, )"
         }
+      },
+      "sharedkernel.idempotency": {
+        "type": "Project"
       },
       "sharedkernel.inputnormalization": {
         "type": "Project"

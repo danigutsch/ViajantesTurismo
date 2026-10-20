@@ -63,3 +63,31 @@ static SharedKernel.HttpClients.HttpOutcomeMapper.Status<TValue>(SharedKernel.Ht
 static SharedKernel.HttpClients.HttpOutcomeMapper.Succeeded(System.Net.HttpStatusCode statusCode, System.Uri? location) -> SharedKernel.HttpClients.HttpOutcome!
 static SharedKernel.HttpClients.HttpOutcomeMapper.Succeeded<TValue>(System.Net.HttpStatusCode statusCode, TValue value, System.Uri? location = null) -> SharedKernel.HttpClients.HttpOutcome<TValue>!
 static SharedKernel.HttpClients.HttpServiceCollectionExtensions.AddHttpClientDefaults(this Microsoft.Extensions.DependencyInjection.IServiceCollection! services) -> Microsoft.Extensions.DependencyInjection.IServiceCollection!
+SharedKernel.HttpClients.UploadOperationState
+SharedKernel.HttpClients.UploadOperationState.UploadOperationState() -> void
+SharedKernel.HttpClients.UploadOperationState.OperationId.get -> long
+SharedKernel.HttpClients.UploadOperationState.Status.get -> SharedKernel.HttpClients.UploadOperationStatus
+SharedKernel.HttpClients.UploadOperationState.FileName.get -> string!
+SharedKernel.HttpClients.UploadOperationState.BytesTransferred.get -> long
+SharedKernel.HttpClients.UploadOperationState.TotalBytes.get -> long
+SharedKernel.HttpClients.UploadOperationState.Announcement.get -> string!
+SharedKernel.HttpClients.UploadOperationState.FailureMessage.get -> string?
+SharedKernel.HttpClients.UploadOperationState.IsActive.get -> bool
+SharedKernel.HttpClients.UploadOperationState.IsDeterminate.get -> bool
+SharedKernel.HttpClients.UploadOperationState.CanRetry.get -> bool
+SharedKernel.HttpClients.UploadOperationState.Begin(string! fileName, long totalBytes, bool isRetry) -> long
+SharedKernel.HttpClients.UploadOperationState.ReportBytes(long operationId, long bytesTransferred) -> bool
+SharedKernel.HttpClients.UploadOperationState.Complete(long operationId) -> bool
+SharedKernel.HttpClients.UploadOperationState.Cancel(long operationId) -> bool
+SharedKernel.HttpClients.UploadOperationState.Fail(long operationId, string! failureMessage) -> bool
+SharedKernel.HttpClients.UploadOperationState.IsCurrentActive(long operationId) -> bool
+SharedKernel.HttpClients.UploadOperationState.Reset() -> void
+SharedKernel.HttpClients.UploadOperationStatus
+SharedKernel.HttpClients.UploadOperationStatus.None = 0 -> SharedKernel.HttpClients.UploadOperationStatus
+SharedKernel.HttpClients.UploadOperationStatus.Queued = 1 -> SharedKernel.HttpClients.UploadOperationStatus
+SharedKernel.HttpClients.UploadOperationStatus.Retrying = 2 -> SharedKernel.HttpClients.UploadOperationStatus
+SharedKernel.HttpClients.UploadOperationStatus.Uploading = 3 -> SharedKernel.HttpClients.UploadOperationStatus
+SharedKernel.HttpClients.UploadOperationStatus.Processing = 4 -> SharedKernel.HttpClients.UploadOperationStatus
+SharedKernel.HttpClients.UploadOperationStatus.Complete = 5 -> SharedKernel.HttpClients.UploadOperationStatus
+SharedKernel.HttpClients.UploadOperationStatus.Canceled = 6 -> SharedKernel.HttpClients.UploadOperationStatus
+SharedKernel.HttpClients.UploadOperationStatus.Failed = 7 -> SharedKernel.HttpClients.UploadOperationStatus

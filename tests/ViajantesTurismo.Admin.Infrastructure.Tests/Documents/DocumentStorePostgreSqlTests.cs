@@ -419,7 +419,7 @@ public sealed class DocumentStorePostgreSqlTests(PostgreSqlTestServerFixture fix
         var first = DocumentDraftInfrastructureTestData.CreateDraft(now, bookingId);
         var second = DocumentDraftInfrastructureTestData.CreateDraft(now, bookingId);
         var key = IdempotencyKey.From(Guid.CreateVersion7().ToString("N"));
-        var requestFingerprint = DocumentCommandIdempotency.CreateRequestFingerprint(
+        var requestFingerprint = IdempotencyRequestFingerprint.Create(
             requestMarker,
             "1");
 

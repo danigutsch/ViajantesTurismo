@@ -11,3 +11,8 @@ Use `MapRobotsTxt` to expose an application-owned crawler policy at `/robots.txt
 
 Use `SitemapXmlSerializer` to generate sitemap XML while retaining URL inclusion policy in the
 consuming application.
+
+Use `IdempotencyKeyHeader.Create(value)` to create a required `IdempotencyKey` from HTTP input as a
+`Result<IdempotencyKey>`. The value object owns token rules and normalization; this adapter associates
+missing or invalid input with the standard `Idempotency-Key` validation field. It does not generate
+keys, coordinate operations, or log header values.

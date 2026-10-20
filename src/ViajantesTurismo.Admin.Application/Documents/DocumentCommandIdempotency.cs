@@ -85,7 +85,9 @@ public sealed class DocumentCommandIdempotency(
             return DocumentAuditErrors.AuditContextRequired().ConvertError<Guid>();
         }
 
-        var requestFingerprint = CreateRequestFingerprint(templateId, templateVersion);
+        ArgumentException.ThrowIfNullOrWhiteSpace(templateId);
+        ArgumentException.ThrowIfNullOrWhiteSpace(templateVersion);
+        var requestFingerprint = IdempotencyRequestFingerprint.Create(templateId, templateVersion);
         var existingResult = await GetExistingResult(scope, key, requestFingerprint, ct);
         if (existingResult is { IsSuccess: true } replayedResult)
         {
@@ -128,18 +130,6 @@ public sealed class DocumentCommandIdempotency(
             auditContext, operation, documentId, bookingId, revision,
             DocumentAuditOutcome.Rejected, DocumentAuditReasonCode.StateConflict, ct);
         return auditResult.IsFailure ? auditResult.ConvertError<Guid>() : result;
-    }
-
-    /// <summary>Creates a privacy-safe fingerprint for the template inputs bound to an idempotency key.</summary>
-    /// <param name="templateId">The server-selected template identifier.</param>
-    /// <param name="templateVersion">The server-selected template version.</param>
-    /// <returns>An uppercase SHA-256 fingerprint that contains no raw template input.</returns>
-    public static string CreateRequestFingerprint(string templateId, string templateVersion)
-    {
-        ArgumentException.ThrowIfNullOrWhiteSpace(templateId);
-        ArgumentException.ThrowIfNullOrWhiteSpace(templateVersion);
-
-        return IdempotencyRequestFingerprint.Create(templateId, templateVersion);
     }
 
     /// <summary>Gets the replay or conflict for an existing operation.</summary>

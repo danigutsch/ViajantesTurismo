@@ -11,7 +11,7 @@ namespace ViajantesTurismo.Admin.UnitTests.Application.Documents;
 public sealed class DocumentCommandIdempotencyTests
 {
     private static readonly string RequestFingerprint =
-        DocumentCommandIdempotency.CreateRequestFingerprint("tour-service-contract", "1");
+        IdempotencyRequestFingerprint.Create("tour-service-contract", "1");
 
     [Fact]
     public async Task Canceled_lookup_preserves_the_caller_token_without_preparing_or_claiming()
@@ -161,7 +161,7 @@ public sealed class DocumentCommandIdempotencyTests
         // Act
         var generate = new GenerateContractDraftCommand(bookingId, auditContext, IdempotencyKey.From(Guid.CreateVersion7().ToString("N")));
         var regenerate = new RegenerateDocumentDraftCommand(documentId, auditContext, IdempotencyKey.From(Guid.CreateVersion7().ToString("N")));
-        var fingerprint = DocumentCommandIdempotency.CreateRequestFingerprint(generate.TemplateId, generate.TemplateVersion);
+        var fingerprint = IdempotencyRequestFingerprint.Create(generate.TemplateId, generate.TemplateVersion);
 
         // Assert
         generate.TemplateId.ShouldBe("tour-service-contract");
@@ -341,7 +341,7 @@ public sealed class DocumentCommandIdempotencyTests
             key,
             Guid.CreateVersion7().ToString("N"),
             unitOfWork);
-        var changedRequestFingerprint = DocumentCommandIdempotency.CreateRequestFingerprint(
+        var changedRequestFingerprint = IdempotencyRequestFingerprint.Create(
             "tour-service-contract",
             "2");
 

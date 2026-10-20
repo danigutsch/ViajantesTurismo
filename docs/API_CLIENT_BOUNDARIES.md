@@ -191,3 +191,21 @@ Test contract-owned clients at the HTTP seam they own:
 - keep UI fallback, navigation, and user-message assertions in app or component tests.
 
 Avoid fakes that reimplement HTTP parsing. App tests should fake the `I*ApiClient` interface by returning documented outcomes.
+
+## Shared upload lifecycle
+
+`SharedKernel.HttpClients.UploadOperationState` and `UploadOperationStatus` model a caller-owned upload
+lifecycle. Customer import and Catalog image upload use the same state without depending on Blazor.
+`ProgressStreamContent`, in the same package, supplies transport byte counts; the host connects those
+reports to the state and owns rendering, cancellation sources, request execution, and server outcomes.
+
+The state is mutable and not thread-safe. Marshal every read and mutation to the host's rendering or
+synchronization context. Keep the operation identifier returned by `Begin` with each callback: stale
+callbacks, canceled operations, and callbacks from before a reset cannot overwrite a new operation.
+Retries require a canceled or failed operation. Reporting every declared byte transitions to server
+processing; it does not indicate server success. `Complete` is valid only after that transition.
+Reset clears displayed state without rewinding operation identifiers or canceling transport work.
+
+The existing English announcements and ten-percent announcement cadence are preserved for accessible
+presentation. They contain the display file name and must not be copied into logs or telemetry.
+App-specific CSV mappings, file policies, routes, page rendering, and workflow decisions remain in the app.

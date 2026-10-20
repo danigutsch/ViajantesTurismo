@@ -1,5 +1,5 @@
 using ViajantesTurismo.Admin.Contracts.Application;
-using ViajantesTurismo.Management.Web.Components.Shared;
+using SharedKernel.HttpClients;
 using ViajantesTurismo.Management.Web.Services;
 
 namespace ViajantesTurismo.Management.Web.Components.Pages.Customers;
