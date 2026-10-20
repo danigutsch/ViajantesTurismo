@@ -15,7 +15,7 @@ public sealed class PaymentFormModel
     public decimal? Amount { get; set; }
 
     [Required(ErrorMessage = "Payment date is required")]
-    public DateTime? PaymentDate { get; set; } = DateTime.Today;
+    public DateOnly? PaymentDate { get; set; }
 
     [Required(ErrorMessage = "Payment method is required")]
     public PaymentMethodDto? Method { get; set; }
@@ -32,7 +32,7 @@ public sealed class PaymentFormModel
     public CreatePaymentDto ToDto() => new()
     {
         Amount = Amount!.Value,
-        PaymentDate = DateTime.SpecifyKind(PaymentDate!.Value, DateTimeKind.Utc),
+        PaymentDate = PaymentDate!.Value,
         Method = Method!.Value,
         ReferenceNumber = ReferenceNumber,
         Notes = Notes

@@ -24,12 +24,12 @@ public sealed record GetTourDto
     /// <summary>
     /// Start date of the tour.
     /// </summary>
-    public required DateTime StartDate { get; init; }
+    public required DateOnly StartDate { get; init; }
 
     /// <summary>
     /// End date of the tour.
     /// </summary>
-    public required DateTime EndDate { get; init; }
+    public required DateOnly EndDate { get; init; }
 
     /// <summary>
     /// Base price for double occupancy (not per person).

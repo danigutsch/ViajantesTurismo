@@ -27,6 +27,7 @@ public static class ApplicationDependencyInjection
     public static IServiceCollection AddCatalogApplication(this IServiceCollection services)
     {
         ArgumentNullException.ThrowIfNull(services);
+        services.TryAddSingleton(TimeProvider.System);
 
         services.AddOptions<IntegrationEventOptions>()
             .BindConfiguration(IntegrationEventOptions.SectionName)
@@ -41,7 +42,8 @@ public static class ApplicationDependencyInjection
                     sp.GetRequiredService<IEventStore>(),
                     sp.GetRequiredService<ICatalogTourSlugLock>()),
                 sp.GetRequiredService<IIdempotencyStore>(),
-                sp.GetRequiredService<IOptions<IntegrationEventOptions>>()));
+                sp.GetRequiredService<IOptions<IntegrationEventOptions>>(),
+                sp.GetRequiredService<TimeProvider>()));
         JsonTypeInfo<AdminTourCreatedIntegrationEvent> adminTourCreatedJsonTypeInfo =
             AdminIntegrationEventJsonContext.Default.AdminTourCreatedIntegrationEvent;
         services.AddIntegrationEventConsumer(

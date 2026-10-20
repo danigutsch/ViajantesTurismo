@@ -17,7 +17,7 @@ public sealed class BookingEntitySteps(BookingContext bookingContext)
             principal,
             null,
             Discount.Create(DiscountType.None, 0m, null).Value,
-            null);
+            null, new DateTime(2030, 1, 1, 0, 0, 0, DateTimeKind.Utc));
 
         bookingContext.BookingCreationResult = result;
         bookingContext.Action = null!;
@@ -37,7 +37,7 @@ public sealed class BookingEntitySteps(BookingContext bookingContext)
             principal,
             companion,
             Discount.Create(DiscountType.None, 0m, null).Value,
-            null);
+            null, new DateTime(2030, 1, 1, 0, 0, 0, DateTimeKind.Utc));
 
         bookingContext.BookingCreationResult = result;
         bookingContext.Action = null!;
@@ -57,7 +57,7 @@ public sealed class BookingEntitySteps(BookingContext bookingContext)
                 DiscountType.None,
                 0m,
                 null).Value,
-            null);
+            null, new DateTime(2030, 1, 1, 0, 0, 0, DateTimeKind.Utc));
 
         bookingContext.BookingCreationResult = result;
         bookingContext.Action = null!;
@@ -74,7 +74,7 @@ public sealed class BookingEntitySteps(BookingContext bookingContext)
             principal,
             null,
             Discount.Create(DiscountType.None, 0m, null).Value,
-            null);
+            null, new DateTime(2030, 1, 1, 0, 0, 0, DateTimeKind.Utc));
 
         bookingContext.BookingCreationResult = result;
         bookingContext.Action = null!;
@@ -103,7 +103,7 @@ public sealed class BookingEntitySteps(BookingContext bookingContext)
             principal,
             null,
             Discount.Create(DiscountType.None, 0m, null).Value,
-            notes);
+            notes, new DateTime(2030, 1, 1, 0, 0, 0, DateTimeKind.Utc));
 
         bookingContext.BookingCreationResult = result;
         bookingContext.Action = null!;
@@ -120,7 +120,7 @@ public sealed class BookingEntitySteps(BookingContext bookingContext)
             principal,
             null,
             Discount.Create(DiscountType.None, 0m, null).Value,
-            null);
+            null, new DateTime(2030, 1, 1, 0, 0, 0, DateTimeKind.Utc));
 
         bookingContext.BookingCreationResult = result;
         bookingContext.Action = null!;

@@ -20,8 +20,8 @@ internal sealed class TourConfiguration : IEntityTypeConfiguration<Tour>
 
         entity.OwnsOne(tour => tour.Schedule, schedule =>
         {
-            schedule.Property(s => s.StartDate).HasColumnName("StartDate").IsRequired();
-            schedule.Property(s => s.EndDate).HasColumnName("EndDate").IsRequired();
+            schedule.Property(s => s.StartDate).HasColumnName("StartDate").HasColumnType("date").IsRequired();
+            schedule.Property(s => s.EndDate).HasColumnName("EndDate").HasColumnType("date").IsRequired();
         });
 
         entity.OwnsOne(tour => tour.Pricing, pricing =>

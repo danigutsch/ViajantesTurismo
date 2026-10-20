@@ -26,8 +26,8 @@ public sealed class AdminApiSecurityBaselineTests
         {
             Identifier = "rate-limit-tour",
             Name = "Rate limit tour",
-            StartDate = new DateTime(2030, 1, 1, 0, 0, 0, DateTimeKind.Utc),
-            EndDate = new DateTime(2030, 1, 8, 0, 0, 0, DateTimeKind.Utc),
+            StartDate = new DateOnly(2030, 1, 1),
+            EndDate = new DateOnly(2030, 1, 8),
             Price = 0m,
             SingleRoomSupplementPrice = 1m,
             RegularBikePrice = 1m,

@@ -5,4 +5,4 @@ namespace ViajantesTurismo.Admin.Domain.Tours;
 /// </summary>
 /// <param name="StartDate">The scheduled start date.</param>
 /// <param name="EndDate">The scheduled end date.</param>
-public sealed record TourScheduleDefinition(DateTime StartDate, DateTime EndDate);
+public sealed record TourScheduleDefinition(DateOnly StartDate, DateOnly EndDate);

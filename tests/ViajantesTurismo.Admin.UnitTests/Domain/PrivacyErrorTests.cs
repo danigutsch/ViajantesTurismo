@@ -45,7 +45,7 @@ public sealed class PrivacyErrorTests
         var cases = new (Result Error, string Detail, string Message)[]
         {
             (PaymentErrors.InvalidAmount(-123456m), "Payment amount must be greater than zero.", "Payment amount must be greater than zero."),
-            (PaymentErrors.FuturePaymentDate(new DateTime(2099, 12, 31, 0, 0, 0, DateTimeKind.Utc)), "Payment date cannot be in the future.", "Payment date cannot be in the future."),
+            (PaymentErrors.FuturePaymentDate(new DateOnly(2099, 12, 31)), "Payment date cannot be in the future.", "Payment date cannot be in the future."),
             (PaymentErrors.ExceedsRemainingBalance(123456m, 654321m), "Payment amount exceeds remaining balance.", "Payment amount cannot exceed remaining balance."),
             (BookingErrors.ZeroOrNegativeBasePrice(-123456m), "Base price must be greater than zero.", "Base price must be greater than zero."),
             (BookingErrors.BasePriceExceedsMaximum(654321m, 123456m), "Base price exceeds the maximum allowed value.", "Base price exceeds the maximum allowed value."),

@@ -1,9 +1,9 @@
+using SharedKernel.BuildingBlocks;
 using JetBrains.Annotations;
 using ViajantesTurismo.Admin.Domain.Shared;
 using SharedKernel.Domain;
 using SharedKernel.Results;
 using SharedKernel.InputNormalization;
-using SharedKernel.BuildingBlocks;
 
 namespace ViajantesTurismo.Admin.Domain.Tours;
 
@@ -25,7 +25,7 @@ public sealed partial class Tour : IAggregateRoot<Guid>
     private Tour(
         string identifier,
         string name,
-        DateRange schedule,
+        TourSchedule schedule,
         TourPricing pricing,
         TourCapacity capacity,
         IEnumerable<string> includedServices)
@@ -67,7 +67,7 @@ public sealed partial class Tour : IAggregateRoot<Guid>
     /// <summary>
     /// Gets the schedule (date range) for the tour.
     /// </summary>
-    public DateRange Schedule { get; private set; } = default!;
+    public TourSchedule Schedule { get; private set; } = default!;
 
     /// <summary>
     /// Gets the pricing information for the tour.
@@ -151,7 +151,7 @@ public sealed partial class Tour : IAggregateRoot<Guid>
             errors.Add(TourErrors.NameTooLong(AdminDomainLimits.MaxNameLength, name.Length));
         }
 
-        var scheduleResult = DateRange.Create(definition.Schedule.StartDate, definition.Schedule.EndDate);
+        var scheduleResult = TourSchedule.Create(definition.Schedule.StartDate, definition.Schedule.EndDate);
         if (scheduleResult.IsFailure)
         {
             errors.Add(scheduleResult);
@@ -249,9 +249,9 @@ public sealed partial class Tour : IAggregateRoot<Guid>
     /// <param name="startDate">The start date of the tour.</param>
     /// <param name="endDate">The end date of the tour.</param>
     /// <returns>A Result indicating success or failure.</returns>
-    public Result UpdateSchedule(DateTime startDate, DateTime endDate)
+    public Result UpdateSchedule(DateOnly startDate, DateOnly endDate)
     {
-        var scheduleResult = DateRange.Create(startDate, endDate);
+        var scheduleResult = TourSchedule.Create(startDate, endDate);
         if (scheduleResult.IsFailure)
         {
             return scheduleResult.ConvertError();
@@ -390,8 +390,9 @@ public sealed partial class Tour : IAggregateRoot<Guid>
     /// Validates that BikeType.None is not used per US-11 requirement (None is a placeholder value, not a valid booking choice).
     /// </summary>
     /// <param name="request">The booking details to validate and add.</param>
+    /// <param name="createdAt">The captured UTC booking creation instant.</param>
     /// <returns>A Result containing the created booking if successful, or validation errors.</returns>
-    public Result<Booking> AddBooking(TourBookingRequest request)
+    public Result<Booking> AddBooking(TourBookingRequest request, DateTime createdAt)
     {
         ArgumentNullException.ThrowIfNull(request);
 
@@ -453,7 +454,7 @@ public sealed partial class Tour : IAggregateRoot<Guid>
             principalCustomerResult.Value,
             companionCustomer,
             discountResult.Value,
-            request.Notes);
+            request.Notes, createdAt);
 
         if (result.IsFailure)
         {
@@ -601,7 +602,7 @@ public sealed partial class Tour : IAggregateRoot<Guid>
     public Result<Payment> RecordBookingPayment(
         Guid bookingId,
         decimal amount,
-        DateTime paymentDate,
+        DateOnly paymentDate,
         PaymentMethod method,
         TimeProvider timeProvider,
         string? referenceNumber = null,

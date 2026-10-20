@@ -98,7 +98,8 @@
         "@flaky",
         "@ignore",
         "@summary",
-        "@duplicate_resolution"
+        "@duplicate_resolution",
+        "@integration-event-transport"
       ]
     }
   ],

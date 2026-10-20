@@ -1,3 +1,4 @@
+@inject Microsoft.Extensions.Hosting.IHostEnvironment HostEnvironment
 @page "/about"
 <PageTitle>About - ViajantesTurismo</PageTitle>
 
@@ -14,7 +15,7 @@
                 </tr>
                 <tr>
                     <td class="fw-bold">Environment:</td>
-                    <td>@GetEnvironment()</td>
+                    <td>@HostEnvironment.EnvironmentName</td>
                 </tr>
                 <tr>
                     <td class="fw-bold">Built with:</td>
@@ -39,8 +40,3 @@
         </a>
     </div>
 </div>
-
-@code {
-    private static string GetEnvironment() =>
-        Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT") ?? "Production";
-}

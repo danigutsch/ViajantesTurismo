@@ -36,8 +36,8 @@ public sealed record TourDefinition(
     public TourDefinition(
         string identifier,
         string name,
-        DateTime startDate,
-        DateTime endDate,
+        DateOnly startDate,
+        DateOnly endDate,
         decimal basePrice,
         decimal singleRoomSupplementPrice,
         decimal regularBikePrice,

@@ -16,7 +16,7 @@ public sealed class PaymentRecordingSteps(TourContext tourContext, BookingContex
             Guid.CreateVersion7(),
             BikeType.Regular,
             RoomType.DoubleOccupancy,
-            DiscountType.None));
+            DiscountType.None), new DateTime(2030, 1, 1, 0, 0, 0, DateTimeKind.Utc));
         (result.IsSuccess).ShouldBeTrue();
         bookingContext.Booking = result.Value;
         (bookingContext.Booking.Status).ShouldBe(BookingStatus.Pending);
@@ -41,7 +41,7 @@ public sealed class PaymentRecordingSteps(TourContext tourContext, BookingContex
         var notes = string.IsNullOrEmpty(GetFieldValue("Notes")) ? null : GetFieldValue("Notes");
 
         _paymentResult =
-            bookingContext.Booking.RecordPayment(amount, paymentDate, method, _timeProvider, referenceNumber, notes);
+            bookingContext.Booking.RecordPayment(amount, DateOnly.FromDateTime(paymentDate), method, _timeProvider, referenceNumber, notes);
         bookingContext.PaymentResult = _paymentResult;
     }
 
@@ -51,7 +51,7 @@ public sealed class PaymentRecordingSteps(TourContext tourContext, BookingContex
         var paymentDate = DateTime.Parse(dateString, CultureInfo.InvariantCulture);
         var method = Enum.Parse<PaymentMethod>(methodString);
 
-        _paymentResult = bookingContext.Booking.RecordPayment(amount, paymentDate, method, _timeProvider);
+        _paymentResult = bookingContext.Booking.RecordPayment(amount, DateOnly.FromDateTime(paymentDate), method, _timeProvider);
         (_paymentResult.IsSuccess).ShouldBeTrue();
     }
 
@@ -61,7 +61,7 @@ public sealed class PaymentRecordingSteps(TourContext tourContext, BookingContex
         var paymentDate = DateTime.Parse(dateString, CultureInfo.InvariantCulture);
         var method = Enum.Parse<PaymentMethod>(methodString);
 
-        _paymentResult = bookingContext.Booking.RecordPayment(amount, paymentDate, method, _timeProvider);
+        _paymentResult = bookingContext.Booking.RecordPayment(amount, DateOnly.FromDateTime(paymentDate), method, _timeProvider);
         bookingContext.PaymentResult = _paymentResult;
     }
 
@@ -69,7 +69,7 @@ public sealed class PaymentRecordingSteps(TourContext tourContext, BookingContex
     public void WhenIAttemptToRecordAPaymentWithAmount(decimal amount)
     {
         var paymentDate = DateTime.UtcNow.AddDays(-1);
-        _paymentResult = bookingContext.Booking.RecordPayment(amount, paymentDate, PaymentMethod.Cash, _timeProvider);
+        _paymentResult = bookingContext.Booking.RecordPayment(amount, DateOnly.FromDateTime(paymentDate), PaymentMethod.Cash, _timeProvider);
         bookingContext.PaymentResult = _paymentResult;
     }
 
@@ -77,7 +77,7 @@ public sealed class PaymentRecordingSteps(TourContext tourContext, BookingContex
     public void WhenIAttemptToRecordAPaymentWithADateInTheFuture()
     {
         var futureDate = DateTime.UtcNow.AddDays(1);
-        _paymentResult = bookingContext.Booking.RecordPayment(100m, futureDate, PaymentMethod.Cash, _timeProvider);
+        _paymentResult = bookingContext.Booking.RecordPayment(100m, DateOnly.FromDateTime(futureDate), PaymentMethod.Cash, _timeProvider);
         bookingContext.PaymentResult = _paymentResult;
     }
 
@@ -85,7 +85,7 @@ public sealed class PaymentRecordingSteps(TourContext tourContext, BookingContex
     public void WhenIAttemptToRecordAPaymentWithAnInvalidPaymentMethod()
     {
         var paymentDate = DateTime.UtcNow.AddDays(-1);
-        _paymentResult = bookingContext.Booking.RecordPayment(100m, paymentDate, (PaymentMethod)999, _timeProvider);
+        _paymentResult = bookingContext.Booking.RecordPayment(100m, DateOnly.FromDateTime(paymentDate), (PaymentMethod)999, _timeProvider);
         bookingContext.PaymentResult = _paymentResult;
     }
 
@@ -100,7 +100,7 @@ public sealed class PaymentRecordingSteps(TourContext tourContext, BookingContex
             var amount = decimal.Parse(row["Amount"], CultureInfo.InvariantCulture);
             var paymentDate = DateTime.UtcNow.AddDays(-1);
 
-            var result = bookingContext.Booking.RecordPayment(amount, paymentDate, method, _timeProvider);
+            var result = bookingContext.Booking.RecordPayment(amount, DateOnly.FromDateTime(paymentDate), method, _timeProvider);
             if (!result.IsSuccess)
             {
                 allSuccessful = false;

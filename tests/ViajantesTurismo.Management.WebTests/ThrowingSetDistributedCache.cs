@@ -10,6 +10,8 @@ internal sealed class ThrowingSetDistributedCache(
     private readonly Exception _failure = failure ?? new InvalidOperationException("The cache is unavailable.");
     private int _setCalls;
 
+    public DistributedCacheEntryOptions? LastOptions { get; private set; }
+
     public byte[]? Get(string key)
     {
         return inner.Get(key);
@@ -42,6 +44,7 @@ internal sealed class ThrowingSetDistributedCache(
 
     public void Set(string key, byte[] value, DistributedCacheEntryOptions options)
     {
+        LastOptions = options;
         var setCall = Interlocked.Increment(ref _setCalls);
         if (shouldThrowOnSet(key, setCall))
         {
@@ -53,6 +56,7 @@ internal sealed class ThrowingSetDistributedCache(
 
     public Task SetAsync(string key, byte[] value, DistributedCacheEntryOptions options, CancellationToken token = default)
     {
+        LastOptions = options;
         var setCall = Interlocked.Increment(ref _setCalls);
         return shouldThrowOnSet(key, setCall)
             ? Task.FromException(_failure)

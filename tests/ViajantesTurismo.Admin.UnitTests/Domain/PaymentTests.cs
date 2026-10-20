@@ -67,7 +67,7 @@ public class PaymentTests
         var futureDate = new DateTime(2026, 12, 31, 10, 30, 0, DateTimeKind.Utc);
 
         // Act
-        var result = PaymentErrors.FuturePaymentDate(futureDate);
+        var result = PaymentErrors.FuturePaymentDate(DateOnly.FromDateTime(futureDate));
 
         // Assert
         (result.IsSuccess).ShouldBeFalse();

@@ -67,7 +67,7 @@ public sealed class MediaInfrastructureContainerTests(MediaInfrastructureContain
             new UnexpectedPublicMediaImageStore(),
             new UnexpectedIntegrationEventOutbox(),
             Options.Create(validationOptions),
-            NullLogger<MediaImageUploadIntake>.Instance);
+            NullLogger<MediaImageUploadIntake>.Instance, TimeProvider.System);
         var content = new byte[] { 0xFF, 0xD8, 0xFF, 0xD9 };
         var request = new MediaImageUploadIntakeRequest(
             Guid.CreateVersion7(),
