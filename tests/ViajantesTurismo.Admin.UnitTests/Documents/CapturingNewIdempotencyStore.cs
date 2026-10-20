@@ -3,8 +3,12 @@ using ViajantesTurismo.Admin.Testing.Fakes;
 
 namespace ViajantesTurismo.Admin.UnitTests.Documents;
 
-internal sealed class CapturingNewIdempotencyStore(FakeUnitOfWork unitOfWork) : IIdempotencyStore
+internal sealed class CapturingNewIdempotencyStore(
+    FakeUnitOfWork unitOfWork,
+    IdempotencyEntry? competingEntry = null) : IIdempotencyStore
 {
+    private IdempotencyEntry? entry;
+
     internal int GetCallCount { get; private set; }
 
     internal int TryStartCallCount { get; private set; }
@@ -35,6 +39,23 @@ internal sealed class CapturingNewIdempotencyStore(FakeUnitOfWork unitOfWork) : 
         StartedOperation = operation;
         StartedAt = startedAt;
         LockDuration = lockDuration;
+        if (entry is not null)
+        {
+            return ValueTask.FromResult(IdempotencyStartResult.AlreadyStarted(entry));
+        }
+
+        if (competingEntry is not null)
+        {
+            entry = competingEntry;
+            return ValueTask.FromResult(IdempotencyStartResult.AlreadyStarted(competingEntry));
+        }
+
+        entry = new IdempotencyEntry(
+            operation,
+            IdempotencyEntryState.Started,
+            startedAt,
+            null,
+            null);
         return ValueTask.FromResult(IdempotencyStartResult.StartedNew());
     }
 
@@ -56,6 +77,12 @@ internal sealed class CapturingNewIdempotencyStore(FakeUnitOfWork unitOfWork) : 
         CompletedAt = completedAt;
         StagedResultFingerprint = resultFingerprint;
         WasCompletionStagedBeforeSave = unitOfWork.SaveEntitiesCallCount == 0;
+        entry = new IdempotencyEntry(
+            operation,
+            IdempotencyEntryState.Completed,
+            StartedAt ?? completedAt,
+            completedAt,
+            resultFingerprint);
         return ValueTask.CompletedTask;
     }
 
@@ -64,6 +91,6 @@ internal sealed class CapturingNewIdempotencyStore(FakeUnitOfWork unitOfWork) : 
         CancellationToken ct)
     {
         GetCallCount++;
-        return ValueTask.FromResult<IdempotencyEntry?>(null);
+        return ValueTask.FromResult(entry?.Operation == operation ? entry : null);
     }
 }

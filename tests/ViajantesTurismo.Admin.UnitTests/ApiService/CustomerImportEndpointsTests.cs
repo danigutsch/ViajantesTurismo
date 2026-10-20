@@ -6,6 +6,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using SharedKernel.MalwareScanning;
 using SharedKernel.Results;
+using SharedKernel.Testing;
 using ViajantesTurismo.Admin.ApiService;
 using TestTraits = ViajantesTurismo.Admin.UnitTests.Infrastructure.TestTraits;
 using ViajantesTurismo.Admin.ApiService.Customers;
@@ -13,7 +14,7 @@ using ViajantesTurismo.Admin.Contracts.Application;
 
 namespace ViajantesTurismo.Admin.UnitTests.ApiService;
 
-[Trait(SharedKernel.Testing.TestTraitNames.CategoryName, TestTraits.SecurityCategory)]
+[Trait(TestTraitNames.CategoryName, TestTraits.SecurityCategory)]
 public sealed class CustomerImportEndpointsTests
 {
     [Fact]
@@ -266,5 +267,54 @@ public sealed class CustomerImportEndpointsTests
 
         // Assert
         response.StatusCode.ShouldBe(HttpStatusCode.RequestEntityTooLarge);
+    }
+
+    [Fact]
+    public async Task ReadCsv_propagates_cancellation_during_bounded_buffering_without_scanning()
+    {
+        // Arrange
+        var content = "firstName,lastName\nAda,Lovelace"u8.ToArray();
+        using var stream = new GatedCountingReadStream(content);
+        var file = new FormFile(stream, 0, content.LongLength, "file", "customers.csv")
+        {
+            Headers = new HeaderDictionary(),
+            ContentType = ContractConstants.CustomerImportTextCsvContentType
+        };
+        var scanner = new StubMalwareScanner(MalwareScanResult.Passed);
+        using var requestCancellation = new CancellationTokenSource();
+
+        // Act
+        var read = CustomerImportEndpoints.ReadCsv(file, scanner, requestCancellation.Token);
+        await stream.ReadStarted.WaitAsync(TestContext.Current.CancellationToken);
+        await requestCancellation.CancelAsync();
+        Func<Task> action = async () => await read;
+
+        // Assert
+        _ = await action.ShouldThrow<TaskCanceledException>();
+        scanner.ScannedContent.ShouldBeNull();
+        stream.BytesRead.ShouldBe(0);
+    }
+
+    [Fact]
+    public async Task ReadCsv_reads_the_received_file_once_before_scanning()
+    {
+        // Arrange
+        var content = "firstName,lastName\nAda,Lovelace"u8.ToArray();
+        using var stream = new GatedCountingReadStream(content);
+        stream.Release();
+        var file = new FormFile(stream, 0, content.LongLength, "file", "customers.csv")
+        {
+            Headers = new HeaderDictionary(),
+            ContentType = ContractConstants.CustomerImportTextCsvContentType
+        };
+        var scanner = new StubMalwareScanner(MalwareScanResult.Passed);
+
+        // Act
+        var result = await CustomerImportEndpoints.ReadCsv(file, scanner, TestContext.Current.CancellationToken);
+
+        // Assert
+        result.IsSuccess.ShouldBeTrue();
+        stream.BytesRead.ShouldBe(content.LongLength);
+        scanner.ScannedContent.ShouldNotBeNull();
     }
 }

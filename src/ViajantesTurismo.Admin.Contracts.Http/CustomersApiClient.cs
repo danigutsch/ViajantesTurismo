@@ -93,7 +93,7 @@ public sealed partial class CustomersApiClient(HttpClient httpClient, ILogger<Cu
     }
 
     /// <inheritdoc />
-    public async Task<ContractCommandOutcomeDto<ImportResultDto>> ImportCustomers(byte[] fileContent, string fileName, CancellationToken ct)
+    public async Task<ContractCommandOutcomeDto<ImportResultDto>> ImportCustomers(byte[] fileContent, string fileName, IProgress<long>? progress, CancellationToken ct)
     {
         ArgumentNullException.ThrowIfNull(fileContent);
         ArgumentNullException.ThrowIfNull(fileName);
@@ -103,6 +103,7 @@ public sealed partial class CustomersApiClient(HttpClient httpClient, ILogger<Cu
             fileContent,
             fileName,
             conflictResolutions: null,
+            progress,
             ct).ConfigureAwait(false);
     }
 
@@ -111,6 +112,7 @@ public sealed partial class CustomersApiClient(HttpClient httpClient, ILogger<Cu
         byte[] fileContent,
         string fileName,
         IReadOnlyDictionary<string, string> conflictResolutions,
+        IProgress<long>? progress,
         CancellationToken ct)
     {
         ArgumentNullException.ThrowIfNull(fileContent);
@@ -122,6 +124,7 @@ public sealed partial class CustomersApiClient(HttpClient httpClient, ILogger<Cu
             fileContent,
             fileName,
             conflictResolutions,
+            progress,
             ct).ConfigureAwait(false);
     }
 
@@ -130,9 +133,10 @@ public sealed partial class CustomersApiClient(HttpClient httpClient, ILogger<Cu
         byte[] fileContent,
         string fileName,
         IReadOnlyDictionary<string, string>? conflictResolutions,
+        IProgress<long>? progress,
         CancellationToken ct)
     {
-        var fileBytes = new ByteArrayContent(fileContent);
+        var fileBytes = new ProgressStreamContent(new MemoryStream(fileContent, writable: false), fileContent.LongLength, progress);
         fileBytes.Headers.ContentType = new System.Net.Http.Headers.MediaTypeHeaderValue(MediaTypeNames.Text.Csv);
         var content = new MultipartFormDataContent();
         content.Add(fileBytes, "file", fileName);
@@ -167,4 +171,16 @@ public sealed partial class CustomersApiClient(HttpClient httpClient, ILogger<Cu
 
     [LoggerMessage(1, LogLevel.Warning, "Customer create returned {StatusCode} with outcome {OutcomeKind}.")]
     private static partial void LogCustomerCreateOutcome(ILogger logger, HttpStatusCode? statusCode, ContractCommandOutcomeKind outcomeKind);
+
+    /// <inheritdoc />
+    public Task<ContractCommandOutcomeDto<ImportResultDto>> ImportCustomers(byte[] fileContent, string fileName, CancellationToken ct)
+    {
+        return ImportCustomers(fileContent, fileName, null, ct);
+    }
+
+    /// <inheritdoc />
+    public Task<ContractCommandOutcomeDto<ImportResultDto>> CommitImportWithResolutions(byte[] fileContent, string fileName, IReadOnlyDictionary<string, string> conflictResolutions, CancellationToken ct)
+    {
+        return CommitImportWithResolutions(fileContent, fileName, conflictResolutions, null, ct);
+    }
 }

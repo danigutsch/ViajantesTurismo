@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using SharedKernel.HttpCaching.AspNetCore;
 using SharedKernel.Idempotency;
 using SharedKernel.Results;
 using ViajantesTurismo.Admin.Application.Documents;
@@ -22,7 +23,7 @@ internal static class DocumentEndpoints
     {
         ArgumentNullException.ThrowIfNull(app);
 
-        var documentsGroup = app.MapDocumentsGroup();
+        var documentsGroup = app.MapDocumentsGroup().WithNoStoreResponses();
 
         documentsGroup.MapPost("/bookings/{bookingId:guid}/contract-drafts", GenerateContractDraft)
             .RequireRateLimiting(AdminSecurityBaseline.MutationRateLimitPolicy)
@@ -454,11 +455,17 @@ internal static class DocumentEndpoints
         }
         catch (DbUpdateConcurrencyException)
         {
-            return DocumentErrors.DocumentChangedByAnotherRequest().ConvertError<T>();
+            var auditResult = await RecordRejectedConcurrencyAudit(scopeFactory, auditMetadata, ct);
+            return auditResult.IsFailure
+                ? auditResult.ConvertError<T>()
+                : DocumentErrors.DocumentChangedByAnotherRequest().ConvertError<T>();
         }
         catch (DocumentRevisionConflictException)
         {
-            return DocumentErrors.DocumentRevisionAlreadyExists().ConvertError<T>();
+            var auditResult = await RecordRejectedConcurrencyAudit(scopeFactory, auditMetadata, ct);
+            return auditResult.IsFailure
+                ? auditResult.ConvertError<T>()
+                : DocumentErrors.DocumentRevisionAlreadyExists().ConvertError<T>();
         }
         catch (DocumentBookingEligibilityConflictException)
         {

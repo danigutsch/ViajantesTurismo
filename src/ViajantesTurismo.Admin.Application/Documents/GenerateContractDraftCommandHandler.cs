@@ -28,13 +28,29 @@ public sealed class GenerateContractDraftCommandHandler(
         }
 
         var idempotencyScope = IdempotencyScope.From($"admin.documents.generate-contract-draft:{command.BookingId:N}");
+        var requestFingerprint = DocumentCommandIdempotency.CreateRequestFingerprint(
+            command.TemplateId,
+            command.TemplateVersion);
         var existingResult = await documentCommandIdempotency.GetExistingResult(
             idempotencyScope,
             command.IdempotencyKey,
+            requestFingerprint,
             ct);
-        if (existingResult is { } replayedResult)
+        if (existingResult is { IsSuccess: true } replayedResult)
         {
             return replayedResult;
+        }
+
+        if (existingResult is { } conflictResult)
+        {
+            return await RecordAndReturn(
+                conflictResult,
+                command.AuditContext,
+                null,
+                command.BookingId,
+                null,
+                DocumentAuditReasonCode.StateConflict,
+                ct);
         }
 
         var now = timeProvider.GetUtcNow().UtcDateTime;
@@ -117,15 +133,28 @@ public sealed class GenerateContractDraftCommandHandler(
 
         var lineage = lineageResult.Value;
         var draft = lineage.Revisions[0];
-        return await documentCommandIdempotency.Execute(
+        var operationWasInvoked = false;
+        var result = await documentCommandIdempotency.Execute(
             idempotencyScope,
             command.IdempotencyKey,
+            requestFingerprint,
             () =>
             {
+                operationWasInvoked = true;
                 documentStore.Add(lineage);
                 return Task.FromResult(Result.Ok(draft.Id));
             },
             ct);
+        return result.IsFailure && !operationWasInvoked
+            ? await RecordAndReturn(
+                result,
+                command.AuditContext,
+                null,
+                command.BookingId,
+                null,
+                DocumentAuditReasonCode.StateConflict,
+                ct)
+            : result;
     }
 
     private async Task<Result<Guid>> RecordAndReturn(

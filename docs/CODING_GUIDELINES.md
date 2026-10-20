@@ -336,6 +336,8 @@ See [TEST_GUIDELINES.md](TEST_GUIDELINES.md).
 - Keep `Program.cs` focused on host setup, middleware order, and top-level calls.
 - Put app-specific route/component/static asset mappings in one or more nearby `*Endpoints.cs` files.
 - Name the extension `Map<Area>Endpoints` and call it before `MapDefaultEndpoints()`.
+- Choose route, query, header, form, body, and stream inputs by the
+  [API request shape policy](API_REQUEST_SHAPES.md); `[AsParameters]` alone does not mean query binding.
 - Preserve existing route templates, middleware order, authorization, validation, and contracts.
 - Do not add endpoint registries, reflection scanning, or framework layers for simple mappings.
 

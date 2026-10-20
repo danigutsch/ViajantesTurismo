@@ -86,4 +86,21 @@ public sealed class CustomerImportCommandHandlerTests
         (_uow.SaveEntitiesCallCount).ShouldBe(0);
     }
 
+    [Fact]
+    public async Task Handle_with_a_canceled_request_does_not_stage_or_commit_customers()
+    {
+        // Arrange
+        var command = new CustomerImportCommand(CsvRows.Build("canceled@example.com"), DryRun: false);
+        using var requestCancellation = new CancellationTokenSource();
+        await requestCancellation.CancelAsync();
+
+        // Act
+        Func<Task> action = async () => await _sut.Handle(command, requestCancellation.Token);
+
+        // Assert
+        _ = await action.ShouldThrow<OperationCanceledException>();
+        _fakeCustomerStore.AllCustomers.ShouldBeEmpty();
+        _uow.SaveEntitiesCallCount.ShouldBe(0);
+    }
+
 }

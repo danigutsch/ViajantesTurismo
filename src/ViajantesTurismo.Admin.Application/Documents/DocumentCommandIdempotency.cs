@@ -1,3 +1,6 @@
+using System.Globalization;
+using System.Security.Cryptography;
+using System.Text;
 using SharedKernel.Idempotency;
 using SharedKernel.Results;
 using ViajantesTurismo.Admin.Domain.Documents;
@@ -10,18 +13,45 @@ public sealed class DocumentCommandIdempotency(
     IUnitOfWork unitOfWork,
     TimeProvider timeProvider)
 {
+    private const char FingerprintSeparator = ':';
+    private const int GuidNLength = 32;
+    private const int Sha256HexLength = 64;
     private static readonly TimeSpan ProcessingLockDuration = TimeSpan.FromMinutes(5);
+
+    /// <summary>Creates a privacy-safe fingerprint for the template inputs bound to an idempotency key.</summary>
+    /// <param name="templateId">The server-selected template identifier.</param>
+    /// <param name="templateVersion">The server-selected template version.</param>
+    /// <returns>An uppercase SHA-256 fingerprint that contains no raw template input.</returns>
+    public static string CreateRequestFingerprint(string templateId, string templateVersion)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(templateId);
+        ArgumentException.ThrowIfNullOrWhiteSpace(templateVersion);
+
+        var value = string.Concat(
+            templateId.Length.ToString(CultureInfo.InvariantCulture),
+            FingerprintSeparator,
+            templateId,
+            FingerprintSeparator,
+            templateVersion.Length.ToString(CultureInfo.InvariantCulture),
+            FingerprintSeparator,
+            templateVersion);
+        return Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(value)));
+    }
 
     /// <summary>Gets the replay or conflict for an existing operation.</summary>
     /// <param name="scope">The resource-specific operation scope.</param>
     /// <param name="key">The optional caller-supplied idempotency key.</param>
+    /// <param name="requestFingerprint">The privacy-safe fingerprint of the operation input.</param>
     /// <param name="ct">A cancellation token.</param>
     /// <returns>The existing result, or <see langword="null" /> when the caller may attempt ownership.</returns>
     public async ValueTask<Result<Guid>?> GetExistingResult(
         IdempotencyScope scope,
         IdempotencyKey? key,
+        string requestFingerprint,
         CancellationToken ct)
     {
+        ArgumentException.ThrowIfNullOrWhiteSpace(requestFingerprint);
+
         if (key is null)
         {
             return null;
@@ -33,12 +63,7 @@ public sealed class DocumentCommandIdempotency(
             return null;
         }
 
-        if (entry is
-            {
-                State: IdempotencyEntryState.Completed,
-                ResultFingerprint: { } resultFingerprint,
-            }
-            && Guid.TryParseExact(resultFingerprint, "N", out var documentId))
+        if (TryGetCompletedDocumentId(entry, requestFingerprint, out var documentId))
         {
             return Result.Ok(documentId);
         }
@@ -55,15 +80,18 @@ public sealed class DocumentCommandIdempotency(
     /// <summary>Executes a document command once per optional idempotency key.</summary>
     /// <param name="scope">The resource-specific operation scope.</param>
     /// <param name="key">The optional caller-supplied idempotency key.</param>
+    /// <param name="requestFingerprint">The privacy-safe fingerprint of the operation input.</param>
     /// <param name="operation">The document command to execute when ownership is acquired.</param>
     /// <param name="ct">A cancellation token.</param>
     /// <returns>The created document identifier, a completed replay, or a conflict.</returns>
     public async Task<Result<Guid>> Execute(
         IdempotencyScope scope,
         IdempotencyKey? key,
+        string requestFingerprint,
         Func<Task<Result<Guid>>> operation,
         CancellationToken ct)
     {
+        ArgumentException.ThrowIfNullOrWhiteSpace(requestFingerprint);
         ArgumentNullException.ThrowIfNull(operation);
 
         if (key is null)
@@ -85,12 +113,7 @@ public sealed class DocumentCommandIdempotency(
             ct);
         if (!startResult.Started)
         {
-            if (startResult.ExistingEntry is
-                {
-                    State: IdempotencyEntryState.Completed,
-                    ResultFingerprint: { } resultFingerprint,
-                }
-                && Guid.TryParseExact(resultFingerprint, "N", out var replayedDocumentId))
+            if (TryGetCompletedDocumentId(startResult.ExistingEntry, requestFingerprint, out var replayedDocumentId))
             {
                 return Result.Ok(replayedDocumentId);
             }
@@ -104,11 +127,37 @@ public sealed class DocumentCommandIdempotency(
             await idempotencyStore.StageCompletion(
                 idempotencyOperation,
                 timeProvider.GetUtcNow(),
-                ownedResult.Value.ToString("N"),
+                CreateResultFingerprint(requestFingerprint, ownedResult.Value),
                 ct);
             await unitOfWork.SaveEntities(ct);
         }
 
         return ownedResult;
+    }
+
+    private static string CreateResultFingerprint(string requestFingerprint, Guid documentId) =>
+        string.Concat(requestFingerprint, FingerprintSeparator, documentId.ToString("N"));
+
+    private static bool TryGetCompletedDocumentId(
+        IdempotencyEntry? entry,
+        string requestFingerprint,
+        out Guid documentId)
+    {
+        documentId = Guid.Empty;
+        if (entry is not
+            {
+                State: IdempotencyEntryState.Completed,
+                ResultFingerprint: { } resultFingerprint,
+            })
+        {
+            return false;
+        }
+
+        return resultFingerprint.Length == Sha256HexLength + 1 + GuidNLength
+            && resultFingerprint[Sha256HexLength] == FingerprintSeparator
+            && resultFingerprint.AsSpan(0, Sha256HexLength).Equals(
+                requestFingerprint.AsSpan(),
+                StringComparison.Ordinal)
+            && Guid.TryParseExact(resultFingerprint.AsSpan((Sha256HexLength + 1)..), "N", out documentId);
     }
 }

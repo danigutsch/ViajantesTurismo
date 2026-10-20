@@ -106,12 +106,19 @@ public sealed class CatalogToursApiClient(HttpClient httpClient) : ICatalogTours
     public async Task<ContractCommandOutcomeDto<CatalogMediaImageDto>> UploadTourImage(
         Guid id,
         CatalogTourImageUploadRequest request,
+        IProgress<long>? progress,
         CancellationToken ct)
     {
         ArgumentNullException.ThrowIfNull(request);
+        if (progress is not null)
+        {
+            ArgumentOutOfRangeException.ThrowIfNegativeOrZero(request.ContentLength);
+        }
 
         using var content = new MultipartFormDataContent();
-        using var file = new StreamContent(new LocalUploadReadStream(request.Content));
+        using HttpContent file = request.ContentLength > 0
+            ? new ProgressStreamContent(new LocalUploadReadStream(request.Content), request.ContentLength, progress)
+            : new StreamContent(new LocalUploadReadStream(request.Content));
         file.Headers.ContentType = new System.Net.Http.Headers.MediaTypeHeaderValue(request.ContentType);
         content.Add(file, "file", request.FileName);
         content.Add(new StringContent(request.AltText), "altText");
@@ -388,5 +395,11 @@ public sealed class CatalogToursApiClient(HttpClient httpClient) : ICatalogTours
             exception.Data[LocalUploadReadExceptionKey] = sourceException;
             return exception;
         }
+    }
+
+    /// <inheritdoc />
+    public Task<ContractCommandOutcomeDto<CatalogMediaImageDto>> UploadTourImage(Guid id, CatalogTourImageUploadRequest request, CancellationToken ct)
+    {
+        return UploadTourImage(id, request, null, ct);
     }
 }

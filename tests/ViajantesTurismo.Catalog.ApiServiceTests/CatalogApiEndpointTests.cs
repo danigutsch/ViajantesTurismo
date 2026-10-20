@@ -1,8 +1,10 @@
 using System.Net.Http.Headers;
 using System.Net.Http.Json;
+using System.Reflection;
 using System.Text;
 using System.Text.Json;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Http.HttpResults;
 using SharedKernel.AI;
 using SharedKernel.EventSourcing;
 using TestTraits = ViajantesTurismo.Catalog.ApiServiceTests.Infrastructure.TestTraits;
@@ -33,6 +35,27 @@ public sealed class CatalogApiEndpointTests
         // Assert
         (entryPointAssembly).ShouldBeSameAs(CatalogApiMarker.Assembly);
         (markerAssembly).ShouldBeSameAs(entryPointAssembly);
+    }
+
+    [Theory]
+    [InlineData("UpsertPublicContent", typeof(Task<Results<Ok<PublicContentDto>, BadRequest, ValidationProblem>>))]
+    [InlineData("UpsertTourPresentation", typeof(Task<Results<Ok<CatalogTourDto>, Accepted, BadRequest, ValidationProblem, NotFound, ProblemHttpResult>>))]
+    [InlineData("PublishTour", typeof(Task<Results<NoContent, Accepted, BadRequest, ValidationProblem, NotFound, ProblemHttpResult>>))]
+    [InlineData("UnpublishTour", typeof(Task<Results<NoContent, Accepted, BadRequest, ValidationProblem, NotFound, ProblemHttpResult>>))]
+    [InlineData("UploadTourImage", typeof(Task<Results<Created<CatalogMediaImageDto>, BadRequest, NotFound, ValidationProblem, ProblemHttpResult>>))]
+    [InlineData("GenerateMediaImageAccessibilityDraft", typeof(Task<Results<Ok<CatalogMediaImageDto>, BadRequest, ValidationProblem, NotFound, ProblemHttpResult>>))]
+    [InlineData("ReviewMediaImageAccessibility", typeof(Task<Results<Ok<CatalogMediaImageDto>, BadRequest, NotFound, ValidationProblem>>))]
+    public void Catalog_mutation_handlers_expose_explicit_typed_result_unions(string methodName, Type expectedReturnType)
+    {
+        // Arrange
+        var endpointsType = typeof(CatalogEndpoints);
+
+        // Act
+        var method = endpointsType.GetMethod(methodName, BindingFlags.Static | BindingFlags.NonPublic);
+
+        // Assert
+        method.ShouldNotBeNull();
+        method.ReturnType.ShouldBe(expectedReturnType);
     }
 
     [Theory]
@@ -158,6 +181,7 @@ public sealed class CatalogApiEndpointTests
 
         // Assert
         (response.StatusCode).ShouldBe(HttpStatusCode.BadRequest);
+        response.Content.Headers.ContentType?.MediaType.ShouldBe("application/problem+json");
         var problem = await response.Content.ReadFromJsonAsync<HttpValidationProblemDetails>(TestContext.Current.CancellationToken);
         _ = (problem).ShouldNotBeNull();
         (problem.Errors.Keys).ShouldContain(nameof(PublicContentVariantDto.Title));
@@ -416,6 +440,7 @@ public sealed class CatalogApiEndpointTests
 
         // Assert
         (response.StatusCode).ShouldBe(HttpStatusCode.BadRequest);
+        response.Content.Headers.ContentType?.MediaType.ShouldBe("application/problem+json");
         var problem = await response.Content.ReadFromJsonAsync<HttpValidationProblemDetails>(TestContext.Current.CancellationToken);
         _ = (problem).ShouldNotBeNull();
         (problem.Errors.Keys).ShouldContain(nameof(UpsertCatalogTourPresentationRequest.Title));
@@ -540,6 +565,9 @@ public sealed class CatalogApiEndpointTests
 
         // Assert
         response.StatusCode.ShouldBe(HttpStatusCode.BadRequest);
+        response.Content.Headers.ContentType.ShouldBeNull();
+        var responseBody = await response.Content.ReadAsStringAsync(TestContext.Current.CancellationToken);
+        responseBody.ShouldBe(string.Empty);
     }
 
     [Fact]
@@ -661,6 +689,7 @@ public sealed class CatalogApiEndpointTests
 
         // Assert
         response.StatusCode.ShouldBe(HttpStatusCode.BadRequest);
+        response.Content.Headers.ContentType?.MediaType.ShouldBe("application/problem+json");
         var problem = await response.Content.ReadFromJsonAsync<HttpValidationProblemDetails>(TestContext.Current.CancellationToken);
         problem.ShouldNotBeNull();
         problem.Errors.Keys.ShouldContain(nameof(PublicMediaImageAccessibilityDraftRequest.Language));
@@ -1787,6 +1816,7 @@ public sealed class CatalogApiEndpointTests
 
         // Assert
         reviewResponse.StatusCode.ShouldBe(HttpStatusCode.BadRequest);
+        reviewResponse.Content.Headers.ContentType?.MediaType.ShouldBe("application/problem+json");
         publicResponse.StatusCode.ShouldBe(HttpStatusCode.NotFound);
         persistedImage.ShouldNotBeNull();
         persistedImage.RequiresHumanReview.ShouldBeTrue();

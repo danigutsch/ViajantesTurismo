@@ -64,7 +64,7 @@ internal sealed class TransientCatalogToursApiClient(
         return Task.FromResult(NotFound<CatalogMediaImageDto>());
     }
 
-    public Task<ContractCommandOutcomeDto<CatalogMediaImageDto>> UploadTourImage(Guid id, CatalogTourImageUploadRequest request, CancellationToken ct)
+    public Task<ContractCommandOutcomeDto<CatalogMediaImageDto>> UploadTourImage(Guid id, CatalogTourImageUploadRequest request, IProgress<long>? progress, CancellationToken ct)
     {
         ct.ThrowIfCancellationRequested();
 
@@ -108,5 +108,11 @@ internal sealed class TransientCatalogToursApiClient(
             HttpStatusCode.Conflict => ContractCommandOutcomeKind.Conflict,
             _ => ContractCommandOutcomeKind.UnexpectedStatus
         };
+    }
+
+    /// <inheritdoc />
+    public Task<ContractCommandOutcomeDto<CatalogMediaImageDto>> UploadTourImage(Guid id, CatalogTourImageUploadRequest request, CancellationToken ct)
+    {
+        return UploadTourImage(id, request, null, ct);
     }
 }

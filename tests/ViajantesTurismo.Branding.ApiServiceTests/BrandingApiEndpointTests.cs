@@ -1,3 +1,5 @@
+using System.Reflection;
+using Microsoft.AspNetCore.Http.HttpResults;
 using TestTraits = ViajantesTurismo.Branding.ApiServiceTests.Infrastructure.TestTraits;
 using ViajantesTurismo.Branding.ApiService;
 
@@ -23,6 +25,20 @@ public sealed class BrandingApiEndpointTests
         // Assert
         entryPointAssembly.ShouldBe(BrandingApiMarker.Assembly);
         markerAssembly.ShouldBe(entryPointAssembly);
+    }
+
+    [Fact]
+    public void Branding_mutation_handler_exposes_an_explicit_typed_result_union()
+    {
+        // Arrange
+        var endpointsType = typeof(BrandingEndpoints);
+
+        // Act
+        var method = endpointsType.GetMethod("SaveSettings", BindingFlags.Static | BindingFlags.NonPublic);
+
+        // Assert
+        method.ShouldNotBeNull();
+        method.ReturnType.ShouldBe(typeof(Task<Results<Ok<BrandingSettingsDto>, ProblemHttpResult>>));
     }
 
     [Theory]
@@ -209,7 +225,10 @@ public sealed class BrandingApiEndpointTests
 
         // Assert
         response.StatusCode.ShouldBe(HttpStatusCode.BadRequest);
+        response.Content.Headers.ContentType?.MediaType.ShouldBe("application/problem+json");
         problem.ShouldNotBeNull();
+        problem.Status.ShouldBe(StatusCodes.Status400BadRequest);
+        problem.Title.ShouldBe("One or more validation errors occurred.");
         problem.Errors.Keys.ShouldContain(nameof(BrandingSettingsDto.PrimaryColor));
         problem.Errors.Keys.ShouldContain(nameof(BrandingSettingsDto.HeadingFontFamily));
         problem.Errors.Keys.ShouldContain(nameof(BrandingSettingsDto.LogoUri));
