@@ -67,6 +67,12 @@ public interface ICatalogToursApiClient
     /// </summary>
     Task<PublicMediaObjectResponse?> GetMediaPreview(Guid id, int width, string format, CancellationToken ct);
 
-    /// <inheritdoc />
+    /// <summary>
+    /// Uploads a new image for a catalog tour without reporting upload progress.
+    /// </summary>
+    /// <param name="id">The Catalog tour identifier.</param>
+    /// <param name="request">The image content and upload metadata.</param>
+    /// <param name="ct">The cancellation token.</param>
+    /// <returns>The uploaded image or the classified HTTP failure.</returns>
     Task<HttpOutcome<CatalogMediaImageDto>> UploadTourImage(Guid id, CatalogTourImageUploadRequest request, CancellationToken ct);
 }
