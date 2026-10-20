@@ -67,7 +67,7 @@ internal static class CiTestProjectSelector
         ".github/actions/",
         ".github/workflows/",
         "scripts/ci-test-slices/",
-        "tools/ViajantesTurismo.RepoConfig.Tool/",
+        "tools/SharedKernel.RepoConfig.Tool/",
         "src/SharedKernel/SharedKernel.Style.Analyzers/",
         "src/SharedKernel/SharedKernel.Style.CodeFixes/",
         "src/SharedKernel/SharedKernel.Testing.Analyzers/"
@@ -214,8 +214,6 @@ internal static class CiTestProjectSelector
             throw new InvalidOperationException(
                 $"CI test slice manifests must match the fixed workflow matrix. Missing: [{string.Join(", ", missing)}]. Extra: [{string.Join(", ", extra)}].");
         }
-
-
     }
 
     internal static void ValidateCanonicalSliceMembership(string rootPath)

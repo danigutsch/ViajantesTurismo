@@ -70,11 +70,21 @@ Use `--output <path>` to select another JSON evidence path. Inspect
 `TestResults/CoverageReport/index.html`, the JSON result, and the diff when the check fails.
 Never reuse stale reports after source, test, collector, or configuration changes.
 
-## Branch-protection migration
+## Branch protection
 
-The workflow check is named `Quality Gate`. Existing remote protection may still require
-`SonarCloud`; changing workflow files does not update GitHub protection automatically.
-After the concrete replacement check passes, a maintainer must replace that required status
-with `Quality Gate`, retaining `Build and Test`, `Lint`, `Dependency Review`, and `Secret Scan`.
-Do not remove the old requirement before the replacement has passed. Remove obsolete Sonar
-secrets and variables through repository administration after retiring the integration.
+The required workflow check is `Quality Gate`. After its concrete check passed, the required
+`SonarCloud` status was replaced in branch protection and ruleset `14460324`, allowing the
+replacement workflow to merge. Both settings were read back and verified on October 20, 2026.
+`Build and Test`, `Lint`, `Dependency Review`, and `Secret Scan` remain required. Strict up-to-date checks, GitHub Actions check attribution
+(app `15368`), signed commits, additional review requirements, and the no-bypass policy remain
+in force.
+
+Workflow changes do not update remote protection automatically. For any future replacement:
+
+1. Confirm the replacement check passes on the exact pull-request head before changing protection.
+2. Read both branch protection and every active ruleset targeting `main`.
+3. Replace only the retired status, preserving check attribution and all other protection settings.
+4. Read back both settings and confirm the pull request still requires the intended checks.
+
+SonarCloud account state and removal of obsolete remote secrets or variables have not been
+verified. Those are separate administrative cleanup tasks; current CI does not require them.

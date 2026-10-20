@@ -11,7 +11,7 @@ see [`trust-boundaries.md`](trust-boundaries.md).
 
 ## Branch protection rules
 
-The intended required status checks after quality-gate migration are:
+Branch protection and the active `main` ruleset require these status checks:
 
 - `Build and Test` (from `.github/workflows/ci.yml`)
 - `Lint` (from `.github/workflows/ci.yml`)
@@ -19,9 +19,12 @@ The intended required status checks after quality-gate migration are:
 - `Secret Scan` (from `.github/workflows/secret-scan.yml`)
 - `Quality Gate` (from `.github/workflows/ci.yml`)
 
-Remote branch protection may still require the historical `SonarCloud` status. A maintainer
-must replace it with `Quality Gate` only after the concrete replacement passes. This document
-does not assert that remote settings have already changed. See [quality gates](quality-gates.md).
+The required status changed from `SonarCloud` to `Quality Gate` after the replacement check
+passed. Updating both protections then allowed the replacement workflow to merge. The settings
+were verified on October 20, 2026 in branch protection and ruleset `14460324`. Strict up-to-date
+checks, GitHub Actions check attribution (app `15368`), the other required checks, signed commits,
+additional review requirements, and the no-bypass policy were preserved.
+See [quality gates](quality-gates.md#branch-protection) for the maintenance runbook.
 
 `Build and Test` aggregates the test matrix and `OpenAPI Tool Windows`. `Quality Gate`
 aggregates selected coverage and enforces changed-code coverage without secrets, including on
