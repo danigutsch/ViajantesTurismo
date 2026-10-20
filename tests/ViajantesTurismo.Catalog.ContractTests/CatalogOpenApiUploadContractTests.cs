@@ -82,6 +82,7 @@ public sealed class CatalogOpenApiUploadContractTests
         // Assert
         keyParameter["in"].ShouldNotBeNull().GetValue<string>().ShouldBe("path");
         keyParameter["required"].ShouldNotBeNull().GetValue<bool>().ShouldBeTrue();
+        localizationParameterNames.Length.ShouldBe(2);
         localizationParameterNames.ShouldContain("language");
         localizationParameterNames.ShouldContain("culture");
         foreach (var parameter in localizationParameters)
