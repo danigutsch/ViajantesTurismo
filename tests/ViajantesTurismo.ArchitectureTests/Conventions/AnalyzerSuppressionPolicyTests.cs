@@ -12,6 +12,7 @@ public sealed partial class AnalyzerSuppressionPolicyTests
         "src/ViajantesTurismo.Admin.Domain/Customers/Customer.cs",
         "src/ViajantesTurismo.Admin.ApiService/Customers/CustomerImportEndpoints.cs",
         "src/SharedKernel/SharedKernel.IntegrationTesting/AspireTestApplication.cs",
+        "src/SharedKernel/SharedKernel.Testing/GatedCountingReadStream.cs",
         "src/ViajantesTurismo.MigrationService/MigrationProcess.cs",
         "src/ViajantesTurismo.Catalog.Contracts.Application/CatalogTourImageDto.cs",
         "tests/SharedKernel.EntityFrameworkCore.Tests/EfCoreCommandTransactionScopeTests.cs",
