@@ -7,5 +7,4 @@ tests/ViajantesTurismo.Admin.ContractTests/ViajantesTurismo.Admin.ContractTests.
 tests/ViajantesTurismo.Catalog.ContractTests/ViajantesTurismo.Catalog.ContractTests.csproj
 tests/ViajantesTurismo.Branding.ContractTests/ViajantesTurismo.Branding.ContractTests.csproj
 tests/ViajantesTurismo.ServiceDefaults.Tests/ViajantesTurismo.ServiceDefaults.Tests.csproj
-tests/ViajantesTurismo.Documentation.Tests/ViajantesTurismo.Documentation.Tests.csproj
 tests/ViajantesTurismo.DatabaseObservability.Tests/ViajantesTurismo.DatabaseObservability.Tests.csproj

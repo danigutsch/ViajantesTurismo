@@ -103,7 +103,7 @@ public static class ServiceDefaultsExtensions
     {
         logging.IncludeFormattedMessage = false;
         logging.IncludeScopes = false;
-        logging.AddProcessor(_ => new LogRecordPrivacyProcessor());
+        logging.AddProcessor(_ => new SharedKernel.Observability.LogRecordPrivacyProcessor(TelemetryPrivacyAttributeClassifier.IsSensitive));
     }
 
     private static void ConfigureOpenTelemetryMetrics(MeterProviderBuilder metrics)
@@ -116,7 +116,7 @@ public static class ServiceDefaultsExtensions
 
     private static void ConfigureOpenTelemetryTracing(TracerProviderBuilder tracing, string applicationName)
     {
-        tracing.AddProcessor(new ActivityPrivacyProcessor())
+        tracing.AddProcessor(new SharedKernel.Observability.ActivityPrivacyProcessor(TelemetryPrivacyAttributeClassifier.IsSensitive))
             .AddSource(applicationName)
             .AddCatalogTracing()
             .AddSharedKernelMediatorTracing()

@@ -2,7 +2,7 @@
 
 set -euo pipefail
 
-if output="$(dotnet run --project tools/ViajantesTurismo.Documentation.Tool -- generate --config docs/architecture/generated-diagrams.json "$@" 2>&1)"; then
+if output="$(dotnet tool run sharedkernel-docs -- generate --config docs/architecture/generated-diagrams.json "$@" 2>&1)"; then
     printf '%s\n' "${output}"
 else
     status=$?

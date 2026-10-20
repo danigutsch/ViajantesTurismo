@@ -1,8 +1,0 @@
-#nullable enable
-ViajantesTurismo.Documentation.DocumentationConformanceChecker
-static ViajantesTurismo.Documentation.DocumentationConformanceChecker.Check(string! rootPath, string! configPath) -> int
-ViajantesTurismo.Documentation.DocumentationGenerationResult
-ViajantesTurismo.Documentation.DocumentationGenerationResult.ChangedFiles.get -> System.Collections.Generic.IReadOnlyList<string!>!
-ViajantesTurismo.Documentation.DocumentationGenerationResult.DocumentationGenerationResult(System.Collections.Generic.IReadOnlyList<string!>! changedFiles) -> void
-ViajantesTurismo.Documentation.DocumentationGenerator
-static ViajantesTurismo.Documentation.DocumentationGenerator.Run(string! rootPath, string! configPath, bool checkOnly) -> ViajantesTurismo.Documentation.DocumentationGenerationResult!

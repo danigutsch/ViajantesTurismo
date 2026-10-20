@@ -41,7 +41,7 @@
         <PackageReference Include="PandaBear.SharedKernel.Aspire.Hosting.ClamAv" />
         <PackageReference Include="PandaBear.SharedKernel.Aspire.Hosting.SeaweedFs" />
         <PackageReference Include="PandaBear.SharedKernel.BuildingBlocks" />
-        <ProjectReference Include="..\..\src\ViajantesTurismo.Documentation\ViajantesTurismo.Documentation.csproj" />
+        <PackageReference Include="PandaBear.SharedKernel.Documentation" />
         <PackageReference Include="PandaBear.SharedKernel.Messaging.IntegrationEvents" />
     </ItemGroup>
 </Project>

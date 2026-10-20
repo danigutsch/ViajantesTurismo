@@ -47,8 +47,8 @@ Check drift with:
 bash scripts/update-architecture-diagrams.sh --check
 ```
 
-The script invokes `tools/ViajantesTurismo.Documentation.Tool`, which delegates reusable generation logic
-to `src/ViajantesTurismo.Documentation`.
+The script invokes `sharedkernel-docs`, which delegates reusable generation logic
+to `PandaBear.SharedKernel.Documentation`.
 
 ## References
 
