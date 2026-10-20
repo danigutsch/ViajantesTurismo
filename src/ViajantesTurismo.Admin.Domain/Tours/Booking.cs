@@ -27,6 +27,7 @@ public sealed partial class Booking : IEntity<Guid>
     /// <param name="companionCustomer">The companion customer's booking details, if any.</param>
     /// <param name="discount">The discount applied to this booking.</param>
     /// <param name="notes">Optional notes about the booking.</param>
+    /// <param name="createdAt">The captured UTC booking creation instant.</param>
     private Booking(
         Guid tourId,
         decimal basePrice,
@@ -34,7 +35,8 @@ public sealed partial class Booking : IEntity<Guid>
         BookingCustomer principalCustomer,
         BookingCustomer? companionCustomer,
         Discount discount,
-        string? notes)
+        string? notes,
+        DateTime createdAt)
     {
         Id = Guid.CreateVersion7();
         TourId = tourId;
@@ -45,6 +47,7 @@ public sealed partial class Booking : IEntity<Guid>
         CompanionCustomer = companionCustomer;
         Discount = discount;
         Notes = notes;
+        BookingDate = createdAt;
     }
 
     /// <summary>
@@ -98,7 +101,7 @@ public sealed partial class Booking : IEntity<Guid>
     /// <summary>
     /// The date when the booking was made.
     /// </summary>
-    public DateTime BookingDate { get; private init; } = DateTime.UtcNow;
+    public DateTime BookingDate { get; private init; }
 
     /// <summary>
     /// The start date of the tour.
@@ -197,6 +200,7 @@ public sealed partial class Booking : IEntity<Guid>
     /// <param name="companionCustomer">The companion customer's booking details, if any.</param>
     /// <param name="discount">The discount applied to this booking.</param>
     /// <param name="notes">Optional notes about the booking.</param>
+    /// <param name="createdAt">The captured UTC booking creation instant.</param>
     /// <returns>A Result containing the booking if successful, or validation errors.</returns>
     public static Result<Booking> Create(
         Guid tourId,
@@ -205,7 +209,8 @@ public sealed partial class Booking : IEntity<Guid>
         BookingCustomer principalCustomer,
         BookingCustomer? companionCustomer,
         Discount discount,
-        string? notes)
+        string? notes,
+        DateTime createdAt)
     {
         ArgumentNullException.ThrowIfNull(principalCustomer);
         ArgumentNullException.ThrowIfNull(discount);
@@ -271,7 +276,7 @@ public sealed partial class Booking : IEntity<Guid>
         }
 
         return Result.Ok(new Booking(tourId, basePrice, new BookingRoom(roomType, roomAdditionalCost), principalCustomer, companionCustomer,
-            discount, notes));
+            discount, notes, createdAt));
     }
 
 
@@ -523,7 +528,7 @@ public sealed partial class Booking : IEntity<Guid>
     /// <returns>A result containing the recorded Payment if successful, or validation errors.</returns>
     public Result<Payment> RecordPayment(
         decimal amount,
-        DateTime paymentDate,
+        DateOnly paymentDate,
         PaymentMethod method,
         TimeProvider timeProvider,
         string? referenceNumber = null,

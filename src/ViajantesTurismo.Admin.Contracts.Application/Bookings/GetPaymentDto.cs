@@ -15,7 +15,7 @@ public sealed record GetPaymentDto
     public required decimal Amount { get; init; }
 
     /// <summary>The date the payment was made.</summary>
-    public required DateTime PaymentDate { get; init; }
+    public required DateOnly PaymentDate { get; init; }
 
     /// <summary>The payment method used.</summary>
     public required PaymentMethodDto Method { get; init; }

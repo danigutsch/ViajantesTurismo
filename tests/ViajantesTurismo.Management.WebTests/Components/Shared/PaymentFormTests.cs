@@ -314,7 +314,7 @@ public class PaymentFormTests : BunitContext
         var model = new PaymentFormModel
         {
             Amount = 100.50m,
-            PaymentDate = DateTime.Today,
+            PaymentDate = DateOnly.FromDateTime(DateTime.Today),
             Method = PaymentMethodDto.CreditCard
         };
         var onValidSubmit = EventCallback.Factory.Create(this, () => submitCalled = true);

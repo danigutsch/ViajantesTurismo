@@ -30,7 +30,7 @@ internal static class BookingStepDataFactory
             principal,
             null,
             Discount.Create(DiscountType.None, 0m, null).Value,
-            notes);
+            notes, new DateTime(2030, 1, 1, 0, 0, 0, DateTimeKind.Utc));
     }
 
     public static Result<Booking> CreateBookingWithBasePrice(decimal basePrice)
@@ -44,7 +44,7 @@ internal static class BookingStepDataFactory
             principal,
             null,
             Discount.Create(DiscountType.None, 0m, null).Value,
-            null);
+            null, new DateTime(2030, 1, 1, 0, 0, 0, DateTimeKind.Utc));
     }
 
     public static Result<Booking> CreateBookingWithRoomCost(decimal basePrice, decimal roomCost)
@@ -58,7 +58,7 @@ internal static class BookingStepDataFactory
             principal,
             null,
             Discount.Create(DiscountType.None, 0m, null).Value,
-            null);
+            null, new DateTime(2030, 1, 1, 0, 0, 0, DateTimeKind.Utc));
     }
 
     public static Result<Booking> CreateBookingWithInvalidRoomType(int invalidRoomType)
@@ -72,6 +72,6 @@ internal static class BookingStepDataFactory
             principal,
             null,
             Discount.Create(DiscountType.None, 0m, null).Value,
-            null);
+            null, new DateTime(2030, 1, 1, 0, 0, 0, DateTimeKind.Utc));
     }
 }

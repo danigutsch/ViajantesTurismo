@@ -33,10 +33,10 @@ public sealed class CommonPersonalInfoSteps(CustomerContext context)
             context.FirstName,
             context.LastName,
             context.Gender,
-            context.BirthDate,
+            DateOnly.FromDateTime(context.BirthDate),
             context.Nationality,
             context.Occupation,
-            TimeProvider.System);
+            DateOnly.FromDateTime(TimeProvider.System.GetUtcNow().UtcDateTime));
     }
 
     [Then("the creation should succeed")]
@@ -494,10 +494,10 @@ public sealed class CommonPersonalInfoSteps(CustomerContext context)
             "John",
             "Smith",
             null!,
-            ValidBirthDate,
+            DateOnly.FromDateTime(ValidBirthDate),
             "American",
             "Software Engineer",
-            TimeProvider.System
+            DateOnly.FromDateTime(TimeProvider.System.GetUtcNow().UtcDateTime)
         );
     }
 
@@ -508,10 +508,10 @@ public sealed class CommonPersonalInfoSteps(CustomerContext context)
             "John",
             "Smith",
             "   ",
-            ValidBirthDate,
+            DateOnly.FromDateTime(ValidBirthDate),
             "American",
             "Software Engineer",
-            TimeProvider.System
+            DateOnly.FromDateTime(TimeProvider.System.GetUtcNow().UtcDateTime)
         );
     }
 
@@ -522,10 +522,10 @@ public sealed class CommonPersonalInfoSteps(CustomerContext context)
             "John",
             "Smith",
             new string('A', length),
-            ValidBirthDate,
+            DateOnly.FromDateTime(ValidBirthDate),
             "American",
             "Software Engineer",
-            TimeProvider.System
+            DateOnly.FromDateTime(TimeProvider.System.GetUtcNow().UtcDateTime)
         );
     }
 
@@ -536,10 +536,10 @@ public sealed class CommonPersonalInfoSteps(CustomerContext context)
             "John",
             "Smith",
             new string('A', length),
-            ValidBirthDate,
+            DateOnly.FromDateTime(ValidBirthDate),
             "American",
             "Software Engineer",
-            TimeProvider.System
+            DateOnly.FromDateTime(TimeProvider.System.GetUtcNow().UtcDateTime)
         );
     }
 
@@ -550,10 +550,10 @@ public sealed class CommonPersonalInfoSteps(CustomerContext context)
             "John",
             "Smith",
             gender,
-            ValidBirthDate,
+            DateOnly.FromDateTime(ValidBirthDate),
             "American",
             "Software Engineer",
-            TimeProvider.System
+            DateOnly.FromDateTime(TimeProvider.System.GetUtcNow().UtcDateTime)
         );
     }
 
@@ -588,10 +588,10 @@ public sealed class CommonPersonalInfoSteps(CustomerContext context)
             "John",
             "Smith",
             "Male",
-            ValidBirthDate,
+            DateOnly.FromDateTime(ValidBirthDate),
             null!,
             "Software Engineer",
-            TimeProvider.System
+            DateOnly.FromDateTime(TimeProvider.System.GetUtcNow().UtcDateTime)
         );
     }
 
@@ -602,10 +602,10 @@ public sealed class CommonPersonalInfoSteps(CustomerContext context)
             "John",
             "Smith",
             "Male",
-            ValidBirthDate,
+            DateOnly.FromDateTime(ValidBirthDate),
             "   ",
             "Software Engineer",
-            TimeProvider.System
+            DateOnly.FromDateTime(TimeProvider.System.GetUtcNow().UtcDateTime)
         );
     }
 
@@ -616,10 +616,10 @@ public sealed class CommonPersonalInfoSteps(CustomerContext context)
             "John",
             "Smith",
             "Male",
-            ValidBirthDate,
+            DateOnly.FromDateTime(ValidBirthDate),
             new string('A', length),
             "Software Engineer",
-            TimeProvider.System
+            DateOnly.FromDateTime(TimeProvider.System.GetUtcNow().UtcDateTime)
         );
     }
 
@@ -630,10 +630,10 @@ public sealed class CommonPersonalInfoSteps(CustomerContext context)
             "John",
             "Smith",
             "Male",
-            ValidBirthDate,
+            DateOnly.FromDateTime(ValidBirthDate),
             new string('A', length),
             "Software Engineer",
-            TimeProvider.System
+            DateOnly.FromDateTime(TimeProvider.System.GetUtcNow().UtcDateTime)
         );
     }
 
@@ -644,10 +644,10 @@ public sealed class CommonPersonalInfoSteps(CustomerContext context)
             "John",
             "Smith",
             "Male",
-            ValidBirthDate,
+            DateOnly.FromDateTime(ValidBirthDate),
             nationality,
             "Software Engineer",
-            TimeProvider.System
+            DateOnly.FromDateTime(TimeProvider.System.GetUtcNow().UtcDateTime)
         );
     }
 
@@ -682,10 +682,10 @@ public sealed class CommonPersonalInfoSteps(CustomerContext context)
             "John",
             "Smith",
             "Male",
-            ValidBirthDate,
+            DateOnly.FromDateTime(ValidBirthDate),
             "American",
             null!,
-            TimeProvider.System
+            DateOnly.FromDateTime(TimeProvider.System.GetUtcNow().UtcDateTime)
         );
     }
 
@@ -696,10 +696,10 @@ public sealed class CommonPersonalInfoSteps(CustomerContext context)
             "John",
             "Smith",
             "Male",
-            ValidBirthDate,
+            DateOnly.FromDateTime(ValidBirthDate),
             "American",
             "   ",
-            TimeProvider.System
+            DateOnly.FromDateTime(TimeProvider.System.GetUtcNow().UtcDateTime)
         );
     }
 
@@ -710,10 +710,10 @@ public sealed class CommonPersonalInfoSteps(CustomerContext context)
             "John",
             "Smith",
             "Male",
-            ValidBirthDate,
+            DateOnly.FromDateTime(ValidBirthDate),
             "American",
             new string('A', length),
-            TimeProvider.System
+            DateOnly.FromDateTime(TimeProvider.System.GetUtcNow().UtcDateTime)
         );
     }
 
@@ -724,10 +724,10 @@ public sealed class CommonPersonalInfoSteps(CustomerContext context)
             "John",
             "Smith",
             "Male",
-            ValidBirthDate,
+            DateOnly.FromDateTime(ValidBirthDate),
             "American",
             new string('A', length),
-            TimeProvider.System
+            DateOnly.FromDateTime(TimeProvider.System.GetUtcNow().UtcDateTime)
         );
     }
 
@@ -738,10 +738,10 @@ public sealed class CommonPersonalInfoSteps(CustomerContext context)
             "John",
             "Smith",
             "Male",
-            ValidBirthDate,
+            DateOnly.FromDateTime(ValidBirthDate),
             "American",
             occupation,
-            TimeProvider.System
+            DateOnly.FromDateTime(TimeProvider.System.GetUtcNow().UtcDateTime)
         );
     }
 

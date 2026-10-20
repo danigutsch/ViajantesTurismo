@@ -97,8 +97,8 @@ internal static class ContractDocumentDraftFactory
             tour.Id.ToString("N"),
             tour.Identifier,
             tour.Name,
-            tour.StartDate.ToUniversalTime().ToString("O", CultureInfo.InvariantCulture),
-            tour.EndDate.ToUniversalTime().ToString("O", CultureInfo.InvariantCulture),
+            tour.StartDate.ToString("O", CultureInfo.InvariantCulture),
+            tour.EndDate.ToString("O", CultureInfo.InvariantCulture),
             string.Join("\u001f", tour.IncludedServices));
         var hash = SHA256.HashData(Encoding.UTF8.GetBytes(source));
         return Convert.ToHexString(hash);

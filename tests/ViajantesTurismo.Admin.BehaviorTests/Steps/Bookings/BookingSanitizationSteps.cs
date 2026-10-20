@@ -13,7 +13,7 @@ public sealed class BookingSanitizationSteps(BookingContext bookingContext, Tour
             BikeType.Regular,
             RoomType.DoubleOccupancy,
             DiscountType.None,
-            notes: notes));
+            notes: notes), new DateTime(2030, 1, 1, 0, 0, 0, DateTimeKind.Utc));
         (result.IsSuccess).ShouldBeTrue();
         bookingContext.Booking = result.Value;
     }
@@ -27,7 +27,7 @@ public sealed class BookingSanitizationSteps(BookingContext bookingContext, Tour
             BikeType.Regular,
             RoomType.DoubleOccupancy,
             DiscountType.None,
-            notes: longNotes));
+            notes: longNotes), new DateTime(2030, 1, 1, 0, 0, 0, DateTimeKind.Utc));
         if (result.IsSuccess)
         {
             bookingContext.Booking = result.Value;
@@ -45,7 +45,7 @@ public sealed class BookingSanitizationSteps(BookingContext bookingContext, Tour
             Guid.CreateVersion7(),
             BikeType.Regular,
             RoomType.DoubleOccupancy,
-            DiscountType.None));
+            DiscountType.None), new DateTime(2030, 1, 1, 0, 0, 0, DateTimeKind.Utc));
         (result.IsSuccess).ShouldBeTrue();
         bookingContext.Booking = result.Value;
     }

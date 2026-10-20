@@ -329,6 +329,40 @@ if (!result.IsSuccess)
 await unitOfWork.SaveEntities(ct);
 ```
 
+## Calendar Dates and Current Time
+
+Admin birth dates, tour schedules, and payment dates are civil dates. Use `DateOnly` in domain
+values, commands, API contracts, and forms, and PostgreSQL `date` columns. API JSON represents these
+values as `yyyy-MM-dd`; clients must stop sending timestamp strings for these fields.
+`TourSchedule` owns Admin schedule rules. SharedKernel `DateRange` retains its sub-day semantics.
+
+The current application policy defines the business date as the UTC date. Capture it with
+`DateOnly.FromDateTime(timeProvider.GetUtcNow().UtcDateTime)` at the application or UI boundary.
+Pass that one value into age validation and through import analysis and persistence. An import
+must not change its age decision when processing crosses midnight. Changing the business timezone
+requires an explicit policy change across these boundaries, rather than relying on host-local time.
+
+Use the injected platform `TimeProvider` for booking creation, integration-event occurrence,
+idempotency leases, payment recording, and authentication-ticket expiry. Booking creation captures
+one UTC instant; lease acquisition and completion capture separate instants. Existing booking and
+payment audit columns remain UTC `DateTime` instants. UUIDv7 generation remains at each identity
+owner, and authentication keys continue to use cryptographic randomness directly.
+
+The `UseCivilDates` migration explicitly converts existing timestamps through UTC before taking
+the date, independent of the PostgreSQL session timezone. This conversion discards time-of-day.
+Rollback reconstructs UTC midnight; it cannot recover original times. Back up affected data before
+applying this migration to an existing database. Migration tests exercise both positive and negative
+timezone offsets and a forward/rollback/forward cycle.
+
+Management rejects tickets at or after `ExpiresUtc`. Tickets without explicit expiry use the
+configured relative cache lifetime. Its explicit expiry checks use the injected clock; cookie
+middleware and PostgreSQL cache expiration have their own provider configuration. These tests do
+not claim one virtual clock controls the entire authentication pipeline.
+
+References: [TimeProvider](https://learn.microsoft.com/dotnet/standard/datetime/timeprovider-overview),
+[Npgsql date/time mapping](https://www.npgsql.org/doc/types/datetime.html), and
+[PostgreSQL timezone conversion](https://www.postgresql.org/docs/current/functions-datetime.html#FUNCTIONS-DATETIME-ZONECONVERT).
+
 ## Related Documentation
 
 Use the [documentation source-of-truth map](README.md#source-of-truth-map) for related repository guidance.

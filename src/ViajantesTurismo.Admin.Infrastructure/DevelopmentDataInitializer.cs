@@ -21,42 +21,40 @@ public sealed class DevelopmentDataInitializer
     private const string HotelService = "Hotel";
     private const string MaleGender = "Male";
 
-    private static DateTime UtcDate(int year, int month, int day) => new(year, month, day, 0, 0, 0, DateTimeKind.Utc);
-
     private static readonly Tour[] Tours =
     [
         Tour.Create(new TourDefinition(
             "CITY001",
             "City Highlights",
-            new TourScheduleDefinition(DateTime.UtcNow.AddDays(1), DateTime.UtcNow.AddDays(7)),
+            new TourScheduleDefinition(DateOnly.FromDateTime(DateTime.UtcNow.AddDays(1)), DateOnly.FromDateTime(DateTime.UtcNow.AddDays(7))),
             new TourPricingDefinition(1500m, 300m, 100m, 200m, Currency.Real),
             new TourCapacityDefinition(6, 15),
             [HotelService, BreakfastService, "City Tour"])).Value,
         Tour.Create(new TourDefinition(
             "HIST002",
             "Historical Landmarks",
-            new TourScheduleDefinition(DateTime.UtcNow.AddDays(4), DateTime.UtcNow.AddDays(10)),
+            new TourScheduleDefinition(DateOnly.FromDateTime(DateTime.UtcNow.AddDays(4)), DateOnly.FromDateTime(DateTime.UtcNow.AddDays(10))),
             new TourPricingDefinition(2000m, 400m, 150m, 250m, Currency.Euro),
             new TourCapacityDefinition(8, 20),
             [HotelService, BreakfastService, "Museum Tickets"])).Value,
         Tour.Create(new TourDefinition(
             "CULT001",
             "Cultural Experience",
-            new TourScheduleDefinition(DateTime.UtcNow.AddDays(7), DateTime.UtcNow.AddDays(13)),
+            new TourScheduleDefinition(DateOnly.FromDateTime(DateTime.UtcNow.AddDays(7)), DateOnly.FromDateTime(DateTime.UtcNow.AddDays(13))),
             new TourPricingDefinition(1800m, 350m, 120m, 220m, Currency.UsDollar),
             new TourCapacityDefinition(4, 12),
             [HotelService, BreakfastService, "Cultural Show"])).Value,
         Tour.Create(new TourDefinition(
             "NATR001",
             "Nature and Adventure",
-            new TourScheduleDefinition(DateTime.UtcNow.AddDays(11), DateTime.UtcNow.AddDays(17)),
+            new TourScheduleDefinition(DateOnly.FromDateTime(DateTime.UtcNow.AddDays(11)), DateOnly.FromDateTime(DateTime.UtcNow.AddDays(17))),
             new TourPricingDefinition(2200m, 450m, 180m, 280m, Currency.Real),
             new TourCapacityDefinition(5, 18),
             [HotelService, BreakfastService, "Hiking Tour"])).Value,
         Tour.Create(new TourDefinition(
             "FOWI003",
             "Food and Wine Tour",
-            new TourScheduleDefinition(DateTime.UtcNow.AddDays(16), DateTime.UtcNow.AddDays(22)),
+            new TourScheduleDefinition(DateOnly.FromDateTime(DateTime.UtcNow.AddDays(16)), DateOnly.FromDateTime(DateTime.UtcNow.AddDays(22))),
             new TourPricingDefinition(2500m, 500m, 200m, 300m, Currency.Euro),
             new TourCapacityDefinition(6, 16),
             [HotelService, BreakfastService, "Wine Tasting"])).Value
@@ -65,7 +63,7 @@ public sealed class DevelopmentDataInitializer
     private static readonly Customer[] Customers =
     [
         new(
-            PersonalInfo.Create("Alice", "Smith", FemaleGender, UtcDate(1990, 1, 1), BrazilianNationality, "Engineer", TimeProvider.System).Value,
+            PersonalInfo.Create("Alice", "Smith", FemaleGender, new DateOnly(1990, 1, 1), BrazilianNationality, "Engineer", DateOnly.FromDateTime(TimeProvider.System.GetUtcNow().UtcDateTime)).Value,
             IdentificationInfo.Create("123456789", "Brazilian").Value,
             ContactInfo.Create("alice@example.com", "+5511999999999", "@alice", "alice.fb").Value,
             Address.Create("Rua A, 123", "Apt 1", "Centro", "01234-567", "São Paulo", "SP", "Brazil").Value,
@@ -75,7 +73,7 @@ public sealed class DevelopmentDataInitializer
             MedicalInfo.Create("Peanuts", null).Value
         ),
         new(
-            PersonalInfo.Create("Bob", "Johnson", MaleGender, UtcDate(1985, 5, 15), "American", "Teacher", TimeProvider.System).Value,
+            PersonalInfo.Create("Bob", "Johnson", MaleGender, new DateOnly(1985, 5, 15), "American", "Teacher", DateOnly.FromDateTime(TimeProvider.System.GetUtcNow().UtcDateTime)).Value,
             IdentificationInfo.Create("987654321", "American").Value,
             ContactInfo.Create("bob@example.com", "+15551234567", null, "bob.johnson").Value,
             Address.Create("456 Elm St", null, "Manhattan", "10001", "New York", "NY", "USA").Value,
@@ -85,7 +83,7 @@ public sealed class DevelopmentDataInitializer
             MedicalInfo.Create(null, null).Value
         ),
         new(
-            PersonalInfo.Create("Carla", "Santos", FemaleGender, UtcDate(1995, 10, 20), "Portuguese", "Doctor", TimeProvider.System).Value,
+            PersonalInfo.Create("Carla", "Santos", FemaleGender, new DateOnly(1995, 10, 20), "Portuguese", "Doctor", DateOnly.FromDateTime(TimeProvider.System.GetUtcNow().UtcDateTime)).Value,
             IdentificationInfo.Create("456789123", "Portuguese").Value,
             ContactInfo.Create("carla@example.com", "+351912345678", "@carla_santos", null).Value,
             Address.Create("Rua B, 456", null, "Alfama", "1100-001", "Lisbon", "Lisbon", "Portugal").Value,
@@ -95,7 +93,7 @@ public sealed class DevelopmentDataInitializer
             MedicalInfo.Create("Shellfish", null).Value
         ),
         new(
-            PersonalInfo.Create("David", "Lee", MaleGender, UtcDate(1980, 3, 10), "Korean", "Chef", TimeProvider.System).Value,
+            PersonalInfo.Create("David", "Lee", MaleGender, new DateOnly(1980, 3, 10), "Korean", "Chef", DateOnly.FromDateTime(TimeProvider.System.GetUtcNow().UtcDateTime)).Value,
             IdentificationInfo.Create("789123456", "Korean").Value,
             ContactInfo.Create("david@example.com", "+821012345678", null, "david.lee").Value,
             Address.Create("Gangnam-daero 789", null, "Gangnam-gu", "06234", "Seoul", "Seoul", "South Korea").Value,
@@ -105,7 +103,7 @@ public sealed class DevelopmentDataInitializer
             MedicalInfo.Create("Dairy", null).Value
         ),
         new(
-            PersonalInfo.Create("Elena", "Rodriguez", FemaleGender, UtcDate(1992, 7, 5), "Spanish", "Artist", TimeProvider.System).Value,
+            PersonalInfo.Create("Elena", "Rodriguez", FemaleGender, new DateOnly(1992, 7, 5), "Spanish", "Artist", DateOnly.FromDateTime(TimeProvider.System.GetUtcNow().UtcDateTime)).Value,
             IdentificationInfo.Create("321654987", "Spanish").Value,
             ContactInfo.Create("elena@example.com", "+34612345678", "@elena_art", null).Value,
             Address.Create("Calle C, 789", "Piso 2", "Centro", "28001", "Madrid", "Madrid", "Spain").Value,
@@ -115,7 +113,7 @@ public sealed class DevelopmentDataInitializer
             MedicalInfo.Create("Pollen", null).Value
         ),
         new(
-            PersonalInfo.Create("Frank", "Muller", MaleGender, UtcDate(1975, 12, 25), "German", "Mechanic", TimeProvider.System).Value,
+            PersonalInfo.Create("Frank", "Muller", MaleGender, new DateOnly(1975, 12, 25), "German", "Mechanic", DateOnly.FromDateTime(TimeProvider.System.GetUtcNow().UtcDateTime)).Value,
             IdentificationInfo.Create("654987321", "German").Value,
             ContactInfo.Create("frank@example.com", "+491512345678", null, "frank.muller").Value,
             Address.Create("Hauptstr. 101", null, "Mitte", "10117", "Berlin", "Berlin", "Germany").Value,
@@ -125,7 +123,7 @@ public sealed class DevelopmentDataInitializer
             MedicalInfo.Create(null, null).Value
         ),
         new(
-            PersonalInfo.Create("Gina", "Patel", FemaleGender, UtcDate(1988, 9, 30), "Indian", "Accountant", TimeProvider.System).Value,
+            PersonalInfo.Create("Gina", "Patel", FemaleGender, new DateOnly(1988, 9, 30), "Indian", "Accountant", DateOnly.FromDateTime(TimeProvider.System.GetUtcNow().UtcDateTime)).Value,
             IdentificationInfo.Create("147258369", "Indian").Value,
             ContactInfo.Create("gina@example.com", "+919876543210", "@gina_patel", null).Value,
             Address.Create("MG Road, 202", null, "Bandra", "400050", "Mumbai", "Maharashtra", "India").Value,
@@ -135,7 +133,7 @@ public sealed class DevelopmentDataInitializer
             MedicalInfo.Create("Nuts", null).Value
         ),
         new(
-            PersonalInfo.Create("Hans", "Nielsen", MaleGender, UtcDate(1998, 4, 14), "Danish", "Student", TimeProvider.System).Value,
+            PersonalInfo.Create("Hans", "Nielsen", MaleGender, new DateOnly(1998, 4, 14), "Danish", "Student", DateOnly.FromDateTime(TimeProvider.System.GetUtcNow().UtcDateTime)).Value,
             IdentificationInfo.Create("963852741", "Danish").Value,
             ContactInfo.Create("hans@example.com", "+4520123456", null, "hans.nielsen").Value,
             Address.Create("Vesterbrogade 303", null, "Vesterbro", "1620", "Copenhagen", "Capital Region", "Denmark").Value,
@@ -145,7 +143,7 @@ public sealed class DevelopmentDataInitializer
             MedicalInfo.Create("Gluten", null).Value
         ),
         new(
-            PersonalInfo.Create("Irina", "Petrov", FemaleGender, UtcDate(1983, 11, 8), "Russian", "Scientist", TimeProvider.System).Value,
+            PersonalInfo.Create("Irina", "Petrov", FemaleGender, new DateOnly(1983, 11, 8), "Russian", "Scientist", DateOnly.FromDateTime(TimeProvider.System.GetUtcNow().UtcDateTime)).Value,
             IdentificationInfo.Create("852741963", "Russian").Value,
             ContactInfo.Create("irina@example.com", "+79123456789", "@irina_petrov", null).Value,
             Address.Create("Tverskaya Ulitsa, 404", null, "Tverskoy", "125009", "Moscow", "Moscow", "Russia").Value,
@@ -155,7 +153,7 @@ public sealed class DevelopmentDataInitializer
             MedicalInfo.Create(null, null).Value
         ),
         new(
-            PersonalInfo.Create("Jack", "Brown", MaleGender, UtcDate(1991, 6, 22), "Australian", "Photographer", TimeProvider.System).Value,
+            PersonalInfo.Create("Jack", "Brown", MaleGender, new DateOnly(1991, 6, 22), "Australian", "Photographer", DateOnly.FromDateTime(TimeProvider.System.GetUtcNow().UtcDateTime)).Value,
             IdentificationInfo.Create("741963852", "Australian").Value,
             ContactInfo.Create("jack@example.com", "+61412345678", null, "jack.brown").Value,
             Address.Create("Collins Street, 505", null, "CBD", "3000", "Melbourne", "Victoria", "Australia").Value,
@@ -165,7 +163,7 @@ public sealed class DevelopmentDataInitializer
             MedicalInfo.Create("Seafood", null).Value
         ),
         new(
-            PersonalInfo.Create("Karen", "Tanaka", FemaleGender, UtcDate(1987, 2, 14), "Japanese", "Architect", TimeProvider.System).Value,
+            PersonalInfo.Create("Karen", "Tanaka", FemaleGender, new DateOnly(1987, 2, 14), "Japanese", "Architect", DateOnly.FromDateTime(TimeProvider.System.GetUtcNow().UtcDateTime)).Value,
             IdentificationInfo.Create("159357486", "Japanese").Value,
             ContactInfo.Create("karen@example.com", "+81901234567", "@karen_tanaka", null).Value,
             Address.Create("Shibuya 1-2-3", null, "Shibuya-ku", "150-0002", "Tokyo", "Tokyo", "Japan").Value,
@@ -175,7 +173,7 @@ public sealed class DevelopmentDataInitializer
             MedicalInfo.Create(null, null).Value
         ),
         new(
-            PersonalInfo.Create("Leo", "Costa", MaleGender, UtcDate(1993, 8, 3), BrazilianNationality, "Software Developer", TimeProvider.System).Value,
+            PersonalInfo.Create("Leo", "Costa", MaleGender, new DateOnly(1993, 8, 3), BrazilianNationality, "Software Developer", DateOnly.FromDateTime(TimeProvider.System.GetUtcNow().UtcDateTime)).Value,
             IdentificationInfo.Create("264835791", "Brazilian").Value,
             ContactInfo.Create("leo@example.com", "+5521999887766", null, "leo.costa").Value,
             Address.Create("Av. Paulista, 1000", "Sala 10", "Bela Vista", "01310-100", "São Paulo", "SP", "Brazil").Value,
@@ -185,7 +183,7 @@ public sealed class DevelopmentDataInitializer
             MedicalInfo.Create("Latex", null).Value
         ),
         new(
-            PersonalInfo.Create("Maria", "Gonzalez", FemaleGender, UtcDate(1989, 12, 1), "Mexican", "Journalist", TimeProvider.System).Value,
+            PersonalInfo.Create("Maria", "Gonzalez", FemaleGender, new DateOnly(1989, 12, 1), "Mexican", "Journalist", DateOnly.FromDateTime(TimeProvider.System.GetUtcNow().UtcDateTime)).Value,
             IdentificationInfo.Create("375924681", "Mexican").Value,
             ContactInfo.Create("maria@example.com", "+521234567890", "@maria_g", null).Value,
             Address.Create("Reforma 222", null, "Juárez", "06600", "Mexico City", "CDMX", "Mexico").Value,
@@ -195,7 +193,7 @@ public sealed class DevelopmentDataInitializer
             MedicalInfo.Create("Penicillin", null).Value
         ),
         new(
-            PersonalInfo.Create("Nora", "Eriksson", FemaleGender, UtcDate(1996, 5, 18), "Swedish", "Nurse", TimeProvider.System).Value,
+            PersonalInfo.Create("Nora", "Eriksson", FemaleGender, new DateOnly(1996, 5, 18), "Swedish", "Nurse", DateOnly.FromDateTime(TimeProvider.System.GetUtcNow().UtcDateTime)).Value,
             IdentificationInfo.Create("486135792", "Swedish").Value,
             ContactInfo.Create("nora@example.com", "+46701234567", null, "nora.eriksson").Value,
             Address.Create("Kungsgatan 44", null, "Norrmalm", "111 35", "Stockholm", "Stockholm", "Sweden").Value,
@@ -205,7 +203,7 @@ public sealed class DevelopmentDataInitializer
             MedicalInfo.Create(null, null).Value
         ),
         new(
-            PersonalInfo.Create("Oscar", "Fischer", MaleGender, UtcDate(1982, 9, 27), "Austrian", "Musician", TimeProvider.System).Value,
+            PersonalInfo.Create("Oscar", "Fischer", MaleGender, new DateOnly(1982, 9, 27), "Austrian", "Musician", DateOnly.FromDateTime(TimeProvider.System.GetUtcNow().UtcDateTime)).Value,
             IdentificationInfo.Create("597246813", "Austrian").Value,
             ContactInfo.Create("oscar@example.com", "+43664123456", "@oscar_music", null).Value,
             Address.Create("Mariahilfer Straße, 88", null, "Mariahilf", "1060", "Vienna", "Vienna", "Austria").Value,
@@ -441,58 +439,58 @@ public sealed class DevelopmentDataInitializer
             customers[0].Id,
             customers[0].PhysicalInfo.BikeType,
             customers[0].AccommodationPreferences.RoomType,
-            notes: "Early bird discount applied")).Value;
+            notes: "Early bird discount applied"), timeProvider.GetUtcNow().UtcDateTime).Value;
         _ = tours[1].AddBooking(TourBookingRequest.CreateDouble(
             customers[1].Id,
             customers[1].PhysicalInfo.BikeType,
             customers[0].Id,
             customers[0].PhysicalInfo.BikeType,
             RoomType.DoubleOccupancy,
-            notes: "Traveling together as a couple")).Value;
+            notes: "Traveling together as a couple"), timeProvider.GetUtcNow().UtcDateTime).Value;
         _ = tours[2].AddBooking(TourBookingRequest.CreateSingle(
             customers[2].Id,
             customers[2].PhysicalInfo.BikeType,
             customers[2].AccommodationPreferences.RoomType,
-            notes: "Pending with partial payment, awaiting full payment")).Value;
+            notes: "Pending with partial payment, awaiting full payment"), timeProvider.GetUtcNow().UtcDateTime).Value;
         _ = tours[3].AddBooking(TourBookingRequest.CreateDouble(
             customers[3].Id,
             customers[3].PhysicalInfo.BikeType,
             customers[4].Id,
             customers[4].PhysicalInfo.BikeType,
             RoomType.DoubleOccupancy,
-            notes: "Upgraded to premium accommodation")).Value;
+            notes: "Upgraded to premium accommodation"), timeProvider.GetUtcNow().UtcDateTime).Value;
         _ = tours[4].AddBooking(TourBookingRequest.CreateSingle(
             customers[5].Id,
             customers[5].PhysicalInfo.BikeType,
             customers[5].AccommodationPreferences.RoomType,
-            notes: "Excellent tour experience")).Value;
+            notes: "Excellent tour experience"), timeProvider.GetUtcNow().UtcDateTime).Value;
         _ = tours[0].AddBooking(TourBookingRequest.CreateSingle(
             customers[6].Id,
             customers[6].PhysicalInfo.BikeType,
             customers[6].AccommodationPreferences.RoomType,
-            notes: "Cancelled due to personal reasons")).Value;
+            notes: "Cancelled due to personal reasons"), timeProvider.GetUtcNow().UtcDateTime).Value;
         _ = tours[1].AddBooking(TourBookingRequest.CreateDouble(
             customers[7].Id,
             customers[7].PhysicalInfo.BikeType,
             customers[8].Id,
             customers[8].PhysicalInfo.BikeType,
             RoomType.DoubleOccupancy,
-            notes: "Special dietary requirements noted")).Value;
+            notes: "Special dietary requirements noted"), timeProvider.GetUtcNow().UtcDateTime).Value;
         tours[3].AddBooking(TourBookingRequest.CreateSingle(
             customers[9].Id,
             customers[9].PhysicalInfo.BikeType,
             customers[9].AccommodationPreferences.RoomType,
-            notes: "Interested in photography opportunities"));
+            notes: "Interested in photography opportunities"), timeProvider.GetUtcNow().UtcDateTime);
         _ = tours[0].AddBooking(TourBookingRequest.CreateSingle(
             customers[4].Id,
             customers[4].PhysicalInfo.BikeType,
             RoomType.SingleOccupancy,
-            notes: "Solo traveler, single room supplement included")).Value;
+            notes: "Solo traveler, single room supplement included"), timeProvider.GetUtcNow().UtcDateTime).Value;
         _ = tours[4].AddBooking(TourBookingRequest.CreateSingle(
             customers[8].Id,
             customers[8].PhysicalInfo.BikeType,
             customers[8].AccommodationPreferences.RoomType,
-            notes: "Payment pending bank transfer")).Value;
+            notes: "Payment pending bank transfer"), timeProvider.GetUtcNow().UtcDateTime).Value;
 
         if (!TryCompleteBookingStates(tours, customers))
         {
@@ -602,7 +600,7 @@ public sealed class DevelopmentDataInitializer
         EnsureSeedOperationSucceeded(tours[0].RecordBookingPayment(
             booking1.Id,
             booking1.TotalPrice,
-            paymentDate,
+            DateOnly.FromDateTime(paymentDate),
             PaymentMethod.CreditCard,
             timeProvider,
             "CC-2024-001"));
@@ -611,7 +609,7 @@ public sealed class DevelopmentDataInitializer
         EnsureSeedOperationSucceeded(tours[1].RecordBookingPayment(
             booking2.Id,
             booking2.TotalPrice * 0.5m,
-            paymentDate,
+            DateOnly.FromDateTime(paymentDate),
             PaymentMethod.BankTransfer,
             timeProvider,
             "BT-2024-002",
@@ -621,7 +619,7 @@ public sealed class DevelopmentDataInitializer
         EnsureSeedOperationSucceeded(tours[3].RecordBookingPayment(
             booking4.Id,
             booking4.TotalPrice,
-            paymentDate,
+            DateOnly.FromDateTime(paymentDate),
             PaymentMethod.CreditCard,
             timeProvider,
             "CC-2024-003"));
@@ -634,7 +632,7 @@ public sealed class DevelopmentDataInitializer
         EnsureSeedOperationSucceeded(tours[1].RecordBookingPayment(
             booking7.Id,
             booking7.TotalPrice * 0.75m,
-            paymentDate,
+            DateOnly.FromDateTime(paymentDate),
             PaymentMethod.BankTransfer,
             timeProvider,
             "BT-2024-004",
@@ -644,7 +642,7 @@ public sealed class DevelopmentDataInitializer
         EnsureSeedOperationSucceeded(tours[0].RecordBookingPayment(
             booking9.Id,
             booking9.TotalPrice,
-            paymentDate,
+            DateOnly.FromDateTime(paymentDate),
             PaymentMethod.Cash,
             timeProvider));
 
@@ -653,7 +651,7 @@ public sealed class DevelopmentDataInitializer
         EnsureSeedOperationSucceeded(tours[2].RecordBookingPayment(
             booking3.Id,
             booking3.TotalPrice * 0.25m,
-            paymentDate,
+            DateOnly.FromDateTime(paymentDate),
             PaymentMethod.CreditCard,
             timeProvider,
             "CC-2024-006",
@@ -732,13 +730,7 @@ public sealed class DevelopmentDataInitializer
             return false;
         }
 
-        var actualDuration = actual.Schedule.EndDate - actual.Schedule.StartDate;
-        var expectedDuration = expected.Schedule.EndDate - expected.Schedule.StartDate;
-        var actualSubDayTicks = actualDuration.Ticks - TimeSpan.FromDays(actualDuration.Days).Ticks;
-        var expectedSubDayTicks = expectedDuration.Ticks - TimeSpan.FromDays(expectedDuration.Days).Ticks;
-        var durationMatches = actualDuration.Days == expectedDuration.Days &&
-            Math.Abs(actualSubDayTicks) < TimeSpan.TicksPerSecond &&
-            Math.Abs(expectedSubDayTicks) < TimeSpan.TicksPerSecond;
+        var durationMatches = actual.Schedule.DurationDays == expected.Schedule.DurationDays;
 
         return string.Equals(actual.Name, expected.Name, StringComparison.Ordinal) &&
             durationMatches &&

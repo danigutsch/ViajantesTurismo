@@ -14,6 +14,7 @@ public sealed class DetailsPageTests : BunitContext
 
     public DetailsPageTests()
     {
+        Services.AddSingleton(TimeProvider.System);
         var authorization = AddAuthorization();
         authorization.SetAuthorized("admin@example.test", AuthorizationState.Authorized);
         authorization.SetRoles("Admin");
@@ -217,6 +218,7 @@ public sealed class DetailsPageTests : BunitContext
     {
         // Arrange
         using var context = new BunitContext();
+        context.Services.AddSingleton(TimeProvider.System);
         var authorization = context.AddAuthorization();
         authorization.SetAuthorized("operator@example.test", AuthorizationState.Authorized);
         authorization.SetRoles("Operator");

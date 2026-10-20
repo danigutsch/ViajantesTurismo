@@ -17,7 +17,7 @@ namespace ViajantesTurismo.Admin.Infrastructure.Migrations
         {
 #pragma warning disable 612, 618
             modelBuilder
-                .HasAnnotation("ProductVersion", "10.0.10")
+                .HasAnnotation("ProductVersion", "10.0.13")
                 .HasAnnotation("Relational:MaxIdentifierLength", 63);
 
             NpgsqlModelBuilderExtensions.HasPostgresExtension(modelBuilder, "citext");
@@ -538,8 +538,8 @@ namespace ViajantesTurismo.Admin.Infrastructure.Migrations
                         .HasMaxLength(500)
                         .HasColumnType("character varying(500)");
 
-                    b.Property<DateTime>("PaymentDate")
-                        .HasColumnType("timestamp with time zone");
+                    b.Property<DateOnly>("PaymentDate")
+                        .HasColumnType("date");
 
                     b.Property<DateTime>("RecordedAt")
                         .HasColumnType("timestamp with time zone");
@@ -747,8 +747,8 @@ namespace ViajantesTurismo.Admin.Infrastructure.Migrations
                             b1.Property<Guid>("CustomerId")
                                 .HasColumnType("uuid");
 
-                            b1.Property<DateTime>("BirthDate")
-                                .HasColumnType("timestamp with time zone");
+                            b1.Property<DateOnly>("BirthDate")
+                                .HasColumnType("date");
 
                             b1.Property<string>("FirstName")
                                 .IsRequired()
@@ -974,27 +974,6 @@ namespace ViajantesTurismo.Admin.Infrastructure.Migrations
 
             modelBuilder.Entity("ViajantesTurismo.Admin.Domain.Tours.Tour", b =>
                 {
-                    b.OwnsOne("SharedKernel.BuildingBlocks.DateRange", "Schedule", b1 =>
-                        {
-                            b1.Property<Guid>("TourId")
-                                .HasColumnType("uuid");
-
-                            b1.Property<DateTime>("EndDate")
-                                .HasColumnType("timestamp with time zone")
-                                .HasColumnName("EndDate");
-
-                            b1.Property<DateTime>("StartDate")
-                                .HasColumnType("timestamp with time zone")
-                                .HasColumnName("StartDate");
-
-                            b1.HasKey("TourId");
-
-                            b1.ToTable("Tours");
-
-                            b1.WithOwner()
-                                .HasForeignKey("TourId");
-                        });
-
                     b.OwnsOne("ViajantesTurismo.Admin.Domain.Tours.TourCapacity", "Capacity", b1 =>
                         {
                             b1.Property<Guid>("TourId")
@@ -1041,6 +1020,27 @@ namespace ViajantesTurismo.Admin.Infrastructure.Migrations
                             b1.Property<decimal>("SingleRoomSupplementPrice")
                                 .HasColumnType("numeric")
                                 .HasColumnName("DoubleRoomSupplementPrice");
+
+                            b1.HasKey("TourId");
+
+                            b1.ToTable("Tours");
+
+                            b1.WithOwner()
+                                .HasForeignKey("TourId");
+                        });
+
+                    b.OwnsOne("ViajantesTurismo.Admin.Domain.Tours.TourSchedule", "Schedule", b1 =>
+                        {
+                            b1.Property<Guid>("TourId")
+                                .HasColumnType("uuid");
+
+                            b1.Property<DateOnly>("EndDate")
+                                .HasColumnType("date")
+                                .HasColumnName("EndDate");
+
+                            b1.Property<DateOnly>("StartDate")
+                                .HasColumnType("date")
+                                .HasColumnName("StartDate");
 
                             b1.HasKey("TourId");
 

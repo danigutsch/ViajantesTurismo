@@ -13,6 +13,31 @@ namespace ViajantesTurismo.Catalog.UnitTests;
 public sealed class AdminTourCreatedIntegrationHandlerTests
 {
     [Fact]
+    [Trait(TestTraitNames.CategoryName, "Regression")]
+    [Trait(TestTraitNames.ScopeName, SharedKernelTestTraitNames.UnitScope)]
+    public async Task Handle_uses_controlled_lease_and_completion_instants()
+    {
+        // Arrange
+        var now = new DateTimeOffset(2030, 2, 3, 14, 0, 0, TimeSpan.Zero);
+        var clock = new ControlledTimeProvider(now);
+        var store = new CapturingIdempotencyStore();
+        var handler = new IdempotentIntegrationHandler<AdminTourCreatedIntegrationEvent>(
+            new AdminTourCreatedIntegrationHandler(new CapturingEventStore
+            {
+                OnAppend = () => clock.CurrentInstant = now.AddMinutes(1)
+            }, new TestCatalogTourSlugLock()),
+            store,
+            Options.Create(new IntegrationEventOptions()),
+            clock);
+        var integrationEvent = new AdminTourCreatedIntegrationEvent(Guid.CreateVersion7(), now, Guid.CreateVersion7(), "boundary", "Boundary");
+        // Act
+        await handler.Handle(integrationEvent, TestContext.Current.CancellationToken);
+        // Assert
+        store.StartedAt.ShouldBe(now);
+        store.CompletedAt.ShouldBe(now.AddMinutes(1));
+    }
+
+    [Fact]
     public async Task Handle_creates_a_draft_catalog_tour_stream()
     {
         var idempotencyStore = new CapturingIdempotencyStore();
@@ -20,7 +45,7 @@ public sealed class AdminTourCreatedIntegrationHandlerTests
         var handler = new IdempotentIntegrationHandler<AdminTourCreatedIntegrationEvent>(
             new AdminTourCreatedIntegrationHandler(eventStore, new TestCatalogTourSlugLock()),
             idempotencyStore,
-            Options.Create(new IntegrationEventOptions()));
+            Options.Create(new IntegrationEventOptions()), TimeProvider.System);
         var integrationEvent = new AdminTourCreatedIntegrationEvent(
             Guid.CreateVersion7(),
             DateTimeOffset.UtcNow,
@@ -49,7 +74,7 @@ public sealed class AdminTourCreatedIntegrationHandlerTests
         var handler = new IdempotentIntegrationHandler<AdminTourCreatedIntegrationEvent>(
             new AdminTourCreatedIntegrationHandler(eventStore, new TestCatalogTourSlugLock()),
             idempotencyStore,
-            Options.Create(new IntegrationEventOptions()));
+            Options.Create(new IntegrationEventOptions()), TimeProvider.System);
         var integrationEvent = new AdminTourCreatedIntegrationEvent(
             Guid.CreateVersion7(),
             DateTimeOffset.UtcNow,
@@ -114,7 +139,7 @@ public sealed class AdminTourCreatedIntegrationHandlerTests
         var handler = new IdempotentIntegrationHandler<AdminTourCreatedIntegrationEvent>(
             new AdminTourCreatedIntegrationHandler(eventStore, new TestCatalogTourSlugLock()),
             idempotencyStore,
-            Options.Create(new IntegrationEventOptions()));
+            Options.Create(new IntegrationEventOptions()), TimeProvider.System);
         var integrationEvent = new AdminTourCreatedIntegrationEvent(
             Guid.CreateVersion7(),
             DateTimeOffset.UtcNow,
@@ -140,7 +165,7 @@ public sealed class AdminTourCreatedIntegrationHandlerTests
         var handler = new IdempotentIntegrationHandler<AdminTourCreatedIntegrationEvent>(
             new AdminTourCreatedIntegrationHandler(new CapturingEventStore(), new TestCatalogTourSlugLock()),
             idempotencyStore,
-            Options.Create(new IntegrationEventOptions { IdempotencyLockDuration = configuredDuration }));
+            Options.Create(new IntegrationEventOptions { IdempotencyLockDuration = configuredDuration }), TimeProvider.System);
         var integrationEvent = new AdminTourCreatedIntegrationEvent(
             Guid.CreateVersion7(),
             DateTimeOffset.UtcNow,
@@ -167,7 +192,7 @@ public sealed class AdminTourCreatedIntegrationHandlerTests
         var handler = new IdempotentIntegrationHandler<AdminTourCreatedIntegrationEvent>(
             new AdminTourCreatedIntegrationHandler(eventStore, new TestCatalogTourSlugLock()),
             idempotencyStore,
-            Options.Create(new IntegrationEventOptions()));
+            Options.Create(new IntegrationEventOptions()), TimeProvider.System);
         var integrationEvent = new AdminTourCreatedIntegrationEvent(
             Guid.CreateVersion7(),
             DateTimeOffset.UtcNow,
@@ -195,7 +220,7 @@ public sealed class AdminTourCreatedIntegrationHandlerTests
         var handler = new IdempotentIntegrationHandler<AdminTourCreatedIntegrationEvent>(
             new AdminTourCreatedIntegrationHandler(eventStore, new TestCatalogTourSlugLock()),
             idempotencyStore,
-            Options.Create(new IntegrationEventOptions()));
+            Options.Create(new IntegrationEventOptions()), TimeProvider.System);
         var integrationEvent = new AdminTourCreatedIntegrationEvent(
             Guid.CreateVersion7(),
             DateTimeOffset.UtcNow,
@@ -225,7 +250,7 @@ public sealed class AdminTourCreatedIntegrationHandlerTests
         var handler = new IdempotentIntegrationHandler<AdminTourCreatedIntegrationEvent>(
             new AdminTourCreatedIntegrationHandler(eventStore, new TestCatalogTourSlugLock()),
             idempotencyStore,
-            Options.Create(new IntegrationEventOptions()));
+            Options.Create(new IntegrationEventOptions()), TimeProvider.System);
         var integrationEvent = new AdminTourCreatedIntegrationEvent(
             Guid.CreateVersion7(),
             DateTimeOffset.UtcNow,

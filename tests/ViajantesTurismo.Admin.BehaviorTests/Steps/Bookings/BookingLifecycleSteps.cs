@@ -19,7 +19,7 @@ public sealed class BookingLifecycleSteps(BookingContext bookingContext, TourCon
             Guid.CreateVersion7(),
             BikeType.Regular,
             RoomType.DoubleOccupancy,
-            DiscountType.None));
+            DiscountType.None), new DateTime(2030, 1, 1, 0, 0, 0, DateTimeKind.Utc));
         (result.IsSuccess).ShouldBeTrue();
         bookingContext.Booking = result.Value;
         (bookingContext.Booking.Status).ShouldBe(BookingStatus.Pending);
@@ -33,7 +33,7 @@ public sealed class BookingLifecycleSteps(BookingContext bookingContext, TourCon
             Guid.CreateVersion7(),
             BikeType.Regular,
             RoomType.DoubleOccupancy,
-            DiscountType.None));
+            DiscountType.None), new DateTime(2030, 1, 1, 0, 0, 0, DateTimeKind.Utc));
         (result.IsSuccess).ShouldBeTrue();
         bookingContext.Booking = result.Value;
         tourContext.Tour.ConfirmBooking(bookingContext.Booking.Id);
@@ -52,7 +52,7 @@ public sealed class BookingLifecycleSteps(BookingContext bookingContext, TourCon
             RoomType.DoubleOccupancy,
             DiscountType.None,
             companionCustomerId,
-            BikeType.EBike));
+            BikeType.EBike), new DateTime(2030, 1, 1, 0, 0, 0, DateTimeKind.Utc));
         (result.IsSuccess).ShouldBeTrue();
         bookingContext.Booking = result.Value;
         var confirmResult = tourContext.Tour.ConfirmBooking(bookingContext.Booking.Id);
@@ -68,7 +68,7 @@ public sealed class BookingLifecycleSteps(BookingContext bookingContext, TourCon
             Guid.CreateVersion7(),
             BikeType.Regular,
             RoomType.DoubleOccupancy,
-            DiscountType.None));
+            DiscountType.None), new DateTime(2030, 1, 1, 0, 0, 0, DateTimeKind.Utc));
         (addResult.IsSuccess).ShouldBeTrue();
         bookingContext.Booking = addResult.Value;
         var result = tourContext.Tour.CancelBooking(bookingContext.Booking.Id);
@@ -84,7 +84,7 @@ public sealed class BookingLifecycleSteps(BookingContext bookingContext, TourCon
             Guid.CreateVersion7(),
             BikeType.Regular,
             RoomType.DoubleOccupancy,
-            DiscountType.None));
+            DiscountType.None), new DateTime(2030, 1, 1, 0, 0, 0, DateTimeKind.Utc));
         (addResult.IsSuccess).ShouldBeTrue();
         bookingContext.Booking = addResult.Value;
         var confirmResult = tourContext.Tour.ConfirmBooking(bookingContext.Booking.Id);
@@ -164,7 +164,7 @@ public sealed class BookingLifecycleSteps(BookingContext bookingContext, TourCon
         var result = tourContext.Tour.RecordBookingPayment(
             bookingContext.Booking.Id,
             bookingContext.Booking.TotalPrice,
-            DateTime.UtcNow,
+            DateOnly.FromDateTime(DateTime.UtcNow),
             PaymentMethod.CreditCard,
             TimeProvider.System);
         (result.IsSuccess).ShouldBeTrue();
@@ -177,7 +177,7 @@ public sealed class BookingLifecycleSteps(BookingContext bookingContext, TourCon
         var result = tourContext.Tour.RecordBookingPayment(
             bookingContext.Booking.Id,
             amount,
-            DateTime.UtcNow,
+            DateOnly.FromDateTime(DateTime.UtcNow),
             PaymentMethod.CreditCard,
             TimeProvider.System);
         (result.IsSuccess).ShouldBeTrue();

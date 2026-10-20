@@ -49,7 +49,7 @@ public class DetailsPageTests : BunitContext
     {
         // Arrange
         var tour = BuildTourDto();
-        var expectedDuration = (tour.EndDate - tour.StartDate).Days;
+        var expectedDuration = tour.EndDate.DayNumber - tour.StartDate.DayNumber;
 
         TourDetailsPageTestsHelper.SetupSuccessfulTourLoad(_fakeToursApi, tour);
 

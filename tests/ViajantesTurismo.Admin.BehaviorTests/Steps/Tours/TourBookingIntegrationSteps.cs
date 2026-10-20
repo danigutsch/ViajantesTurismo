@@ -25,7 +25,7 @@ public sealed class TourBookingIntegrationSteps(BookingContext bookingContext, T
             Guid.CreateVersion7(),
             BikeType.Regular,
             RoomType.DoubleOccupancy,
-            DiscountType.None));
+            DiscountType.None), new DateTime(2030, 1, 1, 0, 0, 0, DateTimeKind.Utc));
         (result.IsSuccess).ShouldBeTrue();
         bookingContext.Booking = result.Value;
         (bookingContext.Booking.Status).ShouldBe(BookingStatus.Pending);
@@ -39,7 +39,7 @@ public sealed class TourBookingIntegrationSteps(BookingContext bookingContext, T
             Guid.CreateVersion7(),
             BikeType.Regular,
             RoomType.DoubleOccupancy,
-            DiscountType.None));
+            DiscountType.None), new DateTime(2030, 1, 1, 0, 0, 0, DateTimeKind.Utc));
         (addResult.IsSuccess).ShouldBeTrue();
         bookingContext.Booking = addResult.Value;
         var result = tourContext.Tour.ConfirmBooking(bookingContext.Booking.Id);
@@ -55,7 +55,7 @@ public sealed class TourBookingIntegrationSteps(BookingContext bookingContext, T
             Guid.CreateVersion7(),
             BikeType.Regular,
             RoomType.DoubleOccupancy,
-            DiscountType.None));
+            DiscountType.None), new DateTime(2030, 1, 1, 0, 0, 0, DateTimeKind.Utc));
         (addResult.IsSuccess).ShouldBeTrue();
         bookingContext.Booking = addResult.Value;
         var result = tourContext.Tour.CancelBooking(bookingContext.Booking.Id);
@@ -71,7 +71,7 @@ public sealed class TourBookingIntegrationSteps(BookingContext bookingContext, T
             Guid.CreateVersion7(),
             BikeType.Regular,
             RoomType.DoubleOccupancy,
-            DiscountType.None));
+            DiscountType.None), new DateTime(2030, 1, 1, 0, 0, 0, DateTimeKind.Utc));
         (addResult.IsSuccess).ShouldBeTrue();
         bookingContext.Booking = addResult.Value;
 
@@ -92,7 +92,7 @@ public sealed class TourBookingIntegrationSteps(BookingContext bookingContext, T
             Guid.CreateVersion7(),
             BikeType.Regular,
             RoomType.DoubleOccupancy,
-            DiscountType.None));
+            DiscountType.None), new DateTime(2030, 1, 1, 0, 0, 0, DateTimeKind.Utc));
         (result.IsSuccess).ShouldBeTrue();
         bookingContext.Booking = result.Value;
     }
@@ -106,7 +106,7 @@ public sealed class TourBookingIntegrationSteps(BookingContext bookingContext, T
             BikeType.Regular,
             RoomType.DoubleOccupancy,
             DiscountType.None,
-            notes: notes));
+            notes: notes), new DateTime(2030, 1, 1, 0, 0, 0, DateTimeKind.Utc));
         (result.IsSuccess).ShouldBeTrue();
         bookingContext.Booking = result.Value;
     }
@@ -118,7 +118,7 @@ public sealed class TourBookingIntegrationSteps(BookingContext bookingContext, T
             Guid.CreateVersion7(),
             BikeType.Regular,
             RoomType.DoubleOccupancy,
-            DiscountType.None));
+            DiscountType.None), new DateTime(2030, 1, 1, 0, 0, 0, DateTimeKind.Utc));
         (result.IsSuccess).ShouldBeTrue();
         bookingContext.Booking = result.Value;
     }
@@ -131,7 +131,7 @@ public sealed class TourBookingIntegrationSteps(BookingContext bookingContext, T
             Guid.CreateVersion7(),
             bikeType,
             RoomType.DoubleOccupancy,
-            DiscountType.None));
+            DiscountType.None), new DateTime(2030, 1, 1, 0, 0, 0, DateTimeKind.Utc));
         bookingContext.BookingCreationResult = result;
         (result.IsSuccess).ShouldBeTrue();
         bookingContext.Booking = result.Value;
@@ -145,7 +145,7 @@ public sealed class TourBookingIntegrationSteps(BookingContext bookingContext, T
             Guid.CreateVersion7(),
             BikeType.Regular,
             roomType,
-            DiscountType.None));
+            DiscountType.None), new DateTime(2030, 1, 1, 0, 0, 0, DateTimeKind.Utc));
         bookingContext.BookingCreationResult = result;
         (result.IsSuccess).ShouldBeTrue();
         bookingContext.Booking = result.Value;

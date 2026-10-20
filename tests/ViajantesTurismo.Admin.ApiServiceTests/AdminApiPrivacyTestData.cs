@@ -10,8 +10,8 @@ internal static class AdminApiPrivacyTestData
         var result = Tour.Create(new TourDefinition(
             identifier,
             $"Tour {identifier}",
-            startDate,
-            startDate.AddDays(10),
+            DateOnly.FromDateTime(startDate),
+            DateOnly.FromDateTime(startDate.AddDays(10)),
             2000m,
             500m,
             100m,

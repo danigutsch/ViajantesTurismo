@@ -10,8 +10,8 @@ public sealed class TourUpdateBasePriceSteps(TourContext tourContext)
         tourContext.Tour = Tour.Create(new TourDefinition(
             "TEST2024",
             "Test Tour",
-            DateTime.UtcNow.AddMonths(1),
-            DateTime.UtcNow.AddMonths(1).AddDays(7),
+            DateOnly.FromDateTime(DateTime.UtcNow.AddMonths(1)),
+            DateOnly.FromDateTime(DateTime.UtcNow.AddMonths(1).AddDays(7)),
             basePrice,
             500.00m,
             100.00m,

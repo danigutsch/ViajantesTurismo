@@ -15,8 +15,8 @@ public sealed class CreateTourCommandHandlerTests
         var command = new CreateTourCommand(
             "andes-2026",
             "Andes 2026",
-            new DateTime(2026, 3, 10, 0, 0, 0, DateTimeKind.Utc),
-            new DateTime(2026, 3, 20, 0, 0, 0, DateTimeKind.Utc),
+            new DateOnly(2026, 3, 10),
+            new DateOnly(2026, 3, 20),
             1_500m,
             250m,
             100m,
