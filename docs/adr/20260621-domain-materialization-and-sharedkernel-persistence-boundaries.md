@@ -26,8 +26,11 @@ Keep the Domain layer persistence-agnostic:
 - Domain types must not depend on EF Core or persistence-specific helper packages.
 - Infrastructure owns EF configuration, backing-field mappings, value converters, and
   materialization conventions.
-- If shared EF helpers become necessary, place them in an Infrastructure-side package such as
-  `SharedKernel.Persistence.EFCore`, not in `SharedKernel.Domain`.
+- Shared EF helpers belong in a focused Infrastructure-side provider package, not
+  `SharedKernel.Domain`. For integration messaging this is
+  `SharedKernel.Messaging.IntegrationEvents.EntityFrameworkCore`; it may supply reusable
+  context-qualified mapping mechanics, while the consuming module owns schema/table selection,
+  migrations, transactions, and operational policy.
 - Do not add source generation solely to hide `CS8618` warnings for existing domain entities.
 
 The representative migration removes EF-only parameterless constructors and their `CS8618`
@@ -67,3 +70,4 @@ while domain callers continue to use validated factory methods.
 - [Back to ADR Index](../ARCHITECTURE_DECISIONS.md)
 - Related: [ADR-001: Domain Validation with Factory Methods](20251108-domain-validation-factory-methods.md)
 - Related: [ADR-022: Split SharedKernel Domain and Building Blocks](20260621-split-sharedkernel-domain-and-building-blocks.md)
+- Related: [ADR-040: Branding Module Co-hosting and State Distribution](20260724-branding-module-co-hosting-and-state-distribution.md)

@@ -11,7 +11,8 @@ API versions are public contract versions. They do not follow application, assem
 ## SharedKernel packages
 
 - `SharedKernel.ApiVersioning` owns host-agnostic API version, lifecycle, deprecation, and selection primitives.
-- `SharedKernel.ApiVersioning.AspNetCore` owns ASP.NET Core route metadata and `/api/v1` style route helpers.
+- `SharedKernel.ApiVersioning.AspNetCore` owns generic ASP.NET Core route metadata and version-group
+  composition helpers. It does not own application API prefixes or module route segments.
 - `SharedKernel.OpenApi` owns OpenAPI document registration for versioned API contracts.
 
 Keep app-specific boundary names, domain policy, and business compatibility rules in the consuming application.
@@ -34,9 +35,18 @@ header, form, body, and stream inputs by the [API request shape policy](API_REQU
 The unversioned API routes are not part of the supported HTTP contract. Browser-facing Management and Public Web routes
 remain unversioned UI routes; typed API clients translate API calls to the versioned service endpoints.
 
-OpenAPI artifacts keep the existing boundary files (`tours`, `customers`, `bookings`, `catalog`, and `public-catalog`)
-and add a service-wide `v1` document for version-level review. Refresh committed artifacts only when the HTTP contract
-changes intentionally.
+OpenAPI artifacts keep the existing logical boundary files (`tours`, `customers`, `bookings`, `catalog`,
+`public-catalog`, `branding`, and `public-branding`) plus their version-level review documents. A
+shared process may generate more than one logical `v1` artifact: ADR-040 preserves Branding's
+Branding-only canonical `v1` after Catalog.ApiService co-hosting rather than merging contract ownership.
+Refresh committed artifacts only when the HTTP contract changes intentionally.
+
+Conditional request semantics are part of the versioned HTTP contract. Branding management v1 uses
+RFC 9110 strong ETag/`If-Match` comparison: valid false conditions return 412, missing required
+preconditions return 428, and only malformed field syntax returns 400. Entity-tag lists, weak tags,
+and `*` retain their standards-defined meanings; they are not alternate application-version signals.
+Management `GET` returns the validator. A normalized successful `PUT` omits it and requires a follow-up
+`GET`, because validators cannot describe a stored representation transformed from the request.
 
 ## Alpha evolution
 

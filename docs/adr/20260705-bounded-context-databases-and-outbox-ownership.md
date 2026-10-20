@@ -4,6 +4,9 @@
 
 Accepted.
 
+Extended for co-hosted Branding by
+[ADR-040](20260724-branding-module-co-hosting-and-state-distribution.md).
+
 ## Context
 
 Admin and Catalog are separate bounded contexts. Both need durable integration messaging. A shared
@@ -17,8 +20,17 @@ business data that caused the event.
 ## Decision
 
 - Admin and Catalog use separate PostgreSQL databases on the same PostgreSQL server.
-- Each bounded context owns its own `messaging` schema and outbox/inbox tables inside its database.
-- Messaging tables are not shared between bounded contexts.
+- Admin and Catalog currently use the SharedKernel default `messaging` schema/table mappings inside
+  their respective databases; the same default name does not imply one physical shared table.
+- Outbox/inbox ownership is never shared between bounded contexts. A default transport table is an
+  explicit producer-database handoff queue partitioned by `ConsumerName`, not either consumer's inbox
+  or source-of-truth state.
+- A co-hosted logical module that shares a physical database still owns a context-qualified outbox
+  mapping/table. ADR-040 applies this rule to Branding in the `branding` schema rather than sharing
+  Catalog's outbox.
+- Transport is distinct from source outbox ownership. Admin-to-Catalog uses Admin-database
+  `messaging.transport_messages`; ADR-040 assigns Branding-to-Admin envelopes to the Catalog
+  database's default `messaging.transport_messages` table while Branding retains its qualified outbox.
 - A future broker or relay may be shared infrastructure, but it must not replace the owning
   bounded context outbox transaction.
 

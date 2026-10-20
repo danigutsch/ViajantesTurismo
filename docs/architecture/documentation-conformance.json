@@ -147,6 +147,33 @@
           "expectedArguments": ["catalogDataSource", "options: null", "ct"]
         }
       ]
+    },
+    {
+      "name": "branding-architecture",
+      "documentPath": "docs/branding.md",
+      "markerName": "branding-architecture",
+      "factName": "current-decision",
+      "expectedIdentifiers": [
+        "admin-local-projection",
+        "app-owned-contracts",
+        "atomic-reseed",
+        "branding-owned-outbox",
+        "catalog-api-cohost",
+        "catalog-transport-table",
+        "exact-route-audiences",
+        "independent-logical-module",
+        "no-ordinary-api-http",
+        "openapi-retarget-gate",
+        "positive-event-revision",
+        "production-platform-undecided",
+        "public-cache-60-300",
+        "put-etag-omitted-after-normalization",
+        "recovery-gates-document-generation",
+        "reseed-only-recovery-lane",
+        "rfc9110-strong-if-match",
+        "shared-process-blast-radius",
+        "transport-ack-boundary"
+      ]
     }
   ]
 }
