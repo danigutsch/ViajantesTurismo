@@ -19,9 +19,9 @@
       },
       "PandaBear.SharedKernel.HttpClients": {
         "type": "Direct",
-        "requested": "[0.1.0-alpha.cutover.20261020.1, )",
-        "resolved": "0.1.0-alpha.cutover.20261020.1",
-        "contentHash": "qCFxoIyNSsESh7eNPzhAFCKcaYVrfwtpG46Owi/rCiv4mgXQYbaCFPH736gKtFZ5Z95QiM722aPJi0nm88+ZXw==",
+        "requested": "[0.1.0-alpha.cutover.20261020.2, )",
+        "resolved": "0.1.0-alpha.cutover.20261020.2",
+        "contentHash": "hP+dWA7uWXxspv7aqtWGGFqWxPJe6ircd/EsMHTM9RhAe1gt8tk4YxNHFOhD2nw8chGTF4MRd+ebvGnrbzCWAg==",
         "dependencies": {
           "Microsoft.Extensions.Compliance.Abstractions": "10.11.0",
           "Microsoft.Extensions.DependencyInjection": "10.0.13",
@@ -41,15 +41,15 @@
       },
       "PandaBear.SharedKernel.Style.Analyzers": {
         "type": "Direct",
-        "requested": "[0.1.0-alpha.cutover.20261020.1, )",
-        "resolved": "0.1.0-alpha.cutover.20261020.1",
-        "contentHash": "PRJz2s3vGVIDMHReXInOSxU8hXL0WRuvJBRXzJ+Jq/xmgYUFY6tqF4QNbSzMk4PjR3NnKYFd8TIedyyzGMLXMA=="
+        "requested": "[0.1.0-alpha.cutover.20261020.2, )",
+        "resolved": "0.1.0-alpha.cutover.20261020.2",
+        "contentHash": "GRcXPhB7SITFjPcEp6iuYY5pg5LYNyVsTl7DUMpoauP2bMO3zOOEATx788c8ygjq1NjsCsEfyWQ3ftN4yL6Inw=="
       },
       "PandaBear.SharedKernel.Style.CodeFixes": {
         "type": "Direct",
-        "requested": "[0.1.0-alpha.cutover.20261020.1, )",
-        "resolved": "0.1.0-alpha.cutover.20261020.1",
-        "contentHash": "EbnkVQJPiBcUUNNesaD5HFt79FxlJ14oCySaMTmha7bWxxRUFuH6qP25ZxV5uTfiL9fXDyJKNPt0ltcGACKt+A=="
+        "requested": "[0.1.0-alpha.cutover.20261020.2, )",
+        "resolved": "0.1.0-alpha.cutover.20261020.2",
+        "contentHash": "dvDIqdYrxPCkSWAm9O7T9+coiL5t9+NBCfPVN0gVZDRWlD71ESSHPOjdzzE75kwabaT/LcdV7bpf7H22CE0BxQ=="
       },
       "Microsoft.Extensions.AmbientMetadata.Application": {
         "type": "Transitive",

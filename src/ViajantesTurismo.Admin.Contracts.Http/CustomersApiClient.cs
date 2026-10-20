@@ -79,7 +79,7 @@ public sealed partial class CustomersApiClient(HttpClient httpClient, ILogger<Cu
 
         var outcome = await ContractCommandOutcome.FromResponse(response, Json.ContractValidationProblemDto, ct).ConfigureAwait(false);
 
-        activity?.SetTag(AdminContractsClientTelemetry.StatusCodeTag, (int)outcome.StatusCode);
+        activity?.SetTag(AdminContractsClientTelemetry.StatusCodeTag, (int?)outcome.StatusCode);
         activity?.SetTag(AdminContractsClientTelemetry.CommandOutcomeKindTag, outcome.Kind.ToString());
         if (outcome.Kind != ContractCommandOutcomeKind.Succeeded)
         {
@@ -144,6 +144,6 @@ public sealed partial class CustomersApiClient(HttpClient httpClient, ILogger<Cu
     }
 
     [LoggerMessage(1, LogLevel.Warning, "Customer create returned {StatusCode} with outcome {OutcomeKind}.")]
-    private static partial void LogCustomerCreateOutcome(ILogger logger, HttpStatusCode statusCode, ContractCommandOutcomeKind outcomeKind);
+    private static partial void LogCustomerCreateOutcome(ILogger logger, HttpStatusCode? statusCode, ContractCommandOutcomeKind outcomeKind);
 
 }

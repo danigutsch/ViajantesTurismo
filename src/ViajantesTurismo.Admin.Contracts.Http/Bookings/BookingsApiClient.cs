@@ -151,9 +151,9 @@ public sealed partial class BookingsApiClient(HttpClient httpClient, ILogger<Boo
     private void RecordOutcome(
         Activity? activity,
         ContractCommandOutcomeDto outcome,
-        Action<ILogger, HttpStatusCode, ContractCommandOutcomeKind> log)
+        Action<ILogger, HttpStatusCode?, ContractCommandOutcomeKind> log)
     {
-        activity?.SetTag(AdminContractsClientTelemetry.StatusCodeTag, (int)outcome.StatusCode);
+        activity?.SetTag(AdminContractsClientTelemetry.StatusCodeTag, (int?)outcome.StatusCode);
         activity?.SetTag(AdminContractsClientTelemetry.CommandOutcomeKindTag, outcome.Kind.ToString());
         if (outcome.Kind != ContractCommandOutcomeKind.Succeeded && logger is not null)
         {
@@ -162,8 +162,8 @@ public sealed partial class BookingsApiClient(HttpClient httpClient, ILogger<Boo
     }
 
     [LoggerMessage(1, LogLevel.Warning, "Booking create returned {StatusCode} with outcome {OutcomeKind}.")]
-    private static partial void LogBookingCreateOutcome(ILogger logger, HttpStatusCode statusCode, ContractCommandOutcomeKind outcomeKind);
+    private static partial void LogBookingCreateOutcome(ILogger logger, HttpStatusCode? statusCode, ContractCommandOutcomeKind outcomeKind);
 
     [LoggerMessage(2, LogLevel.Warning, "Record payment returned {StatusCode} with outcome {OutcomeKind}.")]
-    private static partial void LogRecordPaymentOutcome(ILogger logger, HttpStatusCode statusCode, ContractCommandOutcomeKind outcomeKind);
+    private static partial void LogRecordPaymentOutcome(ILogger logger, HttpStatusCode? statusCode, ContractCommandOutcomeKind outcomeKind);
 }

@@ -72,7 +72,7 @@ public sealed partial class ToursApiClient(HttpClient httpClient, ILogger<ToursA
         using var response = await httpClient.PostAsJsonAsync(new Uri(RoutePrefix, UriKind.Relative), dto, Json.CreateTourDto, cancellationToken).ConfigureAwait(false);
         var outcome = await ContractCommandOutcome.FromResponse(response, Json.ContractValidationProblemDto, cancellationToken).ConfigureAwait(false);
 
-        activity?.SetTag(AdminContractsClientTelemetry.StatusCodeTag, (int)outcome.StatusCode);
+        activity?.SetTag(AdminContractsClientTelemetry.StatusCodeTag, (int?)outcome.StatusCode);
         activity?.SetTag(AdminContractsClientTelemetry.CommandOutcomeKindTag, outcome.Kind.ToString());
         if (outcome.Kind != ContractCommandOutcomeKind.Succeeded && logger is not null)
         {
@@ -92,5 +92,5 @@ public sealed partial class ToursApiClient(HttpClient httpClient, ILogger<ToursA
     }
 
     [LoggerMessage(1, LogLevel.Warning, "Tour create returned {StatusCode} with outcome {OutcomeKind}.")]
-    private static partial void LogTourCreateOutcome(ILogger logger, HttpStatusCode statusCode, ContractCommandOutcomeKind outcomeKind);
+    private static partial void LogTourCreateOutcome(ILogger logger, HttpStatusCode? statusCode, ContractCommandOutcomeKind outcomeKind);
 }
