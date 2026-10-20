@@ -224,7 +224,7 @@ public sealed class PublicCatalogApiClientTests
         Func<Task> act = async () => await sut.GetPublishedTourBySlug("cancelled", cancellationTokenSource.Token);
 
         // Assert
-        await act.ShouldThrow<TaskCanceledException>();
+        await act.ShouldThrow<OperationCanceledException>();
         responseFactoryWasCalled.ShouldBeFalse();
     }
 

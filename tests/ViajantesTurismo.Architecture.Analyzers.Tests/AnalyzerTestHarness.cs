@@ -16,6 +16,7 @@ internal static class AnalyzerTestHarness
         using System.Net.Http;
         using System.Threading.Tasks;
         using Demo;
+        using ServiceCollection = Demo.ServiceCollection;
         using Microsoft.Extensions.DependencyInjection;
         using SharedKernel.Branding;
         using ViajantesTurismo.Resources;
