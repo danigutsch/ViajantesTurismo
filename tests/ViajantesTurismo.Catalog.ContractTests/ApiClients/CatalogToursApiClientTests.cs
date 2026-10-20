@@ -512,7 +512,8 @@ public sealed class CatalogToursApiClientTests
         // Act
         var outcome = await sut.UploadTourImage(
             tourId,
-            new CatalogTourImageUploadRequest(content, "mountain.jpg", "image/jpeg", "Cyclist on a mountain pass", "Mountain pass", "Photo team", "© Viajantes"),
+            new CatalogTourImageUploadRequest(content, content.Length, "mountain.jpg", "image/jpeg", "Cyclist on a mountain pass", "Mountain pass", "Photo team", "© Viajantes"),
+            null,
             TestContext.Current.CancellationToken);
 
         // Assert
@@ -544,7 +545,8 @@ public sealed class CatalogToursApiClientTests
         // Act
         var outcome = await sut.UploadTourImage(
             Guid.CreateVersion7(),
-            new CatalogTourImageUploadRequest(content, "missing.jpg", "image/jpeg", "Missing tour"),
+            new CatalogTourImageUploadRequest(content, content.Length, "missing.jpg", "image/jpeg", "Missing tour"),
+            null,
             TestContext.Current.CancellationToken);
 
         // Assert
@@ -604,6 +606,71 @@ public sealed class CatalogToursApiClientTests
         outcome.Message.ShouldBe("HTTP transport failed.");
         requestCount.ShouldBe(1);
         content.CanRead.ShouldBeFalse();
+    }
+
+    [Fact]
+    public async Task UploadTourImage_reports_only_file_bytes_written_to_the_transport()
+    {
+        // Arrange
+        var fileContent = new byte[100];
+        var reportedBytes = new TaskCompletionSource<long>(TaskCreationOptions.RunContinuationsAsynchronously);
+        using var content = new MemoryStream(fileContent, writable: false);
+        using var httpClient = CatalogToursApiClientTestsHelpers.CreateClient(async (request, ct) =>
+        {
+            await request.Content.ShouldNotBeNull().CopyToAsync(Stream.Null, ct);
+            return CatalogToursApiClientTestsHelpers.JsonResponse("""
+                {
+                  "id":"33333333-3333-3333-3333-333333333333",
+                  "responsiveVariants":[],
+                  "altText":"Cyclist on a mountain pass",
+                  "isDecorative":false,
+                  "requiresHumanReview":true,
+                  "isAiGenerated":false
+                }
+                """);
+        });
+        var sut = new CatalogToursApiClient(httpClient);
+        var progress = new Progress<long>(bytes => reportedBytes.TrySetResult(bytes));
+
+        // Act
+        _ = await sut.UploadTourImage(
+            Guid.CreateVersion7(),
+            new CatalogTourImageUploadRequest(content, fileContent.LongLength, "mountain.jpg", "image/jpeg", "Cyclist on a mountain pass"),
+            progress,
+            TestContext.Current.CancellationToken);
+        var transferredBytes = await reportedBytes.Task.WaitAsync(TestContext.Current.CancellationToken);
+
+        // Assert
+        transferredBytes.ShouldBe(fileContent.LongLength);
+    }
+
+    [Fact]
+    public async Task UploadTourImage_propagates_cancellation_to_the_http_request()
+    {
+        // Arrange
+        var requestStarted = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        using var content = new MemoryStream([1, 2, 3], writable: false);
+        using var httpClient = CatalogToursApiClientTestsHelpers.CreateClient(async (_, ct) =>
+        {
+            requestStarted.TrySetResult();
+            await Task.Delay(Timeout.InfiniteTimeSpan, ct);
+            return new HttpResponseMessage(HttpStatusCode.OK);
+        });
+        var sut = new CatalogToursApiClient(httpClient);
+        using var requestCancellation = new CancellationTokenSource();
+
+        // Act
+        var upload = sut.UploadTourImage(
+            Guid.CreateVersion7(),
+            new CatalogTourImageUploadRequest(content, content.Length, "mountain.jpg", "image/jpeg", "Cyclist on a mountain pass"),
+            null,
+            requestCancellation.Token);
+        await requestStarted.Task.WaitAsync(TestContext.Current.CancellationToken);
+        await requestCancellation.CancelAsync();
+        Func<Task> action = async () => await upload;
+
+        // Assert
+        _ = await action.ShouldThrow<TaskCanceledException>();
     }
 
     [Fact]

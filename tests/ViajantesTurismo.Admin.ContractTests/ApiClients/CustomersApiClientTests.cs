@@ -382,11 +382,118 @@ public sealed class CustomersApiClientTests
             [1, 2, 3],
             "customers.csv",
             new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase) { ["alice@example.test"] = "overwrite" },
+            null,
             TestContext.Current.CancellationToken);
 
         // Assert
         requestPath.ShouldBe("/api/v1/customers/import/commit");
         var result = outcome.Value.ShouldNotBeNull();
         result.SuccessCount.ShouldBe(2);
+    }
+
+    [Fact]
+    public async Task ImportCustomers_reports_only_file_bytes_written_to_the_transport()
+    {
+        // Arrange
+        var fileContent = new byte[100];
+        var reportedBytes = new TaskCompletionSource<long>(TaskCreationOptions.RunContinuationsAsynchronously);
+        using var httpClient = CatalogToursApiClientTestsHelpers.CreateClient(async (request, ct) =>
+        {
+            await request.Content.ShouldNotBeNull().CopyToAsync(Stream.Null, ct);
+            return CatalogToursApiClientTestsHelpers.JsonResponse("""
+                { "successCount": 1, "errorCount": 0 }
+                """);
+        });
+        var sut = CustomersApiClientTestsHelpers.CreateSut(httpClient);
+        var progress = new Progress<long>(bytes => reportedBytes.TrySetResult(bytes));
+
+        // Act
+        _ = await sut.ImportCustomers(fileContent, "customers.csv", progress, TestContext.Current.CancellationToken);
+        var transferredBytes = await reportedBytes.Task.WaitAsync(TestContext.Current.CancellationToken);
+
+        // Assert
+        transferredBytes.ShouldBe(fileContent.LongLength);
+    }
+
+    [Fact]
+    public async Task ImportCustomers_propagates_cancellation_to_the_http_request()
+    {
+        // Arrange
+        var requestStarted = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        using var httpClient = CatalogToursApiClientTestsHelpers.CreateClient(async (_, ct) =>
+        {
+            requestStarted.TrySetResult();
+            await Task.Delay(Timeout.InfiniteTimeSpan, ct);
+            return new HttpResponseMessage(HttpStatusCode.OK);
+        });
+        var sut = CustomersApiClientTestsHelpers.CreateSut(httpClient);
+        using var requestCancellation = new CancellationTokenSource();
+
+        // Act
+        var import = sut.ImportCustomers([1, 2, 3], "customers.csv", null, requestCancellation.Token);
+        await requestStarted.Task.WaitAsync(TestContext.Current.CancellationToken);
+        await requestCancellation.CancelAsync();
+        Func<Task> action = async () => await import;
+
+        // Assert
+        _ = await action.ShouldThrow<TaskCanceledException>();
+    }
+
+    [Fact]
+    public async Task CommitImportWithResolutions_reports_only_file_bytes_written_to_the_transport()
+    {
+        // Arrange
+        var fileContent = new byte[100];
+        var reportedBytes = new TaskCompletionSource<long>(TaskCreationOptions.RunContinuationsAsynchronously);
+        using var httpClient = CatalogToursApiClientTestsHelpers.CreateClient(async (request, ct) =>
+        {
+            await request.Content.ShouldNotBeNull().CopyToAsync(Stream.Null, ct);
+            return CatalogToursApiClientTestsHelpers.JsonResponse("""
+                { "successCount": 1, "errorCount": 0 }
+                """);
+        });
+        var sut = CustomersApiClientTestsHelpers.CreateSut(httpClient);
+        var progress = new Progress<long>(bytes => reportedBytes.TrySetResult(bytes));
+
+        // Act
+        _ = await sut.CommitImportWithResolutions(
+            fileContent,
+            "customers.csv",
+            new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase) { ["alice@example.test"] = "overwrite" },
+            progress,
+            TestContext.Current.CancellationToken);
+        var transferredBytes = await reportedBytes.Task.WaitAsync(TestContext.Current.CancellationToken);
+
+        // Assert
+        transferredBytes.ShouldBe(fileContent.LongLength);
+    }
+
+    [Fact]
+    public async Task CommitImportWithResolutions_propagates_cancellation_to_the_http_request()
+    {
+        // Arrange
+        var requestStarted = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        using var httpClient = CatalogToursApiClientTestsHelpers.CreateClient(async (_, ct) =>
+        {
+            requestStarted.TrySetResult();
+            await Task.Delay(Timeout.InfiniteTimeSpan, ct);
+            return new HttpResponseMessage(HttpStatusCode.OK);
+        });
+        var sut = CustomersApiClientTestsHelpers.CreateSut(httpClient);
+        using var requestCancellation = new CancellationTokenSource();
+
+        // Act
+        var commit = sut.CommitImportWithResolutions(
+            [1, 2, 3],
+            "customers.csv",
+            new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase) { ["alice@example.test"] = "overwrite" },
+            null,
+            requestCancellation.Token);
+        await requestStarted.Task.WaitAsync(TestContext.Current.CancellationToken);
+        await requestCancellation.CancelAsync();
+        Func<Task> action = async () => await commit;
+
+        // Assert
+        _ = await action.ShouldThrow<TaskCanceledException>();
     }
 }

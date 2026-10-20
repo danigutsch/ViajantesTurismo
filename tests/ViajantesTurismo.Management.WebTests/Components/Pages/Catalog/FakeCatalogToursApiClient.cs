@@ -33,6 +33,8 @@ internal sealed class FakeCatalogToursApiClient : ICatalogToursApiClient
 
     public CatalogMediaImageDto? UploadedImage { get; set; }
 
+    public Func<Guid, CatalogTourImageUploadRequest, IProgress<long>?, CancellationToken, Task<CatalogMediaImageDto?>>? UploadTourImageHandler { get; set; }
+
     public Guid? LastUploadedTourId { get; private set; }
 
     public string? LastUploadedFileName { get; private set; }
@@ -42,6 +44,10 @@ internal sealed class FakeCatalogToursApiClient : ICatalogToursApiClient
     public string? LastUploadedAltText { get; private set; }
 
     public string? LastUploadedCaption { get; private set; }
+
+    public CancellationToken LastUploadCancellationToken { get; private set; }
+
+    public int UploadTourImageCallCount { get; private set; }
 
     public CatalogMediaImageDto? AccessibilityReviewResult { get; set; }
 
@@ -148,8 +154,10 @@ internal sealed class FakeCatalogToursApiClient : ICatalogToursApiClient
             : ContractCommandOutcome.Succeeded(HttpStatusCode.OK, Draft));
     }
 
-    public Task<ContractCommandOutcomeDto<CatalogMediaImageDto>> UploadTourImage(Guid id, CatalogTourImageUploadRequest request, CancellationToken ct)
+    public async Task<ContractCommandOutcomeDto<CatalogMediaImageDto>> UploadTourImage(Guid id, CatalogTourImageUploadRequest request, IProgress<long>? progress, CancellationToken ct)
     {
+        LastUploadCancellationToken = ct;
+        UploadTourImageCallCount++;
         ct.ThrowIfCancellationRequested();
 
         LastUploadedTourId = id;
@@ -157,9 +165,13 @@ internal sealed class FakeCatalogToursApiClient : ICatalogToursApiClient
         LastUploadedContentType = request.ContentType;
         LastUploadedAltText = request.AltText;
         LastUploadedCaption = request.Caption;
-        return Task.FromResult(UploadedImage is null
+        var uploaded = UploadTourImageHandler is null
+            ? UploadedImage
+            : await UploadTourImageHandler(id, request, progress, ct);
+        progress?.Report(request.ContentLength);
+        return uploaded is null
             ? ContractCommandOutcome.Status<CatalogMediaImageDto>(ContractCommandOutcomeKind.NotFound, HttpStatusCode.NotFound)
-            : ContractCommandOutcome.Succeeded(HttpStatusCode.Created, UploadedImage));
+            : ContractCommandOutcome.Succeeded(HttpStatusCode.Created, uploaded);
     }
 
     public Task<ContractCommandOutcomeDto<CatalogMediaImageDto[]>> GetTourImages(Guid id, CancellationToken ct)
@@ -264,4 +276,10 @@ internal sealed class FakeCatalogToursApiClient : ICatalogToursApiClient
         StatusCode = HttpStatusCode.BadRequest,
         ValidationErrors = exception.ValidationErrors
     };
+
+    /// <inheritdoc />
+    public Task<ContractCommandOutcomeDto<CatalogMediaImageDto>> UploadTourImage(Guid id, CatalogTourImageUploadRequest request, CancellationToken ct)
+    {
+        return UploadTourImage(id, request, null, ct);
+    }
 }

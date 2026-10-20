@@ -33,6 +33,7 @@ public sealed class CustomerImportCommandHandler(
         IReadOnlyDictionary<string, string>? conflictResolutions = null)
     {
         ArgumentNullException.ThrowIfNull(command);
+        ct.ThrowIfCancellationRequested();
 
         var documentResult = CsvDocument.Parse(command.CsvContent);
         if (documentResult.IsFailure)
@@ -49,6 +50,7 @@ public sealed class CustomerImportCommandHandler(
 
         foreach (var (row, rowIndex) in document.Rows.Select((row, index) => (row, index)))
         {
+            ct.ThrowIfCancellationRequested();
             var lineNumber = rowIndex + 2;
             if (duplicateLineNumbers.Contains(lineNumber))
             {
@@ -136,6 +138,8 @@ public sealed class CustomerImportCommandHandler(
             return;
         }
 
+        ct.ThrowIfCancellationRequested();
+
         foreach (var customer in customersToCreate)
         {
             customerStore.Add(customer);
@@ -146,6 +150,7 @@ public sealed class CustomerImportCommandHandler(
             ApplyOverwrite(pair.ExistingCustomer, pair.IncomingCustomer);
         }
 
+        ct.ThrowIfCancellationRequested();
         await unitOfWork.SaveEntities(ct);
     }
 

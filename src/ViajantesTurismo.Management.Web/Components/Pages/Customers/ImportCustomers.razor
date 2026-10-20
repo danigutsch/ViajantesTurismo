@@ -1,6 +1,8 @@
 @page "/customers/import"
+@implements IAsyncDisposable
 @using System.Text
 @using ViajantesTurismo.Admin.Contracts.Application
+@using ViajantesTurismo.Management.Web.Components.Shared
 @using ViajantesTurismo.Management.Web.Helpers
 @using ViajantesTurismo.Management.Web.Services
 
@@ -17,6 +19,37 @@
     </div>
 
     <p class="text-muted">Upload a CSV file to bulk-import customers. The file must include the required columns.</p>
+
+    @if (_state.Upload.Status is not UploadOperationStatus.None)
+    {
+        <section class="alert alert-light border" aria-label="Customer import upload status">
+            <div class="visually-hidden" role="status" aria-live="polite" aria-atomic="true">@_state.Upload.Announcement</div>
+            <div data-upload-status>@GetUploadStatusText()</div>
+            @if (_state.Upload.IsDeterminate)
+            {
+                <progress class="w-100 mt-2"
+                          aria-label="@($"Upload progress for {_state.Upload.FileName}")"
+                          value="@_state.Upload.BytesTransferred"
+                          max="@_state.Upload.TotalBytes">
+                    @_state.Upload.BytesTransferred of @_state.Upload.TotalBytes bytes
+                </progress>
+            }
+            else if (_state.Upload.IsActive)
+            {
+                <progress class="w-100 mt-2" aria-label="@($"Indeterminate server progress for {_state.Upload.FileName}")"></progress>
+            }
+
+            @if (_state.Upload.IsActive)
+            {
+                <button type="button"
+                        class="btn btn-sm btn-outline-danger mt-2"
+                        aria-label="@($"Cancel upload of {_state.Upload.FileName}")"
+                        @onclick="CancelUpload">
+                    Cancel upload
+                </button>
+            }
+        </section>
+    }
 
     @if (_state.Result is not null)
     {
@@ -130,18 +163,6 @@
                         </button>
                     }
                     <NavLink href="/customers" class="btn btn-sm btn-primary">View customers</NavLink>
-                </div>
-            </div>
-        </div>
-    }
-    else if (_state.Error is not null)
-    {
-        <div class="alert alert-danger d-flex align-items-start gap-3">
-            <i class="bi bi-x-circle-fill fs-4"></i>
-            <div>
-                <strong>Import failed.</strong> @_state.Error
-                <div class="mt-2">
-                    <button class="btn btn-sm btn-outline-secondary" @onclick="Reset">Try again</button>
                 </div>
             </div>
         </div>
@@ -300,7 +321,7 @@
                         {
                             <span class="spinner-border spinner-border-sm me-2"></span>
                         }
-                        <i class="bi bi-check-lg"></i> Confirm Import
+                        <i class="bi bi-check-lg"></i> @GetImportButtonLabel()
                     </button>
                     <button class="btn btn-outline-secondary"
                             @onclick="@(() => _state.Step = ImportCustomersWorkflowStep.HeaderMapping)"
@@ -332,7 +353,7 @@
                     @ondragleave="@(() => _state.Dragging--)">
                     <i class="bi bi-file-earmark-arrow-up fs-1 text-muted d-block mb-2"></i>
                     <p class="mb-1 fw-semibold">Drop a CSV file here</p>
-                    <p class="text-muted small mb-0">or click to browse &mdash; max 5 MB</p>
+                    <p class="text-muted small mb-0">or click to browse &mdash; max @MaxFileSizeInMebibytes MiB</p>
                     <InputFile OnChange="OnFileSelected"
                                accept=".csv"
                                class="position-absolute top-0 start-0 w-100 h-100 opacity-0"
@@ -351,9 +372,12 @@
 </div>
 
 @code {
-    private const long MaxFileSizeBytes = 5 * 1024 * 1024;
+    private const long MaxFileSizeBytes = ContractConstants.CustomerImportMaxFileBytes;
+    private const long BytesPerMebibyte = 1024 * 1024;
+    private const long MaxFileSizeInMebibytes = MaxFileSizeBytes / BytesPerMebibyte;
     private const int MaxPreviewRows = 5;
     private readonly ImportCustomersWorkflowState _state = new();
+    private CancellationTokenSource? _activeUploadCancellation;
 
     private async Task OnFileSelected(InputFileChangeEventArgs e)
     {
@@ -406,84 +430,124 @@
             return;
         }
 
-        BeginUpload();
+        var fileBytes = ApplyCurrentMapping();
+        var (operationId, uploadCancellation, progress) = BeginUpload(fileBytes.LongLength);
 
         try
         {
-            var fileBytes = ApplyCurrentMapping();
-            var outcome = await CustomersApi.ImportCustomers(fileBytes, _state.PendingFileName, CancellationToken.None);
+            var outcome = await CustomersApi.ImportCustomers(fileBytes, _state.PendingFileName, progress, uploadCancellation.Token);
+            if (!_state.Upload.IsCurrentActive(operationId))
+            {
+                return;
+            }
+
             if (outcome is not { Kind: ContractCommandOutcomeKind.Succeeded, Value: { } result })
             {
-                _state.Error = HttpOutcomeUserMessage.For(outcome.Kind, UserFacingErrorMessage.ForOperation("import the customers"));
+                _state.Upload.Fail(operationId, HttpOutcomeUserMessage.For(outcome.Kind, UserFacingErrorMessage.ForOperation("import the customers")));
                 return;
             }
 
             if (result.Conflicts is { Count: > 0 } conflicts)
             {
-                await InitializeConflictResolutionData(conflicts, fileBytes);
+                var conflictStates = await LoadConflictStates(conflicts, fileBytes, uploadCancellation.Token);
+                if (!_state.Upload.IsCurrentActive(operationId))
+                {
+                    return;
+                }
+
+                _state.ConflictSourceFileBytes = fileBytes;
+                _state.ConflictStates = conflictStates;
                 _state.Step = ImportCustomersWorkflowStep.DuplicateResolution;
             }
             else
             {
                 _state.Result = result;
             }
+
+            _state.Upload.ReportBytes(operationId, fileBytes.LongLength);
+            _state.Upload.Complete(operationId);
+        }
+        catch (OperationCanceledException) when (uploadCancellation.IsCancellationRequested)
+        {
+            _state.Upload.Cancel(operationId);
         }
         catch (Exception)
         {
-            _state.Error = UserFacingErrorMessage.ForOperation("import the customers");
+            _state.Upload.Fail(operationId, UserFacingErrorMessage.ForOperation("import the customers"));
         }
         finally
         {
-            EndUpload();
+            ReleaseUploadCancellation(uploadCancellation);
         }
     }
 
     private async Task HandleCommitWithResolutions()
     {
-        BeginUpload();
+        var fileBytes = _state.ConflictSourceFileBytes.Length > 0
+            ? _state.ConflictSourceFileBytes
+            : ApplyCurrentMapping();
+
+        var hasMixedDecision = _state.ConflictStates.Any(state => state.HasMixedDecision);
+        if (hasMixedDecision)
+        {
+            fileBytes = ImportCustomersCsvProcessor.ApplyMixedFieldSelections(
+                fileBytes,
+                _state.ConflictStates);
+        }
+
+        var (operationId, uploadCancellation, progress) = BeginUpload(fileBytes.LongLength);
 
         try
         {
-            var fileBytes = _state.ConflictSourceFileBytes.Length > 0
-                ? _state.ConflictSourceFileBytes
-                : ApplyCurrentMapping();
-
-            var hasMixedDecision = _state.ConflictStates.Any(state => state.HasMixedDecision);
-            if (hasMixedDecision)
-            {
-                fileBytes = ImportCustomersCsvProcessor.ApplyMixedFieldSelections(
-                    fileBytes,
-                    _state.ConflictStates);
-            }
-
             var conflictDecisions = BuildConflictDecisions();
             var outcome = await CustomersApi.CommitImportWithResolutions(
-                fileBytes, _state.PendingFileName, conflictDecisions, CancellationToken.None);
+                fileBytes,
+                _state.PendingFileName,
+                conflictDecisions,
+                progress,
+                uploadCancellation.Token);
+            if (!_state.Upload.IsCurrentActive(operationId))
+            {
+                return;
+            }
+
             if (outcome is not { Kind: ContractCommandOutcomeKind.Succeeded, Value: { } result })
             {
-                _state.Error = HttpOutcomeUserMessage.For(
-                    outcome.Kind,
-                    UserFacingErrorMessage.ForOperation("complete the customer import"));
+                _state.Upload.Fail(operationId, HttpOutcomeUserMessage.For(outcome.Kind, UserFacingErrorMessage.ForOperation("import the customers")));
                 return;
             }
 
             if (result.Conflicts is { Count: > 0 } conflicts)
             {
-                await InitializeConflictResolutionData(conflicts, fileBytes);
+                var conflictStates = await LoadConflictStates(conflicts, fileBytes, uploadCancellation.Token);
+                if (!_state.Upload.IsCurrentActive(operationId))
+                {
+                    return;
+                }
+
+                _state.ConflictSourceFileBytes = fileBytes;
+                _state.ConflictStates = conflictStates;
                 _state.Step = ImportCustomersWorkflowStep.DuplicateResolution;
             }
             else
             {
                 _state.Result = result;
             }
+
+            _state.Upload.ReportBytes(operationId, fileBytes.LongLength);
+            _state.Upload.Complete(operationId);
+        }
+        catch (OperationCanceledException) when (uploadCancellation.IsCancellationRequested)
+        {
+            _state.Upload.Cancel(operationId);
         }
         catch (Exception)
         {
-            _state.Error = UserFacingErrorMessage.ForOperation("complete the customer import");
+            _state.Upload.Fail(operationId, UserFacingErrorMessage.ForOperation("complete the customer import"));
         }
         finally
         {
-            EndUpload();
+            ReleaseUploadCancellation(uploadCancellation);
         }
     }
 
@@ -507,7 +571,7 @@
 
         if (file.Size > MaxFileSizeBytes)
         {
-            _state.ValidationError = $"File is too large ({file.Size / 1024 / 1024} MB). Maximum allowed size is 5 MB.";
+            _state.ValidationError = $"File is too large ({file.Size / BytesPerMebibyte} MiB). Maximum allowed size is {MaxFileSizeInMebibytes} MiB.";
             return false;
         }
 
@@ -550,16 +614,66 @@
 
     private Dictionary<string, string> BuildConflictDecisions() => _state.BuildConflictDecisions();
 
-    private void BeginUpload()
+    private (long OperationId, CancellationTokenSource Cancellation, IProgress<long> Progress) BeginUpload(long totalBytes)
     {
-        _state.Uploading = true;
+        var operationId = _state.Upload.Begin(_state.PendingFileName, totalBytes, _state.Upload.CanRetry);
+        var uploadCancellation = new CancellationTokenSource();
+        _activeUploadCancellation = uploadCancellation;
         _state.ValidationError = null;
+
+        var progress = new Progress<long>(bytesTransferred =>
+        {
+            if (_state.Upload.ReportBytes(operationId, bytesTransferred))
+            {
+                StateHasChanged();
+            }
+        });
+
+        return (operationId, uploadCancellation, progress);
     }
 
-    private void EndUpload()
+    private void ReleaseUploadCancellation(CancellationTokenSource uploadCancellation)
     {
-        _state.Uploading = false;
+        if (ReferenceEquals(_activeUploadCancellation, uploadCancellation))
+        {
+            _activeUploadCancellation = null;
+        }
+
+        uploadCancellation.Dispose();
     }
+
+    private async Task CancelUpload()
+    {
+        var uploadCancellation = _activeUploadCancellation;
+        if (uploadCancellation is null || !_state.Upload.Cancel(_state.Upload.OperationId))
+        {
+            return;
+        }
+
+        await uploadCancellation.CancelAsync();
+    }
+
+    private string GetImportButtonLabel()
+    {
+        if (_state.Uploading)
+        {
+            return "Importing...";
+        }
+
+        return _state.Upload.CanRetry ? "Retry Import" : "Confirm Import";
+    }
+
+    private string GetUploadStatusText() => _state.Upload.Status switch
+    {
+        UploadOperationStatus.Queued => $"Queued: {_state.Upload.FileName}",
+        UploadOperationStatus.Retrying => $"Retrying: {_state.Upload.FileName}",
+        UploadOperationStatus.Uploading => $"Uploading {_state.Upload.FileName}: {_state.Upload.BytesTransferred} of {_state.Upload.TotalBytes} bytes.",
+        UploadOperationStatus.Processing => $"Server processing {_state.Upload.FileName}: scanning, validating, parsing, and committing eligible rows. Progress is indeterminate.",
+        UploadOperationStatus.Complete => $"Complete: {_state.Upload.FileName}",
+        UploadOperationStatus.Canceled => $"Canceled: {_state.Upload.FileName}. Confirm the import to retry.",
+        UploadOperationStatus.Failed => $"Failed: {_state.Upload.FailureMessage}",
+        _ => string.Empty,
+    };
 
     private void SetConflictDecision(ImportCustomerConflictState conflictState, string decision)
     {
@@ -615,12 +729,29 @@
         conflictState.SetFieldSource(fieldName, source);
     }
 
-    private async Task InitializeConflictResolutionData(IReadOnlyList<ImportConflictDto> conflicts, byte[] mappedFileBytes)
+    private Task<IReadOnlyList<ImportCustomerConflictState>> LoadConflictStates(
+        IReadOnlyList<ImportConflictDto> conflicts,
+        byte[] mappedFileBytes,
+        CancellationToken ct)
     {
-        _state.ConflictSourceFileBytes = mappedFileBytes;
-        _state.ConflictStates = await ImportCustomersConflictLoader.LoadConflictStates(
+        return ImportCustomersConflictLoader.LoadConflictStates(
             CustomersApi,
             conflicts,
-            mappedFileBytes);
+            mappedFileBytes,
+            ct);
+    }
+
+    public async ValueTask DisposeAsync()
+    {
+        var uploadCancellation = _activeUploadCancellation;
+        if (uploadCancellation is null)
+        {
+            return;
+        }
+
+        _activeUploadCancellation = null;
+        _state.Upload.Cancel(_state.Upload.OperationId);
+        await uploadCancellation.CancelAsync();
+        uploadCancellation.Dispose();
     }
 }

@@ -19,11 +19,24 @@ internal sealed class AbsoluteLocationCustomersApiClient : ICustomersApiClient
 
     public Task<ContractCommandOutcomeDto> UpdateCustomer(Guid id, UpdateCustomerDto dto, CancellationToken ct) => throw new NotImplementedException();
 
-    public Task<ContractCommandOutcomeDto<ImportResultDto>> ImportCustomers(byte[] fileContent, string fileName, CancellationToken ct) => throw new NotImplementedException();
+    public Task<ContractCommandOutcomeDto<ImportResultDto>> ImportCustomers(byte[] fileContent, string fileName, IProgress<long>? progress, CancellationToken ct) => throw new NotImplementedException();
 
     public Task<ContractCommandOutcomeDto<ImportResultDto>> CommitImportWithResolutions(
         byte[] fileContent,
         string fileName,
         IReadOnlyDictionary<string, string> conflictResolutions,
+        IProgress<long>? progress,
         CancellationToken ct) => throw new NotImplementedException();
+
+    /// <inheritdoc />
+    public Task<ContractCommandOutcomeDto<ImportResultDto>> ImportCustomers(byte[] fileContent, string fileName, CancellationToken ct)
+    {
+        return ImportCustomers(fileContent, fileName, null, ct);
+    }
+
+    /// <inheritdoc />
+    public Task<ContractCommandOutcomeDto<ImportResultDto>> CommitImportWithResolutions(byte[] fileContent, string fileName, IReadOnlyDictionary<string, string> conflictResolutions, CancellationToken ct)
+    {
+        return CommitImportWithResolutions(fileContent, fileName, conflictResolutions, null, ct);
+    }
 }

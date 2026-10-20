@@ -14,10 +14,11 @@ internal static class ImportCustomersConflictLoader
     internal static async Task<IReadOnlyList<ImportCustomerConflictState>> LoadConflictStates(
         ICustomersApiClient customersApi,
         IReadOnlyList<ImportConflictDto> conflicts,
-        byte[] mappedFileBytes)
+        byte[] mappedFileBytes,
+        CancellationToken ct)
     {
         var incomingConflictValuesByEmail = ImportCustomersCsvProcessor.ParseMappedRowsByEmail(mappedFileBytes);
-        var existingConflictValuesByEmail = await LoadExistingConflictValuesByEmail(customersApi, conflicts);
+        var existingConflictValuesByEmail = await LoadExistingConflictValuesByEmail(customersApi, conflicts, ct);
 
         return conflicts
             .Select(conflict => new ImportCustomerConflictState(
@@ -30,10 +31,11 @@ internal static class ImportCustomersConflictLoader
 
     private static async Task<Dictionary<string, Dictionary<string, string>>> LoadExistingConflictValuesByEmail(
         ICustomersApiClient customersApi,
-        IReadOnlyList<ImportConflictDto> conflicts)
+        IReadOnlyList<ImportConflictDto> conflicts,
+        CancellationToken ct)
     {
         var result = new Dictionary<string, Dictionary<string, string>>(StringComparer.OrdinalIgnoreCase);
-        var customersOutcome = await customersApi.GetCustomers(CancellationToken.None);
+        var customersOutcome = await customersApi.GetCustomers(ct);
         if (customersOutcome is not { Kind: SharedKernel.HttpClients.ContractCommandOutcomeKind.Succeeded, Value: { } customers })
         {
             throw new InvalidOperationException(LoadFailureMessage);
@@ -47,7 +49,7 @@ internal static class ImportCustomersConflictLoader
                 continue;
             }
 
-            var detailsOutcome = await customersApi.GetCustomerById(existingSummary.Id, CancellationToken.None);
+            var detailsOutcome = await customersApi.GetCustomerById(existingSummary.Id, ct);
             if (detailsOutcome.Kind == SharedKernel.HttpClients.ContractCommandOutcomeKind.NotFound)
             {
                 continue;

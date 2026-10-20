@@ -39,7 +39,8 @@ public sealed class ImportCustomersConflictLoaderTests
         var conflictStates = await ImportCustomersConflictLoader.LoadConflictStates(
             customersApi,
             [new ImportConflictDto(conflictEmail)],
-            mappedFileBytes);
+            mappedFileBytes,
+            Xunit.TestContext.Current.CancellationToken);
 
         // Assert
         var conflictState = (conflictStates).ShouldHaveSingleItem();
@@ -77,7 +78,8 @@ public sealed class ImportCustomersConflictLoaderTests
         var conflictStates = await ImportCustomersConflictLoader.LoadConflictStates(
             customersApi,
             [new ImportConflictDto(conflictEmail)],
-            mappedFileBytes);
+            mappedFileBytes,
+            Xunit.TestContext.Current.CancellationToken);
 
         // Assert
         var conflictState = (conflictStates).ShouldHaveSingleItem();
@@ -108,7 +110,8 @@ public sealed class ImportCustomersConflictLoaderTests
         Func<Task> action = () => ImportCustomersConflictLoader.LoadConflictStates(
             customersApi,
             [new ImportConflictDto(conflictEmail)],
-            mappedFileBytes);
+            mappedFileBytes,
+            TestContext.Current.CancellationToken);
 
         // Assert
         await action.ShouldThrow<InvalidOperationException>();
