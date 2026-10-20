@@ -71,6 +71,8 @@ flowchart LR
     repo --> devcontainer_smoke
     release_prep[Release Prep]
     repo --> release_prep
+    roadmap_maintenance[Roadmap Maintenance]
+    repo --> roadmap_maintenance
     secret_scan[Secret Scan]
     repo --> secret_scan
     sync_labels[Sync Repository Labels]
