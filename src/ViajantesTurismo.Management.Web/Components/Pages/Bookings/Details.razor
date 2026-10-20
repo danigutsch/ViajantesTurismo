@@ -46,7 +46,7 @@
                     <Authorized>
                         @if (_booking.Status is BookingStatusDto.Confirmed or BookingStatusDto.Completed)
                         {
-                            <button type="button" class="btn btn-outline-primary" @onclick="GenerateContractDraft">
+                            <button type="button" class="btn btn-outline-primary" disabled="@_generatingContractDraft" @onclick="GenerateContractDraft">
                                 Generate contract draft
                             </button>
                         }
@@ -181,6 +181,8 @@
     private bool _notFound;
     private string? _loadErrorMessage;
     private string? _documentError;
+    private (Guid ResourceId, string Key)? _generationAttempt;
+    private bool _generatingContractDraft;
 
     protected override async Task OnInitializedAsync()
     {
@@ -188,10 +190,20 @@
         _notFound = false;
         try
         {
-            _booking = await BookingsApi.GetBookingById(Id, CancellationToken.None);
-            if (_booking == null)
+            var outcome = await BookingsApi.GetBookingById(Id, CancellationToken.None);
+            if (outcome is { Kind: HttpOutcomeKind.Succeeded, Value: { } booking })
+            {
+                _booking = booking;
+            }
+            else if (outcome.Kind == HttpOutcomeKind.NotFound)
             {
                 _notFound = true;
+            }
+            else
+            {
+                _loadErrorMessage = HttpOutcomeUserMessage.For(
+                    outcome.Kind,
+                    UserFacingErrorMessage.ForOperation("load the booking"));
             }
         }
         catch (Exception)
@@ -206,16 +218,37 @@
 
     private async Task GenerateContractDraft()
     {
+        if (_generatingContractDraft)
+        {
+            return;
+        }
+
+        _generatingContractDraft = true;
         _documentError = null;
+        var attempt = _generationAttempt is { } pending && pending.ResourceId == Id
+            ? pending
+            : (ResourceId: Id, Key: Guid.CreateVersion7().ToString("N"));
+        _generationAttempt = attempt;
 
         try
         {
-            var document = await DocumentsApi.GenerateContractDraft(Id, CancellationToken.None);
-            Navigation.NavigateTo($"/documents/{document.Id}");
+            var outcome = await DocumentsApi.GenerateContractDraft(Id, attempt.Key, CancellationToken.None);
+            if (outcome is { Kind: HttpOutcomeKind.Succeeded, Value: { } document })
+            {
+                _generationAttempt = null;
+                Navigation.NavigateTo($"/documents/{document.Id}");
+                return;
+            }
+
+            _documentError = HttpOutcomeUserMessage.For(outcome.Kind, "The contract draft could not be generated.");
         }
         catch (Exception)
         {
             _documentError = "The contract draft could not be generated.";
+        }
+        finally
+        {
+            _generatingContractDraft = false;
         }
     }
 }

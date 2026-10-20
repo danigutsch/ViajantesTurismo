@@ -22,8 +22,8 @@ belong in `.Contracts.Application`.
 - Catalog API clients live in `ViajantesTurismo.Catalog.Contracts.Http`.
 - Apps configure base addresses and consume the contract-owned interfaces.
 - UI fallback behavior remains app-local.
-- Response outcome DTOs model caller-visible branches only when callers need stable branching without raw HTTP parsing.
-- Contract clients emit only bounded, non-PII diagnostics for non-success outcomes that callers need to diagnose.
+- Response outcome DTOs describe expected HTTP outcomes as part of the client contract.
+- Contract clients emit bounded, non-PII diagnostics for non-success outcomes.
 - Consuming apps keep `IHttpClientFactory` lifetime, cookie, concurrency, and resilience configuration at composition roots.
 - Contract clients use per-client `JsonSerializerContext` types and generated `JsonTypeInfo<T>`
   metadata for AOT-safe JSON.
@@ -44,7 +44,7 @@ belong in `.Contracts.Application`.
 
 - Contract projects now reference HTTP client and logging abstractions.
 - Each client needs a small source-generated JSON context.
-- Outcome DTOs add small contract types only where a caller has a real branch to handle.
+- HTTP outcome types must be documented and tested.
 
 ## Alternatives
 
@@ -57,7 +57,31 @@ Rejected. It keeps duplicate response parsing outside the contract boundary and 
 Rejected. Those types are server-boundary conveniences and would couple AOT-compatible contract
 projects to ASP.NET Core MVC abstractions.
 
-### Create a broad shared HTTP result client library now
+### Introduce another HTTP result package or client framework
 
-Rejected for this PR. Only one endpoint currently proves a full outcome model. A shared library can
-be revisited after at least two clients share the same response shape.
+Rejected. The existing `SharedKernel.HttpClients` module provides the reusable HTTP boundary.
+Extend that capability directly while keeping application policy in the owning contract projects.
+
+## Shared HTTP outcomes
+
+Contract clients use consistent response classification, bounded reads, cancellation, disposal, and
+privacy-safe diagnostics. These requirements apply across clients, independently of how many current
+call sites exercise each response branch.
+
+`SharedKernel.HttpClients` owns reusable materialized JSON response parsing, Problem Details validation
+errors, bounded status classification, timeout and transport outcomes, disposal, and method/status/outcome
+telemetry. The boundary follows the capability's stable, host-agnostic responsibilities; a caller-count
+threshold does not determine whether the capability belongs in SharedKernel.
+
+`HttpOutcome` and `HttpOutcome<T>` represent client-side HTTP results, including status, location,
+validation errors, transport failures, and an optional materialized value. They do not add a response
+envelope to API payloads or wrap an application `Result<T>`.
+
+Caller cancellation, programmer errors, and local upload-content failures remain exceptions in the
+current implementation. Review stream and download clients against the same safety requirements, using
+contracts appropriate to their content lifetime and memory use. API shapes, result types, and error
+handling can evolve when that improves consistency and correctness.
+
+Application routes, DTOs, authentication, caching, retry policy, and user-facing messages belong to their
+owning contract or Web projects. Their current implementations are subject to the same review and
+improvement as shared HTTP behavior.

@@ -7,3 +7,6 @@ static SharedKernel.HttpCaching.AspNetCore.HttpCacheHeaders.SetNoStore(Microsoft
 static SharedKernel.HttpCaching.AspNetCore.HttpCacheHeaders.SetPublic(Microsoft.AspNetCore.Http.HttpContext! httpContext, System.TimeSpan maxAge, System.TimeSpan? staleWhileRevalidate = null) -> void
 static SharedKernel.HttpCaching.AspNetCore.HttpCacheCultures.Normalize(string? culture) -> string?
 static SharedKernel.HttpCaching.AspNetCore.RouteGroupBuilderHttpCacheExtensions.WithNoStoreResponses(this Microsoft.AspNetCore.Routing.RouteGroupBuilder! group) -> Microsoft.AspNetCore.Routing.RouteGroupBuilder!
+SharedKernel.HttpCaching.AspNetCore.ApplicationBuilderHttpCacheExtensions
+static SharedKernel.HttpCaching.AspNetCore.ApplicationBuilderHttpCacheExtensions.UseNoStoreResponses(this Microsoft.AspNetCore.Builder.IApplicationBuilder! app) -> Microsoft.AspNetCore.Builder.IApplicationBuilder!
+static SharedKernel.HttpCaching.AspNetCore.RouteGroupBuilderHttpCacheExtensions.WithNoStoreResponses(this Microsoft.AspNetCore.Routing.RouteGroupBuilder! group, Microsoft.AspNetCore.Http.PathString pathPrefix) -> Microsoft.AspNetCore.Routing.RouteGroupBuilder!

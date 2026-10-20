@@ -12,6 +12,9 @@ namespace ViajantesTurismo.Admin.Application.Documents;
 /// </summary>
 internal static class ContractDocumentDraftFactory
 {
+    public const string DefaultTemplateId = "tour-service-contract";
+    public const string DefaultTemplateVersion = "1";
+
     public static Result<DocumentDraftContent> Create(
         GetBookingDto booking,
         GetTourDto tour,

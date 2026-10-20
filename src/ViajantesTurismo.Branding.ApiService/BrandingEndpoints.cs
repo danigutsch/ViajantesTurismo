@@ -1,4 +1,5 @@
 using Microsoft.AspNetCore.OutputCaching;
+using Microsoft.AspNetCore.Http.HttpResults;
 using SharedKernel.ApiVersioning.AspNetCore;
 using SharedKernel.Branding;
 using SharedKernel.BuildingBlocks;
@@ -26,6 +27,7 @@ internal static class BrandingEndpoints
             .RequireRateLimiting(BrandingSecurityBaseline.MutationRateLimitPolicy)
             .RequireAuthorization(BrandingAuthorization.BrandingRead);
         managementBranding.MapPut("/", SaveSettings)
+            .Produces(StatusCodes.Status200OK)
             .RequireRateLimiting(BrandingSecurityBaseline.MutationRateLimitPolicy)
             .RequireAuthorization(BrandingAuthorization.BrandingWrite);
 
@@ -50,7 +52,7 @@ internal static class BrandingEndpoints
         return Results.Ok(ToDto(settings));
     }
 
-    private static async Task<IResult> SaveSettings(
+    private static async Task<Results<Ok<BrandingSettingsDto>, ProblemHttpResult>> SaveSettings(
         BrandingSettingsDto request,
         IBrandingSettingsStore store,
         IOutputCacheStore outputCacheStore,
@@ -65,7 +67,7 @@ internal static class BrandingEndpoints
 
         await store.SaveSettings(settings.Value, ct).ConfigureAwait(false);
         await InvalidatePublicBrandingCache(outputCacheStore, logger).ConfigureAwait(false);
-        return Results.Ok(ToDto(settings.Value));
+        return TypedResults.Ok(ToDto(settings.Value));
     }
 
     private static async Task<BrandingSettings> GetSettingsOrDefault(IBrandingSettingsStore store, CancellationToken ct)
@@ -105,9 +107,11 @@ internal static class BrandingEndpoints
         };
     }
 
-    private static IResult ToValidationProblem(ResultError error)
+    private static ProblemHttpResult ToValidationProblem(ResultError error)
     {
-        return Results.ValidationProblem(ToValidationProblemDictionary(error.ValidationErrors), detail: error.Detail);
+        // ProblemHttpResult avoids adding a new published 400 response while preserving the validation payload.
+        var validationProblem = TypedResults.ValidationProblem(ToValidationProblemDictionary(error.ValidationErrors), detail: error.Detail);
+        return TypedResults.Problem(validationProblem.ProblemDetails);
     }
 
     private static Dictionary<string, string[]> ToValidationProblemDictionary(IReadOnlyDictionary<string, IReadOnlyList<string>>? validationErrors)

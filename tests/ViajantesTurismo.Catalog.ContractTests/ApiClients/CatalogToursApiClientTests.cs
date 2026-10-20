@@ -1,6 +1,5 @@
 using Microsoft.AspNetCore.Http;
 using System.Net;
-using System.Text.Json;
 using CatalogToursApiClientTestsHelpers = SharedKernel.Testing.Contracts.ContractHttpClientTestHelper;
 using SharedKernel.Testing.Contracts;
 using ViajantesTurismo.Catalog.Contracts.Application;
@@ -11,6 +10,20 @@ namespace ViajantesTurismo.Catalog.ContractTests.ApiClients;
 [Trait(SharedKernel.Testing.TestTraitNames.CategoryName, Infrastructure.TestTraits.ContractCategory)]
 public sealed class CatalogToursApiClientTests
 {
+    [Fact]
+    public void Progress_overload_preserves_existing_client_implementations()
+    {
+        // Arrange
+        var parameterTypes = new[] { typeof(Guid), typeof(CatalogTourImageUploadRequest), typeof(IProgress<long>), typeof(CancellationToken) };
+
+        // Act
+        var overload = typeof(ICatalogToursApiClient).GetMethod(nameof(ICatalogToursApiClient.UploadTourImage), parameterTypes);
+
+        // Assert
+        overload.ShouldNotBeNull();
+        overload.IsAbstract.ShouldBeFalse();
+    }
+
     [Fact]
     public async Task GetTours_requests_management_catalog_endpoint_and_skips_null_items()
     {
@@ -50,10 +63,11 @@ public sealed class CatalogToursApiClientTests
         var sut = new CatalogToursApiClient(httpClient);
 
         // Act
-        var tours = await sut.GetTours(TestContext.Current.CancellationToken);
+        var outcome = await sut.GetTours(TestContext.Current.CancellationToken);
 
         // Assert
         requestPath.ShouldBe("/api/v1/catalog/tours");
+        var tours = outcome.Value.ShouldNotBeNull();
         tours.Length.ShouldBe(2);
         tours[0].Slug.ShouldBe("first-tour");
         tours[1].Slug.ShouldBe("second-tour");
@@ -67,9 +81,10 @@ public sealed class CatalogToursApiClientTests
         var sut = new CatalogToursApiClient(httpClient);
 
         // Act
-        var tours = await sut.GetTours(TestContext.Current.CancellationToken);
+        var outcome = await sut.GetTours(TestContext.Current.CancellationToken);
 
         // Assert
+        var tours = outcome.Value.ShouldNotBeNull();
         tours.ShouldBeEmpty();
     }
 
@@ -103,7 +118,7 @@ public sealed class CatalogToursApiClientTests
         var sut = new CatalogToursApiClient(httpClient);
 
         // Act
-        var updated = await sut.UpdatePresentation(
+        var outcome = await sut.UpdatePresentation(
             tourId,
             new UpsertCatalogTourPresentationRequest
             {
@@ -119,7 +134,7 @@ public sealed class CatalogToursApiClientTests
             TestContext.Current.CancellationToken);
 
         // Assert
-        updated.ShouldNotBeNull();
+        var updated = outcome.Value.ShouldNotBeNull();
         requestMethod.ShouldBe(HttpMethods.Put);
         requestPath.ShouldBe("/api/v1/catalog/tours/11111111-1111-1111-1111-111111111111/presentation");
         requestBody.ShouldContain("\"summary\":\"Updated summary\"", StringComparison.Ordinal);
@@ -137,7 +152,7 @@ public sealed class CatalogToursApiClientTests
         var sut = new CatalogToursApiClient(httpClient);
 
         // Act
-        Func<Task> update = async () => await sut.UpdatePresentation(
+        var outcome = await sut.UpdatePresentation(
             Guid.CreateVersion7(),
             new UpsertCatalogTourPresentationRequest
             {
@@ -149,8 +164,8 @@ public sealed class CatalogToursApiClientTests
             TestContext.Current.CancellationToken);
 
         // Assert
-        var exception = await update.ShouldThrow<HttpRequestException>();
-        exception.StatusCode.ShouldBe(HttpStatusCode.Accepted);
+        outcome.Kind.ShouldBe(SharedKernel.HttpClients.HttpOutcomeKind.UnexpectedStatus);
+        outcome.StatusCode.ShouldBe(HttpStatusCode.Accepted);
     }
 
     [Fact]
@@ -171,7 +186,7 @@ public sealed class CatalogToursApiClientTests
         var sut = new CatalogToursApiClient(httpClient);
 
         // Act
-        await sut.Publish(
+        var outcome = await sut.Publish(
             tourId,
             new CatalogTourPublicationRequest { ExpectedVersion = 5 },
             TestContext.Current.CancellationToken);
@@ -180,6 +195,7 @@ public sealed class CatalogToursApiClientTests
         requestMethod.ShouldBe(HttpMethods.Post);
         requestPath.ShouldBe("/api/v1/catalog/tours/11111111-1111-1111-1111-111111111111/publish");
         requestBody.ShouldContain("\"expectedVersion\":5", StringComparison.Ordinal);
+        outcome.Kind.ShouldBe(SharedKernel.HttpClients.HttpOutcomeKind.Succeeded);
     }
 
     [Fact]
@@ -200,7 +216,7 @@ public sealed class CatalogToursApiClientTests
         var sut = new CatalogToursApiClient(httpClient);
 
         // Act
-        await sut.Unpublish(
+        var outcome = await sut.Unpublish(
             tourId,
             new CatalogTourPublicationRequest { ExpectedVersion = 6 },
             TestContext.Current.CancellationToken);
@@ -209,6 +225,7 @@ public sealed class CatalogToursApiClientTests
         requestMethod.ShouldBe(HttpMethods.Post);
         requestPath.ShouldBe("/api/v1/catalog/tours/11111111-1111-1111-1111-111111111111/unpublish");
         requestBody.ShouldContain("\"expectedVersion\":6", StringComparison.Ordinal);
+        outcome.Kind.ShouldBe(SharedKernel.HttpClients.HttpOutcomeKind.Succeeded);
     }
 
     [Theory]
@@ -223,13 +240,12 @@ public sealed class CatalogToursApiClientTests
         var request = new CatalogTourPublicationRequest { ExpectedVersion = 3 };
 
         // Act
-        Func<Task> changePublication = publish
-            ? () => sut.Publish(Guid.CreateVersion7(), request, TestContext.Current.CancellationToken)
-            : () => sut.Unpublish(Guid.CreateVersion7(), request, TestContext.Current.CancellationToken);
+        var outcome = publish
+            ? await sut.Publish(Guid.CreateVersion7(), request, TestContext.Current.CancellationToken)
+            : await sut.Unpublish(Guid.CreateVersion7(), request, TestContext.Current.CancellationToken);
 
         // Assert
-        var exception = await changePublication.ShouldThrow<HttpRequestException>();
-        exception.StatusCode.ShouldBe(HttpStatusCode.Accepted);
+        outcome.StatusCode.ShouldBe(HttpStatusCode.Accepted);
     }
 
     [Fact]
@@ -258,10 +274,10 @@ public sealed class CatalogToursApiClientTests
         var sut = new CatalogToursApiClient(httpClient);
 
         // Act
-        var tour = await sut.GetTour(tourId, TestContext.Current.CancellationToken);
+        var outcome = await sut.GetTour(tourId, TestContext.Current.CancellationToken);
 
         // Assert
-        tour.ShouldNotBeNull();
+        var tour = outcome.Value.ShouldNotBeNull();
         requestPath.ShouldBe("/api/v1/catalog/tours/11111111-1111-1111-1111-111111111111");
         tour.Slug.ShouldBe("catalog-tour");
     }
@@ -286,10 +302,10 @@ public sealed class CatalogToursApiClientTests
         var sut = new CatalogToursApiClient(httpClient);
 
         // Act
-        Func<Task> getTour = async () => await sut.GetTour(Guid.CreateVersion7(), TestContext.Current.CancellationToken);
+        var outcome = await sut.GetTour(Guid.CreateVersion7(), TestContext.Current.CancellationToken);
 
         // Assert
-        await getTour.ShouldThrow<JsonException>();
+        outcome.Kind.ShouldBe(SharedKernel.HttpClients.HttpOutcomeKind.MalformedBody);
     }
 
     [Fact]
@@ -313,10 +329,10 @@ public sealed class CatalogToursApiClientTests
         var sut = new CatalogToursApiClient(httpClient);
 
         // Act
-        Func<Task> getTour = async () => await sut.GetTour(Guid.CreateVersion7(), TestContext.Current.CancellationToken);
+        var outcome = await sut.GetTour(Guid.CreateVersion7(), TestContext.Current.CancellationToken);
 
         // Assert
-        await getTour.ShouldThrow<InvalidOperationException>();
+        outcome.Kind.ShouldBe(SharedKernel.HttpClients.HttpOutcomeKind.MalformedBody);
     }
 
     [Fact]
@@ -327,25 +343,26 @@ public sealed class CatalogToursApiClientTests
         var sut = new CatalogToursApiClient(httpClient);
 
         // Act
-        var tour = await sut.GetTour(Guid.CreateVersion7(), TestContext.Current.CancellationToken);
+        var outcome = await sut.GetTour(Guid.CreateVersion7(), TestContext.Current.CancellationToken);
 
         // Assert
-        tour.ShouldBeNull();
+        outcome.Kind.ShouldBe(SharedKernel.HttpClients.HttpOutcomeKind.NotFound);
+        outcome.Value.ShouldBeNull();
     }
 
     [Fact]
-    public async Task GetTour_throws_when_catalog_returns_success_with_null_body()
+    public async Task GetTour_returns_malformed_outcome_when_catalog_returns_success_with_null_body()
     {
         // Arrange
         using var httpClient = CatalogToursApiClientTestsHelpers.CreateClient(_ => CatalogToursApiClientTestsHelpers.JsonResponse("null"));
         var sut = new CatalogToursApiClient(httpClient);
 
         // Act
-        Func<Task> act = async () => await sut.GetTour(Guid.CreateVersion7(), TestContext.Current.CancellationToken);
+        var outcome = await sut.GetTour(Guid.CreateVersion7(), TestContext.Current.CancellationToken);
 
         // Assert
-        var exception = await act.ShouldThrow<InvalidOperationException>();
-        exception.Message.ShouldBe("The catalog tour response body was empty.");
+        outcome.Kind.ShouldBe(SharedKernel.HttpClients.HttpOutcomeKind.MalformedBody);
+        outcome.Value.ShouldBeNull();
     }
 
     [Fact]
@@ -356,7 +373,7 @@ public sealed class CatalogToursApiClientTests
         var sut = new CatalogToursApiClient(httpClient);
 
         // Act
-        var updated = await sut.UpdatePresentation(
+        var outcome = await sut.UpdatePresentation(
             Guid.CreateVersion7(),
             new UpsertCatalogTourPresentationRequest
             {
@@ -367,18 +384,19 @@ public sealed class CatalogToursApiClientTests
             TestContext.Current.CancellationToken);
 
         // Assert
-        updated.ShouldBeNull();
+        outcome.Kind.ShouldBe(SharedKernel.HttpClients.HttpOutcomeKind.NotFound);
+        outcome.Value.ShouldBeNull();
     }
 
     [Fact]
-    public async Task UpdatePresentation_throws_when_catalog_returns_success_with_null_body()
+    public async Task UpdatePresentation_returns_malformed_outcome_when_catalog_returns_success_with_null_body()
     {
         // Arrange
         using var httpClient = CatalogToursApiClientTestsHelpers.CreateClient(_ => CatalogToursApiClientTestsHelpers.JsonResponse("null"));
         var sut = new CatalogToursApiClient(httpClient);
 
         // Act
-        Func<Task> act = async () => await sut.UpdatePresentation(
+        var outcome = await sut.UpdatePresentation(
             Guid.CreateVersion7(),
             new UpsertCatalogTourPresentationRequest
             {
@@ -389,8 +407,7 @@ public sealed class CatalogToursApiClientTests
             TestContext.Current.CancellationToken);
 
         // Assert
-        var exception = await act.ShouldThrow<InvalidOperationException>();
-        exception.Message.ShouldBe("The catalog tour response body was empty.");
+        outcome.Kind.ShouldBe(SharedKernel.HttpClients.HttpOutcomeKind.MalformedBody);
     }
 
     [Fact]
@@ -425,13 +442,30 @@ public sealed class CatalogToursApiClientTests
         var sut = new CatalogToursApiClient(httpClient);
 
         // Act
-        var images = await sut.GetTourImages(tourId, TestContext.Current.CancellationToken);
+        var outcome = await sut.GetTourImages(tourId, TestContext.Current.CancellationToken);
 
         // Assert
         requestPath.ShouldBe("/api/v1/catalog/tours/11111111-1111-1111-1111-111111111111/images");
+        var images = outcome.Value.ShouldNotBeNull();
         var image = images.ShouldHaveSingleItem();
         image.Id.ShouldBe(Guid.Parse("33333333-3333-3333-3333-333333333333"));
         image.ResponsiveVariants.ShouldHaveSingleItem().Width.ShouldBe(640);
+    }
+
+    [Fact]
+    public async Task GetTourImages_returns_malformed_body_when_the_payload_contains_a_null_image()
+    {
+        // Arrange
+        using var httpClient = CatalogToursApiClientTestsHelpers.CreateClient(_ =>
+            CatalogToursApiClientTestsHelpers.JsonResponse("[null]"));
+        var sut = new CatalogToursApiClient(httpClient);
+
+        // Act
+        var outcome = await sut.GetTourImages(Guid.CreateVersion7(), TestContext.Current.CancellationToken);
+
+        // Assert
+        outcome.Kind.ShouldBe(SharedKernel.HttpClients.HttpOutcomeKind.MalformedBody);
+        outcome.Value.ShouldBeNull();
     }
 
     [Fact]
@@ -485,18 +519,19 @@ public sealed class CatalogToursApiClientTests
                   "requiresHumanReview":true,
                   "isAiGenerated":false
                 }
-                """);
+                """, HttpStatusCode.Created);
         });
         var sut = new CatalogToursApiClient(httpClient);
 
         // Act
-        var image = await sut.UploadTourImage(
+        var outcome = await sut.UploadTourImage(
             tourId,
-            new CatalogTourImageUploadRequest(content, "mountain.jpg", "image/jpeg", "Cyclist on a mountain pass", "Mountain pass", "Photo team", "© Viajantes"),
+            new CatalogTourImageUploadRequest(content, content.Length, "mountain.jpg", "image/jpeg", "Cyclist on a mountain pass", "Mountain pass", "Photo team", "© Viajantes"),
+            null,
             TestContext.Current.CancellationToken);
 
         // Assert
-        image.ShouldNotBeNull();
+        var image = outcome.Value.ShouldNotBeNull();
         image.Id.ShouldBe(Guid.Parse("33333333-3333-3333-3333-333333333333"));
         requestMethod.ShouldBe(HttpMethods.Post);
         requestPath.ShouldBe("/api/v1/catalog/tours/11111111-1111-1111-1111-111111111111/images");
@@ -522,13 +557,134 @@ public sealed class CatalogToursApiClientTests
         var sut = new CatalogToursApiClient(httpClient);
 
         // Act
-        var image = await sut.UploadTourImage(
+        var outcome = await sut.UploadTourImage(
             Guid.CreateVersion7(),
-            new CatalogTourImageUploadRequest(content, "missing.jpg", "image/jpeg", "Missing tour"),
+            new CatalogTourImageUploadRequest(content, content.Length, "missing.jpg", "image/jpeg", "Missing tour"),
+            null,
             TestContext.Current.CancellationToken);
 
         // Assert
-        image.ShouldBeNull();
+        outcome.Kind.ShouldBe(SharedKernel.HttpClients.HttpOutcomeKind.NotFound);
+        outcome.Value.ShouldBeNull();
+    }
+
+    [Fact]
+    public async Task UploadTourImage_preserves_local_content_read_failures()
+    {
+        // Arrange
+        const string failureMessage = "The selected image could not be read.";
+        using var content = new ThrowingReadStream(new IOException(failureMessage));
+        using var httpClient = CatalogToursApiClientTestsHelpers.CreateClient(
+            request => ThrowingReadStream.SerializeRequest(request, TestContext.Current.CancellationToken));
+        var sut = new CatalogToursApiClient(httpClient);
+
+        // Act
+        Func<Task> action = async () => await sut.UploadTourImage(
+                Guid.CreateVersion7(),
+                new CatalogTourImageUploadRequest(content, "unreadable.jpg", "image/jpeg", "Unreadable image"),
+                TestContext.Current.CancellationToken)
+            .ConfigureAwait(false);
+
+        // Assert
+        var exception = await action.ShouldThrow<IOException>();
+        exception.Message.ShouldBe(failureMessage);
+        content.ReadCount.ShouldBe(1);
+        content.IsDisposed.ShouldBeTrue();
+    }
+
+    [Fact]
+    public async Task UploadTourImage_returns_transport_failure_for_genuine_transport_errors()
+    {
+        // Arrange
+        var requestCount = 0;
+        using var content = new MemoryStream("image"u8.ToArray());
+        using var httpClient = CatalogToursApiClientTestsHelpers.CreateClient(_ =>
+        {
+            requestCount++;
+            throw new HttpRequestException(
+                HttpRequestError.ConnectionError,
+                "The server connection failed.",
+                new IOException("The socket closed."));
+        });
+        var sut = new CatalogToursApiClient(httpClient);
+
+        // Act
+        var outcome = await sut.UploadTourImage(
+            Guid.CreateVersion7(),
+            new CatalogTourImageUploadRequest(content, "image.jpg", "image/jpeg", "Tour image"),
+            TestContext.Current.CancellationToken);
+
+        // Assert
+        outcome.Kind.ShouldBe(SharedKernel.HttpClients.HttpOutcomeKind.TransportFailure);
+        outcome.StatusCode.ShouldBeNull();
+        outcome.Message.ShouldBe("HTTP transport failed.");
+        requestCount.ShouldBe(1);
+        content.CanRead.ShouldBeFalse();
+    }
+
+    [Fact]
+    public async Task UploadTourImage_reports_only_file_bytes_written_to_the_transport()
+    {
+        // Arrange
+        var fileContent = new byte[100];
+        var reportedBytes = new TaskCompletionSource<long>(TaskCreationOptions.RunContinuationsAsynchronously);
+        using var content = new MemoryStream(fileContent, writable: false);
+        using var httpClient = CatalogToursApiClientTestsHelpers.CreateClient(async (request, ct) =>
+        {
+            await request.Content.ShouldNotBeNull().CopyToAsync(Stream.Null, ct);
+            return CatalogToursApiClientTestsHelpers.JsonResponse("""
+                {
+                  "id":"33333333-3333-3333-3333-333333333333",
+                  "responsiveVariants":[],
+                  "altText":"Cyclist on a mountain pass",
+                  "isDecorative":false,
+                  "requiresHumanReview":true,
+                  "isAiGenerated":false
+                }
+                """);
+        });
+        var sut = new CatalogToursApiClient(httpClient);
+        var progress = new Progress<long>(bytes => reportedBytes.TrySetResult(bytes));
+
+        // Act
+        _ = await sut.UploadTourImage(
+            Guid.CreateVersion7(),
+            new CatalogTourImageUploadRequest(content, fileContent.LongLength, "mountain.jpg", "image/jpeg", "Cyclist on a mountain pass"),
+            progress,
+            TestContext.Current.CancellationToken);
+        var transferredBytes = await reportedBytes.Task.WaitAsync(TestContext.Current.CancellationToken);
+
+        // Assert
+        transferredBytes.ShouldBe(fileContent.LongLength);
+    }
+
+    [Fact]
+    public async Task UploadTourImage_propagates_cancellation_to_the_http_request()
+    {
+        // Arrange
+        var requestStarted = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        using var content = new MemoryStream([1, 2, 3], writable: false);
+        using var httpClient = CatalogToursApiClientTestsHelpers.CreateClient(async (_, ct) =>
+        {
+            requestStarted.TrySetResult();
+            await Task.Delay(Timeout.InfiniteTimeSpan, ct);
+            return new HttpResponseMessage(HttpStatusCode.OK);
+        });
+        var sut = new CatalogToursApiClient(httpClient);
+        using var requestCancellation = new CancellationTokenSource();
+
+        // Act
+        var upload = sut.UploadTourImage(
+            Guid.CreateVersion7(),
+            new CatalogTourImageUploadRequest(content, content.Length, "mountain.jpg", "image/jpeg", "Cyclist on a mountain pass"),
+            null,
+            requestCancellation.Token);
+        await requestStarted.Task.WaitAsync(TestContext.Current.CancellationToken);
+        await requestCancellation.CancelAsync();
+        Func<Task> action = async () => await upload;
+
+        // Assert
+        _ = await action.ShouldThrow<OperationCanceledException>();
     }
 
     [Fact]
@@ -558,7 +714,7 @@ public sealed class CatalogToursApiClientTests
         var sut = new CatalogToursApiClient(httpClient);
 
         // Act
-        var image = await sut.ReviewMediaImageAccessibility(
+        var outcome = await sut.ReviewMediaImageAccessibility(
             imageId,
             new PublicMediaImageAccessibilityReviewRequest
             {
@@ -569,7 +725,7 @@ public sealed class CatalogToursApiClientTests
             TestContext.Current.CancellationToken);
 
         // Assert
-        image.ShouldNotBeNull();
+        var image = outcome.Value.ShouldNotBeNull();
         image.RequiresHumanReview.ShouldBeFalse();
         requestMethod.ShouldBe(HttpMethods.Put);
         requestPath.ShouldBe("/api/v1/catalog/media/images/33333333-3333-3333-3333-333333333333/accessibility-review");
@@ -584,7 +740,7 @@ public sealed class CatalogToursApiClientTests
         var sut = new CatalogToursApiClient(httpClient);
 
         // Act
-        var image = await sut.ReviewMediaImageAccessibility(
+        var outcome = await sut.ReviewMediaImageAccessibility(
             Guid.CreateVersion7(),
             new PublicMediaImageAccessibilityReviewRequest
             {
@@ -595,7 +751,8 @@ public sealed class CatalogToursApiClientTests
             TestContext.Current.CancellationToken);
 
         // Assert
-        image.ShouldBeNull();
+        outcome.Kind.ShouldBe(SharedKernel.HttpClients.HttpOutcomeKind.NotFound);
+        outcome.Value.ShouldBeNull();
     }
 
     [Fact]

@@ -1,7 +1,11 @@
+using System.Globalization;
 using ViajantesTurismo.Management.Web.Components.Pages.Customers;
+using AdminContractConstants = ViajantesTurismo.Admin.Contracts.Application.ContractConstants;
 
 namespace ViajantesTurismo.Management.WebTests.Components.Pages.Customers;
 
+[Trait(SharedKernel.Testing.TestTraitNames.CategoryName, TestTraits.ComponentCategory)]
+[Trait(SharedKernel.Testing.TestTraitNames.ScopeName, TestTraits.ComponentScope)]
 public sealed class ImportCustomersPageTests : BunitContext
 {
     private readonly FakeCustomersApiClient _fakeCustomersApi = new();
@@ -53,6 +57,19 @@ public sealed class ImportCustomersPageTests : BunitContext
         // Assert
         (cut.Markup).ShouldContain("Drop a CSV file here", StringComparison.Ordinal);
         (cut.Markup).ShouldContain("or click to browse", StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public void Displays_the_authoritative_customer_import_limit()
+    {
+        // Arrange
+        var expectedLimitInMebibytes = AdminContractConstants.CustomerImportMaxFileBytes / (1024 * 1024);
+
+        // Act
+        var cut = Render<ImportCustomers>();
+
+        // Assert
+        cut.Markup.ShouldContain($"max {expectedLimitInMebibytes} MiB", StringComparison.Ordinal);
     }
 
     [Fact]
@@ -127,7 +144,7 @@ public sealed class ImportCustomersPageTests : BunitContext
     {
         // Arrange
         var cut = Render<ImportCustomers>();
-        var largeContent = new byte[6 * 1024 * 1024]; // 6 MB exceeds the 5 MB limit
+        var largeContent = new byte[2 * 1024 * 1024];
         var file = InputFileContent.CreateFromBinary(largeContent, "customers.csv");
 
         // Act
@@ -136,7 +153,7 @@ public sealed class ImportCustomersPageTests : BunitContext
         // Assert
         cut.WaitForAssertion(() => (cut.FindAll(".alert.alert-danger")).ShouldNotBeEmpty());
         (cut.Markup).ShouldContain("File is too large", StringComparison.Ordinal);
-        (cut.Markup).ShouldContain("Maximum allowed size is 5 MB", StringComparison.Ordinal);
+        (cut.Markup).ShouldContain("Maximum allowed size is 1 MiB", StringComparison.Ordinal);
     }
 
     [Fact]
@@ -242,5 +259,130 @@ public sealed class ImportCustomersPageTests : BunitContext
         // Assert
         (cut.Markup).ShouldContain("Drop a CSV file here", StringComparison.Ordinal);
         (cut.FindAll(".alert")).ShouldBeEmpty();
+    }
+
+    [Fact]
+    public async Task Cancel_targets_the_current_file_and_late_completion_cannot_replace_canceled_state()
+    {
+        // Arrange
+        var requestStarted = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        var requestCompletion = new TaskCompletionSource<ImportResultDto>(TaskCreationOptions.RunContinuationsAsynchronously);
+        _fakeCustomersApi.SetImportCustomersHandler((_, _, _, _) =>
+        {
+            requestStarted.TrySetResult();
+            return requestCompletion.Task;
+        });
+        var cut = Render<ImportCustomers>();
+        var file = InputFileContent.CreateFromText(CustomerImportCsvTestData.AllCanonicalHeaders + "\ndata", "customers.csv");
+        cut.FindComponent<InputFile>().UploadFiles(file);
+        ImportCustomersTestDomHelper.WaitForEnabledButton(cut, "Preview");
+        await ImportCustomersTestDomHelper.FindButtonByText(cut, "Preview").ClickAsync();
+        ImportCustomersTestDomHelper.WaitForEnabledButton(cut, "Confirm Import");
+
+        // Act
+        var importTask = ImportCustomersTestDomHelper.FindButtonByText(cut, "Confirm Import").ClickAsync();
+        await requestStarted.Task.WaitAsync(Xunit.TestContext.Current.CancellationToken);
+        var cancelButton = cut.Find("button[aria-label='Cancel upload of customers.csv']");
+        cancelButton.TagName.ShouldBe("BUTTON");
+        cancelButton.GetAttribute("type").ShouldBe("button");
+        await cancelButton.ClickAsync();
+        requestCompletion.TrySetResult(new ImportResultDto(1, 0));
+        await importTask;
+
+        // Assert
+        _fakeCustomersApi.LastImportCancellationToken.IsCancellationRequested.ShouldBeTrue();
+        cut.Find("[data-upload-status]").TextContent.ShouldContain("Canceled", StringComparison.Ordinal);
+        cut.Markup.ShouldNotContain("Import complete", StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public async Task Displays_authoritative_transport_bytes_then_indeterminate_server_phases_with_polite_announcements()
+    {
+        // Arrange
+        var requestStarted = new TaskCompletionSource<long>(TaskCreationOptions.RunContinuationsAsynchronously);
+        var requestCompletion = new TaskCompletionSource<ImportResultDto>(TaskCreationOptions.RunContinuationsAsynchronously);
+        IProgress<long>? reportedProgress = null;
+        _fakeCustomersApi.SetImportCustomersHandler((content, _, progress, _) =>
+        {
+            reportedProgress = progress;
+            requestStarted.TrySetResult(content.LongLength);
+            return requestCompletion.Task;
+        });
+        var cut = Render<ImportCustomers>();
+        var file = InputFileContent.CreateFromText(CustomerImportCsvTestData.AllCanonicalHeaders + "\ndata", "customers.csv");
+        cut.FindComponent<InputFile>().UploadFiles(file);
+        ImportCustomersTestDomHelper.WaitForEnabledButton(cut, "Preview");
+        await ImportCustomersTestDomHelper.FindButtonByText(cut, "Preview").ClickAsync();
+        ImportCustomersTestDomHelper.WaitForEnabledButton(cut, "Confirm Import");
+
+        // Act
+        var importTask = ImportCustomersTestDomHelper.FindButtonByText(cut, "Confirm Import").ClickAsync();
+        var totalBytes = await requestStarted.Task.WaitAsync(Xunit.TestContext.Current.CancellationToken);
+        var progress = reportedProgress.ShouldNotBeNull();
+        var transferredBytes = totalBytes / 2;
+        progress.Report(transferredBytes);
+
+        // Assert
+        await cut.WaitForAssertionAsync(() => cut.Find("progress[value]").GetAttribute("value").ShouldBe(transferredBytes.ToString(CultureInfo.InvariantCulture)));
+        cut.Find("progress[value]").GetAttribute("max").ShouldBe(totalBytes.ToString(CultureInfo.InvariantCulture));
+        var liveRegion = cut.Find("[role='status'][aria-live='polite']");
+        liveRegion.GetAttribute("aria-atomic").ShouldBe("true");
+
+        // Act
+        progress.Report(totalBytes);
+
+        // Assert
+        await cut.WaitForAssertionAsync(() => cut.Find("progress:not([value])").ShouldNotBeNull());
+        cut.Find("[data-upload-status]").TextContent.ShouldContain("scanning, validating, parsing", StringComparison.Ordinal);
+        cut.Find("[data-upload-status]").TextContent.ShouldContain("Progress is indeterminate", StringComparison.Ordinal);
+
+        requestCompletion.TrySetResult(new ImportResultDto(1, 0));
+        await importTask;
+    }
+
+    [Fact]
+    public async Task Retry_uses_a_new_cancellation_token_and_runs_the_import_request_again()
+    {
+        // Arrange
+        var requestStarted = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        var firstRequestCompletion = new TaskCompletionSource<ImportResultDto>(TaskCreationOptions.RunContinuationsAsynchronously);
+        var callCount = 0;
+        var firstToken = CancellationToken.None;
+        var retryToken = CancellationToken.None;
+        _fakeCustomersApi.SetImportCustomersHandler((content, _, progress, ct) =>
+        {
+            if (Interlocked.Increment(ref callCount) == 1)
+            {
+                firstToken = ct;
+                requestStarted.TrySetResult();
+                return firstRequestCompletion.Task;
+            }
+
+            retryToken = ct;
+            progress?.Report(content.LongLength);
+            return Task.FromResult(new ImportResultDto(1, 0));
+        });
+        var cut = Render<ImportCustomers>();
+        var file = InputFileContent.CreateFromText(CustomerImportCsvTestData.AllCanonicalHeaders + "\ndata", "customers.csv");
+        cut.FindComponent<InputFile>().UploadFiles(file);
+        ImportCustomersTestDomHelper.WaitForEnabledButton(cut, "Preview");
+        await ImportCustomersTestDomHelper.FindButtonByText(cut, "Preview").ClickAsync();
+        ImportCustomersTestDomHelper.WaitForEnabledButton(cut, "Confirm Import");
+
+        // Act
+        var firstImport = ImportCustomersTestDomHelper.FindButtonByText(cut, "Confirm Import").ClickAsync();
+        await requestStarted.Task.WaitAsync(Xunit.TestContext.Current.CancellationToken);
+        await cut.Find("button[aria-label='Cancel upload of customers.csv']").ClickAsync();
+        firstRequestCompletion.TrySetResult(new ImportResultDto(1, 0));
+        await firstImport;
+        await ImportCustomersTestDomHelper.FindButtonByText(cut, "Retry Import").ClickAsync();
+
+        // Assert
+        callCount.ShouldBe(2);
+        firstToken.IsCancellationRequested.ShouldBeTrue();
+        retryToken.CanBeCanceled.ShouldBeTrue();
+        retryToken.IsCancellationRequested.ShouldBeFalse();
+        retryToken.ShouldNotBe(firstToken);
+        cut.Markup.ShouldContain("Import complete", StringComparison.Ordinal);
     }
 }

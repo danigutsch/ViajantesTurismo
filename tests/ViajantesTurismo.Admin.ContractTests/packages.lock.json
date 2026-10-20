@@ -337,8 +337,10 @@
         "type": "Project",
         "dependencies": {
           "Microsoft.AspNetCore.Authentication.JwtBearer": "[10.0.13, )",
+          "SharedKernel.Idempotency": "[0.1.0-alpha.0, )",
           "SharedKernel.InputNormalization": "[0.1.0-alpha.0, )",
-          "SharedKernel.OpenApi": "[0.1.0-alpha.0, )"
+          "SharedKernel.OpenApi": "[0.1.0-alpha.0, )",
+          "SharedKernel.Results": "[0.1.0-alpha.0, )"
         }
       },
       "sharedkernel.audittrail": {
@@ -383,6 +385,9 @@
         "dependencies": {
           "Microsoft.EntityFrameworkCore.Relational": "[10.0.13, )"
         }
+      },
+      "sharedkernel.httpcaching.aspnetcore": {
+        "type": "Project"
       },
       "sharedkernel.httpclients": {
         "type": "Project",
@@ -502,6 +507,7 @@
           "SharedKernel.ApiVersioning.AspNetCore": "[0.1.0-alpha.0, )",
           "SharedKernel.AspNetCore": "[0.1.0-alpha.0, )",
           "SharedKernel.Branding": "[0.1.0-alpha.0, )",
+          "SharedKernel.HttpCaching.AspNetCore": "[0.1.0-alpha.0, )",
           "SharedKernel.HttpClients": "[0.1.0-alpha.0, )",
           "SharedKernel.Idempotency": "[0.1.0-alpha.0, )",
           "SharedKernel.MalwareScanning": "[0.1.0-alpha.0, )",

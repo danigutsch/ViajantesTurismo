@@ -1,5 +1,4 @@
 using SharedKernel.Branding;
-using SharedKernel.Idempotency;
 using SharedKernel.Results;
 using ViajantesTurismo.Admin.Application.Mappings;
 using ViajantesTurismo.Admin.Domain.Documents;
@@ -17,24 +16,18 @@ public sealed class RegenerateDocumentDraftCommandHandler(
     DocumentCommandIdempotency documentCommandIdempotency)
 {
     /// <summary>Generates and persists the replacement revision.</summary>
-    public async Task<Result<Guid>> Handle(RegenerateDocumentDraftCommand command, CancellationToken ct)
+    public Task<Result<Guid>> Handle(RegenerateDocumentDraftCommand command, CancellationToken ct)
     {
         ArgumentNullException.ThrowIfNull(command);
-        if (command.AuditContext is null)
-        {
-            return DocumentAuditErrors.AuditContextRequired().ConvertError<Guid>();
-        }
+        return documentCommandIdempotency.Execute(
+            command, documentAuditWriter, commit => Prepare(command, commit, ct), ct);
+    }
 
-        var idempotencyScope = IdempotencyScope.From($"admin.documents.regenerate-draft:{command.DocumentId:N}");
-        var existingResult = await documentCommandIdempotency.GetExistingResult(
-            idempotencyScope,
-            command.IdempotencyKey,
-            ct);
-        if (existingResult is { } replayedResult)
-        {
-            return replayedResult;
-        }
-
+    private async Task<Result<Guid>> Prepare(
+        RegenerateDocumentDraftCommand command,
+        DocumentCommandCommit commit,
+        CancellationToken ct)
+    {
         var now = timeProvider.GetUtcNow().UtcDateTime;
         var lineage = await documentStore.GetByDocumentId(command.DocumentId, ct);
         var current = lineage?.GetRevision(command.DocumentId);
@@ -108,9 +101,7 @@ public sealed class RegenerateDocumentDraftCommandHandler(
                 ct);
         }
 
-        return await documentCommandIdempotency.Execute(
-            idempotencyScope,
-            command.IdempotencyKey,
+        return await commit(
             async () =>
             {
                 var replacementResult = lineage.CreateRevision(current.Id, contentResult.Value, now, command.AuditContext);
@@ -128,7 +119,9 @@ public sealed class RegenerateDocumentDraftCommandHandler(
 
                 return Result.Ok(replacementResult.Value.Id);
             },
-            ct);
+            current.Id,
+            current.BookingId,
+            current.Revision);
     }
 
     private async Task<Result<Guid>> RecordAndReturn(

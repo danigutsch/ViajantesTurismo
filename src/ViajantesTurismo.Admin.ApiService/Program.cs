@@ -1,5 +1,6 @@
 using SharedKernel.AspNetCore;
 using SharedKernel.Branding;
+using SharedKernel.HttpCaching.AspNetCore;
 using SharedKernel.HttpClients;
 using SharedKernel.MalwareScanning.ClamAv;
 using SharedKernel.OpenApi;
@@ -65,6 +66,8 @@ app.UseForwardedHeaders();
 app.MapConfiguredOpenApi();
 
 app.UseCors(AdminSecurityBaseline.CorsPolicyName);
+
+app.UseNoStoreResponses();
 
 app.UseApiSecurity();
 app.UseRateLimiter();

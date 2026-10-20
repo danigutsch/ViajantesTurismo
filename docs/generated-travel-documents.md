@@ -11,6 +11,35 @@ customers and internal operations.
 The first implementation must stay small: one document type, one vertical slice, no new rendering
 framework until tests prove the required behavior.
 
+## Draft command retries
+
+Draft generation and regeneration require an `Idempotency-Key` header. A caller creates an opaque
+token for one intended operation and reuses it when retrying that operation. Missing or malformed
+keys return a validation problem before document queries, writes, or audit persistence. Other
+document lifecycle routes retain their existing contracts.
+
+The server selects the template and calculates a fingerprint from the template identifier and
+version. HTTP callers never supply a fingerprint. Keys are scoped to the operation and booking or
+source document, preserving existing persisted operation identities. Reusing a key with the same
+inputs replays the completed document identifier; reusing it with different inputs returns a
+conflict. Different keys represent distinct intended operations, even when their inputs match.
+
+Earlier alpha versions stored only the resulting document identifier for completed keys. Those
+entries cannot verify the original template inputs and now return a conflict, even when a caller
+retries with the same template. Existing documents and key records remain intact. Staff must inspect
+the existing document before deciding whether a new operation is needed; clients must not automatically
+retry these conflicts with a new key, which could create an unintended additional draft.
+
+Application command composition performs replay checks before mutable booking and document
+validation. Preparation validates source data before acquiring a durable processing claim; mutation
+starts only after ownership is acquired. Completion, the document change, and its successful audit
+events commit in the same unit of work. A failure must not leave a completed key without its document.
+Endpoint code remains responsible for HTTP binding, authorization, and response mapping.
+
+Application commands, the coordinator, and typed client methods require an explicit operation key.
+The client does not silently generate one. The staff UI creates the key for the intended operation,
+retains it after an unsuccessful attempt, and starts a new operation after success or a resource change.
+
 ## Use cases
 
 The epic covers several generated travel document categories. The first implementation should prove

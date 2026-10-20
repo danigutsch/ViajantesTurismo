@@ -1,11 +1,14 @@
 using System.Text.Json;
 using System.Text.Json.Serialization;
+using SharedKernel.HttpClients;
 using ViajantesTurismo.Catalog.Contracts.Application;
 
 namespace ViajantesTurismo.Catalog.Contracts.Http;
 
 [JsonSourceGenerationOptions(JsonSerializerDefaults.Web)]
+[JsonSerializable(typeof(ContractValidationProblemDto))]
 [JsonSerializable(typeof(TourSummaryDto))]
+[JsonSerializable(typeof(TourSummaryDto[]))]
 [JsonSerializable(typeof(TourDetailsDto))]
 [JsonSerializable(typeof(PublicContentVariantDto))]
 internal sealed partial class PublicCatalogApiClientJsonContext : JsonSerializerContext;

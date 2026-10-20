@@ -44,3 +44,5 @@ static SharedKernel.Idempotency.IdempotencyKey.From(string? value) -> SharedKern
 override SharedKernel.Idempotency.IdempotencyKey.ToString() -> string!
 static SharedKernel.Idempotency.IdempotencyScope.From(string? value) -> SharedKernel.Idempotency.IdempotencyScope
 override SharedKernel.Idempotency.IdempotencyScope.ToString() -> string!
+SharedKernel.Idempotency.IdempotencyRequestFingerprint
+static SharedKernel.Idempotency.IdempotencyRequestFingerprint.Create(params string![]! components) -> string!

@@ -163,7 +163,7 @@ public class AddPageTests : BunitContext
         string location)
     {
         // Arrange
-        _fakeToursApi.SetCreateTourOutcome(ContractCommandOutcome.Succeeded(
+        _fakeToursApi.SetCreateTourOutcome(HttpOutcomeMapper.Succeeded(
             System.Net.HttpStatusCode.Created,
             new Uri(location, UriKind.Relative)));
         var cut = Render<Add>();
@@ -278,9 +278,9 @@ public class AddPageTests : BunitContext
     public async Task Validation_problem_outcome_shows_server_validation_errors()
     {
         // Arrange
-        _fakeToursApi.SetCreateTourOutcome(new ContractCommandOutcomeDto
+        _fakeToursApi.SetCreateTourOutcome(new HttpOutcome
         {
-            Kind = ContractCommandOutcomeKind.ValidationProblem,
+            Kind = HttpOutcomeKind.ValidationProblem,
             StatusCode = System.Net.HttpStatusCode.BadRequest,
             ValidationErrors = new Dictionary<string, string[]> { ["Name"] = ["Tour name already exists."] }
         });
@@ -374,8 +374,10 @@ public class AddPageTests : BunitContext
         // Assert
         await cut.WaitForStateAsync(() => cut.FindAll(".alert-success").Count > 0, TimeSpan.FromSeconds(2));
 
-        var createdTours = await _fakeToursApi.GetTours(CancellationToken.None);
-        (createdTours).ShouldHaveSingleItem();
+        var outcome = await _fakeToursApi.GetTours(CancellationToken.None);
+        outcome.Kind.ShouldBe(HttpOutcomeKind.Succeeded);
+        var createdTours = outcome.Value.ShouldNotBeNull();
+        createdTours.ShouldHaveSingleItem();
 
         var tour = createdTours[0];
         (tour.Identifier).ShouldBe("CUBA2024");
@@ -405,7 +407,9 @@ public class AddPageTests : BunitContext
         // Assert
         await cut.WaitForStateAsync(() => cut.FindAll(".alert-success").Count > 0, TimeSpan.FromSeconds(2));
 
-        var createdTours = await _fakeToursApi.GetTours(CancellationToken.None);
+        var outcome = await _fakeToursApi.GetTours(CancellationToken.None);
+        outcome.Kind.ShouldBe(HttpOutcomeKind.Succeeded);
+        var createdTours = outcome.Value.ShouldNotBeNull();
         var tour = createdTours[0];
 
         (tour.IncludedServices.Count).ShouldBe(3);

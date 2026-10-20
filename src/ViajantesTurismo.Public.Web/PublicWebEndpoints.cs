@@ -60,7 +60,14 @@ internal static class PublicWebEndpoints
         TourSummaryDto[] tours;
         try
         {
-            tours = await catalogApi.GetPublishedTours(ct);
+            var outcome = await catalogApi.GetPublishedTours(ct);
+            if (outcome is not { Kind: SharedKernel.HttpClients.HttpOutcomeKind.Succeeded, Value: { } publishedTours })
+            {
+                PublicWebHttpCache.SetServiceUnavailableNoStore(httpContext);
+                return Results.StatusCode(StatusCodes.Status503ServiceUnavailable);
+            }
+
+            tours = publishedTours;
         }
         catch (HttpRequestException)
         {

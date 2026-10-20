@@ -1,12 +1,14 @@
 namespace ViajantesTurismo.Management.WebTests.Components.Pages.Catalog;
 
-internal sealed class RecordingBrowserFile : IBrowserFile
+internal sealed class RecordingBrowserFile(byte[]? fileContent = null) : IBrowserFile
 {
+    private readonly byte[] _fileContent = fileContent ?? [0x01];
+
     public string Name => "tour-image.jpg";
 
     public DateTimeOffset LastModified => DateTimeOffset.UnixEpoch;
 
-    public long Size => 1;
+    public long Size => _fileContent.LongLength;
 
     public string ContentType => "image/jpeg";
 
@@ -16,6 +18,6 @@ internal sealed class RecordingBrowserFile : IBrowserFile
     {
         cancellationToken.ThrowIfCancellationRequested();
         MaximumAllowedSize = maxAllowedSize;
-        return new MemoryStream([0x01]);
+        return new MemoryStream(_fileContent, writable: false);
     }
 }

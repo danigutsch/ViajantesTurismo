@@ -95,7 +95,7 @@
                        download
                        data-enhance-nav="false">Download artifact</a>
                 }
-                <button type="button" class="btn btn-outline-secondary" @onclick="Regenerate">Regenerate</button>
+                <button type="button" class="btn btn-outline-secondary" disabled="@_regenerating" @onclick="Regenerate">Regenerate</button>
                 <button type="button" class="btn btn-danger" @onclick="Void">Void</button>
             }
         </div>
@@ -112,6 +112,8 @@
     private bool _notFound;
     private string? _errorMessage;
     private string? _loadErrorMessage;
+    private (Guid ResourceId, string Key)? _regenerationAttempt;
+    private bool _regenerating;
 
     protected override async Task OnParametersSetAsync()
     {
@@ -125,29 +127,25 @@
         _errorMessage = null;
         _loadErrorMessage = null;
 
-        try
+        var outcome = await DocumentsApi.GetDocumentById(Id, CancellationToken.None);
+        _document = outcome is { Kind: HttpOutcomeKind.Succeeded, Value: { } document }
+            ? document
+            : null;
+        _notFound = outcome.Kind == HttpOutcomeKind.NotFound;
+        _fieldValues.Clear();
+        if (_document is not null)
         {
-            _document = await DocumentsApi.GetDocumentById(Id, CancellationToken.None);
-            _notFound = _document is null;
-            _fieldValues.Clear();
-            if (_document is not null)
+            foreach (var field in _document.Fields)
             {
-                foreach (var field in _document.Fields)
-                {
-                    _fieldValues[field.FieldId] = field.RenderedValue;
-                }
+                _fieldValues[field.FieldId] = field.RenderedValue;
             }
         }
-        catch (Exception)
+        else if (!_notFound)
         {
-            _document = null;
-            _fieldValues.Clear();
-            _loadErrorMessage = "The document could not be loaded. Please try again.";
+            _loadErrorMessage = HttpOutcomeUserMessage.For(outcome.Kind, "The document could not be loaded. Please try again.");
         }
-        finally
-        {
-            _loading = false;
-        }
+
+        _loading = false;
     }
 
     private bool CanEdit(GetDocumentFieldDto field) =>
@@ -168,11 +166,38 @@
 
     private async Task Regenerate()
     {
-        await ExecuteAction(() => DocumentsApi.Regenerate(CurrentDocumentId, CancellationToken.None), "The document could not be regenerated.");
-
-        if (_document is not null && _document.Id != Id)
+        if (_regenerating)
         {
-            Navigation.NavigateTo($"/documents/{_document.Id}");
+            return;
+        }
+
+        _regenerating = true;
+        var resourceId = CurrentDocumentId;
+        var attempt = _regenerationAttempt is { } pending && pending.ResourceId == resourceId
+            ? pending
+            : (ResourceId: resourceId, Key: Guid.CreateVersion7().ToString("N"));
+        _regenerationAttempt = attempt;
+        try
+        {
+            await ExecuteAction(async () =>
+            {
+                var outcome = await DocumentsApi.Regenerate(resourceId, attempt.Key, CancellationToken.None);
+                if (outcome is { Kind: HttpOutcomeKind.Succeeded, Value: not null })
+                {
+                    _regenerationAttempt = null;
+                }
+
+                return outcome;
+            }, "The document could not be regenerated.");
+
+            if (_document is not null && _document.Id != Id)
+            {
+                Navigation.NavigateTo($"/documents/{_document.Id}");
+            }
+        }
+        finally
+        {
+            _regenerating = false;
         }
     }
 
@@ -190,22 +215,22 @@
             "The document field could not be updated.");
     }
 
-    private async Task ExecuteAction(Func<Task<GetDocumentDto>> action, string errorMessage)
+    private async Task ExecuteAction(Func<Task<HttpOutcome<GetDocumentDto>>> action, string errorMessage)
     {
         _errorMessage = null;
 
-        try
+        var outcome = await action();
+        if (outcome is not { Kind: HttpOutcomeKind.Succeeded, Value: { } document })
         {
-            _document = await action();
-            _fieldValues.Clear();
-            foreach (var field in _document.Fields)
-            {
-                _fieldValues[field.FieldId] = field.RenderedValue;
-            }
+            _errorMessage = HttpOutcomeUserMessage.For(outcome.Kind, errorMessage);
+            return;
         }
-        catch (Exception)
+
+        _document = document;
+        _fieldValues.Clear();
+        foreach (var field in _document.Fields)
         {
-            _errorMessage = errorMessage;
+            _fieldValues[field.FieldId] = field.RenderedValue;
         }
     }
 }

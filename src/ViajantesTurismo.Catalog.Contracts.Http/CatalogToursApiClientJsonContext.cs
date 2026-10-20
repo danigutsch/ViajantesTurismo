@@ -8,6 +8,7 @@ namespace ViajantesTurismo.Catalog.Contracts.Http;
 [JsonSourceGenerationOptions(JsonSerializerDefaults.Web)]
 [JsonSerializable(typeof(ContractValidationProblemDto))]
 [JsonSerializable(typeof(CatalogTourDto))]
+[JsonSerializable(typeof(CatalogTourDto[]))]
 [JsonSerializable(typeof(UpsertCatalogTourPresentationRequest))]
 [JsonSerializable(typeof(CatalogTourPublicationRequest))]
 [JsonSerializable(typeof(PublicMediaImageAccessibilityDraftRequest))]

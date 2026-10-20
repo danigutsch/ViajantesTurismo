@@ -29,6 +29,9 @@ The [generated endpoint route map](architecture/generated-endpoint-route-map.md)
 source-derived inventory of route prefixes and owning services. Do not duplicate that volatile list
 here; committed OpenAPI artifacts remain the contract-review boundary.
 
+Route versioning does not require every other request value to move into a body. Choose route, query,
+header, form, body, and stream inputs by the [API request shape policy](API_REQUEST_SHAPES.md).
+
 The unversioned API routes are not part of the supported HTTP contract. Browser-facing Management and Public Web routes
 remain unversioned UI routes; typed API clients translate API calls to the versioned service endpoints.
 

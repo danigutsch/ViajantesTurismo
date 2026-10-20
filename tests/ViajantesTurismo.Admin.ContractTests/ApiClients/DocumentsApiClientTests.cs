@@ -1,6 +1,7 @@
 using System.Net;
 using System.Net.Http.Headers;
 using System.Text;
+using SharedKernel.HttpClients;
 using SharedKernel.Testing.Contracts;
 using ViajantesTurismo.Admin.Contracts.Http;
 
@@ -25,6 +26,134 @@ public sealed class DocumentsApiClientTests
         }
         """;
 
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task Separate_document_operations_send_their_distinct_caller_owned_keys(bool regenerate)
+    {
+        // Arrange
+        List<string> keys = [];
+        var requestsHaveNoBody = true;
+        using var httpClient = ContractHttpClientTestHelper.CreateClient(request =>
+        {
+            keys.Add(request.Headers.TryGetValues("Idempotency-Key", out var values) ? values.Single() : string.Empty);
+            requestsHaveNoBody &= request.Content is null;
+            return ContractHttpClientTestHelper.JsonResponse(DocumentJson, regenerate ? HttpStatusCode.OK : HttpStatusCode.Created);
+        });
+        var sut = new DocumentsApiClient(httpClient);
+        var id = Guid.CreateVersion7();
+        var firstKey = Guid.CreateVersion7().ToString("N");
+        var secondKey = Guid.CreateVersion7().ToString("N");
+
+        // Act
+        var first = regenerate
+            ? await sut.Regenerate(id, firstKey, TestContext.Current.CancellationToken)
+            : await sut.GenerateContractDraft(id, firstKey, TestContext.Current.CancellationToken);
+        var second = regenerate
+            ? await sut.Regenerate(id, secondKey, TestContext.Current.CancellationToken)
+            : await sut.GenerateContractDraft(id, secondKey, TestContext.Current.CancellationToken);
+
+        // Assert
+        first.Kind.ShouldBe(HttpOutcomeKind.Succeeded);
+        second.Kind.ShouldBe(HttpOutcomeKind.Succeeded);
+        keys.Count.ShouldBe(2);
+        keys[0].ShouldBe(firstKey);
+        keys[1].ShouldBe(secondKey);
+        requestsHaveNoBody.ShouldBeTrue();
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task Caller_provided_key_is_preserved_when_the_same_command_is_retried(bool regenerate)
+    {
+        // Arrange
+        const string key = "stable-document-command-key";
+        List<string> keys = [];
+        var requestsHaveNoBody = true;
+        using var httpClient = ContractHttpClientTestHelper.CreateClient(request =>
+        {
+            keys.Add(request.Headers.TryGetValues("Idempotency-Key", out var values) ? values.Single() : string.Empty);
+            requestsHaveNoBody &= request.Content is null;
+            return ContractHttpClientTestHelper.JsonResponse(DocumentJson, regenerate ? HttpStatusCode.OK : HttpStatusCode.Created);
+        });
+        var sut = new DocumentsApiClient(httpClient);
+        var id = Guid.CreateVersion7();
+
+        // Act
+        var first = regenerate
+            ? await sut.Regenerate(id, key, TestContext.Current.CancellationToken)
+            : await sut.GenerateContractDraft(id, key, TestContext.Current.CancellationToken);
+        var second = regenerate
+            ? await sut.Regenerate(id, key, TestContext.Current.CancellationToken)
+            : await sut.GenerateContractDraft(id, key, TestContext.Current.CancellationToken);
+
+        // Assert
+        first.Kind.ShouldBe(HttpOutcomeKind.Succeeded);
+        second.Kind.ShouldBe(HttpOutcomeKind.Succeeded);
+        keys.ShouldBeEquivalentTo(key, key);
+        requestsHaveNoBody.ShouldBeTrue();
+    }
+
+    [Theory]
+    [InlineData(false, null)]
+    [InlineData(false, "")]
+    [InlineData(false, " ")]
+    [InlineData(true, null)]
+    [InlineData(true, "")]
+    [InlineData(true, " ")]
+    public async Task Caller_provided_key_must_not_be_blank(bool regenerate, string? key)
+    {
+        // Arrange
+        using var httpClient = ContractHttpClientTestHelper.CreateClient(_ => new HttpResponseMessage(HttpStatusCode.OK));
+        var sut = new DocumentsApiClient(httpClient);
+        var id = Guid.CreateVersion7();
+        Func<Task> action = async () => _ = regenerate
+            ? await sut.Regenerate(id, key!, TestContext.Current.CancellationToken)
+            : await sut.GenerateContractDraft(id, key!, TestContext.Current.CancellationToken);
+
+        // Act
+        var exception = await action.ShouldThrowAssignableTo<ArgumentException>();
+
+        // Assert
+        exception.ParamName.ShouldBe("idempotencyKey");
+    }
+
+    [Fact]
+    public async Task Non_creation_document_commands_do_not_send_an_idempotency_key()
+    {
+        // Arrange
+        var hasIdempotencyKey = false;
+        using var httpClient = ContractHttpClientTestHelper.CreateClient(request =>
+        {
+            hasIdempotencyKey = request.Headers.Contains("Idempotency-Key");
+            return ContractHttpClientTestHelper.JsonResponse(DocumentJson);
+        });
+        var sut = new DocumentsApiClient(httpClient);
+
+        // Act
+        var outcome = await sut.BeginReview(Guid.CreateVersion7(), TestContext.Current.CancellationToken);
+
+        // Assert
+        outcome.Kind.ShouldBe(HttpOutcomeKind.Succeeded);
+        hasIdempotencyKey.ShouldBeFalse();
+    }
+
+    [Fact]
+    public async Task GetDocumentById_returns_not_found_outcome()
+    {
+        // Arrange
+        using var httpClient = ContractHttpClientTestHelper.CreateClient(_ => new HttpResponseMessage(HttpStatusCode.NotFound));
+        var sut = new DocumentsApiClient(httpClient);
+
+        // Act
+        var outcome = await sut.GetDocumentById(Guid.CreateVersion7(), TestContext.Current.CancellationToken);
+
+        // Assert
+        outcome.Kind.ShouldBe(HttpOutcomeKind.NotFound);
+        outcome.Value.ShouldBeNull();
+    }
+
     [Fact]
     public async Task GetDocumentById_requests_the_document_endpoint_and_returns_the_document()
     {
@@ -39,10 +168,10 @@ public sealed class DocumentsApiClientTests
         var sut = new DocumentsApiClient(httpClient);
 
         // Act
-        var document = await sut.GetDocumentById(documentId, TestContext.Current.CancellationToken);
+        var outcome = await sut.GetDocumentById(documentId, TestContext.Current.CancellationToken);
 
         // Assert
-        var documentDto = document.ShouldNotBeNull();
+        var documentDto = outcome.Value.ShouldNotBeNull();
         requestPath.ShouldBe("/api/v1/documents/11111111-1111-1111-1111-111111111111");
         documentDto.TemplateId.ShouldBe("tour-service-contract");
     }
@@ -108,5 +237,59 @@ public sealed class DocumentsApiClientTests
 
         // Assert
         exception.Message.ShouldBe("The document artifact response must be HTML.");
+    }
+
+    [Fact]
+    public async Task DownloadFinalizedArtifact_times_out_while_reading_a_stalled_validation_body()
+    {
+        // Arrange
+        var documentId = Guid.CreateVersion7();
+        using var responseBody = new BlockingDocumentReadStream();
+        using var httpClient = ContractHttpClientTestHelper.CreateClient(_ =>
+            new HttpResponseMessage(HttpStatusCode.BadRequest)
+            {
+                Content = new StreamContent(responseBody)
+                {
+                    Headers = { ContentType = new MediaTypeHeaderValue("application/problem+json") }
+                }
+            });
+        httpClient.Timeout = TimeSpan.FromMilliseconds(100);
+        var sut = new DocumentsApiClient(httpClient);
+        Func<Task> download = async () => await sut.DownloadFinalizedArtifact(documentId, TestContext.Current.CancellationToken);
+
+        // Act
+        await download.ShouldThrowAssignableTo<OperationCanceledException>();
+
+        // Assert
+        responseBody.ReadStarted.IsCompletedSuccessfully.ShouldBeTrue();
+        responseBody.IsDisposed.ShouldBeTrue();
+    }
+
+    [Fact]
+    public async Task DownloadFinalizedArtifact_preserves_caller_cancellation_while_reading_validation()
+    {
+        // Arrange
+        var documentId = Guid.CreateVersion7();
+        using var cts = CancellationTokenSource.CreateLinkedTokenSource(TestContext.Current.CancellationToken);
+        using var responseBody = new BlockingDocumentReadStream(cts.Cancel);
+        using var httpClient = ContractHttpClientTestHelper.CreateClient(_ =>
+            new HttpResponseMessage(HttpStatusCode.BadRequest)
+            {
+                Content = new StreamContent(responseBody)
+                {
+                    Headers = { ContentType = new MediaTypeHeaderValue("application/problem+json") }
+                }
+            });
+        httpClient.Timeout = TimeSpan.FromMinutes(1);
+        var sut = new DocumentsApiClient(httpClient);
+        Func<Task> download = async () => await sut.DownloadFinalizedArtifact(documentId, cts.Token);
+
+        // Act
+        var exception = await download.ShouldThrowAssignableTo<OperationCanceledException>();
+
+        // Assert
+        exception.CancellationToken.ShouldBe(cts.Token);
+        responseBody.ReadStarted.IsCompletedSuccessfully.ShouldBeTrue();
+        responseBody.IsDisposed.ShouldBeTrue();
     }
 }

@@ -1,3 +1,4 @@
+using SharedKernel.HttpClients;
 using TestTraits = ViajantesTurismo.Catalog.ApiServiceTests.Infrastructure.TestTraits;
 using ViajantesTurismo.Catalog.Application.Tours;
 using ViajantesTurismo.Catalog.Contracts.Application;
@@ -43,27 +44,32 @@ public sealed class CatalogApiClientIntegrationTests
         };
 
         // Act
-        var saved = await managementClient.UpdatePresentation(tourId, request, cancellationToken);
-        await managementClient.Publish(
+        var savedOutcome = await managementClient.UpdatePresentation(tourId, request, cancellationToken);
+        var publishOutcome = await managementClient.Publish(
             tourId,
             new CatalogTourPublicationRequest { ExpectedVersion = 2 },
             cancellationToken);
-        var published = await publicClient.GetPublishedTourBySlug("contract-client-tour", cancellationToken);
-        await managementClient.Unpublish(
+        var publishedOutcome = await publicClient.GetPublishedTourBySlug("contract-client-tour", cancellationToken);
+        var unpublishOutcome = await managementClient.Unpublish(
             tourId,
             new CatalogTourPublicationRequest { ExpectedVersion = 3 },
             cancellationToken);
-        var unpublished = await publicClient.GetPublishedTourBySlug("contract-client-tour", cancellationToken);
+        var unpublishedOutcome = await publicClient.GetPublishedTourBySlug("contract-client-tour", cancellationToken);
 
         // Assert
-        saved.ShouldNotBeNull();
+        savedOutcome.Kind.ShouldBe(HttpOutcomeKind.Succeeded);
+        var saved = savedOutcome.Value.ShouldNotBeNull();
         saved.Title.ShouldBe("Contract Client Tour");
         saved.IsPublished.ShouldBeFalse();
-        published.ShouldNotBeNull();
+        publishOutcome.Kind.ShouldBe(HttpOutcomeKind.Succeeded);
+        publishedOutcome.Kind.ShouldBe(HttpOutcomeKind.Succeeded);
+        var published = publishedOutcome.Value.ShouldNotBeNull();
         published.Title.ShouldBe("Contract Client Tour");
         published.Slug.ShouldBe("contract-client-tour");
         published.Summary.ShouldBe("A contract-tested tour.");
-        unpublished.ShouldBeNull();
+        unpublishOutcome.Kind.ShouldBe(HttpOutcomeKind.Succeeded);
+        unpublishedOutcome.Kind.ShouldBe(HttpOutcomeKind.NotFound);
+        unpublishedOutcome.Value.ShouldBeNull();
     }
 
     [Fact]
@@ -82,12 +88,15 @@ public sealed class CatalogApiClientIntegrationTests
         request.Variants.Add(new PublicContentVariantDto { Language = PublicContentLanguageDto.PtBr, Title = "Bem-vindo", Body = "Pedale conosco" });
 
         // Act
-        var saved = await sut.SaveContent("home.hero", request, cancellationToken);
-        var read = await sut.GetContent("home.hero", cancellationToken);
+        var savedOutcome = await sut.SaveContent("home.hero", request, cancellationToken);
+        var readOutcome = await sut.GetContent("home.hero", cancellationToken);
 
         // Assert
+        savedOutcome.Kind.ShouldBe(HttpOutcomeKind.Succeeded);
+        var saved = savedOutcome.Value.ShouldNotBeNull();
         saved.Key.ShouldBe("HOME.HERO");
-        read.ShouldNotBeNull();
+        readOutcome.Kind.ShouldBe(HttpOutcomeKind.Succeeded);
+        var read = readOutcome.Value.ShouldNotBeNull();
         read.Key.ShouldBe("HOME.HERO");
         read.Variants.ShouldContain(variant => variant.Language == PublicContentLanguageDto.PtBr && variant.Title == "Bem-vindo");
     }

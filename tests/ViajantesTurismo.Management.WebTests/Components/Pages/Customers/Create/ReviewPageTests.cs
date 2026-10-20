@@ -2,8 +2,8 @@ using Microsoft.AspNetCore.Components;
 using ViajantesTurismo.Management.Web;
 using ViajantesTurismo.Management.Web.Components.Pages.Customers.Create;
 using ViajantesTurismo.Management.Web.Models;
-using ContractCommandOutcomeDto = SharedKernel.HttpClients.ContractCommandOutcomeDto;
-using ContractCommandOutcomeKind = SharedKernel.HttpClients.ContractCommandOutcomeKind;
+using HttpOutcome = SharedKernel.HttpClients.HttpOutcome;
+using HttpOutcomeKind = SharedKernel.HttpClients.HttpOutcomeKind;
 
 namespace ViajantesTurismo.Management.WebTests.Components.Pages.Customers.Create;
 
@@ -49,9 +49,9 @@ public sealed class ReviewPageTests : BunitContext
     {
         // Arrange
         CustomerCreationStateTestHelper.SeedCompletedState(_state);
-        _fakeCustomersApi.SetCreateCustomerOutcome(new ContractCommandOutcomeDto
+        _fakeCustomersApi.SetCreateCustomerOutcome(new HttpOutcome
         {
-            Kind = ContractCommandOutcomeKind.Conflict,
+            Kind = HttpOutcomeKind.Conflict,
             StatusCode = System.Net.HttpStatusCode.Conflict,
             Message = "Duplicate email"
         });
@@ -211,9 +211,9 @@ public sealed class ReviewPageTests : BunitContext
     {
         // Arrange
         CustomerCreationStateTestHelper.SeedCompletedState(_state);
-        _fakeCustomersApi.SetCreateCustomerOutcome(new ContractCommandOutcomeDto
+        _fakeCustomersApi.SetCreateCustomerOutcome(new HttpOutcome
         {
-            Kind = ContractCommandOutcomeKind.Succeeded,
+            Kind = HttpOutcomeKind.Succeeded,
             StatusCode = System.Net.HttpStatusCode.Created,
             Location = new Uri(location, UriKind.Relative)
         });
@@ -234,9 +234,9 @@ public sealed class ReviewPageTests : BunitContext
     {
         // Arrange
         CustomerCreationStateTestHelper.SeedCompletedState(_state);
-        _fakeCustomersApi.SetCreateCustomerOutcome(new ContractCommandOutcomeDto
+        _fakeCustomersApi.SetCreateCustomerOutcome(new HttpOutcome
         {
-            Kind = ContractCommandOutcomeKind.Succeeded,
+            Kind = HttpOutcomeKind.Succeeded,
             StatusCode = System.Net.HttpStatusCode.Created
         });
         var navigationManager = Services.GetRequiredService<NavigationManager>();

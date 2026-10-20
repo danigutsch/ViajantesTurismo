@@ -17,4 +17,27 @@ public sealed record CatalogTourImageUploadRequest(
     string AltText,
     string? Caption = null,
     string? Attribution = null,
-    string? Copyright = null);
+    string? Copyright = null)
+{
+    /// <summary>
+    /// Initializes an upload with an authoritative declared length for transport progress.
+    /// </summary>
+    public CatalogTourImageUploadRequest(
+        Stream Content,
+        long ContentLength,
+        string FileName,
+        string ContentType,
+        string AltText,
+        string? Caption = null,
+        string? Attribution = null,
+        string? Copyright = null)
+        : this(Content, FileName, ContentType, AltText, Caption, Attribution, Copyright)
+    {
+        this.ContentLength = ContentLength;
+    }
+
+    /// <summary>
+    /// Gets the declared image length, or zero when an existing caller supplies an unknown-length stream.
+    /// </summary>
+    public long ContentLength { get; init; } = Content is { CanSeek: true } ? Content.Length - Content.Position : 0;
+}

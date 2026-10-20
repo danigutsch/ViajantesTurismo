@@ -1,5 +1,5 @@
 using System.Net;
-using System.Text.Json;
+using SharedKernel.HttpClients;
 using PublicCatalogApiClientTestsHelpers = SharedKernel.Testing.Contracts.ContractHttpClientTestHelper;
 using SharedKernel.Testing.Contracts;
 using ViajantesTurismo.Catalog.Contracts.Http;
@@ -40,10 +40,11 @@ public sealed class PublicCatalogApiClientTests
         var sut = new PublicCatalogApiClient(httpClient);
 
         // Act
-        var tours = await sut.GetPublishedTours(TestContext.Current.CancellationToken);
+        var outcome = await sut.GetPublishedTours(TestContext.Current.CancellationToken);
 
         // Assert
         requestPath.ShouldBe("/api/v1/public/catalog/tours");
+        var tours = outcome.Value.ShouldNotBeNull();
         tours.Length.ShouldBe(2);
         tours[0].Slug.ShouldBe("first-tour");
         tours[1].Slug.ShouldBe("second-tour");
@@ -79,9 +80,10 @@ public sealed class PublicCatalogApiClientTests
         var sut = new PublicCatalogApiClient(httpClient);
 
         // Act
-        var tours = await sut.GetPublishedTours(TestContext.Current.CancellationToken);
+        var outcome = await sut.GetPublishedTours(TestContext.Current.CancellationToken);
 
         // Assert
+        var tours = outcome.Value.ShouldNotBeNull();
         var tour = tours.ShouldHaveSingleItem();
         var image = tour.Images.ShouldHaveSingleItem();
         image.IsCover.ShouldBeTrue();
@@ -182,10 +184,10 @@ public sealed class PublicCatalogApiClientTests
         var sut = new PublicCatalogApiClient(httpClient);
 
         // Act
-        var tour = await sut.GetPublishedTourBySlug(slug, TestContext.Current.CancellationToken);
+        var outcome = await sut.GetPublishedTourBySlug(slug, TestContext.Current.CancellationToken);
 
         // Assert
-        tour.ShouldNotBeNull();
+        outcome.Value.ShouldNotBeNull();
         requestPath.ShouldBe(expectedPath);
     }
 
@@ -197,10 +199,11 @@ public sealed class PublicCatalogApiClientTests
         var sut = new PublicCatalogApiClient(httpClient);
 
         // Act
-        var tour = await sut.GetPublishedTourBySlug("missing-tour", TestContext.Current.CancellationToken);
+        var outcome = await sut.GetPublishedTourBySlug("missing-tour", TestContext.Current.CancellationToken);
 
         // Assert
-        tour.ShouldBeNull();
+        outcome.Kind.ShouldBe(HttpOutcomeKind.NotFound);
+        outcome.Value.ShouldBeNull();
     }
 
     [Fact]
@@ -221,14 +224,14 @@ public sealed class PublicCatalogApiClientTests
         Func<Task> act = async () => await sut.GetPublishedTourBySlug("cancelled", cancellationTokenSource.Token);
 
         // Assert
-        await act.ShouldThrow<TaskCanceledException>();
+        await act.ShouldThrow<OperationCanceledException>();
         responseFactoryWasCalled.ShouldBeFalse();
     }
 
     [Theory]
     [InlineData(false)]
     [InlineData(true)]
-    public async Task GetPublishedTourBySlug_rejects_success_with_empty_or_null_body(bool jsonNull)
+    public async Task GetPublishedTourBySlug_returns_explicit_outcome_for_empty_or_null_body(bool jsonNull)
     {
         // Arrange
         using var httpClient = PublicCatalogApiClientTestsHelpers.CreateClient(_ => jsonNull
@@ -237,31 +240,28 @@ public sealed class PublicCatalogApiClientTests
         var sut = new PublicCatalogApiClient(httpClient);
 
         // Act
-        Func<Task> act = async () => await sut.GetPublishedTourBySlug("missing-body", TestContext.Current.CancellationToken);
+        var outcome = await sut.GetPublishedTourBySlug("missing-body", TestContext.Current.CancellationToken);
 
         // Assert
-        if (jsonNull)
-        {
-            var exception = await act.ShouldThrow<InvalidOperationException>();
-            exception.Message.ShouldBe("The published tour response body was empty.");
-            return;
-        }
-
-        await act.ShouldThrow<JsonException>();
+        outcome.Kind.ShouldBe(jsonNull
+            ? HttpOutcomeKind.MalformedBody
+            : HttpOutcomeKind.EmptyBody);
+        outcome.Value.ShouldBeNull();
     }
 
     [Fact]
-    public async Task GetPublishedTourBySlug_throws_when_catalog_returns_unexpected_error()
+    public async Task GetPublishedTourBySlug_returns_unexpected_status_when_catalog_returns_unexpected_error()
     {
         // Arrange
         using var httpClient = PublicCatalogApiClientTestsHelpers.CreateClient(_ => new HttpResponseMessage(HttpStatusCode.BadGateway));
         var sut = new PublicCatalogApiClient(httpClient);
 
         // Act
-        Func<Task> act = async () => await sut.GetPublishedTourBySlug("error-tour", TestContext.Current.CancellationToken);
+        var outcome = await sut.GetPublishedTourBySlug("error-tour", TestContext.Current.CancellationToken);
 
         // Assert
-        await act.ShouldThrow<HttpRequestException>();
+        outcome.Kind.ShouldBe(HttpOutcomeKind.UnexpectedStatus);
+        outcome.StatusCode.ShouldBe(HttpStatusCode.BadGateway);
     }
 
     [Theory]
@@ -291,10 +291,10 @@ public sealed class PublicCatalogApiClientTests
         var sut = new PublicCatalogApiClient(httpClient);
 
         // Act
-        var content = await sut.GetPublicContent(key, culture, TestContext.Current.CancellationToken);
+        var outcome = await sut.GetPublicContent(key, culture, TestContext.Current.CancellationToken);
 
         // Assert
-        content.ShouldNotBeNull();
+        var content = outcome.Value.ShouldNotBeNull();
         requestPath.ShouldBe(expectedPath);
         content.Title.ShouldBe("Bem-vindo");
     }
@@ -307,16 +307,17 @@ public sealed class PublicCatalogApiClientTests
         var sut = new PublicCatalogApiClient(httpClient);
 
         // Act
-        var content = await sut.GetPublicContent("home.hero", "pt-BR", TestContext.Current.CancellationToken);
+        var outcome = await sut.GetPublicContent("home.hero", "pt-BR", TestContext.Current.CancellationToken);
 
         // Assert
-        content.ShouldBeNull();
+        outcome.Kind.ShouldBe(HttpOutcomeKind.NotFound);
+        outcome.Value.ShouldBeNull();
     }
 
     [Theory]
     [InlineData(false)]
     [InlineData(true)]
-    public async Task GetPublicContent_rejects_success_with_empty_or_null_body(bool jsonNull)
+    public async Task GetPublicContent_returns_explicit_outcome_for_empty_or_null_body(bool jsonNull)
     {
         // Arrange
         using var httpClient = PublicCatalogApiClientTestsHelpers.CreateClient(_ => jsonNull
@@ -325,16 +326,12 @@ public sealed class PublicCatalogApiClientTests
         var sut = new PublicCatalogApiClient(httpClient);
 
         // Act
-        Func<Task> act = async () => await sut.GetPublicContent("home.hero", "en-US", TestContext.Current.CancellationToken);
+        var outcome = await sut.GetPublicContent("home.hero", "en-US", TestContext.Current.CancellationToken);
 
         // Assert
-        if (jsonNull)
-        {
-            var exception = await act.ShouldThrow<InvalidOperationException>();
-            exception.Message.ShouldBe("The public content response body was empty.");
-            return;
-        }
-
-        await act.ShouldThrow<JsonException>();
+        outcome.Kind.ShouldBe(jsonNull
+            ? HttpOutcomeKind.MalformedBody
+            : HttpOutcomeKind.EmptyBody);
+        outcome.Value.ShouldBeNull();
     }
 }

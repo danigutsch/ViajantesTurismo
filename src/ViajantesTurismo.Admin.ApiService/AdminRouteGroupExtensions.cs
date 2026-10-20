@@ -1,5 +1,6 @@
 using SharedKernel.ApiVersioning;
 using SharedKernel.ApiVersioning.AspNetCore;
+using SharedKernel.HttpCaching.AspNetCore;
 
 namespace ViajantesTurismo.Admin.ApiService;
 
@@ -85,7 +86,8 @@ internal static class AdminRouteGroupExtensions
     /// <returns>The configured route group builder.</returns>
     public static RouteGroupBuilder MapDocumentsGroup(this WebApplication app)
     {
-        return app.MapRouteGroup(DocumentsRoutePrefix, DocumentsGroupName);
+        return app.MapRouteGroup(DocumentsRoutePrefix, DocumentsGroupName)
+            .WithNoStoreResponses($"/api/{CurrentApiVersion.RouteSegment}/{DocumentsRoutePrefix}");
     }
 
     /// <summary>

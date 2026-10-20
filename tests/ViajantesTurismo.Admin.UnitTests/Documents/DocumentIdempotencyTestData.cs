@@ -7,17 +7,18 @@ namespace ViajantesTurismo.Admin.UnitTests.Documents;
 
 internal static class DocumentIdempotencyTestData
 {
-    internal static DocumentCommandIdempotency Create(IUnitOfWork unitOfWork) =>
-        new(new UnusedIdempotencyStore(), unitOfWork, TimeProvider.System);
+    internal static DocumentCommandIdempotency Create(FakeUnitOfWork unitOfWork) =>
+        new(new CapturingNewIdempotencyStore(unitOfWork), unitOfWork, TimeProvider.System);
 
     internal static DocumentCommandIdempotency CreateCompleted(
         IdempotencyScope scope,
         IdempotencyKey key,
         Guid documentId,
+        string requestFingerprint,
         IUnitOfWork unitOfWork) => CreateCompletedWithFingerprint(
             scope,
             key,
-            documentId.ToString("N"),
+            $"{requestFingerprint}:{documentId:N}",
             unitOfWork);
 
     internal static DocumentCommandIdempotency CreateCompletedWithFingerprint(

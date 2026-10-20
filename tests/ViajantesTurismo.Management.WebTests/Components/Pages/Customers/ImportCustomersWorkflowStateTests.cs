@@ -49,7 +49,6 @@ public sealed class ImportCustomersWorkflowStateTests
             ValidationError = "Validation",
             Error = "Error",
             Result = new ImportResultDto(1, 0),
-            Uploading = true,
             PreviewRows = [new Dictionary<string, string> { [CustomerImportFieldNames.Email] = "preview@example.com" }],
             ConflictStates = [new ImportCustomerConflictState("existing@example.com", null, null)],
             Step = ImportCustomersWorkflowStep.DuplicateResolution,
@@ -60,6 +59,7 @@ public sealed class ImportCustomersWorkflowStateTests
             [CustomerImportFieldNames.Email],
             CustomerImportHeaderMatcher.AutoMatch([CustomerImportFieldNames.Email]));
         state.UserMappings[CustomerImportFieldNames.Email] = CustomerImportFieldNames.Email;
+        _ = state.Upload.Begin("customers.csv", 3, isRetry: false);
 
         // Act
         state.ResetToFileSelection();
@@ -88,7 +88,6 @@ public sealed class ImportCustomersWorkflowStateTests
             ValidationError = "Validation",
             Error = "Error",
             Result = new ImportResultDto(1, 0),
-            Uploading = true,
             PreviewRows = [new Dictionary<string, string> { [CustomerImportFieldNames.Email] = "preview@example.com" }],
             ConflictStates = [new ImportCustomerConflictState("existing@example.com", null, null)],
             Step = ImportCustomersWorkflowStep.DuplicateResolution,
@@ -98,6 +97,7 @@ public sealed class ImportCustomersWorkflowStateTests
             [1, 2, 3],
             [CustomerImportFieldNames.Email],
             CustomerImportHeaderMatcher.AutoMatch([CustomerImportFieldNames.Email]));
+        _ = state.Upload.Begin("customers.csv", 3, isRetry: false);
 
         // Act
         state.RetryCurrentFile();
@@ -139,4 +139,5 @@ public sealed class ImportCustomersWorkflowStateTests
         (decisions["MIXED@example.com"]).ShouldBe("mixed");
         (decisions["pending@example.com"]).ShouldBe(string.Empty);
     }
+
 }

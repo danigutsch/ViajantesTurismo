@@ -232,6 +232,27 @@ public sealed class ReviewImageAccessibilityPageTests : BunitContext
     }
 
     [Fact]
+    public void Shows_a_safe_error_when_the_image_list_is_malformed()
+    {
+        // Arrange
+        catalogApi.GetTourImagesOutcome = HttpOutcomeMapper.Status<CatalogMediaImageDto[]>(
+            HttpOutcomeKind.MalformedBody,
+            System.Net.HttpStatusCode.OK,
+            "The catalog image response body was invalid.");
+
+        // Act
+        var cut = Render<ReviewImageAccessibility>(parameters => parameters.Add(component => component.Id, Guid.CreateVersion7()));
+        cut.WaitForState(
+            () => cut.Markup.Contains("Images could not be loaded.", StringComparison.Ordinal),
+            TimeSpan.FromSeconds(2));
+
+        // Assert
+        cut.Find("[role='alert']").TextContent.ShouldBe("Images could not be loaded. Try again later.");
+        cut.Markup.ShouldNotContain("The catalog image response body was invalid.", StringComparison.Ordinal);
+        cut.FindAll("img").ShouldBeEmpty();
+    }
+
+    [Fact]
     public void Shows_not_found_when_the_selected_image_disappears_during_approval()
     {
         // Arrange

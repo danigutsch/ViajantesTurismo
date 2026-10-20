@@ -2,6 +2,17 @@ namespace ViajantesTurismo.Admin.IntegrationTests.Documents;
 
 internal static class DocumentApiTestSetup
 {
+    public static async Task<HttpResponseMessage> PostIdempotentCommand(
+        HttpClient client,
+        Uri route,
+        string idempotencyKey,
+        CancellationToken ct)
+    {
+        using var request = new HttpRequestMessage(HttpMethod.Post, route);
+        request.Headers.Add("Idempotency-Key", idempotencyKey);
+        return await client.SendAsync(request, ct);
+    }
+
     public static async Task<(Guid BookingId, DocumentsApiClient Client, GetDocumentDto Document)>
         CreateGeneratedDocument(ApiFixture fixture, string scenarioName, CancellationToken ct)
     {
@@ -18,7 +29,7 @@ internal static class DocumentApiTestSetup
         confirmResponse.StatusCode.ShouldBe(HttpStatusCode.OK);
 
         var client = new DocumentsApiClient(fixture.Client);
-        var document = await client.GenerateContractDraft(booking.Id, ct);
+        var document = await client.GenerateContractDraft(booking.Id, Guid.CreateVersion7().ToString("N"), ct).RequireSucceededValue();
         return (booking.Id, client, document);
     }
 }

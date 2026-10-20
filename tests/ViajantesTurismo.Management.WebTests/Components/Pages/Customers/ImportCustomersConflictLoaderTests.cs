@@ -1,4 +1,5 @@
 using System.Text;
+using SharedKernel.HttpClients;
 using ViajantesTurismo.Management.Web.Components.Pages.Customers;
 
 namespace ViajantesTurismo.Management.WebTests.Components.Pages.Customers;
@@ -38,7 +39,8 @@ public sealed class ImportCustomersConflictLoaderTests
         var conflictStates = await ImportCustomersConflictLoader.LoadConflictStates(
             customersApi,
             [new ImportConflictDto(conflictEmail)],
-            mappedFileBytes);
+            mappedFileBytes,
+            Xunit.TestContext.Current.CancellationToken);
 
         // Assert
         var conflictState = (conflictStates).ShouldHaveSingleItem();
@@ -76,12 +78,42 @@ public sealed class ImportCustomersConflictLoaderTests
         var conflictStates = await ImportCustomersConflictLoader.LoadConflictStates(
             customersApi,
             [new ImportConflictDto(conflictEmail)],
-            mappedFileBytes);
+            mappedFileBytes,
+            Xunit.TestContext.Current.CancellationToken);
 
         // Assert
         var conflictState = (conflictStates).ShouldHaveSingleItem();
         (conflictState.GetIncomingValue(CustomerImportFieldNames.FirstName)).ShouldBe("IncomingFirst");
         (conflictState.GetExistingValue(CustomerImportFieldNames.FirstName)).ShouldBe(string.Empty);
         (conflictState.GetExistingValue(CustomerImportFieldNames.Email)).ShouldBe(string.Empty);
+    }
+
+    [Fact]
+    public async Task LoadConflictStates_when_customer_list_load_fails_does_not_build_incomplete_conflict_state()
+    {
+        // Arrange
+        const string conflictEmail = "existing@example.com";
+        var customersApi = new FakeCustomersApiClient();
+        customersApi.SetGetCustomersOutcome(HttpOutcomeMapper.Status<GetCustomerDto[]>(
+            HttpOutcomeKind.Unauthorized,
+            System.Net.HttpStatusCode.Unauthorized));
+        var mappedFileBytes = Encoding.UTF8.GetBytes(
+            CustomerImportCsvTestData.AllCanonicalHeaders
+            + "\n"
+            + CustomerImportCsvTestData.BuildCsvRow(new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
+            {
+                [CustomerImportFieldNames.FirstName] = "IncomingFirst",
+                [CustomerImportFieldNames.Email] = conflictEmail,
+            }));
+
+        // Act
+        Func<Task> action = () => ImportCustomersConflictLoader.LoadConflictStates(
+            customersApi,
+            [new ImportConflictDto(conflictEmail)],
+            mappedFileBytes,
+            Xunit.TestContext.Current.CancellationToken);
+
+        // Assert
+        await action.ShouldThrow<InvalidOperationException>();
     }
 }

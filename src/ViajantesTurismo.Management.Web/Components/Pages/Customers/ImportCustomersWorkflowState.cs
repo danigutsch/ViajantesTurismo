@@ -1,4 +1,5 @@
 using ViajantesTurismo.Admin.Contracts.Application;
+using SharedKernel.HttpClients;
 using ViajantesTurismo.Management.Web.Services;
 
 namespace ViajantesTurismo.Management.Web.Components.Pages.Customers;
@@ -24,7 +25,9 @@ internal sealed class ImportCustomersWorkflowState
 
     internal Dictionary<string, string?> UserMappings { get; private set; } = [];
 
-    internal bool Uploading { get; set; }
+    internal UploadOperationState Upload { get; } = new();
+
+    internal bool Uploading => Upload.IsActive;
 
     internal IReadOnlyList<IReadOnlyDictionary<string, string>> PreviewRows { get; set; } = [];
 
@@ -64,7 +67,7 @@ internal sealed class ImportCustomersWorkflowState
         ConflictStates = [];
         ConflictSourceFileBytes = [];
         PreviewRows = [];
-        Uploading = false;
+        Upload.Reset();
     }
 
     internal void ClearPendingFile()

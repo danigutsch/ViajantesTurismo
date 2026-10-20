@@ -1,5 +1,5 @@
 using System.Net;
-using System.Net.Http.Json;
+using SharedKernel.HttpClients;
 using ViajantesTurismo.Catalog.Contracts.Application;
 
 namespace ViajantesTurismo.Catalog.Contracts.Http;
@@ -13,59 +13,54 @@ public sealed class PublicCatalogApiClient(HttpClient httpClient) : IPublicCatal
     private static readonly PublicCatalogApiClientJsonContext Json = PublicCatalogApiClientJsonContext.Default;
 
     /// <inheritdoc />
-    public async Task<TourSummaryDto[]> GetPublishedTours(CancellationToken ct)
+    public async Task<HttpOutcome<TourSummaryDto[]>> GetPublishedTours(CancellationToken ct)
     {
-        List<TourSummaryDto>? tours = null;
-
-        await foreach (var tour in httpClient.GetFromJsonAsAsyncEnumerable($"{RoutePrefix}/tours", Json.TourSummaryDto, ct).ConfigureAwait(false))
-        {
-            if (tour is null)
-            {
-                continue;
-            }
-
-            tours ??= [];
-            tours.Add(tour);
-        }
-
-        return tours?.ToArray() ?? [];
+        var outcome = await HttpOutcomeMapper.Send(
+            httpClient,
+            new HttpRequestMessage(HttpMethod.Get, new Uri($"{RoutePrefix}/tours", UriKind.Relative)),
+            HttpStatusCode.OK,
+            Json.TourSummaryDtoArray,
+            Json.ContractValidationProblemDto,
+            ct).ConfigureAwait(false);
+        return outcome.Kind == HttpOutcomeKind.Succeeded
+            ? outcome with { Value = outcome.Value?.OfType<TourSummaryDto>().ToArray() ?? [] }
+            : outcome;
     }
 
     /// <inheritdoc />
-    public async Task<TourDetailsDto?> GetPublishedTourBySlug(string slug, CancellationToken ct)
+    public async Task<HttpOutcome<TourDetailsDto>> GetPublishedTourBySlug(string slug, CancellationToken ct)
     {
         ArgumentNullException.ThrowIfNull(slug);
 
         var escapedSlug = Uri.EscapeDataString(slug);
-        using var response = await httpClient.GetAsync(new Uri($"{RoutePrefix}/tours/{escapedSlug}", UriKind.Relative), ct).ConfigureAwait(false);
-        if (response.StatusCode == HttpStatusCode.NotFound)
-        {
-            return null;
-        }
-
-        response.EnsureSuccessStatusCode();
-        return await response.Content.ReadFromJsonAsync(Json.TourDetailsDto, ct).ConfigureAwait(false)
-               ?? throw new InvalidOperationException("The published tour response body was empty.");
+        return await HttpOutcomeMapper.Send(
+            httpClient,
+            new HttpRequestMessage(HttpMethod.Get, new Uri($"{RoutePrefix}/tours/{escapedSlug}", UriKind.Relative)),
+            HttpStatusCode.OK,
+            Json.TourDetailsDto,
+            Json.ContractValidationProblemDto,
+            ct).ConfigureAwait(false);
     }
 
     /// <inheritdoc />
-    public async Task<PublicContentVariantDto?> GetPublicContent(string key, string? culture, CancellationToken ct)
+    public async Task<HttpOutcome<PublicContentVariantDto>> GetPublicContent(
+        string key,
+        string? culture,
+        CancellationToken ct)
     {
         ArgumentNullException.ThrowIfNull(key);
 
         var escapedKey = EscapePath(key);
         var escapedCulture = string.IsNullOrWhiteSpace(culture) ? "en-US" : Uri.EscapeDataString(culture);
-        using var response = await httpClient.GetAsync(
-            new Uri($"{RoutePrefix}/content/{escapedKey}?culture={escapedCulture}", UriKind.Relative),
+        return await HttpOutcomeMapper.Send(
+            httpClient,
+            new HttpRequestMessage(
+                HttpMethod.Get,
+                new Uri($"{RoutePrefix}/content/{escapedKey}?culture={escapedCulture}", UriKind.Relative)),
+            HttpStatusCode.OK,
+            Json.PublicContentVariantDto,
+            Json.ContractValidationProblemDto,
             ct).ConfigureAwait(false);
-        if (response.StatusCode == HttpStatusCode.NotFound)
-        {
-            return null;
-        }
-
-        response.EnsureSuccessStatusCode();
-        return await response.Content.ReadFromJsonAsync(Json.PublicContentVariantDto, ct).ConfigureAwait(false)
-               ?? throw new InvalidOperationException("The public content response body was empty.");
     }
 
     /// <inheritdoc />
@@ -111,5 +106,4 @@ public sealed class PublicCatalogApiClient(HttpClient httpClient) : IPublicCatal
             .Split('/', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
             .Select(Uri.EscapeDataString));
     }
-
 }

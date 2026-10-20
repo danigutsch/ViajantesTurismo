@@ -1,3 +1,5 @@
+using System.Globalization;
+
 namespace ViajantesTurismo.Management.WebTests.Components.Pages.Customers;
 
 public sealed class ImportCustomersDuplicateResolutionTests : BunitContext
@@ -246,6 +248,118 @@ public sealed class ImportCustomersDuplicateResolutionTests : BunitContext
         committedValues["FirstName"].ShouldBe("IncomingFirst");
         committedValues["LastName"].ShouldBe("ExistingLast");
         committedValues["Email"].ShouldBe("a@example.com");
+    }
+
+    [Fact]
+    public async Task DuplicateResolution_commit_reports_progress_and_cancel_preserves_the_effective_mixed_file()
+    {
+        // Arrange
+        _fakeCustomersApi.SetImportCustomersResult(
+            new ImportResultDto(0, 0, [new ImportConflictDto("a@example.com")]));
+        ImportCustomersDuplicateResolutionTestHelper.SeedExistingCustomer(
+            _fakeCustomersApi,
+            "a@example.com",
+            "ExistingFirst",
+            "ExistingLast");
+        var requestStarted = new TaskCompletionSource<long>(TaskCreationOptions.RunContinuationsAsynchronously);
+        var requestCompletion = new TaskCompletionSource<ImportResultDto>(TaskCreationOptions.RunContinuationsAsynchronously);
+        byte[]? committedContent = null;
+        IProgress<long>? reportedProgress = null;
+        _fakeCustomersApi.SetCommitImportHandler((content, _, _, progress, _) =>
+        {
+            committedContent = content;
+            reportedProgress = progress;
+            requestStarted.TrySetResult(content.LongLength);
+            return requestCompletion.Task;
+        });
+        var cut = ImportCustomersPreviewTestHelper.GoToPreview(
+            this,
+            CustomerImportCsvTestData.BuildCsvWithOverrides(new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
+            {
+                ["FirstName"] = "IncomingFirst",
+                ["LastName"] = "IncomingLast",
+                ["Email"] = "a@example.com",
+            }));
+        await ImportCustomersTestDomHelper.FindButtonByText(cut, "Confirm Import").ClickAsync();
+        await cut.WaitForAssertionAsync(() => cut.Markup.ShouldContain("Resolve Duplicates", StringComparison.Ordinal));
+        await cut.Find("button[data-action='mixed']").ClickAsync();
+        var firstNameRow = ImportCustomersTestDomHelper.FindRowContainingText(
+            cut,
+            "table.table.table-sm.mb-0 tbody tr",
+            "First Name");
+        var incomingButton = firstNameRow.QuerySelector("button[data-action='field-incoming']").ShouldNotBeNull();
+        await incomingButton.ClickAsync();
+
+        // Act
+        var commitTask = cut.Find("button[data-action='confirm-import']").ClickAsync();
+        var totalBytes = await requestStarted.Task.WaitAsync(Xunit.TestContext.Current.CancellationToken);
+        var progress = reportedProgress.ShouldNotBeNull();
+        var transferredBytes = totalBytes / 2;
+        progress.Report(transferredBytes);
+        await cut.WaitForAssertionAsync(() =>
+            cut.Find("progress[value]").GetAttribute("value").ShouldBe(transferredBytes.ToString(CultureInfo.InvariantCulture)));
+        await cut.Find("button[aria-label='Cancel upload of customers.csv']").ClickAsync();
+        requestCompletion.TrySetResult(
+            new ImportResultDto(0, 0, [new ImportConflictDto("a@example.com")]));
+        await commitTask;
+
+        // Assert
+        _fakeCustomersApi.LastCommitCancellationToken.IsCancellationRequested.ShouldBeTrue();
+        cut.Find("[data-upload-status]").TextContent.ShouldContain("Canceled", StringComparison.Ordinal);
+        cut.Markup.ShouldNotContain("Import complete", StringComparison.Ordinal);
+        var effectiveContent = committedContent.ShouldNotBeNull();
+        var committedValues = ImportCustomersDuplicateResolutionTestHelper.ParseSingleDataRow(effectiveContent);
+        committedValues["FirstName"].ShouldBe("IncomingFirst");
+        committedValues["LastName"].ShouldBe("ExistingLast");
+    }
+
+    [Fact]
+    public async Task Canceled_conflict_lookup_cannot_replace_newer_retry_conflicts()
+    {
+        // Arrange
+        _fakeCustomersApi.SetImportCustomersResult(
+            new ImportResultDto(0, 0, [new ImportConflictDto("a@example.com")]));
+        var cut = ImportCustomersPreviewTestHelper.GoToPreview(
+            this,
+            CustomerImportCsvTestData.BuildCsvWithEmail("a@example.com"));
+        await ImportCustomersTestDomHelper.FindButtonByText(cut, "Confirm Import").ClickAsync();
+        await cut.WaitForAssertionAsync(() => cut.Markup.ShouldContain("Resolve Duplicates", StringComparison.Ordinal));
+        await cut.Find("button[data-action='keep']").ClickAsync();
+
+        var commitCount = 0;
+        _fakeCustomersApi.SetCommitImportHandler((_, _, _, _, _) =>
+        {
+            var conflictEmail = Interlocked.Increment(ref commitCount) == 1
+                ? "old@example.com"
+                : "new@example.com";
+            return Task.FromResult(new ImportResultDto(0, 0, [new ImportConflictDto(conflictEmail)]));
+        });
+        var oldLookupStarted = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        var oldLookupCompletion = new TaskCompletionSource<IReadOnlyList<GetCustomerDto>>(TaskCreationOptions.RunContinuationsAsynchronously);
+        var lookupCount = 0;
+        _fakeCustomersApi.SetGetCustomersHandler((_, _) =>
+        {
+            if (Interlocked.Increment(ref lookupCount) == 1)
+            {
+                oldLookupStarted.TrySetResult();
+                return oldLookupCompletion.Task;
+            }
+
+            return Task.FromResult<IReadOnlyList<GetCustomerDto>>([]);
+        });
+
+        // Act
+        var oldCommit = cut.Find("button[data-action='confirm-import']").ClickAsync();
+        await oldLookupStarted.Task.WaitAsync(Xunit.TestContext.Current.CancellationToken);
+        await cut.Find("button[aria-label='Cancel upload of customers.csv']").ClickAsync();
+        await cut.Find("button[data-action='confirm-import']").ClickAsync();
+        await cut.WaitForAssertionAsync(() => cut.Markup.ShouldContain("new@example.com", StringComparison.Ordinal));
+        oldLookupCompletion.TrySetResult([]);
+        await oldCommit;
+
+        // Assert
+        cut.Markup.ShouldContain("new@example.com", StringComparison.Ordinal);
+        cut.Markup.ShouldNotContain("old@example.com", StringComparison.Ordinal);
     }
 
     [Fact]

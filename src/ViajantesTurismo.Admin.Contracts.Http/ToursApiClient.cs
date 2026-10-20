@@ -16,50 +16,40 @@ public sealed partial class ToursApiClient(HttpClient httpClient, ILogger<ToursA
     private static readonly ToursApiClientJsonContext Json = ToursApiClientJsonContext.Default;
 
     /// <inheritdoc />
-    public async Task<GetTourDto[]> GetTours(CancellationToken cancellationToken, int maxItems = int.MaxValue)
+    public async Task<HttpOutcome<GetTourDto[]>> GetTours(CancellationToken cancellationToken, int maxItems = int.MaxValue)
     {
         if (maxItems <= 0)
         {
-            return [];
+            return HttpOutcomeMapper.Succeeded(HttpStatusCode.OK, Array.Empty<GetTourDto>());
         }
 
-        List<GetTourDto>? tours = null;
+        var outcome = await HttpOutcomeMapper.Send(
+            httpClient,
+            new HttpRequestMessage(HttpMethod.Get, new Uri(RoutePrefix, UriKind.Relative)),
+            HttpStatusCode.OK,
+            Json.GetTourDtoArray,
+            Json.ContractValidationProblemDto,
+            cancellationToken).ConfigureAwait(false);
 
-        await foreach (var tour in httpClient.GetFromJsonAsAsyncEnumerable(RoutePrefix, Json.GetTourDto, cancellationToken).ConfigureAwait(false))
-        {
-            if (tours?.Count >= maxItems)
-            {
-                break;
-            }
-
-            if (tour is null)
-            {
-                continue;
-            }
-
-            tours ??= [];
-            tours.Add(tour);
-        }
-
-        return tours?.ToArray() ?? [];
+        return outcome.Kind == HttpOutcomeKind.Succeeded
+            ? outcome with { Value = outcome.Value?.OfType<GetTourDto>().Take(maxItems).ToArray() ?? [] }
+            : outcome;
     }
 
     /// <inheritdoc />
-    public async Task<GetTourDto?> GetTourById(Guid id, CancellationToken cancellationToken)
+    public async Task<HttpOutcome<GetTourDto>> GetTourById(Guid id, CancellationToken cancellationToken)
     {
-        using var response = await httpClient.GetAsync(new Uri($"{RoutePrefix}/{id}", UriKind.Relative), cancellationToken).ConfigureAwait(false);
-        if (response.StatusCode == HttpStatusCode.NotFound)
-        {
-            return null;
-        }
-
-        response.EnsureSuccessStatusCode();
-        return await response.Content.ReadFromJsonAsync(Json.GetTourDto, cancellationToken).ConfigureAwait(false)
-               ?? throw new InvalidOperationException("The tour response body was empty.");
+        return await HttpOutcomeMapper.Send(
+            httpClient,
+            new HttpRequestMessage(HttpMethod.Get, new Uri($"{RoutePrefix}/{id}", UriKind.Relative)),
+            HttpStatusCode.OK,
+            Json.GetTourDto,
+            Json.ContractValidationProblemDto,
+            cancellationToken).ConfigureAwait(false);
     }
 
     /// <inheritdoc />
-    public async Task<ContractCommandOutcomeDto> CreateTour(CreateTourDto dto, CancellationToken cancellationToken)
+    public async Task<HttpOutcome> CreateTour(CreateTourDto dto, CancellationToken cancellationToken)
     {
         ArgumentNullException.ThrowIfNull(dto);
 
@@ -69,12 +59,24 @@ public sealed partial class ToursApiClient(HttpClient httpClient, ILogger<ToursA
         activity?.SetTag(AdminContractsClientTelemetry.ApiAreaTag, AdminContractsClientTelemetry.AdminApiArea);
         activity?.SetTag(AdminContractsClientTelemetry.OperationTag, AdminContractsClientTelemetry.CreateTourActivity);
 
-        using var response = await httpClient.PostAsJsonAsync(new Uri(RoutePrefix, UriKind.Relative), dto, Json.CreateTourDto, cancellationToken).ConfigureAwait(false);
-        var outcome = await ContractCommandOutcome.FromResponse(response, Json.ContractValidationProblemDto, cancellationToken).ConfigureAwait(false);
+        var request = new HttpRequestMessage(HttpMethod.Post, new Uri(RoutePrefix, UriKind.Relative))
+        {
+            Content = JsonContent.Create(dto, Json.CreateTourDto)
+        };
+        var outcome = await HttpOutcomeMapper.Send(
+            httpClient,
+            request,
+            HttpStatusCode.Created,
+            Json.ContractValidationProblemDto,
+            cancellationToken).ConfigureAwait(false);
 
-        activity?.SetTag(AdminContractsClientTelemetry.StatusCodeTag, (int)outcome.StatusCode);
+        if (outcome.StatusCode is not null)
+        {
+            activity?.SetTag(AdminContractsClientTelemetry.StatusCodeTag, (int)outcome.StatusCode.Value);
+        }
+
         activity?.SetTag(AdminContractsClientTelemetry.CommandOutcomeKindTag, outcome.Kind.ToString());
-        if (outcome.Kind != ContractCommandOutcomeKind.Succeeded && logger is not null)
+        if (outcome.Kind != HttpOutcomeKind.Succeeded && logger is not null)
         {
             LogTourCreateOutcome(logger, outcome.StatusCode, outcome.Kind);
         }
@@ -83,14 +85,22 @@ public sealed partial class ToursApiClient(HttpClient httpClient, ILogger<ToursA
     }
 
     /// <inheritdoc />
-    public async Task UpdateTour(Guid id, UpdateTourDto dto, CancellationToken cancellationToken)
+    public async Task<HttpOutcome> UpdateTour(Guid id, UpdateTourDto dto, CancellationToken cancellationToken)
     {
         ArgumentNullException.ThrowIfNull(dto);
 
-        using var response = await httpClient.PutAsJsonAsync($"{RoutePrefix}/{id}", dto, Json.UpdateTourDto, cancellationToken).ConfigureAwait(false);
-        await ContractHttpValidation.EnsureSuccessOrThrowValidationException(response, Json.ContractValidationProblemDto, cancellationToken).ConfigureAwait(false);
+        var request = new HttpRequestMessage(HttpMethod.Put, new Uri($"{RoutePrefix}/{id}", UriKind.Relative))
+        {
+            Content = JsonContent.Create(dto, Json.UpdateTourDto)
+        };
+        return await HttpOutcomeMapper.Send(
+            httpClient,
+            request,
+            HttpStatusCode.NoContent,
+            Json.ContractValidationProblemDto,
+            cancellationToken).ConfigureAwait(false);
     }
 
     [LoggerMessage(1, LogLevel.Warning, "Tour create returned {StatusCode} with outcome {OutcomeKind}.")]
-    private static partial void LogTourCreateOutcome(ILogger logger, HttpStatusCode statusCode, ContractCommandOutcomeKind outcomeKind);
+    private static partial void LogTourCreateOutcome(ILogger logger, HttpStatusCode? statusCode, HttpOutcomeKind outcomeKind);
 }
