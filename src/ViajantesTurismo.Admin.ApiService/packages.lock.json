@@ -286,6 +286,9 @@
           "Microsoft.EntityFrameworkCore.Relational": "[10.0.13, )"
         }
       },
+      "sharedkernel.httpcaching.aspnetcore": {
+        "type": "Project"
+      },
       "sharedkernel.httpclients": {
         "type": "Project",
         "dependencies": {

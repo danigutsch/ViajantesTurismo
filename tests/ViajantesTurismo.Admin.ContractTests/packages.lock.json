@@ -384,6 +384,9 @@
           "Microsoft.EntityFrameworkCore.Relational": "[10.0.13, )"
         }
       },
+      "sharedkernel.httpcaching.aspnetcore": {
+        "type": "Project"
+      },
       "sharedkernel.httpclients": {
         "type": "Project",
         "dependencies": {
@@ -502,6 +505,7 @@
           "SharedKernel.ApiVersioning.AspNetCore": "[0.1.0-alpha.0, )",
           "SharedKernel.AspNetCore": "[0.1.0-alpha.0, )",
           "SharedKernel.Branding": "[0.1.0-alpha.0, )",
+          "SharedKernel.HttpCaching.AspNetCore": "[0.1.0-alpha.0, )",
           "SharedKernel.HttpClients": "[0.1.0-alpha.0, )",
           "SharedKernel.Idempotency": "[0.1.0-alpha.0, )",
           "SharedKernel.MalwareScanning": "[0.1.0-alpha.0, )",
