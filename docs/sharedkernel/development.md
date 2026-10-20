@@ -3,7 +3,8 @@
 SharedKernel implementations, reusable test helpers, analyzers, generators, samples, benchmarks,
 and library tooling belong to the separate SharedKernel repository. ViajantesTurismo consumes
 `PandaBear.SharedKernel.*` packages. Public namespaces and assembly names remain `SharedKernel.*`.
-Application documentation and repository tooling belong to `ViajantesTurismo.*` projects here.
+Generic documentation and repository-configuration tooling belongs to SharedKernel. Application
+documentation configuration, CI and coverage policy, bootstrap, and compatibility orchestration stay here.
 
 ## Bootstrap a checkout
 
@@ -62,3 +63,8 @@ Missing source, missing artifacts, revision mismatches, and hash mismatches fail
 Linux and Windows must consume the same hashed packages. Record platform tests and NativeAOT results
 separately; an unavailable platform remains pending. Hosted distribution and public publishing require
 a later explicit decision. This workflow uses no package server and publishes nothing to nuget.org.
+
+Generic commands use `dotnet tool run sharedkernel-repo -- <command>` and documentation commands use
+`dotnet tool run sharedkernel-docs -- <command>`. Endpoint metadata methods and audience classification
+are consumer settings in `docs/architecture/generated-diagrams.json`. Shared telemetry privacy processors
+always enforce the baseline, with additional business-sensitive attribute policy supplied by ServiceDefaults.
