@@ -17,8 +17,8 @@ module in `ViajantesTurismo.Catalog.ApiService` without moving it into the Catal
 - current-decision: `openapi-retarget-gate`
 - current-decision: `positive-event-revision`
 - current-decision: `production-platform-undecided`
-- current-decision: `put-etag-omitted-after-normalization`
 - current-decision: `public-cache-60-300`
+- current-decision: `put-etag-omitted-after-normalization`
 - current-decision: `recovery-gates-document-generation`
 - current-decision: `reseed-only-recovery-lane`
 - current-decision: `rfc9110-strong-if-match`
