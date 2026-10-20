@@ -94,10 +94,14 @@ internal sealed class CandidateScratchTestScope : IDisposable, IAsyncDisposable
             """);
     }
 
-    public async Task Prepare(CancellationToken ct)
+    public async Task Prepare(CancellationToken ct, string? candidateContent = null)
     {
         Candidate.WriteFile(".gitignore", "evidence/\n");
         await Candidate.WriteManifest(ct);
+        if (candidateContent is not null)
+        {
+            Candidate.WriteFile("candidate.json", candidateContent);
+        }
         string[][] commands = [
             ["init"], ["add", "."],
             ["-c", "user.name=Compatibility Test", "-c", "user.email=compatibility@example.test", "-c", "commit.gpgsign=false", "commit", "-m", "test fixture"]

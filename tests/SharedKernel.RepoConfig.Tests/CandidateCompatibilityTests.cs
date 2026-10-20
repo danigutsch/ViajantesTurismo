@@ -185,6 +185,137 @@ public sealed class CandidateCompatibilityTests
         error.ToString().ShouldContain(expected, StringComparison.Ordinal);
     }
 
+    [Theory]
+    [InlineData("Directory.Packages.props", "<Project")]
+    [InlineData("ViajantesTurismo.slnx", "<Solution")]
+    [InlineData("Consumer.csproj", "<Project")]
+    [InlineData("packages.lock.json", "{")]
+    [InlineData("packages.lock.json", "null")]
+    [InlineData("packages.lock.json", "{}")]
+    [InlineData("packages.lock.json", "{\"dependencies\":null}")]
+    [InlineData("packages.lock.json", "{\"dependencies\":{\"net10.0\":null}}")]
+    [InlineData("packages.lock.json", "{\"dependencies\":{\"net10.0\":{\"SharedKernel.Results\":null}}}")]
+    [InlineData("packages.lock.json", "{\"dependencies\":{\"net10.0\":{\"SharedKernel.Results\":{}}}}")]
+    [InlineData("packages.lock.json", "{\"dependencies\":{\"net10.0\":{\"SharedKernel.Results\":{\"type\":null}}}}")]
+    [InlineData("packages.lock.json", "{\"dependencies\":{\"net10.0\":{\"SharedKernel.Results\":{\"type\":\"Direct\"}}}}")]
+    [InlineData("packages.lock.json", "{\"dependencies\":{\"net10.0\":{\"SharedKernel.Results\":{\"type\":\"Direct\",\"resolved\":null}}}}")]
+    public async Task Committed_malformed_consumer_files_persist_failed_compatibility_evidence(string path, string content)
+    {
+        // Arrange
+        using var scope = new CandidateScratchTestScope();
+        var ct = TestContext.Current.CancellationToken;
+        scope.Candidate.WriteFile(path, content);
+        await scope.Prepare(ct);
+        var destination = Path.Combine(scope.Candidate.Root, "evidence", "compatibility.json");
+        using var output = new StringWriter();
+        using var error = new StringWriter();
+
+        // Act
+        var result = await CandidateCompatibilityCommand.Run(
+            ["--candidate", scope.Candidate.Manifest, "--output", destination], output, error, scope.Candidate.Root, ct);
+
+        // Assert
+        result.ShouldBe(1);
+        var evidence = JsonNode.Parse(await File.ReadAllTextAsync(destination, ct)).ShouldNotBeNull();
+        evidence["consumerCompatibility"].ShouldNotBeNull().GetValue<string>().ShouldBe("failed");
+        evidence["consumerRevision"].ShouldNotBeNull().GetValue<string>().Length.ShouldBe(40);
+        evidence["reason"].ShouldNotBeNull().GetValue<string>().ShouldNotBeEmpty();
+        error.ToString().ShouldNotBeEmpty();
+        scope.FindScratchDirectories().ShouldBeEmpty();
+    }
+
+    [Theory]
+    [InlineData("libraryDirty", false)]
+    [InlineData("libraryDirty", true)]
+    [InlineData("packageVersion", false)]
+    [InlineData("packageVersion", true)]
+    [InlineData("packageHash", false)]
+    public async Task Missing_or_null_candidate_fields_persist_failed_compatibility_evidence(string field, bool missing)
+    {
+        // Arrange
+        using var scope = new CandidateScratchTestScope();
+        var ct = TestContext.Current.CancellationToken;
+        if (field == "packageHash")
+        {
+            scope.Candidate.Evidence["packageSha256"].ShouldNotBeNull().AsObject()[Path.GetFileName(scope.Candidate.Package)] = null;
+        }
+        else if (missing)
+        {
+            scope.Candidate.Evidence.Remove(field);
+        }
+        else
+        {
+            scope.Candidate.Evidence[field] = null;
+        }
+        await scope.Prepare(ct);
+        var destination = Path.Combine(scope.Candidate.Root, "evidence", "compatibility.json");
+        using var output = new StringWriter();
+        using var error = new StringWriter();
+
+        // Act
+        var result = await CandidateCompatibilityCommand.Run(
+            ["--candidate", scope.Candidate.Manifest, "--output", destination], output, error, scope.Candidate.Root, ct);
+
+        // Assert
+        result.ShouldBe(1);
+        var evidence = JsonNode.Parse(await File.ReadAllTextAsync(destination, ct)).ShouldNotBeNull();
+        evidence["consumerCompatibility"].ShouldNotBeNull().GetValue<string>().ShouldBe("failed");
+        evidence["reason"].ShouldNotBeNull().GetValue<string>().ShouldNotBeEmpty();
+        error.ToString().ShouldNotBeEmpty();
+        scope.FindScratchDirectories().ShouldBeEmpty();
+    }
+
+    [Theory]
+    [InlineData("{")]
+    [InlineData("null")]
+    [InlineData("[]")]
+    public async Task Malformed_candidate_manifests_persist_failed_compatibility_evidence(string content)
+    {
+        // Arrange
+        using var scope = new CandidateScratchTestScope();
+        var ct = TestContext.Current.CancellationToken;
+        await scope.Prepare(ct, candidateContent: content);
+        var destination = Path.Combine(scope.Candidate.Root, "evidence", "compatibility.json");
+        using var output = new StringWriter();
+        using var error = new StringWriter();
+
+        // Act
+        var result = await CandidateCompatibilityCommand.Run(
+            ["--candidate", scope.Candidate.Manifest, "--output", destination], output, error, scope.Candidate.Root, ct);
+
+        // Assert
+        result.ShouldBe(1);
+        var evidence = JsonNode.Parse(await File.ReadAllTextAsync(destination, ct)).ShouldNotBeNull();
+        evidence["consumerCompatibility"].ShouldNotBeNull().GetValue<string>().ShouldBe("failed");
+        evidence["reason"].ShouldNotBeNull().GetValue<string>().ShouldNotBeEmpty();
+        error.ToString().ShouldNotBeEmpty();
+        scope.FindScratchDirectories().ShouldBeEmpty();
+    }
+
+    [Fact]
+    public async Task Uncommitted_consumer_changes_remain_pending_without_running_validation()
+    {
+        // Arrange
+        using var scope = new CandidateScratchTestScope();
+        var ct = TestContext.Current.CancellationToken;
+        await scope.Prepare(ct);
+        scope.Candidate.WriteFile("Consumer.csproj", "<Project />\n");
+        var destination = Path.Combine(scope.Candidate.Root, "evidence", "compatibility.json");
+        using var output = new StringWriter();
+        using var error = new StringWriter();
+
+        // Act
+        var result = await CandidateCompatibilityCommand.Run(
+            ["--candidate", scope.Candidate.Manifest, "--output", destination], output, error, scope.Candidate.Root, ct);
+
+        // Assert
+        result.ShouldBe(1);
+        var evidence = JsonNode.Parse(await File.ReadAllTextAsync(destination, ct)).ShouldNotBeNull();
+        evidence["consumerCompatibility"].ShouldNotBeNull().GetValue<string>().ShouldBe("pending");
+        evidence["consumerDirty"].ShouldNotBeNull().GetValue<bool>().ShouldBeTrue();
+        scope.FindScratchDirectories().ShouldBeEmpty();
+    }
+
     [Fact]
     public async Task Uncommitted_library_evidence_remains_pending_without_running_validation()
     {
