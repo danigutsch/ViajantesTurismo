@@ -20,6 +20,39 @@ public sealed class ServiceDefaultsTelemetryTests
     private const string CatalogMetricIntegrationEvent = "catalog.integration_event";
 
     [Fact]
+    [Trait(SharedKernel.Testing.TestTraitNames.AreaName, TestTraits.ServiceDefaultsArea)]
+    public void Management_service_defaults_export_admin_client_business_outcomes()
+    {
+        // Arrange
+        const string sourceName = "ViajantesTurismo.Admin.Contracts.Clients";
+        var exportedActivities = new ConcurrentQueue<Activity>();
+        using var activitySource = new ActivitySource(sourceName);
+        var builder = Host.CreateApplicationBuilder(new HostApplicationBuilderSettings
+        {
+            ApplicationName = "ViajantesTurismo.Management.Web"
+        });
+        builder.Configuration["OTEL_EXPORTER_OTLP_ENDPOINT"] = string.Empty;
+        builder.AddServiceDefaults();
+        builder.Services.AddOpenTelemetry().WithTracing(tracing =>
+            tracing.AddProcessor(new SimpleActivityExportProcessor(new CollectingActivityExporter(exportedActivities))));
+        using var host = builder.Build();
+        var tracerProvider = host.Services.GetRequiredService<TracerProvider>();
+
+        // Act
+        using (var activity = activitySource.StartActivity("customers.create", ActivityKind.Client))
+        {
+            activity?.SetStatus(ActivityStatusCode.Error);
+        }
+        tracerProvider.ForceFlush();
+
+        // Assert
+        var exported = exportedActivities.ShouldHaveSingleItem(activity =>
+            string.Equals(activity.Source.Name, sourceName, StringComparison.Ordinal));
+        exported.OperationName.ShouldBe("customers.create");
+        exported.Status.ShouldBe(ActivityStatusCode.Error);
+    }
+
+    [Fact]
     public void Add_service_defaults_exports_catalog_custom_tracing_and_metrics()
     {
         // Arrange

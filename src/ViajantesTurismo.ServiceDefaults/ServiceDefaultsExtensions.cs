@@ -24,6 +24,7 @@ namespace ViajantesTurismo.ServiceDefaults;
 [PublicAPI]
 public static class ServiceDefaultsExtensions
 {
+    private const string AdminContractsClientTelemetryName = "ViajantesTurismo.Admin.Contracts.Clients";
     private const string OtlpExporterEndpointVariableName = "OTEL_EXPORTER_OTLP_ENDPOINT";
 
     /// <summary>
@@ -117,7 +118,7 @@ public static class ServiceDefaultsExtensions
     private static void ConfigureOpenTelemetryTracing(TracerProviderBuilder tracing, string applicationName)
     {
         tracing.AddProcessor(new ActivityPrivacyProcessor())
-            .AddSource(applicationName)
+            .AddSource(applicationName, AdminContractsClientTelemetryName)
             .AddCatalogTracing()
             .AddSharedKernelMediatorTracing()
             .AddSharedKernelProviderTracing()
