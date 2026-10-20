@@ -35,6 +35,14 @@ moderate-or-higher advisories and by allowing only the routine-license set above
 dependencies. Update this document and `.github/workflows/dependency-review.yml` together when the
 routine license set changes.
 
+## Exact-version license evidence
+
+The [dependency license evidence record](ci/dependency-license-evidence.md) documents the scoped
+StreamJsonRpc 2.25.29 scanner-metadata correction, package NOTICE review, owner, and review expiry.
+The exemption covers only that package/version's license classification; vulnerability checks remain
+active. It does not expand the routine license set or exempt Magick.NET. Magick.NET's native notices
+and runtime inclusion evidence require a separate distribution review before any exception.
+
 ## Vulnerability severity gates
 
 Dependency Review fails pull requests on `moderate` or higher advisories because it evaluates newly
