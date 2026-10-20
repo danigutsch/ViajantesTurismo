@@ -3,6 +3,7 @@ using System.Xml.Linq;
 
 namespace ViajantesTurismo.RepoConfig.Tests;
 
+[Trait(TestTraitNames.CategoryName, TestTraits.CommandLineCategory)]
 public sealed class CiTestProjectSelectionCommandTests
 {
     [Theory]
@@ -12,7 +13,6 @@ public sealed class CiTestProjectSelectionCommandTests
     [InlineData("fast-validation-1")]
     [InlineData("fast-validation-2")]
     [InlineData("mediator-heavy")]
-    [Trait(TestTraitNames.CategoryName, TestTraits.CommandLineCategory)]
     public async Task Extracted_library_test_slice_is_skipped_without_skipping_remaining_application_tests(string slice)
     {
         // Arrange
@@ -52,6 +52,18 @@ public sealed class CiTestProjectSelectionCommandTests
         githubOutputs.ShouldContain(slice.Replace('-', '_') + "_required=false");
         githubOutputs.ShouldContain("selected_test_project_count=5");
         githubOutputs.ShouldContain("build_required=true");
+        if (slice.StartsWith("fast-validation-", StringComparison.Ordinal))
+        {
+            var root = CiTestSelectionTestProcess.GetRepositoryRoot();
+            var workflow = await File.ReadAllTextAsync(Path.Combine(root, ".github", "workflows", "ci.yml"), TestContext.Current.CancellationToken);
+            var row = workflow.Split("          - id: " + slice + "\n", StringSplitOptions.None)[1]
+                .Split("          - id: ", StringSplitOptions.None)[0];
+            var changeOutput = row.Split('\n')
+                .Single(line => line.TrimStart().StartsWith("change_output:", StringComparison.Ordinal))
+                .Split(':', 2)[1].Trim();
+            githubOutputs.ShouldContain(changeOutput + "=false");
+            workflow.ShouldContain(changeOutput + ": ${{ steps.change-scope.outputs." + changeOutput + " }}", StringComparison.Ordinal);
+        }
         var remainingManifests = await Task.WhenAll(Directory.EnumerateFiles(outputDirectory, "*.txt")
             .Where(path => Path.GetFileName(path) != "openapi-tool-windows.txt")
             .Select(path => File.ReadAllLinesAsync(path, TestContext.Current.CancellationToken)));

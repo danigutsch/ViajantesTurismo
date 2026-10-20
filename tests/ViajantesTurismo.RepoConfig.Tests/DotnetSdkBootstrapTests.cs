@@ -1,4 +1,4 @@
-namespace SharedKernel.RepoConfig.Tests;
+namespace ViajantesTurismo.RepoConfig.Tests;
 
 [Trait(TestTraitNames.CategoryName, TestTraits.CommandLineCategory)]
 [Collection("Repo config tool environment")]

@@ -1,6 +1,6 @@
 using System.Xml.Linq;
 
-namespace SharedKernel.RepoConfig.Tests;
+namespace ViajantesTurismo.RepoConfig.Tests;
 
 [Trait(TestTraitNames.CategoryName, TestTraits.CommandLineCategory)]
 public sealed class CiCoverageCollectionTests

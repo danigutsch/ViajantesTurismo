@@ -851,6 +851,7 @@
           "PandaBear.SharedKernel.ApiVersioning.AspNetCore": "[0.1.0-alpha.cutover.20261020.3, )",
           "PandaBear.SharedKernel.AspNetCore": "[0.1.0-alpha.cutover.20261020.3, )",
           "PandaBear.SharedKernel.Branding": "[0.1.0-alpha.cutover.20261020.3, )",
+          "PandaBear.SharedKernel.HttpCaching.AspNetCore": "[0.1.0-alpha.cutover.20261020.3, )",
           "PandaBear.SharedKernel.HttpClients": "[0.1.0-alpha.cutover.20261020.3, )",
           "PandaBear.SharedKernel.Idempotency": "[0.1.0-alpha.cutover.20261020.3, )",
           "PandaBear.SharedKernel.MalwareScanning": "[0.1.0-alpha.cutover.20261020.3, )",
@@ -1582,6 +1583,12 @@
           "PandaBear.SharedKernel.EventSourcing": "0.1.0-alpha.cutover.20261020.3",
           "PandaBear.SharedKernel.Npgsql": "0.1.0-alpha.cutover.20261020.3"
         }
+      },
+      "PandaBear.SharedKernel.HttpCaching.AspNetCore": {
+        "type": "CentralTransitive",
+        "requested": "[0.1.0-alpha.cutover.20261020.3, )",
+        "resolved": "0.1.0-alpha.cutover.20261020.3",
+        "contentHash": "SRLYGyWJLBxw9n+ShjKrOpKGcInauUr3+tBtjiljoIXk+Sfebms4BctjjSL+sdj830r6wfh1sQ2WhY+t9WyRMA=="
       },
       "PandaBear.SharedKernel.HttpClients": {
         "type": "CentralTransitive",

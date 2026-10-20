@@ -72,6 +72,12 @@
           "PandaBear.SharedKernel.Results": "0.1.0-alpha.cutover.20261020.3"
         }
       },
+      "PandaBear.SharedKernel.HttpCaching.AspNetCore": {
+        "type": "Direct",
+        "requested": "[0.1.0-alpha.cutover.20261020.3, )",
+        "resolved": "0.1.0-alpha.cutover.20261020.3",
+        "contentHash": "SRLYGyWJLBxw9n+ShjKrOpKGcInauUr3+tBtjiljoIXk+Sfebms4BctjjSL+sdj830r6wfh1sQ2WhY+t9WyRMA=="
+      },
       "PandaBear.SharedKernel.HttpClients": {
         "type": "Direct",
         "requested": "[0.1.0-alpha.cutover.20261020.3, )",

@@ -141,6 +141,7 @@
     <PackageVersion Include="PandaBear.SharedKernel.Testing.AspNetCore" Version="0.1.0-alpha.cutover.20261020.3" />
     <PackageVersion Include="PandaBear.SharedKernel.Testing.Assertions" Version="0.1.0-alpha.cutover.20261020.3" />
     <PackageVersion Include="PandaBear.SharedKernel.Testing.Contracts" Version="0.1.0-alpha.cutover.20261020.3" />
+    <PackageVersion Include="PandaBear.SharedKernel.Testing.Roslyn" Version="0.1.0-alpha.cutover.20261020.3" />
     <PackageVersion Include="PandaBear.SharedKernel.Testing.Http" Version="0.1.0-alpha.cutover.20261020.3" />
     <PackageVersion Include="PandaBear.SharedKernel.Testing.Playwright" Version="0.1.0-alpha.cutover.20261020.3" />
     <PackageVersion Include="PandaBear.SharedKernel.Testing.Snapshots" Version="0.1.0-alpha.cutover.20261020.3" />

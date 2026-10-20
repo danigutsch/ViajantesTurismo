@@ -4,7 +4,7 @@ using System.Runtime.InteropServices;
 using System.Security.Cryptography;
 using System.Text.Json;
 
-namespace SharedKernel.RepoConfig.Tests;
+namespace ViajantesTurismo.RepoConfig.Tests;
 
 internal sealed class DotnetSdkBootstrapScope : IDisposable
 {

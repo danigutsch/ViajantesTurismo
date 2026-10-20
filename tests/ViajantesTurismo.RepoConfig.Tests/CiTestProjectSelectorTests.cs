@@ -47,6 +47,40 @@ public sealed class CiTestProjectSelectorTests
             .ShouldBe("tests/Application.Tests/Application.Tests.csproj");
     }
 
+    [Theory]
+    [InlineData("")]
+    [InlineData("http://schemas.microsoft.com/developer/msbuild/2003")]
+    [Trait(TestTraitNames.CategoryName, TestTraits.CommandLineCategory)]
+    [Trait(SharedKernelTestTraitNames.CapabilityName, "CiSelection")]
+    public void Unevaluated_project_imports_select_every_test_project(string xmlNamespace)
+    {
+        // Arrange
+        using var repository = new TemporaryCiTestRepository();
+        repository.AddProject("src/Core/Core.csproj");
+        repository.AddProject("tests/Direct.Tests/Direct.Tests.csproj", "src/Core/Core.csproj");
+        repository.AddProject("tests/Imported.Tests/Imported.Tests.csproj");
+        repository.WriteFile(
+            "tests/Imported.Tests/Imported.Tests.csproj",
+            $"<Project xmlns=\"{xmlNamespace}\"><Import Project=\"references.props\" /></Project>");
+        repository.WriteFile(
+            "tests/Imported.Tests/references.props",
+            "<Project><ItemGroup><ProjectReference Include=\"../../src/Core/Core.csproj\" /></ItemGroup></Project>");
+        repository.WriteSlice(
+            "fast-validation",
+            "tests/Direct.Tests/Direct.Tests.csproj",
+            "tests/Imported.Tests/Imported.Tests.csproj");
+
+        // Act
+        var selection = CiTestProjectSelector.Select(
+            repository.RootPath,
+            ["src/Core/Service.cs"],
+            fullValidation: false);
+
+        // Assert
+        selection.FallbackToFullValidation.ShouldBeTrue();
+        selection.SelectedProjectsBySlice["fast-validation"].Count.ShouldBe(2);
+    }
+
     [Fact]
     public void Windows_project_reference_paths_are_resolved_on_linux()
     {

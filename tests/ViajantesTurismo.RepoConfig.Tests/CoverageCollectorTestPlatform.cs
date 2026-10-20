@@ -1,4 +1,4 @@
-namespace SharedKernel.RepoConfig.Tests;
+namespace ViajantesTurismo.RepoConfig.Tests;
 
 internal static class CoverageCollectorTestPlatform
 {
