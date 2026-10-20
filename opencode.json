@@ -28,6 +28,19 @@
   },
   "lsp": true,
   "agent": {
+    "diagnose": {
+      "description": "Diagnose .NET and Aspire failures using read-only repository and installed SDK evidence.",
+      "mode": "subagent",
+      "permission": {
+        "edit": "deny",
+        "bash": "deny",
+        "task": "deny",
+        "external_directory": {
+          "/usr/share/dotnet/sdk/**": "allow",
+          "~/.dotnet/sdk/**": "allow"
+        }
+      }
+    },
     "aspire-operator": {
       "description": "Inspect and operate the local Aspire AppHost through approval-gated MCP tools.",
       "mode": "subagent",

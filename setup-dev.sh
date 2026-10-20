@@ -4,18 +4,25 @@
 
 set -e
 
-NOT_FOUND="not found"
+repo_root="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+install_sdk=false
 
 # Parse arguments
 while [[ $# -gt 0 ]]; do
     case $1 in
+        --install-sdk)
+            install_sdk=true
+            ;;
         *)
             echo "Unknown option: $1"
-            echo "Usage: $0"
+            echo "Usage: $0 [--install-sdk]"
             exit 1
             ;;
     esac
+    shift
 done
+
+cd "${repo_root}"
 
 # Colors
 RED='\033[0;31m'
@@ -31,57 +38,46 @@ print_header() {
 }
 
 check_dotnet_sdk_version() {
+    local -a ensure_args
     local installed_sdk
     local required_version
 
     printf "%b" "${YELLOW}📦 Checking .NET SDK...${NC}\n"
 
-    if [[ ! -f "global.json" ]]; then
-        printf "%b" "   ${RED}❌ global.json not found in the current directory${NC}\n"
+    if ! command -v jq > /dev/null 2>&1; then
+        printf "%b" "   ${RED}jq is required to read global.json${NC}\n"
         exit 1
     fi
-
-    # Prefer jq for parsing global.json when available; otherwise fall back to python3.
-    if command -v jq > /dev/null 2>&1; then
-        required_version=$(jq -r '.sdk.version' global.json 2> /dev/null || echo "")
-    else
-        required_version=$(
-            python3 - << 'EOF' 2> /dev/null || echo ""
-import json
-import sys
-
-try:
-    with open("global.json", "r", encoding="utf-8") as f:
-        data = json.load(f)
-    print(data.get("sdk", {}).get("version", ""))
-except Exception:
-    sys.exit(1)
-EOF
-        )
-    fi
-
+    required_version=$(jq -er '.sdk.version | select(type == "string" and length > 0)' global.json)
     if [[ -z "${required_version}" ]]; then
         printf "%b" "   ${RED}❌ Unable to determine required .NET SDK version from global.json${NC}\n"
         exit 1
     fi
 
-    if ! command -v dotnet > /dev/null 2>&1; then
-        printf "%b" "   ${RED}❌ .NET SDK not found${NC}\n"
-        printf "%b" "   ${CYAN}💡 Download .NET ${required_version} from: https://dotnet.microsoft.com/download/dotnet/10.0${NC}\n"
+    ensure_args=(
+        --global-json "${repo_root}/global.json"
+        --install-dir "${HOME}/.dotnet"
+    )
+    if [[ "${install_sdk}" == true ]]; then
+        ensure_args=(--install "${ensure_args[@]}")
+    fi
+
+    if ! bash "${repo_root}/scripts/ensure-dotnet-sdk.sh" "${ensure_args[@]}"; then
+        printf "%b" "   ${RED}❌ Required .NET SDK is unavailable${NC}\n"
         exit 1
     fi
 
-    installed_sdk=$(dotnet --version 2>&1 || echo "${NOT_FOUND}")
-
-    if [[ "${installed_sdk}" != "${NOT_FOUND}" ]]; then
-        printf "%b" "   ${GREEN}✅ .NET SDK installed: ${installed_sdk}${NC}\n"
-        if [[ "${installed_sdk}" != "${required_version}" ]]; then
-            printf "%b" "   ${RED}❌ Required version: ${required_version}${NC}\n"
-            printf "%b" "   ${CYAN}💡 Install the exact SDK from: https://dotnet.microsoft.com/download/dotnet/10.0${NC}\n"
-            printf "%b" "   ${CYAN}💡 Re-run setup after the exact SDK is installed so locked restore uses the same toolchain as CI.${NC}\n"
-            exit 1
-        fi
+    if [[ -f "${HOME}/.dotnet/sdk/${required_version}/dotnet.dll" ]]; then
+        export DOTNET_ROOT="${HOME}/.dotnet"
+        export PATH="${DOTNET_ROOT}:${PATH}"
     fi
+
+    if ! installed_sdk="$(dotnet --version 2> /dev/null)" || [[ "${installed_sdk}" != "${required_version}" ]]; then
+        printf "%b" "   ${RED}❌ Resolved .NET SDK does not match required ${required_version}${NC}\n"
+        exit 1
+    fi
+
+    printf "%b" "   ${GREEN}✅ .NET SDK installed: ${installed_sdk}${NC}\n"
 
     return 0
 }
