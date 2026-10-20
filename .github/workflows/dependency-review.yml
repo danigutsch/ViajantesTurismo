@@ -83,8 +83,6 @@ jobs:
           fail-on-severity: moderate
           license-check: true
           vulnerability-check: true
-          # Exact-version metadata correction; evidence and review expiry: docs/ci/dependency-license-evidence.md.
-          allow-dependencies-licenses: pkg:nuget/StreamJsonRpc@2.25.29
           allow-licenses: >-
             MIT, Apache-2.0, BSD-2-Clause, BSD-3-Clause, 0BSD, ISC, PostgreSQL, Zlib,
             Unlicense, CC0-1.0

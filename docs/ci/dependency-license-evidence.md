@@ -6,7 +6,7 @@ or by January 20, 2027, whichever comes first. This record does not grant genera
 ## Contents
 
 - [Snapshot failure and correction](#snapshot-failure-and-correction)
-- [StreamJsonRpc metadata correction](#streamjsonrpc-metadata-correction)
+- [StreamJsonRpc metadata review](#streamjsonrpc-metadata-review)
 - [Magick native audit](#magick-native-audit)
 - [Remaining decision](#remaining-decision)
 
@@ -34,11 +34,18 @@ is introduced. Manual submissions take precedence over automatic submissions per
 [GitHub's documented deduplication](https://docs.github.com/en/rest/dependency-graph/dependency-submission).
 Automatic submission is left enabled as fallback; no remote security setting is changed.
 
-## StreamJsonRpc metadata correction
+## StreamJsonRpc metadata review
 
-Exact scope: `pkg:nuget/StreamJsonRpc@2.25.29`, license checking only. Vulnerability checks and the
-moderate severity gate remain active. Other versions, other packages, and unknown/mixed license
-categories receive no blanket exemption.
+Reviewed package: `pkg:nuget/StreamJsonRpc@2.25.29`. No package license exemption is configured.
+Vulnerability checks and the moderate severity gate remain active.
+
+The pinned review Action's `purlsMatch` implementation ignores package versions when matching
+`allow-dependencies-licenses`. Supplying a version in that option would exempt future versions too,
+contrary to the intended scope. Do not use that option as a version-specific correction. See the
+[exact pinned source](https://github.com/actions/dependency-review-action/blob/2031cfc080254a8a887f58cffee85186f0e49e48/src/purl.ts).
+Complete base/head snapshots resolve false additions without changing license policy. If a real
+package change later needs an exception, use a separately reviewed mechanism that actually checks
+its version and preserve this evidence; do not rely on the appearance of a versioned purl.
 
 The installed NuGet package declares MIT and repository commit
 `332cc170a82fa424e0b4f902ab9f9a876e827f38`. Aspire.Hosting 13.6.1 still references it directly;
@@ -61,9 +68,8 @@ Local exact-package evidence (SHA-256):
 
 Sources: the package's versioned NuGet archive and
 [Aspire 13.6.1 source](https://github.com/microsoft/aspire/blob/v13.6.1/src/Aspire.Hosting/Aspire.Hosting.csproj).
-Remove the exception when upstream graph metadata accurately represents this exact package, or
-replace it only after reviewing a new version's archive and notices. The workflow option permits
-any scanner license label for this exact version; the evidence review, scope, and expiry matter.
+Re-review a new version's archive and notices rather than assuming the same conclusion. This
+record preserves provenance without disabling license checks for the package or any future version.
 
 ## Magick native audit
 

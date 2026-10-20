@@ -31,7 +31,7 @@ public sealed class DependencyReviewWorkflowTests
     }
 
     [Fact]
-    public void License_metadata_exception_is_version_scoped_and_preserves_other_security_checks()
+    public void License_review_does_not_use_package_exemptions_that_ignore_versions()
     {
         // Arrange
         var path = Path.Combine(GetRepositoryRoot(), ".github", "workflows", "dependency-review.yml");
@@ -40,7 +40,7 @@ public sealed class DependencyReviewWorkflowTests
         var workflow = File.ReadAllText(path);
 
         // Assert
-        workflow.ShouldContain("allow-dependencies-licenses: pkg:nuget/StreamJsonRpc@2.25.29", StringComparison.Ordinal);
+        workflow.ShouldNotContain("allow-dependencies-licenses:", StringComparison.Ordinal);
         workflow.ShouldContain("fail-on-severity: moderate", StringComparison.Ordinal);
         workflow.ShouldContain("license-check: true", StringComparison.Ordinal);
         workflow.ShouldContain("vulnerability-check: true", StringComparison.Ordinal);
