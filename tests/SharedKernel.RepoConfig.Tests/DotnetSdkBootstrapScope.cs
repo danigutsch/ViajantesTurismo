@@ -19,6 +19,8 @@ internal sealed class DotnetSdkBootstrapScope : IDisposable
         _workspace.WriteFile("global.json", "{\"sdk\":{\"version\":\"10.0.303\",\"rollForward\":\"disable\"}}");
         _workspace.WriteFile("sdks.txt", string.Empty);
         _workspace.WriteFile("payload/sdk/10.0.303/dotnet.dll", "fixture");
+        _workspace.WriteFile("payload/dotnet", "new host");
+        _workspace.WriteFile("install/dotnet", "existing host");
         _workspace.WriteFile("install/sdk/10.0.302/marker", "old sdk");
         _workspace.WriteFile("bin/dotnet", "#!/usr/bin/env bash\ncat \"$FAKE_DOTNET_SDKS_FILE\"\n");
         _workspace.WriteFile("bin/python3", "#!/usr/bin/env bash\necho 'SDK bootstrap must not invoke Python' >&2\nexit 99\n");
@@ -82,6 +84,27 @@ internal sealed class DotnetSdkBootstrapScope : IDisposable
         _workspace.WriteFile("alternate.json", "{\"sdk\":{\"version\":\"10.0.304\",\"rollForward\":\"disable\"}}");
 
     public void CorruptArchive() => _workspace.WriteFile("sdk.tar.gz", "not an SDK archive");
+
+    public void UseCopyWithoutUpdateArgument()
+    {
+        _workspace.WriteFile("bin/cp", """
+            #!/usr/bin/env bash
+            if [[ "$1" == "--help" ]]; then
+                printf '%s\n' '  -u, --update  copy only newer source files'
+                exit 0
+            fi
+            for argument in "$@"; do
+                case "$argument" in
+                    --update=*) echo "cp: option '--update' does not allow an argument" >&2; exit 1 ;;
+                esac
+            done
+            exec /bin/cp "$@"
+            """);
+        if (!OperatingSystem.IsWindows())
+        {
+            File.SetUnixFileMode(PathFor("bin/cp"), UnixFileMode.UserRead | UnixFileMode.UserWrite | UnixFileMode.UserExecute);
+        }
+    }
 
     public void WriteMetadata(bool invalidHash = false)
     {

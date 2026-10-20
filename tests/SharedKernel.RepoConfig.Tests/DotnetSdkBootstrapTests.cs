@@ -54,8 +54,28 @@ public sealed class DotnetSdkBootstrapTests
         result.ExitCode.ShouldBe(0);
         scope.FileExists("install/sdk/10.0.303/dotnet.dll").ShouldBeTrue();
         scope.FileExists("install/sdk/10.0.302/marker").ShouldBeTrue();
+        var host = await File.ReadAllTextAsync(scope.PathFor("install/dotnet"), TestContext.Current.CancellationToken);
+        host.ShouldBe("existing host");
         var requests = await File.ReadAllTextAsync(scope.PathFor("web.log"), TestContext.Current.CancellationToken);
         requests.ShouldContain("/Sdk/10.0.303/", StringComparison.Ordinal);
+    }
+
+    [Fact(Skip = "SDK bootstrap fixtures run on Unix CI hosts.", SkipType = typeof(CoverageCollectorTestPlatform), SkipWhen = nameof(CoverageCollectorTestPlatform.IsWindows))]
+    public async Task Verified_install_supports_copy_with_a_boolean_update_option()
+    {
+        // Arrange
+        using var scope = new DotnetSdkBootstrapScope(powershell: false);
+        scope.UseCopyWithoutUpdateArgument();
+
+        // Act
+        var result = await scope.Run(install: true, TestContext.Current.CancellationToken);
+
+        // Assert
+        result.ExitCode.ShouldBe(0);
+        scope.FileExists("install/sdk/10.0.303/dotnet.dll").ShouldBeTrue();
+        scope.FileExists("install/sdk/10.0.302/marker").ShouldBeTrue();
+        var host = await File.ReadAllTextAsync(scope.PathFor("install/dotnet"), TestContext.Current.CancellationToken);
+        host.ShouldBe("existing host");
     }
 
     [Theory(Skip = "SDK bootstrap fixtures run on Unix CI hosts.", SkipType = typeof(CoverageCollectorTestPlatform), SkipWhen = nameof(CoverageCollectorTestPlatform.IsWindows))]

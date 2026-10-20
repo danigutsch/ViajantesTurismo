@@ -52,7 +52,8 @@ read_required_version() {
 }
 
 required_version="$(read_required_version)"
-[[ "${required_version}" =~ ^[0-9]+\.[0-9]+\.[0-9]+([-.][0-9A-Za-z.-]+)?$ ]] || fail "Invalid sdk.version in ${global_json}: ${required_version}"
+version_pattern='^[0-9]+\.[0-9]+\.[0-9]+([-.][0-9A-Za-z.-]+)?$'
+[[ "${required_version}" =~ ${version_pattern} ]] || fail "Invalid sdk.version in ${global_json}: ${required_version}"
 
 sdk_is_installed() {
     local installed_sdks=""
@@ -181,9 +182,11 @@ else
 fi
 actual_hash="${hash_output%% *}"
 
-if [[ "${actual_hash,,}" != "${expected_hash,,}" ]]; then
+shopt -s nocasematch
+if [[ "${actual_hash}" != "${expected_hash}" ]]; then
     fail "SHA-512 verification failed for .NET SDK ${required_version}."
 fi
+shopt -u nocasematch
 
 mkdir -p "${payload_dir}"
 if ! tar -xzf "${archive_file}" -C "${payload_dir}"; then
@@ -192,7 +195,7 @@ fi
 [[ -f "${payload_dir}/sdk/${required_version}/dotnet.dll" ]] || fail "Verified archive does not contain .NET SDK ${required_version}."
 
 mkdir -p "${install_dir}"
-if cp --help 2>&1 | grep -q -- '--update'; then
+if cp --help 2>&1 | grep -Fq -- '--update[='; then
     cp -R --update=none "${payload_dir}/." "${install_dir}/"
 else
     cp -R -n "${payload_dir}/." "${install_dir}/"
