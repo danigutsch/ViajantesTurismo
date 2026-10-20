@@ -1,5 +1,5 @@
 using System.Text.Json;
-using SharedKernel.Documentation;
+using ViajantesTurismo.Documentation;
 using SharedKernel.Testing;
 using static ViajantesTurismo.ArchitectureTests.Conventions.AdminTestArchitectureGuardTestsHelpers;
 

@@ -66,3 +66,6 @@ Every exception should state:
 
 Broad repository-wide coverage percentages should be treated as trend data, not a merge gate, until
 per-assembly ownership and threshold reporting are proven in CI.
+
+SharedKernel implementation coverage is owned by the separate library repository. Application
+coverage includes `ViajantesTurismo.*` assemblies; package-consumer integration tests remain here.

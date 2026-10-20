@@ -28,8 +28,8 @@
     </ItemGroup>
 
     <ItemGroup>
-        <ProjectReference Include="..\..\src\SharedKernel\SharedKernel.InputNormalization\SharedKernel.InputNormalization.csproj" />
-        <ProjectReference Include="..\..\src\SharedKernel\SharedKernel.Testing.Assertions\SharedKernel.Testing.Assertions.csproj" />
+        <PackageReference Include="PandaBear.SharedKernel.InputNormalization" />
+        <PackageReference Include="PandaBear.SharedKernel.Testing.Assertions" />
         <ProjectReference Include="..\..\src\ViajantesTurismo.Catalog.ApiService\ViajantesTurismo.Catalog.ApiService.csproj" />
         <ProjectReference Include="..\ViajantesTurismo.Catalog.Testing\ViajantesTurismo.Catalog.Testing.csproj" />
     </ItemGroup>

@@ -18,8 +18,8 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\src\SharedKernel\SharedKernel.Testing.Assertions\SharedKernel.Testing.Assertions.csproj" />
-    <ProjectReference Include="..\..\src\SharedKernel\SharedKernel.Testing\SharedKernel.Testing.csproj" />
+    <PackageReference Include="PandaBear.SharedKernel.Testing.Assertions" />
+    <PackageReference Include="PandaBear.SharedKernel.Testing" />
     <ProjectReference Include="..\..\src\ViajantesTurismo.DatabaseObservability\ViajantesTurismo.DatabaseObservability.csproj" />
   </ItemGroup>
 

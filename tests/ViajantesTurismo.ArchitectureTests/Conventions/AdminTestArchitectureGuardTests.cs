@@ -34,12 +34,6 @@ public sealed partial class AdminTestArchitectureGuardTests
         var systemTestFixturesPath = Path.Combine(repositoryRoot, "tests", "ViajantesTurismo.Admin.SystemTests", "Infrastructure", "Fixtures");
         var assemblyFixtureText = File.ReadAllText(Path.Combine(integrationInfrastructurePath, "AssemblyFixture.cs"));
         var apiFixtureText = File.ReadAllText(Path.Combine(integrationInfrastructurePath, "ApiFixture.cs"));
-        var publicSchemaResetText = File.ReadAllText(Path.Combine(
-            repositoryRoot,
-            "src",
-            "SharedKernel",
-            "SharedKernel.IntegrationTesting",
-            "PostgreSqlPublicSchemaReset.cs"));
         var serialIntegrationCollectionExists = File.Exists(Path.Combine(
             integrationInfrastructurePath,
             "Fixtures",
@@ -75,9 +69,6 @@ public sealed partial class AdminTestArchitectureGuardTests
         apiFixtureText.ShouldContain("_client = _app.CreateHttpClient(ResourceNames.Api);", StringComparison.Ordinal);
         apiFixtureText.ShouldContain(
             "_databaseConnectionString = await _app.GetConnectionString(ResourceNames.AdminDatabase, TestContext.Current.CancellationToken);",
-            StringComparison.Ordinal);
-        publicSchemaResetText.ShouldContain(
-            "public static async Task Reset(DbConnection connection, CancellationToken ct)",
             StringComparison.Ordinal);
         apiFixtureText.ShouldNotContain("ResetToKnownBaseline", StringComparison.Ordinal);
         serialIntegrationCollectionExists.ShouldBeFalse();
@@ -308,19 +299,6 @@ public sealed partial class AdminTestArchitectureGuardTests
 
         (offendingLines.Length != 0).ShouldBeFalse(
             $"Expected reusable trait names to come from canonical constants directly, but found:{Environment.NewLine}{string.Join(Environment.NewLine, offendingLines)}");
-    }
-
-    [Fact]
-    public void SharedKernel_testing_should_not_own_product_or_area_specific_trait_values()
-    {
-        var sharedKernelTestingRoot = Path.Combine(GetRepositoryRoot(), "src", "SharedKernel", "SharedKernel.Testing");
-        var offendingLines = Directory.GetFiles(sharedKernelTestingRoot, "*.cs", SearchOption.AllDirectories)
-            .Where(path => !IsGeneratedTestPath(path))
-            .SelectMany(FindProductSpecificSharedKernelTestingCoupling)
-            .ToArray();
-
-        (offendingLines.Length != 0).ShouldBeFalse(
-            $"Expected SharedKernel.Testing to stay neutral and leave product or area-specific trait values local, but found:{Environment.NewLine}{string.Join(Environment.NewLine, offendingLines)}");
     }
 
 }

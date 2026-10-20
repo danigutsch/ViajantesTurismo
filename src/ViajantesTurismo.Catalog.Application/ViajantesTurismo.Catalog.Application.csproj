@@ -20,18 +20,16 @@
     </ItemGroup>
 
     <ItemGroup>
-        <ProjectReference Include="..\SharedKernel\SharedKernel.BuildingBlocks\SharedKernel.BuildingBlocks.csproj" />
-        <ProjectReference Include="..\SharedKernel\SharedKernel.AI\SharedKernel.AI.csproj" />
-        <ProjectReference Include="..\SharedKernel\SharedKernel.EventSourcing\SharedKernel.EventSourcing.csproj" />
-        <ProjectReference Include="..\SharedKernel\SharedKernel.Idempotency\SharedKernel.Idempotency.csproj" />
-        <ProjectReference Include="..\SharedKernel\SharedKernel.ImageProcessing\SharedKernel.ImageProcessing.csproj" />
-        <ProjectReference Include="..\SharedKernel\SharedKernel.InputNormalization\SharedKernel.InputNormalization.csproj" />
-        <ProjectReference Include="..\SharedKernel\SharedKernel.Messaging\SharedKernel.Messaging.csproj" />
-        <ProjectReference Include="..\SharedKernel\SharedKernel.Messaging.IntegrationEvents.SourceGenerator\SharedKernel.Messaging.IntegrationEvents.SourceGenerator.csproj"
-                          OutputItemType="Analyzer"
-                          ReferenceOutputAssembly="false" />
-        <ProjectReference Include="..\SharedKernel\SharedKernel.Messaging.IntegrationEvents\SharedKernel.Messaging.IntegrationEvents.csproj" />
-        <ProjectReference Include="..\SharedKernel\SharedKernel.Results\SharedKernel.Results.csproj" />
+        <PackageReference Include="PandaBear.SharedKernel.BuildingBlocks" />
+        <PackageReference Include="PandaBear.SharedKernel.AI" />
+        <PackageReference Include="PandaBear.SharedKernel.EventSourcing" />
+        <PackageReference Include="PandaBear.SharedKernel.Idempotency" />
+        <PackageReference Include="PandaBear.SharedKernel.ImageProcessing" />
+        <PackageReference Include="PandaBear.SharedKernel.InputNormalization" />
+        <PackageReference Include="PandaBear.SharedKernel.Messaging" />
+        <PackageReference Include="PandaBear.SharedKernel.Messaging.IntegrationEvents.SourceGenerator" PrivateAssets="all" />
+        <PackageReference Include="PandaBear.SharedKernel.Messaging.IntegrationEvents" />
+        <PackageReference Include="PandaBear.SharedKernel.Results" />
         <ProjectReference Include="..\ViajantesTurismo.Admin.Contracts.IntegrationEvents\ViajantesTurismo.Admin.Contracts.IntegrationEvents.csproj" />
         <ProjectReference Include="..\ViajantesTurismo.Catalog.Contracts.Application\ViajantesTurismo.Catalog.Contracts.Application.csproj" />
         <ProjectReference Include="..\ViajantesTurismo.Catalog.Contracts.IntegrationEvents\ViajantesTurismo.Catalog.Contracts.IntegrationEvents.csproj" />

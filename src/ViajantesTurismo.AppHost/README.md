@@ -60,7 +60,7 @@ code builds or before committing.
 ## Release publish integration points
 
 The AppHost must not calculate application versions. Release workflows calculate versions with
-`SharedKernel.Versioning.Tool calculate-release`, then pass the computed values into Aspire publish
+`sharedkernel-version calculate-release`, then pass the computed values into Aspire publish
 steps as configuration, environment variables, or MSBuild properties.
 Release workflow context lives in [`docs/ci/supplemental-workflows.md`](../../docs/ci/supplemental-workflows.md).
 

@@ -101,7 +101,7 @@ This activates both complete fast shards for structural validation while depende
 their own graph-derived gates.
 
 The required change-classification path is the `select-ci-test-projects` command in
-`SharedKernel.RepoConfig.Tool`. It maps changed files to owning solution projects, follows reverse
+`ViajantesTurismo.RepoConfig.Tool`. It maps changed files to owning solution projects, follows reverse
 transitive `ProjectReference` dependencies, and maps affected tests back to the fixed slice
 manifests. Missing ranges, unknown paths, unresolved references, and malformed graphs fail open to
 full validation. Pull requests use a merge-base range; `main`, merge-queue, and manual runs validate

@@ -49,19 +49,9 @@
 		<PublishRepositoryUrl Condition="'$(PublishRepositoryUrl)' == ''">true</PublishRepositoryUrl>
 	</PropertyGroup>
 
-	<ItemGroup Condition="'$(MSBuildProjectExtension)' == '.csproj' and '$(IsRoslynComponent)' != 'true'">
-		<ProjectReference Include="$(MSBuildThisFileDirectory)src/SharedKernel/SharedKernel.Style.Analyzers/SharedKernel.Style.Analyzers.csproj"
-			OutputItemType="Analyzer"
-			ReferenceOutputAssembly="false"
-			PrivateAssets="all"
-			IsAspireProjectResource="false"
-			Condition="Exists('$(MSBuildThisFileDirectory)src/SharedKernel/SharedKernel.Style.Analyzers/SharedKernel.Style.Analyzers.csproj')" />
-		<ProjectReference Include="$(MSBuildThisFileDirectory)src/SharedKernel/SharedKernel.Style.CodeFixes/SharedKernel.Style.CodeFixes.csproj"
-			OutputItemType="Analyzer"
-			ReferenceOutputAssembly="false"
-			PrivateAssets="all"
-			IsAspireProjectResource="false"
-			Condition="Exists('$(MSBuildThisFileDirectory)src/SharedKernel/SharedKernel.Style.CodeFixes/SharedKernel.Style.CodeFixes.csproj')" />
+	<ItemGroup Condition="'$(MSBuildProjectExtension)' == '.csproj' and '$(IsRoslynComponent)' != 'true' and '$(EnableSharedKernelAnalyzers)' != 'false'">
+		<PackageReference Include="PandaBear.SharedKernel.Style.Analyzers" PrivateAssets="all" />
+		<PackageReference Include="PandaBear.SharedKernel.Style.CodeFixes" PrivateAssets="all" />
 	</ItemGroup>
 
 	<PropertyGroup Condition="'$(CI)' == 'true' or '$(TF_BUILD)' == 'True' or '$(GITHUB_ACTIONS)' == 'true'">

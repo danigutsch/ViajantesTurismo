@@ -5,7 +5,8 @@
       "excludeByFile": "**/Migrations/**,**/obj/**,**/*.g.cs,**/*.generated.cs",
       "excludeByAttribute": "ExcludeFromCodeCoverageAttribute,GeneratedCodeAttribute",
       "includeTestAssembly": false,
-      "format": "cobertura"
+      "format": "cobertura",
+      "include": "[ViajantesTurismo.*]*"
     }
   }
 }

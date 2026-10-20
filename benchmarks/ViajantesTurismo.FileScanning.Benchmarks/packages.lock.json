@@ -20,6 +20,18 @@
           "System.Management": "9.0.5"
         }
       },
+      "PandaBear.SharedKernel.Style.Analyzers": {
+        "type": "Direct",
+        "requested": "[0.1.0-alpha.cutover.20261019.3, )",
+        "resolved": "0.1.0-alpha.cutover.20261019.3",
+        "contentHash": "kbIa09GTnszrGDCfrM1LosFtg/XPxFA6XtB0tNyiyBY9HH/5hCxX1ERXYgoGtTvq2xwjUVx0EO1BRw7NbTYAog=="
+      },
+      "PandaBear.SharedKernel.Style.CodeFixes": {
+        "type": "Direct",
+        "requested": "[0.1.0-alpha.cutover.20261019.3, )",
+        "resolved": "0.1.0-alpha.cutover.20261019.3",
+        "contentHash": "pbYgkyK3rA4VtbhpdpjkqDFtEa4M5YHq9R13cXQaqSBaXzlKw4OlVAHVEs0jzh2BPIbzPL8Gp4td0u0Feyhm2g=="
+      },
       "BenchmarkDotNet.Annotations": {
         "type": "Transitive",
         "resolved": "0.15.8",

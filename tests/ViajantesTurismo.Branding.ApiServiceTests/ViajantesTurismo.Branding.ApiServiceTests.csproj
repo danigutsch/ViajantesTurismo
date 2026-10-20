@@ -30,13 +30,13 @@
     </ItemGroup>
 
     <ItemGroup>
-        <ProjectReference Include="..\..\src\SharedKernel\SharedKernel.Branding\SharedKernel.Branding.csproj" />
-        <ProjectReference Include="..\..\src\SharedKernel\SharedKernel.Messaging\SharedKernel.Messaging.csproj" />
-        <ProjectReference Include="..\..\src\SharedKernel\SharedKernel.Messaging.IntegrationEvents\SharedKernel.Messaging.IntegrationEvents.csproj" />
-        <ProjectReference Include="..\..\src\SharedKernel\SharedKernel.Messaging.IntegrationEvents.EntityFrameworkCore\SharedKernel.Messaging.IntegrationEvents.EntityFrameworkCore.csproj" />
-        <ProjectReference Include="..\..\src\SharedKernel\SharedKernel.Testing.Assertions\SharedKernel.Testing.Assertions.csproj" />
-        <ProjectReference Include="..\..\src\SharedKernel\SharedKernel.Testing.AspNetCore\SharedKernel.Testing.AspNetCore.csproj" />
-        <ProjectReference Include="..\..\src\SharedKernel\SharedKernel.Testing\SharedKernel.Testing.csproj" />
+        <PackageReference Include="PandaBear.SharedKernel.Branding" />
+        <PackageReference Include="PandaBear.SharedKernel.Messaging" />
+        <PackageReference Include="PandaBear.SharedKernel.Messaging.IntegrationEvents" />
+        <PackageReference Include="PandaBear.SharedKernel.Messaging.IntegrationEvents.EntityFrameworkCore" />
+        <PackageReference Include="PandaBear.SharedKernel.Testing.Assertions" />
+        <PackageReference Include="PandaBear.SharedKernel.Testing.AspNetCore" />
+        <PackageReference Include="PandaBear.SharedKernel.Testing" />
         <ProjectReference Include="..\..\src\ViajantesTurismo.Branding.ApiService\ViajantesTurismo.Branding.ApiService.csproj" />
     </ItemGroup>
 

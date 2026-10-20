@@ -49,8 +49,8 @@ This file overrides root guidance where test-specific behavior is needed.
 - Step definition methods should use descriptive Given/When/Then-style names with underscores.
 - Prefer precise assertions on business-visible outcomes over incidental implementation details.
 - New or touched maintained tests must use the repository assertion package:
-  `tests/SharedKernel.Testing.Assertions` / `SharedKernel.Testing.Assertions`.
-  If a test project does not already reference it, add the project reference and a global
+  `PandaBear.SharedKernel.Testing.Assertions` (namespace `SharedKernel.Testing.Assertions`).
+  If a test project does not already reference it, add the package reference and a global
   `<Using Include="SharedKernel.Testing.Assertions" />` (or a file `using`) instead of using
   `Xunit.Assert` directly.
 - Prefer extension assertions from `SharedKernel.Testing.Assertions`, for example
@@ -60,7 +60,7 @@ This file overrides root guidance where test-specific behavior is needed.
 - Use `Should*` assertion extensions exclusively. Add an extension only for a current repeated
   assertion pattern.
 - Direct `Xunit.Assert` is not permitted in test code. The sole implementation boundary is
-  `src/SharedKernel/SharedKernel.Testing.Assertions`, where wrappers delegate to xUnit.
+  the standalone SharedKernel repository, where assertion wrappers delegate to xUnit.
 - Prefer assigning computed values to locals before asserting on them; avoid embedding method calls
   directly inside assertion arguments when that makes debugging harder.
 - Do not use the null-forgiving operator (`!`) in tests to dereference values or feed assertions;

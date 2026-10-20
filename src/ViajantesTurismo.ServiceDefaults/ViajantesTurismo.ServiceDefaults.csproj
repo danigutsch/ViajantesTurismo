@@ -17,9 +17,9 @@
   </ItemGroup>
 
   <ItemGroup>
-        <ProjectReference Include="..\SharedKernel\SharedKernel.Mediator.Abstractions\SharedKernel.Mediator.Abstractions.csproj" />
-        <ProjectReference Include="..\SharedKernel\SharedKernel.Observability\SharedKernel.Observability.csproj" />
-        <ProjectReference Include="..\SharedKernel\SharedKernel.OpenApi\SharedKernel.OpenApi.csproj" />
+        <PackageReference Include="PandaBear.SharedKernel.Mediator.Abstractions" />
+        <PackageReference Include="PandaBear.SharedKernel.Observability" />
+        <PackageReference Include="PandaBear.SharedKernel.OpenApi" />
         <ProjectReference Include="..\ViajantesTurismo.Resources\ViajantesTurismo.Resources.csproj" />
   </ItemGroup>
 

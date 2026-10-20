@@ -38,7 +38,7 @@
     },
     {
       "kind": "repository-artifact",
-      "reference": "tools/SharedKernel.RepoConfig.Tool/GitHubRoadmapSyncer.cs; tests/SharedKernel.RepoConfig.Tests/RepoConfigToolApplicationTests.cs",
+      "reference": "tools/ViajantesTurismo.RepoConfig.Tool/GitHubRoadmapSyncer.cs; tests/ViajantesTurismo.RepoConfig.Tests/RepoConfigToolApplicationTests.cs",
       "supports": [
         "effort",
         "confidence"

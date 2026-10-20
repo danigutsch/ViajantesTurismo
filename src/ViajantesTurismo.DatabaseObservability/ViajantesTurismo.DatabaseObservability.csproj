@@ -2,7 +2,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\ViajantesTurismo.ServiceDefaults\ViajantesTurismo.ServiceDefaults.csproj" />
-    <ProjectReference Include="..\SharedKernel\SharedKernel.Observability.Npgsql\SharedKernel.Observability.Npgsql.csproj" />
+    <PackageReference Include="PandaBear.SharedKernel.Observability.Npgsql" />
   </ItemGroup>
 
   <ItemGroup>

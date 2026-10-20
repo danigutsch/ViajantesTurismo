@@ -158,7 +158,7 @@ publishing by default. It runs on relevant pull-request changes and manual dispa
 **Dry-run steps:**
 
 1. Checkout full history so the existing version calculation can inspect tags and commits.
-2. Run `SharedKernel.Versioning.Tool calculate-release` from the CI versioning flow.
+2. Run `sharedkernel-version calculate-release` from the CI versioning flow.
 3. Run `SharedKernel.Versioning.Tool pack-sharedkernel` with the computed package version.
 4. Run `SharedKernel.Versioning.Tool validate-package-metadata` for required package metadata.
 5. Run `SharedKernel.Versioning.Tool api-compatibility` to write the package compatibility report.

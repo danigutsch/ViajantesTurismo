@@ -8,6 +8,6 @@
     </ItemGroup>
 
     <ItemGroup>
-        <ProjectReference Include="..\SharedKernel\SharedKernel.Messaging.IntegrationEvents\SharedKernel.Messaging.IntegrationEvents.csproj" />
+        <PackageReference Include="PandaBear.SharedKernel.Messaging.IntegrationEvents" />
     </ItemGroup>
 </Project>

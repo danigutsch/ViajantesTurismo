@@ -20,8 +20,8 @@
     </ItemGroup>
 
     <ItemGroup>
-        <ProjectReference Include="..\..\src\SharedKernel\SharedKernel.Testing.Assertions\SharedKernel.Testing.Assertions.csproj" />
-        <ProjectReference Include="..\..\src\SharedKernel\SharedKernel.Testing.Snapshots\SharedKernel.Testing.Snapshots.csproj" />
+        <PackageReference Include="PandaBear.SharedKernel.Testing.Assertions" />
+        <PackageReference Include="PandaBear.SharedKernel.Testing.Snapshots" />
         <ProjectReference Include="..\..\tools\ViajantesTurismo.OpenApi.Tool\ViajantesTurismo.OpenApi.Tool.csproj" />
     </ItemGroup>
 
