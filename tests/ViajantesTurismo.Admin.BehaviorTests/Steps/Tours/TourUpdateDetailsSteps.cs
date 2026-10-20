@@ -18,7 +18,7 @@ public sealed class TourUpdateDetailsSteps(TourContext tourContext)
                 Guid.CreateVersion7(),
                 BikeType.Regular,
                 RoomType.DoubleOccupancy,
-                DiscountType.None));
+                DiscountType.None), new DateTime(2030, 1, 1, 0, 0, 0, DateTimeKind.Utc));
         }
     }
 

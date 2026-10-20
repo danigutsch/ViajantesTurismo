@@ -30,7 +30,7 @@ public class CompanionBookingsSteps(TourContext tourContext, BookingContext book
             RoomType.DoubleOccupancy,
             DiscountType.None,
             companionGuid,
-            BikeType.Regular));
+            BikeType.Regular), new DateTime(2030, 1, 1, 0, 0, 0, DateTimeKind.Utc));
     }
 
     [When(@"I add a booking with principal customer (\d+) on regular bike and companion customer (\d+) on e-bike in double room")]
@@ -42,7 +42,7 @@ public class CompanionBookingsSteps(TourContext tourContext, BookingContext book
             RoomType.DoubleOccupancy,
             DiscountType.None,
             Guid.CreateVersion7(),
-            BikeType.EBike));
+            BikeType.EBike), new DateTime(2030, 1, 1, 0, 0, 0, DateTimeKind.Utc));
     }
 
     [When(@"I add a booking with principal customer (\d+) on e-bike and companion customer (\d+) on e-bike in double room")]
@@ -54,7 +54,7 @@ public class CompanionBookingsSteps(TourContext tourContext, BookingContext book
             RoomType.DoubleOccupancy,
             DiscountType.None,
             Guid.CreateVersion7(),
-            BikeType.EBike));
+            BikeType.EBike), new DateTime(2030, 1, 1, 0, 0, 0, DateTimeKind.Utc));
     }
 
     [When(@"I add a booking with principal customer (\d+) on regular bike without companion in single room")]
@@ -64,7 +64,7 @@ public class CompanionBookingsSteps(TourContext tourContext, BookingContext book
             Guid.CreateVersion7(),
             BikeType.Regular,
             RoomType.SingleOccupancy,
-            DiscountType.None));
+            DiscountType.None), new DateTime(2030, 1, 1, 0, 0, 0, DateTimeKind.Utc));
     }
 
     [When(@"I add a booking with principal customer (\d+) on regular bike and companion customer (\d+) with no bike type in double room")]
@@ -75,7 +75,7 @@ public class CompanionBookingsSteps(TourContext tourContext, BookingContext book
             BikeType.Regular,
             RoomType.DoubleOccupancy,
             DiscountType.None,
-            Guid.CreateVersion7()));
+            Guid.CreateVersion7()), new DateTime(2030, 1, 1, 0, 0, 0, DateTimeKind.Utc));
     }
 
     [When(@"I add a booking with principal customer (\d+) with no bike type without companion in single room")]
@@ -85,7 +85,7 @@ public class CompanionBookingsSteps(TourContext tourContext, BookingContext book
             Guid.CreateVersion7(),
             BikeType.None,
             RoomType.SingleOccupancy,
-            DiscountType.None));
+            DiscountType.None), new DateTime(2030, 1, 1, 0, 0, 0, DateTimeKind.Utc));
     }
 
     [Then("the booking should have a companion customer")]

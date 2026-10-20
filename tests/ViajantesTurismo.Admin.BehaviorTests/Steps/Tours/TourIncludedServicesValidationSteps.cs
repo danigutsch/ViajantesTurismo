@@ -25,8 +25,8 @@ public sealed class TourIncludedServicesValidationSteps(TourContext tourContext)
         tourContext.Tour = Tour.Create(new TourDefinition(
             data["Identifier"],
             data["Name"],
-            startDate,
-            endDate,
+            DateOnly.FromDateTime(startDate),
+            DateOnly.FromDateTime(endDate),
             price,
             singleRoomSupplementPrice,
             regularBikePrice,

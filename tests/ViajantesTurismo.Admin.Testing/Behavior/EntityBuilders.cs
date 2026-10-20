@@ -25,8 +25,8 @@ public static class EntityBuilders
             options.Identifier ?? "TEST2024",
             options.Name ?? "Test Tour",
             new TourScheduleDefinition(
-                start,
-                scheduleOptions.EndDate ?? start.AddDays(7)),
+                DateOnly.FromDateTime(start),
+                DateOnly.FromDateTime(scheduleOptions.EndDate ?? start.AddDays(7))),
             new TourPricingDefinition(
                 pricingOptions.BasePrice ?? 2000.00m,
                 pricingOptions.SingleRoomSupplementPrice ?? 500.00m,
@@ -102,10 +102,10 @@ public static class EntityBuilders
                 _options.FirstName ?? "John",
                 _options.LastName ?? "Doe",
                 _options.Gender ?? "Male",
-                _options.BirthDate ?? DateTime.UtcNow.AddYears(-30),
+                DateOnly.FromDateTime(_options.BirthDate ?? DateTime.UtcNow.AddYears(-30)),
                 _options.Nationality ?? "USA",
                 _options.Occupation ?? "Engineer",
-                TimeProvider.System).Value;
+                DateOnly.FromDateTime(TimeProvider.System.GetUtcNow().UtcDateTime)).Value;
 
             var identificationInfo = IdentificationInfo.Create(
                 _options.PassportNumber ?? "A12345678",

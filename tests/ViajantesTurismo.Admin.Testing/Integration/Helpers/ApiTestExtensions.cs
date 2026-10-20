@@ -94,8 +94,8 @@ public static class ApiTestExtensions
         {
             Identifier = resolvedOptions.Identifier ?? $"TEST-{Guid.NewGuid():N}",
             Name = resolvedOptions.Name ?? $"Test Tour {Guid.NewGuid():N}"[..30],
-            StartDate = resolvedStartDate,
-            EndDate = resolvedEndDate,
+            StartDate = DateOnly.FromDateTime(resolvedStartDate),
+            EndDate = DateOnly.FromDateTime(resolvedEndDate),
             Price = resolvedOptions.Price,
             SingleRoomSupplementPrice = 200m,
             RegularBikePrice = 50m,
@@ -128,7 +128,7 @@ public static class ApiTestExtensions
             {
                 FirstName = firstName ?? $"Test{uid}",
                 LastName = lastName ?? "User",
-                BirthDate = new DateTime(1990, 1, 1, 0, 0, 0, DateTimeKind.Utc),
+                BirthDate = new DateOnly(1990, 1, 1),
                 Gender = "Other",
                 Nationality = "Brazilian",
                 Occupation = "Tester"
@@ -329,7 +329,7 @@ public static class ApiTestExtensions
         var dto = new CreatePaymentDto
         {
             Amount = amount,
-            PaymentDate = DateTime.UtcNow,
+            PaymentDate = DateOnly.FromDateTime(DateTime.UtcNow),
             Method = PaymentMethodDto.CreditCard,
             Notes = "E2E test payment"
         };

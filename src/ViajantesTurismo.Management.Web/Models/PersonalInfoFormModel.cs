@@ -14,7 +14,7 @@ internal sealed class PersonalInfoFormModel
     public string LastName { get; set; } = string.Empty;
 
     [Required(ErrorMessage = "Birth date is required")]
-    public DateTime? BirthDate { get; set; }
+    public DateOnly? BirthDate { get; set; }
 
     [Required(ErrorMessage = "Gender is required")]
     [MaxLength(ContractConstants.MaxDefaultLength)]
@@ -32,7 +32,7 @@ internal sealed class PersonalInfoFormModel
     {
         FirstName = FirstName,
         LastName = LastName,
-        BirthDate = DateTime.SpecifyKind(BirthDate!.Value, DateTimeKind.Utc),
+        BirthDate = BirthDate!.Value,
         Gender = Gender,
         Nationality = Nationality,
         Occupation = Occupation

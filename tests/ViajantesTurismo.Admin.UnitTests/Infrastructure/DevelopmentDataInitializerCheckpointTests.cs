@@ -239,24 +239,6 @@ public sealed class DevelopmentDataInitializerCheckpointTests
     }
 
     [Fact]
-    public async Task Initialize_recovers_a_baseline_tour_checkpoint_after_timestamp_precision_rounding()
-    {
-        // Arrange
-        var ct = TestContext.Current.CancellationToken;
-        await using var scenario = DevelopmentDataInitializerScenario.Create();
-        await scenario.Initialize(ct);
-        await scenario.KeepOnlyBaselineTours(ct);
-        await scenario.AlterBaselineTourSchedulePrecision(ct);
-
-        // Act
-        await scenario.Initialize(ct);
-
-        // Assert
-        await scenario.ShouldContainDevelopmentData(ct);
-        await scenario.ShouldContainExpectedDevelopmentBookingStates(ct);
-    }
-
-    [Fact]
     public async Task Initialize_does_not_complete_a_pending_booking_checkpoint_with_changed_snapshot_pricing()
     {
         // Arrange

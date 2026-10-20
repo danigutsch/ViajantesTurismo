@@ -13,7 +13,7 @@ public class RowToCustomerMapperTests
         var (document, row) = MappingInputs.Create();
 
         // Act
-        var customerResult = RowToCustomerMapper.MapCustomer(document, row, TimeProvider.System);
+        var customerResult = RowToCustomerMapper.MapCustomer(document, row, DateOnly.FromDateTime(TimeProvider.System.GetUtcNow().UtcDateTime));
 
         // Assert
         (customerResult.IsSuccess).ShouldBeTrue();
@@ -42,7 +42,7 @@ public class RowToCustomerMapperTests
         });
 
         // Act
-        var customerResult = RowToCustomerMapper.MapCustomer(document, row, TimeProvider.System);
+        var customerResult = RowToCustomerMapper.MapCustomer(document, row, DateOnly.FromDateTime(TimeProvider.System.GetUtcNow().UtcDateTime));
 
         // Assert
         (customerResult.IsFailure).ShouldBeTrue();
@@ -72,7 +72,7 @@ public class RowToCustomerMapperTests
         });
 
         // Act
-        var customerResult = RowToCustomerMapper.MapCustomer(document, row, TimeProvider.System);
+        var customerResult = RowToCustomerMapper.MapCustomer(document, row, DateOnly.FromDateTime(TimeProvider.System.GetUtcNow().UtcDateTime));
 
         // Assert
         (customerResult.IsFailure).ShouldBeTrue();
@@ -91,7 +91,7 @@ public class RowToCustomerMapperTests
         const string expectedMessage = "Required header 'FirstName' is missing.";
 
         // Act
-        var customerResult = RowToCustomerMapper.MapCustomer(document, row, TimeProvider.System);
+        var customerResult = RowToCustomerMapper.MapCustomer(document, row, DateOnly.FromDateTime(TimeProvider.System.GetUtcNow().UtcDateTime));
 
         // Assert
         (customerResult.IsFailure).ShouldBeTrue();
@@ -114,7 +114,7 @@ public class RowToCustomerMapperTests
         });
 
         // Act
-        var customerResult = RowToCustomerMapper.MapCustomer(document, row, TimeProvider.System);
+        var customerResult = RowToCustomerMapper.MapCustomer(document, row, DateOnly.FromDateTime(TimeProvider.System.GetUtcNow().UtcDateTime));
 
         // Assert
         (customerResult.IsFailure).ShouldBeTrue();

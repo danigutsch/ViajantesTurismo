@@ -4,7 +4,27 @@ public class PaymentsListTests : BunitContext
 {
     public PaymentsListTests()
     {
+        Services.AddSingleton(TimeProvider.System);
         JSInterop.Mode = JSRuntimeMode.Loose;
+    }
+
+    [Theory]
+    [InlineData(0, "Just now")]
+    [InlineData(1, "1m ago")]
+    [InlineData(60, "1h ago")]
+    [InlineData(1440, "1d ago")]
+    [Trait(SharedKernel.Testing.TestTraitNames.CategoryName, "Regression")]
+    [Trait(SharedKernel.Testing.TestTraitNames.ScopeName, SharedKernel.Testing.SharedKernelTestTraitNames.UnitScope)]
+    public void Renders_relative_recording_time_from_the_controlled_clock(int elapsedMinutes, string expected)
+    {
+        // Arrange
+        var now = new DateTimeOffset(2030, 2, 3, 14, 0, 0, TimeSpan.Zero);
+        Services.AddSingleton<TimeProvider>(new ViajantesTurismo.Admin.Testing.Fakes.FakeTimeProvider(now));
+        var payment = BuildPaymentDto(recordedAt: now.AddMinutes(-elapsedMinutes).UtcDateTime);
+        // Act
+        var cut = Render<PaymentsList>(parameters => parameters.Add(component => component.Payments, new[] { payment }));
+        // Assert
+        cut.Markup.ShouldContain(expected, StringComparison.Ordinal);
     }
 
     [Fact]

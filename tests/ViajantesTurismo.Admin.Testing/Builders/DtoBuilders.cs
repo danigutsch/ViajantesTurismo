@@ -42,8 +42,8 @@ public static class DtoBuilders
             Id = id ?? Guid.NewGuid(),
             Identifier = identifier ?? "TOUR-2024-001",
             Name = name ?? "Test Tour",
-            StartDate = start,
-            EndDate = end,
+            StartDate = DateOnly.FromDateTime(start),
+            EndDate = DateOnly.FromDateTime(end),
             Price = price ?? 1500.00m,
             SingleRoomSupplementPrice = singleRoomSupplementPrice ?? 300.00m,
             RegularBikePrice = regularBikePrice ?? 100.00m,
@@ -157,7 +157,7 @@ public static class DtoBuilders
             Id = id ?? Guid.NewGuid(),
             BookingId = bookingId ?? Guid.NewGuid(),
             Amount = amount ?? 500.00m,
-            PaymentDate = paymentDate ?? DateTime.UtcNow,
+            PaymentDate = DateOnly.FromDateTime(paymentDate ?? DateTime.UtcNow),
             Method = method ?? PaymentMethodDto.CreditCard,
             ReferenceNumber = referenceNumber,
             Notes = notes,
@@ -187,7 +187,7 @@ public static class DtoBuilders
                 FirstName = "John",
                 LastName = "Doe",
                 Gender = "Male",
-                BirthDate = DateTime.UtcNow.AddYears(-30),
+                BirthDate = DateOnly.FromDateTime(DateTime.UtcNow.AddYears(-30)),
                 Nationality = "USA",
                 Occupation = "Engineer"
             },
@@ -263,8 +263,8 @@ public static class DtoBuilders
         {
             Identifier = tourIdentifier,
             Name = name ?? $"Test Tour {tourIdentifier}",
-            StartDate = start,
-            EndDate = end,
+            StartDate = DateOnly.FromDateTime(start),
+            EndDate = DateOnly.FromDateTime(end),
             Price = basePrice ?? DefaultBaseTourPrice,
             SingleRoomSupplementPrice = singleRoomSupplement ?? DefaultSingleRoomSupplement,
             RegularBikePrice = regularBikePrice ?? DefaultRegularBikePrice,
@@ -301,8 +301,8 @@ public static class DtoBuilders
         {
             Identifier = tourIdentifier,
             Name = name ?? $"Test Tour {tourIdentifier}",
-            StartDate = start,
-            EndDate = end,
+            StartDate = DateOnly.FromDateTime(start),
+            EndDate = DateOnly.FromDateTime(end),
             Price = basePrice ?? DefaultBaseTourPrice,
             SingleRoomSupplementPrice = singleRoomSupplement ?? DefaultSingleRoomSupplement,
             RegularBikePrice = regularBikePrice ?? DefaultRegularBikePrice,
@@ -336,7 +336,7 @@ public static class DtoBuilders
             {
                 FirstName = first,
                 LastName = last,
-                BirthDate = new DateTime(1990, 1, 1, 0, 0, 0, DateTimeKind.Utc),
+                BirthDate = new DateOnly(1990, 1, 1),
                 Gender = "Male",
                 Nationality = "American",
                 Occupation = "Engineer"
@@ -433,7 +433,7 @@ public static class DtoBuilders
         return new CreatePaymentDto
         {
             Amount = amount ?? 500m,
-            PaymentDate = paymentDate ?? DateTime.UtcNow.Date,
+            PaymentDate = DateOnly.FromDateTime(paymentDate ?? DateTime.UtcNow.Date),
             Method = method ?? PaymentMethodDto.BankTransfer,
             ReferenceNumber = referenceNumber ?? UniqueReferenceNumber(),
             Notes = notes
@@ -522,7 +522,7 @@ public static class DtoBuilders
             {
                 FirstName = first,
                 LastName = last,
-                BirthDate = new DateTime(1990, 1, 1, 0, 0, 0, DateTimeKind.Utc),
+                BirthDate = new DateOnly(1990, 1, 1),
                 Gender = "Male",
                 Nationality = "American",
                 Occupation = occupation ?? "Engineer"

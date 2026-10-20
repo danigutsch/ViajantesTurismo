@@ -9,8 +9,24 @@ public class AddPageTests : BunitContext
 
     public AddPageTests()
     {
+        Services.AddSingleton(TimeProvider.System);
         _fakeToursApi = new FakeToursApiClient();
         Services.AddSingleton<IToursApiClient>(_fakeToursApi);
+    }
+
+    [Fact]
+    [Trait(SharedKernel.Testing.TestTraitNames.CategoryName, "Regression")]
+    [Trait(SharedKernel.Testing.TestTraitNames.ScopeName, SharedKernel.Testing.SharedKernelTestTraitNames.UnitScope)]
+    public void Defaults_schedule_dates_from_the_controlled_utc_business_date()
+    {
+        // Arrange
+        Services.AddSingleton<TimeProvider>(new ViajantesTurismo.Admin.Testing.Fakes.FakeTimeProvider(
+            new DateTimeOffset(2030, 2, 3, 0, 30, 0, TimeSpan.Zero)));
+        // Act
+        var cut = Render<Add>();
+        // Assert
+        cut.Find("#startDate").GetAttribute("value").ShouldBe("2030-03-05");
+        cut.Find("#endDate").GetAttribute("value").ShouldBe("2030-03-15");
     }
 
     [Fact]

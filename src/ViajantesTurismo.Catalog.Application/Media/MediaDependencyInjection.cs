@@ -23,6 +23,7 @@ public static class MediaDependencyInjection
     public static IServiceCollection AddCatalogMediaApplication(this IServiceCollection services)
     {
         ArgumentNullException.ThrowIfNull(services);
+        services.TryAddSingleton(TimeProvider.System);
 
         services.AddOptions<MediaUploadValidationOptions>()
             .BindConfiguration(MediaUploadValidationOptions.SectionName)
@@ -40,7 +41,8 @@ public static class MediaDependencyInjection
             new IdempotentIntegrationHandler<MediaImageOriginalStoredIntegrationEvent>(
                 sp.GetRequiredService<MediaImageOriginalStoredIntegrationHandler>(),
                 sp.GetRequiredService<IIdempotencyStore>(),
-                sp.GetRequiredService<IOptions<IntegrationEventOptions>>()));
+                sp.GetRequiredService<IOptions<IntegrationEventOptions>>(),
+                sp.GetRequiredService<TimeProvider>()));
         JsonTypeInfo<MediaImageOriginalStoredIntegrationEvent> mediaImageOriginalStoredJsonTypeInfo =
             CatalogIntegrationEventJsonContext.Default.MediaImageOriginalStoredIntegrationEvent;
         services.AddIntegrationEventConsumer(

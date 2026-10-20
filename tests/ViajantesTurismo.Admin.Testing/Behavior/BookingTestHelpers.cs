@@ -25,7 +25,7 @@ public static class BookingTestHelpers
             options.BikeType,
             options.RoomType,
             discount,
-            options.SpecialRequests));
+            options.SpecialRequests), new DateTime(2030, 1, 1, 0, 0, 0, DateTimeKind.Utc));
     }
 
     /// <summary>
@@ -45,7 +45,7 @@ public static class BookingTestHelpers
             options.CompanionBikeType,
             options.RoomType,
             discount,
-            options.SpecialRequests));
+            options.SpecialRequests), new DateTime(2030, 1, 1, 0, 0, 0, DateTimeKind.Utc));
     }
 
     /// <summary>

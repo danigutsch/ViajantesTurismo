@@ -1,3 +1,4 @@
+@inject TimeProvider TimeProvider
 @page "/bookings/{id:guid}/edit"
 @implements IAsyncDisposable
 @using SharedKernel.HttpClients
@@ -565,6 +566,7 @@ else if (_booking is not null)
         }
 
         _paymentState.ShowForm();
+        _paymentState.FormModel.PaymentDate = DateOnly.FromDateTime(TimeProvider.GetUtcNow().UtcDateTime);
     }
 
     private void HidePaymentForm()

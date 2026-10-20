@@ -8,8 +8,8 @@ namespace ViajantesTurismo.Admin.Application.Tours.CreateTour;
 public sealed record CreateTourCommand(
     string Identifier,
     string Name,
-    DateTime StartDate,
-    DateTime EndDate,
+    DateOnly StartDate,
+    DateOnly EndDate,
     decimal Price,
     decimal SingleRoomSupplementPrice,
     decimal RegularBikePrice,

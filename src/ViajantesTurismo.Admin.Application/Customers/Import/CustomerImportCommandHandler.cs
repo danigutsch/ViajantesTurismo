@@ -35,6 +35,7 @@ public sealed class CustomerImportCommandHandler(
         ArgumentNullException.ThrowIfNull(command);
         ct.ThrowIfCancellationRequested();
 
+        var today = command.Today ?? DateOnly.FromDateTime(timeProvider.GetUtcNow().UtcDateTime);
         var documentResult = CsvDocument.Parse(command.CsvContent);
         if (documentResult.IsFailure)
         {
@@ -64,6 +65,7 @@ public sealed class CustomerImportCommandHandler(
                 conflictResolutions,
                 customersToCreate,
                 customersToOverwrite,
+                today,
                 ct);
 
             if (outcome is ImportRowOutcome.Error)
@@ -83,9 +85,10 @@ public sealed class CustomerImportCommandHandler(
         IReadOnlyDictionary<string, string>? conflictResolutions,
         List<Customer> customersToCreate,
         List<CustomerOverwritePair> customersToOverwrite,
+        DateOnly today,
         CancellationToken ct)
     {
-        var customerResult = RowToCustomerMapper.MapCustomer(document, row, timeProvider);
+        var customerResult = RowToCustomerMapper.MapCustomer(document, row, today);
         if (customerResult.IsFailure)
         {
             return ImportRowOutcome.Error;

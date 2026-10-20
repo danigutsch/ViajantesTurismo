@@ -14,7 +14,7 @@ internal sealed class PaymentConfiguration : IEntityTypeConfiguration<Payment>
 
         entity.Property(payment => payment.BookingId).IsRequired();
         entity.Property(payment => payment.Amount).IsRequired();
-        entity.Property(payment => payment.PaymentDate).IsRequired();
+        entity.Property(payment => payment.PaymentDate).HasColumnType("date").IsRequired();
         entity.Property(payment => payment.Method).HasConversion<string>().IsRequired();
         entity.Property(payment => payment.ReferenceNumber).HasMaxLength(AdminDomainLimits.MaxReferenceNumberLength);
         entity.Property(payment => payment.Notes).HasMaxLength(AdminDomainLimits.MaxPaymentNotesLength);

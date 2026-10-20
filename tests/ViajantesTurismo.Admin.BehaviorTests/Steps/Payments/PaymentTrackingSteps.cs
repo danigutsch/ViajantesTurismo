@@ -111,7 +111,7 @@ public sealed class PaymentTrackingSteps(TourContext tourContext, BookingContext
     public void WhenIRecordAPaymentWithTodaysDate()
     {
         var today = DateTime.UtcNow.Date;
-        _paymentResult = bookingContext.Booking.RecordPayment(100m, today, PaymentMethod.Cash, _timeProvider);
+        _paymentResult = bookingContext.Booking.RecordPayment(100m, DateOnly.FromDateTime(today), PaymentMethod.Cash, _timeProvider);
         bookingContext.PaymentResult = _paymentResult;
     }
 
@@ -119,7 +119,7 @@ public sealed class PaymentTrackingSteps(TourContext tourContext, BookingContext
     public void WhenIAttemptToRecordAPaymentWithTomorrowsDate()
     {
         var tomorrow = DateTime.UtcNow.Date.AddDays(1);
-        _paymentResult = bookingContext.Booking.RecordPayment(100m, tomorrow, PaymentMethod.Cash, _timeProvider);
+        _paymentResult = bookingContext.Booking.RecordPayment(100m, DateOnly.FromDateTime(tomorrow), PaymentMethod.Cash, _timeProvider);
         bookingContext.PaymentResult = _paymentResult;
     }
 
@@ -127,7 +127,7 @@ public sealed class PaymentTrackingSteps(TourContext tourContext, BookingContext
     public void WhenIAttemptToRecordAPaymentWithANegativePaymentMethodValue()
     {
         var paymentDate = DateTime.UtcNow.AddDays(-1);
-        _paymentResult = bookingContext.Booking.RecordPayment(100m, paymentDate, (PaymentMethod)(-1), _timeProvider);
+        _paymentResult = bookingContext.Booking.RecordPayment(100m, DateOnly.FromDateTime(paymentDate), (PaymentMethod)(-1), _timeProvider);
         bookingContext.PaymentResult = _paymentResult;
     }
 
@@ -161,13 +161,13 @@ public sealed class PaymentTrackingSteps(TourContext tourContext, BookingContext
         var payments = bookingContext.Booking.Payments.ToList();
 
         (payments[0].Amount).ShouldBe(100m);
-        (payments[0].PaymentDate).ShouldBe(new DateTime(2025, 3, 15, 0, 0, 0, DateTimeKind.Utc));
+        (payments[0].PaymentDate).ShouldBe(new DateOnly(2025, 3, 15));
 
         (payments[1].Amount).ShouldBe(200m);
-        (payments[1].PaymentDate).ShouldBe(new DateTime(2025, 1, 15, 0, 0, 0, DateTimeKind.Utc));
+        (payments[1].PaymentDate).ShouldBe(new DateOnly(2025, 1, 15));
 
         (payments[2].Amount).ShouldBe(150m);
-        (payments[2].PaymentDate).ShouldBe(new DateTime(2025, 2, 15, 0, 0, 0, DateTimeKind.Utc));
+        (payments[2].PaymentDate).ShouldBe(new DateOnly(2025, 2, 15));
     }
 
     [Then("all payments should have the same payment date")]
@@ -185,7 +185,7 @@ public sealed class PaymentTrackingSteps(TourContext tourContext, BookingContext
         var paymentDate = DateTime.Parse(dateString, CultureInfo.InvariantCulture);
         var method = Enum.Parse<PaymentMethod>(methodString);
 
-        var result = bookingContext.Booking.RecordPayment(amount, paymentDate, method, _timeProvider, reference);
+        var result = bookingContext.Booking.RecordPayment(amount, DateOnly.FromDateTime(paymentDate), method, _timeProvider, reference);
         (result.IsSuccess).ShouldBeTrue();
     }
 
@@ -197,7 +197,7 @@ public sealed class PaymentTrackingSteps(TourContext tourContext, BookingContext
             Guid.CreateVersion7(),
             BikeType.Regular,
             RoomType.DoubleOccupancy,
-            DiscountType.None));
+            DiscountType.None), new DateTime(2030, 1, 1, 0, 0, 0, DateTimeKind.Utc));
         (result.IsSuccess).ShouldBeTrue();
         bookingContext.Booking = result.Value;
     }
@@ -205,7 +205,7 @@ public sealed class PaymentTrackingSteps(TourContext tourContext, BookingContext
     [When(@"I record a payment for the second booking with reference ""(.*)""")]
     public void WhenIRecordAPaymentForTheSecondBookingWithReference(string reference)
     {
-        var result = bookingContext.Booking.RecordPayment(100m, DateTime.UtcNow.AddDays(-1), PaymentMethod.CreditCard,
+        var result = bookingContext.Booking.RecordPayment(100m, DateOnly.FromDateTime(DateTime.UtcNow.AddDays(-1)), PaymentMethod.CreditCard,
             _timeProvider, reference);
         (result.IsSuccess).ShouldBeTrue();
     }
@@ -227,7 +227,7 @@ public sealed class PaymentTrackingSteps(TourContext tourContext, BookingContext
             RoomType.DoubleOccupancy,
             DiscountType.Percentage,
             discountAmount: discountPercentage,
-            discountReason: "Test discount"));
+            discountReason: "Test discount"), new DateTime(2030, 1, 1, 0, 0, 0, DateTimeKind.Utc));
         (result.IsSuccess).ShouldBeTrue();
         bookingContext.Booking = result.Value;
     }

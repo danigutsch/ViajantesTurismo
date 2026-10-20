@@ -26,7 +26,7 @@ public sealed record PersonalInfoDto
     /// The date of birth of the customer.
     /// </summary>
     [Required]
-    public required DateTime BirthDate { get; init; }
+    public required DateOnly BirthDate { get; init; }
 
     /// <summary>
     /// The gender of the customer.

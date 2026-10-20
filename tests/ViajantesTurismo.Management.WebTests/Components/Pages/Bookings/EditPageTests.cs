@@ -21,6 +21,7 @@ public sealed class EditPageTests : BunitContext
 
     public EditPageTests()
     {
+        Services.AddSingleton(TimeProvider.System);
         Services.AddSingleton<IBookingsApiClient>(_fakeBookingsApi);
         Services.AddSingleton<ICustomersApiClient>(_fakeCustomersApi);
     }
