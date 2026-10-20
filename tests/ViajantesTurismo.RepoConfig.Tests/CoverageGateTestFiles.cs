@@ -1,3 +1,8 @@
+using System.Collections.Immutable;
+using System.Reflection.Metadata;
+using System.Reflection.Metadata.Ecma335;
+using System.Security.Cryptography;
+using System.Text;
 using System.Xml.Linq;
 
 namespace ViajantesTurismo.RepoConfig.Tests;
@@ -26,6 +31,27 @@ internal static class CoverageGateTestFiles
     {
         switch (scenario)
         {
+            case "mixed-symbols":
+                WriteSymbols(workspace, "interface-symbols");
+                File.Copy(Path.Combine(workspace.RootPath, "src/bin/Release/net10.0/Core.pdb"),
+                    Path.Combine(workspace.RootPath, "src/bin/Release/net10.0/Other.pdb"));
+                WriteSymbols(workspace, "executable-symbols");
+                break;
+            case "unsupported-hash":
+            case "absolute-symbols":
+            case "interface-symbols":
+            case "stale-symbols":
+            case "executable-symbols":
+                WriteSymbols(workspace, scenario);
+                break;
+            case "space-path":
+                workspace.WriteFile("src/A B.cs", "uncovered\n");
+                workspace.WriteFile("changes.patch", "--- /dev/null\n+++ b/src/A B.cs\t\n@@ -0,0 +1 @@\n+uncovered\n");
+                workspace.WriteFile("coverage.xml", "<coverage><packages><package><classes><class filename='src/A B.cs'><lines><line number='1' hits='0' /></lines></class></classes></package></packages></coverage>");
+                break;
+            case "increment":
+                workspace.WriteFile("changes.patch", "--- /dev/null\n+++ b/src/Core.cs\n@@ -0,0 +1 @@\n+++ count;\n");
+                break;
             case "duplicate":
                 var report = XDocument.Parse(workspace.ReadFile("coverage.xml"));
                 var classes = report.Descendants("classes").Single();
@@ -77,5 +103,32 @@ internal static class CoverageGateTestFiles
             default:
                 throw new ArgumentException("Unknown coverage scenario.", nameof(scenario));
         }
+    }
+
+    private static void WriteSymbols(TemporaryRepoConfigWorkspace workspace, string scenario)
+    {
+        const string source = "public interface IValue { int Value { get; } }\n";
+        workspace.WriteFile("src/Core.cs", source);
+        workspace.WriteFile("coverage.xml", "<coverage><packages /></coverage>");
+        workspace.WriteFile("changes.patch", "--- /dev/null\n+++ b/src/Core.cs\n@@ -0,0 +1 @@\n+" + source);
+        var metadata = new MetadataBuilder();
+        var hash = SHA256.HashData(Encoding.UTF8.GetBytes(scenario == "stale-symbols" ? "old" : source));
+        var name = scenario == "absolute-symbols" ? Path.Combine(workspace.RootPath, "src/Core.cs") : "/_/src/Core.cs";
+        var algorithm = scenario == "unsupported-hash" ? Guid.Empty : new Guid("8829d00f-11b8-4213-878b-770e8597ac16");
+        var document = metadata.AddDocument(metadata.GetOrAddDocumentName(name),
+            metadata.GetOrAddGuid(algorithm), metadata.GetOrAddBlob(hash), default);
+        var sequence = new BlobBuilder();
+        if (scenario == "executable-symbols")
+        {
+            sequence.WriteBytes(new byte[] { 0, 0, 0, 1, 1, 1 });
+        }
+        metadata.AddMethodDebugInformation(document, metadata.GetOrAddBlob(sequence));
+        var counts = new int[64];
+        counts[(int)TableIndex.MethodDef] = 1;
+        var builder = new PortablePdbBuilder(metadata, ImmutableArray.Create(counts), default);
+        var blob = new BlobBuilder();
+        builder.Serialize(blob);
+        workspace.WriteFile("src/bin/Release/net10.0/Core.pdb", string.Empty);
+        File.WriteAllBytes(Path.Combine(workspace.RootPath, "src/bin/Release/net10.0/Core.pdb"), blob.ToArray());
     }
 }

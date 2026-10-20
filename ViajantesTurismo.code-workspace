@@ -78,7 +78,7 @@
 				"label": "test",
 				"command": "dotnet",
 				"type": "process",
-				"args": ["test", "${workspaceFolder}/ViajantesTurismo.slnx"],
+				"args": ["test", "--solution", "${workspaceFolder}/ViajantesTurismo.slnx"],
 				"problemMatcher": "$msCompile",
 				"group": "test"
 			},
@@ -88,12 +88,11 @@
 				"type": "process",
 				"args": [
 					"test",
+					"--solution",
 					"${workspaceFolder}/ViajantesTurismo.slnx",
 					"--",
-					"--coverage",
-					"--coverage-output-format", "cobertura",
-					"--coverage-output", "coverage.cobertura.xml",
-					"--coverage-settings", "${workspaceFolder}/coverage.settings.xml"
+					"--coverlet",
+					"--coverlet-output-format", "cobertura"
 				],
 				"problemMatcher": "$msCompile",
 				"group": "test"
@@ -104,7 +103,7 @@
 				"command": "dotnet",
 				"args": [
 					"reportgenerator",
-					"-reports:**/TestResults/**/coverage.cobertura.xml",
+					"-reports:**/TestResults/**/*.cobertura*.xml",
 					"-targetdir:TestResults/CoverageReport",
 					"-reporttypes:Html"
 				],

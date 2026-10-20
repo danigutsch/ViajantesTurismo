@@ -387,8 +387,12 @@ jobs:
         if: ${{ needs.detect-changes.outputs.build_required == 'true' }}
         uses: ./.github/actions/setup-ci-prerequisites
         with:
-          restore-targets: tools/ViajantesTurismo.RepoConfig.Tool/ViajantesTurismo.RepoConfig.Tool.csproj
+          restore-targets: ViajantesTurismo.slnx
           trust-dev-certificate: "false"
+
+      - name: Build all solution projects
+        if: ${{ needs.detect-changes.outputs.build_required == 'true' }}
+        run: dotnet build ViajantesTurismo.slnx -c Release --no-restore
 
       - name: Download test slice coverage
         if: ${{ needs.detect-changes.outputs.build_required == 'true' }}

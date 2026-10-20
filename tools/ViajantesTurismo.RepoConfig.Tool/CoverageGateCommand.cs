@@ -1,4 +1,6 @@
 using System.Globalization;
+using System.Reflection.Metadata;
+using System.Security.Cryptography;
 using System.Text.Json;
 using System.Text.RegularExpressions;
 using System.Xml;
@@ -32,6 +34,7 @@ internal static partial class CoverageGateCommand
             {
                 if (!coverage.TryGetValue(path, out var lines))
                 {
+                    if (HasNonExecutableSymbols(path, root)) { continue; }
                     throw new InvalidOperationException($"Changed production source is missing from coverage: {path}");
                 }
                 foreach (var number in changedLines)
@@ -46,7 +49,7 @@ internal static partial class CoverageGateCommand
             await output.WriteLineAsync($"Coverage: {covered}/{total} changed executable lines and conditions; required 80%.".AsMemory(), cancellationToken).ConfigureAwait(false);
             return passed ? 0 : 1;
         }
-        catch (Exception exception) when (exception is XmlException or IOException or InvalidOperationException or FormatException or OverflowException)
+        catch (Exception exception) when (exception is XmlException or IOException or InvalidOperationException or FormatException or OverflowException or BadImageFormatException)
         {
             await WriteEvidence(evidence, false, 0, 0, exception.Message, cancellationToken).ConfigureAwait(false);
             await error.WriteLineAsync($"Coverage evidence is invalid: {exception.Message}".AsMemory(), cancellationToken).ConfigureAwait(false);
@@ -66,12 +69,12 @@ internal static partial class CoverageGateCommand
         var awaitingHunk = false;
         foreach (var text in patch)
         {
-            if (text.StartsWith("+++ ", StringComparison.Ordinal))
+            if (text.StartsWith("+++ ", StringComparison.Ordinal) && (!inHunk || (remaining == 0 && removedRemaining == 0)))
             {
                 if (remaining != 0 || removedRemaining != 0 || awaitingHunk) { throw new FormatException("Incomplete diff hunk."); }
                 hasFileHeader = true;
                 awaitingHunk = true;
-                var name = text[4..];
+                var name = text[4..].Split('\t', 2)[0];
                 if (name.StartsWith('"')) { throw new FormatException("Quoted diff paths require git -c core.quotePath=false."); }
                 path = name == "/dev/null" ? null : NormalizeSource(name.StartsWith("b/", StringComparison.Ordinal) ? name[2..] : name, root);
                 if (name != "/dev/null" && path is null) { throw new FormatException("Diff source escapes repository root."); }
@@ -152,6 +155,51 @@ internal static partial class CoverageGateCommand
             }
         }
         return result;
+    }
+
+    private static bool HasNonExecutableSymbols(string path, string root)
+    {
+        var checksum = SHA256.HashData(File.ReadAllBytes(Path.Combine(root, path)));
+        var found = false;
+        Span<byte> signature = stackalloc byte[4];
+        foreach (var directory in new[] { "src", "tools" })
+        {
+            var sourceRoot = Path.Combine(root, directory);
+            if (!Directory.Exists(sourceRoot)) { continue; }
+            foreach (var filename in Directory.EnumerateFiles(sourceRoot, "*.pdb", SearchOption.AllDirectories)
+                .Where(filename => filename.Replace('\\', '/').Contains("/bin/Release/", StringComparison.Ordinal)))
+            {
+                using var stream = File.OpenRead(filename);
+                // Windows native symbols are not portable document evidence.
+                if (stream.Read(signature) != 4 || !signature.SequenceEqual("BSJB"u8)) { continue; }
+                stream.Position = 0;
+                using var provider = MetadataReaderProvider.FromPortablePdbStream(stream);
+                var reader = provider.GetMetadataReader();
+                var documents = new HashSet<DocumentHandle>();
+                foreach (var handle in reader.Documents)
+                {
+                    var document = reader.GetDocument(handle);
+                    var name = reader.GetString(document.Name).Replace('\\', '/');
+                    var documentPath = NormalizeSource(name.StartsWith("/_/", StringComparison.Ordinal) ? name[3..] : name, root);
+                    if (documentPath != path) { continue; }
+                    if (reader.GetGuid(document.HashAlgorithm) != new Guid("8829d00f-11b8-4213-878b-770e8597ac16")
+                        || !reader.GetBlobBytes(document.Hash).AsSpan().SequenceEqual(checksum)) { return false; }
+                    documents.Add(handle);
+                    found = true;
+                }
+                if (documents.Count == 0) { continue; }
+                foreach (var handle in reader.MethodDebugInformation)
+                {
+                    var method = reader.GetMethodDebugInformation(handle);
+                    foreach (var point in method.GetSequencePoints())
+                    {
+                        var document = point.Document.IsNil ? method.Document : point.Document;
+                        if (!point.IsHidden && documents.Contains(document)) { return false; }
+                    }
+                }
+            }
+        }
+        return found;
     }
 
     private static string? NormalizeSource(string filename, string root)
