@@ -12,6 +12,16 @@ ViajantesTurismo is a platform for operating and selling group bike tours. It co
 and Catalog APIs, management and public Blazor frontends, and supporting services so teams can
 manage tours, travellers, bookings, payments, and customer-facing tour content in one place.
 
+## Contributor entry points
+
+- [Set up and run locally](#getting-started).
+- [Understand architecture and ownership](docs/architecture/README.md).
+- [Review API contracts and client boundaries](docs/API_CLIENT_BOUNDARIES.md).
+- [Choose and run tests](docs/TEST_GUIDELINES.md).
+- [Follow CI and release governance](docs/ci/governance.md).
+- [Prepare production operations](docs/operations/production-readiness.md).
+- [Find detailed guidance](docs/README.md).
+
 ## Features
 
 - **Tours and services**: Create tour packages, itineraries, and included service bundles.

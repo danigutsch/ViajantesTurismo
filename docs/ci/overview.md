@@ -26,6 +26,7 @@ current schedules and grouping rules.
 
 ## Documentation map
 
+- [Test diagnostics proposal](test-diagnostics.md) — bounded failure artifacts, privacy, and test/resource correlation
 - [Warning policy](warning-policy.md) — diagnostic classification, enforcement owners, and exception lifecycle
 - [Pin update review](pin-update-review.md) — Action/container update coverage and review evidence
 

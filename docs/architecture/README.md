@@ -72,6 +72,11 @@ claimed batch. See [Events and messaging](../domain/EVENTS_AND_MESSAGING.md) and
 - [Domain aggregates](../domain/AGGREGATES.md)
 - [Glossary](../domain/GLOSSARY.md)
 
+## Measurement and media ownership
+
+- [Coupling and cohesion proposal](coupling-and-cohesion-metrics.md) defines advisory measurement and rollout criteria.
+- [Media ownership decision](../adr/20261020-catalog-media-metadata-and-object-ownership.md) separates Catalog metadata from object bytes and repair authority.
+
 ## Migration planning
 
 The [application vertical slice plan](../vertical-slice-migration-plan.md) inventories current

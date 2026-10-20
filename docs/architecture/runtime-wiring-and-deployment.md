@@ -1,5 +1,11 @@
 # Runtime wiring and deployment mapping
 
+Generation ownership: source/configuration in [generated-diagrams.json](generated-diagrams.json),
+with per-output sources in the [diagram inventory](generated-diagram-roadmap.md).
+Refresh: `bash scripts/update-architecture-diagrams.sh`; check: append `--check`.
+Edit manual narrative outside generated markers; review under the
+[documentation governance policy](../DOCUMENTATION_GOVERNANCE.md#generated-output-review-and-finalization).
+
 This page separates the current local Aspire model from deployment guidance and planned runtime
 improvements. Secret values are intentionally omitted.
 
