@@ -1,6 +1,5 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using SharedKernel.HttpCaching.AspNetCore;
 using SharedKernel.Idempotency;
 using SharedKernel.Results;
 using ViajantesTurismo.Admin.Application.Documents;
@@ -23,7 +22,7 @@ internal static class DocumentEndpoints
     {
         ArgumentNullException.ThrowIfNull(app);
 
-        var documentsGroup = app.MapDocumentsGroup().WithNoStoreResponses();
+        var documentsGroup = app.MapDocumentsGroup();
 
         documentsGroup.MapPost("/bookings/{bookingId:guid}/contract-drafts", GenerateContractDraft)
             .RequireRateLimiting(AdminSecurityBaseline.MutationRateLimitPolicy)
@@ -115,16 +114,10 @@ internal static class DocumentEndpoints
         HttpContext httpContext,
         CancellationToken ct)
     {
-        IdempotencyKey? parsedIdempotencyKey = null;
-        if (idempotencyKey is not null)
+        var keyResult = ParseOptionalIdempotencyKey(idempotencyKey, out var parsedIdempotencyKey);
+        if (keyResult.IsFailure)
         {
-            var keyResult = ParseIdempotencyKey(idempotencyKey);
-            if (keyResult.IsFailure)
-            {
-                return ToError(keyResult.ConvertError());
-            }
-
-            parsedIdempotencyKey = keyResult.Value;
+            return ToError(keyResult);
         }
 
         var auditContext = CreateAuditContext(httpContext);
@@ -298,16 +291,10 @@ internal static class DocumentEndpoints
         HttpContext httpContext,
         CancellationToken ct)
     {
-        IdempotencyKey? parsedIdempotencyKey = null;
-        if (idempotencyKey is not null)
+        var keyResult = ParseOptionalIdempotencyKey(idempotencyKey, out var parsedIdempotencyKey);
+        if (keyResult.IsFailure)
         {
-            var keyResult = ParseIdempotencyKey(idempotencyKey);
-            if (keyResult.IsFailure)
-            {
-                return ToError(keyResult.ConvertError());
-            }
-
-            parsedIdempotencyKey = keyResult.Value;
+            return ToError(keyResult);
         }
 
         var auditContext = CreateAuditContext(httpContext);
@@ -526,18 +513,24 @@ internal static class DocumentEndpoints
         return auditContextResult.Value;
     }
 
-    private static Result<IdempotencyKey> ParseIdempotencyKey(string value)
+    private static Result ParseOptionalIdempotencyKey(string? value, out IdempotencyKey? parsedKey)
     {
+        parsedKey = null;
+        if (value is null)
+        {
+            return Result.Ok();
+        }
+
         if (IdempotencyKey.TryFrom(value, out var key))
         {
-            return Result.Ok(key);
+            parsedKey = key;
+            return Result.Ok();
         }
 
         return Result.Invalid(
             detail: $"{IdempotencyKeyHeaderName} must use the supported opaque token format.",
             field: IdempotencyKeyHeaderName,
-            message: $"{IdempotencyKeyHeaderName} is invalid.")
-            .ConvertError<IdempotencyKey>();
+            message: $"{IdempotencyKeyHeaderName} is invalid.");
     }
 
     private static DocumentAuditReasonCode GetFailureReasonCode(Result result) => result.Status switch
