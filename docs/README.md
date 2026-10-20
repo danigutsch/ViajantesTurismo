@@ -72,6 +72,7 @@ outdated behavior.
 ## Engineering guidance
 
 - [Coding guidelines](CODING_GUIDELINES.md)
+- [Exception documentation](EXCEPTION_DOCUMENTATION.md)
 - [Code quality](CODE_QUALITY.md)
 - [Test guidelines](TEST_GUIDELINES.md)
 - [Coverage ownership](COVERAGE_OWNERSHIP.md)
