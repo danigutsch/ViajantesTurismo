@@ -1,6 +1,8 @@
 using System.Diagnostics;
 using System.Security.Cryptography;
+using System.Text.Json;
 using System.Text.Json.Nodes;
+using System.Xml;
 using System.Xml.Linq;
 
 namespace ViajantesTurismo.RepoConfig.Tool;
@@ -38,17 +40,22 @@ internal static class CandidateCompatibilityCommand
         }
 
         destination = Path.GetFullPath(destination, root);
-        var evidence = JsonNode.Parse(await File.ReadAllTextAsync(candidate, ct).ConfigureAwait(false))!.AsObject();
-        evidence["consumerRevision"] = await RunProcess("git", ["rev-parse", "HEAD"], root, TextWriter.Null, ct).ConfigureAwait(false);
-        evidence["consumerDirty"] = (await RunProcess("git", ["status", "--porcelain"], root, TextWriter.Null, ct).ConfigureAwait(false)).Length != 0;
-        var status = "pending";
+        var evidence = new JsonObject();
+        var status = "failed";
         string? scratch = null;
         try
         {
             try
             {
-                if (evidence["libraryDirty"]!.GetValue<bool>() || evidence["consumerDirty"]!.GetValue<bool>())
+                evidence = JsonNode.Parse(await File.ReadAllTextAsync(candidate, ct).ConfigureAwait(false)) as JsonObject
+                    ?? throw new ArgumentException("Candidate evidence must be a JSON object.");
+                evidence["consumerRevision"] = await RunProcess("git", ["rev-parse", "HEAD"], root, TextWriter.Null, ct).ConfigureAwait(false);
+                evidence["consumerDirty"] = (await RunProcess("git", ["status", "--porcelain"], root, TextWriter.Null, ct).ConfigureAwait(false)).Length != 0;
+                var libraryDirty = evidence["libraryDirty"]?.GetValue<bool>()
+                    ?? throw new ArgumentException("Candidate library state is unavailable.");
+                if (libraryDirty || evidence["consumerDirty"]!.GetValue<bool>())
                 {
+                    status = "pending";
                     throw new ArgumentException("Compatibility requires committed library and consumer revisions.");
                 }
 
@@ -56,7 +63,6 @@ internal static class CandidateCompatibilityCommand
                 scratch = Path.Combine(Path.GetTempPath(), "sharedkernel-consumer-" + Guid.NewGuid().ToString("N"));
                 var config = WriteRestoreConfiguration(candidate, scratch);
                 var cache = Path.Combine(scratch, "packages");
-                status = "failed";
                 string[][] commands = [
                     ["restore", SolutionFileName, "--locked-mode", "--configfile", config, "--packages", cache, "--no-cache"],
                     ["build", SolutionFileName, "-c", "Release", "--no-restore"],
@@ -70,7 +76,7 @@ internal static class CandidateCompatibilityCommand
 
                 status = "passed";
             }
-            catch (Exception exception) when (exception is ArgumentException or IOException or InvalidOperationException or OperationCanceledException)
+            catch (Exception exception) when (exception is ArgumentException or IOException or InvalidOperationException or OperationCanceledException or XmlException or JsonException)
             {
                 evidence["reason"] = exception.Message;
                 await error.WriteLineAsync(exception.Message).ConfigureAwait(false);
@@ -123,14 +129,15 @@ internal static class CandidateCompatibilityCommand
                 throw new ArgumentException("Invalid candidate package filename: " + name);
             }
 
+            var expectedHash = hash?.GetValue<string>() ?? throw new ArgumentException("Candidate package hash is unavailable: " + name);
             using var stream = File.OpenRead(Path.Combine(Path.GetDirectoryName(candidate)!, name));
-            if (Convert.ToHexStringLower(SHA256.HashData(stream)) != hash!.GetValue<string>())
+            if (Convert.ToHexStringLower(SHA256.HashData(stream)) != expectedHash)
             {
                 throw new ArgumentException("Candidate package changed: " + name);
             }
         }
 
-        var version = evidence["packageVersion"]!.GetValue<string>();
+        var version = evidence["packageVersion"]?.GetValue<string>() ?? throw new ArgumentException("Candidate package version is unavailable.");
         var central = XDocument.Load(Path.Combine(root, "Directory.Packages.props")).Descendants("PackageVersion")
             .Where(x => ((string?)x.Attribute("Include"))?.StartsWith(InternalPackagePrefix, StringComparison.Ordinal) == true).ToArray();
         if (central.Length == 0 || central.Any(x => (string?)x.Attribute("Version") != version && (string?)x.Attribute("Version") != "[" + version + "]"))
@@ -144,19 +151,23 @@ internal static class CandidateCompatibilityCommand
             foreach (var reference in XDocument.Load(path).Descendants("ProjectReference"))
             {
                 var id = Path.GetFileNameWithoutExtension(((string?)reference.Attribute("Include") ?? string.Empty).Replace('\\', '/'));
-                RejectExtractedSource(id, path);
+                RejectExtractedSource(root, id, path);
             }
 
             var lockPath = Path.Combine(Path.GetDirectoryName(path)!, "packages.lock.json");
-            var dependencies = JsonNode.Parse(File.ReadAllText(lockPath))!["dependencies"]!.AsObject();
-            foreach (var (id, value) in dependencies.SelectMany(framework => framework.Value!.AsObject())
+            var dependencies = JsonNode.Parse(File.ReadAllText(lockPath))?["dependencies"]?.AsObject()
+                ?? throw new ArgumentException("Lock dependencies are unavailable: " + lockPath);
+            foreach (var (id, value) in dependencies.SelectMany(framework => framework.Value?.AsObject()
+                         ?? throw new ArgumentException("Lock framework dependencies are unavailable: " + lockPath))
                          .Where(dependency => dependency.Key.StartsWith(InternalPackagePrefix, StringComparison.Ordinal)))
             {
-                if (value!["type"]!.GetValue<string>() == "Project")
+                var dependency = value?.AsObject() ?? throw new ArgumentException("Lock dependency is unavailable: " + id);
+                var type = dependency["type"]?.GetValue<string>() ?? throw new ArgumentException("Lock dependency type is unavailable: " + id);
+                if (type == "Project")
                 {
-                    RejectExtractedSource(id, lockPath);
+                    RejectExtractedSource(root, id, lockPath);
                 }
-                else if (value["resolved"]!.GetValue<string>() != version)
+                else if ((dependency["resolved"]?.GetValue<string>() ?? throw new ArgumentException("Lock dependency version is unavailable: " + id)) != version)
                 {
                     throw new ArgumentException(lockPath + ": " + id + " does not resolve to the tested candidate.");
                 }
@@ -164,7 +175,7 @@ internal static class CandidateCompatibilityCommand
         }
     }
 
-    private static void RejectExtractedSource(string id, string path)
+    private static void RejectExtractedSource(string root, string id, string path)
     {
         if (id.StartsWith("SharedKernel.", StringComparison.Ordinal) || id.StartsWith(InternalPackagePrefix, StringComparison.Ordinal))
         {
