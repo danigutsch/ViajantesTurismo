@@ -105,9 +105,8 @@ The workflow uses a small reviewed action set.
 | `actions/checkout` | Repository checkout |
 | `actions/setup-dotnet` | .NET SDK provisioning |
 | `actions/cache` | Reviewed dependency caching where configured |
-| `actions/create-github-app-token` | Mint a short-lived, repository-scoped roadmap pull-request token after environment approval |
-| `actions/download-artifact` | Retrieve immutable artifacts between jobs in the same workflow run |
-| `actions/upload-artifact` | Upload bounded test, scan, release, and roadmap-plan artifacts |
+| `actions/download-artifact` | Retrieve SARIF artifact for the dedicated code-scanning upload job |
+| `actions/upload-artifact` | Test result artifact upload |
 | `actions/dependency-review-action` | PR dependency and license review |
 | `github/codeql-action/upload-sarif` | Upload SARIF results from secret scanning |
 

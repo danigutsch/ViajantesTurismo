@@ -130,7 +130,7 @@ Local worktree convention:
 Each worktree resolves its own `global.json`. The setup scripts inspect the installed SDK inventory even
 when `dotnet --version` cannot resolve the pinned version. They never remove another SDK. Installation is
 opt-in, downloads the exact archive from Microsoft's release metadata, verifies its SHA-512 hash, and then
-adds only files that are not already present in the shared SDK root.
+adds only files that are not already present in the shared SDK root. The Unix bootstrap requires `jq` to parse SDK metadata; it does not invoke Python.
 
 The supported local helper-tool model is intentionally npm-minimized. Prefer repo-pinned
 `.NET` tools, repository-owned scripts, and Dockerized lint wrappers over transient package

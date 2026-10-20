@@ -45,29 +45,10 @@ done
 
 [[ -f "${global_json}" ]] || fail "global.json not found: ${global_json}"
 
+command -v jq > /dev/null 2>&1 || fail "Reading SDK release metadata requires jq."
+
 read_required_version() {
-    if command -v jq > /dev/null 2>&1; then
-        jq -er '.sdk.version | select(type == "string" and length > 0)' "${global_json}"
-        return
-    fi
-
-    if command -v python3 > /dev/null 2>&1; then
-        python3 - "${global_json}" <<'PY'
-import json
-import sys
-
-with open(sys.argv[1], encoding="utf-8") as stream:
-    version = json.load(stream).get("sdk", {}).get("version")
-
-if not isinstance(version, str) or not version:
-    raise SystemExit(1)
-
-print(version)
-PY
-        return
-    fi
-
-    fail "Reading global.json requires jq or python3."
+    jq -er '.sdk.version | select(type == "string" and length > 0)' "${global_json}"
 }
 
 required_version="$(read_required_version)"
@@ -152,44 +133,18 @@ read_archive_record() {
     local metadata_file="$1"
     local rid="$2"
 
-    if command -v jq > /dev/null 2>&1; then
-        jq -er --arg version "${required_version}" --arg rid "${rid}" '
-            first(
-                .releases[]
-                | ((.sdks // []) + (if .sdk then [.sdk] else [] end))[]
-                | select(.version == $version)
-                | .files[]
-                | select(.rid == $rid)
-                | select((.name // "") | endswith(".tar.gz"))
-                | [.url, .hash]
-                | @tsv
-            )
-        ' "${metadata_file}"
-        return
-    fi
-
-    python3 - "${metadata_file}" "${required_version}" "${rid}" <<'PY'
-import json
-import sys
-
-metadata_path, required_version, rid = sys.argv[1:]
-with open(metadata_path, encoding="utf-8") as stream:
-    metadata = json.load(stream)
-
-for release in metadata.get("releases", []):
-    sdks = list(release.get("sdks", []))
-    if isinstance(release.get("sdk"), dict):
-        sdks.append(release["sdk"])
-    for sdk in sdks:
-        if sdk.get("version") != required_version:
-            continue
-        for file in sdk.get("files", []):
-            if file.get("rid") == rid and str(file.get("name", "")).endswith(".tar.gz"):
-                print(f'{file.get("url", "")}\t{file.get("hash", "")}')
-                raise SystemExit(0)
-
-raise SystemExit(1)
-PY
+    jq -er --arg version "${required_version}" --arg rid "${rid}" '
+        first(
+            .releases[]
+            | ((.sdks // []) + (if .sdk then [.sdk] else [] end))[]
+            | select(.version == $version)
+            | .files[]
+            | select(.rid == $rid)
+            | select((.name // "") | endswith(".tar.gz"))
+            | [.url, .hash]
+            | @tsv
+        )
+    ' "${metadata_file}"
 }
 
 channel="${required_version%.*}"

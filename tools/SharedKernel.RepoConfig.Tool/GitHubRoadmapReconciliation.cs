@@ -18,7 +18,6 @@ internal sealed class GitHubRoadmapReconciliation
         IReadOnlyDictionary<int, string> closedEndpointStates,
         IReadOnlyDictionary<int, string> closedItemTransitions,
         string? snapshotDigest,
-        string? repositoryCommit,
         string? ruleVersion,
         GitHubRoadmapPriorityPolicy priorityPolicy,
         string sourceContent)
@@ -33,7 +32,6 @@ internal sealed class GitHubRoadmapReconciliation
         ClosedEndpointStates = closedEndpointStates;
         ClosedItemTransitions = closedItemTransitions;
         SnapshotDigest = snapshotDigest;
-        RepositoryCommit = repositoryCommit;
         RuleVersion = ruleVersion;
         PriorityPolicy = priorityPolicy;
         SourceContent = sourceContent;
@@ -54,8 +52,6 @@ internal sealed class GitHubRoadmapReconciliation
     public string ManifestPath { get; }
 
     public string Repository { get; }
-
-    public string? RepositoryCommit { get; }
 
     public string? RuleVersion { get; }
 
@@ -122,7 +118,6 @@ internal sealed class GitHubRoadmapReconciliation
             closedEndpointStates,
             closedItemTransitions,
             GetNullableString(root, "snapshotDigest"),
-            GetNullableString(root, "repositoryCommit"),
             GetNullableString(root, "ruleVersion"),
             priorityPolicy,
             content);

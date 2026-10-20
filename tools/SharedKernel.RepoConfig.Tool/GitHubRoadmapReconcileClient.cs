@@ -288,6 +288,37 @@ internal sealed class GitHubRoadmapReconcileClient
         return ReadRepositoryCommit(GetRepository(document.RootElement));
     }
 
+    private static async Task<byte[]> ReadResponseContent(HttpContent content, CancellationToken cancellationToken)
+    {
+        const string LimitMessage = "GitHub reconciliation response exceeded the allowed size.";
+        if (content.Headers.ContentLength is > MaxResponseBytes)
+        {
+            throw new InvalidOperationException(LimitMessage);
+        }
+
+        var source = await content.ReadAsStreamAsync(cancellationToken).ConfigureAwait(false);
+        await using (source.ConfigureAwait(false))
+        {
+            using var destination = new MemoryStream();
+            var buffer = new byte[8192];
+            while (true)
+            {
+                var read = await source.ReadAsync(buffer, cancellationToken).ConfigureAwait(false);
+                if (read == 0)
+                {
+                    return destination.ToArray();
+                }
+
+                if (destination.Length + read > MaxResponseBytes)
+                {
+                    throw new InvalidOperationException(LimitMessage);
+                }
+
+                await destination.WriteAsync(buffer.AsMemory(0, read), cancellationToken).ConfigureAwait(false);
+            }
+        }
+    }
+
     private static void RequireStableRepositoryCommit(string? expected, string? actual)
     {
         if (!string.Equals(expected, actual, StringComparison.Ordinal))
@@ -370,11 +401,7 @@ internal sealed class GitHubRoadmapReconcileClient
             JsonDocument document;
             try
             {
-                var content = await BoundedHttpContentReader.Read(
-                    response.Content,
-                    MaxResponseBytes,
-                    "GitHub reconciliation response exceeded the allowed size.",
-                    cancellationToken).ConfigureAwait(false);
+                var content = await ReadResponseContent(response.Content, cancellationToken).ConfigureAwait(false);
                 document = JsonDocument.Parse(content);
             }
             catch (Exception exception) when (exception is JsonException or HttpRequestException or IOException)

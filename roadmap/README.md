@@ -54,17 +54,12 @@ that exact declaration, intake rejects the transition rather than closing a revi
 1. Add or edit roadmap items in a pull request.
 2. Review priority inputs with the same care as implementation code.
 3. Merge repository changes first.
-4. Dispatch [Roadmap Maintenance](../docs/ci/supplemental-workflows.md#roadmap-maintenance-workflow)
-   from `main` with `apply_changes` disabled to inspect a fresh integrity-bound plan.
-5. To create an update pull request, dispatch again with `apply_changes` enabled. Review that run's
-   plan and approve the protected `roadmap-maintenance` environment.
-6. Review and merge the resulting draft pull request through normal branch protection and CI.
-7. Project roadmap items into GitHub Issues and Projects through a dedicated adapter.
-8. Report drift when repository-owned fields and GitHub-owned fields conflict.
-
-The protected workflow runs the same `reconcile github --apply`, `intake github --dry-run`, and
-`intake github --apply` sequence documented below. It does not run `sync github --apply`, write to
-`main`, reuse an existing automation branch, or accept a personal access token.
+4. Run `reconcile github --dry-run`, then review and run `reconcile github --apply` to update the
+   structural GitHub snapshot.
+5. Run `intake github --dry-run`, then review and run `intake github --apply` to write the accepted
+   snapshot into repository-owned roadmap files.
+6. Project roadmap items into GitHub Issues and Projects through a dedicated adapter.
+7. Report drift when repository-owned fields and GitHub-owned fields conflict.
 
 The repository owns item identity, outcome, explicit ordering and scoring for triaged
 work, blockers, parent-child relationships, themes, tags, and labels. GitHub owns

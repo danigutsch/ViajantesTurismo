@@ -54,38 +54,30 @@ fi
 resolved_sdk_version="$(dotnet --version)"
 
 for profile in /home/vscode/.bashrc /home/vscode/.profile; do
-    python3 - "${profile}" "${DOTNET_ROOT_MARKER_BEGIN}" "${DOTNET_ROOT_MARKER_END}" "${use_local_dotnet}" <<'PY'
-from pathlib import Path
-import sys
-
-profile_path = Path(sys.argv[1])
-marker_begin = sys.argv[2]
-marker_end = sys.argv[3]
-use_local_dotnet = sys.argv[4] == "true"
-
-content = profile_path.read_text(encoding='utf-8') if profile_path.exists() else ""
-block = (
-    f"{marker_begin}\n"
-    'export PATH="/home/vscode/.dotnet:$PATH"\n'
-    f"{marker_end}\n"
-)
-
-start = content.find(marker_begin)
-if start != -1:
-    end = content.find(marker_end, start)
-    if end != -1:
-        end += len(marker_end)
-        while end < len(content) and content[end] == "\n":
-            end += 1
-        content = content[:start] + content[end:]
-
-if use_local_dotnet:
-    if content and not content.endswith("\n"):
-        content += "\n"
-    content += block
-
-profile_path.write_text(content, encoding='utf-8')
-PY
+    content=""
+    if [[ -f "${profile}" ]]; then
+        IFS= read -r -d '' content < "${profile}" || true
+    fi
+    if [[ "${content}" == *"${DOTNET_ROOT_MARKER_BEGIN}"* ]]; then
+        prefix="${content%%"${DOTNET_ROOT_MARKER_BEGIN}"*}"
+        suffix="${content#*"${DOTNET_ROOT_MARKER_BEGIN}"}"
+        if [[ "${suffix}" == *"${DOTNET_ROOT_MARKER_END}"* ]]; then
+            suffix="${suffix#*"${DOTNET_ROOT_MARKER_END}"}"
+            while [[ "${suffix}" == $'\n'* ]]; do
+                suffix="${suffix#$'\n'}"
+            done
+            content="${prefix}${suffix}"
+        fi
+    fi
+    if [[ "${use_local_dotnet}" == "true" ]]; then
+        if [[ -n "${content}" && "${content}" != *$'\n' ]]; then
+            content+=$'\n'
+        fi
+        content+="${DOTNET_ROOT_MARKER_BEGIN}"$'\n'
+        content+="export PATH=\"/home/vscode/.dotnet:\$PATH\""$'\n'
+        content+="${DOTNET_ROOT_MARKER_END}"$'\n'
+    fi
+    printf '%s' "${content}" > "${profile}"
 done
 
 if [[ "${resolved_sdk_version}" != "${required_sdk_version}" ]]; then

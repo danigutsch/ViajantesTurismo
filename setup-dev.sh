@@ -44,25 +44,11 @@ check_dotnet_sdk_version() {
 
     printf "%b" "${YELLOW}📦 Checking .NET SDK...${NC}\n"
 
-    # Prefer jq for parsing global.json when available; otherwise fall back to python3.
-    if command -v jq > /dev/null 2>&1; then
-        required_version=$(jq -r '.sdk.version' global.json 2> /dev/null || echo "")
-    else
-        required_version=$(
-            python3 - << 'EOF' 2> /dev/null || echo ""
-import json
-import sys
-
-try:
-    with open("global.json", "r", encoding="utf-8") as f:
-        data = json.load(f)
-    print(data.get("sdk", {}).get("version", ""))
-except Exception:
-    sys.exit(1)
-EOF
-        )
+    if ! command -v jq > /dev/null 2>&1; then
+        printf "%b" "   ${RED}jq is required to read global.json${NC}\n"
+        exit 1
     fi
-
+    required_version=$(jq -er '.sdk.version | select(type == "string" and length > 0)' global.json)
     if [[ -z "${required_version}" ]]; then
         printf "%b" "   ${RED}❌ Unable to determine required .NET SDK version from global.json${NC}\n"
         exit 1
