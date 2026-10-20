@@ -1,5 +1,11 @@
 # Generated endpoint route map
 
+Generation ownership: source/configuration in [generated-diagrams.json](generated-diagrams.json),
+with per-output sources in the [diagram inventory](generated-diagram-roadmap.md).
+Refresh: `bash scripts/update-architecture-diagrams.sh`; check: append `--check`.
+Edit manual narrative outside generated markers; review under the
+[documentation governance policy](../DOCUMENTATION_GOVERNANCE.md#generated-output-review-and-finalization).
+
 This page lists Minimal API routes that the documentation generator can discover from source. It is a
 review aid for OpenAPI, route ownership, and public-versus-management surface checks.
 

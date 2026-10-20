@@ -42,6 +42,8 @@ Decisions about code quality standards and testing practices.
 
 ### Architecture & Layers
 
+- **[ADR-041](adr/20261020-catalog-media-metadata-and-object-ownership.md)** — Catalog Media Metadata and Object Ownership
+
 Decisions about application architecture and layer responsibilities.
 
 - **[ADR-007](adr/20251108-application-layer-mappers-queries.md)** — Application Layer for Mappers and

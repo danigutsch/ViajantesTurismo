@@ -79,6 +79,7 @@ outdated behavior.
 - [Reusable test helpers](REUSABLE_TEST_HELPERS.md)
 - [Configuration standards](CONFIGURATION.md)
 - [Documentation governance](DOCUMENTATION_GOVERNANCE.md)
+- [Documentation inventory and consolidation](documentation-inventory.md)
 - [API request shape policy](API_REQUEST_SHAPES.md)
 - [API versioning](API_VERSIONING.md)
 - [Async contracts](ASYNC_CONTRACTS.md)
@@ -90,6 +91,19 @@ outdated behavior.
 - [Configurable model source generation](MODEL_SOURCE_GENERATION.md)
 - [FOSS compliance](FOSS_COMPLIANCE.md)
 - [Roadmap](../roadmap/README.md)
+
+## Generated travel documents
+
+- [Use cases, source boundaries, and first-slice status](generated-travel-documents.md)
+- [Intermediate format decision](adr/20260710-generated-travel-document-format-and-workflow.md)
+- [Review and finalization workflow](generated-travel-documents.md#manual-review-and-finalization-workflow)
+- [Retention and legal-hold proposal](operations/document-retention-and-legal-hold.md)
+
+## Research and operational design
+
+- [Coupling and cohesion measurement proposal](architecture/coupling-and-cohesion-metrics.md)
+- [Integration and system test diagnostics](ci/test-diagnostics.md)
+- [Media metadata and object ownership](adr/20261020-catalog-media-metadata-and-object-ownership.md)
 
 ## Maintenance notes
 

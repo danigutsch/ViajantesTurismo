@@ -1,5 +1,11 @@
 # Generated event and message flow map
 
+Generation ownership: source/configuration in [generated-diagrams.json](generated-diagrams.json),
+with per-output sources in the [diagram inventory](generated-diagram-roadmap.md).
+Refresh: `bash scripts/update-architecture-diagrams.sh`; check: append `--check`.
+Edit manual narrative outside generated markers; review under the
+[documentation governance policy](../DOCUMENTATION_GOVERNANCE.md#generated-output-review-and-finalization).
+
 This page lists integration-event contracts, source-created producers, consumer registrations, and
 handlers discovered from source. It complements the hand-written flow narrative in
 [Architecture flows](FLOWS.md).
