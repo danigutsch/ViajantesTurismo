@@ -2,9 +2,12 @@
 # ViajantesTurismo Development Environment Setup Script
 # This script verifies required tooling and points to optional local tools
 
-param()
+param(
+    [switch]$InstallSdk
+)
 
 $ErrorActionPreference = "Stop"
+$repoRoot = $PSScriptRoot
 
 function Write-SetupHeader {
     Write-Host "`n🚀 ViajantesTurismo Development Setup" -ForegroundColor Cyan
@@ -12,25 +15,35 @@ function Write-SetupHeader {
 }
 
 function Test-DotNetSdkVersion {
-    Write-Host "📦 Checking .NET SDK..." -ForegroundColor Yellow
-    $globalJson = Get-Content "global.json" | ConvertFrom-Json
-    $requiredVersion = $globalJson.sdk.version
-    $installedSdk = dotnet --version 2>&1
+    param([bool]$InstallMissingSdk)
 
-    if ($LASTEXITCODE -eq 0) {
-        Write-Host "   ✅ .NET SDK installed: $installedSdk" -ForegroundColor Green
-        if ($installedSdk -ne $requiredVersion) {
-            Write-Output "Install the exact SDK from: https://dotnet.microsoft.com/download/dotnet/10.0"
-            Write-Output "   Re-run setup after the exact SDK is installed so locked restore uses the same toolchain as CI."
-            Write-Error "Required version: $requiredVersion"
-            exit 1
-        }
+    Write-Host "📦 Checking .NET SDK..." -ForegroundColor Yellow
+    $globalJsonPath = Join-Path $repoRoot "global.json"
+    $globalJson = Get-Content $globalJsonPath | ConvertFrom-Json
+    $requiredVersion = $globalJson.sdk.version
+    $installDir = Join-Path $HOME ".dotnet"
+    $ensureParameters = @{
+        GlobalJson = $globalJsonPath
+        InstallDir = $installDir
     }
-    else {
-        Write-Output "Download .NET $requiredVersion from: https://dotnet.microsoft.com/download/dotnet/10.0"
-        Write-Error ".NET SDK not found"
+    if ($InstallMissingSdk) {
+        $ensureParameters.Install = $true
+    }
+
+    & (Join-Path $repoRoot "scripts/ensure-dotnet-sdk.ps1") @ensureParameters
+
+    if (Test-Path -Path (Join-Path $installDir "sdk/$requiredVersion/dotnet.dll") -PathType Leaf) {
+        $env:DOTNET_ROOT = $installDir
+        $env:PATH = "$installDir$([System.IO.Path]::PathSeparator)$env:PATH"
+    }
+
+    $installedSdk = dotnet --version 2>&1
+    if ($LASTEXITCODE -ne 0 -or $installedSdk -ne $requiredVersion) {
+        Write-Error "Resolved .NET SDK does not match required $requiredVersion"
         exit 1
     }
+
+    Write-Host "   ✅ .NET SDK installed: $installedSdk" -ForegroundColor Green
 }
 
 function Restore-DotNetDependencies {
@@ -156,7 +169,7 @@ function Write-SetupSummary {
 }
 
 Write-SetupHeader
-Test-DotNetSdkVersion
+Test-DotNetSdkVersion -InstallMissingSdk $InstallSdk
 Restore-DotNetDependencies
 Restore-DotNetLocalTools
 Test-AspNetCoreDevelopmentCertificateTrust

@@ -75,14 +75,17 @@ Run the automated setup script to verify required dependencies and point you to 
 ```powershell
 # Windows (PowerShell)
 .\setup-dev.ps1
+.\setup-dev.ps1 -InstallSdk # Install the exact SDK when it is missing
 
 # Unix/Linux/macOS (Bash)
 bash setup-dev.sh
+bash setup-dev.sh --install-sdk # Install the exact SDK when it is missing
 ```
 
 This script will:
 
 - ✅ Verify the exact .NET SDK version pinned in `global.json`
+- ✅ Install a missing exact SDK side-by-side only when explicitly requested
 - ✅ Restore .NET dependencies (`dotnet restore --locked-mode`)
 - ✅ Restore .NET local tools (`dotnet tool restore` - includes dotnet-ef, reportgenerator, Aspire CLI)
 - ✅ Verify PowerShell availability for Playwright browser installation
@@ -121,6 +124,13 @@ Local worktree convention:
 - Put repository-local Git worktrees under `.worktrees/`
 - Agents should always use repository-local Git worktrees for issue work
 - `.worktrees/` is ignored and intended only for local workspace management, not committed project structure
+- Keep every exact SDK pinned by `main` or an active worktree installed side-by-side in `~/.dotnet`
+- Remove an SDK only after `main` and every active worktree have stopped pinning that version
+
+Each worktree resolves its own `global.json`. The setup scripts inspect the installed SDK inventory even
+when `dotnet --version` cannot resolve the pinned version. They never remove another SDK. Installation is
+opt-in, downloads the exact archive from Microsoft's release metadata, verifies its SHA-512 hash, and then
+adds only files that are not already present in the shared SDK root.
 
 The supported local helper-tool model is intentionally npm-minimized. Prefer repo-pinned
 `.NET` tools, repository-owned scripts, and Dockerized lint wrappers over transient package
@@ -135,8 +145,9 @@ numeric shorthand in maintained docs, and avoids external URL probing in PR gati
 If you prefer manual setup or the automated script doesn't work:
 
 ```bash
-# 1. Verify the exact .NET SDK version pinned in global.json
-dotnet --version
+# 1. Verify or explicitly install the exact SDK pinned in global.json
+bash scripts/ensure-dotnet-sdk.sh
+bash scripts/ensure-dotnet-sdk.sh --install
 
 # 2. Clone and navigate to repository
 git clone https://github.com/danigutsch/ViajantesTurismo.git

@@ -80,6 +80,15 @@ fi
 run_shellcheck "${shellcheck_targets[@]}"
 dotnet test --project tests/SharedKernel.RepoConfig.Tests/SharedKernel.RepoConfig.Tests.csproj \
     --filter-class SharedKernel.RepoConfig.Tests.PodmanDnsPreflightCommandTests
+bash scripts/test-dotnet-sdk-bootstrap.sh
+if command -v pwsh > /dev/null 2>&1; then
+    pwsh -NoLogo -NoProfile -File scripts/test-dotnet-sdk-bootstrap.ps1
+elif [[ "${CI:-}" == "true" ]]; then
+    echo "pwsh is required to test the PowerShell SDK bootstrap in CI." >&2
+    exit 1
+else
+    echo "Optional: pwsh not found; skipping PowerShell SDK bootstrap tests." >&2
+fi
 bash scripts/check-line-endings.sh
 dotnet run --project tools/SharedKernel.RepoConfig.Tool -- text-encoding --root .
 bash scripts/lint-json.sh

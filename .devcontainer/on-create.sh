@@ -33,14 +33,12 @@ sudo chown -R vscode:vscode \
 
 use_local_dotnet=false
 
-if [[ -d "${DOTNET_INSTALL_DIR}/sdk/${required_sdk_version}" ]]; then
-    use_local_dotnet=true
-elif ! dotnet --list-sdks | grep -q "^${required_sdk_version} "; then
-    install_script="$(mktemp)"
-    trap 'rm -f "${install_script}"' EXIT
+bash "${WORKSPACE_FOLDER}/scripts/ensure-dotnet-sdk.sh" \
+    --install \
+    --global-json "${WORKSPACE_FOLDER}/global.json" \
+    --install-dir "${DOTNET_INSTALL_DIR}"
 
-    curl -fsSL "https://dot.net/v1/dotnet-install.sh" -o "${install_script}"
-    bash "${install_script}" --version "${required_sdk_version}" --install-dir "${DOTNET_INSTALL_DIR}"
+if [[ -f "${DOTNET_INSTALL_DIR}/sdk/${required_sdk_version}/dotnet.dll" ]]; then
     use_local_dotnet=true
 fi
 

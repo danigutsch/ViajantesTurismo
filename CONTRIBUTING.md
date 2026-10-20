@@ -145,5 +145,8 @@ Contributors and CI must install that SDK before restore so a later installed SD
 SDK-injected dependencies. Apply SDK servicing updates by changing `global.json` intentionally;
 this build-tooling pin does not alter application runtime roll-forward policy. Then run
 `bash scripts/refresh-dependency-lockfiles.sh` and commit the SDK input with the regenerated lock files.
+Install servicing SDKs side-by-side: `bash setup-dev.sh --install-sdk` or
+`.\setup-dev.ps1 -InstallSdk`. Do not remove the previous SDK until `main` and every active worktree
+have stopped pinning it.
 
 See `docs/CODE_QUALITY.md` for the full local tooling reference.

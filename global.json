@@ -1,7 +1,8 @@
 {
   "sdk": {
     "version": "10.0.402",
-    "rollForward": "disable"
+    "rollForward": "disable",
+    "errorMessage": "Run setup-dev.sh --install-sdk or setup-dev.ps1 -InstallSdk to install this SDK side-by-side."
   },
   "msbuild-sdks": {
     "Aspire.AppHost.Sdk": "13.6.1"
