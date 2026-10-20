@@ -19,14 +19,10 @@
         <ProjectReference Include="..\ViajantesTurismo.Resources\ViajantesTurismo.Resources.csproj" IsAspireProjectResource="false"/>
         <ProjectReference Include="..\ViajantesTurismo.Management.Web\ViajantesTurismo.Management.Web.csproj"/>
         <ProjectReference Include="..\ViajantesTurismo.Public.Web\ViajantesTurismo.Public.Web.csproj"/>
-        <ProjectReference Include="..\SharedKernel\SharedKernel.Aspire.Hosting.Grafana\SharedKernel.Aspire.Hosting.Grafana.csproj" IsAspireProjectResource="false"/>
-        <ProjectReference Include="..\SharedKernel\SharedKernel.Aspire.Hosting.ClamAv\SharedKernel.Aspire.Hosting.ClamAv.csproj" IsAspireProjectResource="false"/>
-        <ProjectReference Include="..\SharedKernel\SharedKernel.Aspire.Hosting.SeaweedFs\SharedKernel.Aspire.Hosting.SeaweedFs.csproj" IsAspireProjectResource="false"/>
-        <ProjectReference Include="..\SharedKernel\SharedKernel.Aspire.Analyzers\SharedKernel.Aspire.Analyzers.csproj"
-            OutputItemType="Analyzer"
-            ReferenceOutputAssembly="false"
-            PrivateAssets="all"
-            IsAspireProjectResource="false"/>
+        <PackageReference Include="PandaBear.SharedKernel.Aspire.Hosting.Grafana" />
+        <PackageReference Include="PandaBear.SharedKernel.Aspire.Hosting.ClamAv" />
+        <PackageReference Include="PandaBear.SharedKernel.Aspire.Hosting.SeaweedFs" />
+        <PackageReference Include="PandaBear.SharedKernel.Aspire.Analyzers" PrivateAssets="all" />
         <ProjectReference Include="..\ViajantesTurismo.DatabaseObservability\ViajantesTurismo.DatabaseObservability.csproj"/>
     </ItemGroup>
 

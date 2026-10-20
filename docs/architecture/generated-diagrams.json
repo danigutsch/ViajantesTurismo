@@ -1,6 +1,6 @@
 {
   "docsPath": "docs/architecture",
-  "generatorName": "tools/SharedKernel.Documentation.Tool",
+  "generatorName": "tools/ViajantesTurismo.Documentation.Tool",
   "blocks": [
     {
       "name": "system-overview",

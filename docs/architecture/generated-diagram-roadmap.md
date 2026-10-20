@@ -6,7 +6,7 @@ metadata the code does not expose.
 
 | Area | Source of truth | Output | Refresh and check path | Status |
 | --- | --- | --- | --- | --- |
-| System overview | Curated block in `docs/architecture/generated-diagrams.json`. | `system-overview.md` | `tools/SharedKernel.Documentation.Tool` through the existing diagram refresh path. | Generated from curated architecture data. |
+| System overview | Curated block in `docs/architecture/generated-diagrams.json`. | `system-overview.md` | `tools/ViajantesTurismo.Documentation.Tool` through the existing diagram refresh path. | Generated from curated architecture data. |
 | Project dependencies | `*.csproj` project references. | `boundaries-and-dependencies.md` | Same generator config. | Generated. |
 | SharedKernel dependencies | `src/SharedKernel/**/*.csproj` project references. | `boundaries-and-dependencies.md` | Same generator config. | Generated. |
 | AppHost runtime wiring | `src/ViajantesTurismo.AppHost/AppHostComposition.cs`. | `runtime-wiring-and-deployment.md` | Same generator config. | Generated. |
@@ -14,7 +14,7 @@ metadata the code does not expose.
 | Supplemental workflows | `.github/workflows/*.yml` workflow names. | `ci-validation-flows.md` | Same generator config. | Generated. |
 | Minimal API endpoints | `MapGet`, `MapPost`, `MapPut`, `MapPatch`, and `MapDelete` declarations. | `generated-endpoint-route-map.md` | Same generator config; stale output fails the existing lint path. | Generated. |
 | Events and messages | Integration-event contracts, event creation sites, consumer registrations, and handlers. | `generated-event-message-flow-map.md` | Same generator config; missing metadata is shown as missing. | Generated. |
-| Machine-readable architecture facts | Stable fact markers plus configured C# switches, registrations, and required invocations. | `FLOWS.md` and the documentation index. | `SharedKernel.Documentation.Tool check` through `scripts/lint-all.sh`. | Source-conformance checked. |
+| Machine-readable architecture facts | Stable fact markers plus configured C# switches, registrations, and required invocations. | `FLOWS.md` and the documentation index. | `ViajantesTurismo.Documentation.Tool check` through `scripts/lint-all.sh`. | Source-conformance checked. |
 | Mediator workflows | Existing mediator generator output and request/handler source. | No generated diagram yet. | Research only until request, handler, pipeline, notification, and stream metadata are explicit. | Deferred. |
 | Code-generation strategy | Repository .NET tool model and local tool security policy. | This roadmap and `diagram-guidance.md`. | No new scripts, Python, npm, or transient tooling. | Use existing .NET generator. |
 
@@ -24,7 +24,7 @@ The existing docs/scripts/spec lint path already checks generated diagram drift.
 the underlying .NET tool directly when they want the exact stale file list:
 
 ```text
-dotnet run --project tools/SharedKernel.Documentation.Tool -- generate --config docs/architecture/generated-diagrams.json --check
+dotnet run --project tools/ViajantesTurismo.Documentation.Tool -- generate --config docs/architecture/generated-diagrams.json --check
 ```
 
 Refresh with the same command without `--check`, or use the repository's existing diagram refresh

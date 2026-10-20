@@ -22,9 +22,9 @@
     </ItemGroup>
 
     <ItemGroup>
-        <ProjectReference Include="..\..\src\SharedKernel\SharedKernel.Testing.Assertions\SharedKernel.Testing.Assertions.csproj" />
-        <ProjectReference Include="..\..\src\SharedKernel\SharedKernel.Testing.Snapshots\SharedKernel.Testing.Snapshots.csproj" />
-        <ProjectReference Include="..\..\src\SharedKernel\SharedKernel.Testing\SharedKernel.Testing.csproj" />
+        <PackageReference Include="PandaBear.SharedKernel.Testing.Assertions" />
+        <PackageReference Include="PandaBear.SharedKernel.Testing.Snapshots" />
+        <PackageReference Include="PandaBear.SharedKernel.Testing" />
         <ProjectReference Include="..\..\src\ViajantesTurismo.Branding.ApiService\ViajantesTurismo.Branding.ApiService.csproj" />
         <ProjectReference Include="..\..\src\ViajantesTurismo.Branding.Contracts.Http\ViajantesTurismo.Branding.Contracts.Http.csproj" />
         <ProjectReference Include="..\..\src\ViajantesTurismo.Branding.Contracts.IntegrationEvents\ViajantesTurismo.Branding.Contracts.IntegrationEvents.csproj" />

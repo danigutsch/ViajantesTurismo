@@ -78,12 +78,12 @@ if [[ "${fix_mode}" == true ]]; then
 fi
 
 run_shellcheck "${shellcheck_targets[@]}"
-dotnet test --project tests/SharedKernel.RepoConfig.Tests/SharedKernel.RepoConfig.Tests.csproj \
-    --filter-class SharedKernel.RepoConfig.Tests.PodmanDnsPreflightCommandTests
-dotnet test --project tests/SharedKernel.RepoConfig.Tests/SharedKernel.RepoConfig.Tests.csproj \
-    --filter-class SharedKernel.RepoConfig.Tests.DotnetSdkBootstrapTests
+dotnet test --project tests/ViajantesTurismo.RepoConfig.Tests/ViajantesTurismo.RepoConfig.Tests.csproj \
+    --filter-class ViajantesTurismo.RepoConfig.Tests.PodmanDnsPreflightCommandTests
+dotnet test --project tests/ViajantesTurismo.RepoConfig.Tests/ViajantesTurismo.RepoConfig.Tests.csproj \
+    --filter-class ViajantesTurismo.RepoConfig.Tests.DotnetSdkBootstrapTests
 bash scripts/check-line-endings.sh
-dotnet run --project tools/SharedKernel.RepoConfig.Tool -- text-encoding --root .
+dotnet run --project tools/ViajantesTurismo.RepoConfig.Tool -- text-encoding --root .
 bash scripts/lint-json.sh
 bash scripts/lint-gherkin.sh tests/**/*.feature
 bash scripts/lint-links.sh
@@ -92,7 +92,7 @@ if [[ "${fix_mode}" == true ]]; then
 else
     bash scripts/update-architecture-diagrams.sh --check
 fi
-dotnet run --project tools/SharedKernel.Documentation.Tool -- \
+dotnet run --project tools/ViajantesTurismo.Documentation.Tool -- \
     check --config docs/architecture/documentation-conformance.json
 
 if [[ "${skip_markdown}" != true ]]; then

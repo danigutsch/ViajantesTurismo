@@ -18,8 +18,8 @@
     </ItemGroup>
 
     <ItemGroup>
-        <ProjectReference Include="..\SharedKernel\SharedKernel.Branding\SharedKernel.Branding.csproj"/>
-        <ProjectReference Include="..\SharedKernel\SharedKernel.EventSourcing.Npgsql\SharedKernel.EventSourcing.Npgsql.csproj"/>
+        <PackageReference Include="PandaBear.SharedKernel.Branding" />
+        <PackageReference Include="PandaBear.SharedKernel.EventSourcing.Npgsql" />
         <ProjectReference Include="..\ViajantesTurismo.Admin.Application\ViajantesTurismo.Admin.Application.csproj"/>
         <ProjectReference Include="..\ViajantesTurismo.Admin.Infrastructure\ViajantesTurismo.Admin.Infrastructure.csproj"/>
         <ProjectReference Include="..\ViajantesTurismo.Branding.Infrastructure\ViajantesTurismo.Branding.Infrastructure.csproj"/>

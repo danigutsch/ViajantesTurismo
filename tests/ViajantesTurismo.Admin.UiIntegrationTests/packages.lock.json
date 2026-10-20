@@ -14,6 +14,33 @@
           "Microsoft.Testing.Platform": "2.4.1"
         }
       },
+      "PandaBear.SharedKernel.Style.Analyzers": {
+        "type": "Direct",
+        "requested": "[0.1.0-alpha.cutover.20261019.3, )",
+        "resolved": "0.1.0-alpha.cutover.20261019.3",
+        "contentHash": "kbIa09GTnszrGDCfrM1LosFtg/XPxFA6XtB0tNyiyBY9HH/5hCxX1ERXYgoGtTvq2xwjUVx0EO1BRw7NbTYAog=="
+      },
+      "PandaBear.SharedKernel.Style.CodeFixes": {
+        "type": "Direct",
+        "requested": "[0.1.0-alpha.cutover.20261019.3, )",
+        "resolved": "0.1.0-alpha.cutover.20261019.3",
+        "contentHash": "pbYgkyK3rA4VtbhpdpjkqDFtEa4M5YHq9R13cXQaqSBaXzlKw4OlVAHVEs0jzh2BPIbzPL8Gp4td0u0Feyhm2g=="
+      },
+      "PandaBear.SharedKernel.Testing.Analyzers": {
+        "type": "Direct",
+        "requested": "[0.1.0-alpha.cutover.20261019.3, )",
+        "resolved": "0.1.0-alpha.cutover.20261019.3",
+        "contentHash": "Ou6/nS2p57mcLLPE+zrT75YU2GZleDS7OgVRJA7XhgUrEv3cDwlx2sueyFIosfNTYPZeqRQttCfvRWNfsK8JTA=="
+      },
+      "PandaBear.SharedKernel.Testing.Assertions": {
+        "type": "Direct",
+        "requested": "[0.1.0-alpha.cutover.20261019.3, )",
+        "resolved": "0.1.0-alpha.cutover.20261019.3",
+        "contentHash": "Nbwa1t2MMGjltC8wl9oh3gbN1IOrRg35vOw6oOEyNT5nBepe4hqwkxRLZh5YCF/wqEIZPCBlSz2fSpk7U4QwRg==",
+        "dependencies": {
+          "xunit.v3.assert": "4.0.0"
+        }
+      },
       "xunit.v3.mtp-v2": {
         "type": "Direct",
         "requested": "[4.0.2, )",
@@ -199,12 +226,6 @@
         "dependencies": {
           "xunit.v3.extensibility.core": "[4.0.2]",
           "xunit.v3.runner.common": "[4.0.2]"
-        }
-      },
-      "sharedkernel.testing.assertions": {
-        "type": "Project",
-        "dependencies": {
-          "xunit.v3.assert": "[4.0.2, )"
         }
       },
       "Microsoft.Extensions.DependencyInjection": {

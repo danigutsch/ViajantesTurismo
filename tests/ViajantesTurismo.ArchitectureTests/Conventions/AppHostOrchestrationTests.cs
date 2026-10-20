@@ -53,7 +53,7 @@ public sealed partial class AppHostOrchestrationTests
         releaseWorkflowText.ShouldContain("VT_ASPIRE_CONTAINER_IMAGE_TAG", StringComparison.Ordinal);
         releaseWorkflowText.ShouldContain("ComputedInformationalVersion", StringComparison.Ordinal);
         releaseWorkflowText.ShouldContain("dotnet tool run aspire -- publish", StringComparison.Ordinal);
-        combinedDocsText.ShouldContain("SharedKernel.Versioning.Tool calculate-release", StringComparison.Ordinal);
+        combinedDocsText.ShouldContain("sharedkernel-version calculate-release", StringComparison.Ordinal);
         combinedDocsText.ShouldContain("PublishAsDockerFile", StringComparison.Ordinal);
         combinedDocsText.ShouldContain("WithImageTag", StringComparison.Ordinal);
         combinedDocsText.ShouldContain("WithImageRegistry", StringComparison.Ordinal);
@@ -254,102 +254,6 @@ public sealed partial class AppHostOrchestrationTests
     }
 
     [Fact]
-    public void Aspire_test_application_bounds_build_start_and_resource_health_waits()
-    {
-        // Arrange
-        var testApplicationText = File.ReadAllText(Path.Combine(
-            GetRepositoryRoot(),
-            "src",
-            "SharedKernel",
-            "SharedKernel.IntegrationTesting",
-            "AspireTestApplication.cs"));
-
-        // Act
-        var usesBoundedStartup = testApplicationText.Contains("RunWithResourceStartupTimeout", StringComparison.Ordinal)
-            && testApplicationText.Contains("BuildAsync(startupCt)", StringComparison.Ordinal)
-            && testApplicationText.Contains("await builtApp.StartAsync(startupCt)", StringComparison.Ordinal)
-            && testApplicationText.Contains(
-                "WaitForResourceHealthyAsync(resourceName, startupCt)",
-                StringComparison.Ordinal);
-
-        // Assert
-        usesBoundedStartup.ShouldBeTrue();
-        testApplicationText.ShouldContain(
-            "CancellationTokenSource.CreateLinkedTokenSource(ct, timeoutCts.Token)",
-            StringComparison.Ordinal);
-    }
-
-    [Fact]
-    public void Aspire_test_application_awaits_uncancellable_resource_teardown()
-    {
-        // Arrange
-        var testApplicationText = File.ReadAllText(Path.Combine(
-            GetRepositoryRoot(),
-            "src",
-            "SharedKernel",
-            "SharedKernel.IntegrationTesting",
-            "AspireTestApplication.cs"));
-
-        // Act
-        var awaitsUncancellableTeardown = testApplicationText.Contains(
-            "RunWithResourceTeardownTimeout(app.StopAsync)",
-            StringComparison.Ordinal)
-            && testApplicationText.Contains("await operation(timeoutCts.Token)", StringComparison.Ordinal)
-            && testApplicationText.Contains(
-                "CaptureTeardownFailure(() => app.DisposeAsync().AsTask()",
-                StringComparison.Ordinal)
-            && testApplicationText.Contains(
-                "CaptureTeardownFailure(() => appBuilder.DisposeAsync().AsTask()",
-                StringComparison.Ordinal);
-
-        // Assert
-        awaitsUncancellableTeardown.ShouldBeTrue();
-        testApplicationText.ShouldNotContain(".WaitAsync(", StringComparison.Ordinal);
-        testApplicationText.ShouldContain("CaptureTeardownFailure", StringComparison.Ordinal);
-        testApplicationText.ShouldContain("new AggregateException(", StringComparison.Ordinal);
-        testApplicationText.ShouldContain("var teardownFailures = await DisposeAfterFailedStart", StringComparison.Ordinal);
-    }
-
-    [Fact]
-    public void Aspire_test_application_preserves_aspire_testing_concurrency_defaults()
-    {
-        // Arrange
-        var repositoryRoot = GetRepositoryRoot();
-        var testApplicationText = File.ReadAllText(Path.Combine(
-            repositoryRoot,
-            "src",
-            "SharedKernel",
-            "SharedKernel.IntegrationTesting",
-            "AspireTestApplication.cs"));
-        var endpointLeasePath = Path.Combine(
-            repositoryRoot,
-            "src",
-            "SharedKernel",
-            "SharedKernel.IntegrationTesting",
-            "AspireTestEndpointLease.cs");
-        var publicApiText = File.ReadAllText(Path.Combine(
-            repositoryRoot,
-            "src",
-            "SharedKernel",
-            "SharedKernel.IntegrationTesting",
-            "PublicAPI.Unshipped.txt"));
-
-        // Act
-        var usesTestingBuilder = testApplicationText.Contains(
-            "DistributedApplicationTestingBuilder",
-            StringComparison.Ordinal);
-
-        // Assert
-        usesTestingBuilder.ShouldBeTrue();
-        File.Exists(endpointLeasePath).ShouldBeFalse();
-        testApplicationText.ShouldNotContain("AspireTestEndpointLease", StringComparison.Ordinal);
-        testApplicationText.ShouldNotContain("DcpPublisher:RandomizePorts", StringComparison.Ordinal);
-        publicApiText.ShouldNotContain(
-            "Aspire.Hosting.IDistributedApplicationBuilder! builder",
-            StringComparison.Ordinal);
-    }
-
-    [Fact]
     public void Database_observability_waits_for_both_databases_after_migrations()
     {
         // Arrange
@@ -398,44 +302,14 @@ public sealed partial class AppHostOrchestrationTests
             "ViajantesTurismo.AppHost",
             "ObservabilityStackResourceExtensions.cs"));
 
-        var sharedHostingText = File.ReadAllText(Path.Combine(
-            GetRepositoryRoot(),
-            "src",
-            "SharedKernel",
-            "SharedKernel.Aspire.Hosting.Grafana",
-            "GrafanaLgtmStackResourceExtensions.cs"));
-
-        var sharedDefaultsText = File.ReadAllText(Path.Combine(
-            GetRepositoryRoot(),
-            "src",
-            "SharedKernel",
-            "SharedKernel.Aspire.Hosting.Grafana",
-            "GrafanaLgtmStackDefaults.cs"));
-
         // Act
         var hasGate = appHostText.Contains("GrafanaLgtmStackDefaults.EnableObservabilityStackVariable", StringComparison.Ordinal)
-            && sharedDefaultsText.Contains("ASPIRE_ENABLE_OBSERVABILITY_STACK", StringComparison.Ordinal)
             && appHostText.Contains("AddObservabilityStack", StringComparison.Ordinal);
 
         // Assert
         hasGate.ShouldBeTrue();
         appHostText.ShouldContain("AddGrafanaLgtmStack", StringComparison.Ordinal);
         appHostText.ShouldNotContain("ViajantesTurismo.Resources", StringComparison.Ordinal);
-        sharedHostingText.ShouldContain("GrafanaLgtmStackDefaults.ResourceNames", StringComparison.Ordinal);
-        sharedDefaultsText.ShouldContain("\"opentelemetry-collector\"", StringComparison.Ordinal);
-        sharedDefaultsText.ShouldContain("\"grafana\"", StringComparison.Ordinal);
-        sharedDefaultsText.ShouldContain("\"loki\"", StringComparison.Ordinal);
-        sharedDefaultsText.ShouldContain("\"tempo\"", StringComparison.Ordinal);
-        sharedDefaultsText.ShouldContain("\"prometheus\"", StringComparison.Ordinal);
-        sharedHostingText.ShouldContain("AddOpenTelemetryCollectorGateway(", StringComparison.Ordinal);
-        sharedHostingText.ShouldContain("ConfigureAppForwarding(collector)", StringComparison.Ordinal);
-        sharedHostingText.ShouldContain("ResolveCollectorEndpointName", StringComparison.Ordinal);
-        (sharedHostingText.Split("ExcludeFromManifest()").Length - 1).ShouldBe(5);
-        sharedHostingText.ShouldNotContain("AddContainer(", StringComparison.Ordinal);
-        sharedHostingText.ShouldContain("AddGrafana(resourceNames.Grafana", StringComparison.Ordinal);
-        sharedHostingText.ShouldContain("AddLoki(resourceNames.Loki", StringComparison.Ordinal);
-        sharedHostingText.ShouldContain("AddTempo(resourceNames.Tempo", StringComparison.Ordinal);
-        sharedHostingText.ShouldContain("AddPrometheus(", StringComparison.Ordinal);
     }
 
     [Fact]
@@ -453,12 +327,6 @@ public sealed partial class AppHostOrchestrationTests
             "src",
             "ViajantesTurismo.AppHost",
             "ObservabilityStackResourceExtensions.cs"));
-        var sharedHostingText = File.ReadAllText(Path.Combine(
-            GetRepositoryRoot(),
-            "src",
-            "SharedKernel",
-            "SharedKernel.Aspire.Hosting.Grafana",
-            "GrafanaLgtmStackResourceExtensions.cs"));
 
         // Act
         var gatewayCallIndex = compositionText.IndexOf("builder.AddObservabilityStack();", StringComparison.Ordinal);
@@ -470,8 +338,6 @@ public sealed partial class AppHostOrchestrationTests
         gatewayCallIndex.ShouldBeLessThan(adminProfileReturnIndex);
         gatewayCallCount.ShouldBe(1);
         observabilityStackText.ShouldContain("AddOpenTelemetryCollectorGateway", StringComparison.Ordinal);
-        sharedHostingText.ShouldContain("WithConfig(Path.GetFullPath(privacyConfigurationFile))", StringComparison.Ordinal);
-        sharedHostingText.ShouldContain("WithConfig(Path.GetFullPath(routingConfigurationFile))", StringComparison.Ordinal);
     }
 
     [Fact]
@@ -532,75 +398,17 @@ public sealed partial class AppHostOrchestrationTests
     }
 
     [Fact]
-    public void Observability_stack_uses_pinned_container_images()
-    {
-        // Arrange
-        var sharedHostingText = File.ReadAllText(Path.Combine(
-            GetRepositoryRoot(),
-            "src",
-            "SharedKernel",
-            "SharedKernel.Aspire.Hosting.Grafana",
-            "GrafanaLgtmStackResourceExtensions.cs"));
-
-        // Act
-        var imageDigestCalls = sharedHostingText.Split("WithImageSHA256(").Length - 1;
-
-        // Assert
-        imageDigestCalls.ShouldBe(5);
-        sharedHostingText.ShouldContain("OpenTelemetryCollectorImageDigest", StringComparison.Ordinal);
-        sharedHostingText.ShouldContain("GrafanaImageDigest", StringComparison.Ordinal);
-        sharedHostingText.ShouldContain("LokiImageDigest", StringComparison.Ordinal);
-        sharedHostingText.ShouldContain("TempoImageDigest", StringComparison.Ordinal);
-        sharedHostingText.ShouldContain("PrometheusImageDigest", StringComparison.Ordinal);
-    }
-
-    [Fact]
     public void Media_object_storage_source_configuration_is_private_and_pinned()
     {
         // Arrange
         var appHostExtensionsText = File.ReadAllText(Path.Combine(GetRepositoryRoot(), "src", "ViajantesTurismo.AppHost", "AppHostResourceExtensions.cs"));
-        var seaweedFsText = File.ReadAllText(Path.Combine(GetRepositoryRoot(), "src", "SharedKernel", "SharedKernel.Aspire.Hosting.SeaweedFs", "SeaweedFsResourceExtensions.cs"));
 
         // Assert
         appHostExtensionsText.ShouldContain("AddMediaObjectStorage(this IDistributedApplicationBuilder builder)", StringComparison.Ordinal);
         appHostExtensionsText.ShouldContain("\"viajantes-media\"", StringComparison.Ordinal);
         appHostExtensionsText.ShouldNotContain("$\"{ResourceNames.SeaweedFs}-bucket\"", StringComparison.Ordinal);
         appHostExtensionsText.ShouldContain("AddSeaweedFs(ResourceNames.SeaweedFs, SeaweedFsBucketDefault)", StringComparison.Ordinal);
-        seaweedFsText.ShouldContain("WithImageSHA256", StringComparison.Ordinal);
-        seaweedFsText.ShouldContain("isExternal: false", StringComparison.Ordinal);
-        seaweedFsText.ShouldContain("-dir=/data", StringComparison.Ordinal);
-        seaweedFsText.ShouldContain("-webdav=false", StringComparison.Ordinal);
-        seaweedFsText.ShouldContain("-admin.ui=false", StringComparison.Ordinal);
-        seaweedFsText.ShouldContain("WithHttpHealthCheck", StringComparison.Ordinal);
-        seaweedFsText.ShouldContain("SeaweedFsResource", StringComparison.Ordinal);
-        seaweedFsText.ShouldContain("secret: true", StringComparison.Ordinal);
-        seaweedFsText.ShouldContain("persist: true", StringComparison.Ordinal);
-        seaweedFsText.ShouldContain("AWS_ACCESS_KEY_ID", StringComparison.Ordinal);
-        seaweedFsText.ShouldContain("AWS_SECRET_ACCESS_KEY", StringComparison.Ordinal);
-        seaweedFsText.ShouldContain("$\"{name}-bucket\"", StringComparison.Ordinal);
-        seaweedFsText.ShouldNotContain("viajantes-media", StringComparison.Ordinal);
-        seaweedFsText.ShouldNotContain("Catalog__MediaObjectStorage", StringComparison.Ordinal);
         appHostExtensionsText.ShouldContain("private static IResourceBuilder<TDestination> WithSeaweedFsReference<TDestination>(", StringComparison.Ordinal);
-        seaweedFsText.ShouldContain("DcpPublisher:ResourceNameSuffix", StringComparison.Ordinal);
-    }
-
-    [Fact]
-    public void Seaweedfs_uses_named_storage()
-    {
-        // Arrange
-        var seaweedFsText = File.ReadAllText(Path.Combine(
-            GetRepositoryRoot(),
-            "src",
-            "SharedKernel",
-            "SharedKernel.Aspire.Hosting.SeaweedFs",
-            "SeaweedFsResourceExtensions.cs"));
-
-        // Act
-        var usesNamedStorage = seaweedFsText.Contains("DcpPublisher:ResourceNameSuffix", StringComparison.Ordinal)
-            && seaweedFsText.Contains("WithVolume(dataVolumeName, \"/data\")", StringComparison.Ordinal);
-
-        // Assert
-        usesNamedStorage.ShouldBeTrue();
     }
 
 }

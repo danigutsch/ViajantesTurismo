@@ -157,7 +157,7 @@ generated, or narrowly scoped.
 ### Maintenance model
 
 Prefer a generated or tool-verified TOC when an existing repository tool supports the document.
-The current `SharedKernel.Documentation.Tool` owns generated architecture-document outputs; it does
+The current `ViajantesTurismo.Documentation.Tool` owns generated architecture-document outputs; it does
 not yet generate general Markdown TOCs. Do not add a second tool or script for this policy.
 
 Until a supported generator exists, maintain a required or recommended TOC in the same change that
@@ -183,9 +183,9 @@ The current repository checks remain authoritative for their distinct responsibi
 - `bash scripts/lint-all.sh` checks maintained documentation quality and generated-document drift.
 - `scripts/lint-links.py` validates local links and durable external-reference policy through the
   repository wrapper.
-- `SharedKernel.Documentation.Tool` owns its configured generated-document outputs.
+- `ViajantesTurismo.Documentation.Tool` owns its configured generated-document outputs.
 
-`SharedKernel.Documentation.Tool check` validates the small set of machine-readable governance and
+`ViajantesTurismo.Documentation.Tool check` validates the small set of machine-readable governance and
 architecture facts that have concrete consumers. Keep broader schema enforcement deferred until a
 new durable fact has a real consumer; extend the existing .NET tool rather than adding another
 script or tool.
