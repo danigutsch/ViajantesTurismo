@@ -36,7 +36,8 @@
         "bash": "deny",
         "task": "deny",
         "external_directory": {
-          "/usr/share/dotnet/sdk/**": "allow"
+          "/usr/share/dotnet/sdk/**": "allow",
+          "~/.dotnet/sdk/**": "allow"
         }
       }
     },
