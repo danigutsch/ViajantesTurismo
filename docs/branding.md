@@ -83,7 +83,7 @@ seam requires demonstrated synchronous need and a separate decision.
 
 Branding stores the current document with a source epoch and monotonically increasing positive
 revision. Each write appends an immutable full-state revision and enqueues
-`BrandingSettingsChangedV1`, carrying that epoch, positive revision, and full immutable snapshot, in
+`BrandingSettingsChangedIntegrationEvent`, carrying that epoch, positive revision, and full immutable snapshot, in
 the same Branding transaction. No earlier Branding integration event exists. Only document rows made
 before rollout may have nullable Branding revision provenance.
 

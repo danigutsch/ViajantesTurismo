@@ -18,7 +18,7 @@ event abstraction.
 
 - `SharedKernel.Messaging.IntegrationEvents` remains dependency-free and owns typed integration-event
   abstractions, envelope conventions, and dispatch boundaries. Each application/bounded context owns
-  its concrete payload contract; ADR-040 therefore keeps `BrandingSettingsChangedV1` in a
+  its concrete payload contract; ADR-040 therefore keeps `BrandingSettingsChangedIntegrationEvent` in a
   ViajantesTurismo-owned Branding integration-contract module.
 - `SharedKernel.Messaging.IntegrationEvents.CloudEvents` references the CloudEvents SDK and maps typed
   integration events to and from CloudEvents.

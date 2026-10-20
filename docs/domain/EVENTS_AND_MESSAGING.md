@@ -156,7 +156,7 @@ exception without changing the default: target Branding owns `branding.outbox_me
 database. Co-hosting does not merge the Catalog and Branding outbox transactions.
 
 Branding state distribution follows ADR-040: a Branding write atomically saves current state, appends
-an immutable full-state revision, and enqueues `BrandingSettingsChangedV1` with a non-empty source
+an immutable full-state revision, and enqueues `BrandingSettingsChangedIntegrationEvent` with a non-empty source
 epoch, positive source revision, and immutable full snapshot. The Branding relay atomically inserts the
 `ConsumerName = 'admin'` envelope into the Catalog database's default
 `messaging.transport_messages` table and marks the Branding outbox row published. The worker commits
@@ -178,7 +178,7 @@ not part of the generated path.
 | Regular mediator use case | Caller to scoped `AppMediator` | Closed request/stream/notification and pipeline calls | Handler business behavior and configured pipeline semantics. |
 | Admin persistence | `SaveChanges` interceptor to composite domain-event dispatcher | Exhaustive typed outbox and audit mappings plus typed serialization | EF transaction, aggregate state, outbox/audit atomicity, and post-save domain-event clearing. |
 | Durable delivery | Admin relay to PostgreSQL transport to worker batch to generated publisher | Closed envelope deserialization and typed handler selection | `FOR UPDATE SKIP LOCKED`, batch claim/publisher scope, per-envelope handler scope, sequential processing, lease/retry, Catalog idempotency, and handler side effects. |
-| Branding-to-Admin delivery | Branding relay to Catalog-database PostgreSQL transport to worker to Admin projection | Closed `BrandingSettingsChangedV1` serialization and handler selection | Atomic outbox/transport handoff, separate Admin commit and transport ack, epoch/revision watermark, finite retry/poison/replay, and reseed audit. |
+| Branding-to-Admin delivery | Branding relay to Catalog-database PostgreSQL transport to worker to Admin projection | Closed `BrandingSettingsChangedIntegrationEvent` serialization and handler selection | Atomic outbox/transport handoff, separate Admin commit and transport ack, epoch/revision watermark, finite retry/poison/replay, and reseed audit. |
 
 ## Domain Events
 

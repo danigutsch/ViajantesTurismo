@@ -85,7 +85,7 @@ that the target topology is deployed or production-ready.
 
 ### Admin projection and delivery policy
 
-- `BrandingSettingsChangedV1` carries a non-empty source epoch, a positive source revision, and the complete
+- `BrandingSettingsChangedIntegrationEvent` carries a non-empty source epoch, a positive source revision, and the complete
   immutable Branding document snapshot. No Branding integration event predates this contract and no valid event
   has a null or zero revision.
 - `IntegrationEventWorker` delivers Branding events through an Admin-owned inbox into an Admin-owned local
@@ -97,7 +97,7 @@ that the target topology is deployed or production-ready.
   ordinary delivery never switches source lineage implicitly.
 - Only Admin document rows created before this rollout may have nullable `BrandingSourceRevision` provenance.
   Null means the immutable document snapshot predates revision capture; it is not an event ordering rule and
-  must not be synthesized into a `BrandingSettingsChangedV1` envelope.
+  must not be synthesized into a `BrandingSettingsChangedIntegrationEvent` envelope.
 - Consumer health records the accepted source epoch, highest observed revision, highest applied revision, last
   successful apply time, retry state, and poison backlog. Operations compare producer delivery and consumer
   epoch/revision watermarks without giving Admin direct source-store access. Exact production alert thresholds
@@ -276,7 +276,7 @@ expanded into Branding by this decision.
 - Worker tests cover failure before Admin commit and a crash after Admin inbox/projection/watermark commit but
   before transport `ProcessedAt`; redelivery must be idempotent and eventually acknowledge transport. Retry-limit
   tests prove transition to poison and audited replay.
-- Contract tests prove every `BrandingSettingsChangedV1` has a non-empty epoch and positive revision, while only
+- Contract tests prove every `BrandingSettingsChangedIntegrationEvent` has a non-empty epoch and positive revision, while only
   pre-rollout document rows may retain null Branding revision provenance.
 - Management API/client/OpenAPI tests verify epoch/revision strong ETags, missing-header 428, malformed-syntax
   400, valid nonmatch 412, weak-tag strong comparison, existing-resource `*`, matching/nonmatching lists, no
