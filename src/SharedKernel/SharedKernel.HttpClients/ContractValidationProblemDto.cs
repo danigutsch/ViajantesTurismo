@@ -19,7 +19,7 @@ public sealed record ContractValidationProblemDto
 
         foreach (var (field, messages) in Errors)
         {
-            if (string.IsNullOrWhiteSpace(field)
+            if ((field.Length > 0 && string.IsNullOrWhiteSpace(field))
                 || messages is null or { Length: 0 }
                 || messages.Any(string.IsNullOrWhiteSpace))
             {

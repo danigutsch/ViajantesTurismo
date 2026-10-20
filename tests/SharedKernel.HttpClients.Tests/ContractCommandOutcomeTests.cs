@@ -99,14 +99,16 @@ public sealed class ContractCommandOutcomeTests
         outcome.Value.ShouldBeNull();
     }
 
-    [Fact]
-    public async Task Send_returns_validation_problem_from_problem_json()
+    [Theory]
+    [InlineData("Name")]
+    [InlineData("")]
+    public async Task Send_returns_validation_problem_from_problem_json(string fieldName)
     {
         // Arrange
         using var handler = new ContractCommandOutcomeTestHandler((_, _) => Task.FromResult(
             ContractCommandOutcomeTestResponses.Json(
                 HttpStatusCode.BadRequest,
-                "{\"errors\":{\"Name\":[\"Name is required.\"]}}",
+                $$$"""{"errors":{"{{{fieldName}}}":["Name is required."]}}""",
                 "application/problem+json")));
         using var client = new HttpClient(handler, disposeHandler: false) { BaseAddress = new Uri("https://admin.example.test") };
 
@@ -123,7 +125,7 @@ public sealed class ContractCommandOutcomeTests
         outcome.Kind.ShouldBe(ContractCommandOutcomeKind.ValidationProblem);
         outcome.StatusCode.ShouldBe(HttpStatusCode.BadRequest);
         var errors = outcome.ValidationErrors.ShouldNotBeNull();
-        errors["Name"].ShouldBeEquivalentTo("Name is required.");
+        errors[fieldName].ShouldBeEquivalentTo("Name is required.");
     }
 
     [Fact]
