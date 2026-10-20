@@ -45,7 +45,7 @@ public sealed class UpdateCustomerCommandHandler(
             command.PersonalInfo.BirthDate,
             command.PersonalInfo.Nationality,
             command.PersonalInfo.Occupation,
-            timeProvider);
+            DateOnly.FromDateTime(timeProvider.GetUtcNow().UtcDateTime));
 
         var identificationInfoResult = IdentificationInfo.Create(
             command.IdentificationInfo.NationalId,

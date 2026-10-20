@@ -20,7 +20,7 @@ public class TourAddBookingTests
         var request = BookingDomainTestDataFactory.CreateValidSingleRequest();
 
         // Act
-        var result = tour.AddBooking(request);
+        var result = tour.AddBooking(request, new DateTime(2030, 1, 1, 0, 0, 0, DateTimeKind.Utc));
 
         // Assert
         (result.IsSuccess).ShouldBeFalse();
@@ -42,7 +42,7 @@ public class TourAddBookingTests
             DiscountType.None);
 
         // Act
-        var result = tour.AddBooking(request);
+        var result = tour.AddBooking(request, new DateTime(2030, 1, 1, 0, 0, 0, DateTimeKind.Utc));
 
         // Assert
         (result.IsSuccess).ShouldBeFalse();
@@ -64,7 +64,7 @@ public class TourAddBookingTests
             DiscountType.None);
 
         // Act
-        var result = tour.AddBooking(request);
+        var result = tour.AddBooking(request, new DateTime(2030, 1, 1, 0, 0, 0, DateTimeKind.Utc));
 
         // Assert
         (result.IsSuccess).ShouldBeFalse();
@@ -88,7 +88,7 @@ public class TourAddBookingTests
             companionBikeType: (BikeType)999);
 
         // Act
-        var result = tour.AddBooking(request);
+        var result = tour.AddBooking(request, new DateTime(2030, 1, 1, 0, 0, 0, DateTimeKind.Utc));
 
         // Assert
         (result.IsSuccess).ShouldBeFalse();
@@ -112,7 +112,7 @@ public class TourAddBookingTests
             companionBikeType: null);
 
         // Act
-        var result = tour.AddBooking(request);
+        var result = tour.AddBooking(request, new DateTime(2030, 1, 1, 0, 0, 0, DateTimeKind.Utc));
 
         // Assert
         (result.IsSuccess).ShouldBeFalse();
@@ -134,7 +134,7 @@ public class TourAddBookingTests
             DiscountType.None);
 
         // Act
-        var result = tour.AddBooking(request);
+        var result = tour.AddBooking(request, new DateTime(2030, 1, 1, 0, 0, 0, DateTimeKind.Utc));
 
         // Assert
         (result.IsSuccess).ShouldBeFalse();
@@ -152,7 +152,7 @@ public class TourAddBookingTests
         var request = BookingDomainTestDataFactory.CreateValidDoubleRequest(roomType: RoomType.SingleOccupancy);
 
         // Act
-        var result = tour.AddBooking(request);
+        var result = tour.AddBooking(request, new DateTime(2030, 1, 1, 0, 0, 0, DateTimeKind.Utc));
 
         // Assert
         (result.IsSuccess).ShouldBeFalse();
@@ -173,7 +173,7 @@ public class TourAddBookingTests
             companionCustomerId: customerId);
 
         // Act
-        var result = tour.AddBooking(request);
+        var result = tour.AddBooking(request, new DateTime(2030, 1, 1, 0, 0, 0, DateTimeKind.Utc));
 
         // Assert
         (result.IsSuccess).ShouldBeFalse();
@@ -195,7 +195,7 @@ public class TourAddBookingTests
             BookingDiscountDefinition.Percentage(150m, "Seasonal promo"));
 
         // Act
-        var result = tour.AddBooking(request);
+        var result = tour.AddBooking(request, new DateTime(2030, 1, 1, 0, 0, 0, DateTimeKind.Utc));
 
         // Assert
         (result.IsSuccess).ShouldBeFalse();
@@ -217,7 +217,7 @@ public class TourAddBookingTests
             new BookingDiscountDefinition(DiscountType.Absolute, 50_000m, "Manual approval"));
 
         // Act
-        var result = tour.AddBooking(request);
+        var result = tour.AddBooking(request, new DateTime(2030, 1, 1, 0, 0, 0, DateTimeKind.Utc));
 
         // Assert
         (result.IsSuccess).ShouldBeFalse();
@@ -241,7 +241,7 @@ public class TourAddBookingTests
             tooLongNotes);
 
         // Act
-        var result = tour.AddBooking(request);
+        var result = tour.AddBooking(request, new DateTime(2030, 1, 1, 0, 0, 0, DateTimeKind.Utc));
 
         // Assert
         (result.IsSuccess).ShouldBeFalse();
@@ -259,7 +259,7 @@ public class TourAddBookingTests
         var request = BookingDomainTestDataFactory.CreateValidDoubleRequest();
 
         // Act
-        var result = tour.AddBooking(request);
+        var result = tour.AddBooking(request, new DateTime(2030, 1, 1, 0, 0, 0, DateTimeKind.Utc));
 
         // Assert
         (result.IsSuccess).ShouldBeTrue();

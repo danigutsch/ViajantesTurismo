@@ -11,7 +11,11 @@ internal sealed class CustomerConfiguration : IEntityTypeConfiguration<Customer>
         entity.HasKey(customer => customer.Id);
         entity.Property(customer => customer.Id).ValueGeneratedNever();
 
-        entity.OwnsOne(customer => customer.PersonalInfo, builder => builder.ToTable("CustomerPersonalInfo"));
+        entity.OwnsOne(customer => customer.PersonalInfo, builder =>
+        {
+            builder.ToTable("CustomerPersonalInfo");
+            builder.Property(info => info.BirthDate).HasColumnType("date");
+        });
         entity.OwnsOne(customer => customer.IdentificationInfo, builder => builder.ToTable("CustomerIdentificationInfo"));
         entity.OwnsOne(customer => customer.ContactInfo, builder =>
         {

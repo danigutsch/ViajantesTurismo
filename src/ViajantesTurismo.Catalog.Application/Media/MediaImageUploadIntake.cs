@@ -21,7 +21,8 @@ public sealed partial class MediaImageUploadIntake(
     IPublicMediaImageStore imageStore,
     IIntegrationEventOutbox outbox,
     IOptions<MediaUploadValidationOptions> validationOptions,
-    ILogger<MediaImageUploadIntake> logger)
+    ILogger<MediaImageUploadIntake> logger,
+    TimeProvider timeProvider)
 {
     private const string InvalidUploadMessage = "Media upload is invalid.";
 
@@ -150,7 +151,7 @@ public sealed partial class MediaImageUploadIntake(
 
         var originalStoredEvent = new MediaImageOriginalStoredIntegrationEvent(
             Guid.CreateVersion7(),
-            DateTimeOffset.UtcNow,
+            timeProvider.GetUtcNow(),
             request.MediaImageId,
             objectKey,
             1);

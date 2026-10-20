@@ -23,13 +23,13 @@ public sealed record UpdateTourDto : IValidatableObject
     /// Start date of the tour.
     /// </summary>
     [Required]
-    public required DateTime StartDate { get; init; }
+    public required DateOnly StartDate { get; init; }
 
     /// <summary>
     /// End date of the tour.
     /// </summary>
     [Required]
-    public required DateTime EndDate { get; init; }
+    public required DateOnly EndDate { get; init; }
 
     /// <summary>
     /// Base price for the tour.

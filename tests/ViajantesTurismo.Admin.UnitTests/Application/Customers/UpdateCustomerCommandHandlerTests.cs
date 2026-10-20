@@ -32,7 +32,7 @@ public sealed class UpdateCustomerCommandHandlerTests
             {
                 FirstName = "John",
                 LastName = "Smith",
-                BirthDate = DateTime.UtcNow.AddYears(-30),
+                BirthDate = DateOnly.FromDateTime(DateTime.UtcNow.AddYears(-30)),
                 Gender = "Male",
                 Nationality = "USA",
                 Occupation = "Engineer"
@@ -78,7 +78,7 @@ public sealed class UpdateCustomerCommandHandlerTests
             {
                 FirstName = "John",
                 LastName = "Doe",
-                BirthDate = DateTime.UtcNow.AddYears(-30),
+                BirthDate = DateOnly.FromDateTime(DateTime.UtcNow.AddYears(-30)),
                 Gender = "Male",
                 Nationality = "USA",
                 Occupation = "Engineer"

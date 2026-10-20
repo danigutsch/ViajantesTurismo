@@ -12,8 +12,8 @@ public sealed class TourManagementSteps(TourContext tourContext)
         var tour = Tour.Create(new TourDefinition(
             identifier,
             "Existing Tour",
-            DateTime.UtcNow.AddMonths(1),
-            DateTime.UtcNow.AddMonths(1).AddDays(7),
+            DateOnly.FromDateTime(DateTime.UtcNow.AddMonths(1)),
+            DateOnly.FromDateTime(DateTime.UtcNow.AddMonths(1).AddDays(7)),
             2000.00m,
             500.00m,
             100.00m,
@@ -32,8 +32,8 @@ public sealed class TourManagementSteps(TourContext tourContext)
         var command = new CreateTourCommand(
             identifier,
             "Another Tour",
-            DateTime.UtcNow.AddMonths(2),
-            DateTime.UtcNow.AddMonths(2).AddDays(7),
+            DateOnly.FromDateTime(DateTime.UtcNow.AddMonths(2)),
+            DateOnly.FromDateTime(DateTime.UtcNow.AddMonths(2).AddDays(7)),
             2500.00m,
             600.00m,
             120.00m,
@@ -82,8 +82,8 @@ public sealed class TourManagementSteps(TourContext tourContext)
         tourContext.Tour = Tour.Create(new TourDefinition(
             "TEST2024",
             "Test Tour",
-            DateTime.UtcNow.AddMonths(1),
-            DateTime.UtcNow.AddMonths(1).AddDays(7),
+            DateOnly.FromDateTime(DateTime.UtcNow.AddMonths(1)),
+            DateOnly.FromDateTime(DateTime.UtcNow.AddMonths(1).AddDays(7)),
             2000.00m,
             500.00m,
             100.00m,
@@ -216,8 +216,8 @@ public sealed class TourManagementSteps(TourContext tourContext)
         var result = Tour.Create(new TourDefinition(
             tourContext.Identifier,
             tourContext.Name,
-            tourContext.StartDate,
-            tourContext.EndDate,
+            DateOnly.FromDateTime(tourContext.StartDate),
+            DateOnly.FromDateTime(tourContext.EndDate),
             tourContext.BasePrice,
             tourContext.SingleRoomSupplementPrice,
             tourContext.RegularBikePrice,
@@ -359,19 +359,11 @@ public sealed class TourManagementSteps(TourContext tourContext)
         (tourContext.Tour.Pricing.EBikePrice).ShouldBe(expectedPrice);
     }
 
-    [Then("the tour should preserve UTC time zone")]
-    public void ThenTheTourShouldPreserveUtcTimeZone()
-    {
-        (tourContext.Tour).ShouldNotBeNull();
-        (tourContext.Tour.Schedule.StartDate.Kind).ShouldBe(DateTimeKind.Utc);
-        (tourContext.Tour.Schedule.EndDate.Kind).ShouldBe(DateTimeKind.Utc);
-    }
-
     [Then("the tour duration should be greater than (.*) days")]
     public void ThenTheTourDurationShouldBeGreaterThanDays(int days)
     {
         (tourContext.Tour).ShouldNotBeNull();
-        var duration = (tourContext.Tour.Schedule.EndDate - tourContext.Tour.Schedule.StartDate).TotalDays;
+        var duration = tourContext.Tour.Schedule.DurationDays;
         (duration > days).ShouldBeTrue($"Expected duration greater than {days} days but got {duration:F1}");
     }
 
@@ -379,7 +371,7 @@ public sealed class TourManagementSteps(TourContext tourContext)
     public void ThenTheTourDurationShouldBeDays(int expectedDays)
     {
         (tourContext.Tour).ShouldNotBeNull();
-        var duration = (tourContext.Tour.Schedule.EndDate - tourContext.Tour.Schedule.StartDate).TotalDays;
+        var duration = tourContext.Tour.Schedule.DurationDays;
         (duration).ShouldBe(expectedDays);
     }
 
@@ -389,7 +381,7 @@ public sealed class TourManagementSteps(TourContext tourContext)
         (tourContext.Tour).ShouldNotBeNull();
         var expectedDate =
             DateTime.Parse(expectedDateString, CultureInfo.InvariantCulture, DateTimeStyles.RoundtripKind);
-        (tourContext.Tour.Schedule.StartDate).ShouldBe(expectedDate);
+        (tourContext.Tour.Schedule.StartDate).ShouldBe(DateOnly.FromDateTime(expectedDate));
     }
 
     [Then(@"the tour EndDate should be ""(.*)""")]
@@ -398,7 +390,7 @@ public sealed class TourManagementSteps(TourContext tourContext)
         (tourContext.Tour).ShouldNotBeNull();
         var expectedDate =
             DateTime.Parse(expectedDateString, CultureInfo.InvariantCulture, DateTimeStyles.RoundtripKind);
-        (tourContext.Tour.Schedule.EndDate).ShouldBe(expectedDate);
+        (tourContext.Tour.Schedule.EndDate).ShouldBe(DateOnly.FromDateTime(expectedDate));
     }
 
     [Then("I should be informed that the end date must be after the start date")]

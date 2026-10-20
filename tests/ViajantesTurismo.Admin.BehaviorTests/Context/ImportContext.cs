@@ -46,7 +46,7 @@ public sealed class ImportContext
         new(CustomerStore);
 
     public CustomerImportWorkflowService CreateWorkflowService() =>
-        new(CustomerStore, CreateConflictDetector(), CreateHandler());
+        new(CustomerStore, CreateConflictDetector(), CreateHandler(), TimeProvider.System);
 
     public static string BuildValidCsv(int rowCount)
     {
@@ -139,10 +139,10 @@ public sealed class ImportContext
             firstName,
             "Doe",
             "Male",
-            DateTime.UtcNow.AddYears(-30),
+            DateOnly.FromDateTime(DateTime.UtcNow.AddYears(-30)),
             "Brazilian",
             "Engineer",
-            TimeProvider.System).Value;
+            DateOnly.FromDateTime(TimeProvider.System.GetUtcNow().UtcDateTime)).Value;
 
         var identificationInfo = IdentificationInfo.Create(
             nationalId: "A12345678",

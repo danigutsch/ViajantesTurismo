@@ -21,8 +21,8 @@ public sealed class TourCapacityManagementSteps(
         tourContext.Tour = Tour.Create(new TourDefinition(
             "TEST2024",
             "Test Tour",
-            DateTime.UtcNow.AddMonths(1),
-            DateTime.UtcNow.AddMonths(1).AddDays(7),
+            DateOnly.FromDateTime(DateTime.UtcNow.AddMonths(1)),
+            DateOnly.FromDateTime(DateTime.UtcNow.AddMonths(1).AddDays(7)),
             2000.00m,
             500.00m,
             100.00m,
@@ -89,8 +89,8 @@ public sealed class TourCapacityManagementSteps(
         var result = Tour.Create(new TourDefinition(
             tourContext.Identifier,
             tourContext.Name,
-            tourContext.StartDate,
-            tourContext.EndDate,
+            DateOnly.FromDateTime(tourContext.StartDate),
+            DateOnly.FromDateTime(tourContext.EndDate),
             tourContext.BasePrice,
             tourContext.SingleRoomSupplementPrice,
             tourContext.RegularBikePrice,
@@ -130,7 +130,7 @@ public sealed class TourCapacityManagementSteps(
             customer.Id,
             BikeType.Regular,
             RoomType.DoubleOccupancy,
-            DiscountType.None));
+            DiscountType.None), new DateTime(2030, 1, 1, 0, 0, 0, DateTimeKind.Utc));
 
         (result.IsSuccess).ShouldBeTrue();
         result.Value.Confirm();
@@ -155,7 +155,7 @@ public sealed class TourCapacityManagementSteps(
             customer.Id,
             BikeType.Regular,
             RoomType.DoubleOccupancy,
-            DiscountType.None));
+            DiscountType.None), new DateTime(2030, 1, 1, 0, 0, 0, DateTimeKind.Utc));
 
         bookingContext.BookingCreationResult = result;
     }

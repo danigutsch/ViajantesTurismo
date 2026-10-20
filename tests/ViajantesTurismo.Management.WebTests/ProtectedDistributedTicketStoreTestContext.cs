@@ -14,13 +14,14 @@ internal sealed class ProtectedDistributedTicketStoreTestContext
 {
     public ProtectedDistributedTicketStoreTestContext(
         IDistributedCache? cache = null,
-        ILogger<ProtectedDistributedTicketStore>? logger = null)
+        ILogger<ProtectedDistributedTicketStore>? logger = null,
+        TimeProvider? timeProvider = null)
     {
         Cache = cache ?? new MemoryDistributedCache(Options.Create(new MemoryDistributedCacheOptions()));
         Store = new ProtectedDistributedTicketStore(
             Cache,
             new EphemeralDataProtectionProvider(),
-            logger ?? NullLogger<ProtectedDistributedTicketStore>.Instance);
+            logger ?? NullLogger<ProtectedDistributedTicketStore>.Instance, timeProvider ?? TimeProvider.System);
     }
 
     public IDistributedCache Cache { get; }

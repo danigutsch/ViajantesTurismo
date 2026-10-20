@@ -243,8 +243,8 @@ Bike rental"/>
             {
                 Identifier = _model.Identifier,
                 Name = _model.Name,
-                StartDate = DateTime.SpecifyKind(_model.StartDate, DateTimeKind.Utc),
-                EndDate = DateTime.SpecifyKind(_model.EndDate, DateTimeKind.Utc),
+                StartDate = _model.StartDate,
+                EndDate = _model.EndDate,
                 Currency = _model.Currency,
                 Price = _model.Price,
                 SingleRoomSupplementPrice = _model.SingleRoomSupplementPrice,
@@ -331,10 +331,10 @@ Bike rental"/>
         public string Name { get; set; } = string.Empty;
 
         [Required, Display(Name = "Start Date")]
-        public DateTime StartDate { get; set; }
+        public DateOnly StartDate { get; set; }
 
         [Required, Display(Name = "End Date")]
-        public DateTime EndDate { get; set; }
+        public DateOnly EndDate { get; set; }
 
         [Required]
         public CurrencyDto Currency { get; set; }

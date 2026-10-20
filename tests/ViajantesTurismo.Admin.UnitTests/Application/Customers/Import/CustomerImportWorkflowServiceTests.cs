@@ -10,6 +10,53 @@ public sealed class CustomerImportWorkflowServiceTests
         "Email,Mobile,Street,Neighborhood,PostalCode,City,State,Country," +
         "WeightKg,HeightCentimeters,BikeType,RoomType,BedType,EmergencyContactName,EmergencyContactMobile";
 
+    [Theory]
+    [InlineData(1999, 12, 31, 0, 1)]
+    [InlineData(2000, 1, 1, 1, 0)]
+    [Trait(SharedKernel.Testing.TestTraitNames.CategoryName, "Regression")]
+    [Trait(SharedKernel.Testing.TestTraitNames.ScopeName, SharedKernel.Testing.SharedKernelTestTraitNames.UnitScope)]
+    public async Task Import_captures_one_date_for_summary_and_persistence_across_midnight(int year, int month, int day, int successes, int errors)
+    {
+        // Arrange
+        var clock = new FakeTimeProvider(new DateTimeOffset(year, month, day, 23, 59, 59, TimeSpan.Zero))
+        {
+            AutoAdvance = TimeSpan.FromDays(1)
+        };
+        var store = new FakeCustomerStore();
+        var handler = new CustomerImportCommandHandler(store, new FakeUnitOfWork(), clock);
+        var sut = new CustomerImportWorkflowService(store, new CustomerImportConflictDetector(store), handler, clock);
+        var csv = $"{CsvHeaders}\n{CustomerImportWorkflowCsvRows.Build("Ana", "Silva", "birthday@example.com")}";
+        // Act
+        var result = await sut.Import(csv, TestContext.Current.CancellationToken);
+        // Assert
+        result.SuccessCount.ShouldBe(successes);
+        result.ErrorCount.ShouldBe(errors);
+        (result.SuccessRows?.Count ?? 0).ShouldBe(successes);
+        (result.ErrorRows?.Count ?? 0).ShouldBe(errors);
+        store.AllCustomers.Count.ShouldBe(successes);
+        clock.ReadCount.ShouldBe(1);
+    }
+
+    [Fact]
+    [Trait(SharedKernel.Testing.TestTraitNames.CategoryName, "Regression")]
+    [Trait(SharedKernel.Testing.TestTraitNames.ScopeName, SharedKernel.Testing.SharedKernelTestTraitNames.UnitScope)]
+    public async Task Import_summary_and_persistence_reject_the_same_underage_customer()
+    {
+        // Arrange
+        var clock = new FakeTimeProvider(new DateTimeOffset(1999, 12, 31, 23, 59, 59, TimeSpan.Zero));
+        var store = new FakeCustomerStore();
+        var handler = new CustomerImportCommandHandler(store, new FakeUnitOfWork(), clock);
+        var sut = new CustomerImportWorkflowService(store, new CustomerImportConflictDetector(store), handler, clock);
+        var csv = $"{CsvHeaders}\n{CustomerImportWorkflowCsvRows.Build("Ana", "Silva", "boundary@example.com")}";
+        // Act
+        var result = await sut.Import(csv, TestContext.Current.CancellationToken);
+        // Assert
+        result.SuccessCount.ShouldBe(0);
+        result.ErrorCount.ShouldBe(1);
+        result.ErrorRows.ShouldNotBeNull().ShouldHaveSingleItem().Field.ShouldBe("BirthDate");
+        store.AllCustomers.ShouldBeEmpty();
+    }
+
     [Fact]
     public async Task ImportAsync_with_fileanddatabaseduplicates_reports_conflicts_using_configured_normalization_rules()
     {
@@ -30,7 +77,7 @@ public sealed class CustomerImportWorkflowServiceTests
         var unitOfWork = new FakeUnitOfWork();
         var conflictDetector = new CustomerImportConflictDetector(store);
         var handler = new CustomerImportCommandHandler(store, unitOfWork, TimeProvider.System);
-        var sut = new CustomerImportWorkflowService(store, conflictDetector, handler);
+        var sut = new CustomerImportWorkflowService(store, conflictDetector, handler, TimeProvider.System);
 
         // Act
         var result = await sut.Import(csv, CancellationToken.None);
@@ -54,7 +101,7 @@ public sealed class CustomerImportWorkflowServiceTests
         var conflictDetector = new CustomerImportConflictDetector(store);
         var unitOfWork = new ConcurrentCustomerEmailConflictUnitOfWork(store, email);
         var handler = new CustomerImportCommandHandler(store, unitOfWork, TimeProvider.System);
-        var sut = new CustomerImportWorkflowService(store, conflictDetector, handler);
+        var sut = new CustomerImportWorkflowService(store, conflictDetector, handler, TimeProvider.System);
 
         // Act
         var result = await sut.Import(csv, TestContext.Current.CancellationToken);
@@ -77,7 +124,7 @@ public sealed class CustomerImportWorkflowServiceTests
         var conflictDetector = new CustomerImportConflictDetector(store);
         var unitOfWork = new ConcurrentCustomerEmailConflictUnitOfWork(store, email);
         var handler = new CustomerImportCommandHandler(store, unitOfWork, TimeProvider.System);
-        var sut = new CustomerImportWorkflowService(store, conflictDetector, handler);
+        var sut = new CustomerImportWorkflowService(store, conflictDetector, handler, TimeProvider.System);
 
         // Act
         var result = await sut.Commit(csv, new Dictionary<string, string>(), TestContext.Current.CancellationToken);
@@ -100,7 +147,7 @@ public sealed class CustomerImportWorkflowServiceTests
         var conflictDetector = new CustomerImportConflictDetector(store);
         var unitOfWork = new RolledBackCustomerEmailConflictUnitOfWork(store);
         var handler = new CustomerImportCommandHandler(store, unitOfWork, TimeProvider.System);
-        var sut = new CustomerImportWorkflowService(store, conflictDetector, handler);
+        var sut = new CustomerImportWorkflowService(store, conflictDetector, handler, TimeProvider.System);
 
         // Act
         var result = await sut.Commit(csv, new Dictionary<string, string>(), TestContext.Current.CancellationToken);

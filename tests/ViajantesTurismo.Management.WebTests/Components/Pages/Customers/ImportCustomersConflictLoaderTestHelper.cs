@@ -12,7 +12,7 @@ internal static class ImportCustomersConflictLoaderTestHelper
                 FirstName = "ExistingFirst",
                 LastName = lastName,
                 Gender = "Female",
-                BirthDate = new DateTime(1990, 1, 1, 0, 0, 0, DateTimeKind.Unspecified),
+                BirthDate = DateOnly.FromDateTime(new DateTime(1990, 1, 1, 0, 0, 0, DateTimeKind.Unspecified)),
                 Nationality = "Brazilian",
                 Occupation = "Engineer",
             },

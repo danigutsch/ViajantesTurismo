@@ -11,7 +11,8 @@ namespace ViajantesTurismo.Admin.Application.Customers.Import;
 public sealed class CustomerImportWorkflowService(
     ICustomerStore customerStore,
     CustomerImportConflictDetector conflictDetector,
-    CustomerImportCommandHandler commandHandler
+    CustomerImportCommandHandler commandHandler,
+    TimeProvider timeProvider
 )
 {
     private const string EmailFieldName = "Email";
@@ -26,18 +27,19 @@ public sealed class CustomerImportWorkflowService(
     /// <returns>Import summary with optional conflicts.</returns>
     public async Task<ImportResultDto> Import(string csvText, CancellationToken ct)
     {
+        var today = DateOnly.FromDateTime(timeProvider.GetUtcNow().UtcDateTime);
         var conflicts = await conflictDetector.FindDatabaseEmailConflicts(csvText, ct);
         if (conflicts.Count > 0)
         {
             return new ImportResultDto(0, 0, conflicts);
         }
 
-        var summary = await AnalyzeRowsForSummary(csvText, conflictResolutions: null, ct);
+        var summary = await AnalyzeRowsForSummary(csvText, conflictResolutions: null, today, ct);
 
         ImportResult result;
         try
         {
-            result = await commandHandler.Handle(new CustomerImportCommand(csvText, false), ct);
+            result = await commandHandler.Handle(new CustomerImportCommand(csvText, false) { Today = today }, ct);
         }
         catch (CustomerEmailConflictException)
         {
@@ -68,13 +70,14 @@ public sealed class CustomerImportWorkflowService(
     {
         ArgumentNullException.ThrowIfNull(conflictResolutions);
 
-        var summary = await AnalyzeRowsForSummary(csvText, conflictResolutions, ct);
+        var today = DateOnly.FromDateTime(timeProvider.GetUtcNow().UtcDateTime);
+        var summary = await AnalyzeRowsForSummary(csvText, conflictResolutions, today, ct);
 
         ImportResult result;
         try
         {
             result = await commandHandler.Handle(
-                new CustomerImportCommand(csvText, false),
+                new CustomerImportCommand(csvText, false) { Today = today },
                 ct,
                 conflictResolutions);
         }
@@ -149,6 +152,7 @@ public sealed class CustomerImportWorkflowService(
     private async Task<ImportSummaryAnalysis> AnalyzeRowsForSummary(
         string csvText,
         IReadOnlyDictionary<string, string>? conflictResolutions,
+        DateOnly today,
         CancellationToken ct)
     {
         var documentResult = CsvDocument.Parse(csvText);
@@ -183,7 +187,7 @@ public sealed class CustomerImportWorkflowService(
                 continue;
             }
 
-            var customerResult = RowToCustomerMapper.MapCustomer(document, row, TimeProvider.System);
+            var customerResult = RowToCustomerMapper.MapCustomer(document, row, today);
             if (customerResult.IsFailure)
             {
                 var (field, message) = GetValidationFieldAndMessage(customerResult);

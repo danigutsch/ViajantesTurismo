@@ -2477,7 +2477,7 @@
           },
           "paymentDate": {
             "type": "string",
-            "format": "date-time"
+            "format": "date"
           },
           "method": {
             "$ref": "#/components/schemas/PaymentMethodDto"
@@ -2529,11 +2529,11 @@
           },
           "startDate": {
             "type": "string",
-            "format": "date-time"
+            "format": "date"
           },
           "endDate": {
             "type": "string",
-            "format": "date-time"
+            "format": "date"
           },
           "price": {
             "maximum": 100000,
@@ -3034,7 +3034,7 @@
           },
           "paymentDate": {
             "type": "string",
-            "format": "date-time"
+            "format": "date"
           },
           "method": {
             "$ref": "#/components/schemas/PaymentMethodDto"
@@ -3088,11 +3088,11 @@
           },
           "startDate": {
             "type": "string",
-            "format": "date-time"
+            "format": "date"
           },
           "endDate": {
             "type": "string",
-            "format": "date-time"
+            "format": "date"
           },
           "price": {
             "pattern": "^-?(?:0|[1-9]\\d*)(?:\\.\\d+)?$",
@@ -3403,7 +3403,7 @@
           },
           "birthDate": {
             "type": "string",
-            "format": "date-time"
+            "format": "date"
           },
           "gender": {
             "maxLength": 64,
@@ -3650,11 +3650,11 @@
           },
           "startDate": {
             "type": "string",
-            "format": "date-time"
+            "format": "date"
           },
           "endDate": {
             "type": "string",
-            "format": "date-time"
+            "format": "date"
           },
           "price": {
             "maximum": 100000,

@@ -27,7 +27,7 @@ public sealed class CatalogTelemetryTests
         var handler = new IdempotentIntegrationHandler<AdminTourCreatedIntegrationEvent>(
             new AdminTourCreatedIntegrationHandler(new CapturingEventStore(), new TestCatalogTourSlugLock()),
             new CapturingIdempotencyStore(),
-            Options.Create(new IntegrationEventOptions()));
+            Options.Create(new IntegrationEventOptions()), TimeProvider.System);
         var integrationEvent = new AdminTourCreatedIntegrationEvent(
             Guid.CreateVersion7(),
             DateTimeOffset.UtcNow,
@@ -59,7 +59,7 @@ public sealed class CatalogTelemetryTests
         var handler = new IdempotentIntegrationHandler<AdminTourCreatedIntegrationEvent>(
             new AdminTourCreatedIntegrationHandler(new CapturingEventStore(), new TestCatalogTourSlugLock()),
             new CapturingIdempotencyStore(started: false),
-            Options.Create(new IntegrationEventOptions()));
+            Options.Create(new IntegrationEventOptions()), TimeProvider.System);
         var integrationEvent = new AdminTourCreatedIntegrationEvent(
             Guid.CreateVersion7(),
             DateTimeOffset.UtcNow,
@@ -127,7 +127,7 @@ public sealed class CatalogTelemetryTests
         var handler = new IdempotentIntegrationHandler<AdminTourCreatedIntegrationEvent>(
             new AdminTourCreatedIntegrationHandler(new ThrowingEventStore(), new TestCatalogTourSlugLock()),
             new CapturingIdempotencyStore(),
-            Options.Create(new IntegrationEventOptions()));
+            Options.Create(new IntegrationEventOptions()), TimeProvider.System);
         var integrationEvent = new AdminTourCreatedIntegrationEvent(
             Guid.CreateVersion7(),
             DateTimeOffset.UtcNow,
@@ -163,7 +163,7 @@ public sealed class CatalogTelemetryTests
         var handler = new IdempotentIntegrationHandler<AdminTourCreatedIntegrationEvent>(
             new AdminTourCreatedIntegrationHandler(new UnexpectedCancelledEventStore(), new TestCatalogTourSlugLock()),
             new CapturingIdempotencyStore(),
-            Options.Create(new IntegrationEventOptions()));
+            Options.Create(new IntegrationEventOptions()), TimeProvider.System);
         var integrationEvent = new AdminTourCreatedIntegrationEvent(
             Guid.CreateVersion7(),
             DateTimeOffset.UtcNow,
@@ -205,7 +205,7 @@ public sealed class CatalogTelemetryTests
         var handler = new IdempotentIntegrationHandler<AdminTourCreatedIntegrationEvent>(
             new AdminTourCreatedIntegrationHandler(new CapturingEventStore(), new TestCatalogTourSlugLock()),
             new UnexpectedCancelledIdempotencyStore(),
-            Options.Create(new IntegrationEventOptions()));
+            Options.Create(new IntegrationEventOptions()), TimeProvider.System);
         var integrationEvent = new AdminTourCreatedIntegrationEvent(
             Guid.CreateVersion7(),
             DateTimeOffset.UtcNow,
@@ -372,7 +372,7 @@ public sealed class CatalogTelemetryTests
         var handler = new IdempotentIntegrationHandler<AdminTourCreatedIntegrationEvent>(
             new AdminTourCreatedIntegrationHandler(new CancelledEventStore(), new TestCatalogTourSlugLock()),
             new CapturingIdempotencyStore(),
-            Options.Create(new IntegrationEventOptions()));
+            Options.Create(new IntegrationEventOptions()), TimeProvider.System);
         var integrationEvent = new AdminTourCreatedIntegrationEvent(
             Guid.CreateVersion7(),
             DateTimeOffset.UtcNow,
@@ -409,7 +409,7 @@ public sealed class CatalogTelemetryTests
         var handler = new IdempotentIntegrationHandler<AdminTourCreatedIntegrationEvent>(
             new AdminTourCreatedIntegrationHandler(new CapturingEventStore(), new TestCatalogTourSlugLock()),
             new CancelledIdempotencyStore(),
-            Options.Create(new IntegrationEventOptions()));
+            Options.Create(new IntegrationEventOptions()), TimeProvider.System);
         var integrationEvent = new AdminTourCreatedIntegrationEvent(
             Guid.CreateVersion7(),
             DateTimeOffset.UtcNow,

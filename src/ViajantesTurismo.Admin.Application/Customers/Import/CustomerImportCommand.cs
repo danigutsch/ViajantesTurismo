@@ -5,4 +5,8 @@ namespace ViajantesTurismo.Admin.Application.Customers.Import;
 /// </summary>
 /// <param name="CsvContent">Raw CSV text, where the first line is the header row.</param>
 /// <param name="DryRun">When true, parsing and mapping are performed but changes are not persisted.</param>
-public sealed record CustomerImportCommand(string CsvContent, bool DryRun);
+public sealed record CustomerImportCommand(string CsvContent, bool DryRun)
+{
+    /// <summary>Gets the UTC business date captured by the import workflow, when supplied.</summary>
+    public DateOnly? Today { get; init; }
+}

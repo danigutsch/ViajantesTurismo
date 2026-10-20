@@ -8,7 +8,7 @@ namespace ViajantesTurismo.Admin.Application.Bookings.RecordPayment;
 public sealed record RecordPaymentCommand(
     Guid BookingId,
     decimal Amount,
-    DateTime PaymentDate,
+    DateOnly PaymentDate,
     PaymentMethodDto Method,
     string? ReferenceNumber,
     string? Notes);

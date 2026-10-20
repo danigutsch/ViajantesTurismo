@@ -273,11 +273,11 @@
           },
           "startDate": {
             "type": "string",
-            "format": "date-time"
+            "format": "date"
           },
           "endDate": {
             "type": "string",
-            "format": "date-time"
+            "format": "date"
           },
           "price": {
             "maximum": 100000,
@@ -384,11 +384,11 @@
           },
           "startDate": {
             "type": "string",
-            "format": "date-time"
+            "format": "date"
           },
           "endDate": {
             "type": "string",
-            "format": "date-time"
+            "format": "date"
           },
           "price": {
             "pattern": "^-?(?:0|[1-9]\\d*)(?:\\.\\d+)?$",
@@ -571,11 +571,11 @@
           },
           "startDate": {
             "type": "string",
-            "format": "date-time"
+            "format": "date"
           },
           "endDate": {
             "type": "string",
-            "format": "date-time"
+            "format": "date"
           },
           "price": {
             "maximum": 100000,

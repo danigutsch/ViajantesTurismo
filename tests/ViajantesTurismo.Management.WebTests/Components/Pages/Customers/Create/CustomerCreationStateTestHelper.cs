@@ -17,7 +17,7 @@ internal static class CustomerCreationStateTestHelper
         {
             FirstName = "Ana",
             LastName = "Silva",
-            BirthDate = new DateTime(1990, 5, 1, 0, 0, 0, DateTimeKind.Unspecified),
+            BirthDate = DateOnly.FromDateTime(new DateTime(1990, 5, 1, 0, 0, 0, DateTimeKind.Unspecified)),
             Gender = "Female",
             Nationality = "Brazilian",
             Occupation = "Designer",

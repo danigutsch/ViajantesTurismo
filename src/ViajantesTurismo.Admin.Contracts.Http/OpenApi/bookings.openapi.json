@@ -940,7 +940,7 @@
           },
           "paymentDate": {
             "type": "string",
-            "format": "date-time"
+            "format": "date"
           },
           "method": {
             "$ref": "#/components/schemas/PaymentMethodDto"
@@ -1139,7 +1139,7 @@
           },
           "paymentDate": {
             "type": "string",
-            "format": "date-time"
+            "format": "date"
           },
           "method": {
             "$ref": "#/components/schemas/PaymentMethodDto"

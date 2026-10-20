@@ -25,7 +25,7 @@ public sealed partial class Payment : IEntity<Guid>
     private Payment(
         Guid bookingId,
         decimal amount,
-        DateTime paymentDate,
+        DateOnly paymentDate,
         PaymentMethod method,
         string? referenceNumber,
         string? notes,
@@ -67,7 +67,7 @@ public sealed partial class Payment : IEntity<Guid>
     /// <summary>
     /// The date the payment was made.
     /// </summary>
-    public DateTime PaymentDate { get; private init; }
+    public DateOnly PaymentDate { get; private init; }
 
     /// <summary>
     /// The payment method used.
@@ -103,7 +103,7 @@ public sealed partial class Payment : IEntity<Guid>
     public static Result<Payment> Create(
         Guid bookingId,
         decimal amount,
-        DateTime paymentDate,
+        DateOnly paymentDate,
         PaymentMethod method,
         TimeProvider timeProvider,
         string? referenceNumber,
@@ -128,7 +128,7 @@ public sealed partial class Payment : IEntity<Guid>
         }
 
         var now = timeProvider.GetUtcNow().UtcDateTime;
-        if (paymentDate > now)
+        if (paymentDate > DateOnly.FromDateTime(now))
         {
             errors.Add(PaymentErrors.FuturePaymentDate(paymentDate));
         }

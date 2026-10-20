@@ -21,6 +21,10 @@ internal static class DateFormatter
     public static string? FormatDate(DateTime? value)
         => value?.ToString(DateFormat, Culture);
 
+    /// <summary>Formats a nullable calendar date.</summary>
+    [return: NotNullIfNotNull(nameof(value))]
+    public static string? FormatDate(DateOnly? value) => value?.ToString(DateFormat, Culture);
+
     /// <summary>
     /// Formats a date with time component.
     /// </summary>
