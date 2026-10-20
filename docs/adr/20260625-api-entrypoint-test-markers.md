@@ -62,4 +62,4 @@ Accepted.
 ## Links
 
 - [ADR Index](../ARCHITECTURE_DECISIONS.md)
-- [SonarCloud CI Policy](../ci/sonarcloud.md)
+- [Current quality gates (replaces the historical SonarCloud policy)](../ci/quality-gates.md)

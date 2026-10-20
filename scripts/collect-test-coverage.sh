@@ -3,9 +3,8 @@
 set -euo pipefail
 
 coverage_args=(
-    --coverage
-    --coverage-output-format cobertura
-    --coverage-settings coverage.settings.xml
+    --coverlet
+    --coverlet-output-format cobertura
 )
 
 get_test_project_parallelism() {
@@ -42,9 +41,11 @@ run_project_tests() {
 
     for project_path in "$@"; do
         (
+            local project_results_directory
+            project_results_directory="$(mktemp -d "${results_directory}/project.XXXXXX")"
             echo "==> Testing ${project_path}"
             dotnet test --project "${project_path}" --no-restore --no-build \
-                --results-directory "${results_directory}" -- "${coverage_args[@]}"
+                --results-directory "${project_results_directory}" -- "${coverage_args[@]}"
         ) &
 
         active=$((active + 1))
@@ -86,14 +87,30 @@ main() {
     shift
 
     if [[ $# -eq 0 ]]; then
-        dotnet test --solution ViajantesTurismo.slnx --no-restore --no-build \
-            --results-directory "${results_directory}" -- "${coverage_args[@]}"
+        # CI's checked manifests contain every solution test project exactly once.
+        # Use the same project scheduler so each module gets an isolated report directory.
+        shopt -s nullglob
+        local -a manifests=(scripts/ci-test-slices/*.txt)
+        shopt -u nullglob
+        local -a test_projects=()
+        local manifest project_path
+        for manifest in "${manifests[@]}"; do
+            while IFS= read -r project_path || [[ -n "${project_path}" ]]; do
+                [[ -z "${project_path}" ]] && continue
+                test_projects+=("${project_path}")
+            done < "${manifest}"
+        done
+        if [[ ${#test_projects[@]} -eq 0 ]]; then
+            echo "No test projects found in scripts/ci-test-slices/*.txt." >&2
+            return 1
+        fi
+        run_project_tests "${results_directory}" "${test_projects[@]}"
     else
         run_project_tests "${results_directory}" "$@"
     fi
 
     shopt -s globstar nullglob
-    local -a coverage_files=("${results_directory}"/**/*.cobertura.xml)
+    local -a coverage_files=("${results_directory}"/**/*.cobertura*.xml)
     shopt -u globstar nullglob
 
     if [[ ${#coverage_files[@]} -eq 0 ]]; then

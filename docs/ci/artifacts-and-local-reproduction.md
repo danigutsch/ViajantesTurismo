@@ -15,10 +15,7 @@ its `Run test slice` step fails.
 | --- | --- | --- |
 | `ci-selected-test-projects` | Generated project-level selection plan for every fixed test slice | 1 day |
 | `ci-test-slice-<id>-results` | `**/TestResults/**` produced by one test-slice matrix row | 7 days |
-| `sonar-coverage` | Aggregated SonarCloud coverage input at `TestResults/sonar-coverage.xml` | 7 days |
-| `sonar-analysis-log` | Raw SonarCloud analysis log from the dedicated Sonar job | 7 days |
-| `sonar-analysis-manifest` | Machine-readable Sonar job manifest at `TestResults/ci-validation-manifest.json` | 7 days |
-| `coverage-report` | Aggregated HTML coverage report under `TestResults/CoverageReport/**` from the Sonar aggregation job | 7 days |
+| `quality-evidence` | Merged HTML/Cobertura, changed-code diff, and coverage-gate JSON when applicable | 14 days |
 | `ci-test-slice-<id>-diagnostics` | Focused failure summary for one failed test-slice matrix row | 7 days |
 
 The slice result artifacts also include machine-readable helper outputs such as
@@ -33,12 +30,9 @@ fail the workflow but should still be investigated.
 The HTML coverage artifact is generated from those uniquely named Cobertura files with the
 repo's local `reportgenerator` tool manifest entry.
 
-Coverage now has two consumers inside the same workflow:
-
-- the test-slice matrix publishes Cobertura XML inside `ci-test-slice-<id>-results` artifacts
-- the dedicated `SonarCloud` job downloads those slice artifacts, generates the aggregated
-  HTML `coverage-report`, creates `sonar-coverage.xml`, and sends the hosted analysis to
-  SonarCloud
+Test slices publish Cobertura XML in their result artifacts. The secret-free `Quality Gate`
+job merges those reports into HTML and Cobertura and checks changed-code coverage on pull
+requests and merge groups. Full-run trends are reported separately from selected-slice coverage.
 
 Artifact scope is kept narrow — only test outputs that materially help diagnose failures are
 included. Do not broaden the upload glob without a clear reason.
@@ -67,39 +61,14 @@ bash scripts/run-ci-test-slice.sh \
 
 `scripts/run-ci-test-slice.sh` is a post-restore helper. It builds single-project slices directly,
 builds multi-project slices through one temporary solution, runs them with coverage, and records
-per-slice timing information. Aggregated HTML coverage is generated once later by the `SonarCloud`
+per-slice timing information. Aggregated HTML coverage is generated once later by the `Quality Gate`
 job. Replace `<slice-id>` with a file basename from `scripts/ci-test-slices`; add
 `--install-playwright` only for a matrix row that enables it in `.github/workflows/ci.yml`.
 The logical fast lane uses the `fast-validation-1` and `fast-validation-2` basenames and produces
 separate result and diagnostic artifacts for each shard.
 
-To reproduce the SonarCloud analysis flow locally after configuring the required
-environment variables, run:
-
-```bash
-export SONAR_TOKEN="..."
-export SONAR_ORGANIZATION="..."
-export SONAR_PROJECT_KEY="..."
-dotnet restore ViajantesTurismo.slnx
-dotnet tool restore
-bash scripts/install-playwright.sh
-dotnet dev-certs https --trust || true
-export SSL_CERT_DIR="$HOME/.aspnet/dev-certs/trust"
-bash scripts/run-sonar-analysis.sh
-```
-
-To reproduce the Sonar aggregation path after the test slices have already produced
-coverage files, run:
-
-```bash
-export SONAR_TOKEN="..."
-export SONAR_ORGANIZATION="..."
-export SONAR_PROJECT_KEY="..."
-dotnet restore ViajantesTurismo.slnx
-dotnet tool restore
-bash scripts/generate-sonar-coverage-report.sh
-SONAR_ANALYSIS_SKIP_TESTS=true bash scripts/run-sonar-analysis.sh
-```
+To reproduce coverage aggregation and changed-code enforcement locally, use the commands in
+[quality gates](quality-gates.md#changed-code-policy). No analysis credentials are needed.
 
 For documentation-only or low-risk contributor-maintenance pull requests (`docs/**`, `README.md`,
 `CONTRIBUTING.md`, and the allowlisted files in the `select-ci-test-projects` command), CI skips the

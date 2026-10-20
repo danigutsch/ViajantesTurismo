@@ -318,9 +318,15 @@ Do not put those connection strings in source-controlled configuration.
 
 ## Coverage
 
-The AppHost project is local orchestration code and is excluded from MTP coverage collection in
-`coverage.settings.xml`. Sonar coverage exclusions mirror that boundary with
-`src/ViajantesTurismo.AppHost/**`.
+The AppHost project is local orchestration code and is excluded from Coverlet MTP coverage
+collection by `tests/testconfig.json`. There is no hosted Sonar coverage configuration.
+
+Coverage of services launched as separate AppHost child processes is not automatic. Passing an
+Aspire-backed test does not prove that its child-service code was instrumented. Missing coverage
+evidence for changed source fails the repository gate; resolve instrumentation or add appropriate
+direct tests rather than broadening exclusions. See
+[quality gates](../../docs/ci/quality-gates.md#coverage-collection) for the collection boundary and
+changed-code policy.
 
 ## Dependencies
 

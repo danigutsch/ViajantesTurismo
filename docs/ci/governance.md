@@ -11,26 +11,23 @@ see [`trust-boundaries.md`](trust-boundaries.md).
 
 ## Branch protection rules
 
-Branch protection for `main` is configured to require the following status checks:
+The intended required status checks after quality-gate migration are:
 
 - `Build and Test` (from `.github/workflows/ci.yml`)
 - `Lint` (from `.github/workflows/ci.yml`)
 - `Dependency Review` (from `.github/workflows/dependency-review.yml`)
 - `Secret Scan` (from `.github/workflows/secret-scan.yml`)
-- `SonarCloud` (from `.github/workflows/ci.yml`; includes hosted quality gate and the
-  repository-owned new issue policy fallback)
+- `Quality Gate` (from `.github/workflows/ci.yml`)
 
-`Build and Test` is the required non-secret aggregate for the `test-slices` matrix and
-`OpenAPI Tool Windows`. Any failed matrix row blocks merging, including on fork pull requests where
-`SonarCloud` intentionally resolves successfully without accessing repository secrets.
+Remote branch protection may still require the historical `SonarCloud` status. A maintainer
+must replace it with `Quality Gate` only after the concrete replacement passes. This document
+does not assert that remote settings have already changed. See [quality gates](quality-gates.md).
 
-These names match the `name:` fields in the respective workflow files. Any rename of a required
-job must be reflected in branch protection settings.
+`Build and Test` aggregates the test matrix and `OpenAPI Tool Windows`. `Quality Gate`
+aggregates selected coverage and enforces changed-code coverage without secrets, including on
+fork pull requests. Failed tests cannot be bypassed by successful coverage aggregation.
 
-Representative pull request validation has also been observed successfully with these
-checks, including the main CI workflow and its integrated SonarCloud status job, the
-separate dependency review workflow, and the separate secret scanning workflow. The
-`Devcontainer Smoke` workflow remains supplemental, does not run on ordinary pull requests,
+Required names must match workflow `name:` fields. `Devcontainer Smoke` remains supplemental
 and is not part of the required merge gate.
 
 ## Recovery for missing PR checks
@@ -104,28 +101,16 @@ The workflow uses a small reviewed action set.
 | --- | --- |
 | `actions/checkout` | Repository checkout |
 | `actions/setup-dotnet` | .NET SDK provisioning |
-| `actions/cache` | SonarCloud package cache |
+| `actions/cache` | Reviewed dependency caching where configured |
 | `actions/download-artifact` | Retrieve SARIF artifact for the dedicated code-scanning upload job |
 | `actions/upload-artifact` | Test result artifact upload |
 | `actions/dependency-review-action` | PR dependency and license review |
 | `github/codeql-action/upload-sarif` | Upload SARIF results from secret scanning |
 
-SonarCloud integration is implemented through repo-pinned local .NET tools rather than an
-additional third-party GitHub Action. The workflow lint path also installs the pinned
-`actionlint` `1.7.9` release binary directly rather than adding another GitHub Action
-dependency.
-
-The current hosted analysis path actively uses:
-
-- `dotnet-sonarscanner` `12.0.0`
-- `dotnet-reportgenerator-globaltool` `5.5.11`
-
-The local tool manifest also contains `dotnet-coverage` `18.12.0` for supported .NET
-coverage workflows, but the current SonarCloud workflow does not rely on the direct
-`dotnet-coverage -f xml` path.
-
-This keeps the GitHub Actions dependency surface narrow while still adopting the
-SonarCloud analysis model used in BookWorm's quality strategy.
+Coverage collection uses `coverlet.MTP` 10.1.0 and the pinned local
+`dotnet-reportgenerator-globaltool` 5.5.11 for HTML and merged Cobertura. The C# repository tool
+owns changed-code threshold validation. No scanner or proprietary coverage local tool is needed.
+The workflow lint path installs pinned `actionlint` 1.7.9 directly.
 
 ### Update process
 

@@ -14,4 +14,4 @@ coverage_reports="$(< "${coverage_reports_file}")"
 dotnet tool run reportgenerator \
     "-reports:${coverage_reports}" \
     "-targetdir:TestResults/CoverageReport" \
-    "-reporttypes:Html"
+    "-reporttypes:Html;Cobertura"

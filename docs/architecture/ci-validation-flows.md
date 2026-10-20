@@ -19,7 +19,7 @@ flowchart TB
     test_slices[test-slices]
     build_and_test[Build and Test]
     api_compatibility[API Compatibility]
-    sonarcloud[SonarCloud]
+    quality_gate[Quality Gate]
     lint[Lint]
     trigger --> detect_changes
     trigger --> calculate_version
@@ -29,8 +29,8 @@ flowchart TB
     test_slices --> build_and_test
     openapi_tool_windows --> build_and_test
     trigger --> api_compatibility
-    detect_changes --> sonarcloud
-    test_slices --> sonarcloud
+    detect_changes --> quality_gate
+    test_slices --> quality_gate
     trigger --> lint
 ```
 <!-- generated:ci-main-jobs:end -->
@@ -47,7 +47,7 @@ Workflow details: [CI overview](../ci/overview.md) and [main workflow](../ci/mai
 | `Lint` | Markdown, scripts, specs, and repository quality checks. | Fast; runs independently. |
 | `Dependency Review` | Scan dependency manifest and lock-file diffs. | Fast governance lane. |
 | `Secret Scan` | Detect committed secrets and publish SARIF when allowed. | Fast security lane. |
-| `SonarCloud` | Aggregate coverage and run hosted analysis. | Dependency-heavy; secret-aware. |
+| `Quality Gate` | Aggregate coverage and enforce changed-code threshold. | Runs after tests; no analysis secrets. |
 
 The `select-ci-test-projects` command in `SharedKernel.RepoConfig.Tool` owns path decisions. If diff
 or project-graph detection is uncertain, it fails open so CI runs more work rather than skipping a

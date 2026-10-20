@@ -50,7 +50,6 @@ internal static class CiTestProjectSelector
         ".gitattributes",
         ".markdownlint-cli2.jsonc",
         ".markdownlint.json",
-        "coverage.settings.xml",
         "Directory.Build.props",
         "Directory.Build.targets",
         "Directory.Packages.props",
@@ -58,6 +57,7 @@ internal static class CiTestProjectSelector
         "NuGet.Config",
         "opencode.json",
         "tests/Directory.Build.props",
+        "tests/testconfig.json",
         "tests/xunit.runner.json",
         SolutionPath
     };
@@ -77,15 +77,11 @@ internal static class CiTestProjectSelector
     {
         "scripts/collect-ci-build-test-diagnostics.sh",
         "scripts/collect-test-coverage.sh",
-        "scripts/generate-sonar-coverage-report.sh",
         "scripts/install-playwright.sh",
         "scripts/refresh-dependency-lockfiles.sh",
         "scripts/run-ci-test-slice.sh",
-        "scripts/run-sonar-analysis.sh",
         "scripts/run-tests-with-coverage.sh",
-        "scripts/validate-sonar-analysis-config.sh",
-        "scripts/write-ci-artifact-summary.sh",
-        "scripts/write-github-sonar-summary.sh"
+        "scripts/write-ci-artifact-summary.sh"
     };
 
     private static readonly HashSet<string> LowRiskFiles = new(StringComparer.Ordinal)

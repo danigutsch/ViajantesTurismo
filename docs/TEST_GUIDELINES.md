@@ -172,7 +172,7 @@ Do not gate CI on this while Stryker.NET MTP support remains in preview.
 
 ### Code Coverage with MTP + xUnit v3
 
-This repository uses the MTP-native coverage collection for xUnit v3 test projects.
+This repository uses `coverlet.MTP` for xUnit v3 test projects on Microsoft.Testing.Platform.
 
 #### Canonical commands
 
@@ -186,12 +186,13 @@ Open `TestResults/CoverageReport/index.html` to inspect the aggregated report.
 
 #### Important MTP behavior
 
-When `dotnet test` runs multiple projects, do not pass `--coverage-output`. xUnit v3 4.0 and MTP
-otherwise write every project to the same path, so later projects overwrite earlier reports.
+The repository helper creates a run-specific `TestResults/coverage.*` directory, collects
+separate Cobertura reports, and aggregates only that run's reports. Do not reuse stale results
+or share an output filename between parallel test projects.
 
-The repository helper creates a run-specific `TestResults/coverage.*` directory, passes it through
-`--results-directory`, lets MTP assign unique Cobertura filenames, and aggregates only that run's
-reports. This avoids parallel collisions and stale coverage from earlier runs.
+`tests/testconfig.json` controls Coverlet collection. Async and iterator implementations remain
+included. Separate AppHost child processes are not automatically covered; see
+[quality gates](ci/quality-gates.md) for the changed-source evidence policy.
 
 ### Filtering Tests MTP
 
@@ -711,7 +712,8 @@ declarative and domain-focused; do not turn them into UI or infrastructure tests
 
 ### Coverage Goals
 
-- **Unit Tests:** 80%+ code coverage
+- **Changed executable code:** CI enforces 80% combined line and condition coverage
+- **Whole-repository coverage:** trend reporting on full runs
 - **Integration Tests:** All API endpoints
 - **Behaviour Tests:** Business-critical scenarios
 
@@ -720,23 +722,16 @@ getters/setters.
 
 ### Coverage Configuration
 
-Code coverage is collected using **Microsoft Testing Platform (MTP)** with the
-[`Microsoft.Testing.Extensions.CodeCoverage`](https://learn.microsoft.com/dotnet/core/testing/unit-testing-platform-extensions-code-coverage)
-extension (already referenced in all test projects). Settings are defined in `coverage.settings.xml` at the solution
-root.
-
-See [xUnit v3 Code Coverage with MTP](https://xunit.net/docs/getting-started/v3/code-coverage-with-mtp) for the
-official guide.
+Code coverage uses `coverlet.MTP` with Microsoft.Testing.Platform. Collection settings live in
+`tests/testconfig.json`; ReportGenerator produces merged Cobertura and HTML.
 
 ```bash
-# Collect and aggregate coverage (Cobertura XML + HTML)
+# Restore and build first, then collect and aggregate
 bash scripts/run-tests-with-coverage.sh
-
-# `coverage.settings.xml` excludes migrations and common generated-source patterns during collection
 ```
 
-The helper stores uniquely named MTP reports under a run-specific `TestResults/coverage.*` directory
-before aggregating them with ReportGenerator.
+See [quality gates](ci/quality-gates.md) for the 80% changed-code policy, evidence validation,
+local verification command, and child-process instrumentation limitations.
 
 ### CI integration
 
@@ -769,7 +764,7 @@ dotnet test --project tests/ViajantesTurismo.Admin.SystemTests --filter-class Co
 bash scripts/run-tests-with-coverage.sh
 ```
 
-> If `coverage.settings.xml` changed, regenerate the Cobertura files before building the HTML report.
+> If `tests/testconfig.json` changed, recollect coverage before building the HTML report.
 
 See [Code Quality](CODE_QUALITY.md#test-coverage-tools) for full coverage tool configuration and report generation.
 

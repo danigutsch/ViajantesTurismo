@@ -28,8 +28,8 @@ current schedules and grouping rules.
 
 - [Main workflow](main-workflow.md) — triggers, jobs, docs-only optimization, and
   workflow evolution
-- [SonarCloud](sonarcloud.md) — hosted analysis path, exclusions, and quality-gate
-  expectations
+- [Quality gates](quality-gates.md) — build analysis, changed-code coverage, limitations,
+  and branch-protection migration
 - [Artifacts and local reproduction](artifacts-and-local-reproduction.md) — CI artifacts
   and the local commands used to reproduce failures
 - [CI output UX](output-ux.md) — readability and machine-consumability guidance for logs,

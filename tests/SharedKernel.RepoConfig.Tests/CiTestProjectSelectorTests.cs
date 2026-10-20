@@ -3,6 +3,23 @@ namespace SharedKernel.RepoConfig.Tests;
 public sealed class CiTestProjectSelectorTests
 {
     [Fact]
+    public void Shared_coverage_configuration_selects_every_test_project()
+    {
+        // Arrange
+        using var repository = new TemporaryCiTestRepository();
+        repository.AddProject("tests/First.Tests/First.Tests.csproj");
+        repository.AddProject("tests/Second.Tests/Second.Tests.csproj");
+        repository.WriteSlice("fast-validation", "tests/First.Tests/First.Tests.csproj", "tests/Second.Tests/Second.Tests.csproj");
+
+        // Act
+        var selection = CiTestProjectSelector.Select(repository.RootPath, ["tests/testconfig.json"], fullValidation: false);
+
+        // Assert
+        selection.BuildRequired.ShouldBeTrue();
+        selection.SelectedProjectsBySlice["fast-validation"].Count.ShouldBe(2);
+    }
+
+    [Fact]
     public void Changed_source_selects_direct_and_transitive_test_dependents()
     {
         // Arrange
