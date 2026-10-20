@@ -154,6 +154,24 @@ public sealed class DocumentPrivacySafeguardTests
     }
 
     [Fact]
+    public async Task Document_no_store_scope_does_not_apply_to_a_sibling_path_prefix()
+    {
+        // Arrange
+        await using var factory = AdminApiTestHost.Create();
+        using var client = factory.CreateClient();
+        AdminApiTestHost.ConfigureAuthenticatedClient(client, "Admin");
+
+        // Act
+        using var response = await client.GetAsync(
+            new Uri("/api/v1/documents-public/unmatched", UriKind.Relative),
+            TestContext.Current.CancellationToken);
+
+        // Assert
+        response.StatusCode.ShouldBe(HttpStatusCode.NotFound);
+        DocumentNoStoreHeaders.ArePresent(response).ShouldBeFalse();
+    }
+
+    [Fact]
     public async Task Unsupported_document_method_returns_no_store_headers()
     {
         // Arrange

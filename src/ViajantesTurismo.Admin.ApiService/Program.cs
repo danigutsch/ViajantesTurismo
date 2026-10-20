@@ -16,7 +16,6 @@ using ViajantesTurismo.Resources;
 using ViajantesTurismo.ServiceDefaults;
 
 const string ApiRobotsTxt = "User-agent: *\nDisallow: /";
-const string DocumentsApiPath = "/api/v1/documents";
 
 var builder = WebApplication.CreateSlimBuilder(args);
 
@@ -68,21 +67,7 @@ app.MapConfiguredOpenApi();
 
 app.UseCors(AdminSecurityBaseline.CorsPolicyName);
 
-app.Use(static (context, next) =>
-{
-    if (context.Request.Path.StartsWithSegments(DocumentsApiPath, StringComparison.OrdinalIgnoreCase))
-    {
-        context.Response.OnStarting(static state =>
-        {
-            var httpContext = (HttpContext)state;
-            HttpCacheHeaders.SetNoStore(httpContext);
-
-            return Task.CompletedTask;
-        }, context);
-    }
-
-    return next(context);
-});
+app.UseNoStoreResponses();
 
 app.UseApiSecurity();
 app.UseRateLimiter();
