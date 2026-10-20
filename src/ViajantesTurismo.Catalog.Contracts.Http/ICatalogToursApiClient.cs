@@ -47,7 +47,10 @@ public interface ICatalogToursApiClient
     /// <summary>
     /// Uploads a new image for a catalog tour.
     /// </summary>
-    Task<ContractCommandOutcomeDto<CatalogMediaImageDto>> UploadTourImage(Guid id, CatalogTourImageUploadRequest request, IProgress<long>? progress, CancellationToken ct);
+    Task<ContractCommandOutcomeDto<CatalogMediaImageDto>> UploadTourImage(Guid id, CatalogTourImageUploadRequest request, IProgress<long>? progress, CancellationToken ct)
+    {
+        return UploadTourImage(id, request, ct);
+    }
 
     /// <summary>
     /// Gets the media images linked to a catalog tour.
@@ -65,8 +68,5 @@ public interface ICatalogToursApiClient
     Task<PublicMediaObjectResponse?> GetMediaPreview(Guid id, int width, string format, CancellationToken ct);
 
     /// <inheritdoc />
-    Task<ContractCommandOutcomeDto<CatalogMediaImageDto>> UploadTourImage(Guid id, CatalogTourImageUploadRequest request, CancellationToken ct)
-    {
-        return UploadTourImage(id, request, null, ct);
-    }
+    Task<ContractCommandOutcomeDto<CatalogMediaImageDto>> UploadTourImage(Guid id, CatalogTourImageUploadRequest request, CancellationToken ct);
 }

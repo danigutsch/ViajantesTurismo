@@ -11,6 +11,20 @@ namespace ViajantesTurismo.Catalog.ContractTests.ApiClients;
 public sealed class CatalogToursApiClientTests
 {
     [Fact]
+    public void Progress_overload_preserves_existing_client_implementations()
+    {
+        // Arrange
+        var parameterTypes = new[] { typeof(Guid), typeof(CatalogTourImageUploadRequest), typeof(IProgress<long>), typeof(CancellationToken) };
+
+        // Act
+        var overload = typeof(ICatalogToursApiClient).GetMethod(nameof(ICatalogToursApiClient.UploadTourImage), parameterTypes);
+
+        // Assert
+        overload.ShouldNotBeNull();
+        overload.IsAbstract.ShouldBeFalse();
+    }
+
+    [Fact]
     public async Task GetTours_requests_management_catalog_endpoint_and_skips_null_items()
     {
         // Arrange

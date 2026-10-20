@@ -13,6 +13,20 @@ namespace ViajantesTurismo.Admin.ContractTests.ApiClients;
 public sealed class CustomersApiClientTests
 {
     [Fact]
+    public void Progress_overload_preserves_existing_client_implementations()
+    {
+        // Arrange
+        var parameterTypes = new[] { typeof(byte[]), typeof(string), typeof(IProgress<long>), typeof(CancellationToken) };
+
+        // Act
+        var overload = typeof(ICustomersApiClient).GetMethod(nameof(ICustomersApiClient.ImportCustomers), parameterTypes);
+
+        // Assert
+        overload.ShouldNotBeNull();
+        overload.IsAbstract.ShouldBeFalse();
+    }
+
+    [Fact]
     public async Task GetCustomers_requests_customers_endpoint_and_limits_items()
     {
         // Arrange

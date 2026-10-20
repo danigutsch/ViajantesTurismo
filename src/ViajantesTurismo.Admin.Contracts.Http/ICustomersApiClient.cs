@@ -49,7 +49,10 @@ public interface ICustomersApiClient
     /// <param name="progress">Receives cumulative file bytes written to the HTTP transport.</param>
     /// <param name="ct">Cancellation token for the request.</param>
     /// <returns>The materialized import outcome.</returns>
-    Task<ContractCommandOutcomeDto<ImportResultDto>> ImportCustomers(byte[] fileContent, string fileName, IProgress<long>? progress, CancellationToken ct);
+    Task<ContractCommandOutcomeDto<ImportResultDto>> ImportCustomers(byte[] fileContent, string fileName, IProgress<long>? progress, CancellationToken ct)
+    {
+        return ImportCustomers(fileContent, fileName, ct);
+    }
 
     /// <summary>
     /// Commits a customer import applying per-email conflict resolutions decided by the user.
@@ -60,17 +63,14 @@ public interface ICustomersApiClient
     /// <param name="progress">Receives cumulative file bytes written to the HTTP transport.</param>
     /// <param name="ct">Cancellation token for the request.</param>
     /// <returns>The materialized import outcome.</returns>
-    Task<ContractCommandOutcomeDto<ImportResultDto>> CommitImportWithResolutions(byte[] fileContent, string fileName, IReadOnlyDictionary<string, string> conflictResolutions, IProgress<long>? progress, CancellationToken ct);
-
-    /// <inheritdoc />
-    Task<ContractCommandOutcomeDto<ImportResultDto>> ImportCustomers(byte[] fileContent, string fileName, CancellationToken ct)
+    Task<ContractCommandOutcomeDto<ImportResultDto>> CommitImportWithResolutions(byte[] fileContent, string fileName, IReadOnlyDictionary<string, string> conflictResolutions, IProgress<long>? progress, CancellationToken ct)
     {
-        return ImportCustomers(fileContent, fileName, null, ct);
+        return CommitImportWithResolutions(fileContent, fileName, conflictResolutions, ct);
     }
 
     /// <inheritdoc />
-    Task<ContractCommandOutcomeDto<ImportResultDto>> CommitImportWithResolutions(byte[] fileContent, string fileName, IReadOnlyDictionary<string, string> conflictResolutions, CancellationToken ct)
-    {
-        return CommitImportWithResolutions(fileContent, fileName, conflictResolutions, null, ct);
-    }
+    Task<ContractCommandOutcomeDto<ImportResultDto>> ImportCustomers(byte[] fileContent, string fileName, CancellationToken ct);
+
+    /// <inheritdoc />
+    Task<ContractCommandOutcomeDto<ImportResultDto>> CommitImportWithResolutions(byte[] fileContent, string fileName, IReadOnlyDictionary<string, string> conflictResolutions, CancellationToken ct);
 }
