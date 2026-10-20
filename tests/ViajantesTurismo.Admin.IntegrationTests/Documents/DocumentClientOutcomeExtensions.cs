@@ -5,7 +5,7 @@ namespace ViajantesTurismo.Admin.IntegrationTests.Documents;
 internal static class DocumentClientOutcomeExtensions
 {
     public static async Task<TValue> RequireSucceededValue<TValue>(
-        this Task<ContractCommandOutcomeDto<TValue>> outcomeTask)
+        this Task<HttpOutcome<TValue>> outcomeTask)
         where TValue : class
     {
         ArgumentNullException.ThrowIfNull(outcomeTask);

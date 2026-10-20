@@ -11,17 +11,17 @@ public interface IPublicCatalogApiClient
     /// <summary>
     /// Gets published tours.
     /// </summary>
-    Task<ContractCommandOutcomeDto<TourSummaryDto[]>> GetPublishedTours(CancellationToken ct);
+    Task<HttpOutcome<TourSummaryDto[]>> GetPublishedTours(CancellationToken ct);
 
     /// <summary>
     /// Gets a published tour by slug.
     /// </summary>
-    Task<ContractCommandOutcomeDto<TourDetailsDto>> GetPublishedTourBySlug(string slug, CancellationToken ct);
+    Task<HttpOutcome<TourDetailsDto>> GetPublishedTourBySlug(string slug, CancellationToken ct);
 
     /// <summary>
     /// Gets public content by key and culture.
     /// </summary>
-    Task<ContractCommandOutcomeDto<PublicContentVariantDto>> GetPublicContent(string key, string? culture, CancellationToken ct);
+    Task<HttpOutcome<PublicContentVariantDto>> GetPublicContent(string key, string? culture, CancellationToken ct);
 
     /// <summary>
     /// Opens public media content for streaming.

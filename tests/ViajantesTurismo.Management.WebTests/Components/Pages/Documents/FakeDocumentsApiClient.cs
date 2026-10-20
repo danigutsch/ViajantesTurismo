@@ -13,6 +13,12 @@ internal sealed class FakeDocumentsApiClient : IDocumentsApiClient
 
     public GetDocumentDto? RegeneratedDocument { get; set; }
 
+    public HttpOutcome<GetDocumentDto>? RegenerationOutcome { get; set; }
+
+    public List<string> GenerationKeys { get; } = [];
+
+    public List<string> RegenerationKeys { get; } = [];
+
     public GetDocumentDto? UpdatedDocument { get; set; }
 
     public Guid? LastBeginReviewDocumentId { get; private set; }
@@ -29,24 +35,30 @@ internal sealed class FakeDocumentsApiClient : IDocumentsApiClient
 
     public void AddDocument(GetDocumentDto document) => _documents.Add(document.Id, document);
 
-    public Task<ContractCommandOutcomeDto<GetDocumentDto>> GetDocumentById(Guid id, CancellationToken ct) =>
+    public Task<HttpOutcome<GetDocumentDto>> GetDocumentById(Guid id, CancellationToken ct) =>
         GetDocumentException is null
             ? Task.FromResult(DocumentOutcome(_documents.GetValueOrDefault(id)))
             : Task.FromResult(TransportFailure());
 
-    public Task<ContractCommandOutcomeDto<GetDocumentDto>> GenerateContractDraft(Guid bookingId, CancellationToken ct) =>
+    public Task<HttpOutcome<GetDocumentDto>> GenerateContractDraft(Guid bookingId, CancellationToken ct) =>
         Task.FromResult(DocumentOutcome(GeneratedDocument, HttpStatusCode.Created));
 
-    public Task<ContractCommandOutcomeDto<GetDocumentDto>> BeginReview(Guid documentId, CancellationToken ct)
+    public Task<HttpOutcome<GetDocumentDto>> GenerateContractDraft(Guid bookingId, string idempotencyKey, CancellationToken ct)
+    {
+        GenerationKeys.Add(idempotencyKey);
+        return GenerateContractDraft(bookingId, ct);
+    }
+
+    public Task<HttpOutcome<GetDocumentDto>> BeginReview(Guid documentId, CancellationToken ct)
     {
         LastBeginReviewDocumentId = documentId;
         return Task.FromResult(DocumentOutcome(GetRequiredDocument(documentId)));
     }
 
-    public Task<ContractCommandOutcomeDto<GetDocumentDto>> RequestChanges(Guid documentId, CancellationToken ct) =>
+    public Task<HttpOutcome<GetDocumentDto>> RequestChanges(Guid documentId, CancellationToken ct) =>
         Task.FromResult(DocumentOutcome(GetRequiredDocument(documentId)));
 
-    public Task<ContractCommandOutcomeDto<GetDocumentDto>> UpdateField(Guid documentId, string fieldId, UpdateDocumentFieldDto dto, CancellationToken ct)
+    public Task<HttpOutcome<GetDocumentDto>> UpdateField(Guid documentId, string fieldId, UpdateDocumentFieldDto dto, CancellationToken ct)
     {
         LastUpdatedDocumentId = documentId;
         LastUpdatedFieldId = fieldId;
@@ -54,16 +66,22 @@ internal sealed class FakeDocumentsApiClient : IDocumentsApiClient
         return Task.FromResult(DocumentOutcome(UpdatedDocument ?? GetRequiredDocument(documentId)));
     }
 
-    public Task<ContractCommandOutcomeDto<GetDocumentDto>> Approve(Guid documentId, CancellationToken ct) =>
+    public Task<HttpOutcome<GetDocumentDto>> Approve(Guid documentId, CancellationToken ct) =>
         Task.FromResult(DocumentOutcome(GetRequiredDocument(documentId)));
 
-    public Task<ContractCommandOutcomeDto<GetDocumentDto>> Finalize(Guid documentId, CancellationToken ct) =>
+    public Task<HttpOutcome<GetDocumentDto>> Finalize(Guid documentId, CancellationToken ct) =>
         Task.FromResult(DocumentOutcome(GetRequiredDocument(documentId)));
 
-    public Task<ContractCommandOutcomeDto<GetDocumentDto>> Regenerate(Guid documentId, CancellationToken ct) =>
-        Task.FromResult(DocumentOutcome(RegeneratedDocument ?? GetRequiredDocument(documentId)));
+    public Task<HttpOutcome<GetDocumentDto>> Regenerate(Guid documentId, CancellationToken ct) =>
+        Task.FromResult(RegenerationOutcome ?? DocumentOutcome(RegeneratedDocument ?? GetRequiredDocument(documentId)));
 
-    public Task<ContractCommandOutcomeDto<GetDocumentDto>> Void(Guid documentId, CancellationToken ct) =>
+    public Task<HttpOutcome<GetDocumentDto>> Regenerate(Guid documentId, string idempotencyKey, CancellationToken ct)
+    {
+        RegenerationKeys.Add(idempotencyKey);
+        return Regenerate(documentId, ct);
+    }
+
+    public Task<HttpOutcome<GetDocumentDto>> Void(Guid documentId, CancellationToken ct) =>
         Task.FromResult(DocumentOutcome(GetRequiredDocument(documentId)));
 
     public Task<DocumentArtifactResponse?> DownloadFinalizedArtifact(Guid documentId, CancellationToken ct) =>
@@ -74,14 +92,14 @@ internal sealed class FakeDocumentsApiClient : IDocumentsApiClient
     private GetDocumentDto GetRequiredDocument(Guid id) =>
         _documents.GetValueOrDefault(id) ?? throw new InvalidOperationException("The configured document was not found.");
 
-    private static ContractCommandOutcomeDto<GetDocumentDto> DocumentOutcome(
+    private static HttpOutcome<GetDocumentDto> DocumentOutcome(
         GetDocumentDto? document,
         HttpStatusCode successStatusCode = HttpStatusCode.OK) =>
         document is null
             ? ContractCommandOutcome.Status<GetDocumentDto>(ContractCommandOutcomeKind.NotFound, HttpStatusCode.NotFound)
             : ContractCommandOutcome.Succeeded(successStatusCode, document);
 
-    private static ContractCommandOutcomeDto<GetDocumentDto> TransportFailure() => new()
+    private static HttpOutcome<GetDocumentDto> TransportFailure() => new()
     {
         Kind = ContractCommandOutcomeKind.TransportFailure,
         Message = "HTTP transport failed."

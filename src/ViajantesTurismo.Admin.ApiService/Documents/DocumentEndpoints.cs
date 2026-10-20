@@ -1,3 +1,4 @@
+using System.ComponentModel.DataAnnotations;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using SharedKernel.Idempotency;
@@ -11,8 +12,6 @@ namespace ViajantesTurismo.Admin.ApiService.Documents;
 /// <summary>Defines Admin-only endpoints for generated document lifecycle operations.</summary>
 internal static class DocumentEndpoints
 {
-    private const string ContractTemplateId = "tour-service-contract";
-    private const string ContractTemplateVersion = "1";
     private const string AdministrativeVoidReasonCode = "administrative-void";
     private const string HtmlMediaType = "text/html; charset=utf-8";
     private const string IdempotencyKeyHeaderName = "Idempotency-Key";
@@ -107,14 +106,14 @@ internal static class DocumentEndpoints
 
     private static async Task<IResult> GenerateContractDraft(
         [FromRoute] Guid bookingId,
-        [FromHeader(Name = IdempotencyKeyHeaderName)] string? idempotencyKey,
+        [Required, FromHeader(Name = IdempotencyKeyHeaderName)] string? idempotencyKey,
         [FromServices] GenerateContractDraftCommandHandler handler,
         [FromServices] IDocumentQueryService queryService,
         [FromServices] IServiceScopeFactory scopeFactory,
         HttpContext httpContext,
         CancellationToken ct)
     {
-        var keyResult = ParseOptionalIdempotencyKey(idempotencyKey, out var parsedIdempotencyKey);
+        var keyResult = ParseRequiredIdempotencyKey(idempotencyKey, out var parsedIdempotencyKey);
         if (keyResult.IsFailure)
         {
             return ToError(keyResult);
@@ -124,8 +123,6 @@ internal static class DocumentEndpoints
         var result = await ExecuteDocumentCommand(() => handler.Handle(
             new GenerateContractDraftCommand(
                 bookingId,
-                ContractTemplateId,
-                ContractTemplateVersion,
                 auditContext,
                 parsedIdempotencyKey),
             ct),
@@ -284,14 +281,14 @@ internal static class DocumentEndpoints
 
     private static async Task<IResult> Regenerate(
         [FromRoute] Guid id,
-        [FromHeader(Name = IdempotencyKeyHeaderName)] string? idempotencyKey,
+        [Required, FromHeader(Name = IdempotencyKeyHeaderName)] string? idempotencyKey,
         [FromServices] RegenerateDocumentDraftCommandHandler handler,
         [FromServices] IDocumentQueryService queryService,
         [FromServices] IServiceScopeFactory scopeFactory,
         HttpContext httpContext,
         CancellationToken ct)
     {
-        var keyResult = ParseOptionalIdempotencyKey(idempotencyKey, out var parsedIdempotencyKey);
+        var keyResult = ParseRequiredIdempotencyKey(idempotencyKey, out var parsedIdempotencyKey);
         if (keyResult.IsFailure)
         {
             return ToError(keyResult);
@@ -299,7 +296,7 @@ internal static class DocumentEndpoints
 
         var auditContext = CreateAuditContext(httpContext);
         var result = await ExecuteDocumentCommand(() => handler.Handle(
-            new RegenerateDocumentDraftCommand(id, ContractTemplateId, ContractTemplateVersion, auditContext, parsedIdempotencyKey),
+            new RegenerateDocumentDraftCommand(id, auditContext, parsedIdempotencyKey),
             ct),
             new DocumentCommandAuditMetadata(auditContext, DocumentAuditOperation.Regenerate, id, null),
             scopeFactory,
@@ -513,12 +510,12 @@ internal static class DocumentEndpoints
         return auditContextResult.Value;
     }
 
-    private static Result ParseOptionalIdempotencyKey(string? value, out IdempotencyKey? parsedKey)
+    private static Result ParseRequiredIdempotencyKey(string? value, out IdempotencyKey? parsedKey)
     {
         parsedKey = null;
         if (value is null)
         {
-            return Result.Ok();
+            return DocumentCommandIdempotency.RequiredKeyError();
         }
 
         if (IdempotencyKey.TryFrom(value, out var key))

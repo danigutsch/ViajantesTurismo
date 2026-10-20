@@ -8,6 +8,7 @@ using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using SharedKernel.Testing;
+using SharedKernel.Idempotency;
 using ViajantesTurismo.Admin.ApiService;
 using ViajantesTurismo.Admin.ApiServiceTests.Infrastructure.Documents;
 using ViajantesTurismo.Admin.Application;
@@ -260,6 +261,8 @@ public sealed class DocumentPrivacySafeguardTests
         var unitOfWork = new FakeUnitOfWork();
         await using var factory = AdminApiTestHost.Create(services =>
         {
+            services.RemoveAll<IIdempotencyStore>();
+            services.AddSingleton<IIdempotencyStore, UnstartedDocumentIdempotencyStore>();
             services.RemoveAll<IDocumentStore>();
             services.AddSingleton<IDocumentStore>(missingDocuments);
             services.RemoveAll<IDocumentQueryService>();
@@ -282,6 +285,10 @@ public sealed class DocumentPrivacySafeguardTests
             if (route.Pattern.Contains("bookings/{bookingId:guid}", StringComparison.Ordinal))
             {
                 request.Headers.TryAddWithoutValidation("Idempotency-Key", "invalid key");
+            }
+            else if (route.Pattern.EndsWith("/regenerate", StringComparison.Ordinal))
+            {
+                request.Headers.Add("Idempotency-Key", Guid.CreateVersion7().ToString("N"));
             }
 
             if (string.Equals(route.Method, HttpMethod.Patch.Method, StringComparison.Ordinal))

@@ -17,6 +17,33 @@ namespace ViajantesTurismo.Admin.UnitTests.Application.Documents;
 public sealed class GenerateContractDraftCommandHandlerTests
 {
     [Fact]
+    public async Task Handle_rejects_a_missing_idempotency_key_before_any_work()
+    {
+        // Arrange
+        var store = new FakeDocumentStore();
+        var auditStore = new FakeDocumentAuditStore();
+        var unitOfWork = new FakeUnitOfWork();
+        var handler = new GenerateContractDraftCommandHandler(
+            new FakeQueryService(null), store,
+            new FakeBrandingApiClient(new BrandingSettingsDto()),
+            TimeProvider.System,
+            DocumentAuditTestData.CreateWriter(auditStore, unitOfWork),
+            new DocumentCommandIdempotency(new UnusedIdempotencyStore(), unitOfWork, TimeProvider.System));
+
+        // Act
+        var result = await handler.Handle(
+            new GenerateContractDraftCommand(Guid.CreateVersion7(), DocumentAuditTestData.CreateContext()),
+            CancellationToken.None);
+
+        // Assert
+        result.Status.ShouldBe(ResultStatus.Invalid);
+        result.ErrorDetails.ShouldNotBeNull().Detail.ShouldBe("Idempotency-Key is required.");
+        auditStore.Records.ShouldBeEmpty();
+        store.AddedDocuments.ShouldBeEmpty();
+        unitOfWork.SaveEntitiesCallCount.ShouldBe(0);
+    }
+
+    [Fact]
     public async Task Handle_returns_conflict_for_an_active_generation_key_before_mutable_booking_validation()
     {
         // Arrange
@@ -230,7 +257,7 @@ public sealed class GenerateContractDraftCommandHandlerTests
 
         // Act
         var result = await handler.Handle(
-            new GenerateContractDraftCommand(booking.Id, "booking-confirmation", "1", null!),
+            new GenerateContractDraftCommand(booking.Id, "booking-confirmation", "1", null!, IdempotencyKey.From(Guid.CreateVersion7().ToString("N"))),
             CancellationToken.None);
 
         // Assert
@@ -258,7 +285,7 @@ public sealed class GenerateContractDraftCommandHandlerTests
         var handler = new GenerateContractDraftCommandHandler(queryService, store, new FakeBrandingApiClient(branding), TimeProvider.System, DocumentAuditTestData.CreateWriter(auditStore, unitOfWork), DocumentIdempotencyTestData.Create(unitOfWork));
 
         // Act
-        var result = await handler.Handle(new GenerateContractDraftCommand(bookingId, "booking-confirmation", "1", DocumentAuditTestData.CreateContext()), CancellationToken.None);
+        var result = await handler.Handle(new GenerateContractDraftCommand(bookingId, "booking-confirmation", "1", DocumentAuditTestData.CreateContext(), IdempotencyKey.From(Guid.CreateVersion7().ToString("N"))), CancellationToken.None);
 
         // Assert
         result.IsSuccess.ShouldBeTrue();
@@ -300,7 +327,7 @@ public sealed class GenerateContractDraftCommandHandlerTests
 
         // Act
         var result = await handler.Handle(
-            new GenerateContractDraftCommand(booking.Id, "booking-confirmation", "1", auditContext),
+            new GenerateContractDraftCommand(booking.Id, "booking-confirmation", "1", auditContext, IdempotencyKey.From(Guid.CreateVersion7().ToString("N"))),
             CancellationToken.None);
         var audit = auditStore.Records.ShouldHaveSingleItem();
 
@@ -331,7 +358,7 @@ public sealed class GenerateContractDraftCommandHandlerTests
 
         // Act
         var result = await handler.Handle(
-            new GenerateContractDraftCommand(bookingId, "booking-confirmation", "1", auditContext),
+            new GenerateContractDraftCommand(bookingId, "booking-confirmation", "1", auditContext, IdempotencyKey.From(Guid.CreateVersion7().ToString("N"))),
             CancellationToken.None);
         var audit = auditStore.Records.ShouldHaveSingleItem();
 
@@ -368,7 +395,7 @@ public sealed class GenerateContractDraftCommandHandlerTests
 
         // Act
         var result = await handler.Handle(
-            new GenerateContractDraftCommand(booking.Id, "booking-confirmation", "1", auditContext),
+            new GenerateContractDraftCommand(booking.Id, "booking-confirmation", "1", auditContext, IdempotencyKey.From(Guid.CreateVersion7().ToString("N"))),
             CancellationToken.None);
         var audit = auditStore.Records.ShouldHaveSingleItem();
 
@@ -402,7 +429,7 @@ public sealed class GenerateContractDraftCommandHandlerTests
         var handler = new GenerateContractDraftCommandHandler(queryService, store, new FakeBrandingApiClient(branding), TimeProvider.System, DocumentAuditTestData.CreateWriter(auditStore, unitOfWork), DocumentIdempotencyTestData.Create(unitOfWork));
 
         // Act
-        var result = await handler.Handle(new GenerateContractDraftCommand(bookingId, "booking-confirmation", "1", DocumentAuditTestData.CreateContext()), CancellationToken.None);
+        var result = await handler.Handle(new GenerateContractDraftCommand(bookingId, "booking-confirmation", "1", DocumentAuditTestData.CreateContext(), IdempotencyKey.From(Guid.CreateVersion7().ToString("N"))), CancellationToken.None);
 
         // Assert
         result.IsSuccess.ShouldBeTrue();

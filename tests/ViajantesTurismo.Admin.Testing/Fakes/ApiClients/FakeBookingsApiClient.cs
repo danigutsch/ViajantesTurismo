@@ -9,19 +9,19 @@ public sealed class FakeBookingsApiClient : IBookingsApiClient
 {
     private readonly List<GetBookingDto> _bookings = [];
     private Task _bookingActionTask = Task.CompletedTask;
-    private ContractCommandOutcomeDto? _createBookingOutcome;
+    private HttpOutcome? _createBookingOutcome;
     private Exception? _getAllBookingsException;
-    private ContractCommandOutcomeDto<GetBookingDto[]>? _getAllBookingsOutcome;
+    private HttpOutcome<GetBookingDto[]>? _getAllBookingsOutcome;
     private Exception? _getBookingByIdException;
     private int? _getBookingByIdExceptionCall;
-    private ContractCommandOutcomeDto<GetBookingDto>? _getBookingByIdOutcome;
+    private HttpOutcome<GetBookingDto>? _getBookingByIdOutcome;
     private int? _getBookingByIdOutcomeCall;
     private Exception? _recordPaymentExceptionAfterCommit;
-    private ContractCommandOutcomeDto? _recordPaymentOutcome;
-    private ContractCommandOutcomeDto? _recordPaymentOutcomeAfterCommit;
+    private HttpOutcome? _recordPaymentOutcome;
+    private HttpOutcome? _recordPaymentOutcomeAfterCommit;
     private Task _recordPaymentTask = Task.CompletedTask;
     private Exception? _updateBookingNotesException;
-    private ContractCommandOutcomeDto? _updateBookingNotesOutcome;
+    private HttpOutcome? _updateBookingNotesOutcome;
     private decimal? _updatedDetailsTotalPrice;
 
     public int BookingActionCallCount { get; private set; }
@@ -40,7 +40,7 @@ public sealed class FakeBookingsApiClient : IBookingsApiClient
 
     public int UpdateBookingNotesCallCount { get; private set; }
 
-    public Task<ContractCommandOutcomeDto<GetBookingDto[]>> GetAllBookings(CancellationToken ct)
+    public Task<HttpOutcome<GetBookingDto[]>> GetAllBookings(CancellationToken ct)
     {
         ct.ThrowIfCancellationRequested();
 
@@ -57,7 +57,7 @@ public sealed class FakeBookingsApiClient : IBookingsApiClient
         return Task.FromResult(ContractCommandOutcome.Succeeded(HttpStatusCode.OK, _bookings.ToArray()));
     }
 
-    public Task<ContractCommandOutcomeDto<GetBookingDto>> GetBookingById(Guid id, CancellationToken ct)
+    public Task<HttpOutcome<GetBookingDto>> GetBookingById(Guid id, CancellationToken ct)
     {
         ct.ThrowIfCancellationRequested();
         GetBookingByIdCallCount++;
@@ -80,7 +80,7 @@ public sealed class FakeBookingsApiClient : IBookingsApiClient
             : ContractCommandOutcome.Succeeded(HttpStatusCode.OK, booking));
     }
 
-    public Task<ContractCommandOutcomeDto<GetBookingDto[]>> GetBookingsByTourId(Guid tourId, CancellationToken ct)
+    public Task<HttpOutcome<GetBookingDto[]>> GetBookingsByTourId(Guid tourId, CancellationToken ct)
     {
         ct.ThrowIfCancellationRequested();
         return Task.FromResult(ContractCommandOutcome.Succeeded(
@@ -88,7 +88,7 @@ public sealed class FakeBookingsApiClient : IBookingsApiClient
             _bookings.Where(b => b.TourId == tourId).ToArray()));
     }
 
-    public Task<ContractCommandOutcomeDto<GetBookingDto[]>> GetBookingsByCustomerId(Guid customerId, CancellationToken ct)
+    public Task<HttpOutcome<GetBookingDto[]>> GetBookingsByCustomerId(Guid customerId, CancellationToken ct)
     {
         ct.ThrowIfCancellationRequested();
         return Task.FromResult(ContractCommandOutcome.Succeeded(
@@ -96,7 +96,7 @@ public sealed class FakeBookingsApiClient : IBookingsApiClient
             _bookings.Where(b => b.CustomerId == customerId || b.CompanionId == customerId).ToArray()));
     }
 
-    public Task<ContractCommandOutcomeDto> CreateBooking(CreateBookingDto dto, CancellationToken ct)
+    public Task<HttpOutcome> CreateBooking(CreateBookingDto dto, CancellationToken ct)
     {
         ArgumentNullException.ThrowIfNull(dto);
         ct.ThrowIfCancellationRequested();
@@ -122,7 +122,7 @@ public sealed class FakeBookingsApiClient : IBookingsApiClient
         return Task.FromResult(ContractCommandOutcome.Succeeded(HttpStatusCode.Created, new Uri($"/api/v1/bookings/{newBooking.Id}", UriKind.Relative)));
     }
 
-    public Task<ContractCommandOutcomeDto> UpdateBookingDiscount(Guid id, UpdateBookingDiscountDto dto, CancellationToken ct)
+    public Task<HttpOutcome> UpdateBookingDiscount(Guid id, UpdateBookingDiscountDto dto, CancellationToken ct)
     {
         ArgumentNullException.ThrowIfNull(dto);
         ct.ThrowIfCancellationRequested();
@@ -142,7 +142,7 @@ public sealed class FakeBookingsApiClient : IBookingsApiClient
         return Task.FromResult(ContractCommandOutcome.Succeeded(HttpStatusCode.OK, location: null));
     }
 
-    public Task<ContractCommandOutcomeDto> UpdateBookingDetails(Guid id, UpdateBookingDetailsDto dto, CancellationToken ct)
+    public Task<HttpOutcome> UpdateBookingDetails(Guid id, UpdateBookingDetailsDto dto, CancellationToken ct)
     {
         ArgumentNullException.ThrowIfNull(dto);
         ct.ThrowIfCancellationRequested();
@@ -170,7 +170,7 @@ public sealed class FakeBookingsApiClient : IBookingsApiClient
         return Task.FromResult(ContractCommandOutcome.Succeeded(HttpStatusCode.OK, location: null));
     }
 
-    public Task<ContractCommandOutcomeDto> UpdateBookingNotes(Guid id, UpdateBookingNotesDto dto, CancellationToken ct)
+    public Task<HttpOutcome> UpdateBookingNotes(Guid id, UpdateBookingNotesDto dto, CancellationToken ct)
     {
         ArgumentNullException.ThrowIfNull(dto);
         ct.ThrowIfCancellationRequested();
@@ -195,16 +195,16 @@ public sealed class FakeBookingsApiClient : IBookingsApiClient
         return Task.FromResult(ContractCommandOutcome.Succeeded(HttpStatusCode.OK, location: null));
     }
 
-    public Task<ContractCommandOutcomeDto> CancelBooking(Guid id, CancellationToken ct) =>
+    public Task<HttpOutcome> CancelBooking(Guid id, CancellationToken ct) =>
         ExecuteBookingAction(() => UpdateBookingStatus(id, BookingStatusDto.Cancelled), HttpStatusCode.OK, ct);
 
-    public Task<ContractCommandOutcomeDto> ConfirmBooking(Guid id, CancellationToken ct) =>
+    public Task<HttpOutcome> ConfirmBooking(Guid id, CancellationToken ct) =>
         ExecuteBookingAction(() => UpdateBookingStatus(id, BookingStatusDto.Confirmed), HttpStatusCode.OK, ct);
 
-    public Task<ContractCommandOutcomeDto> CompleteBooking(Guid id, CancellationToken ct) =>
+    public Task<HttpOutcome> CompleteBooking(Guid id, CancellationToken ct) =>
         ExecuteBookingAction(() => UpdateBookingStatus(id, BookingStatusDto.Completed), HttpStatusCode.OK, ct);
 
-    public Task<ContractCommandOutcomeDto> DeleteBooking(Guid id, CancellationToken ct) =>
+    public Task<HttpOutcome> DeleteBooking(Guid id, CancellationToken ct) =>
         ExecuteBookingAction(() =>
         {
             var booking = _bookings.FirstOrDefault(candidate => candidate.Id == id);
@@ -214,7 +214,7 @@ public sealed class FakeBookingsApiClient : IBookingsApiClient
             }
         }, HttpStatusCode.NoContent, ct);
 
-    public async Task<ContractCommandOutcomeDto> RecordPayment(Guid bookingId, CreatePaymentDto dto, CancellationToken ct)
+    public async Task<HttpOutcome> RecordPayment(Guid bookingId, CreatePaymentDto dto, CancellationToken ct)
     {
         ArgumentNullException.ThrowIfNull(dto);
         ct.ThrowIfCancellationRequested();
@@ -244,7 +244,7 @@ public sealed class FakeBookingsApiClient : IBookingsApiClient
 
     public void AddBooking(GetBookingDto booking) => _bookings.Add(booking);
 
-    public void SetCreateBookingOutcome(ContractCommandOutcomeDto outcome) => _createBookingOutcome = outcome;
+    public void SetCreateBookingOutcome(HttpOutcome outcome) => _createBookingOutcome = outcome;
 
     public void SetBookingActionTask(Task actionTask)
     {
@@ -254,17 +254,17 @@ public sealed class FakeBookingsApiClient : IBookingsApiClient
 
     public void SetGetAllBookingsException(Exception exception) => _getAllBookingsException = exception;
 
-    public void SetGetAllBookingsOutcome(ContractCommandOutcomeDto<GetBookingDto[]> outcome) => _getAllBookingsOutcome = outcome;
+    public void SetGetAllBookingsOutcome(HttpOutcome<GetBookingDto[]> outcome) => _getAllBookingsOutcome = outcome;
 
     public void SetGetBookingByIdException(Exception exception) => _getBookingByIdException = exception;
 
-    public void SetGetBookingByIdOutcome(ContractCommandOutcomeDto<GetBookingDto> outcome)
+    public void SetGetBookingByIdOutcome(HttpOutcome<GetBookingDto> outcome)
     {
         _getBookingByIdOutcomeCall = null;
         _getBookingByIdOutcome = outcome;
     }
 
-    public void SetGetBookingByIdOutcomeOnCall(int call, ContractCommandOutcomeDto<GetBookingDto> outcome)
+    public void SetGetBookingByIdOutcomeOnCall(int call, HttpOutcome<GetBookingDto> outcome)
     {
         _getBookingByIdOutcomeCall = call;
         _getBookingByIdOutcome = outcome;
@@ -276,9 +276,9 @@ public sealed class FakeBookingsApiClient : IBookingsApiClient
         _getBookingByIdException = exception;
     }
 
-    public void SetRecordPaymentOutcome(ContractCommandOutcomeDto outcome) => _recordPaymentOutcome = outcome;
+    public void SetRecordPaymentOutcome(HttpOutcome outcome) => _recordPaymentOutcome = outcome;
 
-    public void SetRecordPaymentOutcomeAfterCommit(ContractCommandOutcomeDto outcome) =>
+    public void SetRecordPaymentOutcomeAfterCommit(HttpOutcome outcome) =>
         _recordPaymentOutcomeAfterCommit = outcome;
 
     public void SetRecordPaymentExceptionAfterCommit(Exception exception) =>
@@ -292,11 +292,11 @@ public sealed class FakeBookingsApiClient : IBookingsApiClient
 
     public void SetUpdateBookingNotesException(Exception exception) => _updateBookingNotesException = exception;
 
-    public void SetUpdateBookingNotesOutcome(ContractCommandOutcomeDto outcome) => _updateBookingNotesOutcome = outcome;
+    public void SetUpdateBookingNotesOutcome(HttpOutcome outcome) => _updateBookingNotesOutcome = outcome;
 
     public void SetUpdatedDetailsTotalPrice(decimal totalPrice) => _updatedDetailsTotalPrice = totalPrice;
 
-    private async Task<ContractCommandOutcomeDto> ExecuteBookingAction(
+    private async Task<HttpOutcome> ExecuteBookingAction(
         Action onCompleted,
         HttpStatusCode statusCode,
         CancellationToken ct)

@@ -17,9 +17,10 @@ public sealed class DocumentApiLifecycleRegressionTests(ApiFixture fixture)
         var bookingId = Guid.CreateVersion7();
 
         // Act
-        using var response = await fixture.Client.PostAsync(
+        using var response = await DocumentApiTestSetup.PostIdempotentCommand(
+            fixture.Client,
             new Uri($"/api/v1/documents/bookings/{bookingId}/contract-drafts", UriKind.Relative),
-            null,
+            Guid.CreateVersion7().ToString("N"),
             cancellationToken);
         var draftCount = await fixture.GetDocumentDraftCountForBooking(bookingId, cancellationToken);
         var audits = await fixture.GetDocumentAuditMetadataForBooking(bookingId, cancellationToken);

@@ -16,16 +16,16 @@ public sealed class FakeCustomersApiClient : ICustomersApiClient
     public int ImportCustomersCallCount { get; private set; }
     private ImportResultDto? _commitImportResult;
     private Exception? _createCustomerException;
-    private ContractCommandOutcomeDto? _createCustomerOutcome;
+    private HttpOutcome? _createCustomerOutcome;
     private Exception? _getCustomerByIdException;
-    private ContractCommandOutcomeDto<CustomerDetailsDto>? _getCustomerByIdOutcome;
+    private HttpOutcome<CustomerDetailsDto>? _getCustomerByIdOutcome;
     private Exception? _getCustomersException;
-    private ContractCommandOutcomeDto<GetCustomerDto[]>? _getCustomersOutcome;
+    private HttpOutcome<GetCustomerDto[]>? _getCustomersOutcome;
     private Exception? _importCustomersException;
-    private ContractCommandOutcomeDto<ImportResultDto>? _importCustomersOutcome;
+    private HttpOutcome<ImportResultDto>? _importCustomersOutcome;
     private ImportResultDto? _importResult;
     private Exception? _updateCustomerException;
-    private ContractCommandOutcomeDto? _updateCustomerOutcome;
+    private HttpOutcome? _updateCustomerOutcome;
 
     public IReadOnlyList<byte>? LastCommitFileContent { get; private set; }
 
@@ -35,7 +35,7 @@ public sealed class FakeCustomersApiClient : ICustomersApiClient
 
     public int? LastGetCustomersMaxItems { get; private set; }
 
-    public async Task<ContractCommandOutcomeDto<GetCustomerDto[]>> GetCustomers(CancellationToken ct, int maxItems = 100)
+    public async Task<HttpOutcome<GetCustomerDto[]>> GetCustomers(CancellationToken ct, int maxItems = 100)
     {
         ct.ThrowIfCancellationRequested();
         LastGetCustomersMaxItems = maxItems;
@@ -58,7 +58,7 @@ public sealed class FakeCustomersApiClient : ICustomersApiClient
         return ContractCommandOutcome.Succeeded(HttpStatusCode.OK, _customers.Take(maxItems).ToArray());
     }
 
-    public Task<ContractCommandOutcomeDto<CustomerDetailsDto>> GetCustomerById(Guid id, CancellationToken ct)
+    public Task<HttpOutcome<CustomerDetailsDto>> GetCustomerById(Guid id, CancellationToken ct)
     {
         ct.ThrowIfCancellationRequested();
 
@@ -78,7 +78,7 @@ public sealed class FakeCustomersApiClient : ICustomersApiClient
             : ContractCommandOutcome.Succeeded(HttpStatusCode.OK, customer));
     }
 
-    public Task<ContractCommandOutcomeDto> CreateCustomer(CreateCustomerDto dto, CancellationToken ct)
+    public Task<HttpOutcome> CreateCustomer(CreateCustomerDto dto, CancellationToken ct)
     {
         ArgumentNullException.ThrowIfNull(dto);
         ct.ThrowIfCancellationRequested();
@@ -97,7 +97,7 @@ public sealed class FakeCustomersApiClient : ICustomersApiClient
         return Task.FromResult(ContractCommandOutcome.Succeeded(HttpStatusCode.Created, new Uri($"/api/v1/customers/{customerId}", UriKind.Relative)));
     }
 
-    public Task<ContractCommandOutcomeDto> UpdateCustomer(Guid id, UpdateCustomerDto dto, CancellationToken ct)
+    public Task<HttpOutcome> UpdateCustomer(Guid id, UpdateCustomerDto dto, CancellationToken ct)
     {
         ArgumentNullException.ThrowIfNull(dto);
         ct.ThrowIfCancellationRequested();
@@ -115,7 +115,7 @@ public sealed class FakeCustomersApiClient : ICustomersApiClient
         return Task.FromResult(ContractCommandOutcome.Succeeded(HttpStatusCode.NoContent, location: null));
     }
 
-    public async Task<ContractCommandOutcomeDto<ImportResultDto>> ImportCustomers(byte[] fileContent, string fileName, IProgress<long>? progress, CancellationToken ct)
+    public async Task<HttpOutcome<ImportResultDto>> ImportCustomers(byte[] fileContent, string fileName, IProgress<long>? progress, CancellationToken ct)
     {
         ArgumentNullException.ThrowIfNull(fileContent);
         ArgumentNullException.ThrowIfNull(fileName);
@@ -148,7 +148,7 @@ public sealed class FakeCustomersApiClient : ICustomersApiClient
         throw new NotImplementedException();
     }
 
-    public async Task<ContractCommandOutcomeDto<ImportResultDto>> CommitImportWithResolutions(
+    public async Task<HttpOutcome<ImportResultDto>> CommitImportWithResolutions(
         byte[] fileContent,
         string fileName,
         IReadOnlyDictionary<string, string> conflictResolutions,
@@ -188,21 +188,21 @@ public sealed class FakeCustomersApiClient : ICustomersApiClient
 
     public void SetGetCustomerByIdException(Exception exception) => _getCustomerByIdException = exception;
 
-    public void SetGetCustomerByIdOutcome(ContractCommandOutcomeDto<CustomerDetailsDto> outcome) => _getCustomerByIdOutcome = outcome;
+    public void SetGetCustomerByIdOutcome(HttpOutcome<CustomerDetailsDto> outcome) => _getCustomerByIdOutcome = outcome;
 
     public void SetGetCustomersException(Exception exception) => _getCustomersException = exception;
 
     public void SetGetCustomersHandler(Func<CancellationToken, int, Task<IReadOnlyList<GetCustomerDto>>> handler) => _getCustomersHandler = handler;
 
-    public void SetGetCustomersOutcome(ContractCommandOutcomeDto<GetCustomerDto[]> outcome) => _getCustomersOutcome = outcome;
+    public void SetGetCustomersOutcome(HttpOutcome<GetCustomerDto[]> outcome) => _getCustomersOutcome = outcome;
 
     public void SetCreateCustomerException(Exception exception) => _createCustomerException = exception;
 
-    public void SetCreateCustomerOutcome(ContractCommandOutcomeDto outcome) => _createCustomerOutcome = outcome;
+    public void SetCreateCustomerOutcome(HttpOutcome outcome) => _createCustomerOutcome = outcome;
 
     public void SetUpdateCustomerException(Exception exception) => _updateCustomerException = exception;
 
-    public void SetUpdateCustomerOutcome(ContractCommandOutcomeDto outcome) => _updateCustomerOutcome = outcome;
+    public void SetUpdateCustomerOutcome(HttpOutcome outcome) => _updateCustomerOutcome = outcome;
 
     public void SetImportCustomersResult(ImportResultDto result) => _importResult = result;
 
@@ -215,16 +215,16 @@ public sealed class FakeCustomersApiClient : ICustomersApiClient
 
     public void SetImportCustomersException(Exception exception) => _importCustomersException = exception;
 
-    public void SetImportCustomersOutcome(ContractCommandOutcomeDto<ImportResultDto> outcome) => _importCustomersOutcome = outcome;
+    public void SetImportCustomersOutcome(HttpOutcome<ImportResultDto> outcome) => _importCustomersOutcome = outcome;
 
     /// <inheritdoc />
-    public Task<ContractCommandOutcomeDto<ImportResultDto>> ImportCustomers(byte[] fileContent, string fileName, CancellationToken ct)
+    public Task<HttpOutcome<ImportResultDto>> ImportCustomers(byte[] fileContent, string fileName, CancellationToken ct)
     {
         return ImportCustomers(fileContent, fileName, null, ct);
     }
 
     /// <inheritdoc />
-    public Task<ContractCommandOutcomeDto<ImportResultDto>> CommitImportWithResolutions(byte[] fileContent, string fileName, IReadOnlyDictionary<string, string> conflictResolutions, CancellationToken ct)
+    public Task<HttpOutcome<ImportResultDto>> CommitImportWithResolutions(byte[] fileContent, string fileName, IReadOnlyDictionary<string, string> conflictResolutions, CancellationToken ct)
     {
         return CommitImportWithResolutions(fileContent, fileName, conflictResolutions, null, ct);
     }

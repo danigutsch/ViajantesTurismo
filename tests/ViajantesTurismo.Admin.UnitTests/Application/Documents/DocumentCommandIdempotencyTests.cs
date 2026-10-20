@@ -14,6 +14,166 @@ public sealed class DocumentCommandIdempotencyTests
         DocumentCommandIdempotency.CreateRequestFingerprint("tour-service-contract", "1");
 
     [Fact]
+    public async Task Canceled_lookup_preserves_the_caller_token_without_preparing_or_claiming()
+    {
+        // Arrange
+        using var cancellation = new CancellationTokenSource();
+        var unitOfWork = new FakeUnitOfWork();
+        var auditStore = new FakeDocumentAuditStore();
+        var store = new CapturingNewIdempotencyStore(unitOfWork);
+        var coordinator = new DocumentCommandIdempotency(store, unitOfWork, TimeProvider.System);
+        var command = new GenerateContractDraftCommand(
+            Guid.CreateVersion7(), DocumentAuditTestData.CreateContext(),
+            IdempotencyKey.From(Guid.CreateVersion7().ToString("N")));
+        var preparationWasInvoked = false;
+        await cancellation.CancelAsync();
+
+        // Act
+        Func<Task> action = async () => await coordinator.Execute(
+            command, DocumentAuditTestData.CreateWriter(auditStore, unitOfWork), _ =>
+            {
+                preparationWasInvoked = true;
+                return Task.FromResult(Result.Ok(Guid.CreateVersion7()));
+            }, cancellation.Token);
+        var exception = await action.ShouldThrow<OperationCanceledException>();
+
+        // Assert
+        exception.CancellationToken.ShouldBe(cancellation.Token);
+        store.LastGetCancellationToken.ShouldBe(cancellation.Token);
+        preparationWasInvoked.ShouldBeFalse();
+        store.TryStartCallCount.ShouldBe(0);
+        store.StageCompletionCallCount.ShouldBe(0);
+        unitOfWork.SaveEntitiesCallCount.ShouldBe(0);
+        auditStore.Records.ShouldBeEmpty();
+    }
+
+    [Fact]
+    public async Task Cancellation_before_completion_preserves_the_caller_token_without_completing_or_saving()
+    {
+        // Arrange
+        using var cancellation = new CancellationTokenSource();
+        var unitOfWork = new FakeUnitOfWork();
+        var auditStore = new FakeDocumentAuditStore();
+        var store = new CapturingNewIdempotencyStore(unitOfWork);
+        var coordinator = new DocumentCommandIdempotency(store, unitOfWork, TimeProvider.System);
+        var command = new GenerateContractDraftCommand(
+            Guid.CreateVersion7(), DocumentAuditTestData.CreateContext(),
+            IdempotencyKey.From(Guid.CreateVersion7().ToString("N")));
+        var mutationWasInvoked = false;
+
+        // Act
+        Func<Task> action = async () => await coordinator.Execute(
+            command, DocumentAuditTestData.CreateWriter(auditStore, unitOfWork), commit => commit(async () =>
+            {
+                mutationWasInvoked = true;
+                await cancellation.CancelAsync();
+                return Result.Ok(Guid.CreateVersion7());
+            }, null, command.BookingId, null), cancellation.Token);
+        var exception = await action.ShouldThrow<OperationCanceledException>();
+
+        // Assert
+        exception.CancellationToken.ShouldBe(cancellation.Token);
+        store.LastCompletionCancellationToken.ShouldBe(cancellation.Token);
+        mutationWasInvoked.ShouldBeTrue();
+        store.TryStartCallCount.ShouldBe(1);
+        store.StageCompletionCallCount.ShouldBe(0);
+        unitOfWork.SaveEntitiesCallCount.ShouldBe(0);
+        auditStore.Records.ShouldBeEmpty();
+    }
+
+    [Fact]
+    public async Task Preparation_failure_does_not_claim_a_key_or_persist_work()
+    {
+        // Arrange
+        var unitOfWork = new FakeUnitOfWork();
+        var auditStore = new FakeDocumentAuditStore();
+        var store = new CapturingNewIdempotencyStore(unitOfWork);
+        var coordinator = new DocumentCommandIdempotency(store, unitOfWork, TimeProvider.System);
+        var command = new GenerateContractDraftCommand(
+            Guid.CreateVersion7(), DocumentAuditTestData.CreateContext(),
+            IdempotencyKey.From(Guid.CreateVersion7().ToString("N")));
+        var preparationWasInvoked = false;
+
+        // Act
+        var result = await coordinator.Execute(command, DocumentAuditTestData.CreateWriter(auditStore, unitOfWork), _ =>
+        {
+            preparationWasInvoked = true;
+            return Task.FromResult(Result.Invalid<Guid>(detail: "Source validation failed.", field: "TemplateId", message: "Template is invalid."));
+        }, CancellationToken.None);
+
+        // Assert
+        result.Status.ShouldBe(ResultStatus.Invalid);
+        preparationWasInvoked.ShouldBeTrue();
+        store.GetCallCount.ShouldBe(1);
+        store.TryStartCallCount.ShouldBe(0);
+        store.StageCompletionCallCount.ShouldBe(0);
+        unitOfWork.SaveEntitiesCallCount.ShouldBe(0);
+        auditStore.Records.ShouldBeEmpty();
+    }
+
+    [Fact]
+    public async Task Prepared_mutation_claims_ownership_only_at_commit_and_stages_completion_before_save()
+    {
+        // Arrange
+        var unitOfWork = new FakeUnitOfWork();
+        var auditStore = new FakeDocumentAuditStore();
+        var store = new CapturingNewIdempotencyStore(unitOfWork);
+        var coordinator = new DocumentCommandIdempotency(store, unitOfWork, TimeProvider.System);
+        var command = new GenerateContractDraftCommand(
+            Guid.CreateVersion7(), DocumentAuditTestData.CreateContext(),
+            IdempotencyKey.From(Guid.CreateVersion7().ToString("N")));
+        var documentId = Guid.CreateVersion7();
+        var ownershipCountBeforePreparation = -1;
+        var ownershipCountAtMutation = -1;
+
+        // Act
+        var result = await coordinator.Execute(command, DocumentAuditTestData.CreateWriter(auditStore, unitOfWork), commit =>
+        {
+            ownershipCountBeforePreparation = store.TryStartCallCount;
+            return commit(() =>
+            {
+                ownershipCountAtMutation = store.TryStartCallCount;
+                return Task.FromResult(Result.Ok(documentId));
+            }, null, command.BookingId, null);
+        }, CancellationToken.None);
+
+        // Assert
+        result.IsSuccess.ShouldBeTrue();
+        result.Value.ShouldBe(documentId);
+        ownershipCountBeforePreparation.ShouldBe(0);
+        ownershipCountAtMutation.ShouldBe(1);
+        var key = command.IdempotencyKey.ShouldNotBeNull();
+        store.StartedOperation.ShouldBe(new IdempotencyOperation(command.Scope, key));
+        store.StagedResultFingerprint.ShouldBe($"{RequestFingerprint}:{documentId:N}");
+        store.WasCompletionStagedBeforeSave.ShouldBeTrue();
+        unitOfWork.SaveEntitiesCallCount.ShouldBe(1);
+        auditStore.Records.ShouldBeEmpty();
+    }
+
+    [Fact]
+    public void Commands_select_the_current_template_and_preserve_resource_operation_scopes()
+    {
+        // Arrange
+        var bookingId = Guid.CreateVersion7();
+        var documentId = Guid.CreateVersion7();
+        var auditContext = DocumentAuditTestData.CreateContext();
+
+        // Act
+        var generate = new GenerateContractDraftCommand(bookingId, auditContext);
+        var regenerate = new RegenerateDocumentDraftCommand(documentId, auditContext);
+        var fingerprint = DocumentCommandIdempotency.CreateRequestFingerprint(generate.TemplateId, generate.TemplateVersion);
+
+        // Assert
+        generate.TemplateId.ShouldBe("tour-service-contract");
+        generate.TemplateVersion.ShouldBe("1");
+        regenerate.TemplateId.ShouldBe(generate.TemplateId);
+        regenerate.TemplateVersion.ShouldBe(generate.TemplateVersion);
+        generate.Scope.Value.ShouldBe($"admin.documents.generate-contract-draft:{bookingId:N}");
+        regenerate.Scope.Value.ShouldBe($"admin.documents.regenerate-draft:{documentId:N}");
+        fingerprint.ShouldBe(RequestFingerprint);
+    }
+
+    [Fact]
     public async Task Fresh_key_acquires_ownership_stages_completion_before_save_and_returns_the_document_id()
     {
         // Arrange

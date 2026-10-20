@@ -9,11 +9,12 @@ namespace ViajantesTurismo.Admin.Contracts.Http;
 public sealed class DocumentsApiClient(HttpClient httpClient) : IDocumentsApiClient
 {
     private const string RoutePrefix = "/api/v1/documents";
+    private const string IdempotencyKeyHeaderName = "Idempotency-Key";
     private const string HtmlMediaType = "text/html";
     private static readonly DocumentsApiClientJsonContext Json = DocumentsApiClientJsonContext.Default;
 
     /// <inheritdoc />
-    public async Task<ContractCommandOutcomeDto<GetDocumentDto>> GetDocumentById(Guid id, CancellationToken ct)
+    public async Task<HttpOutcome<GetDocumentDto>> GetDocumentById(Guid id, CancellationToken ct)
     {
         return await ContractCommandOutcome.Send(
             httpClient,
@@ -25,19 +26,26 @@ public sealed class DocumentsApiClient(HttpClient httpClient) : IDocumentsApiCli
     }
 
     /// <inheritdoc />
-    public async Task<ContractCommandOutcomeDto<GetDocumentDto>> GenerateContractDraft(Guid bookingId, CancellationToken ct) =>
-        await PostCommand($"{RoutePrefix}/bookings/{bookingId}/contract-drafts", HttpStatusCode.Created, ct).ConfigureAwait(false);
+    public async Task<HttpOutcome<GetDocumentDto>> GenerateContractDraft(Guid bookingId, CancellationToken ct) =>
+        await GenerateContractDraft(bookingId, Guid.NewGuid().ToString("N"), ct).ConfigureAwait(false);
 
     /// <inheritdoc />
-    public async Task<ContractCommandOutcomeDto<GetDocumentDto>> BeginReview(Guid documentId, CancellationToken ct) =>
+    public async Task<HttpOutcome<GetDocumentDto>> GenerateContractDraft(Guid bookingId, string idempotencyKey, CancellationToken ct)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(idempotencyKey);
+        return await PostCommand($"{RoutePrefix}/bookings/{bookingId}/contract-drafts", HttpStatusCode.Created, ct, idempotencyKey).ConfigureAwait(false);
+    }
+
+    /// <inheritdoc />
+    public async Task<HttpOutcome<GetDocumentDto>> BeginReview(Guid documentId, CancellationToken ct) =>
         await PostCommand($"{RoutePrefix}/{documentId}/review", HttpStatusCode.OK, ct).ConfigureAwait(false);
 
     /// <inheritdoc />
-    public async Task<ContractCommandOutcomeDto<GetDocumentDto>> RequestChanges(Guid documentId, CancellationToken ct) =>
+    public async Task<HttpOutcome<GetDocumentDto>> RequestChanges(Guid documentId, CancellationToken ct) =>
         await PostCommand($"{RoutePrefix}/{documentId}/changes-requested", HttpStatusCode.OK, ct).ConfigureAwait(false);
 
     /// <inheritdoc />
-    public async Task<ContractCommandOutcomeDto<GetDocumentDto>> UpdateField(Guid documentId, string fieldId, UpdateDocumentFieldDto dto, CancellationToken ct)
+    public async Task<HttpOutcome<GetDocumentDto>> UpdateField(Guid documentId, string fieldId, UpdateDocumentFieldDto dto, CancellationToken ct)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(fieldId);
         ArgumentNullException.ThrowIfNull(dto);
@@ -58,19 +66,26 @@ public sealed class DocumentsApiClient(HttpClient httpClient) : IDocumentsApiCli
     }
 
     /// <inheritdoc />
-    public async Task<ContractCommandOutcomeDto<GetDocumentDto>> Approve(Guid documentId, CancellationToken ct) =>
+    public async Task<HttpOutcome<GetDocumentDto>> Approve(Guid documentId, CancellationToken ct) =>
         await PostCommand($"{RoutePrefix}/{documentId}/approve", HttpStatusCode.OK, ct).ConfigureAwait(false);
 
     /// <inheritdoc />
-    public async Task<ContractCommandOutcomeDto<GetDocumentDto>> Finalize(Guid documentId, CancellationToken ct) =>
+    public async Task<HttpOutcome<GetDocumentDto>> Finalize(Guid documentId, CancellationToken ct) =>
         await PostCommand($"{RoutePrefix}/{documentId}/finalize", HttpStatusCode.OK, ct).ConfigureAwait(false);
 
     /// <inheritdoc />
-    public async Task<ContractCommandOutcomeDto<GetDocumentDto>> Regenerate(Guid documentId, CancellationToken ct) =>
-        await PostCommand($"{RoutePrefix}/{documentId}/regenerate", HttpStatusCode.OK, ct).ConfigureAwait(false);
+    public async Task<HttpOutcome<GetDocumentDto>> Regenerate(Guid documentId, CancellationToken ct) =>
+        await Regenerate(documentId, Guid.NewGuid().ToString("N"), ct).ConfigureAwait(false);
 
     /// <inheritdoc />
-    public async Task<ContractCommandOutcomeDto<GetDocumentDto>> Void(Guid documentId, CancellationToken ct) =>
+    public async Task<HttpOutcome<GetDocumentDto>> Regenerate(Guid documentId, string idempotencyKey, CancellationToken ct)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(idempotencyKey);
+        return await PostCommand($"{RoutePrefix}/{documentId}/regenerate", HttpStatusCode.OK, ct, idempotencyKey).ConfigureAwait(false);
+    }
+
+    /// <inheritdoc />
+    public async Task<HttpOutcome<GetDocumentDto>> Void(Guid documentId, CancellationToken ct) =>
         await PostCommand($"{RoutePrefix}/{documentId}/void", HttpStatusCode.OK, ct).ConfigureAwait(false);
 
     /// <inheritdoc />
@@ -117,14 +132,21 @@ public sealed class DocumentsApiClient(HttpClient httpClient) : IDocumentsApiCli
         }
     }
 
-    private async Task<ContractCommandOutcomeDto<GetDocumentDto>> PostCommand(
+    private async Task<HttpOutcome<GetDocumentDto>> PostCommand(
         string requestUri,
         HttpStatusCode successStatusCode,
-        CancellationToken ct)
+        CancellationToken ct,
+        string? idempotencyKey = null)
     {
+        var request = new HttpRequestMessage(HttpMethod.Post, new Uri(requestUri, UriKind.Relative));
+        if (idempotencyKey is not null)
+        {
+            request.Headers.Add(IdempotencyKeyHeaderName, idempotencyKey);
+        }
+
         return await ContractCommandOutcome.Send(
             httpClient,
-            new HttpRequestMessage(HttpMethod.Post, new Uri(requestUri, UriKind.Relative)),
+            request,
             successStatusCode,
             Json.GetDocumentDto,
             Json.ContractValidationProblemDto,

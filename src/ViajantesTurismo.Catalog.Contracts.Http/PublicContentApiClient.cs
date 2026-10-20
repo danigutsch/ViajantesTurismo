@@ -14,7 +14,7 @@ public sealed class PublicContentApiClient(HttpClient httpClient) : IPublicConte
     private static readonly PublicContentApiClientJsonContext Json = PublicContentApiClientJsonContext.Default;
 
     /// <inheritdoc />
-    public async Task<ContractCommandOutcomeDto<PublicContentDto[]>> GetContent(CancellationToken ct)
+    public async Task<HttpOutcome<PublicContentDto[]>> GetContent(CancellationToken ct)
     {
         var outcome = await ContractCommandOutcome.Send(
             httpClient,
@@ -29,7 +29,7 @@ public sealed class PublicContentApiClient(HttpClient httpClient) : IPublicConte
     }
 
     /// <inheritdoc />
-    public async Task<ContractCommandOutcomeDto<PublicContentDto>> GetContent(string key, CancellationToken ct)
+    public async Task<HttpOutcome<PublicContentDto>> GetContent(string key, CancellationToken ct)
     {
         ArgumentNullException.ThrowIfNull(key);
 
@@ -44,7 +44,7 @@ public sealed class PublicContentApiClient(HttpClient httpClient) : IPublicConte
     }
 
     /// <inheritdoc />
-    public async Task<ContractCommandOutcomeDto<PublicContentDto>> SaveContent(
+    public async Task<HttpOutcome<PublicContentDto>> SaveContent(
         string key,
         UpsertPublicContentRequest request,
         CancellationToken ct)

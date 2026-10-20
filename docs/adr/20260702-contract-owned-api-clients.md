@@ -44,7 +44,7 @@ belong in `.Contracts.Application`.
 
 - Contract projects now reference HTTP client and logging abstractions.
 - Each client needs a small source-generated JSON context.
-- Outcome DTOs add contract types that must be documented and tested.
+- HTTP outcome types must be documented and tested.
 
 ## Alternatives
 
@@ -72,6 +72,10 @@ call sites exercise each response branch.
 errors, bounded status classification, timeout and transport outcomes, disposal, and method/status/outcome
 telemetry. The boundary follows the capability's stable, host-agnostic responsibilities; a caller-count
 threshold does not determine whether the capability belongs in SharedKernel.
+
+`HttpOutcome` and `HttpOutcome<T>` represent client-side HTTP results, including status, location,
+validation errors, transport failures, and an optional materialized value. They do not add a response
+envelope to API payloads or wrap an application `Result<T>`.
 
 Caller cancellation, programmer errors, and local upload-content failures remain exceptions in the
 current implementation. Review stream and download clients against the same safety requirements, using

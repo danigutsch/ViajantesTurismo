@@ -95,7 +95,7 @@
                        download
                        data-enhance-nav="false">Download artifact</a>
                 }
-                <button type="button" class="btn btn-outline-secondary" @onclick="Regenerate">Regenerate</button>
+                <button type="button" class="btn btn-outline-secondary" disabled="@_regenerating" @onclick="Regenerate">Regenerate</button>
                 <button type="button" class="btn btn-danger" @onclick="Void">Void</button>
             }
         </div>
@@ -112,6 +112,8 @@
     private bool _notFound;
     private string? _errorMessage;
     private string? _loadErrorMessage;
+    private (Guid ResourceId, string Key)? _regenerationAttempt;
+    private bool _regenerating;
 
     protected override async Task OnParametersSetAsync()
     {
@@ -164,11 +166,38 @@
 
     private async Task Regenerate()
     {
-        await ExecuteAction(() => DocumentsApi.Regenerate(CurrentDocumentId, CancellationToken.None), "The document could not be regenerated.");
-
-        if (_document is not null && _document.Id != Id)
+        if (_regenerating)
         {
-            Navigation.NavigateTo($"/documents/{_document.Id}");
+            return;
+        }
+
+        _regenerating = true;
+        var resourceId = CurrentDocumentId;
+        var attempt = _regenerationAttempt is { } pending && pending.ResourceId == resourceId
+            ? pending
+            : (ResourceId: resourceId, Key: Guid.CreateVersion7().ToString("N"));
+        _regenerationAttempt = attempt;
+        try
+        {
+            await ExecuteAction(async () =>
+            {
+                var outcome = await DocumentsApi.Regenerate(resourceId, attempt.Key, CancellationToken.None);
+                if (outcome is { Kind: ContractCommandOutcomeKind.Succeeded, Value: not null })
+                {
+                    _regenerationAttempt = null;
+                }
+
+                return outcome;
+            }, "The document could not be regenerated.");
+
+            if (_document is not null && _document.Id != Id)
+            {
+                Navigation.NavigateTo($"/documents/{_document.Id}");
+            }
+        }
+        finally
+        {
+            _regenerating = false;
         }
     }
 
@@ -186,7 +215,7 @@
             "The document field could not be updated.");
     }
 
-    private async Task ExecuteAction(Func<Task<ContractCommandOutcomeDto<GetDocumentDto>>> action, string errorMessage)
+    private async Task ExecuteAction(Func<Task<HttpOutcome<GetDocumentDto>>> action, string errorMessage)
     {
         _errorMessage = null;
 

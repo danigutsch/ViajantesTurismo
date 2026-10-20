@@ -15,12 +15,12 @@ internal sealed class FakePublicContentApiClient : IPublicContentApiClient
 
     public UpsertPublicContentRequest? SavedRequest { get; private set; }
 
-    public Task<ContractCommandOutcomeDto<PublicContentDto[]>> GetContent(CancellationToken ct)
+    public Task<HttpOutcome<PublicContentDto[]>> GetContent(CancellationToken ct)
     {
         ct.ThrowIfCancellationRequested();
 
         return Task.FromResult(ThrowOnGetContent
-            ? new ContractCommandOutcomeDto<PublicContentDto[]>
+            ? new HttpOutcome<PublicContentDto[]>
             {
                 Kind = ContractCommandOutcomeKind.TransportFailure,
                 Message = "HTTP transport failed."
@@ -28,7 +28,7 @@ internal sealed class FakePublicContentApiClient : IPublicContentApiClient
             : ContractCommandOutcome.Succeeded(HttpStatusCode.OK, Content));
     }
 
-    public Task<ContractCommandOutcomeDto<PublicContentDto>> GetContent(string key, CancellationToken ct)
+    public Task<HttpOutcome<PublicContentDto>> GetContent(string key, CancellationToken ct)
     {
         ct.ThrowIfCancellationRequested();
 
@@ -38,13 +38,13 @@ internal sealed class FakePublicContentApiClient : IPublicContentApiClient
             : ContractCommandOutcome.Succeeded(HttpStatusCode.OK, content));
     }
 
-    public Task<ContractCommandOutcomeDto<PublicContentDto>> SaveContent(string key, UpsertPublicContentRequest request, CancellationToken ct)
+    public Task<HttpOutcome<PublicContentDto>> SaveContent(string key, UpsertPublicContentRequest request, CancellationToken ct)
     {
         ct.ThrowIfCancellationRequested();
 
         if (ValidationException is not null)
         {
-            return Task.FromResult(new ContractCommandOutcomeDto<PublicContentDto>
+            return Task.FromResult(new HttpOutcome<PublicContentDto>
             {
                 Kind = ContractCommandOutcomeKind.ValidationProblem,
                 StatusCode = HttpStatusCode.BadRequest,

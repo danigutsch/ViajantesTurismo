@@ -27,7 +27,7 @@ internal sealed class FakeCatalogToursApiClient : ICatalogToursApiClient
 
     public bool ThrowOnGetTourImages { get; set; }
 
-    public ContractCommandOutcomeDto<CatalogMediaImageDto[]>? GetTourImagesOutcome { get; set; }
+    public HttpOutcome<CatalogMediaImageDto[]>? GetTourImagesOutcome { get; set; }
 
     public CatalogMediaImageDto? Draft { get; set; }
 
@@ -69,7 +69,7 @@ internal sealed class FakeCatalogToursApiClient : ICatalogToursApiClient
 
     private int getTourImagesRequests;
 
-    public Task<ContractCommandOutcomeDto<CatalogTourDto[]>> GetTours(CancellationToken ct)
+    public Task<HttpOutcome<CatalogTourDto[]>> GetTours(CancellationToken ct)
     {
         ct.ThrowIfCancellationRequested();
 
@@ -78,7 +78,7 @@ internal sealed class FakeCatalogToursApiClient : ICatalogToursApiClient
             : ContractCommandOutcome.Succeeded(HttpStatusCode.OK, Tours));
     }
 
-    public Task<ContractCommandOutcomeDto<CatalogTourDto>> GetTour(Guid id, CancellationToken ct)
+    public Task<HttpOutcome<CatalogTourDto>> GetTour(Guid id, CancellationToken ct)
     {
         ct.ThrowIfCancellationRequested();
 
@@ -93,7 +93,7 @@ internal sealed class FakeCatalogToursApiClient : ICatalogToursApiClient
             : ContractCommandOutcome.Succeeded(HttpStatusCode.OK, tour));
     }
 
-    public Task<ContractCommandOutcomeDto<CatalogTourDto>> UpdatePresentation(Guid id, UpsertCatalogTourPresentationRequest request, CancellationToken ct)
+    public Task<HttpOutcome<CatalogTourDto>> UpdatePresentation(Guid id, UpsertCatalogTourPresentationRequest request, CancellationToken ct)
     {
         ct.ThrowIfCancellationRequested();
 
@@ -135,17 +135,17 @@ internal sealed class FakeCatalogToursApiClient : ICatalogToursApiClient
         return Task.FromResult(ContractCommandOutcome.Succeeded(HttpStatusCode.OK, updated));
     }
 
-    public Task<ContractCommandOutcomeDto> Publish(Guid id, CatalogTourPublicationRequest request, CancellationToken ct)
+    public Task<HttpOutcome> Publish(Guid id, CatalogTourPublicationRequest request, CancellationToken ct)
     {
         return ChangePublication(id, request, isPublished: true, ct);
     }
 
-    public Task<ContractCommandOutcomeDto> Unpublish(Guid id, CatalogTourPublicationRequest request, CancellationToken ct)
+    public Task<HttpOutcome> Unpublish(Guid id, CatalogTourPublicationRequest request, CancellationToken ct)
     {
         return ChangePublication(id, request, isPublished: false, ct);
     }
 
-    public Task<ContractCommandOutcomeDto<CatalogMediaImageDto>> GenerateMediaImageAccessibilityDraft(Guid id, PublicMediaImageAccessibilityDraftRequest request, CancellationToken ct)
+    public Task<HttpOutcome<CatalogMediaImageDto>> GenerateMediaImageAccessibilityDraft(Guid id, PublicMediaImageAccessibilityDraftRequest request, CancellationToken ct)
     {
         ct.ThrowIfCancellationRequested();
 
@@ -154,7 +154,7 @@ internal sealed class FakeCatalogToursApiClient : ICatalogToursApiClient
             : ContractCommandOutcome.Succeeded(HttpStatusCode.OK, Draft));
     }
 
-    public async Task<ContractCommandOutcomeDto<CatalogMediaImageDto>> UploadTourImage(Guid id, CatalogTourImageUploadRequest request, IProgress<long>? progress, CancellationToken ct)
+    public async Task<HttpOutcome<CatalogMediaImageDto>> UploadTourImage(Guid id, CatalogTourImageUploadRequest request, IProgress<long>? progress, CancellationToken ct)
     {
         LastUploadCancellationToken = ct;
         UploadTourImageCallCount++;
@@ -174,7 +174,7 @@ internal sealed class FakeCatalogToursApiClient : ICatalogToursApiClient
             : ContractCommandOutcome.Succeeded(HttpStatusCode.Created, uploaded);
     }
 
-    public Task<ContractCommandOutcomeDto<CatalogMediaImageDto[]>> GetTourImages(Guid id, CancellationToken ct)
+    public Task<HttpOutcome<CatalogMediaImageDto[]>> GetTourImages(Guid id, CancellationToken ct)
     {
         ct.ThrowIfCancellationRequested();
 
@@ -196,7 +196,7 @@ internal sealed class FakeCatalogToursApiClient : ICatalogToursApiClient
         return Task.FromResult(ContractCommandOutcome.Succeeded(HttpStatusCode.OK, Images.ToArray()));
     }
 
-    public Task<ContractCommandOutcomeDto<CatalogMediaImageDto>> ReviewMediaImageAccessibility(Guid id, PublicMediaImageAccessibilityReviewRequest request, CancellationToken ct)
+    public Task<HttpOutcome<CatalogMediaImageDto>> ReviewMediaImageAccessibility(Guid id, PublicMediaImageAccessibilityReviewRequest request, CancellationToken ct)
     {
         ct.ThrowIfCancellationRequested();
 
@@ -237,7 +237,7 @@ internal sealed class FakeCatalogToursApiClient : ICatalogToursApiClient
         return Task.FromResult(Media);
     }
 
-    private Task<ContractCommandOutcomeDto> ChangePublication(
+    private Task<HttpOutcome> ChangePublication(
         Guid id,
         CatalogTourPublicationRequest request,
         bool isPublished,
@@ -264,13 +264,13 @@ internal sealed class FakeCatalogToursApiClient : ICatalogToursApiClient
             : ContractCommandOutcome.Succeeded(HttpStatusCode.NoContent, location: null));
     }
 
-    private static ContractCommandOutcomeDto<TValue> TransportFailure<TValue>() => new()
+    private static HttpOutcome<TValue> TransportFailure<TValue>() => new()
     {
         Kind = ContractCommandOutcomeKind.TransportFailure,
         Message = "HTTP transport failed."
     };
 
-    private static ContractCommandOutcomeDto<TValue> ValidationFailure<TValue>(ContractValidationException exception) => new()
+    private static HttpOutcome<TValue> ValidationFailure<TValue>(ContractValidationException exception) => new()
     {
         Kind = ContractCommandOutcomeKind.ValidationProblem,
         StatusCode = HttpStatusCode.BadRequest,
@@ -278,7 +278,7 @@ internal sealed class FakeCatalogToursApiClient : ICatalogToursApiClient
     };
 
     /// <inheritdoc />
-    public Task<ContractCommandOutcomeDto<CatalogMediaImageDto>> UploadTourImage(Guid id, CatalogTourImageUploadRequest request, CancellationToken ct)
+    public Task<HttpOutcome<CatalogMediaImageDto>> UploadTourImage(Guid id, CatalogTourImageUploadRequest request, CancellationToken ct)
     {
         return UploadTourImage(id, request, null, ct);
     }

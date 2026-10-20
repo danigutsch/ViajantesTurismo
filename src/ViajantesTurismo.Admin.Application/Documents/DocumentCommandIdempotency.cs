@@ -15,6 +15,121 @@ public sealed class DocumentCommandIdempotency(
     private const int Sha256HexLength = 64;
     private static readonly TimeSpan ProcessingLockDuration = TimeSpan.FromMinutes(5);
 
+    /// <summary>Creates the validation error for a required document operation key.</summary>
+    /// <returns>The stable required-key validation problem.</returns>
+    public static Result RequiredKeyError() => Result.Invalid(
+        detail: "Idempotency-Key is required.",
+        field: "Idempotency-Key",
+        message: "Idempotency-Key is required.");
+
+    /// <summary>Runs generation preparation and its deferred durable mutation.</summary>
+    /// <param name="command">The command defining resource scope and meaningful template inputs.</param>
+    /// <param name="auditWriter">The writer for rejected ownership audits.</param>
+    /// <param name="prepare">Prepares source data before invoking the commit continuation.</param>
+    /// <param name="ct">A cancellation token.</param>
+    /// <returns>The command result, replay, or audited conflict.</returns>
+    public Task<Result<Guid>> Execute(
+        GenerateContractDraftCommand command,
+        DocumentAuditWriter auditWriter,
+        DocumentCommandPreparation prepare,
+        CancellationToken ct)
+    {
+        ArgumentNullException.ThrowIfNull(command);
+        return ExecutePrepared(
+            command.Scope, command.IdempotencyKey, command.TemplateId, command.TemplateVersion,
+            command.AuditContext, DocumentAuditOperation.Generate, null, command.BookingId,
+            auditWriter, prepare, ct);
+    }
+
+    /// <summary>Runs regeneration preparation and its deferred durable mutation.</summary>
+    /// <param name="command">The command defining resource scope and meaningful template inputs.</param>
+    /// <param name="auditWriter">The writer for rejected ownership audits.</param>
+    /// <param name="prepare">Prepares source data before invoking the commit continuation.</param>
+    /// <param name="ct">A cancellation token.</param>
+    /// <returns>The command result, replay, or audited conflict.</returns>
+    public Task<Result<Guid>> Execute(
+        RegenerateDocumentDraftCommand command,
+        DocumentAuditWriter auditWriter,
+        DocumentCommandPreparation prepare,
+        CancellationToken ct)
+    {
+        ArgumentNullException.ThrowIfNull(command);
+        return ExecutePrepared(
+            command.Scope, command.IdempotencyKey, command.TemplateId, command.TemplateVersion,
+            command.AuditContext, DocumentAuditOperation.Regenerate, command.DocumentId, null,
+            auditWriter, prepare, ct);
+    }
+
+    private async Task<Result<Guid>> ExecutePrepared(
+        IdempotencyScope scope,
+        IdempotencyKey? key,
+        string templateId,
+        string templateVersion,
+        DocumentAuditContext auditContext,
+        DocumentAuditOperation auditOperation,
+        Guid? documentId,
+        Guid? bookingId,
+        DocumentAuditWriter auditWriter,
+        DocumentCommandPreparation prepare,
+        CancellationToken ct)
+    {
+        ArgumentNullException.ThrowIfNull(auditWriter);
+        ArgumentNullException.ThrowIfNull(prepare);
+        if (key is null)
+        {
+            return RequiredKeyError().ConvertError<Guid>();
+        }
+
+        if (auditContext is null)
+        {
+            return DocumentAuditErrors.AuditContextRequired().ConvertError<Guid>();
+        }
+
+        var requestFingerprint = CreateRequestFingerprint(templateId, templateVersion);
+        var existingResult = await GetExistingResult(scope, key, requestFingerprint, ct);
+        if (existingResult is { IsSuccess: true } replayedResult)
+        {
+            return replayedResult;
+        }
+
+        if (existingResult is { } conflictResult)
+        {
+            return await RecordConflict(
+                conflictResult, auditWriter, auditContext, auditOperation, documentId, bookingId, null, ct);
+        }
+
+        return await prepare(async (operation, preparedDocumentId, preparedBookingId, preparedRevision) =>
+        {
+            var operationWasInvoked = false;
+            var result = await Execute(scope, key, requestFingerprint, () =>
+            {
+                operationWasInvoked = true;
+                return operation();
+            }, ct);
+            return result.IsFailure && !operationWasInvoked
+                ? await RecordConflict(
+                    result, auditWriter, auditContext, auditOperation,
+                    preparedDocumentId, preparedBookingId, preparedRevision, ct)
+                : result;
+        });
+    }
+
+    private static async Task<Result<Guid>> RecordConflict(
+        Result<Guid> result,
+        DocumentAuditWriter auditWriter,
+        DocumentAuditContext auditContext,
+        DocumentAuditOperation operation,
+        Guid? documentId,
+        Guid? bookingId,
+        int? revision,
+        CancellationToken ct)
+    {
+        var auditResult = await auditWriter.Add(
+            auditContext, operation, documentId, bookingId, revision,
+            DocumentAuditOutcome.Rejected, DocumentAuditReasonCode.StateConflict, ct);
+        return auditResult.IsFailure ? auditResult.ConvertError<Guid>() : result;
+    }
+
     /// <summary>Creates a privacy-safe fingerprint for the template inputs bound to an idempotency key.</summary>
     /// <param name="templateId">The server-selected template identifier.</param>
     /// <param name="templateVersion">The server-selected template version.</param>

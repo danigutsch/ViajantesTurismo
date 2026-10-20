@@ -16,11 +16,11 @@ public sealed partial class BookingsApiClient(HttpClient httpClient, ILogger<Boo
     private static readonly BookingsApiClientJsonContext Json = BookingsApiClientJsonContext.Default;
 
     /// <inheritdoc />
-    public async Task<ContractCommandOutcomeDto<GetBookingDto[]>> GetAllBookings(CancellationToken ct) =>
+    public async Task<HttpOutcome<GetBookingDto[]>> GetAllBookings(CancellationToken ct) =>
         await ReadBookings(RoutePrefix, ct).ConfigureAwait(false);
 
     /// <inheritdoc />
-    public async Task<ContractCommandOutcomeDto<GetBookingDto>> GetBookingById(Guid id, CancellationToken ct)
+    public async Task<HttpOutcome<GetBookingDto>> GetBookingById(Guid id, CancellationToken ct)
     {
         return await ContractCommandOutcome.Send(
             httpClient,
@@ -32,15 +32,15 @@ public sealed partial class BookingsApiClient(HttpClient httpClient, ILogger<Boo
     }
 
     /// <inheritdoc />
-    public async Task<ContractCommandOutcomeDto<GetBookingDto[]>> GetBookingsByTourId(Guid tourId, CancellationToken ct) =>
+    public async Task<HttpOutcome<GetBookingDto[]>> GetBookingsByTourId(Guid tourId, CancellationToken ct) =>
         await ReadBookings($"{RoutePrefix}/tour/{tourId}", ct).ConfigureAwait(false);
 
     /// <inheritdoc />
-    public async Task<ContractCommandOutcomeDto<GetBookingDto[]>> GetBookingsByCustomerId(Guid customerId, CancellationToken ct) =>
+    public async Task<HttpOutcome<GetBookingDto[]>> GetBookingsByCustomerId(Guid customerId, CancellationToken ct) =>
         await ReadBookings($"{RoutePrefix}/customer/{customerId}", ct).ConfigureAwait(false);
 
     /// <inheritdoc />
-    public async Task<ContractCommandOutcomeDto> CreateBooking(CreateBookingDto dto, CancellationToken ct)
+    public async Task<HttpOutcome> CreateBooking(CreateBookingDto dto, CancellationToken ct)
     {
         ArgumentNullException.ThrowIfNull(dto);
 
@@ -61,7 +61,7 @@ public sealed partial class BookingsApiClient(HttpClient httpClient, ILogger<Boo
     }
 
     /// <inheritdoc />
-    public async Task<ContractCommandOutcomeDto> UpdateBookingDiscount(Guid id, UpdateBookingDiscountDto dto, CancellationToken ct)
+    public async Task<HttpOutcome> UpdateBookingDiscount(Guid id, UpdateBookingDiscountDto dto, CancellationToken ct)
     {
         ArgumentNullException.ThrowIfNull(dto);
 
@@ -74,7 +74,7 @@ public sealed partial class BookingsApiClient(HttpClient httpClient, ILogger<Boo
     }
 
     /// <inheritdoc />
-    public async Task<ContractCommandOutcomeDto> UpdateBookingDetails(Guid id, UpdateBookingDetailsDto dto, CancellationToken ct)
+    public async Task<HttpOutcome> UpdateBookingDetails(Guid id, UpdateBookingDetailsDto dto, CancellationToken ct)
     {
         ArgumentNullException.ThrowIfNull(dto);
 
@@ -87,7 +87,7 @@ public sealed partial class BookingsApiClient(HttpClient httpClient, ILogger<Boo
     }
 
     /// <inheritdoc />
-    public async Task<ContractCommandOutcomeDto> UpdateBookingNotes(Guid id, UpdateBookingNotesDto dto, CancellationToken ct)
+    public async Task<HttpOutcome> UpdateBookingNotes(Guid id, UpdateBookingNotesDto dto, CancellationToken ct)
     {
         ArgumentNullException.ThrowIfNull(dto);
 
@@ -100,23 +100,23 @@ public sealed partial class BookingsApiClient(HttpClient httpClient, ILogger<Boo
     }
 
     /// <inheritdoc />
-    public async Task<ContractCommandOutcomeDto> CancelBooking(Guid id, CancellationToken ct) =>
+    public async Task<HttpOutcome> CancelBooking(Guid id, CancellationToken ct) =>
         await SendCommand(HttpMethod.Post, $"{RoutePrefix}/{id}/cancel", content: null, HttpStatusCode.OK, ct).ConfigureAwait(false);
 
     /// <inheritdoc />
-    public async Task<ContractCommandOutcomeDto> ConfirmBooking(Guid id, CancellationToken ct) =>
+    public async Task<HttpOutcome> ConfirmBooking(Guid id, CancellationToken ct) =>
         await SendCommand(HttpMethod.Post, $"{RoutePrefix}/{id}/confirm", content: null, HttpStatusCode.OK, ct).ConfigureAwait(false);
 
     /// <inheritdoc />
-    public async Task<ContractCommandOutcomeDto> CompleteBooking(Guid id, CancellationToken ct) =>
+    public async Task<HttpOutcome> CompleteBooking(Guid id, CancellationToken ct) =>
         await SendCommand(HttpMethod.Post, $"{RoutePrefix}/{id}/complete", content: null, HttpStatusCode.OK, ct).ConfigureAwait(false);
 
     /// <inheritdoc />
-    public async Task<ContractCommandOutcomeDto> DeleteBooking(Guid id, CancellationToken ct) =>
+    public async Task<HttpOutcome> DeleteBooking(Guid id, CancellationToken ct) =>
         await SendCommand(HttpMethod.Delete, $"{RoutePrefix}/{id}", content: null, HttpStatusCode.NoContent, ct).ConfigureAwait(false);
 
     /// <inheritdoc />
-    public async Task<ContractCommandOutcomeDto> RecordPayment(Guid bookingId, CreatePaymentDto dto, CancellationToken ct)
+    public async Task<HttpOutcome> RecordPayment(Guid bookingId, CreatePaymentDto dto, CancellationToken ct)
     {
         ArgumentNullException.ThrowIfNull(dto);
 
@@ -136,7 +136,7 @@ public sealed partial class BookingsApiClient(HttpClient httpClient, ILogger<Boo
         return outcome;
     }
 
-    private async Task<ContractCommandOutcomeDto<GetBookingDto[]>> ReadBookings(string requestUri, CancellationToken ct)
+    private async Task<HttpOutcome<GetBookingDto[]>> ReadBookings(string requestUri, CancellationToken ct)
     {
         var outcome = await ContractCommandOutcome.Send(
             httpClient,
@@ -151,7 +151,7 @@ public sealed partial class BookingsApiClient(HttpClient httpClient, ILogger<Boo
             : outcome;
     }
 
-    private async Task<ContractCommandOutcomeDto> SendCommand(
+    private async Task<HttpOutcome> SendCommand(
         HttpMethod method,
         string requestUri,
         HttpContent? content,
@@ -177,7 +177,7 @@ public sealed partial class BookingsApiClient(HttpClient httpClient, ILogger<Boo
 
     private void RecordOutcome(
         Activity? activity,
-        ContractCommandOutcomeDto outcome,
+        HttpOutcome outcome,
         Action<ILogger, HttpStatusCode?, ContractCommandOutcomeKind> log)
     {
         if (outcome.StatusCode is not null)

@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Routing;
+using SharedKernel.HttpClients;
 using SharedKernel.Testing;
 using ViajantesTurismo.Management.Web.Components;
 using ViajantesTurismo.Management.Web.Components.Pages.Documents;
@@ -308,6 +309,61 @@ public sealed class DetailsPageTests : BunitContext
         documentsApiClient.LastUpdatedFieldValue.ShouldBe(reviewedValue);
         cut.FindAll("dd")[0].TextContent.Trim().ShouldBe("InReview");
         cut.Find("#document-field-greeting").GetAttribute("value").ShouldBe(reviewedValue);
+    }
+
+    [Fact]
+    public async Task Retrying_regeneration_reuses_the_same_idempotency_key()
+    {
+        // Arrange
+        var document = DocumentDetailsTestData.Create(DocumentStatusDto.Finalized, fields: []);
+        documentsApiClient.AddDocument(document);
+        documentsApiClient.RegenerationOutcome = new HttpOutcome<GetDocumentDto>
+        {
+            Kind = ContractCommandOutcomeKind.TransportFailure
+        };
+        var cut = Render<Details>(parameters => parameters.Add(page => page.Id, document.Id));
+        await cut.WaitForAssertionAsync(() => cut.Find("h1"));
+        var regenerateButton = cut.FindAll("button").ShouldHaveSingleItem(button =>
+            button.TextContent.Contains("Regenerate", StringComparison.Ordinal));
+
+        // Act
+        await cut.InvokeAsync(() => regenerateButton.Click());
+        await cut.InvokeAsync(() => regenerateButton.Click());
+
+        // Assert
+        documentsApiClient.RegenerationKeys.Count.ShouldBe(2);
+        var key = documentsApiClient.RegenerationKeys[0];
+        Guid.TryParseExact(key, "N", out _).ShouldBeTrue();
+        documentsApiClient.RegenerationKeys[1].ShouldBe(key);
+    }
+
+    [Fact]
+    public async Task Regenerating_another_document_starts_a_new_idempotency_key()
+    {
+        // Arrange
+        var original = DocumentDetailsTestData.Create(DocumentStatusDto.Finalized, fields: []);
+        var other = original with { Id = Guid.CreateVersion7() };
+        documentsApiClient.AddDocument(original);
+        documentsApiClient.AddDocument(other);
+        documentsApiClient.RegenerationOutcome = new HttpOutcome<GetDocumentDto>
+        {
+            Kind = ContractCommandOutcomeKind.TransportFailure
+        };
+        var cut = Render<Details>(parameters => parameters.Add(page => page.Id, original.Id));
+        await cut.WaitForAssertionAsync(() => cut.Find("h1"));
+
+        // Act
+        var firstButton = cut.FindAll("button").ShouldHaveSingleItem(button =>
+            button.TextContent.Contains("Regenerate", StringComparison.Ordinal));
+        await cut.InvokeAsync(() => firstButton.Click());
+        cut.Render(parameters => parameters.Add(page => page.Id, other.Id));
+        var secondButton = cut.FindAll("button").ShouldHaveSingleItem(button =>
+            button.TextContent.Contains("Regenerate", StringComparison.Ordinal));
+        await cut.InvokeAsync(() => secondButton.Click());
+
+        // Assert
+        documentsApiClient.RegenerationKeys.Count.ShouldBe(2);
+        documentsApiClient.RegenerationKeys[1].ShouldNotBe(documentsApiClient.RegenerationKeys[0]);
     }
 
     [Fact]

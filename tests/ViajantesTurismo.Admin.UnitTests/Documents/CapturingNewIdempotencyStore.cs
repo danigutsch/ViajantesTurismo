@@ -11,6 +11,10 @@ internal sealed class CapturingNewIdempotencyStore(
 
     internal int GetCallCount { get; private set; }
 
+    internal CancellationToken LastGetCancellationToken { get; private set; }
+
+    internal CancellationToken LastCompletionCancellationToken { get; private set; }
+
     internal int TryStartCallCount { get; private set; }
 
     internal IdempotencyOperation? StartedOperation { get; private set; }
@@ -35,6 +39,7 @@ internal sealed class CapturingNewIdempotencyStore(
         TimeSpan? lockDuration,
         CancellationToken ct)
     {
+        ct.ThrowIfCancellationRequested();
         TryStartCallCount++;
         StartedOperation = operation;
         StartedAt = startedAt;
@@ -72,6 +77,8 @@ internal sealed class CapturingNewIdempotencyStore(
         string? resultFingerprint,
         CancellationToken ct)
     {
+        LastCompletionCancellationToken = ct;
+        ct.ThrowIfCancellationRequested();
         StageCompletionCallCount++;
         StagedOperation = operation;
         CompletedAt = completedAt;
@@ -90,6 +97,8 @@ internal sealed class CapturingNewIdempotencyStore(
         IdempotencyOperation operation,
         CancellationToken ct)
     {
+        LastGetCancellationToken = ct;
+        ct.ThrowIfCancellationRequested();
         GetCallCount++;
         return ValueTask.FromResult(entry?.Operation == operation ? entry : null);
     }

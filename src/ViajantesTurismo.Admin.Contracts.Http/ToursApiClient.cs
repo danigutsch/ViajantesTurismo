@@ -16,7 +16,7 @@ public sealed partial class ToursApiClient(HttpClient httpClient, ILogger<ToursA
     private static readonly ToursApiClientJsonContext Json = ToursApiClientJsonContext.Default;
 
     /// <inheritdoc />
-    public async Task<ContractCommandOutcomeDto<GetTourDto[]>> GetTours(CancellationToken cancellationToken, int maxItems = int.MaxValue)
+    public async Task<HttpOutcome<GetTourDto[]>> GetTours(CancellationToken cancellationToken, int maxItems = int.MaxValue)
     {
         if (maxItems <= 0)
         {
@@ -37,7 +37,7 @@ public sealed partial class ToursApiClient(HttpClient httpClient, ILogger<ToursA
     }
 
     /// <inheritdoc />
-    public async Task<ContractCommandOutcomeDto<GetTourDto>> GetTourById(Guid id, CancellationToken cancellationToken)
+    public async Task<HttpOutcome<GetTourDto>> GetTourById(Guid id, CancellationToken cancellationToken)
     {
         return await ContractCommandOutcome.Send(
             httpClient,
@@ -49,7 +49,7 @@ public sealed partial class ToursApiClient(HttpClient httpClient, ILogger<ToursA
     }
 
     /// <inheritdoc />
-    public async Task<ContractCommandOutcomeDto> CreateTour(CreateTourDto dto, CancellationToken cancellationToken)
+    public async Task<HttpOutcome> CreateTour(CreateTourDto dto, CancellationToken cancellationToken)
     {
         ArgumentNullException.ThrowIfNull(dto);
 
@@ -85,7 +85,7 @@ public sealed partial class ToursApiClient(HttpClient httpClient, ILogger<ToursA
     }
 
     /// <inheritdoc />
-    public async Task<ContractCommandOutcomeDto> UpdateTour(Guid id, UpdateTourDto dto, CancellationToken cancellationToken)
+    public async Task<HttpOutcome> UpdateTour(Guid id, UpdateTourDto dto, CancellationToken cancellationToken)
     {
         ArgumentNullException.ThrowIfNull(dto);
 

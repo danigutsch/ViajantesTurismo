@@ -90,6 +90,38 @@ public sealed class AdminOpenApiDocumentRegistrationTests
         document.Paths.Keys.ShouldNotContain("/api/v1/customers");
     }
 
+    [Theory]
+    [InlineData("documents")]
+    [InlineData("v1")]
+    [Trait(SharedKernel.Testing.TestTraitNames.CategoryName, TestTraits.DriftGuardCategory)]
+    [Trait(SharedKernel.Testing.TestTraitNames.SurfaceName, TestTraits.OpenApiSurface)]
+    public async Task Document_draft_commands_describe_the_idempotency_header_as_required(string documentName)
+    {
+        // Arrange
+        var document = await AdminOpenApiDocumentFactory.CreateDocument(
+            documentName,
+            TestContext.Current.CancellationToken,
+            "MapDocumentEndpoints");
+        string[] commandPaths =
+        [
+            "/api/v1/documents/bookings/{bookingId}/contract-drafts",
+            "/api/v1/documents/{id}/regenerate"
+        ];
+
+        // Act
+        var commandOperations = commandPaths
+            .Select(path => document.Paths[path].Operations.ShouldNotBeNull()[HttpMethod.Post])
+            .ToArray();
+
+        // Assert
+        foreach (var operation in commandOperations)
+        {
+            var parameter = operation.Parameters.ShouldNotBeNull().ShouldHaveSingleItem(
+                parameter => parameter.Name == "Idempotency-Key" && parameter.In == ParameterLocation.Header);
+            parameter.Required.ShouldBeTrue();
+        }
+    }
+
     [Fact]
     public void Documents_document_describes_validation_problems_for_generate_regenerate_and_update()
     {
@@ -133,7 +165,7 @@ public sealed class AdminOpenApiDocumentRegistrationTests
     [Fact]
     [Trait(SharedKernel.Testing.TestTraitNames.CategoryName, TestTraits.DriftGuardCategory)]
     [Trait(SharedKernel.Testing.TestTraitNames.SurfaceName, TestTraits.OpenApiSurface)]
-    public void Documents_document_describes_required_route_identity_and_optional_idempotency_headers()
+    public void Documents_document_describes_required_route_identity_and_idempotency_headers()
     {
         // Arrange
         var document = AdminOpenApiArtifactDriftGuard.CreateSnapshotSet()
@@ -165,7 +197,7 @@ public sealed class AdminOpenApiDocumentRegistrationTests
             routeParameter["in"].ShouldNotBeNull().GetValue<string>().ShouldBe("path");
             routeParameter["required"].ShouldNotBeNull().GetValue<bool>().ShouldBeTrue();
             header["in"].ShouldNotBeNull().GetValue<string>().ShouldBe("header");
-            (header["required"]?.GetValue<bool>() ?? false).ShouldBeFalse();
+            header["required"].ShouldNotBeNull().GetValue<bool>().ShouldBeTrue();
             var schema = header["schema"].ShouldNotBeNull().AsObject();
             schema["type"].ShouldNotBeNull().GetValue<string>().ShouldBe("string");
         }

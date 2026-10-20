@@ -14,7 +14,7 @@ public interface IToursApiClient
     /// <param name="cancellationToken">Cancellation token for the request.</param>
     /// <param name="maxItems">Maximum number of items to return (default: all items).</param>
     /// <returns>The materialized tour-list outcome.</returns>
-    Task<ContractCommandOutcomeDto<GetTourDto[]>> GetTours(CancellationToken cancellationToken, int maxItems = int.MaxValue);
+    Task<HttpOutcome<GetTourDto[]>> GetTours(CancellationToken cancellationToken, int maxItems = int.MaxValue);
 
     /// <summary>
     /// Gets a specific tour by its ID.
@@ -22,7 +22,7 @@ public interface IToursApiClient
     /// <param name="id">The unique identifier of the tour.</param>
     /// <param name="cancellationToken">Cancellation token for the request.</param>
     /// <returns>The materialized tour outcome.</returns>
-    Task<ContractCommandOutcomeDto<GetTourDto>> GetTourById(Guid id, CancellationToken cancellationToken);
+    Task<HttpOutcome<GetTourDto>> GetTourById(Guid id, CancellationToken cancellationToken);
 
     /// <summary>
     /// Creates a new tour.
@@ -30,7 +30,7 @@ public interface IToursApiClient
     /// <param name="dto">The tour data to create.</param>
     /// <param name="cancellationToken">Cancellation token for the request.</param>
     /// <returns>The contract-level outcome of the create request.</returns>
-    Task<ContractCommandOutcomeDto> CreateTour(CreateTourDto dto, CancellationToken cancellationToken);
+    Task<HttpOutcome> CreateTour(CreateTourDto dto, CancellationToken cancellationToken);
 
     /// <summary>
     /// Updates an existing tour.
@@ -39,5 +39,5 @@ public interface IToursApiClient
     /// <param name="dto">The updated tour data.</param>
     /// <param name="cancellationToken">Cancellation token for the request.</param>
     /// <returns>The update outcome returned by the API.</returns>
-    Task<ContractCommandOutcomeDto> UpdateTour(Guid id, UpdateTourDto dto, CancellationToken cancellationToken);
+    Task<HttpOutcome> UpdateTour(Guid id, UpdateTourDto dto, CancellationToken cancellationToken);
 }

@@ -11,15 +11,15 @@ public interface IPublicContentApiClient
     /// <summary>
     /// Gets all public content entries.
     /// </summary>
-    Task<ContractCommandOutcomeDto<PublicContentDto[]>> GetContent(CancellationToken ct);
+    Task<HttpOutcome<PublicContentDto[]>> GetContent(CancellationToken ct);
 
     /// <summary>
     /// Gets a public content entry by key.
     /// </summary>
-    Task<ContractCommandOutcomeDto<PublicContentDto>> GetContent(string key, CancellationToken ct);
+    Task<HttpOutcome<PublicContentDto>> GetContent(string key, CancellationToken ct);
 
     /// <summary>
     /// Saves a public content entry.
     /// </summary>
-    Task<ContractCommandOutcomeDto<PublicContentDto>> SaveContent(string key, UpsertPublicContentRequest request, CancellationToken ct);
+    Task<HttpOutcome<PublicContentDto>> SaveContent(string key, UpsertPublicContentRequest request, CancellationToken ct);
 }

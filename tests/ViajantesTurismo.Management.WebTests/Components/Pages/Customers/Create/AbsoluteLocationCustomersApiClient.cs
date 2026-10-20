@@ -5,23 +5,23 @@ namespace ViajantesTurismo.Management.WebTests.Components.Pages.Customers.Create
 
 internal sealed class AbsoluteLocationCustomersApiClient : ICustomersApiClient
 {
-    public Task<ContractCommandOutcomeDto<GetCustomerDto[]>> GetCustomers(CancellationToken ct, int maxItems = 100) => throw new NotImplementedException();
+    public Task<HttpOutcome<GetCustomerDto[]>> GetCustomers(CancellationToken ct, int maxItems = 100) => throw new NotImplementedException();
 
-    public Task<ContractCommandOutcomeDto<CustomerDetailsDto>> GetCustomerById(Guid id, CancellationToken ct) => throw new NotImplementedException();
+    public Task<HttpOutcome<CustomerDetailsDto>> GetCustomerById(Guid id, CancellationToken ct) => throw new NotImplementedException();
 
-    public Task<ContractCommandOutcomeDto> CreateCustomer(CreateCustomerDto dto, CancellationToken ct) =>
-        Task.FromResult(new ContractCommandOutcomeDto
+    public Task<HttpOutcome> CreateCustomer(CreateCustomerDto dto, CancellationToken ct) =>
+        Task.FromResult(new HttpOutcome
         {
             Kind = ContractCommandOutcomeKind.Succeeded,
             StatusCode = HttpStatusCode.Created,
             Location = new Uri("https://example.test/customers/absolute-id?source=review", UriKind.Absolute)
         });
 
-    public Task<ContractCommandOutcomeDto> UpdateCustomer(Guid id, UpdateCustomerDto dto, CancellationToken ct) => throw new NotImplementedException();
+    public Task<HttpOutcome> UpdateCustomer(Guid id, UpdateCustomerDto dto, CancellationToken ct) => throw new NotImplementedException();
 
-    public Task<ContractCommandOutcomeDto<ImportResultDto>> ImportCustomers(byte[] fileContent, string fileName, IProgress<long>? progress, CancellationToken ct) => throw new NotImplementedException();
+    public Task<HttpOutcome<ImportResultDto>> ImportCustomers(byte[] fileContent, string fileName, IProgress<long>? progress, CancellationToken ct) => throw new NotImplementedException();
 
-    public Task<ContractCommandOutcomeDto<ImportResultDto>> CommitImportWithResolutions(
+    public Task<HttpOutcome<ImportResultDto>> CommitImportWithResolutions(
         byte[] fileContent,
         string fileName,
         IReadOnlyDictionary<string, string> conflictResolutions,
@@ -29,13 +29,13 @@ internal sealed class AbsoluteLocationCustomersApiClient : ICustomersApiClient
         CancellationToken ct) => throw new NotImplementedException();
 
     /// <inheritdoc />
-    public Task<ContractCommandOutcomeDto<ImportResultDto>> ImportCustomers(byte[] fileContent, string fileName, CancellationToken ct)
+    public Task<HttpOutcome<ImportResultDto>> ImportCustomers(byte[] fileContent, string fileName, CancellationToken ct)
     {
         return ImportCustomers(fileContent, fileName, null, ct);
     }
 
     /// <inheritdoc />
-    public Task<ContractCommandOutcomeDto<ImportResultDto>> CommitImportWithResolutions(byte[] fileContent, string fileName, IReadOnlyDictionary<string, string> conflictResolutions, CancellationToken ct)
+    public Task<HttpOutcome<ImportResultDto>> CommitImportWithResolutions(byte[] fileContent, string fileName, IReadOnlyDictionary<string, string> conflictResolutions, CancellationToken ct)
     {
         return CommitImportWithResolutions(fileContent, fileName, conflictResolutions, null, ct);
     }

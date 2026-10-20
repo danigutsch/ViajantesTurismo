@@ -16,7 +16,7 @@ public sealed class CatalogToursApiClient(HttpClient httpClient) : ICatalogTours
     private static readonly object LocalUploadReadExceptionKey = new();
 
     /// <inheritdoc />
-    public async Task<ContractCommandOutcomeDto<CatalogTourDto[]>> GetTours(CancellationToken ct)
+    public async Task<HttpOutcome<CatalogTourDto[]>> GetTours(CancellationToken ct)
     {
         var outcome = await ContractCommandOutcome.Send(
             httpClient,
@@ -29,7 +29,7 @@ public sealed class CatalogToursApiClient(HttpClient httpClient) : ICatalogTours
     }
 
     /// <inheritdoc />
-    public async Task<ContractCommandOutcomeDto<CatalogTourDto>> UpdatePresentation(
+    public async Task<HttpOutcome<CatalogTourDto>> UpdatePresentation(
         Guid id,
         UpsertCatalogTourPresentationRequest request,
         CancellationToken ct)
@@ -53,21 +53,21 @@ public sealed class CatalogToursApiClient(HttpClient httpClient) : ICatalogTours
     }
 
     /// <inheritdoc />
-    public async Task<ContractCommandOutcomeDto> Publish(Guid id, CatalogTourPublicationRequest request, CancellationToken ct)
+    public async Task<HttpOutcome> Publish(Guid id, CatalogTourPublicationRequest request, CancellationToken ct)
     {
         ArgumentNullException.ThrowIfNull(request);
         return await ChangePublication(id, "publish", request, ct).ConfigureAwait(false);
     }
 
     /// <inheritdoc />
-    public async Task<ContractCommandOutcomeDto> Unpublish(Guid id, CatalogTourPublicationRequest request, CancellationToken ct)
+    public async Task<HttpOutcome> Unpublish(Guid id, CatalogTourPublicationRequest request, CancellationToken ct)
     {
         ArgumentNullException.ThrowIfNull(request);
         return await ChangePublication(id, "unpublish", request, ct).ConfigureAwait(false);
     }
 
     /// <inheritdoc />
-    public async Task<ContractCommandOutcomeDto<CatalogTourDto>> GetTour(Guid id, CancellationToken ct)
+    public async Task<HttpOutcome<CatalogTourDto>> GetTour(Guid id, CancellationToken ct)
     {
         var outcome = await ContractCommandOutcome.Send(
             httpClient,
@@ -80,7 +80,7 @@ public sealed class CatalogToursApiClient(HttpClient httpClient) : ICatalogTours
     }
 
     /// <inheritdoc />
-    public async Task<ContractCommandOutcomeDto<CatalogMediaImageDto>> GenerateMediaImageAccessibilityDraft(
+    public async Task<HttpOutcome<CatalogMediaImageDto>> GenerateMediaImageAccessibilityDraft(
         Guid id,
         PublicMediaImageAccessibilityDraftRequest request,
         CancellationToken ct)
@@ -103,7 +103,7 @@ public sealed class CatalogToursApiClient(HttpClient httpClient) : ICatalogTours
     }
 
     /// <inheritdoc />
-    public async Task<ContractCommandOutcomeDto<CatalogMediaImageDto>> UploadTourImage(
+    public async Task<HttpOutcome<CatalogMediaImageDto>> UploadTourImage(
         Guid id,
         CatalogTourImageUploadRequest request,
         IProgress<long>? progress,
@@ -150,7 +150,7 @@ public sealed class CatalogToursApiClient(HttpClient httpClient) : ICatalogTours
     }
 
     /// <inheritdoc />
-    public async Task<ContractCommandOutcomeDto<CatalogMediaImageDto[]>> GetTourImages(Guid id, CancellationToken ct)
+    public async Task<HttpOutcome<CatalogMediaImageDto[]>> GetTourImages(Guid id, CancellationToken ct)
     {
         var outcome = await ContractCommandOutcome.Send(
             httpClient,
@@ -163,7 +163,7 @@ public sealed class CatalogToursApiClient(HttpClient httpClient) : ICatalogTours
     }
 
     /// <inheritdoc />
-    public async Task<ContractCommandOutcomeDto<CatalogMediaImageDto>> ReviewMediaImageAccessibility(
+    public async Task<HttpOutcome<CatalogMediaImageDto>> ReviewMediaImageAccessibility(
         Guid id,
         PublicMediaImageAccessibilityReviewRequest request,
         CancellationToken ct)
@@ -213,7 +213,7 @@ public sealed class CatalogToursApiClient(HttpClient httpClient) : ICatalogTours
         }
     }
 
-    private async Task<ContractCommandOutcomeDto> ChangePublication(
+    private async Task<HttpOutcome> ChangePublication(
         Guid id,
         string operation,
         CatalogTourPublicationRequest request,
@@ -233,7 +233,7 @@ public sealed class CatalogToursApiClient(HttpClient httpClient) : ICatalogTours
             ct).ConfigureAwait(false);
     }
 
-    private static ContractCommandOutcomeDto<CatalogTourDto> NormalizeTour(ContractCommandOutcomeDto<CatalogTourDto> outcome)
+    private static HttpOutcome<CatalogTourDto> NormalizeTour(HttpOutcome<CatalogTourDto> outcome)
     {
         return outcome is
         {
@@ -248,7 +248,7 @@ public sealed class CatalogToursApiClient(HttpClient httpClient) : ICatalogTours
             : outcome;
     }
 
-    private static ContractCommandOutcomeDto<CatalogTourDto[]> NormalizeTours(ContractCommandOutcomeDto<CatalogTourDto[]> outcome)
+    private static HttpOutcome<CatalogTourDto[]> NormalizeTours(HttpOutcome<CatalogTourDto[]> outcome)
     {
         if (outcome is not
             {
@@ -269,8 +269,8 @@ public sealed class CatalogToursApiClient(HttpClient httpClient) : ICatalogTours
             : outcome with { Value = tours };
     }
 
-    private static ContractCommandOutcomeDto<CatalogMediaImageDto[]> NormalizeImages(
-        ContractCommandOutcomeDto<CatalogMediaImageDto[]> outcome)
+    private static HttpOutcome<CatalogMediaImageDto[]> NormalizeImages(
+        HttpOutcome<CatalogMediaImageDto[]> outcome)
     {
         if (outcome is not
             {
@@ -398,7 +398,7 @@ public sealed class CatalogToursApiClient(HttpClient httpClient) : ICatalogTours
     }
 
     /// <inheritdoc />
-    public Task<ContractCommandOutcomeDto<CatalogMediaImageDto>> UploadTourImage(Guid id, CatalogTourImageUploadRequest request, CancellationToken ct)
+    public Task<HttpOutcome<CatalogMediaImageDto>> UploadTourImage(Guid id, CatalogTourImageUploadRequest request, CancellationToken ct)
     {
         return UploadTourImage(id, request, null, ct);
     }

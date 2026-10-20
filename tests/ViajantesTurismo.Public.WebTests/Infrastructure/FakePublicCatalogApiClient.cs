@@ -77,7 +77,7 @@ internal sealed class FakePublicCatalogApiClient : IPublicCatalogApiClient
         contentByKeyAndCulture[CreateContentKey(key, culture)] = content;
     }
 
-    public async Task<ContractCommandOutcomeDto<TourSummaryDto[]>> GetPublishedTours(CancellationToken ct)
+    public async Task<HttpOutcome<TourSummaryDto[]>> GetPublishedTours(CancellationToken ct)
     {
         ct.ThrowIfCancellationRequested();
         ListStarted?.TrySetResult(null);
@@ -97,7 +97,7 @@ internal sealed class FakePublicCatalogApiClient : IPublicCatalogApiClient
             : ContractCommandOutcome.Succeeded(HttpStatusCode.OK, tours.ToArray());
     }
 
-    public Task<ContractCommandOutcomeDto<TourDetailsDto>> GetPublishedTourBySlug(string slug, CancellationToken ct)
+    public Task<HttpOutcome<TourDetailsDto>> GetPublishedTourBySlug(string slug, CancellationToken ct)
     {
         ct.ThrowIfCancellationRequested();
 
@@ -117,7 +117,7 @@ internal sealed class FakePublicCatalogApiClient : IPublicCatalogApiClient
             : ContractCommandOutcome.Succeeded(HttpStatusCode.OK, tour));
     }
 
-    public async Task<ContractCommandOutcomeDto<PublicContentVariantDto>> GetPublicContent(string key, string? culture, CancellationToken ct)
+    public async Task<HttpOutcome<PublicContentVariantDto>> GetPublicContent(string key, string? culture, CancellationToken ct)
     {
         ct.ThrowIfCancellationRequested();
         ContentStarted?.TrySetResult(null);
@@ -166,7 +166,7 @@ internal sealed class FakePublicCatalogApiClient : IPublicCatalogApiClient
 
     private static string CreateContentKey(string key, string culture) => $"{key}\u001F{culture}";
 
-    private static ContractCommandOutcomeDto<TValue> TransportFailure<TValue>() => new()
+    private static HttpOutcome<TValue> TransportFailure<TValue>() => new()
     {
         Kind = ContractCommandOutcomeKind.TransportFailure,
         Message = "HTTP transport failed."

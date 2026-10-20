@@ -278,7 +278,7 @@ public class AddPageTests : BunitContext
     public async Task Validation_problem_outcome_shows_server_validation_errors()
     {
         // Arrange
-        _fakeToursApi.SetCreateTourOutcome(new ContractCommandOutcomeDto
+        _fakeToursApi.SetCreateTourOutcome(new HttpOutcome
         {
             Kind = ContractCommandOutcomeKind.ValidationProblem,
             StatusCode = System.Net.HttpStatusCode.BadRequest,

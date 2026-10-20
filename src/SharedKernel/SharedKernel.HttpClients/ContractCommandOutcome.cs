@@ -40,9 +40,9 @@ public static class ContractCommandOutcome
     /// <param name="statusCode">The successful HTTP status code.</param>
     /// <param name="location">The created resource location, when present.</param>
     /// <returns>The successful command outcome.</returns>
-    public static ContractCommandOutcomeDto Succeeded(HttpStatusCode statusCode, Uri? location)
+    public static HttpOutcome Succeeded(HttpStatusCode statusCode, Uri? location)
     {
-        return new ContractCommandOutcomeDto
+        return new HttpOutcome
         {
             Kind = ContractCommandOutcomeKind.Succeeded,
             StatusCode = statusCode,
@@ -58,11 +58,11 @@ public static class ContractCommandOutcome
     /// <param name="value">The materialized response value.</param>
     /// <param name="location">The created resource location, when present.</param>
     /// <returns>The successful command outcome.</returns>
-    public static ContractCommandOutcomeDto<TValue> Succeeded<TValue>(HttpStatusCode statusCode, TValue value, Uri? location = null)
+    public static HttpOutcome<TValue> Succeeded<TValue>(HttpStatusCode statusCode, TValue value, Uri? location = null)
     {
         ArgumentNullException.ThrowIfNull(value);
 
-        return new ContractCommandOutcomeDto<TValue>
+        return new HttpOutcome<TValue>
         {
             Kind = ContractCommandOutcomeKind.Succeeded,
             StatusCode = statusCode,
@@ -84,7 +84,7 @@ public static class ContractCommandOutcome
     /// <param name="validationProblemJson">The source-generated validation problem JSON metadata.</param>
     /// <param name="ct">The caller cancellation token.</param>
     /// <returns>The command outcome.</returns>
-    public static async Task<ContractCommandOutcomeDto> Send(
+    public static async Task<HttpOutcome> Send(
         HttpClient httpClient,
         HttpRequestMessage request,
         HttpStatusCode successStatusCode,
@@ -100,7 +100,7 @@ public static class ContractCommandOutcome
         using (var timeoutSource = CreateResponseTimeoutSource(httpClient, ct))
         {
             var requestToken = timeoutSource?.Token ?? ct;
-            ContractCommandOutcomeDto outcome;
+            HttpOutcome outcome;
             try
             {
                 using var response = await httpClient.SendAsync(request, HttpCompletionOption.ResponseHeadersRead, requestToken).ConfigureAwait(false);
@@ -144,7 +144,7 @@ public static class ContractCommandOutcome
     /// <param name="validationProblemJson">The source-generated validation problem JSON metadata.</param>
     /// <param name="ct">The caller cancellation token.</param>
     /// <returns>The materialized command outcome.</returns>
-    public static async Task<ContractCommandOutcomeDto<TValue>> Send<TValue>(
+    public static async Task<HttpOutcome<TValue>> Send<TValue>(
         HttpClient httpClient,
         HttpRequestMessage request,
         HttpStatusCode successStatusCode,
@@ -162,7 +162,7 @@ public static class ContractCommandOutcome
         using (var timeoutSource = CreateResponseTimeoutSource(httpClient, ct))
         {
             var requestToken = timeoutSource?.Token ?? ct;
-            ContractCommandOutcomeDto<TValue> outcome;
+            HttpOutcome<TValue> outcome;
             try
             {
                 using var response = await httpClient.SendAsync(request, HttpCompletionOption.ResponseHeadersRead, requestToken).ConfigureAwait(false);
@@ -200,7 +200,7 @@ public static class ContractCommandOutcome
     /// <param name="validationProblemJson">The source-generated validation problem JSON metadata.</param>
     /// <param name="ct">Cancellation token for reading the response body.</param>
     /// <returns>The command outcome.</returns>
-    public static async Task<ContractCommandOutcomeDto> FromResponse(
+    public static async Task<HttpOutcome> FromResponse(
         HttpResponseMessage response,
         JsonTypeInfo<ContractValidationProblemDto> validationProblemJson,
         CancellationToken ct)
@@ -217,7 +217,7 @@ public static class ContractCommandOutcome
     /// <param name="validationProblemJson">The source-generated validation problem JSON metadata.</param>
     /// <param name="ct">Cancellation token for reading the response body.</param>
     /// <returns>The command outcome.</returns>
-    public static async Task<ContractCommandOutcomeDto> FromResponse(
+    public static async Task<HttpOutcome> FromResponse(
         HttpResponseMessage response,
         HttpStatusCode successStatusCode,
         JsonTypeInfo<ContractValidationProblemDto> validationProblemJson,
@@ -248,7 +248,7 @@ public static class ContractCommandOutcome
     /// <param name="validationProblemJson">The source-generated validation problem JSON metadata.</param>
     /// <param name="ct">Cancellation token for reading the response body.</param>
     /// <returns>The materialized command outcome.</returns>
-    public static async Task<ContractCommandOutcomeDto<TValue>> FromResponse<TValue>(
+    public static async Task<HttpOutcome<TValue>> FromResponse<TValue>(
         HttpResponseMessage response,
         HttpStatusCode successStatusCode,
         JsonTypeInfo<TValue> valueJson,
@@ -278,9 +278,9 @@ public static class ContractCommandOutcome
     /// <param name="statusCode">The HTTP status code.</param>
     /// <param name="message">A non-PII diagnostic message.</param>
     /// <returns>The command outcome.</returns>
-    public static ContractCommandOutcomeDto Status(ContractCommandOutcomeKind kind, HttpStatusCode statusCode, string? message = null)
+    public static HttpOutcome Status(ContractCommandOutcomeKind kind, HttpStatusCode statusCode, string? message = null)
     {
-        return new ContractCommandOutcomeDto
+        return new HttpOutcome
         {
             Kind = kind,
             StatusCode = statusCode,
@@ -296,9 +296,9 @@ public static class ContractCommandOutcome
     /// <param name="statusCode">The HTTP status code.</param>
     /// <param name="message">A non-PII diagnostic message.</param>
     /// <returns>The materialized command outcome.</returns>
-    public static ContractCommandOutcomeDto<TValue> Status<TValue>(ContractCommandOutcomeKind kind, HttpStatusCode statusCode, string? message = null)
+    public static HttpOutcome<TValue> Status<TValue>(ContractCommandOutcomeKind kind, HttpStatusCode statusCode, string? message = null)
     {
-        return new ContractCommandOutcomeDto<TValue>
+        return new HttpOutcome<TValue>
         {
             Kind = kind,
             StatusCode = statusCode,
@@ -306,7 +306,7 @@ public static class ContractCommandOutcome
         };
     }
 
-    private static async Task<ContractCommandOutcomeDto> FromResponseCore(
+    private static async Task<HttpOutcome> FromResponseCore(
         HttpResponseMessage response,
         HttpStatusCode successStatusCode,
         JsonTypeInfo<ContractValidationProblemDto> validationProblemJson,
@@ -326,7 +326,7 @@ public static class ContractCommandOutcome
         return Status(MapStatusCode(response.StatusCode), response.StatusCode);
     }
 
-    private static async Task<ContractCommandOutcomeDto<TValue>> FromResponseCore<TValue>(
+    private static async Task<HttpOutcome<TValue>> FromResponseCore<TValue>(
         HttpResponseMessage response,
         HttpStatusCode successStatusCode,
         JsonTypeInfo<TValue> valueJson,
@@ -352,7 +352,7 @@ public static class ContractCommandOutcome
         return Status<TValue>(MapStatusCode(response.StatusCode), response.StatusCode);
     }
 
-    private static async Task<ContractCommandOutcomeDto<TValue>> ReadValue<TValue>(
+    private static async Task<HttpOutcome<TValue>> ReadValue<TValue>(
         HttpResponseMessage response,
         JsonTypeInfo<TValue> valueJson,
         int responseBodyLimit,
@@ -397,7 +397,7 @@ public static class ContractCommandOutcome
         }
     }
 
-    private static async Task<ContractCommandOutcomeDto> ReadValidationProblem(
+    private static async Task<HttpOutcome> ReadValidationProblem(
         HttpResponseMessage response,
         JsonTypeInfo<ContractValidationProblemDto> validationProblemJson,
         int responseBodyLimit,
@@ -442,7 +442,7 @@ public static class ContractCommandOutcome
                 return Status(ContractCommandOutcomeKind.MalformedBody, response.StatusCode, ValidationMalformedBodyMessage);
             }
 
-            return new ContractCommandOutcomeDto
+            return new HttpOutcome
             {
                 Kind = ContractCommandOutcomeKind.ValidationProblem,
                 StatusCode = response.StatusCode,
@@ -521,27 +521,27 @@ public static class ContractCommandOutcome
         }
     }
 
-    private static ContractCommandOutcomeDto Failure(ContractCommandOutcomeKind kind, string message)
+    private static HttpOutcome Failure(ContractCommandOutcomeKind kind, string message)
     {
-        return new ContractCommandOutcomeDto
+        return new HttpOutcome
         {
             Kind = kind,
             Message = message
         };
     }
 
-    private static ContractCommandOutcomeDto<TValue> Failure<TValue>(ContractCommandOutcomeKind kind, string message)
+    private static HttpOutcome<TValue> Failure<TValue>(ContractCommandOutcomeKind kind, string message)
     {
-        return new ContractCommandOutcomeDto<TValue>
+        return new HttpOutcome<TValue>
         {
             Kind = kind,
             Message = message
         };
     }
 
-    private static ContractCommandOutcomeDto<TValue> FromOutcome<TValue>(ContractCommandOutcomeDto outcome)
+    private static HttpOutcome<TValue> FromOutcome<TValue>(HttpOutcome outcome)
     {
-        return new ContractCommandOutcomeDto<TValue>
+        return new HttpOutcome<TValue>
         {
             Kind = outcome.Kind,
             StatusCode = outcome.StatusCode,

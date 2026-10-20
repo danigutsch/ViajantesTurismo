@@ -415,7 +415,7 @@ else if (_customer != null)
         }
     }
 
-    private void ApplyBookingValidationErrors(ContractCommandOutcomeDto outcome)
+    private void ApplyBookingValidationErrors(HttpOutcome outcome)
     {
         if (_bookingCreateFormRef?.EditContext is not null && outcome.ValidationErrors is not null)
         {

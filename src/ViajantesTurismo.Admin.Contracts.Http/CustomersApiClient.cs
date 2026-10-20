@@ -17,7 +17,7 @@ public sealed partial class CustomersApiClient(HttpClient httpClient, ILogger<Cu
     private static readonly CustomersApiClientJsonContext Json = CustomersApiClientJsonContext.Default;
 
     /// <inheritdoc />
-    public async Task<ContractCommandOutcomeDto<GetCustomerDto[]>> GetCustomers(CancellationToken ct, int maxItems = 100)
+    public async Task<HttpOutcome<GetCustomerDto[]>> GetCustomers(CancellationToken ct, int maxItems = 100)
     {
         if (maxItems <= 0)
         {
@@ -38,7 +38,7 @@ public sealed partial class CustomersApiClient(HttpClient httpClient, ILogger<Cu
     }
 
     /// <inheritdoc />
-    public async Task<ContractCommandOutcomeDto<CustomerDetailsDto>> GetCustomerById(Guid id, CancellationToken ct)
+    public async Task<HttpOutcome<CustomerDetailsDto>> GetCustomerById(Guid id, CancellationToken ct)
     {
         return await ContractCommandOutcome.Send(
             httpClient,
@@ -50,7 +50,7 @@ public sealed partial class CustomersApiClient(HttpClient httpClient, ILogger<Cu
     }
 
     /// <inheritdoc />
-    public async Task<ContractCommandOutcomeDto> CreateCustomer(CreateCustomerDto dto, CancellationToken ct)
+    public async Task<HttpOutcome> CreateCustomer(CreateCustomerDto dto, CancellationToken ct)
     {
         ArgumentNullException.ThrowIfNull(dto);
 
@@ -76,7 +76,7 @@ public sealed partial class CustomersApiClient(HttpClient httpClient, ILogger<Cu
     }
 
     /// <inheritdoc />
-    public async Task<ContractCommandOutcomeDto> UpdateCustomer(Guid id, UpdateCustomerDto dto, CancellationToken ct)
+    public async Task<HttpOutcome> UpdateCustomer(Guid id, UpdateCustomerDto dto, CancellationToken ct)
     {
         ArgumentNullException.ThrowIfNull(dto);
 
@@ -93,7 +93,7 @@ public sealed partial class CustomersApiClient(HttpClient httpClient, ILogger<Cu
     }
 
     /// <inheritdoc />
-    public async Task<ContractCommandOutcomeDto<ImportResultDto>> ImportCustomers(byte[] fileContent, string fileName, IProgress<long>? progress, CancellationToken ct)
+    public async Task<HttpOutcome<ImportResultDto>> ImportCustomers(byte[] fileContent, string fileName, IProgress<long>? progress, CancellationToken ct)
     {
         ArgumentNullException.ThrowIfNull(fileContent);
         ArgumentNullException.ThrowIfNull(fileName);
@@ -108,7 +108,7 @@ public sealed partial class CustomersApiClient(HttpClient httpClient, ILogger<Cu
     }
 
     /// <inheritdoc />
-    public async Task<ContractCommandOutcomeDto<ImportResultDto>> CommitImportWithResolutions(
+    public async Task<HttpOutcome<ImportResultDto>> CommitImportWithResolutions(
         byte[] fileContent,
         string fileName,
         IReadOnlyDictionary<string, string> conflictResolutions,
@@ -128,7 +128,7 @@ public sealed partial class CustomersApiClient(HttpClient httpClient, ILogger<Cu
             ct).ConfigureAwait(false);
     }
 
-    private async Task<ContractCommandOutcomeDto<ImportResultDto>> SendImport(
+    private async Task<HttpOutcome<ImportResultDto>> SendImport(
         Uri requestUri,
         byte[] fileContent,
         string fileName,
@@ -155,7 +155,7 @@ public sealed partial class CustomersApiClient(HttpClient httpClient, ILogger<Cu
             ct).ConfigureAwait(false);
     }
 
-    private void RecordOutcome(Activity? activity, ContractCommandOutcomeDto outcome)
+    private void RecordOutcome(Activity? activity, HttpOutcome outcome)
     {
         if (outcome.StatusCode is not null)
         {
@@ -173,13 +173,13 @@ public sealed partial class CustomersApiClient(HttpClient httpClient, ILogger<Cu
     private static partial void LogCustomerCreateOutcome(ILogger logger, HttpStatusCode? statusCode, ContractCommandOutcomeKind outcomeKind);
 
     /// <inheritdoc />
-    public Task<ContractCommandOutcomeDto<ImportResultDto>> ImportCustomers(byte[] fileContent, string fileName, CancellationToken ct)
+    public Task<HttpOutcome<ImportResultDto>> ImportCustomers(byte[] fileContent, string fileName, CancellationToken ct)
     {
         return ImportCustomers(fileContent, fileName, null, ct);
     }
 
     /// <inheritdoc />
-    public Task<ContractCommandOutcomeDto<ImportResultDto>> CommitImportWithResolutions(byte[] fileContent, string fileName, IReadOnlyDictionary<string, string> conflictResolutions, CancellationToken ct)
+    public Task<HttpOutcome<ImportResultDto>> CommitImportWithResolutions(byte[] fileContent, string fileName, IReadOnlyDictionary<string, string> conflictResolutions, CancellationToken ct)
     {
         return CommitImportWithResolutions(fileContent, fileName, conflictResolutions, null, ct);
     }

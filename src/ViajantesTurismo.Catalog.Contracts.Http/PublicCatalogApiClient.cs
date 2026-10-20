@@ -13,7 +13,7 @@ public sealed class PublicCatalogApiClient(HttpClient httpClient) : IPublicCatal
     private static readonly PublicCatalogApiClientJsonContext Json = PublicCatalogApiClientJsonContext.Default;
 
     /// <inheritdoc />
-    public async Task<ContractCommandOutcomeDto<TourSummaryDto[]>> GetPublishedTours(CancellationToken ct)
+    public async Task<HttpOutcome<TourSummaryDto[]>> GetPublishedTours(CancellationToken ct)
     {
         var outcome = await ContractCommandOutcome.Send(
             httpClient,
@@ -28,7 +28,7 @@ public sealed class PublicCatalogApiClient(HttpClient httpClient) : IPublicCatal
     }
 
     /// <inheritdoc />
-    public async Task<ContractCommandOutcomeDto<TourDetailsDto>> GetPublishedTourBySlug(string slug, CancellationToken ct)
+    public async Task<HttpOutcome<TourDetailsDto>> GetPublishedTourBySlug(string slug, CancellationToken ct)
     {
         ArgumentNullException.ThrowIfNull(slug);
 
@@ -43,7 +43,7 @@ public sealed class PublicCatalogApiClient(HttpClient httpClient) : IPublicCatal
     }
 
     /// <inheritdoc />
-    public async Task<ContractCommandOutcomeDto<PublicContentVariantDto>> GetPublicContent(
+    public async Task<HttpOutcome<PublicContentVariantDto>> GetPublicContent(
         string key,
         string? culture,
         CancellationToken ct)

@@ -3,10 +3,10 @@ using System.Net;
 namespace SharedKernel.HttpClients;
 
 /// <summary>
-/// Represents the contract-level outcome of an HTTP request that materializes a response value.
+/// Represents the outcome of an HTTP request that materializes a response value.
 /// </summary>
 /// <typeparam name="TValue">The materialized response contract type.</typeparam>
-public sealed record ContractCommandOutcomeDto<TValue>
+public sealed record HttpOutcome<TValue>
 {
     /// <summary>
     /// Gets the outcome kind.

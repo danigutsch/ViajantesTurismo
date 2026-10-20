@@ -11,7 +11,7 @@ internal sealed class TransientCatalogToursApiClient(
 {
     public int GetToursCallCount { get; private set; }
 
-    public Task<ContractCommandOutcomeDto<CatalogTourDto[]>> GetTours(CancellationToken ct)
+    public Task<HttpOutcome<CatalogTourDto[]>> GetTours(CancellationToken ct)
     {
         ct.ThrowIfCancellationRequested();
 
@@ -23,27 +23,27 @@ internal sealed class TransientCatalogToursApiClient(
             : Task.FromResult(ContractCommandOutcome.Succeeded(HttpStatusCode.OK, new[] { tour }));
     }
 
-    public Task<ContractCommandOutcomeDto<CatalogTourDto>> GetTour(Guid id, CancellationToken ct)
+    public Task<HttpOutcome<CatalogTourDto>> GetTour(Guid id, CancellationToken ct)
     {
         return Task.FromResult(NotFound<CatalogTourDto>());
     }
 
-    public Task<ContractCommandOutcomeDto<CatalogTourDto>> UpdatePresentation(Guid id, UpsertCatalogTourPresentationRequest request, CancellationToken ct)
+    public Task<HttpOutcome<CatalogTourDto>> UpdatePresentation(Guid id, UpsertCatalogTourPresentationRequest request, CancellationToken ct)
     {
         return Task.FromResult(NotFound<CatalogTourDto>());
     }
 
-    public Task<ContractCommandOutcomeDto> Publish(Guid id, CatalogTourPublicationRequest request, CancellationToken ct)
+    public Task<HttpOutcome> Publish(Guid id, CatalogTourPublicationRequest request, CancellationToken ct)
     {
         return CompletePublication(request, isPublished: true, ct);
     }
 
-    public Task<ContractCommandOutcomeDto> Unpublish(Guid id, CatalogTourPublicationRequest request, CancellationToken ct)
+    public Task<HttpOutcome> Unpublish(Guid id, CatalogTourPublicationRequest request, CancellationToken ct)
     {
         return CompletePublication(request, isPublished: false, ct);
     }
 
-    private static Task<ContractCommandOutcomeDto> CompletePublication(
+    private static Task<HttpOutcome> CompletePublication(
         CatalogTourPublicationRequest request,
         bool isPublished,
         CancellationToken ct)
@@ -54,7 +54,7 @@ internal sealed class TransientCatalogToursApiClient(
         return Task.FromResult(ContractCommandOutcome.Succeeded(HttpStatusCode.NoContent, location: null));
     }
 
-    public Task<ContractCommandOutcomeDto<CatalogMediaImageDto>> GenerateMediaImageAccessibilityDraft(
+    public Task<HttpOutcome<CatalogMediaImageDto>> GenerateMediaImageAccessibilityDraft(
         Guid id,
         PublicMediaImageAccessibilityDraftRequest request,
         CancellationToken ct)
@@ -64,21 +64,21 @@ internal sealed class TransientCatalogToursApiClient(
         return Task.FromResult(NotFound<CatalogMediaImageDto>());
     }
 
-    public Task<ContractCommandOutcomeDto<CatalogMediaImageDto>> UploadTourImage(Guid id, CatalogTourImageUploadRequest request, IProgress<long>? progress, CancellationToken ct)
+    public Task<HttpOutcome<CatalogMediaImageDto>> UploadTourImage(Guid id, CatalogTourImageUploadRequest request, IProgress<long>? progress, CancellationToken ct)
     {
         ct.ThrowIfCancellationRequested();
 
         return Task.FromResult(NotFound<CatalogMediaImageDto>());
     }
 
-    public Task<ContractCommandOutcomeDto<CatalogMediaImageDto[]>> GetTourImages(Guid id, CancellationToken ct)
+    public Task<HttpOutcome<CatalogMediaImageDto[]>> GetTourImages(Guid id, CancellationToken ct)
     {
         ct.ThrowIfCancellationRequested();
 
         return Task.FromResult(ContractCommandOutcome.Succeeded(HttpStatusCode.OK, Array.Empty<CatalogMediaImageDto>()));
     }
 
-    public Task<ContractCommandOutcomeDto<CatalogMediaImageDto>> ReviewMediaImageAccessibility(
+    public Task<HttpOutcome<CatalogMediaImageDto>> ReviewMediaImageAccessibility(
         Guid id,
         PublicMediaImageAccessibilityReviewRequest request,
         CancellationToken ct)
@@ -95,7 +95,7 @@ internal sealed class TransientCatalogToursApiClient(
         return Task.FromResult<PublicMediaObjectResponse?>(null);
     }
 
-    private static ContractCommandOutcomeDto<TValue> NotFound<TValue>() =>
+    private static HttpOutcome<TValue> NotFound<TValue>() =>
         ContractCommandOutcome.Status<TValue>(ContractCommandOutcomeKind.NotFound, HttpStatusCode.NotFound);
 
     private static ContractCommandOutcomeKind MapKind(HttpStatusCode statusCode)
@@ -111,7 +111,7 @@ internal sealed class TransientCatalogToursApiClient(
     }
 
     /// <inheritdoc />
-    public Task<ContractCommandOutcomeDto<CatalogMediaImageDto>> UploadTourImage(Guid id, CatalogTourImageUploadRequest request, CancellationToken ct)
+    public Task<HttpOutcome<CatalogMediaImageDto>> UploadTourImage(Guid id, CatalogTourImageUploadRequest request, CancellationToken ct)
     {
         return UploadTourImage(id, request, null, ct);
     }

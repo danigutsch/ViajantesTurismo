@@ -423,7 +423,7 @@ public sealed class DetailsPageTests : BunitContext
         _fakeCustomersApi.AddCustomerDetails(customer);
         _fakeCustomersApi.AddCustomer(BuildCustomerDto(id: customer.Id));
         _fakeToursApi.AddTour(tour);
-        _fakeBookingsApi.SetCreateBookingOutcome(new ContractCommandOutcomeDto
+        _fakeBookingsApi.SetCreateBookingOutcome(new HttpOutcome
         {
             Kind = ContractCommandOutcomeKind.ValidationProblem,
             StatusCode = HttpStatusCode.BadRequest,

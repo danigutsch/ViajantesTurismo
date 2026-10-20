@@ -784,7 +784,7 @@ else if (_booking is not null)
     }
 
     private async Task ExecuteBookingAction(
-        Func<CancellationToken, Task<ContractCommandOutcomeDto>> action,
+        Func<CancellationToken, Task<HttpOutcome>> action,
         string successMessage,
         string operationDescription,
         bool refreshBooking = true,
@@ -827,7 +827,7 @@ else if (_booking is not null)
         }
     }
 
-    private bool EnsureSucceeded(ContractCommandOutcomeDto outcome, string operationDescription)
+    private bool EnsureSucceeded(HttpOutcome outcome, string operationDescription)
     {
         if (outcome.Kind == ContractCommandOutcomeKind.Succeeded)
         {

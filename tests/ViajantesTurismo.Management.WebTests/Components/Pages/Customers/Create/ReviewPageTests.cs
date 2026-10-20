@@ -2,7 +2,7 @@ using Microsoft.AspNetCore.Components;
 using ViajantesTurismo.Management.Web;
 using ViajantesTurismo.Management.Web.Components.Pages.Customers.Create;
 using ViajantesTurismo.Management.Web.Models;
-using ContractCommandOutcomeDto = SharedKernel.HttpClients.ContractCommandOutcomeDto;
+using HttpOutcome = SharedKernel.HttpClients.HttpOutcome;
 using ContractCommandOutcomeKind = SharedKernel.HttpClients.ContractCommandOutcomeKind;
 
 namespace ViajantesTurismo.Management.WebTests.Components.Pages.Customers.Create;
@@ -49,7 +49,7 @@ public sealed class ReviewPageTests : BunitContext
     {
         // Arrange
         CustomerCreationStateTestHelper.SeedCompletedState(_state);
-        _fakeCustomersApi.SetCreateCustomerOutcome(new ContractCommandOutcomeDto
+        _fakeCustomersApi.SetCreateCustomerOutcome(new HttpOutcome
         {
             Kind = ContractCommandOutcomeKind.Conflict,
             StatusCode = System.Net.HttpStatusCode.Conflict,
@@ -211,7 +211,7 @@ public sealed class ReviewPageTests : BunitContext
     {
         // Arrange
         CustomerCreationStateTestHelper.SeedCompletedState(_state);
-        _fakeCustomersApi.SetCreateCustomerOutcome(new ContractCommandOutcomeDto
+        _fakeCustomersApi.SetCreateCustomerOutcome(new HttpOutcome
         {
             Kind = ContractCommandOutcomeKind.Succeeded,
             StatusCode = System.Net.HttpStatusCode.Created,
@@ -234,7 +234,7 @@ public sealed class ReviewPageTests : BunitContext
     {
         // Arrange
         CustomerCreationStateTestHelper.SeedCompletedState(_state);
-        _fakeCustomersApi.SetCreateCustomerOutcome(new ContractCommandOutcomeDto
+        _fakeCustomersApi.SetCreateCustomerOutcome(new HttpOutcome
         {
             Kind = ContractCommandOutcomeKind.Succeeded,
             StatusCode = System.Net.HttpStatusCode.Created

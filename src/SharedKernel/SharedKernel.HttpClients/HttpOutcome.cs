@@ -3,9 +3,9 @@ using System.Net;
 namespace SharedKernel.HttpClients;
 
 /// <summary>
-/// Represents the contract-level outcome of an HTTP command request.
+/// Represents the outcome of an HTTP request without a materialized response value.
 /// </summary>
-public sealed record ContractCommandOutcomeDto
+public sealed record HttpOutcome
 {
     /// <summary>
     /// Gets the outcome kind.

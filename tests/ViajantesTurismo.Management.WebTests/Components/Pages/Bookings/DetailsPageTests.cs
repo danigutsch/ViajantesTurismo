@@ -1,9 +1,12 @@
 using Microsoft.AspNetCore.Components;
+using SharedKernel.Testing;
 using ViajantesTurismo.Management.Web.Components.Pages.Bookings;
 using ViajantesTurismo.Management.WebTests.Components.Pages.Documents;
 
 namespace ViajantesTurismo.Management.WebTests.Components.Pages.Bookings;
 
+[Trait(SharedKernelTestTraitNames.CategoryName, TestTraits.ComponentCategory)]
+[Trait(SharedKernelTestTraitNames.ScopeName, TestTraits.ComponentScope)]
 public sealed class DetailsPageTests : BunitContext
 {
     private readonly FakeBookingsApiClient _fakeBookingsApi = new();
@@ -161,6 +164,52 @@ public sealed class DetailsPageTests : BunitContext
             "The contract draft could not be generated.",
             StringComparison.Ordinal);
         cut.Markup.ShouldNotContain("No generated document was configured.", StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public async Task Retrying_contract_generation_reuses_the_same_idempotency_key()
+    {
+        // Arrange
+        var booking = BuildBookingDto(status: BookingStatusDto.Confirmed);
+        _fakeBookingsApi.AddBooking(booking);
+        var cut = Render<Details>(parameters => parameters.Add(page => page.Id, booking.Id));
+        await cut.WaitForAssertionAsync(() => cut.Find("h1"));
+        var generateButton = cut.FindAll("button").ShouldHaveSingleItem(button =>
+            button.TextContent.Contains("Generate contract draft", StringComparison.Ordinal));
+
+        // Act
+        await cut.InvokeAsync(() => generateButton.Click());
+        await cut.InvokeAsync(() => generateButton.Click());
+
+        // Assert
+        _fakeDocumentsApi.GenerationKeys.Count.ShouldBe(2);
+        var key = _fakeDocumentsApi.GenerationKeys[0];
+        Guid.TryParseExact(key, "N", out _).ShouldBeTrue();
+        _fakeDocumentsApi.GenerationKeys[1].ShouldBe(key);
+    }
+
+    [Fact]
+    public async Task A_new_generation_after_success_uses_a_new_idempotency_key()
+    {
+        // Arrange
+        var booking = BuildBookingDto(status: BookingStatusDto.Confirmed);
+        _fakeBookingsApi.AddBooking(booking);
+        _fakeDocumentsApi.GeneratedDocument = DocumentDetailsTestData.Create(DocumentStatusDto.DraftGenerated) with
+        {
+            BookingId = booking.Id
+        };
+        var cut = Render<Details>(parameters => parameters.Add(page => page.Id, booking.Id));
+        await cut.WaitForAssertionAsync(() => cut.Find("h1"));
+        var generateButton = cut.FindAll("button").ShouldHaveSingleItem(button =>
+            button.TextContent.Contains("Generate contract draft", StringComparison.Ordinal));
+
+        // Act
+        await cut.InvokeAsync(() => generateButton.Click());
+        await cut.InvokeAsync(() => generateButton.Click());
+
+        // Assert
+        _fakeDocumentsApi.GenerationKeys.Count.ShouldBe(2);
+        _fakeDocumentsApi.GenerationKeys[1].ShouldNotBe(_fakeDocumentsApi.GenerationKeys[0]);
     }
 
     [Fact]

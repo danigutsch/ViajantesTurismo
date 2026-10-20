@@ -14,7 +14,7 @@ public interface ICustomersApiClient
     /// <param name="ct">Cancellation token for the request.</param>
     /// <param name="maxItems">Maximum number of items to return (default: 100).</param>
     /// <returns>The materialized customer-list outcome.</returns>
-    Task<ContractCommandOutcomeDto<GetCustomerDto[]>> GetCustomers(CancellationToken ct, int maxItems = 100);
+    Task<HttpOutcome<GetCustomerDto[]>> GetCustomers(CancellationToken ct, int maxItems = 100);
 
     /// <summary>
     /// Gets detailed information for a specific customer by their ID.
@@ -22,7 +22,7 @@ public interface ICustomersApiClient
     /// <param name="id">The unique identifier of the customer.</param>
     /// <param name="ct">Cancellation token for the request.</param>
     /// <returns>The materialized customer-details outcome.</returns>
-    Task<ContractCommandOutcomeDto<CustomerDetailsDto>> GetCustomerById(Guid id, CancellationToken ct);
+    Task<HttpOutcome<CustomerDetailsDto>> GetCustomerById(Guid id, CancellationToken ct);
 
     /// <summary>
     /// Creates a new customer.
@@ -30,7 +30,7 @@ public interface ICustomersApiClient
     /// <param name="dto">The customer data to create.</param>
     /// <param name="ct">Cancellation token for the request.</param>
     /// <returns>The creation outcome returned by the API.</returns>
-    Task<ContractCommandOutcomeDto> CreateCustomer(CreateCustomerDto dto, CancellationToken ct);
+    Task<HttpOutcome> CreateCustomer(CreateCustomerDto dto, CancellationToken ct);
 
     /// <summary>
     /// Updates an existing customer.
@@ -39,7 +39,7 @@ public interface ICustomersApiClient
     /// <param name="dto">The updated customer data.</param>
     /// <param name="ct">Cancellation token for the request.</param>
     /// <returns>The update outcome returned by the API.</returns>
-    Task<ContractCommandOutcomeDto> UpdateCustomer(Guid id, UpdateCustomerDto dto, CancellationToken ct);
+    Task<HttpOutcome> UpdateCustomer(Guid id, UpdateCustomerDto dto, CancellationToken ct);
 
     /// <summary>
     /// Imports customers from a CSV file.
@@ -49,7 +49,7 @@ public interface ICustomersApiClient
     /// <param name="progress">Receives cumulative file bytes written to the HTTP transport.</param>
     /// <param name="ct">Cancellation token for the request.</param>
     /// <returns>The materialized import outcome.</returns>
-    Task<ContractCommandOutcomeDto<ImportResultDto>> ImportCustomers(byte[] fileContent, string fileName, IProgress<long>? progress, CancellationToken ct)
+    Task<HttpOutcome<ImportResultDto>> ImportCustomers(byte[] fileContent, string fileName, IProgress<long>? progress, CancellationToken ct)
     {
         return ImportCustomers(fileContent, fileName, ct);
     }
@@ -63,14 +63,14 @@ public interface ICustomersApiClient
     /// <param name="progress">Receives cumulative file bytes written to the HTTP transport.</param>
     /// <param name="ct">Cancellation token for the request.</param>
     /// <returns>The materialized import outcome.</returns>
-    Task<ContractCommandOutcomeDto<ImportResultDto>> CommitImportWithResolutions(byte[] fileContent, string fileName, IReadOnlyDictionary<string, string> conflictResolutions, IProgress<long>? progress, CancellationToken ct)
+    Task<HttpOutcome<ImportResultDto>> CommitImportWithResolutions(byte[] fileContent, string fileName, IReadOnlyDictionary<string, string> conflictResolutions, IProgress<long>? progress, CancellationToken ct)
     {
         return CommitImportWithResolutions(fileContent, fileName, conflictResolutions, ct);
     }
 
     /// <inheritdoc />
-    Task<ContractCommandOutcomeDto<ImportResultDto>> ImportCustomers(byte[] fileContent, string fileName, CancellationToken ct);
+    Task<HttpOutcome<ImportResultDto>> ImportCustomers(byte[] fileContent, string fileName, CancellationToken ct);
 
     /// <inheritdoc />
-    Task<ContractCommandOutcomeDto<ImportResultDto>> CommitImportWithResolutions(byte[] fileContent, string fileName, IReadOnlyDictionary<string, string> conflictResolutions, CancellationToken ct);
+    Task<HttpOutcome<ImportResultDto>> CommitImportWithResolutions(byte[] fileContent, string fileName, IReadOnlyDictionary<string, string> conflictResolutions, CancellationToken ct);
 }

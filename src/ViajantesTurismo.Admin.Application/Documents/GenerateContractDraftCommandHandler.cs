@@ -1,5 +1,4 @@
 using SharedKernel.Branding;
-using SharedKernel.Idempotency;
 using SharedKernel.Results;
 using ViajantesTurismo.Admin.Application.Mappings;
 using ViajantesTurismo.Admin.Domain.Documents;
@@ -19,40 +18,18 @@ public sealed class GenerateContractDraftCommandHandler(
     DocumentCommandIdempotency documentCommandIdempotency)
 {
     /// <summary>Generates and persists a new draft revision.</summary>
-    public async Task<Result<Guid>> Handle(GenerateContractDraftCommand command, CancellationToken ct)
+    public Task<Result<Guid>> Handle(GenerateContractDraftCommand command, CancellationToken ct)
     {
         ArgumentNullException.ThrowIfNull(command);
-        if (command.AuditContext is null)
-        {
-            return DocumentAuditErrors.AuditContextRequired().ConvertError<Guid>();
-        }
+        return documentCommandIdempotency.Execute(
+            command, documentAuditWriter, commit => Prepare(command, commit, ct), ct);
+    }
 
-        var idempotencyScope = IdempotencyScope.From($"admin.documents.generate-contract-draft:{command.BookingId:N}");
-        var requestFingerprint = DocumentCommandIdempotency.CreateRequestFingerprint(
-            command.TemplateId,
-            command.TemplateVersion);
-        var existingResult = await documentCommandIdempotency.GetExistingResult(
-            idempotencyScope,
-            command.IdempotencyKey,
-            requestFingerprint,
-            ct);
-        if (existingResult is { IsSuccess: true } replayedResult)
-        {
-            return replayedResult;
-        }
-
-        if (existingResult is { } conflictResult)
-        {
-            return await RecordAndReturn(
-                conflictResult,
-                command.AuditContext,
-                null,
-                command.BookingId,
-                null,
-                DocumentAuditReasonCode.StateConflict,
-                ct);
-        }
-
+    private async Task<Result<Guid>> Prepare(
+        GenerateContractDraftCommand command,
+        DocumentCommandCommit commit,
+        CancellationToken ct)
+    {
         var now = timeProvider.GetUtcNow().UtcDateTime;
         var booking = await queryService.GetBookingById(command.BookingId, ct);
         if (booking is null)
@@ -133,28 +110,15 @@ public sealed class GenerateContractDraftCommandHandler(
 
         var lineage = lineageResult.Value;
         var draft = lineage.Revisions[0];
-        var operationWasInvoked = false;
-        var result = await documentCommandIdempotency.Execute(
-            idempotencyScope,
-            command.IdempotencyKey,
-            requestFingerprint,
+        return await commit(
             () =>
             {
-                operationWasInvoked = true;
                 documentStore.Add(lineage);
                 return Task.FromResult(Result.Ok(draft.Id));
             },
-            ct);
-        return result.IsFailure && !operationWasInvoked
-            ? await RecordAndReturn(
-                result,
-                command.AuditContext,
-                null,
-                command.BookingId,
-                null,
-                DocumentAuditReasonCode.StateConflict,
-                ct)
-            : result;
+            null,
+            command.BookingId,
+            null);
     }
 
     private async Task<Result<Guid>> RecordAndReturn(

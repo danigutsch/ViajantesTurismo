@@ -82,7 +82,7 @@ If any item is false, keep the client app-local until the contract boundary is c
 
 Admin and Catalog JSON clients use the shared contract outcome shape for caller-visible HTTP branches:
 
-- `ContractCommandOutcomeDto` carries `Kind`, `StatusCode`, optional `Location`, optional `ValidationErrors`, and an optional
+- `HttpOutcome` carries `Kind`, `StatusCode`, optional `Location`, optional `ValidationErrors`, and an optional
   diagnostic `Message`.
 - `ContractCommandOutcomeKind` models success, validation problem, not found, unauthorized, forbidden, conflict, empty
   body, malformed body, unsupported content type, unexpected status, timeout, and transport failure.

@@ -16,6 +16,33 @@ namespace ViajantesTurismo.Admin.UnitTests.Application.Documents;
 public sealed class RegenerateDocumentDraftCommandHandlerTests
 {
     [Fact]
+    public async Task Handle_rejects_a_missing_idempotency_key_before_any_work()
+    {
+        // Arrange
+        var store = new FakeDocumentStore();
+        var auditStore = new FakeDocumentAuditStore();
+        var unitOfWork = new FakeUnitOfWork();
+        var handler = new RegenerateDocumentDraftCommandHandler(
+            store, new FakeQueryService(null),
+            new FakeBrandingApiClient(new BrandingSettingsDto()),
+            TimeProvider.System,
+            DocumentAuditTestData.CreateWriter(auditStore, unitOfWork),
+            new DocumentCommandIdempotency(new UnusedIdempotencyStore(), unitOfWork, TimeProvider.System));
+
+        // Act
+        var result = await handler.Handle(
+            new RegenerateDocumentDraftCommand(Guid.CreateVersion7(), DocumentAuditTestData.CreateContext()),
+            CancellationToken.None);
+
+        // Assert
+        result.Status.ShouldBe(ResultStatus.Invalid);
+        result.ErrorDetails.ShouldNotBeNull().Detail.ShouldBe("Idempotency-Key is required.");
+        auditStore.Records.ShouldBeEmpty();
+        store.AddedDocuments.ShouldBeEmpty();
+        unitOfWork.SaveEntitiesCallCount.ShouldBe(0);
+    }
+
+    [Fact]
     public async Task Handle_returns_conflict_for_an_active_regeneration_key_before_mutable_document_validation()
     {
         // Arrange
@@ -238,7 +265,7 @@ public sealed class RegenerateDocumentDraftCommandHandlerTests
 
         // Act
         var result = await handler.Handle(
-            new RegenerateDocumentDraftCommand(document.Id, "booking-confirmation", "2", null!),
+            new RegenerateDocumentDraftCommand(document.Id, "booking-confirmation", "2", null!, IdempotencyKey.From(Guid.CreateVersion7().ToString("N"))),
             CancellationToken.None);
 
         // Assert
@@ -267,7 +294,7 @@ public sealed class RegenerateDocumentDraftCommandHandlerTests
 
         // Act
         var result = await handler.Handle(
-            new RegenerateDocumentDraftCommand(documentId, "booking-confirmation", "2", auditContext),
+            new RegenerateDocumentDraftCommand(documentId, "booking-confirmation", "2", auditContext, IdempotencyKey.From(Guid.CreateVersion7().ToString("N"))),
             CancellationToken.None);
         var audit = auditStore.Records.ShouldHaveSingleItem();
 
@@ -310,7 +337,7 @@ public sealed class RegenerateDocumentDraftCommandHandlerTests
 
         // Act
         var result = await handler.Handle(
-            new RegenerateDocumentDraftCommand(document.Id, "booking-confirmation", "2", auditContext),
+            new RegenerateDocumentDraftCommand(document.Id, "booking-confirmation", "2", auditContext, IdempotencyKey.From(Guid.CreateVersion7().ToString("N"))),
             CancellationToken.None);
 
         // Assert
@@ -348,7 +375,7 @@ public sealed class RegenerateDocumentDraftCommandHandlerTests
 
         // Act
         var result = await handler.Handle(
-            new RegenerateDocumentDraftCommand(document.Id, "booking-confirmation", "2", auditContext),
+            new RegenerateDocumentDraftCommand(document.Id, "booking-confirmation", "2", auditContext, IdempotencyKey.From(Guid.CreateVersion7().ToString("N"))),
             CancellationToken.None);
         var audit = auditStore.Records.ShouldHaveSingleItem();
 
@@ -386,7 +413,7 @@ public sealed class RegenerateDocumentDraftCommandHandlerTests
 
         // Act
         var result = await handler.Handle(
-            new RegenerateDocumentDraftCommand(document.Id, "booking-confirmation", "2", auditContext),
+            new RegenerateDocumentDraftCommand(document.Id, "booking-confirmation", "2", auditContext, IdempotencyKey.From(Guid.CreateVersion7().ToString("N"))),
             CancellationToken.None);
         var audit = auditStore.Records.ShouldHaveSingleItem();
 
@@ -425,7 +452,7 @@ public sealed class RegenerateDocumentDraftCommandHandlerTests
 
         // Act
         var result = await handler.Handle(
-            new RegenerateDocumentDraftCommand(document.Id, "booking-confirmation", "2", auditContext),
+            new RegenerateDocumentDraftCommand(document.Id, "booking-confirmation", "2", auditContext, IdempotencyKey.From(Guid.CreateVersion7().ToString("N"))),
             CancellationToken.None);
         var audit = auditStore.Records.ShouldHaveSingleItem();
 
