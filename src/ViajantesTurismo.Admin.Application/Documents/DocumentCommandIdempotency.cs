@@ -1,6 +1,3 @@
-using System.Globalization;
-using System.Security.Cryptography;
-using System.Text;
 using SharedKernel.Idempotency;
 using SharedKernel.Results;
 using ViajantesTurismo.Admin.Domain.Documents;
@@ -27,15 +24,7 @@ public sealed class DocumentCommandIdempotency(
         ArgumentException.ThrowIfNullOrWhiteSpace(templateId);
         ArgumentException.ThrowIfNullOrWhiteSpace(templateVersion);
 
-        var value = string.Concat(
-            templateId.Length.ToString(CultureInfo.InvariantCulture),
-            FingerprintSeparator,
-            templateId,
-            FingerprintSeparator,
-            templateVersion.Length.ToString(CultureInfo.InvariantCulture),
-            FingerprintSeparator,
-            templateVersion);
-        return Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(value)));
+        return IdempotencyRequestFingerprint.Create(templateId, templateVersion);
     }
 
     /// <summary>Gets the replay or conflict for an existing operation.</summary>
