@@ -802,7 +802,7 @@ else if (_booking is not null)
             var outcome = await action(CancellationToken.None);
             if (outcome.Kind != ContractCommandOutcomeKind.Succeeded)
             {
-                _toast.ShowError(HttpOutcomeUserMessage.For(
+                _toast?.ShowError(HttpOutcomeUserMessage.For(
                     outcome.Kind,
                     UserFacingErrorMessage.ForOperation(operationDescription)));
                 return;
