@@ -295,6 +295,11 @@ internal static class CiTestProjectSelector
             var projectDirectory = Path.GetDirectoryName(projectFullPath)
                 ?? throw new InvalidOperationException($"Project path has no directory: {projectPath}");
             var project = XDocument.Load(projectFullPath);
+            if (project.Descendants().Any(static element => element.Name.LocalName == "Import"))
+            {
+                throw new InvalidOperationException($"Project '{projectPath}' has unevaluated imported build inputs.");
+            }
+
             var resolvedReferences = project
                 .Descendants()
                 .Where(static element => element.Name.LocalName == "ProjectReference")
