@@ -72,6 +72,11 @@ claimed batch. See [Events and messaging](../domain/EVENTS_AND_MESSAGING.md) and
 - [Domain aggregates](../domain/AGGREGATES.md)
 - [Glossary](../domain/GLOSSARY.md)
 
+## Migration planning
+
+The [application vertical slice plan](../vertical-slice-migration-plan.md) inventories current
+feature ownership and proposes incremental moves within existing Clean Architecture layers.
+
 ## Flow references
 
 - [Architecture boundaries and dependency flow](boundaries-and-dependencies.md)

@@ -245,6 +245,10 @@ the local formatter or surrounding code in that file clearly requires a differen
 All public APIs must have XML documentation.
 Required tags: `<summary>`, `<param>`, `<returns>`, `<remarks>` for aggregates.
 
+Document stable caller-visible exception conditions with `<exception>` tags. Follow the
+[exception documentation guide](EXCEPTION_DOCUMENTATION.md) for guards, cancellation, Results,
+and provider-specific failures; do not promise incidental implementation exceptions.
+
 ```csharp
 /// <summary>Creates a new <see cref="Tour"/> with validation.</summary>
 /// <param name="identifier">Unique business identifier.</param>
