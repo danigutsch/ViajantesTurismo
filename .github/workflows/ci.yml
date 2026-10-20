@@ -29,7 +29,8 @@ jobs:
       contents: read
     outputs:
       build_required: ${{ steps.change-scope.outputs.build_required }}
-      fast_validation_required: ${{ steps.change-scope.outputs.fast_validation_required }}
+      fast_validation_1_required: ${{ steps.change-scope.outputs.fast_validation_1_required }}
+      fast_validation_2_required: ${{ steps.change-scope.outputs.fast_validation_2_required }}
       admin_integration_required: ${{ steps.change-scope.outputs.admin_integration_required }}
       admin_api_integration_required: ${{ steps.change-scope.outputs.admin_api_integration_required }}
       admin_system_required: ${{ steps.change-scope.outputs.admin_system_required }}
@@ -173,14 +174,14 @@ jobs:
         include:
           - id: fast-validation-1
             display_name: Fast Validation 1
-            change_output: fast_validation_required
+            change_output: fast_validation_1_required
             projects_file: scripts/ci-test-slices/fast-validation-1.txt
             timeout_minutes: 15
             install_playwright: false
             playwright_outcome: not-applicable
           - id: fast-validation-2
             display_name: Fast Validation 2
-            change_output: fast_validation_required
+            change_output: fast_validation_2_required
             projects_file: scripts/ci-test-slices/fast-validation-2.txt
             timeout_minutes: 15
             install_playwright: false

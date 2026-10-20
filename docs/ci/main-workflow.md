@@ -116,6 +116,13 @@ Test-slice project membership is now centralized under `scripts/ci-test-slices/*
 restore, build, test, and coverage inputs for each slice stay aligned instead of
 duplicating project lists in multiple workflow locations.
 
+Keep all six canonical slice files when extracting SharedKernel into its own repository. A slice
+may become empty after its last test project leaves the application solution; selection emits
+`<slice>_required=false`, and the existing matrix skip step reports success without restoring or
+running that slice. Every xUnit project still in the application solution must remain assigned
+exactly once. Emptying a manifest while leaving its projects in the solution fails membership
+validation; missing or unexpected slice files also remain errors.
+
 Multi-project slice manifests restore through one temporary solution. This lets MSBuild schedule
 the selected restore graph in parallel while preserving locked-mode restore and slice isolation.
 Jobs that invoke only project-based tools skip `dotnet tool restore`; coverage aggregation and release
@@ -126,9 +133,9 @@ projects first so the parallel test worker pool does not leave long-running proj
 
 Fast Validation is split into two fixed 28-project execution shards. Run `30085894084` measured the
 former single row at about 138 seconds of setup plus 518 seconds for build, OpenAPI preparation, and
-coverage tests. The split duplicates setup but allows those phases to proceed on two runners while
-the stable `fast_validation_required` gate, `Build and Test` aggregate, and coverage artifact pattern
-continue to represent one logical lane.
+coverage tests. The split duplicates setup but allows those phases to proceed on two runners. Each
+shard uses its own `fast_validation_1_required` or `fast_validation_2_required` selection flag.
+The `Build and Test` aggregate and coverage artifact pattern continue to represent one logical lane.
 
 The shard containing all three HTTP contract projects prepares Admin, Catalog, and Branding OpenAPI
 artifacts through one parallel MSBuild graph. Focused local slices that contain only a subset keep the

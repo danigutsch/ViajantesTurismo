@@ -1,9 +1,81 @@
 using System.Globalization;
+using System.Xml.Linq;
 
 namespace SharedKernel.RepoConfig.Tests;
 
+[Trait(TestTraitNames.CategoryName, TestTraits.CommandLineCategory)]
 public sealed class CiTestProjectSelectionCommandTests
 {
+    [Theory]
+    [InlineData("admin-api-integration")]
+    [InlineData("admin-integration")]
+    [InlineData("admin-system")]
+    [InlineData("fast-validation-1")]
+    [InlineData("fast-validation-2")]
+    [InlineData("mediator-heavy")]
+    public async Task Extracted_library_test_slice_is_skipped_without_skipping_remaining_application_tests(string slice)
+    {
+        // Arrange
+        using var repository = new TemporaryCiTestRepository();
+        ArgumentNullException.ThrowIfNull(slice);
+        repository.AddCanonicalTestSlices();
+        var manifest = Path.Combine(repository.RootPath, "scripts", "ci-test-slices", slice + ".txt");
+        var extractedProjects = await File.ReadAllLinesAsync(manifest, TestContext.Current.CancellationToken);
+        var extractedProject = extractedProjects.Single();
+        var solutionPath = Path.Combine(repository.RootPath, "ViajantesTurismo.slnx");
+        var solution = XDocument.Load(solutionPath);
+        solution.Descendants("Project")
+            .Single(project => project.Attribute("Path")?.Value == extractedProject)
+            .Remove();
+        solution.Save(solutionPath);
+        repository.WriteSlice(slice);
+        var outputDirectory = Path.Combine(repository.RootPath, "TestResults", "selected-ci-test-slices");
+        var githubOutput = Path.Combine(repository.RootPath, "TestResults", "github-output.txt");
+        using var output = new StringWriter(CultureInfo.InvariantCulture);
+        using var error = new StringWriter(CultureInfo.InvariantCulture);
+
+        // Act
+        var exitCode = await RepoConfigToolApplication.Run(
+            ["select-ci-test-projects", "--mode", "full", "--root", repository.RootPath,
+                "--output-directory", outputDirectory, "--github-output", githubOutput],
+            output,
+            error,
+            repository.RootPath,
+            TestContext.Current.CancellationToken);
+
+        // Assert
+        exitCode.ShouldBe(0);
+        error.ToString().ShouldBe(string.Empty);
+        var selectedSlice = await File.ReadAllLinesAsync(Path.Combine(outputDirectory, slice + ".txt"), TestContext.Current.CancellationToken);
+        selectedSlice.ShouldBeEmpty();
+        var githubOutputs = await File.ReadAllLinesAsync(githubOutput, TestContext.Current.CancellationToken);
+        githubOutputs.ShouldContain(slice.Replace('-', '_') + "_required=false");
+        githubOutputs.ShouldContain("selected_test_project_count=5");
+        githubOutputs.ShouldContain("build_required=true");
+        if (slice.StartsWith("fast-validation-", StringComparison.Ordinal))
+        {
+            var root = CiTestSelectionTestProcess.GetRepositoryRoot();
+            var workflow = await File.ReadAllTextAsync(Path.Combine(root, ".github", "workflows", "ci.yml"), TestContext.Current.CancellationToken);
+            var row = workflow.Split("          - id: " + slice + "\n", StringSplitOptions.None)[1]
+                .Split("          - id: ", StringSplitOptions.None)[0];
+            var changeOutput = row.Split('\n')
+                .Single(line => line.TrimStart().StartsWith("change_output:", StringComparison.Ordinal))
+                .Split(':', 2)[1].Trim();
+            githubOutputs.ShouldContain(changeOutput + "=false");
+            workflow.ShouldContain(changeOutput + ": ${{ steps.change-scope.outputs." + changeOutput + " }}", StringComparison.Ordinal);
+        }
+        var remainingManifests = await Task.WhenAll(Directory.EnumerateFiles(outputDirectory, "*.txt")
+            .Where(path => Path.GetFileName(path) != "openapi-tool-windows.txt")
+            .Select(path => File.ReadAllLinesAsync(path, TestContext.Current.CancellationToken)));
+        var remainingProjects = remainingManifests.SelectMany(projects => projects).Order(StringComparer.Ordinal).ToArray();
+        var expectedProjects = solution.Descendants("Project")
+            .Select(project => project.Attribute("Path")?.Value)
+            .OfType<string>()
+            .Order(StringComparer.Ordinal)
+            .ToArray();
+        remainingProjects.ShouldBe(expectedProjects);
+    }
+
     [Fact]
     public async Task Full_selection_writes_manifests_and_github_outputs()
     {
@@ -108,7 +180,7 @@ public sealed class CiTestProjectSelectionCommandTests
     [InlineData("missing")]
     [InlineData("extra")]
     [InlineData("empty")]
-    public async Task Selection_rejects_manifest_drift_from_the_fixed_workflow_matrix(string drift)
+    public async Task Selection_rejects_manifest_drift_or_unassigned_solution_tests(string drift)
     {
         // Arrange
         using var repository = new TemporaryCiTestRepository();
@@ -139,7 +211,12 @@ public sealed class CiTestProjectSelectionCommandTests
 
         // Assert
         exitCode.ShouldBe(1);
-        error.ToString().ShouldContain("CI test slice manifests", StringComparison.Ordinal);
+        var expectedError = drift == "empty" ? "CI test slice membership" : "CI test slice manifests";
+        error.ToString().ShouldContain(expectedError, StringComparison.Ordinal);
+        if (drift == "empty")
+        {
+            error.ToString().ShouldContain("tests/Fast1.Tests/Fast1.Tests.csproj", StringComparison.Ordinal);
+        }
     }
 
     [Fact]

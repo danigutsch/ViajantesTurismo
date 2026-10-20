@@ -214,17 +214,6 @@ internal static class CiTestProjectSelector
             throw new InvalidOperationException(
                 $"CI test slice manifests must match the fixed workflow matrix. Missing: [{string.Join(", ", missing)}]. Extra: [{string.Join(", ", extra)}].");
         }
-
-        var emptySlices = slices
-            .Where(static slice => slice.Value.Length == 0)
-            .Select(static slice => slice.Key)
-            .Order(StringComparer.Ordinal)
-            .ToArray();
-        if (emptySlices.Length > 0)
-        {
-            throw new InvalidOperationException(
-                $"CI test slice manifests cannot be empty: [{string.Join(", ", emptySlices)}].");
-        }
     }
 
     internal static void ValidateCanonicalSliceMembership(string rootPath)
