@@ -107,7 +107,6 @@ public sealed partial class AnalyzerSuppressionPolicyTests
             "custom-config:.editorconfig:SKTEST006",
             "import:src/Directory.Build.props:$([MSBuild]::GetPathOfFileAbove('Directory.Build.props', '$(MSBuildThisFileDirectory)..'))",
             "import:tests/Directory.Build.props:$([MSBuild]::GetPathOfFileAbove('Directory.Build.props', '$(MSBuildThisFileDirectory)../'))",
-            "package:Directory.Build.props:SonarAnalyzer.CSharp",
             "package:src/Directory.Build.props:Microsoft.CodeAnalysis.PublicApiAnalyzers",
             "project:Directory.Build.props:$(MSBuildThisFileDirectory)src/SharedKernel/SharedKernel.Style.Analyzers/SharedKernel.Style.Analyzers.csproj:Analyzer",
             "project:Directory.Build.props:$(MSBuildThisFileDirectory)src/SharedKernel/SharedKernel.Style.CodeFixes/SharedKernel.Style.CodeFixes.csproj:Analyzer",
