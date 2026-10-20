@@ -142,7 +142,7 @@ public sealed class DocumentCommandIdempotencyTests
         result.Value.ShouldBe(documentId);
         ownershipCountBeforePreparation.ShouldBe(0);
         ownershipCountAtMutation.ShouldBe(1);
-        var key = command.IdempotencyKey.ShouldNotBeNull();
+        var key = command.IdempotencyKey;
         store.StartedOperation.ShouldBe(new IdempotencyOperation(command.Scope, key));
         store.StagedResultFingerprint.ShouldBe($"{RequestFingerprint}:{documentId:N}");
         store.WasCompletionStagedBeforeSave.ShouldBeTrue();
@@ -159,8 +159,8 @@ public sealed class DocumentCommandIdempotencyTests
         var auditContext = DocumentAuditTestData.CreateContext();
 
         // Act
-        var generate = new GenerateContractDraftCommand(bookingId, auditContext);
-        var regenerate = new RegenerateDocumentDraftCommand(documentId, auditContext);
+        var generate = new GenerateContractDraftCommand(bookingId, auditContext, IdempotencyKey.From(Guid.CreateVersion7().ToString("N")));
+        var regenerate = new RegenerateDocumentDraftCommand(documentId, auditContext, IdempotencyKey.From(Guid.CreateVersion7().ToString("N")));
         var fingerprint = DocumentCommandIdempotency.CreateRequestFingerprint(generate.TemplateId, generate.TemplateVersion);
 
         // Assert
@@ -358,7 +358,7 @@ public sealed class DocumentCommandIdempotencyTests
     }
 
     [Fact]
-    public async Task Null_key_bypasses_idempotency_and_does_not_save_a_failed_operation()
+    public async Task Uninitialized_key_is_invalid_before_lookup_or_mutation()
     {
         // Arrange
         var scope = IdempotencyScope.From($"admin.documents.generate-contract-draft:{Guid.CreateVersion7():N}");
@@ -369,13 +369,13 @@ public sealed class DocumentCommandIdempotencyTests
         // Act
         var existingResult = await coordinator.GetExistingResult(
             scope,
-            null,
-            RequestFingerprint,
+            default(IdempotencyKey),
+            string.Empty,
             CancellationToken.None);
         var executionResult = await coordinator.Execute(
             scope,
-            null,
-            RequestFingerprint,
+            default(IdempotencyKey),
+            string.Empty,
             () =>
             {
                 operationCallCount++;
@@ -384,9 +384,9 @@ public sealed class DocumentCommandIdempotencyTests
             CancellationToken.None);
 
         // Assert
-        existingResult.ShouldBeNull();
-        executionResult.Status.ShouldBe(ResultStatus.Conflict);
-        operationCallCount.ShouldBe(1);
+        existingResult.ShouldNotBeNull().Status.ShouldBe(ResultStatus.Invalid);
+        executionResult.Status.ShouldBe(ResultStatus.Invalid);
+        operationCallCount.ShouldBe(0);
         unitOfWork.SaveEntitiesCallCount.ShouldBe(0);
     }
 

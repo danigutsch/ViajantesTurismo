@@ -26,14 +26,10 @@ public sealed class DocumentsApiClient(HttpClient httpClient) : IDocumentsApiCli
     }
 
     /// <inheritdoc />
-    public async Task<HttpOutcome<GetDocumentDto>> GenerateContractDraft(Guid bookingId, CancellationToken ct) =>
-        await GenerateContractDraft(bookingId, Guid.NewGuid().ToString("N"), ct).ConfigureAwait(false);
-
-    /// <inheritdoc />
     public async Task<HttpOutcome<GetDocumentDto>> GenerateContractDraft(Guid bookingId, string idempotencyKey, CancellationToken ct)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(idempotencyKey);
-        return await PostCommand($"{RoutePrefix}/bookings/{bookingId}/contract-drafts", HttpStatusCode.Created, ct, idempotencyKey).ConfigureAwait(false);
+        return await PostCommand($"{RoutePrefix}/bookings/{bookingId}/contract-drafts", HttpStatusCode.Created, idempotencyKey, ct).ConfigureAwait(false);
     }
 
     /// <inheritdoc />
@@ -74,14 +70,10 @@ public sealed class DocumentsApiClient(HttpClient httpClient) : IDocumentsApiCli
         await PostCommand($"{RoutePrefix}/{documentId}/finalize", HttpStatusCode.OK, ct).ConfigureAwait(false);
 
     /// <inheritdoc />
-    public async Task<HttpOutcome<GetDocumentDto>> Regenerate(Guid documentId, CancellationToken ct) =>
-        await Regenerate(documentId, Guid.NewGuid().ToString("N"), ct).ConfigureAwait(false);
-
-    /// <inheritdoc />
     public async Task<HttpOutcome<GetDocumentDto>> Regenerate(Guid documentId, string idempotencyKey, CancellationToken ct)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(idempotencyKey);
-        return await PostCommand($"{RoutePrefix}/{documentId}/regenerate", HttpStatusCode.OK, ct, idempotencyKey).ConfigureAwait(false);
+        return await PostCommand($"{RoutePrefix}/{documentId}/regenerate", HttpStatusCode.OK, idempotencyKey, ct).ConfigureAwait(false);
     }
 
     /// <inheritdoc />
@@ -132,18 +124,28 @@ public sealed class DocumentsApiClient(HttpClient httpClient) : IDocumentsApiCli
         }
     }
 
-    private async Task<HttpOutcome<GetDocumentDto>> PostCommand(
+    private Task<HttpOutcome<GetDocumentDto>> PostCommand(
         string requestUri,
         HttpStatusCode successStatusCode,
-        CancellationToken ct,
-        string? idempotencyKey = null)
+        CancellationToken ct) =>
+        PostCommand(new HttpRequestMessage(HttpMethod.Post, new Uri(requestUri, UriKind.Relative)), successStatusCode, ct);
+
+    private Task<HttpOutcome<GetDocumentDto>> PostCommand(
+        string requestUri,
+        HttpStatusCode successStatusCode,
+        string idempotencyKey,
+        CancellationToken ct)
     {
         var request = new HttpRequestMessage(HttpMethod.Post, new Uri(requestUri, UriKind.Relative));
-        if (idempotencyKey is not null)
-        {
-            request.Headers.Add(IdempotencyKeyHeaderName, idempotencyKey);
-        }
+        request.Headers.Add(IdempotencyKeyHeaderName, idempotencyKey);
+        return PostCommand(request, successStatusCode, ct);
+    }
 
+    private async Task<HttpOutcome<GetDocumentDto>> PostCommand(
+        HttpRequestMessage request,
+        HttpStatusCode successStatusCode,
+        CancellationToken ct)
+    {
         return await HttpOutcomeMapper.Send(
             httpClient,
             request,

@@ -62,7 +62,7 @@ public sealed class DocumentCommandIdempotency(
 
     private async Task<Result<Guid>> ExecutePrepared(
         IdempotencyScope scope,
-        IdempotencyKey? key,
+        IdempotencyKey key,
         string templateId,
         string templateVersion,
         DocumentAuditContext auditContext,
@@ -75,7 +75,7 @@ public sealed class DocumentCommandIdempotency(
     {
         ArgumentNullException.ThrowIfNull(auditWriter);
         ArgumentNullException.ThrowIfNull(prepare);
-        if (key is null)
+        if (key == default)
         {
             return RequiredKeyError().ConvertError<Guid>();
         }
@@ -144,24 +144,24 @@ public sealed class DocumentCommandIdempotency(
 
     /// <summary>Gets the replay or conflict for an existing operation.</summary>
     /// <param name="scope">The resource-specific operation scope.</param>
-    /// <param name="key">The optional caller-supplied idempotency key.</param>
+    /// <param name="key">The required caller-supplied idempotency key.</param>
     /// <param name="requestFingerprint">The privacy-safe fingerprint of the operation input.</param>
     /// <param name="ct">A cancellation token.</param>
     /// <returns>The existing result, or <see langword="null" /> when the caller may attempt ownership.</returns>
     public async ValueTask<Result<Guid>?> GetExistingResult(
         IdempotencyScope scope,
-        IdempotencyKey? key,
+        IdempotencyKey key,
         string requestFingerprint,
         CancellationToken ct)
     {
-        ArgumentException.ThrowIfNullOrWhiteSpace(requestFingerprint);
-
-        if (key is null)
+        if (key == default)
         {
-            return null;
+            return RequiredKeyError().ConvertError<Guid>();
         }
 
-        var entry = await idempotencyStore.Get(new IdempotencyOperation(scope, key.Value), ct);
+        ArgumentException.ThrowIfNullOrWhiteSpace(requestFingerprint);
+
+        var entry = await idempotencyStore.Get(new IdempotencyOperation(scope, key), ct);
         if (entry is null)
         {
             return null;
@@ -181,35 +181,29 @@ public sealed class DocumentCommandIdempotency(
         return DocumentErrors.DocumentRevisionAlreadyExists().ConvertError<Guid>();
     }
 
-    /// <summary>Executes a document command once per optional idempotency key.</summary>
+    /// <summary>Executes a document command once per required idempotency key.</summary>
     /// <param name="scope">The resource-specific operation scope.</param>
-    /// <param name="key">The optional caller-supplied idempotency key.</param>
+    /// <param name="key">The required caller-supplied idempotency key.</param>
     /// <param name="requestFingerprint">The privacy-safe fingerprint of the operation input.</param>
     /// <param name="operation">The document command to execute when ownership is acquired.</param>
     /// <param name="ct">A cancellation token.</param>
     /// <returns>The created document identifier, a completed replay, or a conflict.</returns>
     public async Task<Result<Guid>> Execute(
         IdempotencyScope scope,
-        IdempotencyKey? key,
+        IdempotencyKey key,
         string requestFingerprint,
         Func<Task<Result<Guid>>> operation,
         CancellationToken ct)
     {
+        if (key == default)
+        {
+            return RequiredKeyError().ConvertError<Guid>();
+        }
+
         ArgumentException.ThrowIfNullOrWhiteSpace(requestFingerprint);
         ArgumentNullException.ThrowIfNull(operation);
 
-        if (key is null)
-        {
-            var result = await operation();
-            if (result.IsSuccess)
-            {
-                await unitOfWork.SaveEntities(ct);
-            }
-
-            return result;
-        }
-
-        var idempotencyOperation = new IdempotencyOperation(scope, key.Value);
+        var idempotencyOperation = new IdempotencyOperation(scope, key);
         var startResult = await idempotencyStore.TryStart(
             idempotencyOperation,
             timeProvider.GetUtcNow(),

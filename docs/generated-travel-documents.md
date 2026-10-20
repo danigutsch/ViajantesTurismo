@@ -30,9 +30,9 @@ starts only after ownership is acquired. Completion, the document change, and it
 events commit in the same unit of work. A failure must not leave a completed key without its document.
 Endpoint code remains responsible for HTTP binding, authorization, and response mapping.
 
-The typed client retains its original convenience methods, which generate a fresh key for each call,
-and exposes keyed overloads for callers that retry an operation. The staff UI retains the same key
-after an unsuccessful attempt and starts a new operation after success or a resource change.
+Application commands, the coordinator, and typed client methods require an explicit operation key.
+The client does not silently generate one. The staff UI creates the key for the intended operation,
+retains it after an unsuccessful attempt, and starts a new operation after success or a resource change.
 
 ## Use cases
 

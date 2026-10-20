@@ -106,14 +106,14 @@ internal static class DocumentEndpoints
 
     private static async Task<IResult> GenerateContractDraft(
         [FromRoute] Guid bookingId,
-        [Required, FromHeader(Name = IdempotencyKeyHeaderName)] string? idempotencyKey,
+        [Required, FromHeader(Name = IdempotencyKeyHeaderName)] string? idempotencyKeyHeader,
         [FromServices] GenerateContractDraftCommandHandler handler,
         [FromServices] IDocumentQueryService queryService,
         [FromServices] IServiceScopeFactory scopeFactory,
         HttpContext httpContext,
         CancellationToken ct)
     {
-        var keyResult = ParseRequiredIdempotencyKey(idempotencyKey, out var parsedIdempotencyKey);
+        var keyResult = ParseRequiredIdempotencyKey(idempotencyKeyHeader, out var parsedIdempotencyKey);
         if (keyResult.IsFailure)
         {
             return ToError(keyResult);
@@ -281,14 +281,14 @@ internal static class DocumentEndpoints
 
     private static async Task<IResult> Regenerate(
         [FromRoute] Guid id,
-        [Required, FromHeader(Name = IdempotencyKeyHeaderName)] string? idempotencyKey,
+        [Required, FromHeader(Name = IdempotencyKeyHeaderName)] string? idempotencyKeyHeader,
         [FromServices] RegenerateDocumentDraftCommandHandler handler,
         [FromServices] IDocumentQueryService queryService,
         [FromServices] IServiceScopeFactory scopeFactory,
         HttpContext httpContext,
         CancellationToken ct)
     {
-        var keyResult = ParseRequiredIdempotencyKey(idempotencyKey, out var parsedIdempotencyKey);
+        var keyResult = ParseRequiredIdempotencyKey(idempotencyKeyHeader, out var parsedIdempotencyKey);
         if (keyResult.IsFailure)
         {
             return ToError(keyResult);
@@ -510,9 +510,9 @@ internal static class DocumentEndpoints
         return auditContextResult.Value;
     }
 
-    private static Result ParseRequiredIdempotencyKey(string? value, out IdempotencyKey? parsedKey)
+    private static Result ParseRequiredIdempotencyKey(string? value, out IdempotencyKey parsedKey)
     {
-        parsedKey = null;
+        parsedKey = default;
         if (value is null)
         {
             return DocumentCommandIdempotency.RequiredKeyError();

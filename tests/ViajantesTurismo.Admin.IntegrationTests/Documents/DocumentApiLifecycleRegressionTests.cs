@@ -361,7 +361,7 @@ public sealed class DocumentApiLifecycleRegressionTests(ApiFixture fixture)
             cancellationToken);
 
         // Act
-        var replacement = await setup.Client.Regenerate(setup.Document.Id, cancellationToken).RequireSucceededValue();
+        var replacement = await setup.Client.Regenerate(setup.Document.Id, Guid.CreateVersion7().ToString("N"), cancellationToken).RequireSucceededValue();
         var updatedReplacement = await setup.Client.UpdateField(
             replacement.Id,
             fieldId,
@@ -401,7 +401,7 @@ public sealed class DocumentApiLifecycleRegressionTests(ApiFixture fixture)
         _ = await setup.Client.BeginReview(setup.Document.Id, cancellationToken).RequireSucceededValue();
         _ = await setup.Client.Approve(setup.Document.Id, cancellationToken).RequireSucceededValue();
         _ = await setup.Client.Finalize(setup.Document.Id, cancellationToken).RequireSucceededValue();
-        var replacement = await setup.Client.Regenerate(setup.Document.Id, cancellationToken).RequireSucceededValue();
+        var replacement = await setup.Client.Regenerate(setup.Document.Id, Guid.CreateVersion7().ToString("N"), cancellationToken).RequireSucceededValue();
         _ = await setup.Client.BeginReview(replacement.Id, cancellationToken).RequireSucceededValue();
         _ = await setup.Client.Approve(replacement.Id, cancellationToken).RequireSucceededValue();
 

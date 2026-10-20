@@ -9,13 +9,13 @@ public sealed record RegenerateDocumentDraftCommand(
     string TemplateId,
     string TemplateVersion,
     DocumentAuditContext AuditContext,
-    IdempotencyKey? IdempotencyKey = null)
+    IdempotencyKey IdempotencyKey)
 {
     /// <summary>Creates a command using the current server-owned contract template.</summary>
     /// <param name="documentId">The resource whose document is generated.</param>
     /// <param name="auditContext">Trusted metadata identifying the caller and request.</param>
-    /// <param name="idempotencyKey">The caller-supplied operation key.</param>
-    public RegenerateDocumentDraftCommand(Guid documentId, DocumentAuditContext auditContext, IdempotencyKey? idempotencyKey = null)
+    /// <param name="idempotencyKey">The required caller-supplied operation key.</param>
+    public RegenerateDocumentDraftCommand(Guid documentId, DocumentAuditContext auditContext, IdempotencyKey idempotencyKey)
         : this(documentId, ContractDocumentDraftFactory.DefaultTemplateId, ContractDocumentDraftFactory.DefaultTemplateVersion, auditContext, idempotencyKey)
     {
     }

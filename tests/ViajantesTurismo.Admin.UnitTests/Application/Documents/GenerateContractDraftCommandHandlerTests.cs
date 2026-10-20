@@ -17,7 +17,7 @@ namespace ViajantesTurismo.Admin.UnitTests.Application.Documents;
 public sealed class GenerateContractDraftCommandHandlerTests
 {
     [Fact]
-    public async Task Handle_rejects_a_missing_idempotency_key_before_any_work()
+    public async Task Handle_rejects_an_uninitialized_idempotency_key_before_any_work()
     {
         // Arrange
         var store = new FakeDocumentStore();
@@ -32,7 +32,7 @@ public sealed class GenerateContractDraftCommandHandlerTests
 
         // Act
         var result = await handler.Handle(
-            new GenerateContractDraftCommand(Guid.CreateVersion7(), DocumentAuditTestData.CreateContext()),
+            new GenerateContractDraftCommand(Guid.CreateVersion7(), string.Empty, string.Empty, DocumentAuditTestData.CreateContext(), default(IdempotencyKey)),
             CancellationToken.None);
 
         // Assert

@@ -29,7 +29,7 @@ public sealed class DocumentsApiClientTests
     [Theory]
     [InlineData(false)]
     [InlineData(true)]
-    public async Task Document_creation_methods_send_fresh_nonempty_idempotency_tokens(bool regenerate)
+    public async Task Separate_document_operations_send_their_distinct_caller_owned_keys(bool regenerate)
     {
         // Arrange
         List<string> keys = [];
@@ -42,24 +42,23 @@ public sealed class DocumentsApiClientTests
         });
         var sut = new DocumentsApiClient(httpClient);
         var id = Guid.CreateVersion7();
+        var firstKey = Guid.CreateVersion7().ToString("N");
+        var secondKey = Guid.CreateVersion7().ToString("N");
 
         // Act
         var first = regenerate
-            ? await sut.Regenerate(id, TestContext.Current.CancellationToken)
-            : await sut.GenerateContractDraft(id, TestContext.Current.CancellationToken);
+            ? await sut.Regenerate(id, firstKey, TestContext.Current.CancellationToken)
+            : await sut.GenerateContractDraft(id, firstKey, TestContext.Current.CancellationToken);
         var second = regenerate
-            ? await sut.Regenerate(id, TestContext.Current.CancellationToken)
-            : await sut.GenerateContractDraft(id, TestContext.Current.CancellationToken);
+            ? await sut.Regenerate(id, secondKey, TestContext.Current.CancellationToken)
+            : await sut.GenerateContractDraft(id, secondKey, TestContext.Current.CancellationToken);
 
         // Assert
         first.Kind.ShouldBe(HttpOutcomeKind.Succeeded);
         second.Kind.ShouldBe(HttpOutcomeKind.Succeeded);
         keys.Count.ShouldBe(2);
-        foreach (var key in keys)
-        {
-            Guid.TryParseExact(key, "N", out _).ShouldBeTrue();
-        }
-        keys[0].ShouldNotBe(keys[1]);
+        keys[0].ShouldBe(firstKey);
+        keys[1].ShouldBe(secondKey);
         requestsHaveNoBody.ShouldBeTrue();
     }
 
@@ -78,7 +77,7 @@ public sealed class DocumentsApiClientTests
             requestsHaveNoBody &= request.Content is null;
             return ContractHttpClientTestHelper.JsonResponse(DocumentJson, regenerate ? HttpStatusCode.OK : HttpStatusCode.Created);
         });
-        IDocumentsApiClient sut = new DocumentsApiClient(httpClient);
+        var sut = new DocumentsApiClient(httpClient);
         var id = Guid.CreateVersion7();
 
         // Act

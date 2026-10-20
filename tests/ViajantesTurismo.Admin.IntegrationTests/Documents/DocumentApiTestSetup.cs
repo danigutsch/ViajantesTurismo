@@ -29,7 +29,7 @@ internal static class DocumentApiTestSetup
         confirmResponse.StatusCode.ShouldBe(HttpStatusCode.OK);
 
         var client = new DocumentsApiClient(fixture.Client);
-        var document = await client.GenerateContractDraft(booking.Id, ct).RequireSucceededValue();
+        var document = await client.GenerateContractDraft(booking.Id, Guid.CreateVersion7().ToString("N"), ct).RequireSucceededValue();
         return (booking.Id, client, document);
     }
 }

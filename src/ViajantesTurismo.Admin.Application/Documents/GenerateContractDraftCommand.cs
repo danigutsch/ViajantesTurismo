@@ -11,13 +11,13 @@ public sealed record GenerateContractDraftCommand(
     string TemplateId,
     string TemplateVersion,
     DocumentAuditContext AuditContext,
-    IdempotencyKey? IdempotencyKey = null)
+    IdempotencyKey IdempotencyKey)
 {
     /// <summary>Creates a command using the current server-owned contract template.</summary>
     /// <param name="bookingId">The resource whose document is generated.</param>
     /// <param name="auditContext">Trusted metadata identifying the caller and request.</param>
-    /// <param name="idempotencyKey">The caller-supplied operation key.</param>
-    public GenerateContractDraftCommand(Guid bookingId, DocumentAuditContext auditContext, IdempotencyKey? idempotencyKey = null)
+    /// <param name="idempotencyKey">The required caller-supplied operation key.</param>
+    public GenerateContractDraftCommand(Guid bookingId, DocumentAuditContext auditContext, IdempotencyKey idempotencyKey)
         : this(bookingId, ContractDocumentDraftFactory.DefaultTemplateId, ContractDocumentDraftFactory.DefaultTemplateVersion, auditContext, idempotencyKey)
     {
     }
