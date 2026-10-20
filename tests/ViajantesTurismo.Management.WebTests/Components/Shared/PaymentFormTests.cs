@@ -5,11 +5,6 @@ namespace ViajantesTurismo.Management.WebTests.Components.Shared;
 
 public class PaymentFormTests : BunitContext
 {
-    public PaymentFormTests()
-    {
-        Services.AddSingleton(TimeProvider.System);
-    }
-
     [Fact]
     public void Renders_all_form_fields()
     {
