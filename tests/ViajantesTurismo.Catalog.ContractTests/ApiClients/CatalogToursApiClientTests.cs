@@ -670,7 +670,7 @@ public sealed class CatalogToursApiClientTests
         Func<Task> action = async () => await upload;
 
         // Assert
-        _ = await action.ShouldThrow<TaskCanceledException>();
+        _ = await action.ShouldThrow<OperationCanceledException>();
     }
 
     [Fact]

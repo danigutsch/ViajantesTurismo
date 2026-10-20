@@ -436,7 +436,7 @@ public sealed class CustomersApiClientTests
         Func<Task> action = async () => await import;
 
         // Assert
-        _ = await action.ShouldThrow<TaskCanceledException>();
+        _ = await action.ShouldThrow<OperationCanceledException>();
     }
 
     [Fact]
@@ -494,6 +494,6 @@ public sealed class CustomersApiClientTests
         Func<Task> action = async () => await commit;
 
         // Assert
-        _ = await action.ShouldThrow<TaskCanceledException>();
+        _ = await action.ShouldThrow<OperationCanceledException>();
     }
 }

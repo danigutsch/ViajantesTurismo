@@ -111,7 +111,7 @@ public sealed class ImportCustomersConflictLoaderTests
             customersApi,
             [new ImportConflictDto(conflictEmail)],
             mappedFileBytes,
-            TestContext.Current.CancellationToken);
+            Xunit.TestContext.Current.CancellationToken);
 
         // Assert
         await action.ShouldThrow<InvalidOperationException>();
