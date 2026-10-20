@@ -385,7 +385,7 @@ public sealed class ProductionApiHttpAnalyzer : DiagnosticAnalyzer
                 return overrideDestination;
             }
 
-            if (IsStaticallyAbsoluteUri(relativeUriArgument.Value, visitedSymbols) is not false)
+            if (IsStaticallyBaseRelativeUri(relativeUriArgument.Value, visitedSymbols) is not true)
             {
                 return ApiDestination.None;
             }
@@ -409,7 +409,7 @@ public sealed class ProductionApiHttpAnalyzer : DiagnosticAnalyzer
         return ApiDestination.None;
     }
 
-    private static bool? IsStaticallyAbsoluteUri(IOperation operation, ISet<ISymbol> visitedSymbols)
+    private static bool? IsStaticallyBaseRelativeUri(IOperation operation, ISet<ISymbol> visitedSymbols)
     {
         while (operation is IConversionOperation { IsTryCast: false, OperatorMethod: null } conversion)
         {
@@ -418,13 +418,16 @@ public sealed class ProductionApiHttpAnalyzer : DiagnosticAnalyzer
 
         if (operation is IParenthesizedOperation parenthesized)
         {
-            return IsStaticallyAbsoluteUri(parenthesized.Operand, visitedSymbols);
+            return IsStaticallyBaseRelativeUri(parenthesized.Operand, visitedSymbols);
         }
 
         if (operation.ConstantValue is { HasValue: true, Value: string value })
         {
+            var candidate = value.TrimStart();
             return Uri.TryCreate(value, UriKind.RelativeOrAbsolute, out var uri)
-                ? uri.IsAbsoluteUri
+                ? !uri.IsAbsoluteUri
+                    && !candidate.StartsWith("//", StringComparison.Ordinal)
+                    && !candidate.StartsWith("\\/", StringComparison.Ordinal)
                 : null;
         }
 
@@ -439,7 +442,7 @@ public sealed class ProductionApiHttpAnalyzer : DiagnosticAnalyzer
             {
                 return TryGetReachingLocalInitializer(localReference, out var initializer)
                     && initializer is not null
-                        ? IsStaticallyAbsoluteUri(initializer, visitedSymbols)
+                        ? IsStaticallyBaseRelativeUri(initializer, visitedSymbols)
                         : null;
             }
             finally
@@ -460,7 +463,7 @@ public sealed class ProductionApiHttpAnalyzer : DiagnosticAnalyzer
             return null;
         }
 
-        var inferredKind = IsStaticallyAbsoluteUri(uriStringArgument.Value, visitedSymbols);
+        var inferredKind = IsStaticallyBaseRelativeUri(uriStringArgument.Value, visitedSymbols);
         var uriKindArgument = objectCreation.Arguments.FirstOrDefault(static argument =>
             string.Equals(argument.Parameter?.Name, "uriKind", StringComparison.Ordinal));
         if (uriKindArgument is null)
@@ -471,8 +474,8 @@ public sealed class ProductionApiHttpAnalyzer : DiagnosticAnalyzer
         return uriKindArgument.Value.ConstantValue is { HasValue: true, Value: int uriKindValue }
             ? (UriKind)uriKindValue switch
             {
-                UriKind.Relative when inferredKind is false => false,
-                UriKind.Absolute when inferredKind is true => true,
+                UriKind.Relative when inferredKind is true => true,
+                UriKind.Absolute when inferredKind is false => false,
                 UriKind.RelativeOrAbsolute => inferredKind,
                 _ => null
             }
@@ -759,6 +762,19 @@ public sealed class ProductionApiHttpAnalyzer : DiagnosticAnalyzer
         ApiDestination sourceApi,
         DestinationResolutionMode resolutionMode)
     {
+        if (objectCreation.Initializer is not null)
+        {
+            foreach (var operation in objectCreation.Initializer.ChildOperations)
+            {
+                if (operation is not IAssignmentOperation assignment || !IsHttpRequestUri(assignment.Target))
+                {
+                    continue;
+                }
+
+                return ResolveDestination(assignment.Value, visitedSymbols, sourceApi, resolutionMode);
+            }
+        }
+
         foreach (var argument in objectCreation.Arguments)
         {
             if (!IsRequestUriParameter(argument.Parameter))
@@ -767,25 +783,6 @@ public sealed class ProductionApiHttpAnalyzer : DiagnosticAnalyzer
             }
 
             var destination = ResolveDestination(argument.Value, visitedSymbols, sourceApi, resolutionMode);
-            if (destination != ApiDestination.None)
-            {
-                return destination;
-            }
-        }
-
-        if (objectCreation.Initializer is null)
-        {
-            return ApiDestination.None;
-        }
-
-        foreach (var operation in objectCreation.Initializer.ChildOperations)
-        {
-            if (operation is not IAssignmentOperation assignment || !IsHttpRequestUri(assignment.Target))
-            {
-                continue;
-            }
-
-            var destination = ResolveDestination(assignment.Value, visitedSymbols, sourceApi, resolutionMode);
             if (destination != ApiDestination.None)
             {
                 return destination;

@@ -329,8 +329,10 @@ public sealed class DocumentCommandIdempotencyTests
         unitOfWork.SaveEntitiesCallCount.ShouldBe(0);
     }
 
-    [Fact]
-    public async Task Legacy_bare_guid_entry_conflicts_when_template_inputs_change()
+    [Theory]
+    [InlineData("1")]
+    [InlineData("2")]
+    public async Task Legacy_bare_guid_entry_conflicts_without_a_verifiable_request_fingerprint(string templateVersion)
     {
         // Arrange
         var scope = IdempotencyScope.From($"admin.documents.generate-contract-draft:{Guid.CreateVersion7():N}");
@@ -341,19 +343,21 @@ public sealed class DocumentCommandIdempotencyTests
             key,
             Guid.CreateVersion7().ToString("N"),
             unitOfWork);
-        var changedRequestFingerprint = IdempotencyRequestFingerprint.Create(
-            "tour-service-contract",
-            "2");
+        var requestFingerprint = IdempotencyRequestFingerprint.Create("tour-service-contract", templateVersion);
+        var operationWasInvoked = false;
 
         // Act
-        var result = await coordinator.GetExistingResult(
-            scope,
-            key,
-            changedRequestFingerprint,
-            CancellationToken.None);
+        var existingResult = await coordinator.GetExistingResult(scope, key, requestFingerprint, CancellationToken.None);
+        var executionResult = await coordinator.Execute(scope, key, requestFingerprint, () =>
+        {
+            operationWasInvoked = true;
+            return Task.FromResult(Result.Ok(Guid.CreateVersion7()));
+        }, CancellationToken.None);
 
         // Assert
-        result.ShouldNotBeNull().Status.ShouldBe(ResultStatus.Conflict);
+        existingResult.ShouldNotBeNull().Status.ShouldBe(ResultStatus.Conflict);
+        executionResult.Status.ShouldBe(ResultStatus.Conflict);
+        operationWasInvoked.ShouldBeFalse();
         unitOfWork.SaveEntitiesCallCount.ShouldBe(0);
     }
 

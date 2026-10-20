@@ -308,8 +308,10 @@ This diagram is generated from SharedKernel project references.
 ```mermaid
 flowchart TB
     SharedKernel_ApiVersioning_AspNetCore[SharedKernel.ApiVersioning.AspNetCore] --> SharedKernel_ApiVersioning[SharedKernel.ApiVersioning]
+    SharedKernel_AspNetCore[SharedKernel.AspNetCore] --> SharedKernel_Idempotency[SharedKernel.Idempotency]
     SharedKernel_AspNetCore[SharedKernel.AspNetCore] --> SharedKernel_InputNormalization[SharedKernel.InputNormalization]
     SharedKernel_AspNetCore[SharedKernel.AspNetCore] --> SharedKernel_OpenApi[SharedKernel.OpenApi]
+    SharedKernel_AspNetCore[SharedKernel.AspNetCore] --> SharedKernel_Results[SharedKernel.Results]
     SharedKernel_Branding[SharedKernel.Branding] --> SharedKernel_HttpClients[SharedKernel.HttpClients]
     SharedKernel_Branding[SharedKernel.Branding] --> SharedKernel_InputNormalization[SharedKernel.InputNormalization]
     SharedKernel_Branding[SharedKernel.Branding] --> SharedKernel_Results[SharedKernel.Results]

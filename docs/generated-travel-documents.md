@@ -24,6 +24,12 @@ source document, preserving existing persisted operation identities. Reusing a k
 inputs replays the completed document identifier; reusing it with different inputs returns a
 conflict. Different keys represent distinct intended operations, even when their inputs match.
 
+Earlier alpha versions stored only the resulting document identifier for completed keys. Those
+entries cannot verify the original template inputs and now return a conflict, even when a caller
+retries with the same template. Existing documents and key records remain intact. Staff must inspect
+the existing document before deciding whether a new operation is needed; clients must not automatically
+retry these conflicts with a new key, which could create an unintended additional draft.
+
 Application command composition performs replay checks before mutable booking and document
 validation. Preparation validates source data before acquiring a durable processing claim; mutation
 starts only after ownership is acquired. Completion, the document change, and its successful audit

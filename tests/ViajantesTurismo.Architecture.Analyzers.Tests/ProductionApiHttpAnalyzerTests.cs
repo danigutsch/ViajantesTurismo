@@ -599,11 +599,16 @@ public sealed class ProductionApiHttpAnalyzerTests
         diagnostics.ShouldBeEmpty();
     }
 
-    [Fact]
-    public async Task Base_address_uri_internal_base_authority_remains_a_destination()
+    [Theory]
+    [InlineData("v1/settings")]
+    [InlineData("/v1/settings")]
+    [InlineData("?page=1")]
+    [InlineData("#settings")]
+    public async Task Base_address_uri_internal_base_authority_remains_a_destination(string relativePath)
     {
         // Arrange
-        const string source = """
+        ArgumentException.ThrowIfNullOrWhiteSpace(relativePath);
+        var source = $$"""
             namespace ViajantesTurismo.Admin.ApiService;
 
             public static class Registration
@@ -612,7 +617,7 @@ public sealed class ProductionApiHttpAnalyzerTests
                 {
                     client.BaseAddress = new Uri(
                         new Uri($"https+http://{ResourceNames.BrandingApi}"),
-                        "v1/settings");
+                        "{{relativePath}}");
                 }
             }
             """;
@@ -689,6 +694,36 @@ public sealed class ProductionApiHttpAnalyzerTests
                     client.BaseAddress = new Uri(
                         new Uri($"https+http://{ResourceNames.BrandingApi}"),
                         {{overrideExpression}});
+                }
+            }
+            """;
+
+        // Act
+        var diagnostics = await AnalyzerTestHarness.GetAnalyzerDiagnostics(source);
+
+        // Assert
+        diagnostics.ShouldBeEmpty();
+    }
+
+    [Theory]
+    [InlineData("\"//provider.example\"")]
+    [InlineData("\"\\\\/provider.example\"")]
+    [InlineData("new Uri(\"//provider.example\", UriKind.Relative)")]
+    [InlineData("new Uri(\"//provider.example\", UriKind.RelativeOrAbsolute)")]
+    [InlineData("networkPath")]
+    public async Task Two_argument_uri_network_path_overrides_replace_the_base_authority(string overrideExpression)
+    {
+        // Arrange
+        ArgumentException.ThrowIfNullOrWhiteSpace(overrideExpression);
+        var source = $$"""
+            namespace ViajantesTurismo.Admin.ApiService;
+
+            public static class Registration
+            {
+                public static void Configure(HttpClient client)
+                {
+                    var networkPath = "//provider.example";
+                    client.BaseAddress = new Uri(new Uri("https://branding-api"), {{overrideExpression}});
                 }
             }
             """;
@@ -907,6 +942,63 @@ public sealed class ProductionApiHttpAnalyzerTests
                 {
                     var request = new HttpRequestMessage(HttpMethod.Get, new Uri($"https+http://{ResourceNames.BrandingApi}/v1/settings"));
                     request.Method = HttpMethod.Post;
+                    return client.SendAsync(request);
+                }
+            }
+            """;
+
+        // Act
+        var diagnostics = await AnalyzerTestHarness.GetAnalyzerDiagnostics(source);
+
+        // Assert
+        diagnostics.ShouldHaveSingleItem(static candidate => candidate.Id == ArchitectureDiagnosticIds.ProductionApiHttp);
+    }
+
+    [Theory]
+    [InlineData("new Uri(\"https://provider.example\")")]
+    [InlineData("new Uri(configuredEndpoint)")]
+    public async Task Request_initializer_overrides_replace_the_constructor_destination(string overrideExpression)
+    {
+        // Arrange
+        ArgumentException.ThrowIfNullOrWhiteSpace(overrideExpression);
+        var source = $$"""
+            namespace ViajantesTurismo.Admin.ApiService;
+
+            public static class BrandingReader
+            {
+                public static Task<HttpResponseMessage> Read(HttpClient client, string configuredEndpoint)
+                {
+                    var request = new HttpRequestMessage(HttpMethod.Get, "https://branding-api")
+                    {
+                        RequestUri = {{overrideExpression}}
+                    };
+                    return client.SendAsync(request);
+                }
+            }
+            """;
+
+        // Act
+        var diagnostics = await AnalyzerTestHarness.GetAnalyzerDiagnostics(source);
+
+        // Assert
+        diagnostics.ShouldBeEmpty();
+    }
+
+    [Fact]
+    public async Task Request_initializer_cross_api_destination_replaces_the_external_constructor_destination()
+    {
+        // Arrange
+        const string source = """
+            namespace ViajantesTurismo.Admin.ApiService;
+
+            public static class BrandingReader
+            {
+                public static Task<HttpResponseMessage> Read(HttpClient client)
+                {
+                    var request = new HttpRequestMessage(HttpMethod.Get, "https://provider.example")
+                    {
+                        RequestUri = new Uri("https://branding-api")
+                    };
                     return client.SendAsync(request);
                 }
             }
