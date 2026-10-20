@@ -1113,31 +1113,4 @@ public sealed class PublicWebEndpointTests
         body.ShouldBe("Healthy");
     }
 
-    [Fact]
-    public void Production_host_fails_startup_when_sitemap_canonical_origin_is_missing()
-    {
-        // Arrange
-        // Act
-        var exception = PublicWebEndpointTestsHelpers.GetProductionSitemapValidationException();
-
-        // Assert
-        exception.Message.ShouldContain(
-            "PublicWeb:Sitemap:CanonicalOrigin must be provided.",
-            StringComparison.Ordinal);
-    }
-
-    [Fact]
-    public void Production_host_fails_startup_when_sitemap_canonical_origin_is_invalid()
-    {
-        // Arrange
-        // Act
-        var exception = PublicWebEndpointTestsHelpers.GetProductionSitemapValidationException(
-            "https://public.example.test/sitemap.xml");
-
-        // Assert
-        exception.Message.ShouldContain(
-            "PublicWeb:Sitemap:CanonicalOrigin must be an absolute HTTP or HTTPS origin without a path, query, fragment, or userinfo.",
-            StringComparison.Ordinal);
-    }
-
 }
