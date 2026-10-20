@@ -10,13 +10,14 @@ namespace ViajantesTurismo.Branding.ContractTests;
 /// </summary>
 public sealed class BrandingStateTransferContractTests
 {
-    [Fact]
+    [Theory]
+    [InlineData("/branding/logo.svg")]
+    [InlineData("https://cdn.example.test/branding/logo.svg")]
     [Trait(SharedKernel.Testing.TestTraitNames.CategoryName, TestTraits.ContractCategory)]
     [Trait(SharedKernel.Testing.TestTraitNames.SurfaceName, TestTraits.IntegrationEventSurface)]
-    public void Branding_state_transfer_contract_round_trips_complete_public_safe_state()
+    public void Branding_state_transfer_contract_round_trips_complete_public_safe_state(string logoAddress)
     {
         // Arrange
-        const string logoUri = "/branding/logo.svg";
         var eventId = Guid.Parse("0198c854-0735-7906-a801-b1da18b0094d");
         var occurredAt = DateTimeOffset.Parse(
             "2026-08-01T12:30:00Z",
@@ -34,7 +35,7 @@ public sealed class BrandingStateTransferContractTests
             "#111111",
             "Inter",
             "Source Sans 3",
-            new Uri(logoUri, UriKind.RelativeOrAbsolute));
+            new Uri(logoAddress, UriKind.RelativeOrAbsolute));
         var withoutLogoEvent = integrationEvent with
         {
             EventId = Guid.Parse("0198c854-0735-7906-a801-b1da18b0094e"),
@@ -83,6 +84,7 @@ public sealed class BrandingStateTransferContractTests
         integrationEvent.SourceEpoch.ShouldNotBe(Guid.Empty);
         (integrationEvent.SourceRevision > 0).ShouldBeTrue();
         actualProperties.ShouldBe(expectedProperties);
+        document.RootElement.GetProperty("LogoUri").GetString().ShouldBe(logoAddress);
         roundTripped.ShouldNotBeNull();
         roundTripped.EventId.ShouldBe(eventId);
         roundTripped.OccurredAt.ShouldBe(occurredAt);
@@ -95,7 +97,7 @@ public sealed class BrandingStateTransferContractTests
         roundTripped.TextColor.ShouldBe("#111111");
         roundTripped.HeadingFontFamily.ShouldBe("Inter");
         roundTripped.BodyFontFamily.ShouldBe("Source Sans 3");
-        roundTripped.LogoUri.ShouldBe(new Uri(logoUri, UriKind.RelativeOrAbsolute));
+        roundTripped.LogoUri.ShouldBe(new Uri(logoAddress, UriKind.RelativeOrAbsolute));
         withoutLogoDocument.RootElement.TryGetProperty("LogoUri", out var withoutLogoProperty).ShouldBeTrue();
         withoutLogoProperty.ValueKind.ShouldBe(JsonValueKind.Null);
         withoutLogoRoundTripped.ShouldNotBeNull();
