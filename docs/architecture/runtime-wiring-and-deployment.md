@@ -86,6 +86,35 @@ Current AppHost rules:
   private host and port and wait for its PING/PONG health check.
 - The performance smoke resource is opt-in through `VT_ASPIRE_ENABLE_PERFORMANCE_TESTS=1`.
 
+## Accepted Branding runtime transition
+
+The generated graph remains the source of truth for the current local runtime: Branding still has a
+standalone executable. ADR-040 accepts a later target in which the independent Branding ASP.NET module
+and `BrandingDbContext` are composed in `ViajantesTurismo.Catalog.ApiService`. Catalog hosts the module
+but does not own its contracts, `branding` schema, outbox, permissions, or application behavior. This
+is not process isolation: Catalog and Branding share process availability, memory, and the blast radius
+of every credential available to Catalog.ApiService.
+
+In the target flow, Public.Web and Management.Web keep Branding HTTP against the Catalog host.
+`IntegrationEventWorker` carries full-state, revisioned Branding events to an Admin-owned inbox and
+local projection. Admin API reads that projection and has no Catalog/Branding HTTP or database
+credential. Ordinary production API-to-API HTTP is not used for Branding state transfer.
+
+The Branding relay atomically moves each envelope from `branding.outbox_messages` into the Catalog
+database's default `messaging.transport_messages` table with `ConsumerName = 'admin'` and marks the
+outbox row published. The worker claims and updates that transport row with its restricted Catalog
+database credential, commits Admin inbox/projection/watermark through a separate restricted Admin
+credential, and only then marks transport `ProcessedAt`. Lease-expiry redelivery covers a crash between
+the Admin commit and transport acknowledgement.
+
+Do not edit the generated graph to show the target before source wiring changes. The standalone
+resource remains the rollback host until forward-compatible schema, dual-host writer, token/session
+drain, zero-traffic observation, rollback drill, retained release artifact, watermark/reseed health,
+private-exposure, and Branding OpenAPI-tool retarget gates pass. Both hosts retain the exact
+`branding-api` audience during cutover. The production platform and concrete runtime/database roles
+remain undecided; see [ADR-040](../adr/20260724-branding-module-co-hosting-and-state-distribution.md) and
+[production readiness](../operations/production-readiness.md#branding-co-hosting-readiness).
+
 ## Reference rules
 
 - Use `.WithReference(...)` for connection strings and service discovery injection.

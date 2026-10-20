@@ -2,6 +2,7 @@
 
 - Status: Accepted
 - Date: 2026-07-11
+- Branding host refinement: [ADR-040](20260724-branding-module-co-hosting-and-state-distribution.md)
 
 ## Context
 
@@ -14,10 +15,12 @@ must remain replaceable.
 
 - Use standards-based OIDC/OAuth 2.0. Management Web is a confidential authorization-code + PKCE
   client using a secure, `HttpOnly`, `SameSite=Lax`, `__Host-` cookie.
-- APIs accept delegated bearer access tokens only. Each validates its configured issuer,
+- APIs accept delegated bearer access tokens only. Each named scheme validates the configured issuer,
   discovery metadata, signature/JWKS, `RS256` algorithm, expiry, bounded clock skew, and exactly one
-  intended audience: `admin-api`, `catalog-api`, or `branding-api`. Management never forwards its
-  source token to an API.
+  intended audience: `admin-api`, `catalog-api`, or `branding-api`. Catalog.ApiService co-hosting uses
+  `CatalogBearer` for `catalog-api` routes and `BrandingBearer` for protected `branding-api` routes;
+  no route accepts both audiences. Standalone and co-hosted Branding use the same audience during
+  cutover. Management never forwards its source token to an API.
 - Map the validated `roles` claim centrally into application-owned `permission` claims. Policies
   use permissions; they never authorize a raw provider role directly. `Admin` receives all
   boundary permissions. `Operator` receives the non-sensitive operational permissions assigned to
@@ -46,6 +49,9 @@ must remain replaceable.
   token; neither source nor exchanged tokens reach the browser. Exchanged tokens are protected and
   cached server-side by login session and audience, bound to a source-token fingerprint, and expire no
   later than the login session.
+- Retargeting Management from the standalone Branding endpoint to Catalog.ApiService does not change
+  the `branding-api` token exchange audience. Standalone removal waits through the maximum token/session
+  lifetime and a zero-traffic window; it does not add temporary broad audience acceptance.
 - OIDC authority, issuer, client ID, and client-secret configuration remain deployment-provided.
   The current Management BFF implementation requires
   `Authentication:TokenExchange:Enabled=true`,

@@ -100,6 +100,21 @@ fail-closed when authentication configuration is missing.
 dotnet run --project tools/ViajantesTurismo.OpenApi.Tool --no-restore -- generate all --refresh
 ```
 
+ADR-040 keeps `generate branding` and the Branding-owned canonical artifact paths stable when the
+module moves into Catalog.ApiService. Before deleting the standalone project, retarget the tool's
+Branding logical target, filename mapping, refresh hints, and Branding drift tests to Catalog-hosted
+Branding-only generation. Preserve `branding`, `public-branding`, and Branding-only `v1` artifacts;
+do not replace them with Catalog-owned or mixed-route snapshots.
+
+The Management Branding optimistic-concurrency change keeps the route and full-state PUT but adds
+`SourceEpoch`, `SourceRevision`, strong `ETag`/`If-Match`, 400 malformed syntax, 412 false
+precondition, and 428 missing precondition metadata. OpenAPI descriptions preserve RFC 9110 list,
+weak-tag strong-comparison, and existing-singleton `*` semantics. Refresh canonical Branding artifacts
+and typed clients together. Management `GET` owns the response `ETag`; normalized successful `PUT`
+omits it and clients refresh through `GET`, replacing document, epoch, revision, and validator as one
+editor state. Clients expose precondition failure as an outcome and never auto-retry it; an interleaving
+writer between `PUT` and `GET` must be surfaced through the later representation.
+
 Then run:
 
 ```bash

@@ -306,15 +306,18 @@ flowchart LR
 
 ## Branding settings rendering flow
 
-Branding uses reusable validation and public-safe contracts from `SharedKernel.Branding`. The
-ViajantesTurismo Branding API adapter owns app-specific persistence, API routes, default values, and
-cache invalidation. It keeps a separate `BrandingDbContext` while storing its tables in the existing
-Catalog physical database.
+### Current implementation
+
+The current standalone Branding API uses validation from `SharedKernel.Branding` and owns persistence,
+endpoint hosting, defaults, authorization, and cache invalidation. It keeps a separate
+`BrandingDbContext` and `branding` schema in the Catalog physical database. Existing app-specific DTO,
+client, and route types in `SharedKernel.Branding` are transitional; ADR-040 assigns them to the
+ViajantesTurismo Branding module.
 
 ```mermaid
 sequenceDiagram
     participant Editor as Management.Web branding editor
-    participant API as Branding API adapter
+    participant API as Standalone Branding API
     participant Core as SharedKernel.Branding
     participant Store as Branding settings store
     participant Public as Public.Web
@@ -330,12 +333,73 @@ sequenceDiagram
 
 Current rendering rules:
 
-- `SharedKernel.Branding` owns base identity tokens only: brand name, logo URI, palette, and typography.
+- `SharedKernel.Branding` owns pure validation/normalization for brand name, logo URI, palette, and
+  typography; ViajantesTurismo owns the HTTP contract and route surface.
 - Management.Web uses the tokens as functional editable configuration; Public.Web uses them for richer
   customer-facing presentation.
 - No arbitrary user-editable CSS is accepted. Editors choose constrained values; Public.Web renders
   fixed CSS custom-property names with validated values.
 - Preview, review, scheduled publish, and approval workflows are deferred until implemented.
+
+### Accepted target
+
+Branding remains a logical module but is hosted by Catalog.ApiService. A write commits current state,
+an immutable full-state revision, and a Branding-owned outbox event in one transaction. The event
+is `BrandingSettingsChangedIntegrationEvent` and carries a non-empty source epoch, positive source revision, and
+complete immutable document snapshot. `IntegrationEventWorker` applies it through an Admin inbox to a
+local Admin projection; Admin API never calls Catalog HTTP or reads the Catalog database for Branding.
+
+```mermaid
+flowchart LR
+    management[Management.Web]
+    public[Public.Web]
+    catalogHost[Catalog.ApiService host]
+    brandingModule[Branding ASP.NET/application module]
+    current[(Branding current state)]
+    revisions[(Append-only full-state revisions)]
+    outbox[(branding.outbox_messages)]
+    relay[Branding outbox relay]
+    transport[(Catalog DB messaging.transport_messages\nConsumerName = admin)]
+    worker[IntegrationEventWorker]
+    adminInbox[(Admin Branding inbox + watermark)]
+    adminProjection[(Admin Branding projection)]
+    adminApi[Admin.ApiService]
+
+    management -->|GET ETag / PUT If-Match; uncached| catalogHost
+    public -->|60s fresh / 300s stale public HTTP| catalogHost
+    catalogHost --> brandingModule
+    brandingModule -->|one transaction| current
+    brandingModule -->|one transaction| revisions
+    brandingModule -->|full snapshot + revision| outbox
+    outbox --> relay
+    relay -->|atomic transport insert + outbox PublishedAt| transport
+    transport -->|claim + lease| worker
+    worker -->|Admin transaction| adminInbox
+    adminInbox --> adminProjection
+    worker -->|ProcessedAt after Admin commit| transport
+    adminApi --> adminProjection
+```
+
+Target delivery rules:
+
+- No Branding integration event predates `BrandingSettingsChangedIntegrationEvent`, and every valid event has a
+  positive revision. Only pre-rollout document rows may have nullable Branding revision provenance.
+- Within one source epoch, a higher revision replaces the Admin projection; older/duplicate revisions
+  are acknowledged. A new epoch requires audited recovery rather than an implicit switch.
+- Relay enqueue and outbox `PublishedAt` commit atomically. The worker commits Admin
+  inbox/projection/watermark before transport `ProcessedAt`; a crash between those commits redelivers
+  idempotently after lease expiry.
+- Retry is finite. Exhausted transport rows enter visible poison state; audited replay retains the
+  immutable envelope and remains guarded by inbox identity and epoch/revision comparison.
+- Reseed gates ordinary traffic in `Recovering`; a persisted authorization lets only the exact reseed
+  outbox and transport row use a one-shot publish/claim/delivery lane. It rotates source epoch for a
+  source rewind and commits inbox, full projection, watermark, old/new audit, and return to `Ready`
+  atomically.
+- Management uses RFC 9110 strong ETag/`If-Match`: missing returns 428, malformed syntax 400, a valid
+  false condition 412, and `*` succeeds for the existing singleton. Failed preconditions are not
+  blindly retried. Normalized successful `PUT` omits `ETag`; Management refreshes it with `GET`.
+- This is event-carried state transfer, not event sourcing. No projection framework, distributed cache,
+  SignalR, SSE, WebSockets, HTTP/3 requirement, or ordinary API-to-API HTTP is introduced.
 
 ## Media, gallery, and image metadata flows
 
@@ -446,3 +510,4 @@ Remaining design points:
 - [ADR-020: Web Frontends by Audience, Not by Bounded Context](../adr/20260523-web-frontends-by-audience-not-by-bounded-context.md)
 - [ADR-021: Catalog Bounded Context for Public Tour Presentation](../adr/20260621-catalog-bounded-context-for-public-tour-presentation.md)
 - [ADR-025: Event Source Catalog Tour Presentation](../adr/20260621-event-source-catalog-tour-presentation.md)
+- [ADR-040: Branding Module Co-hosting and State Distribution](../adr/20260724-branding-module-co-hosting-and-state-distribution.md)

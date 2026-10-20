@@ -128,14 +128,38 @@ and connection-resiliency guidance on transaction commit ambiguity:
 - Existing mitigation: validates every tour link before saving metadata.
 - Recommendation: no change.
 
-### Public content and Branding settings management
+### Public content management
 
 - Trigger: `CatalogEndpoints.UpsertPublicContent`.
 - Code: `src/ViajantesTurismo.Catalog.ApiService/CatalogEndpoints.cs`.
 - Systems touched: Catalog database only.
 - Failure window: single durable store.
-- Recommendation: no multi-store pattern. Branding settings persistence belongs to the
-  ViajantesTurismo Branding adapter.
+- Recommendation: no multi-store pattern.
+
+### Branding settings management
+
+- Current trigger: `BrandingEndpoints.SaveSettings` in the standalone Branding host.
+- Target trigger: the same logical Branding endpoint module hosted by Catalog.ApiService.
+- Concurrent editor boundary: Management `GET` returns source epoch/revision and a strong opaque ETag; full-state
+  `PUT` requires `If-Match`. A syntactically valid false condition returns 412 without
+  current/history/outbox changes or automatic retry; RFC 9110 list and existing-singleton `*` semantics
+  remain valid.
+- Systems touched by the target write: Branding current state, append-only full-state revision, and
+  context-qualified `branding.outbox_messages` in one local transaction. The relay later inserts a
+  `ConsumerName = 'admin'` row into the Catalog database's default
+  `messaging.transport_messages` mapping and marks the Branding outbox row published in one
+  `BrandingDbContext` transaction.
+- Consumer transactions: `IntegrationEventWorker` claims and updates retry/poison/`ProcessedAt` in
+  Catalog-database `messaging.transport_messages`; a separate Admin transaction commits Branding
+  inbox, projection, source epoch/revision watermark, and audit state.
+- Failure windows: a relay crash before its commit leaves neither transport enqueue nor outbox ack. A
+  worker crash after the Admin commit but before transport ack causes lease-expiry redelivery; Admin
+  inbox identity and epoch/revision comparison make it a no-op. Source-to-Admin lag remains visible in
+  producer/consumer watermarks and poison health.
+- Recommendation: use the Branding transactional outbox and Admin inbox/idempotency boundary from
+  [ADR-040](../adr/20260724-branding-module-co-hosting-and-state-distribution.md). Do not use a dual
+  write, Admin-to-Catalog HTTP, or a cross-database transaction. Gate document generation during an
+  audited atomic reseed or source-epoch rewind.
 
 ### Admin customer, booking, tour, and import mutations
 
@@ -176,8 +200,10 @@ and connection-resiliency guidance on transaction commit ambiguity:
   `SharedKernel.Messaging.IntegrationEvents.EntityFrameworkCore` and
   `SharedKernel.Idempotency.EntityFrameworkCore`; storage-neutral contracts live in
   `SharedKernel.Messaging.IntegrationEvents` and `SharedKernel.Idempotency`.
-- Shared EF messaging tables use the `messaging` schema to group asynchronous delivery and idempotency
-  infrastructure separately from domain tables.
+- The SharedKernel EF provider defaults used by current Admin and Catalog mappings place messaging
+  tables in the `messaging` schema. ADR-040's context-qualified Branding outbox is the explicit
+  `branding.outbox_messages` exception; Branding-to-Admin transport still uses the Catalog database's
+  default `messaging.transport_messages` mapping.
 
 ## Follow-up implementation candidates
 
