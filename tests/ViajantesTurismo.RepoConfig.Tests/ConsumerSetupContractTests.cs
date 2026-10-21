@@ -83,10 +83,42 @@ public sealed class ConsumerSetupContractTests
         var action = await File.ReadAllTextAsync(path, TestContext.Current.CancellationToken);
 
         // Assert
-        action.ShouldContain("if: ${{ vars.SHAREDKERNEL_LIBRARY_ROOT == '' }}", StringComparison.Ordinal);
-        action.ShouldContain("if: ${{ vars.SHAREDKERNEL_LIBRARY_ROOT == '' && vars.SHAREDKERNEL_CANDIDATE_FEED == '' }}", StringComparison.Ordinal);
-        action.ShouldContain("LIBRARY_ROOT: ${{ vars.SHAREDKERNEL_LIBRARY_ROOT }}", StringComparison.Ordinal);
-        action.ShouldContain("CANDIDATE_FEED: ${{ vars.SHAREDKERNEL_CANDIDATE_FEED }}", StringComparison.Ordinal);
+        action.ShouldContain("  sharedkernel-library-root:\n", StringComparison.Ordinal);
+        action.ShouldContain("  sharedkernel-candidate-feed:\n", StringComparison.Ordinal);
+        action.ShouldContain("if: ${{ inputs.sharedkernel-library-root == '' }}", StringComparison.Ordinal);
+        action.ShouldContain("if: ${{ inputs.sharedkernel-library-root == '' && inputs.sharedkernel-candidate-feed == '' }}", StringComparison.Ordinal);
+        action.ShouldContain("LIBRARY_ROOT: ${{ inputs.sharedkernel-library-root }}", StringComparison.Ordinal);
+        action.ShouldContain("CANDIDATE_FEED: ${{ inputs.sharedkernel-candidate-feed }}", StringComparison.Ordinal);
         action.ShouldContain("CANDIDATE_FEED=\"${CANDIDATE_FEED:-${GITHUB_WORKSPACE}/.local/sharedkernel-download}\"", StringComparison.Ordinal);
+        action.ShouldNotContain("${{ vars.", StringComparison.Ordinal);
+    }
+
+    [Theory]
+    [InlineData("ci.yml")]
+    [InlineData("dependency-review.yml")]
+    [InlineData("roadmap-maintenance.yml")]
+    [InlineData("release-prep.yml")]
+    [InlineData("devcontainer-smoke.yml")]
+    public async Task Workflow_callers_pass_repository_overrides_through_explicit_action_inputs(string workflowName)
+    {
+        // Arrange
+        var root = CiTestSelectionTestProcess.GetRepositoryRoot();
+        var path = Path.Combine(root, ".github", "workflows", workflowName);
+        var workflow = await File.ReadAllTextAsync(path, TestContext.Current.CancellationToken);
+
+        // Act
+        var calls = workflow.Split("uses: ./.github/actions/setup-ci-prerequisites", StringSplitOptions.None)
+            .Skip(1)
+            .ToArray();
+
+        // Assert
+        calls.Length.ShouldBeGreaterThan(0);
+        foreach (var call in calls)
+        {
+            var step = call.Split("\n      - ", StringSplitOptions.None)[0];
+            step.ShouldContain("        with:\n", StringComparison.Ordinal);
+            step.ShouldContain("          sharedkernel-library-root: ${{ vars.SHAREDKERNEL_LIBRARY_ROOT }}", StringComparison.Ordinal);
+            step.ShouldContain("          sharedkernel-candidate-feed: ${{ vars.SHAREDKERNEL_CANDIDATE_FEED }}", StringComparison.Ordinal);
+        }
     }
 }

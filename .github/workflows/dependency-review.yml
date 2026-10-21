@@ -45,6 +45,8 @@ jobs:
         if: ${{ hashFiles('.config/sharedkernel-candidate.json') != '' }}
         uses: ./.github/actions/setup-ci-prerequisites
         with:
+          sharedkernel-library-root: ${{ vars.SHAREDKERNEL_LIBRARY_ROOT }}
+          sharedkernel-candidate-feed: ${{ vars.SHAREDKERNEL_CANDIDATE_FEED }}
           restore-targets: tools/ViajantesTurismo.RepoConfig.Tool/ViajantesTurismo.RepoConfig.Tool.csproj
           restore-local-tools: "false"
           trust-dev-certificate: "false"

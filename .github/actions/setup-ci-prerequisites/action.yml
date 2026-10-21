@@ -2,6 +2,14 @@ name: Setup CI Prerequisites
 description: Set up the repository toolchains and restore shared prerequisites for CI jobs.
 
 inputs:
+  sharedkernel-library-root:
+    description: Optional clean checkout of the pinned SharedKernel revision.
+    required: false
+    default: ""
+  sharedkernel-candidate-feed:
+    description: Optional directory containing unchanged pinned candidate packages.
+    required: false
+    default: ""
   restore-targets:
     description: Newline-delimited solution or project paths to restore.
     required: false
@@ -51,7 +59,7 @@ runs:
         "version=$($pin.packageVersion)" >> $env:GITHUB_OUTPUT
 
     - name: Checkout pinned SharedKernel source
-      if: ${{ vars.SHAREDKERNEL_LIBRARY_ROOT == '' }}
+      if: ${{ inputs.sharedkernel-library-root == '' }}
       uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
       with:
         repository: danigutsch/PandaBear.SharedKernel
@@ -60,7 +68,7 @@ runs:
         persist-credentials: false
 
     - name: Download pinned SharedKernel candidate
-      if: ${{ vars.SHAREDKERNEL_LIBRARY_ROOT == '' && vars.SHAREDKERNEL_CANDIDATE_FEED == '' }}
+      if: ${{ inputs.sharedkernel-library-root == '' && inputs.sharedkernel-candidate-feed == '' }}
       shell: bash
       env:
         GH_TOKEN: ${{ github.token }}
@@ -73,8 +81,8 @@ runs:
     - name: Stage pinned SharedKernel candidate
       shell: bash
       env:
-        LIBRARY_ROOT: ${{ vars.SHAREDKERNEL_LIBRARY_ROOT }}
-        CANDIDATE_FEED: ${{ vars.SHAREDKERNEL_CANDIDATE_FEED }}
+        LIBRARY_ROOT: ${{ inputs.sharedkernel-library-root }}
+        CANDIDATE_FEED: ${{ inputs.sharedkernel-candidate-feed }}
       run: |
         if [[ -z "${LIBRARY_ROOT}" ]]; then
           LIBRARY_ROOT="${GITHUB_WORKSPACE}/.local/sharedkernel-library"

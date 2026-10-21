@@ -55,6 +55,8 @@ jobs:
       - name: Set up CI prerequisites
         uses: ./.github/actions/setup-ci-prerequisites
         with:
+          sharedkernel-library-root: ${{ vars.SHAREDKERNEL_LIBRARY_ROOT }}
+          sharedkernel-candidate-feed: ${{ vars.SHAREDKERNEL_CANDIDATE_FEED }}
           trust-dev-certificate: "false"
 
       - name: Calculate release version
