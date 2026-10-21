@@ -65,10 +65,12 @@ public sealed class ConsumerSetupContractTests
         action.ShouldContain("repository: danigutsch/PandaBear.SharedKernel", StringComparison.Ordinal);
         action.ShouldContain("ref: ${{ steps.sharedkernel-pin.outputs.revision }}", StringComparison.Ordinal);
         action.ShouldContain("persist-credentials: false", StringComparison.Ordinal);
-        action.ShouldContain("gh release download \"v${PINNED_VERSION}\"", StringComparison.Ordinal);
-        action.ShouldContain("--pattern '*.nupkg'", StringComparison.Ordinal);
-        action.ShouldContain("--pattern 'candidate.json'", StringComparison.Ordinal);
-        action.ShouldContain("GH_TOKEN: ${{ github.token }}", StringComparison.Ordinal);
+        action.ShouldContain("https://github.com/danigutsch/PandaBear.SharedKernel/releases/download/v", StringComparison.Ordinal);
+        action.ShouldContain("$pin.packageSha256.PSObject.Properties.Name", StringComparison.Ordinal);
+        action.ShouldContain("'candidate.json'", StringComparison.Ordinal);
+        action.ShouldContain("Invoke-WebRequest", StringComparison.Ordinal);
+        action.ShouldNotContain("gh release download", StringComparison.Ordinal);
+        action.ShouldNotContain("GH_TOKEN:", StringComparison.Ordinal);
         action.ShouldNotContain("--clobber", StringComparison.Ordinal);
     }
 
