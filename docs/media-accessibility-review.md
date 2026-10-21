@@ -54,4 +54,9 @@ To run the real-engine verification cases after building the WebTests project, s
 `MediaLanguageGuidanceTests` class. Without those variables, real-engine cases are not exercised;
 parser and indeterminate-rule cases remain independent of external artifacts.
 
+The Linux Fast Validation 2 CI job provisions the same checksum-pinned source archive and model,
+builds the CLI with the runner's C++ compiler, and enables these real-engine tests for coverage.
+Downloads must match their committed SHA-256 values before extraction or use; a download, checksum,
+or build failure fails the job. This test-only provisioning does not install the engine in production.
+
 Language declarations follow [W3C BCP 47 guidance](https://www.w3.org/International/articles/language-tags/).

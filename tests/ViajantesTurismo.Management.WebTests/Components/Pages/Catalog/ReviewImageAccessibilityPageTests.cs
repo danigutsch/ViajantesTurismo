@@ -26,6 +26,35 @@ public sealed class ReviewImageAccessibilityPageTests : BunitContext
                 new EndpointMetadataCollection(new EndpointNameMetadata(ManagementWebEndpoints.MediaPreviewByRenditionEndpointName)), "media")));
     }
 
+    [Fact]
+    public async Task Prevents_description_edits_while_an_external_operation_is_pending()
+    {
+        // Arrange
+        var image = new CatalogMediaImageDto
+        {
+            Id = Guid.CreateVersion7(), AltText = "The cyclists are riding through a mountain valley.",
+            ResponsiveVariants = [], RequiresHumanReview = true
+        };
+        catalogApi.Images = [image];
+        var pendingDraft = new TaskCompletionSource<HttpOutcome<CatalogMediaImageDto>>(TaskCreationOptions.RunContinuationsAsynchronously);
+        catalogApi.AccessibilityDraftTask = pendingDraft.Task;
+        var cut = Render<ReviewImageAccessibility>(parameters => parameters.Add(component => component.Id, Guid.CreateVersion7()));
+
+        // Act
+        var generate = cut.Find("button.btn-outline-primary").ClickAsync(new Microsoft.AspNetCore.Components.Web.MouseEventArgs());
+        cut.WaitForState(() => cut.Find("button.btn-outline-secondary").HasAttribute("disabled"));
+
+        var descriptionDisabledWhilePending = cut.Find("#altText").HasAttribute("disabled");
+        var pendingDescription = cut.Find("#altText").GetAttribute("value");
+        pendingDraft.SetResult(HttpOutcomeMapper.Succeeded(System.Net.HttpStatusCode.OK, image));
+        await generate;
+
+        // Assert
+        descriptionDisabledWhilePending.ShouldBeTrue();
+        pendingDescription.ShouldBe(image.AltText);
+        cut.Find("#altText").HasAttribute("disabled").ShouldBeFalse();
+    }
+
     [Fact(Skip = "Requires explicitly provisioned local fastText executable and model.", SkipUnless = nameof(MediaLanguageGuidanceTests.IsLocalEngineConfigured), SkipType = typeof(MediaLanguageGuidanceTests))]
     public void Shows_language_mismatch_as_advisory_and_allows_human_override()
     {

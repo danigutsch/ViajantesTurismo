@@ -47,7 +47,7 @@ else
     }
     <div class="mb-3">
         <label for="altText" class="form-label">Image description</label>
-        <textarea id="altText" class="form-control" @bind="_altText" @bind:after="ResetGuidance" rows="4" maxlength="@ViajantesTurismo.Catalog.Contracts.Application.ContractConstants.MaxAltTextLength"></textarea>
+        <textarea id="altText" class="form-control" @bind="_altText" @bind:after="ResetGuidance" disabled="@_saving" rows="4" maxlength="@ViajantesTurismo.Catalog.Contracts.Application.ContractConstants.MaxAltTextLength"></textarea>
     </div>
     <div class="mb-3">
         <label for="caption" class="form-label">Caption (optional)</label>

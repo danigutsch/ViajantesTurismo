@@ -117,6 +117,33 @@ internal static class CatalogInfrastructureTestServices
         return new CatalogInfrastructureScenario(builder.Services.BuildServiceProvider());
     }
 
+    public static CatalogInfrastructureScenario CreateS3Scenario(bool includeSeaweedFsSection)
+    {
+        var builder = Host.CreateApplicationBuilder();
+        var configuration = new Dictionary<string, string?>
+        {
+            [$"ConnectionStrings:{ResourceNames.CatalogDatabase}"] = "Host=localhost;Database=viajantes;Username=test;Password=test",
+            [ClamAvMalwareScannerConfigurationKeys.HostConfigurationKey] = "clamav",
+            [ClamAvMalwareScannerConfigurationKeys.PortConfigurationKey] = "3310",
+            [$"{SeaweedFsMediaObjectStorageOptions.S3SectionName}:Endpoint"] = "https://s3.eu-central-1.amazonaws.com",
+            [$"{SeaweedFsMediaObjectStorageOptions.S3SectionName}:AuthenticationRegion"] = "eu-central-1",
+            [$"{SeaweedFsMediaObjectStorageOptions.S3SectionName}:ForcePathStyle"] = "false",
+            [$"{SeaweedFsMediaObjectStorageOptions.S3SectionName}:Bucket"] = "cloud-media",
+            [$"{SeaweedFsMediaObjectStorageOptions.S3SectionName}:AccessKey"] = "test-access",
+            [$"{SeaweedFsMediaObjectStorageOptions.S3SectionName}:SecretKey"] = "test-secret",
+            [$"{SeaweedFsMediaObjectStorageOptions.S3SectionName}:PublicBaseUri"] = "https://cdn.example.com/published/"
+        };
+        if (includeSeaweedFsSection)
+        {
+            // An incomplete local section must not override valid production configuration.
+            configuration[$"{SeaweedFsMediaObjectStorageOptions.SectionName}:Endpoint"] = "http://seaweedfs:8333";
+        }
+        builder.Configuration.AddInMemoryCollection(configuration);
+        builder.AddCatalogInfrastructure();
+
+        return new CatalogInfrastructureScenario(builder.Services.BuildServiceProvider());
+    }
+
     public static CatalogInfrastructureScenario CreateSeedingScenario()
     {
         var builder = Host.CreateApplicationBuilder();
