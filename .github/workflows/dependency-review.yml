@@ -8,7 +8,7 @@ name: Dependency Review
   pull_request:
     types:
       - opened
-      - edited
+      - labeled
       - synchronize
       - reopened
       - ready_for_review
@@ -20,17 +20,51 @@ permissions:
   contents: read
 
 concurrency:
-  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}-${{ github.event.action == 'labeled' && github.event.label.name != 'ci:rerun' && github.run_id || 'validation' }}
   cancel-in-progress: true
 
 jobs:
+  plan:
+    name: Plan Dependency Review
+    if: ${{ github.event.action != 'labeled' || github.event.label.name == 'ci:rerun' }}
+    runs-on: ${{ vars.CI_UBUNTU_RUNNER }}
+    timeout-minutes: 5
+    permissions:
+      contents: read
+    outputs:
+      review_required: ${{ steps.plan.outputs.review_required }}
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+      - uses: actions/setup-dotnet@c2fa09f4bde5ebb9d1777cf28262a3eb3db3ced7 # v5
+        with:
+          global-json-file: global.json
+      - name: Plan exact dependency comparison
+        id: plan
+        env:
+          BASE_SHA: ${{ github.event.pull_request.base.sha || github.event.merge_group.base_sha || github.event.before }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha || github.event.merge_group.head_sha || github.sha }}
+        run: dotnet run --project tools/ViajantesTurismo.RepoConfig.Tool -c Release -- plan-dependency-review --base "$BASE_SHA" --head "$HEAD_SHA" --github-output "$GITHUB_OUTPUT"
+      - name: Retain selection evidence
+        if: always()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
+        with:
+          name: dependency-review-plan
+          path: TestResults/dependency-review-plan.json
+          if-no-files-found: error
+
   dependency-snapshots:
+    needs: plan
     name: Dependency snapshot (${{ matrix.target }})
     if: >-
-      github.event_name == 'push' || github.event_name == 'workflow_dispatch' ||
-      (github.event_name == 'pull_request' &&
+      (github.event.action != 'labeled' || github.event.label.name == 'ci:rerun') &&
+      (github.event_name == 'push' || github.event_name == 'workflow_dispatch' ||
+      (needs.plan.outputs.review_required == 'true' &&
+      github.event_name == 'pull_request' &&
       github.event.pull_request.head.repo.full_name == github.repository &&
-      github.actor != 'dependabot[bot]')
+      github.actor != 'dependabot[bot]'))
     runs-on: ${{ vars.CI_UBUNTU_RUNNER }}
     timeout-minutes: 20
     permissions:
@@ -46,13 +80,24 @@ jobs:
           ref: ${{ matrix.target == 'base' && github.event.pull_request.base.sha || github.event.pull_request.head.sha || github.sha }}
           persist-credentials: false
 
+      # Use reviewed PR tooling for both snapshots; only dependency inputs come from matrix.target.
+      - name: Checkout reviewed CI prerequisites
+        if: ${{ hashFiles('.config/sharedkernel-candidate.json') != '' }}
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+          path: .local/dependency-ci-support
+          sparse-checkout: .github/actions/setup-ci-prerequisites
+          persist-credentials: false
+
       - name: Set up CI prerequisites
         if: ${{ hashFiles('.config/sharedkernel-candidate.json') != '' }}
-        uses: ./.github/actions/setup-ci-prerequisites
+        uses: ./.local/dependency-ci-support/.github/actions/setup-ci-prerequisites
         with:
           sharedkernel-library-root: ${{ vars.SHAREDKERNEL_LIBRARY_ROOT }}
           sharedkernel-candidate-feed: ${{ vars.SHAREDKERNEL_CANDIDATE_FEED }}
-          restore-targets: tools/ViajantesTurismo.RepoConfig.Tool/ViajantesTurismo.RepoConfig.Tool.csproj
+          # Bootstrap builds the historical tool; the complete graph is restored below.
+          restore-targets: ""
           restore-local-tools: "false"
           trust-dev-certificate: "false"
 
@@ -74,21 +119,24 @@ jobs:
           snapshot-ref: ${{ github.event_name == 'pull_request' && format('refs/heads/{0}', matrix.target == 'base' && github.base_ref || github.head_ref) || github.ref }}
 
   dependency-review:
-    name: Dependency Review
-    needs: dependency-snapshots
-    if: ${{ always() && (github.event_name == 'pull_request' || github.event_name == 'merge_group') }}
+    name: ${{ github.event.action == 'labeled' && github.event.label.name != 'ci:rerun' && 'Ignored label event' || 'Dependency Review' }}
+    needs: [plan, dependency-snapshots]
+    if: ${{ (github.event.action != 'labeled' || github.event.label.name == 'ci:rerun') && (always() && (github.event_name == 'pull_request' || github.event_name == 'merge_group')) }}
     runs-on: ${{ vars.CI_UBUNTU_RUNNER }}
     steps:
       - name: Require successful snapshot generation when applicable
         env:
           SNAPSHOT_RESULT: ${{ needs.dependency-snapshots.result }}
+          PLAN_RESULT: ${{ needs.plan.result }}
         run: |
+          test "$PLAN_RESULT" = success
           case "$SNAPSHOT_RESULT" in
             success | skipped) ;;
             *) echo "Dependency snapshot generation did not succeed." >&2; exit 1 ;;
           esac
 
       - name: Checkout repository
+        if: needs.plan.outputs.review_required == 'true'
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
         with:
           ref: ${{ github.event.pull_request.head.sha || github.sha }}
@@ -97,6 +145,7 @@ jobs:
       # The pinned Action ignores purl versions. Fail before emitting its exception if approval expires.
       # Maintainer approved this preview graph on 2026-10-21; evidence: docs/ci/dependency-license-evidence.md.
       - name: Validate exact preview license approval
+        if: needs.plan.outputs.review_required == 'true'
         id: preview-license
         shell: pwsh
         run: |
@@ -128,6 +177,7 @@ jobs:
           'packages=pkg:nuget/StreamJsonRpc@2.25.29,pkg:nuget/Magick.NET-Q8-AnyCPU@15.0.0' >> $env:GITHUB_OUTPUT
 
       - name: Dependency Review
+        if: needs.plan.outputs.review_required == 'true'
         uses: actions/dependency-review-action@2031cfc080254a8a887f58cffee85186f0e49e48 # v4.9.0
         with:
           fail-on-severity: moderate
@@ -139,3 +189,7 @@ jobs:
           allow-licenses: >-
             MIT, Apache-2.0, BSD-2-Clause, BSD-3-Clause, 0BSD, ISC, PostgreSQL, Zlib,
             Unlicense, CC0-1.0
+
+      - name: Report unchanged dependency inputs
+        if: needs.plan.outputs.review_required == 'false'
+        run: echo "Only standalone documentation changed; see dependency-review-plan evidence."

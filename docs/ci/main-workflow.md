@@ -5,7 +5,7 @@ Operational details for the primary GitHub Actions workflow in
 
 ## Workflow jobs
 
-The CI workflow runs on pull request activity (`opened`, `edited`, `synchronize`,
+The CI workflow runs on pull request activity (`opened`, `labeled` for explicit `ci:rerun`, `synchronize`,
 `reopened`, and `ready_for_review`), every push to `main`, on merge queue checks
 (`merge_group`), and on `workflow_dispatch`. It defines multiple test slices, a version
 calculation job, a repository-owned coverage aggregation job, a lint job, and the shared change-detection gate.
@@ -217,3 +217,15 @@ A maintainer must update the remote required check from `SonarCloud` to `Quality
 after the replacement passes. Workflow edits alone do not change branch protection.
 
 For missing PR-context checks, see [Governance](governance.md#recovery-for-missing-pr-checks).
+
+## Parallel solution-build evidence
+
+`Solution Build` runs after change detection alongside test slices. It validates the complete
+solution, including projects outside test dependency graphs, and uploads revision-bound Release
+symbols as `solution-build-evidence`. `Quality Gate` checks the solution-build result, downloads and
+verifies those symbols, and restores only the reporting/repository tools. It no longer builds the
+full solution after tests. Portable-PDB document checks retain their existing coverage semantics.
+
+The `run-ci-test-slice` application command owns graph creation, OpenAPI preparation, Playwright
+selection, timing logs, and failure manifests. The Bash entrypoint delegates to that command;
+existing coverage collection and browser installation remain platform adapters.

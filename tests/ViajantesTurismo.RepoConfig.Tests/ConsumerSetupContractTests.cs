@@ -72,6 +72,8 @@ public sealed class ConsumerSetupContractTests
         action.ShouldContain("-MaximumRetryCount 3", StringComparison.Ordinal);
         action.ShouldNotContain("gh release download", StringComparison.Ordinal);
         action.ShouldNotContain("GH_TOKEN:", StringComparison.Ordinal);
+        action.ShouldContain("if: ${{ inputs.restore-targets != '' || inputs.restore-targets-file != '' }}", StringComparison.Ordinal);
+        action.ShouldNotContain("--clobber", StringComparison.Ordinal);
     }
 
     [Fact]
@@ -109,7 +111,10 @@ public sealed class ConsumerSetupContractTests
         var workflow = await File.ReadAllTextAsync(path, TestContext.Current.CancellationToken);
 
         // Act
-        var calls = workflow.Split("uses: ./.github/actions/setup-ci-prerequisites", StringSplitOptions.None)
+        var actionPath = workflowName == "dependency-review.yml"
+            ? "uses: ./.local/dependency-ci-support/.github/actions/setup-ci-prerequisites"
+            : "uses: ./.github/actions/setup-ci-prerequisites";
+        var calls = workflow.Split(actionPath, StringSplitOptions.None)
             .Skip(1)
             .ToArray();
 

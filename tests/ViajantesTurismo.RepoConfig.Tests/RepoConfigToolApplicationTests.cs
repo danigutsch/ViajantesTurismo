@@ -31,6 +31,8 @@ public sealed class RepoConfigToolApplicationTests
         // Arrange
         using var output = new StringWriter();
         using var error = new StringWriter();
+        using var help = new StringWriter();
+        await RepoConfigToolApplication.Run(["--help"], help, error, Directory.GetCurrentDirectory(), TestContext.Current.CancellationToken);
 
         // Act
         var exitCode = await RepoConfigToolApplication.Run(
@@ -40,6 +42,7 @@ public sealed class RepoConfigToolApplicationTests
         exitCode.ShouldBe(1);
         output.ToString().ShouldBe(string.Empty);
         error.ToString().ShouldContain("Commands: bootstrap-sharedkernel", StringComparison.Ordinal);
+        error.ToString().ShouldContain(help.ToString().TrimEnd(), StringComparison.Ordinal);
         error.ToString().ShouldContain("Use sharedkernel-repo for reusable repository commands.", StringComparison.Ordinal);
     }
 
