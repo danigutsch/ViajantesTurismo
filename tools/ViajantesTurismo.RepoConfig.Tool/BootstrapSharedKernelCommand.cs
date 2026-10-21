@@ -23,7 +23,13 @@ internal static class BootstrapSharedKernelCommand
 
         if (library is null) { throw new ArgumentException("--library-root is required."); }
         var candidate = Path.Combine(root, ".config", "sharedkernel-candidate.json");
-        var pin = JsonNode.Parse(await File.ReadAllTextAsync(candidate, ct).ConfigureAwait(false))!.AsObject();
+        var pin = JsonNode.Parse(await File.ReadAllTextAsync(candidate, ct).ConfigureAwait(false)) as JsonObject
+            ?? throw new ArgumentException("Candidate manifest must be a JSON object.");
+        var version = pin["packageVersion"]?.GetValue<string>();
+        if (string.IsNullOrWhiteSpace(version))
+        {
+            throw new ArgumentException("Candidate package version is required.");
+        }
         var revision = await CandidateCompatibilityCommand.RunProcess("git", ["rev-parse", "HEAD"], library, TextWriter.Null, ct).ConfigureAwait(false);
         var dirty = await CandidateCompatibilityCommand.RunProcess("git", ["status", "--porcelain"], library, TextWriter.Null, ct).ConfigureAwait(false);
         if (dirty.Length != 0 || revision != pin["libraryRevision"]?.GetValue<string>())
@@ -31,7 +37,7 @@ internal static class BootstrapSharedKernelCommand
             throw new ArgumentException("Bootstrap requires a clean checkout of the pinned SharedKernel revision.");
         }
 
-        feed ??= Path.Combine(library, "artifacts", "api-compat", "packages", pin["packageVersion"]!.GetValue<string>());
+        feed ??= Path.Combine(library, "artifacts", "api-compat", "packages", version);
         var tool = Path.Combine(library, "tools", "SharedKernel.Versioning.Tool", "SharedKernel.Versioning.Tool.csproj");
         await CandidateCompatibilityCommand.RunProcess("dotnet",
             ["run", "--project", tool, "-c", "Release", "--", "stage-candidate", "--repo-root", library,

@@ -82,7 +82,7 @@ dotnet test --project tests/ViajantesTurismo.RepoConfig.Tests/ViajantesTurismo.R
     --filter-class ViajantesTurismo.RepoConfig.Tests.DotnetSdkBootstrapTests
 bash scripts/check-line-endings.sh
 dotnet tool run sharedkernel-repo -- text-encoding --root .
-bash scripts/lint-json.sh
+dotnet run --project tools/ViajantesTurismo.RepoConfig.Tool -c Release -- lint-json
 bash scripts/lint-gherkin.sh tests/**/*.feature
 bash scripts/lint-links.sh
 if [[ "${fix_mode}" == true ]]; then

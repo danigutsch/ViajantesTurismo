@@ -52,7 +52,10 @@ public sealed partial class AppHostOrchestrationTests
         releaseWorkflowText.ShouldContain("package_version", StringComparison.Ordinal);
         releaseWorkflowText.ShouldContain("VT_ASPIRE_CONTAINER_IMAGE_TAG", StringComparison.Ordinal);
         releaseWorkflowText.ShouldContain("ComputedInformationalVersion", StringComparison.Ordinal);
-        releaseWorkflowText.ShouldContain("dotnet tool run aspire -- publish", StringComparison.Ordinal);
+        releaseWorkflowText.ShouldContain("dotnet tool run aspire -- 'do' publish-manifest", StringComparison.Ordinal);
+        releaseWorkflowText.ShouldContain("test -s artifacts/aspire/release-prep/aspire-manifest.json", StringComparison.Ordinal);
+        releaseWorkflowText.ShouldContain("path: artifacts/aspire/release-prep/aspire-manifest.json", StringComparison.Ordinal);
+        releaseWorkflowText.ShouldContain("if-no-files-found: error", StringComparison.Ordinal);
         combinedDocsText.ShouldContain("sharedkernel-version calculate-release", StringComparison.Ordinal);
         combinedDocsText.ShouldContain("PublishAsDockerFile", StringComparison.Ordinal);
         combinedDocsText.ShouldContain("WithImageTag", StringComparison.Ordinal);

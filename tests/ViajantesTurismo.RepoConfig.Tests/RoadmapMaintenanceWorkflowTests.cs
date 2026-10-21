@@ -150,7 +150,7 @@ public sealed class RoadmapMaintenanceWorkflowTests
         verifyIndex.ShouldBeGreaterThan(intakeIndex);
         diffIndex.ShouldBeGreaterThan(verifyIndex);
         sealIndex.ShouldBeGreaterThan(diffIndex);
-        workflow.ShouldContain("bash scripts/lint-json.sh roadmap", StringComparison.Ordinal);
+        workflow.ShouldContain("dotnet run --project tools/ViajantesTurismo.RepoConfig.Tool -c Release -- lint-json", StringComparison.Ordinal);
         workflow.ShouldContain("bash scripts/lint-markdown.sh roadmap/README.md", StringComparison.Ordinal);
         workflow.ShouldContain("bash scripts/lint-links.sh roadmap/README.md", StringComparison.Ordinal);
         workflow.ShouldNotContain("sync github --apply", StringComparison.Ordinal);

@@ -143,15 +143,16 @@ becomes a demonstrated contributor pain point.
 
 ## Release prep workflow
 
-A separate workflow (`.github/workflows/release-prep.yml`) prepares release artifacts without
-publishing by default. It runs on relevant pull-request changes and manual dispatch.
+A separate workflow (`.github/workflows/release-prep.yml`) validates the versioned Aspire resource
+model without deploying, tagging, or publishing. It runs on relevant pull-request changes and manual
+dispatch.
 
 ### Release Prep
 
 | Attribute | Value |
 | --- | --- |
 | Workflow file | `.github/workflows/release-prep.yml` |
-| Primary job name | `Release Dry Run` |
+| Primary job name | `Resource Model Validation` |
 | Runner | Repository CI baseline |
 | Merge gate | Not required |
 
@@ -161,12 +162,19 @@ publishing by default. It runs on relevant pull-request changes and manual dispa
 2. Bootstrap the pinned SharedKernel candidate and restore application dependencies and local tools
    through the shared CI prerequisite action.
 3. Run the pinned `sharedkernel-version calculate-release` tool to calculate the application version.
-4. Run `aspire publish` with the computed version and source revision to prepare deployment artifacts.
-5. Upload Aspire deployment artifacts for review.
+4. Run the pinned `aspire do publish-manifest` command with the computed version and source revision
+   to export `artifacts/aspire/release-prep/aspire-manifest.json`.
+5. Require a nonempty manifest and upload that exact file for review.
 
-The existing CI workflow remains the application build/test gate. Release Prep prepares deployment
-artifacts; it does not pack SharedKernel packages, generate library release metadata, create tags,
-or publish packages. The manual `prepare_stable` input selects stable version calculation only.
+The manifest records the application resource model; it does not build deployment images or prove
+deployment readiness. No compute environment is configured, so the generic `aspire publish` pipeline
+would produce no deployment artifacts. The built-in manifest export provides explicit model evidence
+without adding a deployment provider. See the official
+[manifest example](https://aspire.dev/integrations/custom-integrations/hosting-integrations/#publishing-and-resource-expressions).
+
+The existing CI workflow remains the application build/test gate. Release Prep does not pack
+SharedKernel packages, generate library release metadata, create tags, or publish packages. The manual
+`prepare_stable` input selects stable version calculation only.
 Library release and API validation belong to the
 [standalone library](https://github.com/danigutsch/PandaBear.SharedKernel); application adoption follows
 [the consumer compatibility workflow](../sharedkernel/development.md#adopt-a-library-change).
@@ -177,7 +185,9 @@ Release workflows should reuse the same `calculate-release` output. AppHost code
 orchestration model and receives precomputed values from the workflow; it must not inspect Git tags or
 commit history itself.
 
-For application container publishing, pass the computed release version into `aspire publish` and map
+A future application deployment workflow must configure a compute environment before claiming
+deployment-ready output. For application container publishing, pass the computed release version into
+`aspire publish` and map
 it to Aspire's container hooks documented in `src/ViajantesTurismo.AppHost/README.md`:
 
 1. Convert selected project resources with `PublishAsDockerFile(...)` during publish mode.

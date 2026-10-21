@@ -14,6 +14,22 @@ internal sealed class TemporaryCiTestRepository : IDisposable
 
     public string RootPath { get; }
 
+    public async Task<string> CommitFiles(CancellationToken ct)
+    {
+        string[][] commands =
+        [
+            ["init", "--initial-branch=main"],
+            ["add", "--all"],
+            ["-c", "commit.gpgsign=false", "-c", "user.name=Bootstrap Tests", "-c", "user.email=bootstrap@example.invalid", "commit", "-m", "fixture"]
+        ];
+        foreach (var command in commands)
+        {
+            await CandidateCompatibilityCommand.RunProcess("git", command, RootPath, TextWriter.Null, ct);
+        }
+
+        return await CandidateCompatibilityCommand.RunProcess("git", ["rev-parse", "HEAD"], RootPath, TextWriter.Null, ct);
+    }
+
     public void AddProject(string relativePath, params string[] projectReferences)
     {
         AddProject(relativePath, useWindowsReferenceSeparators: false, isXunitTestProject: false, projectReferences);

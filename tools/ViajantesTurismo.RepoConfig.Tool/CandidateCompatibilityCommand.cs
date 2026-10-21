@@ -183,7 +183,7 @@ internal static class CandidateCompatibilityCommand
         }
     }
 
-    internal static async Task<string> RunProcess(string name, string[] args, string root, TextWriter output, CancellationToken ct)
+    internal static async Task<string> RunProcess(string name, string[] args, string root, TextWriter output, CancellationToken ct, bool trimOutput = true)
     {
         var info = new ProcessStartInfo(name) { WorkingDirectory = root, UseShellExecute = false, RedirectStandardOutput = true, RedirectStandardError = true };
         foreach (var argument in args) { info.ArgumentList.Add(argument); }
@@ -209,6 +209,6 @@ internal static class CandidateCompatibilityCommand
         await output.WriteAsync(text).ConfigureAwait(false);
         if (process.ExitCode != 0) { throw new InvalidOperationException($"{name} exited {process.ExitCode}: {text}{Environment.NewLine}{errors}"); }
         if (!string.IsNullOrEmpty(errors)) { await output.WriteAsync(errors).ConfigureAwait(false); }
-        return text.Trim();
+        return trimOutput ? text.Trim() : text;
     }
 }

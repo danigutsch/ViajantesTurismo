@@ -72,8 +72,6 @@ internal static class CiTestProjectSelector
         "scripts/lint-all.sh",
         "scripts/lint-gherkin.sh",
         "scripts/lint-gherkin.py",
-        "scripts/lint-json.sh",
-        "scripts/lint-json.py",
         "scripts/lint-markdown.sh",
         "scripts/validate-commit-message.sh",
         "setup-dev.ps1",

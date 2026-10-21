@@ -18,7 +18,7 @@ name: Release Prep
   workflow_dispatch:
     inputs:
       prepare_stable:
-        description: Prepare stable application deployment artifacts without tagging or publishing.
+        description: Validate a stable-version application resource model without tagging or publishing.
         required: true
         default: false
         type: boolean
@@ -32,7 +32,7 @@ permissions:
 
 jobs:
   dry-run:
-    name: Release Dry Run
+    name: Resource Model Validation
     runs-on: ${{ vars.CI_UBUNTU_RUNNER }}
     permissions:
       contents: read
@@ -73,7 +73,7 @@ jobs:
             --github-output "${GITHUB_OUTPUT}" \
             --github-summary "${GITHUB_STEP_SUMMARY}"
 
-      - name: Publish Aspire deployment artifacts
+      - name: Export Aspire resource model
         shell: bash
         env:
           ComputedSemVer: ${{ steps.version.outputs.sem_ver }}
@@ -85,17 +85,18 @@ jobs:
           VT_ASPIRE_DEPLOYMENT_VERSION: ${{ steps.version.outputs.informational_version }}
           VT_ASPIRE_SOURCE_REVISION: ${{ github.sha }}
         run: |
-          dotnet tool run aspire -- publish \
+          mkdir -p artifacts/aspire/release-prep
+          dotnet tool run aspire -- 'do' publish-manifest \
             --apphost src/ViajantesTurismo.AppHost/ViajantesTurismo.AppHost.csproj \
-            --output-path artifacts/aspire/release-prep \
+            --output-path "${GITHUB_WORKSPACE}/artifacts/aspire/release-prep/aspire-manifest.json" \
             --non-interactive
+          test -s artifacts/aspire/release-prep/aspire-manifest.json
 
-      - name: Upload release prep artifacts
+      - name: Upload resource model
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
         with:
           name: release-prep-${{ steps.version.outputs.package_version }}
-          path: |
-            artifacts/aspire/**
+          path: artifacts/aspire/release-prep/aspire-manifest.json
           if-no-files-found: error
           retention-days: 14
 
@@ -106,6 +107,6 @@ jobs:
             echo "## Release prep"
             echo
             echo "- Version: \`${{ steps.version.outputs.package_version }}\`"
-            echo "- Stable tag when approved: \`v${{ steps.version.outputs.package_version }}\`"
-            echo "- External publishing: disabled unless manually dispatched with approval"
+            echo "- Artifact: Aspire resource model (not deployment-ready output)"
+            echo "- Deployment, tagging, and external publishing: disabled"
           } >> "$GITHUB_STEP_SUMMARY"

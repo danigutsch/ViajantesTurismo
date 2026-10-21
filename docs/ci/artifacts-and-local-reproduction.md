@@ -87,6 +87,6 @@ If the CI lint job fails, run individual linters to isolate the failure:
 ```bash
 bash scripts/lint-markdown.sh              # Markdown
 shellcheck **/*.sh                         # Shell scripts
-bash scripts/lint-json.sh **/*.json        # JSON files
+dotnet run --project tools/ViajantesTurismo.RepoConfig.Tool -c Release -- lint-json
 bash scripts/lint-gherkin.sh tests/**/*.feature  # Gherkin/feature files
 ```
