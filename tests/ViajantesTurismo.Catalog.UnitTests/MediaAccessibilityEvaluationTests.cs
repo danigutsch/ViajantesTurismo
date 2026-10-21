@@ -1,16 +1,19 @@
-using System.Text.Json;
+using System.Security.Cryptography;
 using System.Text.Json.Nodes;
-using OpenTelemetry;
+using System.Text.Json;
+using OpenTelemetry.Exporter;
 using OpenTelemetry.Metrics;
-using ViajantesTurismo.Catalog.Application;
+using OpenTelemetry;
+using PandaBear.Testing;
 using ViajantesTurismo.Catalog.Application.Media;
+using ViajantesTurismo.Catalog.Application;
 
 namespace ViajantesTurismo.Catalog.UnitTests;
 
-[Trait(PandaBear.Testing.TestTraitNames.AreaName, TestTraits.CatalogArea)]
-[Trait(PandaBear.Testing.SharedKernelTestTraitNames.ScopeName, PandaBear.Testing.SharedKernelTestTraitNames.UnitScope)]
-[Trait(PandaBear.Testing.SharedKernelTestTraitNames.CapabilityName, TestTraits.AiAccessibilityCapability)]
-[Collection("Catalog telemetry")]
+[Trait(TestTraitNames.AreaName, TestTraits.CatalogArea)]
+[Trait(SharedKernelTestTraitNames.ScopeName, SharedKernelTestTraitNames.UnitScope)]
+[Trait(SharedKernelTestTraitNames.CapabilityName, TestTraits.AiAccessibilityCapability)]
+[Collection(CatalogTelemetryGroup.Name)]
 public sealed class MediaAccessibilityEvaluationTests
 {
     [Fact]
@@ -36,7 +39,7 @@ public sealed class MediaAccessibilityEvaluationTests
             telemetryBuilder.AddOtlpExporter(options =>
             {
                 options.Endpoint = uri;
-                options.Protocol = OpenTelemetry.Exporter.OtlpExportProtocol.HttpProtobuf;
+                options.Protocol = OtlpExportProtocol.HttpProtobuf;
             });
         }
 
@@ -47,7 +50,7 @@ public sealed class MediaAccessibilityEvaluationTests
             var imageName = fixture.GetProperty("image").GetString();
             imageName.ShouldNotBeNull();
             var bytes = File.ReadAllBytes(Path.Combine(directory, imageName));
-            var hash = Convert.ToHexStringLower(System.Security.Cryptography.SHA256.HashData(bytes));
+            var hash = Convert.ToHexStringLower(SHA256.HashData(bytes));
             hash.ShouldBe(fixture.GetProperty("sha256").GetString());
         }
 

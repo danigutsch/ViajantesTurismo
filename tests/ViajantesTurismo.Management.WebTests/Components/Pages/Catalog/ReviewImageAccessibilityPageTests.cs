@@ -1,10 +1,12 @@
-using Microsoft.Extensions.Configuration;
+using System.Net;
+using Microsoft.AspNetCore.Components.Web;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Routing.Patterns;
-using ReviewImageAccessibility = ViajantesTurismo.Management.Web.Components.Pages.Catalog.ReviewImageAccessibility;
 using Microsoft.AspNetCore.Routing;
+using Microsoft.Extensions.Configuration;
 using PandaBear.HttpClients;
 using ViajantesTurismo.Management.Web;
+using ReviewImageAccessibility = ViajantesTurismo.Management.Web.Components.Pages.Catalog.ReviewImageAccessibility;
 
 namespace ViajantesTurismo.Management.WebTests.Components.Pages.Catalog;
 
@@ -19,7 +21,7 @@ public sealed class ReviewImageAccessibilityPageTests : BunitContext
         JSInterop.Mode = JSRuntimeMode.Loose;
         Services.AddSingleton<ICatalogToursApiClient>(catalogApi);
         Services.AddRouting();
-        Services.AddSingleton(new ViajantesTurismo.Management.Web.Services.MediaLanguageGuidance(new ConfigurationBuilder().Build()));
+        Services.AddSingleton(new MediaLanguageGuidance(new ConfigurationBuilder().Build()));
         Services.AddSingleton<EndpointDataSource>(new DefaultEndpointDataSource(
             new RouteEndpoint(_ => Task.CompletedTask,
                 RoutePatternFactory.Parse("/catalog/media/images/{id}/preview/{width}/{format}"), 0,
@@ -41,12 +43,12 @@ public sealed class ReviewImageAccessibilityPageTests : BunitContext
         var cut = Render<ReviewImageAccessibility>(parameters => parameters.Add(component => component.Id, Guid.CreateVersion7()));
 
         // Act
-        var generate = cut.Find("button.btn-outline-primary").ClickAsync(new Microsoft.AspNetCore.Components.Web.MouseEventArgs());
+        var generate = cut.Find("button.btn-outline-primary").ClickAsync(new MouseEventArgs());
         cut.WaitForState(() => cut.Find("button.btn-outline-secondary").HasAttribute("disabled"));
 
         var descriptionDisabledWhilePending = cut.Find("#altText").HasAttribute("disabled");
         var pendingDescription = cut.Find("#altText").GetAttribute("value");
-        pendingDraft.SetResult(HttpOutcomeMapper.Succeeded(System.Net.HttpStatusCode.OK, image));
+        pendingDraft.SetResult(HttpOutcomeMapper.Succeeded(HttpStatusCode.OK, image));
         await generate;
 
         // Assert
@@ -64,7 +66,7 @@ public sealed class ReviewImageAccessibilityPageTests : BunitContext
             ["MediaLanguageIdentification:ExecutablePath"] = Environment.GetEnvironmentVariable("MEDIA_TEST_FASTTEXT"),
             ["MediaLanguageIdentification:ModelPath"] = Environment.GetEnvironmentVariable("MEDIA_TEST_FASTTEXT_MODEL")
         }).Build();
-        Services.AddSingleton(new ViajantesTurismo.Management.Web.Services.MediaLanguageGuidance(configuration));
+        Services.AddSingleton(new MediaLanguageGuidance(configuration));
         catalogApi.Images = [new CatalogMediaImageDto
         {
             Id = Guid.CreateVersion7(), AltText = "Um grupo de ciclistas atravessa uma estrada nas montanhas ao lado de um vale verde e tranquilo.",
@@ -94,7 +96,7 @@ public sealed class ReviewImageAccessibilityPageTests : BunitContext
             ["MediaLanguageIdentification:ExecutablePath"] = "relative-fasttext",
             ["MediaLanguageIdentification:ModelPath"] = "relative-model"
         }).Build();
-        Services.AddSingleton(new ViajantesTurismo.Management.Web.Services.MediaLanguageGuidance(configuration));
+        Services.AddSingleton(new MediaLanguageGuidance(configuration));
         catalogApi.Images = [new CatalogMediaImageDto
         {
             Id = Guid.CreateVersion7(), AltText = "The cyclists are riding bicycles through the beautiful mountain valley.",
@@ -354,7 +356,7 @@ public sealed class ReviewImageAccessibilityPageTests : BunitContext
         // Arrange
         catalogApi.GetTourImagesOutcome = HttpOutcomeMapper.Status<CatalogMediaImageDto[]>(
             HttpOutcomeKind.MalformedBody,
-            System.Net.HttpStatusCode.OK,
+            HttpStatusCode.OK,
             "The catalog image response body was invalid.");
 
         // Act

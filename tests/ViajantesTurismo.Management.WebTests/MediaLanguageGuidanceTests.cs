@@ -1,9 +1,10 @@
 using Microsoft.Extensions.Configuration;
+using PandaBear.Testing;
 
 namespace ViajantesTurismo.Management.WebTests;
 
-[Trait(PandaBear.Testing.TestTraitNames.CategoryName, TestTraits.ComponentCategory)]
-[Trait(PandaBear.Testing.TestTraitNames.ScopeName, TestTraits.ComponentScope)]
+[Trait(TestTraitNames.CategoryName, TestTraits.ComponentCategory)]
+[Trait(TestTraitNames.ScopeName, TestTraits.ComponentScope)]
 public sealed class MediaLanguageGuidanceTests
 {
     public static bool IsLocalEngineConfigured => !string.IsNullOrWhiteSpace(Environment.GetEnvironmentVariable("MEDIA_TEST_FASTTEXT"))

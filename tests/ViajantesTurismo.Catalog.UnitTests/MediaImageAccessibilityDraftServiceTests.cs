@@ -1,14 +1,16 @@
 using System.Collections.Concurrent;
+using System.Diagnostics;
 using PandaBear.AI;
+using PandaBear.Testing;
 using ViajantesTurismo.Catalog.Application.Media;
 using ViajantesTurismo.Catalog.Domain.PublicContent;
 
 namespace ViajantesTurismo.Catalog.UnitTests;
 
-[Trait(PandaBear.Testing.TestTraitNames.AreaName, TestTraits.CatalogArea)]
-[Trait(PandaBear.Testing.SharedKernelTestTraitNames.ScopeName, PandaBear.Testing.SharedKernelTestTraitNames.UnitScope)]
-[Trait(PandaBear.Testing.SharedKernelTestTraitNames.CapabilityName, TestTraits.AiAccessibilityCapability)]
-[Collection("Catalog telemetry")]
+[Trait(TestTraitNames.AreaName, TestTraits.CatalogArea)]
+[Trait(SharedKernelTestTraitNames.ScopeName, SharedKernelTestTraitNames.UnitScope)]
+[Trait(SharedKernelTestTraitNames.CapabilityName, TestTraits.AiAccessibilityCapability)]
+[Collection(CatalogTelemetryGroup.Name)]
 public sealed class MediaImageAccessibilityDraftServiceTests
 {
     [Fact]
@@ -41,7 +43,7 @@ public sealed class MediaImageAccessibilityDraftServiceTests
         await objectStore.Put(new MediaObjectWriteRequest(image.SourceObjectKey, new MemoryStream([1]), "image/jpeg", 1, "sha256:abc"), TestContext.Current.CancellationToken);
         var provenance = new MediaImageAccessibilityGenerationProvenance("litellm", "configured-model", "artifact-version", "configuration-fingerprint");
         var service = new MediaImageAccessibilityDraftService(imageStore, objectStore, new StubImageTextGenerator(new ImageTextGenerationResult("A beach", null)), provenance: provenance);
-        var activities = new ConcurrentQueue<System.Diagnostics.Activity>();
+        var activities = new ConcurrentQueue<Activity>();
         using var activityListener = CatalogTelemetryTestsHelpers.CreateActivityListener(activities);
         var measurements = new ConcurrentQueue<string>();
         using var listener = CatalogTelemetryTestsHelpers.CreateMeterListener(measurements);
@@ -75,7 +77,7 @@ public sealed class MediaImageAccessibilityDraftServiceTests
         var objectStore = new InMemoryMediaObjectStore();
         await objectStore.Put(new MediaObjectWriteRequest(image.SourceObjectKey, new MemoryStream([1]), "image/jpeg", 1, "sha256:abc"), cancellation.Token);
         var service = new MediaImageAccessibilityDraftService(imageStore, objectStore, new CancellingImageTextGenerator(cancellation));
-        var activities = new ConcurrentQueue<System.Diagnostics.Activity>();
+        var activities = new ConcurrentQueue<Activity>();
         using var listener = CatalogTelemetryTestsHelpers.CreateActivityListener(activities);
 
         // Act

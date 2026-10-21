@@ -1,5 +1,6 @@
-using Amazon.S3;
+using System.Globalization;
 using Amazon.S3.Model;
+using Amazon.S3;
 using Microsoft.Extensions.Options;
 using PandaBear.InputNormalization;
 using ViajantesTurismo.Catalog.Application.Media;
@@ -125,7 +126,7 @@ internal sealed class SeaweedFsMediaObjectStore(
         IReadOnlyDictionary<string, string> headers = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
         {
             ["Content-Type"] = request.ContentType,
-            ["Content-Length"] = request.Length.ToString(System.Globalization.CultureInfo.InvariantCulture)
+            ["Content-Length"] = request.Length.ToString(CultureInfo.InvariantCulture)
         };
         return new MediaObjectUploadTicket(request.ObjectKey, uri, expiresAt, headers);
     }

@@ -1,13 +1,14 @@
 using Amazon.Runtime;
 using Amazon.S3;
 using Microsoft.Extensions.Options;
+using PandaBear.Testing;
 using ViajantesTurismo.Catalog.Application.Media;
 using ViajantesTurismo.Catalog.Infrastructure;
 
 namespace ViajantesTurismo.Catalog.UnitTests;
 
-[Trait(PandaBear.Testing.SharedKernelTestTraitNames.ScopeName, PandaBear.Testing.SharedKernelTestTraitNames.UnitScope)]
-[Trait("Capability", "MediaStorage")]
+[Trait(SharedKernelTestTraitNames.ScopeName, SharedKernelTestTraitNames.UnitScope)]
+[Trait(SharedKernelTestTraitNames.CapabilityName, TestTraits.MediaCapability)]
 public sealed class S3MediaUploadTicketTests
 {
     [Fact]
