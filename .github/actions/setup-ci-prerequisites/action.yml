@@ -72,14 +72,24 @@ runs:
 
     - name: Download pinned SharedKernel candidate
       if: ${{ inputs.sharedkernel-library-root == '' && inputs.sharedkernel-candidate-feed == '' }}
-      shell: bash
-      env:
-        GH_TOKEN: ${{ github.token }}
-        PINNED_VERSION: ${{ steps.sharedkernel-pin.outputs.version }}
+      shell: pwsh
       run: |
-        gh release download "v${PINNED_VERSION}" --repo danigutsch/PandaBear.SharedKernel \
-          --pattern '*.nupkg' --pattern 'candidate.json' \
-          --dir "${GITHUB_WORKSPACE}/.local/sharedkernel-download"
+        $ErrorActionPreference = 'Stop'
+        $ProgressPreference = 'SilentlyContinue'
+        $pin = Get-Content -LiteralPath .config/sharedkernel-candidate.json -Raw | ConvertFrom-Json -AsHashtable
+        $downloadDirectory = Join-Path $env:GITHUB_WORKSPACE '.local/sharedkernel-download'
+        New-Item -ItemType Directory -Path $downloadDirectory -Force | Out-Null
+        $version = [uri]::EscapeDataString($pin.packageVersion)
+        $releaseUrl = "https://github.com/danigutsch/PandaBear.SharedKernel/releases/download/v$version"
+        $files = @('candidate.json') + @($pin.packageSha256.Keys | Sort-Object)
+        foreach ($file in $files) {
+          if ($file -cne 'candidate.json' -and $file -cnotmatch '^[A-Za-z0-9][A-Za-z0-9._+-]*\.nupkg$') {
+            throw "Invalid pinned package filename: $file"
+          }
+          $uri = "$releaseUrl/$([uri]::EscapeDataString($file))"
+          $destination = Join-Path $downloadDirectory $file
+          Invoke-WebRequest -Uri $uri -OutFile $destination -MaximumRetryCount 3 -RetryIntervalSec 2
+        }
 
     - name: Stage pinned SharedKernel candidate
       shell: bash
