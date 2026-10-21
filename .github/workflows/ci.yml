@@ -4,7 +4,7 @@ on:
   pull_request:
     types:
       - opened
-      - edited
+      - labeled
       - synchronize
       - reopened
       - ready_for_review
@@ -17,11 +17,12 @@ on:
   workflow_dispatch:
 
 concurrency:
-  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}-${{ github.event.action == 'labeled' && github.event.label.name != 'ci:rerun' && github.run_id || 'validation' }}
   cancel-in-progress: ${{ github.ref != 'refs/heads/main' }}
 
 jobs:
   detect-changes:
+    if: ${{ github.event.action != 'labeled' || github.event.label.name == 'ci:rerun' }}
     name: Detect Changes
     runs-on: ${{ vars.CI_UBUNTU_RUNNER }}
     timeout-minutes: 5
@@ -79,6 +80,7 @@ jobs:
           retention-days: 1
 
   calculate-version:
+    if: ${{ github.event.action != 'labeled' || github.event.label.name == 'ci:rerun' }}
     name: Calculate Version
     runs-on: ${{ vars.CI_UBUNTU_RUNNER }}
     timeout-minutes: 10
@@ -121,6 +123,7 @@ jobs:
             --github-summary "${GITHUB_STEP_SUMMARY}"
 
   openapi-tool-windows:
+    if: ${{ github.event.action != 'labeled' || github.event.label.name == 'ci:rerun' }}
     name: OpenAPI Tool Windows
     needs:
       - detect-changes
@@ -164,7 +167,7 @@ jobs:
     name: ${{ matrix.display_name }}
     needs:
       - detect-changes
-    if: ${{ always() }}
+    if: ${{ (github.event.action != 'labeled' || github.event.label.name == 'ci:rerun') && (always()) }}
     runs-on: ${{ vars.CI_UBUNTU_RUNNER }}
     timeout-minutes: ${{ matrix.timeout_minutes }}
     permissions:
@@ -300,12 +303,12 @@ jobs:
         run: bash scripts/write-ci-artifact-summary.sh "${{ matrix.display_name }}"
 
   build-and-test:
-    name: Build and Test
+    name: ${{ github.event.action == 'labeled' && github.event.label.name != 'ci:rerun' && 'Ignored label event' || 'Build and Test' }}
     needs:
       - detect-changes
       - test-slices
       - openapi-tool-windows
-    if: ${{ always() }}
+    if: ${{ (github.event.action != 'labeled' || github.event.label.name == 'ci:rerun') && (always()) }}
     runs-on: ${{ vars.CI_UBUNTU_RUNNER }}
     timeout-minutes: 5
     permissions:
@@ -337,12 +340,47 @@ jobs:
           echo "Build and Test completed successfully across the validation slices."
           exit 0
 
+  solution-build:
+    name: Solution Build
+    needs: detect-changes
+    if: ${{ (github.event.action != 'labeled' || github.event.label.name == 'ci:rerun') && needs.detect-changes.outputs.build_required == 'true' }}
+    runs-on: ${{ vars.CI_UBUNTU_RUNNER }}
+    timeout-minutes: 15
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        with:
+          persist-credentials: false
+      - uses: ./.github/actions/setup-ci-prerequisites
+        with:
+          sharedkernel-library-root: ${{ vars.SHAREDKERNEL_LIBRARY_ROOT }}
+          sharedkernel-candidate-feed: ${{ vars.SHAREDKERNEL_CANDIDATE_FEED }}
+          restore-targets: ViajantesTurismo.slnx
+          restore-local-tools: "false"
+          trust-dev-certificate: "false"
+      - name: Build all solution projects
+        run: dotnet build ViajantesTurismo.slnx -c Release --no-restore
+      - name: Record revision and symbol hashes
+        run: dotnet run --project tools/ViajantesTurismo.RepoConfig.Tool -c Release --no-build --no-restore -- write-build-evidence
+      - name: Upload build evidence
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
+        with:
+          name: solution-build-evidence
+          if-no-files-found: error
+          path: |
+            TestResults/build-evidence.json
+            src/**/bin/Release/**/*.pdb
+            tools/**/bin/Release/**/*.pdb
+          retention-days: 7
+
   quality-gate:
-    name: Quality Gate
+    name: ${{ github.event.action == 'labeled' && github.event.label.name != 'ci:rerun' && 'Ignored label event' || 'Quality Gate' }}
     needs:
       - detect-changes
       - test-slices
-    if: ${{ always() }}
+      - solution-build
+    if: ${{ (github.event.action != 'labeled' || github.event.label.name == 'ci:rerun') && (always()) }}
     runs-on: ${{ vars.CI_UBUNTU_RUNNER }}
     timeout-minutes: 10
     permissions:
@@ -353,9 +391,12 @@ jobs:
         env:
           SELECTION_RESULT: ${{ needs.detect-changes.result }}
           TEST_RESULT: ${{ needs.test-slices.result }}
+          BUILD_REQUIRED: ${{ needs.detect-changes.outputs.build_required }}
+          BUILD_RESULT: ${{ needs.solution-build.result }}
         run: |
           test "$SELECTION_RESULT" = success
           test "$TEST_RESULT" = success
+          if [[ "$BUILD_REQUIRED" == true ]]; then test "$BUILD_RESULT" = success; fi
 
       - name: Checkout repository
         if: ${{ needs.detect-changes.outputs.build_required == 'true' }}
@@ -370,12 +411,19 @@ jobs:
         with:
           sharedkernel-library-root: ${{ vars.SHAREDKERNEL_LIBRARY_ROOT }}
           sharedkernel-candidate-feed: ${{ vars.SHAREDKERNEL_CANDIDATE_FEED }}
-          restore-targets: ViajantesTurismo.slnx
+          restore-targets: tools/ViajantesTurismo.RepoConfig.Tool/ViajantesTurismo.RepoConfig.Tool.csproj
           trust-dev-certificate: "false"
 
-      - name: Build all solution projects
+      - name: Download build evidence
         if: ${{ needs.detect-changes.outputs.build_required == 'true' }}
-        run: dotnet build ViajantesTurismo.slnx -c Release --no-restore
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8
+        with:
+          name: solution-build-evidence
+          path: .
+
+      - name: Verify build evidence
+        if: ${{ needs.detect-changes.outputs.build_required == 'true' }}
+        run: dotnet run --project tools/ViajantesTurismo.RepoConfig.Tool -c Release --no-build --no-restore -- verify-build-evidence
 
       - name: Download test slice coverage
         if: ${{ needs.detect-changes.outputs.build_required == 'true' }}
@@ -406,7 +454,7 @@ jobs:
           test -n "$HEAD_SHA"
           git -c core.quotePath=false diff --no-ext-diff --unified=0 --find-renames \
             "$BASE_SHA...$HEAD_SHA" -- '*.cs' '*.razor' > TestResults/coverage-changes.patch
-          dotnet run --project tools/ViajantesTurismo.RepoConfig.Tool -c Release --no-restore -- \
+          dotnet run --project tools/ViajantesTurismo.RepoConfig.Tool -c Release --no-build --no-restore -- \
             verify-coverage --report TestResults/CoverageReport/Cobertura.xml \
             --diff TestResults/coverage-changes.patch
 
@@ -423,7 +471,8 @@ jobs:
           retention-days: 14
 
   lint:
-    name: Lint
+    if: ${{ github.event.action != 'labeled' || github.event.label.name == 'ci:rerun' }}
+    name: ${{ github.event.action == 'labeled' && github.event.label.name != 'ci:rerun' && 'Ignored label event' || 'Lint' }}
     runs-on: ${{ vars.CI_UBUNTU_RUNNER }}
     timeout-minutes: 20
     permissions:

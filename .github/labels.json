@@ -78,5 +78,10 @@
     "name": "risk: breaking-change",
     "color": "b60205",
     "description": "Work that may introduce or govern breaking changes"
+  },
+  {
+    "name": "ci:rerun",
+    "color": "1d76db",
+    "description": "Explicitly restart required PR validation; remove and reapply for another attempt."
   }
 ]

@@ -49,8 +49,10 @@ Commit messages can be checked locally with
 ## Signed Commits
 
 Merges to the protected `main` branch are required to use **verified signed commits**.
-The only permitted merge method is **Create a merge commit**; squash and rebase are not
-allowed. GitHub creates and signs the merge commit, marking it **Verified** on `main`.
+Use **Squash and merge** with a Conventional Commit PR title of at most 100 characters.
+GitHub signs the resulting squash commit. Keep individual PR commits signed: required-signature
+rules can still reject unsigned commits before squash. Preserve breaking-change notes in the PR
+body because the squash message uses that body. Start a fresh branch after merging.
 Any signature type that GitHub marks as **Verified** is acceptable, but this repository
 documents **GPG signing** as the recommended contributor path.
 
