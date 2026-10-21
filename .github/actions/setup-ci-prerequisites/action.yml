@@ -73,25 +73,22 @@ runs:
     - name: Download pinned SharedKernel candidate
       if: ${{ inputs.sharedkernel-library-root == '' && inputs.sharedkernel-candidate-feed == '' }}
       shell: pwsh
-      env:
-        PINNED_VERSION: ${{ steps.sharedkernel-pin.outputs.version }}
       run: |
         $ErrorActionPreference = 'Stop'
-        $pin = Get-Content -LiteralPath .config/sharedkernel-candidate.json -Raw | ConvertFrom-Json
-        $names = @($pin.packageSha256.PSObject.Properties.Name)
-        if ($names.Count -eq 0) { throw 'The committed candidate has no package hashes.' }
-        foreach ($name in $names) {
-          if ($name -cnotmatch '^PandaBear\.SharedKernel\.[A-Za-z0-9.+-]+\.nupkg$') {
-            throw "Invalid committed candidate package name: $name"
+        $ProgressPreference = 'SilentlyContinue'
+        $pin = Get-Content -LiteralPath .config/sharedkernel-candidate.json -Raw | ConvertFrom-Json -AsHashtable
+        $downloadDirectory = Join-Path $env:GITHUB_WORKSPACE '.local/sharedkernel-download'
+        New-Item -ItemType Directory -Path $downloadDirectory -Force | Out-Null
+        $version = [uri]::EscapeDataString($pin.packageVersion)
+        $releaseUrl = "https://github.com/danigutsch/PandaBear.SharedKernel/releases/download/v$version"
+        $files = @('candidate.json') + @($pin.packageSha256.Keys | Sort-Object)
+        foreach ($file in $files) {
+          if ($file -cne 'candidate.json' -and $file -cnotmatch '^[A-Za-z0-9][A-Za-z0-9._+-]*\.nupkg$') {
+            throw "Invalid pinned package filename: $file"
           }
-        }
-        $destination = Join-Path $env:GITHUB_WORKSPACE '.local/sharedkernel-download'
-        New-Item -ItemType Directory -Path $destination -Force | Out-Null
-        # Public release URLs avoid one authenticated REST request per package in every CI job.
-        # Bootstrap below still verifies the committed revision, version, package set, and hashes.
-        $release = "https://github.com/danigutsch/PandaBear.SharedKernel/releases/download/v$($env:PINNED_VERSION)"
-        foreach ($name in @('candidate.json') + $names) {
-          Invoke-WebRequest -Uri "$release/$([Uri]::EscapeDataString($name))" -OutFile (Join-Path $destination $name)
+          $uri = "$releaseUrl/$([uri]::EscapeDataString($file))"
+          $destination = Join-Path $downloadDirectory $file
+          Invoke-WebRequest -Uri $uri -OutFile $destination -MaximumRetryCount 3 -RetryIntervalSec 2
         }
 
     - name: Stage pinned SharedKernel candidate

@@ -1,6 +1,10 @@
 name: Dependency Review
 
 'on':
+  push:
+    branches:
+      - main
+  workflow_dispatch:
   pull_request:
     types:
       - opened
@@ -40,8 +44,8 @@ jobs:
       - name: Plan exact dependency comparison
         id: plan
         env:
-          BASE_SHA: ${{ github.event.pull_request.base.sha || github.event.merge_group.base_sha }}
-          HEAD_SHA: ${{ github.event.pull_request.head.sha || github.event.merge_group.head_sha }}
+          BASE_SHA: ${{ github.event.pull_request.base.sha || github.event.merge_group.base_sha || github.event.before }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha || github.event.merge_group.head_sha || github.sha }}
         run: dotnet run --project tools/ViajantesTurismo.RepoConfig.Tool -c Release -- plan-dependency-review --base "$BASE_SHA" --head "$HEAD_SHA" --github-output "$GITHUB_OUTPUT"
       - name: Retain selection evidence
         if: always()
@@ -56,10 +60,11 @@ jobs:
     name: Dependency snapshot (${{ matrix.target }})
     if: >-
       (github.event.action != 'labeled' || github.event.label.name == 'ci:rerun') &&
-      needs.plan.outputs.review_required == 'true' &&
+      (github.event_name == 'push' || github.event_name == 'workflow_dispatch' ||
+      (needs.plan.outputs.review_required == 'true' &&
       github.event_name == 'pull_request' &&
       github.event.pull_request.head.repo.full_name == github.repository &&
-      github.actor != 'dependabot[bot]'
+      github.actor != 'dependabot[bot]'))
     runs-on: ${{ vars.CI_UBUNTU_RUNNER }}
     timeout-minutes: 20
     permissions:
@@ -67,12 +72,12 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        target: [base, head]
+        target: ${{ github.event_name == 'pull_request' && fromJSON('["base", "head"]') || fromJSON('["head"]') }}
     steps:
       - name: Checkout exact reviewed commit
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
         with:
-          ref: ${{ matrix.target == 'base' && github.event.pull_request.base.sha || github.event.pull_request.head.sha }}
+          ref: ${{ matrix.target == 'base' && github.event.pull_request.base.sha || github.event.pull_request.head.sha || github.sha }}
           persist-credentials: false
 
       # Use reviewed PR tooling for both snapshots; only dependency inputs come from matrix.target.
@@ -80,7 +85,7 @@ jobs:
         if: ${{ hashFiles('.config/sharedkernel-candidate.json') != '' }}
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
         with:
-          ref: ${{ github.event.pull_request.head.sha }}
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
           path: .local/dependency-ci-support
           sparse-checkout: .github/actions/setup-ci-prerequisites
           persist-credentials: false
@@ -110,13 +115,13 @@ jobs:
         with:
           detectorsCategories: NuGet
           correlator: viajantes-solution-nuget
-          snapshot-sha: ${{ matrix.target == 'base' && github.event.pull_request.base.sha || github.event.pull_request.head.sha }}
-          snapshot-ref: ${{ format('refs/heads/{0}', matrix.target == 'base' && github.base_ref || github.head_ref) }}
+          snapshot-sha: ${{ matrix.target == 'base' && github.event.pull_request.base.sha || github.event.pull_request.head.sha || github.sha }}
+          snapshot-ref: ${{ github.event_name == 'pull_request' && format('refs/heads/{0}', matrix.target == 'base' && github.base_ref || github.head_ref) || github.ref }}
 
   dependency-review:
     name: ${{ github.event.action == 'labeled' && github.event.label.name != 'ci:rerun' && 'Ignored label event' || 'Dependency Review' }}
     needs: [plan, dependency-snapshots]
-    if: ${{ (github.event.action != 'labeled' || github.event.label.name == 'ci:rerun') && (always()) }}
+    if: ${{ (github.event.action != 'labeled' || github.event.label.name == 'ci:rerun') && (always() && (github.event_name == 'pull_request' || github.event_name == 'merge_group')) }}
     runs-on: ${{ vars.CI_UBUNTU_RUNNER }}
     steps:
       - name: Require successful snapshot generation when applicable

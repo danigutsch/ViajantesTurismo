@@ -1,9 +1,12 @@
+using System.Net;
+using Microsoft.AspNetCore.Components.Web;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Routing.Patterns;
-using ReviewImageAccessibility = ViajantesTurismo.Management.Web.Components.Pages.Catalog.ReviewImageAccessibility;
 using Microsoft.AspNetCore.Routing;
+using Microsoft.Extensions.Configuration;
 using PandaBear.HttpClients;
 using ViajantesTurismo.Management.Web;
+using ReviewImageAccessibility = ViajantesTurismo.Management.Web.Components.Pages.Catalog.ReviewImageAccessibility;
 
 namespace ViajantesTurismo.Management.WebTests.Components.Pages.Catalog;
 
@@ -18,10 +21,128 @@ public sealed class ReviewImageAccessibilityPageTests : BunitContext
         JSInterop.Mode = JSRuntimeMode.Loose;
         Services.AddSingleton<ICatalogToursApiClient>(catalogApi);
         Services.AddRouting();
+        Services.AddSingleton(new MediaLanguageGuidance(new ConfigurationBuilder().Build()));
         Services.AddSingleton<EndpointDataSource>(new DefaultEndpointDataSource(
             new RouteEndpoint(_ => Task.CompletedTask,
                 RoutePatternFactory.Parse("/catalog/media/images/{id}/preview/{width}/{format}"), 0,
                 new EndpointMetadataCollection(new EndpointNameMetadata(ManagementWebEndpoints.MediaPreviewByRenditionEndpointName)), "media")));
+    }
+
+    [Fact]
+    public async Task Prevents_description_edits_while_an_external_operation_is_pending()
+    {
+        // Arrange
+        var image = new CatalogMediaImageDto
+        {
+            Id = Guid.CreateVersion7(), AltText = "The cyclists are riding through a mountain valley.",
+            ResponsiveVariants = [], RequiresHumanReview = true
+        };
+        catalogApi.Images = [image];
+        var pendingDraft = new TaskCompletionSource<HttpOutcome<CatalogMediaImageDto>>(TaskCreationOptions.RunContinuationsAsynchronously);
+        catalogApi.AccessibilityDraftTask = pendingDraft.Task;
+        var cut = Render<ReviewImageAccessibility>(parameters => parameters.Add(component => component.Id, Guid.CreateVersion7()));
+
+        // Act
+        var generate = cut.Find("button.btn-outline-primary").ClickAsync(new MouseEventArgs());
+        cut.WaitForState(() => cut.Find("button.btn-outline-secondary").HasAttribute("disabled"));
+
+        var descriptionDisabledWhilePending = cut.Find("#altText").HasAttribute("disabled");
+        var pendingDescription = cut.Find("#altText").GetAttribute("value");
+        pendingDraft.SetResult(HttpOutcomeMapper.Succeeded(HttpStatusCode.OK, image));
+        await generate;
+
+        // Assert
+        descriptionDisabledWhilePending.ShouldBeTrue();
+        pendingDescription.ShouldBe(image.AltText);
+        cut.Find("#altText").HasAttribute("disabled").ShouldBeFalse();
+    }
+
+    [Fact(Skip = "Requires explicitly provisioned local fastText executable and model.", SkipUnless = nameof(MediaLanguageGuidanceTests.IsLocalEngineConfigured), SkipType = typeof(MediaLanguageGuidanceTests))]
+    public void Shows_language_mismatch_as_advisory_and_allows_human_override()
+    {
+        // Arrange
+        var configuration = new ConfigurationBuilder().AddInMemoryCollection(new Dictionary<string, string?>
+        {
+            ["MediaLanguageIdentification:ExecutablePath"] = Environment.GetEnvironmentVariable("MEDIA_TEST_FASTTEXT"),
+            ["MediaLanguageIdentification:ModelPath"] = Environment.GetEnvironmentVariable("MEDIA_TEST_FASTTEXT_MODEL")
+        }).Build();
+        Services.AddSingleton(new MediaLanguageGuidance(configuration));
+        catalogApi.Images = [new CatalogMediaImageDto
+        {
+            Id = Guid.CreateVersion7(), AltText = "Um grupo de ciclistas atravessa uma estrada nas montanhas ao lado de um vale verde e tranquilo.",
+            ResponsiveVariants = [], RequiresHumanReview = true
+        }];
+
+        // Act
+        var cut = Render<ReviewImageAccessibility>(parameters => parameters.Add(component => component.Id, Guid.CreateVersion7()));
+        cut.Find("button.btn-outline-secondary").Click();
+        cut.WaitForAssertion(() => cut.Markup.ShouldContain("differs from the declaration", StringComparison.Ordinal));
+        cut.WaitForState(() => !cut.Find("button.btn-primary").HasAttribute("disabled"));
+        cut.Find("button.btn-primary").Click();
+        cut.WaitForState(() => catalogApi.LastAccessibilityReviewRequest is not null);
+
+        // Assert
+        var request = catalogApi.LastAccessibilityReviewRequest.ShouldNotBeNull();
+        request.Language.ShouldBe(PublicContentLanguageDto.EnUs);
+        request.AltText.ShouldBe("Um grupo de ciclistas atravessa uma estrada nas montanhas ao lado de um vale verde e tranquilo.");
+    }
+
+    [Fact]
+    public void Allows_human_approval_after_a_language_checker_configuration_failure()
+    {
+        // Arrange
+        var configuration = new ConfigurationBuilder().AddInMemoryCollection(new Dictionary<string, string?>
+        {
+            ["MediaLanguageIdentification:ExecutablePath"] = "relative-fasttext",
+            ["MediaLanguageIdentification:ModelPath"] = "relative-model"
+        }).Build();
+        Services.AddSingleton(new MediaLanguageGuidance(configuration));
+        catalogApi.Images = [new CatalogMediaImageDto
+        {
+            Id = Guid.CreateVersion7(), AltText = "The cyclists are riding bicycles through the beautiful mountain valley.",
+            ResponsiveVariants = [], RequiresHumanReview = true
+        }];
+
+        // Act
+        var cut = Render<ReviewImageAccessibility>(parameters => parameters.Add(component => component.Id, Guid.CreateVersion7()));
+        cut.Find("button.btn-outline-secondary").Click();
+        var checkerError = cut.Find("[role='alert']").TextContent;
+        cut.Find("button.btn-primary").Click();
+
+        // Assert
+        checkerError.ShouldBe("The local language checker could not run. Ask an administrator to check its configuration. You can still approve your text.");
+        checkerError.ShouldNotContain("relative-fasttext", StringComparison.Ordinal);
+        catalogApi.LastAccessibilityReviewRequest.ShouldNotBeNull();
+        cut.Find("button.btn-primary").HasAttribute("disabled").ShouldBeFalse();
+    }
+
+    [Fact]
+    public void Reviews_the_pending_portuguese_text_without_overwriting_english()
+    {
+        // Arrange
+        catalogApi.Images = [new CatalogMediaImageDto
+        {
+            Id = Guid.CreateVersion7(), AltText = "Approved English", ResponsiveVariants = [],
+            AccessibilityTexts = [new PublicMediaAccessibilityTextDto
+            {
+                Language = PublicContentLanguageDto.PtBr, AltText = "Ciclistas atravessam as montanhas.",
+                RequiresHumanReview = true, IsAiGenerated = true
+            }]
+        }];
+
+        // Act
+        var cut = Render<ReviewImageAccessibility>(parameters => parameters.Add(component => component.Id, Guid.CreateVersion7()));
+        cut.Find("#altText").Change("Ciclistas na montanha.");
+        cut.Find("#caption").Change("Passeio de bicicleta");
+        cut.Find("button.btn-outline-secondary").Click();
+        cut.Find("button.btn-primary").Click();
+
+        // Assert
+        var request = catalogApi.LastAccessibilityReviewRequest.ShouldNotBeNull();
+        request.Language.ShouldBe(PublicContentLanguageDto.PtBr);
+        request.AltText.ShouldBe("Ciclistas na montanha.");
+        request.Caption.ShouldBe("Passeio de bicicleta");
+        cut.Markup.ShouldContain("indeterminate", StringComparison.Ordinal);
     }
 
     [Fact]
@@ -235,7 +356,7 @@ public sealed class ReviewImageAccessibilityPageTests : BunitContext
         // Arrange
         catalogApi.GetTourImagesOutcome = HttpOutcomeMapper.Status<CatalogMediaImageDto[]>(
             HttpOutcomeKind.MalformedBody,
-            System.Net.HttpStatusCode.OK,
+            HttpStatusCode.OK,
             "The catalog image response body was invalid.");
 
         // Act

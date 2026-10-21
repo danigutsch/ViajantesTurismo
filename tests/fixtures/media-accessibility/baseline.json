@@ -1,0 +1,93 @@
+{
+  "fixture_version": "media-accessibility-v1",
+  "provider": "reference-fixture",
+  "model": "not-applicable",
+  "prompt_version": "reference-v1",
+  "config_version": "rubric-v1",
+  "cases": [
+    {
+      "id": "coast-en-US",
+      "alt_text": "Blue sea beside a sandy beach under a clear sky.",
+      "caption": null,
+      "reviewer": "reference-fixture-author",
+      "reviewed_at": "2026-10-21",
+      "scores": {
+        "accessibility": 2,
+        "grounding": 2,
+        "concision": 2,
+        "localization": 2,
+        "unsupported_claims": 2
+      }
+    },
+    {
+      "id": "coast-pt-BR",
+      "alt_text": "Mar azul junto a uma praia de areia sob céu limpo.",
+      "caption": null,
+      "reviewer": "reference-fixture-author",
+      "reviewed_at": "2026-10-21",
+      "scores": {
+        "accessibility": 2,
+        "grounding": 2,
+        "concision": 2,
+        "localization": 2,
+        "unsupported_claims": 2
+      }
+    },
+    {
+      "id": "bicycle-en-US",
+      "alt_text": "A blue bicycle with two wheels.",
+      "caption": null,
+      "reviewer": "reference-fixture-author",
+      "reviewed_at": "2026-10-21",
+      "scores": {
+        "accessibility": 2,
+        "grounding": 2,
+        "concision": 2,
+        "localization": 2,
+        "unsupported_claims": 2
+      }
+    },
+    {
+      "id": "bicycle-pt-BR",
+      "alt_text": "Uma bicicleta azul com duas rodas.",
+      "caption": null,
+      "reviewer": "reference-fixture-author",
+      "reviewed_at": "2026-10-21",
+      "scores": {
+        "accessibility": 2,
+        "grounding": 2,
+        "concision": 2,
+        "localization": 2,
+        "unsupported_claims": 2
+      }
+    },
+    {
+      "id": "closed-trail-en-US",
+      "alt_text": "A red sign reads “TRAIL CLOSED”.",
+      "caption": null,
+      "reviewer": "reference-fixture-author",
+      "reviewed_at": "2026-10-21",
+      "scores": {
+        "accessibility": 2,
+        "grounding": 2,
+        "concision": 2,
+        "localization": 2,
+        "unsupported_claims": 2
+      }
+    },
+    {
+      "id": "closed-trail-pt-BR",
+      "alt_text": "Uma placa vermelha informa que a trilha está fechada.",
+      "caption": null,
+      "reviewer": "reference-fixture-author",
+      "reviewed_at": "2026-10-21",
+      "scores": {
+        "accessibility": 2,
+        "grounding": 2,
+        "concision": 2,
+        "localization": 2,
+        "unsupported_claims": 2
+      }
+    }
+  ]
+}

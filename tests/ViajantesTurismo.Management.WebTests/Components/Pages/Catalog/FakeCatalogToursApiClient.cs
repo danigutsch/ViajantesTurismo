@@ -31,6 +31,8 @@ internal sealed class FakeCatalogToursApiClient : ICatalogToursApiClient
 
     public CatalogMediaImageDto? Draft { get; set; }
 
+    public Task<HttpOutcome<CatalogMediaImageDto>>? AccessibilityDraftTask { get; set; }
+
     public CatalogMediaImageDto? UploadedImage { get; set; }
 
     public Func<Guid, CatalogTourImageUploadRequest, IProgress<long>?, CancellationToken, Task<CatalogMediaImageDto?>>? UploadTourImageHandler { get; set; }
@@ -149,7 +151,7 @@ internal sealed class FakeCatalogToursApiClient : ICatalogToursApiClient
     {
         ct.ThrowIfCancellationRequested();
 
-        return Task.FromResult(Draft is null
+        return AccessibilityDraftTask ?? Task.FromResult(Draft is null
             ? HttpOutcomeMapper.Status<CatalogMediaImageDto>(HttpOutcomeKind.NotFound, HttpStatusCode.NotFound)
             : HttpOutcomeMapper.Succeeded(HttpStatusCode.OK, Draft));
     }

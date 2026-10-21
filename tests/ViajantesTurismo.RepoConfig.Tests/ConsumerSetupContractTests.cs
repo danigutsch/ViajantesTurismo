@@ -66,9 +66,10 @@ public sealed class ConsumerSetupContractTests
         action.ShouldContain("ref: ${{ steps.sharedkernel-pin.outputs.revision }}", StringComparison.Ordinal);
         action.ShouldContain("persist-credentials: false", StringComparison.Ordinal);
         action.ShouldContain("https://github.com/danigutsch/PandaBear.SharedKernel/releases/download/v", StringComparison.Ordinal);
-        action.ShouldContain("$pin.packageSha256.PSObject.Properties.Name", StringComparison.Ordinal);
-        action.ShouldContain("'candidate.json'", StringComparison.Ordinal);
+        action.ShouldContain("$pin.packageSha256.Keys", StringComparison.Ordinal);
+        action.ShouldContain("@('candidate.json')", StringComparison.Ordinal);
         action.ShouldContain("Invoke-WebRequest", StringComparison.Ordinal);
+        action.ShouldContain("-MaximumRetryCount 3", StringComparison.Ordinal);
         action.ShouldNotContain("gh release download", StringComparison.Ordinal);
         action.ShouldNotContain("GH_TOKEN:", StringComparison.Ordinal);
         action.ShouldContain("if: ${{ inputs.restore-targets != '' || inputs.restore-targets-file != '' }}", StringComparison.Ordinal);

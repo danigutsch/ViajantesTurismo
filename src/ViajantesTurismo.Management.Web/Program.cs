@@ -21,6 +21,7 @@ builder.Services.AddAntiforgery();
 builder.Services.AddCascadingAuthenticationState();
 
 builder.Services.AddScoped<CustomerCreationState>();
+builder.Services.AddSingleton<MediaLanguageGuidance>();
 builder.Services.AddScoped<ICountryService, CountryService>();
 
 builder.Services.AddHttpClient<IToursApiClient, ToursApiClient>(client => client.BaseAddress = new Uri($"https+http://{ResourceNames.Api}"))

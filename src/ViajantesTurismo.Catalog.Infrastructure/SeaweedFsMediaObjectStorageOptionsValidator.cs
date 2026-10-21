@@ -12,6 +12,7 @@ internal sealed class SeaweedFsMediaObjectStorageOptionsValidator : IValidateOpt
 
         return options switch
         {
+            var value when string.IsNullOrWhiteSpace(value.AuthenticationRegion) => ValidateOptionsResult.Fail("S3 authentication region must be provided."),
             { Endpoint: null } => ValidateOptionsResult.Fail("SeaweedFS endpoint must be provided."),
             { Endpoint.IsAbsoluteUri: false } => ValidateOptionsResult.Fail("SeaweedFS endpoint must be absolute."),
             { Endpoint.Scheme: not ("http" or "https") } => ValidateOptionsResult.Fail("SeaweedFS endpoint must use HTTP or HTTPS."),

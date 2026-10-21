@@ -243,7 +243,7 @@ internal static class CatalogEndpoints
         }
 
         var image = await imageStore.GetImage(id, ct).ConfigureAwait(false);
-        if (image is null || !image.HasPublicVariants || !await IsLinkedToPublishedTour(image, tourStore, ct).ConfigureAwait(false))
+        if (image is null || !CanDeliverPublicImage(image) || !await IsLinkedToPublishedTour(image, tourStore, ct).ConfigureAwait(false))
         {
             HttpCacheHeaders.SetNoStore(httpContext);
             return Results.NotFound();
@@ -672,6 +672,7 @@ internal static class CatalogEndpoints
         IPublicMediaImageStore imageStore,
         IOutputCacheStore outputCacheStore,
         ILogger<CatalogApiHostEntryPoint> logger,
+        TimeProvider timeProvider,
         CancellationToken ct)
     {
         if (id == Guid.Empty)
@@ -679,21 +680,35 @@ internal static class CatalogEndpoints
             return TypedResults.BadRequest();
         }
 
-        var image = await imageStore.GetImage(id, ct).ConfigureAwait(false);
-        if (image is null)
+        var language = ToDomainLanguage(request.Language);
+        try
         {
-            return TypedResults.NotFound();
-        }
+            var image = await imageStore.GetImage(id, ct).ConfigureAwait(false);
+            if (image is null)
+            {
+                return TypedResults.NotFound();
+            }
 
-        var result = image.SetReviewedAccessibilityText(ToDomainLanguage(request.Language), request.AltText, request.Caption, request.IsDecorative);
-        if (result.Status == ResultStatus.Invalid)
+            var previous = image.AccessibilityTexts.FirstOrDefault(text => text.Language == language);
+            var queueAge = previous?.PendingDraftCreatedAt is { } pendingAt ? Math.Max(0, (timeProvider.GetUtcNow() - pendingAt).TotalSeconds) : (double?)null;
+            var edited = previous is not null && (previous.AltText != request.AltText || previous.Caption != request.Caption || previous.IsDecorative != request.IsDecorative);
+            var result = image.SetReviewedAccessibilityText(language, request.AltText, request.Caption, request.IsDecorative);
+            if (result.Status == ResultStatus.Invalid)
+            {
+                MediaAccessibilityTelemetry.RecordReview(!request.IsDecorative && string.IsNullOrWhiteSpace(request.AltText) ? "missing_alt" : "rejected", language);
+                return ToValidationProblem(result.ErrorDetails ?? throw new InvalidOperationException("Invalid accessibility review results must include validation details."));
+            }
+
+            await imageStore.Upsert(image, ct).ConfigureAwait(false);
+            MediaAccessibilityTelemetry.RecordReview(edited ? "edited" : "approved", language, queueAge);
+            await InvalidatePublicCatalogCache(outputCacheStore, logger);
+            return TypedResults.Ok(MapManagementMediaImage(image));
+        }
+        catch (Exception exception) when (exception.ShouldHandleAsFailure(ct))
         {
-            return ToValidationProblem(result.ErrorDetails ?? throw new InvalidOperationException("Invalid accessibility review results must include validation details."));
+            MediaAccessibilityTelemetry.RecordReview("failed", language);
+            throw;
         }
-
-        await imageStore.Upsert(image, ct).ConfigureAwait(false);
-        await InvalidatePublicCatalogCache(outputCacheStore, logger);
-        return TypedResults.Ok(MapManagementMediaImage(image));
     }
 
     private static async Task InvalidatePublicCatalogCache(IOutputCacheStore outputCacheStore, ILogger logger)
@@ -824,7 +839,17 @@ internal static class CatalogEndpoints
 
     private static IReadOnlyList<PublicMediaImage> GetReadyImages(IReadOnlyList<PublicMediaImage> images)
     {
-        return [.. images.Where(image => image.HasPublicVariants)];
+        return [.. images.Where(CanDeliverPublicImage)];
+    }
+
+    private static bool CanDeliverPublicImage(PublicMediaImage image)
+    {
+        if (!image.HasReviewedAccessibilityText)
+        {
+            MediaAccessibilityTelemetry.RecordPublicationBlocker(!image.IsDecorative && string.IsNullOrWhiteSpace(image.AltText));
+        }
+
+        return image.HasPublicVariants;
     }
 
     private static CatalogTourImageDto MapImage(PublicMediaImage image)
@@ -888,6 +913,15 @@ internal static class CatalogEndpoints
         return new CatalogMediaImageDto
         {
             Id = image.Id,
+            AccessibilityTexts = image.AccessibilityTexts.Select(text => new PublicMediaAccessibilityTextDto
+            {
+                Language = ToContractLanguage(text.Language),
+                AltText = text.AltText,
+                Caption = text.Caption,
+                IsDecorative = text.IsDecorative,
+                RequiresHumanReview = text.RequiresHumanReview,
+                IsAiGenerated = text.IsAiGenerated
+            }).ToArray(),
             ResponsiveVariants = image.ResponsiveVariants
                 .OrderBy(variant => variant.Width)
                 .Select(MapManagementResponsiveVariant)

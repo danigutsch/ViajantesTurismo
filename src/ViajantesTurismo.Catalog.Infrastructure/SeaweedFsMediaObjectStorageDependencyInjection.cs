@@ -11,12 +11,12 @@ namespace ViajantesTurismo.Catalog.Infrastructure;
 
 internal static class SeaweedFsMediaObjectStorageDependencyInjection
 {
-    public static IServiceCollection AddSeaweedFsMediaObjectStorage(this IServiceCollection services)
+    public static IServiceCollection AddSeaweedFsMediaObjectStorage(this IServiceCollection services, string sectionName = SeaweedFsMediaObjectStorageOptions.SectionName)
     {
         ArgumentNullException.ThrowIfNull(services);
 
         services.AddOptions<SeaweedFsMediaObjectStorageOptions>()
-            .BindConfiguration(SeaweedFsMediaObjectStorageOptions.SectionName)
+            .BindConfiguration(sectionName)
             .ValidateOnStart();
         services.TryAddEnumerable(ServiceDescriptor.Singleton<IValidateOptions<SeaweedFsMediaObjectStorageOptions>, SeaweedFsMediaObjectStorageOptionsValidator>());
         services.AddSingleton<IAmazonS3>(provider =>
@@ -25,8 +25,8 @@ internal static class SeaweedFsMediaObjectStorageDependencyInjection
             return new AmazonS3Client(new BasicAWSCredentials(options.AccessKey, options.SecretKey), new AmazonS3Config
             {
                 ServiceURL = options.Endpoint!.AbsoluteUri,
-                ForcePathStyle = true,
-                AuthenticationRegion = "us-east-1"
+                ForcePathStyle = options.ForcePathStyle,
+                AuthenticationRegion = options.AuthenticationRegion
             });
         });
         services.AddOpenTelemetry()

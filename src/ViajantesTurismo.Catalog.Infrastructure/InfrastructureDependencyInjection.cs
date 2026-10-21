@@ -120,7 +120,11 @@ public static class InfrastructureDependencyInjection
     private static TApplicationBuilder AddCatalogStoreInfrastructure<TApplicationBuilder>(this TApplicationBuilder builder)
         where TApplicationBuilder : IHostApplicationBuilder
     {
-        if (builder.Configuration.GetSection(SeaweedFsMediaObjectStorageOptions.SectionName).Exists())
+        if (builder.Configuration.GetSection(SeaweedFsMediaObjectStorageOptions.S3SectionName).Exists())
+        {
+            builder.Services.AddSeaweedFsMediaObjectStorage(SeaweedFsMediaObjectStorageOptions.S3SectionName);
+        }
+        else if (builder.Configuration.GetSection(SeaweedFsMediaObjectStorageOptions.SectionName).Exists())
         {
             builder.Services.AddSeaweedFsMediaObjectStorage();
         }

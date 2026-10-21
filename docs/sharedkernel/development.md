@@ -86,8 +86,10 @@ Hosted Linux and Windows jobs read the committed candidate manifest, check out t
 its exact `libraryRevision`, and download the unchanged packages and `candidate.json` from GitHub
 prerelease `v<packageVersion>`. The approved candidate is distributed as release assets at
 [`v1.0.0-alpha.20261021.2`](https://github.com/danigutsch/PandaBear.SharedKernel/releases/tag/v1.0.0-alpha.20261021.2).
-Checkout credentials are not persisted; downloads use the job's GitHub token and need only read
-access to public release assets. Source and downloads stay in ignored `.local/sharedkernel-library`
+Checkout credentials are not persisted. CI downloads the manifest and exact pinned package filenames
+through public release URLs without a token, avoiding per-asset installation API rate limits. Download
+failures are retried three times; bootstrap still verifies the revision and every package hash before
+restore. Source and downloads stay in ignored `.local/sharedkernel-library`
 and `.local/sharedkernel-download` directories.
 The shared prerequisite action invokes the same C# bootstrap before restoring application dependencies;
 the committed revision and package hashes remain authoritative. Missing assets, revision mismatches,
