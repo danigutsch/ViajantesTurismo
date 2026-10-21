@@ -41,11 +41,13 @@ public sealed class DependencyReviewWorkflowTests
         // Act
         var snapshotJob = workflow.Split("  dependency-snapshots:", StringSplitOptions.None)[1]
             .Split("\n  dependency-review:", StringSplitOptions.None)[0];
-        var bootstrapPosition = snapshotJob.IndexOf("uses: ./.github/actions/setup-ci-prerequisites", StringComparison.Ordinal);
+        var bootstrapPosition = snapshotJob.IndexOf("uses: ./.local/dependency-ci-support/.github/actions/setup-ci-prerequisites", StringComparison.Ordinal);
         var restorePosition = snapshotJob.IndexOf("dotnet restore ViajantesTurismo.slnx --locked-mode -bl:dependency-restore.binlog", StringComparison.Ordinal);
 
         // Assert
         bootstrapPosition.ShouldBeGreaterThanOrEqualTo(0);
+        snapshotJob.ShouldContain("ref: ${{ github.event.pull_request.head.sha }}", StringComparison.Ordinal);
+        snapshotJob.ShouldContain("path: .local/dependency-ci-support", StringComparison.Ordinal);
         restorePosition.ShouldBeGreaterThan(bootstrapPosition);
         snapshotJob.ShouldContain("restore-targets: tools/ViajantesTurismo.RepoConfig.Tool/ViajantesTurismo.RepoConfig.Tool.csproj", StringComparison.Ordinal);
         snapshotJob.ShouldContain("restore-local-tools: \"false\"", StringComparison.Ordinal);
@@ -64,7 +66,7 @@ public sealed class DependencyReviewWorkflowTests
             .Split("\n  dependency-review:", StringSplitOptions.None)[0];
 
         // Assert
-        snapshotJob.ShouldContain("if: ${{ hashFiles('.config/sharedkernel-candidate.json') != '' }}\n        uses: ./.github/actions/setup-ci-prerequisites", StringComparison.Ordinal);
+        snapshotJob.ShouldContain("if: ${{ hashFiles('.config/sharedkernel-candidate.json') != '' }}\n        uses: ./.local/dependency-ci-support/.github/actions/setup-ci-prerequisites", StringComparison.Ordinal);
         snapshotJob.ShouldContain("if: ${{ hashFiles('.config/sharedkernel-candidate.json') == '' }}\n        uses: actions/setup-dotnet@c2fa09f4bde5ebb9d1777cf28262a3eb3db3ced7", StringComparison.Ordinal);
         snapshotJob.ShouldContain("global-json-file: global.json", StringComparison.Ordinal);
         snapshotJob.ShouldContain("dotnet restore ViajantesTurismo.slnx --locked-mode -bl:dependency-restore.binlog", StringComparison.Ordinal);

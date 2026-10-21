@@ -75,9 +75,19 @@ jobs:
           ref: ${{ matrix.target == 'base' && github.event.pull_request.base.sha || github.event.pull_request.head.sha }}
           persist-credentials: false
 
+      # Use reviewed PR tooling for both snapshots; only dependency inputs come from matrix.target.
+      - name: Checkout reviewed CI prerequisites
+        if: ${{ hashFiles('.config/sharedkernel-candidate.json') != '' }}
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+          path: .local/dependency-ci-support
+          sparse-checkout: .github/actions/setup-ci-prerequisites
+          persist-credentials: false
+
       - name: Set up CI prerequisites
         if: ${{ hashFiles('.config/sharedkernel-candidate.json') != '' }}
-        uses: ./.github/actions/setup-ci-prerequisites
+        uses: ./.local/dependency-ci-support/.github/actions/setup-ci-prerequisites
         with:
           sharedkernel-library-root: ${{ vars.SHAREDKERNEL_LIBRARY_ROOT }}
           sharedkernel-candidate-feed: ${{ vars.SHAREDKERNEL_CANDIDATE_FEED }}
