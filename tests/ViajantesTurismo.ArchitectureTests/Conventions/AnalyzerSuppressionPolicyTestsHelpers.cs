@@ -371,7 +371,7 @@ internal static class AnalyzerSuppressionPolicyTestsHelpers
 
     private static bool IsIgnoredDirectoryName(string directoryName)
     {
-        return directoryName is "bin" or "obj" or ".git" or ".nuget" or ".worktrees";
+        return directoryName is "bin" or "obj" or ".git" or ".nuget" or ".worktrees" or ".local";
     }
 
     private static bool ContainsDirectorySegment(string path, string directoryName)

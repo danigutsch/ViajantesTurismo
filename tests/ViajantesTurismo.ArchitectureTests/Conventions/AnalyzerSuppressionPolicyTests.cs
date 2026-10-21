@@ -1,4 +1,5 @@
 using System.Xml.Linq;
+using PandaBear.Testing;
 
 namespace ViajantesTurismo.ArchitectureTests.Conventions;
 
@@ -43,6 +44,25 @@ public sealed partial class AnalyzerSuppressionPolicyTests
         "tests/ViajantesTurismo.Management.WebIntegrationTests/PostgreSqlTestDatabase.cs",
         "tests/ViajantesTurismo.Management.WebIntegrationTests/PostgreSqlTestServerFixture.cs"
     ];
+
+    [Fact]
+    [Trait(TestTraitNames.CategoryName, TestTraitValues.SecurityCategory)]
+    public void Repository_policy_enumeration_excludes_staged_library_source_and_preserves_application_source()
+    {
+        // Arrange
+        using var workspace = new TemporaryDirectory();
+        var sourceDirectory = Directory.CreateDirectory(Path.Combine(workspace.Path, "src"));
+        var libraryDirectory = Directory.CreateDirectory(Path.Combine(workspace.Path, ".local", "sharedkernel-library"));
+        var sourceFile = Path.Combine(sourceDirectory.FullName, "Application.cs");
+        File.WriteAllText(sourceFile, "namespace Application; internal sealed class Example;");
+        File.WriteAllText(Path.Combine(libraryDirectory.FullName, "Library.cs"), "namespace Library; internal sealed class Example;");
+
+        // Act
+        var files = AnalyzerSuppressionPolicyTestsHelpers.EnumerateRepositoryFiles(workspace.Path, "*.cs").ToArray();
+
+        // Assert
+        files.ShouldBeEquivalentTo(sourceFile);
+    }
 
     [Fact]
     public void Project_and_props_nowarn_entries_should_match_the_approved_inventory()

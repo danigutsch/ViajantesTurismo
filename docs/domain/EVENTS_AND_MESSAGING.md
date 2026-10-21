@@ -466,4 +466,4 @@ Transport adapters should remain replaceable:
 - [ADR-040: Branding Module Co-hosting and State Distribution](../adr/20260724-branding-module-co-hosting-and-state-distribution.md)
 - [Catalog Bounded Context](../bounded-contexts/Catalog.md)
 - [Generated messaging dispatch ownership](../adr/20260719-generated-messaging-dispatch-ownership.md)
-- [SharedKernel packaging and source-generator contracts](../SHAREDKERNEL_PACKAGING.md)
+- [SharedKernel consumption](../SHAREDKERNEL_CONSUMPTION.md)

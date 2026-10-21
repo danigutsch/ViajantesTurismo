@@ -7,10 +7,9 @@ name: Release Prep
       - src/ViajantesTurismo.AppHost/**
       - docs/architecture/runtime-wiring-and-deployment.md
       - docs/ci/supplemental-workflows.md
-      - src/Directory.Build.props
       - src/Directory.Build.targets
       - docs/API_COMPATIBILITY.md
-      - docs/SHAREDKERNEL_PACKAGING.md
+      - docs/SHAREDKERNEL_CONSUMPTION.md
       - Directory.Build.props
       - Directory.Packages.props
       - ViajantesTurismo.slnx

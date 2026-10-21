@@ -19,8 +19,8 @@ existing `.NET`, Python, shell, or Docker path already covers the same need.
 ## Current approved paths
 
 - `.NET` local tools: restored from `.config/dotnet-tools.json` with `dotnet tool restore`.
-- Repo-owned `.NET` tool packages: packed into a local feed and installed only from trusted local
-  package contents, following [`SHAREDKERNEL_PACKAGING.md`](SHAREDKERNEL_PACKAGING.md).
+- SharedKernel `.NET` tools: restored from validated pinned artifacts in the local feed, following
+  [SharedKernel consumption](SHAREDKERNEL_CONSUMPTION.md).
 - Markdown lint: `davidanson/markdownlint-cli2` Docker image via `scripts/lint-all.sh` or
   `scripts/lint-markdown.sh`.
 - Shell lint and formatting: local `shellcheck` and `shfmt` when present, otherwise Docker

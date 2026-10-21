@@ -38,6 +38,38 @@ runs:
         cache-dependency-path: |
           **/packages.lock.json
 
+    - name: Read pinned SharedKernel identity
+      id: sharedkernel-pin
+      shell: pwsh
+      run: |
+        $pin = Get-Content -LiteralPath .config/sharedkernel-candidate.json -Raw | ConvertFrom-Json
+        if ($pin.libraryRevision -cnotmatch '^[a-f0-9]{40}$' -or
+            $pin.packageVersion -cnotmatch '^[0-9A-Za-z.+-]+$') {
+          throw "The committed SharedKernel revision or package version is invalid."
+        }
+        "revision=$($pin.libraryRevision)" >> $env:GITHUB_OUTPUT
+        "version=$($pin.packageVersion)" >> $env:GITHUB_OUTPUT
+
+    - name: Checkout pinned SharedKernel source
+      if: ${{ vars.SHAREDKERNEL_LIBRARY_ROOT == '' }}
+      uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+      with:
+        repository: danigutsch/PandaBear.SharedKernel
+        ref: ${{ steps.sharedkernel-pin.outputs.revision }}
+        path: .local/sharedkernel-library
+        persist-credentials: false
+
+    - name: Download pinned SharedKernel candidate
+      if: ${{ vars.SHAREDKERNEL_LIBRARY_ROOT == '' && vars.SHAREDKERNEL_CANDIDATE_FEED == '' }}
+      shell: bash
+      env:
+        GH_TOKEN: ${{ github.token }}
+        PINNED_VERSION: ${{ steps.sharedkernel-pin.outputs.version }}
+      run: |
+        gh release download "v${PINNED_VERSION}" --repo danigutsch/PandaBear.SharedKernel \
+          --pattern '*.nupkg' --pattern 'candidate.json' \
+          --dir "${GITHUB_WORKSPACE}/.local/sharedkernel-download"
+
     - name: Stage pinned SharedKernel candidate
       shell: bash
       env:
@@ -45,8 +77,8 @@ runs:
         CANDIDATE_FEED: ${{ vars.SHAREDKERNEL_CANDIDATE_FEED }}
       run: |
         if [[ -z "${LIBRARY_ROOT}" ]]; then
-          echo "Configure SHAREDKERNEL_LIBRARY_ROOT with a clean checkout of the pinned library revision." >&2
-          exit 1
+          LIBRARY_ROOT="${GITHUB_WORKSPACE}/.local/sharedkernel-library"
+          CANDIDATE_FEED="${CANDIDATE_FEED:-${GITHUB_WORKSPACE}/.local/sharedkernel-download}"
         fi
         args=(bootstrap-sharedkernel --library-root "${LIBRARY_ROOT}")
         if [[ -n "${CANDIDATE_FEED}" ]]; then args+=(--feed "${CANDIDATE_FEED}"); fi

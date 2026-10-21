@@ -1,4 +1,4 @@
-# SharedKernel packaging
+# SharedKernel consumption
 
 SharedKernel implementations and packaging live in the [standalone library](https://github.com/danigutsch/PandaBear.SharedKernel).
 Use its [package guide](https://github.com/danigutsch/PandaBear.SharedKernel/blob/f5975b60601e245bda6bb8e45559d8ce3a24a8e0/docs/package-development.md)

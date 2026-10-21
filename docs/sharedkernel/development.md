@@ -18,11 +18,22 @@ multiline fields remain unsupported.
 
 ## Bootstrap a checkout
 
-Install the SDK pinned by `global.json`. Obtain a clean SharedKernel checkout at the revision in
-`.config/sharedkernel-candidate.json`, together with the unchanged candidate package artifacts.
-The candidate manifest pins the library revision, package version, and SHA-256 hashes. Library source
-is public at [PandaBear.SharedKernel](https://github.com/danigutsch/PandaBear.SharedKernel). Registry
-publication remains deferred; bootstrap stages validated preview artifacts without publishing packages.
+Install the SDK pinned by `global.json`. Clone the public
+[PandaBear.SharedKernel source](https://github.com/danigutsch/PandaBear.SharedKernel), check out the
+exact `libraryRevision` in `.config/sharedkernel-candidate.json`, and keep that checkout clean.
+The committed candidate manifest pins the library revision, package version, and SHA-256 hashes.
+
+Download the unchanged 73 `.nupkg` files and `candidate.json` from
+[GitHub preview `v1.0.0-alpha.20261021.2`](https://github.com/danigutsch/PandaBear.SharedKernel/releases/tag/v1.0.0-alpha.20261021.2)
+into an explicit candidate feed directory. For example, with GitHub CLI:
+
+```sh
+gh release download v1.0.0-alpha.20261021.2 --repo danigutsch/PandaBear.SharedKernel \
+  --pattern '*.nupkg' --pattern candidate.json --dir /path/to/candidate-packages
+```
+
+These GitHub prerelease assets are available for consumption; NuGet registry publication remains
+deferred. Bootstrap validates the downloaded packages against the committed manifest before staging.
 
 From the application root, stage the expected candidate with the dependency-independent C# tool:
 
@@ -71,14 +82,25 @@ through public package interfaces. This test-only commit does not change the pin
 
 ## CI and platform evidence
 
-Runners must have a clean checkout of the pinned library revision. Configure repository variables
-`SHAREDKERNEL_LIBRARY_ROOT` and, when artifacts are elsewhere, `SHAREDKERNEL_CANDIDATE_FEED`.
-The shared prerequisite action invokes the same C# bootstrap before restoring application dependencies.
-Missing source, missing artifacts, revision mismatches, and hash mismatches fail visibly.
+Hosted Linux and Windows jobs read the committed candidate manifest, check out the public library at
+its exact `libraryRevision`, and download the unchanged packages and `candidate.json` from GitHub
+prerelease `v<packageVersion>`. The approved candidate is distributed as release assets at
+[`v1.0.0-alpha.20261021.2`](https://github.com/danigutsch/PandaBear.SharedKernel/releases/tag/v1.0.0-alpha.20261021.2).
+Checkout credentials are not persisted; downloads use the job's GitHub token and need only read
+access to public release assets. Source and downloads stay in ignored `.local/sharedkernel-library`
+and `.local/sharedkernel-download` directories.
+The shared prerequisite action invokes the same C# bootstrap before restoring application dependencies;
+the committed revision and package hashes remain authoritative. Missing assets, revision mismatches,
+and hash mismatches fail visibly.
+
+Optional repository variables `SHAREDKERNEL_LIBRARY_ROOT` and `SHAREDKERNEL_CANDIDATE_FEED` retain the
+explicit local/private flow. A library-root override skips hosted checkout and downloads, using that
+checkout's standard candidate output directory unless a feed override is also provided. A feed-only
+override uses the automatically checked-out pinned library with the specified artifacts.
 
 Linux and Windows must consume the same hashed packages. Record platform tests and NativeAOT results
-separately; an unavailable platform remains pending. Hosted distribution and public publishing require
-a later explicit decision. This workflow uses no package server and publishes nothing to nuget.org.
+separately; an unavailable platform remains pending. Registry publication remains deferred: this
+workflow consumes GitHub release assets and publishes nothing to nuget.org.
 
 Generic commands use `dotnet tool run sharedkernel-repo -- <command>` and documentation commands use
 `dotnet tool run sharedkernel-docs -- <command>`. Endpoint metadata methods and audience classification
