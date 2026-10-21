@@ -28,7 +28,7 @@ flowchart TB
     quality_gate[quality-gate]
     lint[lint]
     trigger --> detect_changes
-    trigger --> calculate_version
+    detect_changes --> calculate_version
     detect_changes --> openapi_tool_windows
     detect_changes --> test_slices
     detect_changes --> build_and_test
@@ -38,7 +38,7 @@ flowchart TB
     detect_changes --> quality_gate
     test_slices --> quality_gate
     solution_build --> quality_gate
-    trigger --> lint
+    detect_changes --> lint
 ```
 <!-- generated:ci-main-jobs:end -->
 
@@ -49,9 +49,9 @@ Workflow details: [CI overview](../ci/overview.md) and [main workflow](../ci/mai
 
 | Lane | Current purpose | Cost posture |
 | --- | --- | --- |
-| `Calculate Version` | Run the versioning tool and expose release-version outputs. | Fast; runs independently. |
+| `Calculate Version` | Run the versioning tool and expose release-version outputs. | Runs after change selection. |
 | `Test slices` | Run path-gated fast, provider/database, full-host API, browser/system, and tooling rows. | Matrix rows run independently. |
-| `Lint` | Markdown, scripts, specs, and repository quality checks. | Fast; runs independently. |
+| `Lint` | Markdown, scripts, specs, and repository quality checks. | Runs after change selection. |
 | `Dependency Review` | Scan dependency manifest and lock-file diffs. | Fast governance lane. |
 | `Secret Scan` | Detect committed secrets and publish SARIF when allowed. | Fast security lane. |
 | `Quality Gate` | Aggregate coverage and enforce changed-code threshold. | Runs after tests; no analysis secrets. |

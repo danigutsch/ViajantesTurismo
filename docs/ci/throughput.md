@@ -21,6 +21,23 @@ hashed package set once; Linux and Windows independently consume those same byte
 NativeAOT. Documentation-only candidate selection already existed before this change and remains
 conservative for package READMEs and uncertain build inputs.
 
+## Documentation-only validation
+
+Documentation changes skip application builds, test matrices, Windows tests, version calculation,
+and repository-tool test runs on both pull requests and main pushes. Selection restores only the
+standalone repository tool. Markdown lint, local link validation, line endings, metadata, and secret
+scanning remain active, and required aggregate checks still report a result.
+
+The documentation allowlist covers Markdown and image files under `docs/` plus root `README.md`,
+`AGENTS.md`, `CONTRIBUTING.md`, and `SECURITY.md`. Package READMEs, scripts, unknown extensions,
+build inputs, and missing comparisons retain their applicable validation. Low-risk contributor
+scripts can skip application tests while retaining the tooling tests in repository lint.
+
+Main pushes compare the exact before/after revisions. Pull requests compare against their merge
+base. Manual and merge-group runs retain full selection; invalid comparisons fall back to full
+validation. Do not use commit-message skip annotations or workflow-level path filters for required
+checks, because those can leave merge gates pending.
+
 ## Dependency-review diagnosis
 
 Run `39600350445` took 19m 04s overall. Its review step took 13m 10s: approximately 2m 07s passed
@@ -54,7 +71,22 @@ artifact overhead, cancellations, and compute minutes. Compare equivalent scenar
 medians. New slice manifests and library execution timings record local phases. Hosted timing after
 rollout must be measured before claiming an improvement.
 
+## First post-rollout sample
+
+These source-validation runs are single observations, not equivalent workloads or a performance
+claim. Application [main run 39670817591](https://github.com/danigutsch/ViajantesTurismo/actions/runs/39670817591)
+completed in 430s: selection 56s, solution build 141s, longest test slice 288s, and quality gate 74s.
+Library [main run 39670639814](https://github.com/danigutsch/PandaBear.SharedKernel/actions/runs/39670639814)
+completed in 385s: selection 33s, ordinary tests 248s, repository quality 301s, candidate creation 133s,
+and Windows consumption 199s. Compare documentation runs separately after the fast path lands.
+
 ## Repository settings rollout
+
+Applied on October 21, 2026 after successful main validation: both repositories use squash-only
+merges with PR titles and bodies, automatic branch deletion, and a `ci:rerun` label. Application
+`PR Metadata` is required after it passed on the existing payment PR. Strict updates, signed commits,
+existing reviews/checks, and advisory SharedKernel validation remain unchanged.
+
 
 Land and inspect successful workflow evidence before applying repository settings. Enable squash
 only, use `PR_TITLE` for squash headers and `PR_BODY` for descriptions, and retain branch deletion.
