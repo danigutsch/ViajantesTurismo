@@ -1,0 +1,161 @@
+{
+  "version": "media-accessibility-v1",
+  "cases": [
+    {
+      "id": "coast-en-US",
+      "image": "coast.svg",
+      "sha256": "0191fa97e77450aea00d877888546b8646337ad00de3433d01f6312c7a4e90d6",
+      "language": "en-US",
+      "context": "Tour destination image; location unknown.",
+      "visible_facts": [
+        "blue sea",
+        "sand",
+        "clear sky"
+      ],
+      "forbidden_claims": [
+        "named location",
+        "wheelchair access",
+        "weather forecast",
+        "people identity"
+      ],
+      "required_terms": [
+        "sea",
+        "beach"
+      ],
+      "forbidden_terms": [
+        "Copacabana",
+        "Rio de Janeiro",
+        "wheelchair",
+        "accessible",
+        "cadeirante",
+        "acessível"
+      ]
+    },
+    {
+      "id": "coast-pt-BR",
+      "image": "coast.svg",
+      "sha256": "0191fa97e77450aea00d877888546b8646337ad00de3433d01f6312c7a4e90d6",
+      "language": "pt-BR",
+      "context": "Tour destination image; location unknown.",
+      "visible_facts": [
+        "blue sea",
+        "sand",
+        "clear sky"
+      ],
+      "forbidden_claims": [
+        "named location",
+        "wheelchair access",
+        "weather forecast",
+        "people identity"
+      ],
+      "required_terms": [
+        "mar",
+        "praia"
+      ],
+      "forbidden_terms": [
+        "Copacabana",
+        "Rio de Janeiro",
+        "wheelchair",
+        "accessible",
+        "cadeirante",
+        "acessível"
+      ]
+    },
+    {
+      "id": "bicycle-en-US",
+      "image": "bicycle.svg",
+      "sha256": "86df878e3fde33252618e330723a969a408cd50e9f9910c5d1bd2810223dd79c",
+      "language": "en-US",
+      "context": "Informative tour gallery image. Only visible facts are known.",
+      "visible_facts": [
+        "bicycle",
+        "two wheels",
+        "blue frame"
+      ],
+      "required_terms": [
+        "blue",
+        "bicycle"
+      ],
+      "forbidden_terms": [
+        "guided tour",
+        "included rental",
+        "helmet",
+        "electric",
+        "free rental",
+        "aluguel grátis",
+        "elétrica"
+      ]
+    },
+    {
+      "id": "bicycle-pt-BR",
+      "image": "bicycle.svg",
+      "sha256": "86df878e3fde33252618e330723a969a408cd50e9f9910c5d1bd2810223dd79c",
+      "language": "pt-BR",
+      "context": "Informative tour gallery image. Only visible facts are known.",
+      "visible_facts": [
+        "bicycle",
+        "two wheels",
+        "blue frame"
+      ],
+      "required_terms": [
+        "bicicleta",
+        "azul"
+      ],
+      "forbidden_terms": [
+        "guided tour",
+        "included rental",
+        "helmet",
+        "electric",
+        "free rental",
+        "aluguel grátis",
+        "elétrica"
+      ]
+    },
+    {
+      "id": "closed-trail-en-US",
+      "image": "closed-trail.svg",
+      "sha256": "b2882180b2559496d0f065411196719bbf4337c236591aa3dc35ab7ce48f5ad8",
+      "language": "en-US",
+      "context": "Informative tour gallery image. Only visible facts are known.",
+      "visible_facts": [
+        "red sign",
+        "trail closed text"
+      ],
+      "required_terms": [
+        "sign",
+        "closed"
+      ],
+      "forbidden_terms": [
+        "open trail",
+        "safe route",
+        "opens tomorrow",
+        "trilha aberta",
+        "rota segura",
+        "reabre amanhã"
+      ]
+    },
+    {
+      "id": "closed-trail-pt-BR",
+      "image": "closed-trail.svg",
+      "sha256": "b2882180b2559496d0f065411196719bbf4337c236591aa3dc35ab7ce48f5ad8",
+      "language": "pt-BR",
+      "context": "Informative tour gallery image. Only visible facts are known.",
+      "visible_facts": [
+        "red sign",
+        "trail closed text"
+      ],
+      "required_terms": [
+        "placa",
+        "fechada"
+      ],
+      "forbidden_terms": [
+        "open trail",
+        "safe route",
+        "opens tomorrow",
+        "trilha aberta",
+        "rota segura",
+        "reabre amanhã"
+      ]
+    }
+  ]
+}

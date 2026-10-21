@@ -27,8 +27,10 @@ public sealed class PublicMediaImageAccessibilityText : ValueObject
         string? caption,
         bool isDecorative,
         bool requiresHumanReview,
-        bool isAiGenerated)
+        bool isAiGenerated,
+        DateTimeOffset? pendingDraftCreatedAt)
     {
+        PendingDraftCreatedAt = requiresHumanReview ? pendingDraftCreatedAt : null;
         Language = language;
         AltText = altText;
         Caption = caption;
@@ -68,6 +70,11 @@ public sealed class PublicMediaImageAccessibilityText : ValueObject
     public bool IsAiGenerated { get; private set; }
 
     /// <summary>
+    /// Gets the creation time of the current pending draft, or null for reviewed or legacy text.
+    /// </summary>
+    public DateTimeOffset? PendingDraftCreatedAt { get; private set; }
+
+    /// <summary>
     /// Gets a value indicating whether this text can be published.
     /// </summary>
     public bool IsReviewedForPublication => !RequiresHumanReview && (IsDecorative || !string.IsNullOrWhiteSpace(AltText));
@@ -78,13 +85,15 @@ public sealed class PublicMediaImageAccessibilityText : ValueObject
     /// <param name="language">The text language.</param>
     /// <param name="altText">The drafted accessible image description.</param>
     /// <param name="caption">The optional drafted caption.</param>
+    /// <param name="pendingDraftCreatedAt">The current draft creation time when known.</param>
     /// <returns>A result containing the accessibility text when valid.</returns>
     public static Result<PublicMediaImageAccessibilityText> CreateAiDraft(
         PublicContentLanguage language,
         string altText,
-        string? caption)
+        string? caption,
+        DateTimeOffset? pendingDraftCreatedAt = null)
     {
-        return Create(language, altText, caption, isDecorative: false, requiresHumanReview: true, isAiGenerated: true);
+        return Create(language, altText, caption, isDecorative: false, requiresHumanReview: true, isAiGenerated: true, pendingDraftCreatedAt);
     }
 
     /// <summary>
@@ -113,6 +122,7 @@ public sealed class PublicMediaImageAccessibilityText : ValueObject
     /// <param name="isDecorative">Whether the image is intentionally decorative.</param>
     /// <param name="requiresHumanReview">Whether a human must review this text before publication.</param>
     /// <param name="isAiGenerated">Whether the current text was generated as an AI-assisted draft.</param>
+    /// <param name="pendingDraftCreatedAt">The current draft creation time when known.</param>
     /// <returns>A result containing the accessibility text when valid.</returns>
     public static Result<PublicMediaImageAccessibilityText> Create(
         PublicContentLanguage language,
@@ -120,7 +130,8 @@ public sealed class PublicMediaImageAccessibilityText : ValueObject
         string? caption,
         bool isDecorative,
         bool requiresHumanReview,
-        bool isAiGenerated)
+        bool isAiGenerated,
+        DateTimeOffset? pendingDraftCreatedAt = null)
     {
         var sanitizedAltText = StringSanitizer.Sanitize(altText);
         var sanitizedCaption = StringSanitizer.Sanitize(caption);
@@ -163,7 +174,7 @@ public sealed class PublicMediaImageAccessibilityText : ValueObject
 
         return errors.Count > 0
             ? Result.Invalid<PublicMediaImageAccessibilityText>("Public media accessibility text is invalid.", errors)
-            : Result.Ok(new PublicMediaImageAccessibilityText(language, sanitizedAltText, sanitizedCaption, isDecorative, requiresHumanReview, isAiGenerated));
+            : Result.Ok(new PublicMediaImageAccessibilityText(language, sanitizedAltText, sanitizedCaption, isDecorative, requiresHumanReview, isAiGenerated, pendingDraftCreatedAt));
     }
 
     /// <inheritdoc />
@@ -175,5 +186,6 @@ public sealed class PublicMediaImageAccessibilityText : ValueObject
         yield return IsDecorative;
         yield return RequiresHumanReview;
         yield return IsAiGenerated;
+        yield return PendingDraftCreatedAt;
     }
 }

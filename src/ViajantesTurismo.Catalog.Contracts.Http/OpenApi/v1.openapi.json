@@ -853,6 +853,12 @@
             "type": "string",
             "format": "uuid"
           },
+          "accessibilityTexts": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/PublicMediaAccessibilityTextDto"
+            }
+          },
           "responsiveVariants": {
             "type": "array",
             "items": {
@@ -1230,6 +1236,45 @@
             ]
           },
           "requiresHumanReview": {
+            "type": "boolean"
+          }
+        }
+      },
+      "PublicMediaAccessibilityTextDto": {
+        "required": [
+          "language",
+          "isDecorative",
+          "requiresHumanReview",
+          "isAiGenerated"
+        ],
+        "type": "object",
+        "properties": {
+          "language": {
+            "$ref": "#/components/schemas/PublicContentLanguageDto"
+          },
+          "altText": {
+            "maxLength": 256,
+            "minLength": 0,
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "caption": {
+            "maxLength": 256,
+            "minLength": 0,
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "isDecorative": {
+            "type": "boolean"
+          },
+          "requiresHumanReview": {
+            "type": "boolean"
+          },
+          "isAiGenerated": {
             "type": "boolean"
           }
         }

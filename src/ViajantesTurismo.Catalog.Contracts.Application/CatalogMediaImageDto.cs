@@ -14,6 +14,11 @@ public sealed record CatalogMediaImageDto
     public required Guid Id { get; init; }
 
     /// <summary>
+    /// Gets accessibility text and review state for every declared language.
+    /// </summary>
+    public IReadOnlyList<PublicMediaAccessibilityTextDto> AccessibilityTexts { get; init; } = [];
+
+    /// <summary>
     /// Gets responsive preview rendition metadata.
     /// </summary>
     [Required]

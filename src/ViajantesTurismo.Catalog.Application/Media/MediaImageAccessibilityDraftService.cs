@@ -1,3 +1,4 @@
+using System.Diagnostics;
 using PandaBear.AI;
 using PandaBear.Results;
 using ViajantesTurismo.Catalog.Domain.Media;
@@ -11,7 +12,9 @@ namespace ViajantesTurismo.Catalog.Application.Media;
 public sealed class MediaImageAccessibilityDraftService(
     IPublicMediaImageStore imageStore,
     IMediaObjectStore objectStore,
-    IImageTextGenerator imageTextGenerator)
+    IImageTextGenerator imageTextGenerator,
+    TimeProvider? timeProvider = null,
+    MediaImageAccessibilityGenerationProvenance? provenance = null)
 {
     /// <summary>
     /// Generates and stores AI-assisted draft accessibility text.
@@ -72,38 +75,63 @@ public sealed class MediaImageAccessibilityDraftService(
         }
 
         using var readableSource = source;
-        ImageTextGenerationResult draft;
+        var started = Stopwatch.GetTimestamp();
+        var outcome = "failure";
+        MediaAccessibilityTelemetry.RecordAttempt(input.Language);
+        using var activity = CatalogTelemetry.ActivitySource.StartActivity("catalog.media_accessibility.generate");
+        activity?.SetTag("catalog.media_accessibility.configured_provider", provenance?.Provider ?? "unreported");
+        activity?.SetTag("gen_ai.request.model", provenance?.RequestedModel ?? "unreported");
+        activity?.SetTag("catalog.media_accessibility.adapter_version", typeof(IImageTextGenerator).Assembly.GetName().Version?.ToString() ?? "unreported");
+        activity?.SetTag("catalog.media_accessibility.prompt_version", provenance?.PromptVersion ?? "unreported");
+        activity?.SetTag("catalog.media_accessibility.config_version", provenance?.ConfigurationVersion ?? "unreported");
+        activity?.SetTag("gen_ai.response.model", "unreported");
         try
         {
-            draft = await imageTextGenerator.GenerateImageText(
-                new ImageTextGenerationRequest
-                {
-                    Image = readableSource.Content,
-                    ContentType = readableSource.ContentType,
-                    Language = ToLanguageTag(input.Language),
-                    Context = input.Context,
-                    Latitude = input.Latitude,
-                    Longitude = input.Longitude
-                },
-                ct).ConfigureAwait(false);
-        }
-        catch (ImageTextGenerationException)
-        {
-            return Result.Unavailable<PublicMediaImage>("AI image text generation is unavailable.");
-        }
-        catch (InvalidOperationException)
-        {
-            return Result.Unavailable<PublicMediaImage>("AI image text generation is unavailable.");
-        }
+            ImageTextGenerationResult draft;
+            try
+            {
+                draft = await imageTextGenerator.GenerateImageText(
+                    new ImageTextGenerationRequest
+                    {
+                        Image = readableSource.Content,
+                        ContentType = readableSource.ContentType,
+                        Language = ToLanguageTag(input.Language),
+                        Context = input.Context,
+                        Latitude = input.Latitude,
+                        Longitude = input.Longitude
+                    },
+                    ct).ConfigureAwait(false);
+            }
+            catch (ImageTextGenerationException)
+            {
+                return Result.Unavailable<PublicMediaImage>("AI image text generation is unavailable.");
+            }
+            catch (InvalidOperationException)
+            {
+                return Result.Unavailable<PublicMediaImage>("AI image text generation is unavailable.");
+            }
 
-        var result = image.SetAiDraftAccessibilityText(input.Language, draft.AltText, draft.Caption);
-        if (result.IsFailure)
-        {
-            return result.ConvertError<PublicMediaImage>();
-        }
+            var result = image.SetAiDraftAccessibilityText(input.Language, draft.AltText, draft.Caption, (timeProvider ?? TimeProvider.System).GetUtcNow());
+            if (result.IsFailure)
+            {
+                return result.ConvertError<PublicMediaImage>();
+            }
 
-        await imageStore.Upsert(image, ct).ConfigureAwait(false);
-        return Result.Ok(image);
+            await imageStore.Upsert(image, ct).ConfigureAwait(false);
+            outcome = "success";
+            return Result.Ok(image);
+        }
+        catch (OperationCanceledException) when (ct.IsCancellationRequested)
+        {
+            outcome = "cancelled";
+            throw;
+        }
+        finally
+        {
+            activity?.SetTag(CatalogTelemetry.TagOutcome, outcome);
+            activity?.SetStatus(outcome == "success" ? ActivityStatusCode.Ok : ActivityStatusCode.Error);
+            MediaAccessibilityTelemetry.RecordCompletion(outcome, input.Language, started);
+        }
     }
 
     private static string ToLanguageTag(PublicContentLanguage language)

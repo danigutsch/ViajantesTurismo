@@ -18,7 +18,7 @@ namespace ViajantesTurismo.Catalog.Infrastructure.Migrations
         {
 #pragma warning disable 612, 618
             modelBuilder
-                .HasAnnotation("ProductVersion", "10.0.10")
+                .HasAnnotation("ProductVersion", "10.0.13")
                 .HasAnnotation("Relational:MaxIdentifierLength", 63);
 
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
@@ -536,6 +536,9 @@ namespace ViajantesTurismo.Catalog.Infrastructure.Migrations
 
                             b1.Property<bool>("IsDecorative")
                                 .HasColumnType("boolean");
+
+                            b1.Property<DateTimeOffset?>("PendingDraftCreatedAt")
+                                .HasColumnType("timestamp with time zone");
 
                             b1.Property<bool>("RequiresHumanReview")
                                 .HasColumnType("boolean");

@@ -93,11 +93,41 @@ internal sealed class SeaweedFsMediaObjectStore(
         return objects.Select(static item => new MediaObjectInventoryItem(item.Key, ToUtcDateTimeOffset(item.LastModified.GetValueOrDefault()))).ToArray();
     }
 
-    public ValueTask<MediaObjectUploadTicket> CreateUploadUrl(MediaObjectUploadRequest request, CancellationToken ct)
+    public async ValueTask<MediaObjectUploadTicket> CreateUploadUrl(MediaObjectUploadRequest request, CancellationToken ct)
     {
         ArgumentNullException.ThrowIfNull(request);
         ct.ThrowIfCancellationRequested();
-        throw new NotSupportedException("SeaweedFS media storage does not support direct upload tickets.");
+        ValidateKey(request.ObjectKey);
+        ArgumentException.ThrowIfNullOrWhiteSpace(request.ContentType);
+        if (request.ContentType.Contains('\r', StringComparison.Ordinal) || request.ContentType.Contains('\n', StringComparison.Ordinal))
+        {
+            throw new ArgumentException("Content type must not contain newlines.", nameof(request));
+        }
+
+        ArgumentOutOfRangeException.ThrowIfNegativeOrZero(request.Length);
+        if (request.ExpiresAfter <= TimeSpan.Zero || request.ExpiresAfter > TimeSpan.FromDays(7))
+        {
+            throw new ArgumentOutOfRangeException(nameof(request), "Upload lifetime must be positive and at most seven days.");
+        }
+
+        var expiresAt = DateTimeOffset.UtcNow.Add(request.ExpiresAfter);
+        var signingRequest = new GetPreSignedUrlRequest
+        {
+            BucketName = options.Bucket,
+            Key = request.ObjectKey,
+            Verb = HttpVerb.PUT,
+            Protocol = options.Endpoint?.Scheme == Uri.UriSchemeHttp ? Protocol.HTTP : Protocol.HTTPS,
+            ContentType = request.ContentType,
+            Expires = expiresAt.UtcDateTime
+        };
+        signingRequest.Headers.ContentLength = request.Length;
+        var uri = new Uri(await client.GetPreSignedURLAsync(signingRequest).ConfigureAwait(false));
+        IReadOnlyDictionary<string, string> headers = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
+        {
+            ["Content-Type"] = request.ContentType,
+            ["Content-Length"] = request.Length.ToString(System.Globalization.CultureInfo.InvariantCulture)
+        };
+        return new MediaObjectUploadTicket(request.ObjectKey, uri, expiresAt, headers);
     }
 
     public Uri GetPublicUri(string objectKey)

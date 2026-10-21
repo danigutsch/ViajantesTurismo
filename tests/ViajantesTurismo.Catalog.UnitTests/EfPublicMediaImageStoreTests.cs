@@ -4,8 +4,42 @@ using ViajantesTurismo.Catalog.Infrastructure;
 
 namespace ViajantesTurismo.Catalog.UnitTests;
 
+[Trait(PandaBear.Testing.TestTraitNames.AreaName, TestTraits.CatalogArea)]
+[Trait(PandaBear.Testing.SharedKernelTestTraitNames.ScopeName, PandaBear.Testing.SharedKernelTestTraitNames.UnitScope)]
+[Trait(PandaBear.Testing.SharedKernelTestTraitNames.CapabilityName, TestTraits.AiAccessibilityCapability)]
 public sealed class EfPublicMediaImageStoreTests
 {
+    [Fact]
+    public async Task Pending_draft_timestamp_survives_persistence_and_clears_only_for_reviewed_language()
+    {
+        // Arrange
+        await using var dbContext = EfPublicContentStoreTestDbContextFactory.Create();
+        var store = new EfPublicMediaImageStore(dbContext);
+        var image = PublicMediaImageTestFactory.CreateImage(Guid.CreateVersion7(), Guid.CreateVersion7(), 0, true);
+        var firstDraftAt = new DateTimeOffset(2026, 10, 21, 10, 0, 0, TimeSpan.Zero);
+        var regeneratedAt = firstDraftAt.AddHours(1);
+        image.SetAiDraftAccessibilityText(PublicContentLanguage.EnUs, "A beach", null, firstDraftAt).IsSuccess.ShouldBeTrue();
+        image.SetAiDraftAccessibilityText(PublicContentLanguage.PtBr, "Uma praia", null, firstDraftAt).IsSuccess.ShouldBeTrue();
+        image.SetAiDraftAccessibilityText(PublicContentLanguage.EnUs, "A blue sea", null, regeneratedAt).IsSuccess.ShouldBeTrue();
+        await store.Upsert(image, TestContext.Current.CancellationToken);
+        dbContext.ChangeTracker.Clear();
+        var pending = await store.GetImage(image.Id, TestContext.Current.CancellationToken);
+        pending.ShouldNotBeNull();
+        pending.AccessibilityTexts.Single(text => text.Language == PublicContentLanguage.EnUs).PendingDraftCreatedAt.ShouldBe(regeneratedAt);
+        pending.AccessibilityTexts.Single(text => text.Language == PublicContentLanguage.PtBr).PendingDraftCreatedAt.ShouldBe(firstDraftAt);
+
+        // Act
+        pending.SetReviewedAccessibilityText(PublicContentLanguage.EnUs, "A blue sea", null, false).IsSuccess.ShouldBeTrue();
+        await store.Upsert(pending, TestContext.Current.CancellationToken);
+        dbContext.ChangeTracker.Clear();
+        var reviewed = await store.GetImage(image.Id, TestContext.Current.CancellationToken);
+
+        // Assert
+        reviewed.ShouldNotBeNull();
+        reviewed.AccessibilityTexts.Single(text => text.Language == PublicContentLanguage.EnUs).PendingDraftCreatedAt.ShouldBeNull();
+        reviewed.AccessibilityTexts.Single(text => text.Language == PublicContentLanguage.PtBr).PendingDraftCreatedAt.ShouldBe(firstDraftAt);
+    }
+
     [Fact]
     public async Task Store_persists_and_loads_ordered_tour_gallery_images()
     {
