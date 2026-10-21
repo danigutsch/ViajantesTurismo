@@ -32,7 +32,10 @@ It introduces a repository-managed Action dependency and its downloaded/transiti
 so maintainers must review that supply-chain surface when updating the pin. No new NuGet dependency
 is introduced. Manual submissions take precedence over automatic submissions per
 [GitHub's documented deduplication](https://docs.github.com/en/rest/dependency-graph/dependency-submission).
-Automatic submission is left enabled as fallback; no remote security setting is changed.
+The same repository-owned submission runs on `main` pushes and manual dispatches. GitHub's managed
+NuGet auto-submission cannot stage the pinned local candidate feed and fails with `NU1301`; rerunning
+it does not fix the missing prerequisite. Replace that incompatible duplicate workflow with this
+bootstrapped submission, retaining the dependency graph, PR snapshots, and required Dependency Review.
 
 ## StreamJsonRpc metadata review
 
