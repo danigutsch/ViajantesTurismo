@@ -30,6 +30,7 @@ jobs:
       contents: read
     outputs:
       build_required: ${{ steps.change-scope.outputs.build_required }}
+      documentation_only: ${{ steps.change-scope.outputs.documentation_only }}
       fast_validation_1_required: ${{ steps.change-scope.outputs.fast_validation_1_required }}
       fast_validation_2_required: ${{ steps.change-scope.outputs.fast_validation_2_required }}
       admin_integration_required: ${{ steps.change-scope.outputs.admin_integration_required }}
@@ -43,26 +44,24 @@ jobs:
           fetch-depth: 0
           persist-credentials: false
 
-      - name: Set up CI selection tool
-        uses: ./.github/actions/setup-ci-prerequisites
+      - name: Set up CI selection SDK
+        uses: actions/setup-dotnet@c2fa09f4bde5ebb9d1777cf28262a3eb3db3ced7 # v5
         with:
-          sharedkernel-library-root: ${{ vars.SHAREDKERNEL_LIBRARY_ROOT }}
-          sharedkernel-candidate-feed: ${{ vars.SHAREDKERNEL_CANDIDATE_FEED }}
-          restore-local-tools: "false"
-          restore-targets: tools/ViajantesTurismo.RepoConfig.Tool/ViajantesTurismo.RepoConfig.Tool.csproj
-          trust-dev-certificate: "false"
+          global-json-file: global.json
+      - name: Restore standalone selection tool
+        run: dotnet restore tools/ViajantesTurismo.RepoConfig.Tool --locked-mode
 
       - name: Select affected CI test projects
         id: change-scope
         shell: bash
         env:
-          SELECTION_MODE: ${{ github.event_name == 'pull_request' && github.event.pull_request.base.sha != '' && github.event.pull_request.head.sha != '' && 'merge-base' || 'full' }}
-          BASE_SHA: ${{ github.event.pull_request.base.sha }}
-          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+          SELECTION_MODE: ${{ github.event_name == 'pull_request' && github.event.pull_request.base.sha != '' && github.event.pull_request.head.sha != '' && 'merge-base' || github.event_name == 'push' && github.event.before != '' && 'direct' || 'full' }}
+          BASE_SHA: ${{ github.event.pull_request.base.sha || github.event.before }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
         run: |
           dotnet run \
             --project tools/ViajantesTurismo.RepoConfig.Tool/ViajantesTurismo.RepoConfig.Tool.csproj \
-            --no-restore \
+            -c Release --no-restore \
             -- \
             select-ci-test-projects \
             --mode "${SELECTION_MODE}" \
@@ -80,7 +79,8 @@ jobs:
           retention-days: 1
 
   calculate-version:
-    if: ${{ github.event.action != 'labeled' || github.event.label.name == 'ci:rerun' }}
+    needs: detect-changes
+    if: ${{ (github.event.action != 'labeled' || github.event.label.name == 'ci:rerun') && needs.detect-changes.outputs.build_required == 'true' }}
     name: Calculate Version
     runs-on: ${{ vars.CI_UBUNTU_RUNNER }}
     timeout-minutes: 10
@@ -123,7 +123,7 @@ jobs:
             --github-summary "${GITHUB_STEP_SUMMARY}"
 
   openapi-tool-windows:
-    if: ${{ github.event.action != 'labeled' || github.event.label.name == 'ci:rerun' }}
+    if: ${{ (github.event.action != 'labeled' || github.event.label.name == 'ci:rerun') && needs.detect-changes.outputs.build_required == 'true' }}
     name: OpenAPI Tool Windows
     needs:
       - detect-changes
@@ -167,7 +167,7 @@ jobs:
     name: ${{ matrix.display_name }}
     needs:
       - detect-changes
-    if: ${{ (github.event.action != 'labeled' || github.event.label.name == 'ci:rerun') && (always()) }}
+    if: ${{ (github.event.action != 'labeled' || github.event.label.name == 'ci:rerun') && (always()) && (needs.detect-changes.result != 'success' || needs.detect-changes.outputs.build_required == 'true') }}
     runs-on: ${{ vars.CI_UBUNTU_RUNNER }}
     timeout-minutes: ${{ matrix.timeout_minutes }}
     permissions:
@@ -418,8 +418,11 @@ jobs:
           BUILD_RESULT: ${{ needs.solution-build.result }}
         run: |
           test "$SELECTION_RESULT" = success
-          test "$TEST_RESULT" = success
-          if [[ "$BUILD_REQUIRED" == true ]]; then test "$BUILD_RESULT" = success; fi
+          case "$BUILD_REQUIRED" in
+            true) test "$TEST_RESULT" = success && test "$BUILD_RESULT" = success ;;
+            false) test "$TEST_RESULT" = skipped && test "$BUILD_RESULT" = skipped ;;
+            *) echo "Missing build selection evidence." >&2; exit 1 ;;
+          esac
 
       - name: Checkout repository
         if: ${{ needs.detect-changes.outputs.build_required == 'true' }}
@@ -494,6 +497,7 @@ jobs:
           retention-days: 14
 
   lint:
+    needs: detect-changes
     if: ${{ github.event.action != 'labeled' || github.event.label.name == 'ci:rerun' }}
     name: ${{ github.event.action == 'labeled' && github.event.label.name != 'ci:rerun' && 'Ignored label event' || 'Lint' }}
     runs-on: ${{ vars.CI_UBUNTU_RUNNER }}
@@ -513,6 +517,9 @@ jobs:
         with:
           files: |
             README.md
+            AGENTS.md
+            CONTRIBUTING.md
+            SECURITY.md
             docs/**/*.md
             .github/**/*.md
             .devcontainer/**/*.md
@@ -536,6 +543,9 @@ jobs:
         with:
           globs: |
             README.md
+            AGENTS.md
+            CONTRIBUTING.md
+            SECURITY.md
             docs/**/*.md
             .github/**/*.md
             .devcontainer/**/*.md
@@ -546,6 +556,7 @@ jobs:
           config: .markdownlint-cli2.jsonc
 
       - name: Set up CI prerequisites
+        if: needs.detect-changes.outputs.documentation_only != 'true'
         uses: ./.github/actions/setup-ci-prerequisites
         with:
           sharedkernel-library-root: ${{ vars.SHAREDKERNEL_LIBRARY_ROOT }}
@@ -554,4 +565,11 @@ jobs:
           trust-dev-certificate: "false"
 
       - name: Run repository linters
+        if: needs.detect-changes.outputs.documentation_only != 'true'
         run: bash scripts/lint-all.sh --skip-markdown
+
+      - name: Validate documentation without running tests
+        if: needs.detect-changes.outputs.documentation_only == 'true'
+        run: |
+          bash scripts/check-line-endings.sh
+          python3 -B scripts/lint-links.py

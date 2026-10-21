@@ -18,6 +18,7 @@ Branch protection and the active `main` ruleset require these status checks:
 - `Dependency Review` (from `.github/workflows/dependency-review.yml`)
 - `Secret Scan` (from `.github/workflows/secret-scan.yml`)
 - `Quality Gate` (from `.github/workflows/ci.yml`)
+- `PR Metadata` (from `.github/workflows/pr-metadata.yml`)
 
 The required status changed from `SonarCloud` to `Quality Gate` after the replacement check
 passed. Updating both protections then allowed the replacement workflow to merge. The settings

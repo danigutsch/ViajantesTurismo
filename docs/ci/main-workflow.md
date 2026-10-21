@@ -29,7 +29,7 @@ Set that variable to the current repository CI baseline runner. `OpenAPI Tool Wi
 | Job name | `Calculate Version` |
 | Runner | Repository CI baseline |
 
-This job checks out full history, restores only `SharedKernel.Versioning.Tool`, and runs
+For build-relevant changes, this job waits for selection, checks out full history, restores only `SharedKernel.Versioning.Tool`, and runs
 `SharedKernel.Versioning.Tool calculate-release`. The tool finds the latest `v*` SemVer tag when one exists;
 otherwise it uses `0.1.0` as the base while the repository has no versioned release tags. It feeds
 commit messages into `sharedkernel-version compute` and exposes the calculated SemVer, release impact,
@@ -90,22 +90,20 @@ that CI can combine `actions/setup-dotnet` built-in caching with locked-mode res
 keeps the dependency graph reproducible across pull requests and merge commits while giving
 the cache a stable key source.
 
-For pull requests that only modify `docs/**`, `README.md`, `CONTRIBUTING.md`, or the small
-allowlist of low-risk contributor-maintenance files, the matrix rows still run and report successful
-outcomes to the required `Build and Test` aggregate through lightweight skip steps,
-but they skip the expensive restore, build, Playwright, and test steps. This avoids the pending
-required-check problem
-caused by trigger-level `paths` or `paths-ignore` filters. The logical fast lane is independently
-path-gated, but every build-relevant project change also selects the Architecture Tests sentinel.
-This activates both complete fast shards for structural validation while dependency-heavy rows use
-their own graph-derived gates.
+Standalone documentation changes skip the entire test matrix, Windows tests, version calculation,
+and solution build. Required `Build and Test` and `Quality Gate` still report successful results
+from validated selection evidence. `Lint` validates Markdown, links, and line endings without
+running tests. Contributor-maintenance scripts retain repository-tool tests even when they do not
+select application tests. Trigger-level `paths` or `paths-ignore` filters are not used for required
+checks. Every build-relevant project change still selects the Architecture Tests sentinel and
+activates both fast shards; dependency-heavy rows retain their graph-derived gates.
 
 The required change-classification path is the `select-ci-test-projects` command in
 `ViajantesTurismo.RepoConfig.Tool`. It maps changed files to owning solution projects, follows reverse
 transitive `ProjectReference` dependencies, and maps affected tests back to the fixed slice
 manifests. Missing ranges, unknown paths, unresolved references, and malformed graphs fail open to
-full validation. Pull requests use a merge-base range; `main`, merge-queue, and manual runs validate
-all slices.
+full validation. Pull requests use a merge-base range; main pushes compare exact before/after
+revisions. Merge-queue and manual runs validate all slices.
 
 The generated project-level plan is uploaded as `ci-selected-test-projects` for timing and coverage
 evaluation. CI currently uses it to decide which complete slices run, while each active row still
@@ -200,7 +198,8 @@ and the required remote branch-protection transition.
 1. Checkout repository (`actions/checkout`).
 2. On pull requests, detect changed Markdown files and lint only that set with `tj-actions/changed-files` and `DavidAnson/markdownlint-cli2-action`.
 3. On non-pull-request runs, lint the full repository Markdown scope with `DavidAnson/markdownlint-cli2-action` using the bundled Node.js runtime.
-4. Run `bash scripts/lint-all.sh`.
+4. For documentation-only changes, check line endings and local links without running tests.
+5. For other changes, run `bash scripts/lint-all.sh`, including its repository-tool tests.
 
 ## Workflow evolution
 
