@@ -86,7 +86,41 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
         with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
           persist-credentials: false
+
+      # The pinned Action ignores purl versions. Fail before emitting its exception if approval expires.
+      # Maintainer approved this preview graph on 2026-10-21; evidence: docs/ci/dependency-license-evidence.md.
+      - name: Validate exact preview license approval
+        id: preview-license
+        shell: pwsh
+        run: |
+          $ErrorActionPreference = 'Stop'
+          $pin = Get-Content '.config/sharedkernel-candidate.json' -Raw | ConvertFrom-Json
+          if ($pin.packageVersion -cne '1.0.0-alpha.20261021.2' -or
+              $pin.libraryRevision -cne 'f5975b60601e245bda6bb8e45559d8ce3a24a8e0' -or
+              $pin.libraryDirty -ne $false) {
+            throw 'Preview license approval expired: re-review this candidate before granting an exception.'
+          }
+          $locks = @(git ls-files -- '**/packages.lock.json')
+          if ($LASTEXITCODE -ne 0 -or $locks.Count -eq 0) { throw 'Cannot inspect the tracked dependency graph.' }
+          $approved = @{ 'StreamJsonRpc' = '2.25.29'; 'Magick.NET-Q8-AnyCPU' = '15.0.0' }
+          $found = @{}
+          foreach ($path in $locks) {
+            $lock = Get-Content -LiteralPath $path -Raw | ConvertFrom-Json -AsHashtable
+            foreach ($target in $lock.dependencies.Values) {
+              foreach ($entry in $target.GetEnumerator()) {
+                if ($approved.ContainsKey($entry.Key)) {
+                  if ($entry.Value.resolved -cne $approved[$entry.Key]) {
+                    throw "License approval for $($entry.Key) covers only $($approved[$entry.Key]); found '$($entry.Value.resolved)' in $path."
+                  }
+                  $found[$entry.Key] = $true
+                }
+              }
+            }
+          }
+          if ($found.Count -ne $approved.Count) { throw 'An approved package no longer exists in the locked graph; remove its preview exception.' }
+          'packages=pkg:nuget/StreamJsonRpc@2.25.29,pkg:nuget/Magick.NET-Q8-AnyCPU@15.0.0' >> $env:GITHUB_OUTPUT
 
       - name: Dependency Review
         uses: actions/dependency-review-action@2031cfc080254a8a887f58cffee85186f0e49e48 # v4.9.0
@@ -94,6 +128,7 @@ jobs:
           fail-on-severity: moderate
           license-check: true
           vulnerability-check: true
+          allow-dependencies-licenses: ${{ steps.preview-license.outputs.packages }}
           allow-licenses: >-
             MIT, Apache-2.0, BSD-2-Clause, BSD-3-Clause, 0BSD, ISC, PostgreSQL, Zlib,
             Unlicense, CC0-1.0

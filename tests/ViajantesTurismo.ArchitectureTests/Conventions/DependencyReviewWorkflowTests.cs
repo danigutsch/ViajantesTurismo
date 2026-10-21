@@ -70,7 +70,7 @@ public sealed class DependencyReviewWorkflowTests
     }
 
     [Fact]
-    public void License_review_does_not_use_package_exemptions_that_ignore_versions()
+    public void License_review_bounds_preview_approval_before_emitting_the_package_exception()
     {
         // Arrange
         var path = Path.Combine(GetRepositoryRoot(), ".github", "workflows", "dependency-review.yml");
@@ -79,11 +79,17 @@ public sealed class DependencyReviewWorkflowTests
         var workflow = File.ReadAllText(path);
 
         // Assert
-        workflow.ShouldNotContain("allow-dependencies-licenses:", StringComparison.Ordinal);
+        workflow.ShouldContain("id: preview-license", StringComparison.Ordinal);
+        workflow.ShouldContain("allow-dependencies-licenses: ${{ steps.preview-license.outputs.packages }}", StringComparison.Ordinal);
+        workflow.ShouldContain("$pin.packageVersion -cne '1.0.0-alpha.20261021.2'", StringComparison.Ordinal);
+        workflow.ShouldContain("$pin.libraryRevision -cne 'f5975b60601e245bda6bb8e45559d8ce3a24a8e0'", StringComparison.Ordinal);
+        workflow.ShouldContain("'StreamJsonRpc' = '2.25.29'", StringComparison.Ordinal);
+        workflow.ShouldContain("'Magick.NET-Q8-AnyCPU' = '15.0.0'", StringComparison.Ordinal);
+        workflow.ShouldContain("$entry.Value.resolved -cne $approved[$entry.Key]", StringComparison.Ordinal);
+        workflow.ShouldContain("git ls-files -- '**/packages.lock.json'", StringComparison.Ordinal);
         workflow.ShouldContain("fail-on-severity: moderate", StringComparison.Ordinal);
         workflow.ShouldContain("license-check: true", StringComparison.Ordinal);
         workflow.ShouldContain("vulnerability-check: true", StringComparison.Ordinal);
-        workflow.ShouldNotContain("pkg:nuget/Magick.NET", StringComparison.Ordinal);
         workflow.ShouldNotContain("warn-only: true", StringComparison.Ordinal);
         workflow.ShouldNotContain("continue-on-error: true", StringComparison.Ordinal);
         workflow.ShouldNotContain("NOASSERTION", StringComparison.Ordinal);

@@ -1,6 +1,6 @@
 # Dependency snapshot and license evidence
 
-Owner: repository maintainers. Reviewed October 20, 2026. Re-review on package/SDK/Aspire changes
+Owner: repository maintainers. Reviewed October 21, 2026. Re-review on package/SDK/Aspire changes
 or by January 20, 2027, whichever comes first. This record does not grant general license approval.
 
 ## Contents
@@ -36,16 +36,25 @@ Automatic submission is left enabled as fallback; no remote security setting is 
 
 ## StreamJsonRpc metadata review
 
-Reviewed package: `pkg:nuget/StreamJsonRpc@2.25.29`. No package license exemption is configured.
+Reviewed package: `pkg:nuget/StreamJsonRpc@2.25.29`. On October 21, 2026, the repository owner
+explicitly approved accepting this package while consuming the current SharedKernel preview.
+The owner also approved using the consumed packages' declared licenses for this preview:
+StreamJsonRpc `2.25.29` declares MIT; Magick.NET-Q8-AnyCPU `15.0.0` declares Apache-2.0.
+Both nuspec declarations were rechecked against the installed exact versions on October 21, 2026.
+This approval is limited to candidate `1.0.0-alpha.20261021.2`, clean library revision
+`f5975b60601e245bda6bb8e45559d8ce3a24a8e0`, and these two exact dependency versions.
 Vulnerability checks and the moderate severity gate remain active.
 
 The pinned review Action's `purlsMatch` implementation ignores package versions when matching
 `allow-dependencies-licenses`. Supplying a version in that option would exempt future versions too,
-contrary to the intended scope. Do not use that option as a version-specific correction. See the
+contrary to the intended scope. The workflow therefore validates the exact candidate version,
+revision, clean marker, and every approved package entry in every tracked lock file on the reviewed
+head commit before emitting the package-specific exception. A changed candidate (including a
+stable version), missing package, or unexpected dependency version fails visibly and requires
+removing or explicitly re-reviewing the exception. The purl alone is not the boundary. See the
 [exact pinned source](https://github.com/actions/dependency-review-action/blob/2031cfc080254a8a887f58cffee85186f0e49e48/src/purl.ts).
-Complete base/head snapshots resolve false additions without changing license policy. If a real
-package change later needs an exception, use a separately reviewed mechanism that actually checks
-its version and preserve this evidence; do not rely on the appearance of a versioned purl.
+Complete base/head snapshots still resolve false additions. No general MS-PL or NOASSERTION
+allowance is granted. Only the two named package identities receive a license metadata exception.
 
 The installed NuGet package declares MIT and repository commit
 `332cc170a82fa424e0b4f902ab9f9a876e827f38`. Aspire.Hosting 13.6.1 still references it directly;
@@ -69,7 +78,8 @@ Local exact-package evidence (SHA-256):
 Sources: the package's versioned NuGet archive and
 [Aspire 13.6.1 source](https://github.com/microsoft/aspire/blob/v13.6.1/src/Aspire.Hosting/Aspire.Hosting.csproj).
 Re-review a new version's archive and notices rather than assuming the same conclusion. This
-record preserves provenance without disabling license checks for the package or any future version.
+record preserves provenance. The preview approval does not cover future versions or remove notice
+and redistribution obligations.
 
 ## Magick native audit
 
@@ -77,7 +87,9 @@ Exact package: `Magick.NET-Q8-AnyCPU@15.0.0`, repository commit
 `79bb8700d7fe3a564f62926ab299fc2520cb2269`. Its nuspec declares Apache-2.0, but its `Notice.txt`
 also covers native dependencies with LGPL notices, including GLib, libheif, liblqr, libraw, Pango,
 and librsvg. The managed license alone is insufficient evidence for the complete distribution.
-No Magick.NET license exception is added.
+The owner's preview approval corrects the review classification using this exact package's
+Apache-2.0 declaration. It does not resolve the native components' distribution obligations or
+grant an exception to other Magick.NET package identities or future versions.
 
 Audited the installed nupkg extracted by NuGet without executing native code. A byte-string probe
 looked for `heif_context_alloc`, `g_malloc`, `rsvg_handle_new`, `libraw_init`, and `lqr_carver_new`.
@@ -106,8 +118,8 @@ RIDs and distribution model: required notices, corresponding source/relinking ob
 applicable, and how releases provide them. Do not interpret LGPL as automatically prohibiting use
 or the Apache package declaration as automatically satisfying every native obligation.
 
-If that review approves the existing distribution, record a version-scoped exception and retain
-required notices/evidence in release artifacts. If the distribution cannot satisfy the selected
+Retain required notices/evidence in release artifacts. The preview metadata exception does not
+replace that distribution review. If the distribution cannot satisfy the selected
 policy, evaluate a reduced native build or a different image provider with the owning library
 repository separately; this application PR does not change SharedKernel implementations.
 
