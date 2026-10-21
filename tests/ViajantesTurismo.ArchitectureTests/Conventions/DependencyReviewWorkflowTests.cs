@@ -16,8 +16,9 @@ public sealed class DependencyReviewWorkflowTests
         var workflow = File.ReadAllText(path);
 
         // Assert
-        workflow.ShouldContain("target: [base, head]", StringComparison.Ordinal);
+        workflow.ShouldContain("target: ${{ github.event_name == 'pull_request' && fromJSON('[\"base\", \"head\"]') || fromJSON('[\"head\"]') }}", StringComparison.Ordinal);
         workflow.ShouldContain("github.event.pull_request.head.repo.full_name == github.repository", StringComparison.Ordinal);
+        workflow.ShouldContain("github.actor != 'dependabot[bot]'", StringComparison.Ordinal);
         workflow.ShouldContain("persist-credentials: false", StringComparison.Ordinal);
         workflow.ShouldContain("github.event.pull_request.base.sha", StringComparison.Ordinal);
         workflow.ShouldContain("github.event.pull_request.head.sha", StringComparison.Ordinal);
@@ -28,6 +29,24 @@ public sealed class DependencyReviewWorkflowTests
         workflow.ShouldContain("exit 1", StringComparison.Ordinal);
         workflow.ShouldNotContain("head -20", StringComparison.Ordinal);
         workflow.ShouldNotContain("pull_request_target:", StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public void Dependency_snapshots_replace_managed_submission_for_main_and_manual_runs()
+    {
+        // Arrange
+        var path = Path.Combine(GetRepositoryRoot(), ".github", "workflows", "dependency-review.yml");
+
+        // Act
+        var workflow = File.ReadAllText(path);
+
+        // Assert
+        workflow.ShouldContain("push:\n    branches:\n      - main", StringComparison.Ordinal);
+        workflow.ShouldContain("workflow_dispatch:", StringComparison.Ordinal);
+        workflow.ShouldContain("github.event_name == 'push' || github.event_name == 'workflow_dispatch'", StringComparison.Ordinal);
+        workflow.ShouldContain("github.event.pull_request.head.sha || github.sha", StringComparison.Ordinal);
+        workflow.ShouldContain("|| github.ref }}", StringComparison.Ordinal);
+        workflow.ShouldContain("always() && (github.event_name == 'pull_request' || github.event_name == 'merge_group')", StringComparison.Ordinal);
     }
 
     [Fact]

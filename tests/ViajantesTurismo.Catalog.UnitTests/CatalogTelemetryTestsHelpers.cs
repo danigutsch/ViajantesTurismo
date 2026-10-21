@@ -57,6 +57,7 @@ public static class CatalogTelemetryTestsHelpers
         };
 
         listener.SetMeasurementEventCallback<long>((instrument, _, _, _) => measurements.Enqueue(instrument.Name));
+        listener.SetMeasurementEventCallback<double>((instrument, _, _, _) => measurements.Enqueue(instrument.Name));
         listener.Start();
         return listener;
     }

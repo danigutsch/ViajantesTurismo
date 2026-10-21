@@ -11,6 +11,21 @@ internal sealed class SeaweedFsMediaObjectStorageOptions
     public const string SectionName = "Catalog:MediaObjectStorage:SeaweedFs";
 
     /// <summary>
+    /// Gets the production S3 configuration section name.
+    /// </summary>
+    public const string S3SectionName = "Catalog:MediaObjectStorage:S3";
+
+    /// <summary>
+    /// Gets or sets the S3 signing region.
+    /// </summary>
+    public string AuthenticationRegion { get; set; } = "us-east-1";
+
+    /// <summary>
+    /// Gets or sets whether bucket names are placed in the endpoint path.
+    /// </summary>
+    public bool ForcePathStyle { get; set; } = true;
+
+    /// <summary>
     /// Gets or sets the private S3 endpoint.
     /// </summary>
     public Uri? Endpoint { get; set; }

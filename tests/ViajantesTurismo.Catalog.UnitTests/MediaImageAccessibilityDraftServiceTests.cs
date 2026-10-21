@@ -1,14 +1,95 @@
+using System.Collections.Concurrent;
+using System.Diagnostics;
 using PandaBear.AI;
+using PandaBear.Testing;
 using ViajantesTurismo.Catalog.Application.Media;
 using ViajantesTurismo.Catalog.Domain.PublicContent;
 
 namespace ViajantesTurismo.Catalog.UnitTests;
 
-[Trait(PandaBear.Testing.TestTraitNames.AreaName, TestTraits.CatalogArea)]
-[Trait(PandaBear.Testing.SharedKernelTestTraitNames.ScopeName, PandaBear.Testing.SharedKernelTestTraitNames.UnitScope)]
-[Trait(PandaBear.Testing.SharedKernelTestTraitNames.CapabilityName, TestTraits.AiAccessibilityCapability)]
+[Trait(TestTraitNames.AreaName, TestTraits.CatalogArea)]
+[Trait(SharedKernelTestTraitNames.ScopeName, SharedKernelTestTraitNames.UnitScope)]
+[Trait(SharedKernelTestTraitNames.CapabilityName, TestTraits.AiAccessibilityCapability)]
+[Collection(CatalogTelemetryGroup.Name)]
 public sealed class MediaImageAccessibilityDraftServiceTests
 {
+    [Fact]
+    public async Task Generated_draft_records_a_persistable_pending_timestamp()
+    {
+        // Arrange
+        var image = PublicMediaImageTestFactory.CreateImage(Guid.CreateVersion7(), 0, true, imageId: Guid.CreateVersion7());
+        var store = new InMemoryPublicMediaImageStore(image);
+        var objects = new InMemoryMediaObjectStore();
+        await objects.Put(new MediaObjectWriteRequest(image.SourceObjectKey, new MemoryStream([1]), "image/jpeg", 1, "sha256:abc"), TestContext.Current.CancellationToken);
+        var generatedAt = new DateTimeOffset(2026, 10, 21, 12, 0, 0, TimeSpan.Zero);
+        var service = new MediaImageAccessibilityDraftService(store, objects, new StubImageTextGenerator(new ImageTextGenerationResult("A beach", null)), new ControlledTimeProvider(generatedAt));
+
+        // Act
+        var result = await service.GenerateDraft(image.Id, new MediaImageAccessibilityDraftInput { Language = PublicContentLanguage.PtBr }, TestContext.Current.CancellationToken);
+
+        // Assert
+        result.IsSuccess.ShouldBeTrue();
+        var draft = store.Current.AccessibilityTexts.Single(text => text.Language == PublicContentLanguage.PtBr);
+        draft.PendingDraftCreatedAt.ShouldBe(generatedAt);
+    }
+
+    [Fact]
+    public async Task Generation_attempt_emits_completion_telemetry_without_private_input()
+    {
+        // Arrange
+        var image = PublicMediaImageTestFactory.CreateImage(Guid.CreateVersion7(), 0, true, imageId: Guid.CreateVersion7());
+        var imageStore = new InMemoryPublicMediaImageStore(image);
+        var objectStore = new InMemoryMediaObjectStore();
+        await objectStore.Put(new MediaObjectWriteRequest(image.SourceObjectKey, new MemoryStream([1]), "image/jpeg", 1, "sha256:abc"), TestContext.Current.CancellationToken);
+        var provenance = new MediaImageAccessibilityGenerationProvenance("litellm", "configured-model", "artifact-version", "configuration-fingerprint");
+        var service = new MediaImageAccessibilityDraftService(imageStore, objectStore, new StubImageTextGenerator(new ImageTextGenerationResult("A beach", null)), provenance: provenance);
+        var activities = new ConcurrentQueue<Activity>();
+        using var activityListener = CatalogTelemetryTestsHelpers.CreateActivityListener(activities);
+        var measurements = new ConcurrentQueue<string>();
+        using var listener = CatalogTelemetryTestsHelpers.CreateMeterListener(measurements);
+
+        // Act
+        var result = await service.GenerateDraft(image.Id, new MediaImageAccessibilityDraftInput { Language = PublicContentLanguage.EnUs, Context = "Private context" }, TestContext.Current.CancellationToken);
+
+        // Assert
+        result.IsSuccess.ShouldBeTrue();
+        measurements.Contains("catalog.media_accessibility.generation.attempts").ShouldBeTrue();
+        measurements.Contains("catalog.media_accessibility.generation.completed").ShouldBeTrue();
+        measurements.Contains("catalog.media_accessibility.generation.duration").ShouldBeTrue();
+        imageStore.Current.RequiresHumanReview.ShouldBeTrue();
+        var generation = activities.Single(activity => activity.OperationName == "catalog.media_accessibility.generate");
+        generation.GetTagItem("catalog.outcome").ShouldBe("success");
+        generation.GetTagItem("gen_ai.request.model").ShouldBe("configured-model");
+        generation.GetTagItem("gen_ai.response.model").ShouldBe("unreported");
+        generation.GetTagItem("catalog.media_accessibility.prompt_version").ShouldBe("artifact-version");
+        generation.GetTagItem("catalog.media_accessibility.config_version").ShouldBe("configuration-fingerprint");
+        generation.TagObjects.Select(tag => tag.Key).ShouldNotContain("context");
+        generation.TagObjects.Any(tag => Equals(tag.Value, "Private context")).ShouldBeFalse();
+    }
+
+    [Fact]
+    public async Task Cancelled_generation_records_cancelled_outcome_and_preserves_review_safety()
+    {
+        // Arrange
+        using var cancellation = CancellationTokenSource.CreateLinkedTokenSource(TestContext.Current.CancellationToken);
+        var image = PublicMediaImageTestFactory.CreateImage(Guid.CreateVersion7(), 0, true, imageId: Guid.CreateVersion7());
+        var imageStore = new InMemoryPublicMediaImageStore(image);
+        var objectStore = new InMemoryMediaObjectStore();
+        await objectStore.Put(new MediaObjectWriteRequest(image.SourceObjectKey, new MemoryStream([1]), "image/jpeg", 1, "sha256:abc"), cancellation.Token);
+        var service = new MediaImageAccessibilityDraftService(imageStore, objectStore, new CancellingImageTextGenerator(cancellation));
+        var activities = new ConcurrentQueue<Activity>();
+        using var listener = CatalogTelemetryTestsHelpers.CreateActivityListener(activities);
+
+        // Act
+        Func<Task> action = () => service.GenerateDraft(image.Id, new MediaImageAccessibilityDraftInput { Language = PublicContentLanguage.EnUs }, cancellation.Token).AsTask();
+        await action.ShouldThrow<TaskCanceledException>();
+
+        // Assert
+        var generation = activities.Single(activity => activity.OperationName == "catalog.media_accessibility.generate");
+        generation.GetTagItem("catalog.outcome").ShouldBe("cancelled");
+        imageStore.Current.IsAiGenerated.ShouldBeFalse();
+    }
+
     [Fact]
     public async Task Generate_draft_returns_invalid_when_image_id_is_empty()
     {

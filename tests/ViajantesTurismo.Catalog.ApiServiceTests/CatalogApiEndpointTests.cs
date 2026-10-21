@@ -1,3 +1,5 @@
+using System.Collections.Concurrent;
+using System.Diagnostics.Metrics;
 using System.Net.Http.Headers;
 using System.Net.Http.Json;
 using System.Reflection;
@@ -1658,10 +1660,34 @@ public sealed class CatalogApiEndpointTests
         response.Headers.CacheControl?.NoStore.ShouldBe(true);
     }
 
-    [Fact]
-    public async Task Public_catalog_media_endpoint_hides_images_with_unreviewed_accessibility_text()
+    [Theory]
+    [InlineData(true, "unreviewed")]
+    [InlineData(false, "missing_alt")]
+    public async Task Public_catalog_media_endpoint_hides_images_with_unreviewed_accessibility_text(bool unreviewed, string expectedReason)
     {
         // Arrange
+        var blockers = new ConcurrentQueue<string>();
+        using var listener = new MeterListener
+        {
+            InstrumentPublished = static (instrument, meterListener) =>
+            {
+                if (instrument.Name == "catalog.media_accessibility.publication.blocked")
+                {
+                    meterListener.EnableMeasurementEvents(instrument);
+                }
+            }
+        };
+        listener.SetMeasurementEventCallback<long>((_, _, tags, _) =>
+        {
+            foreach (var tag in tags)
+            {
+                if (tag.Key == "catalog.outcome" && tag.Value is string reason)
+                {
+                    blockers.Enqueue(reason);
+                }
+            }
+        });
+        listener.Start();
         var tourId = Guid.CreateVersion7();
         var tourStore = new TestCatalogTourReadModelStore();
         await tourStore.UpsertDraft(
@@ -1685,7 +1711,15 @@ public sealed class CatalogApiEndpointTests
             "Draft image",
             displayOrder: 0,
             isCover: true);
-        image.SetAiDraftAccessibilityText(PublicContentLanguage.EnUs, "AI draft image", null).IsSuccess.ShouldBeTrue();
+        if (unreviewed)
+        {
+            image.SetAiDraftAccessibilityText(PublicContentLanguage.EnUs, "AI draft image", null).IsSuccess.ShouldBeTrue();
+        }
+        else
+        {
+            // Model legacy persisted scalar metadata that lacks alternative text.
+            typeof(PublicMediaImage).GetProperty(nameof(PublicMediaImage.AltText)).ShouldNotBeNull().SetValue(image, string.Empty);
+        }
         await mediaStore.Upsert(image, TestContext.Current.CancellationToken);
         await objectStore.Put(
             new MediaObjectWriteRequest("draft-640.jpg", new MemoryStream("draft-media"u8.ToArray()), "image/jpeg", 11, "sha256:draft"),
@@ -1700,7 +1734,128 @@ public sealed class CatalogApiEndpointTests
 
         // Assert
         response.StatusCode.ShouldBe(HttpStatusCode.NotFound);
+        blockers.ShouldContain(expectedReason);
         response.Headers.CacheControl?.NoStore.ShouldBe(true);
+    }
+
+    [Theory]
+    [InlineData(-300, 300)]
+    [InlineData(300, 0)]
+    public async Task Catalog_media_review_measures_persisted_draft_age_and_clamps_clock_skew(int draftOffsetSeconds, double expectedAge)
+    {
+        // Arrange
+        var ages = new ConcurrentQueue<double>();
+        using var listener = new MeterListener
+        {
+            InstrumentPublished = static (instrument, meterListener) =>
+            {
+                if (instrument.Name == "catalog.media_accessibility.review.queue_age")
+                {
+                    meterListener.EnableMeasurementEvents(instrument);
+                }
+            }
+        };
+        listener.SetMeasurementEventCallback<double>((_, value, _, _) => ages.Enqueue(value));
+        listener.Start();
+        var now = new DateTimeOffset(2026, 10, 21, 10, 0, 0, TimeSpan.Zero);
+        var image = PublicMediaImageTestFactory.CreateReadyImage(Guid.CreateVersion7(), "source.jpg", "review.jpg", "sha256:review", "English draft", 0, true);
+        image.SetAiDraftAccessibilityText(PublicContentLanguage.EnUs, "English draft", null, now.AddSeconds(draftOffsetSeconds)).IsSuccess.ShouldBeTrue();
+        var store = new TestPublicMediaImageStore();
+        await store.Upsert(image, TestContext.Current.CancellationToken);
+        await using var baseFactory = CatalogApiTestHost.Create(new TestCatalogTourReadModelStore(), store, new TestMediaObjectStore());
+        await using var factory = baseFactory.WithWebHostBuilder(builder => builder.ConfigureServices(services =>
+            {
+                services.RemoveAll<TimeProvider>();
+                services.AddSingleton<TimeProvider>(new FixedTimeProvider(now));
+            }));
+        using var client = factory.CreateClient();
+
+        // Act
+        using var response = await client.PutAsJsonAsync(new Uri($"/api/v1/catalog/media/images/{image.Id}/accessibility-review", UriKind.Relative),
+            new PublicMediaImageAccessibilityReviewRequest { AltText = "Approved text" }, TestContext.Current.CancellationToken);
+
+        // Assert
+        response.StatusCode.ShouldBe(HttpStatusCode.OK);
+        ages.ShouldHaveSingleItem().ShouldBe(expectedAge);
+        image.AccessibilityTexts.Single(text => text.Language == PublicContentLanguage.EnUs).PendingDraftCreatedAt.ShouldBeNull();
+    }
+
+    [Fact]
+    public async Task Catalog_media_review_records_failed_persistence_without_approving_telemetry()
+    {
+        // Arrange
+        var outcomes = new ConcurrentQueue<string>();
+        using var listener = new MeterListener
+        {
+            InstrumentPublished = static (instrument, meterListener) =>
+            {
+                if (instrument.Name == "catalog.media_accessibility.review.decisions")
+                {
+                    meterListener.EnableMeasurementEvents(instrument);
+                }
+            }
+        };
+        listener.SetMeasurementEventCallback<long>((_, _, tags, _) =>
+        {
+            foreach (var tag in tags)
+            {
+                if (tag.Key == "catalog.outcome" && tag.Value is string outcome)
+                {
+                    outcomes.Enqueue(outcome);
+                }
+            }
+        });
+        listener.Start();
+        var image = PublicMediaImageTestFactory.CreateReadyImage(Guid.CreateVersion7(), "source.jpg", "review.jpg", "sha256:review", "English draft", 0, true);
+        var store = new TestPublicMediaImageStore();
+        await store.Upsert(image, TestContext.Current.CancellationToken);
+        store.UpsertException = new IOException("Private storage failure must not become metric tags.");
+        await using var factory = CatalogApiTestHost.Create(new TestCatalogTourReadModelStore(), store, new TestMediaObjectStore());
+        using var client = factory.CreateClient();
+
+        // Act
+        using var response = await client.PutAsJsonAsync(new Uri($"/api/v1/catalog/media/images/{image.Id}/accessibility-review", UriKind.Relative),
+            new PublicMediaImageAccessibilityReviewRequest { AltText = "Approved text" }, TestContext.Current.CancellationToken);
+
+        // Assert
+        response.StatusCode.ShouldBe(HttpStatusCode.InternalServerError);
+        outcomes.ShouldContain("failed");
+        outcomes.Count.ShouldBe(1);
+    }
+
+    [Fact]
+    public async Task Catalog_media_review_preserves_other_languages_and_server_owned_fields()
+    {
+        // Arrange
+        var tourId = Guid.CreateVersion7();
+        var image = PublicMediaImageTestFactory.CreateReadyImage(tourId, "source.jpg", "review-640.jpg", "sha256:review", "English draft", 0, true);
+        image.SetAiDraftAccessibilityText(PublicContentLanguage.EnUs, "English draft", null).IsSuccess.ShouldBeTrue();
+        image.SetAiDraftAccessibilityText(PublicContentLanguage.PtBr, "Descrição em português", null).IsSuccess.ShouldBeTrue();
+        var mediaStore = new TestPublicMediaImageStore();
+        await mediaStore.Upsert(image, TestContext.Current.CancellationToken);
+        await using var factory = CatalogApiTestHost.Create(new TestCatalogTourReadModelStore(), mediaStore, new TestMediaObjectStore());
+        using var client = factory.CreateClient();
+        using var content = new StringContent("""
+            {"language":2,"altText":"Ciclistas na montanha","isDecorative":false,
+             "sourceObjectKey":"attacker","processingStatus":0,"responsiveVariants":[],"tourLinks":[]}
+            """, Encoding.UTF8, "application/json");
+
+        // Act
+        using var response = await client.PutAsync(new Uri($"/api/v1/catalog/media/images/{image.Id}/accessibility-review", UriKind.Relative), content, TestContext.Current.CancellationToken);
+        var result = await response.Content.ReadFromJsonAsync<CatalogMediaImageDto>(TestContext.Current.CancellationToken);
+        var saved = await mediaStore.GetImage(image.Id, TestContext.Current.CancellationToken);
+
+        // Assert
+        response.StatusCode.ShouldBe(HttpStatusCode.OK);
+        result.ShouldNotBeNull();
+        result.AccessibilityTexts.Count.ShouldBe(2);
+        saved.ShouldNotBeNull();
+        saved.SourceObjectKey.ShouldBe("source.jpg");
+        saved.ProcessingStatus.ShouldBe(MediaImageProcessingStatus.Ready);
+        saved.ResponsiveVariants.Count.ShouldBe(1);
+        saved.BelongsToTour(tourId).ShouldBeTrue();
+        saved.AccessibilityTexts.Single(text => text.Language == PublicContentLanguage.EnUs).RequiresHumanReview.ShouldBeTrue();
+        saved.AccessibilityTexts.Single(text => text.Language == PublicContentLanguage.PtBr).RequiresHumanReview.ShouldBeFalse();
     }
 
     [Fact]

@@ -12,7 +12,7 @@ using ViajantesTurismo.Catalog.Testing.Infrastructure;
 
 namespace ViajantesTurismo.Catalog.UnitTests;
 
-[Collection("Catalog telemetry")]
+[Collection(CatalogTelemetryGroup.Name)]
 public sealed class CatalogTelemetryTests
 {
     [Fact]

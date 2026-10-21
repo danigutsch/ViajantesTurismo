@@ -40,4 +40,8 @@
         <ProjectReference Include="..\ViajantesTurismo.Catalog.Testing\ViajantesTurismo.Catalog.Testing.csproj" />
     </ItemGroup>
 
+    <ItemGroup>
+        <Content Include="../fixtures/media-accessibility/*" Link="Fixtures/media-accessibility/%(Filename)%(Extension)" CopyToOutputDirectory="PreserveNewest" />
+    </ItemGroup>
+
 </Project>

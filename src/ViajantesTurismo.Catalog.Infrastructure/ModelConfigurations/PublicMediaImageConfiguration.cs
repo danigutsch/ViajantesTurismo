@@ -73,6 +73,7 @@ internal sealed class PublicMediaImageConfiguration : IEntityTypeConfiguration<P
             text.Property(item => item.IsDecorative).IsRequired();
             text.Property(item => item.RequiresHumanReview).IsRequired();
             text.Property(item => item.IsAiGenerated).IsRequired();
+            text.Property(item => item.PendingDraftCreatedAt);
         });
 
         entity.Navigation(image => image.ResponsiveVariants).Metadata.SetField("_responsiveVariants");

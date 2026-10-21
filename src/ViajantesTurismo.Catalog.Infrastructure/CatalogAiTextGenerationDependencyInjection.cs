@@ -1,7 +1,11 @@
+using System.Reflection;
+using System.Security.Cryptography;
+using System.Text;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using PandaBear.AI;
+using ViajantesTurismo.Catalog.Application.Media;
 
 namespace ViajantesTurismo.Catalog.Infrastructure;
 
@@ -13,6 +17,13 @@ internal static class CatalogAiTextGenerationDependencyInjection
         var options = CreateOptions(builder.Configuration);
 
         builder.Services.AddSingleton(options);
+        var adapterAssembly = typeof(LiteLlmImageTextGenerator).Assembly;
+        var promptImplementationVersion = adapterAssembly.GetCustomAttribute<AssemblyInformationalVersionAttribute>()?.InformationalVersion
+            ?? adapterAssembly.GetName().Version?.ToString()
+            ?? "unreported";
+        var nonSecretConfiguration = string.Join("\n", options.Model, options.ChatCompletionsPath, options.Endpoint?.GetComponents(UriComponents.SchemeAndServer, UriFormat.UriEscaped));
+        var configurationFingerprint = Convert.ToHexStringLower(SHA256.HashData(Encoding.UTF8.GetBytes(nonSecretConfiguration)));
+        builder.Services.AddSingleton(new MediaImageAccessibilityGenerationProvenance("litellm", options.Model ?? "unconfigured", promptImplementationVersion, configurationFingerprint));
         builder.Services.AddHttpClient<IImageTextGenerator, LiteLlmImageTextGenerator>((serviceProvider, client) =>
         {
             var configuredOptions = serviceProvider.GetRequiredService<LiteLlmImageTextGeneratorOptions>();

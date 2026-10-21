@@ -385,10 +385,11 @@ public sealed class PublicMediaImage
     /// <param name="language">The text language.</param>
     /// <param name="altText">The drafted accessible image description.</param>
     /// <param name="caption">The optional drafted caption.</param>
+    /// <param name="pendingDraftCreatedAt">The current draft creation time when known.</param>
     /// <returns>A result indicating whether the draft was accepted.</returns>
-    public Result SetAiDraftAccessibilityText(PublicContentLanguage language, string altText, string? caption)
+    public Result SetAiDraftAccessibilityText(PublicContentLanguage language, string altText, string? caption, DateTimeOffset? pendingDraftCreatedAt = null)
     {
-        var result = PublicMediaImageAccessibilityText.CreateAiDraft(language, altText, caption);
+        var result = PublicMediaImageAccessibilityText.CreateAiDraft(language, altText, caption, pendingDraftCreatedAt);
         if (result.IsFailure)
         {
             return Result.Invalid(result.ErrorDetails.Detail, ToValidationDictionary(result.ErrorDetails.ValidationErrors));
