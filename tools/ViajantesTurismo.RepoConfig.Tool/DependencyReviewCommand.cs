@@ -60,8 +60,8 @@ internal static class DependencyReviewCommand
         return 0;
     }
 
-    private static bool IsStandaloneDocumentation(string path) =>
-        (path.StartsWith("docs/", StringComparison.Ordinal) || path is "README.md" or "AGENTS.md")
+    internal static bool IsStandaloneDocumentation(string path) =>
+        (path.StartsWith("docs/", StringComparison.Ordinal) || path is "README.md" or "AGENTS.md" or "CONTRIBUTING.md" or "SECURITY.md")
         && Path.GetExtension(path) is ".md" or ".png" or ".jpg" or ".svg";
 
     private static async Task<bool> HasKnownBuildImports(string root, CancellationToken ct)

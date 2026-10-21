@@ -102,7 +102,10 @@ internal static class CiTestProjectSelector
 
         if (relevantPaths.Length == 0)
         {
-            return CreateEmptySelection(slices);
+            return CreateEmptySelection(slices) with
+            {
+                DocumentationOnly = changedPaths.Count > 0 && changedPaths.All(DependencyReviewCommand.IsStandaloneDocumentation)
+            };
         }
 
         if (relevantPaths.Any(RequiresFullValidation))
@@ -362,8 +365,7 @@ internal static class CiTestProjectSelector
     }
 
     private static bool IsDocumentationOrLowRisk(string path) =>
-        path.StartsWith("docs/", StringComparison.Ordinal)
-        || path is "README.md" or "CONTRIBUTING.md"
+        DependencyReviewCommand.IsStandaloneDocumentation(path)
         || LowRiskFiles.Contains(path);
 
     private static bool RequiresFullValidation(string path) =>
