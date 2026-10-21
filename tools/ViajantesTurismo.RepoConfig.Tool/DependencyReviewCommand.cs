@@ -35,6 +35,7 @@ internal static class DependencyReviewCommand
             }
             catch (Exception exception) when (exception is InvalidOperationException or TimeoutException or IOException or System.Xml.XmlException)
             {
+                required = true;
                 reason = "Comparison unavailable; complete dependency review is required.";
             }
         }

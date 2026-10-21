@@ -4,6 +4,38 @@ namespace ViajantesTurismo.RepoConfig.Tests;
 public sealed class CiWorkflowCommandTests
 {
     [Theory]
+    [InlineData("src/App/App.csproj", "<Project>")]
+    [InlineData("Directory.Build.props", "<Project>")]
+    [InlineData("Directory.Build.targets", "<Project>")]
+    public async Task Unreadable_build_graph_keeps_full_review_after_documentation_only_changes(string path, string content)
+    {
+        // Arrange
+        using var workspace = new TemporaryCiTestRepository();
+        workspace.WriteFile(path, content);
+        workspace.WriteFile("docs/guide.md", "before");
+        var token = TestContext.Current.CancellationToken;
+        var baseline = await workspace.CommitFiles(token);
+        workspace.WriteFile("docs/guide.md", "after");
+        var head = await workspace.CommitFiles(token);
+        using var output = new StringWriter();
+        using var error = new StringWriter();
+
+        // Act
+        var result = await RepoConfigToolApplication.Run(["plan-dependency-review", "--base", baseline, "--head", head,
+            "--github-output", "github-output.txt"], output, error, workspace.RootPath, token);
+        var githubOutput = await File.ReadAllTextAsync(Path.Combine(workspace.RootPath, "github-output.txt"), token);
+        using var evidence = System.Text.Json.JsonDocument.Parse(await File.ReadAllTextAsync(
+            Path.Combine(workspace.RootPath, "TestResults/dependency-review-plan.json"), token));
+
+        // Assert
+        result.ShouldBe(0);
+        output.ToString().ShouldContain("review_required=true", StringComparison.Ordinal);
+        githubOutput.ShouldContain("review_required=true", StringComparison.Ordinal);
+        evidence.RootElement.GetProperty("reviewRequired").GetBoolean().ShouldBeTrue();
+        evidence.RootElement.GetProperty("reason").GetString().ShouldContain("complete dependency review is required", StringComparison.Ordinal);
+    }
+
+    [Theory]
     [InlineData("feat(api)!: change booking contract", 0)]
     [InlineData("fix: preserve validation", 0)]
     [InlineData("Update booking", 1)]
