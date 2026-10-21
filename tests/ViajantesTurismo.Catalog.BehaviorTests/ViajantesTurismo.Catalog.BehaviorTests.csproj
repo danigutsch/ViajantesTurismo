@@ -41,7 +41,9 @@
     </ItemGroup>
 
     <ItemGroup>
-        <Content Include="**/*.feature" />
+        <Content Include="specs/**/*.feature" />
+        <ReqnrollFeatureFile Remove="@(ReqnrollFeatureFile)" />
+        <ReqnrollFeatureFile Include="specs/**/*.feature" />
     </ItemGroup>
 
 </Project>
