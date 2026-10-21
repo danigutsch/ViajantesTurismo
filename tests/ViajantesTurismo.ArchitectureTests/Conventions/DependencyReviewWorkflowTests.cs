@@ -49,7 +49,7 @@ public sealed class DependencyReviewWorkflowTests
         snapshotJob.ShouldContain("ref: ${{ github.event.pull_request.head.sha }}", StringComparison.Ordinal);
         snapshotJob.ShouldContain("path: .local/dependency-ci-support", StringComparison.Ordinal);
         restorePosition.ShouldBeGreaterThan(bootstrapPosition);
-        snapshotJob.ShouldContain("restore-targets: tools/ViajantesTurismo.RepoConfig.Tool/ViajantesTurismo.RepoConfig.Tool.csproj", StringComparison.Ordinal);
+        snapshotJob.ShouldContain("restore-targets: \"\"", StringComparison.Ordinal);
         snapshotJob.ShouldContain("restore-local-tools: \"false\"", StringComparison.Ordinal);
         snapshotJob.ShouldContain("trust-dev-certificate: \"false\"", StringComparison.Ordinal);
     }

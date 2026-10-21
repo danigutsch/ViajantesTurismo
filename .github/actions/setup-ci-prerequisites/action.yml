@@ -11,7 +11,7 @@ inputs:
     required: false
     default: ""
   restore-targets:
-    description: Newline-delimited solution or project paths to restore.
+    description: Newline-delimited solution or project paths to restore; empty skips this restore.
     required: false
     default: ViajantesTurismo.slnx
   restore-targets-file:
@@ -109,6 +109,7 @@ runs:
         dotnet run --project tools/ViajantesTurismo.RepoConfig.Tool -c Release -- "${args[@]}"
 
     - name: Restore .NET dependencies
+      if: ${{ inputs.restore-targets != '' || inputs.restore-targets-file != '' }}
       shell: bash
       env:
         RESTORE_TARGETS: ${{ inputs.restore-targets }}

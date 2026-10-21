@@ -71,6 +71,7 @@ public sealed class ConsumerSetupContractTests
         action.ShouldContain("Invoke-WebRequest", StringComparison.Ordinal);
         action.ShouldNotContain("gh release download", StringComparison.Ordinal);
         action.ShouldNotContain("GH_TOKEN:", StringComparison.Ordinal);
+        action.ShouldContain("if: ${{ inputs.restore-targets != '' || inputs.restore-targets-file != '' }}", StringComparison.Ordinal);
         action.ShouldNotContain("--clobber", StringComparison.Ordinal);
     }
 
