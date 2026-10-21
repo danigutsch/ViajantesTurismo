@@ -87,7 +87,6 @@ merges with PR titles and bodies, automatic branch deletion, and a `ci:rerun` la
 `PR Metadata` is required after it passed on the existing payment PR. Strict updates, signed commits,
 existing reviews/checks, and advisory SharedKernel validation remain unchanged.
 
-
 Land and inspect successful workflow evidence before applying repository settings. Enable squash
 only, use `PR_TITLE` for squash headers and `PR_BODY` for descriptions, and retain branch deletion.
 Preserve application signing, strict up-to-date behavior, reviews, and existing required checks.
