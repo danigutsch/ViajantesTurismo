@@ -85,7 +85,6 @@
     </Folder>
     <Folder Name="/tools/">
         <Project Path="tools/ViajantesTurismo.RepoConfig.Tool/ViajantesTurismo.RepoConfig.Tool.csproj" />
-        <Project Path="tools/ViajantesTurismo.SecurityChecks.Tool/ViajantesTurismo.SecurityChecks.Tool.csproj" />
         <Project Path="tools/ViajantesTurismo.Performance.Tool/ViajantesTurismo.Performance.Tool.csproj" />
         <Project Path="tools/ViajantesTurismo.OpenApi.Tool/ViajantesTurismo.OpenApi.Tool.csproj" />
     </Folder>

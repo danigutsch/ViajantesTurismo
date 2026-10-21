@@ -1,0 +1,17 @@
+{
+  "version": 1,
+  "documents": [
+    {
+      "path": "docs/security/threat-model.md",
+      "requiredText": ["STRIDE-A", "Public Web", "Management Web", "Admin API", "Catalog API", "Integration Event Worker", "Customer PII", "Upload and import", "RM-104-github-815.json", "RM-105-github-816.json", "RM-106-github-817.json", "RM-107-github-818.json", "RM-108-github-819.json"]
+    },
+    {
+      "path": "docs/security/security-baseline.md",
+      "requiredText": ["Content-Security-Policy", "Rate limiting", "CORS", "Sensitive data logging", "Customer import"]
+    },
+    {
+      "path": "docs/privacy-classification.md",
+      "requiredText": ["## Logging and telemetry", "Customer and booking baseline"]
+    }
+  ]
+}
