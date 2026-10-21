@@ -1,4 +1,4 @@
-using SharedKernel.AspNetCore;
+using PandaBear.AspNetCore;
 
 namespace ViajantesTurismo.Public.Web;
 

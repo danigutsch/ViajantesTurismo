@@ -1,3 +1,5 @@
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Routing.Patterns;
 using Bunit;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.DependencyInjection;
@@ -11,11 +13,11 @@ public sealed class PublicComponentTests : BunitContext
 {
     public PublicComponentTests()
     {
-        Services.AddSingleton<LinkGenerator>(new TestLinkGenerator((endpointName, values) => endpointName switch
-        {
-            PublicWebEndpoints.PublicMediaByRenditionEndpointName => $"/catalog/media/{values["id"]}/{values["width"]}/{values["format"]}",
-            _ => null
-        }));
+        Services.AddRouting();
+        Services.AddSingleton<EndpointDataSource>(new DefaultEndpointDataSource(
+            new RouteEndpoint(_ => Task.CompletedTask,
+                RoutePatternFactory.Parse("/catalog/media/{id}/{width}/{format}"), 0,
+                new EndpointMetadataCollection(new EndpointNameMetadata(PublicWebEndpoints.PublicMediaByRenditionEndpointName)), "media")));
     }
 
     [Fact]

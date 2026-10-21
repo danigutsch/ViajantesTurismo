@@ -170,6 +170,15 @@ function Write-SetupSummary {
 
 Write-SetupHeader
 Test-DotNetSdkVersion -InstallMissingSdk $InstallSdk
+$stagedCandidate = Join-Path $repoRoot ".local/sharedkernel-feed/candidate.json"
+$pinnedCandidate = Join-Path $repoRoot ".config/sharedkernel-candidate.json"
+if (-not (Test-Path -LiteralPath $stagedCandidate -PathType Leaf) -or
+    (Get-Content -LiteralPath $stagedCandidate -Raw).Replace("`r", "") -cne
+    (Get-Content -LiteralPath $pinnedCandidate -Raw).Replace("`r", "")) {
+    Write-Error "Stage the pinned SharedKernel candidate before setup: dotnet run --project tools/ViajantesTurismo.RepoConfig.Tool -c Release -- bootstrap-sharedkernel --library-root /path/to/SharedKernel --feed /path/to/candidate-packages. See docs/sharedkernel/development.md."
+    exit 1
+}
+Set-Location -LiteralPath $repoRoot
 Restore-DotNetDependencies
 Restore-DotNetLocalTools
 Test-AspNetCoreDevelopmentCertificateTrust

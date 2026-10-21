@@ -1,4 +1,4 @@
-using SharedKernel.AuditTrail;
+using PandaBear.AuditTrail;
 using ViajantesTurismo.Admin.Domain.Documents;
 
 namespace ViajantesTurismo.Admin.Application.Mappings;

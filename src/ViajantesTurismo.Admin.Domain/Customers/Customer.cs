@@ -1,6 +1,6 @@
 using System.Diagnostics.CodeAnalysis;
 using JetBrains.Annotations;
-using SharedKernel.Domain;
+using PandaBear.Domain;
 
 namespace ViajantesTurismo.Admin.Domain.Customers;
 

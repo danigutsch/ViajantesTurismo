@@ -1,5 +1,5 @@
 using PublicContent = ViajantesTurismo.Management.Web.Components.Pages.Catalog.PublicContent;
-using SharedKernel.HttpClients;
+using PandaBear.HttpClients;
 
 namespace ViajantesTurismo.Management.WebTests.Components.Pages.Catalog;
 

@@ -2,7 +2,7 @@ using Microsoft.EntityFrameworkCore;
 using Npgsql;
 using ViajantesTurismo.Catalog.Application.Tours;
 using ViajantesTurismo.Catalog.Domain.Tours;
-using SharedKernel.InputNormalization;
+using PandaBear.InputNormalization;
 
 namespace ViajantesTurismo.Catalog.Infrastructure;
 

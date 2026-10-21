@@ -10,8 +10,8 @@
         <Using Include="Bunit.TestDoubles"/>
         <Using Include="Microsoft.AspNetCore.Components.Forms"/>
         <Using Include="Microsoft.Extensions.DependencyInjection"/>
-        <Using Include="SharedKernel.Branding"/>
-        <Using Include="SharedKernel.Testing.Assertions"/>
+        <Using Include="PandaBear.Branding"/>
+        <Using Include="PandaBear.Testing.Assertions"/>
         <Using Include="ViajantesTurismo.Admin.Contracts.Application"/>
         <Using Include="ViajantesTurismo.Admin.Contracts.Http"/>
         <Using Include="ViajantesTurismo.Catalog.Contracts.Application"/>
@@ -24,7 +24,7 @@
     </ItemGroup>
 
     <ItemGroup>
-        <Using Include="SharedKernel.Testing.AspNetCore" />
+        <Using Include="PandaBear.Testing.AspNetCore" />
     </ItemGroup>
 
     <ItemGroup>
@@ -38,9 +38,9 @@
 
     <ItemGroup>
         <ProjectReference Include="..\..\src\ViajantesTurismo.Management.Web\ViajantesTurismo.Management.Web.csproj"/>
-        <ProjectReference Include="..\..\src\SharedKernel\SharedKernel.Testing.Assertions\SharedKernel.Testing.Assertions.csproj"/>
-        <ProjectReference Include="..\..\src\SharedKernel\SharedKernel.Testing\SharedKernel.Testing.csproj"/>
-        <ProjectReference Include="..\..\src\SharedKernel\SharedKernel.Testing.AspNetCore\SharedKernel.Testing.AspNetCore.csproj"/>
+        <PackageReference Include="PandaBear.SharedKernel.Testing.Assertions" />
+        <PackageReference Include="PandaBear.SharedKernel.Testing" />
+        <PackageReference Include="PandaBear.SharedKernel.Testing.AspNetCore" />
         <ProjectReference Include="..\ViajantesTurismo.Admin.Testing\ViajantesTurismo.Admin.Testing.csproj"/>
     </ItemGroup>
 

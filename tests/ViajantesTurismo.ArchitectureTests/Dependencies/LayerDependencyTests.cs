@@ -151,19 +151,6 @@ public sealed class LayerDependencyTests
     }
 
     [Fact]
-    public void SharedKernel_projects_should_not_reference_product_projects()
-    {
-        // Arrange
-        var repositoryRoot = GetRepositoryRoot();
-
-        // Act
-        var unexpectedReferences = FindSharedKernelProductReferences(repositoryRoot);
-
-        // Assert
-        unexpectedReferences.ShouldBeEmpty();
-    }
-
-    [Fact]
     public void Domain_application_and_contract_projects_should_not_reference_adapter_packages()
     {
         // Arrange
@@ -171,71 +158,6 @@ public sealed class LayerDependencyTests
 
         // Act
         var unexpectedReferences = FindLayerAdapterPackageReferences(repositoryRoot);
-
-        // Assert
-        unexpectedReferences.ShouldBeEmpty();
-    }
-
-    [Fact]
-    public void Provider_neutral_sharedkernel_projects_should_not_reference_adapter_packages()
-    {
-        // Arrange
-        var repositoryRoot = GetRepositoryRoot();
-
-        // Act
-        var unexpectedReferences = FindProviderNeutralSharedKernelAdapterPackageReferences(repositoryRoot);
-
-        // Assert
-        unexpectedReferences.ShouldBeEmpty();
-    }
-
-    [Fact]
-    public void SharedKernel_entityframeworkcore_adapter_projects_should_name_entityframeworkcore()
-    {
-        // Arrange
-        var repositoryRoot = GetRepositoryRoot();
-
-        // Act
-        var unexpectedReferences = FindSharedKernelEntityFrameworkCoreAdapterNamingViolations(repositoryRoot);
-
-        // Assert
-        unexpectedReferences.ShouldBeEmpty();
-    }
-
-    [Fact]
-    public void SharedKernel_project_names_should_not_use_core_as_a_module_segment()
-    {
-        // Arrange
-        var repositoryRoot = GetRepositoryRoot();
-
-        // Act
-        var unexpectedProjects = FindSharedKernelCoreSegmentProjectViolations(repositoryRoot);
-
-        // Assert
-        unexpectedProjects.ShouldBeEmpty();
-    }
-
-    [Fact]
-    public void SharedKernel_primary_modules_should_not_reference_descendant_optional_submodules_at_runtime()
-    {
-        // Arrange
-        var repositoryRoot = GetRepositoryRoot();
-
-        // Act
-        var unexpectedReferences = FindSharedKernelRuntimeReferencesToDescendantOptionalSubmodules(repositoryRoot);
-
-        // Assert
-        unexpectedReferences.ShouldBeEmpty();
-    }
-
-    [Fact]
-    public void SharedKernel_optional_submodules_should_not_reference_same_family_optional_siblings_at_runtime()
-    {
-        // Arrange
-        var repositoryRoot = GetRepositoryRoot();
-
-        // Act
-        var unexpectedReferences = FindSharedKernelRuntimeReferencesToSameFamilyOptionalSiblingSubmodules(repositoryRoot);
 
         // Assert
         unexpectedReferences.ShouldBeEmpty();
@@ -306,8 +228,6 @@ public sealed class LayerDependencyTests
         var flows = File.ReadAllText(Path.Combine(repositoryRoot, "docs", "architecture", "FLOWS.md"));
         var eventsAndMessaging = File.ReadAllText(
             Path.Combine(repositoryRoot, "docs", "domain", "EVENTS_AND_MESSAGING.md"));
-        var domainEventsReadme = File.ReadAllText(
-            Path.Combine(repositoryRoot, "src", "SharedKernel", "SharedKernel.Domain", "README.md"));
 
         // Act
         var mediatorReferences = adminAssemblies
@@ -323,7 +243,6 @@ public sealed class LayerDependencyTests
         eventsAndMessaging.ShouldNotContain(
             "Event dispatch should extend `SharedKernel.Mediator`",
             StringComparison.Ordinal);
-        domainEventsReadme.ShouldNotContain("SharedKernel.Mediator", StringComparison.Ordinal);
     }
 
     [Fact]

@@ -1,4 +1,4 @@
-using SharedKernel.InputNormalization;
+using PandaBear.InputNormalization;
 
 namespace ViajantesTurismo.Admin.UnitTests.Application.Customers.Import;
 

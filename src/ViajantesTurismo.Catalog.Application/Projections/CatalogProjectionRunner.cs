@@ -1,6 +1,6 @@
 using System.Diagnostics;
-using SharedKernel.EventSourcing;
-using SharedKernel.BuildingBlocks;
+using PandaBear.EventSourcing;
+using PandaBear.BuildingBlocks;
 
 namespace ViajantesTurismo.Catalog.Application.Projections;
 

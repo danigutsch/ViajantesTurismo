@@ -1,7 +1,7 @@
 using ViajantesTurismo.Admin.Application.Import;
 using ViajantesTurismo.Admin.Contracts.Application;
 using ViajantesTurismo.Admin.Domain.Customers;
-using SharedKernel.Results;
+using PandaBear.Results;
 
 namespace ViajantesTurismo.Admin.Application.Customers.Import;
 

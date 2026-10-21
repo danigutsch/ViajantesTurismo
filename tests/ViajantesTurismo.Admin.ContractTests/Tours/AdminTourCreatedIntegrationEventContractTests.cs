@@ -6,8 +6,8 @@ using TestTraits = ViajantesTurismo.Admin.ContractTests.Infrastructure.TestTrait
 
 namespace ViajantesTurismo.Admin.ContractTests.Tours;
 
-[Trait(SharedKernel.Testing.TestTraitNames.CategoryName, TestTraits.ContractCategory)]
-[Trait(SharedKernel.Testing.SharedKernelTestTraitNames.CapabilityName, TestTraits.IntegrationEventTransportCapability)]
+[Trait(PandaBear.Testing.TestTraitNames.CategoryName, TestTraits.ContractCategory)]
+[Trait(PandaBear.Testing.SharedKernelTestTraitNames.CapabilityName, TestTraits.IntegrationEventTransportCapability)]
 public sealed class AdminTourCreatedIntegrationEventContractTests
 {
     [Fact]

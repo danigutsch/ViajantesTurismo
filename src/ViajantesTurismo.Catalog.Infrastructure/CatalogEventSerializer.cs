@@ -1,5 +1,5 @@
 using System.Text.Json;
-using SharedKernel.EventSourcing;
+using PandaBear.EventSourcing;
 using ViajantesTurismo.Catalog.Domain.Tours;
 
 namespace ViajantesTurismo.Catalog.Infrastructure;

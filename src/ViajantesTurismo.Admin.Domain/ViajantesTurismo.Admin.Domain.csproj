@@ -4,21 +4,12 @@
         <InternalsVisibleTo Include="ViajantesTurismo.Admin.Infrastructure.Tests" />
     </ItemGroup>
     <ItemGroup>
-        <ProjectReference Include="..\SharedKernel\SharedKernel.BuildingBlocks\SharedKernel.BuildingBlocks.csproj"/>
-        <ProjectReference Include="..\SharedKernel\SharedKernel.AuditTrail\SharedKernel.AuditTrail.csproj"/>
-        <ProjectReference Include="..\SharedKernel\SharedKernel.Domain\SharedKernel.Domain.csproj"/>
-        <ProjectReference Include="..\SharedKernel\SharedKernel.InputNormalization\SharedKernel.InputNormalization.csproj"/>
-        <ProjectReference Include="..\SharedKernel\SharedKernel.Results\SharedKernel.Results.csproj"/>
-        <ProjectReference Include="..\SharedKernel\SharedKernel.Domain.SourceGenerator\SharedKernel.Domain.SourceGenerator.csproj"
-            OutputItemType="Analyzer"
-            ReferenceOutputAssembly="false"
-            PrivateAssets="all"
-            IsAspireProjectResource="false" />
-        <ProjectReference Include="..\SharedKernel\SharedKernel.Results.SourceGenerator\SharedKernel.Results.SourceGenerator.csproj"
-            OutputItemType="Analyzer"
-            ReferenceOutputAssembly="false"
-            PrivateAssets="all"
-            IsAspireProjectResource="false" />
+        <PackageReference Include="PandaBear.SharedKernel.BuildingBlocks" />
+        <PackageReference Include="PandaBear.SharedKernel.AuditTrail" />
+        <PackageReference Include="PandaBear.SharedKernel.Domain" />
+        <PackageReference Include="PandaBear.SharedKernel.InputNormalization" />
+        <PackageReference Include="PandaBear.SharedKernel.Results" />
+        <PackageReference Include="PandaBear.SharedKernel.Domain.SourceGenerator" PrivateAssets="all" />
     </ItemGroup>
     <ItemGroup>
         <PackageReference Include="JetBrains.Annotations"/>

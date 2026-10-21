@@ -220,7 +220,7 @@ dotnet_diagnostic.CA1034.severity = none
 
 # CA2025 crashes while analyzing the deliberately concurrent, fully observed process-stream tasks
 # (dotnet/roslyn-analyzers#7652). Keep the exception scoped to this process boundary.
-[tools/SharedKernel.RepoConfig.Tool/TextEncodingVerifier.cs]
+[tools/ViajantesTurismo.RepoConfig.Tool/TextEncodingVerifier.cs]
 dotnet_diagnostic.CA2025.severity = none
 
 # API and Blazor app entry projects expose framework-discovered surfaces that are not package APIs.
@@ -269,18 +269,6 @@ dotnet_diagnostic.CA2007.severity = none
 
 # CA1716 flags established C# domain terms and package contracts that are expensive to rename
 # across public API consumers. Owner: package/domain maintainers. Revisit on the next major API break.
-[src/SharedKernel/SharedKernel.Idempotency/IIdempotencyStore.cs]
-dotnet_diagnostic.CA1716.severity = none
-
-[src/SharedKernel/SharedKernel.Mediator.Abstractions/IPipelineBehavior.cs]
-dotnet_diagnostic.CA1716.severity = none
-
-[src/SharedKernel/SharedKernel.Mediator.Abstractions/IStreamPipelineBehavior.cs]
-dotnet_diagnostic.CA1716.severity = none
-
-[src/SharedKernel/SharedKernel.Results/Option*.cs]
-dotnet_diagnostic.CA1716.severity = none
-
 [src/ViajantesTurismo.Admin.Domain/Shared/*.cs]
 dotnet_diagnostic.CA1716.severity = none
 

@@ -1,12 +1,12 @@
-using SharedKernel.AI;
+using PandaBear.AI;
 using ViajantesTurismo.Catalog.Application.Media;
 using ViajantesTurismo.Catalog.Domain.PublicContent;
 
 namespace ViajantesTurismo.Catalog.UnitTests;
 
-[Trait(SharedKernel.Testing.TestTraitNames.AreaName, TestTraits.CatalogArea)]
-[Trait(SharedKernel.Testing.SharedKernelTestTraitNames.ScopeName, SharedKernel.Testing.SharedKernelTestTraitNames.UnitScope)]
-[Trait(SharedKernel.Testing.SharedKernelTestTraitNames.CapabilityName, TestTraits.AiAccessibilityCapability)]
+[Trait(PandaBear.Testing.TestTraitNames.AreaName, TestTraits.CatalogArea)]
+[Trait(PandaBear.Testing.SharedKernelTestTraitNames.ScopeName, PandaBear.Testing.SharedKernelTestTraitNames.UnitScope)]
+[Trait(PandaBear.Testing.SharedKernelTestTraitNames.CapabilityName, TestTraits.AiAccessibilityCapability)]
 public sealed class MediaImageAccessibilityDraftServiceTests
 {
     [Fact]
@@ -25,7 +25,7 @@ public sealed class MediaImageAccessibilityDraftServiceTests
             TestContext.Current.CancellationToken);
 
         // Assert
-        result.Status.ShouldBe(SharedKernel.Results.ResultStatus.Invalid);
+        result.Status.ShouldBe(PandaBear.Results.ResultStatus.Invalid);
         generator.Request.ShouldBeNull();
     }
 
@@ -45,7 +45,7 @@ public sealed class MediaImageAccessibilityDraftServiceTests
             TestContext.Current.CancellationToken);
 
         // Assert
-        result.Status.ShouldBe(SharedKernel.Results.ResultStatus.Invalid);
+        result.Status.ShouldBe(PandaBear.Results.ResultStatus.Invalid);
         generator.Request.ShouldBeNull();
     }
 
@@ -116,7 +116,7 @@ public sealed class MediaImageAccessibilityDraftServiceTests
             TestContext.Current.CancellationToken);
 
         // Assert
-        result.Status.ShouldBe(SharedKernel.Results.ResultStatus.NotFound);
+        result.Status.ShouldBe(PandaBear.Results.ResultStatus.NotFound);
         generator.Request.ShouldBeNull();
     }
 
@@ -137,7 +137,7 @@ public sealed class MediaImageAccessibilityDraftServiceTests
             TestContext.Current.CancellationToken);
 
         // Assert
-        result.Status.ShouldBe(SharedKernel.Results.ResultStatus.NotFound);
+        result.Status.ShouldBe(PandaBear.Results.ResultStatus.NotFound);
         generator.Request.ShouldBeNull();
     }
 
@@ -159,7 +159,7 @@ public sealed class MediaImageAccessibilityDraftServiceTests
             TestContext.Current.CancellationToken);
 
         // Assert
-        result.Status.ShouldBe(SharedKernel.Results.ResultStatus.Unavailable);
+        result.Status.ShouldBe(PandaBear.Results.ResultStatus.Unavailable);
         generator.Request.ShouldBeNull();
     }
 
@@ -181,7 +181,7 @@ public sealed class MediaImageAccessibilityDraftServiceTests
             TestContext.Current.CancellationToken);
 
         // Assert
-        result.Status.ShouldBe(SharedKernel.Results.ResultStatus.NotFound);
+        result.Status.ShouldBe(PandaBear.Results.ResultStatus.NotFound);
         generator.Request.ShouldBeNull();
     }
 
@@ -203,7 +203,7 @@ public sealed class MediaImageAccessibilityDraftServiceTests
             TestContext.Current.CancellationToken);
 
         // Assert
-        result.Status.ShouldBe(SharedKernel.Results.ResultStatus.NotFound);
+        result.Status.ShouldBe(PandaBear.Results.ResultStatus.NotFound);
         generator.Request.ShouldBeNull();
     }
 
@@ -225,7 +225,7 @@ public sealed class MediaImageAccessibilityDraftServiceTests
             TestContext.Current.CancellationToken);
 
         // Assert
-        result.Status.ShouldBe(SharedKernel.Results.ResultStatus.Unavailable);
+        result.Status.ShouldBe(PandaBear.Results.ResultStatus.Unavailable);
         generator.Request.ShouldBeNull();
     }
 
@@ -246,7 +246,7 @@ public sealed class MediaImageAccessibilityDraftServiceTests
             TestContext.Current.CancellationToken);
 
         // Assert
-        result.Status.ShouldBe(SharedKernel.Results.ResultStatus.Invalid);
+        result.Status.ShouldBe(PandaBear.Results.ResultStatus.Invalid);
         generator.Request.ShouldBeNull();
     }
 
@@ -271,7 +271,7 @@ public sealed class MediaImageAccessibilityDraftServiceTests
             TestContext.Current.CancellationToken);
 
         // Assert
-        result.Status.ShouldBe(SharedKernel.Results.ResultStatus.Unavailable);
+        result.Status.ShouldBe(PandaBear.Results.ResultStatus.Unavailable);
         imageStore.Current.IsAiGenerated.ShouldBeFalse();
     }
 
@@ -296,7 +296,7 @@ public sealed class MediaImageAccessibilityDraftServiceTests
             TestContext.Current.CancellationToken);
 
         // Assert
-        result.Status.ShouldBe(SharedKernel.Results.ResultStatus.Unavailable);
+        result.Status.ShouldBe(PandaBear.Results.ResultStatus.Unavailable);
         imageStore.Current.IsAiGenerated.ShouldBeFalse();
     }
 
@@ -320,7 +320,7 @@ public sealed class MediaImageAccessibilityDraftServiceTests
             TestContext.Current.CancellationToken);
 
         // Assert
-        result.Status.ShouldBe(SharedKernel.Results.ResultStatus.Invalid);
+        result.Status.ShouldBe(PandaBear.Results.ResultStatus.Invalid);
         imageStore.Current.IsAiGenerated.ShouldBeFalse();
     }
 
@@ -369,7 +369,7 @@ public sealed class MediaImageAccessibilityDraftServiceTests
             TestContext.Current.CancellationToken);
 
         // Assert
-        result.Status.ShouldBe(SharedKernel.Results.ResultStatus.Invalid);
+        result.Status.ShouldBe(PandaBear.Results.ResultStatus.Invalid);
         generator.Request.ShouldNotBeNull();
         generator.Request.Language.ShouldBe("und");
     }

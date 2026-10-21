@@ -1,5 +1,5 @@
 using System.Text.Json.Serialization;
-using SharedKernel.Messaging.IntegrationEvents;
+using PandaBear.Messaging.IntegrationEvents;
 using ViajantesTurismo.ArchitectureTests.Infrastructure;
 using static ViajantesTurismo.ArchitectureTests.Conventions.NamingConventionTestsHelpers;
 

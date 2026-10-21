@@ -4,8 +4,8 @@ using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.DataProtection;
 using Microsoft.AspNetCore.WebUtilities;
 using Microsoft.Extensions.Caching.Distributed;
-using SharedKernel.AspNetCore;
-using SharedKernel.BuildingBlocks;
+using PandaBear.AspNetCore;
+using PandaBear.BuildingBlocks;
 
 namespace ViajantesTurismo.Management.Web;
 

@@ -7,6 +7,6 @@ internal static class TestTraits
     public const string ManagementWebArea = "management-web";
     public const string ApiClientCategory = "api-client";
     public const string ComponentCategory = "component";
-    public const string EndpointCategory = SharedKernel.Testing.TestTraitValues.EndpointCategory;
-    public const string SecurityCategory = SharedKernel.Testing.TestTraitValues.SecurityCategory;
+    public const string EndpointCategory = PandaBear.Testing.TestTraitValues.EndpointCategory;
+    public const string SecurityCategory = PandaBear.Testing.TestTraitValues.SecurityCategory;
 }

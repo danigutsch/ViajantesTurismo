@@ -1,7 +1,7 @@
 using System.Security.Cryptography;
 using System.Text;
-using SharedKernel.Branding;
-using SharedKernel.InputNormalization;
+using PandaBear.Branding;
+using PandaBear.InputNormalization;
 using ViajantesTurismo.Admin.Domain.Documents;
 
 namespace ViajantesTurismo.Admin.Application.Documents;

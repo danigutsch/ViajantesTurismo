@@ -1,16 +1,16 @@
-using SharedKernel.HttpClients;
+using PandaBear.HttpClients;
 using ViajantesTurismo.Admin.SystemTests.Infrastructure;
 using ViajantesTurismo.Catalog.Contracts.Http;
 
 namespace ViajantesTurismo.Admin.SystemTests.PostTransportValidation;
 
-[Trait(SharedKernel.Testing.TestTraitNames.AreaName, TestTraits.PostTransportArea)]
-[Trait(SharedKernel.Testing.TestTraitNames.CategoryName, TestTraits.IntegrationEventTransportCategory)]
-[Trait(SharedKernel.Testing.TestTraitNames.ScopeName, TestTraits.SystemScope)]
-[Trait(SharedKernel.Testing.TestTraitNames.HostName, TestTraits.AspireHost)]
-[Trait(SharedKernel.Testing.TestTraitNames.SurfaceName, TestTraits.AdminSurface)]
-[Trait(SharedKernel.Testing.TestTraitNames.SurfaceName, TestTraits.CatalogSurface)]
-[Trait(SharedKernel.Testing.TestTraitNames.SurfaceName, TestTraits.PublicWebSurface)]
+[Trait(PandaBear.Testing.TestTraitNames.AreaName, TestTraits.PostTransportArea)]
+[Trait(PandaBear.Testing.TestTraitNames.CategoryName, TestTraits.IntegrationEventTransportCategory)]
+[Trait(PandaBear.Testing.TestTraitNames.ScopeName, TestTraits.SystemScope)]
+[Trait(PandaBear.Testing.TestTraitNames.HostName, TestTraits.AspireHost)]
+[Trait(PandaBear.Testing.TestTraitNames.SurfaceName, TestTraits.AdminSurface)]
+[Trait(PandaBear.Testing.TestTraitNames.SurfaceName, TestTraits.CatalogSurface)]
+[Trait(PandaBear.Testing.TestTraitNames.SurfaceName, TestTraits.PublicWebSurface)]
 public sealed class PostTransportValidationTests(AspireSystemTestFixture fixture) : AspireSystemTestBase<AspireSystemTestFixture>(fixture)
 {
     [Fact]

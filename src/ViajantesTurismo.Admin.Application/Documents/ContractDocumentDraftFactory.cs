@@ -1,7 +1,7 @@
 using System.Globalization;
 using System.Security.Cryptography;
 using System.Text;
-using SharedKernel.Results;
+using PandaBear.Results;
 using ViajantesTurismo.Admin.Contracts.Application;
 using ViajantesTurismo.Admin.Domain.Documents;
 

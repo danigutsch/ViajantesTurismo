@@ -1,3 +1,0 @@
-#nullable enable
-SharedKernel.Testing.Data.TestUniqueId
-static SharedKernel.Testing.Data.TestUniqueId.Create(string! prefix = "test") -> string!

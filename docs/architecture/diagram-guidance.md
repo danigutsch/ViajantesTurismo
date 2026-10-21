@@ -47,8 +47,8 @@ Check drift with:
 bash scripts/update-architecture-diagrams.sh --check
 ```
 
-The script invokes `tools/SharedKernel.Documentation.Tool`, which delegates reusable generation logic
-to `src/SharedKernel/SharedKernel.Documentation`.
+The script invokes `sharedkernel-docs`, which delegates reusable generation logic
+to `PandaBear.SharedKernel.Documentation`.
 
 ## References
 

@@ -34,7 +34,6 @@ jobs:
       admin_integration_required: ${{ steps.change-scope.outputs.admin_integration_required }}
       admin_api_integration_required: ${{ steps.change-scope.outputs.admin_api_integration_required }}
       admin_system_required: ${{ steps.change-scope.outputs.admin_system_required }}
-      mediator_heavy_required: ${{ steps.change-scope.outputs.mediator_heavy_required }}
       openapi_tool_windows_required: ${{ steps.change-scope.outputs.openapi_tool_windows_required }}
     steps:
       - name: Checkout repository
@@ -46,8 +45,10 @@ jobs:
       - name: Set up CI selection tool
         uses: ./.github/actions/setup-ci-prerequisites
         with:
+          sharedkernel-library-root: ${{ vars.SHAREDKERNEL_LIBRARY_ROOT }}
+          sharedkernel-candidate-feed: ${{ vars.SHAREDKERNEL_CANDIDATE_FEED }}
           restore-local-tools: "false"
-          restore-targets: tools/SharedKernel.RepoConfig.Tool/SharedKernel.RepoConfig.Tool.csproj
+          restore-targets: tools/ViajantesTurismo.RepoConfig.Tool/ViajantesTurismo.RepoConfig.Tool.csproj
           trust-dev-certificate: "false"
 
       - name: Select affected CI test projects
@@ -59,7 +60,7 @@ jobs:
           HEAD_SHA: ${{ github.event.pull_request.head.sha }}
         run: |
           dotnet run \
-            --project tools/SharedKernel.RepoConfig.Tool/SharedKernel.RepoConfig.Tool.csproj \
+            --project tools/ViajantesTurismo.RepoConfig.Tool/ViajantesTurismo.RepoConfig.Tool.csproj \
             --no-restore \
             -- \
             select-ci-test-projects \
@@ -103,18 +104,16 @@ jobs:
       - name: Set up CI prerequisites
         uses: ./.github/actions/setup-ci-prerequisites
         with:
-          restore-local-tools: "false"
-          restore-targets: tools/SharedKernel.Versioning.Tool/SharedKernel.Versioning.Tool.csproj
+          sharedkernel-library-root: ${{ vars.SHAREDKERNEL_LIBRARY_ROOT }}
+          sharedkernel-candidate-feed: ${{ vars.SHAREDKERNEL_CANDIDATE_FEED }}
+          restore-targets: tools/ViajantesTurismo.RepoConfig.Tool/ViajantesTurismo.RepoConfig.Tool.csproj
           trust-dev-certificate: "false"
 
       - name: Calculate release version
         id: version
         shell: bash
         run: |
-          dotnet run \
-            --project tools/SharedKernel.Versioning.Tool/SharedKernel.Versioning.Tool.csproj \
-            --no-restore \
-            -- \
+          dotnet tool run sharedkernel-version \
             calculate-release \
             --run-number "${{ github.run_number }}" \
             --sha "${{ github.sha }}" \
@@ -147,6 +146,8 @@ jobs:
         if: ${{ needs.detect-changes.outputs.openapi_tool_windows_required == 'true' }}
         uses: ./.github/actions/setup-ci-prerequisites
         with:
+          sharedkernel-library-root: ${{ vars.SHAREDKERNEL_LIBRARY_ROOT }}
+          sharedkernel-candidate-feed: ${{ vars.SHAREDKERNEL_CANDIDATE_FEED }}
           restore-local-tools: "false"
           restore-targets: |
             tests/ViajantesTurismo.OpenApi.Tool.Tests/ViajantesTurismo.OpenApi.Tool.Tests.csproj
@@ -200,13 +201,6 @@ jobs:
             timeout_minutes: 15
             install_playwright: false
             playwright_outcome: not-applicable
-          - id: mediator-heavy
-            display_name: Mediator Heavy Tests
-            change_output: mediator_heavy_required
-            projects_file: scripts/ci-test-slices/mediator-heavy.txt
-            timeout_minutes: 15
-            install_playwright: false
-            playwright_outcome: not-applicable
           - id: admin-system
             display_name: Admin System Tests
             change_output: admin_system_required
@@ -244,7 +238,9 @@ jobs:
         if: ${{ needs.detect-changes.result == 'success' && needs.detect-changes.outputs[matrix.change_output] == 'true' }}
         uses: ./.github/actions/setup-ci-prerequisites
         with:
-          restore-local-tools: "false"
+          sharedkernel-library-root: ${{ vars.SHAREDKERNEL_LIBRARY_ROOT }}
+          sharedkernel-candidate-feed: ${{ vars.SHAREDKERNEL_CANDIDATE_FEED }}
+          restore-local-tools: ${{ matrix.id == 'fast-validation-2' && 'true' || 'false' }}
           restore-targets-file: ${{ matrix.projects_file }}
 
       - name: Run test slice
@@ -341,84 +337,6 @@ jobs:
           echo "Build and Test completed successfully across the validation slices."
           exit 0
 
-  api-compatibility:
-    name: API Compatibility
-    runs-on: ${{ vars.CI_UBUNTU_RUNNER }}
-    timeout-minutes: 20
-    permissions:
-      contents: read
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
-        with:
-          fetch-depth: 0
-          persist-credentials: false
-
-      - name: Set up CI prerequisites
-        uses: ./.github/actions/setup-ci-prerequisites
-        with:
-          restore-local-tools: "false"
-          restore-targets: tools/SharedKernel.Versioning.Tool/SharedKernel.Versioning.Tool.csproj
-          trust-dev-certificate: "false"
-
-      - name: Check PublicAPI baselines
-        shell: bash
-        run: |
-          dotnet run \
-            --project tools/SharedKernel.Versioning.Tool/SharedKernel.Versioning.Tool.csproj \
-            --no-restore \
-            -- \
-            check-public-api-baselines
-
-      - name: Detect breaking-change marker
-        id: breaking-marker
-        if: ${{ github.event_name == 'pull_request' }}
-        shell: bash
-        run: |
-          set +e
-          marker_output=$(dotnet run \
-            --project tools/SharedKernel.Versioning.Tool/SharedKernel.Versioning.Tool.csproj \
-            --no-restore \
-            -- \
-            has-breaking-change-marker "${{ github.event.pull_request.base.sha }}...${{ github.event.pull_request.head.sha }}" 2>&1)
-          marker_exit=$?
-          set -e
-          if [[ "${marker_exit}" -eq 0 ]]; then
-            echo "present=true" >> "${GITHUB_OUTPUT}"
-          elif [[ "${marker_output}" == *"No breaking-change marker found"* ]]; then
-            echo "present=false" >> "${GITHUB_OUTPUT}"
-          else
-            printf '%s\n' "${marker_output}" >&2
-            exit "${marker_exit}"
-          fi
-
-      - name: Run API compatibility report
-        shell: bash
-        env:
-          BREAKING_MARKER: ${{ steps.breaking-marker.outputs.present || 'false' }}
-        run: |
-          args=(
-            api-compatibility
-            --release-phase alpha
-            --version "0.1.0-alpha.ci.${{ github.run_number }}"
-          )
-          if [[ "${BREAKING_MARKER}" == "true" ]]; then
-            args+=(--breaking-marker)
-          fi
-          dotnet run \
-            --project tools/SharedKernel.Versioning.Tool/SharedKernel.Versioning.Tool.csproj \
-            --no-restore \
-            -- "${args[@]}"
-
-      - name: Upload API compatibility report
-        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
-        if: ${{ always() }}
-        with:
-          if-no-files-found: ignore
-          name: api-compatibility-report
-          path: artifacts/api-compat/**
-          retention-days: 14
-
   quality-gate:
     name: Quality Gate
     needs:
@@ -450,6 +368,8 @@ jobs:
         if: ${{ needs.detect-changes.outputs.build_required == 'true' }}
         uses: ./.github/actions/setup-ci-prerequisites
         with:
+          sharedkernel-library-root: ${{ vars.SHAREDKERNEL_LIBRARY_ROOT }}
+          sharedkernel-candidate-feed: ${{ vars.SHAREDKERNEL_CANDIDATE_FEED }}
           restore-targets: ViajantesTurismo.slnx
           trust-dev-certificate: "false"
 
@@ -486,7 +406,7 @@ jobs:
           test -n "$HEAD_SHA"
           git -c core.quotePath=false diff --no-ext-diff --unified=0 --find-renames \
             "$BASE_SHA...$HEAD_SHA" -- '*.cs' '*.razor' > TestResults/coverage-changes.patch
-          dotnet run --project tools/SharedKernel.RepoConfig.Tool -c Release --no-restore -- \
+          dotnet run --project tools/ViajantesTurismo.RepoConfig.Tool -c Release --no-restore -- \
             verify-coverage --report TestResults/CoverageReport/Cobertura.xml \
             --diff TestResults/coverage-changes.patch
 
@@ -553,10 +473,13 @@ jobs:
             samples/**/*.md
           config: .markdownlint-cli2.jsonc
 
-      - name: Set up .NET SDK
-        uses: actions/setup-dotnet@c2fa09f4bde5ebb9d1777cf28262a3eb3db3ced7 # v5
+      - name: Set up CI prerequisites
+        uses: ./.github/actions/setup-ci-prerequisites
         with:
-          global-json-file: global.json
+          sharedkernel-library-root: ${{ vars.SHAREDKERNEL_LIBRARY_ROOT }}
+          sharedkernel-candidate-feed: ${{ vars.SHAREDKERNEL_CANDIDATE_FEED }}
+          restore-targets: tests/ViajantesTurismo.RepoConfig.Tests/ViajantesTurismo.RepoConfig.Tests.csproj
+          trust-dev-certificate: "false"
 
       - name: Run repository linters
         run: bash scripts/lint-all.sh --skip-markdown

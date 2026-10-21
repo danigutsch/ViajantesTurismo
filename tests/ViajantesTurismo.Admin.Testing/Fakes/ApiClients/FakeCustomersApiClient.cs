@@ -1,5 +1,5 @@
 using System.Net;
-using SharedKernel.HttpClients;
+using PandaBear.HttpClients;
 using ViajantesTurismo.Admin.Contracts.Application;
 
 namespace ViajantesTurismo.Admin.Testing.Fakes.ApiClients;

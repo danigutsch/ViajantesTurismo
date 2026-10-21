@@ -1,4 +1,4 @@
-using SharedKernel.OpenApi;
+using PandaBear.OpenApi;
 
 namespace ViajantesTurismo.Admin.ApiService;
 

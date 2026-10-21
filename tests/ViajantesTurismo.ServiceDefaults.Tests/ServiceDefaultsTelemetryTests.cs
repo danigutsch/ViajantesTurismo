@@ -6,7 +6,7 @@ using Microsoft.Extensions.Hosting;
 using OpenTelemetry;
 using OpenTelemetry.Metrics;
 using OpenTelemetry.Trace;
-using SharedKernel.Mediator;
+using PandaBear.Mediator;
 
 namespace ViajantesTurismo.ServiceDefaults.Tests;
 
@@ -20,7 +20,7 @@ public sealed class ServiceDefaultsTelemetryTests
     private const string CatalogMetricIntegrationEvent = "catalog.integration_event";
 
     [Fact]
-    [Trait(SharedKernel.Testing.TestTraitNames.AreaName, TestTraits.ServiceDefaultsArea)]
+    [Trait(PandaBear.Testing.TestTraitNames.AreaName, TestTraits.ServiceDefaultsArea)]
     public void Management_service_defaults_export_admin_client_business_outcomes()
     {
         // Arrange

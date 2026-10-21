@@ -1,5 +1,5 @@
 using System.Net;
-using SharedKernel.HttpClients;
+using PandaBear.HttpClients;
 using ViajantesTurismo.Catalog.Contracts.Application;
 
 namespace ViajantesTurismo.Catalog.Contracts.Http;

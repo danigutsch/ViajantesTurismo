@@ -1,26 +1,32 @@
 {
   "$schema": "https://opencode.ai/config.json",
   "share": "disabled",
-  "instructions": ["AGENTS.md", "CONTRIBUTING.md", "docs/local-tool-security.md"],
+  "instructions": [
+    "AGENTS.md",
+    "CONTRIBUTING.md",
+    "docs/local-tool-security.md"
+  ],
   "mcp": {
     "aspire": {
       "type": "local",
-      "command": ["dotnet", "tool", "run", "aspire", "--", "agent", "mcp"],
+      "command": [
+        "dotnet",
+        "tool",
+        "run",
+        "aspire",
+        "--",
+        "agent",
+        "mcp"
+      ],
       "enabled": true
     },
     "playwright": {
       "type": "local",
       "command": [
         "dotnet",
+        "tool",
         "run",
-        "--project",
-        "tools/SharedKernel.PlaywrightMcp.Tool/SharedKernel.PlaywrightMcp.Tool.csproj",
-        "--configuration",
-        "Release",
-        "--no-build",
-        "--no-restore",
-        "--no-launch-profile",
-        "--"
+        "sharedkernel-playwright-mcp"
       ],
       "timeout": 120000,
       "enabled": true
@@ -127,9 +133,15 @@
     }
   },
   "formatter": {
-    "biome": { "disabled": true },
-    "prettier": { "disabled": true },
-    "shfmt": { "disabled": true },
+    "biome": {
+      "disabled": true
+    },
+    "prettier": {
+      "disabled": true
+    },
+    "shfmt": {
+      "disabled": true
+    },
     "dotnet-format": {
       "command": [
         "bash",
@@ -138,7 +150,9 @@
         "_",
         "$FILE"
       ],
-      "extensions": [".cs"]
+      "extensions": [
+        ".cs"
+      ]
     },
     "repo-markdownlint": {
       "command": [
@@ -148,7 +162,9 @@
         "_",
         "$FILE"
       ],
-      "extensions": [".md"]
+      "extensions": [
+        ".md"
+      ]
     },
     "repo-shfmt": {
       "command": [
@@ -158,7 +174,10 @@
         "_",
         "$FILE"
       ],
-      "extensions": [".sh", ".bash"]
+      "extensions": [
+        ".sh",
+        ".bash"
+      ]
     },
     "repo-powershell": {
       "command": [
@@ -168,7 +187,11 @@
         "_",
         "$FILE"
       ],
-      "extensions": [".ps1", ".psm1", ".psd1"]
+      "extensions": [
+        ".ps1",
+        ".psm1",
+        ".psd1"
+      ]
     }
   }
 }

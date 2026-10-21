@@ -1,6 +1,6 @@
 using Microsoft.EntityFrameworkCore;
-using SharedKernel.EntityFrameworkCore;
-using SharedKernel.Results;
+using PandaBear.EntityFrameworkCore;
+using PandaBear.Results;
 using ViajantesTurismo.Admin.Domain.Customers;
 using ViajantesTurismo.Admin.Domain.Shared;
 using ViajantesTurismo.Admin.Domain.Tours;

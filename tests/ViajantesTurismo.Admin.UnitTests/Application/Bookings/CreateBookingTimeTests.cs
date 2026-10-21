@@ -5,8 +5,8 @@ using ViajantesTurismo.Admin.Testing.Fakes;
 
 namespace ViajantesTurismo.Admin.UnitTests.Application.Bookings;
 
-[Trait(SharedKernel.Testing.TestTraitNames.CategoryName, "Regression")]
-[Trait(SharedKernel.Testing.TestTraitNames.ScopeName, SharedKernel.Testing.SharedKernelTestTraitNames.UnitScope)]
+[Trait(PandaBear.Testing.TestTraitNames.CategoryName, "Regression")]
+[Trait(PandaBear.Testing.TestTraitNames.ScopeName, PandaBear.Testing.SharedKernelTestTraitNames.UnitScope)]
 public sealed class CreateBookingTimeTests
 {
     [Fact]

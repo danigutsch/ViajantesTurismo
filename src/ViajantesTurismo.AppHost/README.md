@@ -60,7 +60,7 @@ code builds or before committing.
 ## Release publish integration points
 
 The AppHost must not calculate application versions. Release workflows calculate versions with
-`SharedKernel.Versioning.Tool calculate-release`, then pass the computed values into Aspire publish
+`sharedkernel-version calculate-release`, then pass the computed values into Aspire publish
 steps as configuration, environment variables, or MSBuild properties.
 Release workflow context lives in [`docs/ci/supplemental-workflows.md`](../../docs/ci/supplemental-workflows.md).
 
@@ -90,9 +90,11 @@ Use these Aspire 13.4 integration points for release work:
   model through container image annotations or resource environment variables.
 
 Container tags for application resources use the versioning tool's `package_version` output. Release
-Prep passes the same computed values as environment variables that MSBuild imports as properties, so
-deployed assemblies carry `InformationalVersion`, which the shared diagnostics emit as OpenTelemetry
-`service.version` and in startup logs. Source SHA and other traceability values are passed as
+Prep passes these values while exporting the resource model with `aspire do publish-manifest`; it does
+not build deployment images or prove deployment readiness. A future deployment workflow must configure
+a compute environment and pass the same computed values into deployment builds so assemblies carry
+`InformationalVersion`, which shared diagnostics emit as OpenTelemetry `service.version` and in
+startup logs. Source SHA and other traceability values are passed as
 deployment metadata environment variables (`VT_DEPLOYMENT_VERSION`, `VT_SOURCE_REVISION`), not in the
 container tag. Infrastructure image tags and SHA-256 digests remain pinned independently and must not
 be replaced with application release versions.

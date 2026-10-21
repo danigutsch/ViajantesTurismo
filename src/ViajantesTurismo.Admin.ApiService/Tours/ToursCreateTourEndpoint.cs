@@ -3,7 +3,7 @@ using Microsoft.AspNetCore.Mvc;
 using ViajantesTurismo.Admin.Application;
 using ViajantesTurismo.Admin.Application.Tours.CreateTour;
 using ViajantesTurismo.Admin.Contracts.Application;
-using SharedKernel.Results;
+using PandaBear.Results;
 using ViajantesTurismo.Admin.Domain.Tours;
 
 namespace ViajantesTurismo.Admin.ApiService.Tours;

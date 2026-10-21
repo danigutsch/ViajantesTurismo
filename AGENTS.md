@@ -30,12 +30,12 @@ Use nested `AGENTS.md` files for scoped rules.
 - Keep business rules in the Domain layer; do not move them into API or infrastructure code.
 - Add domain behavior when it names a real business rule for the current use case, even if only one
     caller needs it today; avoid speculative helper abstractions without a current use case.
-- Treat `src/SharedKernel` as the seed of a future standalone reusable-library repository. Add code
-    there only when the capability is reusable outside this app, has a stable boundary, and is free of
-    application-specific business rules. A reusable SharedKernel implementation may serve one current
-    in-repo caller; do not require two callers when the library boundary is already clear.
-- Keep SharedKernel APIs small, host-agnostic, documented, and dependency-light. Prefer provider-specific
-    modules for provider-specific persistence or hosting integrations.
+- SharedKernel implementations live in the separate SharedKernel repository. Consume
+  `PandaBear.SharedKernel.*` packages through the pinned local candidate workflow documented in
+  `docs/sharedkernel/development.md`; do not restore application-owned copies of the library.
+- Keep application-specific documentation and repository automation in the `ViajantesTurismo.*`
+  projects. Reusable library changes belong in SharedKernel and require application compatibility
+  validation before adoption.
 - For consistency/audit findings, prove each actionable production gap with a failing test before any
     production code change. Do not change production code for such gaps until the failing test exists.
 

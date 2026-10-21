@@ -1,7 +1,7 @@
 using ViajantesTurismo.Admin.Application.Mappings;
 using ViajantesTurismo.Admin.Domain.Customers;
-using SharedKernel.Results;
-using SharedKernel.InputNormalization;
+using PandaBear.Results;
+using PandaBear.InputNormalization;
 
 namespace ViajantesTurismo.Admin.Application.Customers.CreateCustomer;
 

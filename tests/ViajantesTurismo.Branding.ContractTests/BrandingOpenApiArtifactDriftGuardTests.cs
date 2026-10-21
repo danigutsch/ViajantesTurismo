@@ -8,8 +8,8 @@ namespace ViajantesTurismo.Branding.ContractTests;
 public sealed class BrandingOpenApiArtifactDriftGuardTests
 {
     [Fact]
-    [Trait(SharedKernel.Testing.TestTraitNames.CategoryName, TestTraits.DriftGuardCategory)]
-    [Trait(SharedKernel.Testing.TestTraitNames.SurfaceName, TestTraits.OpenApiSurface)]
+    [Trait(PandaBear.Testing.TestTraitNames.CategoryName, TestTraits.DriftGuardCategory)]
+    [Trait(PandaBear.Testing.TestTraitNames.SurfaceName, TestTraits.OpenApiSurface)]
     public void Canonical_branding_OpenApi_artifacts_match_the_generated_boundary_artifacts()
     {
         // Arrange
@@ -24,8 +24,8 @@ public sealed class BrandingOpenApiArtifactDriftGuardTests
     }
 
     [Fact]
-    [Trait(SharedKernel.Testing.TestTraitNames.CategoryName, TestTraits.DriftGuardCategory)]
-    [Trait(SharedKernel.Testing.TestTraitNames.SurfaceName, TestTraits.OpenApiSurface)]
+    [Trait(PandaBear.Testing.TestTraitNames.CategoryName, TestTraits.DriftGuardCategory)]
+    [Trait(PandaBear.Testing.TestTraitNames.SurfaceName, TestTraits.OpenApiSurface)]
     public void Branding_mutation_keeps_its_published_response_contract()
     {
         // Arrange

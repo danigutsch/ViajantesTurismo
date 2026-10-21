@@ -1,6 +1,6 @@
-using SharedKernel.Idempotency;
-using SharedKernel.Results;
-using SharedKernel.Testing;
+using PandaBear.Idempotency;
+using PandaBear.Results;
+using PandaBear.Testing;
 using ViajantesTurismo.Admin.Application.Documents;
 using ViajantesTurismo.Admin.Testing.Fakes;
 using ViajantesTurismo.Admin.UnitTests.Documents;

@@ -2,8 +2,8 @@ using System.Text;
 
 namespace ViajantesTurismo.Management.WebTests.Components.Pages.Customers;
 
-[Trait(SharedKernel.Testing.TestTraitNames.ScopeName, TestTraits.UnitScope)]
-[Trait(SharedKernel.Testing.TestTraitNames.AreaName, TestTraits.ManagementWebArea)]
+[Trait(PandaBear.Testing.TestTraitNames.ScopeName, TestTraits.UnitScope)]
+[Trait(PandaBear.Testing.TestTraitNames.AreaName, TestTraits.ManagementWebArea)]
 public sealed class ImportCustomersDuplicateResolutionTestHelperTests
 {
     [Fact]

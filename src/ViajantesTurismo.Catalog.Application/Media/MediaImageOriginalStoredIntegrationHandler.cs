@@ -1,7 +1,7 @@
 using System.Globalization;
-using SharedKernel.BuildingBlocks;
-using SharedKernel.ImageProcessing;
-using SharedKernel.Messaging.IntegrationEvents;
+using PandaBear.BuildingBlocks;
+using PandaBear.ImageProcessing;
+using PandaBear.Messaging.IntegrationEvents;
 using ViajantesTurismo.Catalog.Contracts.IntegrationEvents.Media;
 using ViajantesTurismo.Catalog.Domain.Media;
 

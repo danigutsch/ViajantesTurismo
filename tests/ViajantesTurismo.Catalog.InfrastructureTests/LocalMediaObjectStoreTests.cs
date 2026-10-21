@@ -1,5 +1,5 @@
 using Microsoft.Extensions.Options;
-using SharedKernel.Testing;
+using PandaBear.Testing;
 using ViajantesTurismo.Catalog.Application.Media;
 using ViajantesTurismo.Catalog.Infrastructure;
 

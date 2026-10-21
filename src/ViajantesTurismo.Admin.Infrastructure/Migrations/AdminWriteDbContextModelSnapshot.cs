@@ -23,7 +23,7 @@ namespace ViajantesTurismo.Admin.Infrastructure.Migrations
             NpgsqlModelBuilderExtensions.HasPostgresExtension(modelBuilder, "citext");
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
 
-            modelBuilder.Entity("SharedKernel.Idempotency.EntityFrameworkCore.IdempotencyEntryEntity", b =>
+            modelBuilder.Entity("PandaBear.Idempotency.EntityFrameworkCore.IdempotencyEntryEntity", b =>
                 {
                     b.Property<string>("Scope")
                         .HasMaxLength(200)
@@ -55,7 +55,7 @@ namespace ViajantesTurismo.Admin.Infrastructure.Migrations
                     b.ToTable("idempotency_keys", "messaging");
                 });
 
-            modelBuilder.Entity("SharedKernel.Messaging.IntegrationEvents.EntityFrameworkCore.IntegrationEventOutboxMessage", b =>
+            modelBuilder.Entity("PandaBear.Messaging.IntegrationEvents.EntityFrameworkCore.IntegrationEventOutboxMessage", b =>
                 {
                     b.Property<Guid>("Id")
                         .HasColumnType("uuid");
@@ -153,7 +153,7 @@ namespace ViajantesTurismo.Admin.Infrastructure.Migrations
                     b.ToTable("outbox_messages", "messaging");
                 });
 
-            modelBuilder.Entity("SharedKernel.Messaging.IntegrationEvents.EntityFrameworkCore.IntegrationEventTransportMessage", b =>
+            modelBuilder.Entity("PandaBear.Messaging.IntegrationEvents.EntityFrameworkCore.IntegrationEventTransportMessage", b =>
                 {
                     b.Property<Guid>("Id")
                         .HasColumnType("uuid");

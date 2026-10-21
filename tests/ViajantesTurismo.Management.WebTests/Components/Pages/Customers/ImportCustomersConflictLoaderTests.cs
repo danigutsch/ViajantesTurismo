@@ -1,5 +1,5 @@
 using System.Text;
-using SharedKernel.HttpClients;
+using PandaBear.HttpClients;
 using ViajantesTurismo.Management.Web.Components.Pages.Customers;
 
 namespace ViajantesTurismo.Management.WebTests.Components.Pages.Customers;

@@ -1,8 +1,6 @@
 using Microsoft.EntityFrameworkCore;
-using SharedKernel.Idempotency;
-using SharedKernel.Idempotency.EntityFrameworkCore;
-using SharedKernel.Messaging.IntegrationEvents.EntityFrameworkCore;
-using SharedKernel.Testing;
+using PandaBear.Idempotency;
+using PandaBear.Testing;
 using ViajantesTurismo.Catalog.Infrastructure;
 
 namespace ViajantesTurismo.Catalog.UnitTests;
@@ -18,7 +16,7 @@ public sealed class CatalogIntegrationEventTransportRegistrationTests
         using var scenario = CatalogInfrastructureTestServices.CreateScenario();
 
         // Act
-        var includesTransportConsumer = scenario.ContainsHostedService<PostgreSqlIntegrationEventTransportConsumerHostedService<CatalogIntegrationTransportDbContext>>();
+        var includesTransportConsumer = scenario.ContainsHostedService<CatalogIntegrationTransportDbContext>("PostgreSqlIntegrationEventTransportConsumerHostedService`1");
 
         // Assert
         includesTransportConsumer.ShouldBeFalse();
@@ -31,7 +29,7 @@ public sealed class CatalogIntegrationEventTransportRegistrationTests
         using var scenario = CatalogInfrastructureTestServices.CreateScenario();
 
         // Act
-        var includesCatalogOutboxRelay = scenario.ContainsHostedService<IntegrationEventOutboxRelayHostedService<CatalogDbContext>>();
+        var includesCatalogOutboxRelay = scenario.ContainsHostedService<CatalogDbContext>("IntegrationEventOutboxRelayHostedService`1");
 
         // Assert
         includesCatalogOutboxRelay.ShouldBeTrue();
@@ -58,7 +56,7 @@ public sealed class CatalogIntegrationEventTransportRegistrationTests
         var dbContext = scenario.ShouldResolve<CatalogDbContext>();
 
         // Act
-        var entityType = dbContext.Model.FindEntityType(typeof(IdempotencyEntryEntity)).ShouldNotBeNull();
+        var entityType = dbContext.Model.GetEntityTypes().ShouldHaveSingleItem(entity => entity.GetTableName() == "idempotency_keys");
         var tableName = entityType.GetTableName();
         var schema = entityType.GetSchema();
 
@@ -74,7 +72,7 @@ public sealed class CatalogIntegrationEventTransportRegistrationTests
         using var scenario = CatalogInfrastructureTestServices.CreateApiHostedTransportScenario();
 
         // Act
-        var includesTransportConsumer = scenario.ContainsHostedService<PostgreSqlIntegrationEventTransportConsumerHostedService<CatalogIntegrationTransportDbContext>>();
+        var includesTransportConsumer = scenario.ContainsHostedService<CatalogIntegrationTransportDbContext>("PostgreSqlIntegrationEventTransportConsumerHostedService`1");
 
         // Assert
         includesTransportConsumer.ShouldBeTrue();
@@ -99,8 +97,8 @@ public sealed class CatalogIntegrationEventTransportRegistrationTests
         using var scenario = CatalogInfrastructureTestServices.CreateWorkerScenario();
 
         // Act
-        var includesTransportConsumer = scenario.ContainsHostedService<PostgreSqlIntegrationEventTransportConsumerHostedService<CatalogIntegrationTransportDbContext>>();
-        var includesCatalogOutboxRelay = scenario.ContainsHostedService<IntegrationEventOutboxRelayHostedService<CatalogDbContext>>();
+        var includesTransportConsumer = scenario.ContainsHostedService<CatalogIntegrationTransportDbContext>("PostgreSqlIntegrationEventTransportConsumerHostedService`1");
+        var includesCatalogOutboxRelay = scenario.ContainsHostedService<CatalogDbContext>("IntegrationEventOutboxRelayHostedService`1");
 
         // Assert
         includesTransportConsumer.ShouldBeTrue();
@@ -114,7 +112,7 @@ public sealed class CatalogIntegrationEventTransportRegistrationTests
         using var scenario = CatalogInfrastructureTestServices.CreateSeedingScenario();
 
         // Act
-        var includesCatalogOutboxRelay = scenario.ContainsHostedService<IntegrationEventOutboxRelayHostedService<CatalogDbContext>>();
+        var includesCatalogOutboxRelay = scenario.ContainsHostedService<CatalogDbContext>("IntegrationEventOutboxRelayHostedService`1");
 
         // Assert
         includesCatalogOutboxRelay.ShouldBeFalse();
@@ -127,7 +125,7 @@ public sealed class CatalogIntegrationEventTransportRegistrationTests
         using var scenario = CatalogInfrastructureTestServices.CreateOpenApiBuildGenerationScenario();
 
         // Act
-        var includesCatalogOutboxRelay = scenario.ContainsHostedService<IntegrationEventOutboxRelayHostedService<CatalogDbContext>>();
+        var includesCatalogOutboxRelay = scenario.ContainsHostedService<CatalogDbContext>("IntegrationEventOutboxRelayHostedService`1");
 
         // Assert
         includesCatalogOutboxRelay.ShouldBeFalse();

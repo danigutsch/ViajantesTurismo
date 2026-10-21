@@ -2,14 +2,14 @@ using Microsoft.AspNetCore.Components;
 using ViajantesTurismo.Management.Web;
 using ViajantesTurismo.Management.Web.Components.Pages.Customers.Create;
 using ViajantesTurismo.Management.Web.Models;
-using HttpOutcome = SharedKernel.HttpClients.HttpOutcome;
-using HttpOutcomeKind = SharedKernel.HttpClients.HttpOutcomeKind;
+using HttpOutcome = PandaBear.HttpClients.HttpOutcome;
+using HttpOutcomeKind = PandaBear.HttpClients.HttpOutcomeKind;
 
 namespace ViajantesTurismo.Management.WebTests.Components.Pages.Customers.Create;
 
-[Trait(SharedKernel.Testing.TestTraitNames.ScopeName, TestTraits.ComponentScope)]
-[Trait(SharedKernel.Testing.TestTraitNames.AreaName, TestTraits.ManagementWebArea)]
-[Trait(SharedKernel.Testing.TestTraitNames.CategoryName, TestTraits.ComponentCategory)]
+[Trait(PandaBear.Testing.TestTraitNames.ScopeName, TestTraits.ComponentScope)]
+[Trait(PandaBear.Testing.TestTraitNames.AreaName, TestTraits.ManagementWebArea)]
+[Trait(PandaBear.Testing.TestTraitNames.CategoryName, TestTraits.ComponentCategory)]
 public sealed class ReviewPageTests : BunitContext
 {
     private readonly FakeCustomersApiClient _fakeCustomersApi = new();

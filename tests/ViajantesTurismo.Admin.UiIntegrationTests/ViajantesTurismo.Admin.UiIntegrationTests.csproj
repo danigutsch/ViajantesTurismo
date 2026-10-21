@@ -6,7 +6,7 @@
     </PropertyGroup>
 
     <ItemGroup>
-        <Using Include="SharedKernel.Testing.Assertions" />
+        <Using Include="PandaBear.Testing.Assertions" />
     </ItemGroup>
 
     <ItemGroup>
@@ -17,7 +17,7 @@
     </ItemGroup>
 
     <ItemGroup>
-        <ProjectReference Include="..\..\src\SharedKernel\SharedKernel.Testing.Assertions\SharedKernel.Testing.Assertions.csproj" />
+        <PackageReference Include="PandaBear.SharedKernel.Testing.Assertions" />
     </ItemGroup>
 
 </Project>

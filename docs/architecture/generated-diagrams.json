@@ -1,6 +1,6 @@
 {
   "docsPath": "docs/architecture",
-  "generatorName": "tools/SharedKernel.Documentation.Tool",
+  "generatorName": "sharedkernel-docs",
   "blocks": [
     {
       "name": "system-overview",
@@ -94,8 +94,20 @@
         "    class github,packageFeeds,observability external"
       ]
     },
-    { "name": "project-dependencies", "targetPath": "boundaries-and-dependencies.md", "kind": "project-references", "sourcePath": "src", "projectFilter": "src-excluding-sharedkernel" },
-    { "name": "sharedkernel-dependencies", "targetPath": "boundaries-and-dependencies.md", "kind": "project-references", "sourcePath": "src", "projectFilter": "sharedkernel" },
+    {
+      "name": "project-dependencies",
+      "targetPath": "boundaries-and-dependencies.md",
+      "kind": "project-references",
+      "sourcePath": "src",
+      "projectFilter": "src-excluding-sharedkernel"
+    },
+    {
+      "name": "sharedkernel-dependencies",
+      "targetPath": "boundaries-and-dependencies.md",
+      "kind": "project-references",
+      "sourcePath": "src",
+      "projectFilter": "sharedkernel"
+    },
     {
       "name": "api-endpoints",
       "targetPath": "generated-endpoint-route-map.md",
@@ -112,9 +124,26 @@
         "publicBranding": "/api/v1/public/branding",
         "toursGroup": "/api/v1/tours",
         "versionedApi": "/api/v1"
-      }
+      },
+      "endpointNameMethods": [
+        "WithAdminMetadata",
+        "WithName"
+      ],
+      "sourceAudiences": {
+        "ViajantesTurismo.Public.Web/": "public web"
+      },
+      "routeAudiences": {
+        "^/public/": "public API",
+        "^/api/v[0-9]+(?:[.][0-9]+)?/public/": "public API"
+      },
+      "defaultAudience": "management/internal"
     },
-    { "name": "integration-events", "targetPath": "generated-event-message-flow-map.md", "kind": "integration-events", "sourcePath": "src" },
+    {
+      "name": "integration-events",
+      "targetPath": "generated-event-message-flow-map.md",
+      "kind": "integration-events",
+      "sourcePath": "src"
+    },
     {
       "name": "apphost-resources",
       "targetPath": "runtime-wiring-and-deployment.md",
@@ -131,7 +160,20 @@
         "catalogApiService": "Catalog.ApiService"
       }
     },
-    { "name": "ci-main-jobs", "targetPath": "ci-validation-flows.md", "kind": "github-actions-jobs", "sourcePath": ".github/workflows/ci.yml", "triggerLabel": "Pull request, push to main, merge queue, or manual run" },
-    { "name": "ci-supplemental-workflows", "targetPath": "ci-validation-flows.md", "kind": "github-actions-workflows", "sourcePath": ".github/workflows", "rootLabel": "Repository events", "excludedWorkflowFileName": "ci.yml" }
+    {
+      "name": "ci-main-jobs",
+      "targetPath": "ci-validation-flows.md",
+      "kind": "github-actions-jobs",
+      "sourcePath": ".github/workflows/ci.yml",
+      "triggerLabel": "Pull request, push to main, merge queue, or manual run"
+    },
+    {
+      "name": "ci-supplemental-workflows",
+      "targetPath": "ci-validation-flows.md",
+      "kind": "github-actions-workflows",
+      "sourcePath": ".github/workflows",
+      "rootLabel": "Repository events",
+      "excludedWorkflowFileName": "ci.yml"
+    }
   ]
 }

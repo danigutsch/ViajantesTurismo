@@ -80,7 +80,7 @@ public sealed record TourPricing(Money BasePrice, Money RoomSupplement, Money Bi
 Use file-scoped namespaces (enforced by EditorConfig):
 
 ```csharp
-using SharedKernel.Domain;
+using PandaBear.Domain;
 
 namespace ViajantesTurismo.Admin.Domain.Tours;
 

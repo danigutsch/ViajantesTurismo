@@ -1,6 +1,6 @@
 using Npgsql;
 using Projects;
-using SharedKernel.IntegrationTesting;
+using PandaBear.IntegrationTesting;
 using ViajantesTurismo.Admin.Contracts.IntegrationEvents.Tours;
 using ViajantesTurismo.Resources;
 

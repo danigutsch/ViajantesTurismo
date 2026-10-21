@@ -1,6 +1,6 @@
-using SharedKernel.AspNetCore;
-using SharedKernel.HttpCaching.AspNetCore;
-using SharedKernel.OpenApi;
+using PandaBear.AspNetCore;
+using PandaBear.HttpCaching.AspNetCore;
+using PandaBear.OpenApi;
 using ViajantesTurismo.Catalog.ApiService;
 using ViajantesTurismo.Catalog.Infrastructure;
 using ViajantesTurismo.Resources;

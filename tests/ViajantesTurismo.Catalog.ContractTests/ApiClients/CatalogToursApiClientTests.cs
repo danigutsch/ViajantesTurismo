@@ -1,13 +1,13 @@
 using Microsoft.AspNetCore.Http;
 using System.Net;
-using CatalogToursApiClientTestsHelpers = SharedKernel.Testing.Contracts.ContractHttpClientTestHelper;
-using SharedKernel.Testing.Contracts;
+using CatalogToursApiClientTestsHelpers = PandaBear.Testing.Contracts.ContractHttpClientTestHelper;
+using PandaBear.Testing.Contracts;
 using ViajantesTurismo.Catalog.Contracts.Application;
 using ViajantesTurismo.Catalog.Contracts.Http;
 
 namespace ViajantesTurismo.Catalog.ContractTests.ApiClients;
 
-[Trait(SharedKernel.Testing.TestTraitNames.CategoryName, Infrastructure.TestTraits.ContractCategory)]
+[Trait(PandaBear.Testing.TestTraitNames.CategoryName, Infrastructure.TestTraits.ContractCategory)]
 public sealed class CatalogToursApiClientTests
 {
     [Fact]
@@ -164,7 +164,7 @@ public sealed class CatalogToursApiClientTests
             TestContext.Current.CancellationToken);
 
         // Assert
-        outcome.Kind.ShouldBe(SharedKernel.HttpClients.HttpOutcomeKind.UnexpectedStatus);
+        outcome.Kind.ShouldBe(PandaBear.HttpClients.HttpOutcomeKind.UnexpectedStatus);
         outcome.StatusCode.ShouldBe(HttpStatusCode.Accepted);
     }
 
@@ -195,7 +195,7 @@ public sealed class CatalogToursApiClientTests
         requestMethod.ShouldBe(HttpMethods.Post);
         requestPath.ShouldBe("/api/v1/catalog/tours/11111111-1111-1111-1111-111111111111/publish");
         requestBody.ShouldContain("\"expectedVersion\":5", StringComparison.Ordinal);
-        outcome.Kind.ShouldBe(SharedKernel.HttpClients.HttpOutcomeKind.Succeeded);
+        outcome.Kind.ShouldBe(PandaBear.HttpClients.HttpOutcomeKind.Succeeded);
     }
 
     [Fact]
@@ -225,7 +225,7 @@ public sealed class CatalogToursApiClientTests
         requestMethod.ShouldBe(HttpMethods.Post);
         requestPath.ShouldBe("/api/v1/catalog/tours/11111111-1111-1111-1111-111111111111/unpublish");
         requestBody.ShouldContain("\"expectedVersion\":6", StringComparison.Ordinal);
-        outcome.Kind.ShouldBe(SharedKernel.HttpClients.HttpOutcomeKind.Succeeded);
+        outcome.Kind.ShouldBe(PandaBear.HttpClients.HttpOutcomeKind.Succeeded);
     }
 
     [Theory]
@@ -305,7 +305,7 @@ public sealed class CatalogToursApiClientTests
         var outcome = await sut.GetTour(Guid.CreateVersion7(), TestContext.Current.CancellationToken);
 
         // Assert
-        outcome.Kind.ShouldBe(SharedKernel.HttpClients.HttpOutcomeKind.MalformedBody);
+        outcome.Kind.ShouldBe(PandaBear.HttpClients.HttpOutcomeKind.MalformedBody);
     }
 
     [Fact]
@@ -332,7 +332,7 @@ public sealed class CatalogToursApiClientTests
         var outcome = await sut.GetTour(Guid.CreateVersion7(), TestContext.Current.CancellationToken);
 
         // Assert
-        outcome.Kind.ShouldBe(SharedKernel.HttpClients.HttpOutcomeKind.MalformedBody);
+        outcome.Kind.ShouldBe(PandaBear.HttpClients.HttpOutcomeKind.MalformedBody);
     }
 
     [Fact]
@@ -346,7 +346,7 @@ public sealed class CatalogToursApiClientTests
         var outcome = await sut.GetTour(Guid.CreateVersion7(), TestContext.Current.CancellationToken);
 
         // Assert
-        outcome.Kind.ShouldBe(SharedKernel.HttpClients.HttpOutcomeKind.NotFound);
+        outcome.Kind.ShouldBe(PandaBear.HttpClients.HttpOutcomeKind.NotFound);
         outcome.Value.ShouldBeNull();
     }
 
@@ -361,7 +361,7 @@ public sealed class CatalogToursApiClientTests
         var outcome = await sut.GetTour(Guid.CreateVersion7(), TestContext.Current.CancellationToken);
 
         // Assert
-        outcome.Kind.ShouldBe(SharedKernel.HttpClients.HttpOutcomeKind.MalformedBody);
+        outcome.Kind.ShouldBe(PandaBear.HttpClients.HttpOutcomeKind.MalformedBody);
         outcome.Value.ShouldBeNull();
     }
 
@@ -384,7 +384,7 @@ public sealed class CatalogToursApiClientTests
             TestContext.Current.CancellationToken);
 
         // Assert
-        outcome.Kind.ShouldBe(SharedKernel.HttpClients.HttpOutcomeKind.NotFound);
+        outcome.Kind.ShouldBe(PandaBear.HttpClients.HttpOutcomeKind.NotFound);
         outcome.Value.ShouldBeNull();
     }
 
@@ -407,7 +407,7 @@ public sealed class CatalogToursApiClientTests
             TestContext.Current.CancellationToken);
 
         // Assert
-        outcome.Kind.ShouldBe(SharedKernel.HttpClients.HttpOutcomeKind.MalformedBody);
+        outcome.Kind.ShouldBe(PandaBear.HttpClients.HttpOutcomeKind.MalformedBody);
     }
 
     [Fact]
@@ -464,7 +464,7 @@ public sealed class CatalogToursApiClientTests
         var outcome = await sut.GetTourImages(Guid.CreateVersion7(), TestContext.Current.CancellationToken);
 
         // Assert
-        outcome.Kind.ShouldBe(SharedKernel.HttpClients.HttpOutcomeKind.MalformedBody);
+        outcome.Kind.ShouldBe(PandaBear.HttpClients.HttpOutcomeKind.MalformedBody);
         outcome.Value.ShouldBeNull();
     }
 
@@ -564,7 +564,7 @@ public sealed class CatalogToursApiClientTests
             TestContext.Current.CancellationToken);
 
         // Assert
-        outcome.Kind.ShouldBe(SharedKernel.HttpClients.HttpOutcomeKind.NotFound);
+        outcome.Kind.ShouldBe(PandaBear.HttpClients.HttpOutcomeKind.NotFound);
         outcome.Value.ShouldBeNull();
     }
 
@@ -615,7 +615,7 @@ public sealed class CatalogToursApiClientTests
             TestContext.Current.CancellationToken);
 
         // Assert
-        outcome.Kind.ShouldBe(SharedKernel.HttpClients.HttpOutcomeKind.TransportFailure);
+        outcome.Kind.ShouldBe(PandaBear.HttpClients.HttpOutcomeKind.TransportFailure);
         outcome.StatusCode.ShouldBeNull();
         outcome.Message.ShouldBe("HTTP transport failed.");
         requestCount.ShouldBe(1);
@@ -751,7 +751,7 @@ public sealed class CatalogToursApiClientTests
             TestContext.Current.CancellationToken);
 
         // Assert
-        outcome.Kind.ShouldBe(SharedKernel.HttpClients.HttpOutcomeKind.NotFound);
+        outcome.Kind.ShouldBe(PandaBear.HttpClients.HttpOutcomeKind.NotFound);
         outcome.Value.ShouldBeNull();
     }
 

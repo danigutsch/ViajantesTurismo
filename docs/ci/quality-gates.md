@@ -61,7 +61,7 @@ dotnet build ViajantesTurismo.slnx -c Release --no-restore
 # Replace origin/main with the actual comparison base when reproducing a CI run
 git -c core.quotePath=false diff --no-ext-diff --unified=0 --find-renames \
   origin/main...HEAD -- '*.cs' '*.razor' > TestResults/coverage-changes.patch
-dotnet run --project tools/SharedKernel.RepoConfig.Tool -c Release --no-restore -- \
+dotnet run --project tools/ViajantesTurismo.RepoConfig.Tool -c Release --no-restore -- \
   verify-coverage --report TestResults/CoverageReport/Cobertura.xml \
   --diff TestResults/coverage-changes.patch
 ```

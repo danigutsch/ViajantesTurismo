@@ -16,19 +16,6 @@ configs=(
     "tests/ViajantesTurismo.Catalog.UnitTests/stryker-domain-config.json"
     "tests/ViajantesTurismo.Catalog.UnitTests/stryker-application-config.json"
     "tests/ViajantesTurismo.Admin.UnitTests/stryker-application-config.json"
-    "tests/SharedKernel.BuildingBlocks.Tests/stryker-config.json"
-    "tests/SharedKernel.Domain.Tests/stryker-config.json"
-    "tests/SharedKernel.EventSourcing.Tests/stryker-config.json"
-    "tests/SharedKernel.Functional.Tests/stryker-config.json"
-    "tests/SharedKernel.Idempotency.Tests/stryker-config.json"
-    "tests/SharedKernel.Messaging.IntegrationEvents.Tests/stryker-config.json"
-    "tests/SharedKernel.Messaging.IntegrationEvents.CloudEvents.Tests/stryker-config.json"
-    "tests/SharedKernel.Observability.Tests/stryker-config.json"
-    "tests/SharedKernel.Results.AspNet.Tests/stryker-config.json"
-    "tests/SharedKernel.Results.GeneratorTests/stryker-config.json"
-    "tests/SharedKernel.Mediator.Analyzers.Tests/stryker-config.json"
-    "tests/SharedKernel.Style.Analyzers.Tests/stryker-config.json"
-    "tests/SharedKernel.Testing.Analyzers.Tests/stryker-config.json"
 )
 
 for config in "${configs[@]}"; do

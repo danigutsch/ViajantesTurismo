@@ -77,6 +77,49 @@
           "OpenTelemetry.Api": "[1.20.0, 2.0.0)"
         }
       },
+      "PandaBear.SharedKernel.Mediator.Abstractions": {
+        "type": "Direct",
+        "requested": "[1.0.0-alpha.20261021.2, )",
+        "resolved": "1.0.0-alpha.20261021.2",
+        "contentHash": "UddQCFwFCFcXDnJnb2jCzdrsTgqAYKfB2IUyVrQuONJ9b8Iarx3cCYfwZJlY5Xn/5gpJSese8QSMmv05gd8/OA=="
+      },
+      "PandaBear.SharedKernel.Observability": {
+        "type": "Direct",
+        "requested": "[1.0.0-alpha.20261021.2, )",
+        "resolved": "1.0.0-alpha.20261021.2",
+        "contentHash": "9B0yZLZBagCQwZJBWU37lwcPKAAXUJ15WzlNQut50j47sqfuv7Lw2CNug/P+66myyUD3xqwtVBP21Vg36R1lMA==",
+        "dependencies": {
+          "Microsoft.Extensions.Compliance.Abstractions": "10.11.0",
+          "Microsoft.Extensions.Compliance.Redaction": "10.11.0",
+          "Microsoft.Extensions.Telemetry": "10.11.0",
+          "OpenTelemetry": "1.20.0",
+          "OpenTelemetry.Extensions.Hosting": "1.20.0",
+          "OpenTelemetry.Instrumentation.Runtime": "1.20.0"
+        }
+      },
+      "PandaBear.SharedKernel.OpenApi": {
+        "type": "Direct",
+        "requested": "[1.0.0-alpha.20261021.2, )",
+        "resolved": "1.0.0-alpha.20261021.2",
+        "contentHash": "b0iYad6G6fN8kIAxbB+b0kbFkxOCzquG4g13eoUAy66pVt+h1Mwu0Z/Wp+zbiCcV3AfQGAy9lGYB5Nw4tUZwIQ==",
+        "dependencies": {
+          "Microsoft.AspNetCore.OpenApi": "10.0.13",
+          "Microsoft.OpenApi": "2.12.2",
+          "PandaBear.SharedKernel.ApiVersioning": "1.0.0-alpha.20261021.2"
+        }
+      },
+      "PandaBear.SharedKernel.Style.Analyzers": {
+        "type": "Direct",
+        "requested": "[1.0.0-alpha.20261021.2, )",
+        "resolved": "1.0.0-alpha.20261021.2",
+        "contentHash": "nfxdWX03IuS9TR9Zn4Jp3ED+tcTIe/06+SdLU3XmLhS6EHMljOtbPgeYuQw2TeKFZq0WQkUrG3vI0lOyesRp5A=="
+      },
+      "PandaBear.SharedKernel.Style.CodeFixes": {
+        "type": "Direct",
+        "requested": "[1.0.0-alpha.20261021.2, )",
+        "resolved": "1.0.0-alpha.20261021.2",
+        "contentHash": "36TIAEL97BTvjHzQgIq05C465xm10yxGjMtpPwJpxFZuRUgMihMJ4Fx9d91fH/ofmghcBzfeyQODqtviQ/qvtg=="
+      },
       "Microsoft.Extensions.AmbientMetadata.Application": {
         "type": "Transitive",
         "resolved": "10.11.0",
@@ -113,29 +156,10 @@
           "OpenTelemetry.Api": "1.20.0"
         }
       },
-      "sharedkernel.apiversioning": {
-        "type": "Project"
-      },
-      "sharedkernel.mediator.abstractions": {
-        "type": "Project"
-      },
-      "sharedkernel.observability": {
-        "type": "Project",
-        "dependencies": {
-          "Microsoft.Extensions.Compliance.Redaction": "[10.11.0, )",
-          "Microsoft.Extensions.Telemetry": "[10.11.0, )",
-          "OpenTelemetry": "[1.20.0, )",
-          "OpenTelemetry.Extensions.Hosting": "[1.20.0, )",
-          "OpenTelemetry.Instrumentation.Runtime": "[1.20.0, )"
-        }
-      },
-      "sharedkernel.openapi": {
-        "type": "Project",
-        "dependencies": {
-          "Microsoft.AspNetCore.OpenApi": "[10.0.13, )",
-          "Microsoft.OpenApi": "[2.12.2, )",
-          "SharedKernel.ApiVersioning": "[0.1.0-alpha.0, )"
-        }
+      "PandaBear.SharedKernel.ApiVersioning": {
+        "type": "Transitive",
+        "resolved": "1.0.0-alpha.20261021.2",
+        "contentHash": "bei+JBxRuLBpGwABRZG0+hV8gOGOlRcgVWYFCYZ1W2O2/Maqj65H8eX0LiZrNORUOhDy2PcFhMaHDiH6UScsPA=="
       },
       "viajantesturismo.resources": {
         "type": "Project"

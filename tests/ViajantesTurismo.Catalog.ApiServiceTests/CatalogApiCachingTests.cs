@@ -8,8 +8,8 @@ using ViajantesTurismo.Catalog.Domain.Tours;
 
 namespace ViajantesTurismo.Catalog.ApiServiceTests;
 
-[Trait(SharedKernel.Testing.TestTraitNames.CategoryName, TestTraits.EndpointCategory)]
-[Trait(SharedKernel.Testing.TestTraitNames.HostName, TestTraits.TestServerHost)]
+[Trait(PandaBear.Testing.TestTraitNames.CategoryName, TestTraits.EndpointCategory)]
+[Trait(PandaBear.Testing.TestTraitNames.HostName, TestTraits.TestServerHost)]
 public sealed class CatalogApiCachingTests
 {
     [Theory]

@@ -59,7 +59,7 @@ for the rationale and patterns.
 
 All domain operations that can fail return `Result` or `Result<T>`.
 
-**Reference:** See [SharedKernel.Results](../src/SharedKernel/SharedKernel.Results/README.md)
+**Reference:** See [PandaBear.SharedKernel.Results consumption](sharedkernel/development.md)
 and [ADR-002: Result Pattern Over Exceptions](adr/20251108-result-pattern-over-exceptions.md).
 
 ## Factory Method Pattern

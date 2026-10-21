@@ -1,4 +1,5 @@
 using Aspire.Hosting;
+using Microsoft.Extensions.DependencyInjection;
 using Aspire.Hosting.ApplicationModel;
 
 namespace ViajantesTurismo.ArchitectureTests.Conventions;
@@ -55,7 +56,7 @@ public sealed class GrafanaLgtmStackResourceTests
     public async Task Collector_gateway_routes_http_protobuf_to_the_http_endpoint_and_adds_a_health_wait()
     {
         // Arrange
-        var builder = DistributedApplication.CreateBuilder([]);
+        var builder = DistributedApplication.CreateBuilder(["--operation", "publish"]);
         var configurationRoot = Path.Combine(Path.GetTempPath(), "collector-routing-test");
         var collector = builder.AddOpenTelemetryCollectorGateway(
             "collector-test",
@@ -63,7 +64,9 @@ public sealed class GrafanaLgtmStackResourceTests
             Path.Combine(configurationRoot, "aspire.yaml"));
         var sender = builder.AddContainer("sender-test", "test-image")
             .WithEnvironment("OTEL_EXPORTER_OTLP_PROTOCOL", "http/protobuf");
-        GrafanaLgtmStackResourceExtensions.ConfigureOpenTelemetryCollectorRouting(sender, collector);
+        sender.WithOtlpExporterIfEndpointAvailable(OtlpProtocol.HttpProtobuf);
+        using var application = builder.Build();
+        await builder.Eventing.PublishAsync(new BeforeStartEvent(application.Services, application.Services.GetRequiredService<DistributedApplicationModel>()), TestContext.Current.CancellationToken);
         var environmentVariables = new Dictionary<string, object>();
         var executionContext = new DistributedApplicationExecutionContext(DistributedApplicationOperation.Run);
 

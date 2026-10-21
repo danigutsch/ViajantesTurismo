@@ -8,8 +8,8 @@ namespace ViajantesTurismo.Catalog.ContractTests;
 public sealed class CatalogOpenApiArtifactDriftGuardTests
 {
     [Fact]
-    [Trait(SharedKernel.Testing.TestTraitNames.CategoryName, TestTraits.DriftGuardCategory)]
-    [Trait(SharedKernel.Testing.TestTraitNames.SurfaceName, TestTraits.OpenApiSurface)]
+    [Trait(PandaBear.Testing.TestTraitNames.CategoryName, TestTraits.DriftGuardCategory)]
+    [Trait(PandaBear.Testing.TestTraitNames.SurfaceName, TestTraits.OpenApiSurface)]
     public void Canonical_catalog_OpenApi_artifacts_match_the_generated_boundary_artifacts()
     {
         // Arrange

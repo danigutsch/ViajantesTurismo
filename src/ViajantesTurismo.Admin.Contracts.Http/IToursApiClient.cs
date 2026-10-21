@@ -1,4 +1,4 @@
-using SharedKernel.HttpClients;
+using PandaBear.HttpClients;
 using ViajantesTurismo.Admin.Contracts.Application;
 
 namespace ViajantesTurismo.Admin.Contracts.Http;

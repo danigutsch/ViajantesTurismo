@@ -1,8 +1,8 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Design;
 using Microsoft.Extensions.DependencyInjection;
-using SharedKernel.EntityFrameworkCore;
-using SharedKernel.Messaging.IntegrationEvents.EntityFrameworkCore;
+using PandaBear.EntityFrameworkCore;
+using PandaBear.Messaging.IntegrationEvents.EntityFrameworkCore;
 
 namespace ViajantesTurismo.Catalog.Infrastructure;
 

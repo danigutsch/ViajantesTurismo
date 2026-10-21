@@ -1,10 +1,10 @@
 using Microsoft.AspNetCore.OutputCaching;
 using Microsoft.AspNetCore.Http.HttpResults;
-using SharedKernel.ApiVersioning.AspNetCore;
-using SharedKernel.Branding;
-using SharedKernel.BuildingBlocks;
-using SharedKernel.HttpCaching.AspNetCore;
-using SharedKernel.Results;
+using PandaBear.ApiVersioning.AspNetCore;
+using PandaBear.Branding;
+using PandaBear.BuildingBlocks;
+using PandaBear.HttpCaching.AspNetCore;
+using PandaBear.Results;
 
 namespace ViajantesTurismo.Branding.ApiService;
 

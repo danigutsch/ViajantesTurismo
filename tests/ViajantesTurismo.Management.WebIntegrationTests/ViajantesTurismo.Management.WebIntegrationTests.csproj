@@ -11,7 +11,7 @@
         <Using Include="Microsoft.Extensions.Caching.Distributed" />
         <Using Include="Microsoft.Extensions.DependencyInjection" />
         <Using Include="Npgsql" />
-        <Using Include="SharedKernel.Testing.Assertions" />
+        <Using Include="PandaBear.Testing.Assertions" />
         <Using Include="Xunit" />
     </ItemGroup>
 
@@ -27,12 +27,12 @@
     </ItemGroup>
 
     <ItemGroup>
-        <ProjectReference Include="..\..\src\SharedKernel\SharedKernel.IntegrationTesting\SharedKernel.IntegrationTesting.csproj" IsAspireProjectResource="false" />
-        <ProjectReference Include="..\..\src\SharedKernel\SharedKernel.Testing.Assertions\SharedKernel.Testing.Assertions.csproj" IsAspireProjectResource="false" />
-        <ProjectReference Include="..\..\src\SharedKernel\SharedKernel.Testing\SharedKernel.Testing.csproj" IsAspireProjectResource="false" />
+        <PackageReference Include="PandaBear.SharedKernel.IntegrationTesting" />
+        <PackageReference Include="PandaBear.SharedKernel.Testing.Assertions" />
+        <PackageReference Include="PandaBear.SharedKernel.Testing" />
         <ProjectReference Include="..\..\src\ViajantesTurismo.Management.Web\ViajantesTurismo.Management.Web.csproj" IsAspireProjectResource="false" />
         <ProjectReference Include="..\..\src\ViajantesTurismo.Management.Security\ViajantesTurismo.Management.Security.csproj" IsAspireProjectResource="false" />
-        <ProjectReference Include="..\..\src\SharedKernel\SharedKernel.Testing.AspNetCore\SharedKernel.Testing.AspNetCore.csproj" IsAspireProjectResource="false" />
+        <PackageReference Include="PandaBear.SharedKernel.Testing.AspNetCore" />
     </ItemGroup>
 
 </Project>

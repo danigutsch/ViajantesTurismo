@@ -6,8 +6,8 @@ namespace ViajantesTurismo.Management.WebTests.Components.Pages;
 public sealed class AboutPageTests : BunitContext
 {
     [Fact]
-    [Trait(SharedKernel.Testing.TestTraitNames.CategoryName, "Regression")]
-    [Trait(SharedKernel.Testing.TestTraitNames.ScopeName, SharedKernel.Testing.SharedKernelTestTraitNames.UnitScope)]
+    [Trait(PandaBear.Testing.TestTraitNames.CategoryName, "Regression")]
+    [Trait(PandaBear.Testing.TestTraitNames.ScopeName, PandaBear.Testing.SharedKernelTestTraitNames.UnitScope)]
     public void Displays_the_effective_host_environment()
     {
         // Arrange

@@ -26,8 +26,8 @@ public sealed class AdminOpenApiDocumentRegistrationTests
     }
 
     [Fact]
-    [Trait(SharedKernel.Testing.TestTraitNames.CategoryName, TestTraits.DriftGuardCategory)]
-    [Trait(SharedKernel.Testing.TestTraitNames.SurfaceName, TestTraits.OpenApiSurface)]
+    [Trait(PandaBear.Testing.TestTraitNames.CategoryName, TestTraits.DriftGuardCategory)]
+    [Trait(PandaBear.Testing.TestTraitNames.SurfaceName, TestTraits.OpenApiSurface)]
     public async Task Generates_a_customers_document_including_import_paths()
     {
         // Act
@@ -93,8 +93,8 @@ public sealed class AdminOpenApiDocumentRegistrationTests
     [Theory]
     [InlineData("documents")]
     [InlineData("v1")]
-    [Trait(SharedKernel.Testing.TestTraitNames.CategoryName, TestTraits.DriftGuardCategory)]
-    [Trait(SharedKernel.Testing.TestTraitNames.SurfaceName, TestTraits.OpenApiSurface)]
+    [Trait(PandaBear.Testing.TestTraitNames.CategoryName, TestTraits.DriftGuardCategory)]
+    [Trait(PandaBear.Testing.TestTraitNames.SurfaceName, TestTraits.OpenApiSurface)]
     public async Task Document_draft_commands_describe_the_idempotency_header_as_required(string documentName)
     {
         // Arrange
@@ -163,8 +163,8 @@ public sealed class AdminOpenApiDocumentRegistrationTests
     }
 
     [Fact]
-    [Trait(SharedKernel.Testing.TestTraitNames.CategoryName, TestTraits.DriftGuardCategory)]
-    [Trait(SharedKernel.Testing.TestTraitNames.SurfaceName, TestTraits.OpenApiSurface)]
+    [Trait(PandaBear.Testing.TestTraitNames.CategoryName, TestTraits.DriftGuardCategory)]
+    [Trait(PandaBear.Testing.TestTraitNames.SurfaceName, TestTraits.OpenApiSurface)]
     public void Documents_document_describes_required_route_identity_and_idempotency_headers()
     {
         // Arrange
@@ -204,8 +204,8 @@ public sealed class AdminOpenApiDocumentRegistrationTests
     }
 
     [Fact]
-    [Trait(SharedKernel.Testing.TestTraitNames.CategoryName, TestTraits.DriftGuardCategory)]
-    [Trait(SharedKernel.Testing.TestTraitNames.SurfaceName, TestTraits.OpenApiSurface)]
+    [Trait(PandaBear.Testing.TestTraitNames.CategoryName, TestTraits.DriftGuardCategory)]
+    [Trait(PandaBear.Testing.TestTraitNames.SurfaceName, TestTraits.OpenApiSurface)]
     public void Customer_create_operation_uses_required_JSON_body_and_no_URL_parameters()
     {
         // Arrange
@@ -241,8 +241,8 @@ public sealed class AdminOpenApiDocumentRegistrationTests
     }
 
     [Fact]
-    [Trait(SharedKernel.Testing.TestTraitNames.CategoryName, TestTraits.DriftGuardCategory)]
-    [Trait(SharedKernel.Testing.TestTraitNames.SurfaceName, TestTraits.OpenApiSurface)]
+    [Trait(PandaBear.Testing.TestTraitNames.CategoryName, TestTraits.DriftGuardCategory)]
+    [Trait(PandaBear.Testing.TestTraitNames.SurfaceName, TestTraits.OpenApiSurface)]
     public void Customer_update_operation_uses_required_JSON_body_and_only_required_id_path_parameter()
     {
         // Arrange

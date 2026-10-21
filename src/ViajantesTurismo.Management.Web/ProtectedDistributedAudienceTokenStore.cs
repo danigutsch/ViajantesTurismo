@@ -2,8 +2,8 @@ using System.Security.Cryptography;
 using System.Text;
 using Microsoft.AspNetCore.DataProtection;
 using Microsoft.Extensions.Caching.Distributed;
-using SharedKernel.AspNetCore;
-using SharedKernel.BuildingBlocks;
+using PandaBear.AspNetCore;
+using PandaBear.BuildingBlocks;
 using ViajantesTurismo.Resources;
 
 namespace ViajantesTurismo.Management.Web;

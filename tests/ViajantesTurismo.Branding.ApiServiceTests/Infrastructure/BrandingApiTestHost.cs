@@ -2,8 +2,8 @@ using Microsoft.AspNetCore.OutputCaching;
 using Microsoft.Extensions.Diagnostics.HealthChecks;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
-using SharedKernel.AspNetCore;
-using SharedKernel.Testing.AspNetCore;
+using PandaBear.AspNetCore;
+using PandaBear.Testing.AspNetCore;
 using ViajantesTurismo.Branding.ApiService;
 
 namespace ViajantesTurismo.Branding.ApiServiceTests.Infrastructure;

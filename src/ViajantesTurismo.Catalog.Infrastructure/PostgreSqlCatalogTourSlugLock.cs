@@ -1,8 +1,5 @@
-using System.Buffers.Binary;
-using System.Security.Cryptography;
-using System.Text;
 using Npgsql;
-using SharedKernel.Npgsql;
+using PandaBear.Npgsql;
 using ViajantesTurismo.Catalog.Application.Tours;
 
 namespace ViajantesTurismo.Catalog.Infrastructure;
@@ -17,8 +14,7 @@ internal sealed class PostgreSqlCatalogTourSlugLock(NpgsqlDataSource dataSource)
 
     private static long CreateLockKey(string slug)
     {
-        var hash = SHA256.HashData(Encoding.UTF8.GetBytes(slug));
-        return BinaryPrimitives.ReadInt64BigEndian(hash);
+        return PostgreSqlAdvisoryLockKey.FromUtf8Sha256BigEndian(slug);
     }
 
 }

@@ -1,5 +1,5 @@
 using Microsoft.AspNetCore.Authentication.Cookies;
-using SharedKernel.BuildingBlocks;
+using PandaBear.BuildingBlocks;
 
 namespace ViajantesTurismo.Management.Web;
 

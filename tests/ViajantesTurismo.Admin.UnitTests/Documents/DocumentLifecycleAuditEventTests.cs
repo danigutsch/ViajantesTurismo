@@ -1,5 +1,5 @@
-using SharedKernel.AuditTrail;
-using SharedKernel.Testing;
+using PandaBear.AuditTrail;
+using PandaBear.Testing;
 using ViajantesTurismo.Admin.Domain.Documents;
 
 namespace ViajantesTurismo.Admin.UnitTests.Documents;

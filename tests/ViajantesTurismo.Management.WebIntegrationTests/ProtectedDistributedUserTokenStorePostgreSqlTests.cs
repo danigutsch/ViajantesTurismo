@@ -2,10 +2,10 @@ using System.Net;
 
 namespace ViajantesTurismo.Management.WebIntegrationTests;
 
-[Trait(SharedKernel.Testing.TestTraitNames.CategoryName, SharedKernel.Testing.TestTraitValues.SecurityCategory)]
-[Trait(SharedKernel.Testing.TestTraitNames.ScopeName, TestTraits.DatabaseIntegrationScope)]
-[Trait(SharedKernel.Testing.TestTraitNames.HostName, TestTraits.AspireHost)]
-[Trait(SharedKernel.Testing.TestTraitNames.AreaName, TestTraits.ManagementWebArea)]
+[Trait(PandaBear.Testing.TestTraitNames.CategoryName, PandaBear.Testing.TestTraitValues.SecurityCategory)]
+[Trait(PandaBear.Testing.TestTraitNames.ScopeName, TestTraits.DatabaseIntegrationScope)]
+[Trait(PandaBear.Testing.TestTraitNames.HostName, TestTraits.AspireHost)]
+[Trait(PandaBear.Testing.TestTraitNames.AreaName, TestTraits.ManagementWebArea)]
 public sealed class ProtectedDistributedUserTokenStorePostgreSqlTests(PostgreSqlTestServerFixture fixture) : IAsyncLifetime
 {
     private readonly PostgreSqlManagementUserTokenStoreScenario _scenario = new(fixture);

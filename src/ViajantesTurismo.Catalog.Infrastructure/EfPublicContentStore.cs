@@ -1,7 +1,7 @@
 using Microsoft.EntityFrameworkCore;
 using ViajantesTurismo.Catalog.Application.PublicContent;
 using ViajantesTurismo.Catalog.Domain.PublicContent;
-using SharedKernel.InputNormalization;
+using PandaBear.InputNormalization;
 
 namespace ViajantesTurismo.Catalog.Infrastructure;
 

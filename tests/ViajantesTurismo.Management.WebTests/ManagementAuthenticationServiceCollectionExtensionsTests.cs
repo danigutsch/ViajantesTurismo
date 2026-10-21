@@ -1,6 +1,6 @@
 using System.Net;
 using Microsoft.Extensions.Hosting;
-using SharedKernel.AspNetCore;
+using PandaBear.AspNetCore;
 using ViajantesTurismo.Management.Web;
 
 namespace ViajantesTurismo.Management.WebTests;
@@ -8,8 +8,8 @@ namespace ViajantesTurismo.Management.WebTests;
 /// <summary>
 /// Verifies Management Web authentication startup configuration.
 /// </summary>
-[Trait(SharedKernel.Testing.TestTraitNames.CategoryName, TestTraits.SecurityCategory)]
-[Trait(SharedKernel.Testing.TestTraitNames.ScopeName, TestTraits.UnitScope)]
+[Trait(PandaBear.Testing.TestTraitNames.CategoryName, TestTraits.SecurityCategory)]
+[Trait(PandaBear.Testing.TestTraitNames.ScopeName, TestTraits.UnitScope)]
 public sealed class ManagementAuthenticationServiceCollectionExtensionsTests
 {
     [Fact]

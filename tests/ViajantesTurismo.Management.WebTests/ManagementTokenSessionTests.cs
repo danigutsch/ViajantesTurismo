@@ -3,8 +3,8 @@ using ViajantesTurismo.Management.Web;
 
 namespace ViajantesTurismo.Management.WebTests;
 
-[Trait(SharedKernel.Testing.TestTraitNames.CategoryName, TestTraits.SecurityCategory)]
-[Trait(SharedKernel.Testing.TestTraitNames.ScopeName, TestTraits.UnitScope)]
+[Trait(PandaBear.Testing.TestTraitNames.CategoryName, TestTraits.SecurityCategory)]
+[Trait(PandaBear.Testing.TestTraitNames.ScopeName, TestTraits.UnitScope)]
 public sealed class ManagementTokenSessionTests
 {
     [Fact]

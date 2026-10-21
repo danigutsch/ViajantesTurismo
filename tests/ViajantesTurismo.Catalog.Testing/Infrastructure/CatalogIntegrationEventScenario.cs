@@ -1,8 +1,8 @@
 using Microsoft.Extensions.Configuration;
-using SharedKernel.EventSourcing;
-using SharedKernel.Idempotency;
-using SharedKernel.Messaging;
-using SharedKernel.Messaging.IntegrationEvents;
+using PandaBear.EventSourcing;
+using PandaBear.Idempotency;
+using PandaBear.Messaging;
+using PandaBear.Messaging.IntegrationEvents;
 using ViajantesTurismo.Admin.Contracts.IntegrationEvents.Tours;
 using ViajantesTurismo.Catalog.Application;
 using ViajantesTurismo.Catalog.Application.Tours;
@@ -30,7 +30,7 @@ internal sealed class CatalogIntegrationEventScenario : IAsyncDisposable
     public async Task Deliver(AdminTourCreatedIntegrationEvent integrationEvent, CancellationToken ct)
     {
         var serializer = provider.GetRequiredService<IIntegrationEventSerializer>();
-        var envelope = new SharedKernel.Messaging.EventEnvelope(
+        var envelope = new PandaBear.Messaging.EventEnvelope(
             "cloudevents", "1.0", integrationEvent.EventId.ToString(), new Uri("urn:viajantes:admin"),
             AdminTourCreatedIntegrationEvent.EventType, AdminTourCreatedIntegrationEvent.EventVersion,
             integrationEvent.OccurredAt, null, "application/json", null, serializer.Serialize(integrationEvent),

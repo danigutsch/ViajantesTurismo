@@ -1,4 +1,4 @@
-using SharedKernel.Testing.Snapshots;
+using PandaBear.Testing.Snapshots;
 
 using ViajantesTurismo.Admin.ContractTests.Infrastructure;
 

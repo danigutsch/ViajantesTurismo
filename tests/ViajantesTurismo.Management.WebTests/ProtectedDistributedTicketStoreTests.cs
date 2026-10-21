@@ -1,10 +1,11 @@
+using ViajantesTurismo.Admin.Testing.Fakes;
 namespace ViajantesTurismo.Management.WebTests;
 
 /// <summary>
 /// Verifies protected server-side authentication ticket storage.
 /// </summary>
-[Trait(SharedKernel.Testing.TestTraitNames.CategoryName, TestTraits.SecurityCategory)]
-[Trait(SharedKernel.Testing.TestTraitNames.ScopeName, TestTraits.UnitScope)]
+[Trait(PandaBear.Testing.TestTraitNames.CategoryName, TestTraits.SecurityCategory)]
+[Trait(PandaBear.Testing.TestTraitNames.ScopeName, TestTraits.UnitScope)]
 public sealed class ProtectedDistributedTicketStoreTests
 {
     [Theory]
@@ -15,7 +16,7 @@ public sealed class ProtectedDistributedTicketStoreTests
     {
         // Arrange
         var expiry = new DateTimeOffset(2090, 2, 3, 14, 0, 0, TimeSpan.Zero);
-        var clock = new ViajantesTurismo.Admin.Testing.Fakes.FakeTimeProvider(expiry.AddTicks(-1));
+        var clock = new FakeTimeProvider(expiry.AddTicks(-1));
         var context = new ProtectedDistributedTicketStoreTestContext(timeProvider: clock);
         var ticket = ProtectedDistributedTicketStoreTestContext.CreateTicket(expiry);
         // Act

@@ -5,9 +5,9 @@ using ViajantesTurismo.Resources;
 
 namespace ViajantesTurismo.Admin.SystemTests.Authentication;
 
-[Trait(SharedKernel.Testing.TestTraitNames.CategoryName, TestTraits.AuthenticationCategory)]
-[Trait(SharedKernel.Testing.TestTraitNames.ScopeName, TestTraits.SystemScope)]
-[Trait(SharedKernel.Testing.TestTraitNames.HostName, TestTraits.AspireHost)]
+[Trait(PandaBear.Testing.TestTraitNames.CategoryName, TestTraits.AuthenticationCategory)]
+[Trait(PandaBear.Testing.TestTraitNames.ScopeName, TestTraits.SystemScope)]
+[Trait(PandaBear.Testing.TestTraitNames.HostName, TestTraits.AspireHost)]
 public sealed class ManagementBffConformanceTests(AspireSystemTestFixture fixture)
     : AspireSystemTestBase<AspireSystemTestFixture>(fixture)
 {

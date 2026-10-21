@@ -3,13 +3,13 @@ using System.Collections.Concurrent;
 using System.Diagnostics;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
-using HttpOutcomeKind = SharedKernel.HttpClients.HttpOutcomeKind;
-using CatalogToursApiClientTestsHelpers = SharedKernel.Testing.Contracts.ContractHttpClientTestHelper;
+using HttpOutcomeKind = PandaBear.HttpClients.HttpOutcomeKind;
+using CatalogToursApiClientTestsHelpers = PandaBear.Testing.Contracts.ContractHttpClientTestHelper;
 using ViajantesTurismo.Admin.Contracts.Http;
 
 namespace ViajantesTurismo.Admin.ContractTests.ApiClients;
 
-[Trait(SharedKernel.Testing.TestTraitNames.CategoryName, Infrastructure.TestTraits.ContractCategory)]
+[Trait(PandaBear.Testing.TestTraitNames.CategoryName, Infrastructure.TestTraits.ContractCategory)]
 public sealed class CustomersApiClientTests
 {
     [Fact]

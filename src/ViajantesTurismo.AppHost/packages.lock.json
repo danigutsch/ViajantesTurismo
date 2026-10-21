@@ -134,6 +134,94 @@
           "YamlDotNet": "18.1.0"
         }
       },
+      "PandaBear.SharedKernel.Aspire.Analyzers": {
+        "type": "Direct",
+        "requested": "[1.0.0-alpha.20261021.2, )",
+        "resolved": "1.0.0-alpha.20261021.2",
+        "contentHash": "Vns3PVzFxPd6Amv3iD1j2BQ5Wa6qx+Y+k+ut0tcPBmn/2MfBV2ZiePFYTR4AAf3JbC09zG/Oug8HW+4ER2gwFA=="
+      },
+      "PandaBear.SharedKernel.Aspire.Hosting.ClamAv": {
+        "type": "Direct",
+        "requested": "[1.0.0-alpha.20261021.2, )",
+        "resolved": "1.0.0-alpha.20261021.2",
+        "contentHash": "xjOXjqaKhua5Uudo6OdNaqwFbQeZo9HX05YscUuriERK3bUaf0fkMcLLtzEtd+azIZrogaCr5SotSY3fcpkweg==",
+        "dependencies": {
+          "Aspire.Hosting": "13.6.1",
+          "MessagePack": "2.5.303",
+          "Microsoft.Extensions.DependencyInjection": "10.0.13",
+          "Microsoft.Extensions.DependencyInjection.Abstractions": "10.0.13",
+          "Microsoft.Extensions.Diagnostics": "10.0.13",
+          "Microsoft.Extensions.Diagnostics.HealthChecks": "10.0.13",
+          "Microsoft.Extensions.Hosting": "10.0.13",
+          "Microsoft.Extensions.Hosting.Abstractions": "10.0.13",
+          "Microsoft.Extensions.Logging.Abstractions": "10.0.13",
+          "Microsoft.Extensions.Options": "10.0.13",
+          "Microsoft.Extensions.Options.ConfigurationExtensions": "10.0.13",
+          "Microsoft.NET.StringTools": "18.9.6",
+          "OpenTelemetry": "1.20.0",
+          "OpenTelemetry.Exporter.OpenTelemetryProtocol": "1.20.0",
+          "OpenTelemetry.Extensions.Hosting": "1.20.0"
+        }
+      },
+      "PandaBear.SharedKernel.Aspire.Hosting.Grafana": {
+        "type": "Direct",
+        "requested": "[1.0.0-alpha.20261021.2, )",
+        "resolved": "1.0.0-alpha.20261021.2",
+        "contentHash": "osZBy98GDrVHrH97tE8n1UK+KwU6uRt8jxxD8REmqnWOrjXv3vZJflSlRcJbTSz22JXM8nWAQD/VqIveTEBOHQ==",
+        "dependencies": {
+          "Aspire.Hosting": "13.6.1",
+          "CommunityToolkit.Aspire.Hosting.OpenTelemetryCollector": "13.6.0",
+          "MessagePack": "2.5.303",
+          "Microsoft.Extensions.DependencyInjection": "10.0.13",
+          "Microsoft.Extensions.DependencyInjection.Abstractions": "10.0.13",
+          "Microsoft.Extensions.Diagnostics": "10.0.13",
+          "Microsoft.Extensions.Diagnostics.HealthChecks": "10.0.13",
+          "Microsoft.Extensions.Hosting": "10.0.13",
+          "Microsoft.Extensions.Hosting.Abstractions": "10.0.13",
+          "Microsoft.Extensions.Logging.Abstractions": "10.0.13",
+          "Microsoft.Extensions.Options": "10.0.13",
+          "Microsoft.Extensions.Options.ConfigurationExtensions": "10.0.13",
+          "Microsoft.NET.StringTools": "18.9.6",
+          "OpenTelemetry": "1.20.0",
+          "OpenTelemetry.Exporter.OpenTelemetryProtocol": "1.20.0",
+          "OpenTelemetry.Extensions.Hosting": "1.20.0"
+        }
+      },
+      "PandaBear.SharedKernel.Aspire.Hosting.SeaweedFs": {
+        "type": "Direct",
+        "requested": "[1.0.0-alpha.20261021.2, )",
+        "resolved": "1.0.0-alpha.20261021.2",
+        "contentHash": "gW1FDipVTDu0rpNqAR6ZG3eLA4ukdqlZXx+qIiTPZWHgO3nS1e1QoSMEyErqAc58qIUjBOjujfL9181gbmVjsg==",
+        "dependencies": {
+          "Aspire.Hosting": "13.6.1",
+          "MessagePack": "2.5.303",
+          "Microsoft.Extensions.DependencyInjection": "10.0.13",
+          "Microsoft.Extensions.DependencyInjection.Abstractions": "10.0.13",
+          "Microsoft.Extensions.Diagnostics": "10.0.13",
+          "Microsoft.Extensions.Diagnostics.HealthChecks": "10.0.13",
+          "Microsoft.Extensions.Hosting": "10.0.13",
+          "Microsoft.Extensions.Hosting.Abstractions": "10.0.13",
+          "Microsoft.Extensions.Logging.Abstractions": "10.0.13",
+          "Microsoft.Extensions.Options": "10.0.13",
+          "Microsoft.Extensions.Options.ConfigurationExtensions": "10.0.13",
+          "Microsoft.NET.StringTools": "18.9.6",
+          "OpenTelemetry": "1.20.0",
+          "OpenTelemetry.Exporter.OpenTelemetryProtocol": "1.20.0",
+          "OpenTelemetry.Extensions.Hosting": "1.20.0"
+        }
+      },
+      "PandaBear.SharedKernel.Style.Analyzers": {
+        "type": "Direct",
+        "requested": "[1.0.0-alpha.20261021.2, )",
+        "resolved": "1.0.0-alpha.20261021.2",
+        "contentHash": "nfxdWX03IuS9TR9Zn4Jp3ED+tcTIe/06+SdLU3XmLhS6EHMljOtbPgeYuQw2TeKFZq0WQkUrG3vI0lOyesRp5A=="
+      },
+      "PandaBear.SharedKernel.Style.CodeFixes": {
+        "type": "Direct",
+        "requested": "[1.0.0-alpha.20261021.2, )",
+        "resolved": "1.0.0-alpha.20261021.2",
+        "contentHash": "36TIAEL97BTvjHzQgIq05C465xm10yxGjMtpPwJpxFZuRUgMihMJ4Fx9d91fH/ofmghcBzfeyQODqtviQ/qvtg=="
+      },
       "AspNetCore.HealthChecks.NpgSql": {
         "type": "Transitive",
         "resolved": "9.0.0",
@@ -625,26 +713,6 @@
         "type": "Transitive",
         "resolved": "18.1.0",
         "contentHash": "5K+9KFg2TdTl7VXv88Qzi/0lqK6JFoNP3lRuImPYGRV7K/QYklDyTrj4+A+KAki1JsQi6qKY+hDyY7d6WRqjrw=="
-      },
-      "sharedkernel.aspire.hosting.clamav": {
-        "type": "Project",
-        "dependencies": {
-          "Aspire.Hosting": "[13.6.1, )",
-          "Microsoft.Extensions.Diagnostics.HealthChecks": "[10.0.13, )"
-        }
-      },
-      "sharedkernel.aspire.hosting.grafana": {
-        "type": "Project",
-        "dependencies": {
-          "Aspire.Hosting": "[13.6.1, )",
-          "CommunityToolkit.Aspire.Hosting.OpenTelemetryCollector": "[13.6.0, )"
-        }
-      },
-      "sharedkernel.aspire.hosting.seaweedfs": {
-        "type": "Project",
-        "dependencies": {
-          "Aspire.Hosting": "[13.6.1, )"
-        }
       },
       "viajantesturismo.resources": {
         "type": "Project"

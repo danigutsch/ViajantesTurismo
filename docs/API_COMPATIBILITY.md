@@ -1,90 +1,32 @@
 # API compatibility gates
 
-This repository protects two public contract surfaces:
-
-- `SharedKernel.*` package APIs through `PublicAPI.Shipped.txt`, `PublicAPI.Unshipped.txt`,
-  and .NET package validation.
-- Admin, Catalog, and Branding HTTP contracts through canonical OpenAPI artifacts and contract tests.
+This repository protects Admin, Catalog, and Branding HTTP contracts through canonical OpenAPI
+artifacts and contract tests. SharedKernel package APIs, public API baselines, package validation,
+and release policy belong to the [standalone library](https://github.com/danigutsch/PandaBear.SharedKernel).
+See its [release policy](https://github.com/danigutsch/PandaBear.SharedKernel/blob/f5975b60601e245bda6bb8e45559d8ce3a24a8e0/docs/release-policy.md)
+for library checks; do not run source-level library validation from this application checkout.
 
 ## Release phase policy
 
-| Phase | Gate behavior | Breaking-change expectation |
-| --- | --- | --- |
-| Alpha / `0.y.z` / `-alpha` | Report-only compatibility artifacts | Evolve current code and contracts directly. Do not retain legacy implementations, add compatibility layers, or create parallel `/api/v2` endpoints solely for backward compatibility. Document significant consumer-visible breaks. |
-| Beta / `-beta` | Package breaking diffs are report-only when a breaking-change marker is present | App HTTP compatibility begins: incompatible changes require a new API version and deprecation of the previous route. Package breaks must be intentional and documented. |
-| Release candidate / `-rc` | Block breaking diffs | Treat the API as final except for critical fixes. |
-| Stable / `>=1.0.0` | Block breaking diffs, even when a marker is present | Use a SemVer major version or a new HTTP API version for incompatible changes. Deprecate first when practical. |
-
-This follows SemVer's rule that `0.y.z` is initial development and anything may
-change, NuGet's prerelease opt-in model, and Microsoft's guidance to minimize stable
-library breaking changes.
-
-References:
-
-- [Semantic Versioning](https://semver.org/)
-- [NuGet package versioning](https://learn.microsoft.com/nuget/concepts/package-versioning)
-- [.NET library guidance for breaking changes](https://learn.microsoft.com/dotnet/standard/library-guidance/breaking-changes)
-- [.NET library change rules](https://learn.microsoft.com/dotnet/core/compatibility/library-change-rules)
-- [.NET package validation](https://learn.microsoft.com/dotnet/fundamentals/apicompat/package-validation/overview)
+| Phase | HTTP compatibility expectation |
+| --- | --- |
+| Alpha / `0.y.z` / `-alpha` | Evolve current contracts directly. Do not retain legacy implementations or add parallel endpoints solely for backward compatibility. Document significant consumer-visible breaks. |
+| Beta / `-beta` | Incompatible changes require a new API version and deprecation of the previous route. |
+| Release candidate / `-rc` | Treat the API as final except for critical fixes; block incompatible changes. |
+| Stable / `>=1.0.0` | Use a new HTTP API version for incompatible changes. Deprecate first when practical. |
 
 ## Local checks
 
-Run the public API baseline presence check:
-
-```bash
-dotnet run --project tools/SharedKernel.Versioning.Tool -- check-public-api-baselines
-```
-
-Run the package compatibility/report command:
-
-```bash
-dotnet run --project tools/SharedKernel.Versioning.Tool -- api-compatibility
-```
-
-To compare against a previous package version when it is available in the NuGet cache or configured
-sources, set:
-
-```bash
-dotnet run --project tools/SharedKernel.Versioning.Tool -- \
-  api-compatibility --baseline-version 0.1.0-alpha.0
-```
-
-Compatibility output is written under `artifacts/api-compat/` for CI artifact upload.
-
-When `--baseline-version` is supplied, the command maps its internal settings to the official .NET SDK
-package validation properties used by `dotnet pack`:
-
-| Internal setting | Environment variable | MSBuild property |
-| --- | --- | --- |
-| Enable package validation | `API_COMPAT_ENABLE_PACKAGE_VALIDATION` | `EnablePackageValidation` |
-| Baseline package version | `API_COMPAT_BASELINE_VERSION` | `PackageValidationBaselineVersion` |
-
-These environment variables are scoped inside `SharedKernel.Versioning.Tool`; the tool restores any
-previous values after the report command finishes. Contributors should prefer the command-line options
-above instead of setting these variables directly.
+Follow the [SharedKernel consumption workflow](sharedkernel/development.md#adopt-a-library-change)
+to bootstrap immutable pinned artifacts, validate application behavior, and record compatibility
+against both committed repository revisions. Library CI owns package API validation; application CI
+owns consumer builds, tests, and HTTP contract checks.
 
 ## Breaking-change marker
 
-When a beta package compatibility check finds a breaking public API diff, the PR must include a
-Conventional Commit breaking marker in at least one commit:
-
-```text
-feat(sharedkernel)!: revise package contract
-```
-
-or a footer:
-
-```text
-BREAKING CHANGE: describe the migration impact
-```
-
-This marker exception applies only to beta package compatibility. Beginning at beta, app HTTP
-compatibility is preserved; incompatible changes use a new API version and deprecate the previous route.
-
-Alpha changes do not need this marker. Document every significant consumer-visible break in the
-same change, including caller impact and any required data migration.
-
-Release-candidate and stable compatibility failures still block even when a marker is present.
+Document significant consumer-visible breaks, caller impact, and any required data migration in the
+same change. A Conventional Commit breaking marker does not waive HTTP compatibility from beta onward.
+Library package breaking markers and release exceptions are governed in the standalone library.
 
 ## OpenAPI snapshots
 

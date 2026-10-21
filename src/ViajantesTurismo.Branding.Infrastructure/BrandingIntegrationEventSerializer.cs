@@ -1,5 +1,5 @@
 using System.Text.Json;
-using SharedKernel.Messaging.IntegrationEvents;
+using PandaBear.Messaging.IntegrationEvents;
 using ViajantesTurismo.Branding.Contracts.IntegrationEvents;
 using ViajantesTurismo.Branding.Contracts.IntegrationEvents.Branding;
 

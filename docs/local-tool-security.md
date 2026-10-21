@@ -19,8 +19,8 @@ existing `.NET`, Python, shell, or Docker path already covers the same need.
 ## Current approved paths
 
 - `.NET` local tools: restored from `.config/dotnet-tools.json` with `dotnet tool restore`.
-- Repo-owned `.NET` tool packages: packed into a local feed and installed only from trusted local
-  package contents, following [`SHAREDKERNEL_PACKAGING.md`](SHAREDKERNEL_PACKAGING.md).
+- SharedKernel `.NET` tools: restored from validated pinned artifacts in the local feed, following
+  [SharedKernel consumption](SHAREDKERNEL_CONSUMPTION.md).
 - Markdown lint: `davidanson/markdownlint-cli2` Docker image via `scripts/lint-all.sh` or
   `scripts/lint-markdown.sh`.
 - Shell lint and formatting: local `shellcheck` and `shfmt` when present, otherwise Docker
@@ -30,8 +30,8 @@ existing `.NET`, Python, shell, or Docker path already covers the same need.
 - Link validation: repository-owned Python wrapper (`scripts/lint-links.sh`), with Docker
   fallback. It validates local Markdown links and enforces durable documentation link rules;
   it does not probe external URLs in PR gating.
-- Podman DNS preflight and its tests: repository-owned C# in `SharedKernel.RepoConfig.Tool` and
-  `SharedKernel.RepoConfig.Tests`; no extra runtime or container image is required.
+- Podman DNS preflight and its tests: repository-owned C# in `ViajantesTurismo.RepoConfig.Tool` and
+  `ViajantesTurismo.RepoConfig.Tests`; no extra runtime or container image is required.
 - Optional standalone tools such as `PSScriptAnalyzer`, `pwsh`, and `k6`: install only when
   needed for the specific task, using vendor-documented installation guidance.
 - Local k6 performance runs: prefer a user/system installed `k6` binary from a trusted package manager.
@@ -41,6 +41,14 @@ existing `.NET`, Python, shell, or Docker path already covers the same need.
 - Agent/editor project formatters: limited to repository-approved single-file formatters. They
   reuse `.NET`, repository scripts, Docker-backed shell/markdown wrappers, and optional
   PSScriptAnalyzer instead of adding npm helper packages.
+
+## Local tool restore ordering
+
+Keep the RID-specific `aspire.cli` entry last in `.config/dotnet-tools.json`. The pinned SDK can reuse
+stale RID asset metadata during a cold `dotnet tool restore`, misidentifying later portable tool
+commands as `aspire`; ordinary restore and `--disable-parallel` both reproduced the failure.
+The proposed upstream fix was closed without merging. Remove this ordering constraint only after
+an upstream fix is available in the pinned SDK and cold restore is verified.
 
 ## Project MCP servers
 

@@ -1,4 +1,4 @@
-using SharedKernel.Results;
+using PandaBear.Results;
 using ViajantesTurismo.Catalog.Contracts.Application;
 using ViajantesTurismo.Catalog.Domain.PublicContent;
 

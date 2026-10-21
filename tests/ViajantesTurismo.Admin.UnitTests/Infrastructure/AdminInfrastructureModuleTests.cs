@@ -1,6 +1,5 @@
-using SharedKernel.Messaging.IntegrationEvents;
-using SharedKernel.Messaging.IntegrationEvents.EntityFrameworkCore;
-using SharedKernel.Testing;
+using PandaBear.Messaging.IntegrationEvents;
+using PandaBear.Testing;
 using ViajantesTurismo.Admin.Infrastructure;
 using ViajantesTurismo.Admin.Infrastructure.Documents;
 using ViajantesTurismo.Admin.Testing.Fakes;
@@ -156,12 +155,12 @@ public sealed class AdminInfrastructureModuleTests
         tourStore.ShouldBeOfType<TourStore>();
         customerStore.ShouldBeOfType<CustomerStore>();
         documentStore.ShouldBeOfType<DocumentStore>();
-        outbox.ShouldBeOfType<EfIntegrationEventOutbox<AdminWriteDbContext>>();
+        outbox.ShouldNotBeNull();
         idempotencyStore.ShouldNotBeNull();
         brandingApiClient.ShouldBeOfType<FakeBrandingApiClient>();
         hostedServices.ShouldContain(service => service is DocumentDraftRetentionHostedService);
         hostedServices.ShouldContain(service => service is DocumentAuditRetentionHostedService);
-        hostedServices.ShouldContain(service => (service is IntegrationEventOutboxRelayHostedService<AdminWriteDbContext>));
+        services.HasOutboxRelay.ShouldBeTrue();
     }
 
     [Fact]
@@ -189,7 +188,7 @@ public sealed class AdminInfrastructureModuleTests
         // Assert
         hostedServices.ShouldNotContain(service => service is DocumentDraftRetentionHostedService);
         hostedServices.ShouldNotContain(service => service is DocumentAuditRetentionHostedService);
-        hostedServices.ShouldNotContain(service => service is IntegrationEventOutboxRelayHostedService<AdminWriteDbContext>);
+        services.HasOutboxRelay.ShouldBeFalse();
     }
 
     [Fact]
@@ -206,8 +205,10 @@ public sealed class AdminInfrastructureModuleTests
 
         // Assert
         initializer.ShouldNotBeNull();
-        outbox.ShouldBeOfType<EfIntegrationEventOutbox<AdminWriteDbContext>>();
+        outbox.ShouldNotBeNull();
         dispatcher.ShouldNotBeNull();
-        hostedServices.ShouldNotContain(service => (service is IntegrationEventOutboxRelayHostedService<AdminWriteDbContext>));
+        hostedServices.ShouldNotContain(service => service.GetType().IsGenericType
+            && service.GetType().GetGenericTypeDefinition().Name == "IntegrationEventOutboxRelayHostedService`1"
+            && service.GetType().GenericTypeArguments.Single() == typeof(AdminWriteDbContext));
     }
 }

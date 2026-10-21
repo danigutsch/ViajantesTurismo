@@ -1,8 +1,7 @@
 using Microsoft.EntityFrameworkCore;
 using System.Reflection;
-using SharedKernel.EntityFrameworkCore;
-using SharedKernel.Messaging.IntegrationEvents.CloudEvents;
-using SharedKernel.Messaging.IntegrationEvents.EntityFrameworkCore;
+using PandaBear.EntityFrameworkCore;
+using PandaBear.Messaging.IntegrationEvents.CloudEvents;
 using ViajantesTurismo.Admin.Contracts.IntegrationEvents.Tours;
 using ViajantesTurismo.Admin.Domain.Tours;
 using ViajantesTurismo.Admin.Testing.Behavior;
@@ -19,7 +18,7 @@ public sealed class AdminWriteDbContextDomainEventInterceptorTests
             new DateTimeOffset(2026, 6, 22, 12, 30, 0, TimeSpan.Zero)));
         await using var scope = AdminWriteDbContextTestFactory.CreateWithDomainEventDispatcher(dispatcher);
         var dbContext = scope.DbContext;
-        dispatcher.DbContext = dbContext;
+        dispatcher.Outbox = scope.Outbox;
         var tour = EntityBuilders.BuildTour(new TourOptions(Identifier: "andes-2026", Name: "Andes 2026"));
         dbContext.Tours.Add(tour);
 
@@ -27,7 +26,7 @@ public sealed class AdminWriteDbContextDomainEventInterceptorTests
 
         dispatcher.DispatchedEvents.ShouldHaveSingleItem().ShouldBeOfType<TourCreatedDomainEvent>();
         tour.GetDomainEvents().ShouldBeEmpty();
-        var outboxMessage = dbContext.Set<IntegrationEventOutboxMessage>().ShouldHaveSingleItem();
+        var outboxMessage = scope.ReadSavedOutboxMessages().ShouldHaveSingleItem();
         outboxMessage.EnvelopeSpec.ShouldBe(CloudEventConstants.Spec);
         outboxMessage.EnvelopeSpecVersion.ShouldBe(CloudEventConstants.SpecVersion);
         outboxMessage.EventType.ShouldBe(AdminTourCreatedIntegrationEvent.EventType);
@@ -45,7 +44,7 @@ public sealed class AdminWriteDbContextDomainEventInterceptorTests
             new DateTimeOffset(2026, 6, 22, 12, 30, 0, TimeSpan.Zero)));
         await using var scope = AdminWriteDbContextTestFactory.CreateWithDomainEventDispatcher(dispatcher);
         var dbContext = scope.DbContext;
-        dispatcher.DbContext = dbContext;
+        dispatcher.Outbox = scope.Outbox;
         var tour = EntityBuilders.BuildTour(new TourOptions(Identifier: "andes-sync-2026", Name: "Andes Sync 2026"));
         dbContext.Tours.Add(tour);
         var saveChanges = typeof(DbContext).GetMethod(nameof(DbContext.SaveChanges), [typeof(bool)]).ShouldNotBeNull();
@@ -59,7 +58,7 @@ public sealed class AdminWriteDbContextDomainEventInterceptorTests
         exception.Message.ShouldBe("Synchronous SaveChanges is not supported; use SaveChangesAsync.");
         dispatcher.DispatchedEvents.ShouldBeEmpty();
         tour.GetDomainEvents().ShouldNotBeEmpty();
-        dbContext.Set<IntegrationEventOutboxMessage>().ShouldBeEmpty();
+        scope.ReadSavedOutboxMessages().ShouldBeEmpty();
     }
 
     [Fact]
@@ -73,7 +72,7 @@ public sealed class AdminWriteDbContextDomainEventInterceptorTests
         await dbContext.SaveEntities(CancellationToken.None);
 
         tour.GetDomainEvents().ShouldBeEmpty();
-        var outboxMessage = dbContext.Set<IntegrationEventOutboxMessage>().ShouldHaveSingleItem();
+        var outboxMessage = scope.ReadSavedOutboxMessages().ShouldHaveSingleItem();
         outboxMessage.EventType.ShouldBe(AdminTourCreatedIntegrationEvent.EventType);
         outboxMessage.Payload.ShouldContain("andes-generated-2026", StringComparison.Ordinal);
     }
@@ -111,7 +110,7 @@ public sealed class AdminWriteDbContextDomainEventInterceptorTests
         CurrentSaveChangesDbContext.Current.ShouldBeNull();
         firstTour.GetDomainEvents().ShouldBeEmpty();
         secondTour.GetDomainEvents().ShouldBeEmpty();
-        dbContext.Set<IntegrationEventOutboxMessage>().ShouldHaveCount(2);
+        scope.ReadSavedOutboxMessages().ShouldHaveCount(2);
     }
 
     [Fact]
@@ -188,7 +187,7 @@ public sealed class AdminWriteDbContextDomainEventInterceptorTests
         var failingInterceptor = new FailingSaveChangesInterceptor();
         await using var scope = AdminWriteDbContextTestFactory.CreateWithDomainEventDispatcher(dispatcher, failingInterceptor);
         var dbContext = scope.DbContext;
-        dispatcher.DbContext = dbContext;
+        dispatcher.Outbox = scope.Outbox;
         var tour = EntityBuilders.BuildTour(new TourOptions(Identifier: "andes-retry-2026", Name: "Andes Retry 2026"));
         dbContext.Tours.Add(tour);
 
@@ -199,7 +198,7 @@ public sealed class AdminWriteDbContextDomainEventInterceptorTests
 
         dispatcher.DispatchedEvents.ShouldHaveSingleItem().ShouldBeOfType<TourCreatedDomainEvent>();
         tour.GetDomainEvents().ShouldBeEmpty();
-        var outboxMessage = dbContext.Set<IntegrationEventOutboxMessage>().ShouldHaveSingleItem();
+        var outboxMessage = scope.ReadSavedOutboxMessages().ShouldHaveSingleItem();
         outboxMessage.EventType.ShouldBe(AdminTourCreatedIntegrationEvent.EventType);
         outboxMessage.Payload.ShouldContain("andes-retry-2026", StringComparison.Ordinal);
     }
@@ -247,7 +246,7 @@ public sealed class AdminWriteDbContextDomainEventInterceptorTests
         probe.HandledEvents.ShouldBeEmpty();
         probe.DisposedHandlers.ShouldBeEmpty();
         tour.GetDomainEvents().ShouldBeEmpty();
-        dbContext.Set<IntegrationEventOutboxMessage>().ShouldBeEmpty();
+        scope.ReadSavedOutboxMessages().ShouldBeEmpty();
     }
 
 }

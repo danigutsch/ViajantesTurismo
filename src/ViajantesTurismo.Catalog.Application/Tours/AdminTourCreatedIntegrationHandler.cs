@@ -1,9 +1,9 @@
 using System.Diagnostics;
-using SharedKernel.EventSourcing;
-using SharedKernel.Messaging.IntegrationEvents;
+using PandaBear.EventSourcing;
+using PandaBear.Messaging.IntegrationEvents;
 using ViajantesTurismo.Admin.Contracts.IntegrationEvents.Tours;
 using ViajantesTurismo.Catalog.Domain.Tours;
-using SharedKernel.BuildingBlocks;
+using PandaBear.BuildingBlocks;
 
 namespace ViajantesTurismo.Catalog.Application.Tours;
 

@@ -14,6 +14,39 @@
           "Microsoft.Testing.Platform": "2.4.1"
         }
       },
+      "PandaBear.SharedKernel.Style.Analyzers": {
+        "type": "Direct",
+        "requested": "[1.0.0-alpha.20261021.2, )",
+        "resolved": "1.0.0-alpha.20261021.2",
+        "contentHash": "nfxdWX03IuS9TR9Zn4Jp3ED+tcTIe/06+SdLU3XmLhS6EHMljOtbPgeYuQw2TeKFZq0WQkUrG3vI0lOyesRp5A=="
+      },
+      "PandaBear.SharedKernel.Style.CodeFixes": {
+        "type": "Direct",
+        "requested": "[1.0.0-alpha.20261021.2, )",
+        "resolved": "1.0.0-alpha.20261021.2",
+        "contentHash": "36TIAEL97BTvjHzQgIq05C465xm10yxGjMtpPwJpxFZuRUgMihMJ4Fx9d91fH/ofmghcBzfeyQODqtviQ/qvtg=="
+      },
+      "PandaBear.SharedKernel.Testing": {
+        "type": "Direct",
+        "requested": "[1.0.0-alpha.20261021.2, )",
+        "resolved": "1.0.0-alpha.20261021.2",
+        "contentHash": "CWBLYUcl2WjiGngGC8LgOtArEc8szYzLfJKkEtZTiuNlWbdLgdO8W2GUYhg07YaUHvVvXSTFv4MKz1IhmNMFeg=="
+      },
+      "PandaBear.SharedKernel.Testing.Analyzers": {
+        "type": "Direct",
+        "requested": "[1.0.0-alpha.20261021.2, )",
+        "resolved": "1.0.0-alpha.20261021.2",
+        "contentHash": "NM31sHLDgF/VW/1mD6tmtGO5SOsd4FqGGGpBY8WvWG/e8MOggWqFPP088ZF/KQgpDPkPlo4wyVwyjl5rlogolg=="
+      },
+      "PandaBear.SharedKernel.Testing.Assertions": {
+        "type": "Direct",
+        "requested": "[1.0.0-alpha.20261021.2, )",
+        "resolved": "1.0.0-alpha.20261021.2",
+        "contentHash": "e/vTHCU+HKJQ4HqG0kEaUf1uiQTCUwJQvdh8jN0E61l5qVTNprpFW/UcQ6uVxZJRDn4sXHegATqFsaaTv7F57Q==",
+        "dependencies": {
+          "xunit.v3.assert": "4.0.0"
+        }
+      },
       "xunit.v3.mtp-v2": {
         "type": "Direct",
         "requested": "[4.0.2, )",
@@ -199,15 +232,6 @@
         "dependencies": {
           "xunit.v3.extensibility.core": "[4.0.2]",
           "xunit.v3.runner.common": "[4.0.2]"
-        }
-      },
-      "sharedkernel.testing": {
-        "type": "Project"
-      },
-      "sharedkernel.testing.assertions": {
-        "type": "Project",
-        "dependencies": {
-          "xunit.v3.assert": "[4.0.2, )"
         }
       },
       "viajantesturismo.performance.tool": {

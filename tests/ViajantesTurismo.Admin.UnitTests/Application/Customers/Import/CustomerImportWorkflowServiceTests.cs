@@ -13,8 +13,8 @@ public sealed class CustomerImportWorkflowServiceTests
     [Theory]
     [InlineData(1999, 12, 31, 0, 1)]
     [InlineData(2000, 1, 1, 1, 0)]
-    [Trait(SharedKernel.Testing.TestTraitNames.CategoryName, "Regression")]
-    [Trait(SharedKernel.Testing.TestTraitNames.ScopeName, SharedKernel.Testing.SharedKernelTestTraitNames.UnitScope)]
+    [Trait(PandaBear.Testing.TestTraitNames.CategoryName, "Regression")]
+    [Trait(PandaBear.Testing.TestTraitNames.ScopeName, PandaBear.Testing.SharedKernelTestTraitNames.UnitScope)]
     public async Task Import_captures_one_date_for_summary_and_persistence_across_midnight(int year, int month, int day, int successes, int errors)
     {
         // Arrange
@@ -38,8 +38,8 @@ public sealed class CustomerImportWorkflowServiceTests
     }
 
     [Fact]
-    [Trait(SharedKernel.Testing.TestTraitNames.CategoryName, "Regression")]
-    [Trait(SharedKernel.Testing.TestTraitNames.ScopeName, SharedKernel.Testing.SharedKernelTestTraitNames.UnitScope)]
+    [Trait(PandaBear.Testing.TestTraitNames.CategoryName, "Regression")]
+    [Trait(PandaBear.Testing.TestTraitNames.ScopeName, PandaBear.Testing.SharedKernelTestTraitNames.UnitScope)]
     public async Task Import_summary_and_persistence_reject_the_same_underage_customer()
     {
         // Arrange

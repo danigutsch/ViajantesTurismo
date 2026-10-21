@@ -1,10 +1,10 @@
 using Microsoft.Extensions.Diagnostics.HealthChecks;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Hosting;
-using SharedKernel.AspNetCore;
-using SharedKernel.MalwareScanning;
-using SharedKernel.MalwareScanning.ClamAv;
-using SharedKernel.Testing.AspNetCore;
+using PandaBear.AspNetCore;
+using PandaBear.MalwareScanning;
+using PandaBear.MalwareScanning.ClamAv;
+using PandaBear.Testing.AspNetCore;
 using ViajantesTurismo.Admin.ApiService;
 using ViajantesTurismo.Admin.Application;
 using ViajantesTurismo.Admin.Application.Bookings.CancelBooking;

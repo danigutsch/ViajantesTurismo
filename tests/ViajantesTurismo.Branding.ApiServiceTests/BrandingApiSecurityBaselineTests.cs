@@ -2,8 +2,8 @@ using TestTraits = ViajantesTurismo.Branding.ApiServiceTests.Infrastructure.Test
 
 namespace ViajantesTurismo.Branding.ApiServiceTests;
 
-[Trait(SharedKernel.Testing.TestTraitNames.CategoryName, TestTraits.SecurityCategory)]
-[Trait(SharedKernel.Testing.TestTraitNames.HostName, TestTraits.TestServerHost)]
+[Trait(PandaBear.Testing.TestTraitNames.CategoryName, TestTraits.SecurityCategory)]
+[Trait(PandaBear.Testing.TestTraitNames.HostName, TestTraits.TestServerHost)]
 public sealed class BrandingApiSecurityBaselineTests
 {
     [Fact]

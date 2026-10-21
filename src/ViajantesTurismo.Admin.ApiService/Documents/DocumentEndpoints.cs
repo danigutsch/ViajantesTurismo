@@ -1,8 +1,8 @@
 using System.ComponentModel.DataAnnotations;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using SharedKernel.Results;
-using SharedKernel.AspNetCore;
+using PandaBear.Results;
+using PandaBear.AspNetCore;
 using ViajantesTurismo.Admin.Application.Documents;
 using ViajantesTurismo.Admin.Contracts.Application;
 using ViajantesTurismo.Admin.Domain.Documents;

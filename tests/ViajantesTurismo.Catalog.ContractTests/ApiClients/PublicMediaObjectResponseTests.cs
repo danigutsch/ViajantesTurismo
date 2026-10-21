@@ -1,9 +1,9 @@
 using ViajantesTurismo.Catalog.Contracts.Http;
-using SharedKernel.Testing.Contracts;
+using PandaBear.Testing.Contracts;
 
 namespace ViajantesTurismo.Catalog.ContractTests.ApiClients;
 
-[Trait(SharedKernel.Testing.TestTraitNames.CategoryName, Infrastructure.TestTraits.ContractCategory)]
+[Trait(PandaBear.Testing.TestTraitNames.CategoryName, Infrastructure.TestTraits.ContractCategory)]
 public sealed class PublicMediaObjectResponseTests
 {
     [Fact]

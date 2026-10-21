@@ -1,9 +1,9 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Npgsql;
-using SharedKernel.EntityFrameworkCore;
-using SharedKernel.IntegrationTesting;
-using SharedKernel.Messaging.IntegrationEvents.EntityFrameworkCore;
+using PandaBear.EntityFrameworkCore;
+using PandaBear.IntegrationTesting;
+using PandaBear.Messaging.IntegrationEvents.EntityFrameworkCore;
 using ViajantesTurismo.Branding.Infrastructure;
 
 namespace ViajantesTurismo.Admin.IntegrationTests.Branding;

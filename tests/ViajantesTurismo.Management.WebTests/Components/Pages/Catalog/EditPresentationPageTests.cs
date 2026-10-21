@@ -1,10 +1,10 @@
 using EditPresentation = ViajantesTurismo.Management.Web.Components.Pages.Catalog.EditPresentation;
-using SharedKernel.HttpClients;
+using PandaBear.HttpClients;
 
 namespace ViajantesTurismo.Management.WebTests.Components.Pages.Catalog;
 
-[Trait(SharedKernel.Testing.TestTraitNames.CategoryName, TestTraits.ComponentCategory)]
-[Trait(SharedKernel.Testing.TestTraitNames.AreaName, TestTraits.ManagementWebArea)]
+[Trait(PandaBear.Testing.TestTraitNames.CategoryName, TestTraits.ComponentCategory)]
+[Trait(PandaBear.Testing.TestTraitNames.AreaName, TestTraits.ManagementWebArea)]
 public sealed class EditPresentationPageTests : BunitContext
 {
     private readonly FakeCatalogToursApiClient catalogApi = new();

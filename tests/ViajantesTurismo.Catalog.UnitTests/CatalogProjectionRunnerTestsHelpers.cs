@@ -1,4 +1,4 @@
-using SharedKernel.EventSourcing;
+using PandaBear.EventSourcing;
 using ViajantesTurismo.Catalog.Application.Tours;
 using ViajantesTurismo.Catalog.Domain.Tours;
 

@@ -1,9 +1,9 @@
-using SharedKernel.AspNetCore;
-using SharedKernel.Branding;
-using SharedKernel.HttpCaching.AspNetCore;
-using SharedKernel.HttpClients;
-using SharedKernel.MalwareScanning.ClamAv;
-using SharedKernel.OpenApi;
+using PandaBear.AspNetCore;
+using PandaBear.Branding;
+using PandaBear.HttpCaching.AspNetCore;
+using PandaBear.HttpClients;
+using PandaBear.MalwareScanning.ClamAv;
+using PandaBear.OpenApi;
 using ViajantesTurismo.Admin.ApiService;
 using ViajantesTurismo.Admin.ApiService.Bookings;
 using ViajantesTurismo.Admin.ApiService.Customers;

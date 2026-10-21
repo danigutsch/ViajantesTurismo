@@ -1,8 +1,8 @@
 using System.Text.Json;
 using Microsoft.EntityFrameworkCore;
 using Npgsql;
-using SharedKernel.Idempotency;
-using SharedKernel.Testing;
+using PandaBear.Idempotency;
+using PandaBear.Testing;
 using ViajantesTurismo.Admin.Application.Documents;
 using ViajantesTurismo.Admin.Contracts.Application;
 using ViajantesTurismo.Admin.Domain.Documents;
@@ -440,7 +440,7 @@ public sealed class DocumentStorePostgreSqlTests(PostgreSqlTestServerFixture fix
         // Assert
         result.Attempts.Count(attempt => attempt.IsSuccess).ShouldBe(1);
         result.Attempts.ShouldHaveSingleItem(attempt => attempt.IsFailure)
-            .Status.ShouldBe(SharedKernel.Results.ResultStatus.Conflict);
+            .Status.ShouldBe(PandaBear.Results.ResultStatus.Conflict);
         var returnedDocumentIds = result.Attempts
             .Where(attempt => attempt.IsSuccess)
             .Select(attempt => attempt.Value)

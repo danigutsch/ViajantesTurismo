@@ -1,4 +1,4 @@
-using SharedKernel.Testing;
+using PandaBear.Testing;
 using static ViajantesTurismo.ArchitectureTests.Conventions.AppHostOrchestrationTestsHelpers;
 
 namespace ViajantesTurismo.ArchitectureTests.Conventions;
@@ -31,7 +31,46 @@ public sealed class DependencyReviewWorkflowTests
     }
 
     [Fact]
-    public void License_review_does_not_use_package_exemptions_that_ignore_versions()
+    public void Dependency_snapshots_stage_the_pinned_candidate_before_locked_restore()
+    {
+        // Arrange
+        var path = Path.Combine(GetRepositoryRoot(), ".github", "workflows", "dependency-review.yml");
+        var workflow = File.ReadAllText(path);
+
+        // Act
+        var snapshotJob = workflow.Split("  dependency-snapshots:", StringSplitOptions.None)[1]
+            .Split("\n  dependency-review:", StringSplitOptions.None)[0];
+        var bootstrapPosition = snapshotJob.IndexOf("uses: ./.github/actions/setup-ci-prerequisites", StringComparison.Ordinal);
+        var restorePosition = snapshotJob.IndexOf("dotnet restore ViajantesTurismo.slnx --locked-mode -bl:dependency-restore.binlog", StringComparison.Ordinal);
+
+        // Assert
+        bootstrapPosition.ShouldBeGreaterThanOrEqualTo(0);
+        restorePosition.ShouldBeGreaterThan(bootstrapPosition);
+        snapshotJob.ShouldContain("restore-targets: tools/ViajantesTurismo.RepoConfig.Tool/ViajantesTurismo.RepoConfig.Tool.csproj", StringComparison.Ordinal);
+        snapshotJob.ShouldContain("restore-local-tools: \"false\"", StringComparison.Ordinal);
+        snapshotJob.ShouldContain("trust-dev-certificate: \"false\"", StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public void Dependency_snapshots_support_reviewed_commits_before_the_package_cutover()
+    {
+        // Arrange
+        var path = Path.Combine(GetRepositoryRoot(), ".github", "workflows", "dependency-review.yml");
+        var workflow = File.ReadAllText(path);
+
+        // Act
+        var snapshotJob = workflow.Split("  dependency-snapshots:", StringSplitOptions.None)[1]
+            .Split("\n  dependency-review:", StringSplitOptions.None)[0];
+
+        // Assert
+        snapshotJob.ShouldContain("if: ${{ hashFiles('.config/sharedkernel-candidate.json') != '' }}\n        uses: ./.github/actions/setup-ci-prerequisites", StringComparison.Ordinal);
+        snapshotJob.ShouldContain("if: ${{ hashFiles('.config/sharedkernel-candidate.json') == '' }}\n        uses: actions/setup-dotnet@c2fa09f4bde5ebb9d1777cf28262a3eb3db3ced7", StringComparison.Ordinal);
+        snapshotJob.ShouldContain("global-json-file: global.json", StringComparison.Ordinal);
+        snapshotJob.ShouldContain("dotnet restore ViajantesTurismo.slnx --locked-mode -bl:dependency-restore.binlog", StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public void License_review_bounds_preview_approval_before_emitting_the_package_exception()
     {
         // Arrange
         var path = Path.Combine(GetRepositoryRoot(), ".github", "workflows", "dependency-review.yml");
@@ -40,11 +79,17 @@ public sealed class DependencyReviewWorkflowTests
         var workflow = File.ReadAllText(path);
 
         // Assert
-        workflow.ShouldNotContain("allow-dependencies-licenses:", StringComparison.Ordinal);
+        workflow.ShouldContain("id: preview-license", StringComparison.Ordinal);
+        workflow.ShouldContain("allow-dependencies-licenses: ${{ steps.preview-license.outputs.packages }}", StringComparison.Ordinal);
+        workflow.ShouldContain("$pin.packageVersion -cne '1.0.0-alpha.20261021.2'", StringComparison.Ordinal);
+        workflow.ShouldContain("$pin.libraryRevision -cne 'f5975b60601e245bda6bb8e45559d8ce3a24a8e0'", StringComparison.Ordinal);
+        workflow.ShouldContain("'StreamJsonRpc' = '2.25.29'", StringComparison.Ordinal);
+        workflow.ShouldContain("'Magick.NET-Q8-AnyCPU' = '15.0.0'", StringComparison.Ordinal);
+        workflow.ShouldContain("$entry.Value.resolved -cne $approved[$entry.Key]", StringComparison.Ordinal);
+        workflow.ShouldContain("git ls-files -- '**/packages.lock.json'", StringComparison.Ordinal);
         workflow.ShouldContain("fail-on-severity: moderate", StringComparison.Ordinal);
         workflow.ShouldContain("license-check: true", StringComparison.Ordinal);
         workflow.ShouldContain("vulnerability-check: true", StringComparison.Ordinal);
-        workflow.ShouldNotContain("pkg:nuget/Magick.NET", StringComparison.Ordinal);
         workflow.ShouldNotContain("warn-only: true", StringComparison.Ordinal);
         workflow.ShouldNotContain("continue-on-error: true", StringComparison.Ordinal);
         workflow.ShouldNotContain("NOASSERTION", StringComparison.Ordinal);

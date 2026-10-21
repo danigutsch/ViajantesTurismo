@@ -6,7 +6,7 @@ using TestTraits = ViajantesTurismo.Branding.ApiServiceTests.Infrastructure.Test
 
 namespace ViajantesTurismo.Branding.ApiServiceTests;
 
-[Trait(SharedKernel.Testing.TestTraitNames.CategoryName, TestTraits.EndpointCategory)]
+[Trait(PandaBear.Testing.TestTraitNames.CategoryName, TestTraits.EndpointCategory)]
 public sealed class EfBrandingSettingsStoreTests
 {
     [Fact]

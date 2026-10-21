@@ -1,6 +1,6 @@
 using System.Diagnostics;
 using Microsoft.Extensions.Logging.Abstractions;
-using SharedKernel.Scheduling;
+using PandaBear.Scheduling;
 
 namespace ViajantesTurismo.Catalog.UnitTests;
 

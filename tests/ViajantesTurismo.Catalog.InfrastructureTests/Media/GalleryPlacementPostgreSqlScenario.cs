@@ -1,8 +1,8 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
-using SharedKernel.EntityFrameworkCore;
-using SharedKernel.IntegrationTesting;
-using SharedKernel.Messaging.IntegrationEvents.EntityFrameworkCore;
+using PandaBear.EntityFrameworkCore;
+using PandaBear.IntegrationTesting;
+using PandaBear.Messaging.IntegrationEvents.EntityFrameworkCore;
 using ViajantesTurismo.Catalog.Infrastructure;
 
 namespace ViajantesTurismo.Catalog.InfrastructureTests.Media;

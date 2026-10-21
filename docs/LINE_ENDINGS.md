@@ -46,7 +46,7 @@ dedicated pull request whenever they touch many files.
 Run the focused text-encoding check:
 
 ```bash
-dotnet run --project tools/SharedKernel.RepoConfig.Tool -- text-encoding --root .
+dotnet tool run sharedkernel-repo -- text-encoding --root .
 ```
 
 The .NET command is the authoritative encoding check. It parses NUL-delimited stage records from

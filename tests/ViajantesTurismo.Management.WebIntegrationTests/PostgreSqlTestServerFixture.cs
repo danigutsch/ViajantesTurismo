@@ -1,6 +1,6 @@
 using System.Collections.Concurrent;
 using System.Diagnostics.CodeAnalysis;
-using SharedKernel.IntegrationTesting;
+using PandaBear.IntegrationTesting;
 
 namespace ViajantesTurismo.Management.WebIntegrationTests;
 

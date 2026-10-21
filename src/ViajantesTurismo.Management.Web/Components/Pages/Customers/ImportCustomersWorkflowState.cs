@@ -1,5 +1,5 @@
 using ViajantesTurismo.Admin.Contracts.Application;
-using SharedKernel.HttpClients;
+using PandaBear.HttpClients;
 using ViajantesTurismo.Management.Web.Services;
 
 namespace ViajantesTurismo.Management.Web.Components.Pages.Customers;

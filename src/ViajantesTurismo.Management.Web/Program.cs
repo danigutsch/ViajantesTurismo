@@ -1,7 +1,7 @@
 using Duende.AccessTokenManagement.OpenIdConnect;
-using SharedKernel.AspNetCore;
-using SharedKernel.Branding;
-using SharedKernel.HttpClients;
+using PandaBear.AspNetCore;
+using PandaBear.Branding;
+using PandaBear.HttpClients;
 using ViajantesTurismo.Management.Web;
 using ViajantesTurismo.Management.Web.Services;
 using ViajantesTurismo.Resources;

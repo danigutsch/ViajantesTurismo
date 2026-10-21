@@ -1,13 +1,13 @@
 using System.Net;
 using System.Net.Http.Headers;
 using System.Text;
-using SharedKernel.HttpClients;
-using SharedKernel.Testing.Contracts;
+using PandaBear.HttpClients;
+using PandaBear.Testing.Contracts;
 using ViajantesTurismo.Admin.Contracts.Http;
 
 namespace ViajantesTurismo.Admin.ContractTests.ApiClients;
 
-[Trait(SharedKernel.Testing.TestTraitNames.CategoryName, Infrastructure.TestTraits.ContractCategory)]
+[Trait(PandaBear.Testing.TestTraitNames.CategoryName, Infrastructure.TestTraits.ContractCategory)]
 public sealed class DocumentsApiClientTests
 {
     private const string DocumentJson = """

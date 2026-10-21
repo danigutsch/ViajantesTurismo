@@ -204,6 +204,17 @@ print_summary() {
 
 print_header
 check_dotnet_sdk_version
+staged_candidate=""
+if [[ -f "${repo_root}/.local/sharedkernel-feed/candidate.json" ]]; then
+    staged_candidate="$(tr -d '\r' < "${repo_root}/.local/sharedkernel-feed/candidate.json")"
+fi
+pinned_candidate="$(tr -d '\r' < "${repo_root}/.config/sharedkernel-candidate.json")"
+if [[ "${staged_candidate}" != "${pinned_candidate}" ]]; then
+    echo "Stage the pinned SharedKernel candidate before setup:" >&2
+    echo "dotnet run --project tools/ViajantesTurismo.RepoConfig.Tool -c Release -- bootstrap-sharedkernel --library-root /path/to/SharedKernel --feed /path/to/candidate-packages" >&2
+    echo "See docs/sharedkernel/development.md. Devcontainers use the feed staged in the host workspace." >&2
+    exit 1
+fi
 restore_dotnet_dependencies
 restore_dotnet_local_tools
 check_aspnet_core_development_certificate_trust

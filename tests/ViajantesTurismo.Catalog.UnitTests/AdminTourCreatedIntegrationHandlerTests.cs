@@ -1,7 +1,7 @@
 using Microsoft.Extensions.Options;
-using SharedKernel.EventSourcing;
-using SharedKernel.Idempotency;
-using SharedKernel.Testing;
+using PandaBear.EventSourcing;
+using PandaBear.Idempotency;
+using PandaBear.Testing;
 using ViajantesTurismo.Admin.Contracts.IntegrationEvents.Tours;
 using ViajantesTurismo.Catalog.Application.IntegrationEvents;
 using ViajantesTurismo.Catalog.Application.Tours;

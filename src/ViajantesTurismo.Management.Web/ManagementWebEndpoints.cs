@@ -1,5 +1,5 @@
-using SharedKernel.AspNetCore;
-using SharedKernel.HttpCaching.AspNetCore;
+using PandaBear.AspNetCore;
+using PandaBear.HttpCaching.AspNetCore;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Authentication.Cookies;

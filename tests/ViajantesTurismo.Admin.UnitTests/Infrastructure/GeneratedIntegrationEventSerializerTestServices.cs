@@ -1,6 +1,6 @@
 using System.Text.Json.Serialization.Metadata;
 using Microsoft.Extensions.DependencyInjection;
-using SharedKernel.Messaging.IntegrationEvents;
+using PandaBear.Messaging.IntegrationEvents;
 using ViajantesTurismo.Admin.Contracts.IntegrationEvents;
 using ViajantesTurismo.Admin.Contracts.IntegrationEvents.Tours;
 

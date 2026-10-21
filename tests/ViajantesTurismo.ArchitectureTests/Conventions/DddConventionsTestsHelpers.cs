@@ -1,5 +1,5 @@
-using SharedKernel.Domain;
-using SharedKernel.BuildingBlocks;
+using PandaBear.Domain;
+using PandaBear.BuildingBlocks;
 
 namespace ViajantesTurismo.ArchitectureTests.Conventions;
 

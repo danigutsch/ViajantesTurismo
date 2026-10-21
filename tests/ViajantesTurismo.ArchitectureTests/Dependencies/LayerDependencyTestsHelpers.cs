@@ -160,7 +160,7 @@ internal static partial class LayerDependencyTestsHelpers
                     "Abstraction projects must not reference same-family implementation packages, provider adapters, persistence projects, web/API hosts, or adapter packages."
                 ]),
             (
-                Path.Combine("docs", "SHAREDKERNEL_PACKAGING.md"),
+                Path.Combine("docs", "SHAREDKERNEL_CONSUMPTION.md"),
                 [
                     "Do not create `SharedKernel.<Capability>.Core` packages.",
                     "families may be multi-segment",

@@ -1,6 +1,6 @@
-using SharedKernel.Results;
+using PandaBear.Results;
 using static ViajantesTurismo.Admin.Domain.Customers.CustomerErrors;
-using SharedKernel.InputNormalization;
+using PandaBear.InputNormalization;
 
 namespace ViajantesTurismo.Admin.Domain.Customers;
 

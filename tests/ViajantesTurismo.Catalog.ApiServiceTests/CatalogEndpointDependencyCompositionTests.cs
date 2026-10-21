@@ -5,8 +5,8 @@ using ViajantesTurismo.Catalog.Application.PublicContent;
 
 namespace ViajantesTurismo.Catalog.ApiServiceTests;
 
-[Trait(SharedKernel.Testing.TestTraitNames.CategoryName, SharedKernel.Testing.TestTraitValues.DependencyInjectionCategory)]
-[Trait(SharedKernel.Testing.TestTraitNames.HostName, TestTraits.TestServerHost)]
+[Trait(PandaBear.Testing.TestTraitNames.CategoryName, PandaBear.Testing.TestTraitValues.DependencyInjectionCategory)]
+[Trait(PandaBear.Testing.TestTraitNames.HostName, TestTraits.TestServerHost)]
 public sealed class CatalogEndpointDependencyCompositionTests
 {
     [Fact]

@@ -25,7 +25,7 @@ public static class ServiceDefaultsVersionTests
             StringComparison.Ordinal));
         hostedServices.ShouldContain(service => string.Equals(
             service.GetType().Namespace,
-            "SharedKernel.Observability",
+            "PandaBear.Observability",
             StringComparison.Ordinal));
     }
 

@@ -1,6 +1,6 @@
 using ViajantesTurismo.Admin.Application.Mappings;
 using ViajantesTurismo.Admin.Domain.Customers;
-using SharedKernel.Results;
+using PandaBear.Results;
 using ViajantesTurismo.Admin.Domain.Tours;
 
 namespace ViajantesTurismo.Admin.Application.Bookings.CreateBooking;

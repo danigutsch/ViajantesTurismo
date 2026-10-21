@@ -2,6 +2,14 @@ name: Setup CI Prerequisites
 description: Set up the repository toolchains and restore shared prerequisites for CI jobs.
 
 inputs:
+  sharedkernel-library-root:
+    description: Optional clean checkout of the pinned SharedKernel revision.
+    required: false
+    default: ""
+  sharedkernel-candidate-feed:
+    description: Optional directory containing unchanged pinned candidate packages.
+    required: false
+    default: ""
   restore-targets:
     description: Newline-delimited solution or project paths to restore.
     required: false
@@ -37,6 +45,55 @@ runs:
         cache: true
         cache-dependency-path: |
           **/packages.lock.json
+
+    - name: Read pinned SharedKernel identity
+      id: sharedkernel-pin
+      shell: pwsh
+      run: |
+        $pin = Get-Content -LiteralPath .config/sharedkernel-candidate.json -Raw | ConvertFrom-Json
+        if ($pin.libraryRevision -cnotmatch '^[a-f0-9]{40}$' -or
+            $pin.packageVersion -cnotmatch '^[0-9A-Za-z.+-]+$') {
+          throw "The committed SharedKernel revision or package version is invalid."
+        }
+        "revision=$($pin.libraryRevision)" >> $env:GITHUB_OUTPUT
+        "version=$($pin.packageVersion)" >> $env:GITHUB_OUTPUT
+
+    - name: Checkout pinned SharedKernel source
+      if: ${{ inputs.sharedkernel-library-root == '' }}
+      uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+      with:
+        repository: danigutsch/PandaBear.SharedKernel
+        ref: ${{ steps.sharedkernel-pin.outputs.revision }}
+        path: .local/sharedkernel-library
+        persist-credentials: false
+        sparse-checkout: |
+          src
+          tools
+
+    - name: Download pinned SharedKernel candidate
+      if: ${{ inputs.sharedkernel-library-root == '' && inputs.sharedkernel-candidate-feed == '' }}
+      shell: bash
+      env:
+        GH_TOKEN: ${{ github.token }}
+        PINNED_VERSION: ${{ steps.sharedkernel-pin.outputs.version }}
+      run: |
+        gh release download "v${PINNED_VERSION}" --repo danigutsch/PandaBear.SharedKernel \
+          --pattern '*.nupkg' --pattern 'candidate.json' \
+          --dir "${GITHUB_WORKSPACE}/.local/sharedkernel-download"
+
+    - name: Stage pinned SharedKernel candidate
+      shell: bash
+      env:
+        LIBRARY_ROOT: ${{ inputs.sharedkernel-library-root }}
+        CANDIDATE_FEED: ${{ inputs.sharedkernel-candidate-feed }}
+      run: |
+        if [[ -z "${LIBRARY_ROOT}" ]]; then
+          LIBRARY_ROOT="${GITHUB_WORKSPACE}/.local/sharedkernel-library"
+          CANDIDATE_FEED="${CANDIDATE_FEED:-${GITHUB_WORKSPACE}/.local/sharedkernel-download}"
+        fi
+        args=(bootstrap-sharedkernel --library-root "${LIBRARY_ROOT}")
+        if [[ -n "${CANDIDATE_FEED}" ]]; then args+=(--feed "${CANDIDATE_FEED}"); fi
+        dotnet run --project tools/ViajantesTurismo.RepoConfig.Tool -c Release -- "${args[@]}"
 
     - name: Restore .NET dependencies
       shell: bash

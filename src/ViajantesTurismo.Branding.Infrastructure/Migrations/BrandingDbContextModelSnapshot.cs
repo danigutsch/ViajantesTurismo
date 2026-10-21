@@ -23,7 +23,7 @@ namespace ViajantesTurismo.Branding.Infrastructure.Migrations
 
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
 
-            modelBuilder.Entity("SharedKernel.Messaging.IntegrationEvents.EntityFrameworkCore.IntegrationEventOutboxMessage", b =>
+            modelBuilder.Entity("PandaBear.Messaging.IntegrationEvents.EntityFrameworkCore.IntegrationEventOutboxMessage", b =>
                 {
                     b.Property<Guid>("Id")
                         .HasColumnType("uuid");
@@ -121,7 +121,7 @@ namespace ViajantesTurismo.Branding.Infrastructure.Migrations
                     b.ToTable("outbox_messages", "branding");
                 });
 
-            modelBuilder.Entity("SharedKernel.Messaging.IntegrationEvents.EntityFrameworkCore.IntegrationEventTransportMessage", b =>
+            modelBuilder.Entity("PandaBear.Messaging.IntegrationEvents.EntityFrameworkCore.IntegrationEventTransportMessage", b =>
                 {
                     b.Property<Guid>("Id")
                         .HasColumnType("uuid");

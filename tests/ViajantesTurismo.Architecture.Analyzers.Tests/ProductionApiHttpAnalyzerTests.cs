@@ -51,7 +51,7 @@ public sealed class ProductionApiHttpAnalyzerTests
     {
         // Arrange
         const string source = """
-            namespace SharedKernel.Branding
+            namespace PandaBear.Branding
             {
                 public interface IManagementBrandingApiClient
                 {
@@ -96,7 +96,7 @@ public sealed class ProductionApiHttpAnalyzerTests
         ArgumentException.ThrowIfNullOrWhiteSpace(clientType);
         ArgumentException.ThrowIfNullOrWhiteSpace(implementationType);
         var source = $$"""
-            namespace SharedKernel.Branding
+            namespace PandaBear.Branding
             {
                 public interface IManagementBrandingApiClient
                 {

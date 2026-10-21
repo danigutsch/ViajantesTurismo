@@ -1,6 +1,6 @@
 using System.Globalization;
 using System.Text.Json;
-using SharedKernel.Testing;
+using PandaBear.Testing;
 using ViajantesTurismo.Admin.Contracts.IntegrationEvents.Tours;
 
 namespace ViajantesTurismo.Admin.UnitTests.Infrastructure;

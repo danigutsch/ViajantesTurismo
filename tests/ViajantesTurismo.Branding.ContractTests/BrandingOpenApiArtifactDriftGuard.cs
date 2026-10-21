@@ -1,4 +1,4 @@
-using SharedKernel.Testing.Snapshots;
+using PandaBear.Testing.Snapshots;
 using ViajantesTurismo.Branding.ContractTests.Infrastructure;
 
 namespace ViajantesTurismo.Branding.ContractTests;

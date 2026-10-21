@@ -3,30 +3,18 @@
         <ProjectReference Include="..\ViajantesTurismo.Admin.Domain\ViajantesTurismo.Admin.Domain.csproj"/>
         <ProjectReference Include="..\ViajantesTurismo.Admin.Contracts.Application\ViajantesTurismo.Admin.Contracts.Application.csproj"/>
         <ProjectReference Include="..\ViajantesTurismo.Admin.Contracts.IntegrationEvents\ViajantesTurismo.Admin.Contracts.IntegrationEvents.csproj"/>
-        <ProjectReference Include="..\SharedKernel\SharedKernel.AuditTrail\SharedKernel.AuditTrail.csproj" />
-        <ProjectReference Include="..\SharedKernel\SharedKernel.Domain\SharedKernel.Domain.csproj" />
-        <ProjectReference Include="..\SharedKernel\SharedKernel.Messaging.IntegrationEvents\SharedKernel.Messaging.IntegrationEvents.csproj"/>
-        <ProjectReference Include="..\SharedKernel\SharedKernel.Results\SharedKernel.Results.csproj"/>
-        <ProjectReference Include="..\SharedKernel\SharedKernel.BuildingBlocks\SharedKernel.BuildingBlocks.csproj" />
-        <ProjectReference Include="..\SharedKernel\SharedKernel.InputNormalization\SharedKernel.InputNormalization.csproj" />
-        <ProjectReference Include="..\SharedKernel\SharedKernel.Idempotency\SharedKernel.Idempotency.csproj" />
-        <ProjectReference Include="..\SharedKernel\SharedKernel.DocumentRendering\SharedKernel.DocumentRendering.csproj" />
-        <ProjectReference Include="..\SharedKernel\SharedKernel.Branding\SharedKernel.Branding.csproj" />
-        <ProjectReference Include="..\SharedKernel\SharedKernel.Results.SourceGenerator\SharedKernel.Results.SourceGenerator.csproj"
-            OutputItemType="Analyzer"
-            ReferenceOutputAssembly="false"
-            PrivateAssets="all"
-            IsAspireProjectResource="false" />
-        <ProjectReference Include="..\SharedKernel\SharedKernel.Messaging.IntegrationEvents.SourceGenerator\SharedKernel.Messaging.IntegrationEvents.SourceGenerator.csproj"
-            OutputItemType="Analyzer"
-            ReferenceOutputAssembly="false"
-            PrivateAssets="all"
-            IsAspireProjectResource="false" />
-        <ProjectReference Include="..\SharedKernel\SharedKernel.AuditTrail.SourceGenerator\SharedKernel.AuditTrail.SourceGenerator.csproj"
-            OutputItemType="Analyzer"
-            ReferenceOutputAssembly="false"
-            PrivateAssets="all"
-            IsAspireProjectResource="false" />
+        <PackageReference Include="PandaBear.SharedKernel.AuditTrail" />
+        <PackageReference Include="PandaBear.SharedKernel.Domain" />
+        <PackageReference Include="PandaBear.SharedKernel.Messaging.IntegrationEvents" />
+        <PackageReference Include="PandaBear.SharedKernel.Tabular" />
+        <PackageReference Include="PandaBear.SharedKernel.Results" />
+        <PackageReference Include="PandaBear.SharedKernel.BuildingBlocks" />
+        <PackageReference Include="PandaBear.SharedKernel.InputNormalization" />
+        <PackageReference Include="PandaBear.SharedKernel.Idempotency" />
+        <PackageReference Include="PandaBear.SharedKernel.DocumentRendering" />
+        <PackageReference Include="PandaBear.SharedKernel.Branding" />
+        <PackageReference Include="PandaBear.SharedKernel.Messaging.IntegrationEvents.SourceGenerator" PrivateAssets="all" />
+        <PackageReference Include="PandaBear.SharedKernel.AuditTrail.SourceGenerator" PrivateAssets="all" />
     </ItemGroup>
 
     <ItemGroup>

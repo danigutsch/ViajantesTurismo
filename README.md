@@ -49,11 +49,10 @@ manage tours, travellers, bookings, payments, and customer-facing tour content i
 
 ```text
 ViajantesTurismo/
-├── src/            # Application, service, contract, hosting, and SharedKernel projects
+├── src/            # Application, service, contract, and hosting projects
 ├── tests/          # Unit, contract, behavior, integration, system, and tooling tests
 ├── tools/          # Repository-owned .NET tools
 ├── benchmarks/     # Maintained performance harnesses
-├── samples/        # Focused package and source-generation samples
 └── docs/           # Canonical architecture, domain, workflow, and operations guidance
 ```
 
@@ -79,6 +78,11 @@ view of project relationships; avoid duplicating that volatile list in this READ
 for the best development experience.
 
 ### Quick Setup
+
+Bootstrap the pinned SharedKernel candidate using the
+[application consumption guide](docs/sharedkernel/development.md#bootstrap-a-checkout) before setup
+restores dependencies. Library sources, samples, and benchmarks live in the
+[standalone library repository](https://github.com/danigutsch/PandaBear.SharedKernel).
 
 Run the automated setup script to verify required dependencies and point you to optional tools:
 
@@ -238,8 +242,10 @@ defaults, and output details.
 ### Optional: Dev Containers
 
 If you prefer a containerized development environment, the repository includes a
-VS Code Dev Container configuration. For prerequisites, lifecycle behavior, the shared
-local smoke command, and the minimum validation checklist, see
+VS Code Dev Container configuration. Bootstrap the pinned SharedKernel candidate on the host before
+creating the container. The workspace mount carries the staged `.local/sharedkernel-feed`; the
+container does not need a separate library checkout or feed mount. For prerequisites, lifecycle
+behavior, the shared local smoke command, and the minimum validation checklist, see
 [docs/DEVCONTAINERS.md](docs/DEVCONTAINERS.md).
 
 ### Running the Application
@@ -298,12 +304,6 @@ Use `--all-slices`, `--skip-restore`, `--skip-build`, or `--slice <name>` to mea
 See [docs/CODE_QUALITY.md](docs/CODE_QUALITY.md#local-validation-runtime) for baseline timings,
 recommended fast local paths, and improvement options.
 
-**Run SharedKernel mediator benchmarks:**
-
-```powershell
-dotnet run --project benchmarks/SharedKernel.Mediator.Benchmarks/SharedKernel.Mediator.Benchmarks.csproj -c Release -- --filter *DiscoveryBenchmarks*
-```
-
 **Run file scanning benchmarks:**
 
 ```powershell
@@ -314,12 +314,6 @@ dotnet run --project benchmarks/ViajantesTurismo.FileScanning.Benchmarks/Viajant
 
 ```powershell
 dotnet run --project tools/ViajantesTurismo.Performance.Tool/ViajantesTurismo.Performance.Tool.csproj -- file-upload-scan
-```
-
-**Run the SharedKernel mediator sample:**
-
-```powershell
-dotnet run --project samples/Mediator/Mediator.Sample/Mediator.Sample.csproj
 ```
 
 **Dependency graph and lock files:**

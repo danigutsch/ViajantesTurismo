@@ -1,6 +1,6 @@
-using SharedKernel.Results;
+using PandaBear.Results;
 using ViajantesTurismo.Catalog.Contracts.Application;
-using SharedKernel.InputNormalization;
+using PandaBear.InputNormalization;
 using ViajantesTurismo.Catalog.Domain.Tours;
 
 namespace ViajantesTurismo.Catalog.Application.Tours;

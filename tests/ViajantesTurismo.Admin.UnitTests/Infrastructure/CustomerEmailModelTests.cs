@@ -1,7 +1,7 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
-using SharedKernel.Testing;
+using PandaBear.Testing;
 using ViajantesTurismo.Admin.Domain.Customers;
 using ViajantesTurismo.Admin.Infrastructure;
 

@@ -1,7 +1,7 @@
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using SharedKernel.Domain;
-using SharedKernel.Messaging.IntegrationEvents;
+using PandaBear.Domain;
+using PandaBear.Messaging.IntegrationEvents;
 using ViajantesTurismo.Admin.Infrastructure;
 
 namespace ViajantesTurismo.Admin.UnitTests.Infrastructure;

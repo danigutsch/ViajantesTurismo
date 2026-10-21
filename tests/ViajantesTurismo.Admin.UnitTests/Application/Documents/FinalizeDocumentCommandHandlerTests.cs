@@ -1,5 +1,5 @@
 using System.Text;
-using SharedKernel.Testing;
+using PandaBear.Testing;
 using ViajantesTurismo.Admin.Application.Documents;
 using ViajantesTurismo.Admin.Domain.Documents;
 using ViajantesTurismo.Admin.Testing.Fakes;

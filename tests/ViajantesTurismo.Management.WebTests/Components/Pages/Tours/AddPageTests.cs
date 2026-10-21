@@ -1,4 +1,5 @@
-using SharedKernel.HttpClients;
+using ViajantesTurismo.Admin.Testing.Fakes;
+using PandaBear.HttpClients;
 using Add = ViajantesTurismo.Management.Web.Components.Pages.Tours.Add;
 
 namespace ViajantesTurismo.Management.WebTests.Components.Pages.Tours;
@@ -15,12 +16,12 @@ public class AddPageTests : BunitContext
     }
 
     [Fact]
-    [Trait(SharedKernel.Testing.TestTraitNames.CategoryName, "Regression")]
-    [Trait(SharedKernel.Testing.TestTraitNames.ScopeName, SharedKernel.Testing.SharedKernelTestTraitNames.UnitScope)]
+    [Trait(PandaBear.Testing.TestTraitNames.CategoryName, "Regression")]
+    [Trait(PandaBear.Testing.TestTraitNames.ScopeName, PandaBear.Testing.SharedKernelTestTraitNames.UnitScope)]
     public void Defaults_schedule_dates_from_the_controlled_utc_business_date()
     {
         // Arrange
-        Services.AddSingleton<TimeProvider>(new ViajantesTurismo.Admin.Testing.Fakes.FakeTimeProvider(
+        Services.AddSingleton<TimeProvider>(new FakeTimeProvider(
             new DateTimeOffset(2030, 2, 3, 0, 30, 0, TimeSpan.Zero)));
         // Act
         var cut = Render<Add>();
@@ -170,9 +171,9 @@ public class AddPageTests : BunitContext
     }
 
     [Theory]
-    [Trait(SharedKernel.Testing.TestTraitNames.ScopeName, TestTraits.ComponentScope)]
-    [Trait(SharedKernel.Testing.TestTraitNames.AreaName, TestTraits.ManagementWebArea)]
-    [Trait(SharedKernel.Testing.TestTraitNames.CategoryName, TestTraits.ComponentCategory)]
+    [Trait(PandaBear.Testing.TestTraitNames.ScopeName, TestTraits.ComponentScope)]
+    [Trait(PandaBear.Testing.TestTraitNames.AreaName, TestTraits.ManagementWebArea)]
+    [Trait(PandaBear.Testing.TestTraitNames.CategoryName, TestTraits.ComponentCategory)]
     [InlineData("/api/v1/route")]
     [InlineData("/api/v1/tours-malformed/relative-id")]
     public async Task Successful_submission_preserves_api_prefix_when_tours_path_prefix_does_not_match(
@@ -288,9 +289,9 @@ public class AddPageTests : BunitContext
     }
 
     [Fact]
-    [Trait(SharedKernel.Testing.TestTraitNames.ScopeName, TestTraits.ComponentScope)]
-    [Trait(SharedKernel.Testing.TestTraitNames.AreaName, TestTraits.ManagementWebArea)]
-    [Trait(SharedKernel.Testing.TestTraitNames.CategoryName, TestTraits.ComponentCategory)]
+    [Trait(PandaBear.Testing.TestTraitNames.ScopeName, TestTraits.ComponentScope)]
+    [Trait(PandaBear.Testing.TestTraitNames.AreaName, TestTraits.ManagementWebArea)]
+    [Trait(PandaBear.Testing.TestTraitNames.CategoryName, TestTraits.ComponentCategory)]
     public async Task Validation_problem_outcome_shows_server_validation_errors()
     {
         // Arrange

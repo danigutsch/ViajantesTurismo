@@ -89,5 +89,5 @@ skip the decorator and weaken duplicate-delivery protection.
 
 - [Back to ADR Index](../ARCHITECTURE_DECISIONS.md)
 - [Events and Messaging](../domain/EVENTS_AND_MESSAGING.md)
-- [SharedKernel Packaging](../SHAREDKERNEL_PACKAGING.md)
+- [SharedKernel consumption](../SHAREDKERNEL_CONSUMPTION.md)
 - [Separate Domain and Integration Event Dispatch](20260621-separate-domain-and-integration-event-dispatch.md)

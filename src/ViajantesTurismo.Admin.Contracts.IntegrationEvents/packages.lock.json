@@ -8,21 +8,39 @@
         "resolved": "10.0.13",
         "contentHash": "40yrBMsLEcjixBR4G+FiUaBPvxXIPSKJ2OgSrbOZcmSDBda4Sb0k7BWrfDpIvn3IvvDzwOL/tEPa6gDQfh6aRw=="
       },
-      "sharedkernel.messaging": {
-        "type": "Project"
-      },
-      "sharedkernel.messaging.integrationevents": {
-        "type": "Project",
+      "PandaBear.SharedKernel.Messaging.IntegrationEvents": {
+        "type": "Direct",
+        "requested": "[1.0.0-alpha.20261021.2, )",
+        "resolved": "1.0.0-alpha.20261021.2",
+        "contentHash": "3HXQKTGPPAugjav7KZTeLK2wQNU8vPAQ1g992xbf+86wcZIuJPOqL5vNsnk6vHLH+Wjg2jQCBICiU2GHYl/abw==",
         "dependencies": {
-          "Microsoft.Extensions.DependencyInjection.Abstractions": "[10.0.13, )",
-          "SharedKernel.Messaging": "[0.1.0-alpha.0, )"
+          "Microsoft.Extensions.DependencyInjection.Abstractions": "10.0.13",
+          "PandaBear.SharedKernel.Messaging": "1.0.0-alpha.20261021.2"
         }
+      },
+      "PandaBear.SharedKernel.Style.Analyzers": {
+        "type": "Direct",
+        "requested": "[1.0.0-alpha.20261021.2, )",
+        "resolved": "1.0.0-alpha.20261021.2",
+        "contentHash": "nfxdWX03IuS9TR9Zn4Jp3ED+tcTIe/06+SdLU3XmLhS6EHMljOtbPgeYuQw2TeKFZq0WQkUrG3vI0lOyesRp5A=="
+      },
+      "PandaBear.SharedKernel.Style.CodeFixes": {
+        "type": "Direct",
+        "requested": "[1.0.0-alpha.20261021.2, )",
+        "resolved": "1.0.0-alpha.20261021.2",
+        "contentHash": "36TIAEL97BTvjHzQgIq05C465xm10yxGjMtpPwJpxFZuRUgMihMJ4Fx9d91fH/ofmghcBzfeyQODqtviQ/qvtg=="
       },
       "Microsoft.Extensions.DependencyInjection.Abstractions": {
         "type": "CentralTransitive",
         "requested": "[10.0.13, )",
         "resolved": "10.0.13",
         "contentHash": "G2GrGWNAPZBsii2F6AU8n+JT2tC1/I0Ml/e9ZyNCgPjf3hZqronP7o0X91aAynCmVeae8KkSIUNXXeXCNRmdVQ=="
+      },
+      "PandaBear.SharedKernel.Messaging": {
+        "type": "CentralTransitive",
+        "requested": "[1.0.0-alpha.20261021.2, )",
+        "resolved": "1.0.0-alpha.20261021.2",
+        "contentHash": "gFV5scJK6OoU2MTuFn5Pk8i2DnuqmbgTzKWJYIpWOwEojjjMbcn4ZsSu6TTchlNLgvt/BpwbDoVHmmrTGbAllw=="
       }
     }
   }

@@ -6,8 +6,8 @@
     </PropertyGroup>
 
     <ItemGroup>
-        <Using Include="SharedKernel.Testing" />
-        <Using Include="SharedKernel.Testing.Assertions" />
+        <Using Include="PandaBear.Testing" />
+        <Using Include="PandaBear.Testing.Assertions" />
         <Using Include="ViajantesTurismo.Performance.Tool" />
         <Using Include="Xunit" />
     </ItemGroup>
@@ -20,8 +20,8 @@
     </ItemGroup>
 
     <ItemGroup>
-        <ProjectReference Include="..\..\src\SharedKernel\SharedKernel.Testing\SharedKernel.Testing.csproj" />
-        <ProjectReference Include="..\..\src\SharedKernel\SharedKernel.Testing.Assertions\SharedKernel.Testing.Assertions.csproj" />
+        <PackageReference Include="PandaBear.SharedKernel.Testing" />
+        <PackageReference Include="PandaBear.SharedKernel.Testing.Assertions" />
         <ProjectReference Include="..\..\tools\ViajantesTurismo.Performance.Tool\ViajantesTurismo.Performance.Tool.csproj" />
     </ItemGroup>
 

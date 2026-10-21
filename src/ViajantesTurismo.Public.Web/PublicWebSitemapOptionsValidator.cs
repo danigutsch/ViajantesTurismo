@@ -1,5 +1,5 @@
 using Microsoft.Extensions.Options;
-using SharedKernel.AspNetCore;
+using PandaBear.AspNetCore;
 
 namespace ViajantesTurismo.Public.Web;
 

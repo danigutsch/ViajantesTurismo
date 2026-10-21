@@ -10,8 +10,8 @@ This project uses automated tools to enforce consistent formatting and style acr
 - **[shfmt](https://github.com/mvdan/sh)** - Bash/shell script formatting (direct CLI or Docker fallback)
 - **Repository Gherkin linter** (`scripts/lint-gherkin.py`) - BDD/Gherkin feature-file linting
   (runs via local Python or Docker fallback)
-- **Python JSON validator** (`scripts/lint-json.py`) - JSON and JSONC validation with repo-specific exclusions
-  (runs via local Python or Docker fallback)
+- **Repository JSON validator** (`ViajantesTurismo.RepoConfig.Tool lint-json`) - Git-indexed JSON
+  validation using the .NET SDK, with comments and trailing commas allowed
 - **Repository link validator** (`scripts/lint-links.py`) - Local Markdown/text link, anchor, and
   durable docs-link validation (runs via local Python or Docker fallback)
 - **[PSScriptAnalyzer](https://github.com/PowerShell/PSScriptAnalyzer)** - PowerShell script linting
@@ -152,24 +152,27 @@ See `tests/BDD_GUIDE.md` for comprehensive Gherkin linting documentation.
 
 ### Configuration
 
-JSON validation is performed by `scripts/lint-json.py`, which accepts repository JSON and JSONC-style comments.
+JSON validation is performed by `ViajantesTurismo.RepoConfig.Tool lint-json`, which accepts
+JSONC-style comments and trailing commas in tracked `*.json` files.
 
 **Key Rules:**
 
-The validator focuses on parse correctness for repository JSON files without a repo-tracked npm toolchain.
-Generated package artifacts under `artifacts/` are excluded so local SharedKernel pack/restore dry runs
-do not create lint inputs.
+The validator reads the working-tree contents of Git-indexed `*.json` files and requires UTF-8,
+with an optional UTF-8 BOM. It reports each invalid file and fails when any cannot be parsed or read.
+Untracked package caches, generated artifacts, and nested library checkouts are not lint inputs.
 
 ### Tool
 
-- **Repository JSON validator** - `scripts/lint-json.py` parses repository JSON and JSONC-style files
-  through `scripts/lint-json.sh`.
+- **Repository JSON validator** - Run
+  `dotnet run --project tools/ViajantesTurismo.RepoConfig.Tool -c Release -- lint-json`.
+  The command validates all indexed JSON files and accepts no directory arguments. Roadmap
+  validation uses this same repository-wide policy.
 
 ## Link Validation
 
 The repository validates maintained Markdown and selected text links with `scripts/lint-links.sh`. The chosen
 approach is a repository-owned Python script with the same local Python or Docker fallback pattern
-as the JSON and Gherkin linters. This avoids transient npm execution and avoids adding a new package
+as the Gherkin linter. This avoids transient npm execution and avoids adding a new package
 ecosystem for documentation checks.
 
 The validator checks stable PR-gating rules:
@@ -369,7 +372,7 @@ bash scripts/lint-gherkin.sh tests/**/*.feature     # Repository Gherkin lint wr
 **JSON Files:**
 
 ```powershell
-bash scripts/lint-json.sh **/*.json        # Check all JSON files
+dotnet run --project tools/ViajantesTurismo.RepoConfig.Tool -c Release -- lint-json
 ```
 
 **Links:**

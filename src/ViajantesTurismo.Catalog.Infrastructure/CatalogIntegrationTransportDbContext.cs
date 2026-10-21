@@ -1,5 +1,5 @@
 using Microsoft.EntityFrameworkCore;
-using SharedKernel.EntityFrameworkCore;
+using PandaBear.EntityFrameworkCore;
 
 namespace ViajantesTurismo.Catalog.Infrastructure;
 

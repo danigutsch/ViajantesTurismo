@@ -8,8 +8,8 @@ namespace ViajantesTurismo.Catalog.ContractTests;
 public sealed class CatalogOpenApiUploadContractTests
 {
     [Fact]
-    [Trait(SharedKernel.Testing.TestTraitNames.CategoryName, TestTraits.DriftGuardCategory)]
-    [Trait(SharedKernel.Testing.TestTraitNames.SurfaceName, TestTraits.OpenApiSurface)]
+    [Trait(PandaBear.Testing.TestTraitNames.CategoryName, TestTraits.DriftGuardCategory)]
+    [Trait(PandaBear.Testing.TestTraitNames.SurfaceName, TestTraits.OpenApiSurface)]
     public void Catalog_tour_image_upload_is_multipart_only_and_requires_file_and_alt_text()
     {
         // Arrange
@@ -57,8 +57,8 @@ public sealed class CatalogOpenApiUploadContractTests
     }
 
     [Fact]
-    [Trait(SharedKernel.Testing.TestTraitNames.CategoryName, TestTraits.DriftGuardCategory)]
-    [Trait(SharedKernel.Testing.TestTraitNames.SurfaceName, TestTraits.OpenApiSurface)]
+    [Trait(PandaBear.Testing.TestTraitNames.CategoryName, TestTraits.DriftGuardCategory)]
+    [Trait(PandaBear.Testing.TestTraitNames.SurfaceName, TestTraits.OpenApiSurface)]
     public void Public_content_uses_required_route_identity_and_optional_localization_query_parameters()
     {
         // Arrange
@@ -92,8 +92,8 @@ public sealed class CatalogOpenApiUploadContractTests
     }
 
     [Fact]
-    [Trait(SharedKernel.Testing.TestTraitNames.CategoryName, TestTraits.DriftGuardCategory)]
-    [Trait(SharedKernel.Testing.TestTraitNames.SurfaceName, TestTraits.OpenApiSurface)]
+    [Trait(PandaBear.Testing.TestTraitNames.CategoryName, TestTraits.DriftGuardCategory)]
+    [Trait(PandaBear.Testing.TestTraitNames.SurfaceName, TestTraits.OpenApiSurface)]
     public void Catalog_mutations_document_validation_problem_responses()
     {
         // Arrange

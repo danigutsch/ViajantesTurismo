@@ -1,5 +1,5 @@
-using SharedKernel.Testing;
-using SharedKernel.Branding;
+using PandaBear.Testing;
+using PandaBear.Branding;
 using ViajantesTurismo.Resources;
 using ViajantesTurismo.Branding.Infrastructure;
 

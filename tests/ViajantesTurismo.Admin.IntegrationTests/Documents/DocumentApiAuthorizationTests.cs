@@ -1,7 +1,7 @@
 namespace ViajantesTurismo.Admin.IntegrationTests.Documents;
 
-[Trait(SharedKernel.Testing.TestTraitNames.CategoryName, TestTraits.EndpointCategory)]
-[Trait(SharedKernel.Testing.TestTraitNames.ScopeName, TestTraits.IntegrationScope)]
+[Trait(PandaBear.Testing.TestTraitNames.CategoryName, TestTraits.EndpointCategory)]
+[Trait(PandaBear.Testing.TestTraitNames.ScopeName, TestTraits.IntegrationScope)]
 public sealed class DocumentApiAuthorizationTests(ApiFixture fixture)
 {
     [Theory]

@@ -1,11 +1,11 @@
 using ViajantesTurismo.Admin.Domain.Customers;
 using ViajantesTurismo.Admin.Domain.Documents;
 using ViajantesTurismo.Admin.Domain.Tours;
-using SharedKernel.Results;
+using PandaBear.Results;
 
 namespace ViajantesTurismo.Admin.UnitTests.Domain;
 
-[Trait(SharedKernel.Testing.TestTraitNames.CategoryName, SharedKernel.Testing.TestTraitValues.SecurityCategory)]
+[Trait(PandaBear.Testing.TestTraitNames.CategoryName, PandaBear.Testing.TestTraitValues.SecurityCategory)]
 public sealed class PrivacyErrorTests
 {
     [Fact]

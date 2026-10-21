@@ -2,7 +2,7 @@ using System.Net;
 using System.Net.Http.Headers;
 using Microsoft.AspNetCore.TestHost;
 using Polly.Timeout;
-using SharedKernel.Testing;
+using PandaBear.Testing;
 using ViajantesTurismo.Management.WebTests.Components.Pages.Documents;
 using ViajantesTurismo.Management.WebTests.Infrastructure;
 

@@ -2,7 +2,7 @@ using System.Security.Claims;
 using System.Security.Cryptography;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
-using SharedKernel.Testing;
+using PandaBear.Testing;
 
 namespace ViajantesTurismo.Management.WebIntegrationTests;
 

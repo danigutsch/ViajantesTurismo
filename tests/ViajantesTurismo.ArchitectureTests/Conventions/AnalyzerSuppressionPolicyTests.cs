@@ -1,4 +1,5 @@
 using System.Xml.Linq;
+using PandaBear.Testing;
 
 namespace ViajantesTurismo.ArchitectureTests.Conventions;
 
@@ -43,6 +44,25 @@ public sealed partial class AnalyzerSuppressionPolicyTests
         "tests/ViajantesTurismo.Management.WebIntegrationTests/PostgreSqlTestDatabase.cs",
         "tests/ViajantesTurismo.Management.WebIntegrationTests/PostgreSqlTestServerFixture.cs"
     ];
+
+    [Fact]
+    [Trait(TestTraitNames.CategoryName, TestTraitValues.SecurityCategory)]
+    public void Repository_policy_enumeration_excludes_staged_library_source_and_preserves_application_source()
+    {
+        // Arrange
+        using var workspace = new TemporaryDirectory();
+        var sourceDirectory = Directory.CreateDirectory(Path.Combine(workspace.Path, "src"));
+        var libraryDirectory = Directory.CreateDirectory(Path.Combine(workspace.Path, ".local", "sharedkernel-library"));
+        var sourceFile = Path.Combine(sourceDirectory.FullName, "Application.cs");
+        File.WriteAllText(sourceFile, "namespace Application; internal sealed class Example;");
+        File.WriteAllText(Path.Combine(libraryDirectory.FullName, "Library.cs"), "namespace Library; internal sealed class Example;");
+
+        // Act
+        var files = AnalyzerSuppressionPolicyTestsHelpers.EnumerateRepositoryFiles(workspace.Path, "*.cs").ToArray();
+
+        // Assert
+        files.ShouldBeEquivalentTo(sourceFile);
+    }
 
     [Fact]
     public void Project_and_props_nowarn_entries_should_match_the_approved_inventory()
@@ -94,7 +114,6 @@ public sealed partial class AnalyzerSuppressionPolicyTests
         string[] expectedSurfaces =
         [
             "build:Directory.Build.props",
-            "build:src/Directory.Build.props",
             "build:src/Directory.Build.targets",
             "build:tests/Directory.Build.props",
             "custom-config:.editorconfig:SKSTYLE001",
@@ -107,12 +126,10 @@ public sealed partial class AnalyzerSuppressionPolicyTests
             "custom-config:.editorconfig:SKTEST004",
             "custom-config:.editorconfig:SKTEST005",
             "custom-config:.editorconfig:SKTEST006",
-            "import:src/Directory.Build.props:$([MSBuild]::GetPathOfFileAbove('Directory.Build.props', '$(MSBuildThisFileDirectory)..'))",
             "import:tests/Directory.Build.props:$([MSBuild]::GetPathOfFileAbove('Directory.Build.props', '$(MSBuildThisFileDirectory)../'))",
-            "package:src/Directory.Build.props:Microsoft.CodeAnalysis.PublicApiAnalyzers",
-            "project:Directory.Build.props:$(MSBuildThisFileDirectory)src/SharedKernel/SharedKernel.Style.Analyzers/SharedKernel.Style.Analyzers.csproj:Analyzer",
-            "project:Directory.Build.props:$(MSBuildThisFileDirectory)src/SharedKernel/SharedKernel.Style.CodeFixes/SharedKernel.Style.CodeFixes.csproj:Analyzer",
-            "project:tests/Directory.Build.props:$(MSBuildThisFileDirectory)../src/SharedKernel/SharedKernel.Testing.Analyzers/SharedKernel.Testing.Analyzers.csproj:Analyzer"
+            "package:Directory.Build.props:PandaBear.SharedKernel.Style.Analyzers",
+            "package:Directory.Build.props:PandaBear.SharedKernel.Style.CodeFixes",
+            "package:tests/Directory.Build.props:PandaBear.SharedKernel.Testing.Analyzers"
         ];
         var buildFiles = AnalyzerSuppressionPolicyTestsHelpers.EnumerateRepositoryFiles(repositoryRoot, "Directory.Build.props")
             .Concat(AnalyzerSuppressionPolicyTestsHelpers.EnumerateRepositoryFiles(repositoryRoot, "Directory.Build.targets"))

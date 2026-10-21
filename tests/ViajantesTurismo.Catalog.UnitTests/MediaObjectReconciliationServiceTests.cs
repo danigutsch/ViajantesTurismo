@@ -3,9 +3,9 @@ using ViajantesTurismo.Catalog.Testing.Infrastructure;
 
 namespace ViajantesTurismo.Catalog.UnitTests;
 
-[Trait(SharedKernel.Testing.TestTraitNames.AreaName, TestTraits.CatalogArea)]
-[Trait(SharedKernel.Testing.SharedKernelTestTraitNames.ScopeName, SharedKernel.Testing.SharedKernelTestTraitNames.UnitScope)]
-[Trait(SharedKernel.Testing.SharedKernelTestTraitNames.CapabilityName, TestTraits.MediaCapability)]
+[Trait(PandaBear.Testing.TestTraitNames.AreaName, TestTraits.CatalogArea)]
+[Trait(PandaBear.Testing.SharedKernelTestTraitNames.ScopeName, PandaBear.Testing.SharedKernelTestTraitNames.UnitScope)]
+[Trait(PandaBear.Testing.SharedKernelTestTraitNames.CapabilityName, TestTraits.MediaCapability)]
 public sealed class MediaObjectReconciliationServiceTests
 {
     [Fact]
@@ -126,7 +126,7 @@ public sealed class MediaObjectReconciliationServiceTests
     }
 
     [Fact]
-    [Trait(SharedKernel.Testing.TestTraitNames.CategoryName, SharedKernel.Testing.TestTraitValues.SecurityCategory)]
+    [Trait(PandaBear.Testing.TestTraitNames.CategoryName, PandaBear.Testing.TestTraitValues.SecurityCategory)]
     public async Task Reconcile_records_delete_failures_and_can_retry_later()
     {
         // Arrange
