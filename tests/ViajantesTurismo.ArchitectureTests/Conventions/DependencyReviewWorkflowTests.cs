@@ -23,7 +23,8 @@ public sealed class DependencyReviewWorkflowTests
         workflow.ShouldContain("github.event.pull_request.head.sha", StringComparison.Ordinal);
         workflow.ShouldContain("dotnet restore ViajantesTurismo.slnx --locked-mode -bl:dependency-restore.binlog", StringComparison.Ordinal);
         workflow.ShouldContain("correlator: viajantes-solution-nuget", StringComparison.Ordinal);
-        workflow.ShouldContain("needs: dependency-snapshots", StringComparison.Ordinal);
+        workflow.ShouldContain("needs: [plan, dependency-snapshots]", StringComparison.Ordinal);
+        workflow.ShouldContain("test \"$PLAN_RESULT\" = success", StringComparison.Ordinal);
         workflow.ShouldContain("needs.dependency-snapshots.result", StringComparison.Ordinal);
         workflow.ShouldContain("exit 1", StringComparison.Ordinal);
         workflow.ShouldNotContain("head -20", StringComparison.Ordinal);
