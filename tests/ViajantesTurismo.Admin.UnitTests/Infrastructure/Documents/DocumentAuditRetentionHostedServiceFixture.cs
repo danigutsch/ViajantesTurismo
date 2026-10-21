@@ -22,7 +22,10 @@ internal sealed class DocumentAuditRetentionHostedServiceFixture : IAsyncDisposa
             NullLogger<DocumentAuditRetentionHostedService>.Instance);
     }
 
-    public FakeDocumentAuditStore AuditStore { get; }
+    public FakeDocumentAuditStore AuditStore
+    {
+        get;
+    }
 
     public static DocumentAuditRetentionHostedServiceFixture Create(DateTimeOffset now, int purgedCount)
     {

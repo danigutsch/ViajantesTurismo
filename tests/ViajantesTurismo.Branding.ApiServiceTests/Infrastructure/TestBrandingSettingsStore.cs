@@ -5,7 +5,10 @@ internal sealed class TestBrandingSettingsStore : IBrandingSettingsStore
     private BrandingSettings? settings;
 
     public BrandingSettings? Settings => settings;
-    public Exception? SaveException { get; set; }
+    public Exception? SaveException
+    {
+        get; set;
+    }
 
     public Task<BrandingSettings?> GetSettings(CancellationToken ct)
     {

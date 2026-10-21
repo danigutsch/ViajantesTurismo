@@ -30,7 +30,10 @@ internal sealed class CandidateCompatibilityTestScope : IDisposable
 
     public string Manifest => Path.Combine(Root, "candidate.json");
 
-    public JsonObject Evidence { get; }
+    public JsonObject Evidence
+    {
+        get;
+    }
 
     public void WriteFile(string path, string content) => workspace.WriteFile(path, content);
 

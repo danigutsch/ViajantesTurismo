@@ -12,37 +12,55 @@ public sealed record CatalogTourImageDto
     /// Gets the stable media image identifier.
     /// </summary>
     [Required]
-    public Guid Id { get; init; }
+    public Guid Id
+    {
+        get; init;
+    }
 
     /// <summary>
     /// Gets the display order for the image inside its tour gallery.
     /// </summary>
     [Required, Range(0, int.MaxValue)]
-    public int SortOrder { get; init; }
+    public int SortOrder
+    {
+        get; init;
+    }
 
     /// <summary>
     /// Gets a value indicating whether this image is the preferred tour cover.
     /// </summary>
     [Required]
-    public bool IsCover { get; init; }
+    public bool IsCover
+    {
+        get; init;
+    }
 
     /// <summary>
     /// Gets the accessible image description.
     /// </summary>
     [StringLength(ContractConstants.MaxAltTextLength)]
-    public required string AltText { get; init; }
+    public required string AltText
+    {
+        get; init;
+    }
 
     /// <summary>
     /// Gets a value indicating whether this image is intentionally decorative.
     /// </summary>
     [Required]
-    public bool IsDecorative { get; init; }
+    public bool IsDecorative
+    {
+        get; init;
+    }
 
     /// <summary>
     /// Gets an optional display caption.
     /// </summary>
     [StringLength(ContractConstants.MaxCaptionLength)]
-    public string? Caption { get; init; }
+    public string? Caption
+    {
+        get; init;
+    }
 
     /// <summary>
     /// Gets processed rendition metadata for responsive image rendering.

@@ -71,19 +71,34 @@ public sealed class DocumentDraft : IEntity<Guid>
     }
 
     /// <summary>Gets the opaque document revision identifier.</summary>
-    public Guid Id { get; private init; }
+    public Guid Id
+    {
+        get; private init;
+    }
 
     /// <summary>Gets the owning document lineage identifier.</summary>
-    public Guid DocumentLineageId { get; private set; }
+    public Guid DocumentLineageId
+    {
+        get; private set;
+    }
 
     /// <summary>Gets the source booking identifier.</summary>
-    public Guid BookingId { get; private init; }
+    public Guid BookingId
+    {
+        get; private init;
+    }
 
     /// <summary>Gets the document type.</summary>
-    public DocumentType Type { get; private init; }
+    public DocumentType Type
+    {
+        get; private init;
+    }
 
     /// <summary>Gets the intended document audience.</summary>
-    public DocumentAudience Audience { get; private init; }
+    public DocumentAudience Audience
+    {
+        get; private init;
+    }
 
     /// <summary>Gets the deployed template identifier.</summary>
     public string TemplateId { get; private init; } = default!;
@@ -92,7 +107,10 @@ public sealed class DocumentDraft : IEntity<Guid>
     public string TemplateVersion { get; private init; } = default!;
 
     /// <summary>Gets the revision number within the document lineage.</summary>
-    public int Revision { get; private init; }
+    public int Revision
+    {
+        get; private init;
+    }
 
     /// <summary>Gets the deterministic source-data version signal.</summary>
     public string SourceVersion { get; private init; } = default!;
@@ -107,7 +125,10 @@ public sealed class DocumentDraft : IEntity<Guid>
     public string BrandingName { get; private init; } = default!;
 
     /// <summary>Gets the immutable captured branding logo URI.</summary>
-    public Uri? BrandingLogoUri { get; private init; }
+    public Uri? BrandingLogoUri
+    {
+        get; private init;
+    }
 
     /// <summary>Gets the immutable captured primary brand color.</summary>
     public string BrandingPrimaryColor { get; private init; } = default!;
@@ -134,25 +155,46 @@ public sealed class DocumentDraft : IEntity<Guid>
     public IReadOnlyList<DocumentField> Fields => _fields.AsReadOnly();
 
     /// <summary>Gets when this revision was created.</summary>
-    public DateTime CreatedAt { get; private init; }
+    public DateTime CreatedAt
+    {
+        get; private init;
+    }
 
     /// <summary>Gets when this revision was last changed.</summary>
-    public DateTime UpdatedAt { get; private set; }
+    public DateTime UpdatedAt
+    {
+        get; private set;
+    }
 
     /// <summary>Gets when this revision may be removed under retention policy.</summary>
-    public DateTime? RetentionExpiresAt { get; private set; }
+    public DateTime? RetentionExpiresAt
+    {
+        get; private set;
+    }
 
     /// <summary>Gets when this revision was finalized.</summary>
-    public DateTime? FinalizedAt { get; private set; }
+    public DateTime? FinalizedAt
+    {
+        get; private set;
+    }
 
     /// <summary>Gets the opaque finalized artifact name.</summary>
-    public string? FinalizedArtifactName { get; private set; }
+    public string? FinalizedArtifactName
+    {
+        get; private set;
+    }
 
     /// <summary>Gets the preceding revision replaced by this revision, when applicable.</summary>
-    public Guid? ReplacesDocumentId { get; private init; }
+    public Guid? ReplacesDocumentId
+    {
+        get; private init;
+    }
 
     /// <summary>Gets the reason recorded when the document was voided.</summary>
-    public string? VoidReason { get; private set; }
+    public string? VoidReason
+    {
+        get; private set;
+    }
 
     /// <summary>Gets a copy of the finalized artifact content.</summary>
     public ReadOnlyMemory<byte>? GetFinalizedArtifactContent()

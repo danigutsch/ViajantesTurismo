@@ -19,11 +19,20 @@ internal sealed class ProtectedDistributedUserTokenStoreTestContext
         Store = ProtectedDistributedUserTokenStore.CreateForTesting(Cache, dataProtectionProvider, TimeProvider.System);
     }
 
-    public IDistributedCache Cache { get; }
+    public IDistributedCache Cache
+    {
+        get;
+    }
 
-    public ProtectedDistributedAudienceTokenStore AudienceTokenStore { get; }
+    public ProtectedDistributedAudienceTokenStore AudienceTokenStore
+    {
+        get;
+    }
 
-    public ProtectedDistributedUserTokenStore Store { get; }
+    public ProtectedDistributedUserTokenStore Store
+    {
+        get;
+    }
 
     public static ClaimsPrincipal CreateUser(string sessionId, DateTimeOffset? sessionExpiresAt = null)
     {

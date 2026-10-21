@@ -9,37 +9,85 @@ internal sealed class FakePublicCatalogApiClient : IPublicCatalogApiClient
     private readonly List<TourDetailsDto> tourDetails = [];
     private readonly ConcurrentDictionary<string, PublicContentVariantDto> contentByKeyAndCulture = new(StringComparer.OrdinalIgnoreCase);
 
-    public bool FailListRequests { get; set; }
+    public bool FailListRequests
+    {
+        get; set;
+    }
 
-    public bool ThrowOperationCanceledExceptionOnListRequests { get; set; }
+    public bool ThrowOperationCanceledExceptionOnListRequests
+    {
+        get; set;
+    }
 
-    public bool ThrowOperationCanceledExceptionOnMediaRequests { get; set; }
+    public bool ThrowOperationCanceledExceptionOnMediaRequests
+    {
+        get; set;
+    }
 
-    public bool FailMediaRequests { get; set; }
+    public bool FailMediaRequests
+    {
+        get; set;
+    }
 
-    public bool FailDetailsRequests { get; set; }
+    public bool FailDetailsRequests
+    {
+        get; set;
+    }
 
-    public bool ThrowOperationCanceledExceptionOnDetailsRequests { get; set; }
+    public bool ThrowOperationCanceledExceptionOnDetailsRequests
+    {
+        get; set;
+    }
 
-    public bool FailContentRequests { get; set; }
+    public bool FailContentRequests
+    {
+        get; set;
+    }
 
-    public bool ThrowOperationCanceledExceptionOnContentRequests { get; set; }
+    public bool ThrowOperationCanceledExceptionOnContentRequests
+    {
+        get; set;
+    }
 
-    public TimeSpan ListDelay { get; set; }
+    public TimeSpan ListDelay
+    {
+        get; set;
+    }
 
-    public TimeSpan ContentDelay { get; set; }
+    public TimeSpan ContentDelay
+    {
+        get; set;
+    }
 
-    public TaskCompletionSource<object?>? ListStarted { get; set; }
+    public TaskCompletionSource<object?>? ListStarted
+    {
+        get; set;
+    }
 
-    public TaskCompletionSource<object?>? ContentStarted { get; set; }
+    public TaskCompletionSource<object?>? ContentStarted
+    {
+        get; set;
+    }
 
-    public PublicMediaObjectResponse? Media { get; set; }
+    public PublicMediaObjectResponse? Media
+    {
+        get; set;
+    }
 
-    public Guid? LastMediaId { get; private set; }
+    public Guid? LastMediaId
+    {
+        get; private set;
+    }
 
-    public int? LastMediaWidth { get; private set; }
+    public int? LastMediaWidth
+    {
+        get; private set;
+    }
 
-    public string? LastMediaFormat { get; private set; }
+    public string? LastMediaFormat
+    {
+        get; private set;
+    }
 
     public void AddTour(TourDetailsDto tour)
     {

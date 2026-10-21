@@ -22,7 +22,10 @@ internal sealed class MediaObjectReconciliationHostedServiceScenario : IAsyncDis
             NullLogger<MediaObjectReconciliationHostedService>.Instance);
     }
 
-    public InMemoryMediaObjectStore ObjectStore { get; }
+    public InMemoryMediaObjectStore ObjectStore
+    {
+        get;
+    }
 
     public static async Task<MediaObjectReconciliationHostedServiceScenario> CreateWithOldOrphan()
     {

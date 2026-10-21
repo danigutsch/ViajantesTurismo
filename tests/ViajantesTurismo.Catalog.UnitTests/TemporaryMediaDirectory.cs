@@ -7,7 +7,10 @@ internal sealed class TemporaryMediaDirectory : IDisposable
         Path = path;
     }
 
-    public string Path { get; }
+    public string Path
+    {
+        get;
+    }
 
     public static TemporaryMediaDirectory Create()
     {

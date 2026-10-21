@@ -32,7 +32,10 @@ public sealed partial class ToursApiClient(HttpClient httpClient, ILogger<ToursA
             cancellationToken).ConfigureAwait(false);
 
         return outcome.Kind == HttpOutcomeKind.Succeeded
-            ? outcome with { Value = outcome.Value?.OfType<GetTourDto>().Take(maxItems).ToArray() ?? [] }
+            ? outcome with
+            {
+                Value = outcome.Value?.OfType<GetTourDto>().Take(maxItems).ToArray() ?? []
+            }
             : outcome;
     }
 

@@ -6,9 +6,18 @@ internal sealed class ManagementCookieTicketCacheEntry
 
     public byte[] Value { get; init; } = [];
 
-    public DateTimeOffset ExpiresAtTime { get; init; }
+    public DateTimeOffset ExpiresAtTime
+    {
+        get; init;
+    }
 
-    public long? SlidingExpirationInSeconds { get; init; }
+    public long? SlidingExpirationInSeconds
+    {
+        get; init;
+    }
 
-    public DateTimeOffset? AbsoluteExpiration { get; init; }
+    public DateTimeOffset? AbsoluteExpiration
+    {
+        get; init;
+    }
 }

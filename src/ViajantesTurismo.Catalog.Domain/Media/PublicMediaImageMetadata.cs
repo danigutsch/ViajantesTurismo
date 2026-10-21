@@ -8,70 +8,112 @@ public sealed class PublicMediaImageMetadata
     /// <summary>
     /// Gets or initializes the stable media image identifier.
     /// </summary>
-    public required Guid Id { get; init; }
+    public required Guid Id
+    {
+        get; init;
+    }
 
     /// <summary>
     /// Gets or initializes the original object key.
     /// </summary>
-    public required string SourceObjectKey { get; init; }
+    public required string SourceObjectKey
+    {
+        get; init;
+    }
 
     /// <summary>
     /// Gets or initializes the content checksum supplied by the media source.
     /// </summary>
-    public required string Checksum { get; init; }
+    public required string Checksum
+    {
+        get; init;
+    }
 
     /// <summary>
     /// Gets or initializes the source media content type.
     /// </summary>
-    public required string ContentType { get; init; }
+    public required string ContentType
+    {
+        get; init;
+    }
 
     /// <summary>
     /// Gets or initializes the source file size in bytes.
     /// </summary>
-    public required long FileSizeBytes { get; init; }
+    public required long FileSizeBytes
+    {
+        get; init;
+    }
 
     /// <summary>
     /// Gets or initializes the source image dimensions.
     /// </summary>
-    public required MediaImageDimensions Dimensions { get; init; }
+    public required MediaImageDimensions Dimensions
+    {
+        get; init;
+    }
 
     /// <summary>
     /// Gets or initializes the external processing state.
     /// </summary>
-    public required MediaImageProcessingStatus ProcessingStatus { get; init; }
+    public required MediaImageProcessingStatus ProcessingStatus
+    {
+        get; init;
+    }
 
     /// <summary>
     /// Gets or initializes the accessible image description.
     /// </summary>
-    public required string AltText { get; init; }
+    public required string AltText
+    {
+        get; init;
+    }
 
     /// <summary>
     /// Gets or initializes the optional public caption.
     /// </summary>
-    public string? Caption { get; init; }
+    public string? Caption
+    {
+        get; init;
+    }
 
     /// <summary>
     /// Gets or initializes a value indicating whether the image is intentionally decorative.
     /// </summary>
-    public bool IsDecorative { get; init; }
+    public bool IsDecorative
+    {
+        get; init;
+    }
 
     /// <summary>
     /// Gets or initializes a value indicating whether accessibility text needs human review before publication.
     /// </summary>
-    public bool RequiresHumanReview { get; init; }
+    public bool RequiresHumanReview
+    {
+        get; init;
+    }
 
     /// <summary>
     /// Gets or initializes a value indicating whether the current accessibility text is an AI-assisted draft.
     /// </summary>
-    public bool IsAiGenerated { get; init; }
+    public bool IsAiGenerated
+    {
+        get; init;
+    }
 
     /// <summary>
     /// Gets or initializes the optional attribution text.
     /// </summary>
-    public string? Attribution { get; init; }
+    public string? Attribution
+    {
+        get; init;
+    }
 
     /// <summary>
     /// Gets or initializes the optional copyright notice.
     /// </summary>
-    public string? Copyright { get; init; }
+    public string? Copyright
+    {
+        get; init;
+    }
 }

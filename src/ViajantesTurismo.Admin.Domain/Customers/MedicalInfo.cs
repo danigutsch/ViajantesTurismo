@@ -30,10 +30,16 @@ public sealed class MedicalInfo
     }
 
     /// <summary>Allergies.</summary>
-    public string? Allergies { get; private set; }
+    public string? Allergies
+    {
+        get; private set;
+    }
 
     /// <summary>Additional medical information.</summary>
-    public string? AdditionalInfo { get; private set; }
+    public string? AdditionalInfo
+    {
+        get; private set;
+    }
 
     /// <summary>
     /// Creates a new instance of <see cref="MedicalInfo"/> with validation.

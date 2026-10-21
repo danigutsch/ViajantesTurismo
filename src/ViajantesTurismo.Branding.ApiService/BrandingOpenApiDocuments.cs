@@ -7,12 +7,18 @@ internal static class BrandingOpenApiDocuments
 {
     public static ApiVersionDefinition CurrentApiVersion { get; } = new(new ApiVersion(1));
 
-    public static IReadOnlyCollection<ApiVersionDefinition> ApiVersions { get; } =
+    public static IReadOnlyCollection<ApiVersionDefinition> ApiVersions
+    {
+        get;
+    } =
     [
         CurrentApiVersion
     ];
 
-    public static IReadOnlyCollection<string> OpenApiDocumentNames { get; } =
+    public static IReadOnlyCollection<string> OpenApiDocumentNames
+    {
+        get;
+    } =
     [
         "branding",
         "public-branding",

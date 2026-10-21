@@ -2,9 +2,15 @@ namespace ViajantesTurismo.Catalog.ContractTests.ApiClients;
 
 internal sealed class ThrowingReadStream(IOException exception) : Stream
 {
-    public int ReadCount { get; private set; }
+    public int ReadCount
+    {
+        get; private set;
+    }
 
-    public bool IsDisposed { get; private set; }
+    public bool IsDisposed
+    {
+        get; private set;
+    }
 
     public override bool CanRead => !IsDisposed;
 

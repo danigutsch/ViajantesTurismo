@@ -137,32 +137,50 @@ public static class CatalogTelemetry
 
     internal static Meter Meter { get; } = new(Name);
 
-    internal static Counter<long> IntegrationEvents { get; } = Meter.CreateCounter<long>(
+    internal static Counter<long> IntegrationEvents
+    {
+        get;
+    } = Meter.CreateCounter<long>(
         MetricIntegrationEvent,
         unit: "{event}",
         description: "Number of Catalog integration events handled, skipped, or failed.");
 
-    internal static Counter<long> IdempotencyOperations { get; } = Meter.CreateCounter<long>(
+    internal static Counter<long> IdempotencyOperations
+    {
+        get;
+    } = Meter.CreateCounter<long>(
         MetricIdempotencyOperation,
         unit: "{operation}",
         description: "Number of Catalog integration-event idempotency outcomes.");
 
-    internal static Counter<long> TourStreamUpdates { get; } = Meter.CreateCounter<long>(
+    internal static Counter<long> TourStreamUpdates
+    {
+        get;
+    } = Meter.CreateCounter<long>(
         MetricTourStreamUpdate,
         unit: "{operation}",
         description: "Number of Catalog tour event-stream updates.");
 
-    internal static Counter<long> ProjectionEvents { get; } = Meter.CreateCounter<long>(
+    internal static Counter<long> ProjectionEvents
+    {
+        get;
+    } = Meter.CreateCounter<long>(
         MetricProjectionEvent,
         unit: "{event}",
         description: "Number of events processed by Catalog projections.");
 
-    internal static Counter<long> ProjectionBatches { get; } = Meter.CreateCounter<long>(
+    internal static Counter<long> ProjectionBatches
+    {
+        get;
+    } = Meter.CreateCounter<long>(
         MetricProjectionBatch,
         unit: "{batch}",
         description: "Number of Catalog projection batches processed.");
 
-    internal static Counter<long> MediaObjectReconciliationObjects { get; } = Meter.CreateCounter<long>(
+    internal static Counter<long> MediaObjectReconciliationObjects
+    {
+        get;
+    } = Meter.CreateCounter<long>(
         MetricMediaObjectReconciliationObject,
         unit: "{object}",
         description: "Number of Catalog media objects found, deleted, or failed during reconciliation.");

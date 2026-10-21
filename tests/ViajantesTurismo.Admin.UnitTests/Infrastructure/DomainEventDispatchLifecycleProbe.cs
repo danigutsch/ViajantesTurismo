@@ -15,9 +15,15 @@ internal sealed class DomainEventDispatchLifecycleProbe
 
     public IReadOnlyList<(object Handler, DbContext? CurrentContext)> DisposedHandlers => disposedHandlers;
 
-    public Exception? DispatchFailure { get; init; }
+    public Exception? DispatchFailure
+    {
+        get; init;
+    }
 
-    public CancellationTokenSource? CancellationSource { get; init; }
+    public CancellationTokenSource? CancellationSource
+    {
+        get; init;
+    }
 
     public void RecordCreated(object handler) => createdHandlers.Add(handler);
 

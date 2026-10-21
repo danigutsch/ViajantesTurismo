@@ -12,19 +12,34 @@ public sealed class PaymentFormModel
 {
     [Required(ErrorMessage = "Payment amount is required")]
     [Range(0.01, double.MaxValue, ErrorMessage = "Payment amount must be greater than zero")]
-    public decimal? Amount { get; set; }
+    public decimal? Amount
+    {
+        get; set;
+    }
 
     [Required(ErrorMessage = "Payment date is required")]
-    public DateOnly? PaymentDate { get; set; }
+    public DateOnly? PaymentDate
+    {
+        get; set;
+    }
 
     [Required(ErrorMessage = "Payment method is required")]
-    public PaymentMethodDto? Method { get; set; }
+    public PaymentMethodDto? Method
+    {
+        get; set;
+    }
 
     [MaxLength(ContractConstants.MaxReferenceNumberLength)]
-    public string? ReferenceNumber { get; set; }
+    public string? ReferenceNumber
+    {
+        get; set;
+    }
 
     [MaxLength(ContractConstants.MaxPaymentNotesLength)]
-    public string? Notes { get; set; }
+    public string? Notes
+    {
+        get; set;
+    }
 
     /// <summary>
     /// Converts this form model to a CreatePaymentDto for API submission.

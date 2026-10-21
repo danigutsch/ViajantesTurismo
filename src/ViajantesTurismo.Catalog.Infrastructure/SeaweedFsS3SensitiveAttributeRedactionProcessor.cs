@@ -5,7 +5,10 @@ namespace ViajantesTurismo.Catalog.Infrastructure;
 
 internal sealed class SeaweedFsS3SensitiveAttributeRedactionProcessor : BaseProcessor<Activity>
 {
-    private static string[] SensitiveAttributes { get; } =
+    private static string[] SensitiveAttributes
+    {
+        get;
+    } =
     [
         "aws.s3.bucket",
         "aws.s3.bucket.name",

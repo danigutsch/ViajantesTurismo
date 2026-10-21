@@ -113,12 +113,18 @@ public sealed record CountryInfo
     /// <summary>
     /// Gets the country code (ISO 3166-1 alpha-2).
     /// </summary>
-    public required string Code { get; init; }
+    public required string Code
+    {
+        get; init;
+    }
 
     /// <summary>
     /// Gets the name of the country.
     /// </summary>
-    public required string Name { get; init; }
+    public required string Name
+    {
+        get; init;
+    }
 }
 
 /// <summary>
@@ -130,5 +136,8 @@ internal sealed record CountryData
     /// <summary>
     /// Gets the name of the country.
     /// </summary>
-    public required string Name { get; init; }
+    public required string Name
+    {
+        get; init;
+    }
 }

@@ -10,7 +10,10 @@ public sealed class TestMediaObjectStore : IMediaObjectStore
 
     private const int MaxObjectKeyLength = CatalogDomainLimits.MaxMediaObjectKeyLength;
 
-    public bool ThrowFileNotFoundOnOpenRead { get; set; }
+    public bool ThrowFileNotFoundOnOpenRead
+    {
+        get; set;
+    }
 
     public async ValueTask<MediaObjectWriteResult> Put(MediaObjectWriteRequest request, CancellationToken ct)
     {
@@ -19,7 +22,11 @@ public sealed class TestMediaObjectStore : IMediaObjectStore
         ValidateObjectKey(request.ObjectKey);
         using var content = new MemoryStream();
         await request.Content.CopyToAsync(content, ct).ConfigureAwait(false);
-        objects[request.ObjectKey] = request with { Content = new MemoryStream(content.ToArray()), Length = content.Length };
+        objects[request.ObjectKey] = request with
+        {
+            Content = new MemoryStream(content.ToArray()),
+            Length = content.Length
+        };
 
         return new MediaObjectWriteResult(request.ObjectKey, GetPublicUri(request.ObjectKey), GetPublicUri(request.ObjectKey), request.ContentType, content.Length, request.Checksum);
     }

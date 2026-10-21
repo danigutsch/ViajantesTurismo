@@ -4,11 +4,20 @@ namespace ViajantesTurismo.Catalog.ApiServiceTests.Infrastructure;
 
 internal sealed class RecordingOutputCacheStore : IOutputCacheStore
 {
-    public bool EvictionObserved { get; private set; }
+    public bool EvictionObserved
+    {
+        get; private set;
+    }
 
-    public CancellationToken EvictionCancellationToken { get; private set; }
+    public CancellationToken EvictionCancellationToken
+    {
+        get; private set;
+    }
 
-    public Exception? EvictionException { get; set; }
+    public Exception? EvictionException
+    {
+        get; set;
+    }
 
     public ValueTask<byte[]?> GetAsync(string key, CancellationToken cancellationToken)
     {

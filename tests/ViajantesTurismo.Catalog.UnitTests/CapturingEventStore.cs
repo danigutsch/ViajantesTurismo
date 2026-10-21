@@ -9,17 +9,32 @@ public sealed class CapturingEventStore(int appendFailures = 0) : IEventStore
     private readonly List<EventEnvelope> replayEvents = [];
     private int remainingAppendFailures = appendFailures;
 
-    public Action? OnAppend { get; set; }
+    public Action? OnAppend
+    {
+        get; set;
+    }
 
-    public StreamId StreamId { get; private set; }
+    public StreamId StreamId
+    {
+        get; private set;
+    }
 
-    public ExpectedStreamRevision ExpectedRevision { get; private set; }
+    public ExpectedStreamRevision ExpectedRevision
+    {
+        get; private set;
+    }
 
     public IReadOnlyCollection<object> Events => appendedEvents;
 
-    public long? LoadedAfterPosition { get; private set; }
+    public long? LoadedAfterPosition
+    {
+        get; private set;
+    }
 
-    public int AppendAttempts { get; private set; }
+    public int AppendAttempts
+    {
+        get; private set;
+    }
 
     public void AddReplayEvent(EventEnvelope envelope) => replayEvents.Add(envelope);
 

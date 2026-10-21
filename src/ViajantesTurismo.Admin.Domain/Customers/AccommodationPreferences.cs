@@ -30,13 +30,22 @@ public sealed class AccommodationPreferences
     }
 
     /// <summary>Room type.</summary>
-    public RoomType RoomType { get; private set; }
+    public RoomType RoomType
+    {
+        get; private set;
+    }
 
     /// <summary>Bed type.</summary>
-    public BedType BedType { get; private set; }
+    public BedType BedType
+    {
+        get; private set;
+    }
 
     /// <summary>Companion's ID.</summary>
-    public Guid? CompanionId { get; private set; }
+    public Guid? CompanionId
+    {
+        get; private set;
+    }
 
     /// <summary>
     /// Creates a new instance of <see cref="AccommodationPreferences"/>.

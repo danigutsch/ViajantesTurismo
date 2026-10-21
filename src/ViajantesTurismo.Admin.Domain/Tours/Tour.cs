@@ -52,7 +52,10 @@ public sealed partial class Tour : IAggregateRoot<Guid>
     /// <summary>
     /// Gets the unique tour identifier.
     /// </summary>
-    public Guid Id { get; private init; }
+    public Guid Id
+    {
+        get; private init;
+    }
 
     /// <summary>
     /// Gets the unique business identifier for the tour.

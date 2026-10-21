@@ -266,7 +266,10 @@ public sealed class CatalogToursApiClient(HttpClient httpClient) : ICatalogTours
                 HttpOutcomeKind.MalformedBody,
                 statusCode,
                 "The catalog tour response body was invalid.")
-            : outcome with { Value = tours };
+            : outcome with
+            {
+                Value = tours
+            };
     }
 
     private static HttpOutcome<CatalogMediaImageDto[]> NormalizeImages(

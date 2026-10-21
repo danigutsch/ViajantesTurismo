@@ -6,7 +6,10 @@ internal sealed class PostgreSqlIndexHealthHostOptions
     public const string AdminConnectionStringName = "admin-index-health";
     public const string CatalogConnectionStringName = "catalog-index-health";
 
-    public bool Enabled { get; set; }
+    public bool Enabled
+    {
+        get; set;
+    }
 
     public TimeSpan PollingInterval { get; set; } = TimeSpan.FromHours(1);
 

@@ -28,7 +28,10 @@ internal sealed class ProtectedDistributedTicketStoreCookieHandlerTestHost : IDi
     public ThrowingRemoveDistributedCache Cache => _ticketRemovalCache
         ?? throw new InvalidOperationException("The test host was not configured with a failing ticket cache.");
 
-    public IHost Host { get; }
+    public IHost Host
+    {
+        get;
+    }
 
     public static async Task<ProtectedDistributedTicketStoreCookieHandlerTestHost> StartWithFailingTicketRemoval(CancellationToken ct)
     {

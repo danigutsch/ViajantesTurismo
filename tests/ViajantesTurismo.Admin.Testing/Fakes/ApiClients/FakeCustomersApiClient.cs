@@ -11,9 +11,18 @@ public sealed class FakeCustomersApiClient : ICustomersApiClient
     private Func<CancellationToken, int, Task<IReadOnlyList<GetCustomerDto>>>? _getCustomersHandler;
     private Func<byte[], string, IReadOnlyDictionary<string, string>, IProgress<long>?, CancellationToken, Task<ImportResultDto>>? _commitImportHandler;
     private Func<byte[], string, IProgress<long>?, CancellationToken, Task<ImportResultDto>>? _importCustomersHandler;
-    public CancellationToken LastCommitCancellationToken { get; private set; }
-    public CancellationToken LastImportCancellationToken { get; private set; }
-    public int ImportCustomersCallCount { get; private set; }
+    public CancellationToken LastCommitCancellationToken
+    {
+        get; private set;
+    }
+    public CancellationToken LastImportCancellationToken
+    {
+        get; private set;
+    }
+    public int ImportCustomersCallCount
+    {
+        get; private set;
+    }
     private ImportResultDto? _commitImportResult;
     private Exception? _createCustomerException;
     private HttpOutcome? _createCustomerOutcome;
@@ -27,13 +36,25 @@ public sealed class FakeCustomersApiClient : ICustomersApiClient
     private Exception? _updateCustomerException;
     private HttpOutcome? _updateCustomerOutcome;
 
-    public IReadOnlyList<byte>? LastCommitFileContent { get; private set; }
+    public IReadOnlyList<byte>? LastCommitFileContent
+    {
+        get; private set;
+    }
 
-    public string? LastCommitFileName { get; private set; }
+    public string? LastCommitFileName
+    {
+        get; private set;
+    }
 
-    public IReadOnlyDictionary<string, string>? LastCommitConflictResolutions { get; private set; }
+    public IReadOnlyDictionary<string, string>? LastCommitConflictResolutions
+    {
+        get; private set;
+    }
 
-    public int? LastGetCustomersMaxItems { get; private set; }
+    public int? LastGetCustomersMaxItems
+    {
+        get; private set;
+    }
 
     public async Task<HttpOutcome<GetCustomerDto[]>> GetCustomers(CancellationToken ct, int maxItems = 100)
     {

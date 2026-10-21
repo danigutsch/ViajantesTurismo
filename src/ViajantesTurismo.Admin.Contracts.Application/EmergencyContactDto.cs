@@ -13,7 +13,10 @@ public sealed record EmergencyContactDto
     /// </summary>
     [Required]
     [StringLength(ContractConstants.MaxNameLength, MinimumLength = 1)]
-    public required string Name { get; init; }
+    public required string Name
+    {
+        get; init;
+    }
 
     /// <summary>
     /// The mobile phone number of the emergency contact person.
@@ -21,5 +24,8 @@ public sealed record EmergencyContactDto
     [Required]
     [StringLength(ContractConstants.MaxDefaultLength, MinimumLength = 1)]
     [Phone]
-    public required string Mobile { get; init; }
+    public required string Mobile
+    {
+        get; init;
+    }
 }

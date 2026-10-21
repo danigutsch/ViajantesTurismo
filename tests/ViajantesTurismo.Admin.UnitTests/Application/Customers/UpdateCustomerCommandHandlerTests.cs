@@ -39,7 +39,12 @@ public sealed class UpdateCustomerCommandHandlerTests
             },
             new IdentificationInfoDto { NationalId = "ID123", IdNationality = "USA" },
             new ContactInfoDto
-            { Email = "updated@example.com", Mobile = "+1000000000", Instagram = null, Facebook = null },
+            {
+                Email = "updated@example.com",
+                Mobile = "+1000000000",
+                Instagram = null,
+                Facebook = null
+            },
             new AddressDto
             {
                 Street = "Street",
@@ -52,7 +57,11 @@ public sealed class UpdateCustomerCommandHandlerTests
             },
             new PhysicalInfoDto { WeightKg = 70m, HeightCentimeters = 180, BikeType = BikeTypeDto.Regular },
             new AccommodationPreferencesDto
-            { RoomType = RoomTypeDto.DoubleOccupancy, BedType = BedTypeDto.SingleBed, CompanionId = null },
+            {
+                RoomType = RoomTypeDto.DoubleOccupancy,
+                BedType = BedTypeDto.SingleBed,
+                CompanionId = null
+            },
             new EmergencyContactDto { Name = "Jane Doe", Mobile = "+1000000001" },
             new MedicalInfoDto { Allergies = "None", AdditionalInfo = null }
         );
@@ -85,7 +94,12 @@ public sealed class UpdateCustomerCommandHandlerTests
             },
             new IdentificationInfoDto { NationalId = "ID123", IdNationality = "USA" },
             new ContactInfoDto
-            { Email = "nonexistent@example.com", Mobile = "+1000000000", Instagram = null, Facebook = null },
+            {
+                Email = "nonexistent@example.com",
+                Mobile = "+1000000000",
+                Instagram = null,
+                Facebook = null
+            },
             new AddressDto
             {
                 Street = "Street",
@@ -98,7 +112,11 @@ public sealed class UpdateCustomerCommandHandlerTests
             },
             new PhysicalInfoDto { WeightKg = 70m, HeightCentimeters = 180, BikeType = BikeTypeDto.Regular },
             new AccommodationPreferencesDto
-            { RoomType = RoomTypeDto.DoubleOccupancy, BedType = BedTypeDto.SingleBed, CompanionId = null },
+            {
+                RoomType = RoomTypeDto.DoubleOccupancy,
+                BedType = BedTypeDto.SingleBed,
+                CompanionId = null
+            },
             new EmergencyContactDto { Name = "Jane Doe", Mobile = "+1000000001" },
             new MedicalInfoDto { Allergies = "None", AdditionalInfo = null }
         );
@@ -137,7 +155,12 @@ public sealed class UpdateCustomerCommandHandlerTests
                 IdNationality = existing1.IdentificationInfo.IdNationality
             },
             new ContactInfoDto
-            { Email = "dup@example.com", Mobile = existing1.ContactInfo.Mobile, Instagram = null, Facebook = null },
+            {
+                Email = "dup@example.com",
+                Mobile = existing1.ContactInfo.Mobile,
+                Instagram = null,
+                Facebook = null
+            },
             new AddressDto
             {
                 Street = "Street",
@@ -155,11 +178,21 @@ public sealed class UpdateCustomerCommandHandlerTests
                 BikeType = BikeTypeDto.Regular
             },
             new AccommodationPreferencesDto
-            { RoomType = RoomTypeDto.DoubleOccupancy, BedType = BedTypeDto.SingleBed, CompanionId = null },
+            {
+                RoomType = RoomTypeDto.DoubleOccupancy,
+                BedType = BedTypeDto.SingleBed,
+                CompanionId = null
+            },
             new EmergencyContactDto
-            { Name = existing1.EmergencyContact.Name, Mobile = existing1.EmergencyContact.Mobile },
+            {
+                Name = existing1.EmergencyContact.Name,
+                Mobile = existing1.EmergencyContact.Mobile
+            },
             new MedicalInfoDto
-            { Allergies = existing1.MedicalInfo.Allergies, AdditionalInfo = existing1.MedicalInfo.AdditionalInfo }
+            {
+                Allergies = existing1.MedicalInfo.Allergies,
+                AdditionalInfo = existing1.MedicalInfo.AdditionalInfo
+            }
         );
 
         // Act

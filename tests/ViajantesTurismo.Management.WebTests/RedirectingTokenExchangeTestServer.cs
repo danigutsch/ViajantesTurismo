@@ -26,7 +26,10 @@ internal sealed class RedirectingTokenExchangeTestServer : IAsyncDisposable
         _tokenRequestBodies = tokenRequestBodies;
     }
 
-    public Uri TokenEndpoint { get; }
+    public Uri TokenEndpoint
+    {
+        get;
+    }
 
     public IReadOnlyList<string> RedirectRequestBodies => _redirectRequestBodies.ToArray();
 

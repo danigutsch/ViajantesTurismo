@@ -11,7 +11,10 @@ public sealed record CustomerImportFieldMapping(CustomerImportField Field, strin
 
 internal static class CustomerImportHeaderMatcher
 {
-    public static IReadOnlyList<CustomerImportField> Fields { get; } =
+    public static IReadOnlyList<CustomerImportField> Fields
+    {
+        get;
+    } =
     [
         new(CustomerImportFieldNames.FirstName, "First Name", true),
         new(CustomerImportFieldNames.LastName, "Last Name", true),

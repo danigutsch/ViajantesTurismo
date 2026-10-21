@@ -39,37 +39,64 @@ public sealed class DocumentAuditRecord : IEntity<Guid>, IAuditTrailEntry
     }
 
     /// <summary>Gets the opaque audit record identifier.</summary>
-    public Guid Id { get; private init; }
+    public Guid Id
+    {
+        get; private init;
+    }
 
     /// <summary>Gets the opaque authenticated actor identifier.</summary>
     public string ActorId { get; private init; } = default!;
 
     /// <summary>Gets the affected document identifier when available.</summary>
-    public Guid? DocumentId { get; private init; }
+    public Guid? DocumentId
+    {
+        get; private init;
+    }
 
     /// <summary>Gets the affected booking identifier when available.</summary>
-    public Guid? BookingId { get; private init; }
+    public Guid? BookingId
+    {
+        get; private init;
+    }
 
     /// <summary>Gets the document revision when available.</summary>
-    public int? DocumentRevision { get; private init; }
+    public int? DocumentRevision
+    {
+        get; private init;
+    }
 
     /// <summary>Gets the operation that was requested.</summary>
-    public DocumentAuditOperation Operation { get; private init; }
+    public DocumentAuditOperation Operation
+    {
+        get; private init;
+    }
 
     /// <summary>Gets whether the operation completed or was rejected.</summary>
-    public DocumentAuditOutcome Outcome { get; private init; }
+    public DocumentAuditOutcome Outcome
+    {
+        get; private init;
+    }
 
     /// <summary>Gets a bounded, non-content reason code.</summary>
-    public DocumentAuditReasonCode ReasonCode { get; private init; }
+    public DocumentAuditReasonCode ReasonCode
+    {
+        get; private init;
+    }
 
     /// <summary>Gets the server-generated correlation identifier.</summary>
     public string CorrelationId { get; private init; } = default!;
 
     /// <summary>Gets when the operation occurred in UTC.</summary>
-    public DateTime OccurredAtUtc { get; private init; }
+    public DateTime OccurredAtUtc
+    {
+        get; private init;
+    }
 
     /// <summary>Gets when this audit record becomes eligible for retention purge.</summary>
-    public DateTime RetentionExpiresAt { get; private init; }
+    public DateTime RetentionExpiresAt
+    {
+        get; private init;
+    }
 
     /// <summary>Creates an immutable document audit record from approved metadata only.</summary>
     public static Result<DocumentAuditRecord> Create(

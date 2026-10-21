@@ -136,7 +136,10 @@ public sealed class MediaImageUploadIntakeTests
 
         // Act
         var first = await intake.Accept(request, TestContext.Current.CancellationToken);
-        var retry = await intake.Accept(request with { Content = new MemoryStream(content) }, TestContext.Current.CancellationToken);
+        var retry = await intake.Accept(request with
+        {
+            Content = new MemoryStream(content)
+        }, TestContext.Current.CancellationToken);
 
         // Assert
         first.IsSuccess.ShouldBeTrue();

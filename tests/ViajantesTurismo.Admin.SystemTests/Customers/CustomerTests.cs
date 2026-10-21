@@ -54,8 +54,14 @@ public class CustomerTests(AspireSystemTestFixture fixture) : AspireSystemTestBa
 
         await Page.GetButton("Next").ClickAsync();
 
-        await Expect(Page).ToHaveURLAsync(CustomerTestRegexes.ContactStep(), new() { Timeout = WizardStepTransitionTimeoutMilliseconds });
-        await Expect(Page.Locator("#email")).ToBeVisibleAsync(new() { Timeout = WizardStepTransitionTimeoutMilliseconds });
+        await Expect(Page).ToHaveURLAsync(CustomerTestRegexes.ContactStep(), new()
+        {
+            Timeout = WizardStepTransitionTimeoutMilliseconds
+        });
+        await Expect(Page.Locator("#email")).ToBeVisibleAsync(new()
+        {
+            Timeout = WizardStepTransitionTimeoutMilliseconds
+        });
         await Expect(Page.GetByText("Step 3 of 8")).ToBeVisibleAsync();
         await Expect(Page).ToHaveTitleAsync("Create Customer - Contact Information");
 
@@ -85,7 +91,10 @@ public class CustomerTests(AspireSystemTestFixture fixture) : AspireSystemTestBa
 
         await Page.GetButton("Next").ClickAsync();
 
-        await Expect(Page).ToHaveURLAsync(CustomerTestRegexes.PhysicalStep(), new() { Timeout = WizardStepTransitionTimeoutMilliseconds });
+        await Expect(Page).ToHaveURLAsync(CustomerTestRegexes.PhysicalStep(), new()
+        {
+            Timeout = WizardStepTransitionTimeoutMilliseconds
+        });
         await Expect(Page).ToHaveTitleAsync("Create Customer - Physical Information");
         await Expect(Page.Locator("#weightKg")).ToBeEditableAsync();
         await Expect(Page.GetByText("Step 5 of 8")).ToBeVisibleAsync();
@@ -136,7 +145,10 @@ public class CustomerTests(AspireSystemTestFixture fixture) : AspireSystemTestBa
 
         await Page.GetButton("Next").ClickAsync();
 
-        await Expect(Page).ToHaveURLAsync(CustomerTestRegexes.MedicalStep(), new() { Timeout = WizardStepTransitionTimeoutMilliseconds });
+        await Expect(Page).ToHaveURLAsync(CustomerTestRegexes.MedicalStep(), new()
+        {
+            Timeout = WizardStepTransitionTimeoutMilliseconds
+        });
         await Expect(Page).ToHaveTitleAsync("Create Customer - Medical Information");
         await Expect(Page.GetByText("Step 8 of 8")).ToBeVisibleAsync();
 

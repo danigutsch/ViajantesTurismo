@@ -42,37 +42,58 @@ public sealed class PublicMediaImageAccessibilityText : ValueObject
     /// <summary>
     /// Gets the language for this accessibility text.
     /// </summary>
-    public PublicContentLanguage Language { get; private set; }
+    public PublicContentLanguage Language
+    {
+        get; private set;
+    }
 
     /// <summary>
     /// Gets the accessible image description.
     /// </summary>
-    public string? AltText { get; private set; }
+    public string? AltText
+    {
+        get; private set;
+    }
 
     /// <summary>
     /// Gets the optional public caption.
     /// </summary>
-    public string? Caption { get; private set; }
+    public string? Caption
+    {
+        get; private set;
+    }
 
     /// <summary>
     /// Gets a value indicating whether the image is intentionally decorative.
     /// </summary>
-    public bool IsDecorative { get; private set; }
+    public bool IsDecorative
+    {
+        get; private set;
+    }
 
     /// <summary>
     /// Gets a value indicating whether a human must review this text before publication.
     /// </summary>
-    public bool RequiresHumanReview { get; private set; }
+    public bool RequiresHumanReview
+    {
+        get; private set;
+    }
 
     /// <summary>
     /// Gets a value indicating whether the current text was generated as an AI-assisted draft.
     /// </summary>
-    public bool IsAiGenerated { get; private set; }
+    public bool IsAiGenerated
+    {
+        get; private set;
+    }
 
     /// <summary>
     /// Gets the creation time of the current pending draft, or null for reviewed or legacy text.
     /// </summary>
-    public DateTimeOffset? PendingDraftCreatedAt { get; private set; }
+    public DateTimeOffset? PendingDraftCreatedAt
+    {
+        get; private set;
+    }
 
     /// <summary>
     /// Gets a value indicating whether this text can be published.

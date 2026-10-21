@@ -8,7 +8,10 @@ internal sealed class SeaweedFsObjectResponseStream(GetObjectResponse response) 
     public override bool CanSeek => response.ResponseStream.CanSeek;
     public override bool CanWrite => false;
     public override long Length => response.ResponseStream.Length;
-    public override long Position { get => response.ResponseStream.Position; set => response.ResponseStream.Position = value; }
+    public override long Position
+    {
+        get => response.ResponseStream.Position; set => response.ResponseStream.Position = value;
+    }
     public override void Flush() => response.ResponseStream.Flush();
     public override Task FlushAsync(CancellationToken cancellationToken) => response.ResponseStream.FlushAsync(cancellationToken);
     public override int Read(byte[] buffer, int offset, int count) => response.ResponseStream.Read(buffer, offset, count);

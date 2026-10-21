@@ -8,7 +8,10 @@ public sealed class UpsertPublicContentRequest
     /// <summary>
     /// Gets or sets the source language entered by the editor.
     /// </summary>
-    public PublicContentLanguageDto SourceLanguage { get; set; }
+    public PublicContentLanguageDto SourceLanguage
+    {
+        get; set;
+    }
 
     /// <summary>
     /// Gets or sets the localized content variants.

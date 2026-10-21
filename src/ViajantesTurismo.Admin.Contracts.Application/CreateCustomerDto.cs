@@ -8,40 +8,64 @@ public sealed record CreateCustomerDto
     /// <summary>
     /// Gets the personal information of the customer.
     /// </summary>
-    public required PersonalInfoDto PersonalInfo { get; init; }
+    public required PersonalInfoDto PersonalInfo
+    {
+        get; init;
+    }
 
     /// <summary>
     /// Gets the identification information of the customer.
     /// </summary>
-    public required IdentificationInfoDto IdentificationInfo { get; init; }
+    public required IdentificationInfoDto IdentificationInfo
+    {
+        get; init;
+    }
 
     /// <summary>
     /// Gets the contact information of the customer.
     /// </summary>
-    public required ContactInfoDto ContactInfo { get; init; }
+    public required ContactInfoDto ContactInfo
+    {
+        get; init;
+    }
 
     /// <summary>
     /// Gets the address of the customer.
     /// </summary>
-    public required AddressDto Address { get; init; }
+    public required AddressDto Address
+    {
+        get; init;
+    }
 
     /// <summary>
     /// Gets the physical information of the customer.
     /// </summary>
-    public required PhysicalInfoDto PhysicalInfo { get; init; }
+    public required PhysicalInfoDto PhysicalInfo
+    {
+        get; init;
+    }
 
     /// <summary>
     /// Gets the accommodation preferences of the customer.
     /// </summary>
-    public required AccommodationPreferencesDto AccommodationPreferences { get; init; }
+    public required AccommodationPreferencesDto AccommodationPreferences
+    {
+        get; init;
+    }
 
     /// <summary>
     /// Gets the emergency contact information of the customer.
     /// </summary>
-    public required EmergencyContactDto EmergencyContact { get; init; }
+    public required EmergencyContactDto EmergencyContact
+    {
+        get; init;
+    }
 
     /// <summary>
     /// Gets the medical information of the customer.
     /// </summary>
-    public required MedicalInfoDto MedicalInfo { get; init; }
+    public required MedicalInfoDto MedicalInfo
+    {
+        get; init;
+    }
 }

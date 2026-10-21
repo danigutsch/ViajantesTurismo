@@ -191,7 +191,10 @@ public sealed class DetailsPageTests : BunitContext
         // Assert
         documentsApiClient.LastBeginReviewDocumentId.ShouldBe(replacement.Id);
 
-        var otherRevision = replacement with { Id = Guid.CreateVersion7() };
+        var otherRevision = replacement with
+        {
+            Id = Guid.CreateVersion7()
+        };
         documentsApiClient.AddDocument(otherRevision);
         cut.Render(parameters => parameters.Add(page => page.Id, otherRevision.Id));
 
@@ -342,7 +345,10 @@ public sealed class DetailsPageTests : BunitContext
     {
         // Arrange
         var original = DocumentDetailsTestData.Create(DocumentStatusDto.Finalized, fields: []);
-        var other = original with { Id = Guid.CreateVersion7() };
+        var other = original with
+        {
+            Id = Guid.CreateVersion7()
+        };
         documentsApiClient.AddDocument(original);
         documentsApiClient.AddDocument(other);
         documentsApiClient.RegenerationOutcome = new HttpOutcome<GetDocumentDto>

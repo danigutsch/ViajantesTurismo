@@ -22,13 +22,25 @@ public class MockWebHostEnvironment : IWebHostEnvironment
 
     public string ApplicationName { get; set; } = "ViajantesTurismo.Management.Web";
 
-    public string WebRootPath { get; set; }
+    public string WebRootPath
+    {
+        get; set;
+    }
 
-    public IFileProvider WebRootFileProvider { get; set; }
+    public IFileProvider WebRootFileProvider
+    {
+        get; set;
+    }
 
-    public string ContentRootPath { get; set; }
+    public string ContentRootPath
+    {
+        get; set;
+    }
 
-    public IFileProvider ContentRootFileProvider { get; set; }
+    public IFileProvider ContentRootFileProvider
+    {
+        get; set;
+    }
 
     private static string GetWebProjectPath()
     {

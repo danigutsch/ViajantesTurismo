@@ -28,23 +28,50 @@ internal sealed class BrandingSettingsRecord
         LogoUri = logoUri;
     }
 
-    public Guid Id { get; private set; }
+    public Guid Id
+    {
+        get; private set;
+    }
 
-    public string BrandName { get; private set; }
+    public string BrandName
+    {
+        get; private set;
+    }
 
-    public string PrimaryColor { get; private set; }
+    public string PrimaryColor
+    {
+        get; private set;
+    }
 
-    public string AccentColor { get; private set; }
+    public string AccentColor
+    {
+        get; private set;
+    }
 
-    public string BackgroundColor { get; private set; }
+    public string BackgroundColor
+    {
+        get; private set;
+    }
 
-    public string TextColor { get; private set; }
+    public string TextColor
+    {
+        get; private set;
+    }
 
-    public string HeadingFontFamily { get; private set; }
+    public string HeadingFontFamily
+    {
+        get; private set;
+    }
 
-    public string BodyFontFamily { get; private set; }
+    public string BodyFontFamily
+    {
+        get; private set;
+    }
 
-    public string? LogoUri { get; private set; }
+    public string? LogoUri
+    {
+        get; private set;
+    }
 
     public static BrandingSettingsRecord FromSettings(BrandingSettings settings)
     {

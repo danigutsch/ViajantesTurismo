@@ -24,15 +24,30 @@ public sealed class ImportContext
 
     public string CsvContent { get; set; } = BuildValidCsv(1);
 
-    public bool DryRun { get; set; }
+    public bool DryRun
+    {
+        get; set;
+    }
 
-    public ImportResult? Result { get; set; }
+    public ImportResult? Result
+    {
+        get; set;
+    }
 
-    public ImportResultDto? WorkflowResult { get; set; }
+    public ImportResultDto? WorkflowResult
+    {
+        get; set;
+    }
 
-    public ImportResultDto? WorkflowCommitResult { get; set; }
+    public ImportResultDto? WorkflowCommitResult
+    {
+        get; set;
+    }
 
-    public IReadOnlyDictionary<string, string> ConflictResolutions { get; set; } =
+    public IReadOnlyDictionary<string, string> ConflictResolutions
+    {
+        get; set;
+    } =
         new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
 
     public FakeCustomerStore CustomerStore { get; } = new();

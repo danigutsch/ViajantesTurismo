@@ -19,7 +19,10 @@ public sealed class S3MediaUploadTicketTests
             new AmazonS3Config { ServiceURL = "https://s3.eu-central-1.amazonaws.com", AuthenticationRegion = "eu-central-1", ForcePathStyle = true });
         var store = new SeaweedFsMediaObjectStore(client, Options.Create(new SeaweedFsMediaObjectStorageOptions
         {
-            Endpoint = new Uri("https://s3.eu-central-1.amazonaws.com"), Bucket = "media", AccessKey = "test-access", SecretKey = "test-secret"
+            Endpoint = new Uri("https://s3.eu-central-1.amazonaws.com"),
+            Bucket = "media",
+            AccessKey = "test-access",
+            SecretKey = "test-secret"
         }));
         var request = new MediaObjectUploadRequest("pending/image.jpg", "image/jpeg", 123, TimeSpan.FromMinutes(5));
 
@@ -46,7 +49,10 @@ public sealed class S3MediaUploadTicketTests
             new AmazonS3Config { ServiceURL = endpoint.AbsoluteUri, AuthenticationRegion = "us-east-1", ForcePathStyle = true });
         var store = new SeaweedFsMediaObjectStore(client, Options.Create(new SeaweedFsMediaObjectStorageOptions
         {
-            Endpoint = endpoint, Bucket = "media", AccessKey = "test-access", SecretKey = "test-secret"
+            Endpoint = endpoint,
+            Bucket = "media",
+            AccessKey = "test-access",
+            SecretKey = "test-secret"
         }));
         var request = new MediaObjectUploadRequest("pending/image.jpg", "image/jpeg", 123, TimeSpan.FromMinutes(5));
 

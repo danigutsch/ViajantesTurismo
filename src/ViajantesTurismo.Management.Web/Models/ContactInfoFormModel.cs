@@ -16,10 +16,16 @@ internal sealed class ContactInfoFormModel
     public string Mobile { get; set; } = string.Empty;
 
     [MaxLength(ContractConstants.MaxDefaultLength)]
-    public string? Instagram { get; set; }
+    public string? Instagram
+    {
+        get; set;
+    }
 
     [MaxLength(ContractConstants.MaxDefaultLength)]
-    public string? Facebook { get; set; }
+    public string? Facebook
+    {
+        get; set;
+    }
 
     public ContactInfoDto ToDto() => new()
     {

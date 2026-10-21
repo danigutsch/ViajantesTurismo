@@ -14,7 +14,10 @@ internal sealed class InMemoryMediaObjectStore : IMediaObjectStore
 
     public IReadOnlyCollection<string> ObjectKeys => objects.Keys;
 
-    public int ExistsCallCount { get; private set; }
+    public int ExistsCallCount
+    {
+        get; private set;
+    }
 
     public async ValueTask<MediaObjectWriteResult> Put(MediaObjectWriteRequest request, CancellationToken ct)
     {
@@ -23,7 +26,11 @@ internal sealed class InMemoryMediaObjectStore : IMediaObjectStore
         using var content = new MemoryStream();
         await request.Content.CopyToAsync(content, ct);
         objects[request.ObjectKey] = new StoredMediaObject(
-            request with { Content = new MemoryStream(content.ToArray()), Length = content.Length },
+            request with
+            {
+                Content = new MemoryStream(content.ToArray()),
+                Length = content.Length
+            },
             DateTimeOffset.UtcNow);
 
         return new MediaObjectWriteResult(
@@ -117,7 +124,10 @@ internal sealed class InMemoryMediaObjectStore : IMediaObjectStore
     public void SetLastModified(string objectKey, DateTimeOffset lastModifiedAt)
     {
         ValidateObjectKey(objectKey);
-        objects[objectKey] = objects[objectKey] with { LastModifiedAt = lastModifiedAt };
+        objects[objectKey] = objects[objectKey] with
+        {
+            LastModifiedAt = lastModifiedAt
+        };
     }
 
     public void FailNextDelete(string objectKey)

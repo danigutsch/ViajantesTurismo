@@ -34,8 +34,10 @@ public sealed class ReviewImageAccessibilityPageTests : BunitContext
         // Arrange
         var image = new CatalogMediaImageDto
         {
-            Id = Guid.CreateVersion7(), AltText = "The cyclists are riding through a mountain valley.",
-            ResponsiveVariants = [], RequiresHumanReview = true
+            Id = Guid.CreateVersion7(),
+            AltText = "The cyclists are riding through a mountain valley.",
+            ResponsiveVariants = [],
+            RequiresHumanReview = true
         };
         catalogApi.Images = [image];
         var pendingDraft = new TaskCompletionSource<HttpOutcome<CatalogMediaImageDto>>(TaskCreationOptions.RunContinuationsAsynchronously);
@@ -212,7 +214,10 @@ public sealed class ReviewImageAccessibilityPageTests : BunitContext
             ]
         };
         catalogApi.Images = [image];
-        catalogApi.AccessibilityReviewResult = image with { RequiresHumanReview = false };
+        catalogApi.AccessibilityReviewResult = image with
+        {
+            RequiresHumanReview = false
+        };
 
         // Act
         var cut = Render<ReviewImageAccessibility>(parameters => parameters.Add(component => component.Id, Guid.CreateVersion7()));

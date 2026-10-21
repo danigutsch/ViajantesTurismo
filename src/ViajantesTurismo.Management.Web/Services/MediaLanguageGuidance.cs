@@ -100,8 +100,12 @@ internal sealed class MediaLanguageGuidance(IConfiguration configuration)
         {
             StartInfo = new ProcessStartInfo(executable)
             {
-                UseShellExecute = false, RedirectStandardInput = true, RedirectStandardOutput = true,
-                RedirectStandardError = true, CreateNoWindow = true, StandardInputEncoding = new UTF8Encoding(false)
+                UseShellExecute = false,
+                RedirectStandardInput = true,
+                RedirectStandardOutput = true,
+                RedirectStandardError = true,
+                CreateNoWindow = true,
+                StandardInputEncoding = new UTF8Encoding(false)
             }
         };
         process.StartInfo.ArgumentList.Add("predict-prob");

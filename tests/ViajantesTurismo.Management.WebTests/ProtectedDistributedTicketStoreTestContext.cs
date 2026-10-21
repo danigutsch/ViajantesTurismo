@@ -24,9 +24,15 @@ internal sealed class ProtectedDistributedTicketStoreTestContext
             logger ?? NullLogger<ProtectedDistributedTicketStore>.Instance, timeProvider ?? TimeProvider.System);
     }
 
-    public IDistributedCache Cache { get; }
+    public IDistributedCache Cache
+    {
+        get;
+    }
 
-    public ProtectedDistributedTicketStore Store { get; }
+    public ProtectedDistributedTicketStore Store
+    {
+        get;
+    }
 
     public static AuthenticationTicket CreateTicket(DateTimeOffset? expiresUtc = null)
     {

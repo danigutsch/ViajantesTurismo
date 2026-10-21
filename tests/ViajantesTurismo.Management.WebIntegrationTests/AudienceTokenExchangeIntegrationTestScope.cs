@@ -27,7 +27,10 @@ internal sealed class AudienceTokenExchangeIntegrationTestScope : IDisposable
 
     public IReadOnlyList<string?> AuthorizationHeaders => Backend.AuthorizationHeaders;
 
-    private BlockingBackendHandler Backend { get; }
+    private BlockingBackendHandler Backend
+    {
+        get;
+    }
 
     public static AudienceTokenExchangeIntegrationTestScope Create(
         ClaimsPrincipal user,

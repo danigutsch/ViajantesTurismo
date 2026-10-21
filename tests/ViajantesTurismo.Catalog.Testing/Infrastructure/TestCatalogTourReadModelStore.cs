@@ -9,7 +9,10 @@ public sealed class TestCatalogTourReadModelStore : ICatalogTourReadModelStore
 {
     private readonly ConcurrentDictionary<Guid, CatalogTourDraftReadModel> toursById = new();
 
-    public bool FailNextPublicationProjection { get; set; }
+    public bool FailNextPublicationProjection
+    {
+        get; set;
+    }
 
     internal IReadOnlyCollection<CatalogTourDraftReadModel> GetSnapshot() => toursById.Values.ToArray();
 

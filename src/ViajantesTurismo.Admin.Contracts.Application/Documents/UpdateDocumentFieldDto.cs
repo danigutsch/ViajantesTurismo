@@ -8,5 +8,8 @@ public sealed record UpdateDocumentFieldDto
     /// <summary>Gets the replacement field value.</summary>
     [Required]
     [StringLength(ContractConstants.MaxDocumentFieldValueLength)]
-    public required string Value { get; init; }
+    public required string Value
+    {
+        get; init;
+    }
 }

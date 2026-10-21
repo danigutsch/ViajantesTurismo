@@ -6,10 +6,16 @@ namespace ViajantesTurismo.Management.Web.Models;
 internal sealed class MedicalInfoFormModel
 {
     [MaxLength(ContractConstants.MaxServiceDescriptionLength)]
-    public string? Allergies { get; set; }
+    public string? Allergies
+    {
+        get; set;
+    }
 
     [MaxLength(ContractConstants.MaxServiceDescriptionLength)]
-    public string? AdditionalInfo { get; set; }
+    public string? AdditionalInfo
+    {
+        get; set;
+    }
 
     public MedicalInfoDto ToDto() => new()
     {

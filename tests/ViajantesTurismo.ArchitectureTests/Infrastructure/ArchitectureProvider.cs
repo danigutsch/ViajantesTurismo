@@ -21,7 +21,10 @@ internal static class ArchitectureProvider
 
     internal static Architecture Architecture => LazyArchitecture.Value;
 
-    internal static IReadOnlyCollection<Assembly> Assemblies { get; } =
+    internal static IReadOnlyCollection<Assembly> Assemblies
+    {
+        get;
+    } =
     [
         typeof(Tour).Assembly,
         typeof(IUnitOfWork).Assembly,

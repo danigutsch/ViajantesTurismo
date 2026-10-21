@@ -11,47 +11,71 @@ public sealed record UpdateCustomerDto
     /// Personal information.
     /// </summary>
     [Required]
-    public required PersonalInfoDto PersonalInfo { get; init; }
+    public required PersonalInfoDto PersonalInfo
+    {
+        get; init;
+    }
 
     /// <summary>
     /// Identification information.
     /// </summary>
     [Required]
-    public required IdentificationInfoDto IdentificationInfo { get; init; }
+    public required IdentificationInfoDto IdentificationInfo
+    {
+        get; init;
+    }
 
     /// <summary>
     /// Contact information.
     /// </summary>
     [Required]
-    public required ContactInfoDto ContactInfo { get; init; }
+    public required ContactInfoDto ContactInfo
+    {
+        get; init;
+    }
 
     /// <summary>
     /// Physical address.
     /// </summary>
     [Required]
-    public required AddressDto Address { get; init; }
+    public required AddressDto Address
+    {
+        get; init;
+    }
 
     /// <summary>
     /// Physical characteristics and bike preferences.
     /// </summary>
     [Required]
-    public required PhysicalInfoDto PhysicalInfo { get; init; }
+    public required PhysicalInfoDto PhysicalInfo
+    {
+        get; init;
+    }
 
     /// <summary>
     /// Accommodation preferences.
     /// </summary>
     [Required]
-    public required AccommodationPreferencesDto AccommodationPreferences { get; init; }
+    public required AccommodationPreferencesDto AccommodationPreferences
+    {
+        get; init;
+    }
 
     /// <summary>
     /// Emergency contact information.
     /// </summary>
     [Required]
-    public required EmergencyContactDto EmergencyContact { get; init; }
+    public required EmergencyContactDto EmergencyContact
+    {
+        get; init;
+    }
 
     /// <summary>
     /// Medical information and allergies.
     /// </summary>
     [Required]
-    public required MedicalInfoDto MedicalInfo { get; init; }
+    public required MedicalInfoDto MedicalInfo
+    {
+        get; init;
+    }
 }

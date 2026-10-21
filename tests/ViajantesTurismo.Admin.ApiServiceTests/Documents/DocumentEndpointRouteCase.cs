@@ -5,7 +5,10 @@ internal static class DocumentEndpointRouteCase
     private const string DocumentId = "00000000-0000-0000-0000-000000000001";
     private const string BookingId = "00000000-0000-0000-0000-000000000002";
 
-    public static IReadOnlyList<(string Method, string Pattern, string RequestPath)> All { get; } =
+    public static IReadOnlyList<(string Method, string Pattern, string RequestPath)> All
+    {
+        get;
+    } =
     [
         (HttpMethod.Post.Method, "api/v1/documents/bookings/{bookingId:guid}/contract-drafts", $"/api/v1/documents/bookings/{BookingId}/contract-drafts"),
         (HttpMethod.Get.Method, "api/v1/documents/{id:guid}", $"/api/v1/documents/{DocumentId}"),

@@ -16,7 +16,10 @@ internal sealed class CandidateScratchTestScope : IDisposable, IAsyncDisposable
     {
         var pipeName = Guid.NewGuid().ToString("N");
         // Absolute Unix paths avoid the runtime's extra CoreFxPipe_ prefix under long temporary roots.
-        if (!OperatingSystem.IsWindows()) { pipeName = Path.Combine(Path.GetTempPath(), pipeName); }
+        if (!OperatingSystem.IsWindows())
+        {
+            pipeName = Path.Combine(Path.GetTempPath(), pipeName);
+        }
         pipe = new NamedPipeServerStream(pipeName, PipeDirection.InOut, 1, PipeTransmissionMode.Byte, PipeOptions.Asynchronous);
         BlockRestore(pipeName);
         await Prepare(ct);
@@ -25,7 +28,10 @@ internal sealed class CandidateScratchTestScope : IDisposable, IAsyncDisposable
             ["--candidate", Candidate.Manifest, "--output", destination], output, error, Candidate.Root, cancellation.Token);
         var connection = pipe.WaitForConnectionAsync(ct);
         var ready = await Task.WhenAny(connection, Completion);
-        if (ready != connection) { throw new InvalidOperationException(error.ToString()); }
+        if (ready != connection)
+        {
+            throw new InvalidOperationException(error.ToString());
+        }
         await connection;
         using var reader = new StreamReader(pipe, leaveOpen: true);
         var processId = await reader.ReadLineAsync(ct);
@@ -40,7 +46,10 @@ internal sealed class CandidateScratchTestScope : IDisposable, IAsyncDisposable
         if (cancellation is not null)
         {
             await cancellation.CancelAsync();
-            try { await Completion; }
+            try
+            {
+                await Completion;
+            }
             catch (OperationCanceledException) { /* Expected termination of the blocked restore. */ }
             cancellation.Dispose();
         }

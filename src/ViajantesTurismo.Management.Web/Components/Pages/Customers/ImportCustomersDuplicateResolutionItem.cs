@@ -8,17 +8,26 @@ public sealed class ImportCustomersDuplicateResolutionItem
     /// <summary>
     /// Gets or sets the conflicting customer email.
     /// </summary>
-    public required string Email { get; init; }
+    public required string Email
+    {
+        get; init;
+    }
 
     /// <summary>
     /// Gets or sets the selected resolution decision.
     /// </summary>
-    public string? Decision { get; init; }
+    public string? Decision
+    {
+        get; init;
+    }
 
     /// <summary>
     /// Gets or sets a value indicating whether the conflict has a selected decision.
     /// </summary>
-    public bool IsResolved { get; init; }
+    public bool IsResolved
+    {
+        get; init;
+    }
 
     /// <summary>
     /// Gets or sets the field source selections for mixed merges.

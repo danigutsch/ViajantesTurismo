@@ -5,9 +5,15 @@ namespace ViajantesTurismo.Admin.UnitTests.Application.IntegrationEvents;
 
 internal sealed class CapturingIntegrationEventOutbox(FakeUnitOfWork unitOfWork) : IIntegrationEventOutbox, IDomainEventIntegrationEventOutbox
 {
-    public object? IntegrationEvent { get; private set; }
+    public object? IntegrationEvent
+    {
+        get; private set;
+    }
 
-    public bool WasEnqueuedBeforeSave { get; private set; }
+    public bool WasEnqueuedBeforeSave
+    {
+        get; private set;
+    }
 
     public ValueTask Enqueue<TIntegrationEvent>(TIntegrationEvent integrationEvent, CancellationToken ct)
         where TIntegrationEvent : IIntegrationEvent

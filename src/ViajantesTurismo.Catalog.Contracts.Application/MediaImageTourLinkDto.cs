@@ -11,17 +11,26 @@ public sealed record MediaImageTourLinkDto
     /// Gets the Catalog tour identifier.
     /// </summary>
     [Required]
-    public required Guid CatalogTourId { get; init; }
+    public required Guid CatalogTourId
+    {
+        get; init;
+    }
 
     /// <summary>
     /// Gets the display order within the tour gallery.
     /// </summary>
     [Required, Range(0, int.MaxValue)]
-    public required int DisplayOrder { get; init; }
+    public required int DisplayOrder
+    {
+        get; init;
+    }
 
     /// <summary>
     /// Gets a value indicating whether the image is the tour cover image.
     /// </summary>
     [Required]
-    public required bool IsCover { get; init; }
+    public required bool IsCover
+    {
+        get; init;
+    }
 }

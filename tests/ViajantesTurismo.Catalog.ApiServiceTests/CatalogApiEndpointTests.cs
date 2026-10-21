@@ -460,7 +460,9 @@ public sealed class CatalogApiEndpointTests
         // Act
         using var response = await client.PutAsJsonAsync(
             new Uri($"/api/v1/catalog/media/images/{imageId}", UriKind.Relative),
-            new { },
+            new
+            {
+            },
             TestContext.Current.CancellationToken);
 
         // Assert
@@ -1157,7 +1159,10 @@ public sealed class CatalogApiEndpointTests
             TestContext.Current.CancellationToken);
         using var retryResponse = await client.PutAsJsonAsync(
             new Uri($"/api/v1/catalog/tours/{secondTourId}/presentation", UriKind.Relative),
-            duplicateRequest with { Slug = "second-tour" },
+            duplicateRequest with
+            {
+                Slug = "second-tour"
+            },
             TestContext.Current.CancellationToken);
 
         // Assert

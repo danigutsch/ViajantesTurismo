@@ -11,5 +11,8 @@ public sealed record CatalogTourPublicationRequest
     /// Gets the stream version on which this transition is based.
     /// </summary>
     [Range(1, long.MaxValue)]
-    public required long ExpectedVersion { get; init; }
+    public required long ExpectedVersion
+    {
+        get; init;
+    }
 }

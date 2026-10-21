@@ -6,12 +6,21 @@ namespace ViajantesTurismo.Management.Web.Models;
 internal sealed class AccommodationPreferencesFormModel
 {
     [Required(ErrorMessage = "Room type is required")]
-    public RoomTypeDto? RoomType { get; set; }
+    public RoomTypeDto? RoomType
+    {
+        get; set;
+    }
 
     [Required(ErrorMessage = "Bed type is required")]
-    public BedTypeDto? BedType { get; set; }
+    public BedTypeDto? BedType
+    {
+        get; set;
+    }
 
-    public Guid? CompanionId { get; set; }
+    public Guid? CompanionId
+    {
+        get; set;
+    }
 
     public AccommodationPreferencesDto ToDto() => new()
     {

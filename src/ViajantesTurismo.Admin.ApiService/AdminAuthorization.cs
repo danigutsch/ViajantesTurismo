@@ -19,7 +19,10 @@ internal static class AdminAuthorization
     public const string TourRead = "tour.read";
     public const string TourWrite = "tour.write";
 
-    public static IReadOnlyDictionary<string, IReadOnlyCollection<string>> PermissionsByRole { get; } =
+    public static IReadOnlyDictionary<string, IReadOnlyCollection<string>> PermissionsByRole
+    {
+        get;
+    } =
         new Dictionary<string, IReadOnlyCollection<string>>(StringComparer.Ordinal)
         {
             ["Admin"] =

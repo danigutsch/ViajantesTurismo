@@ -54,8 +54,14 @@ public sealed class CoverageGateTests
         // Arrange
         using var workspace = new TemporaryRepoConfigWorkspace();
         CoverageGateTestFiles.Write(workspace, 5);
-        if (problem == "missing") { workspace.DeleteFile("coverage.xml"); }
-        if (problem == "malformed") { workspace.WriteFile("coverage.xml", "<coverage>"); }
+        if (problem == "missing")
+        {
+            workspace.DeleteFile("coverage.xml");
+        }
+        if (problem == "malformed")
+        {
+            workspace.WriteFile("coverage.xml", "<coverage>");
+        }
         if (problem == "omitted-source")
         {
             workspace.WriteFile("coverage.xml", "<coverage><packages /></coverage>");

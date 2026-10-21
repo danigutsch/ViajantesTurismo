@@ -28,16 +28,28 @@ public sealed partial class ContactInfo
     }
 
     /// <summary>Email address.</summary>
-    public string Email { get; private set; }
+    public string Email
+    {
+        get; private set;
+    }
 
     /// <summary>Mobile phone number.</summary>
-    public string Mobile { get; private set; }
+    public string Mobile
+    {
+        get; private set;
+    }
 
     /// <summary>Instagram handle.</summary>
-    public string? Instagram { get; private set; }
+    public string? Instagram
+    {
+        get; private set;
+    }
 
     /// <summary>Facebook profile.</summary>
-    public string? Facebook { get; private set; }
+    public string? Facebook
+    {
+        get; private set;
+    }
 
     [GeneratedRegex(@"^[^@\s]+@[^@\s]+\.[^@\s]+$", RegexOptions.IgnoreCase | RegexOptions.Compiled)]
     private static partial Regex EmailFormatRegex();

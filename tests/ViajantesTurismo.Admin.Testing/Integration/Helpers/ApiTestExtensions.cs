@@ -27,22 +27,34 @@ public sealed class CreateTourOptions
     /// <summary>
     /// Gets the optional tour identifier override.
     /// </summary>
-    public string? Identifier { get; init; }
+    public string? Identifier
+    {
+        get; init;
+    }
 
     /// <summary>
     /// Gets the optional tour name override.
     /// </summary>
-    public string? Name { get; init; }
+    public string? Name
+    {
+        get; init;
+    }
 
     /// <summary>
     /// Gets the optional tour start date override.
     /// </summary>
-    public DateTime? StartDate { get; init; }
+    public DateTime? StartDate
+    {
+        get; init;
+    }
 
     /// <summary>
     /// Gets the optional tour end date override.
     /// </summary>
-    public DateTime? EndDate { get; init; }
+    public DateTime? EndDate
+    {
+        get; init;
+    }
 
     /// <summary>
     /// Gets the tour base price.

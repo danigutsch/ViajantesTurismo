@@ -16,7 +16,10 @@ internal static class CatalogOpenApiDocuments
     /// <summary>
     /// Gets the Catalog API's active HTTP contract versions.
     /// </summary>
-    public static IReadOnlyCollection<ApiVersionDefinition> ApiVersions { get; } =
+    public static IReadOnlyCollection<ApiVersionDefinition> ApiVersions
+    {
+        get;
+    } =
     [
         CurrentApiVersion
     ];
@@ -24,7 +27,10 @@ internal static class CatalogOpenApiDocuments
     /// <summary>
     /// Gets the Catalog API's OpenAPI boundary document names.
     /// </summary>
-    public static IReadOnlyCollection<string> OpenApiDocumentNames { get; } =
+    public static IReadOnlyCollection<string> OpenApiDocumentNames
+    {
+        get;
+    } =
     [
         "catalog",
         "public-catalog",

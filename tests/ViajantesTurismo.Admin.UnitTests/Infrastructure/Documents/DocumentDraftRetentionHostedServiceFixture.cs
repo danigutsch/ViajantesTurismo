@@ -22,7 +22,10 @@ internal sealed class DocumentDraftRetentionHostedServiceFixture : IAsyncDisposa
             NullLogger<DocumentDraftRetentionHostedService>.Instance);
     }
 
-    public FakeDocumentStore DocumentStore { get; }
+    public FakeDocumentStore DocumentStore
+    {
+        get;
+    }
 
     public static DocumentDraftRetentionHostedServiceFixture Create(DateTimeOffset now, DocumentDraft draft)
     {

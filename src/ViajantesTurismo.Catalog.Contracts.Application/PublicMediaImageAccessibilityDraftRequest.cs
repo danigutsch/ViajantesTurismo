@@ -17,17 +17,26 @@ public sealed record PublicMediaImageAccessibilityDraftRequest
     /// Gets optional editorial context for the image purpose or tour placement.
     /// </summary>
     [StringLength(1_000)]
-    public string? Context { get; init; }
+    public string? Context
+    {
+        get; init;
+    }
 
     /// <summary>
     /// Gets the optional latitude supplied by trusted metadata.
     /// </summary>
     [Range(-90, 90)]
-    public decimal? Latitude { get; init; }
+    public decimal? Latitude
+    {
+        get; init;
+    }
 
     /// <summary>
     /// Gets the optional longitude supplied by trusted metadata.
     /// </summary>
     [Range(-180, 180)]
-    public decimal? Longitude { get; init; }
+    public decimal? Longitude
+    {
+        get; init;
+    }
 }

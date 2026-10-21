@@ -11,7 +11,10 @@ public sealed record CatalogMediaImageDto
     /// Gets the stable media image identifier.
     /// </summary>
     [Required]
-    public required Guid Id { get; init; }
+    public required Guid Id
+    {
+        get; init;
+    }
 
     /// <summary>
     /// Gets accessibility text and review state for every declared language.
@@ -22,35 +25,53 @@ public sealed record CatalogMediaImageDto
     /// Gets responsive preview rendition metadata.
     /// </summary>
     [Required]
-    public required IReadOnlyList<CatalogMediaImageVariantDto> ResponsiveVariants { get; init; }
+    public required IReadOnlyList<CatalogMediaImageVariantDto> ResponsiveVariants
+    {
+        get; init;
+    }
 
     /// <summary>
     /// Gets the accessible image description.
     /// </summary>
     [StringLength(ContractConstants.MaxAltTextLength)]
-    public required string AltText { get; init; }
+    public required string AltText
+    {
+        get; init;
+    }
 
     /// <summary>
     /// Gets the optional display caption.
     /// </summary>
     [StringLength(ContractConstants.MaxCaptionLength)]
-    public string? Caption { get; init; }
+    public string? Caption
+    {
+        get; init;
+    }
 
     /// <summary>
     /// Gets a value indicating whether the image is intentionally decorative.
     /// </summary>
     [Required]
-    public bool IsDecorative { get; init; }
+    public bool IsDecorative
+    {
+        get; init;
+    }
 
     /// <summary>
     /// Gets a value indicating whether accessibility text needs human review.
     /// </summary>
     [Required]
-    public bool RequiresHumanReview { get; init; }
+    public bool RequiresHumanReview
+    {
+        get; init;
+    }
 
     /// <summary>
     /// Gets a value indicating whether the accessibility text is AI-assisted.
     /// </summary>
     [Required]
-    public bool IsAiGenerated { get; init; }
+    public bool IsAiGenerated
+    {
+        get; init;
+    }
 }

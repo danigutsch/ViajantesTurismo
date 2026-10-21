@@ -12,7 +12,10 @@ internal sealed class RecordingBrowserFile(byte[]? fileContent = null) : IBrowse
 
     public string ContentType => "image/jpeg";
 
-    public long? MaximumAllowedSize { get; private set; }
+    public long? MaximumAllowedSize
+    {
+        get; private set;
+    }
 
     public Stream OpenReadStream(long maxAllowedSize = 512000, CancellationToken cancellationToken = default)
     {

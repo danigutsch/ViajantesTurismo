@@ -11,13 +11,19 @@ public sealed record UpsertCatalogTourPresentationRequest
     /// Gets the customer-facing tour title.
     /// </summary>
     [Required, StringLength(ContractConstants.MaxNameLength, MinimumLength = 1)]
-    public required string Title { get; init; }
+    public required string Title
+    {
+        get; init;
+    }
 
     /// <summary>
     /// Gets the public URL slug.
     /// </summary>
     [Required, StringLength(ContractConstants.MaxSlugLength, MinimumLength = 1)]
-    public required string Slug { get; init; }
+    public required string Slug
+    {
+        get; init;
+    }
 
     /// <summary>
     /// Gets the concise customer-facing tour summary.
@@ -53,5 +59,8 @@ public sealed record UpsertCatalogTourPresentationRequest
     /// Gets the stream version on which this edit is based.
     /// </summary>
     [Range(1, long.MaxValue)]
-    public required long ExpectedVersion { get; init; }
+    public required long ExpectedVersion
+    {
+        get; init;
+    }
 }

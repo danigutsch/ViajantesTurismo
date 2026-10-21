@@ -13,11 +13,17 @@ internal readonly record struct CommitCustomerImportFormDto
     /// </summary>
     [Required]
     [FromForm(Name = "file")]
-    public required IFormFile File { get; init; }
+    public required IFormFile File
+    {
+        get; init;
+    }
 
     /// <summary>
     /// Gets or sets the serialized conflict-resolution payload.
     /// </summary>
     [FromForm(Name = "conflictResolutions")]
-    public string? ConflictResolutions { get; init; }
+    public string? ConflictResolutions
+    {
+        get; init;
+    }
 }

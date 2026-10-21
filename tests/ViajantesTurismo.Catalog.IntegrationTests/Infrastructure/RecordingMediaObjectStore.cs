@@ -4,7 +4,10 @@ namespace ViajantesTurismo.Catalog.IntegrationTests.Infrastructure;
 
 internal sealed class RecordingMediaObjectStore : IMediaObjectStore
 {
-    public int PutCount { get; private set; }
+    public int PutCount
+    {
+        get; private set;
+    }
 
     public ValueTask<MediaObjectWriteResult> Put(MediaObjectWriteRequest request, CancellationToken ct)
     {

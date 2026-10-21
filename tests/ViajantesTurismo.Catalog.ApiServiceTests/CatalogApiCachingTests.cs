@@ -136,7 +136,10 @@ public sealed class CatalogApiCachingTests
             cancellationToken);
         using var updateResponse = await client.PutAsJsonAsync(
             new Uri($"/api/v1/catalog/tours/{tourId}/presentation", UriKind.Relative),
-            CatalogApiCachingTestData.CreatePresentationRequest("Invalidated tour", "camino-norte") with { ExpectedVersion = 4 },
+            CatalogApiCachingTestData.CreatePresentationRequest("Invalidated tour", "camino-norte") with
+            {
+                ExpectedVersion = 4
+            },
             cancellationToken);
         using var publishResponse = await client.PostAsJsonAsync(
             new Uri($"/api/v1/catalog/tours/{tourId}/publish", UriKind.Relative),

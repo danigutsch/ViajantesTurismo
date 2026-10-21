@@ -9,17 +9,29 @@ public sealed record UpdateBookingDetailsDto : IValidatableObject
 {
     /// <summary>The room type for the booking.</summary>
     [Required]
-    public required RoomTypeDto RoomType { get; init; }
+    public required RoomTypeDto RoomType
+    {
+        get; init;
+    }
 
     /// <summary>The bike type for the principal customer.</summary>
     [Required]
-    public required BikeTypeDto PrincipalBikeType { get; init; }
+    public required BikeTypeDto PrincipalBikeType
+    {
+        get; init;
+    }
 
     /// <summary>The companion customer ID (null to remove companion).</summary>
-    public Guid? CompanionCustomerId { get; init; }
+    public Guid? CompanionCustomerId
+    {
+        get; init;
+    }
 
     /// <summary>The bike type for the companion (required if companion present).</summary>
-    public BikeTypeDto? CompanionBikeType { get; init; }
+    public BikeTypeDto? CompanionBikeType
+    {
+        get; init;
+    }
 
     /// <summary>
     /// Validates the booking details based on business rules.

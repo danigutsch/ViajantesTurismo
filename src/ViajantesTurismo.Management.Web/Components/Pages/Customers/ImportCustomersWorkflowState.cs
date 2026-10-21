@@ -9,9 +9,15 @@ namespace ViajantesTurismo.Management.Web.Components.Pages.Customers;
 /// </summary>
 internal sealed class ImportCustomersWorkflowState
 {
-    internal int Dragging { get; set; }
+    internal int Dragging
+    {
+        get; set;
+    }
 
-    internal string? ValidationError { get; set; }
+    internal string? ValidationError
+    {
+        get; set;
+    }
 
     internal ImportCustomersWorkflowStep Step { get; set; } = ImportCustomersWorkflowStep.FileSelection;
 
@@ -31,9 +37,15 @@ internal sealed class ImportCustomersWorkflowState
 
     internal IReadOnlyList<IReadOnlyDictionary<string, string>> PreviewRows { get; set; } = [];
 
-    internal string? Error { get; set; }
+    internal string? Error
+    {
+        get; set;
+    }
 
-    internal ImportResultDto? Result { get; set; }
+    internal ImportResultDto? Result
+    {
+        get; set;
+    }
 
     internal IReadOnlyList<ImportCustomerConflictState> ConflictStates { get; set; } = [];
 

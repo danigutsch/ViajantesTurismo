@@ -32,25 +32,46 @@ public sealed class DocumentLineage : IAggregateRoot<Guid>
     }
 
     /// <summary>Gets the opaque lineage identifier.</summary>
-    public Guid Id { get; private init; }
+    public Guid Id
+    {
+        get; private init;
+    }
 
     /// <summary>Gets the source booking identifier.</summary>
-    public Guid BookingId { get; private init; }
+    public Guid BookingId
+    {
+        get; private init;
+    }
 
     /// <summary>Gets the document type shared by every revision.</summary>
-    public DocumentType Type { get; private init; }
+    public DocumentType Type
+    {
+        get; private init;
+    }
 
     /// <summary>Gets the intended audience shared by every revision.</summary>
-    public DocumentAudience Audience { get; private init; }
+    public DocumentAudience Audience
+    {
+        get; private init;
+    }
 
     /// <summary>Gets the highest revision that has ever been finalized.</summary>
-    public int HighestFinalizedRevision { get; private set; }
+    public int HighestFinalizedRevision
+    {
+        get; private set;
+    }
 
     /// <summary>Gets the highest revision number ever allocated in this lineage.</summary>
-    public int HighestRevision { get; private set; }
+    public int HighestRevision
+    {
+        get; private set;
+    }
 
     /// <summary>Gets the aggregate concurrency version.</summary>
-    public long Version { get; private set; }
+    public long Version
+    {
+        get; private set;
+    }
 
     /// <summary>Gets the revisions owned by this lineage.</summary>
     public IReadOnlyList<DocumentDraft> Revisions => _revisions.AsReadOnly();

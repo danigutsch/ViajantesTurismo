@@ -10,7 +10,10 @@ internal sealed class TestEventStore : IEventStore
     private readonly Dictionary<StreamId, List<EventEnvelope>> streams = [];
     private long position;
 
-    public Exception? LoadException { get; set; }
+    public Exception? LoadException
+    {
+        get; set;
+    }
 
     public ValueTask<IReadOnlyCollection<EventEnvelope>> Append(
         StreamId streamId,

@@ -7,9 +7,15 @@ internal sealed class BookingEditRedirectState : IAsyncDisposable
 {
     private CancellationTokenSource? _cancellationTokenSource;
 
-    internal bool IsPending { get; private set; }
+    internal bool IsPending
+    {
+        get; private set;
+    }
 
-    internal bool IsCancelled { get; private set; }
+    internal bool IsCancelled
+    {
+        get; private set;
+    }
 
     internal async Task Reset()
     {

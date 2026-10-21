@@ -6,7 +6,10 @@ internal sealed class StubImageTextGenerator(ImageTextGenerationResult result) :
 {
     private Exception? exception;
 
-    public ImageTextGenerationRequest? Request { get; private set; }
+    public ImageTextGenerationRequest? Request
+    {
+        get; private set;
+    }
 
     public void Throw(Exception value)
     {

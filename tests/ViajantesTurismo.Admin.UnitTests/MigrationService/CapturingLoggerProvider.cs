@@ -5,7 +5,10 @@ namespace ViajantesTurismo.Admin.UnitTests.MigrationService;
 
 internal sealed class CapturingLoggerProvider : ILoggerProvider
 {
-    public string? CategoryName { get; private set; }
+    public string? CategoryName
+    {
+        get; private set;
+    }
 
     public ILogger CreateLogger(string categoryName)
     {

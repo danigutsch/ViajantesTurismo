@@ -85,7 +85,10 @@ public sealed partial class Customer : IEntity<Guid>
     }
 
     /// <summary>Unique customer identifier.</summary>
-    public Guid Id { get; private init; }
+    public Guid Id
+    {
+        get; private init;
+    }
 
     /// <summary>Personal information.</summary>
     public PersonalInfo PersonalInfo { get; private set; } = default!;

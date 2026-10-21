@@ -34,7 +34,10 @@ public sealed class DocumentField
     public string FieldId { get; private set; } = default!;
 
     /// <summary>Gets the stable field order from the source template.</summary>
-    public int SortOrder { get; private set; }
+    public int SortOrder
+    {
+        get; private set;
+    }
 
     /// <summary>Gets the customer-visible field label.</summary>
     public string Label { get; private set; } = default!;
@@ -43,13 +46,22 @@ public sealed class DocumentField
     public string Value { get; private set; } = default!;
 
     /// <summary>Gets the field privacy classification.</summary>
-    public DocumentPrivacyClassification PrivacyClassification { get; private set; }
+    public DocumentPrivacyClassification PrivacyClassification
+    {
+        get; private set;
+    }
 
     /// <summary>Gets whether staff may override this field.</summary>
-    public bool IsEditable { get; private set; }
+    public bool IsEditable
+    {
+        get; private set;
+    }
 
     /// <summary>Gets the optional staff override without replacing generated source text.</summary>
-    public string? StaffOverride { get; private set; }
+    public string? StaffOverride
+    {
+        get; private set;
+    }
 
     /// <summary>Gets the value to render for this field.</summary>
     public string RenderedValue => StaffOverride ?? Value;

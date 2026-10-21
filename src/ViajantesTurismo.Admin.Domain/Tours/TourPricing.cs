@@ -25,27 +25,42 @@ public sealed class TourPricing : ValueObject
     /// <summary>
     /// Gets the base price of the tour (double occupancy).
     /// </summary>
-    public decimal BasePrice { get; }
+    public decimal BasePrice
+    {
+        get;
+    }
 
     /// <summary>
     /// Gets the supplement price for single room occupancy.
     /// </summary>
-    public decimal SingleRoomSupplementPrice { get; }
+    public decimal SingleRoomSupplementPrice
+    {
+        get;
+    }
 
     /// <summary>
     /// Gets the price for regular bike rental.
     /// </summary>
-    public decimal RegularBikePrice { get; }
+    public decimal RegularBikePrice
+    {
+        get;
+    }
 
     /// <summary>
     /// Gets the price for e-bike rental.
     /// </summary>
-    public decimal EBikePrice { get; }
+    public decimal EBikePrice
+    {
+        get;
+    }
 
     /// <summary>
     /// Gets the currency used for all prices.
     /// </summary>
-    public Currency Currency { get; }
+    public Currency Currency
+    {
+        get;
+    }
 
     /// <summary>
     /// Creates a new tour pricing with validation.

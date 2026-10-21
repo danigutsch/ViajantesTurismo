@@ -10,9 +10,15 @@ public sealed class TestPublicMediaImageStore : IPublicMediaImageStore
 
     private int getImageCallCount;
 
-    public Exception? UpsertException { get; set; }
+    public Exception? UpsertException
+    {
+        get; set;
+    }
 
-    public Exception? ListByTourException { get; set; }
+    public Exception? ListByTourException
+    {
+        get; set;
+    }
 
     public int GetImageCallCount => getImageCallCount;
 
