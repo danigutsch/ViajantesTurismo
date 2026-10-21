@@ -337,26 +337,6 @@ jobs:
           echo "Build and Test completed successfully across the validation slices."
           exit 0
 
-  api-compatibility:
-    name: API Compatibility
-    runs-on: ${{ vars.CI_UBUNTU_RUNNER }}
-    timeout-minutes: 20
-    permissions:
-      contents: read
-    steps:
-      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
-        with:
-          persist-credentials: false
-      - uses: ./.github/actions/setup-ci-prerequisites
-        with:
-          restore-targets: tools/ViajantesTurismo.RepoConfig.Tool/ViajantesTurismo.RepoConfig.Tool.csproj
-          trust-dev-certificate: "false"
-      - name: Check API baselines in the pinned library checkout
-        shell: bash
-        env:
-          LIBRARY_ROOT: ${{ vars.SHAREDKERNEL_LIBRARY_ROOT }}
-        run: dotnet tool run sharedkernel-version check-public-api-baselines --repo-root "${LIBRARY_ROOT}"
-
   quality-gate:
     name: Quality Gate
     needs:
@@ -491,10 +471,11 @@ jobs:
             samples/**/*.md
           config: .markdownlint-cli2.jsonc
 
-      - name: Set up .NET SDK
-        uses: actions/setup-dotnet@c2fa09f4bde5ebb9d1777cf28262a3eb3db3ced7 # v5
+      - name: Set up CI prerequisites
+        uses: ./.github/actions/setup-ci-prerequisites
         with:
-          global-json-file: global.json
+          restore-targets: tests/ViajantesTurismo.RepoConfig.Tests/ViajantesTurismo.RepoConfig.Tests.csproj
+          trust-dev-certificate: "false"
 
       - name: Run repository linters
         run: bash scripts/lint-all.sh --skip-markdown

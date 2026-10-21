@@ -94,7 +94,6 @@ public sealed partial class AnalyzerSuppressionPolicyTests
         string[] expectedSurfaces =
         [
             "build:Directory.Build.props",
-            "build:src/Directory.Build.props",
             "build:src/Directory.Build.targets",
             "build:tests/Directory.Build.props",
             "custom-config:.editorconfig:SKSTYLE001",
@@ -107,9 +106,7 @@ public sealed partial class AnalyzerSuppressionPolicyTests
             "custom-config:.editorconfig:SKTEST004",
             "custom-config:.editorconfig:SKTEST005",
             "custom-config:.editorconfig:SKTEST006",
-            "import:src/Directory.Build.props:$([MSBuild]::GetPathOfFileAbove('Directory.Build.props', '$(MSBuildThisFileDirectory)..'))",
             "import:tests/Directory.Build.props:$([MSBuild]::GetPathOfFileAbove('Directory.Build.props', '$(MSBuildThisFileDirectory)../'))",
-            "package:src/Directory.Build.props:Microsoft.CodeAnalysis.PublicApiAnalyzers",
             "package:Directory.Build.props:PandaBear.SharedKernel.Style.Analyzers",
             "package:Directory.Build.props:PandaBear.SharedKernel.Style.CodeFixes",
             "package:tests/Directory.Build.props:PandaBear.SharedKernel.Testing.Analyzers"

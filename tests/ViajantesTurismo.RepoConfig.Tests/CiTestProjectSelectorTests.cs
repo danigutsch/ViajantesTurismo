@@ -2,6 +2,27 @@ namespace ViajantesTurismo.RepoConfig.Tests;
 
 public sealed class CiTestProjectSelectorTests
 {
+    [Theory]
+    [Trait(TestTraitNames.CategoryName, TestTraits.CommandLineCategory)]
+    [InlineData(".config/sharedkernel-candidate.json")]
+    [InlineData("tools/ViajantesTurismo.RepoConfig.Tool/CiTestProjectSelector.cs")]
+    public void Candidate_or_repository_tool_changes_select_every_test_project(string changedPath)
+    {
+        // Arrange
+        using var repository = new TemporaryCiTestRepository();
+        repository.AddProject("tools/ViajantesTurismo.RepoConfig.Tool/ViajantesTurismo.RepoConfig.Tool.csproj");
+        repository.AddProject("tests/First.Tests/First.Tests.csproj", "tools/ViajantesTurismo.RepoConfig.Tool/ViajantesTurismo.RepoConfig.Tool.csproj");
+        repository.AddProject("tests/Second.Tests/Second.Tests.csproj");
+        repository.WriteSlice("fast-validation", "tests/First.Tests/First.Tests.csproj", "tests/Second.Tests/Second.Tests.csproj");
+
+        // Act
+        var selection = CiTestProjectSelector.Select(repository.RootPath, [changedPath], fullValidation: false);
+
+        // Assert
+        selection.BuildRequired.ShouldBeTrue();
+        selection.SelectedProjectsBySlice["fast-validation"].Count.ShouldBe(2);
+    }
+
     [Fact]
     public void Shared_coverage_configuration_selects_every_test_project()
     {
@@ -271,32 +292,6 @@ public sealed class CiTestProjectSelectorTests
             .ShouldHaveSingleItem()
             .ShouldBe("tests/ViajantesTurismo.OpenApi.Tool.Tests/ViajantesTurismo.OpenApi.Tool.Tests.csproj");
         selection.OpenApiToolWindowsRequired.ShouldBeTrue();
-    }
-
-    [Fact]
-    public void Mediator_package_consumption_tests_include_dynamically_packed_projects()
-    {
-        // Arrange
-        using var repository = new TemporaryCiTestRepository();
-        repository.AddProject(
-            "src/SharedKernel/SharedKernel.Messaging.IntegrationEvents.SourceGenerator/SharedKernel.Messaging.IntegrationEvents.SourceGenerator.csproj");
-        repository.AddProject(
-            "tests/SharedKernel.Mediator.PackageConsumptionTests/SharedKernel.Mediator.PackageConsumptionTests.csproj");
-        repository.WriteSlice(
-            "mediator-heavy",
-            "tests/SharedKernel.Mediator.PackageConsumptionTests/SharedKernel.Mediator.PackageConsumptionTests.csproj");
-
-        // Act
-        var selection = CiTestProjectSelector.Select(
-            repository.RootPath,
-            ["src/SharedKernel/SharedKernel.Messaging.IntegrationEvents.SourceGenerator/Generator.cs"],
-            fullValidation: false);
-
-        // Assert
-        selection.FallbackToFullValidation.ShouldBeFalse();
-        selection.SelectedProjectsBySlice["mediator-heavy"]
-            .ShouldHaveSingleItem()
-            .ShouldBe("tests/SharedKernel.Mediator.PackageConsumptionTests/SharedKernel.Mediator.PackageConsumptionTests.csproj");
     }
 
     [Fact]

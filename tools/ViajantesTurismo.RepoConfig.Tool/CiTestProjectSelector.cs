@@ -7,7 +7,6 @@ internal static class CiTestProjectSelector
     private const string SolutionPath = "ViajantesTurismo.slnx";
     private const string SliceDirectory = "scripts/ci-test-slices";
     private const string ArchitectureTests = "tests/ViajantesTurismo.ArchitectureTests/ViajantesTurismo.ArchitectureTests.csproj";
-    private const string MediatorPackageConsumptionTests = "tests/SharedKernel.Mediator.PackageConsumptionTests/SharedKernel.Mediator.PackageConsumptionTests.csproj";
     private const string OpenApiToolTests = "tests/ViajantesTurismo.OpenApi.Tool.Tests/ViajantesTurismo.OpenApi.Tool.Tests.csproj";
 
     private static readonly HashSet<string> CanonicalSliceNames = new(StringComparer.Ordinal)
@@ -20,21 +19,6 @@ internal static class CiTestProjectSelector
         "mediator-heavy"
     };
 
-    private static readonly string[] MediatorPackedProjects =
-    [
-        "src/SharedKernel/SharedKernel.Mediator.Abstractions/SharedKernel.Mediator.Abstractions.csproj",
-        "src/SharedKernel/SharedKernel.Mediator/SharedKernel.Mediator.csproj",
-        "src/SharedKernel/SharedKernel.Mediator.SourceGenerator/SharedKernel.Mediator.SourceGenerator.csproj",
-        "src/SharedKernel/SharedKernel.Mediator.Analyzers/SharedKernel.Mediator.Analyzers.csproj",
-        "src/SharedKernel/SharedKernel.Mediator.CodeFixes/SharedKernel.Mediator.CodeFixes.csproj",
-        "src/SharedKernel/SharedKernel.Results/SharedKernel.Results.csproj",
-        "src/SharedKernel/SharedKernel.BuildingBlocks/SharedKernel.BuildingBlocks.csproj",
-        "src/SharedKernel/SharedKernel.Domain/SharedKernel.Domain.csproj",
-        "src/SharedKernel/SharedKernel.Messaging/SharedKernel.Messaging.csproj",
-        "src/SharedKernel/SharedKernel.Messaging.IntegrationEvents/SharedKernel.Messaging.IntegrationEvents.csproj",
-        "src/SharedKernel/SharedKernel.Messaging.IntegrationEvents.SourceGenerator/SharedKernel.Messaging.IntegrationEvents.SourceGenerator.csproj"
-    ];
-
     internal static readonly IReadOnlyList<string> OpenApiWindowsProjects = Array.AsReadOnly(
     [
         OpenApiToolTests,
@@ -46,6 +30,7 @@ internal static class CiTestProjectSelector
     private static readonly HashSet<string> FullValidationFiles = new(StringComparer.Ordinal)
     {
         ".config/dotnet-tools.json",
+        ".config/sharedkernel-candidate.json",
         ".editorconfig",
         ".gitattributes",
         ".markdownlint-cli2.jsonc",
@@ -67,10 +52,7 @@ internal static class CiTestProjectSelector
         ".github/actions/",
         ".github/workflows/",
         "scripts/ci-test-slices/",
-        "tools/SharedKernel.RepoConfig.Tool/",
-        "src/SharedKernel/SharedKernel.Style.Analyzers/",
-        "src/SharedKernel/SharedKernel.Style.CodeFixes/",
-        "src/SharedKernel/SharedKernel.Testing.Analyzers/"
+        "tools/ViajantesTurismo.RepoConfig.Tool/"
     ];
 
     private static readonly HashSet<string> FullValidationScripts = new(StringComparer.Ordinal)
@@ -318,14 +300,6 @@ internal static class CiTestProjectSelector
             }
 
             references.Add(projectPath, resolvedReferences);
-        }
-
-        if (references.TryGetValue(MediatorPackageConsumptionTests, out var mediatorReferences))
-        {
-            references[MediatorPackageConsumptionTests] = mediatorReferences
-                .Concat(MediatorPackedProjects.Where(references.ContainsKey))
-                .Distinct(StringComparer.Ordinal)
-                .ToArray();
         }
 
         return references;

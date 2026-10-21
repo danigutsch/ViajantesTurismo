@@ -24,7 +24,6 @@ flowchart TB
     openapi_tool_windows[OpenAPI Tool Windows]
     test_slices[test-slices]
     build_and_test[Build and Test]
-    api_compatibility[API Compatibility]
     quality_gate[Quality Gate]
     lint[Lint]
     trigger --> detect_changes
@@ -34,7 +33,6 @@ flowchart TB
     detect_changes --> build_and_test
     test_slices --> build_and_test
     openapi_tool_windows --> build_and_test
-    trigger --> api_compatibility
     detect_changes --> quality_gate
     test_slices --> quality_gate
     trigger --> lint

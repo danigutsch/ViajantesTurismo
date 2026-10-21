@@ -1,308 +1,37 @@
 # SharedKernel packaging
 
-This page retains the original in-repository packaging design. SharedKernel implementations and
-packaging now live in the [standalone library](https://github.com/danigutsch/PandaBear.SharedKernel).
-Use its [package development guide](https://github.com/danigutsch/PandaBear.SharedKernel/blob/f5975b60601e245bda6bb8e45559d8ce3a24a8e0/docs/package-development.md)
+SharedKernel implementations and packaging live in the [standalone library](https://github.com/danigutsch/PandaBear.SharedKernel).
+Use its [package guide](https://github.com/danigutsch/PandaBear.SharedKernel/blob/f5975b60601e245bda6bb8e45559d8ce3a24a8e0/docs/package-development.md)
 for current library ownership and [application consumption](sharedkernel/development.md) for bootstrap,
-pinned artifacts, validation, and rollback. Paths below describe the former layout.
+pinned artifacts, validation, and rollback. This application does not build or publish SharedKernel
+packages; library packaging commands and metadata belong in the standalone repository.
 
-## Package metadata
+## Consumer responsibilities
 
-Shared package metadata defaults are centralized in the repository root `Directory.Build.props`:
+Consume only the modules the application uses. Keep candidate versions, package hashes, local tools,
+and lock files consistent with the committed candidate manifest. Validate changes through the
+application bootstrap and compatibility workflow before adopting a new candidate.
 
-- author and company values
-- MIT license expression
-- repository URL
-- repository URL publishing
-- symbol package generation with `.snupkg`
+Application-specific business rules, configuration, CI policy, and orchestration stay here. Reusable
+library changes, test helpers, analyzers, generators, samples, and benchmarks belong in SharedKernel.
+Do not restore application-owned copies of those implementations.
 
-The `src/Directory.Build.props` file imports the root defaults for source projects. The
-`src/Directory.Build.targets` file adds the source-wide AOT default after project target frameworks
-are known. Source projects under `src/` default to AOT-compatible and must opt out explicitly when a
-dependency, target framework, or project type cannot support that promise. Roslyn analyzer, code-fix,
-and source-generator packages that target `netstandard2.0` opt out in their project files because the
-.NET SDK does not support `IsAotCompatible` for that target framework.
+## Module boundary rules
 
-Each packable project still owns its package-specific identity:
-
-- `PackageId`
-- `Description`
-- `PackageTags`
-- `PackageReadmeFile` when the package includes a README
-
-Packable non-Roslyn `SharedKernel.*` source projects generate symbol packages with
-`IncludeSymbols=true` and `SymbolPackageFormat=snupkg`. Roslyn analyzer, code-fix, and source-generator
-packages keep their analyzer package layout separate. Project READMEs are included in packages with
-`PackageReadmeFile` and a packed `README.md` item when the package has a README.
-
-Reusable testing helper packages live under `src/SharedKernel` and are included in the same local
-pack/restore validation as runtime packages. They opt out of source-wide AOT compatibility because
-test frameworks, Roslyn test infrastructure, and Aspire test hosts are not production runtime
-surfaces.
-
-Package-worthy test helpers use `SharedKernel.Testing.<Capability>` names. Move a helper to
-`src/SharedKernel` only when it exposes reusable behavior with a clear boundary outside this
-repository's test taxonomy and has focused tests for its public behavior.
-
-Current package-worthy testing helper packages:
-
-| Package | Reusable boundary | Test coverage |
-| --- | --- | --- |
-| `SharedKernel.Testing.AspNetCore` | ASP.NET Core `WebApplicationFactory<TEntryPoint>` setup helpers. | Used by Catalog and Public web endpoint tests. |
-| `SharedKernel.Testing.Mediator` | Reference mediator dispatcher used as a correctness oracle. | Covered by `tests/SharedKernel.Mediator.Tests`. |
-
-Repository-only test helpers stay under `tests/` and are explicitly non-packable:
-
-| Helper project | Placement decision |
-| --- | --- |
-| `SharedKernel.CodeFixes.Testing` | Repository-local Roslyn code-fix test support. |
-| `SharedKernel.Testing.Contracts` | Repository-local contract test taxonomy. |
-| `SharedKernel.Testing.Integration` | Repository-local integration test taxonomy. |
-| `SharedKernel.Testing.Packaging` | Repository-local package-test builders. |
-| `SharedKernel.Testing.Scenarios` | Repository-local scenario test taxonomy. |
-| `SharedKernel.Testing.System` | Repository-local system test taxonomy. |
-
-Samples and benchmarks are explicitly non-packable:
-
-| Project | Reason |
-| --- | --- |
-| `samples/Mediator/Mediator.Sample` | Consumer-facing sample, not a reusable package. |
-| `samples/Results/BasicResults.Sample` | Consumer-facing sample, not a reusable package. |
-| `benchmarks/SharedKernel.Functional.Benchmarks` | Measurement harness, not a reusable package. |
-| `benchmarks/SharedKernel.Mediator.Benchmarks` | Measurement harness, not a reusable package. |
-| `benchmarks/ViajantesTurismo.FileScanning.Benchmarks` | Measurement harness, not a reusable package. |
-| `benchmarks/ViajantesTurismo.FileUpload.BenchmarkHost` | Benchmark-only Kestrel host, not a reusable package. |
-
-## Naming
-
-Use `SharedKernel.<Capability>` for provider-neutral packages.
+These boundary rules remain relevant when proposing reusable changes in the standalone library.
+Names below describe module families; published package IDs use the `PandaBear.SharedKernel.*` prefix.
 
 `SharedKernel.<Capability>` is the primary module and core surface for that capability. Capability
-families may be multi-segment, such as `SharedKernel.Messaging.IntegrationEvents`; the primary package
-owns shared runtime and core logic for that full family name.
+families may be multi-segment, such as `SharedKernel.Messaging.IntegrationEvents`.
 
-Use `SharedKernel.<Capability>.<Provider>` for provider-specific adapters.
-
-Use analyzer, code-fix, and source-generator suffixes only for Roslyn packages:
-
-- `SharedKernel.<Capability>.Analyzers`
-- `SharedKernel.<Capability>.CodeFixes`
-- `SharedKernel.<Capability>.SourceGenerator`
-
-Use `SharedKernel.Testing.<Capability>` for reusable test helpers. Keep repository-only test support
-under `tests/` when it only encodes this repository's test taxonomy or fixtures.
-
-Do not use `SharedKernel.<Capability>.Testing.*` for package-worthy helpers. That shape is reserved
-for old repository-local helpers while they are being reviewed and should migrate to
-`SharedKernel.Testing.<Capability>` before packaging.
-
-Use `SharedKernel.<Capability>` for the primary package in a feature family. Use
-`SharedKernel.<Capability>.<Submodule>` only for an optional surface with a real independent reason to
-exist now, such as a provider adapter, Roslyn component, source generator, integration-specific
-extension, or abstraction package that avoids a concrete implementation dependency.
-
-Primary packages own the stable runtime API for a feature family. Primary modules must not
-runtime-reference descendant optional submodules through project or package references.
-Optional submodules may reference the same-family primary module, a nearer parent module, or an
-explicit `Abstractions` module.
-Optional/provider/tool suffixes are not allowed to point sideways within the same family.
-Cross-family SharedKernel references may target stable reusable primary modules, abstraction modules, or
-explicitly lower-level provider primitives. Do not use arbitrary sideways coupling to borrow runtime
-details from another family.
-
-Analyzer, code-fix, source-generator, and packaging references may point from a primary package to a
-tool package only when the project reference is non-runtime, for example with
-`ReferenceOutputAssembly="false"` or an analyzer/package output item type.
-
-Use `Abstractions` only when consumers need contracts without the implementation package and at least
-two real consumers or implementations need that split now. Otherwise keep contracts in the primary
-feature package. The primary feature package is the core surface; do not add `Core` packages unless a
-documented migration or compatibility constraint prevents the root package from owning that surface.
+Primary modules must not runtime-reference descendant optional submodules through project or package
+references. Optional submodules may reference the same-family primary module, a nearer parent module,
+or an explicit `Abstractions` module. Optional/provider/tool suffixes are not allowed to point sideways
+within the same family.
 
 `Abstractions` modules are dependency-inversion surfaces, not implementation hosts.
-Abstraction projects must not reference same-family implementation packages, provider adapters, persistence projects, web/API hosts, or adapter packages.
-Domain-facing and application-facing abstractions stay provider-neutral;
-infrastructure, persistence, hosting, web, and provider SDK dependencies belong in infrastructure or
-provider modules.
+Keep domain-facing and application-facing abstractions provider-neutral; provider dependencies belong
+in infrastructure or provider modules.
 
-Do not create `SharedKernel.<Capability>.Core` packages. Add a `Core` package only after an ADR or
-compatibility constraint records why the primary module cannot own the core surface.
-
-Keep package IDs aligned with the root namespace unless a package has a documented compatibility reason
-to differ.
-
-Current package inventory follows these conventions:
-
-| Package family | Location | Convention |
-| --- | --- | --- |
-| Runtime and provider packages | `src/SharedKernel/SharedKernel.*` | `PackageId` matches the project file name and folder name. |
-| Roslyn analyzers, code fixes, and source generators | `src/SharedKernel/SharedKernel.*.{Analyzers,CodeFixes,SourceGenerator}` | `netstandard2.0`, Roslyn package suffix, and explicit `IsAotCompatible=false`. |
-| Reusable testing helpers | `src/SharedKernel/SharedKernel.Testing*` | Packable only when intended for reuse outside this repository's test taxonomy. |
-| Repo-owned command tools | `tools/*` | Pack as .NET tools when useful outside one local `dotnet run --project` invocation. |
-
-Intentional naming exceptions:
-
-| Project | Exception | Reason |
-| --- | --- | --- |
-| `SharedKernel.Mediator.Abstractions` | C# namespace is `PandaBear.Mediator`; assembly identity remains `SharedKernel.Mediator.Abstractions`. | The assembly contributes shared mediator contracts under the existing mediator namespace while keeping package identity precise. |
-| `SharedKernel.EventSourcing.Npgsql` | Provider segment uses the provider name `Npgsql`. | Matches the .NET PostgreSQL provider package naming. |
-
-Current deferred package candidates:
-
-| Project | Decision |
-| --- | --- |
-| `tests/SharedKernel.CodeFixes.Testing` | Reusable Roslyn code-fix test workspace exists, but `SharedKernel.Testing.CodeFixes` is already a Roslyn code-fix package name. Extract to a collision-free package only after a dedicated naming/design decision. |
-
-## Local package artifact layout
-
-Local package builds write `.nupkg` files under an artifact directory outside source folders:
-
-```text
-artifacts/packages/local/<version>/
-```
-
-Use a unique prerelease version for local validation so NuGet cache reuse cannot hide package content
-changes.
-
-## Repo-owned tool package workflow
-
-Repo-owned command-line automation is packaged as .NET tools when the executable is useful outside a
-single `dotnet run --project` call. Current repo-owned tool package IDs and commands:
-
-Use `tools/` for repository automation such as release, compatibility, code-fix, and packaging
-commands. Use `src/SharedKernel/` only for reusable library APIs that consumers reference at runtime
-or from tests. A command that orchestrates repository files, GitHub Actions artifacts, or `dotnet`
-processes belongs under `tools/`, even when it primarily supports SharedKernel packages.
-Reusable release/versioning rules, package-feed metadata checks, and public API baseline checks belong
-in `src/SharedKernel/SharedKernel.Versioning`; tool projects should delegate to that library after
-parsing CLI arguments and before writing command output.
-
-| Package ID | Command |
-| --- | --- |
-| `SharedKernel.Versioning.Tool` | `sharedkernel-version` |
-| `SharedKernel.Testing.CodeFixRunner` | `sharedkernel-codefix` |
-| `ViajantesTurismo.SecurityChecks.Tool` | `viajantes-security-checks` |
-| `ViajantesTurismo.Performance.Tool` | `viajantes-performance` |
-
-Pack tools into an ignored local feed with a unique prerelease version:
-
-```bash
-dotnet pack tools/SharedKernel.Versioning.Tool/SharedKernel.Versioning.Tool.csproj \
-  --configuration Release \
-  --output /tmp/opencode/sharedkernel-tools \
-  -p:ComputedSemVer=0.1.0-alpha.local.20260705000000
-
-dotnet pack tools/SharedKernel.Testing.CodeFixRunner/SharedKernel.Testing.CodeFixRunner.csproj \
-  --configuration Release \
-  --output /tmp/opencode/sharedkernel-tools \
-  -p:ComputedSemVer=0.1.0-alpha.local.20260705000000
-```
-
-Install or update from that local feed only after trusting the package contents. Set `package_id` to
-one of the repo-owned tool package IDs above:
-
-```bash
-package_id=SharedKernel.Versioning.Tool
-
-dotnet tool install "${package_id}" \
-  --tool-path /tmp/opencode/sharedkernel-tool-bin \
-  --add-source /tmp/opencode/sharedkernel-tools \
-  --version 0.1.0-alpha.local.20260705000000
-
-dotnet tool update "${package_id}" \
-  --tool-path /tmp/opencode/sharedkernel-tool-bin \
-  --add-source /tmp/opencode/sharedkernel-tools \
-  --version 0.1.0-alpha.local.20260705000000
-```
-
-When running from this repository, package source mapping in `NuGet.Config` intentionally blocks ad hoc
-`--add-source` restores for unmapped package IDs. For install smoke checks, run from a scratch directory
-with an explicit temporary NuGet config that maps the local feed to the repo-owned tool package IDs and
-maps `nuget.org` to external dependencies.
-
-Do not add repo-owned tools to `.config/dotnet-tools.json` until a stable trusted feed is available for
-ordinary `dotnet tool restore` users.
-
-## Local feed workflow
-
-Pack all current source `SharedKernel.*` projects into a local artifact folder and verify that a
-scratch project can restore them from that local feed:
-
-```bash
-dotnet run --project tools/SharedKernel.Versioning.Tool -- \
-  pack-sharedkernel --version 0.1.0-alpha.local.20260704000000
-```
-
-If `--version` is omitted, the tool creates a timestamped local prerelease version. Reusing an
-existing package version fails before packing when any `.nupkg`, `.snupkg`, or `.symbols.nupkg`
-artifact already exists for that version. This keeps local and release dry runs from accidentally
-hiding package-content changes behind NuGet cache reuse.
-
-The restore check creates a scratch project under the artifact folder, references every generated
-`SharedKernel.*` package, restores with the local feed plus `nuget.org`, and verifies each generated
-package exists in the scratch package cache. The scratch restore uses a generated `NuGet.config` with
-`<clear />`, exact package source mapping for the generated package IDs, a wildcard `nuget.org` mapping
-for external dependencies, and a scratch package cache. This avoids inherited machine sources and keeps
-local `SharedKernel.*` package resolution deterministic even if a colliding package ID exists on
-`nuget.org`. Use `--skip-restore-check` only when diagnosing pack failures before restore validation is
-relevant.
-
-The restore verifier runs inside the .NET tool and invokes the local `dotnet restore` used for the
-scratch project. This workflow intentionally validates the local .NET SDK/package environment that
-produced the packages.
-
-Use this workflow only for local validation and CI dry runs. Stable publishing needs release workflow
-gates, release notes, provenance, and support-policy decisions.
-
-## Release prep workflow
-
-The `Release Prep` GitHub Actions workflow uses `SharedKernel.Versioning.Tool` to calculate the
-release version, pack the current `SharedKernel.*` projects, validate package metadata, generate release
-notes, write a changelog, and create provenance, attribution, and SBOM artifacts.
-
-Stable release behavior is disabled by default. Creating a `vX.Y.Z` tag, creating a GitHub release,
-or publishing to NuGet requires manual workflow dispatch and the `release` environment approval.
-NuGet publishing also requires `NUGET_API_KEY` to be configured for that approved environment.
-
-Release prep writes a minimal SPDX 2.3 SBOM from resolved `packages.lock.json` files to
-`artifacts/release-prep/sbom.spdx.json`. It also writes `third-party-attributions.json` and
-`third-party-notices.md` for release review. License fields that cannot be proven from lock files use
-`NOASSERTION` and must be reviewed against NuGet and dependency-review metadata.
-
-Validate package metadata before release work:
-
-```bash
-dotnet run --project tools/SharedKernel.Versioning.Tool -- validate-package-metadata
-```
-
-## Internal SharedKernel dependency versions
-
-Packable `SharedKernel.*` projects should keep internal dependencies as project references in source.
-During `dotnet pack`, those project references become package dependencies that use the same
-`ComputedSemVer` as the package set being packed. The local feed verifier rejects generated packages
-when an internal `SharedKernel.*` dependency does not match the pack version.
-
-Do not widen internal dependency ranges in individual project files without a compatibility policy for
-that package family. Broader ranges belong in a release-governed change because they let consumers mix
-different SharedKernel package versions.
-
-## Public API compatibility
-
-Every `SharedKernel.*` source package has `PublicAPI.Shipped.txt` and `PublicAPI.Unshipped.txt` baseline
-files. The repository enables `Microsoft.CodeAnalysis.PublicApiAnalyzers` centrally for SharedKernel
-package projects, so new public APIs must be added to the baseline intentionally.
-
-Run the baseline presence check before release work:
-
-```bash
-dotnet run --project tools/SharedKernel.Versioning.Tool -- check-public-api-baselines
-```
-
-Run the package compatibility report command before release work:
-
-```bash
-dotnet run --project tools/SharedKernel.Versioning.Tool -- api-compatibility
-```
-
-See [API compatibility gates](API_COMPATIBILITY.md) for alpha, beta, release-candidate, and stable
-breaking-change expectations.
+Do not create `SharedKernel.<Capability>.Core` packages. A documented migration or compatibility
+constraint must explain why the primary module cannot own that surface before adding an exception.

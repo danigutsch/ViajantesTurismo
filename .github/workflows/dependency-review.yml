@@ -41,7 +41,16 @@ jobs:
           ref: ${{ matrix.target == 'base' && github.event.pull_request.base.sha || github.event.pull_request.head.sha }}
           persist-credentials: false
 
-      - name: Set up repository SDK
+      - name: Set up CI prerequisites
+        if: ${{ hashFiles('.config/sharedkernel-candidate.json') != '' }}
+        uses: ./.github/actions/setup-ci-prerequisites
+        with:
+          restore-targets: tools/ViajantesTurismo.RepoConfig.Tool/ViajantesTurismo.RepoConfig.Tool.csproj
+          restore-local-tools: "false"
+          trust-dev-certificate: "false"
+
+      - name: Set up SDK for commits before the package cutover
+        if: ${{ hashFiles('.config/sharedkernel-candidate.json') == '' }}
         uses: actions/setup-dotnet@c2fa09f4bde5ebb9d1777cf28262a3eb3db3ced7 # v5
         with:
           global-json-file: global.json

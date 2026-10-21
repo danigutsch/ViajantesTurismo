@@ -85,6 +85,20 @@ if [[ "${resolved_sdk_version}" != "${required_sdk_version}" ]]; then
     exit 1
 fi
 
+# The host workspace carries the validated candidate feed into the container.
+staged_candidate=""
+if [[ -f "${WORKSPACE_FOLDER}/.local/sharedkernel-feed/candidate.json" ]]; then
+    staged_candidate="$(tr -d '\r' < "${WORKSPACE_FOLDER}/.local/sharedkernel-feed/candidate.json")"
+fi
+pinned_candidate="$(tr -d '\r' < "${WORKSPACE_FOLDER}/.config/sharedkernel-candidate.json")"
+if [[ "${staged_candidate}" != "${pinned_candidate}" ]]; then
+    echo "Stage the pinned SharedKernel candidate before setup:" >&2
+    echo "dotnet run --project tools/ViajantesTurismo.RepoConfig.Tool -c Release -- bootstrap-sharedkernel --library-root /path/to/SharedKernel --feed /path/to/candidate-packages" >&2
+    echo "See docs/sharedkernel/development.md. Devcontainers use the feed staged in the host workspace." >&2
+    exit 1
+fi
+
+cd "${WORKSPACE_FOLDER}"
 dotnet tool restore
 
 # Configure repository as safe for git once.
