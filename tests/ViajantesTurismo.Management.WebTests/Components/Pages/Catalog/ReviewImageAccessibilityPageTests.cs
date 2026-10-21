@@ -1,12 +1,14 @@
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Routing.Patterns;
 using ReviewImageAccessibility = ViajantesTurismo.Management.Web.Components.Pages.Catalog.ReviewImageAccessibility;
 using Microsoft.AspNetCore.Routing;
-using SharedKernel.HttpClients;
+using PandaBear.HttpClients;
 using ViajantesTurismo.Management.Web;
 
 namespace ViajantesTurismo.Management.WebTests.Components.Pages.Catalog;
 
-[Trait(SharedKernel.Testing.TestTraitNames.CategoryName, TestTraits.ComponentCategory)]
-[Trait(SharedKernel.Testing.TestTraitNames.ScopeName, TestTraits.ComponentScope)]
+[Trait(PandaBear.Testing.TestTraitNames.CategoryName, TestTraits.ComponentCategory)]
+[Trait(PandaBear.Testing.TestTraitNames.ScopeName, TestTraits.ComponentScope)]
 public sealed class ReviewImageAccessibilityPageTests : BunitContext
 {
     private readonly FakeCatalogToursApiClient catalogApi = new();
@@ -15,15 +17,11 @@ public sealed class ReviewImageAccessibilityPageTests : BunitContext
     {
         JSInterop.Mode = JSRuntimeMode.Loose;
         Services.AddSingleton<ICatalogToursApiClient>(catalogApi);
-        Services.AddSingleton<LinkGenerator>(new TestLinkGenerator((endpointName, values) =>
-        {
-            if (!string.Equals(endpointName, ManagementWebEndpoints.MediaPreviewByRenditionEndpointName, StringComparison.Ordinal))
-            {
-                return null;
-            }
-
-            return $"/catalog/media/images/{values["id"]}/preview/{values["width"]}/{values["format"]}";
-        }));
+        Services.AddRouting();
+        Services.AddSingleton<EndpointDataSource>(new DefaultEndpointDataSource(
+            new RouteEndpoint(_ => Task.CompletedTask,
+                RoutePatternFactory.Parse("/catalog/media/images/{id}/preview/{width}/{format}"), 0,
+                new EndpointMetadataCollection(new EndpointNameMetadata(ManagementWebEndpoints.MediaPreviewByRenditionEndpointName)), "media")));
     }
 
     [Fact]

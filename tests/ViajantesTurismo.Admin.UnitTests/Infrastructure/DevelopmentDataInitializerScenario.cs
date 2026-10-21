@@ -1,7 +1,7 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
-using SharedKernel.EntityFrameworkCore;
-using SharedKernel.Messaging.IntegrationEvents.EntityFrameworkCore;
+using PandaBear.EntityFrameworkCore;
+using PandaBear.Messaging.IntegrationEvents.EntityFrameworkCore;
 using ViajantesTurismo.Admin.Domain.Tours;
 using ViajantesTurismo.Admin.Infrastructure;
 using ViajantesTurismo.Admin.Testing.Fakes;
@@ -53,7 +53,7 @@ internal sealed class DevelopmentDataInitializerScenario : IAsyncDisposable
         var tour = Tour.Create(new TourDefinition(
             "EXIST001",
             "Existing Tour",
-            new TourScheduleDefinition(CurrentTime.UtcDateTime.AddDays(1), CurrentTime.UtcDateTime.AddDays(7)),
+            new TourScheduleDefinition(DateOnly.FromDateTime(CurrentTime.UtcDateTime.AddDays(1)), DateOnly.FromDateTime(CurrentTime.UtcDateTime.AddDays(7))),
             new TourPricingDefinition(1000m, 100m, 100m, 200m, Currency.Real),
             new TourCapacityDefinition(1, 10),
             ["Hotel"])).Value;
@@ -153,15 +153,6 @@ internal sealed class DevelopmentDataInitializerScenario : IAsyncDisposable
         DbContext.ChangeTracker.Clear();
     }
 
-    public async Task AlterBaselineTourSchedulePrecision(CancellationToken ct)
-    {
-        var tour = await DbContext.Tours.OrderBy(static item => item.Identifier).FirstAsync(ct);
-        var result = tour.UpdateSchedule(tour.Schedule.StartDate, tour.Schedule.EndDate.AddTicks(1));
-        result.IsSuccess.ShouldBeTrue();
-        await DbContext.SaveChangesAsync(ct);
-        DbContext.ChangeTracker.Clear();
-    }
-
     public async Task RemoveBaselineBookings(CancellationToken ct)
     {
         var bookings = await DbContext.Set<Booking>().ToArrayAsync(ct);
@@ -208,7 +199,7 @@ internal sealed class DevelopmentDataInitializerScenario : IAsyncDisposable
             customers[9].Id,
             customers[9].PhysicalInfo.BikeType,
             customers[9].AccommodationPreferences.RoomType,
-            notes: "Arbitrary pending booking"));
+            notes: "Arbitrary pending booking"), new DateTime(2030, 1, 1, 0, 0, 0, DateTimeKind.Utc));
         result.IsSuccess.ShouldBeTrue();
         await DbContext.SaveChangesAsync(ct);
         DbContext.ChangeTracker.Clear();

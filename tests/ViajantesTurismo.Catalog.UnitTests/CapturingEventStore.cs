@@ -1,4 +1,4 @@
-using SharedKernel.EventSourcing;
+using PandaBear.EventSourcing;
 
 namespace ViajantesTurismo.Catalog.UnitTests;
 
@@ -8,6 +8,8 @@ public sealed class CapturingEventStore(int appendFailures = 0) : IEventStore
     private readonly List<EventEnvelope> appendedEnvelopes = [];
     private readonly List<EventEnvelope> replayEvents = [];
     private int remainingAppendFailures = appendFailures;
+
+    public Action? OnAppend { get; set; }
 
     public StreamId StreamId { get; private set; }
 
@@ -62,6 +64,7 @@ public sealed class CapturingEventStore(int appendFailures = 0) : IEventStore
                 DateTimeOffset.UtcNow))
             .ToArray();
         appendedEnvelopes.AddRange(envelopes);
+        OnAppend?.Invoke();
 
         return ValueTask.FromResult(envelopes);
     }

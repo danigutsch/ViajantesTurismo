@@ -11,7 +11,7 @@
         <Using Include="Microsoft.Extensions.Caching.Distributed" />
         <Using Include="Microsoft.Extensions.DependencyInjection" />
         <Using Include="Npgsql" />
-        <Using Include="SharedKernel.Testing.Assertions" />
+        <Using Include="PandaBear.Testing.Assertions" />
         <Using Include="Xunit" />
     </ItemGroup>
 

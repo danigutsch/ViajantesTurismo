@@ -1,4 +1,4 @@
-using SharedKernel.Idempotency;
+using PandaBear.Idempotency;
 using ViajantesTurismo.Admin.Application;
 using ViajantesTurismo.Admin.Application.Documents;
 using ViajantesTurismo.Admin.Testing.Fakes;

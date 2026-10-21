@@ -1,6 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using Npgsql;
-using SharedKernel.Testing;
+using PandaBear.Testing;
 using ViajantesTurismo.Admin.Application.Customers;
 
 namespace ViajantesTurismo.Admin.Infrastructure.Tests.Customers;

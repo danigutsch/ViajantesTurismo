@@ -6,9 +6,9 @@
     </PropertyGroup>
 
     <ItemGroup>
-        <Using Include="SharedKernel.Testing.Assertions" />
-        <Using Include="SharedKernel.Testing.Http" />
-        <Using Include="SharedKernel.Testing" />
+        <Using Include="PandaBear.Testing.Assertions" />
+        <Using Include="PandaBear.Testing.Http" />
+        <Using Include="PandaBear.Testing" />
         <Using Include="ViajantesTurismo.RepoConfig.Tool" />
         <Using Include="Xunit" />
     </ItemGroup>

@@ -8,8 +8,8 @@ internal static class EditPageTestsHelper
         {
             Identifier = "CUBA2024",
             Name = "Cuba Adventure",
-            StartDate = new DateTime(2024, 6, 1, 0, 0, 0, DateTimeKind.Unspecified),
-            EndDate = new DateTime(2024, 6, 15, 0, 0, 0, DateTimeKind.Unspecified),
+            StartDate = DateOnly.FromDateTime(new DateTime(2024, 6, 1, 0, 0, 0, DateTimeKind.Unspecified)),
+            EndDate = DateOnly.FromDateTime(new DateTime(2024, 6, 15, 0, 0, 0, DateTimeKind.Unspecified)),
             Currency = CurrencyDto.Euro,
             Price = 1500.00m,
             SingleRoomSupplementPrice = 200.00m,

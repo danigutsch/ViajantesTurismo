@@ -1,12 +1,12 @@
 using System.Net;
-using SharedKernel.HttpClients;
-using PublicCatalogApiClientTestsHelpers = SharedKernel.Testing.Contracts.ContractHttpClientTestHelper;
-using SharedKernel.Testing.Contracts;
+using PandaBear.HttpClients;
+using PublicCatalogApiClientTestsHelpers = PandaBear.Testing.Contracts.ContractHttpClientTestHelper;
+using PandaBear.Testing.Contracts;
 using ViajantesTurismo.Catalog.Contracts.Http;
 
 namespace ViajantesTurismo.Catalog.ContractTests.ApiClients;
 
-[Trait(SharedKernel.Testing.TestTraitNames.CategoryName, Infrastructure.TestTraits.ContractCategory)]
+[Trait(PandaBear.Testing.TestTraitNames.CategoryName, Infrastructure.TestTraits.ContractCategory)]
 public sealed class PublicCatalogApiClientTests
 {
     [Fact]

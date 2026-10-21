@@ -1,6 +1,7 @@
+@inject TimeProvider TimeProvider
 @page "/addtour"
 @using System.ComponentModel.DataAnnotations
-@using SharedKernel.HttpClients
+@using PandaBear.HttpClients
 @using ViajantesTurismo.Admin.Contracts.Application
 @using ViajantesTurismo.Management.Web.Helpers
 @inject IToursApiClient ToursApi
@@ -141,6 +142,18 @@ Bike rental"/>
         _editContext = new EditContext(_model);
     }
 
+    protected override void OnInitialized()
+    {
+        SetDefaultSchedule();
+    }
+
+    private void SetDefaultSchedule()
+    {
+        var today = DateOnly.FromDateTime(TimeProvider.GetUtcNow().UtcDateTime);
+        _model.StartDate = today.AddDays(30);
+        _model.EndDate = today.AddDays(40);
+    }
+
     private async Task HandleSubmit()
     {
         _isSubmitting = true;
@@ -153,8 +166,8 @@ Bike rental"/>
             {
                     Identifier = _model.Identifier,
                     Name = _model.Name,
-                    StartDate = DateTime.SpecifyKind(_model.StartDate, DateTimeKind.Utc),
-                    EndDate = DateTime.SpecifyKind(_model.EndDate, DateTimeKind.Utc),
+                    StartDate = _model.StartDate,
+                    EndDate = _model.EndDate,
                     Currency = _model.Currency,
                     Price = _model.Price,
                     SingleRoomSupplementPrice = _model.SingleRoomSupplementPrice,
@@ -197,6 +210,7 @@ Bike rental"/>
     private void CreateAnother()
     {
         _model = new TourFormModel();
+        SetDefaultSchedule();
         _editContext = new EditContext(_model);
         _success = false;
         _createdTourUrl = null;
@@ -215,10 +229,10 @@ Bike rental"/>
         public string Name { get; set; } = string.Empty;
 
         [Required, Display(Name = "Start Date")]
-        public DateTime StartDate { get; set; } = DateTime.Today.AddDays(30);
+        public DateOnly StartDate { get; set; }
 
         [Required, Display(Name = "End Date")]
-        public DateTime EndDate { get; set; } = DateTime.Today.AddDays(40);
+        public DateOnly EndDate { get; set; }
 
         [Required]
         public CurrencyDto Currency { get; set; } = CurrencyDto.Euro;

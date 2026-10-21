@@ -1,6 +1,6 @@
 using System.Net;
 using Microsoft.Extensions.Hosting;
-using SharedKernel.Testing;
+using PandaBear.Testing;
 using ViajantesTurismo.Management.Web;
 
 namespace ViajantesTurismo.Management.WebTests;

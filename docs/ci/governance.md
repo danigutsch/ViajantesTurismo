@@ -117,6 +117,9 @@ The workflow lint path installs pinned `actionlint` 1.7.9 directly.
 
 ### Update process
 
+Use the [pin update review workflow](pin-update-review.md) for coverage gaps, required SHA/digest
+evidence, compatibility checks, and stateful recovery.
+
 - GitHub Dependabot automates version update PRs via `.github/dependabot.yml`. The
   configuration covers `github-actions`, `dotnet-sdk`, `nuget`, and `devcontainers`
   ecosystems with deliberately cautious schedules for routine version updates.

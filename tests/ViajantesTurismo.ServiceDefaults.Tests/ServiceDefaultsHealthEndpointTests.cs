@@ -8,10 +8,10 @@ using ViajantesTurismo.Resources;
 
 namespace ViajantesTurismo.ServiceDefaults.Tests;
 
-[Trait(SharedKernel.Testing.TestTraitNames.CategoryName, TestTraits.EndpointCategory)]
-[Trait(SharedKernel.Testing.TestTraitNames.ScopeName, TestTraits.ApiIntegrationScope)]
-[Trait(SharedKernel.Testing.TestTraitNames.AreaName, TestTraits.ServiceDefaultsArea)]
-[Trait(SharedKernel.Testing.TestTraitNames.HostName, TestTraits.TestServerHost)]
+[Trait(PandaBear.Testing.TestTraitNames.CategoryName, TestTraits.EndpointCategory)]
+[Trait(PandaBear.Testing.TestTraitNames.ScopeName, TestTraits.ApiIntegrationScope)]
+[Trait(PandaBear.Testing.TestTraitNames.AreaName, TestTraits.ServiceDefaultsArea)]
+[Trait(PandaBear.Testing.TestTraitNames.HostName, TestTraits.TestServerHost)]
 public sealed class ServiceDefaultsHealthEndpointTests
 {
     [Fact]

@@ -1,14 +1,14 @@
 using System.Net.Http.Json;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Hosting;
-using SharedKernel.MalwareScanning;
+using PandaBear.MalwareScanning;
 using ViajantesTurismo.Admin.Application.Tours.CreateTour;
 using ViajantesTurismo.Admin.Contracts.Application;
 
 namespace ViajantesTurismo.Admin.ApiServiceTests;
 
-[Trait(SharedKernel.Testing.TestTraitNames.CategoryName, SharedKernel.Testing.TestTraitValues.DependencyInjectionCategory)]
-[Trait(SharedKernel.Testing.TestTraitNames.HostName, SharedKernel.Testing.TestTraitValues.TestServerHost)]
+[Trait(PandaBear.Testing.TestTraitNames.CategoryName, PandaBear.Testing.TestTraitValues.DependencyInjectionCategory)]
+[Trait(PandaBear.Testing.TestTraitNames.HostName, PandaBear.Testing.TestTraitValues.TestServerHost)]
 public sealed class AdminEndpointDependencyCompositionTests
 {
     [Fact]
@@ -56,8 +56,8 @@ public sealed class AdminEndpointDependencyCompositionTests
         {
             Identifier = "composition-tour",
             Name = "Composition tour",
-            StartDate = new DateTime(2030, 1, 1, 0, 0, 0, DateTimeKind.Utc),
-            EndDate = new DateTime(2030, 1, 8, 0, 0, 0, DateTimeKind.Utc),
+            StartDate = new DateOnly(2030, 1, 1),
+            EndDate = new DateOnly(2030, 1, 8),
             Price = 1m,
             SingleRoomSupplementPrice = 1m,
             RegularBikePrice = 1m,

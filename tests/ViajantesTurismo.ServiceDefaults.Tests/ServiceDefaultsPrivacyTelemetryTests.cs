@@ -13,7 +13,7 @@ using OpenTelemetry.Trace;
 
 namespace ViajantesTurismo.ServiceDefaults.Tests;
 
-[Trait(SharedKernel.Testing.TestTraitNames.CategoryName, SharedKernel.Testing.TestTraitValues.SecurityCategory)]
+[Trait(PandaBear.Testing.TestTraitNames.CategoryName, PandaBear.Testing.TestTraitValues.SecurityCategory)]
 public sealed class ServiceDefaultsPrivacyTelemetryTests
 {
     [Fact]

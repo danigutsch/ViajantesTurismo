@@ -136,7 +136,9 @@ When resolving a rebase or merge conflict that affects dependency inputs or lock
 4. Review the regenerated lock-file diff, then run the build and relevant test slice.
 
 GitHub Action SHA pins and container image tag/digest pairs have their own review paths; do not run
-the lock-file helper solely for those changes.
+the lock-file helper solely for those changes. See the [pin update review workflow](docs/ci/pin-update-review.md)
+for Action SHA and image digest evidence. The older SDK-only refresh command is superseded by
+`refresh-dependency-lockfiles.sh`; do not create a separate SDK lock-refresh path.
 
 ### Updating the .NET SDK
 

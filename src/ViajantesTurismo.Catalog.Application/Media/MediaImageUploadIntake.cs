@@ -2,12 +2,12 @@ using System.Globalization;
 using System.Security.Cryptography;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
-using SharedKernel.ImageProcessing;
-using SharedKernel.Messaging.IntegrationEvents;
+using PandaBear.ImageProcessing;
+using PandaBear.Messaging.IntegrationEvents;
 using ViajantesTurismo.Catalog.Contracts.IntegrationEvents.Media;
-using SharedKernel.Results;
+using PandaBear.Results;
 using ViajantesTurismo.Catalog.Domain.Media;
-using SharedKernel.BuildingBlocks;
+using PandaBear.BuildingBlocks;
 
 namespace ViajantesTurismo.Catalog.Application.Media;
 
@@ -21,7 +21,8 @@ public sealed partial class MediaImageUploadIntake(
     IPublicMediaImageStore imageStore,
     IIntegrationEventOutbox outbox,
     IOptions<MediaUploadValidationOptions> validationOptions,
-    ILogger<MediaImageUploadIntake> logger)
+    ILogger<MediaImageUploadIntake> logger,
+    TimeProvider timeProvider)
 {
     private const string InvalidUploadMessage = "Media upload is invalid.";
 
@@ -150,7 +151,7 @@ public sealed partial class MediaImageUploadIntake(
 
         var originalStoredEvent = new MediaImageOriginalStoredIntegrationEvent(
             Guid.CreateVersion7(),
-            DateTimeOffset.UtcNow,
+            timeProvider.GetUtcNow(),
             request.MediaImageId,
             objectKey,
             1);

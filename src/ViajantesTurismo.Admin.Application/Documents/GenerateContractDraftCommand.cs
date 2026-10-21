@@ -1,4 +1,4 @@
-using SharedKernel.Idempotency;
+using PandaBear.Idempotency;
 using ViajantesTurismo.Admin.Domain.Documents;
 
 namespace ViajantesTurismo.Admin.Application.Documents;

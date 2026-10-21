@@ -73,10 +73,10 @@ public sealed class CustomerManagementSteps(CustomerContext context)
             "John",
             "Smith",
             "Male",
-            ValidBirthDate,
+            DateOnly.FromDateTime(ValidBirthDate),
             "American",
             "Software Engineer",
-            TimeProvider.System);
+            DateOnly.FromDateTime(TimeProvider.System.GetUtcNow().UtcDateTime));
 
         context.Customer = new Customer(
             context.PersonalInfoResult.Value,
@@ -119,10 +119,10 @@ public sealed class CustomerManagementSteps(CustomerContext context)
             firstName,
             lastName,
             "Male",
-            SanitizationBirthDate,
+            DateOnly.FromDateTime(SanitizationBirthDate),
             "American",
             "Engineer",
-            TimeProvider.System);
+            DateOnly.FromDateTime(TimeProvider.System.GetUtcNow().UtcDateTime));
     }
 
     [When("I create personal information from sanitization inputs")]
@@ -324,7 +324,7 @@ public sealed class CustomerManagementSteps(CustomerContext context)
                 FirstName = "Jane",
                 LastName = "Doe",
                 Gender = "Female",
-                BirthDate = DateTime.UtcNow.AddYears(-30),
+                BirthDate = DateOnly.FromDateTime(DateTime.UtcNow.AddYears(-30)),
                 Nationality = "American",
                 Occupation = "Designer"
             },

@@ -1,7 +1,7 @@
 using ViajantesTurismo.Admin.Application.Mappings;
 using ViajantesTurismo.Admin.Domain.Customers;
-using SharedKernel.Results;
-using SharedKernel.InputNormalization;
+using PandaBear.Results;
+using PandaBear.InputNormalization;
 
 namespace ViajantesTurismo.Admin.Application.Customers.UpdateCustomer;
 
@@ -45,7 +45,7 @@ public sealed class UpdateCustomerCommandHandler(
             command.PersonalInfo.BirthDate,
             command.PersonalInfo.Nationality,
             command.PersonalInfo.Occupation,
-            timeProvider);
+            DateOnly.FromDateTime(timeProvider.GetUtcNow().UtcDateTime));
 
         var identificationInfoResult = IdentificationInfo.Create(
             command.IdentificationInfo.NationalId,

@@ -1,5 +1,5 @@
-using SharedKernel.EventSourcing;
-using SharedKernel.InputNormalization;
+using PandaBear.EventSourcing;
+using PandaBear.InputNormalization;
 
 namespace ViajantesTurismo.Catalog.Domain.Tours;
 

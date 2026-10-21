@@ -1,10 +1,10 @@
 using Microsoft.Extensions.Logging.Abstractions;
-using SharedKernel.HttpClients;
+using PandaBear.HttpClients;
 
 namespace ViajantesTurismo.Admin.IntegrationTests.ApiClients;
 
-[Trait(SharedKernel.Testing.TestTraitNames.CategoryName, TestTraits.SmokeCategory)]
-[Trait(SharedKernel.Testing.TestTraitNames.ScopeName, TestTraits.IntegrationScope)]
+[Trait(PandaBear.Testing.TestTraitNames.CategoryName, TestTraits.SmokeCategory)]
+[Trait(PandaBear.Testing.TestTraitNames.ScopeName, TestTraits.IntegrationScope)]
 public sealed class AdminApiClientIntegrationTests(ApiFixture fixture)
 {
     [Fact]

@@ -1,4 +1,4 @@
-using SharedKernel.AI;
+using PandaBear.AI;
 
 namespace ViajantesTurismo.Catalog.ApiServiceTests;
 

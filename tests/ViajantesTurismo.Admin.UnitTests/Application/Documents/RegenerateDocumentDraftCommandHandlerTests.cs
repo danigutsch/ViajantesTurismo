@@ -1,7 +1,7 @@
-using SharedKernel.Branding;
-using SharedKernel.Idempotency;
-using SharedKernel.Results;
-using SharedKernel.Testing;
+using PandaBear.Branding;
+using PandaBear.Idempotency;
+using PandaBear.Results;
+using PandaBear.Testing;
 using ViajantesTurismo.Admin.Application.Documents;
 using ViajantesTurismo.Admin.Contracts.Application;
 using ViajantesTurismo.Admin.Domain.Documents;

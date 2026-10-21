@@ -8,7 +8,7 @@ using ViajantesTurismo.Catalog.Application;
 using ViajantesTurismo.Catalog.Contracts.Application;
 using ViajantesTurismo.Catalog.Domain;
 using ViajantesTurismo.Catalog.Infrastructure;
-using SharedKernel.Results;
+using PandaBear.Results;
 using AdminInfrastructure = ViajantesTurismo.Admin.Infrastructure;
 using Assembly = System.Reflection.Assembly;
 using ViajantesTurismo.Admin.Domain.Tours;

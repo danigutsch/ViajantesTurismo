@@ -2,8 +2,8 @@ using ViajantesTurismo.Catalog.Application.Media;
 using ViajantesTurismo.Catalog.Contracts.IntegrationEvents.Media;
 using ViajantesTurismo.Catalog.Domain.Media;
 using ViajantesTurismo.Catalog.Testing.Infrastructure;
-using SharedKernel.Results;
-using SharedKernel.Testing;
+using PandaBear.Results;
+using PandaBear.Testing;
 
 namespace ViajantesTurismo.Catalog.UnitTests;
 
@@ -82,7 +82,8 @@ public sealed class MediaImageUploadIntakeTests
         var objectStore = new InMemoryMediaObjectStore();
         var imageStore = new InMemoryPublicMediaImageStore(PublicMediaImageTestFactory.CreatePendingImage(Guid.CreateVersion7(), 1));
         var scanner = new StubMediaUploadScanner(MediaUploadScanResult.Passed);
-        var intake = MediaImageUploadIntakeTestFactory.Create(scanner, objectStore, imageStore);
+        var intake = MediaImageUploadIntakeTestFactory.Create(scanner, objectStore, imageStore,
+            timeProvider: new ControlledTimeProvider(new DateTimeOffset(2030, 2, 3, 14, 0, 0, TimeSpan.Zero)));
         var tourLink = new MediaImageTourLink(Guid.CreateVersion7(), 0, true);
         var request = new MediaImageUploadIntakeRequest(
             mediaImageId,
@@ -108,6 +109,7 @@ public sealed class MediaImageUploadIntakeTests
         storedObjectKey.ShouldEndWith(".jpg", StringComparison.Ordinal);
         objectStore.ObjectKeys.ShouldNotContain("client-photo.jpg");
         result.Value.OriginalStoredEvent.SourceObjectKey.ShouldBe(storedObjectKey);
+        result.Value.OriginalStoredEvent.OccurredAt.ShouldBe(new DateTimeOffset(2030, 2, 3, 14, 0, 0, TimeSpan.Zero));
         scanner.LastRequest.ShouldNotBeNull();
         scanner.LastRequest.ObjectKey.ShouldBe(storedObjectKey);
     }

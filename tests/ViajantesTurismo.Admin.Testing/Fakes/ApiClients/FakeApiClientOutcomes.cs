@@ -1,4 +1,4 @@
-using SharedKernel.HttpClients;
+using PandaBear.HttpClients;
 
 namespace ViajantesTurismo.Admin.Testing.Fakes.ApiClients;
 

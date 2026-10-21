@@ -12,8 +12,8 @@ public sealed class EntityIdGenerationTests
         var result = Tour.Create(new TourDefinition(
             "TEST2024",
             "Test Tour",
-            DateTime.UtcNow.AddMonths(1),
-            DateTime.UtcNow.AddMonths(1).AddDays(7),
+            DateOnly.FromDateTime(DateTime.UtcNow.AddMonths(1)),
+            DateOnly.FromDateTime(DateTime.UtcNow.AddMonths(1).AddDays(7)),
             2000m,
             500m,
             100m,
@@ -53,7 +53,7 @@ public sealed class EntityIdGenerationTests
             principalCustomer: principalResult.Value,
             companionCustomer: null,
             discount: discountResult.Value,
-            notes: null);
+            notes: null, new DateTime(2030, 1, 1, 0, 0, 0, DateTimeKind.Utc));
 
         // Assert
         (principalResult.IsSuccess).ShouldBeTrue();
@@ -69,7 +69,7 @@ public sealed class EntityIdGenerationTests
         var result = Payment.Create(
             bookingId: Guid.CreateVersion7(),
             amount: 250m,
-            paymentDate: DateTime.UtcNow,
+            paymentDate: DateOnly.FromDateTime(DateTime.UtcNow),
             method: PaymentMethod.CreditCard,
             timeProvider: TimeProvider.System,
             referenceNumber: "TX-123",

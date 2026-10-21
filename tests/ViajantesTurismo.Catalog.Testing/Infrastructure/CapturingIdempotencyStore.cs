@@ -1,6 +1,6 @@
-using SharedKernel.Idempotency;
+using PandaBear.Idempotency;
 
-namespace ViajantesTurismo.Catalog.UnitTests;
+namespace ViajantesTurismo.Catalog.Testing.Infrastructure;
 
 public sealed class CapturingIdempotencyStore(
     bool started = true,
@@ -12,6 +12,10 @@ public sealed class CapturingIdempotencyStore(
 
     public IdempotencyEntryState? CompletedState { get; private set; }
 
+    public DateTimeOffset? StartedAt { get; private set; }
+
+    public DateTimeOffset? CompletedAt { get; private set; }
+
     public TimeSpan? CapturedLockDuration { get; private set; }
 
     public ValueTask<IdempotencyStartResult> TryStart(
@@ -21,6 +25,7 @@ public sealed class CapturingIdempotencyStore(
         CancellationToken ct)
     {
         CapturedLockDuration = lockDuration;
+        StartedAt = startedAt;
 
         if (entries.TryGetValue(operation, out var existingEntry))
         {
@@ -62,6 +67,7 @@ public sealed class CapturingIdempotencyStore(
             throw new InvalidOperationException("complete failed");
         }
 
+        CompletedAt = completedAt;
         CompletedState = IdempotencyEntryState.Completed;
         entries[operation] = new IdempotencyEntry(
             operation,

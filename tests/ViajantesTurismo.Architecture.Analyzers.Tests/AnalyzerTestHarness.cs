@@ -18,7 +18,7 @@ internal static class AnalyzerTestHarness
         using Demo;
         using ServiceCollection = Demo.ServiceCollection;
         using Microsoft.Extensions.DependencyInjection;
-        using SharedKernel.Branding;
+        using PandaBear.Branding;
         using ViajantesTurismo.Resources;
 
         """;
@@ -28,7 +28,7 @@ internal static class AnalyzerTestHarness
         string assemblyName = AdminApiAssemblyName,
         string path = "TestSource.cs")
     {
-        var compilation = SharedKernel.Testing.Roslyn.AnalyzerTestHarness.CreateCompilation(
+        var compilation = PandaBear.Testing.Roslyn.AnalyzerTestHarness.CreateCompilation(
             source,
             DefaultUsings,
             assemblyName: assemblyName,

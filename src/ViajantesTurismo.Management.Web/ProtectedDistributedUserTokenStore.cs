@@ -7,9 +7,9 @@ using Duende.AccessTokenManagement.OpenIdConnect;
 using Microsoft.AspNetCore.DataProtection;
 using Microsoft.Extensions.Caching.Distributed;
 using Npgsql;
-using SharedKernel.AspNetCore;
-using SharedKernel.BuildingBlocks;
-using SharedKernel.Npgsql;
+using PandaBear.AspNetCore;
+using PandaBear.BuildingBlocks;
+using PandaBear.Npgsql;
 
 namespace ViajantesTurismo.Management.Web;
 

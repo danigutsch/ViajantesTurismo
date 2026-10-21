@@ -31,6 +31,7 @@ public sealed partial class AnalyzerSuppressionPolicyTests
         "tests/ViajantesTurismo.Admin.Infrastructure.Tests/Initialization/DevelopmentDataInitializationPostgreSqlScenario.cs",
         "tests/ViajantesTurismo.Admin.Infrastructure.Tests/Messaging/AdminMessagingMigrationScenario.cs",
         "tests/ViajantesTurismo.Admin.Infrastructure.Tests/Tours/TourStorePostgreSqlScenario.cs",
+        "tests/ViajantesTurismo.Admin.Infrastructure.Tests/Temporal/CivilDatePostgreSqlScenario.cs",
         "tests/ViajantesTurismo.Admin.Infrastructure.Tests/PostgreSqlTestCleanup.cs",
         "tests/ViajantesTurismo.Admin.Infrastructure.Tests/PostgreSqlTestDatabase.cs",
         "tests/ViajantesTurismo.Admin.Infrastructure.Tests/PostgreSqlTestServerFixture.cs",
@@ -109,9 +110,9 @@ public sealed partial class AnalyzerSuppressionPolicyTests
             "import:src/Directory.Build.props:$([MSBuild]::GetPathOfFileAbove('Directory.Build.props', '$(MSBuildThisFileDirectory)..'))",
             "import:tests/Directory.Build.props:$([MSBuild]::GetPathOfFileAbove('Directory.Build.props', '$(MSBuildThisFileDirectory)../'))",
             "package:src/Directory.Build.props:Microsoft.CodeAnalysis.PublicApiAnalyzers",
-            "project:Directory.Build.props:$(MSBuildThisFileDirectory)src/SharedKernel/SharedKernel.Style.Analyzers/SharedKernel.Style.Analyzers.csproj:Analyzer",
-            "project:Directory.Build.props:$(MSBuildThisFileDirectory)src/SharedKernel/SharedKernel.Style.CodeFixes/SharedKernel.Style.CodeFixes.csproj:Analyzer",
-            "project:tests/Directory.Build.props:$(MSBuildThisFileDirectory)../src/SharedKernel/SharedKernel.Testing.Analyzers/SharedKernel.Testing.Analyzers.csproj:Analyzer"
+            "package:Directory.Build.props:PandaBear.SharedKernel.Style.Analyzers",
+            "package:Directory.Build.props:PandaBear.SharedKernel.Style.CodeFixes",
+            "package:tests/Directory.Build.props:PandaBear.SharedKernel.Testing.Analyzers"
         ];
         var buildFiles = AnalyzerSuppressionPolicyTestsHelpers.EnumerateRepositoryFiles(repositoryRoot, "Directory.Build.props")
             .Concat(AnalyzerSuppressionPolicyTestsHelpers.EnumerateRepositoryFiles(repositoryRoot, "Directory.Build.targets"))

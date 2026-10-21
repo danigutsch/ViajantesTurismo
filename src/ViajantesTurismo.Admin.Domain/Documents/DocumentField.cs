@@ -1,5 +1,5 @@
 using JetBrains.Annotations;
-using SharedKernel.Results;
+using PandaBear.Results;
 
 namespace ViajantesTurismo.Admin.Domain.Documents;
 

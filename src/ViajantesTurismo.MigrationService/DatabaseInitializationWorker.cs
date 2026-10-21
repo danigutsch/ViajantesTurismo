@@ -1,7 +1,7 @@
 using System.Diagnostics;
 using Microsoft.EntityFrameworkCore;
 using Npgsql;
-using SharedKernel.EventSourcing.Npgsql;
+using PandaBear.EventSourcing.Npgsql;
 using ViajantesTurismo.Admin.Infrastructure;
 using ViajantesTurismo.Branding.Infrastructure;
 using ViajantesTurismo.Catalog.Infrastructure;

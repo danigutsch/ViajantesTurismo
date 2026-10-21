@@ -9,8 +9,8 @@ internal static class AdminApiClientTestsHelpers
           "id":"11111111-1111-1111-1111-111111111111",
           "identifier":"TOUR-1",
           "name":"First tour",
-          "startDate":"2026-08-01T00:00:00",
-          "endDate":"2026-08-08T00:00:00",
+          "startDate":"2026-08-01",
+          "endDate":"2026-08-08",
           "price":1200,
           "singleRoomSupplementPrice":300,
           "regularBikePrice":80,
@@ -52,8 +52,8 @@ internal static class AdminApiClientTestsHelpers
         {
             Identifier = "TOUR-1",
             Name = "First tour",
-            StartDate = new DateTime(2026, 8, 1, 0, 0, 0, DateTimeKind.Utc),
-            EndDate = new DateTime(2026, 8, 8, 0, 0, 0, DateTimeKind.Utc),
+            StartDate = new DateOnly(2026, 8, 1),
+            EndDate = new DateOnly(2026, 8, 8),
             Price = 1200,
             SingleRoomSupplementPrice = 300,
             RegularBikePrice = 80,
@@ -69,8 +69,8 @@ internal static class AdminApiClientTestsHelpers
         {
             Identifier = "TOUR-1",
             Name = "Updated tour",
-            StartDate = new DateTime(2026, 8, 1, 0, 0, 0, DateTimeKind.Utc),
-            EndDate = new DateTime(2026, 8, 8, 0, 0, 0, DateTimeKind.Utc),
+            StartDate = new DateOnly(2026, 8, 1),
+            EndDate = new DateOnly(2026, 8, 8),
             Price = 1300,
             SingleRoomSupplementPrice = 350,
             RegularBikePrice = 90,
@@ -109,7 +109,7 @@ internal static class AdminApiClientTestsHelpers
         new()
         {
             Amount = 200,
-            PaymentDate = new DateTime(2026, 7, 2, 0, 0, 0, DateTimeKind.Utc),
+            PaymentDate = new DateOnly(2026, 7, 2),
             Method = PaymentMethodDto.BankTransfer
         };
 }

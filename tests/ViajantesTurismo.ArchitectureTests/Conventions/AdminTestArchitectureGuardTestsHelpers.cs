@@ -1,5 +1,5 @@
 using System.Text.RegularExpressions;
-using SharedKernel.Testing;
+using PandaBear.Testing;
 
 namespace ViajantesTurismo.ArchitectureTests.Conventions;
 

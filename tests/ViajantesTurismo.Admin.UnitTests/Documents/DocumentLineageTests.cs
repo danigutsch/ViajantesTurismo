@@ -1,5 +1,5 @@
-using SharedKernel.Results;
-using SharedKernel.Testing;
+using PandaBear.Results;
+using PandaBear.Testing;
 using ViajantesTurismo.Admin.Domain.Documents;
 
 namespace ViajantesTurismo.Admin.UnitTests.Documents;

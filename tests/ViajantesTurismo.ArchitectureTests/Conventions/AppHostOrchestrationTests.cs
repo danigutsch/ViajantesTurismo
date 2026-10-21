@@ -313,7 +313,7 @@ public sealed partial class AppHostOrchestrationTests
     }
 
     [Fact]
-    [Trait(SharedKernel.Testing.TestTraitNames.CategoryName, SharedKernel.Testing.TestTraitValues.SecurityCategory)]
+    [Trait(PandaBear.Testing.TestTraitNames.CategoryName, PandaBear.Testing.TestTraitValues.SecurityCategory)]
     public void Every_hosted_profile_routes_through_the_trusted_collector_gateway()
     {
         // Arrange
@@ -341,7 +341,7 @@ public sealed partial class AppHostOrchestrationTests
     }
 
     [Fact]
-    [Trait(SharedKernel.Testing.TestTraitNames.CategoryName, SharedKernel.Testing.TestTraitValues.SecurityCategory)]
+    [Trait(PandaBear.Testing.TestTraitNames.CategoryName, PandaBear.Testing.TestTraitValues.SecurityCategory)]
     public void Collector_pipelines_sanitize_resources_and_trace_payloads_before_export()
     {
         // Arrange

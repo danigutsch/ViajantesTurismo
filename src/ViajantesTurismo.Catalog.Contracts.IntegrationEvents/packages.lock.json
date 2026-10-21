@@ -10,25 +10,25 @@
       },
       "PandaBear.SharedKernel.Messaging.IntegrationEvents": {
         "type": "Direct",
-        "requested": "[0.1.0-alpha.cutover.20261020.3, )",
-        "resolved": "0.1.0-alpha.cutover.20261020.3",
-        "contentHash": "YJir3CEWZWNaqghExAiXQtncLcCuwlrX1gazFq1MhdamdiJyqAD9wHK8CO/axiU2QQNmcji+TXIufqxAAxpiTg==",
+        "requested": "[1.0.0-alpha.20261021.2, )",
+        "resolved": "1.0.0-alpha.20261021.2",
+        "contentHash": "3HXQKTGPPAugjav7KZTeLK2wQNU8vPAQ1g992xbf+86wcZIuJPOqL5vNsnk6vHLH+Wjg2jQCBICiU2GHYl/abw==",
         "dependencies": {
           "Microsoft.Extensions.DependencyInjection.Abstractions": "10.0.13",
-          "PandaBear.SharedKernel.Messaging": "0.1.0-alpha.cutover.20261020.3"
+          "PandaBear.SharedKernel.Messaging": "1.0.0-alpha.20261021.2"
         }
       },
       "PandaBear.SharedKernel.Style.Analyzers": {
         "type": "Direct",
-        "requested": "[0.1.0-alpha.cutover.20261020.3, )",
-        "resolved": "0.1.0-alpha.cutover.20261020.3",
-        "contentHash": "wgeDHjtSJLu/DyLGx0LOa/QNeI46TiS4YuXm0TP4udkiogIlzCxXfPdfyGCkxtJZx+lQvQpoKisKfp0u/90AtA=="
+        "requested": "[1.0.0-alpha.20261021.2, )",
+        "resolved": "1.0.0-alpha.20261021.2",
+        "contentHash": "nfxdWX03IuS9TR9Zn4Jp3ED+tcTIe/06+SdLU3XmLhS6EHMljOtbPgeYuQw2TeKFZq0WQkUrG3vI0lOyesRp5A=="
       },
       "PandaBear.SharedKernel.Style.CodeFixes": {
         "type": "Direct",
-        "requested": "[0.1.0-alpha.cutover.20261020.3, )",
-        "resolved": "0.1.0-alpha.cutover.20261020.3",
-        "contentHash": "bGCNAQX5vfXK//VCyq9hEymr+rIvAhkxProvelmanLAx7oIiDW0h6RtbN4dyuSSy8PxkdWVEh+vmKE0LPHCobg=="
+        "requested": "[1.0.0-alpha.20261021.2, )",
+        "resolved": "1.0.0-alpha.20261021.2",
+        "contentHash": "36TIAEL97BTvjHzQgIq05C465xm10yxGjMtpPwJpxFZuRUgMihMJ4Fx9d91fH/ofmghcBzfeyQODqtviQ/qvtg=="
       },
       "Microsoft.Extensions.DependencyInjection.Abstractions": {
         "type": "CentralTransitive",
@@ -38,9 +38,9 @@
       },
       "PandaBear.SharedKernel.Messaging": {
         "type": "CentralTransitive",
-        "requested": "[0.1.0-alpha.cutover.20261020.3, )",
-        "resolved": "0.1.0-alpha.cutover.20261020.3",
-        "contentHash": "AGQIW6hwwo7ZEKdSZfKcullOPcTGpIuK40LlAEl5qelJuQfsb+frMh8uVQkps7HK3PNt/HxXubzpSkvWZe0lDw=="
+        "requested": "[1.0.0-alpha.20261021.2, )",
+        "resolved": "1.0.0-alpha.20261021.2",
+        "contentHash": "gFV5scJK6OoU2MTuFn5Pk8i2DnuqmbgTzKWJYIpWOwEojjjMbcn4ZsSu6TTchlNLgvt/BpwbDoVHmmrTGbAllw=="
       }
     }
   }

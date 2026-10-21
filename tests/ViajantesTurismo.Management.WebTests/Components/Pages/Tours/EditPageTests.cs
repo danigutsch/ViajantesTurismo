@@ -1,4 +1,4 @@
-using SharedKernel.HttpClients;
+using PandaBear.HttpClients;
 using Edit = ViajantesTurismo.Management.Web.Components.Pages.Tours.Edit;
 
 namespace ViajantesTurismo.Management.WebTests.Components.Pages.Tours;

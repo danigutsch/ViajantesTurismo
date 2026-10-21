@@ -1,5 +1,5 @@
 using Microsoft.AspNetCore.WebUtilities;
-using SharedKernel.HttpCaching.AspNetCore;
+using PandaBear.HttpCaching.AspNetCore;
 
 namespace ViajantesTurismo.Public.Web;
 

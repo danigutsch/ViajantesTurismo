@@ -6,8 +6,8 @@
     </PropertyGroup>
 
     <ItemGroup>
-        <Using Include="SharedKernel.Testing.Assertions" />
-        <Using Include="SharedKernel.Testing.Snapshots" />
+        <Using Include="PandaBear.Testing.Assertions" />
+        <Using Include="PandaBear.Testing.Snapshots" />
         <Using Include="Xunit" />
         <Using Include="ViajantesTurismo.OpenApi.Tool" />
     </ItemGroup>

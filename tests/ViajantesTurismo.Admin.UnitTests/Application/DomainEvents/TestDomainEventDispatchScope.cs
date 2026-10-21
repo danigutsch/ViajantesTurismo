@@ -1,8 +1,8 @@
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using SharedKernel.AuditTrail;
-using SharedKernel.Domain;
-using SharedKernel.Messaging.IntegrationEvents;
+using PandaBear.AuditTrail;
+using PandaBear.Domain;
+using PandaBear.Messaging.IntegrationEvents;
 using ViajantesTurismo.Admin.Application;
 using ViajantesTurismo.Admin.Domain.Documents;
 using ViajantesTurismo.Admin.Testing.Fakes;

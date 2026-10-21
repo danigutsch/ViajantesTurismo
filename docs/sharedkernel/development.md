@@ -2,16 +2,27 @@
 
 SharedKernel implementations, reusable test helpers, analyzers, generators, samples, benchmarks,
 and library tooling belong to the separate SharedKernel repository. ViajantesTurismo consumes
-`PandaBear.SharedKernel.*` packages. Public namespaces and assembly names remain `SharedKernel.*`.
+`PandaBear.SharedKernel.*` packages. C# namespaces use `PandaBear.*`; assembly and project names remain `SharedKernel.*`.
 Generic documentation and repository-configuration tooling belongs to SharedKernel. Application
 documentation configuration, CI and coverage policy, bootstrap, and compatibility orchestration stay here.
+
+The pinned candidate is `1.0.0-alpha.20261021.2` at library revision
+`f5975b60601e245bda6bb8e45559d8ce3a24a8e0`. Its manifest covers 73 immutable packages; the application
+references only the modules it uses. The Results runtime includes its generator, so do not add a
+separate Results generator package.
+
+CSV structure parsing and advisory-lock hashing use the Tabular and Npgsql packages. Application
+import interfaces, accepted headers, normalization, business errors, and lock identities remain local.
+The CSV parser preserves the existing simple comma-splitting behavior; quoted commas, escaping, and
+multiline fields remain unsupported.
 
 ## Bootstrap a checkout
 
 Install the SDK pinned by `global.json`. Obtain a clean SharedKernel checkout at the revision in
 `.config/sharedkernel-candidate.json`, together with the unchanged candidate package artifacts.
-The candidate manifest pins the library revision, package version, and SHA-256 hashes. The library
-repository has no configured remote yet; no command creates one or publishes packages.
+The candidate manifest pins the library revision, package version, and SHA-256 hashes. Library source
+is public at [PandaBear.SharedKernel](https://github.com/danigutsch/PandaBear.SharedKernel). Registry
+publication remains deferred; bootstrap stages validated preview artifacts without publishing packages.
 
 From the application root, stage the expected candidate with the dependency-independent C# tool:
 
@@ -52,6 +63,11 @@ Compatibility records both committed repository revisions and package hashes. A 
 identity does not establish compatibility with previously published `SharedKernel.*` packages.
 Rollback restores the previous application dependency configuration, candidate manifest, and lock files,
 then bootstraps its retained artifacts. Keep the prior artifacts available until adoption is accepted.
+
+Generic outbox and idempotency implementation tests live in the library persistence test project.
+The transfer preserves 37 guards in library test commit `3752abb54681e28f4d16abd29966bab3819dd0ea`;
+application tests continue to verify domain dispatch, saved envelopes, registration, and schema policy
+through public package interfaces. This test-only commit does not change the pinned runtime artifacts.
 
 ## CI and platform evidence
 

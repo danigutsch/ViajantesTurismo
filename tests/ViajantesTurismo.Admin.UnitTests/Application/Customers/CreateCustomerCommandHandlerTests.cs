@@ -1,4 +1,4 @@
-using SharedKernel.Results;
+using PandaBear.Results;
 using ViajantesTurismo.Admin.Application.Customers;
 using ViajantesTurismo.Admin.Application.Customers.CreateCustomer;
 using ViajantesTurismo.Admin.Testing.Builders;

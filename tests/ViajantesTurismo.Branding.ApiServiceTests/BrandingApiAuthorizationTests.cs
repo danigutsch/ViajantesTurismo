@@ -6,8 +6,8 @@ namespace ViajantesTurismo.Branding.ApiServiceTests;
 /// <summary>
 /// Verifies the authorization boundary between management and public Branding endpoints.
 /// </summary>
-[Trait(SharedKernel.Testing.TestTraitNames.CategoryName, TestTraits.EndpointCategory)]
-[Trait(SharedKernel.Testing.TestTraitNames.HostName, TestTraits.TestServerHost)]
+[Trait(PandaBear.Testing.TestTraitNames.CategoryName, TestTraits.EndpointCategory)]
+[Trait(PandaBear.Testing.TestTraitNames.HostName, TestTraits.TestServerHost)]
 public sealed class BrandingApiAuthorizationTests
 {
     [Fact]

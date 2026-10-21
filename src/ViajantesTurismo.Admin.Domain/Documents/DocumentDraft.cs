@@ -1,7 +1,7 @@
 using JetBrains.Annotations;
-using SharedKernel.Domain;
-using SharedKernel.InputNormalization;
-using SharedKernel.Results;
+using PandaBear.Domain;
+using PandaBear.InputNormalization;
+using PandaBear.Results;
 
 namespace ViajantesTurismo.Admin.Domain.Documents;
 

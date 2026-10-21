@@ -20,7 +20,8 @@ internal static class MediaImageUploadIntakeTestFactory
         IPublicMediaImageStore imageStore,
         CapturingIntegrationEventOutbox? outbox = null,
         MediaUploadValidationOptions? options = null,
-        ILogger<MediaImageUploadIntake>? logger = null)
+        ILogger<MediaImageUploadIntake>? logger = null,
+        TimeProvider? timeProvider = null)
     {
         var validationOptions = options ?? new MediaUploadValidationOptions();
 
@@ -31,6 +32,6 @@ internal static class MediaImageUploadIntakeTestFactory
             imageStore,
             outbox ?? new CapturingIntegrationEventOutbox(),
             Options.Create(validationOptions),
-            logger ?? NullLogger<MediaImageUploadIntake>.Instance);
+            logger ?? NullLogger<MediaImageUploadIntake>.Instance, timeProvider ?? TimeProvider.System);
     }
 }

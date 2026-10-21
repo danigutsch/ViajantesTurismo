@@ -1,7 +1,7 @@
 using System.Security.Cryptography;
 using Amazon.Runtime;
 using Amazon.S3;
-using SharedKernel.IntegrationTesting;
+using PandaBear.IntegrationTesting;
 
 namespace ViajantesTurismo.Catalog.IntegrationTests.Infrastructure;
 

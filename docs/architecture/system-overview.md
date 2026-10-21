@@ -1,5 +1,11 @@
 # System architecture diagram
 
+Generation ownership: source/configuration in [generated-diagrams.json](generated-diagrams.json),
+with per-output sources in the [diagram inventory](generated-diagram-roadmap.md).
+Refresh: `bash scripts/update-architecture-diagrams.sh`; check: append `--check`.
+Edit manual narrative outside generated markers; review under the
+[documentation governance policy](../DOCUMENTATION_GOVERNANCE.md#generated-output-review-and-finalization).
+
 This C4-style container map gives a single GitHub-rendered view of runtime entry points, internal
 services, data stores, messaging tables, shared libraries, and supporting external dependencies. Edit
 the Mermaid source in `docs/architecture/generated-diagrams.json`; the architecture diagram script

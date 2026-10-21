@@ -5,11 +5,11 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using OpenTelemetry.Metrics;
 using OpenTelemetry.Trace;
-using SharedKernel.Branding;
-using SharedKernel.Domain;
-using SharedKernel.EntityFrameworkCore;
-using SharedKernel.Idempotency;
-using SharedKernel.Messaging.IntegrationEvents;
+using PandaBear.Branding;
+using PandaBear.Domain;
+using PandaBear.EntityFrameworkCore;
+using PandaBear.Idempotency;
+using PandaBear.Messaging.IntegrationEvents;
 using ViajantesTurismo.Admin.Application;
 using ViajantesTurismo.Admin.Application.Tours;
 using ViajantesTurismo.Admin.Application.Tours.CreateTour;
@@ -24,6 +24,15 @@ internal sealed class AdminInfrastructureModuleTestScope(ServiceProvider service
 {
     private readonly ServiceProvider serviceProvider = serviceProvider;
     private readonly IServiceScope scope = serviceProvider.CreateScope();
+
+    public bool HasOutboxRelay => HostedServices.Any(service =>
+    {
+        var type = service.GetType();
+        return type.Assembly == typeof(PandaBear.Messaging.IntegrationEvents.EntityFrameworkCore.IntegrationEventOutboxRelayOptions).Assembly
+            && type.IsGenericType
+            && type.GetGenericTypeDefinition().Name == "IntegrationEventOutboxRelayHostedService`1"
+            && type.GenericTypeArguments.Single() == typeof(AdminWriteDbContext);
+    });
 
     public IDomainEventDispatcher Dispatcher => scope.ServiceProvider.GetRequiredService<IDomainEventDispatcher>();
 

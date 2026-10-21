@@ -2,6 +2,38 @@
 
 This plan defines the generated travel document scope.
 
+Owner: Admin application maintainers. Manually maintained specification, reviewed October 20, 2026.
+[ADR-036](adr/20260710-generated-travel-document-format-and-workflow.md) owns the intermediate-format
+choice; this page owns use cases, boundaries, delivery requirements, and first-slice status.
+
+## Navigation
+
+- [Use cases](#use-cases)
+- [Source-data boundaries](#source-data-boundaries)
+- [Editable intermediate format](#editable-intermediate-format)
+- [PDF generation requirements](#pdf-generation-requirements)
+- [Manual review and finalization workflow](#manual-review-and-finalization-workflow)
+- [First vertical slice](#first-vertical-slice)
+- [Current evidence and remaining gates](#current-evidence-and-remaining-gates)
+
+## Current evidence and remaining gates
+
+The first-slice plan and format decision are complete planning artifacts. They do not mean every
+production workflow or PDF accessibility requirement is implemented. Verify current behavior from
+these source/test owners before widening the slice:
+
+| Boundary | Current evidence | Remaining delivery gate |
+| --- | --- | --- |
+| Draft creation, source/template identity, approved editable fields | `Admin.Application/Documents/ContractDocumentDraftFactory.cs`; `Admin.UnitTests/Documents/DocumentDraftTests.cs` | More template types, governed template approval, and full source/template freshness enforcement remain separate work |
+| Draft idempotency, review/finalization commands, lineage | `Admin.Application/Documents/`; `Admin.UnitTests/Application/Documents/`; `Admin.UnitTests/Documents/DocumentLineageLifecycleTests.cs` | Do not close review/retention hardening from this plan alone; verify reviewer identity, reasons, stale-source behavior, and denied transitions against current tests |
+| Rendering | `Admin.Application/Documents/DocumentArtifactRenderer.cs` maps to semantic HTML | PDF renderer selection, tagged PDF output, and assistive-technology verification are pending; HTML structure does not prove PDF conformance |
+| Branding snapshot | `Admin.Application/Documents/DocumentBrandingSnapshotFactory.cs` currently captures values via `IBrandingApiClient` and hashes them | ADR-040's Admin-local revisioned projection and recovery fence are planned, not implemented by this document |
+| Delivery | Admin document endpoints, contract-owned client, Management download proxy | Governed object storage, retention exceptions, legal hold, and production privacy approval remain separate gates |
+
+Paths in this table are relative to `src/ViajantesTurismo.` or `tests/ViajantesTurismo.` as
+appropriate. Keep business document rendering separate from repository documentation generation:
+regenerating a Markdown diagram never approves or finalizes a customer artifact.
+
 ## Goal
 
 Generate travel documents from existing booking, customer, tour, pricing, payment, and operational
@@ -109,7 +141,7 @@ truth for bookings, customers, tours, pricing, payments, or operational data.
 | Pricing and payment state | Admin pricing/payment model | Use booking price snapshots and coarse payment state. Do not include payment secrets, card data, or processor payloads. |
 | Discount data | Admin pricing/discount model | Read discount labels or totals only when required for customer-facing explanation or finance traceability. Do not expose internal approval notes or rules. |
 | Localization data | Localization resources or content owner | Render in the requested supported language with safe fallback rules. Track language and template version; do not auto-publish machine-translated legal or customer text without human review. |
-| Branding data | Admin-owned local Branding projection | Apply the projected immutable values and record source epoch/revision. New documents require positive revision provenance; only rows created before ADR-040 rollout may retain null Branding revision. Gate generation while projection recovery is active. |
+| Branding data | Current: Branding HTTP client captured as an immutable document snapshot. Target: Admin-owned local projection under ADR-040 | Preserve captured values for existing artifacts. The target records source epoch/revision and gates generation during recovery; do not claim revision provenance or recovery fencing before that rollout. |
 | Staff-entered document edits | Document draft | Store only approved document-specific text. Do not write edits back to booking, customer, tour, or payment records. |
 | Template metadata | Document template record or deployed template version | Record template identifier and version used for draft and PDF generation. |
 
@@ -135,6 +167,17 @@ Do not store the draft as arbitrary HTML, Markdown, DOCX, or a binary PDF. Rich 
 later only for fields that have a proven business need and a sanitizer/accessibility test plan.
 
 ## PDF generation requirements
+
+Status: requirements for a future renderer; no PDF library is selected or installed.
+Before selecting one, render a synthetic contract with headings, a table, links, accents, long text,
+and page breaks. Verify tagging, logical reading order, language, keyboard/link behavior, font/text
+extraction, and screen-reader output. A visual snapshot alone cannot prove accessibility. Record
+renderer/version/options and remove uncontrolled timestamps or identifiers from reproducibility
+checks; retain required business timestamps from the immutable draft.
+
+Reject image-only output and unsupported accessibility claims. Keep HTML as the current derived
+artifact until the PDF boundary has automated structural checks plus manual assistive-technology
+review. Choosing a renderer requires its own dependency/license/supply-chain review.
 
 PDF generation is a derived rendering step from a reviewed draft.
 

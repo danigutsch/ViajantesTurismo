@@ -49,11 +49,11 @@ This file overrides root guidance where test-specific behavior is needed.
 - Step definition methods should use descriptive Given/When/Then-style names with underscores.
 - Prefer precise assertions on business-visible outcomes over incidental implementation details.
 - New or touched maintained tests must use the repository assertion package:
-  `PandaBear.SharedKernel.Testing.Assertions` (namespace `SharedKernel.Testing.Assertions`).
+  `PandaBear.SharedKernel.Testing.Assertions` (namespace `PandaBear.Testing.Assertions`).
   If a test project does not already reference it, add the package reference and a global
-  `<Using Include="SharedKernel.Testing.Assertions" />` (or a file `using`) instead of using
+  `<Using Include="PandaBear.Testing.Assertions" />` (or a file `using`) instead of using
   `Xunit.Assert` directly.
-- Prefer extension assertions from `SharedKernel.Testing.Assertions`, for example
+- Prefer extension assertions from `PandaBear.Testing.Assertions`, for example
   `actual.ShouldBe(expected)`, `actual.ShouldNotBeNull()`, `items.ShouldContain(expected)`,
   `text.ShouldContain(expected, StringComparison.Ordinal)`, and
   `action.ShouldThrow<InvalidOperationException>()`.

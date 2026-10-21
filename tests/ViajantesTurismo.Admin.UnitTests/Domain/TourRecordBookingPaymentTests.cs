@@ -1,6 +1,6 @@
 using ViajantesTurismo.Admin.Domain.Shared;
 using ViajantesTurismo.Admin.Testing.Behavior;
-using SharedKernel.Results;
+using PandaBear.Results;
 using ViajantesTurismo.Admin.Domain.Tours;
 
 namespace ViajantesTurismo.Admin.UnitTests.Domain;
@@ -17,7 +17,7 @@ public class TourRecordBookingPaymentTests
         var result = tour.RecordBookingPayment(
             Guid.CreateVersion7(),
             100m,
-            DateTime.UtcNow.AddDays(-1),
+            DateOnly.FromDateTime(DateTime.UtcNow.AddDays(-1)),
             PaymentMethod.CreditCard,
             TimeProvider.System);
 
@@ -40,7 +40,7 @@ public class TourRecordBookingPaymentTests
         var result = tour.RecordBookingPayment(
             booking.Id,
             booking.RemainingBalance + 1m,
-            DateTime.UtcNow.AddDays(-1),
+            DateOnly.FromDateTime(DateTime.UtcNow.AddDays(-1)),
             PaymentMethod.CreditCard,
             TimeProvider.System);
 
@@ -64,7 +64,7 @@ public class TourRecordBookingPaymentTests
         var result = tour.RecordBookingPayment(
             booking.Id,
             0m,
-            DateTime.UtcNow.AddDays(-1),
+            DateOnly.FromDateTime(DateTime.UtcNow.AddDays(-1)),
             PaymentMethod.CreditCard,
             TimeProvider.System);
 
@@ -88,7 +88,7 @@ public class TourRecordBookingPaymentTests
         var result = tour.RecordBookingPayment(
             booking.Id,
             100m,
-            DateTime.UtcNow.AddDays(-1),
+            DateOnly.FromDateTime(DateTime.UtcNow.AddDays(-1)),
             (PaymentMethod)999,
             TimeProvider.System);
 
@@ -112,7 +112,7 @@ public class TourRecordBookingPaymentTests
         var result = tour.RecordBookingPayment(
             booking.Id,
             100m,
-            DateTime.UtcNow.AddDays(1),
+            DateOnly.FromDateTime(DateTime.UtcNow.AddDays(1)),
             PaymentMethod.CreditCard,
             TimeProvider.System);
 
@@ -137,7 +137,7 @@ public class TourRecordBookingPaymentTests
         var result = tour.RecordBookingPayment(
             booking.Id,
             100m,
-            paymentDate,
+            DateOnly.FromDateTime(paymentDate),
             PaymentMethod.CreditCard,
             TimeProvider.System,
             referenceNumber: "TX-123",
@@ -148,7 +148,7 @@ public class TourRecordBookingPaymentTests
         var payment = (booking.Payments).ShouldHaveSingleItem();
         (payment.Id).ShouldBe(result.Value.Id);
         (payment.Amount).ShouldBe(100m);
-        (payment.PaymentDate).ShouldBe(paymentDate);
+        (payment.PaymentDate).ShouldBe(DateOnly.FromDateTime(paymentDate));
         (payment.Method).ShouldBe(PaymentMethod.CreditCard);
         (payment.ReferenceNumber).ShouldBe("TX-123");
         (payment.Notes).ShouldBe("Paid at reception");

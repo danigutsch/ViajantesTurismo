@@ -4,8 +4,8 @@ using AdminContractConstants = ViajantesTurismo.Admin.Contracts.Application.Cont
 
 namespace ViajantesTurismo.Management.WebTests.Components.Pages.Customers;
 
-[Trait(SharedKernel.Testing.TestTraitNames.CategoryName, TestTraits.ComponentCategory)]
-[Trait(SharedKernel.Testing.TestTraitNames.ScopeName, TestTraits.ComponentScope)]
+[Trait(PandaBear.Testing.TestTraitNames.CategoryName, TestTraits.ComponentCategory)]
+[Trait(PandaBear.Testing.TestTraitNames.ScopeName, TestTraits.ComponentScope)]
 public sealed class ImportCustomersPageTests : BunitContext
 {
     private readonly FakeCustomersApiClient _fakeCustomersApi = new();

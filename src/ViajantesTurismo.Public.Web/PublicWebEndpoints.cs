@@ -1,5 +1,5 @@
 using Microsoft.Extensions.Options;
-using SharedKernel.AspNetCore;
+using PandaBear.AspNetCore;
 using ViajantesTurismo.Catalog.Contracts.Application;
 using ViajantesTurismo.Public.Web.Components;
 
@@ -61,7 +61,7 @@ internal static class PublicWebEndpoints
         try
         {
             var outcome = await catalogApi.GetPublishedTours(ct);
-            if (outcome is not { Kind: SharedKernel.HttpClients.HttpOutcomeKind.Succeeded, Value: { } publishedTours })
+            if (outcome is not { Kind: PandaBear.HttpClients.HttpOutcomeKind.Succeeded, Value: { } publishedTours })
             {
                 PublicWebHttpCache.SetServiceUnavailableNoStore(httpContext);
                 return Results.StatusCode(StatusCodes.Status503ServiceUnavailable);

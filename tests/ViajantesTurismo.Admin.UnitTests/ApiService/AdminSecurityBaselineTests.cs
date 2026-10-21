@@ -8,7 +8,7 @@ using ViajantesTurismo.Admin.ApiService;
 
 namespace ViajantesTurismo.Admin.UnitTests.ApiService;
 
-[Trait(SharedKernel.Testing.TestTraitNames.CategoryName, TestTraits.SecurityCategory)]
+[Trait(PandaBear.Testing.TestTraitNames.CategoryName, TestTraits.SecurityCategory)]
 public sealed class AdminSecurityBaselineTests
 {
     [Fact]

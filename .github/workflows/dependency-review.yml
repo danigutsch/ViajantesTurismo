@@ -20,17 +20,69 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
+  dependency-snapshots:
+    name: Dependency snapshot (${{ matrix.target }})
+    if: >-
+      github.event_name == 'pull_request' &&
+      github.event.pull_request.head.repo.full_name == github.repository &&
+      github.actor != 'dependabot[bot]'
+    runs-on: ${{ vars.CI_UBUNTU_RUNNER }}
+    timeout-minutes: 20
+    permissions:
+      contents: write
+    strategy:
+      fail-fast: false
+      matrix:
+        target: [base, head]
+    steps:
+      - name: Checkout exact reviewed commit
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        with:
+          ref: ${{ matrix.target == 'base' && github.event.pull_request.base.sha || github.event.pull_request.head.sha }}
+          persist-credentials: false
+
+      - name: Set up repository SDK
+        uses: actions/setup-dotnet@c2fa09f4bde5ebb9d1777cf28262a3eb3db3ced7 # v5
+        with:
+          global-json-file: global.json
+
+      - name: Restore complete locked dependency graph
+        run: dotnet restore ViajantesTurismo.slnx --locked-mode -bl:dependency-restore.binlog
+
+      - name: Submit complete dependency snapshot
+        uses: actions/component-detection-dependency-submission-action@98beaea5a1227f3db476e4c9ca959a0cacd7ac4f # reviewed automatic-submission revision
+        with:
+          detectorsCategories: NuGet
+          correlator: viajantes-solution-nuget
+          snapshot-sha: ${{ matrix.target == 'base' && github.event.pull_request.base.sha || github.event.pull_request.head.sha }}
+          snapshot-ref: ${{ format('refs/heads/{0}', matrix.target == 'base' && github.base_ref || github.head_ref) }}
+
   dependency-review:
     name: Dependency Review
+    needs: dependency-snapshots
+    if: ${{ always() }}
     runs-on: ${{ vars.CI_UBUNTU_RUNNER }}
     steps:
+      - name: Require successful snapshot generation when applicable
+        env:
+          SNAPSHOT_RESULT: ${{ needs.dependency-snapshots.result }}
+        run: |
+          case "$SNAPSHOT_RESULT" in
+            success | skipped) ;;
+            *) echo "Dependency snapshot generation did not succeed." >&2; exit 1 ;;
+          esac
+
       - name: Checkout repository
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        with:
+          persist-credentials: false
 
       - name: Dependency Review
         uses: actions/dependency-review-action@2031cfc080254a8a887f58cffee85186f0e49e48 # v4.9.0
         with:
           fail-on-severity: moderate
+          license-check: true
+          vulnerability-check: true
           allow-licenses: >-
             MIT, Apache-2.0, BSD-2-Clause, BSD-3-Clause, 0BSD, ISC, PostgreSQL, Zlib,
             Unlicense, CC0-1.0

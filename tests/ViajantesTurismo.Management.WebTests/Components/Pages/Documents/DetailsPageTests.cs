@@ -1,7 +1,7 @@
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Routing;
-using SharedKernel.HttpClients;
-using SharedKernel.Testing;
+using PandaBear.HttpClients;
+using PandaBear.Testing;
 using ViajantesTurismo.Management.Web.Components;
 using ViajantesTurismo.Management.Web.Components.Pages.Documents;
 

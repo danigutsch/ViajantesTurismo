@@ -1,5 +1,5 @@
 using System.Collections.Concurrent;
-using SharedKernel.HttpClients;
+using PandaBear.HttpClients;
 
 namespace ViajantesTurismo.Public.WebTests.Infrastructure;
 

@@ -5,9 +5,9 @@ using Amazon.S3;
 using Amazon.S3.Model;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Options;
-using SharedKernel.MalwareScanning;
-using SharedKernel.MalwareScanning.ClamAv.Testing;
-using SharedKernel.Results;
+using PandaBear.MalwareScanning;
+using PandaBear.MalwareScanning.ClamAv.Testing;
+using PandaBear.Results;
 using ViajantesTurismo.Catalog.Application.Media;
 using ViajantesTurismo.Catalog.Domain.Media;
 using ViajantesTurismo.Catalog.Infrastructure;
@@ -67,7 +67,7 @@ public sealed class MediaInfrastructureContainerTests(MediaInfrastructureContain
             new UnexpectedPublicMediaImageStore(),
             new UnexpectedIntegrationEventOutbox(),
             Options.Create(validationOptions),
-            NullLogger<MediaImageUploadIntake>.Instance);
+            NullLogger<MediaImageUploadIntake>.Instance, TimeProvider.System);
         var content = new byte[] { 0xFF, 0xD8, 0xFF, 0xD9 };
         var request = new MediaImageUploadIntakeRequest(
             Guid.CreateVersion7(),

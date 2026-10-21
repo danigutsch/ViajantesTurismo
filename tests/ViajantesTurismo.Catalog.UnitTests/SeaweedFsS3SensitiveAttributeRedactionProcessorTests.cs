@@ -1,5 +1,5 @@
 using System.Diagnostics;
-using SharedKernel.Testing;
+using PandaBear.Testing;
 using ViajantesTurismo.Catalog.Infrastructure;
 
 namespace ViajantesTurismo.Catalog.UnitTests;

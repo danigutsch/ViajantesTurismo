@@ -1,6 +1,6 @@
 using System.Text.Json;
-using SharedKernel.Documentation;
-using SharedKernel.Testing;
+using PandaBear.Documentation;
+using PandaBear.Testing;
 using static ViajantesTurismo.ArchitectureTests.Conventions.AdminTestArchitectureGuardTestsHelpers;
 
 namespace ViajantesTurismo.ArchitectureTests.Conventions;

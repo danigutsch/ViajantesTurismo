@@ -1,5 +1,11 @@
 # Architecture boundaries and dependency flow
 
+Generation ownership: source/configuration in [generated-diagrams.json](generated-diagrams.json),
+with per-output sources in the [diagram inventory](generated-diagram-roadmap.md).
+Refresh: `bash scripts/update-architecture-diagrams.sh`; check: append `--check`.
+Edit manual narrative outside generated markers; review under the
+[documentation governance policy](../DOCUMENTATION_GOVERNANCE.md#generated-output-review-and-finalization).
+
 This page documents the current source-controlled dependency shape. Planned changes are listed
 separately so diagrams can stay useful as repository structure evolves.
 

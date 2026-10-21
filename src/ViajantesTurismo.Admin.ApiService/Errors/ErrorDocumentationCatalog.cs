@@ -1,7 +1,7 @@
 using System.Diagnostics.CodeAnalysis;
 using System.Reflection;
-using SharedKernel.Results;
-using SharedKernel.Results.AspNet;
+using PandaBear.Results;
+using PandaBear.Results.AspNet;
 using ViajantesTurismo.Admin.Application;
 using ViajantesTurismo.Admin.Contracts.Http;
 using ViajantesTurismo.Admin.Domain.Tours;

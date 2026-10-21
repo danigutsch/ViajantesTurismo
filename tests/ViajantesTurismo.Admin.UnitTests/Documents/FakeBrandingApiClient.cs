@@ -1,4 +1,4 @@
-using SharedKernel.Branding;
+using PandaBear.Branding;
 
 namespace ViajantesTurismo.Admin.UnitTests.Documents;
 

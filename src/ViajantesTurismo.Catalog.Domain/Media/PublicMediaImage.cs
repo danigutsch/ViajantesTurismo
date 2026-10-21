@@ -1,7 +1,7 @@
 using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
-using SharedKernel.Results;
-using SharedKernel.InputNormalization;
+using PandaBear.Results;
+using PandaBear.InputNormalization;
 using ViajantesTurismo.Catalog.Domain.PublicContent;
 
 namespace ViajantesTurismo.Catalog.Domain.Media;

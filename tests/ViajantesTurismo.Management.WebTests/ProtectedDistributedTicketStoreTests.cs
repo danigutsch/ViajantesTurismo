@@ -1,12 +1,55 @@
+using ViajantesTurismo.Admin.Testing.Fakes;
 namespace ViajantesTurismo.Management.WebTests;
 
 /// <summary>
 /// Verifies protected server-side authentication ticket storage.
 /// </summary>
-[Trait(SharedKernel.Testing.TestTraitNames.CategoryName, TestTraits.SecurityCategory)]
-[Trait(SharedKernel.Testing.TestTraitNames.ScopeName, TestTraits.UnitScope)]
+[Trait(PandaBear.Testing.TestTraitNames.CategoryName, TestTraits.SecurityCategory)]
+[Trait(PandaBear.Testing.TestTraitNames.ScopeName, TestTraits.UnitScope)]
 public sealed class ProtectedDistributedTicketStoreTests
 {
+    [Theory]
+    [InlineData(-1, false)]
+    [InlineData(0, true)]
+    [InlineData(1, true)]
+    public async Task Expires_tickets_at_the_exact_controlled_boundary(int ticksAfterExpiry, bool expired)
+    {
+        // Arrange
+        var expiry = new DateTimeOffset(2090, 2, 3, 14, 0, 0, TimeSpan.Zero);
+        var clock = new FakeTimeProvider(expiry.AddTicks(-1));
+        var context = new ProtectedDistributedTicketStoreTestContext(timeProvider: clock);
+        var ticket = ProtectedDistributedTicketStoreTestContext.CreateTicket(expiry);
+        // Act
+        var key = await context.Store.StoreAsync(ticket);
+        clock.CurrentInstant = expiry.AddTicks(ticksAfterExpiry);
+        var retrieved = await context.Store.RetrieveAsync(key);
+        var cachedValue = await context.Cache.GetAsync(key, Xunit.TestContext.Current.CancellationToken);
+        // Assert
+        (retrieved is null).ShouldBe(expired);
+        (cachedValue is null).ShouldBe(expired);
+        clock.GetUtcNow().ShouldBe(expiry.AddTicks(ticksAfterExpiry));
+    }
+
+    [Fact]
+    public async Task Uses_relative_session_lifetime_when_the_ticket_has_no_explicit_expiry()
+    {
+        // Arrange
+        var inner = new Microsoft.Extensions.Caching.Distributed.MemoryDistributedCache(
+            Microsoft.Extensions.Options.Options.Create(new Microsoft.Extensions.Caching.Memory.MemoryDistributedCacheOptions()));
+        var cache = new ThrowingSetDistributedCache(inner, static (_, _) => false);
+        var context = new ProtectedDistributedTicketStoreTestContext(cache);
+        var ticket = ProtectedDistributedTicketStoreTestContext.CreateTicket();
+        ticket.Properties.ExpiresUtc = null;
+        // Act
+        var key = await context.Store.StoreAsync(ticket);
+        var retrieved = await context.Store.RetrieveAsync(key);
+        // Assert
+        retrieved.ShouldNotBeNull();
+        var options = cache.LastOptions.ShouldNotBeNull();
+        options.AbsoluteExpiration.ShouldBeNull();
+        options.AbsoluteExpirationRelativeToNow.ShouldBe(Web.ManagementAuthenticationDefaults.SessionLifetime);
+    }
+
     [Fact]
     public async Task Stores_encrypted_ticket_and_retrieves_it()
     {

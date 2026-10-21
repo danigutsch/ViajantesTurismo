@@ -1,7 +1,7 @@
 using System.Globalization;
 using System.Security.Cryptography;
 using System.Text;
-using SharedKernel.Results;
+using PandaBear.Results;
 using ViajantesTurismo.Admin.Contracts.Application;
 using ViajantesTurismo.Admin.Domain.Documents;
 
@@ -97,8 +97,8 @@ internal static class ContractDocumentDraftFactory
             tour.Id.ToString("N"),
             tour.Identifier,
             tour.Name,
-            tour.StartDate.ToUniversalTime().ToString("O", CultureInfo.InvariantCulture),
-            tour.EndDate.ToUniversalTime().ToString("O", CultureInfo.InvariantCulture),
+            tour.StartDate.ToString("O", CultureInfo.InvariantCulture),
+            tour.EndDate.ToString("O", CultureInfo.InvariantCulture),
             string.Join("\u001f", tour.IncludedServices));
         var hash = SHA256.HashData(Encoding.UTF8.GetBytes(source));
         return Convert.ToHexString(hash);

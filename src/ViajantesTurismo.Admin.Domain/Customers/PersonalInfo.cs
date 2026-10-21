@@ -1,6 +1,6 @@
-using SharedKernel.Results;
+using PandaBear.Results;
 using static ViajantesTurismo.Admin.Domain.Customers.CustomerErrors;
-using SharedKernel.InputNormalization;
+using PandaBear.InputNormalization;
 
 namespace ViajantesTurismo.Admin.Domain.Customers;
 
@@ -9,7 +9,7 @@ namespace ViajantesTurismo.Admin.Domain.Customers;
 /// </summary>
 public sealed class PersonalInfo
 {
-    private PersonalInfo(string firstName, string lastName, string gender, DateTime birthDate, string nationality, string occupation)
+    private PersonalInfo(string firstName, string lastName, string gender, DateOnly birthDate, string nationality, string occupation)
     {
         FirstName = firstName;
         LastName = lastName;
@@ -29,7 +29,7 @@ public sealed class PersonalInfo
     public string Gender { get; private set; }
 
     /// <summary>Date of birth.</summary>
-    public DateTime BirthDate { get; private set; }
+    public DateOnly BirthDate { get; private set; }
 
     /// <summary>Nationality.</summary>
     public string Nationality { get; private set; }
@@ -46,20 +46,17 @@ public sealed class PersonalInfo
     /// <param name="birthDate">The birthdate.</param>
     /// <param name="nationality">The nationality.</param>
     /// <param name="occupation">The occupation.</param>
-    /// <param name="timeProvider">The time provider for date validation.</param>
+    /// <param name="today">The captured UTC business date for age validation.</param>
     /// <returns>A Result containing the PersonalInfo.</returns>
-    /// <exception cref="ArgumentNullException">Thrown when <paramref name="timeProvider"/> is null.</exception>
     public static Result<PersonalInfo> Create(
         string firstName,
         string lastName,
         string gender,
-        DateTime birthDate,
+        DateOnly birthDate,
         string nationality,
         string occupation,
-        TimeProvider timeProvider)
+        DateOnly today)
     {
-        ArgumentNullException.ThrowIfNull(timeProvider);
-
         firstName = StringSanitizer.Sanitize(firstName);
         lastName = StringSanitizer.Sanitize(lastName);
         gender = StringSanitizer.Sanitize(gender);
@@ -113,16 +110,13 @@ public sealed class PersonalInfo
             errors.Add(OccupationTooLong());
         }
 
-        var currentDate = timeProvider.GetUtcNow().Date;
-        var birthDateOnly = birthDate.Date;
-
-        if (birthDateOnly > currentDate)
+        if (birthDate > today)
         {
             errors.Add(FutureBirthDate());
         }
         else
         {
-            var age = CalculateAge(birthDateOnly, currentDate);
+            var age = CalculateAge(birthDate, today);
             if (age < 10)
             {
                 errors.Add(AgeTooYoung(age));
@@ -137,7 +131,7 @@ public sealed class PersonalInfo
         return Result.Ok(new PersonalInfo(firstName, lastName, gender, birthDate, nationality, occupation));
     }
 
-    private static int CalculateAge(DateTime birthDate, DateTime currentDate)
+    private static int CalculateAge(DateOnly birthDate, DateOnly currentDate)
     {
         var age = currentDate.Year - birthDate.Year;
         if (currentDate.Month < birthDate.Month || (currentDate.Month == birthDate.Month && currentDate.Day < birthDate.Day))

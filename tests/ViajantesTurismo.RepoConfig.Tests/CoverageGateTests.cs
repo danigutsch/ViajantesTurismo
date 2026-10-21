@@ -1,6 +1,6 @@
 namespace ViajantesTurismo.RepoConfig.Tests;
 
-[Trait(SharedKernel.Testing.TestTraitNames.CategoryName, "coverage")]
+[Trait(TestTraitNames.CategoryName, "coverage")]
 public sealed class CoverageGateTests
 {
     [Theory]

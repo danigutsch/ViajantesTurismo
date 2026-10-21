@@ -1,5 +1,5 @@
 using Projects;
-using SharedKernel.IntegrationTesting;
+using PandaBear.IntegrationTesting;
 using ViajantesTurismo.Resources;
 
 namespace ViajantesTurismo.Admin.IntegrationTests.Infrastructure;
@@ -7,9 +7,9 @@ namespace ViajantesTurismo.Admin.IntegrationTests.Infrastructure;
 /// <summary>
 /// Verifies DCP isolation when multiple test AppHosts start concurrently.
 /// </summary>
-[Trait(SharedKernel.Testing.TestTraitNames.CategoryName, TestTraits.SmokeCategory)]
-[Trait(SharedKernel.Testing.TestTraitNames.ScopeName, TestTraits.IntegrationScope)]
-[Trait(SharedKernel.Testing.TestTraitNames.HostName, TestTraits.AspireHost)]
+[Trait(PandaBear.Testing.TestTraitNames.CategoryName, TestTraits.SmokeCategory)]
+[Trait(PandaBear.Testing.TestTraitNames.ScopeName, TestTraits.IntegrationScope)]
+[Trait(PandaBear.Testing.TestTraitNames.HostName, TestTraits.AspireHost)]
 public sealed class ConcurrentAspireTestApplicationTests
 {
     private static readonly TimeSpan ConcurrentResourceStartupTimeout = TimeSpan.FromMinutes(3);

@@ -1,7 +1,7 @@
-using SharedKernel.Branding;
-using SharedKernel.HttpClients;
+using PandaBear.Branding;
+using PandaBear.HttpClients;
 using Microsoft.Extensions.Options;
-using SharedKernel.AspNetCore;
+using PandaBear.AspNetCore;
 using ViajantesTurismo.Public.Web;
 using ViajantesTurismo.Resources;
 using ViajantesTurismo.ServiceDefaults;

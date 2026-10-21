@@ -26,6 +26,12 @@ current schedules and grouping rules.
 
 ## Documentation map
 
+- [Dependency/license evidence](dependency-license-evidence.md) — complete snapshots, package evidence, and native audit
+
+- [Test diagnostics proposal](test-diagnostics.md) — bounded failure artifacts, privacy, and test/resource correlation
+- [Warning policy](warning-policy.md) — diagnostic classification, enforcement owners, and exception lifecycle
+- [Pin update review](pin-update-review.md) — Action/container update coverage and review evidence
+
 - [Main workflow](main-workflow.md) — triggers, jobs, docs-only optimization, and
   workflow evolution
 - [Quality gates](quality-gates.md) — build analysis, changed-code coverage, limitations,

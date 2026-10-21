@@ -2,7 +2,7 @@ using System.Xml.Linq;
 
 namespace ViajantesTurismo.ArchitectureTests.Conventions;
 
-[Trait(SharedKernel.Testing.SharedKernelTestTraitNames.ScopeName, TestTraits.ArchitectureScope)]
+[Trait(PandaBear.Testing.SharedKernelTestTraitNames.ScopeName, TestTraits.ArchitectureScope)]
 public static class SharedKernelConsumptionTests
 {
     [Fact]

@@ -1,5 +1,5 @@
 using Microsoft.AspNetCore.Components;
-using SharedKernel.Testing;
+using PandaBear.Testing;
 using ViajantesTurismo.Management.Web.Components.Pages.Bookings;
 using ViajantesTurismo.Management.WebTests.Components.Pages.Documents;
 
@@ -14,6 +14,7 @@ public sealed class DetailsPageTests : BunitContext
 
     public DetailsPageTests()
     {
+        Services.AddSingleton(TimeProvider.System);
         var authorization = AddAuthorization();
         authorization.SetAuthorized("admin@example.test", AuthorizationState.Authorized);
         authorization.SetRoles("Admin");
@@ -22,9 +23,9 @@ public sealed class DetailsPageTests : BunitContext
     }
 
     [Fact]
-    [Trait(SharedKernel.Testing.TestTraitNames.ScopeName, TestTraits.ComponentScope)]
-    [Trait(SharedKernel.Testing.TestTraitNames.AreaName, TestTraits.ManagementWebArea)]
-    [Trait(SharedKernel.Testing.TestTraitNames.CategoryName, TestTraits.ComponentCategory)]
+    [Trait(TestTraitNames.ScopeName, TestTraits.ComponentScope)]
+    [Trait(TestTraitNames.AreaName, TestTraits.ManagementWebArea)]
+    [Trait(TestTraitNames.CategoryName, TestTraits.ComponentCategory)]
     public void Api_failure_shows_a_sanitized_unavailable_message_instead_of_not_found()
     {
         // Arrange
@@ -60,9 +61,9 @@ public sealed class DetailsPageTests : BunitContext
     }
 
     [Fact]
-    [Trait(SharedKernel.Testing.TestTraitNames.ScopeName, TestTraits.ComponentScope)]
-    [Trait(SharedKernel.Testing.TestTraitNames.AreaName, TestTraits.ManagementWebArea)]
-    [Trait(SharedKernel.Testing.TestTraitNames.CategoryName, TestTraits.ComponentCategory)]
+    [Trait(TestTraitNames.ScopeName, TestTraits.ComponentScope)]
+    [Trait(TestTraitNames.AreaName, TestTraits.ManagementWebArea)]
+    [Trait(TestTraitNames.CategoryName, TestTraits.ComponentCategory)]
     public void Booking_details_show_room_and_bike_selections_semantically()
     {
         // Arrange
@@ -217,6 +218,7 @@ public sealed class DetailsPageTests : BunitContext
     {
         // Arrange
         using var context = new BunitContext();
+        context.Services.AddSingleton(TimeProvider.System);
         var authorization = context.AddAuthorization();
         authorization.SetAuthorized("operator@example.test", AuthorizationState.Authorized);
         authorization.SetRoles("Operator");

@@ -1,5 +1,5 @@
 using System.Diagnostics;
-using SharedKernel.Scheduling;
+using PandaBear.Scheduling;
 
 namespace ViajantesTurismo.Catalog.UnitTests;
 

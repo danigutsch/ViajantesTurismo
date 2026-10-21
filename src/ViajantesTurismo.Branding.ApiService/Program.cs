@@ -1,5 +1,5 @@
-using SharedKernel.AspNetCore;
-using SharedKernel.OpenApi;
+using PandaBear.AspNetCore;
+using PandaBear.OpenApi;
 using ViajantesTurismo.Branding.ApiService;
 using ViajantesTurismo.Branding.Infrastructure;
 using ViajantesTurismo.Resources;

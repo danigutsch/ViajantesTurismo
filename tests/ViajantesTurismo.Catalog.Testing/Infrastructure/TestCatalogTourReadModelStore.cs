@@ -1,7 +1,7 @@
 using System.Collections.Concurrent;
 using ViajantesTurismo.Catalog.Application.Tours;
 using ViajantesTurismo.Catalog.Domain.Tours;
-using SharedKernel.InputNormalization;
+using PandaBear.InputNormalization;
 
 namespace ViajantesTurismo.Catalog.Testing.Infrastructure;
 

@@ -1,4 +1,4 @@
-using SharedKernel.Branding;
+using PandaBear.Branding;
 using ViajantesTurismo.Resources;
 
 namespace ViajantesTurismo.Branding.ApiService;

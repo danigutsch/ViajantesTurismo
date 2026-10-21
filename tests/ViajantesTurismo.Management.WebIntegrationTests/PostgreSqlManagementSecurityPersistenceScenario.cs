@@ -1,5 +1,5 @@
 using Microsoft.EntityFrameworkCore;
-using SharedKernel.IntegrationTesting;
+using PandaBear.IntegrationTesting;
 using ViajantesTurismo.Management.Security;
 
 namespace ViajantesTurismo.Management.WebIntegrationTests;

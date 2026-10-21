@@ -1,7 +1,7 @@
 using System.Collections.Concurrent;
 using System.Diagnostics.CodeAnalysis;
 using Npgsql;
-using SharedKernel.IntegrationTesting;
+using PandaBear.IntegrationTesting;
 
 namespace ViajantesTurismo.Admin.Infrastructure.Tests;
 

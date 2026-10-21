@@ -1,8 +1,8 @@
 using System.Diagnostics;
 using Microsoft.Extensions.Options;
-using SharedKernel.Idempotency;
-using SharedKernel.BuildingBlocks;
-using SharedKernel.Messaging.IntegrationEvents;
+using PandaBear.Idempotency;
+using PandaBear.BuildingBlocks;
+using PandaBear.Messaging.IntegrationEvents;
 
 namespace ViajantesTurismo.Catalog.Application.IntegrationEvents;
 
@@ -13,7 +13,8 @@ namespace ViajantesTurismo.Catalog.Application.IntegrationEvents;
 public sealed class IdempotentIntegrationHandler<TIntegrationEvent>(
     IIntegrationEventHandler<TIntegrationEvent> inner,
     IIdempotencyStore idempotencyStore,
-    IOptions<IntegrationEventOptions> options) : IIntegrationEventHandler<TIntegrationEvent>
+    IOptions<IntegrationEventOptions> options,
+    TimeProvider timeProvider) : IIntegrationEventHandler<TIntegrationEvent>
     where TIntegrationEvent : IIntegrationEvent
 {
     private static readonly IdempotencyScope Scope = IdempotencyScope.From(
@@ -36,7 +37,7 @@ public sealed class IdempotentIntegrationHandler<TIntegrationEvent>(
         {
             var startResult = await idempotencyStore.TryStart(
                 operation,
-                DateTimeOffset.UtcNow,
+                timeProvider.GetUtcNow(),
                 options.Value.IdempotencyLockDuration,
                 ct);
             if (!startResult.Started)
@@ -59,7 +60,7 @@ public sealed class IdempotentIntegrationHandler<TIntegrationEvent>(
             CatalogTelemetry.IdempotencyOperations.Add(1, CreateEventTags(CatalogTelemetry.OutcomeAcquired));
 
             await inner.Handle(integrationEvent, ct);
-            await idempotencyStore.Complete(operation, DateTimeOffset.UtcNow, integrationEvent.EventId.ToString("N"), ct);
+            await idempotencyStore.Complete(operation, timeProvider.GetUtcNow(), integrationEvent.EventId.ToString("N"), ct);
 
             SetOutcome(activity, CatalogTelemetry.OutcomeSuccess);
             activity?.SetTag(CatalogTelemetry.TagIdempotencyOutcome, CatalogTelemetry.OutcomeCompleted);

@@ -1,5 +1,5 @@
-using SharedKernel.Results;
-using SharedKernel.InputNormalization;
+using PandaBear.Results;
+using PandaBear.InputNormalization;
 
 namespace ViajantesTurismo.Admin.Domain.Tours;
 

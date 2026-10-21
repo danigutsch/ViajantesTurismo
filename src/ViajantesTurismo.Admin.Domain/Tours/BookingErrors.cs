@@ -1,5 +1,5 @@
 using ViajantesTurismo.Admin.Domain.Shared;
-using SharedKernel.Results;
+using PandaBear.Results;
 
 namespace ViajantesTurismo.Admin.Domain.Tours;
 

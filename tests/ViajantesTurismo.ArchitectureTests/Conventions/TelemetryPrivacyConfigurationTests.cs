@@ -2,7 +2,7 @@ using static ViajantesTurismo.ArchitectureTests.Conventions.AppHostOrchestration
 
 namespace ViajantesTurismo.ArchitectureTests.Conventions;
 
-[Trait(SharedKernel.Testing.TestTraitNames.CategoryName, SharedKernel.Testing.TestTraitValues.SecurityCategory)]
+[Trait(PandaBear.Testing.TestTraitNames.CategoryName, PandaBear.Testing.TestTraitValues.SecurityCategory)]
 public sealed class TelemetryPrivacyConfigurationTests
 {
     [Fact]

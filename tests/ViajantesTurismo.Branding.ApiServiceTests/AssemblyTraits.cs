@@ -1,4 +1,4 @@
 using TestTraits = ViajantesTurismo.Branding.ApiServiceTests.Infrastructure.TestTraits;
 
-[assembly: Trait(SharedKernel.Testing.TestTraitNames.ScopeName, TestTraits.ApiIntegrationScope)]
-[assembly: Trait(SharedKernel.Testing.TestTraitNames.AreaName, TestTraits.BrandingArea)]
+[assembly: Trait(PandaBear.Testing.TestTraitNames.ScopeName, TestTraits.ApiIntegrationScope)]
+[assembly: Trait(PandaBear.Testing.TestTraitNames.AreaName, TestTraits.BrandingArea)]

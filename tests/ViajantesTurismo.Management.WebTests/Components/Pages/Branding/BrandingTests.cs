@@ -1,5 +1,5 @@
 using BrandingPage = ViajantesTurismo.Management.Web.Components.Pages.Branding.Branding;
-using SharedKernel.HttpClients;
+using PandaBear.HttpClients;
 
 namespace ViajantesTurismo.Management.WebTests.Components.Pages.Branding;
 

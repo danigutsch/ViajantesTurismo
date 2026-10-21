@@ -1,5 +1,5 @@
 using ViajantesTurismo.Admin.Domain.Customers;
-using SharedKernel.Results;
+using PandaBear.Results;
 using ViajantesTurismo.Admin.Domain.Tours;
 
 namespace ViajantesTurismo.Admin.Testing.Behavior;
@@ -25,7 +25,7 @@ public static class BookingTestHelpers
             options.BikeType,
             options.RoomType,
             discount,
-            options.SpecialRequests));
+            options.SpecialRequests), new DateTime(2030, 1, 1, 0, 0, 0, DateTimeKind.Utc));
     }
 
     /// <summary>
@@ -45,7 +45,7 @@ public static class BookingTestHelpers
             options.CompanionBikeType,
             options.RoomType,
             discount,
-            options.SpecialRequests));
+            options.SpecialRequests), new DateTime(2030, 1, 1, 0, 0, 0, DateTimeKind.Utc));
     }
 
     /// <summary>

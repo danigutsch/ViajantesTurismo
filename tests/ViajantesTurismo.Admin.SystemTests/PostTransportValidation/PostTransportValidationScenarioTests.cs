@@ -4,8 +4,8 @@ using ViajantesTurismo.Admin.SystemTests.Infrastructure;
 
 namespace ViajantesTurismo.Admin.SystemTests.PostTransportValidation;
 
-[Trait(SharedKernel.Testing.TestTraitNames.AreaName, TestTraits.PostTransportArea)]
-[Trait(SharedKernel.Testing.TestTraitNames.CategoryName, TestTraits.IntegrationEventTransportCategory)]
+[Trait(PandaBear.Testing.TestTraitNames.AreaName, TestTraits.PostTransportArea)]
+[Trait(PandaBear.Testing.TestTraitNames.CategoryName, TestTraits.IntegrationEventTransportCategory)]
 public sealed class PostTransportValidationScenarioTests
 {
     [Fact]

@@ -4,8 +4,8 @@ using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.DataProtection;
 using Microsoft.AspNetCore.WebUtilities;
 using Microsoft.Extensions.Caching.Distributed;
-using SharedKernel.AspNetCore;
-using SharedKernel.BuildingBlocks;
+using PandaBear.AspNetCore;
+using PandaBear.BuildingBlocks;
 
 namespace ViajantesTurismo.Management.Web;
 
@@ -19,18 +19,22 @@ internal sealed partial class ProtectedDistributedTicketStore : ITicketStore
     private const string StaleCleanupCanceledMessage = "The management stale ticket cleanup was canceled.";
 
     private readonly IDistributedCache cache;
+    private readonly TimeProvider timeProvider;
     private readonly ILogger<ProtectedDistributedTicketStore> logger;
     private readonly KeyBoundDataProtector protector;
 
     public ProtectedDistributedTicketStore(
         IDistributedCache cache,
         IDataProtectionProvider dataProtectionProvider,
-        ILogger<ProtectedDistributedTicketStore> logger)
+        ILogger<ProtectedDistributedTicketStore> logger,
+        TimeProvider timeProvider)
     {
         ArgumentNullException.ThrowIfNull(cache);
         ArgumentNullException.ThrowIfNull(dataProtectionProvider);
         ArgumentNullException.ThrowIfNull(logger);
+        ArgumentNullException.ThrowIfNull(timeProvider);
 
+        this.timeProvider = timeProvider;
         this.cache = cache;
         this.logger = logger;
         protector = new KeyBoundDataProtector(
@@ -64,7 +68,10 @@ internal sealed partial class ProtectedDistributedTicketStore : ITicketStore
             protectedTicket,
             new DistributedCacheEntryOptions
             {
-                AbsoluteExpiration = ticket.Properties.ExpiresUtc ?? DateTimeOffset.UtcNow.Add(ManagementAuthenticationDefaults.SessionLifetime)
+                AbsoluteExpiration = ticket.Properties.ExpiresUtc,
+                AbsoluteExpirationRelativeToNow = ticket.Properties.ExpiresUtc is null
+                    ? ManagementAuthenticationDefaults.SessionLifetime
+                    : null
             }).ConfigureAwait(false);
     }
 
@@ -166,8 +173,8 @@ internal sealed partial class ProtectedDistributedTicketStore : ITicketStore
             WebEncoders.Base64UrlEncode(RandomNumberGenerator.GetBytes(32)));
     }
 
-    private static bool HasExpired(AuthenticationTicket ticket)
+    private bool HasExpired(AuthenticationTicket ticket)
     {
-        return ticket.Properties.ExpiresUtc is { } expiresUtc && expiresUtc <= DateTimeOffset.UtcNow;
+        return ticket.Properties.ExpiresUtc is { } expiresUtc && expiresUtc <= timeProvider.GetUtcNow();
     }
 }

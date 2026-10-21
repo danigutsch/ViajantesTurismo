@@ -9,7 +9,7 @@
     <ItemGroup>
         <Using Include="System.Net" />
         <Using Include="System.Net.Http.Json" />
-        <Using Include="SharedKernel.Testing.Assertions" />
+        <Using Include="PandaBear.Testing.Assertions" />
         <Using Include="ViajantesTurismo.Admin.Contracts.Application" />
         <Using Include="ViajantesTurismo.Admin.Contracts.Http" />
         <Using Include="ViajantesTurismo.Admin.IntegrationTests.Infrastructure" />

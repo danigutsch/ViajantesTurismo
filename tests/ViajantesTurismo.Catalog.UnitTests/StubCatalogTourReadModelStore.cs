@@ -1,5 +1,5 @@
 using ViajantesTurismo.Catalog.Application.Tours;
-using SharedKernel.InputNormalization;
+using PandaBear.InputNormalization;
 
 namespace ViajantesTurismo.Catalog.UnitTests;
 

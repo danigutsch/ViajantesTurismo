@@ -1,6 +1,6 @@
 using System.Globalization;
 using System.Net;
-using SharedKernel.HttpClients;
+using PandaBear.HttpClients;
 using ViajantesTurismo.Management.Web.Components.Pages.Tours;
 
 namespace ViajantesTurismo.Management.WebTests.Components.Pages.Tours;
@@ -49,7 +49,7 @@ public class DetailsPageTests : BunitContext
     {
         // Arrange
         var tour = BuildTourDto();
-        var expectedDuration = (tour.EndDate - tour.StartDate).Days;
+        var expectedDuration = tour.EndDate.DayNumber - tour.StartDate.DayNumber;
 
         TourDetailsPageTestsHelper.SetupSuccessfulTourLoad(_fakeToursApi, tour);
 
@@ -167,9 +167,9 @@ public class DetailsPageTests : BunitContext
     }
 
     [Fact]
-    [Trait(SharedKernel.Testing.TestTraitNames.ScopeName, TestTraits.ComponentScope)]
-    [Trait(SharedKernel.Testing.TestTraitNames.AreaName, TestTraits.ManagementWebArea)]
-    [Trait(SharedKernel.Testing.TestTraitNames.CategoryName, TestTraits.ComponentCategory)]
+    [Trait(PandaBear.Testing.TestTraitNames.ScopeName, TestTraits.ComponentScope)]
+    [Trait(PandaBear.Testing.TestTraitNames.AreaName, TestTraits.ManagementWebArea)]
+    [Trait(PandaBear.Testing.TestTraitNames.CategoryName, TestTraits.ComponentCategory)]
     public async Task Create_booking_non_success_outcome_shows_sanitized_error()
     {
         // Arrange
@@ -200,9 +200,9 @@ public class DetailsPageTests : BunitContext
     }
 
     [Fact]
-    [Trait(SharedKernel.Testing.TestTraitNames.ScopeName, TestTraits.ComponentScope)]
-    [Trait(SharedKernel.Testing.TestTraitNames.AreaName, TestTraits.ManagementWebArea)]
-    [Trait(SharedKernel.Testing.TestTraitNames.CategoryName, TestTraits.ComponentCategory)]
+    [Trait(PandaBear.Testing.TestTraitNames.ScopeName, TestTraits.ComponentScope)]
+    [Trait(PandaBear.Testing.TestTraitNames.AreaName, TestTraits.ManagementWebArea)]
+    [Trait(PandaBear.Testing.TestTraitNames.CategoryName, TestTraits.ComponentCategory)]
     public async Task Create_booking_success_shows_confirmation_and_closes_form()
     {
         // Arrange

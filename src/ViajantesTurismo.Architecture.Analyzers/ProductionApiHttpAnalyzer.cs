@@ -31,7 +31,7 @@ public sealed class ProductionApiHttpAnalyzer : DiagnosticAnalyzer
     private const string RequestUriParameterName = "requestUri";
     private const string RequestUriPropertyName = "RequestUri";
     private const string RelativeUriParameterName = "relativeUri";
-    private const string SharedKernelBrandingNamespace = "SharedKernel.Branding";
+    private const string SharedKernelBrandingNamespace = "PandaBear.Branding";
     private const string SystemNetHttpNamespace = "System.Net.Http";
     private const string ResourceNamesTypeName = "ViajantesTurismo.Resources.ResourceNames";
 

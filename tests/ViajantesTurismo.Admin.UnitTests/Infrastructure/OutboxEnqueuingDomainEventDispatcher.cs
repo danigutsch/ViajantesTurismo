@@ -1,21 +1,22 @@
-using SharedKernel.Messaging.IntegrationEvents.EntityFrameworkCore;
+using PandaBear.Messaging.IntegrationEvents;
 using ViajantesTurismo.Admin.Contracts.IntegrationEvents.Tours;
 using ViajantesTurismo.Admin.Domain.Tours;
-using ViajantesTurismo.Admin.Infrastructure;
 using ViajantesTurismo.Admin.Testing.Fakes;
 
 namespace ViajantesTurismo.Admin.UnitTests.Infrastructure;
 
 internal sealed class OutboxEnqueuingDomainEventDispatcher(TimeProvider timeProvider) : CapturingDomainEventDispatcher
 {
-    public AdminWriteDbContext? DbContext { get; set; }
+    public TimeProvider TimeProvider { get; } = timeProvider;
+
+    public IIntegrationEventOutbox? Outbox { get; set; }
 
     public override async ValueTask Dispatch<TDomainEvent>(TDomainEvent domainEvent, CancellationToken ct)
     {
-        await Dispatch((SharedKernel.Domain.IDomainEvent)domainEvent, ct);
+        await Dispatch((PandaBear.Domain.IDomainEvent)domainEvent, ct);
     }
 
-    public override async ValueTask Dispatch(SharedKernel.Domain.IDomainEvent domainEvent, CancellationToken ct)
+    public override async ValueTask Dispatch(PandaBear.Domain.IDomainEvent domainEvent, CancellationToken ct)
     {
         await base.Dispatch(domainEvent, ct);
 
@@ -24,15 +25,11 @@ internal sealed class OutboxEnqueuingDomainEventDispatcher(TimeProvider timeProv
             return;
         }
 
-        var dbContext = DbContext.ShouldNotBeNull();
-        var outbox = new EfIntegrationEventOutbox<AdminWriteDbContext>(
-            dbContext,
-            timeProvider,
-            GeneratedIntegrationEventSerializerTestServices.CreateSerializer());
+        var outbox = Outbox.ShouldNotBeNull();
         await outbox.Enqueue(
             new AdminTourCreatedIntegrationEvent(
                 Guid.CreateVersion7(),
-                timeProvider.GetUtcNow(),
+                TimeProvider.GetUtcNow(),
                 tourCreated.TourId,
                 tourCreated.Identifier,
                 tourCreated.Name),

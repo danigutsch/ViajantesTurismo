@@ -1,5 +1,5 @@
 using Microsoft.AspNetCore.Mvc.Testing;
-using SharedKernel.HttpClients;
+using PandaBear.HttpClients;
 using System.Xml.Linq;
 using TestTraits = ViajantesTurismo.Public.WebTests.Infrastructure.TestTraits;
 

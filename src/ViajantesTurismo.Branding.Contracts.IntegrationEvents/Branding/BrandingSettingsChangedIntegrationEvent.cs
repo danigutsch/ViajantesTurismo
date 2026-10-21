@@ -1,4 +1,4 @@
-using SharedKernel.Messaging.IntegrationEvents;
+using PandaBear.Messaging.IntegrationEvents;
 
 namespace ViajantesTurismo.Branding.Contracts.IntegrationEvents.Branding;
 

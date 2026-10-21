@@ -12,8 +12,8 @@ namespace ViajantesTurismo.Management.WebTests;
 /// <summary>
 /// Verifies sign-out removes protected user and exchanged-audience tokens for the current session.
 /// </summary>
-[Trait(SharedKernel.Testing.TestTraitNames.CategoryName, TestTraits.SecurityCategory)]
-[Trait(SharedKernel.Testing.TestTraitNames.ScopeName, TestTraits.UnitScope)]
+[Trait(PandaBear.Testing.TestTraitNames.CategoryName, TestTraits.SecurityCategory)]
+[Trait(PandaBear.Testing.TestTraitNames.ScopeName, TestTraits.UnitScope)]
 public sealed class ManagementCookieAuthenticationEventsTests
 {
     [Fact]

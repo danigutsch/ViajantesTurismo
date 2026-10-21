@@ -1,6 +1,6 @@
 using System.Runtime.CompilerServices;
 using Microsoft.AspNetCore.Components.Forms;
-using SharedKernel.HttpClients;
+using PandaBear.HttpClients;
 
 namespace ViajantesTurismo.Management.Web.Helpers;
 

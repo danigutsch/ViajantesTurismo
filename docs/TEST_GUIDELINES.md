@@ -58,9 +58,9 @@ When tags or traits are used, keep them orthogonal:
 
 Use constants instead of hardcoded trait strings when a constant exists:
 
-- shared trait names: `SharedKernel.Testing.TestTraitNames`
-- shared cross-project values: `SharedKernel.Testing.TestTraitValues`
-- SharedKernel package taxonomy: `SharedKernel.Testing.SharedKernelTestTraitNames`
+- shared trait names: `PandaBear.Testing.TestTraitNames`
+- shared cross-project values: `PandaBear.Testing.TestTraitValues`
+- SharedKernel package taxonomy: `PandaBear.Testing.SharedKernelTestTraitNames`
 - project-specific values: the owning test project's `TestTraits` type
 
 `SKTEST009` reports `Trait` string literals when a canonical constant can be identified safely.
@@ -334,9 +334,9 @@ Benefits: Standard pattern, clear flow, helps identify tests doing too much.
 ### Assertion readability
 
 Use the repository-owned assertion package across maintained tests:
-`tests/SharedKernel.Testing.Assertions` / `SharedKernel.Testing.Assertions`. Wrapper-first is
+`tests/SharedKernel.Testing.Assertions` / `PandaBear.Testing.Assertions`. Wrapper-first is
 the policy for maintained test code. If a test project does not already reference the package,
-add the project reference and a global `<Using Include="SharedKernel.Testing.Assertions" />`
+add the project reference and a global `<Using Include="PandaBear.Testing.Assertions" />`
 (or a file `using`) rather than adding direct `Xunit.Assert` calls. `SKTEST006` reports direct
 `Xunit.Assert` calls, which are not permitted in test code.
 

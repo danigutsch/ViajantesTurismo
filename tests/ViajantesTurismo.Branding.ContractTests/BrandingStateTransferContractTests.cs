@@ -13,8 +13,8 @@ public sealed class BrandingStateTransferContractTests
     [Theory]
     [InlineData("/branding/logo.svg")]
     [InlineData("https://cdn.example.test/branding/logo.svg")]
-    [Trait(SharedKernel.Testing.TestTraitNames.CategoryName, TestTraits.ContractCategory)]
-    [Trait(SharedKernel.Testing.TestTraitNames.SurfaceName, TestTraits.IntegrationEventSurface)]
+    [Trait(PandaBear.Testing.TestTraitNames.CategoryName, TestTraits.ContractCategory)]
+    [Trait(PandaBear.Testing.TestTraitNames.SurfaceName, TestTraits.IntegrationEventSurface)]
     public void Branding_state_transfer_contract_round_trips_complete_public_safe_state(string logoAddress)
     {
         // Arrange

@@ -16,7 +16,7 @@ public sealed class TourUpdateScheduleSteps(TourContext tourContext)
     {
         var startDate = DateTime.Parse(startDateString, CultureInfo.InvariantCulture).ToUniversalTime();
         var endDate = DateTime.Parse(endDateString, CultureInfo.InvariantCulture).ToUniversalTime();
-        tourContext.UpdateResult = tourContext.Tour.UpdateSchedule(startDate, endDate);
+        tourContext.UpdateResult = tourContext.Tour.UpdateSchedule(DateOnly.FromDateTime(startDate), DateOnly.FromDateTime(endDate));
     }
 
     [When(@"I update the tour schedule to start ""(.*)"" and end ""(.*)""")]
@@ -43,13 +43,13 @@ public sealed class TourUpdateScheduleSteps(TourContext tourContext)
     public void ThenTheTourStartDateShouldBe(string expectedDateString)
     {
         var expectedDate = DateTime.Parse(expectedDateString, CultureInfo.InvariantCulture).ToUniversalTime();
-        (tourContext.Tour.Schedule.StartDate).ShouldBe(expectedDate);
+        (tourContext.Tour.Schedule.StartDate).ShouldBe(DateOnly.FromDateTime(expectedDate));
     }
 
     [Then(@"the tour end date should be ""(.*)""")]
     public void ThenTheTourEndDateShouldBe(string expectedDateString)
     {
         var expectedDate = DateTime.Parse(expectedDateString, CultureInfo.InvariantCulture).ToUniversalTime();
-        (tourContext.Tour.Schedule.EndDate).ShouldBe(expectedDate);
+        (tourContext.Tour.Schedule.EndDate).ShouldBe(DateOnly.FromDateTime(expectedDate));
     }
 }

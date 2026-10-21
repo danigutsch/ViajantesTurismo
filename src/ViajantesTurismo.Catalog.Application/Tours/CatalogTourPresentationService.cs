@@ -1,5 +1,5 @@
-using SharedKernel.BuildingBlocks;
-using SharedKernel.EventSourcing;
+using PandaBear.BuildingBlocks;
+using PandaBear.EventSourcing;
 using ViajantesTurismo.Catalog.Domain.Tours;
 
 namespace ViajantesTurismo.Catalog.Application.Tours;

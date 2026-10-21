@@ -1,3 +1,4 @@
+@inject TimeProvider TimeProvider
 @using Microsoft.AspNetCore.Components.QuickGrid
 @using ViajantesTurismo.Admin.Contracts.Application
 @using ViajantesTurismo.Management.Web.Helpers
@@ -108,11 +109,11 @@ else
         return notes[..maxLength] + "...";
     }
 
-    private static string FormatRecordedAt(DateTime recordedAt)
+    private string FormatRecordedAt(DateTime recordedAt)
     {
         var localTime = recordedAt.ToLocalTime();
-        var now = DateTime.Now;
-        var diff = now - localTime;
+        var now = TimeProvider.GetUtcNow().UtcDateTime;
+        var diff = now - recordedAt;
 
         if (diff.TotalMinutes < 1)
         {

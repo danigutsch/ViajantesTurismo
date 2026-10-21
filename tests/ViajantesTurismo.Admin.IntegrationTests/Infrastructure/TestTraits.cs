@@ -13,7 +13,7 @@ public static class TestTraits
     /// <summary>
     /// Category value for endpoint coverage.
     /// </summary>
-    public const string EndpointCategory = SharedKernel.Testing.TestTraitValues.EndpointCategory;
+    public const string EndpointCategory = PandaBear.Testing.TestTraitValues.EndpointCategory;
 
     /// <summary>
     /// Scope value for integration tests.

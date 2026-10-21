@@ -1,12 +1,12 @@
 namespace ViajantesTurismo.Admin.IntegrationTests.Bookings;
 
-[Trait(SharedKernel.Testing.TestTraitNames.CategoryName, TestTraits.SmokeCategory)]
-[Trait(SharedKernel.Testing.TestTraitNames.ScopeName, TestTraits.IntegrationScope)]
-[Trait(SharedKernel.Testing.TestTraitNames.AreaName, TestTraits.BookingsArea)]
+[Trait(PandaBear.Testing.TestTraitNames.CategoryName, TestTraits.SmokeCategory)]
+[Trait(PandaBear.Testing.TestTraitNames.ScopeName, TestTraits.IntegrationScope)]
+[Trait(PandaBear.Testing.TestTraitNames.AreaName, TestTraits.BookingsArea)]
 public class BookingTests(ApiFixture fixture)
 {
     [Fact]
-    [Trait(SharedKernel.Testing.TestTraitNames.CategoryName, TestTraits.EndpointCategory)]
+    [Trait(PandaBear.Testing.TestTraitNames.CategoryName, TestTraits.EndpointCategory)]
     public async Task All_booking_read_endpoints_return_persisted_room_and_bike_selections()
     {
         // Arrange

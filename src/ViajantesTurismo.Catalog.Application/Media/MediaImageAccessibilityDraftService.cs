@@ -1,5 +1,5 @@
-using SharedKernel.AI;
-using SharedKernel.Results;
+using PandaBear.AI;
+using PandaBear.Results;
 using ViajantesTurismo.Catalog.Domain.Media;
 using ViajantesTurismo.Catalog.Domain.PublicContent;
 

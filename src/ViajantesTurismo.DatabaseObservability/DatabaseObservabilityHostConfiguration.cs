@@ -1,7 +1,7 @@
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using SharedKernel.Observability.Npgsql;
+using PandaBear.Observability.Npgsql;
 using ViajantesTurismo.ServiceDefaults;
 
 namespace ViajantesTurismo.DatabaseObservability;

@@ -23,13 +23,13 @@ public sealed record CreateTourDto : IValidatableObject
     /// The start date of the tour.
     /// </summary>
     [Required]
-    public required DateTime StartDate { get; init; }
+    public required DateOnly StartDate { get; init; }
 
     /// <summary>
     /// The end date of the tour.
     /// </summary>
     [Required]
-    public required DateTime EndDate { get; init; }
+    public required DateOnly EndDate { get; init; }
 
     /// <summary>
     /// The base price of the tour per person.

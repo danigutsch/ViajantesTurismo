@@ -1,6 +1,6 @@
 using ViajantesTurismo.Admin.Application.Mappings;
 using ViajantesTurismo.Admin.Domain.Customers;
-using SharedKernel.Results;
+using PandaBear.Results;
 using ViajantesTurismo.Admin.Domain.Tours;
 
 namespace ViajantesTurismo.Admin.Application.Bookings.CreateBooking;
@@ -11,7 +11,8 @@ namespace ViajantesTurismo.Admin.Application.Bookings.CreateBooking;
 public sealed class CreateBookingCommandHandler(
     ITourStore tourStore,
     ICustomerStore customerStore,
-    IUnitOfWork unitOfWork)
+    IUnitOfWork unitOfWork,
+    TimeProvider timeProvider)
 {
     /// <summary>
     /// Handles the CreateBookingCommand and returns the ID of the created booking.
@@ -57,7 +58,7 @@ public sealed class CreateBookingCommandHandler(
                 BookingMapper.MapToDiscountType(command.DiscountType),
                 command.DiscountAmount,
                 command.DiscountReason),
-            command.Notes));
+            command.Notes), timeProvider.GetUtcNow().UtcDateTime);
 
         if (!result.IsSuccess)
         {

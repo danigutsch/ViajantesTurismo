@@ -13,8 +13,8 @@ public class BookingDiscountsSteps(TourContext tourContext, BookingContext booki
         tourContext.Tour = Tour.Create(new TourDefinition(
             "TEST2024",
             "Test Tour",
-            DateTime.UtcNow.AddMonths(1),
-            DateTime.UtcNow.AddMonths(1).AddDays(7),
+            DateOnly.FromDateTime(DateTime.UtcNow.AddMonths(1)),
+            DateOnly.FromDateTime(DateTime.UtcNow.AddMonths(1).AddDays(7)),
             basePrice,
             singleRoomSupplement,
             regularBikePrice,
@@ -32,7 +32,7 @@ public class BookingDiscountsSteps(TourContext tourContext, BookingContext booki
             Guid.CreateVersion7(),
             BikeType.Regular,
             RoomType.DoubleOccupancy,
-            DiscountType.None));
+            DiscountType.None), new DateTime(2030, 1, 1, 0, 0, 0, DateTimeKind.Utc));
 
         bookingContext.BookingCreationResult = result;
     }
@@ -45,7 +45,7 @@ public class BookingDiscountsSteps(TourContext tourContext, BookingContext booki
             BikeType.Regular,
             RoomType.DoubleOccupancy,
             DiscountType.Percentage,
-            discountAmount: discountPercentage));
+            discountAmount: discountPercentage), new DateTime(2030, 1, 1, 0, 0, 0, DateTimeKind.Utc));
 
         bookingContext.BookingCreationResult = result;
     }
@@ -58,7 +58,7 @@ public class BookingDiscountsSteps(TourContext tourContext, BookingContext booki
             BikeType.Regular,
             RoomType.SingleOccupancy,
             DiscountType.Absolute,
-            discountAmount: discountAmount));
+            discountAmount: discountAmount), new DateTime(2030, 1, 1, 0, 0, 0, DateTimeKind.Utc));
 
         bookingContext.BookingCreationResult = result;
     }
@@ -72,7 +72,7 @@ public class BookingDiscountsSteps(TourContext tourContext, BookingContext booki
             RoomType.DoubleOccupancy,
             DiscountType.Percentage,
             discountAmount: discountPercentage,
-            discountReason: reason));
+            discountReason: reason), new DateTime(2030, 1, 1, 0, 0, 0, DateTimeKind.Utc));
 
         bookingContext.BookingCreationResult = result;
     }
@@ -87,7 +87,7 @@ public class BookingDiscountsSteps(TourContext tourContext, BookingContext booki
             DiscountType.Percentage,
             Guid.CreateVersion7(),
             BikeType.EBike,
-            discountPercentage));
+            discountPercentage), new DateTime(2030, 1, 1, 0, 0, 0, DateTimeKind.Utc));
 
         bookingContext.BookingCreationResult = result;
     }
@@ -101,7 +101,7 @@ public class BookingDiscountsSteps(TourContext tourContext, BookingContext booki
             BikeType.Regular,
             RoomType.DoubleOccupancy,
             DiscountType.Percentage,
-            discountAmount: -discountPercentage));
+            discountAmount: -discountPercentage), new DateTime(2030, 1, 1, 0, 0, 0, DateTimeKind.Utc));
 
         bookingContext.BookingCreationResult = result;
     }
@@ -114,7 +114,7 @@ public class BookingDiscountsSteps(TourContext tourContext, BookingContext booki
             BikeType.Regular,
             RoomType.DoubleOccupancy,
             DiscountType.Absolute,
-            discountAmount: discountAmount));
+            discountAmount: discountAmount), new DateTime(2030, 1, 1, 0, 0, 0, DateTimeKind.Utc));
 
         bookingContext.BookingCreationResult = result;
     }
@@ -134,7 +134,7 @@ public class BookingDiscountsSteps(TourContext tourContext, BookingContext booki
             DiscountType.Percentage,
             companionId,
             companionBikeType,
-            discount));
+            discount), new DateTime(2030, 1, 1, 0, 0, 0, DateTimeKind.Utc));
 
         bookingContext.BookingCreationResult = result;
     }

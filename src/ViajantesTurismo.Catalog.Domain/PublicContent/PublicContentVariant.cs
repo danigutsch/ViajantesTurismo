@@ -1,8 +1,8 @@
 using System.Diagnostics.CodeAnalysis;
 using JetBrains.Annotations;
-using SharedKernel.Results;
-using SharedKernel.InputNormalization;
-using SharedKernel.BuildingBlocks;
+using PandaBear.Results;
+using PandaBear.InputNormalization;
+using PandaBear.BuildingBlocks;
 
 namespace ViajantesTurismo.Catalog.Domain.PublicContent;
 

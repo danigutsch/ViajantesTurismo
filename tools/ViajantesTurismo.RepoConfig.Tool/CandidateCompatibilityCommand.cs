@@ -84,7 +84,7 @@ internal static class CandidateCompatibilityCommand
 
             evidence["consumerCompatibility"] = status;
             Directory.CreateDirectory(Path.GetDirectoryName(destination)!);
-            await File.WriteAllTextAsync(destination, evidence.ToJsonString(new System.Text.Json.JsonSerializerOptions { WriteIndented = true }) + Environment.NewLine, CancellationToken.None).ConfigureAwait(false);
+            await File.WriteAllTextAsync(destination, evidence.ToJsonString(new JsonSerializerOptions { WriteIndented = true }) + Environment.NewLine, CancellationToken.None).ConfigureAwait(false);
             await output.WriteLineAsync(evidence["consumerCompatibility"]!.GetValue<string>()).ConfigureAwait(false);
             ct.ThrowIfCancellationRequested();
             return evidence["consumerCompatibility"]!.GetValue<string>() == "passed" ? 0 : 1;

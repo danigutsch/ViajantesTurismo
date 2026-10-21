@@ -12,6 +12,7 @@ documents navigable and reviewable without forcing every Markdown file into one 
 - [Composition and incremental adoption](#composition-and-incremental-adoption)
 - [Table of contents policy](#table-of-contents-policy)
 - [Validation and tooling](#validation-and-tooling)
+- [Generated output review and finalization](#generated-output-review-and-finalization)
 - [Ownership and review](#ownership-and-review)
 - [Related guidance](#related-guidance)
 
@@ -189,6 +190,24 @@ The current repository checks remain authoritative for their distinct responsibi
 architecture facts that have concrete consumers. Keep broader schema enforcement deferred until a
 new durable fact has a real consumer; extend the existing .NET tool rather than adding another
 script or tool.
+
+## Generated output review and finalization
+
+The [generated diagram inventory](architecture/generated-diagram-roadmap.md) names each output,
+source, and generator. Refresh with `bash scripts/update-architecture-diagrams.sh`; verify with the
+same command plus `--check`. Change the source/configuration first and review the resulting diff.
+Keep manual commentary outside generated markers; never fix a generated claim by hand inside a block.
+
+Reviewers verify source fidelity, public/internal boundaries, privacy, accessible labels, and whether
+planned behavior is explicitly marked. Human review finalizes repository prose through its normal
+PR checks; generation alone is not approval. If a generated block is wrong, correct its inputs or
+record the generator limitation outside the block and retain a focused follow-up.
+
+Customer travel documents have a different lifecycle. Follow the canonical
+[manual review and finalization workflow](generated-travel-documents.md#manual-review-and-finalization-workflow)
+for draft edits, reviewer decisions, source freshness, approval, and immutable artifacts. A Markdown
+refresh or merged documentation PR never substitutes for that business authorization. This stable
+local reference follows repository link policy; execution tracking belongs in the PR/issue tracker.
 
 ## Ownership and review
 

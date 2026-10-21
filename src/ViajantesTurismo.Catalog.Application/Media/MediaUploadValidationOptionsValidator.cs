@@ -1,5 +1,5 @@
 using Microsoft.Extensions.Options;
-using SharedKernel.ImageProcessing;
+using PandaBear.ImageProcessing;
 
 namespace ViajantesTurismo.Catalog.Application.Media;
 

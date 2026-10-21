@@ -1,7 +1,7 @@
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using SharedKernel.AI;
+using PandaBear.AI;
 
 namespace ViajantesTurismo.Catalog.Infrastructure;
 

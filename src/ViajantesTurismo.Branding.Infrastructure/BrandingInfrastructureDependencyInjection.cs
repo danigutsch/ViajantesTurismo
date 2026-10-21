@@ -2,11 +2,11 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Npgsql;
-using SharedKernel.Branding;
-using SharedKernel.EntityFrameworkCore;
-using SharedKernel.Messaging.IntegrationEvents;
-using SharedKernel.Messaging.IntegrationEvents.EntityFrameworkCore;
-using SharedKernel.Npgsql;
+using PandaBear.Branding;
+using PandaBear.EntityFrameworkCore;
+using PandaBear.Messaging.IntegrationEvents;
+using PandaBear.Messaging.IntegrationEvents.EntityFrameworkCore;
+using PandaBear.Npgsql;
 using ViajantesTurismo.Resources;
 
 namespace ViajantesTurismo.Branding.Infrastructure;

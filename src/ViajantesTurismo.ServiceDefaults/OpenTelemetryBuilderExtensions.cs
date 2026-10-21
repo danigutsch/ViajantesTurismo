@@ -11,14 +11,14 @@ internal static class OpenTelemetryBuilderExtensions
     {
         ArgumentNullException.ThrowIfNull(metrics);
 
-        return metrics.AddMeter(SharedKernel.Mediator.MediatorTelemetry.Name);
+        return metrics.AddMeter(PandaBear.Mediator.MediatorTelemetry.Name);
     }
 
     public static TracerProviderBuilder AddSharedKernelMediatorTracing(this TracerProviderBuilder tracing)
     {
         ArgumentNullException.ThrowIfNull(tracing);
 
-        return tracing.AddSource(SharedKernel.Mediator.MediatorTelemetry.Name);
+        return tracing.AddSource(PandaBear.Mediator.MediatorTelemetry.Name);
     }
 
     public static MeterProviderBuilder AddSharedKernelProviderMetrics(this MeterProviderBuilder metrics)

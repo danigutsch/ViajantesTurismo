@@ -3,7 +3,7 @@ using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.TestHost;
 using Microsoft.Extensions.Hosting;
-using SharedKernel.Testing;
+using PandaBear.Testing;
 using System.Net;
 using ViajantesTurismo.Management.Web;
 using ViajantesTurismo.Management.WebTests.Components.Pages.Catalog;

@@ -1,6 +1,6 @@
 using JetBrains.Annotations;
-using SharedKernel.Domain;
-using SharedKernel.Results;
+using PandaBear.Domain;
+using PandaBear.Results;
 
 namespace ViajantesTurismo.Admin.Domain.Documents;
 

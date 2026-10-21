@@ -1,10 +1,10 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Design;
 using Microsoft.Extensions.DependencyInjection;
-using SharedKernel.Domain.EntityFrameworkCore;
-using SharedKernel.EntityFrameworkCore;
-using SharedKernel.Idempotency.EntityFrameworkCore;
-using SharedKernel.Messaging.IntegrationEvents.EntityFrameworkCore;
+using PandaBear.Domain.EntityFrameworkCore;
+using PandaBear.EntityFrameworkCore;
+using PandaBear.Idempotency.EntityFrameworkCore;
+using PandaBear.Messaging.IntegrationEvents.EntityFrameworkCore;
 using ViajantesTurismo.Resources;
 
 namespace ViajantesTurismo.Admin.Infrastructure;

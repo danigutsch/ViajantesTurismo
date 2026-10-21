@@ -1,5 +1,5 @@
 using ViajantesTurismo.Catalog.Application.Media;
-using SharedKernel.InputNormalization;
+using PandaBear.InputNormalization;
 using ViajantesTurismo.Catalog.Domain;
 
 namespace ViajantesTurismo.Catalog.UnitTests;

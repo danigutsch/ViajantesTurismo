@@ -271,7 +271,7 @@ public class BookingMapperTests
         var paymentResult = Payment.Create(
             bookingId,
             150.50m,
-            paymentDate,
+            DateOnly.FromDateTime(paymentDate),
             PaymentMethod.CreditCard,
             timeProvider,
             "REF-12345",
@@ -288,7 +288,7 @@ public class BookingMapperTests
         (result.Id).ShouldBe(payment.Id);
         (result.BookingId).ShouldBe(bookingId);
         (result.Amount).ShouldBe(150.50m);
-        (result.PaymentDate).ShouldBe(paymentDate);
+        (result.PaymentDate).ShouldBe(DateOnly.FromDateTime(paymentDate));
         (result.Method).ShouldBe(PaymentMethodDto.CreditCard);
         (result.ReferenceNumber).ShouldBe("REF-12345");
         (result.Notes).ShouldBe("Payment for tour booking");
@@ -317,7 +317,7 @@ public class BookingMapperTests
         var paymentResult = Payment.Create(
             bookingId,
             100.00m,
-            paymentDate,
+            DateOnly.FromDateTime(paymentDate),
             PaymentMethod.Cash,
             timeProvider,
             null,
@@ -334,7 +334,7 @@ public class BookingMapperTests
         (result.Id).ShouldBe(payment.Id);
         (result.BookingId).ShouldBe(bookingId);
         (result.Amount).ShouldBe(100.00m);
-        (result.PaymentDate).ShouldBe(paymentDate);
+        (result.PaymentDate).ShouldBe(DateOnly.FromDateTime(paymentDate));
         (result.Method).ShouldBe(PaymentMethodDto.Cash);
         (result.ReferenceNumber).ShouldBeNull();
         (result.Notes).ShouldBeNull();
@@ -357,7 +357,7 @@ public class BookingMapperTests
         var paymentResult = Payment.Create(
             Guid.CreateVersion7(),
             100.00m,
-            paymentDate,
+            DateOnly.FromDateTime(paymentDate),
             domainMethod,
             timeProvider,
             null,

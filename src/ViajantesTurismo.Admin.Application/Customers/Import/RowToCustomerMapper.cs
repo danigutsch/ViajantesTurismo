@@ -2,7 +2,7 @@ using System.Globalization;
 using ViajantesTurismo.Admin.Application.Import;
 using ViajantesTurismo.Admin.Domain.Customers;
 using ViajantesTurismo.Admin.Domain.Shared;
-using SharedKernel.Results;
+using PandaBear.Results;
 
 namespace ViajantesTurismo.Admin.Application.Customers.Import;
 
@@ -16,18 +16,17 @@ public static class RowToCustomerMapper
     /// </summary>
     /// <param name="document">Document that provides header-to-column mapping.</param>
     /// <param name="row">Data row to map.</param>
-    /// <param name="timeProvider">Time provider used by domain birthdate validation.</param>
+    /// <param name="today">The UTC business date captured for this import.</param>
     /// <returns>A result containing the mapped <see cref="Customer"/> or validation errors.</returns>
     /// <exception cref="ArgumentNullException">
-    /// Thrown when <paramref name="document"/>, <paramref name="row"/>, or <paramref name="timeProvider"/> is null.
+    /// Thrown when <paramref name="document"/> or <paramref name="row"/> is null.
     /// </exception>
-    public static Result<Customer> MapCustomer(IImportDocument document, IImportRow row, TimeProvider timeProvider)
+    public static Result<Customer> MapCustomer(IImportDocument document, IImportRow row, DateOnly today)
     {
         ArgumentNullException.ThrowIfNull(document);
         ArgumentNullException.ThrowIfNull(row);
-        ArgumentNullException.ThrowIfNull(timeProvider);
 
-        var personalInfoResult = MapPersonalInfo(document, row, timeProvider);
+        var personalInfoResult = MapPersonalInfo(document, row, today);
         var identificationInfoResult = MapIdentificationInfo(document, row);
         var contactInfoResult = MapContactInfo(document, row);
         var addressResult = MapAddress(document, row);
@@ -92,7 +91,7 @@ public static class RowToCustomerMapper
             new CustomerHealthInfo(emergencyContactResult.Value, medicalInfoResult.Value)));
     }
 
-    private static Result<PersonalInfo> MapPersonalInfo(IImportDocument document, IImportRow row, TimeProvider timeProvider)
+    private static Result<PersonalInfo> MapPersonalInfo(IImportDocument document, IImportRow row, DateOnly today)
     {
         var errors = new ValidationErrors();
 
@@ -103,13 +102,13 @@ public static class RowToCustomerMapper
         var nationality = GetRequired(document, row, ImportHeaders.Nationality, errors);
         var occupation = GetRequired(document, row, ImportHeaders.Occupation, errors);
 
-        DateTime birthDate = default;
+        DateOnly birthDate = default;
         if (!string.IsNullOrWhiteSpace(birthDateText)
-            && !DateTime.TryParseExact(
+            && !DateOnly.TryParseExact(
                 birthDateText,
                 "yyyy-MM-dd",
                 CultureInfo.InvariantCulture,
-                DateTimeStyles.AssumeUniversal | DateTimeStyles.AdjustToUniversal,
+                DateTimeStyles.None,
                 out birthDate))
         {
             errors.Add(Result.Invalid(
@@ -130,7 +129,7 @@ public static class RowToCustomerMapper
             birthDate,
             nationality!,
             occupation!,
-            timeProvider);
+            today);
     }
 
     private static Result<IdentificationInfo> MapIdentificationInfo(IImportDocument document, IImportRow row)

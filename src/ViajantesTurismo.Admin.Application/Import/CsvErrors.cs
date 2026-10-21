@@ -1,9 +1,9 @@
-using SharedKernel.Results;
+using PandaBear.Results;
 
 namespace ViajantesTurismo.Admin.Application.Import;
 
 /// <summary>
-/// Defines common error results for CSV document processing, such as inconsistent column counts across rows.
+/// Preserves the application error catalog for CSV validation returned by the packaged parser.
 /// </summary>
 internal static class CsvErrors
 {

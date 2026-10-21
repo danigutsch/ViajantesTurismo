@@ -6,6 +6,7 @@
         <PackageReference Include="PandaBear.SharedKernel.AuditTrail" />
         <PackageReference Include="PandaBear.SharedKernel.Domain" />
         <PackageReference Include="PandaBear.SharedKernel.Messaging.IntegrationEvents" />
+        <PackageReference Include="PandaBear.SharedKernel.Tabular" />
         <PackageReference Include="PandaBear.SharedKernel.Results" />
         <PackageReference Include="PandaBear.SharedKernel.BuildingBlocks" />
         <PackageReference Include="PandaBear.SharedKernel.InputNormalization" />

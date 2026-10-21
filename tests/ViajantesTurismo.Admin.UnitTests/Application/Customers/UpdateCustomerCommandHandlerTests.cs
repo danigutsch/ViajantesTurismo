@@ -2,7 +2,7 @@ using ViajantesTurismo.Admin.Application.Customers.UpdateCustomer;
 using ViajantesTurismo.Admin.Contracts.Application;
 using ViajantesTurismo.Admin.Testing.Behavior;
 using ViajantesTurismo.Admin.Testing.Fakes;
-using SharedKernel.Results;
+using PandaBear.Results;
 using ViajantesTurismo.Admin.Application.Customers;
 using ViajantesTurismo.Admin.Testing.Builders;
 
@@ -32,7 +32,7 @@ public sealed class UpdateCustomerCommandHandlerTests
             {
                 FirstName = "John",
                 LastName = "Smith",
-                BirthDate = DateTime.UtcNow.AddYears(-30),
+                BirthDate = DateOnly.FromDateTime(DateTime.UtcNow.AddYears(-30)),
                 Gender = "Male",
                 Nationality = "USA",
                 Occupation = "Engineer"
@@ -78,7 +78,7 @@ public sealed class UpdateCustomerCommandHandlerTests
             {
                 FirstName = "John",
                 LastName = "Doe",
-                BirthDate = DateTime.UtcNow.AddYears(-30),
+                BirthDate = DateOnly.FromDateTime(DateTime.UtcNow.AddYears(-30)),
                 Gender = "Male",
                 Nationality = "USA",
                 Occupation = "Engineer"

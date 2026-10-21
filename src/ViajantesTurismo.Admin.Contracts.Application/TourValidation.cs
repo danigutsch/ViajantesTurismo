@@ -17,13 +17,13 @@ public static class TourValidation
     /// <param name="endDateMemberName">The name of the end date property.</param>
     /// <returns>A validation result if invalid, or null if valid.</returns>
     public static ValidationResult? ValidateDuration(
-        DateTime startDate,
-        DateTime endDate,
+        DateOnly startDate,
+        DateOnly endDate,
         int minimumDays,
         string startDateMemberName,
         string endDateMemberName)
     {
-        var duration = (endDate - startDate).TotalDays;
+        var duration = endDate.DayNumber - startDate.DayNumber;
         return duration <= minimumDays
             ? new ValidationResult(
                 $"The tour must be at least {minimumDays} days long. End date must be more than {minimumDays} days after start date.",

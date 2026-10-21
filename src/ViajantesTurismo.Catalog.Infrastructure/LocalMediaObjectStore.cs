@@ -1,5 +1,5 @@
 using Microsoft.Extensions.Options;
-using SharedKernel.InputNormalization;
+using PandaBear.InputNormalization;
 using ViajantesTurismo.Catalog.Application.Media;
 using ViajantesTurismo.Catalog.Domain;
 

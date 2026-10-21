@@ -11,8 +11,8 @@ using OpenTelemetry.Instrumentation.AspNetCore;
 using OpenTelemetry.Logs;
 using OpenTelemetry.Metrics;
 using OpenTelemetry.Trace;
-using SharedKernel.Observability;
-using SharedKernel.OpenApi;
+using PandaBear.Observability;
+using PandaBear.OpenApi;
 using ViajantesTurismo.Resources;
 
 namespace ViajantesTurismo.ServiceDefaults;
@@ -104,7 +104,7 @@ public static class ServiceDefaultsExtensions
     {
         logging.IncludeFormattedMessage = false;
         logging.IncludeScopes = false;
-        logging.AddProcessor(_ => new SharedKernel.Observability.LogRecordPrivacyProcessor(TelemetryPrivacyAttributeClassifier.IsSensitive));
+        logging.AddProcessor(_ => new LogRecordPrivacyProcessor(TelemetryPrivacyAttributeClassifier.IsSensitive));
     }
 
     private static void ConfigureOpenTelemetryMetrics(MeterProviderBuilder metrics)
@@ -117,7 +117,7 @@ public static class ServiceDefaultsExtensions
 
     private static void ConfigureOpenTelemetryTracing(TracerProviderBuilder tracing, string applicationName)
     {
-        tracing.AddProcessor(new SharedKernel.Observability.ActivityPrivacyProcessor(TelemetryPrivacyAttributeClassifier.IsSensitive))
+        tracing.AddProcessor(new ActivityPrivacyProcessor(TelemetryPrivacyAttributeClassifier.IsSensitive))
             .AddSource(applicationName, AdminContractsClientTelemetryName)
             .AddCatalogTracing()
             .AddSharedKernelMediatorTracing()

@@ -1,4 +1,4 @@
-using SharedKernel.Testing;
+using PandaBear.Testing;
 using ViajantesTurismo.Admin.Application.Documents;
 using ViajantesTurismo.Admin.Domain.Documents;
 using ViajantesTurismo.Admin.Testing.Fakes;
@@ -131,7 +131,7 @@ public sealed class DocumentLifecycleCommandHandlerTests
             CancellationToken.None);
 
         // Assert
-        result.Status.ShouldBe(SharedKernel.Results.ResultStatus.Invalid);
+        result.Status.ShouldBe(PandaBear.Results.ResultStatus.Invalid);
         auditStore.Records.ShouldHaveSingleItem().ReasonCode.ShouldBe(DocumentAuditReasonCode.ValidationRejected);
         unitOfWork.SaveEntitiesCallCount.ShouldBe(1);
     }
@@ -420,7 +420,7 @@ public sealed class DocumentLifecycleCommandHandlerTests
             CancellationToken.None);
 
         // Assert
-        result.Status.ShouldBe(SharedKernel.Results.ResultStatus.Conflict);
+        result.Status.ShouldBe(PandaBear.Results.ResultStatus.Conflict);
         document.Status.ShouldBe(DocumentStatus.Finalized);
         auditStore.Records.ShouldHaveSingleItem().ReasonCode.ShouldBe(DocumentAuditReasonCode.StateConflict);
         unitOfWork.SaveEntitiesCallCount.ShouldBe(1);
@@ -447,7 +447,7 @@ public sealed class DocumentLifecycleCommandHandlerTests
             CancellationToken.None);
 
         // Assert
-        result.Status.ShouldBe(SharedKernel.Results.ResultStatus.Invalid);
+        result.Status.ShouldBe(PandaBear.Results.ResultStatus.Invalid);
         auditStore.Records.ShouldHaveSingleItem().ReasonCode.ShouldBe(DocumentAuditReasonCode.ValidationRejected);
         unitOfWork.SaveEntitiesCallCount.ShouldBe(1);
     }

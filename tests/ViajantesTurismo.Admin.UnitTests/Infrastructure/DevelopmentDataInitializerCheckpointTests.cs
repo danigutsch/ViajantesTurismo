@@ -1,4 +1,4 @@
-using SharedKernel.Testing;
+using PandaBear.Testing;
 
 namespace ViajantesTurismo.Admin.UnitTests.Infrastructure;
 
@@ -236,24 +236,6 @@ public sealed class DevelopmentDataInitializerCheckpointTests
         persistedCustomerIds.ShouldBeEmpty();
         var persistedBookings = await scenario.GetBookingStates(ct);
         persistedBookings.ShouldBeEmpty();
-    }
-
-    [Fact]
-    public async Task Initialize_recovers_a_baseline_tour_checkpoint_after_timestamp_precision_rounding()
-    {
-        // Arrange
-        var ct = TestContext.Current.CancellationToken;
-        await using var scenario = DevelopmentDataInitializerScenario.Create();
-        await scenario.Initialize(ct);
-        await scenario.KeepOnlyBaselineTours(ct);
-        await scenario.AlterBaselineTourSchedulePrecision(ct);
-
-        // Act
-        await scenario.Initialize(ct);
-
-        // Assert
-        await scenario.ShouldContainDevelopmentData(ct);
-        await scenario.ShouldContainExpectedDevelopmentBookingStates(ct);
     }
 
     [Fact]

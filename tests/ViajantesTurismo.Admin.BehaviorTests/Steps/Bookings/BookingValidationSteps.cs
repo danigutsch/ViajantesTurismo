@@ -21,7 +21,7 @@ public sealed class BookingValidationSteps(
             Guid.CreateVersion7(),
             BikeType.Regular,
             (RoomType)invalidRoomType,
-            DiscountType.None));
+            DiscountType.None), new DateTime(2030, 1, 1, 0, 0, 0, DateTimeKind.Utc));
         bookingContext.BookingCreationResult = result;
     }
 

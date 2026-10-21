@@ -1,5 +1,5 @@
-using SharedKernel.Branding;
-using SharedKernel.Results;
+using PandaBear.Branding;
+using PandaBear.Results;
 using ViajantesTurismo.Admin.Application.Mappings;
 using ViajantesTurismo.Admin.Domain.Documents;
 using ViajantesTurismo.Admin.Domain.Tours;

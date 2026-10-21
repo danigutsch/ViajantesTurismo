@@ -1,6 +1,6 @@
 using System.Net;
 using System.Net.Http.Json;
-using SharedKernel.HttpClients;
+using PandaBear.HttpClients;
 using ViajantesTurismo.Catalog.Contracts.Application;
 
 namespace ViajantesTurismo.Catalog.Contracts.Http;

@@ -11,8 +11,8 @@
         <Using Include="ViajantesTurismo.Admin.SystemTests.Infrastructure.Fixtures" />
         <Using Include="ViajantesTurismo.Admin.SystemTests.Infrastructure.Helpers" />
         <Using Include="ViajantesTurismo.Admin.Testing.Integration.Helpers" />
-        <Using Include="SharedKernel.Testing.Assertions" />
-        <Using Include="SharedKernel.Testing.Playwright" />
+        <Using Include="PandaBear.Testing.Assertions" />
+        <Using Include="PandaBear.Testing.Playwright" />
         <Using Include="Xunit" />
     </ItemGroup>
 

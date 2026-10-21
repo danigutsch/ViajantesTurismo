@@ -3,8 +3,8 @@ using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.DataProtection;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Hosting;
-using SharedKernel.AspNetCore;
-using SharedKernel.Testing.AspNetCore;
+using PandaBear.AspNetCore;
+using PandaBear.Testing.AspNetCore;
 using ViajantesTurismo.Management.Web;
 
 namespace ViajantesTurismo.Management.WebIntegrationTests;

@@ -1,6 +1,10 @@
 # SharedKernel packaging
 
-This page defines the local package shape for reusable `SharedKernel.*` projects.
+This page retains the original in-repository packaging design. SharedKernel implementations and
+packaging now live in the [standalone library](https://github.com/danigutsch/PandaBear.SharedKernel).
+Use its [package development guide](https://github.com/danigutsch/PandaBear.SharedKernel/blob/f5975b60601e245bda6bb8e45559d8ce3a24a8e0/docs/package-development.md)
+for current library ownership and [application consumption](sharedkernel/development.md) for bootstrap,
+pinned artifacts, validation, and rollback. Paths below describe the former layout.
 
 ## Package metadata
 
@@ -140,7 +144,7 @@ Intentional naming exceptions:
 
 | Project | Exception | Reason |
 | --- | --- | --- |
-| `SharedKernel.Mediator.Abstractions` | Root namespace remains `SharedKernel.Mediator`. | The assembly contributes shared mediator contracts under the existing mediator namespace while keeping package identity precise. |
+| `SharedKernel.Mediator.Abstractions` | C# namespace is `PandaBear.Mediator`; assembly identity remains `SharedKernel.Mediator.Abstractions`. | The assembly contributes shared mediator contracts under the existing mediator namespace while keeping package identity precise. |
 | `SharedKernel.EventSourcing.Npgsql` | Provider segment uses the provider name `Npgsql`. | Matches the .NET PostgreSQL provider package naming. |
 
 Current deferred package candidates:

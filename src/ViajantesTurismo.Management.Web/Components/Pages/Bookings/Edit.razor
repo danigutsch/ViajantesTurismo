@@ -1,6 +1,7 @@
+@inject TimeProvider TimeProvider
 @page "/bookings/{id:guid}/edit"
 @implements IAsyncDisposable
-@using SharedKernel.HttpClients
+@using PandaBear.HttpClients
 @using ViajantesTurismo.Admin.Contracts.Application
 @using ViajantesTurismo.Management.Web.Helpers
 @inject IBookingsApiClient BookingsApi
@@ -565,6 +566,7 @@ else if (_booking is not null)
         }
 
         _paymentState.ShowForm();
+        _paymentState.FormModel.PaymentDate = DateOnly.FromDateTime(TimeProvider.GetUtcNow().UtcDateTime);
     }
 
     private void HidePaymentForm()

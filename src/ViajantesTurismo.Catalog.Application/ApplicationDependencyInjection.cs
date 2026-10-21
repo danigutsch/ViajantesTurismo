@@ -2,9 +2,9 @@ using System.Text.Json.Serialization.Metadata;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Options;
-using SharedKernel.EventSourcing;
-using SharedKernel.Idempotency;
-using SharedKernel.Messaging.IntegrationEvents;
+using PandaBear.EventSourcing;
+using PandaBear.Idempotency;
+using PandaBear.Messaging.IntegrationEvents;
 using ViajantesTurismo.Admin.Contracts.IntegrationEvents;
 using ViajantesTurismo.Admin.Contracts.IntegrationEvents.Tours;
 using ViajantesTurismo.Catalog.Application.IntegrationEvents;
@@ -27,6 +27,7 @@ public static class ApplicationDependencyInjection
     public static IServiceCollection AddCatalogApplication(this IServiceCollection services)
     {
         ArgumentNullException.ThrowIfNull(services);
+        services.TryAddSingleton(TimeProvider.System);
 
         services.AddOptions<IntegrationEventOptions>()
             .BindConfiguration(IntegrationEventOptions.SectionName)
@@ -41,7 +42,8 @@ public static class ApplicationDependencyInjection
                     sp.GetRequiredService<IEventStore>(),
                     sp.GetRequiredService<ICatalogTourSlugLock>()),
                 sp.GetRequiredService<IIdempotencyStore>(),
-                sp.GetRequiredService<IOptions<IntegrationEventOptions>>()));
+                sp.GetRequiredService<IOptions<IntegrationEventOptions>>(),
+                sp.GetRequiredService<TimeProvider>()));
         JsonTypeInfo<AdminTourCreatedIntegrationEvent> adminTourCreatedJsonTypeInfo =
             AdminIntegrationEventJsonContext.Default.AdminTourCreatedIntegrationEvent;
         services.AddIntegrationEventConsumer(

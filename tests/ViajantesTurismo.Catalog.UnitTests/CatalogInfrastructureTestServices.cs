@@ -1,7 +1,7 @@
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using SharedKernel.MalwareScanning.ClamAv;
+using PandaBear.MalwareScanning.ClamAv;
 using ViajantesTurismo.Catalog.Infrastructure;
 using ViajantesTurismo.Resources;
 
@@ -188,6 +188,18 @@ internal sealed class CatalogInfrastructureScenario(ServiceProvider provider) : 
     public bool ContainsHostedService<TService>()
     {
         return hostedServices.Any(service => service.GetType() == typeof(TService));
+    }
+
+    public bool ContainsHostedService<TContext>(string genericTypeName)
+    {
+        return hostedServices.Any(service =>
+        {
+            var type = service.GetType();
+            return type.Assembly == typeof(PandaBear.Messaging.IntegrationEvents.EntityFrameworkCore.IntegrationEventOutboxRelayOptions).Assembly
+                && type.IsGenericType
+                && type.GetGenericTypeDefinition().Name == genericTypeName
+                && type.GenericTypeArguments.Single() == typeof(TContext);
+        });
     }
 
     public TService ShouldResolve<TService>()

@@ -1,5 +1,5 @@
 using System.Text.Json;
-using SharedKernel.Testing;
+using PandaBear.Testing;
 
 namespace ViajantesTurismo.Admin.IntegrationTests.Documents;
 

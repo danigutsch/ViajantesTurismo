@@ -5,7 +5,7 @@
         <RootNamespace>ViajantesTurismo.Catalog.InfrastructureTests</RootNamespace>
     </PropertyGroup>
     <ItemGroup>
-        <Using Include="SharedKernel.Testing.Assertions" />
+        <Using Include="PandaBear.Testing.Assertions" />
         <Using Include="Xunit" />
     </ItemGroup>
     <ItemGroup>
