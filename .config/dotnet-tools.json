@@ -16,13 +16,6 @@
       ],
       "rollForward": false
     },
-    "aspire.cli": {
-      "version": "13.6.1",
-      "commands": [
-        "aspire"
-      ],
-      "rollForward": false
-    },
     "pandabear.sharedkernel.versioning.tool": {
       "version": "1.0.0-alpha.20261021.2",
       "commands": [
@@ -55,6 +48,13 @@
       "version": "1.0.0-alpha.20261021.2",
       "commands": [
         "sharedkernel-docs"
+      ],
+      "rollForward": false
+    },
+    "aspire.cli": {
+      "version": "13.6.1",
+      "commands": [
+        "aspire"
       ],
       "rollForward": false
     }

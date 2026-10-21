@@ -15,8 +15,7 @@ internal static class CiTestProjectSelector
         "admin-integration",
         "admin-system",
         "fast-validation-1",
-        "fast-validation-2",
-        "mediator-heavy"
+        "fast-validation-2"
     };
 
     internal static readonly IReadOnlyList<string> OpenApiWindowsProjects = Array.AsReadOnly(

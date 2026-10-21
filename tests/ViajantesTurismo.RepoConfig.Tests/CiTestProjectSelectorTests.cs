@@ -167,7 +167,7 @@ public sealed class CiTestProjectSelectorTests
             "src/SharedKernel/SharedKernel.IntegrationTesting/SharedKernel.IntegrationTesting.csproj");
         repository.WriteSlice("admin-integration", "tests/Provider.Tests/Provider.Tests.csproj");
         repository.WriteSlice("admin-system", "tests/System.Tests/System.Tests.csproj");
-        repository.WriteSlice("mediator-heavy", "tests/EntityFrameworkCore.Tests/EntityFrameworkCore.Tests.csproj");
+        repository.WriteSlice("fast-validation-2", "tests/EntityFrameworkCore.Tests/EntityFrameworkCore.Tests.csproj");
 
         // Act
         var selection = CiTestProjectSelector.Select(
@@ -178,7 +178,7 @@ public sealed class CiTestProjectSelectorTests
         // Assert
         selection.SelectedProjectsBySlice["admin-integration"].ShouldHaveSingleItem();
         selection.SelectedProjectsBySlice["admin-system"].ShouldHaveSingleItem();
-        selection.SelectedProjectsBySlice["mediator-heavy"].ShouldHaveSingleItem();
+        selection.SelectedProjectsBySlice["fast-validation-2"].ShouldHaveSingleItem();
     }
 
     [Fact]

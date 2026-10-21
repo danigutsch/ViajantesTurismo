@@ -83,13 +83,11 @@ internal sealed class TemporaryCiTestRepository : IDisposable
         AddXunitProject("tests/AdminSystem.Tests/AdminSystem.Tests.csproj");
         AddXunitProject("tests/Fast1.Tests/Fast1.Tests.csproj");
         AddXunitProject("tests/Fast2.Tests/Fast2.Tests.csproj");
-        AddXunitProject("tests/Mediator.Tests/Mediator.Tests.csproj");
         WriteSlice("admin-api-integration", "tests/AdminApi.Tests/AdminApi.Tests.csproj");
         WriteSlice("admin-integration", "tests/AdminIntegration.Tests/AdminIntegration.Tests.csproj");
         WriteSlice("admin-system", "tests/AdminSystem.Tests/AdminSystem.Tests.csproj");
         WriteSlice("fast-validation-1", "tests/Fast1.Tests/Fast1.Tests.csproj");
         WriteSlice("fast-validation-2", "tests/Fast2.Tests/Fast2.Tests.csproj");
-        WriteSlice("mediator-heavy", "tests/Mediator.Tests/Mediator.Tests.csproj");
     }
 
     public void DeleteSlice(string name)

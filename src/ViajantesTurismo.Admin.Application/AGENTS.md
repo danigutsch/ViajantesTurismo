@@ -52,4 +52,4 @@ Each `Handle` method should:
 
 - `AGENTS.md` (repository root)
 - `docs/CODING_GUIDELINES.md`
-- `src/SharedKernel/SharedKernel.Results/README.md`
+- [Results package guide](https://github.com/danigutsch/PandaBear.SharedKernel/blob/f5975b60601e245bda6bb8e45559d8ce3a24a8e0/src/SharedKernel/SharedKernel.Results/README.md)

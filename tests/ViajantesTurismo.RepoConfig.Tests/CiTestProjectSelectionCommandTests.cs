@@ -12,7 +12,6 @@ public sealed class CiTestProjectSelectionCommandTests
     [InlineData("admin-system")]
     [InlineData("fast-validation-1")]
     [InlineData("fast-validation-2")]
-    [InlineData("mediator-heavy")]
     public async Task Extracted_library_test_slice_is_skipped_without_skipping_remaining_application_tests(string slice)
     {
         // Arrange
@@ -50,7 +49,7 @@ public sealed class CiTestProjectSelectionCommandTests
         selectedSlice.ShouldBeEmpty();
         var githubOutputs = await File.ReadAllLinesAsync(githubOutput, TestContext.Current.CancellationToken);
         githubOutputs.ShouldContain(slice.Replace('-', '_') + "_required=false");
-        githubOutputs.ShouldContain("selected_test_project_count=5");
+        githubOutputs.ShouldContain("selected_test_project_count=4");
         githubOutputs.ShouldContain("build_required=true");
         if (slice.StartsWith("fast-validation-", StringComparison.Ordinal))
         {
@@ -261,8 +260,8 @@ public sealed class CiTestProjectSelectionCommandTests
         repository.AddCanonicalTestSlices();
         const string duplicateProject = "tests/Fast1.Tests/Fast1.Tests.csproj";
         repository.WriteSlice(
-            "mediator-heavy",
-            "tests/Mediator.Tests/Mediator.Tests.csproj",
+            "fast-validation-2",
+            "tests/Fast2.Tests/Fast2.Tests.csproj",
             duplicateProject);
         using var output = new StringWriter(CultureInfo.InvariantCulture);
         using var error = new StringWriter(CultureInfo.InvariantCulture);
@@ -278,7 +277,7 @@ public sealed class CiTestProjectSelectionCommandTests
         // Assert
         exitCode.ShouldBe(1);
         error.ToString().ShouldContain(duplicateProject, StringComparison.Ordinal);
-        error.ToString().ShouldContain("fast-validation-1, mediator-heavy", StringComparison.Ordinal);
+        error.ToString().ShouldContain("fast-validation-1, fast-validation-2", StringComparison.Ordinal);
     }
 
     [Fact]

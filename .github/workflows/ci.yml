@@ -34,7 +34,6 @@ jobs:
       admin_integration_required: ${{ steps.change-scope.outputs.admin_integration_required }}
       admin_api_integration_required: ${{ steps.change-scope.outputs.admin_api_integration_required }}
       admin_system_required: ${{ steps.change-scope.outputs.admin_system_required }}
-      mediator_heavy_required: ${{ steps.change-scope.outputs.mediator_heavy_required }}
       openapi_tool_windows_required: ${{ steps.change-scope.outputs.openapi_tool_windows_required }}
     steps:
       - name: Checkout repository
@@ -202,13 +201,6 @@ jobs:
             timeout_minutes: 15
             install_playwright: false
             playwright_outcome: not-applicable
-          - id: mediator-heavy
-            display_name: Mediator Heavy Tests
-            change_output: mediator_heavy_required
-            projects_file: scripts/ci-test-slices/mediator-heavy.txt
-            timeout_minutes: 15
-            install_playwright: false
-            playwright_outcome: not-applicable
           - id: admin-system
             display_name: Admin System Tests
             change_output: admin_system_required
@@ -248,7 +240,7 @@ jobs:
         with:
           sharedkernel-library-root: ${{ vars.SHAREDKERNEL_LIBRARY_ROOT }}
           sharedkernel-candidate-feed: ${{ vars.SHAREDKERNEL_CANDIDATE_FEED }}
-          restore-local-tools: "false"
+          restore-local-tools: ${{ matrix.id == 'fast-validation-2' && 'true' || 'false' }}
           restore-targets-file: ${{ matrix.projects_file }}
 
       - name: Run test slice

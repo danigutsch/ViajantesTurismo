@@ -5,6 +5,26 @@ namespace ViajantesTurismo.RepoConfig.Tests;
 public sealed class CiTestSliceManifestTests
 {
     [Fact]
+    [Trait(TestTraitNames.CategoryName, TestTraits.CommandLineCategory)]
+    public void Every_configured_ci_slice_contains_test_projects()
+    {
+        // Arrange
+        var repositoryRoot = CiTestSelectionTestProcess.GetRepositoryRoot();
+        var manifestsDirectory = Path.Combine(repositoryRoot, "scripts", "ci-test-slices");
+        var manifests = Directory.EnumerateFiles(manifestsDirectory, "*.txt").ToArray();
+
+        // Act
+        var emptyManifests = manifests
+            .Where(static path => !File.ReadLines(path).Any(static line => !string.IsNullOrWhiteSpace(line)))
+            .Select(static path => Path.GetFileName(path))
+            .ToArray();
+
+        // Assert
+        manifests.Length.ShouldBeGreaterThan(0);
+        emptyManifests.ShouldBeEmpty();
+    }
+
+    [Fact]
     public void Every_solution_test_project_is_assigned_to_exactly_one_ci_slice()
     {
         // Arrange

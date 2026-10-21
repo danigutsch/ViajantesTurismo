@@ -66,6 +66,9 @@ runs:
         ref: ${{ steps.sharedkernel-pin.outputs.revision }}
         path: .local/sharedkernel-library
         persist-credentials: false
+        sparse-checkout: |
+          src
+          tools
 
     - name: Download pinned SharedKernel candidate
       if: ${{ inputs.sharedkernel-library-root == '' && inputs.sharedkernel-candidate-feed == '' }}

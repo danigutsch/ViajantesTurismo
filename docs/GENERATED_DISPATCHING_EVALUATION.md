@@ -2,7 +2,9 @@
 
 This document records the generated dispatching evaluation, which reviewed older
 dispatching experiments preserved on stale local branches and compared them against the
-current `SharedKernel.Mediator` source-generator direction.
+`SharedKernel.Mediator` source-generator direction. SharedKernel implementations and generator
+validation now live in the [standalone library](https://github.com/danigutsch/PandaBear.SharedKernel);
+this application consumes its pinned packages.
 
 ## Reviewed preserved commit set
 
@@ -32,9 +34,10 @@ Current dispatching is centered on `SharedKernel.Mediator` and already provides:
 - generated pipeline invocation
 - generated typed request dispatch plus internal object dispatch support
 - analyzer coverage for handler, stream, pipeline, and cancellation rules
-- package-consumption and generator-heavy tests in the `Mediator Heavy Tests` CI lane
+- generator and packed-consumer tests owned by SharedKernel CI; application tests cover dispatch
+  composition and consumer behavior
 
-Relevant current sources:
+Relevant sources in the standalone library (not application-local paths):
 
 - `src/SharedKernel/SharedKernel.Mediator.SourceGenerator/AppMediatorEmitter.cs`
 - `src/SharedKernel/SharedKernel.Mediator.SourceGenerator/GeneratedDispatchEmitter.cs`
@@ -127,16 +130,14 @@ The old branch added explicit test coverage for generator-related project refere
 
 #### Current status for test coverage
 
-This remains directionally valid, but the repository already has a better replacement:
-
-- generator tests
-- package-consumption tests
-- code-fix tests
-- CI documentation that treats `Mediator Heavy Tests` as the generated-output guardrail lane
+This intent remains covered by focused generator, package-consumption, and code-fix tests in
+SharedKernel. Application CI retains its own dispatch composition, HTTP contract, telemetry, and
+privacy checks through public package interfaces.
 
 #### Decision for test coverage
 
-Keep the current `Mediator Heavy Tests` safety model.
+Keep reusable generator and packed-consumer validation in SharedKernel. Validate new candidates
+through the application compatibility workflow; do not recreate a library-only application CI lane.
 
 Status: useful intent already preserved by newer test infrastructure.
 
@@ -187,10 +188,7 @@ No source code from the retired dispatching branch should be revived as-is.
 
 ## References
 
-- `src/SharedKernel/SharedKernel.Mediator.Abstractions/ISender.cs`
-- `src/SharedKernel/SharedKernel.Mediator.SourceGenerator/AppMediatorEmitter.cs`
-- `src/SharedKernel/SharedKernel.Mediator.SourceGenerator/GeneratedDispatchEmitter.cs`
-- `src/SharedKernel/SharedKernel.Mediator.SourceGenerator/DependencyInjectionEmitter.cs`
-- `src/SharedKernel/SharedKernel.Mediator.Analyzers/SharedKernelMediatorAnalyzer.cs`
-- `docs/ci/main-workflow.md`
-- `docs/ci/telemetry-generated-guardrails.md`
+- [Library sources](https://github.com/danigutsch/PandaBear.SharedKernel/tree/f5975b60601e245bda6bb8e45559d8ce3a24a8e0/src/SharedKernel)
+- [Application CI](ci/main-workflow.md)
+- [Telemetry and generated-code guardrails](ci/telemetry-generated-guardrails.md)
+- [Application compatibility workflow](sharedkernel/development.md#adopt-a-library-change)

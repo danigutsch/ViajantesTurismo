@@ -42,6 +42,14 @@ existing `.NET`, Python, shell, or Docker path already covers the same need.
   reuse `.NET`, repository scripts, Docker-backed shell/markdown wrappers, and optional
   PSScriptAnalyzer instead of adding npm helper packages.
 
+## Local tool restore ordering
+
+Keep the RID-specific `aspire.cli` entry last in `.config/dotnet-tools.json`. The pinned SDK can reuse
+stale RID asset metadata during a cold `dotnet tool restore`, misidentifying later portable tool
+commands as `aspire`; ordinary restore and `--disable-parallel` both reproduced the failure.
+The proposed upstream fix was closed without merging. Remove this ordering constraint only after
+an upstream fix is available in the pinned SDK and cold restore is verified.
+
 ## Project MCP servers
 
 `opencode.json` permanently configures Aspire and Playwright MCP for OpenCode. The generic
