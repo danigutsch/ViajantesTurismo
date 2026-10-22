@@ -7,7 +7,10 @@ internal static partial class PrTitleCommand
 {
     public static async Task<int> Run(string[] args, string root, CancellationToken ct)
     {
-        if (args is not ["--event", var filename]) { throw new ArgumentException("Expected --event <GitHub event JSON>."); }
+        if (args is not ["--event", var filename])
+        {
+            throw new ArgumentException("Expected --event <GitHub event JSON>.");
+        }
         using var document = JsonDocument.Parse(await File.ReadAllTextAsync(Path.GetFullPath(filename, root), ct).ConfigureAwait(false));
         var title = document.RootElement.GetProperty("pull_request").GetProperty("title").GetString() ?? string.Empty;
         if (title.Length > 100 || title != title.Trim() || !TitlePattern().IsMatch(title))

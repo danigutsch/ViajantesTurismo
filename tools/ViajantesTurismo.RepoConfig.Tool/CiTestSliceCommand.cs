@@ -14,20 +14,50 @@ internal static class CiTestSliceCommand
         var projects = new List<string>();
         for (var index = 0; index < args.Length; index++)
         {
-            if (args[index] == "--install-playwright") { playwright = true; continue; }
-            if (args[index] == "--") { projects.AddRange(args[(index + 1)..]); break; }
+            if (args[index] == "--install-playwright")
+            {
+                playwright = true;
+                continue;
+            }
+            if (args[index] == "--")
+            {
+                projects.AddRange(args[(index + 1)..]);
+                break;
+            }
             if (args[index] is "--slice-name" or "--projects-file")
             {
-                if (index + 1 == args.Length) { throw new ArgumentException("Missing slice option value."); }
-                if (args[index] == "--slice-name") { name = args[++index]; } else { projectsFile = args[++index]; }
+                if (index + 1 == args.Length)
+                {
+                    throw new ArgumentException("Missing slice option value.");
+                }
+                if (args[index] == "--slice-name")
+                {
+                    name = args[++index];
+                }
+                else
+                {
+                    projectsFile = args[++index];
+                }
             }
-            else if (args[index].StartsWith("--", StringComparison.Ordinal)) { throw new ArgumentException("Unknown slice option."); }
-            else { projects.Add(args[index]); }
+            else if (args[index].StartsWith("--", StringComparison.Ordinal))
+            {
+                throw new ArgumentException("Unknown slice option.");
+            }
+            else
+            {
+                projects.Add(args[index]);
+            }
         }
-        if (string.IsNullOrWhiteSpace(name)) { throw new ArgumentException("--slice-name is required."); }
+        if (string.IsNullOrWhiteSpace(name))
+        {
+            throw new ArgumentException("--slice-name is required.");
+        }
         if (projectsFile is not null)
         {
-            if (projects.Count > 0) { throw new ArgumentException("Do not combine a project manifest with positional projects."); }
+            if (projects.Count > 0)
+            {
+                throw new ArgumentException("Do not combine a project manifest with positional projects.");
+            }
             projects.AddRange(await File.ReadAllLinesAsync(Path.GetFullPath(projectsFile, root), ct).ConfigureAwait(false));
         }
         projects = projects.Select(path => path.Trim().Replace('\\', '/')).Where(path => path.Length > 0).ToList();
@@ -43,7 +73,10 @@ internal static class CiTestSliceCommand
             throw new ArgumentException("A slice can execute only test projects in the repository solution.");
         }
         var slug = new string(name.Select(character => char.IsAsciiLetterOrDigit(character) ? char.ToLowerInvariant(character) : '-').ToArray());
-        if (slug.All(character => character == '-')) { slug = "slice"; }
+        if (slug.All(character => character == '-'))
+        {
+            slug = "slice";
+        }
         var results = Path.Combine(root, "TestResults");
         Directory.CreateDirectory(results);
         var revision = await CandidateCompatibilityCommand.RunProcess("git", ["rev-parse", "HEAD"], root, TextWriter.Null, ct).ConfigureAwait(false);
@@ -102,11 +135,20 @@ internal static class CiTestSliceCommand
                 writer.WriteString("timing_file", "TestResults/" + slug + "-phase-timings.tsv");
                 writer.WriteString("build_log", "TestResults/" + slug + "-build.log");
                 writer.WriteString("coverage_collection_log", "TestResults/" + slug + "-coverage-collection.log");
-                if (playwright) { writer.WriteString("playwright_install_log", "TestResults/" + slug + "-playwright-install.log"); }
-                else { writer.WriteNull("playwright_install_log"); }
+                if (playwright)
+                {
+                    writer.WriteString("playwright_install_log", "TestResults/" + slug + "-playwright-install.log");
+                }
+                else
+                {
+                    writer.WriteNull("playwright_install_log");
+                }
                 writer.WriteEndObject();
                 writer.WriteStartArray("projects");
-                foreach (var project in projects) { writer.WriteStringValue(project); }
+                foreach (var project in projects)
+                {
+                    writer.WriteStringValue(project);
+                }
                 writer.WriteEndArray();
                 writer.WriteStartArray("phases");
                 foreach (var phase in phases)

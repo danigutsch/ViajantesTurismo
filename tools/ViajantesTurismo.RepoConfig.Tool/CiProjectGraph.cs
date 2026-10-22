@@ -13,9 +13,15 @@ internal static class CiProjectGraph
         var full = Path.GetFullPath(path, root);
         for (var item = new FileInfo(full) as FileSystemInfo; item is not null && item.FullName != Path.GetFullPath(root); item = item is FileInfo file ? file.Directory : ((DirectoryInfo)item).Parent)
         {
-            if (item.LinkTarget is not null) { throw new ArgumentException("Project paths cannot leave the checkout through symbolic links."); }
+            if (item.LinkTarget is not null)
+            {
+                throw new ArgumentException("Project paths cannot leave the checkout through symbolic links.");
+            }
         }
-        if (!File.Exists(full)) { throw new ArgumentException("Project input does not exist in the checkout: " + path); }
+        if (!File.Exists(full))
+        {
+            throw new ArgumentException("Project input does not exist in the checkout: " + path);
+        }
         return full;
     }
 

@@ -10,7 +10,10 @@ internal static class BuildEvidenceCommand
 
     public static async Task<int> Run(bool write, string[] args, string root, CancellationToken ct)
     {
-        if (args.Length != 0) { throw new ArgumentException("Build evidence commands take no arguments."); }
+        if (args.Length != 0)
+        {
+            throw new ArgumentException("Build evidence commands take no arguments.");
+        }
         var revision = await CandidateCompatibilityCommand.RunProcess("git", ["rev-parse", "HEAD"], root, TextWriter.Null, ct).ConfigureAwait(false);
         var manifest = Path.Combine(root, Manifest);
         if (write)
@@ -19,7 +22,10 @@ internal static class BuildEvidenceCommand
                 .Where(Directory.Exists).SelectMany(directory => Directory.EnumerateFiles(directory, "*.pdb", SearchOption.AllDirectories))
                 .Where(filename => filename.Replace('\\', '/').Contains("/bin/Release/", StringComparison.Ordinal))
                 .Select(filename => Path.GetRelativePath(root, filename).Replace('\\', '/')).Order(StringComparer.Ordinal).ToArray();
-            if (files.Length == 0) { throw new InvalidOperationException("No Release symbols were produced by the solution build."); }
+            if (files.Length == 0)
+            {
+                throw new InvalidOperationException("No Release symbols were produced by the solution build.");
+            }
             Directory.CreateDirectory(Path.GetDirectoryName(manifest) ?? root);
             using var buffer = new MemoryStream();
             using (var writer = new Utf8JsonWriter(buffer, new JsonWriterOptions { Indented = true }))
@@ -27,7 +33,10 @@ internal static class BuildEvidenceCommand
                 writer.WriteStartObject();
                 writer.WriteString("revision", revision);
                 writer.WriteStartObject("files");
-                foreach (var file in files) { writer.WriteString(file, await Hash(root, file, ct).ConfigureAwait(false)); }
+                foreach (var file in files)
+                {
+                    writer.WriteString(file, await Hash(root, file, ct).ConfigureAwait(false));
+                }
                 writer.WriteEndObject();
                 writer.WriteEndObject();
             }
@@ -79,10 +88,16 @@ internal static class BuildEvidenceCommand
         }
         var full = Path.GetFullPath(path, root);
         var relative = Path.GetRelativePath(root, full);
-        if (relative.StartsWith("..", StringComparison.Ordinal) || Path.IsPathRooted(relative)) { throw new ArgumentException("Build evidence escapes the checkout."); }
+        if (relative.StartsWith("..", StringComparison.Ordinal) || Path.IsPathRooted(relative))
+        {
+            throw new ArgumentException("Build evidence escapes the checkout.");
+        }
         for (var item = new FileInfo(full) as FileSystemInfo; item is not null && item.FullName != Path.GetFullPath(root); item = item is FileInfo file ? file.Directory : ((DirectoryInfo)item).Parent)
         {
-            if (item.LinkTarget is not null) { throw new ArgumentException("Build evidence cannot traverse symbolic links."); }
+            if (item.LinkTarget is not null)
+            {
+                throw new ArgumentException("Build evidence cannot traverse symbolic links.");
+            }
         }
         using var stream = File.OpenRead(full);
         return Convert.ToHexStringLower(await SHA256.HashDataAsync(stream, ct).ConfigureAwait(false));
