@@ -51,7 +51,7 @@ public sealed class CiCoverageCollectionTests
     }
 
     [Fact]
-    public void Quality_gate_builds_solution_projects_outside_test_dependency_graphs()
+    public void Independent_solution_build_preserves_projects_outside_test_dependency_graphs()
     {
         // Arrange
         var root = CiTestSelectionTestProcess.GetRepositoryRoot();
@@ -67,6 +67,8 @@ public sealed class CiCoverageCollectionTests
         // Act
         var qualityGate = workflow.Split("  quality-gate:", StringSplitOptions.None)[1]
             .Split("\n  lint:", StringSplitOptions.None)[0];
+        var solutionBuild = workflow.Split("  solution-build:", StringSplitOptions.None)[1]
+            .Split("\n  quality-gate:", StringSplitOptions.None)[0];
         var referencedProjects = Directory.EnumerateFiles(Path.Combine(root, "tests"), "*.csproj", SearchOption.AllDirectories)
             .SelectMany(static path => XDocument.Load(path).Descendants("ProjectReference")
                 .Select(reference => Path.GetFullPath(Path.Combine(Path.GetDirectoryName(path).ShouldNotBeNull(),
@@ -79,7 +81,9 @@ public sealed class CiCoverageCollectionTests
         {
             referencedProjects.ShouldNotContain(Path.GetFullPath(Path.Combine(root, project)));
         }
-        qualityGate.ShouldContain("restore-targets: ViajantesTurismo.slnx", StringComparison.Ordinal);
-        qualityGate.ShouldContain("dotnet build ViajantesTurismo.slnx -c Release --no-restore", StringComparison.Ordinal);
+        workflow.ShouldContain("dotnet build ViajantesTurismo.slnx -c Release --no-restore", StringComparison.Ordinal);
+        qualityGate.ShouldNotContain("dotnet build ViajantesTurismo.slnx", StringComparison.Ordinal);
+        qualityGate.ShouldContain("verify-build-evidence", StringComparison.Ordinal);
+        solutionBuild.ShouldNotContain("test-slices", StringComparison.Ordinal);
     }
 }

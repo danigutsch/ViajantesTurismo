@@ -4,7 +4,7 @@ on:
   pull_request:
     types:
       - opened
-      - edited
+      - labeled
       - synchronize
       - reopened
       - ready_for_review
@@ -17,11 +17,12 @@ on:
   workflow_dispatch:
 
 concurrency:
-  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}-${{ github.event.action == 'labeled' && github.event.label.name != 'ci:rerun' && github.run_id || 'validation' }}
   cancel-in-progress: ${{ github.ref != 'refs/heads/main' }}
 
 jobs:
   detect-changes:
+    if: ${{ github.event.action != 'labeled' || github.event.label.name == 'ci:rerun' }}
     name: Detect Changes
     runs-on: ${{ vars.CI_UBUNTU_RUNNER }}
     timeout-minutes: 5
@@ -29,6 +30,7 @@ jobs:
       contents: read
     outputs:
       build_required: ${{ steps.change-scope.outputs.build_required }}
+      documentation_only: ${{ steps.change-scope.outputs.documentation_only }}
       fast_validation_1_required: ${{ steps.change-scope.outputs.fast_validation_1_required }}
       fast_validation_2_required: ${{ steps.change-scope.outputs.fast_validation_2_required }}
       admin_integration_required: ${{ steps.change-scope.outputs.admin_integration_required }}
@@ -42,26 +44,24 @@ jobs:
           fetch-depth: 0
           persist-credentials: false
 
-      - name: Set up CI selection tool
-        uses: ./.github/actions/setup-ci-prerequisites
+      - name: Set up CI selection SDK
+        uses: actions/setup-dotnet@c2fa09f4bde5ebb9d1777cf28262a3eb3db3ced7 # v5
         with:
-          sharedkernel-library-root: ${{ vars.SHAREDKERNEL_LIBRARY_ROOT }}
-          sharedkernel-candidate-feed: ${{ vars.SHAREDKERNEL_CANDIDATE_FEED }}
-          restore-local-tools: "false"
-          restore-targets: tools/ViajantesTurismo.RepoConfig.Tool/ViajantesTurismo.RepoConfig.Tool.csproj
-          trust-dev-certificate: "false"
+          global-json-file: global.json
+      - name: Restore standalone selection tool
+        run: dotnet restore tools/ViajantesTurismo.RepoConfig.Tool --locked-mode
 
       - name: Select affected CI test projects
         id: change-scope
         shell: bash
         env:
-          SELECTION_MODE: ${{ github.event_name == 'pull_request' && github.event.pull_request.base.sha != '' && github.event.pull_request.head.sha != '' && 'merge-base' || 'full' }}
-          BASE_SHA: ${{ github.event.pull_request.base.sha }}
-          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+          SELECTION_MODE: ${{ github.event_name == 'pull_request' && github.event.pull_request.base.sha != '' && github.event.pull_request.head.sha != '' && 'merge-base' || github.event_name == 'push' && github.event.before != '' && 'direct' || 'full' }}
+          BASE_SHA: ${{ github.event.pull_request.base.sha || github.event.before }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
         run: |
           dotnet run \
             --project tools/ViajantesTurismo.RepoConfig.Tool/ViajantesTurismo.RepoConfig.Tool.csproj \
-            --no-restore \
+            -c Release --no-restore \
             -- \
             select-ci-test-projects \
             --mode "${SELECTION_MODE}" \
@@ -79,6 +79,8 @@ jobs:
           retention-days: 1
 
   calculate-version:
+    needs: detect-changes
+    if: ${{ (github.event.action != 'labeled' || github.event.label.name == 'ci:rerun') && needs.detect-changes.outputs.build_required == 'true' }}
     name: Calculate Version
     runs-on: ${{ vars.CI_UBUNTU_RUNNER }}
     timeout-minutes: 10
@@ -121,6 +123,7 @@ jobs:
             --github-summary "${GITHUB_STEP_SUMMARY}"
 
   openapi-tool-windows:
+    if: ${{ (github.event.action != 'labeled' || github.event.label.name == 'ci:rerun') && needs.detect-changes.outputs.build_required == 'true' }}
     name: OpenAPI Tool Windows
     needs:
       - detect-changes
@@ -164,7 +167,7 @@ jobs:
     name: ${{ matrix.display_name }}
     needs:
       - detect-changes
-    if: ${{ always() }}
+    if: ${{ (github.event.action != 'labeled' || github.event.label.name == 'ci:rerun') && (always()) && (needs.detect-changes.result != 'success' || needs.detect-changes.outputs.build_required == 'true') }}
     runs-on: ${{ vars.CI_UBUNTU_RUNNER }}
     timeout-minutes: ${{ matrix.timeout_minutes }}
     permissions:
@@ -323,12 +326,12 @@ jobs:
         run: bash scripts/write-ci-artifact-summary.sh "${{ matrix.display_name }}"
 
   build-and-test:
-    name: Build and Test
+    name: ${{ github.event.action == 'labeled' && github.event.label.name != 'ci:rerun' && 'Ignored label event' || 'Build and Test' }}
     needs:
       - detect-changes
       - test-slices
       - openapi-tool-windows
-    if: ${{ always() }}
+    if: ${{ (github.event.action != 'labeled' || github.event.label.name == 'ci:rerun') && (always()) }}
     runs-on: ${{ vars.CI_UBUNTU_RUNNER }}
     timeout-minutes: 5
     permissions:
@@ -360,12 +363,47 @@ jobs:
           echo "Build and Test completed successfully across the validation slices."
           exit 0
 
+  solution-build:
+    name: Solution Build
+    needs: detect-changes
+    if: ${{ (github.event.action != 'labeled' || github.event.label.name == 'ci:rerun') && needs.detect-changes.outputs.build_required == 'true' }}
+    runs-on: ${{ vars.CI_UBUNTU_RUNNER }}
+    timeout-minutes: 15
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        with:
+          persist-credentials: false
+      - uses: ./.github/actions/setup-ci-prerequisites
+        with:
+          sharedkernel-library-root: ${{ vars.SHAREDKERNEL_LIBRARY_ROOT }}
+          sharedkernel-candidate-feed: ${{ vars.SHAREDKERNEL_CANDIDATE_FEED }}
+          restore-targets: ViajantesTurismo.slnx
+          restore-local-tools: "false"
+          trust-dev-certificate: "false"
+      - name: Build all solution projects
+        run: dotnet build ViajantesTurismo.slnx -c Release --no-restore
+      - name: Record revision and symbol hashes
+        run: dotnet run --project tools/ViajantesTurismo.RepoConfig.Tool -c Release --no-build --no-restore -- write-build-evidence
+      - name: Upload build evidence
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
+        with:
+          name: solution-build-evidence
+          if-no-files-found: error
+          path: |
+            TestResults/build-evidence.json
+            src/**/bin/Release/**/*.pdb
+            tools/**/bin/Release/**/*.pdb
+          retention-days: 7
+
   quality-gate:
-    name: Quality Gate
+    name: ${{ github.event.action == 'labeled' && github.event.label.name != 'ci:rerun' && 'Ignored label event' || 'Quality Gate' }}
     needs:
       - detect-changes
       - test-slices
-    if: ${{ always() }}
+      - solution-build
+    if: ${{ (github.event.action != 'labeled' || github.event.label.name == 'ci:rerun') && (always()) }}
     runs-on: ${{ vars.CI_UBUNTU_RUNNER }}
     timeout-minutes: 10
     permissions:
@@ -376,9 +414,15 @@ jobs:
         env:
           SELECTION_RESULT: ${{ needs.detect-changes.result }}
           TEST_RESULT: ${{ needs.test-slices.result }}
+          BUILD_REQUIRED: ${{ needs.detect-changes.outputs.build_required }}
+          BUILD_RESULT: ${{ needs.solution-build.result }}
         run: |
           test "$SELECTION_RESULT" = success
-          test "$TEST_RESULT" = success
+          case "$BUILD_REQUIRED" in
+            true) test "$TEST_RESULT" = success && test "$BUILD_RESULT" = success ;;
+            false) test "$TEST_RESULT" = skipped && test "$BUILD_RESULT" = skipped ;;
+            *) echo "Missing build selection evidence." >&2; exit 1 ;;
+          esac
 
       - name: Checkout repository
         if: ${{ needs.detect-changes.outputs.build_required == 'true' }}
@@ -393,12 +437,19 @@ jobs:
         with:
           sharedkernel-library-root: ${{ vars.SHAREDKERNEL_LIBRARY_ROOT }}
           sharedkernel-candidate-feed: ${{ vars.SHAREDKERNEL_CANDIDATE_FEED }}
-          restore-targets: ViajantesTurismo.slnx
+          restore-targets: tools/ViajantesTurismo.RepoConfig.Tool/ViajantesTurismo.RepoConfig.Tool.csproj
           trust-dev-certificate: "false"
 
-      - name: Build all solution projects
+      - name: Download build evidence
         if: ${{ needs.detect-changes.outputs.build_required == 'true' }}
-        run: dotnet build ViajantesTurismo.slnx -c Release --no-restore
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+        with:
+          name: solution-build-evidence
+          path: .
+
+      - name: Verify build evidence
+        if: ${{ needs.detect-changes.outputs.build_required == 'true' }}
+        run: dotnet run --project tools/ViajantesTurismo.RepoConfig.Tool -c Release --no-build --no-restore -- verify-build-evidence
 
       - name: Download test slice coverage
         if: ${{ needs.detect-changes.outputs.build_required == 'true' }}
@@ -429,7 +480,7 @@ jobs:
           test -n "$HEAD_SHA"
           git -c core.quotePath=false diff --no-ext-diff --unified=0 --find-renames \
             "$BASE_SHA...$HEAD_SHA" -- '*.cs' '*.razor' > TestResults/coverage-changes.patch
-          dotnet run --project tools/ViajantesTurismo.RepoConfig.Tool -c Release --no-restore -- \
+          dotnet run --project tools/ViajantesTurismo.RepoConfig.Tool -c Release --no-build --no-restore -- \
             verify-coverage --report TestResults/CoverageReport/Cobertura.xml \
             --diff TestResults/coverage-changes.patch
 
@@ -446,7 +497,9 @@ jobs:
           retention-days: 14
 
   lint:
-    name: Lint
+    needs: detect-changes
+    if: ${{ github.event.action != 'labeled' || github.event.label.name == 'ci:rerun' }}
+    name: ${{ github.event.action == 'labeled' && github.event.label.name != 'ci:rerun' && 'Ignored label event' || 'Lint' }}
     runs-on: ${{ vars.CI_UBUNTU_RUNNER }}
     timeout-minutes: 20
     permissions:
@@ -464,6 +517,9 @@ jobs:
         with:
           files: |
             README.md
+            AGENTS.md
+            CONTRIBUTING.md
+            SECURITY.md
             docs/**/*.md
             .github/**/*.md
             .devcontainer/**/*.md
@@ -487,6 +543,9 @@ jobs:
         with:
           globs: |
             README.md
+            AGENTS.md
+            CONTRIBUTING.md
+            SECURITY.md
             docs/**/*.md
             .github/**/*.md
             .devcontainer/**/*.md
@@ -497,6 +556,7 @@ jobs:
           config: .markdownlint-cli2.jsonc
 
       - name: Set up CI prerequisites
+        if: needs.detect-changes.outputs.documentation_only != 'true'
         uses: ./.github/actions/setup-ci-prerequisites
         with:
           sharedkernel-library-root: ${{ vars.SHAREDKERNEL_LIBRARY_ROOT }}
@@ -505,4 +565,11 @@ jobs:
           trust-dev-certificate: "false"
 
       - name: Run repository linters
+        if: needs.detect-changes.outputs.documentation_only != 'true'
         run: bash scripts/lint-all.sh --skip-markdown
+
+      - name: Validate documentation without running tests
+        if: needs.detect-changes.outputs.documentation_only == 'true'
+        run: |
+          bash scripts/check-line-endings.sh
+          python3 -B scripts/lint-links.py

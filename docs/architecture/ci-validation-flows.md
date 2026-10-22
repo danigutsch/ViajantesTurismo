@@ -23,19 +23,22 @@ flowchart TB
     calculate_version[Calculate Version]
     openapi_tool_windows[OpenAPI Tool Windows]
     test_slices[test-slices]
-    build_and_test[Build and Test]
-    quality_gate[Quality Gate]
-    lint[Lint]
+    build_and_test[build-and-test]
+    solution_build[Solution Build]
+    quality_gate[quality-gate]
+    lint[lint]
     trigger --> detect_changes
-    trigger --> calculate_version
+    detect_changes --> calculate_version
     detect_changes --> openapi_tool_windows
     detect_changes --> test_slices
     detect_changes --> build_and_test
     test_slices --> build_and_test
     openapi_tool_windows --> build_and_test
+    detect_changes --> solution_build
     detect_changes --> quality_gate
     test_slices --> quality_gate
-    trigger --> lint
+    solution_build --> quality_gate
+    detect_changes --> lint
 ```
 <!-- generated:ci-main-jobs:end -->
 
@@ -46,9 +49,9 @@ Workflow details: [CI overview](../ci/overview.md) and [main workflow](../ci/mai
 
 | Lane | Current purpose | Cost posture |
 | --- | --- | --- |
-| `Calculate Version` | Run the versioning tool and expose release-version outputs. | Fast; runs independently. |
+| `Calculate Version` | Run the versioning tool and expose release-version outputs. | Runs after change selection. |
 | `Test slices` | Run path-gated fast, provider/database, full-host API, browser/system, and tooling rows. | Matrix rows run independently. |
-| `Lint` | Markdown, scripts, specs, and repository quality checks. | Fast; runs independently. |
+| `Lint` | Markdown, scripts, specs, and repository quality checks. | Runs after change selection. |
 | `Dependency Review` | Scan dependency manifest and lock-file diffs. | Fast governance lane. |
 | `Secret Scan` | Detect committed secrets and publish SARIF when allowed. | Fast security lane. |
 | `Quality Gate` | Aggregate coverage and enforce changed-code threshold. | Runs after tests; no analysis secrets. |
@@ -73,6 +76,8 @@ flowchart LR
     repo --> dependency_review
     devcontainer_smoke[Devcontainer Smoke]
     repo --> devcontainer_smoke
+    pr_metadata[PR Metadata]
+    repo --> pr_metadata
     release_prep[Release Prep]
     repo --> release_prep
     roadmap_maintenance[Roadmap Maintenance]

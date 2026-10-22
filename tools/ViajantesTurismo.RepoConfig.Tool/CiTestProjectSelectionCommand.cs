@@ -40,6 +40,7 @@ internal static class CiTestProjectSelectionCommand
         var githubOutputs = new List<string>
         {
             FormatOutput("build_required", selection.BuildRequired),
+            FormatOutput("documentation_only", selection.DocumentationOnly),
             FormatOutput("openapi_tool_windows_required", selection.OpenApiToolWindowsRequired),
             FormatOutput("selection_fallback", selection.FallbackToFullValidation),
             $"selected_test_project_count={selectedProjectCount.ToString(CultureInfo.InvariantCulture)}"

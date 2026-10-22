@@ -18,6 +18,7 @@ Branch protection and the active `main` ruleset require these status checks:
 - `Dependency Review` (from `.github/workflows/dependency-review.yml`)
 - `Secret Scan` (from `.github/workflows/secret-scan.yml`)
 - `Quality Gate` (from `.github/workflows/ci.yml`)
+- `PR Metadata` (from `.github/workflows/pr-metadata.yml`)
 
 The required status changed from `SonarCloud` to `Quality Gate` after the replacement check
 passed. Updating both protections then allowed the replacement workflow to merge. The settings
@@ -41,15 +42,19 @@ code or tests are at fault.
 
 Repository recovery order:
 
-1. Confirm the current PR head SHA.
-2. Confirm whether `pull_request` runs exist for that SHA.
-3. If none exist, trigger another PR activity event by editing the PR.
-4. If editing does not create fresh PR-context runs, close and reopen the PR.
+1. Confirm the current PR head SHA and whether PR-context runs exist for it.
+2. Add the `ci:rerun` label to explicitly start fresh source validation and metadata checks.
+3. For another attempt, remove and reapply the label using a human account or an authorized app.
+4. If label delivery fails, close and reopen the PR.
 
-The required workflows in this repository listen to `pull_request.edited` specifically so a
-small metadata edit can be used as the first recovery step. Manual `workflow_dispatch` runs may
-be helpful for diagnostics, but they are not the preferred recovery path for satisfying branch
-protection on the current PR head SHA.
+Ordinary title/body edits run only `PR Metadata`. They do not restart or cancel source-validation
+runs. Unrelated label events use separate concurrency groups and ignored check names; skipped
+jobs cannot overwrite the results of required source checks. Workflows do not grant themselves
+label-write permissions. A label applied by `GITHUB_TOKEN` may not trigger another workflow;
+use the existing human/app authentication path.
+
+Manual `workflow_dispatch` remains diagnostic rather than a substitute for missing PR-context
+checks. See [CI throughput](throughput.md) for the rollout and measurement procedure.
 
 ## Signed commit policy
 
@@ -66,11 +71,12 @@ The repository policy is to require verified signed commits for merges to the pr
 
 ### Merge and automation implications
 
-- **Squash and merge** is not permitted in this repository.
-- **Rebase and merge** is not permitted for branches that require signed commits because
-  GitHub cannot preserve commit signature verification on that merge path.
-- **Create a merge commit** is the only permitted merge method. GitHub creates and signs
-  the resulting merge commit, which is marked **Verified** on `main`.
+- **Squash and merge** is the only permitted merge method after the settings rollout. Use the PR
+  title as the commit header and the PR body as its description. Metadata validation checks the
+  Conventional Commit header independently of source checks.
+- GitHub signs the resulting squash commit, but required signing can still reject unsigned PR commits.
+- Disable **Create a merge commit** and **Rebase and merge**. Preserve signed commits, strict
+  up-to-date checks, review settings, and existing required checks.
 - Dependabot and other bots are unaffected while they work on pull request branches, but
   any commit that ultimately lands on `main` must still satisfy the signed-commit rule.
 
