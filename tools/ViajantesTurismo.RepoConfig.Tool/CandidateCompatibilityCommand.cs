@@ -69,6 +69,9 @@ internal static class CandidateCompatibilityCommand
                 ValidateConsumer(root, candidate, evidence);
                 scratch = Path.Combine(Path.GetTempPath(), "sharedkernel-consumer-" + Guid.NewGuid().ToString("N"));
                 var config = WriteRestoreConfiguration(candidate, scratch);
+                var consumer = Path.Combine(scratch, "consumer");
+                await RunProcess("git", ["clone", "--local", "--shared", "--no-checkout", "--", root, consumer], root, output, ct).ConfigureAwait(false);
+                await RunProcess("git", ["checkout", "--detach", evidence["consumerRevision"]!.GetValue<string>()], consumer, output, ct).ConfigureAwait(false);
                 var cache = Path.Combine(scratch, "packages");
                 string[][] commands = [
                     ["restore", SolutionFileName, "--locked-mode", "--configfile", config, "--packages", cache, "--no-cache"],
@@ -78,7 +81,7 @@ internal static class CandidateCompatibilityCommand
                 ];
                 foreach (var command in commands)
                 {
-                    await RunProcess("dotnet", command, root, output, ct).ConfigureAwait(false);
+                    await RunProcess("dotnet", command, consumer, output, ct).ConfigureAwait(false);
                 }
 
                 status = "passed";

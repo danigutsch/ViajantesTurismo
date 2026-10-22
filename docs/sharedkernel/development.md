@@ -67,7 +67,9 @@ dotnet run --project tools/ViajantesTurismo.RepoConfig.Tool -c Release --no-buil
   verify-sharedkernel-candidate --candidate .local/sharedkernel-feed/candidate.json
 ```
 
-Compatibility records both committed repository revisions and package hashes. A renamed package
+Compatibility records both committed repository revisions and package hashes. Validation runs in a
+temporary local clone of the recorded application commit with an isolated package cache, then removes
+both. The working checkout's restore assets and binaries remain unchanged. A renamed package
 identity does not establish compatibility with previously published `SharedKernel.*` packages.
 Rollback restores the previous application dependency configuration, candidate manifest, and lock files,
 then bootstraps its retained artifacts. Keep the prior artifacts available until adoption is accepted.
