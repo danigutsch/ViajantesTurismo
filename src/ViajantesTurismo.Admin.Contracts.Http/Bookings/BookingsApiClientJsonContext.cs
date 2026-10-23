@@ -13,5 +13,4 @@ namespace ViajantesTurismo.Admin.Contracts.Http;
 [JsonSerializable(typeof(UpdateBookingDiscountDto))]
 [JsonSerializable(typeof(UpdateBookingDetailsDto))]
 [JsonSerializable(typeof(UpdateBookingNotesDto))]
-[JsonSerializable(typeof(CreatePaymentDto))]
 internal sealed partial class BookingsApiClientJsonContext : JsonSerializerContext;

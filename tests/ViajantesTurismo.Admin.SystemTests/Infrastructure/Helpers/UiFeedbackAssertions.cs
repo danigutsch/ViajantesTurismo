@@ -44,7 +44,8 @@ internal sealed class UiFeedbackAssertions(IPage page)
     {
         var redirectAlert = page.Locator(".alert-info").Filter(new LocatorFilterOptions { HasText = "Redirecting" });
         await redirectAlert.WaitForAsync();
-        (await redirectAlert.InnerTextAsync()).ShouldContain(expectedText, StringComparison.Ordinal);
+        var assertionTarget1 = await redirectAlert.InnerTextAsync();
+        assertionTarget1.ShouldContain(expectedText, StringComparison.Ordinal);
         await redirectAlert.GetButton("Cancel").WaitForAsync();
     }
 }

@@ -28,28 +28,28 @@ public sealed class TourUpdateScheduleSteps(TourContext tourContext)
     [Then("the tour schedule update should succeed")]
     public void ThenTheTourScheduleUpdateShouldSucceed()
     {
-        (tourContext.UpdateResult).ShouldNotBeNull();
-        (tourContext.UpdateResult.Value.IsSuccess).ShouldBeTrue($"Expected success but got error: {tourContext.UpdateResult.Value.ErrorDetails?.Detail}");
+        tourContext.UpdateResult.ShouldNotBeNull();
+        tourContext.UpdateResult.Value.IsSuccess.ShouldBeTrue($"Expected success but got error: {tourContext.UpdateResult.Value.ErrorDetails?.Detail}");
     }
 
     [Then("the tour schedule update should fail")]
     public void ThenTheTourScheduleUpdateShouldFail()
     {
-        (tourContext.UpdateResult).ShouldNotBeNull();
-        (tourContext.UpdateResult.Value.IsSuccess).ShouldBeFalse();
+        tourContext.UpdateResult.ShouldNotBeNull();
+        tourContext.UpdateResult.Value.IsSuccess.ShouldBeFalse();
     }
 
     [Then(@"the tour start date should be ""(.*)""")]
     public void ThenTheTourStartDateShouldBe(string expectedDateString)
     {
         var expectedDate = DateTime.Parse(expectedDateString, CultureInfo.InvariantCulture).ToUniversalTime();
-        (tourContext.Tour.Schedule.StartDate).ShouldBe(DateOnly.FromDateTime(expectedDate));
+        tourContext.Tour.Schedule.StartDate.ShouldBe(DateOnly.FromDateTime(expectedDate));
     }
 
     [Then(@"the tour end date should be ""(.*)""")]
     public void ThenTheTourEndDateShouldBe(string expectedDateString)
     {
         var expectedDate = DateTime.Parse(expectedDateString, CultureInfo.InvariantCulture).ToUniversalTime();
-        (tourContext.Tour.Schedule.EndDate).ShouldBe(DateOnly.FromDateTime(expectedDate));
+        tourContext.Tour.Schedule.EndDate.ShouldBe(DateOnly.FromDateTime(expectedDate));
     }
 }

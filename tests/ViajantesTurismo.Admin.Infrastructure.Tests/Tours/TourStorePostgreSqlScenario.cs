@@ -45,7 +45,8 @@ internal sealed class TourStorePostgreSqlScenario : IAsyncDisposable
     public async Task<Option<Guid>> GetTourIdByBookingId(Guid bookingId, CancellationToken ct)
     {
         await using var dbContext = CreateDbContext();
-        return await new TourStore(dbContext).GetTourIdByBookingId(bookingId, ct);
+        using var protection = new Infrastructure.Payments.PaymentProtection(new Microsoft.Extensions.Configuration.ConfigurationBuilder().Build());
+        return await new TourStore(dbContext, new Infrastructure.Payments.PaymentHistoryStore(dbContext, protection)).GetTourIdByBookingId(bookingId, ct);
     }
 
     public ValueTask DisposeAsync() => database.DisposeAsync();

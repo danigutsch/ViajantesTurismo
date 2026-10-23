@@ -1,6 +1,5 @@
 using ViajantesTurismo.Admin.Domain.Customers;
 using ViajantesTurismo.Admin.Domain.Tours;
-using ViajantesTurismo.Admin.Testing.Fakes;
 
 namespace ViajantesTurismo.Admin.UnitTests.Domain;
 
@@ -44,13 +43,17 @@ public sealed class CivilDateBoundaryTests
         var now = new DateTimeOffset(2030, 2, 3, 0, 0, 0, TimeSpan.Zero);
         var date = new DateOnly(2030, 2, 3).AddDays(daysAfterToday);
         // Act
-        var result = Payment.Create(Guid.CreateVersion7(), 100m, date, PaymentMethod.Cash, new FakeTimeProvider(now), null, null);
+        var scenario = new PaymentAccounts.PaymentScenario();
+        var result = scenario.Tour.RecordBookingReceipt(scenario.Booking.Id, 0,
+            Admin.Domain.Payments.ReceiptSettlement.Create(Currency.Euro, 100m, 0m).Value,
+            date, null, PaymentMethod.Cash, "calendar-test", [], "owner", now, DateOnly.FromDateTime(now.UtcDateTime));
         // Assert
         result.IsSuccess.ShouldBe(valid);
         if (valid)
         {
-            result.Value.PaymentDate.ShouldBe(date);
-            result.Value.RecordedAt.ShouldBe(now.UtcDateTime);
+            var receipt = scenario.History.ExportState().Receipts.ShouldHaveSingleItem();
+            receipt.PaymentDate.ShouldBe(date);
+            receipt.CreatedAt.ShouldBe(now);
         }
     }
 

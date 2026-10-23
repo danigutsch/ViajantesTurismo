@@ -79,7 +79,15 @@ internal static class TelemetryPrivacyAttributeClassifier
 
     public static bool IsSensitive(string name)
     {
-        return SensitiveAttributeNames.Contains(name)
+        return name.StartsWith("payment", StringComparison.OrdinalIgnoreCase)
+            || name.StartsWith("financial", StringComparison.OrdinalIgnoreCase)
+            || name.StartsWith("recipient", StringComparison.OrdinalIgnoreCase)
+            || name.StartsWith("fx.quote", StringComparison.OrdinalIgnoreCase)
+            || name.StartsWith("receipt", StringComparison.OrdinalIgnoreCase)
+            || name.StartsWith("refund", StringComparison.OrdinalIgnoreCase)
+            || name.StartsWith("reconciliation", StringComparison.OrdinalIgnoreCase)
+            || name.StartsWith("allocation", StringComparison.OrdinalIgnoreCase)
+            || SensitiveAttributeNames.Contains(name)
             || name.StartsWith("db.query.parameter.", StringComparison.OrdinalIgnoreCase)
             || name.StartsWith("http.request.header.", StringComparison.OrdinalIgnoreCase)
             || name.StartsWith("http.response.header.", StringComparison.OrdinalIgnoreCase);

@@ -22,15 +22,15 @@
       },
       "PandaBear.SharedKernel.Style.Analyzers": {
         "type": "Direct",
-        "requested": "[0.1.0-alpha.70.1, )",
-        "resolved": "0.1.0-alpha.70.1",
-        "contentHash": "1LmLUT1f+2pAV4+oLvlU4/IoMPrKI59ID0Dol4yDyqoqh3W7pSYhSyga18e/MEyBk+z1ebbwk7Jcoqd2OrunMg=="
+        "requested": "[0.1.0-alpha.94.1, )",
+        "resolved": "0.1.0-alpha.94.1",
+        "contentHash": "WULoarTmx0VyJey8sU0QJ0TVH21p5c9NeqTT1WqVCZ1/QBS16Ps4rMh5lJXxFcoB02ThWvNSlqCxal9Kzs/Hzg=="
       },
       "PandaBear.SharedKernel.Style.CodeFixes": {
         "type": "Direct",
-        "requested": "[0.1.0-alpha.70.1, )",
-        "resolved": "0.1.0-alpha.70.1",
-        "contentHash": "mEe/85utqAEpYs1pQC+T+jsKm0rQ4LWDqH0lU4mehKl2nDVkMkC3JouHD0hQqJmIuBc5aMRQYw5HqyWbTTON5w=="
+        "requested": "[0.1.0-alpha.94.1, )",
+        "resolved": "0.1.0-alpha.94.1",
+        "contentHash": "EPGlWz/TQ6WPMB60YI6d92VFPEEJjsEIdoHlZC1am7tG+cKML4e/0cCEL8Un56aNXK28WXOcMZAcKLYdkIDd1Q=="
       },
       "BenchmarkDotNet.Annotations": {
         "type": "Transitive",

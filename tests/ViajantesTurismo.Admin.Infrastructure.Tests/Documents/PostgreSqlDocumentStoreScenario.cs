@@ -295,7 +295,10 @@ internal sealed class PostgreSqlDocumentStoreScenario : IAsyncDisposable
         var barrier = new DocumentSaveBarrierInterceptor();
         var services = new ServiceCollection();
         services.AddSingleton(barrier);
+        services.AddDomainEventDispatch<AdminWriteDbContext>();
         services.AddIdempotencyStore<AdminWriteDbContext>();
+        services.AddIntegrationEventOutbox<AdminWriteDbContext>();
+        services.AddPostgreSqlIntegrationEventTransportProducer<AdminWriteDbContext>(IntegrationEventConsumerNames.Catalog);
         services.AddDbContext<AdminWriteDbContext>((serviceProvider, options) =>
         {
             options.UseNpgsql(connectionString);

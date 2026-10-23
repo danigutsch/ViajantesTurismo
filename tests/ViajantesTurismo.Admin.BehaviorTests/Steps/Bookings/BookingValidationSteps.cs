@@ -10,8 +10,8 @@ public sealed class BookingValidationSteps(
 {
     private void AssertBookingCreationFailed()
     {
-        (bookingContext.BookingCreationResult).ShouldNotBeNull();
-        (bookingContext.BookingCreationResult.Value.IsFailure).ShouldBeTrue();
+        bookingContext.BookingCreationResult.ShouldNotBeNull();
+        bookingContext.BookingCreationResult.Value.IsFailure.ShouldBeTrue();
     }
 
     [When("I try to add a booking to tour with invalid room type (.*)")]
@@ -57,16 +57,16 @@ public sealed class BookingValidationSteps(
     [Then("the booking update should fail with validation error")]
     public void ThenTheBookingUpdateShouldFailWithValidationError()
     {
-        (bookingContext.BookingOperationResult).ShouldNotBeNull();
-        (bookingContext.BookingOperationResult.Value.IsSuccess).ShouldBeFalse();
-        (bookingContext.BookingOperationResult.Value.Status).ShouldBe(ResultStatus.Invalid);
+        bookingContext.BookingOperationResult.ShouldNotBeNull();
+        bookingContext.BookingOperationResult.Value.IsSuccess.ShouldBeFalse();
+        bookingContext.BookingOperationResult.Value.Status.ShouldBe(ResultStatus.Invalid);
     }
 
     [Then("the booking should be created successfully")]
     public void ThenTheBookingShouldBeCreatedSuccessfully()
     {
-        (bookingContext.BookingCreationResult).ShouldNotBeNull();
-        (bookingContext.BookingCreationResult.Value.IsSuccess).ShouldBeTrue();
+        bookingContext.BookingCreationResult.ShouldNotBeNull();
+        bookingContext.BookingCreationResult.Value.IsSuccess.ShouldBeTrue();
         bookingContext.Booking = bookingContext.BookingCreationResult.Value.Value;
     }
 
@@ -88,10 +88,6 @@ public sealed class BookingValidationSteps(
         {
             errorDetails = bookingContext.BookingCustomerResult.Value.ErrorDetails;
         }
-        else if (bookingContext.PaymentResult.HasValue)
-        {
-            errorDetails = bookingContext.PaymentResult.Value.ErrorDetails;
-        }
         else if (tourContext.DeleteResult.HasValue)
         {
             errorDetails = tourContext.DeleteResult.Value.ErrorDetails;
@@ -105,7 +101,7 @@ public sealed class BookingValidationSteps(
             errorDetails = customerContext.CommandResult.Value.ErrorDetails;
         }
 
-        (errorDetails).ShouldNotBeNull();
+        errorDetails.ShouldNotBeNull();
 
         var messageFound = errorDetails.Detail.Contains(expectedMessage, StringComparison.Ordinal);
         if (!messageFound && errorDetails.ValidationErrors != null)
@@ -115,20 +111,20 @@ public sealed class BookingValidationSteps(
                 .Any(error => error.Contains(expectedMessage, StringComparison.Ordinal));
         }
 
-        (messageFound).ShouldBeTrue($"Expected message '{expectedMessage}' not found in error details.");
+        messageFound.ShouldBeTrue($"Expected message '{expectedMessage}' not found in error details.");
     }
 
     [Then("the booking notes should be updated successfully")]
     public void ThenTheBookingNotesShouldBeUpdatedSuccessfully()
     {
-        (bookingContext.BookingOperationResult).ShouldNotBeNull();
-        (bookingContext.BookingOperationResult.Value.IsSuccess).ShouldBeTrue();
+        bookingContext.BookingOperationResult.ShouldNotBeNull();
+        bookingContext.BookingOperationResult.Value.IsSuccess.ShouldBeTrue();
     }
 
     [Then("the booking notes should be null or empty")]
     public void ThenTheBookingNotesShouldBeNullOrEmpty()
     {
-        (string.IsNullOrWhiteSpace(bookingContext.Booking.Notes)).ShouldBeTrue();
+        string.IsNullOrWhiteSpace(bookingContext.Booking.Notes).ShouldBeTrue();
     }
 
     [Then(@"I should be informed that (.+) cannot exceed (\d+) characters")]
@@ -139,12 +135,12 @@ public sealed class BookingValidationSteps(
 
         if (bookingContext.BookingCreationResult.HasValue)
         {
-            (bookingContext.BookingCreationResult.Value.IsFailure).ShouldBeTrue();
+            bookingContext.BookingCreationResult.Value.IsFailure.ShouldBeTrue();
             errorDetails = bookingContext.BookingCreationResult.Value.ErrorDetails;
         }
         else if (bookingContext.BookingOperationResult.HasValue)
         {
-            (bookingContext.BookingOperationResult.Value.IsFailure).ShouldBeTrue();
+            bookingContext.BookingOperationResult.Value.IsFailure.ShouldBeTrue();
             errorDetails = bookingContext.BookingOperationResult.Value.ErrorDetails;
         }
         else
@@ -153,8 +149,9 @@ public sealed class BookingValidationSteps(
         }
 
         var normalizedFieldName = fieldName.Replace(" ", "", StringComparison.Ordinal);
-        (errorDetails?.ValidationErrors?.Any(kvp =>
-                kvp.Key.Equals(normalizedFieldName, StringComparison.OrdinalIgnoreCase)) ?? false).ShouldBeTrue($"Expected validation error for {normalizedFieldName}");
+        var assertionTarget1 = errorDetails?.ValidationErrors?.Any(kvp =>
+                kvp.Key.Equals(normalizedFieldName, StringComparison.OrdinalIgnoreCase)) ?? false;
+        assertionTarget1.ShouldBeTrue($"Expected validation error for {normalizedFieldName}");
     }
 
     [When(@"I attempt to create a booking with base price (-?\d+)")]
@@ -184,9 +181,10 @@ public sealed class BookingValidationSteps(
     [Then("I should be informed that the room type is invalid")]
     public void ThenIShouldBeInformedThatTheRoomTypeIsInvalid()
     {
-        (bookingContext.BookingCreationResult).ShouldNotBeNull();
-        (bookingContext.BookingCreationResult.Value.IsFailure).ShouldBeTrue();
-        (bookingContext.BookingCreationResult.Value.ErrorDetails?.Detail ?? string.Empty).ShouldContain("room", StringComparison.OrdinalIgnoreCase);
+        bookingContext.BookingCreationResult.ShouldNotBeNull();
+        bookingContext.BookingCreationResult.Value.IsFailure.ShouldBeTrue();
+        var assertionTarget2 = bookingContext.BookingCreationResult.Value.ErrorDetails?.Detail ?? string.Empty;
+        assertionTarget2.ShouldContain("room", StringComparison.OrdinalIgnoreCase);
     }
 
     [Then("I should be informed that the cost exceeds our maximum rate")]

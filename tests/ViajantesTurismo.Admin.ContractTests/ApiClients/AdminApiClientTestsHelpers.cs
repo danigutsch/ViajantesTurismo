@@ -105,11 +105,4 @@ internal static class AdminApiClientTestsHelpers
             DiscountReason = "Returning customer"
         };
 
-    public static CreatePaymentDto CreatePayment() =>
-        new()
-        {
-            Amount = 200,
-            PaymentDate = new DateOnly(2026, 7, 2),
-            Method = PaymentMethodDto.BankTransfer
-        };
 }

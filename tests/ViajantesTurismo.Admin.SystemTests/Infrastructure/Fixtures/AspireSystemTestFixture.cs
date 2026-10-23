@@ -1,3 +1,6 @@
+using Aspire.Hosting.Testing;
+using System.Security.Cryptography;
+using System.Security.Cryptography.X509Certificates;
 using Npgsql;
 using Projects;
 using PandaBear.IntegrationTesting;
@@ -11,6 +14,7 @@ public sealed class AspireSystemTestFixture : IAspireSystemTestFixture, IAsyncLi
     private static readonly TimeSpan SystemResourceStartupTimeout = TimeSpan.FromMinutes(3);
 
     private AspireTestApplication? _app;
+    private readonly string _paymentDirectory = Path.Combine(Path.GetTempPath(), "vt-system-payment-" + Guid.CreateVersion7().ToString("N"));
     private string? _databaseConnectionString;
     private string? _catalogDatabaseConnectionString;
 
@@ -43,11 +47,25 @@ public sealed class AspireSystemTestFixture : IAspireSystemTestFixture, IAsyncLi
         var testConfiguration = AppHostTestArguments.CreateConfiguration();
         ConformanceUserPassword = testConfiguration.ConformanceUserPassword;
         string[] appHostArguments =
-            [.. testConfiguration.Arguments, .. HostedProfile.System.ToArguments()];
-        _app = await AspireTestApplication.Start<ViajantesTurismo_AppHost>(
-            [ResourceNames.Api, ResourceNames.WebApp, ResourceNames.PublicWebApp],
-            SystemResourceStartupTimeout,
-            appHostArguments,
+            [.. testConfiguration.Arguments, .. HostedProfile.System.ToArguments(),
+                $"--DcpPublisher:ResourceNameSuffix=system-{Guid.CreateVersion7():N}"];
+        Directory.CreateDirectory(_paymentDirectory);
+        var keys = Directory.CreateDirectory(Path.Combine(_paymentDirectory, "keys"));
+        var certificatePath = Path.Combine(_paymentDirectory, "test.pfx");
+        using var rsa = RSA.Create(2048);
+        var request = new CertificateRequest("CN=VT isolated system payment test", rsa, HashAlgorithmName.SHA256, RSASignaturePadding.Pkcs1);
+        var now = TimeProvider.System.GetUtcNow();
+        using var certificate = request.CreateSelfSigned(now.AddDays(-1), now.AddDays(1));
+        await File.WriteAllBytesAsync(certificatePath, certificate.Export(X509ContentType.Pfx), TestContext.Current.CancellationToken);
+        var builder = await DistributedApplicationTestingBuilder.CreateAsync<ViajantesTurismo_AppHost>(appHostArguments, TestContext.Current.CancellationToken);
+        var api = builder.Resources.OfType<ProjectResource>().Single(resource => resource.Name == ResourceNames.Api);
+        builder.CreateResourceBuilder(api)
+            .WithEnvironment("Payments__Enabled", "true")
+            .WithEnvironment("Payments__BusinessTimeZone", "UTC")
+            .WithEnvironment("Payments__Protection__KeyDirectory", keys.FullName)
+            .WithEnvironment("Payments__Protection__CertificatePath", certificatePath);
+        _app = await AspireTestApplication.Start(builder,
+            [ResourceNames.Api, ResourceNames.WebApp, ResourceNames.PublicWebApp], SystemResourceStartupTimeout,
             TestContext.Current.CancellationToken);
 
         WebAppUrl = _app.GetEndpoint(ResourceNames.WebApp, "https");
@@ -72,6 +90,10 @@ public sealed class AspireSystemTestFixture : IAspireSystemTestFixture, IAsyncLi
             _app = null;
         }
 
+        if (Directory.Exists(_paymentDirectory))
+        {
+            Directory.Delete(_paymentDirectory, true);
+        }
         GC.SuppressFinalize(this);
     }
 

@@ -1,7 +1,5 @@
-using System.Net;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Web;
-using PandaBear.HttpClients;
 using ViajantesTurismo.Management.Web.Components.Pages.Bookings;
 
 namespace ViajantesTurismo.Management.WebTests.Components.Pages.Bookings;
@@ -42,7 +40,7 @@ public sealed class EditPageTests : BunitContext
     }
 
     [Fact]
-    public void OnInitializedAsync_when_load_fails_shows_sanitized_error_message()
+    public void On_initialized_async_when_load_fails_shows_sanitized_error_message()
     {
         // Arrange
         var bookingId = Guid.NewGuid();
@@ -88,7 +86,7 @@ public sealed class EditPageTests : BunitContext
     }
 
     [Fact]
-    public async Task HandleSubmit_when_update_fails_shows_sanitized_error_message()
+    public async Task Handle_submit_when_update_fails_shows_sanitized_error_message()
     {
         // Arrange
         var booking = BuildBookingDto(notes: "Original notes");
@@ -566,183 +564,6 @@ public sealed class EditPageTests : BunitContext
         cut.Markup.ShouldNotContain("HTTP transport failed.", StringComparison.Ordinal);
         cut.Find("button[type='submit']").HasAttribute(DisabledAttributeName).ShouldBeTrue();
     }
-
-    [Fact]
-    [Trait(PandaBear.Testing.TestTraitNames.ScopeName, TestTraits.ComponentScope)]
-    [Trait(PandaBear.Testing.TestTraitNames.AreaName, TestTraits.ManagementWebArea)]
-    [Trait(PandaBear.Testing.TestTraitNames.CategoryName, TestTraits.ComponentCategory)]
-    public async Task Refresh_failure_disables_an_already_open_payment_form()
-    {
-        // Arrange
-        var booking = BuildBookingDto(notes: "Original notes", remainingBalance: 250m);
-        _fakeBookingsApi.AddBooking(booking);
-        _fakeBookingsApi.SetGetBookingByIdOutcomeOnCall(2, FakeApiClientOutcomes.TransportFailure<GetBookingDto>());
-        var cut = Render<Edit>(parameters => parameters.Add(page => page.Id, booking.Id));
-        await cut.WaitForAssertionAsync(() => cut.Find("form"));
-        var showPaymentButton = cut.FindAll(ButtonSelector)
-            .ShouldHaveSingleItem(button => button.TextContent.Contains("Record Payment", StringComparison.Ordinal));
-        await showPaymentButton.ClickAsync(new MouseEventArgs());
-        var paymentForm = cut.FindComponent<PaymentForm>();
-        paymentForm.Instance.Model.Amount = 100m;
-        paymentForm.Instance.Model.Method = PaymentMethodDto.Cash;
-        await cut.Find("#notes").ChangeAsync(new ChangeEventArgs { Value = "Updated notes" });
-
-        // Act
-        var updateTask = cut.FindAll("form")[0].SubmitAsync();
-        await cut.WaitForAssertionAsync(() =>
-            cut.Markup.ShouldContain("The change was saved, but we couldn't refresh the booking", StringComparison.Ordinal));
-        paymentForm = cut.FindComponent<PaymentForm>();
-        var paymentWasDisabled = paymentForm.Find("button[type='submit']").HasAttribute(DisabledAttributeName);
-        await paymentForm.Find("form").SubmitAsync();
-
-        // Assert
-        await cut.FindAll(ButtonSelector)
-            .ShouldHaveSingleItem(button => button.TextContent.Contains("Cancel", StringComparison.Ordinal) &&
-                                            button.Closest(".alert.alert-info") is not null)
-            .ClickAsync(new MouseEventArgs());
-        await updateTask;
-        paymentWasDisabled.ShouldBeTrue();
-        _fakeBookingsApi.RecordPaymentCallCount.ShouldBe(0);
-    }
-
-    [Fact]
-    [Trait(PandaBear.Testing.TestTraitNames.ScopeName, TestTraits.ComponentScope)]
-    [Trait(PandaBear.Testing.TestTraitNames.AreaName, TestTraits.ManagementWebArea)]
-    [Trait(PandaBear.Testing.TestTraitNames.CategoryName, TestTraits.ComponentCategory)]
-    public async Task Payment_success_with_refresh_failure_is_acknowledged_and_locks_further_mutations()
-    {
-        // Arrange
-        var booking = BuildBookingDto(status: BookingStatusDto.Pending, remainingBalance: 250m);
-        _fakeBookingsApi.AddBooking(booking);
-        _fakeBookingsApi.SetGetBookingByIdOutcomeOnCall(2, FakeApiClientOutcomes.TransportFailure<GetBookingDto>());
-        var cut = Render<Edit>(parameters => parameters.Add(page => page.Id, booking.Id));
-        await cut.WaitForAssertionAsync(() => cut.Find(HeadingOrAlertSelector));
-        var showPaymentButton = cut.FindAll(ButtonSelector)
-            .ShouldHaveSingleItem(button => button.TextContent.Contains("Record Payment", StringComparison.Ordinal));
-        await showPaymentButton.ClickAsync(new MouseEventArgs());
-        var paymentForm = cut.FindComponent<PaymentForm>();
-        paymentForm.Instance.Model.Amount = 100m;
-        paymentForm.Instance.Model.Method = PaymentMethodDto.Cash;
-
-        // Act
-        await paymentForm.Find("form").SubmitAsync();
-
-        // Assert
-        _fakeBookingsApi.RecordPaymentCallCount.ShouldBe(1);
-        cut.Markup.ShouldContain("Payment recorded successfully.", StringComparison.Ordinal);
-        cut.Markup.ShouldContain("The change was saved, but we couldn't refresh the booking", StringComparison.Ordinal);
-        cut.Markup.ShouldNotContain("We couldn't record the payment", StringComparison.Ordinal);
-        var actionButtons = cut.FindAll(".card.border-danger button");
-        actionButtons.ShouldNotBeEmpty();
-        actionButtons.ShouldAllSatisfy(button => button.HasAttribute(DisabledAttributeName).ShouldBeTrue());
-    }
-
-    [Fact]
-    [Trait(PandaBear.Testing.TestTraitNames.ScopeName, TestTraits.ComponentScope)]
-    [Trait(PandaBear.Testing.TestTraitNames.AreaName, TestTraits.ManagementWebArea)]
-    [Trait(PandaBear.Testing.TestTraitNames.CategoryName, TestTraits.ComponentCategory)]
-    public async Task Payment_committed_before_transport_failure_locks_further_mutations()
-    {
-        // Arrange
-        var booking = BuildBookingDto(status: BookingStatusDto.Pending, remainingBalance: 250m);
-        _fakeBookingsApi.AddBooking(booking);
-        _fakeBookingsApi.SetRecordPaymentOutcomeAfterCommit(FakeApiClientOutcomes.TransportFailure());
-        var cut = Render<Edit>(parameters => parameters.Add(page => page.Id, booking.Id));
-        await cut.WaitForAssertionAsync(() => cut.Find(HeadingOrAlertSelector));
-        var showPaymentButton = cut.FindAll(ButtonSelector)
-            .ShouldHaveSingleItem(button => button.TextContent.Contains("Record Payment", StringComparison.Ordinal));
-        await showPaymentButton.ClickAsync(new MouseEventArgs());
-        var paymentForm = cut.FindComponent<PaymentForm>();
-        paymentForm.Instance.Model.Amount = 100m;
-        paymentForm.Instance.Model.Method = PaymentMethodDto.Cash;
-
-        // Act
-        await paymentForm.Find("form").SubmitAsync();
-
-        // Assert
-        _fakeBookingsApi.RecordPaymentCallCount.ShouldBe(1);
-        _fakeBookingsApi.CommittedPaymentCount.ShouldBe(1);
-        cut.Markup.ShouldContain("The payment may have been recorded, but we couldn't confirm the result", StringComparison.Ordinal);
-        cut.Markup.ShouldNotContain("HTTP transport failed.", StringComparison.Ordinal);
-        cut.Markup.ShouldNotContain("We couldn't record the payment right now", StringComparison.Ordinal);
-        cut.Find("button[type='submit']").HasAttribute(DisabledAttributeName).ShouldBeTrue();
-        var actionButtons = cut.FindAll(".card.border-danger button");
-        actionButtons.ShouldNotBeEmpty();
-        actionButtons.ShouldAllSatisfy(button => button.HasAttribute(DisabledAttributeName).ShouldBeTrue());
-    }
-
-    [Fact]
-    [Trait(PandaBear.Testing.TestTraitNames.ScopeName, TestTraits.ComponentScope)]
-    [Trait(PandaBear.Testing.TestTraitNames.AreaName, TestTraits.ManagementWebArea)]
-    [Trait(PandaBear.Testing.TestTraitNames.CategoryName, TestTraits.ComponentCategory)]
-    public async Task Concurrent_payment_submits_dispatch_only_one_request()
-    {
-        // Arrange
-        var booking = BuildBookingDto(status: BookingStatusDto.Pending, remainingBalance: 250m);
-        _fakeBookingsApi.AddBooking(booking);
-        var cancellationToken = Xunit.TestContext.Current.CancellationToken;
-        var paymentGate = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
-        using var paymentGateCancellation = cancellationToken.Register(() => paymentGate.TrySetCanceled(cancellationToken));
-        _fakeBookingsApi.SetRecordPaymentTask(paymentGate.Task);
-        var cut = Render<Edit>(parameters => parameters.Add(page => page.Id, booking.Id));
-        await cut.WaitForAssertionAsync(() => cut.Find(HeadingOrAlertSelector));
-        var showPaymentButton = cut.FindAll(ButtonSelector)
-            .ShouldHaveSingleItem(button => button.TextContent.Contains("Record Payment", StringComparison.Ordinal));
-        await showPaymentButton.ClickAsync(new MouseEventArgs());
-        var paymentForm = cut.FindComponent<PaymentForm>();
-        paymentForm.Instance.Model.Amount = 100m;
-        paymentForm.Instance.Model.Method = PaymentMethodDto.Cash;
-
-        // Act
-        var firstPaymentTask = paymentForm.Find("form").SubmitAsync();
-        await cut.WaitForStateAsync(() => _fakeBookingsApi.RecordPaymentCallCount == 1);
-        paymentForm = cut.FindComponent<PaymentForm>();
-        await paymentForm.Find("form").SubmitAsync();
-        paymentGate.SetResult();
-        await firstPaymentTask;
-
-        // Assert
-        _fakeBookingsApi.RecordPaymentCallCount.ShouldBe(1);
-    }
-
-    [Fact]
-    [Trait(PandaBear.Testing.TestTraitNames.ScopeName, TestTraits.ComponentScope)]
-    [Trait(PandaBear.Testing.TestTraitNames.AreaName, TestTraits.ManagementWebArea)]
-    [Trait(PandaBear.Testing.TestTraitNames.CategoryName, TestTraits.ComponentCategory)]
-    public async Task Payment_in_flight_blocks_edit_and_lifecycle_requests()
-    {
-        // Arrange
-        var booking = BuildBookingDto(status: BookingStatusDto.Pending, notes: "Original notes", remainingBalance: 250m);
-        _fakeBookingsApi.AddBooking(booking);
-        _fakeBookingsApi.SetUpdateBookingNotesException(new InvalidOperationException("notes should not run"));
-        var cancellationToken = Xunit.TestContext.Current.CancellationToken;
-        var paymentGate = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
-        using var paymentGateCancellation = cancellationToken.Register(() => paymentGate.TrySetCanceled(cancellationToken));
-        _fakeBookingsApi.SetRecordPaymentTask(paymentGate.Task);
-        var cut = Render<Edit>(parameters => parameters.Add(page => page.Id, booking.Id));
-        await cut.WaitForAssertionAsync(() => cut.Find(HeadingOrAlertSelector));
-        var showPaymentButton = cut.FindAll(ButtonSelector)
-            .ShouldHaveSingleItem(button => button.TextContent.Contains("Record Payment", StringComparison.Ordinal));
-        await showPaymentButton.ClickAsync(new MouseEventArgs());
-        var paymentForm = cut.FindComponent<PaymentForm>();
-        paymentForm.Instance.Model.Amount = 100m;
-        paymentForm.Instance.Model.Method = PaymentMethodDto.Cash;
-        var paymentTask = paymentForm.Find("form").SubmitAsync();
-        await cut.WaitForStateAsync(() => _fakeBookingsApi.RecordPaymentCallCount == 1);
-        await cut.Find("#notes").ChangeAsync(new ChangeEventArgs { Value = "Attempted notes" });
-
-        // Act
-        await cut.InvokeAsync(() => cut.FindComponent<BookingEditActionPanel>().Instance.Confirm.InvokeAsync());
-        await cut.FindAll("form")[0].SubmitAsync();
-        paymentGate.SetResult();
-        await paymentTask;
-
-        // Assert
-        _fakeBookingsApi.RecordPaymentCallCount.ShouldBe(1);
-        _fakeBookingsApi.BookingActionCallCount.ShouldBe(0);
-        _fakeBookingsApi.UpdateBookingNotesCallCount.ShouldBe(0);
-    }
-
     [Fact]
     [Trait(PandaBear.Testing.TestTraitNames.ScopeName, TestTraits.ComponentScope)]
     [Trait(PandaBear.Testing.TestTraitNames.AreaName, TestTraits.ManagementWebArea)]
@@ -949,7 +770,7 @@ public sealed class EditPageTests : BunitContext
 
         var redirectAlert = cut.FindAll(".alert.alert-info").First(a => a.TextContent.Contains("Redirecting", StringComparison.Ordinal));
         var cancelButton = redirectAlert.QuerySelector(ButtonSelector);
-        _ = cancelButton.ShouldNotBeNull();
+        cancelButton.ShouldNotBeNull();
         await cut.InvokeAsync(() => cancelButton.Click());
 
         // Assert
@@ -979,7 +800,7 @@ public sealed class EditPageTests : BunitContext
         submitButton.TextContent.ShouldContain("Updating...", StringComparison.Ordinal);
 
         var spinner = submitButton.QuerySelector(".spinner-border");
-        _ = spinner.ShouldNotBeNull();
+        spinner.ShouldNotBeNull();
 
         var cancelLink = cut.Find("a.btn.btn-secondary");
         cancelLink.GetAttribute("class").ShouldContain(DisabledAttributeName, StringComparison.Ordinal);
@@ -1006,75 +827,6 @@ public sealed class EditPageTests : BunitContext
         helpText.TextContent.ShouldContain("Required for audit purposes", StringComparison.Ordinal);
         helpText.TextContent.ShouldContain("10-500 characters", StringComparison.Ordinal);
     }
-
-    [Fact]
-    public async Task Record_payment_button_toggles_payment_form_visibility()
-    {
-        // Arrange
-        var booking = BuildBookingDto(status: BookingStatusDto.Pending, remainingBalance: 250m);
-        _fakeBookingsApi.AddBooking(booking);
-
-        var cut = Render<Edit>(parameters => parameters.Add(p => p.Id, booking.Id));
-        await cut.WaitForAssertionAsync(() => cut.Find(HeadingOrAlertSelector));
-
-        // Act
-        var showButton = cut.FindAll(ButtonSelector)
-            .First(button => button.TextContent.Contains("Record Payment", StringComparison.Ordinal));
-        await cut.InvokeAsync(() => showButton.Click());
-
-        // Assert
-        await cut.WaitForAssertionAsync(() =>
-        {
-            cut.Markup.ShouldContain("Record New Payment", StringComparison.Ordinal);
-            cut.FindAll("#amount").ShouldNotBeEmpty();
-        });
-
-        // Act
-        var hideButton = cut.FindAll(ButtonSelector)
-            .First(button => button.TextContent.Trim() == "Cancel");
-        await cut.InvokeAsync(() => hideButton.Click());
-
-        // Assert
-        await cut.WaitForAssertionAsync(() =>
-        {
-            cut.Markup.ShouldNotContain("Record New Payment", StringComparison.Ordinal);
-            cut.FindAll(ButtonSelector).ShouldContain(button => button.TextContent.Contains("Record Payment", StringComparison.Ordinal));
-        });
-    }
-
-    [Fact]
-    [Trait(PandaBear.Testing.TestTraitNames.ScopeName, TestTraits.ComponentScope)]
-    [Trait(PandaBear.Testing.TestTraitNames.AreaName, TestTraits.ManagementWebArea)]
-    [Trait(PandaBear.Testing.TestTraitNames.CategoryName, TestTraits.ComponentCategory)]
-    public async Task Record_payment_non_success_outcome_shows_sanitized_error()
-    {
-        // Arrange
-        var booking = BuildBookingDto(status: BookingStatusDto.Pending, remainingBalance: 250m);
-        _fakeBookingsApi.AddBooking(booking);
-        _fakeBookingsApi.SetRecordPaymentOutcome(HttpOutcomeMapper.Status(HttpOutcomeKind.Conflict, HttpStatusCode.Conflict));
-
-        var cut = Render<Edit>(parameters => parameters.Add(p => p.Id, booking.Id));
-        await cut.WaitForAssertionAsync(() => cut.Find(HeadingOrAlertSelector));
-
-        // Act
-        var showButton = cut.FindAll(ButtonSelector)
-            .First(button => button.TextContent.Contains("Record Payment", StringComparison.Ordinal));
-        await cut.InvokeAsync(() => showButton.Click());
-        await cut.WaitForAssertionAsync(() => cut.FindComponent<PaymentForm>());
-
-        var form = cut.FindComponent<PaymentForm>();
-        form.Instance.Model.Amount = 100m;
-        form.Instance.Model.Method = PaymentMethodDto.Cash;
-        await cut.InvokeAsync(() => form.Find("form").Submit());
-
-        // Assert
-        await cut.WaitForAssertionAsync(() =>
-        {
-            cut.Markup.ShouldContain("We couldn't record the payment right now. Please try again.", StringComparison.Ordinal);
-            cut.Markup.ShouldContain("Record New Payment", StringComparison.Ordinal);
-        });
-    }
-
     [Fact]
     public void Page_has_correct_title()
     {
@@ -1236,7 +988,7 @@ public sealed class EditPageTests : BunitContext
             dialog.TextContent.ShouldContain("No", StringComparison.Ordinal);
 
             var confirmButton = dialog.QuerySelector(".modal-footer .btn-warning");
-            _ = confirmButton.ShouldNotBeNull();
+            confirmButton.ShouldNotBeNull();
         });
     }
 
@@ -1336,7 +1088,7 @@ public sealed class EditPageTests : BunitContext
             dialog.TextContent.ShouldContain("No", StringComparison.Ordinal);
 
             var confirmButton = dialog.QuerySelector(".modal-footer .btn-danger");
-            _ = confirmButton.ShouldNotBeNull();
+            confirmButton.ShouldNotBeNull();
         });
     }
 
@@ -1366,5 +1118,23 @@ public sealed class EditPageTests : BunitContext
             cut.FindAll(ButtonSelector).ShouldContain(button => button.TextContent.Contains(DeleteBookingText, StringComparison.Ordinal));
             navigationManager.Uri.ShouldNotContain("/bookings", StringComparison.OrdinalIgnoreCase);
         });
+    }
+    [Fact]
+    public void All_bookings_route_receipt_entry_to_the_financial_workflow()
+    {
+        // Arrange
+        var booking = BuildBookingDto() with
+        {
+            Currency = CurrencyDto.Euro
+        };
+        _fakeBookingsApi.AddBooking(booking);
+
+        // Act
+        var page = Render<Edit>(parameters => parameters.Add(value => value.Id, booking.Id));
+        page.WaitForAssertion(() => page.Find("h1"));
+
+        // Assert
+        page.FindAll("button").ShouldNotContain(button => button.TextContent.Contains("Record Payment", StringComparison.Ordinal));
+        page.Find($"a[href='/bookings/{booking.Id}/finances']").TextContent.ShouldContain("Record and allocate", StringComparison.Ordinal);
     }
 }

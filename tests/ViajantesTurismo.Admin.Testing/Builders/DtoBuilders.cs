@@ -76,7 +76,6 @@ public static class DtoBuilders
         decimal? discountAmount = null,
         string? discountReason = null,
         string? notes = null,
-        IReadOnlyCollection<GetPaymentDto>? payments = null,
         decimal? amountPaid = null,
         decimal? remainingBalance = null,
         CurrencyDto? currency = null,
@@ -108,9 +107,8 @@ public static class DtoBuilders
             DiscountAmount = discountAmount ?? 0m,
             DiscountReason = discountReason,
             Notes = notes,
-            Payments = payments ?? Array.Empty<GetPaymentDto>(),
             AmountPaid = bookingAmountPaid,
-            RemainingBalance = remainingBalance ?? (bookingTotalPrice - bookingAmountPaid),
+            RemainingBalance = remainingBalance ?? 0m,
             Currency = currency ?? CurrencyDto.Real
         };
     }
@@ -136,32 +134,6 @@ public static class DtoBuilders
             Mobile = mobile ?? "+1234567890",
             Nationality = nationality ?? "USA",
             BikeType = bikeType ?? BikeTypeDto.Regular
-        };
-    }
-
-    /// <summary>
-    /// Builds a GetPaymentDto with default or custom values.
-    /// </summary>
-    public static GetPaymentDto BuildPaymentDto(
-        Guid? id = null,
-        Guid? bookingId = null,
-        decimal? amount = null,
-        DateTime? paymentDate = null,
-        PaymentMethodDto? method = null,
-        string? referenceNumber = null,
-        string? notes = null,
-        DateTime? recordedAt = null)
-    {
-        return new GetPaymentDto
-        {
-            Id = id ?? Guid.NewGuid(),
-            BookingId = bookingId ?? Guid.NewGuid(),
-            Amount = amount ?? 500.00m,
-            PaymentDate = DateOnly.FromDateTime(paymentDate ?? TimeProvider.System.GetUtcNow().UtcDateTime),
-            Method = method ?? PaymentMethodDto.CreditCard,
-            ReferenceNumber = referenceNumber,
-            Notes = notes,
-            RecordedAt = recordedAt ?? TimeProvider.System.GetUtcNow().UtcDateTime
         };
     }
 
@@ -417,26 +389,6 @@ public static class DtoBuilders
             DiscountType = discountType,
             DiscountAmount = discountAmount,
             DiscountReason = discountReason
-        };
-    }
-
-    /// <summary>
-    /// Builds a CreatePaymentDto with default or custom values.
-    /// </summary>
-    public static CreatePaymentDto BuildCreatePaymentDto(
-        decimal? amount = null,
-        DateTime? paymentDate = null,
-        PaymentMethodDto? method = null,
-        string? referenceNumber = null,
-        string? notes = null)
-    {
-        return new CreatePaymentDto
-        {
-            Amount = amount ?? 500m,
-            PaymentDate = DateOnly.FromDateTime(paymentDate ?? TimeProvider.System.GetUtcNow().UtcDateTime.Date),
-            Method = method ?? PaymentMethodDto.BankTransfer,
-            ReferenceNumber = referenceNumber ?? UniqueReferenceNumber(),
-            Notes = notes
         };
     }
 

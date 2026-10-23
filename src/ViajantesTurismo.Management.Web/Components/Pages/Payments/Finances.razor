@@ -1,0 +1,156 @@
+@page "/bookings/{BookingId:guid}/finances"
+@attribute [Authorize(Roles = "Admin,Operator")]
+@inject IBookingPaymentsApiClient PaymentsApi
+@inject IBookingsApiClient BookingsApi
+@inject AuthenticationStateProvider Authentication
+
+<PageTitle>Booking finances</PageTitle>
+<h1>Booking finances</h1>
+<a href="@($"/bookings/{BookingId}")">Back to booking</a>
+<AuthorizeView Roles="Admin"><a class="ms-3" href="@($"/bookings/{BookingId}/payment-instructions")">Payment instructions</a></AuthorizeView>
+@if (_loading) { <p role="status">Loading financial history…</p> }
+@if (_error is not null) { <p class="alert alert-danger" role="alert">@_error</p> }
+@if (_submission.HasPending) { <p role="alert">The submission outcome is unknown. Retry the same command before editing.</p><button type="button" @onclick="Retry" disabled="@_submission.IsBusy">Retry same submission</button> }
+<button type="button" @onclick="Load" disabled="@_submission.IsBusy">Refresh</button>
+<AuthorizeView Roles="Admin"><button type="button" @onclick="LoadEvidence" disabled="@Blocked">View sensitive evidence references (audited)</button></AuthorizeView>
+@if (_booking is { Currency: not CurrencyDto.Euro }) { <p>Payment obligations require a tour priced in EUR.</p> }
+else if (_booking is not null)
+{
+    <p>Booking price: @_booking.TotalPrice EUR. Status: @_booking.Status. Financial revision: @Version.</p>
+    @if (_history is not null)
+    {
+        <p>Approved obligation: @_history.ApprovedObligationEuro EUR. Outstanding: @_history.OutstandingEuro EUR. Unallocated credit: @_history.UnallocatedEuroCredit EUR.</p>
+        <p>Business date: @_history.BusinessDate. Overdue: @_history.Overdue. Terms stale: @_history.TermsStale.</p>
+        @foreach (var schedule in _history.Schedules)
+        {
+            <section class="card p-3 my-2" @key="schedule.Id"><h2>Schedule @schedule.Revision — @schedule.Status</h2>
+                @if (RequiresAttention(schedule.Id)) { <strong>Attention requested; approval remains until explicitly withdrawn.</strong> }
+                <p>@schedule.ObligationEuro EUR; booking price snapshot @schedule.BookingPriceEuro EUR. Withdrawn: @schedule.ApprovalWithdrawn.</p>
+                <p>Creator @schedule.Approval.CreatedBy at @schedule.Approval.CreatedAt; approver @schedule.Approval.ApprovedBy at @schedule.Approval.ApprovedAt. @if (schedule.Approval.SelfApproved) { <strong>Self-approved</strong> }</p>
+                <table class="table"><caption>Immutable installment terms</caption><thead><tr><th scope="col">Installment</th><th scope="col">Due date</th><th scope="col">EUR</th><th scope="col">Allocated EUR</th><th scope="col">Outstanding EUR</th></tr></thead><tbody>
+                    @foreach (var item in schedule.Installments) { <tr><th scope="row">@item.Id</th><td>@item.DueDate</td><td>@item.EuroAmount</td><td>@item.AllocatedEuro</td><td>@item.OutstandingEuro</td></tr> }
+                </tbody></table>
+                <AuthorizeView Roles="Admin" Context="scheduleAdmin">
+                    @if (schedule.Status == PaymentScheduleStatusDto.Draft) { <button type="button" @onclick='() => Select("schedule", schedule.Id, $"Schedule {schedule.Revision}: {schedule.ObligationEuro} EUR", FinancialReasonDto.InitialObligation)'>Approve terms</button> }
+                    @if (schedule.Status == PaymentScheduleStatusDto.Approved && !schedule.ApprovalWithdrawn) { <button type="button" @onclick='() => Select("withdraw", schedule.Id, $"Schedule {schedule.Revision}", FinancialReasonDto.ApprovalWithdrawn)'>Withdraw approval</button> }
+                    @if (schedule.Approval.CreatedBy != _actor) { <button type="button" @onclick='() => Select("review", schedule.Id, $"Schedule {schedule.Revision}", FinancialReasonDto.ReviewAccepted)'>Optional independent review</button> }
+                </AuthorizeView>
+            </section>
+        }
+        <h2>Agreed quotes</h2>
+        @foreach (var quote in _history.Quotes)
+        {
+            <div class="card p-2 my-2" @key="quote.Id">@if (RequiresAttention(quote.Id)) { <strong>Attention requested; approval remains until explicitly withdrawn.</strong> }<p>Source: @quote.Source. Reference: @quote.Reference.</p><p>@quote.Id: @quote.BrlPerEuro BRL/EUR; agreed @quote.AgreedAt; expires @quote.ExpiresAt. Refund: @quote.ForRefund. Withdrawn: @quote.ApprovalWithdrawn.</p>
+                <p>Creator @quote.Approval.CreatedBy; approver @quote.Approval.ApprovedBy. @if (quote.Approval.SelfApproved) { <strong>Self-approved</strong> }</p>
+                <AuthorizeView Roles="Admin" Context="quoteAdmin">
+                    @if (quote.Approval.ApprovedAt is null) { <button type="button" @onclick='() => Select("quote", quote.Id, $"Quote {quote.BrlPerEuro} BRL/EUR, expiry {quote.ExpiresAt}", FinancialReasonDto.QuoteAgreed)'>Approve quote</button> }
+                    else if (!quote.ApprovalWithdrawn) { <button type="button" @onclick='() => Select("withdraw", quote.Id, $"Quote {quote.Id}", FinancialReasonDto.ApprovalWithdrawn)'>Withdraw approval</button> }
+                    @if (quote.Approval.CreatedBy != _actor) { <button type="button" @onclick='() => Select("review", quote.Id, $"Quote {quote.Id}", FinancialReasonDto.ReviewAccepted)'>Optional independent review</button> }
+                </AuthorizeView>
+            </div>
+        }
+        <h2>Receipts and customer credit</h2>
+        @foreach (var receipt in _history.Receipts)
+        {
+            <section class="card p-2 my-2" @key="receipt.Id"><h3>Receipt @receipt.Id</h3><p>@receipt.PaymentDate: gross @receipt.Gross, fees @receipt.Fees, net @receipt.Net @receipt.SettlementCurrency. EUR credit: @receipt.ApprovedEuroCredit. Unallocated EUR: @receipt.UnallocatedEuroCredit. Unallocated cash: @receipt.UnallocatedCashCredit @receipt.SettlementCurrency.</p>
+                <p>Reference: @receipt.Reference. Pending reconciliation: @receipt.PendingReconciliation. Reversed: @receipt.Reversed. Method: @receipt.Method. Creator: @receipt.CreatedBy.</p>
+                <AuthorizeView Roles="Admin" Context="receiptAdmin">
+                    @if (!receipt.Reversed) { <button type="button" @onclick='() => Select("reverse", receipt.Id, $"Full receipt reversal {receipt.Id}, gross {receipt.Gross} {receipt.SettlementCurrency}", FinancialReasonDto.ReceiptError)'>Reverse erroneous receipt</button> }
+                </AuthorizeView>
+            </section>
+        }
+        <h2>Reconciliations</h2>
+        @foreach (var reconciliation in _history.Reconciliations)
+        {
+            @if (RequiresAttention(reconciliation.Id)) { <strong>Attention requested; existing approval remains active.</strong> }
+            <p>@reconciliation.Id: receipt @reconciliation.ReceiptId, @reconciliation.EuroCredit EUR; creator @reconciliation.Approval.CreatedBy; approved @reconciliation.Approval.ApprovedAt. @if (reconciliation.Approval.SelfApproved) { <strong>Self-approved</strong> }</p>
+            <AuthorizeView Roles="Admin" Context="reconciliationAdmin">
+                @if (reconciliation.Approval.ApprovedAt is null) { <button type="button" @onclick='() => Select("reconciliation", reconciliation.Id, $"Receipt {reconciliation.ReceiptId}: credit {reconciliation.EuroCredit} EUR to displayed selected installments", FinancialReasonDto.MismatchedReceipt)'>Approve reconciliation</button> }
+                @if (reconciliation.Approval.CreatedBy != _actor) { <button type="button" @onclick='() => Select("review", reconciliation.Id, $"Reconciliation {reconciliation.Id}", FinancialReasonDto.ReviewAccepted)'>Optional independent review</button> }
+            </AuthorizeView>
+            <ul>@foreach (var selection in reconciliation.Allocations) { <li>@selection.TargetId: @selection.EuroAmount EUR</li> }</ul>
+        }
+        <h2>Allocation history</h2>
+        <ul>@foreach (var allocation in _history.Allocations) { <li>@allocation.Id: receipt @allocation.ReceiptId, installment @allocation.InstallmentId; original @allocation.OriginalEuroCredit EUR, active @allocation.ActiveEuroCredit EUR.</li> }</ul>
+        <h2>Refund records</h2>
+        @foreach (var refund in _history.Refunds)
+        {
+            @if (RequiresAttention(refund.Id)) { <strong>Attention requested; existing approval remains active.</strong> }
+            <p>Transfer reference: @refund.Reference.</p><p>@refund.Id: receipt @refund.ReceiptId; original cash basis @refund.OriginalCashBasis; EUR credit reversed @refund.EuroCreditReversed; actual settlement @refund.ActualSettlement; FX difference @refund.FxDifference; performed @refund.PerformedAt. Corrected: @refund.Corrected. Creator @refund.Approval.CreatedBy; approver @refund.Approval.ApprovedBy. @if (refund.Approval.SelfApproved) { <strong>Self-approved</strong> }</p>
+            <AuthorizeView Roles="Admin" Context="refundAdmin">
+                @if (refund.Approval.ApprovedAt is null) { <button type="button" @onclick='() => Select("refund", refund.Id, $"Refund {refund.Id}: actual {refund.ActualSettlement}, reverse {refund.EuroCreditReversed} EUR credit", FinancialReasonDto.RefundPerformed)'>Approve refund record</button> }
+                else if (!refund.Corrected) { <button type="button" @onclick='() => Select("correct", refund.Id, $"Correct refund record {refund.Id}. This does not perform a return transfer. Release conflicting allocations before restoring reversed credit.", FinancialReasonDto.RefundRecordError)'>Correct erroneous refund record</button> }
+                @if (refund.Approval.CreatedBy != _actor) { <button type="button" @onclick='() => Select("review", refund.Id, $"Refund {refund.Id}", FinancialReasonDto.ReviewAccepted)'>Optional independent review</button> }
+            </AuthorizeView>
+        }
+        <h2>Reversals, releases and corrections</h2>
+        <ul>@foreach (var correction in _history.Reversals) { <li>@correction.Operation: @correction.TargetId; @correction.EuroAmount EUR; recorded and approved by @correction.ApprovedBy at @correction.ApprovedAt; reason @correction.Reason. Linked allocations: @string.Join(", ", correction.AllocationIds).</li> }</ul>
+        <h2>Independent reviews</h2><p>A request for changes flags attention and does not withdraw approval.</p>
+        <ul>@foreach (var review in _history.Reviews) { <li>@review.TargetId revision @review.TargetRevision: @review.ReviewerId at @review.ReviewedAt; changes requested: @review.ChangesRequested.</li> }</ul>
+    }
+    <fieldset disabled="@Blocked"><legend>Record actual receipt pending reconciliation</legend>
+        <p>Recording cash does not approve EUR credit. Select proposed installment allocations explicitly.</p>
+        <label for="receipt-currency">Settlement currency</label><InputSelect id="receipt-currency" @bind-Value="_receipt.SettlementCurrency"><option value="@CurrencyDto.Euro">EUR</option><option value="@CurrencyDto.Real">BRL</option></InputSelect>
+        <label for="receipt-gross">Gross</label><InputNumber id="receipt-gross" @bind-Value="_receipt.Gross" step="0.01" />
+        <label for="receipt-fees">Fees</label><InputNumber id="receipt-fees" @bind-Value="_receipt.Fees" step="0.01" />
+        <label for="receipt-date">Calendar payment date</label><InputDate id="receipt-date" @bind-Value="_receipt.PaymentDate" />
+        <label for="receipt-time">Bank settlement instant (UTC, optional)</label><input id="receipt-time" type="datetime-local" @bind="_receipt.SettledAtUtc" />
+        <label for="receipt-method">Method</label><InputSelect id="receipt-method" @bind-Value="_receipt.Method">@foreach (var method in Enum.GetValues<PaymentMethodDto>()) { <option value="@method">@method</option> }</InputSelect>
+        <label for="receipt-reference">Bank reference</label><InputText id="receipt-reference" @bind-Value="_receipt.Reference" autocomplete="off" />
+        <PaymentAllocationEditor Rows="_receipt.Allocations" Choices="ReceiptInstallmentChoices" Prefix="receipt" />
+        <button type="button" @onclick="RecordReceipt">Record pending receipt</button>
+    </fieldset>
+    <AuthorizeView Roles="Admin" Context="formsAdmin">
+        <fieldset disabled="@Blocked"><legend>Save replacement or initial schedule draft</legend><p>Saving does not approve terms. Approval supersedes earlier terms without moving any historical allocations.</p>
+            <label for="schedule-obligation">EUR obligation</label><InputNumber id="schedule-obligation" @bind-Value="_schedule.ObligationEuro" step="0.01" />
+            @for (var index = 0; index < _schedule.Installments.Count; index++)
+            {
+                var row = _schedule.Installments[index]; var amountId = $"installment-amount-{index}"; var dateId = $"installment-date-{index}";
+                <div @key="row"><label for="@amountId">Installment @(index + 1) EUR</label><InputNumber id="@amountId" @bind-Value="row.EuroAmount" step="0.01" /><label for="@dateId">Due date</label><InputDate id="@dateId" @bind-Value="row.DueDate" /><button type="button" @onclick="() => _schedule.Installments.Remove(row)">Remove installment @(index + 1)</button></div>
+            }
+            <button type="button" @onclick="() => _schedule.Installments.Add(new())">Add installment</button><button type="button" @onclick="SaveSchedule">Save unapproved schedule</button>
+        </fieldset>
+        <fieldset disabled="@Blocked"><legend>Save manually agreed quote draft</legend><p>Record an agreed quote; informational public rates are not transaction quotes.</p>
+            <label for="quote-rate">BRL per EUR</label><InputNumber id="quote-rate" @bind-Value="_quote.BrlPerEuro" step="0.00000001" />
+            <label for="quote-source">Source</label><InputText id="quote-source" @bind-Value="_quote.Source" />
+            <label for="quote-reference">Agreement reference</label><InputText id="quote-reference" @bind-Value="_quote.Reference" autocomplete="off" />
+            <label for="quote-agreed">Agreement instant (UTC)</label><input id="quote-agreed" type="datetime-local" @bind="_quote.AgreedAtUtc" />
+            <label for="quote-expiry">Explicit expiry (UTC)</label><input id="quote-expiry" type="datetime-local" @bind="_quote.ExpiresAtUtc" />
+            <label><input type="checkbox" @bind="_quote.ForRefund" /> Newly agreed refund quote</label><button type="button" @onclick="SaveQuote">Save unapproved quote</button>
+        </fieldset>
+        <fieldset disabled="@Blocked"><legend>Save proposed reconciliation</legend>
+            <label for="reconcile-receipt">Receipt</label><InputSelect id="reconcile-receipt" @bind-Value="_reconciliation.ReceiptId"><option value="@Guid.Empty">Select receipt</option>@foreach (var receipt in Receipts) { <option value="@receipt.Id">@receipt.Id — @receipt.Net @receipt.SettlementCurrency</option> }</InputSelect>
+            <label for="reconcile-eur">Approved EUR credit proposal</label><InputNumber id="reconcile-eur" @bind-Value="_reconciliation.EuroCredit" step="0.01" />
+            <label for="reconcile-quote">Agreed quote (BRL)</label><InputSelect id="reconcile-quote" @bind-Value="_reconciliation.QuoteId"><option value="">EUR, no quote</option>@foreach (var quote in Quotes.Where(item => !item.ForRefund)) { <option value="@quote.Id">@quote.Id — @quote.BrlPerEuro BRL/EUR</option> }</InputSelect>
+            <label for="reconcile-instruction">Frozen instruction ID (required for exact receipt)</label><InputText id="reconcile-instruction" @bind-Value="_instructionId" />
+            <PaymentAllocationEditor Rows="_reconciliation.Allocations" Choices="InstallmentChoices" Prefix="reconciliation" /><button type="button" @onclick="SaveReconciliation">Save unapproved reconciliation</button>
+        </fieldset>
+        <fieldset disabled="@Blocked"><legend>Allocate customer credit or release historical allocations</legend>
+            <label for="allocation-receipt">Source receipt for allocation</label><InputSelect id="allocation-receipt" @bind-Value="_allocationReceipt"><option value="@Guid.Empty">Select receipt</option>@foreach (var receipt in Receipts) { <option value="@receipt.Id">@receipt.Id — @receipt.UnallocatedEuroCredit EUR available</option> }</InputSelect>
+            <PaymentAllocationEditor Rows="_allocations" Choices="InstallmentChoices" Prefix="allocate" /><button type="button" @onclick='() => Select("allocate", _allocationReceipt, "Allocate the selected EUR amounts from this receipt to the displayed installments", FinancialReasonDto.AllocationSelected)'>Review allocation</button>
+            <PaymentAllocationEditor Rows="_releases" Choices="AllocationChoices" Prefix="release" Legend="Historical allocations to release before reassigning" /><button type="button" @onclick='() => Select("release", BookingId, "Release selected historical EUR allocations into unapplied customer credit", FinancialReasonDto.AllocationSelected)'>Review release</button>
+        </fieldset>
+        <fieldset disabled="@Blocked"><legend>Record already performed refund</legend><p>This records a transfer and never sends money. EUR credit reversal and obligation adjustment are separate decisions.</p>
+            <label for="refund-receipt">Original receipt</label><InputSelect id="refund-receipt" @bind-Value="_refund.ReceiptId"><option value="@Guid.Empty">Select receipt</option>@foreach (var receipt in Receipts) { <option value="@receipt.Id">@receipt.Id — refundable basis @receipt.RefundableCashBasis @receipt.SettlementCurrency</option> }</InputSelect>
+            <label for="refund-actual">Actual transfer amount (original settlement currency)</label><InputNumber id="refund-actual" @bind-Value="_refund.ActualSettlement" step="0.01" />
+            <label for="refund-basis">Original receipt currency cash basis</label><InputNumber id="refund-basis" @bind-Value="_refund.OriginalCashBasis" step="0.01" />
+            <label for="refund-credit">EUR credit to reverse</label><InputNumber id="refund-credit" @bind-Value="_refund.EuroCreditReversed" step="0.01" />
+            <label for="refund-payable">EUR cash payable</label><InputNumber id="refund-payable" @bind-Value="_refund.EuroCashPayable" step="0.01" />
+            <label for="refund-quote">Newly agreed refund quote (BRL)</label><InputSelect id="refund-quote" @bind-Value="_refund.RefundQuoteId"><option value="">EUR, no quote</option>@foreach (var quote in Quotes.Where(item => item.ForRefund)) { <option value="@quote.Id">@quote.Id — @quote.BrlPerEuro BRL/EUR</option> }</InputSelect>
+            <label for="refund-reference">Actual transfer reference</label><InputText id="refund-reference" @bind-Value="_refund.Reference" autocomplete="off" />
+            <label for="refund-time">Performed instant (UTC)</label><input id="refund-time" type="datetime-local" @bind="_refund.PerformedAtUtc" />
+            <PaymentAllocationEditor Rows="_refund.Allocations" Choices="AllocationChoices" Prefix="refund" Legend="Selected original allocations whose EUR credit is reversed" />
+            <label><input type="checkbox" @bind="_refund.PerformedAttested" /> I checked evidence that this transfer was already performed.</label><button type="button" disabled="@(!_refund.PerformedAttested)" @onclick="SaveRefund">Save unapproved refund record</button>
+        </fieldset>
+        @if (_action is not null)
+        {
+            <section class="card p-3" aria-labelledby="financial-confirm"><h2 id="financial-confirm">Confirm @_action</h2><p>@_summary. Booking @BookingId, financial revision @Version.</p>
+                <fieldset disabled="@Blocked"><legend>Explicit action confirmation</legend>
+                    @if (_action == "review") { <label><input type="checkbox" @bind="_changesRequested" /> Request changes; existing approval remains active</label> }
+                    else { <label for="financial-reason">Reason</label><InputSelect id="financial-reason" @bind-Value="_reason">@foreach (var reason in Reasons) { <option value="@reason">@reason</option> }</InputSelect> }
+                    <label><input type="checkbox" @bind="_confirmed" /> I confirm the displayed summary and selected allocations.</label><button type="button" @onclick="Confirm" disabled="@(!_confirmed)">Confirm @_action</button><button type="button" @onclick="Cancel">Cancel</button>
+                </fieldset>
+            </section>
+        }
+    </AuthorizeView>
+}

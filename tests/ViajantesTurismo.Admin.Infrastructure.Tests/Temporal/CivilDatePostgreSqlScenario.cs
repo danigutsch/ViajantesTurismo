@@ -6,7 +6,6 @@ using Microsoft.EntityFrameworkCore.Migrations;
 using ViajantesTurismo.Admin.Domain.Customers;
 using ViajantesTurismo.Admin.Domain.Tours;
 using ViajantesTurismo.Admin.Testing.Behavior;
-using ViajantesTurismo.Admin.Testing.Fakes;
 
 namespace ViajantesTurismo.Admin.Infrastructure.Tests.Temporal;
 
@@ -39,8 +38,6 @@ internal sealed class CivilDatePostgreSqlScenario : IAsyncDisposable
         var now = new DateTimeOffset(2030, 2, 4, 14, 0, 0, TimeSpan.Zero);
         var booking = tour.AddBooking(TourBookingRequest.CreateSingle(customer.Id, BikeType.Regular,
             RoomType.DoubleOccupancy, BookingDiscountDefinition.None), now.UtcDateTime).Value;
-        tour.RecordBookingPayment(booking.Id, 100m, new DateOnly(2030, 2, 3), PaymentMethod.Cash,
-            new FakeTimeProvider(now)).IsSuccess.ShouldBeTrue();
         context.Customers.Add(customer);
         context.Tours.Add(tour);
         await context.SaveEntities(ct);
@@ -55,28 +52,26 @@ internal sealed class CivilDatePostgreSqlScenario : IAsyncDisposable
             forward ? null : "20260724210254_InitialAdmin", ct);
     }
 
-    public async Task SetLegacyDates(CancellationToken ct)
+    public async Task SetTimestampDates(CancellationToken ct)
     {
         await using var context = CreateContext();
         await context.Database.ExecuteSqlRawAsync("""
             UPDATE "Tours" SET "StartDate" = TIMESTAMPTZ '2030-02-03T00:30:00Z',
                 "EndDate" = TIMESTAMPTZ '2030-02-10T23:30:00Z';
             UPDATE "CustomerPersonalInfo" SET "BirthDate" = TIMESTAMPTZ '1990-01-01T00:30:00Z';
-            UPDATE "Payment" SET "PaymentDate" = TIMESTAMPTZ '2030-02-03T23:30:00Z';
             """, ct);
     }
 
-    public async Task<(DateOnly BirthDate, DateOnly StartDate, DateOnly EndDate, DateOnly PaymentDate,
-        DateTime BookingDate, DateTime RecordedAt)> Read(CancellationToken ct)
+    public async Task<(DateOnly BirthDate, DateOnly StartDate, DateOnly EndDate,
+        DateTime BookingDate)> Read(CancellationToken ct)
     {
         await using var context = CreateContext();
         var customer = await context.Customers.AsNoTracking().SingleAsync(ct);
-        var tour = await context.Tours.Include(item => item.Bookings).ThenInclude(item => item.Payments)
+        var tour = await context.Tours.Include(item => item.Bookings)
             .AsNoTracking().SingleAsync(ct);
         var booking = tour.Bookings.ShouldHaveSingleItem();
-        var payment = booking.Payments.ShouldHaveSingleItem();
         return (customer.PersonalInfo.BirthDate, tour.Schedule.StartDate, tour.Schedule.EndDate,
-            payment.PaymentDate, booking.BookingDate, payment.RecordedAt);
+            booking.BookingDate);
     }
 
     public ValueTask DisposeAsync() => database.DisposeAsync();

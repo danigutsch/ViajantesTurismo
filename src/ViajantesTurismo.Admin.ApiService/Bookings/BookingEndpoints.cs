@@ -47,7 +47,6 @@ internal static class BookingEndpoints
         bookingsGroup.MapConfirmBookingEndpoint();
         bookingsGroup.MapUpdateBookingNotesEndpoint();
         bookingsGroup.MapCompleteBookingEndpoint();
-        bookingsGroup.MapRecordPaymentEndpoint();
     }
 
     private static async Task<Ok<IReadOnlyList<GetBookingDto>>> GetAllBookings(

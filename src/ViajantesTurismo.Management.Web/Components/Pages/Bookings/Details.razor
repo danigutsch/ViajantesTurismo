@@ -121,10 +121,10 @@
                             <dd class="col-sm-8">@CurrencyFormatter.Format(_booking.TotalPrice, _booking.Currency)</dd>
 
                             <dt class="col-sm-4">Amount Paid</dt>
-                            <dd class="col-sm-8 text-success">@CurrencyFormatter.Format(_booking.AmountPaid, _booking.Currency)</dd>
+                            <dd class="col-sm-8 text-success">@CurrencyFormatter.Format(_booking.AmountPaid, CurrencyDto.Euro)</dd>
 
                             <dt class="col-sm-4">Remaining Balance</dt>
-                            <dd class="col-sm-8 text-danger">@CurrencyFormatter.Format(_booking.RemainingBalance, _booking.Currency)</dd>
+                            <dd class="col-sm-8 text-danger">@CurrencyFormatter.Format(_booking.RemainingBalance, CurrencyDto.Euro)</dd>
 
                             <dt class="col-sm-4">Discount</dt>
                             <dd class="col-sm-8">
@@ -164,7 +164,8 @@
                         <h5 class="card-title mb-0">Payments</h5>
                     </div>
                     <div class="card-body p-0">
-                        <PaymentsList Payments="_booking.Payments" Currency="_booking.Currency" />
+                        <p><NavLink class="btn btn-outline-primary" href="@($"/bookings/{_booking.Id}/finances")">Schedules, settlement and instructions</NavLink></p>
+
                     </div>
                 </div>
             </div>

@@ -26,7 +26,7 @@ public sealed class AdminApiMutationAuthorizationTests
             ("POST", "/api/v1/bookings/1d02ec44-41b5-4d3a-878b-89f53261a803/confirm"),
             ("PATCH", "/api/v1/bookings/1d02ec44-41b5-4d3a-878b-89f53261a803/notes"),
             ("POST", "/api/v1/bookings/1d02ec44-41b5-4d3a-878b-89f53261a803/complete"),
-            ("POST", "/api/v1/bookings/1d02ec44-41b5-4d3a-878b-89f53261a803/payments")
+            ("POST", "/api/v1/bookings/1d02ec44-41b5-4d3a-878b-89f53261a803/finances/receipts")
         ];
 
         // Act
@@ -62,7 +62,7 @@ public sealed class AdminApiMutationAuthorizationTests
             ("POST", "/api/v1/bookings/1d02ec44-41b5-4d3a-878b-89f53261a803/confirm"),
             ("PATCH", "/api/v1/bookings/1d02ec44-41b5-4d3a-878b-89f53261a803/notes"),
             ("POST", "/api/v1/bookings/1d02ec44-41b5-4d3a-878b-89f53261a803/complete"),
-            ("POST", "/api/v1/bookings/1d02ec44-41b5-4d3a-878b-89f53261a803/payments")
+            ("POST", "/api/v1/bookings/1d02ec44-41b5-4d3a-878b-89f53261a803/finances/receipts")
         ];
 
         // Act

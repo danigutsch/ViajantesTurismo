@@ -33,6 +33,15 @@ builder.Services.AddHttpClient<ICustomersApiClient, CustomersApiClient>(client =
 builder.Services.AddHttpClient<IBookingsApiClient, BookingsApiClient>(client => client.BaseAddress = new Uri($"https+http://{ResourceNames.Api}"))
     .AddUserAccessTokenHandler()
     .AddKeycloakAudienceTokenExchangeHandler(ApiAudienceNames.Admin);
+builder.Services.AddHttpClient<IBookingPaymentsApiClient, BookingPaymentsApiClient>(client => client.BaseAddress = new Uri($"https+http://{ResourceNames.Api}"))
+    .AddUserAccessTokenHandler()
+    .AddKeycloakAudienceTokenExchangeHandler(ApiAudienceNames.Admin);
+builder.Services.AddHttpClient<IPaymentInstructionsApiClient, PaymentInstructionsApiClient>(client => client.BaseAddress = new Uri($"https+http://{ResourceNames.Api}"))
+    .AddUserAccessTokenHandler()
+    .AddKeycloakAudienceTokenExchangeHandler(ApiAudienceNames.Admin);
+builder.Services.AddHttpClient<IPaymentAccountsApiClient, PaymentAccountsApiClient>(client => client.BaseAddress = new Uri($"https+http://{ResourceNames.Api}"))
+    .AddUserAccessTokenHandler()
+    .AddKeycloakAudienceTokenExchangeHandler(ApiAudienceNames.Admin);
 builder.Services.AddHttpClient<IDocumentsApiClient, DocumentsApiClient>(client => client.BaseAddress = new Uri($"https+http://{ResourceNames.Api}"))
     .AddUserAccessTokenHandler()
     .AddKeycloakAudienceTokenExchangeHandler(ApiAudienceNames.Admin);

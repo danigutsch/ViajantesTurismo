@@ -1,10 +1,11 @@
 using PandaBear.Results;
+using ViajantesTurismo.Admin.Application.Payments;
 using ViajantesTurismo.Admin.Domain.Documents;
 
 namespace ViajantesTurismo.Admin.Application.Documents;
 
 /// <summary>Retrieves a sealed document artifact for a mediated delivery boundary.</summary>
-public sealed class GetFinalizedDocumentArtifactHandler(IDocumentStore documentStore)
+public sealed class GetFinalizedDocumentArtifactHandler(IDocumentStore documentStore, PaymentInstructionWorkflow? paymentInstructions = null)
 {
     /// <summary>Returns the artifact only when the document revision is finalized and sealed.</summary>
     public async Task<Result<FinalizedDocumentArtifact>> Handle(GetFinalizedDocumentArtifactQuery query, CancellationToken ct)
@@ -18,6 +19,11 @@ public sealed class GetFinalizedDocumentArtifactHandler(IDocumentStore documentS
             return DocumentErrors.DocumentNotFound(query.DocumentId).ConvertError<FinalizedDocumentArtifact>();
         }
 
+        if (document.Type == DocumentType.PaymentInstructions)
+        {
+            return paymentInstructions is not null ? await paymentInstructions.Download(query.DocumentId, query.ActorId, ct)
+                : DocumentErrors.FinalizedArtifactNotAvailable().ConvertError<FinalizedDocumentArtifact>();
+        }
         var artifactContent = document.GetFinalizedArtifactContent();
         if (document.Status != DocumentStatus.Finalized
             || artifactContent is null

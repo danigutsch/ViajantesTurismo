@@ -41,24 +41,24 @@ public sealed class PhysicalInfoValidationSteps(CustomerContext context)
     [Then("the physical info should be created successfully")]
     public void ThenThePhysicalInfoShouldBeCreatedSuccessfully()
     {
-        (context.PhysicalInfoResult).ShouldNotBeNull();
-        (context.PhysicalInfoResult.Value.IsSuccess).ShouldBeTrue();
+        context.PhysicalInfoResult.ShouldNotBeNull();
+        context.PhysicalInfoResult.Value.IsSuccess.ShouldBeTrue();
     }
 
     [Then("the physical info creation should fail")]
     public void ThenThePhysicalInfoCreationShouldFail()
     {
-        (context.PhysicalInfoResult).ShouldNotBeNull();
-        (context.PhysicalInfoResult.Value.IsSuccess).ShouldBeFalse();
+        context.PhysicalInfoResult.ShouldNotBeNull();
+        context.PhysicalInfoResult.Value.IsSuccess.ShouldBeFalse();
     }
 
     [Then(@"the error should be ""(.*)""")]
     public void ThenThePhysicalInfoErrorShouldBe(string expectedError)
     {
-        (context.PhysicalInfoResult).ShouldNotBeNull();
-        (context.PhysicalInfoResult.Value.IsFailure).ShouldBeTrue("Expected failure but got success");
+        context.PhysicalInfoResult.ShouldNotBeNull();
+        context.PhysicalInfoResult.Value.IsFailure.ShouldBeTrue("Expected failure but got success");
         var errors = context.PhysicalInfoResult.Value.ErrorDetails?.ValidationErrors;
         var allErrors = errors?.Values.SelectMany(e => e).ToList() ?? new List<string>();
-        (allErrors).ShouldContain(expectedError);
+        allErrors.ShouldContain(expectedError);
     }
 }

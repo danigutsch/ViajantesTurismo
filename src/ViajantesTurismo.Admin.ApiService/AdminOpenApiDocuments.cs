@@ -20,7 +20,8 @@ internal static class AdminOpenApiDocuments
             new OpenApiBoundaryDocument("tours", "api/v1/tours"),
             new OpenApiBoundaryDocument("customers", "api/v1/customers"),
             new OpenApiBoundaryDocument("bookings", "api/v1/bookings"),
-            new OpenApiBoundaryDocument("documents", "api/v1/documents")
+            new OpenApiBoundaryDocument("documents", "api/v1/documents"),
+            new OpenApiBoundaryDocument("payment-accounts", "api/v1/payment-accounts")
         ]);
         services.AddApiVersionOpenApiDocuments(AdminRouteGroupExtensions.ApiVersions);
     }

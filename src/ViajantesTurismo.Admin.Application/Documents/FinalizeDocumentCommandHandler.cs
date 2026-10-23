@@ -35,6 +35,11 @@ public sealed class FinalizeDocumentCommandHandler(
                 ct);
         }
 
+        if (document.Type == DocumentType.PaymentInstructions)
+        {
+            return Domain.Payments.FinancialErrors.Invalid("paymentInstructionLifecycle");
+        }
+
         var result = lineage.Finalize(document.Id, DocumentArtifactRenderer.Render(document), now, auditContext);
         if (result.IsFailure)
         {

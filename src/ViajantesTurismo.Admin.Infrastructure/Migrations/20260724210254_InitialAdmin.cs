@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using Microsoft.EntityFrameworkCore.Migrations;
 
 #nullable disable
@@ -451,30 +451,6 @@ namespace ViajantesTurismo.Admin.Infrastructure.Migrations
                         onDelete: ReferentialAction.Cascade);
                 });
 
-            migrationBuilder.CreateTable(
-                name: "Payment",
-                columns: table => new
-                {
-                    Id = table.Column<Guid>(type: "uuid", nullable: false),
-                    BookingId = table.Column<Guid>(type: "uuid", nullable: false),
-                    Amount = table.Column<decimal>(type: "numeric", nullable: false),
-                    PaymentDate = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
-                    Method = table.Column<string>(type: "text", nullable: false),
-                    ReferenceNumber = table.Column<string>(type: "character varying(128)", maxLength: 128, nullable: true),
-                    Notes = table.Column<string>(type: "character varying(500)", maxLength: 500, nullable: true),
-                    RecordedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_Payment", x => x.Id);
-                    table.ForeignKey(
-                        name: "FK_Payment_Booking_BookingId",
-                        column: x => x.BookingId,
-                        principalTable: "Booking",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
-                });
-
             migrationBuilder.CreateIndex(
                 name: "IX_Booking_TourId",
                 table: "Booking",
@@ -548,10 +524,6 @@ namespace ViajantesTurismo.Admin.Infrastructure.Migrations
                 table: "outbox_messages",
                 columns: new[] { "PublishedAt", "NextPublishAttemptAt", "EnqueuedAt" });
 
-            migrationBuilder.CreateIndex(
-                name: "IX_Payment_BookingId",
-                table: "Payment",
-                column: "BookingId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_Tours_Identifier",
@@ -696,8 +668,6 @@ namespace ViajantesTurismo.Admin.Infrastructure.Migrations
                 name: "outbox_messages",
                 schema: "messaging");
 
-            migrationBuilder.DropTable(
-                name: "Payment");
 
             migrationBuilder.DropTable(
                 name: "transport_messages",

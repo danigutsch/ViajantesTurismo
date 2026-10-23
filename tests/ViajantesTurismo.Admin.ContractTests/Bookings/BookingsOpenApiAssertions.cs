@@ -32,8 +32,6 @@ internal static class BookingsOpenApiAssertions
         contract.ConfirmBookingOperationId.ShouldBe("ConfirmBooking");
         contract.CancelBookingOperationId.ShouldBe("CancelBooking");
         contract.CompleteBookingOperationId.ShouldBe("CompleteBooking");
-        contract.RecordPaymentOperationId.ShouldBe("RecordPayment");
-        contract.RecordPaymentSchemaReference.ShouldBe("#/components/schemas/CreatePaymentDto");
     }
 
     /// <summary>

@@ -35,29 +35,29 @@ public sealed class BookingCustomerEntitySteps(BookingContext bookingContext)
     [Then("the booking customer should be created successfully")]
     public void ThenTheBookingCustomerShouldBeCreatedSuccessfully()
     {
-        (bookingContext.BookingCustomerResult).ShouldNotBeNull();
-        (bookingContext.BookingCustomerResult.Value.IsSuccess).ShouldBeTrue();
+        bookingContext.BookingCustomerResult.ShouldNotBeNull();
+        bookingContext.BookingCustomerResult.Value.IsSuccess.ShouldBeTrue();
     }
 
     [Then(@"the booking customer should have bike type ""(.*)""")]
     public void ThenTheBookingCustomerShouldHaveBikeType(string expectedBikeType)
     {
-        (bookingContext.BookingCustomerResult).ShouldNotBeNull();
+        bookingContext.BookingCustomerResult.ShouldNotBeNull();
         var type = Enum.Parse<BikeType>(expectedBikeType);
-        (bookingContext.BookingCustomerResult.Value.Value.BikeType).ShouldBe(type);
+        bookingContext.BookingCustomerResult.Value.Value.BikeType.ShouldBe(type);
     }
 
     [Then("the booking customer should have bike price (.*)")]
     public void ThenTheBookingCustomerShouldHaveBikePrice(decimal expectedPrice)
     {
-        (bookingContext.BookingCustomerResult).ShouldNotBeNull();
-        (bookingContext.BookingCustomerResult.Value.Value.BikePrice).ShouldBe(expectedPrice);
+        bookingContext.BookingCustomerResult.ShouldNotBeNull();
+        bookingContext.BookingCustomerResult.Value.Value.BikePrice.ShouldBe(expectedPrice);
     }
 
     [Then("the booking customer creation should fail")]
     public void ThenTheBookingCustomerCreationShouldFail()
     {
-        (bookingContext.BookingCustomerResult).ShouldNotBeNull();
-        (bookingContext.BookingCustomerResult.Value.IsSuccess).ShouldBeFalse();
+        bookingContext.BookingCustomerResult.ShouldNotBeNull();
+        bookingContext.BookingCustomerResult.Value.IsSuccess.ShouldBeFalse();
     }
 }

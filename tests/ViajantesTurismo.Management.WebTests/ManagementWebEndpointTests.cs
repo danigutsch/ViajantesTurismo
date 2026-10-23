@@ -24,6 +24,7 @@ public sealed class ManagementWebEndpointTests
         using var host = await new HostBuilder()
             .ConfigureWebHost(webBuilder => webBuilder
                 .UseTestServer()
+                .ConfigureServices(static services => services.AddTestRequestBindingDefaults())
                 .ConfigureServices(services =>
                 {
                     services.AddAuthentication(AnonymousAuthenticationHandler.SchemeName)
@@ -77,8 +78,10 @@ public sealed class ManagementWebEndpointTests
 
         // Assert
         response.StatusCode.ShouldBe(HttpStatusCode.OK);
-        response.Content.Headers.ContentType.ShouldNotBeNull().MediaType.ShouldBe("image/jpeg");
-        response.Headers.CacheControl.ShouldNotBeNull().NoStore.ShouldBeTrue();
+        var assertionTarget = response.Content.Headers.ContentType?.MediaType;
+        assertionTarget.ShouldNotBeNull().ShouldBe("image/jpeg");
+        var assertionTarget1 = response.Headers.CacheControl?.NoStore;
+        assertionTarget1.ShouldNotBeNull().ShouldBeTrue();
         response.Headers.GetValues("X-Content-Type-Options").ShouldHaveSingleItem().ShouldBe("nosniff");
         content.ShouldBe("image"u8.ToArray());
         catalogApi.LastMediaId.ShouldBe(imageId);
@@ -103,7 +106,8 @@ public sealed class ManagementWebEndpointTests
 
         // Assert
         response.StatusCode.ShouldBe(HttpStatusCode.ServiceUnavailable);
-        response.Headers.CacheControl.ShouldNotBeNull().NoStore.ShouldBeTrue();
+        var assertionTarget = response.Headers.CacheControl?.NoStore;
+        assertionTarget.ShouldNotBeNull().ShouldBeTrue();
     }
 
     [Fact]
@@ -123,7 +127,8 @@ public sealed class ManagementWebEndpointTests
 
         // Assert
         response.StatusCode.ShouldBe(HttpStatusCode.BadRequest);
-        response.Headers.CacheControl.ShouldNotBeNull().NoStore.ShouldBeTrue();
+        var assertionTarget = response.Headers.CacheControl?.NoStore;
+        assertionTarget.ShouldNotBeNull().ShouldBeTrue();
         catalogApi.LastMediaId.ShouldBeNull();
     }
 
@@ -134,6 +139,7 @@ public sealed class ManagementWebEndpointTests
         using var host = await new HostBuilder()
             .ConfigureWebHost(webBuilder => webBuilder
                 .UseTestServer()
+                .ConfigureServices(static services => services.AddTestRequestBindingDefaults())
                 .ConfigureServices(services => services
                     .AddRazorComponents()
                     .AddInteractiveServerComponents())
@@ -151,8 +157,10 @@ public sealed class ManagementWebEndpointTests
 
         // Assert
         response.StatusCode.ShouldBe(HttpStatusCode.OK);
-        response.Content.Headers.ContentType.ShouldNotBeNull().MediaType.ShouldBe("text/plain");
-        response.Content.Headers.ContentType.ShouldNotBeNull().CharSet.ShouldBe("utf-8");
+        var assertionTarget = response.Content.Headers.ContentType?.MediaType;
+        assertionTarget.ShouldNotBeNull().ShouldBe("text/plain");
+        var assertionTarget1 = response.Content.Headers.ContentType?.CharSet;
+        assertionTarget1.ShouldNotBeNull().ShouldBe("utf-8");
         body.ShouldBe("User-agent: *\nDisallow: /");
     }
 

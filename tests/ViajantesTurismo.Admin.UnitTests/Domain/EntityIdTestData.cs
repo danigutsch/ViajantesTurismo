@@ -1,6 +1,5 @@
 using ViajantesTurismo.Admin.Domain.Customers;
 using ViajantesTurismo.Admin.Domain.Shared;
-using ViajantesTurismo.Admin.Domain.Tours;
 
 namespace ViajantesTurismo.Admin.UnitTests.Domain;
 
@@ -65,18 +64,4 @@ internal static class EntityIdTestData
             medical);
     }
 
-    public static Payment CreatePayment()
-    {
-        var result = Payment.Create(
-            bookingId: Guid.CreateVersion7(),
-            amount: 250m,
-            paymentDate: DateOnly.FromDateTime(TimeProvider.System.GetUtcNow().UtcDateTime),
-            method: PaymentMethod.CreditCard,
-            timeProvider: TimeProvider.System,
-            referenceNumber: "TX-123",
-            notes: "Initial payment");
-
-        (result.IsSuccess).ShouldBeTrue();
-        return result.Value;
-    }
 }

@@ -22,4 +22,7 @@
         <PackageReference Include="PandaBear.SharedKernel.HttpClients" />
         <ProjectReference Include="..\ViajantesTurismo.Admin.Contracts.Application\ViajantesTurismo.Admin.Contracts.Application.csproj" />
     </ItemGroup>
+    <ItemGroup>
+        <InternalsVisibleTo Include="ViajantesTurismo.Admin.ContractTests" />
+    </ItemGroup>
 </Project>

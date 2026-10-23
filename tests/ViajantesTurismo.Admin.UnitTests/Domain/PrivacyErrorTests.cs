@@ -22,7 +22,6 @@ public sealed class PrivacyErrorTests
             BookingErrors.BookingNotFound(identifier),
             BookingErrors.CannotModifyCancelledOrCompletedBooking(identifier, BookingStatus.Cancelled),
             BookingErrors.PrincipalAndCompanionCannotBeSame(identifier),
-            PaymentErrors.PaymentNotFound(identifier),
             TourErrors.BookingNotFound(identifier),
             TourErrors.TourNotFound(identifier),
             TourErrors.CannotRemoveNonPendingBooking(identifier, BookingStatus.Confirmed),
@@ -44,9 +43,7 @@ public sealed class PrivacyErrorTests
         // Arrange
         var cases = new (Result Error, string Detail, string Message)[]
         {
-            (PaymentErrors.InvalidAmount(-123456m), "Payment amount must be greater than zero.", "Payment amount must be greater than zero."),
-            (PaymentErrors.FuturePaymentDate(new DateOnly(2099, 12, 31)), "Payment date cannot be in the future.", "Payment date cannot be in the future."),
-            (PaymentErrors.ExceedsRemainingBalance(123456m, 654321m), "Payment amount exceeds remaining balance.", "Payment amount cannot exceed remaining balance."),
+            (Admin.Domain.Payments.FinancialErrors.Invalid("receipt"), "Invalid payment information.", "Review the payment information."),
             (BookingErrors.ZeroOrNegativeBasePrice(-123456m), "Base price must be greater than zero.", "Base price must be greater than zero."),
             (BookingErrors.BasePriceExceedsMaximum(654321m, 123456m), "Base price exceeds the maximum allowed value.", "Base price exceeds the maximum allowed value."),
             (BookingErrors.NegativeBikePrice(-123456m), "Bike price cannot be negative.", "Bike price cannot be negative."),

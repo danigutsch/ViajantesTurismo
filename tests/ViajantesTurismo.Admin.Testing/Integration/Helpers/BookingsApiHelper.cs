@@ -120,21 +120,6 @@ public static class BookingsApiHelper
         return (await response.Content.ReadFromJsonAsync<GetBookingDto[]>(cancellationToken))!;
     }
 
-    public static async Task<HttpResponseMessage> RecordPayment(
-        this HttpClient client,
-        Guid bookingId,
-        CreatePaymentDto payment,
-        CancellationToken cancellationToken)
-    {
-        ArgumentNullException.ThrowIfNull(client);
-        ArgumentNullException.ThrowIfNull(payment);
-
-        return await client.PostAsJsonAsync(
-            new Uri($"{RoutePrefix}/{bookingId}/payments", UriKind.Relative),
-            payment,
-            cancellationToken);
-    }
-
     public static async Task<HttpResponseMessage> ConfirmBooking(
         this HttpClient client,
         Guid bookingId,

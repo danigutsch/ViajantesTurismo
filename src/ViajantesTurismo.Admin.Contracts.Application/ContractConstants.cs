@@ -5,6 +5,9 @@ namespace ViajantesTurismo.Admin.Contracts.Application;
 /// </summary>
 public static class ContractConstants
 {
+    /// <summary>The required HTTP header identifying an idempotent financial or document command.</summary>
+    public const string IdempotencyKeyHeaderName = "Idempotency-Key";
+
     /// <summary>
     /// The maximum length for default string fields such as identifiers.
     /// </summary>

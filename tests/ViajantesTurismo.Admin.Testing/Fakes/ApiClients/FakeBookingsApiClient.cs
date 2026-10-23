@@ -16,10 +16,6 @@ public sealed class FakeBookingsApiClient : IBookingsApiClient
     private int? _getBookingByIdExceptionCall;
     private HttpOutcome<GetBookingDto>? _getBookingByIdOutcome;
     private int? _getBookingByIdOutcomeCall;
-    private Exception? _recordPaymentExceptionAfterCommit;
-    private HttpOutcome? _recordPaymentOutcome;
-    private HttpOutcome? _recordPaymentOutcomeAfterCommit;
-    private Task _recordPaymentTask = Task.CompletedTask;
     private Exception? _updateBookingNotesException;
     private HttpOutcome? _updateBookingNotesOutcome;
     private decimal? _updatedDetailsTotalPrice;
@@ -29,10 +25,6 @@ public sealed class FakeBookingsApiClient : IBookingsApiClient
         get; private set;
     }
 
-    public int CommittedPaymentCount
-    {
-        get; private set;
-    }
 
     public int GetBookingByIdCallCount
     {
@@ -44,10 +36,6 @@ public sealed class FakeBookingsApiClient : IBookingsApiClient
         get; private set;
     }
 
-    public int RecordPaymentCallCount
-    {
-        get; private set;
-    }
 
     public int UpdateBookingDetailsCallCount
     {
@@ -241,34 +229,6 @@ public sealed class FakeBookingsApiClient : IBookingsApiClient
             }
         }, HttpStatusCode.NoContent, ct);
 
-    public async Task<HttpOutcome> RecordPayment(Guid bookingId, CreatePaymentDto dto, CancellationToken ct)
-    {
-        ArgumentNullException.ThrowIfNull(dto);
-        ct.ThrowIfCancellationRequested();
-        RecordPaymentCallCount++;
-        await _recordPaymentTask.WaitAsync(ct);
-
-        if (_recordPaymentExceptionAfterCommit is not null)
-        {
-            CommittedPaymentCount++;
-            throw _recordPaymentExceptionAfterCommit;
-        }
-
-        if (_recordPaymentOutcomeAfterCommit is not null)
-        {
-            CommittedPaymentCount++;
-            return _recordPaymentOutcomeAfterCommit;
-        }
-
-        if (_recordPaymentOutcome is not null)
-        {
-            return _recordPaymentOutcome;
-        }
-
-        var paymentId = Guid.NewGuid();
-        return HttpOutcomeMapper.Succeeded(HttpStatusCode.Created, new Uri($"/api/v1/bookings/{bookingId}/payments/{paymentId}", UriKind.Relative));
-    }
-
     public void AddBooking(GetBookingDto booking) => _bookings.Add(booking);
 
     public void SetCreateBookingOutcome(HttpOutcome outcome) => _createBookingOutcome = outcome;
@@ -301,20 +261,6 @@ public sealed class FakeBookingsApiClient : IBookingsApiClient
     {
         _getBookingByIdExceptionCall = call;
         _getBookingByIdException = exception;
-    }
-
-    public void SetRecordPaymentOutcome(HttpOutcome outcome) => _recordPaymentOutcome = outcome;
-
-    public void SetRecordPaymentOutcomeAfterCommit(HttpOutcome outcome) =>
-        _recordPaymentOutcomeAfterCommit = outcome;
-
-    public void SetRecordPaymentExceptionAfterCommit(Exception exception) =>
-        _recordPaymentExceptionAfterCommit = exception;
-
-    public void SetRecordPaymentTask(Task paymentTask)
-    {
-        ArgumentNullException.ThrowIfNull(paymentTask);
-        _recordPaymentTask = paymentTask;
     }
 
     public void SetUpdateBookingNotesException(Exception exception) => _updateBookingNotesException = exception;

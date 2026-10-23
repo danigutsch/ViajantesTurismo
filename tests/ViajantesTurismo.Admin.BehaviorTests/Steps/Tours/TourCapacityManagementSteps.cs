@@ -132,7 +132,7 @@ public sealed class TourCapacityManagementSteps(
             RoomType.DoubleOccupancy,
             DiscountType.None), new DateTime(2030, 1, 1, 0, 0, 0, DateTimeKind.Utc));
 
-        (result.IsSuccess).ShouldBeTrue();
+        result.IsSuccess.ShouldBeTrue();
         result.Value.Confirm();
 
         bookingContext.BookingCreationResult = result;
@@ -163,116 +163,116 @@ public sealed class TourCapacityManagementSteps(
     [Then("the minimum capacity should be (.*)")]
     public void ThenTheMinimumCapacityShouldBe(int expected)
     {
-        (tourContext.Tour.Capacity.MinCustomers).ShouldBe(expected);
+        tourContext.Tour.Capacity.MinCustomers.ShouldBe(expected);
     }
 
     [Then("the maximum capacity should be (.*)")]
     public void ThenTheMaximumCapacityShouldBe(int expected)
     {
-        (tourContext.Tour.Capacity.MaxCustomers).ShouldBe(expected);
+        tourContext.Tour.Capacity.MaxCustomers.ShouldBe(expected);
     }
 
     [Then("the capacity update should succeed")]
     public void ThenTheCapacityUpdateShouldSucceed()
     {
-        (tourContext.CapacityUpdateResult).ShouldNotBeNull();
-        (tourContext.CapacityUpdateResult.Value.IsSuccess).ShouldBeTrue();
+        tourContext.CapacityUpdateResult.ShouldNotBeNull();
+        tourContext.CapacityUpdateResult.Value.IsSuccess.ShouldBeTrue();
     }
 
     [Then("the capacity update should fail")]
     public void ThenTheCapacityUpdateShouldFail()
     {
-        (tourContext.CapacityUpdateResult).ShouldNotBeNull();
-        (tourContext.CapacityUpdateResult.Value.IsFailure).ShouldBeTrue();
+        tourContext.CapacityUpdateResult.ShouldNotBeNull();
+        tourContext.CapacityUpdateResult.Value.IsFailure.ShouldBeTrue();
     }
 
     [Then("the error should indicate cannot reduce capacity below current bookings")]
     public void ThenTheErrorShouldIndicateCannotReduceCapacityBelowCurrentBookings()
     {
-        (tourContext.CapacityUpdateResult).ShouldNotBeNull();
-        (tourContext.CapacityUpdateResult.Value.IsFailure).ShouldBeTrue();
+        tourContext.CapacityUpdateResult.ShouldNotBeNull();
+        tourContext.CapacityUpdateResult.Value.IsFailure.ShouldBeTrue();
 
         var error = tourContext.CapacityUpdateResult.Value.ErrorDetails;
-        (error).ShouldNotBeNull();
-        (error.Detail).ShouldContain("capacity", StringComparison.OrdinalIgnoreCase);
-        (error.Detail).ShouldContain("current", StringComparison.OrdinalIgnoreCase);
-        (error.Detail).ShouldContain("booking", StringComparison.OrdinalIgnoreCase);
+        error.ShouldNotBeNull();
+        error.Detail.ShouldContain("capacity", StringComparison.OrdinalIgnoreCase);
+        error.Detail.ShouldContain("current", StringComparison.OrdinalIgnoreCase);
+        error.Detail.ShouldContain("booking", StringComparison.OrdinalIgnoreCase);
     }
 
     [Then("the tour creation should fail")]
     public void ThenTheTourCreationShouldFail()
     {
-        (tourContext.CreationResult).ShouldNotBeNull();
-        (tourContext.CreationResult.Value.IsFailure).ShouldBeTrue();
+        tourContext.CreationResult.ShouldNotBeNull();
+        tourContext.CreationResult.Value.IsFailure.ShouldBeTrue();
     }
 
     [Then("the error should indicate max must be at least min")]
     public void ThenTheErrorShouldIndicateMaxMustBeAtLeastMin()
     {
-        (tourContext.CreationResult).ShouldNotBeNull();
-        (tourContext.CreationResult.Value.IsFailure).ShouldBeTrue();
+        tourContext.CreationResult.ShouldNotBeNull();
+        tourContext.CreationResult.Value.IsFailure.ShouldBeTrue();
         var errors = tourContext.CreationResult.Value.ErrorDetails?.ValidationErrors;
         var allErrors = errors?.Values.SelectMany(e => e).ToList() ?? [];
         var combinedErrors = string.Join(" ", allErrors);
-        (combinedErrors).ShouldContain("maximum", StringComparison.OrdinalIgnoreCase);
-        (combinedErrors).ShouldContain("minimum", StringComparison.OrdinalIgnoreCase);
+        combinedErrors.ShouldContain("maximum", StringComparison.OrdinalIgnoreCase);
+        combinedErrors.ShouldContain("minimum", StringComparison.OrdinalIgnoreCase);
     }
 
     [Then("the error should indicate minimum must be at least 1")]
     public void ThenTheErrorShouldIndicateMinimumMustBeAtLeast()
     {
-        (tourContext.CreationResult).ShouldNotBeNull();
-        (tourContext.CreationResult.Value.IsFailure).ShouldBeTrue();
+        tourContext.CreationResult.ShouldNotBeNull();
+        tourContext.CreationResult.Value.IsFailure.ShouldBeTrue();
         var errors = tourContext.CreationResult.Value.ErrorDetails?.ValidationErrors;
         var allErrors = errors?.Values.SelectMany(e => e).ToList() ?? [];
         var combinedErrors = string.Join(" ", allErrors);
-        (combinedErrors).ShouldContain("Minimum", StringComparison.OrdinalIgnoreCase);
-        (combinedErrors).ShouldContain("1", StringComparison.Ordinal);
+        combinedErrors.ShouldContain("Minimum", StringComparison.OrdinalIgnoreCase);
+        combinedErrors.ShouldContain("1", StringComparison.Ordinal);
     }
 
     [Then("the error should indicate maximum cannot exceed 20")]
     public void ThenTheErrorShouldIndicateMaximumCannotExceed()
     {
-        (tourContext.CreationResult).ShouldNotBeNull();
-        (tourContext.CreationResult.Value.IsFailure).ShouldBeTrue();
+        tourContext.CreationResult.ShouldNotBeNull();
+        tourContext.CreationResult.Value.IsFailure.ShouldBeTrue();
         var errors = tourContext.CreationResult.Value.ErrorDetails?.ValidationErrors;
         var allErrors = errors?.Values.SelectMany(e => e).ToList() ?? [];
         var combinedErrors = string.Join(" ", allErrors);
-        (combinedErrors).ShouldContain("Maximum", StringComparison.OrdinalIgnoreCase);
-        (combinedErrors).ShouldContain("20", StringComparison.Ordinal);
+        combinedErrors.ShouldContain("Maximum", StringComparison.OrdinalIgnoreCase);
+        combinedErrors.ShouldContain("20", StringComparison.Ordinal);
     }
 
     [Then("the error should indicate the tour is fully booked")]
     public void ThenTheErrorShouldIndicateTheTourIsFullyBooked()
     {
-        (bookingContext.BookingCreationResult).ShouldNotBeNull();
-        (bookingContext.BookingCreationResult.Value.IsFailure).ShouldBeTrue();
+        bookingContext.BookingCreationResult.ShouldNotBeNull();
+        bookingContext.BookingCreationResult.Value.IsFailure.ShouldBeTrue();
         var error = bookingContext.BookingCreationResult.Value.ErrorDetails;
-        (error).ShouldNotBeNull();
-        (error.Detail).ShouldContain("fully booked", StringComparison.OrdinalIgnoreCase);
+        error.ShouldNotBeNull();
+        error.Detail.ShouldContain("fully booked", StringComparison.OrdinalIgnoreCase);
     }
 
     [Then("the current customer count should be (.*)")]
     public void ThenTheCurrentCustomerCountShouldBe(int expected)
     {
-        (tourContext.Tour.CurrentCustomerCount).ShouldBe(expected);
+        tourContext.Tour.CurrentCustomerCount.ShouldBe(expected);
     }
 
     [Then("the available spots should be (.*)")]
     public void ThenTheAvailableSpotsShouldBe(int expected)
     {
-        (tourContext.Tour.AvailableSpots).ShouldBe(expected);
+        tourContext.Tour.AvailableSpots.ShouldBe(expected);
     }
 
     [Then("the tour should not be at minimum capacity")]
     public void ThenTheTourShouldNotBeAtMinimumCapacity()
     {
-        (tourContext.Tour.IsAtMinimumCapacity).ShouldBeFalse();
+        tourContext.Tour.IsAtMinimumCapacity.ShouldBeFalse();
     }
 
     [Then("the tour should not be fully booked")]
     public void ThenTheTourShouldNotBeFullyBooked()
     {
-        (tourContext.Tour.IsFullyBooked).ShouldBeFalse();
+        tourContext.Tour.IsFullyBooked.ShouldBeFalse();
     }
 }

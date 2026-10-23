@@ -257,12 +257,7 @@ else if (_booking is not null)
     <div class="card mt-4">
         <div class="card-header d-flex justify-content-between align-items-center">
             <h5 class="card-title mb-0"><i class="bi bi-cash-stack"></i> Payments</h5>
-            @if (!_paymentState.IsFormVisible && _booking.RemainingBalance > 0 && _booking.Status != BookingStatusDto.Cancelled && !AreMutationsBlocked)
-            {
-                <button type="button" class="btn btn-sm btn-success" @onclick="ShowPaymentForm">
-                    <i class="bi bi-plus-circle"></i> Record Payment
-                </button>
-            }
+            <a class="btn btn-sm btn-success" href="@($"/bookings/{_booking.Id}/finances")">Record and allocate receipts</a>
         </div>
         <div class="card-body">
             <div class="row mb-3">
@@ -278,7 +273,7 @@ else if (_booking is not null)
                     <div class="card bg-light">
                         <div class="card-body py-2 text-center">
                             <div class="text-muted small">Amount Paid</div>
-                            <div class="h5 mb-0 text-success">@CurrencyFormatter.Format(_booking.AmountPaid, _booking.Currency)</div>
+                            <div class="h5 mb-0 text-success">@CurrencyFormatter.Format(_booking.AmountPaid, CurrencyDto.Euro)</div>
                         </div>
                     </div>
                 </div>
@@ -286,29 +281,12 @@ else if (_booking is not null)
                     <div class="card bg-light">
                         <div class="card-body py-2 text-center">
                             <div class="text-muted small">Remaining Balance</div>
-                            <div class="h5 mb-0 text-danger">@CurrencyFormatter.Format(_booking.RemainingBalance, _booking.Currency)</div>
+                            <div class="h5 mb-0 text-danger">@CurrencyFormatter.Format(_booking.RemainingBalance, CurrencyDto.Euro)</div>
                         </div>
                     </div>
                 </div>
             </div>
 
-            @if (_paymentState.IsFormVisible)
-            {
-                <div class="card mb-3 border-success">
-                    <div class="card-header bg-success text-white py-1">
-                        <h6 class="mb-0 small">Record New Payment</h6>
-                    </div>
-                    <div class="card-body">
-                        <PaymentForm Model="_paymentState.FormModel"
-                                     Currency="_booking.Currency"
-                                     OnValidSubmit="@HandleSavePayment"
-                                     OnCancel="@HidePaymentForm"
-                                     IsSubmitting="@AreMutationsBlocked" />
-                    </div>
-                </div>
-            }
-
-            <PaymentsList Payments="_booking.Payments" Currency="_booking.Currency" />
         </div>
     </div>
 
@@ -360,12 +338,11 @@ else if (_booking is not null)
     private string? _errorMessage;
     private string? _refreshWarningMessage;
 
-    private readonly BookingEditPaymentState _paymentState = new();
 
     private ConfirmDialog? _confirmDialog;
     private ToastNotification? _toast;
 
-    private bool IsMutationInFlight => _isSubmitting || _paymentState.IsSubmitting;
+    private bool IsMutationInFlight => _isSubmitting;
 
     private bool AreMutationsBlocked => RequiresReload || IsMutationInFlight;
 
@@ -558,66 +535,6 @@ else if (_booking is not null)
         Navigation.NavigateTo("/bookings");
     }
 
-    private void ShowPaymentForm()
-    {
-        if (AreMutationsBlocked)
-        {
-            return;
-        }
-
-        _paymentState.ShowForm();
-        _paymentState.FormModel.PaymentDate = DateOnly.FromDateTime(TimeProvider.GetUtcNow().UtcDateTime);
-    }
-
-    private void HidePaymentForm()
-    {
-        _paymentState.HideForm();
-    }
-
-    private async Task HandleSavePayment()
-    {
-        if (AreMutationsBlocked)
-        {
-            return;
-        }
-
-        _paymentState.BeginSubmission();
-        try
-        {
-            var createDto = _paymentState.FormModel.ToDto();
-            var outcome = await BookingsApi.RecordPayment(Id, createDto, CancellationToken.None);
-            if (outcome.Kind != HttpOutcomeKind.Succeeded)
-            {
-                if (outcome.Kind is HttpOutcomeKind.UnexpectedStatus or
-                    HttpOutcomeKind.TransportFailure or
-                    HttpOutcomeKind.TimedOut)
-                {
-                    MarkPaymentResultUncertain();
-                }
-                else
-                {
-                    _toast?.ShowError(HttpOutcomeUserMessage.For(
-                        outcome.Kind,
-                        UserFacingErrorMessage.ForOperation("record the payment")));
-                }
-
-                return;
-            }
-
-            await TryRefreshBookingAndSyncModel();
-            _toast?.ShowSuccess("Payment recorded successfully.");
-            HidePaymentForm();
-        }
-        catch (Exception)
-        {
-            MarkPaymentResultUncertain();
-        }
-        finally
-        {
-            _paymentState.EndSubmission();
-        }
-    }
-
     private async Task HandleConfirm()
     {
         await ExecuteBookingAction(
@@ -757,13 +674,6 @@ else if (_booking is not null)
             _refreshWarningMessage = "The change was saved, but we couldn't refresh the booking. Reload the page to see the latest calculated values.";
             return false;
         }
-    }
-
-    private void MarkPaymentResultUncertain()
-    {
-        _refreshWarningMessage = "The payment may have been recorded, but we couldn't confirm the result. Reload the booking before recording another payment.";
-        _toast?.ShowError("We couldn't confirm whether the payment was recorded. Reload the booking before trying again.");
-        HidePaymentForm();
     }
 
     private async Task ReconcileAfterFailedMutation()

@@ -1,11 +1,11 @@
 using Microsoft.Extensions.DependencyInjection;
+using ViajantesTurismo.Admin.Application.Payments;
 using Microsoft.Extensions.Hosting;
 using ViajantesTurismo.Admin.Application.Bookings.CancelBooking;
 using ViajantesTurismo.Admin.Application.Bookings.CompleteBooking;
 using ViajantesTurismo.Admin.Application.Bookings.ConfirmBooking;
 using ViajantesTurismo.Admin.Application.Bookings.CreateBooking;
 using ViajantesTurismo.Admin.Application.Bookings.DeleteBooking;
-using ViajantesTurismo.Admin.Application.Bookings.RecordPayment;
 using ViajantesTurismo.Admin.Application.Bookings.UpdateBookingDetails;
 using ViajantesTurismo.Admin.Application.Bookings.UpdateBookingDiscount;
 using ViajantesTurismo.Admin.Application.Bookings.UpdateBookingNotes;
@@ -35,12 +35,43 @@ public static class ApplicationDependencyInjection
     {
         ArgumentNullException.ThrowIfNull(builder);
 
+        builder.Services.AddScoped<PaymentInstructionWorkflow>();
+        builder.Services.AddScoped<GeneratePaymentInstructionsCommandHandler>();
+        builder.Services.AddScoped<ApprovePaymentInstructionsCommandHandler>();
+        builder.Services.AddScoped<FinalizePaymentInstructionsCommandHandler>();
+        builder.Services.AddScoped<WithdrawPaymentInstructionApprovalCommandHandler>();
+        builder.Services.AddScoped<VoidPaymentInstructionsCommandHandler>();
+        builder.Services.AddScoped<ReviewPaymentInstructionsCommandHandler>();
+        builder.Services.AddScoped<BookingPaymentCommandExecutor>();
+        builder.Services.AddScoped<DraftBookingPaymentScheduleCommandHandler>();
+        builder.Services.AddScoped<ApproveBookingPaymentScheduleCommandHandler>();
+        builder.Services.AddScoped<DraftBookingPaymentQuoteCommandHandler>();
+        builder.Services.AddScoped<ApproveBookingPaymentQuoteCommandHandler>();
+        builder.Services.AddScoped<RecordBookingReceiptCommandHandler>();
+        builder.Services.AddScoped<DraftBookingReceiptReconciliationCommandHandler>();
+        builder.Services.AddScoped<ApproveBookingReceiptReconciliationCommandHandler>();
+        builder.Services.AddScoped<AllocateBookingPaymentCommandHandler>();
+        builder.Services.AddScoped<ReleaseBookingPaymentAllocationsCommandHandler>();
+        builder.Services.AddScoped<ReverseBookingReceiptCommandHandler>();
+        builder.Services.AddScoped<DraftBookingPaymentRefundCommandHandler>();
+        builder.Services.AddScoped<ApproveBookingPaymentRefundCommandHandler>();
+        builder.Services.AddScoped<CorrectBookingPaymentRefundCommandHandler>();
+        builder.Services.AddScoped<ReviewBookingFinancialRecordCommandHandler>();
+        builder.Services.AddScoped<WithdrawBookingFinancialApprovalCommandHandler>();
+        builder.Services.AddScoped<PaymentCommandExecutor>();
+        builder.Services.AddScoped<PaymentAccountCommandExecutor>();
+        builder.Services.AddScoped<CreatePaymentAccountCommandHandler>();
+        builder.Services.AddScoped<UpdatePaymentAccountCommandHandler>();
+        builder.Services.AddScoped<VerifyPaymentAccountCommandHandler>();
+        builder.Services.AddScoped<ReviewPaymentAccountCommandHandler>();
+        builder.Services.AddScoped<RetirePaymentAccountCommandHandler>();
+        builder.Services.AddScoped<WithdrawPaymentAccountVerificationCommandHandler>();
+
         builder.Services.AddScoped<CancelBookingCommandHandler>();
         builder.Services.AddScoped<CompleteBookingCommandHandler>();
         builder.Services.AddScoped<ConfirmBookingCommandHandler>();
         builder.Services.AddScoped<CreateBookingCommandHandler>();
         builder.Services.AddScoped<DeleteBookingCommandHandler>();
-        builder.Services.AddScoped<RecordPaymentCommandHandler>();
         builder.Services.AddScoped<UpdateBookingDetailsCommandHandler>();
         builder.Services.AddScoped<UpdateBookingDiscountCommandHandler>();
         builder.Services.AddScoped<UpdateBookingNotesCommandHandler>();

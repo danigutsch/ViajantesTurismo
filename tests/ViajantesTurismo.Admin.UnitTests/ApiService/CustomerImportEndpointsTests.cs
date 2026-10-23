@@ -1,3 +1,4 @@
+using PandaBear.Testing.AspNetCore;
 using System.Net;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
@@ -243,6 +244,7 @@ public sealed class CustomerImportEndpointsTests
         {
             EnvironmentName = Environments.Development
         });
+        builder.Services.AddTestRequestBindingDefaults();
         builder.WebHost.UseKestrel().UseUrls("http://127.0.0.1:0");
         builder.Services.AddAdminSecurityBaseline(builder.Configuration);
         builder.Services.AddAuthorization(options =>

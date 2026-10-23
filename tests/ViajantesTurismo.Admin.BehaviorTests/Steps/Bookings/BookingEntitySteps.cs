@@ -130,31 +130,31 @@ public sealed class BookingEntitySteps(BookingContext bookingContext)
     public void ThenTheBookingShouldHaveRoomType(string expectedRoomType)
     {
         var type = Enum.Parse<RoomType>(expectedRoomType);
-        (bookingContext.Booking.RoomType).ShouldBe(type);
+        bookingContext.Booking.RoomType.ShouldBe(type);
     }
 
     [Then(@"the booking update should fail with validation error for ""(.*)""")]
     public void ThenTheBookingUpdateShouldFailWithValidationErrorFor(string fieldName)
     {
-        (bookingContext.BookingOperationResult).ShouldNotBeNull();
-        (bookingContext.BookingOperationResult.Value.IsSuccess).ShouldBeFalse();
-        (bookingContext.BookingOperationResult.Value.Status).ShouldBe(ResultStatus.Invalid);
-        var errorDetails = (bookingContext.BookingOperationResult.Value.ErrorDetails).ShouldNotBeNull();
-        var validationErrors = (errorDetails.ValidationErrors).ShouldNotBeNull();
-        (validationErrors.Keys).ShouldContain(fieldName);
+        bookingContext.BookingOperationResult.ShouldNotBeNull();
+        bookingContext.BookingOperationResult.Value.IsSuccess.ShouldBeFalse();
+        bookingContext.BookingOperationResult.Value.Status.ShouldBe(ResultStatus.Invalid);
+        var errorDetails = bookingContext.BookingOperationResult.Value.ErrorDetails.ShouldNotBeNull();
+        var validationErrors = errorDetails.ValidationErrors.ShouldNotBeNull();
+        validationErrors.Keys.ShouldContain(fieldName);
     }
 
     [Then("the booking creation should fail")]
     public void ThenTheBookingCreationShouldFail()
     {
-        (bookingContext.BookingCreationResult).ShouldNotBeNull();
-        (bookingContext.BookingCreationResult.Value.IsSuccess).ShouldBeFalse();
+        bookingContext.BookingCreationResult.ShouldNotBeNull();
+        bookingContext.BookingCreationResult.Value.IsSuccess.ShouldBeFalse();
     }
 
     [Then("the booking total price should be (.*)")]
     public void ThenTheBookingTotalPriceShouldBe(decimal expectedPrice)
     {
-        (bookingContext.Booking.TotalPrice).ShouldBe(expectedPrice);
+        bookingContext.Booking.TotalPrice.ShouldBe(expectedPrice);
     }
 
     [Then(@"the error should be for field ""(.*)""")]
@@ -163,27 +163,27 @@ public sealed class BookingEntitySteps(BookingContext bookingContext)
         // Check BookingCreationResult first, then BookingOperationResult, then BookingCustomerResult
         if (bookingContext.BookingCreationResult.HasValue)
         {
-            (bookingContext.BookingCreationResult.Value.IsSuccess).ShouldBeFalse();
-            (bookingContext.BookingCreationResult.Value.Status).ShouldBe(ResultStatus.Invalid);
-            var errorDetails = (bookingContext.BookingCreationResult.Value.ErrorDetails).ShouldNotBeNull();
-            var validationErrors = (errorDetails.ValidationErrors).ShouldNotBeNull();
-            (validationErrors.Keys).ShouldContain(fieldName);
+            bookingContext.BookingCreationResult.Value.IsSuccess.ShouldBeFalse();
+            bookingContext.BookingCreationResult.Value.Status.ShouldBe(ResultStatus.Invalid);
+            var errorDetails = bookingContext.BookingCreationResult.Value.ErrorDetails.ShouldNotBeNull();
+            var validationErrors = errorDetails.ValidationErrors.ShouldNotBeNull();
+            validationErrors.Keys.ShouldContain(fieldName);
         }
         else if (bookingContext.BookingOperationResult.HasValue)
         {
-            (bookingContext.BookingOperationResult.Value.IsSuccess).ShouldBeFalse();
-            (bookingContext.BookingOperationResult.Value.Status).ShouldBe(ResultStatus.Invalid);
-            var errorDetails = (bookingContext.BookingOperationResult.Value.ErrorDetails).ShouldNotBeNull();
-            var validationErrors = (errorDetails.ValidationErrors).ShouldNotBeNull();
-            (validationErrors.Keys).ShouldContain(fieldName);
+            bookingContext.BookingOperationResult.Value.IsSuccess.ShouldBeFalse();
+            bookingContext.BookingOperationResult.Value.Status.ShouldBe(ResultStatus.Invalid);
+            var errorDetails = bookingContext.BookingOperationResult.Value.ErrorDetails.ShouldNotBeNull();
+            var validationErrors = errorDetails.ValidationErrors.ShouldNotBeNull();
+            validationErrors.Keys.ShouldContain(fieldName);
         }
         else if (bookingContext.BookingCustomerResult.HasValue)
         {
-            (bookingContext.BookingCustomerResult.Value.IsSuccess).ShouldBeFalse();
-            (bookingContext.BookingCustomerResult.Value.Status).ShouldBe(ResultStatus.Invalid);
-            var errorDetails = (bookingContext.BookingCustomerResult.Value.ErrorDetails).ShouldNotBeNull();
-            var validationErrors = (errorDetails.ValidationErrors).ShouldNotBeNull();
-            (validationErrors.Keys).ShouldContain(fieldName);
+            bookingContext.BookingCustomerResult.Value.IsSuccess.ShouldBeFalse();
+            bookingContext.BookingCustomerResult.Value.Status.ShouldBe(ResultStatus.Invalid);
+            var errorDetails = bookingContext.BookingCustomerResult.Value.ErrorDetails.ShouldNotBeNull();
+            var validationErrors = errorDetails.ValidationErrors.ShouldNotBeNull();
+            validationErrors.Keys.ShouldContain(fieldName);
         }
         else
         {

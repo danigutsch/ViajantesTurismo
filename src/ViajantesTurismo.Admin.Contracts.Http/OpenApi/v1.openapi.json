@@ -1366,17 +1366,111 @@
         ]
       }
     },
-    "/api/v1/bookings/{id}/payments": {
+    "/api/v1/bookings/{bookingId}/finances": {
+      "get": {
+        "tags": [
+          "Bookings"
+        ],
+        "summary": "Retrieves masked booking finances.",
+        "description": "Retrieves masked financial history and approved EUR balances.",
+        "operationId": "GetBookingFinancialHistory",
+        "parameters": [
+          {
+            "name": "bookingId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GetBookingFinancialHistoryDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found"
+          },
+          "401": {
+            "description": "Authentication is required."
+          },
+          "403": {
+            "description": "The authenticated caller lacks the required permission."
+          }
+        },
+        "security": [
+          {
+            "Bearer": [ ]
+          }
+        ]
+      }
+    },
+    "/api/v1/bookings/{bookingId}/finances/details": {
+      "get": {
+        "tags": [
+          "Bookings"
+        ],
+        "summary": "Retrieves sensitive financial evidence.",
+        "description": "Audits Admin access to full settlement evidence references.",
+        "operationId": "GetBookingFinancialDetails",
+        "parameters": [
+          {
+            "name": "bookingId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GetBookingFinancialHistoryDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found"
+          },
+          "401": {
+            "description": "Authentication is required."
+          },
+          "403": {
+            "description": "The authenticated caller lacks the required permission."
+          }
+        },
+        "security": [
+          {
+            "Bearer": [ ]
+          }
+        ]
+      }
+    },
+    "/api/v1/bookings/{bookingId}/finances/schedules": {
       "post": {
         "tags": [
           "Bookings"
         ],
-        "summary": "Records a payment.",
-        "description": "Records a payment for a booking.",
-        "operationId": "RecordPayment",
+        "summary": "DraftBookingPaymentSchedule operation.",
+        "description": "Executes DraftBookingPaymentSchedule with a required idempotency key and revision precondition.",
+        "operationId": "DraftBookingPaymentSchedule",
         "parameters": [
           {
-            "name": "id",
+            "name": "bookingId",
             "in": "path",
             "required": true,
             "schema": {
@@ -1389,25 +1483,1310 @@
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/CreatePaymentDto"
+                "$ref": "#/components/schemas/CreatePaymentScheduleDto"
               }
             }
           },
           "required": true
         },
         "responses": {
-          "201": {
-            "description": "Created",
+          "200": {
+            "description": "OK",
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/GetPaymentDto"
+                  "$ref": "#/components/schemas/GetPaymentCommandResultDto"
                 }
               }
             }
           },
           "404": {
             "description": "Not Found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Conflict",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HttpValidationProblemDetails"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Authentication is required."
+          },
+          "403": {
+            "description": "The authenticated caller lacks the required permission."
+          }
+        },
+        "security": [
+          {
+            "Bearer": [ ]
+          }
+        ]
+      }
+    },
+    "/api/v1/bookings/{bookingId}/finances/schedules/{scheduleId}/approve": {
+      "post": {
+        "tags": [
+          "Bookings"
+        ],
+        "summary": "ApproveBookingPaymentSchedule operation.",
+        "description": "Executes ApproveBookingPaymentSchedule with a required idempotency key and revision precondition.",
+        "operationId": "ApproveBookingPaymentSchedule",
+        "parameters": [
+          {
+            "name": "bookingId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "scheduleId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ApproveFinancialRecordDto"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GetPaymentCommandResultDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Conflict",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HttpValidationProblemDetails"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Authentication is required."
+          },
+          "403": {
+            "description": "The authenticated caller lacks the required permission."
+          }
+        },
+        "security": [
+          {
+            "Bearer": [ ]
+          }
+        ]
+      }
+    },
+    "/api/v1/bookings/{bookingId}/finances/quotes": {
+      "post": {
+        "tags": [
+          "Bookings"
+        ],
+        "summary": "DraftBookingPaymentQuote operation.",
+        "description": "Executes DraftBookingPaymentQuote with a required idempotency key and revision precondition.",
+        "operationId": "DraftBookingPaymentQuote",
+        "parameters": [
+          {
+            "name": "bookingId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreatePaymentQuoteDto"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GetPaymentCommandResultDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Conflict",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HttpValidationProblemDetails"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Authentication is required."
+          },
+          "403": {
+            "description": "The authenticated caller lacks the required permission."
+          }
+        },
+        "security": [
+          {
+            "Bearer": [ ]
+          }
+        ]
+      }
+    },
+    "/api/v1/bookings/{bookingId}/finances/quotes/{quoteId}/approve": {
+      "post": {
+        "tags": [
+          "Bookings"
+        ],
+        "summary": "ApproveBookingPaymentQuote operation.",
+        "description": "Executes ApproveBookingPaymentQuote with a required idempotency key and revision precondition.",
+        "operationId": "ApproveBookingPaymentQuote",
+        "parameters": [
+          {
+            "name": "bookingId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "quoteId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ApproveFinancialRecordDto"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GetPaymentCommandResultDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Conflict",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HttpValidationProblemDetails"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Authentication is required."
+          },
+          "403": {
+            "description": "The authenticated caller lacks the required permission."
+          }
+        },
+        "security": [
+          {
+            "Bearer": [ ]
+          }
+        ]
+      }
+    },
+    "/api/v1/bookings/{bookingId}/finances/receipts": {
+      "post": {
+        "tags": [
+          "Bookings"
+        ],
+        "summary": "RecordBookingReceipt operation.",
+        "description": "Executes RecordBookingReceipt with a required idempotency key and revision precondition.",
+        "operationId": "RecordBookingReceipt",
+        "parameters": [
+          {
+            "name": "bookingId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateBookingReceiptDto"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GetPaymentCommandResultDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Conflict",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HttpValidationProblemDetails"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Authentication is required."
+          },
+          "403": {
+            "description": "The authenticated caller lacks the required permission."
+          }
+        },
+        "security": [
+          {
+            "Bearer": [ ]
+          }
+        ]
+      }
+    },
+    "/api/v1/bookings/{bookingId}/finances/receipts/{receiptId}/reconciliations": {
+      "post": {
+        "tags": [
+          "Bookings"
+        ],
+        "summary": "DraftBookingReceiptReconciliation operation.",
+        "description": "Executes DraftBookingReceiptReconciliation with a required idempotency key and revision precondition.",
+        "operationId": "DraftBookingReceiptReconciliation",
+        "parameters": [
+          {
+            "name": "bookingId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "receiptId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateReceiptReconciliationDto"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GetPaymentCommandResultDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Conflict",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HttpValidationProblemDetails"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Authentication is required."
+          },
+          "403": {
+            "description": "The authenticated caller lacks the required permission."
+          }
+        },
+        "security": [
+          {
+            "Bearer": [ ]
+          }
+        ]
+      }
+    },
+    "/api/v1/bookings/{bookingId}/finances/reconciliations/{reconciliationId}/approve": {
+      "post": {
+        "tags": [
+          "Bookings"
+        ],
+        "summary": "ApproveBookingReceiptReconciliation operation.",
+        "description": "Executes ApproveBookingReceiptReconciliation with a required idempotency key and revision precondition.",
+        "operationId": "ApproveBookingReceiptReconciliation",
+        "parameters": [
+          {
+            "name": "bookingId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "reconciliationId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ApproveFinancialRecordDto"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GetPaymentCommandResultDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Conflict",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HttpValidationProblemDetails"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Authentication is required."
+          },
+          "403": {
+            "description": "The authenticated caller lacks the required permission."
+          }
+        },
+        "security": [
+          {
+            "Bearer": [ ]
+          }
+        ]
+      }
+    },
+    "/api/v1/bookings/{bookingId}/finances/receipts/{receiptId}/allocations": {
+      "post": {
+        "tags": [
+          "Bookings"
+        ],
+        "summary": "AllocateBookingPayment operation.",
+        "description": "Executes AllocateBookingPayment with a required idempotency key and revision precondition.",
+        "operationId": "AllocateBookingPayment",
+        "parameters": [
+          {
+            "name": "bookingId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "receiptId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AllocatePaymentCreditDto"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GetPaymentCommandResultDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Conflict",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HttpValidationProblemDetails"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Authentication is required."
+          },
+          "403": {
+            "description": "The authenticated caller lacks the required permission."
+          }
+        },
+        "security": [
+          {
+            "Bearer": [ ]
+          }
+        ]
+      }
+    },
+    "/api/v1/bookings/{bookingId}/finances/allocation-releases": {
+      "post": {
+        "tags": [
+          "Bookings"
+        ],
+        "summary": "ReleaseBookingPaymentAllocations operation.",
+        "description": "Executes ReleaseBookingPaymentAllocations with a required idempotency key and revision precondition.",
+        "operationId": "ReleaseBookingPaymentAllocations",
+        "parameters": [
+          {
+            "name": "bookingId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AllocatePaymentCreditDto"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GetPaymentCommandResultDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Conflict",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HttpValidationProblemDetails"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Authentication is required."
+          },
+          "403": {
+            "description": "The authenticated caller lacks the required permission."
+          }
+        },
+        "security": [
+          {
+            "Bearer": [ ]
+          }
+        ]
+      }
+    },
+    "/api/v1/bookings/{bookingId}/finances/receipts/{receiptId}/reversals": {
+      "post": {
+        "tags": [
+          "Bookings"
+        ],
+        "summary": "ReverseBookingReceipt operation.",
+        "description": "Executes ReverseBookingReceipt with a required idempotency key and revision precondition.",
+        "operationId": "ReverseBookingReceipt",
+        "parameters": [
+          {
+            "name": "bookingId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "receiptId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ApproveFinancialRecordDto"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GetPaymentCommandResultDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Conflict",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HttpValidationProblemDetails"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Authentication is required."
+          },
+          "403": {
+            "description": "The authenticated caller lacks the required permission."
+          }
+        },
+        "security": [
+          {
+            "Bearer": [ ]
+          }
+        ]
+      }
+    },
+    "/api/v1/bookings/{bookingId}/finances/receipts/{receiptId}/refunds": {
+      "post": {
+        "tags": [
+          "Bookings"
+        ],
+        "summary": "DraftBookingPaymentRefund operation.",
+        "description": "Executes DraftBookingPaymentRefund with a required idempotency key and revision precondition.",
+        "operationId": "DraftBookingPaymentRefund",
+        "parameters": [
+          {
+            "name": "bookingId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "receiptId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreatePaymentRefundDto"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GetPaymentCommandResultDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Conflict",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HttpValidationProblemDetails"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Authentication is required."
+          },
+          "403": {
+            "description": "The authenticated caller lacks the required permission."
+          }
+        },
+        "security": [
+          {
+            "Bearer": [ ]
+          }
+        ]
+      }
+    },
+    "/api/v1/bookings/{bookingId}/finances/refunds/{refundId}/approve": {
+      "post": {
+        "tags": [
+          "Bookings"
+        ],
+        "summary": "ApproveBookingPaymentRefund operation.",
+        "description": "Executes ApproveBookingPaymentRefund with a required idempotency key and revision precondition.",
+        "operationId": "ApproveBookingPaymentRefund",
+        "parameters": [
+          {
+            "name": "bookingId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "refundId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ApproveFinancialRecordDto"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GetPaymentCommandResultDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Conflict",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HttpValidationProblemDetails"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Authentication is required."
+          },
+          "403": {
+            "description": "The authenticated caller lacks the required permission."
+          }
+        },
+        "security": [
+          {
+            "Bearer": [ ]
+          }
+        ]
+      }
+    },
+    "/api/v1/bookings/{bookingId}/finances/refunds/{refundId}/corrections": {
+      "post": {
+        "tags": [
+          "Bookings"
+        ],
+        "summary": "CorrectBookingPaymentRefund operation.",
+        "description": "Executes CorrectBookingPaymentRefund with a required idempotency key and revision precondition.",
+        "operationId": "CorrectBookingPaymentRefund",
+        "parameters": [
+          {
+            "name": "bookingId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "refundId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ApproveFinancialRecordDto"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GetPaymentCommandResultDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Conflict",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HttpValidationProblemDetails"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Authentication is required."
+          },
+          "403": {
+            "description": "The authenticated caller lacks the required permission."
+          }
+        },
+        "security": [
+          {
+            "Bearer": [ ]
+          }
+        ]
+      }
+    },
+    "/api/v1/bookings/{bookingId}/finances/records/{targetId}/review": {
+      "post": {
+        "tags": [
+          "Bookings"
+        ],
+        "summary": "ReviewBookingFinancialRecord operation.",
+        "description": "Executes ReviewBookingFinancialRecord with a required idempotency key and revision precondition.",
+        "operationId": "ReviewBookingFinancialRecord",
+        "parameters": [
+          {
+            "name": "bookingId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "targetId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ReviewFinancialRecordDto"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GetPaymentCommandResultDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Conflict",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HttpValidationProblemDetails"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Authentication is required."
+          },
+          "403": {
+            "description": "The authenticated caller lacks the required permission."
+          }
+        },
+        "security": [
+          {
+            "Bearer": [ ]
+          }
+        ]
+      }
+    },
+    "/api/v1/bookings/{bookingId}/finances/records/{targetId}/withdraw-approval": {
+      "post": {
+        "tags": [
+          "Bookings"
+        ],
+        "summary": "WithdrawBookingFinancialApproval operation.",
+        "description": "Executes WithdrawBookingFinancialApproval with a required idempotency key and revision precondition.",
+        "operationId": "WithdrawBookingFinancialApproval",
+        "parameters": [
+          {
+            "name": "bookingId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "targetId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ApproveFinancialRecordDto"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GetPaymentCommandResultDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Conflict",
             "content": {
               "application/json": {
                 "schema": {
@@ -2134,6 +3513,1444 @@
         ]
       }
     },
+    "/api/v1/documents/bookings/{bookingId}/payment-instructions": {
+      "get": {
+        "tags": [
+          "Documents"
+        ],
+        "summary": "Lists booking payment instructions.",
+        "description": "Lists retained protected payment instruction revisions.",
+        "operationId": "ListBookingPaymentInstructions",
+        "parameters": [
+          {
+            "name": "bookingId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/GetPaymentInstructionDto"
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Authentication is required."
+          },
+          "403": {
+            "description": "The authenticated caller lacks the required permission."
+          }
+        },
+        "security": [
+          {
+            "Bearer": [ ]
+          }
+        ]
+      },
+      "post": {
+        "tags": [
+          "Documents"
+        ],
+        "summary": "Generates payment instructions.",
+        "description": "Generates a new immutable protected instruction draft.",
+        "operationId": "GeneratePaymentInstructions",
+        "parameters": [
+          {
+            "name": "bookingId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/GeneratePaymentInstructionsDto"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GetPaymentInstructionDto"
+                }
+              }
+            }
+          },
+          "201": {
+            "description": "Created",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GetPaymentInstructionDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Conflict",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HttpValidationProblemDetails"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Authentication is required."
+          },
+          "403": {
+            "description": "The authenticated caller lacks the required permission."
+          }
+        },
+        "security": [
+          {
+            "Bearer": [ ]
+          }
+        ]
+      }
+    },
+    "/api/v1/documents/{id}/payment-instructions": {
+      "get": {
+        "tags": [
+          "Documents"
+        ],
+        "summary": "Retrieves payment instructions.",
+        "description": "Retrieves masked generated instruction fields and approval metadata.",
+        "operationId": "GetPaymentInstructions",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GetPaymentInstructionDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found"
+          },
+          "401": {
+            "description": "Authentication is required."
+          },
+          "403": {
+            "description": "The authenticated caller lacks the required permission."
+          }
+        },
+        "security": [
+          {
+            "Bearer": [ ]
+          }
+        ]
+      }
+    },
+    "/api/v1/documents/bookings/{bookingId}/payment-instructions/{id}/regenerate": {
+      "post": {
+        "tags": [
+          "Documents"
+        ],
+        "summary": "Regenerates payment instructions.",
+        "description": "Creates an immutable replacement from current approved sources.",
+        "operationId": "RegeneratePaymentInstructions",
+        "parameters": [
+          {
+            "name": "bookingId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/GeneratePaymentInstructionsDto"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GetPaymentInstructionDto"
+                }
+              }
+            }
+          },
+          "201": {
+            "description": "Created",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GetPaymentInstructionDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Conflict",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HttpValidationProblemDetails"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Authentication is required."
+          },
+          "403": {
+            "description": "The authenticated caller lacks the required permission."
+          }
+        },
+        "security": [
+          {
+            "Bearer": [ ]
+          }
+        ]
+      }
+    },
+    "/api/v1/documents/{id}/payment-instructions/approve": {
+      "post": {
+        "tags": [
+          "Documents"
+        ],
+        "summary": "ApprovePaymentInstructions operation.",
+        "description": "Executes a confirmed, revision-preconditioned ApprovePaymentInstructions operation.",
+        "operationId": "ApprovePaymentInstructions",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdatePaymentInstructionsDto"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GetPaymentInstructionDto"
+                }
+              }
+            }
+          },
+          "201": {
+            "description": "Created",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GetPaymentInstructionDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Conflict",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HttpValidationProblemDetails"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Authentication is required."
+          },
+          "403": {
+            "description": "The authenticated caller lacks the required permission."
+          }
+        },
+        "security": [
+          {
+            "Bearer": [ ]
+          }
+        ]
+      }
+    },
+    "/api/v1/documents/{id}/payment-instructions/finalize": {
+      "post": {
+        "tags": [
+          "Documents"
+        ],
+        "summary": "FinalizePaymentInstructions operation.",
+        "description": "Executes a confirmed, revision-preconditioned FinalizePaymentInstructions operation.",
+        "operationId": "FinalizePaymentInstructions",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdatePaymentInstructionsDto"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GetPaymentInstructionDto"
+                }
+              }
+            }
+          },
+          "201": {
+            "description": "Created",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GetPaymentInstructionDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Conflict",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HttpValidationProblemDetails"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Authentication is required."
+          },
+          "403": {
+            "description": "The authenticated caller lacks the required permission."
+          }
+        },
+        "security": [
+          {
+            "Bearer": [ ]
+          }
+        ]
+      }
+    },
+    "/api/v1/documents/{id}/payment-instructions/withdraw-approval": {
+      "post": {
+        "tags": [
+          "Documents"
+        ],
+        "summary": "WithdrawPaymentInstructionApproval operation.",
+        "description": "Executes a confirmed, revision-preconditioned WithdrawPaymentInstructionApproval operation.",
+        "operationId": "WithdrawPaymentInstructionApproval",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdatePaymentInstructionsDto"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GetPaymentInstructionDto"
+                }
+              }
+            }
+          },
+          "201": {
+            "description": "Created",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GetPaymentInstructionDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Conflict",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HttpValidationProblemDetails"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Authentication is required."
+          },
+          "403": {
+            "description": "The authenticated caller lacks the required permission."
+          }
+        },
+        "security": [
+          {
+            "Bearer": [ ]
+          }
+        ]
+      }
+    },
+    "/api/v1/documents/{id}/payment-instructions/void": {
+      "post": {
+        "tags": [
+          "Documents"
+        ],
+        "summary": "VoidPaymentInstructions operation.",
+        "description": "Executes a confirmed, revision-preconditioned VoidPaymentInstructions operation.",
+        "operationId": "VoidPaymentInstructions",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdatePaymentInstructionsDto"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GetPaymentInstructionDto"
+                }
+              }
+            }
+          },
+          "201": {
+            "description": "Created",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GetPaymentInstructionDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Conflict",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HttpValidationProblemDetails"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Authentication is required."
+          },
+          "403": {
+            "description": "The authenticated caller lacks the required permission."
+          }
+        },
+        "security": [
+          {
+            "Bearer": [ ]
+          }
+        ]
+      }
+    },
+    "/api/v1/documents/{id}/payment-instructions/review": {
+      "post": {
+        "tags": [
+          "Documents"
+        ],
+        "summary": "ReviewPaymentInstructions operation.",
+        "description": "Executes a confirmed, revision-preconditioned ReviewPaymentInstructions operation.",
+        "operationId": "ReviewPaymentInstructions",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ReviewPaymentInstructionsDto"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GetPaymentInstructionDto"
+                }
+              }
+            }
+          },
+          "201": {
+            "description": "Created",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GetPaymentInstructionDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Conflict",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HttpValidationProblemDetails"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Authentication is required."
+          },
+          "403": {
+            "description": "The authenticated caller lacks the required permission."
+          }
+        },
+        "security": [
+          {
+            "Bearer": [ ]
+          }
+        ]
+      }
+    },
+    "/api/v1/payment-accounts": {
+      "get": {
+        "tags": [
+          "PaymentAccounts"
+        ],
+        "summary": "Lists masked payment accounts.",
+        "description": "Lists masked recipient accounts.",
+        "operationId": "ListPaymentAccounts",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/GetPaymentAccountDto"
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Authentication is required."
+          },
+          "403": {
+            "description": "The authenticated caller lacks the required permission."
+          }
+        },
+        "security": [
+          {
+            "Bearer": [ ]
+          }
+        ]
+      },
+      "post": {
+        "tags": [
+          "PaymentAccounts"
+        ],
+        "summary": "CreatePaymentAccount operation.",
+        "description": "Executes the revision-preconditioned CreatePaymentAccount operation.",
+        "operationId": "CreatePaymentAccount",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreatePaymentAccountDto"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GetPaymentAccountDto"
+                }
+              }
+            }
+          },
+          "201": {
+            "description": "Created",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GetPaymentAccountDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Conflict",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HttpValidationProblemDetails"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Authentication is required."
+          },
+          "403": {
+            "description": "The authenticated caller lacks the required permission."
+          }
+        },
+        "security": [
+          {
+            "Bearer": [ ]
+          }
+        ]
+      }
+    },
+    "/api/v1/payment-accounts/{id}": {
+      "get": {
+        "tags": [
+          "PaymentAccounts"
+        ],
+        "summary": "Retrieves a masked payment account.",
+        "description": "Retrieves masked account and revision metadata.",
+        "operationId": "GetPaymentAccount",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GetPaymentAccountDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found"
+          },
+          "401": {
+            "description": "Authentication is required."
+          },
+          "403": {
+            "description": "The authenticated caller lacks the required permission."
+          }
+        },
+        "security": [
+          {
+            "Bearer": [ ]
+          }
+        ]
+      },
+      "put": {
+        "tags": [
+          "PaymentAccounts"
+        ],
+        "summary": "UpdatePaymentAccount operation.",
+        "description": "Executes the revision-preconditioned UpdatePaymentAccount operation.",
+        "operationId": "UpdatePaymentAccount",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdatePaymentAccountDto"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GetPaymentAccountDto"
+                }
+              }
+            }
+          },
+          "201": {
+            "description": "Created",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GetPaymentAccountDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Conflict",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HttpValidationProblemDetails"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Authentication is required."
+          },
+          "403": {
+            "description": "The authenticated caller lacks the required permission."
+          }
+        },
+        "security": [
+          {
+            "Bearer": [ ]
+          }
+        ]
+      }
+    },
+    "/api/v1/payment-accounts/{id}/recipient": {
+      "get": {
+        "tags": [
+          "PaymentAccounts"
+        ],
+        "summary": "Retrieves sensitive recipient details.",
+        "description": "Audits Admin access to full recipient details.",
+        "operationId": "GetPaymentAccountRecipient",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GetPaymentAccountDetailsDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found"
+          },
+          "401": {
+            "description": "Authentication is required."
+          },
+          "403": {
+            "description": "The authenticated caller lacks the required permission."
+          }
+        },
+        "security": [
+          {
+            "Bearer": [ ]
+          }
+        ]
+      }
+    },
+    "/api/v1/payment-accounts/{id}/verify": {
+      "post": {
+        "tags": [
+          "PaymentAccounts"
+        ],
+        "summary": "VerifyPaymentAccount operation.",
+        "description": "Executes the revision-preconditioned VerifyPaymentAccount operation.",
+        "operationId": "VerifyPaymentAccount",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/VerifyPaymentAccountDto"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GetPaymentAccountDto"
+                }
+              }
+            }
+          },
+          "201": {
+            "description": "Created",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GetPaymentAccountDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Conflict",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HttpValidationProblemDetails"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Authentication is required."
+          },
+          "403": {
+            "description": "The authenticated caller lacks the required permission."
+          }
+        },
+        "security": [
+          {
+            "Bearer": [ ]
+          }
+        ]
+      }
+    },
+    "/api/v1/payment-accounts/{id}/review": {
+      "post": {
+        "tags": [
+          "PaymentAccounts"
+        ],
+        "summary": "ReviewPaymentAccount operation.",
+        "description": "Executes the revision-preconditioned ReviewPaymentAccount operation.",
+        "operationId": "ReviewPaymentAccount",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ReviewPaymentAccountDto"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GetPaymentAccountDto"
+                }
+              }
+            }
+          },
+          "201": {
+            "description": "Created",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GetPaymentAccountDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Conflict",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HttpValidationProblemDetails"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Authentication is required."
+          },
+          "403": {
+            "description": "The authenticated caller lacks the required permission."
+          }
+        },
+        "security": [
+          {
+            "Bearer": [ ]
+          }
+        ]
+      }
+    },
+    "/api/v1/payment-accounts/{id}/retire": {
+      "post": {
+        "tags": [
+          "PaymentAccounts"
+        ],
+        "summary": "RetirePaymentAccount operation.",
+        "description": "Executes the revision-preconditioned RetirePaymentAccount operation.",
+        "operationId": "RetirePaymentAccount",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RetirePaymentAccountDto"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GetPaymentAccountDto"
+                }
+              }
+            }
+          },
+          "201": {
+            "description": "Created",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GetPaymentAccountDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Conflict",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HttpValidationProblemDetails"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Authentication is required."
+          },
+          "403": {
+            "description": "The authenticated caller lacks the required permission."
+          }
+        },
+        "security": [
+          {
+            "Bearer": [ ]
+          }
+        ]
+      }
+    },
+    "/api/v1/payment-accounts/{id}/withdraw-verification": {
+      "post": {
+        "tags": [
+          "PaymentAccounts"
+        ],
+        "summary": "WithdrawPaymentAccountVerification operation.",
+        "description": "Executes the revision-preconditioned WithdrawPaymentAccountVerification operation.",
+        "operationId": "WithdrawPaymentAccountVerification",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/WithdrawPaymentAccountVerificationDto"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GetPaymentAccountDto"
+                }
+              }
+            }
+          },
+          "201": {
+            "description": "Created",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GetPaymentAccountDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Conflict",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HttpValidationProblemDetails"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Authentication is required."
+          },
+          "403": {
+            "description": "The authenticated caller lacks the required permission."
+          }
+        },
+        "security": [
+          {
+            "Bearer": [ ]
+          }
+        ]
+      }
+    },
     "/api/v1/docs/errors": {
       "get": {
         "tags": [
@@ -2304,6 +5121,65 @@
           }
         }
       },
+      "AllocatePaymentCreditDto": {
+        "required": [
+          "expectedVersion",
+          "allocations",
+          "reason",
+          "confirmed"
+        ],
+        "type": "object",
+        "properties": {
+          "expectedVersion": {
+            "maximum": 9223372036854776000,
+            "minimum": 0,
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "format": "int64"
+          },
+          "allocations": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/InstallmentAllocationDto"
+            }
+          },
+          "reason": {
+            "$ref": "#/components/schemas/FinancialReasonDto"
+          },
+          "confirmed": {
+            "type": "boolean"
+          }
+        }
+      },
+      "ApproveFinancialRecordDto": {
+        "required": [
+          "expectedVersion",
+          "reason",
+          "confirmed"
+        ],
+        "type": "object",
+        "properties": {
+          "expectedVersion": {
+            "maximum": 9223372036854776000,
+            "minimum": 0,
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "format": "int64"
+          },
+          "reason": {
+            "$ref": "#/components/schemas/FinancialReasonDto"
+          },
+          "confirmed": {
+            "type": "boolean"
+          }
+        }
+      },
       "BedTypeDto": {
         "type": "integer"
       },
@@ -2311,6 +5187,9 @@
         "type": "integer"
       },
       "BookingStatusDto": {
+        "type": "integer"
+      },
+      "BrazilianAccountTypeDto": {
         "type": "integer"
       },
       "ContactInfoDto": {
@@ -2419,6 +5298,75 @@
           }
         }
       },
+      "CreateBookingReceiptDto": {
+        "required": [
+          "expectedVersion",
+          "settlementCurrency",
+          "gross",
+          "fees",
+          "paymentDate",
+          "method",
+          "reference",
+          "proposedAllocations"
+        ],
+        "type": "object",
+        "properties": {
+          "expectedVersion": {
+            "maximum": 9223372036854776000,
+            "minimum": 0,
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "format": "int64"
+          },
+          "settlementCurrency": {
+            "$ref": "#/components/schemas/CurrencyDto"
+          },
+          "gross": {
+            "pattern": "^-?(?:0|[1-9]\\d*)(?:\\.\\d+)?$",
+            "type": [
+              "number",
+              "string"
+            ],
+            "format": "double"
+          },
+          "fees": {
+            "pattern": "^-?(?:0|[1-9]\\d*)(?:\\.\\d+)?$",
+            "type": [
+              "number",
+              "string"
+            ],
+            "format": "double"
+          },
+          "paymentDate": {
+            "type": "string",
+            "format": "date"
+          },
+          "settledAt": {
+            "type": [
+              "null",
+              "string"
+            ],
+            "format": "date-time"
+          },
+          "method": {
+            "$ref": "#/components/schemas/PaymentMethodDto"
+          },
+          "reference": {
+            "maxLength": 128,
+            "minLength": 0,
+            "type": "string"
+          },
+          "proposedAllocations": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/InstallmentAllocationDto"
+            }
+          }
+        }
+      },
       "CreateCustomerDto": {
         "required": [
           "personalInfo",
@@ -2458,16 +5406,46 @@
           }
         }
       },
-      "CreatePaymentDto": {
+      "CreatePaymentAccountDto": {
         "required": [
-          "amount",
-          "paymentDate",
-          "method"
+          "label",
+          "recipient"
         ],
         "type": "object",
         "properties": {
-          "amount": {
-            "minimum": 0.01,
+          "label": {
+            "maxLength": 128,
+            "minLength": 0,
+            "type": "string"
+          },
+          "recipient": {
+            "$ref": "#/components/schemas/PaymentRecipientDto"
+          }
+        }
+      },
+      "CreatePaymentQuoteDto": {
+        "required": [
+          "expectedVersion",
+          "brlPerEuro",
+          "source",
+          "reference",
+          "agreedAt",
+          "expiresAt",
+          "forRefund"
+        ],
+        "type": "object",
+        "properties": {
+          "expectedVersion": {
+            "maximum": 9223372036854776000,
+            "minimum": 0,
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "format": "int64"
+          },
+          "brlPerEuro": {
             "pattern": "^-?(?:0|[1-9]\\d*)(?:\\.\\d+)?$",
             "type": [
               "number",
@@ -2475,28 +5453,187 @@
             ],
             "format": "double"
           },
-          "paymentDate": {
-            "type": "string",
-            "format": "date"
-          },
-          "method": {
-            "$ref": "#/components/schemas/PaymentMethodDto"
-          },
-          "referenceNumber": {
+          "source": {
             "maxLength": 128,
             "minLength": 0,
-            "type": [
-              "null",
-              "string"
-            ]
+            "type": "string"
           },
-          "notes": {
-            "maxLength": 500,
+          "reference": {
+            "maxLength": 128,
             "minLength": 0,
+            "type": "string"
+          },
+          "agreedAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "expiresAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "forRefund": {
+            "type": "boolean"
+          }
+        }
+      },
+      "CreatePaymentRefundDto": {
+        "required": [
+          "expectedVersion",
+          "actualSettlement",
+          "originalCashBasis",
+          "euroCreditReversed",
+          "euroCashPayable",
+          "reversedAllocations",
+          "reference",
+          "performedAt"
+        ],
+        "type": "object",
+        "properties": {
+          "expectedVersion": {
+            "maximum": 9223372036854776000,
+            "minimum": 0,
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "format": "int64"
+          },
+          "actualSettlement": {
+            "pattern": "^-?(?:0|[1-9]\\d*)(?:\\.\\d+)?$",
+            "type": [
+              "number",
+              "string"
+            ],
+            "format": "double"
+          },
+          "originalCashBasis": {
+            "pattern": "^-?(?:0|[1-9]\\d*)(?:\\.\\d+)?$",
+            "type": [
+              "number",
+              "string"
+            ],
+            "format": "double"
+          },
+          "euroCreditReversed": {
+            "pattern": "^-?(?:0|[1-9]\\d*)(?:\\.\\d+)?$",
+            "type": [
+              "number",
+              "string"
+            ],
+            "format": "double"
+          },
+          "euroCashPayable": {
+            "pattern": "^-?(?:0|[1-9]\\d*)(?:\\.\\d+)?$",
+            "type": [
+              "number",
+              "string"
+            ],
+            "format": "double"
+          },
+          "refundQuoteId": {
             "type": [
               "null",
               "string"
-            ]
+            ],
+            "format": "uuid"
+          },
+          "reversedAllocations": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/InstallmentAllocationDto"
+            }
+          },
+          "reference": {
+            "maxLength": 128,
+            "minLength": 0,
+            "type": "string"
+          },
+          "performedAt": {
+            "type": "string",
+            "format": "date-time"
+          }
+        }
+      },
+      "CreatePaymentScheduleDto": {
+        "required": [
+          "expectedVersion",
+          "obligationEuro",
+          "installments"
+        ],
+        "type": "object",
+        "properties": {
+          "expectedVersion": {
+            "maximum": 9223372036854776000,
+            "minimum": 0,
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "format": "int64"
+          },
+          "obligationEuro": {
+            "pattern": "^-?(?:0|[1-9]\\d*)(?:\\.\\d+)?$",
+            "type": [
+              "number",
+              "string"
+            ],
+            "format": "double"
+          },
+          "installments": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/PaymentInstallmentDto"
+            }
+          }
+        }
+      },
+      "CreateReceiptReconciliationDto": {
+        "required": [
+          "expectedVersion",
+          "euroCredit",
+          "allocations"
+        ],
+        "type": "object",
+        "properties": {
+          "expectedVersion": {
+            "maximum": 9223372036854776000,
+            "minimum": 0,
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "format": "int64"
+          },
+          "euroCredit": {
+            "pattern": "^-?(?:0|[1-9]\\d*)(?:\\.\\d+)?$",
+            "type": [
+              "number",
+              "string"
+            ],
+            "format": "double"
+          },
+          "quoteId": {
+            "type": [
+              "null",
+              "string"
+            ],
+            "format": "uuid"
+          },
+          "instructionId": {
+            "type": [
+              "null",
+              "string"
+            ],
+            "format": "uuid"
+          },
+          "allocations": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/InstallmentAllocationDto"
+            }
           }
         }
       },
@@ -2678,6 +5815,110 @@
           }
         }
       },
+      "FinancialApprovalDto": {
+        "required": [
+          "createdBy",
+          "createdAt",
+          "selfApproved"
+        ],
+        "type": "object",
+        "properties": {
+          "createdBy": {
+            "type": "string"
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "approvedBy": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "approvedAt": {
+            "type": [
+              "null",
+              "string"
+            ],
+            "format": "date-time"
+          },
+          "approvalReason": {
+            "oneOf": [
+              {
+                "type": "null"
+              },
+              {
+                "$ref": "#/components/schemas/FinancialReasonDto"
+              }
+            ]
+          },
+          "selfApproved": {
+            "type": "boolean"
+          }
+        }
+      },
+      "FinancialReasonDto": {
+        "type": "integer"
+      },
+      "GeneratePaymentInstructionsDto": {
+        "required": [
+          "expectedVersion",
+          "accountId",
+          "expectedAccountVersion",
+          "installmentIds"
+        ],
+        "type": "object",
+        "properties": {
+          "expectedDocumentVersion": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "null",
+              "integer",
+              "string"
+            ],
+            "format": "int64"
+          },
+          "expectedVersion": {
+            "maximum": 9223372036854776000,
+            "minimum": 0,
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "format": "int64"
+          },
+          "accountId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "expectedAccountVersion": {
+            "maximum": 9223372036854776000,
+            "minimum": 1,
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "format": "int64"
+          },
+          "quoteId": {
+            "type": [
+              "null",
+              "string"
+            ],
+            "format": "uuid"
+          },
+          "installmentIds": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        }
+      },
       "GetBookingDto": {
         "required": [
           "id",
@@ -2695,12 +5936,29 @@
           "discountType",
           "discountAmount",
           "currency",
-          "payments",
           "amountPaid",
           "remainingBalance"
         ],
         "type": "object",
         "properties": {
+          "financialVersion": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "null",
+              "integer",
+              "string"
+            ],
+            "format": "int64"
+          },
+          "approvedObligationEuro": {
+            "pattern": "^-?(?:0|[1-9]\\d*)(?:\\.\\d+)?$",
+            "type": [
+              "null",
+              "number",
+              "string"
+            ],
+            "format": "double"
+          },
           "id": {
             "type": "string",
             "format": "uuid"
@@ -2795,12 +6053,6 @@
               "string"
             ]
           },
-          "payments": {
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/GetPaymentDto"
-            }
-          },
           "amountPaid": {
             "pattern": "^-?(?:0|[1-9]\\d*)(?:\\.\\d+)?$",
             "type": [
@@ -2810,6 +6062,252 @@
             "format": "double"
           },
           "remainingBalance": {
+            "pattern": "^-?(?:0|[1-9]\\d*)(?:\\.\\d+)?$",
+            "type": [
+              "number",
+              "string"
+            ],
+            "format": "double"
+          }
+        }
+      },
+      "GetBookingFinancialHistoryDto": {
+        "required": [
+          "bookingId",
+          "version",
+          "obligationCurrency",
+          "termsStale",
+          "approvedObligationEuro",
+          "outstandingEuro",
+          "unallocatedEuroCredit",
+          "businessDate",
+          "overdue",
+          "schedules",
+          "quotes",
+          "receipts",
+          "reconciliations",
+          "allocations",
+          "refunds",
+          "reversals",
+          "reviews"
+        ],
+        "type": "object",
+        "properties": {
+          "bookingId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "version": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "format": "int64"
+          },
+          "obligationCurrency": {
+            "$ref": "#/components/schemas/CurrencyDto"
+          },
+          "termsStale": {
+            "type": "boolean"
+          },
+          "approvedObligationEuro": {
+            "pattern": "^-?(?:0|[1-9]\\d*)(?:\\.\\d+)?$",
+            "type": [
+              "number",
+              "string"
+            ],
+            "format": "double"
+          },
+          "outstandingEuro": {
+            "pattern": "^-?(?:0|[1-9]\\d*)(?:\\.\\d+)?$",
+            "type": [
+              "number",
+              "string"
+            ],
+            "format": "double"
+          },
+          "unallocatedEuroCredit": {
+            "pattern": "^-?(?:0|[1-9]\\d*)(?:\\.\\d+)?$",
+            "type": [
+              "number",
+              "string"
+            ],
+            "format": "double"
+          },
+          "businessDate": {
+            "type": "string",
+            "format": "date"
+          },
+          "overdue": {
+            "type": "boolean"
+          },
+          "schedules": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/GetPaymentScheduleDto"
+            }
+          },
+          "quotes": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/GetPaymentQuoteDto"
+            }
+          },
+          "receipts": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/GetBookingReceiptDto"
+            }
+          },
+          "reconciliations": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/GetReceiptReconciliationDto"
+            }
+          },
+          "allocations": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/GetPaymentAllocationDto"
+            }
+          },
+          "refunds": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/GetPaymentRefundDto"
+            }
+          },
+          "reversals": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/GetFinancialReversalDto"
+            }
+          },
+          "reviews": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/GetFinancialReviewDto"
+            }
+          }
+        }
+      },
+      "GetBookingReceiptDto": {
+        "required": [
+          "id",
+          "settlementCurrency",
+          "gross",
+          "fees",
+          "net",
+          "paymentDate",
+          "reference",
+          "createdBy",
+          "createdAt",
+          "method",
+          "reversed",
+          "pendingReconciliation",
+          "approvedEuroCredit",
+          "unallocatedEuroCredit",
+          "unallocatedCashCredit",
+          "refundableCashBasis",
+          "settlementDifference"
+        ],
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "settlementCurrency": {
+            "$ref": "#/components/schemas/CurrencyDto"
+          },
+          "gross": {
+            "pattern": "^-?(?:0|[1-9]\\d*)(?:\\.\\d+)?$",
+            "type": [
+              "number",
+              "string"
+            ],
+            "format": "double"
+          },
+          "fees": {
+            "pattern": "^-?(?:0|[1-9]\\d*)(?:\\.\\d+)?$",
+            "type": [
+              "number",
+              "string"
+            ],
+            "format": "double"
+          },
+          "net": {
+            "pattern": "^-?(?:0|[1-9]\\d*)(?:\\.\\d+)?$",
+            "type": [
+              "number",
+              "string"
+            ],
+            "format": "double"
+          },
+          "paymentDate": {
+            "type": "string",
+            "format": "date"
+          },
+          "settledAt": {
+            "type": [
+              "null",
+              "string"
+            ],
+            "format": "date-time"
+          },
+          "reference": {
+            "type": "string"
+          },
+          "createdBy": {
+            "type": "string"
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "method": {
+            "$ref": "#/components/schemas/PaymentMethodDto"
+          },
+          "reversed": {
+            "type": "boolean"
+          },
+          "pendingReconciliation": {
+            "type": "boolean"
+          },
+          "approvedEuroCredit": {
+            "pattern": "^-?(?:0|[1-9]\\d*)(?:\\.\\d+)?$",
+            "type": [
+              "number",
+              "string"
+            ],
+            "format": "double"
+          },
+          "unallocatedEuroCredit": {
+            "pattern": "^-?(?:0|[1-9]\\d*)(?:\\.\\d+)?$",
+            "type": [
+              "number",
+              "string"
+            ],
+            "format": "double"
+          },
+          "unallocatedCashCredit": {
+            "pattern": "^-?(?:0|[1-9]\\d*)(?:\\.\\d+)?$",
+            "type": [
+              "number",
+              "string"
+            ],
+            "format": "double"
+          },
+          "refundableCashBasis": {
+            "pattern": "^-?(?:0|[1-9]\\d*)(?:\\.\\d+)?$",
+            "type": [
+              "number",
+              "string"
+            ],
+            "format": "double"
+          },
+          "settlementDifference": {
             "pattern": "^-?(?:0|[1-9]\\d*)(?:\\.\\d+)?$",
             "type": [
               "number",
@@ -3005,14 +6503,225 @@
           }
         }
       },
-      "GetPaymentDto": {
+      "GetFinancialReversalDto": {
         "required": [
           "id",
-          "bookingId",
-          "amount",
-          "paymentDate",
-          "method",
-          "recordedAt"
+          "targetId",
+          "operation",
+          "approvedBy",
+          "approvedAt",
+          "reason"
+        ],
+        "type": "object",
+        "properties": {
+          "allocationIds": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          "euroAmount": {
+            "pattern": "^-?(?:0|[1-9]\\d*)(?:\\.\\d+)?$",
+            "type": [
+              "null",
+              "number",
+              "string"
+            ],
+            "format": "double"
+          },
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "targetId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "operation": {
+            "type": "string"
+          },
+          "approvedBy": {
+            "type": "string"
+          },
+          "approvedAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "reason": {
+            "$ref": "#/components/schemas/FinancialReasonDto"
+          }
+        }
+      },
+      "GetFinancialReviewDto": {
+        "required": [
+          "targetId",
+          "targetRevision",
+          "reviewerId",
+          "reviewedAt",
+          "changesRequested"
+        ],
+        "type": "object",
+        "properties": {
+          "targetId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "targetRevision": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "format": "int32"
+          },
+          "reviewerId": {
+            "type": "string"
+          },
+          "reviewedAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "changesRequested": {
+            "type": "boolean"
+          }
+        }
+      },
+      "GetPaymentAccountDetailsDto": {
+        "required": [
+          "account",
+          "recipient"
+        ],
+        "type": "object",
+        "properties": {
+          "account": {
+            "$ref": "#/components/schemas/GetPaymentAccountDto"
+          },
+          "recipient": {
+            "$ref": "#/components/schemas/PaymentRecipientDto"
+          }
+        }
+      },
+      "GetPaymentAccountDto": {
+        "required": [
+          "settlementCurrency",
+          "id",
+          "version",
+          "label",
+          "status",
+          "kind",
+          "revisionId",
+          "revision",
+          "maskedIdentifier",
+          "createdBy",
+          "createdAt",
+          "verificationMethod",
+          "selfApproved",
+          "reviewOutcome",
+          "requiresAttention"
+        ],
+        "type": "object",
+        "properties": {
+          "settlementCurrency": {
+            "$ref": "#/components/schemas/CurrencyDto"
+          },
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "version": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "format": "int64"
+          },
+          "label": {
+            "type": "string"
+          },
+          "status": {
+            "$ref": "#/components/schemas/PaymentAccountStatusDto"
+          },
+          "kind": {
+            "$ref": "#/components/schemas/PaymentAccountKindDto"
+          },
+          "revisionId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "revision": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "format": "int32"
+          },
+          "maskedIdentifier": {
+            "type": "string"
+          },
+          "createdBy": {
+            "type": "string"
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "verifiedBy": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "verifiedAt": {
+            "type": [
+              "null",
+              "string"
+            ],
+            "format": "date-time"
+          },
+          "verificationMethod": {
+            "$ref": "#/components/schemas/PaymentAccountVerificationMethodDto"
+          },
+          "checkedAt": {
+            "type": [
+              "null",
+              "string"
+            ],
+            "format": "date-time"
+          },
+          "selfApproved": {
+            "type": "boolean"
+          },
+          "reviewedBy": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "reviewedAt": {
+            "type": [
+              "null",
+              "string"
+            ],
+            "format": "date-time"
+          },
+          "reviewOutcome": {
+            "$ref": "#/components/schemas/PaymentAccountReviewOutcomeDto"
+          },
+          "requiresAttention": {
+            "type": "boolean"
+          }
+        }
+      },
+      "GetPaymentAllocationDto": {
+        "required": [
+          "id",
+          "receiptId",
+          "installmentId",
+          "originalEuroCredit",
+          "activeEuroCredit"
         ],
         "type": "object",
         "properties": {
@@ -3020,11 +6729,15 @@
             "type": "string",
             "format": "uuid"
           },
-          "bookingId": {
+          "receiptId": {
             "type": "string",
             "format": "uuid"
           },
-          "amount": {
+          "installmentId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "originalEuroCredit": {
             "pattern": "^-?(?:0|[1-9]\\d*)(?:\\.\\d+)?$",
             "type": [
               "number",
@@ -3032,28 +6745,409 @@
             ],
             "format": "double"
           },
-          "paymentDate": {
+          "activeEuroCredit": {
+            "pattern": "^-?(?:0|[1-9]\\d*)(?:\\.\\d+)?$",
+            "type": [
+              "number",
+              "string"
+            ],
+            "format": "double"
+          }
+        }
+      },
+      "GetPaymentCommandResultDto": {
+        "required": [
+          "bookingId",
+          "resourceId"
+        ],
+        "type": "object",
+        "properties": {
+          "bookingId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "resourceId": {
+            "type": "string",
+            "format": "uuid"
+          }
+        }
+      },
+      "GetPaymentInstallmentDto": {
+        "required": [
+          "id",
+          "euroAmount",
+          "dueDate",
+          "allocatedEuro",
+          "outstandingEuro"
+        ],
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "euroAmount": {
+            "pattern": "^-?(?:0|[1-9]\\d*)(?:\\.\\d+)?$",
+            "type": [
+              "number",
+              "string"
+            ],
+            "format": "double"
+          },
+          "dueDate": {
             "type": "string",
             "format": "date"
           },
-          "method": {
-            "$ref": "#/components/schemas/PaymentMethodDto"
+          "allocatedEuro": {
+            "pattern": "^-?(?:0|[1-9]\\d*)(?:\\.\\d+)?$",
+            "type": [
+              "number",
+              "string"
+            ],
+            "format": "double"
           },
-          "referenceNumber": {
+          "outstandingEuro": {
+            "pattern": "^-?(?:0|[1-9]\\d*)(?:\\.\\d+)?$",
+            "type": [
+              "number",
+              "string"
+            ],
+            "format": "double"
+          }
+        }
+      },
+      "GetPaymentInstructionDto": {
+        "required": [
+          "document",
+          "documentVersion",
+          "accountId",
+          "accountRevisionId",
+          "maskedRecipient",
+          "eligible",
+          "euroAmount",
+          "settlementAmount",
+          "settlementCurrency",
+          "paymentReference",
+          "approval",
+          "reviews"
+        ],
+        "type": "object",
+        "properties": {
+          "document": {
+            "$ref": "#/components/schemas/GetDocumentDto"
+          },
+          "documentVersion": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "format": "int64"
+          },
+          "accountId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "accountRevisionId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "maskedRecipient": {
+            "type": "string"
+          },
+          "eligible": {
+            "type": "boolean"
+          },
+          "euroAmount": {
+            "pattern": "^-?(?:0|[1-9]\\d*)(?:\\.\\d+)?$",
+            "type": [
+              "number",
+              "string"
+            ],
+            "format": "double"
+          },
+          "settlementAmount": {
+            "pattern": "^-?(?:0|[1-9]\\d*)(?:\\.\\d+)?$",
+            "type": [
+              "number",
+              "string"
+            ],
+            "format": "double"
+          },
+          "settlementCurrency": {
+            "$ref": "#/components/schemas/CurrencyDto"
+          },
+          "paymentReference": {
+            "type": "string"
+          },
+          "quoteExpiresAt": {
             "type": [
               "null",
               "string"
-            ]
+            ],
+            "format": "date-time"
           },
-          "notes": {
+          "approval": {
+            "$ref": "#/components/schemas/FinancialApprovalDto"
+          },
+          "reviews": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/GetFinancialReviewDto"
+            }
+          }
+        }
+      },
+      "GetPaymentQuoteDto": {
+        "required": [
+          "id",
+          "brlPerEuro",
+          "source",
+          "reference",
+          "agreedAt",
+          "expiresAt",
+          "forRefund",
+          "approvalWithdrawn",
+          "approval"
+        ],
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "brlPerEuro": {
+            "pattern": "^-?(?:0|[1-9]\\d*)(?:\\.\\d+)?$",
             "type": [
-              "null",
+              "number",
               "string"
-            ]
+            ],
+            "format": "double"
           },
-          "recordedAt": {
+          "source": {
+            "type": "string"
+          },
+          "reference": {
+            "type": "string"
+          },
+          "agreedAt": {
             "type": "string",
             "format": "date-time"
+          },
+          "expiresAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "forRefund": {
+            "type": "boolean"
+          },
+          "approvalWithdrawn": {
+            "type": "boolean"
+          },
+          "approval": {
+            "$ref": "#/components/schemas/FinancialApprovalDto"
+          }
+        }
+      },
+      "GetPaymentRefundDto": {
+        "required": [
+          "id",
+          "receiptId",
+          "originalCashBasis",
+          "euroCreditReversed",
+          "euroCashPayable",
+          "actualSettlement",
+          "fxDifference",
+          "reference",
+          "performedAt",
+          "corrected",
+          "reversedAllocations",
+          "approval"
+        ],
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "receiptId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "originalCashBasis": {
+            "pattern": "^-?(?:0|[1-9]\\d*)(?:\\.\\d+)?$",
+            "type": [
+              "number",
+              "string"
+            ],
+            "format": "double"
+          },
+          "euroCreditReversed": {
+            "pattern": "^-?(?:0|[1-9]\\d*)(?:\\.\\d+)?$",
+            "type": [
+              "number",
+              "string"
+            ],
+            "format": "double"
+          },
+          "euroCashPayable": {
+            "pattern": "^-?(?:0|[1-9]\\d*)(?:\\.\\d+)?$",
+            "type": [
+              "number",
+              "string"
+            ],
+            "format": "double"
+          },
+          "actualSettlement": {
+            "pattern": "^-?(?:0|[1-9]\\d*)(?:\\.\\d+)?$",
+            "type": [
+              "number",
+              "string"
+            ],
+            "format": "double"
+          },
+          "fxDifference": {
+            "pattern": "^-?(?:0|[1-9]\\d*)(?:\\.\\d+)?$",
+            "type": [
+              "number",
+              "string"
+            ],
+            "format": "double"
+          },
+          "quoteId": {
+            "type": [
+              "null",
+              "string"
+            ],
+            "format": "uuid"
+          },
+          "reference": {
+            "type": "string"
+          },
+          "performedAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "corrected": {
+            "type": "boolean"
+          },
+          "reversedAllocations": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/InstallmentAllocationDto"
+            }
+          },
+          "approval": {
+            "$ref": "#/components/schemas/FinancialApprovalDto"
+          }
+        }
+      },
+      "GetPaymentScheduleDto": {
+        "required": [
+          "id",
+          "revision",
+          "obligationEuro",
+          "bookingPriceEuro",
+          "status",
+          "approvalWithdrawn",
+          "approval",
+          "installments"
+        ],
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "revision": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "format": "int32"
+          },
+          "obligationEuro": {
+            "pattern": "^-?(?:0|[1-9]\\d*)(?:\\.\\d+)?$",
+            "type": [
+              "number",
+              "string"
+            ],
+            "format": "double"
+          },
+          "bookingPriceEuro": {
+            "pattern": "^-?(?:0|[1-9]\\d*)(?:\\.\\d+)?$",
+            "type": [
+              "number",
+              "string"
+            ],
+            "format": "double"
+          },
+          "status": {
+            "$ref": "#/components/schemas/PaymentScheduleStatusDto"
+          },
+          "approvalWithdrawn": {
+            "type": "boolean"
+          },
+          "approval": {
+            "$ref": "#/components/schemas/FinancialApprovalDto"
+          },
+          "installments": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/GetPaymentInstallmentDto"
+            }
+          }
+        }
+      },
+      "GetReceiptReconciliationDto": {
+        "required": [
+          "id",
+          "receiptId",
+          "euroCredit",
+          "allocations",
+          "approval"
+        ],
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "receiptId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "euroCredit": {
+            "pattern": "^-?(?:0|[1-9]\\d*)(?:\\.\\d+)?$",
+            "type": [
+              "number",
+              "string"
+            ],
+            "format": "double"
+          },
+          "quoteId": {
+            "type": [
+              "null",
+              "string"
+            ],
+            "format": "uuid"
+          },
+          "instructionId": {
+            "type": [
+              "null",
+              "string"
+            ],
+            "format": "uuid"
+          },
+          "allocations": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/InstallmentAllocationDto"
+            }
+          },
+          "approval": {
+            "$ref": "#/components/schemas/FinancialApprovalDto"
           }
         }
       },
@@ -3349,6 +7443,27 @@
           }
         }
       },
+      "InstallmentAllocationDto": {
+        "required": [
+          "targetId",
+          "euroAmount"
+        ],
+        "type": "object",
+        "properties": {
+          "targetId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "euroAmount": {
+            "pattern": "^-?(?:0|[1-9]\\d*)(?:\\.\\d+)?$",
+            "type": [
+              "number",
+              "string"
+            ],
+            "format": "double"
+          }
+        }
+      },
       "MedicalInfoDto": {
         "required": [
           "allergies",
@@ -3374,7 +7489,129 @@
           }
         }
       },
+      "PaymentAccountKindDto": {
+        "type": "integer"
+      },
+      "PaymentAccountReasonDto": {
+        "type": "integer"
+      },
+      "PaymentAccountReviewOutcomeDto": {
+        "type": "integer"
+      },
+      "PaymentAccountStatusDto": {
+        "type": "integer"
+      },
+      "PaymentAccountVerificationMethodDto": {
+        "type": "integer"
+      },
+      "PaymentInstallmentDto": {
+        "required": [
+          "euroAmount",
+          "dueDate"
+        ],
+        "type": "object",
+        "properties": {
+          "euroAmount": {
+            "pattern": "^-?(?:0|[1-9]\\d*)(?:\\.\\d+)?$",
+            "type": [
+              "number",
+              "string"
+            ],
+            "format": "double"
+          },
+          "dueDate": {
+            "type": "string",
+            "format": "date"
+          }
+        }
+      },
       "PaymentMethodDto": {
+        "type": "integer"
+      },
+      "PaymentRecipientDto": {
+        "required": [
+          "settlementCurrency",
+          "kind",
+          "recipientName"
+        ],
+        "type": "object",
+        "properties": {
+          "settlementCurrency": {
+            "$ref": "#/components/schemas/CurrencyDto"
+          },
+          "kind": {
+            "$ref": "#/components/schemas/PaymentAccountKindDto"
+          },
+          "recipientName": {
+            "maxLength": 128,
+            "minLength": 0,
+            "type": "string"
+          },
+          "iban": {
+            "maxLength": 34,
+            "minLength": 0,
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "bic": {
+            "maxLength": 11,
+            "minLength": 0,
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "pixKey": {
+            "maxLength": 77,
+            "minLength": 0,
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "ispb": {
+            "maxLength": 8,
+            "minLength": 0,
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "branch": {
+            "maxLength": 4,
+            "minLength": 0,
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "accountNumber": {
+            "maxLength": 20,
+            "minLength": 0,
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "taxId": {
+            "maxLength": 14,
+            "minLength": 0,
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "pixKeyType": {
+            "$ref": "#/components/schemas/PixKeyTypeDto"
+          },
+          "accountType": {
+            "$ref": "#/components/schemas/BrazilianAccountTypeDto"
+          }
+        }
+      },
+      "PaymentScheduleStatusDto": {
         "type": "integer"
       },
       "PaymentStatusDto": {
@@ -3455,6 +7692,9 @@
           }
         }
       },
+      "PixKeyTypeDto": {
+        "type": "integer"
+      },
       "ProblemDetails": {
         "type": "object",
         "properties": {
@@ -3490,6 +7730,98 @@
               "null",
               "string"
             ]
+          }
+        }
+      },
+      "RetirePaymentAccountDto": {
+        "required": [
+          "expectedVersion",
+          "reason",
+          "confirmed"
+        ],
+        "type": "object",
+        "properties": {
+          "expectedVersion": {
+            "maximum": 9223372036854776000,
+            "minimum": 1,
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "format": "int64"
+          },
+          "reason": {
+            "$ref": "#/components/schemas/PaymentAccountReasonDto"
+          },
+          "confirmed": {
+            "type": "boolean"
+          }
+        }
+      },
+      "ReviewFinancialRecordDto": {
+        "required": [
+          "expectedVersion",
+          "changesRequested"
+        ],
+        "type": "object",
+        "properties": {
+          "expectedVersion": {
+            "maximum": 9223372036854776000,
+            "minimum": 0,
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "format": "int64"
+          },
+          "changesRequested": {
+            "type": "boolean"
+          }
+        }
+      },
+      "ReviewPaymentAccountDto": {
+        "required": [
+          "expectedVersion",
+          "outcome"
+        ],
+        "type": "object",
+        "properties": {
+          "expectedVersion": {
+            "maximum": 9223372036854776000,
+            "minimum": 1,
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "format": "int64"
+          },
+          "outcome": {
+            "$ref": "#/components/schemas/PaymentAccountReviewOutcomeDto"
+          }
+        }
+      },
+      "ReviewPaymentInstructionsDto": {
+        "required": [
+          "expectedDocumentVersion",
+          "changesRequested"
+        ],
+        "type": "object",
+        "properties": {
+          "expectedDocumentVersion": {
+            "maximum": 9223372036854776000,
+            "minimum": 0,
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "format": "int64"
+          },
+          "changesRequested": {
+            "type": "boolean"
           }
         }
       },
@@ -3621,6 +7953,60 @@
           }
         }
       },
+      "UpdatePaymentAccountDto": {
+        "required": [
+          "expectedVersion",
+          "label",
+          "recipient"
+        ],
+        "type": "object",
+        "properties": {
+          "expectedVersion": {
+            "maximum": 9223372036854776000,
+            "minimum": 1,
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "format": "int64"
+          },
+          "label": {
+            "maxLength": 128,
+            "minLength": 0,
+            "type": "string"
+          },
+          "recipient": {
+            "$ref": "#/components/schemas/PaymentRecipientDto"
+          }
+        }
+      },
+      "UpdatePaymentInstructionsDto": {
+        "required": [
+          "expectedDocumentVersion",
+          "reason",
+          "confirmed"
+        ],
+        "type": "object",
+        "properties": {
+          "expectedDocumentVersion": {
+            "maximum": 9223372036854776000,
+            "minimum": 0,
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "format": "int64"
+          },
+          "reason": {
+            "$ref": "#/components/schemas/FinancialReasonDto"
+          },
+          "confirmed": {
+            "type": "boolean"
+          }
+        }
+      },
       "UpdateTourDto": {
         "required": [
           "identifier",
@@ -3726,6 +8112,63 @@
             "format": "int32"
           }
         }
+      },
+      "VerifyPaymentAccountDto": {
+        "required": [
+          "expectedVersion",
+          "method",
+          "checkedAt",
+          "independentCheckAttested",
+          "confirmed"
+        ],
+        "type": "object",
+        "properties": {
+          "expectedVersion": {
+            "maximum": 9223372036854776000,
+            "minimum": 1,
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "format": "int64"
+          },
+          "method": {
+            "$ref": "#/components/schemas/PaymentAccountVerificationMethodDto"
+          },
+          "checkedAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "independentCheckAttested": {
+            "type": "boolean"
+          },
+          "confirmed": {
+            "type": "boolean"
+          }
+        }
+      },
+      "WithdrawPaymentAccountVerificationDto": {
+        "required": [
+          "expectedVersion",
+          "confirmed"
+        ],
+        "type": "object",
+        "properties": {
+          "expectedVersion": {
+            "maximum": 9223372036854776000,
+            "minimum": 1,
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "format": "int64"
+          },
+          "confirmed": {
+            "type": "boolean"
+          }
+        }
       }
     },
     "securitySchemes": {
@@ -3748,6 +8191,9 @@
     },
     {
       "name": "Documents"
+    },
+    {
+      "name": "PaymentAccounts"
     },
     {
       "name": "Errors"

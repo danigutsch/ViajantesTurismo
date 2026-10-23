@@ -15,8 +15,6 @@ public partial class UseCivilDates : Migration
             ALTER TABLE "Tours"
                 ALTER COLUMN "StartDate" TYPE date USING ("StartDate" AT TIME ZONE 'UTC')::date,
                 ALTER COLUMN "EndDate" TYPE date USING ("EndDate" AT TIME ZONE 'UTC')::date;
-            ALTER TABLE "Payment"
-                ALTER COLUMN "PaymentDate" TYPE date USING ("PaymentDate" AT TIME ZONE 'UTC')::date;
             ALTER TABLE "CustomerPersonalInfo"
                 ALTER COLUMN "BirthDate" TYPE date USING ("BirthDate" AT TIME ZONE 'UTC')::date;
             """);
@@ -30,8 +28,6 @@ public partial class UseCivilDates : Migration
             ALTER TABLE "Tours"
                 ALTER COLUMN "StartDate" TYPE timestamp with time zone USING "StartDate"::timestamp AT TIME ZONE 'UTC',
                 ALTER COLUMN "EndDate" TYPE timestamp with time zone USING "EndDate"::timestamp AT TIME ZONE 'UTC';
-            ALTER TABLE "Payment"
-                ALTER COLUMN "PaymentDate" TYPE timestamp with time zone USING "PaymentDate"::timestamp AT TIME ZONE 'UTC';
             ALTER TABLE "CustomerPersonalInfo"
                 ALTER COLUMN "BirthDate" TYPE timestamp with time zone USING "BirthDate"::timestamp AT TIME ZONE 'UTC';
             """);

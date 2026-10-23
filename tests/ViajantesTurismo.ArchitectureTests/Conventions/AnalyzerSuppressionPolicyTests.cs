@@ -7,6 +7,14 @@ public sealed partial class AnalyzerSuppressionPolicyTests
 {
     private static readonly HashSet<string> ApprovedSuppressMessageFiles =
     [
+        // Preserve the epic's existing exact-site telemetry, Blazor and fixture-ownership exceptions.
+        "tests/ViajantesTurismo.Admin.ApiServiceTests/Documents/DocumentPrivacyTelemetryCapture.cs",
+        "tests/ViajantesTurismo.Catalog.InfrastructureTests/Tours/CatalogTourSlugLockPostgreSqlTests.cs",
+        "src/ViajantesTurismo.Management.Web/Components/Pages/Payments/Finances.razor.cs",
+        "src/ViajantesTurismo.Management.Web/Components/Pages/Payments/Instructions.razor.cs",
+        "src/ViajantesTurismo.Management.Web/Components/Pages/Payments/PaymentAllocationFormRow.cs",
+        "src/ViajantesTurismo.Management.Web/Components/Pages/Payments/PaymentTargetChoice.cs",
+        "tests/ViajantesTurismo.Admin.Infrastructure.Tests/Payments/PostgreSqlPaymentScenario.cs",
         "samples/Mediator/Mediator.Sample/GlobalSuppressions.cs",
         "src/SharedKernel/SharedKernel.Branding/BrandingSettings.cs",
         "src/SharedKernel/SharedKernel.Branding/BrandingSettingsDto.cs",

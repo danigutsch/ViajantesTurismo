@@ -1,0 +1,210 @@
+@using PandaBear.AspNetCore
+@page "/payment-accounts"
+@attribute [Authorize(Roles = "Admin,Operator")]
+@inject IPaymentAccountsApiClient AccountsApi
+@inject AuthenticationStateProvider Authentication
+@inject TimeProvider Clock
+
+<PageTitle>Payment accounts</PageTitle>
+<h1>Payment accounts</h1>
+@if (_loading) { <p role="status">Loading payment accounts…</p> }
+@if (_error is not null) { <p class="alert alert-danger" role="alert">@_error</p> }
+@if (_submission.HasPending)
+{
+    <div role="alert" class="alert alert-warning">The outcome of @_submission.Operation is unknown. Retry the same submission before changing the form.</div>
+    <button type="button" class="btn btn-warning" disabled="@_submission.IsBusy" @onclick="Retry">Retry same submission</button>
+}
+<button type="button" class="btn btn-outline-secondary" disabled="@_submission.IsBusy" @onclick="Load">Refresh accounts</button>
+<table class="table">
+    <caption>Masked recipient accounts; sensitive details require an explicit Admin action.</caption>
+    <thead><tr><th scope="col">Account</th><th scope="col">Identifier</th><th scope="col">Currency</th><th scope="col">Revision</th><th scope="col">Status</th><th scope="col">Approval and review</th><th scope="col">Actions</th></tr></thead>
+    <tbody>
+    @foreach (var account in _accounts)
+    {
+        <tr @key="account.Id">
+            <th scope="row">@account.Label</th><td>@account.MaskedIdentifier</td><td>@account.SettlementCurrency</td><td>@account.Revision</td><td>@account.Status</td>
+            <td>
+                @if (account.SelfApproved) { <strong class="badge bg-info text-dark">Self-approved</strong> }
+                @if (account.VerifiedBy is not null) { <span>Verified by @account.VerifiedBy at @account.VerifiedAt</span> }
+                @if (account.ReviewedBy is not null) { <span>Independent review: @account.ReviewOutcome by @account.ReviewedBy</span> }
+                @if (account.RequiresAttention) { <strong>Attention requested; approval remains active until explicitly withdrawn.</strong> }
+            </td>
+            <td>
+                <AuthorizeView Roles="Admin" Context="adminContext">
+                    <fieldset disabled="@(_submission.HasPending || _submission.IsBusy || account.Status == PaymentAccountStatusDto.Inactive)">
+                        <legend class="visually-hidden">Actions for @account.Label</legend>
+                        <button type="button" class="btn btn-sm btn-outline-primary" @onclick="() => Edit(account)">Edit recipient</button>
+                        @if (account.Status == PaymentAccountStatusDto.Draft) { <button type="button" class="btn btn-sm btn-success" @onclick='() => Select(account, "verify")'>Verify</button> }
+                        @if (account.Status == PaymentAccountStatusDto.Verified) { <button type="button" class="btn btn-sm btn-outline-warning" @onclick='() => Select(account, "withdraw")'>Withdraw verification</button> }
+                        <button type="button" class="btn btn-sm btn-outline-danger" @onclick='() => Select(account, "retire")'>Retire</button>
+                        @if (account.CreatedBy != _actorId) { <button type="button" class="btn btn-sm btn-outline-secondary" @onclick='() => Select(account, "review")'>Independent review (optional)</button> }
+                    </fieldset>
+                </AuthorizeView>
+            </td>
+        </tr>
+    }
+    </tbody>
+</table>
+<AuthorizeView Roles="Admin" Context="adminContext">
+    <p>Format validation does not prove ownership. You may enter and verify an account yourself after an independent bank or recipient check.</p>
+    <EditForm Model="_model" OnValidSubmit="SaveDraft" FormName="payment-account">
+        <DataAnnotationsValidator /><ValidationSummary />
+        <fieldset disabled="@(_submission.HasPending || _submission.IsBusy)">
+            <legend>@(_editing is null ? "New recipient draft" : "New unverified recipient revision")</legend>
+            <label for="account-label">Staff label</label><InputText id="account-label" class="form-control" @bind-Value="_model.Label" />
+            <label for="recipient-name">Bank-recorded recipient name</label><InputText id="recipient-name" class="form-control" autocomplete="off" @bind-Value="_model.RecipientName" />
+            <label for="account-kind">Recipient format</label><InputSelect id="account-kind" class="form-select" @bind-Value="_model.Kind"><option value="@PaymentAccountKindDto.Iban">IBAN/BIC</option><option value="@PaymentAccountKindDto.BrazilianBank">Brazilian bank</option><option value="@PaymentAccountKindDto.Pix">Pix</option></InputSelect>
+            @if (_model.Kind == PaymentAccountKindDto.Iban)
+            {
+                <label for="account-currency">Bank-checked settlement currency</label><InputSelect id="account-currency" class="form-select" @bind-Value="_model.SettlementCurrency"><option value="@CurrencyDto.Euro">EUR</option><option value="@CurrencyDto.Real">BRL</option></InputSelect>
+                <label for="account-iban">IBAN (uppercase, no spaces)</label><InputText id="account-iban" class="form-control" autocomplete="off" @bind-Value="_model.Iban" />
+                <label for="account-bic">BIC (uppercase)</label><InputText id="account-bic" class="form-control" autocomplete="off" @bind-Value="_model.Bic" />
+            }
+            else if (_model.Kind == PaymentAccountKindDto.Pix)
+            {
+                <p>Pix settlement currency: BRL.</p>
+                <label for="pix-type">Pix key type</label><InputSelect id="pix-type" class="form-select" @bind-Value="_model.PixKeyType">@foreach (var type in Enum.GetValues<PixKeyTypeDto>().Where(type => type != PixKeyTypeDto.None)) { <option value="@type">@type</option> }</InputSelect>
+                <label for="pix-key">Canonical Pix key</label><InputText id="pix-key" class="form-control" autocomplete="off" @bind-Value="_model.PixKey" />
+            }
+            else
+            {
+                <p>Bank settlement currency: BRL. Use canonical bank details; independent checking is still required.</p>
+                <label for="bank-ispb">ISPB (8 characters)</label><InputText id="bank-ispb" class="form-control" autocomplete="off" @bind-Value="_model.Ispb" />
+                <label for="bank-branch">Branch (without verifier, when required)</label><InputText id="bank-branch" class="form-control" autocomplete="off" @bind-Value="_model.Branch" />
+                <label for="bank-number">Account including verifier (replace a letter verifier with 0 under BCB format)</label><InputText id="bank-number" class="form-control" autocomplete="off" @bind-Value="_model.AccountNumber" />
+                <label for="bank-type">Account type</label><InputSelect id="bank-type" class="form-select" @bind-Value="_model.AccountType">@foreach (var type in Enum.GetValues<BrazilianAccountTypeDto>().Where(type => type != BrazilianAccountTypeDto.None)) { <option value="@type">@type</option> }</InputSelect>
+                <label for="holder-tax">Holder CPF or CNPJ (canonical)</label><InputText id="holder-tax" class="form-control" autocomplete="off" @bind-Value="_model.TaxId" />
+            }
+            <button type="submit" class="btn btn-primary">Save unverified draft</button>
+            @if (_editing is not null) { <button type="button" class="btn btn-secondary" @onclick="CancelEdit">Cancel edit</button> }
+        </fieldset>
+    </EditForm>
+    @if (_selected is not null)
+    {
+        <section aria-labelledby="account-confirm-title" class="card mt-3 p-3">
+            <h2 id="account-confirm-title">Confirm @_action</h2>
+            <p>@_selected.Label, @_selected.MaskedIdentifier, @_selected.SettlementCurrency, recipient revision @_selected.Revision, current status @_selected.Status.</p>
+            <fieldset disabled="@(_submission.HasPending || _submission.IsBusy)">
+                <legend>Current revision confirmation</legend>
+                @if (_action == "verify")
+                {
+                    <label for="verification-method">Independent check method</label><InputSelect id="verification-method" class="form-select" @bind-Value="_method">@foreach (var method in Enum.GetValues<PaymentAccountVerificationMethodDto>().Where(method => method != PaymentAccountVerificationMethodDto.None)) { <option value="@method">@method</option> }</InputSelect>
+                    <label for="verification-time">Check time (UTC)</label><input id="verification-time" class="form-control" type="datetime-local" @bind="_checkedAt" />
+                    <label><input type="checkbox" @bind="_attested" /> I independently checked these recipient details against a bank or recipient source.</label>
+                }
+                @if (_action == "review")
+                {
+                    <p>Independent review is optional and does not withdraw an existing verification.</p>
+                    <label for="account-review-outcome">Outcome</label><InputSelect id="account-review-outcome" class="form-select" @bind-Value="_reviewOutcome"><option value="@PaymentAccountReviewOutcomeDto.Approved">Accept</option><option value="@PaymentAccountReviewOutcomeDto.ChangesRequested">Request changes</option></InputSelect>
+                }
+                @if (_action == "retire")
+                {
+                    <p>Retirement blocks new instructions and further downloads using this account.</p>
+                    <label for="retirement-reason">Reason</label><InputSelect id="retirement-reason" class="form-select" @bind-Value="_retireReason"><option value="@PaymentAccountReasonDto.NoLongerUsed">No longer used</option><option value="@PaymentAccountReasonDto.AccountReplaced">Account replaced</option></InputSelect>
+                }
+                <label><input type="checkbox" @bind="_confirmed" /> I confirm this action for the displayed revision.</label>
+                <button type="button" class="btn btn-primary" disabled="@(!_confirmed || _action == "verify" && !_attested)" @onclick="Confirm">Confirm @_action</button>
+                <button type="button" class="btn btn-secondary" @onclick="CancelAction">Cancel</button>
+            </fieldset>
+        </section>
+    }
+</AuthorizeView>
+
+@code {
+    private IReadOnlyList<GetPaymentAccountDto> _accounts = [];
+    private PaymentAccountFormModel _model = new();
+    private GetPaymentAccountDto? _editing;
+    private GetPaymentAccountDto? _selected;
+    private string _action = string.Empty;
+    private string? _actorId;
+    private string? _error;
+    private bool _loading;
+    private bool _confirmed;
+    private bool _attested;
+    private DateTime _checkedAt;
+    private PaymentAccountVerificationMethodDto _method = PaymentAccountVerificationMethodDto.BankStatement;
+    private PaymentAccountReasonDto _retireReason = PaymentAccountReasonDto.NoLongerUsed;
+    private PaymentAccountReviewOutcomeDto _reviewOutcome = PaymentAccountReviewOutcomeDto.Approved;
+    private readonly IdempotentSubmission<GetPaymentAccountDto> _submission = new();
+
+    protected override async Task OnInitializedAsync()
+    {
+        _actorId = (await Authentication.GetAuthenticationStateAsync()).User.GetSubjectId();
+        _checkedAt = Clock.GetUtcNow().UtcDateTime;
+        await Load();
+    }
+    private async Task Load()
+    {
+        _loading = true; _error = null;
+        try
+        {
+            var outcome = await AccountsApi.List(CancellationToken.None);
+            if (outcome is { Kind: HttpOutcomeKind.Succeeded, Value: { } accounts }) { _accounts = accounts; }
+            else { _error = HttpOutcomeUserMessage.For(outcome.Kind, "Payment accounts are unavailable. Please try again."); }
+        }
+        finally { _loading = false; }
+    }
+    private async Task Edit(GetPaymentAccountDto account)
+    {
+        _error = null;
+        var outcome = await AccountsApi.GetSensitiveDetails(account.Id, CancellationToken.None);
+        if (outcome is { Kind: HttpOutcomeKind.Succeeded, Value: { } details }) { _editing = details.Account; _model = PaymentAccountFormModel.From(details); }
+        else { _error = HttpOutcomeUserMessage.For(outcome.Kind, "Recipient details could not be loaded."); }
+    }
+    private void CancelEdit() { _model = new(); _editing = null; }
+    private void Select(GetPaymentAccountDto account, string action) { _selected = account; _action = action; _confirmed = false; _attested = false; }
+    private void CancelAction() { _selected = null; _confirmed = false; _attested = false; }
+    private async Task SaveDraft()
+    {
+        _error = null;
+        if (_editing is { } editing)
+        {
+            var input = new UpdatePaymentAccountDto { ExpectedVersion = editing.Version, Label = _model.Label, Recipient = _model.Recipient() };
+            await Complete(await _submission.Submit("saving the recipient revision", (key, ct) => AccountsApi.Update(editing.Id, input, key, ct), CancellationToken.None));
+        }
+        else
+        {
+            var input = new CreatePaymentAccountDto { Label = _model.Label, Recipient = _model.Recipient() };
+            await Complete(await _submission.Submit("saving the recipient draft", (key, ct) => AccountsApi.Create(input, key, ct), CancellationToken.None));
+        }
+    }
+    private async Task Confirm()
+    {
+        if (_selected is not { } selected || !_confirmed) { return; }
+        _error = null;
+        Func<string, CancellationToken, Task<HttpOutcome<GetPaymentAccountDto>>> submit;
+        switch (_action)
+        {
+            case "verify":
+                var verification = new VerifyPaymentAccountDto { ExpectedVersion = selected.Version, Confirmed = true, IndependentCheckAttested = _attested,
+                    Method = _method, CheckedAt = new DateTimeOffset(DateTime.SpecifyKind(_checkedAt, DateTimeKind.Utc)) };
+                submit = (key, ct) => AccountsApi.Verify(selected.Id, verification, key, ct);
+                break;
+            case "retire":
+                var retirement = new RetirePaymentAccountDto { ExpectedVersion = selected.Version, Confirmed = true, Reason = _retireReason };
+                submit = (key, ct) => AccountsApi.Retire(selected.Id, retirement, key, ct);
+                break;
+            case "withdraw":
+                var withdrawal = new WithdrawPaymentAccountVerificationDto { ExpectedVersion = selected.Version, Confirmed = true };
+                submit = (key, ct) => AccountsApi.WithdrawVerification(selected.Id, withdrawal, key, ct);
+                break;
+            case "review":
+                var review = new ReviewPaymentAccountDto { ExpectedVersion = selected.Version, Outcome = _reviewOutcome };
+                submit = (key, ct) => AccountsApi.Review(selected.Id, review, key, ct);
+                break;
+            default: return;
+        }
+        await Complete(await _submission.Submit(_action, submit, CancellationToken.None));
+    }
+    private async Task Retry() => await Complete(await _submission.Retry(CancellationToken.None));
+    private async Task Complete(HttpOutcome<GetPaymentAccountDto>? outcome)
+    {
+        if (outcome is null) { return; }
+        if (outcome is { Kind: HttpOutcomeKind.Succeeded, Value: not null }) { CancelEdit(); CancelAction(); await Load(); }
+        else
+        {
+            _error = HttpOutcomeUserMessage.For(outcome.Kind, "The account action could not be completed. Reload before confirming again.");
+            if (outcome.Kind == HttpOutcomeKind.Conflict) { CancelAction(); CancelEdit(); await Load(); _error = "The account changed. Review its current revision before confirming again."; }
+        }
+    }
+}

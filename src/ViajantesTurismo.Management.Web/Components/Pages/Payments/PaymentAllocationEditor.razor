@@ -1,0 +1,24 @@
+<fieldset disabled="@Disabled">
+    <legend>@Legend</legend>
+    @for (var index = 0; index < Rows.Count; index++)
+    {
+        var row = Rows[index];
+        var targetId = $"{Prefix}-target-{index}";
+        var amountId = $"{Prefix}-amount-{index}";
+        <div @key="row" class="row align-items-end mb-2">
+            <div class="col-md-7"><label for="@targetId">Target</label><select id="@targetId" class="form-select" @bind="row.TargetId"><option value="@Guid.Empty">Select target</option>@foreach (var choice in Choices) { <option value="@choice.Id">@choice.Label</option> }</select></div>
+            <div class="col-md-3"><label for="@amountId">EUR credit</label><input id="@amountId" type="number" min="0.01" step="0.01" class="form-control" @bind="row.EuroAmount" /></div>
+            <div class="col-md-2"><button type="button" class="btn btn-outline-secondary" aria-label="Remove allocation row @(index + 1)" @onclick="() => Remove(row)">Remove</button></div>
+        </div>
+    }
+    <button type="button" class="btn btn-outline-secondary" @onclick="Add">Add selected allocation</button>
+</fieldset>
+@code {
+    [Parameter, EditorRequired] public required List<PaymentAllocationFormRow> Rows { get; set; }
+    [Parameter, EditorRequired] public required IReadOnlyList<PaymentTargetChoice> Choices { get; set; }
+    [Parameter, EditorRequired] public required string Prefix { get; set; }
+    [Parameter] public string Legend { get; set; } = "Explicit EUR installment selections";
+    [Parameter] public bool Disabled { get; set; }
+    private void Add() => Rows.Add(new PaymentAllocationFormRow());
+    private void Remove(PaymentAllocationFormRow row) => Rows.Remove(row);
+}

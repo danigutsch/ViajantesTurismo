@@ -115,27 +115,6 @@ public sealed partial class BookingsApiClient(HttpClient httpClient, ILogger<Boo
     public async Task<HttpOutcome> DeleteBooking(Guid id, CancellationToken ct) =>
         await SendCommand(HttpMethod.Delete, $"{RoutePrefix}/{id}", content: null, HttpStatusCode.NoContent, ct).ConfigureAwait(false);
 
-    /// <inheritdoc />
-    public async Task<HttpOutcome> RecordPayment(Guid bookingId, CreatePaymentDto dto, CancellationToken ct)
-    {
-        ArgumentNullException.ThrowIfNull(dto);
-
-        using var activity = StartActivity(AdminContractsClientTelemetry.RecordPaymentActivity);
-        var request = new HttpRequestMessage(HttpMethod.Post, new Uri($"{RoutePrefix}/{bookingId}/payments", UriKind.Relative))
-        {
-            Content = JsonContent.Create(dto, Json.CreatePaymentDto)
-        };
-        var outcome = await HttpOutcomeMapper.Send(
-            httpClient,
-            request,
-            HttpStatusCode.Created,
-            Json.ContractValidationProblemDto,
-            ct).ConfigureAwait(false);
-
-        RecordOutcome(activity, outcome, LogRecordPaymentOutcome);
-        return outcome;
-    }
-
     private async Task<HttpOutcome<GetBookingDto[]>> ReadBookings(string requestUri, CancellationToken ct)
     {
         var outcome = await HttpOutcomeMapper.Send(
@@ -198,6 +177,4 @@ public sealed partial class BookingsApiClient(HttpClient httpClient, ILogger<Boo
     [LoggerMessage(1, LogLevel.Warning, "Booking create returned {StatusCode} with outcome {OutcomeKind}.")]
     private static partial void LogBookingCreateOutcome(ILogger logger, HttpStatusCode? statusCode, HttpOutcomeKind outcomeKind);
 
-    [LoggerMessage(2, LogLevel.Warning, "Record payment returned {StatusCode} with outcome {OutcomeKind}.")]
-    private static partial void LogRecordPaymentOutcome(ILogger logger, HttpStatusCode? statusCode, HttpOutcomeKind outcomeKind);
 }

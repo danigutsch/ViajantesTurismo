@@ -9,7 +9,6 @@ namespace ViajantesTurismo.Admin.Contracts.Http;
 public sealed class DocumentsApiClient(HttpClient httpClient) : IDocumentsApiClient
 {
     private const string RoutePrefix = "/api/v1/documents";
-    private const string IdempotencyKeyHeaderName = "Idempotency-Key";
     private const string HtmlMediaType = "text/html";
     private static readonly DocumentsApiClientJsonContext Json = DocumentsApiClientJsonContext.Default;
 
@@ -137,7 +136,7 @@ public sealed class DocumentsApiClient(HttpClient httpClient) : IDocumentsApiCli
         CancellationToken ct)
     {
         var request = new HttpRequestMessage(HttpMethod.Post, new Uri(requestUri, UriKind.Relative));
-        request.Headers.Add(IdempotencyKeyHeaderName, idempotencyKey);
+        request.Headers.Add(ContractConstants.IdempotencyKeyHeaderName, idempotencyKey);
         return PostCommand(request, successStatusCode, ct);
     }
 

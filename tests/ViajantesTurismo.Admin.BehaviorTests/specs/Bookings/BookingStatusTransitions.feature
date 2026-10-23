@@ -26,7 +26,7 @@ independently from payment status to handle real-world scenarios where payments 
         Scenario: Confirm booking before payment is received
             Given a pending booking exists
             When the operator confirms the booking
-            And the operator records a payment for the full amount
+            And the Admin records and approves EUR credit for the full amount
             Then the booking status should be "Confirmed"
             And the booking payment status should be "Paid"
 
@@ -34,7 +34,7 @@ independently from payment status to handle real-world scenarios where payments 
         @happy_path
         Scenario: Receive payment before confirming booking
             Given a pending booking exists
-            When the operator records a payment for the full amount
+            When the Admin records and approves EUR credit for the full amount
             And the operator confirms the booking
             Then the booking status should be "Confirmed"
             And the booking payment status should be "Paid"
@@ -42,7 +42,7 @@ independently from payment status to handle real-world scenarios where payments 
         @happy_path
         Scenario: Track partial payment on confirmed booking
             Given a confirmed booking exists
-            When the operator records a payment for 50 percent of the total
+            When the Admin records and approves EUR credit for 50 percent of the total
             Then the booking status should be "Confirmed"
             And the booking payment status should be "PartiallyPaid"
 

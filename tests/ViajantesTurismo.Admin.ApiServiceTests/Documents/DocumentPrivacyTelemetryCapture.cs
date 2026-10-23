@@ -1,5 +1,6 @@
 using System.Collections.Concurrent;
 using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 
 namespace ViajantesTurismo.Admin.ApiServiceTests.Documents;
@@ -10,6 +11,7 @@ internal sealed class DocumentPrivacyTelemetryCapture : IDisposable
     private readonly ActivitySource parentSource = new($"document-privacy-test-{Guid.CreateVersion7():N}");
     private readonly ActivityListener listener;
 
+    [SuppressMessage("Testing", "SKTEST010", Justification = "Framework-owned sources expose names, not accessible singleton instances.")]
     public DocumentPrivacyTelemetryCapture()
     {
         listener = new ActivityListener

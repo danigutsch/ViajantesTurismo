@@ -1,0 +1,1174 @@
+{
+  "openapi": "3.1.1",
+  "info": {
+    "title": "ViajantesTurismo.Admin.ApiService | payment-accounts",
+    "version": "1.0.0"
+  },
+  "paths": {
+    "/api/v1/payment-accounts": {
+      "get": {
+        "tags": [
+          "PaymentAccounts"
+        ],
+        "summary": "Lists masked payment accounts.",
+        "description": "Lists masked recipient accounts.",
+        "operationId": "ListPaymentAccounts",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/GetPaymentAccountDto"
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Authentication is required."
+          },
+          "403": {
+            "description": "The authenticated caller lacks the required permission."
+          }
+        },
+        "security": [
+          {
+            "Bearer": [ ]
+          }
+        ]
+      },
+      "post": {
+        "tags": [
+          "PaymentAccounts"
+        ],
+        "summary": "CreatePaymentAccount operation.",
+        "description": "Executes the revision-preconditioned CreatePaymentAccount operation.",
+        "operationId": "CreatePaymentAccount",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreatePaymentAccountDto"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GetPaymentAccountDto"
+                }
+              }
+            }
+          },
+          "201": {
+            "description": "Created",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GetPaymentAccountDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Conflict",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HttpValidationProblemDetails"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Authentication is required."
+          },
+          "403": {
+            "description": "The authenticated caller lacks the required permission."
+          }
+        },
+        "security": [
+          {
+            "Bearer": [ ]
+          }
+        ]
+      }
+    },
+    "/api/v1/payment-accounts/{id}": {
+      "get": {
+        "tags": [
+          "PaymentAccounts"
+        ],
+        "summary": "Retrieves a masked payment account.",
+        "description": "Retrieves masked account and revision metadata.",
+        "operationId": "GetPaymentAccount",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GetPaymentAccountDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found"
+          },
+          "401": {
+            "description": "Authentication is required."
+          },
+          "403": {
+            "description": "The authenticated caller lacks the required permission."
+          }
+        },
+        "security": [
+          {
+            "Bearer": [ ]
+          }
+        ]
+      },
+      "put": {
+        "tags": [
+          "PaymentAccounts"
+        ],
+        "summary": "UpdatePaymentAccount operation.",
+        "description": "Executes the revision-preconditioned UpdatePaymentAccount operation.",
+        "operationId": "UpdatePaymentAccount",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdatePaymentAccountDto"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GetPaymentAccountDto"
+                }
+              }
+            }
+          },
+          "201": {
+            "description": "Created",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GetPaymentAccountDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Conflict",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HttpValidationProblemDetails"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Authentication is required."
+          },
+          "403": {
+            "description": "The authenticated caller lacks the required permission."
+          }
+        },
+        "security": [
+          {
+            "Bearer": [ ]
+          }
+        ]
+      }
+    },
+    "/api/v1/payment-accounts/{id}/recipient": {
+      "get": {
+        "tags": [
+          "PaymentAccounts"
+        ],
+        "summary": "Retrieves sensitive recipient details.",
+        "description": "Audits Admin access to full recipient details.",
+        "operationId": "GetPaymentAccountRecipient",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GetPaymentAccountDetailsDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found"
+          },
+          "401": {
+            "description": "Authentication is required."
+          },
+          "403": {
+            "description": "The authenticated caller lacks the required permission."
+          }
+        },
+        "security": [
+          {
+            "Bearer": [ ]
+          }
+        ]
+      }
+    },
+    "/api/v1/payment-accounts/{id}/verify": {
+      "post": {
+        "tags": [
+          "PaymentAccounts"
+        ],
+        "summary": "VerifyPaymentAccount operation.",
+        "description": "Executes the revision-preconditioned VerifyPaymentAccount operation.",
+        "operationId": "VerifyPaymentAccount",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/VerifyPaymentAccountDto"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GetPaymentAccountDto"
+                }
+              }
+            }
+          },
+          "201": {
+            "description": "Created",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GetPaymentAccountDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Conflict",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HttpValidationProblemDetails"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Authentication is required."
+          },
+          "403": {
+            "description": "The authenticated caller lacks the required permission."
+          }
+        },
+        "security": [
+          {
+            "Bearer": [ ]
+          }
+        ]
+      }
+    },
+    "/api/v1/payment-accounts/{id}/review": {
+      "post": {
+        "tags": [
+          "PaymentAccounts"
+        ],
+        "summary": "ReviewPaymentAccount operation.",
+        "description": "Executes the revision-preconditioned ReviewPaymentAccount operation.",
+        "operationId": "ReviewPaymentAccount",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ReviewPaymentAccountDto"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GetPaymentAccountDto"
+                }
+              }
+            }
+          },
+          "201": {
+            "description": "Created",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GetPaymentAccountDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Conflict",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HttpValidationProblemDetails"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Authentication is required."
+          },
+          "403": {
+            "description": "The authenticated caller lacks the required permission."
+          }
+        },
+        "security": [
+          {
+            "Bearer": [ ]
+          }
+        ]
+      }
+    },
+    "/api/v1/payment-accounts/{id}/retire": {
+      "post": {
+        "tags": [
+          "PaymentAccounts"
+        ],
+        "summary": "RetirePaymentAccount operation.",
+        "description": "Executes the revision-preconditioned RetirePaymentAccount operation.",
+        "operationId": "RetirePaymentAccount",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RetirePaymentAccountDto"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GetPaymentAccountDto"
+                }
+              }
+            }
+          },
+          "201": {
+            "description": "Created",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GetPaymentAccountDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Conflict",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HttpValidationProblemDetails"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Authentication is required."
+          },
+          "403": {
+            "description": "The authenticated caller lacks the required permission."
+          }
+        },
+        "security": [
+          {
+            "Bearer": [ ]
+          }
+        ]
+      }
+    },
+    "/api/v1/payment-accounts/{id}/withdraw-verification": {
+      "post": {
+        "tags": [
+          "PaymentAccounts"
+        ],
+        "summary": "WithdrawPaymentAccountVerification operation.",
+        "description": "Executes the revision-preconditioned WithdrawPaymentAccountVerification operation.",
+        "operationId": "WithdrawPaymentAccountVerification",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/WithdrawPaymentAccountVerificationDto"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GetPaymentAccountDto"
+                }
+              }
+            }
+          },
+          "201": {
+            "description": "Created",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GetPaymentAccountDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Conflict",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HttpValidationProblemDetails"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Authentication is required."
+          },
+          "403": {
+            "description": "The authenticated caller lacks the required permission."
+          }
+        },
+        "security": [
+          {
+            "Bearer": [ ]
+          }
+        ]
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "BrazilianAccountTypeDto": {
+        "type": "integer"
+      },
+      "CreatePaymentAccountDto": {
+        "required": [
+          "label",
+          "recipient"
+        ],
+        "type": "object",
+        "properties": {
+          "label": {
+            "maxLength": 128,
+            "minLength": 0,
+            "type": "string"
+          },
+          "recipient": {
+            "$ref": "#/components/schemas/PaymentRecipientDto"
+          }
+        }
+      },
+      "CurrencyDto": {
+        "type": "integer"
+      },
+      "GetPaymentAccountDetailsDto": {
+        "required": [
+          "account",
+          "recipient"
+        ],
+        "type": "object",
+        "properties": {
+          "account": {
+            "$ref": "#/components/schemas/GetPaymentAccountDto"
+          },
+          "recipient": {
+            "$ref": "#/components/schemas/PaymentRecipientDto"
+          }
+        }
+      },
+      "GetPaymentAccountDto": {
+        "required": [
+          "settlementCurrency",
+          "id",
+          "version",
+          "label",
+          "status",
+          "kind",
+          "revisionId",
+          "revision",
+          "maskedIdentifier",
+          "createdBy",
+          "createdAt",
+          "verificationMethod",
+          "selfApproved",
+          "reviewOutcome",
+          "requiresAttention"
+        ],
+        "type": "object",
+        "properties": {
+          "settlementCurrency": {
+            "$ref": "#/components/schemas/CurrencyDto"
+          },
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "version": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "format": "int64"
+          },
+          "label": {
+            "type": "string"
+          },
+          "status": {
+            "$ref": "#/components/schemas/PaymentAccountStatusDto"
+          },
+          "kind": {
+            "$ref": "#/components/schemas/PaymentAccountKindDto"
+          },
+          "revisionId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "revision": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "format": "int32"
+          },
+          "maskedIdentifier": {
+            "type": "string"
+          },
+          "createdBy": {
+            "type": "string"
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "verifiedBy": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "verifiedAt": {
+            "type": [
+              "null",
+              "string"
+            ],
+            "format": "date-time"
+          },
+          "verificationMethod": {
+            "$ref": "#/components/schemas/PaymentAccountVerificationMethodDto"
+          },
+          "checkedAt": {
+            "type": [
+              "null",
+              "string"
+            ],
+            "format": "date-time"
+          },
+          "selfApproved": {
+            "type": "boolean"
+          },
+          "reviewedBy": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "reviewedAt": {
+            "type": [
+              "null",
+              "string"
+            ],
+            "format": "date-time"
+          },
+          "reviewOutcome": {
+            "$ref": "#/components/schemas/PaymentAccountReviewOutcomeDto"
+          },
+          "requiresAttention": {
+            "type": "boolean"
+          }
+        }
+      },
+      "HttpValidationProblemDetails": {
+        "type": "object",
+        "properties": {
+          "type": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "title": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "status": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "null",
+              "integer",
+              "string"
+            ],
+            "format": "int32"
+          },
+          "detail": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "instance": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "errors": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          }
+        }
+      },
+      "PaymentAccountKindDto": {
+        "type": "integer"
+      },
+      "PaymentAccountReasonDto": {
+        "type": "integer"
+      },
+      "PaymentAccountReviewOutcomeDto": {
+        "type": "integer"
+      },
+      "PaymentAccountStatusDto": {
+        "type": "integer"
+      },
+      "PaymentAccountVerificationMethodDto": {
+        "type": "integer"
+      },
+      "PaymentRecipientDto": {
+        "required": [
+          "settlementCurrency",
+          "kind",
+          "recipientName"
+        ],
+        "type": "object",
+        "properties": {
+          "settlementCurrency": {
+            "$ref": "#/components/schemas/CurrencyDto"
+          },
+          "kind": {
+            "$ref": "#/components/schemas/PaymentAccountKindDto"
+          },
+          "recipientName": {
+            "maxLength": 128,
+            "minLength": 0,
+            "type": "string"
+          },
+          "iban": {
+            "maxLength": 34,
+            "minLength": 0,
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "bic": {
+            "maxLength": 11,
+            "minLength": 0,
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "pixKey": {
+            "maxLength": 77,
+            "minLength": 0,
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "ispb": {
+            "maxLength": 8,
+            "minLength": 0,
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "branch": {
+            "maxLength": 4,
+            "minLength": 0,
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "accountNumber": {
+            "maxLength": 20,
+            "minLength": 0,
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "taxId": {
+            "maxLength": 14,
+            "minLength": 0,
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "pixKeyType": {
+            "$ref": "#/components/schemas/PixKeyTypeDto"
+          },
+          "accountType": {
+            "$ref": "#/components/schemas/BrazilianAccountTypeDto"
+          }
+        }
+      },
+      "PixKeyTypeDto": {
+        "type": "integer"
+      },
+      "ProblemDetails": {
+        "type": "object",
+        "properties": {
+          "type": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "title": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "status": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "null",
+              "integer",
+              "string"
+            ],
+            "format": "int32"
+          },
+          "detail": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "instance": {
+            "type": [
+              "null",
+              "string"
+            ]
+          }
+        }
+      },
+      "RetirePaymentAccountDto": {
+        "required": [
+          "expectedVersion",
+          "reason",
+          "confirmed"
+        ],
+        "type": "object",
+        "properties": {
+          "expectedVersion": {
+            "maximum": 9223372036854776000,
+            "minimum": 1,
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "format": "int64"
+          },
+          "reason": {
+            "$ref": "#/components/schemas/PaymentAccountReasonDto"
+          },
+          "confirmed": {
+            "type": "boolean"
+          }
+        }
+      },
+      "ReviewPaymentAccountDto": {
+        "required": [
+          "expectedVersion",
+          "outcome"
+        ],
+        "type": "object",
+        "properties": {
+          "expectedVersion": {
+            "maximum": 9223372036854776000,
+            "minimum": 1,
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "format": "int64"
+          },
+          "outcome": {
+            "$ref": "#/components/schemas/PaymentAccountReviewOutcomeDto"
+          }
+        }
+      },
+      "UpdatePaymentAccountDto": {
+        "required": [
+          "expectedVersion",
+          "label",
+          "recipient"
+        ],
+        "type": "object",
+        "properties": {
+          "expectedVersion": {
+            "maximum": 9223372036854776000,
+            "minimum": 1,
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "format": "int64"
+          },
+          "label": {
+            "maxLength": 128,
+            "minLength": 0,
+            "type": "string"
+          },
+          "recipient": {
+            "$ref": "#/components/schemas/PaymentRecipientDto"
+          }
+        }
+      },
+      "VerifyPaymentAccountDto": {
+        "required": [
+          "expectedVersion",
+          "method",
+          "checkedAt",
+          "independentCheckAttested",
+          "confirmed"
+        ],
+        "type": "object",
+        "properties": {
+          "expectedVersion": {
+            "maximum": 9223372036854776000,
+            "minimum": 1,
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "format": "int64"
+          },
+          "method": {
+            "$ref": "#/components/schemas/PaymentAccountVerificationMethodDto"
+          },
+          "checkedAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "independentCheckAttested": {
+            "type": "boolean"
+          },
+          "confirmed": {
+            "type": "boolean"
+          }
+        }
+      },
+      "WithdrawPaymentAccountVerificationDto": {
+        "required": [
+          "expectedVersion",
+          "confirmed"
+        ],
+        "type": "object",
+        "properties": {
+          "expectedVersion": {
+            "maximum": 9223372036854776000,
+            "minimum": 1,
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "format": "int64"
+          },
+          "confirmed": {
+            "type": "boolean"
+          }
+        }
+      }
+    },
+    "securitySchemes": {
+      "Bearer": {
+        "type": "http",
+        "scheme": "bearer",
+        "bearerFormat": "JWT"
+      }
+    }
+  },
+  "tags": [
+    {
+      "name": "PaymentAccounts"
+    }
+  ]
+}

@@ -100,23 +100,16 @@ internal static class BookingsOpenApiDocumentClient
             throw new InvalidOperationException("The booking complete path is missing the required operation.");
         }
 
-        if (!document.Paths.TryGetValue($"{RoutePrefix}/{{id}}/payments", out var paymentsPath) ||
-            paymentsPath.Post is null)
-        {
-            throw new InvalidOperationException("The booking payments path is missing the required operation.");
-        }
 
         var createBookingSchemaReference = bookingsPath.Post.RequestBody?.Content?.ApplicationJson?.Schema?.Reference;
         var updateBookingDiscountSchemaReference = discountPath.Put.RequestBody?.Content?.ApplicationJson?.Schema?.Reference;
         var updateBookingDetailsSchemaReference = detailsPath.Put.RequestBody?.Content?.ApplicationJson?.Schema?.Reference;
         var updateBookingNotesSchemaReference = notesPath.Patch.RequestBody?.Content?.ApplicationJson?.Schema?.Reference;
-        var recordPaymentSchemaReference = paymentsPath.Post.RequestBody?.Content?.ApplicationJson?.Schema?.Reference;
 
         if (string.IsNullOrWhiteSpace(createBookingSchemaReference) ||
             string.IsNullOrWhiteSpace(updateBookingDiscountSchemaReference) ||
             string.IsNullOrWhiteSpace(updateBookingDetailsSchemaReference) ||
-            string.IsNullOrWhiteSpace(updateBookingNotesSchemaReference) ||
-            string.IsNullOrWhiteSpace(recordPaymentSchemaReference))
+            string.IsNullOrWhiteSpace(updateBookingNotesSchemaReference))
         {
             throw new InvalidOperationException("The bookings contract is missing request schema references.");
         }
@@ -139,9 +132,7 @@ internal static class BookingsOpenApiDocumentClient
             updateBookingNotesSchemaReference,
             confirmPath.Post.OperationId,
             cancelPath.Post.OperationId,
-            completePath.Post.OperationId,
-            paymentsPath.Post.OperationId,
-            recordPaymentSchemaReference);
+            completePath.Post.OperationId);
     }
 
     private static async Task<BookingsOpenApiDocumentDto?> ReadDocument(string documentPath, CancellationToken cancellationToken)

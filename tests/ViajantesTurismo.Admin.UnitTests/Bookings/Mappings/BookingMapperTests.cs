@@ -128,7 +128,8 @@ public class BookingMapperTests
 
         // Act
         // Assert
-        var exception = ShouldAssertionExtensions.ShouldThrow<ArgumentOutOfRangeException>((Func<object?>)(() => BookingMapper.MapToBikeType(invalidValue)));
+        Func<object?> action = () => BookingMapper.MapToBikeType(invalidValue);
+        var exception = action.ShouldThrow<ArgumentOutOfRangeException>();
         exception.Message.ShouldContain("Invalid bike type value", StringComparison.Ordinal);
     }
 
@@ -140,7 +141,8 @@ public class BookingMapperTests
 
         // Act
         // Assert
-        var exception = ShouldAssertionExtensions.ShouldThrow<ArgumentOutOfRangeException>((Func<object?>)(() => BookingMapper.MapToBikeTypeDto(invalidValue)));
+        Func<object?> action = () => BookingMapper.MapToBikeTypeDto(invalidValue);
+        var exception = action.ShouldThrow<ArgumentOutOfRangeException>();
         exception.Message.ShouldContain("Invalid bike type value", StringComparison.Ordinal);
     }
 
@@ -152,7 +154,8 @@ public class BookingMapperTests
 
         // Act
         // Assert
-        var exception = ShouldAssertionExtensions.ShouldThrow<ArgumentOutOfRangeException>((Func<object?>)(() => BookingMapper.MapToRoomType(invalidValue)));
+        Func<object?> action = () => BookingMapper.MapToRoomType(invalidValue);
+        var exception = action.ShouldThrow<ArgumentOutOfRangeException>();
         exception.Message.ShouldContain("Invalid room type value", StringComparison.Ordinal);
     }
 
@@ -164,7 +167,8 @@ public class BookingMapperTests
 
         // Act
         // Assert
-        var exception = ShouldAssertionExtensions.ShouldThrow<ArgumentOutOfRangeException>((Func<object?>)(() => BookingMapper.MapToBookingStatus(invalidValue)));
+        Func<object?> action = () => BookingMapper.MapToBookingStatus(invalidValue);
+        var exception = action.ShouldThrow<ArgumentOutOfRangeException>();
         exception.Message.ShouldContain("Invalid booking status value", StringComparison.Ordinal);
     }
 
@@ -176,7 +180,8 @@ public class BookingMapperTests
 
         // Act
         // Assert
-        var exception = ShouldAssertionExtensions.ShouldThrow<ArgumentOutOfRangeException>((Func<object?>)(() => BookingMapper.MapToPaymentStatus(invalidValue)));
+        Func<object?> action = () => BookingMapper.MapToPaymentStatus(invalidValue);
+        var exception = action.ShouldThrow<ArgumentOutOfRangeException>();
         exception.Message.ShouldContain("Invalid payment status value", StringComparison.Ordinal);
     }
 
@@ -188,7 +193,8 @@ public class BookingMapperTests
 
         // Act
         // Assert
-        var exception = ShouldAssertionExtensions.ShouldThrow<ArgumentOutOfRangeException>((Func<object?>)(() => BookingMapper.MapToDiscountType(invalidValue)));
+        Func<object?> action = () => BookingMapper.MapToDiscountType(invalidValue);
+        var exception = action.ShouldThrow<ArgumentOutOfRangeException>();
         exception.Message.ShouldContain("Invalid discount type value", StringComparison.Ordinal);
     }
 
@@ -200,7 +206,8 @@ public class BookingMapperTests
 
         // Act
         // Assert
-        var exception = ShouldAssertionExtensions.ShouldThrow<ArgumentOutOfRangeException>((Func<object?>)(() => BookingMapper.MapToDiscountTypeDto(invalidValue)));
+        Func<object?> action = () => BookingMapper.MapToDiscountTypeDto(invalidValue);
+        var exception = action.ShouldThrow<ArgumentOutOfRangeException>();
         exception.Message.ShouldContain("Invalid discount type value", StringComparison.Ordinal);
     }
 
@@ -228,7 +235,8 @@ public class BookingMapperTests
 
         // Act
         // Assert
-        var exception = ShouldAssertionExtensions.ShouldThrow<ArgumentOutOfRangeException>((Func<object?>)(() => BookingMapper.MapToPaymentMethod(invalidValue)));
+        Func<object?> action = () => BookingMapper.MapToPaymentMethod(invalidValue);
+        var exception = action.ShouldThrow<ArgumentOutOfRangeException>();
         exception.Message.ShouldContain("Invalid payment method value", StringComparison.Ordinal);
     }
 
@@ -256,124 +264,10 @@ public class BookingMapperTests
 
         // Act
         // Assert
-        var exception = ShouldAssertionExtensions.ShouldThrow<ArgumentOutOfRangeException>((Func<object?>)(() => BookingMapper.MapToPaymentMethodDto(invalidValue)));
+        Func<object?> action = () => BookingMapper.MapToPaymentMethodDto(invalidValue);
+        var exception = action.ShouldThrow<ArgumentOutOfRangeException>();
         exception.Message.ShouldContain("Invalid payment method value", StringComparison.Ordinal);
     }
-
-    [Fact]
-    public void Map_to_payment_dto_should_map_all_properties()
-    {
-        // Arrange
-        var bookingId = Guid.CreateVersion7();
-        var paymentDate = new DateTime(2025, 1, 15, 10, 30, 0, DateTimeKind.Utc);
-        var timeProvider = TimeProvider.System;
-
-        var paymentResult = Payment.Create(
-            bookingId,
-            150.50m,
-            DateOnly.FromDateTime(paymentDate),
-            PaymentMethod.CreditCard,
-            timeProvider,
-            "REF-12345",
-            "Payment for tour booking"
-        );
-
-        paymentResult.IsSuccess.ShouldBeTrue();
-        var payment = paymentResult.Value;
-
-        // Act
-        var result = BookingMapper.MapToPaymentDto(payment);
-
-        // Assert
-        result.Id.ShouldBe(payment.Id);
-        result.BookingId.ShouldBe(bookingId);
-        result.Amount.ShouldBe(150.50m);
-        result.PaymentDate.ShouldBe(DateOnly.FromDateTime(paymentDate));
-        result.Method.ShouldBe(PaymentMethodDto.CreditCard);
-        result.ReferenceNumber.ShouldBe("REF-12345");
-        result.Notes.ShouldBe("Payment for tour booking");
-        result.RecordedAt.ShouldBe(payment.RecordedAt);
-    }
-
-    [Fact]
-    public void Map_to_payment_dto_with_null_payment_should_throw_argument_null_exception()
-    {
-        // Arrange
-        Payment? payment = null;
-
-        // Act
-        // Assert
-        ShouldAssertionExtensions.ShouldThrow<ArgumentNullException>((Func<object?>)(() => BookingMapper.MapToPaymentDto(payment!)));
-    }
-
-    [Fact]
-    public void Map_to_payment_dto_with_null_optional_fields_should_map_correctly()
-    {
-        // Arrange
-        var bookingId = Guid.CreateVersion7();
-        var paymentDate = new DateTime(2025, 1, 15, 10, 30, 0, DateTimeKind.Utc);
-        var timeProvider = TimeProvider.System;
-
-        var paymentResult = Payment.Create(
-            bookingId,
-            100.00m,
-            DateOnly.FromDateTime(paymentDate),
-            PaymentMethod.Cash,
-            timeProvider,
-            null,
-            null
-        );
-
-        paymentResult.IsSuccess.ShouldBeTrue();
-        var payment = paymentResult.Value;
-
-        // Act
-        var result = BookingMapper.MapToPaymentDto(payment);
-
-        // Assert
-        result.Id.ShouldBe(payment.Id);
-        result.BookingId.ShouldBe(bookingId);
-        result.Amount.ShouldBe(100.00m);
-        result.PaymentDate.ShouldBe(DateOnly.FromDateTime(paymentDate));
-        result.Method.ShouldBe(PaymentMethodDto.Cash);
-        result.ReferenceNumber.ShouldBeNull();
-        result.Notes.ShouldBeNull();
-        result.RecordedAt.ShouldBe(payment.RecordedAt);
-    }
-
-    [Theory]
-    [InlineData(PaymentMethod.CreditCard, PaymentMethodDto.CreditCard)]
-    [InlineData(PaymentMethod.BankTransfer, PaymentMethodDto.BankTransfer)]
-    [InlineData(PaymentMethod.Cash, PaymentMethodDto.Cash)]
-    [InlineData(PaymentMethod.Check, PaymentMethodDto.Check)]
-    [InlineData(PaymentMethod.PayPal, PaymentMethodDto.PayPal)]
-    [InlineData(PaymentMethod.Other, PaymentMethodDto.Other)]
-    public void Map_to_payment_dto_should_map_all_payment_methods(PaymentMethod domainMethod, PaymentMethodDto expectedDto)
-    {
-        // Arrange
-        var paymentDate = new DateTime(2025, 1, 15, 10, 30, 0, DateTimeKind.Utc);
-        var timeProvider = TimeProvider.System;
-
-        var paymentResult = Payment.Create(
-            Guid.CreateVersion7(),
-            100.00m,
-            DateOnly.FromDateTime(paymentDate),
-            domainMethod,
-            timeProvider,
-            null,
-            null
-        );
-
-        paymentResult.IsSuccess.ShouldBeTrue();
-        var payment = paymentResult.Value;
-
-        // Act
-        var result = BookingMapper.MapToPaymentDto(payment);
-
-        // Assert
-        result.Method.ShouldBe(expectedDto);
-    }
-
     [Theory]
     [InlineData(BookingStatus.Pending, BookingStatusDto.Pending)]
     [InlineData(BookingStatus.Confirmed, BookingStatusDto.Confirmed)]
@@ -413,7 +307,8 @@ public class BookingMapperTests
 
         // Act
         // Assert
-        var exception = ShouldAssertionExtensions.ShouldThrow<ArgumentOutOfRangeException>((Func<object?>)(() => BookingMapper.MapToBookingStatusDto(invalidValue)));
+        Func<object?> action = () => BookingMapper.MapToBookingStatusDto(invalidValue);
+        var exception = action.ShouldThrow<ArgumentOutOfRangeException>();
         exception.Message.ShouldContain("Invalid booking status value", StringComparison.Ordinal);
     }
 
@@ -456,7 +351,8 @@ public class BookingMapperTests
 
         // Act
         // Assert
-        var exception = ShouldAssertionExtensions.ShouldThrow<ArgumentOutOfRangeException>((Func<object?>)(() => BookingMapper.MapToPaymentStatusDto(invalidValue)));
+        Func<object?> action = () => BookingMapper.MapToPaymentStatusDto(invalidValue);
+        var exception = action.ShouldThrow<ArgumentOutOfRangeException>();
         exception.Message.ShouldContain("Invalid payment status value", StringComparison.Ordinal);
     }
 
@@ -497,7 +393,8 @@ public class BookingMapperTests
 
         // Act
         // Assert
-        var exception = ShouldAssertionExtensions.ShouldThrow<ArgumentOutOfRangeException>((Func<object?>)(() => BookingMapper.MapToRoomTypeDto(invalidValue)));
+        Func<object?> action = () => BookingMapper.MapToRoomTypeDto(invalidValue);
+        var exception = action.ShouldThrow<ArgumentOutOfRangeException>();
         exception.Message.ShouldContain("Invalid room type value", StringComparison.Ordinal);
     }
 
@@ -538,7 +435,8 @@ public class BookingMapperTests
 
         // Act
         // Assert
-        var exception = ShouldAssertionExtensions.ShouldThrow<ArgumentOutOfRangeException>((Func<object?>)(() => BookingMapper.MapToBedTypeDto(invalidValue)));
+        Func<object?> action = () => BookingMapper.MapToBedTypeDto(invalidValue);
+        var exception = action.ShouldThrow<ArgumentOutOfRangeException>();
         exception.Message.ShouldContain("Invalid bed type value", StringComparison.Ordinal);
     }
 }

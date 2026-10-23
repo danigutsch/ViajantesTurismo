@@ -6,26 +6,31 @@ and library tooling belong to the separate SharedKernel repository. ViajantesTur
 Generic documentation and repository-configuration tooling belongs to SharedKernel. Application
 documentation configuration, CI and coverage policy, bootstrap, and compatibility orchestration stay here.
 
-The pinned preview is `0.1.0-alpha.70.1` at library
-[revision `ef0dd0a67b8982dfdf0cb8f5e23224c397971a5b`](https://github.com/danigutsch/PandaBear.SharedKernel/commit/ef0dd0a67b8982dfdf0cb8f5e23224c397971a5b),
-which contains the merged shared security tooling and scanner fixes. All 74 package hashes have
-been verified against the fresh CI candidate and the published
-[prerelease assets](https://github.com/danigutsch/PandaBear.SharedKernel/releases/tag/v0.1.0-alpha.70.1).
-Isolated compatibility at application revision `9cc551e4c5ac7f9dda022d090b2df8667f3e3687`
-passed 3,691 tests with zero failures and five intentional skips. Locked restore, Release build,
-OpenAPI generation, formatting, repository lint, and source scanning passed. The isolated clone
-and package cache were removed; original AppHost asset, metadata, and binary hashes stayed unchanged.
+The prepared payments rebase candidate is `0.1.0-alpha.94.1` at clean library revision
+[`d08008cd3e8901c304377edcc4683de7c3a85ecb`](https://github.com/danigutsch/PandaBear.SharedKernel/commit/d08008cd3e8901c304377edcc4683de7c3a85ecb).
+It combines the merged security tooling, request-binding defaults, reusable assertions and offline
+snapshot generator. All 74 package hashes match the unchanged artifacts from
+[CI run 39994519633](https://github.com/danigutsch/PandaBear.SharedKernel/actions/runs/39994519633);
+Linux/Windows package consumption and NativeAOT passed. Application compatibility validation and
+preview distribution remain pending for this candidate.
+
+The previous accepted preview `0.1.0-alpha.70.1` at revision
+`ef0dd0a67b8982dfdf0cb8f5e23224c397971a5b` remains published. Its earlier application validation is
+historical evidence; it does not contain the request-binding defaults needed by the payments tests.
 
 The former candidate `1.2.0-alpha.20261023.1` at library revision
 `cc826be664bfc2dc087fe5a140f7232b4f65967d` is retired. Its release was deliberately deleted;
 do not recreate, download, restore, or execute its artifacts. Earlier compatibility and package
 validation results are historical evidence, not approval to consume a retired candidate.
 
-The runtime candidate does not contain the offline `dependency snapshot` command.
-Dependency review therefore requires a separately reviewed immutable generator source revision
-containing that command, or a later validated runtime candidate that includes it. Review the source
-generator independently of the runtime package pin; do not restore historical packages to compare
-committed lockfiles.
+HTTP test factories apply `AddTestRequestBindingDefaults` from `PandaBear.Testing.AspNetCore`.
+Direct TestServer and Kestrel test hosts register the same extension. Invalid bodies return HTTP 400
+in Development and Production test environments; ordinary application startup keeps framework defaults.
+
+Dependency review retains main's separately reviewed immutable generator source revision. Its shared
+`dependency snapshot` command compares committed lockfiles without restoring historical packages.
+The application-owned duplicate generator has been removed. Review generator source independently
+of the runtime package pin.
 The Results runtime includes its generator, so do not add a separate Results generator package.
 
 CSV structure parsing and advisory-lock hashing use the Tabular and Npgsql packages. Application
@@ -97,8 +102,8 @@ through public package interfaces. This test-only commit does not change the pin
 
 Hosted Linux and Windows jobs read the committed candidate manifest, check out the public library at
 its exact `libraryRevision`, and download unchanged packages and `candidate.json` from GitHub
-prerelease `v<packageVersion>`. Preview `0.1.0-alpha.70.1` is published and available to these
-checks. Missing retired releases must not be recreated to unblock checks. The secret-scan
+prerelease `v<packageVersion>`. The prepared `0.1.0-alpha.94.1` candidate requires its exact matching release assets before these
+checks can consume it. Missing retired releases must not be recreated to unblock checks. The secret-scan
 workflow also pins the shared scanner action to an immutable library revision. Hosted checks verify
 the same immutable package bytes as local validation.
 

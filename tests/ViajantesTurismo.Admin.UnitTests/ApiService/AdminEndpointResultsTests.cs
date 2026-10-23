@@ -58,11 +58,12 @@ public class AdminEndpointResultsTests
     [Fact]
     public void Match_not_found_conflict_failure_with_unsupported_status_throws()
     {
-        var exception = ShouldAssertionExtensions.ShouldThrow<InvalidOperationException>((Func<object?>)(() =>
+        Func<object?> action = () =>
             AdminEndpointResults.MatchNotFoundConflictFailure(
                 Result.Ok(),
                 () => "not-found",
-                () => "conflict")));
+                () => "conflict");
+        var exception = action.ShouldThrow<InvalidOperationException>();
 
         exception.Message.ShouldBe("Unsupported result status 'Ok'.");
     }
@@ -98,65 +99,6 @@ public class AdminEndpointResultsTests
 
         response.ShouldBe(bookingId.ToString());
     }
-
-    [Fact]
-    public async Task Get_payment_response_when_payment_exists_returns_found_response()
-    {
-        var payment = DtoBuilders.BuildPaymentDto();
-        var booking = DtoBuilders.BuildBookingDto(id: payment.BookingId, payments: [payment]);
-        var queryService = new FakeQueryService(booking, null);
-
-        var response = await AdminEndpointResults.GetPaymentResponse(
-            booking.Id,
-            payment.Id,
-            queryService,
-            foundPayment => foundPayment.Id.ToString(),
-            _ => "booking",
-            _ => "payment",
-            CancellationToken.None);
-
-        response.ShouldBe(payment.Id.ToString());
-    }
-
-    [Fact]
-    public async Task Get_payment_response_when_booking_is_missing_returns_booking_not_found_response()
-    {
-        var bookingId = Guid.CreateVersion7();
-        var paymentId = Guid.CreateVersion7();
-        var queryService = new FakeQueryService(null, null);
-
-        var response = await AdminEndpointResults.GetPaymentResponse(
-            bookingId,
-            paymentId,
-            queryService,
-            foundPayment => foundPayment.Id.ToString(),
-            missingBookingId => missingBookingId.ToString(),
-            missingPaymentId => missingPaymentId.ToString(),
-            CancellationToken.None);
-
-        response.ShouldBe(bookingId.ToString());
-    }
-
-    [Fact]
-    public async Task Get_payment_response_when_payment_is_missing_returns_payment_not_found_response()
-    {
-        var bookingId = Guid.CreateVersion7();
-        var paymentId = Guid.CreateVersion7();
-        var booking = DtoBuilders.BuildBookingDto(id: bookingId, payments: []);
-        var queryService = new FakeQueryService(booking, null);
-
-        var response = await AdminEndpointResults.GetPaymentResponse(
-            bookingId,
-            paymentId,
-            queryService,
-            foundPayment => foundPayment.Id.ToString(),
-            missingBookingId => missingBookingId.ToString(),
-            missingPaymentId => missingPaymentId.ToString(),
-            CancellationToken.None);
-
-        response.ShouldBe(paymentId.ToString());
-    }
-
     [Fact]
     public async Task Match_not_found_conflict_booking_response_when_result_succeeds_returns_found_response()
     {

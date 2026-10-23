@@ -61,50 +61,50 @@ public sealed class EmergencyContactValidationSteps(CustomerContext context)
     [Then("the emergency contact should be successfully created")]
     public void ThenTheEmergencyContactShouldBeSuccessfullyCreated()
     {
-        (context.EmergencyContactResult.IsSuccess).ShouldBeTrue(context.EmergencyContactResult.ErrorDetails?.Detail ?? "Creation failed");
-        (context.EmergencyContactResult.Value).ShouldNotBeNull();
+        context.EmergencyContactResult.IsSuccess.ShouldBeTrue(context.EmergencyContactResult.ErrorDetails?.Detail ?? "Creation failed");
+        context.EmergencyContactResult.Value.ShouldNotBeNull();
     }
 
     [Then("I should be informed that emergency contact name is required")]
     public void ThenIShouldBeInformedThatEmergencyContactNameIsRequired()
     {
-        (context.EmergencyContactResult.IsFailure).ShouldBeTrue("Expected failure but got success");
+        context.EmergencyContactResult.IsFailure.ShouldBeTrue("Expected failure but got success");
         var errors = context.EmergencyContactResult.ErrorDetails?.ValidationErrors;
         var allErrors = errors?.Values.SelectMany(e => e).ToList() ?? new List<string>();
-        (allErrors).ShouldContain("Emergency contact name is required.");
+        allErrors.ShouldContain("Emergency contact name is required.");
     }
 
     [Then("I should be informed that emergency contact name cannot exceed 128 characters")]
     public void ThenIShouldBeInformedThatEmergencyContactNameCannotExceed128Characters()
     {
-        (context.EmergencyContactResult.IsFailure).ShouldBeTrue("Expected failure but got success");
+        context.EmergencyContactResult.IsFailure.ShouldBeTrue("Expected failure but got success");
         var errors = context.EmergencyContactResult.ErrorDetails?.ValidationErrors;
         var allErrors = errors?.Values.SelectMany(e => e).ToList() ?? new List<string>();
-        (allErrors).ShouldContain("Emergency contact name cannot exceed 128 characters.");
+        allErrors.ShouldContain("Emergency contact name cannot exceed 128 characters.");
     }
 
     [Then("I should be informed that emergency contact mobile is required")]
     public void ThenIShouldBeInformedThatEmergencyContactMobileIsRequired()
     {
-        (context.EmergencyContactResult.IsFailure).ShouldBeTrue("Expected failure but got success");
+        context.EmergencyContactResult.IsFailure.ShouldBeTrue("Expected failure but got success");
         var errors = context.EmergencyContactResult.ErrorDetails?.ValidationErrors;
         var allErrors = errors?.Values.SelectMany(e => e).ToList() ?? new List<string>();
-        (allErrors).ShouldContain("Emergency contact mobile is required.");
+        allErrors.ShouldContain("Emergency contact mobile is required.");
     }
 
     [Then("I should be informed that emergency contact mobile cannot exceed 64 characters")]
     public void ThenIShouldBeInformedThatEmergencyContactMobileCannotExceed64Characters()
     {
-        (context.EmergencyContactResult.IsFailure).ShouldBeTrue("Expected failure but got success");
+        context.EmergencyContactResult.IsFailure.ShouldBeTrue("Expected failure but got success");
         var errors = context.EmergencyContactResult.ErrorDetails?.ValidationErrors;
         var allErrors = errors?.Values.SelectMany(e => e).ToList() ?? new List<string>();
-        (allErrors).ShouldContain("Emergency contact mobile cannot exceed 64 characters.");
+        allErrors.ShouldContain("Emergency contact mobile cannot exceed 64 characters.");
     }
 
     [Then("all emergency contact fields should have normalized whitespace")]
     public void ThenAllEmergencyContactFieldsShouldHaveNormalizedWhitespace()
     {
-        (context.EmergencyContactResult.Value.Name).ShouldBe("Jane Doe");
-        (context.EmergencyContactResult.Value.Mobile).ShouldBe("+1234 567890");
+        context.EmergencyContactResult.Value.Name.ShouldBe("Jane Doe");
+        context.EmergencyContactResult.Value.Mobile.ShouldBe("+1234 567890");
     }
 }

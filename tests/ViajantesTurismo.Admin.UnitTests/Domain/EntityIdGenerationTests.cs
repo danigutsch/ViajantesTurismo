@@ -61,23 +61,4 @@ public sealed class EntityIdGenerationTests
         result.IsSuccess.ShouldBeTrue();
         EntityIdAssertions.AssertUuidV7(result.Value.Id);
     }
-
-    [Fact]
-    public void Payment_create_should_generate_uuidv7_id()
-    {
-        // Act
-        var result = Payment.Create(
-            bookingId: Guid.CreateVersion7(),
-            amount: 250m,
-            paymentDate: DateOnly.FromDateTime(TimeProvider.System.GetUtcNow().UtcDateTime),
-            method: PaymentMethod.CreditCard,
-            timeProvider: TimeProvider.System,
-            referenceNumber: "TX-123",
-            notes: "Initial payment");
-
-        // Assert
-        result.IsSuccess.ShouldBeTrue();
-        EntityIdAssertions.AssertUuidV7(result.Value.Id);
-    }
-
 }

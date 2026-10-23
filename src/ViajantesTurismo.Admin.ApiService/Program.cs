@@ -8,6 +8,7 @@ using ViajantesTurismo.Admin.ApiService;
 using ViajantesTurismo.Admin.ApiService.Bookings;
 using ViajantesTurismo.Admin.ApiService.Customers;
 using ViajantesTurismo.Admin.ApiService.Documents;
+using ViajantesTurismo.Admin.ApiService.Payments;
 using ViajantesTurismo.Admin.ApiService.Errors;
 using ViajantesTurismo.Admin.ApiService.Tours;
 using ViajantesTurismo.Admin.Application;
@@ -44,6 +45,7 @@ builder.Services.AddApiSecurity(
     .AddPolicy(AdminAuthorization.CustomerWrite, policy => policy.RequirePermission(AdminAuthorization.CustomerWrite))
     .AddPolicy(AdminAuthorization.DocumentManage, policy => policy.RequirePermission(AdminAuthorization.DocumentManage))
     .AddPolicy(AdminAuthorization.DocumentationRead, policy => policy.RequirePermission(AdminAuthorization.DocumentationRead))
+    .AddPolicy(AdminAuthorization.PaymentManage, policy => policy.RequirePermission(AdminAuthorization.PaymentManage))
     .AddPolicy(AdminAuthorization.PaymentRead, policy => policy.RequirePermission(AdminAuthorization.PaymentRead))
     .AddPolicy(AdminAuthorization.PaymentWrite, policy => policy.RequirePermission(AdminAuthorization.PaymentWrite))
     .AddPolicy(AdminAuthorization.TourRead, policy => policy.RequirePermission(AdminAuthorization.TourRead))
@@ -56,6 +58,10 @@ builder.Services.AddConfiguredClamAvMalwareScanner(builder.Configuration, builde
 
 builder.AddApplication();
 builder.AddInfrastructure();
+
+builder.Services.ConfigureHttpJsonOptions(options => options.SerializerOptions.TypeInfoResolverChain.Insert(0, ViajantesTurismo.Admin.Contracts.Application.PaymentAccountContractJsonContext.Default));
+
+builder.Services.ConfigureHttpJsonOptions(options => options.SerializerOptions.TypeInfoResolverChain.Insert(0, ViajantesTurismo.Admin.Contracts.Application.PaymentFinancialContractJsonContext.Default));
 
 var app = builder.Build();
 
@@ -77,6 +83,9 @@ app.MapCustomerEndpoints()
     .MapCustomerImportEndpoints();
 app.MapBookingEndpoints();
 app.MapDocumentEndpoints();
+app.MapPaymentAccountEndpoints();
+app.MapBookingFinancialEndpoints();
+app.MapPaymentInstructionEndpoints();
 app.MapErrorDocumentationEndpoints();
 app.MapRobotsTxt(ApiRobotsTxt);
 

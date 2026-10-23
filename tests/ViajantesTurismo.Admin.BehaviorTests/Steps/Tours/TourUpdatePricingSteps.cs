@@ -35,32 +35,32 @@ public sealed class TourUpdatePricingSteps(TourContext tourContext)
     [Then("the tour pricing update should succeed")]
     public void ThenTheTourPricingUpdateShouldSucceed()
     {
-        (tourContext.UpdateResult).ShouldNotBeNull();
-        (tourContext.UpdateResult.Value.IsSuccess).ShouldBeTrue($"Expected success but got error: {tourContext.UpdateResult.Value.ErrorDetails?.Detail}");
+        tourContext.UpdateResult.ShouldNotBeNull();
+        tourContext.UpdateResult.Value.IsSuccess.ShouldBeTrue($"Expected success but got error: {tourContext.UpdateResult.Value.ErrorDetails?.Detail}");
     }
 
     [Then("the tour pricing update should fail")]
     public void ThenTheTourPricingUpdateShouldFail()
     {
-        (tourContext.UpdateResult).ShouldNotBeNull();
-        (tourContext.UpdateResult.Value.IsSuccess).ShouldBeFalse();
+        tourContext.UpdateResult.ShouldNotBeNull();
+        tourContext.UpdateResult.Value.IsSuccess.ShouldBeFalse();
     }
 
     [Then("the tour should have single room supplement (.*)")]
     public void ThenTheTourShouldHaveSingleRoomSupplement(decimal expectedPrice)
     {
-        (tourContext.Tour.Pricing.SingleRoomSupplementPrice).ShouldBe(expectedPrice);
+        tourContext.Tour.Pricing.SingleRoomSupplementPrice.ShouldBe(expectedPrice);
     }
 
     [Then("the tour should have regular bike price (.*)")]
     public void ThenTheTourShouldHaveRegularBikePrice(decimal expectedPrice)
     {
-        (tourContext.Tour.Pricing.RegularBikePrice).ShouldBe(expectedPrice);
+        tourContext.Tour.Pricing.RegularBikePrice.ShouldBe(expectedPrice);
     }
 
     [Then("the tour should have e-bike price (.*)")]
     public void ThenTheTourShouldHaveEBikePrice(decimal expectedPrice)
     {
-        (tourContext.Tour.Pricing.EBikePrice).ShouldBe(expectedPrice);
+        tourContext.Tour.Pricing.EBikePrice.ShouldBe(expectedPrice);
     }
 }

@@ -115,40 +115,40 @@ public sealed class CustomerImportSteps(ImportContext context)
     [Then("{int} customers success should be reported")]
     public void ThenCustomersShouldBeImportedSuccessfully(int expectedCount)
     {
-        (context.Result).ShouldNotBeNull();
-        (context.Result.Value.SuccessCount).ShouldBe(expectedCount);
+        context.Result.ShouldNotBeNull();
+        context.Result.Value.SuccessCount.ShouldBe(expectedCount);
     }
 
     [Then("{int} rows should have errors")]
     [Then("{int} row should have errors")]
     public void ThenRowsShouldHaveErrors(int expectedCount)
     {
-        (context.Result).ShouldNotBeNull();
-        (context.Result.Value.ErrorCount).ShouldBe(expectedCount);
+        context.Result.ShouldNotBeNull();
+        context.Result.Value.ErrorCount.ShouldBe(expectedCount);
     }
 
     [Then("no customers should exist in the store")]
     public void ThenNoCustomersShouldExistInTheStore()
     {
-        (context.CustomerStore.AllCustomers).ShouldBeEmpty();
+        context.CustomerStore.AllCustomers.ShouldBeEmpty();
     }
 
     [Then("{int} duplicate conflict should be surfaced")]
     [Then("{int} duplicate conflicts should be surfaced")]
     public void ThenDuplicateConflictsShouldBeSurfaced(int expectedCount)
     {
-        (context.WorkflowResult).ShouldNotBeNull();
-        (context.WorkflowResult.Conflicts).ShouldNotBeNull();
-        (context.WorkflowResult.Conflicts.Count).ShouldBe(expectedCount);
+        context.WorkflowResult.ShouldNotBeNull();
+        context.WorkflowResult.Conflicts.ShouldNotBeNull();
+        context.WorkflowResult.Conflicts.Count.ShouldBe(expectedCount);
     }
 
     [Then("the duplicate conflict should contain email {string}")]
     public void ThenTheDuplicateConflictShouldContainEmail(string expectedEmail)
     {
-        (context.WorkflowResult).ShouldNotBeNull();
-        (context.WorkflowResult.Conflicts).ShouldNotBeNull();
-        var conflict = (context.WorkflowResult.Conflicts).ShouldHaveSingleItem();
-        (conflict.Email).ShouldBe(expectedEmail, StringComparer.OrdinalIgnoreCase);
+        context.WorkflowResult.ShouldNotBeNull();
+        context.WorkflowResult.Conflicts.ShouldNotBeNull();
+        var conflict = context.WorkflowResult.Conflicts.ShouldHaveSingleItem();
+        conflict.Email.ShouldBe(expectedEmail, StringComparer.OrdinalIgnoreCase);
     }
 
     [Then("import summary should report {int} created, {int} updated, {int} skipped, and {int} failed")]
@@ -158,7 +158,7 @@ public sealed class CustomerImportSteps(ImportContext context)
         int expectedSkipped,
         int expectedFailed)
     {
-        (context.WorkflowCommitResult).ShouldNotBeNull();
+        context.WorkflowCommitResult.ShouldNotBeNull();
 
         var updatedCount = context.ConflictResolutions.Values.Count(v =>
             v.Equals("overwrite", StringComparison.OrdinalIgnoreCase)
@@ -168,32 +168,32 @@ public sealed class CustomerImportSteps(ImportContext context)
         var createdCount = Math.Max(0, context.WorkflowCommitResult.SuccessCount - updatedCount);
         var failedCount = context.WorkflowCommitResult.ErrorCount;
 
-        (createdCount).ShouldBe(expectedCreated);
-        (updatedCount).ShouldBe(expectedUpdated);
-        (skippedCount).ShouldBe(expectedSkipped);
-        (failedCount).ShouldBe(expectedFailed);
+        createdCount.ShouldBe(expectedCreated);
+        updatedCount.ShouldBe(expectedUpdated);
+        skippedCount.ShouldBe(expectedSkipped);
+        failedCount.ShouldBe(expectedFailed);
     }
 
     [Then("customer with email {string} should have first name {string}")]
     public void ThenCustomerWithEmailShouldHaveFirstName(string email, string expectedFirstName)
     {
         var customer = context.GetCustomerByEmail(email);
-        (customer).ShouldNotBeNull();
-        (customer.PersonalInfo.FirstName).ShouldBe(expectedFirstName);
+        customer.ShouldNotBeNull();
+        customer.PersonalInfo.FirstName.ShouldBe(expectedFirstName);
     }
 
     [Then("customer with email {string} should exist in the store")]
     public void ThenCustomerWithEmailShouldExistInTheStore(string email)
     {
         var customer = context.GetCustomerByEmail(email);
-        (customer).ShouldNotBeNull();
+        customer.ShouldNotBeNull();
     }
 
     [Then("imported customer with email {string} should have a stable identifier")]
     public void ThenImportedCustomerWithEmailShouldHaveAStableIdentifier(string email)
     {
         var customer = context.GetCustomerByEmail(email);
-        (customer).ShouldNotBeNull();
-        (customer.Id).ShouldNotBe(Guid.Empty);
+        customer.ShouldNotBeNull();
+        customer.Id.ShouldNotBe(Guid.Empty);
     }
 }

@@ -199,23 +199,4 @@ public static class BookingMapper
         };
     }
 
-    /// <summary>
-    /// Maps a <see cref="Payment"/> to a <see cref="GetPaymentDto"/>.
-    /// </summary>
-    public static GetPaymentDto MapToPaymentDto(Payment payment)
-    {
-        ArgumentNullException.ThrowIfNull(payment);
-
-        return new GetPaymentDto
-        {
-            Id = payment.Id,
-            BookingId = payment.BookingId,
-            Amount = payment.Amount,
-            PaymentDate = payment.PaymentDate,
-            Method = MapToPaymentMethodDto(payment.Method),
-            ReferenceNumber = payment.ReferenceNumber,
-            Notes = payment.Notes,
-            RecordedAt = payment.RecordedAt
-        };
-    }
 }

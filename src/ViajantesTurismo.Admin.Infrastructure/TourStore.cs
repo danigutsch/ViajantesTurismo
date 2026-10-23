@@ -1,26 +1,39 @@
 using Microsoft.EntityFrameworkCore;
+using ViajantesTurismo.Admin.Infrastructure.Payments;
 using PandaBear.Results;
 using ViajantesTurismo.Admin.Domain.Tours;
 
 namespace ViajantesTurismo.Admin.Infrastructure;
 
-internal sealed class TourStore(AdminWriteDbContext dbContext) : ITourStore
+internal sealed class TourStore(AdminWriteDbContext dbContext, PaymentHistoryStore histories) : ITourStore
 {
     public void Add(Tour tour) => dbContext.Tours.Add(tour);
 
-    public async Task<Tour?> GetById(Guid id, CancellationToken ct) =>
-        await dbContext.Tours
+    public async Task<Tour?> GetById(Guid id, CancellationToken ct)
+    {
+        var tour = await dbContext.Tours
             .Include(t => t.Bookings)
-            .ThenInclude(b => b.Payments)
             .AsSplitQuery()
             .FirstOrDefaultAsync(t => t.Id == id, ct);
+        if (tour is not null)
+        {
+            await histories.Attach(tour.Bookings, ct);
+        }
+        return tour;
+    }
 
-    public async Task<Tour?> GetByBookingId(Guid bookingId, CancellationToken ct) =>
-        await dbContext.Tours
+    public async Task<Tour?> GetByBookingId(Guid bookingId, CancellationToken ct)
+    {
+        var tour = await dbContext.Tours
             .Include(t => t.Bookings)
-            .ThenInclude(b => b.Payments)
             .AsSplitQuery()
             .FirstOrDefaultAsync(t => t.Bookings.Any(b => b.Id == bookingId), ct);
+        if (tour is not null)
+        {
+            await histories.Attach(tour.Bookings, ct);
+        }
+        return tour;
+    }
 
     public async Task<Option<Guid>> GetTourIdByBookingId(Guid bookingId, CancellationToken ct)
     {
