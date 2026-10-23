@@ -1,0 +1,14 @@
+title = "ViajantesTurismo source secret scanning"
+
+[extend]
+useDefault = true
+
+[[allowlists]]
+description = "Generated local build, package, and worktree outputs; source and tests remain scanned"
+paths = [
+  '''(^|/)\.git/''',
+  '''(^|/)\.worktrees/''',
+  '''(^|/)\.local/''',
+  '''(^|/)\.nuget/''',
+  '''(^|/)(bin|obj|artifacts|TestResults|node_modules)/'''
+]

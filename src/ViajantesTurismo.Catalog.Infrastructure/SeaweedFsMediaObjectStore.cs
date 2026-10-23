@@ -111,7 +111,7 @@ internal sealed class SeaweedFsMediaObjectStore(
             throw new ArgumentOutOfRangeException(nameof(request), "Upload lifetime must be positive and at most seven days.");
         }
 
-        var expiresAt = DateTimeOffset.UtcNow.Add(request.ExpiresAfter);
+        var expiresAt = TimeProvider.System.GetUtcNow().Add(request.ExpiresAfter);
         var signingRequest = new GetPreSignedUrlRequest
         {
             BucketName = options.Bucket,

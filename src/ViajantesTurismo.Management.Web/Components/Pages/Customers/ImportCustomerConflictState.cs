@@ -17,13 +17,25 @@ internal sealed class ImportCustomerConflictState
         ExistingValues = new Dictionary<string, string>(existingValues ?? new Dictionary<string, string>(), StringComparer.OrdinalIgnoreCase);
     }
 
-    internal string Email { get; }
+    internal string Email
+    {
+        get;
+    }
 
-    internal string? Decision { get; private set; }
+    internal string? Decision
+    {
+        get; private set;
+    }
 
-    internal Dictionary<string, string> IncomingValues { get; }
+    internal Dictionary<string, string> IncomingValues
+    {
+        get;
+    }
 
-    internal Dictionary<string, string> ExistingValues { get; }
+    internal Dictionary<string, string> ExistingValues
+    {
+        get;
+    }
 
     internal Dictionary<string, ImportConflictFieldSource> FieldSelections { get; } = new(StringComparer.OrdinalIgnoreCase);
 

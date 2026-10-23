@@ -16,33 +16,33 @@
       },
       "PandaBear.SharedKernel.Style.Analyzers": {
         "type": "Direct",
-        "requested": "[1.0.0-alpha.20261021.2, )",
-        "resolved": "1.0.0-alpha.20261021.2",
-        "contentHash": "nfxdWX03IuS9TR9Zn4Jp3ED+tcTIe/06+SdLU3XmLhS6EHMljOtbPgeYuQw2TeKFZq0WQkUrG3vI0lOyesRp5A=="
+        "requested": "[0.1.0-alpha.70.1, )",
+        "resolved": "0.1.0-alpha.70.1",
+        "contentHash": "1LmLUT1f+2pAV4+oLvlU4/IoMPrKI59ID0Dol4yDyqoqh3W7pSYhSyga18e/MEyBk+z1ebbwk7Jcoqd2OrunMg=="
       },
       "PandaBear.SharedKernel.Style.CodeFixes": {
         "type": "Direct",
-        "requested": "[1.0.0-alpha.20261021.2, )",
-        "resolved": "1.0.0-alpha.20261021.2",
-        "contentHash": "36TIAEL97BTvjHzQgIq05C465xm10yxGjMtpPwJpxFZuRUgMihMJ4Fx9d91fH/ofmghcBzfeyQODqtviQ/qvtg=="
+        "requested": "[0.1.0-alpha.70.1, )",
+        "resolved": "0.1.0-alpha.70.1",
+        "contentHash": "mEe/85utqAEpYs1pQC+T+jsKm0rQ4LWDqH0lU4mehKl2nDVkMkC3JouHD0hQqJmIuBc5aMRQYw5HqyWbTTON5w=="
       },
       "PandaBear.SharedKernel.Testing": {
         "type": "Direct",
-        "requested": "[1.0.0-alpha.20261021.2, )",
-        "resolved": "1.0.0-alpha.20261021.2",
-        "contentHash": "CWBLYUcl2WjiGngGC8LgOtArEc8szYzLfJKkEtZTiuNlWbdLgdO8W2GUYhg07YaUHvVvXSTFv4MKz1IhmNMFeg=="
+        "requested": "[0.1.0-alpha.70.1, )",
+        "resolved": "0.1.0-alpha.70.1",
+        "contentHash": "vV8Pr9how2432Xjno5kD56RvLh4xCe3Sdq0DacEF+YTfsyp4/JRXI0++ZnqUIonHiF3thGbiszriYat7a+PbRA=="
       },
       "PandaBear.SharedKernel.Testing.Analyzers": {
         "type": "Direct",
-        "requested": "[1.0.0-alpha.20261021.2, )",
-        "resolved": "1.0.0-alpha.20261021.2",
-        "contentHash": "NM31sHLDgF/VW/1mD6tmtGO5SOsd4FqGGGpBY8WvWG/e8MOggWqFPP088ZF/KQgpDPkPlo4wyVwyjl5rlogolg=="
+        "requested": "[0.1.0-alpha.70.1, )",
+        "resolved": "0.1.0-alpha.70.1",
+        "contentHash": "s0bp0+/rYvkvLyv9xB3tGFkHWXjB+WVCt//CgDXUAUm8kcyoVGYKksOvc19JimNePixH2WGbmTdGddM7WOZaiQ=="
       },
       "PandaBear.SharedKernel.Testing.Assertions": {
         "type": "Direct",
-        "requested": "[1.0.0-alpha.20261021.2, )",
-        "resolved": "1.0.0-alpha.20261021.2",
-        "contentHash": "e/vTHCU+HKJQ4HqG0kEaUf1uiQTCUwJQvdh8jN0E61l5qVTNprpFW/UcQ6uVxZJRDn4sXHegATqFsaaTv7F57Q==",
+        "requested": "[0.1.0-alpha.70.1, )",
+        "resolved": "0.1.0-alpha.70.1",
+        "contentHash": "dJXbtQtE4eyPbiV7UE+oxnBQTxT8XcGQL39v2O6DuZonXIzRaOAwgOJ+suHF4pS8Pb8qeGJKv7NR7ypE8sp5Cg==",
         "dependencies": {
           "xunit.v3.assert": "4.0.0"
         }

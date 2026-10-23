@@ -366,7 +366,7 @@ public sealed class PublicMediaImageTests
         image.RequiresHumanReview.ShouldBeTrue();
         image.IsAiGenerated.ShouldBeFalse();
         image.HasPublicVariants.ShouldBeFalse();
-        var text = image.AccessibilityTexts.Single(accessibilityText => accessibilityText.Language == PublicContentLanguage.EnUs);
+        var text = image.AccessibilityTexts.ShouldHaveSingleItem(accessibilityText => accessibilityText.Language == PublicContentLanguage.EnUs);
         text.RequiresHumanReview.ShouldBeTrue();
         text.IsAiGenerated.ShouldBeFalse();
     }
@@ -400,7 +400,7 @@ public sealed class PublicMediaImageTests
         // Assert
         result.IsSuccess.ShouldBeTrue();
         image.AccessibilityTexts.Count.ShouldBe(2);
-        var localized = image.AccessibilityTexts.Single(text => text.Language == PublicContentLanguage.PtBr);
+        var localized = image.AccessibilityTexts.ShouldHaveSingleItem(text => text.Language == PublicContentLanguage.PtBr);
         localized.RequiresHumanReview.ShouldBeTrue();
         localized.IsAiGenerated.ShouldBeTrue();
     }

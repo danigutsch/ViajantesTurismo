@@ -56,7 +56,7 @@ internal static class FileUploadScanCommand
         var dotnetPath = FindCommandPath("dotnet")
             ?? throw new InvalidOperationException("dotnet is required to start the file upload benchmark host.");
 
-        var timestamp = DateTimeOffset.UtcNow.ToString("yyyyMMdd'T'HHmmss'Z'", CultureInfo.InvariantCulture);
+        var timestamp = TimeProvider.System.GetUtcNow().ToString("yyyyMMdd'T'HHmmss'Z'", CultureInfo.InvariantCulture);
         var runId = Guid.NewGuid().ToString("N", CultureInfo.InvariantCulture)[..8];
         var runDirectory = Path.Combine(resultsDirectory, "file-upload-scan-" + timestamp + "-" + runId);
         var absoluteRunDirectory = Path.Combine(repositoryRoot, ToPlatformPath(runDirectory));

@@ -22,7 +22,7 @@ internal sealed class BookingWorkflow(IPage page, Func<string, Task> navigateTo)
     public async Task NavigateToEdit(Guid bookingId)
     {
         await navigateTo($"/bookings/{bookingId}/edit");
-        await Expect(page).ToHaveTitleAsync("Edit Booking");
+        await page.ShouldHaveTitle("Edit Booking");
     }
 
     /// <summary>
@@ -40,7 +40,7 @@ internal sealed class BookingWorkflow(IPage page, Func<string, Task> navigateTo)
         string expectedFinalTotal)
     {
         await navigateTo($"/tours/{tour.Id}");
-        await Expect(page).ToHaveTitleAsync("Tour Details");
+        await page.ShouldHaveTitle("Tour Details");
         await page.GetByText(tour.Name).First.WaitForAsync();
 
         var addBookingButton = page.GetButton("Add Booking");
@@ -96,7 +96,7 @@ internal sealed class BookingWorkflow(IPage page, Func<string, Task> navigateTo)
     public async Task NavigateToDetails(Guid bookingId)
     {
         await navigateTo($"/bookings/{bookingId}");
-        await Expect(page).ToHaveTitleAsync("Booking Details");
+        await page.ShouldHaveTitle("Booking Details");
     }
 
     /// <summary>
@@ -157,7 +157,7 @@ internal sealed class BookingWorkflow(IPage page, Func<string, Task> navigateTo)
         await paymentCard.WaitForAsync();
 
         await paymentCard.Locator("#amount").FillAsync("1000");
-        await paymentCard.Locator("#paymentDate").FillAsync(DateTime.UtcNow.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture));
+        await paymentCard.Locator("#paymentDate").FillAsync(TimeProvider.System.GetUtcNow().UtcDateTime.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture));
         await paymentCard.Locator("#method").SelectOptionAsync("Cash");
 
         var toastTask = UiFeedback.ExpectToastThenHide("Payment recorded successfully");

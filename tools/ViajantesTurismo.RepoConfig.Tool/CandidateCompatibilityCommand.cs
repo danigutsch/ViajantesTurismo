@@ -27,10 +27,17 @@ internal static class CandidateCompatibilityCommand
 
             switch (args[index])
             {
-                case "--root": root = Path.GetFullPath(args[index + 1]); break;
-                case "--candidate": candidate = Path.GetFullPath(args[index + 1]); break;
-                case "--output": destination = args[index + 1]; break;
-                default: throw new ArgumentException("Unknown option: " + args[index]);
+                case "--root":
+                    root = Path.GetFullPath(args[index + 1]);
+                    break;
+                case "--candidate":
+                    candidate = Path.GetFullPath(args[index + 1]);
+                    break;
+                case "--output":
+                    destination = args[index + 1];
+                    break;
+                default:
+                    throw new ArgumentException("Unknown option: " + args[index]);
             }
         }
 
@@ -62,6 +69,9 @@ internal static class CandidateCompatibilityCommand
                 ValidateConsumer(root, candidate, evidence);
                 scratch = Path.Combine(Path.GetTempPath(), "sharedkernel-consumer-" + Guid.NewGuid().ToString("N"));
                 var config = WriteRestoreConfiguration(candidate, scratch);
+                var consumer = Path.Combine(scratch, "consumer");
+                await RunProcess("git", ["clone", "--local", "--shared", "--no-checkout", "--", root, consumer], root, output, ct).ConfigureAwait(false);
+                await RunProcess("git", ["checkout", "--detach", evidence["consumerRevision"]!.GetValue<string>()], consumer, output, ct).ConfigureAwait(false);
                 var cache = Path.Combine(scratch, "packages");
                 string[][] commands = [
                     ["restore", SolutionFileName, "--locked-mode", "--configfile", config, "--packages", cache, "--no-cache"],
@@ -71,7 +81,7 @@ internal static class CandidateCompatibilityCommand
                 ];
                 foreach (var command in commands)
                 {
-                    await RunProcess("dotnet", command, root, output, ct).ConfigureAwait(false);
+                    await RunProcess("dotnet", command, consumer, output, ct).ConfigureAwait(false);
                 }
 
                 status = "passed";
@@ -186,7 +196,10 @@ internal static class CandidateCompatibilityCommand
     internal static async Task<string> RunProcess(string name, string[] args, string root, TextWriter output, CancellationToken ct, bool trimOutput = true)
     {
         var info = new ProcessStartInfo(name) { WorkingDirectory = root, UseShellExecute = false, RedirectStandardOutput = true, RedirectStandardError = true };
-        foreach (var argument in args) { info.ArgumentList.Add(argument); }
+        foreach (var argument in args)
+        {
+            info.ArgumentList.Add(argument);
+        }
         using var process = Process.Start(info) ?? throw new InvalidOperationException("Could not start " + name);
         var stdout = process.StandardOutput.ReadToEndAsync(ct);
         var stderr = process.StandardError.ReadToEndAsync(ct);
@@ -207,8 +220,14 @@ internal static class CandidateCompatibilityCommand
         var text = await stdout.ConfigureAwait(false);
         var errors = await stderr.ConfigureAwait(false);
         await output.WriteAsync(text).ConfigureAwait(false);
-        if (process.ExitCode != 0) { throw new InvalidOperationException($"{name} exited {process.ExitCode}: {text}{Environment.NewLine}{errors}"); }
-        if (!string.IsNullOrEmpty(errors)) { await output.WriteAsync(errors).ConfigureAwait(false); }
+        if (process.ExitCode != 0)
+        {
+            throw new InvalidOperationException($"{name} exited {process.ExitCode}: {text}{Environment.NewLine}{errors}");
+        }
+        if (!string.IsNullOrEmpty(errors))
+        {
+            await output.WriteAsync(errors).ConfigureAwait(false);
+        }
         return trimOutput ? text.Trim() : text;
     }
 }

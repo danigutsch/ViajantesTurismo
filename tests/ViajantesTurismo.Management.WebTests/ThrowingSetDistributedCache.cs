@@ -10,7 +10,10 @@ internal sealed class ThrowingSetDistributedCache(
     private readonly Exception _failure = failure ?? new InvalidOperationException("The cache is unavailable.");
     private int _setCalls;
 
-    public DistributedCacheEntryOptions? LastOptions { get; private set; }
+    public DistributedCacheEntryOptions? LastOptions
+    {
+        get; private set;
+    }
 
     public byte[]? Get(string key)
     {

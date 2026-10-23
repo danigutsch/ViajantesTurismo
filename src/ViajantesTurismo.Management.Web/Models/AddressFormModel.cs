@@ -10,7 +10,10 @@ internal sealed class AddressFormModel
     public string Street { get; set; } = string.Empty;
 
     [MaxLength(ContractConstants.MaxNameLength)]
-    public string? Complement { get; set; }
+    public string? Complement
+    {
+        get; set;
+    }
 
     [Required(ErrorMessage = "Neighborhood is required")]
     [MaxLength(ContractConstants.MaxNameLength)]

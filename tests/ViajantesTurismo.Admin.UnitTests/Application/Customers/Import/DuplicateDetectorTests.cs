@@ -25,8 +25,8 @@ public class DuplicateDetectorTests
         var duplicateLineNumbers = DuplicateDetector.FindDuplicateEmailLineNumbers(document);
 
         // Assert
-        var duplicateLineNumber = (duplicateLineNumbers).ShouldHaveSingleItem();
-        (duplicateLineNumber).ShouldBe(3);
+        var duplicateLineNumber = duplicateLineNumbers.ShouldHaveSingleItem();
+        duplicateLineNumber.ShouldBe(3);
     }
 
     [Fact]
@@ -47,8 +47,8 @@ public class DuplicateDetectorTests
         var duplicateLineNumbers = DuplicateDetector.FindDuplicateNameLineNumbers(document);
 
         // Assert
-        var duplicateLineNumber = (duplicateLineNumbers).ShouldHaveSingleItem();
-        (duplicateLineNumber).ShouldBe(3);
+        var duplicateLineNumber = duplicateLineNumbers.ShouldHaveSingleItem();
+        duplicateLineNumber.ShouldBe(3);
     }
 
     [Fact]
@@ -63,7 +63,7 @@ public class DuplicateDetectorTests
         var conflicts = await detector.FindDatabaseEmailConflicts(csv, CancellationToken.None);
 
         // Assert
-        var conflict = (conflicts).ShouldHaveSingleItem();
-        (conflict).ShouldBe(new ImportConflictDto("john.doe@example.com"));
+        var conflict = conflicts.ShouldHaveSingleItem();
+        conflict.ShouldBe(new ImportConflictDto("john.doe@example.com"));
     }
 }

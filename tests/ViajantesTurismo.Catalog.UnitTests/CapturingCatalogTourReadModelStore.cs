@@ -6,7 +6,10 @@ public sealed class CapturingCatalogTourReadModelStore : ICatalogTourReadModelSt
 {
     private readonly List<CatalogTourDraftReadModel> drafts = [];
 
-    public CatalogTourDraftReadModel? Draft { get; private set; }
+    public CatalogTourDraftReadModel? Draft
+    {
+        get; private set;
+    }
 
     public IReadOnlyCollection<CatalogTourDraftReadModel> Drafts => drafts;
 

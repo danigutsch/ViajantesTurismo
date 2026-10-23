@@ -11,17 +11,30 @@ internal static class BootstrapSharedKernelCommand
         string? feed = null;
         for (var index = 0; index < args.Length; index += 2)
         {
-            if (index + 1 == args.Length) { throw new ArgumentException("Missing value for " + args[index]); }
+            if (index + 1 == args.Length)
+            {
+                throw new ArgumentException("Missing value for " + args[index]);
+            }
             switch (args[index])
             {
-                case "--root": root = Path.GetFullPath(args[index + 1]); break;
-                case "--library-root": library = Path.GetFullPath(args[index + 1]); break;
-                case "--feed": feed = Path.GetFullPath(args[index + 1]); break;
-                default: throw new ArgumentException("Unknown option: " + args[index]);
+                case "--root":
+                    root = Path.GetFullPath(args[index + 1]);
+                    break;
+                case "--library-root":
+                    library = Path.GetFullPath(args[index + 1]);
+                    break;
+                case "--feed":
+                    feed = Path.GetFullPath(args[index + 1]);
+                    break;
+                default:
+                    throw new ArgumentException("Unknown option: " + args[index]);
             }
         }
 
-        if (library is null) { throw new ArgumentException("--library-root is required."); }
+        if (library is null)
+        {
+            throw new ArgumentException("--library-root is required.");
+        }
         var candidate = Path.Combine(root, ".config", "sharedkernel-candidate.json");
         var pin = JsonNode.Parse(await File.ReadAllTextAsync(candidate, ct).ConfigureAwait(false)) as JsonObject
             ?? throw new ArgumentException("Candidate manifest must be a JSON object.");

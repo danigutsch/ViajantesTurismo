@@ -26,8 +26,8 @@ public sealed class EfPublicMediaImageStoreTests
         dbContext.ChangeTracker.Clear();
         var pending = await store.GetImage(image.Id, TestContext.Current.CancellationToken);
         pending.ShouldNotBeNull();
-        pending.AccessibilityTexts.Single(text => text.Language == PublicContentLanguage.EnUs).PendingDraftCreatedAt.ShouldBe(regeneratedAt);
-        pending.AccessibilityTexts.Single(text => text.Language == PublicContentLanguage.PtBr).PendingDraftCreatedAt.ShouldBe(firstDraftAt);
+        pending.AccessibilityTexts.ShouldHaveSingleItem(text => text.Language == PublicContentLanguage.EnUs).PendingDraftCreatedAt.ShouldBe(regeneratedAt);
+        pending.AccessibilityTexts.ShouldHaveSingleItem(text => text.Language == PublicContentLanguage.PtBr).PendingDraftCreatedAt.ShouldBe(firstDraftAt);
 
         // Act
         pending.SetReviewedAccessibilityText(PublicContentLanguage.EnUs, "A blue sea", null, false).IsSuccess.ShouldBeTrue();
@@ -37,8 +37,8 @@ public sealed class EfPublicMediaImageStoreTests
 
         // Assert
         reviewed.ShouldNotBeNull();
-        reviewed.AccessibilityTexts.Single(text => text.Language == PublicContentLanguage.EnUs).PendingDraftCreatedAt.ShouldBeNull();
-        reviewed.AccessibilityTexts.Single(text => text.Language == PublicContentLanguage.PtBr).PendingDraftCreatedAt.ShouldBe(firstDraftAt);
+        reviewed.AccessibilityTexts.ShouldHaveSingleItem(text => text.Language == PublicContentLanguage.EnUs).PendingDraftCreatedAt.ShouldBeNull();
+        reviewed.AccessibilityTexts.ShouldHaveSingleItem(text => text.Language == PublicContentLanguage.PtBr).PendingDraftCreatedAt.ShouldBe(firstDraftAt);
     }
 
     [Fact]
@@ -131,7 +131,7 @@ public sealed class EfPublicMediaImageStoreTests
         // Assert
         saved.ShouldNotBeNull();
         saved.AccessibilityTexts.Count.ShouldBe(2);
-        var localized = saved.AccessibilityTexts.Single(text => text.Language == PublicContentLanguage.PtBr);
+        var localized = saved.AccessibilityTexts.ShouldHaveSingleItem(text => text.Language == PublicContentLanguage.PtBr);
         localized.RequiresHumanReview.ShouldBeTrue();
         localized.IsAiGenerated.ShouldBeTrue();
         localized.AltText.ShouldBe("Ciclistas em uma trilha de montanha");

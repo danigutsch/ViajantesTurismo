@@ -14,8 +14,8 @@ public sealed class FakeAdminApiClientParityTests
         sut.SetGetToursException(expected);
 
         // Act
-        var exception = await ((Func<Task>)(async () =>
-            await sut.GetTours(TestContext.Current.CancellationToken))).ShouldThrow<InvalidOperationException>();
+        var exception = await ShouldAssertionExtensions.ShouldThrow<InvalidOperationException>((Func<Task>)(async () =>
+            await sut.GetTours(TestContext.Current.CancellationToken)));
 
         // Assert
         exception.ShouldBeSameAs(expected);
@@ -30,8 +30,8 @@ public sealed class FakeAdminApiClientParityTests
         sut.SetGetCustomersException(expected);
 
         // Act
-        var exception = await ((Func<Task>)(async () =>
-            await sut.GetCustomers(TestContext.Current.CancellationToken))).ShouldThrow<InvalidOperationException>();
+        var exception = await ShouldAssertionExtensions.ShouldThrow<InvalidOperationException>((Func<Task>)(async () =>
+            await sut.GetCustomers(TestContext.Current.CancellationToken)));
 
         // Assert
         exception.ShouldBeSameAs(expected);
@@ -46,8 +46,8 @@ public sealed class FakeAdminApiClientParityTests
         sut.SetGetAllBookingsException(expected);
 
         // Act
-        var exception = await ((Func<Task>)(async () =>
-            await sut.GetAllBookings(TestContext.Current.CancellationToken))).ShouldThrow<InvalidOperationException>();
+        var exception = await ShouldAssertionExtensions.ShouldThrow<InvalidOperationException>((Func<Task>)(async () =>
+            await sut.GetAllBookings(TestContext.Current.CancellationToken)));
 
         // Assert
         exception.ShouldBeSameAs(expected);
@@ -107,8 +107,8 @@ public sealed class FakeAdminApiClientParityTests
         var sut = new FakeToursApiClient();
 
         // Act
-        var exception = await ((Func<Task>)(async () =>
-            await sut.GetTours(cts.Token))).ShouldThrowAssignableTo<OperationCanceledException>();
+        var exception = await ShouldAssertionExtensions.ShouldThrowAssignableTo<OperationCanceledException>((Func<Task>)(async () =>
+            await sut.GetTours(cts.Token)));
 
         // Assert
         exception.CancellationToken.ShouldBe(cts.Token);
@@ -123,8 +123,8 @@ public sealed class FakeAdminApiClientParityTests
         var sut = new FakeCustomersApiClient();
 
         // Act
-        var exception = await ((Func<Task>)(async () =>
-            await sut.GetCustomers(cts.Token))).ShouldThrowAssignableTo<OperationCanceledException>();
+        var exception = await ShouldAssertionExtensions.ShouldThrowAssignableTo<OperationCanceledException>((Func<Task>)(async () =>
+            await sut.GetCustomers(cts.Token)));
 
         // Assert
         exception.CancellationToken.ShouldBe(cts.Token);
@@ -139,8 +139,8 @@ public sealed class FakeAdminApiClientParityTests
         var sut = new FakeBookingsApiClient();
 
         // Act
-        var exception = await ((Func<Task>)(async () =>
-            await sut.GetAllBookings(cts.Token))).ShouldThrowAssignableTo<OperationCanceledException>();
+        var exception = await ShouldAssertionExtensions.ShouldThrowAssignableTo<OperationCanceledException>((Func<Task>)(async () =>
+            await sut.GetAllBookings(cts.Token)));
 
         // Assert
         exception.CancellationToken.ShouldBe(cts.Token);

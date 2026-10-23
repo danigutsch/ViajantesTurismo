@@ -1,3 +1,4 @@
+using System.Collections.Concurrent;
 using System.Diagnostics;
 using Microsoft.Extensions.Logging.Abstractions;
 using PandaBear.Scheduling;
@@ -16,13 +17,19 @@ internal sealed class PollingBackgroundServiceTestHarness
 
     public Task Started => started.Task;
 
-    public static ActivityListener CreateActivityListener(ICollection<Activity> stoppedActivities)
+    public static ActivityListener CreateActivityListener(ConcurrentQueue<Activity> stoppedActivities, ActivityContext parentContext)
     {
         var listener = new ActivityListener
         {
             ShouldListenTo = static source => string.Equals(source.Name, SchedulingTelemetry.Name, StringComparison.Ordinal),
             Sample = static (ref ActivityCreationOptions<ActivityContext> _) => ActivitySamplingResult.AllDataAndRecorded,
-            ActivityStopped = stoppedActivities.Add,
+            ActivityStopped = activity =>
+            {
+                if (activity.TraceId == parentContext.TraceId && activity.ParentSpanId == parentContext.SpanId)
+                {
+                    stoppedActivities.Enqueue(activity);
+                }
+            },
         };
         ActivitySource.AddActivityListener(listener);
         return listener;

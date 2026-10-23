@@ -17,12 +17,18 @@ public sealed class TourCapacity : ValueObject
     /// <summary>
     /// Gets the minimum number of customers required for the tour.
     /// </summary>
-    public int MinCustomers { get; }
+    public int MinCustomers
+    {
+        get;
+    }
 
     /// <summary>
     /// Gets the maximum number of customers allowed on the tour.
     /// </summary>
-    public int MaxCustomers { get; }
+    public int MaxCustomers
+    {
+        get;
+    }
 
     /// <summary>
     /// Creates a new tour capacity with validation.

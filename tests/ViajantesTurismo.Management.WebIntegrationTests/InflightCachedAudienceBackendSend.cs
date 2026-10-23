@@ -41,7 +41,7 @@ internal sealed class InflightCachedAudienceBackendSend : IAsyncDisposable
             ManagementTokenSession.From(user),
             sourceAccessToken,
             exchangedAccessToken,
-            DateTimeOffset.UtcNow.AddMinutes(5),
+            TimeProvider.System.GetUtcNow().AddMinutes(5),
             ct);
         var exchange = AudienceTokenExchangeIntegrationTestScope.Create(user, userTokenStore, audienceTokenStore);
         var firstResponse = exchange.Send(

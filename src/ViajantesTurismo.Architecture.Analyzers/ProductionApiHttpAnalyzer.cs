@@ -46,7 +46,10 @@ public sealed class ProductionApiHttpAnalyzer : DiagnosticAnalyzer
         description: "Repository-owned production APIs communicate through integration events, explicitly approved gRPC, or in-process modules instead of ordinary API-to-API HTTP.");
 
     /// <inheritdoc />
-    public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics { get; } =
+    public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics
+    {
+        get;
+    } =
         ImmutableArray.Create(ProductionApiHttpRule);
 
     /// <inheritdoc />

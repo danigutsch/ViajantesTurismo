@@ -4,16 +4,18 @@ namespace ViajantesTurismo.RepoConfig.Tests;
 public sealed class PreviewLicenseApprovalTests
 {
     [Theory]
-    [InlineData("1.0.0-alpha.20261021.2", "2.25.29", "15.0.0", false, true, false, true)]
+    [InlineData("0.1.0-alpha.70.1", "2.25.29", "15.0.0", false, true, false, true)]
+    [InlineData("1.0.0-alpha.20261021.2", "2.25.29", "15.0.0", false, true, false, false)]
+    [InlineData("1.2.0-alpha.20261023.1", "2.25.29", "15.0.0", false, true, false, false)]
     [InlineData("1.0.0", "2.25.29", "15.0.0", false, true, false, false)]
-    [InlineData("1.0.0-alpha.20261022.1", "2.25.29", "15.0.0", false, true, false, false)]
-    [InlineData("1.0.0-alpha.20261021.2", "2.25.30", "15.0.0", false, true, false, false)]
-    [InlineData("1.0.0-alpha.20261021.2", "2.25.29", "15.0.1", false, true, false, false)]
-    [InlineData("1.0.0-alpha.20261021.2", "2.25.29", "15.0.0", true, true, false, false)]
-    [InlineData("1.0.0-alpha.20261021.2", "2.25.29", "15.0.0", false, false, false, false)]
-    [InlineData("1.0.0-alpha.20261021.2", "2.25.29", "15.0.0", false, true, true, false)]
-    [InlineData("1.0.0-alpha.20261021.2", "", "15.0.0", false, true, false, false)]
-    [InlineData("1.0.0-alpha.20261021.2", "2.25.29", "", false, true, false, false)]
+    [InlineData("1.2.0-alpha.20261024.1", "2.25.29", "15.0.0", false, true, false, false)]
+    [InlineData("0.1.0-alpha.70.1", "2.25.30", "15.0.0", false, true, false, false)]
+    [InlineData("0.1.0-alpha.70.1", "2.25.29", "15.0.1", false, true, false, false)]
+    [InlineData("0.1.0-alpha.70.1", "2.25.29", "15.0.0", true, true, false, false)]
+    [InlineData("0.1.0-alpha.70.1", "2.25.29", "15.0.0", false, false, false, false)]
+    [InlineData("0.1.0-alpha.70.1", "2.25.29", "15.0.0", false, true, true, false)]
+    [InlineData("0.1.0-alpha.70.1", "", "15.0.0", false, true, false, false)]
+    [InlineData("0.1.0-alpha.70.1", "2.25.29", "", false, true, false, false)]
     public async Task Preview_exception_requires_the_approved_candidate_and_every_locked_version(
         string candidateVersion, string dependencyVersion, string magickVersion, bool dirty, bool correctRevision,
         bool conflictingTarget, bool approved)
@@ -31,7 +33,7 @@ public sealed class PreviewLicenseApprovalTests
         var pin = System.Text.Json.JsonSerializer.Serialize(new
         {
             packageVersion = candidateVersion,
-            libraryRevision = correctRevision ? "f5975b60601e245bda6bb8e45559d8ce3a24a8e0" : new string('a', 40),
+            libraryRevision = correctRevision ? "ef0dd0a67b8982dfdf0cb8f5e23224c397971a5b" : new string('a', 40),
             libraryDirty = dirty
         });
         await File.WriteAllTextAsync(Path.Combine(repository.RootPath, ".config", "sharedkernel-candidate.json"), pin, TestContext.Current.CancellationToken);
@@ -63,7 +65,8 @@ public sealed class PreviewLicenseApprovalTests
             new Dictionary<string, string?> { ["GITHUB_OUTPUT"] = outputPath });
 
         // Assert
-        (result.ExitCode == 0).ShouldBe(approved);
+        var succeeded = result.ExitCode == 0;
+        succeeded.ShouldBe(approved);
         File.Exists(outputPath).ShouldBe(approved);
         if (approved)
         {

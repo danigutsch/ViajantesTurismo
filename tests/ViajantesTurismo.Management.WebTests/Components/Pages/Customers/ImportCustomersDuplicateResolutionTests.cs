@@ -21,7 +21,7 @@ public sealed class ImportCustomersDuplicateResolutionTests : BunitContext
         ImportCustomersTestDomHelper.FindButtonByText(cut, "Confirm Import").Click();
 
         cut.WaitForAssertion(() =>
-            (cut.Markup).ShouldContain("Resolve Duplicates", StringComparison.Ordinal));
+            cut.Markup.ShouldContain("Resolve Duplicates", StringComparison.Ordinal));
     }
 
     [Fact]
@@ -31,13 +31,13 @@ public sealed class ImportCustomersDuplicateResolutionTests : BunitContext
             new ImportResultDto(0, 0, [new ImportConflictDto("a@example.com"), new ImportConflictDto("b@example.com")]));
         var cut = ImportCustomersPreviewTestHelper.GoToPreview(this, CustomerImportCsvTestData.AllCanonicalHeaders + "\n" + CustomerImportCsvTestData.AllCanonicalValues);
         ImportCustomersTestDomHelper.FindButtonByText(cut, "Confirm Import").Click();
-        cut.WaitForAssertion(() => (cut.Markup).ShouldContain("Resolve Duplicates", StringComparison.Ordinal));
+        cut.WaitForAssertion(() => cut.Markup.ShouldContain("Resolve Duplicates", StringComparison.Ordinal));
 
         var keepButtons = cut.FindAll("button[data-action='keep']");
         var overwriteButtons = cut.FindAll("button[data-action='overwrite']");
 
-        (keepButtons.Count).ShouldBe(2);
-        (overwriteButtons.Count).ShouldBe(2);
+        keepButtons.Count.ShouldBe(2);
+        overwriteButtons.Count.ShouldBe(2);
     }
 
     [Fact]
@@ -47,20 +47,20 @@ public sealed class ImportCustomersDuplicateResolutionTests : BunitContext
             new ImportResultDto(0, 0, [new ImportConflictDto("a@example.com"), new ImportConflictDto("b@example.com")]));
         var cut = ImportCustomersPreviewTestHelper.GoToPreview(this, CustomerImportCsvTestData.AllCanonicalHeaders + "\n" + CustomerImportCsvTestData.AllCanonicalValues);
         ImportCustomersTestDomHelper.FindButtonByText(cut, "Confirm Import").Click();
-        cut.WaitForAssertion(() => (cut.Markup).ShouldContain("Resolve Duplicates", StringComparison.Ordinal));
+        cut.WaitForAssertion(() => cut.Markup.ShouldContain("Resolve Duplicates", StringComparison.Ordinal));
 
         // No decisions made yet — confirm should be disabled
-        (cut.Find("button[data-action='confirm-import']").HasAttribute("disabled")).ShouldBeTrue();
+        cut.Find("button[data-action='confirm-import']").HasAttribute("disabled").ShouldBeTrue();
 
         // Resolve only one of two — still disabled
         ImportCustomersTestDomHelper.FindRowContainingText(cut, ".duplicate-resolution-table tbody tr", "a@example.com")
             .QuerySelector("button[data-action='keep']")!.Click();
-        (cut.Find("button[data-action='confirm-import']").HasAttribute("disabled")).ShouldBeTrue();
+        cut.Find("button[data-action='confirm-import']").HasAttribute("disabled").ShouldBeTrue();
 
         // Resolve the second — now enabled
         ImportCustomersTestDomHelper.FindRowContainingText(cut, ".duplicate-resolution-table tbody tr", "b@example.com")
             .QuerySelector("button[data-action='keep']")!.Click();
-        (cut.Find("button[data-action='confirm-import']").HasAttribute("disabled")).ShouldBeFalse();
+        cut.Find("button[data-action='confirm-import']").HasAttribute("disabled").ShouldBeFalse();
     }
 
     [Fact]
@@ -71,13 +71,13 @@ public sealed class ImportCustomersDuplicateResolutionTests : BunitContext
         _fakeCustomersApi.SetCommitImportResult(new ImportResultDto(1, 0));
         var cut = ImportCustomersPreviewTestHelper.GoToPreview(this, CustomerImportCsvTestData.AllCanonicalHeaders + "\n" + CustomerImportCsvTestData.AllCanonicalValues);
         ImportCustomersTestDomHelper.FindButtonByText(cut, "Confirm Import").Click();
-        cut.WaitForAssertion(() => (cut.Markup).ShouldContain("Resolve Duplicates", StringComparison.Ordinal));
+        cut.WaitForAssertion(() => cut.Markup.ShouldContain("Resolve Duplicates", StringComparison.Ordinal));
 
         cut.Find("button[data-action='keep']").Click();
         cut.Find("button[data-action='confirm-import']").Click();
 
         cut.WaitForAssertion(() =>
-            (cut.Markup).ShouldContain("1 customer(s) imported successfully", StringComparison.Ordinal));
+            cut.Markup.ShouldContain("1 customer(s) imported successfully", StringComparison.Ordinal));
     }
 
     [Fact]
@@ -181,12 +181,12 @@ public sealed class ImportCustomersDuplicateResolutionTests : BunitContext
 
         var cut = ImportCustomersPreviewTestHelper.GoToPreview(this, CustomerImportCsvTestData.BuildCsvWithEmail("a@example.com"));
         ImportCustomersTestDomHelper.FindButtonByText(cut, "Confirm Import").Click();
-        cut.WaitForAssertion(() => (cut.Markup).ShouldContain("Resolve Duplicates", StringComparison.Ordinal));
+        cut.WaitForAssertion(() => cut.Markup.ShouldContain("Resolve Duplicates", StringComparison.Ordinal));
 
         cut.Find("button[data-action='mixed']").Click();
 
-        (cut.FindAll("button[data-action='field-existing']")).ShouldNotBeEmpty();
-        (cut.FindAll("button[data-action='field-incoming']")).ShouldNotBeEmpty();
+        cut.FindAll("button[data-action='field-existing']").ShouldNotBeEmpty();
+        cut.FindAll("button[data-action='field-incoming']").ShouldNotBeEmpty();
     }
 
     [Fact]
@@ -198,16 +198,16 @@ public sealed class ImportCustomersDuplicateResolutionTests : BunitContext
 
         var cut = ImportCustomersPreviewTestHelper.GoToPreview(this, CustomerImportCsvTestData.BuildCsvWithEmail("a@example.com"));
         ImportCustomersTestDomHelper.FindButtonByText(cut, "Confirm Import").Click();
-        cut.WaitForAssertion(() => (cut.Markup).ShouldContain("Resolve Duplicates", StringComparison.Ordinal));
+        cut.WaitForAssertion(() => cut.Markup.ShouldContain("Resolve Duplicates", StringComparison.Ordinal));
 
         cut.Find("button[data-action='mixed']").Click();
         cut.Find("button[data-action='confirm-import']").Click();
 
         cut.WaitForAssertion(() =>
-            (cut.Markup).ShouldContain("1 customer(s) imported successfully", StringComparison.Ordinal));
+            cut.Markup.ShouldContain("1 customer(s) imported successfully", StringComparison.Ordinal));
 
-        (_fakeCustomersApi.LastCommitConflictResolutions).ShouldNotBeNull();
-        (_fakeCustomersApi.LastCommitConflictResolutions["a@example.com"]).ShouldBe("mixed");
+        _fakeCustomersApi.LastCommitConflictResolutions.ShouldNotBeNull();
+        _fakeCustomersApi.LastCommitConflictResolutions["a@example.com"].ShouldBe("mixed");
     }
 
     [Fact]
@@ -227,21 +227,21 @@ public sealed class ImportCustomersDuplicateResolutionTests : BunitContext
         }));
 
         ImportCustomersTestDomHelper.FindButtonByText(cut, "Confirm Import").Click();
-        cut.WaitForAssertion(() => (cut.Markup).ShouldContain("Resolve Duplicates", StringComparison.Ordinal));
+        cut.WaitForAssertion(() => cut.Markup.ShouldContain("Resolve Duplicates", StringComparison.Ordinal));
 
         // Act
         cut.Find("button[data-action='mixed']").Click();
-        cut.WaitForAssertion(() => (cut.FindAll("button[data-action='field-incoming']")).ShouldNotBeEmpty());
+        cut.WaitForAssertion(() => cut.FindAll("button[data-action='field-incoming']").ShouldNotBeEmpty());
 
         var firstNameRow = ImportCustomersTestDomHelper.FindRowContainingText(cut, "table.table.table-sm.mb-0 tbody tr", "First Name");
         firstNameRow.QuerySelector("button[data-action='field-incoming']")!.Click();
 
         cut.Find("button[data-action='confirm-import']").Click();
-        cut.WaitForAssertion(() => (cut.Markup).ShouldContain("1 customer(s) imported successfully", StringComparison.Ordinal));
+        cut.WaitForAssertion(() => cut.Markup.ShouldContain("1 customer(s) imported successfully", StringComparison.Ordinal));
 
         // Assert
-        (_fakeCustomersApi.LastCommitFileContent).ShouldNotBeNull();
-        (_fakeCustomersApi.LastCommitFileName).ShouldBe("customers.csv");
+        _fakeCustomersApi.LastCommitFileContent.ShouldNotBeNull();
+        _fakeCustomersApi.LastCommitFileName.ShouldBe("customers.csv");
 
         var committedValues = ImportCustomersDuplicateResolutionTestHelper.ParseSingleDataRow(
             _fakeCustomersApi.LastCommitFileContent.ToArray());

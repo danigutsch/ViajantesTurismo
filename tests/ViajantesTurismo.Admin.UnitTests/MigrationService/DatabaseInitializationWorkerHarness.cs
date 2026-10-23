@@ -40,7 +40,10 @@ internal sealed class DatabaseInitializationWorkerHarness : IDisposable
         StoreProbe = storeProbe;
     }
 
-    public MigrationStoreResolutionProbe? StoreProbe { get; }
+    public MigrationStoreResolutionProbe? StoreProbe
+    {
+        get;
+    }
 
     public ActivitySource ActivitySource => activitySource;
 

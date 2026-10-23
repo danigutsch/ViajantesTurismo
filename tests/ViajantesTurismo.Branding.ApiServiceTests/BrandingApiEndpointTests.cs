@@ -13,7 +13,7 @@ public sealed class BrandingApiEndpointTests
     private const string ManagementSettingsPath = $"/api/v1/{BrandingRoutes.ManagementSettingsPath}";
 
     [Fact]
-    public void Branding_api_marker_exposes_entry_assembly()
+    public void Branding_API_marker_exposes_entry_assembly()
     {
         // Arrange
         var marker = new BrandingApiHostEntryPoint();
@@ -225,7 +225,7 @@ public sealed class BrandingApiEndpointTests
 
         // Assert
         response.StatusCode.ShouldBe(HttpStatusCode.BadRequest);
-        response.Content.Headers.ContentType?.MediaType.ShouldBe("application/problem+json");
+        response.Content.Headers.ContentType.ShouldNotBeNull().MediaType.ShouldBe("application/problem+json");
         problem.ShouldNotBeNull();
         problem.Status.ShouldBe(StatusCodes.Status400BadRequest);
         problem.Title.ShouldBe("One or more validation errors occurred.");

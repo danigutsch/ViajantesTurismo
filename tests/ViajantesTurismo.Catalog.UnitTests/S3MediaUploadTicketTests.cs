@@ -1,3 +1,5 @@
+using System.Globalization;
+using System.Web;
 using Amazon.Runtime;
 using Amazon.S3;
 using Microsoft.Extensions.Options;
@@ -19,12 +21,17 @@ public sealed class S3MediaUploadTicketTests
             new AmazonS3Config { ServiceURL = "https://s3.eu-central-1.amazonaws.com", AuthenticationRegion = "eu-central-1", ForcePathStyle = true });
         var store = new SeaweedFsMediaObjectStore(client, Options.Create(new SeaweedFsMediaObjectStorageOptions
         {
-            Endpoint = new Uri("https://s3.eu-central-1.amazonaws.com"), Bucket = "media", AccessKey = "test-access", SecretKey = "test-secret"
+            Endpoint = new Uri("https://s3.eu-central-1.amazonaws.com"),
+            Bucket = "media",
+            AccessKey = "test-access",
+            SecretKey = "test-secret"
         }));
         var request = new MediaObjectUploadRequest("pending/image.jpg", "image/jpeg", 123, TimeSpan.FromMinutes(5));
 
         // Act
+        var startedAt = TimeProvider.System.GetUtcNow();
         var ticket = await store.CreateUploadUrl(request, TestContext.Current.CancellationToken);
+        var completedAt = TimeProvider.System.GetUtcNow();
 
         // Assert
         ticket.ObjectKey.ShouldBe(request.ObjectKey);
@@ -32,7 +39,18 @@ public sealed class S3MediaUploadTicketTests
         ticket.RequiredHeaders["Content-Length"].ShouldBe("123");
         var query = Uri.UnescapeDataString(ticket.UploadUri.Query);
         query.ShouldContain("X-Amz-SignedHeaders=content-length;content-type;host", StringComparison.Ordinal);
-        query.ShouldContain("X-Amz-Expires=300", StringComparison.Ordinal);
+        ticket.ExpiresAt.ShouldBeInRange(startedAt.Add(request.ExpiresAfter), completedAt.Add(request.ExpiresAfter));
+        var parameters = HttpUtility.ParseQueryString(ticket.UploadUri.Query);
+        var signedAtText = parameters["X-Amz-Date"];
+        var lifetimeText = parameters["X-Amz-Expires"];
+        signedAtText.ShouldNotBeNull();
+        lifetimeText.ShouldNotBeNull();
+        var signedAt = DateTimeOffset.ParseExact(signedAtText, "yyyyMMdd'T'HHmmss'Z'", CultureInfo.InvariantCulture, DateTimeStyles.AssumeUniversal);
+        var signedLifetime = int.Parse(lifetimeText, CultureInfo.InvariantCulture);
+        var signedExpiry = signedAt.AddSeconds(signedLifetime);
+        // The SDK rounds the remaining lifetime and serializes the signing timestamp to whole seconds.
+        var expiryDifference = (ticket.ExpiresAt - signedExpiry).Duration();
+        expiryDifference.ShouldBeLessThanOrEqualTo(TimeSpan.FromSeconds(2));
     }
 
     [Theory]
@@ -46,7 +64,10 @@ public sealed class S3MediaUploadTicketTests
             new AmazonS3Config { ServiceURL = endpoint.AbsoluteUri, AuthenticationRegion = "us-east-1", ForcePathStyle = true });
         var store = new SeaweedFsMediaObjectStore(client, Options.Create(new SeaweedFsMediaObjectStorageOptions
         {
-            Endpoint = endpoint, Bucket = "media", AccessKey = "test-access", SecretKey = "test-secret"
+            Endpoint = endpoint,
+            Bucket = "media",
+            AccessKey = "test-access",
+            SecretKey = "test-secret"
         }));
         var request = new MediaObjectUploadRequest("pending/image.jpg", "image/jpeg", 123, TimeSpan.FromMinutes(5));
 

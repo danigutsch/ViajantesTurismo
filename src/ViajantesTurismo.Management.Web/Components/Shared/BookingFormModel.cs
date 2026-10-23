@@ -9,26 +9,44 @@ namespace ViajantesTurismo.Management.Web.Components.Shared;
 /// </summary>
 public class BookingFormModel : IValidatableObject
 {
-    public Guid? TourId { get; set; }
+    public Guid? TourId
+    {
+        get; set;
+    }
 
-    public Guid? CustomerId { get; set; }
+    public Guid? CustomerId
+    {
+        get; set;
+    }
 
-    public Guid? CompanionId { get; set; }
+    public Guid? CompanionId
+    {
+        get; set;
+    }
 
     [Required(ErrorMessage = "Room type is required")]
     public RoomTypeDto RoomType { get; set; } = RoomTypeDto.DoubleOccupancy;
 
     public BikeTypeDto PrincipalBikeType { get; set; } = BikeTypeDto.None;
 
-    public BikeTypeDto? CompanionBikeType { get; set; }
+    public BikeTypeDto? CompanionBikeType
+    {
+        get; set;
+    }
 
     [MaxLength(ContractConstants.MaxBookingNotesLength, ErrorMessage = "Notes cannot exceed 2000 characters")]
-    public string? Notes { get; set; }
+    public string? Notes
+    {
+        get; set;
+    }
 
     public DiscountTypeDto DiscountType { get; set; } = DiscountTypeDto.None;
 
     [Range(0, double.MaxValue, ErrorMessage = "Discount amount must be positive")]
-    public decimal DiscountAmount { get; set; }
+    public decimal DiscountAmount
+    {
+        get; set;
+    }
 
     [MaxLength(ContractConstants.MaxDiscountReasonLength, ErrorMessage = "Discount reason cannot exceed {1} characters")]
     public string DiscountReason { get; set; } = string.Empty;

@@ -13,12 +13,18 @@ public sealed record MedicalInfoDto
     /// </summary>
     [Required]
     [StringLength(ContractConstants.MaxMedicalInfoLength)]
-    public required string? Allergies { get; init; }
+    public required string? Allergies
+    {
+        get; init;
+    }
 
     /// <summary>
     /// Additional medical information or conditions relevant for the tour (e.g., chronic conditions, medications, mobility limitations).
     /// </summary>
     [Required]
     [StringLength(ContractConstants.MaxMedicalInfoLength)]
-    public required string? AdditionalInfo { get; init; }
+    public required string? AdditionalInfo
+    {
+        get; init;
+    }
 }

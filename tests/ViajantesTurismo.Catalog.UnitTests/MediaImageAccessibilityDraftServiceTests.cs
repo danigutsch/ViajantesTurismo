@@ -29,7 +29,7 @@ public sealed class MediaImageAccessibilityDraftServiceTests
 
         // Assert
         result.IsSuccess.ShouldBeTrue();
-        var draft = store.Current.AccessibilityTexts.Single(text => text.Language == PublicContentLanguage.PtBr);
+        var draft = store.Current.AccessibilityTexts.ShouldHaveSingleItem(text => text.Language == PublicContentLanguage.PtBr);
         draft.PendingDraftCreatedAt.ShouldBe(generatedAt);
     }
 
@@ -57,7 +57,7 @@ public sealed class MediaImageAccessibilityDraftServiceTests
         measurements.Contains("catalog.media_accessibility.generation.completed").ShouldBeTrue();
         measurements.Contains("catalog.media_accessibility.generation.duration").ShouldBeTrue();
         imageStore.Current.RequiresHumanReview.ShouldBeTrue();
-        var generation = activities.Single(activity => activity.OperationName == "catalog.media_accessibility.generate");
+        var generation = activities.ShouldHaveSingleItem(activity => activity.OperationName == "catalog.media_accessibility.generate");
         generation.GetTagItem("catalog.outcome").ShouldBe("success");
         generation.GetTagItem("gen_ai.request.model").ShouldBe("configured-model");
         generation.GetTagItem("gen_ai.response.model").ShouldBe("unreported");
@@ -85,7 +85,7 @@ public sealed class MediaImageAccessibilityDraftServiceTests
         await action.ShouldThrow<TaskCanceledException>();
 
         // Assert
-        var generation = activities.Single(activity => activity.OperationName == "catalog.media_accessibility.generate");
+        var generation = activities.ShouldHaveSingleItem(activity => activity.OperationName == "catalog.media_accessibility.generate");
         generation.GetTagItem("catalog.outcome").ShouldBe("cancelled");
         imageStore.Current.IsAiGenerated.ShouldBeFalse();
     }
@@ -167,7 +167,7 @@ public sealed class MediaImageAccessibilityDraftServiceTests
         imageStore.Current.IsAiGenerated.ShouldBeTrue();
         imageStore.Current.RequiresHumanReview.ShouldBeTrue();
 
-        var draft = imageStore.Current.AccessibilityTexts.Single();
+        var draft = imageStore.Current.AccessibilityTexts.ShouldHaveSingleItem();
         draft.AltText.ShouldBe("Draft beach alt");
         draft.Caption.ShouldBe("Draft beach caption");
         draft.IsAiGenerated.ShouldBeTrue();

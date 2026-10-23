@@ -111,7 +111,7 @@ public sealed class MediaObjectReconciliationServiceTests
         await objectStore.Put(
             new MediaObjectWriteRequest("media/old-orphan.jpg", new MemoryStream([2]), "image/jpeg", 1),
             TestContext.Current.CancellationToken);
-        objectStore.SetLastModified("media/old-orphan.jpg", DateTimeOffset.UtcNow.AddDays(-2));
+        objectStore.SetLastModified("media/old-orphan.jpg", TimeProvider.System.GetUtcNow().AddDays(-2));
         var imageStore = new InMemoryPublicMediaImageStore(image);
         var service = new MediaObjectReconciliationService(objectStore, imageStore);
 

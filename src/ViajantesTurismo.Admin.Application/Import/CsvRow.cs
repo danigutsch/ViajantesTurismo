@@ -11,7 +11,10 @@ public sealed class CsvRow : ValueObject, IImportRow
         Row = row;
     }
 
-    internal PandaBear.Tabular.CsvRow Row { get; }
+    internal PandaBear.Tabular.CsvRow Row
+    {
+        get;
+    }
 
     /// <inheritdoc />
     public int Count => Row.Count;

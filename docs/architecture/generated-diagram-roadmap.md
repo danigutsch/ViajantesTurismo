@@ -24,11 +24,11 @@ The existing docs/scripts/spec lint path already checks generated diagram drift.
 the underlying .NET tool directly when they want the exact stale file list:
 
 ```text
-dotnet tool run sharedkernel-docs -- generate --config docs/architecture/generated-diagrams.json --check
+dotnet tool run sharedkernel-docs -- verify --config docs/architecture/generated-diagrams.json
 ```
 
-Refresh with the same command without `--check`, or use the repository's existing diagram refresh
-wrapper when running the broader docs lint flow.
+Refresh with `dotnet tool run sharedkernel-docs -- generate --config docs/architecture/generated-diagrams.json`,
+or run the existing wrapper: `bash scripts/update-architecture-diagrams.sh`.
 
 ## Deferred mediator diagram research
 

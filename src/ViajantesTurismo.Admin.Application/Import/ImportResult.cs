@@ -34,10 +34,16 @@ public readonly record struct ImportResult
     /// <summary>
     /// Number of successfully imported rows.
     /// </summary>
-    public int SuccessCount { get; }
+    public int SuccessCount
+    {
+        get;
+    }
 
     /// <summary>
     /// Number of rows that failed during import.
     /// </summary>
-    public int ErrorCount { get; }
+    public int ErrorCount
+    {
+        get;
+    }
 }

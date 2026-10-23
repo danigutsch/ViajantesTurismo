@@ -40,9 +40,20 @@ OpenTelemetry exporters, and external clients such as browsers and API clients.
 | Upload and import | Oversized, malformed, or wrong content-type CSV upload | Customer import validation rejects non-CSV, empty, and oversized files with generic ProblemDetails |
 | Media upload | Malware or unsafe binary content | Scanner integration remains tracked separately |
 | Auditability | Sensitive business actions need durable audit trail | Audit design remains separate from baseline controls |
-| Baseline drift | Controls removed during future refactors | .NET security baseline tool checks docs and wiring |
+| Baseline drift | Controls removed during future refactors | Shared documentation checks and maintained runtime security tests |
 
 ## Notes
+
+Baseline controls and validation are tracked by the canonical roadmap records for
+[web headers and CSP](../../roadmap/items/RM-104-github-815.json),
+[rate limiting](../../roadmap/items/RM-105-github-816.json),
+[CORS](../../roadmap/items/RM-106-github-817.json),
+[PII logging](../../roadmap/items/RM-107-github-818.json), and
+[customer import](../../roadmap/items/RM-108-github-819.json).
+These maintained records identify the control backlog and its external integration. Automated
+documentation checks do not establish that
+the runtime controls are effective. Current security tests and the separate deep-scan reports provide
+their own evidence.
 
 Authorization provider and policy implementation are intentionally outside this epic and remain governed by
 the authentication/authorization epic. This baseline does not weaken existing validation, privacy, or data

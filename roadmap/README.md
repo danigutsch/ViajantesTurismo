@@ -30,10 +30,10 @@ priority policy. Intake requires `snapshotDigest` and rejects a missing or misma
 pull-request endpoint before writing any local roadmap file. Only exact
 `integrations.github.issue` mappings affect canonical roadmap identity, dependencies, or priority.
 
-Run `reconcile github --dry-run` before intake. The .NET tool preserves the reviewed policy, canonical
+Run `github reconcile` before intake. The .NET tool preserves the reviewed policy, canonical
 primary mappings, and explicit closure approvals, then derives every snapshot-owned disposition, exact
 blocker edge, endpoint state, and integrity count from field-selected GitHub GraphQL data.
-`reconcile github --apply` updates only this manifest. If a mapped active item closes without approval,
+`github reconcile --force` updates only this manifest. If a mapped active item closes without approval,
 the error names the exact `closedItemTransitions` entry and manifest path to edit.
 
 For a previously imported open item whose issue is now closed, the manifest must explicitly declare
@@ -54,9 +54,9 @@ that exact declaration, intake rejects the transition rather than closing a revi
 1. Add or edit roadmap items in a pull request.
 2. Review priority inputs with the same care as implementation code.
 3. Merge repository changes first.
-4. Run `reconcile github --dry-run`, then review and run `reconcile github --apply` to update the
+4. Run `github reconcile`, then review and run `github reconcile --force` to update the
    structural GitHub snapshot.
-5. Run `intake github --dry-run`, then review and run `intake github --apply` to write the accepted
+5. Run `github import`, then review and run `github import --force` to write the accepted
    snapshot into repository-owned roadmap files.
 6. Project roadmap items into GitHub Issues and Projects through a dedicated adapter.
 7. Report drift when repository-owned fields and GitHub-owned fields conflict.
@@ -139,14 +139,14 @@ pull request that changes canonical roadmap data.
 The repo config tool also exposes project-style queries over roadmap data:
 
 ```bash
-dotnet run --project tools/ViajantesTurismo.RepoConfig.Tool/ViajantesTurismo.RepoConfig.Tool.csproj -- get next-priority
-dotnet run --project tools/ViajantesTurismo.RepoConfig.Tool/ViajantesTurismo.RepoConfig.Tool.csproj -- get next-unblocked --type issue
-dotnet run --project tools/ViajantesTurismo.RepoConfig.Tool/ViajantesTurismo.RepoConfig.Tool.csproj -- get next-work
-dotnet run --project tools/ViajantesTurismo.RepoConfig.Tool/ViajantesTurismo.RepoConfig.Tool.csproj -- get blockers-of RM-004
-dotnet run --project tools/ViajantesTurismo.RepoConfig.Tool/ViajantesTurismo.RepoConfig.Tool.csproj -- get next-blockers
-dotnet run --project tools/ViajantesTurismo.RepoConfig.Tool/ViajantesTurismo.RepoConfig.Tool.csproj -- get low-hanging-fruit
-dotnet run --project tools/ViajantesTurismo.RepoConfig.Tool/ViajantesTurismo.RepoConfig.Tool.csproj -- get tags
-dotnet run --project tools/ViajantesTurismo.RepoConfig.Tool/ViajantesTurismo.RepoConfig.Tool.csproj -- get by-label "area: tooling"
+dotnet tool run sharedkernel-repo -- get next-priority
+dotnet tool run sharedkernel-repo -- get next-unblocked --type issue
+dotnet tool run sharedkernel-repo -- get next-work
+dotnet tool run sharedkernel-repo -- get blockers-of RM-004
+dotnet tool run sharedkernel-repo -- get next-blockers
+dotnet tool run sharedkernel-repo -- get low-hanging-fruit
+dotnet tool run sharedkernel-repo -- get tags
+dotnet tool run sharedkernel-repo -- get by-label "area: tooling"
 ```
 
 Use `get next-work` for the local executable queue: it promotes unblocked work that
@@ -159,15 +159,15 @@ removes open blockers, then uses canonical order and RICE to break ties. Use
 Use the .NET repo config tool for local setup and verification:
 
 ```bash
-dotnet run --project tools/ViajantesTurismo.RepoConfig.Tool/ViajantesTurismo.RepoConfig.Tool.csproj -- verify
-dotnet run --project tools/ViajantesTurismo.RepoConfig.Tool/ViajantesTurismo.RepoConfig.Tool.csproj -- diff
-dotnet run --project tools/ViajantesTurismo.RepoConfig.Tool/ViajantesTurismo.RepoConfig.Tool.csproj -- init
-dotnet run --project tools/ViajantesTurismo.RepoConfig.Tool/ViajantesTurismo.RepoConfig.Tool.csproj -- set github.repository danigutsch/ViajantesTurismo
-dotnet run --project tools/ViajantesTurismo.RepoConfig.Tool/ViajantesTurismo.RepoConfig.Tool.csproj -- sync github --dry-run
-dotnet run --project tools/ViajantesTurismo.RepoConfig.Tool/ViajantesTurismo.RepoConfig.Tool.csproj -- reconcile github --dry-run
-dotnet run --project tools/ViajantesTurismo.RepoConfig.Tool/ViajantesTurismo.RepoConfig.Tool.csproj -- reconcile github --apply
-dotnet run --project tools/ViajantesTurismo.RepoConfig.Tool/ViajantesTurismo.RepoConfig.Tool.csproj -- intake github --dry-run
-dotnet run --project tools/ViajantesTurismo.RepoConfig.Tool/ViajantesTurismo.RepoConfig.Tool.csproj -- intake github --apply
+dotnet tool run sharedkernel-repo -- verify
+dotnet tool run sharedkernel-repo -- diff
+dotnet tool run sharedkernel-repo -- init
+dotnet tool run sharedkernel-repo -- set github.repository danigutsch/ViajantesTurismo
+dotnet tool run sharedkernel-repo -- github sync
+dotnet tool run sharedkernel-repo -- github reconcile
+dotnet tool run sharedkernel-repo -- github reconcile --force
+dotnet tool run sharedkernel-repo -- github import
+dotnet tool run sharedkernel-repo -- github import --force
 ```
 
 The first implementation avoids regular helper scripts and extra package

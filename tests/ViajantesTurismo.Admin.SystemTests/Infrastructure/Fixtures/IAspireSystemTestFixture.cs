@@ -9,9 +9,18 @@ public interface IAspireSystemTestFixture
     /// <returns>A client that the calling test must dispose.</returns>
     Task<HttpClient> CreateApiClient(CancellationToken ct);
 
-    Uri WebAppUrl { get; }
+    Uri WebAppUrl
+    {
+        get;
+    }
 
-    Uri PublicWebAppUrl { get; }
+    Uri PublicWebAppUrl
+    {
+        get;
+    }
 
-    string ConformanceUserPassword { get; }
+    string ConformanceUserPassword
+    {
+        get;
+    }
 }

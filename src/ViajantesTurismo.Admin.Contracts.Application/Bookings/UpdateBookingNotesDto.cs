@@ -9,5 +9,8 @@ public sealed record UpdateBookingNotesDto
 {
     /// <summary>Optional notes about the booking.</summary>
     [StringLength(ContractConstants.MaxBookingNotesLength)]
-    public string? Notes { get; init; }
+    public string? Notes
+    {
+        get; init;
+    }
 }

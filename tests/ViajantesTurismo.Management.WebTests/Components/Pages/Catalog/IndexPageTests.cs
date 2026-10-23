@@ -27,13 +27,13 @@ public sealed class IndexPageTests : BunitContext
         cut.WaitForState(() => cut.Markup.Contains("First Public Tour", StringComparison.Ordinal), TimeSpan.FromSeconds(2));
 
         // Assert
-        (cut.Markup).ShouldContain("Catalog Tours", StringComparison.Ordinal);
-        (cut.Markup).ShouldContain("TOUR-1", StringComparison.Ordinal);
-        (cut.Markup).ShouldContain("first-public-tour", StringComparison.Ordinal);
-        (cut.Markup).ShouldContain("Published", StringComparison.Ordinal);
-        (cut.Markup).ShouldContain("Draft", StringComparison.Ordinal);
-        (cut.Markup).ShouldContain("2026-06-25", StringComparison.Ordinal);
-        (cut.Markup).ShouldContain("Edit presentation", StringComparison.Ordinal);
+        cut.Markup.ShouldContain("Catalog Tours", StringComparison.Ordinal);
+        cut.Markup.ShouldContain("TOUR-1", StringComparison.Ordinal);
+        cut.Markup.ShouldContain("first-public-tour", StringComparison.Ordinal);
+        cut.Markup.ShouldContain("Published", StringComparison.Ordinal);
+        cut.Markup.ShouldContain("Draft", StringComparison.Ordinal);
+        cut.Markup.ShouldContain("2026-06-25", StringComparison.Ordinal);
+        cut.Markup.ShouldContain("Edit presentation", StringComparison.Ordinal);
     }
 
     [Fact]
@@ -47,11 +47,11 @@ public sealed class IndexPageTests : BunitContext
         cut.WaitForState(() => cut.Markup.Contains("No Catalog tours", StringComparison.Ordinal), TimeSpan.FromSeconds(2));
 
         // Assert
-        (cut.Markup).ShouldContain("No Catalog tours are available yet", StringComparison.Ordinal);
+        cut.Markup.ShouldContain("No Catalog tours are available yet", StringComparison.Ordinal);
     }
 
     [Fact]
-    public void Renders_error_when_catalog_api_fails()
+    public void Renders_error_when_catalog_API_fails()
     {
         // Arrange
         catalogApi.ThrowOnGetTours = true;
@@ -62,7 +62,7 @@ public sealed class IndexPageTests : BunitContext
 
         // Assert
         var alert = cut.Find(".alert-danger");
-        (alert.TextContent).ShouldContain("Catalog tours could not be loaded", StringComparison.Ordinal);
+        alert.TextContent.ShouldContain("Catalog tours could not be loaded", StringComparison.Ordinal);
     }
 
     [Fact]
@@ -78,7 +78,7 @@ public sealed class IndexPageTests : BunitContext
         cut.WaitForState(() => cut.Markup.Contains("TOUR-01", StringComparison.Ordinal), TimeSpan.FromSeconds(2));
 
         // Assert
-        (cut.Markup).ShouldContain("pagination", StringComparison.OrdinalIgnoreCase);
+        cut.Markup.ShouldContain("pagination", StringComparison.OrdinalIgnoreCase);
     }
 
 }

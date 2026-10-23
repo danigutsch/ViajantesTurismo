@@ -131,7 +131,7 @@ public sealed class CustomersApiClientTests
     }
 
     [Fact]
-    public async Task GetCustomerById_returns_malformed_outcome_when_admin_api_returns_success_with_null_body()
+    public async Task GetCustomerById_returns_malformed_outcome_when_admin_API_returns_success_with_null_body()
     {
         // Arrange
         using var httpClient = CatalogToursApiClientTestsHelpers.CreateClient(_ => CatalogToursApiClientTestsHelpers.JsonResponse("null"));

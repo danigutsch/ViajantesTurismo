@@ -24,7 +24,7 @@ public sealed class ImportCustomersPageTests : BunitContext
 
         // Assert
         var heading = cut.Find("h1");
-        (heading.TextContent).ShouldContain("Import Customers", StringComparison.Ordinal);
+        heading.TextContent.ShouldContain("Import Customers", StringComparison.Ordinal);
     }
 
     [Fact]
@@ -35,7 +35,7 @@ public sealed class ImportCustomersPageTests : BunitContext
 
         // Assert
         var backButton = cut.Find("a.btn-outline-secondary[href='/customers']");
-        (backButton.TextContent).ShouldContain("Back to Customers", StringComparison.Ordinal);
+        backButton.TextContent.ShouldContain("Back to Customers", StringComparison.Ordinal);
     }
 
     [Fact]
@@ -45,7 +45,7 @@ public sealed class ImportCustomersPageTests : BunitContext
         var cut = Render<ImportCustomers>();
 
         // Assert
-        (cut.Markup).ShouldContain("Upload a CSV file", StringComparison.Ordinal);
+        cut.Markup.ShouldContain("Upload a CSV file", StringComparison.Ordinal);
     }
 
     [Fact]
@@ -55,8 +55,8 @@ public sealed class ImportCustomersPageTests : BunitContext
         var cut = Render<ImportCustomers>();
 
         // Assert
-        (cut.Markup).ShouldContain("Drop a CSV file here", StringComparison.Ordinal);
-        (cut.Markup).ShouldContain("or click to browse", StringComparison.Ordinal);
+        cut.Markup.ShouldContain("Drop a CSV file here", StringComparison.Ordinal);
+        cut.Markup.ShouldContain("or click to browse", StringComparison.Ordinal);
     }
 
     [Fact]
@@ -79,7 +79,7 @@ public sealed class ImportCustomersPageTests : BunitContext
         var cut = Render<ImportCustomers>();
 
         // Assert
-        (cut.FindAll(".alert")).ShouldBeEmpty();
+        cut.FindAll(".alert").ShouldBeEmpty();
     }
 
     [Fact]
@@ -90,7 +90,7 @@ public sealed class ImportCustomersPageTests : BunitContext
 
         // Assert
         var dropZone = cut.Find(".border.border-2");
-        (dropZone.ClassName).ShouldContain("border-secondary", StringComparison.Ordinal);
+        dropZone.ClassName.ShouldContain("border-secondary", StringComparison.Ordinal);
     }
 
     [Fact]
@@ -105,7 +105,7 @@ public sealed class ImportCustomersPageTests : BunitContext
 
         // Assert
         dropZone = cut.Find(".border.border-2");
-        (dropZone.ClassName).ShouldContain("border-primary", StringComparison.Ordinal);
+        dropZone.ClassName.ShouldContain("border-primary", StringComparison.Ordinal);
     }
 
     [Fact]
@@ -121,7 +121,7 @@ public sealed class ImportCustomersPageTests : BunitContext
 
         // Assert
         dropZone = cut.Find(".border.border-2");
-        (dropZone.ClassName).ShouldContain("border-secondary", StringComparison.Ordinal);
+        dropZone.ClassName.ShouldContain("border-secondary", StringComparison.Ordinal);
     }
 
     [Fact]
@@ -135,8 +135,8 @@ public sealed class ImportCustomersPageTests : BunitContext
         cut.FindComponent<InputFile>().UploadFiles(file);
 
         // Assert
-        cut.WaitForAssertion(() => (cut.FindAll(".alert.alert-danger")).ShouldNotBeEmpty());
-        (cut.Markup).ShouldContain("Only CSV files are supported", StringComparison.Ordinal);
+        cut.WaitForAssertion(() => cut.FindAll(".alert.alert-danger").ShouldNotBeEmpty());
+        cut.Markup.ShouldContain("Only CSV files are supported", StringComparison.Ordinal);
     }
 
     [Fact]
@@ -151,9 +151,9 @@ public sealed class ImportCustomersPageTests : BunitContext
         cut.FindComponent<InputFile>().UploadFiles(file);
 
         // Assert
-        cut.WaitForAssertion(() => (cut.FindAll(".alert.alert-danger")).ShouldNotBeEmpty());
-        (cut.Markup).ShouldContain("File is too large", StringComparison.Ordinal);
-        (cut.Markup).ShouldContain("Maximum allowed size is 1 MiB", StringComparison.Ordinal);
+        cut.WaitForAssertion(() => cut.FindAll(".alert.alert-danger").ShouldNotBeEmpty());
+        cut.Markup.ShouldContain("File is too large", StringComparison.Ordinal);
+        cut.Markup.ShouldContain("Maximum allowed size is 1 MiB", StringComparison.Ordinal);
     }
 
     [Fact]
@@ -172,8 +172,8 @@ public sealed class ImportCustomersPageTests : BunitContext
         ImportCustomersTestDomHelper.FindButtonByText(cut, "Confirm Import").Click();
 
         // Assert
-        cut.WaitForAssertion(() => (cut.Markup).ShouldContain("3 customer(s) imported successfully", StringComparison.Ordinal));
-        (cut.Markup).ShouldNotContain("could not be imported", StringComparison.Ordinal);
+        cut.WaitForAssertion(() => cut.Markup.ShouldContain("3 customer(s) imported successfully", StringComparison.Ordinal));
+        cut.Markup.ShouldNotContain("could not be imported", StringComparison.Ordinal);
     }
 
     [Fact]
@@ -192,12 +192,12 @@ public sealed class ImportCustomersPageTests : BunitContext
         ImportCustomersTestDomHelper.FindButtonByText(cut, "Confirm Import").Click();
 
         // Assert
-        cut.WaitForAssertion(() => (cut.Markup).ShouldContain("2 customer(s) imported successfully", StringComparison.Ordinal));
-        (cut.Markup).ShouldContain("1 row(s) could not be imported", StringComparison.Ordinal);
+        cut.WaitForAssertion(() => cut.Markup.ShouldContain("2 customer(s) imported successfully", StringComparison.Ordinal));
+        cut.Markup.ShouldContain("1 row(s) could not be imported", StringComparison.Ordinal);
     }
 
     [Fact]
-    public void Shows_error_alert_when_api_throws()
+    public void Shows_error_alert_when_API_throws()
     {
         // Arrange
         _fakeCustomersApi.SetImportCustomersException(new InvalidOperationException("Connection refused"));
@@ -214,8 +214,8 @@ public sealed class ImportCustomersPageTests : BunitContext
         // Assert
         cut.WaitForAssertion(() =>
         {
-            (cut.Markup).ShouldContain("We couldn't import the customers right now. Please try again.", StringComparison.Ordinal);
-            (cut.Markup).ShouldNotContain("Connection refused", StringComparison.Ordinal);
+            cut.Markup.ShouldContain("We couldn't import the customers right now. Please try again.", StringComparison.Ordinal);
+            cut.Markup.ShouldNotContain("Connection refused", StringComparison.Ordinal);
         });
     }
 
@@ -235,8 +235,8 @@ public sealed class ImportCustomersPageTests : BunitContext
         ImportCustomersTestDomHelper.FindButtonByText(cut, "Confirm Import").Click();
 
         // Assert
-        cut.WaitForAssertion(() => (cut.Markup).ShouldContain("Import another file", StringComparison.Ordinal));
-        (cut.Find("a[href='/customers']")).ShouldNotBeNull();
+        cut.WaitForAssertion(() => cut.Markup.ShouldContain("Import another file", StringComparison.Ordinal));
+        cut.Find("a[href='/customers']").ShouldNotBeNull();
     }
 
     [Fact]
@@ -251,14 +251,14 @@ public sealed class ImportCustomersPageTests : BunitContext
         ImportCustomersTestDomHelper.FindButtonByText(cut, "Preview").Click();
         ImportCustomersTestDomHelper.WaitForEnabledButton(cut, "Confirm Import");
         ImportCustomersTestDomHelper.FindButtonByText(cut, "Confirm Import").Click();
-        cut.WaitForAssertion(() => (cut.Markup).ShouldContain("Import another file", StringComparison.Ordinal));
+        cut.WaitForAssertion(() => cut.Markup.ShouldContain("Import another file", StringComparison.Ordinal));
 
         // Act — click "Import another file" (btn-sm variant in the result alert)
         ImportCustomersTestDomHelper.FindButtonByText(cut, "Import another file").Click();
 
         // Assert
-        (cut.Markup).ShouldContain("Drop a CSV file here", StringComparison.Ordinal);
-        (cut.FindAll(".alert")).ShouldBeEmpty();
+        cut.Markup.ShouldContain("Drop a CSV file here", StringComparison.Ordinal);
+        cut.FindAll(".alert").ShouldBeEmpty();
     }
 
     [Fact]

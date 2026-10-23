@@ -5,7 +5,7 @@ namespace ViajantesTurismo.Admin.IntegrationTests;
 public sealed class AdminApiEndpointTests(ApiFixture fixture)
 {
     [Fact]
-    public async Task Robots_txt_disallows_admin_api_crawling()
+    public async Task Robots_txt_disallows_admin_API_crawling()
     {
         // Arrange
         var cancellationToken = TestContext.Current.CancellationToken;
@@ -16,8 +16,8 @@ public sealed class AdminApiEndpointTests(ApiFixture fixture)
 
         // Assert
         response.StatusCode.ShouldBe(HttpStatusCode.OK);
-        response.Content.Headers.ContentType?.MediaType.ShouldBe("text/plain");
-        response.Content.Headers.ContentType?.CharSet.ShouldBe("utf-8");
+        response.Content.Headers.ContentType.ShouldNotBeNull().MediaType.ShouldBe("text/plain");
+        response.Content.Headers.ContentType.ShouldNotBeNull().CharSet.ShouldBe("utf-8");
         body.ShouldBe("User-agent: *\nDisallow: /");
     }
 

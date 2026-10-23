@@ -6,10 +6,23 @@ and library tooling belong to the separate SharedKernel repository. ViajantesTur
 Generic documentation and repository-configuration tooling belongs to SharedKernel. Application
 documentation configuration, CI and coverage policy, bootstrap, and compatibility orchestration stay here.
 
-The pinned candidate is `1.0.0-alpha.20261021.2` at library revision
-`f5975b60601e245bda6bb8e45559d8ce3a24a8e0`. Its manifest covers 73 immutable packages; the application
-references only the modules it uses. The Results runtime includes its generator, so do not add a
-separate Results generator package.
+The prepared pin is `0.1.0-alpha.70.1` at library
+[revision `ef0dd0a67b8982dfdf0cb8f5e23224c397971a5b`](https://github.com/danigutsch/PandaBear.SharedKernel/commit/ef0dd0a67b8982dfdf0cb8f5e23224c397971a5b),
+which contains the merged shared security tooling and scanner fixes. All 74 package hashes have
+been verified against the fresh CI candidate. Application compatibility validation and GitHub
+prerelease publication remain pending; the prepared pin is not yet an accepted application adoption.
+
+The former candidate `1.2.0-alpha.20261023.1` at library revision
+`cc826be664bfc2dc087fe5a140f7232b4f65967d` is retired. Its release was deliberately deleted;
+do not recreate, download, restore, or execute its artifacts. Earlier compatibility and package
+validation results are historical evidence, not approval to consume a retired candidate.
+
+The prepared runtime candidate does not contain the offline `dependency snapshot` command.
+Dependency review therefore requires a separately reviewed immutable generator source revision
+containing that command, or a later validated runtime candidate that includes it. Review the source
+generator independently of the runtime package pin; do not restore historical packages to compare
+committed lockfiles.
+The Results runtime includes its generator, so do not add a separate Results generator package.
 
 CSV structure parsing and advisory-lock hashing use the Tabular and Npgsql packages. Application
 import interfaces, accepted headers, normalization, business errors, and lock identities remain local.
@@ -23,19 +36,13 @@ Install the SDK pinned by `global.json`. Clone the public
 exact `libraryRevision` in `.config/sharedkernel-candidate.json`, and keep that checkout clean.
 The committed candidate manifest pins the library revision, package version, and SHA-256 hashes.
 
-Download the unchanged 73 `.nupkg` files and `candidate.json` from
-[GitHub preview `v1.0.0-alpha.20261021.2`](https://github.com/danigutsch/PandaBear.SharedKernel/releases/tag/v1.0.0-alpha.20261021.2)
-into an explicit candidate feed directory. For example, with GitHub CLI:
+For local compatibility validation, use only the prepared manifest's exact `.nupkg` files and
+`candidate.json` from the fresh CI candidate. Once published, normal checkouts obtain those unchanged
+artifacts from the approved `v<packageVersion>` release. Supply a clean checkout of the exact library
+revision and unchanged artifacts through explicit library/feed paths. Do not substitute another
+preview's package files or use cached retired artifacts to bypass missing releases.
 
-```sh
-gh release download v1.0.0-alpha.20261021.2 --repo danigutsch/PandaBear.SharedKernel \
-  --pattern '*.nupkg' --pattern candidate.json --dir /path/to/candidate-packages
-```
-
-These GitHub prerelease assets are available for consumption; NuGet registry publication remains
-deferred. Bootstrap validates the downloaded packages against the committed manifest before staging.
-
-From the application root, stage the expected candidate with the dependency-independent C# tool:
+From the application root, stage the exact candidate with the dependency-independent C# tool:
 
 ```sh
 dotnet run --project tools/ViajantesTurismo.RepoConfig.Tool -c Release -- \
@@ -70,10 +77,13 @@ dotnet run --project tools/ViajantesTurismo.RepoConfig.Tool -c Release --no-buil
   verify-sharedkernel-candidate --candidate .local/sharedkernel-feed/candidate.json
 ```
 
-Compatibility records both committed repository revisions and package hashes. A renamed package
+Compatibility records both committed repository revisions and package hashes. Validation runs in a
+temporary local clone of the recorded application commit with an isolated package cache, then removes
+both. The working checkout's restore assets and binaries remain unchanged. A renamed package
 identity does not establish compatibility with previously published `SharedKernel.*` packages.
-Rollback restores the previous application dependency configuration, candidate manifest, and lock files,
-then bootstraps its retained artifacts. Keep the prior artifacts available until adoption is accepted.
+Rollback may use only an approved, non-retired compatible candidate after validation. Update the
+application dependency configuration, candidate manifest, and lock files together, then bootstrap
+that candidate's exact artifacts. Retired releases must remain deleted and must not be consumed again.
 
 Generic outbox and idempotency implementation tests live in the library persistence test project.
 The transfer preserves 37 guards in library test commit `3752abb54681e28f4d16abd29966bab3819dd0ea`;
@@ -83,17 +93,18 @@ through public package interfaces. This test-only commit does not change the pin
 ## CI and platform evidence
 
 Hosted Linux and Windows jobs read the committed candidate manifest, check out the public library at
-its exact `libraryRevision`, and download the unchanged packages and `candidate.json` from GitHub
-prerelease `v<packageVersion>`. The approved candidate is distributed as release assets at
-[`v1.0.0-alpha.20261021.2`](https://github.com/danigutsch/PandaBear.SharedKernel/releases/tag/v1.0.0-alpha.20261021.2).
-Checkout credentials are not persisted. CI downloads the manifest and exact pinned package filenames
-through public release URLs without a token, avoiding per-asset installation API rate limits. Download
-failures are retried three times; bootstrap still verifies the revision and every package hash before
-restore. Source and downloads stay in ignored `.local/sharedkernel-library`
-and `.local/sharedkernel-download` directories.
-The shared prerequisite action invokes the same C# bootstrap before restoring application dependencies;
-the committed revision and package hashes remain authoritative. Missing assets, revision mismatches,
-and hash mismatches fail visibly.
+its exact `libraryRevision`, and download unchanged packages and `candidate.json` from GitHub
+prerelease `v<packageVersion>` after that non-retired candidate is published. Publication of the
+prepared `0.1.0-alpha.70.1` preview remains pending, so release-dependent hosted checks cannot yet
+download it. Missing retired releases must not be recreated to unblock checks. The secret-scan
+workflow also pins the shared scanner action to an immutable library revision. Hosted checks verify
+the same immutable package bytes as local validation.
+
+Checkout credentials are not persisted. CI downloads the manifest and exact pinned filenames through
+public release URLs without a token. Download failures are retried three times; bootstrap still verifies
+the revision and every package hash before restore. Source and downloads stay in ignored
+`.local/sharedkernel-library` and `.local/sharedkernel-download` directories. Missing assets, revision
+mismatches, and hash mismatches fail visibly.
 
 Optional repository variables `SHAREDKERNEL_LIBRARY_ROOT` and `SHAREDKERNEL_CANDIDATE_FEED` retain the
 explicit local/private flow. A library-root override skips hosted checkout and downloads, using that
@@ -108,3 +119,11 @@ Generic commands use `dotnet tool run sharedkernel-repo -- <command>` and docume
 `dotnet tool run sharedkernel-docs -- <command>`. Endpoint metadata methods and audience classification
 are consumer settings in `docs/architecture/generated-diagrams.json`. Shared telemetry privacy processors
 always enforce the baseline, with additional business-sensitive attribute policy supplied by ServiceDefaults.
+
+## Shared security tooling
+
+Security baseline checking and deterministic scanner orchestration are provided by the pinned
+`sharedkernel-repo security` commands. Application document contracts, endpoint policies, CI
+permissions, and runtime security tests remain here. SharedKernel also uses the same implementation
+for its own baseline. The Linux scanner installer pins and verifies Gitleaks separately from NuGet
+packages; see [the application baseline](../security/security-baseline.md).

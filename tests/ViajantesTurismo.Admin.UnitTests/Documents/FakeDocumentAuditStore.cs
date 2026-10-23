@@ -6,9 +6,15 @@ internal sealed class FakeDocumentAuditStore : IDocumentAuditStore
 {
     public List<DocumentAuditRecord> Records { get; } = [];
 
-    public int PurgedCount { get; set; }
+    public int PurgedCount
+    {
+        get; set;
+    }
 
-    public DateTime? PurgeCalledAt { get; private set; }
+    public DateTime? PurgeCalledAt
+    {
+        get; private set;
+    }
 
     public void Add(DocumentAuditRecord record) => Records.Add(record);
 

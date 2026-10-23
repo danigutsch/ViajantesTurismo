@@ -86,7 +86,7 @@ public sealed class AudienceTokenExchangeHandlerTests
     {
         // Arrange
         await using var host = AudienceTokenExchangeTestHost.Create();
-        var sessionExpiresAt = DateTimeOffset.UtcNow.AddMinutes(2);
+        var sessionExpiresAt = TimeProvider.System.GetUtcNow().AddMinutes(2);
         var user = ProtectedDistributedUserTokenStoreTestContext.CreateUser("session-a", sessionExpiresAt);
         await host.StoreProtectedAudienceTokenEntry(
             ApiAudienceNames.Admin,
@@ -171,7 +171,7 @@ public sealed class AudienceTokenExchangeHandlerTests
         await using var host = AudienceTokenExchangeTestHost.Create();
         var user = ProtectedDistributedUserTokenStoreTestContext.CreateUser(
             "expired-session",
-            DateTimeOffset.UtcNow.AddMinutes(-1));
+            TimeProvider.System.GetUtcNow().AddMinutes(-1));
         using var exchangeHandler = host.CreateHandler(ApiAudienceNames.Admin, user);
         using var sourceHandler = new SourceAccessTokenHandler("source-token") { InnerHandler = exchangeHandler };
         using var client = new HttpMessageInvoker(sourceHandler, disposeHandler: false);
@@ -386,7 +386,7 @@ public sealed class AudienceTokenExchangeHandlerTests
             user,
             "source-token",
             "source-token",
-            DateTimeOffset.UtcNow.AddMinutes(5),
+            TimeProvider.System.GetUtcNow().AddMinutes(5),
             Xunit.TestContext.Current.CancellationToken);
         using var exchangeHandler = host.CreateHandler(ApiAudienceNames.Admin, user);
         using var sourceHandler = new SourceAccessTokenHandler("source-token") { InnerHandler = exchangeHandler };
@@ -439,7 +439,7 @@ public sealed class AudienceTokenExchangeHandlerTests
             user,
             "source-token",
             "expired-audience-token",
-            DateTimeOffset.UtcNow.AddSeconds(30),
+            TimeProvider.System.GetUtcNow().AddSeconds(30),
             Xunit.TestContext.Current.CancellationToken);
         using var exchangeHandler = host.CreateHandler(ApiAudienceNames.Admin, user);
         using var sourceHandler = new SourceAccessTokenHandler("source-token") { InnerHandler = exchangeHandler };

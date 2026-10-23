@@ -10,9 +10,15 @@ internal sealed class ThrowingRemoveDistributedCache(
     private readonly Exception _failure = failure ?? new InvalidOperationException("The cache is unavailable.");
     private readonly Func<string, int, bool> _shouldThrowOnRemove = shouldThrowOnRemove ?? (static (_, _) => true);
 
-    public int RemoveCalls { get; private set; }
+    public int RemoveCalls
+    {
+        get; private set;
+    }
 
-    public CancellationToken LastRemoveCancellationToken { get; private set; }
+    public CancellationToken LastRemoveCancellationToken
+    {
+        get; private set;
+    }
 
     public byte[]? Get(string key)
     {

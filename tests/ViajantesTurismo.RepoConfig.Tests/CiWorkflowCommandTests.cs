@@ -45,7 +45,13 @@ public sealed class CiWorkflowCommandTests
     {
         // Arrange
         using var workspace = new TemporaryRepoConfigWorkspace();
-        workspace.WriteFile("event.json", System.Text.Json.JsonSerializer.Serialize(new { pull_request = new { title } }));
+        workspace.WriteFile("event.json", System.Text.Json.JsonSerializer.Serialize(new
+        {
+            pull_request = new
+            {
+                title
+            }
+        }));
         using var output = new StringWriter();
         using var error = new StringWriter();
 
@@ -66,7 +72,14 @@ public sealed class CiWorkflowCommandTests
     {
         // Arrange
         using var workspace = new TemporaryRepoConfigWorkspace();
-        workspace.WriteFile("event.json", System.Text.Json.JsonSerializer.Serialize(new { pull_request = new { title = "feat: change the contract", body } }));
+        workspace.WriteFile("event.json", System.Text.Json.JsonSerializer.Serialize(new
+        {
+            pull_request = new
+            {
+                title = "feat: change the contract",
+                body
+            }
+        }));
         using var output = new StringWriter();
         using var error = new StringWriter();
 
@@ -245,7 +258,11 @@ public sealed class CiWorkflowCommandTests
         outside.WriteFile("bin/Release/outside.pdb", "symbols");
         var path = "src/../../" + Path.GetFileName(outside.RootPath) + "/bin/Release/outside.pdb";
         var files = new Dictionary<string, string> { [path] = "not-allowed" };
-        workspace.WriteFile("TestResults/build-evidence.json", System.Text.Json.JsonSerializer.Serialize(new { revision, files }));
+        workspace.WriteFile("TestResults/build-evidence.json", System.Text.Json.JsonSerializer.Serialize(new
+        {
+            revision,
+            files
+        }));
         using var output = new StringWriter();
         using var error = new StringWriter();
 

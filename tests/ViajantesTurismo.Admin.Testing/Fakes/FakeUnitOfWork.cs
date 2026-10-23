@@ -4,7 +4,10 @@ namespace ViajantesTurismo.Admin.Testing.Fakes;
 
 public sealed class FakeUnitOfWork : IUnitOfWork
 {
-    public int SaveEntitiesCallCount { get; private set; }
+    public int SaveEntitiesCallCount
+    {
+        get; private set;
+    }
 
     public Task SaveEntities(CancellationToken ct)
     {

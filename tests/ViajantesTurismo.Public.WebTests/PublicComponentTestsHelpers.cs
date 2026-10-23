@@ -24,7 +24,7 @@ internal static class PublicComponentTestsHelpers
                     }
                 ]
                 : [],
-            UpdatedAt = DateTimeOffset.UtcNow
+            UpdatedAt = TimeProvider.System.GetUtcNow()
         };
     }
 

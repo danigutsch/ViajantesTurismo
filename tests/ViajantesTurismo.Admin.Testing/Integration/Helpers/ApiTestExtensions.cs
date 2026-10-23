@@ -27,22 +27,34 @@ public sealed class CreateTourOptions
     /// <summary>
     /// Gets the optional tour identifier override.
     /// </summary>
-    public string? Identifier { get; init; }
+    public string? Identifier
+    {
+        get; init;
+    }
 
     /// <summary>
     /// Gets the optional tour name override.
     /// </summary>
-    public string? Name { get; init; }
+    public string? Name
+    {
+        get; init;
+    }
 
     /// <summary>
     /// Gets the optional tour start date override.
     /// </summary>
-    public DateTime? StartDate { get; init; }
+    public DateTime? StartDate
+    {
+        get; init;
+    }
 
     /// <summary>
     /// Gets the optional tour end date override.
     /// </summary>
-    public DateTime? EndDate { get; init; }
+    public DateTime? EndDate
+    {
+        get; init;
+    }
 
     /// <summary>
     /// Gets the tour base price.
@@ -87,7 +99,7 @@ public static class ApiTestExtensions
     public static async Task<GetTourDto> CreateTour(this HttpClient client, CreateTourOptions? options = null)
     {
         var resolvedOptions = options ?? new CreateTourOptions();
-        var resolvedStartDate = resolvedOptions.StartDate ?? DateTime.UtcNow.AddDays(30);
+        var resolvedStartDate = resolvedOptions.StartDate ?? TimeProvider.System.GetUtcNow().UtcDateTime.AddDays(30);
         var resolvedEndDate = resolvedOptions.EndDate ?? resolvedStartDate.AddDays(7);
 
         var dto = new CreateTourDto
@@ -329,7 +341,7 @@ public static class ApiTestExtensions
         var dto = new CreatePaymentDto
         {
             Amount = amount,
-            PaymentDate = DateOnly.FromDateTime(DateTime.UtcNow),
+            PaymentDate = DateOnly.FromDateTime(TimeProvider.System.GetUtcNow().UtcDateTime),
             Method = PaymentMethodDto.CreditCard,
             Notes = "E2E test payment"
         };

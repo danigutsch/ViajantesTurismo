@@ -34,11 +34,11 @@ public sealed class DocumentArtifactProxyEndpointTests
 
         // Assert
         response.StatusCode.ShouldBe(HttpStatusCode.OK);
-        response.Headers.CacheControl?.NoStore.ShouldBeTrue();
+        response.Headers.CacheControl.ShouldNotBeNull().NoStore.ShouldBeTrue();
         response.Headers.Pragma.ShouldContain(header => string.Equals(header.Name, "no-cache", StringComparison.OrdinalIgnoreCase));
         response.Headers.GetValues("X-Content-Type-Options").ShouldContain("nosniff");
-        response.Content.Headers.ContentType?.MediaType.ShouldBe("text/html");
-        response.Content.Headers.ContentDisposition?.FileNameStar.ShouldBe($"{documentId:N}.html");
+        response.Content.Headers.ContentType.ShouldNotBeNull().MediaType.ShouldBe("text/html");
+        response.Content.Headers.ContentDisposition.ShouldNotBeNull().FileNameStar.ShouldBe($"{documentId:N}.html");
         html.ShouldBe("<html>contract</html>");
     }
 
@@ -240,7 +240,7 @@ public sealed class DocumentArtifactProxyEndpointTests
         response.StatusCode.ShouldBe(HttpStatusCode.OK);
         response.Content.Headers.ContentRange.ShouldBeNull();
         response.Headers.AcceptRanges.ShouldBeEmpty();
-        response.Content.Headers.ContentDisposition?.DispositionType.ShouldBe("attachment");
+        response.Content.Headers.ContentDisposition.ShouldNotBeNull().DispositionType.ShouldBe("attachment");
         html.ShouldBe(expectedHtml);
     }
 }

@@ -22,7 +22,10 @@ internal static class AdminRouteGroupExtensions
     /// <summary>
     /// Gets the OpenAPI document names used by the Admin API.
     /// </summary>
-    public static IReadOnlyCollection<string> OpenApiDocumentNames { get; } =
+    public static IReadOnlyCollection<string> OpenApiDocumentNames
+    {
+        get;
+    } =
     [
         ToursRoutePrefix,
         CustomersRoutePrefix,
@@ -34,7 +37,10 @@ internal static class AdminRouteGroupExtensions
     /// <summary>
     /// Gets the Admin API's active HTTP contract versions.
     /// </summary>
-    public static IReadOnlyCollection<ApiVersionDefinition> ApiVersions { get; } =
+    public static IReadOnlyCollection<ApiVersionDefinition> ApiVersions
+    {
+        get;
+    } =
     [
         CurrentApiVersion
     ];

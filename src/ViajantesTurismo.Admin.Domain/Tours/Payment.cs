@@ -52,42 +52,66 @@ public sealed partial class Payment : IEntity<Guid>
     /// <summary>
     /// Gets the unique payment identifier.
     /// </summary>
-    public Guid Id { get; private init; }
+    public Guid Id
+    {
+        get; private init;
+    }
 
     /// <summary>
     /// The ID of the booking this payment is for.
     /// </summary>
-    public Guid BookingId { get; private init; }
+    public Guid BookingId
+    {
+        get; private init;
+    }
 
     /// <summary>
     /// The payment amount.
     /// </summary>
-    public decimal Amount { get; private init; }
+    public decimal Amount
+    {
+        get; private init;
+    }
 
     /// <summary>
     /// The date the payment was made.
     /// </summary>
-    public DateOnly PaymentDate { get; private init; }
+    public DateOnly PaymentDate
+    {
+        get; private init;
+    }
 
     /// <summary>
     /// The payment method used.
     /// </summary>
-    public PaymentMethod Method { get; private init; }
+    public PaymentMethod Method
+    {
+        get; private init;
+    }
 
     /// <summary>
     /// Optional reference number for the payment (e.g. transaction ID, check number).
     /// </summary>
-    public string? ReferenceNumber { get; private init; }
+    public string? ReferenceNumber
+    {
+        get; private init;
+    }
 
     /// <summary>
     /// Optional notes about the payment.
     /// </summary>
-    public string? Notes { get; private init; }
+    public string? Notes
+    {
+        get; private init;
+    }
 
     /// <summary>
     /// The timestamp when this payment was recorded (UTC).
     /// </summary>
-    public DateTime RecordedAt { get; private init; }
+    public DateTime RecordedAt
+    {
+        get; private init;
+    }
 
     /// <summary>
     /// Creates a new instance of <see cref="Payment"/> with validation.

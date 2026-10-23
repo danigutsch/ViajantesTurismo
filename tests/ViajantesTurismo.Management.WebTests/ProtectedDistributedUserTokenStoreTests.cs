@@ -126,7 +126,7 @@ public sealed class ProtectedDistributedUserTokenStoreTests
         // Arrange
         var context = new ProtectedDistributedUserTokenStoreTestContext();
         var user = ProtectedDistributedUserTokenStoreTestContext.CreateUser("session-a");
-        var expiration = DateTimeOffset.UtcNow.AddMinutes(5);
+        var expiration = TimeProvider.System.GetUtcNow().AddMinutes(5);
         var token = new UserToken
         {
             AccessToken = AccessToken.Parse("source-access-token"),
@@ -146,12 +146,12 @@ public sealed class ProtectedDistributedUserTokenStoreTests
         var tokens = result.Token ?? throw new InvalidOperationException("The user token was not retrieved.");
         var storedToken = tokens.TokenForSpecifiedParameters ?? throw new InvalidOperationException("The access token was not retrieved.");
         storedToken.AccessToken.ToString().ShouldBe("source-access-token");
-        storedToken.AccessTokenType?.ToString().ShouldBe("Bearer");
+        storedToken.AccessTokenType.ShouldNotBeNull().ToString().ShouldBe("Bearer");
         storedToken.ClientId.ToString().ShouldBe("web-app");
         storedToken.Expiration.ToUnixTimeMilliseconds().ShouldBe(expiration.ToUnixTimeMilliseconds());
-        storedToken.IdentityToken?.ToString().ShouldBe("header.payload.signature");
-        storedToken.RefreshToken?.ToString().ShouldBe("refresh-token");
-        storedToken.Scope?.ToString().ShouldBe("openid offline_access");
+        storedToken.IdentityToken.ShouldNotBeNull().ToString().ShouldBe("header.payload.signature");
+        storedToken.RefreshToken.ShouldNotBeNull().ToString().ShouldBe("refresh-token");
+        storedToken.Scope.ShouldNotBeNull().ToString().ShouldBe("openid offline_access");
     }
 
     [Fact]
@@ -160,7 +160,7 @@ public sealed class ProtectedDistributedUserTokenStoreTests
         // Arrange
         var context = new ProtectedDistributedUserTokenStoreTestContext();
         var activeUser = ProtectedDistributedUserTokenStoreTestContext.CreateUser("session-a");
-        var expiredUser = ProtectedDistributedUserTokenStoreTestContext.CreateUser("session-a", DateTimeOffset.UtcNow.AddMinutes(-1));
+        var expiredUser = ProtectedDistributedUserTokenStoreTestContext.CreateUser("session-a", TimeProvider.System.GetUtcNow().AddMinutes(-1));
         await context.Store.StoreTokenAsync(
             activeUser,
             ProtectedDistributedUserTokenStoreTestContext.CreateToken("source-access-token"),
@@ -187,7 +187,7 @@ public sealed class ProtectedDistributedUserTokenStoreTests
         var cache = new ThrowingRemoveDistributedCache(innerCache);
         var context = new ProtectedDistributedUserTokenStoreTestContext(cache);
         var activeUser = ProtectedDistributedUserTokenStoreTestContext.CreateUser("session-a");
-        var expiredUser = ProtectedDistributedUserTokenStoreTestContext.CreateUser("session-a", DateTimeOffset.UtcNow.AddMinutes(-1));
+        var expiredUser = ProtectedDistributedUserTokenStoreTestContext.CreateUser("session-a", TimeProvider.System.GetUtcNow().AddMinutes(-1));
         await context.Store.StoreTokenAsync(
             activeUser,
             ProtectedDistributedUserTokenStoreTestContext.CreateToken("source-access-token"),
@@ -211,7 +211,7 @@ public sealed class ProtectedDistributedUserTokenStoreTests
         var cache = new ThrowingRemoveDistributedCache(innerCache);
         var context = new ProtectedDistributedUserTokenStoreTestContext(cache);
         var activeUser = ProtectedDistributedUserTokenStoreTestContext.CreateUser("session-a");
-        var expiredUser = ProtectedDistributedUserTokenStoreTestContext.CreateUser("session-a", DateTimeOffset.UtcNow.AddMinutes(-1));
+        var expiredUser = ProtectedDistributedUserTokenStoreTestContext.CreateUser("session-a", TimeProvider.System.GetUtcNow().AddMinutes(-1));
         await context.Store.StoreTokenAsync(
             activeUser,
             ProtectedDistributedUserTokenStoreTestContext.CreateToken("source-access-token"),

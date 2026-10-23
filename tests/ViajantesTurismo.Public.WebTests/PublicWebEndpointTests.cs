@@ -21,7 +21,7 @@ public sealed class PublicWebEndpointTests
 
         // Assert
         response.StatusCode.ShouldBe(HttpStatusCode.NotFound);
-        response.Headers.CacheControl?.NoStore.ShouldBe(true);
+        response.Headers.CacheControl.ShouldNotBeNull().NoStore.ShouldBe(true);
     }
 
     [Fact]
@@ -45,7 +45,7 @@ public sealed class PublicWebEndpointTests
 
         // Assert
         response.StatusCode.ShouldBe(HttpStatusCode.OK);
-        response.Content.Headers.ContentType?.MediaType.ShouldBe("image/jpeg");
+        response.Content.Headers.ContentType.ShouldNotBeNull().MediaType.ShouldBe("image/jpeg");
         var cacheControl = response.Headers.CacheControl.ShouldNotBeNull();
         cacheControl.Public.ShouldBeTrue();
         cacheControl.NoStore.ShouldBeFalse();
@@ -108,7 +108,7 @@ public sealed class PublicWebEndpointTests
 
         // Assert
         response.StatusCode.ShouldBe(HttpStatusCode.OK);
-        response.Content.Headers.ContentType?.MediaType.ShouldBe("text/html");
+        response.Content.Headers.ContentType.ShouldNotBeNull().MediaType.ShouldBe("text/html");
         content.ShouldContain("<html lang=\"en\">", StringComparison.Ordinal);
         content.ShouldContain("Viajantes Turismo", StringComparison.Ordinal);
         content.ShouldContain("Cycle tourism around the world!", StringComparison.Ordinal);
@@ -652,7 +652,7 @@ public sealed class PublicWebEndpointTests
 
         // Assert
         response.StatusCode.ShouldBe(HttpStatusCode.OK);
-        response.Content.Headers.ContentType?.MediaType.ShouldBe("text/html");
+        response.Content.Headers.ContentType.ShouldNotBeNull().MediaType.ShouldBe("text/html");
         content.ShouldContain($"<h1>{expectedHeading}</h1>", StringComparison.Ordinal);
     }
 
@@ -908,7 +908,7 @@ public sealed class PublicWebEndpointTests
 
         // Assert
         response.StatusCode.ShouldBe(HttpStatusCode.InternalServerError);
-        response.Content.Headers.ContentType?.MediaType.ShouldBe("application/problem+json");
+        response.Content.Headers.ContentType.ShouldNotBeNull().MediaType.ShouldBe("application/problem+json");
     }
 
     [Fact]
@@ -929,8 +929,8 @@ public sealed class PublicWebEndpointTests
 
         // Assert
         response.StatusCode.ShouldBe(HttpStatusCode.OK);
-        response.Content.Headers.ContentType?.MediaType.ShouldBe("text/plain");
-        response.Content.Headers.ContentType?.CharSet.ShouldBe("utf-8");
+        response.Content.Headers.ContentType.ShouldNotBeNull().MediaType.ShouldBe("text/plain");
+        response.Content.Headers.ContentType.ShouldNotBeNull().CharSet.ShouldBe("utf-8");
         body.ShouldBe("User-agent: *\nAllow: /\nSitemap: https://localhost:7003/sitemap.xml");
     }
 
@@ -1000,7 +1000,7 @@ public sealed class PublicWebEndpointTests
 
         // Assert
         response.StatusCode.ShouldBe(HttpStatusCode.OK);
-        response.Content.Headers.ContentType?.MediaType.ShouldBe("application/xml");
+        response.Content.Headers.ContentType.ShouldNotBeNull().MediaType.ShouldBe("application/xml");
         locations.ShouldBe([
             "https://localhost:7003/",
             "https://localhost:7003/group-bike-tours",
@@ -1111,7 +1111,7 @@ public sealed class PublicWebEndpointTests
 
         // Assert
         response.StatusCode.ShouldBe(HttpStatusCode.OK);
-        response.Content.Headers.ContentType?.MediaType.ShouldBe("text/plain");
+        response.Content.Headers.ContentType.ShouldNotBeNull().MediaType.ShouldBe("text/plain");
         body.ShouldBe("Healthy");
     }
 

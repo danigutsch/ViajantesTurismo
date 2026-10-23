@@ -10,20 +10,50 @@ public sealed class CustomerContext
     public string FirstName { get; set; } = null!;
     public string LastName { get; set; } = null!;
     public string Gender { get; set; } = null!;
-    public DateTime BirthDate { get; set; }
+    public DateTime BirthDate
+    {
+        get; set;
+    }
     public string Nationality { get; set; } = null!;
     public string Occupation { get; set; } = null!;
 
-    public required Result<PersonalInfo> PersonalInfoResult { get; set; }
-    public required Result<IdentificationInfo> IdentificationInfoResult { get; set; }
-    public required Result<ContactInfo> ContactInfoResult { get; set; }
-    public required Result<Address> AddressResult { get; set; }
-    public required Result<EmergencyContact> EmergencyContactResult { get; set; }
-    public Result<PhysicalInfo>? PhysicalInfoResult { get; set; }
-    public Result<MedicalInfo>? MedicalInfoResult { get; set; }
-    public AccommodationPreferences? AccommodationPreferences { get; set; }
+    public required Result<PersonalInfo> PersonalInfoResult
+    {
+        get; set;
+    }
+    public required Result<IdentificationInfo> IdentificationInfoResult
+    {
+        get; set;
+    }
+    public required Result<ContactInfo> ContactInfoResult
+    {
+        get; set;
+    }
+    public required Result<Address> AddressResult
+    {
+        get; set;
+    }
+    public required Result<EmergencyContact> EmergencyContactResult
+    {
+        get; set;
+    }
+    public Result<PhysicalInfo>? PhysicalInfoResult
+    {
+        get; set;
+    }
+    public Result<MedicalInfo>? MedicalInfoResult
+    {
+        get; set;
+    }
+    public AccommodationPreferences? AccommodationPreferences
+    {
+        get; set;
+    }
 
-    public required Customer Customer { get; set; }
+    public required Customer Customer
+    {
+        get; set;
+    }
 
     public ICollection<Customer> Customers { get; } = [];
 
@@ -31,5 +61,8 @@ public sealed class CustomerContext
     public FakeUnitOfWork UnitOfWork { get; } = new();
     public CreateCustomerCommandHandler CommandHandler => new(CustomerStore, UnitOfWork, TimeProvider.System);
 
-    public Result<Guid>? CommandResult { get; set; }
+    public Result<Guid>? CommandResult
+    {
+        get; set;
+    }
 }

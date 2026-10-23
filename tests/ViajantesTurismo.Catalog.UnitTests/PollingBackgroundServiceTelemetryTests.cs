@@ -1,3 +1,4 @@
+using System.Collections.Concurrent;
 using System.Diagnostics;
 using PandaBear.Scheduling;
 
@@ -9,8 +10,11 @@ public sealed class PollingBackgroundServiceTelemetryTests
     public async Task Cooperative_shutdown_does_not_record_a_polling_error()
     {
         // Arrange
-        var stoppedActivities = new List<Activity>();
-        using var listener = PollingBackgroundServiceTestHarness.CreateActivityListener(stoppedActivities);
+        using var parent = new Activity("polling.shutdown.test");
+        parent.SetIdFormat(ActivityIdFormat.W3C);
+        parent.Start();
+        var stoppedActivities = new ConcurrentQueue<Activity>();
+        using var listener = PollingBackgroundServiceTestHarness.CreateActivityListener(stoppedActivities, parent.Context);
         using var service = new PollingBackgroundServiceTestHarness();
         await service.StartAsync(CancellationToken.None);
         await service.Started.WaitAsync(TimeSpan.FromSeconds(5), TestContext.Current.CancellationToken);

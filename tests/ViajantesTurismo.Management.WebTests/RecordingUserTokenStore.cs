@@ -6,7 +6,10 @@ namespace ViajantesTurismo.Management.WebTests;
 
 internal sealed class RecordingUserTokenStore : IUserTokenStore
 {
-    public ClaimsPrincipal? StoredUser { get; private set; }
+    public ClaimsPrincipal? StoredUser
+    {
+        get; private set;
+    }
 
     public Task ClearTokenAsync(ClaimsPrincipal user, UserTokenRequestParameters? parameters = null, CancellationToken ct = default)
     {

@@ -43,12 +43,12 @@ public sealed class ServiceDefaultsHealthEndpointTests
 
         // Assert
         healthResponse.StatusCode.ShouldBe(HttpStatusCode.OK);
-        healthResponse.Headers.CacheControl?.NoStore.ShouldBe(true);
-        healthResponse.Content.Headers.ContentType?.MediaType.ShouldBe("text/plain");
+        healthResponse.Headers.CacheControl.ShouldNotBeNull().NoStore.ShouldBe(true);
+        healthResponse.Content.Headers.ContentType.ShouldNotBeNull().MediaType.ShouldBe("text/plain");
         healthBody.ShouldBe("Healthy");
         aliveResponse.StatusCode.ShouldBe(HttpStatusCode.OK);
-        aliveResponse.Headers.CacheControl?.NoStore.ShouldBe(true);
-        aliveResponse.Content.Headers.ContentType?.MediaType.ShouldBe("text/plain");
+        aliveResponse.Headers.CacheControl.ShouldNotBeNull().NoStore.ShouldBe(true);
+        aliveResponse.Content.Headers.ContentType.ShouldNotBeNull().MediaType.ShouldBe("text/plain");
         aliveBody.ShouldBe("Healthy");
     }
 
@@ -83,12 +83,12 @@ public sealed class ServiceDefaultsHealthEndpointTests
 
         // Assert
         healthResponse.StatusCode.ShouldBe(HttpStatusCode.ServiceUnavailable);
-        healthResponse.Headers.CacheControl?.NoStore.ShouldBe(true);
-        healthResponse.Content.Headers.ContentType?.MediaType.ShouldBe("text/plain");
+        healthResponse.Headers.CacheControl.ShouldNotBeNull().NoStore.ShouldBe(true);
+        healthResponse.Content.Headers.ContentType.ShouldNotBeNull().MediaType.ShouldBe("text/plain");
         healthBody.ShouldBe("Unhealthy");
         aliveResponse.StatusCode.ShouldBe(HttpStatusCode.OK);
-        aliveResponse.Headers.CacheControl?.NoStore.ShouldBe(true);
-        aliveResponse.Content.Headers.ContentType?.MediaType.ShouldBe("text/plain");
+        aliveResponse.Headers.CacheControl.ShouldNotBeNull().NoStore.ShouldBe(true);
+        aliveResponse.Content.Headers.ContentType.ShouldNotBeNull().MediaType.ShouldBe("text/plain");
         aliveBody.ShouldBe("Healthy");
     }
 }

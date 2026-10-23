@@ -6,7 +6,7 @@ internal static class AdminApiPrivacyTestData
 {
     public static Tour CreateTour(string identifier)
     {
-        var startDate = DateTime.UtcNow.AddMonths(2);
+        var startDate = TimeProvider.System.GetUtcNow().UtcDateTime.AddMonths(2);
         var result = Tour.Create(new TourDefinition(
             identifier,
             $"Tour {identifier}",

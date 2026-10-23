@@ -30,7 +30,8 @@ public sealed class CreateTourCommandHandlerTests
 
         result.IsSuccess.ShouldBeTrue();
         unitOfWork.SaveEntitiesCallCount.ShouldBe(1);
-        var storedTour = (await tourStore.GetById(result.Value, CancellationToken.None)).ShouldNotBeNull();
+        var actualValue = await tourStore.GetById(result.Value, CancellationToken.None);
+        var storedTour = actualValue.ShouldNotBeNull();
         storedTour.Id.ShouldBe(result.Value);
         storedTour.Identifier.ShouldBe(command.Identifier);
         storedTour.Name.ShouldBe(command.Name);

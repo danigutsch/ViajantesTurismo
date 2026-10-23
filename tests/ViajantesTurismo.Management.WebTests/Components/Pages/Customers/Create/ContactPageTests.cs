@@ -30,11 +30,11 @@ public sealed class ContactPageTests : BunitContext
         var cut = Render<Contact>();
 
         // Assert
-        (cut.Find("#email").GetAttribute("value")).ShouldBe("ana.silva@example.com");
-        (cut.Find("#mobile").GetAttribute("value")).ShouldBe("+55 11 98765-4321");
-        (cut.Find("#instagram").GetAttribute("value")).ShouldBe("@ana.silva");
-        (cut.Find("#facebook").GetAttribute("value")).ShouldBe("facebook.com/ana.silva");
-        (_state.CurrentStep).ShouldBe(3);
+        cut.Find("#email").GetAttribute("value").ShouldBe("ana.silva@example.com");
+        cut.Find("#mobile").GetAttribute("value").ShouldBe("+55 11 98765-4321");
+        cut.Find("#instagram").GetAttribute("value").ShouldBe("@ana.silva");
+        cut.Find("#facebook").GetAttribute("value").ShouldBe("facebook.com/ana.silva");
+        _state.CurrentStep.ShouldBe(3);
     }
 
     [Fact]
@@ -52,13 +52,13 @@ public sealed class ContactPageTests : BunitContext
         await cut.InvokeAsync(async () => await cut.Find("form").SubmitAsync());
 
         // Assert
-        await cut.WaitForAssertionAsync(() => (navigationManager.Uri).ShouldEndWith("/customers/create/address", StringComparison.Ordinal));
-        (_state.ContactInfo).ShouldNotBeNull();
-        (_state.ContactInfo.Email).ShouldBe("ana.silva@example.com");
-        (_state.ContactInfo.Mobile).ShouldBe("+55 11 98765-4321");
-        (_state.ContactInfo.Instagram).ShouldBe("@ana.silva");
-        (_state.ContactInfo.Facebook).ShouldBe("facebook.com/ana.silva");
-        (_state.CurrentStep).ShouldBe(4);
+        await cut.WaitForAssertionAsync(() => navigationManager.Uri.ShouldEndWith("/customers/create/address", StringComparison.Ordinal));
+        _state.ContactInfo.ShouldNotBeNull();
+        _state.ContactInfo.Email.ShouldBe("ana.silva@example.com");
+        _state.ContactInfo.Mobile.ShouldBe("+55 11 98765-4321");
+        _state.ContactInfo.Instagram.ShouldBe("@ana.silva");
+        _state.ContactInfo.Facebook.ShouldBe("facebook.com/ana.silva");
+        _state.CurrentStep.ShouldBe(4);
     }
 
     [Fact]
@@ -73,7 +73,7 @@ public sealed class ContactPageTests : BunitContext
         await cut.InvokeAsync(() => backButton.Click());
 
         // Assert
-        await cut.WaitForAssertionAsync(() => (navigationManager.Uri).ShouldEndWith("/customers/create/identification", StringComparison.Ordinal));
-        (_state.CurrentStep).ShouldBe(2);
+        await cut.WaitForAssertionAsync(() => navigationManager.Uri.ShouldEndWith("/customers/create/identification", StringComparison.Ordinal));
+        _state.CurrentStep.ShouldBe(2);
     }
 }

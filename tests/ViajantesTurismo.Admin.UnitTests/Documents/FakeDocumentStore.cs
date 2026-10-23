@@ -10,7 +10,10 @@ internal sealed class FakeDocumentStore : IDocumentStore
 
     public List<DocumentLineage> AddedLineages { get; } = [];
 
-    public DocumentLineage? LastLoadedLineage { get; private set; }
+    public DocumentLineage? LastLoadedLineage
+    {
+        get; private set;
+    }
 
     public void Add(DocumentLineage lineage)
     {

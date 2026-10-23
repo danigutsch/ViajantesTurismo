@@ -7,67 +7,157 @@ internal sealed class FakeCatalogToursApiClient : ICatalogToursApiClient
 {
     public CatalogTourDto[] Tours { get; set; } = [];
 
-    public bool ThrowOnGetTours { get; set; }
+    public bool ThrowOnGetTours
+    {
+        get; set;
+    }
 
-    public ContractValidationException? ValidationException { get; set; }
+    public ContractValidationException? ValidationException
+    {
+        get; set;
+    }
 
-    public bool ThrowConflictOnUpdate { get; set; }
+    public bool ThrowConflictOnUpdate
+    {
+        get; set;
+    }
 
-    public bool ThrowAcceptedOnUpdate { get; set; }
+    public bool ThrowAcceptedOnUpdate
+    {
+        get; set;
+    }
 
-    public bool ThrowAcceptedOnPublication { get; set; }
+    public bool ThrowAcceptedOnPublication
+    {
+        get; set;
+    }
 
-    public UpsertCatalogTourPresentationRequest? LastPresentationRequest { get; private set; }
+    public UpsertCatalogTourPresentationRequest? LastPresentationRequest
+    {
+        get; private set;
+    }
 
-    public CatalogTourPublicationRequest? LastPublicationRequest { get; private set; }
+    public CatalogTourPublicationRequest? LastPublicationRequest
+    {
+        get; private set;
+    }
 
-    public bool? LastPublicationState { get; private set; }
+    public bool? LastPublicationState
+    {
+        get; private set;
+    }
 
     public IReadOnlyList<CatalogMediaImageDto> Images { get; set; } = [];
 
-    public bool ThrowOnGetTourImages { get; set; }
+    public bool ThrowOnGetTourImages
+    {
+        get; set;
+    }
 
-    public HttpOutcome<CatalogMediaImageDto[]>? GetTourImagesOutcome { get; set; }
+    public HttpOutcome<CatalogMediaImageDto[]>? GetTourImagesOutcome
+    {
+        get; set;
+    }
 
-    public CatalogMediaImageDto? Draft { get; set; }
+    public CatalogMediaImageDto? Draft
+    {
+        get; set;
+    }
 
-    public Task<HttpOutcome<CatalogMediaImageDto>>? AccessibilityDraftTask { get; set; }
+    public Task<HttpOutcome<CatalogMediaImageDto>>? AccessibilityDraftTask
+    {
+        get; set;
+    }
 
-    public CatalogMediaImageDto? UploadedImage { get; set; }
+    public CatalogMediaImageDto? UploadedImage
+    {
+        get; set;
+    }
 
-    public Func<Guid, CatalogTourImageUploadRequest, IProgress<long>?, CancellationToken, Task<CatalogMediaImageDto?>>? UploadTourImageHandler { get; set; }
+    public Func<Guid, CatalogTourImageUploadRequest, IProgress<long>?, CancellationToken, Task<CatalogMediaImageDto?>>? UploadTourImageHandler
+    {
+        get; set;
+    }
 
-    public Guid? LastUploadedTourId { get; private set; }
+    public Guid? LastUploadedTourId
+    {
+        get; private set;
+    }
 
-    public string? LastUploadedFileName { get; private set; }
+    public string? LastUploadedFileName
+    {
+        get; private set;
+    }
 
-    public string? LastUploadedContentType { get; private set; }
+    public string? LastUploadedContentType
+    {
+        get; private set;
+    }
 
-    public string? LastUploadedAltText { get; private set; }
+    public string? LastUploadedAltText
+    {
+        get; private set;
+    }
 
-    public string? LastUploadedCaption { get; private set; }
+    public string? LastUploadedCaption
+    {
+        get; private set;
+    }
 
-    public CancellationToken LastUploadCancellationToken { get; private set; }
+    public CancellationToken LastUploadCancellationToken
+    {
+        get; private set;
+    }
 
-    public int UploadTourImageCallCount { get; private set; }
+    public int UploadTourImageCallCount
+    {
+        get; private set;
+    }
 
-    public CatalogMediaImageDto? AccessibilityReviewResult { get; set; }
+    public CatalogMediaImageDto? AccessibilityReviewResult
+    {
+        get; set;
+    }
 
-    public bool ReturnNullOnAccessibilityReview { get; set; }
+    public bool ReturnNullOnAccessibilityReview
+    {
+        get; set;
+    }
 
-    public bool ThrowOnSubsequentGetTourImages { get; set; }
+    public bool ThrowOnSubsequentGetTourImages
+    {
+        get; set;
+    }
 
-    public PublicMediaObjectResponse? Media { get; set; }
+    public PublicMediaObjectResponse? Media
+    {
+        get; set;
+    }
 
-    public bool ThrowOnMediaPreview { get; set; }
+    public bool ThrowOnMediaPreview
+    {
+        get; set;
+    }
 
-    public Guid? LastMediaId { get; private set; }
+    public Guid? LastMediaId
+    {
+        get; private set;
+    }
 
-    public int? LastMediaWidth { get; private set; }
+    public int? LastMediaWidth
+    {
+        get; private set;
+    }
 
-    public string? LastMediaFormat { get; private set; }
+    public string? LastMediaFormat
+    {
+        get; private set;
+    }
 
-    public PublicMediaImageAccessibilityReviewRequest? LastAccessibilityReviewRequest { get; private set; }
+    public PublicMediaImageAccessibilityReviewRequest? LastAccessibilityReviewRequest
+    {
+        get; private set;
+    }
 
     private int getTourImagesRequests;
 
@@ -257,7 +347,11 @@ internal sealed class FakeCatalogToursApiClient : ICatalogToursApiClient
         var tour = Tours.SingleOrDefault(tour => tour.Id == id);
         if (tour is not null)
         {
-            var updated = tour with { IsPublished = isPublished, Version = tour.Version + 1 };
+            var updated = tour with
+            {
+                IsPublished = isPublished,
+                Version = tour.Version + 1
+            };
             Tours = Tours.Select(current => current.Id == id ? updated : current).ToArray();
         }
 

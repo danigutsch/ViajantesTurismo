@@ -33,7 +33,10 @@ public sealed class DocumentationCiTests
         result.ShouldBe(0);
         outputs.ShouldContain("build_required=" + (buildRequired ? "true" : "false"), StringComparison.Ordinal);
         outputs.ShouldContain("documentation_only=" + (documentationOnly ? "true" : "false"), StringComparison.Ordinal);
-        if (documentationOnly) { outputs.ShouldContain("selected_test_project_count=0", StringComparison.Ordinal); }
+        if (documentationOnly)
+        {
+            outputs.ShouldContain("selected_test_project_count=0", StringComparison.Ordinal);
+        }
     }
 
     [Fact]

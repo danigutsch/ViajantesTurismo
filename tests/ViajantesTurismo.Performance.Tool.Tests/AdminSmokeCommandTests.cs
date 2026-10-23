@@ -11,7 +11,7 @@ public sealed class AdminSmokeCommandTests
     [InlineData("http://127.0.0.1:5000")]
     [InlineData("https://[::1]:5001")]
     [InlineData("http://host.docker.internal:5000")]
-    public void Allows_local_admin_api_targets(string targetText)
+    public void Allows_local_admin_API_targets(string targetText)
     {
         // Arrange
         var target = targetText;
@@ -29,7 +29,7 @@ public sealed class AdminSmokeCommandTests
     [InlineData("http://0.0.0.0:5000", "http://host.docker.internal:5000")]
     [InlineData("http://[::1]:5000", "http://host.docker.internal:5000")]
     [InlineData("http://[::]:5000", "http://host.docker.internal:5000")]
-    public void Converts_loopback_admin_api_targets_for_docker(string targetText, string expectedText)
+    public void Converts_loopback_admin_API_targets_for_docker(string targetText, string expectedText)
     {
         // Arrange
         var target = targetText;
@@ -44,7 +44,7 @@ public sealed class AdminSmokeCommandTests
     [Theory]
     [InlineData("https://mylocalhost.example:8443/path?x=1")]
     [InlineData("https://127.0.0.1.example:8443/path?x=1")]
-    public void Does_not_rewrite_external_admin_api_hosts_that_contain_loopback_text(string targetText)
+    public void Does_not_rewrite_external_admin_API_hosts_that_contain_loopback_text(string targetText)
     {
         // Arrange
         var target = targetText;
@@ -57,7 +57,7 @@ public sealed class AdminSmokeCommandTests
     }
 
     [Fact]
-    public void Rejects_admin_api_targets_with_user_information()
+    public void Rejects_admin_API_targets_with_user_information()
     {
         // Arrange
         const string target = "http://localhost:80@evil.example";
@@ -72,7 +72,7 @@ public sealed class AdminSmokeCommandTests
     }
 
     [Fact]
-    public void Rejects_external_admin_api_targets_by_default()
+    public void Rejects_external_admin_API_targets_by_default()
     {
         // Arrange
         using var allowExternalScope = new EnvironmentVariableScope("VT_K6_ALLOW_EXTERNAL", "0");
@@ -88,7 +88,7 @@ public sealed class AdminSmokeCommandTests
     }
 
     [Fact]
-    public void Allows_external_admin_api_targets_when_explicitly_enabled()
+    public void Allows_external_admin_API_targets_when_explicitly_enabled()
     {
         // Arrange
         using var allowExternalScope = new EnvironmentVariableScope("VT_K6_ALLOW_EXTERNAL", "1");
@@ -102,7 +102,7 @@ public sealed class AdminSmokeCommandTests
     }
 
     [Fact]
-    public void Rejects_admin_api_targets_without_http_scheme()
+    public void Rejects_admin_API_targets_without_http_scheme()
     {
         // Arrange
         const string target = "ftp://localhost";

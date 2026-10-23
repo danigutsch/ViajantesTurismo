@@ -24,21 +24,45 @@ public sealed class FakeBookingsApiClient : IBookingsApiClient
     private HttpOutcome? _updateBookingNotesOutcome;
     private decimal? _updatedDetailsTotalPrice;
 
-    public int BookingActionCallCount { get; private set; }
+    public int BookingActionCallCount
+    {
+        get; private set;
+    }
 
-    public int CommittedPaymentCount { get; private set; }
+    public int CommittedPaymentCount
+    {
+        get; private set;
+    }
 
-    public int GetBookingByIdCallCount { get; private set; }
+    public int GetBookingByIdCallCount
+    {
+        get; private set;
+    }
 
-    public UpdateBookingDetailsDto? LastUpdatedDetails { get; private set; }
+    public UpdateBookingDetailsDto? LastUpdatedDetails
+    {
+        get; private set;
+    }
 
-    public int RecordPaymentCallCount { get; private set; }
+    public int RecordPaymentCallCount
+    {
+        get; private set;
+    }
 
-    public int UpdateBookingDetailsCallCount { get; private set; }
+    public int UpdateBookingDetailsCallCount
+    {
+        get; private set;
+    }
 
-    public int UpdateBookingDiscountCallCount { get; private set; }
+    public int UpdateBookingDiscountCallCount
+    {
+        get; private set;
+    }
 
-    public int UpdateBookingNotesCallCount { get; private set; }
+    public int UpdateBookingNotesCallCount
+    {
+        get; private set;
+    }
 
     public Task<HttpOutcome<GetBookingDto[]>> GetAllBookings(CancellationToken ct)
     {
@@ -189,7 +213,10 @@ public sealed class FakeBookingsApiClient : IBookingsApiClient
         var index = _bookings.FindIndex(booking => booking.Id == id);
         if (index >= 0)
         {
-            _bookings[index] = _bookings[index] with { Notes = dto.Notes };
+            _bookings[index] = _bookings[index] with
+            {
+                Notes = dto.Notes
+            };
         }
 
         return Task.FromResult(HttpOutcomeMapper.Succeeded(HttpStatusCode.OK, location: null));
@@ -313,7 +340,10 @@ public sealed class FakeBookingsApiClient : IBookingsApiClient
         var index = _bookings.FindIndex(b => b.Id == id);
         if (index >= 0)
         {
-            _bookings[index] = _bookings[index] with { Status = newStatus };
+            _bookings[index] = _bookings[index] with
+            {
+                Status = newStatus
+            };
         }
     }
 }

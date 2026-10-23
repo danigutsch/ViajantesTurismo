@@ -255,7 +255,7 @@ public sealed class CustomerImportEndpointsTests
         await app.StartAsync(cancellationToken);
         using var client = new HttpClient
         {
-            BaseAddress = new Uri(app.Urls.Single())
+            BaseAddress = new Uri(app.Urls.ShouldHaveSingleItem())
         };
         using var requestContent = new MultipartFormDataContent();
         using var fileContent = new ByteArrayContent(new byte[ContractConstants.CustomerImportMaxRequestBytes + 1]);

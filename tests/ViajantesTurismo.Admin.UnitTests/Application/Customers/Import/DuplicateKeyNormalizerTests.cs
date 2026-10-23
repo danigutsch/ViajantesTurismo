@@ -20,7 +20,7 @@ public class DuplicateKeyNormalizerTests
         var normalizedEmailWithoutDiacritics = StringSanitizer.NormalizeKey(emailWithoutDiacritics);
 
         // Assert
-        (normalizedNameWithoutDiacritics).ShouldBe(normalizedNameWithDiacritics);
-        (normalizedEmailWithoutDiacritics).ShouldNotBe(normalizedEmailWithDiacritics);
+        normalizedNameWithoutDiacritics.ShouldBe(normalizedNameWithDiacritics);
+        normalizedEmailWithoutDiacritics.ShouldNotBe(normalizedEmailWithDiacritics);
     }
 }

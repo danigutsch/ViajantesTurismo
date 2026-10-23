@@ -43,11 +43,11 @@ public sealed class ImportCustomersConflictLoaderTests
             Xunit.TestContext.Current.CancellationToken);
 
         // Assert
-        var conflictState = (conflictStates).ShouldHaveSingleItem();
-        (conflictState.Email).ShouldBe(conflictEmail);
-        (conflictState.GetIncomingValue(CustomerImportFieldNames.FirstName)).ShouldBe(incomingFirstName);
-        (conflictState.GetExistingValue(CustomerImportFieldNames.LastName)).ShouldBe(existingLastName);
-        (conflictState.GetExistingValue(CustomerImportFieldNames.Email)).ShouldBe(conflictEmail);
+        var conflictState = conflictStates.ShouldHaveSingleItem();
+        conflictState.Email.ShouldBe(conflictEmail);
+        conflictState.GetIncomingValue(CustomerImportFieldNames.FirstName).ShouldBe(incomingFirstName);
+        conflictState.GetExistingValue(CustomerImportFieldNames.LastName).ShouldBe(existingLastName);
+        conflictState.GetExistingValue(CustomerImportFieldNames.Email).ShouldBe(conflictEmail);
     }
 
     [Fact]
@@ -82,10 +82,10 @@ public sealed class ImportCustomersConflictLoaderTests
             Xunit.TestContext.Current.CancellationToken);
 
         // Assert
-        var conflictState = (conflictStates).ShouldHaveSingleItem();
-        (conflictState.GetIncomingValue(CustomerImportFieldNames.FirstName)).ShouldBe("IncomingFirst");
-        (conflictState.GetExistingValue(CustomerImportFieldNames.FirstName)).ShouldBe(string.Empty);
-        (conflictState.GetExistingValue(CustomerImportFieldNames.Email)).ShouldBe(string.Empty);
+        var conflictState = conflictStates.ShouldHaveSingleItem();
+        conflictState.GetIncomingValue(CustomerImportFieldNames.FirstName).ShouldBe("IncomingFirst");
+        conflictState.GetExistingValue(CustomerImportFieldNames.FirstName).ShouldBe(string.Empty);
+        conflictState.GetExistingValue(CustomerImportFieldNames.Email).ShouldBe(string.Empty);
     }
 
     [Fact]

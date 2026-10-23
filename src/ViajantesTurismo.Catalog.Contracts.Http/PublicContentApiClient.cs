@@ -24,7 +24,10 @@ public sealed class PublicContentApiClient(HttpClient httpClient) : IPublicConte
             Json.ContractValidationProblemDto,
             ct).ConfigureAwait(false);
         return outcome.Kind == HttpOutcomeKind.Succeeded
-            ? outcome with { Value = outcome.Value?.OfType<PublicContentDto>().ToArray() ?? [] }
+            ? outcome with
+            {
+                Value = outcome.Value?.OfType<PublicContentDto>().ToArray() ?? []
+            }
             : outcome;
     }
 

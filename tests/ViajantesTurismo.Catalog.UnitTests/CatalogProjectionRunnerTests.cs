@@ -27,7 +27,7 @@ public sealed class CatalogProjectionRunnerTests
             "Andes 2026",
             Guid.CreateVersion7(),
             $"tour-{catalogTourId:N}");
-        var recordedAt = DateTimeOffset.UtcNow;
+        var recordedAt = TimeProvider.System.GetUtcNow();
         eventStore.AddReplayEvent(CatalogProjectionRunnerTestsHelpers.CreateEnvelope(11, draftCreated, recordedAt));
 
         // Act
@@ -35,18 +35,18 @@ public sealed class CatalogProjectionRunnerTests
 
         // Assert
         projectedEvents.ShouldBe(1);
-        (eventStore.LoadedAfterPosition).ShouldBe(10);
-        (readModelStore.Draft).ShouldNotBeNull();
-        (readModelStore.Draft.CatalogTourId).ShouldBe(draftCreated.CatalogTourId);
-        (readModelStore.Draft.AdminTourId).ShouldBe(draftCreated.AdminTourId);
-        (readModelStore.Draft.Identifier).ShouldBe(draftCreated.Identifier);
-        (readModelStore.Draft.Title).ShouldBe(draftCreated.Title);
-        (readModelStore.Draft.Slug).ShouldBe($"tour-{draftCreated.CatalogTourId:N}");
-        (readModelStore.Draft.Position).ShouldBe(11);
-        (readModelStore.Draft.UpdatedAt).ShouldBe(recordedAt);
-        (checkpointStore.SavedCheckpoint).ShouldNotBeNull();
-        (checkpointStore.SavedCheckpoint.ProjectionName).ShouldBe(projection.Name);
-        (checkpointStore.SavedCheckpoint.Position).ShouldBe(11);
+        eventStore.LoadedAfterPosition.ShouldBe(10);
+        readModelStore.Draft.ShouldNotBeNull();
+        readModelStore.Draft.CatalogTourId.ShouldBe(draftCreated.CatalogTourId);
+        readModelStore.Draft.AdminTourId.ShouldBe(draftCreated.AdminTourId);
+        readModelStore.Draft.Identifier.ShouldBe(draftCreated.Identifier);
+        readModelStore.Draft.Title.ShouldBe(draftCreated.Title);
+        readModelStore.Draft.Slug.ShouldBe($"tour-{draftCreated.CatalogTourId:N}");
+        readModelStore.Draft.Position.ShouldBe(11);
+        readModelStore.Draft.UpdatedAt.ShouldBe(recordedAt);
+        checkpointStore.SavedCheckpoint.ShouldNotBeNull();
+        checkpointStore.SavedCheckpoint.ProjectionName.ShouldBe(projection.Name);
+        checkpointStore.SavedCheckpoint.Position.ShouldBe(11);
     }
 
     [Fact]
@@ -64,9 +64,9 @@ public sealed class CatalogProjectionRunnerTests
 
         // Assert
         projectedEvents.ShouldBe(0);
-        (eventStore.LoadedAfterPosition).ShouldBe(0);
-        (readModelStore.Draft).ShouldBeNull();
-        (checkpointStore.SavedCheckpoint).ShouldBeNull();
+        eventStore.LoadedAfterPosition.ShouldBe(0);
+        readModelStore.Draft.ShouldBeNull();
+        checkpointStore.SavedCheckpoint.ShouldBeNull();
     }
 
     [Fact]
@@ -92,16 +92,16 @@ public sealed class CatalogProjectionRunnerTests
             "Patagonia 2026",
             Guid.CreateVersion7(),
             "patagonia-2026");
-        eventStore.AddReplayEvent(CatalogProjectionRunnerTestsHelpers.CreateEnvelope(12, secondDraftCreated, DateTimeOffset.UtcNow));
-        eventStore.AddReplayEvent(CatalogProjectionRunnerTestsHelpers.CreateEnvelope(11, firstDraftCreated, DateTimeOffset.UtcNow));
+        eventStore.AddReplayEvent(CatalogProjectionRunnerTestsHelpers.CreateEnvelope(12, secondDraftCreated, TimeProvider.System.GetUtcNow()));
+        eventStore.AddReplayEvent(CatalogProjectionRunnerTestsHelpers.CreateEnvelope(11, firstDraftCreated, TimeProvider.System.GetUtcNow()));
 
         // Act
         var projectedEvents = await runner.Project(TestContext.Current.CancellationToken);
 
         // Assert
         projectedEvents.ShouldBe(2);
-        (readModelStore.Drafts).ShouldMatchCollection(first => (first.Position).ShouldBe(11), second => (second.Position).ShouldBe(12));
-        (checkpointStore.SavedCheckpoint).ShouldNotBeNull();
-        (checkpointStore.SavedCheckpoint.Position).ShouldBe(12);
+        readModelStore.Drafts.ShouldMatchCollection(first => first.Position.ShouldBe(11), second => second.Position.ShouldBe(12));
+        checkpointStore.SavedCheckpoint.ShouldNotBeNull();
+        checkpointStore.SavedCheckpoint.Position.ShouldBe(12);
     }
 }

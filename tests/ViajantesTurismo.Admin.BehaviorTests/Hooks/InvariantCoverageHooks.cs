@@ -85,7 +85,7 @@ public class InvariantCoverageHooks(ScenarioContext scenarioContext)
         var sb = new StringBuilder();
         sb.AppendLine("# Invariant Coverage Report");
         sb.AppendLine();
-        sb.AppendLine(CultureInfo.InvariantCulture, $"**Generated:** {DateTime.UtcNow:yyyy-MM-dd HH:mm:ss} UTC");
+        sb.AppendLine(CultureInfo.InvariantCulture, $"**Generated:** {TimeProvider.System.GetUtcNow().UtcDateTime:yyyy-MM-dd HH:mm:ss} UTC");
         sb.AppendLine();
         sb.AppendLine("## Summary");
         sb.AppendLine();
@@ -127,7 +127,7 @@ public class InvariantCoverageHooks(ScenarioContext scenarioContext)
     {
         var json = new
         {
-            generatedUtc = DateTime.UtcNow.ToString("yyyy-MM-ddTHH:mm:ssZ", CultureInfo.InvariantCulture),
+            generatedUtc = TimeProvider.System.GetUtcNow().UtcDateTime.ToString("yyyy-MM-ddTHH:mm:ssZ", CultureInfo.InvariantCulture),
             summary = new
             {
                 totalInvariants = report.TotalInvariants,

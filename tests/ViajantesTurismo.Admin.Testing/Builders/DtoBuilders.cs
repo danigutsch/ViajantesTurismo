@@ -34,7 +34,7 @@ public static class DtoBuilders
         int? maxCustomers = null,
         int? currentCustomerCount = null)
     {
-        var start = startDate ?? DateTime.UtcNow.AddMonths(1);
+        var start = startDate ?? TimeProvider.System.GetUtcNow().UtcDateTime.AddMonths(1);
         var end = endDate ?? start.AddDays(7);
 
         return new GetTourDto
@@ -100,7 +100,7 @@ public static class DtoBuilders
             RoomType = roomType ?? RoomTypeDto.DoubleOccupancy,
             PrincipalBikeType = principalBikeType ?? BikeTypeDto.Regular,
             CompanionBikeType = companionBikeType ?? (companionId.HasValue ? BikeTypeDto.Regular : null),
-            BookingDate = bookingDate ?? DateTime.UtcNow,
+            BookingDate = bookingDate ?? TimeProvider.System.GetUtcNow().UtcDateTime,
             Status = status ?? BookingStatusDto.Pending,
             PaymentStatus = paymentStatus ?? PaymentStatusDto.Unpaid,
             TotalPrice = bookingTotalPrice,
@@ -157,11 +157,11 @@ public static class DtoBuilders
             Id = id ?? Guid.NewGuid(),
             BookingId = bookingId ?? Guid.NewGuid(),
             Amount = amount ?? 500.00m,
-            PaymentDate = DateOnly.FromDateTime(paymentDate ?? DateTime.UtcNow),
+            PaymentDate = DateOnly.FromDateTime(paymentDate ?? TimeProvider.System.GetUtcNow().UtcDateTime),
             Method = method ?? PaymentMethodDto.CreditCard,
             ReferenceNumber = referenceNumber,
             Notes = notes,
-            RecordedAt = recordedAt ?? DateTime.UtcNow
+            RecordedAt = recordedAt ?? TimeProvider.System.GetUtcNow().UtcDateTime
         };
     }
 
@@ -187,7 +187,7 @@ public static class DtoBuilders
                 FirstName = "John",
                 LastName = "Doe",
                 Gender = "Male",
-                BirthDate = DateOnly.FromDateTime(DateTime.UtcNow.AddYears(-30)),
+                BirthDate = DateOnly.FromDateTime(TimeProvider.System.GetUtcNow().UtcDateTime.AddYears(-30)),
                 Nationality = "USA",
                 Occupation = "Engineer"
             },
@@ -256,7 +256,7 @@ public static class DtoBuilders
         string[]? includedServices = null)
     {
         var tourIdentifier = identifier ?? UniqueTourIdentifier();
-        var start = startDate ?? DateTime.UtcNow.AddMonths(2);
+        var start = startDate ?? TimeProvider.System.GetUtcNow().UtcDateTime.AddMonths(2);
         var end = endDate ?? start.AddDays(10);
 
         return new CreateTourDto
@@ -294,7 +294,7 @@ public static class DtoBuilders
         string[]? includedServices = null)
     {
         var tourIdentifier = identifier ?? UniqueTourIdentifier();
-        var start = startDate ?? DateTime.UtcNow.AddMonths(2);
+        var start = startDate ?? TimeProvider.System.GetUtcNow().UtcDateTime.AddMonths(2);
         var end = endDate ?? start.AddDays(10);
 
         return new UpdateTourDto
@@ -433,7 +433,7 @@ public static class DtoBuilders
         return new CreatePaymentDto
         {
             Amount = amount ?? 500m,
-            PaymentDate = DateOnly.FromDateTime(paymentDate ?? DateTime.UtcNow.Date),
+            PaymentDate = DateOnly.FromDateTime(paymentDate ?? TimeProvider.System.GetUtcNow().UtcDateTime.Date),
             Method = method ?? PaymentMethodDto.BankTransfer,
             ReferenceNumber = referenceNumber ?? UniqueReferenceNumber(),
             Notes = notes

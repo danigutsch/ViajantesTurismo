@@ -21,8 +21,8 @@ public sealed class ManagementSecurityDbContextFactoryTests
         // Assert
         context.Database.ProviderName.ShouldBe("Npgsql.EntityFrameworkCore.PostgreSQL");
         var dataProtectionKeyEntity = entityType ?? throw new InvalidOperationException("The Data Protection key entity is not mapped.");
-        dataProtectionKeyEntity.FindAnnotation("Relational:Schema")?.Value.ShouldBe(ManagementSecurityDefaults.SchemaName);
-        dataProtectionKeyEntity.FindAnnotation("Relational:TableName")?.Value.ShouldBe("data_protection_keys");
+        dataProtectionKeyEntity.FindAnnotation("Relational:Schema").ShouldNotBeNull().Value.ShouldBe(ManagementSecurityDefaults.SchemaName);
+        dataProtectionKeyEntity.FindAnnotation("Relational:TableName").ShouldNotBeNull().Value.ShouldBe("data_protection_keys");
     }
 
     [Fact]

@@ -123,7 +123,7 @@ internal sealed class PostgreSqlManagementUserTokenStoreScenario : IAsyncDisposa
             new Claim(ManagementAuthenticationDefaults.UserTokenStoreSessionIdClaimType, sessionId),
             new Claim(
                 ManagementAuthenticationDefaults.UserTokenStoreSessionExpiresAtClaimType,
-                DateTimeOffset.UtcNow.Add(ManagementAuthenticationDefaults.SessionLifetime).ToString("O")),
+                TimeProvider.System.GetUtcNow().Add(ManagementAuthenticationDefaults.SessionLifetime).ToString("O")),
         ],
         "test");
 
@@ -137,7 +137,7 @@ internal sealed class PostgreSqlManagementUserTokenStoreScenario : IAsyncDisposa
             AccessToken = AccessToken.Parse(accessToken),
             AccessTokenType = AccessTokenType.Parse("Bearer"),
             ClientId = ClientId.Parse("web-app"),
-            Expiration = DateTimeOffset.UtcNow.AddMinutes(5),
+            Expiration = TimeProvider.System.GetUtcNow().AddMinutes(5),
             RefreshToken = RefreshToken.Parse("refresh-token"),
         };
     }
@@ -149,7 +149,7 @@ internal sealed class PostgreSqlManagementUserTokenStoreScenario : IAsyncDisposa
         return cache.SetAsync(
             cacheKey,
             [0x01],
-            new DistributedCacheEntryOptions { AbsoluteExpiration = DateTimeOffset.UtcNow.Add(ManagementAuthenticationDefaults.SessionLifetime) },
+            new DistributedCacheEntryOptions { AbsoluteExpiration = TimeProvider.System.GetUtcNow().Add(ManagementAuthenticationDefaults.SessionLifetime) },
             ct);
     }
 

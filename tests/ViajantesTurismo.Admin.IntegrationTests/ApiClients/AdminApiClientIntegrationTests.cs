@@ -8,7 +8,7 @@ namespace ViajantesTurismo.Admin.IntegrationTests.ApiClients;
 public sealed class AdminApiClientIntegrationTests(ApiFixture fixture)
 {
     [Fact]
-    public async Task Customers_client_creates_and_reads_customer_through_api_host()
+    public async Task Customers_client_creates_and_reads_customer_through_API_host()
     {
         // Arrange
         var cancellationToken = TestContext.Current.CancellationToken;
@@ -34,7 +34,7 @@ public sealed class AdminApiClientIntegrationTests(ApiFixture fixture)
     }
 
     [Fact]
-    public async Task Tours_client_creates_updates_and_reads_tour_through_api_host()
+    public async Task Tours_client_creates_updates_and_reads_tour_through_API_host()
     {
         // Arrange
         var cancellationToken = TestContext.Current.CancellationToken;
@@ -66,7 +66,7 @@ public sealed class AdminApiClientIntegrationTests(ApiFixture fixture)
     }
 
     [Fact]
-    public async Task Bookings_client_updates_notes_through_api_host()
+    public async Task Bookings_client_updates_notes_through_API_host()
     {
         // Arrange
         var cancellationToken = TestContext.Current.CancellationToken;

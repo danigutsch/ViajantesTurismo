@@ -7,13 +7,25 @@ internal sealed class FakePublicContentApiClient : IPublicContentApiClient
 {
     public PublicContentDto[] Content { get; set; } = [];
 
-    public bool ThrowOnGetContent { get; set; }
+    public bool ThrowOnGetContent
+    {
+        get; set;
+    }
 
-    public ContractValidationException? ValidationException { get; set; }
+    public ContractValidationException? ValidationException
+    {
+        get; set;
+    }
 
-    public string? SavedKey { get; private set; }
+    public string? SavedKey
+    {
+        get; private set;
+    }
 
-    public UpsertPublicContentRequest? SavedRequest { get; private set; }
+    public UpsertPublicContentRequest? SavedRequest
+    {
+        get; private set;
+    }
 
     public Task<HttpOutcome<PublicContentDto[]>> GetContent(CancellationToken ct)
     {

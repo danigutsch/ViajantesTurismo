@@ -5,7 +5,11 @@ internal static class Program
     public static async Task<int> Main(string[] args)
     {
         using var cancellation = new CancellationTokenSource();
-        void Cancel(object? sender, ConsoleCancelEventArgs eventArgs) { eventArgs.Cancel = true; cancellation.Cancel(); }
+        void Cancel(object? sender, ConsoleCancelEventArgs eventArgs)
+        {
+            eventArgs.Cancel = true;
+            cancellation.Cancel();
+        }
         Console.CancelKeyPress += Cancel;
         try
         {

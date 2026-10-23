@@ -20,23 +20,23 @@ public class ListInteractionTests(AspireSystemTestFixture fixture) : AspireSyste
         {
             Identifier = $"SRT-{uid}-A",
             Name = ascendingSentinelName,
-            StartDate = DateTime.UtcNow.AddDays(10),
-            EndDate = DateTime.UtcNow.AddDays(17),
+            StartDate = TimeProvider.System.GetUtcNow().UtcDateTime.AddDays(10),
+            EndDate = TimeProvider.System.GetUtcNow().UtcDateTime.AddDays(17),
             Price = 500m
         });
         _ = await ApiClient.CreateTour(new CreateTourOptions
         {
             Identifier = $"SRT-{uid}-Z",
             Name = descendingSentinelName,
-            StartDate = DateTime.UtcNow.AddDays(40),
-            EndDate = DateTime.UtcNow.AddDays(47),
+            StartDate = TimeProvider.System.GetUtcNow().UtcDateTime.AddDays(40),
+            EndDate = TimeProvider.System.GetUtcNow().UtcDateTime.AddDays(47),
             Currency = CurrencyDto.Real,
             Price = 1500m
         });
 
         // Act
         await NavigateTo("/tours");
-        await Expect(Page).ToHaveTitleAsync("Tours");
+        await Page.ShouldHaveTitle("Tours");
 
         var toursTable = Page.Locator("table");
         var tourNameCells = toursTable.Locator("tbody tr td:nth-child(2)");
@@ -74,7 +74,7 @@ public class ListInteractionTests(AspireSystemTestFixture fixture) : AspireSyste
 
         // Act
         await NavigateTo("/customers");
-        await Expect(Page).ToHaveTitleAsync("Customers");
+        await Page.ShouldHaveTitle("Customers");
 
         var customersTable = Page.Locator("table");
         await Expect(Page.Locator(".paginator")).ToBeVisibleAsync();
@@ -82,8 +82,9 @@ public class ListInteractionTests(AspireSystemTestFixture fixture) : AspireSyste
         var paginationText = paginator.Locator(".pagination-text");
 
         var firstPage = await ListInteractionTestHelpers.ReadPaginationState(paginationText);
-        (firstPage.CurrentPage).ShouldBe(1);
-        (firstPage.TotalPages >= 2).ShouldBeTrue($"Expected at least 2 pages, but found {firstPage.TotalPages}.");
+        firstPage.CurrentPage.ShouldBe(1);
+        var isValid = firstPage.TotalPages >= 2;
+        isValid.ShouldBeTrue($"Expected at least 2 pages, but found {firstPage.TotalPages}.");
 
         await customersTable.GetButton("Name").ClickAsync();
         await customersTable.GetButton("Name").ClickAsync();
@@ -95,16 +96,18 @@ public class ListInteractionTests(AspireSystemTestFixture fixture) : AspireSyste
         await paginator.Locator("button[aria-label='Go to next page']").ClickAsync();
         await Expect(paginationText).ToContainTextAsync("Page 2 of");
         var secondPage = await ListInteractionTestHelpers.ReadPaginationState(paginationText);
-        (secondPage.CurrentPage).ShouldBe(2);
-        (secondPage.TotalPages >= 2).ShouldBeTrue($"Expected at least 2 pages, but found {secondPage.TotalPages}.");
+        secondPage.CurrentPage.ShouldBe(2);
+        var isValid1 = secondPage.TotalPages >= 2;
+        isValid1.ShouldBeTrue($"Expected at least 2 pages, but found {secondPage.TotalPages}.");
         await ListInteractionTestHelpers.AssertVisibleCellTextsAreSorted(customerNameCells, descending: true);
         await Expect(customersTable.Locator(DescendingSortSelector)).ToContainTextAsync("Name");
 
         await paginator.Locator("button[aria-label='Go to previous page']").ClickAsync();
         await Expect(paginationText).ToContainTextAsync("Page 1 of");
         var returnedPage = await ListInteractionTestHelpers.ReadPaginationState(paginationText);
-        (returnedPage.CurrentPage).ShouldBe(1);
-        (returnedPage.TotalPages >= 2).ShouldBeTrue($"Expected at least 2 pages, but found {returnedPage.TotalPages}.");
+        returnedPage.CurrentPage.ShouldBe(1);
+        var isValid2 = returnedPage.TotalPages >= 2;
+        isValid2.ShouldBeTrue($"Expected at least 2 pages, but found {returnedPage.TotalPages}.");
         await ListInteractionTestHelpers.AssertVisibleCellTextsAreSorted(customerNameCells, descending: true);
         await Expect(customersTable.Locator(DescendingSortSelector)).ToContainTextAsync("Name");
     }

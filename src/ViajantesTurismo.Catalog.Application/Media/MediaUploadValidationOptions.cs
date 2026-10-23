@@ -55,7 +55,10 @@ public sealed class MediaUploadValidationOptions
     /// <summary>
     /// Gets the allowed extensions keyed by content type.
     /// </summary>
-    public IReadOnlyDictionary<string, string[]> AllowedExtensionsByContentType { get; set; } = new Dictionary<string, string[]>(StringComparer.OrdinalIgnoreCase)
+    public IReadOnlyDictionary<string, string[]> AllowedExtensionsByContentType
+    {
+        get; set;
+    } = new Dictionary<string, string[]>(StringComparer.OrdinalIgnoreCase)
     {
         ["image/jpeg"] = [".jpg", ".jpeg"],
         ["image/png"] = [".png"],

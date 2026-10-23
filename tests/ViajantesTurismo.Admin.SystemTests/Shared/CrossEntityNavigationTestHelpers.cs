@@ -11,7 +11,7 @@ public static class CrossEntityNavigationTestHelpers
 
         await Expect(link).ToBeVisibleAsync();
         await link.ClickAsync();
-        await Expect(page).ToHaveTitleAsync(expectedTitle);
+        await page.ShouldHaveTitle(expectedTitle);
     }
 
     public static async Task ExpectColumnVisibility(ILocator table, string hiddenHeader, string visibleHeader)

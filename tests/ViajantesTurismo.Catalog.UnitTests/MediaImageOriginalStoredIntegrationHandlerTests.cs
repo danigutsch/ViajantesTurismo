@@ -20,7 +20,7 @@ public sealed class MediaImageOriginalStoredIntegrationHandlerTests
         var handler = new MediaImageOriginalStoredIntegrationHandler(objectStore, imageStore);
         var notification = new MediaImageOriginalStoredIntegrationEvent(
             Guid.CreateVersion7(),
-            DateTimeOffset.UtcNow,
+            TimeProvider.System.GetUtcNow(),
             mediaImageId,
             "uploads/original.jpg",
             1);
@@ -57,7 +57,7 @@ public sealed class MediaImageOriginalStoredIntegrationHandlerTests
         await handler.Handle(
             new MediaImageOriginalStoredIntegrationEvent(
                 Guid.CreateVersion7(),
-                DateTimeOffset.UtcNow,
+                TimeProvider.System.GetUtcNow(),
                 mediaImageId,
                 "uploads/original.jpg",
                 1),
@@ -65,7 +65,7 @@ public sealed class MediaImageOriginalStoredIntegrationHandlerTests
         await handler.Handle(
             new MediaImageOriginalStoredIntegrationEvent(
                 Guid.CreateVersion7(),
-                DateTimeOffset.UtcNow,
+                TimeProvider.System.GetUtcNow(),
                 mediaImageId,
                 "uploads/original.jpg",
                 2),
@@ -96,7 +96,7 @@ public sealed class MediaImageOriginalStoredIntegrationHandlerTests
         await handler.Handle(
             new MediaImageOriginalStoredIntegrationEvent(
                 Guid.CreateVersion7(),
-                DateTimeOffset.UtcNow,
+                TimeProvider.System.GetUtcNow(),
                 mediaImageId,
                 "uploads/not-image.bin",
                 2),
@@ -124,7 +124,7 @@ public sealed class MediaImageOriginalStoredIntegrationHandlerTests
         await handler.Handle(
             new MediaImageOriginalStoredIntegrationEvent(
                 Guid.CreateVersion7(),
-                DateTimeOffset.UtcNow,
+                TimeProvider.System.GetUtcNow(),
                 mediaImageId,
                 "uploads/not-image.bin",
                 1),
@@ -149,7 +149,7 @@ public sealed class MediaImageOriginalStoredIntegrationHandlerTests
         var handler = new MediaImageOriginalStoredIntegrationHandler(objectStore, imageStore);
         var notification = new MediaImageOriginalStoredIntegrationEvent(
             Guid.CreateVersion7(),
-            DateTimeOffset.UtcNow,
+            TimeProvider.System.GetUtcNow(),
             mediaImageId,
             "uploads/tiny-original.jpg",
             1);
@@ -182,7 +182,7 @@ public sealed class MediaImageOriginalStoredIntegrationHandlerTests
         var handler = new MediaImageOriginalStoredIntegrationHandler(objectStore, imageStore);
         var notification = new MediaImageOriginalStoredIntegrationEvent(
             Guid.CreateVersion7(),
-            DateTimeOffset.UtcNow,
+            TimeProvider.System.GetUtcNow(),
             mediaImageId,
             "uploads/original.jpg",
             1);

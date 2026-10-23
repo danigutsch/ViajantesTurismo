@@ -28,7 +28,7 @@ public sealed class LayerDependencyTests
     private static IObjectProvider<IType> CatalogApiTypes => TypesInNamespace(ArchitectureProvider.Namespaces.CatalogApi, "Catalog API layer");
 
     [Fact]
-    public void Domain_should_not_depend_on_application_infrastructure_or_api()
+    public void Domain_should_not_depend_on_application_infrastructure_or_API()
     {
         var rule = Types().That().Are(DomainTypes)
             .Should().NotDependOnAny(ApplicationTypes)
@@ -40,7 +40,7 @@ public sealed class LayerDependencyTests
     }
 
     [Fact]
-    public void Application_should_not_depend_on_infrastructure_or_api()
+    public void Application_should_not_depend_on_infrastructure_or_API()
     {
         var rule = Types().That().Are(ApplicationTypes)
             .Should().NotDependOnAny(ApiTypes)
@@ -51,7 +51,7 @@ public sealed class LayerDependencyTests
     }
 
     [Fact]
-    public void Infrastructure_should_not_depend_on_api()
+    public void Infrastructure_should_not_depend_on_API()
     {
         var rule = Types().That().Are(InfrastructureTypes)
             .Should().NotDependOnAny(ApiTypes)
@@ -91,7 +91,7 @@ public sealed class LayerDependencyTests
     }
 
     [Fact]
-    public void Catalog_domain_should_not_depend_on_application_infrastructure_or_api()
+    public void Catalog_domain_should_not_depend_on_application_infrastructure_or_API()
     {
         var rule = Types().That().Are(CatalogDomainTypes)
             .Should().NotDependOnAny(CatalogApplicationTypes)
@@ -103,7 +103,7 @@ public sealed class LayerDependencyTests
     }
 
     [Fact]
-    public void Catalog_application_should_not_depend_on_infrastructure_or_api()
+    public void Catalog_application_should_not_depend_on_infrastructure_or_API()
     {
         var rule = Types().That().Are(CatalogApplicationTypes)
             .Should().NotDependOnAny(CatalogApiTypes)
@@ -114,7 +114,7 @@ public sealed class LayerDependencyTests
     }
 
     [Fact]
-    public void Catalog_infrastructure_should_not_depend_on_api()
+    public void Catalog_infrastructure_should_not_depend_on_API()
     {
         var rule = Types().That().Are(CatalogInfrastructureTypes)
             .Should().NotDependOnAny(CatalogApiTypes)

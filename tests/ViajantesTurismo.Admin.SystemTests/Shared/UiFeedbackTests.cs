@@ -37,6 +37,6 @@ public class UiFeedbackTests(AspireSystemTestFixture fixture) : AspireSystemTest
 
         // Assert
         await Expect(Page.GetButton("Go to Bookings")).ToBeVisibleAsync();
-        await Expect(Page).ToHaveTitleAsync("Edit Booking");
+        await Page.ShouldHaveTitle("Edit Booking");
     }
 }

@@ -22,9 +22,15 @@ internal sealed class AudienceTokenExchangeTestHost : IAsyncDisposable
         Backend = backend;
     }
 
-    public RecordingAudienceTokenEndpointHandler TokenEndpoint { get; }
+    public RecordingAudienceTokenEndpointHandler TokenEndpoint
+    {
+        get;
+    }
 
-    public RecordingAudienceTokenBackendHandler Backend { get; }
+    public RecordingAudienceTokenBackendHandler Backend
+    {
+        get;
+    }
 
     public IDistributedCache Cache => _provider.GetRequiredService<IDistributedCache>();
 

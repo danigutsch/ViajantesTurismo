@@ -17,7 +17,7 @@ public sealed class MainLayoutTests : BunitContext
 
         // Assert
         var pageDiv = cut.Find("div.page");
-        _ = (pageDiv).ShouldNotBeNull();
+        _ = pageDiv.ShouldNotBeNull();
     }
 
     [Fact]
@@ -28,7 +28,7 @@ public sealed class MainLayoutTests : BunitContext
 
         // Assert
         var sidebar = cut.Find("div.sidebar");
-        _ = (sidebar).ShouldNotBeNull();
+        _ = sidebar.ShouldNotBeNull();
     }
 
     [Fact]
@@ -39,7 +39,7 @@ public sealed class MainLayoutTests : BunitContext
 
         // Assert
         var navMenu = cut.FindComponent<NavMenu>();
-        _ = (navMenu).ShouldNotBeNull();
+        _ = navMenu.ShouldNotBeNull();
     }
 
     [Fact]
@@ -50,7 +50,7 @@ public sealed class MainLayoutTests : BunitContext
 
         // Assert
         var main = cut.Find("main");
-        _ = (main).ShouldNotBeNull();
+        _ = main.ShouldNotBeNull();
     }
 
     [Fact]
@@ -61,8 +61,8 @@ public sealed class MainLayoutTests : BunitContext
 
         // Assert
         var topRow = cut.Find("main div.top-row");
-        _ = (topRow).ShouldNotBeNull();
-        (topRow.TextContent).ShouldContain("About", StringComparison.Ordinal);
+        _ = topRow.ShouldNotBeNull();
+        topRow.TextContent.ShouldContain("About", StringComparison.Ordinal);
     }
 
     [Fact]
@@ -73,7 +73,7 @@ public sealed class MainLayoutTests : BunitContext
 
         // Assert
         var article = cut.Find("article.content");
-        _ = (article).ShouldNotBeNull();
+        _ = article.ShouldNotBeNull();
     }
 
     [Fact]
@@ -84,7 +84,7 @@ public sealed class MainLayoutTests : BunitContext
 
         // Assert
         var errorUi = cut.Find("div#blazor-error-ui");
-        _ = (errorUi).ShouldNotBeNull();
+        _ = errorUi.ShouldNotBeNull();
     }
 
     [Fact]
@@ -95,7 +95,7 @@ public sealed class MainLayoutTests : BunitContext
 
         // Assert
         var errorUi = cut.Find("div#blazor-error-ui");
-        (errorUi.TextContent).ShouldContain("An unhandled error has occurred.", StringComparison.Ordinal);
+        errorUi.TextContent.ShouldContain("An unhandled error has occurred.", StringComparison.Ordinal);
     }
 
     [Fact]
@@ -107,9 +107,9 @@ public sealed class MainLayoutTests : BunitContext
         // Assert
         var errorUi = cut.Find("div#blazor-error-ui");
         var reloadLink = errorUi.QuerySelector("a.reload");
-        _ = (reloadLink).ShouldNotBeNull();
-        (reloadLink.TextContent).ShouldBe("Reload");
-        (reloadLink.GetAttribute("href")).ShouldBe("");
+        _ = reloadLink.ShouldNotBeNull();
+        reloadLink.TextContent.ShouldBe("Reload");
+        reloadLink.GetAttribute("href").ShouldBe("");
     }
 
     [Fact]
@@ -121,7 +121,7 @@ public sealed class MainLayoutTests : BunitContext
         // Assert
         var errorUi = cut.Find("div#blazor-error-ui");
         var dismissLink = errorUi.QuerySelector("a.dismiss");
-        _ = (dismissLink).ShouldNotBeNull();
-        (dismissLink.TextContent).ShouldBe("🗙");
+        _ = dismissLink.ShouldNotBeNull();
+        dismissLink.TextContent.ShouldBe("🗙");
     }
 }

@@ -21,13 +21,25 @@ internal sealed class AdminDatabaseInitializationModuleTestScope : IDisposable
         HostedServices = serviceProvider.GetServices<IHostedService>().ToArray();
     }
 
-    public DevelopmentDataInitializer Initializer { get; }
+    public DevelopmentDataInitializer Initializer
+    {
+        get;
+    }
 
-    public IIntegrationEventOutbox Outbox { get; }
+    public IIntegrationEventOutbox Outbox
+    {
+        get;
+    }
 
-    public IDomainEventDispatcher Dispatcher { get; }
+    public IDomainEventDispatcher Dispatcher
+    {
+        get;
+    }
 
-    public IReadOnlyList<IHostedService> HostedServices { get; }
+    public IReadOnlyList<IHostedService> HostedServices
+    {
+        get;
+    }
 
     public void Dispose()
     {

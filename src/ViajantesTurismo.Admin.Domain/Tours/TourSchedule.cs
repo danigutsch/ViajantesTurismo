@@ -13,10 +13,16 @@ public sealed class TourSchedule : ValueObject
     }
 
     /// <summary>Gets the first tour date.</summary>
-    public DateOnly StartDate { get; }
+    public DateOnly StartDate
+    {
+        get;
+    }
 
     /// <summary>Gets the last tour date.</summary>
-    public DateOnly EndDate { get; }
+    public DateOnly EndDate
+    {
+        get;
+    }
 
     /// <summary>Gets the number of days between the start and end dates.</summary>
     public int DurationDays => EndDate.DayNumber - StartDate.DayNumber;

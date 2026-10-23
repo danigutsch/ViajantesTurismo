@@ -12,7 +12,7 @@ public sealed class DocumentLifecycleCommandHandlerTests
     [Fact]
     public async Task BeginReview_saves_eligible_draft()
     {
-        var document = DocumentDraftTestData.Create(DateTime.UtcNow);
+        var document = DocumentDraftTestData.Create(TimeProvider.System.GetUtcNow().UtcDateTime);
         var store = new FakeDocumentStore();
         store.Documents.Add(document.Id, document);
         var auditStore = new FakeDocumentAuditStore();
@@ -33,7 +33,7 @@ public sealed class DocumentLifecycleCommandHandlerTests
     public async Task BeginReview_rejects_missing_audit_context_before_mutation()
     {
         // Arrange
-        var document = DocumentDraftTestData.Create(DateTime.UtcNow);
+        var document = DocumentDraftTestData.Create(TimeProvider.System.GetUtcNow().UtcDateTime);
         var store = new FakeDocumentStore();
         store.Documents.Add(document.Id, document);
         var auditStore = new FakeDocumentAuditStore();
@@ -85,7 +85,7 @@ public sealed class DocumentLifecycleCommandHandlerTests
     [Fact]
     public async Task Void_saves_finalized_draft()
     {
-        var now = DateTime.UtcNow;
+        var now = TimeProvider.System.GetUtcNow().UtcDateTime;
         var document = DocumentDraftTestData.Create(now);
         document.BeginReview(now).IsSuccess.ShouldBeTrue();
         document.Approve(now).IsSuccess.ShouldBeTrue();
@@ -110,7 +110,7 @@ public sealed class DocumentLifecycleCommandHandlerTests
     public async Task Void_audits_invalid_reason_as_validation_rejected()
     {
         // Arrange
-        var now = DateTime.UtcNow;
+        var now = TimeProvider.System.GetUtcNow().UtcDateTime;
         var document = DocumentDraftTestData.Create(now);
         document.BeginReview(now).IsSuccess.ShouldBeTrue();
         document.Approve(now).IsSuccess.ShouldBeTrue();
@@ -139,7 +139,7 @@ public sealed class DocumentLifecycleCommandHandlerTests
     [Fact]
     public async Task Approve_saves_document_in_review()
     {
-        var now = DateTime.UtcNow;
+        var now = TimeProvider.System.GetUtcNow().UtcDateTime;
         var document = DocumentDraftTestData.Create(now);
         document.BeginReview(now).IsSuccess.ShouldBeTrue();
         var store = new FakeDocumentStore();
@@ -162,7 +162,7 @@ public sealed class DocumentLifecycleCommandHandlerTests
     public async Task Approve_rejects_missing_audit_context_before_mutation()
     {
         // Arrange
-        var now = DateTime.UtcNow;
+        var now = TimeProvider.System.GetUtcNow().UtcDateTime;
         var document = DocumentDraftTestData.Create(now);
         document.BeginReview(now).IsSuccess.ShouldBeTrue();
         var store = new FakeDocumentStore();
@@ -217,7 +217,7 @@ public sealed class DocumentLifecycleCommandHandlerTests
     public async Task RequestChanges_saves_document_in_review()
     {
         // Arrange
-        var now = DateTime.UtcNow;
+        var now = TimeProvider.System.GetUtcNow().UtcDateTime;
         var document = DocumentDraftTestData.Create(now);
         document.BeginReview(now).IsSuccess.ShouldBeTrue();
         var store = new FakeDocumentStore();
@@ -242,7 +242,7 @@ public sealed class DocumentLifecycleCommandHandlerTests
     public async Task RequestChanges_rejects_missing_audit_context_before_mutation()
     {
         // Arrange
-        var now = DateTime.UtcNow;
+        var now = TimeProvider.System.GetUtcNow().UtcDateTime;
         var document = DocumentDraftTestData.Create(now);
         document.BeginReview(now).IsSuccess.ShouldBeTrue();
         var store = new FakeDocumentStore();
@@ -324,7 +324,7 @@ public sealed class DocumentLifecycleCommandHandlerTests
     public async Task Void_rejects_missing_audit_context_before_mutation()
     {
         // Arrange
-        var now = DateTime.UtcNow;
+        var now = TimeProvider.System.GetUtcNow().UtcDateTime;
         var document = DocumentDraftTestData.Create(now);
         document.BeginReview(now).IsSuccess.ShouldBeTrue();
         document.Approve(now).IsSuccess.ShouldBeTrue();
@@ -376,7 +376,7 @@ public sealed class DocumentLifecycleCommandHandlerTests
     public async Task UpdateField_saves_editable_field_override()
     {
         // Arrange
-        var document = DocumentDraftTestData.Create(DateTime.UtcNow);
+        var document = DocumentDraftTestData.Create(TimeProvider.System.GetUtcNow().UtcDateTime);
         var store = new FakeDocumentStore();
         store.Documents.Add(document.Id, document);
         var auditStore = new FakeDocumentAuditStore();
@@ -388,7 +388,7 @@ public sealed class DocumentLifecycleCommandHandlerTests
 
         // Assert
         result.IsSuccess.ShouldBeTrue();
-        document.Fields.Single(field => field.FieldId == "greeting").RenderedValue.ShouldBe("Welcome");
+        document.Fields.ShouldHaveSingleItem(field => field.FieldId == "greeting").RenderedValue.ShouldBe("Welcome");
         var auditEvent = store.LastLoadedLineage.ShouldNotBeNull().GetDomainEvents()
             .ShouldHaveSingleItem().ShouldBeOfType<DocumentLifecycleAuditDomainEvent>();
         auditEvent.Operation.ShouldBe(DocumentAuditOperation.UpdateField);
@@ -399,7 +399,7 @@ public sealed class DocumentLifecycleCommandHandlerTests
     public async Task UpdateField_records_state_conflict_for_an_immutable_document()
     {
         // Arrange
-        var now = DateTime.UtcNow;
+        var now = TimeProvider.System.GetUtcNow().UtcDateTime;
         var document = DocumentDraftTestData.Create(now);
         document.BeginReview(now).IsSuccess.ShouldBeTrue();
         document.Approve(now).IsSuccess.ShouldBeTrue();
@@ -430,7 +430,7 @@ public sealed class DocumentLifecycleCommandHandlerTests
     public async Task UpdateField_rejects_and_audits_a_null_value()
     {
         // Arrange
-        var document = DocumentDraftTestData.Create(DateTime.UtcNow);
+        var document = DocumentDraftTestData.Create(TimeProvider.System.GetUtcNow().UtcDateTime);
         var store = new FakeDocumentStore();
         store.Documents.Add(document.Id, document);
         var auditStore = new FakeDocumentAuditStore();
@@ -456,8 +456,8 @@ public sealed class DocumentLifecycleCommandHandlerTests
     public async Task UpdateField_rejects_missing_audit_context_before_mutation()
     {
         // Arrange
-        var document = DocumentDraftTestData.Create(DateTime.UtcNow);
-        var originalValue = document.Fields.Single(field => field.FieldId == "greeting").RenderedValue;
+        var document = DocumentDraftTestData.Create(TimeProvider.System.GetUtcNow().UtcDateTime);
+        var originalValue = document.Fields.ShouldHaveSingleItem(field => field.FieldId == "greeting").RenderedValue;
         var store = new FakeDocumentStore();
         store.Documents.Add(document.Id, document);
         var auditStore = new FakeDocumentAuditStore();
@@ -475,7 +475,7 @@ public sealed class DocumentLifecycleCommandHandlerTests
 
         // Assert
         result.IsFailure.ShouldBeTrue();
-        document.Fields.Single(field => field.FieldId == "greeting").RenderedValue.ShouldBe(originalValue);
+        document.Fields.ShouldHaveSingleItem(field => field.FieldId == "greeting").RenderedValue.ShouldBe(originalValue);
         store.LastLoadedLineage.ShouldBeNull();
         auditStore.Records.ShouldBeEmpty();
         unitOfWork.SaveEntitiesCallCount.ShouldBe(0);

@@ -15,13 +15,13 @@ public class TourTests(AspireSystemTestFixture fixture) : AspireSystemTestBase<A
 
         // Act
         await NavigateTo("/addtour");
-        await Expect(Page).ToHaveTitleAsync("Add Tour");
+        await Page.ShouldHaveTitle("Add Tour");
 
         await Page.Locator("#identifier").FillAndExpectValue(identifier);
         await Page.Locator("#name").FillAndExpectValue(initialName);
 
-        var startDate = DateTime.UtcNow.AddDays(30).ToString("yyyy-MM-dd", CultureInfo.InvariantCulture);
-        var endDate = DateTime.UtcNow.AddDays(37).ToString("yyyy-MM-dd", CultureInfo.InvariantCulture);
+        var startDate = TimeProvider.System.GetUtcNow().UtcDateTime.AddDays(30).ToString("yyyy-MM-dd", CultureInfo.InvariantCulture);
+        var endDate = TimeProvider.System.GetUtcNow().UtcDateTime.AddDays(37).ToString("yyyy-MM-dd", CultureInfo.InvariantCulture);
         await Page.Locator("#startDate").FillAndExpectValue(startDate);
         await Page.Locator("#endDate").FillAndExpectValue(endDate);
 
@@ -43,7 +43,7 @@ public class TourTests(AspireSystemTestFixture fixture) : AspireSystemTestBase<A
 
         // Act
         await successAlert.GetByRole(AriaRole.Link, new LocatorGetByRoleOptions { Name = "View Tour Details" }).ClickAsync();
-        await Expect(Page).ToHaveTitleAsync("Tour Details");
+        await Page.ShouldHaveTitle("Tour Details");
 
         // Assert
         await Expect(Page.GetByText(identifier)).ToBeVisibleAsync();
@@ -58,7 +58,7 @@ public class TourTests(AspireSystemTestFixture fixture) : AspireSystemTestBase<A
 
         // Act
         await NavigateTo($"/edittour/{tourId}");
-        await Expect(Page).ToHaveTitleAsync("Edit Tour");
+        await Page.ShouldHaveTitle("Edit Tour");
 
         await Page.Locator("#name").FillAndExpectValue("");
         await Page.Locator("#name").FillAndExpectValue(updatedName);
@@ -75,12 +75,12 @@ public class TourTests(AspireSystemTestFixture fixture) : AspireSystemTestBase<A
 
         // Assert
         await NavigateTo($"/tours/{tourId}");
-        await Expect(Page).ToHaveTitleAsync("Tour Details");
+        await Page.ShouldHaveTitle("Tour Details");
         await Expect(Page.GetHeading(updatedName)).ToBeVisibleAsync();
         await Expect(Page.GetByText("Bike Rental")).ToBeVisibleAsync();
 
         await Page.ReloadAsync();
-        await Expect(Page).ToHaveTitleAsync("Tour Details");
+        await Page.ShouldHaveTitle("Tour Details");
         await Expect(Page.GetHeading(updatedName)).ToBeVisibleAsync();
         await Expect(Page.GetByText("Bike Rental")).ToBeVisibleAsync();
         await Expect(Page.GetByText(identifier)).ToBeVisibleAsync();

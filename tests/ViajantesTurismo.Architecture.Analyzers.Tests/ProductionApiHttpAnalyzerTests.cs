@@ -5,7 +5,7 @@ namespace ViajantesTurismo.Architecture.Analyzers.Tests;
 public sealed class ProductionApiHttpAnalyzerTests
 {
     [Fact]
-    public void Supported_diagnostics_match_the_production_api_http_contract()
+    public void Supported_diagnostics_match_the_production_API_http_contract()
     {
         // Arrange
         var analyzer = new ProductionApiHttpAnalyzer();
@@ -300,7 +300,7 @@ public sealed class ProductionApiHttpAnalyzerTests
     }
 
     [Fact]
-    public async Task An_own_resource_branch_does_not_mask_a_cross_api_destination()
+    public async Task An_own_resource_branch_does_not_mask_a_cross_API_destination()
     {
         // Arrange
         const string source = """
@@ -406,7 +406,7 @@ public sealed class ProductionApiHttpAnalyzerTests
     [Theory]
     [InlineData("true ? \"https+http://api\" : \"https+http://branding-api\"")]
     [InlineData("\"https+http://api\" ?? \"https+http://branding-api\"")]
-    public async Task Unreachable_cross_api_branches_are_not_destinations(string destination)
+    public async Task Unreachable_cross_API_branches_are_not_destinations(string destination)
     {
         // Arrange
         ArgumentException.ThrowIfNullOrWhiteSpace(destination);
@@ -504,7 +504,7 @@ public sealed class ProductionApiHttpAnalyzerTests
     [Theory]
     [InlineData("false ? \"https+http://api\" : \"https+http://branding-api\"")]
     [InlineData("(string?)null ?? \"https+http://branding-api\"")]
-    public async Task Reachable_cross_api_branches_remain_destinations(string destination)
+    public async Task Reachable_cross_API_branches_remain_destinations(string destination)
     {
         // Arrange
         ArgumentException.ThrowIfNullOrWhiteSpace(destination);
@@ -985,7 +985,7 @@ public sealed class ProductionApiHttpAnalyzerTests
     }
 
     [Fact]
-    public async Task Request_initializer_cross_api_destination_replaces_the_external_constructor_destination()
+    public async Task Request_initializer_cross_API_destination_replaces_the_external_constructor_destination()
     {
         // Arrange
         const string source = """
@@ -1258,7 +1258,7 @@ public sealed class ProductionApiHttpAnalyzerTests
     [InlineData("ViajantesTurismo.OpenApi.Tool")]
     [InlineData("ViajantesTurismo.Admin.Tests")]
     [InlineData("ViajantesTurismo.Admin.ApiServiceTests")]
-    public async Task Non_production_api_projects_are_excluded(string assemblyName)
+    public async Task Non_production_API_projects_are_excluded(string assemblyName)
     {
         // Arrange
         const string source = """

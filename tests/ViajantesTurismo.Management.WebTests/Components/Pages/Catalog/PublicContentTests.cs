@@ -31,7 +31,7 @@ public sealed class PublicContentTests : BunitContext
     }
 
     [Fact]
-    public void Renders_load_error_when_public_content_api_fails()
+    public void Renders_load_error_when_public_content_API_fails()
     {
         // Arrange
         publicContentApi.ThrowOnGetContent = true;

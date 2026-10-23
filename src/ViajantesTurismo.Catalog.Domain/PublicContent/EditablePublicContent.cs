@@ -42,17 +42,26 @@ public sealed partial class EditablePublicContent : IAggregateRoot<Guid>
     /// <summary>
     /// Gets the unique content identifier.
     /// </summary>
-    public Guid Id { get; private init; }
+    public Guid Id
+    {
+        get; private init;
+    }
 
     /// <summary>
     /// Gets the stable content key, such as a page or section identifier.
     /// </summary>
-    public string Key { get; private set; }
+    public string Key
+    {
+        get; private set;
+    }
 
     /// <summary>
     /// Gets the language originally entered by the editor.
     /// </summary>
-    public PublicContentLanguage SourceLanguage { get; private set; }
+    public PublicContentLanguage SourceLanguage
+    {
+        get; private set;
+    }
 
     /// <summary>
     /// Gets the localized content variants.
@@ -68,7 +77,10 @@ public sealed partial class EditablePublicContent : IAggregateRoot<Guid>
     /// <summary>
     /// Gets the publication state for the content entry.
     /// </summary>
-    public PublicContentPublicationState PublicationState { get; private set; }
+    public PublicContentPublicationState PublicationState
+    {
+        get; private set;
+    }
 
     /// <summary>
     /// Gets a value indicating whether this content can be served on public endpoints.

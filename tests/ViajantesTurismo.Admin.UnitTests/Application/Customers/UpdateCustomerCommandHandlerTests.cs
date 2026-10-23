@@ -32,14 +32,19 @@ public sealed class UpdateCustomerCommandHandlerTests
             {
                 FirstName = "John",
                 LastName = "Smith",
-                BirthDate = DateOnly.FromDateTime(DateTime.UtcNow.AddYears(-30)),
+                BirthDate = DateOnly.FromDateTime(TimeProvider.System.GetUtcNow().UtcDateTime.AddYears(-30)),
                 Gender = "Male",
                 Nationality = "USA",
                 Occupation = "Engineer"
             },
             new IdentificationInfoDto { NationalId = "ID123", IdNationality = "USA" },
             new ContactInfoDto
-            { Email = "updated@example.com", Mobile = "+1000000000", Instagram = null, Facebook = null },
+            {
+                Email = "updated@example.com",
+                Mobile = "+1000000000",
+                Instagram = null,
+                Facebook = null
+            },
             new AddressDto
             {
                 Street = "Street",
@@ -52,7 +57,11 @@ public sealed class UpdateCustomerCommandHandlerTests
             },
             new PhysicalInfoDto { WeightKg = 70m, HeightCentimeters = 180, BikeType = BikeTypeDto.Regular },
             new AccommodationPreferencesDto
-            { RoomType = RoomTypeDto.DoubleOccupancy, BedType = BedTypeDto.SingleBed, CompanionId = null },
+            {
+                RoomType = RoomTypeDto.DoubleOccupancy,
+                BedType = BedTypeDto.SingleBed,
+                CompanionId = null
+            },
             new EmergencyContactDto { Name = "Jane Doe", Mobile = "+1000000001" },
             new MedicalInfoDto { Allergies = "None", AdditionalInfo = null }
         );
@@ -61,11 +70,11 @@ public sealed class UpdateCustomerCommandHandlerTests
         var result = await _sut.Handle(command, CancellationToken.None);
 
         // Assert
-        (result.IsSuccess).ShouldBeTrue("Expected successful update.");
+        result.IsSuccess.ShouldBeTrue("Expected successful update.");
         var updated = await _store.GetById(existing.Id, CancellationToken.None);
-        _ = (updated).ShouldNotBeNull();
-        (updated.PersonalInfo.LastName).ShouldBe("Smith");
-        (updated.ContactInfo.Email).ShouldBe("updated@example.com");
+        _ = updated.ShouldNotBeNull();
+        updated.PersonalInfo.LastName.ShouldBe("Smith");
+        updated.ContactInfo.Email.ShouldBe("updated@example.com");
     }
 
     [Fact]
@@ -78,14 +87,19 @@ public sealed class UpdateCustomerCommandHandlerTests
             {
                 FirstName = "John",
                 LastName = "Doe",
-                BirthDate = DateOnly.FromDateTime(DateTime.UtcNow.AddYears(-30)),
+                BirthDate = DateOnly.FromDateTime(TimeProvider.System.GetUtcNow().UtcDateTime.AddYears(-30)),
                 Gender = "Male",
                 Nationality = "USA",
                 Occupation = "Engineer"
             },
             new IdentificationInfoDto { NationalId = "ID123", IdNationality = "USA" },
             new ContactInfoDto
-            { Email = "nonexistent@example.com", Mobile = "+1000000000", Instagram = null, Facebook = null },
+            {
+                Email = "nonexistent@example.com",
+                Mobile = "+1000000000",
+                Instagram = null,
+                Facebook = null
+            },
             new AddressDto
             {
                 Street = "Street",
@@ -98,7 +112,11 @@ public sealed class UpdateCustomerCommandHandlerTests
             },
             new PhysicalInfoDto { WeightKg = 70m, HeightCentimeters = 180, BikeType = BikeTypeDto.Regular },
             new AccommodationPreferencesDto
-            { RoomType = RoomTypeDto.DoubleOccupancy, BedType = BedTypeDto.SingleBed, CompanionId = null },
+            {
+                RoomType = RoomTypeDto.DoubleOccupancy,
+                BedType = BedTypeDto.SingleBed,
+                CompanionId = null
+            },
             new EmergencyContactDto { Name = "Jane Doe", Mobile = "+1000000001" },
             new MedicalInfoDto { Allergies = "None", AdditionalInfo = null }
         );
@@ -107,8 +125,8 @@ public sealed class UpdateCustomerCommandHandlerTests
         var result = await _sut.Handle(command, CancellationToken.None);
 
         // Assert
-        (result.IsFailure).ShouldBeTrue();
-        (result.Status).ShouldBe(ResultStatus.NotFound);
+        result.IsFailure.ShouldBeTrue();
+        result.Status.ShouldBe(ResultStatus.NotFound);
     }
 
     [Fact]
@@ -137,7 +155,12 @@ public sealed class UpdateCustomerCommandHandlerTests
                 IdNationality = existing1.IdentificationInfo.IdNationality
             },
             new ContactInfoDto
-            { Email = "dup@example.com", Mobile = existing1.ContactInfo.Mobile, Instagram = null, Facebook = null },
+            {
+                Email = "dup@example.com",
+                Mobile = existing1.ContactInfo.Mobile,
+                Instagram = null,
+                Facebook = null
+            },
             new AddressDto
             {
                 Street = "Street",
@@ -155,19 +178,29 @@ public sealed class UpdateCustomerCommandHandlerTests
                 BikeType = BikeTypeDto.Regular
             },
             new AccommodationPreferencesDto
-            { RoomType = RoomTypeDto.DoubleOccupancy, BedType = BedTypeDto.SingleBed, CompanionId = null },
+            {
+                RoomType = RoomTypeDto.DoubleOccupancy,
+                BedType = BedTypeDto.SingleBed,
+                CompanionId = null
+            },
             new EmergencyContactDto
-            { Name = existing1.EmergencyContact.Name, Mobile = existing1.EmergencyContact.Mobile },
+            {
+                Name = existing1.EmergencyContact.Name,
+                Mobile = existing1.EmergencyContact.Mobile
+            },
             new MedicalInfoDto
-            { Allergies = existing1.MedicalInfo.Allergies, AdditionalInfo = existing1.MedicalInfo.AdditionalInfo }
+            {
+                Allergies = existing1.MedicalInfo.Allergies,
+                AdditionalInfo = existing1.MedicalInfo.AdditionalInfo
+            }
         );
 
         // Act
         var result = await _sut.Handle(command, CancellationToken.None);
 
         // Assert
-        (result.IsFailure).ShouldBeTrue();
-        (result.Status).ShouldBe(ResultStatus.Conflict);
+        result.IsFailure.ShouldBeTrue();
+        result.Status.ShouldBe(ResultStatus.Conflict);
     }
 
     [Fact]

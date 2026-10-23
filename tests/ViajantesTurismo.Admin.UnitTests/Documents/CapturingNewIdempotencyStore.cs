@@ -9,29 +9,65 @@ internal sealed class CapturingNewIdempotencyStore(
 {
     private IdempotencyEntry? entry;
 
-    internal int GetCallCount { get; private set; }
+    internal int GetCallCount
+    {
+        get; private set;
+    }
 
-    internal CancellationToken LastGetCancellationToken { get; private set; }
+    internal CancellationToken LastGetCancellationToken
+    {
+        get; private set;
+    }
 
-    internal CancellationToken LastCompletionCancellationToken { get; private set; }
+    internal CancellationToken LastCompletionCancellationToken
+    {
+        get; private set;
+    }
 
-    internal int TryStartCallCount { get; private set; }
+    internal int TryStartCallCount
+    {
+        get; private set;
+    }
 
-    internal IdempotencyOperation? StartedOperation { get; private set; }
+    internal IdempotencyOperation? StartedOperation
+    {
+        get; private set;
+    }
 
-    internal DateTimeOffset? StartedAt { get; private set; }
+    internal DateTimeOffset? StartedAt
+    {
+        get; private set;
+    }
 
-    internal TimeSpan? LockDuration { get; private set; }
+    internal TimeSpan? LockDuration
+    {
+        get; private set;
+    }
 
-    internal int StageCompletionCallCount { get; private set; }
+    internal int StageCompletionCallCount
+    {
+        get; private set;
+    }
 
-    internal IdempotencyOperation? StagedOperation { get; private set; }
+    internal IdempotencyOperation? StagedOperation
+    {
+        get; private set;
+    }
 
-    internal DateTimeOffset? CompletedAt { get; private set; }
+    internal DateTimeOffset? CompletedAt
+    {
+        get; private set;
+    }
 
-    internal string? StagedResultFingerprint { get; private set; }
+    internal string? StagedResultFingerprint
+    {
+        get; private set;
+    }
 
-    internal bool WasCompletionStagedBeforeSave { get; private set; }
+    internal bool WasCompletionStagedBeforeSave
+    {
+        get; private set;
+    }
 
     public ValueTask<IdempotencyStartResult> TryStart(
         IdempotencyOperation operation,

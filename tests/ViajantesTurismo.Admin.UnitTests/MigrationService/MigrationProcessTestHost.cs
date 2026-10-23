@@ -55,21 +55,42 @@ internal sealed class MigrationProcessTestHost : IHost
 
     public CancellationToken ApplicationStopping => applicationStopping;
 
-    public bool DisposeCalled { get; private set; }
+    public bool DisposeCalled
+    {
+        get; private set;
+    }
 
-    public bool InitializationCalled { get; private set; }
+    public bool InitializationCalled
+    {
+        get; private set;
+    }
 
-    public CancellationToken InitializationToken { get; private set; }
+    public CancellationToken InitializationToken
+    {
+        get; private set;
+    }
 
-    public bool StartCalled { get; private set; }
+    public bool StartCalled
+    {
+        get; private set;
+    }
 
-    public bool StopCalled { get; private set; }
+    public bool StopCalled
+    {
+        get; private set;
+    }
 
     public IReadOnlyList<string> LifecycleEvents => lifecycleEvents;
 
-    public CancellationToken StartToken { get; private set; }
+    public CancellationToken StartToken
+    {
+        get; private set;
+    }
 
-    public CancellationToken StopToken { get; private set; }
+    public CancellationToken StopToken
+    {
+        get; private set;
+    }
 
     public Task StartAsync(CancellationToken cancellationToken = default)
     {

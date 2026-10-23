@@ -25,7 +25,7 @@ public sealed class BehaviorFeatureDiscoveryTests
         var removedGeneratorItems = generatorItems.Select(item => item.Attribute("Remove")?.Value).OfType<string>().ToArray();
         var includedGeneratorItems = generatorItems.Select(item => item.Attribute("Include")?.Value).OfType<string>().ToArray();
         var runtimeCopy = project.Descendants("None")
-            .Single(item => item.Attribute("Update")?.Value == "specs\\**\\*.feature")
+            .ShouldHaveSingleItem(item => item.Attribute("Update")?.Value == "specs\\**\\*.feature")
             .Element("CopyToOutputDirectory")?.Value;
 
         // Assert

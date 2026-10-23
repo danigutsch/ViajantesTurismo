@@ -12,10 +12,16 @@ public sealed record DocumentAuditContext
     }
 
     /// <summary>Gets the opaque authenticated actor identifier.</summary>
-    public string ActorId { get; }
+    public string ActorId
+    {
+        get;
+    }
 
     /// <summary>Gets the server-generated correlation identifier.</summary>
-    public string CorrelationId { get; }
+    public string CorrelationId
+    {
+        get;
+    }
 
     /// <summary>Creates validated document audit metadata from trusted request values.</summary>
     /// <param name="actorId">The opaque authenticated actor identifier.</param>

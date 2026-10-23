@@ -51,7 +51,7 @@ public sealed class ManagementSecurityPersistencePostgreSqlTests
         CookieAuthenticationDefaults.AuthenticationScheme);
         var ticket = new AuthenticationTicket(
             new ClaimsPrincipal(identity),
-            new AuthenticationProperties { ExpiresUtc = DateTimeOffset.UtcNow.AddHours(1) },
+            new AuthenticationProperties { ExpiresUtc = TimeProvider.System.GetUtcNow().AddHours(1) },
             CookieAuthenticationDefaults.AuthenticationScheme);
 
         string protectedPayload;

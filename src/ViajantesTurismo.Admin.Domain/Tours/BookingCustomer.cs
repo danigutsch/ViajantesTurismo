@@ -34,17 +34,26 @@ public sealed class BookingCustomer
     /// <summary>
     /// The ID of the customer.
     /// </summary>
-    public Guid CustomerId { get; private init; }
+    public Guid CustomerId
+    {
+        get; private init;
+    }
 
     /// <summary>
     /// The type of bike selected by the customer.
     /// </summary>
-    public BikeType BikeType { get; private init; }
+    public BikeType BikeType
+    {
+        get; private init;
+    }
 
     /// <summary>
     /// The price of the bike rental at the time of booking.
     /// </summary>
-    public decimal BikePrice { get; private init; }
+    public decimal BikePrice
+    {
+        get; private init;
+    }
 
     /// <summary>
     /// Creates a new instance of <see cref="BookingCustomer"/> with validation.

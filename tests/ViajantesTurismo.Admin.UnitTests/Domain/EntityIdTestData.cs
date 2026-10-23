@@ -12,7 +12,7 @@ internal static class EntityIdTestData
             firstName: "John",
             lastName: "Doe",
             gender: "Male",
-            birthDate: DateOnly.FromDateTime(DateTime.UtcNow.AddYears(-30)),
+            birthDate: DateOnly.FromDateTime(TimeProvider.System.GetUtcNow().UtcDateTime.AddYears(-30)),
             nationality: "USA",
             occupation: "Engineer",
             today: DateOnly.FromDateTime(TimeProvider.System.GetUtcNow().UtcDateTime)).Value;
@@ -70,7 +70,7 @@ internal static class EntityIdTestData
         var result = Payment.Create(
             bookingId: Guid.CreateVersion7(),
             amount: 250m,
-            paymentDate: DateOnly.FromDateTime(DateTime.UtcNow),
+            paymentDate: DateOnly.FromDateTime(TimeProvider.System.GetUtcNow().UtcDateTime),
             method: PaymentMethod.CreditCard,
             timeProvider: TimeProvider.System,
             referenceNumber: "TX-123",

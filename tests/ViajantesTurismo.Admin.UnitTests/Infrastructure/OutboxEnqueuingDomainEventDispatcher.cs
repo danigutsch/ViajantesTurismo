@@ -9,7 +9,10 @@ internal sealed class OutboxEnqueuingDomainEventDispatcher(TimeProvider timeProv
 {
     public TimeProvider TimeProvider { get; } = timeProvider;
 
-    public IIntegrationEventOutbox? Outbox { get; set; }
+    public IIntegrationEventOutbox? Outbox
+    {
+        get; set;
+    }
 
     public override async ValueTask Dispatch<TDomainEvent>(TDomainEvent domainEvent, CancellationToken ct)
     {

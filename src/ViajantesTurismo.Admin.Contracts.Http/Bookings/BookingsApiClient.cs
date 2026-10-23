@@ -147,7 +147,10 @@ public sealed partial class BookingsApiClient(HttpClient httpClient, ILogger<Boo
             ct).ConfigureAwait(false);
 
         return outcome.Kind == HttpOutcomeKind.Succeeded
-            ? outcome with { Value = outcome.Value?.OfType<GetBookingDto>().ToArray() ?? [] }
+            ? outcome with
+            {
+                Value = outcome.Value?.OfType<GetBookingDto>().ToArray() ?? []
+            }
             : outcome;
     }
 

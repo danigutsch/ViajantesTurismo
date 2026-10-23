@@ -20,11 +20,11 @@ public sealed class CiTestProjectSelectionCommandTests
         repository.AddCanonicalTestSlices();
         var manifest = Path.Combine(repository.RootPath, "scripts", "ci-test-slices", slice + ".txt");
         var extractedProjects = await File.ReadAllLinesAsync(manifest, TestContext.Current.CancellationToken);
-        var extractedProject = extractedProjects.Single();
+        var extractedProject = extractedProjects.ShouldHaveSingleItem();
         var solutionPath = Path.Combine(repository.RootPath, "ViajantesTurismo.slnx");
         var solution = XDocument.Load(solutionPath);
         solution.Descendants("Project")
-            .Single(project => project.Attribute("Path")?.Value == extractedProject)
+            .ShouldHaveSingleItem(project => project.Attribute("Path")?.Value == extractedProject)
             .Remove();
         solution.Save(solutionPath);
         repository.WriteSlice(slice);
@@ -58,7 +58,7 @@ public sealed class CiTestProjectSelectionCommandTests
             var row = workflow.Split("          - id: " + slice + "\n", StringSplitOptions.None)[1]
                 .Split("          - id: ", StringSplitOptions.None)[0];
             var changeOutput = row.Split('\n')
-                .Single(line => line.TrimStart().StartsWith("change_output:", StringComparison.Ordinal))
+                .ShouldHaveSingleItem(line => line.TrimStart().StartsWith("change_output:", StringComparison.Ordinal))
                 .Split(':', 2)[1].Trim();
             githubOutputs.ShouldContain(changeOutput + "=false");
             workflow.ShouldContain(changeOutput + ": ${{ steps.change-scope.outputs." + changeOutput + " }}", StringComparison.Ordinal);
@@ -107,20 +107,20 @@ public sealed class CiTestProjectSelectionCommandTests
         // Assert
         exitCode.ShouldBe(0);
         error.ToString().ShouldBe(string.Empty);
-        (await File.ReadAllLinesAsync(
+        var fastValidation1 = await File.ReadAllLinesAsync(
             Path.Combine(outputDirectory, "fast-validation-1.txt"),
-            TestContext.Current.CancellationToken))
-            .ShouldHaveSingleItem()
+            TestContext.Current.CancellationToken);
+        fastValidation1.ShouldHaveSingleItem()
             .ShouldBe("tests/Fast1.Tests/Fast1.Tests.csproj");
-        (await File.ReadAllLinesAsync(
+        var fastValidation2 = await File.ReadAllLinesAsync(
             Path.Combine(outputDirectory, "fast-validation-2.txt"),
-            TestContext.Current.CancellationToken))
-            .ShouldHaveSingleItem()
+            TestContext.Current.CancellationToken);
+        fastValidation2.ShouldHaveSingleItem()
             .ShouldBe("tests/Fast2.Tests/Fast2.Tests.csproj");
-        (await File.ReadAllLinesAsync(
+        var adminSystem = await File.ReadAllLinesAsync(
             Path.Combine(outputDirectory, "admin-system.txt"),
-            TestContext.Current.CancellationToken))
-            .ShouldHaveSingleItem()
+            TestContext.Current.CancellationToken);
+        adminSystem.ShouldHaveSingleItem()
             .ShouldBe("tests/AdminSystem.Tests/AdminSystem.Tests.csproj");
         var githubOutputs = await File.ReadAllLinesAsync(githubOutput, TestContext.Current.CancellationToken);
         githubOutputs.ShouldContain("build_required=true");

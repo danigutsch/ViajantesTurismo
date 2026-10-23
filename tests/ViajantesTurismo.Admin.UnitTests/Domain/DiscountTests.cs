@@ -14,14 +14,14 @@ public class DiscountTests
         var result = DiscountErrors.InvalidDiscountType(invalidType);
 
         // Assert
-        (result.IsSuccess).ShouldBeFalse();
-        (result.ErrorDetails).ShouldNotBeNull();
-        (result.ErrorDetails.Detail).ShouldContain("Invalid discount type", StringComparison.Ordinal);
-        (result.ErrorDetails.Detail).ShouldContain("999", StringComparison.Ordinal);
-        (result.ErrorDetails.Detail).ShouldContain("Valid values are:", StringComparison.Ordinal);
-        (result.ErrorDetails.ValidationErrors).ShouldNotBeNull();
-        (result.ErrorDetails.ValidationErrors.ContainsKey("discountType")).ShouldBeTrue();
-        (result.ErrorDetails.ValidationErrors["discountType"][0]).ShouldContain("Invalid discount type", StringComparison.Ordinal);
+        result.IsSuccess.ShouldBeFalse();
+        result.ErrorDetails.ShouldNotBeNull();
+        result.ErrorDetails.Detail.ShouldContain("Invalid discount type", StringComparison.Ordinal);
+        result.ErrorDetails.Detail.ShouldContain("999", StringComparison.Ordinal);
+        result.ErrorDetails.Detail.ShouldContain("Valid values are:", StringComparison.Ordinal);
+        result.ErrorDetails.ValidationErrors.ShouldNotBeNull();
+        result.ErrorDetails.ValidationErrors.ContainsKey("discountType").ShouldBeTrue();
+        result.ErrorDetails.ValidationErrors["discountType"][0].ShouldContain("Invalid discount type", StringComparison.Ordinal);
     }
 
     [Fact]
@@ -34,12 +34,12 @@ public class DiscountTests
         var result = DiscountErrors.NegativeDiscountAmount(negativeAmount);
 
         // Assert
-        (result.IsSuccess).ShouldBeFalse();
-        (result.ErrorDetails).ShouldNotBeNull();
-        (result.ErrorDetails.Detail).ShouldContain("Discount amount cannot be negative", StringComparison.Ordinal);
-        (result.ErrorDetails.ValidationErrors).ShouldNotBeNull();
-        (result.ErrorDetails.ValidationErrors.ContainsKey("discountAmount")).ShouldBeTrue();
-        (result.ErrorDetails.ValidationErrors["discountAmount"][0]).ShouldContain("Discount amount cannot be negative.", StringComparison.Ordinal);
+        result.IsSuccess.ShouldBeFalse();
+        result.ErrorDetails.ShouldNotBeNull();
+        result.ErrorDetails.Detail.ShouldContain("Discount amount cannot be negative", StringComparison.Ordinal);
+        result.ErrorDetails.ValidationErrors.ShouldNotBeNull();
+        result.ErrorDetails.ValidationErrors.ContainsKey("discountAmount").ShouldBeTrue();
+        result.ErrorDetails.ValidationErrors["discountAmount"][0].ShouldContain("Discount amount cannot be negative.", StringComparison.Ordinal);
     }
 
     [Fact]
@@ -53,12 +53,12 @@ public class DiscountTests
         var result = DiscountErrors.PercentageExceedsMaximum(amount, maxPercentage);
 
         // Assert
-        (result.IsSuccess).ShouldBeFalse();
-        (result.ErrorDetails).ShouldNotBeNull();
-        (result.ErrorDetails.Detail).ShouldContain("Percentage discount cannot exceed", StringComparison.Ordinal);
-        (result.ErrorDetails.ValidationErrors).ShouldNotBeNull();
-        (result.ErrorDetails.ValidationErrors.ContainsKey("discountAmount")).ShouldBeTrue();
-        (result.ErrorDetails.ValidationErrors["discountAmount"][0]).ShouldContain("cannot exceed", StringComparison.Ordinal);
+        result.IsSuccess.ShouldBeFalse();
+        result.ErrorDetails.ShouldNotBeNull();
+        result.ErrorDetails.Detail.ShouldContain("Percentage discount cannot exceed", StringComparison.Ordinal);
+        result.ErrorDetails.ValidationErrors.ShouldNotBeNull();
+        result.ErrorDetails.ValidationErrors.ContainsKey("discountAmount").ShouldBeTrue();
+        result.ErrorDetails.ValidationErrors["discountAmount"][0].ShouldContain("cannot exceed", StringComparison.Ordinal);
     }
 
     [Fact]
@@ -72,13 +72,13 @@ public class DiscountTests
         var result = DiscountErrors.AbsoluteDiscountExceedsSubtotal(amount, subtotal);
 
         // Assert
-        (result.IsSuccess).ShouldBeFalse();
-        (result.ErrorDetails).ShouldNotBeNull();
-        (result.ErrorDetails.Detail).ShouldContain("Absolute discount amount", StringComparison.Ordinal);
-        (result.ErrorDetails.Detail).ShouldContain("cannot exceed subtotal", StringComparison.Ordinal);
-        (result.ErrorDetails.ValidationErrors).ShouldNotBeNull();
-        (result.ErrorDetails.ValidationErrors.ContainsKey("discountAmount")).ShouldBeTrue();
-        (result.ErrorDetails.ValidationErrors["discountAmount"][0]).ShouldContain("Discount amount cannot exceed subtotal.", StringComparison.Ordinal);
+        result.IsSuccess.ShouldBeFalse();
+        result.ErrorDetails.ShouldNotBeNull();
+        result.ErrorDetails.Detail.ShouldContain("Absolute discount amount", StringComparison.Ordinal);
+        result.ErrorDetails.Detail.ShouldContain("cannot exceed subtotal", StringComparison.Ordinal);
+        result.ErrorDetails.ValidationErrors.ShouldNotBeNull();
+        result.ErrorDetails.ValidationErrors.ContainsKey("discountAmount").ShouldBeTrue();
+        result.ErrorDetails.ValidationErrors["discountAmount"][0].ShouldContain("Discount amount cannot exceed subtotal.", StringComparison.Ordinal);
     }
 
     [Fact]
@@ -91,12 +91,12 @@ public class DiscountTests
         var result = DiscountErrors.FinalPriceNotPositive(finalPrice);
 
         // Assert
-        (result.IsSuccess).ShouldBeFalse();
-        (result.ErrorDetails).ShouldNotBeNull();
-        (result.ErrorDetails.Detail).ShouldContain("Final price after discount must be greater than zero", StringComparison.Ordinal);
-        (result.ErrorDetails.ValidationErrors).ShouldNotBeNull();
-        (result.ErrorDetails.ValidationErrors.ContainsKey("discount")).ShouldBeTrue();
-        (result.ErrorDetails.ValidationErrors["discount"][0]).ShouldBe("Final price after discount must be greater than zero.");
+        result.IsSuccess.ShouldBeFalse();
+        result.ErrorDetails.ShouldNotBeNull();
+        result.ErrorDetails.Detail.ShouldContain("Final price after discount must be greater than zero", StringComparison.Ordinal);
+        result.ErrorDetails.ValidationErrors.ShouldNotBeNull();
+        result.ErrorDetails.ValidationErrors.ContainsKey("discount").ShouldBeTrue();
+        result.ErrorDetails.ValidationErrors["discount"][0].ShouldBe("Final price after discount must be greater than zero.");
     }
 
     [Fact]
@@ -110,13 +110,13 @@ public class DiscountTests
         var result = DiscountErrors.ReasonTooShort(minLength, actualLength);
 
         // Assert
-        (result.IsSuccess).ShouldBeFalse();
-        (result.ErrorDetails).ShouldNotBeNull();
-        (result.ErrorDetails.Detail).ShouldContain("Discount reason must be at least", StringComparison.Ordinal);
-        (result.ErrorDetails.Detail).ShouldContain("10", StringComparison.Ordinal);
-        (result.ErrorDetails.ValidationErrors).ShouldNotBeNull();
-        (result.ErrorDetails.ValidationErrors.ContainsKey("reason")).ShouldBeTrue();
-        (result.ErrorDetails.ValidationErrors["reason"][0]).ShouldBe("Reason must be at least 10 characters.");
+        result.IsSuccess.ShouldBeFalse();
+        result.ErrorDetails.ShouldNotBeNull();
+        result.ErrorDetails.Detail.ShouldContain("Discount reason must be at least", StringComparison.Ordinal);
+        result.ErrorDetails.Detail.ShouldContain("10", StringComparison.Ordinal);
+        result.ErrorDetails.ValidationErrors.ShouldNotBeNull();
+        result.ErrorDetails.ValidationErrors.ContainsKey("reason").ShouldBeTrue();
+        result.ErrorDetails.ValidationErrors["reason"][0].ShouldBe("Reason must be at least 10 characters.");
     }
 
     [Fact]
@@ -130,12 +130,12 @@ public class DiscountTests
         var result = DiscountErrors.ReasonTooLong(maxLength, actualLength);
 
         // Assert
-        (result.IsSuccess).ShouldBeFalse();
-        (result.ErrorDetails).ShouldNotBeNull();
-        (result.ErrorDetails.Detail).ShouldContain("Discount reason cannot exceed", StringComparison.Ordinal);
-        (result.ErrorDetails.Detail).ShouldContain("500", StringComparison.Ordinal);
-        (result.ErrorDetails.ValidationErrors).ShouldNotBeNull();
-        (result.ErrorDetails.ValidationErrors.ContainsKey("reason")).ShouldBeTrue();
-        (result.ErrorDetails.ValidationErrors["reason"][0]).ShouldBe("Reason cannot exceed 500 characters.");
+        result.IsSuccess.ShouldBeFalse();
+        result.ErrorDetails.ShouldNotBeNull();
+        result.ErrorDetails.Detail.ShouldContain("Discount reason cannot exceed", StringComparison.Ordinal);
+        result.ErrorDetails.Detail.ShouldContain("500", StringComparison.Ordinal);
+        result.ErrorDetails.ValidationErrors.ShouldNotBeNull();
+        result.ErrorDetails.ValidationErrors.ContainsKey("reason").ShouldBeTrue();
+        result.ErrorDetails.ValidationErrors["reason"][0].ShouldBe("Reason cannot exceed 500 characters.");
     }
 }

@@ -44,7 +44,7 @@ internal static class AdminSmokeCommand
         ValidateDockerImage(dockerK6Image, resolvedUseDocker);
         var runnerPath = ResolveRunnerPath(resolvedUseDocker);
 
-        var timestamp = DateTimeOffset.UtcNow.ToString("yyyyMMdd'T'HHmmss'Z'", CultureInfo.InvariantCulture);
+        var timestamp = TimeProvider.System.GetUtcNow().ToString("yyyyMMdd'T'HHmmss'Z'", CultureInfo.InvariantCulture);
         var runId = Guid.NewGuid().ToString("N", CultureInfo.InvariantCulture)[..8];
         var runDirectory = Path.Combine(resultsDirectory, "admin-smoke-" + profile + "-" + timestamp + "-" + runId);
         var absoluteRunDirectory = Path.Combine(repositoryRoot, ToPlatformPath(runDirectory));

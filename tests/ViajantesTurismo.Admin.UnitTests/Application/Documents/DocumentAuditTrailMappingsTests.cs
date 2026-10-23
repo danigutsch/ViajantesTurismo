@@ -30,7 +30,7 @@ public sealed class DocumentAuditTrailMappingsTests
             operation);
 
         // Act
-        var record = DocumentAuditTrailMappings.Map(domainEvent, DateTimeOffset.UtcNow);
+        var record = DocumentAuditTrailMappings.Map(domainEvent, TimeProvider.System.GetUtcNow());
 
         // Assert
         record.ReasonCode.ShouldBe(expectedReasonCode);
@@ -52,7 +52,7 @@ public sealed class DocumentAuditTrailMappingsTests
             operation);
 
         // Act
-        Func<object?> map = () => DocumentAuditTrailMappings.Map(domainEvent, DateTimeOffset.UtcNow);
+        Func<object?> map = () => DocumentAuditTrailMappings.Map(domainEvent, TimeProvider.System.GetUtcNow());
 
         // Assert
         _ = map.ShouldThrow<ArgumentOutOfRangeException>();

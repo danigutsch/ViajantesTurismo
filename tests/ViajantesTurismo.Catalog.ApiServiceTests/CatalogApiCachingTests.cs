@@ -125,7 +125,7 @@ public sealed class CatalogApiCachingTests
             CatalogApiCachingTestData.CreatePresentationUpdate("Unpublished store-only change", "camino-norte"),
             streamVersion: 4,
             position: 2,
-            DateTimeOffset.UtcNow,
+            TimeProvider.System.GetUtcNow(),
             cancellationToken);
         using var cachedResponse = await client.GetAsync(new Uri("/api/v1/public/catalog/tours/camino-norte", UriKind.Relative), cancellationToken);
         var cachedTour = await cachedResponse.Content.ReadFromJsonAsync<TourDetailsDto>(cancellationToken);
@@ -136,7 +136,10 @@ public sealed class CatalogApiCachingTests
             cancellationToken);
         using var updateResponse = await client.PutAsJsonAsync(
             new Uri($"/api/v1/catalog/tours/{tourId}/presentation", UriKind.Relative),
-            CatalogApiCachingTestData.CreatePresentationRequest("Invalidated tour", "camino-norte") with { ExpectedVersion = 4 },
+            CatalogApiCachingTestData.CreatePresentationRequest("Invalidated tour", "camino-norte") with
+            {
+                ExpectedVersion = 4
+            },
             cancellationToken);
         using var publishResponse = await client.PostAsJsonAsync(
             new Uri($"/api/v1/catalog/tours/{tourId}/publish", UriKind.Relative),

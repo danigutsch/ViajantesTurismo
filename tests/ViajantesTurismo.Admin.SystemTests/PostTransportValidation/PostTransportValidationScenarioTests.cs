@@ -22,7 +22,7 @@ public sealed class PostTransportValidationScenarioTests
             IsPublished = false,
             Version = 1,
             Images = [],
-            UpdatedAt = DateTimeOffset.UtcNow
+            UpdatedAt = TimeProvider.System.GetUtcNow()
         };
         using var adminApi = new HttpClient();
         var catalogTours = new TransientCatalogToursApiClient(expectedTour);
@@ -55,7 +55,7 @@ public sealed class PostTransportValidationScenarioTests
             IsPublished = false,
             Version = 1,
             Images = [],
-            UpdatedAt = DateTimeOffset.UtcNow
+            UpdatedAt = TimeProvider.System.GetUtcNow()
         };
         using var adminApi = new HttpClient();
         var catalogTours = new TransientCatalogToursApiClient(expectedTour, statusCode);

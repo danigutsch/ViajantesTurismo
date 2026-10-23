@@ -7,18 +7,33 @@ internal readonly record struct MediaImageUploadFormDto
 {
     [Required]
     [FromForm(Name = "file")]
-    public required IFormFile File { get; init; }
+    public required IFormFile File
+    {
+        get; init;
+    }
 
     [FromForm(Name = "altText")]
     [Required]
-    public string? AltText { get; init; }
+    public string? AltText
+    {
+        get; init;
+    }
 
     [FromForm(Name = "caption")]
-    public string? Caption { get; init; }
+    public string? Caption
+    {
+        get; init;
+    }
 
     [FromForm(Name = "attribution")]
-    public string? Attribution { get; init; }
+    public string? Attribution
+    {
+        get; init;
+    }
 
     [FromForm(Name = "copyright")]
-    public string? Copyright { get; init; }
+    public string? Copyright
+    {
+        get; init;
+    }
 }

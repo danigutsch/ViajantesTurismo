@@ -29,7 +29,7 @@ public sealed class PublicWebReplicaModelTests
 
         // Act
         builder.AddProductResources(HostedProfile.System);
-        var publicWeb = builder.Resources.Single(resource => resource.Name == ResourceNames.PublicWebApp);
+        var publicWeb = builder.Resources.ShouldHaveSingleItem(resource => resource.Name == ResourceNames.PublicWebApp);
         var otherProjects = builder.Resources.OfType<ProjectResource>()
             .Where(resource => resource.Name != ResourceNames.PublicWebApp).ToArray();
 

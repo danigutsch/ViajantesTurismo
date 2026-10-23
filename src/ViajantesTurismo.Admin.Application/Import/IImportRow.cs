@@ -9,7 +9,10 @@ public interface IImportRow
     /// <summary>
     /// Gets the number of columns in the row.
     /// </summary>
-    int Count { get; }
+    int Count
+    {
+        get;
+    }
 
     /// <summary>
     /// Gets the value at the specified column index.

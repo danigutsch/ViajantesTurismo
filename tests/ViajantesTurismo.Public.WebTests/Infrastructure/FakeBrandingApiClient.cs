@@ -6,13 +6,25 @@ internal sealed class FakeBrandingApiClient : IBrandingApiClient
 {
     private BrandingSettingsDto branding = CreateDefaultBranding();
 
-    public bool FailRequests { get; set; }
+    public bool FailRequests
+    {
+        get; set;
+    }
 
-    public bool ReturnEmptyResponse { get; set; }
+    public bool ReturnEmptyResponse
+    {
+        get; set;
+    }
 
-    public bool ReturnMalformedResponse { get; set; }
+    public bool ReturnMalformedResponse
+    {
+        get; set;
+    }
 
-    public bool ReturnUnsupportedResponse { get; set; }
+    public bool ReturnUnsupportedResponse
+    {
+        get; set;
+    }
 
     public void SetBranding(BrandingSettingsDto branding)
     {

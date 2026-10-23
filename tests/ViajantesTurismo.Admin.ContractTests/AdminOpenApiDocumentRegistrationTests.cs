@@ -41,7 +41,7 @@ public sealed class AdminOpenApiDocumentRegistrationTests
         var importSchema = AdminOpenApiDocumentRegistrationTestHelpers.GetMultipartSchema(document, "/api/v1/customers/import/commit");
         var commitImportPath = document.Paths["/api/v1/customers/import/commit"];
         var commitImportOperations = commitImportPath.Operations.ShouldNotBeNull();
-        (commitImportOperations.TryGetValue(HttpMethod.Post, out var commitImportOperation)).ShouldBeTrue();
+        commitImportOperations.TryGetValue(HttpMethod.Post, out var commitImportOperation).ShouldBeTrue();
         var commitImport = commitImportOperation.ShouldNotBeNull();
         var commitImportRequestBody = commitImport.RequestBody.ShouldNotBeNull();
         var commitImportContent = commitImportRequestBody.Content.ShouldNotBeNull();

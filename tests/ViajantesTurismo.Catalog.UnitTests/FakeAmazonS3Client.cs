@@ -13,17 +13,32 @@ internal sealed class FakeAmazonS3Client : AmazonS3Client
 
     public List<string> Operations { get; } = [];
 
-    public PutObjectRequest? LastPutObjectRequest { get; private set; }
+    public PutObjectRequest? LastPutObjectRequest
+    {
+        get; private set;
+    }
 
-    public Task<PutBucketResponse>? PutBucketTask { get; set; }
+    public Task<PutBucketResponse>? PutBucketTask
+    {
+        get; set;
+    }
 
-    public Exception? GetObjectMetadataException { get; set; }
+    public Exception? GetObjectMetadataException
+    {
+        get; set;
+    }
 
-    public Exception? GetObjectException { get; set; }
+    public Exception? GetObjectException
+    {
+        get; set;
+    }
 
-    public DateTime ListObjectLastModified { get; set; } = DateTime.UtcNow;
+    public DateTime ListObjectLastModified { get; set; } = TimeProvider.System.GetUtcNow().UtcDateTime;
 
-    public bool ReturnEmptyListResponse { get; set; }
+    public bool ReturnEmptyListResponse
+    {
+        get; set;
+    }
 
     public override Task<PutBucketResponse> PutBucketAsync(PutBucketRequest request, CancellationToken cancellationToken = default)
     {

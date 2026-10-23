@@ -20,7 +20,7 @@ public class BookingMapperTests
             var mappedEnum = BookingMapper.MapToBikeType(dtoValue);
 
             // Assert
-            (Enum.IsDefined(mappedEnum)).ShouldBeTrue();
+            Enum.IsDefined(mappedEnum).ShouldBeTrue();
         }
     }
 
@@ -36,7 +36,7 @@ public class BookingMapperTests
             var mappedEnum = BookingMapper.MapToBikeTypeDto(domainValue);
 
             // Assert
-            (Enum.IsDefined(mappedEnum)).ShouldBeTrue();
+            Enum.IsDefined(mappedEnum).ShouldBeTrue();
         }
     }
 
@@ -52,7 +52,7 @@ public class BookingMapperTests
             var mappedEnum = BookingMapper.MapToRoomType(dtoValue);
 
             // Assert
-            (Enum.IsDefined(mappedEnum)).ShouldBeTrue();
+            Enum.IsDefined(mappedEnum).ShouldBeTrue();
         }
     }
 
@@ -68,7 +68,7 @@ public class BookingMapperTests
             var mappedEnum = BookingMapper.MapToBookingStatus(dtoValue);
 
             // Assert
-            (Enum.IsDefined(mappedEnum)).ShouldBeTrue();
+            Enum.IsDefined(mappedEnum).ShouldBeTrue();
         }
     }
 
@@ -84,7 +84,7 @@ public class BookingMapperTests
             var mappedEnum = BookingMapper.MapToPaymentStatus(dtoValue);
 
             // Assert
-            (Enum.IsDefined(mappedEnum)).ShouldBeTrue();
+            Enum.IsDefined(mappedEnum).ShouldBeTrue();
         }
     }
 
@@ -100,7 +100,7 @@ public class BookingMapperTests
             var mappedEnum = BookingMapper.MapToDiscountType(dtoValue);
 
             // Assert
-            (Enum.IsDefined(mappedEnum)).ShouldBeTrue();
+            Enum.IsDefined(mappedEnum).ShouldBeTrue();
         }
     }
 
@@ -116,7 +116,7 @@ public class BookingMapperTests
             var mappedEnum = BookingMapper.MapToDiscountTypeDto(domainValue);
 
             // Assert
-            (Enum.IsDefined(mappedEnum)).ShouldBeTrue();
+            Enum.IsDefined(mappedEnum).ShouldBeTrue();
         }
     }
 
@@ -128,8 +128,8 @@ public class BookingMapperTests
 
         // Act
         // Assert
-        var exception = ((Func<object?>)(() => BookingMapper.MapToBikeType(invalidValue))).ShouldThrow<ArgumentOutOfRangeException>();
-        (exception.Message).ShouldContain("Invalid bike type value", StringComparison.Ordinal);
+        var exception = ShouldAssertionExtensions.ShouldThrow<ArgumentOutOfRangeException>((Func<object?>)(() => BookingMapper.MapToBikeType(invalidValue)));
+        exception.Message.ShouldContain("Invalid bike type value", StringComparison.Ordinal);
     }
 
     [Fact]
@@ -140,8 +140,8 @@ public class BookingMapperTests
 
         // Act
         // Assert
-        var exception = ((Func<object?>)(() => BookingMapper.MapToBikeTypeDto(invalidValue))).ShouldThrow<ArgumentOutOfRangeException>();
-        (exception.Message).ShouldContain("Invalid bike type value", StringComparison.Ordinal);
+        var exception = ShouldAssertionExtensions.ShouldThrow<ArgumentOutOfRangeException>((Func<object?>)(() => BookingMapper.MapToBikeTypeDto(invalidValue)));
+        exception.Message.ShouldContain("Invalid bike type value", StringComparison.Ordinal);
     }
 
     [Fact]
@@ -152,8 +152,8 @@ public class BookingMapperTests
 
         // Act
         // Assert
-        var exception = ((Func<object?>)(() => BookingMapper.MapToRoomType(invalidValue))).ShouldThrow<ArgumentOutOfRangeException>();
-        (exception.Message).ShouldContain("Invalid room type value", StringComparison.Ordinal);
+        var exception = ShouldAssertionExtensions.ShouldThrow<ArgumentOutOfRangeException>((Func<object?>)(() => BookingMapper.MapToRoomType(invalidValue)));
+        exception.Message.ShouldContain("Invalid room type value", StringComparison.Ordinal);
     }
 
     [Fact]
@@ -164,8 +164,8 @@ public class BookingMapperTests
 
         // Act
         // Assert
-        var exception = ((Func<object?>)(() => BookingMapper.MapToBookingStatus(invalidValue))).ShouldThrow<ArgumentOutOfRangeException>();
-        (exception.Message).ShouldContain("Invalid booking status value", StringComparison.Ordinal);
+        var exception = ShouldAssertionExtensions.ShouldThrow<ArgumentOutOfRangeException>((Func<object?>)(() => BookingMapper.MapToBookingStatus(invalidValue)));
+        exception.Message.ShouldContain("Invalid booking status value", StringComparison.Ordinal);
     }
 
     [Fact]
@@ -176,8 +176,8 @@ public class BookingMapperTests
 
         // Act
         // Assert
-        var exception = ((Func<object?>)(() => BookingMapper.MapToPaymentStatus(invalidValue))).ShouldThrow<ArgumentOutOfRangeException>();
-        (exception.Message).ShouldContain("Invalid payment status value", StringComparison.Ordinal);
+        var exception = ShouldAssertionExtensions.ShouldThrow<ArgumentOutOfRangeException>((Func<object?>)(() => BookingMapper.MapToPaymentStatus(invalidValue)));
+        exception.Message.ShouldContain("Invalid payment status value", StringComparison.Ordinal);
     }
 
     [Fact]
@@ -188,8 +188,8 @@ public class BookingMapperTests
 
         // Act
         // Assert
-        var exception = ((Func<object?>)(() => BookingMapper.MapToDiscountType(invalidValue))).ShouldThrow<ArgumentOutOfRangeException>();
-        (exception.Message).ShouldContain("Invalid discount type value", StringComparison.Ordinal);
+        var exception = ShouldAssertionExtensions.ShouldThrow<ArgumentOutOfRangeException>((Func<object?>)(() => BookingMapper.MapToDiscountType(invalidValue)));
+        exception.Message.ShouldContain("Invalid discount type value", StringComparison.Ordinal);
     }
 
     [Fact]
@@ -200,8 +200,8 @@ public class BookingMapperTests
 
         // Act
         // Assert
-        var exception = ((Func<object?>)(() => BookingMapper.MapToDiscountTypeDto(invalidValue))).ShouldThrow<ArgumentOutOfRangeException>();
-        (exception.Message).ShouldContain("Invalid discount type value", StringComparison.Ordinal);
+        var exception = ShouldAssertionExtensions.ShouldThrow<ArgumentOutOfRangeException>((Func<object?>)(() => BookingMapper.MapToDiscountTypeDto(invalidValue)));
+        exception.Message.ShouldContain("Invalid discount type value", StringComparison.Ordinal);
     }
 
     [Fact]
@@ -216,7 +216,7 @@ public class BookingMapperTests
             var mappedEnum = BookingMapper.MapToPaymentMethod(dtoValue);
 
             // Assert
-            (Enum.IsDefined(mappedEnum)).ShouldBeTrue();
+            Enum.IsDefined(mappedEnum).ShouldBeTrue();
         }
     }
 
@@ -228,8 +228,8 @@ public class BookingMapperTests
 
         // Act
         // Assert
-        var exception = ((Func<object?>)(() => BookingMapper.MapToPaymentMethod(invalidValue))).ShouldThrow<ArgumentOutOfRangeException>();
-        (exception.Message).ShouldContain("Invalid payment method value", StringComparison.Ordinal);
+        var exception = ShouldAssertionExtensions.ShouldThrow<ArgumentOutOfRangeException>((Func<object?>)(() => BookingMapper.MapToPaymentMethod(invalidValue)));
+        exception.Message.ShouldContain("Invalid payment method value", StringComparison.Ordinal);
     }
 
     [Fact]
@@ -244,7 +244,7 @@ public class BookingMapperTests
             var mappedEnum = BookingMapper.MapToPaymentMethodDto(domainValue);
 
             // Assert
-            (Enum.IsDefined(mappedEnum)).ShouldBeTrue();
+            Enum.IsDefined(mappedEnum).ShouldBeTrue();
         }
     }
 
@@ -256,8 +256,8 @@ public class BookingMapperTests
 
         // Act
         // Assert
-        var exception = ((Func<object?>)(() => BookingMapper.MapToPaymentMethodDto(invalidValue))).ShouldThrow<ArgumentOutOfRangeException>();
-        (exception.Message).ShouldContain("Invalid payment method value", StringComparison.Ordinal);
+        var exception = ShouldAssertionExtensions.ShouldThrow<ArgumentOutOfRangeException>((Func<object?>)(() => BookingMapper.MapToPaymentMethodDto(invalidValue)));
+        exception.Message.ShouldContain("Invalid payment method value", StringComparison.Ordinal);
     }
 
     [Fact]
@@ -278,21 +278,21 @@ public class BookingMapperTests
             "Payment for tour booking"
         );
 
-        (paymentResult.IsSuccess).ShouldBeTrue();
+        paymentResult.IsSuccess.ShouldBeTrue();
         var payment = paymentResult.Value;
 
         // Act
         var result = BookingMapper.MapToPaymentDto(payment);
 
         // Assert
-        (result.Id).ShouldBe(payment.Id);
-        (result.BookingId).ShouldBe(bookingId);
-        (result.Amount).ShouldBe(150.50m);
-        (result.PaymentDate).ShouldBe(DateOnly.FromDateTime(paymentDate));
-        (result.Method).ShouldBe(PaymentMethodDto.CreditCard);
-        (result.ReferenceNumber).ShouldBe("REF-12345");
-        (result.Notes).ShouldBe("Payment for tour booking");
-        (result.RecordedAt).ShouldBe(payment.RecordedAt);
+        result.Id.ShouldBe(payment.Id);
+        result.BookingId.ShouldBe(bookingId);
+        result.Amount.ShouldBe(150.50m);
+        result.PaymentDate.ShouldBe(DateOnly.FromDateTime(paymentDate));
+        result.Method.ShouldBe(PaymentMethodDto.CreditCard);
+        result.ReferenceNumber.ShouldBe("REF-12345");
+        result.Notes.ShouldBe("Payment for tour booking");
+        result.RecordedAt.ShouldBe(payment.RecordedAt);
     }
 
     [Fact]
@@ -303,7 +303,7 @@ public class BookingMapperTests
 
         // Act
         // Assert
-        ((Func<object?>)(() => BookingMapper.MapToPaymentDto(payment!))).ShouldThrow<ArgumentNullException>();
+        ShouldAssertionExtensions.ShouldThrow<ArgumentNullException>((Func<object?>)(() => BookingMapper.MapToPaymentDto(payment!)));
     }
 
     [Fact]
@@ -324,21 +324,21 @@ public class BookingMapperTests
             null
         );
 
-        (paymentResult.IsSuccess).ShouldBeTrue();
+        paymentResult.IsSuccess.ShouldBeTrue();
         var payment = paymentResult.Value;
 
         // Act
         var result = BookingMapper.MapToPaymentDto(payment);
 
         // Assert
-        (result.Id).ShouldBe(payment.Id);
-        (result.BookingId).ShouldBe(bookingId);
-        (result.Amount).ShouldBe(100.00m);
-        (result.PaymentDate).ShouldBe(DateOnly.FromDateTime(paymentDate));
-        (result.Method).ShouldBe(PaymentMethodDto.Cash);
-        (result.ReferenceNumber).ShouldBeNull();
-        (result.Notes).ShouldBeNull();
-        (result.RecordedAt).ShouldBe(payment.RecordedAt);
+        result.Id.ShouldBe(payment.Id);
+        result.BookingId.ShouldBe(bookingId);
+        result.Amount.ShouldBe(100.00m);
+        result.PaymentDate.ShouldBe(DateOnly.FromDateTime(paymentDate));
+        result.Method.ShouldBe(PaymentMethodDto.Cash);
+        result.ReferenceNumber.ShouldBeNull();
+        result.Notes.ShouldBeNull();
+        result.RecordedAt.ShouldBe(payment.RecordedAt);
     }
 
     [Theory]
@@ -364,14 +364,14 @@ public class BookingMapperTests
             null
         );
 
-        (paymentResult.IsSuccess).ShouldBeTrue();
+        paymentResult.IsSuccess.ShouldBeTrue();
         var payment = paymentResult.Value;
 
         // Act
         var result = BookingMapper.MapToPaymentDto(payment);
 
         // Assert
-        (result.Method).ShouldBe(expectedDto);
+        result.Method.ShouldBe(expectedDto);
     }
 
     [Theory]
@@ -386,7 +386,7 @@ public class BookingMapperTests
         var result = BookingMapper.MapToBookingStatusDto(domain);
 
         // Assert
-        (result).ShouldBe(expected);
+        result.ShouldBe(expected);
     }
 
     [Fact]
@@ -401,7 +401,7 @@ public class BookingMapperTests
             var mappedEnum = BookingMapper.MapToBookingStatusDto(domainValue);
 
             // Assert
-            (Enum.IsDefined(mappedEnum)).ShouldBeTrue();
+            Enum.IsDefined(mappedEnum).ShouldBeTrue();
         }
     }
 
@@ -413,8 +413,8 @@ public class BookingMapperTests
 
         // Act
         // Assert
-        var exception = ((Func<object?>)(() => BookingMapper.MapToBookingStatusDto(invalidValue))).ShouldThrow<ArgumentOutOfRangeException>();
-        (exception.Message).ShouldContain("Invalid booking status value", StringComparison.Ordinal);
+        var exception = ShouldAssertionExtensions.ShouldThrow<ArgumentOutOfRangeException>((Func<object?>)(() => BookingMapper.MapToBookingStatusDto(invalidValue)));
+        exception.Message.ShouldContain("Invalid booking status value", StringComparison.Ordinal);
     }
 
     [Theory]
@@ -429,7 +429,7 @@ public class BookingMapperTests
         var result = BookingMapper.MapToPaymentStatusDto(domain);
 
         // Assert
-        (result).ShouldBe(expected);
+        result.ShouldBe(expected);
     }
 
     [Fact]
@@ -444,7 +444,7 @@ public class BookingMapperTests
             var mappedEnum = BookingMapper.MapToPaymentStatusDto(domainValue);
 
             // Assert
-            (Enum.IsDefined(mappedEnum)).ShouldBeTrue();
+            Enum.IsDefined(mappedEnum).ShouldBeTrue();
         }
     }
 
@@ -456,8 +456,8 @@ public class BookingMapperTests
 
         // Act
         // Assert
-        var exception = ((Func<object?>)(() => BookingMapper.MapToPaymentStatusDto(invalidValue))).ShouldThrow<ArgumentOutOfRangeException>();
-        (exception.Message).ShouldContain("Invalid payment status value", StringComparison.Ordinal);
+        var exception = ShouldAssertionExtensions.ShouldThrow<ArgumentOutOfRangeException>((Func<object?>)(() => BookingMapper.MapToPaymentStatusDto(invalidValue)));
+        exception.Message.ShouldContain("Invalid payment status value", StringComparison.Ordinal);
     }
 
     [Theory]
@@ -470,7 +470,7 @@ public class BookingMapperTests
         var result = BookingMapper.MapToRoomTypeDto(domain);
 
         // Assert
-        (result).ShouldBe(expected);
+        result.ShouldBe(expected);
     }
 
     [Fact]
@@ -485,7 +485,7 @@ public class BookingMapperTests
             var mappedEnum = BookingMapper.MapToRoomTypeDto(domainValue);
 
             // Assert
-            (Enum.IsDefined(mappedEnum)).ShouldBeTrue();
+            Enum.IsDefined(mappedEnum).ShouldBeTrue();
         }
     }
 
@@ -497,8 +497,8 @@ public class BookingMapperTests
 
         // Act
         // Assert
-        var exception = ((Func<object?>)(() => BookingMapper.MapToRoomTypeDto(invalidValue))).ShouldThrow<ArgumentOutOfRangeException>();
-        (exception.Message).ShouldContain("Invalid room type value", StringComparison.Ordinal);
+        var exception = ShouldAssertionExtensions.ShouldThrow<ArgumentOutOfRangeException>((Func<object?>)(() => BookingMapper.MapToRoomTypeDto(invalidValue)));
+        exception.Message.ShouldContain("Invalid room type value", StringComparison.Ordinal);
     }
 
     [Theory]
@@ -511,7 +511,7 @@ public class BookingMapperTests
         var result = BookingMapper.MapToBedTypeDto(domain);
 
         // Assert
-        (result).ShouldBe(expected);
+        result.ShouldBe(expected);
     }
 
     [Fact]
@@ -526,7 +526,7 @@ public class BookingMapperTests
             var mappedEnum = BookingMapper.MapToBedTypeDto(domainValue);
 
             // Assert
-            (Enum.IsDefined(mappedEnum)).ShouldBeTrue();
+            Enum.IsDefined(mappedEnum).ShouldBeTrue();
         }
     }
 
@@ -538,7 +538,7 @@ public class BookingMapperTests
 
         // Act
         // Assert
-        var exception = ((Func<object?>)(() => BookingMapper.MapToBedTypeDto(invalidValue))).ShouldThrow<ArgumentOutOfRangeException>();
-        (exception.Message).ShouldContain("Invalid bed type value", StringComparison.Ordinal);
+        var exception = ShouldAssertionExtensions.ShouldThrow<ArgumentOutOfRangeException>((Func<object?>)(() => BookingMapper.MapToBedTypeDto(invalidValue)));
+        exception.Message.ShouldContain("Invalid bed type value", StringComparison.Ordinal);
     }
 }

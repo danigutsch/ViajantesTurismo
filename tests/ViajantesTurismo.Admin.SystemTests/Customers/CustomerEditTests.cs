@@ -13,7 +13,7 @@ public class CustomerEditTests(AspireSystemTestFixture fixture) : AspireSystemTe
 
         // Act
         await NavigateTo($"/customers/{customer.Id}/edit");
-        await Expect(Page).ToHaveTitleAsync("Edit Customer");
+        await Page.ShouldHaveTitle("Edit Customer");
 
         // Assert: all 8 section headers render.
         await Expect(Page.Locator(".card-title", new PageLocatorOptions { HasText = "Personal Information" })).ToBeVisibleAsync();

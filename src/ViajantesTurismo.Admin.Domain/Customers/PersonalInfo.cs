@@ -20,22 +20,40 @@ public sealed class PersonalInfo
     }
 
     /// <summary>Full first name of the customer.</summary>
-    public string FirstName { get; private set; }
+    public string FirstName
+    {
+        get; private set;
+    }
 
     /// <summary>Full last name of the customer.</summary>
-    public string LastName { get; private set; }
+    public string LastName
+    {
+        get; private set;
+    }
 
     /// <summary>Gender of the customer.</summary>
-    public string Gender { get; private set; }
+    public string Gender
+    {
+        get; private set;
+    }
 
     /// <summary>Date of birth.</summary>
-    public DateOnly BirthDate { get; private set; }
+    public DateOnly BirthDate
+    {
+        get; private set;
+    }
 
     /// <summary>Nationality.</summary>
-    public string Nationality { get; private set; }
+    public string Nationality
+    {
+        get; private set;
+    }
 
     /// <summary>Occupation.</summary>
-    public string Occupation { get; private set; }
+    public string Occupation
+    {
+        get; private set;
+    }
 
     /// <summary>
     /// Creates a new instance of the <see cref="PersonalInfo"/> class.

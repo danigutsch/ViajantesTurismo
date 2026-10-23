@@ -12,7 +12,10 @@ internal sealed class TemporaryCiTestRepository : IDisposable
         Directory.CreateDirectory(RootPath);
     }
 
-    public string RootPath { get; }
+    public string RootPath
+    {
+        get;
+    }
 
     public async Task<string> CommitFiles(CancellationToken ct)
     {

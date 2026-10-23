@@ -31,9 +31,9 @@ public sealed class MedicalPageTests : BunitContext
         var allergiesValue = cut.Find("#allergies").GetAttribute("value") ?? cut.Find("#allergies").TextContent.Trim();
         var additionalInfoValue = cut.Find("#additionalInfo").GetAttribute("value") ?? cut.Find("#additionalInfo").TextContent.Trim();
 
-        (allergiesValue).ShouldBe("Peanuts");
-        (additionalInfoValue).ShouldBe("Carries an epinephrine injector.");
-        (_state.CurrentStep).ShouldBe(8);
+        allergiesValue.ShouldBe("Peanuts");
+        additionalInfoValue.ShouldBe("Carries an epinephrine injector.");
+        _state.CurrentStep.ShouldBe(8);
     }
 
     [Fact]
@@ -49,11 +49,11 @@ public sealed class MedicalPageTests : BunitContext
         await cut.InvokeAsync(async () => await cut.Find("form").SubmitAsync());
 
         // Assert
-        await cut.WaitForAssertionAsync(() => (navigationManager.Uri).ShouldEndWith("/customers/create/review", StringComparison.Ordinal));
-        (_state.MedicalInfo).ShouldNotBeNull();
-        (_state.MedicalInfo.Allergies).ShouldBe("Peanuts");
-        (_state.MedicalInfo.AdditionalInfo).ShouldBe("Carries an epinephrine injector.");
-        (_state.CurrentStep).ShouldBe(8);
+        await cut.WaitForAssertionAsync(() => navigationManager.Uri.ShouldEndWith("/customers/create/review", StringComparison.Ordinal));
+        _state.MedicalInfo.ShouldNotBeNull();
+        _state.MedicalInfo.Allergies.ShouldBe("Peanuts");
+        _state.MedicalInfo.AdditionalInfo.ShouldBe("Carries an epinephrine injector.");
+        _state.CurrentStep.ShouldBe(8);
     }
 
     [Fact]
@@ -68,7 +68,7 @@ public sealed class MedicalPageTests : BunitContext
         await cut.InvokeAsync(() => backButton.Click());
 
         // Assert
-        await cut.WaitForAssertionAsync(() => (navigationManager.Uri).ShouldEndWith("/customers/create/emergency-contact", StringComparison.Ordinal));
-        (_state.CurrentStep).ShouldBe(7);
+        await cut.WaitForAssertionAsync(() => navigationManager.Uri.ShouldEndWith("/customers/create/emergency-contact", StringComparison.Ordinal));
+        _state.CurrentStep.ShouldBe(7);
     }
 }

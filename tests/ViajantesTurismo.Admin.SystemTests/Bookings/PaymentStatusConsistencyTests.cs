@@ -18,7 +18,7 @@ public class PaymentStatusConsistencyTests(AspireSystemTestFixture fixture) : As
 
         // Act
         await NavigateTo($"/tours/{tour.Id}");
-        await Expect(Page).ToHaveTitleAsync("Tour Details");
+        await Page.ShouldHaveTitle("Tour Details");
         var unpaidRow = Page.Locator($".table tbody tr:has(a[href='/bookings/{unpaidBooking.Id}'])");
         var partiallyPaidRow = Page.Locator($".table tbody tr:has(a[href='/bookings/{partiallyPaidBooking.Id}'])");
         await Expect(unpaidRow).ToHaveCountAsync(1);

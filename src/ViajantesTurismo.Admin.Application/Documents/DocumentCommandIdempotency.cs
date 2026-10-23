@@ -1,3 +1,6 @@
+using System.Globalization;
+using System.Security.Cryptography;
+using System.Text;
 using PandaBear.Idempotency;
 using PandaBear.Results;
 using ViajantesTurismo.Admin.Domain.Documents;
@@ -21,6 +24,20 @@ public sealed class DocumentCommandIdempotency(
         detail: "Idempotency-Key is required.",
         field: "Idempotency-Key",
         message: "Idempotency-Key is required.");
+
+    /// <summary>Creates the persisted request fingerprint for a document template and version.</summary>
+    /// <param name="templateId">The unchanged, nonblank template identifier.</param>
+    /// <param name="templateVersion">The unchanged, nonblank template version.</param>
+    /// <returns>The uppercase SHA-256 hash of the UTF-8 encoded, invariant UTF-16 length frames.</returns>
+    /// <exception cref="ArgumentNullException">A template argument is null.</exception>
+    /// <exception cref="ArgumentException">A template argument is empty or whitespace.</exception>
+    public static string CreateRequestFingerprint(string templateId, string templateVersion)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(templateId);
+        ArgumentException.ThrowIfNullOrWhiteSpace(templateVersion);
+        var source = string.Create(CultureInfo.InvariantCulture, $"{templateId.Length}:{templateId}:{templateVersion.Length}:{templateVersion}");
+        return Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(source)));
+    }
 
     /// <summary>Runs generation preparation and its deferred durable mutation.</summary>
     /// <param name="command">The command defining resource scope and meaningful template inputs.</param>
@@ -85,9 +102,7 @@ public sealed class DocumentCommandIdempotency(
             return DocumentAuditErrors.AuditContextRequired().ConvertError<Guid>();
         }
 
-        ArgumentException.ThrowIfNullOrWhiteSpace(templateId);
-        ArgumentException.ThrowIfNullOrWhiteSpace(templateVersion);
-        var requestFingerprint = IdempotencyRequestFingerprint.Create(templateId, templateVersion);
+        var requestFingerprint = CreateRequestFingerprint(templateId, templateVersion);
         var existingResult = await GetExistingResult(scope, key, requestFingerprint, ct);
         if (existingResult is { IsSuccess: true } replayedResult)
         {

@@ -4,9 +4,15 @@ namespace ViajantesTurismo.Catalog.UnitTests;
 
 public sealed class CapturingProjectionCheckpointStore : IProjectionCheckpointStore
 {
-    public ProjectionCheckpoint? CurrentCheckpoint { get; set; }
+    public ProjectionCheckpoint? CurrentCheckpoint
+    {
+        get; set;
+    }
 
-    public ProjectionCheckpoint? SavedCheckpoint { get; private set; }
+    public ProjectionCheckpoint? SavedCheckpoint
+    {
+        get; private set;
+    }
 
     public ValueTask<ProjectionCheckpoint?> GetCheckpoint(string projectionName, CancellationToken ct)
     {

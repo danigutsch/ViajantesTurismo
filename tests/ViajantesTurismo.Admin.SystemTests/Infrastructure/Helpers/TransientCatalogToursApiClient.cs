@@ -9,7 +9,10 @@ internal sealed class TransientCatalogToursApiClient(
     CatalogTourDto tour,
     HttpStatusCode initialFailureStatusCode = HttpStatusCode.InternalServerError) : ICatalogToursApiClient
 {
-    public int GetToursCallCount { get; private set; }
+    public int GetToursCallCount
+    {
+        get; private set;
+    }
 
     public Task<HttpOutcome<CatalogTourDto[]>> GetTours(CancellationToken ct)
     {

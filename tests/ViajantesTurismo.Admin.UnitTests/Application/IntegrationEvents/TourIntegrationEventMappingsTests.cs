@@ -30,7 +30,7 @@ public sealed class TourIntegrationEventMappingsTests
     public void MapTourCreated_rejects_null_domain_events()
     {
         // Act
-        Action map = () => TourIntegrationEventMappings.MapTourCreated(null!, Guid.CreateVersion7(), DateTimeOffset.UtcNow);
+        Action map = () => TourIntegrationEventMappings.MapTourCreated(null!, Guid.CreateVersion7(), TimeProvider.System.GetUtcNow());
 
         var exception = map.ShouldThrow<ArgumentNullException>();
 

@@ -17,17 +17,26 @@ public sealed record PublicMediaImageAccessibilityReviewRequest
     /// Gets the approved alternative text.
     /// </summary>
     [StringLength(ContractConstants.MaxAltTextLength)]
-    public string? AltText { get; init; }
+    public string? AltText
+    {
+        get; init;
+    }
 
     /// <summary>
     /// Gets the optional approved caption.
     /// </summary>
     [StringLength(ContractConstants.MaxCaptionLength)]
-    public string? Caption { get; init; }
+    public string? Caption
+    {
+        get; init;
+    }
 
     /// <summary>
     /// Gets a value indicating whether the image is intentionally decorative.
     /// </summary>
     [Required]
-    public bool IsDecorative { get; init; }
+    public bool IsDecorative
+    {
+        get; init;
+    }
 }

@@ -48,7 +48,7 @@ public sealed class AdminTourCreatedIntegrationHandlerTests
             Options.Create(new IntegrationEventOptions()), TimeProvider.System);
         var integrationEvent = new AdminTourCreatedIntegrationEvent(
             Guid.CreateVersion7(),
-            DateTimeOffset.UtcNow,
+            TimeProvider.System.GetUtcNow(),
             Guid.CreateVersion7(),
             "andes-2026",
             "Andes 2026");
@@ -77,7 +77,7 @@ public sealed class AdminTourCreatedIntegrationHandlerTests
             Options.Create(new IntegrationEventOptions()), TimeProvider.System);
         var integrationEvent = new AdminTourCreatedIntegrationEvent(
             Guid.CreateVersion7(),
-            DateTimeOffset.UtcNow,
+            TimeProvider.System.GetUtcNow(),
             Guid.CreateVersion7(),
             "  andes\u0000   2026  ",
             "  Andes\u0001   2026  ");
@@ -109,12 +109,12 @@ public sealed class AdminTourCreatedIntegrationHandlerTests
                 "Owner Tour",
                 Guid.CreateVersion7(),
                 "tour-1"),
-            DateTimeOffset.UtcNow));
+            TimeProvider.System.GetUtcNow()));
         var slugLock = new TestCatalogTourSlugLock();
         var handler = new AdminTourCreatedIntegrationHandler(eventStore, slugLock);
         var integrationEvent = new AdminTourCreatedIntegrationEvent(
             Guid.CreateVersion7(),
-            DateTimeOffset.UtcNow,
+            TimeProvider.System.GetUtcNow(),
             Guid.CreateVersion7(),
             "TOUR_1",
             "Second Tour");
@@ -142,7 +142,7 @@ public sealed class AdminTourCreatedIntegrationHandlerTests
             Options.Create(new IntegrationEventOptions()), TimeProvider.System);
         var integrationEvent = new AdminTourCreatedIntegrationEvent(
             Guid.CreateVersion7(),
-            DateTimeOffset.UtcNow,
+            TimeProvider.System.GetUtcNow(),
             Guid.CreateVersion7(),
             "andes-2026",
             "Andes 2026");
@@ -168,7 +168,7 @@ public sealed class AdminTourCreatedIntegrationHandlerTests
             Options.Create(new IntegrationEventOptions { IdempotencyLockDuration = configuredDuration }), TimeProvider.System);
         var integrationEvent = new AdminTourCreatedIntegrationEvent(
             Guid.CreateVersion7(),
-            DateTimeOffset.UtcNow,
+            TimeProvider.System.GetUtcNow(),
             Guid.CreateVersion7(),
             "andes-2026",
             "Andes 2026");
@@ -195,7 +195,7 @@ public sealed class AdminTourCreatedIntegrationHandlerTests
             Options.Create(new IntegrationEventOptions()), TimeProvider.System);
         var integrationEvent = new AdminTourCreatedIntegrationEvent(
             Guid.CreateVersion7(),
-            DateTimeOffset.UtcNow,
+            TimeProvider.System.GetUtcNow(),
             Guid.CreateVersion7(),
             "andes-2026",
             "Andes 2026");
@@ -223,7 +223,7 @@ public sealed class AdminTourCreatedIntegrationHandlerTests
             Options.Create(new IntegrationEventOptions()), TimeProvider.System);
         var integrationEvent = new AdminTourCreatedIntegrationEvent(
             Guid.CreateVersion7(),
-            DateTimeOffset.UtcNow,
+            TimeProvider.System.GetUtcNow(),
             Guid.CreateVersion7(),
             "andes-2026",
             "Andes 2026");
@@ -253,7 +253,7 @@ public sealed class AdminTourCreatedIntegrationHandlerTests
             Options.Create(new IntegrationEventOptions()), TimeProvider.System);
         var integrationEvent = new AdminTourCreatedIntegrationEvent(
             Guid.CreateVersion7(),
-            DateTimeOffset.UtcNow,
+            TimeProvider.System.GetUtcNow(),
             Guid.CreateVersion7(),
             "andes-2026",
             "Andes 2026");
@@ -279,7 +279,7 @@ public sealed class AdminTourCreatedIntegrationHandlerTests
         var eventStore = new CapturingEventStore();
         var integrationEvent = new AdminTourCreatedIntegrationEvent(
             Guid.CreateVersion7(),
-            DateTimeOffset.UtcNow,
+            TimeProvider.System.GetUtcNow(),
             Guid.CreateVersion7(),
             "andes-2026",
             "Andes 2026");
@@ -297,7 +297,7 @@ public sealed class AdminTourCreatedIntegrationHandlerTests
                 integrationEvent.Name,
                 Guid.CreateVersion7(),
                 integrationEvent.Identifier),
-            DateTimeOffset.UtcNow));
+            TimeProvider.System.GetUtcNow()));
         var handler = new AdminTourCreatedIntegrationHandler(eventStore, new TestCatalogTourSlugLock());
 
         // Act

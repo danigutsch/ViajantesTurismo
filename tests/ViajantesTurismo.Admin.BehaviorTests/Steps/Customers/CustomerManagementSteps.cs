@@ -324,7 +324,7 @@ public sealed class CustomerManagementSteps(CustomerContext context)
                 FirstName = "Jane",
                 LastName = "Doe",
                 Gender = "Female",
-                BirthDate = DateOnly.FromDateTime(DateTime.UtcNow.AddYears(-30)),
+                BirthDate = DateOnly.FromDateTime(TimeProvider.System.GetUtcNow().UtcDateTime.AddYears(-30)),
                 Nationality = "American",
                 Occupation = "Designer"
             },

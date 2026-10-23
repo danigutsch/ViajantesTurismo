@@ -23,7 +23,10 @@ public sealed class PublicCatalogApiClient(HttpClient httpClient) : IPublicCatal
             Json.ContractValidationProblemDto,
             ct).ConfigureAwait(false);
         return outcome.Kind == HttpOutcomeKind.Succeeded
-            ? outcome with { Value = outcome.Value?.OfType<TourSummaryDto>().ToArray() ?? [] }
+            ? outcome with
+            {
+                Value = outcome.Value?.OfType<TourSummaryDto>().ToArray() ?? []
+            }
             : outcome;
     }
 

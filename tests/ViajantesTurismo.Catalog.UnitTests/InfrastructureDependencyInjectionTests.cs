@@ -166,8 +166,8 @@ public sealed class InfrastructureDependencyInjectionTests
         var mappedTransportEntity = transportEntity
             ?? throw new InvalidOperationException("The integration-event transport entity is not mapped.");
 
-        mappedOutboxEntity.FindAnnotation("Relational:Schema")?.Value.ShouldBe("messaging");
-        mappedTransportEntity.FindAnnotation("Relational:Schema")?.Value.ShouldBe("messaging");
+        mappedOutboxEntity.FindAnnotation("Relational:Schema").ShouldNotBeNull().Value.ShouldBe("messaging");
+        mappedTransportEntity.FindAnnotation("Relational:Schema").ShouldNotBeNull().Value.ShouldBe("messaging");
         mappedTransportEntity.IsTableExcludedFromMigrations().ShouldBeFalse();
     }
 }

@@ -83,7 +83,7 @@ public sealed class DocumentAuditStorePostgreSqlTests(PostgreSqlTestServerFixtur
     public async Task Audit_records_reject_update_and_delete_before_retention_expires()
     {
         // Arrange
-        var record = DocumentAuditInfrastructureTestData.CreateRecord(DateTime.UtcNow);
+        var record = DocumentAuditInfrastructureTestData.CreateRecord(TimeProvider.System.GetUtcNow().UtcDateTime);
         await Scenario.SeedAudit(record);
 
         // Act
@@ -99,7 +99,7 @@ public sealed class DocumentAuditStorePostgreSqlTests(PostgreSqlTestServerFixtur
     public async Task Expired_audit_records_still_reject_update()
     {
         // Arrange
-        var record = DocumentAuditInfrastructureTestData.CreateRecord(DateTime.UtcNow.AddMonths(-25));
+        var record = DocumentAuditInfrastructureTestData.CreateRecord(TimeProvider.System.GetUtcNow().UtcDateTime.AddMonths(-25));
         await Scenario.SeedAudit(record);
 
         // Act
@@ -116,7 +116,7 @@ public sealed class DocumentAuditStorePostgreSqlTests(PostgreSqlTestServerFixtur
     public async Task Audit_records_reject_truncate()
     {
         // Arrange
-        var record = DocumentAuditInfrastructureTestData.CreateRecord(DateTime.UtcNow);
+        var record = DocumentAuditInfrastructureTestData.CreateRecord(TimeProvider.System.GetUtcNow().UtcDateTime);
         await Scenario.SeedAudit(record);
 
         // Act
@@ -130,7 +130,7 @@ public sealed class DocumentAuditStorePostgreSqlTests(PostgreSqlTestServerFixtur
     public async Task PurgeExpiredRecords_deletes_only_records_after_their_retention_period()
     {
         // Arrange
-        var now = DateTime.UtcNow;
+        var now = TimeProvider.System.GetUtcNow().UtcDateTime;
         var expired = DocumentAuditInfrastructureTestData.CreateRecord(now.AddMonths(-25));
         var current = DocumentAuditInfrastructureTestData.CreateRecord(now);
         await Scenario.SeedAudit(expired);
@@ -200,7 +200,7 @@ public sealed class DocumentAuditStorePostgreSqlTests(PostgreSqlTestServerFixtur
     public async Task Audit_record_survives_document_lineage_deletion()
     {
         // Arrange
-        var now = DateTime.UtcNow;
+        var now = TimeProvider.System.GetUtcNow().UtcDateTime;
         now = now.AddTicks(-(now.Ticks % TimeSpan.TicksPerSecond));
         var document = DocumentDraftInfrastructureTestData.CreateDraft(
             now.AddDays(-DocumentLimits.DraftRetentionDays - 1));

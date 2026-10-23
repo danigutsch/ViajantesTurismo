@@ -11,7 +11,7 @@ internal static class IndexPageTestsHelper
         cut.WaitForAssertion(() =>
         {
             var header = cut.Find("th[aria-sort='ascending']");
-            (header.TextContent.Trim()).ShouldBe("Name");
+            header.TextContent.Trim().ShouldBe("Name");
         });
     }
 }

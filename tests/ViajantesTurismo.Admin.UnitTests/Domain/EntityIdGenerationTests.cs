@@ -12,8 +12,8 @@ public sealed class EntityIdGenerationTests
         var result = Tour.Create(new TourDefinition(
             "TEST2024",
             "Test Tour",
-            DateOnly.FromDateTime(DateTime.UtcNow.AddMonths(1)),
-            DateOnly.FromDateTime(DateTime.UtcNow.AddMonths(1).AddDays(7)),
+            DateOnly.FromDateTime(TimeProvider.System.GetUtcNow().UtcDateTime.AddMonths(1)),
+            DateOnly.FromDateTime(TimeProvider.System.GetUtcNow().UtcDateTime.AddMonths(1).AddDays(7)),
             2000m,
             500m,
             100m,
@@ -24,7 +24,7 @@ public sealed class EntityIdGenerationTests
             ["Hotel", "Breakfast"]));
 
         // Assert
-        (result.IsSuccess).ShouldBeTrue();
+        result.IsSuccess.ShouldBeTrue();
         EntityIdAssertions.AssertUuidV7(result.Value.Id);
     }
 
@@ -56,9 +56,9 @@ public sealed class EntityIdGenerationTests
             notes: null, new DateTime(2030, 1, 1, 0, 0, 0, DateTimeKind.Utc));
 
         // Assert
-        (principalResult.IsSuccess).ShouldBeTrue();
-        (discountResult.IsSuccess).ShouldBeTrue();
-        (result.IsSuccess).ShouldBeTrue();
+        principalResult.IsSuccess.ShouldBeTrue();
+        discountResult.IsSuccess.ShouldBeTrue();
+        result.IsSuccess.ShouldBeTrue();
         EntityIdAssertions.AssertUuidV7(result.Value.Id);
     }
 
@@ -69,14 +69,14 @@ public sealed class EntityIdGenerationTests
         var result = Payment.Create(
             bookingId: Guid.CreateVersion7(),
             amount: 250m,
-            paymentDate: DateOnly.FromDateTime(DateTime.UtcNow),
+            paymentDate: DateOnly.FromDateTime(TimeProvider.System.GetUtcNow().UtcDateTime),
             method: PaymentMethod.CreditCard,
             timeProvider: TimeProvider.System,
             referenceNumber: "TX-123",
             notes: "Initial payment");
 
         // Assert
-        (result.IsSuccess).ShouldBeTrue();
+        result.IsSuccess.ShouldBeTrue();
         EntityIdAssertions.AssertUuidV7(result.Value.Id);
     }
 

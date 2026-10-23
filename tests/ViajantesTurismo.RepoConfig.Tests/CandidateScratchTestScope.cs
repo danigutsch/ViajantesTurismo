@@ -16,7 +16,10 @@ internal sealed class CandidateScratchTestScope : IDisposable, IAsyncDisposable
     {
         var pipeName = Guid.NewGuid().ToString("N");
         // Absolute Unix paths avoid the runtime's extra CoreFxPipe_ prefix under long temporary roots.
-        if (!OperatingSystem.IsWindows()) { pipeName = Path.Combine(Path.GetTempPath(), pipeName); }
+        if (!OperatingSystem.IsWindows())
+        {
+            pipeName = Path.Combine(Path.GetTempPath(), pipeName);
+        }
         pipe = new NamedPipeServerStream(pipeName, PipeDirection.InOut, 1, PipeTransmissionMode.Byte, PipeOptions.Asynchronous);
         BlockRestore(pipeName);
         await Prepare(ct);
@@ -25,7 +28,10 @@ internal sealed class CandidateScratchTestScope : IDisposable, IAsyncDisposable
             ["--candidate", Candidate.Manifest, "--output", destination], output, error, Candidate.Root, cancellation.Token);
         var connection = pipe.WaitForConnectionAsync(ct);
         var ready = await Task.WhenAny(connection, Completion);
-        if (ready != connection) { throw new InvalidOperationException(error.ToString()); }
+        if (ready != connection)
+        {
+            throw new InvalidOperationException(error.ToString());
+        }
         await connection;
         using var reader = new StreamReader(pipe, leaveOpen: true);
         var processId = await reader.ReadLineAsync(ct);
@@ -40,7 +46,10 @@ internal sealed class CandidateScratchTestScope : IDisposable, IAsyncDisposable
         if (cancellation is not null)
         {
             await cancellation.CancelAsync();
-            try { await Completion; }
+            try
+            {
+                await Completion;
+            }
             catch (OperationCanceledException) { /* Expected termination of the blocked restore. */ }
             cancellation.Dispose();
         }
@@ -59,21 +68,6 @@ internal sealed class CandidateScratchTestScope : IDisposable, IAsyncDisposable
                 <ParameterGroup><Cache ParameterType="System.String" Required="true" /></ParameterGroup>
                 <Task>
                   <Code Type="Fragment" Language="cs"><![CDATA[
-                    var found = false;
-                    foreach (var directory in System.IO.Directory.GetDirectories(System.IO.Path.GetTempPath(), "sharedkernel-consumer-*"))
-                    {
-                        var configuration = System.IO.Path.Combine(directory, "NuGet.config");
-                        if (!System.IO.File.Exists(configuration)) { continue; }
-                        var document = new System.Xml.XmlDocument();
-                        document.Load(configuration);
-                        if (document.SelectSingleNode("/configuration/packageSources/add[@key='local']/@value")?.Value == Cache)
-                        {
-                            Cache = System.IO.Path.Combine(directory, "packages");
-                            found = true;
-                            break;
-                        }
-                    }
-                    if (!found) { throw new System.InvalidOperationException("Isolated cache configuration was not found."); }
                     System.IO.Directory.CreateDirectory(Cache);
                     using (var cacheFile = System.IO.File.Open(System.IO.Path.Combine(Cache, "held.cache"), System.IO.FileMode.Create, System.IO.FileAccess.ReadWrite, System.IO.FileShare.None))
                     using (var pipe = new System.IO.Pipes.NamedPipeClientStream(".", "{{pipeName}}", System.IO.Pipes.PipeDirection.InOut))
@@ -89,14 +83,14 @@ internal sealed class CandidateScratchTestScope : IDisposable, IAsyncDisposable
                   ]]></Code>
                 </Task>
               </UsingTask>
-              <Target Name="Restore"><HoldCache Cache="$(MSBuildProjectDirectory)" /></Target>
+              <Target Name="Restore"><HoldCache Cache="$(MSBuildProjectDirectory)/../packages" /></Target>
             </Project>
             """);
     }
 
     public async Task Prepare(CancellationToken ct, string? candidateContent = null)
     {
-        Candidate.WriteFile(".gitignore", "evidence/\n");
+        Candidate.WriteFile(".gitignore", "evidence/\nobj/\nbin/\n");
         await Candidate.WriteManifest(ct);
         if (candidateContent is not null)
         {

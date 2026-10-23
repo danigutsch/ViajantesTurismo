@@ -23,7 +23,8 @@ public sealed class ManagementBffConformanceTests(AspireSystemTestFixture fixtur
         await Page.GotoAsync(bookingsUri.ToString(), new PageGotoOptions { WaitUntil = WaitUntilState.DOMContentLoaded });
 
         // Assert
-        (await Page.Locator("#username").CountAsync()).ShouldBe(1);
+        var actualValue = await Page.Locator("#username").CountAsync();
+        actualValue.ShouldBe(1);
 
         // Act
         await ManagementLogin.SignIn(Fixture.WebAppUrl, Fixture.ConformanceUserPassword);
@@ -34,7 +35,7 @@ public sealed class ManagementBffConformanceTests(AspireSystemTestFixture fixtur
         var finalUrl = Page.Url;
 
         // Assert
-        var sessionCookie = cookies.Single(cookie => string.Equals(cookie.Name, "__Host-viajantes-management", StringComparison.Ordinal));
+        var sessionCookie = cookies.ShouldHaveSingleItem(cookie => string.Equals(cookie.Name, "__Host-viajantes-management", StringComparison.Ordinal));
         sessionCookie.HttpOnly.ShouldBeTrue();
         sessionCookie.Secure.ShouldBeTrue();
         sessionCookie.SameSite.ShouldBe(SameSiteAttribute.Lax);
@@ -49,7 +50,8 @@ public sealed class ManagementBffConformanceTests(AspireSystemTestFixture fixtur
         var finalUri = new Uri(finalUrl);
         finalUri.Host.ShouldBe(Fixture.WebAppUrl.Host);
         finalUri.AbsolutePath.ShouldBe("/bookings");
-        (await Page.Locator("h1").InnerTextAsync()).ShouldContain("All Bookings", StringComparison.Ordinal);
+        var actualValue1 = await Page.Locator("h1").InnerTextAsync();
+        actualValue1.ShouldContain("All Bookings", StringComparison.Ordinal);
     }
 
     [Fact]
@@ -80,9 +82,11 @@ public sealed class ManagementBffConformanceTests(AspireSystemTestFixture fixtur
         var brandingErrorCount = await Page.GetByRole(AriaRole.Alert).CountAsync();
 
         // Assert
-        (emptyBookingsCount == 1 || bookingsTableCount > 0).ShouldBeTrue();
+        var areEqual = emptyBookingsCount == 1 || bookingsTableCount > 0;
+        areEqual.ShouldBeTrue();
         catalogErrorCount.ShouldBe(0);
-        (catalogStatusCount > 0 || catalogTableCount > 0).ShouldBeTrue();
+        var isValid = catalogStatusCount > 0 || catalogTableCount > 0;
+        isValid.ShouldBeTrue();
         brandingErrorCount.ShouldBe(0);
     }
 

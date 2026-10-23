@@ -33,7 +33,10 @@ public sealed partial class CustomersApiClient(HttpClient httpClient, ILogger<Cu
             ct).ConfigureAwait(false);
 
         return outcome.Kind == HttpOutcomeKind.Succeeded
-            ? outcome with { Value = outcome.Value?.OfType<GetCustomerDto>().Take(maxItems).ToArray() ?? [] }
+            ? outcome with
+            {
+                Value = outcome.Value?.OfType<GetCustomerDto>().Take(maxItems).ToArray() ?? []
+            }
             : outcome;
     }
 

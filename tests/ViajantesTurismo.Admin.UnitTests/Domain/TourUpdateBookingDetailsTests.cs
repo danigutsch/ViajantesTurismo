@@ -21,10 +21,10 @@ public class TourUpdateBookingDetailsTests
             null);
 
         // Assert
-        (result.IsSuccess).ShouldBeFalse();
-        (result.Status).ShouldBe(ResultStatus.NotFound);
-        (result.ErrorDetails).ShouldNotBeNull();
-        (result.ErrorDetails.Detail).ShouldContain("not found in this tour", StringComparison.Ordinal);
+        result.IsSuccess.ShouldBeFalse();
+        result.Status.ShouldBe(ResultStatus.NotFound);
+        result.ErrorDetails.ShouldNotBeNull();
+        result.ErrorDetails.Detail.ShouldContain("not found in this tour", StringComparison.Ordinal);
     }
 
     [Fact]
@@ -42,10 +42,10 @@ public class TourUpdateBookingDetailsTests
             null);
 
         // Assert
-        (result.IsSuccess).ShouldBeFalse();
-        (result.Status).ShouldBe(ResultStatus.Invalid);
-        (result.ErrorDetails).ShouldNotBeNull();
-        (result.ErrorDetails.Detail).ShouldContain("Invalid room type", StringComparison.Ordinal);
+        result.IsSuccess.ShouldBeFalse();
+        result.Status.ShouldBe(ResultStatus.Invalid);
+        result.ErrorDetails.ShouldNotBeNull();
+        result.ErrorDetails.Detail.ShouldContain("Invalid room type", StringComparison.Ordinal);
     }
 
     [Fact]
@@ -63,10 +63,10 @@ public class TourUpdateBookingDetailsTests
             null);
 
         // Assert
-        (result.IsSuccess).ShouldBeFalse();
-        (result.Status).ShouldBe(ResultStatus.Invalid);
-        (result.ErrorDetails).ShouldNotBeNull();
-        (result.ErrorDetails.Detail).ShouldContain("Invalid bike type", StringComparison.Ordinal);
+        result.IsSuccess.ShouldBeFalse();
+        result.Status.ShouldBe(ResultStatus.Invalid);
+        result.ErrorDetails.ShouldNotBeNull();
+        result.ErrorDetails.Detail.ShouldContain("Invalid bike type", StringComparison.Ordinal);
     }
 
     [Fact]
@@ -84,10 +84,10 @@ public class TourUpdateBookingDetailsTests
             (BikeType)999);
 
         // Assert
-        (result.IsSuccess).ShouldBeFalse();
-        (result.Status).ShouldBe(ResultStatus.Invalid);
-        (result.ErrorDetails).ShouldNotBeNull();
-        (result.ErrorDetails.Detail).ShouldContain("Invalid bike type", StringComparison.Ordinal);
+        result.IsSuccess.ShouldBeFalse();
+        result.Status.ShouldBe(ResultStatus.Invalid);
+        result.ErrorDetails.ShouldNotBeNull();
+        result.ErrorDetails.Detail.ShouldContain("Invalid bike type", StringComparison.Ordinal);
     }
 
     [Fact]
@@ -105,10 +105,10 @@ public class TourUpdateBookingDetailsTests
             BikeType.EBike);
 
         // Assert
-        (result.IsSuccess).ShouldBeFalse();
-        (result.Status).ShouldBe(ResultStatus.Invalid);
-        (result.ErrorDetails).ShouldNotBeNull();
-        (result.ErrorDetails.Detail).ShouldContain("cannot be specified without a companion customer", StringComparison.Ordinal);
+        result.IsSuccess.ShouldBeFalse();
+        result.Status.ShouldBe(ResultStatus.Invalid);
+        result.ErrorDetails.ShouldNotBeNull();
+        result.ErrorDetails.Detail.ShouldContain("cannot be specified without a companion customer", StringComparison.Ordinal);
     }
 
     [Fact]
@@ -126,10 +126,10 @@ public class TourUpdateBookingDetailsTests
             null);
 
         // Assert
-        (result.IsSuccess).ShouldBeFalse();
-        (result.Status).ShouldBe(ResultStatus.Invalid);
-        (result.ErrorDetails).ShouldNotBeNull();
-        (result.ErrorDetails.Detail).ShouldContain("Companion bike type is required", StringComparison.Ordinal);
+        result.IsSuccess.ShouldBeFalse();
+        result.Status.ShouldBe(ResultStatus.Invalid);
+        result.ErrorDetails.ShouldNotBeNull();
+        result.ErrorDetails.Detail.ShouldContain("Companion bike type is required", StringComparison.Ordinal);
     }
 
     [Fact]
@@ -147,10 +147,10 @@ public class TourUpdateBookingDetailsTests
             BikeType.EBike);
 
         // Assert
-        (result.IsSuccess).ShouldBeFalse();
-        (result.Status).ShouldBe(ResultStatus.Invalid);
-        (result.ErrorDetails).ShouldNotBeNull();
-        (result.ErrorDetails.Detail).ShouldContain("cannot be the same person", StringComparison.Ordinal);
+        result.IsSuccess.ShouldBeFalse();
+        result.Status.ShouldBe(ResultStatus.Invalid);
+        result.ErrorDetails.ShouldNotBeNull();
+        result.ErrorDetails.Detail.ShouldContain("cannot be the same person", StringComparison.Ordinal);
     }
 
     [Fact]
@@ -158,7 +158,7 @@ public class TourUpdateBookingDetailsTests
     {
         // Arrange
         var (tour, booking) = BookingDomainTestDataFactory.CreateTourWithSingleBooking();
-        (booking.Cancel().IsSuccess).ShouldBeTrue();
+        booking.Cancel().IsSuccess.ShouldBeTrue();
 
         // Act
         var result = tour.UpdateBookingDetails(
@@ -169,10 +169,10 @@ public class TourUpdateBookingDetailsTests
             null);
 
         // Assert
-        (result.IsSuccess).ShouldBeFalse();
-        (result.Status).ShouldBe(ResultStatus.Conflict);
-        (result.ErrorDetails).ShouldNotBeNull();
-        (result.ErrorDetails.Detail).ShouldContain("cannot be modified", StringComparison.Ordinal);
+        result.IsSuccess.ShouldBeFalse();
+        result.Status.ShouldBe(ResultStatus.Conflict);
+        result.ErrorDetails.ShouldNotBeNull();
+        result.ErrorDetails.Detail.ShouldContain("cannot be modified", StringComparison.Ordinal);
     }
 
     [Fact]
@@ -191,12 +191,12 @@ public class TourUpdateBookingDetailsTests
             BikeType.Regular);
 
         // Assert
-        (result.IsSuccess).ShouldBeTrue();
-        (booking.RoomType).ShouldBe(RoomType.DoubleOccupancy);
-        (booking.PrincipalCustomer.BikeType).ShouldBe(BikeType.EBike);
-        (booking.CompanionCustomer).ShouldNotBeNull();
-        (booking.CompanionCustomer.CustomerId).ShouldBe(companionCustomerId);
-        (booking.CompanionCustomer.BikeType).ShouldBe(BikeType.Regular);
+        result.IsSuccess.ShouldBeTrue();
+        booking.RoomType.ShouldBe(RoomType.DoubleOccupancy);
+        booking.PrincipalCustomer.BikeType.ShouldBe(BikeType.EBike);
+        booking.CompanionCustomer.ShouldNotBeNull();
+        booking.CompanionCustomer.CustomerId.ShouldBe(companionCustomerId);
+        booking.CompanionCustomer.BikeType.ShouldBe(BikeType.Regular);
     }
 
     [Fact]
@@ -204,7 +204,7 @@ public class TourUpdateBookingDetailsTests
     {
         // Arrange
         var (tour, booking) = BookingDomainTestDataFactory.CreateTourWithDoubleBooking();
-        (booking.CompanionCustomer).ShouldNotBeNull();
+        booking.CompanionCustomer.ShouldNotBeNull();
 
         // Act
         var result = tour.UpdateBookingDetails(
@@ -215,10 +215,10 @@ public class TourUpdateBookingDetailsTests
             null);
 
         // Assert
-        (result.IsSuccess).ShouldBeTrue();
-        (booking.RoomType).ShouldBe(RoomType.SingleOccupancy);
-        (booking.CompanionCustomer).ShouldBeNull();
-        (booking.PrincipalCustomer.BikeType).ShouldBe(BikeType.Regular);
+        result.IsSuccess.ShouldBeTrue();
+        booking.RoomType.ShouldBe(RoomType.SingleOccupancy);
+        booking.CompanionCustomer.ShouldBeNull();
+        booking.PrincipalCustomer.BikeType.ShouldBe(BikeType.Regular);
     }
 
     [Fact]

@@ -16,11 +16,20 @@ internal sealed class OpenApiToolTestProcessScope : IDisposable
 
     private readonly bool forceDocumentGeneration;
 
-    public string GeneratedDirectory { get; }
+    public string GeneratedDirectory
+    {
+        get;
+    }
 
-    public bool ChildStarted { get; private set; }
+    public bool ChildStarted
+    {
+        get; private set;
+    }
 
-    public int ChildProcessId { get; private set; }
+    public int ChildProcessId
+    {
+        get; private set;
+    }
 
     public void CancelAfterChildStart(CancellationTokenSource cancellation)
     {

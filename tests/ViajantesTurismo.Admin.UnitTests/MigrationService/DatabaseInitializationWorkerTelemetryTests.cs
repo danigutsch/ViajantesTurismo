@@ -44,15 +44,15 @@ public sealed class DatabaseInitializationWorkerTelemetryTests
         await DatabaseInitializationWorkerTestHelpers.ExecuteWorker(worker, CancellationToken.None);
 
         // Assert
-        var activity = (stoppedActivities).ShouldHaveSingleItem();
-        (activity.OperationName).ShouldBe("DatabaseInitialization");
-        (activity.Source.Name).ShouldBe(DatabaseInitializationWorker.ActivitySourceName);
-        (activity.Status).ShouldBe(ActivityStatusCode.Ok);
-        (activity.StatusDescription).ShouldBeNull();
-        (activity.Tags).ShouldContain(static tag => tag.Key == "operation.type" && tag.Value == "database_initialization");
-        (activity.Tags).ShouldContain(static tag => tag.Key == "worker.type" && tag.Value == "migration");
-        (activity.Events).ShouldNotContain(static activityEvent => activityEvent.Name == "exception");
-        (initializationCalled).ShouldBeTrue();
+        var activity = stoppedActivities.ShouldHaveSingleItem();
+        activity.OperationName.ShouldBe("DatabaseInitialization");
+        activity.Source.Name.ShouldBe(DatabaseInitializationWorker.ActivitySourceName);
+        activity.Status.ShouldBe(ActivityStatusCode.Ok);
+        activity.StatusDescription.ShouldBeNull();
+        activity.Tags.ShouldContain(static tag => tag.Key == "operation.type" && tag.Value == "database_initialization");
+        activity.Tags.ShouldContain(static tag => tag.Key == "worker.type" && tag.Value == "migration");
+        activity.Events.ShouldNotContain(static activityEvent => activityEvent.Name == "exception");
+        initializationCalled.ShouldBeTrue();
     }
 
     [Fact]
@@ -70,21 +70,21 @@ public sealed class DatabaseInitializationWorkerTelemetryTests
         var worker = harness.CreateWorker();
 
         // Act
-        var exception = await ((Func<Task>)(() => DatabaseInitializationWorkerTestHelpers.ExecuteWorker(worker, CancellationToken.None))).ShouldThrow<InvalidOperationException>();
+        var exception = await ShouldAssertionExtensions.ShouldThrow<InvalidOperationException>((Func<Task>)(() => DatabaseInitializationWorkerTestHelpers.ExecuteWorker(worker, CancellationToken.None)));
 
         // Assert
-        (exception.Message).ShouldBe("boom");
-        var activity = (stoppedActivities).ShouldHaveSingleItem();
-        (activity.OperationName).ShouldBe("DatabaseInitialization");
-        (activity.Source.Name).ShouldBe(DatabaseInitializationWorker.ActivitySourceName);
-        (activity.Status).ShouldBe(ActivityStatusCode.Error);
-        (activity.StatusDescription).ShouldBeNull();
-        (activity.Tags).ShouldContain(static tag => tag.Key == "operation.type" && tag.Value == "database_initialization");
-        (activity.Tags).ShouldContain(static tag => tag.Key == "worker.type" && tag.Value == "migration");
-        (activity.Tags).ShouldContain(static tag => tag.Key == "error.type" && tag.Value == nameof(InvalidOperationException));
-        (activity.Tags).ShouldNotContain(static tag => tag.Key.StartsWith("exception.", StringComparison.Ordinal));
-        (activity.Events).ShouldNotContain(static activityEvent => activityEvent.Name == "exception");
-        (initializationCalled).ShouldBeTrue();
+        exception.Message.ShouldBe("boom");
+        var activity = stoppedActivities.ShouldHaveSingleItem();
+        activity.OperationName.ShouldBe("DatabaseInitialization");
+        activity.Source.Name.ShouldBe(DatabaseInitializationWorker.ActivitySourceName);
+        activity.Status.ShouldBe(ActivityStatusCode.Error);
+        activity.StatusDescription.ShouldBeNull();
+        activity.Tags.ShouldContain(static tag => tag.Key == "operation.type" && tag.Value == "database_initialization");
+        activity.Tags.ShouldContain(static tag => tag.Key == "worker.type" && tag.Value == "migration");
+        activity.Tags.ShouldContain(static tag => tag.Key == "error.type" && tag.Value == nameof(InvalidOperationException));
+        activity.Tags.ShouldNotContain(static tag => tag.Key.StartsWith("exception.", StringComparison.Ordinal));
+        activity.Events.ShouldNotContain(static activityEvent => activityEvent.Name == "exception");
+        initializationCalled.ShouldBeTrue();
     }
 
     [Fact]
@@ -105,18 +105,18 @@ public sealed class DatabaseInitializationWorkerTelemetryTests
         var worker = harness.CreateWorker();
 
         // Act
-        await ((Func<Task>)(() => DatabaseInitializationWorkerTestHelpers.ExecuteWorker(worker, cancellation.Token))).ShouldThrow<OperationCanceledException>();
+        await ShouldAssertionExtensions.ShouldThrow<OperationCanceledException>((Func<Task>)(() => DatabaseInitializationWorkerTestHelpers.ExecuteWorker(worker, cancellation.Token)));
 
         // Assert
-        var activity = (stoppedActivities).ShouldHaveSingleItem();
-        (activity.OperationName).ShouldBe("DatabaseInitialization");
-        (activity.Source.Name).ShouldBe(DatabaseInitializationWorker.ActivitySourceName);
-        (activity.Status).ShouldBe(ActivityStatusCode.Unset);
-        (activity.StatusDescription).ShouldBeNull();
-        (activity.Tags).ShouldContain(static tag => tag.Key == "operation.type" && tag.Value == "database_initialization");
-        (activity.Tags).ShouldContain(static tag => tag.Key == "worker.type" && tag.Value == "migration");
-        (activity.Events).ShouldNotContain(static activityEvent => activityEvent.Name == "exception");
-        (initializationCalled).ShouldBeTrue();
+        var activity = stoppedActivities.ShouldHaveSingleItem();
+        activity.OperationName.ShouldBe("DatabaseInitialization");
+        activity.Source.Name.ShouldBe(DatabaseInitializationWorker.ActivitySourceName);
+        activity.Status.ShouldBe(ActivityStatusCode.Unset);
+        activity.StatusDescription.ShouldBeNull();
+        activity.Tags.ShouldContain(static tag => tag.Key == "operation.type" && tag.Value == "database_initialization");
+        activity.Tags.ShouldContain(static tag => tag.Key == "worker.type" && tag.Value == "migration");
+        activity.Events.ShouldNotContain(static activityEvent => activityEvent.Name == "exception");
+        initializationCalled.ShouldBeTrue();
     }
 
     [Fact]
@@ -129,7 +129,7 @@ public sealed class DatabaseInitializationWorkerTelemetryTests
         var worker = harness.CreateWorker();
 
         // Act
-        _ = await ((Func<Task>)(() => DatabaseInitializationWorkerTestHelpers.ExecuteWorker(worker, CancellationToken.None))).ShouldThrow<OperationCanceledException>();
+        _ = await ShouldAssertionExtensions.ShouldThrow<OperationCanceledException>((Func<Task>)(() => DatabaseInitializationWorkerTestHelpers.ExecuteWorker(worker, CancellationToken.None)));
 
         // Assert
         var activity = stoppedActivities.ShouldHaveSingleItem();

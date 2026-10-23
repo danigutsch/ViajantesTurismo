@@ -30,7 +30,7 @@ public sealed class BookingsApiClientTests
     }
 
     [Fact]
-    public async Task GetBookingById_returns_booking_when_admin_api_returns_success()
+    public async Task GetBookingById_returns_booking_when_admin_API_returns_success()
     {
         var requestPath = string.Empty;
         var bookingId = Guid.Parse("11111111-1111-1111-1111-111111111111");
@@ -52,7 +52,7 @@ public sealed class BookingsApiClientTests
     }
 
     [Fact]
-    public async Task GetBookingById_returns_null_when_admin_api_returns_not_found()
+    public async Task GetBookingById_returns_null_when_admin_API_returns_not_found()
     {
         using var httpClient = CatalogToursApiClientTestsHelpers.CreateClient(_ => new HttpResponseMessage(System.Net.HttpStatusCode.NotFound));
         var sut = new BookingsApiClient(httpClient);
@@ -64,7 +64,7 @@ public sealed class BookingsApiClientTests
     }
 
     [Fact]
-    public async Task GetBookingById_returns_malformed_outcome_when_admin_api_returns_success_with_null_body()
+    public async Task GetBookingById_returns_malformed_outcome_when_admin_API_returns_success_with_null_body()
     {
         using var httpClient = CatalogToursApiClientTestsHelpers.CreateClient(_ => CatalogToursApiClientTestsHelpers.JsonResponse("null"));
         var sut = new BookingsApiClient(httpClient);

@@ -6,15 +6,30 @@ internal sealed class FakeBrandingApiClient : IManagementBrandingApiClient
 {
     public BrandingSettingsDto Branding { get; set; } = CreateDefaultBranding();
 
-    public bool ThrowOnGetSettings { get; set; }
+    public bool ThrowOnGetSettings
+    {
+        get; set;
+    }
 
-    public bool ReturnEmptyGetResponse { get; set; }
+    public bool ReturnEmptyGetResponse
+    {
+        get; set;
+    }
 
-    public bool ReturnEmptySaveResponse { get; set; }
+    public bool ReturnEmptySaveResponse
+    {
+        get; set;
+    }
 
-    public ContractValidationException? ValidationException { get; set; }
+    public ContractValidationException? ValidationException
+    {
+        get; set;
+    }
 
-    public BrandingSettingsDto? SavedBranding { get; private set; }
+    public BrandingSettingsDto? SavedBranding
+    {
+        get; private set;
+    }
 
     public Task<BrandingSettingsDto> GetSettings(CancellationToken ct)
     {

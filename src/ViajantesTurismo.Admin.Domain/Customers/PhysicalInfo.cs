@@ -32,13 +32,22 @@ public sealed class PhysicalInfo
     }
 
     /// <summary>Weight in kilograms.</summary>
-    public decimal WeightKg { get; private set; }
+    public decimal WeightKg
+    {
+        get; private set;
+    }
 
     /// <summary>Height in centimeters.</summary>
-    public int HeightCentimeters { get; private set; }
+    public int HeightCentimeters
+    {
+        get; private set;
+    }
 
     /// <summary>Type of bicycle.</summary>
-    public BikeType BikeType { get; private set; }
+    public BikeType BikeType
+    {
+        get; private set;
+    }
 
     /// <summary>
     /// Creates a new instance of <see cref="PhysicalInfo"/> with validation.

@@ -77,7 +77,8 @@ public sealed class DocumentApiEndpointTests(ApiFixture fixture)
 
         // Assert
         response.StatusCode.ShouldBe(HttpStatusCode.Created);
-        var document = (await response.Content.ReadFromJsonAsync<GetDocumentDto>(cancellationToken)).ShouldNotBeNull();
+        var actualValue = await response.Content.ReadFromJsonAsync<GetDocumentDto>(cancellationToken);
+        var document = actualValue.ShouldNotBeNull();
         document.BookingId.ShouldBe(booking.Id);
     }
 
@@ -221,8 +222,10 @@ public sealed class DocumentApiEndpointTests(ApiFixture fixture)
         firstResponse.StatusCode.ShouldBe(HttpStatusCode.Created);
         cancelResponse.StatusCode.ShouldBe(HttpStatusCode.OK);
         replayResponse.StatusCode.ShouldBe(HttpStatusCode.Created);
-        var firstDocument = (await firstResponse.Content.ReadFromJsonAsync<GetDocumentDto>(cancellationToken)).ShouldNotBeNull();
-        var replayedDocument = (await replayResponse.Content.ReadFromJsonAsync<GetDocumentDto>(cancellationToken)).ShouldNotBeNull();
+        var actualValue1 = await firstResponse.Content.ReadFromJsonAsync<GetDocumentDto>(cancellationToken);
+        var firstDocument = actualValue1.ShouldNotBeNull();
+        var actualValue2 = await replayResponse.Content.ReadFromJsonAsync<GetDocumentDto>(cancellationToken);
+        var replayedDocument = actualValue2.ShouldNotBeNull();
         replayedDocument.Id.ShouldBe(firstDocument.Id);
         draftCount.ShouldBe(1);
         var generationAudit = audits.ShouldHaveSingleItem(audit => audit.Operation == "Generate");
@@ -262,8 +265,10 @@ public sealed class DocumentApiEndpointTests(ApiFixture fixture)
         // Assert
         firstResponse.StatusCode.ShouldBe(HttpStatusCode.Created);
         secondResponse.StatusCode.ShouldBe(HttpStatusCode.Created);
-        var firstDocument = (await firstResponse.Content.ReadFromJsonAsync<GetDocumentDto>(cancellationToken)).ShouldNotBeNull();
-        var secondDocument = (await secondResponse.Content.ReadFromJsonAsync<GetDocumentDto>(cancellationToken)).ShouldNotBeNull();
+        var actualValue3 = await firstResponse.Content.ReadFromJsonAsync<GetDocumentDto>(cancellationToken);
+        var firstDocument = actualValue3.ShouldNotBeNull();
+        var actualValue4 = await secondResponse.Content.ReadFromJsonAsync<GetDocumentDto>(cancellationToken);
+        var secondDocument = actualValue4.ShouldNotBeNull();
         secondDocument.Id.ShouldNotBe(firstDocument.Id);
         firstDocument.BookingId.ShouldBe(firstBooking.Id);
         secondDocument.BookingId.ShouldBe(secondBooking.Id);
@@ -828,8 +833,10 @@ public sealed class DocumentApiEndpointTests(ApiFixture fixture)
         firstResponse.StatusCode.ShouldBe(HttpStatusCode.OK);
         cancelResponse.StatusCode.ShouldBe(HttpStatusCode.OK);
         replayResponse.StatusCode.ShouldBe(HttpStatusCode.OK);
-        var firstReplacement = (await firstResponse.Content.ReadFromJsonAsync<GetDocumentDto>(cancellationToken)).ShouldNotBeNull();
-        var replayedReplacement = (await replayResponse.Content.ReadFromJsonAsync<GetDocumentDto>(cancellationToken)).ShouldNotBeNull();
+        var actualValue5 = await firstResponse.Content.ReadFromJsonAsync<GetDocumentDto>(cancellationToken);
+        var firstReplacement = actualValue5.ShouldNotBeNull();
+        var actualValue6 = await replayResponse.Content.ReadFromJsonAsync<GetDocumentDto>(cancellationToken);
+        var replayedReplacement = actualValue6.ShouldNotBeNull();
         replayedReplacement.Id.ShouldBe(firstReplacement.Id);
         firstReplacement.Revision.ShouldBe(2);
         draftCount.ShouldBe(2);
@@ -978,7 +985,8 @@ public sealed class DocumentApiEndpointTests(ApiFixture fixture)
         artifactResponse.Headers.GetValues("X-Content-Type-Options").ShouldContain("nosniff");
         artifactResponse.Content.Headers.ContentType.ShouldNotBeNull().MediaType.ShouldBe("text/html");
         var contentDisposition = artifactResponse.Content.Headers.ContentDisposition.ShouldNotBeNull();
-        (contentDisposition.FileNameStar ?? contentDisposition.FileName?.Trim('"')).ShouldBe($"document-{generated.Id:N}-r1.html");
+        var actualValue7 = contentDisposition.FileNameStar ?? contentDisposition.FileName?.Trim('"');
+        actualValue7.ShouldBe($"document-{generated.Id:N}-r1.html");
         string.IsNullOrWhiteSpace(artifactContent).ShouldBeFalse();
 
         audits.Select(audit => audit.Operation).ShouldBe(

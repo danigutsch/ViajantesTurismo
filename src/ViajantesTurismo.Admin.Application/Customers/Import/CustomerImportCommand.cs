@@ -8,5 +8,8 @@ namespace ViajantesTurismo.Admin.Application.Customers.Import;
 public sealed record CustomerImportCommand(string CsvContent, bool DryRun)
 {
     /// <summary>Gets the UTC business date captured by the import workflow, when supplied.</summary>
-    public DateOnly? Today { get; init; }
+    public DateOnly? Today
+    {
+        get; init;
+    }
 }

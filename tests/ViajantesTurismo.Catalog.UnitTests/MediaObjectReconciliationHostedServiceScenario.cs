@@ -22,7 +22,10 @@ internal sealed class MediaObjectReconciliationHostedServiceScenario : IAsyncDis
             NullLogger<MediaObjectReconciliationHostedService>.Instance);
     }
 
-    public InMemoryMediaObjectStore ObjectStore { get; }
+    public InMemoryMediaObjectStore ObjectStore
+    {
+        get;
+    }
 
     public static async Task<MediaObjectReconciliationHostedServiceScenario> CreateWithOldOrphan()
     {
@@ -34,7 +37,7 @@ internal sealed class MediaObjectReconciliationHostedServiceScenario : IAsyncDis
         await objectStore.Put(
             new MediaObjectWriteRequest("media/hosted-orphan.jpg", new MemoryStream([2]), "image/jpeg", 1),
             TestContext.Current.CancellationToken);
-        objectStore.SetLastModified("media/hosted-orphan.jpg", DateTimeOffset.UtcNow.AddDays(-2));
+        objectStore.SetLastModified("media/hosted-orphan.jpg", TimeProvider.System.GetUtcNow().AddDays(-2));
 
         var imageStore = new InMemoryPublicMediaImageStore(image);
         var services = new ServiceCollection();

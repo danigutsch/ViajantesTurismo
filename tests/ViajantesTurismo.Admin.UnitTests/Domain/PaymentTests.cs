@@ -14,12 +14,12 @@ public class PaymentTests
         var result = PaymentErrors.InvalidAmount(invalidAmount);
 
         // Assert
-        (result.IsSuccess).ShouldBeFalse();
-        (result.ErrorDetails).ShouldNotBeNull();
-        (result.ErrorDetails.Detail).ShouldContain("Payment amount must be greater than zero", StringComparison.Ordinal);
-        (result.ErrorDetails.ValidationErrors).ShouldNotBeNull();
-        (result.ErrorDetails.ValidationErrors.ContainsKey("amount")).ShouldBeTrue();
-        (result.ErrorDetails.ValidationErrors["amount"][0]).ShouldBe("Payment amount must be greater than zero.");
+        result.IsSuccess.ShouldBeFalse();
+        result.ErrorDetails.ShouldNotBeNull();
+        result.ErrorDetails.Detail.ShouldContain("Payment amount must be greater than zero", StringComparison.Ordinal);
+        result.ErrorDetails.ValidationErrors.ShouldNotBeNull();
+        result.ErrorDetails.ValidationErrors.ContainsKey("amount").ShouldBeTrue();
+        result.ErrorDetails.ValidationErrors["amount"][0].ShouldBe("Payment amount must be greater than zero.");
     }
 
     [Fact]
@@ -32,14 +32,14 @@ public class PaymentTests
         var result = PaymentErrors.InvalidPaymentMethod(invalidMethod);
 
         // Assert
-        (result.IsSuccess).ShouldBeFalse();
-        (result.ErrorDetails).ShouldNotBeNull();
-        (result.ErrorDetails.Detail).ShouldContain("Invalid payment method", StringComparison.Ordinal);
-        (result.ErrorDetails.Detail).ShouldContain("999", StringComparison.Ordinal);
-        (result.ErrorDetails.Detail).ShouldContain("Valid values are:", StringComparison.Ordinal);
-        (result.ErrorDetails.ValidationErrors).ShouldNotBeNull();
-        (result.ErrorDetails.ValidationErrors.ContainsKey("method")).ShouldBeTrue();
-        (result.ErrorDetails.ValidationErrors["method"][0]).ShouldContain("Invalid payment method", StringComparison.Ordinal);
+        result.IsSuccess.ShouldBeFalse();
+        result.ErrorDetails.ShouldNotBeNull();
+        result.ErrorDetails.Detail.ShouldContain("Invalid payment method", StringComparison.Ordinal);
+        result.ErrorDetails.Detail.ShouldContain("999", StringComparison.Ordinal);
+        result.ErrorDetails.Detail.ShouldContain("Valid values are:", StringComparison.Ordinal);
+        result.ErrorDetails.ValidationErrors.ShouldNotBeNull();
+        result.ErrorDetails.ValidationErrors.ContainsKey("method").ShouldBeTrue();
+        result.ErrorDetails.ValidationErrors["method"][0].ShouldContain("Invalid payment method", StringComparison.Ordinal);
     }
 
     [Fact]
@@ -52,11 +52,11 @@ public class PaymentTests
         var result = PaymentErrors.InvalidPaymentMethod(invalidMethod);
 
         // Assert
-        (result.ErrorDetails).ShouldNotBeNull();
+        result.ErrorDetails.ShouldNotBeNull();
         var allValidMethods = Enum.GetNames<PaymentMethod>();
         foreach (var validMethod in allValidMethods)
         {
-            (result.ErrorDetails.Detail).ShouldContain(validMethod, StringComparison.Ordinal);
+            result.ErrorDetails.Detail.ShouldContain(validMethod, StringComparison.Ordinal);
         }
     }
 
@@ -70,12 +70,12 @@ public class PaymentTests
         var result = PaymentErrors.FuturePaymentDate(DateOnly.FromDateTime(futureDate));
 
         // Assert
-        (result.IsSuccess).ShouldBeFalse();
-        (result.ErrorDetails).ShouldNotBeNull();
-        (result.ErrorDetails.Detail).ShouldContain("Payment date cannot be in the future", StringComparison.Ordinal);
-        (result.ErrorDetails.ValidationErrors).ShouldNotBeNull();
-        (result.ErrorDetails.ValidationErrors.ContainsKey("paymentDate")).ShouldBeTrue();
-        (result.ErrorDetails.ValidationErrors["paymentDate"][0]).ShouldBe("Payment date cannot be in the future.");
+        result.IsSuccess.ShouldBeFalse();
+        result.ErrorDetails.ShouldNotBeNull();
+        result.ErrorDetails.Detail.ShouldContain("Payment date cannot be in the future", StringComparison.Ordinal);
+        result.ErrorDetails.ValidationErrors.ShouldNotBeNull();
+        result.ErrorDetails.ValidationErrors.ContainsKey("paymentDate").ShouldBeTrue();
+        result.ErrorDetails.ValidationErrors["paymentDate"][0].ShouldBe("Payment date cannot be in the future.");
     }
 
     [Fact]
@@ -89,12 +89,12 @@ public class PaymentTests
         var result = PaymentErrors.ExceedsRemainingBalance(paymentAmount, remainingBalance);
 
         // Assert
-        (result.IsSuccess).ShouldBeFalse();
-        (result.ErrorDetails).ShouldNotBeNull();
-        (result.ErrorDetails.Detail).ShouldContain("exceeds remaining balance", StringComparison.Ordinal);
-        (result.ErrorDetails.ValidationErrors).ShouldNotBeNull();
-        (result.ErrorDetails.ValidationErrors.ContainsKey("amount")).ShouldBeTrue();
-        (result.ErrorDetails.ValidationErrors["amount"][0]).ShouldContain("cannot exceed remaining balance", StringComparison.Ordinal);
+        result.IsSuccess.ShouldBeFalse();
+        result.ErrorDetails.ShouldNotBeNull();
+        result.ErrorDetails.Detail.ShouldContain("exceeds remaining balance", StringComparison.Ordinal);
+        result.ErrorDetails.ValidationErrors.ShouldNotBeNull();
+        result.ErrorDetails.ValidationErrors.ContainsKey("amount").ShouldBeTrue();
+        result.ErrorDetails.ValidationErrors["amount"][0].ShouldContain("cannot exceed remaining balance", StringComparison.Ordinal);
     }
 
     [Fact]
@@ -107,9 +107,9 @@ public class PaymentTests
         var result = PaymentErrors.PaymentNotFound(paymentId);
 
         // Assert
-        (result.IsSuccess).ShouldBeFalse();
-        (result.ErrorDetails).ShouldNotBeNull();
-        (result.ErrorDetails.Detail).ShouldBe("Payment was not found.");
-        (result.ErrorDetails.Detail).ShouldContain("was not found", StringComparison.Ordinal);
+        result.IsSuccess.ShouldBeFalse();
+        result.ErrorDetails.ShouldNotBeNull();
+        result.ErrorDetails.Detail.ShouldBe("Payment was not found.");
+        result.ErrorDetails.Detail.ShouldContain("was not found", StringComparison.Ordinal);
     }
 }

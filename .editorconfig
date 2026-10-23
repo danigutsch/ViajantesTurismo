@@ -80,6 +80,10 @@ insert_final_newline = true
 csharp_using_directive_placement = outside_namespace:warning
 csharp_prefer_simple_using_statement = true:warning
 csharp_prefer_braces = true:warning
+csharp_new_line_before_open_brace = all
+csharp_preserve_single_line_blocks = false
+csharp_preserve_single_line_statements = false
+dotnet_diagnostic.IDE0055.severity = warning
 
 csharp_max_line_length = 200
 csharp_wrap_parameters_style = wrap_if_long
@@ -323,3 +327,18 @@ dotnet_diagnostic.SKSTYLE004.severity = none
 [*]
 sharedkernel_style_allow_async_suffix_overrides = true
 sharedkernel_style_allow_async_suffix_interface_implementations = true
+
+# Scheduling owns its internal source. This process-global subscription correlates the test trace.
+# Owner: Catalog test maintainers. Remove when the package exposes source identity for testing.
+[tests/ViajantesTurismo.Catalog.UnitTests/PollingBackgroundServiceTestHarness.cs]
+dotnet_diagnostic.SKTEST010.severity = none
+
+# Npgsql owns its internal source. The privacy probe correlates trace and parent span IDs.
+# Owner: Catalog test maintainers. Remove when Npgsql exposes source identity for testing.
+[tests/ViajantesTurismo.Catalog.InfrastructureTests/Tours/CatalogTourSlugLockPostgreSqlTests.cs]
+dotnet_diagnostic.SKTEST010.severity = none
+
+# Framework HTTP sources are internal. The privacy capture deliberately subscribes globally and filters trace IDs.
+# Owner: Admin API test maintainers. Remove when framework source identities are publicly available.
+[tests/ViajantesTurismo.Admin.ApiServiceTests/Documents/DocumentPrivacyTelemetryCapture.cs]
+dotnet_diagnostic.SKTEST010.severity = none

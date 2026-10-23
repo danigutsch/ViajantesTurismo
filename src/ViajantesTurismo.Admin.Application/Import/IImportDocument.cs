@@ -16,10 +16,16 @@ public interface IImportDocument
     /// <summary>
     /// Gets the header columns from the imported document.
     /// </summary>
-    IReadOnlyList<string> Headers { get; }
+    IReadOnlyList<string> Headers
+    {
+        get;
+    }
 
     /// <summary>
     /// Gets the data rows from the imported document.
     /// </summary>
-    IReadOnlyList<IImportRow> Rows { get; }
+    IReadOnlyList<IImportRow> Rows
+    {
+        get;
+    }
 }

@@ -24,7 +24,7 @@ public sealed class AdminAuthorizationTests
     }
 
     [Fact]
-    public void Admin_role_receives_every_admin_api_permission()
+    public void Admin_role_receives_every_admin_API_permission()
     {
         // Arrange
         string[] expectedPermissions =

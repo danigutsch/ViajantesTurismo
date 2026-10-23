@@ -28,9 +28,9 @@ public sealed class EmergencyContactPageTests : BunitContext
         var cut = Render<EmergencyContact>();
 
         // Assert
-        (cut.Find("#name").GetAttribute("value")).ShouldBe("Maria Silva");
-        (cut.Find("#mobile").GetAttribute("value")).ShouldBe("+55 11 98888-8888");
-        (_state.CurrentStep).ShouldBe(7);
+        cut.Find("#name").GetAttribute("value").ShouldBe("Maria Silva");
+        cut.Find("#mobile").GetAttribute("value").ShouldBe("+55 11 98888-8888");
+        _state.CurrentStep.ShouldBe(7);
     }
 
     [Fact]
@@ -46,11 +46,11 @@ public sealed class EmergencyContactPageTests : BunitContext
         await cut.InvokeAsync(async () => await cut.Find("form").SubmitAsync());
 
         // Assert
-        await cut.WaitForAssertionAsync(() => (navigationManager.Uri).ShouldEndWith("/customers/create/medical", StringComparison.Ordinal));
-        (_state.EmergencyContact).ShouldNotBeNull();
-        (_state.EmergencyContact.Name).ShouldBe("Maria Silva");
-        (_state.EmergencyContact.Mobile).ShouldBe("+55 11 98888-8888");
-        (_state.CurrentStep).ShouldBe(8);
+        await cut.WaitForAssertionAsync(() => navigationManager.Uri.ShouldEndWith("/customers/create/medical", StringComparison.Ordinal));
+        _state.EmergencyContact.ShouldNotBeNull();
+        _state.EmergencyContact.Name.ShouldBe("Maria Silva");
+        _state.EmergencyContact.Mobile.ShouldBe("+55 11 98888-8888");
+        _state.CurrentStep.ShouldBe(8);
     }
 
     [Fact]
@@ -65,7 +65,7 @@ public sealed class EmergencyContactPageTests : BunitContext
         await cut.InvokeAsync(() => backButton.Click());
 
         // Assert
-        await cut.WaitForAssertionAsync(() => (navigationManager.Uri).ShouldEndWith("/customers/create/accommodation", StringComparison.Ordinal));
-        (_state.CurrentStep).ShouldBe(6);
+        await cut.WaitForAssertionAsync(() => navigationManager.Uri.ShouldEndWith("/customers/create/accommodation", StringComparison.Ordinal));
+        _state.CurrentStep.ShouldBe(6);
     }
 }

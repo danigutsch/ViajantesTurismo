@@ -70,37 +70,58 @@ public sealed class PublicMediaImage
     /// <summary>
     /// Gets the stable media image identifier.
     /// </summary>
-    public Guid Id { get; private set; }
+    public Guid Id
+    {
+        get; private set;
+    }
 
     /// <summary>
     /// Gets the original source object key.
     /// </summary>
-    public string SourceObjectKey { get; private set; }
+    public string SourceObjectKey
+    {
+        get; private set;
+    }
 
     /// <summary>
     /// Gets the content checksum supplied by the media source.
     /// </summary>
-    public string Checksum { get; private set; }
+    public string Checksum
+    {
+        get; private set;
+    }
 
     /// <summary>
     /// Gets the source media content type.
     /// </summary>
-    public string ContentType { get; private set; }
+    public string ContentType
+    {
+        get; private set;
+    }
 
     /// <summary>
     /// Gets the source file size in bytes.
     /// </summary>
-    public long FileSizeBytes { get; private set; }
+    public long FileSizeBytes
+    {
+        get; private set;
+    }
 
     /// <summary>
     /// Gets the source image dimensions.
     /// </summary>
-    public MediaImageDimensions Dimensions { get; private set; }
+    public MediaImageDimensions Dimensions
+    {
+        get; private set;
+    }
 
     /// <summary>
     /// Gets the external processing state.
     /// </summary>
-    public MediaImageProcessingStatus ProcessingStatus { get; private set; }
+    public MediaImageProcessingStatus ProcessingStatus
+    {
+        get; private set;
+    }
 
     /// <summary>
     /// Gets the public responsive renditions.
@@ -120,27 +141,42 @@ public sealed class PublicMediaImage
     /// <summary>
     /// Gets the accessible image description.
     /// </summary>
-    public string AltText { get; private set; }
+    public string AltText
+    {
+        get; private set;
+    }
 
     /// <summary>
     /// Gets the optional public caption.
     /// </summary>
-    public string? Caption { get; private set; }
+    public string? Caption
+    {
+        get; private set;
+    }
 
     /// <summary>
     /// Gets a value indicating whether the image is intentionally decorative.
     /// </summary>
-    public bool IsDecorative { get; private set; }
+    public bool IsDecorative
+    {
+        get; private set;
+    }
 
     /// <summary>
     /// Gets a value indicating whether accessibility text needs human review before publication.
     /// </summary>
-    public bool RequiresHumanReview { get; private set; }
+    public bool RequiresHumanReview
+    {
+        get; private set;
+    }
 
     /// <summary>
     /// Gets a value indicating whether the current accessibility text is an AI-assisted draft.
     /// </summary>
-    public bool IsAiGenerated { get; private set; }
+    public bool IsAiGenerated
+    {
+        get; private set;
+    }
 
     /// <summary>
     /// Gets localized accessibility text for this image.
@@ -150,12 +186,18 @@ public sealed class PublicMediaImage
     /// <summary>
     /// Gets the optional attribution text.
     /// </summary>
-    public string? Attribution { get; private set; }
+    public string? Attribution
+    {
+        get; private set;
+    }
 
     /// <summary>
     /// Gets the optional copyright notice.
     /// </summary>
-    public string? Copyright { get; private set; }
+    public string? Copyright
+    {
+        get; private set;
+    }
 
     /// <summary>
     /// Gets the image display order within its current tour gallery view.

@@ -24,14 +24,20 @@ internal sealed class ProtectedDistributedTicketStoreTestContext
             logger ?? NullLogger<ProtectedDistributedTicketStore>.Instance, timeProvider ?? TimeProvider.System);
     }
 
-    public IDistributedCache Cache { get; }
+    public IDistributedCache Cache
+    {
+        get;
+    }
 
-    public ProtectedDistributedTicketStore Store { get; }
+    public ProtectedDistributedTicketStore Store
+    {
+        get;
+    }
 
     public static AuthenticationTicket CreateTicket(DateTimeOffset? expiresUtc = null)
     {
         var identity = new ClaimsIdentity([new Claim(ClaimTypes.Name, "Test Administrator")], "test");
-        var properties = new AuthenticationProperties { ExpiresUtc = expiresUtc ?? DateTimeOffset.UtcNow.AddHours(1) };
+        var properties = new AuthenticationProperties { ExpiresUtc = expiresUtc ?? TimeProvider.System.GetUtcNow().AddHours(1) };
         return new AuthenticationTicket(new ClaimsPrincipal(identity), properties, "test");
     }
 }

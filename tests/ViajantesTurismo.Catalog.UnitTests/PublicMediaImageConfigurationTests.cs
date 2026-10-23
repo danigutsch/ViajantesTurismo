@@ -14,15 +14,15 @@ public sealed class PublicMediaImageConfigurationTests
 
         // Act
         var displayOrderIndex = tourLinks.GetIndexes()
-            .Single(index => index.Properties.Select(property => property.Name)
+            .ShouldHaveSingleItem(index => index.Properties.Select(property => property.Name)
                 .SequenceEqual([nameof(MediaImageTourLink.CatalogTourId), nameof(MediaImageTourLink.DisplayOrder)]));
         var coverIndex = tourLinks.GetIndexes()
-            .Single(index => index.Properties.Select(property => property.Name)
+            .ShouldHaveSingleItem(index => index.Properties.Select(property => property.Name)
                 .SequenceEqual([nameof(MediaImageTourLink.CatalogTourId)]));
 
         // Assert
         displayOrderIndex.IsUnique.ShouldBeTrue();
         coverIndex.IsUnique.ShouldBeTrue();
-        coverIndex.FindAnnotation("Relational:Filter")?.Value.ShouldBe("\"IsCover\" = TRUE");
+        coverIndex.FindAnnotation("Relational:Filter").ShouldNotBeNull().Value.ShouldBe("\"IsCover\" = TRUE");
     }
 }

@@ -7,14 +7,38 @@ internal sealed class CustomerCreationState
 {
     public int CurrentStep { get; private set; } = 1;
 
-    public PersonalInfoFormModel? PersonalInfo { get; private set; }
-    public IdentificationInfoFormModel? IdentificationInfo { get; private set; }
-    public ContactInfoFormModel? ContactInfo { get; private set; }
-    public AddressFormModel? Address { get; private set; }
-    public PhysicalInfoFormModel? PhysicalInfo { get; private set; }
-    public AccommodationPreferencesFormModel? AccommodationPreferences { get; private set; }
-    public EmergencyContactFormModel? EmergencyContact { get; private set; }
-    public MedicalInfoFormModel? MedicalInfo { get; private set; }
+    public PersonalInfoFormModel? PersonalInfo
+    {
+        get; private set;
+    }
+    public IdentificationInfoFormModel? IdentificationInfo
+    {
+        get; private set;
+    }
+    public ContactInfoFormModel? ContactInfo
+    {
+        get; private set;
+    }
+    public AddressFormModel? Address
+    {
+        get; private set;
+    }
+    public PhysicalInfoFormModel? PhysicalInfo
+    {
+        get; private set;
+    }
+    public AccommodationPreferencesFormModel? AccommodationPreferences
+    {
+        get; private set;
+    }
+    public EmergencyContactFormModel? EmergencyContact
+    {
+        get; private set;
+    }
+    public MedicalInfoFormModel? MedicalInfo
+    {
+        get; private set;
+    }
 
     /// <summary>
     /// Sets the personal information for the customer and advances to the next step.

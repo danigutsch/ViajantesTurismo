@@ -7,11 +7,17 @@ namespace ViajantesTurismo.Management.Web.Components.Pages.Bookings;
 /// </summary>
 internal sealed class BookingEditPaymentState
 {
-    internal bool IsFormVisible { get; private set; }
+    internal bool IsFormVisible
+    {
+        get; private set;
+    }
 
     internal PaymentFormModel FormModel { get; private set; } = new();
 
-    internal bool IsSubmitting { get; private set; }
+    internal bool IsSubmitting
+    {
+        get; private set;
+    }
 
     internal void ShowForm()
     {

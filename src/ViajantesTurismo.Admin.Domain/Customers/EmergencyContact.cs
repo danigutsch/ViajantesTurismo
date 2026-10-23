@@ -30,10 +30,16 @@ public sealed class EmergencyContact
     }
 
     /// <summary>Emergency contact name.</summary>
-    public string Name { get; private set; }
+    public string Name
+    {
+        get; private set;
+    }
 
     /// <summary>Emergency contact mobile (with DDD).</summary>
-    public string Mobile { get; private set; }
+    public string Mobile
+    {
+        get; private set;
+    }
 
     /// <summary>
     /// Creates a new instance of <see cref="EmergencyContact"/> with validation.

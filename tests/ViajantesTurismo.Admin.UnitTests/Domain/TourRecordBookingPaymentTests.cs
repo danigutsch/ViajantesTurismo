@@ -17,15 +17,15 @@ public class TourRecordBookingPaymentTests
         var result = tour.RecordBookingPayment(
             Guid.CreateVersion7(),
             100m,
-            DateOnly.FromDateTime(DateTime.UtcNow.AddDays(-1)),
+            DateOnly.FromDateTime(TimeProvider.System.GetUtcNow().UtcDateTime.AddDays(-1)),
             PaymentMethod.CreditCard,
             TimeProvider.System);
 
         // Assert
-        (result.IsSuccess).ShouldBeFalse();
-        (result.Status).ShouldBe(ResultStatus.NotFound);
-        (result.ErrorDetails).ShouldNotBeNull();
-        (result.ErrorDetails.Detail).ShouldContain("not found in this tour", StringComparison.Ordinal);
+        result.IsSuccess.ShouldBeFalse();
+        result.Status.ShouldBe(ResultStatus.NotFound);
+        result.ErrorDetails.ShouldNotBeNull();
+        result.ErrorDetails.Detail.ShouldContain("not found in this tour", StringComparison.Ordinal);
     }
 
     [Fact]
@@ -40,16 +40,16 @@ public class TourRecordBookingPaymentTests
         var result = tour.RecordBookingPayment(
             booking.Id,
             booking.RemainingBalance + 1m,
-            DateOnly.FromDateTime(DateTime.UtcNow.AddDays(-1)),
+            DateOnly.FromDateTime(TimeProvider.System.GetUtcNow().UtcDateTime.AddDays(-1)),
             PaymentMethod.CreditCard,
             TimeProvider.System);
 
         // Assert
-        (result.IsSuccess).ShouldBeFalse();
-        (result.Status).ShouldBe(ResultStatus.Invalid);
-        (result.ErrorDetails).ShouldNotBeNull();
-        (result.ErrorDetails.Detail).ShouldContain("exceeds remaining balance", StringComparison.Ordinal);
-        (booking.Payments).ShouldBeEmpty();
+        result.IsSuccess.ShouldBeFalse();
+        result.Status.ShouldBe(ResultStatus.Invalid);
+        result.ErrorDetails.ShouldNotBeNull();
+        result.ErrorDetails.Detail.ShouldContain("exceeds remaining balance", StringComparison.Ordinal);
+        booking.Payments.ShouldBeEmpty();
     }
 
     [Fact]
@@ -64,16 +64,16 @@ public class TourRecordBookingPaymentTests
         var result = tour.RecordBookingPayment(
             booking.Id,
             0m,
-            DateOnly.FromDateTime(DateTime.UtcNow.AddDays(-1)),
+            DateOnly.FromDateTime(TimeProvider.System.GetUtcNow().UtcDateTime.AddDays(-1)),
             PaymentMethod.CreditCard,
             TimeProvider.System);
 
         // Assert
-        (result.IsSuccess).ShouldBeFalse();
-        (result.Status).ShouldBe(ResultStatus.Invalid);
-        (result.ErrorDetails).ShouldNotBeNull();
-        (result.ErrorDetails.Detail).ShouldContain("Payment amount must be greater than zero", StringComparison.Ordinal);
-        (booking.Payments).ShouldBeEmpty();
+        result.IsSuccess.ShouldBeFalse();
+        result.Status.ShouldBe(ResultStatus.Invalid);
+        result.ErrorDetails.ShouldNotBeNull();
+        result.ErrorDetails.Detail.ShouldContain("Payment amount must be greater than zero", StringComparison.Ordinal);
+        booking.Payments.ShouldBeEmpty();
     }
 
     [Fact]
@@ -88,16 +88,16 @@ public class TourRecordBookingPaymentTests
         var result = tour.RecordBookingPayment(
             booking.Id,
             100m,
-            DateOnly.FromDateTime(DateTime.UtcNow.AddDays(-1)),
+            DateOnly.FromDateTime(TimeProvider.System.GetUtcNow().UtcDateTime.AddDays(-1)),
             (PaymentMethod)999,
             TimeProvider.System);
 
         // Assert
-        (result.IsSuccess).ShouldBeFalse();
-        (result.Status).ShouldBe(ResultStatus.Invalid);
-        (result.ErrorDetails).ShouldNotBeNull();
-        (result.ErrorDetails.Detail).ShouldContain("Invalid payment method", StringComparison.Ordinal);
-        (booking.Payments).ShouldBeEmpty();
+        result.IsSuccess.ShouldBeFalse();
+        result.Status.ShouldBe(ResultStatus.Invalid);
+        result.ErrorDetails.ShouldNotBeNull();
+        result.ErrorDetails.Detail.ShouldContain("Invalid payment method", StringComparison.Ordinal);
+        booking.Payments.ShouldBeEmpty();
     }
 
     [Fact]
@@ -112,16 +112,16 @@ public class TourRecordBookingPaymentTests
         var result = tour.RecordBookingPayment(
             booking.Id,
             100m,
-            DateOnly.FromDateTime(DateTime.UtcNow.AddDays(1)),
+            DateOnly.FromDateTime(TimeProvider.System.GetUtcNow().UtcDateTime.AddDays(1)),
             PaymentMethod.CreditCard,
             TimeProvider.System);
 
         // Assert
-        (result.IsSuccess).ShouldBeFalse();
-        (result.Status).ShouldBe(ResultStatus.Invalid);
-        (result.ErrorDetails).ShouldNotBeNull();
-        (result.ErrorDetails.Detail).ShouldContain("Payment date cannot be in the future", StringComparison.Ordinal);
-        (booking.Payments).ShouldBeEmpty();
+        result.IsSuccess.ShouldBeFalse();
+        result.Status.ShouldBe(ResultStatus.Invalid);
+        result.ErrorDetails.ShouldNotBeNull();
+        result.ErrorDetails.Detail.ShouldContain("Payment date cannot be in the future", StringComparison.Ordinal);
+        booking.Payments.ShouldBeEmpty();
     }
 
     [Fact]
@@ -131,7 +131,7 @@ public class TourRecordBookingPaymentTests
         var (tour, booking) = BookingDomainTestDataFactory.CreateTourWithSingleBooking(
             new SingleBookingOptions(BikeType: BikeType.Regular, RoomType: RoomType.DoubleOccupancy),
             "Failed to create booking for payment test setup.");
-        var paymentDate = DateTime.UtcNow.AddDays(-2);
+        var paymentDate = TimeProvider.System.GetUtcNow().UtcDateTime.AddDays(-2);
 
         // Act
         var result = tour.RecordBookingPayment(
@@ -144,14 +144,14 @@ public class TourRecordBookingPaymentTests
             notes: "Paid at reception");
 
         // Assert
-        (result.IsSuccess).ShouldBeTrue();
-        var payment = (booking.Payments).ShouldHaveSingleItem();
-        (payment.Id).ShouldBe(result.Value.Id);
-        (payment.Amount).ShouldBe(100m);
-        (payment.PaymentDate).ShouldBe(DateOnly.FromDateTime(paymentDate));
-        (payment.Method).ShouldBe(PaymentMethod.CreditCard);
-        (payment.ReferenceNumber).ShouldBe("TX-123");
-        (payment.Notes).ShouldBe("Paid at reception");
+        result.IsSuccess.ShouldBeTrue();
+        var payment = booking.Payments.ShouldHaveSingleItem();
+        payment.Id.ShouldBe(result.Value.Id);
+        payment.Amount.ShouldBe(100m);
+        payment.PaymentDate.ShouldBe(DateOnly.FromDateTime(paymentDate));
+        payment.Method.ShouldBe(PaymentMethod.CreditCard);
+        payment.ReferenceNumber.ShouldBe("TX-123");
+        payment.Notes.ShouldBe("Paid at reception");
     }
 
 }

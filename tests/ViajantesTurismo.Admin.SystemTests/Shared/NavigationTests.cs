@@ -44,7 +44,7 @@ public class NavigationTests(AspireSystemTestFixture fixture) : AspireSystemTest
         await NavigationTestHelpers.AssertDeepLink(Page, NavigateTo, "/customers/create/review", "Create Customer - Review & Submit");
 
         // Assert
-        await Expect(Page).ToHaveTitleAsync("Create Customer - Review & Submit");
+        await Page.ShouldHaveTitle("Create Customer - Review & Submit");
     }
 
     [Fact]

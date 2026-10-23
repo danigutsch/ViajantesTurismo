@@ -25,7 +25,7 @@ namespace ViajantesTurismo.Catalog.ApiServiceTests;
 public sealed class CatalogApiEndpointTests
 {
     [Fact]
-    public void Catalog_api_marker_exposes_entry_assembly()
+    public void Catalog_API_marker_exposes_entry_assembly()
     {
         // Arrange
         var marker = new CatalogApiHostEntryPoint();
@@ -35,8 +35,8 @@ public sealed class CatalogApiEndpointTests
         var markerAssembly = marker.Assembly;
 
         // Assert
-        (entryPointAssembly).ShouldBeSameAs(CatalogApiMarker.Assembly);
-        (markerAssembly).ShouldBeSameAs(entryPointAssembly);
+        entryPointAssembly.ShouldBeSameAs(CatalogApiMarker.Assembly);
+        markerAssembly.ShouldBeSameAs(entryPointAssembly);
     }
 
     [Theory]
@@ -73,7 +73,7 @@ public sealed class CatalogApiEndpointTests
         using var response = await client.GetAsync(new Uri(path, UriKind.Relative), TestContext.Current.CancellationToken);
 
         // Assert
-        (response.StatusCode).ShouldBe(HttpStatusCode.OK);
+        response.StatusCode.ShouldBe(HttpStatusCode.OK);
     }
 
     [Theory]
@@ -94,7 +94,7 @@ public sealed class CatalogApiEndpointTests
 
         // Assert
         response.StatusCode.ShouldBe(HttpStatusCode.OK);
-        response.Content.Headers.ContentType?.MediaType.ShouldBe("text/plain");
+        response.Content.Headers.ContentType.ShouldNotBeNull().MediaType.ShouldBe("text/plain");
         body.ShouldBe("Healthy");
     }
 
@@ -117,7 +117,7 @@ public sealed class CatalogApiEndpointTests
     }
 
     [Fact]
-    public async Task Robots_txt_disallows_catalog_api_crawling()
+    public async Task Robots_txt_disallows_catalog_API_crawling()
     {
         // Arrange
         await using var factory = CatalogApiTestHost.Create();
@@ -129,8 +129,8 @@ public sealed class CatalogApiEndpointTests
 
         // Assert
         response.StatusCode.ShouldBe(HttpStatusCode.OK);
-        response.Content.Headers.ContentType?.MediaType.ShouldBe("text/plain");
-        response.Content.Headers.ContentType?.CharSet.ShouldBe("utf-8");
+        response.Content.Headers.ContentType.ShouldNotBeNull().MediaType.ShouldBe("text/plain");
+        response.Content.Headers.ContentType.ShouldNotBeNull().CharSet.ShouldBe("utf-8");
         body.ShouldBe("User-agent: *\nDisallow: /");
     }
 
@@ -154,12 +154,12 @@ public sealed class CatalogApiEndpointTests
             TestContext.Current.CancellationToken);
 
         // Assert
-        (response.StatusCode).ShouldBe(HttpStatusCode.OK);
+        response.StatusCode.ShouldBe(HttpStatusCode.OK);
         var saved = await response.Content.ReadFromJsonAsync<PublicContentDto>(TestContext.Current.CancellationToken);
-        _ = (saved).ShouldNotBeNull();
-        (saved.Key).ShouldBe("HOME.HERO");
-        (saved.Variants).ShouldContain(variant => variant.Language == PublicContentLanguageDto.PtBr && variant.RequiresHumanReview);
-        (saved.PublicationState).ShouldBe("ReviewRequired");
+        _ = saved.ShouldNotBeNull();
+        saved.Key.ShouldBe("HOME.HERO");
+        saved.Variants.ShouldContain(variant => variant.Language == PublicContentLanguageDto.PtBr && variant.RequiresHumanReview);
+        saved.PublicationState.ShouldBe("ReviewRequired");
     }
 
     [Fact]
@@ -182,11 +182,11 @@ public sealed class CatalogApiEndpointTests
             TestContext.Current.CancellationToken);
 
         // Assert
-        (response.StatusCode).ShouldBe(HttpStatusCode.BadRequest);
-        response.Content.Headers.ContentType?.MediaType.ShouldBe("application/problem+json");
+        response.StatusCode.ShouldBe(HttpStatusCode.BadRequest);
+        response.Content.Headers.ContentType.ShouldNotBeNull().MediaType.ShouldBe("application/problem+json");
         var problem = await response.Content.ReadFromJsonAsync<HttpValidationProblemDetails>(TestContext.Current.CancellationToken);
-        _ = (problem).ShouldNotBeNull();
-        (problem.Errors.Keys).ShouldContain(nameof(PublicContentVariantDto.Title));
+        _ = problem.ShouldNotBeNull();
+        problem.Errors.Keys.ShouldContain(nameof(PublicContentVariantDto.Title));
     }
 
     [Fact]
@@ -209,10 +209,10 @@ public sealed class CatalogApiEndpointTests
             TestContext.Current.CancellationToken);
 
         // Assert
-        (response.StatusCode).ShouldBe(HttpStatusCode.BadRequest);
+        response.StatusCode.ShouldBe(HttpStatusCode.BadRequest);
         var problem = await response.Content.ReadFromJsonAsync<HttpValidationProblemDetails>(TestContext.Current.CancellationToken);
-        _ = (problem).ShouldNotBeNull();
-        (problem.Errors.Keys).ShouldContain("Variants");
+        _ = problem.ShouldNotBeNull();
+        problem.Errors.Keys.ShouldContain("Variants");
     }
 
     [Fact]
@@ -235,10 +235,10 @@ public sealed class CatalogApiEndpointTests
             TestContext.Current.CancellationToken);
 
         // Assert
-        (response.StatusCode).ShouldBe(HttpStatusCode.BadRequest);
+        response.StatusCode.ShouldBe(HttpStatusCode.BadRequest);
         var problem = await response.Content.ReadFromJsonAsync<HttpValidationProblemDetails>(TestContext.Current.CancellationToken);
-        _ = (problem).ShouldNotBeNull();
-        (problem.Errors.Keys).ShouldContain(nameof(UpsertPublicContentRequest.Variants));
+        _ = problem.ShouldNotBeNull();
+        problem.Errors.Keys.ShouldContain(nameof(UpsertPublicContentRequest.Variants));
     }
 
     [Fact]
@@ -267,10 +267,10 @@ public sealed class CatalogApiEndpointTests
             TestContext.Current.CancellationToken);
 
         // Assert
-        (response.StatusCode).ShouldBe(HttpStatusCode.BadRequest);
+        response.StatusCode.ShouldBe(HttpStatusCode.BadRequest);
         var problem = await response.Content.ReadFromJsonAsync<HttpValidationProblemDetails>(TestContext.Current.CancellationToken);
-        _ = (problem).ShouldNotBeNull();
-        (problem.Errors.Keys).ShouldContain(nameof(UpsertPublicContentRequest.Variants));
+        _ = problem.ShouldNotBeNull();
+        problem.Errors.Keys.ShouldContain(nameof(UpsertPublicContentRequest.Variants));
     }
 
     [Fact]
@@ -292,10 +292,10 @@ public sealed class CatalogApiEndpointTests
             TestContext.Current.CancellationToken);
 
         // Assert
-        (response.StatusCode).ShouldBe(HttpStatusCode.BadRequest);
+        response.StatusCode.ShouldBe(HttpStatusCode.BadRequest);
         var problem = await response.Content.ReadFromJsonAsync<HttpValidationProblemDetails>(TestContext.Current.CancellationToken);
-        _ = (problem).ShouldNotBeNull();
-        (problem.Errors.Keys).ShouldContain("Variants");
+        _ = problem.ShouldNotBeNull();
+        problem.Errors.Keys.ShouldContain("Variants");
     }
 
     [Fact]
@@ -319,12 +319,12 @@ public sealed class CatalogApiEndpointTests
             null,
             null,
             requiresHumanReview: false);
-        (enUs.IsSuccess).ShouldBeTrue();
-        (ptBr.IsSuccess).ShouldBeTrue();
+        enUs.IsSuccess.ShouldBeTrue();
+        ptBr.IsSuccess.ShouldBeTrue();
         var content = EditablePublicContent.Create("home.hero", PublicContentLanguage.EnUs, [enUs.Value, ptBr.Value]);
-        (content.IsSuccess).ShouldBeTrue();
+        content.IsSuccess.ShouldBeTrue();
         var publish = content.Value.Publish();
-        (publish.IsSuccess).ShouldBeTrue();
+        publish.IsSuccess.ShouldBeTrue();
         await publicContentStore.SaveContent(content.Value, TestContext.Current.CancellationToken);
 
         await using var factory = CatalogApiTestHost.Create(new TestCatalogTourReadModelStore(), publicContentStore);
@@ -337,11 +337,11 @@ public sealed class CatalogApiEndpointTests
         var variant = await response.Content.ReadFromJsonAsync<PublicContentVariantDto>(TestContext.Current.CancellationToken);
 
         // Assert
-        (response.StatusCode).ShouldBe(HttpStatusCode.OK);
-        _ = (variant).ShouldNotBeNull();
-        (variant.Language).ShouldBe(PublicContentLanguageDto.PtBr);
-        (variant.Title).ShouldBe("Bem-vindo");
-        (variant.RequiresHumanReview).ShouldBeFalse();
+        response.StatusCode.ShouldBe(HttpStatusCode.OK);
+        _ = variant.ShouldNotBeNull();
+        variant.Language.ShouldBe(PublicContentLanguageDto.PtBr);
+        variant.Title.ShouldBe("Bem-vindo");
+        variant.RequiresHumanReview.ShouldBeFalse();
     }
 
     [Fact]
@@ -365,12 +365,12 @@ public sealed class CatalogApiEndpointTests
             null,
             null,
             requiresHumanReview: false);
-        (enUs.IsSuccess).ShouldBeTrue();
-        (ptBr.IsSuccess).ShouldBeTrue();
+        enUs.IsSuccess.ShouldBeTrue();
+        ptBr.IsSuccess.ShouldBeTrue();
         var content = EditablePublicContent.Create("home/hero", PublicContentLanguage.EnUs, [enUs.Value, ptBr.Value]);
-        (content.IsSuccess).ShouldBeTrue();
+        content.IsSuccess.ShouldBeTrue();
         var publish = content.Value.Publish();
-        (publish.IsSuccess).ShouldBeTrue();
+        publish.IsSuccess.ShouldBeTrue();
         await publicContentStore.SaveContent(content.Value, TestContext.Current.CancellationToken);
 
         await using var factory = CatalogApiTestHost.Create(new TestCatalogTourReadModelStore(), publicContentStore);
@@ -383,9 +383,9 @@ public sealed class CatalogApiEndpointTests
         var variant = await response.Content.ReadFromJsonAsync<PublicContentVariantDto>(TestContext.Current.CancellationToken);
 
         // Assert
-        (response.StatusCode).ShouldBe(HttpStatusCode.OK);
-        _ = (variant).ShouldNotBeNull();
-        (variant.Title).ShouldBe("Welcome");
+        response.StatusCode.ShouldBe(HttpStatusCode.OK);
+        _ = variant.ShouldNotBeNull();
+        variant.Title.ShouldBe("Welcome");
     }
 
     [Fact]
@@ -413,12 +413,12 @@ public sealed class CatalogApiEndpointTests
         var variant = await response.Content.ReadFromJsonAsync<PublicContentVariantDto>(TestContext.Current.CancellationToken);
 
         // Assert
-        (writeResponse.StatusCode).ShouldBe(HttpStatusCode.OK);
-        (response.StatusCode).ShouldBe(HttpStatusCode.OK);
-        _ = (variant).ShouldNotBeNull();
-        (variant.Language).ShouldBe(PublicContentLanguageDto.PtBr);
-        (variant.Title).ShouldBe("Bem-vindo");
-        (variant.RequiresHumanReview).ShouldBeFalse();
+        writeResponse.StatusCode.ShouldBe(HttpStatusCode.OK);
+        response.StatusCode.ShouldBe(HttpStatusCode.OK);
+        _ = variant.ShouldNotBeNull();
+        variant.Language.ShouldBe(PublicContentLanguageDto.PtBr);
+        variant.Title.ShouldBe("Bem-vindo");
+        variant.RequiresHumanReview.ShouldBeFalse();
     }
 
     [Fact]
@@ -441,12 +441,12 @@ public sealed class CatalogApiEndpointTests
             TestContext.Current.CancellationToken);
 
         // Assert
-        (response.StatusCode).ShouldBe(HttpStatusCode.BadRequest);
-        response.Content.Headers.ContentType?.MediaType.ShouldBe("application/problem+json");
+        response.StatusCode.ShouldBe(HttpStatusCode.BadRequest);
+        response.Content.Headers.ContentType.ShouldNotBeNull().MediaType.ShouldBe("application/problem+json");
         var problem = await response.Content.ReadFromJsonAsync<HttpValidationProblemDetails>(TestContext.Current.CancellationToken);
-        _ = (problem).ShouldNotBeNull();
-        (problem.Errors.Keys).ShouldContain(nameof(UpsertCatalogTourPresentationRequest.Title));
-        (problem.Errors.Keys).ShouldContain(nameof(UpsertCatalogTourPresentationRequest.Slug));
+        _ = problem.ShouldNotBeNull();
+        problem.Errors.Keys.ShouldContain(nameof(UpsertCatalogTourPresentationRequest.Title));
+        problem.Errors.Keys.ShouldContain(nameof(UpsertCatalogTourPresentationRequest.Slug));
     }
 
     [Fact]
@@ -460,7 +460,9 @@ public sealed class CatalogApiEndpointTests
         // Act
         using var response = await client.PutAsJsonAsync(
             new Uri($"/api/v1/catalog/media/images/{imageId}", UriKind.Relative),
-            new { },
+            new
+            {
+            },
             TestContext.Current.CancellationToken);
 
         // Assert
@@ -503,7 +505,7 @@ public sealed class CatalogApiEndpointTests
                 "upload-tour",
                 false,
                 1,
-                DateTimeOffset.UtcNow),
+                TimeProvider.System.GetUtcNow()),
             TestContext.Current.CancellationToken);
         var mediaStore = new TestPublicMediaImageStore();
         await using var factory = CatalogApiTestHost.Create(tourStore, new TestPublicContentStore(), mediaStore);
@@ -550,7 +552,7 @@ public sealed class CatalogApiEndpointTests
                 "upload-tour",
                 false,
                 1,
-                DateTimeOffset.UtcNow),
+                TimeProvider.System.GetUtcNow()),
             TestContext.Current.CancellationToken);
         await using var factory = CatalogApiTestHost.Create(tourStore, new TestPublicContentStore(), new TestPublicMediaImageStore());
         using var client = factory.CreateClient();
@@ -587,7 +589,7 @@ public sealed class CatalogApiEndpointTests
                 "preview-tour",
                 false,
                 1,
-                DateTimeOffset.UtcNow),
+                TimeProvider.System.GetUtcNow()),
             TestContext.Current.CancellationToken);
         var image = PublicMediaImageTestFactory.CreateReadyImage(
             tourId,
@@ -611,8 +613,8 @@ public sealed class CatalogApiEndpointTests
             cancellationToken: TestContext.Current.CancellationToken);
         using (document)
         {
-            var returnedImage = document.RootElement.EnumerateArray().Single();
-            var variant = returnedImage.GetProperty("responsiveVariants").EnumerateArray().Single();
+            var returnedImage = document.RootElement.EnumerateArray().ShouldHaveSingleItem();
+            var variant = returnedImage.GetProperty("responsiveVariants").EnumerateArray().ShouldHaveSingleItem();
 
             // Assert
             response.StatusCode.ShouldBe(HttpStatusCode.OK);
@@ -691,7 +693,7 @@ public sealed class CatalogApiEndpointTests
 
         // Assert
         response.StatusCode.ShouldBe(HttpStatusCode.BadRequest);
-        response.Content.Headers.ContentType?.MediaType.ShouldBe("application/problem+json");
+        response.Content.Headers.ContentType.ShouldNotBeNull().MediaType.ShouldBe("application/problem+json");
         var problem = await response.Content.ReadFromJsonAsync<HttpValidationProblemDetails>(TestContext.Current.CancellationToken);
         problem.ShouldNotBeNull();
         problem.Errors.Keys.ShouldContain(nameof(PublicMediaImageAccessibilityDraftRequest.Language));
@@ -783,7 +785,7 @@ public sealed class CatalogApiEndpointTests
                 "camino-norte",
                 true,
                 1,
-                DateTimeOffset.UtcNow),
+                TimeProvider.System.GetUtcNow()),
             TestContext.Current.CancellationToken);
         await tourStore.UpsertDraft(
             new CatalogTourDraftReadModel(
@@ -794,7 +796,7 @@ public sealed class CatalogApiEndpointTests
                 "draft-tour",
                 false,
                 2,
-                DateTimeOffset.UtcNow),
+                TimeProvider.System.GetUtcNow()),
             TestContext.Current.CancellationToken);
         var mediaStore = new TestPublicMediaImageStore();
         await mediaStore.Upsert(
@@ -827,17 +829,17 @@ public sealed class CatalogApiEndpointTests
         using var response = await client.GetAsync(new Uri("/api/v1/public/catalog/tours", UriKind.Relative), TestContext.Current.CancellationToken);
 
         // Assert
-        (response.StatusCode).ShouldBe(HttpStatusCode.OK);
+        response.StatusCode.ShouldBe(HttpStatusCode.OK);
         var tours = await response.Content.ReadFromJsonAsync<TourSummaryDto[]>(TestContext.Current.CancellationToken);
-        _ = (tours).ShouldNotBeNull();
-        var tour = (tours).ShouldHaveSingleItem();
-        (tour.Slug).ShouldBe("camino-norte");
-        var image = (tour.Images).ShouldHaveSingleItem();
-        (image.Id).ShouldNotBe(Guid.Empty);
+        _ = tours.ShouldNotBeNull();
+        var tour = tours.ShouldHaveSingleItem();
+        tour.Slug.ShouldBe("camino-norte");
+        var image = tour.Images.ShouldHaveSingleItem();
+        image.Id.ShouldNotBe(Guid.Empty);
         var rendition = image.ResponsiveVariants.ShouldHaveSingleItem();
         rendition.Width.ShouldBe(640);
         rendition.ContentType.ShouldBe("image/jpeg");
-        (image.AltText).ShouldBe("Published image");
+        image.AltText.ShouldBe("Published image");
     }
 
     [Fact]
@@ -855,7 +857,7 @@ public sealed class CatalogApiEndpointTests
                 "public-tour",
                 true,
                 1,
-                DateTimeOffset.UtcNow),
+                TimeProvider.System.GetUtcNow()),
             TestContext.Current.CancellationToken);
         await using var factory = CatalogApiTestHost.Create(tourStore, new TestPublicContentStore());
         using var client = factory.CreateClient();
@@ -867,7 +869,7 @@ public sealed class CatalogApiEndpointTests
         using var document = await JsonDocument.ParseAsync(
             await response.Content.ReadAsStreamAsync(TestContext.Current.CancellationToken),
             cancellationToken: TestContext.Current.CancellationToken);
-        var tour = document.RootElement.EnumerateArray().Single();
+        var tour = document.RootElement.EnumerateArray().ShouldHaveSingleItem();
 
         // Assert
         response.StatusCode.ShouldBe(HttpStatusCode.OK);
@@ -894,7 +896,7 @@ public sealed class CatalogApiEndpointTests
                 "draft-tour",
                 false,
                 1,
-                DateTimeOffset.UtcNow),
+                TimeProvider.System.GetUtcNow()),
             TestContext.Current.CancellationToken);
         await using var factory = CatalogApiTestHost.Create(tourStore, new TestPublicContentStore());
         using var client = factory.CreateClient();
@@ -935,7 +937,7 @@ public sealed class CatalogApiEndpointTests
                 "published-edit-tour",
                 false,
                 1,
-                DateTimeOffset.UtcNow),
+                TimeProvider.System.GetUtcNow()),
             TestContext.Current.CancellationToken);
         await using var factory = CatalogApiTestHost.Create(tourStore, new TestPublicContentStore());
         using var client = factory.CreateClient();
@@ -987,7 +989,7 @@ public sealed class CatalogApiEndpointTests
                 "image-failure-tour",
                 false,
                 1,
-                DateTimeOffset.UtcNow),
+                TimeProvider.System.GetUtcNow()),
             TestContext.Current.CancellationToken);
         var imageStore = new TestPublicMediaImageStore
         {
@@ -1034,7 +1036,7 @@ public sealed class CatalogApiEndpointTests
                 "slug-tour",
                 false,
                 1,
-                DateTimeOffset.UtcNow),
+                TimeProvider.System.GetUtcNow()),
             TestContext.Current.CancellationToken);
         await using var factory = CatalogApiTestHost.Create(tourStore, new TestPublicContentStore());
         using var client = factory.CreateClient();
@@ -1073,7 +1075,7 @@ public sealed class CatalogApiEndpointTests
                 "concurrency-tour",
                 false,
                 1,
-                DateTimeOffset.UtcNow),
+                TimeProvider.System.GetUtcNow()),
             TestContext.Current.CancellationToken);
         await using var factory = CatalogApiTestHost.Create(tourStore, new TestPublicContentStore());
         using var client = factory.CreateClient();
@@ -1116,7 +1118,7 @@ public sealed class CatalogApiEndpointTests
                 "tour-first",
                 false,
                 1,
-                DateTimeOffset.UtcNow),
+                TimeProvider.System.GetUtcNow()),
             TestContext.Current.CancellationToken);
         await tourStore.UpsertDraft(
             new CatalogTourDraftReadModel(
@@ -1127,7 +1129,7 @@ public sealed class CatalogApiEndpointTests
                 "tour-second",
                 false,
                 2,
-                DateTimeOffset.UtcNow),
+                TimeProvider.System.GetUtcNow()),
             TestContext.Current.CancellationToken);
         await using var factory = CatalogApiTestHost.Create(tourStore, new TestPublicContentStore());
         using var client = factory.CreateClient();
@@ -1157,7 +1159,10 @@ public sealed class CatalogApiEndpointTests
             TestContext.Current.CancellationToken);
         using var retryResponse = await client.PutAsJsonAsync(
             new Uri($"/api/v1/catalog/tours/{secondTourId}/presentation", UriKind.Relative),
-            duplicateRequest with { Slug = "second-tour" },
+            duplicateRequest with
+            {
+                Slug = "second-tour"
+            },
             TestContext.Current.CancellationToken);
 
         // Assert
@@ -1182,7 +1187,7 @@ public sealed class CatalogApiEndpointTests
             "owner-tour",
             false,
             1,
-            DateTimeOffset.UtcNow);
+            TimeProvider.System.GetUtcNow());
         var target = new CatalogTourDraftReadModel(
             targetTourId,
             targetAdminTourId,
@@ -1191,7 +1196,7 @@ public sealed class CatalogApiEndpointTests
             "target-tour",
             false,
             2,
-            DateTimeOffset.UtcNow);
+            TimeProvider.System.GetUtcNow());
         var tourStore = new TestCatalogTourReadModelStore();
         await tourStore.UpsertDraft(owner, TestContext.Current.CancellationToken);
         await tourStore.UpsertDraft(target, TestContext.Current.CancellationToken);
@@ -1252,7 +1257,7 @@ public sealed class CatalogApiEndpointTests
                 "slug-tour",
                 false,
                 1,
-                DateTimeOffset.UtcNow),
+                TimeProvider.System.GetUtcNow()),
             TestContext.Current.CancellationToken);
         await using var factory = CatalogApiTestHost.Create(tourStore, new TestPublicContentStore());
         using var client = factory.CreateClient();
@@ -1288,7 +1293,7 @@ public sealed class CatalogApiEndpointTests
                 "published-tour",
                 true,
                 1,
-                DateTimeOffset.UtcNow),
+                TimeProvider.System.GetUtcNow()),
             TestContext.Current.CancellationToken);
         var mediaStore = new TestPublicMediaImageStore();
         var image = PublicMediaImageTestFactory.CreateReadyImage(
@@ -1329,7 +1334,7 @@ public sealed class CatalogApiEndpointTests
                 "published-tour",
                 true,
                 1,
-                DateTimeOffset.UtcNow),
+                TimeProvider.System.GetUtcNow()),
             TestContext.Current.CancellationToken);
         var mediaStore = new TestPublicMediaImageStore();
         var objectStore = new TestMediaObjectStore();
@@ -1357,8 +1362,8 @@ public sealed class CatalogApiEndpointTests
 
         // Assert
         response.StatusCode.ShouldBe(HttpStatusCode.OK);
-        response.Content.Headers.ContentType?.MediaType.ShouldBe("image/jpeg");
-        response.Headers.CacheControl?.NoStore.ShouldBe(true);
+        response.Content.Headers.ContentType.ShouldNotBeNull().MediaType.ShouldBe("image/jpeg");
+        response.Headers.CacheControl.ShouldNotBeNull().NoStore.ShouldBe(true);
         response.Headers.GetValues("X-Content-Type-Options").ShouldHaveSingleItem().ShouldBe("nosniff");
         content.ShouldBe(expectedContent);
     }
@@ -1378,7 +1383,7 @@ public sealed class CatalogApiEndpointTests
                 "published-tour",
                 true,
                 1,
-                DateTimeOffset.UtcNow),
+                TimeProvider.System.GetUtcNow()),
             TestContext.Current.CancellationToken);
         var mediaStore = new TestPublicMediaImageStore();
         var objectStore = new TestMediaObjectStore();
@@ -1404,7 +1409,7 @@ public sealed class CatalogApiEndpointTests
 
         // Assert
         response.StatusCode.ShouldBe(HttpStatusCode.NotFound);
-        response.Headers.CacheControl?.NoStore.ShouldBe(true);
+        response.Headers.CacheControl.ShouldNotBeNull().NoStore.ShouldBe(true);
     }
 
     [Fact]
@@ -1422,7 +1427,7 @@ public sealed class CatalogApiEndpointTests
                 "published-tour",
                 true,
                 1,
-                DateTimeOffset.UtcNow),
+                TimeProvider.System.GetUtcNow()),
             TestContext.Current.CancellationToken);
         var image = PublicMediaImageTestFactory.CreateReadyImage(
             tourId,
@@ -1448,7 +1453,7 @@ public sealed class CatalogApiEndpointTests
 
         // Assert
         response.StatusCode.ShouldBe(HttpStatusCode.NotFound);
-        response.Headers.CacheControl?.NoStore.ShouldBeTrue();
+        response.Headers.CacheControl.ShouldNotBeNull().NoStore.ShouldBeTrue();
     }
 
     [Fact]
@@ -1481,8 +1486,8 @@ public sealed class CatalogApiEndpointTests
 
         // Assert
         response.StatusCode.ShouldBe(HttpStatusCode.OK);
-        response.Content.Headers.ContentType?.MediaType.ShouldBe("image/jpeg");
-        response.Headers.CacheControl?.NoStore.ShouldBe(true);
+        response.Content.Headers.ContentType.ShouldNotBeNull().MediaType.ShouldBe("image/jpeg");
+        response.Headers.CacheControl.ShouldNotBeNull().NoStore.ShouldBe(true);
         response.Headers.GetValues("X-Content-Type-Options").ShouldHaveSingleItem().ShouldBe("nosniff");
         content.ShouldBe(expectedContent);
     }
@@ -1538,10 +1543,10 @@ public sealed class CatalogApiEndpointTests
 
         // Assert
         avifResponse.StatusCode.ShouldBe(HttpStatusCode.OK);
-        avifResponse.Content.Headers.ContentType?.MediaType.ShouldBe("image/avif");
+        avifResponse.Content.Headers.ContentType.ShouldNotBeNull().MediaType.ShouldBe("image/avif");
         avifResponseContent.ShouldBe(avifContent);
         jpegResponse.StatusCode.ShouldBe(HttpStatusCode.OK);
-        jpegResponse.Content.Headers.ContentType?.MediaType.ShouldBe("image/jpeg");
+        jpegResponse.Content.Headers.ContentType.ShouldNotBeNull().MediaType.ShouldBe("image/jpeg");
         jpegResponseContent.ShouldBe(jpegContent);
     }
 
@@ -1573,7 +1578,7 @@ public sealed class CatalogApiEndpointTests
 
         // Assert
         response.StatusCode.ShouldBe(HttpStatusCode.NotFound);
-        response.Headers.CacheControl?.NoStore.ShouldBe(true);
+        response.Headers.CacheControl.ShouldNotBeNull().NoStore.ShouldBe(true);
     }
 
     [Fact]
@@ -1591,7 +1596,7 @@ public sealed class CatalogApiEndpointTests
                 "published-tour",
                 true,
                 1,
-                DateTimeOffset.UtcNow),
+                TimeProvider.System.GetUtcNow()),
             TestContext.Current.CancellationToken);
         var mediaStore = new TestPublicMediaImageStore();
         var image = PublicMediaImageTestFactory.CreateReadyImage(
@@ -1613,7 +1618,7 @@ public sealed class CatalogApiEndpointTests
 
         // Assert
         response.StatusCode.ShouldBe(HttpStatusCode.NotFound);
-        response.Headers.CacheControl?.NoStore.ShouldBe(true);
+        response.Headers.CacheControl.ShouldNotBeNull().NoStore.ShouldBe(true);
     }
 
     [Fact]
@@ -1631,7 +1636,7 @@ public sealed class CatalogApiEndpointTests
                 "draft-tour",
                 false,
                 1,
-                DateTimeOffset.UtcNow),
+                TimeProvider.System.GetUtcNow()),
             TestContext.Current.CancellationToken);
         var mediaStore = new TestPublicMediaImageStore();
         var objectStore = new TestMediaObjectStore();
@@ -1657,7 +1662,7 @@ public sealed class CatalogApiEndpointTests
 
         // Assert
         response.StatusCode.ShouldBe(HttpStatusCode.NotFound);
-        response.Headers.CacheControl?.NoStore.ShouldBe(true);
+        response.Headers.CacheControl.ShouldNotBeNull().NoStore.ShouldBe(true);
     }
 
     [Theory]
@@ -1699,7 +1704,7 @@ public sealed class CatalogApiEndpointTests
                 "published-tour",
                 true,
                 1,
-                DateTimeOffset.UtcNow),
+                TimeProvider.System.GetUtcNow()),
             TestContext.Current.CancellationToken);
         var mediaStore = new TestPublicMediaImageStore();
         var objectStore = new TestMediaObjectStore();
@@ -1735,7 +1740,7 @@ public sealed class CatalogApiEndpointTests
         // Assert
         response.StatusCode.ShouldBe(HttpStatusCode.NotFound);
         blockers.ShouldContain(expectedReason);
-        response.Headers.CacheControl?.NoStore.ShouldBe(true);
+        response.Headers.CacheControl.ShouldNotBeNull().NoStore.ShouldBe(true);
     }
 
     [Theory]
@@ -1777,7 +1782,7 @@ public sealed class CatalogApiEndpointTests
         // Assert
         response.StatusCode.ShouldBe(HttpStatusCode.OK);
         ages.ShouldHaveSingleItem().ShouldBe(expectedAge);
-        image.AccessibilityTexts.Single(text => text.Language == PublicContentLanguage.EnUs).PendingDraftCreatedAt.ShouldBeNull();
+        image.AccessibilityTexts.ShouldHaveSingleItem(text => text.Language == PublicContentLanguage.EnUs).PendingDraftCreatedAt.ShouldBeNull();
     }
 
     [Fact]
@@ -1854,8 +1859,8 @@ public sealed class CatalogApiEndpointTests
         saved.ProcessingStatus.ShouldBe(MediaImageProcessingStatus.Ready);
         saved.ResponsiveVariants.Count.ShouldBe(1);
         saved.BelongsToTour(tourId).ShouldBeTrue();
-        saved.AccessibilityTexts.Single(text => text.Language == PublicContentLanguage.EnUs).RequiresHumanReview.ShouldBeTrue();
-        saved.AccessibilityTexts.Single(text => text.Language == PublicContentLanguage.PtBr).RequiresHumanReview.ShouldBeFalse();
+        saved.AccessibilityTexts.ShouldHaveSingleItem(text => text.Language == PublicContentLanguage.EnUs).RequiresHumanReview.ShouldBeTrue();
+        saved.AccessibilityTexts.ShouldHaveSingleItem(text => text.Language == PublicContentLanguage.PtBr).RequiresHumanReview.ShouldBeFalse();
     }
 
     [Fact]
@@ -1873,7 +1878,7 @@ public sealed class CatalogApiEndpointTests
                 "published-tour",
                 true,
                 1,
-                DateTimeOffset.UtcNow),
+                TimeProvider.System.GetUtcNow()),
             TestContext.Current.CancellationToken);
         var image = PublicMediaImageTestFactory.CreateReadyImage(
             tourId,
@@ -1934,7 +1939,7 @@ public sealed class CatalogApiEndpointTests
                 "published-tour",
                 true,
                 1,
-                DateTimeOffset.UtcNow),
+                TimeProvider.System.GetUtcNow()),
             TestContext.Current.CancellationToken);
         var image = PublicMediaImageTestFactory.CreateReadyImage(
             tourId,
@@ -1971,7 +1976,7 @@ public sealed class CatalogApiEndpointTests
 
         // Assert
         reviewResponse.StatusCode.ShouldBe(HttpStatusCode.BadRequest);
-        reviewResponse.Content.Headers.ContentType?.MediaType.ShouldBe("application/problem+json");
+        reviewResponse.Content.Headers.ContentType.ShouldNotBeNull().MediaType.ShouldBe("application/problem+json");
         publicResponse.StatusCode.ShouldBe(HttpStatusCode.NotFound);
         persistedImage.ShouldNotBeNull();
         persistedImage.RequiresHumanReview.ShouldBeTrue();
@@ -1992,7 +1997,7 @@ public sealed class CatalogApiEndpointTests
                 "published-tour",
                 true,
                 1,
-                DateTimeOffset.UtcNow),
+                TimeProvider.System.GetUtcNow()),
             TestContext.Current.CancellationToken);
         var imageResult = PublicMediaImage.Create(
             new PublicMediaImageMetadata
@@ -2040,10 +2045,10 @@ public sealed class CatalogApiEndpointTests
 
         // Assert
         avifResponse.StatusCode.ShouldBe(HttpStatusCode.OK);
-        avifResponse.Content.Headers.ContentType?.MediaType.ShouldBe("image/avif");
+        avifResponse.Content.Headers.ContentType.ShouldNotBeNull().MediaType.ShouldBe("image/avif");
         avifResponseContent.ShouldBe(avifContent);
         jpegResponse.StatusCode.ShouldBe(HttpStatusCode.OK);
-        jpegResponse.Content.Headers.ContentType?.MediaType.ShouldBe("image/jpeg");
+        jpegResponse.Content.Headers.ContentType.ShouldNotBeNull().MediaType.ShouldBe("image/jpeg");
         jpegResponseContent.ShouldBe(smallContent);
     }
 
@@ -2062,7 +2067,7 @@ public sealed class CatalogApiEndpointTests
                 "camino-norte",
                 true,
                 1,
-                DateTimeOffset.UtcNow),
+                TimeProvider.System.GetUtcNow()),
             TestContext.Current.CancellationToken);
         var mediaStore = new TestPublicMediaImageStore();
         await mediaStore.Upsert(
@@ -2094,18 +2099,18 @@ public sealed class CatalogApiEndpointTests
             TestContext.Current.CancellationToken);
 
         // Assert
-        (response.StatusCode).ShouldBe(HttpStatusCode.OK);
+        response.StatusCode.ShouldBe(HttpStatusCode.OK);
         var tour = await response.Content.ReadFromJsonAsync<TourDetailsDto>(TestContext.Current.CancellationToken);
-        _ = (tour).ShouldNotBeNull();
-        (tour.Images).ShouldMatchCollection(image =>
+        _ = tour.ShouldNotBeNull();
+        tour.Images.ShouldMatchCollection(image =>
             {
-                (image.IsCover).ShouldBeTrue();
-                (image.Id).ShouldNotBe(Guid.Empty);
+                image.IsCover.ShouldBeTrue();
+                image.Id.ShouldNotBe(Guid.Empty);
                 image.ResponsiveVariants.ShouldHaveSingleItem().Width.ShouldBe(640);
             }, image =>
             {
-                (image.IsCover).ShouldBeFalse();
-                (image.Id).ShouldNotBe(Guid.Empty);
+                image.IsCover.ShouldBeFalse();
+                image.Id.ShouldNotBe(Guid.Empty);
                 image.ResponsiveVariants.ShouldHaveSingleItem().Width.ShouldBe(640);
             });
     }
@@ -2125,7 +2130,7 @@ public sealed class CatalogApiEndpointTests
                 "camino-norte",
                 true,
                 1,
-                DateTimeOffset.UtcNow),
+                TimeProvider.System.GetUtcNow()),
             TestContext.Current.CancellationToken);
         var mediaStore = new TestPublicMediaImageStore();
         await mediaStore.Upsert(PublicMediaImageTestFactory.CreateFailedImage(tourId), TestContext.Current.CancellationToken);
@@ -2145,14 +2150,14 @@ public sealed class CatalogApiEndpointTests
 
         // Assert
         var publicTour = await publicTourResponse.Content.ReadFromJsonAsync<TourDetailsDto>(TestContext.Current.CancellationToken);
-        _ = (publicTour).ShouldNotBeNull();
-        (publicTour.Images).ShouldBeEmpty();
+        _ = publicTour.ShouldNotBeNull();
+        publicTour.Images.ShouldBeEmpty();
         var managementTour = await managementTourResponse.Content.ReadFromJsonAsync<CatalogTourDto>(TestContext.Current.CancellationToken);
-        _ = (managementTour).ShouldNotBeNull();
-        (managementTour.Images).ShouldBeEmpty();
+        _ = managementTour.ShouldNotBeNull();
+        managementTour.Images.ShouldBeEmpty();
         var managementImages = await managementImagesResponse.Content.ReadFromJsonAsync<CatalogMediaImageDto[]>(TestContext.Current.CancellationToken);
-        _ = (managementImages).ShouldNotBeNull();
-        (managementImages).ShouldHaveSingleItem();
+        _ = managementImages.ShouldNotBeNull();
+        managementImages.ShouldHaveSingleItem();
     }
 
 }

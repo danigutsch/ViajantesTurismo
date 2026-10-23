@@ -24,7 +24,7 @@
     </ItemGroup>
 
     <ItemGroup>
-        <PackageReference Include="PandaBear.SharedKernel.Idempotency" />
+        <PackageReference Include="PandaBear.SharedKernel.Idempotency.Abstractions" />
         <PackageReference Include="PandaBear.SharedKernel.AI" />
         <PackageReference Include="PandaBear.SharedKernel.EntityFrameworkCore" />
         <PackageReference Include="PandaBear.SharedKernel.EventSourcing.Npgsql" />

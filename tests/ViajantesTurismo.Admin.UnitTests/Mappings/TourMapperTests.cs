@@ -18,7 +18,7 @@ public class TourMapperTests
             var mappedEnum = TourMapper.MapToCurrency(dtoValue);
 
             // Assert
-            (Enum.IsDefined(mappedEnum)).ShouldBeTrue();
+            Enum.IsDefined(mappedEnum).ShouldBeTrue();
         }
     }
 
@@ -30,8 +30,8 @@ public class TourMapperTests
 
         // Act
         // Assert
-        var exception = ((Func<object?>)(() => TourMapper.MapToCurrency(invalidValue))).ShouldThrow<ArgumentOutOfRangeException>();
-        (exception.Message).ShouldContain("Invalid currency value", StringComparison.Ordinal);
+        var exception = ShouldAssertionExtensions.ShouldThrow<ArgumentOutOfRangeException>((Func<object?>)(() => TourMapper.MapToCurrency(invalidValue)));
+        exception.Message.ShouldContain("Invalid currency value", StringComparison.Ordinal);
     }
 
     [Fact]
@@ -46,7 +46,7 @@ public class TourMapperTests
             var mappedEnum = TourMapper.MapToCurrencyDto(domainValue);
 
             // Assert
-            (Enum.IsDefined(mappedEnum)).ShouldBeTrue();
+            Enum.IsDefined(mappedEnum).ShouldBeTrue();
         }
     }
 
@@ -58,7 +58,7 @@ public class TourMapperTests
 
         // Act
         // Assert
-        var exception = ((Func<object?>)(() => TourMapper.MapToCurrencyDto(invalidValue))).ShouldThrow<ArgumentOutOfRangeException>();
-        (exception.Message).ShouldContain("Invalid currency value", StringComparison.Ordinal);
+        var exception = ShouldAssertionExtensions.ShouldThrow<ArgumentOutOfRangeException>((Func<object?>)(() => TourMapper.MapToCurrencyDto(invalidValue)));
+        exception.Message.ShouldContain("Invalid currency value", StringComparison.Ordinal);
     }
 }

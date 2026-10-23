@@ -21,11 +21,17 @@ public sealed class CiTestSliceExecutionTests
         workspace.WriteFile("NuGet.Config", "<configuration><packageSources><clear /></packageSources></configuration>");
         workspace.WriteFile("scripts/collect-test-coverage.sh", $"echo collector-output\nexit {collectorExit}\n");
         workspace.WriteFile("scripts/install-playwright.sh", "test -f \"$1\" && test \"$2\" = chromium\n");
-        if (playwright) { workspace.WriteFile("tests/Slice.Tests/bin/Debug/net10.0/playwright.ps1", "# browser adapter fixture"); }
+        if (playwright)
+        {
+            workspace.WriteFile("tests/Slice.Tests/bin/Debug/net10.0/playwright.ps1", "# browser adapter fixture");
+        }
         var token = TestContext.Current.CancellationToken;
         var revision = await workspace.CommitFiles(token);
         await CandidateCompatibilityCommand.RunProcess("dotnet", ["restore", project], workspace.RootPath, TextWriter.Null, token);
-        if (brokenBuild) { workspace.WriteFile("tests/Slice.Tests/Broken.cs", "this is invalid C#;"); }
+        if (brokenBuild)
+        {
+            workspace.WriteFile("tests/Slice.Tests/Broken.cs", "this is invalid C#;");
+        }
         string[] arguments = playwright
             ? ["run-ci-test-slice", "--slice-name", "Execution Test", "--install-playwright", "--", project]
             : ["run-ci-test-slice", "--slice-name", "Execution Test", project];
@@ -54,7 +60,10 @@ public sealed class CiTestSliceExecutionTests
         }
         timings.ShouldContain("total_slice", StringComparison.Ordinal);
         timings.ShouldContain(status, StringComparison.Ordinal);
-        if (!brokenBuild) { output.ToString().ShouldContain("collector-output", StringComparison.Ordinal); }
+        if (!brokenBuild)
+        {
+            output.ToString().ShouldContain("collector-output", StringComparison.Ordinal);
+        }
     }
 
     [Theory]

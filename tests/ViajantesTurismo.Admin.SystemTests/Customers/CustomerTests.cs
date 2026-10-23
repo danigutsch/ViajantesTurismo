@@ -19,7 +19,7 @@ public class CustomerTests(AspireSystemTestFixture fixture) : AspireSystemTestBa
 
         // Act
         await NavigateTo("/customers/create/personal-info");
-        await Expect(Page).ToHaveTitleAsync("Create Customer - Personal Information");
+        await Page.ShouldHaveTitle("Create Customer - Personal Information");
         await Expect(Page.GetByText("Step 1 of 8")).ToBeVisibleAsync();
 
         await Page.Locator("#firstName").FillAndExpectValue(firstName);
@@ -38,7 +38,7 @@ public class CustomerTests(AspireSystemTestFixture fixture) : AspireSystemTestBa
 
         await Page.GetButton("Next").ClickAsync();
 
-        await Expect(Page).ToHaveTitleAsync("Create Customer - Identification");
+        await Page.ShouldHaveTitle("Create Customer - Identification");
         await Expect(Page.GetByText("Step 2 of 8")).ToBeVisibleAsync();
 
         var nationalIdInput = Page.Locator("#nationalId");
@@ -54,10 +54,16 @@ public class CustomerTests(AspireSystemTestFixture fixture) : AspireSystemTestBa
 
         await Page.GetButton("Next").ClickAsync();
 
-        await Expect(Page).ToHaveURLAsync(CustomerTestRegexes.ContactStep(), new() { Timeout = WizardStepTransitionTimeoutMilliseconds });
-        await Expect(Page.Locator("#email")).ToBeVisibleAsync(new() { Timeout = WizardStepTransitionTimeoutMilliseconds });
+        await Expect(Page).ToHaveURLAsync(CustomerTestRegexes.ContactStep(), new()
+        {
+            Timeout = WizardStepTransitionTimeoutMilliseconds
+        });
+        await Expect(Page.Locator("#email")).ToBeVisibleAsync(new()
+        {
+            Timeout = WizardStepTransitionTimeoutMilliseconds
+        });
         await Expect(Page.GetByText("Step 3 of 8")).ToBeVisibleAsync();
-        await Expect(Page).ToHaveTitleAsync("Create Customer - Contact Information");
+        await Page.ShouldHaveTitle("Create Customer - Contact Information");
 
         await Page.Locator("#email").FillAndExpectValue(email);
         await Page.Locator("#mobile").FillAndExpectValue(mobile);
@@ -66,7 +72,7 @@ public class CustomerTests(AspireSystemTestFixture fixture) : AspireSystemTestBa
 
         await Page.GetButton("Next").ClickAsync();
 
-        await Expect(Page).ToHaveTitleAsync("Create Customer - Address");
+        await Page.ShouldHaveTitle("Create Customer - Address");
         await Expect(Page.GetByText("Step 4 of 8")).ToBeVisibleAsync();
 
         await Page.Locator("#street").FillAndExpectValue(street);
@@ -85,8 +91,11 @@ public class CustomerTests(AspireSystemTestFixture fixture) : AspireSystemTestBa
 
         await Page.GetButton("Next").ClickAsync();
 
-        await Expect(Page).ToHaveURLAsync(CustomerTestRegexes.PhysicalStep(), new() { Timeout = WizardStepTransitionTimeoutMilliseconds });
-        await Expect(Page).ToHaveTitleAsync("Create Customer - Physical Information");
+        await Expect(Page).ToHaveURLAsync(CustomerTestRegexes.PhysicalStep(), new()
+        {
+            Timeout = WizardStepTransitionTimeoutMilliseconds
+        });
+        await Page.ShouldHaveTitle("Create Customer - Physical Information");
         await Expect(Page.Locator("#weightKg")).ToBeEditableAsync();
         await Expect(Page.GetByText("Step 5 of 8")).ToBeVisibleAsync();
 
@@ -107,7 +116,7 @@ public class CustomerTests(AspireSystemTestFixture fixture) : AspireSystemTestBa
 
         await Page.GetButton("Next").ClickAsync();
 
-        await Expect(Page).ToHaveTitleAsync("Create Customer - Accommodation Preferences");
+        await Page.ShouldHaveTitle("Create Customer - Accommodation Preferences");
         await Expect(Page.GetByText("Step 6 of 8")).ToBeVisibleAsync();
         await Expect(Page.GetByText("Loading customers...")).ToBeHiddenAsync();
 
@@ -121,7 +130,7 @@ public class CustomerTests(AspireSystemTestFixture fixture) : AspireSystemTestBa
 
         await Page.GetButton("Next").ClickAsync();
 
-        await Expect(Page).ToHaveTitleAsync("Create Customer - Emergency Contact");
+        await Page.ShouldHaveTitle("Create Customer - Emergency Contact");
         await Expect(Page.GetByText("Step 7 of 8")).ToBeVisibleAsync();
 
         var emergencyStep = Page.Locator("article").Filter(new LocatorFilterOptions { HasText = "Step 7 of 8: Emergency Contact" });
@@ -136,8 +145,11 @@ public class CustomerTests(AspireSystemTestFixture fixture) : AspireSystemTestBa
 
         await Page.GetButton("Next").ClickAsync();
 
-        await Expect(Page).ToHaveURLAsync(CustomerTestRegexes.MedicalStep(), new() { Timeout = WizardStepTransitionTimeoutMilliseconds });
-        await Expect(Page).ToHaveTitleAsync("Create Customer - Medical Information");
+        await Expect(Page).ToHaveURLAsync(CustomerTestRegexes.MedicalStep(), new()
+        {
+            Timeout = WizardStepTransitionTimeoutMilliseconds
+        });
+        await Page.ShouldHaveTitle("Create Customer - Medical Information");
         await Expect(Page.GetByText("Step 8 of 8")).ToBeVisibleAsync();
 
         var allergiesInput = Page.Locator("#allergies");
@@ -153,7 +165,7 @@ public class CustomerTests(AspireSystemTestFixture fixture) : AspireSystemTestBa
         await Page.GetButton("Review & Submit").ClickAsync();
 
         // Assert
-        await Expect(Page).ToHaveTitleAsync("Create Customer - Review & Submit");
+        await Page.ShouldHaveTitle("Create Customer - Review & Submit");
 
         await Expect(Page.GetByText($"{firstName} {lastName}")).ToBeVisibleAsync();
         await Expect(Page.GetByText("Brazil").First).ToBeVisibleAsync();
@@ -167,7 +179,7 @@ public class CustomerTests(AspireSystemTestFixture fixture) : AspireSystemTestBa
         await Page.GetButton("Create Customer").ClickAsync();
 
         // Assert
-        await Expect(Page).ToHaveTitleAsync("Customer Details");
+        await Page.ShouldHaveTitle("Customer Details");
 
         await Expect(Page.GetByText($"{firstName} {lastName}")).ToBeVisibleAsync();
         await Expect(Page.GetByText(email)).ToBeVisibleAsync();
@@ -180,7 +192,7 @@ public class CustomerTests(AspireSystemTestFixture fixture) : AspireSystemTestBa
 
         // Act
         await NavigateTo($"/customers/{customerId}/edit");
-        await Expect(Page).ToHaveTitleAsync("Edit Customer");
+        await Page.ShouldHaveTitle("Edit Customer");
 
         await Page.Locator("#occupation").FillAndExpectValue("");
         await Page.Locator("#occupation").FillAndExpectValue("Senior QA Engineer");
@@ -199,12 +211,12 @@ public class CustomerTests(AspireSystemTestFixture fixture) : AspireSystemTestBa
         await Page.CancelTimedRedirect();
 
         await NavigateTo($"/customers/{customerId}");
-        await Expect(Page).ToHaveTitleAsync("Customer Details");
+        await Page.ShouldHaveTitle("Customer Details");
         await Expect(Page.GetByText("Senior QA Engineer")).ToBeVisibleAsync();
         await Expect(Page.GetByText("+5511999990099")).ToBeVisibleAsync();
 
         await Page.ReloadAsync();
-        await Expect(Page).ToHaveTitleAsync("Customer Details");
+        await Page.ShouldHaveTitle("Customer Details");
         await Expect(Page.GetByText($"{firstName} {lastName}")).ToBeVisibleAsync();
         await Expect(Page.GetByText("Senior QA Engineer")).ToBeVisibleAsync();
         await Expect(Page.GetByText("+5511999990099")).ToBeVisibleAsync();

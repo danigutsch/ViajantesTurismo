@@ -78,7 +78,7 @@ public sealed partial class AppHostOrchestrationTests
     }
 
     [Fact]
-    public void Catalog_api_waits_for_database_migrations_when_it_uses_persisted_public_content()
+    public void Catalog_API_waits_for_database_migrations_when_it_uses_persisted_public_content()
     {
         // Arrange
         var appHostText = File.ReadAllText(Path.Combine(
@@ -371,8 +371,10 @@ public sealed partial class AppHostOrchestrationTests
         // Assert
         aspireTracePipelineUsesPrivacyProcessors.ShouldBeTrue();
         backendTracePipelineUsesPrivacyProcessors.ShouldBeTrue();
-        (aspireRoutingConfig.Split(nonTracePrivacyProcessors, StringSplitOptions.None).Length - 1).ShouldBe(2);
-        (backendRoutingConfig.Split(nonTracePrivacyProcessors, StringSplitOptions.None).Length - 1).ShouldBe(2);
+        var actualValue = aspireRoutingConfig.Split(nonTracePrivacyProcessors, StringSplitOptions.None).Length - 1;
+        actualValue.ShouldBe(2);
+        var actualValue1 = backendRoutingConfig.Split(nonTracePrivacyProcessors, StringSplitOptions.None).Length - 1;
+        actualValue1.ShouldBe(2);
         privacyConfig.ShouldContain("memory_limiter:", StringComparison.Ordinal);
         privacyConfig.ShouldContain("limit_mib: 256", StringComparison.Ordinal);
         privacyConfig.ShouldContain("spike_limit_mib: 64", StringComparison.Ordinal);
@@ -380,8 +382,10 @@ public sealed partial class AppHostOrchestrationTests
         privacyConfig.ShouldContain("trace_statements:", StringComparison.Ordinal);
         privacyConfig.ShouldContain("log_statements:", StringComparison.Ordinal);
         privacyConfig.ShouldContain("metric_statements:", StringComparison.Ordinal);
-        (privacyConfig.Split("- context: resource", StringSplitOptions.None).Length - 1).ShouldBe(3);
-        (privacyConfig.Split(resourceAttributeSanitizer, StringSplitOptions.None).Length - 1).ShouldBe(3);
+        var actualValue2 = privacyConfig.Split("- context: resource", StringSplitOptions.None).Length - 1;
+        actualValue2.ShouldBe(3);
+        var actualValue3 = privacyConfig.Split(resourceAttributeSanitizer, StringSplitOptions.None).Length - 1;
+        actualValue3.ShouldBe(3);
         privacyConfig.ShouldContain("filter/drop_span_events:", StringComparison.Ordinal);
         privacyConfig.ShouldContain("spanevent:\n        - 'true'", StringComparison.Ordinal);
         privacyConfig.ShouldNotContain("\n      span:\n", StringComparison.Ordinal);

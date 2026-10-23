@@ -37,9 +37,9 @@ public class BookingCreateFormTests : BunitContext
         // Assert
         var tourSelect = cut.Find(SelectSelector);
         var options = tourSelect.QuerySelectorAll("option");
-        (options.Length).ShouldBe(3); // Placeholder + 2 tours
-        (options[1].TextContent).ShouldContain("Tour A (01/06/2025)", StringComparison.Ordinal);
-        (options[2].TextContent).ShouldContain("Tour B (01/07/2025)", StringComparison.Ordinal);
+        options.Length.ShouldBe(3); // Placeholder + 2 tours
+        options[1].TextContent.ShouldContain("Tour A (01/06/2025)", StringComparison.Ordinal);
+        options[2].TextContent.ShouldContain("Tour B (01/07/2025)", StringComparison.Ordinal);
     }
 
     [Fact]
@@ -59,11 +59,11 @@ public class BookingCreateFormTests : BunitContext
 
         // Assert
         var availabilityText = cut.Find(".form-text");
-        (availabilityText.TextContent).ShouldContain("7 spots available", StringComparison.Ordinal);
-        (availabilityText.TextContent).ShouldContain("3 / 10 booked", StringComparison.Ordinal);
+        availabilityText.TextContent.ShouldContain("7 spots available", StringComparison.Ordinal);
+        availabilityText.TextContent.ShouldContain("3 / 10 booked", StringComparison.Ordinal);
         var successSpan = availabilityText.QuerySelector(".text-success");
-        _ = (successSpan).ShouldNotBeNull();
-        (successSpan.InnerHtml).ShouldContain("bi-check-circle", StringComparison.Ordinal);
+        _ = successSpan.ShouldNotBeNull();
+        successSpan.InnerHtml.ShouldContain("bi-check-circle", StringComparison.Ordinal);
     }
 
     [Fact]
@@ -83,11 +83,11 @@ public class BookingCreateFormTests : BunitContext
 
         // Assert
         var availabilityText = cut.Find(".form-text");
-        (availabilityText.TextContent).ShouldContain("Tour is fully booked", StringComparison.Ordinal);
-        (availabilityText.TextContent).ShouldContain("10 / 10", StringComparison.Ordinal);
+        availabilityText.TextContent.ShouldContain("Tour is fully booked", StringComparison.Ordinal);
+        availabilityText.TextContent.ShouldContain("10 / 10", StringComparison.Ordinal);
         var dangerSpan = availabilityText.QuerySelector(".text-danger");
-        _ = (dangerSpan).ShouldNotBeNull();
-        (dangerSpan.InnerHtml).ShouldContain("bi-x-circle", StringComparison.Ordinal);
+        _ = dangerSpan.ShouldNotBeNull();
+        dangerSpan.InnerHtml.ShouldContain("bi-x-circle", StringComparison.Ordinal);
     }
 
     [Fact]
@@ -107,8 +107,8 @@ public class BookingCreateFormTests : BunitContext
 
         // Assert
         var availabilityText = cut.Find(".form-text");
-        (availabilityText.TextContent).ShouldContain("1 spot available", StringComparison.Ordinal);
-        (availabilityText.TextContent).ShouldNotContain("spots", StringComparison.Ordinal);
+        availabilityText.TextContent.ShouldContain("1 spot available", StringComparison.Ordinal);
+        availabilityText.TextContent.ShouldNotContain("spots", StringComparison.Ordinal);
     }
 
     [Fact]
@@ -133,9 +133,9 @@ public class BookingCreateFormTests : BunitContext
         var selects = cut.FindAll(SelectSelector);
         var customerSelect = selects.First(s => s.TextContent.Contains("-- Select Customer --", StringComparison.Ordinal));
         var options = customerSelect.QuerySelectorAll("option");
-        (options.Length).ShouldBe(3);
-        (options[1].TextContent).ShouldContain(AliceCustomerDisplayName, StringComparison.Ordinal);
-        (options[2].TextContent).ShouldContain("Bob Smith (bob@example.com)", StringComparison.Ordinal);
+        options.Length.ShouldBe(3);
+        options[1].TextContent.ShouldContain(AliceCustomerDisplayName, StringComparison.Ordinal);
+        options[2].TextContent.ShouldContain("Bob Smith (bob@example.com)", StringComparison.Ordinal);
     }
 
     [Fact]
@@ -156,9 +156,9 @@ public class BookingCreateFormTests : BunitContext
         var roomTypeSelect = cut.FindAll(SelectSelector)
             .First(s => s.TextContent.Contains("Single Room", StringComparison.Ordinal));
         var options = roomTypeSelect.QuerySelectorAll("option");
-        (options.Length).ShouldBe(2);
-        (options[0].TextContent).ShouldContain("Double Room (Base Price)", StringComparison.Ordinal);
-        (options[1].TextContent).ShouldContain("Single Room (Base Price + Supplement)", StringComparison.Ordinal);
+        options.Length.ShouldBe(2);
+        options[0].TextContent.ShouldContain("Double Room (Base Price)", StringComparison.Ordinal);
+        options[1].TextContent.ShouldContain("Single Room (Base Price + Supplement)", StringComparison.Ordinal);
     }
 
     [Fact]
@@ -181,8 +181,8 @@ public class BookingCreateFormTests : BunitContext
 
         // Assert
         var badge = cut.Find(".badge.bg-info");
-        (badge.TextContent).ShouldContain("Single Occupancy", StringComparison.Ordinal);
-        (badge.TextContent).ShouldContain("No companion selected", StringComparison.Ordinal);
+        badge.TextContent.ShouldContain("Single Occupancy", StringComparison.Ordinal);
+        badge.TextContent.ShouldContain("No companion selected", StringComparison.Ordinal);
     }
 
     [Fact]
@@ -203,9 +203,9 @@ public class BookingCreateFormTests : BunitContext
         var bikeSelect = cut.FindAll(SelectSelector)
             .First(s => s.TextContent.Contains("Regular Bike", StringComparison.Ordinal) && s.TextContent.Contains("E-Bike", StringComparison.Ordinal));
         var options = bikeSelect.QuerySelectorAll("option");
-        (options.Length).ShouldBe(3); // Placeholder + 2 bike types
-        (options[1].TextContent).ShouldContain("Regular Bike", StringComparison.Ordinal);
-        (options[2].TextContent).ShouldContain("E-Bike", StringComparison.Ordinal);
+        options.Length.ShouldBe(3); // Placeholder + 2 bike types
+        options[1].TextContent.ShouldContain("Regular Bike", StringComparison.Ordinal);
+        options[2].TextContent.ShouldContain("E-Bike", StringComparison.Ordinal);
     }
 
     [Fact]
@@ -224,7 +224,7 @@ public class BookingCreateFormTests : BunitContext
 
         // Assert
         var labels = cut.FindAll(LabelSelector);
-        (labels).ShouldNotContain(l => l.TextContent.Contains(CompanionOptionalLabel, StringComparison.Ordinal));
+        labels.ShouldNotContain(l => l.TextContent.Contains(CompanionOptionalLabel, StringComparison.Ordinal));
     }
 
     [Fact]
@@ -251,14 +251,14 @@ public class BookingCreateFormTests : BunitContext
 
         // Assert
         var companionLabel = cut.Find($"{LabelSelector}:contains('{CompanionOptionalLabel}')");
-        _ = (companionLabel).ShouldNotBeNull();
+        _ = companionLabel.ShouldNotBeNull();
 
         var companionSelect = cut.FindAll(SelectSelector)
             .First(s => s.TextContent.Contains("-- No Companion --", StringComparison.Ordinal));
         var options = companionSelect.QuerySelectorAll("option");
-        (options.Length).ShouldBe(2); // "No Companion" + Bob (Alice excluded)
-        (options).ShouldNotContain(o => o.TextContent.Contains(AliceDisplayName, StringComparison.Ordinal));
-        (options).ShouldContain(o => o.TextContent.Contains("Bob Smith", StringComparison.Ordinal));
+        options.Length.ShouldBe(2); // "No Companion" + Bob (Alice excluded)
+        options.ShouldNotContain(o => o.TextContent.Contains(AliceDisplayName, StringComparison.Ordinal));
+        options.ShouldContain(o => o.TextContent.Contains("Bob Smith", StringComparison.Ordinal));
     }
 
     [Fact]
@@ -284,7 +284,7 @@ public class BookingCreateFormTests : BunitContext
 
         // Assert
         var labels = cut.FindAll(LabelSelector);
-        (labels).ShouldContain(l => l.TextContent.Contains(CompanionBikeLabel, StringComparison.Ordinal));
+        labels.ShouldContain(l => l.TextContent.Contains(CompanionBikeLabel, StringComparison.Ordinal));
     }
 
     [Fact]
@@ -311,30 +311,31 @@ public class BookingCreateFormTests : BunitContext
 
         // Assert
         var selectsAfterCompanionSelection = cut.FindAll(SelectSelector);
-        (selectsAfterCompanionSelection[2].GetAttribute(ValueAttributeName)).ShouldBe("EBike");
-        (selectsAfterCompanionSelection[4].GetAttribute(ValueAttributeName)).ShouldBe("Regular");
+        selectsAfterCompanionSelection[2].GetAttribute(ValueAttributeName).ShouldBe("EBike");
+        selectsAfterCompanionSelection[4].GetAttribute(ValueAttributeName).ShouldBe("Regular");
 
         // Act
         selectsAfterCompanionSelection[1].Change(RoomTypeDto.SingleOccupancy);
 
         // Assert
         var labelsAfterSingleRoom = cut.FindAll(LabelSelector);
-        (labelsAfterSingleRoom).ShouldNotContain(label => label.TextContent.Contains(CompanionOptionalLabel, StringComparison.Ordinal));
-        (labelsAfterSingleRoom).ShouldNotContain(label => label.TextContent.Contains(CompanionBikeLabel, StringComparison.Ordinal));
-        (cut.Find(".badge.bg-info").TextContent).ShouldContain("Single Occupancy", StringComparison.Ordinal);
-        (model.CompanionId).ShouldBeNull();
-        (model.CompanionBikeType).ShouldBeNull();
+        labelsAfterSingleRoom.ShouldNotContain(label => label.TextContent.Contains(CompanionOptionalLabel, StringComparison.Ordinal));
+        labelsAfterSingleRoom.ShouldNotContain(label => label.TextContent.Contains(CompanionBikeLabel, StringComparison.Ordinal));
+        cut.Find(".badge.bg-info").TextContent.ShouldContain("Single Occupancy", StringComparison.Ordinal);
+        model.CompanionId.ShouldBeNull();
+        model.CompanionBikeType.ShouldBeNull();
 
         // Act
         cut.FindAll(SelectSelector)[1].Change(RoomTypeDto.DoubleOccupancy);
 
         // Assert
         var labelsAfterReturningToDouble = cut.FindAll(LabelSelector);
-        (labelsAfterReturningToDouble).ShouldContain(label => label.TextContent.Contains(CompanionOptionalLabel, StringComparison.Ordinal));
+        labelsAfterReturningToDouble.ShouldContain(label => label.TextContent.Contains(CompanionOptionalLabel, StringComparison.Ordinal));
 
         var companionSelect = cut.FindAll(SelectSelector)[3];
-        (companionSelect.GetAttribute(ValueAttributeName) ?? string.Empty).ShouldBe(string.Empty);
-        (cut.FindAll(LabelSelector)).ShouldNotContain(label => label.TextContent.Contains(CompanionBikeLabel, StringComparison.Ordinal));
+        var selectedCompanion = companionSelect.GetAttribute(ValueAttributeName) ?? string.Empty;
+        selectedCompanion.ShouldBe(string.Empty);
+        cut.FindAll(LabelSelector).ShouldNotContain(label => label.TextContent.Contains(CompanionBikeLabel, StringComparison.Ordinal));
     }
 
     [Fact]
@@ -357,7 +358,7 @@ public class BookingCreateFormTests : BunitContext
 
         // Assert
         var labels = cut.FindAll(LabelSelector);
-        (labels).ShouldNotContain(l => l.TextContent.Contains(CompanionBikeLabel, StringComparison.Ordinal));
+        labels.ShouldNotContain(l => l.TextContent.Contains(CompanionBikeLabel, StringComparison.Ordinal));
     }
 
     [Fact]
@@ -376,8 +377,8 @@ public class BookingCreateFormTests : BunitContext
 
         // Assert
         var notesTextArea = cut.Find("textarea#notes");
-        (notesTextArea.GetAttribute(ValueAttributeName)).ShouldBe("Special request");
-        (notesTextArea.GetAttribute("rows")).ShouldBe("3");
+        notesTextArea.GetAttribute(ValueAttributeName).ShouldBe("Special request");
+        notesTextArea.GetAttribute("rows").ShouldBe("3");
     }
 
     [Fact]
@@ -396,8 +397,8 @@ public class BookingCreateFormTests : BunitContext
 
         // Assert
         var discountCard = cut.FindAll(".card").First(c => c.TextContent.Contains("Discount", StringComparison.Ordinal));
-        (discountCard.QuerySelector(".card-title")!.TextContent).ShouldContain("Discount (Optional)", StringComparison.Ordinal);
-        (discountCard.InnerHtml).ShouldContain("bi-percent", StringComparison.Ordinal);
+        discountCard.QuerySelector(".card-title")!.TextContent.ShouldContain("Discount (Optional)", StringComparison.Ordinal);
+        discountCard.InnerHtml.ShouldContain("bi-percent", StringComparison.Ordinal);
     }
 
     [Fact]
@@ -417,10 +418,10 @@ public class BookingCreateFormTests : BunitContext
         // Assert
         var discountTypeSelect = cut.Find("select#discountType");
         var options = discountTypeSelect.QuerySelectorAll("option");
-        (options.Length).ShouldBe(3);
-        (options[0].TextContent).ShouldContain("No Discount", StringComparison.Ordinal);
-        (options[1].TextContent).ShouldContain("Percentage (0-100%)", StringComparison.Ordinal);
-        (options[2].TextContent).ShouldContain("Absolute Amount", StringComparison.Ordinal);
+        options.Length.ShouldBe(3);
+        options[0].TextContent.ShouldContain("No Discount", StringComparison.Ordinal);
+        options[1].TextContent.ShouldContain("Percentage (0-100%)", StringComparison.Ordinal);
+        options[2].TextContent.ShouldContain("Absolute Amount", StringComparison.Ordinal);
     }
 
     [Fact]
@@ -446,10 +447,10 @@ public class BookingCreateFormTests : BunitContext
         // Assert
         var priceCards = cut.FindAll(".card");
         var priceCard = priceCards.First(c => c.TextContent.Contains("Price Breakdown", StringComparison.Ordinal));
-        (priceCard.TextContent).ShouldContain("Price Breakdown", StringComparison.Ordinal);
-        (priceCard.InnerHtml).ShouldContain("bi-calculator", StringComparison.Ordinal);
-        (priceCard.TextContent).ShouldContain("Subtotal", StringComparison.Ordinal);
-        (priceCard.TextContent).ShouldContain("Final Total", StringComparison.Ordinal);
+        priceCard.TextContent.ShouldContain("Price Breakdown", StringComparison.Ordinal);
+        priceCard.InnerHtml.ShouldContain("bi-calculator", StringComparison.Ordinal);
+        priceCard.TextContent.ShouldContain("Subtotal", StringComparison.Ordinal);
+        priceCard.TextContent.ShouldContain("Final Total", StringComparison.Ordinal);
     }
 
     [Fact]
@@ -477,10 +478,10 @@ public class BookingCreateFormTests : BunitContext
         // Assert
         var priceCards = cut.FindAll(".card");
         var priceCard = priceCards.First(c => c.TextContent.Contains("Price Breakdown", StringComparison.Ordinal));
-        (priceCard.TextContent).ShouldContain("Discount", StringComparison.Ordinal);
-        (priceCard.TextContent).ShouldContain("(10.00%)", StringComparison.Ordinal);
+        priceCard.TextContent.ShouldContain("Discount", StringComparison.Ordinal);
+        priceCard.TextContent.ShouldContain("(10.00%)", StringComparison.Ordinal);
         var discountRows = priceCard.QuerySelectorAll(".text-danger");
-        (discountRows).ShouldNotBeEmpty();
+        discountRows.ShouldNotBeEmpty();
     }
 
     [Fact]
@@ -510,35 +511,35 @@ public class BookingCreateFormTests : BunitContext
             .Add(p => p.Customers, [.. customers]));
 
         // Assert
-        (cut.Markup).ShouldContain("$ 1,000.00", StringComparison.Ordinal);
+        cut.Markup.ShouldContain("$ 1,000.00", StringComparison.Ordinal);
 
         // Act
         cut.FindAll(SelectSelector)[1].Change(principalCustomer.Id);
 
         // Assert
-        (cut.Markup).ShouldContain("$ 1,050.00", StringComparison.Ordinal);
+        cut.Markup.ShouldContain("$ 1,050.00", StringComparison.Ordinal);
 
         // Act
         cut.FindAll(SelectSelector)[3].Change(BikeTypeDto.EBike);
 
         // Assert
-        (cut.Markup).ShouldContain("$ 1,100.00", StringComparison.Ordinal);
+        cut.Markup.ShouldContain("$ 1,100.00", StringComparison.Ordinal);
 
         // Act
         cut.FindAll(SelectSelector)[2].Change(RoomTypeDto.SingleOccupancy);
 
         // Assert
-        (cut.Markup).ShouldContain("$ 1,300.00", StringComparison.Ordinal);
-        (cut.Markup).ShouldContain("Final Total:", StringComparison.Ordinal);
+        cut.Markup.ShouldContain("$ 1,300.00", StringComparison.Ordinal);
+        cut.Markup.ShouldContain("Final Total:", StringComparison.Ordinal);
 
         // Act
         cut.Find("select#discountType").Change(DiscountTypeDto.Percentage);
         cut.Find("input#discountAmount").Change(10m);
 
         // Assert
-        (cut.Markup).ShouldContain("(10.00%)", StringComparison.Ordinal);
-        (cut.Markup).ShouldContain("-$ 130.00", StringComparison.Ordinal);
-        (cut.Markup).ShouldContain("$ 1,170.00", StringComparison.Ordinal);
+        cut.Markup.ShouldContain("(10.00%)", StringComparison.Ordinal);
+        cut.Markup.ShouldContain("-$ 130.00", StringComparison.Ordinal);
+        cut.Markup.ShouldContain("$ 1,170.00", StringComparison.Ordinal);
     }
 
     [Fact]
@@ -571,9 +572,9 @@ public class BookingCreateFormTests : BunitContext
         var priceCards = cut.FindAll(".card");
         var priceCard = priceCards.First(c => c.TextContent.Contains("Price Breakdown", StringComparison.Ordinal));
         var warning = priceCard.QuerySelector(".alert.alert-warning");
-        _ = (warning).ShouldNotBeNull();
-        (warning.TextContent).ShouldContain("Final price cannot be zero or negative", StringComparison.Ordinal);
-        (warning.InnerHtml).ShouldContain("bi-exclamation-triangle", StringComparison.Ordinal);
+        _ = warning.ShouldNotBeNull();
+        warning.TextContent.ShouldContain("Final price cannot be zero or negative", StringComparison.Ordinal);
+        warning.InnerHtml.ShouldContain("bi-exclamation-triangle", StringComparison.Ordinal);
     }
 
     [Fact]
@@ -592,7 +593,7 @@ public class BookingCreateFormTests : BunitContext
 
         // Assert
         var cards = cut.FindAll(".card");
-        (cards).ShouldNotContain(c => c.TextContent.Contains("Price Breakdown", StringComparison.Ordinal));
+        cards.ShouldNotContain(c => c.TextContent.Contains("Price Breakdown", StringComparison.Ordinal));
     }
 
     [Fact]
@@ -611,8 +612,8 @@ public class BookingCreateFormTests : BunitContext
 
         // Assert
         var createButton = cut.Find("button[type='submit']");
-        (createButton.TextContent).ShouldContain("Create Booking", StringComparison.Ordinal);
-        (createButton.ClassName).ShouldContain("btn-primary", StringComparison.Ordinal);
+        createButton.TextContent.ShouldContain("Create Booking", StringComparison.Ordinal);
+        createButton.ClassName.ShouldContain("btn-primary", StringComparison.Ordinal);
     }
 
     [Fact]
@@ -631,7 +632,7 @@ public class BookingCreateFormTests : BunitContext
 
         // Assert
         var cancelButton = cut.Find("button[type='button']:contains('Cancel')");
-        (cancelButton.ClassName).ShouldContain("btn-secondary", StringComparison.Ordinal);
+        cancelButton.ClassName.ShouldContain("btn-secondary", StringComparison.Ordinal);
     }
 
     [Fact]
@@ -652,8 +653,8 @@ public class BookingCreateFormTests : BunitContext
         // Assert
         var createButton = cut.Find("button[type='submit']");
         var spinner = createButton.QuerySelector(".spinner-border");
-        _ = (spinner).ShouldNotBeNull();
-        (spinner.ClassName).ShouldContain("spinner-border-sm", StringComparison.Ordinal);
+        _ = spinner.ShouldNotBeNull();
+        spinner.ClassName.ShouldContain("spinner-border-sm", StringComparison.Ordinal);
     }
 
     [Fact]
@@ -674,8 +675,8 @@ public class BookingCreateFormTests : BunitContext
         // Assert
         var createButton = cut.Find("button[type='submit']");
         var cancelButton = cut.Find("button[type='button']:contains('Cancel')");
-        (createButton.HasAttribute("disabled")).ShouldBeTrue();
-        (cancelButton.HasAttribute("disabled")).ShouldBeTrue();
+        createButton.HasAttribute("disabled").ShouldBeTrue();
+        cancelButton.HasAttribute("disabled").ShouldBeTrue();
     }
 
     [Fact]
@@ -698,7 +699,7 @@ public class BookingCreateFormTests : BunitContext
         await cancelButton.ClickAsync(new MouseEventArgs());
 
         // Assert
-        (cancelCalled).ShouldBeTrue();
+        cancelCalled.ShouldBeTrue();
     }
 
     [Fact]
@@ -717,7 +718,7 @@ public class BookingCreateFormTests : BunitContext
 
         // Assert
         var validator = cut.FindComponent<DataAnnotationsValidator>();
-        _ = (validator).ShouldNotBeNull();
+        _ = validator.ShouldNotBeNull();
     }
 
     [Fact]
@@ -743,6 +744,6 @@ public class BookingCreateFormTests : BunitContext
         // Assert
         var priceCards = cut.FindAll(".card");
         var priceCard = priceCards.First(c => c.TextContent.Contains("Price Breakdown", StringComparison.Ordinal));
-        (priceCard.TextContent).ShouldContain("€", StringComparison.Ordinal);
+        priceCard.TextContent.ShouldContain("€", StringComparison.Ordinal);
     }
 }

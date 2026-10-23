@@ -11,11 +11,17 @@ public sealed record MediaImageDimensionsDto
     /// Gets the image width in pixels.
     /// </summary>
     [Required, Range(1, int.MaxValue)]
-    public required int Width { get; init; }
+    public required int Width
+    {
+        get; init;
+    }
 
     /// <summary>
     /// Gets the image height in pixels.
     /// </summary>
     [Required, Range(1, int.MaxValue)]
-    public required int Height { get; init; }
+    public required int Height
+    {
+        get; init;
+    }
 }

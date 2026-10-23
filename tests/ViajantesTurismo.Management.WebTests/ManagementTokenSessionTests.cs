@@ -60,7 +60,7 @@ public sealed class ManagementTokenSessionTests
     public void EnsureActive_rejects_expired_sessions()
     {
         // Arrange
-        var session = new ManagementTokenSession("session-1", DateTimeOffset.UtcNow);
+        var session = new ManagementTokenSession("session-1", TimeProvider.System.GetUtcNow());
 
         // Act
         Action act = () => session.EnsureActive(TimeProvider.System);

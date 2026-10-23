@@ -14,7 +14,7 @@ public class ConflictResolutionSerializationTests
         var serialized = ConflictResolutionSerialization.Serialize(conflictResolutions);
 
         // Assert
-        (serialized).ShouldBe(string.Empty);
+        serialized.ShouldBe(string.Empty);
     }
 
     [Fact]
@@ -32,8 +32,8 @@ public class ConflictResolutionSerializationTests
         var parsed = ConflictResolutionSerialization.Parse(serialized);
 
         // Assert
-        (parsed["qa+one@example.com"]).ShouldBe("merge & keep");
-        (parsed["qa.two@example.com"]).ShouldBe("replace/overwrite");
+        parsed["qa+one@example.com"].ShouldBe("merge & keep");
+        parsed["qa.two@example.com"].ShouldBe("replace/overwrite");
     }
 
     [Theory]
@@ -47,8 +47,8 @@ public class ConflictResolutionSerializationTests
         var parsed = ConflictResolutionSerialization.Parse(serialized);
 
         // Assert
-        (parsed).ShouldBeEmpty();
-        (parsed.Comparer).ShouldBe(StringComparer.OrdinalIgnoreCase);
+        parsed.ShouldBeEmpty();
+        parsed.Comparer.ShouldBe(StringComparer.OrdinalIgnoreCase);
     }
 
     [Fact]
@@ -61,8 +61,8 @@ public class ConflictResolutionSerializationTests
         var parsed = ConflictResolutionSerialization.Parse(serialized);
 
         // Assert
-        (parsed).ShouldHaveSingleItem();
-        (parsed["valid@example.com"]).ShouldBe("merge");
+        parsed.ShouldHaveSingleItem();
+        parsed["valid@example.com"].ShouldBe("merge");
     }
 
     [Fact]
@@ -75,8 +75,8 @@ public class ConflictResolutionSerializationTests
         var parsed = ConflictResolutionSerialization.Parse(serialized);
 
         // Assert
-        (parsed).ShouldHaveSingleItem();
-        (parsed["valid@example.com"]).ShouldBe("keep");
+        parsed.ShouldHaveSingleItem();
+        parsed["valid@example.com"].ShouldBe("keep");
     }
 
     [Fact]
@@ -89,7 +89,7 @@ public class ConflictResolutionSerializationTests
         var parsed = ConflictResolutionSerialization.Parse(serialized);
 
         // Assert
-        (parsed).ShouldHaveSingleItem();
-        (parsed["USER@example.com"]).ShouldBe("replace");
+        parsed.ShouldHaveSingleItem();
+        parsed["USER@example.com"].ShouldBe("replace");
     }
 }

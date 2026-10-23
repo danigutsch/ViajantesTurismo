@@ -40,25 +40,46 @@ public sealed class Address
     }
 
     /// <summary>Street address and number.</summary>
-    public string Street { get; private set; }
+    public string Street
+    {
+        get; private set;
+    }
 
     /// <summary>Address complement.</summary>
-    public string? Complement { get; private set; }
+    public string? Complement
+    {
+        get; private set;
+    }
 
     /// <summary>Neighborhood.</summary>
-    public string Neighborhood { get; private set; }
+    public string Neighborhood
+    {
+        get; private set;
+    }
 
     /// <summary>Postal code.</summary>
-    public string PostalCode { get; private set; }
+    public string PostalCode
+    {
+        get; private set;
+    }
 
     /// <summary>City.</summary>
-    public string City { get; private set; }
+    public string City
+    {
+        get; private set;
+    }
 
     /// <summary>State.</summary>
-    public string State { get; private set; }
+    public string State
+    {
+        get; private set;
+    }
 
     /// <summary>Country.</summary>
-    public string Country { get; private set; }
+    public string Country
+    {
+        get; private set;
+    }
 
     /// <summary>
     /// Creates a new instance of <see cref="Address"/> with validation.

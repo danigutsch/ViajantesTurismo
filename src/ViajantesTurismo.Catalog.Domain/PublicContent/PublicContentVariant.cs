@@ -43,37 +43,58 @@ public sealed class PublicContentVariant : ValueObject
     /// <summary>
     /// Gets the content language.
     /// </summary>
-    public PublicContentLanguage Language { get; private set; }
+    public PublicContentLanguage Language
+    {
+        get; private set;
+    }
 
     /// <summary>
     /// Gets the public page title.
     /// </summary>
-    public string Title { get; private set; }
+    public string Title
+    {
+        get; private set;
+    }
 
     /// <summary>
     /// Gets the main public page body text.
     /// </summary>
-    public string Body { get; private set; }
+    public string Body
+    {
+        get; private set;
+    }
 
     /// <summary>
     /// Gets the SEO title when it differs from the page title.
     /// </summary>
-    public string? SeoTitle { get; private set; }
+    public string? SeoTitle
+    {
+        get; private set;
+    }
 
     /// <summary>
     /// Gets the SEO meta description.
     /// </summary>
-    public string? MetaDescription { get; private set; }
+    public string? MetaDescription
+    {
+        get; private set;
+    }
 
     /// <summary>
     /// Gets the social sharing summary.
     /// </summary>
-    public string? ShareSummary { get; private set; }
+    public string? ShareSummary
+    {
+        get; private set;
+    }
 
     /// <summary>
     /// Gets a value indicating whether a human must review this variant before publication.
     /// </summary>
-    public bool RequiresHumanReview { get; private set; }
+    public bool RequiresHumanReview
+    {
+        get; private set;
+    }
 
     /// <summary>
     /// Creates localized content with validation.

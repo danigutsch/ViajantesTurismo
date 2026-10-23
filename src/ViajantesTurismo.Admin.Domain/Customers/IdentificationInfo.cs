@@ -30,10 +30,16 @@ public sealed class IdentificationInfo
     }
 
     /// <summary>National ID.</summary>
-    public string NationalId { get; private set; }
+    public string NationalId
+    {
+        get; private set;
+    }
 
     /// <summary>The nationality that issued the ID.</summary>
-    public string IdNationality { get; private set; }
+    public string IdNationality
+    {
+        get; private set;
+    }
 
     /// <summary>
     /// Creates a new instance of <see cref="IdentificationInfo"/> with validation.

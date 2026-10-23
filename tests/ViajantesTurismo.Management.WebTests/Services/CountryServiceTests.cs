@@ -23,11 +23,11 @@ public sealed class CountryServiceTests : IDisposable
         CountryInfo[] result = await sut.GetCountries(CancellationToken.None);
 
         // Assert
-        (result.Length).ShouldBe(2);
-        (result[0].Name).ShouldBe("Brazil");
-        (result[0].Code).ShouldBe("BR");
-        (result[1].Name).ShouldBe("Germany");
-        (result[1].Code).ShouldBe("DE");
+        result.Length.ShouldBe(2);
+        result[0].Name.ShouldBe("Brazil");
+        result[0].Code.ShouldBe("BR");
+        result[1].Name.ShouldBe("Germany");
+        result[1].Code.ShouldBe("DE");
     }
 
     [Fact]
@@ -42,7 +42,7 @@ public sealed class CountryServiceTests : IDisposable
         CountryInfo[] second = await sut.GetCountries(CancellationToken.None);
 
         // Assert
-        (second).ShouldBeSameAs(first);
+        second.ShouldBeSameAs(first);
     }
 
     [Fact]
@@ -56,8 +56,8 @@ public sealed class CountryServiceTests : IDisposable
         CountryInfo[] result = await sut.GetCountries(CancellationToken.None);
 
         // Assert
-        (result).ShouldNotBeEmpty();
-        (result).ShouldContain(c => c.Code == "BR" && c.Name == "Brazil");
+        result.ShouldNotBeEmpty();
+        result.ShouldContain(c => c.Code == "BR" && c.Name == "Brazil");
     }
 
     [Fact]
@@ -71,8 +71,8 @@ public sealed class CountryServiceTests : IDisposable
         CountryInfo[] result = await sut.GetCountries(CancellationToken.None);
 
         // Assert
-        (result).ShouldNotBeEmpty();
-        (result).ShouldContain(c => c.Code == "US" && c.Name == "United States");
+        result.ShouldNotBeEmpty();
+        result.ShouldContain(c => c.Code == "US" && c.Name == "United States");
     }
 
     [Fact]
@@ -82,7 +82,7 @@ public sealed class CountryServiceTests : IDisposable
         var result = CountryService.NormalizeNationality(null);
 
         // Assert
-        (result).ShouldBe(string.Empty);
+        result.ShouldBe(string.Empty);
     }
 
     [Fact]
@@ -92,7 +92,7 @@ public sealed class CountryServiceTests : IDisposable
         var result = CountryService.NormalizeNationality(string.Empty);
 
         // Assert
-        (result).ShouldBe(string.Empty);
+        result.ShouldBe(string.Empty);
     }
 
     [Theory]
@@ -112,7 +112,7 @@ public sealed class CountryServiceTests : IDisposable
         var result = CountryService.NormalizeNationality(demonym);
 
         // Assert
-        (result).ShouldBe(expectedCountry);
+        result.ShouldBe(expectedCountry);
     }
 
     [Fact]
@@ -122,7 +122,7 @@ public sealed class CountryServiceTests : IDisposable
         var result = CountryService.NormalizeNationality("brazilian");
 
         // Assert
-        (result).ShouldBe("Brazil");
+        result.ShouldBe("Brazil");
     }
 
     [Fact]
@@ -135,7 +135,7 @@ public sealed class CountryServiceTests : IDisposable
         var result = CountryService.NormalizeNationality(unknown);
 
         // Assert
-        (result).ShouldBe(unknown);
+        result.ShouldBe(unknown);
     }
 
 }

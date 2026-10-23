@@ -9,8 +9,8 @@ public sealed class CustomerImportHeaderMatcherTests
     {
         var result = CustomerImportHeaderMatcher.AutoMatch(["FirstName", "Email"]);
 
-        (result.First(m => m.Field.Name == "FirstName").MatchedCsvHeader).ShouldBe("FirstName");
-        (result.First(m => m.Field.Name == "Email").MatchedCsvHeader).ShouldBe("Email");
+        result.First(m => m.Field.Name == "FirstName").MatchedCsvHeader.ShouldBe("FirstName");
+        result.First(m => m.Field.Name == "Email").MatchedCsvHeader.ShouldBe("Email");
     }
 
     [Fact]
@@ -18,9 +18,9 @@ public sealed class CustomerImportHeaderMatcherTests
     {
         var result = CustomerImportHeaderMatcher.AutoMatch(["firstname", "LASTNAME", "eMaIl"]);
 
-        (result.First(m => m.Field.Name == "FirstName").MatchedCsvHeader).ShouldBe("firstname");
-        (result.First(m => m.Field.Name == "LastName").MatchedCsvHeader).ShouldBe("LASTNAME");
-        (result.First(m => m.Field.Name == "Email").MatchedCsvHeader).ShouldBe("eMaIl");
+        result.First(m => m.Field.Name == "FirstName").MatchedCsvHeader.ShouldBe("firstname");
+        result.First(m => m.Field.Name == "LastName").MatchedCsvHeader.ShouldBe("LASTNAME");
+        result.First(m => m.Field.Name == "Email").MatchedCsvHeader.ShouldBe("eMaIl");
     }
 
     [Fact]
@@ -28,7 +28,7 @@ public sealed class CustomerImportHeaderMatcherTests
     {
         var result = CustomerImportHeaderMatcher.AutoMatch(["UnknownCol", "AnotherUnknown"]);
 
-        (result).ShouldAllSatisfy(m => (m.MatchedCsvHeader).ShouldBeNull());
+        result.ShouldAllSatisfy(m => m.MatchedCsvHeader.ShouldBeNull());
     }
 
     [Fact]
@@ -36,7 +36,7 @@ public sealed class CustomerImportHeaderMatcherTests
     {
         var result = CustomerImportHeaderMatcher.AutoMatch([]);
 
-        (result.Count).ShouldBe(CustomerImportHeaderMatcher.Fields.Count);
+        result.Count.ShouldBe(CustomerImportHeaderMatcher.Fields.Count);
     }
 
     [Fact]
@@ -45,7 +45,7 @@ public sealed class CustomerImportHeaderMatcherTests
         var result = CustomerImportHeaderMatcher.AutoMatch(["FirstName"]);
 
         var unmatched = result.Where(m => m.Field.Name != "FirstName");
-        (unmatched).ShouldAllSatisfy(m => (m.IsAutoMatched).ShouldBeFalse());
+        unmatched.ShouldAllSatisfy(m => m.IsAutoMatched.ShouldBeFalse());
     }
 
     [Fact]
@@ -53,7 +53,7 @@ public sealed class CustomerImportHeaderMatcherTests
     {
         var field = CustomerImportHeaderMatcher.Fields.First(f => f.Name == "Email");
 
-        (field.IsRequired).ShouldBeTrue();
+        field.IsRequired.ShouldBeTrue();
     }
 
     [Fact]
@@ -61,7 +61,7 @@ public sealed class CustomerImportHeaderMatcherTests
     {
         var field = CustomerImportHeaderMatcher.Fields.First(f => f.Name == "Instagram");
 
-        (field.IsRequired).ShouldBeFalse();
+        field.IsRequired.ShouldBeFalse();
     }
 
     [Fact]
@@ -69,7 +69,7 @@ public sealed class CustomerImportHeaderMatcherTests
     {
         var field = CustomerImportHeaderMatcher.Fields.First(f => f.Name == "Allergies");
 
-        (field.IsRequired).ShouldBeFalse();
+        field.IsRequired.ShouldBeFalse();
     }
 
     [Fact]
@@ -81,7 +81,7 @@ public sealed class CustomerImportHeaderMatcherTests
         var result = CustomerImportHeaderMatcher.ApplyMapping(bytes, mappings, new Dictionary<string, string?>());
 
         var text = Encoding.UTF8.GetString(result);
-        (text).ShouldStartWith("FirstName,LastName", StringComparison.Ordinal);
+        text.ShouldStartWith("FirstName,LastName", StringComparison.Ordinal);
     }
 
     [Fact]
@@ -98,7 +98,7 @@ public sealed class CustomerImportHeaderMatcherTests
         var result = CustomerImportHeaderMatcher.ApplyMapping(bytes, mappings, userMappings);
 
         var text = Encoding.UTF8.GetString(result);
-        (text).ShouldStartWith("FirstName,Email", StringComparison.Ordinal);
+        text.ShouldStartWith("FirstName,Email", StringComparison.Ordinal);
     }
 
     [Fact]
@@ -110,7 +110,7 @@ public sealed class CustomerImportHeaderMatcherTests
         var result = CustomerImportHeaderMatcher.ApplyMapping(bytes, mappings, new Dictionary<string, string?>());
 
         var text = Encoding.UTF8.GetString(result);
-        (text).ShouldStartWith("FirstName,SomeExtra,Email", StringComparison.Ordinal);
+        text.ShouldStartWith("FirstName,SomeExtra,Email", StringComparison.Ordinal);
     }
 
     [Fact]
@@ -122,8 +122,8 @@ public sealed class CustomerImportHeaderMatcherTests
         var result = CustomerImportHeaderMatcher.ApplyMapping(bytes, mappings, new Dictionary<string, string?>());
 
         var text = Encoding.UTF8.GetString(result);
-        (text).ShouldContain("john,doe", StringComparison.Ordinal);
-        (text).ShouldContain("jane,smith", StringComparison.Ordinal);
+        text.ShouldContain("john,doe", StringComparison.Ordinal);
+        text.ShouldContain("jane,smith", StringComparison.Ordinal);
     }
 
     [Fact]
@@ -135,6 +135,6 @@ public sealed class CustomerImportHeaderMatcherTests
         var result = CustomerImportHeaderMatcher.ApplyMapping(bytes, mappings, new Dictionary<string, string?>());
 
         var text = Encoding.UTF8.GetString(result);
-        (text).ShouldStartWith("FirstName", StringComparison.Ordinal);
+        text.ShouldStartWith("FirstName", StringComparison.Ordinal);
     }
 }

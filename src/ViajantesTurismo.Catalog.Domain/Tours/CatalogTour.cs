@@ -20,7 +20,10 @@ public sealed class CatalogTour : EventSourcedAggregateRoot<Guid>
     /// <summary>
     /// Gets the source Admin tour identifier.
     /// </summary>
-    public Guid AdminTourId { get; private set; }
+    public Guid AdminTourId
+    {
+        get; private set;
+    }
 
     /// <summary>
     /// Gets the source Admin tour business identifier.
@@ -65,7 +68,10 @@ public sealed class CatalogTour : EventSourcedAggregateRoot<Guid>
     /// <summary>
     /// Gets a value indicating whether the tour is visible on the public website.
     /// </summary>
-    public bool IsPublished { get; private set; }
+    public bool IsPublished
+    {
+        get; private set;
+    }
 
     /// <summary>
     /// Creates a draft Catalog tour from an Admin tour-created event.

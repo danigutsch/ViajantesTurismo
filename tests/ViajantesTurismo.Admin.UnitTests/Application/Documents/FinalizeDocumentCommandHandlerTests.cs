@@ -14,7 +14,7 @@ public sealed class FinalizeDocumentCommandHandlerTests
     public async Task Handle_finalizes_approved_document_and_saves()
     {
         // Arrange
-        var now = DateTime.UtcNow;
+        var now = TimeProvider.System.GetUtcNow().UtcDateTime;
         var document = DocumentDraftTestData.Create(now);
         document.BeginReview(now).IsSuccess.ShouldBeTrue();
         document.Approve(now).IsSuccess.ShouldBeTrue();
@@ -40,7 +40,7 @@ public sealed class FinalizeDocumentCommandHandlerTests
     public async Task Handle_omits_remote_branding_logo_from_finalized_artifact()
     {
         // Arrange
-        var now = DateTime.UtcNow;
+        var now = TimeProvider.System.GetUtcNow().UtcDateTime;
         var document = DocumentDraftTestData.Create(now, new Uri("https://branding.example.test/logo.svg", UriKind.Absolute));
         document.BeginReview(now).IsSuccess.ShouldBeTrue();
         document.Approve(now).IsSuccess.ShouldBeTrue();
@@ -65,7 +65,7 @@ public sealed class FinalizeDocumentCommandHandlerTests
     public async Task Handle_queues_metadata_only_audit_event_for_finalized_document()
     {
         // Arrange
-        var now = DateTime.UtcNow;
+        var now = TimeProvider.System.GetUtcNow().UtcDateTime;
         var document = DocumentDraftTestData.Create(now);
         document.BeginReview(now).IsSuccess.ShouldBeTrue();
         document.Approve(now).IsSuccess.ShouldBeTrue();
@@ -97,7 +97,7 @@ public sealed class FinalizeDocumentCommandHandlerTests
     public async Task Handle_does_not_save_finalization_without_audit_metadata()
     {
         // Arrange
-        var now = DateTime.UtcNow;
+        var now = TimeProvider.System.GetUtcNow().UtcDateTime;
         var document = DocumentDraftTestData.Create(now);
         document.BeginReview(now).IsSuccess.ShouldBeTrue();
         document.Approve(now).IsSuccess.ShouldBeTrue();
@@ -122,7 +122,7 @@ public sealed class FinalizeDocumentCommandHandlerTests
     public async Task Handle_preserves_template_field_order_in_finalized_artifact()
     {
         // Arrange
-        var now = DateTime.UtcNow;
+        var now = TimeProvider.System.GetUtcNow().UtcDateTime;
         DocumentField[] fields =
         [
             DocumentField.Create("z-template-first", "Template first", "First value", DocumentPrivacyClassification.Public, false).Value,
@@ -167,7 +167,7 @@ public sealed class FinalizeDocumentCommandHandlerTests
     public async Task Handle_rejects_unapproved_document_without_saving()
     {
         // Arrange
-        var document = DocumentDraftTestData.Create(DateTime.UtcNow);
+        var document = DocumentDraftTestData.Create(TimeProvider.System.GetUtcNow().UtcDateTime);
         var store = new FakeDocumentStore();
         store.Documents.Add(document.Id, document);
         var auditStore = new FakeDocumentAuditStore();
@@ -226,7 +226,7 @@ public sealed class FinalizeDocumentCommandHandlerTests
     public async Task Handle_supersedes_previous_finalized_revision_after_replacement_finalizes()
     {
         // Arrange
-        var now = DateTime.UtcNow;
+        var now = TimeProvider.System.GetUtcNow().UtcDateTime;
         var previous = DocumentDraftTestData.Create(now);
         previous.BeginReview(now).IsSuccess.ShouldBeTrue();
         previous.Approve(now).IsSuccess.ShouldBeTrue();
@@ -270,7 +270,7 @@ public sealed class FinalizeDocumentCommandHandlerTests
     public async Task Handle_supersedes_active_finalized_ancestor_when_predecessor_is_unfinalized()
     {
         // Arrange
-        var now = DateTime.UtcNow;
+        var now = TimeProvider.System.GetUtcNow().UtcDateTime;
         var first = DocumentDraftTestData.Create(now);
         first.BeginReview(now).IsSuccess.ShouldBeTrue();
         first.Approve(now).IsSuccess.ShouldBeTrue();
@@ -333,7 +333,7 @@ public sealed class FinalizeDocumentCommandHandlerTests
     public async Task Handle_keeps_replacement_finalized_when_previous_revision_is_missing()
     {
         // Arrange
-        var now = DateTime.UtcNow;
+        var now = TimeProvider.System.GetUtcNow().UtcDateTime;
         var previous = DocumentDraftTestData.Create(now);
         DocumentField[] replacementFields =
         [
@@ -372,7 +372,7 @@ public sealed class FinalizeDocumentCommandHandlerTests
     public async Task Handle_rejects_finalizing_an_older_revision_after_a_newer_revision()
     {
         // Arrange
-        var now = DateTime.UtcNow;
+        var now = TimeProvider.System.GetUtcNow().UtcDateTime;
         var older = DocumentDraftTestData.Create(now);
         DocumentField[] replacementFields =
         [
@@ -423,7 +423,7 @@ public sealed class FinalizeDocumentCommandHandlerTests
     public async Task Handle_rejects_finalizing_an_older_revision_after_a_newer_revision_was_voided()
     {
         // Arrange
-        var now = DateTime.UtcNow;
+        var now = TimeProvider.System.GetUtcNow().UtcDateTime;
         var older = DocumentDraftTestData.Create(now);
         DocumentField[] replacementFields =
         [

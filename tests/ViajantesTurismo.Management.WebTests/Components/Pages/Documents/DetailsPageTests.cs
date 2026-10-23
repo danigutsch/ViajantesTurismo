@@ -122,9 +122,9 @@ public sealed class DetailsPageTests : BunitContext
                     IsEditable = true
                 }
             ],
-            CreatedAt = DateTime.UtcNow,
-            UpdatedAt = DateTime.UtcNow,
-            FinalizedAt = DateTime.UtcNow,
+            CreatedAt = TimeProvider.System.GetUtcNow().UtcDateTime,
+            UpdatedAt = TimeProvider.System.GetUtcNow().UtcDateTime,
+            FinalizedAt = TimeProvider.System.GetUtcNow().UtcDateTime,
             HasFinalizedArtifact = true
         };
         documentsApiClient.AddDocument(document);
@@ -158,9 +158,9 @@ public sealed class DetailsPageTests : BunitContext
             SourceVersion = "SOURCE-VERSION-1",
             Status = DocumentStatusDto.Finalized,
             Fields = [],
-            CreatedAt = DateTime.UtcNow,
-            UpdatedAt = DateTime.UtcNow,
-            FinalizedAt = DateTime.UtcNow,
+            CreatedAt = TimeProvider.System.GetUtcNow().UtcDateTime,
+            UpdatedAt = TimeProvider.System.GetUtcNow().UtcDateTime,
+            FinalizedAt = TimeProvider.System.GetUtcNow().UtcDateTime,
             HasFinalizedArtifact = true
         };
         var replacement = original with
@@ -191,7 +191,10 @@ public sealed class DetailsPageTests : BunitContext
         // Assert
         documentsApiClient.LastBeginReviewDocumentId.ShouldBe(replacement.Id);
 
-        var otherRevision = replacement with { Id = Guid.CreateVersion7() };
+        var otherRevision = replacement with
+        {
+            Id = Guid.CreateVersion7()
+        };
         documentsApiClient.AddDocument(otherRevision);
         cut.Render(parameters => parameters.Add(page => page.Id, otherRevision.Id));
 
@@ -232,8 +235,8 @@ public sealed class DetailsPageTests : BunitContext
                     IsEditable = true
                 }
             ],
-            CreatedAt = DateTime.UtcNow,
-            UpdatedAt = DateTime.UtcNow,
+            CreatedAt = TimeProvider.System.GetUtcNow().UtcDateTime,
+            UpdatedAt = TimeProvider.System.GetUtcNow().UtcDateTime,
             HasFinalizedArtifact = false
         };
         documentsApiClient.AddDocument(document);
@@ -342,7 +345,10 @@ public sealed class DetailsPageTests : BunitContext
     {
         // Arrange
         var original = DocumentDetailsTestData.Create(DocumentStatusDto.Finalized, fields: []);
-        var other = original with { Id = Guid.CreateVersion7() };
+        var other = original with
+        {
+            Id = Guid.CreateVersion7()
+        };
         documentsApiClient.AddDocument(original);
         documentsApiClient.AddDocument(other);
         documentsApiClient.RegenerationOutcome = new HttpOutcome<GetDocumentDto>
@@ -428,8 +434,8 @@ public sealed class DetailsPageTests : BunitContext
             SourceVersion = "SOURCE-VERSION",
             Status = DocumentStatusDto.DraftGenerated,
             Fields = [],
-            CreatedAt = DateTime.UtcNow,
-            UpdatedAt = DateTime.UtcNow,
+            CreatedAt = TimeProvider.System.GetUtcNow().UtcDateTime,
+            UpdatedAt = TimeProvider.System.GetUtcNow().UtcDateTime,
             HasFinalizedArtifact = false
         });
 

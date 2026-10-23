@@ -114,7 +114,7 @@ public abstract class AspireSystemTestBase<TFixture>(TFixture fixture) : PageTes
     protected async Task<string> ReadBookingDetailsBadgeText(Guid bookingId, string label)
     {
         await NavigateTo($"/bookings/{bookingId}");
-        await Expect(Page).ToHaveTitleAsync("Booking Details");
+        await Page.ShouldHaveTitle("Booking Details");
 
         var badge = Page.GetDetailsBadge(label);
         await Expect(badge).ToBeVisibleAsync();

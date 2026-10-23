@@ -10,7 +10,10 @@ internal static class CatalogAuthorization
     public const string CatalogPublish = "catalog.publish";
     public const string MediaAi = "media.ai";
 
-    public static IReadOnlyDictionary<string, IReadOnlyCollection<string>> PermissionsByRole { get; } =
+    public static IReadOnlyDictionary<string, IReadOnlyCollection<string>> PermissionsByRole
+    {
+        get;
+    } =
         new Dictionary<string, IReadOnlyCollection<string>>(StringComparer.Ordinal)
         {
             ["Admin"] = [CatalogRead, CatalogWrite, CatalogPublish, MediaAi],

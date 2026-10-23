@@ -37,7 +37,7 @@ public sealed class CatalogTourSlugLockPostgreSqlTests : IAsyncLifetime
         // Arrange
         var integrationEvent = new AdminTourCreatedIntegrationEvent(
             Guid.CreateVersion7(),
-            DateTimeOffset.UtcNow,
+            TimeProvider.System.GetUtcNow(),
             Guid.CreateVersion7(),
             "andes-2026",
             "Andes 2026");

@@ -28,7 +28,8 @@ public sealed class TelemetryPrivacyConfigurationTests
 
         // Act
         var combinedSource = string.Concat(adminInfrastructure, brandingInfrastructure, catalogInfrastructure);
-        (combinedSource.Split("ConfigureTracingWithoutFirstResponseEvent()", StringSplitOptions.None).Length - 1).ShouldBe(3);
+        var actualValue = combinedSource.Split("ConfigureTracingWithoutFirstResponseEvent()", StringSplitOptions.None).Length - 1;
+        actualValue.ShouldBe(3);
         combinedSource.ShouldNotContain("EnableFirstResponseEvent", StringComparison.Ordinal);
         combinedSource.ShouldNotContain("DisableTracing = true", StringComparison.Ordinal);
         combinedSource.ShouldNotContain("EnableParameterLogging", StringComparison.Ordinal);

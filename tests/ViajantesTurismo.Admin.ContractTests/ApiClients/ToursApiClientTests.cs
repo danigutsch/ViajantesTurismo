@@ -60,7 +60,7 @@ public sealed class ToursApiClientTests
     }
 
     [Fact]
-    public async Task GetTourById_returns_tour_when_admin_api_returns_success()
+    public async Task GetTourById_returns_tour_when_admin_API_returns_success()
     {
         var requestPath = string.Empty;
         var tourId = Guid.Parse("11111111-1111-1111-1111-111111111111");
@@ -80,7 +80,7 @@ public sealed class ToursApiClientTests
     }
 
     [Fact]
-    public async Task GetTourById_returns_null_when_admin_api_returns_not_found()
+    public async Task GetTourById_returns_null_when_admin_API_returns_not_found()
     {
         using var httpClient = CatalogToursApiClientTestsHelpers.CreateClient(_ => new HttpResponseMessage(System.Net.HttpStatusCode.NotFound));
         var sut = new ToursApiClient(httpClient);
@@ -92,7 +92,7 @@ public sealed class ToursApiClientTests
     }
 
     [Fact]
-    public async Task GetTourById_returns_malformed_outcome_when_admin_api_returns_success_with_null_body()
+    public async Task GetTourById_returns_malformed_outcome_when_admin_API_returns_success_with_null_body()
     {
         using var httpClient = CatalogToursApiClientTestsHelpers.CreateClient(_ => CatalogToursApiClientTestsHelpers.JsonResponse("null"));
         var sut = new ToursApiClient(httpClient);

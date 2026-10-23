@@ -10,13 +10,25 @@ public sealed class CapturingIdempotencyStore(
     private readonly Dictionary<IdempotencyOperation, IdempotencyEntry> entries = [];
     private int remainingCompleteFailures = completeFailures;
 
-    public IdempotencyEntryState? CompletedState { get; private set; }
+    public IdempotencyEntryState? CompletedState
+    {
+        get; private set;
+    }
 
-    public DateTimeOffset? StartedAt { get; private set; }
+    public DateTimeOffset? StartedAt
+    {
+        get; private set;
+    }
 
-    public DateTimeOffset? CompletedAt { get; private set; }
+    public DateTimeOffset? CompletedAt
+    {
+        get; private set;
+    }
 
-    public TimeSpan? CapturedLockDuration { get; private set; }
+    public TimeSpan? CapturedLockDuration
+    {
+        get; private set;
+    }
 
     public ValueTask<IdempotencyStartResult> TryStart(
         IdempotencyOperation operation,

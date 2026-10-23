@@ -17,7 +17,7 @@ public sealed class CustomerSelectorTests : BunitContext
 
         // Assert
         var input = cut.Find("input.form-control");
-        (input.GetAttribute("placeholder")).ShouldBe("Search customers by name or email...");
+        input.GetAttribute("placeholder").ShouldBe("Search customers by name or email...");
     }
 
     [Fact]
@@ -35,7 +35,7 @@ public sealed class CustomerSelectorTests : BunitContext
 
         // Assert
         var dropdowns = cut.FindAll(".dropdown-menu");
-        (dropdowns).ShouldBeEmpty();
+        dropdowns.ShouldBeEmpty();
     }
 
     [Fact]
@@ -59,7 +59,7 @@ public sealed class CustomerSelectorTests : BunitContext
 
         // Assert
         var dropdown = cut.Find(".dropdown-menu.show");
-        _ = (dropdown).ShouldNotBeNull();
+        _ = dropdown.ShouldNotBeNull();
     }
 
     [Fact]
@@ -82,7 +82,7 @@ public sealed class CustomerSelectorTests : BunitContext
 
         // Assert
         var items = cut.FindAll(".dropdown-item:not(.text-muted):not(.dropdown-item-text)");
-        (items.Count).ShouldBe(10);
+        items.Count.ShouldBe(10);
     }
 
     [Fact]
@@ -103,7 +103,7 @@ public sealed class CustomerSelectorTests : BunitContext
 
         // Assert
         var clearButton = cut.Find(".dropdown-item.text-muted");
-        (clearButton.TextContent).ShouldContain("Clear selection", StringComparison.Ordinal);
+        clearButton.TextContent.ShouldContain("Clear selection", StringComparison.Ordinal);
     }
 
     [Fact]
@@ -128,8 +128,8 @@ public sealed class CustomerSelectorTests : BunitContext
 
         // Assert
         var customerButton = cut.Find(".dropdown-item:not(.text-muted)");
-        (customerButton.TextContent).ShouldContain("Jane Smith", StringComparison.Ordinal);
-        (customerButton.TextContent).ShouldContain($"ID: {customerId}", StringComparison.Ordinal);
+        customerButton.TextContent.ShouldContain("Jane Smith", StringComparison.Ordinal);
+        customerButton.TextContent.ShouldContain($"ID: {customerId}", StringComparison.Ordinal);
     }
 
     [Fact]
@@ -153,8 +153,8 @@ public sealed class CustomerSelectorTests : BunitContext
 
         // Assert
         var customerButton = cut.Find(".dropdown-item:not(.text-muted)");
-        (customerButton.TextContent).ShouldContain("test@example.com", StringComparison.Ordinal);
-        (customerButton.TextContent).ShouldContain("Canada", StringComparison.Ordinal);
+        customerButton.TextContent.ShouldContain("test@example.com", StringComparison.Ordinal);
+        customerButton.TextContent.ShouldContain("Canada", StringComparison.Ordinal);
     }
 
     [Fact]
@@ -181,8 +181,8 @@ public sealed class CustomerSelectorTests : BunitContext
 
         // Assert
         var items = cut.FindAll(".dropdown-item:not(.text-muted):not(.dropdown-item-text)");
-        (items).ShouldHaveSingleItem();
-        (items[0].TextContent).ShouldContain("Alice Brown", StringComparison.Ordinal);
+        items.ShouldHaveSingleItem();
+        items[0].TextContent.ShouldContain("Alice Brown", StringComparison.Ordinal);
     }
 
     [Fact]
@@ -209,7 +209,7 @@ public sealed class CustomerSelectorTests : BunitContext
 
         // Assert
         var items = cut.FindAll(".dropdown-item:not(.text-muted):not(.dropdown-item-text)");
-        (items.Count).ShouldBe(2);
+        items.Count.ShouldBe(2);
     }
 
     [Fact]
@@ -236,7 +236,7 @@ public sealed class CustomerSelectorTests : BunitContext
 
         // Assert
         var items = cut.FindAll(".dropdown-item:not(.text-muted):not(.dropdown-item-text)");
-        (items.Count).ShouldBe(2);
+        items.Count.ShouldBe(2);
     }
 
     [Fact]
@@ -263,8 +263,8 @@ public sealed class CustomerSelectorTests : BunitContext
 
         // Assert
         var items = cut.FindAll(".dropdown-item:not(.text-muted):not(.dropdown-item-text)");
-        (items).ShouldHaveSingleItem();
-        (items[0].TextContent).ShouldContain("Alice", StringComparison.Ordinal);
+        items.ShouldHaveSingleItem();
+        items[0].TextContent.ShouldContain("Alice", StringComparison.Ordinal);
     }
 
     [Fact]
@@ -289,8 +289,8 @@ public sealed class CustomerSelectorTests : BunitContext
 
         // Assert
         var items = cut.FindAll(".dropdown-item:not(.text-muted):not(.dropdown-item-text)");
-        (items).ShouldHaveSingleItem();
-        (items[0].TextContent).ShouldContain("Alice Brown", StringComparison.Ordinal);
+        items.ShouldHaveSingleItem();
+        items[0].TextContent.ShouldContain("Alice Brown", StringComparison.Ordinal);
     }
 
     [Fact]
@@ -314,7 +314,7 @@ public sealed class CustomerSelectorTests : BunitContext
 
         // Assert
         var items = cut.FindAll(".dropdown-item:not(.text-muted):not(.dropdown-item-text)");
-        (items.Count).ShouldBe(20);
+        items.Count.ShouldBe(20);
     }
 
     [Fact]
@@ -339,7 +339,7 @@ public sealed class CustomerSelectorTests : BunitContext
 
         // Assert
         var noResults = cut.Find(".dropdown-item-text.text-muted");
-        (noResults.TextContent).ShouldContain("No customers found", StringComparison.Ordinal);
+        noResults.TextContent.ShouldContain("No customers found", StringComparison.Ordinal);
     }
 
     [Fact]
@@ -367,7 +367,7 @@ public sealed class CustomerSelectorTests : BunitContext
         customerButton.Click();
 
         // Assert
-        (value).ShouldBe(customerId);
+        value.ShouldBe(customerId);
     }
 
     [Fact]
@@ -394,7 +394,7 @@ public sealed class CustomerSelectorTests : BunitContext
 
         // Assert
         var dropdowns = cut.FindAll(".dropdown-menu.show");
-        (dropdowns).ShouldBeEmpty();
+        dropdowns.ShouldBeEmpty();
     }
 
     [Fact]
@@ -423,7 +423,7 @@ public sealed class CustomerSelectorTests : BunitContext
         // Assert - Reopen dropdown to check search term was cleared
         input.Focus();
         var items = cut.FindAll(".dropdown-item:not(.text-muted):not(.dropdown-item-text)");
-        (items).ShouldHaveSingleItem(); // Should show all (1) customer, not filtered
+        items.ShouldHaveSingleItem(); // Should show all (1) customer, not filtered
     }
 
     [Fact]
@@ -451,7 +451,7 @@ public sealed class CustomerSelectorTests : BunitContext
         clearButton.Click();
 
         // Assert
-        (value).ShouldBeNull();
+        value.ShouldBeNull();
     }
 
     [Fact]
@@ -473,8 +473,8 @@ public sealed class CustomerSelectorTests : BunitContext
 
         // Assert
         var badge = cut.Find(".badge.bg-primary");
-        (badge.TextContent).ShouldContain("Selected: Alice Brown", StringComparison.Ordinal);
-        (badge.TextContent).ShouldContain($"ID: {customerId}", StringComparison.Ordinal);
+        badge.TextContent.ShouldContain("Selected: Alice Brown", StringComparison.Ordinal);
+        badge.TextContent.ShouldContain($"ID: {customerId}", StringComparison.Ordinal);
     }
 
     [Fact]
@@ -495,7 +495,7 @@ public sealed class CustomerSelectorTests : BunitContext
 
         // Assert
         var badges = cut.FindAll(".badge.bg-primary");
-        (badges).ShouldBeEmpty();
+        badges.ShouldBeEmpty();
     }
 
     [Fact]
@@ -521,7 +521,7 @@ public sealed class CustomerSelectorTests : BunitContext
 
         // Assert
         var activeItem = cut.Find(".dropdown-item.active");
-        (activeItem.TextContent).ShouldContain("Alice", StringComparison.Ordinal);
+        activeItem.TextContent.ShouldContain("Alice", StringComparison.Ordinal);
     }
 
     [Fact]
@@ -539,6 +539,6 @@ public sealed class CustomerSelectorTests : BunitContext
 
         // Assert - Should render without errors
         var input = cut.Find("input.form-control");
-        _ = (input).ShouldNotBeNull();
+        _ = input.ShouldNotBeNull();
     }
 }

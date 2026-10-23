@@ -15,7 +15,7 @@ public class AdminEndpointResultsTests
             () => "not-found",
             () => "conflict");
 
-        (response).ShouldBe(expected);
+        response.ShouldBe(expected);
     }
 
     [Theory]
@@ -28,7 +28,7 @@ public class AdminEndpointResultsTests
             () => "conflict",
             () => "invalid");
 
-        (response).ShouldBe(expected);
+        response.ShouldBe(expected);
     }
 
     [Theory]
@@ -40,7 +40,7 @@ public class AdminEndpointResultsTests
             () => "not-found",
             () => "invalid");
 
-        (response).ShouldBe(expected);
+        response.ShouldBe(expected);
     }
 
     [Theory]
@@ -52,19 +52,19 @@ public class AdminEndpointResultsTests
             () => "conflict",
             () => "invalid");
 
-        (response).ShouldBe(expected);
+        response.ShouldBe(expected);
     }
 
     [Fact]
     public void Match_not_found_conflict_failure_with_unsupported_status_throws()
     {
-        var exception = ((Func<object?>)(() =>
+        var exception = ShouldAssertionExtensions.ShouldThrow<InvalidOperationException>((Func<object?>)(() =>
             AdminEndpointResults.MatchNotFoundConflictFailure(
                 Result.Ok(),
                 () => "not-found",
-                () => "conflict"))).ShouldThrow<InvalidOperationException>();
+                () => "conflict")));
 
-        (exception.Message).ShouldBe("Unsupported result status 'Ok'.");
+        exception.Message.ShouldBe("Unsupported result status 'Ok'.");
     }
 
     [Fact]
@@ -80,7 +80,7 @@ public class AdminEndpointResultsTests
             _ => "missing",
             CancellationToken.None);
 
-        (response).ShouldBe(booking.Id.ToString());
+        response.ShouldBe(booking.Id.ToString());
     }
 
     [Fact]
@@ -96,7 +96,7 @@ public class AdminEndpointResultsTests
             missingBookingId => missingBookingId.ToString(),
             CancellationToken.None);
 
-        (response).ShouldBe(bookingId.ToString());
+        response.ShouldBe(bookingId.ToString());
     }
 
     [Fact]
@@ -115,7 +115,7 @@ public class AdminEndpointResultsTests
             _ => "payment",
             CancellationToken.None);
 
-        (response).ShouldBe(payment.Id.ToString());
+        response.ShouldBe(payment.Id.ToString());
     }
 
     [Fact]
@@ -134,7 +134,7 @@ public class AdminEndpointResultsTests
             missingPaymentId => missingPaymentId.ToString(),
             CancellationToken.None);
 
-        (response).ShouldBe(bookingId.ToString());
+        response.ShouldBe(bookingId.ToString());
     }
 
     [Fact]
@@ -154,7 +154,7 @@ public class AdminEndpointResultsTests
             missingPaymentId => missingPaymentId.ToString(),
             CancellationToken.None);
 
-        (response).ShouldBe(paymentId.ToString());
+        response.ShouldBe(paymentId.ToString());
     }
 
     [Fact]
@@ -172,7 +172,7 @@ public class AdminEndpointResultsTests
             () => "conflict",
             CancellationToken.None);
 
-        (response).ShouldBe(booking.Id.ToString());
+        response.ShouldBe(booking.Id.ToString());
     }
 
     [Fact]
@@ -191,7 +191,7 @@ public class AdminEndpointResultsTests
             () => "invalid",
             CancellationToken.None);
 
-        (response).ShouldBe("invalid");
+        response.ShouldBe("invalid");
     }
 
     [Fact]
@@ -209,7 +209,7 @@ public class AdminEndpointResultsTests
             () => "invalid",
             CancellationToken.None);
 
-        (response).ShouldBe("not-found");
+        response.ShouldBe("not-found");
     }
 
     public static TheoryData<Result, string> NotFoundConflictFailures =>

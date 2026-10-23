@@ -183,7 +183,7 @@ public sealed class DocumentStorePostgreSqlTests(PostgreSqlTestServerFixture fix
     public async Task Invalid_branding_logo_uri_materializes_as_missing_snapshot_logo()
     {
         // Arrange
-        var document = DocumentDraftInfrastructureTestData.CreateDraft(DateTime.UtcNow);
+        var document = DocumentDraftInfrastructureTestData.CreateDraft(TimeProvider.System.GetUtcNow().UtcDateTime);
         await Scenario.Seed(document);
         await Scenario.SetBrandingLogoUri(document.Id, "/\\evil.test/logo.svg", TestContext.Current.CancellationToken);
 
@@ -330,7 +330,7 @@ public sealed class DocumentStorePostgreSqlTests(PostgreSqlTestServerFixture fix
     public async Task GetAuditMetadataById_returns_only_document_audit_identifiers()
     {
         // Arrange
-        var document = DocumentDraftInfrastructureTestData.CreateDraft(DateTime.UtcNow);
+        var document = DocumentDraftInfrastructureTestData.CreateDraft(TimeProvider.System.GetUtcNow().UtcDateTime);
         await Scenario.Seed(document);
 
         // Act
@@ -346,7 +346,7 @@ public sealed class DocumentStorePostgreSqlTests(PostgreSqlTestServerFixture fix
     public async Task DocumentLineage_rejects_concurrent_revision_updates()
     {
         // Arrange
-        var now = DateTime.UtcNow;
+        var now = TimeProvider.System.GetUtcNow().UtcDateTime;
         var document = DocumentDraftInfrastructureTestData.CreateDraft(now);
         await Scenario.Seed(document);
 
@@ -419,7 +419,7 @@ public sealed class DocumentStorePostgreSqlTests(PostgreSqlTestServerFixture fix
         var first = DocumentDraftInfrastructureTestData.CreateDraft(now, bookingId);
         var second = DocumentDraftInfrastructureTestData.CreateDraft(now, bookingId);
         var key = IdempotencyKey.From(Guid.CreateVersion7().ToString("N"));
-        var requestFingerprint = IdempotencyRequestFingerprint.Create(
+        var requestFingerprint = DocumentCommandIdempotency.CreateRequestFingerprint(
             requestMarker,
             "1");
 
@@ -584,7 +584,7 @@ public sealed class DocumentStorePostgreSqlTests(PostgreSqlTestServerFixture fix
     public async Task SaveEntities_rejects_documents_for_pending_and_missing_bookings(BookingStatus? bookingStatus)
     {
         // Arrange
-        var document = DocumentDraftInfrastructureTestData.CreateDraft(DateTime.UtcNow);
+        var document = DocumentDraftInfrastructureTestData.CreateDraft(TimeProvider.System.GetUtcNow().UtcDateTime);
 
         // Act
         Func<Task> save = async () =>
@@ -604,7 +604,7 @@ public sealed class DocumentStorePostgreSqlTests(PostgreSqlTestServerFixture fix
     public async Task SaveEntities_accepts_documents_for_eligible_bookings(BookingStatus bookingStatus)
     {
         // Arrange
-        var document = DocumentDraftInfrastructureTestData.CreateDraft(DateTime.UtcNow);
+        var document = DocumentDraftInfrastructureTestData.CreateDraft(TimeProvider.System.GetUtcNow().UtcDateTime);
 
         // Act
         await Scenario.SaveDocumentForBookingStatus(document, bookingStatus, TestContext.Current.CancellationToken);

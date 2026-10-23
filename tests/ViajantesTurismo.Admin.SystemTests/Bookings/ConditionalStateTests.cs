@@ -12,7 +12,7 @@ public class ConditionalStateTests(AspireSystemTestFixture fixture) : AspireSyst
 
         // Act
         await NavigateTo($"/edittour/{tour.Id}");
-        await Expect(Page).ToHaveTitleAsync("Edit Tour");
+        await Page.ShouldHaveTitle("Edit Tour");
 
         // Assert
         await Expect(Page.Locator("#identifier")).ToBeDisabledAsync();

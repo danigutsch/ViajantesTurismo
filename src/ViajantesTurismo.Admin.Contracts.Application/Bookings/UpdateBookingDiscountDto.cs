@@ -11,11 +11,17 @@ public sealed record UpdateBookingDiscountDto : IValidatableObject
     public DiscountTypeDto DiscountType { get; init; } = DiscountTypeDto.None;
 
     /// <summary>The discount amount (0-100 for percentage, fixed amount for absolute).</summary>
-    public decimal DiscountAmount { get; init; }
+    public decimal DiscountAmount
+    {
+        get; init;
+    }
 
     /// <summary>Reason for the discount (required when discount is applied).</summary>
     [StringLength(ContractConstants.MaxDiscountReasonLength, MinimumLength = ContractConstants.MinDiscountReasonLength)]
-    public string? DiscountReason { get; init; }
+    public string? DiscountReason
+    {
+        get; init;
+    }
 
     /// <summary>
     /// Validates the discount fields based on business rules.

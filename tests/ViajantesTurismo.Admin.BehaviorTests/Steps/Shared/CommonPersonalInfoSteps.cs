@@ -327,7 +327,7 @@ public sealed class CommonPersonalInfoSteps(CustomerContext context)
         context.FirstName = "John";
         context.LastName = "Smith";
         context.Gender = "Male";
-        context.BirthDate = DateTime.UtcNow.Date.AddDays(1);
+        context.BirthDate = TimeProvider.System.GetUtcNow().UtcDateTime.Date.AddDays(1);
         context.Nationality = "American";
         context.Occupation = "Software Engineer";
     }
@@ -338,7 +338,7 @@ public sealed class CommonPersonalInfoSteps(CustomerContext context)
         context.FirstName = "John";
         context.LastName = "Smith";
         context.Gender = "Male";
-        context.BirthDate = DateTime.UtcNow.Date;
+        context.BirthDate = TimeProvider.System.GetUtcNow().UtcDateTime.Date;
         context.Nationality = "American";
         context.Occupation = "Software Engineer";
     }
@@ -355,7 +355,7 @@ public sealed class CommonPersonalInfoSteps(CustomerContext context)
         context.FirstName = "John";
         context.LastName = "Smith";
         context.Gender = "Male";
-        context.BirthDate = DateTime.UtcNow.Date.AddDays(-1);
+        context.BirthDate = TimeProvider.System.GetUtcNow().UtcDateTime.Date.AddDays(-1);
         context.Nationality = "American";
         context.Occupation = "Software Engineer";
     }
@@ -366,7 +366,7 @@ public sealed class CommonPersonalInfoSteps(CustomerContext context)
         context.FirstName = "John";
         context.LastName = "Smith";
         context.Gender = "Male";
-        context.BirthDate = DateTime.UtcNow.Date.AddYears(-years);
+        context.BirthDate = TimeProvider.System.GetUtcNow().UtcDateTime.Date.AddYears(-years);
         context.Nationality = "American";
         context.Occupation = "Software Engineer";
     }
@@ -377,7 +377,7 @@ public sealed class CommonPersonalInfoSteps(CustomerContext context)
         context.FirstName = "John";
         context.LastName = "Smith";
         context.Gender = "Male";
-        context.BirthDate = DateTime.UtcNow.Date.AddDays(1);
+        context.BirthDate = TimeProvider.System.GetUtcNow().UtcDateTime.Date.AddDays(1);
         context.Nationality = "American";
         context.Occupation = "Software Engineer";
         WhenICreateThePersonalInfo();
@@ -395,7 +395,7 @@ public sealed class CommonPersonalInfoSteps(CustomerContext context)
         context.FirstName = "John";
         context.LastName = "Smith";
         context.Gender = "Male";
-        context.BirthDate = DateTime.UtcNow.Date;
+        context.BirthDate = TimeProvider.System.GetUtcNow().UtcDateTime.Date;
         context.Nationality = "American";
         context.Occupation = "Software Engineer";
         WhenICreateThePersonalInfo();
@@ -407,7 +407,7 @@ public sealed class CommonPersonalInfoSteps(CustomerContext context)
         context.FirstName = "John";
         context.LastName = "Smith";
         context.Gender = "Male";
-        context.BirthDate = DateTime.UtcNow.Date.AddDays(-1);
+        context.BirthDate = TimeProvider.System.GetUtcNow().UtcDateTime.Date.AddDays(-1);
         context.Nationality = "American";
         context.Occupation = "Software Engineer";
         WhenICreateThePersonalInfo();
@@ -419,7 +419,7 @@ public sealed class CommonPersonalInfoSteps(CustomerContext context)
         context.FirstName = "John";
         context.LastName = "Smith";
         context.Gender = "Male";
-        context.BirthDate = DateTime.UtcNow.Date.AddYears(-years);
+        context.BirthDate = TimeProvider.System.GetUtcNow().UtcDateTime.Date.AddYears(-years);
         context.Nationality = "American";
         context.Occupation = "Software Engineer";
         WhenICreateThePersonalInfo();

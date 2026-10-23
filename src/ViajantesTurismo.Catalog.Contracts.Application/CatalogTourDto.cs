@@ -11,31 +11,46 @@ public sealed record CatalogTourDto
     /// Gets the Catalog tour identifier.
     /// </summary>
     [Required]
-    public required Guid Id { get; init; }
+    public required Guid Id
+    {
+        get; init;
+    }
 
     /// <summary>
     /// Gets the source Admin tour identifier.
     /// </summary>
     [Required]
-    public required Guid AdminTourId { get; init; }
+    public required Guid AdminTourId
+    {
+        get; init;
+    }
 
     /// <summary>
     /// Gets the customer-facing tour identifier.
     /// </summary>
     [Required, StringLength(ContractConstants.MaxDefaultLength, MinimumLength = 1)]
-    public required string Identifier { get; init; }
+    public required string Identifier
+    {
+        get; init;
+    }
 
     /// <summary>
     /// Gets the customer-facing tour title.
     /// </summary>
     [Required, StringLength(ContractConstants.MaxNameLength, MinimumLength = 1)]
-    public required string Title { get; init; }
+    public required string Title
+    {
+        get; init;
+    }
 
     /// <summary>
     /// Gets the stable public URL slug.
     /// </summary>
     [Required, StringLength(ContractConstants.MaxSlugLength, MinimumLength = 1)]
-    public required string Slug { get; init; }
+    public required string Slug
+    {
+        get; init;
+    }
 
     /// <summary>
     /// Gets the concise customer-facing tour summary.
@@ -71,23 +86,35 @@ public sealed record CatalogTourDto
     /// Gets a value indicating whether the tour is visible on the public website.
     /// </summary>
     [Required]
-    public required bool IsPublished { get; init; }
+    public required bool IsPublished
+    {
+        get; init;
+    }
 
     /// <summary>
     /// Gets the optimistic stream version for management mutations.
     /// </summary>
     [Range(1, long.MaxValue)]
-    public required long Version { get; init; }
+    public required long Version
+    {
+        get; init;
+    }
 
     /// <summary>
     /// Gets the images that can be rendered in public tour galleries.
     /// </summary>
     [Required]
-    public required IReadOnlyList<CatalogTourImageDto> Images { get; init; }
+    public required IReadOnlyList<CatalogTourImageDto> Images
+    {
+        get; init;
+    }
 
     /// <summary>
     /// Gets the timestamp of the event that last updated the projection.
     /// </summary>
     [Required]
-    public required DateTimeOffset UpdatedAt { get; init; }
+    public required DateTimeOffset UpdatedAt
+    {
+        get; init;
+    }
 }

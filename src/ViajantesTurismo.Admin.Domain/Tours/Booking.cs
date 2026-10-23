@@ -61,27 +61,42 @@ public sealed partial class Booking : IEntity<Guid>
     /// <summary>
     /// Gets the unique booking identifier.
     /// </summary>
-    public Guid Id { get; private init; }
+    public Guid Id
+    {
+        get; private init;
+    }
 
     /// <summary>
     /// The ID of the tour that was booked.
     /// </summary>
-    public Guid TourId { get; private init; }
+    public Guid TourId
+    {
+        get; private init;
+    }
 
     /// <summary>
     /// The base price per person at the time of booking.
     /// </summary>
-    public decimal BasePrice { get; }
+    public decimal BasePrice
+    {
+        get;
+    }
 
     /// <summary>
     /// The room type for the booking (shared by all participants).
     /// </summary>
-    public RoomType RoomType { get; private set; }
+    public RoomType RoomType
+    {
+        get; private set;
+    }
 
     /// <summary>
     /// The additional cost for the room (e.g. single room supplement).
     /// </summary>
-    public decimal RoomAdditionalCost { get; private set; }
+    public decimal RoomAdditionalCost
+    {
+        get; private set;
+    }
 
     /// <summary>
     /// The principal customer's booking details including bike selection and price.
@@ -91,7 +106,10 @@ public sealed partial class Booking : IEntity<Guid>
     /// <summary>
     /// The companion customer's booking details including bike selection and price, if any.
     /// </summary>
-    public BookingCustomer? CompanionCustomer { get; private set; }
+    public BookingCustomer? CompanionCustomer
+    {
+        get; private set;
+    }
 
     /// <summary>
     /// The discount applied to this booking.
@@ -101,7 +119,10 @@ public sealed partial class Booking : IEntity<Guid>
     /// <summary>
     /// The date when the booking was made.
     /// </summary>
-    public DateTime BookingDate { get; private init; }
+    public DateTime BookingDate
+    {
+        get; private init;
+    }
 
     /// <summary>
     /// The start date of the tour.
@@ -155,7 +176,10 @@ public sealed partial class Booking : IEntity<Guid>
     /// <summary>
     /// Additional notes for the booking.
     /// </summary>
-    public string? Notes { get; private set; }
+    public string? Notes
+    {
+        get; private set;
+    }
 
     /// <summary>
     /// The payments recorded for this booking.

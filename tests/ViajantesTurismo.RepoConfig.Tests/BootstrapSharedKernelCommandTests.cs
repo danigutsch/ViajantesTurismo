@@ -121,7 +121,7 @@ public sealed class BootstrapSharedKernelCommandTests
         error.ToString().ShouldBe(string.Empty);
         output.ToString().ShouldContain("candidate staged", StringComparison.Ordinal);
         var forwardedJson = output.ToString().Split('\n')
-            .Single(static line => line.StartsWith("forwarded:", StringComparison.Ordinal))["forwarded:".Length..];
+            .ShouldHaveSingleItem(static line => line.StartsWith("forwarded:", StringComparison.Ordinal))["forwarded:".Length..];
         var forwarded = JsonSerializer.Deserialize<string[]>(forwardedJson).ShouldNotBeNull();
         forwarded.ShouldBe([
             "stage-candidate", "--repo-root", library.RootPath,

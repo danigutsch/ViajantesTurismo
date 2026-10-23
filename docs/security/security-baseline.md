@@ -49,11 +49,26 @@ budget, and multipart envelope headroom. Malware scanning is considered separate
 
 ## Recurring check
 
-Run the .NET security baseline tool:
+Run the pinned SharedKernel repository tool after candidate bootstrap and local tool restore:
 
 ```text
-dotnet run --project tools/ViajantesTurismo.SecurityChecks.Tool -- baseline .
+dotnet tool run sharedkernel-repo -- security baseline --root .
+dotnet tool run sharedkernel-repo -- security scan --root . --output TestResults/security
 ```
 
-The tool checks required threat-model docs, control docs, security-header code, CORS/rate-limit wiring, import
-validation, and development-gated sensitive data logging. It does not replace dependency review or NuGet audit.
+The repository-owned `.config/security-baseline.json` declares required Markdown documents and text.
+Documentation checks do not inspect source markers or prove runtime protection. Maintained security tests
+verify headers, CORS, rate limits, import validation, protected routes, and environment-gated logging.
+Dependency review and NuGet Audit retain their existing jobs and severity policy.
+
+The scan command additionally runs Gitleaks on current files and writes redacted SARIF. The shared installer
+pins Gitleaks `8.30.1` and verifies its archive against a committed SHA-256; this replaces the older `8.9.0`
+binary and is a reviewed supply-chain change. Repository rules exclude generated build, package, and worktree
+outputs while retaining source and tests. Git history scanning and Codex deep scans remain separate.
+
+Exit codes: `0` success, `1` baseline violations or secret findings, `2` configuration/usage failure, and `3`
+scanner execution/report failure or cancellation. Missing tools never pass. Raw scanner output is not
+forwarded. Existing reports are not overwritten; retain previous evidence and use a fresh output directory.
+PR, main, manual, and nightly security jobs run with read-only contents permission. SARIF publication remains
+a separate write-scoped job restricted to trusted repository events. Fork and merge-queue scans do not
+publish to code scanning with write credentials.

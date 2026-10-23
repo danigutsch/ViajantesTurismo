@@ -122,7 +122,7 @@ jobs:
           GITHUB_TOKEN: ${{ github.token }}
         run: |
           dotnet tool run sharedkernel-repo -- \
-            reconcile github --apply \
+            github reconcile --force \
             --root .
 
       - name: Preview roadmap intake
@@ -131,7 +131,7 @@ jobs:
           GITHUB_TOKEN: ${{ github.token }}
         run: |
           dotnet tool run sharedkernel-repo -- \
-            intake github --dry-run \
+            github import \
             --root .
 
       - name: Apply roadmap intake
@@ -140,7 +140,7 @@ jobs:
           GITHUB_TOKEN: ${{ github.token }}
         run: |
           dotnet tool run sharedkernel-repo -- \
-            intake github --apply \
+            github import --force \
             --root .
 
       - name: Validate roadmap output
@@ -184,7 +184,7 @@ jobs:
           ROADMAP_RESULT_DIGEST: ${{ steps.seal.outputs.result_digest }}
         run: |
           dotnet tool run sharedkernel-repo -- \
-            automation publish-result \
+            automation publish-result --force \
             --root .
 
       - name: Require published pull request

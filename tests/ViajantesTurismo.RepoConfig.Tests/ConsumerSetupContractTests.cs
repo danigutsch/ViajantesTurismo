@@ -99,7 +99,6 @@ public sealed class ConsumerSetupContractTests
 
     [Theory]
     [InlineData("ci.yml")]
-    [InlineData("dependency-review.yml")]
     [InlineData("roadmap-maintenance.yml")]
     [InlineData("release-prep.yml")]
     [InlineData("devcontainer-smoke.yml")]
@@ -111,9 +110,7 @@ public sealed class ConsumerSetupContractTests
         var workflow = await File.ReadAllTextAsync(path, TestContext.Current.CancellationToken);
 
         // Act
-        var actionPath = workflowName == "dependency-review.yml"
-            ? "uses: ./.local/dependency-ci-support/.github/actions/setup-ci-prerequisites"
-            : "uses: ./.github/actions/setup-ci-prerequisites";
+        const string actionPath = "uses: ./.github/actions/setup-ci-prerequisites";
         var calls = workflow.Split(actionPath, StringSplitOptions.None)
             .Skip(1)
             .ToArray();

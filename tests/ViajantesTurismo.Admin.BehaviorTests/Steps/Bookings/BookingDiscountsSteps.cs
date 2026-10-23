@@ -13,8 +13,8 @@ public class BookingDiscountsSteps(TourContext tourContext, BookingContext booki
         tourContext.Tour = Tour.Create(new TourDefinition(
             "TEST2024",
             "Test Tour",
-            DateOnly.FromDateTime(DateTime.UtcNow.AddMonths(1)),
-            DateOnly.FromDateTime(DateTime.UtcNow.AddMonths(1).AddDays(7)),
+            DateOnly.FromDateTime(TimeProvider.System.GetUtcNow().UtcDateTime.AddMonths(1)),
+            DateOnly.FromDateTime(TimeProvider.System.GetUtcNow().UtcDateTime.AddMonths(1).AddDays(7)),
             basePrice,
             singleRoomSupplement,
             regularBikePrice,

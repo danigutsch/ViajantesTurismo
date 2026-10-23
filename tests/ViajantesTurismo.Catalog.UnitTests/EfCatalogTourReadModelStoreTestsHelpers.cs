@@ -14,7 +14,7 @@ internal static class EfCatalogTourReadModelStoreTestsHelpers
             title,
             false,
             1,
-            DateTimeOffset.UtcNow);
+            TimeProvider.System.GetUtcNow());
     }
 
     public static CatalogTourDraftReadModel CreateTour(Guid id, string title, string slug, bool isPublished)
@@ -27,6 +27,6 @@ internal static class EfCatalogTourReadModelStoreTestsHelpers
             slug,
             isPublished,
             1,
-            DateTimeOffset.UtcNow);
+            TimeProvider.System.GetUtcNow());
     }
 }

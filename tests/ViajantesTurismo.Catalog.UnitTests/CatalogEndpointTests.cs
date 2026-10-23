@@ -121,7 +121,10 @@ public sealed class CatalogEndpointTests
     public async Task Public_tour_details_trims_slug_before_lookup()
     {
         // Arrange
-        var tour = CatalogEndpointTestsHelpers.CreateTour("published-tour", "Published") with { IsPublished = true };
+        var tour = CatalogEndpointTestsHelpers.CreateTour("published-tour", "Published") with
+        {
+            IsPublished = true
+        };
         var store = new StubCatalogTourReadModelStore(tour);
         await using var factory = CatalogEndpointTestsHelpers.CreateFactory(store);
         using var client = factory.CreateClient();

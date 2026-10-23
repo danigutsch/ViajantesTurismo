@@ -13,18 +13,27 @@ public sealed record PhysicalInfoDto
     /// </summary>
     [Required]
     [Range(ContractConstants.MinWeightKg, ContractConstants.MaxWeightKg)]
-    public required decimal WeightKg { get; init; }
+    public required decimal WeightKg
+    {
+        get; init;
+    }
 
     /// <summary>
     /// The height of the customer in centimeters. Valid range is 50 to 300 cm.
     /// </summary>
     [Required]
     [Range(ContractConstants.MinHeightCm, ContractConstants.MaxHeightCm)]
-    public required int HeightCentimeters { get; init; }
+    public required int HeightCentimeters
+    {
+        get; init;
+    }
 
     /// <summary>
     /// The type of bike preferred by the customer (None, Regular, or E-Bike).
     /// </summary>
     [Required]
-    public required BikeTypeDto BikeType { get; init; }
+    public required BikeTypeDto BikeType
+    {
+        get; init;
+    }
 }

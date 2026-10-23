@@ -16,7 +16,7 @@ internal static class CatalogApiCachingTestData
             slug,
             true,
             1,
-            DateTimeOffset.UtcNow)
+            TimeProvider.System.GetUtcNow())
         {
             Summary = $"Summary for {title}",
             StreamVersion = 3

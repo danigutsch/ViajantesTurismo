@@ -21,13 +21,19 @@ public class FileScanBenchmarks
     /// Gets or sets the generated local file size in bytes.
     /// </summary>
     [Params(65_536, 4_194_304, 67_108_864)]
-    public int FileSizeBytes { get; set; }
+    public int FileSizeBytes
+    {
+        get; set;
+    }
 
     /// <summary>
     /// Gets or sets the number of full file scans performed by each benchmark operation.
     /// </summary>
     [Params(1, 8)]
-    public int ScanCount { get; set; }
+    public int ScanCount
+    {
+        get; set;
+    }
 
     /// <summary>
     /// Creates deterministic benchmark input data under the ignored BenchmarkDotNet artifact path.

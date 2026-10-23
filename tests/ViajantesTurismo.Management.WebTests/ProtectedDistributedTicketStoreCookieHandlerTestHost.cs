@@ -28,7 +28,10 @@ internal sealed class ProtectedDistributedTicketStoreCookieHandlerTestHost : IDi
     public ThrowingRemoveDistributedCache Cache => _ticketRemovalCache
         ?? throw new InvalidOperationException("The test host was not configured with a failing ticket cache.");
 
-    public IHost Host { get; }
+    public IHost Host
+    {
+        get;
+    }
 
     public static async Task<ProtectedDistributedTicketStoreCookieHandlerTestHost> StartWithFailingTicketRemoval(CancellationToken ct)
     {
@@ -94,7 +97,7 @@ internal sealed class ProtectedDistributedTicketStoreCookieHandlerTestHost : IDi
                                     new Claim(ManagementAuthenticationDefaults.UserTokenStoreSessionIdClaimType, "test-session"),
                                     new Claim(
                                         ManagementAuthenticationDefaults.UserTokenStoreSessionExpiresAtClaimType,
-                                        DateTimeOffset.UtcNow.AddHours(1).ToString("O"))
+                                        TimeProvider.System.GetUtcNow().AddHours(1).ToString("O"))
                                 ],
                                 CookieAuthenticationDefaults.AuthenticationScheme));
                             await context.SignInAsync(CookieAuthenticationDefaults.AuthenticationScheme, user);

@@ -703,7 +703,7 @@ internal sealed class PostgreSqlDocumentStoreScenario : IAsyncDisposable
         {
             var tourId = Guid.CreateVersion7();
             var customerId = Guid.CreateVersion7();
-            var bookingDate = DateTime.UtcNow;
+            var bookingDate = TimeProvider.System.GetUtcNow().UtcDateTime;
             var tourIdentifier = $"document-fixture-{tourId:N}";
 
             _ = await dbContext.Database.ExecuteSqlInterpolatedAsync(
