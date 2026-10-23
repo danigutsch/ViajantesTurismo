@@ -15,6 +15,8 @@ This file overrides root guidance where domain-specific behavior is needed.
 - Do not reference `ViajantesTurismo.*.Contracts.*` projects from Domain.
 - Keep business rules inside aggregates and value objects.
 - Enforce aggregate boundaries (for example, booking lifecycle flows through `Tour`).
+- Keep child entity factories and mutators `internal` so changes go through the aggregate root.
+- Follow `docs/domain/RICH_DOMAIN_MODEL.md` for encapsulation, purity, and behavior placement.
 - Use domain-owned limit types such as `AdminDomainLimits` for domain validation limits.
 
 ## Validation and error handling
@@ -35,6 +37,7 @@ This file overrides root guidance where domain-specific behavior is needed.
 ## References
 
 - `docs/DOMAIN_VALIDATION.md`
+- `docs/domain/RICH_DOMAIN_MODEL.md`
 - `docs/CODING_GUIDELINES.md`
 - `docs/ARCHITECTURE_DECISIONS.md`
 - `docs/adr/`

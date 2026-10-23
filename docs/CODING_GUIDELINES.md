@@ -84,7 +84,7 @@ using PandaBear.Domain;
 
 namespace ViajantesTurismo.Admin.Domain.Tours;
 
-public sealed partial class Tour : IEntity<Guid>
+public sealed partial class Tour : IAggregateRoot<Guid>
 {
     public Guid Id { get; private init; }
 }
@@ -264,8 +264,8 @@ public static Result<Tour> Create(string identifier, string name) { }
 ## Immutability
 
 - **Value Objects:** Always immutable (`record` or readonly struct)
-- **Entities:** Mutable via methods returning `Result`
-- **Collections:** Store as `List<T>`, expose as `IReadOnlyList<T>`
+- **Entities:** Mutable via methods returning `Result`; setters stay private (`SKDOM001`)
+- **Collections:** Store as a private `List<T>`, expose as `IReadOnlyCollection<T>`, or `IReadOnlyList<T>` when order matters (`SKDOM002`)
 - **DTOs:** Use `init` and `required` for immutable initialization
 
 ```csharp
@@ -284,6 +284,8 @@ public sealed class TourDto
     public required string Identifier { get; init; }
 }
 ```
+
+See the [rich domain model guide](domain/RICH_DOMAIN_MODEL.md) for encapsulation, purity, and behavior-placement rules.
 
 ## Error Handling
 

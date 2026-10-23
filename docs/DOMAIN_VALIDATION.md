@@ -34,7 +34,8 @@ enum-plus-rules. Use explicit transition methods or state objects only when stat
 allowed commands, transition rules, side effects, or errors.
 
 **Reference:** See
-[ADR-031: Rich Domain Behavior and State Exposure](adr/20260703-rich-domain-behavior-and-state-exposure.md).
+[ADR-031: Rich Domain Behavior and State Exposure](adr/20260703-rich-domain-behavior-and-state-exposure.md) and the
+[rich domain model guide](domain/RICH_DOMAIN_MODEL.md), which owns the detailed encapsulation and behavior-placement rules.
 
 ## Application vs Domain Validation
 

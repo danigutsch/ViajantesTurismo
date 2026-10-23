@@ -15,7 +15,7 @@ specialized docs instead of repeating the same policy.
 | Coding standards | [Coding guidelines](CODING_GUIDELINES.md) | [.editorconfig](../.editorconfig), [Code quality](CODE_QUALITY.md) |
 | Testing | [Test guidelines](TEST_GUIDELINES.md) | [Tests README](../tests/README.md), [BDD guide](../tests/BDD_GUIDE.md) |
 | Architecture and ADRs | [Architecture overview](architecture/README.md) and [Architecture decisions](ARCHITECTURE_DECISIONS.md) | [Bounded contexts](bounded-contexts/Admin.md), [Domain aggregates](domain/AGGREGATES.md) |
-| Domain validation | [Domain validation](DOMAIN_VALIDATION.md) | [Domain aggregates](domain/AGGREGATES.md), [Glossary](domain/GLOSSARY.md) |
+| Domain validation | [Domain validation](DOMAIN_VALIDATION.md) | [Rich domain model](domain/RICH_DOMAIN_MODEL.md), [Domain aggregates](domain/AGGREGATES.md), [Glossary](domain/GLOSSARY.md) |
 | API request and client boundaries | [API request shape policy](API_REQUEST_SHAPES.md) and [API client boundaries](API_CLIENT_BOUNDARIES.md) | [API compatibility](API_COMPATIBILITY.md), [API versioning](API_VERSIONING.md) |
 | Async integration contracts | [Async contracts](ASYNC_CONTRACTS.md) | [AsyncAPI contract](asyncapi.json), [Events and messaging](domain/EVENTS_AND_MESSAGING.md) |
 | Configuration and feature flags | [Configuration standards](CONFIGURATION.md) | [OpenTelemetry custom telemetry](OPEN_TELEMETRY.md) |
@@ -72,6 +72,8 @@ outdated behavior.
 ## Engineering guidance
 
 - [Coding guidelines](CODING_GUIDELINES.md)
+- [Rich domain model](domain/RICH_DOMAIN_MODEL.md)
+- [Domain model audit](domain/domain-model-audit.md)
 - [Exception documentation](EXCEPTION_DOCUMENTATION.md)
 - [Code quality](CODE_QUALITY.md)
 - [Test guidelines](TEST_GUIDELINES.md)
