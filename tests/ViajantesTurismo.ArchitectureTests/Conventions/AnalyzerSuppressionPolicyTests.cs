@@ -128,6 +128,9 @@ public sealed partial class AnalyzerSuppressionPolicyTests
             "custom-config:.editorconfig:SKTEST004",
             "custom-config:.editorconfig:SKTEST005",
             "custom-config:.editorconfig:SKTEST006",
+            "custom-config:.editorconfig:SKTEST010:tests/ViajantesTurismo.Admin.ApiServiceTests/Documents/DocumentPrivacyTelemetryCapture.cs:none",
+            "custom-config:.editorconfig:SKTEST010:tests/ViajantesTurismo.Catalog.InfrastructureTests/Tours/CatalogTourSlugLockPostgreSqlTests.cs:none",
+            "custom-config:.editorconfig:SKTEST010:tests/ViajantesTurismo.Catalog.UnitTests/PollingBackgroundServiceTestHarness.cs:none",
             "import:tests/Directory.Build.props:$([MSBuild]::GetPathOfFileAbove('Directory.Build.props', '$(MSBuildThisFileDirectory)../'))",
             "package:Directory.Build.props:PandaBear.SharedKernel.Style.Analyzers",
             "package:Directory.Build.props:PandaBear.SharedKernel.Style.CodeFixes",
@@ -189,13 +192,32 @@ public sealed partial class AnalyzerSuppressionPolicyTests
             .Select(path => $"global-config-file:{Path.GetRelativePath(repositoryRoot, path).Replace('\\', '/')}"));
 
         const string diagnosticPrefix = "dotnet_diagnostic.";
-        var configuredCustomDiagnostics = File.ReadLines(Path.Combine(repositoryRoot, ".editorconfig"))
-            .Select(line => line.Trim())
-            .Where(line => line.StartsWith(diagnosticPrefix + "SK", StringComparison.Ordinal))
-            .Select(line => line[diagnosticPrefix.Length..])
-            .Select(value => value[..value.IndexOf('.', StringComparison.Ordinal)])
-            .Distinct(StringComparer.Ordinal)
-            .Select(diagnosticId => $"custom-config:.editorconfig:{diagnosticId}");
+        var configuredCustomDiagnostics = new HashSet<string>(StringComparer.Ordinal);
+        var section = string.Empty;
+        foreach (var rawLine in File.ReadLines(Path.Combine(repositoryRoot, ".editorconfig")))
+        {
+            var line = rawLine.Trim();
+            if (line.StartsWith('[') && line.EndsWith(']'))
+            {
+                section = line[1..^1];
+            }
+
+            if (!line.StartsWith(diagnosticPrefix + "SK", StringComparison.Ordinal))
+            {
+                continue;
+            }
+
+            var value = line[diagnosticPrefix.Length..];
+            var diagnosticId = value[..value.IndexOf('.', StringComparison.Ordinal)];
+            var surface = $"custom-config:.editorconfig:{diagnosticId}";
+            if (diagnosticId == "SKTEST010")
+            {
+                surface += $":{section}:{line[(line.IndexOf('=', StringComparison.Ordinal) + 1)..].Trim()}";
+            }
+
+            configuredCustomDiagnostics.Add(surface);
+        }
+
         actualSurfaces.AddRange(configuredCustomDiagnostics);
 
         // Assert
