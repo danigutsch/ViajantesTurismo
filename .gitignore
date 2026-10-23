@@ -406,3 +406,6 @@ tmp/
 .env.*.local
 .local/
 .sonarqube/
+
+# Claude Code local settings (repository skills under .claude/skills are tracked)
+.claude/settings.local.json
