@@ -118,6 +118,31 @@ internal static partial class LayerDependencyTestsHelpers
             .ToArray();
     }
 
+    public static string[] FindDomainFrameworkAssemblyReferences(IEnumerable<System.Reflection.Assembly> domainAssemblies)
+    {
+        string[] bannedAssemblyNames =
+        [
+            "System.Text.Json",
+            "System.ComponentModel.Annotations",
+            "System.ComponentModel.DataAnnotations",
+            "System.Net.Http",
+            "Microsoft.EntityFrameworkCore",
+            "Microsoft.AspNetCore",
+            "Microsoft.Extensions.Logging",
+            "Microsoft.Extensions.Http",
+            "Microsoft.CodeAnalysis"
+        ];
+
+        return
+        [
+            .. domainAssemblies.SelectMany(assembly => assembly.GetReferencedAssemblies()
+                .Where(reference => reference.Name is { } name && bannedAssemblyNames.Any(banned =>
+                    string.Equals(name, banned, StringComparison.Ordinal)
+                    || name.StartsWith(banned + ".", StringComparison.Ordinal)))
+                .Select(reference => $"{assembly.GetName().Name} references {reference.Name}"))
+        ];
+    }
+
     public static string[] FindDomainContractProjectReferences(string repositoryRoot)
     {
         return SourceProjectFiles(repositoryRoot)
