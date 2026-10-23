@@ -176,8 +176,10 @@ consumption and NativeAOT passed in the exact-source CI run. All 74 archive hash
 Comparison of the complete external package version/content-hash sets against application base
 `f460444b` found no additions or removals. The prepared workflow still permits only the same exact
 StreamJsonRpc `2.25.29` and Magick.NET-Q8-AnyCPU `15.0.0` metadata exceptions; no license category,
-vulnerability threshold or native distribution gate was relaxed. The candidate's distribution and
-renewal of those unchanged exact-package exceptions await owner approval after application validation.
+vulnerability threshold or native distribution gate was relaxed. On October 23, 2026, the owner
+authorized GitHub prerelease distribution and renewed these unchanged exact-package exceptions
+for this candidate. Publication remains conditional on successful application validation; registry
+publication and the native distribution obligations remain outside this approval.
 
 ## Remaining decision
 
