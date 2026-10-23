@@ -24,8 +24,7 @@ public class BookingTests(AspireSystemTestFixture fixture) : AspireSystemTestBas
 
         // Assert
         ApiBaseUri.IsLoopback.ShouldBeTrue();
-        var isValid = ApiBaseUri.Port > 0;
-        isValid.ShouldBeTrue();
+        ApiBaseUri.Port.ShouldBeGreaterThan(0);
         await Expect(Page.GetByText("Pending").First).ToBeVisibleAsync();
         await Expect(Page.GetByText("Unpaid").First).ToBeVisibleAsync();
         await Expect(Page.GetByText(tour.Name).First).ToBeVisibleAsync();

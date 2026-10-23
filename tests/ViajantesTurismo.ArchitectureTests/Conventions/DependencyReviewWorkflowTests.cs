@@ -1,3 +1,4 @@
+using System.Text.Json;
 using PandaBear.Testing;
 using static ViajantesTurismo.ArchitectureTests.Conventions.AppHostOrchestrationTestsHelpers;
 
@@ -95,7 +96,11 @@ public sealed class DependencyReviewWorkflowTests
     public void License_review_bounds_preview_approval_before_emitting_the_package_exception()
     {
         // Arrange
-        var path = Path.Combine(GetRepositoryRoot(), ".github", "workflows", "dependency-review.yml");
+        var root = GetRepositoryRoot();
+        var path = Path.Combine(root, ".github", "workflows", "dependency-review.yml");
+        using var candidate = JsonDocument.Parse(File.ReadAllText(Path.Combine(root, ".config", "sharedkernel-candidate.json")));
+        var version = candidate.RootElement.GetProperty("packageVersion").GetString();
+        var revision = candidate.RootElement.GetProperty("libraryRevision").GetString();
 
         // Act
         var workflow = File.ReadAllText(path);
@@ -103,8 +108,10 @@ public sealed class DependencyReviewWorkflowTests
         // Assert
         workflow.ShouldContain("id: preview-license", StringComparison.Ordinal);
         workflow.ShouldContain("allow-dependencies-licenses: ${{ steps.preview-license.outputs.packages }}", StringComparison.Ordinal);
-        workflow.ShouldContain("$pin.packageVersion -cne '1.0.0-alpha.20261021.2'", StringComparison.Ordinal);
-        workflow.ShouldContain("$pin.libraryRevision -cne 'f5975b60601e245bda6bb8e45559d8ce3a24a8e0'", StringComparison.Ordinal);
+        version.ShouldNotBeNull();
+        revision.ShouldNotBeNull();
+        workflow.ShouldContain($"$pin.packageVersion -cne '{version}'", StringComparison.Ordinal);
+        workflow.ShouldContain($"$pin.libraryRevision -cne '{revision}'", StringComparison.Ordinal);
         workflow.ShouldContain("'StreamJsonRpc' = '2.25.29'", StringComparison.Ordinal);
         workflow.ShouldContain("'Magick.NET-Q8-AnyCPU' = '15.0.0'", StringComparison.Ordinal);
         workflow.ShouldContain("$entry.Value.resolved -cne $approved[$entry.Key]", StringComparison.Ordinal);

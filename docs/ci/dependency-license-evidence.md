@@ -1,6 +1,6 @@
 # Dependency snapshot and license evidence
 
-Owner: repository maintainers. Reviewed October 21, 2026. Re-review on package/SDK/Aspire changes
+Owner: repository maintainers. Reviewed October 23, 2026. Re-review on package/SDK/Aspire changes
 or by January 20, 2027, whichever comes first. This record does not grant general license approval.
 
 ## Contents
@@ -8,6 +8,7 @@ or by January 20, 2027, whichever comes first. This record does not grant genera
 - [Snapshot failure and correction](#snapshot-failure-and-correction)
 - [StreamJsonRpc metadata review](#streamjsonrpc-metadata-review)
 - [Magick native audit](#magick-native-audit)
+- [Security candidate renewal](#security-candidate-renewal)
 - [Remaining decision](#remaining-decision)
 
 ## Snapshot failure and correction
@@ -112,6 +113,36 @@ Evidence hashes: nuspec `63e1eb3796c8cfe8e068d05976343466f4fd106826a76b47e3aa8a1
 Notice.txt `a08ce0f18e36f83c971ab35a7504523fa25a797e99eec57e67c96ab4648b1409`.
 The binary probes are technical inclusion evidence, not a legal compliance determination or an
 exhaustive dependency inventory. Windows and non-x64 linkage need platform-appropriate inspection.
+
+## Security candidate renewal
+
+Status: **owner-approved October 23, 2026** for candidate `1.2.0-alpha.20261023.1`, clean library
+revision `cc826be664bfc2dc087fe5a140f7232b4f65967d`. The owner explicitly renewed the same two
+metadata exceptions for StreamJsonRpc `2.25.29` and Magick.NET-Q8-AnyCPU `15.0.0`, preserving all
+existing gates. The earlier approval above remains historical evidence for
+`1.0.0-alpha.20261021.2`; this renewal applies only to the newly named candidate.
+
+Rechecked the installed exact archives, nuspec declarations, and notices against the recorded audit.
+StreamJsonRpc `2.25.29` still declares MIT; Magick.NET-Q8-AnyCPU `15.0.0` still declares Apache-2.0.
+All 8 StreamJsonRpc and 14 Magick package entries across the tracked lock graph retain the exact
+version, content hash, and dependency edges from application base `7a6be4ec`. The four previously
+recorded nuspec/notice SHA-256 values above match. Archive SHA-256 values are:
+
+| Package archive | SHA-256 |
+| --- | --- |
+| `StreamJsonRpc.2.25.29.nupkg` | `d0f7be6b1b623df638a35371eb297aa0f7df18ff50555fc9448573e7a5c1111b` |
+| `Magick.NET-Q8-AnyCPU.15.0.0.nupkg` | `7ed7338e11721c0a11ab9480c5e00bb119b5b0ac59c994fa2cc553df21662cf5` |
+
+The renewal changes only the exact candidate version/revision boundary. It retains the
+same two package identities and exact versions, every-lock-entry verification, missing-package
+failure, moderate vulnerability threshold, and both license/vulnerability checks. It grants no
+NOASSERTION, MS-PL, LGPL, other package, future version, stable release, or native redistribution
+approval. The Magick native inclusion evidence and unresolved distribution obligations above remain.
+
+NuGet distinguishes the signed package archive hash from its unsigned content hash. The lock-file
+content hash is compared with the same previous locked graph, rather than incorrectly comparing it
+with the whole signed ZIP SHA-512; see
+[NuGet's content-hash implementation](https://github.com/NuGet/NuGet.Client/blob/dev/src/NuGet.Core/NuGet.Packaging/PackageArchiveReader.cs).
 
 ## Remaining decision
 
