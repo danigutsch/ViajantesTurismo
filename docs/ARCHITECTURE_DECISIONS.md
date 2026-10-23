@@ -69,6 +69,8 @@ Decisions about application architecture and layer responsibilities.
   Provider-Specific SharedKernel Infrastructure Modules
 - **[ADR-031](adr/20260703-rich-domain-behavior-and-state-exposure.md)** — Rich Domain Behavior
   and State Exposure
+- **[ADR-042](adr/20261024-ddd-standards-enforcement.md)** — Enforce DDD Domain Standards with
+  SharedKernel Analyzers and Architecture Tests
 - **[ADR-033](adr/20260705-messaging-event-abstractions.md)** — Messaging Event Abstractions
   and CloudEvents Boundary
 - **[ADR-034](adr/20260705-bounded-context-databases-and-outbox-ownership.md)** — Bounded Context

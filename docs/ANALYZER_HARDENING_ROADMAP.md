@@ -114,7 +114,7 @@ The matrix below focuses on the high-value rules and families that matter to rep
 | Test pragma suppressions | `SKTEST001` | `SharedKernel.Testing.Analyzers` | Adopted | package default `warning` | Test-only by design | Keep active and narrow |
 | Test naming | `SKTEST002` | `SharedKernel.Testing.Analyzers` | Adopted | package default `warning` | Test-only by design | Keep active and use code fix during cleanup |
 | Test trait constants | `SKTEST009` | `SharedKernel.Testing.Analyzers` | Adopted | package default `warning` | Reports only when one safe replacement exists | Keep aligned with `SharedKernel.Testing` constants and project-local `TestTraits` |
-| DDD analyzer catalog | DDD001-DDD005 candidates | Rule catalog | Defined | Not enabled | Avoid DTO/read-model/EF false positives | Implement one rule per follow-up issue after examples/non-examples are proven |
+| Domain encapsulation | `SKDOM001` non-private setters, `SKDOM002` mutable collections | `SharedKernel.Domain.Analyzers` and `.CodeFixes` | Adopted in `*.Domain` projects | package default `warning` | Referenced only by domain projects; setter code fix applies only when no external write exists | Keep active; see the [DDD analyzer rule catalog](DDD_ANALYZER_RULE_CATALOG.md) |
 | Mediator cancellation forwarding | `SKMED006` | `SharedKernel.Mediator.Analyzers` | Adopted | repository-configured `warning` | `.editorconfig`-tunable | Keep active |
 | Stream cancellation semantics | `SKMED007`, `SKMED008` | `SharedKernel.Mediator.Analyzers` | Adopted | `warning` | `.editorconfig`-tunable | Keep active |
 | CQRS strict handler-to-handler send | `SKMED500` | `SharedKernel.Mediator.Analyzers` | Adopted | `warning` | disabled by config if needed | Keep active |
@@ -223,7 +223,6 @@ Remaining Phase 2 backlog:
 Candidate future custom rules still worth evaluating:
 
 - error classes must end with `Errors`
-- domain events must end with `DomainEvent`
 - integration events must end with `IntegrationEvent`
 - focused guardrails for known repository architecture conventions that are too specific for
   off-the-shelf analyzers and too noisy for architecture tests alone
