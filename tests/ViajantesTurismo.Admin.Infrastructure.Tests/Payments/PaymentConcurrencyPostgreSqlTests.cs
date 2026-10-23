@@ -7,7 +7,7 @@ using ViajantesTurismo.Admin.Domain.PaymentAccounts;
 namespace ViajantesTurismo.Admin.Infrastructure.Tests.Payments;
 
 [Trait(SharedKernelTestTraitNames.CategoryName, TestTraits.DatabaseIntegrationCategory)]
-[Trait("Capability", "Payments")]
+[Trait(SharedKernelTestTraitNames.CapabilityName, TestTraits.PaymentsCapability)]
 public sealed class PaymentConcurrencyPostgreSqlTests(PostgreSqlTestServerFixture fixture)
 {
     [Fact]

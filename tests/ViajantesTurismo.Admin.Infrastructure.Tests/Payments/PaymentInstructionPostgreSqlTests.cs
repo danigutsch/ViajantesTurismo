@@ -9,7 +9,7 @@ using ViajantesTurismo.Admin.Testing.Behavior;
 namespace ViajantesTurismo.Admin.Infrastructure.Tests.Payments;
 
 [Trait(SharedKernelTestTraitNames.CategoryName, TestTraits.DatabaseIntegrationCategory)]
-[Trait("Capability", "Payments")]
+[Trait(SharedKernelTestTraitNames.CapabilityName, TestTraits.PaymentsCapability)]
 public sealed class PaymentInstructionPostgreSqlTests(PostgreSqlTestServerFixture fixture)
 {
     [Theory]

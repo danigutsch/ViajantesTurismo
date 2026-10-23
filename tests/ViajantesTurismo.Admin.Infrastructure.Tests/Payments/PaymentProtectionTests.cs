@@ -5,7 +5,7 @@ using PandaBear.Testing;
 namespace ViajantesTurismo.Admin.Infrastructure.Tests.Payments;
 
 [Trait(SharedKernelTestTraitNames.CategoryName, SharedKernelTestTraitNames.UnitScope)]
-[Trait("Capability", "Payments")]
+[Trait(SharedKernelTestTraitNames.CapabilityName, TestTraits.PaymentsCapability)]
 public sealed class PaymentProtectionTests
 {
     [Fact]
