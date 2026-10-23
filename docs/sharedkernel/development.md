@@ -6,18 +6,22 @@ and library tooling belong to the separate SharedKernel repository. ViajantesTur
 Generic documentation and repository-configuration tooling belongs to SharedKernel. Application
 documentation configuration, CI and coverage policy, bootstrap, and compatibility orchestration stay here.
 
-The prepared pin is `0.1.0-alpha.70.1` at library
+The pinned preview is `0.1.0-alpha.70.1` at library
 [revision `ef0dd0a67b8982dfdf0cb8f5e23224c397971a5b`](https://github.com/danigutsch/PandaBear.SharedKernel/commit/ef0dd0a67b8982dfdf0cb8f5e23224c397971a5b),
 which contains the merged shared security tooling and scanner fixes. All 74 package hashes have
-been verified against the fresh CI candidate. Application compatibility validation and GitHub
-prerelease publication remain pending; the prepared pin is not yet an accepted application adoption.
+been verified against the fresh CI candidate and the published
+[prerelease assets](https://github.com/danigutsch/PandaBear.SharedKernel/releases/tag/v0.1.0-alpha.70.1).
+Isolated compatibility at application revision `9cc551e4c5ac7f9dda022d090b2df8667f3e3687`
+passed 3,691 tests with zero failures and five intentional skips. Locked restore, Release build,
+OpenAPI generation, formatting, repository lint, and source scanning passed. The isolated clone
+and package cache were removed; original AppHost asset, metadata, and binary hashes stayed unchanged.
 
 The former candidate `1.2.0-alpha.20261023.1` at library revision
 `cc826be664bfc2dc087fe5a140f7232b4f65967d` is retired. Its release was deliberately deleted;
 do not recreate, download, restore, or execute its artifacts. Earlier compatibility and package
 validation results are historical evidence, not approval to consume a retired candidate.
 
-The prepared runtime candidate does not contain the offline `dependency snapshot` command.
+The runtime candidate does not contain the offline `dependency snapshot` command.
 Dependency review therefore requires a separately reviewed immutable generator source revision
 containing that command, or a later validated runtime candidate that includes it. Review the source
 generator independently of the runtime package pin; do not restore historical packages to compare
@@ -36,9 +40,8 @@ Install the SDK pinned by `global.json`. Clone the public
 exact `libraryRevision` in `.config/sharedkernel-candidate.json`, and keep that checkout clean.
 The committed candidate manifest pins the library revision, package version, and SHA-256 hashes.
 
-For local compatibility validation, use only the prepared manifest's exact `.nupkg` files and
-`candidate.json` from the fresh CI candidate. Once published, normal checkouts obtain those unchanged
-artifacts from the approved `v<packageVersion>` release. Supply a clean checkout of the exact library
+Use only the committed manifest's exact `.nupkg` files and `candidate.json` from the approved
+`v<packageVersion>` release. The published files are unchanged from the validated fresh CI candidate. Supply a clean checkout of the exact library
 revision and unchanged artifacts through explicit library/feed paths. Do not substitute another
 preview's package files or use cached retired artifacts to bypass missing releases.
 
@@ -94,9 +97,8 @@ through public package interfaces. This test-only commit does not change the pin
 
 Hosted Linux and Windows jobs read the committed candidate manifest, check out the public library at
 its exact `libraryRevision`, and download unchanged packages and `candidate.json` from GitHub
-prerelease `v<packageVersion>` after that non-retired candidate is published. Publication of the
-prepared `0.1.0-alpha.70.1` preview remains pending, so release-dependent hosted checks cannot yet
-download it. Missing retired releases must not be recreated to unblock checks. The secret-scan
+prerelease `v<packageVersion>`. Preview `0.1.0-alpha.70.1` is published and available to these
+checks. Missing retired releases must not be recreated to unblock checks. The secret-scan
 workflow also pins the shared scanner action to an immutable library revision. Hosted checks verify
 the same immutable package bytes as local validation.
 
