@@ -9,9 +9,9 @@ documentation configuration, CI and coverage policy, bootstrap, and compatibilit
 The pinned local candidate is `1.2.0-alpha.20261023.1` at library revision
 `cc826be664bfc2dc087fe5a140f7232b4f65967d`. Its manifest covers 74 immutable packages; the application
 references only the modules it uses. The Results runtime includes its generator, so do not add a
-separate Results generator package. API validation and Linux package-consumption checks passed for
-this candidate. Published API baseline comparison, Windows package consumption, and NativeAOT
-validation remain pending; the source revision and preview assets have not been published.
+separate Results generator package. API validation, Linux package consumption, and historical API
+comparison against `1.1.0-alpha.10.1` passed for this candidate. Windows and NativeAOT validation
+are recorded separately; the source revision and preview assets are published.
 
 CSV structure parsing and advisory-lock hashing use the Tabular and Npgsql packages. Application
 import interfaces, accepted headers, normalization, business errors, and lock identities remain local.
@@ -25,14 +25,13 @@ Install the SDK pinned by `global.json`. Clone the public
 exact `libraryRevision` in `.config/sharedkernel-candidate.json`, and keep that checkout clean.
 The committed candidate manifest pins the library revision, package version, and SHA-256 hashes.
 
-The new candidate and its source revision are prepared locally; their publication is pending.
-Until both are published, supply a clean checkout of that exact revision and its unchanged 74
-`.nupkg` files plus `candidate.json` through explicit library/feed paths. Do not substitute the
-previous release's package files for the new candidate.
+The candidate and its source revision are published in
+[preview `v1.2.0-alpha.20261023.1`](https://github.com/danigutsch/PandaBear.SharedKernel/releases/tag/v1.2.0-alpha.20261023.1).
+Supply a clean checkout of that exact revision and its unchanged 74 `.nupkg` files plus
+`candidate.json` through explicit library/feed paths. Do not substitute another preview's package files.
 
 The previous approved [preview `v1.0.0-alpha.20261021.2`](https://github.com/danigutsch/PandaBear.SharedKernel/releases/tag/v1.0.0-alpha.20261021.2)
-remains available for rollback. After the new source revision and preview assets are approved and
-published, download `v1.2.0-alpha.20261023.1` assets without changing their bytes.
+remains available for rollback. Download `v1.2.0-alpha.20261023.1` assets without changing their bytes.
 
 From the application root, stage the expected candidate with the dependency-independent C# tool:
 
@@ -85,10 +84,9 @@ through public package interfaces. This test-only commit does not change the pin
 
 Hosted Linux and Windows jobs read the committed candidate manifest, check out the public library at
 its exact `libraryRevision`, and download unchanged packages and `candidate.json` from GitHub
-prerelease `v<packageVersion>`. The newly pinned revision and `v1.2.0-alpha.20261023.1` assets must be
-published before this default hosted path can succeed. The secret-scan workflow also pins the shared
-scanner action to that exact library revision. Current changes prepare these references; they do not
-publish source, assets, or packages.
+prerelease `v<packageVersion>`. The pinned source revision and `v1.2.0-alpha.20261023.1` assets are
+published. The secret-scan workflow also pins the shared scanner action to that exact library revision.
+Hosted checks verify the same immutable package bytes as local validation.
 
 Checkout credentials are not persisted. CI downloads the manifest and exact pinned filenames through
 public release URLs without a token. Download failures are retried three times; bootstrap still verifies
