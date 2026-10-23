@@ -19,6 +19,8 @@ internal sealed class BookingConfiguration : IEntityTypeConfiguration<Booking>
         entity.Property(booking => booking.BookingDate).IsRequired();
         entity.Property(booking => booking.Status).HasConversion<string>().IsRequired();
         entity.Ignore(booking => booking.PaymentStatus);
+        entity.Ignore(booking => booking.FinancialHistory);
+        entity.Ignore(booking => booking.HasFinancialHistory);
         entity.Ignore(booking => booking.TotalPrice);
         entity.Property(booking => booking.Notes).HasMaxLength(AdminDomainLimits.MaxBookingNotesLength);
 
@@ -43,10 +45,5 @@ internal sealed class BookingConfiguration : IEntityTypeConfiguration<Booking>
             discount.Property(d => d.Reason).HasMaxLength(AdminDomainLimits.MaxBookingNotesLength);
         });
 
-        entity.HasMany(booking => booking.Payments)
-            .WithOne()
-            .HasForeignKey(payment => payment.BookingId)
-            .OnDelete(DeleteBehavior.Cascade)
-            .Metadata.PrincipalToDependent!.SetField("_payments");
     }
 }

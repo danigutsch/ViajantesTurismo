@@ -184,8 +184,8 @@ jobs:
         run: |
           $ErrorActionPreference = 'Stop'
           $pin = Get-Content '.config/sharedkernel-candidate.json' -Raw | ConvertFrom-Json
-          if ($pin.packageVersion -cne '0.1.0-alpha.70.1' -or
-              $pin.libraryRevision -cne 'ef0dd0a67b8982dfdf0cb8f5e23224c397971a5b' -or
+          if ($pin.packageVersion -cne '0.1.0-alpha.94.1' -or
+              $pin.libraryRevision -cne 'd08008cd3e8901c304377edcc4683de7c3a85ecb' -or
               $pin.libraryDirty -ne $false) {
             throw 'Preview license approval expired: re-review this candidate before granting an exception.'
           }

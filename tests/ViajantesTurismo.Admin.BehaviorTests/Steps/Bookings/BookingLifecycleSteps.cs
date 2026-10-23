@@ -14,7 +14,7 @@ public sealed class BookingLifecycleSteps(BookingContext bookingContext, TourCon
     [Given("a pending booking exists")]
     public void GivenAPendingBookingExists()
     {
-        tourContext.Tour = EntityBuilders.BuildTour();
+        tourContext.Tour = EntityBuilders.BuildTour(new TourOptions(Pricing: new TourPricingOptions(Currency: Currency.Euro)));
         var result = tourContext.Tour.AddBooking(new TourBookingRequest(
             Guid.CreateVersion7(),
             BikeType.Regular,
@@ -28,7 +28,7 @@ public sealed class BookingLifecycleSteps(BookingContext bookingContext, TourCon
     [Given("a confirmed booking exists")]
     public void GivenAConfirmedBookingExists()
     {
-        tourContext.Tour = EntityBuilders.BuildTour();
+        tourContext.Tour = EntityBuilders.BuildTour(new TourOptions(Pricing: new TourPricingOptions(Currency: Currency.Euro)));
         var result = tourContext.Tour.AddBooking(new TourBookingRequest(
             Guid.CreateVersion7(),
             BikeType.Regular,
@@ -43,7 +43,7 @@ public sealed class BookingLifecycleSteps(BookingContext bookingContext, TourCon
     [Given("a confirmed booking with a companion exists")]
     public void GivenAConfirmedBookingWithACompanionExists()
     {
-        tourContext.Tour = EntityBuilders.BuildTour();
+        tourContext.Tour = EntityBuilders.BuildTour(new TourOptions(Pricing: new TourPricingOptions(Currency: Currency.Euro)));
         var principalCustomerId = Guid.CreateVersion7();
         var companionCustomerId = Guid.CreateVersion7();
         var result = tourContext.Tour.AddBooking(new TourBookingRequest(
@@ -63,7 +63,7 @@ public sealed class BookingLifecycleSteps(BookingContext bookingContext, TourCon
     [Given("a cancelled booking exists")]
     public void GivenACancelledBookingExists()
     {
-        tourContext.Tour = EntityBuilders.BuildTour();
+        tourContext.Tour = EntityBuilders.BuildTour(new TourOptions(Pricing: new TourPricingOptions(Currency: Currency.Euro)));
         var addResult = tourContext.Tour.AddBooking(new TourBookingRequest(
             Guid.CreateVersion7(),
             BikeType.Regular,
@@ -79,7 +79,7 @@ public sealed class BookingLifecycleSteps(BookingContext bookingContext, TourCon
     [Given("a completed booking exists")]
     public void GivenACompletedBookingExists()
     {
-        tourContext.Tour = EntityBuilders.BuildTour();
+        tourContext.Tour = EntityBuilders.BuildTour(new TourOptions(Pricing: new TourPricingOptions(Currency: Currency.Euro)));
         var addResult = tourContext.Tour.AddBooking(new TourBookingRequest(
             Guid.CreateVersion7(),
             BikeType.Regular,
@@ -158,29 +158,17 @@ public sealed class BookingLifecycleSteps(BookingContext bookingContext, TourCon
         bookingContext.BookingOperationResult = result;
     }
 
-    [When("the operator records a payment for the full amount")]
+    [When("the Admin records and approves EUR credit for the full amount")]
     public void WhenTheOperatorRecordsAPaymentForTheFullAmount()
     {
-        var result = tourContext.Tour.RecordBookingPayment(
-            bookingContext.Booking.Id,
-            bookingContext.Booking.TotalPrice,
-            DateOnly.FromDateTime(TimeProvider.System.GetUtcNow().UtcDateTime),
-            PaymentMethod.CreditCard,
-            TimeProvider.System);
-        (result.IsSuccess).ShouldBeTrue();
+        bookingContext.RecordAndApproveCredit(tourContext.Tour, bookingContext.Booking.TotalPrice);
     }
 
-    [When("the operator records a payment for {int} percent of the total")]
+    [When("the Admin records and approves EUR credit for {int} percent of the total")]
     public void WhenTheOperatorRecordsAPaymentForPercentOfTheTotal(int percentage)
     {
         var amount = bookingContext.Booking.TotalPrice * (percentage / 100m);
-        var result = tourContext.Tour.RecordBookingPayment(
-            bookingContext.Booking.Id,
-            amount,
-            DateOnly.FromDateTime(TimeProvider.System.GetUtcNow().UtcDateTime),
-            PaymentMethod.CreditCard,
-            TimeProvider.System);
-        (result.IsSuccess).ShouldBeTrue();
+        bookingContext.RecordAndApproveCredit(tourContext.Tour, amount);
     }
 
     [When("the operator attempts to remove the booking")]

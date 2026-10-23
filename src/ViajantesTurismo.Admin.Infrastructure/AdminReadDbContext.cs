@@ -1,4 +1,5 @@
 using Microsoft.EntityFrameworkCore;
+using ViajantesTurismo.Admin.Infrastructure.Payments;
 using ViajantesTurismo.Admin.Domain.Customers;
 using ViajantesTurismo.Admin.Domain.Documents;
 using ViajantesTurismo.Admin.Infrastructure.Documents;
@@ -22,10 +23,12 @@ internal sealed class AdminReadDbContext(DbContextOptions<AdminReadDbContext> op
         base.OnModelCreating(modelBuilder);
 
         modelBuilder.HasPostgresExtension("citext");
+        modelBuilder.ApplyConfiguration(new PaymentAccountConfiguration());
+        modelBuilder.ApplyConfiguration(new PaymentHistoryConfiguration());
+        modelBuilder.ApplyConfiguration(new PaymentInstructionConfiguration());
         modelBuilder.ApplyConfiguration(new TourConfiguration());
         modelBuilder.ApplyConfiguration(new CustomerConfiguration());
         modelBuilder.ApplyConfiguration(new BookingConfiguration());
-        modelBuilder.ApplyConfiguration(new PaymentConfiguration());
         modelBuilder.ApplyConfiguration(new DocumentDraftConfiguration());
     }
 

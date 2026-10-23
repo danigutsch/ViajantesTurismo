@@ -43,6 +43,11 @@ public sealed class RegenerateDocumentDraftCommandHandler(
                 ct);
         }
 
+        if (lineage.Type == DocumentType.PaymentInstructions)
+        {
+            return Domain.Payments.FinancialErrors.Invalid("paymentInstructionRegeneration").ConvertError<Guid>();
+        }
+
         var booking = await queryService.GetBookingById(current.BookingId, ct);
         if (booking is null)
         {

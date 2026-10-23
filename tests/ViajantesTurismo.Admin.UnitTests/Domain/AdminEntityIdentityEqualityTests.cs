@@ -39,16 +39,4 @@ public sealed class AdminEntityIdentityEqualityTests
         // Act
         EntityIdAssertions.AssertGeneratedIdentitySemantics(first, second, different);
     }
-
-    [Fact]
-    public void Payment_identity_equality_matches_existing_entity_semantics()
-    {
-        // Arrange
-        var first = EntityIdTestData.CreatePayment();
-        var second = EntityIdTestData.CreatePayment();
-        var different = EntityIdTestData.CreatePayment();
-
-        // Act
-        EntityIdAssertions.AssertGeneratedIdentitySemantics(first, second, different);
-    }
 }

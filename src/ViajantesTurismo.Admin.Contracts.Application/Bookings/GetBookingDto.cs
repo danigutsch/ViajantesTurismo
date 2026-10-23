@@ -5,6 +5,17 @@ namespace ViajantesTurismo.Admin.Contracts.Application;
 /// </summary>
 public sealed record GetBookingDto
 {
+    /// <summary>Gets the protected financial concurrency version once the EUR workflow has been adopted.</summary>
+    public long? FinancialVersion
+    {
+        get; init;
+    }
+    /// <summary>Gets the approved EUR obligation independently of the booking-price snapshot.</summary>
+    public decimal? ApprovedObligationEuro
+    {
+        get; init;
+    }
+
     /// <summary>The booking ID.</summary>
     public required Guid Id
     {
@@ -113,7 +124,7 @@ public sealed record GetBookingDto
         get; init;
     }
 
-    /// <summary>The currency used for all monetary values in this booking.</summary>
+    /// <summary>The currency of the booking price; approved payment obligations are in EUR.</summary>
     public required CurrencyDto Currency
     {
         get; init;
@@ -121,12 +132,6 @@ public sealed record GetBookingDto
 
     /// <summary>Notes about the booking.</summary>
     public string? Notes
-    {
-        get; init;
-    }
-
-    /// <summary>The payments recorded for this booking.</summary>
-    public required IReadOnlyCollection<GetPaymentDto> Payments
     {
         get; init;
     }

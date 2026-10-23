@@ -38,6 +38,7 @@ public sealed class AdminAuthorizationTests
             AdminAuthorization.CustomerWrite,
             AdminAuthorization.DocumentManage,
             AdminAuthorization.DocumentationRead,
+            AdminAuthorization.PaymentManage,
             AdminAuthorization.PaymentRead,
             AdminAuthorization.PaymentWrite,
             AdminAuthorization.TourRead,
@@ -79,5 +80,6 @@ public sealed class AdminAuthorizationTests
         actualPermissions.ShouldNotContain(AdminAuthorization.CustomerSensitiveRead);
         actualPermissions.ShouldNotContain(AdminAuthorization.CustomerWrite);
         actualPermissions.ShouldNotContain(AdminAuthorization.DocumentManage);
+        actualPermissions.ShouldNotContain(AdminAuthorization.PaymentManage);
     }
 }

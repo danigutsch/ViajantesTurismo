@@ -1,3 +1,4 @@
+using PandaBear.Testing.AspNetCore;
 using System.Net;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.TestHost;
@@ -23,6 +24,7 @@ public sealed class ServiceDefaultsHealthEndpointTests
             EnvironmentName = Environments.Production
         });
         builder.WebHost.UseTestServer();
+        builder.Services.AddTestRequestBindingDefaults();
         builder.Configuration["OTEL_EXPORTER_OTLP_ENDPOINT"] = string.Empty;
         builder.AddServiceDefaults();
 
@@ -43,12 +45,16 @@ public sealed class ServiceDefaultsHealthEndpointTests
 
         // Assert
         healthResponse.StatusCode.ShouldBe(HttpStatusCode.OK);
-        healthResponse.Headers.CacheControl.ShouldNotBeNull().NoStore.ShouldBe(true);
-        healthResponse.Content.Headers.ContentType.ShouldNotBeNull().MediaType.ShouldBe("text/plain");
+        var assertionTarget = healthResponse.Headers.CacheControl?.NoStore;
+        assertionTarget.ShouldNotBeNull().ShouldBe(true);
+        var assertionTarget1 = healthResponse.Content.Headers.ContentType?.MediaType;
+        assertionTarget1.ShouldNotBeNull().ShouldBe("text/plain");
         healthBody.ShouldBe("Healthy");
         aliveResponse.StatusCode.ShouldBe(HttpStatusCode.OK);
-        aliveResponse.Headers.CacheControl.ShouldNotBeNull().NoStore.ShouldBe(true);
-        aliveResponse.Content.Headers.ContentType.ShouldNotBeNull().MediaType.ShouldBe("text/plain");
+        var assertionTarget2 = aliveResponse.Headers.CacheControl?.NoStore;
+        assertionTarget2.ShouldNotBeNull().ShouldBe(true);
+        var assertionTarget3 = aliveResponse.Content.Headers.ContentType?.MediaType;
+        assertionTarget3.ShouldNotBeNull().ShouldBe("text/plain");
         aliveBody.ShouldBe("Healthy");
     }
 
@@ -61,6 +67,7 @@ public sealed class ServiceDefaultsHealthEndpointTests
             EnvironmentName = Environments.Production
         });
         builder.WebHost.UseTestServer();
+        builder.Services.AddTestRequestBindingDefaults();
         builder.Configuration["OTEL_EXPORTER_OTLP_ENDPOINT"] = string.Empty;
         builder.AddServiceDefaults();
         builder.Services.AddHealthChecks()
@@ -83,12 +90,16 @@ public sealed class ServiceDefaultsHealthEndpointTests
 
         // Assert
         healthResponse.StatusCode.ShouldBe(HttpStatusCode.ServiceUnavailable);
-        healthResponse.Headers.CacheControl.ShouldNotBeNull().NoStore.ShouldBe(true);
-        healthResponse.Content.Headers.ContentType.ShouldNotBeNull().MediaType.ShouldBe("text/plain");
+        var assertionTarget = healthResponse.Headers.CacheControl?.NoStore;
+        assertionTarget.ShouldNotBeNull().ShouldBe(true);
+        var assertionTarget1 = healthResponse.Content.Headers.ContentType?.MediaType;
+        assertionTarget1.ShouldNotBeNull().ShouldBe("text/plain");
         healthBody.ShouldBe("Unhealthy");
         aliveResponse.StatusCode.ShouldBe(HttpStatusCode.OK);
-        aliveResponse.Headers.CacheControl.ShouldNotBeNull().NoStore.ShouldBe(true);
-        aliveResponse.Content.Headers.ContentType.ShouldNotBeNull().MediaType.ShouldBe("text/plain");
+        var assertionTarget2 = aliveResponse.Headers.CacheControl?.NoStore;
+        assertionTarget2.ShouldNotBeNull().ShouldBe(true);
+        var assertionTarget3 = aliveResponse.Content.Headers.ContentType?.MediaType;
+        assertionTarget3.ShouldNotBeNull().ShouldBe("text/plain");
         aliveBody.ShouldBe("Healthy");
     }
 }

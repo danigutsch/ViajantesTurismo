@@ -1,0 +1,54 @@
+@page "/bookings/{BookingId:guid}/payment-instructions"
+@attribute [Authorize(Roles = "Admin")]
+@inject IPaymentInstructionsApiClient InstructionsApi
+@inject IBookingPaymentsApiClient PaymentsApi
+@inject IPaymentAccountsApiClient AccountsApi
+@inject AuthenticationStateProvider Authentication
+
+<PageTitle>Payment instructions</PageTitle>
+<h1>Payment instructions</h1>
+<a href="@($"/bookings/{BookingId}/finances")">Back to finances</a>
+@if (_loading) { <p role="status">Loading instruction revisions…</p> }
+@if (_error is not null) { <p role="alert" class="alert alert-danger">@_error</p> }
+@if (_submission.HasPending) { <p role="alert">Submission outcome unknown. Retry the same command before editing.</p><button type="button" @onclick="Retry" disabled="@_submission.IsBusy">Retry same submission</button> }
+<button type="button" @onclick="Load" disabled="@_submission.IsBusy">Refresh</button>
+<p>Generated financial fields cannot be edited. Regeneration creates an immutable revision. Account retirement, stale terms and expiry block further delivery; downloaded files cannot be revoked.</p>
+@foreach (var item in _instructions)
+{
+    <section class="card p-3 my-2" @key="item.Document.Id"><h2>Revision @item.Document.Revision — @item.Document.Status</h2>
+        <p>@item.Document.Id; @item.EuroAmount EUR obligation, @item.SettlementAmount @item.SettlementCurrency settlement; recipient @item.MaskedRecipient; account revision @item.AccountRevisionId.</p>
+        <p>Reference: @item.PaymentReference. Quote expiry: @item.QuoteExpiresAt. Currently eligible: @item.Eligible.</p>
+        <p>Creator @item.Approval.CreatedBy at @item.Approval.CreatedAt; approver @item.Approval.ApprovedBy at @item.Approval.ApprovedAt. @if (item.Approval.SelfApproved) { <strong>Self-approved</strong> }</p>
+        @if (item.Reviews.LastOrDefault()?.ChangesRequested == true) { <strong>Attention requested; approval remains until explicitly withdrawn.</strong> }
+        <ul>@foreach (var review in item.Reviews) { <li>@review.ReviewerId reviewed revision @review.TargetRevision at @review.ReviewedAt. Changes requested: @review.ChangesRequested. Approval remains until explicitly withdrawn.</li> }</ul>
+        <fieldset disabled="@Blocked"><legend>Actions for revision @item.Document.Revision</legend>
+            @if (item.Document.Status is DocumentStatusDto.DraftGenerated or DocumentStatusDto.InReview or DocumentStatusDto.ChangesRequested) { <button type="button" disabled="@(!item.Eligible)" @onclick='() => Select(item, "approve")'>Approve summary</button> }
+            @if (item.Document.Status == DocumentStatusDto.Approved) { <button type="button" disabled="@(!item.Eligible)" @onclick='() => Select(item, "finalize")'>Finalize printable HTML</button><button type="button" @onclick='() => Select(item, "withdraw")'>Withdraw approval</button> }
+            @if (item.Document.Status == DocumentStatusDto.Finalized && item.Eligible) { <a href="@($"/documents/{item.Document.Id}/download")" download data-enhance-nav="false">Download printable instructions</a> }
+            @if (item.Document.Status is not (DocumentStatusDto.Voided or DocumentStatusDto.Superseded)) { <button type="button" @onclick='() => Select(item, "void")'>Void revision</button> }
+            @if (item.Approval.CreatedBy != _actor) { <button type="button" @onclick='() => Select(item, "review")'>Independent review (optional)</button> }
+            <button type="button" @onclick="() => RegenerateSelection(item)">Select for regeneration</button>
+        </fieldset>
+    </section>
+}
+@if (_history is not null)
+{
+    <fieldset disabled="@Blocked"><legend>@(_regenerate is null ? "Generate instruction draft" : $"Regenerate revision {_regenerate.Document.Revision}")</legend>
+        <p>Financial revision @_history.Version. Only selected outstanding installments, approved terms and verified recipients are eligible.</p>
+        <label for="instruction-account">Verified recipient account</label><InputSelect id="instruction-account" @bind-Value="_accountId"><option value="@Guid.Empty">Select verified recipient</option>@foreach (var account in _accounts.Where(item => item.Status == PaymentAccountStatusDto.Verified)) { <option value="@account.Id">@account.Label — @account.MaskedIdentifier — @account.SettlementCurrency</option> }</InputSelect>
+        <label for="instruction-quote">Approved agreed quote (required for BRL)</label><InputSelect id="instruction-quote" @bind-Value="_quoteId"><option value="">EUR, no quote</option>@foreach (var quote in _history.Quotes.Where(item => !item.ForRefund && item.Approval.ApprovedAt is not null && !item.ApprovalWithdrawn)) { <option value="@quote.Id">@quote.BrlPerEuro BRL/EUR — expires @quote.ExpiresAt</option> }</InputSelect>
+        <fieldset><legend>Outstanding installments</legend>@foreach (var installment in _history.Schedules.Where(item => item.Status == PaymentScheduleStatusDto.Approved).SelectMany(item => item.Installments).Where(item => item.OutstandingEuro > 0)) { <label class="d-block"><input type="checkbox" checked="@_selectedInstallments.Contains(installment.Id)" @onchange="args => Toggle(installment.Id, args)" /> @installment.DueDate — @installment.OutstandingEuro EUR — @installment.Id</label> }</fieldset>
+        <button type="button" @onclick="Generate">Save generated unapproved draft</button>
+        @if (_regenerate is not null) { <button type="button" @onclick="() => _regenerate = null">Cancel regeneration selection</button> }
+    </fieldset>
+}
+@if (_selected is not null)
+{
+    <section class="card p-3" aria-labelledby="instruction-confirm"><h2 id="instruction-confirm">Confirm @_action</h2>
+        <p>Booking @BookingId, revision @_selected.Document.Revision, concurrency version @_selected.DocumentVersion. @_selected.EuroAmount EUR, @_selected.SettlementAmount @_selected.SettlementCurrency to @_selected.MaskedRecipient. Reference @_selected.PaymentReference. Quote expires @_selected.QuoteExpiresAt.</p>
+        <fieldset disabled="@Blocked"><legend>Explicit confirmation</legend>
+            @if (_action == "review") { <label><input type="checkbox" @bind="_changesRequested" /> Request attention without withdrawing approval</label> }
+            <label><input type="checkbox" @bind="_confirmed" /> I confirm the displayed immutable summary.</label><button type="button" disabled="@(!_confirmed)" @onclick="Confirm">Confirm @_action</button><button type="button" @onclick="Cancel">Cancel</button>
+        </fieldset>
+    </section>
+}

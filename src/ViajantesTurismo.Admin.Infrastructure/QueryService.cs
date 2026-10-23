@@ -1,4 +1,5 @@
 using Microsoft.EntityFrameworkCore;
+using ViajantesTurismo.Admin.Infrastructure.Payments;
 using ViajantesTurismo.Admin.Application;
 using ViajantesTurismo.Admin.Application.Mappings;
 using ViajantesTurismo.Admin.Contracts.Application;
@@ -6,7 +7,7 @@ using ViajantesTurismo.Admin.Domain.Tours;
 
 namespace ViajantesTurismo.Admin.Infrastructure;
 
-internal sealed class QueryService(AdminReadDbContext dbContext) : IQueryService
+internal sealed class QueryService(AdminReadDbContext dbContext, PaymentHistoryStore histories) : IQueryService
 {
     public async Task<IReadOnlyList<GetTourDto>> GetAllTours(CancellationToken ct)
     {
@@ -156,11 +157,11 @@ internal sealed class QueryService(AdminReadDbContext dbContext) : IQueryService
     {
         var bookings = await dbContext.Tours
             .SelectMany(tour => tour.Bookings)
-            .Include(booking => booking.Payments)
             .OrderByDescending(b => b.Status == BookingStatus.Cancelled)
             .ThenByDescending(b => b.BookingDate)
             .ToArrayAsync(ct);
 
+        await histories.Attach(bookings, ct);
         var tourIds = bookings.Select(b => b.TourId).Distinct().ToArray();
         var customerIds = bookings.Select(b => b.PrincipalCustomer.CustomerId)
             .Concat(bookings.Where(b => b.CompanionCustomer != null).Select(b => b.CompanionCustomer!.CustomerId))
@@ -207,7 +208,9 @@ internal sealed class QueryService(AdminReadDbContext dbContext) : IQueryService
                     DiscountAmount = b.Discount.Amount,
                     DiscountReason = b.Discount.Reason,
                     Notes = b.Notes,
-                    Payments = [.. b.Payments.Select(BookingMapper.MapToPaymentDto)],
+
+                    FinancialVersion = b.FinancialHistory?.Version,
+                    ApprovedObligationEuro = b.FinancialHistory?.ApprovedSchedule?.Obligation.Amount,
                     AmountPaid = b.AmountPaid,
                     RemainingBalance = b.RemainingBalance,
                     Currency = TourMapper.MapToCurrencyDto(tour.Pricing.Currency)
@@ -219,7 +222,7 @@ internal sealed class QueryService(AdminReadDbContext dbContext) : IQueryService
     public async Task<GetBookingDto?> GetBookingById(Guid id, CancellationToken ct)
     {
         var booking = await dbContext.Tours
-            .SelectMany(t => t.Bookings).Include(booking => booking.Payments)
+            .SelectMany(t => t.Bookings)
             .FirstOrDefaultAsync(b => b.Id == id, ct);
 
         if (booking is null)
@@ -227,6 +230,7 @@ internal sealed class QueryService(AdminReadDbContext dbContext) : IQueryService
             return null;
         }
 
+        await histories.Attach([booking], ct);
         var tour = await dbContext.Tours.FindAsync([booking.TourId], ct)
                    ?? throw new InvalidOperationException($"Tour {booking.TourId} not found for booking {booking.Id}");
         var customer = await dbContext.Customers.FindAsync([booking.PrincipalCustomer.CustomerId], ct)
@@ -261,7 +265,9 @@ internal sealed class QueryService(AdminReadDbContext dbContext) : IQueryService
             DiscountAmount = booking.Discount.Amount,
             DiscountReason = booking.Discount.Reason,
             Notes = booking.Notes,
-            Payments = [.. booking.Payments.Select(BookingMapper.MapToPaymentDto)],
+
+            FinancialVersion = booking.FinancialHistory?.Version,
+            ApprovedObligationEuro = booking.FinancialHistory?.ApprovedSchedule?.Obligation.Amount,
             AmountPaid = booking.AmountPaid,
             RemainingBalance = booking.RemainingBalance,
             Currency = TourMapper.MapToCurrencyDto(tour.Pricing.Currency)
@@ -271,7 +277,7 @@ internal sealed class QueryService(AdminReadDbContext dbContext) : IQueryService
     public async Task<IReadOnlyList<GetBookingDto>> GetBookingsByTourId(Guid tourId, CancellationToken ct)
     {
         var tour = await dbContext.Tours
-            .Include(t => t.Bookings).ThenInclude(booking => booking.Payments)
+            .Include(t => t.Bookings)
             .FirstOrDefaultAsync(t => t.Id == tourId, ct);
 
         if (tour is null)
@@ -279,6 +285,7 @@ internal sealed class QueryService(AdminReadDbContext dbContext) : IQueryService
             return [];
         }
 
+        await histories.Attach(tour.Bookings, ct);
         var customerIds = tour.Bookings.Select(b => b.PrincipalCustomer.CustomerId)
             .Concat(tour.Bookings.Where(b => b.CompanionCustomer != null).Select(b => b.CompanionCustomer!.CustomerId))
             .Distinct()
@@ -323,7 +330,9 @@ internal sealed class QueryService(AdminReadDbContext dbContext) : IQueryService
                         DiscountAmount = b.Discount.Amount,
                         DiscountReason = b.Discount.Reason,
                         Notes = b.Notes,
-                        Payments = [.. b.Payments.Select(BookingMapper.MapToPaymentDto)],
+
+                    FinancialVersion = b.FinancialHistory?.Version,
+                    ApprovedObligationEuro = b.FinancialHistory?.ApprovedSchedule?.Obligation.Amount,
                         AmountPaid = b.AmountPaid,
                         RemainingBalance = b.RemainingBalance,
                         Currency = TourMapper.MapToCurrencyDto(tour.Pricing.Currency)
@@ -338,9 +347,10 @@ internal sealed class QueryService(AdminReadDbContext dbContext) : IQueryService
             .SelectMany(t => t.Bookings)
             .Where(b => b.PrincipalCustomer.CustomerId == customerId ||
                         (b.CompanionCustomer != null && b.CompanionCustomer.CustomerId == customerId))
-            .OrderByDescending(b => b.BookingDate).Include(booking => booking.Payments)
+            .OrderByDescending(b => b.BookingDate)
             .ToArrayAsync(ct);
 
+        await histories.Attach(bookings, ct);
         var tourIds = bookings.Select(b => b.TourId).Distinct().ToList();
         var customerIds = bookings.Select(b => b.PrincipalCustomer.CustomerId)
             .Concat(bookings.Where(b => b.CompanionCustomer != null).Select(b => b.CompanionCustomer!.CustomerId))
@@ -388,7 +398,9 @@ internal sealed class QueryService(AdminReadDbContext dbContext) : IQueryService
                     DiscountAmount = b.Discount.Amount,
                     DiscountReason = b.Discount.Reason,
                     Notes = b.Notes,
-                    Payments = [.. b.Payments.Select(BookingMapper.MapToPaymentDto)],
+
+                    FinancialVersion = b.FinancialHistory?.Version,
+                    ApprovedObligationEuro = b.FinancialHistory?.ApprovedSchedule?.Obligation.Amount,
                     AmountPaid = b.AmountPaid,
                     RemainingBalance = b.RemainingBalance,
                     Currency = TourMapper.MapToCurrencyDto(tour.Pricing.Currency)

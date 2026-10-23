@@ -34,6 +34,11 @@ public sealed class VoidDocumentCommandHandler(
                 ct);
         }
 
+        if (document.Type == DocumentType.PaymentInstructions)
+        {
+            return Domain.Payments.FinancialErrors.Invalid("paymentInstructionLifecycle");
+        }
+
         var result = lineage.Void(document.Id, command.Reason, now, command.AuditContext);
         if (result.IsFailure)
         {

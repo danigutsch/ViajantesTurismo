@@ -25,6 +25,7 @@ internal static class ManagementWebEndpointTestHost
         return await new HostBuilder()
             .ConfigureWebHost(webBuilder => webBuilder
                 .UseTestServer()
+                .ConfigureServices(static services => services.AddTestRequestBindingDefaults())
                 .ConfigureServices(services =>
                 {
                     services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)

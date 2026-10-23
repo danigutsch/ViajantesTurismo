@@ -14,4 +14,6 @@ internal static class TestTraits
 
     public const string CoreBehaviorCategory = "core-behavior";
 
+    public const string PaymentsCapability = "Payments";
+
 }

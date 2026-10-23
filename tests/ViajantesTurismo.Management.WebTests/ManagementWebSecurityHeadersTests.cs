@@ -20,6 +20,7 @@ public sealed class ManagementWebSecurityHeadersTests
         using var host = await new HostBuilder()
             .ConfigureWebHost(webBuilder => webBuilder
                 .UseTestServer()
+                .ConfigureServices(static services => services.AddTestRequestBindingDefaults())
                 .Configure(app =>
                 {
                     app.UseManagementWebSecurityHeaders();
@@ -47,6 +48,7 @@ public sealed class ManagementWebSecurityHeadersTests
         using var host = await new HostBuilder()
             .ConfigureWebHost(webBuilder => webBuilder
                 .UseTestServer()
+                .ConfigureServices(static services => services.AddTestRequestBindingDefaults())
                 .Configure(app =>
                 {
                     app.UseManagementWebSecurityHeaders();

@@ -22,6 +22,7 @@
         <ProjectReference Include="..\..\src\ViajantesTurismo.ServiceDefaults\ViajantesTurismo.ServiceDefaults.csproj" />
         <PackageReference Include="PandaBear.SharedKernel.Mediator" />
         <PackageReference Include="PandaBear.SharedKernel.Testing" />
+        <PackageReference Include="PandaBear.SharedKernel.Testing.AspNetCore" />
         <PackageReference Include="PandaBear.SharedKernel.Testing.Assertions" />
     </ItemGroup>
 

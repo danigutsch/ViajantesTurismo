@@ -38,6 +38,7 @@ internal sealed class RedirectingTokenExchangeTestServer : IAsyncDisposable
     public static async Task<RedirectingTokenExchangeTestServer> Start(CancellationToken ct)
     {
         var builder = WebApplication.CreateBuilder();
+        builder.Services.AddTestRequestBindingDefaults();
         builder.WebHost.ConfigureKestrel(options => options.Listen(IPAddress.Loopback, port: 0));
         var application = builder.Build();
         var redirectRequestBodies = new ConcurrentQueue<string>();

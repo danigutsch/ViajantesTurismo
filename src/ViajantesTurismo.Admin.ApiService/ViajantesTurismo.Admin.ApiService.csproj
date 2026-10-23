@@ -42,7 +42,7 @@
 
     <Target Name="CopyAdminBoundaryOpenApiArtifacts" AfterTargets="GenerateOpenApiDocuments" Condition="'$(RefreshAdminOpenApiArtifacts)' == 'true'">
         <ItemGroup>
-            <AdminOpenApiArtifact Include="tours;customers;bookings;documents" />
+            <AdminOpenApiArtifact Include="tours;customers;bookings;documents;payment-accounts" />
             <GeneratedOpenApiArtifact Include="@(AdminOpenApiArtifact)">
                 <SourcePath>$(OpenApiDocumentsDirectory)/$(AssemblyName)_%(Identity).json</SourcePath>
                 <TargetPath>$(MSBuildProjectDirectory)/../ViajantesTurismo.Admin.Contracts.Http/OpenApi/%(Identity).openapi.json</TargetPath>

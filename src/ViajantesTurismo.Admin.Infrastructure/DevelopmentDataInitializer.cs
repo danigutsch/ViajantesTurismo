@@ -1,4 +1,5 @@
 using Microsoft.EntityFrameworkCore;
+using ViajantesTurismo.Admin.Infrastructure.Payments;
 using PandaBear.EntityFrameworkCore;
 using PandaBear.Results;
 using ViajantesTurismo.Admin.Domain.Customers;
@@ -353,15 +354,17 @@ public sealed class DevelopmentDataInitializer
         baselineTours = await dbContext.Tours
             .Where(tour => baselineTourIds.Contains(tour.Id))
             .Include(static tour => tour.Bookings)
-            .ThenInclude(static booking => booking.Payments)
+
             .OrderBy(static tour => tour.Identifier)
             .ToArrayAsync(ct);
         var baselineBookings = baselineTours
             .SelectMany(static tour => tour.Bookings)
             .ToArray();
-        var isPendingBookingCheckpoint = baselineBookings.Length == 10 &&
+        var bookingIds = baselineBookings.Select(booking => booking.Id).ToArray();
+        var hasFinancialHistory = await dbContext.Set<PaymentHistoryRow>().AnyAsync(row => bookingIds.Contains(row.BookingId), ct);
+        var isPendingBookingCheckpoint = !hasFinancialHistory && baselineBookings.Length == 10 &&
             baselineBookings.All(static booking =>
-                booking.Status == BookingStatus.Pending && booking.Payments.Count == 0);
+                booking.Status == BookingStatus.Pending);
         if (!isPendingBookingCheckpoint || !TryCompleteBookingStates(baselineTours, baselineCustomers))
         {
             return false;
@@ -498,7 +501,7 @@ public sealed class DevelopmentDataInitializer
         }
     }
 
-    private bool TryCompleteBookingStates(Tour[] tours, Customer[] customers)
+    private static bool TryCompleteBookingStates(Tour[] tours, Customer[] customers)
     {
         var booking1 = tours[0].Bookings.FirstOrDefault(
             booking => MatchesBaselineBooking(
@@ -594,68 +597,23 @@ public sealed class DevelopmentDataInitializer
             return false;
         }
 
-        var paymentDate = timeProvider.GetUtcNow().UtcDateTime;
 
         EnsureSeedOperationSucceeded(tours[0].ConfirmBooking(booking1.Id));
-        EnsureSeedOperationSucceeded(tours[0].RecordBookingPayment(
-            booking1.Id,
-            booking1.TotalPrice,
-            DateOnly.FromDateTime(paymentDate),
-            PaymentMethod.CreditCard,
-            timeProvider,
-            "CC-2024-001"));
 
         EnsureSeedOperationSucceeded(tours[1].ConfirmBooking(booking2.Id));
-        EnsureSeedOperationSucceeded(tours[1].RecordBookingPayment(
-            booking2.Id,
-            booking2.TotalPrice * 0.5m,
-            DateOnly.FromDateTime(paymentDate),
-            PaymentMethod.BankTransfer,
-            timeProvider,
-            "BT-2024-002",
-            "50% deposit paid"));
 
         EnsureSeedOperationSucceeded(tours[3].ConfirmBooking(booking4.Id));
-        EnsureSeedOperationSucceeded(tours[3].RecordBookingPayment(
-            booking4.Id,
-            booking4.TotalPrice,
-            DateOnly.FromDateTime(paymentDate),
-            PaymentMethod.CreditCard,
-            timeProvider,
-            "CC-2024-003"));
 
         EnsureSeedOperationSucceeded(tours[4].ConfirmBooking(booking5.Id));
         EnsureSeedOperationSucceeded(tours[4].CompleteBooking(booking5.Id));
         EnsureSeedOperationSucceeded(tours[0].CancelBooking(booking6.Id));
 
         EnsureSeedOperationSucceeded(tours[1].ConfirmBooking(booking7.Id));
-        EnsureSeedOperationSucceeded(tours[1].RecordBookingPayment(
-            booking7.Id,
-            booking7.TotalPrice * 0.75m,
-            DateOnly.FromDateTime(paymentDate),
-            PaymentMethod.BankTransfer,
-            timeProvider,
-            "BT-2024-004",
-            "75% deposit paid"));
 
         EnsureSeedOperationSucceeded(tours[0].ConfirmBooking(booking9.Id));
-        EnsureSeedOperationSucceeded(tours[0].RecordBookingPayment(
-            booking9.Id,
-            booking9.TotalPrice,
-            DateOnly.FromDateTime(paymentDate),
-            PaymentMethod.Cash,
-            timeProvider));
 
         EnsureSeedOperationSucceeded(tours[4].ConfirmBooking(booking10.Id));
 
-        EnsureSeedOperationSucceeded(tours[2].RecordBookingPayment(
-            booking3.Id,
-            booking3.TotalPrice * 0.25m,
-            DateOnly.FromDateTime(paymentDate),
-            PaymentMethod.CreditCard,
-            timeProvider,
-            "CC-2024-006",
-            "25% deposit paid"));
 
         return true;
     }

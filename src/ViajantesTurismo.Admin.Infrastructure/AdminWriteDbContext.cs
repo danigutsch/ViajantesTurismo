@@ -1,4 +1,5 @@
 using Microsoft.EntityFrameworkCore;
+using ViajantesTurismo.Admin.Infrastructure.Payments;
 using PandaBear.EntityFrameworkCore;
 using ViajantesTurismo.Admin.Application;
 using ViajantesTurismo.Admin.Application.Customers;
@@ -68,10 +69,13 @@ internal sealed class AdminWriteDbContext(
         base.OnModelCreating(modelBuilder);
 
         modelBuilder.HasPostgresExtension("citext");
+        modelBuilder.ApplyConfiguration(new PaymentAccountConfiguration());
+        modelBuilder.ApplyConfiguration(new PaymentHistoryConfiguration());
+        modelBuilder.ApplyConfiguration(new PaymentInstructionConfiguration());
+        modelBuilder.ApplyConfiguration(new PaymentAuditConfiguration());
         modelBuilder.ApplyConfiguration(new TourConfiguration());
         modelBuilder.ApplyConfiguration(new CustomerConfiguration());
         modelBuilder.ApplyConfiguration(new BookingConfiguration());
-        modelBuilder.ApplyConfiguration(new PaymentConfiguration());
         modelBuilder.ApplyConfiguration(new DocumentLineageConfiguration());
         modelBuilder.ApplyConfiguration(new DocumentDraftConfiguration());
         modelBuilder.ApplyConfiguration(new DocumentAuditConfiguration());

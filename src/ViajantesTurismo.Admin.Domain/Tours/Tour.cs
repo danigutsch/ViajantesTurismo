@@ -284,6 +284,11 @@ public sealed partial class Tour : IAggregateRoot<Guid>
         decimal eBikePrice,
         Currency currency)
     {
+        if (currency != Pricing.Currency && _bookings.Count > 0)
+        {
+            return TourErrors.CurrencyCannotBeChangedWithBookings();
+        }
+
         var pricingResult = TourPricing.Create(
             Pricing.BasePrice,
             singleRoomSupplementPrice,
@@ -592,35 +597,6 @@ public sealed partial class Tour : IAggregateRoot<Guid>
     }
 
     /// <summary>
-    /// Records a payment for a booking.
-    /// </summary>
-    /// <param name="bookingId">The ID of the booking to record payment for.</param>
-    /// <param name="amount">The payment amount.</param>
-    /// <param name="paymentDate">The date the payment was made.</param>
-    /// <param name="method">The payment method used.</param>
-    /// <param name="timeProvider">The time provider for getting current time.</param>
-    /// <param name="referenceNumber">Optional reference number for the payment.</param>
-    /// <param name="notes">Optional notes about the payment.</param>
-    /// <returns>A result containing the recorded Payment if successful, or validation errors.</returns>
-    public Result<Payment> RecordBookingPayment(
-        Guid bookingId,
-        decimal amount,
-        DateOnly paymentDate,
-        PaymentMethod method,
-        TimeProvider timeProvider,
-        string? referenceNumber = null,
-        string? notes = null)
-    {
-        var bookingResult = FindBooking(bookingId).ToNotFoundResult(bookingId, "this tour");
-        if (bookingResult.IsFailure)
-        {
-            return bookingResult.ConvertError<Booking, Payment>();
-        }
-
-        return bookingResult.Value.RecordPayment(amount, paymentDate, method, timeProvider, referenceNumber, notes);
-    }
-
-    /// <summary>
     /// Updates the notes of a booking.
     /// </summary>
     /// <param name="bookingId">The ID of the booking to update.</param>
@@ -805,6 +781,11 @@ public sealed partial class Tour : IAggregateRoot<Guid>
 
         var booking = bookingResult.Value;
 
+        if (booking.HasFinancialHistory)
+        {
+            return Payments.FinancialErrors.Unavailable();
+        }
+
         if (!booking.IsPending)
         {
             return TourErrors.CannotRemoveNonPendingBooking(bookingId, booking.Status);
@@ -821,6 +802,10 @@ public sealed partial class Tour : IAggregateRoot<Guid>
     /// <returns>A result indicating whether the tour can be deleted.</returns>
     private Result CanBeDeleted()
     {
+        if (_bookings.Any(booking => booking.HasFinancialHistory))
+        {
+            return Payments.FinancialErrors.Unavailable();
+        }
         var confirmedBookings = _bookings.Count(booking => booking.IsConfirmed);
         if (confirmedBookings > 0)
         {

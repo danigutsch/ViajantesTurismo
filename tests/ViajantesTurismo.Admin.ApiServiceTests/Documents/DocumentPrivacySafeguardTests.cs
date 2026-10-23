@@ -58,7 +58,8 @@ public sealed class DocumentPrivacySafeguardTests
         {
             endpoint.Metadata.GetOrderedMetadata<IAuthorizeData>()
                 .Select(metadata => metadata.Policy)
-                .ShouldContain(AdminAuthorization.DocumentManage);
+                .ShouldContain(endpoint.RoutePattern.RawText?.Contains("payment-instructions", StringComparison.Ordinal) == true
+                    ? AdminAuthorization.PaymentManage : AdminAuthorization.DocumentManage);
         }
     }
 
@@ -302,11 +303,17 @@ public sealed class DocumentPrivacySafeguardTests
 
         // Assert
         outcomes.Count.ShouldBe(DocumentEndpointRouteCase.All.Count);
-        outcomes.ShouldHaveSingleItem(outcome => outcome.Pattern.Contains("bookings/{bookingId:guid}", StringComparison.Ordinal))
+        outcomes.ShouldHaveSingleItem(outcome => outcome.Pattern.EndsWith("/contract-drafts", StringComparison.Ordinal))
             .StatusCode.ShouldBe(HttpStatusCode.BadRequest);
-        outcomes.Where(outcome => !outcome.Pattern.Contains("bookings/{bookingId:guid}", StringComparison.Ordinal))
+        outcomes.Where(outcome => !outcome.Pattern.Contains("bookings/{bookingId:guid}", StringComparison.Ordinal) && !outcome.Pattern.Contains("payment-instructions", StringComparison.Ordinal))
             .All(outcome => outcome.StatusCode == HttpStatusCode.NotFound)
             .ShouldBeTrue();
+        foreach (var outcome in outcomes.Where(outcome => outcome.Pattern.Contains("payment-instructions", StringComparison.Ordinal)))
+        {
+            var assertionTarget1 = outcome.StatusCode is HttpStatusCode.BadRequest or HttpStatusCode.NotFound or HttpStatusCode.UnsupportedMediaType;
+            assertionTarget1
+                .ShouldBeTrue($"Unexpected status for {outcome.Pattern}: {outcome.StatusCode}.");
+        }
         outcomes.All(outcome => outcome.HasNoStoreHeaders).ShouldBeTrue();
     }
 

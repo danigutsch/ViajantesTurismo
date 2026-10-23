@@ -66,6 +66,7 @@ internal sealed class DevelopmentDataInitializerScenario : IAsyncDisposable
         var bookings = await DbContext.Set<Booking>().ToArrayAsync(ct);
         var tours = await DbContext.Tours.ToArrayAsync(ct);
         var customers = await DbContext.Customers.OrderBy(static customer => customer.Id).ToArrayAsync(ct);
+        // This InMemory-only scenario deliberately constructs a partial synthetic seed checkpoint.
         DbContext.RemoveRange(bookings);
         DbContext.RemoveRange(tours);
         DbContext.RemoveRange(customers.Skip(1));
@@ -138,6 +139,7 @@ internal sealed class DevelopmentDataInitializerScenario : IAsyncDisposable
     {
         var bookings = await DbContext.Set<Booking>().ToArrayAsync(ct);
         var customers = await DbContext.Customers.ToArrayAsync(ct);
+        // This InMemory-only scenario deliberately constructs a partial synthetic seed checkpoint.
         DbContext.RemoveRange(bookings);
         DbContext.RemoveRange(customers);
         await DbContext.SaveChangesAsync(ct);
@@ -156,6 +158,7 @@ internal sealed class DevelopmentDataInitializerScenario : IAsyncDisposable
     public async Task RemoveBaselineBookings(CancellationToken ct)
     {
         var bookings = await DbContext.Set<Booking>().ToArrayAsync(ct);
+        // This InMemory-only scenario deliberately constructs a partial synthetic seed checkpoint.
         DbContext.RemoveRange(bookings);
         await DbContext.SaveChangesAsync(ct);
         DbContext.ChangeTracker.Clear();
@@ -163,9 +166,7 @@ internal sealed class DevelopmentDataInitializerScenario : IAsyncDisposable
 
     public async Task ResetBaselineBookingsToPendingCheckpoint(CancellationToken ct)
     {
-        var payments = await DbContext.Set<Payment>().ToArrayAsync(ct);
         var bookings = await DbContext.Set<Booking>().ToArrayAsync(ct);
-        DbContext.RemoveRange(payments);
         foreach (var booking in bookings)
         {
             DbContext.Entry(booking)
@@ -240,13 +241,11 @@ internal sealed class DevelopmentDataInitializerScenario : IAsyncDisposable
     {
         DbContext.ChangeTracker.Clear();
         var bookings = await DbContext.Set<Booking>()
-            .Include(static booking => booking.Payments)
             .AsNoTracking()
             .ToArrayAsync(ct);
 
         bookings.Length.ShouldBe(10);
         bookings.Count(static booking => booking.Status == BookingStatus.Pending).ShouldBe(10);
-        bookings.Sum(static booking => booking.Payments.Count).ShouldBe(0);
     }
 
     public async Task ShouldContainExpectedDevelopmentBookingStates(CancellationToken ct)
@@ -257,22 +256,21 @@ internal sealed class DevelopmentDataInitializerScenario : IAsyncDisposable
             .OrderBy(static customer => customer.Id)
             .ToArrayAsync(ct);
         var bookings = await DbContext.Set<Booking>()
-            .Include(static booking => booking.Payments)
             .AsNoTracking()
             .ToArrayAsync(ct);
         var bookingsByCustomer = bookings.ToDictionary(
             static booking => booking.PrincipalCustomer.CustomerId);
         var expected = new (Guid CustomerId, BookingStatus Status, PaymentStatus PaymentStatus, decimal PaidRatio)[]
         {
-            (customers[0].Id, BookingStatus.Confirmed, PaymentStatus.Paid, 1m),
-            (customers[1].Id, BookingStatus.Confirmed, PaymentStatus.PartiallyPaid, 0.5m),
-            (customers[2].Id, BookingStatus.Pending, PaymentStatus.PartiallyPaid, 0.25m),
-            (customers[3].Id, BookingStatus.Confirmed, PaymentStatus.Paid, 1m),
+            (customers[0].Id, BookingStatus.Confirmed, PaymentStatus.Unpaid, 0m),
+            (customers[1].Id, BookingStatus.Confirmed, PaymentStatus.Unpaid, 0m),
+            (customers[2].Id, BookingStatus.Pending, PaymentStatus.Unpaid, 0m),
+            (customers[3].Id, BookingStatus.Confirmed, PaymentStatus.Unpaid, 0m),
             (customers[5].Id, BookingStatus.Completed, PaymentStatus.Unpaid, 0m),
             (customers[6].Id, BookingStatus.Cancelled, PaymentStatus.Unpaid, 0m),
-            (customers[7].Id, BookingStatus.Confirmed, PaymentStatus.PartiallyPaid, 0.75m),
+            (customers[7].Id, BookingStatus.Confirmed, PaymentStatus.Unpaid, 0m),
             (customers[9].Id, BookingStatus.Pending, PaymentStatus.Unpaid, 0m),
-            (customers[4].Id, BookingStatus.Confirmed, PaymentStatus.Paid, 1m),
+            (customers[4].Id, BookingStatus.Confirmed, PaymentStatus.Unpaid, 0m),
             (customers[8].Id, BookingStatus.Confirmed, PaymentStatus.Unpaid, 0m)
         };
         var actual = expected
@@ -300,7 +298,6 @@ internal sealed class DevelopmentDataInitializerScenario : IAsyncDisposable
     {
         DbContext.ChangeTracker.Clear();
         var bookings = await DbContext.Set<Booking>()
-            .Include(static booking => booking.Payments)
             .AsNoTracking()
             .OrderBy(static booking => booking.Id)
             .ToArrayAsync(ct);
@@ -310,7 +307,7 @@ internal sealed class DevelopmentDataInitializerScenario : IAsyncDisposable
                 booking.Id,
                 booking.Status,
                 booking.PaymentStatus,
-                booking.Payments.Sum(static payment => payment.Amount),
+                booking.AmountPaid,
                 booking.Discount.Type,
                 booking.Discount.Amount,
                 booking.Discount.Reason))

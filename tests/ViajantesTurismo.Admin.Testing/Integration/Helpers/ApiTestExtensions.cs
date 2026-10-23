@@ -331,24 +331,75 @@ public static class ApiTestExtensions
         return await client.CompleteBooking(booking.Id);
     }
 
-    /// <summary>
-    /// Records a payment for a booking via the API.
-    /// </summary>
-    public static async Task RecordPayment(this HttpClient client, Guid bookingId, decimal amount)
+    /// <summary>Records actual EUR cash and explicitly approves its allocated EUR credit through the financial API.</summary>
+    public static async Task RecordAndApproveReceiptCredit(this HttpClient client, Guid bookingId, decimal amount)
     {
         ArgumentNullException.ThrowIfNull(client);
+        var booking = await client.GetBooking(bookingId);
+        var payments = new BookingPaymentsApiClient(client);
+        var today = DateOnly.FromDateTime(TimeProvider.System.GetUtcNow().UtcDateTime);
 
-        var dto = new CreatePaymentDto
+        async Task<GetBookingFinancialHistoryDto> Read()
         {
-            Amount = amount,
-            PaymentDate = DateOnly.FromDateTime(TimeProvider.System.GetUtcNow().UtcDateTime),
-            Method = PaymentMethodDto.CreditCard,
-            Notes = "E2E test payment"
-        };
+            var outcome = await payments.GetByBookingId(bookingId, CancellationToken.None);
+            if (outcome.Kind != PandaBear.HttpClients.HttpOutcomeKind.Succeeded || outcome.Value is null)
+            {
+                throw new InvalidOperationException($"Financial test setup failed: {outcome.Kind}.");
+            }
+            return outcome.Value;
+        }
 
-        var response = await client.PostAsJsonAsync(
-            new Uri($"{BookingsRoutePrefix}/{bookingId}/payments", UriKind.Relative), dto);
-        response.EnsureSuccessStatusCode();
+        GetPaymentCommandResultDto Confirm(PandaBear.HttpClients.HttpOutcome<GetPaymentCommandResultDto> outcome)
+        {
+            if (outcome.Kind != PandaBear.HttpClients.HttpOutcomeKind.Succeeded || outcome.Value is null)
+            {
+                throw new InvalidOperationException($"Financial test setup failed: {outcome.Kind}.");
+            }
+            return outcome.Value;
+        }
+
+        var history = await Read();
+        var draft = Confirm(await payments.DraftSchedule(bookingId, new CreatePaymentScheduleDto
+        {
+            ExpectedVersion = history.Version,
+            ObligationEuro = booking.TotalPrice,
+            Installments = [new PaymentInstallmentDto { EuroAmount = booking.TotalPrice, DueDate = today }]
+        }, Guid.CreateVersion7().ToString("N"), CancellationToken.None));
+        history = await Read();
+        Confirm(await payments.ApproveSchedule(bookingId, draft.ResourceId, new ApproveFinancialRecordDto
+        {
+            ExpectedVersion = history.Version,
+            Reason = FinancialReasonDto.InitialObligation,
+            Confirmed = true
+        }, Guid.CreateVersion7().ToString("N"), CancellationToken.None));
+        history = await Read();
+        var installment = history.Schedules.Single(schedule => schedule.Id == draft.ResourceId).Installments.Single();
+        InstallmentAllocationDto[] allocations = [new() { TargetId = installment.Id, EuroAmount = amount }];
+        var receipt = Confirm(await payments.RecordReceipt(bookingId, new CreateBookingReceiptDto
+        {
+            ExpectedVersion = history.Version,
+            SettlementCurrency = CurrencyDto.Euro,
+            Gross = amount,
+            Fees = 0,
+            PaymentDate = today,
+            Method = PaymentMethodDto.Cash,
+            Reference = "owned-test-receipt",
+            ProposedAllocations = allocations
+        }, Guid.CreateVersion7().ToString("N"), CancellationToken.None));
+        history = await Read();
+        var reconciliation = Confirm(await payments.DraftReconciliation(bookingId, receipt.ResourceId, new CreateReceiptReconciliationDto
+        {
+            ExpectedVersion = history.Version,
+            EuroCredit = amount,
+            Allocations = allocations
+        }, Guid.CreateVersion7().ToString("N"), CancellationToken.None));
+        history = await Read();
+        Confirm(await payments.ApproveReconciliation(bookingId, reconciliation.ResourceId, new ApproveFinancialRecordDto
+        {
+            ExpectedVersion = history.Version,
+            Reason = FinancialReasonDto.MismatchedReceipt,
+            Confirmed = true
+        }, Guid.CreateVersion7().ToString("N"), CancellationToken.None));
     }
 
     /// <summary>
@@ -362,7 +413,7 @@ public static class ApiTestExtensions
     public static async Task<GetBookingDto> CreatePartiallyPaidBooking(this HttpClient client, Guid tourId, Guid customerId, decimal amount)
     {
         var booking = await client.CreateBooking(tourId, customerId);
-        await client.RecordPayment(booking.Id, amount);
+        await client.RecordAndApproveReceiptCredit(booking.Id, amount);
         return await client.GetBooking(booking.Id);
     }
 
@@ -376,7 +427,7 @@ public static class ApiTestExtensions
     public static async Task<GetBookingDto> CreatePaidBooking(this HttpClient client, Guid tourId, Guid customerId)
     {
         var booking = await client.CreateBooking(tourId, customerId);
-        await client.RecordPayment(booking.Id, booking.TotalPrice);
+        await client.RecordAndApproveReceiptCredit(booking.Id, booking.TotalPrice);
         return await client.GetBooking(booking.Id);
     }
 
@@ -390,7 +441,7 @@ public static class ApiTestExtensions
     public static async Task<GetBookingDto> CreateConfirmedPaidBooking(this HttpClient client, Guid tourId, Guid customerId)
     {
         var booking = await client.CreateConfirmedBooking(tourId, customerId);
-        await client.RecordPayment(booking.Id, booking.TotalPrice);
+        await client.RecordAndApproveReceiptCredit(booking.Id, booking.TotalPrice);
         return await client.GetBooking(booking.Id);
     }
 }

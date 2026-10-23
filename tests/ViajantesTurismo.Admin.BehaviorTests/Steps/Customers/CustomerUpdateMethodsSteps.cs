@@ -125,109 +125,109 @@ public sealed class CustomerUpdateMethodsSteps(CustomerContext customerContext)
     [Then("the customer personal info update should succeed")]
     public void ThenTheCustomerPersonalInfoUpdateShouldSucceed()
     {
-        (customerContext.Customer).ShouldNotBeNull();
+        customerContext.Customer.ShouldNotBeNull();
     }
 
     [Then("the customer identification info update should succeed")]
     public void ThenTheCustomerIdentificationInfoUpdateShouldSucceed()
     {
-        (customerContext.Customer).ShouldNotBeNull();
+        customerContext.Customer.ShouldNotBeNull();
     }
 
     [Then("the customer contact info update should succeed")]
     public void ThenTheCustomerContactInfoUpdateShouldSucceed()
     {
-        (customerContext.Customer).ShouldNotBeNull();
+        customerContext.Customer.ShouldNotBeNull();
     }
 
     [Then("the customer address update should succeed")]
     public void ThenTheCustomerAddressUpdateShouldSucceed()
     {
-        (customerContext.Customer).ShouldNotBeNull();
+        customerContext.Customer.ShouldNotBeNull();
     }
 
     [Then("the customer physical info update should succeed")]
     public void ThenTheCustomerPhysicalInfoUpdateShouldSucceed()
     {
-        (customerContext.Customer).ShouldNotBeNull();
+        customerContext.Customer.ShouldNotBeNull();
     }
 
     [Then("the customer accommodation preferences update should succeed")]
     public void ThenTheCustomerAccommodationPreferencesUpdateShouldSucceed()
     {
-        (customerContext.Customer).ShouldNotBeNull();
+        customerContext.Customer.ShouldNotBeNull();
     }
 
     [Then("the customer emergency contact update should succeed")]
     public void ThenTheCustomerEmergencyContactUpdateShouldSucceed()
     {
-        (customerContext.Customer).ShouldNotBeNull();
+        customerContext.Customer.ShouldNotBeNull();
     }
 
     [Then("the customer medical info update should succeed")]
     public void ThenTheCustomerMedicalInfoUpdateShouldSucceed()
     {
-        (customerContext.Customer).ShouldNotBeNull();
+        customerContext.Customer.ShouldNotBeNull();
     }
 
     [Then("all customer updates should succeed")]
     public void ThenAllCustomerUpdatesShouldSucceed()
     {
-        (customerContext.Customer).ShouldNotBeNull();
+        customerContext.Customer.ShouldNotBeNull();
     }
 
     [Then(@"the customer should have first name ""(.*)""")]
     public void ThenTheCustomerShouldHaveFirstName(string expectedFirstName)
     {
-        (customerContext.Customer.PersonalInfo.FirstName).ShouldBe(expectedFirstName);
+        customerContext.Customer.PersonalInfo.FirstName.ShouldBe(expectedFirstName);
     }
 
     [Then(@"the customer should have last name ""(.*)""")]
     public void ThenTheCustomerShouldHaveLastName(string expectedLastName)
     {
-        (customerContext.Customer.PersonalInfo.LastName).ShouldBe(expectedLastName);
+        customerContext.Customer.PersonalInfo.LastName.ShouldBe(expectedLastName);
     }
 
     [Then(@"the customer should have passport ""(.*)""")]
     public void ThenTheCustomerShouldHavePassport(string expectedPassport)
     {
-        (customerContext.Customer.IdentificationInfo.NationalId).ShouldBe(expectedPassport);
+        customerContext.Customer.IdentificationInfo.NationalId.ShouldBe(expectedPassport);
     }
 
     [Then(@"the customer should have email ""(.*)""")]
     public void ThenTheCustomerShouldHaveEmail(string expectedEmail)
     {
-        (customerContext.Customer.ContactInfo.Email).ShouldBe(expectedEmail);
+        customerContext.Customer.ContactInfo.Email.ShouldBe(expectedEmail);
     }
 
     [Then(@"the customer should have city ""(.*)""")]
     public void ThenTheCustomerShouldHaveCity(string expectedCity)
     {
-        (customerContext.Customer.Address.City).ShouldBe(expectedCity);
+        customerContext.Customer.Address.City.ShouldBe(expectedCity);
     }
 
     [Then("the customer should have height (.*)")]
     public void ThenTheCustomerShouldHaveHeight(int expectedHeight)
     {
-        (customerContext.Customer.PhysicalInfo.HeightCentimeters).ShouldBe(expectedHeight);
+        customerContext.Customer.PhysicalInfo.HeightCentimeters.ShouldBe(expectedHeight);
     }
 
     [Then(@"the customer should have bed type ""(.*)""")]
     public void ThenTheCustomerShouldHaveBedType(string expectedBedType)
     {
         var bedTypeEnum = Enum.Parse<BedType>(expectedBedType + "Bed");
-        (customerContext.Customer.AccommodationPreferences.BedType).ShouldBe(bedTypeEnum);
+        customerContext.Customer.AccommodationPreferences.BedType.ShouldBe(bedTypeEnum);
     }
 
     [Then(@"the customer should have emergency contact ""(.*)""")]
     public void ThenTheCustomerShouldHaveEmergencyContact(string expectedName)
     {
-        (customerContext.Customer.EmergencyContact.Name).ShouldBe(expectedName);
+        customerContext.Customer.EmergencyContact.Name.ShouldBe(expectedName);
     }
 
     [Then(@"the customer should have allergies ""(.*)""")]
     public void ThenTheCustomerShouldHaveAllergies(string expectedAllergies)
     {
-        (customerContext.Customer.MedicalInfo.Allergies).ShouldBe(expectedAllergies);
+        customerContext.Customer.MedicalInfo.Allergies.ShouldBe(expectedAllergies);
     }
 }

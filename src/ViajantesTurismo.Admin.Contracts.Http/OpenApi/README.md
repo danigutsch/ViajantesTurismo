@@ -8,6 +8,7 @@ Current boundary files:
 - `customers.openapi.json`
 - `bookings.openapi.json`
 - `documents.openapi.json`
+- `payment-accounts.openapi.json`
 - `v1.openapi.json`
 
 Ownership rules:

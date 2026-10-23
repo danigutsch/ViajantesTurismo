@@ -30,7 +30,7 @@ public sealed class BookingsApiClientTests
     }
 
     [Fact]
-    public async Task GetBookingById_returns_booking_when_admin_API_returns_success()
+    public async Task Get_booking_by_id_returns_booking_when_admin_API_returns_success()
     {
         var requestPath = string.Empty;
         var bookingId = Guid.Parse("11111111-1111-1111-1111-111111111111");
@@ -52,7 +52,7 @@ public sealed class BookingsApiClientTests
     }
 
     [Fact]
-    public async Task GetBookingById_returns_null_when_admin_API_returns_not_found()
+    public async Task Get_booking_by_id_returns_null_when_admin_API_returns_not_found()
     {
         using var httpClient = CatalogToursApiClientTestsHelpers.CreateClient(_ => new HttpResponseMessage(System.Net.HttpStatusCode.NotFound));
         var sut = new BookingsApiClient(httpClient);
@@ -64,7 +64,7 @@ public sealed class BookingsApiClientTests
     }
 
     [Fact]
-    public async Task GetBookingById_returns_malformed_outcome_when_admin_API_returns_success_with_null_body()
+    public async Task Get_booking_by_id_returns_malformed_outcome_when_admin_API_returns_success_with_null_body()
     {
         using var httpClient = CatalogToursApiClientTestsHelpers.CreateClient(_ => CatalogToursApiClientTestsHelpers.JsonResponse("null"));
         var sut = new BookingsApiClient(httpClient);
@@ -256,52 +256,6 @@ public sealed class BookingsApiClientTests
         requestPath.ShouldBe("/api/v1/bookings/11111111-1111-1111-1111-111111111111");
         outcome.Kind.ShouldBe(HttpOutcomeKind.Succeeded);
     }
-
-    [Fact]
-    public async Task RecordPayment_posts_payment_and_returns_success_outcome()
-    {
-        // Arrange
-        var requestPath = string.Empty;
-        var requestMethod = string.Empty;
-        var bookingId = Guid.Parse("11111111-1111-1111-1111-111111111111");
-        using var httpClient = CatalogToursApiClientTestsHelpers.CreateClient(request =>
-        {
-            requestPath = request.RequestUri?.PathAndQuery ?? string.Empty;
-            requestMethod = request.Method.Method;
-            return new HttpResponseMessage(System.Net.HttpStatusCode.Created)
-            {
-                Headers = { Location = new Uri("/api/v1/bookings/11111111-1111-1111-1111-111111111111/payments/aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa", UriKind.Relative) }
-            };
-        });
-        var sut = new BookingsApiClient(httpClient);
-
-        // Act
-        var outcome = await sut.RecordPayment(bookingId, AdminApiClientTestsHelpers.CreatePayment(), TestContext.Current.CancellationToken);
-
-        // Assert
-        requestMethod.ShouldBe(HttpMethods.Post);
-        requestPath.ShouldBe("/api/v1/bookings/11111111-1111-1111-1111-111111111111/payments");
-        outcome.Kind.ShouldBe(HttpOutcomeKind.Succeeded);
-        outcome.Location.ShouldNotBeNull();
-        outcome.Location.ToString().ShouldBe("/api/v1/bookings/11111111-1111-1111-1111-111111111111/payments/aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa");
-    }
-
-    [Fact]
-    public async Task RecordPayment_returns_not_found_outcome()
-    {
-        // Arrange
-        var bookingId = Guid.Parse("11111111-1111-1111-1111-111111111111");
-        using var httpClient = CatalogToursApiClientTestsHelpers.CreateClient(_ => new HttpResponseMessage(System.Net.HttpStatusCode.NotFound));
-        var sut = new BookingsApiClient(httpClient);
-
-        // Act
-        var outcome = await sut.RecordPayment(bookingId, AdminApiClientTestsHelpers.CreatePayment(), TestContext.Current.CancellationToken);
-
-        // Assert
-        outcome.Kind.ShouldBe(HttpOutcomeKind.NotFound);
-        outcome.StatusCode.ShouldBe(System.Net.HttpStatusCode.NotFound);
-    }
-
     [Fact]
     public async Task CreateBooking_logs_non_success_outcome_without_response_body()
     {

@@ -1,5 +1,8 @@
 # ADR-011: Payment Tracking with Immutable Payment Records
 
+> Superseded for payments on 2026-10-23 by the [single financial-history workflow](../payments.md).
+> The unpublished payment entity and compatibility workflow were removed before deployment.
+
 **Status**: Accepted — 2025-11-08
 
 ## Context

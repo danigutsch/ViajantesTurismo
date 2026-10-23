@@ -1,4 +1,6 @@
 using System.Text.Json.Serialization.Metadata;
+using ViajantesTurismo.Admin.Application.Payments;
+using ViajantesTurismo.Admin.Infrastructure.Payments;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
@@ -85,6 +87,25 @@ public static class InfrastructureDependencyInjection
         builder.AddAdminWriteDbContext();
         builder.AddAdminReadDbContext();
 
+        builder.Services.AddSingleton<PaymentProtection>();
+        builder.Services.AddHostedService<PaymentProtectionStartupCheck>();
+        builder.Services.AddScoped<IPaymentTransaction, PaymentTransaction>();
+        builder.Services.AddSingleton(sp =>
+        {
+            var enabled = bool.TryParse(builder.Configuration["Payments:Enabled"], out var configured) && configured;
+            var zone = builder.Configuration["Payments:BusinessTimeZone"];
+            if (enabled && string.IsNullOrWhiteSpace(zone))
+            {
+                throw new InvalidOperationException("Payments require an explicit business time zone.");
+            }
+            return new PaymentBusinessCalendar(sp.GetRequiredService<TimeProvider>(), TimeZoneInfo.FindSystemTimeZoneById(zone ?? "UTC"));
+        });
+        builder.Services.AddScoped<PaymentHistoryStore>();
+        builder.Services.AddScoped<IPaymentHistoryStore>(sp => sp.GetRequiredService<PaymentHistoryStore>());
+        builder.Services.AddScoped<IPaymentAccountStore, PaymentAccountStore>();
+        builder.Services.AddScoped<IPaymentAccountQueryService, PaymentAccountQueryService>();
+        builder.Services.AddScoped<IPaymentFinancialQueryService, PaymentFinancialQueryService>();
+        builder.Services.AddScoped<IPaymentInstructionStore, PaymentInstructionStore>();
         builder.Services.AddScoped<IUnitOfWork>(sp => sp.GetRequiredService<AdminWriteDbContext>());
         builder.Services.AddScoped<IQueryService, QueryService>();
         builder.Services.AddScoped<IDocumentQueryService, DocumentQueryService>();

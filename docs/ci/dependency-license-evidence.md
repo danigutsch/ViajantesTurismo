@@ -9,6 +9,7 @@ or by January 20, 2027, whichever comes first. This record does not grant genera
 - [StreamJsonRpc metadata review](#streamjsonrpc-metadata-review)
 - [Magick native audit](#magick-native-audit)
 - [Security candidate renewal](#security-candidate-renewal)
+- [Payments rebase candidate](#payments-rebase-candidate)
 - [Remaining decision](#remaining-decision)
 
 ## Snapshot failure and correction
@@ -164,6 +165,21 @@ NuGet distinguishes the signed package archive hash from its unsigned content ha
 content hash is compared with the same previous locked graph, rather than incorrectly comparing it
 with the whole signed ZIP SHA-512; see
 [NuGet's content-hash implementation](https://github.com/NuGet/NuGet.Client/blob/dev/src/NuGet.Core/NuGet.Packaging/PackageArchiveReader.cs).
+
+## Payments rebase candidate
+
+Prepared candidate `0.1.0-alpha.94.1` uses clean library revision
+`d08008cd3e8901c304377edcc4683de7c3a85ecb`. It combines the accepted security changes with merged
+request-binding defaults, assertion helpers and the shared snapshot generator. Linux/Windows package
+consumption and NativeAOT passed in the exact-source CI run. All 74 archive hashes were verified.
+
+Comparison of the complete external package version/content-hash sets against application base
+`f460444b` found no additions or removals. The prepared workflow still permits only the same exact
+StreamJsonRpc `2.25.29` and Magick.NET-Q8-AnyCPU `15.0.0` metadata exceptions; no license category,
+vulnerability threshold or native distribution gate was relaxed. On October 23, 2026, the owner
+authorized GitHub prerelease distribution and renewed these unchanged exact-package exceptions
+for this candidate. Publication remains conditional on successful application validation; registry
+publication and the native distribution obligations remain outside this approval.
 
 ## Remaining decision
 

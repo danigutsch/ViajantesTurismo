@@ -1,3 +1,4 @@
+using PandaBear.Testing.AspNetCore;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.HttpOverrides;
@@ -27,6 +28,7 @@ public sealed class CatalogApiSecurityBaselineTests
         using var host = await new HostBuilder()
             .ConfigureWebHost(webBuilder => webBuilder
                 .UseTestServer()
+                .ConfigureServices(static services => services.AddTestRequestBindingDefaults())
                 .ConfigureServices(services => services.AddCatalogSecurityBaseline(configuration))
                 .Configure(app =>
                 {
@@ -59,6 +61,7 @@ public sealed class CatalogApiSecurityBaselineTests
         using var host = await new HostBuilder()
             .ConfigureWebHost(webBuilder => webBuilder
                 .UseTestServer()
+                .ConfigureServices(static services => services.AddTestRequestBindingDefaults())
                 .ConfigureServices(services => services.AddCatalogSecurityBaseline(configuration))
                 .Configure(app =>
                 {
@@ -86,6 +89,7 @@ public sealed class CatalogApiSecurityBaselineTests
         using var host = await new HostBuilder()
             .ConfigureWebHost(webBuilder => webBuilder
                 .UseTestServer()
+                .ConfigureServices(static services => services.AddTestRequestBindingDefaults())
                 .ConfigureServices(services => services.AddCatalogSecurityBaseline(configuration))
                 .Configure(app =>
                 {
@@ -261,6 +265,7 @@ public sealed class CatalogApiSecurityBaselineTests
         using var host = await new HostBuilder()
             .ConfigureWebHost(webBuilder => webBuilder
                 .UseTestServer()
+                .ConfigureServices(static services => services.AddTestRequestBindingDefaults())
                 .ConfigureServices(services => services.Configure<ForwardedHeadersOptions>(options =>
                 {
                     options.ForwardedHeaders = ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedProto;

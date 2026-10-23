@@ -1,3 +1,4 @@
+using PandaBear.Testing.AspNetCore;
 using System.Collections.Concurrent;
 using System.Diagnostics;
 using Microsoft.AspNetCore.Builder;
@@ -59,6 +60,7 @@ public sealed class ServiceDefaultsPrivacyTelemetryTests
             EnvironmentName = Environments.Production
         });
         builder.WebHost.UseTestServer();
+        builder.Services.AddTestRequestBindingDefaults();
         builder.Configuration["OTEL_EXPORTER_OTLP_ENDPOINT"] = string.Empty;
         builder.AddServiceDefaults();
         builder.Services.AddOpenTelemetry().WithTracing(tracing =>
@@ -119,6 +121,7 @@ public sealed class ServiceDefaultsPrivacyTelemetryTests
             EnvironmentName = Environments.Production
         });
         builder.WebHost.UseTestServer();
+        builder.Services.AddTestRequestBindingDefaults();
         builder.Configuration["OTEL_EXPORTER_OTLP_ENDPOINT"] = string.Empty;
         builder.Services.PostConfigureAll<AspNetCoreTraceInstrumentationOptions>(options => options.RecordException = true);
         builder.AddServiceDefaults();
@@ -198,6 +201,10 @@ public sealed class ServiceDefaultsPrivacyTelemetryTests
         using (var activity = activitySource.StartActivity("privacy.failure", ActivityKind.Internal))
         {
             activity.ShouldNotBeNull();
+            activity.SetTag("payment.account.iban", "DE89370400440532013000");
+            activity.SetTag("financial.gross", "500.00");
+            activity.SetTag("recipient.pix", "payment@example.test");
+            activity.SetTag("fx.quote.reference", "private-agreement");
             activity.SetTag("customer.id", customerId.ToString());
             activity.SetTag("customerId", customerId.ToString());
             activity.SetTag("booking.id", bookingId.ToString());
@@ -242,6 +249,10 @@ public sealed class ServiceDefaultsPrivacyTelemetryTests
             string.Equals(attribute.Key, "exception.type", StringComparison.OrdinalIgnoreCase));
         var exceptionTypeValue = exceptionType.Value.ShouldBeOfType<string>();
         exceptionTypeValue.Length.ShouldBe(256);
+        exported.GetTagItem("payment.account.iban").ShouldBeNull();
+        exported.GetTagItem("financial.gross").ShouldBeNull();
+        exported.GetTagItem("recipient.pix").ShouldBeNull();
+        exported.GetTagItem("fx.quote.reference").ShouldBeNull();
         exported.GetTagItem("customer.id").ShouldBeNull();
         exported.GetTagItem("customerId").ShouldBeNull();
         exported.GetTagItem("booking.id").ShouldBeNull();

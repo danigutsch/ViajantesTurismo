@@ -106,12 +106,4 @@ public interface IBookingsApiClient
     /// <returns>The delete outcome returned by the API.</returns>
     Task<HttpOutcome> DeleteBooking(Guid id, CancellationToken ct);
 
-    /// <summary>
-    /// Records a payment for a booking.
-    /// </summary>
-    /// <param name="bookingId">The unique identifier of the booking.</param>
-    /// <param name="dto">The payment data to record.</param>
-    /// <param name="ct">Cancellation token for the request.</param>
-    /// <returns>The contract-level outcome of the record-payment request.</returns>
-    Task<HttpOutcome> RecordPayment(Guid bookingId, CreatePaymentDto dto, CancellationToken ct);
 }

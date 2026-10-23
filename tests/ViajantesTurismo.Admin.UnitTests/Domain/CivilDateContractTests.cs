@@ -1,7 +1,5 @@
 using System.Text.Json;
 using ViajantesTurismo.Admin.Testing.Builders;
-using ViajantesTurismo.Admin.Testing.Fakes;
-using ViajantesTurismo.Admin.Domain.Tours;
 
 namespace ViajantesTurismo.Admin.UnitTests.Domain;
 
@@ -35,11 +33,20 @@ public sealed class CivilDateContractTests
     public void Payment_date_serializes_as_a_calendar_date()
     {
         // Arrange
-        var now = new DateTimeOffset(2030, 2, 3, 14, 0, 0, TimeSpan.Zero);
-        var payment = Payment.Create(Guid.CreateVersion7(), 100m, DateOnly.FromDateTime(now.UtcDateTime.Date),
-            PaymentMethod.Cash, new FakeTimeProvider(now), null, null).Value;
+        var date = new DateOnly(2030, 2, 3);
+        var receipt = new Admin.Contracts.Application.CreateBookingReceiptDto
+        {
+            ExpectedVersion = 0,
+            SettlementCurrency = Admin.Contracts.Application.CurrencyDto.Euro,
+            Gross = 100m,
+            Fees = 0m,
+            PaymentDate = date,
+            Reference = "calendar-test",
+            Method = Admin.Contracts.Application.PaymentMethodDto.Cash,
+            ProposedAllocations = []
+        };
         // Act
-        var json = JsonSerializer.Serialize(payment.PaymentDate);
+        var json = JsonSerializer.Serialize(receipt.PaymentDate);
         // Assert
         json.ShouldBe("\"2030-02-03\"");
     }

@@ -12,7 +12,6 @@ using ViajantesTurismo.Admin.Application.Bookings.CompleteBooking;
 using ViajantesTurismo.Admin.Application.Bookings.ConfirmBooking;
 using ViajantesTurismo.Admin.Application.Bookings.CreateBooking;
 using ViajantesTurismo.Admin.Application.Bookings.DeleteBooking;
-using ViajantesTurismo.Admin.Application.Bookings.RecordPayment;
 using ViajantesTurismo.Admin.Application.Bookings.UpdateBookingDetails;
 using ViajantesTurismo.Admin.Application.Bookings.UpdateBookingDiscount;
 using ViajantesTurismo.Admin.Application.Bookings.UpdateBookingNotes;
@@ -34,7 +33,8 @@ internal static class AdminApiTestHost
 
     public static WebApplicationFactory<AdminApiHostEntryPoint> Create(
         Action<IServiceCollection>? configureTestServices = null,
-        string? environment = null)
+        string? environment = null,
+        Action<IDictionary<string, string?>>? configureConfiguration = null)
     {
         var hostEnvironment = environment ?? Environments.Development;
         var disableMalwareScanner = !string.Equals(
@@ -42,6 +42,7 @@ internal static class AdminApiTestHost
             Environments.Production,
             StringComparison.Ordinal);
         var configuration = CreateConfiguration(disableMalwareScanner);
+        configureConfiguration?.Invoke(configuration);
 
         return WebApplicationTestHost.Create<AdminApiHostEntryPoint>(
             environment: hostEnvironment,
@@ -121,7 +122,6 @@ internal static class AdminApiTestHost
         _ = scope.ServiceProvider.GetRequiredService<UpdateBookingDetailsCommandHandler>();
         _ = scope.ServiceProvider.GetRequiredService<UpdateBookingNotesCommandHandler>();
         _ = scope.ServiceProvider.GetRequiredService<UpdateBookingDiscountCommandHandler>();
-        _ = scope.ServiceProvider.GetRequiredService<RecordPaymentCommandHandler>();
         _ = scope.ServiceProvider.GetRequiredService<CompleteBookingCommandHandler>();
         _ = scope.ServiceProvider.GetRequiredService<DeleteBookingCommandHandler>();
         scope.ServiceProvider.GetRequiredService<ITourCapacityMutationLock>()

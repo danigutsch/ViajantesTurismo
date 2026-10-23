@@ -1,4 +1,3 @@
-using System.Globalization;
 using ViajantesTurismo.Admin.Contracts.Application;
 using static Microsoft.Playwright.Assertions;
 
@@ -22,7 +21,7 @@ internal sealed class BookingWorkflow(IPage page, Func<string, Task> navigateTo)
     public async Task NavigateToEdit(Guid bookingId)
     {
         await navigateTo($"/bookings/{bookingId}/edit");
-        await page.ShouldHaveTitle("Edit Booking");
+        await Expect(page).ToHaveTitleAsync("Edit Booking");
     }
 
     /// <summary>
@@ -40,7 +39,7 @@ internal sealed class BookingWorkflow(IPage page, Func<string, Task> navigateTo)
         string expectedFinalTotal)
     {
         await navigateTo($"/tours/{tour.Id}");
-        await page.ShouldHaveTitle("Tour Details");
+        await Expect(page).ToHaveTitleAsync("Tour Details");
         await page.GetByText(tour.Name).First.WaitForAsync();
 
         var addBookingButton = page.GetButton("Add Booking");
@@ -96,7 +95,7 @@ internal sealed class BookingWorkflow(IPage page, Func<string, Task> navigateTo)
     public async Task NavigateToDetails(Guid bookingId)
     {
         await navigateTo($"/bookings/{bookingId}");
-        await page.ShouldHaveTitle("Booking Details");
+        await Expect(page).ToHaveTitleAsync("Booking Details");
     }
 
     /// <summary>
@@ -146,24 +145,11 @@ internal sealed class BookingWorkflow(IPage page, Func<string, Task> navigateTo)
         await page.GetButton("Complete Booking").WaitForAsync();
     }
 
-    /// <summary>
-    /// Records the standard cash payment used by booking workflow tests.
-    /// </summary>
-    public async Task RecordPayment()
+    /// <summary>Opens the authoritative schedule, settlement and reconciliation workflow.</summary>
+    public async Task NavigateToFinances(Guid bookingId)
     {
-        await page.GetButton("Record Payment").ClickAsync();
-
-        var paymentCard = page.Locator(".card.border-success");
-        await paymentCard.WaitForAsync();
-
-        await paymentCard.Locator("#amount").FillAsync("1000");
-        await paymentCard.Locator("#paymentDate").FillAsync(TimeProvider.System.GetUtcNow().UtcDateTime.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture));
-        await paymentCard.Locator("#method").SelectOptionAsync("Cash");
-
-        var toastTask = UiFeedback.ExpectToastThenHide("Payment recorded successfully");
-        await paymentCard.GetButton("Record Payment").ClickAsync();
-
-        await toastTask;
+        await navigateTo($"/bookings/{bookingId}/finances");
+        await Expect(page).ToHaveTitleAsync("Booking finances");
     }
 
     /// <summary>

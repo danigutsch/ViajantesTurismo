@@ -16,6 +16,8 @@ internal static class AdminRouteGroupExtensions
     private const string CustomersGroupName = "Customers";
     private const string BookingsRoutePrefix = "bookings";
     private const string BookingsGroupName = "Bookings";
+    private const string PaymentAccountsRoutePrefix = "payment-accounts";
+    private const string PaymentAccountsGroupName = "PaymentAccounts";
     private const string DocumentsRoutePrefix = "documents";
     private const string DocumentsGroupName = "Documents";
 
@@ -27,6 +29,7 @@ internal static class AdminRouteGroupExtensions
         get;
     } =
     [
+        PaymentAccountsRoutePrefix,
         ToursRoutePrefix,
         CustomersRoutePrefix,
         BookingsRoutePrefix,
@@ -105,6 +108,10 @@ internal static class AdminRouteGroupExtensions
     {
         return app.MapRouteGroup("docs/errors", "Errors");
     }
+
+    /// <summary>Maps protected account lifecycle routes with no-store responses.</summary>
+    public static RouteGroupBuilder MapPaymentAccountsGroup(this WebApplication app) => app.MapRouteGroup(PaymentAccountsRoutePrefix, PaymentAccountsGroupName)
+        .WithNoStoreResponses($"/api/{CurrentApiVersion.RouteSegment}/{PaymentAccountsRoutePrefix}");
 
     private static RouteGroupBuilder MapRouteGroup(this WebApplication app, string routePrefix, string groupName)
     {

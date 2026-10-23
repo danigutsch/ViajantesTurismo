@@ -59,6 +59,7 @@ internal sealed class ProtectedDistributedTicketStoreCookieHandlerTestHost : IDi
         var host = await new HostBuilder()
             .ConfigureWebHost(webBuilder => webBuilder
                 .UseTestServer()
+                .ConfigureServices(static services => services.AddTestRequestBindingDefaults())
                 .ConfigureServices(services =>
                 {
                     services.AddRouting();

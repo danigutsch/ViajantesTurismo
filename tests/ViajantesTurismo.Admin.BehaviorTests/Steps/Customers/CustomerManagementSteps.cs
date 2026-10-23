@@ -65,9 +65,9 @@ public sealed class CustomerManagementSteps(CustomerContext context)
     [When("I create a customer")]
     public void WhenICreateACustomer()
     {
-        (context.PhysicalInfoResult).ShouldNotBeNull();
+        context.PhysicalInfoResult.ShouldNotBeNull();
         var accommodationPreferences = context.AccommodationPreferences.ShouldNotBeNull();
-        (context.MedicalInfoResult).ShouldNotBeNull();
+        context.MedicalInfoResult.ShouldNotBeNull();
 
         context.PersonalInfoResult = PersonalInfo.Create(
             "John",
@@ -91,25 +91,25 @@ public sealed class CustomerManagementSteps(CustomerContext context)
     [Then("the customer should be created successfully")]
     public void ThenTheCustomerShouldBeCreatedSuccessfully()
     {
-        (context.Customer).ShouldNotBeNull();
+        context.Customer.ShouldNotBeNull();
     }
 
     [Then("the customer should contain all the provided information")]
     public void ThenTheCustomerShouldContainAllTheProvidedInformation()
     {
-        (context.Customer).ShouldNotBeNull();
-        (context.PhysicalInfoResult).ShouldNotBeNull();
+        context.Customer.ShouldNotBeNull();
+        context.PhysicalInfoResult.ShouldNotBeNull();
         var accommodationPreferences = context.AccommodationPreferences.ShouldNotBeNull();
-        (context.MedicalInfoResult).ShouldNotBeNull();
+        context.MedicalInfoResult.ShouldNotBeNull();
 
-        (context.Customer.PersonalInfo).ShouldBe(context.PersonalInfoResult.Value);
-        (context.Customer.IdentificationInfo).ShouldBe(context.IdentificationInfoResult.Value);
-        (context.Customer.ContactInfo).ShouldBe(context.ContactInfoResult.Value);
-        (context.Customer.Address).ShouldBe(context.AddressResult.Value);
-        (context.Customer.PhysicalInfo).ShouldBe(context.PhysicalInfoResult.Value.Value);
-        (context.Customer.AccommodationPreferences).ShouldBe(accommodationPreferences);
-        (context.Customer.EmergencyContact).ShouldBe(context.EmergencyContactResult.Value);
-        (context.Customer.MedicalInfo).ShouldBe(context.MedicalInfoResult.Value.Value);
+        context.Customer.PersonalInfo.ShouldBe(context.PersonalInfoResult.Value);
+        context.Customer.IdentificationInfo.ShouldBe(context.IdentificationInfoResult.Value);
+        context.Customer.ContactInfo.ShouldBe(context.ContactInfoResult.Value);
+        context.Customer.Address.ShouldBe(context.AddressResult.Value);
+        context.Customer.PhysicalInfo.ShouldBe(context.PhysicalInfoResult.Value.Value);
+        context.Customer.AccommodationPreferences.ShouldBe(accommodationPreferences);
+        context.Customer.EmergencyContact.ShouldBe(context.EmergencyContactResult.Value);
+        context.Customer.MedicalInfo.ShouldBe(context.MedicalInfoResult.Value.Value);
     }
 
     [Given(@"I have personal information for sanitization with first name ""([^""]*)"" and last name ""([^""]*)""")]
@@ -128,26 +128,26 @@ public sealed class CustomerManagementSteps(CustomerContext context)
     [When("I create personal information from sanitization inputs")]
     public void WhenICreatePersonalInformationFromSanitizationInputs()
     {
-        (context.PersonalInfoResult.IsSuccess).ShouldBeTrue();
+        context.PersonalInfoResult.IsSuccess.ShouldBeTrue();
     }
 
     [Then("the personal information should be created successfully from sanitization")]
     public void ThenThePersonalInformationShouldBeCreatedSuccessfullyFromSanitization()
     {
-        (context.PersonalInfoResult.IsSuccess).ShouldBeTrue();
-        (context.PersonalInfoResult.Value).ShouldNotBeNull();
+        context.PersonalInfoResult.IsSuccess.ShouldBeTrue();
+        context.PersonalInfoResult.Value.ShouldNotBeNull();
     }
 
     [Then(@"the sanitized first name should be ""(.*)""")]
     public void ThenTheSanitizedFirstNameShouldBe(string expectedFirstName)
     {
-        (context.PersonalInfoResult.Value.FirstName).ShouldBe(expectedFirstName);
+        context.PersonalInfoResult.Value.FirstName.ShouldBe(expectedFirstName);
     }
 
     [Then(@"the sanitized last name should be ""(.*)""")]
     public void ThenTheSanitizedLastNameShouldBe(string expectedLastName)
     {
-        (context.PersonalInfoResult.Value.LastName).ShouldBe(expectedLastName);
+        context.PersonalInfoResult.Value.LastName.ShouldBe(expectedLastName);
     }
 
     [Given(@"I have address for sanitization with city ""(.*)"" and country ""(.*)""")]
@@ -166,19 +166,19 @@ public sealed class CustomerManagementSteps(CustomerContext context)
     [When("I create address information from sanitization inputs")]
     public void WhenICreateAddressInformationFromSanitizationInputs()
     {
-        (context.AddressResult.IsSuccess).ShouldBeTrue();
+        context.AddressResult.IsSuccess.ShouldBeTrue();
     }
 
     [Then(@"the sanitized address city should be ""(.*)""")]
     public void ThenTheSanitizedAddressCityShouldBe(string expectedCity)
     {
-        (context.AddressResult.Value.City).ShouldBe(expectedCity);
+        context.AddressResult.Value.City.ShouldBe(expectedCity);
     }
 
     [Then(@"the sanitized address country should be ""(.*)""")]
     public void ThenTheSanitizedAddressCountryShouldBe(string expectedCountry)
     {
-        (context.AddressResult.Value.Country).ShouldBe(expectedCountry);
+        context.AddressResult.Value.Country.ShouldBe(expectedCountry);
     }
 
     [Given(@"I have contact info with email ""(.*)"" and mobile ""(.*)""")]
@@ -190,19 +190,19 @@ public sealed class CustomerManagementSteps(CustomerContext context)
     [When("I create contact information")]
     public void WhenICreateContactInformation()
     {
-        (context.ContactInfoResult.IsSuccess).ShouldBeTrue();
+        context.ContactInfoResult.IsSuccess.ShouldBeTrue();
     }
 
     [Then(@"the sanitized email should be ""(.*)""")]
     public void ThenTheSanitizedEmailShouldBe(string expectedEmail)
     {
-        (context.ContactInfoResult.Value.Email).ShouldBe(expectedEmail);
+        context.ContactInfoResult.Value.Email.ShouldBe(expectedEmail);
     }
 
     [Then(@"the sanitized mobile should be ""(.*)""")]
     public void ThenTheSanitizedMobileShouldBe(string expectedMobile)
     {
-        (context.ContactInfoResult.Value.Mobile).ShouldBe(expectedMobile);
+        context.ContactInfoResult.Value.Mobile.ShouldBe(expectedMobile);
     }
 
     [Given(@"I have contact info with Instagram ""(.*)"" and Facebook ""(.*)""")]
@@ -214,19 +214,19 @@ public sealed class CustomerManagementSteps(CustomerContext context)
     [When("I create contact information with social media")]
     public void WhenICreateContactInformationWithSocialMedia()
     {
-        (context.ContactInfoResult.IsSuccess).ShouldBeTrue();
+        context.ContactInfoResult.IsSuccess.ShouldBeTrue();
     }
 
     [Then(@"the sanitized Instagram should be ""(.*)""")]
     public void ThenTheSanitizedInstagramShouldBe(string expectedInstagram)
     {
-        (context.ContactInfoResult.Value.Instagram).ShouldBe(expectedInstagram);
+        context.ContactInfoResult.Value.Instagram.ShouldBe(expectedInstagram);
     }
 
     [Then(@"the sanitized Facebook should be ""(.*)""")]
     public void ThenTheSanitizedFacebookShouldBe(string expectedFacebook)
     {
-        (context.ContactInfoResult.Value.Facebook).ShouldBe(expectedFacebook);
+        context.ContactInfoResult.Value.Facebook.ShouldBe(expectedFacebook);
     }
 
     [Given(@"I have identification info with national ID ""(.*)"" and nationality ""(.*)""")]
@@ -238,19 +238,19 @@ public sealed class CustomerManagementSteps(CustomerContext context)
     [When("I create identification information")]
     public void WhenICreateIdentificationInformation()
     {
-        (context.IdentificationInfoResult.IsSuccess).ShouldBeTrue();
+        context.IdentificationInfoResult.IsSuccess.ShouldBeTrue();
     }
 
     [Then(@"the sanitized national ID should be ""(.*)""")]
     public void ThenTheSanitizedNationalIdShouldBe(string expectedNationalId)
     {
-        (context.IdentificationInfoResult.Value.NationalId).ShouldBe(expectedNationalId);
+        context.IdentificationInfoResult.Value.NationalId.ShouldBe(expectedNationalId);
     }
 
     [Then(@"the sanitized ID nationality should be ""(.*)""")]
     public void ThenTheSanitizedIdNationalityShouldBe(string expectedNationality)
     {
-        (context.IdentificationInfoResult.Value.IdNationality).ShouldBe(expectedNationality);
+        context.IdentificationInfoResult.Value.IdNationality.ShouldBe(expectedNationality);
     }
 
     [Given(@"I have emergency contact with name ""(.*)"" and mobile ""(.*)""")]
@@ -262,19 +262,19 @@ public sealed class CustomerManagementSteps(CustomerContext context)
     [When("I create emergency contact information")]
     public void WhenICreateEmergencyContactInformation()
     {
-        (context.EmergencyContactResult.IsSuccess).ShouldBeTrue();
+        context.EmergencyContactResult.IsSuccess.ShouldBeTrue();
     }
 
     [Then(@"the sanitized emergency contact name should be ""(.*)""")]
     public void ThenTheSanitizedEmergencyContactNameShouldBe(string expectedName)
     {
-        (context.EmergencyContactResult.Value.Name).ShouldBe(expectedName);
+        context.EmergencyContactResult.Value.Name.ShouldBe(expectedName);
     }
 
     [Then(@"the sanitized emergency contact mobile should be ""(.*)""")]
     public void ThenTheSanitizedEmergencyContactMobileShouldBe(string expectedMobile)
     {
-        (context.EmergencyContactResult.Value.Mobile).ShouldBe(expectedMobile);
+        context.EmergencyContactResult.Value.Mobile.ShouldBe(expectedMobile);
     }
 
     [Given(@"I have medical info with allergies ""(.*)"" and additional info ""(.*)""")]
@@ -286,22 +286,22 @@ public sealed class CustomerManagementSteps(CustomerContext context)
     [When("I create medical information")]
     public void WhenICreateMedicalInformation()
     {
-        (context.MedicalInfoResult).ShouldNotBeNull();
-        (context.MedicalInfoResult.Value.IsSuccess).ShouldBeTrue();
+        context.MedicalInfoResult.ShouldNotBeNull();
+        context.MedicalInfoResult.Value.IsSuccess.ShouldBeTrue();
     }
 
     [Then(@"the sanitized allergies should be ""(.*)""")]
     public void ThenTheSanitizedAllergiesShouldBe(string expectedAllergies)
     {
-        (context.MedicalInfoResult).ShouldNotBeNull();
-        (context.MedicalInfoResult.Value.Value.Allergies).ShouldBe(expectedAllergies);
+        context.MedicalInfoResult.ShouldNotBeNull();
+        context.MedicalInfoResult.Value.Value.Allergies.ShouldBe(expectedAllergies);
     }
 
     [Then(@"the sanitized additional info should be ""(.*)""")]
     public void ThenTheSanitizedAdditionalInfoShouldBe(string expectedAdditionalInfo)
     {
-        (context.MedicalInfoResult).ShouldNotBeNull();
-        (context.MedicalInfoResult.Value.Value.AdditionalInfo).ShouldBe(expectedAdditionalInfo);
+        context.MedicalInfoResult.ShouldNotBeNull();
+        context.MedicalInfoResult.Value.Value.AdditionalInfo.ShouldBe(expectedAdditionalInfo);
     }
 
     [When(@"I attempt to create another customer with email ""(.*)""")]
@@ -379,7 +379,7 @@ public sealed class CustomerManagementSteps(CustomerContext context)
     [Then("the customer creation should fail")]
     public void ThenTheCustomerCreationShouldFail()
     {
-        (context.CommandResult).ShouldNotBeNull();
-        (context.CommandResult.Value.IsFailure).ShouldBeTrue();
+        context.CommandResult.ShouldNotBeNull();
+        context.CommandResult.Value.IsFailure.ShouldBeTrue();
     }
 }

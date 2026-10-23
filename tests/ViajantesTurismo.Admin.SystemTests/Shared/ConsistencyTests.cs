@@ -23,7 +23,7 @@ public class ConsistencyTests(AspireSystemTestFixture fixture) : AspireSystemTes
     public async Task Booking_list_and_details_show_consistent_status_and_payment_badges()
     {
         // Arrange
-        var tour = await ApiClient.CreateTour(new CreateTourOptions { Currency = CurrencyDto.UsDollar });
+        var tour = await ApiClient.CreateTour(new CreateTourOptions { Currency = CurrencyDto.Euro });
         var pendingCustomer = await ApiClient.CreateCustomer();
         var paidCustomer = await ApiClient.CreateCustomer();
 

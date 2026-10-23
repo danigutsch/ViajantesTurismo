@@ -1,7 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using ViajantesTurismo.Admin.Infrastructure;
 using ViajantesTurismo.Admin.Domain.Customers;
-using ViajantesTurismo.Admin.Domain.Tours;
 
 namespace ViajantesTurismo.Admin.UnitTests.Domain;
 
@@ -11,7 +10,6 @@ public sealed class CivilDatePersistenceTests
 {
     [Theory]
     [InlineData(typeof(PersonalInfo), nameof(PersonalInfo.BirthDate))]
-    [InlineData(typeof(Payment), nameof(Payment.PaymentDate))]
     public void Civil_values_use_postgresql_date_columns(Type entityType, string propertyName)
     {
         // Arrange

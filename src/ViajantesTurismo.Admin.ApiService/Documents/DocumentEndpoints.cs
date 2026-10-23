@@ -1,8 +1,8 @@
+using PandaBear.AspNetCore;
 using System.ComponentModel.DataAnnotations;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using PandaBear.Results;
-using PandaBear.AspNetCore;
 using ViajantesTurismo.Admin.Application.Documents;
 using ViajantesTurismo.Admin.Contracts.Application;
 using ViajantesTurismo.Admin.Domain.Documents;
@@ -338,7 +338,7 @@ internal static class DocumentEndpoints
         CancellationToken ct)
     {
         var auditContext = CreateAuditContext(httpContext);
-        var result = await handler.Handle(new GetFinalizedDocumentArtifactQuery(id), ct);
+        var result = await handler.Handle(new GetFinalizedDocumentArtifactQuery(id, auditContext.ActorId), ct);
         if (result.IsFailure)
         {
             var failure = result.ConvertError();
@@ -494,7 +494,7 @@ internal static class DocumentEndpoints
 
     private static DocumentAuditContext CreateAuditContext(HttpContext httpContext)
     {
-        var actorId = httpContext.User.FindFirst("sub")?.Value;
+        var actorId = httpContext.User.GetSubjectId();
         if (string.IsNullOrWhiteSpace(actorId))
         {
             throw new InvalidOperationException("Document operations require an authenticated subject identifier.");

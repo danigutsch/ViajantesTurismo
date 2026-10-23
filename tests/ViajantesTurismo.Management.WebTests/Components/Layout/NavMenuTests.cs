@@ -132,7 +132,7 @@ public class NavMenuTests : BunitContext
 
         // Assert
         var navLinks = cut.FindAll(".nav-link");
-        navLinks.Count.ShouldBe(9);
+        navLinks.Count.ShouldBe(10);
     }
 
     [Fact]
@@ -192,7 +192,7 @@ public class NavMenuTests : BunitContext
 
         // Assert
         var navItems = cut.FindAll(".nav-item.px-3");
-        navItems.Count.ShouldBe(9);
+        navItems.Count.ShouldBe(10);
     }
 
     [Fact]

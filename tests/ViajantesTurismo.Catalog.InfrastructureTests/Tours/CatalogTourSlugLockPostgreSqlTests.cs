@@ -1,5 +1,6 @@
 using System.Collections.Concurrent;
 using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using PandaBear.Testing;
 using ViajantesTurismo.Admin.Contracts.IntegrationEvents.Tours;
 using ViajantesTurismo.Catalog.Application.Tours;
@@ -58,6 +59,7 @@ public sealed class CatalogTourSlugLockPostgreSqlTests : IAsyncLifetime
 
     [Fact]
     [Trait(TestTraitNames.CategoryName, TestTraitValues.SecurityCategory)]
+    [SuppressMessage("Testing", "SKTEST010", Justification = "Npgsql owns the source instance; its supported instrumentation selector is its name.")]
     public async Task Catalog_npgsql_tracing_remains_enabled_without_first_response_or_parameter_values()
     {
         // Arrange

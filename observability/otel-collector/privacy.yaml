@@ -59,6 +59,7 @@ processors:
           - delete_key(span.attributes, "messaging.destination.subscription.name")
           - delete_matching_keys(span.attributes, "(?i)(^|[._])headers?([._]|$)")
           - delete_matching_keys(span.attributes, "(?i)(^|[._])(body|payload)([._]|$)")
+          - delete_matching_keys(span.attributes, "(?i)^(payment|financial|recipient|fx[._]quote|receipt|refund|reconciliation|allocation)")
           - delete_matching_keys(span.attributes, "(?i)(^|[._-])(authorization|cookie|password|token|api[._-]?key|secret)([._-]|$)")
           - delete_matching_keys(span.attributes, "(?i)^db\\.query\\.parameter\\.")
           - delete_matching_keys(span.attributes, "(?i)(^|[._])id$")

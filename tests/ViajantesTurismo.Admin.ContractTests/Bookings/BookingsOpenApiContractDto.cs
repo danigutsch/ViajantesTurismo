@@ -21,6 +21,4 @@ internal sealed record BookingsOpenApiContractDto(
     string UpdateBookingNotesSchemaReference,
     string ConfirmBookingOperationId,
     string CancelBookingOperationId,
-    string CompleteBookingOperationId,
-    string RecordPaymentOperationId,
-    string RecordPaymentSchemaReference);
+    string CompleteBookingOperationId);

@@ -78,3 +78,21 @@ correctness and reliability blockers go to the owning application/suite maintain
 
 Validate policy changes against actual workflow commands and [trust boundaries](trust-boundaries.md).
 Changing a required check or hosted gate also follows the [governance runbook](governance.md).
+
+## External telemetry source identity exceptions
+
+The application test maintainers own three method-scoped `SKTEST010` exceptions, reviewed on
+2026-10-22 and due for review by 2027-01-22 or the next owning-library/analyzer upgrade:
+
+| File | Method | Reason |
+| --- | --- | --- |
+| `tests/ViajantesTurismo.Admin.ApiServiceTests/Documents/DocumentPrivacyTelemetryCapture.cs` | Constructor | ASP.NET Core and HTTP client instrumentation expose source names, without accessible singleton instances. |
+| `tests/ViajantesTurismo.Catalog.InfrastructureTests/Tours/CatalogTourSlugLockPostgreSqlTests.cs` | `Catalog_npgsql_tracing_remains_enabled_without_first_response_or_parameter_values` | Npgsql owns the private source; its supported instrumentation selector is its name. |
+| `tests/ViajantesTurismo.Catalog.UnitTests/PollingBackgroundServiceTestHarness.cs` | `CreateActivityListener` | Scheduling publishes its source name while keeping its singleton internal. |
+
+The baseline is one attribute per named method, three total. Retain name filtering and trace-scoped
+assertions so these privacy tests still observe the actual external instrumentation. Replace each
+exception with instance identity if its owner exposes that instance. Application-owned sources use
+instance identity. The existing suppression allowlist and full architecture tests reject unlisted
+files; compiler enforcement remains enabled elsewhere. These exceptions are included for explicit
+review with the candidate adoption change.
