@@ -3,6 +3,8 @@
         <InternalsVisibleTo Include="ViajantesTurismo.Admin.Infrastructure" />
         <InternalsVisibleTo Include="ViajantesTurismo.Admin.UnitTests" />
         <InternalsVisibleTo Include="ViajantesTurismo.Admin.Infrastructure.Tests" />
+        <InternalsVisibleTo Include="ViajantesTurismo.Admin.Testing" />
+        <InternalsVisibleTo Include="ViajantesTurismo.Admin.BehaviorTests" />
     </ItemGroup>
     <ItemGroup>
         <PackageReference Include="PandaBear.SharedKernel.BuildingBlocks" />

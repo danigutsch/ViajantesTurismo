@@ -244,7 +244,7 @@ public sealed partial class Booking : IEntity<Guid>
     /// <param name="notes">Optional notes about the booking.</param>
     /// <param name="createdAt">The captured UTC booking creation instant.</param>
     /// <returns>A Result containing the booking if successful, or validation errors.</returns>
-    public static Result<Booking> Create(
+    internal static Result<Booking> Create(
         Guid tourId,
         decimal basePrice,
         BookingRoom room,
@@ -326,7 +326,7 @@ public sealed partial class Booking : IEntity<Guid>
     /// Confirms the booking, setting its status to Confirmed. Is idempotent.
     /// </summary>
     /// <returns>A result indicating success or failure.</returns>
-    public Result Confirm()
+    internal Result Confirm()
     {
         return Status switch
         {
@@ -348,7 +348,7 @@ public sealed partial class Booking : IEntity<Guid>
     /// Cancels the booking, setting its status to Cancelled. Is idempotent.
     /// </summary>
     /// <returns>A result indicating success or failure.</returns>
-    public Result Cancel()
+    internal Result Cancel()
     {
         return Status switch
         {
@@ -369,7 +369,7 @@ public sealed partial class Booking : IEntity<Guid>
     /// Marks the booking as completed. Is idempotent.
     /// </summary>
     /// <returns>A result indicating success or failure.</returns>
-    public Result Complete()
+    internal Result Complete()
     {
         return Status switch
         {
@@ -393,7 +393,7 @@ public sealed partial class Booking : IEntity<Guid>
     /// </summary>
     /// <param name="notes">The updated notes.</param>
     /// <returns>A result indicating success or failure.</returns>
-    public Result UpdateNotes(string? notes)
+    internal Result UpdateNotes(string? notes)
     {
         notes = StringSanitizer.SanitizeNotes(notes);
 
@@ -411,7 +411,7 @@ public sealed partial class Booking : IEntity<Guid>
     /// </summary>
     /// <param name="discount">The new discount.</param>
     /// <returns>A result indicating success or failure.</returns>
-    public Result UpdateDiscount(Discount discount)
+    internal Result UpdateDiscount(Discount discount)
     {
         ArgumentNullException.ThrowIfNull(discount);
 
@@ -442,7 +442,7 @@ public sealed partial class Booking : IEntity<Guid>
     /// <param name="roomAdditionalCost">The new room additional cost.</param>
     /// <param name="companionCustomer">The companion customer details (null if no companion).</param>
     /// <returns>A result indicating success or failure.</returns>
-    public Result UpdateRoom(RoomType roomType, decimal roomAdditionalCost, BookingCustomer? companionCustomer)
+    internal Result UpdateRoom(RoomType roomType, decimal roomAdditionalCost, BookingCustomer? companionCustomer)
     {
         if (!CanModifyBookedServices)
         {
@@ -489,7 +489,7 @@ public sealed partial class Booking : IEntity<Guid>
     /// </summary>
     /// <param name="companionCustomer">The companion customer details (null to remove).</param>
     /// <returns>A result indicating success or failure.</returns>
-    public Result UpdateCompanion(BookingCustomer? companionCustomer)
+    internal Result UpdateCompanion(BookingCustomer? companionCustomer)
     {
         if (!CanModifyBookedServices)
         {
@@ -523,7 +523,7 @@ public sealed partial class Booking : IEntity<Guid>
     /// <param name="principalBikeType">The updated bike type.</param>
     /// <param name="principalBikePrice">The updated bike price.</param>
     /// <returns>A result indicating success or failure.</returns>
-    public Result UpdatePrincipalBike(BikeType principalBikeType, decimal principalBikePrice)
+    internal Result UpdatePrincipalBike(BikeType principalBikeType, decimal principalBikePrice)
     {
         if (!CanModifyBookedServices)
         {
