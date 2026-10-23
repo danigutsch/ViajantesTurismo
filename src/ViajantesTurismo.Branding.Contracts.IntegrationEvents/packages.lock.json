@@ -10,25 +10,25 @@
       },
       "PandaBear.SharedKernel.Messaging.IntegrationEvents": {
         "type": "Direct",
-        "requested": "[1.0.0-alpha.20261021.3, )",
-        "resolved": "1.0.0-alpha.20261021.3",
-        "contentHash": "qaY8DCAg0vIk5taOReVEoqCTIQM6VtEX49Mdd8Ck9cCcWOfzucum4S5rakWAcMYJOP9VQesXL2dykR0looRyQA==",
+        "requested": "[1.2.0-alpha.20261023.1, )",
+        "resolved": "1.2.0-alpha.20261023.1",
+        "contentHash": "Ah0D4Bxp4HGHNddDh2ec2iYDakFkycBWh/XKTbQZBMqlaTD6eQ47G9jVh34+QMtLT0auol5wucAKileGqM9iBw==",
         "dependencies": {
           "Microsoft.Extensions.DependencyInjection.Abstractions": "10.0.13",
-          "PandaBear.SharedKernel.Messaging": "1.0.0-alpha.20261021.3"
+          "PandaBear.SharedKernel.Messaging": "1.2.0-alpha.20261023.1"
         }
       },
       "PandaBear.SharedKernel.Style.Analyzers": {
         "type": "Direct",
-        "requested": "[1.0.0-alpha.20261021.3, )",
-        "resolved": "1.0.0-alpha.20261021.3",
-        "contentHash": "0CFM/G6fyhwcTl3aSIs9huKugqnsu8VMz5Yc7gtdMml71uQnFmDbdWL6I0KC5+tOeky+LqwJe2d3y0V6WXzs2Q=="
+        "requested": "[1.2.0-alpha.20261023.1, )",
+        "resolved": "1.2.0-alpha.20261023.1",
+        "contentHash": "RpyYwF7tqj5NDJh/tnKKKvz4SxcBEnR7PEtniXvkmYVCyMisssoQWFtIkF6Fo/u2hk24GFclhzCSjMhVP1ecOA=="
       },
       "PandaBear.SharedKernel.Style.CodeFixes": {
         "type": "Direct",
-        "requested": "[1.0.0-alpha.20261021.3, )",
-        "resolved": "1.0.0-alpha.20261021.3",
-        "contentHash": "Hs/57bTHAsrdCOuQuLPYcG0IxvIgaLWv0EDCkixoHDa9P0ea1TNicfQ/1g6TYYOYOceuCpN2GWNalMClmV8GOA=="
+        "requested": "[1.2.0-alpha.20261023.1, )",
+        "resolved": "1.2.0-alpha.20261023.1",
+        "contentHash": "wMtzQOdGoGHorEM55RTlHkE1ZYurVJTyy2maK6pF9qACd4L+lZyskTzZFGwbdfQ/XEqYl4piEeFqyhYDZrhmMg=="
       },
       "Microsoft.Extensions.DependencyInjection.Abstractions": {
         "type": "CentralTransitive",
@@ -38,9 +38,9 @@
       },
       "PandaBear.SharedKernel.Messaging": {
         "type": "CentralTransitive",
-        "requested": "[1.0.0-alpha.20261021.3, )",
-        "resolved": "1.0.0-alpha.20261021.3",
-        "contentHash": "c1Faps8TGBgAyJNw+Pa2bbIQvu4Zp77jFOT4blnMgzJhmXTaEwqb8ufXP1hg+e9lL7tISrXp/mgtchL4vNnI4Q=="
+        "requested": "[1.2.0-alpha.20261023.1, )",
+        "resolved": "1.2.0-alpha.20261023.1",
+        "contentHash": "eaW5MzqXlcr4L6W4w46GBual+bKv6Za5ih2zkU3QWAkpO/lH3ZrfLDd15KLVecSs6zJ9akdeJzn63dU5Vr4P5Q=="
       }
     }
   }

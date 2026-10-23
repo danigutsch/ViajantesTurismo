@@ -6,10 +6,12 @@ and library tooling belong to the separate SharedKernel repository. ViajantesTur
 Generic documentation and repository-configuration tooling belongs to SharedKernel. Application
 documentation configuration, CI and coverage policy, bootstrap, and compatibility orchestration stay here.
 
-The pinned local candidate is `1.0.0-alpha.20261021.3` at library revision
-`f22207a34bb42e0d94d12680b75c3a91e7c59e90`. Its manifest covers 74 immutable packages; the application
+The pinned local candidate is `1.2.0-alpha.20261023.1` at library revision
+`cc826be664bfc2dc087fe5a140f7232b4f65967d`. Its manifest covers 74 immutable packages; the application
 references only the modules it uses. The Results runtime includes its generator, so do not add a
-separate Results generator package.
+separate Results generator package. API validation and Linux package-consumption checks passed for
+this candidate. Published API baseline comparison, Windows package consumption, and NativeAOT
+validation remain pending; the source revision and preview assets have not been published.
 
 CSV structure parsing and advisory-lock hashing use the Tabular and Npgsql packages. Application
 import interfaces, accepted headers, normalization, business errors, and lock identities remain local.
@@ -30,7 +32,7 @@ previous release's package files for the new candidate.
 
 The previous approved [preview `v1.0.0-alpha.20261021.2`](https://github.com/danigutsch/PandaBear.SharedKernel/releases/tag/v1.0.0-alpha.20261021.2)
 remains available for rollback. After the new source revision and preview assets are approved and
-published, download `v1.0.0-alpha.20261021.3` assets without changing their bytes.
+published, download `v1.2.0-alpha.20261023.1` assets without changing their bytes.
 
 From the application root, stage the expected candidate with the dependency-independent C# tool:
 
@@ -83,7 +85,7 @@ through public package interfaces. This test-only commit does not change the pin
 
 Hosted Linux and Windows jobs read the committed candidate manifest, check out the public library at
 its exact `libraryRevision`, and download unchanged packages and `candidate.json` from GitHub
-prerelease `v<packageVersion>`. The newly pinned revision and `v1.0.0-alpha.20261021.3` assets must be
+prerelease `v<packageVersion>`. The newly pinned revision and `v1.2.0-alpha.20261023.1` assets must be
 published before this default hosted path can succeed. The secret-scan workflow also pins the shared
 scanner action to that exact library revision. Current changes prepare these references; they do not
 publish source, assets, or packages.
