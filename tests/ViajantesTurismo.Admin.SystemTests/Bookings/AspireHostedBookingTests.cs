@@ -11,10 +11,12 @@ public class AspireHostedBookingTests(AspireSystemTestFixture fixture) : AspireS
         await NavigateTo("/");
 
         // Assert
-        (ApiBaseUri.IsLoopback).ShouldBeTrue();
-        (ApiBaseUri.Port > 0).ShouldBeTrue();
-        (Fixture.WebAppUrl.IsLoopback).ShouldBeTrue();
-        (Fixture.WebAppUrl.Port > 0).ShouldBeTrue();
+        ApiBaseUri.IsLoopback.ShouldBeTrue();
+        var isValid = ApiBaseUri.Port > 0;
+        isValid.ShouldBeTrue();
+        Fixture.WebAppUrl.IsLoopback.ShouldBeTrue();
+        var isValid1 = Fixture.WebAppUrl.Port > 0;
+        isValid1.ShouldBeTrue();
         await Expect(Page).ToHaveURLAsync(new Regex("/$"));
     }
 }

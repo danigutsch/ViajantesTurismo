@@ -164,7 +164,7 @@ public sealed class BookingLifecycleSteps(BookingContext bookingContext, TourCon
         var result = tourContext.Tour.RecordBookingPayment(
             bookingContext.Booking.Id,
             bookingContext.Booking.TotalPrice,
-            DateOnly.FromDateTime(DateTime.UtcNow),
+            DateOnly.FromDateTime(TimeProvider.System.GetUtcNow().UtcDateTime),
             PaymentMethod.CreditCard,
             TimeProvider.System);
         (result.IsSuccess).ShouldBeTrue();
@@ -177,7 +177,7 @@ public sealed class BookingLifecycleSteps(BookingContext bookingContext, TourCon
         var result = tourContext.Tour.RecordBookingPayment(
             bookingContext.Booking.Id,
             amount,
-            DateOnly.FromDateTime(DateTime.UtcNow),
+            DateOnly.FromDateTime(TimeProvider.System.GetUtcNow().UtcDateTime),
             PaymentMethod.CreditCard,
             TimeProvider.System);
         (result.IsSuccess).ShouldBeTrue();

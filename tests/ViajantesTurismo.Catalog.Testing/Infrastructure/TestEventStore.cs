@@ -137,7 +137,7 @@ internal sealed class TestEventStore : IEventStore
                 Guid.CreateVersion7(),
                 domainEvent.GetType().FullName ?? domainEvent.GetType().Name,
                 domainEvent,
-                DateTimeOffset.UtcNow);
+                TimeProvider.System.GetUtcNow());
             stream.Add(envelope);
             appended.Add(envelope);
         }

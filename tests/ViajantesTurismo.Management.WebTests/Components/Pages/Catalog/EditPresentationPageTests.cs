@@ -166,7 +166,7 @@ public sealed class EditPresentationPageTests : BunitContext
     }
 
     [Fact]
-    public void Shows_load_error_when_catalog_api_fails()
+    public void Shows_load_error_when_catalog_API_fails()
     {
         // Arrange
         catalogApi.ThrowOnGetTours = true;
@@ -251,7 +251,7 @@ public sealed class EditPresentationPageTests : BunitContext
         // Act
         var cut = Render<EditPresentation>(parameters => parameters.Add(component => component.Id, tour.Id));
         cut.WaitForState(() => cut.Markup.Contains("Status: Draft", StringComparison.Ordinal), TimeSpan.FromSeconds(2));
-        cut.FindAll("button").Single(button => button.TextContent.Contains("Publish", StringComparison.Ordinal)).Click();
+        cut.FindAll("button").ShouldHaveSingleItem(button => button.TextContent.Contains("Publish", StringComparison.Ordinal)).Click();
         cut.WaitForState(() => cut.Markup.Contains("accepted", StringComparison.OrdinalIgnoreCase), TimeSpan.FromSeconds(2));
 
         // Assert

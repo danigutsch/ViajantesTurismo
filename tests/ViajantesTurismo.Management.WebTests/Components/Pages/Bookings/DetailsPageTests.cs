@@ -26,7 +26,7 @@ public sealed class DetailsPageTests : BunitContext
     [Trait(TestTraitNames.ScopeName, TestTraits.ComponentScope)]
     [Trait(TestTraitNames.AreaName, TestTraits.ManagementWebArea)]
     [Trait(TestTraitNames.CategoryName, TestTraits.ComponentCategory)]
-    public void Api_failure_shows_a_sanitized_unavailable_message_instead_of_not_found()
+    public void API_failure_shows_a_sanitized_unavailable_message_instead_of_not_found()
     {
         // Arrange
         var bookingId = Guid.NewGuid();
@@ -56,8 +56,8 @@ public sealed class DetailsPageTests : BunitContext
 
         // Assert
         var editLink = cut.FindAll("a").FirstOrDefault(a => a.TextContent.Contains("Edit Booking", StringComparison.Ordinal));
-        _ = (editLink).ShouldNotBeNull();
-        (editLink.GetAttribute("href")).ShouldBe($"/bookings/{booking.Id}/edit");
+        _ = editLink.ShouldNotBeNull();
+        editLink.GetAttribute("href").ShouldBe($"/bookings/{booking.Id}/edit");
     }
 
     [Fact]

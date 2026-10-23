@@ -24,12 +24,12 @@ internal static class DocumentDetailsTestData
                 IsEditable = true
             }
         ],
-            CreatedAt = DateTime.UtcNow,
-            UpdatedAt = DateTime.UtcNow,
+            CreatedAt = TimeProvider.System.GetUtcNow().UtcDateTime,
+            UpdatedAt = TimeProvider.System.GetUtcNow().UtcDateTime,
             FinalizedAt = status is DocumentStatusDto.Finalized
             or DocumentStatusDto.Superseded
             or DocumentStatusDto.Voided
-                ? DateTime.UtcNow
+                ? TimeProvider.System.GetUtcNow().UtcDateTime
                 : null,
             HasFinalizedArtifact = hasFinalizedArtifact
         };

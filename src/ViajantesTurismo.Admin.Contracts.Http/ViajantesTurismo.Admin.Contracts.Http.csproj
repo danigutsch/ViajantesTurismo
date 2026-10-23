@@ -8,6 +8,10 @@
     </ItemGroup>
 
     <ItemGroup>
+        <InternalsVisibleTo Include="ViajantesTurismo.Admin.ContractTests" />
+    </ItemGroup>
+
+    <ItemGroup>
         <Using Remove="ViajantesTurismo.Admin.Contracts.Application" />
         <None Include="OpenApi/**/*.openapi.json" Pack="true" PackagePath="OpenApi/" />
         <None Include="OpenApi/README.md" Pack="true" PackagePath="OpenApi/" />

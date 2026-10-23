@@ -16,7 +16,7 @@ public sealed class CreateRedirectPageTests : BunitContext
         cut.WaitForState(() => navManager.Uri.EndsWith("/customers/create/personal-info", StringComparison.Ordinal));
 
         // Assert
-        (navManager.Uri).ShouldEndWith("/customers/create/personal-info", StringComparison.Ordinal);
+        navManager.Uri.ShouldEndWith("/customers/create/personal-info", StringComparison.Ordinal);
     }
 
     [Fact]
@@ -26,6 +26,6 @@ public sealed class CreateRedirectPageTests : BunitContext
         var cut = Render<CreateRedirect>();
 
         // Assert
-        (cut.Markup.Trim()).ShouldBeEmpty();
+        cut.Markup.Trim().ShouldBeEmpty();
     }
 }

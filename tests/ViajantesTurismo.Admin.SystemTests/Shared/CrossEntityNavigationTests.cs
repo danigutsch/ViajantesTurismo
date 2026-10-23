@@ -19,7 +19,7 @@ public class CrossEntityNavigationTests(AspireSystemTestFixture fixture) : Aspir
         await CrossEntityNavigationTestHelpers.FollowLinkAndExpectTitle(Page, Page.Locator("a[href^='/customers/']").First, CustomerDetailsTitle);
 
         // Assert
-        await Expect(Page).ToHaveTitleAsync(CustomerDetailsTitle);
+        await Page.ShouldHaveTitle(CustomerDetailsTitle);
     }
 
     [Fact]
@@ -34,7 +34,7 @@ public class CrossEntityNavigationTests(AspireSystemTestFixture fixture) : Aspir
         await NavigateTo($"/tours/{tour.Id}");
 
         // Assert
-        await Expect(Page).ToHaveTitleAsync("Tour Details");
+        await Page.ShouldHaveTitle("Tour Details");
         var tourBookingsTable = Page.Locator("table");
         await Expect(tourBookingsTable).ToBeVisibleAsync();
         await CrossEntityNavigationTestHelpers.ExpectColumnVisibility(tourBookingsTable, hiddenHeader: "Tour", visibleHeader: "Customer");
@@ -53,7 +53,7 @@ public class CrossEntityNavigationTests(AspireSystemTestFixture fixture) : Aspir
         await NavigateTo($"/customers/{customer.Id}");
 
         // Assert
-        await Expect(Page).ToHaveTitleAsync(CustomerDetailsTitle);
+        await Page.ShouldHaveTitle(CustomerDetailsTitle);
         var customerBookingsTable = Page.Locator("table");
         await Expect(customerBookingsTable).ToBeVisibleAsync();
         await CrossEntityNavigationTestHelpers.ExpectColumnVisibility(customerBookingsTable, hiddenHeader: "Customer", visibleHeader: "Tour");

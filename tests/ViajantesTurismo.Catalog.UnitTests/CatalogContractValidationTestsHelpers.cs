@@ -29,7 +29,7 @@ public static class CatalogContractValidationTestsHelpers
                     ]
                 }
             ],
-            UpdatedAt = DateTimeOffset.UtcNow
+            UpdatedAt = TimeProvider.System.GetUtcNow()
         };
     }
 

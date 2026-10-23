@@ -27,7 +27,7 @@ public sealed class SharedKernelConsumerWorkflowTests
     }
 
     [Fact]
-    public void Application_ci_does_not_repeat_library_source_api_validation()
+    public void Application_ci_does_not_repeat_library_source_API_validation()
     {
         // Arrange
         var path = Path.Combine(GetRepositoryRoot(), ".github", "workflows", "ci.yml");

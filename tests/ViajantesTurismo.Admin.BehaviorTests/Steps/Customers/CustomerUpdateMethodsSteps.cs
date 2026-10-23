@@ -65,7 +65,7 @@ public sealed class CustomerUpdateMethodsSteps(CustomerContext customerContext)
             firstName,
             lastName,
             "Male",
-            DateOnly.FromDateTime(DateTime.UtcNow.AddYears(-30)),
+            DateOnly.FromDateTime(TimeProvider.System.GetUtcNow().UtcDateTime.AddYears(-30)),
             "USA",
             "Engineer",
             DateOnly.FromDateTime(TimeProvider.System.GetUtcNow().UtcDateTime)).Value;

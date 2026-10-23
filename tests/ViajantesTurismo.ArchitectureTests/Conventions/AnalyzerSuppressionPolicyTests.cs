@@ -87,7 +87,8 @@ public sealed partial class AnalyzerSuppressionPolicyTests
             .SelectMany(path => AnalyzerSuppressionPolicyTestsHelpers.FindUnapprovedPragmaWarningSuppressions(repositoryRoot, path))
             .ToArray();
 
-        (unapprovedPragmas.Length == 0).ShouldBeTrue(
+        var areEqual = unapprovedPragmas.Length == 0;
+        areEqual.ShouldBeTrue(
             $"Expected hand-written source to use only approved exact-site pragma warning suppressions, but found:{Environment.NewLine}{string.Join(Environment.NewLine, unapprovedPragmas)}");
     }
 
@@ -102,7 +103,8 @@ public sealed partial class AnalyzerSuppressionPolicyTests
             .Where(path => !ApprovedSuppressMessageFiles.Contains(path))
             .ToArray();
 
-        (filesWithSuppressMessage.Length == 0).ShouldBeTrue(
+        var areEqual1 = filesWithSuppressMessage.Length == 0;
+        areEqual1.ShouldBeTrue(
             $"Expected SuppressMessage attributes to stay on the approved analyzer policy allowlist, but found:{Environment.NewLine}{string.Join(Environment.NewLine, filesWithSuppressMessage)}");
     }
 

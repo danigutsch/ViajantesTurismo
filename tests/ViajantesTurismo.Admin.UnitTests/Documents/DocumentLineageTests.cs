@@ -112,7 +112,7 @@ public sealed class DocumentLineageTests
         var auditContext = DocumentAuditTestData.CreateContext();
 
         // Act
-        var result = lineage.BeginReview(document.Id, DateTime.UtcNow, auditContext);
+        var result = lineage.BeginReview(document.Id, TimeProvider.System.GetUtcNow().UtcDateTime, auditContext);
 
         // Assert
         result.IsSuccess.ShouldBeTrue();
@@ -132,7 +132,7 @@ public sealed class DocumentLineageTests
         var document = lineage.Revisions.ShouldHaveSingleItem();
 
         // Act
-        var result = lineage.Approve(document.Id, DateTime.UtcNow, DocumentAuditTestData.CreateContext());
+        var result = lineage.Approve(document.Id, TimeProvider.System.GetUtcNow().UtcDateTime, DocumentAuditTestData.CreateContext());
 
         // Assert
         result.IsFailure.ShouldBeTrue();
@@ -152,7 +152,7 @@ public sealed class DocumentLineageTests
         var result = lineage.CreateRevision(
             previous.Id,
             content,
-            DateTime.UtcNow,
+            TimeProvider.System.GetUtcNow().UtcDateTime,
             DocumentAuditTestData.CreateContext());
 
         // Assert

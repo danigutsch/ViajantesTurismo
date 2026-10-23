@@ -15,7 +15,7 @@ public sealed class CustomerHealthInfoTests
         var healthInfo = new CustomerHealthInfo(emergencyContact, medicalInfo);
 
         // Assert
-        (healthInfo.EmergencyContact).ShouldBeSameAs(emergencyContact);
-        (healthInfo.MedicalInfo).ShouldBeSameAs(medicalInfo);
+        healthInfo.EmergencyContact.ShouldBeSameAs(emergencyContact);
+        healthInfo.MedicalInfo.ShouldBeSameAs(medicalInfo);
     }
 }

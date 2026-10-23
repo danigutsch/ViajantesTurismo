@@ -10,7 +10,7 @@ public static class CapacityIndicatorTestHelpers
         ArgumentNullException.ThrowIfNull(page);
 
         await page.GetLink("Edit Tour").ClickAsync();
-        await Expect(page).ToHaveTitleAsync("Edit Tour");
+        await page.ShouldHaveTitle("Edit Tour");
 
         var maximumCustomers = page.GetByLabel("Maximum Customers");
         var maximumCustomersText = maxCustomers.ToString(CultureInfo.InvariantCulture);

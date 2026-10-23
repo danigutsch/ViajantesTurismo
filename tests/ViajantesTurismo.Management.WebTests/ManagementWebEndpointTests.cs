@@ -77,8 +77,8 @@ public sealed class ManagementWebEndpointTests
 
         // Assert
         response.StatusCode.ShouldBe(HttpStatusCode.OK);
-        response.Content.Headers.ContentType?.MediaType.ShouldBe("image/jpeg");
-        response.Headers.CacheControl?.NoStore.ShouldBeTrue();
+        response.Content.Headers.ContentType.ShouldNotBeNull().MediaType.ShouldBe("image/jpeg");
+        response.Headers.CacheControl.ShouldNotBeNull().NoStore.ShouldBeTrue();
         response.Headers.GetValues("X-Content-Type-Options").ShouldHaveSingleItem().ShouldBe("nosniff");
         content.ShouldBe("image"u8.ToArray());
         catalogApi.LastMediaId.ShouldBe(imageId);
@@ -103,7 +103,7 @@ public sealed class ManagementWebEndpointTests
 
         // Assert
         response.StatusCode.ShouldBe(HttpStatusCode.ServiceUnavailable);
-        response.Headers.CacheControl?.NoStore.ShouldBeTrue();
+        response.Headers.CacheControl.ShouldNotBeNull().NoStore.ShouldBeTrue();
     }
 
     [Fact]
@@ -123,7 +123,7 @@ public sealed class ManagementWebEndpointTests
 
         // Assert
         response.StatusCode.ShouldBe(HttpStatusCode.BadRequest);
-        response.Headers.CacheControl?.NoStore.ShouldBeTrue();
+        response.Headers.CacheControl.ShouldNotBeNull().NoStore.ShouldBeTrue();
         catalogApi.LastMediaId.ShouldBeNull();
     }
 
@@ -151,8 +151,8 @@ public sealed class ManagementWebEndpointTests
 
         // Assert
         response.StatusCode.ShouldBe(HttpStatusCode.OK);
-        response.Content.Headers.ContentType?.MediaType.ShouldBe("text/plain");
-        response.Content.Headers.ContentType?.CharSet.ShouldBe("utf-8");
+        response.Content.Headers.ContentType.ShouldNotBeNull().MediaType.ShouldBe("text/plain");
+        response.Content.Headers.ContentType.ShouldNotBeNull().CharSet.ShouldBe("utf-8");
         body.ShouldBe("User-agent: *\nDisallow: /");
     }
 
@@ -167,7 +167,7 @@ public sealed class ManagementWebEndpointTests
         using var response = await client.GetAsync(
             new Uri("/login?returnUrl=/%5Cattacker.example", UriKind.Relative),
             Xunit.TestContext.Current.CancellationToken);
-        var redirectUri = response.Headers.GetValues(RecordingAuthenticationHandler.ChallengeRedirectHeaderName).Single();
+        var redirectUri = response.Headers.GetValues(RecordingAuthenticationHandler.ChallengeRedirectHeaderName).ShouldHaveSingleItem();
 
         // Assert
         redirectUri.ShouldBe("/");

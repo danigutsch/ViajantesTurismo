@@ -17,7 +17,7 @@ public sealed class DocumentationSourceOfTruthTests
         using var config = JsonDocument.Parse(File.ReadAllText(configPath));
         var systemOverview = config.RootElement.GetProperty("blocks")
             .EnumerateArray()
-            .Single(block => block.GetProperty("name").GetString() == "system-overview");
+            .ShouldHaveSingleItem(block => block.GetProperty("name").GetString() == "system-overview");
 
         // Act
         var lines = systemOverview.GetProperty("lines")

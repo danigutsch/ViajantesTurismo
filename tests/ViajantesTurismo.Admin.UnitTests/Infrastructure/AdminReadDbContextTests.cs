@@ -9,10 +9,10 @@ public sealed class AdminReadDbContextTests
         using var context = AdminReadDbContexts.Create();
 
         // Act
-        var exception = ((Func<object?>)(() => context.SaveChanges())).ShouldThrow<InvalidOperationException>();
+        var exception = ShouldAssertionExtensions.ShouldThrow<InvalidOperationException>((Func<object?>)(() => context.SaveChanges()));
 
         // Assert
-        (exception.Message).ShouldBe("This context is read-only. Use AdminWriteDbContext for write operations.");
+        exception.Message.ShouldBe("This context is read-only. Use AdminWriteDbContext for write operations.");
     }
 
     [Fact]
@@ -22,10 +22,10 @@ public sealed class AdminReadDbContextTests
         await using var context = AdminReadDbContexts.Create();
 
         // Act
-        var exception = await ((Func<Task>)(() => context.SaveChangesAsync(TestContext.Current.CancellationToken))).ShouldThrow<InvalidOperationException>();
+        var exception = await ShouldAssertionExtensions.ShouldThrow<InvalidOperationException>((Func<Task>)(() => context.SaveChangesAsync(TestContext.Current.CancellationToken)));
 
         // Assert
-        (exception.Message).ShouldBe("This context is read-only. Use AdminWriteDbContext for write operations.");
+        exception.Message.ShouldBe("This context is read-only. Use AdminWriteDbContext for write operations.");
     }
 
 }

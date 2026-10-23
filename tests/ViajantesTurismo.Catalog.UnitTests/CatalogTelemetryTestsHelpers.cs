@@ -14,9 +14,10 @@ public static class CatalogTelemetryTestsHelpers
     {
         ArgumentNullException.ThrowIfNull(stoppedActivities);
 
+        var expectedSource = CatalogTelemetry.ActivitySource;
         var listener = new ActivityListener
         {
-            ShouldListenTo = static source => string.Equals(source.Name, CatalogTelemetry.Name, StringComparison.Ordinal),
+            ShouldListenTo = source => ReferenceEquals(source, expectedSource),
             Sample = static (ref ActivityCreationOptions<ActivityContext> _) => ActivitySamplingResult.AllDataAndRecorded,
             ActivityStopped = stoppedActivities.Enqueue,
         };
@@ -38,7 +39,7 @@ public static class CatalogTelemetryTestsHelpers
             Activity rootActivity,
             string operationName)
     {
-        return (stoppedActivities).ShouldHaveSingleItem(activity =>
+        return stoppedActivities.ShouldHaveSingleItem(activity =>
             activity.TraceId == rootActivity.TraceId
             && string.Equals(activity.OperationName, operationName, StringComparison.Ordinal));
     }

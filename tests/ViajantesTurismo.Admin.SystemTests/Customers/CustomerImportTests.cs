@@ -18,7 +18,7 @@ public partial class CustomerImportTests(AspireSystemTestFixture fixture) : Aspi
         await CustomerImportCsvHelpers.UploadCsv(Page, CustomerImportCsvHelpers.BuildCanonicalCsv(email));
 
         // Assert
-        await Expect(Page).ToHaveTitleAsync("Import Customers");
+        await Page.ShouldHaveTitle("Import Customers");
         await Expect(Page.GetHeading("Import Customers")).ToBeVisibleAsync();
         await Expect(autoMatchedAlert).ToBeVisibleAsync();
         await Expect(previewButton).Not.ToBeDisabledAsync();
@@ -133,10 +133,11 @@ public partial class CustomerImportTests(AspireSystemTestFixture fixture) : Aspi
 
         var viewCustomerLink = successRow.Locator("a[data-action='view-customer']");
         await Expect(viewCustomerLink).ToBeVisibleAsync();
-        var customerDetailsHref = (await viewCustomerLink.GetAttributeAsync("href")).ShouldNotBeNull();
+        var actualValue = await viewCustomerLink.GetAttributeAsync("href");
+        var customerDetailsHref = actualValue.ShouldNotBeNull();
 
         await NavigateTo(customerDetailsHref);
         await Expect(Page).ToHaveURLAsync(CustomerImportTestRegexes.CustomerUrl());
-        await Expect(Page).ToHaveTitleAsync("Customer Details");
+        await Page.ShouldHaveTitle("Customer Details");
     }
 }

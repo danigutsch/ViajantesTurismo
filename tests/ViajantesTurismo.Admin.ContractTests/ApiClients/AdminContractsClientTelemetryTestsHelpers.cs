@@ -1,5 +1,6 @@
 using System.Collections.Concurrent;
 using System.Diagnostics;
+using ViajantesTurismo.Admin.Contracts.Http;
 
 namespace ViajantesTurismo.Admin.ContractTests.ApiClients;
 
@@ -9,9 +10,10 @@ internal static class AdminContractsClientTelemetryTestsHelpers
     {
         ArgumentNullException.ThrowIfNull(stoppedActivities);
 
+        var expectedSource = AdminContractsClientTelemetry.ActivitySource;
         var listener = new ActivityListener
         {
-            ShouldListenTo = static source => source.Name == "ViajantesTurismo.Admin.Contracts.Clients",
+            ShouldListenTo = source => ReferenceEquals(source, expectedSource),
             Sample = static (ref ActivityCreationOptions<ActivityContext> _) => ActivitySamplingResult.AllDataAndRecorded,
             ActivityStopped = stoppedActivities.Enqueue,
         };

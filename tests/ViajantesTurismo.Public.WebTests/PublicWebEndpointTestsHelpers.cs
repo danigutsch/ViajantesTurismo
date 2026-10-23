@@ -17,7 +17,7 @@ internal static class PublicWebEndpointTestsHelpers
             Description = $"A detailed description of {title}.",
             Itinerary = $"Day one: explore {title}.",
             Images = [],
-            UpdatedAt = DateTimeOffset.UtcNow
+            UpdatedAt = TimeProvider.System.GetUtcNow()
         };
     }
 

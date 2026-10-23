@@ -122,9 +122,9 @@ public sealed class DetailsPageTests : BunitContext
                     IsEditable = true
                 }
             ],
-            CreatedAt = DateTime.UtcNow,
-            UpdatedAt = DateTime.UtcNow,
-            FinalizedAt = DateTime.UtcNow,
+            CreatedAt = TimeProvider.System.GetUtcNow().UtcDateTime,
+            UpdatedAt = TimeProvider.System.GetUtcNow().UtcDateTime,
+            FinalizedAt = TimeProvider.System.GetUtcNow().UtcDateTime,
             HasFinalizedArtifact = true
         };
         documentsApiClient.AddDocument(document);
@@ -158,9 +158,9 @@ public sealed class DetailsPageTests : BunitContext
             SourceVersion = "SOURCE-VERSION-1",
             Status = DocumentStatusDto.Finalized,
             Fields = [],
-            CreatedAt = DateTime.UtcNow,
-            UpdatedAt = DateTime.UtcNow,
-            FinalizedAt = DateTime.UtcNow,
+            CreatedAt = TimeProvider.System.GetUtcNow().UtcDateTime,
+            UpdatedAt = TimeProvider.System.GetUtcNow().UtcDateTime,
+            FinalizedAt = TimeProvider.System.GetUtcNow().UtcDateTime,
             HasFinalizedArtifact = true
         };
         var replacement = original with
@@ -235,8 +235,8 @@ public sealed class DetailsPageTests : BunitContext
                     IsEditable = true
                 }
             ],
-            CreatedAt = DateTime.UtcNow,
-            UpdatedAt = DateTime.UtcNow,
+            CreatedAt = TimeProvider.System.GetUtcNow().UtcDateTime,
+            UpdatedAt = TimeProvider.System.GetUtcNow().UtcDateTime,
             HasFinalizedArtifact = false
         };
         documentsApiClient.AddDocument(document);
@@ -434,8 +434,8 @@ public sealed class DetailsPageTests : BunitContext
             SourceVersion = "SOURCE-VERSION",
             Status = DocumentStatusDto.DraftGenerated,
             Fields = [],
-            CreatedAt = DateTime.UtcNow,
-            UpdatedAt = DateTime.UtcNow,
+            CreatedAt = TimeProvider.System.GetUtcNow().UtcDateTime,
+            UpdatedAt = TimeProvider.System.GetUtcNow().UtcDateTime,
             HasFinalizedArtifact = false
         });
 

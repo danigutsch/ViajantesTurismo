@@ -33,7 +33,7 @@ internal sealed class FakeAmazonS3Client : AmazonS3Client
         get; set;
     }
 
-    public DateTime ListObjectLastModified { get; set; } = DateTime.UtcNow;
+    public DateTime ListObjectLastModified { get; set; } = TimeProvider.System.GetUtcNow().UtcDateTime;
 
     public bool ReturnEmptyListResponse
     {

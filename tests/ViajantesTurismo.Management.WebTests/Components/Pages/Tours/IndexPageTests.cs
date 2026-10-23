@@ -31,9 +31,9 @@ public class IndexPageTests : BunitContext
         cut.WaitForState(() => cut.Markup.Contains("TOUR-2024-001", StringComparison.Ordinal), TimeSpan.FromSeconds(2));
 
         // Assert
-        (cut.Markup).ShouldContain("TOUR-2024-001", StringComparison.Ordinal);
-        (cut.Markup).ShouldContain("Amazing Bike Tour", StringComparison.Ordinal);
-        (cut.Markup).ShouldContain("2024", StringComparison.Ordinal);
+        cut.Markup.ShouldContain("TOUR-2024-001", StringComparison.Ordinal);
+        cut.Markup.ShouldContain("Amazing Bike Tour", StringComparison.Ordinal);
+        cut.Markup.ShouldContain("2024", StringComparison.Ordinal);
     }
 
     [Fact]
@@ -48,10 +48,10 @@ public class IndexPageTests : BunitContext
         cut.WaitForState(() => cut.Markup.Contains("R$", StringComparison.Ordinal), TimeSpan.FromSeconds(2));
 
         // Assert
-        (cut.Markup).ShouldContain("R$ 1,500.00", StringComparison.Ordinal);
-        (cut.Markup).ShouldContain("R$ 300.00", StringComparison.Ordinal);
-        (cut.Markup).ShouldContain("R$ 100.00", StringComparison.Ordinal);
-        (cut.Markup).ShouldContain("R$ 250.00", StringComparison.Ordinal);
+        cut.Markup.ShouldContain("R$ 1,500.00", StringComparison.Ordinal);
+        cut.Markup.ShouldContain("R$ 300.00", StringComparison.Ordinal);
+        cut.Markup.ShouldContain("R$ 100.00", StringComparison.Ordinal);
+        cut.Markup.ShouldContain("R$ 250.00", StringComparison.Ordinal);
     }
 
     [Fact]
@@ -66,7 +66,7 @@ public class IndexPageTests : BunitContext
         cut.WaitForState(() => cut.Markup.Contains('€', StringComparison.Ordinal), TimeSpan.FromSeconds(2));
 
         // Assert
-        (cut.Markup).ShouldContain("1,200.00 €", StringComparison.Ordinal);
+        cut.Markup.ShouldContain("1,200.00 €", StringComparison.Ordinal);
     }
 
     [Fact]
@@ -81,7 +81,7 @@ public class IndexPageTests : BunitContext
         cut.WaitForState(() => cut.Markup.Contains("$ 1,800.00", StringComparison.Ordinal), TimeSpan.FromSeconds(2));
 
         // Assert
-        (cut.Markup).ShouldContain("$ 1,800.00", StringComparison.Ordinal);
+        cut.Markup.ShouldContain("$ 1,800.00", StringComparison.Ordinal);
     }
 
     [Fact]
@@ -102,8 +102,8 @@ public class IndexPageTests : BunitContext
 
         // Assert
         var badge = cut.Find("span.badge.bg-success");
-        (badge.TextContent).ShouldContain("15 spots", StringComparison.Ordinal);
-        (cut.Markup).ShouldContain("15 / 30", StringComparison.Ordinal);
+        badge.TextContent.ShouldContain("15 spots", StringComparison.Ordinal);
+        cut.Markup.ShouldContain("15 / 30", StringComparison.Ordinal);
     }
 
     [Fact]
@@ -123,8 +123,8 @@ public class IndexPageTests : BunitContext
 
         // Assert
         var badge = cut.Find("span.badge.bg-danger");
-        (badge.TextContent).ShouldContain("Full", StringComparison.Ordinal);
-        (cut.Markup).ShouldContain("30 / 30", StringComparison.Ordinal);
+        badge.TextContent.ShouldContain("Full", StringComparison.Ordinal);
+        cut.Markup.ShouldContain("30 / 30", StringComparison.Ordinal);
     }
 
     [Fact]
@@ -145,8 +145,8 @@ public class IndexPageTests : BunitContext
 
         // Assert
         var badge = cut.Find("span.badge.bg-warning");
-        (badge.TextContent).ShouldContain("Below Min", StringComparison.Ordinal);
-        (cut.Markup).ShouldContain("5 / 30", StringComparison.Ordinal);
+        badge.TextContent.ShouldContain("Below Min", StringComparison.Ordinal);
+        cut.Markup.ShouldContain("5 / 30", StringComparison.Ordinal);
     }
 
     [Fact]
@@ -159,7 +159,7 @@ public class IndexPageTests : BunitContext
         cut.WaitForState(() => cut.Markup.Contains("Alpha Tour", StringComparison.Ordinal), TimeSpan.FromSeconds(2));
 
         // Act
-        var nameButton = cut.FindAll("button").Single(button => button.TextContent.Trim() == "Name");
+        var nameButton = cut.FindAll("button").ShouldHaveSingleItem(button => button.TextContent.Trim() == "Name");
         nameButton.Click();
 
         // Assert

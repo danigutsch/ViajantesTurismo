@@ -78,7 +78,7 @@ public sealed class DocumentLifecycleAuditEventTests
             DocumentType.BookingConfirmationContract,
             DocumentAudience.Customer,
             DocumentLineageTestData.CreateContent(),
-            DateTime.UtcNow,
+            TimeProvider.System.GetUtcNow().UtcDateTime,
             DocumentAuditTestData.CreateContext());
         result.IsSuccess.ShouldBeTrue();
         var lineage = result.Value;

@@ -31,7 +31,7 @@ internal sealed class InMemoryMediaObjectStore : IMediaObjectStore
                 Content = new MemoryStream(content.ToArray()),
                 Length = content.Length
             },
-            DateTimeOffset.UtcNow);
+            TimeProvider.System.GetUtcNow());
 
         return new MediaObjectWriteResult(
             request.ObjectKey,

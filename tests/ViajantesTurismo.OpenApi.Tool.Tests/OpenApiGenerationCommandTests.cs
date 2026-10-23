@@ -133,7 +133,7 @@ public sealed class OpenApiGenerationCommandTests
     }
 
     [Fact]
-    public void All_generation_graph_contains_exactly_the_three_api_projects()
+    public void All_generation_graph_contains_exactly_the_three_API_projects()
     {
         // Arrange
         var repositoryRoot = OpenApiToolApplication.FindRepositoryRoot(AppContext.BaseDirectory);

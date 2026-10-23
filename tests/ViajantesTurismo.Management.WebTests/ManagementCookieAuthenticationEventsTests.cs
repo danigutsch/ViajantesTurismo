@@ -244,7 +244,7 @@ public sealed class ManagementCookieAuthenticationEventsTests
         await events.SigningOut(signingOutContext);
 
         // Assert
-        httpContext.User.Identity?.IsAuthenticated.ShouldBeTrue();
+        httpContext.User.Identity.ShouldNotBeNull().IsAuthenticated.ShouldBeTrue();
     }
 
     [Fact]
@@ -315,7 +315,7 @@ public sealed class ManagementCookieAuthenticationEventsTests
         await events.SigningOut(signingOutContext);
 
         // Assert
-        httpContext.User.Identity?.IsAuthenticated.ShouldBeTrue();
+        httpContext.User.Identity.ShouldNotBeNull().IsAuthenticated.ShouldBeTrue();
     }
 
     [Fact]
@@ -350,8 +350,8 @@ public sealed class ManagementCookieAuthenticationEventsTests
         // Act
         await events.SigningOut(signingOutContext);
         var logEntries = logger.Entries;
-        var audienceLogEntry = logEntries.Single(entry => entry.StartsWith("Management audience-token", StringComparison.Ordinal));
-        var userLogEntry = logEntries.Single(entry => entry.StartsWith("Management user-token", StringComparison.Ordinal));
+        var audienceLogEntry = logEntries.ShouldHaveSingleItem(entry => entry.StartsWith("Management audience-token", StringComparison.Ordinal));
+        var userLogEntry = logEntries.ShouldHaveSingleItem(entry => entry.StartsWith("Management user-token", StringComparison.Ordinal));
 
         // Assert
         logEntries.Count.ShouldBe(2);

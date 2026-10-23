@@ -15,8 +15,8 @@ public static class ContextHelpers
 
         context.Identifier = "TEST2024";
         context.Name = "Test Tour";
-        context.StartDate = DateTime.UtcNow.AddMonths(1);
-        context.EndDate = DateTime.UtcNow.AddMonths(1).AddDays(7);
+        context.StartDate = TimeProvider.System.GetUtcNow().UtcDateTime.AddMonths(1);
+        context.EndDate = TimeProvider.System.GetUtcNow().UtcDateTime.AddMonths(1).AddDays(7);
         context.BasePrice = 2000.00m;
         context.SingleRoomSupplementPrice = 500.00m;
         context.RegularBikePrice = 100.00m;

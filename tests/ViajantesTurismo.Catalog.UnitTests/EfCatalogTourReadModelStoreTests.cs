@@ -21,7 +21,7 @@ public sealed class EfCatalogTourReadModelStoreTests
         var tours = await sut.ListTours(TestContext.Current.CancellationToken);
 
         // Assert
-        (tours).ShouldMatchCollection(tour => (tour.Title).ShouldBe("Alpha"), tour => (tour.Title).ShouldBe("Bravo"), tour => (tour.Title).ShouldBe("Zulu"));
+        tours.ShouldMatchCollection(tour => tour.Title.ShouldBe("Alpha"), tour => tour.Title.ShouldBe("Bravo"), tour => tour.Title.ShouldBe("Zulu"));
     }
 
     [Fact]
@@ -37,9 +37,9 @@ public sealed class EfCatalogTourReadModelStoreTests
         var tour = await sut.GetTour(tourId, TestContext.Current.CancellationToken);
 
         // Assert
-        _ = (tour).ShouldNotBeNull();
-        (tour.CatalogTourId).ShouldBe(tourId);
-        (tour.Title).ShouldBe("Draft");
+        _ = tour.ShouldNotBeNull();
+        tour.CatalogTourId.ShouldBe(tourId);
+        tour.Title.ShouldBe("Draft");
     }
 
     [Fact]
@@ -53,7 +53,7 @@ public sealed class EfCatalogTourReadModelStoreTests
         var tour = await sut.GetTour(Guid.CreateVersion7(), TestContext.Current.CancellationToken);
 
         // Assert
-        (tour).ShouldBeNull();
+        tour.ShouldBeNull();
     }
 
     [Fact]
@@ -63,7 +63,7 @@ public sealed class EfCatalogTourReadModelStoreTests
         await using var dbContext = EfPublicContentStoreTestDbContextFactory.Create();
         var sut = new EfCatalogTourReadModelStore(dbContext);
         var tourId = Guid.CreateVersion7();
-        var updatedAt = DateTimeOffset.UtcNow;
+        var updatedAt = TimeProvider.System.GetUtcNow();
         await sut.UpsertDraft(EfCatalogTourReadModelStoreTestsHelpers.CreateTour(tourId, "Draft"), TestContext.Current.CancellationToken);
 
         // Act
@@ -91,18 +91,18 @@ public sealed class EfCatalogTourReadModelStoreTests
         var published = await sut.GetPublishedTourBySlug("published-tour", TestContext.Current.CancellationToken);
 
         // Assert
-        _ = (updated).ShouldNotBeNull();
-        (updated.Title).ShouldBe("Published Tour");
-        (updated.Slug).ShouldBe("published-tour");
-        (updated.Summary).ShouldBe("Tour summary");
-        (updated.Description).ShouldBe("Tour description");
-        (updated.Itinerary).ShouldBe("Day one: ride.");
-        (updated.SeoTitle).ShouldBe("Published Tour SEO");
-        (updated.SeoDescription).ShouldBe("Published tour search description.");
-        (updated.IsPublished).ShouldBeFalse();
-        _ = (published).ShouldNotBeNull();
-        (published.CatalogTourId).ShouldBe(tourId);
-        (published.StreamVersion).ShouldBe(3);
+        _ = updated.ShouldNotBeNull();
+        updated.Title.ShouldBe("Published Tour");
+        updated.Slug.ShouldBe("published-tour");
+        updated.Summary.ShouldBe("Tour summary");
+        updated.Description.ShouldBe("Tour description");
+        updated.Itinerary.ShouldBe("Day one: ride.");
+        updated.SeoTitle.ShouldBe("Published Tour SEO");
+        updated.SeoDescription.ShouldBe("Published tour search description.");
+        updated.IsPublished.ShouldBeFalse();
+        _ = published.ShouldNotBeNull();
+        published.CatalogTourId.ShouldBe(tourId);
+        published.StreamVersion.ShouldBe(3);
     }
 
     [Fact]
@@ -132,7 +132,7 @@ public sealed class EfCatalogTourReadModelStoreTests
             new CatalogTourPresentationUpdate("Legacy Tour", legacyTour.Slug, "New summary", "", "", "", ""),
             streamVersion: 2,
             position: 2,
-            updatedAt: DateTimeOffset.UtcNow,
+            updatedAt: TimeProvider.System.GetUtcNow(),
             ct: TestContext.Current.CancellationToken);
         var publicBeforeRepublish = await sut.GetPublishedTourBySlug(legacyTour.Slug, TestContext.Current.CancellationToken);
         var republished = await sut.SetPublicationStatus(
@@ -140,7 +140,7 @@ public sealed class EfCatalogTourReadModelStoreTests
             isPublished: true,
             streamVersion: 3,
             position: 3,
-            updatedAt: DateTimeOffset.UtcNow,
+            updatedAt: TimeProvider.System.GetUtcNow(),
             ct: TestContext.Current.CancellationToken);
         var publicAfterRepublish = await sut.GetPublishedTourBySlug(legacyTour.Slug, TestContext.Current.CancellationToken);
 
@@ -173,7 +173,7 @@ public sealed class EfCatalogTourReadModelStoreTests
             isPublished: true,
             streamVersion: 3,
             position: 3,
-            updatedAt: DateTimeOffset.UtcNow,
+            updatedAt: TimeProvider.System.GetUtcNow(),
             ct: TestContext.Current.CancellationToken);
 
         // Act
@@ -182,7 +182,7 @@ public sealed class EfCatalogTourReadModelStoreTests
             new CatalogTourPresentationUpdate("Published Tour", "published-tour", "Tour summary", "", "", "", ""),
             streamVersion: 2,
             position: 2,
-            updatedAt: DateTimeOffset.UtcNow,
+            updatedAt: TimeProvider.System.GetUtcNow(),
             ct: TestContext.Current.CancellationToken);
         var projected = await sut.GetTour(tourId, TestContext.Current.CancellationToken);
 
@@ -210,14 +210,14 @@ public sealed class EfCatalogTourReadModelStoreTests
             new CatalogTourPresentationUpdate("Published Tour", "published-tour", "Tour summary", "", "", "", ""),
             streamVersion: 2,
             position: 2,
-            updatedAt: DateTimeOffset.UtcNow,
+            updatedAt: TimeProvider.System.GetUtcNow(),
             ct: TestContext.Current.CancellationToken);
         _ = await sut.SetPublicationStatus(
             tourId,
             isPublished: true,
             streamVersion: 3,
             position: 3,
-            updatedAt: DateTimeOffset.UtcNow,
+            updatedAt: TimeProvider.System.GetUtcNow(),
             ct: TestContext.Current.CancellationToken);
 
         // Act
@@ -226,7 +226,7 @@ public sealed class EfCatalogTourReadModelStoreTests
             new CatalogTourPresentationUpdate("Edited Draft", "edited-draft", "Edited summary", "", "", "", ""),
             streamVersion: 5,
             position: 5,
-            updatedAt: DateTimeOffset.UtcNow,
+            updatedAt: TimeProvider.System.GetUtcNow(),
             ct: TestContext.Current.CancellationToken);
         var publicTour = await sut.GetPublishedTourBySlug("edited-draft", TestContext.Current.CancellationToken);
 
@@ -253,7 +253,7 @@ public sealed class EfCatalogTourReadModelStoreTests
             new CatalogTourPresentationUpdate("Edited Draft", "edited-draft", "Edited summary", "", "", "", ""),
             streamVersion: 5,
             position: 5,
-            updatedAt: DateTimeOffset.UtcNow,
+            updatedAt: TimeProvider.System.GetUtcNow(),
             ct: TestContext.Current.CancellationToken);
 
         // Act
@@ -262,7 +262,7 @@ public sealed class EfCatalogTourReadModelStoreTests
             isPublished: true,
             streamVersion: 3,
             position: 3,
-            updatedAt: DateTimeOffset.UtcNow,
+            updatedAt: TimeProvider.System.GetUtcNow(),
             ct: TestContext.Current.CancellationToken);
         var publicTour = await sut.GetPublishedTourBySlug("edited-draft", TestContext.Current.CancellationToken);
 
@@ -289,13 +289,13 @@ public sealed class EfCatalogTourReadModelStoreTests
             new CatalogTourPresentationUpdate("  Public Title  ", "  Mixed-Case-Slug  ", "", "", "", "", ""),
             streamVersion: 2,
             position: 2,
-            updatedAt: DateTimeOffset.UtcNow,
+            updatedAt: TimeProvider.System.GetUtcNow(),
             ct: TestContext.Current.CancellationToken);
 
         // Assert
-        _ = (updated).ShouldNotBeNull();
-        (updated.Title).ShouldBe("Public Title");
-        (updated.Slug).ShouldBe("Mixed-Case-Slug");
+        _ = updated.ShouldNotBeNull();
+        updated.Title.ShouldBe("Public Title");
+        updated.Slug.ShouldBe("Mixed-Case-Slug");
     }
 
     [Fact]
@@ -393,11 +393,11 @@ public sealed class EfCatalogTourReadModelStoreTests
             new CatalogTourPresentationUpdate("Public Title", "public-title", "", "", "", "", ""),
             streamVersion: 2,
             position: 2,
-            updatedAt: DateTimeOffset.UtcNow,
+            updatedAt: TimeProvider.System.GetUtcNow(),
             ct: TestContext.Current.CancellationToken);
 
         // Assert
-        (updated).ShouldBeNull();
+        updated.ShouldBeNull();
     }
 
     [Fact]
@@ -415,8 +415,8 @@ public sealed class EfCatalogTourReadModelStoreTests
         var tour = await sut.GetTour(tourId, TestContext.Current.CancellationToken);
 
         // Assert
-        _ = (tour).ShouldNotBeNull();
-        (tour.Slug).ShouldBe("mixed-slug");
+        _ = tour.ShouldNotBeNull();
+        tour.Slug.ShouldBe("mixed-slug");
     }
 
     [Fact]
@@ -438,8 +438,8 @@ public sealed class EfCatalogTourReadModelStoreTests
         var tour = await sut.GetPublishedTourBySlug(" mixed-slug ", TestContext.Current.CancellationToken);
 
         // Assert
-        _ = (tour).ShouldNotBeNull();
-        (tour.CatalogTourId).ShouldBe(tourId);
+        _ = tour.ShouldNotBeNull();
+        tour.CatalogTourId.ShouldBe(tourId);
     }
 
     [Fact]
@@ -456,7 +456,7 @@ public sealed class EfCatalogTourReadModelStoreTests
         var tour = await sut.GetPublishedTourBySlug("mixed-slug", TestContext.Current.CancellationToken);
 
         // Assert
-        (tour).ShouldBeNull();
+        tour.ShouldBeNull();
     }
 
     [Fact]
@@ -473,7 +473,7 @@ public sealed class EfCatalogTourReadModelStoreTests
         var tour = await sut.GetPublishedTourBySlug("draft", TestContext.Current.CancellationToken);
 
         // Assert
-        (tour).ShouldBeNull();
+        tour.ShouldBeNull();
     }
 
     [Fact]
@@ -496,14 +496,14 @@ public sealed class EfCatalogTourReadModelStoreTests
                 "Tour SEO description"),
             streamVersion: 2,
             position: 2,
-            updatedAt: DateTimeOffset.UtcNow,
+            updatedAt: TimeProvider.System.GetUtcNow(),
             ct: TestContext.Current.CancellationToken);
         _ = await sut.SetPublicationStatus(
             tourId,
             isPublished: true,
             streamVersion: 3,
             position: 3,
-            updatedAt: DateTimeOffset.UtcNow,
+            updatedAt: TimeProvider.System.GetUtcNow(),
             ct: TestContext.Current.CancellationToken);
 
         // Act
@@ -511,15 +511,15 @@ public sealed class EfCatalogTourReadModelStoreTests
         var tours = await sut.ListTours(TestContext.Current.CancellationToken);
 
         // Assert
-        var tour = (tours).ShouldHaveSingleItem();
-        (tour.Title).ShouldBe("Public Title");
-        (tour.Slug).ShouldBe("public-title");
-        (tour.Summary).ShouldBe("Tour summary");
-        (tour.Description).ShouldBe("Tour description");
-        (tour.Itinerary).ShouldBe("Tour itinerary");
-        (tour.SeoTitle).ShouldBe("Tour SEO title");
-        (tour.SeoDescription).ShouldBe("Tour SEO description");
-        (tour.IsPublished).ShouldBeTrue();
+        var tour = tours.ShouldHaveSingleItem();
+        tour.Title.ShouldBe("Public Title");
+        tour.Slug.ShouldBe("public-title");
+        tour.Summary.ShouldBe("Tour summary");
+        tour.Description.ShouldBe("Tour description");
+        tour.Itinerary.ShouldBe("Tour itinerary");
+        tour.SeoTitle.ShouldBe("Tour SEO title");
+        tour.SeoDescription.ShouldBe("Tour SEO description");
+        tour.IsPublished.ShouldBeTrue();
     }
 
 }

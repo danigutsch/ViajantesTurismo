@@ -23,8 +23,9 @@ public class BookingTests(AspireSystemTestFixture fixture) : AspireSystemTestBas
         await BookingWorkflow.NavigateToDetails(createdBookingId);
 
         // Assert
-        (ApiBaseUri.IsLoopback).ShouldBeTrue();
-        (ApiBaseUri.Port > 0).ShouldBeTrue();
+        ApiBaseUri.IsLoopback.ShouldBeTrue();
+        var isValid = ApiBaseUri.Port > 0;
+        isValid.ShouldBeTrue();
         await Expect(Page.GetByText("Pending").First).ToBeVisibleAsync();
         await Expect(Page.GetByText("Unpaid").First).ToBeVisibleAsync();
         await Expect(Page.GetByText(tour.Name).First).ToBeVisibleAsync();
@@ -83,7 +84,7 @@ public class BookingTests(AspireSystemTestFixture fixture) : AspireSystemTestBas
         await Page.ReloadAsync();
 
         // Assert
-        await Expect(Page).ToHaveTitleAsync("Booking Details");
+        await Page.ShouldHaveTitle("Booking Details");
         var generalInformation = Page.Locator(".card")
             .Filter(new LocatorFilterOptions { HasText = "General Information" });
         await Expect(generalInformation.GetByText(

@@ -209,6 +209,6 @@ public sealed class AdminInfrastructureModuleTests
         dispatcher.ShouldNotBeNull();
         hostedServices.ShouldNotContain(service => service.GetType().IsGenericType
             && service.GetType().GetGenericTypeDefinition().Name == "IntegrationEventOutboxRelayHostedService`1"
-            && service.GetType().GenericTypeArguments.Single() == typeof(AdminWriteDbContext));
+            && service.GetType().GenericTypeArguments.ShouldHaveSingleItem() == typeof(AdminWriteDbContext));
     }
 }

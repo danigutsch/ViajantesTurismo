@@ -27,7 +27,7 @@ public sealed class AccommodationPageTests : BunitContext
         await cut.InvokeAsync(() => Task.CompletedTask);
 
         // Assert
-        (cut.FindAll("input[placeholder='Search customers by name or email...']")).ShouldBeEmpty();
+        cut.FindAll("input[placeholder='Search customers by name or email...']").ShouldBeEmpty();
     }
 
     [Fact]
@@ -52,10 +52,10 @@ public sealed class AccommodationPageTests : BunitContext
         await cut.InvokeAsync(() => Task.CompletedTask);
 
         // Assert
-        (cut.Find("#roomType").GetAttribute("value")).ShouldBe(nameof(RoomTypeDto.SingleOccupancy));
-        (cut.Find("#bedType").GetAttribute("value")).ShouldBe(nameof(BedTypeDto.DoubleBed));
-        (cut.Markup).ShouldContain("alice@example.com", StringComparison.Ordinal);
-        (_state.CurrentStep).ShouldBe(6);
+        cut.Find("#roomType").GetAttribute("value").ShouldBe(nameof(RoomTypeDto.SingleOccupancy));
+        cut.Find("#bedType").GetAttribute("value").ShouldBe(nameof(BedTypeDto.DoubleBed));
+        cut.Markup.ShouldContain("alice@example.com", StringComparison.Ordinal);
+        _state.CurrentStep.ShouldBe(6);
     }
 
     [Fact]
@@ -80,12 +80,12 @@ public sealed class AccommodationPageTests : BunitContext
         await cut.InvokeAsync(async () => await cut.Find("form").SubmitAsync());
 
         // Assert
-        await cut.WaitForAssertionAsync(() => (navigationManager.Uri).ShouldEndWith("/customers/create/emergency-contact", StringComparison.Ordinal));
-        (_state.AccommodationPreferences).ShouldNotBeNull();
-        (_state.AccommodationPreferences.RoomType).ShouldBe(RoomTypeDto.DoubleOccupancy);
-        (_state.AccommodationPreferences.BedType).ShouldBe(BedTypeDto.SingleBed);
-        (_state.AccommodationPreferences.CompanionId).ShouldBe(companionId);
-        (_state.CurrentStep).ShouldBe(7);
+        await cut.WaitForAssertionAsync(() => navigationManager.Uri.ShouldEndWith("/customers/create/emergency-contact", StringComparison.Ordinal));
+        _state.AccommodationPreferences.ShouldNotBeNull();
+        _state.AccommodationPreferences.RoomType.ShouldBe(RoomTypeDto.DoubleOccupancy);
+        _state.AccommodationPreferences.BedType.ShouldBe(BedTypeDto.SingleBed);
+        _state.AccommodationPreferences.CompanionId.ShouldBe(companionId);
+        _state.CurrentStep.ShouldBe(7);
     }
 
     [Fact]
@@ -101,7 +101,7 @@ public sealed class AccommodationPageTests : BunitContext
         await cut.InvokeAsync(() => backButton.Click());
 
         // Assert
-        await cut.WaitForAssertionAsync(() => (navigationManager.Uri).ShouldEndWith("/customers/create/physical", StringComparison.Ordinal));
-        (_state.CurrentStep).ShouldBe(5);
+        await cut.WaitForAssertionAsync(() => navigationManager.Uri.ShouldEndWith("/customers/create/physical", StringComparison.Ordinal));
+        _state.CurrentStep.ShouldBe(5);
     }
 }

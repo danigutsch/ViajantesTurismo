@@ -19,7 +19,7 @@ public static class EntityBuilders
         var pricingOptions = options.Pricing ?? new TourPricingOptions();
         var capacityOptions = options.Capacity ?? new TourCapacityOptions();
 
-        var start = scheduleOptions.StartDate ?? DateTime.UtcNow.AddMonths(1);
+        var start = scheduleOptions.StartDate ?? TimeProvider.System.GetUtcNow().UtcDateTime.AddMonths(1);
 
         return Tour.Create(new TourDefinition(
             options.Identifier ?? "TEST2024",
@@ -102,7 +102,7 @@ public static class EntityBuilders
                 _options.FirstName ?? "John",
                 _options.LastName ?? "Doe",
                 _options.Gender ?? "Male",
-                DateOnly.FromDateTime(_options.BirthDate ?? DateTime.UtcNow.AddYears(-30)),
+                DateOnly.FromDateTime(_options.BirthDate ?? TimeProvider.System.GetUtcNow().UtcDateTime.AddYears(-30)),
                 _options.Nationality ?? "USA",
                 _options.Occupation ?? "Engineer",
                 DateOnly.FromDateTime(TimeProvider.System.GetUtcNow().UtcDateTime)).Value;

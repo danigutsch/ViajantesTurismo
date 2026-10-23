@@ -12,8 +12,8 @@ public sealed class TourManagementSteps(TourContext tourContext)
         var tour = Tour.Create(new TourDefinition(
             identifier,
             "Existing Tour",
-            DateOnly.FromDateTime(DateTime.UtcNow.AddMonths(1)),
-            DateOnly.FromDateTime(DateTime.UtcNow.AddMonths(1).AddDays(7)),
+            DateOnly.FromDateTime(TimeProvider.System.GetUtcNow().UtcDateTime.AddMonths(1)),
+            DateOnly.FromDateTime(TimeProvider.System.GetUtcNow().UtcDateTime.AddMonths(1).AddDays(7)),
             2000.00m,
             500.00m,
             100.00m,
@@ -32,8 +32,8 @@ public sealed class TourManagementSteps(TourContext tourContext)
         var command = new CreateTourCommand(
             identifier,
             "Another Tour",
-            DateOnly.FromDateTime(DateTime.UtcNow.AddMonths(2)),
-            DateOnly.FromDateTime(DateTime.UtcNow.AddMonths(2).AddDays(7)),
+            DateOnly.FromDateTime(TimeProvider.System.GetUtcNow().UtcDateTime.AddMonths(2)),
+            DateOnly.FromDateTime(TimeProvider.System.GetUtcNow().UtcDateTime.AddMonths(2).AddDays(7)),
             2500.00m,
             600.00m,
             120.00m,
@@ -82,8 +82,8 @@ public sealed class TourManagementSteps(TourContext tourContext)
         tourContext.Tour = Tour.Create(new TourDefinition(
             "TEST2024",
             "Test Tour",
-            DateOnly.FromDateTime(DateTime.UtcNow.AddMonths(1)),
-            DateOnly.FromDateTime(DateTime.UtcNow.AddMonths(1).AddDays(7)),
+            DateOnly.FromDateTime(TimeProvider.System.GetUtcNow().UtcDateTime.AddMonths(1)),
+            DateOnly.FromDateTime(TimeProvider.System.GetUtcNow().UtcDateTime.AddMonths(1).AddDays(7)),
             2000.00m,
             500.00m,
             100.00m,
@@ -123,7 +123,7 @@ public sealed class TourManagementSteps(TourContext tourContext)
     {
         tourContext.Identifier = "TEST2024";
         tourContext.Name = "Test Tour";
-        tourContext.StartDate = DateTime.UtcNow.AddMonths(1);
+        tourContext.StartDate = TimeProvider.System.GetUtcNow().UtcDateTime.AddMonths(1);
         tourContext.EndDate = tourContext.StartDate.AddDays(7);
         tourContext.BasePrice = 0m;
         tourContext.SingleRoomSupplementPrice = 0m;
@@ -136,8 +136,8 @@ public sealed class TourManagementSteps(TourContext tourContext)
     {
         tourContext.Identifier = "TEST2024";
         tourContext.Name = "Test Tour";
-        tourContext.StartDate = DateTime.UtcNow.AddMonths(1);
-        tourContext.EndDate = DateTime.UtcNow.AddMonths(1).AddDays(7);
+        tourContext.StartDate = TimeProvider.System.GetUtcNow().UtcDateTime.AddMonths(1);
+        tourContext.EndDate = TimeProvider.System.GetUtcNow().UtcDateTime.AddMonths(1).AddDays(7);
 
         switch (priceType)
         {
@@ -188,8 +188,8 @@ public sealed class TourManagementSteps(TourContext tourContext)
     {
         tourContext.Identifier = "TEST2024";
         tourContext.Name = "Test Tour";
-        tourContext.StartDate = DateTime.UtcNow.AddMonths(1);
-        tourContext.EndDate = DateTime.UtcNow.AddMonths(1).AddDays(7);
+        tourContext.StartDate = TimeProvider.System.GetUtcNow().UtcDateTime.AddMonths(1);
+        tourContext.EndDate = TimeProvider.System.GetUtcNow().UtcDateTime.AddMonths(1).AddDays(7);
         tourContext.BasePrice = basePrice;
         tourContext.SingleRoomSupplementPrice = singleRoom;
         tourContext.RegularBikePrice = regularBike;

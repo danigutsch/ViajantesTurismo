@@ -15,7 +15,7 @@ namespace ViajantesTurismo.Catalog.ApiServiceTests;
 public sealed class CatalogApiSecurityBaselineTests
 {
     [Fact]
-    public async Task Catalog_api_allows_configured_cors_origin()
+    public async Task Catalog_API_allows_configured_cors_origin()
     {
         // Arrange
         var configuration = new ConfigurationBuilder()
@@ -47,7 +47,7 @@ public sealed class CatalogApiSecurityBaselineTests
     }
 
     [Fact]
-    public async Task Catalog_api_omits_cors_headers_for_denied_origins()
+    public async Task Catalog_API_omits_cors_headers_for_denied_origins()
     {
         // Arrange
         var configuration = new ConfigurationBuilder()
@@ -79,7 +79,7 @@ public sealed class CatalogApiSecurityBaselineTests
     }
 
     [Fact]
-    public async Task Catalog_api_omits_cors_headers_when_no_origins_are_configured()
+    public async Task Catalog_API_omits_cors_headers_when_no_origins_are_configured()
     {
         // Arrange
         var configuration = new ConfigurationBuilder().Build();

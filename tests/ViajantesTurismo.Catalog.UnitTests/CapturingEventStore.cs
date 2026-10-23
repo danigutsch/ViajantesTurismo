@@ -76,7 +76,7 @@ public sealed class CapturingEventStore(int appendFailures = 0) : IEventStore
                 Guid.CreateVersion7(),
                 domainEvent.GetType().FullName ?? domainEvent.GetType().Name,
                 domainEvent,
-                DateTimeOffset.UtcNow))
+                TimeProvider.System.GetUtcNow()))
             .ToArray();
         appendedEnvelopes.AddRange(envelopes);
         OnAppend?.Invoke();

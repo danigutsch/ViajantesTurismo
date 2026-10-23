@@ -11,7 +11,7 @@ public sealed class GetFinalizedDocumentArtifactHandlerTests
     public async Task Handle_returns_the_sealed_artifact_for_a_finalized_document()
     {
         // Arrange
-        var now = DateTime.UtcNow;
+        var now = TimeProvider.System.GetUtcNow().UtcDateTime;
         var document = DocumentDraftTestData.Create(now);
         document.BeginReview(now).IsSuccess.ShouldBeTrue();
         document.Approve(now).IsSuccess.ShouldBeTrue();
@@ -36,7 +36,7 @@ public sealed class GetFinalizedDocumentArtifactHandlerTests
     public async Task Handle_rejects_an_unfinalized_document_without_an_artifact()
     {
         // Arrange
-        var document = DocumentDraftTestData.Create(DateTime.UtcNow);
+        var document = DocumentDraftTestData.Create(TimeProvider.System.GetUtcNow().UtcDateTime);
         var store = new FakeDocumentStore();
         store.Documents.Add(document.Id, document);
         var handler = new GetFinalizedDocumentArtifactHandler(store);

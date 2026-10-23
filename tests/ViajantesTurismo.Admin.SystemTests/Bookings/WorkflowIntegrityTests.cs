@@ -10,7 +10,7 @@ public class WorkflowIntegrityTests(AspireSystemTestFixture fixture) : AspireSys
 
         // Act
         await NavigateTo($"/tours/{tour.Id}");
-        await Expect(Page).ToHaveTitleAsync("Tour Details");
+        await Page.ShouldHaveTitle("Tour Details");
 
         await Page.GetButton("Add Booking").ClickAsync();
         await Expect(Page.GetButton("Create Booking")).ToBeVisibleAsync();
@@ -23,9 +23,9 @@ public class WorkflowIntegrityTests(AspireSystemTestFixture fixture) : AspireSys
 
         // Assert
         var hasFriendlyValidationFeedback = await WorkflowIntegrityTestHelpers.HasFriendlyValidationFeedback(alert, inlineValidation);
-        (hasFriendlyValidationFeedback).ShouldBeTrue("Expected user-facing validation feedback (e.g., required-field or friendly validation message). ");
+        hasFriendlyValidationFeedback.ShouldBeTrue("Expected user-facing validation feedback (e.g., required-field or friendly validation message). ");
 
-        await Expect(Page).ToHaveTitleAsync("Tour Details");
+        await Page.ShouldHaveTitle("Tour Details");
         await WorkflowIntegrityTestHelpers.AssertNoTechnicalLeak(Page, alert, inlineValidation);
     }
 }

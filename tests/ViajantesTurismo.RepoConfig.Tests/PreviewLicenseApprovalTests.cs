@@ -63,7 +63,8 @@ public sealed class PreviewLicenseApprovalTests
             new Dictionary<string, string?> { ["GITHUB_OUTPUT"] = outputPath });
 
         // Assert
-        (result.ExitCode == 0).ShouldBe(approved);
+        var succeeded = result.ExitCode == 0;
+        succeeded.ShouldBe(approved);
         File.Exists(outputPath).ShouldBe(approved);
         if (approved)
         {

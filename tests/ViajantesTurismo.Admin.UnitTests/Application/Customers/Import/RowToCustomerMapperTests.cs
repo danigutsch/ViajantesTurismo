@@ -16,20 +16,20 @@ public class RowToCustomerMapperTests
         var customerResult = RowToCustomerMapper.MapCustomer(document, row, DateOnly.FromDateTime(TimeProvider.System.GetUtcNow().UtcDateTime));
 
         // Assert
-        (customerResult.IsSuccess).ShouldBeTrue();
+        customerResult.IsSuccess.ShouldBeTrue();
 
         var customer = customerResult.Value;
 
-        (customer.PersonalInfo.FirstName).ShouldBe("John");
-        (customer.PersonalInfo.LastName).ShouldBe("Doe");
-        (customer.IdentificationInfo.NationalId).ShouldBe("123456789");
-        (customer.ContactInfo.Email).ShouldBe("john.doe@example.com");
-        (customer.Address.Street).ShouldBe("Main St 123");
-        (customer.PhysicalInfo.WeightKg).ShouldBe(75.5m);
-        (customer.PhysicalInfo.BikeType).ShouldBe(BikeType.Regular);
-        (customer.AccommodationPreferences.RoomType).ShouldBe(RoomType.SingleOccupancy);
-        (customer.EmergencyContact.Name).ShouldBe("Jane Doe");
-        (customer.MedicalInfo.Allergies).ShouldBe("Peanuts");
+        customer.PersonalInfo.FirstName.ShouldBe("John");
+        customer.PersonalInfo.LastName.ShouldBe("Doe");
+        customer.IdentificationInfo.NationalId.ShouldBe("123456789");
+        customer.ContactInfo.Email.ShouldBe("john.doe@example.com");
+        customer.Address.Street.ShouldBe("Main St 123");
+        customer.PhysicalInfo.WeightKg.ShouldBe(75.5m);
+        customer.PhysicalInfo.BikeType.ShouldBe(BikeType.Regular);
+        customer.AccommodationPreferences.RoomType.ShouldBe(RoomType.SingleOccupancy);
+        customer.EmergencyContact.Name.ShouldBe("Jane Doe");
+        customer.MedicalInfo.Allergies.ShouldBe("Peanuts");
     }
 
     [Fact]
@@ -45,11 +45,11 @@ public class RowToCustomerMapperTests
         var customerResult = RowToCustomerMapper.MapCustomer(document, row, DateOnly.FromDateTime(TimeProvider.System.GetUtcNow().UtcDateTime));
 
         // Assert
-        (customerResult.IsFailure).ShouldBeTrue();
-        (customerResult.ErrorDetails).ShouldNotBeNull();
-        (customerResult.ErrorDetails.Detail).ShouldContain("Email", StringComparison.Ordinal);
-        (customerResult.ErrorDetails.ValidationErrors).ShouldNotBeNull();
-        (customerResult.ErrorDetails.ValidationErrors.ContainsKey("Email")).ShouldBeTrue();
+        customerResult.IsFailure.ShouldBeTrue();
+        customerResult.ErrorDetails.ShouldNotBeNull();
+        customerResult.ErrorDetails.Detail.ShouldContain("Email", StringComparison.Ordinal);
+        customerResult.ErrorDetails.ValidationErrors.ShouldNotBeNull();
+        customerResult.ErrorDetails.ValidationErrors.ContainsKey("Email").ShouldBeTrue();
     }
 
     [Theory]
@@ -75,12 +75,12 @@ public class RowToCustomerMapperTests
         var customerResult = RowToCustomerMapper.MapCustomer(document, row, DateOnly.FromDateTime(TimeProvider.System.GetUtcNow().UtcDateTime));
 
         // Assert
-        (customerResult.IsFailure).ShouldBeTrue();
-        (customerResult.ErrorDetails).ShouldNotBeNull();
-        (customerResult.ErrorDetails.Detail).ShouldBe(expectedMessage);
-        (customerResult.ErrorDetails.ValidationErrors).ShouldNotBeNull();
-        (customerResult.ErrorDetails.ValidationErrors.TryGetValue(field, out var messages)).ShouldBeTrue();
-        (messages).ShouldBe([expectedMessage]);
+        customerResult.IsFailure.ShouldBeTrue();
+        customerResult.ErrorDetails.ShouldNotBeNull();
+        customerResult.ErrorDetails.Detail.ShouldBe(expectedMessage);
+        customerResult.ErrorDetails.ValidationErrors.ShouldNotBeNull();
+        customerResult.ErrorDetails.ValidationErrors.TryGetValue(field, out var messages).ShouldBeTrue();
+        messages.ShouldBe([expectedMessage]);
     }
 
     [Fact]
@@ -94,12 +94,12 @@ public class RowToCustomerMapperTests
         var customerResult = RowToCustomerMapper.MapCustomer(document, row, DateOnly.FromDateTime(TimeProvider.System.GetUtcNow().UtcDateTime));
 
         // Assert
-        (customerResult.IsFailure).ShouldBeTrue();
-        (customerResult.ErrorDetails).ShouldNotBeNull();
-        (customerResult.ErrorDetails.Detail).ShouldBe(expectedMessage);
-        (customerResult.ErrorDetails.ValidationErrors).ShouldNotBeNull();
-        (customerResult.ErrorDetails.ValidationErrors.TryGetValue("headers", out var messages)).ShouldBeTrue();
-        (messages).ShouldBe([expectedMessage]);
+        customerResult.IsFailure.ShouldBeTrue();
+        customerResult.ErrorDetails.ShouldNotBeNull();
+        customerResult.ErrorDetails.Detail.ShouldBe(expectedMessage);
+        customerResult.ErrorDetails.ValidationErrors.ShouldNotBeNull();
+        customerResult.ErrorDetails.ValidationErrors.TryGetValue("headers", out var messages).ShouldBeTrue();
+        messages.ShouldBe([expectedMessage]);
     }
 
     [Fact]
@@ -117,16 +117,16 @@ public class RowToCustomerMapperTests
         var customerResult = RowToCustomerMapper.MapCustomer(document, row, DateOnly.FromDateTime(TimeProvider.System.GetUtcNow().UtcDateTime));
 
         // Assert
-        (customerResult.IsFailure).ShouldBeTrue();
-        (customerResult.ErrorDetails).ShouldNotBeNull();
-        (customerResult.ErrorDetails.Detail).ShouldBe(MultipleValidationErrorsDetailMessage);
-        (customerResult.ErrorDetails.ValidationErrors).ShouldNotBeNull();
-        (customerResult.ErrorDetails.ValidationErrors.ContainsKey("BirthDate")).ShouldBeTrue();
-        (customerResult.ErrorDetails.ValidationErrors.ContainsKey("WeightKg")).ShouldBeTrue();
-        (customerResult.ErrorDetails.ValidationErrors.ContainsKey("CompanionId")).ShouldBeTrue();
-        (customerResult.ErrorDetails.ValidationErrors["BirthDate"]).ShouldContain("BirthDate has invalid format.");
-        (customerResult.ErrorDetails.ValidationErrors["WeightKg"]).ShouldContain("WeightKg has invalid format.");
-        (customerResult.ErrorDetails.ValidationErrors["CompanionId"]).ShouldContain("CompanionId has invalid format.");
+        customerResult.IsFailure.ShouldBeTrue();
+        customerResult.ErrorDetails.ShouldNotBeNull();
+        customerResult.ErrorDetails.Detail.ShouldBe(MultipleValidationErrorsDetailMessage);
+        customerResult.ErrorDetails.ValidationErrors.ShouldNotBeNull();
+        customerResult.ErrorDetails.ValidationErrors.ContainsKey("BirthDate").ShouldBeTrue();
+        customerResult.ErrorDetails.ValidationErrors.ContainsKey("WeightKg").ShouldBeTrue();
+        customerResult.ErrorDetails.ValidationErrors.ContainsKey("CompanionId").ShouldBeTrue();
+        customerResult.ErrorDetails.ValidationErrors["BirthDate"].ShouldContain("BirthDate has invalid format.");
+        customerResult.ErrorDetails.ValidationErrors["WeightKg"].ShouldContain("WeightKg has invalid format.");
+        customerResult.ErrorDetails.ValidationErrors["CompanionId"].ShouldContain("CompanionId has invalid format.");
     }
 
 }

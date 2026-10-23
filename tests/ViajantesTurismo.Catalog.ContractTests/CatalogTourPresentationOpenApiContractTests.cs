@@ -70,7 +70,7 @@ public sealed class CatalogTourPresentationOpenApiContractTests
         // Act
         var responses = mutationPaths
             .Select(path => paths[path].ShouldNotBeNull().AsObject()
-                .Single().Value.ShouldNotBeNull().AsObject()
+                .ShouldHaveSingleItem().Value.ShouldNotBeNull().AsObject()
                 ["responses"].ShouldNotBeNull().AsObject())
             .ToArray();
 

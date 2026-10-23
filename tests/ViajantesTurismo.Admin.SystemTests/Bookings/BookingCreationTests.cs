@@ -18,7 +18,7 @@ public class BookingCreationTests(AspireSystemTestFixture fixture) : AspireSyste
 
         // Act
         await NavigateTo($"/customers/{customer.Id}");
-        await Expect(Page).ToHaveTitleAsync("Customer Details");
+        await Page.ShouldHaveTitle("Customer Details");
         await Expect(Page.GetByRole(AriaRole.Heading, new PageGetByRoleOptions { Name = "Customer Details" })).ToBeVisibleAsync();
         var customerName = Page.GetByText(customerFullName, new PageGetByTextOptions { Exact = true });
         await Expect(customerName).ToHaveCountAsync(1);

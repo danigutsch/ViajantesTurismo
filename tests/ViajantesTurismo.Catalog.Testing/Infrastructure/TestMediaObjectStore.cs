@@ -66,7 +66,7 @@ public sealed class TestMediaObjectStore : IMediaObjectStore
     {
         ct.ThrowIfCancellationRequested();
         ValidatePrefix(prefix);
-        return ValueTask.FromResult<IReadOnlyList<MediaObjectInventoryItem>>([.. objects.Keys.Where(key => key.StartsWith(prefix, StringComparison.Ordinal)).Order(StringComparer.Ordinal).Select(key => new MediaObjectInventoryItem(key, DateTimeOffset.UtcNow))]);
+        return ValueTask.FromResult<IReadOnlyList<MediaObjectInventoryItem>>([.. objects.Keys.Where(key => key.StartsWith(prefix, StringComparison.Ordinal)).Order(StringComparer.Ordinal).Select(key => new MediaObjectInventoryItem(key, TimeProvider.System.GetUtcNow()))]);
     }
 
     public Uri GetPublicUri(string objectKey)

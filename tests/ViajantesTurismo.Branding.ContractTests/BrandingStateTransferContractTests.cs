@@ -82,7 +82,7 @@ public sealed class BrandingStateTransferContractTests
         BrandingSettingsChangedIntegrationEvent.EventType.ShouldBe("branding.settings.changed");
         BrandingSettingsChangedIntegrationEvent.EventVersion.ShouldBe(1);
         integrationEvent.SourceEpoch.ShouldNotBe(Guid.Empty);
-        (integrationEvent.SourceRevision > 0).ShouldBeTrue();
+        integrationEvent.SourceRevision.ShouldBeGreaterThan(0);
         actualProperties.ShouldBe(expectedProperties);
         document.RootElement.GetProperty("LogoUri").GetString().ShouldBe(logoAddress);
         roundTripped.ShouldNotBeNull();

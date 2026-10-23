@@ -87,7 +87,8 @@ public sealed class CatalogOpenApiUploadContractTests
         localizationParameterNames.ShouldContain("culture");
         foreach (var parameter in localizationParameters)
         {
-            (parameter["required"]?.GetValue<bool>() ?? false).ShouldBeFalse();
+            var isRequired = parameter["required"]?.GetValue<bool>() ?? false;
+            isRequired.ShouldBeFalse();
         }
     }
 

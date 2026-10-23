@@ -44,6 +44,6 @@ internal static class CatalogEndpointTestsHelpers
             identifier,
             false,
             1,
-            DateTimeOffset.UtcNow);
+            TimeProvider.System.GetUtcNow());
     }
 }

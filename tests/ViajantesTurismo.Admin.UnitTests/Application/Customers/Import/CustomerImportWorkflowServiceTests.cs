@@ -31,8 +31,10 @@ public sealed class CustomerImportWorkflowServiceTests
         // Assert
         result.SuccessCount.ShouldBe(successes);
         result.ErrorCount.ShouldBe(errors);
-        (result.SuccessRows?.Count ?? 0).ShouldBe(successes);
-        (result.ErrorRows?.Count ?? 0).ShouldBe(errors);
+        var actualValue = result.SuccessRows?.Count ?? 0;
+        actualValue.ShouldBe(successes);
+        var actualValue1 = result.ErrorRows?.Count ?? 0;
+        actualValue1.ShouldBe(errors);
         store.AllCustomers.Count.ShouldBe(successes);
         clock.ReadCount.ShouldBe(1);
     }
@@ -83,12 +85,12 @@ public sealed class CustomerImportWorkflowServiceTests
         var result = await sut.Import(csv, CancellationToken.None);
 
         // Assert
-        (result.Conflicts).ShouldNotBeNull();
-        (result.Conflicts.Count).ShouldBe(2);
-        (result.Conflicts).ShouldContain(c => c.Email.Equals(nameDuplicateEmail, StringComparison.OrdinalIgnoreCase));
-        (result.Conflicts).ShouldContain(c => c.Email.Equals(dbDuplicateEmail, StringComparison.OrdinalIgnoreCase));
-        (result.SuccessCount).ShouldBe(0);
-        (result.ErrorCount).ShouldBe(0);
+        result.Conflicts.ShouldNotBeNull();
+        result.Conflicts.Count.ShouldBe(2);
+        result.Conflicts.ShouldContain(c => c.Email.Equals(nameDuplicateEmail, StringComparison.OrdinalIgnoreCase));
+        result.Conflicts.ShouldContain(c => c.Email.Equals(dbDuplicateEmail, StringComparison.OrdinalIgnoreCase));
+        result.SuccessCount.ShouldBe(0);
+        result.ErrorCount.ShouldBe(0);
     }
 
     [Fact]

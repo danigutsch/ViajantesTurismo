@@ -42,7 +42,7 @@ public sealed class GeneratedIntegrationEventSerializerTests
     {
         // Arrange
         var serializer = GeneratedIntegrationEventSerializerTestServices.CreateSerializer();
-        var integrationEvent = new UnknownAdminIntegrationEvent(Guid.CreateVersion7(), DateTimeOffset.UtcNow);
+        var integrationEvent = new UnknownAdminIntegrationEvent(Guid.CreateVersion7(), TimeProvider.System.GetUtcNow());
 
         // Act
         Action serialize = () => serializer.Serialize(integrationEvent);

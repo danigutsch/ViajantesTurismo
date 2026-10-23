@@ -58,7 +58,7 @@ public sealed class PaymentTrackingSteps(TourContext tourContext, BookingContext
     public void ThenTheRecordedTimestampShouldBeRecent()
     {
         var payment = bookingContext.Booking.Payments.Last();
-        var timeDifference = DateTime.UtcNow - payment.RecordedAt;
+        var timeDifference = TimeProvider.System.GetUtcNow().UtcDateTime - payment.RecordedAt;
         (timeDifference.TotalMinutes < 1).ShouldBeTrue($"Timestamp should be recent, but was {timeDifference.TotalMinutes} minutes ago");
     }
 
@@ -110,7 +110,7 @@ public sealed class PaymentTrackingSteps(TourContext tourContext, BookingContext
     [When("I record a payment with today's date")]
     public void WhenIRecordAPaymentWithTodaysDate()
     {
-        var today = DateTime.UtcNow.Date;
+        var today = TimeProvider.System.GetUtcNow().UtcDateTime.Date;
         _paymentResult = bookingContext.Booking.RecordPayment(100m, DateOnly.FromDateTime(today), PaymentMethod.Cash, _timeProvider);
         bookingContext.PaymentResult = _paymentResult;
     }
@@ -118,7 +118,7 @@ public sealed class PaymentTrackingSteps(TourContext tourContext, BookingContext
     [When("I attempt to record a payment with tomorrow's date")]
     public void WhenIAttemptToRecordAPaymentWithTomorrowsDate()
     {
-        var tomorrow = DateTime.UtcNow.Date.AddDays(1);
+        var tomorrow = TimeProvider.System.GetUtcNow().UtcDateTime.Date.AddDays(1);
         _paymentResult = bookingContext.Booking.RecordPayment(100m, DateOnly.FromDateTime(tomorrow), PaymentMethod.Cash, _timeProvider);
         bookingContext.PaymentResult = _paymentResult;
     }
@@ -126,7 +126,7 @@ public sealed class PaymentTrackingSteps(TourContext tourContext, BookingContext
     [When("I attempt to record a payment with a negative payment method value")]
     public void WhenIAttemptToRecordAPaymentWithANegativePaymentMethodValue()
     {
-        var paymentDate = DateTime.UtcNow.AddDays(-1);
+        var paymentDate = TimeProvider.System.GetUtcNow().UtcDateTime.AddDays(-1);
         _paymentResult = bookingContext.Booking.RecordPayment(100m, DateOnly.FromDateTime(paymentDate), (PaymentMethod)(-1), _timeProvider);
         bookingContext.PaymentResult = _paymentResult;
     }
@@ -205,7 +205,7 @@ public sealed class PaymentTrackingSteps(TourContext tourContext, BookingContext
     [When(@"I record a payment for the second booking with reference ""(.*)""")]
     public void WhenIRecordAPaymentForTheSecondBookingWithReference(string reference)
     {
-        var result = bookingContext.Booking.RecordPayment(100m, DateOnly.FromDateTime(DateTime.UtcNow.AddDays(-1)), PaymentMethod.CreditCard,
+        var result = bookingContext.Booking.RecordPayment(100m, DateOnly.FromDateTime(TimeProvider.System.GetUtcNow().UtcDateTime.AddDays(-1)), PaymentMethod.CreditCard,
             _timeProvider, reference);
         (result.IsSuccess).ShouldBeTrue();
     }

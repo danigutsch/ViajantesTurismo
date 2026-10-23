@@ -57,8 +57,8 @@ public sealed class DocumentDraftTests
         // Assert
         editableResult.IsSuccess.ShouldBeTrue();
         protectedResult.IsFailure.ShouldBeTrue();
-        draft.Fields.Single(field => field.FieldId == "greeting").RenderedValue.ShouldBe("Welcome");
-        draft.Fields.Single(field => field.FieldId == "booking-reference").RenderedValue.ShouldBe("ABC123");
+        draft.Fields.ShouldHaveSingleItem(field => field.FieldId == "greeting").RenderedValue.ShouldBe("Welcome");
+        draft.Fields.ShouldHaveSingleItem(field => field.FieldId == "booking-reference").RenderedValue.ShouldBe("ABC123");
     }
 
     [Fact]
@@ -175,7 +175,7 @@ public sealed class DocumentDraftTests
         finalize.IsSuccess.ShouldBeTrue();
         missingFieldResult.IsFailure.ShouldBeTrue();
         immutableResult.IsFailure.ShouldBeTrue();
-        finalized.Fields.Single(field => field.FieldId == "greeting").RenderedValue.ShouldBe("Dear customer");
+        finalized.Fields.ShouldHaveSingleItem(field => field.FieldId == "greeting").RenderedValue.ShouldBe("Dear customer");
     }
 
     [Fact]
@@ -592,7 +592,7 @@ public sealed class DocumentDraftTests
         // Assert
         update.IsSuccess.ShouldBeTrue();
         revision.IsSuccess.ShouldBeTrue();
-        revision.Value.Fields.Single(field => field.FieldId == "greeting").RenderedValue.ShouldBe("Dear Bea,");
+        revision.Value.Fields.ShouldHaveSingleItem(field => field.FieldId == "greeting").RenderedValue.ShouldBe("Dear Bea,");
     }
 
     [Fact]

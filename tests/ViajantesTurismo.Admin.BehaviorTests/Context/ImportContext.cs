@@ -154,7 +154,7 @@ public sealed class ImportContext
             firstName,
             "Doe",
             "Male",
-            DateOnly.FromDateTime(DateTime.UtcNow.AddYears(-30)),
+            DateOnly.FromDateTime(TimeProvider.System.GetUtcNow().UtcDateTime.AddYears(-30)),
             "Brazilian",
             "Engineer",
             DateOnly.FromDateTime(TimeProvider.System.GetUtcNow().UtcDateTime)).Value;

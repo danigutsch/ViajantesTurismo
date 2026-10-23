@@ -36,7 +36,7 @@ public sealed class DocumentsApiClientTests
         var requestsHaveNoBody = true;
         using var httpClient = ContractHttpClientTestHelper.CreateClient(request =>
         {
-            keys.Add(request.Headers.TryGetValues("Idempotency-Key", out var values) ? values.Single() : string.Empty);
+            keys.Add(request.Headers.TryGetValues("Idempotency-Key", out var values) ? values.ShouldHaveSingleItem() : string.Empty);
             requestsHaveNoBody &= request.Content is null;
             return ContractHttpClientTestHelper.JsonResponse(DocumentJson, regenerate ? HttpStatusCode.OK : HttpStatusCode.Created);
         });
@@ -73,7 +73,7 @@ public sealed class DocumentsApiClientTests
         var requestsHaveNoBody = true;
         using var httpClient = ContractHttpClientTestHelper.CreateClient(request =>
         {
-            keys.Add(request.Headers.TryGetValues("Idempotency-Key", out var values) ? values.Single() : string.Empty);
+            keys.Add(request.Headers.TryGetValues("Idempotency-Key", out var values) ? values.ShouldHaveSingleItem() : string.Empty);
             requestsHaveNoBody &= request.Content is null;
             return ContractHttpClientTestHelper.JsonResponse(DocumentJson, regenerate ? HttpStatusCode.OK : HttpStatusCode.Created);
         });

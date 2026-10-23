@@ -12,7 +12,7 @@ public class ConsistencyTests(AspireSystemTestFixture fixture) : AspireSystemTes
 
         // Act
         await NavigateTo($"/tours/{tour.Id}");
-        await Expect(Page).ToHaveTitleAsync("Tour Details");
+        await Page.ShouldHaveTitle("Tour Details");
 
         // Assert
         await Expect(Page.GetByText(ConsistencyTestRegexes.BrlPrice()).First).ToBeVisibleAsync();
@@ -32,7 +32,7 @@ public class ConsistencyTests(AspireSystemTestFixture fixture) : AspireSystemTes
 
         // Act
         await NavigateTo($"/tours/{tour.Id}");
-        await Expect(Page).ToHaveTitleAsync("Tour Details");
+        await Page.ShouldHaveTitle("Tour Details");
         var pendingRow = Page.Locator($".table tbody tr:has(a[href='/bookings/{pendingBooking.Id}'])");
         var paidRow = Page.Locator($".table tbody tr:has(a[href='/bookings/{paidBooking.Id}'])");
         await Expect(pendingRow).ToHaveCountAsync(1);
@@ -46,10 +46,10 @@ public class ConsistencyTests(AspireSystemTestFixture fixture) : AspireSystemTes
         var paidPaymentFromDetails = await ReadBookingDetailsBadgeText(paidBooking.Id, "Payment Status");
 
         // Assert
-        (pendingStatusFromDetails).ShouldBe(pendingStatusFromList);
-        (paidStatusFromDetails).ShouldBe(paidStatusFromList);
-        (paidPaymentFromDetails).ShouldBe(paidPaymentFromList);
-        (paidPaymentFromDetails).ShouldBe("Paid");
+        pendingStatusFromDetails.ShouldBe(pendingStatusFromList);
+        paidStatusFromDetails.ShouldBe(paidStatusFromList);
+        paidPaymentFromDetails.ShouldBe(paidPaymentFromList);
+        paidPaymentFromDetails.ShouldBe("Paid");
     }
 
     [Theory]
@@ -64,6 +64,6 @@ public class ConsistencyTests(AspireSystemTestFixture fixture) : AspireSystemTes
         // Act
         // Assert
         await NavigateTo(route);
-        await Expect(Page).ToHaveTitleAsync(expectedTitle);
+        await Page.ShouldHaveTitle(expectedTitle);
     }
 }

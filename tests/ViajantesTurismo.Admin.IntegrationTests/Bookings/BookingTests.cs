@@ -35,11 +35,14 @@ public class BookingTests(ApiFixture fixture)
         var singleById = await fixture.Client.GetBookingAndRead(singleRoomBooking.Id, cancellationToken);
         var allBookings = await fixture.Client.GetAllBookingsAndRead(cancellationToken);
         var tourBookings = await fixture.Client.GetBookingsByTourAndRead(tour.Id, cancellationToken);
-        var doubleByPrincipal = (await fixture.Client.GetBookingsByCustomerAndRead(principal.Id, cancellationToken))
+        var actualValue = await fixture.Client.GetBookingsByCustomerAndRead(principal.Id, cancellationToken);
+        var doubleByPrincipal = actualValue
             .ShouldHaveSingleItem(booking => booking.Id == doubleRoomBooking.Id);
-        var doubleByCompanion = (await fixture.Client.GetBookingsByCustomerAndRead(companion.Id, cancellationToken))
+        var actualValue1 = await fixture.Client.GetBookingsByCustomerAndRead(companion.Id, cancellationToken);
+        var doubleByCompanion = actualValue1
             .ShouldHaveSingleItem(booking => booking.Id == doubleRoomBooking.Id);
-        var singleByCustomer = (await fixture.Client.GetBookingsByCustomerAndRead(soloCustomer.Id, cancellationToken))
+        var actualValue2 = await fixture.Client.GetBookingsByCustomerAndRead(soloCustomer.Id, cancellationToken);
+        var singleByCustomer = actualValue2
             .ShouldHaveSingleItem(booking => booking.Id == singleRoomBooking.Id);
 
         // Assert
@@ -96,9 +99,11 @@ public class BookingTests(ApiFixture fixture)
         var response = await fixture.Client.GetAsync(new Uri("/api/v1/bookings", UriKind.Relative), cancellationToken);
 
         // Assert
-        (baseUri.Scheme == Uri.UriSchemeHttp || baseUri.Scheme == Uri.UriSchemeHttps).ShouldBeTrue();
+        var areEqual = baseUri.Scheme == Uri.UriSchemeHttp || baseUri.Scheme == Uri.UriSchemeHttps;
+        areEqual.ShouldBeTrue();
         string.IsNullOrWhiteSpace(baseUri.Host).ShouldBeFalse();
-        (baseUri.Port > 0).ShouldBeTrue();
+        var isValid = baseUri.Port > 0;
+        isValid.ShouldBeTrue();
 
         response.StatusCode.ShouldBe(HttpStatusCode.OK);
     }

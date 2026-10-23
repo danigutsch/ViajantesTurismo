@@ -169,21 +169,21 @@ public sealed partial class AdminTestArchitectureGuardTests
             .ToArray();
 
         // Assert
-        (appMarkup).ShouldContain("<HeadOutlet @rendermode=\"InteractiveServer\" />", StringComparison.Ordinal);
-        (appMarkup).ShouldContain("<Routes @rendermode=\"InteractiveServer\" />", StringComparison.Ordinal);
-        (appMarkup).ShouldContain("<div class=\"app-startup-status\" role=\"status\" aria-live=\"polite\">", StringComparison.Ordinal);
-        (appMarkup).ShouldContain("<noscript>", StringComparison.Ordinal);
-        (appMarkup).ShouldContain("<link rel=\"stylesheet\" href=\"@Assets[\"app-noscript.css\"]\" />", StringComparison.Ordinal);
-        (mainLayoutMarkup).ShouldContain("inert=\"@(!RendererInfo.IsInteractive ? \"inert\" : null)\"", StringComparison.Ordinal);
-        (mainLayoutMarkup).ShouldContain("aria-busy=\"@(!RendererInfo.IsInteractive ? \"true\" : \"false\")\"", StringComparison.Ordinal);
-        (mainLayoutMarkup).ShouldContain("data-interactive=\"@RendererInfo.IsInteractive.ToString().ToLowerInvariant()\"", StringComparison.Ordinal);
-        (appStyles).ShouldContain("body:has(.page[data-interactive=\"true\"]) .app-startup-status", StringComparison.Ordinal);
+        appMarkup.ShouldContain("<HeadOutlet @rendermode=\"InteractiveServer\" />", StringComparison.Ordinal);
+        appMarkup.ShouldContain("<Routes @rendermode=\"InteractiveServer\" />", StringComparison.Ordinal);
+        appMarkup.ShouldContain("<div class=\"app-startup-status\" role=\"status\" aria-live=\"polite\">", StringComparison.Ordinal);
+        appMarkup.ShouldContain("<noscript>", StringComparison.Ordinal);
+        appMarkup.ShouldContain("<link rel=\"stylesheet\" href=\"@Assets[\"app-noscript.css\"]\" />", StringComparison.Ordinal);
+        mainLayoutMarkup.ShouldContain("inert=\"@(!RendererInfo.IsInteractive ? \"inert\" : null)\"", StringComparison.Ordinal);
+        mainLayoutMarkup.ShouldContain("aria-busy=\"@(!RendererInfo.IsInteractive ? \"true\" : \"false\")\"", StringComparison.Ordinal);
+        mainLayoutMarkup.ShouldContain("data-interactive=\"@RendererInfo.IsInteractive.ToString().ToLowerInvariant()\"", StringComparison.Ordinal);
+        appStyles.ShouldContain("body:has(.page[data-interactive=\"true\"]) .app-startup-status", StringComparison.Ordinal);
         systemTestBase.ShouldContain(".page[data-interactive=\\\"true\\\"]", StringComparison.Ordinal);
         systemTestBase.ShouldContain("DeveloperExceptionPageSelector", StringComparison.Ordinal);
         systemTestBase.ShouldNotContain(".page:not([inert])", StringComparison.Ordinal);
         systemTestBase.ShouldNotContain("maxAttempts", StringComparison.Ordinal);
         noScriptStylesExists.ShouldBeTrue();
-        (noScriptStyles).ShouldContain(".app-startup-status { display: none; }", StringComparison.Ordinal);
+        noScriptStyles.ShouldContain(".app-startup-status { display: none; }", StringComparison.Ordinal);
         interactiveReadyExists.ShouldBeFalse();
         pagesWithRouteRenderModes.ShouldBeEmpty();
     }
@@ -234,7 +234,8 @@ public sealed partial class AdminTestArchitectureGuardTests
             .SelectMany(FindUndocumentedSerialCollectionDefinitions)
             .ToArray();
 
-        (undocumentedSerialDefinitions.Length == 0).ShouldBeTrue(
+        var areEqual = undocumentedSerialDefinitions.Length == 0;
+        areEqual.ShouldBeTrue(
             $"Expected every DisableParallelization = true collection definition to include a nearby [SerialTestJustification] attribute, but found:{Environment.NewLine}{string.Join(Environment.NewLine, undocumentedSerialDefinitions)}");
     }
 
@@ -253,7 +254,8 @@ public sealed partial class AdminTestArchitectureGuardTests
             .SelectMany(path => FindGenericServiceProviderReachThrough(path))
             .ToArray();
 
-        (offendingMembers.Length != 0).ShouldBeFalse(
+        var areDifferent = offendingMembers.Length != 0;
+        areDifferent.ShouldBeFalse(
             $"Expected Admin hosted test infrastructure to avoid public generic service-provider reach-through, but found:{Environment.NewLine}{string.Join(Environment.NewLine, offendingMembers)}");
     }
 
@@ -266,7 +268,8 @@ public sealed partial class AdminTestArchitectureGuardTests
             .SelectMany(FindRawServiceProviderPlumbingInTestMethods)
             .ToArray();
 
-        (offendingLines.Length != 0).ShouldBeFalse(
+        var areDifferent1 = offendingLines.Length != 0;
+        areDifferent1.ShouldBeFalse(
             $"Expected concrete test methods to use typed helpers instead of raw DI/scope plumbing, but found:{Environment.NewLine}{string.Join(Environment.NewLine, offendingLines)}");
     }
 
@@ -297,7 +300,8 @@ public sealed partial class AdminTestArchitectureGuardTests
             .SelectMany(FindHardcodedCanonicalTraitNames)
             .ToArray();
 
-        (offendingLines.Length != 0).ShouldBeFalse(
+        var areDifferent2 = offendingLines.Length != 0;
+        areDifferent2.ShouldBeFalse(
             $"Expected reusable trait names to come from canonical constants directly, but found:{Environment.NewLine}{string.Join(Environment.NewLine, offendingLines)}");
     }
 

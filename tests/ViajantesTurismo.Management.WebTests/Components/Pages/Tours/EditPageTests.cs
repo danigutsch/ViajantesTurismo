@@ -25,8 +25,9 @@ public class EditPageTests : BunitContext
 
         // Assert
         var markup = cut.Markup;
-        (markup.Contains("Loading...", StringComparison.Ordinal) || markup.Contains("Tour not found", StringComparison.Ordinal) ||
-                    markup.Contains("input#identifier", StringComparison.Ordinal)).ShouldBeTrue();
+        var showsInitialState = markup.Contains("Loading...", StringComparison.Ordinal) || markup.Contains("Tour not found", StringComparison.Ordinal) ||
+                    markup.Contains("input#identifier", StringComparison.Ordinal);
+        showsInitialState.ShouldBeTrue();
     }
 
     [Fact]
@@ -42,8 +43,8 @@ public class EditPageTests : BunitContext
         // Assert
         await cut.WaitForStateAsync(() => cut.FindAll("input#identifier").Count > 0, TimeSpan.FromSeconds(2));
 
-        (cut.Find("input#identifier").GetAttribute("value")).ShouldBe("CUBA2024");
-        (cut.Find("input#name").GetAttribute("value")).ShouldBe("Cuba Adventure");
+        cut.Find("input#identifier").GetAttribute("value").ShouldBe("CUBA2024");
+        cut.Find("input#name").GetAttribute("value").ShouldBe("Cuba Adventure");
     }
 
     [Fact]
@@ -60,7 +61,7 @@ public class EditPageTests : BunitContext
         await cut.WaitForStateAsync(() => cut.FindAll("h1").Count > 0, TimeSpan.FromSeconds(2));
 
         var title = cut.Find("h1");
-        (title.TextContent).ShouldBe("Edit Tour");
+        title.TextContent.ShouldBe("Edit Tour");
     }
 
     [Fact]
@@ -78,9 +79,9 @@ public class EditPageTests : BunitContext
 
         var markup = cut.Markup;
 
-        (markup).ShouldContain("Hotel", StringComparison.Ordinal);
-        (markup).ShouldContain("Breakfast", StringComparison.Ordinal);
-        (markup).ShouldContain("Lunch", StringComparison.Ordinal);
+        markup.ShouldContain("Hotel", StringComparison.Ordinal);
+        markup.ShouldContain("Breakfast", StringComparison.Ordinal);
+        markup.ShouldContain("Lunch", StringComparison.Ordinal);
     }
 
     [Fact]
@@ -101,7 +102,7 @@ public class EditPageTests : BunitContext
         await cut.WaitForStateAsync(() => cut.FindAll(".alert-info").Count > 0, TimeSpan.FromSeconds(2));
 
         var cancelButton = cut.FindAll("button").First(b => b.TextContent.Contains("Cancel", StringComparison.Ordinal));
-        _ = (cancelButton).ShouldNotBeNull();
+        _ = cancelButton.ShouldNotBeNull();
     }
 
     [Fact]
@@ -129,10 +130,11 @@ public class EditPageTests : BunitContext
             TimeSpan.FromSeconds(2));
 
         var successAlerts = cut.FindAll(".alert-success");
-        (successAlerts.Count >= 1).ShouldBeTrue("Should have at least one success alert");
+        var hasSuccessAlert = successAlerts.Count >= 1;
+        hasSuccessAlert.ShouldBeTrue("Should have at least one success alert");
 
         var markup = cut.Markup;
-        (markup).ShouldContain("You can go to the details page now", StringComparison.Ordinal);
+        markup.ShouldContain("You can go to the details page now", StringComparison.Ordinal);
     }
 
     [Fact]
@@ -159,7 +161,7 @@ public class EditPageTests : BunitContext
             TimeSpan.FromSeconds(2));
 
         var goToDetailsButton = cut.FindAll("button").First(b => b.TextContent.Contains("Go to Details", StringComparison.Ordinal));
-        _ = (goToDetailsButton).ShouldNotBeNull();
+        _ = goToDetailsButton.ShouldNotBeNull();
     }
 
     [Fact]
@@ -200,9 +202,10 @@ public class EditPageTests : BunitContext
         await cut.InvokeAsync(() => cut.Find("form").Submit());
 
         // Assert
+        var isUpdating = cut.Find("button[type='submit']").TextContent.Contains("Updating...", StringComparison.Ordinal)
+                || cut.FindAll(".alert-success").Count > 0;
         await cut.WaitForAssertionAsync(() =>
-            (cut.Find("button[type='submit']").TextContent.Contains("Updating...", StringComparison.Ordinal)
-                || cut.FindAll(".alert-success").Count > 0).ShouldBeTrue(),
+            isUpdating.ShouldBeTrue(),
             TimeSpan.FromSeconds(2));
     }
 
@@ -263,7 +266,7 @@ public class EditPageTests : BunitContext
         await cut.WaitForStateAsync(() => cut.FindAll("input#identifier").Count > 0, TimeSpan.FromSeconds(2));
 
         var identifier = cut.Find("input#identifier");
-        (identifier.HasAttribute("disabled")).ShouldBeFalse();
+        identifier.HasAttribute("disabled").ShouldBeFalse();
     }
 
     [Fact]
@@ -280,7 +283,7 @@ public class EditPageTests : BunitContext
         await cut.WaitForStateAsync(() => cut.FindAll("input#identifier").Count > 0, TimeSpan.FromSeconds(2));
 
         var identifier = cut.Find("input#identifier");
-        (identifier.HasAttribute("disabled")).ShouldBeTrue();
+        identifier.HasAttribute("disabled").ShouldBeTrue();
     }
 
     [Fact]
@@ -297,7 +300,7 @@ public class EditPageTests : BunitContext
         await cut.WaitForStateAsync(() => cut.FindAll("select#currency").Count > 0, TimeSpan.FromSeconds(2));
 
         var currency = cut.Find("select#currency");
-        (currency.HasAttribute("disabled")).ShouldBeFalse();
+        currency.HasAttribute("disabled").ShouldBeFalse();
     }
 
     [Fact]
@@ -314,7 +317,7 @@ public class EditPageTests : BunitContext
         await cut.WaitForStateAsync(() => cut.FindAll("select#currency").Count > 0, TimeSpan.FromSeconds(2));
 
         var currency = cut.Find("select#currency");
-        (currency.HasAttribute("disabled")).ShouldBeTrue();
+        currency.HasAttribute("disabled").ShouldBeTrue();
     }
 
 }

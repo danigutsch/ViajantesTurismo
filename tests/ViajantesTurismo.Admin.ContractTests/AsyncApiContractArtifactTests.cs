@@ -16,7 +16,7 @@ public sealed class AsyncApiContractArtifactTests
     [Fact]
     [Trait(PandaBear.Testing.TestTraitNames.CategoryName, TestTraits.DriftGuardCategory)]
     [Trait(PandaBear.Testing.TestTraitNames.SurfaceName, TestTraits.AsyncApiSurface)]
-    public void Canonical_async_api_artifact_matches_current_integration_event_contracts()
+    public void Canonical_async_API_artifact_matches_current_integration_event_contracts()
     {
         // Arrange
         var artifact = AsyncApiContractArtifact.Read();

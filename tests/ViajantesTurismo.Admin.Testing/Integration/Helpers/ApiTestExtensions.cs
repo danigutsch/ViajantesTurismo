@@ -99,7 +99,7 @@ public static class ApiTestExtensions
     public static async Task<GetTourDto> CreateTour(this HttpClient client, CreateTourOptions? options = null)
     {
         var resolvedOptions = options ?? new CreateTourOptions();
-        var resolvedStartDate = resolvedOptions.StartDate ?? DateTime.UtcNow.AddDays(30);
+        var resolvedStartDate = resolvedOptions.StartDate ?? TimeProvider.System.GetUtcNow().UtcDateTime.AddDays(30);
         var resolvedEndDate = resolvedOptions.EndDate ?? resolvedStartDate.AddDays(7);
 
         var dto = new CreateTourDto
@@ -341,7 +341,7 @@ public static class ApiTestExtensions
         var dto = new CreatePaymentDto
         {
             Amount = amount,
-            PaymentDate = DateOnly.FromDateTime(DateTime.UtcNow),
+            PaymentDate = DateOnly.FromDateTime(TimeProvider.System.GetUtcNow().UtcDateTime),
             Method = PaymentMethodDto.CreditCard,
             Notes = "E2E test payment"
         };

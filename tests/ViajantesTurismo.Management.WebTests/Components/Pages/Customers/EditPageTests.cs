@@ -24,9 +24,10 @@ public class EditPageTests : BunitContext
         var cut = Render<Edit>(parameters => parameters.Add(p => p.Id, customerId));
 
         // Assert
+        var showsInitialState = cut.Markup.Contains("Loading...", StringComparison.Ordinal)
+                || cut.Markup.Contains("Customer not found.", StringComparison.Ordinal);
         cut.WaitForAssertion(() =>
-            (cut.Markup.Contains("Loading...", StringComparison.Ordinal)
-                || cut.Markup.Contains("Customer not found.", StringComparison.Ordinal)).ShouldBeTrue());
+            showsInitialState.ShouldBeTrue());
     }
 
     [Fact]
@@ -89,13 +90,13 @@ public class EditPageTests : BunitContext
         await cut.WaitForAssertionAsync(() =>
         {
             var firstNameInput = cut.Find("input#firstName");
-            (firstNameInput.GetAttribute("value")).ShouldBe(customer.PersonalInfo.FirstName);
+            firstNameInput.GetAttribute("value").ShouldBe(customer.PersonalInfo.FirstName);
 
             var lastNameInput = cut.Find("input#lastName");
-            (lastNameInput.GetAttribute("value")).ShouldBe(customer.PersonalInfo.LastName);
+            lastNameInput.GetAttribute("value").ShouldBe(customer.PersonalInfo.LastName);
 
             var emailInput = cut.Find("input#email");
-            (emailInput.GetAttribute("value")).ShouldBe(customer.ContactInfo.Email);
+            emailInput.GetAttribute("value").ShouldBe(customer.ContactInfo.Email);
         });
     }
 
@@ -115,12 +116,12 @@ public class EditPageTests : BunitContext
         await cut.WaitForAssertionAsync(() =>
         {
             var card = cut.FindAll(".card").First(c => c.TextContent.Contains("Personal Information", StringComparison.Ordinal));
-            (card.QuerySelector("input#firstName")).ShouldNotBeNull();
-            (card.QuerySelector("input#lastName")).ShouldNotBeNull();
-            (card.QuerySelector("input#birthDate")).ShouldNotBeNull();
-            (card.QuerySelector("input#gender")).ShouldNotBeNull();
-            (card.QuerySelector("#nationality")).ShouldNotBeNull();
-            (card.QuerySelector("input#occupation")).ShouldNotBeNull();
+            card.QuerySelector("input#firstName").ShouldNotBeNull();
+            card.QuerySelector("input#lastName").ShouldNotBeNull();
+            card.QuerySelector("input#birthDate").ShouldNotBeNull();
+            card.QuerySelector("input#gender").ShouldNotBeNull();
+            card.QuerySelector("#nationality").ShouldNotBeNull();
+            card.QuerySelector("input#occupation").ShouldNotBeNull();
         });
     }
 
@@ -140,10 +141,10 @@ public class EditPageTests : BunitContext
         await cut.WaitForAssertionAsync(() =>
         {
             var card = cut.FindAll(".card").First(c => c.TextContent.Contains("Contact Information", StringComparison.Ordinal));
-            (card.QuerySelector("input#email")).ShouldNotBeNull();
-            (card.QuerySelector("input#mobile")).ShouldNotBeNull();
-            (card.QuerySelector("input#instagram")).ShouldNotBeNull();
-            (card.QuerySelector("input#facebook")).ShouldNotBeNull();
+            card.QuerySelector("input#email").ShouldNotBeNull();
+            card.QuerySelector("input#mobile").ShouldNotBeNull();
+            card.QuerySelector("input#instagram").ShouldNotBeNull();
+            card.QuerySelector("input#facebook").ShouldNotBeNull();
         });
     }
 
@@ -163,8 +164,8 @@ public class EditPageTests : BunitContext
         await cut.WaitForAssertionAsync(() =>
         {
             var card = cut.FindAll(".card").First(c => c.TextContent.Contains("Identification", StringComparison.Ordinal));
-            (card.QuerySelector("input#nationalId")).ShouldNotBeNull();
-            (card.QuerySelector("#idNationality")).ShouldNotBeNull();
+            card.QuerySelector("input#nationalId").ShouldNotBeNull();
+            card.QuerySelector("#idNationality").ShouldNotBeNull();
         });
     }
 
@@ -184,13 +185,13 @@ public class EditPageTests : BunitContext
         await cut.WaitForAssertionAsync(() =>
         {
             var card = cut.FindAll(".card").First(c => c.TextContent.Contains("Address", StringComparison.Ordinal));
-            (card.QuerySelector("input#street")).ShouldNotBeNull();
-            (card.QuerySelector("input#complement")).ShouldNotBeNull();
-            (card.QuerySelector("input#neighborhood")).ShouldNotBeNull();
-            (card.QuerySelector("input#postalCode")).ShouldNotBeNull();
-            (card.QuerySelector("input#city")).ShouldNotBeNull();
-            (card.QuerySelector("input#state")).ShouldNotBeNull();
-            (card.QuerySelector("input#country")).ShouldNotBeNull();
+            card.QuerySelector("input#street").ShouldNotBeNull();
+            card.QuerySelector("input#complement").ShouldNotBeNull();
+            card.QuerySelector("input#neighborhood").ShouldNotBeNull();
+            card.QuerySelector("input#postalCode").ShouldNotBeNull();
+            card.QuerySelector("input#city").ShouldNotBeNull();
+            card.QuerySelector("input#state").ShouldNotBeNull();
+            card.QuerySelector("input#country").ShouldNotBeNull();
         });
     }
 
@@ -212,15 +213,15 @@ public class EditPageTests : BunitContext
             var card = cut.FindAll(".card").First(c => c.TextContent.Contains("Physical Information", StringComparison.Ordinal));
 
             var weightInput = card.QuerySelector("input#weight");
-            _ = (weightInput).ShouldNotBeNull();
-            (card.TextContent).ShouldContain("Weight (kg)", StringComparison.Ordinal);
+            _ = weightInput.ShouldNotBeNull();
+            card.TextContent.ShouldContain("Weight (kg)", StringComparison.Ordinal);
 
             var heightInput = card.QuerySelector("input#height");
-            _ = (heightInput).ShouldNotBeNull();
-            (card.TextContent).ShouldContain("Height (cm)", StringComparison.Ordinal);
+            _ = heightInput.ShouldNotBeNull();
+            card.TextContent.ShouldContain("Height (cm)", StringComparison.Ordinal);
 
             var bikeTypeSelect = card.QuerySelector("select#bikeType");
-            _ = (bikeTypeSelect).ShouldNotBeNull();
+            _ = bikeTypeSelect.ShouldNotBeNull();
         });
     }
 
@@ -241,10 +242,10 @@ public class EditPageTests : BunitContext
         {
             var bikeTypeSelect = cut.Find("select#bikeType");
             var options = bikeTypeSelect.QuerySelectorAll("option");
-            (options.Length).ShouldBe(3);
-            (options[0].TextContent).ShouldContain("None", StringComparison.Ordinal);
-            (options[1].TextContent).ShouldContain("Regular", StringComparison.Ordinal);
-            (options[2].TextContent).ShouldContain("E-Bike", StringComparison.Ordinal);
+            options.Length.ShouldBe(3);
+            options[0].TextContent.ShouldContain("None", StringComparison.Ordinal);
+            options[1].TextContent.ShouldContain("Regular", StringComparison.Ordinal);
+            options[2].TextContent.ShouldContain("E-Bike", StringComparison.Ordinal);
         });
     }
 
@@ -264,9 +265,9 @@ public class EditPageTests : BunitContext
         await cut.WaitForAssertionAsync(() =>
         {
             var card = cut.FindAll(".card").First(c => c.TextContent.Contains("Accommodation Preferences", StringComparison.Ordinal));
-            (card.QuerySelector("select#roomType")).ShouldNotBeNull();
-            (card.QuerySelector("select#bedType")).ShouldNotBeNull();
-            (card.TextContent).ShouldContain("Companion", StringComparison.Ordinal);
+            card.QuerySelector("select#roomType").ShouldNotBeNull();
+            card.QuerySelector("select#bedType").ShouldNotBeNull();
+            card.TextContent.ShouldContain("Companion", StringComparison.Ordinal);
         });
     }
 
@@ -287,9 +288,9 @@ public class EditPageTests : BunitContext
         {
             var roomTypeSelect = cut.Find("select#roomType");
             var options = roomTypeSelect.QuerySelectorAll("option");
-            (options.Length).ShouldBe(2);
-            (options[0].TextContent).ShouldContain("Double Room", StringComparison.Ordinal);
-            (options[1].TextContent).ShouldContain("Single Room", StringComparison.Ordinal);
+            options.Length.ShouldBe(2);
+            options[0].TextContent.ShouldContain("Double Room", StringComparison.Ordinal);
+            options[1].TextContent.ShouldContain("Single Room", StringComparison.Ordinal);
         });
     }
 
@@ -310,9 +311,9 @@ public class EditPageTests : BunitContext
         {
             var bedTypeSelect = cut.Find("select#bedType");
             var options = bedTypeSelect.QuerySelectorAll("option");
-            (options.Length).ShouldBe(2);
-            (options[0].TextContent).ShouldContain("Single Bed", StringComparison.Ordinal);
-            (options[1].TextContent).ShouldContain("Double Bed", StringComparison.Ordinal);
+            options.Length.ShouldBe(2);
+            options[0].TextContent.ShouldContain("Single Bed", StringComparison.Ordinal);
+            options[1].TextContent.ShouldContain("Double Bed", StringComparison.Ordinal);
         });
     }
 
@@ -332,8 +333,8 @@ public class EditPageTests : BunitContext
         await cut.WaitForAssertionAsync(() =>
         {
             var card = cut.FindAll(".card").First(c => c.TextContent.Contains("Emergency Contact", StringComparison.Ordinal));
-            (card.QuerySelector("input#emergencyName")).ShouldNotBeNull();
-            (card.QuerySelector("input#emergencyMobile")).ShouldNotBeNull();
+            card.QuerySelector("input#emergencyName").ShouldNotBeNull();
+            card.QuerySelector("input#emergencyMobile").ShouldNotBeNull();
         });
     }
 
@@ -355,12 +356,12 @@ public class EditPageTests : BunitContext
             var card = cut.FindAll(".card").First(c => c.TextContent.Contains("Medical Information", StringComparison.Ordinal));
 
             var allergiesTextArea = card.QuerySelector("textarea#allergies");
-            _ = (allergiesTextArea).ShouldNotBeNull();
-            (allergiesTextArea.GetAttribute("rows")).ShouldBe("3");
+            _ = allergiesTextArea.ShouldNotBeNull();
+            allergiesTextArea.GetAttribute("rows").ShouldBe("3");
 
             var additionalInfoTextArea = card.QuerySelector("textarea#additionalInfo");
-            _ = (additionalInfoTextArea).ShouldNotBeNull();
-            (additionalInfoTextArea.GetAttribute("rows")).ShouldBe("3");
+            _ = additionalInfoTextArea.ShouldNotBeNull();
+            additionalInfoTextArea.GetAttribute("rows").ShouldBe("3");
         });
     }
 
@@ -388,11 +389,11 @@ public class EditPageTests : BunitContext
         {
             var alerts = cut.FindAll(".alert.alert-success");
             var cancelledAlert = alerts.Last(a => a.TextContent.Contains("Customer updated successfully", StringComparison.Ordinal));
-            (cancelledAlert.TextContent).ShouldContain("Customer updated successfully", StringComparison.Ordinal);
+            cancelledAlert.TextContent.ShouldContain("Customer updated successfully", StringComparison.Ordinal);
 
             var goToDetailsButton = cancelledAlert.QuerySelector("button");
-            _ = (goToDetailsButton).ShouldNotBeNull();
-            (goToDetailsButton.TextContent).ShouldContain("Go to Details", StringComparison.Ordinal);
+            _ = goToDetailsButton.ShouldNotBeNull();
+            goToDetailsButton.TextContent.ShouldContain("Go to Details", StringComparison.Ordinal);
         });
     }
 }

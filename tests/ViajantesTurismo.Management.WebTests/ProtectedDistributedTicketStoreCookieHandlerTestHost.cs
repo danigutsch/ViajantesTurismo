@@ -97,7 +97,7 @@ internal sealed class ProtectedDistributedTicketStoreCookieHandlerTestHost : IDi
                                     new Claim(ManagementAuthenticationDefaults.UserTokenStoreSessionIdClaimType, "test-session"),
                                     new Claim(
                                         ManagementAuthenticationDefaults.UserTokenStoreSessionExpiresAtClaimType,
-                                        DateTimeOffset.UtcNow.AddHours(1).ToString("O"))
+                                        TimeProvider.System.GetUtcNow().AddHours(1).ToString("O"))
                                 ],
                                 CookieAuthenticationDefaults.AuthenticationScheme));
                             await context.SignInAsync(CookieAuthenticationDefaults.AuthenticationScheme, user);

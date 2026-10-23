@@ -25,8 +25,10 @@ public sealed class ProtectedDistributedTicketStoreTests
         var retrieved = await context.Store.RetrieveAsync(key);
         var cachedValue = await context.Cache.GetAsync(key, Xunit.TestContext.Current.CancellationToken);
         // Assert
-        (retrieved is null).ShouldBe(expired);
-        (cachedValue is null).ShouldBe(expired);
+        var ticketWasRemoved = retrieved is null;
+        ticketWasRemoved.ShouldBe(expired);
+        var cacheEntryWasRemoved = cachedValue is null;
+        cacheEntryWasRemoved.ShouldBe(expired);
         clock.GetUtcNow().ShouldBe(expiry.AddTicks(ticksAfterExpiry));
     }
 
@@ -68,7 +70,7 @@ public sealed class ProtectedDistributedTicketStoreTests
         var serializedTicket = Microsoft.AspNetCore.Authentication.TicketSerializer.Default.Serialize(ticket);
         protectedTicket.SequenceEqual(serializedTicket).ShouldBeFalse();
         retrieved.ShouldNotBeNull();
-        retrieved.Principal.Identity?.Name.ShouldBe("Test Administrator");
+        retrieved.Principal.Identity.ShouldNotBeNull().Name.ShouldBe("Test Administrator");
     }
 
     [Fact]
@@ -151,7 +153,7 @@ public sealed class ProtectedDistributedTicketStoreTests
                 new Microsoft.Extensions.Caching.Memory.MemoryDistributedCacheOptions()));
         var cache = new ThrowingRemoveDistributedCache(innerCache);
         var context = new ProtectedDistributedTicketStoreTestContext(cache);
-        var expiredTicket = ProtectedDistributedTicketStoreTestContext.CreateTicket(DateTimeOffset.UtcNow.AddMinutes(-1));
+        var expiredTicket = ProtectedDistributedTicketStoreTestContext.CreateTicket(TimeProvider.System.GetUtcNow().AddMinutes(-1));
 
         // Act
         await context.Store.RenewAsync("management-ticket:expired", expiredTicket);
@@ -265,7 +267,7 @@ public sealed class ProtectedDistributedTicketStoreTests
     {
         // Arrange
         var context = new ProtectedDistributedTicketStoreTestContext();
-        var expiredTicket = ProtectedDistributedTicketStoreTestContext.CreateTicket(DateTimeOffset.UtcNow.AddMinutes(-1));
+        var expiredTicket = ProtectedDistributedTicketStoreTestContext.CreateTicket(TimeProvider.System.GetUtcNow().AddMinutes(-1));
 
         // Act
         var key = await context.Store.StoreAsync(expiredTicket);

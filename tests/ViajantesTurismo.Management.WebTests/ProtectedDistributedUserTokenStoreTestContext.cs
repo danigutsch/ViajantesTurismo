@@ -41,7 +41,7 @@ internal sealed class ProtectedDistributedUserTokenStoreTestContext
             new Claim(ManagementAuthenticationDefaults.UserTokenStoreSessionIdClaimType, sessionId),
             new Claim(
                 ManagementAuthenticationDefaults.UserTokenStoreSessionExpiresAtClaimType,
-                (sessionExpiresAt ?? DateTimeOffset.UtcNow.Add(ManagementAuthenticationDefaults.SessionLifetime)).ToString("O"))
+                (sessionExpiresAt ?? TimeProvider.System.GetUtcNow().Add(ManagementAuthenticationDefaults.SessionLifetime)).ToString("O"))
         ],
         "test");
 
@@ -55,7 +55,7 @@ internal sealed class ProtectedDistributedUserTokenStoreTestContext
             AccessToken = AccessToken.Parse(accessToken),
             AccessTokenType = AccessTokenType.Parse("Bearer"),
             ClientId = ClientId.Parse("web-app"),
-            Expiration = DateTimeOffset.UtcNow.AddMinutes(5),
+            Expiration = TimeProvider.System.GetUtcNow().AddMinutes(5),
             RefreshToken = RefreshToken.Parse("refresh-token")
         };
     }

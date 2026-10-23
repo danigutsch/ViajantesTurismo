@@ -15,9 +15,9 @@ public sealed class MainLayoutInteractivityTests : BunitContext
 
         // Assert
         var page = cut.Find("div.page");
-        (page.GetAttribute("inert")).ShouldBe("inert");
-        (page.GetAttribute("aria-busy")).ShouldBe("true");
-        (page.GetAttribute("data-interactive")).ShouldBe("false");
+        page.GetAttribute("inert").ShouldBe("inert");
+        page.GetAttribute("aria-busy").ShouldBe("true");
+        page.GetAttribute("data-interactive").ShouldBe("false");
     }
 
     [Fact]
@@ -31,8 +31,8 @@ public sealed class MainLayoutInteractivityTests : BunitContext
 
         // Assert
         var page = cut.Find("div.page");
-        (page.HasAttribute("inert")).ShouldBeFalse();
-        (page.GetAttribute("aria-busy")).ShouldBe("false");
-        (page.GetAttribute("data-interactive")).ShouldBe("true");
+        page.HasAttribute("inert").ShouldBeFalse();
+        page.GetAttribute("aria-busy").ShouldBe("false");
+        page.GetAttribute("data-interactive").ShouldBe("true");
     }
 }

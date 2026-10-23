@@ -268,7 +268,7 @@ public sealed class CiTestProjectSelectorTests
     }
 
     [Fact]
-    public void Openapi_api_change_selects_dynamic_tool_tests_and_windows_validation()
+    public void OpenApi_API_change_selects_dynamic_tool_tests_and_windows_validation()
     {
         // Arrange
         using var repository = new TemporaryCiTestRepository();

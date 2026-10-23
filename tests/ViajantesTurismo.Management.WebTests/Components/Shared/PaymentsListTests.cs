@@ -40,8 +40,8 @@ public class PaymentsListTests : BunitContext
 
         // Assert
         var alert = cut.Find(".alert-info");
-        (alert.TextContent).ShouldContain("No payments recorded yet", StringComparison.Ordinal);
-        (alert.InnerHtml).ShouldContain("bi-info-circle", StringComparison.Ordinal);
+        alert.TextContent.ShouldContain("No payments recorded yet", StringComparison.Ordinal);
+        alert.InnerHtml.ShouldContain("bi-info-circle", StringComparison.Ordinal);
     }
 
     [Fact]
@@ -62,7 +62,7 @@ public class PaymentsListTests : BunitContext
 
         // Assert
         var quickGrid = cut.Find(".table.table-hover");
-        _ = (quickGrid).ShouldNotBeNull();
+        _ = quickGrid.ShouldNotBeNull();
     }
 
     [Fact]
@@ -83,7 +83,7 @@ public class PaymentsListTests : BunitContext
             .Add(p => p.Payments, payments));
 
         // Assert
-        (cut.Markup).ShouldContain("15/03/2024", StringComparison.Ordinal);
+        cut.Markup.ShouldContain("15/03/2024", StringComparison.Ordinal);
     }
 
     [Fact]
@@ -103,7 +103,7 @@ public class PaymentsListTests : BunitContext
 
         // Assert
         var amountCell = cut.Find("td strong");
-        (amountCell.TextContent).ShouldContain("123.45", StringComparison.Ordinal);
+        amountCell.TextContent.ShouldContain("123.45", StringComparison.Ordinal);
     }
 
     [Fact]
@@ -123,7 +123,7 @@ public class PaymentsListTests : BunitContext
 
         // Assert
         var badge = cut.Find(".badge.bg-primary");
-        (badge.TextContent.Trim()).ShouldBe("Credit Card");
+        badge.TextContent.Trim().ShouldBe("Credit Card");
     }
 
     [Fact]
@@ -143,7 +143,7 @@ public class PaymentsListTests : BunitContext
 
         // Assert
         var badge = cut.Find(".badge.bg-info");
-        (badge.TextContent.Trim()).ShouldBe("Bank Transfer");
+        badge.TextContent.Trim().ShouldBe("Bank Transfer");
     }
 
     [Fact]
@@ -163,7 +163,7 @@ public class PaymentsListTests : BunitContext
 
         // Assert
         var badge = cut.Find(".badge.bg-success");
-        (badge.TextContent.Trim()).ShouldBe("Cash");
+        badge.TextContent.Trim().ShouldBe("Cash");
     }
 
     [Fact]
@@ -183,7 +183,7 @@ public class PaymentsListTests : BunitContext
 
         // Assert
         var badge = cut.Find(".badge.bg-warning");
-        (badge.TextContent.Trim()).ShouldBe("Check");
+        badge.TextContent.Trim().ShouldBe("Check");
     }
 
     [Fact]
@@ -203,7 +203,7 @@ public class PaymentsListTests : BunitContext
 
         // Assert
         var badge = cut.Find(".badge.bg-secondary");
-        (badge.TextContent.Trim()).ShouldBe("PayPal");
+        badge.TextContent.Trim().ShouldBe("PayPal");
     }
 
     [Fact]
@@ -224,7 +224,7 @@ public class PaymentsListTests : BunitContext
 
         // Assert
         var code = cut.Find("code");
-        (code.TextContent).ShouldBe("REF123456");
+        code.TextContent.ShouldBe("REF123456");
     }
 
     [Fact]
@@ -245,7 +245,7 @@ public class PaymentsListTests : BunitContext
         // Assert
         var cells = cut.FindAll("td");
         var referenceCell = cells.FirstOrDefault(c => c.TextContent.Contains('-', StringComparison.Ordinal) && c.QuerySelector(".text-muted") != null);
-        _ = (referenceCell).ShouldNotBeNull();
+        _ = referenceCell.ShouldNotBeNull();
     }
 
     [Fact]
@@ -265,7 +265,7 @@ public class PaymentsListTests : BunitContext
             .Add(p => p.Payments, payments));
 
         // Assert
-        (cut.Markup).ShouldContain("Test payment notes", StringComparison.Ordinal);
+        cut.Markup.ShouldContain("Test payment notes", StringComparison.Ordinal);
     }
 
     [Fact]
@@ -288,8 +288,9 @@ public class PaymentsListTests : BunitContext
         // Assert
         var spans = cut.FindAll("span[title]");
         var notesSpan = spans.First(s => s.GetAttribute("title") == longNotes);
-        (notesSpan.TextContent).ShouldContain("...", StringComparison.Ordinal);
-        (notesSpan.TextContent.Length <= 34).ShouldBeTrue(); // 30 + "..."
+        notesSpan.TextContent.ShouldContain("...", StringComparison.Ordinal);
+        var notesAreTruncated = notesSpan.TextContent.Length <= 34;
+        notesAreTruncated.ShouldBeTrue(); // 30 + "..."
     }
 
     [Fact]
@@ -310,7 +311,7 @@ public class PaymentsListTests : BunitContext
         // Assert
         var cells = cut.FindAll("td");
         var notesCell = cells.FirstOrDefault(c => c.TextContent.Contains('-', StringComparison.Ordinal) && c.QuerySelector(".text-muted") != null);
-        _ = (notesCell).ShouldNotBeNull();
+        _ = notesCell.ShouldNotBeNull();
     }
 
     [Fact]
@@ -330,7 +331,7 @@ public class PaymentsListTests : BunitContext
 
         // Assert
         var totalSection = cut.Find(".bg-light");
-        (totalSection.TextContent).ShouldContain("400", StringComparison.Ordinal); // 100 + 250.50 + 49.50 = 400
+        totalSection.TextContent.ShouldContain("400", StringComparison.Ordinal); // 100 + 250.50 + 49.50 = 400
     }
 
     [Fact]
@@ -352,8 +353,8 @@ public class PaymentsListTests : BunitContext
         var rows = cut.FindAll("tbody tr");
         var amounts = rows.Select(r => r.QuerySelector("strong")!.TextContent).ToList();
 
-        (amounts[0]).ShouldContain("200", StringComparison.Ordinal); // March payment (most recent)
-        (amounts[2]).ShouldContain("100", StringComparison.Ordinal); // January payment (oldest)
+        amounts[0].ShouldContain("200", StringComparison.Ordinal); // March payment (most recent)
+        amounts[2].ShouldContain("100", StringComparison.Ordinal); // January payment (oldest)
     }
 
     [Fact]
@@ -371,7 +372,7 @@ public class PaymentsListTests : BunitContext
 
         // Assert
         var quickGrid = cut.Find(".table.table-hover");
-        _ = (quickGrid).ShouldNotBeNull();
+        _ = quickGrid.ShouldNotBeNull();
     }
 
     [Fact]
@@ -389,12 +390,12 @@ public class PaymentsListTests : BunitContext
 
         // Assert
         var headers = cut.FindAll("thead th");
-        (headers.Count).ShouldBe(6);
-        (headers[0].TextContent).ShouldContain("Payment Date", StringComparison.Ordinal);
-        (headers[1].TextContent).ShouldContain("Amount", StringComparison.Ordinal);
-        (headers[2].TextContent).ShouldContain("Method", StringComparison.Ordinal);
-        (headers[3].TextContent).ShouldContain("Reference", StringComparison.Ordinal);
-        (headers[4].TextContent).ShouldContain("Notes", StringComparison.Ordinal);
-        (headers[5].TextContent).ShouldContain("Recorded At", StringComparison.Ordinal);
+        headers.Count.ShouldBe(6);
+        headers[0].TextContent.ShouldContain("Payment Date", StringComparison.Ordinal);
+        headers[1].TextContent.ShouldContain("Amount", StringComparison.Ordinal);
+        headers[2].TextContent.ShouldContain("Method", StringComparison.Ordinal);
+        headers[3].TextContent.ShouldContain("Reference", StringComparison.Ordinal);
+        headers[4].TextContent.ShouldContain("Notes", StringComparison.Ordinal);
+        headers[5].TextContent.ShouldContain("Recorded At", StringComparison.Ordinal);
     }
 }

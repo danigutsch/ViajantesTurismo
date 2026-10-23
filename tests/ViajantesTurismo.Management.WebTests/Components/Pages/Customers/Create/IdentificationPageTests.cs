@@ -31,9 +31,9 @@ public sealed class IdentificationPageTests : BunitContext
         await cut.InvokeAsync(() => Task.CompletedTask);
 
         // Assert
-        (cut.Find("#nationalId").GetAttribute("value")).ShouldBe("123456789");
-        (cut.Markup).ShouldContain("Brazil", StringComparison.Ordinal);
-        (_state.CurrentStep).ShouldBe(2);
+        cut.Find("#nationalId").GetAttribute("value").ShouldBe("123456789");
+        cut.Markup.ShouldContain("Brazil", StringComparison.Ordinal);
+        _state.CurrentStep.ShouldBe(2);
     }
 
     [Fact]
@@ -51,11 +51,11 @@ public sealed class IdentificationPageTests : BunitContext
         await cut.InvokeAsync(async () => await cut.Find("form").SubmitAsync());
 
         // Assert
-        await cut.WaitForAssertionAsync(() => (navigationManager.Uri).ShouldEndWith("/customers/create/contact", StringComparison.Ordinal));
-        (_state.IdentificationInfo).ShouldNotBeNull();
-        (_state.IdentificationInfo.NationalId).ShouldBe("123456789");
-        (_state.IdentificationInfo.IdNationality).ShouldBe("Brazil");
-        (_state.CurrentStep).ShouldBe(3);
+        await cut.WaitForAssertionAsync(() => navigationManager.Uri.ShouldEndWith("/customers/create/contact", StringComparison.Ordinal));
+        _state.IdentificationInfo.ShouldNotBeNull();
+        _state.IdentificationInfo.NationalId.ShouldBe("123456789");
+        _state.IdentificationInfo.IdNationality.ShouldBe("Brazil");
+        _state.CurrentStep.ShouldBe(3);
     }
 
     [Fact]
@@ -71,7 +71,7 @@ public sealed class IdentificationPageTests : BunitContext
         await cut.InvokeAsync(() => backButton.Click());
 
         // Assert
-        await cut.WaitForAssertionAsync(() => (navigationManager.Uri).ShouldEndWith("/customers/create/personal-info", StringComparison.Ordinal));
-        (_state.CurrentStep).ShouldBe(1);
+        await cut.WaitForAssertionAsync(() => navigationManager.Uri.ShouldEndWith("/customers/create/personal-info", StringComparison.Ordinal));
+        _state.CurrentStep.ShouldBe(1);
     }
 }

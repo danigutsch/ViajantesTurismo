@@ -131,7 +131,7 @@ public sealed class RegenerateDocumentDraftCommandHandlerTests
     public async Task Handle_replays_matching_input_and_rejects_conflicting_input_for_a_completed_key()
     {
         // Arrange
-        var document = DocumentDraftTestData.Create(DateTime.UtcNow);
+        var document = DocumentDraftTestData.Create(TimeProvider.System.GetUtcNow().UtcDateTime);
         var tourId = Guid.CreateVersion7();
         var booking = DtoBuilders.BuildBookingDto(
             id: document.BookingId,
@@ -189,7 +189,7 @@ public sealed class RegenerateDocumentDraftCommandHandlerTests
     public async Task Handle_persists_one_conflict_audit_when_regeneration_idempotency_ownership_is_lost()
     {
         // Arrange
-        var document = DocumentDraftTestData.Create(DateTime.UtcNow);
+        var document = DocumentDraftTestData.Create(TimeProvider.System.GetUtcNow().UtcDateTime);
         var tourId = Guid.CreateVersion7();
         var booking = DtoBuilders.BuildBookingDto(
             id: document.BookingId,
@@ -245,7 +245,7 @@ public sealed class RegenerateDocumentDraftCommandHandlerTests
     public async Task Handle_rejects_missing_audit_context_before_adding_a_revision()
     {
         // Arrange
-        var document = DocumentDraftTestData.Create(DateTime.UtcNow);
+        var document = DocumentDraftTestData.Create(TimeProvider.System.GetUtcNow().UtcDateTime);
         var tourId = Guid.CreateVersion7();
         var booking = DtoBuilders.BuildBookingDto(
             id: document.BookingId,
@@ -318,7 +318,7 @@ public sealed class RegenerateDocumentDraftCommandHandlerTests
     public async Task Handle_persists_a_replacement_when_booking_is_accepted(BookingStatusDto bookingStatus)
     {
         // Arrange
-        var document = DocumentDraftTestData.Create(DateTime.UtcNow);
+        var document = DocumentDraftTestData.Create(TimeProvider.System.GetUtcNow().UtcDateTime);
         var tourId = Guid.CreateVersion7();
         var booking = DtoBuilders.BuildBookingDto(id: document.BookingId, tourId: tourId, status: bookingStatus);
         var tour = DtoBuilders.BuildTourDto(id: tourId);
@@ -356,7 +356,7 @@ public sealed class RegenerateDocumentDraftCommandHandlerTests
     public async Task Handle_does_not_persist_when_booking_is_not_accepted(BookingStatusDto bookingStatus)
     {
         // Arrange
-        var document = DocumentDraftTestData.Create(DateTime.UtcNow);
+        var document = DocumentDraftTestData.Create(TimeProvider.System.GetUtcNow().UtcDateTime);
         var tourId = Guid.CreateVersion7();
         var booking = DtoBuilders.BuildBookingDto(id: document.BookingId, tourId: tourId, status: bookingStatus);
         var tour = DtoBuilders.BuildTourDto(id: tourId);
@@ -397,7 +397,7 @@ public sealed class RegenerateDocumentDraftCommandHandlerTests
     public async Task Handle_does_not_save_when_source_booking_is_missing()
     {
         // Arrange
-        var document = DocumentDraftTestData.Create(DateTime.UtcNow);
+        var document = DocumentDraftTestData.Create(TimeProvider.System.GetUtcNow().UtcDateTime);
         var store = new FakeDocumentStore();
         store.Documents.Add(document.Id, document);
         var auditStore = new FakeDocumentAuditStore();
@@ -435,7 +435,7 @@ public sealed class RegenerateDocumentDraftCommandHandlerTests
     public async Task Handle_does_not_save_when_source_tour_is_missing()
     {
         // Arrange
-        var document = DocumentDraftTestData.Create(DateTime.UtcNow);
+        var document = DocumentDraftTestData.Create(TimeProvider.System.GetUtcNow().UtcDateTime);
         var booking = DtoBuilders.BuildBookingDto(id: document.BookingId, status: BookingStatusDto.Confirmed);
         var store = new FakeDocumentStore();
         store.Documents.Add(document.Id, document);

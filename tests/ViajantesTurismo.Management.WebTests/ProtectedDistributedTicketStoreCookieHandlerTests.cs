@@ -19,7 +19,7 @@ public sealed class ProtectedDistributedTicketStoreCookieHandlerTests
         using var signInResponse = await client.GetAsync(
             new Uri("/sign-in", UriKind.Relative),
             Xunit.TestContext.Current.CancellationToken);
-        var sessionCookie = signInResponse.Headers.GetValues("Set-Cookie").Single().Split(';', 2)[0];
+        var sessionCookie = signInResponse.Headers.GetValues("Set-Cookie").ShouldHaveSingleItem().Split(';', 2)[0];
         using var signOutRequest = new HttpRequestMessage(HttpMethod.Post, new Uri("/sign-out", UriKind.Relative));
         signOutRequest.Headers.Add("Cookie", sessionCookie);
 
@@ -44,7 +44,7 @@ public sealed class ProtectedDistributedTicketStoreCookieHandlerTests
         using var signInResponse = await client.GetAsync(
             new Uri("/sign-in", UriKind.Relative),
             Xunit.TestContext.Current.CancellationToken);
-        var sessionCookie = signInResponse.Headers.GetValues("Set-Cookie").Single().Split(';', 2)[0];
+        var sessionCookie = signInResponse.Headers.GetValues("Set-Cookie").ShouldHaveSingleItem().Split(';', 2)[0];
         using var signOutRequest = new HttpRequestMessage(HttpMethod.Post, new Uri("/sign-out", UriKind.Relative));
         signOutRequest.Headers.Add("Cookie", sessionCookie);
 

@@ -68,7 +68,7 @@ public sealed class PaymentRecordingSteps(TourContext tourContext, BookingContex
     [When("I attempt to record a payment with amount (.*)")]
     public void WhenIAttemptToRecordAPaymentWithAmount(decimal amount)
     {
-        var paymentDate = DateTime.UtcNow.AddDays(-1);
+        var paymentDate = TimeProvider.System.GetUtcNow().UtcDateTime.AddDays(-1);
         _paymentResult = bookingContext.Booking.RecordPayment(amount, DateOnly.FromDateTime(paymentDate), PaymentMethod.Cash, _timeProvider);
         bookingContext.PaymentResult = _paymentResult;
     }
@@ -76,7 +76,7 @@ public sealed class PaymentRecordingSteps(TourContext tourContext, BookingContex
     [When("I attempt to record a payment with a date in the future")]
     public void WhenIAttemptToRecordAPaymentWithADateInTheFuture()
     {
-        var futureDate = DateTime.UtcNow.AddDays(1);
+        var futureDate = TimeProvider.System.GetUtcNow().UtcDateTime.AddDays(1);
         _paymentResult = bookingContext.Booking.RecordPayment(100m, DateOnly.FromDateTime(futureDate), PaymentMethod.Cash, _timeProvider);
         bookingContext.PaymentResult = _paymentResult;
     }
@@ -84,7 +84,7 @@ public sealed class PaymentRecordingSteps(TourContext tourContext, BookingContex
     [When("I attempt to record a payment with an invalid payment method")]
     public void WhenIAttemptToRecordAPaymentWithAnInvalidPaymentMethod()
     {
-        var paymentDate = DateTime.UtcNow.AddDays(-1);
+        var paymentDate = TimeProvider.System.GetUtcNow().UtcDateTime.AddDays(-1);
         _paymentResult = bookingContext.Booking.RecordPayment(100m, DateOnly.FromDateTime(paymentDate), (PaymentMethod)999, _timeProvider);
         bookingContext.PaymentResult = _paymentResult;
     }
@@ -98,7 +98,7 @@ public sealed class PaymentRecordingSteps(TourContext tourContext, BookingContex
         {
             var method = Enum.Parse<PaymentMethod>(row["Method"]);
             var amount = decimal.Parse(row["Amount"], CultureInfo.InvariantCulture);
-            var paymentDate = DateTime.UtcNow.AddDays(-1);
+            var paymentDate = TimeProvider.System.GetUtcNow().UtcDateTime.AddDays(-1);
 
             var result = bookingContext.Booking.RecordPayment(amount, DateOnly.FromDateTime(paymentDate), method, _timeProvider);
             if (!result.IsSuccess)

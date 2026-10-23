@@ -23,7 +23,7 @@ public sealed class DocumentLifecycleTests(AspireSystemTestFixture fixture)
 
         // Act
         await Page.GetButton("Generate contract draft").ClickAsync();
-        await Expect(Page).ToHaveTitleAsync("Document Details");
+        await Page.ShouldHaveTitle("Document Details");
         await Expect(Page.GetHeading("Document Details")).ToBeVisibleAsync();
         var status = Page.Locator("dt:text-is('Status')")
             .Locator("xpath=following-sibling::dd[1]");
@@ -78,7 +78,7 @@ public sealed class DocumentLifecycleTests(AspireSystemTestFixture fixture)
         var booking = await ApiClient.CreateConfirmedBooking(tour.Id, customer.Id);
         booking.Status.ShouldBe(BookingStatusDto.Confirmed);
         await NavigateTo($"/bookings/{booking.Id}");
-        await Expect(Page).ToHaveTitleAsync("Booking Details");
+        await Page.ShouldHaveTitle("Booking Details");
         var bookingStatus = Page.GetDetailsBadge("Status");
         var generateButton = Page.GetButton("Generate contract draft");
         await Expect(bookingStatus).ToHaveTextAsync(nameof(BookingStatusDto.Confirmed));

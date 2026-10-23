@@ -94,7 +94,7 @@ public sealed class PublicComponentTests : BunitContext
                     ]
                 }
             ],
-            UpdatedAt = DateTimeOffset.UtcNow
+            UpdatedAt = TimeProvider.System.GetUtcNow()
         };
 
         // Act

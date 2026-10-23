@@ -14,7 +14,7 @@ namespace ViajantesTurismo.Admin.SystemTests.PostTransportValidation;
 public sealed class PostTransportValidationTests(AspireSystemTestFixture fixture) : AspireSystemTestBase<AspireSystemTestFixture>(fixture)
 {
     [Fact]
-    public async Task Catalog_api_exposes_tour_after_admin_event_is_delivered()
+    public async Task Catalog_API_exposes_tour_after_admin_event_is_delivered()
     {
         // Arrange
         using var catalogApiClient = await Fixture.CreateCatalogApiClient(TestContext.Current.CancellationToken);
@@ -35,7 +35,7 @@ public sealed class PostTransportValidationTests(AspireSystemTestFixture fixture
     }
 
     [Fact]
-    public async Task Public_web_renders_published_tour_from_real_catalog_api()
+    public async Task Public_web_renders_published_tour_from_real_catalog_API()
     {
         // Arrange
         using var catalogApiClient = await Fixture.CreateCatalogApiClient(TestContext.Current.CancellationToken);
@@ -59,7 +59,7 @@ public sealed class PostTransportValidationTests(AspireSystemTestFixture fixture
     }
 
     [Fact]
-    public async Task Admin_api_to_public_flow_renders_tour_details_after_transport_projection()
+    public async Task Admin_API_to_public_flow_renders_tour_details_after_transport_projection()
     {
         // Arrange
         using var catalogApiClient = await Fixture.CreateCatalogApiClient(TestContext.Current.CancellationToken);

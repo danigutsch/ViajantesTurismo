@@ -10,7 +10,7 @@ namespace ViajantesTurismo.Catalog.UnitTests;
 public sealed class CatalogIntegrationEventTransportRegistrationTests
 {
     [Fact]
-    public void Catalog_api_infrastructure_does_not_start_the_admin_transport_consumer()
+    public void Catalog_API_infrastructure_does_not_start_the_admin_transport_consumer()
     {
         // Arrange
         using var scenario = CatalogInfrastructureTestServices.CreateScenario();
@@ -23,7 +23,7 @@ public sealed class CatalogIntegrationEventTransportRegistrationTests
     }
 
     [Fact]
-    public void Catalog_api_infrastructure_starts_the_catalog_outbox_relay()
+    public void Catalog_API_infrastructure_starts_the_catalog_outbox_relay()
     {
         // Arrange
         using var scenario = CatalogInfrastructureTestServices.CreateScenario();
@@ -173,7 +173,7 @@ public sealed class CatalogIntegrationEventTransportRegistrationTests
     }
 
     [Fact]
-    public void Catalog_api_infrastructure_does_not_start_the_catalog_projection_worker()
+    public void Catalog_API_infrastructure_does_not_start_the_catalog_projection_worker()
     {
         // Arrange
         using var scenario = CatalogInfrastructureTestServices.CreateScenario();
@@ -186,7 +186,7 @@ public sealed class CatalogIntegrationEventTransportRegistrationTests
     }
 
     [Fact]
-    public void Catalog_api_infrastructure_does_not_start_the_media_object_reconciliation_worker()
+    public void Catalog_API_infrastructure_does_not_start_the_media_object_reconciliation_worker()
     {
         // Arrange
         using var scenario = CatalogInfrastructureTestServices.CreateScenario();

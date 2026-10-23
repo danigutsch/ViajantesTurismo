@@ -41,7 +41,7 @@ internal sealed class CatalogProjectionHostedServiceScenario : IAsyncDisposable
             "Andes 2026",
             Guid.CreateVersion7(),
             "andes-2026");
-        eventStore.AddReplayEvent(CatalogProjectionRunnerTestsHelpers.CreateEnvelope(1, draftCreated, DateTimeOffset.UtcNow));
+        eventStore.AddReplayEvent(CatalogProjectionRunnerTestsHelpers.CreateEnvelope(1, draftCreated, TimeProvider.System.GetUtcNow()));
 
         var services = new ServiceCollection();
         services.AddScoped<IEventStore>(_ => eventStore);

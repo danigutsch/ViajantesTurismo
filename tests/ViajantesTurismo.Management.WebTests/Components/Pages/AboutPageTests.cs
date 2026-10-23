@@ -30,10 +30,10 @@ public sealed class AboutPageTests : BunitContext
         var cut = Render<About>();
 
         // Assert
-        (cut.Markup).ShouldContain("About ViajantesTurismo Admin Portal", StringComparison.Ordinal);
-        (cut.Markup).ShouldContain("Application Information", StringComparison.Ordinal);
-        (cut.Markup).ShouldContain("support@viajantesturismo.example", StringComparison.Ordinal);
-        (cut.Markup).ShouldContain("Back to Dashboard", StringComparison.Ordinal);
-        (cut.Find("a.btn.btn-primary").GetAttribute("href")).ShouldBe("/");
+        cut.Markup.ShouldContain("About ViajantesTurismo Admin Portal", StringComparison.Ordinal);
+        cut.Markup.ShouldContain("Application Information", StringComparison.Ordinal);
+        cut.Markup.ShouldContain("support@viajantesturismo.example", StringComparison.Ordinal);
+        cut.Markup.ShouldContain("Back to Dashboard", StringComparison.Ordinal);
+        cut.Find("a.btn.btn-primary").GetAttribute("href").ShouldBe("/");
     }
 }

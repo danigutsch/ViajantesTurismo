@@ -10,7 +10,7 @@ namespace ViajantesTurismo.Catalog.ApiServiceTests;
 public sealed class CatalogApiClientIntegrationTests
 {
     [Fact]
-    public async Task Catalog_tours_clients_update_publish_and_unpublish_through_api_host()
+    public async Task Catalog_tours_clients_update_publish_and_unpublish_through_API_host()
     {
         // Arrange
         var cancellationToken = TestContext.Current.CancellationToken;
@@ -25,7 +25,7 @@ public sealed class CatalogApiClientIntegrationTests
                 "draft-tour",
                 false,
                 1,
-                DateTimeOffset.UtcNow),
+                TimeProvider.System.GetUtcNow()),
             cancellationToken);
         await using var factory = CatalogApiTestHost.Create(tourStore, new TestPublicContentStore());
         using var httpClient = factory.CreateClient();
@@ -73,7 +73,7 @@ public sealed class CatalogApiClientIntegrationTests
     }
 
     [Fact]
-    public async Task Public_content_client_saves_and_reads_content_through_api_host()
+    public async Task Public_content_client_saves_and_reads_content_through_API_host()
     {
         // Arrange
         var cancellationToken = TestContext.Current.CancellationToken;

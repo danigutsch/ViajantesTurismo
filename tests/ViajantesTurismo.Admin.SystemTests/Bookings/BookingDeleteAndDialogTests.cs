@@ -19,7 +19,7 @@ public class BookingDeleteAndDialogTests(AspireSystemTestFixture fixture) : Aspi
         await deleteButton.ClickAsync();
 
         // Assert
-        await Expect(Page).ToHaveTitleAsync("Edit Booking");
+        await Page.ShouldHaveTitle("Edit Booking");
         await Expect(deleteButton).ToBeVisibleAsync();
         var dialog = Page.Locator(".modal.show");
         await Expect(dialog).ToBeVisibleAsync();
@@ -41,7 +41,7 @@ public class BookingDeleteAndDialogTests(AspireSystemTestFixture fixture) : Aspi
 
         // Assert
         await Expect(Page).ToHaveURLAsync(new Regex("/bookings$"));
-        await Expect(Page).ToHaveTitleAsync("Bookings");
+        await Page.ShouldHaveTitle("Bookings");
         await NavigateTo($"/bookings/{booking.Id}");
         var missingBookingAlert = Page.Locator("[role='alert']", new PageLocatorOptions { HasText = "Booking not found." });
         await Expect(missingBookingAlert).ToHaveCountAsync(1);

@@ -29,9 +29,9 @@ public sealed class S3MediaUploadTicketTests
         var request = new MediaObjectUploadRequest("pending/image.jpg", "image/jpeg", 123, TimeSpan.FromMinutes(5));
 
         // Act
-        var startedAt = DateTimeOffset.UtcNow;
+        var startedAt = TimeProvider.System.GetUtcNow();
         var ticket = await store.CreateUploadUrl(request, TestContext.Current.CancellationToken);
-        var completedAt = DateTimeOffset.UtcNow;
+        var completedAt = TimeProvider.System.GetUtcNow();
 
         // Assert
         ticket.ObjectKey.ShouldBe(request.ObjectKey);
