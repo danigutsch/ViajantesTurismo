@@ -6,13 +6,17 @@ and library tooling belong to the separate SharedKernel repository. ViajantesTur
 Generic documentation and repository-configuration tooling belongs to SharedKernel. Application
 documentation configuration, CI and coverage policy, bootstrap, and compatibility orchestration stay here.
 
-The prepared payments rebase candidate is `0.1.0-alpha.94.1` at clean library revision
+The published payments rebase candidate is `0.1.0-alpha.94.1` at clean library revision
 [`d08008cd3e8901c304377edcc4683de7c3a85ecb`](https://github.com/danigutsch/PandaBear.SharedKernel/commit/d08008cd3e8901c304377edcc4683de7c3a85ecb).
 It combines the merged security tooling, request-binding defaults, reusable assertions and offline
 snapshot generator. All 74 package hashes match the unchanged artifacts from
 [CI run 39994519633](https://github.com/danigutsch/PandaBear.SharedKernel/actions/runs/39994519633);
-Linux/Windows package consumption and NativeAOT passed. Application compatibility validation and
-preview distribution remain pending for this candidate.
+Linux/Windows package consumption and NativeAOT passed. Isolated application compatibility at
+consumer revision
+`e38c34533c6b1541bf1dd6b802bf655bfa6dc30f` passed locked restore, Release build with zero
+warnings/errors, OpenAPI verification and 4,044 tests with five optional fastText skips. The unchanged
+74 packages, 54 symbol archives and manifest are published in GitHub prerelease
+[`v0.1.0-alpha.94.1`](https://github.com/danigutsch/PandaBear.SharedKernel/releases/tag/v0.1.0-alpha.94.1).
 
 The previous accepted preview `0.1.0-alpha.70.1` at revision
 `ef0dd0a67b8982dfdf0cb8f5e23224c397971a5b` remains published. Its earlier application validation is
@@ -102,8 +106,8 @@ through public package interfaces. This test-only commit does not change the pin
 
 Hosted Linux and Windows jobs read the committed candidate manifest, check out the public library at
 its exact `libraryRevision`, and download unchanged packages and `candidate.json` from GitHub
-prerelease `v<packageVersion>`. The prepared `0.1.0-alpha.94.1` candidate requires its exact matching release assets before these
-checks can consume it. Missing retired releases must not be recreated to unblock checks. The secret-scan
+prerelease `v<packageVersion>`. The published `0.1.0-alpha.94.1` assets match the committed candidate
+hashes. Missing retired releases must not be recreated to unblock checks. The secret-scan
 workflow also pins the shared scanner action to an immutable library revision. Hosted checks verify
 the same immutable package bytes as local validation.
 
