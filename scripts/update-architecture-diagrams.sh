@@ -2,7 +2,20 @@
 
 set -euo pipefail
 
-if output="$(dotnet tool run sharedkernel-docs -- generate --config docs/architecture/generated-diagrams.json "$@" 2>&1)"; then
+diagram_command=generate
+diagram_arguments=()
+for argument in "$@"; do
+    case "${argument}" in
+        --check)
+            diagram_command=verify
+            ;;
+        *)
+            diagram_arguments+=("${argument}")
+            ;;
+    esac
+done
+
+if output="$(dotnet tool run sharedkernel-docs -- "${diagram_command}" --config docs/architecture/generated-diagrams.json "${diagram_arguments[@]}" 2>&1)"; then
     printf '%s\n' "${output}"
 else
     status=$?

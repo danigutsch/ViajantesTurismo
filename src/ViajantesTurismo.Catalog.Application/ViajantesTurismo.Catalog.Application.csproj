@@ -24,7 +24,7 @@
         <PackageReference Include="PandaBear.SharedKernel.BuildingBlocks" />
         <PackageReference Include="PandaBear.SharedKernel.AI" />
         <PackageReference Include="PandaBear.SharedKernel.EventSourcing" />
-        <PackageReference Include="PandaBear.SharedKernel.Idempotency" />
+        <PackageReference Include="PandaBear.SharedKernel.Idempotency.Abstractions" />
         <PackageReference Include="PandaBear.SharedKernel.ImageProcessing" />
         <PackageReference Include="PandaBear.SharedKernel.InputNormalization" />
         <PackageReference Include="PandaBear.SharedKernel.Messaging" />

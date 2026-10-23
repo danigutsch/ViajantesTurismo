@@ -804,7 +804,7 @@ serialization first; check the daemon.
 **Check and recover.**
 
 ```bash
-dotnet tool run sharedkernel-repo -- podman-dns-preflight --check
+dotnet tool run sharedkernel-repo -- verify-podman-dns
 # exits 1 when stale state is detected
 ```
 

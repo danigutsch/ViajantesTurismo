@@ -24,7 +24,7 @@
         <PackageReference Include="PandaBear.SharedKernel.InputNormalization" />
         <PackageReference Include="PandaBear.SharedKernel.MalwareScanning" />
         <PackageReference Include="PandaBear.SharedKernel.EventSourcing" />
-        <PackageReference Include="PandaBear.SharedKernel.Idempotency" />
+        <PackageReference Include="PandaBear.SharedKernel.Idempotency.Abstractions" />
         <PackageReference Include="PandaBear.SharedKernel.Idempotency.EntityFrameworkCore" />
         <PackageReference Include="PandaBear.SharedKernel.EntityFrameworkCore" />
         <PackageReference Include="PandaBear.SharedKernel.Testing" />

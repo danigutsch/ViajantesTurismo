@@ -136,9 +136,9 @@ public sealed class RoadmapMaintenanceWorkflowTests
         var workflow = RoadmapMaintenanceWorkflowTestFile.Content;
 
         // Act
-        var reconcileIndex = workflow.IndexOf("reconcile github --apply", StringComparison.Ordinal);
-        var previewIndex = workflow.IndexOf("intake github --dry-run", StringComparison.Ordinal);
-        var intakeIndex = workflow.IndexOf("intake github --apply", StringComparison.Ordinal);
+        var reconcileIndex = workflow.IndexOf("github reconcile --force", StringComparison.Ordinal);
+        var previewIndex = workflow.IndexOf("github import \\\n", StringComparison.Ordinal);
+        var intakeIndex = workflow.IndexOf("github import --force", StringComparison.Ordinal);
         var verifyIndex = workflow.IndexOf("-- verify", StringComparison.Ordinal);
         var diffIndex = workflow.IndexOf("-- diff", StringComparison.Ordinal);
         var sealIndex = workflow.IndexOf("automation seal-result", StringComparison.Ordinal);
@@ -201,13 +201,14 @@ public sealed class RoadmapMaintenanceWorkflowTests
         var workflow = RoadmapMaintenanceWorkflowTestFile.Content;
 
         // Assert
-        workflow.ShouldContain("automation publish-result", StringComparison.Ordinal);
+        workflow.ShouldContain("automation publish-result --force", StringComparison.Ordinal);
         workflow.ShouldContain("GITHUB_TOKEN: ${{ steps.app_token.outputs.token }}", StringComparison.Ordinal);
         workflow.ShouldContain("ROADMAP_RESULT_DIGEST: ${{ steps.seal.outputs.result_digest }}", StringComparison.Ordinal);
         workflow.ShouldNotContain("ensure-branch-available", StringComparison.Ordinal);
         workflow.ShouldNotContain("create-pull-request", StringComparison.Ordinal);
         workflow.ShouldNotContain("git push", StringComparison.Ordinal);
-        workflow.ShouldNotContain("--force", StringComparison.Ordinal);
+        workflow.ShouldNotContain("git push --force", StringComparison.Ordinal);
+        Regex.Count(workflow, "--force", RegexOptions.None, TimeSpan.FromSeconds(1)).ShouldBe(3);
         workflow.ShouldNotContain("git push origin main", StringComparison.Ordinal);
         workflow.ShouldNotContain("refs/heads/main:", StringComparison.Ordinal);
     }
@@ -220,7 +221,7 @@ public sealed class RoadmapMaintenanceWorkflowTests
 
         // Assert
         workflow.ShouldContain("automation seal-result", StringComparison.Ordinal);
-        workflow.ShouldContain("automation publish-result", StringComparison.Ordinal);
+        workflow.ShouldContain("automation publish-result --force", StringComparison.Ordinal);
         workflow.ShouldNotContain("git diff --name-only", StringComparison.Ordinal);
         workflow.ShouldNotContain("git status --porcelain", StringComparison.Ordinal);
         Regex.Count(workflow, "\\$\\{\\{ inputs\\.", RegexOptions.None, TimeSpan.FromSeconds(1)).ShouldBe(1);

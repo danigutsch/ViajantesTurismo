@@ -69,54 +69,87 @@ jobs:
     timeout-minutes: 20
     permissions:
       contents: write
+    env:
+      # Reviewed source generator: https://github.com/danigutsch/PandaBear.SharedKernel/pull/92
+      # Pin independently of runtime packages so both targets can read retired candidates' lock metadata.
+      SNAPSHOT_GENERATOR_REVISION: 8895a57934be23177f9979a23620774e5085eb3d
     strategy:
       fail-fast: false
       matrix:
         target: ${{ github.event_name == 'pull_request' && fromJSON('["base", "head"]') || fromJSON('["head"]') }}
     steps:
-      - name: Checkout exact reviewed commit
+      - name: Checkout exact dependency inputs
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
         with:
           ref: ${{ matrix.target == 'base' && github.event.pull_request.base.sha || github.event.pull_request.head.sha || github.sha }}
+          path: dependency-input
           persist-credentials: false
 
-      # Use reviewed PR tooling for both snapshots; only dependency inputs come from matrix.target.
-      - name: Checkout reviewed CI prerequisites
-        if: ${{ hashFiles('.config/sharedkernel-candidate.json') != '' }}
+      - name: Checkout reviewed SharedKernel generator source
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
         with:
-          ref: ${{ github.event.pull_request.head.sha || github.sha }}
-          path: .local/dependency-ci-support
-          sparse-checkout: .github/actions/setup-ci-prerequisites
+          repository: danigutsch/PandaBear.SharedKernel
+          ref: ${{ env.SNAPSHOT_GENERATOR_REVISION }}
+          path: .local/dependency-library
           persist-credentials: false
 
-      - name: Set up CI prerequisites
-        if: ${{ hashFiles('.config/sharedkernel-candidate.json') != '' }}
-        uses: ./.local/dependency-ci-support/.github/actions/setup-ci-prerequisites
-        with:
-          sharedkernel-library-root: ${{ vars.SHAREDKERNEL_LIBRARY_ROOT }}
-          sharedkernel-candidate-feed: ${{ vars.SHAREDKERNEL_CANDIDATE_FEED }}
-          # Bootstrap builds the historical tool; the complete graph is restored below.
-          restore-targets: ""
-          restore-local-tools: "false"
-          trust-dev-certificate: "false"
+      - name: Verify exact clean generator source
+        shell: pwsh
+        working-directory: .local/dependency-library
+        env:
+          GENERATOR_REVISION: ${{ env.SNAPSHOT_GENERATOR_REVISION }}
+        run: |
+          $ErrorActionPreference = 'Stop'
+          $revision = git rev-parse HEAD
+          if ($LASTEXITCODE -ne 0) { throw 'Cannot inspect generator source revision.' }
+          $dirty = git status --porcelain
+          if ($LASTEXITCODE -ne 0) { throw 'Cannot inspect generator source cleanliness.' }
+          if ($revision -cne $env:GENERATOR_REVISION -or $dirty) {
+            throw 'Dependency snapshots require the exact clean reviewed generator source.'
+          }
 
-      - name: Set up SDK for commits before the package cutover
-        if: ${{ hashFiles('.config/sharedkernel-candidate.json') == '' }}
+      - name: Set up generator SDK
         uses: actions/setup-dotnet@c2fa09f4bde5ebb9d1777cf28262a3eb3db3ced7 # v5
         with:
-          global-json-file: global.json
+          global-json-file: .local/dependency-library/global.json
 
-      - name: Restore complete locked dependency graph
-        run: dotnet restore ViajantesTurismo.slnx --locked-mode -bl:dependency-restore.binlog
+      - name: Build dependency-independent snapshot generator
+        working-directory: .local/dependency-library
+        run: |
+          dotnet restore tools/SharedKernel.RepoConfig.Tool --locked-mode
+          dotnet build tools/SharedKernel.RepoConfig.Tool -c Release --no-restore
 
-      - name: Submit complete dependency snapshot
-        uses: actions/component-detection-dependency-submission-action@98beaea5a1227f3db476e4c9ca959a0cacd7ac4f # reviewed automatic-submission revision
+      - name: Generate snapshot from committed lock files
+        shell: pwsh
+        env:
+          SNAPSHOT_SHA: ${{ matrix.target == 'base' && github.event.pull_request.base.sha || github.event.pull_request.head.sha || github.sha }}
+          SNAPSHOT_REF: ${{ github.event_name == 'pull_request' && format('refs/heads/{0}', matrix.target == 'base' && github.base_ref || github.head_ref) || github.ref }}
+          SNAPSHOT_JOB_ID: ${{ github.run_id }}
+        run: |
+          $ErrorActionPreference = 'Stop'
+          $root = Join-Path $env:GITHUB_WORKSPACE 'dependency-input'
+          $generator = Join-Path $env:GITHUB_WORKSPACE '.local/dependency-library/tools/SharedKernel.RepoConfig.Tool/bin/Release/net10.0/SharedKernel.RepoConfig.Tool.dll'
+          $snapshot = Join-Path $root 'TestResults/dependency-snapshot.json'
+          dotnet $generator dependency snapshot --root $root --sha $env:SNAPSHOT_SHA --ref $env:SNAPSHOT_REF --job $env:SNAPSHOT_JOB_ID --correlator viajantes-solution-nuget --output $snapshot
+          if ($LASTEXITCODE -ne 0) { throw 'Committed dependency snapshot generation failed.' }
+
+      - name: Submit complete committed dependency snapshot
+        shell: pwsh
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          $ErrorActionPreference = 'Stop'
+          $snapshot = Join-Path $env:GITHUB_WORKSPACE 'dependency-input/TestResults/dependency-snapshot.json'
+          $headers = @{ Authorization = "Bearer $env:GH_TOKEN"; Accept = 'application/vnd.github+json'; 'X-GitHub-Api-Version' = '2022-11-28' }
+          Invoke-RestMethod -Method Post -Uri "https://api.github.com/repos/$env:GITHUB_REPOSITORY/dependency-graph/snapshots" -Headers $headers -ContentType 'application/json' -InFile $snapshot | Out-Null
+
+      - name: Retain committed snapshot evidence
+        if: always()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
         with:
-          detectorsCategories: NuGet
-          correlator: viajantes-solution-nuget
-          snapshot-sha: ${{ matrix.target == 'base' && github.event.pull_request.base.sha || github.event.pull_request.head.sha || github.sha }}
-          snapshot-ref: ${{ github.event_name == 'pull_request' && format('refs/heads/{0}', matrix.target == 'base' && github.base_ref || github.head_ref) || github.ref }}
+          name: dependency-snapshot-${{ matrix.target }}
+          path: dependency-input/TestResults/dependency-snapshot.json
+          if-no-files-found: ignore
 
   dependency-review:
     name: ${{ github.event.action == 'labeled' && github.event.label.name != 'ci:rerun' && 'Ignored label event' || 'Dependency Review' }}
@@ -151,8 +184,8 @@ jobs:
         run: |
           $ErrorActionPreference = 'Stop'
           $pin = Get-Content '.config/sharedkernel-candidate.json' -Raw | ConvertFrom-Json
-          if ($pin.packageVersion -cne '1.2.0-alpha.20261023.1' -or
-              $pin.libraryRevision -cne 'cc826be664bfc2dc087fe5a140f7232b4f65967d' -or
+          if ($pin.packageVersion -cne '0.1.0-alpha.70.1' -or
+              $pin.libraryRevision -cne 'ef0dd0a67b8982dfdf0cb8f5e23224c397971a5b' -or
               $pin.libraryDirty -ne $false) {
             throw 'Preview license approval expired: re-review this candidate before granting an exception.'
           }

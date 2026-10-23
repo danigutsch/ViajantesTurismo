@@ -106,7 +106,7 @@ public sealed class RegenerateDocumentDraftCommandHandlerTests
                 idempotencyScope,
                 idempotencyKey,
                 replacementDocumentId,
-                IdempotencyRequestFingerprint.Create("booking-confirmation", "2"),
+                DocumentCommandIdempotency.CreateRequestFingerprint("booking-confirmation", "2"),
                 unitOfWork));
 
         // Act

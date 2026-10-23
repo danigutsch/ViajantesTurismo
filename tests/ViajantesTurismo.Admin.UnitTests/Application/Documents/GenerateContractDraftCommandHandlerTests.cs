@@ -107,7 +107,7 @@ public sealed class GenerateContractDraftCommandHandlerTests
                 idempotencyScope,
                 idempotencyKey,
                 documentId,
-                IdempotencyRequestFingerprint.Create("booking-confirmation", "1"),
+                DocumentCommandIdempotency.CreateRequestFingerprint("booking-confirmation", "1"),
                 unitOfWork));
 
         // Act

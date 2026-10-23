@@ -29,7 +29,7 @@
         <PackageReference Include="PandaBear.SharedKernel.OpenApi" />
         <PackageReference Include="PandaBear.SharedKernel.Branding" />
         <PackageReference Include="PandaBear.SharedKernel.HttpClients" />
-        <PackageReference Include="PandaBear.SharedKernel.Idempotency" />
+        <PackageReference Include="PandaBear.SharedKernel.Idempotency.Abstractions" />
         <PackageReference Include="PandaBear.SharedKernel.MalwareScanning" />
         <PackageReference Include="PandaBear.SharedKernel.MalwareScanning.ClamAv" />
     </ItemGroup>

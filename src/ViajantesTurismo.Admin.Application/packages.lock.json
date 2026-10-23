@@ -23,26 +23,26 @@
       },
       "PandaBear.SharedKernel.AuditTrail": {
         "type": "Direct",
-        "requested": "[1.2.0-alpha.20261023.1, )",
-        "resolved": "1.2.0-alpha.20261023.1",
-        "contentHash": "1AR4atc2BYAooUPfdeSxsU2Kn8ExtrAlkZgMb4G4gRdYETBMSkPEoOzegbwc9EU5qewPsZhCND6guNBwxLbSZw=="
+        "requested": "[0.1.0-alpha.70.1, )",
+        "resolved": "0.1.0-alpha.70.1",
+        "contentHash": "HrjrWZN5Iia4djG94gIPRbonDP3A3XFcA24iPFS3XluZUenYrUmKuMfoMRy4mklNqqo1Rx7hUwNNe374Y0VcJA=="
       },
       "PandaBear.SharedKernel.AuditTrail.SourceGenerator": {
         "type": "Direct",
-        "requested": "[1.2.0-alpha.20261023.1, )",
-        "resolved": "1.2.0-alpha.20261023.1",
-        "contentHash": "2ZR6TRo+CpHRNxq7LcxP6Hjpqhd6jxundhbjqvmhNA+fpAf1qxJFzcnUh9jWk9Umj/wYPg/zrEOFNocVEFBuSg==",
+        "requested": "[0.1.0-alpha.70.1, )",
+        "resolved": "0.1.0-alpha.70.1",
+        "contentHash": "EZJgvvZQ0q/BU36GeiVbsCIw3vdgD9xMUIU7dX3SDboW6TBK1IHR59/T10E2gvsIMkMwC5ZLRYKGbhobACWVEQ==",
         "dependencies": {
           "Microsoft.Extensions.DependencyInjection.Abstractions": "10.0.10",
-          "PandaBear.SharedKernel.AuditTrail": "1.2.0-alpha.20261023.1",
-          "PandaBear.SharedKernel.Domain": "1.2.0-alpha.20261023.1"
+          "PandaBear.SharedKernel.AuditTrail": "0.1.0-alpha.70.1",
+          "PandaBear.SharedKernel.Domain": "0.1.0-alpha.70.1"
         }
       },
       "PandaBear.SharedKernel.Branding": {
         "type": "Direct",
-        "requested": "[1.2.0-alpha.20261023.1, )",
-        "resolved": "1.2.0-alpha.20261023.1",
-        "contentHash": "SoloPln0Go4W+2IZ8MaD9RHgGa4OexLW5sE0oS8Ex58kBa8w4sZ508Zvb6p9cbMfeS15iDu7M86NLJsbbVIiDg==",
+        "requested": "[0.1.0-alpha.70.1, )",
+        "resolved": "0.1.0-alpha.70.1",
+        "contentHash": "RN+STtbMYWIgwqmdifP7fbtZqPpFIrxtFYZ4R+pMa0sZJx27V7+ftPc6oZ+t4xqPGESMYTh8dnKVeVvgqMKAtg==",
         "dependencies": {
           "Microsoft.Extensions.Compliance.Abstractions": "10.11.0",
           "Microsoft.Extensions.DependencyInjection": "10.0.13",
@@ -58,91 +58,91 @@
           "OpenTelemetry": "1.20.0",
           "OpenTelemetry.Extensions.Hosting": "1.20.0",
           "OpenTelemetry.Instrumentation.Http": "1.20.0",
-          "PandaBear.SharedKernel.HttpClients": "1.2.0-alpha.20261023.1",
-          "PandaBear.SharedKernel.InputNormalization": "1.2.0-alpha.20261023.1",
-          "PandaBear.SharedKernel.Results": "1.2.0-alpha.20261023.1"
+          "PandaBear.SharedKernel.HttpClients": "0.1.0-alpha.70.1",
+          "PandaBear.SharedKernel.InputNormalization": "0.1.0-alpha.70.1",
+          "PandaBear.SharedKernel.Results": "0.1.0-alpha.70.1"
         }
       },
       "PandaBear.SharedKernel.BuildingBlocks": {
         "type": "Direct",
-        "requested": "[1.2.0-alpha.20261023.1, )",
-        "resolved": "1.2.0-alpha.20261023.1",
-        "contentHash": "Kolx3qAAYRzrcCN+P2aqhDdten78p0ufKp+vIr1Pz7kIgqO52x/OJkEvLvK446uwcdWSyjUaTK8fTiZbvVsoWg==",
+        "requested": "[0.1.0-alpha.70.1, )",
+        "resolved": "0.1.0-alpha.70.1",
+        "contentHash": "vrBzPOwAwsfKCIu5Pr8v0JqljOm0hoNwX63DLAxhVKyebiP8UAiAD8W3gmbY4DdzXxRr80XdaN+3KZ7ONfTnuw==",
         "dependencies": {
-          "PandaBear.SharedKernel.Results": "1.2.0-alpha.20261023.1"
+          "PandaBear.SharedKernel.Results": "0.1.0-alpha.70.1"
         }
       },
       "PandaBear.SharedKernel.DocumentRendering": {
         "type": "Direct",
-        "requested": "[1.2.0-alpha.20261023.1, )",
-        "resolved": "1.2.0-alpha.20261023.1",
-        "contentHash": "1ZTYOTQuFSZdaSJVb9ebF4JtCFoCMTSP4nFE/tvTRF104aW9bJmVBCb7AdlWSTeDuYuSGoPjSPkuJepQmesqCA==",
+        "requested": "[0.1.0-alpha.70.1, )",
+        "resolved": "0.1.0-alpha.70.1",
+        "contentHash": "3QCZh+xmN9MqG+hbmF5VSdXOG+NhYXodUoS9GZZwXOecDcoxWT43TFPxwds0In7iHhJYklEkoxxgRk0eEXDlYQ==",
         "dependencies": {
-          "PandaBear.SharedKernel.InputNormalization": "1.2.0-alpha.20261023.1"
+          "PandaBear.SharedKernel.InputNormalization": "0.1.0-alpha.70.1"
         }
       },
       "PandaBear.SharedKernel.Domain": {
         "type": "Direct",
-        "requested": "[1.2.0-alpha.20261023.1, )",
-        "resolved": "1.2.0-alpha.20261023.1",
-        "contentHash": "o0S3kj58rKTDf60VkcoCc11U65a4c3ZlO06G2J3eEhLXZNA0VJdanU2zQW5IgPt/gOyN+NHJCcodbMV5uYfcBw==",
+        "requested": "[0.1.0-alpha.70.1, )",
+        "resolved": "0.1.0-alpha.70.1",
+        "contentHash": "aC/lUCCS+gEHetajOsVQ8Zu/ljRM7EMPEpbvkjBp1yJcl7KQOEQRt9iOiv0lSGkfy6C3PyIcBFiF+GvEZ05BAQ==",
         "dependencies": {
-          "PandaBear.SharedKernel.BuildingBlocks": "1.2.0-alpha.20261023.1"
+          "PandaBear.SharedKernel.BuildingBlocks": "0.1.0-alpha.70.1"
         }
       },
-      "PandaBear.SharedKernel.Idempotency": {
+      "PandaBear.SharedKernel.Idempotency.Abstractions": {
         "type": "Direct",
-        "requested": "[1.2.0-alpha.20261023.1, )",
-        "resolved": "1.2.0-alpha.20261023.1",
-        "contentHash": "Dw/EoyLF/hnoCmI+HKLyOFO0u872rPcvaUtV8PoHscyxEnfRNOUkk7S80hiFkFnToEFat776hqcnmH/llbTVuA=="
+        "requested": "[0.1.0-alpha.70.1, )",
+        "resolved": "0.1.0-alpha.70.1",
+        "contentHash": "7T8QwKRlrCBB+KB5fMA+gwabtGHSCc/76aHydyzAZ2WcGyYu98GhSsr7KOZyKF3f7mkDxxqMo02GWAkEd5mvKA=="
       },
       "PandaBear.SharedKernel.InputNormalization": {
         "type": "Direct",
-        "requested": "[1.2.0-alpha.20261023.1, )",
-        "resolved": "1.2.0-alpha.20261023.1",
-        "contentHash": "D6RpkLds7tkD/7iqsylAV9qmLgyBu8COGVkk2U9eyM+h4RxASo2buH1fycZBa+NBXBrWwzy1ytU9Iex0d52S1g=="
+        "requested": "[0.1.0-alpha.70.1, )",
+        "resolved": "0.1.0-alpha.70.1",
+        "contentHash": "S9QDPvH4kBru2Zan2WYvJqg7VW3kMJ9+KPXoud9fjbnfnlBHBGqbAmpJklidmWp1PWPZ+zy2UDWPSz0VS8fXbA=="
       },
       "PandaBear.SharedKernel.Messaging.IntegrationEvents": {
         "type": "Direct",
-        "requested": "[1.2.0-alpha.20261023.1, )",
-        "resolved": "1.2.0-alpha.20261023.1",
-        "contentHash": "Ah0D4Bxp4HGHNddDh2ec2iYDakFkycBWh/XKTbQZBMqlaTD6eQ47G9jVh34+QMtLT0auol5wucAKileGqM9iBw==",
+        "requested": "[0.1.0-alpha.70.1, )",
+        "resolved": "0.1.0-alpha.70.1",
+        "contentHash": "8hl88ztDEpkwHFwsJVnsJI+Q4QU9msRMbg8hd3MUSPPSC0bk6F4S1xbDtijc2Y6WQFc4zB8c3nIrhTJn5SCElw==",
         "dependencies": {
           "Microsoft.Extensions.DependencyInjection.Abstractions": "10.0.13",
-          "PandaBear.SharedKernel.Messaging": "1.2.0-alpha.20261023.1"
+          "PandaBear.SharedKernel.Messaging": "0.1.0-alpha.70.1"
         }
       },
       "PandaBear.SharedKernel.Messaging.IntegrationEvents.SourceGenerator": {
         "type": "Direct",
-        "requested": "[1.2.0-alpha.20261023.1, )",
-        "resolved": "1.2.0-alpha.20261023.1",
-        "contentHash": "txPVu/JMPPV8FUlAAbKu+qO9Yz7YDdPy+jbwjSnpyWQFm4ij7cuipyV+mJa2GwYaFlmqklRYngSj6Bux//GDgA=="
+        "requested": "[0.1.0-alpha.70.1, )",
+        "resolved": "0.1.0-alpha.70.1",
+        "contentHash": "D1c8AbHMKvbo8U5molWJcJU56tXf1M5M6aOBdtl4WvLjb6vDpw0b+000P2DHfgzLu4annI/Kl2byXX3sirZArg=="
       },
       "PandaBear.SharedKernel.Results": {
         "type": "Direct",
-        "requested": "[1.2.0-alpha.20261023.1, )",
-        "resolved": "1.2.0-alpha.20261023.1",
-        "contentHash": "YT/cI5tjC9JIPz8x0fWcvpTiSfNj9A6QqYZ1o3K/oSvWDyD2PBqUs8k2/CnLsRAkQGmNWPpLYURB8lJ1aymjNA=="
+        "requested": "[0.1.0-alpha.70.1, )",
+        "resolved": "0.1.0-alpha.70.1",
+        "contentHash": "jlwzYLJyBlBoO/RxlnFm9hf3mHgN21s/G3C6G6nXIRvOiHePM8ur6XnXlbLMnk0NZ85rrH2782K3436nBahMog=="
       },
       "PandaBear.SharedKernel.Style.Analyzers": {
         "type": "Direct",
-        "requested": "[1.2.0-alpha.20261023.1, )",
-        "resolved": "1.2.0-alpha.20261023.1",
-        "contentHash": "RpyYwF7tqj5NDJh/tnKKKvz4SxcBEnR7PEtniXvkmYVCyMisssoQWFtIkF6Fo/u2hk24GFclhzCSjMhVP1ecOA=="
+        "requested": "[0.1.0-alpha.70.1, )",
+        "resolved": "0.1.0-alpha.70.1",
+        "contentHash": "1LmLUT1f+2pAV4+oLvlU4/IoMPrKI59ID0Dol4yDyqoqh3W7pSYhSyga18e/MEyBk+z1ebbwk7Jcoqd2OrunMg=="
       },
       "PandaBear.SharedKernel.Style.CodeFixes": {
         "type": "Direct",
-        "requested": "[1.2.0-alpha.20261023.1, )",
-        "resolved": "1.2.0-alpha.20261023.1",
-        "contentHash": "wMtzQOdGoGHorEM55RTlHkE1ZYurVJTyy2maK6pF9qACd4L+lZyskTzZFGwbdfQ/XEqYl4piEeFqyhYDZrhmMg=="
+        "requested": "[0.1.0-alpha.70.1, )",
+        "resolved": "0.1.0-alpha.70.1",
+        "contentHash": "mEe/85utqAEpYs1pQC+T+jsKm0rQ4LWDqH0lU4mehKl2nDVkMkC3JouHD0hQqJmIuBc5aMRQYw5HqyWbTTON5w=="
       },
       "PandaBear.SharedKernel.Tabular": {
         "type": "Direct",
-        "requested": "[1.2.0-alpha.20261023.1, )",
-        "resolved": "1.2.0-alpha.20261023.1",
-        "contentHash": "YOI1eQ4lN0W6N+rDdRPuD1t0riwxXBjFPP/OHW8cnLNka1pm/36/NatvdUEU0hPqdA4k3AAtnBZMksuJby/0Tg==",
+        "requested": "[0.1.0-alpha.70.1, )",
+        "resolved": "0.1.0-alpha.70.1",
+        "contentHash": "hyZzQ4wwU6Rm6+UMf8naYWBhLTpZpblYVvzBaq4XkQ/+HYz7hKNV8dqwob6wPkMXtsk8nVOZ0LY4ay4dMoPX5Q==",
         "dependencies": {
-          "PandaBear.SharedKernel.Results": "1.2.0-alpha.20261023.1"
+          "PandaBear.SharedKernel.Results": "0.1.0-alpha.70.1"
         }
       },
       "Microsoft.Extensions.AmbientMetadata.Application": {
@@ -372,18 +372,18 @@
       "viajantesturismo.admin.contracts.integrationevents": {
         "type": "Project",
         "dependencies": {
-          "PandaBear.SharedKernel.Messaging.IntegrationEvents": "[1.2.0-alpha.20261023.1, )"
+          "PandaBear.SharedKernel.Messaging.IntegrationEvents": "[0.1.0-alpha.70.1, )"
         }
       },
       "viajantesturismo.admin.domain": {
         "type": "Project",
         "dependencies": {
           "JetBrains.Annotations": "[2026.2.0, )",
-          "PandaBear.SharedKernel.AuditTrail": "[1.2.0-alpha.20261023.1, )",
-          "PandaBear.SharedKernel.BuildingBlocks": "[1.2.0-alpha.20261023.1, )",
-          "PandaBear.SharedKernel.Domain": "[1.2.0-alpha.20261023.1, )",
-          "PandaBear.SharedKernel.InputNormalization": "[1.2.0-alpha.20261023.1, )",
-          "PandaBear.SharedKernel.Results": "[1.2.0-alpha.20261023.1, )"
+          "PandaBear.SharedKernel.AuditTrail": "[0.1.0-alpha.70.1, )",
+          "PandaBear.SharedKernel.BuildingBlocks": "[0.1.0-alpha.70.1, )",
+          "PandaBear.SharedKernel.Domain": "[0.1.0-alpha.70.1, )",
+          "PandaBear.SharedKernel.InputNormalization": "[0.1.0-alpha.70.1, )",
+          "PandaBear.SharedKernel.Results": "[0.1.0-alpha.70.1, )"
         }
       },
       "JetBrains.Annotations": {
@@ -529,9 +529,9 @@
       },
       "PandaBear.SharedKernel.HttpClients": {
         "type": "CentralTransitive",
-        "requested": "[1.2.0-alpha.20261023.1, )",
-        "resolved": "1.2.0-alpha.20261023.1",
-        "contentHash": "kWpOWO24cJ4Oec8D8QLZ5EiRRzJLFHzGGk+6wLj9ejep2z8iyHaWx0TQyZvZCkaU03dcsX8imuFfLCd3gcjRDQ==",
+        "requested": "[0.1.0-alpha.70.1, )",
+        "resolved": "0.1.0-alpha.70.1",
+        "contentHash": "0fZEBFjifVxn5rMFs+867/o1G4BpIY96H9gt/Xei2k1rPOjJeX90y8+orW7GnCUZ5aZPrrJH7ZYRWmlcaKzVlw==",
         "dependencies": {
           "Microsoft.Extensions.Compliance.Abstractions": "10.11.0",
           "Microsoft.Extensions.DependencyInjection": "10.0.13",
@@ -546,14 +546,15 @@
           "Microsoft.Extensions.Telemetry": "10.11.0",
           "OpenTelemetry": "1.20.0",
           "OpenTelemetry.Extensions.Hosting": "1.20.0",
-          "OpenTelemetry.Instrumentation.Http": "1.20.0"
+          "OpenTelemetry.Instrumentation.Http": "1.20.0",
+          "PandaBear.SharedKernel.Idempotency.Abstractions": "0.1.0-alpha.70.1"
         }
       },
       "PandaBear.SharedKernel.Messaging": {
         "type": "CentralTransitive",
-        "requested": "[1.2.0-alpha.20261023.1, )",
-        "resolved": "1.2.0-alpha.20261023.1",
-        "contentHash": "eaW5MzqXlcr4L6W4w46GBual+bKv6Za5ih2zkU3QWAkpO/lH3ZrfLDd15KLVecSs6zJ9akdeJzn63dU5Vr4P5Q=="
+        "requested": "[0.1.0-alpha.70.1, )",
+        "resolved": "0.1.0-alpha.70.1",
+        "contentHash": "DRvuI0RQeP+n9jgraVGZKS8ugVz41KmjqklasrQYFgKBWlrF6BD3iUnWId9vtSQ+ukREFAi0KywKub93kTsPqg=="
       }
     }
   }

@@ -18,25 +18,45 @@ The inspected GitHub automatic NuGet submission restores the first 20 project pa
 subsets despite identical dependency inputs. The dependency comparison reported 1,134 additions and
 287 removals on a documentation-only change. Rerunning the base submission did not resolve it.
 
-The repository Dependency Review workflow now restores the entire locked solution for the exact
-PR base/head SHAs and submits both graphs with the same stable `viajantes-solution-nuget`
-correlator. The restore binary log supplies evaluated graph evidence to Component Detection.
-A failed/canceled snapshot job fails the required review rather than allowing a successful aggregate.
+The repository Dependency Review workflow submits the complete committed lock graph for the exact
+PR base/head SHAs with the same stable `viajantes-solution-nuget` correlator. Each target is checked
+out into an isolated `dependency-input` directory. The shared `dependency snapshot` engine verifies
+the exact clean target revision, discovers the committed solution's projects, and requires their
+lock files. It emits the locked package versions, framework-specific nodes, direct/transitive
+classification, and dependency edges; malformed, missing, or unresolved graph input fails visibly.
+Snapshot JSON is retained as CI evidence. This describes the committed restore graph, not a claim
+that all build-time dependency inputs have been dynamically evaluated.
+
+Both targets use one reviewed generator implementation, independently pinned by
+`SNAPSHOT_GENERATOR_REVISION` to SharedKernel revision
+[`8895a57934be23177f9979a23620774e5085eb3d`](https://github.com/danigutsch/PandaBear.SharedKernel/commit/8895a57934be23177f9979a23620774e5085eb3d).
+The workflow verifies the exact clean source checkout, selects its `global.json` SDK, and builds
+`SharedKernel.RepoConfig.Tool`. Only the generator's own prerequisites are restored. The runtime
+candidate `0.1.0-alpha.70.1` predates this command; its manifest does not select the generator.
+No application solution is restored, and neither target's historical candidate packages, release
+assets, or local feed are needed. There is no fallback to a mutable branch, retired preview, or old
+detector binary.
+Retiring a prior release therefore cannot break a base snapshot merely because that base once
+consumed its packages.
 
 The write-capable snapshot job runs only for same-repository PRs from non-Dependabot actors. It does
-not use `pull_request_target`, repository secrets, or persisted checkout credentials. Fork and
+not use `pull_request_target`, repository secrets, or persisted checkout credentials. The scoped
+`contents: write` token exists only in the native PowerShell submission step. That step posts the
+validated JSON to GitHub's snapshot endpoint and fails on HTTP errors. A failed/canceled generation
+or submission job fails the required review rather than allowing a successful aggregate. Fork and
 Dependabot PRs retain the read-only review against available GitHub graph data; this does not claim
 complete dynamic snapshot coverage for them. Merge-group events retain their existing review path.
 
-The checked-in submission Action uses the same full SHA observed in GitHub's automatic workflow.
-It introduces a repository-managed Action dependency and its downloaded/transitive scanning tools,
-so maintainers must review that supply-chain surface when updating the pin. No new NuGet dependency
-is introduced. Manual submissions take precedence over automatic submissions per
-[GitHub's documented deduplication](https://docs.github.com/en/rest/dependency-graph/dependency-submission).
+This source-built engine replaces the component-detection submission Action. The previously pinned
+Action downloaded the latest detector binary, and that detector required restore assets/binlogs
+rather than accepting `packages.lock.json` directly. Merely removing restore from that path would
+lose graph coverage. The replacement introduces no new external package or scanner dependency and
+never downloads retired candidate artifacts. GitHub manual submissions take precedence over
+automatic submissions per [its documented deduplication](https://docs.github.com/en/rest/dependency-graph/dependency-submission).
 The same repository-owned submission runs on `main` pushes and manual dispatches. GitHub's managed
-NuGet auto-submission cannot stage the pinned local candidate feed and fails with `NU1301`; rerunning
-it does not fix the missing prerequisite. Replace that incompatible duplicate workflow with this
-bootstrapped submission, retaining the dependency graph, PR snapshots, and required Dependency Review.
+NuGet auto-submission still cannot stage the pinned local candidate feed; rerunning it does not fix
+that missing prerequisite. Use this committed-lock submission to retain dependency graph data,
+complete PR snapshots, and the required Dependency Review without historical restore coupling.
 
 ## StreamJsonRpc metadata review
 
@@ -116,11 +136,12 @@ exhaustive dependency inventory. Windows and non-x64 linkage need platform-appro
 
 ## Security candidate renewal
 
-Status: **owner-approved October 23, 2026** for candidate `1.2.0-alpha.20261023.1`, clean library
-revision `cc826be664bfc2dc087fe5a140f7232b4f65967d`. The owner explicitly renewed the same two
+Status: **owner-approved October 23, 2026** for candidate `0.1.0-alpha.70.1`, clean library
+revision `ef0dd0a67b8982dfdf0cb8f5e23224c397971a5b`. The owner explicitly renewed the same two
 metadata exceptions for StreamJsonRpc `2.25.29` and Magick.NET-Q8-AnyCPU `15.0.0`, preserving all
-existing gates. The earlier approval above remains historical evidence for
-`1.0.0-alpha.20261021.2`; this renewal applies only to the newly named candidate.
+existing gates. Earlier approvals for `1.0.0-alpha.20261021.2` and retired
+`1.2.0-alpha.20261023.1` remain historical evidence; this renewal applies only to the newly named
+fresh candidate. Retired release artifacts must not be consumed again.
 
 Rechecked the installed exact archives, nuspec declarations, and notices against the recorded audit.
 StreamJsonRpc `2.25.29` still declares MIT; Magick.NET-Q8-AnyCPU `15.0.0` still declares Apache-2.0.

@@ -15,7 +15,7 @@ public sealed class DocumentRequestFingerprintTests
     public void Existing_document_fingerprint_encoding_remains_compatible(string templateId, string version, string expected)
     {
         // Act
-        var actual = IdempotencyRequestFingerprint.Create(templateId, version);
+        var actual = DocumentCommandIdempotency.CreateRequestFingerprint(templateId, version);
 
         // Assert
         actual.ShouldBe(expected);

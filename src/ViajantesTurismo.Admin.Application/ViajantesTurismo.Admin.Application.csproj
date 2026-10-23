@@ -10,7 +10,7 @@
         <PackageReference Include="PandaBear.SharedKernel.Results" />
         <PackageReference Include="PandaBear.SharedKernel.BuildingBlocks" />
         <PackageReference Include="PandaBear.SharedKernel.InputNormalization" />
-        <PackageReference Include="PandaBear.SharedKernel.Idempotency" />
+        <PackageReference Include="PandaBear.SharedKernel.Idempotency.Abstractions" />
         <PackageReference Include="PandaBear.SharedKernel.DocumentRendering" />
         <PackageReference Include="PandaBear.SharedKernel.Branding" />
         <PackageReference Include="PandaBear.SharedKernel.Messaging.IntegrationEvents.SourceGenerator" PrivateAssets="all" />
