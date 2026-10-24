@@ -16,6 +16,8 @@ public sealed class BrandingDbContext(
 
     internal DbSet<BrandingSettingsRecord> BrandingSettings => Set<BrandingSettingsRecord>();
 
+    internal DbSet<BrandingSettingsRevisionRecord> BrandingSettingsRevisions => Set<BrandingSettingsRevisionRecord>();
+
     /// <inheritdoc />
     protected override void ConfigureConventions(ModelConfigurationBuilder configurationBuilder)
     {
@@ -39,6 +41,7 @@ public sealed class BrandingDbContext(
 
         modelBuilder.HasDefaultSchema(SchemaName);
         modelBuilder.ApplyConfiguration(new BrandingSettingsConfiguration());
+        modelBuilder.ApplyConfiguration(new BrandingSettingsRevisionConfiguration());
 
         if (configurations is not null)
         {

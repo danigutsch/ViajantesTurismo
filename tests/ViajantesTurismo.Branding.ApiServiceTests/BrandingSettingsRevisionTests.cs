@@ -1,0 +1,163 @@
+using Microsoft.EntityFrameworkCore;
+using ViajantesTurismo.Branding.Contracts.IntegrationEvents.Branding;
+using ViajantesTurismo.Branding.Infrastructure;
+using TestTraits = ViajantesTurismo.Branding.ApiServiceTests.Infrastructure.TestTraits;
+
+namespace ViajantesTurismo.Branding.ApiServiceTests;
+
+[Trait(PandaBear.Testing.TestTraitNames.CategoryName, TestTraits.EndpointCategory)]
+public sealed class BrandingSettingsRevisionTests
+{
+    [Fact]
+    public async Task First_save_creates_revision_one_with_history_and_one_event()
+    {
+        // Arrange
+        var ct = TestContext.Current.CancellationToken;
+        using var scenario = BrandingStoreScenario.Create();
+        var settings = BrandingSettingsTestData.CreateSettings();
+
+        // Act
+        await scenario.CreateStore().SaveSettings(settings, ct);
+
+        // Assert
+        var snapshot = scenario.ReadSnapshot();
+        var current = snapshot.Current.ShouldNotBeNull();
+        current.SourceEpoch.ShouldNotBe(Guid.Empty);
+        current.SourceRevision.ShouldBe(1);
+        var revision = snapshot.Revisions.ShouldHaveSingleItem();
+        revision.SourceEpoch.ShouldBe(current.SourceEpoch);
+        revision.SourceRevision.ShouldBe(1);
+        revision.BrandName.ShouldBe(settings.BrandName);
+        var envelope = snapshot.Outbox.ShouldHaveSingleItem();
+        envelope.EventType.ShouldBe(BrandingSettingsChangedIntegrationEvent.EventType);
+        envelope.EventVersion.ShouldBe(BrandingSettingsChangedIntegrationEvent.EventVersion);
+    }
+
+    [Fact]
+    public async Task Changed_save_appends_the_next_revision_in_the_same_epoch()
+    {
+        // Arrange
+        var ct = TestContext.Current.CancellationToken;
+        using var scenario = BrandingStoreScenario.Create();
+        var first = BrandingSettingsTestData.CreateSettings();
+        var second = BrandingSettingsTestData.CreateSettings("Viajantes 2");
+        await scenario.CreateStore().SaveSettings(first, ct);
+
+        // Act
+        await scenario.CreateStore().SaveSettings(second, ct);
+
+        // Assert
+        var snapshot = scenario.ReadSnapshot();
+        var current = snapshot.Current.ShouldNotBeNull();
+        current.SourceRevision.ShouldBe(2);
+        current.BrandName.ShouldBe("Viajantes 2");
+        snapshot.Revisions.Select(revision => revision.SourceRevision).ShouldBe([1L, 2L]);
+        snapshot.Revisions.ShouldAllSatisfy(revision => revision.SourceEpoch.ShouldBe(current.SourceEpoch));
+        snapshot.Outbox.Count.ShouldBe(2);
+    }
+
+    [Fact]
+    public async Task Saving_the_same_settings_writes_no_revision_or_event()
+    {
+        // Arrange
+        var ct = TestContext.Current.CancellationToken;
+        using var scenario = BrandingStoreScenario.Create();
+        var settings = BrandingSettingsTestData.CreateSettings();
+        await scenario.CreateStore().SaveSettings(settings, ct);
+
+        // Act
+        await scenario.CreateStore().SaveSettings(settings, ct);
+
+        // Assert
+        var snapshot = scenario.ReadSnapshot();
+        snapshot.Current.ShouldNotBeNull().SourceRevision.ShouldBe(1);
+        snapshot.Revisions.Count.ShouldBe(1);
+        snapshot.Outbox.Count.ShouldBe(1);
+    }
+
+    [Fact]
+    public async Task A_writer_with_a_stale_revision_conflicts()
+    {
+        // Arrange
+        var ct = TestContext.Current.CancellationToken;
+        using var scenario = BrandingStoreScenario.Create();
+        var initial = BrandingSettingsTestData.CreateSettings();
+        await scenario.CreateStore().SaveSettings(initial, ct);
+        var writerA = scenario.CreateStore();
+        var writerB = scenario.CreateStore();
+        _ = await writerA.GetSettings(ct);
+        _ = await writerB.GetSettings(ct);
+        await writerA.SaveSettings(
+            BrandingSettingsTestData.CreateSettings("From A"), ct);
+
+        // Act
+        var save = () => writerB.SaveSettings(
+            BrandingSettingsTestData.CreateSettings("From B"), ct);
+
+        // Assert
+        // The in-memory provider has no transactions; BrandingRevisionPostgreSqlTests proves no partial write.
+        await save.ShouldThrow<DbUpdateConcurrencyException>();
+        scenario.ReadSnapshot().Current.ShouldNotBeNull().BrandName.ShouldBe("From A");
+    }
+
+    [Fact]
+    public async Task Bootstrap_turns_an_existing_valid_row_into_revision_one_once()
+    {
+        // Arrange
+        var ct = TestContext.Current.CancellationToken;
+        using var scenario = BrandingStoreScenario.Create();
+        var settings = BrandingSettingsTestData.CreateSettings();
+        await scenario.SeedUnrevisionedSettings(settings, ct);
+
+        // Act
+        await scenario.CreateStore().Bootstrap(ct);
+        await scenario.CreateStore().Bootstrap(ct);
+
+        // Assert
+        var snapshot = scenario.ReadSnapshot();
+        var current = snapshot.Current.ShouldNotBeNull();
+        current.SourceRevision.ShouldBe(1);
+        current.SourceEpoch.ShouldNotBe(Guid.Empty);
+        current.BrandName.ShouldBe(settings.BrandName);
+        snapshot.Revisions.ShouldHaveSingleItem().SourceRevision.ShouldBe(1);
+        snapshot.Outbox.ShouldHaveSingleItem();
+    }
+
+    [Fact]
+    public async Task Bootstrap_materializes_defaults_as_revision_one_when_no_row_exists()
+    {
+        // Arrange
+        var ct = TestContext.Current.CancellationToken;
+        using var scenario = BrandingStoreScenario.Create();
+
+        // Act
+        await scenario.CreateStore().Bootstrap(ct);
+
+        // Assert
+        var snapshot = scenario.ReadSnapshot();
+        var current = snapshot.Current.ShouldNotBeNull();
+        current.SourceRevision.ShouldBe(1);
+        current.BrandName.ShouldBe(BrandingDefaults.CreateDto().BrandName);
+        snapshot.Revisions.ShouldHaveSingleItem();
+        snapshot.Outbox.ShouldHaveSingleItem();
+    }
+
+    [Fact]
+    public async Task Bootstrap_fails_visibly_for_invalid_persisted_settings()
+    {
+        // Arrange
+        var ct = TestContext.Current.CancellationToken;
+        using var scenario = BrandingStoreScenario.Create();
+        await scenario.SeedInvalidUnrevisionedSettings(ct);
+
+        // Act
+        var bootstrap = () => scenario.CreateStore().Bootstrap(ct);
+
+        // Assert
+        await bootstrap.ShouldThrow<InvalidOperationException>();
+        var snapshot = scenario.ReadSnapshot();
+        snapshot.Current.ShouldNotBeNull().SourceRevision.ShouldBe(0);
+        snapshot.Revisions.ShouldBeEmpty();
+        snapshot.Outbox.ShouldBeEmpty();
+    }
+}

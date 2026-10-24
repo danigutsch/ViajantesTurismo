@@ -92,11 +92,8 @@ public sealed class EfBrandingSettingsStoreTests
     public async Task GetSettings_returns_null_when_no_settings_have_been_saved()
     {
         // Arrange
-        var options = new DbContextOptionsBuilder<BrandingDbContext>()
-            .UseInMemoryDatabase(Guid.CreateVersion7().ToString())
-            .Options;
-        await using var dbContext = new BrandingDbContext(options);
-        var store = new EfBrandingSettingsStore(dbContext);
+        using var scenario = BrandingStoreScenario.Create();
+        var store = scenario.CreateStore();
 
         // Act
         var settings = await store.GetSettings(TestContext.Current.CancellationToken);
@@ -109,11 +106,8 @@ public sealed class EfBrandingSettingsStoreTests
     public async Task SaveSettings_persists_validated_branding_settings()
     {
         // Arrange
-        var options = new DbContextOptionsBuilder<BrandingDbContext>()
-            .UseInMemoryDatabase(Guid.CreateVersion7().ToString())
-            .Options;
-        await using var dbContext = new BrandingDbContext(options);
-        var store = new EfBrandingSettingsStore(dbContext);
+        using var scenario = BrandingStoreScenario.Create();
+        var store = scenario.CreateStore();
         var settings = BrandingSettings.Create(new BrandingSettingsDto
         {
             BrandName = "Viajantes Turismo",
@@ -161,11 +155,8 @@ public sealed class EfBrandingSettingsStoreTests
     public async Task SaveSettings_replaces_existing_settings()
     {
         // Arrange
-        var options = new DbContextOptionsBuilder<BrandingDbContext>()
-            .UseInMemoryDatabase(Guid.CreateVersion7().ToString())
-            .Options;
-        await using var dbContext = new BrandingDbContext(options);
-        var store = new EfBrandingSettingsStore(dbContext);
+        using var scenario = BrandingStoreScenario.Create();
+        var store = scenario.CreateStore();
         var initial = BrandingSettings.Create(new BrandingSettingsDto
         {
             BrandName = "Viajantes Turismo",

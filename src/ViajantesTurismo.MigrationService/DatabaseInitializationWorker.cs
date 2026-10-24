@@ -115,6 +115,7 @@ internal sealed class DatabaseInitializationWorker
         if (brandingDbContext.Database.IsRelational())
         {
             await brandingDbContext.Database.MigrateAsync(ct);
+            await serviceProvider.BootstrapBrandingRevisions(ct);
         }
 
         if (managementSecurityDbContext.Database.IsRelational())
