@@ -619,23 +619,4 @@ public sealed class PublicMediaImageTests
         var validationErrors = result.ErrorDetails.ShouldNotBeNull().ValidationErrors.ShouldNotBeNull();
         validationErrors.ContainsKey(nameof(PublicMediaImage.ResponsiveVariants)).ShouldBeTrue();
     }
-
-    [Fact]
-    public void With_processing_result_rejects_ready_images_without_public_variants()
-    {
-        // Arrange
-        var image = PublicMediaImageTestFactory.CreatePendingImage(Guid.CreateVersion7(), 2048);
-
-        // Act
-        var result = image.WithProcessingResult(
-            new MediaImageDimensions(1200, 800),
-            MediaImageProcessingStatus.Ready,
-            []);
-
-        // Assert
-        result.IsFailure.ShouldBeTrue();
-        var errorDetails = result.ErrorDetails ?? throw new InvalidOperationException("Expected validation error details.");
-        var validationErrors = errorDetails.ValidationErrors ?? throw new InvalidOperationException("Expected validation errors.");
-        validationErrors.ContainsKey(nameof(PublicMediaImage.ResponsiveVariants)).ShouldBe(true);
-    }
 }
