@@ -26,7 +26,8 @@ The current `.devcontainer/devcontainer.json` defines a shared environment with:
 
 The current lifecycle flow is:
 
-1. `onCreateCommand` runs `.devcontainer/on-create.sh`
+1. `onCreateCommand` runs `.devcontainer/on-create.sh`, which installs the pinned SDK and runs
+   `setup-dev.sh` to stage the pinned SharedKernel candidate
 2. `postCreateCommand` runs `.devcontainer/post-create.sh`
 3. `postStartCommand` runs `.devcontainer/post-start.sh`
 

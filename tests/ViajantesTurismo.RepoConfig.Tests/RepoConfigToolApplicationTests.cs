@@ -7,7 +7,7 @@ public sealed class RepoConfigToolApplicationTests
     [InlineData(null)]
     [InlineData("--help")]
     [InlineData("-h")]
-    public async Task Help_lists_bootstrap_and_json_validation_commands(string? help)
+    public async Task Help_lists_candidate_and_json_validation_commands(string? help)
     {
         // Arrange
         using var output = new StringWriter();
@@ -20,7 +20,7 @@ public sealed class RepoConfigToolApplicationTests
 
         // Assert
         exitCode.ShouldBe(0);
-        output.ToString().ShouldContain("bootstrap-sharedkernel", StringComparison.Ordinal);
+        output.ToString().ShouldContain("verify-sharedkernel-candidate", StringComparison.Ordinal);
         output.ToString().ShouldContain("lint-json", StringComparison.Ordinal);
         error.ToString().ShouldBe(string.Empty);
     }
@@ -41,7 +41,7 @@ public sealed class RepoConfigToolApplicationTests
         // Assert
         exitCode.ShouldBe(1);
         output.ToString().ShouldBe(string.Empty);
-        error.ToString().ShouldContain("Commands: bootstrap-sharedkernel", StringComparison.Ordinal);
+        error.ToString().ShouldContain("Commands: verify-sharedkernel-candidate", StringComparison.Ordinal);
         error.ToString().ShouldContain(help.ToString().TrimEnd(), StringComparison.Ordinal);
         error.ToString().ShouldContain("Use sharedkernel-repo for reusable repository commands.", StringComparison.Ordinal);
     }

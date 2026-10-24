@@ -1,0 +1,79 @@
+name: Build SharedKernel tool
+description: >-
+  Build a source-runnable SharedKernel tool at the pinned library revision and export
+  SHAREDKERNEL_SOURCE. Requires the .NET SDK pinned by global.json.
+
+inputs:
+  tool:
+    description: SharedKernel.CI.Tool or SharedKernel.RepoConfig.Tool.
+    required: true
+  library-root:
+    description: Optional clean checkout of the pinned SharedKernel revision used instead of a sparse checkout.
+    required: false
+    default: ""
+
+runs:
+  using: composite
+  steps:
+    - name: Resolve pinned SharedKernel source
+      id: sharedkernel-source
+      shell: pwsh
+      env:
+        TOOL: ${{ inputs.tool }}
+        LIBRARY_ROOT: ${{ inputs.library-root }}
+        WORKSPACE: ${{ github.workspace }}
+      run: |
+        $ErrorActionPreference = 'Stop'
+        if ($env:TOOL -cne 'SharedKernel.CI.Tool' -and $env:TOOL -cne 'SharedKernel.RepoConfig.Tool') {
+          throw "Unsupported SharedKernel tool: $env:TOOL"
+        }
+        $pin = Get-Content -LiteralPath .config/sharedkernel-candidate.json -Raw | ConvertFrom-Json
+        $revision = [string]$pin.libraryRevision
+        if ($revision -cnotmatch '^[0-9a-f]{40}$') {
+          throw 'The committed SharedKernel libraryRevision must be 40 lowercase hexadecimal characters.'
+        }
+        if ($env:LIBRARY_ROOT -eq '') {
+          $source = Join-Path $env:WORKSPACE ".local/sharedkernel-source/$env:TOOL"
+        }
+        else {
+          $source = [System.IO.Path]::GetFullPath($env:LIBRARY_ROOT)
+          $cdup = git -C $source rev-parse --show-cdup
+          if ($LASTEXITCODE -ne 0 -or $cdup -ne '') {
+            throw 'The SharedKernel library root must be the top level of a Git work tree.'
+          }
+          $head = git -C $source rev-parse HEAD
+          if ($LASTEXITCODE -ne 0 -or $head -cne $revision) {
+            throw 'The SharedKernel library root must be checked out at the pinned libraryRevision.'
+          }
+          $status = git -C $source status --porcelain
+          if ($LASTEXITCODE -ne 0 -or $status) {
+            throw 'The SharedKernel library root must have a clean git status.'
+          }
+        }
+        "revision=$revision" >> $env:GITHUB_OUTPUT
+        "source=$source" >> $env:GITHUB_OUTPUT
+        "SHAREDKERNEL_SOURCE=$source" >> $env:GITHUB_ENV
+
+    - name: Checkout pinned SharedKernel tool source
+      if: ${{ inputs.library-root == '' }}
+      uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+      with:
+        repository: danigutsch/PandaBear.SharedKernel
+        ref: ${{ steps.sharedkernel-source.outputs.revision }}
+        path: .local/sharedkernel-source/${{ inputs.tool }}
+        persist-credentials: false
+        sparse-checkout-cone-mode: true
+        sparse-checkout: |
+          tools/${{ inputs.tool }}
+          tools/Shared
+
+    - name: Build SharedKernel tool
+      shell: pwsh
+      working-directory: ${{ steps.sharedkernel-source.outputs.source }}
+      env:
+        TOOL: ${{ inputs.tool }}
+      run: |
+        dotnet restore "tools/$env:TOOL" --locked-mode
+        if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+        dotnet build "tools/$env:TOOL" -c Release --no-restore
+        if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }

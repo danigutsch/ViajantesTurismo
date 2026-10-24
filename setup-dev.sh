@@ -6,6 +6,9 @@ set -e
 
 repo_root="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 install_sdk=false
+library_root=""
+feed=""
+usage="Usage: $0 [--install-sdk] [--library-root <path>] [--feed <dir>]"
 
 # Parse arguments
 while [[ $# -gt 0 ]]; do
@@ -13,9 +16,18 @@ while [[ $# -gt 0 ]]; do
         --install-sdk)
             install_sdk=true
             ;;
+        --library-root | --feed)
+            if [[ $# -lt 2 ]] || ! value="$(cd -- "$2" && pwd)"; then
+                echo "$1 requires an existing directory"
+                echo "${usage}"
+                exit 1
+            fi
+            if [[ "$1" == "--feed" ]]; then feed="${value}"; else library_root="${value}"; fi
+            shift
+            ;;
         *)
             echo "Unknown option: $1"
-            echo "Usage: $0 [--install-sdk]"
+            echo "${usage}"
             exit 1
             ;;
     esac
@@ -82,6 +94,57 @@ check_dotnet_sdk_version() {
     return 0
 }
 
+stage_sharedkernel_candidate() {
+    local cdup
+    local promisor
+    local revision
+    local source_dir="${library_root}"
+    local sparse
+    local -a stage_source=(--repository danigutsch/PandaBear.SharedKernel)
+
+    printf "\n%b" "${YELLOW}📦 Staging the pinned SharedKernel candidate...${NC}\n"
+    if ! revision="$(jq -er '.libraryRevision | select(type == "string" and test("^[0-9a-f]{40}$"))' .config/sharedkernel-candidate.json)"; then
+        printf "%b" "   ${RED}❌ The pinned libraryRevision must be 40 lowercase hexadecimal characters${NC}\n"
+        exit 1
+    fi
+
+    if [[ -z "${source_dir}" ]]; then
+        source_dir="${repo_root}/.local/sharedkernel-source/SharedKernel.CI.Tool"
+        if [[ ! -e "${source_dir}" ]]; then
+            git clone --filter=blob:none --no-checkout https://github.com/danigutsch/PandaBear.SharedKernel.git "${source_dir}"
+            git -C "${source_dir}" sparse-checkout set --cone tools/SharedKernel.CI.Tool tools/Shared
+        else
+            cdup="$(git -C "${source_dir}" rev-parse --show-cdup 2> /dev/null)" || cdup="not-top-level"
+            promisor="$(git -C "${source_dir}" config --get remote.origin.promisor)" || promisor=""
+            sparse="$(git -C "${source_dir}" sparse-checkout list)" || sparse=""
+            if [[ -n "${cdup}" || "${promisor}" != "true" || "${sparse}" != $'tools/Shared\ntools/SharedKernel.CI.Tool' ]]; then
+                printf "%b" "   ${RED}❌ ${source_dir} is not the expected sparse SharedKernel clone; move it away and rerun${NC}\n"
+                exit 1
+            fi
+        fi
+        if ! git -C "${source_dir}" cat-file -e "${revision}^{commit}" 2> /dev/null; then
+            git -C "${source_dir}" fetch --filter=blob:none origin "${revision}"
+        fi
+        git -C "${source_dir}" checkout --quiet --detach "${revision}"
+    fi
+
+    (
+        cd "${source_dir}"
+        dotnet restore tools/SharedKernel.CI.Tool --locked-mode
+        dotnet build tools/SharedKernel.CI.Tool -c Release --no-restore
+    )
+
+    if [[ -n "${feed}" ]]; then
+        stage_source=(--feed "${feed}")
+    fi
+    dotnet run --project "${source_dir}/tools/SharedKernel.CI.Tool" -c Release --no-build -- \
+        stage-candidate --pin .config/sharedkernel-candidate.json --library-root "${source_dir}" \
+        --output .local/sharedkernel-feed "${stage_source[@]}"
+    printf "%b" "   ${GREEN}✅ SharedKernel candidate staged${NC}\n"
+
+    return 0
+}
+
 restore_dotnet_dependencies() {
     printf "\n%b" "${YELLOW}📦 Restoring .NET dependencies...${NC}\n"
     if dotnet restore --locked-mode > /dev/null 2>&1; then
@@ -100,7 +163,8 @@ restore_dotnet_local_tools() {
         printf "%b" "   ${GREEN}✅ .NET tools restored (dotnet-ef, reportgenerator, Aspire CLI)${NC}\n"
         printf "%b" "   ${CYAN}💡 Run the repo-pinned Aspire CLI with: dotnet tool run aspire run${NC}\n"
     else
-        printf "%b" "   ${YELLOW}⚠️ Failed to restore .NET tools${NC}\n"
+        printf "%b" "   ${RED}❌ Failed to restore .NET tools${NC}\n"
+        exit 1
     fi
 
     return 0
@@ -204,17 +268,7 @@ print_summary() {
 
 print_header
 check_dotnet_sdk_version
-staged_candidate=""
-if [[ -f "${repo_root}/.local/sharedkernel-feed/candidate.json" ]]; then
-    staged_candidate="$(tr -d '\r' < "${repo_root}/.local/sharedkernel-feed/candidate.json")"
-fi
-pinned_candidate="$(tr -d '\r' < "${repo_root}/.config/sharedkernel-candidate.json")"
-if [[ "${staged_candidate}" != "${pinned_candidate}" ]]; then
-    echo "Stage the pinned SharedKernel candidate before setup:" >&2
-    echo "dotnet run --project tools/ViajantesTurismo.RepoConfig.Tool -c Release -- bootstrap-sharedkernel --library-root /path/to/SharedKernel --feed /path/to/candidate-packages" >&2
-    echo "See docs/sharedkernel/development.md. Devcontainers use the feed staged in the host workspace." >&2
-    exit 1
-fi
+stage_sharedkernel_candidate
 restore_dotnet_dependencies
 restore_dotnet_local_tools
 check_aspnet_core_development_certificate_trust

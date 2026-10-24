@@ -60,7 +60,7 @@ public sealed partial class AnalyzerSuppressionPolicyTests
         // Arrange
         using var workspace = new TemporaryDirectory();
         var sourceDirectory = Directory.CreateDirectory(Path.Combine(workspace.Path, "src"));
-        var libraryDirectory = Directory.CreateDirectory(Path.Combine(workspace.Path, ".local", "sharedkernel-library"));
+        var libraryDirectory = Directory.CreateDirectory(Path.Combine(workspace.Path, ".local", "sharedkernel-source"));
         var sourceFile = Path.Combine(sourceDirectory.FullName, "Application.cs");
         File.WriteAllText(sourceFile, "namespace Application; internal sealed class Example;");
         File.WriteAllText(Path.Combine(libraryDirectory.FullName, "Library.cs"), "namespace Library; internal sealed class Example;");

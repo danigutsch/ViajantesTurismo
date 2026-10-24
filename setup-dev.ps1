@@ -3,11 +3,19 @@
 # This script verifies required tooling and points to optional local tools
 
 param(
-    [switch]$InstallSdk
+    [switch]$InstallSdk,
+    [string]$LibraryRoot,
+    [string]$Feed
 )
 
 $ErrorActionPreference = "Stop"
 $repoRoot = $PSScriptRoot
+if ($LibraryRoot) {
+    $LibraryRoot = (Resolve-Path -LiteralPath $LibraryRoot).ProviderPath
+}
+if ($Feed) {
+    $Feed = (Resolve-Path -LiteralPath $Feed).ProviderPath
+}
 
 function Write-SetupHeader {
     Write-Host "`n🚀 ViajantesTurismo Development Setup" -ForegroundColor Cyan
@@ -46,6 +54,63 @@ function Test-DotNetSdkVersion {
     Write-Host "   ✅ .NET SDK installed: $installedSdk" -ForegroundColor Green
 }
 
+function Invoke-SharedKernelCandidateStaging {
+    Write-Host "`n📦 Staging the pinned SharedKernel candidate..." -ForegroundColor Yellow
+    $revision = [string](Get-Content -LiteralPath .config/sharedkernel-candidate.json -Raw | ConvertFrom-Json).libraryRevision
+    if ($revision -cnotmatch '^[0-9a-f]{40}$') {
+        Write-Error "The pinned libraryRevision must be 40 lowercase hexadecimal characters"
+        exit 1
+    }
+
+    $sourceDir = $LibraryRoot
+    if (-not $sourceDir) {
+        $sourceDir = Join-Path $repoRoot ".local/sharedkernel-source/SharedKernel.CI.Tool"
+        $clone = -not (Test-Path -LiteralPath $sourceDir)
+        if (-not $clone) {
+            $cdup = git -C $sourceDir rev-parse --show-cdup 2>$null
+            $isTopLevel = $LASTEXITCODE -eq 0 -and -not $cdup
+            $promisor = git -C $sourceDir config --get remote.origin.promisor
+            $sparse = (git -C $sourceDir sparse-checkout list) -join "`n"
+            if (-not $isTopLevel -or $promisor -cne 'true' -or $sparse -cne "tools/Shared`ntools/SharedKernel.CI.Tool") {
+                Write-Error "$sourceDir is not the expected sparse SharedKernel clone; move it away and rerun"
+                exit 1
+            }
+        }
+        git -C $sourceDir cat-file -e "$revision^{commit}" 2>$null
+        $fetch = $clone -or $LASTEXITCODE -ne 0
+    }
+
+    $PSNativeCommandUseErrorActionPreference = $true
+    if (-not $LibraryRoot) {
+        if ($clone) {
+            git clone --filter=blob:none --no-checkout https://github.com/danigutsch/PandaBear.SharedKernel.git $sourceDir
+            git -C $sourceDir sparse-checkout set --cone tools/SharedKernel.CI.Tool tools/Shared
+        }
+        if ($fetch) {
+            git -C $sourceDir fetch --filter=blob:none origin $revision
+        }
+        git -C $sourceDir checkout --quiet --detach $revision
+    }
+
+    Push-Location -LiteralPath $sourceDir
+    try {
+        dotnet restore tools/SharedKernel.CI.Tool --locked-mode
+        dotnet build tools/SharedKernel.CI.Tool -c Release --no-restore
+    }
+    finally {
+        Pop-Location
+    }
+
+    $stageSource = '--repository', 'danigutsch/PandaBear.SharedKernel'
+    if ($Feed) {
+        $stageSource = '--feed', $Feed
+    }
+    dotnet run --project (Join-Path $sourceDir "tools/SharedKernel.CI.Tool") -c Release --no-build -- `
+        stage-candidate --pin .config/sharedkernel-candidate.json --library-root $sourceDir `
+        --output .local/sharedkernel-feed @stageSource
+    Write-Host "   ✅ SharedKernel candidate staged" -ForegroundColor Green
+}
+
 function Restore-DotNetDependencies {
     Write-Host "`n📦 Restoring .NET dependencies..." -ForegroundColor Yellow
     dotnet restore --locked-mode
@@ -66,7 +131,8 @@ function Restore-DotNetLocalTools {
         Write-Host "   💡 Run the repo-pinned Aspire CLI with: dotnet tool run aspire run" -ForegroundColor Cyan
     }
     else {
-        Write-Host "   ⚠️ Failed to restore .NET tools" -ForegroundColor Yellow
+        Write-Error "Failed to restore .NET tools"
+        exit 1
     }
 }
 
@@ -170,15 +236,8 @@ function Write-SetupSummary {
 
 Write-SetupHeader
 Test-DotNetSdkVersion -InstallMissingSdk $InstallSdk
-$stagedCandidate = Join-Path $repoRoot ".local/sharedkernel-feed/candidate.json"
-$pinnedCandidate = Join-Path $repoRoot ".config/sharedkernel-candidate.json"
-if (-not (Test-Path -LiteralPath $stagedCandidate -PathType Leaf) -or
-    (Get-Content -LiteralPath $stagedCandidate -Raw).Replace("`r", "") -cne
-    (Get-Content -LiteralPath $pinnedCandidate -Raw).Replace("`r", "")) {
-    Write-Error "Stage the pinned SharedKernel candidate before setup: dotnet run --project tools/ViajantesTurismo.RepoConfig.Tool -c Release -- bootstrap-sharedkernel --library-root /path/to/SharedKernel --feed /path/to/candidate-packages. See docs/sharedkernel/development.md."
-    exit 1
-}
 Set-Location -LiteralPath $repoRoot
+Invoke-SharedKernelCandidateStaging
 Restore-DotNetDependencies
 Restore-DotNetLocalTools
 Test-AspNetCoreDevelopmentCertificateTrust

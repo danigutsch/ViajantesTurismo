@@ -22,10 +22,6 @@ inputs:
     description: Whether to restore repository-local .NET tools.
     required: false
     default: "true"
-  dotnet-global-json:
-    description: Path to the global.json file used to select the .NET SDK.
-    required: false
-    default: global.json
   trust-dev-certificate:
     description: Whether to trust the ASP.NET HTTPS developer certificate.
     required: false
@@ -41,69 +37,38 @@ runs:
     - name: Set up .NET SDK
       uses: actions/setup-dotnet@c2fa09f4bde5ebb9d1777cf28262a3eb3db3ced7 # v5
       with:
-        global-json-file: ${{ inputs.dotnet-global-json }}
+        global-json-file: global.json
         cache: true
         cache-dependency-path: |
           **/packages.lock.json
 
-    - name: Read pinned SharedKernel identity
-      id: sharedkernel-pin
-      shell: pwsh
-      run: |
-        $pin = Get-Content -LiteralPath .config/sharedkernel-candidate.json -Raw | ConvertFrom-Json
-        if ($pin.libraryRevision -cnotmatch '^[a-f0-9]{40}$' -or
-            $pin.packageVersion -cnotmatch '^[0-9A-Za-z.+-]+$') {
-          throw "The committed SharedKernel revision or package version is invalid."
-        }
-        "revision=$($pin.libraryRevision)" >> $env:GITHUB_OUTPUT
-        "version=$($pin.packageVersion)" >> $env:GITHUB_OUTPUT
-
-    - name: Checkout pinned SharedKernel source
-      if: ${{ inputs.sharedkernel-library-root == '' }}
-      uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+    - name: Build SharedKernel CI tool
+      uses: ./.github/actions/build-sharedkernel-tool
       with:
-        repository: danigutsch/PandaBear.SharedKernel
-        ref: ${{ steps.sharedkernel-pin.outputs.revision }}
-        path: .local/sharedkernel-library
-        persist-credentials: false
-        sparse-checkout: |
-          src
-          tools
-
-    - name: Download pinned SharedKernel candidate
-      if: ${{ inputs.sharedkernel-library-root == '' && inputs.sharedkernel-candidate-feed == '' }}
-      shell: pwsh
-      run: |
-        $ErrorActionPreference = 'Stop'
-        $ProgressPreference = 'SilentlyContinue'
-        $pin = Get-Content -LiteralPath .config/sharedkernel-candidate.json -Raw | ConvertFrom-Json -AsHashtable
-        $downloadDirectory = Join-Path $env:GITHUB_WORKSPACE '.local/sharedkernel-download'
-        New-Item -ItemType Directory -Path $downloadDirectory -Force | Out-Null
-        $version = [uri]::EscapeDataString($pin.packageVersion)
-        $releaseUrl = "https://github.com/danigutsch/PandaBear.SharedKernel/releases/download/v$version"
-        $files = @('candidate.json') + @($pin.packageSha256.Keys | Sort-Object)
-        foreach ($file in $files) {
-          if ($file -cne 'candidate.json' -and $file -cnotmatch '^[A-Za-z0-9][A-Za-z0-9._+-]*\.nupkg$') {
-            throw "Invalid pinned package filename: $file"
-          }
-          $uri = "$releaseUrl/$([uri]::EscapeDataString($file))"
-          $destination = Join-Path $downloadDirectory $file
-          Invoke-WebRequest -Uri $uri -OutFile $destination -MaximumRetryCount 3 -RetryIntervalSec 2
-        }
+        tool: SharedKernel.CI.Tool
+        library-root: ${{ inputs.sharedkernel-library-root }}
 
     - name: Stage pinned SharedKernel candidate
-      shell: bash
+      shell: pwsh
       env:
         LIBRARY_ROOT: ${{ inputs.sharedkernel-library-root }}
         CANDIDATE_FEED: ${{ inputs.sharedkernel-candidate-feed }}
       run: |
-        if [[ -z "${LIBRARY_ROOT}" ]]; then
-          LIBRARY_ROOT="${GITHUB_WORKSPACE}/.local/sharedkernel-library"
-          CANDIDATE_FEED="${CANDIDATE_FEED:-${GITHUB_WORKSPACE}/.local/sharedkernel-download}"
-        fi
-        args=(bootstrap-sharedkernel --library-root "${LIBRARY_ROOT}")
-        if [[ -n "${CANDIDATE_FEED}" ]]; then args+=(--feed "${CANDIDATE_FEED}"); fi
-        dotnet run --project tools/ViajantesTurismo.RepoConfig.Tool -c Release -- "${args[@]}"
+        $ErrorActionPreference = 'Stop'
+        if ($env:CANDIDATE_FEED -ne '') {
+          $source = '--feed', $env:CANDIDATE_FEED
+        }
+        elseif ($env:LIBRARY_ROOT -ne '') {
+          $pin = Get-Content -LiteralPath .config/sharedkernel-candidate.json -Raw | ConvertFrom-Json
+          $source = '--feed', (Join-Path $env:LIBRARY_ROOT "artifacts/api-compat/packages/$($pin.packageVersion)")
+        }
+        else {
+          $source = '--repository', 'danigutsch/PandaBear.SharedKernel'
+        }
+        dotnet run --project (Join-Path $env:SHAREDKERNEL_SOURCE 'tools/SharedKernel.CI.Tool') -c Release --no-build -- `
+          stage-candidate --pin .config/sharedkernel-candidate.json --library-root $env:SHAREDKERNEL_SOURCE `
+          --output .local/sharedkernel-feed @source
+        if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
 
     - name: Restore .NET dependencies
       if: ${{ inputs.restore-targets != '' || inputs.restore-targets-file != '' }}
@@ -111,7 +76,7 @@ runs:
       env:
         RESTORE_TARGETS: ${{ inputs.restore-targets }}
         RESTORE_TARGETS_FILE: ${{ inputs.restore-targets-file }}
-      run: dotnet run --project tools/ViajantesTurismo.RepoConfig.Tool -c Release --no-build --no-restore -- restore-ci-projects --projects-file "$RESTORE_TARGETS_FILE" --targets "$RESTORE_TARGETS"
+      run: dotnet run --project tools/ViajantesTurismo.RepoConfig.Tool -c Release -- restore-ci-projects --projects-file "$RESTORE_TARGETS_FILE" --targets "$RESTORE_TARGETS"
 
     - name: Restore .NET local tools
       if: ${{ inputs.restore-local-tools == 'true' }}

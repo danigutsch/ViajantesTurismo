@@ -13,7 +13,8 @@ on:
       - ViajantesTurismo.slnx
       - scripts/run-devcontainer-smoke.sh
       - .config/sharedkernel-candidate.json
-      - .github/actions/setup-ci-prerequisites/**
+      - .github/actions/**
+      - setup-dev.sh
       - tools/ViajantesTurismo.RepoConfig.Tool/**
   schedule:
     - cron: '0 6 * * 1'

@@ -79,9 +79,9 @@ for the best development experience.
 
 ### Quick Setup
 
-Bootstrap the pinned SharedKernel candidate using the
-[application consumption guide](docs/sharedkernel/development.md#bootstrap-a-checkout) before setup
-restores dependencies. Library sources, samples, and benchmarks live in the
+The setup scripts stage the pinned SharedKernel candidate before they restore dependencies; the
+[application consumption guide](docs/sharedkernel/development.md#stage-the-candidate) describes the
+`--library-root` and `--feed` options. Library sources, samples, and benchmarks live in the
 [standalone library repository](https://github.com/danigutsch/PandaBear.SharedKernel).
 
 Run the automated setup script to verify required dependencies and point you to optional tools:
@@ -100,6 +100,7 @@ This script will:
 
 - ✅ Verify the exact .NET SDK version pinned in `global.json`
 - ✅ Install a missing exact SDK side-by-side only when explicitly requested
+- ✅ Build `sharedkernel-ci` from the pinned SharedKernel source and stage the pinned candidate
 - ✅ Restore .NET dependencies (`dotnet restore --locked-mode`)
 - ✅ Restore .NET local tools (`dotnet tool restore` - includes dotnet-ef, reportgenerator, Aspire CLI)
 - ✅ Verify PowerShell availability for Playwright browser installation
@@ -242,11 +243,10 @@ defaults, and output details.
 ### Optional: Dev Containers
 
 If you prefer a containerized development environment, the repository includes a
-VS Code Dev Container configuration. Bootstrap the pinned SharedKernel candidate on the host before
-creating the container. The workspace mount carries the staged `.local/sharedkernel-feed`; the
-container does not need a separate library checkout or feed mount. For prerequisites, lifecycle
-behavior, the shared local smoke command, and the minimum validation checklist, see
-[docs/DEVCONTAINERS.md](docs/DEVCONTAINERS.md).
+VS Code Dev Container configuration. `.devcontainer/on-create.sh` runs `setup-dev.sh`, which stages
+the pinned SharedKernel candidate inside the container; it needs no library checkout or feed mount.
+For prerequisites, lifecycle behavior, the shared local smoke command, and the minimum validation
+checklist, see [docs/DEVCONTAINERS.md](docs/DEVCONTAINERS.md).
 
 ### Running the Application
 
