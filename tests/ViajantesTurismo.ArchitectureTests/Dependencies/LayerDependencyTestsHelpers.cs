@@ -143,6 +143,34 @@ internal static partial class LayerDependencyTestsHelpers
         ];
     }
 
+    public static string[] FindDomainAnalyzerActivationViolations(string repositoryRoot)
+    {
+        string[] domainAnalyzerPackageNames =
+        [
+            "PandaBear.SharedKernel.Domain.Analyzers",
+            "PandaBear.SharedKernel.Domain.CodeFixes"
+        ];
+
+        return
+        [
+            .. SourceProjectFiles(repositoryRoot).SelectMany(filePath =>
+            {
+                var relativePath = Path.GetRelativePath(repositoryRoot, filePath)
+                    .Replace(Path.DirectorySeparatorChar, '/');
+                var isDomainProject = IsDomainProjectName(Path.GetFileNameWithoutExtension(filePath));
+                var packageNames = PackageReferences(filePath)
+                    .Select(reference => reference.PackageName)
+                    .ToHashSet(StringComparer.OrdinalIgnoreCase);
+
+                return domainAnalyzerPackageNames
+                    .Where(packageName => packageNames.Contains(packageName) != isDomainProject)
+                    .Select(packageName => isDomainProject
+                        ? $"{relativePath}: missing PackageReference Include=\"{packageName}\""
+                        : $"{relativePath}: PackageReference Include=\"{packageName}\" belongs only in domain projects");
+            })
+        ];
+    }
+
     public static string[] FindDomainContractProjectReferences(string repositoryRoot)
     {
         return SourceProjectFiles(repositoryRoot)

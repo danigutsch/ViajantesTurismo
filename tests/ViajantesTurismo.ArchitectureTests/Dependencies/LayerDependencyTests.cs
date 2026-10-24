@@ -192,6 +192,19 @@ public sealed class LayerDependencyTests
     }
 
     [Fact]
+    public void Domain_analyzer_packages_should_be_referenced_by_exactly_the_domain_projects()
+    {
+        // Arrange
+        var repositoryRoot = GetRepositoryRoot();
+
+        // Act
+        var violations = FindDomainAnalyzerActivationViolations(repositoryRoot);
+
+        // Assert
+        violations.ShouldBeEmpty();
+    }
+
+    [Fact]
     public void Domain_projects_should_not_reference_contract_projects()
     {
         // Arrange
