@@ -368,10 +368,13 @@ consumer always requires the unkeyed application or generated publisher.
 
 In the Catalog database, `CatalogDbContext` owns `messaging.outbox_messages`,
 `messaging.transport_messages`, and `messaging.idempotency_keys`; `BrandingDbContext` owns
-`branding.outbox_messages` and maps `messaging.transport_messages` with migrations excluded. A host
-that composes Catalog and Branding together keeps the unkeyed `IIntegrationEventOutbox` bound to
-`CatalogDbContext` whatever the registration order, so Catalog application code enqueues into the
-Catalog outbox, and Branding code resolves its outbox by context key.
+`branding.outbox_messages` and maps `messaging.transport_messages` with migrations excluded. Catalog
+infrastructure calls `UseDefaultIntegrationEventOutbox<CatalogDbContext>()`, so in a host that composes
+Catalog and Branding the unkeyed `IIntegrationEventOutbox` is Catalog's whatever the registration
+order; Catalog application code enqueues into the Catalog outbox, and Branding code resolves its
+outbox by context key. Since SharedKernel `0.1.0-alpha.159.1`, a host with several outbox or
+idempotency-store contexts and no chosen default fails when the unkeyed service is resolved instead
+of silently binding the first registration.
 `CatalogBrandingCoHostedMessagingTests` covers this composition.
 
 Each physical table must have one migrations owner. A context that only reads a shared transport table

@@ -7,7 +7,6 @@ using PandaBear.EntityFrameworkCore;
 using PandaBear.EventSourcing;
 using PandaBear.EventSourcing.Npgsql;
 using PandaBear.MalwareScanning.ClamAv;
-using PandaBear.Messaging.IntegrationEvents;
 using PandaBear.Messaging.IntegrationEvents.EntityFrameworkCore;
 using PandaBear.Npgsql;
 using PandaBear.OpenApi;
@@ -190,27 +189,11 @@ public static class InfrastructureDependencyInjection
         return builder;
     }
 
-    // A co-hosted module such as Branding also registers an unkeyed outbox, and the first registration
-    // would win. Catalog code resolves the unkeyed outbox, so the Catalog host claims it explicitly;
-    // co-hosted modules resolve their own outbox by context key.
-    private static void UseCatalogOutboxAsHostDefault(IServiceCollection services)
-    {
-        foreach (var descriptor in services
-                     .Where(descriptor => descriptor.ServiceType == typeof(IIntegrationEventOutbox) && !descriptor.IsKeyedService)
-                     .ToArray())
-        {
-            services.Remove(descriptor);
-        }
-
-        services.AddScoped(serviceProvider =>
-            serviceProvider.GetRequiredKeyedService<IIntegrationEventOutbox>(typeof(CatalogDbContext)));
-    }
-
     private static TApplicationBuilder AddCatalogOutbox<TApplicationBuilder>(this TApplicationBuilder builder, bool addOutboxRelay)
         where TApplicationBuilder : IHostApplicationBuilder
     {
         builder.Services.AddIntegrationEventOutbox<CatalogDbContext>();
-        UseCatalogOutboxAsHostDefault(builder.Services);
+        builder.Services.UseDefaultIntegrationEventOutbox<CatalogDbContext>();
         builder.Services.AddIntegrationEventInbox<CatalogDbContext>();
         builder.Services.AddIntegrationEventTransportStorage<CatalogDbContext>();
         if (addOutboxRelay)

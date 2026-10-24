@@ -6,19 +6,20 @@ and library tooling belong to the separate SharedKernel repository. ViajantesTur
 Generic documentation and repository-configuration tooling belongs to SharedKernel. Application
 documentation configuration, CI and coverage policy, setup scripts, and compatibility orchestration stay here.
 
-The published candidate is `0.1.0-alpha.144.1` at clean library revision
-[`ee4126348011b2ddf60d3e580428867689c412dd`](https://github.com/danigutsch/PandaBear.SharedKernel/commit/ee4126348011b2ddf60d3e580428867689c412dd).
-It gives `ShouldThrow<T>` a `userMessage` overload and removes its `paramName` overloads, stages
-candidates with `sharedkernel-ci stage-candidate`, and includes the other library changes merged since
-`0.1.0-alpha.133.1`. All 77 package hashes match the unchanged artifacts from
-[CI run 40074930808](https://github.com/danigutsch/PandaBear.SharedKernel/actions/runs/40074930808);
-Linux/Windows package consumption and NativeAOT passed. Isolated application compatibility at
-consumer revision `374ccb560d9a84a146748907f9b8004783cf7534` passed locked restore, Release build
-with zero warnings/errors, OpenAPI generation and 4,073 tests with five optional fastText skips. The
-unchanged 77 packages, 54 symbol archives and manifest are published in GitHub prerelease
-[`v0.1.0-alpha.144.1`](https://github.com/danigutsch/PandaBear.SharedKernel/releases/tag/v0.1.0-alpha.144.1).
+The published candidate is `0.1.0-alpha.159.1` at clean library revision
+[`afaaa2994edd43e82cb4b3ff622cd7ef17fa0f4d`](https://github.com/danigutsch/PandaBear.SharedKernel/commit/afaaa2994edd43e82cb4b3ff622cd7ef17fa0f4d).
+It requires an explicit default when several contexts register an integration-event outbox or
+idempotency store (`UseDefaultIntegrationEventOutbox<TContext>()` / `UseDefaultIdempotencyStore<TContext>()`),
+adds `PandaBear.SharedKernel.Npgsql.Testing`, replaces `sharedkernel-ci validate --test-group` with
+`run --slice`, and includes the other library changes merged since `0.1.0-alpha.144.1`. All 78 package
+hashes match the unchanged artifacts from
+[CI run 40114059506](https://github.com/danigutsch/PandaBear.SharedKernel/actions/runs/40114059506);
+Linux/Windows package consumption and NativeAOT passed. The unchanged packages and manifest are
+published in GitHub prerelease
+[`v0.1.0-alpha.159.1`](https://github.com/danigutsch/PandaBear.SharedKernel/releases/tag/v0.1.0-alpha.159.1).
 
-The previous previews `0.1.0-alpha.133.1` at revision `078adf2b2b158f38a211f48274af548d12a85752`,
+The previous previews `0.1.0-alpha.144.1` at revision `ee4126348011b2ddf60d3e580428867689c412dd`,
+`0.1.0-alpha.133.1` at revision `078adf2b2b158f38a211f48274af548d12a85752`,
 `0.1.0-alpha.112.1` at revision `e4d13f63ff872a86478a16e5a3c3ce1ecba0fcb1` and `0.1.0-alpha.94.1` at
 revision `d08008cd3e8901c304377edcc4683de7c3a85ecb` remain published. Their application validation is
 historical evidence.
