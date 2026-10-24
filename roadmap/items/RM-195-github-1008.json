@@ -5,7 +5,7 @@
   "title": "Verify bounded Branding cache freshness",
   "type": "enabler",
   "status": "proposed",
-  "order": 417,
+  "order": 409,
   "theme": "repo-operations",
   "outcome": "GitHub issue #1008 is canonically represented from the reconciliation manifest.",
   "scoring": {

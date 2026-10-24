@@ -1,0 +1,37 @@
+{
+  "$schema": "../schema/roadmap-item.schema.json",
+  "id": "RM-308",
+  "title": "Move contract draft eligibility into the domain (audit A5)",
+  "type": "enabler",
+  "status": "proposed",
+  "order": 437,
+  "theme": "repo-operations",
+  "outcome": "GitHub issue #1211 is canonically represented from the reconciliation manifest.",
+  "scoring": {
+    "reach": 1,
+    "impact": 1,
+    "confidence": 0.1,
+    "effort": 3
+  },
+  "blockedBy": [],
+  "blocks": [],
+  "dependencies": [],
+  "tags": [],
+  "labels": [
+    ".net",
+    "architecture",
+    "type: enabler"
+  ],
+  "sources": [
+    {
+      "kind": "github-issue",
+      "reference": "#1211"
+    }
+  ],
+  "integrations": {
+    "github": {
+      "issue": 1211,
+      "nodeId": "I_kwDOQAEVW88AAAABZkyPtg"
+    }
+  }
+}
