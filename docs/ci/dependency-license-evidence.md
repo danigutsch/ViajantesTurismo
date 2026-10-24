@@ -198,3 +198,23 @@ A zero dependency delta after full snapshots means this docs PR introduces no pa
 does not approve existing Magick.NET distribution or remove the need for the native review. Keep
 license and vulnerability findings visible; never add global NOASSERTION or LGPL allowances to
 turn the check green.
+
+## Rate-limit and reconciliation candidate renewal
+
+On October 24, 2026, the owner approved unchanged GitHub prerelease
+`0.1.0-alpha.112.1`, clean library revision
+`e4d13f63ff872a86478a16e5a3c3ce1ecba0fcb1`, and renewed the same exact
+StreamJsonRpc `2.25.29` and Magick.NET-Q8-AnyCPU `15.0.0` metadata exceptions
+for this candidate. The 8 StreamJsonRpc and 14 Magick lock entries retain their
+versions, content hashes, and dependency edges compared with application main
+`f2337a26`. Both archive SHA-256 hashes match the recorded evidence above.
+
+Producer run `40039601794` passed API validation and Linux/Windows packed
+consumption, including NativeAOT. The application Release build passed without
+warnings or errors. The owner requested no application test rerun after the merge;
+this build evidence does not claim a new full isolated compatibility run.
+
+The workflow remains bounded to this exact clean candidate and the same two
+package versions. Vulnerability and forbidden-license gates remain enabled.
+NuGet publication, future candidates, stable promotion, and native distribution
+approval remain excluded; the native obligations described above are unchanged.

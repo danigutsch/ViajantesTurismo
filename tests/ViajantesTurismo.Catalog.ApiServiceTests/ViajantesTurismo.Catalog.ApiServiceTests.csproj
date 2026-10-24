@@ -32,6 +32,7 @@
         <PackageReference Include="PandaBear.SharedKernel.AI" />
         <ProjectReference Include="..\..\src\ViajantesTurismo.Catalog.ApiService\ViajantesTurismo.Catalog.ApiService.csproj" />
         <ProjectReference Include="..\..\src\ViajantesTurismo.Catalog.Contracts.Http\ViajantesTurismo.Catalog.Contracts.Http.csproj" />
+        <ProjectReference Include="..\..\src\ViajantesTurismo.Public.Web\ViajantesTurismo.Public.Web.csproj" />
         <PackageReference Include="PandaBear.SharedKernel.Testing.Assertions" />
         <PackageReference Include="PandaBear.SharedKernel.Testing" />
         <ProjectReference Include="..\ViajantesTurismo.Catalog.Testing\ViajantesTurismo.Catalog.Testing.csproj" />

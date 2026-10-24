@@ -27,15 +27,18 @@ internal static class PublicWebEndpoints
             .ExcludeFromDescription();
 
         app.MapGet(SitemapPath, GetSitemap)
+            .RequireRateLimiting(PublicWebSecurityBaseline.PublicReadRateLimitPolicy)
             .ExcludeFromDescription();
 
         app.MapGet("/catalog/media/{id:guid}/{width:int}/{format}", GetPublicMedia)
+            .RequireRateLimiting(PublicWebSecurityBaseline.PublicReadRateLimitPolicy)
             .WithName(PublicMediaByRenditionEndpointName)
             .ExcludeFromDescription();
 
         app.MapStaticAssets();
 
-        app.MapRazorComponents<App>();
+        app.MapRazorComponents<App>()
+            .RequireRateLimiting(PublicWebSecurityBaseline.PublicReadRateLimitPolicy);
 
         return app;
     }

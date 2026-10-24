@@ -6,6 +6,19 @@ and library tooling belong to the separate SharedKernel repository. ViajantesTur
 Generic documentation and repository-configuration tooling belongs to SharedKernel. Application
 documentation configuration, CI and coverage policy, bootstrap, and compatibility orchestration stay here.
 
+The current published candidate is `0.1.0-alpha.112.1` at clean library revision
+[`e4d13f63ff872a86478a16e5a3c3ce1ecba0fcb1`](https://github.com/danigutsch/PandaBear.SharedKernel/commit/e4d13f63ff872a86478a16e5a3c3ce1ecba0fcb1).
+It includes resolved client IP forwarding, configurable HTTP resilience and transfer-aware roadmap
+reconciliation. [CI run 40039601794](https://github.com/danigutsch/PandaBear.SharedKernel/actions/runs/40039601794)
+passed library checks and Linux/Windows package consumption and NativeAOT validation. The unchanged
+74 packages, 54 symbol archives and manifest are published in GitHub prerelease
+[`v0.1.0-alpha.112.1`](https://github.com/danigutsch/PandaBear.SharedKernel/releases/tag/v0.1.0-alpha.112.1).
+All 129 published asset digests matched the approved candidate. Application locked restore and Release
+build passed with zero warnings/errors. Application tests were not repeated after integrating the
+payments merge, as requested by the owner; full isolated consumer compatibility remains pending.
+
+The following payments rebase validation is historical evidence for the previous candidate.
+
 The published payments rebase candidate is `0.1.0-alpha.94.1` at clean library revision
 [`d08008cd3e8901c304377edcc4683de7c3a85ecb`](https://github.com/danigutsch/PandaBear.SharedKernel/commit/d08008cd3e8901c304377edcc4683de7c3a85ecb).
 It combines the merged security tooling, request-binding defaults, reusable assertions and offline

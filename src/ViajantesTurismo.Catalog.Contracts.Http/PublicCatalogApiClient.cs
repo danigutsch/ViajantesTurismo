@@ -9,7 +9,8 @@ namespace ViajantesTurismo.Catalog.Contracts.Http;
 /// </summary>
 public sealed class PublicCatalogApiClient(HttpClient httpClient) : IPublicCatalogApiClient
 {
-    private const string RoutePrefix = "/api/v1/public/catalog";
+    /// <summary>Gets the route prefix shared by public catalog requests.</summary>
+    public const string RoutePrefix = "/api/v1/public/catalog";
     private static readonly PublicCatalogApiClientJsonContext Json = PublicCatalogApiClientJsonContext.Default;
 
     /// <inheritdoc />
