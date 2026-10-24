@@ -1,0 +1,17 @@
+{
+  "version": 1,
+  "licenseExceptions": {
+    "approval": {
+      "file": ".config/sharedkernel-candidate.json",
+      "values": {
+        "packageVersion": "0.1.0-alpha.144.1",
+        "libraryRevision": "ee4126348011b2ddf60d3e580428867689c412dd",
+        "libraryDirty": false
+      }
+    },
+    "packages": {
+      "StreamJsonRpc": "2.25.29",
+      "Magick.NET-Q8-AnyCPU": "15.0.0"
+    }
+  }
+}

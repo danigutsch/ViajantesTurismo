@@ -137,9 +137,10 @@ evidence, compatibility checks, and stateful recovery.
 ## Workflow ownership
 
 The `CODEOWNERS` file at the repository root requires review for all changes to workflow
-files.
+files, composite actions, and repository configuration.
 
-Any pull request that modifies `.github/workflows/**` will request review from the
+Any pull request that modifies `.github/workflows/**`, `.github/actions/**`, or `.config/**`
+(the SharedKernel pin, local tool manifest, and license exceptions) will request review from the
 designated code owners. See `CODEOWNERS` for the current ownership mapping.
 
 ## Dependabot configuration

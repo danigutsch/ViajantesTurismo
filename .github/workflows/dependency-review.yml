@@ -69,15 +69,17 @@ jobs:
     timeout-minutes: 20
     permissions:
       contents: write
-    env:
-      # Reviewed source generator: https://github.com/danigutsch/PandaBear.SharedKernel/pull/92
-      # Pin independently of runtime packages so both targets can read retired candidates' lock metadata.
-      SNAPSHOT_GENERATOR_REVISION: 8895a57934be23177f9979a23620774e5085eb3d
     strategy:
       fail-fast: false
       matrix:
         target: ${{ github.event_name == 'pull_request' && fromJSON('["base", "head"]') || fromJSON('["head"]') }}
     steps:
+      - name: Checkout repository
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+          persist-credentials: false
+
       - name: Checkout exact dependency inputs
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
         with:
@@ -85,63 +87,34 @@ jobs:
           path: dependency-input
           persist-credentials: false
 
-      - name: Checkout reviewed SharedKernel generator source
-        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+      - uses: actions/setup-dotnet@c2fa09f4bde5ebb9d1777cf28262a3eb3db3ced7 # v5
         with:
-          repository: danigutsch/PandaBear.SharedKernel
-          ref: ${{ env.SNAPSHOT_GENERATOR_REVISION }}
-          path: .local/dependency-library
-          persist-credentials: false
+          global-json-file: global.json
 
-      - name: Verify exact clean generator source
-        shell: pwsh
-        working-directory: .local/dependency-library
-        env:
-          GENERATOR_REVISION: ${{ env.SNAPSHOT_GENERATOR_REVISION }}
-        run: |
-          $ErrorActionPreference = 'Stop'
-          $revision = git rev-parse HEAD
-          if ($LASTEXITCODE -ne 0) { throw 'Cannot inspect generator source revision.' }
-          $dirty = git status --porcelain
-          if ($LASTEXITCODE -ne 0) { throw 'Cannot inspect generator source cleanliness.' }
-          if ($revision -cne $env:GENERATOR_REVISION -or $dirty) {
-            throw 'Dependency snapshots require the exact clean reviewed generator source.'
-          }
-
-      - name: Set up generator SDK
-        uses: actions/setup-dotnet@c2fa09f4bde5ebb9d1777cf28262a3eb3db3ced7 # v5
+      # One generator built from the pinned libraryRevision reads both base and head lock files,
+      # so retired candidates never need to be restored.
+      - name: Build pinned SharedKernel repository tool
+        uses: ./.github/actions/build-sharedkernel-tool
         with:
-          global-json-file: .local/dependency-library/global.json
-
-      - name: Build dependency-independent snapshot generator
-        working-directory: .local/dependency-library
-        run: |
-          dotnet restore tools/SharedKernel.RepoConfig.Tool --locked-mode
-          dotnet build tools/SharedKernel.RepoConfig.Tool -c Release --no-restore
+          tool: SharedKernel.RepoConfig.Tool
 
       - name: Generate snapshot from committed lock files
-        shell: pwsh
         env:
           SNAPSHOT_SHA: ${{ matrix.target == 'base' && github.event.pull_request.base.sha || github.event.pull_request.head.sha || github.sha }}
           SNAPSHOT_REF: ${{ github.event_name == 'pull_request' && format('refs/heads/{0}', matrix.target == 'base' && github.base_ref || github.head_ref) || github.ref }}
           SNAPSHOT_JOB_ID: ${{ github.run_id }}
         run: |
-          $ErrorActionPreference = 'Stop'
-          $root = Join-Path $env:GITHUB_WORKSPACE 'dependency-input'
-          $generator = Join-Path $env:GITHUB_WORKSPACE '.local/dependency-library/tools/SharedKernel.RepoConfig.Tool/bin/Release/net10.0/SharedKernel.RepoConfig.Tool.dll'
-          $snapshot = Join-Path $root 'TestResults/dependency-snapshot.json'
-          dotnet $generator dependency snapshot --root $root --sha $env:SNAPSHOT_SHA --ref $env:SNAPSHOT_REF --job $env:SNAPSHOT_JOB_ID --correlator viajantes-solution-nuget --output $snapshot
-          if ($LASTEXITCODE -ne 0) { throw 'Committed dependency snapshot generation failed.' }
+          dotnet run --project "$SHAREDKERNEL_SOURCE/tools/SharedKernel.RepoConfig.Tool" -c Release --no-build -- \
+            dependency snapshot --root dependency-input --sha "$SNAPSHOT_SHA" --ref "$SNAPSHOT_REF" \
+            --job "$SNAPSHOT_JOB_ID" --correlator viajantes-solution-nuget --output TestResults/dependency-snapshot.json
 
       - name: Submit complete committed dependency snapshot
-        shell: pwsh
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          $ErrorActionPreference = 'Stop'
-          $snapshot = Join-Path $env:GITHUB_WORKSPACE 'dependency-input/TestResults/dependency-snapshot.json'
-          $headers = @{ Authorization = "Bearer $env:GH_TOKEN"; Accept = 'application/vnd.github+json'; 'X-GitHub-Api-Version' = '2022-11-28' }
-          Invoke-RestMethod -Method Post -Uri "https://api.github.com/repos/$env:GITHUB_REPOSITORY/dependency-graph/snapshots" -Headers $headers -ContentType 'application/json' -InFile $snapshot | Out-Null
+          dotnet run --project "$SHAREDKERNEL_SOURCE/tools/SharedKernel.RepoConfig.Tool" -c Release --no-build -- \
+            dependency submit --snapshot dependency-input/TestResults/dependency-snapshot.json \
+            --repository "$GITHUB_REPOSITORY" --force
 
       - name: Retain committed snapshot evidence
         if: always()
@@ -156,6 +129,7 @@ jobs:
     needs: [plan, dependency-snapshots]
     if: ${{ (github.event.action != 'labeled' || github.event.label.name == 'ci:rerun') && (always() && (github.event_name == 'pull_request' || github.event_name == 'merge_group')) }}
     runs-on: ${{ vars.CI_UBUNTU_RUNNER }}
+    timeout-minutes: 15
     steps:
       - name: Require successful snapshot generation when applicable
         env:
@@ -175,39 +149,25 @@ jobs:
           ref: ${{ github.event.pull_request.head.sha || github.sha }}
           persist-credentials: false
 
+      - uses: actions/setup-dotnet@c2fa09f4bde5ebb9d1777cf28262a3eb3db3ced7 # v5
+        if: needs.plan.outputs.review_required == 'true'
+        with:
+          global-json-file: global.json
+
+      - name: Build pinned SharedKernel repository tool
+        if: needs.plan.outputs.review_required == 'true'
+        uses: ./.github/actions/build-sharedkernel-tool
+        with:
+          tool: SharedKernel.RepoConfig.Tool
+
       # The pinned Action ignores purl versions. Fail before emitting its exception if approval expires.
-      # Maintainer renewed this exact preview on 2026-10-24; evidence: docs/ci/dependency-license-evidence.md.
+      # .config/sharedkernel-repo.json holds the approval; evidence: docs/ci/dependency-license-evidence.md.
       - name: Validate exact preview license approval
         if: needs.plan.outputs.review_required == 'true'
         id: preview-license
-        shell: pwsh
         run: |
-          $ErrorActionPreference = 'Stop'
-          $pin = Get-Content '.config/sharedkernel-candidate.json' -Raw | ConvertFrom-Json
-          if ($pin.packageVersion -cne '0.1.0-alpha.144.1' -or
-              $pin.libraryRevision -cne 'ee4126348011b2ddf60d3e580428867689c412dd' -or
-              $pin.libraryDirty -ne $false) {
-            throw 'Preview license approval expired: re-review this candidate before granting an exception.'
-          }
-          $locks = @(git ls-files -- '**/packages.lock.json')
-          if ($LASTEXITCODE -ne 0 -or $locks.Count -eq 0) { throw 'Cannot inspect the tracked dependency graph.' }
-          $approved = @{ 'StreamJsonRpc' = '2.25.29'; 'Magick.NET-Q8-AnyCPU' = '15.0.0' }
-          $found = @{}
-          foreach ($path in $locks) {
-            $lock = Get-Content -LiteralPath $path -Raw | ConvertFrom-Json -AsHashtable
-            foreach ($target in $lock.dependencies.Values) {
-              foreach ($entry in $target.GetEnumerator()) {
-                if ($approved.ContainsKey($entry.Key)) {
-                  if ($entry.Value.resolved -cne $approved[$entry.Key]) {
-                    throw "License approval for $($entry.Key) covers only $($approved[$entry.Key]); found '$($entry.Value.resolved)' in $path."
-                  }
-                  $found[$entry.Key] = $true
-                }
-              }
-            }
-          }
-          if ($found.Count -ne $approved.Count) { throw 'An approved package no longer exists in the locked graph; remove its preview exception.' }
-          'packages=pkg:nuget/StreamJsonRpc@2.25.29,pkg:nuget/Magick.NET-Q8-AnyCPU@15.0.0' >> $env:GITHUB_OUTPUT
+          dotnet run --project "$SHAREDKERNEL_SOURCE/tools/SharedKernel.RepoConfig.Tool" -c Release --no-build -- \
+            dependency verify-license-exceptions --github-output "$GITHUB_OUTPUT"
 
       - name: Dependency Review
         if: needs.plan.outputs.review_required == 'true'

@@ -30,13 +30,10 @@ classification, and dependency edges; malformed, missing, or unresolved graph in
 Snapshot JSON is retained as CI evidence. This describes the committed restore graph, not a claim
 that all build-time dependency inputs have been dynamically evaluated.
 
-Both targets use one reviewed generator implementation, independently pinned by
-`SNAPSHOT_GENERATOR_REVISION` to SharedKernel revision
-[`8895a57934be23177f9979a23620774e5085eb3d`](https://github.com/danigutsch/PandaBear.SharedKernel/commit/8895a57934be23177f9979a23620774e5085eb3d).
-The workflow verifies the exact clean source checkout, selects its `global.json` SDK, and builds
-`SharedKernel.RepoConfig.Tool`. Only the generator's own prerequisites are restored. The runtime
-candidate `0.1.0-alpha.70.1` predates this command; its manifest does not select the generator.
-No application solution is restored, and neither target's historical candidate packages, release
+Both targets use one generator implementation: `.github/actions/build-sharedkernel-tool` builds
+`SharedKernel.RepoConfig.Tool` from a cone sparse checkout of the SharedKernel `libraryRevision`
+pinned in `.config/sharedkernel-candidate.json`, with the repository `global.json` SDK. Only the
+generator's own prerequisites are restored. No application solution is restored, and neither target's historical candidate packages, release
 assets, or local feed are needed. There is no fallback to a mutable branch, retired preview, or old
 detector binary.
 Retiring a prior release therefore cannot break a base snapshot merely because that base once
@@ -44,8 +41,9 @@ consumed its packages.
 
 The write-capable snapshot job runs only for same-repository PRs from non-Dependabot actors. It does
 not use `pull_request_target`, repository secrets, or persisted checkout credentials. The scoped
-`contents: write` token exists only in the native PowerShell submission step. That step posts the
-validated JSON to GitHub's snapshot endpoint and fails on HTTP errors. A failed/canceled generation
+`contents: write` token exists only in the `dependency submit --force` step. That step posts the
+snapshot file unchanged to GitHub's snapshot endpoint and fails on a non-2xx response or an
+`INVALID` result. A failed/canceled generation
 or submission job fails the required review rather than allowing a successful aggregate. Fork and
 Dependabot PRs retain the read-only review against available GitHub graph data; this does not claim
 complete dynamic snapshot coverage for them. Merge-group events retain their existing review path.
@@ -74,9 +72,11 @@ Vulnerability checks and the moderate severity gate remain active.
 
 The pinned review Action's `purlsMatch` implementation ignores package versions when matching
 `allow-dependencies-licenses`. Supplying a version in that option would exempt future versions too,
-contrary to the intended scope. The workflow therefore validates the exact candidate version,
-revision, clean marker, and every approved package entry in every tracked lock file on the reviewed
-head commit before emitting the package-specific exception. A changed candidate (including a
+contrary to the intended scope. `dependency verify-license-exceptions` therefore checks the
+`licenseExceptions` section of `.config/sharedkernel-repo.json`: the approved candidate version,
+revision, and clean marker must equal `.config/sharedkernel-candidate.json`, and every approved
+package must resolve to its approved version in every tracked lock file on the reviewed head commit,
+before the workflow emits the package-specific exception. A changed candidate (including a
 stable version), missing package, or unexpected dependency version fails visibly and requires
 removing or explicitly re-reviewing the exception. The purl alone is not the boundary. See the
 [exact pinned source](https://github.com/actions/dependency-review-action/blob/2031cfc080254a8a887f58cffee85186f0e49e48/src/purl.ts).

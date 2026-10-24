@@ -5,3 +5,7 @@
 
 # Workflow files require review to prevent supply-chain and permission issues
 .github/workflows/ @danigutsch
+
+# Composite actions build cross-repository tools; .config holds pins and license approvals
+.github/actions/ @danigutsch
+.config/ @danigutsch
