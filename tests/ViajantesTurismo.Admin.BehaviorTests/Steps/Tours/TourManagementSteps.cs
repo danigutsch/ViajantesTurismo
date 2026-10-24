@@ -102,11 +102,11 @@ public sealed class TourManagementSteps(TourContext tourContext)
         tourContext.Name = name;
     }
 
-    [Given("I have tour details with identifier longer than 128 characters")]
-    public void GivenIHaveTourDetailsWithIdentifierLongerThan128Characters()
+    [Given("I have tour details with identifier longer than 64 characters")]
+    public void GivenIHaveTourDetailsWithIdentifierLongerThan64Characters()
     {
         ContextHelpers.SetupValidTour(tourContext);
-        tourContext.Identifier = new string('A', 129);
+        tourContext.Identifier = new string('A', 65);
         tourContext.Name = "Valid Tour Name";
     }
 

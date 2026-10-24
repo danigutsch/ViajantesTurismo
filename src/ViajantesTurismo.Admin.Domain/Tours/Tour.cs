@@ -140,9 +140,9 @@ public sealed partial class Tour : IAggregateRoot<Guid>
         {
             errors.Add(TourErrors.EmptyIdentifier());
         }
-        else if (identifier.Length > AdminDomainLimits.MaxNameLength)
+        else if (identifier.Length > AdminDomainLimits.MaxDefaultLength)
         {
-            errors.Add(TourErrors.IdentifierTooLong(AdminDomainLimits.MaxNameLength, identifier.Length));
+            errors.Add(TourErrors.IdentifierTooLong(AdminDomainLimits.MaxDefaultLength, identifier.Length));
         }
 
         if (string.IsNullOrWhiteSpace(name))
@@ -222,9 +222,9 @@ public sealed partial class Tour : IAggregateRoot<Guid>
         {
             errors.Add(TourErrors.EmptyIdentifier());
         }
-        else if (sanitizedIdentifier.Length > AdminDomainLimits.MaxNameLength)
+        else if (sanitizedIdentifier.Length > AdminDomainLimits.MaxDefaultLength)
         {
-            errors.Add(TourErrors.IdentifierTooLong(AdminDomainLimits.MaxNameLength, sanitizedIdentifier.Length));
+            errors.Add(TourErrors.IdentifierTooLong(AdminDomainLimits.MaxDefaultLength, sanitizedIdentifier.Length));
         }
 
         if (string.IsNullOrWhiteSpace(sanitizedName))
