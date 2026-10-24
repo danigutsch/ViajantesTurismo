@@ -513,7 +513,7 @@ Recommended fast local path by change type:
 
 | Change type | Fast local path | Full confidence before PR when risk is real |
 | --- | --- | --- |
-| Dependency-graph change | `bash scripts/refresh-dependency-lockfiles.sh` | `dotnet build ViajantesTurismo.slnx --no-restore` plus impacted test slice |
+| Dependency-graph change | `dotnet restore ViajantesTurismo.slnx --force-evaluate`, then `--locked-mode` | `dotnet build ViajantesTurismo.slnx --no-restore` plus impacted test slice |
 | AppHost-only change | `dotnet build src/ViajantesTurismo.AppHost/ViajantesTurismo.AppHost.csproj --no-restore` | `dotnet tool run aspire run` and `bash scripts/benchmark-local-validation.sh --skip-restore --skip-build --slice admin-system` |
 | Test-only change | `dotnet test --project <changed-test-project>.csproj` | Matching CI slice through `bash scripts/benchmark-local-validation.sh --skip-restore --skip-build --slice <name>` |
 

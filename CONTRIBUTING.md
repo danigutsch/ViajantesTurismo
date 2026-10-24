@@ -131,14 +131,20 @@ the documented devcontainer workflow.
 
 ## Dependency graph and lock-file maintenance
 
-Use `bash scripts/refresh-dependency-lockfiles.sh` after intentionally changing any NuGet package
-or project reference, `Directory.Packages.props`, restore-affecting build configuration,
-`NuGet.Config`, solution/project membership, `global.json`, or `.config/dotnet-tools.json`.
-The command restores pinned local tools, regenerates `packages.lock.json` with
-`--force-evaluate`, and verifies the result with `--locked-mode`.
+After intentionally changing any NuGet package or project reference, `Directory.Packages.props`,
+restore-affecting build configuration, `NuGet.Config`, solution/project membership, `global.json`,
+or `.config/dotnet-tools.json`, refresh the lock files:
+
+```bash
+dotnet tool restore
+dotnet restore ViajantesTurismo.slnx --force-evaluate
+dotnet restore ViajantesTurismo.slnx --locked-mode
+```
+
+These commands restore pinned local tools, regenerate `packages.lock.json`, and verify the result.
 
 Review every generated lock-file change, including resolved-version changes, before committing it
-with the dependency input that caused it. The command does not edit declared package or tool versions
+with the dependency input that caused it. The refresh does not edit declared package or tool versions
 and never auto-commits changes. Package-version inputs remain review-driven through Dependabot or an
 intentional dependency update.
 
@@ -146,13 +152,13 @@ When resolving a rebase or merge conflict that affects dependency inputs or lock
 
 1. Resolve the authoritative dependency inputs first.
 2. Do not hand-merge or delete `packages.lock.json` files.
-3. Run `bash scripts/refresh-dependency-lockfiles.sh`.
+3. Run the lock-file refresh commands above.
 4. Review the regenerated lock-file diff, then run the build and relevant test slice.
 
 GitHub Action SHA pins and container image tag/digest pairs have their own review paths; do not run
 the lock-file helper solely for those changes. See the [pin update review workflow](docs/ci/pin-update-review.md)
-for Action SHA and image digest evidence. The older SDK-only refresh command is superseded by
-`refresh-dependency-lockfiles.sh`; do not create a separate SDK lock-refresh path.
+for Action SHA and image digest evidence. SDK updates use the same lock-file
+refresh; do not create a separate SDK lock-refresh path.
 
 ### Updating the .NET SDK
 
@@ -160,7 +166,7 @@ The repository pins the exact build SDK in `global.json` with `"rollForward": "d
 Contributors and CI must install that SDK before restore so a later installed SDK cannot change
 SDK-injected dependencies. Apply SDK servicing updates by changing `global.json` intentionally;
 this build-tooling pin does not alter application runtime roll-forward policy. Then run
-`bash scripts/refresh-dependency-lockfiles.sh` and commit the SDK input with the regenerated lock files.
+the lock-file refresh commands above and commit the SDK input with the regenerated lock files.
 Install servicing SDKs side-by-side: `bash setup-dev.sh --install-sdk` or
 `.\setup-dev.ps1 -InstallSdk`. Do not remove the previous SDK until `main` and every active worktree
 have stopped pinning it.

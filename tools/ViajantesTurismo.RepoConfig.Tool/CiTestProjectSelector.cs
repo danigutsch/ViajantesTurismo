@@ -59,7 +59,6 @@ internal static class CiTestProjectSelector
         "scripts/collect-ci-build-test-diagnostics.sh",
         "scripts/collect-test-coverage.sh",
         "scripts/install-playwright.sh",
-        "scripts/refresh-dependency-lockfiles.sh",
         "scripts/run-ci-test-slice.sh",
         "scripts/run-tests-with-coverage.sh",
         "scripts/write-ci-artifact-summary.sh"

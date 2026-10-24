@@ -156,7 +156,8 @@ split only after CI timing data shows duplicated setup is cheaper than serial ex
 
 Dependency-graph changes—including NuGet, SDK, local-tool, project-reference, or dependency-related
 rebase changes—must refresh committed `packages.lock.json` files with
-`bash scripts/refresh-dependency-lockfiles.sh`. CI uses locked restore to reject drift; contributors
+`dotnet restore ViajantesTurismo.slnx --force-evaluate`, then
+`dotnet restore ViajantesTurismo.slnx --locked-mode`. CI uses locked restore to reject drift; contributors
 must review regenerated locks and follow the canonical
 [dependency graph and lock-file maintenance workflow](../../CONTRIBUTING.md#dependency-graph-and-lock-file-maintenance).
 

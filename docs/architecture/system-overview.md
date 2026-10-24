@@ -2,7 +2,8 @@
 
 Generation ownership: source/configuration in [generated-diagrams.json](generated-diagrams.json),
 with per-output sources in the [diagram inventory](generated-diagram-roadmap.md).
-Refresh: `bash scripts/update-architecture-diagrams.sh`; check: append `--check`.
+Refresh: `dotnet tool run sharedkernel-docs -- generate --config docs/architecture/generated-diagrams.json`;
+check: the same command with `verify` instead of `generate`.
 Edit manual narrative outside generated markers; review under the
 [documentation governance policy](../DOCUMENTATION_GOVERNANCE.md#generated-output-review-and-finalization).
 
@@ -129,7 +130,7 @@ findings belong in maintained security or threat-model docs rather than this ove
 
 ## Refresh
 
-Run `bash scripts/update-architecture-diagrams.sh` after changing generated diagram sources or
+Run `dotnet tool run sharedkernel-docs -- generate --config docs/architecture/generated-diagrams.json` after changing generated diagram sources or
 `docs/architecture/generated-diagrams.json`. The repository lint path checks generated diagram
 freshness. See [Diagram guidance](diagram-guidance.md) for diagram type selection and generation
 source policy.

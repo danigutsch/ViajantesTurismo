@@ -322,12 +322,14 @@ This repository commits `packages.lock.json` for reproducible NuGet restores. Af
 NuGet, SDK, local-tool, or project-reference graph change—or a related rebase conflict—run:
 
 ```bash
-bash scripts/refresh-dependency-lockfiles.sh
+dotnet tool restore
+dotnet restore ViajantesTurismo.slnx --force-evaluate
+dotnet restore ViajantesTurismo.slnx --locked-mode
 ```
 
-The helper restores pinned local tools, regenerates NuGet locks, and verifies locked restore. Review
+These commands restore pinned local tools, regenerate NuGet locks, and verify locked restore. Review
 the resulting lock-file diff, including resolved-version changes, before committing it with its
-dependency inputs. It does not edit declared dependency versions, GitHub Actions, or container image
+dependency inputs. They do not edit declared dependency versions, GitHub Actions, or container image
 pins. See
 [CONTRIBUTING.md](CONTRIBUTING.md#dependency-graph-and-lock-file-maintenance) for the canonical
 workflow and rebase recovery steps.

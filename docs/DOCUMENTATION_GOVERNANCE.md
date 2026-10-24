@@ -194,8 +194,10 @@ script or tool.
 ## Generated output review and finalization
 
 The [generated diagram inventory](architecture/generated-diagram-roadmap.md) names each output,
-source, and generator. Refresh with `bash scripts/update-architecture-diagrams.sh`; verify with the
-same command plus `--check`. Change the source/configuration first and review the resulting diff.
+source, and generator. Refresh with
+`dotnet tool run sharedkernel-docs -- generate --config docs/architecture/generated-diagrams.json`;
+verify with the same command using `verify` instead of `generate`. Change the source/configuration
+first and review the resulting diff.
 Keep manual commentary outside generated markers; never fix a generated claim by hand inside a block.
 
 Reviewers verify source fidelity, public/internal boundaries, privacy, accessible labels, and whether

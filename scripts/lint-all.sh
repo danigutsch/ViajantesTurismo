@@ -86,9 +86,9 @@ dotnet tool run sharedkernel-repo -- verify-json --root .
 bash scripts/lint-gherkin.sh tests/**/*.feature
 bash scripts/lint-links.sh
 if [[ "${fix_mode}" == true ]]; then
-    bash scripts/update-architecture-diagrams.sh
+    dotnet tool run sharedkernel-docs -- generate --config docs/architecture/generated-diagrams.json
 else
-    bash scripts/update-architecture-diagrams.sh --check
+    dotnet tool run sharedkernel-docs -- verify --config docs/architecture/generated-diagrams.json
 fi
 dotnet tool run sharedkernel-docs -- \
     check --config docs/architecture/documentation-conformance.json
