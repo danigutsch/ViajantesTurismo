@@ -366,6 +366,14 @@ context key; producer registration never occupies the unkeyed publisher service.
 its exact context key, then falls back to the required unkeyed application publisher. A transport
 consumer always requires the unkeyed application or generated publisher.
 
+In the Catalog database, `CatalogDbContext` owns `messaging.outbox_messages`,
+`messaging.transport_messages`, and `messaging.idempotency_keys`; `BrandingDbContext` owns
+`branding.outbox_messages` and maps `messaging.transport_messages` with migrations excluded. A host
+that composes Catalog and Branding together keeps the unkeyed `IIntegrationEventOutbox` bound to
+`CatalogDbContext` whatever the registration order, so Catalog application code enqueues into the
+Catalog outbox, and Branding code resolves its outbox by context key.
+`CatalogBrandingCoHostedMessagingTests` covers this composition.
+
 Each physical table must have one migrations owner. A context that only reads a shared transport table
 may map it for runtime consumption, but its migrations must not create that producer-owned table.
 Changing a default mapping is an application migration: scaffold and review the owning context's table

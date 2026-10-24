@@ -1,7 +1,10 @@
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Hosting;
 using PandaBear.MalwareScanning.ClamAv;
+using PandaBear.Messaging.IntegrationEvents;
+using ViajantesTurismo.Branding.Infrastructure;
 using ViajantesTurismo.Catalog.Infrastructure;
 using ViajantesTurismo.Resources;
 
@@ -196,6 +199,24 @@ internal static class CatalogInfrastructureTestServices
 
         return new CatalogInfrastructureScenario(builder.Services.BuildServiceProvider());
     }
+    public static CatalogInfrastructureScenario CreateBrandingCoHostedScenario()
+    {
+        var builder = Host.CreateApplicationBuilder(new HostApplicationBuilderSettings
+        {
+            EnvironmentName = Environments.Development
+        });
+        builder.Configuration.AddInMemoryCollection(new Dictionary<string, string?>
+        {
+            [$"ConnectionStrings:{ResourceNames.CatalogDatabase}"] = "Host=localhost;Database=viajantes;Username=test;Password=test",
+            [ClamAvMalwareScannerConfigurationKeys.DisabledConfigurationKey] = bool.TrueString
+        });
+
+        // Branding registers first on purpose: the co-hosted composition must not depend on order.
+        builder.AddBrandingInfrastructure();
+        builder.AddCatalogInfrastructure();
+
+        return new CatalogInfrastructureScenario(builder.Services.BuildServiceProvider());
+    }
 }
 
 internal sealed class CatalogInfrastructureScenario(ServiceProvider provider) : IDisposable
@@ -273,6 +294,24 @@ internal sealed class CatalogInfrastructureScenario(ServiceProvider provider) : 
     {
         var service = provider.GetServices<TService>().ShouldHaveSingleItem(item => item?.GetType() == typeof(TImplementation));
         service.ShouldBeOfType<TImplementation>();
+    }
+
+    public bool DefaultOutboxBelongsTo<TContext>()
+        where TContext : Microsoft.EntityFrameworkCore.DbContext
+    {
+        using var scope = provider.CreateScope();
+        var defaultOutbox = scope.ServiceProvider.GetRequiredService<IIntegrationEventOutbox>();
+        var contextOutbox = scope.ServiceProvider.GetRequiredKeyedService<IIntegrationEventOutbox>(typeof(TContext));
+        return ReferenceEquals(defaultOutbox, contextOutbox);
+    }
+
+    public (string? Schema, string? Table) OutboxTable<TContext>()
+        where TContext : Microsoft.EntityFrameworkCore.DbContext
+    {
+        using var scope = provider.CreateScope();
+        var entityType = scope.ServiceProvider.GetRequiredService<TContext>().Model.GetEntityTypes()
+            .ShouldHaveSingleItem(entity => entity.ClrType.Name == "IntegrationEventOutboxMessage");
+        return (entityType.GetSchema(), entityType.GetTableName());
     }
 
     public void Dispose()
