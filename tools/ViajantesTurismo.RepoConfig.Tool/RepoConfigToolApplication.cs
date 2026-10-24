@@ -6,7 +6,7 @@ namespace ViajantesTurismo.RepoConfig.Tool;
 
 internal static class RepoConfigToolApplication
 {
-    private const string CommandHelp = "Commands: verify-sharedkernel-candidate, select-ci-test-projects, restore-ci-projects, run-ci-test-slice, verify-coverage, write-build-evidence, verify-build-evidence, plan-dependency-review, verify-pr-title, lint-json.";
+    private const string CommandHelp = "Commands: verify-sharedkernel-candidate, select-ci-test-projects, restore-ci-projects, run-ci-test-slice, verify-coverage, write-build-evidence, verify-build-evidence, plan-dependency-review, lint-json.";
 
     public static async Task<int> Run(string[] args, TextWriter output, TextWriter error, string workingDirectory, CancellationToken cancellationToken)
     {
@@ -27,7 +27,6 @@ internal static class RepoConfigToolApplication
             {
                 "restore-ci-projects" => await CiRestoreCommand.Run(args[1..], output, workingDirectory, cancellationToken).ConfigureAwait(false),
                 "run-ci-test-slice" => await CiTestSliceCommand.Run(args[1..], output, workingDirectory, cancellationToken).ConfigureAwait(false),
-                "verify-pr-title" => await PrTitleCommand.Run(args[1..], workingDirectory, cancellationToken).ConfigureAwait(false),
                 "write-build-evidence" => await BuildEvidenceCommand.Run(true, args[1..], workingDirectory, cancellationToken).ConfigureAwait(false),
                 "verify-build-evidence" => await BuildEvidenceCommand.Run(false, args[1..], workingDirectory, cancellationToken).ConfigureAwait(false),
                 "plan-dependency-review" => await DependencyReviewCommand.Run(args[1..], output, workingDirectory, cancellationToken).ConfigureAwait(false),

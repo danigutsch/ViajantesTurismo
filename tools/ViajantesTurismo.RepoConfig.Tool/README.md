@@ -31,9 +31,6 @@ revisions and records its decision in `TestResults/dependency-review-plan.json`.
 Markdown/images under `docs`, root `README.md`, and root `AGENTS.md` can skip dependency review.
 Source changes, package READMEs, pins, unknown paths, and unavailable comparisons retain full review.
 
-`verify-pr-title --event <path>` reads GitHub event JSON directly and validates a single Conventional
-Commit header of at most 100 characters. Passing the event file avoids shell interpolation of PR text.
-
 `restore-ci-projects --projects-file <manifest>` or `--targets <newline-separated paths>` restores
 project roots as one temporary MSBuild solution graph. Solution targets retain their normal restore
 behavior. Paths and symbolic links cannot escape the checkout; an empty target list fails. The

@@ -413,7 +413,7 @@ The repository no longer installs git hooks by default.
 - If Docker is unavailable, wrappers use local tools when present and fail with an explicit message
   when neither local tool nor Docker is available.
 - Commit message validation remains available locally through
-  `bash scripts/validate-commit-message.sh <path-to-commit-message-file>`.
+  `dotnet tool run sharedkernel-ci -- verify-commit-message --file <path-to-commit-message-file>`.
 - If you previously installed repository hooks from an older revision, remove or replace the copied
   files under `git rev-parse --git-path hooks` so commits do not keep calling deleted npm-based
   hook scripts.
@@ -537,7 +537,7 @@ Use [CONTRIBUTING.md](../CONTRIBUTING.md#commit-messages) as the canonical commi
 This quality guide only owns the validation command reference:
 
 ```powershell
-bash scripts/validate-commit-message.sh <path-to-commit-message-file>
+dotnet tool run sharedkernel-ci -- verify-commit-message --file <path-to-commit-message-file>
 ```
 
 ### VS Code Integration

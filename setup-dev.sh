@@ -259,7 +259,7 @@ print_summary() {
     printf "%b" "  2. Run tests: ${NC}dotnet test\n"
     printf "%b" "  3. Install Playwright browsers after build: ${NC}bash scripts/install-playwright.sh\n"
     printf "%b" "  4. Optional performance smoke run: ${NC}VT_API_BASE_URL=<admin-api-url> dotnet run --project tools/ViajantesTurismo.Performance.Tool/ViajantesTurismo.Performance.Tool.csproj -- admin-smoke\n"
-    printf "%b" "  5. Validate a commit message: ${NC}bash scripts/validate-commit-message.sh /path/to/message.txt\n"
+    printf "%b" "  5. Validate a commit message: ${NC}dotnet tool run sharedkernel-ci -- verify-commit-message --file /path/to/message.txt\n"
     printf "%b" "     ${CYAN}(If Aspire CLI is installed globally or via the official install script, 'aspire run' also works.)${NC}\n"
     printf "%b" "  6. Tool inventory reference: ${NC}README.md (required local, optional local, CI-only, and devcontainer-provided tools)\n"
     printf "\n"

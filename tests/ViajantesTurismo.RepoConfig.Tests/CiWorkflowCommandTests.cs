@@ -35,60 +35,25 @@ public sealed class CiWorkflowCommandTests
         evidence.RootElement.GetProperty("reason").GetString().ShouldContain("complete dependency review is required", StringComparison.Ordinal);
     }
 
-    [Theory]
-    [InlineData("feat(api)!: change booking contract", 0)]
-    [InlineData("fix: preserve validation", 0)]
-    [InlineData("Update booking", 1)]
-    [InlineData("feat: first\nfix: injected", 1)]
-    [InlineData("feat:    ", 1)]
-    public async Task Squash_titles_require_a_single_conventional_commit(string title, int expected)
+    [Fact]
+    public async Task Pr_metadata_verifies_the_event_file_with_the_pinned_ci_tool()
     {
         // Arrange
-        using var workspace = new TemporaryRepoConfigWorkspace();
-        workspace.WriteFile("event.json", System.Text.Json.JsonSerializer.Serialize(new
-        {
-            pull_request = new
-            {
-                title
-            }
-        }));
-        using var output = new StringWriter();
-        using var error = new StringWriter();
+        var path = Path.Combine(CiTestSelectionTestProcess.GetRepositoryRoot(), ".github", "workflows", "pr-metadata.yml");
 
         // Act
-        var result = await RepoConfigToolApplication.Run(["verify-pr-title", "--event", "event.json"], output, error,
-            workspace.RootPath, TestContext.Current.CancellationToken);
+        var workflow = await File.ReadAllTextAsync(path, TestContext.Current.CancellationToken);
+        var build = workflow.IndexOf("uses: ./.github/actions/build-sharedkernel-tool", StringComparison.Ordinal);
+        var verify = workflow.IndexOf(
+            "dotnet run --project \"$SHAREDKERNEL_SOURCE/tools/SharedKernel.CI.Tool\" -c Release --no-build -- verify-commit-message --event \"$GITHUB_EVENT_PATH\"",
+            StringComparison.Ordinal);
 
         // Assert
-        result.ShouldBe(expected);
-    }
-
-    [Theory]
-    [InlineData("BREAKING CHANGE: remove the old field", 0)]
-    [InlineData("BREAKING-CHANGE: remove the old field", 0)]
-    [InlineData("BREAKING CHANGE missing colon", 1)]
-    [InlineData("BREAKING CHANGE:", 1)]
-    public async Task Structured_breaking_change_footers_require_a_description(string body, int expected)
-    {
-        // Arrange
-        using var workspace = new TemporaryRepoConfigWorkspace();
-        workspace.WriteFile("event.json", System.Text.Json.JsonSerializer.Serialize(new
-        {
-            pull_request = new
-            {
-                title = "feat: change the contract",
-                body
-            }
-        }));
-        using var output = new StringWriter();
-        using var error = new StringWriter();
-
-        // Act
-        var result = await RepoConfigToolApplication.Run(["verify-pr-title", "--event", "event.json"], output, error,
-            workspace.RootPath, TestContext.Current.CancellationToken);
-
-        // Assert
-        result.ShouldBe(expected);
+        build.ShouldBeGreaterThan(-1);
+        verify.ShouldBeGreaterThan(build);
+        workflow.ShouldContain("tool: SharedKernel.CI.Tool", StringComparison.Ordinal);
+        workflow.ShouldContain("persist-credentials: false", StringComparison.Ordinal);
+        workflow.ShouldNotContain("github.event.pull_request.title", StringComparison.Ordinal);
     }
 
     [Fact]

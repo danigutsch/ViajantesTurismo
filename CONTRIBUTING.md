@@ -48,7 +48,15 @@ feat(api)!: remove legacy booking endpoint
 ```
 
 Commit messages can be checked locally with
-`bash scripts/validate-commit-message.sh <path-to-commit-message-file>`.
+`dotnet tool run sharedkernel-ci -- verify-commit-message --file <path-to-commit-message-file>`.
+To check each local commit, save this hook as the file that `git rev-parse --git-path hooks/commit-msg`
+prints and make it executable. That path follows `core.hooksPath`; when only the global Git
+configuration sets it, first set `core.hooksPath` in this repository to a directory of its own.
+
+```sh
+#!/bin/sh
+exec dotnet tool run sharedkernel-ci -- verify-commit-message --file "$1"
+```
 
 ## Signed Commits
 

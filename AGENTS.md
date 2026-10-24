@@ -49,8 +49,10 @@ Use nested `AGENTS.md` files for scoped rules.
 - This repo uses xUnit v3 + Microsoft.Testing.Platform (MTP);
     prefer `--filter-class`, `--filter-method`, `--filter-namespace`, and `--filter-trait`
     over legacy VSTest filters.
-- Commit messages must pass `commitlint`; use Conventional Commits, keep the header at or under
-    100 characters, and wrap every body line to 100 characters or less.
+- Commit messages must pass
+    `dotnet tool run sharedkernel-ci -- verify-commit-message --file <path>`;
+    use Conventional Commits, keep the header at or under 100 characters,
+    and wrap every body line to 100 characters or less.
 - Put test-host arguments after `--` when required.
 - .NET formatting: `dotnet format`.
 - Docs/scripts/spec quality checks run in CI via `bash scripts/lint-all.sh`.

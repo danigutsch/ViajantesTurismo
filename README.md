@@ -188,7 +188,7 @@ Install-Module -Name PSScriptAnalyzer -Scope CurrentUser
 
 # 8. Optional local commit validation
 printf "%s\n" "feat: example message" > /tmp/commit-msg.txt
-bash scripts/validate-commit-message.sh /tmp/commit-msg.txt
+dotnet tool run sharedkernel-ci -- verify-commit-message --file /tmp/commit-msg.txt
 ```
 
 On Linux, `pwsh` is required for the generated Playwright installer, and Aspire HTTPS
