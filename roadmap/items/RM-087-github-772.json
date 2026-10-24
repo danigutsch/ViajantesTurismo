@@ -4,7 +4,7 @@
   "title": "add operations dashboard for scheduling and messaging health",
   "type": "feature",
   "status": "proposed",
-  "order": 288,
+  "order": 451,
   "theme": "repo-operations",
   "outcome": "GitHub issue #772 is canonically represented from the reconciliation manifest.",
   "scoring": {
@@ -33,7 +33,8 @@
   ],
   "integrations": {
     "github": {
-      "issue": 772
+      "issue": 772,
+      "nodeId": "I_kwDOQAEVW88AAAABH4bffQ"
     }
   }
 }

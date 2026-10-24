@@ -4,7 +4,7 @@
   "title": "Epic: secure repository MCP and Aspire resource tooling",
   "type": "epic",
   "status": "proposed",
-  "order": 344,
+  "order": 500,
   "theme": "repo-operations",
   "outcome": "GitHub issue #1037 is canonically represented from the reconciliation manifest.",
   "scoring": {
@@ -34,7 +34,8 @@
   ],
   "integrations": {
     "github": {
-      "issue": 1037
+      "issue": 1037,
+      "nodeId": "I_kwDOQAEVW88AAAABIrESBA"
     }
   }
 }

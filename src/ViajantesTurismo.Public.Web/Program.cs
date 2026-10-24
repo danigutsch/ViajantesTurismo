@@ -9,9 +9,11 @@ using ViajantesTurismo.ServiceDefaults;
 var builder = WebApplication.CreateBuilder(args);
 
 builder.AddServiceDefaults();
-builder.Services.AddHttpClientDefaults();
+builder.Services.AddHttpClientDefaults(PublicWebSecurityBaseline.ConfigureCatalogResilience);
 builder.AddConfiguredTrustedForwardedHeaders();
-builder.Services.AddHttpClient<IPublicCatalogApiClient, PublicCatalogApiClient>(client => client.BaseAddress = new Uri($"https+http://{ResourceNames.CatalogApi}"));
+builder.Services.AddPublicWebSecurityBaseline();
+builder.Services.AddHttpClient<IPublicCatalogApiClient, PublicCatalogApiClient>(client => client.BaseAddress = new Uri($"https+http://{ResourceNames.CatalogApi}"))
+    .AddForwardedClientIp();
 builder.Services.AddHttpClient<IBrandingApiClient, BrandingApiClient>(client => client.BaseAddress = new Uri($"https+http://{ResourceNames.BrandingApi}"));
 builder.Services.AddRazorComponents();
 builder.Services.AddOptions<PublicWebSitemapOptions>()
@@ -35,6 +37,7 @@ app.UseAntiforgery();
 
 app.UsePublicWebCacheHeaders();
 app.UsePublicWebSecurityHeaders();
+app.UseRateLimiter();
 app.MapPublicWebEndpoints();
 
 app.MapDefaultEndpoints();

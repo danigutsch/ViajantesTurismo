@@ -5,7 +5,7 @@
   "title": "Update security policy after versioned releases exist",
   "type": "issue",
   "status": "proposed",
-  "order": 101,
+  "order": 352,
   "theme": "repo-operations",
   "outcome": "GitHub issue #595 is canonically represented from the reconciliation manifest.",
   "scoring": {
@@ -30,7 +30,8 @@
   ],
   "integrations": {
     "github": {
-      "issue": 595
+      "issue": 595,
+      "nodeId": "I_kwDOQAEVW88AAAABHpyu_g"
     }
   }
 }

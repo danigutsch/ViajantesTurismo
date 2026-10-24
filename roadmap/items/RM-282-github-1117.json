@@ -5,7 +5,7 @@
   "title": "Implement document data-subject rights and retention exceptions",
   "type": "feature",
   "status": "proposed",
-  "order": 323,
+  "order": 482,
   "theme": "repo-operations",
   "outcome": "GitHub issue #1117 is canonically represented from the reconciliation manifest.",
   "scoring": {
@@ -32,7 +32,8 @@
   ],
   "integrations": {
     "github": {
-      "issue": 1117
+      "issue": 1117,
+      "nodeId": "I_kwDOQAEVW88AAAABJR1BlA"
     }
   }
 }

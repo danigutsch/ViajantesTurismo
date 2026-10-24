@@ -117,7 +117,7 @@ public sealed class CatalogApiSecurityBaselineTests
         using var client = factory.CreateClient();
 
         // Act
-        for (var requestNumber = 0; requestNumber < 60; requestNumber++)
+        for (var requestNumber = 0; requestNumber < CatalogSecurityBaseline.PublicReadPermitLimit; requestNumber++)
         {
             using var allowedResponse = await client.GetAsync(new Uri("/api/v1/public/catalog/tours", UriKind.Relative), TestContext.Current.CancellationToken);
             allowedResponse.StatusCode.ShouldBe(HttpStatusCode.OK);

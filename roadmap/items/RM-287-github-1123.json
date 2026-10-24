@@ -4,16 +4,10 @@
   "parent": "RM-285",
   "title": "[Issue]: Remove unused Admin mediator wiring and stale docs",
   "type": "issue",
-  "status": "proposed",
-  "order": 120,
+  "status": "done",
+  "triage": "untriaged",
   "theme": "repo-operations",
   "outcome": "GitHub issue #1123 is canonically represented from the reconciliation manifest.",
-  "scoring": {
-    "reach": 1,
-    "impact": 1,
-    "confidence": 0.1,
-    "effort": 2
-  },
   "blockedBy": [],
   "blocks": [],
   "dependencies": [],
@@ -34,7 +28,8 @@
   ],
   "integrations": {
     "github": {
-      "issue": 1123
+      "issue": 1123,
+      "nodeId": "I_kwDOQAEVW88AAAABJSG6oQ"
     }
   }
 }

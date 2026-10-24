@@ -4,7 +4,7 @@
   "title": "Add authenticated document preview and delivery",
   "type": "feature",
   "status": "proposed",
-  "order": 308,
+  "order": 469,
   "theme": "repo-operations",
   "outcome": "GitHub issue #944 is canonically represented from the reconciliation manifest.",
   "scoring": {
@@ -30,7 +30,8 @@
   ],
   "integrations": {
     "github": {
-      "issue": 944
+      "issue": 944,
+      "nodeId": "I_kwDOQAEVW88AAAABIb2fwg"
     }
   }
 }

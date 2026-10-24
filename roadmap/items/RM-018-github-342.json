@@ -4,7 +4,7 @@
   "title": "Epic: Public website image and gallery management",
   "type": "epic",
   "status": "proposed",
-  "order": 324,
+  "order": 483,
   "theme": "repo-operations",
   "outcome": "GitHub issue #342 is canonically represented from the reconciliation manifest.",
   "scoring": {
@@ -31,7 +31,8 @@
   ],
   "integrations": {
     "github": {
-      "issue": 342
+      "issue": 342,
+      "nodeId": "I_kwDOQAEVW88AAAABGmXFoQ"
     }
   }
 }

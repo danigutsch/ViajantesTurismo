@@ -1,0 +1,37 @@
+{
+  "$schema": "../schema/roadmap-item.schema.json",
+  "id": "RM-298",
+  "parent": "RM-196",
+  "title": "Guard ordinary production API-to-API HTTP with an analyzer",
+  "type": "enabler",
+  "status": "proposed",
+  "triage": "untriaged",
+  "theme": "repo-operations",
+  "outcome": "Guard ordinary production API-to-API HTTP with an analyzer.",
+  "blockedBy": [
+    "RM-299",
+    "RM-302"
+  ],
+  "blocks": [],
+  "dependencies": [],
+  "tags": [],
+  "labels": [
+    ".net",
+    "architecture",
+    "testing",
+    "type: enabler",
+    "area: tooling"
+  ],
+  "sources": [
+    {
+      "kind": "github-issue",
+      "reference": "https://github.com/danigutsch/ViajantesTurismo/issues/1153"
+    }
+  ],
+  "integrations": {
+    "github": {
+      "issue": 1153,
+      "nodeId": "I_kwDOQAEVW88AAAABKATahA"
+    }
+  }
+}

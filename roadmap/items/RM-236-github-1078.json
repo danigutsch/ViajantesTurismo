@@ -5,7 +5,7 @@
   "title": "Publish a consolidated CI warning summary",
   "type": "enabler",
   "status": "proposed",
-  "order": 251,
+  "order": 436,
   "theme": "repo-operations",
   "outcome": "GitHub issue #1078 is canonically represented from the reconciliation manifest.",
   "scoring": {
@@ -31,7 +31,8 @@
   ],
   "integrations": {
     "github": {
-      "issue": 1078
+      "issue": 1078,
+      "nodeId": "I_kwDOQAEVW88AAAABI_1BdQ"
     }
   }
 }

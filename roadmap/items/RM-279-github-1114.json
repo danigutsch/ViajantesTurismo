@@ -4,16 +4,10 @@
   "parent": "RM-161",
   "title": "Enforce unique document revisions and idempotent generation",
   "type": "issue",
-  "status": "proposed",
-  "order": 269,
+  "status": "done",
+  "triage": "untriaged",
   "theme": "repo-operations",
   "outcome": "GitHub issue #1114 is canonically represented from the reconciliation manifest.",
-  "scoring": {
-    "reach": 1,
-    "impact": 1,
-    "confidence": 0.1,
-    "effort": 3
-  },
   "blockedBy": [],
   "blocks": [],
   "dependencies": [],
@@ -34,7 +28,8 @@
   ],
   "integrations": {
     "github": {
-      "issue": 1114
+      "issue": 1114,
+      "nodeId": "I_kwDOQAEVW88AAAABJR1Bhg"
     }
   }
 }

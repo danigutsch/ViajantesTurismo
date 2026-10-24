@@ -4,16 +4,10 @@
   "parent": "RM-050",
   "title": "Document file and stream intake policy",
   "type": "documentation",
-  "status": "proposed",
-  "order": 103,
+  "status": "done",
+  "triage": "untriaged",
   "theme": "repo-operations",
   "outcome": "GitHub issue #701 is canonically represented from the reconciliation manifest.",
-  "scoring": {
-    "reach": 1,
-    "impact": 1,
-    "confidence": 0.1,
-    "effort": 2
-  },
   "blockedBy": [],
   "blocks": [],
   "dependencies": [],
@@ -31,7 +25,8 @@
   ],
   "integrations": {
     "github": {
-      "issue": 701
+      "issue": 701,
+      "nodeId": "I_kwDOQAEVW88AAAABHtV45w"
     }
   }
 }

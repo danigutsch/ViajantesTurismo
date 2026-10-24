@@ -4,16 +4,10 @@
   "parent": "RM-141",
   "title": "Evaluate body-only endpoint request contracts",
   "type": "enabler",
-  "status": "proposed",
-  "order": 197,
+  "status": "done",
+  "triage": "untriaged",
   "theme": "repo-operations",
   "outcome": "GitHub issue #902 is canonically represented from the reconciliation manifest.",
-  "scoring": {
-    "reach": 1,
-    "impact": 1,
-    "confidence": 0.1,
-    "effort": 3
-  },
   "blockedBy": [],
   "blocks": [],
   "dependencies": [],
@@ -32,7 +26,8 @@
   ],
   "integrations": {
     "github": {
-      "issue": 902
+      "issue": 902,
+      "nodeId": "I_kwDOQAEVW88AAAABIRaJUQ"
     }
   }
 }

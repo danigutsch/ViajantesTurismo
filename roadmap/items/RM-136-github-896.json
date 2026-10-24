@@ -5,7 +5,7 @@
   "title": "Evaluate flagd for feature flags",
   "type": "enabler",
   "status": "proposed",
-  "order": 194,
+  "order": 394,
   "theme": "repo-operations",
   "outcome": "GitHub issue #896 is canonically represented from the reconciliation manifest.",
   "scoring": {
@@ -32,7 +32,8 @@
   ],
   "integrations": {
     "github": {
-      "issue": 896
+      "issue": 896,
+      "nodeId": "I_kwDOQAEVW88AAAABIRUGRg"
     }
   }
 }

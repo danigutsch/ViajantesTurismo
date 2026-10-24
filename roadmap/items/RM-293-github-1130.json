@@ -2,9 +2,9 @@
   "$schema": "../schema/roadmap-item.schema.json",
   "id": "RM-293",
   "title": "test(analyzers): require ActivityListener source identity filtering",
-  "type": "issue",
+  "type": "enabler",
   "status": "proposed",
-  "order": 278,
+  "order": 442,
   "theme": "repo-operations",
   "outcome": "GitHub issue #1130 is canonically represented from the reconciliation manifest.",
   "scoring": {
@@ -17,7 +17,15 @@
   "blocks": [],
   "dependencies": [],
   "tags": [],
-  "labels": [],
+  "labels": [
+    "area: sharedkernel",
+    "area: testing",
+    "area: tooling",
+    "observability",
+    "sharedkernel",
+    "testing",
+    "type: enabler"
+  ],
   "sources": [
     {
       "kind": "github-issue",
@@ -26,7 +34,8 @@
   ],
   "integrations": {
     "github": {
-      "issue": 1130
+      "issue": 1130,
+      "nodeId": "I_kwDOQAEVW88AAAABJV8HDg"
     }
   }
 }

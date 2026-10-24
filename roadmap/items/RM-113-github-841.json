@@ -4,7 +4,7 @@
   "title": "Add logging and telemetry redaction rules",
   "type": "feature",
   "status": "proposed",
-  "order": 299,
+  "order": 460,
   "theme": "repo-operations",
   "outcome": "GitHub issue #841 is canonically represented from the reconciliation manifest.",
   "scoring": {
@@ -31,7 +31,8 @@
   ],
   "integrations": {
     "github": {
-      "issue": 841
+      "issue": 841,
+      "nodeId": "I_kwDOQAEVW88AAAABH_qaNA"
     }
   }
 }

@@ -4,7 +4,7 @@
   "title": "Enforce document generation eligibility and source freshness",
   "type": "feature",
   "status": "proposed",
-  "order": 313,
+  "order": 474,
   "theme": "repo-operations",
   "outcome": "GitHub issue #995 is canonically represented from the reconciliation manifest.",
   "scoring": {
@@ -31,7 +31,8 @@
   ],
   "integrations": {
     "github": {
-      "issue": 995
+      "issue": 995,
+      "nodeId": "I_kwDOQAEVW88AAAABIh0dDA"
     }
   }
 }

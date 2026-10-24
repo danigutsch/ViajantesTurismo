@@ -4,7 +4,7 @@
   "title": "Research retention, export, and deletion requirements",
   "type": "enabler",
   "status": "proposed",
-  "order": 177,
+  "order": 382,
   "theme": "repo-operations",
   "outcome": "GitHub issue #842 is canonically represented from the reconciliation manifest.",
   "scoring": {
@@ -31,7 +31,8 @@
   ],
   "integrations": {
     "github": {
-      "issue": 842
+      "issue": 842,
+      "nodeId": "I_kwDOQAEVW88AAAABH_qamQ"
     }
   }
 }

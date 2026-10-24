@@ -1,0 +1,36 @@
+{
+  "$schema": "../schema/roadmap-item.schema.json",
+  "id": "RM-296",
+  "parent": "RM-212",
+  "title": "Replace production EF migrations with reviewed SQL scripts",
+  "type": "enabler",
+  "status": "proposed",
+  "triage": "untriaged",
+  "theme": "repo-operations",
+  "outcome": "Replace production EF migrations with reviewed SQL scripts.",
+  "blockedBy": [],
+  "blocks": [],
+  "dependencies": [],
+  "tags": [],
+  "labels": [
+    "architecture",
+    "testing",
+    "security",
+    "infrastructure",
+    "type: enabler",
+    "area: tooling",
+    "risk: breaking-change"
+  ],
+  "sources": [
+    {
+      "kind": "github-issue",
+      "reference": "https://github.com/danigutsch/ViajantesTurismo/issues/1144"
+    }
+  ],
+  "integrations": {
+    "github": {
+      "issue": 1144,
+      "nodeId": "I_kwDOQAEVW88AAAABJeAFGA"
+    }
+  }
+}

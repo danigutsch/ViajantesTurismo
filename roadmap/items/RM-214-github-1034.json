@@ -5,7 +5,7 @@
   "title": "Align worker ownership to bounded contexts",
   "type": "enabler",
   "status": "proposed",
-  "order": 241,
+  "order": 426,
   "theme": "repo-operations",
   "outcome": "Each event consumer has bounded-context ownership with matching deployment, scaling, credentials, and reliability boundaries.",
   "scoring": {
@@ -38,7 +38,8 @@
   ],
   "integrations": {
     "github": {
-      "issue": 1034
+      "issue": 1034,
+      "nodeId": "I_kwDOQAEVW88AAAABIq0IDg"
     }
   }
 }

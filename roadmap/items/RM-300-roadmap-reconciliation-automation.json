@@ -1,0 +1,35 @@
+{
+  "$schema": "../schema/roadmap-item.schema.json",
+  "id": "RM-300",
+  "parent": "RM-001",
+  "title": "Automate roadmap reconciliation through approved pull requests",
+  "type": "feature",
+  "status": "proposed",
+  "triage": "untriaged",
+  "theme": "repo-operations",
+  "outcome": "Automate roadmap reconciliation through approved pull requests.",
+  "blockedBy": [],
+  "blocks": [],
+  "dependencies": [],
+  "tags": [],
+  "labels": [
+    "ci",
+    "testing",
+    "security",
+    "type: feature",
+    "area: tooling",
+    "github-actions"
+  ],
+  "sources": [
+    {
+      "kind": "github-issue",
+      "reference": "https://github.com/danigutsch/ViajantesTurismo/issues/1160"
+    }
+  ],
+  "integrations": {
+    "github": {
+      "issue": 1160,
+      "nodeId": "I_kwDOQAEVW88AAAABKBv7Zw"
+    }
+  }
+}

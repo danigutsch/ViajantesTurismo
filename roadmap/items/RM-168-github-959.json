@@ -4,16 +4,10 @@
   "parent": "RM-166",
   "title": "Add customer payment schedules and status",
   "type": "issue",
-  "status": "proposed",
-  "order": 211,
+  "status": "done",
+  "triage": "untriaged",
   "theme": "repo-operations",
   "outcome": "GitHub issue #959 is canonically represented from the reconciliation manifest.",
-  "scoring": {
-    "reach": 1,
-    "impact": 1,
-    "confidence": 0.1,
-    "effort": 3
-  },
   "blockedBy": [],
   "blocks": [],
   "dependencies": [],
@@ -29,7 +23,8 @@
   ],
   "integrations": {
     "github": {
-      "issue": 959
+      "issue": 959,
+      "nodeId": "I_kwDOQAEVW88AAAABIcvc-A"
     }
   }
 }

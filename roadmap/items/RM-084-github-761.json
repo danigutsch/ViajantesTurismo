@@ -3,16 +3,10 @@
   "id": "RM-084",
   "title": "add Catalog behavior coverage for duplicate integration-event delivery",
   "type": "issue",
-  "status": "proposed",
-  "order": 165,
+  "status": "done",
+  "triage": "untriaged",
   "theme": "repo-operations",
   "outcome": "GitHub issue #761 is canonically represented from the reconciliation manifest.",
-  "scoring": {
-    "reach": 1,
-    "impact": 1,
-    "confidence": 0.1,
-    "effort": 3
-  },
   "blockedBy": [],
   "blocks": [],
   "dependencies": [],
@@ -30,7 +24,8 @@
   ],
   "integrations": {
     "github": {
-      "issue": 761
+      "issue": 761,
+      "nodeId": "I_kwDOQAEVW88AAAABH2VS2A"
     }
   }
 }

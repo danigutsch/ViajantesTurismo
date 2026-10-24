@@ -4,7 +4,7 @@
   "title": "Establish a safe dependency graph refresh workflow",
   "type": "epic",
   "status": "proposed",
-  "order": 348,
+  "order": 504,
   "theme": "repo-operations",
   "outcome": "GitHub issue #1086 is canonically represented from the reconciliation manifest.",
   "scoring": {
@@ -33,7 +33,8 @@
   ],
   "integrations": {
     "github": {
-      "issue": 1086
+      "issue": 1086,
+      "nodeId": "I_kwDOQAEVW88AAAABJFsXiw"
     }
   }
 }

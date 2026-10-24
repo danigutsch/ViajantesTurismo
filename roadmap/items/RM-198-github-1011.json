@@ -4,16 +4,10 @@
   "parent": "RM-162",
   "title": "Research test logs and OpenTelemetry diagnostics",
   "type": "issue",
-  "status": "proposed",
-  "order": 228,
+  "status": "done",
+  "triage": "untriaged",
   "theme": "repo-operations",
   "outcome": "GitHub issue #1011 is canonically represented from the reconciliation manifest.",
-  "scoring": {
-    "reach": 1,
-    "impact": 1,
-    "confidence": 0.1,
-    "effort": 3
-  },
   "blockedBy": [],
   "blocks": [],
   "dependencies": [],
@@ -32,7 +26,8 @@
   ],
   "integrations": {
     "github": {
-      "issue": 1011
+      "issue": 1011,
+      "nodeId": "I_kwDOQAEVW88AAAABIjB8kQ"
     }
   }
 }

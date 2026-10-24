@@ -5,7 +5,7 @@
   "title": "Rename API service projects to Api",
   "type": "enabler",
   "status": "proposed",
-  "order": 240,
+  "order": 425,
   "theme": "repo-operations",
   "outcome": "GitHub issue #1033 is canonically represented from the reconciliation manifest.",
   "scoring": {
@@ -32,7 +32,8 @@
   ],
   "integrations": {
     "github": {
-      "issue": 1033
+      "issue": 1033,
+      "nodeId": "I_kwDOQAEVW88AAAABIqwgtg"
     }
   }
 }
