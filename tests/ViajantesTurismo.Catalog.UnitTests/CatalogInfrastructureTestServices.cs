@@ -199,6 +199,7 @@ internal static class CatalogInfrastructureTestServices
 
         return new CatalogInfrastructureScenario(builder.Services.BuildServiceProvider());
     }
+
     public static CatalogInfrastructureScenario CreateBrandingCoHostedScenario()
     {
         var builder = Host.CreateApplicationBuilder(new HostApplicationBuilderSettings
