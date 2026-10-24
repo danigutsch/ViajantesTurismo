@@ -29,6 +29,11 @@ internal static class WorkerOwnershipTestsHelpers
         BoundedContexts.FirstOrDefault(context =>
             projectName.StartsWith($"ViajantesTurismo.{context}.", StringComparison.Ordinal));
 
+    // A worker consumes other contexts' published integration events; it never takes their other projects.
+    private static bool IsPublishedIntegrationEventContract(string projectName) =>
+        BoundedContexts.Any(context =>
+            projectName == $"ViajantesTurismo.{context}.Contracts.IntegrationEvents");
+
     public static string[] FindForeignContextReferences(string projectName, string owningContext)
     {
         var projectPath = Path.Combine(
@@ -40,7 +45,8 @@ internal static class WorkerOwnershipTestsHelpers
             .Select(reference => Path.GetFileNameWithoutExtension(
                 (reference.Attribute("Include")?.Value ?? string.Empty).Replace('\\', '/')))
             .Where(reference => !reference.StartsWith(ownPrefix, StringComparison.Ordinal)
-                                && !SharedHostProjects.Contains(reference, StringComparer.Ordinal))
+                                && !SharedHostProjects.Contains(reference, StringComparer.Ordinal)
+                                && !IsPublishedIntegrationEventContract(reference))
             .Order(StringComparer.Ordinal)
             .ToArray();
     }

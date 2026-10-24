@@ -1,0 +1,14 @@
+<Project Sdk="Microsoft.NET.Sdk.Worker">
+
+    <ItemGroup>
+        <ProjectReference Include="..\ViajantesTurismo.Admin.Infrastructure\ViajantesTurismo.Admin.Infrastructure.csproj" />
+        <ProjectReference Include="..\ViajantesTurismo.Branding.Contracts.IntegrationEvents\ViajantesTurismo.Branding.Contracts.IntegrationEvents.csproj" />
+        <ProjectReference Include="..\ViajantesTurismo.ServiceDefaults\ViajantesTurismo.ServiceDefaults.csproj" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <PackageReference Include="PandaBear.SharedKernel.Messaging.IntegrationEvents" />
+        <PackageReference Include="PandaBear.SharedKernel.Messaging.IntegrationEvents.SourceGenerator" PrivateAssets="all" />
+    </ItemGroup>
+
+</Project>

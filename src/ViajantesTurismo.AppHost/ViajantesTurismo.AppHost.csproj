@@ -14,6 +14,7 @@
         <ProjectReference Include="..\ViajantesTurismo.Admin.ApiService\ViajantesTurismo.Admin.ApiService.csproj"/>
         <ProjectReference Include="..\ViajantesTurismo.Branding.ApiService\ViajantesTurismo.Branding.ApiService.csproj"/>
         <ProjectReference Include="..\ViajantesTurismo.Catalog.ApiService\ViajantesTurismo.Catalog.ApiService.csproj"/>
+        <ProjectReference Include="..\ViajantesTurismo.Admin.IntegrationEventWorker\ViajantesTurismo.Admin.IntegrationEventWorker.csproj"/>
         <ProjectReference Include="..\ViajantesTurismo.Catalog.IntegrationEventWorker\ViajantesTurismo.Catalog.IntegrationEventWorker.csproj"/>
         <ProjectReference Include="..\ViajantesTurismo.MigrationService\ViajantesTurismo.MigrationService.csproj"/>
         <ProjectReference Include="..\ViajantesTurismo.Resources\ViajantesTurismo.Resources.csproj" IsAspireProjectResource="false"/>

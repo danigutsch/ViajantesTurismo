@@ -6,6 +6,7 @@ using ViajantesTurismo.Admin.Application.Customers;
 using ViajantesTurismo.Admin.Application.Documents;
 using ViajantesTurismo.Admin.Domain.Customers;
 using ViajantesTurismo.Admin.Domain.Documents;
+using ViajantesTurismo.Admin.Infrastructure.Branding;
 using ViajantesTurismo.Admin.Infrastructure.Documents;
 using ViajantesTurismo.Admin.Infrastructure.ModelConfigurations;
 using ViajantesTurismo.Admin.Domain.Tours;
@@ -79,6 +80,8 @@ internal sealed class AdminWriteDbContext(
         modelBuilder.ApplyConfiguration(new DocumentLineageConfiguration());
         modelBuilder.ApplyConfiguration(new DocumentDraftConfiguration());
         modelBuilder.ApplyConfiguration(new DocumentAuditConfiguration());
+        modelBuilder.ApplyConfiguration(new BrandingProjectionConfiguration());
+        modelBuilder.ApplyConfiguration(new BrandingInboxConfiguration());
         if (configurations is not null)
         {
             foreach (var configuration in configurations)

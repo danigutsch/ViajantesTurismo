@@ -81,6 +81,14 @@ seam requires demonstrated synchronous need and a separate decision.
 
 ## State and delivery
 
+Implemented so far: `Admin.IntegrationEventWorker` applies each `BrandingSettingsChangedIntegrationEvent`
+to `branding_projection.settings` and records it in `branding_projection.inbox_messages` in one Admin
+transaction. Redelivered events are no-ops, older revisions are acknowledged without change, and a newer
+revision closes any gap. An unexpected epoch, a same-revision payload conflict, or an invalid envelope is
+recorded as `Rejected` with a sanitized reason code and acknowledged, so it never blocks later revisions;
+infrastructure failures are retried by the transport. Document capture, recovery, and the `If-Match`
+contract described below are still to come.
+
 Branding stores the current document with a source epoch and monotonically increasing positive
 revision. Each write appends an immutable full-state revision and enqueues
 `BrandingSettingsChangedIntegrationEvent`, carrying that epoch, positive revision, and full immutable snapshot, in

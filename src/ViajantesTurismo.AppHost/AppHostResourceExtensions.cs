@@ -354,6 +354,28 @@ internal static class AppHostResourceExtensions
         return worker;
     }
 
+    /// <summary>
+    /// Adds the Admin-owned integration-event worker, which applies Branding revisions to the Admin projection.
+    /// </summary>
+    /// <param name="builder">The distributed application builder.</param>
+    /// <param name="adminDatabase">The Admin database resource that holds the Branding projection.</param>
+    /// <param name="catalogDatabase">The Catalog database resource that holds the transport table.</param>
+    /// <param name="migrationService">The migration service resource.</param>
+    /// <returns>The configured Admin integration-event worker resource.</returns>
+    public static IResourceBuilder<ProjectResource> AddAdminIntegrationEventWorker(
+        this IDistributedApplicationBuilder builder,
+        IResourceBuilder<PostgresDatabaseResource> adminDatabase,
+        IResourceBuilder<PostgresDatabaseResource> catalogDatabase,
+        IResourceBuilder<ProjectResource> migrationService)
+    {
+        return builder.AddDevelopmentDotNetProject<ViajantesTurismo_Admin_IntegrationEventWorker>(ResourceNames.AdminIntegrationEventWorker)
+            .WithReference(adminDatabase)
+            .WithReference(catalogDatabase)
+            .WaitFor(adminDatabase)
+            .WaitFor(catalogDatabase)
+            .WaitForCompletion(migrationService);
+    }
+
     private static IResourceBuilder<TDestination> WithSeaweedFsReference<TDestination>(
         this IResourceBuilder<TDestination> destination,
         IResourceBuilder<SeaweedFsResource> seaweedFs)
