@@ -419,77 +419,26 @@ The repository installs no Git hooks.
 
 ### Local validation runtime
 
-Use the repository benchmark script when a change may affect local validation time:
+Measure the solution-wide baseline with a plain timed run after a restore and build:
 
 ```bash
-bash scripts/benchmark-local-validation.sh
+time dotnet test --solution ViajantesTurismo.slnx --no-restore --no-build
 ```
 
-The script writes tab-separated phase timings to `TestResults/local-validation-benchmark-timings.tsv`
-and logs beside that file. It uses Bash, the .NET SDK, and standard POSIX utilities available on
-Unix-like development environments.
-
-Useful focused runs:
+Measure one CI slice through the same engine CI uses. `select` without `--base` selects every test
+project; `run` restores, builds, and tests the slice's selected projects and writes per-phase timings to
+`TestResults/selection/execution-<slice>/phase-timings.tsv`:
 
 ```bash
-# Restore and build only. This is the safe default.
-bash scripts/benchmark-local-validation.sh
-
-# One Fast Validation execution shard, after a successful build
-bash scripts/benchmark-local-validation.sh --skip-restore --skip-build --slice fast-validation-1
-bash scripts/benchmark-local-validation.sh --skip-restore --skip-build --slice fast-validation-2
-
-# Full measured path with a custom output file
-bash scripts/benchmark-local-validation.sh --all-slices --output TestResults/local-validation-$(date +%Y%m%d-%H%M%S).tsv
-
-# Solution-level all-tests baseline. This is a benchmark, not the CI lane policy.
-bash scripts/benchmark-local-validation.sh --skip-restore --skip-build --solution-tests
+dotnet tool run sharedkernel-ci -- select
+dotnet tool run sharedkernel-ci -- run --slice fast-validation-1
 ```
 
-Available slice names are the basenames of `scripts/ci-test-slices/*.txt`; the benchmark's
-`--all-slices` option discovers every current slice automatically.
+The slice names are the `slices[].name` values of `.config/sharedkernel-ci.json`.
 
 Dependency-heavy slices may require a running container runtime, trusted development certificates,
 or Playwright browsers. If a local machine cannot run those prerequisites, capture the restore,
 build, and feasible slice timings, then state which slice was skipped and why in the pull request.
-
-Measured on this worktree on 2026-06-29:
-
-| Phase | Command | Duration | Status |
-| --- | --- | ---: | --- |
-| Restore | `bash scripts/benchmark-local-validation.sh --skip-build --skip-tests --output TestResults/local-validation-restore-benchmark.tsv` | 2s | success |
-| Build, warm repeat | `bash scripts/benchmark-local-validation.sh --skip-restore --skip-tests --output TestResults/local-validation-build-benchmark.tsv` | 26s | success |
-| Fast validation slice, pre-shard historical baseline | `--slice fast-validation` with the former single manifest | 167s | success |
-| Admin integration slice | `bash scripts/benchmark-local-validation.sh --skip-restore --skip-build --slice admin-integration --output TestResults/local-validation-admin-integration.tsv` | 100s | success |
-| Mediator heavy slice | `bash scripts/benchmark-local-validation.sh --skip-restore --skip-build --slice mediator-heavy --output TestResults/local-validation-mediator-heavy.tsv` | 65s | success |
-| Admin system slice | `bash scripts/benchmark-local-validation.sh --skip-restore --skip-build --slice admin-system --output TestResults/local-validation-admin-system.tsv` | 71s | success |
-| Solution all-tests baseline | `bash scripts/benchmark-local-validation.sh --skip-restore --skip-build --solution-tests --output TestResults/local-validation-solution-baseline.tsv` | 131s | failure; hosted/system concurrency conflict |
-| Admin integration plus PostgreSQL event sourcing | `bash scripts/benchmark-local-validation.sh --skip-restore --skip-build --slice admin-integration --output TestResults/local-validation-admin-integration-postgres.tsv` | 212s | success |
-
-Low-risk improvement implemented here: local timing can run test slices without coverage collection
-while CI keeps its existing coverage collection and required checks intact.
-
-After `SharedKernel.EventSourcing.Npgsql.Tests` moved from one PostgreSQL container per test to one
-assembly server with isolated databases, two local Release runs completed all 22 cases in 22.0 and
-15.6 seconds. Hosted slice timing remains the authoritative comparison because the historical
-212-second row includes the other Admin Integration projects and coverage collection.
-
-Measured locally on 2026-07-24, the full build-plus-coverage path completed `fast-validation-1` in
-64 seconds and `fast-validation-2` in 44 seconds. These warm local numbers validate both shard paths;
-hosted timings remain authoritative for the split's wall-clock benefit because each hosted shard pays
-its own setup cost.
-
-`SharedKernel.EntityFrameworkCore.Tests` now lazily shares one PostgreSQL server while allocating a
-GUID-owned database per database-backed fact. This reduces ten full-run server starts to one without
-starting PostgreSQL for focused database-free runs. Two final local Release runs completed all 34
-cases in 15.9 and 18.0 seconds.
-
-On 2026-07-25, the Admin Integration build-plus-coverage path fell from 330 seconds to 89 seconds
-after Admin Infrastructure and Management Web Integration each moved to one assembly PostgreSQL
-server with per-test databases. Coverage execution fell from 315 to 60 seconds; Admin Infrastructure
-fell from 313 to 58 seconds and Management Web Integration from 165 to 39 seconds. Catalog
-Infrastructure completed in 52 seconds and no longer controls the lane, so its three-start fixture
-migration remains deferred until hosted timing shows a wall-clock need.
 
 #### Analyzer and code-fix runner measurements
 
@@ -511,13 +460,13 @@ Recommended fast local path by change type:
 | Change type | Fast local path | Full confidence before PR when risk is real |
 | --- | --- | --- |
 | Dependency-graph change | `dotnet restore ViajantesTurismo.slnx --force-evaluate`, then `--locked-mode` | `dotnet build ViajantesTurismo.slnx --no-restore` plus impacted test slice |
-| AppHost-only change | `dotnet build src/ViajantesTurismo.AppHost/ViajantesTurismo.AppHost.csproj --no-restore` | `dotnet tool run aspire run` and `bash scripts/benchmark-local-validation.sh --skip-restore --skip-build --slice admin-system` |
-| Test-only change | `dotnet test --project <changed-test-project>.csproj` | Matching CI slice through `bash scripts/benchmark-local-validation.sh --skip-restore --skip-build --slice <name>` |
+| AppHost-only change | `dotnet build src/ViajantesTurismo.AppHost/ViajantesTurismo.AppHost.csproj --no-restore` | `dotnet tool run aspire run` and `dotnet tool run sharedkernel-ci -- run --slice admin-system --install-playwright` |
+| Test-only change | `dotnet test --project <changed-test-project>.csproj` | Matching CI slice through `dotnet tool run sharedkernel-ci -- run --slice <name>` |
 
 Concrete improvement options:
 
-1. Keep using `scripts/ci-test-slices/*.txt` as the single slice membership source for CI and local
-   benchmarks so project lists do not drift.
+1. Keep `.config/sharedkernel-ci.json` as the single slice membership source for CI and local
+   runs so project lists do not drift.
 2. Compare local no-coverage slice timings with CI coverage slice timings before changing any CI
    coverage behavior.
 3. Split hosted browser/system tests further by trait only after measured timings show one stable
@@ -557,19 +506,20 @@ missing evidence for changed source fails the gate. See [quality gates](ci/quali
 
 ### Running tests with coverage
 
-Restore and build first, then collect and aggregate:
+Collect coverage through the same engine CI uses, then merge the per-project reports for browsing:
 
 ```bash
 dotnet tool restore
-bash scripts/run-tests-with-coverage.sh
+dotnet tool run sharedkernel-ci -- select
+dotnet tool run sharedkernel-ci -- run --slice fast-validation-1 --coverage
+dotnet tool run reportgenerator "-reports:TestResults/selection/execution-*/results/**/*.cobertura*.xml" \
+    "-targetdir:TestResults/CoverageReport" "-reporttypes:Html;Cobertura"
 ```
 
-The helper uses a run-specific results directory and the `--coverlet` test-host switch.
-Reports from parallel projects remain separate until ReportGenerator creates merged Cobertura
-and `TestResults/CoverageReport/index.html`. Use the repository helper rather than old
-Microsoft collector switches such as `--coverage` or `--coverage-settings`.
-
-The VS Code "test with coverage" task runs the same helper.
+`run --coverage` passes the `--coverlet` test-host switch and writes one Cobertura report per test
+project under `TestResults/selection/execution-<slice>/results/<Project>/`. ReportGenerator merges
+them into `TestResults/CoverageReport/index.html`. Use `--coverlet` rather than old Microsoft collector
+switches such as `--coverage` or `--coverage-settings`.
 
 ### Coverage Reports
 

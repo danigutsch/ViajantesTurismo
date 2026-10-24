@@ -106,7 +106,7 @@ This script will:
   SharedKernel tools `sharedkernel-ci`, `sharedkernel-repo`, `sharedkernel-version`, `sharedkernel-docs`,
   `sharedkernel-playwright-mcp`, and `sharedkernel-codefix`)
 - ✅ Verify PowerShell availability for Playwright browser installation
-- ✅ Explain the Playwright browser install step (`bash scripts/install-playwright.sh` after build)
+- ✅ Explain the Playwright browser install step (`sharedkernel-ci install-playwright` after build)
 - ✅ Detect optional PSScriptAnalyzer for PowerShell linting (PowerShell only)
 - ✅ Detect optional `k6` availability for `tests/performance/`
 - ✅ Explain that Markdown and Gherkin lint tooling remains CI-owned for now
@@ -178,8 +178,8 @@ dotnet tool restore
 # 4. Build once so the generated Playwright installer exists
 dotnet build ViajantesTurismo.slnx --no-restore
 
-# 5. Install Playwright browsers (requires pwsh on Linux/macOS)
-bash scripts/install-playwright.sh
+# 5. Install Playwright browsers (requires pwsh on Linux/macOS; add --with-dependencies on supported Ubuntu)
+dotnet tool run sharedkernel-ci -- install-playwright --project tests/ViajantesTurismo.Admin.SystemTests/ViajantesTurismo.Admin.SystemTests.csproj --browser chromium
 
 # 6. Install PowerShell linting (optional, when working on PowerShell scripts)
 Install-Module -Name PSScriptAnalyzer -Scope CurrentUser
@@ -198,9 +198,11 @@ On Linux, `pwsh` is required for the generated Playwright installer, and Aspire 
 trust may also require `SSL_CERT_DIR` to include `$HOME/.aspnet/dev-certs/trust`.
 The setup scripts check both conditions.
 
-On Linux distributions where `bash scripts/install-playwright.sh` skips
-`install --with-deps` (for example Ubuntu 25.10), browser download alone is not
-enough. Install the runtime libraries manually before running system tests:
+Playwright installs browser system dependencies only with `--with-dependencies` on the Ubuntu versions it
+supports. On Ubuntu 26.04, set `PLAYWRIGHT_HOST_PLATFORM_OVERRIDE=ubuntu24.04-x64` (or `ubuntu24.04-arm64`)
+because Playwright 1.60 has no Ubuntu 26.04 manifests yet. On other Linux
+distributions (for example Ubuntu 25.10), browser download alone is not enough. Install the runtime libraries
+manually before running system tests:
 
 ```bash
 sudo apt-get update
@@ -297,15 +299,16 @@ dotnet test --solution ViajantesTurismo.slnx
 dotnet test --project tests/ViajantesTurismo.Admin.UnitTests/ViajantesTurismo.Admin.UnitTests.csproj
 ```
 
-**Benchmark local validation timing:**
+**Measure local validation timing:**
 
 ```bash
-bash scripts/benchmark-local-validation.sh
+time dotnet test --solution ViajantesTurismo.slnx --no-restore
+dotnet tool run sharedkernel-ci -- select
+dotnet tool run sharedkernel-ci -- run --slice fast-validation-1
 ```
 
-Use `--all-slices`, `--skip-restore`, `--skip-build`, or `--slice <name>` to measure a broader or focused path.
-See [docs/CODE_QUALITY.md](docs/CODE_QUALITY.md#local-validation-runtime) for baseline timings,
-recommended fast local paths, and improvement options.
+`run` writes per-phase timings to `TestResults/selection/execution-<slice>/phase-timings.tsv`.
+See [docs/CODE_QUALITY.md](docs/CODE_QUALITY.md#local-validation-runtime) for recommended fast local paths.
 
 **Run file scanning benchmarks:**
 

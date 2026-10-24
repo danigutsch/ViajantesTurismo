@@ -165,7 +165,7 @@
       "targetPath": "ci-validation-flows.md",
       "kind": "github-actions-jobs",
       "sourcePath": ".github/workflows/ci.yml",
-      "triggerLabel": "Pull request, push to main, merge queue, or manual run"
+      "triggerLabel": "Pull request, push to main, merge queue, nightly schedule, or manual run"
     },
     {
       "name": "ci-supplemental-workflows",

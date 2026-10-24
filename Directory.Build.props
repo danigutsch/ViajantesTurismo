@@ -49,7 +49,7 @@
 		<PublishRepositoryUrl Condition="'$(PublishRepositoryUrl)' == ''">true</PublishRepositoryUrl>
 	</PropertyGroup>
 
-	<ItemGroup Condition="'$(MSBuildProjectExtension)' == '.csproj' and '$(IsRoslynComponent)' != 'true' and '$(EnableSharedKernelAnalyzers)' != 'false'">
+	<ItemGroup Condition="'$(MSBuildProjectExtension)' == '.csproj' and '$(IsRoslynComponent)' != 'true'">
 		<PackageReference Include="PandaBear.SharedKernel.Style.Analyzers" PrivateAssets="all" />
 		<PackageReference Include="PandaBear.SharedKernel.Style.CodeFixes" PrivateAssets="all" />
 	</ItemGroup>

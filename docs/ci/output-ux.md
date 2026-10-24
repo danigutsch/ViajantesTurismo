@@ -95,14 +95,14 @@ Implication for this repo:
 ### Human-facing surfaces
 
 - skip steps append short summary notes to `GITHUB_STEP_SUMMARY`
-- `scripts/run-ci-test-slice.sh` appends a small timing table for each slice
-- changed-code coverage emits a result and JSON evidence through `verify-coverage`
+- `sharedkernel-ci run --github-summary` appends a phase table for each slice
+- changed-code coverage emits a result and JSON evidence through `sharedkernel-ci coverage verify`
 
 ### Machine-facing surfaces
 
-- slice timing files: `TestResults/<slice>-phase-timings.tsv`
-- per-slice test results artifacts
-- per-slice diagnostics artifacts on failure
+- slice timing files: `TestResults/selection/execution-<slice>/phase-timings.tsv`
+- per-slice test results artifacts, including `manifest.json` and `diagnostics.txt`
+- the `ci-selection` artifact with selection reasons
 - `quality-evidence`: merged coverage, diff, and threshold-result JSON
 
 ### Current gaps

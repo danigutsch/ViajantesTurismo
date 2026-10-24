@@ -97,7 +97,7 @@ for the resource changed. Dev Container image/Feature changes require its smoke 
    `dotnet restore ViajantesTurismo.slnx --locked-mode`.
 5. Refresh the roadmap schema: run `dotnet tool run sharedkernel-repo -- init --root <empty directory>`,
    copy any changed `roadmap/schema/*.json` into this repository with a final newline, then run
-   `dotnet tool run sharedkernel-repo -- verify`. `RepoConfigContractTests` compares the committed
+   `dotnet tool run sharedkernel-repo -- verify`. `RoadmapSchemaContractTests` compares the committed
    schema with the pinned tool's output.
 6. Respond to NuGet audit failures: restore audits every package (`NuGetAuditMode` `all`, level `high`,
    warnings as errors), and the SharedKernel tool build audits its own lock file. Adopt a SharedKernel
@@ -108,8 +108,8 @@ for the resource changed. Dev Container image/Feature changes require its smoke 
    [dependency license evidence](dependency-license-evidence.md).
 8. Build, run the full test suite (including `SharedKernelToolCallerTests`), Actionlint, and
    `bash scripts/lint-all.sh`.
-9. Run `pwsh ./setup-dev.ps1` by hand on Windows. No CI job runs the PowerShell setup script; the
-   `OpenAPI Tool Windows` job covers only the composite actions on Windows.
+9. Run `pwsh ./setup-dev.ps1` by hand on Windows. No CI job runs on Windows, so this manual run is the
+   only Windows check of the setup script and the pinned SharedKernel tools.
 
 ## Validation and recovery
 

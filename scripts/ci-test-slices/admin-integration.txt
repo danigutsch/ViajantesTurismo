@@ -1,4 +1,0 @@
-tests/ViajantesTurismo.Catalog.IntegrationTests/ViajantesTurismo.Catalog.IntegrationTests.csproj
-tests/ViajantesTurismo.Admin.Infrastructure.Tests/ViajantesTurismo.Admin.Infrastructure.Tests.csproj
-tests/ViajantesTurismo.Catalog.InfrastructureTests/ViajantesTurismo.Catalog.InfrastructureTests.csproj
-tests/ViajantesTurismo.Management.WebIntegrationTests/ViajantesTurismo.Management.WebIntegrationTests.csproj

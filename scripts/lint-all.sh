@@ -78,8 +78,6 @@ if [[ "${fix_mode}" == true ]]; then
 fi
 
 run_shellcheck "${shellcheck_targets[@]}"
-dotnet test --project tests/ViajantesTurismo.RepoConfig.Tests/ViajantesTurismo.RepoConfig.Tests.csproj \
-    --filter-class ViajantesTurismo.RepoConfig.Tests.DotnetSdkBootstrapTests
 bash scripts/check-line-endings.sh
 dotnet tool run sharedkernel-repo -- verify-text-encoding --root .
 dotnet tool run sharedkernel-repo -- verify-json --root .

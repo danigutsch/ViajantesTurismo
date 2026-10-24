@@ -1,0 +1,120 @@
+{
+  "version": 1,
+  "solution": "ViajantesTurismo.slnx",
+  "selection": {
+    "fullValidation": [
+      ".config/*",
+      ".github/*",
+      "*.props",
+      "*.targets",
+      "*.slnx",
+      ".editorconfig",
+      ".gitattributes",
+      ".markdownlint-cli2.jsonc",
+      ".markdownlint.json",
+      "global.json",
+      "NuGet.Config",
+      "opencode.json",
+      "scripts/*",
+      "setup-dev.ps1",
+      "setup-dev.sh",
+      "tests/testconfig.json",
+      "tests/xunit.runner.json"
+    ],
+    "documentation": [
+      "docs/*.md",
+      "docs/*.png",
+      "docs/*.jpg",
+      "docs/*.svg",
+      "README.md",
+      "AGENTS.md",
+      "CONTRIBUTING.md",
+      "SECURITY.md"
+    ],
+    "alwaysSelected": [
+      "tests/ViajantesTurismo.Admin.ContractTests/ViajantesTurismo.Admin.ContractTests.csproj",
+      "tests/ViajantesTurismo.ArchitectureTests/ViajantesTurismo.ArchitectureTests.csproj",
+      "tests/ViajantesTurismo.Branding.ContractTests/ViajantesTurismo.Branding.ContractTests.csproj",
+      "tests/ViajantesTurismo.Catalog.ContractTests/ViajantesTurismo.Catalog.ContractTests.csproj"
+    ],
+    "requireCoveringTests": true
+  },
+  "slices": [
+    {
+      "name": "fast-validation-1",
+      "projects": [
+        "tests/ViajantesTurismo.Catalog.UnitTests/ViajantesTurismo.Catalog.UnitTests.csproj",
+        "tests/ViajantesTurismo.Admin.ApiServiceTests/ViajantesTurismo.Admin.ApiServiceTests.csproj",
+        "tests/ViajantesTurismo.Branding.ApiServiceTests/ViajantesTurismo.Branding.ApiServiceTests.csproj",
+        "tests/ViajantesTurismo.Admin.UnitTests/ViajantesTurismo.Admin.UnitTests.csproj",
+        "tests/ViajantesTurismo.Admin.ContractTests/ViajantesTurismo.Admin.ContractTests.csproj",
+        "tests/ViajantesTurismo.Catalog.ContractTests/ViajantesTurismo.Catalog.ContractTests.csproj",
+        "tests/ViajantesTurismo.Branding.ContractTests/ViajantesTurismo.Branding.ContractTests.csproj",
+        "tests/ViajantesTurismo.ServiceDefaults.Tests/ViajantesTurismo.ServiceDefaults.Tests.csproj",
+        "tests/ViajantesTurismo.DatabaseObservability.Tests/ViajantesTurismo.DatabaseObservability.Tests.csproj"
+      ],
+      "openApi": ["admin", "branding", "catalog"]
+    },
+    {
+      "name": "fast-validation-2",
+      "projects": [
+        "tests/ViajantesTurismo.Management.WebTests/ViajantesTurismo.Management.WebTests.csproj",
+        "tests/ViajantesTurismo.ArchitectureTests/ViajantesTurismo.ArchitectureTests.csproj",
+        "tests/ViajantesTurismo.Architecture.Analyzers.Tests/ViajantesTurismo.Architecture.Analyzers.Tests.csproj",
+        "tests/ViajantesTurismo.Public.WebTests/ViajantesTurismo.Public.WebTests.csproj",
+        "tests/ViajantesTurismo.Catalog.ApiServiceTests/ViajantesTurismo.Catalog.ApiServiceTests.csproj",
+        "tests/ViajantesTurismo.Admin.BehaviorTests/ViajantesTurismo.Admin.BehaviorTests.csproj",
+        "tests/ViajantesTurismo.Catalog.BehaviorTests/ViajantesTurismo.Catalog.BehaviorTests.csproj",
+        "tests/ViajantesTurismo.Admin.UiIntegrationTests/ViajantesTurismo.Admin.UiIntegrationTests.csproj",
+        "tests/ViajantesTurismo.Performance.Tool.Tests/ViajantesTurismo.Performance.Tool.Tests.csproj"
+      ]
+    },
+    {
+      "name": "admin-integration",
+      "projects": [
+        "tests/ViajantesTurismo.Catalog.IntegrationTests/ViajantesTurismo.Catalog.IntegrationTests.csproj",
+        "tests/ViajantesTurismo.Admin.Infrastructure.Tests/ViajantesTurismo.Admin.Infrastructure.Tests.csproj",
+        "tests/ViajantesTurismo.Catalog.InfrastructureTests/ViajantesTurismo.Catalog.InfrastructureTests.csproj",
+        "tests/ViajantesTurismo.Management.WebIntegrationTests/ViajantesTurismo.Management.WebIntegrationTests.csproj"
+      ]
+    },
+    {
+      "name": "admin-api-integration",
+      "projects": ["tests/ViajantesTurismo.Admin.IntegrationTests/ViajantesTurismo.Admin.IntegrationTests.csproj"]
+    },
+    {
+      "name": "admin-system",
+      "projects": ["tests/ViajantesTurismo.Admin.SystemTests/ViajantesTurismo.Admin.SystemTests.csproj"],
+      "playwright": {
+        "project": "tests/ViajantesTurismo.Admin.SystemTests/ViajantesTurismo.Admin.SystemTests.csproj",
+        "browsers": ["chromium"]
+      }
+    }
+  ],
+  "openApi": [
+    {
+      "name": "admin",
+      "project": "src/ViajantesTurismo.Admin.ApiService/ViajantesTurismo.Admin.ApiService.csproj",
+      "generateProperty": "GenerateAdminOpenApiArtifacts",
+      "refreshProperty": "RefreshAdminOpenApiArtifacts"
+    },
+    {
+      "name": "branding",
+      "project": "src/ViajantesTurismo.Branding.ApiService/ViajantesTurismo.Branding.ApiService.csproj",
+      "generateProperty": "GenerateBrandingOpenApiArtifacts",
+      "refreshProperty": "RefreshBrandingOpenApiArtifacts"
+    },
+    {
+      "name": "catalog",
+      "project": "src/ViajantesTurismo.Catalog.ApiService/ViajantesTurismo.Catalog.ApiService.csproj",
+      "generateProperty": "GenerateCatalogOpenApiArtifacts",
+      "refreshProperty": "RefreshCatalogOpenApiArtifacts"
+    }
+  ],
+  "coverage": {
+    "thresholdPercent": 80,
+    "include": ["src/*.cs", "src/*.razor"],
+    "exclude": ["*/Migrations/*", "*/obj/*", "*.g.cs", "*.generated.cs", "src/ViajantesTurismo.AppHost/*"],
+    "symbolDirectories": ["src"]
+  }
+}

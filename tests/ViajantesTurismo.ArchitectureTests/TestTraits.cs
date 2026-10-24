@@ -29,4 +29,9 @@ public static class TestTraits
     /// Category value for documentation conformance tests.
     /// </summary>
     public const string DocumentationCategory = "documentation";
+
+    /// <summary>
+    /// Category value for repository scripts, workflows, and command-line contracts.
+    /// </summary>
+    public const string CommandLineCategory = "command-line";
 }

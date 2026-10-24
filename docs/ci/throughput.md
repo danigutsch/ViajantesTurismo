@@ -6,13 +6,14 @@ strict up-to-date checks remain enabled. SharedKernel validation remains advisor
 
 ## Validation ownership
 
-Application selection, slice preparation, build evidence, dependency-review planning, and PR title
-validation live in `ViajantesTurismo.RepoConfig.Tool`. The existing coverage collector and browser
-installer remain platform adapters. GitHub Actions owns scheduling, permissions, caching, and
-artifact transport. Required source-validation names remain stable.
+Application selection, slice execution, OpenAPI generation, Playwright installation, symbol evidence,
+changed-code coverage, dependency-review planning, and PR title validation run through `sharedkernel-ci`,
+built from the pinned SharedKernel source and configured by `.config/sharedkernel-ci.json`. GitHub
+Actions owns scheduling, permissions, caching, and artifact transport. Required source-validation names
+remain stable.
 
 `Solution Build` runs alongside test slices and uploads revision-bound Release PDB hashes. The
-coverage job downloads and verifies the symbols rather than rebuilding the whole application.
+coverage job verifies the symbols rather than rebuilding the whole application.
 Missing, changed, stale, or undeclared symbols fail validation. Portable-PDB document checks and
 the 80% changed-code threshold remain unchanged.
 
@@ -23,19 +24,18 @@ conservative for package READMEs and uncertain build inputs.
 
 ## Documentation-only validation
 
-Documentation changes skip application builds, test matrices, Windows tests, version calculation,
-and repository-tool test runs on both pull requests and main pushes. Selection restores only the
-standalone repository tool. Markdown lint, local link validation, line endings, metadata, and secret
+Documentation changes skip application builds, test matrices, and version calculation on both pull
+requests and main pushes. Selection builds only the source-runnable `sharedkernel-ci`. Markdown lint, local link validation, line endings, metadata, and secret
 scanning remain active, and required aggregate checks still report a result.
 
 The documentation allowlist covers Markdown and image files under `docs/` plus root `README.md`,
 `AGENTS.md`, `CONTRIBUTING.md`, and `SECURITY.md`. Package READMEs, scripts, unknown extensions,
-build inputs, and missing comparisons retain their applicable validation. Low-risk contributor
-scripts can skip application tests while retaining the tooling tests in repository lint.
+build inputs, and missing comparisons retain their applicable validation. Script changes select every
+test project.
 
-Main pushes compare the exact before/after revisions. Pull requests compare against their merge
-base. Manual and merge-group runs retain full selection; invalid comparisons fall back to full
-validation. Do not use commit-message skip annotations or workflow-level path filters for required
+Main pushes compare `before...HEAD`, pull requests compare their merge commit with its first parent,
+and merge groups compare with `merge_group.base_sha`. Scheduled and manual runs select every test
+project; invalid comparisons fall back to full validation. Do not use commit-message skip annotations or workflow-level path filters for required
 checks, because those can leave merge gates pending.
 
 ## Dependency-review diagnosis
@@ -47,8 +47,8 @@ informational Scorecard output. These timestamps do not isolate license lookup f
 lookup, and they do not prove snapshot retrying was the cause. The pinned action defaults snapshot
 retrying to false. Keep vulnerability/license enforcement and preview approvals unchanged.
 
-The initial optimization skips graph submission/review only for recognized standalone documentation
-changes. It does not skip source changes or reuse another revision's snapshot. Broader skipping
+Dependency review skips graph submission and review only when `sharedkernel-ci select` reports
+`documentation_only=true`. It does not skip source changes or reuse another revision's snapshot. Broader skipping
 requires evaluated restore-input evidence; unknown input and comparison failures retain full review.
 
 ## Historical baseline

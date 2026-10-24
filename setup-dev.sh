@@ -215,7 +215,7 @@ check_powershell() {
     printf "\n%b" "${YELLOW}🔍 Checking pwsh (PowerShell 7+) and Playwright prerequisites...${NC}\n"
     if command -v pwsh > /dev/null 2>&1; then
         printf "%b" "   ${GREEN}✅ pwsh (PowerShell 7+) installed${NC}\n"
-        printf "%b" "   ${GREEN}✅ Playwright browser installation can use scripts/install-playwright.sh after build${NC}\n"
+        printf "%b" "   ${GREEN}✅ Playwright browser installation can use sharedkernel-ci install-playwright after build${NC}\n"
         if pwsh -NoLogo -NoProfile -Command "if (Get-Module -ListAvailable -Name PSScriptAnalyzer) { exit 0 } else { exit 1 }" > /dev/null 2>&1; then
             printf "%b" "   ${GREEN}✅ PSScriptAnalyzer already installed${NC}\n"
         else
@@ -223,7 +223,7 @@ check_powershell() {
             printf "%b" "   ${CYAN}💡 Install it only if you plan to lint PowerShell scripts:${NC}\n"
             printf "%b" "   ${CYAN}   pwsh -Command 'Install-Module -Name PSScriptAnalyzer -Scope CurrentUser -Force'${NC}\n"
         fi
-        printf "%b" "   ${CYAN}💡 After dotnet build, install Playwright browsers with: bash scripts/install-playwright.sh${NC}\n"
+        printf "%b" "   ${CYAN}💡 After dotnet build, install Playwright browsers with: ${NC}dotnet tool run sharedkernel-ci -- install-playwright --project tests/ViajantesTurismo.Admin.SystemTests/ViajantesTurismo.Admin.SystemTests.csproj --browser chromium\n"
     else
         printf "%b" "   ${YELLOW}⚠️ pwsh (PowerShell 7+) not available - PowerShell script linting and Playwright browser installation will be skipped${NC}\n"
         printf "%b" "   ${CYAN}💡 Install pwsh (PowerShell 7+) from: https://github.com/PowerShell/PowerShell${NC}\n"
@@ -257,7 +257,7 @@ print_summary() {
     printf "%b" "${CYAN}Next steps:${NC}\n"
     printf "%b" "  1. Run the application: ${NC}dotnet tool run aspire run\n"
     printf "%b" "  2. Run tests: ${NC}dotnet test\n"
-    printf "%b" "  3. Install Playwright browsers after build: ${NC}bash scripts/install-playwright.sh\n"
+    printf "%b" "  3. Install Playwright browsers after build: ${NC}dotnet tool run sharedkernel-ci -- install-playwright --project tests/ViajantesTurismo.Admin.SystemTests/ViajantesTurismo.Admin.SystemTests.csproj --browser chromium\n"
     printf "%b" "  4. Optional performance smoke run: ${NC}VT_API_BASE_URL=<admin-api-url> dotnet run --project tools/ViajantesTurismo.Performance.Tool/ViajantesTurismo.Performance.Tool.csproj -- admin-smoke\n"
     printf "%b" "  5. Validate a commit message: ${NC}dotnet tool run sharedkernel-ci -- verify-commit-message --file /path/to/message.txt\n"
     printf "%b" "     ${CYAN}(If Aspire CLI is installed globally or via the official install script, 'aspire run' also works.)${NC}\n"

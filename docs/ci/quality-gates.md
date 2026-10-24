@@ -28,11 +28,11 @@ instrumented. Missing coverage evidence for changed source fails the gate rather
 silently discarded. Resolve instrumentation or add appropriate direct tests; do not hide gaps
 with broader exclusions.
 
-ReportGenerator 5.5.11 merges Cobertura reports and produces HTML for inspection.
 The `Quality Gate` CI job downloads selected test-slice artifacts and runs without secrets,
 including on fork pull requests. Failed selection or tests fail the aggregate first. A locked
 restore and Release build of the full solution also cover samples and benchmarks outside test
-dependency graphs. Each collected project writes into its own temporary report directory.
+dependency graphs. Each test project writes its Cobertura report into its own `results/<Project>/`
+directory. ReportGenerator 5.5.11 merges the reports into HTML for local inspection.
 
 ## Changed-code policy
 
@@ -40,35 +40,35 @@ Pull requests and merge groups require at least **80% combined coverage of chang
 lines and conditions**. This is not a whole-repository 80% threshold. Full runs publish coverage
 trends; selected slices do not represent repository-wide trends.
 
-The C# `verify-coverage` command consumes merged Cobertura and a zero-context Git diff. It handles
-duplicate line and branch observations and rejects malformed reports, malformed diffs, and missing
-changed-source evidence. A file without a coverage entry is exempt only when Release portable
-PDBs positively identify the current source checksum and contain no executable sequence points
-for it. Missing, stale, conflicting, or executable symbol evidence still fails. This supports
-interface-only files without hiding uninstrumented application code. Its JSON output defaults
-to `TestResults/coverage-gate.json`.
+`sharedkernel-ci coverage verify` reads `.config/sharedkernel-ci.json`: `coverage.thresholdPercent` (80),
+the `coverage.include` patterns (`src/*.cs`, `src/*.razor`), and the `coverage.exclude` patterns
+(migrations, `obj`, generated files, and AppHost). It runs its own zero-context `git diff <base>...HEAD`
+with repository Git configuration and attributes neutralized, reads every `*.cobertura*.xml` under each
+`--report`, and refuses a report with a document type declaration. A line is covered when any report hits
+it. A file without a coverage entry is exempt only when the Release portable PDBs that
+`coverage record-symbols` recorded name its current content hash and map no executable code to it.
+Missing, stale, or executable symbol evidence still fails. This supports interface-only files without
+hiding uninstrumented application code. Its JSON output defaults to `TestResults/coverage-gate.json`.
 
 ```bash
-# Restore and build before collection
-dotnet restore ViajantesTurismo.slnx --locked-mode
-dotnet build ViajantesTurismo.slnx --no-restore
+# Collect coverage for every test project through the CI engine
 dotnet tool restore
-bash scripts/run-tests-with-coverage.sh
+dotnet tool run sharedkernel-ci -- select
+dotnet tool run sharedkernel-ci -- run --coverage
 
 # Build current Release symbols for non-executable source evidence
+dotnet restore ViajantesTurismo.slnx --locked-mode
 dotnet build ViajantesTurismo.slnx -c Release --no-restore
+dotnet tool run sharedkernel-ci -- coverage record-symbols
 
-# Replace origin/main with the actual comparison base when reproducing a CI run
-git -c core.quotePath=false diff --no-ext-diff --unified=0 --find-renames \
-  origin/main...HEAD -- '*.cs' '*.razor' > TestResults/coverage-changes.patch
-dotnet run --project tools/ViajantesTurismo.RepoConfig.Tool -c Release --no-restore -- \
-  verify-coverage --report TestResults/CoverageReport/Cobertura.xml \
-  --diff TestResults/coverage-changes.patch
+# Replace the base with the actual comparison base (full object ID) when reproducing a CI run
+dotnet tool run sharedkernel-ci -- coverage verify --report TestResults/selection \
+  --base "$(git rev-parse origin/main)" --symbols TestResults/symbol-evidence.json
 ```
 
-Use `--output <path>` to select another JSON evidence path. Inspect
-`TestResults/CoverageReport/index.html`, the JSON result, and the diff when the check fails.
-Never reuse stale reports after source, test, collector, or configuration changes.
+Use `--output <path>` to select another JSON evidence path. Inspect the JSON result when the check
+fails, and merge the reports with ReportGenerator for an HTML view. Never reuse stale reports after
+source, test, collector, or configuration changes.
 
 ## Branch protection
 

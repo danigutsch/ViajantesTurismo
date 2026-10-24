@@ -22,7 +22,7 @@ public sealed class SharedKernelConsumerWorkflowTests
         // Assert
         bootstrapPosition.ShouldBeGreaterThanOrEqualTo(0);
         lintPosition.ShouldBeGreaterThan(bootstrapPosition);
-        lintJob.ShouldContain("restore-targets: tests/ViajantesTurismo.RepoConfig.Tests/ViajantesTurismo.RepoConfig.Tests.csproj", StringComparison.Ordinal);
+        lintJob.ShouldNotContain("restore-targets", StringComparison.Ordinal);
         lintJob.ShouldContain("trust-dev-certificate: \"false\"", StringComparison.Ordinal);
         lintJob.ShouldNotContain("restore-local-tools: \"false\"", StringComparison.Ordinal);
     }

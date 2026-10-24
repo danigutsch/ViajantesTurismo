@@ -51,8 +51,6 @@
     </Folder>
     <Folder Name="/tests/">
         <Project Path="tests/ViajantesTurismo.Performance.Tool.Tests/ViajantesTurismo.Performance.Tool.Tests.csproj" />
-        <Project Path="tests/ViajantesTurismo.RepoConfig.Tests/ViajantesTurismo.RepoConfig.Tests.csproj" />
-        <Project Path="tests/ViajantesTurismo.OpenApi.Tool.Tests/ViajantesTurismo.OpenApi.Tool.Tests.csproj" />
         <Project Path="tests/ViajantesTurismo.ServiceDefaults.Tests/ViajantesTurismo.ServiceDefaults.Tests.csproj" />
         <Project Path="tests/ViajantesTurismo.Admin.ContractTests/ViajantesTurismo.Admin.ContractTests.csproj" />
         <Project Path="tests/ViajantesTurismo.Admin.UiIntegrationTests/ViajantesTurismo.Admin.UiIntegrationTests.csproj" />
@@ -84,8 +82,6 @@
         <Project Path="benchmarks/ViajantesTurismo.FileUpload.BenchmarkHost/ViajantesTurismo.FileUpload.BenchmarkHost.csproj" />
     </Folder>
     <Folder Name="/tools/">
-        <Project Path="tools/ViajantesTurismo.RepoConfig.Tool/ViajantesTurismo.RepoConfig.Tool.csproj" />
         <Project Path="tools/ViajantesTurismo.Performance.Tool/ViajantesTurismo.Performance.Tool.csproj" />
-        <Project Path="tools/ViajantesTurismo.OpenApi.Tool/ViajantesTurismo.OpenApi.Tool.csproj" />
     </Folder>
 </Solution>

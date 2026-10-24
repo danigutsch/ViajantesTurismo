@@ -86,7 +86,7 @@ Then validate the application:
 
 ```sh
 dotnet build ViajantesTurismo.slnx -c Release --no-restore
-dotnet run --project tools/ViajantesTurismo.OpenApi.Tool -c Release --no-build --no-restore -- generate all
+dotnet tool run sharedkernel-ci -- openapi generate
 dotnet test --solution ViajantesTurismo.slnx -c Release --no-build --no-restore
 ```
 
@@ -104,13 +104,14 @@ in an application worktree. Stage the exact artifacts, run the application check
 those changes, and record compatibility using:
 
 ```sh
-dotnet run --project tools/ViajantesTurismo.RepoConfig.Tool -c Release --no-build --no-restore -- \
-  verify-sharedkernel-candidate --candidate .local/sharedkernel-feed/candidate.json
+dotnet tool run sharedkernel-version -- verify-consumer --candidate .local/sharedkernel-feed/candidate.json -- \
+  dotnet test --solution ViajantesTurismo.slnx -c Release
 ```
 
-Compatibility records both committed repository revisions and package hashes. Validation runs in a
-temporary local clone of the recorded application commit with an isolated package cache, then removes
-both. The working checkout's restore assets and binaries remain unchanged. A renamed package
+Compatibility records both committed repository revisions and package hashes in
+`TestResults/consumer-compatibility.json` as `passed`, `failed`, or `pending` (uncommitted changes run
+nothing). Validation runs in a temporary local clone of the recorded application commit with an isolated
+package cache, then removes both. The working checkout's restore assets and binaries remain unchanged. A renamed package
 identity does not establish compatibility with previously published `SharedKernel.*` packages.
 Rollback may use only an approved, non-retired compatible candidate after validation. Update the
 application dependency configuration, candidate manifest, and lock files together, then stage

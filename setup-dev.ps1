@@ -181,8 +181,8 @@ function Test-PowerShellAndPlaywrightPrerequisites {
     $pwshCommand = Get-Command pwsh -ErrorAction SilentlyContinue
     if ($pwshCommand) {
         Write-Host "   ✅ pwsh (PowerShell 7+) installed: $($pwshCommand.Source)" -ForegroundColor Green
-        Write-Host "   ✅ Playwright browser installation can use scripts/install-playwright.sh after build" -ForegroundColor Green
-        Write-Host "   💡 After dotnet build, install Playwright browsers with: bash scripts/install-playwright.sh" -ForegroundColor Cyan
+        Write-Host "   ✅ Playwright browser installation can use sharedkernel-ci install-playwright after build" -ForegroundColor Green
+        Write-Host "   💡 After dotnet build, install Playwright browsers with: dotnet tool run sharedkernel-ci -- install-playwright --project tests/ViajantesTurismo.Admin.SystemTests/ViajantesTurismo.Admin.SystemTests.csproj --browser chromium" -ForegroundColor Cyan
     }
     else {
         Write-Host "   ⚠️ pwsh (PowerShell 7+) not available - PowerShell script linting and Playwright browser installation will be skipped" -ForegroundColor Yellow
@@ -226,7 +226,7 @@ function Write-SetupSummary {
     Write-Host "Next steps:" -ForegroundColor Cyan
     Write-Host "  1. Run the application: dotnet tool run aspire run" -ForegroundColor White
     Write-Host "  2. Run tests: dotnet test" -ForegroundColor White
-    Write-Host "  3. Install Playwright browsers after build: bash scripts/install-playwright.sh" -ForegroundColor White
+    Write-Host "  3. Install Playwright browsers after build: dotnet tool run sharedkernel-ci -- install-playwright --project tests/ViajantesTurismo.Admin.SystemTests/ViajantesTurismo.Admin.SystemTests.csproj --browser chromium" -ForegroundColor White
     Write-Host "  4. Optional performance smoke run: `$env:VT_API_BASE_URL = '<admin-api-url>'; dotnet run --project tools/ViajantesTurismo.Performance.Tool/ViajantesTurismo.Performance.Tool.csproj -- admin-smoke" -ForegroundColor White
     Write-Host "  5. Validate a commit message: dotnet tool run sharedkernel-ci -- verify-commit-message --file /path/to/message.txt" -ForegroundColor White
     Write-Host "     (If Aspire CLI is installed globally or via the official install script, 'aspire run' also works.)" -ForegroundColor DarkGray

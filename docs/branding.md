@@ -210,14 +210,14 @@ payloads, scripts, or arbitrary URL-bearing CSS.
 
 ## OpenAPI ownership through co-hosting
 
-`dotnet run --project tools/ViajantesTurismo.OpenApi.Tool --no-restore -- generate branding` remains
-the stable generation command. During contraction its target changes from the standalone project to
+`dotnet tool run sharedkernel-ci -- openapi generate --target branding` remains the stable generation
+command. During contraction the `branding` target in `.config/sharedkernel-ci.json` changes from the standalone project to
 Catalog.ApiService's Branding-only document generation mode. Canonical `branding`, `public-branding`,
 and Branding-only `v1` artifacts remain under
 `ViajantesTurismo.Branding.Contracts.Http/OpenApi` and remain owned by Branding contracts; co-hosting
 does not merge them into Catalog contract ownership.
 
-The standalone executable cannot be removed while the OpenAPI tool, generated filename mapping,
+The standalone executable cannot be removed while the `branding` OpenAPI target, generated filename mapping,
 Branding drift guards, refresh hints, or contract tests still reference it. Generation from the
 Catalog host must retain the trusted no-network/fail-closed metadata rules and prove the Branding
 artifacts contain only the intended Branding routes.

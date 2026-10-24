@@ -176,19 +176,25 @@ This repository uses `coverlet.MTP` for xUnit v3 test projects on Microsoft.Test
 
 #### Canonical commands
 
-Generate fresh Cobertura coverage for the whole solution:
+Generate fresh Cobertura coverage for every test project, then merge it into an HTML report:
 
 ```bash
-bash scripts/run-tests-with-coverage.sh
+dotnet tool run sharedkernel-ci -- select
+dotnet tool run sharedkernel-ci -- run --coverage
+dotnet tool run reportgenerator "-reports:TestResults/selection/execution/results/**/*.cobertura*.xml" \
+    "-targetdir:TestResults/CoverageReport" "-reporttypes:Html;Cobertura"
 ```
 
-Open `TestResults/CoverageReport/index.html` to inspect the aggregated report.
+Open `TestResults/CoverageReport/index.html` to inspect the aggregated report. `select` without
+`--base` selects every test project; `run` without `--slice` runs every slice of the selection
+together. Pass `--slice <name>` to collect one CI slice.
 
 #### Important MTP behavior
 
-The repository helper creates a run-specific `TestResults/coverage.*` directory, collects
-separate Cobertura reports, and aggregates only that run's reports. Do not reuse stale results
-or share an output filename between parallel test projects.
+`run --coverage` deletes the previous results of its execution directory and writes one Cobertura
+report per test project under `TestResults/selection/execution/results/<Project>/<tfm>_<rid>/`, and it
+fails when a selected test project produced no report. Do not reuse stale results or share an output
+filename between parallel test projects.
 
 `tests/testconfig.json` controls Coverlet collection. Async and iterator implementations remain
 included. Separate AppHost child processes are not automatically covered; see
@@ -726,8 +732,11 @@ Code coverage uses `coverlet.MTP` with Microsoft.Testing.Platform. Collection se
 `tests/testconfig.json`; ReportGenerator produces merged Cobertura and HTML.
 
 ```bash
-# Restore and build first, then collect and aggregate
-bash scripts/run-tests-with-coverage.sh
+# Collect per-project Cobertura through the CI engine, then aggregate
+dotnet tool run sharedkernel-ci -- select
+dotnet tool run sharedkernel-ci -- run --coverage
+dotnet tool run reportgenerator "-reports:TestResults/selection/execution/results/**/*.cobertura*.xml" \
+    "-targetdir:TestResults/CoverageReport" "-reporttypes:Html;Cobertura"
 ```
 
 See [quality gates](ci/quality-gates.md) for the 80% changed-code policy, evidence validation,
@@ -761,7 +770,10 @@ dotnet test --project tests/ViajantesTurismo.Admin.SystemTests --filter-class Co
 
 ```bash
 # All tests with Cobertura coverage and an aggregated HTML report
-bash scripts/run-tests-with-coverage.sh
+dotnet tool run sharedkernel-ci -- select
+dotnet tool run sharedkernel-ci -- run --coverage
+dotnet tool run reportgenerator "-reports:TestResults/selection/execution/results/**/*.cobertura*.xml" \
+    "-targetdir:TestResults/CoverageReport" "-reporttypes:Html;Cobertura"
 ```
 
 > If `tests/testconfig.json` changed, recollect coverage before building the HTML report.

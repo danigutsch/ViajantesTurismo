@@ -28,11 +28,11 @@ jobs:
     name: Plan Dependency Review
     if: ${{ github.event.action != 'labeled' || github.event.label.name == 'ci:rerun' }}
     runs-on: ${{ vars.CI_UBUNTU_RUNNER }}
-    timeout-minutes: 5
+    timeout-minutes: 10
     permissions:
       contents: read
     outputs:
-      review_required: ${{ steps.plan.outputs.review_required }}
+      review_required: ${{ steps.plan.outputs.documentation_only == 'true' && 'false' || 'true' }}
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
         with:
@@ -41,18 +41,32 @@ jobs:
       - uses: actions/setup-dotnet@c2fa09f4bde5ebb9d1777cf28262a3eb3db3ced7 # v5
         with:
           global-json-file: global.json
+      - name: Build pinned SharedKernel CI tool
+        uses: ./.github/actions/build-sharedkernel-tool
+        with:
+          tool: SharedKernel.CI.Tool
+      # Only a change that selects nothing because it touches documentation alone skips the review.
       - name: Plan exact dependency comparison
         id: plan
         env:
-          BASE_SHA: ${{ github.event.pull_request.base.sha || github.event.merge_group.base_sha || github.event.before }}
-          HEAD_SHA: ${{ github.event.pull_request.head.sha || github.event.merge_group.head_sha || github.sha }}
-        run: dotnet run --project tools/ViajantesTurismo.RepoConfig.Tool -c Release -- plan-dependency-review --base "$BASE_SHA" --head "$HEAD_SHA" --github-output "$GITHUB_OUTPUT"
+          EVENT_NAME: ${{ github.event_name }}
+          PUSH_BEFORE: ${{ github.event.before }}
+          MERGE_GROUP_BASE: ${{ github.event.merge_group.base_sha }}
+        run: |
+          case "$EVENT_NAME" in
+            pull_request) BASE_SHA="$(git rev-parse HEAD^1)" ;;
+            push) BASE_SHA="$PUSH_BEFORE" ;;
+            merge_group) BASE_SHA="$MERGE_GROUP_BASE" ;;
+            *) BASE_SHA="" ;;
+          esac
+          dotnet run --project "$SHAREDKERNEL_SOURCE/tools/SharedKernel.CI.Tool" -c Release --no-build -- \
+            select --base "$BASE_SHA" --github-output "$GITHUB_OUTPUT"
       - name: Retain selection evidence
         if: always()
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
         with:
-          name: dependency-review-plan
-          path: TestResults/dependency-review-plan.json
+          name: dependency-review-selection
+          path: TestResults/selection/**
           if-no-files-found: error
 
   dependency-snapshots:
@@ -185,4 +199,4 @@ jobs:
 
       - name: Report unchanged dependency inputs
         if: needs.plan.outputs.review_required == 'false'
-        run: echo "Only standalone documentation changed; see dependency-review-plan evidence."
+        run: echo "Only documentation changed; see the dependency-review-selection evidence."

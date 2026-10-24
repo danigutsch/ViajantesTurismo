@@ -25,8 +25,8 @@ GitHub Actions check attribution (app `15368`), signed commits, additional revie
 and no bypass.
 See [quality gates](quality-gates.md#branch-protection) for the maintenance runbook.
 
-`Build and Test` aggregates the test matrix and `OpenAPI Tool Windows`. `Quality Gate`
-aggregates selected coverage and enforces changed-code coverage without secrets, including on
+`Build and Test` aggregates the test matrix. `Quality Gate`
+checks the selected slices' coverage and enforces changed-code coverage without secrets, including on
 fork pull requests. Failed tests cannot be bypassed by successful coverage aggregation.
 
 Required names must match workflow `name:` fields. `Devcontainer Smoke` remains supplemental

@@ -16,11 +16,11 @@ by this proposal. Ordinary successful runs should remain quiet.
 
 ## Current evidence
 
-The [main workflow](../../.github/workflows/ci.yml) already uploads failure diagnostics and test
-results per slice with seven-day retention. The
-[diagnostics script](../../scripts/collect-ci-build-test-diagnostics.sh) records SDK/runtime,
-step outcomes, phase timings, manifests, and result inventory. The
-[slice runner](../../scripts/run-ci-test-slice.sh) captures phase logs and uses separate output files.
+The [main workflow](../../.github/workflows/ci.yml) already uploads test results and run evidence per
+slice with seven-day retention. `sharedkernel-ci run` writes `phase-timings.tsv`, `manifest.json`,
+`diagnostics.txt` (phase status, escaped failure message, and file inventory), and one log per phase to
+`TestResults/selection/execution-<slice>/`, whether the run passes, fails, or is canceled, and a failed
+slice prints `dotnet --info`.
 These are current capabilities, not proof of test-to-resource trace correlation.
 
 The [System assembly fixture](../../tests/ViajantesTurismo.Admin.SystemTests/Infrastructure/Fixtures/AspireSystemTestFixture.cs)
@@ -87,8 +87,8 @@ startup prerequisites. For a manually launched AppHost, the dashboard's resource
 logs, console logs, then traces are the diagnostic order. A manual host is not automatically the
 fixture's host, and dashboard data may not survive fixture disposal.
 
-In CI, open the failing slice's summary, download `ci-test-slice-<slice>-diagnostics` and
-`ci-test-slice-<slice>-results`, inspect phase status first, then locate the affected test. The
+In CI, open the failing slice's summary, download `ci-test-slice-<slice>-results`, inspect
+`diagnostics.txt` and the phase logs first, then locate the affected test. The
 proposed per-attempt manifests would link test failures to bounded excerpts; they are not yet
 present. Keep the existing seven-day retention for the proposed bundle and use repository access
 controls; do not attach raw artifacts to public issues or external viewers.

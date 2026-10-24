@@ -33,18 +33,18 @@ Library package breaking markers and release exceptions are governed in the stan
 The Admin, Catalog, and Branding contract tests read the committed OpenAPI artifacts and compare them
 with generated documents. Regenerate the committed artifacts intentionally when HTTP contracts change:
 
-After a locked restore, the .NET tool runs the three API generators through one parallel MSBuild graph
-with a minimal child environment. Trusted generation omits JWT/OIDC registration while retaining
-authorization metadata for the generated Bearer security documents. Normal application runs remain
-fail-closed when authentication configuration is missing.
+After a locked restore, `sharedkernel-ci openapi` builds the `admin`, `branding`, and `catalog` targets of
+`.config/sharedkernel-ci.json` in order with a minimal child environment. Trusted generation omits JWT/OIDC
+registration while retaining authorization metadata for the generated Bearer security documents. Normal
+application runs remain fail-closed when authentication configuration is missing.
 
 ```bash
-dotnet run --project tools/ViajantesTurismo.OpenApi.Tool --no-restore -- generate all --refresh
+dotnet tool run sharedkernel-ci -- openapi refresh
 ```
 
-ADR-040 keeps `generate branding` and the Branding-owned canonical artifact paths stable when the
-module moves into Catalog.ApiService. Before deleting the standalone project, retarget the tool's
-Branding logical target, filename mapping, refresh hints, and Branding drift tests to Catalog-hosted
+ADR-040 keeps the `branding` target and the Branding-owned canonical artifact paths stable when the
+module moves into Catalog.ApiService. Before deleting the standalone project, retarget the `branding`
+OpenAPI target, filename mapping, refresh hints, and Branding drift tests to Catalog-hosted
 Branding-only generation. Preserve `branding`, `public-branding`, and Branding-only `v1` artifacts;
 do not replace them with Catalog-owned or mixed-route snapshots.
 
