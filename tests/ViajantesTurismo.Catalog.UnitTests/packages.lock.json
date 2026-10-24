@@ -794,6 +794,26 @@
           "PandaBear.SharedKernel.Messaging.IntegrationEvents": "[0.1.0-alpha.144.1, )"
         }
       },
+      "viajantesturismo.branding.contracts.integrationevents": {
+        "type": "Project",
+        "dependencies": {
+          "PandaBear.SharedKernel.Messaging.IntegrationEvents": "[0.1.0-alpha.144.1, )"
+        }
+      },
+      "viajantesturismo.branding.infrastructure": {
+        "type": "Project",
+        "dependencies": {
+          "Aspire.Npgsql": "[13.6.1, )",
+          "Aspire.Npgsql.EntityFrameworkCore.PostgreSQL": "[13.6.1, )",
+          "PandaBear.SharedKernel.Branding": "[0.1.0-alpha.144.1, )",
+          "PandaBear.SharedKernel.EntityFrameworkCore": "[0.1.0-alpha.144.1, )",
+          "PandaBear.SharedKernel.Messaging.IntegrationEvents": "[0.1.0-alpha.144.1, )",
+          "PandaBear.SharedKernel.Messaging.IntegrationEvents.EntityFrameworkCore": "[0.1.0-alpha.144.1, )",
+          "PandaBear.SharedKernel.Npgsql": "[0.1.0-alpha.144.1, )",
+          "ViajantesTurismo.Branding.Contracts.IntegrationEvents": "[0.1.0-alpha.0, )",
+          "ViajantesTurismo.Resources": "[0.1.0-alpha.0, )"
+        }
+      },
       "viajantesturismo.catalog.apiservice": {
         "type": "Project",
         "dependencies": {
@@ -1330,6 +1350,31 @@
           "PandaBear.SharedKernel.Idempotency.Abstractions": "0.1.0-alpha.144.1",
           "PandaBear.SharedKernel.InputNormalization": "0.1.0-alpha.144.1",
           "PandaBear.SharedKernel.OpenApi": "0.1.0-alpha.144.1",
+          "PandaBear.SharedKernel.Results": "0.1.0-alpha.144.1"
+        }
+      },
+      "PandaBear.SharedKernel.Branding": {
+        "type": "CentralTransitive",
+        "requested": "[0.1.0-alpha.144.1, )",
+        "resolved": "0.1.0-alpha.144.1",
+        "contentHash": "EFoPS7CorZB5HReY8StswZhxiOZN4QVHMcyKkdW76px7jXjl6Oesg9O/wkNDre5M1ETWUj9YH7gCKAXQdBvE7g==",
+        "dependencies": {
+          "Microsoft.Extensions.Compliance.Abstractions": "10.11.0",
+          "Microsoft.Extensions.DependencyInjection": "10.0.13",
+          "Microsoft.Extensions.DependencyInjection.Abstractions": "10.0.13",
+          "Microsoft.Extensions.Diagnostics": "10.0.13",
+          "Microsoft.Extensions.Hosting.Abstractions": "10.0.13",
+          "Microsoft.Extensions.Http.Resilience": "10.11.0",
+          "Microsoft.Extensions.Logging.Abstractions": "10.0.13",
+          "Microsoft.Extensions.Options": "10.0.13",
+          "Microsoft.Extensions.Options.ConfigurationExtensions": "10.0.13",
+          "Microsoft.Extensions.ServiceDiscovery": "10.11.0",
+          "Microsoft.Extensions.Telemetry": "10.11.0",
+          "OpenTelemetry": "1.20.0",
+          "OpenTelemetry.Extensions.Hosting": "1.20.0",
+          "OpenTelemetry.Instrumentation.Http": "1.20.0",
+          "PandaBear.SharedKernel.HttpClients": "0.1.0-alpha.144.1",
+          "PandaBear.SharedKernel.InputNormalization": "0.1.0-alpha.144.1",
           "PandaBear.SharedKernel.Results": "0.1.0-alpha.144.1"
         }
       },

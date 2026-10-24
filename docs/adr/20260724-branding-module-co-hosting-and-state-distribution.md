@@ -61,9 +61,9 @@ that the target topology is deployed or production-ready.
 
 - Branding-to-Admin envelopes use the existing SharedKernel default PostgreSQL transport mapping in the
   **Catalog database**, `messaging.transport_messages`, with stable consumer name `admin`. Branding owns
-  `branding.outbox_messages`; it does not create a second Branding transport table. The Branding Infrastructure
-  migration is the single Catalog-database migration owner for this transport table; the worker transport
-  DbContext maps it with migrations excluded.
+  `branding.outbox_messages`; it does not create a second Branding transport table. The Catalog Infrastructure
+  migration is the single Catalog-database migration owner for this transport table; Branding and the worker
+  transport DbContext map it with migrations excluded.
 - The Branding outbox relay owns the complete producer handoff. It first acquires the existing durable outbox
   claim lease. It then uses one `BrandingDbContext` transaction to insert the envelope into
   `messaging.transport_messages` and mark the outbox row published. The unique `(ConsumerName, EventId)`
@@ -248,8 +248,8 @@ least-privilege capabilities for:
 
 - a Branding runtime writer that can read/write current state, append revisions, and enqueue only into the
   Branding outbox;
-- a deployment-time migration identity that can apply approved Branding schema changes and the sole
-  Catalog-database `messaging.transport_messages` migration owned by Branding Infrastructure, but is not used by
+- a deployment-time migration identity that can apply approved Branding schema changes and the
+  Catalog-database `messaging.transport_messages` migration owned by Catalog Infrastructure, but is not used by
   the runtime;
 - producer/relay access that can claim/update `branding.outbox_messages` and insert
   `ConsumerName = 'admin'` rows into Catalog-database `messaging.transport_messages`, without Catalog-domain or
