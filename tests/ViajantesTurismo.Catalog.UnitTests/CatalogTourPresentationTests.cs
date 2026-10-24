@@ -1,3 +1,5 @@
+using PandaBear.Results;
+using ViajantesTurismo.Catalog.Domain;
 using ViajantesTurismo.Catalog.Domain.Tours;
 
 namespace ViajantesTurismo.Catalog.UnitTests;
@@ -18,7 +20,7 @@ public sealed class CatalogTourPresentationTests
         tour.ClearUncommittedEvents();
 
         // Act
-        tour.ChangePresentation(
+        var changed = tour.ChangePresentation(
             "Camino Norte",
             "camino-norte",
             "Ride the Camino Norte.",
@@ -26,12 +28,14 @@ public sealed class CatalogTourPresentationTests
             "Day one: depart by bicycle.",
             "Camino Norte cycling tour",
             "Cycle the Camino Norte with Viajantes Turismo.");
-        tour.Publish();
+        var published = tour.Publish();
         tour.Unpublish();
         var transitions = tour.GetUncommittedEvents();
         var rebuilt = CatalogTour.Rehydrate([draftCreated, .. transitions]);
 
         // Assert
+        changed.IsSuccess.ShouldBeTrue();
+        published.IsSuccess.ShouldBeTrue();
         transitions.ShouldMatchCollection(
             domainEvent => domainEvent.ShouldBeOfType<CatalogTourPresentationChanged>(),
             domainEvent => domainEvent.ShouldBeOfType<CatalogTourPublished>(),
@@ -48,7 +52,7 @@ public sealed class CatalogTourPresentationTests
     }
 
     [Fact]
-    public void Publish_rejects_a_tour_without_a_summary()
+    public void Publish_returns_an_invalid_result_for_a_tour_without_a_summary()
     {
         // Arrange
         var tour = CatalogTour.CreateDraft(
@@ -59,16 +63,19 @@ public sealed class CatalogTourPresentationTests
         tour.ClearUncommittedEvents();
 
         // Act
-        Action publish = tour.Publish;
+        var result = tour.Publish();
 
         // Assert
-        publish.ShouldThrow<CatalogTourPublicationNotReadyException>();
+        result.Status.ShouldBe(ResultStatus.Invalid);
+        var validationErrors = result.ErrorDetails.ShouldNotBeNull().ValidationErrors.ShouldNotBeNull();
+        validationErrors["Summary"].ShouldHaveSingleItem()
+            .ShouldBe("Catalog tours require a title, summary, and slug before publication.");
         tour.IsPublished.ShouldBeFalse();
         tour.GetUncommittedEvents().ShouldBeEmpty();
     }
 
     [Fact]
-    public void ChangePresentation_rejects_edits_while_published_without_changing_state_or_events()
+    public void ChangePresentation_returns_a_conflict_while_published_without_changing_state_or_events()
     {
         // Arrange
         var tour = CatalogTour.CreateDraft(
@@ -76,7 +83,7 @@ public sealed class CatalogTourPresentationTests
             "TOUR-2026",
             "Draft Tour",
             Guid.CreateVersion7());
-        tour.ChangePresentation(
+        _ = tour.ChangePresentation(
             "Published Tour",
             "published-tour",
             "Published summary.",
@@ -84,12 +91,12 @@ public sealed class CatalogTourPresentationTests
             "Published itinerary.",
             "Published SEO title",
             "Published SEO description.");
-        tour.Publish();
+        _ = tour.Publish();
         tour.ClearUncommittedEvents();
         var version = tour.Version;
 
         // Act
-        Action changePresentation = () => tour.ChangePresentation(
+        var result = tour.ChangePresentation(
             "Changed Tour",
             "changed-tour",
             string.Empty,
@@ -99,13 +106,112 @@ public sealed class CatalogTourPresentationTests
             "Changed SEO description.");
 
         // Assert
-        changePresentation.ShouldThrow<CatalogTourPublishedPresentationChangeException>();
+        result.Status.ShouldBe(ResultStatus.Conflict);
+        result.ErrorDetails.ShouldNotBeNull().Detail
+            .ShouldBe("Published tours must be unpublished before their presentation can change.");
         tour.Title.ShouldBe("Published Tour");
         tour.Slug.ShouldBe("published-tour");
         tour.Summary.ShouldBe("Published summary.");
         tour.IsPublished.ShouldBeTrue();
         tour.Version.ShouldBe(version);
         tour.GetUncommittedEvents().ShouldBeEmpty();
+    }
+
+    [Theory]
+    [InlineData("public/tour")]
+    [InlineData("public?tour")]
+    [InlineData("   ")]
+    public void ChangePresentation_returns_an_invalid_result_for_an_unsafe_slug(string slug)
+    {
+        // Arrange
+        var tour = CatalogTour.CreateDraft(
+            Guid.CreateVersion7(),
+            "TOUR-2026",
+            "Draft Tour",
+            Guid.CreateVersion7());
+        tour.ClearUncommittedEvents();
+
+        // Act
+        var result = tour.ChangePresentation("Camino Norte", slug, "Summary.", "", "", "", "");
+
+        // Assert
+        result.Status.ShouldBe(ResultStatus.Invalid);
+        var validationErrors = result.ErrorDetails.ShouldNotBeNull().ValidationErrors.ShouldNotBeNull();
+        validationErrors["Slug"].ShouldHaveSingleItem().ShouldBe("Slug must be a safe URL path segment.");
+        tour.Slug.ShouldBe("tour-2026");
+        tour.GetUncommittedEvents().ShouldBeEmpty();
+    }
+
+    [Fact]
+    public void ChangePresentation_returns_an_invalid_result_for_an_over_long_title_and_seo_title()
+    {
+        // Arrange
+        var tour = CatalogTour.CreateDraft(
+            Guid.CreateVersion7(),
+            "TOUR-2026",
+            "Draft Tour",
+            Guid.CreateVersion7());
+        tour.ClearUncommittedEvents();
+        var tooLong = new string('t', CatalogDomainLimits.MaxNameLength + 1);
+
+        // Act
+        var result = tour.ChangePresentation(tooLong, "camino-norte", "Summary.", "", "", tooLong, "");
+
+        // Assert
+        result.Status.ShouldBe(ResultStatus.Invalid);
+        var validationErrors = result.ErrorDetails.ShouldNotBeNull().ValidationErrors.ShouldNotBeNull();
+        validationErrors["Title"].ShouldHaveSingleItem()
+            .ShouldBe($"Title cannot exceed {CatalogDomainLimits.MaxNameLength} characters.");
+        validationErrors["SeoTitle"].ShouldHaveSingleItem()
+            .ShouldBe($"SeoTitle cannot exceed {CatalogDomainLimits.MaxNameLength} characters.");
+        tour.Title.ShouldBe("Draft Tour");
+        tour.GetUncommittedEvents().ShouldBeEmpty();
+    }
+
+    [Fact]
+    public void ChangePresentation_returns_an_invalid_result_for_a_blank_title_or_over_long_body_text()
+    {
+        // Arrange
+        var tour = CatalogTour.CreateDraft(
+            Guid.CreateVersion7(),
+            "TOUR-2026",
+            "Draft Tour",
+            Guid.CreateVersion7());
+        tour.ClearUncommittedEvents();
+        var tooLong = new string('b', CatalogDomainLimits.MaxBodyLength + 1);
+
+        // Act
+        var result = tour.ChangePresentation("   ", "camino-norte", tooLong, tooLong, tooLong, "", tooLong);
+
+        // Assert
+        result.Status.ShouldBe(ResultStatus.Invalid);
+        var validationErrors = result.ErrorDetails.ShouldNotBeNull().ValidationErrors.ShouldNotBeNull();
+        validationErrors["Title"].ShouldHaveSingleItem().ShouldBe("Title is required.");
+        validationErrors.Keys.ShouldContain("Summary");
+        validationErrors.Keys.ShouldContain("Description");
+        validationErrors.Keys.ShouldContain("Itinerary");
+        validationErrors.Keys.ShouldContain("SeoDescription");
+        tour.GetUncommittedEvents().ShouldBeEmpty();
+    }
+
+    [Fact]
+    public void ChangePresentation_normalizes_a_customer_entered_slug_and_sanitizes_text()
+    {
+        // Arrange
+        var tour = CatalogTour.CreateDraft(
+            Guid.CreateVersion7(),
+            "TOUR-2026",
+            "Draft Tour",
+            Guid.CreateVersion7());
+        tour.ClearUncommittedEvents();
+
+        // Act
+        var result = tour.ChangePresentation("  Camino Norte  ", "  Camino Norte  ", "Summary.", "", "", "", "");
+
+        // Assert
+        result.IsSuccess.ShouldBeTrue();
+        tour.Title.ShouldBe("Camino Norte");
+        tour.Slug.ShouldBe("camino-norte");
     }
 
     [Fact]

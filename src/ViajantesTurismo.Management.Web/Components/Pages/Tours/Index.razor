@@ -48,13 +48,13 @@ else
                         SortBy="GridSort<GetTourDto>.ByAscending(t => t.CurrentCustomerCount)">
             <div class="d-flex align-items-center gap-2">
                 <span class="text-nowrap">@context.CurrentCustomerCount / @context.MaxCustomers</span>
-                @if (IsFullyBooked(context))
+                @if (context.IsFullyBooked)
                 {
                     <span class="badge bg-danger" title="Tour is fully booked">
                         <i class="bi bi-exclamation-circle"></i> Full
                     </span>
                 }
-                else if (IsBelowMinimum(context))
+                else if (!context.IsAtMinimumCapacity)
                 {
                     <span class="badge bg-warning text-dark"
                           title="Below minimum capacity (@context.MinCustomers customers)">
@@ -63,8 +63,8 @@ else
                 }
                 else
                 {
-                    <span class="badge bg-success" title="@GetAvailableSpots(context) spots available">
-                        <i class="bi bi-check-circle"></i> @GetAvailableSpots(context) spots
+                    <span class="badge bg-success" title="@context.AvailableSpots spots available">
+                        <i class="bi bi-check-circle"></i> @context.AvailableSpots spots
                     </span>
                 }
             </div>
@@ -118,10 +118,4 @@ else
     private static string GetTourDetailsUrl(Guid tourId) => $"/tours/{tourId}";
 
     private static string GetTourEditUrl(Guid tourId) => $"/edittour/{tourId}";
-
-    private static bool IsFullyBooked(GetTourDto tour) => tour.CurrentCustomerCount >= tour.MaxCustomers;
-
-    private static bool IsBelowMinimum(GetTourDto tour) => tour.CurrentCustomerCount < tour.MinCustomers;
-
-    private static int GetAvailableSpots(GetTourDto tour) => tour.MaxCustomers - tour.CurrentCustomerCount;
 }

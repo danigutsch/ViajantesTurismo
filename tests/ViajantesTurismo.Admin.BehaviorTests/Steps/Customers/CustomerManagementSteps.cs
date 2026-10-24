@@ -1,4 +1,5 @@
 using ViajantesTurismo.Admin.Application.Customers.CreateCustomer;
+using ViajantesTurismo.Admin.Application.Mappings;
 using ViajantesTurismo.Admin.Contracts.Application;
 
 using ViajantesTurismo.Admin.Domain.Shared;
@@ -78,14 +79,29 @@ public sealed class CustomerManagementSteps(CustomerContext context)
             "Software Engineer",
             DateOnly.FromDateTime(TimeProvider.System.GetUtcNow().UtcDateTime));
 
-        context.Customer = new Customer(
-            context.PersonalInfoResult.Value,
-            context.IdentificationInfoResult.Value,
-            context.ContactInfoResult.Value,
-            context.AddressResult.Value,
-            context.PhysicalInfoResult.Value.Value,
-            accommodationPreferences,
-            new CustomerHealthInfo(context.EmergencyContactResult.Value, context.MedicalInfoResult.Value.Value));
+        var personal = context.PersonalInfoResult.Value;
+        var identification = context.IdentificationInfoResult.Value;
+        var contact = context.ContactInfoResult.Value;
+        var address = context.AddressResult.Value;
+        var physical = context.PhysicalInfoResult.Value.Value;
+        var emergencyContact = context.EmergencyContactResult.Value;
+        var medical = context.MedicalInfoResult.Value.Value;
+        var customerResult = Customer.Create(
+            new CustomerDefinition(
+                new PersonalInfoDefinition(personal.FirstName, personal.LastName, personal.Gender, personal.BirthDate,
+                    personal.Nationality, personal.Occupation),
+                new IdentificationInfoDefinition(identification.NationalId, identification.IdNationality),
+                new ContactInfoDefinition(contact.Email, contact.Mobile, contact.Instagram, contact.Facebook),
+                new AddressDefinition(address.Street, address.Complement, address.Neighborhood, address.PostalCode,
+                    address.City, address.State, address.Country),
+                new PhysicalInfoDefinition(physical.WeightKg, physical.HeightCentimeters, physical.BikeType),
+                new AccommodationPreferencesDefinition(accommodationPreferences.RoomType,
+                    accommodationPreferences.BedType, accommodationPreferences.CompanionId),
+                new CustomerHealthDefinition(emergencyContact.Name, emergencyContact.Mobile, medical.Allergies,
+                    medical.AdditionalInfo)),
+            DateOnly.FromDateTime(TimeProvider.System.GetUtcNow().UtcDateTime));
+        customerResult.IsSuccess.ShouldBeTrue();
+        context.Customer = customerResult.Value;
     }
 
     [Then("the customer should be created successfully")]
@@ -102,14 +118,29 @@ public sealed class CustomerManagementSteps(CustomerContext context)
         var accommodationPreferences = context.AccommodationPreferences.ShouldNotBeNull();
         context.MedicalInfoResult.ShouldNotBeNull();
 
-        context.Customer.PersonalInfo.ShouldBe(context.PersonalInfoResult.Value);
-        context.Customer.IdentificationInfo.ShouldBe(context.IdentificationInfoResult.Value);
-        context.Customer.ContactInfo.ShouldBe(context.ContactInfoResult.Value);
-        context.Customer.Address.ShouldBe(context.AddressResult.Value);
-        context.Customer.PhysicalInfo.ShouldBe(context.PhysicalInfoResult.Value.Value);
-        context.Customer.AccommodationPreferences.ShouldBe(accommodationPreferences);
-        context.Customer.EmergencyContact.ShouldBe(context.EmergencyContactResult.Value);
-        context.Customer.MedicalInfo.ShouldBe(context.MedicalInfoResult.Value.Value);
+        var actual = CustomerMapper.MapToDefinition(context.Customer);
+        var personal = context.PersonalInfoResult.Value;
+        var identification = context.IdentificationInfoResult.Value;
+        var contact = context.ContactInfoResult.Value;
+        var address = context.AddressResult.Value;
+        var physical = context.PhysicalInfoResult.Value.Value;
+        var emergencyContact = context.EmergencyContactResult.Value;
+        var medical = context.MedicalInfoResult.Value.Value;
+
+        actual.PersonalInfo.ShouldBe(new PersonalInfoDefinition(personal.FirstName, personal.LastName, personal.Gender,
+            personal.BirthDate, personal.Nationality, personal.Occupation));
+        actual.IdentificationInfo.ShouldBe(new IdentificationInfoDefinition(identification.NationalId,
+            identification.IdNationality));
+        actual.ContactInfo.ShouldBe(new ContactInfoDefinition(contact.Email, contact.Mobile, contact.Instagram,
+            contact.Facebook));
+        actual.Address.ShouldBe(new AddressDefinition(address.Street, address.Complement, address.Neighborhood,
+            address.PostalCode, address.City, address.State, address.Country));
+        actual.PhysicalInfo.ShouldBe(new PhysicalInfoDefinition(physical.WeightKg, physical.HeightCentimeters,
+            physical.BikeType));
+        actual.AccommodationPreferences.ShouldBe(new AccommodationPreferencesDefinition(accommodationPreferences.RoomType,
+            accommodationPreferences.BedType, accommodationPreferences.CompanionId));
+        actual.HealthInfo.ShouldBe(new CustomerHealthDefinition(emergencyContact.Name, emergencyContact.Mobile,
+            medical.Allergies, medical.AdditionalInfo));
     }
 
     [Given(@"I have personal information for sanitization with first name ""([^""]*)"" and last name ""([^""]*)""")]

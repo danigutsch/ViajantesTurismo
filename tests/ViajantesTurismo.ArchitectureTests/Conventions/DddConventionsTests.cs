@@ -72,6 +72,23 @@ public sealed class DddConventionsTests
     }
 
     [Fact]
+    public void Entities_must_be_created_through_factories_instead_of_public_constructors()
+    {
+        // Arrange
+        var entityTypes = EntityTypes.ToArray();
+
+        // Act
+        var publicConstructors = entityTypes
+            .Where(type => type.GetConstructors(BindingFlags.Instance | BindingFlags.Public).Length != 0)
+            .Select(type => type.FullName)
+            .ToArray();
+
+        // Assert
+        entityTypes.ShouldNotBeEmpty();
+        publicConstructors.ShouldBeEmpty();
+    }
+
+    [Fact]
     public void Child_entities_must_change_only_through_their_aggregate_root()
     {
         // Arrange

@@ -384,20 +384,47 @@ public sealed class PublicMediaImage
     }
 
     /// <summary>
-    /// Creates a copy with updated processing output.
+    /// Completes processing of the original image, making the processed public variants ready for catalog use.
     /// </summary>
     /// <param name="dimensions">The processed image dimensions.</param>
-    /// <param name="status">The processing status.</param>
     /// <param name="variants">The processed public variants.</param>
-    /// <returns>A result containing the updated media image when valid.</returns>
-    public Result<PublicMediaImage> WithProcessingResult(
+    /// <returns>A result containing the ready media image when the processed output is valid.</returns>
+    public Result<PublicMediaImage> CompleteProcessing(
         MediaImageDimensions dimensions,
-        MediaImageProcessingStatus status,
         IReadOnlyList<MediaImageResponsiveVariant> variants)
     {
         ArgumentNullException.ThrowIfNull(dimensions);
         ArgumentNullException.ThrowIfNull(variants);
 
+        return WithProcessingResult(dimensions, MediaImageProcessingStatus.Ready, variants);
+    }
+
+    /// <summary>
+    /// Records that processing of the original image failed, leaving the image without public variants.
+    /// </summary>
+    /// <returns>
+    /// A result containing the failed media image, or a failure when existing public variants must be retained instead.
+    /// </returns>
+    public Result<PublicMediaImage> FailProcessing()
+    {
+        if (CanRetainPublicVariantsAfterProcessingFailure)
+        {
+            return Result.Invalid<PublicMediaImage>(
+                "Public media image is invalid.",
+                new Dictionary<string, string[]>(StringComparer.Ordinal)
+                {
+                    [nameof(ProcessingStatus)] = ["Images with public variants retain them when processing fails."],
+                });
+        }
+
+        return WithProcessingResult(Dimensions, MediaImageProcessingStatus.Failed, []);
+    }
+
+    private Result<PublicMediaImage> WithProcessingResult(
+        MediaImageDimensions dimensions,
+        MediaImageProcessingStatus status,
+        IReadOnlyList<MediaImageResponsiveVariant> variants)
+    {
         return Create(
             new PublicMediaImageMetadata
             {

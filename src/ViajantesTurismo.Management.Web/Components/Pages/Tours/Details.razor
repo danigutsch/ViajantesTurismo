@@ -91,17 +91,17 @@ else if (_tour != null)
                         <dt class="col-sm-6">Current Bookings:</dt>
                         <dd class="col-sm-6">
                             @_tour.CurrentCustomerCount / @_tour.MaxCustomers customers
-                            @if (IsFullyBooked(_tour))
+                            @if (_tour.IsFullyBooked)
                             {
                                 <span class="badge bg-danger ms-2">Fully Booked</span>
                             }
-                            else if (IsBelowMinimum(_tour))
+                            else if (!_tour.IsAtMinimumCapacity)
                             {
                                 <span class="badge bg-warning ms-2">Below Minimum</span>
                             }
                             else
                             {
-                                <span class="badge bg-success ms-2">@GetAvailableSpots(_tour) spots available</span>
+                                <span class="badge bg-success ms-2">@_tour.AvailableSpots spots available</span>
                             }
                         </dd>
                     </dl>
@@ -293,11 +293,5 @@ else if (_tour != null)
     }
 
     private static string FormatPrice(decimal price, CurrencyDto currency) => CurrencyFormatter.Format(price, currency);
-
-    private static bool IsFullyBooked(GetTourDto tour) => tour.CurrentCustomerCount >= tour.MaxCustomers;
-
-    private static bool IsBelowMinimum(GetTourDto tour) => tour.CurrentCustomerCount < tour.MinCustomers;
-
-    private static int GetAvailableSpots(GetTourDto tour) => tour.MaxCustomers - tour.CurrentCustomerCount;
 
 }

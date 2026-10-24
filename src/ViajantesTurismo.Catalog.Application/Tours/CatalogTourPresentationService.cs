@@ -1,5 +1,6 @@
 using PandaBear.BuildingBlocks;
 using PandaBear.EventSourcing;
+using PandaBear.Results;
 using ViajantesTurismo.Catalog.Domain.Tours;
 
 namespace ViajantesTurismo.Catalog.Application.Tours;
@@ -21,8 +22,10 @@ public sealed class CatalogTourPresentationService(
     /// <param name="update">The validated presentation values.</param>
     /// <param name="expectedVersion">The stream version on which the edit is based.</param>
     /// <param name="ct">The cancellation token.</param>
-    /// <returns>The refreshed management projection, or <see langword="null" /> when the tour is missing.</returns>
-    public async ValueTask<CatalogTourDraftReadModel?> UpdatePresentation(
+    /// <returns>
+    /// The refreshed management projection, a not-found result when the tour is missing, or the domain failure.
+    /// </returns>
+    public async ValueTask<Result<CatalogTourDraftReadModel>> UpdatePresentation(
         Guid catalogTourId,
         CatalogTourPresentationUpdate update,
         long expectedVersion,
@@ -33,7 +36,7 @@ public sealed class CatalogTourPresentationService(
         var (aggregate, streamId) = await LoadTour(catalogTourId, expectedVersion, ct).ConfigureAwait(false);
         if (aggregate is null)
         {
-            return null;
+            return TourNotFound();
         }
 
         await using var slugLease = await slugLock.Acquire(update.Slug, ct).ConfigureAwait(false);
@@ -47,7 +50,7 @@ public sealed class CatalogTourPresentationService(
             throw new CatalogTourSlugConflictException();
         }
 
-        aggregate.ChangePresentation(
+        var changed = aggregate.ChangePresentation(
             update.Title,
             update.Slug,
             update.Summary,
@@ -55,6 +58,11 @@ public sealed class CatalogTourPresentationService(
             update.Itinerary,
             update.SeoTitle,
             update.SeoDescription);
+        if (changed.IsFailure)
+        {
+            return changed.ConvertError<CatalogTourDraftReadModel>();
+        }
+
         return await PersistAndProject(catalogTourId, aggregate, streamId, expectedVersion, ct).ConfigureAwait(false);
     }
 
@@ -64,17 +72,24 @@ public sealed class CatalogTourPresentationService(
     /// <param name="catalogTourId">The Catalog tour identifier.</param>
     /// <param name="expectedVersion">The stream version on which the transition is based.</param>
     /// <param name="ct">The cancellation token.</param>
-    /// <returns>The refreshed management projection, or <see langword="null" /> when the tour is missing.</returns>
-    public async ValueTask<CatalogTourDraftReadModel?> Publish(Guid catalogTourId, long expectedVersion, CancellationToken ct)
+    /// <returns>
+    /// The refreshed management projection, a not-found result when the tour is missing, or the domain failure.
+    /// </returns>
+    public async ValueTask<Result<CatalogTourDraftReadModel>> Publish(Guid catalogTourId, long expectedVersion, CancellationToken ct)
     {
         await using var mutationLease = await mutationLock.Acquire([catalogTourId], ct).ConfigureAwait(false);
         var (aggregate, streamId) = await LoadTour(catalogTourId, expectedVersion, ct).ConfigureAwait(false);
         if (aggregate is null)
         {
-            return null;
+            return TourNotFound();
         }
 
-        aggregate.Publish();
+        var published = aggregate.Publish();
+        if (published.IsFailure)
+        {
+            return published.ConvertError<CatalogTourDraftReadModel>();
+        }
+
         return await PersistAndProject(catalogTourId, aggregate, streamId, expectedVersion, ct).ConfigureAwait(false);
     }
 
@@ -84,14 +99,14 @@ public sealed class CatalogTourPresentationService(
     /// <param name="catalogTourId">The Catalog tour identifier.</param>
     /// <param name="expectedVersion">The stream version on which the transition is based.</param>
     /// <param name="ct">The cancellation token.</param>
-    /// <returns>The refreshed management projection, or <see langword="null" /> when the tour is missing.</returns>
-    public async ValueTask<CatalogTourDraftReadModel?> Unpublish(Guid catalogTourId, long expectedVersion, CancellationToken ct)
+    /// <returns>The refreshed management projection, or a not-found result when the tour is missing.</returns>
+    public async ValueTask<Result<CatalogTourDraftReadModel>> Unpublish(Guid catalogTourId, long expectedVersion, CancellationToken ct)
     {
         await using var mutationLease = await mutationLock.Acquire([catalogTourId], ct).ConfigureAwait(false);
         var (aggregate, streamId) = await LoadTour(catalogTourId, expectedVersion, ct).ConfigureAwait(false);
         if (aggregate is null)
         {
-            return null;
+            return TourNotFound();
         }
 
         aggregate.Unpublish();
@@ -134,7 +149,10 @@ public sealed class CatalogTourPresentationService(
             StreamRevision.From(actualVersion));
     }
 
-    private async ValueTask<CatalogTourDraftReadModel?> PersistAndProject(
+    private static Result<CatalogTourDraftReadModel> TourNotFound() =>
+        Result.NotFound<CatalogTourDraftReadModel>("The Catalog tour was not found.");
+
+    private async ValueTask<Result<CatalogTourDraftReadModel>> PersistAndProject(
         Guid catalogTourId,
         CatalogTour aggregate,
         StreamId streamId,
@@ -144,7 +162,8 @@ public sealed class CatalogTourPresentationService(
         var pendingEvents = aggregate.GetUncommittedEvents();
         if (pendingEvents.Count == 0)
         {
-            return await readModelStore.GetTour(catalogTourId, ct).ConfigureAwait(false);
+            var current = await readModelStore.GetTour(catalogTourId, ct).ConfigureAwait(false);
+            return current is null ? TourNotFound() : Result.Ok(current);
         }
 
         var persistedEvents = await eventStore.Append(
@@ -160,8 +179,8 @@ public sealed class CatalogTourPresentationService(
                 await projection.Apply(envelope, CancellationToken.None).ConfigureAwait(false);
             }
 
-            return await readModelStore.GetTour(catalogTourId, CancellationToken.None).ConfigureAwait(false)
-                ?? throw new InvalidOperationException("The committed Catalog tour projection was not found.");
+            return Result.Ok(await readModelStore.GetTour(catalogTourId, CancellationToken.None).ConfigureAwait(false)
+                ?? throw new InvalidOperationException("The committed Catalog tour projection was not found."));
         }
         catch (Exception exception) when (exception.ShouldHandleAsFailure(CancellationToken.None))
         {
