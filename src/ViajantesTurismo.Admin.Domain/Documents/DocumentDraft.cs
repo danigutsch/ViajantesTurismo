@@ -196,6 +196,17 @@ public sealed class DocumentDraft : IEntity<Guid>
         get; private set;
     }
 
+    /// <summary>Gets whether this revision has a finalized artifact that can be downloaded.</summary>
+    public bool HasAvailableFinalizedArtifact => Status == DocumentStatus.Finalized
+        && _finalizedArtifactContent is not null
+        && !string.IsNullOrWhiteSpace(FinalizedArtifactName);
+
+    /// <summary>
+    /// Gets whether lifecycle changes and downloads go through the payment instruction workflow, which
+    /// rechecks approved terms and verified recipients.
+    /// </summary>
+    public bool RequiresPaymentInstructionWorkflow => Type == DocumentType.PaymentInstructions;
+
     /// <summary>Gets a copy of the finalized artifact content.</summary>
     public ReadOnlyMemory<byte>? GetFinalizedArtifactContent()
     {

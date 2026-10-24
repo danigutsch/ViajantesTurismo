@@ -268,7 +268,7 @@ public sealed class PaymentInstructionWorkflow(PaymentCommandExecutor commands, 
         var lineage = await documents.GetByDocumentId(documentId, ct);
         var document = lineage?.GetRevision(documentId);
         var snapshot = await instructions.GetSnapshot(documentId, ct);
-        return lineage is not null && document is not null && snapshot is not null && document.Type == DocumentType.PaymentInstructions
+        return lineage is not null && document is not null && snapshot is not null && document.RequiresPaymentInstructionWorkflow
             ? Result.Ok(new PaymentInstructionSources(lineage, document, snapshot)) : Result.NotFound(detail: "Payment instruction not found.").ConvertError<PaymentInstructionSources>();
     }
     private async Task<bool> Eligible(PaymentInstructionSources current, CancellationToken ct)

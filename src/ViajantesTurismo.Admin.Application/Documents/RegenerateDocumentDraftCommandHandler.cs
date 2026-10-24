@@ -43,7 +43,7 @@ public sealed class RegenerateDocumentDraftCommandHandler(
                 ct);
         }
 
-        if (lineage.Type == DocumentType.PaymentInstructions)
+        if (lineage.RequiresPaymentInstructionWorkflow)
         {
             return Domain.Payments.FinancialErrors.Invalid("paymentInstructionRegeneration").ConvertError<Guid>();
         }
