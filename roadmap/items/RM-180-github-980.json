@@ -3,16 +3,10 @@
   "id": "RM-180",
   "title": "Decide media database and object-storage ownership boundaries",
   "type": "issue",
-  "status": "proposed",
-  "order": 218,
+  "status": "done",
+  "triage": "untriaged",
   "theme": "repo-operations",
   "outcome": "GitHub issue #980 is canonically represented from the reconciliation manifest.",
-  "scoring": {
-    "reach": 1,
-    "impact": 1,
-    "confidence": 0.1,
-    "effort": 3
-  },
   "blockedBy": [],
   "blocks": [],
   "dependencies": [],
@@ -29,7 +23,8 @@
   ],
   "integrations": {
     "github": {
-      "issue": 980
+      "issue": 980,
+      "nodeId": "I_kwDOQAEVW88AAAABIhSl4A"
     }
   }
 }

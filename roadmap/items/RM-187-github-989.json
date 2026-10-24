@@ -4,7 +4,7 @@
   "title": "Standardize Aspire execution-context deployment configuration",
   "type": "enabler",
   "status": "proposed",
-  "order": 223,
+  "order": 415,
   "theme": "repo-operations",
   "outcome": "GitHub issue #989 is canonically represented from the reconciliation manifest.",
   "scoring": {
@@ -31,7 +31,8 @@
   ],
   "integrations": {
     "github": {
-      "issue": 989
+      "issue": 989,
+      "nodeId": "I_kwDOQAEVW88AAAABIhsohw"
     }
   }
 }

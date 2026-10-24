@@ -4,16 +4,10 @@
   "parent": "RM-278",
   "title": "Classify production log fields for privacy redaction",
   "type": "enabler",
-  "status": "proposed",
-  "order": 271,
+  "status": "done",
+  "triage": "untriaged",
   "theme": "repo-operations",
   "outcome": "GitHub issue #1119 is canonically represented from the reconciliation manifest.",
-  "scoring": {
-    "reach": 1,
-    "impact": 1,
-    "confidence": 0.1,
-    "effort": 3
-  },
   "blockedBy": [],
   "blocks": [],
   "dependencies": [],
@@ -32,7 +26,8 @@
   ],
   "integrations": {
     "github": {
-      "issue": 1119
+      "issue": 1119,
+      "nodeId": "I_kwDOQAEVW88AAAABJR1BnA"
     }
   }
 }

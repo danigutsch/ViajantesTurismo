@@ -3,16 +3,10 @@
   "id": "RM-072",
   "title": "Define PDF generation and accessibility requirements",
   "type": "enabler",
-  "status": "proposed",
-  "order": 155,
+  "status": "done",
+  "triage": "untriaged",
   "theme": "repo-operations",
   "outcome": "GitHub issue #725 is canonically represented from the reconciliation manifest.",
-  "scoring": {
-    "reach": 1,
-    "impact": 1,
-    "confidence": 0.1,
-    "effort": 3
-  },
   "blockedBy": [],
   "blocks": [],
   "dependencies": [],
@@ -29,7 +23,8 @@
   ],
   "integrations": {
     "github": {
-      "issue": 725
+      "issue": 725,
+      "nodeId": "I_kwDOQAEVW88AAAABHtaf5Q"
     }
   }
 }

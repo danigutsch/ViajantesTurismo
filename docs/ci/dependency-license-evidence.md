@@ -10,6 +10,7 @@ or by January 20, 2027, whichever comes first. This record does not grant genera
 - [Magick native audit](#magick-native-audit)
 - [Security candidate renewal](#security-candidate-renewal)
 - [Payments rebase candidate](#payments-rebase-candidate)
+- [Rate-limit and reconciliation candidate renewal](#rate-limit-and-reconciliation-candidate-renewal)
 - [DDD standards candidate](#ddd-standards-candidate)
 - [Remaining decision](#remaining-decision)
 
@@ -182,17 +183,37 @@ authorized GitHub prerelease distribution and renewed these unchanged exact-pack
 for this candidate. Publication remains conditional on successful application validation; registry
 publication and the native distribution obligations remain outside this approval.
 
+## Rate-limit and reconciliation candidate renewal
+
+On October 24, 2026, the owner approved unchanged GitHub prerelease
+`0.1.0-alpha.112.1`, clean library revision
+`e4d13f63ff872a86478a16e5a3c3ce1ecba0fcb1`, and renewed the same exact
+StreamJsonRpc `2.25.29` and Magick.NET-Q8-AnyCPU `15.0.0` metadata exceptions
+for this candidate. The 8 StreamJsonRpc and 14 Magick lock entries retain their
+versions, content hashes, and dependency edges compared with application main
+`f2337a26`. Both archive SHA-256 hashes match the recorded evidence above.
+
+Producer run `40039601794` passed API validation and Linux/Windows packed
+consumption, including NativeAOT. The application Release build passed without
+warnings or errors. The owner requested no application test rerun after the merge;
+this build evidence does not claim a new full isolated compatibility run.
+
+The workflow remains bounded to this exact clean candidate and the same two
+package versions. Vulnerability and forbidden-license gates remain enabled.
+NuGet publication, future candidates, stable promotion, and native distribution
+approval remain excluded; the native obligations described above are unchanged.
+
 ## DDD standards candidate
 
 Candidate `0.1.0-alpha.133.1` uses clean library revision
 `078adf2b2b158f38a211f48274af548d12a85752`. It adds the domain encapsulation analyzers and code fix,
 the opt-in assertion `userMessage` rule, packaged repository tooling and the other library changes
-merged since `0.1.0-alpha.94.1`. Linux/Windows package consumption and NativeAOT passed in the
+merged since `0.1.0-alpha.112.1`. Linux/Windows package consumption and NativeAOT passed in the
 exact-source CI run. All 77 archive hashes were verified.
 
 Comparison of the complete external package version/content-hash sets across all 61 lock files
-against application base `f2337a26` found no additions or removals; both sets hold the same 283
-entries. The workflow still permits only the same exact StreamJsonRpc `2.25.29` and
+against application main `a92f03fb` (candidate `0.1.0-alpha.112.1`) found no additions or removals;
+both sets hold the same 283 entries. The workflow still permits only the same exact StreamJsonRpc `2.25.29` and
 Magick.NET-Q8-AnyCPU `15.0.0` metadata exceptions; no license category, vulnerability threshold or
 native distribution gate was relaxed. On October 24, 2026, the owner authorized GitHub prerelease
 distribution and renewed these unchanged exact-package exceptions for this candidate. Publication

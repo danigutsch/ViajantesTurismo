@@ -3,16 +3,10 @@
   "id": "RM-118",
   "title": "Improve docs navigation and contributor entry points",
   "type": "documentation",
-  "status": "proposed",
-  "order": 109,
+  "status": "done",
+  "triage": "untriaged",
   "theme": "repo-operations",
   "outcome": "GitHub issue #852 is canonically represented from the reconciliation manifest.",
-  "scoring": {
-    "reach": 1,
-    "impact": 1,
-    "confidence": 0.1,
-    "effort": 2
-  },
   "blockedBy": [],
   "blocks": [],
   "dependencies": [],
@@ -29,7 +23,8 @@
   ],
   "integrations": {
     "github": {
-      "issue": 852
+      "issue": 852,
+      "nodeId": "I_kwDOQAEVW88AAAABH_sCKA"
     }
   }
 }

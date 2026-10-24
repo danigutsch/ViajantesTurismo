@@ -4,7 +4,7 @@
   "title": "Research accessibility analysis and improvement strategy",
   "type": "enabler",
   "status": "proposed",
-  "order": 175,
+  "order": 380,
   "theme": "repo-operations",
   "outcome": "GitHub issue #833 is canonically represented from the reconciliation manifest.",
   "scoring": {
@@ -33,7 +33,8 @@
   ],
   "integrations": {
     "github": {
-      "issue": 833
+      "issue": 833,
+      "nodeId": "I_kwDOQAEVW88AAAABH_qWvw"
     }
   }
 }

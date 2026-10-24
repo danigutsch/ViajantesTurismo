@@ -33,7 +33,15 @@
   ],
   "integrations": {
     "github": {
-      "issue": 1111
+      "issue": 45,
+      "repository": "danigutsch/PandaBear.SharedKernel",
+      "nodeId": "I_kwDOVRZZxs8AAAABYqBciA",
+      "previousLocations": [
+        {
+          "repository": "danigutsch/ViajantesTurismo",
+          "issue": 1111
+        }
+      ]
     }
   }
 }

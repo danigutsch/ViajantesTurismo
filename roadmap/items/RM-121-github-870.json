@@ -4,7 +4,7 @@
   "title": "Research automatic table of contents generation for Markdown",
   "type": "feature",
   "status": "proposed",
-  "order": 300,
+  "order": 461,
   "theme": "repo-operations",
   "outcome": "GitHub issue #870 is canonically represented from the reconciliation manifest.",
   "scoring": {
@@ -32,7 +32,8 @@
   ],
   "integrations": {
     "github": {
-      "issue": 870
+      "issue": 870,
+      "nodeId": "I_kwDOQAEVW88AAAABIA1H_w"
     }
   }
 }

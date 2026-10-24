@@ -5,7 +5,7 @@
   "title": "Add truthful progress and cancellation across upload flows",
   "type": "feature",
   "status": "proposed",
-  "order": 320,
+  "order": 480,
   "theme": "repo-operations",
   "outcome": "GitHub issue #1096 is canonically represented from the reconciliation manifest.",
   "scoring": {
@@ -35,7 +35,8 @@
   ],
   "integrations": {
     "github": {
-      "issue": 1096
+      "issue": 1096,
+      "nodeId": "I_kwDOQAEVW88AAAABJNSSzg"
     }
   }
 }

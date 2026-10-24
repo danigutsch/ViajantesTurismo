@@ -4,17 +4,10 @@
   "parent": "RM-009",
   "title": "Score and order the first executable roadmap tranche",
   "type": "issue",
-  "status": "proposed",
-  "order": 70,
+  "status": "done",
   "theme": "repo-operations",
   "outcome": "The first active tranche receives reviewed RICE evidence and canonical order without fabricated estimates.",
   "size": "XS",
-  "scoring": {
-    "reach": 1,
-    "impact": 2,
-    "confidence": 0.8,
-    "effort": 1
-  },
   "blockedBy": [
     "RM-012"
   ],
@@ -50,7 +43,9 @@
   ],
   "integrations": {
     "github": {
-      "issue": 1064
+      "issue": 1064,
+      "nodeId": "I_kwDOQAEVW88AAAABI3Ht0g"
     }
-  }
+  },
+  "triage": "untriaged"
 }

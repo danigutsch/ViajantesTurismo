@@ -5,7 +5,7 @@
   "title": "Add recurring security baseline checks",
   "type": "enabler",
   "status": "proposed",
-  "order": 173,
+  "order": 378,
   "theme": "repo-operations",
   "outcome": "GitHub issue #820 is canonically represented from the reconciliation manifest.",
   "scoring": {
@@ -32,7 +32,8 @@
   ],
   "integrations": {
     "github": {
-      "issue": 820
+      "issue": 820,
+      "nodeId": "I_kwDOQAEVW88AAAABH_qRXg"
     }
   }
 }

@@ -4,7 +4,7 @@
   "title": "Make CountryService cache process-wide",
   "type": "feature",
   "status": "proposed",
-  "order": 302,
+  "order": 463,
   "theme": "repo-operations",
   "outcome": "GitHub issue #906 is canonically represented from the reconciliation manifest.",
   "scoring": {
@@ -30,7 +30,8 @@
   ],
   "integrations": {
     "github": {
-      "issue": 906
+      "issue": 906,
+      "nodeId": "I_kwDOQAEVW88AAAABIRdqgg"
     }
   }
 }

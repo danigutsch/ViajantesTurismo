@@ -4,16 +4,10 @@
   "parent": "RM-196",
   "title": "Isolate Branding persistence in a dedicated PostgreSQL schema",
   "type": "enabler",
-  "status": "proposed",
-  "order": 227,
+  "status": "done",
+  "triage": "untriaged",
   "theme": "repo-operations",
   "outcome": "GitHub issue #1010 is canonically represented from the reconciliation manifest.",
-  "scoring": {
-    "reach": 1,
-    "impact": 1,
-    "confidence": 0.1,
-    "effort": 3
-  },
   "blockedBy": [],
   "blocks": [],
   "dependencies": [],
@@ -31,7 +25,8 @@
   ],
   "integrations": {
     "github": {
-      "issue": 1010
+      "issue": 1010,
+      "nodeId": "I_kwDOQAEVW88AAAABIi2hzg"
     }
   }
 }

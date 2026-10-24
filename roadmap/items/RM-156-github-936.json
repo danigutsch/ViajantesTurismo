@@ -4,7 +4,7 @@
   "title": "Add authorization for generated travel document endpoints",
   "type": "enabler",
   "status": "proposed",
-  "order": 206,
+  "order": 405,
   "theme": "repo-operations",
   "outcome": "GitHub issue #936 is canonically represented from the reconciliation manifest.",
   "scoring": {
@@ -30,7 +30,8 @@
   ],
   "integrations": {
     "github": {
-      "issue": 936
+      "issue": 936,
+      "nodeId": "I_kwDOQAEVW88AAAABIZ_zGw"
     }
   }
 }

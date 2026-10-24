@@ -9,7 +9,7 @@ documentation configuration, CI and coverage policy, bootstrap, and compatibilit
 The published DDD standards candidate is `0.1.0-alpha.133.1` at clean library revision
 [`078adf2b2b158f38a211f48274af548d12a85752`](https://github.com/danigutsch/PandaBear.SharedKernel/commit/078adf2b2b158f38a211f48274af548d12a85752).
 It adds the domain encapsulation analyzers and setter code fix that every `src/*.Domain` project
-references, plus the library changes merged since `0.1.0-alpha.94.1`. All 77 package hashes match the
+references, plus the library changes merged since `0.1.0-alpha.112.1`. All 77 package hashes match the
 unchanged artifacts from
 [CI run 40070217254](https://github.com/danigutsch/PandaBear.SharedKernel/actions/runs/40070217254);
 Linux/Windows package consumption and NativeAOT passed. Isolated application compatibility at
@@ -18,9 +18,9 @@ with zero warnings/errors, OpenAPI generation and 4,055 tests with five optional
 unchanged 77 packages, 54 symbol archives and manifest are published in GitHub prerelease
 [`v0.1.0-alpha.133.1`](https://github.com/danigutsch/PandaBear.SharedKernel/releases/tag/v0.1.0-alpha.133.1).
 
-The previous accepted preview `0.1.0-alpha.94.1` at revision
-`d08008cd3e8901c304377edcc4683de7c3a85ecb` remains published. Its application validation is
-historical evidence; it does not contain the domain analyzers.
+The previous previews `0.1.0-alpha.112.1` at revision `e4d13f63ff872a86478a16e5a3c3ce1ecba0fcb1` and
+`0.1.0-alpha.94.1` at revision `d08008cd3e8901c304377edcc4683de7c3a85ecb` remain published. Their
+application validation is historical evidence; neither contains the domain analyzers.
 
 The former candidate `1.2.0-alpha.20261023.1` at library revision
 `cc826be664bfc2dc087fe5a140f7232b4f65967d` is retired. Its release was deliberately deleted;

@@ -5,7 +5,7 @@
   "title": "Define test taxonomy inventory and validator",
   "type": "enabler",
   "status": "proposed",
-  "order": 232,
+  "order": 420,
   "theme": "repo-operations",
   "outcome": "GitHub issue #1023 is canonically represented from the reconciliation manifest.",
   "scoring": {
@@ -33,7 +33,8 @@
   ],
   "integrations": {
     "github": {
-      "issue": 1023
+      "issue": 1023,
+      "nodeId": "I_kwDOQAEVW88AAAABIptAaA"
     }
   }
 }

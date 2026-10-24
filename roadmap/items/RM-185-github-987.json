@@ -5,7 +5,7 @@
   "title": "Add approved PostgreSQL observability dashboards and runbooks",
   "type": "enabler",
   "status": "proposed",
-  "order": 222,
+  "order": 414,
   "theme": "repo-operations",
   "outcome": "GitHub issue #987 is canonically represented from the reconciliation manifest.",
   "scoring": {
@@ -33,7 +33,8 @@
   ],
   "integrations": {
     "github": {
-      "issue": 987
+      "issue": 987,
+      "nodeId": "I_kwDOQAEVW88AAAABIhWP4A"
     }
   }
 }

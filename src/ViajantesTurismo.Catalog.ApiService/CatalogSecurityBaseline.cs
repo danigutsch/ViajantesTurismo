@@ -10,6 +10,8 @@ internal static class CatalogSecurityBaseline
 
     public const string MutationRateLimitPolicy = "catalog-mutation";
 
+    public const int PublicReadPermitLimit = 240;
+
     public static IServiceCollection AddCatalogSecurityBaseline(this IServiceCollection services, IConfiguration configuration)
     {
         ArgumentNullException.ThrowIfNull(services);
@@ -21,7 +23,7 @@ internal static class CatalogSecurityBaseline
 
         services.AddRateLimiter(options =>
             options.AddRemoteIpFixedWindowPolicies([
-                new RemoteIpFixedWindowRateLimitPolicy(PublicReadRateLimitPolicy, 60, TimeSpan.FromMinutes(1)),
+                new RemoteIpFixedWindowRateLimitPolicy(PublicReadRateLimitPolicy, PublicReadPermitLimit, TimeSpan.FromMinutes(1)),
                 new RemoteIpFixedWindowRateLimitPolicy(MutationRateLimitPolicy, 20, TimeSpan.FromMinutes(1))
             ]));
 

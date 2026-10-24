@@ -1,10 +1,11 @@
 {
   "$schema": "../schema/roadmap-item.schema.json",
   "id": "RM-148",
+  "parent": "RM-303",
   "title": "Research DDD analyzer rule catalog",
   "type": "enabler",
   "status": "proposed",
-  "order": 201,
+  "order": 400,
   "theme": "repo-operations",
   "outcome": "GitHub issue #912 is canonically represented from the reconciliation manifest.",
   "scoring": {
@@ -34,7 +35,8 @@
   ],
   "integrations": {
     "github": {
-      "issue": 912
+      "issue": 912,
+      "nodeId": "I_kwDOQAEVW88AAAABIRod3g"
     }
   }
 }

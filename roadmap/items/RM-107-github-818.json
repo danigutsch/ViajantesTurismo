@@ -5,7 +5,7 @@
   "title": "Review PII logging and sensitive data settings",
   "type": "issue",
   "status": "proposed",
-  "order": 108,
+  "order": 355,
   "theme": "repo-operations",
   "outcome": "GitHub issue #818 is canonically represented from the reconciliation manifest.",
   "scoring": {
@@ -32,7 +32,8 @@
   ],
   "integrations": {
     "github": {
-      "issue": 818
+      "issue": 818,
+      "nodeId": "I_kwDOQAEVW88AAAABH_qP8Q"
     }
   }
 }

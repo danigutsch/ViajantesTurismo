@@ -4,16 +4,10 @@
   "parent": "RM-242",
   "title": "Add an explicit dependency graph refresh command",
   "type": "enabler",
-  "status": "proposed",
-  "order": 258,
+  "status": "done",
+  "triage": "untriaged",
   "theme": "repo-operations",
   "outcome": "GitHub issue #1088 is canonically represented from the reconciliation manifest.",
-  "scoring": {
-    "reach": 1,
-    "impact": 1,
-    "confidence": 0.1,
-    "effort": 3
-  },
   "blockedBy": [],
   "blocks": [],
   "dependencies": [],
@@ -34,7 +28,8 @@
   ],
   "integrations": {
     "github": {
-      "issue": 1088
+      "issue": 1088,
+      "nodeId": "I_kwDOQAEVW88AAAABJFssBQ"
     }
   }
 }

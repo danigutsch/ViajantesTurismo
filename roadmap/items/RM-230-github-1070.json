@@ -4,7 +4,7 @@
   "title": "Epic: governed constants and literal diagnostics",
   "type": "epic",
   "status": "proposed",
-  "order": 346,
+  "order": 502,
   "theme": "repo-operations",
   "outcome": "GitHub issue #1070 is canonically represented from the reconciliation manifest.",
   "scoring": {
@@ -32,7 +32,8 @@
   ],
   "integrations": {
     "github": {
-      "issue": 1070
+      "issue": 1070,
+      "nodeId": "I_kwDOQAEVW88AAAABI7X0pw"
     }
   }
 }

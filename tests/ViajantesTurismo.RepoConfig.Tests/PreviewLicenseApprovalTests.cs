@@ -5,6 +5,7 @@ public sealed class PreviewLicenseApprovalTests
 {
     [Theory]
     [InlineData("0.1.0-alpha.133.1", "2.25.29", "15.0.0", false, true, false, true)]
+    [InlineData("0.1.0-alpha.112.1", "2.25.29", "15.0.0", false, true, false, false)]
     [InlineData("1.0.0-alpha.20261021.2", "2.25.29", "15.0.0", false, true, false, false)]
     [InlineData("1.2.0-alpha.20261023.1", "2.25.29", "15.0.0", false, true, false, false)]
     [InlineData("1.0.0", "2.25.29", "15.0.0", false, true, false, false)]

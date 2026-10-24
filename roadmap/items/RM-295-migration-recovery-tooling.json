@@ -1,0 +1,37 @@
+{
+  "$schema": "../schema/roadmap-item.schema.json",
+  "id": "RM-295",
+  "parent": "RM-212",
+  "title": "Build ordered schema, data, and recovery migration tooling",
+  "type": "feature",
+  "status": "proposed",
+  "triage": "untriaged",
+  "theme": "repo-operations",
+  "outcome": "Build ordered schema, data, and recovery migration tooling.",
+  "blockedBy": [],
+  "blocks": [],
+  "dependencies": [],
+  "tags": [],
+  "labels": [
+    "enhancement",
+    "architecture",
+    "testing",
+    "security",
+    "infrastructure",
+    "type: feature",
+    "area: tooling",
+    "risk: breaking-change"
+  ],
+  "sources": [
+    {
+      "kind": "github-issue",
+      "reference": "https://github.com/danigutsch/ViajantesTurismo/issues/1143"
+    }
+  ],
+  "integrations": {
+    "github": {
+      "issue": 1143,
+      "nodeId": "I_kwDOQAEVW88AAAABJd_6FA"
+    }
+  }
+}

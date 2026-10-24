@@ -5,7 +5,7 @@
   "title": "Standardize application test project ownership",
   "type": "enabler",
   "status": "proposed",
-  "order": 233,
+  "order": 421,
   "theme": "repo-operations",
   "outcome": "GitHub issue #1025 is canonically represented from the reconciliation manifest.",
   "scoring": {
@@ -32,7 +32,8 @@
   ],
   "integrations": {
     "github": {
-      "issue": 1025
+      "issue": 1025,
+      "nodeId": "I_kwDOQAEVW88AAAABIptAdQ"
     }
   }
 }

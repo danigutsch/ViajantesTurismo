@@ -4,7 +4,7 @@
   "title": "Centralize Aspire run, publish, and test resource-mode policy",
   "type": "issue",
   "status": "proposed",
-  "order": 225,
+  "order": 416,
   "theme": "repo-operations",
   "outcome": "GitHub issue #991 is canonically represented from the reconciliation manifest.",
   "scoring": {
@@ -29,7 +29,8 @@
   ],
   "integrations": {
     "github": {
-      "issue": 991
+      "issue": 991,
+      "nodeId": "I_kwDOQAEVW88AAAABIhxrPA"
     }
   }
 }

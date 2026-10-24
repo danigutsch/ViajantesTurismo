@@ -4,7 +4,7 @@
   "title": "Update package versions and reduce central transitive pins",
   "type": "issue",
   "status": "proposed",
-  "order": 111,
+  "order": 356,
   "theme": "repo-operations",
   "outcome": "GitHub issue #879 is canonically represented from the reconciliation manifest.",
   "scoring": {
@@ -31,7 +31,8 @@
   ],
   "integrations": {
     "github": {
-      "issue": 879
+      "issue": 879,
+      "nodeId": "I_kwDOQAEVW88AAAABINQmvg"
     }
   }
 }

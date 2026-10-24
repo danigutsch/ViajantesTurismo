@@ -4,16 +4,10 @@
   "parent": "RM-166",
   "title": "Deliver customer payment instructions safely",
   "type": "issue",
-  "status": "proposed",
-  "order": 212,
+  "status": "done",
+  "triage": "untriaged",
   "theme": "repo-operations",
   "outcome": "GitHub issue #960 is canonically represented from the reconciliation manifest.",
-  "scoring": {
-    "reach": 1,
-    "impact": 1,
-    "confidence": 0.1,
-    "effort": 3
-  },
   "blockedBy": [],
   "blocks": [],
   "dependencies": [],
@@ -29,7 +23,8 @@
   ],
   "integrations": {
     "github": {
-      "issue": 960
+      "issue": 960,
+      "nodeId": "I_kwDOQAEVW88AAAABIcvdVg"
     }
   }
 }

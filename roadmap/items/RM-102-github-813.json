@@ -4,7 +4,7 @@
   "title": "Epic: establish threat model and security baseline",
   "type": "epic",
   "status": "proposed",
-  "order": 334,
+  "order": 490,
   "theme": "repo-operations",
   "outcome": "GitHub issue #813 is canonically represented from the reconciliation manifest.",
   "scoring": {
@@ -32,7 +32,8 @@
   ],
   "integrations": {
     "github": {
-      "issue": 813
+      "issue": 813,
+      "nodeId": "I_kwDOQAEVW88AAAABH_qN3Q"
     }
   }
 }

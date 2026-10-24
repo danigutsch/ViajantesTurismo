@@ -1,10 +1,11 @@
 {
   "$schema": "../schema/roadmap-item.schema.json",
   "id": "RM-150",
+  "parent": "RM-303",
   "title": "Evaluate exposed enums in domain models",
   "type": "enabler",
   "status": "proposed",
-  "order": 203,
+  "order": 402,
   "theme": "repo-operations",
   "outcome": "GitHub issue #914 is canonically represented from the reconciliation manifest.",
   "scoring": {
@@ -32,7 +33,8 @@
   ],
   "integrations": {
     "github": {
-      "issue": 914
+      "issue": 914,
+      "nodeId": "I_kwDOQAEVW88AAAABIRoe3Q"
     }
   }
 }

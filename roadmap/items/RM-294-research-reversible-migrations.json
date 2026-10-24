@@ -1,0 +1,37 @@
+{
+  "$schema": "../schema/roadmap-item.schema.json",
+  "id": "RM-294",
+  "parent": "RM-212",
+  "title": "Research reversible schema and data migration practices",
+  "type": "enabler",
+  "status": "proposed",
+  "triage": "untriaged",
+  "theme": "repo-operations",
+  "outcome": "Research reversible schema and data migration practices.",
+  "blockedBy": [],
+  "blocks": [],
+  "dependencies": [],
+  "tags": [],
+  "labels": [
+    "architecture",
+    "testing",
+    "security",
+    "research",
+    "infrastructure",
+    "type: enabler",
+    "area: tooling",
+    "risk: breaking-change"
+  ],
+  "sources": [
+    {
+      "kind": "github-issue",
+      "reference": "https://github.com/danigutsch/ViajantesTurismo/issues/1142"
+    }
+  ],
+  "integrations": {
+    "github": {
+      "issue": 1142,
+      "nodeId": "I_kwDOQAEVW88AAAABJd_sNw"
+    }
+  }
+}

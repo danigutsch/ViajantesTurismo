@@ -5,7 +5,7 @@
   "title": "Define and enforce CORS policy",
   "type": "enabler",
   "status": "proposed",
-  "order": 172,
+  "order": 377,
   "theme": "repo-operations",
   "outcome": "GitHub issue #817 is canonically represented from the reconciliation manifest.",
   "scoring": {
@@ -32,7 +32,8 @@
   ],
   "integrations": {
     "github": {
-      "issue": 817
+      "issue": 817,
+      "nodeId": "I_kwDOQAEVW88AAAABH_qPiw"
     }
   }
 }

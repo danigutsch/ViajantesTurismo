@@ -4,7 +4,7 @@
   "title": "Add analyzer for SharedKernel helper placement",
   "type": "feature",
   "status": "proposed",
-  "order": 315,
+  "order": 475,
   "theme": "repo-operations",
   "outcome": "GitHub issue #1014 is canonically represented from the reconciliation manifest.",
   "scoring": {
@@ -30,7 +30,8 @@
   ],
   "integrations": {
     "github": {
-      "issue": 1014
+      "issue": 1014,
+      "nodeId": "I_kwDOQAEVW88AAAABIjlosA"
     }
   }
 }

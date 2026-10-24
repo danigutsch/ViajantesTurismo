@@ -5,7 +5,7 @@
   "title": "Document HATEOAS response migration and client impact",
   "type": "documentation",
   "status": "proposed",
-  "order": 107,
+  "order": 354,
   "theme": "repo-operations",
   "outcome": "GitHub issue #795 is canonically represented from the reconciliation manifest.",
   "scoring": {
@@ -32,7 +32,8 @@
   ],
   "integrations": {
     "github": {
-      "issue": 795
+      "issue": 795,
+      "nodeId": "I_kwDOQAEVW88AAAABH_lnGA"
     }
   }
 }

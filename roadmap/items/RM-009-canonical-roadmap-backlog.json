@@ -23,7 +23,8 @@
   ],
   "integrations": {
     "github": {
-      "issue": 1060
+      "issue": 1060,
+      "nodeId": "I_kwDOQAEVW88AAAABI3HiEw"
     }
   }
 }
