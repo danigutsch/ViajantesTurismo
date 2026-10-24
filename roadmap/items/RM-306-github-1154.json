@@ -5,7 +5,7 @@
   "title": "Standardize endpoint I/O and streaming contracts",
   "type": "enabler",
   "status": "proposed",
-  "order": 435,
+  "order": 433,
   "theme": "repo-operations",
   "outcome": "GitHub issue #1154 is canonically represented from the reconciliation manifest.",
   "scoring": {

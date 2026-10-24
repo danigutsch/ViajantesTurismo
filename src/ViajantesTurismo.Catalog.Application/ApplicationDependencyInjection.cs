@@ -53,6 +53,7 @@ public static class ApplicationDependencyInjection
         services.AddGeneratedIntegrationEvents();
         services.TryAddScoped<PublicContentUpsertService>();
         services.TryAddScoped<CatalogTourPresentationService>();
+        services.TryAddScoped<CatalogGalleryMutationGuard>();
 
         return services;
     }

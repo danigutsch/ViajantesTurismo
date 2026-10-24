@@ -2,6 +2,7 @@ using PandaBear.AspNetCore;
 using PandaBear.HttpCaching.AspNetCore;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authentication.OpenIdConnect;
 using ViajantesTurismo.Management.Web.Components;
@@ -92,7 +93,6 @@ internal static class ManagementWebEndpoints
     {
         return !string.IsNullOrWhiteSpace(returnUrl)
                && returnUrl.StartsWith('/')
-               && !returnUrl.StartsWith("//", StringComparison.Ordinal)
-               && !returnUrl.StartsWith("/\\", StringComparison.Ordinal);
+               && RedirectHttpResult.IsLocalUrl(returnUrl);
     }
 }

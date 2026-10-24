@@ -4,7 +4,7 @@
   "title": "Add privacy regression tests for sensitive outputs",
   "type": "enabler",
   "status": "proposed",
-  "order": 379,
+  "order": 378,
   "theme": "repo-operations",
   "outcome": "GitHub issue #843 is canonically represented from the reconciliation manifest.",
   "scoring": {

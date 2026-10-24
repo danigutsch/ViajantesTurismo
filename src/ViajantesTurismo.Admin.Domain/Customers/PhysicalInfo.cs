@@ -60,6 +60,11 @@ public sealed class PhysicalInfo
     {
         var errors = new ValidationErrors();
 
+        if (!Enum.IsDefined(bikeType))
+        {
+            errors.Add(InvalidBikeType());
+        }
+
         if (weightKg is < AdminDomainLimits.MinWeightKg or > AdminDomainLimits.MaxWeightKg)
         {
             errors.Add(InvalidWeight());

@@ -1,4 +1,5 @@
 using PandaBear.Testing;
+using Microsoft.EntityFrameworkCore.Storage;
 using ViajantesTurismo.Catalog.Domain.Media;
 using ViajantesTurismo.Catalog.Domain.PublicContent;
 using ViajantesTurismo.Catalog.Infrastructure;
@@ -10,6 +11,34 @@ namespace ViajantesTurismo.Catalog.UnitTests;
 [Trait(SharedKernelTestTraitNames.CapabilityName, TestTraits.AiAccessibilityCapability)]
 public sealed class EfPublicMediaImageStoreTests
 {
+    [Fact]
+    public async Task Image_reload_observes_metadata_committed_while_the_caller_waited_for_a_lease()
+    {
+        // Arrange
+        var database = Guid.CreateVersion7().ToString("N");
+        var root = new InMemoryDatabaseRoot();
+        await using var firstContext = CatalogDbContextTestFactory.Create(database, root);
+        await using var secondContext = CatalogDbContextTestFactory.Create(database, root);
+        var firstStore = new EfPublicMediaImageStore(firstContext);
+        var secondStore = new EfPublicMediaImageStore(secondContext);
+        var image = PublicMediaImageTestFactory.CreateImage(Guid.CreateVersion7(), 0, true);
+        await firstStore.Upsert(image, TestContext.Current.CancellationToken);
+        var beforeWait = await firstStore.GetImage(image.Id, TestContext.Current.CancellationToken);
+        beforeWait.ShouldNotBeNull();
+        var concurrent = await secondStore.GetImage(image.Id, TestContext.Current.CancellationToken);
+        concurrent.ShouldNotBeNull();
+        concurrent.SetReviewedAccessibilityText(PublicContentLanguage.EnUs, "Publisher approved replacement", "Approved caption", false).IsSuccess.ShouldBeTrue();
+        await secondStore.Upsert(concurrent, TestContext.Current.CancellationToken);
+
+        // Act
+        var afterWait = await firstStore.GetImage(image.Id, TestContext.Current.CancellationToken);
+
+        // Assert
+        afterWait.ShouldNotBeNull();
+        afterWait.AltText.ShouldBe("Publisher approved replacement");
+        afterWait.Caption.ShouldBe("Approved caption");
+    }
+
     [Fact]
     public async Task Pending_draft_timestamp_survives_persistence_and_clears_only_for_reviewed_language()
     {

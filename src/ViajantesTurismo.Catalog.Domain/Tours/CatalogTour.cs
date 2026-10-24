@@ -73,6 +73,16 @@ public sealed class CatalogTour : EventSourcedAggregateRoot<Guid>
         get; private set;
     }
 
+    /// <summary>Determines whether gallery content can change with the caller's publication authority.</summary>
+    /// <param name="canPublish">Whether the caller can approve public Catalog content.</param>
+    /// <param name="isPubliclyVisible">Whether the current public projection still exposes the tour.</param>
+    /// <param name="projectionVersion">The event stream version represented by the public projection.</param>
+    /// <returns>Whether gallery changes are permitted in the current publication state.</returns>
+    public bool CanEditGallery(bool canPublish, bool isPubliclyVisible, long projectionVersion)
+    {
+        return canPublish || (!IsPublished && !isPubliclyVisible && projectionVersion == Version);
+    }
+
     /// <summary>
     /// Creates a draft Catalog tour from an Admin tour-created event.
     /// </summary>

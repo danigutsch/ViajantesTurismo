@@ -1,4 +1,6 @@
 using Microsoft.EntityFrameworkCore;
+using Npgsql;
+using ViajantesTurismo.Catalog.Application.Tours;
 using Microsoft.Extensions.DependencyInjection;
 using PandaBear.EntityFrameworkCore;
 using PandaBear.IntegrationTesting;
@@ -12,6 +14,7 @@ internal sealed class GalleryPlacementPostgreSqlScenario : IAsyncDisposable
     private const string PostgreSqlResourceName = "postgres";
     private const string DatabaseResourceName = "catalog";
     private readonly AspireTestApplication app;
+    private readonly NpgsqlDataSource mutationDataSource;
     private readonly string connectionString;
     private readonly ServiceProvider serviceProvider;
 
@@ -19,6 +22,7 @@ internal sealed class GalleryPlacementPostgreSqlScenario : IAsyncDisposable
     {
         this.app = app;
         this.connectionString = connectionString;
+        mutationDataSource = NpgsqlDataSource.Create(connectionString);
         this.serviceProvider = serviceProvider;
     }
 
@@ -37,6 +41,27 @@ internal sealed class GalleryPlacementPostgreSqlScenario : IAsyncDisposable
         var serviceProvider = services.BuildServiceProvider();
 
         return new GalleryPlacementPostgreSqlScenario(app, connectionString, serviceProvider);
+    }
+
+    public ICatalogTourMutationLock CreateMutationLock()
+    {
+        return new PostgreSqlCatalogTourMutationLock(mutationDataSource);
+    }
+
+    public async Task WaitForBlockedMutation(CancellationToken ct)
+    {
+        await using var connection = new NpgsqlConnection(connectionString);
+        await connection.OpenAsync(ct);
+        while (true)
+        {
+            ct.ThrowIfCancellationRequested();
+            await using var command = connection.CreateCommand();
+            command.CommandText = "SELECT EXISTS (SELECT 1 FROM pg_stat_activity WHERE wait_event = 'advisory' AND query LIKE 'SELECT pg_advisory_xact_lock%');";
+            if (await command.ExecuteScalarAsync(ct) is true)
+            {
+                return;
+            }
+        }
     }
 
     public CatalogDbContext CreateDbContext()
@@ -73,6 +98,7 @@ internal sealed class GalleryPlacementPostgreSqlScenario : IAsyncDisposable
     public async ValueTask DisposeAsync()
     {
         await serviceProvider.DisposeAsync();
+        await mutationDataSource.DisposeAsync();
         await app.DisposeAsync();
     }
 }

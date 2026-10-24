@@ -163,11 +163,11 @@ internal static class ImportCustomersCsvProcessor
         {
             sb.Append(row.LineNumber)
                 .Append(',')
-                .Append(EscapeCsvValue(row.Field ?? string.Empty))
+                .Append(EscapeReportValue(row.Field ?? string.Empty))
                 .Append(',')
-                .Append(EscapeCsvValue(row.Message))
+                .Append(EscapeReportValue(row.Message))
                 .Append(',')
-                .Append(EscapeCsvValue(row.Email ?? string.Empty))
+                .Append(EscapeReportValue(row.Email ?? string.Empty))
                 .AppendLine();
         }
 
@@ -267,6 +267,23 @@ internal static class ImportCustomersCsvProcessor
         }
 
         return mergedValues;
+    }
+
+    private static string EscapeReportValue(string value)
+    {
+        var candidate = value.AsSpan();
+        while (!candidate.IsEmpty && (char.IsWhiteSpace(candidate[0]) || char.IsControl(candidate[0])))
+        {
+            candidate = candidate[1..];
+        }
+
+        if ((!candidate.IsEmpty && candidate[0] is '=' or '+' or '-' or '@' or '＝' or '＋' or '－' or '＠')
+            || (value.Length > 0 && char.IsControl(value[0])))
+        {
+            return $"\"'{value.Replace("\"", "\"\"", StringComparison.Ordinal)}\"";
+        }
+
+        return EscapeCsvValue(value);
     }
 
     private static string EscapeCsvValue(string value) =>

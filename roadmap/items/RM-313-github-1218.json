@@ -1,0 +1,37 @@
+{
+  "$schema": "../schema/roadmap-item.schema.json",
+  "id": "RM-313",
+  "parent": "RM-304",
+  "title": "Make signed media upload-ticket expiry deterministic",
+  "type": "issue",
+  "status": "proposed",
+  "order": 440,
+  "theme": "repo-operations",
+  "outcome": "GitHub issue #1218 is canonically represented from the reconciliation manifest.",
+  "scoring": {
+    "reach": 1,
+    "impact": 1,
+    "confidence": 0.1,
+    "effort": 3
+  },
+  "blockedBy": [],
+  "blocks": [],
+  "dependencies": [],
+  "tags": [],
+  "labels": [
+    "architecture",
+    "testing"
+  ],
+  "sources": [
+    {
+      "kind": "github-issue",
+      "reference": "#1218"
+    }
+  ],
+  "integrations": {
+    "github": {
+      "issue": 1218,
+      "nodeId": "I_kwDOQAEVW88AAAABZk_LvA"
+    }
+  }
+}

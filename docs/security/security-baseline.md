@@ -35,6 +35,10 @@ that proxy; otherwise clients can share the proxy IP rate-limit bucket. Set
 `Security:ForwardedHeaders:ForwardLimit` explicitly from the expected `X-Forwarded-For` proxy hop count when
 traffic crosses multiple proxies; CIDR network entries do not imply a hop count.
 
+The [public visitor deployment validation record](../operations/public-visitor-deployment-validation.md)
+documents local multi-frontend controls, process-local quota limits, and the remaining deployed
+topology and effective-configuration evidence.
+
 ## Sensitive data logging
 
 Catalog EF sensitive data logging is development-gated. Production and non-development environments must not

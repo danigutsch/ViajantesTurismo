@@ -11,6 +11,7 @@ public sealed class CatalogTourPresentationService(
     IEventStore eventStore,
     ICatalogTourReadModelStore readModelStore,
     ICatalogTourSlugLock slugLock,
+    ICatalogTourMutationLock mutationLock,
     CatalogTourReadModelProjection projection)
 {
     /// <summary>
@@ -66,6 +67,7 @@ public sealed class CatalogTourPresentationService(
     /// <returns>The refreshed management projection, or <see langword="null" /> when the tour is missing.</returns>
     public async ValueTask<CatalogTourDraftReadModel?> Publish(Guid catalogTourId, long expectedVersion, CancellationToken ct)
     {
+        await using var mutationLease = await mutationLock.Acquire([catalogTourId], ct).ConfigureAwait(false);
         var (aggregate, streamId) = await LoadTour(catalogTourId, expectedVersion, ct).ConfigureAwait(false);
         if (aggregate is null)
         {
@@ -85,6 +87,7 @@ public sealed class CatalogTourPresentationService(
     /// <returns>The refreshed management projection, or <see langword="null" /> when the tour is missing.</returns>
     public async ValueTask<CatalogTourDraftReadModel?> Unpublish(Guid catalogTourId, long expectedVersion, CancellationToken ct)
     {
+        await using var mutationLease = await mutationLock.Acquire([catalogTourId], ct).ConfigureAwait(false);
         var (aggregate, streamId) = await LoadTour(catalogTourId, expectedVersion, ct).ConfigureAwait(false);
         if (aggregate is null)
         {

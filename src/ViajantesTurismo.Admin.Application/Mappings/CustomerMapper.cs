@@ -70,7 +70,7 @@ public static class CustomerMapper
     /// <summary>
     /// Maps an <see cref="AccommodationPreferencesDto"/> to an <see cref="AccommodationPreferences"/> domain object.
     /// </summary>
-    public static AccommodationPreferences MapToAccommodationPreferences(AccommodationPreferencesDto dto)
+    public static Result<AccommodationPreferences> MapToAccommodationPreferences(AccommodationPreferencesDto dto)
     {
         ArgumentNullException.ThrowIfNull(dto);
 

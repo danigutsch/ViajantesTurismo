@@ -1,7 +1,7 @@
 {
   "repository": "danigutsch/ViajantesTurismo",
   "retrievedOn": "2026-10-24",
-  "repositoryCommit": "c93781a445cad94d77b24cc50de01c85cf2af8c9",
+  "repositoryCommit": "3eb3732d68b2736775d16f2fb146e40993d6d00e",
   "source": "GitHub GraphQL repository.issues snapshot with parent, subissue, label, and blocker metadata.",
   "ruleVersion": "structural-parent-subissue-blocker-v1",
   "mechanicalPriorityOverride": {
@@ -31,7 +31,7 @@
     "Only exact GitHub blocker relationships may become canonical blockedBy and blocks links.",
     "Only an explicit closedItemTransitions entry can move an imported open item to closed support."
   ],
-  "snapshotDigest": "5a99fcf471f36d8f6ea368abc545ec7e99a6d578cb63b8674130ee35eb96b688",
+  "snapshotDigest": "cafe62cb89d1692ed8163f0e5a8ae6bfdff33d88c839593fa7129c511d737c34",
   "blockerEdges": [
     {
       "blocker": 484,
@@ -188,7 +188,7 @@
       "blocked": {
         "repository": "danigutsch/ViajantesTurismo",
         "issue": 1041,
-        "state": "OPEN"
+        "state": "CLOSED"
       }
     },
     {
@@ -200,7 +200,7 @@
       "blocked": {
         "repository": "danigutsch/ViajantesTurismo",
         "issue": 1041,
-        "state": "OPEN"
+        "state": "CLOSED"
       }
     }
   ],
@@ -208,6 +208,10 @@
     {
       "issue": 488,
       "roadmapItem": "RM-024"
+    },
+    {
+      "issue": 512,
+      "roadmapItem": "RM-026"
     },
     {
       "issue": 529,
@@ -330,8 +334,16 @@
       "roadmapItem": "RM-120"
     },
     {
+      "issue": 888,
+      "roadmapItem": "RM-131"
+    },
+    {
       "issue": 902,
       "roadmapItem": "RM-139"
+    },
+    {
+      "issue": 903,
+      "roadmapItem": "RM-140"
     },
     {
       "issue": 910,
@@ -418,6 +430,14 @@
       "roadmapItem": "RM-202"
     },
     {
+      "issue": 1040,
+      "roadmapItem": "RM-220"
+    },
+    {
+      "issue": 1041,
+      "roadmapItem": "RM-221"
+    },
+    {
       "issue": 1069,
       "roadmapItem": "RM-229"
     },
@@ -428,6 +448,10 @@
     {
       "issue": 1081,
       "roadmapItem": "RM-239"
+    },
+    {
+      "issue": 1086,
+      "roadmapItem": "RM-242"
     },
     {
       "issue": 1087,
@@ -540,23 +564,20 @@
   "unmappedStructuralRoots": [
     342,
     476,
-    512,
     588,
     682,
     696,
     789,
-    903,
     904,
     948,
     983,
     1022,
     1037,
-    1040,
     1070,
     1076,
-    1086,
     1113,
-    1131
+    1131,
+    1225
   ],
   "needsHuman": [
     394,
@@ -600,7 +621,6 @@
     878,
     879,
     881,
-    888,
     891,
     892,
     893,
@@ -648,7 +668,6 @@
     1036,
     1038,
     1039,
-    1041,
     1042,
     1046,
     1051,
@@ -681,14 +700,23 @@
     1212,
     1213,
     1214,
-    1215
+    1215,
+    1218,
+    1219,
+    1220,
+    1221,
+    1222,
+    1223,
+    1224,
+    1226,
+    1227
   ],
   "integrity": {
-    "expectedIssueCount": 162,
+    "expectedIssueCount": 166,
     "expectedDirectCanonicalPrimaryCount": 5,
     "expectedChildrenOfCanonicalPrimaryCount": 15,
-    "expectedUnmappedStructuralRootCount": 19,
-    "expectedNeedsHumanCount": 123,
+    "expectedUnmappedStructuralRootCount": 16,
+    "expectedNeedsHumanCount": 130,
     "expectedBlockerEdgeCount": 24,
     "expectedExternalBlockerEdgeCount": 2,
     "dispositionsAreDisjoint": true,

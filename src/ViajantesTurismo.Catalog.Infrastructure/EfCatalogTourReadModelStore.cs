@@ -142,6 +142,7 @@ internal sealed class EfCatalogTourReadModelStore(
     public async ValueTask<CatalogTourDraftReadModel?> GetTour(Guid catalogTourId, CancellationToken ct)
     {
         var tour = await dbContext.CatalogTourReadModels
+            .AsNoTracking()
             .SingleOrDefaultAsync(tour => tour.CatalogTourId == catalogTourId, ct)
             .ConfigureAwait(false);
 

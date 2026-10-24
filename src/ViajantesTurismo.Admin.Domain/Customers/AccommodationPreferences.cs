@@ -1,4 +1,5 @@
 using JetBrains.Annotations;
+using PandaBear.Results;
 using ViajantesTurismo.Admin.Domain.Shared;
 
 namespace ViajantesTurismo.Admin.Domain.Customers;
@@ -53,7 +54,25 @@ public sealed class AccommodationPreferences
     /// <param name="roomType">The room type.</param>
     /// <param name="bedType">The bed type.</param>
     /// <param name="companionId">The companion's ID.</param>
-    /// <returns>The accommodation preferences.</returns>
-    public static AccommodationPreferences Create(RoomType roomType, BedType bedType, Guid? companionId) =>
-        new(roomType, bedType, companionId);
+    /// <returns>The validated accommodation preferences or validation errors.</returns>
+    public static Result<AccommodationPreferences> Create(RoomType roomType, BedType bedType, Guid? companionId)
+    {
+        var errors = new ValidationErrors();
+        if (!Enum.IsDefined(roomType))
+        {
+            errors.Add(CustomerErrors.InvalidRoomType());
+        }
+
+        if (!Enum.IsDefined(bedType))
+        {
+            errors.Add(CustomerErrors.InvalidBedType());
+        }
+
+        if (errors.HasErrors)
+        {
+            return errors.ToResult<AccommodationPreferences>();
+        }
+
+        return Result.Ok(new AccommodationPreferences(roomType, bedType, companionId));
+    }
 }

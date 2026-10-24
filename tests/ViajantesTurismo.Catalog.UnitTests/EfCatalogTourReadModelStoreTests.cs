@@ -8,6 +8,35 @@ namespace ViajantesTurismo.Catalog.UnitTests;
 public sealed class EfCatalogTourReadModelStoreTests
 {
     [Fact]
+    [Trait(PandaBear.Testing.TestTraitNames.CategoryName, PandaBear.Testing.TestTraitValues.SecurityCategory)]
+    public async Task Tour_reload_observes_public_visibility_committed_while_waiting_for_a_lease()
+    {
+        // Arrange
+        var database = Guid.CreateVersion7().ToString("N");
+        var root = new InMemoryDatabaseRoot();
+        await using var firstContext = CatalogDbContextTestFactory.Create(database, root);
+        await using var secondContext = CatalogDbContextTestFactory.Create(database, root);
+        var firstStore = new EfCatalogTourReadModelStore(firstContext);
+        var secondStore = new EfCatalogTourReadModelStore(secondContext);
+        var tour = EfCatalogTourReadModelStoreTestsHelpers.CreateTour(Guid.CreateVersion7(), "Tour") with
+        {
+            Summary = "Ready for public delivery"
+        };
+        await firstStore.UpsertDraft(tour, TestContext.Current.CancellationToken);
+        var beforeWait = await firstStore.GetTour(tour.CatalogTourId, TestContext.Current.CancellationToken);
+        beforeWait.ShouldNotBeNull();
+        _ = await secondStore.SetPublicationStatus(tour.CatalogTourId, true, 2, 2, TimeProvider.System.GetUtcNow(), TestContext.Current.CancellationToken);
+
+        // Act
+        var afterWait = await firstStore.GetTour(tour.CatalogTourId, TestContext.Current.CancellationToken);
+
+        // Assert
+        afterWait.ShouldNotBeNull();
+        afterWait.IsPubliclyVisible.ShouldBeTrue();
+        afterWait.StreamVersion.ShouldBe(2);
+    }
+
+    [Fact]
     public async Task ListTours_returns_stable_title_ordering()
     {
         // Arrange

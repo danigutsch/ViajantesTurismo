@@ -1,6 +1,7 @@
 using ViajantesTurismo.Admin.Application.Mappings;
 using ViajantesTurismo.Admin.Application.Tours;
 using PandaBear.Results;
+using ViajantesTurismo.Admin.Domain.Customers;
 using ViajantesTurismo.Admin.Domain.Tours;
 
 namespace ViajantesTurismo.Admin.Application.Bookings.UpdateBookingDetails;
@@ -10,6 +11,7 @@ namespace ViajantesTurismo.Admin.Application.Bookings.UpdateBookingDetails;
 /// </summary>
 public sealed class UpdateBookingDetailsCommandHandler(
     ITourStore tourStore,
+    ICustomerStore customerStore,
     ITourCapacityMutationLock capacityMutationLock,
     IUnitOfWork unitOfWork)
 {
@@ -34,6 +36,15 @@ public sealed class UpdateBookingDetailsCommandHandler(
         if (tour is null)
         {
             return BookingErrors.BookingNotFound(command.BookingId);
+        }
+
+        if (command.CompanionCustomerId.HasValue)
+        {
+            var companion = await customerStore.GetById(command.CompanionCustomerId.Value, ct);
+            if (companion is null)
+            {
+                return CustomerErrors.CustomerNotFound(command.CompanionCustomerId.Value);
+            }
         }
 
         var result = tour.UpdateBookingDetails(

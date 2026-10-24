@@ -1,0 +1,41 @@
+{
+  "$schema": "../schema/roadmap-item.schema.json",
+  "id": "RM-321",
+  "parent": "RM-320",
+  "title": "Validate trusted proxy configuration and visitor isolation across replicas",
+  "type": "enabler",
+  "status": "proposed",
+  "order": 447,
+  "theme": "repo-operations",
+  "outcome": "GitHub issue #1226 is canonically represented from the reconciliation manifest.",
+  "scoring": {
+    "reach": 1,
+    "impact": 1,
+    "confidence": 0.1,
+    "effort": 3
+  },
+  "blockedBy": [],
+  "blocks": [],
+  "dependencies": [],
+  "tags": [],
+  "labels": [
+    "configuration",
+    "infrastructure",
+    "public-web",
+    "security",
+    "testing",
+    "type: enabler"
+  ],
+  "sources": [
+    {
+      "kind": "github-issue",
+      "reference": "#1226"
+    }
+  ],
+  "integrations": {
+    "github": {
+      "issue": 1226,
+      "nodeId": "I_kwDOQAEVW88AAAABZlCvAA"
+    }
+  }
+}
