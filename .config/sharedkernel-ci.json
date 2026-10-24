@@ -4,7 +4,11 @@
   "selection": {
     "fullValidation": [
       ".config/*",
-      ".github/*",
+      ".github/workflows/*",
+      ".github/actions/*",
+      ".github/dependabot.yml",
+      ".github/actionlint.yaml",
+      ".github/labels.json",
       "*.props",
       "*.targets",
       "*.slnx",
@@ -29,7 +33,14 @@
       "README.md",
       "AGENTS.md",
       "CONTRIBUTING.md",
-      "SECURITY.md"
+      "SECURITY.md",
+      ".github/*.md",
+      ".github/ISSUE_TEMPLATE/*",
+      ".github/agents/*",
+      ".github/instructions/*",
+      ".github/prompts/*",
+      ".agents/*",
+      ".claude/*"
     ],
     "alwaysSelected": [
       "tests/ViajantesTurismo.Admin.ContractTests/ViajantesTurismo.Admin.ContractTests.csproj",
