@@ -29,8 +29,9 @@ Set that variable to the current repository CI baseline runner. `OpenAPI Tool Wi
 | Job name | `Calculate Version` |
 | Runner | Repository CI baseline |
 
-For build-relevant changes, this job waits for selection, checks out full history, restores only `SharedKernel.Versioning.Tool`, and runs
-`SharedKernel.Versioning.Tool calculate-release`. The tool finds the latest `v*` SemVer tag when one exists;
+For build-relevant changes, this job waits for selection, checks out full history, stages the pinned SharedKernel
+candidate through `setup-ci-prerequisites`, restores the local tools, and runs
+`dotnet tool run sharedkernel-version -- calculate-release` with its values passed through `env:`. The tool finds the latest `v*` SemVer tag when one exists;
 otherwise it uses `0.1.0` as the base while the repository has no versioned release tags. It feeds
 commit messages into `sharedkernel-version compute` and exposes the calculated SemVer, release impact,
 package version, assembly version, file version, informational version, base version, source tag, and
@@ -114,8 +115,7 @@ Test-slice project membership is now centralized under `scripts/ci-test-slices/*
 restore, build, test, and coverage inputs for each slice stay aligned instead of
 duplicating project lists in multiple workflow locations.
 
-Keep all six canonical slice files when extracting SharedKernel into its own repository. A slice
-may become empty after its last test project leaves the application solution; selection emits
+Keep all five canonical slice files. A slice may become empty after its last test project leaves the application solution; selection emits
 `<slice>_required=false`, and the existing matrix skip step reports success without restoring or
 running that slice. Every xUnit project still in the application solution must remain assigned
 exactly once. Emptying a manifest while leaving its projects in the solution fails membership

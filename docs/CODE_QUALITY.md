@@ -398,7 +398,7 @@ dotnet tool restore      # Install all pinned .NET tools
 
 ## Local Validation
 
-The repository no longer installs git hooks by default.
+The repository installs no Git hooks.
 
 - Lint is CI-owned and runs through `bash scripts/lint-all.sh` and `DavidAnson/markdownlint-cli2-action` in workflows.
 - `bash scripts/lint-all.sh --fix` is available locally to apply supported autofixes before strict checks.
@@ -412,11 +412,8 @@ The repository no longer installs git hooks by default.
   Python-based linters.
 - If Docker is unavailable, wrappers use local tools when present and fail with an explicit message
   when neither local tool nor Docker is available.
-- Commit message validation remains available locally through
+- Validate a commit message locally with
   `dotnet tool run sharedkernel-ci -- verify-commit-message --file <path-to-commit-message-file>`.
-- If you previously installed repository hooks from an older revision, remove or replace the copied
-  files under `git rev-parse --git-path hooks` so commits do not keep calling deleted npm-based
-  hook scripts.
 - For the repository's explicit local helper-tool acquisition rules, see
   [Local tool security model](local-tool-security.md).
 

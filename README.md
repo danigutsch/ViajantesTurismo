@@ -102,7 +102,9 @@ This script will:
 - ✅ Install a missing exact SDK side-by-side only when explicitly requested
 - ✅ Build `sharedkernel-ci` from the pinned SharedKernel source and stage the pinned candidate
 - ✅ Restore .NET dependencies (`dotnet restore --locked-mode`)
-- ✅ Restore .NET local tools (`dotnet tool restore` - includes dotnet-ef, reportgenerator, Aspire CLI)
+- ✅ Restore .NET local tools (`dotnet tool restore` - includes dotnet-ef, reportgenerator, Aspire CLI, and the
+  SharedKernel tools `sharedkernel-ci`, `sharedkernel-repo`, `sharedkernel-version`, `sharedkernel-docs`,
+  `sharedkernel-playwright-mcp`, and `sharedkernel-codefix`)
 - ✅ Verify PowerShell availability for Playwright browser installation
 - ✅ Explain the Playwright browser install step (`bash scripts/install-playwright.sh` after build)
 - ✅ Detect optional PSScriptAnalyzer for PowerShell linting (PowerShell only)
@@ -125,7 +127,7 @@ Optional local tools by task:
 
 CI-only tools by default:
 
-- Markdown/Gherkin/JSON/link lint containers and wrappers used by `bash scripts/lint-all.sh`
+- Markdown/Gherkin/link lint containers and wrappers used by `bash scripts/lint-all.sh`
 - dependency-review, secret-scanning, and workflow-governance tooling owned by GitHub Actions
 
 Devcontainer-provided tools:
@@ -168,7 +170,8 @@ bash scripts/ensure-dotnet-sdk.sh --install
 git clone https://github.com/danigutsch/ViajantesTurismo.git
 cd ViajantesTurismo
 
-# 3. Restore .NET dependencies and tools
+# 3. Stage the pinned SharedKernel candidate (manual steps: docs/sharedkernel/development.md#stage-the-candidate),
+#    then restore .NET dependencies and tools
 dotnet restore --locked-mode
 dotnet tool restore
 
