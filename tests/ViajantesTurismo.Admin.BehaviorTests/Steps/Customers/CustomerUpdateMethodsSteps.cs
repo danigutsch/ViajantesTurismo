@@ -1,3 +1,4 @@
+using ViajantesTurismo.Admin.Application.Mappings;
 using ViajantesTurismo.Admin.Domain.Shared;
 
 namespace ViajantesTurismo.Admin.BehaviorTests.Steps.Customers;
@@ -61,65 +62,122 @@ public sealed class CustomerUpdateMethodsSteps(CustomerContext customerContext)
     [When(@"I update the personal info to ""(.*)"" ""(.*)""")]
     public void WhenIUpdateThePersonalInfoTo(string firstName, string lastName)
     {
-        var personalInfo = PersonalInfo.Create(
-            firstName,
-            lastName,
-            "Male",
-            DateOnly.FromDateTime(TimeProvider.System.GetUtcNow().UtcDateTime.AddYears(-30)),
-            "USA",
-            "Engineer",
-            DateOnly.FromDateTime(TimeProvider.System.GetUtcNow().UtcDateTime)).Value;
-        customerContext.Customer.UpdatePersonalInfo(personalInfo);
+        var definition = CustomerMapper.MapToDefinition(customerContext.Customer) with
+        {
+            PersonalInfo = new PersonalInfoDefinition(
+                firstName,
+                lastName,
+                "Male",
+                DateOnly.FromDateTime(TimeProvider.System.GetUtcNow().UtcDateTime.AddYears(-30)),
+                "USA",
+                "Engineer")
+        };
+
+        var result = customerContext.Customer.Revise(definition, DateOnly.FromDateTime(TimeProvider.System.GetUtcNow().UtcDateTime));
+
+        result.IsSuccess.ShouldBeTrue();
     }
 
     [When(@"I update the identification info to passport ""(.*)""")]
     public void WhenIUpdateTheIdentificationInfoToPassport(string passport)
     {
-        var identificationInfo = IdentificationInfo.Create(passport, "USA").Value;
-        customerContext.Customer.UpdateIdentificationInfo(identificationInfo);
+        var definition = CustomerMapper.MapToDefinition(customerContext.Customer) with
+        {
+            IdentificationInfo = new IdentificationInfoDefinition(passport, "USA")
+        };
+
+        var result = customerContext.Customer.Revise(definition, DateOnly.FromDateTime(TimeProvider.System.GetUtcNow().UtcDateTime));
+
+        result.IsSuccess.ShouldBeTrue();
     }
 
     [When(@"I update the contact info to email ""(.*)""")]
     public void WhenIUpdateTheContactInfoToEmail(string email)
     {
-        var contactInfo = ContactInfo.Create(email, "+1234567890", null, null).Value;
-        customerContext.Customer.UpdateContactInfo(contactInfo);
+        var definition = CustomerMapper.MapToDefinition(customerContext.Customer) with
+        {
+            ContactInfo = new ContactInfoDefinition(email, "+1234567890", null, null)
+        };
+
+        var result = customerContext.Customer.Revise(definition, DateOnly.FromDateTime(TimeProvider.System.GetUtcNow().UtcDateTime));
+
+        result.IsSuccess.ShouldBeTrue();
     }
 
     [When(@"I update the address to city ""(.*)""")]
     public void WhenIUpdateTheAddressToCity(string city)
     {
-        var address = Address.Create("123 Main St", null, "Downtown", "12345", city, "CA", "USA").Value;
-        customerContext.Customer.UpdateAddress(address);
+        var definition = CustomerMapper.MapToDefinition(customerContext.Customer) with
+        {
+            Address = new AddressDefinition("123 Main St", null, "Downtown", "12345", city, "CA", "USA")
+        };
+
+        var result = customerContext.Customer.Revise(definition, DateOnly.FromDateTime(TimeProvider.System.GetUtcNow().UtcDateTime));
+
+        result.IsSuccess.ShouldBeTrue();
     }
 
     [When("I update the physical info to height (.*)")]
     public void WhenIUpdateThePhysicalInfoToHeight(int height)
     {
-        var physicalInfo = PhysicalInfo.Create(70, height, BikeType.Regular).Value;
-        customerContext.Customer.UpdatePhysicalInfo(physicalInfo);
+        var definition = CustomerMapper.MapToDefinition(customerContext.Customer) with
+        {
+            PhysicalInfo = new PhysicalInfoDefinition(70, height, BikeType.Regular)
+        };
+
+        var result = customerContext.Customer.Revise(definition, DateOnly.FromDateTime(TimeProvider.System.GetUtcNow().UtcDateTime));
+
+        result.IsSuccess.ShouldBeTrue();
     }
 
     [When(@"I update the accommodation preferences to bed type ""(.*)""")]
     public void WhenIUpdateTheAccommodationPreferencesToBedType(string bedType)
     {
-        var bedTypeEnum = Enum.Parse<BedType>(bedType + "Bed");
-        var accommodationPreferences = AccommodationPreferences.Create(RoomType.DoubleOccupancy, bedTypeEnum, null).Value;
-        customerContext.Customer.UpdateAccommodationPreferences(accommodationPreferences);
+        var definition = CustomerMapper.MapToDefinition(customerContext.Customer) with
+        {
+            AccommodationPreferences = new AccommodationPreferencesDefinition(
+                RoomType.DoubleOccupancy,
+                Enum.Parse<BedType>(bedType + "Bed"),
+                null)
+        };
+
+        var result = customerContext.Customer.Revise(definition, DateOnly.FromDateTime(TimeProvider.System.GetUtcNow().UtcDateTime));
+
+        result.IsSuccess.ShouldBeTrue();
     }
 
     [When(@"I update the emergency contact to ""(.*)""")]
     public void WhenIUpdateTheEmergencyContactTo(string name)
     {
-        var emergencyContact = EmergencyContact.Create(name, "+9876543210").Value;
-        customerContext.Customer.UpdateEmergencyContact(emergencyContact);
+        var definition = CustomerMapper.MapToDefinition(customerContext.Customer) with
+        {
+            HealthInfo = CustomerMapper.MapToDefinition(customerContext.Customer).HealthInfo with
+            {
+                EmergencyContactName = name,
+                EmergencyContactMobile = "+9876543210"
+            }
+        };
+
+        var result = customerContext.Customer.Revise(definition, DateOnly.FromDateTime(TimeProvider.System.GetUtcNow().UtcDateTime));
+
+        result.IsSuccess.ShouldBeTrue();
     }
 
     [When(@"I update the medical info to allergies ""(.*)""")]
     public void WhenIUpdateTheMedicalInfoToAllergies(string allergies)
     {
-        var medicalInfo = MedicalInfo.Create(allergies, "None").Value;
-        customerContext.Customer.UpdateMedicalInfo(medicalInfo);
+        var definition = CustomerMapper.MapToDefinition(customerContext.Customer) with
+        {
+            HealthInfo = CustomerMapper.MapToDefinition(customerContext.Customer).HealthInfo with
+            {
+                Allergies = allergies,
+                AdditionalInfo = "None"
+            }
+        };
+
+        var result = customerContext.Customer.Revise(definition, DateOnly.FromDateTime(TimeProvider.System.GetUtcNow().UtcDateTime));
+
+        result.IsSuccess.ShouldBeTrue();
     }
 
     [Then("the customer personal info update should succeed")]

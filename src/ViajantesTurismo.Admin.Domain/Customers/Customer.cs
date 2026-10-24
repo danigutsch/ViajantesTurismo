@@ -1,6 +1,6 @@
-using System.Diagnostics.CodeAnalysis;
 using JetBrains.Annotations;
 using PandaBear.Domain;
+using PandaBear.Results;
 
 namespace ViajantesTurismo.Admin.Domain.Customers;
 
@@ -10,28 +10,15 @@ namespace ViajantesTurismo.Admin.Domain.Customers;
 [GenerateModelSupport(Identity = true)]
 public sealed partial class Customer : IEntity<Guid>
 {
-    /// <summary>
-    /// Initializes a new instance of the <see cref="Customer"/> class.
-    /// </summary>
-    /// <param name="personalInfo">The personal information.</param>
-    /// <param name="identificationInfo">The identification information.</param>
-    /// <param name="contactInfo">The contact information.</param>
-    /// <param name="address">The physical address.</param>
-    /// <param name="physicalInfo">The physical characteristics and bike preferences.</param>
-    /// <param name="accommodationPreferences">The accommodation preferences.</param>
-    /// <param name="healthInfo">The emergency contact and medical information.</param>
-    public Customer(
+    private Customer(
         PersonalInfo personalInfo,
         IdentificationInfo identificationInfo,
         ContactInfo contactInfo,
         Address address,
         PhysicalInfo physicalInfo,
         AccommodationPreferences accommodationPreferences,
-        CustomerHealthInfo healthInfo
-    )
+        CustomerHealthInfo healthInfo)
     {
-        ArgumentNullException.ThrowIfNull(healthInfo);
-
         Id = Guid.CreateVersion7();
         PersonalInfo = personalInfo;
         IdentificationInfo = identificationInfo;
@@ -41,39 +28,6 @@ public sealed partial class Customer : IEntity<Guid>
         AccommodationPreferences = accommodationPreferences;
         EmergencyContact = healthInfo.EmergencyContact;
         MedicalInfo = healthInfo.MedicalInfo;
-    }
-
-    /// <summary>
-    /// Initializes a new instance of the <see cref="Customer"/> class from separate health details.
-    /// </summary>
-    /// <param name="personalInfo">The personal information.</param>
-    /// <param name="identificationInfo">The identification information.</param>
-    /// <param name="contactInfo">The contact information.</param>
-    /// <param name="address">The physical address.</param>
-    /// <param name="physicalInfo">The physical characteristics and bike preferences.</param>
-    /// <param name="accommodationPreferences">The accommodation preferences.</param>
-    /// <param name="emergencyContact">The emergency contact information.</param>
-    /// <param name="medicalInfo">The medical information and allergies.</param>
-    [SuppressMessage("Major Code Smell", "S107:Methods should not have too many parameters", Justification = "Preserves existing seed data construction while the primary constructor groups health details.")]
-    public Customer(
-        PersonalInfo personalInfo,
-        IdentificationInfo identificationInfo,
-        ContactInfo contactInfo,
-        Address address,
-        PhysicalInfo physicalInfo,
-        AccommodationPreferences accommodationPreferences,
-        EmergencyContact emergencyContact,
-        MedicalInfo medicalInfo
-    )
-        : this(
-            personalInfo,
-            identificationInfo,
-            contactInfo,
-            address,
-            physicalInfo,
-            accommodationPreferences,
-            new CustomerHealthInfo(emergencyContact, medicalInfo))
-    {
     }
 
     /// <summary>
@@ -115,75 +69,110 @@ public sealed partial class Customer : IEntity<Guid>
     public MedicalInfo MedicalInfo { get; private set; } = default!;
 
     /// <summary>
-    /// Updates the customer's personal information.
+    /// Creates a customer after validating every profile value.
     /// </summary>
-    /// <param name="personalInfo">The personal information.</param>
-    public void UpdatePersonalInfo(PersonalInfo personalInfo)
+    /// <param name="definition">The requested profile values.</param>
+    /// <param name="today">The current business date, used to validate the birth date.</param>
+    /// <returns>A Result containing the new customer, or every validation failure.</returns>
+    public static Result<Customer> Create(CustomerDefinition definition, DateOnly today)
     {
-        PersonalInfo = personalInfo;
+        ArgumentNullException.ThrowIfNull(definition);
+
+        var personal = definition.PersonalInfo;
+        var personalInfoResult = PersonalInfo.Create(
+            personal.FirstName,
+            personal.LastName,
+            personal.Gender,
+            personal.BirthDate,
+            personal.Nationality,
+            personal.Occupation,
+            today);
+        var identificationInfoResult = IdentificationInfo.Create(
+            definition.IdentificationInfo.NationalId,
+            definition.IdentificationInfo.IdNationality);
+        var contact = definition.ContactInfo;
+        var contactInfoResult = ContactInfo.Create(contact.Email, contact.Mobile, contact.Instagram, contact.Facebook);
+        var address = definition.Address;
+        var addressResult = Address.Create(
+            address.Street,
+            address.Complement,
+            address.Neighborhood,
+            address.PostalCode,
+            address.City,
+            address.State,
+            address.Country);
+        var physical = definition.PhysicalInfo;
+        var physicalInfoResult = PhysicalInfo.Create(physical.WeightKg, physical.HeightCentimeters, physical.BikeType);
+        var health = definition.HealthInfo;
+        var emergencyContactResult = EmergencyContact.Create(health.EmergencyContactName, health.EmergencyContactMobile);
+        var medicalInfoResult = MedicalInfo.Create(health.Allergies, health.AdditionalInfo);
+        var accommodation = definition.AccommodationPreferences;
+        var accommodationPreferencesResult = AccommodationPreferences.Create(
+            accommodation.RoomType,
+            accommodation.BedType,
+            accommodation.CompanionId);
+
+        var errors = new ValidationErrors();
+        AddIfFailure(errors, personalInfoResult);
+        AddIfFailure(errors, identificationInfoResult);
+        AddIfFailure(errors, contactInfoResult);
+        AddIfFailure(errors, addressResult);
+        AddIfFailure(errors, physicalInfoResult);
+        AddIfFailure(errors, emergencyContactResult);
+        AddIfFailure(errors, medicalInfoResult);
+        AddIfFailure(errors, accommodationPreferencesResult);
+
+        if (errors.HasErrors)
+        {
+            return errors.ToResult<Customer>();
+        }
+
+        return Result.Ok(new Customer(
+            personalInfoResult.Value,
+            identificationInfoResult.Value,
+            contactInfoResult.Value,
+            addressResult.Value,
+            physicalInfoResult.Value,
+            accommodationPreferencesResult.Value,
+            new CustomerHealthInfo(emergencyContactResult.Value, medicalInfoResult.Value)));
     }
 
     /// <summary>
-    /// Updates the customer's identification information.
+    /// Revises the whole customer profile at once.
     /// </summary>
-    /// <param name="identificationInfo">The identification information.</param>
-    public void UpdateIdentificationInfo(IdentificationInfo identificationInfo)
+    /// <remarks>
+    /// Every value is validated before any change is applied, so a failure leaves the customer unchanged and
+    /// reports every invalid value.
+    /// </remarks>
+    /// <param name="definition">The revised profile values.</param>
+    /// <param name="today">The current business date, used to validate the birth date.</param>
+    /// <returns>A Result indicating success or every validation failure.</returns>
+    public Result Revise(CustomerDefinition definition, DateOnly today)
     {
-        IdentificationInfo = identificationInfo;
+        var revisedResult = Create(definition, today);
+        if (revisedResult.IsFailure)
+        {
+            return revisedResult.ConvertError();
+        }
+
+        var revised = revisedResult.Value;
+        PersonalInfo = revised.PersonalInfo;
+        IdentificationInfo = revised.IdentificationInfo;
+        ContactInfo = revised.ContactInfo;
+        Address = revised.Address;
+        PhysicalInfo = revised.PhysicalInfo;
+        AccommodationPreferences = revised.AccommodationPreferences;
+        EmergencyContact = revised.EmergencyContact;
+        MedicalInfo = revised.MedicalInfo;
+        return Result.Ok();
     }
 
-    /// <summary>
-    /// Updates the customer's contact information.
-    /// </summary>
-    /// <param name="contactInfo">The contact information.</param>
-    public void UpdateContactInfo(ContactInfo contactInfo)
+    private static void AddIfFailure<T>(ValidationErrors errors, Result<T> result)
+        where T : notnull
     {
-        ContactInfo = contactInfo;
+        if (result.IsFailure)
+        {
+            errors.Add(result);
+        }
     }
-
-    /// <summary>
-    /// Updates the customer's physical address.
-    /// </summary>
-    /// <param name="address">The physical address.</param>
-    public void UpdateAddress(Address address)
-    {
-        Address = address;
-    }
-
-    /// <summary>
-    /// Updates the customer's physical characteristics and bike preferences.
-    /// </summary>
-    /// <param name="physicalInfo">The physical characteristics and bike preferences.</param>
-    public void UpdatePhysicalInfo(PhysicalInfo physicalInfo)
-    {
-        PhysicalInfo = physicalInfo;
-    }
-
-    /// <summary>
-    /// Updates the customer's accommodation preferences.
-    /// </summary>
-    /// <param name="accommodationPreferences">The accommodation preferences.</param>
-    public void UpdateAccommodationPreferences(AccommodationPreferences accommodationPreferences)
-    {
-        AccommodationPreferences = accommodationPreferences;
-    }
-
-    /// <summary>
-    /// Updates the customer's emergency contact information.
-    /// </summary>
-    /// <param name="emergencyContact">The emergency contact information.</param>
-    public void UpdateEmergencyContact(EmergencyContact emergencyContact)
-    {
-        EmergencyContact = emergencyContact;
-    }
-
-    /// <summary>
-    /// Updates the customer's medical information and allergies.
-    /// </summary>
-    /// <param name="medicalInfo">The medical information and allergies.</param>
-    public void UpdateMedicalInfo(MedicalInfo medicalInfo)
-    {
-        MedicalInfo = medicalInfo;
-    }
-
 }

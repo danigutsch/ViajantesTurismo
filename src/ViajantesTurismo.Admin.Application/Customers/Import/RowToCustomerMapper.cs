@@ -81,14 +81,25 @@ public static class RowToCustomerMapper
             return errors.ToResult<Customer>();
         }
 
-        return Result.Ok(new Customer(
-            personalInfoResult.Value,
-            identificationInfoResult.Value,
-            contactInfoResult.Value,
-            addressResult.Value,
-            physicalInfoResult.Value,
-            accommodationPreferencesResult.Value,
-            new CustomerHealthInfo(emergencyContactResult.Value, medicalInfoResult.Value)));
+        var personal = personalInfoResult.Value;
+        var address = addressResult.Value;
+        return Customer.Create(
+            new CustomerDefinition(
+                new PersonalInfoDefinition(personal.FirstName, personal.LastName, personal.Gender, personal.BirthDate,
+                    personal.Nationality, personal.Occupation),
+                new IdentificationInfoDefinition(identificationInfoResult.Value.NationalId,
+                    identificationInfoResult.Value.IdNationality),
+                new ContactInfoDefinition(contactInfoResult.Value.Email, contactInfoResult.Value.Mobile,
+                    contactInfoResult.Value.Instagram, contactInfoResult.Value.Facebook),
+                new AddressDefinition(address.Street, address.Complement, address.Neighborhood, address.PostalCode,
+                    address.City, address.State, address.Country),
+                new PhysicalInfoDefinition(physicalInfoResult.Value.WeightKg, physicalInfoResult.Value.HeightCentimeters,
+                    physicalInfoResult.Value.BikeType),
+                new AccommodationPreferencesDefinition(accommodationPreferencesResult.Value.RoomType,
+                    accommodationPreferencesResult.Value.BedType, accommodationPreferencesResult.Value.CompanionId),
+                new CustomerHealthDefinition(emergencyContactResult.Value.Name, emergencyContactResult.Value.Mobile,
+                    medicalInfoResult.Value.Allergies, medicalInfoResult.Value.AdditionalInfo)),
+            today);
     }
 
     private static Result<PersonalInfo> MapPersonalInfo(IImportDocument document, IImportRow row, DateOnly today)

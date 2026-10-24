@@ -36,92 +36,20 @@ public sealed class UpdateCustomerCommandHandler(
             return CustomerErrors.EmailAlreadyExists();
         }
 
-        var errors = new ValidationErrors();
-
-        var personalInfoResult = PersonalInfo.Create(
-            command.PersonalInfo.FirstName,
-            command.PersonalInfo.LastName,
-            command.PersonalInfo.Gender,
-            command.PersonalInfo.BirthDate,
-            command.PersonalInfo.Nationality,
-            command.PersonalInfo.Occupation,
+        var revisionResult = customer.Revise(
+            new CustomerDefinition(
+                CustomerMapper.MapToPersonalInfoDefinition(command.PersonalInfo),
+                CustomerMapper.MapToIdentificationInfoDefinition(command.IdentificationInfo),
+                CustomerMapper.MapToContactInfoDefinition(command.ContactInfo),
+                CustomerMapper.MapToAddressDefinition(command.Address),
+                CustomerMapper.MapToPhysicalInfoDefinition(command.PhysicalInfo),
+                CustomerMapper.MapToAccommodationPreferencesDefinition(command.AccommodationPreferences),
+                CustomerMapper.MapToHealthDefinition(command.EmergencyContact, command.MedicalInfo)),
             DateOnly.FromDateTime(timeProvider.GetUtcNow().UtcDateTime));
-
-        var identificationInfoResult = IdentificationInfo.Create(
-            command.IdentificationInfo.NationalId,
-            command.IdentificationInfo.IdNationality);
-
-        var contactInfoResult = ContactInfo.Create(
-            command.ContactInfo.Email,
-            command.ContactInfo.Mobile,
-            command.ContactInfo.Instagram,
-            command.ContactInfo.Facebook);
-
-        if (!personalInfoResult.IsSuccess)
+        if (revisionResult.IsFailure)
         {
-            errors.Add(personalInfoResult);
+            return revisionResult;
         }
-
-        if (!identificationInfoResult.IsSuccess)
-        {
-            errors.Add(identificationInfoResult);
-        }
-
-        if (!contactInfoResult.IsSuccess)
-        {
-            errors.Add(contactInfoResult);
-        }
-
-        var addressResult = CustomerMapper.MapToAddress(command.Address);
-        var physicalInfoResult = CustomerMapper.MapToPhysicalInfo(command.PhysicalInfo);
-        var emergencyContactResult = CustomerMapper.MapToEmergencyContact(command.EmergencyContact);
-        var medicalInfoResult = CustomerMapper.MapToMedicalInfo(command.MedicalInfo);
-        var accommodationPreferencesResult = CustomerMapper.MapToAccommodationPreferences(command.AccommodationPreferences);
-
-        if (!addressResult.IsSuccess)
-        {
-            errors.Add(addressResult);
-        }
-
-        if (!physicalInfoResult.IsSuccess)
-        {
-            errors.Add(physicalInfoResult);
-        }
-
-        if (!emergencyContactResult.IsSuccess)
-        {
-            errors.Add(emergencyContactResult);
-        }
-
-        if (!medicalInfoResult.IsSuccess)
-        {
-            errors.Add(medicalInfoResult);
-        }
-
-        if (accommodationPreferencesResult.IsFailure)
-        {
-            errors.Add(accommodationPreferencesResult);
-        }
-
-        if (errors.HasErrors)
-        {
-            return errors.ToResult();
-        }
-
-        var address = addressResult.Value;
-        var physicalInfo = physicalInfoResult.Value;
-        var accommodationPreferences = accommodationPreferencesResult.Value;
-        var emergencyContact = emergencyContactResult.Value;
-        var medicalInfo = medicalInfoResult.Value;
-
-        customer.UpdatePersonalInfo(personalInfoResult.Value);
-        customer.UpdateIdentificationInfo(identificationInfoResult.Value);
-        customer.UpdateContactInfo(contactInfoResult.Value);
-        customer.UpdateAddress(address);
-        customer.UpdatePhysicalInfo(physicalInfo);
-        customer.UpdateAccommodationPreferences(accommodationPreferences);
-        customer.UpdateEmergencyContact(emergencyContact);
-        customer.UpdateMedicalInfo(medicalInfo);
 
         try
         {
