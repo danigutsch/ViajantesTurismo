@@ -51,10 +51,11 @@ internal static class BootstrapSharedKernelCommand
         }
 
         feed ??= Path.Combine(library, "artifacts", "api-compat", "packages", version);
-        var tool = Path.Combine(library, "tools", "SharedKernel.Versioning.Tool", "SharedKernel.Versioning.Tool.csproj");
+        var tool = Path.Combine(library, "tools", "SharedKernel.CI.Tool", "SharedKernel.CI.Tool.csproj");
         await CandidateCompatibilityCommand.RunProcess("dotnet",
-            ["run", "--project", tool, "-c", "Release", "--", "stage-candidate", "--repo-root", library,
-                "--candidate", candidate, "--feed", feed, "--output", Path.Combine(root, ".local", "sharedkernel-feed")],
+            ["run", "--project", tool, "-c", "Release", "--", "stage-candidate", "--pin", candidate,
+                "--library-root", library, "--output", Path.Combine(root, ".local", "sharedkernel-feed"),
+                "--feed", feed, "--root", root],
             library, output, ct).ConfigureAwait(false);
         return 0;
     }

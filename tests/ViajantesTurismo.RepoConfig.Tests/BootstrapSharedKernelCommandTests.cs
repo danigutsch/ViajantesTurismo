@@ -91,12 +91,12 @@ public sealed class BootstrapSharedKernelCommandTests
         var repositoryRoot = CiTestSelectionTestProcess.GetRepositoryRoot();
         library.WriteFile("global.json", await File.ReadAllTextAsync(Path.Combine(repositoryRoot, "global.json"), ct));
         library.WriteFile(".gitignore", "bin/\nobj/\n");
-        library.WriteFile("tools/SharedKernel.Versioning.Tool/SharedKernel.Versioning.Tool.csproj", """
+        library.WriteFile("tools/SharedKernel.CI.Tool/SharedKernel.CI.Tool.csproj", """
             <Project Sdk="Microsoft.NET.Sdk"><PropertyGroup>
               <TargetFramework>net10.0</TargetFramework><OutputType>Exe</OutputType>
             </PropertyGroup></Project>
             """);
-        library.WriteFile("tools/SharedKernel.Versioning.Tool/Program.cs", """
+        library.WriteFile("tools/SharedKernel.CI.Tool/Program.cs", """
             System.Console.WriteLine("forwarded:" + System.Text.Json.JsonSerializer.Serialize(args));
             System.Console.WriteLine("candidate staged");
             """);
@@ -124,10 +124,11 @@ public sealed class BootstrapSharedKernelCommandTests
             .ShouldHaveSingleItem(static line => line.StartsWith("forwarded:", StringComparison.Ordinal))["forwarded:".Length..];
         var forwarded = JsonSerializer.Deserialize<string[]>(forwardedJson).ShouldNotBeNull();
         forwarded.ShouldBe([
-            "stage-candidate", "--repo-root", library.RootPath,
-            "--candidate", Path.Combine(consumer.RootPath, ".config", "sharedkernel-candidate.json"),
+            "stage-candidate", "--pin", Path.Combine(consumer.RootPath, ".config", "sharedkernel-candidate.json"),
+            "--library-root", library.RootPath,
+            "--output", Path.Combine(consumer.RootPath, ".local", "sharedkernel-feed"),
             "--feed", explicitFeed ? feed : Path.Combine(library.RootPath, "artifacts", "api-compat", "packages", "1.2.3"),
-            "--output", Path.Combine(consumer.RootPath, ".local", "sharedkernel-feed")
+            "--root", consumer.RootPath
         ]);
     }
 }
