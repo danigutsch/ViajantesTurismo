@@ -1,6 +1,7 @@
 using System.Net;
 using PandaBear.HttpClients;
 using ViajantesTurismo.Admin.Contracts.Application;
+using ViajantesTurismo.Admin.Testing.Builders;
 
 namespace ViajantesTurismo.Admin.Testing.Fakes.ApiClients;
 
@@ -68,7 +69,7 @@ public sealed class FakeToursApiClient : IToursApiClient
             return Task.FromResult(_createTourOutcome);
         }
 
-        var newTour = new GetTourDto
+        var newTour = DtoBuilders.WithCapacityFacts(new GetTourDto
         {
             Id = Guid.NewGuid(),
             Identifier = dto.Identifier,
@@ -84,7 +85,7 @@ public sealed class FakeToursApiClient : IToursApiClient
             MinCustomers = dto.MinCustomers,
             MaxCustomers = dto.MaxCustomers,
             CurrentCustomerCount = 0
-        };
+        });
 
         _tours.Add(newTour);
 
@@ -113,7 +114,7 @@ public sealed class FakeToursApiClient : IToursApiClient
         }
 
         var index = _tours.IndexOf(tour);
-        _tours[index] = tour with
+        _tours[index] = DtoBuilders.WithCapacityFacts(tour with
         {
             Identifier = dto.Identifier,
             Name = dto.Name,
@@ -127,7 +128,7 @@ public sealed class FakeToursApiClient : IToursApiClient
             IncludedServices = dto.IncludedServices,
             MinCustomers = dto.MinCustomers,
             MaxCustomers = dto.MaxCustomers
-        };
+        });
 
         return Task.FromResult(HttpOutcomeMapper.Succeeded(HttpStatusCode.NoContent, location: null));
     }

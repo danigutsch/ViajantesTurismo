@@ -214,7 +214,20 @@ public sealed partial class Booking : IEntity<Guid>
         FinancialHistory = history;
     }
 
-    private bool CanModifyBookedServices => Status is not (BookingStatus.Cancelled or BookingStatus.Completed);
+    /// <summary>
+    /// Gets whether the booked services (room, bikes, companion, and discount) can still be changed;
+    /// cancelled and completed bookings are closed to such changes.
+    /// </summary>
+    public bool CanModifyBookedServices => Status is not (BookingStatus.Cancelled or BookingStatus.Completed);
+
+    /// <summary>Gets whether confirming the booking would change its status; only pending bookings qualify.</summary>
+    public bool CanBeConfirmed => Status == BookingStatus.Pending;
+
+    /// <summary>Gets whether completing the booking would change its status; only confirmed bookings qualify.</summary>
+    public bool CanBeCompleted => Status == BookingStatus.Confirmed;
+
+    /// <summary>Gets whether cancelling the booking would change its status; pending and confirmed bookings qualify.</summary>
+    public bool CanBeCancelled => Status is BookingStatus.Pending or BookingStatus.Confirmed;
 
     private static decimal CalculateSubtotal(
         decimal basePrice,

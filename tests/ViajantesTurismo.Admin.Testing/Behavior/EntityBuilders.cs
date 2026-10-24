@@ -98,60 +98,45 @@ public static class EntityBuilders
 
         public Customer Build()
         {
-            var personalInfo = PersonalInfo.Create(
-                _options.FirstName ?? "John",
-                _options.LastName ?? "Doe",
-                _options.Gender ?? "Male",
-                DateOnly.FromDateTime(_options.BirthDate ?? TimeProvider.System.GetUtcNow().UtcDateTime.AddYears(-30)),
-                _options.Nationality ?? "USA",
-                _options.Occupation ?? "Engineer",
-                DateOnly.FromDateTime(TimeProvider.System.GetUtcNow().UtcDateTime)).Value;
+            var definition = new CustomerDefinition(
+                new PersonalInfoDefinition(
+                    _options.FirstName ?? "John",
+                    _options.LastName ?? "Doe",
+                    _options.Gender ?? "Male",
+                    DateOnly.FromDateTime(_options.BirthDate ?? TimeProvider.System.GetUtcNow().UtcDateTime.AddYears(-30)),
+                    _options.Nationality ?? "USA",
+                    _options.Occupation ?? "Engineer"),
+                new IdentificationInfoDefinition(
+                    _options.PassportNumber ?? "A12345678",
+                    _options.PassportCountry ?? "USA"),
+                new ContactInfoDefinition(
+                    _options.Email ?? "test@example.com",
+                    _options.Mobile ?? "+1234567890",
+                    _options.Instagram,
+                    _options.Facebook),
+                new AddressDefinition(
+                    _options.Street ?? "123 Main St",
+                    _options.Complement,
+                    _options.Neighborhood ?? "Downtown",
+                    _options.PostalCode ?? "10001",
+                    _options.City ?? "New York",
+                    _options.State ?? "NY",
+                    _options.Country ?? "USA"),
+                new PhysicalInfoDefinition(
+                    _options.WeightKg ?? 75,
+                    _options.HeightCentimeters ?? 175,
+                    _options.PreferredBike ?? BikeType.Regular),
+                new AccommodationPreferencesDefinition(
+                    _options.PreferredRoom ?? RoomType.DoubleOccupancy,
+                    _options.PreferredBed ?? BedType.SingleBed,
+                    _options.CompanionId),
+                new CustomerHealthDefinition(
+                    _options.EmergencyContactName ?? "Emergency Contact",
+                    _options.EmergencyContactMobile ?? "+9876543210",
+                    _options.Allergies ?? "None",
+                    _options.MedicalAdditionalInfo ?? "None"));
 
-            var identificationInfo = IdentificationInfo.Create(
-                _options.PassportNumber ?? "A12345678",
-                _options.PassportCountry ?? "USA").Value;
-
-            var contactInfo = ContactInfo.Create(
-                _options.Email ?? "test@example.com",
-                _options.Mobile ?? "+1234567890",
-                _options.Instagram,
-                _options.Facebook).Value;
-
-            var address = Address.Create(
-                _options.Street ?? "123 Main St",
-                _options.Complement,
-                _options.Neighborhood ?? "Downtown",
-                _options.PostalCode ?? "10001",
-                _options.City ?? "New York",
-                _options.State ?? "NY",
-                _options.Country ?? "USA").Value;
-
-            var physicalInfo = PhysicalInfo.Create(
-                _options.WeightKg ?? 75,
-                _options.HeightCentimeters ?? 175,
-                _options.PreferredBike ?? BikeType.Regular).Value;
-
-            var accommodationPreferences = AccommodationPreferences.Create(
-                _options.PreferredRoom ?? RoomType.DoubleOccupancy,
-                _options.PreferredBed ?? BedType.SingleBed,
-                _options.CompanionId).Value;
-
-            var emergencyContact = EmergencyContact.Create(
-                _options.EmergencyContactName ?? "Emergency Contact",
-                _options.EmergencyContactMobile ?? "+9876543210").Value;
-
-            var medicalInfo = MedicalInfo.Create(
-                _options.Allergies ?? "None",
-                _options.MedicalAdditionalInfo ?? "None").Value;
-
-            return new Customer(
-                personalInfo,
-                identificationInfo,
-                contactInfo,
-                address,
-                physicalInfo,
-                accommodationPreferences,
-                new CustomerHealthInfo(emergencyContact, medicalInfo));
+            return Customer.Create(definition, DateOnly.FromDateTime(TimeProvider.System.GetUtcNow().UtcDateTime)).Value;
         }
     }
 }

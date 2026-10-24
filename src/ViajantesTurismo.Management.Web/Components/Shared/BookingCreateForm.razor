@@ -18,9 +18,9 @@
             <ValidationMessage For="@(() => Model.TourId)"/>
             @if (Model.TourId.HasValue && SelectedTour is not null)
             {
-                var availableSpots = SelectedTour.MaxCustomers - SelectedTour.CurrentCustomerCount;
+                var availableSpots = SelectedTour.AvailableSpots;
                 <div class="form-text">
-                    @if (availableSpots > 0)
+                    @if (!SelectedTour.IsFullyBooked)
                     {
                         <span class="text-success"><i class="bi bi-check-circle"></i> @availableSpots spot@(availableSpots == 1 ? "" : "s") available (@SelectedTour.CurrentCustomerCount / @SelectedTour.MaxCustomers booked)</span>
                     }

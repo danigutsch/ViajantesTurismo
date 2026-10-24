@@ -14,7 +14,7 @@ public class BookingEditStateTests(AspireSystemTestFixture fixture) : AspireSyst
         await BookingWorkflow.NavigateToEdit(booking.Id);
 
         // Assert
-        await BookingEditStateTestHelpers.ExpectWarningContains(Page, "cancelled", "cannot be modified");
+        await BookingEditStateTestHelpers.ExpectWarningContains(Page, "cancelled", "booked services can no longer");
         await Expect(Page.GetByRole(AriaRole.Link, new PageGetByRoleOptions { Name = "Record and allocate receipts" })).ToBeVisibleAsync();
         await BookingEditStateTestHelpers.ExpectPaymentsSummaryVisible(Page);
         await Expect(Page.GetButton("Confirm Booking")).Not.ToBeVisibleAsync();

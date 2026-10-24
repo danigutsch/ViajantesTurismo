@@ -48,9 +48,8 @@ public sealed class MediaImageOriginalStoredIntegrationHandler(
                 result,
                 ct).ConfigureAwait(false);
 
-            var updatedImage = image.WithProcessingResult(
+            var updatedImage = image.CompleteProcessing(
                 new MediaImageDimensions(result.Width, result.Height),
-                MediaImageProcessingStatus.Ready,
                 storedVariants.ResponsiveVariants);
             if (updatedImage.IsFailure)
             {
@@ -69,7 +68,7 @@ public sealed class MediaImageOriginalStoredIntegrationHandler(
                 return;
             }
 
-            var failedImage = image.WithProcessingResult(image.Dimensions, MediaImageProcessingStatus.Failed, []);
+            var failedImage = image.FailProcessing();
             if (failedImage.IsFailure)
             {
                 throw new InvalidOperationException(

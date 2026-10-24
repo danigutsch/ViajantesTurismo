@@ -1,5 +1,6 @@
 using PandaBear.EventSourcing;
 using PandaBear.InputNormalization;
+using PandaBear.Results;
 
 namespace ViajantesTurismo.Catalog.Domain.Tours;
 
@@ -162,7 +163,10 @@ public sealed class CatalogTour : EventSourcedAggregateRoot<Guid>
     /// <param name="itinerary">The plain-text customer-facing itinerary.</param>
     /// <param name="seoTitle">The optional search-engine title override.</param>
     /// <param name="seoDescription">The optional search-engine description override.</param>
-    public void ChangePresentation(
+    /// <returns>
+    /// A success result, a conflict when the tour is published, or a validation failure when values are invalid.
+    /// </returns>
+    public Result ChangePresentation(
         string title,
         string slug,
         string summary,
@@ -171,64 +175,76 @@ public sealed class CatalogTour : EventSourcedAggregateRoot<Guid>
         string seoTitle,
         string seoDescription)
     {
-        if (IsPublished)
-        {
-            throw new CatalogTourPublishedPresentationChangeException();
-        }
-
-        ArgumentException.ThrowIfNullOrWhiteSpace(title);
-        ArgumentException.ThrowIfNullOrWhiteSpace(slug);
+        ArgumentNullException.ThrowIfNull(title);
+        ArgumentNullException.ThrowIfNull(slug);
         ArgumentNullException.ThrowIfNull(summary);
         ArgumentNullException.ThrowIfNull(description);
         ArgumentNullException.ThrowIfNull(itinerary);
         ArgumentNullException.ThrowIfNull(seoTitle);
         ArgumentNullException.ThrowIfNull(seoDescription);
 
-        if (!CatalogTourSlug.IsCanonical(slug))
+        if (IsPublished)
         {
-            throw new ArgumentException("Catalog tour slugs must be canonical lowercase ASCII path segments.", nameof(slug));
+            return CatalogTourErrors.PublishedPresentationChange();
         }
 
-        if (Title == title
-            && Slug == slug
-            && Summary == summary
-            && Description == description
-            && Itinerary == itinerary
-            && SeoTitle == seoTitle
-            && SeoDescription == seoDescription)
-        {
-            return;
-        }
-
-        AddEvent(new CatalogTourPresentationChanged(
-            Id,
+        var presentation = CatalogTourPresentation.Create(
             title,
             slug,
             summary,
             description,
             itinerary,
             seoTitle,
-            seoDescription));
+            seoDescription);
+        if (presentation.IsFailure)
+        {
+            return presentation.ConvertError();
+        }
+
+        var value = presentation.Value;
+        if (Title == value.Title
+            && Slug == value.Slug
+            && Summary == value.Summary
+            && Description == value.Description
+            && Itinerary == value.Itinerary
+            && SeoTitle == value.SeoTitle
+            && SeoDescription == value.SeoDescription)
+        {
+            return Result.Ok();
+        }
+
+        AddEvent(new CatalogTourPresentationChanged(
+            Id,
+            value.Title,
+            value.Slug,
+            value.Summary,
+            value.Description,
+            value.Itinerary,
+            value.SeoTitle,
+            value.SeoDescription));
+        return Result.Ok();
     }
 
     /// <summary>
     /// Makes the tour visible on the public website when its minimum public content is complete.
     /// </summary>
-    public void Publish()
+    /// <returns>A success result, or a validation failure when required public content is missing.</returns>
+    public Result Publish()
     {
         if (IsPublished)
         {
-            return;
+            return Result.Ok();
         }
 
         if (string.IsNullOrWhiteSpace(Title)
             || string.IsNullOrWhiteSpace(Slug)
             || string.IsNullOrWhiteSpace(Summary))
         {
-            throw new CatalogTourPublicationNotReadyException();
+            return CatalogTourErrors.PublicationNotReady();
         }
 
         AddEvent(new CatalogTourPublished(Id));
+        return Result.Ok();
     }
 
     /// <summary>

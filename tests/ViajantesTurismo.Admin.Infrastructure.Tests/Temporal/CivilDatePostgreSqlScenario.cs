@@ -3,7 +3,6 @@ using ViajantesTurismo.Admin.Domain.Shared;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Migrations;
-using ViajantesTurismo.Admin.Domain.Customers;
 using ViajantesTurismo.Admin.Domain.Tours;
 using ViajantesTurismo.Admin.Testing.Behavior;
 
@@ -30,9 +29,13 @@ internal sealed class CivilDatePostgreSqlScenario : IAsyncDisposable
     {
         await using var context = CreateContext();
         await context.Database.MigrateAsync(ct);
-        var customer = EntityBuilders.BuildCustomer(null);
-        customer.UpdatePersonalInfo(PersonalInfo.Create("Ana", "Silva", "Female", new DateOnly(1990, 1, 1),
-            "Brazilian", "Engineer", new DateOnly(2030, 2, 3)).Value);
+        var customer = EntityBuilders.BuildCustomer(new CustomerOptions(
+            FirstName: "Ana",
+            LastName: "Silva",
+            Gender: "Female",
+            BirthDate: new DateTime(1990, 1, 1, 0, 0, 0, DateTimeKind.Utc),
+            Nationality: "Brazilian",
+            Occupation: "Engineer"));
         var tour = EntityBuilders.BuildTour();
         tour.UpdateSchedule(new DateOnly(2030, 2, 3), new DateOnly(2030, 2, 10)).IsSuccess.ShouldBeTrue();
         var now = new DateTimeOffset(2030, 2, 4, 14, 0, 0, TimeSpan.Zero);

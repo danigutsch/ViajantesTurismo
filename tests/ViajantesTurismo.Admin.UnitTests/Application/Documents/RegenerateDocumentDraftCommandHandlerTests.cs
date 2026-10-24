@@ -5,6 +5,7 @@ using PandaBear.Testing;
 using ViajantesTurismo.Admin.Application.Documents;
 using ViajantesTurismo.Admin.Contracts.Application;
 using ViajantesTurismo.Admin.Domain.Documents;
+using ViajantesTurismo.Admin.Domain.Tours;
 using ViajantesTurismo.Admin.Testing.Builders;
 using ViajantesTurismo.Admin.Testing.Fakes;
 using ViajantesTurismo.Admin.UnitTests.ApiService;
@@ -23,7 +24,7 @@ public sealed class RegenerateDocumentDraftCommandHandlerTests
         var auditStore = new FakeDocumentAuditStore();
         var unitOfWork = new FakeUnitOfWork();
         var handler = new RegenerateDocumentDraftCommandHandler(
-            store, new FakeQueryService(null),
+            store, new FakeQueryService(null), new FakeTourStore(),
             new FakeBrandingApiClient(new BrandingSettingsDto()),
             TimeProvider.System,
             DocumentAuditTestData.CreateWriter(auditStore, unitOfWork),
@@ -55,6 +56,7 @@ public sealed class RegenerateDocumentDraftCommandHandlerTests
         var handler = new RegenerateDocumentDraftCommandHandler(
             store,
             new FakeQueryService(null),
+            new FakeTourStore(),
             new FakeBrandingApiClient(new BrandingSettingsDto()),
             TimeProvider.System,
             DocumentAuditTestData.CreateWriter(auditStore, unitOfWork),
@@ -99,6 +101,7 @@ public sealed class RegenerateDocumentDraftCommandHandlerTests
         var handler = new RegenerateDocumentDraftCommandHandler(
             store,
             new FakeQueryService(null),
+            new FakeTourStore(),
             new FakeBrandingApiClient(new BrandingSettingsDto()),
             TimeProvider.System,
             DocumentAuditTestData.CreateWriter(auditStore, unitOfWork),
@@ -131,8 +134,9 @@ public sealed class RegenerateDocumentDraftCommandHandlerTests
     public async Task Handle_replays_matching_input_and_rejects_conflicting_input_for_a_completed_key()
     {
         // Arrange
-        var document = DocumentDraftTestData.Create(TimeProvider.System.GetUtcNow().UtcDateTime);
-        var tourId = Guid.CreateVersion7();
+        var tourData = DocumentTourTestData.WithBooking(BookingStatus.Confirmed);
+        var document = DocumentDraftTestData.Create(TimeProvider.System.GetUtcNow().UtcDateTime, bookingId: tourData.BookingId);
+        var tourId = tourData.TourId;
         var booking = DtoBuilders.BuildBookingDto(
             id: document.BookingId,
             tourId: tourId,
@@ -150,6 +154,7 @@ public sealed class RegenerateDocumentDraftCommandHandlerTests
         var handler = new RegenerateDocumentDraftCommandHandler(
             store,
             new FakeQueryService(booking, tour),
+            tourData.TourStore,
             new FakeBrandingApiClient(DocumentDraftTestData.CreateBrandingSettings()),
             TimeProvider.System,
             DocumentAuditTestData.CreateWriter(auditStore, unitOfWork),
@@ -189,8 +194,9 @@ public sealed class RegenerateDocumentDraftCommandHandlerTests
     public async Task Handle_persists_one_conflict_audit_when_regeneration_idempotency_ownership_is_lost()
     {
         // Arrange
-        var document = DocumentDraftTestData.Create(TimeProvider.System.GetUtcNow().UtcDateTime);
-        var tourId = Guid.CreateVersion7();
+        var tourData = DocumentTourTestData.WithBooking(BookingStatus.Confirmed);
+        var document = DocumentDraftTestData.Create(TimeProvider.System.GetUtcNow().UtcDateTime, bookingId: tourData.BookingId);
+        var tourId = tourData.TourId;
         var booking = DtoBuilders.BuildBookingDto(
             id: document.BookingId,
             tourId: tourId,
@@ -212,6 +218,7 @@ public sealed class RegenerateDocumentDraftCommandHandlerTests
         var handler = new RegenerateDocumentDraftCommandHandler(
             documentStore,
             new FakeQueryService(booking, DtoBuilders.BuildTourDto(id: tourId)),
+            tourData.TourStore,
             new FakeBrandingApiClient(DocumentDraftTestData.CreateBrandingSettings()),
             TimeProvider.System,
             DocumentAuditTestData.CreateWriter(auditStore, unitOfWork),
@@ -245,8 +252,9 @@ public sealed class RegenerateDocumentDraftCommandHandlerTests
     public async Task Handle_rejects_missing_audit_context_before_adding_a_revision()
     {
         // Arrange
-        var document = DocumentDraftTestData.Create(TimeProvider.System.GetUtcNow().UtcDateTime);
-        var tourId = Guid.CreateVersion7();
+        var tourData = DocumentTourTestData.WithBooking(BookingStatus.Confirmed);
+        var document = DocumentDraftTestData.Create(TimeProvider.System.GetUtcNow().UtcDateTime, bookingId: tourData.BookingId);
+        var tourId = tourData.TourId;
         var booking = DtoBuilders.BuildBookingDto(
             id: document.BookingId,
             tourId: tourId,
@@ -258,6 +266,7 @@ public sealed class RegenerateDocumentDraftCommandHandlerTests
         var handler = new RegenerateDocumentDraftCommandHandler(
             store,
             new FakeQueryService(booking, DtoBuilders.BuildTourDto(id: tourId)),
+            tourData.TourStore,
             new FakeBrandingApiClient(DocumentDraftTestData.CreateBrandingSettings()),
             TimeProvider.System,
             DocumentAuditTestData.CreateWriter(auditStore, unitOfWork),
@@ -287,6 +296,7 @@ public sealed class RegenerateDocumentDraftCommandHandlerTests
         var handler = new RegenerateDocumentDraftCommandHandler(
             store,
             new FakeQueryService(null),
+            new FakeTourStore(),
             new FakeBrandingApiClient(DocumentDraftTestData.CreateBrandingSettings()),
             TimeProvider.System,
             DocumentAuditTestData.CreateWriter(auditStore, unitOfWork),
@@ -313,13 +323,16 @@ public sealed class RegenerateDocumentDraftCommandHandlerTests
     }
 
     [Theory]
-    [InlineData(BookingStatusDto.Confirmed)]
-    [InlineData(BookingStatusDto.Completed)]
-    public async Task Handle_persists_a_replacement_when_booking_is_accepted(BookingStatusDto bookingStatus)
+    [InlineData(BookingStatus.Confirmed, BookingStatusDto.Confirmed)]
+    [InlineData(BookingStatus.Completed, BookingStatusDto.Completed)]
+    public async Task Handle_persists_a_replacement_when_booking_is_accepted(
+        BookingStatus aggregateStatus,
+        BookingStatusDto bookingStatus)
     {
         // Arrange
-        var document = DocumentDraftTestData.Create(TimeProvider.System.GetUtcNow().UtcDateTime);
-        var tourId = Guid.CreateVersion7();
+        var tourData = DocumentTourTestData.WithBooking(aggregateStatus);
+        var document = DocumentDraftTestData.Create(TimeProvider.System.GetUtcNow().UtcDateTime, bookingId: tourData.BookingId);
+        var tourId = tourData.TourId;
         var booking = DtoBuilders.BuildBookingDto(id: document.BookingId, tourId: tourId, status: bookingStatus);
         var tour = DtoBuilders.BuildTourDto(id: tourId);
         var store = new FakeDocumentStore();
@@ -330,6 +343,7 @@ public sealed class RegenerateDocumentDraftCommandHandlerTests
         var handler = new RegenerateDocumentDraftCommandHandler(
             store,
             new FakeQueryService(booking, tour),
+            tourData.TourStore,
             new FakeBrandingApiClient(DocumentDraftTestData.CreateBrandingSettings()),
             TimeProvider.System,
             DocumentAuditTestData.CreateWriter(auditStore, unitOfWork),
@@ -351,14 +365,15 @@ public sealed class RegenerateDocumentDraftCommandHandlerTests
     }
 
     [Theory]
-    [InlineData(BookingStatusDto.Pending)]
-    [InlineData(BookingStatusDto.Cancelled)]
-    public async Task Handle_does_not_persist_when_booking_is_not_accepted(BookingStatusDto bookingStatus)
+    [InlineData(BookingStatus.Pending)]
+    [InlineData(BookingStatus.Cancelled)]
+    public async Task Handle_does_not_persist_when_the_tour_aggregate_booking_is_not_accepted(BookingStatus aggregateStatus)
     {
         // Arrange
-        var document = DocumentDraftTestData.Create(TimeProvider.System.GetUtcNow().UtcDateTime);
-        var tourId = Guid.CreateVersion7();
-        var booking = DtoBuilders.BuildBookingDto(id: document.BookingId, tourId: tourId, status: bookingStatus);
+        var tourData = DocumentTourTestData.WithBooking(aggregateStatus);
+        var document = DocumentDraftTestData.Create(TimeProvider.System.GetUtcNow().UtcDateTime, bookingId: tourData.BookingId);
+        var tourId = tourData.TourId;
+        var booking = DtoBuilders.BuildBookingDto(id: document.BookingId, tourId: tourId, status: BookingStatusDto.Confirmed);
         var tour = DtoBuilders.BuildTourDto(id: tourId);
         var store = new FakeDocumentStore();
         store.Documents.Add(document.Id, document);
@@ -368,6 +383,7 @@ public sealed class RegenerateDocumentDraftCommandHandlerTests
         var handler = new RegenerateDocumentDraftCommandHandler(
             store,
             new FakeQueryService(booking, tour),
+            tourData.TourStore,
             new FakeBrandingApiClient(DocumentDraftTestData.CreateBrandingSettings()),
             TimeProvider.System,
             DocumentAuditTestData.CreateWriter(auditStore, unitOfWork),
@@ -406,6 +422,7 @@ public sealed class RegenerateDocumentDraftCommandHandlerTests
         var handler = new RegenerateDocumentDraftCommandHandler(
             store,
             new FakeQueryService(null),
+            new FakeTourStore(),
             new FakeBrandingApiClient(new BrandingSettingsDto()),
             TimeProvider.System,
             DocumentAuditTestData.CreateWriter(auditStore, unitOfWork),
@@ -432,10 +449,47 @@ public sealed class RegenerateDocumentDraftCommandHandlerTests
     }
 
     [Fact]
-    public async Task Handle_does_not_save_when_source_tour_is_missing()
+    public async Task Handle_does_not_save_when_no_tour_aggregate_owns_the_source_booking()
     {
         // Arrange
         var document = DocumentDraftTestData.Create(TimeProvider.System.GetUtcNow().UtcDateTime);
+        var tourId = Guid.CreateVersion7();
+        var booking = DtoBuilders.BuildBookingDto(id: document.BookingId, tourId: tourId, status: BookingStatusDto.Confirmed);
+        var store = new FakeDocumentStore();
+        store.Documents.Add(document.Id, document);
+        var auditStore = new FakeDocumentAuditStore();
+        var unitOfWork = new FakeUnitOfWork();
+        var handler = new RegenerateDocumentDraftCommandHandler(
+            store,
+            new FakeQueryService(booking, DtoBuilders.BuildTourDto(id: tourId)),
+            new FakeTourStore(),
+            new FakeBrandingApiClient(DocumentDraftTestData.CreateBrandingSettings()),
+            TimeProvider.System,
+            DocumentAuditTestData.CreateWriter(auditStore, unitOfWork),
+            DocumentIdempotencyTestData.Create(unitOfWork));
+
+        // Act
+        var result = await handler.Handle(
+            new RegenerateDocumentDraftCommand(document.Id, "booking-confirmation", "2", DocumentAuditTestData.CreateContext(), IdempotencyKey.From(Guid.CreateVersion7().ToString("N"))),
+            CancellationToken.None);
+
+        // Assert
+        result.Status.ShouldBe(ResultStatus.NotFound);
+        store.AddedDocuments.ShouldBeEmpty();
+        var audit = auditStore.Records.ShouldHaveSingleItem();
+        audit.ReasonCode.ShouldBe(DocumentAuditReasonCode.BookingNotFound);
+        audit.DocumentId.ShouldBe(document.Id);
+        audit.BookingId.ShouldBe(document.BookingId);
+        audit.DocumentRevision.ShouldBe(document.Revision);
+        unitOfWork.SaveEntitiesCallCount.ShouldBe(1);
+    }
+
+    [Fact]
+    public async Task Handle_does_not_save_when_source_tour_is_missing()
+    {
+        // Arrange
+        var tourData = DocumentTourTestData.WithBooking(BookingStatus.Confirmed);
+        var document = DocumentDraftTestData.Create(TimeProvider.System.GetUtcNow().UtcDateTime, bookingId: tourData.BookingId);
         var booking = DtoBuilders.BuildBookingDto(id: document.BookingId, status: BookingStatusDto.Confirmed);
         var store = new FakeDocumentStore();
         store.Documents.Add(document.Id, document);
@@ -445,6 +499,7 @@ public sealed class RegenerateDocumentDraftCommandHandlerTests
         var handler = new RegenerateDocumentDraftCommandHandler(
             store,
             new FakeQueryService(booking),
+            tourData.TourStore,
             new FakeBrandingApiClient(new BrandingSettingsDto()),
             TimeProvider.System,
             DocumentAuditTestData.CreateWriter(auditStore, unitOfWork),

@@ -1,4 +1,5 @@
 using ViajantesTurismo.Admin.Application.Import;
+using ViajantesTurismo.Admin.Application.Mappings;
 using ViajantesTurismo.Admin.Domain.Customers;
 
 namespace ViajantesTurismo.Admin.Application.Customers.Import;
@@ -74,7 +75,7 @@ public sealed class CustomerImportCommandHandler(
             }
         }
 
-        await PersistImport(command, customersToCreate, customersToOverwrite, ct);
+        await PersistImport(command, today, customersToCreate, customersToOverwrite, ct);
 
         return new ImportResult(customersToCreate.Count + customersToOverwrite.Count, errorCount);
     }
@@ -132,6 +133,7 @@ public sealed class CustomerImportCommandHandler(
 
     private async Task PersistImport(
         CustomerImportCommand command,
+        DateOnly today,
         List<Customer> customersToCreate,
         List<CustomerOverwritePair> customersToOverwrite,
         CancellationToken ct)
@@ -150,7 +152,7 @@ public sealed class CustomerImportCommandHandler(
 
         foreach (var pair in customersToOverwrite)
         {
-            ApplyOverwrite(pair.ExistingCustomer, pair.IncomingCustomer);
+            ApplyOverwrite(pair.ExistingCustomer, pair.IncomingCustomer, today);
         }
 
         ct.ThrowIfCancellationRequested();
@@ -185,15 +187,13 @@ public sealed class CustomerImportCommandHandler(
         return true;
     }
 
-    private static void ApplyOverwrite(Customer existingCustomer, Customer incomingCustomer)
+    private static void ApplyOverwrite(Customer existingCustomer, Customer incomingCustomer, DateOnly today)
     {
-        existingCustomer.UpdatePersonalInfo(incomingCustomer.PersonalInfo);
-        existingCustomer.UpdateIdentificationInfo(incomingCustomer.IdentificationInfo);
-        existingCustomer.UpdateContactInfo(incomingCustomer.ContactInfo);
-        existingCustomer.UpdateAddress(incomingCustomer.Address);
-        existingCustomer.UpdatePhysicalInfo(incomingCustomer.PhysicalInfo);
-        existingCustomer.UpdateAccommodationPreferences(incomingCustomer.AccommodationPreferences);
-        existingCustomer.UpdateEmergencyContact(incomingCustomer.EmergencyContact);
-        existingCustomer.UpdateMedicalInfo(incomingCustomer.MedicalInfo);
+        var revisionResult = existingCustomer.Revise(CustomerMapper.MapToDefinition(incomingCustomer), today);
+        if (revisionResult.IsFailure)
+        {
+            throw new InvalidOperationException(
+                $"Customer {existingCustomer.Id} could not be revised from an already validated import row.");
+        }
     }
 }

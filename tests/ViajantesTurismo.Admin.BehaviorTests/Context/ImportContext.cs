@@ -150,57 +150,16 @@ public sealed class ImportContext
 
     private static Customer CreateCustomer(string firstName, string email)
     {
-        var personalInfo = PersonalInfo.Create(
-            firstName,
-            "Doe",
-            "Male",
-            DateOnly.FromDateTime(TimeProvider.System.GetUtcNow().UtcDateTime.AddYears(-30)),
-            "Brazilian",
-            "Engineer",
-            DateOnly.FromDateTime(TimeProvider.System.GetUtcNow().UtcDateTime)).Value;
+        var today = DateOnly.FromDateTime(TimeProvider.System.GetUtcNow().UtcDateTime);
+        var definition = new CustomerDefinition(
+            new PersonalInfoDefinition(firstName, "Doe", "Male", today.AddYears(-30), "Brazilian", "Engineer"),
+            new IdentificationInfoDefinition("A12345678", "BR"),
+            new ContactInfoDefinition(email, "+1234567890", null, null),
+            new AddressDefinition("123 Main St", null, "Downtown", "10001", "New York", "NY", "USA"),
+            new PhysicalInfoDefinition(75, 175, BikeType.Regular),
+            new AccommodationPreferencesDefinition(RoomType.DoubleOccupancy, BedType.SingleBed, null),
+            new CustomerHealthDefinition("Emergency Contact", "+0987654321", "None", "None"));
 
-        var identificationInfo = IdentificationInfo.Create(
-            nationalId: "A12345678",
-            idNationality: "BR").Value;
-
-        var contactInfo = ContactInfo.Create(
-            email,
-            "+1234567890",
-            null,
-            null).Value;
-
-        var address = Address.Create(
-            "123 Main St",
-            null,
-            "Downtown",
-            "10001",
-            "New York",
-            "NY",
-            "USA").Value;
-
-        var physicalInfo = PhysicalInfo.Create(
-            75,
-            175,
-            BikeType.Regular).Value;
-
-        var accommodationPreferences = AccommodationPreferences.Create(
-            RoomType.DoubleOccupancy,
-            BedType.SingleBed,
-            null).Value;
-
-        var emergencyContact = EmergencyContact.Create(
-            "Emergency Contact",
-            "+0987654321").Value;
-
-        var medicalInfo = MedicalInfo.Create("None", "None").Value;
-
-        return new Customer(
-            personalInfo,
-            identificationInfo,
-            contactInfo,
-            address,
-            physicalInfo,
-            accommodationPreferences,
-            new CustomerHealthInfo(emergencyContact, medicalInfo));
+        return Customer.Create(definition, today).Value;
     }
 }
