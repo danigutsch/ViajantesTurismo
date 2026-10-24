@@ -118,6 +118,59 @@ internal static partial class LayerDependencyTestsHelpers
             .ToArray();
     }
 
+    public static string[] FindDomainFrameworkAssemblyReferences(IEnumerable<System.Reflection.Assembly> domainAssemblies)
+    {
+        string[] bannedAssemblyNames =
+        [
+            "System.Text.Json",
+            "System.ComponentModel.Annotations",
+            "System.ComponentModel.DataAnnotations",
+            "System.Net.Http",
+            "Microsoft.EntityFrameworkCore",
+            "Microsoft.AspNetCore",
+            "Microsoft.Extensions.Logging",
+            "Microsoft.Extensions.Http",
+            "Microsoft.CodeAnalysis"
+        ];
+
+        return
+        [
+            .. domainAssemblies.SelectMany(assembly => assembly.GetReferencedAssemblies()
+                .Where(reference => reference.Name is { } name && bannedAssemblyNames.Any(banned =>
+                    string.Equals(name, banned, StringComparison.Ordinal)
+                    || name.StartsWith(banned + ".", StringComparison.Ordinal)))
+                .Select(reference => $"{assembly.GetName().Name} references {reference.Name}"))
+        ];
+    }
+
+    public static string[] FindDomainAnalyzerActivationViolations(string repositoryRoot)
+    {
+        string[] domainAnalyzerPackageNames =
+        [
+            "PandaBear.SharedKernel.Domain.Analyzers",
+            "PandaBear.SharedKernel.Domain.CodeFixes"
+        ];
+
+        return
+        [
+            .. SourceProjectFiles(repositoryRoot).SelectMany(filePath =>
+            {
+                var relativePath = Path.GetRelativePath(repositoryRoot, filePath)
+                    .Replace(Path.DirectorySeparatorChar, '/');
+                var isDomainProject = IsDomainProjectName(Path.GetFileNameWithoutExtension(filePath));
+                var packageNames = PackageReferences(filePath)
+                    .Select(reference => reference.PackageName)
+                    .ToHashSet(StringComparer.OrdinalIgnoreCase);
+
+                return domainAnalyzerPackageNames
+                    .Where(packageName => packageNames.Contains(packageName) != isDomainProject)
+                    .Select(packageName => isDomainProject
+                        ? $"{relativePath}: missing PackageReference Include=\"{packageName}\""
+                        : $"{relativePath}: PackageReference Include=\"{packageName}\" belongs only in domain projects");
+            })
+        ];
+    }
+
     public static string[] FindDomainContractProjectReferences(string repositoryRoot)
     {
         return SourceProjectFiles(repositoryRoot)

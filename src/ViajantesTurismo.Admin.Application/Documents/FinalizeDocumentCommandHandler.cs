@@ -35,7 +35,7 @@ public sealed class FinalizeDocumentCommandHandler(
                 ct);
         }
 
-        if (document.Type == DocumentType.PaymentInstructions)
+        if (document.RequiresPaymentInstructionWorkflow)
         {
             return Domain.Payments.FinancialErrors.Invalid("paymentInstructionLifecycle");
         }

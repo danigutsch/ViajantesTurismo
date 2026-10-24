@@ -33,41 +33,23 @@ public sealed class UpdateTourCommandHandler(
             return TourErrors.IdentifierAlreadyExists(command.Identifier);
         }
 
-        var detailsResult = tour.UpdateDetails(command.Identifier, command.Name);
-        if (detailsResult.IsFailure)
-        {
-            return detailsResult;
-        }
-
-        var scheduleResult = tour.UpdateSchedule(command.StartDate, command.EndDate);
-        if (scheduleResult.IsFailure)
-        {
-            return scheduleResult;
-        }
-
-        var pricingResult = tour.UpdatePricing(
+        var reviseResult = tour.Revise(new TourDefinition(
+            command.Identifier,
+            command.Name,
+            command.StartDate,
+            command.EndDate,
+            command.Price,
             command.SingleRoomSupplementPrice,
             command.RegularBikePrice,
             command.EBikePrice,
-            command.Currency);
-        if (pricingResult.IsFailure)
+            command.Currency,
+            command.MinCustomers,
+            command.MaxCustomers,
+            command.IncludedServices));
+        if (reviseResult.IsFailure)
         {
-            return pricingResult;
+            return reviseResult;
         }
-
-        var basePriceResult = tour.UpdateBasePrice(command.Price);
-        if (basePriceResult.IsFailure)
-        {
-            return basePriceResult;
-        }
-
-        var capacityResult = tour.UpdateCapacity(command.MinCustomers, command.MaxCustomers);
-        if (capacityResult.IsFailure)
-        {
-            return capacityResult;
-        }
-
-        tour.UpdateIncludedServices([.. command.IncludedServices]);
 
         await unitOfWork.SaveEntities(ct);
 

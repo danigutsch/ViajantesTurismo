@@ -33,8 +33,7 @@ public static class DocumentMapper
             UpdatedAt = document.UpdatedAt,
             FinalizedAt = document.FinalizedAt,
             ReplacesDocumentId = document.ReplacesDocumentId,
-            HasFinalizedArtifact = document.Status == DocumentStatus.Finalized
-                && document.GetFinalizedArtifactContent() is not null
+            HasFinalizedArtifact = document.HasAvailableFinalizedArtifact
         };
     }
 

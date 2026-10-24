@@ -1,6 +1,6 @@
 # Dependency snapshot and license evidence
 
-Owner: repository maintainers. Reviewed October 23, 2026. Re-review on package/SDK/Aspire changes
+Owner: repository maintainers. Reviewed October 24, 2026. Re-review on package/SDK/Aspire changes
 or by January 20, 2027, whichever comes first. This record does not grant general license approval.
 
 ## Contents
@@ -10,6 +10,8 @@ or by January 20, 2027, whichever comes first. This record does not grant genera
 - [Magick native audit](#magick-native-audit)
 - [Security candidate renewal](#security-candidate-renewal)
 - [Payments rebase candidate](#payments-rebase-candidate)
+- [Rate-limit and reconciliation candidate renewal](#rate-limit-and-reconciliation-candidate-renewal)
+- [DDD standards candidate](#ddd-standards-candidate)
 - [Remaining decision](#remaining-decision)
 
 ## Snapshot failure and correction
@@ -181,24 +183,6 @@ authorized GitHub prerelease distribution and renewed these unchanged exact-pack
 for this candidate. Publication remains conditional on successful application validation; registry
 publication and the native distribution obligations remain outside this approval.
 
-## Remaining decision
-
-Keep current versions and library behavior unchanged while resolving distribution obligations.
-The recommended next decision is an explicit native-component review for the actual deployment
-RIDs and distribution model: required notices, corresponding source/relinking obligations where
-applicable, and how releases provide them. Do not interpret LGPL as automatically prohibiting use
-or the Apache package declaration as automatically satisfying every native obligation.
-
-Retain required notices/evidence in release artifacts. The preview metadata exception does not
-replace that distribution review. If the distribution cannot satisfy the selected
-policy, evaluate a reduced native build or a different image provider with the owning library
-repository separately; this application PR does not change SharedKernel implementations.
-
-A zero dependency delta after full snapshots means this docs PR introduces no package change. It
-does not approve existing Magick.NET distribution or remove the need for the native review. Keep
-license and vulnerability findings visible; never add global NOASSERTION or LGPL allowances to
-turn the check green.
-
 ## Rate-limit and reconciliation candidate renewal
 
 On October 24, 2026, the owner approved unchanged GitHub prerelease
@@ -218,3 +202,38 @@ The workflow remains bounded to this exact clean candidate and the same two
 package versions. Vulnerability and forbidden-license gates remain enabled.
 NuGet publication, future candidates, stable promotion, and native distribution
 approval remain excluded; the native obligations described above are unchanged.
+
+## DDD standards candidate
+
+Candidate `0.1.0-alpha.133.1` uses clean library revision
+`078adf2b2b158f38a211f48274af548d12a85752`. It adds the domain encapsulation analyzers and code fix,
+the opt-in assertion `userMessage` rule, packaged repository tooling and the other library changes
+merged since `0.1.0-alpha.112.1`. Linux/Windows package consumption and NativeAOT passed in the
+exact-source CI run. All 77 archive hashes were verified.
+
+Comparison of the complete external package version/content-hash sets across all 61 lock files
+against application main `a92f03fb` (candidate `0.1.0-alpha.112.1`) found no additions or removals;
+both sets hold the same 283 entries. The workflow still permits only the same exact StreamJsonRpc `2.25.29` and
+Magick.NET-Q8-AnyCPU `15.0.0` metadata exceptions; no license category, vulnerability threshold or
+native distribution gate was relaxed. On October 24, 2026, the owner authorized GitHub prerelease
+distribution and renewed these unchanged exact-package exceptions for this candidate. Publication
+remains conditional on successful application validation; registry publication and the native
+distribution obligations remain outside this approval.
+
+## Remaining decision
+
+Keep current versions and library behavior unchanged while resolving distribution obligations.
+The recommended next decision is an explicit native-component review for the actual deployment
+RIDs and distribution model: required notices, corresponding source/relinking obligations where
+applicable, and how releases provide them. Do not interpret LGPL as automatically prohibiting use
+or the Apache package declaration as automatically satisfying every native obligation.
+
+Retain required notices/evidence in release artifacts. The preview metadata exception does not
+replace that distribution review. If the distribution cannot satisfy the selected
+policy, evaluate a reduced native build or a different image provider with the owning library
+repository separately; this application PR does not change SharedKernel implementations.
+
+A zero dependency delta after full snapshots means this docs PR introduces no package change. It
+does not approve existing Magick.NET distribution or remove the need for the native review. Keep
+license and vulnerability findings visible; never add global NOASSERTION or LGPL allowances to
+turn the check green.

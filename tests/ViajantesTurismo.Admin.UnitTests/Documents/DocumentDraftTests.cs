@@ -697,4 +697,40 @@ public sealed class DocumentDraftTests
         expiredFinalized.ShouldBeFalse();
         finalized.RetentionExpiresAt.ShouldBeNull();
     }
+
+    [Fact]
+    public void Finalized_artifact_is_available_only_after_finalization()
+    {
+        // Arrange
+        var now = new DateTime(2026, 7, 11, 0, 0, 0, DateTimeKind.Utc);
+        var draft = DocumentDraftTestData.Create(now);
+        var beginReview = draft.BeginReview(now);
+        var approve = draft.Approve(now);
+        var availableBeforeFinalization = draft.HasAvailableFinalizedArtifact;
+
+        // Act
+        var finalize = draft.Finalize("artifact"u8.ToArray(), now);
+
+        // Assert
+        beginReview.IsSuccess.ShouldBeTrue();
+        approve.IsSuccess.ShouldBeTrue();
+        finalize.IsSuccess.ShouldBeTrue();
+        availableBeforeFinalization.ShouldBeFalse();
+        draft.HasAvailableFinalizedArtifact.ShouldBeTrue();
+    }
+
+    [Theory]
+    [InlineData(DocumentType.PaymentInstructions, true)]
+    [InlineData(DocumentType.BookingConfirmationContract, false)]
+    public void Only_payment_instructions_require_the_payment_instruction_workflow(DocumentType type, bool expected)
+    {
+        // Arrange
+        var now = new DateTime(2026, 7, 11, 0, 0, 0, DateTimeKind.Utc);
+
+        // Act
+        var draft = DocumentDraftTestData.Create(now, type: type);
+
+        // Assert
+        draft.RequiresPaymentInstructionWorkflow.ShouldBe(expected);
+    }
 }

@@ -4,19 +4,19 @@ namespace ViajantesTurismo.RepoConfig.Tests;
 public sealed class PreviewLicenseApprovalTests
 {
     [Theory]
-    [InlineData("0.1.0-alpha.112.1", "2.25.29", "15.0.0", false, true, false, true)]
-    [InlineData("0.1.0-alpha.94.1", "2.25.29", "15.0.0", false, true, false, false)]
+    [InlineData("0.1.0-alpha.133.1", "2.25.29", "15.0.0", false, true, false, true)]
+    [InlineData("0.1.0-alpha.112.1", "2.25.29", "15.0.0", false, true, false, false)]
     [InlineData("1.0.0-alpha.20261021.2", "2.25.29", "15.0.0", false, true, false, false)]
     [InlineData("1.2.0-alpha.20261023.1", "2.25.29", "15.0.0", false, true, false, false)]
     [InlineData("1.0.0", "2.25.29", "15.0.0", false, true, false, false)]
     [InlineData("1.2.0-alpha.20261024.1", "2.25.29", "15.0.0", false, true, false, false)]
-    [InlineData("0.1.0-alpha.112.1", "2.25.30", "15.0.0", false, true, false, false)]
-    [InlineData("0.1.0-alpha.112.1", "2.25.29", "15.0.1", false, true, false, false)]
-    [InlineData("0.1.0-alpha.112.1", "2.25.29", "15.0.0", true, true, false, false)]
-    [InlineData("0.1.0-alpha.112.1", "2.25.29", "15.0.0", false, false, false, false)]
-    [InlineData("0.1.0-alpha.112.1", "2.25.29", "15.0.0", false, true, true, false)]
-    [InlineData("0.1.0-alpha.112.1", "", "15.0.0", false, true, false, false)]
-    [InlineData("0.1.0-alpha.112.1", "2.25.29", "", false, true, false, false)]
+    [InlineData("0.1.0-alpha.133.1", "2.25.30", "15.0.0", false, true, false, false)]
+    [InlineData("0.1.0-alpha.133.1", "2.25.29", "15.0.1", false, true, false, false)]
+    [InlineData("0.1.0-alpha.133.1", "2.25.29", "15.0.0", true, true, false, false)]
+    [InlineData("0.1.0-alpha.133.1", "2.25.29", "15.0.0", false, false, false, false)]
+    [InlineData("0.1.0-alpha.133.1", "2.25.29", "15.0.0", false, true, true, false)]
+    [InlineData("0.1.0-alpha.133.1", "", "15.0.0", false, true, false, false)]
+    [InlineData("0.1.0-alpha.133.1", "2.25.29", "", false, true, false, false)]
     public async Task Preview_exception_requires_the_approved_candidate_and_every_locked_version(
         string candidateVersion, string dependencyVersion, string magickVersion, bool dirty, bool correctRevision,
         bool conflictingTarget, bool approved)
@@ -34,7 +34,7 @@ public sealed class PreviewLicenseApprovalTests
         var pin = System.Text.Json.JsonSerializer.Serialize(new
         {
             packageVersion = candidateVersion,
-            libraryRevision = correctRevision ? "e4d13f63ff872a86478a16e5a3c3ce1ecba0fcb1" : new string('a', 40),
+            libraryRevision = correctRevision ? "078adf2b2b158f38a211f48274af548d12a85752" : new string('a', 40),
             libraryDirty = dirty
         });
         await File.WriteAllTextAsync(Path.Combine(repository.RootPath, ".config", "sharedkernel-candidate.json"), pin, TestContext.Current.CancellationToken);

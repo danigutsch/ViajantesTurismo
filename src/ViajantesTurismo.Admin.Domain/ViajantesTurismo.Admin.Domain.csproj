@@ -3,6 +3,8 @@
         <InternalsVisibleTo Include="ViajantesTurismo.Admin.Infrastructure" />
         <InternalsVisibleTo Include="ViajantesTurismo.Admin.UnitTests" />
         <InternalsVisibleTo Include="ViajantesTurismo.Admin.Infrastructure.Tests" />
+        <InternalsVisibleTo Include="ViajantesTurismo.Admin.Testing" />
+        <InternalsVisibleTo Include="ViajantesTurismo.Admin.BehaviorTests" />
     </ItemGroup>
     <ItemGroup>
         <PackageReference Include="PandaBear.SharedKernel.BuildingBlocks" />
@@ -11,6 +13,8 @@
         <PackageReference Include="PandaBear.SharedKernel.InputNormalization" />
         <PackageReference Include="PandaBear.SharedKernel.Results" />
         <PackageReference Include="PandaBear.SharedKernel.Domain.SourceGenerator" PrivateAssets="all" />
+        <PackageReference Include="PandaBear.SharedKernel.Domain.Analyzers" PrivateAssets="all" />
+        <PackageReference Include="PandaBear.SharedKernel.Domain.CodeFixes" PrivateAssets="all" />
     </ItemGroup>
     <ItemGroup>
         <PackageReference Include="JetBrains.Annotations"/>

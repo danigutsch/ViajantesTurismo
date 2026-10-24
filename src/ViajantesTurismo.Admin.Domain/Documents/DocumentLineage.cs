@@ -49,6 +49,12 @@ public sealed class DocumentLineage : IAggregateRoot<Guid>
         get; private init;
     }
 
+    /// <summary>
+    /// Gets whether lifecycle changes go through the payment instruction workflow, which rechecks
+    /// approved terms and verified recipients.
+    /// </summary>
+    public bool RequiresPaymentInstructionWorkflow => Type == DocumentType.PaymentInstructions;
+
     /// <summary>Gets the intended audience shared by every revision.</summary>
     public DocumentAudience Audience
     {

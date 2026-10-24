@@ -61,6 +61,11 @@ Use nested `AGENTS.md` files for scoped rules.
 - `.worktrees/` is a local-only workspace area and is ignored by Git at the repository root.
 - Do not add committed documentation or code that depends on a specific `.worktrees/*` path.
 
+## Agent skills
+
+- Repository skills live in `.agents/skills/<name>/SKILL.md`. `.claude/skills/<name>` is a relative symlink to the
+    same folder for Claude Code; edit the canonical `.agents` copy.
+
 ## Aspire operations
 
 This repository is set up to use Aspire. Aspire orchestrates the application and handles
@@ -129,6 +134,8 @@ Always prefer official docs:
 - `README.md`
 - `docs/CODING_GUIDELINES.md`
 - `docs/DOMAIN_VALIDATION.md`
+- `docs/domain/RICH_DOMAIN_MODEL.md`
+- `docs/DDD_ANALYZER_RULE_CATALOG.md`
 - `docs/TEST_GUIDELINES.md`
 - `docs/CODE_QUALITY.md`
 - `docs/ARCHITECTURE_DECISIONS.md`

@@ -33,7 +33,7 @@ So that I can keep tour information current and accurate
 
     Scenario: Cannot update tour with identifier exceeding maximum length
         Given a tour exists with identifier "CUBA2024" and name "Cuba Bike Adventure"
-        When I update the tour details to identifier with 129 characters and name "Valid Name"
+        When I update the tour details to identifier with 65 characters and name "Valid Name"
         Then the tour details update should fail
         And the error should contain "identifier"
 

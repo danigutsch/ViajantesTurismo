@@ -89,7 +89,7 @@ Business Rules:
         @Invariant:INV-TOUR-003
         @error_case
         Scenario: Tour identifier has length limits
-            Given I have tour details with identifier longer than 128 characters
+            Given I have tour details with identifier longer than 64 characters
             When I attempt to create the tour
             Then I should not be able to create the tour
             And I should be informed that the identifier is too long

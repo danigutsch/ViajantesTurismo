@@ -6,34 +6,21 @@ and library tooling belong to the separate SharedKernel repository. ViajantesTur
 Generic documentation and repository-configuration tooling belongs to SharedKernel. Application
 documentation configuration, CI and coverage policy, bootstrap, and compatibility orchestration stay here.
 
-The current published candidate is `0.1.0-alpha.112.1` at clean library revision
-[`e4d13f63ff872a86478a16e5a3c3ce1ecba0fcb1`](https://github.com/danigutsch/PandaBear.SharedKernel/commit/e4d13f63ff872a86478a16e5a3c3ce1ecba0fcb1).
-It includes resolved client IP forwarding, configurable HTTP resilience and transfer-aware roadmap
-reconciliation. [CI run 40039601794](https://github.com/danigutsch/PandaBear.SharedKernel/actions/runs/40039601794)
-passed library checks and Linux/Windows package consumption and NativeAOT validation. The unchanged
-74 packages, 54 symbol archives and manifest are published in GitHub prerelease
-[`v0.1.0-alpha.112.1`](https://github.com/danigutsch/PandaBear.SharedKernel/releases/tag/v0.1.0-alpha.112.1).
-All 129 published asset digests matched the approved candidate. Application locked restore and Release
-build passed with zero warnings/errors. Application tests were not repeated after integrating the
-payments merge, as requested by the owner; full isolated consumer compatibility remains pending.
-
-The following payments rebase validation is historical evidence for the previous candidate.
-
-The published payments rebase candidate is `0.1.0-alpha.94.1` at clean library revision
-[`d08008cd3e8901c304377edcc4683de7c3a85ecb`](https://github.com/danigutsch/PandaBear.SharedKernel/commit/d08008cd3e8901c304377edcc4683de7c3a85ecb).
-It combines the merged security tooling, request-binding defaults, reusable assertions and offline
-snapshot generator. All 74 package hashes match the unchanged artifacts from
-[CI run 39994519633](https://github.com/danigutsch/PandaBear.SharedKernel/actions/runs/39994519633);
+The published DDD standards candidate is `0.1.0-alpha.133.1` at clean library revision
+[`078adf2b2b158f38a211f48274af548d12a85752`](https://github.com/danigutsch/PandaBear.SharedKernel/commit/078adf2b2b158f38a211f48274af548d12a85752).
+It adds the domain encapsulation analyzers and setter code fix that every `src/*.Domain` project
+references, plus the library changes merged since `0.1.0-alpha.112.1`. All 77 package hashes match the
+unchanged artifacts from
+[CI run 40070217254](https://github.com/danigutsch/PandaBear.SharedKernel/actions/runs/40070217254);
 Linux/Windows package consumption and NativeAOT passed. Isolated application compatibility at
-consumer revision
-`e38c34533c6b1541bf1dd6b802bf655bfa6dc30f` passed locked restore, Release build with zero
-warnings/errors, OpenAPI verification and 4,044 tests with five optional fastText skips. The unchanged
-74 packages, 54 symbol archives and manifest are published in GitHub prerelease
-[`v0.1.0-alpha.94.1`](https://github.com/danigutsch/PandaBear.SharedKernel/releases/tag/v0.1.0-alpha.94.1).
+consumer revision `b04552cd4c408d8c3c2c9258e3b4f14460e1c394` passed locked restore, Release build
+with zero warnings/errors, OpenAPI generation and 4,055 tests with five optional fastText skips. The
+unchanged 77 packages, 54 symbol archives and manifest are published in GitHub prerelease
+[`v0.1.0-alpha.133.1`](https://github.com/danigutsch/PandaBear.SharedKernel/releases/tag/v0.1.0-alpha.133.1).
 
-The previous accepted preview `0.1.0-alpha.70.1` at revision
-`ef0dd0a67b8982dfdf0cb8f5e23224c397971a5b` remains published. Its earlier application validation is
-historical evidence; it does not contain the request-binding defaults needed by the payments tests.
+The previous previews `0.1.0-alpha.112.1` at revision `e4d13f63ff872a86478a16e5a3c3ce1ecba0fcb1` and
+`0.1.0-alpha.94.1` at revision `d08008cd3e8901c304377edcc4683de7c3a85ecb` remain published. Their
+application validation is historical evidence; neither contains the domain analyzers.
 
 The former candidate `1.2.0-alpha.20261023.1` at library revision
 `cc826be664bfc2dc087fe5a140f7232b4f65967d` is retired. Its release was deliberately deleted;
@@ -119,7 +106,7 @@ through public package interfaces. This test-only commit does not change the pin
 
 Hosted Linux and Windows jobs read the committed candidate manifest, check out the public library at
 its exact `libraryRevision`, and download unchanged packages and `candidate.json` from GitHub
-prerelease `v<packageVersion>`. The published `0.1.0-alpha.112.1` assets match the committed candidate
+prerelease `v<packageVersion>`. The published `0.1.0-alpha.133.1` assets match the committed candidate
 hashes. Missing retired releases must not be recreated to unblock checks. The secret-scan
 workflow also pins the shared scanner action to an immutable library revision. Hosted checks verify
 the same immutable package bytes as local validation.

@@ -16,11 +16,14 @@ internal static class DocumentDraftTestData
         BodyFontFamily = "Inter"
     };
 
-    public static DocumentDraft Create(DateTime createdAt, Uri? brandingLogoUri = null)
+    public static DocumentDraft Create(
+        DateTime createdAt,
+        Uri? brandingLogoUri = null,
+        DocumentType type = DocumentType.BookingConfirmationContract)
     {
         var result = DocumentDraft.Create(
             Guid.CreateVersion7(),
-            DocumentType.BookingConfirmationContract,
+            type,
             DocumentAudience.Customer,
             "tour-service-contract",
             "1",

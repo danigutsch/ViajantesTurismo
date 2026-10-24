@@ -8,6 +8,8 @@
         <PackageReference Include="PandaBear.SharedKernel.EventSourcing" />
         <PackageReference Include="PandaBear.SharedKernel.Domain" />
         <PackageReference Include="PandaBear.SharedKernel.Domain.SourceGenerator" PrivateAssets="all" />
+        <PackageReference Include="PandaBear.SharedKernel.Domain.Analyzers" PrivateAssets="all" />
+        <PackageReference Include="PandaBear.SharedKernel.Domain.CodeFixes" PrivateAssets="all" />
         <PackageReference Include="PandaBear.SharedKernel.BuildingBlocks" />
         <PackageReference Include="PandaBear.SharedKernel.InputNormalization" />
     </ItemGroup>

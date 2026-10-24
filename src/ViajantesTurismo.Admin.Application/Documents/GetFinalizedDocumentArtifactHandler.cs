@@ -19,15 +19,13 @@ public sealed class GetFinalizedDocumentArtifactHandler(IDocumentStore documentS
             return DocumentErrors.DocumentNotFound(query.DocumentId).ConvertError<FinalizedDocumentArtifact>();
         }
 
-        if (document.Type == DocumentType.PaymentInstructions)
+        if (document.RequiresPaymentInstructionWorkflow)
         {
             return paymentInstructions is not null ? await paymentInstructions.Download(query.DocumentId, query.ActorId, ct)
                 : DocumentErrors.FinalizedArtifactNotAvailable().ConvertError<FinalizedDocumentArtifact>();
         }
         var artifactContent = document.GetFinalizedArtifactContent();
-        if (document.Status != DocumentStatus.Finalized
-            || artifactContent is null
-            || string.IsNullOrWhiteSpace(document.FinalizedArtifactName))
+        if (!document.HasAvailableFinalizedArtifact || artifactContent is null || document.FinalizedArtifactName is null)
         {
             return DocumentErrors.FinalizedArtifactNotAvailable().ConvertError<FinalizedDocumentArtifact>();
         }

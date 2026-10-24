@@ -135,24 +135,7 @@ public sealed partial class Tour : IAggregateRoot<Guid>
         var sanitizedServices = StringSanitizer.SanitizeCollection(definition.IncludedServices);
 
         var errors = new ValidationErrors();
-
-        if (string.IsNullOrWhiteSpace(identifier))
-        {
-            errors.Add(TourErrors.EmptyIdentifier());
-        }
-        else if (identifier.Length > AdminDomainLimits.MaxNameLength)
-        {
-            errors.Add(TourErrors.IdentifierTooLong(AdminDomainLimits.MaxNameLength, identifier.Length));
-        }
-
-        if (string.IsNullOrWhiteSpace(name))
-        {
-            errors.Add(TourErrors.EmptyName());
-        }
-        else if (name.Length > AdminDomainLimits.MaxNameLength)
-        {
-            errors.Add(TourErrors.NameTooLong(AdminDomainLimits.MaxNameLength, name.Length));
-        }
+        AddDetailsErrors(errors, identifier, name);
 
         var scheduleResult = TourSchedule.Create(definition.Schedule.StartDate, definition.Schedule.EndDate);
         if (scheduleResult.IsFailure)
@@ -197,6 +180,83 @@ public sealed partial class Tour : IAggregateRoot<Guid>
     }
 
     /// <summary>
+    /// Revises every editable tour value at once: details, schedule, pricing, capacity, and included services.
+    /// </summary>
+    /// <remarks>
+    /// All values are validated before any change is applied, so a failure leaves the tour unchanged and
+    /// reports every invalid value. The identifier and currency cannot change while bookings exist, and
+    /// the maximum capacity cannot drop below the current customer count.
+    /// </remarks>
+    /// <param name="definition">The revised tour values.</param>
+    /// <returns>A Result indicating success or every validation failure.</returns>
+    public Result Revise(TourDefinition definition)
+    {
+        ArgumentNullException.ThrowIfNull(definition);
+
+        var identifier = StringSanitizer.Sanitize(definition.Identifier);
+        var name = StringSanitizer.Sanitize(definition.Name);
+
+        if (_bookings.Count > 0 && !string.Equals(Identifier, identifier, StringComparison.Ordinal))
+        {
+            return TourErrors.IdentifierCannotBeChangedWithBookings();
+        }
+
+        if (_bookings.Count > 0 && definition.Pricing.Currency != Pricing.Currency)
+        {
+            return TourErrors.CurrencyCannotBeChangedWithBookings();
+        }
+
+        var errors = new ValidationErrors();
+        AddDetailsErrors(errors, identifier, name);
+
+        var scheduleResult = TourSchedule.Create(definition.Schedule.StartDate, definition.Schedule.EndDate);
+        if (scheduleResult.IsFailure)
+        {
+            errors.Add(scheduleResult);
+        }
+        else if (scheduleResult.Value.DurationDays < AdminDomainLimits.MinimumTourDurationDays)
+        {
+            errors.Add(TourErrors.DurationTooShort(AdminDomainLimits.MinimumTourDurationDays,
+                scheduleResult.Value.DurationDays));
+        }
+
+        var pricingResult = TourPricing.Create(
+            definition.Pricing.BasePrice,
+            definition.Pricing.SingleRoomSupplementPrice,
+            definition.Pricing.RegularBikePrice,
+            definition.Pricing.EBikePrice,
+            definition.Pricing.Currency);
+        if (pricingResult.IsFailure)
+        {
+            errors.Add(pricingResult);
+        }
+
+        var capacityResult = TourCapacity.Create(definition.Capacity.MinCustomers, definition.Capacity.MaxCustomers);
+        if (capacityResult.IsFailure)
+        {
+            errors.Add(capacityResult);
+        }
+        else if (definition.Capacity.MaxCustomers < CurrentCustomerCount)
+        {
+            errors.Add(TourErrors.CannotReduceCapacityBelowCurrentBookings(definition.Capacity.MaxCustomers,
+                CurrentCustomerCount));
+        }
+
+        if (errors.HasErrors)
+        {
+            return errors.ToResult();
+        }
+
+        Identifier = identifier;
+        Name = name;
+        Schedule = scheduleResult.Value;
+        Pricing = pricingResult.Value;
+        Capacity = capacityResult.Value;
+        _includedServices = StringSanitizer.SanitizeCollection(definition.IncludedServices);
+        return Result.Ok();
+    }
+
+    /// <summary>
     /// Updates the tour's basic information (identifier and name).
     /// </summary>
     /// <remarks>
@@ -217,24 +277,7 @@ public sealed partial class Tour : IAggregateRoot<Guid>
         var sanitizedName = StringSanitizer.Sanitize(name);
 
         var errors = new ValidationErrors();
-
-        if (string.IsNullOrWhiteSpace(sanitizedIdentifier))
-        {
-            errors.Add(TourErrors.EmptyIdentifier());
-        }
-        else if (sanitizedIdentifier.Length > AdminDomainLimits.MaxNameLength)
-        {
-            errors.Add(TourErrors.IdentifierTooLong(AdminDomainLimits.MaxNameLength, sanitizedIdentifier.Length));
-        }
-
-        if (string.IsNullOrWhiteSpace(sanitizedName))
-        {
-            errors.Add(TourErrors.EmptyName());
-        }
-        else if (sanitizedName.Length > AdminDomainLimits.MaxNameLength)
-        {
-            errors.Add(TourErrors.NameTooLong(AdminDomainLimits.MaxNameLength, sanitizedName.Length));
-        }
+        AddDetailsErrors(errors, sanitizedIdentifier, sanitizedName);
 
         if (errors.HasErrors)
         {
@@ -835,4 +878,24 @@ public sealed partial class Tour : IAggregateRoot<Guid>
         return Result.Ok();
     }
 
+    private static void AddDetailsErrors(ValidationErrors errors, string identifier, string name)
+    {
+        if (string.IsNullOrWhiteSpace(identifier))
+        {
+            errors.Add(TourErrors.EmptyIdentifier());
+        }
+        else if (identifier.Length > AdminDomainLimits.MaxDefaultLength)
+        {
+            errors.Add(TourErrors.IdentifierTooLong(AdminDomainLimits.MaxDefaultLength, identifier.Length));
+        }
+
+        if (string.IsNullOrWhiteSpace(name))
+        {
+            errors.Add(TourErrors.EmptyName());
+        }
+        else if (name.Length > AdminDomainLimits.MaxNameLength)
+        {
+            errors.Add(TourErrors.NameTooLong(AdminDomainLimits.MaxNameLength, name.Length));
+        }
+    }
 }

@@ -1,4 +1,5 @@
 using System.Reflection;
+using ViajantesTurismo.Admin.Domain.Tours;
 using ViajantesTurismo.ArchitectureTests.Infrastructure;
 using static ViajantesTurismo.ArchitectureTests.Conventions.DddConventionsTestsHelpers;
 
@@ -68,6 +69,20 @@ public sealed class DddConventionsTests
         var areDifferent3 = violatingTypes.Length != 0;
         areDifferent3.ShouldBeFalse(
             $"Expected value objects to expose immutable state, but found public setters on: {string.Join(", ", violatingTypes)}");
+    }
+
+    [Fact]
+    public void Child_entities_must_change_only_through_their_aggregate_root()
+    {
+        // Arrange
+        var childEntityTypes = GetChildEntityTypes([.. EntityTypes]);
+
+        // Act
+        var publicMutators = childEntityTypes.SelectMany(GetPublicMutators).ToArray();
+
+        // Assert
+        childEntityTypes.ShouldContain(typeof(Booking));
+        publicMutators.ShouldBeEmpty();
     }
 
 }

@@ -13,6 +13,7 @@ from pathlib import Path
 ROOT = Path.cwd()
 
 DEFAULT_DIRS = (
+    ".agents",
     ".devcontainer",
     ".github",
     "benchmarks",

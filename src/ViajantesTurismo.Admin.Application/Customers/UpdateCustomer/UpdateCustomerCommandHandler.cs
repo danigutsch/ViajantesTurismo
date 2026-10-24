@@ -72,16 +72,41 @@ public sealed class UpdateCustomerCommandHandler(
             errors.Add(contactInfoResult);
         }
 
+        var addressResult = CustomerMapper.MapToAddress(command.Address);
+        var physicalInfoResult = CustomerMapper.MapToPhysicalInfo(command.PhysicalInfo);
+        var emergencyContactResult = CustomerMapper.MapToEmergencyContact(command.EmergencyContact);
+        var medicalInfoResult = CustomerMapper.MapToMedicalInfo(command.MedicalInfo);
+
+        if (!addressResult.IsSuccess)
+        {
+            errors.Add(addressResult);
+        }
+
+        if (!physicalInfoResult.IsSuccess)
+        {
+            errors.Add(physicalInfoResult);
+        }
+
+        if (!emergencyContactResult.IsSuccess)
+        {
+            errors.Add(emergencyContactResult);
+        }
+
+        if (!medicalInfoResult.IsSuccess)
+        {
+            errors.Add(medicalInfoResult);
+        }
+
         if (errors.HasErrors)
         {
             return errors.ToResult();
         }
 
-        var address = CustomerMapper.MapToAddress(command.Address);
-        var physicalInfo = CustomerMapper.MapToPhysicalInfo(command.PhysicalInfo);
+        var address = addressResult.Value;
+        var physicalInfo = physicalInfoResult.Value;
         var accommodationPreferences = CustomerMapper.MapToAccommodationPreferences(command.AccommodationPreferences);
-        var emergencyContact = CustomerMapper.MapToEmergencyContact(command.EmergencyContact);
-        var medicalInfo = CustomerMapper.MapToMedicalInfo(command.MedicalInfo);
+        var emergencyContact = emergencyContactResult.Value;
+        var medicalInfo = medicalInfoResult.Value;
 
         customer.UpdatePersonalInfo(personalInfoResult.Value);
         customer.UpdateIdentificationInfo(identificationInfoResult.Value);

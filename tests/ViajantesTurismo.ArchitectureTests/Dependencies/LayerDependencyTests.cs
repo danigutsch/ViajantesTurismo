@@ -1,6 +1,8 @@
 using ArchUnitNET.Domain;
 using ArchUnitNET.xUnitV3;
+using ViajantesTurismo.Admin.Domain.Tours;
 using ViajantesTurismo.ArchitectureTests.Infrastructure;
+using ViajantesTurismo.Catalog.Domain;
 using Assembly = System.Reflection.Assembly;
 using static ArchUnitNET.Fluent.ArchRuleDefinition;
 using static ViajantesTurismo.ArchitectureTests.Dependencies.LayerDependencyTestsHelpers;
@@ -174,6 +176,32 @@ public sealed class LayerDependencyTests
 
         // Assert
         unexpectedReferences.ShouldBeEmpty();
+    }
+
+    [Fact]
+    public void Domain_assemblies_should_not_reference_framework_adapters()
+    {
+        // Arrange
+        Assembly[] domainAssemblies = [typeof(Tour).Assembly, CatalogDomainMarker.Assembly];
+
+        // Act
+        var unexpectedReferences = FindDomainFrameworkAssemblyReferences(domainAssemblies);
+
+        // Assert
+        unexpectedReferences.ShouldBeEmpty();
+    }
+
+    [Fact]
+    public void Domain_analyzer_packages_should_be_referenced_by_exactly_the_domain_projects()
+    {
+        // Arrange
+        var repositoryRoot = GetRepositoryRoot();
+
+        // Act
+        var violations = FindDomainAnalyzerActivationViolations(repositoryRoot);
+
+        // Assert
+        violations.ShouldBeEmpty();
     }
 
     [Fact]

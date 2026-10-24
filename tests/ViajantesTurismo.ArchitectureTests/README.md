@@ -13,9 +13,11 @@ For Admin test taxonomy and seam guidance, treat `tests/README.md` as the canoni
 
 - `LayerDependencyTests` — Ensures Domain never depends on Application/Infrastructure/API,
   Application stays adapter-free, Infrastructure is not coupled to transport, and SharedKernel module boundaries stay
-  explicit. Abstraction projects stay separated from implementation and adapter dependencies.
+  explicit. Abstraction projects stay separated from implementation and adapter dependencies. Domain assemblies
+  reference no framework adapters such as System.Text.Json, EF Core, or ASP.NET Core.
 - `DddConventionsTests` — Guards aggregate patterns: entities stay sealed and live under the
-  domain namespaces; value objects remain immutable with no public setters.
+  domain namespaces; value objects remain immutable with no public setters; child entities change only through their
+  aggregate root.
 - `NamingConventionTests` — Enforces consistent naming (interfaces start with `I`, contracts end with `Dto`,
   architecture test classes end with `Tests`).
 - `ErrorClassTests` — Ensures domain `*Errors` helper classes follow the required static-class convention.

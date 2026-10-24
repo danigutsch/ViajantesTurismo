@@ -40,12 +40,12 @@ public sealed class TourCapacity : ValueObject
     {
         var errors = new ValidationErrors();
 
-        if (minCustomers is < 1 or > 20)
+        if (minCustomers is < AdminDomainLimits.MinTourCustomers or > AdminDomainLimits.MaxTourCustomers)
         {
             errors.Add(TourErrors.InvalidMinCustomers(minCustomers));
         }
 
-        if (maxCustomers is < 1 or > 20)
+        if (maxCustomers is < AdminDomainLimits.MinTourCustomers or > AdminDomainLimits.MaxTourCustomers)
         {
             errors.Add(TourErrors.InvalidMaxCustomers(maxCustomers));
         }

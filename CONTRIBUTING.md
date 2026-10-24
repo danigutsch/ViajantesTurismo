@@ -13,6 +13,10 @@
 6. Run the relevant checks before opening a pull request.
 7. Open a pull request using the repository template and complete the checklist.
 
+Repository agent skills live in `.agents/skills/<name>/SKILL.md`. `.claude/skills/<name>` is a relative symlink to the
+same folder so Claude Code finds it; edit the `.agents` copy. On Windows, enable Developer Mode and run
+`git config --global core.symlinks true` before cloning, otherwise Git checks the link out as a plain text file.
+
 Custom Git hooks are not installed or maintained by this repository. Run local checks explicitly;
 CI enforces the required quality gates.
 

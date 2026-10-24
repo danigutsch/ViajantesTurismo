@@ -80,6 +80,8 @@ Decisions about application architecture and layer responsibilities.
   Ownership
 - **[ADR-040](adr/20260724-branding-module-co-hosting-and-state-distribution.md)** — Branding Module
   Co-hosting and State Distribution
+- **[ADR-042](adr/20261024-ddd-standards-enforcement.md)** — Enforce DDD Domain Standards with
+  SharedKernel Analyzers and Architecture Tests
 
 ### Versioning & Release
 

@@ -233,4 +233,37 @@ public sealed class UpdateCustomerCommandHandlerTests
         result.IsFailure.ShouldBeTrue();
         result.Status.ShouldBe(ResultStatus.Conflict);
     }
+
+    [Fact]
+    public async Task Handle_returns_invalid_without_changing_the_customer_when_address_is_invalid()
+    {
+        // Arrange
+        var existing = EntityBuilders.BuildCustomer(new CustomerOptions(Email: "address@example.com"));
+        _store.Seed(existing);
+        var originalStreet = existing.Address.Street;
+        var dto = DtoBuilders.BuildCreateCustomerDto(email: "address@example.com");
+        var command = new UpdateCustomerCommand(
+            existing.Id,
+            dto.PersonalInfo,
+            dto.IdentificationInfo,
+            dto.ContactInfo,
+            dto.Address with
+            {
+                Street = ""
+            },
+            dto.PhysicalInfo,
+            dto.AccommodationPreferences,
+            dto.EmergencyContact,
+            dto.MedicalInfo with
+            {
+                Allergies = new string('A', 501)
+            });
+
+        // Act
+        var result = await _sut.Handle(command, CancellationToken.None);
+
+        // Assert
+        result.Status.ShouldBe(ResultStatus.Invalid);
+        existing.Address.Street.ShouldBe(originalStreet);
+    }
 }
