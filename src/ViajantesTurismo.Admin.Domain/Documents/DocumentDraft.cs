@@ -196,8 +196,17 @@ public sealed class DocumentDraft : IEntity<Guid>
         get; private set;
     }
 
+    /// <summary>Gets whether staff review can start, which a generated draft or one with requested changes allows.</summary>
+    public bool CanBeginReview => Status is DocumentStatus.DraftGenerated or DocumentStatus.ChangesRequested;
+
+    /// <summary>Gets whether this revision is the finalized, customer-issued version.</summary>
+    public bool IsFinalized => Status == DocumentStatus.Finalized;
+
+    /// <summary>Gets whether this revision was voided or superseded and can no longer be issued.</summary>
+    public bool IsRetired => Status is DocumentStatus.Voided or DocumentStatus.Superseded;
+
     /// <summary>Gets whether this revision has a finalized artifact that can be downloaded.</summary>
-    public bool HasAvailableFinalizedArtifact => Status == DocumentStatus.Finalized
+    public bool HasAvailableFinalizedArtifact => IsFinalized
         && _finalizedArtifactContent is not null
         && !string.IsNullOrWhiteSpace(FinalizedArtifactName);
 
@@ -519,7 +528,7 @@ public sealed class DocumentDraft : IEntity<Guid>
     /// <summary>Starts or restarts staff review.</summary>
     internal Result BeginReview(DateTime now)
     {
-        if (Status is not (DocumentStatus.DraftGenerated or DocumentStatus.ChangesRequested))
+        if (!CanBeginReview)
         {
             return DocumentErrors.InvalidStatusTransition(Status, DocumentStatus.InReview);
         }
