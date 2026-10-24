@@ -317,7 +317,7 @@ internal static class AppHostResourceExtensions
     }
 
     /// <summary>
-    /// Adds the standalone integration-event worker.
+    /// Adds the Catalog-owned integration-event worker, which runs only Catalog consumers and background services.
     /// </summary>
     /// <param name="builder">The distributed application builder.</param>
     /// <param name="adminDatabase">The Admin database resource that owns the transport table.</param>
@@ -325,8 +325,8 @@ internal static class AppHostResourceExtensions
     /// <param name="migrationService">The migration service resource.</param>
     /// <param name="clamAv">The optional private ClamAV scanner resource.</param>
     /// <param name="seaweedFs">The optional private SeaweedFS object-storage resource.</param>
-    /// <returns>The configured integration-event worker resource.</returns>
-    public static IResourceBuilder<ProjectResource> AddIntegrationEventWorker(
+    /// <returns>The configured Catalog integration-event worker resource.</returns>
+    public static IResourceBuilder<ProjectResource> AddCatalogIntegrationEventWorker(
         this IDistributedApplicationBuilder builder,
         IResourceBuilder<PostgresDatabaseResource> adminDatabase,
         IResourceBuilder<PostgresDatabaseResource> catalogDatabase,
@@ -334,7 +334,7 @@ internal static class AppHostResourceExtensions
         IResourceBuilder<ClamAvResource>? clamAv,
         IResourceBuilder<SeaweedFsResource>? seaweedFs)
     {
-        var worker = builder.AddDevelopmentDotNetProject<ViajantesTurismo_IntegrationEventWorker>(ResourceNames.IntegrationEventWorker)
+        var worker = builder.AddDevelopmentDotNetProject<ViajantesTurismo_Catalog_IntegrationEventWorker>(ResourceNames.CatalogIntegrationEventWorker)
             .WithReference(adminDatabase)
             .WithReference(catalogDatabase)
             .WaitFor(adminDatabase)

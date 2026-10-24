@@ -23,13 +23,13 @@ flowchart LR
     AdminPerformanceSmoke[Admin Performance Smoke]
     apiService[Admin.ApiService]
     brandingApiService[Branding Api]
+    CatalogIntegrationEventWorker[Catalog Integration Event Worker]
     catalogApiService[Catalog.ApiService]
     clamAv[ClamAV]
     adminDatabase[Database]
     catalogDatabase[Database]
     securityDatabase[Database]
     DatabaseObservability[Database Observability]
-    IntegrationEventWorker[Integration Event Worker]
     ManagementWeb[Management.Web]
     migrationService[MigrationService]
     ObservabilityStack[Observability Stack]
@@ -40,14 +40,14 @@ flowchart LR
     identityProvider[Run Mode Identity Provider]
     seaweedFs[SeaweedFS]
     AdminPerformanceSmoke --> apiService
+    CatalogIntegrationEventWorker --> adminDatabase
+    CatalogIntegrationEventWorker --> catalogDatabase
+    CatalogIntegrationEventWorker --> clamAv
+    CatalogIntegrationEventWorker --> migrationService
+    CatalogIntegrationEventWorker --> seaweedFs
     DatabaseObservability --> adminDatabase
     DatabaseObservability --> catalogDatabase
     DatabaseObservability --> migrationService
-    IntegrationEventWorker --> adminDatabase
-    IntegrationEventWorker --> catalogDatabase
-    IntegrationEventWorker --> clamAv
-    IntegrationEventWorker --> migrationService
-    IntegrationEventWorker --> seaweedFs
     ManagementWeb --> apiService
     ManagementWeb --> brandingApiService
     ManagementWeb --> cache
@@ -87,9 +87,21 @@ Current AppHost rules:
 - Infrastructure resources are declared before services.
 - Service-specific references and startup dependencies are shown in the generated graph above; do not
   maintain a second edge list here.
-- `IntegrationEventWorker` reads Admin transport rows and writes Catalog idempotency/event-store state.
+- `Catalog.IntegrationEventWorker` reads Admin transport rows and writes Catalog idempotency/event-store state.
+- Each worker host belongs to one bounded context and runs only that context's consumers and background
+  services; `WorkerOwnershipTests` rejects a worker without an owning context or with another context's
+  project references. Current consumers and owners:
+
+  | Consumer or background service | Owner | Host |
+  | --- | --- | --- |
+  | `AdminTourCreatedIntegrationHandler` (transport consumer `catalog`) | Catalog | `Catalog.IntegrationEventWorker` |
+  | `MediaImageOriginalStoredIntegrationHandler` | Catalog | `Catalog.IntegrationEventWorker` |
+  | `CatalogProjectionHostedService` | Catalog | `Catalog.IntegrationEventWorker` |
+  | `MediaObjectReconciliationHostedService` | Catalog | `Catalog.IntegrationEventWorker` |
+  | Branding settings projection (transport consumer `admin`, planned) | Admin | `Admin.IntegrationEventWorker`, planned |
+
 - API services stay internal; web frontends expose external HTTP endpoints.
-- ClamAV stays private on TCP; Admin API, Catalog API, and Integration Event Worker receive its
+- ClamAV stays private on TCP; Admin API, Catalog API, and `Catalog.IntegrationEventWorker` receive its
   private host and port and wait for its PING/PONG health check.
 - The performance smoke resource is opt-in through `VT_ASPIRE_ENABLE_PERFORMANCE_TESTS=1`.
 
@@ -103,7 +115,7 @@ is not process isolation: Catalog and Branding share process availability, memor
 of every credential available to Catalog.ApiService.
 
 In the target flow, Public.Web and Management.Web keep Branding HTTP against the Catalog host.
-`IntegrationEventWorker` carries full-state, revisioned Branding events to an Admin-owned inbox and
+`Admin.IntegrationEventWorker` carries full-state, revisioned Branding events to an Admin-owned inbox and
 local projection. Admin API reads that projection and has no Catalog/Branding HTTP or database
 credential. Ordinary production API-to-API HTTP is not used for Branding state transfer.
 

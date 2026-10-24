@@ -2,6 +2,10 @@
 
 **Status**: Accepted - 2026-07-24
 
+**Amended**: 2026-10-24 - worker hosts follow bounded-context ownership. The Branding-to-Admin consumer runs
+in an Admin-owned `Admin.IntegrationEventWorker`, not in the Catalog-owned worker that runs Catalog consumers;
+see [Worker ownership](#worker-ownership).
+
 ## Context
 
 Branding is a small business capability with its own settings, permissions, persistence, public reads,
@@ -68,7 +72,7 @@ that the target topology is deployed or production-ready.
   that handoff transaction commits leaves neither the transport insert nor `PublishedAt`; the durable outbox
   claim remains until its lease expires and the relay retries. A crash after commit leaves both durable and needs
   no republish.
-- `IntegrationEventWorker` connects to the Catalog database to claim `ConsumerName = 'admin'` rows with the
+- `Admin.IntegrationEventWorker` connects to the Catalog database to claim `ConsumerName = 'admin'` rows with the
   existing lease/`FOR UPDATE SKIP LOCKED` pattern. It updates transport claim, retry, poison, and final
   `ProcessedAt` acknowledgement state there. A finite configured attempt limit moves an exhausted row to an
   explicit poison state; poison rows are never selected as ordinary pending work.
@@ -83,12 +87,21 @@ that the target topology is deployed or production-ready.
   Admin inbox identity plus epoch/revision comparison makes the second delivery a no-op before the worker
   acknowledges transport.
 
+### Worker ownership
+
+- A worker host belongs to the bounded context that owns its consumers' business rules and data. Consumers
+  share a host only when they share that owner, scaling, availability, deployment lifecycle, and credentials.
+- `Catalog.IntegrationEventWorker` runs only Catalog consumers and background services and holds no Admin
+  projection credential. `Admin.IntegrationEventWorker` runs the Branding-to-Admin consumer and holds the
+  Catalog-database transport credential plus the Admin projection credential described below; it holds no
+  Catalog domain credential.
+
 ### Admin projection and delivery policy
 
 - `BrandingSettingsChangedIntegrationEvent` carries a non-empty source epoch, a positive source revision, and the complete
   immutable Branding document snapshot. No Branding integration event predates this contract and no valid event
   has a null or zero revision.
-- `IntegrationEventWorker` delivers Branding events through an Admin-owned inbox into an Admin-owned local
+- `Admin.IntegrationEventWorker` delivers Branding events through an Admin-owned inbox into an Admin-owned local
   projection. Inbox completion, projection replacement, and consumer-watermark advancement are one Admin
   transaction.
 - Within the accepted source epoch, a revision applies only when it is greater than the persisted Admin
@@ -241,7 +254,7 @@ least-privilege capabilities for:
 - producer/relay access that can claim/update `branding.outbox_messages` and insert
   `ConsumerName = 'admin'` rows into Catalog-database `messaging.transport_messages`, without Catalog-domain or
   Admin access;
-- an `IntegrationEventWorker` Catalog-database credential limited to `SELECT`/`UPDATE` on
+- an `Admin.IntegrationEventWorker` Catalog-database credential limited to `SELECT`/`UPDATE` on
   `messaging.transport_messages`, plus a separate Admin credential limited to Branding inbox, projection,
   watermark, recovery, and replay-audit DML;
 - Admin API read access to its local Branding projection only;

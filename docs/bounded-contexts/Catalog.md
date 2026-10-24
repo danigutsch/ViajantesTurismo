@@ -72,7 +72,7 @@ Current runtime notes:
 
 - Admin maps a tour-created domain event into `AdminTourCreatedIntegrationEvent` during `SaveChanges`
   and commits it with the Admin outbox row.
-- The Admin relay writes the Admin PostgreSQL transport table. `IntegrationEventWorker` claims batches,
+- The Admin relay writes the Admin PostgreSQL transport table. `Catalog.IntegrationEventWorker` claims batches,
   invokes the generated typed Catalog publisher, and applies Catalog inbox/idempotency before appending
   `CatalogTourDraftCreated`. The worker also hosts Catalog background projection execution.
 - Admin and Catalog use separate databases, which may share one PostgreSQL server. Each database owns

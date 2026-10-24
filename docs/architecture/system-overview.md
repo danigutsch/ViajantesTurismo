@@ -30,7 +30,7 @@ flowchart LR
         adminApi[Admin.ApiService internal API]
         brandingApi[Branding.ApiService internal API]
         catalogApi[Catalog.ApiService internal API]
-        worker[IntegrationEventWorker]
+        worker[Catalog.IntegrationEventWorker]
         migration[MigrationService]
         sharedKernel[SharedKernel reusable modules]
     end

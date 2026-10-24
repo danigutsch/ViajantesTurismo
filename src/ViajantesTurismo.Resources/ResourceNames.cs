@@ -81,9 +81,9 @@ public static class ResourceNames
     public const string BrandingApi = "branding-api";
 
     /// <summary>
-    /// The name of the integration-event worker resource.
+    /// The name of the Catalog-owned integration-event worker resource.
     /// </summary>
-    public const string IntegrationEventWorker = "integration-event-worker";
+    public const string CatalogIntegrationEventWorker = "catalog-integration-event-worker";
 
     /// <summary>
     /// The name of the web application resource.

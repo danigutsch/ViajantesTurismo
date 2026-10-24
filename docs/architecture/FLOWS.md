@@ -81,7 +81,7 @@ sequenceDiagram
 Admin tour creation persists integration events through the EF Core outbox provider. Admin and Catalog
 use separate databases, which may share one PostgreSQL server; each database owns its own `messaging`
 schema. The Admin relay moves envelopes from `messaging.outbox_messages` into the Admin PostgreSQL
-transport table. `IntegrationEventWorker` claims a batch with `FOR UPDATE SKIP LOCKED`, keeps one scope
+transport table. `Catalog.IntegrationEventWorker` claims a batch with `FOR UPDATE SKIP LOCKED`, keeps one scope
 for that batch, processes its messages sequentially, and records lease/retry state. The generated typed
 publisher resolves the Catalog handler, whose idempotency wrapper writes Catalog
 `messaging.idempotency_keys`.
@@ -108,7 +108,7 @@ flowchart LR
     outbox[(messaging.outbox_messages)]
     relay[Admin outbox relay]
     transport[(Admin PostgreSQL transport)]
-    worker[IntegrationEventWorker batch consumer]
+    worker[Catalog.IntegrationEventWorker batch consumer]
     inbox[(Catalog messaging.idempotency_keys)]
     catalogConsumer[Catalog consumer]
     catalogEvents[(Catalog event streams)]
@@ -214,7 +214,7 @@ Current runtime behavior:
 - Management presentation and publication mutations append to the tour stream with optimistic
   expected-version checks.
 - Public endpoints read only rows marked `IsPublished` from the read model.
-- `IntegrationEventWorker` hosts PostgreSQL transport consumption, background projection execution,
+- `Catalog.IntegrationEventWorker` hosts PostgreSQL transport consumption, background projection execution,
   and media reconciliation. A claimed transport batch shares one DI scope and is processed sequentially.
 - A committed mutation with deferred projection returns `202 Accepted` and a management-detail
   `Location`; background projection retries it.
@@ -346,7 +346,7 @@ Current rendering rules:
 Branding remains a logical module but is hosted by Catalog.ApiService. A write commits current state,
 an immutable full-state revision, and a Branding-owned outbox event in one transaction. The event
 is `BrandingSettingsChangedIntegrationEvent` and carries a non-empty source epoch, positive source revision, and
-complete immutable document snapshot. `IntegrationEventWorker` applies it through an Admin inbox to a
+complete immutable document snapshot. `Admin.IntegrationEventWorker` applies it through an Admin inbox to a
 local Admin projection; Admin API never calls Catalog HTTP or reads the Catalog database for Branding.
 
 ```mermaid
@@ -360,7 +360,7 @@ flowchart LR
     outbox[(branding.outbox_messages)]
     relay[Branding outbox relay]
     transport[(Catalog DB messaging.transport_messages\nConsumerName = admin)]
-    worker[IntegrationEventWorker]
+    worker[Admin.IntegrationEventWorker]
     adminInbox[(Admin Branding inbox + watermark)]
     adminProjection[(Admin Branding projection)]
     adminApi[Admin.ApiService]

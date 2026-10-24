@@ -71,7 +71,7 @@ domain, memory space, and the blast radius of every credential available to that
   Management.Web, and Admin call it. This remains the rollback host during migration.
 - **Target**: Public.Web and Management.Web use the same logical Branding HTTP contract on
   `ViajantesTurismo.Catalog.ApiService`. Admin reads an Admin-owned local projection populated by
-  `IntegrationEventWorker` and has no Catalog/Branding HTTP or database credential.
+  `Admin.IntegrationEventWorker` and has no Catalog/Branding HTTP or database credential.
 - **Contraction**: the standalone executable is removed only after forward-compatible schema,
   dual-host writer, token/session drain, zero-traffic observation, rollback drill, retained release
   artifact, private-exposure, recovery, and Branding OpenAPI retarget gates pass.
@@ -93,7 +93,7 @@ outbox row published. A crash before commit leaves neither change; a crash after
 SharedKernel EF messaging supplies context-qualified registration/mapping mechanics rather than one
 universal outbox table.
 
-`IntegrationEventWorker` claims and updates transport lease/retry/poison/`ProcessedAt` state in the
+`Admin.IntegrationEventWorker` claims and updates transport lease/retry/poison/`ProcessedAt` state in the
 Catalog database, then applies through an Admin inbox to the local projection. Admin inbox,
 projection, and epoch/revision watermark commit atomically. A crash after that Admin commit but before
 transport acknowledgement redelivers after lease expiry; inbox identity and watermark comparison make
