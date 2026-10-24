@@ -286,7 +286,7 @@ public sealed class FakeBookingsApiClient : IBookingsApiClient
         var index = _bookings.FindIndex(b => b.Id == id);
         if (index >= 0)
         {
-            _bookings[index] = DtoBuilders.WithBookedServicesFact(_bookings[index] with
+            _bookings[index] = DtoBuilders.WithBookingFacts(_bookings[index] with
             {
                 Status = newStatus
             });

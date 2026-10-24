@@ -737,7 +737,7 @@ public sealed class EditPageTests : BunitContext
     [Trait(PandaBear.Testing.TestTraitNames.ScopeName, TestTraits.ComponentScope)]
     [Trait(PandaBear.Testing.TestTraitNames.AreaName, TestTraits.ManagementWebArea)]
     [Trait(PandaBear.Testing.TestTraitNames.CategoryName, TestTraits.ComponentCategory)]
-    public void Completed_and_cancelled_bookings_keep_edit_controls_disabled(BookingStatusDto status)
+    public void Completed_and_cancelled_bookings_disable_booked_service_controls_but_keep_notes_editable(BookingStatusDto status)
     {
         // Arrange
         var booking = BuildBookingDto(status: status);
@@ -750,9 +750,35 @@ public sealed class EditPageTests : BunitContext
         // Assert
         cut.Find("#roomType").HasAttribute(DisabledAttributeName).ShouldBeTrue();
         cut.Find("#principalBikeType").HasAttribute(DisabledAttributeName).ShouldBeTrue();
-        cut.Find("#notes").HasAttribute(DisabledAttributeName).ShouldBeTrue();
         cut.Find("#discountType").HasAttribute(DisabledAttributeName).ShouldBeTrue();
-        cut.Find("button[type='submit']").HasAttribute(DisabledAttributeName).ShouldBeTrue();
+        cut.Find("#notes").HasAttribute(DisabledAttributeName).ShouldBeFalse();
+        cut.Find("button[type='submit']").HasAttribute(DisabledAttributeName).ShouldBeFalse();
+    }
+
+    [Theory]
+    [InlineData(BookingStatusDto.Completed)]
+    [InlineData(BookingStatusDto.Cancelled)]
+    [Trait(PandaBear.Testing.TestTraitNames.ScopeName, TestTraits.ComponentScope)]
+    [Trait(PandaBear.Testing.TestTraitNames.AreaName, TestTraits.ManagementWebArea)]
+    [Trait(PandaBear.Testing.TestTraitNames.CategoryName, TestTraits.ComponentCategory)]
+    public async Task Closed_bookings_save_only_their_notes(BookingStatusDto status)
+    {
+        // Arrange
+        var booking = BuildBookingDto(status: status, notes: "Original notes");
+        _fakeBookingsApi.AddBooking(booking);
+        var cut = Render<Edit>(parameters => parameters.Add(page => page.Id, booking.Id));
+        await cut.WaitForAssertionAsync(() => cut.Find("form"));
+        await cut.Find("#notes").ChangeAsync(new ChangeEventArgs { Value = "Follow-up call done" });
+
+        // Act
+        await cut.Find("form").SubmitAsync();
+
+        // Assert
+        await cut.WaitForAssertionAsync(() =>
+            cut.Markup.ShouldContain("Booking updated successfully!", StringComparison.Ordinal));
+        _fakeBookingsApi.UpdateBookingNotesCallCount.ShouldBe(1);
+        _fakeBookingsApi.UpdateBookingDetailsCallCount.ShouldBe(0);
+        _fakeBookingsApi.UpdateBookingDiscountCallCount.ShouldBe(0);
     }
 
     [Fact]
@@ -776,7 +802,8 @@ public sealed class EditPageTests : BunitContext
         cut.Find("#roomType").HasAttribute(DisabledAttributeName).ShouldBeTrue();
         cut.Find("#principalBikeType").HasAttribute(DisabledAttributeName).ShouldBeTrue();
         cut.Find("#discountType").HasAttribute(DisabledAttributeName).ShouldBeTrue();
-        cut.Find("button[type='submit']").HasAttribute(DisabledAttributeName).ShouldBeTrue();
+        cut.Find("#notes").HasAttribute(DisabledAttributeName).ShouldBeFalse();
+        cut.Find("button[type='submit']").HasAttribute(DisabledAttributeName).ShouldBeFalse();
     }
 
     [Fact]
@@ -968,7 +995,7 @@ public sealed class EditPageTests : BunitContext
         // Arrange
         var callbackCount = 0;
         var cut = Render<BookingEditActionPanel>(parameters => parameters
-            .Add(panel => panel.Status, status)
+            .Add(panel => panel.Booking, BuildBookingDto(status: status))
             .Add(panel => panel.IsSubmitting, true)
             .Add(panel => panel.Confirm, EventCallback.Factory.Create(this, () => callbackCount++))
             .Add(panel => panel.Complete, EventCallback.Factory.Create(this, () => callbackCount++))
@@ -986,6 +1013,36 @@ public sealed class EditPageTests : BunitContext
         buttons.ShouldNotBeEmpty();
         buttons.ShouldAllSatisfy(button => button.HasAttribute(DisabledAttributeName).ShouldBeTrue());
         callbackCount.ShouldBe(0);
+    }
+
+    [Fact]
+    [Trait(PandaBear.Testing.TestTraitNames.ScopeName, TestTraits.ComponentScope)]
+    [Trait(PandaBear.Testing.TestTraitNames.AreaName, TestTraits.ManagementWebArea)]
+    [Trait(PandaBear.Testing.TestTraitNames.CategoryName, TestTraits.ComponentCategory)]
+    public void Status_actions_follow_the_read_model_transition_facts()
+    {
+        // Arrange
+        var booking = BuildBookingDto(status: BookingStatusDto.Pending) with
+        {
+            CanBeConfirmed = false,
+            CanBeCompleted = true,
+            CanBeCancelled = false
+        };
+
+        // Act
+        var cut = Render<BookingEditActionPanel>(parameters => parameters
+            .Add(panel => panel.Booking, booking)
+            .Add(panel => panel.Confirm, EventCallback.Factory.Create(this, () => { }))
+            .Add(panel => panel.Complete, EventCallback.Factory.Create(this, () => { }))
+            .Add(panel => panel.Cancel, EventCallback.Factory.Create(this, () => { }))
+            .Add(panel => panel.Delete, EventCallback.Factory.Create(this, () => { })));
+
+        // Assert
+        var buttonTexts = cut.FindAll(ButtonSelector).Select(button => button.TextContent).ToList();
+        buttonTexts.ShouldNotContain(text => text.Contains("Confirm Booking", StringComparison.Ordinal));
+        buttonTexts.ShouldContain(text => text.Contains("Complete Booking", StringComparison.Ordinal));
+        buttonTexts.ShouldNotContain(text => text.Contains(CancelBookingText, StringComparison.Ordinal));
+        buttonTexts.ShouldContain(text => text.Contains(DeleteBookingText, StringComparison.Ordinal));
     }
 
     [Fact]
@@ -1048,7 +1105,7 @@ public sealed class EditPageTests : BunitContext
     }
 
     [Fact]
-    public async Task Confirming_cancel_booking_should_update_status_and_disable_editing()
+    public async Task Confirming_cancel_booking_should_update_status_and_disable_booked_service_editing()
     {
         // Arrange
         var booking = BuildBookingDto(status: BookingStatusDto.Confirmed, notes: "Original notes");
@@ -1075,7 +1132,7 @@ public sealed class EditPageTests : BunitContext
             statusBadge.Instance.Status.ShouldBe(BookingStatusDto.Cancelled);
 
             var notes = cut.Find("#notes");
-            notes.HasAttribute(DisabledAttributeName).ShouldBeTrue();
+            notes.HasAttribute(DisabledAttributeName).ShouldBeFalse();
 
             var roomType = cut.Find("#roomType");
             roomType.HasAttribute(DisabledAttributeName).ShouldBeTrue();

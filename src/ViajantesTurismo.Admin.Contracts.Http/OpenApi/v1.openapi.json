@@ -6019,6 +6019,15 @@
           "canModifyBookedServices": {
             "type": "boolean"
           },
+          "canBeConfirmed": {
+            "type": "boolean"
+          },
+          "canBeCompleted": {
+            "type": "boolean"
+          },
+          "canBeCancelled": {
+            "type": "boolean"
+          },
           "paymentStatus": {
             "$ref": "#/components/schemas/PaymentStatusDto"
           },

@@ -26,7 +26,7 @@ public class ConditionalStateTests(AspireSystemTestFixture fixture) : AspireSyst
     }
 
     [Fact]
-    public async Task Booking_edit_disables_all_fields_for_terminal_states()
+    public async Task Booking_edit_disables_booked_service_fields_but_keeps_notes_for_terminal_states()
     {
         // Arrange
         var tour = await ApiClient.CreateTour(new CreateTourOptions { MinCustomers = 1, MaxCustomers = 20 });

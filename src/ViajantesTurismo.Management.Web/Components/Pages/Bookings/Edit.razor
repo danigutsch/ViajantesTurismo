@@ -177,7 +177,7 @@ else if (_booking is not null)
                 <div class="mb-3">
                     <label for="notes" class="form-label">Notes</label>
                     <InputTextArea id="notes" class="form-control" @bind-Value="_model.Notes" rows="4" placeholder="Additional notes or comments..."
-                                   disabled="@AreEditControlsDisabled"/>
+                                   disabled="@AreMutationsBlocked"/>
                     <ValidationMessage For="@(() => _model.Notes)"/>
                 </div>
 
@@ -236,7 +236,7 @@ else if (_booking is not null)
 
         <div class="d-flex gap-2">
             <button type="submit" class="btn btn-primary"
-                    disabled="@(_redirectState.IsPending || AreEditControlsDisabled)">
+                    disabled="@(_redirectState.IsPending || AreMutationsBlocked)">
                 @if (_isSubmitting)
                 {
                     <span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
@@ -291,7 +291,7 @@ else if (_booking is not null)
     </div>
 
     <BookingEditActionPanel
-        Status="@_booking.Status"
+        Booking="@_booking"
         IsSubmitting="@AreMutationsBlocked"
         Confirm="HandleConfirm"
         Complete="HandleComplete"
@@ -386,7 +386,7 @@ else if (_booking is not null)
 
     private async Task HandleSubmit()
     {
-        if (_booking is null || AreEditControlsDisabled)
+        if (_booking is null || AreMutationsBlocked)
         {
             return;
         }

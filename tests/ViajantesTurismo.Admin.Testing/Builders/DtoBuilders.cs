@@ -73,16 +73,19 @@ public static class DtoBuilders
     }
 
     /// <summary>
-    /// Returns the booking with the booked-services fact consistent with its status, mirroring what
-    /// the API reports from the booking.
+    /// Returns the booking with the booked-services and status-transition facts consistent with its
+    /// status, mirroring what the API reports from the booking.
     /// </summary>
-    public static GetBookingDto WithBookedServicesFact(GetBookingDto booking)
+    public static GetBookingDto WithBookingFacts(GetBookingDto booking)
     {
         ArgumentNullException.ThrowIfNull(booking);
 
         return booking with
         {
-            CanModifyBookedServices = booking.Status is not (BookingStatusDto.Cancelled or BookingStatusDto.Completed)
+            CanModifyBookedServices = booking.Status is not (BookingStatusDto.Cancelled or BookingStatusDto.Completed),
+            CanBeConfirmed = booking.Status is BookingStatusDto.Pending,
+            CanBeCompleted = booking.Status is BookingStatusDto.Confirmed,
+            CanBeCancelled = booking.Status is BookingStatusDto.Pending or BookingStatusDto.Confirmed
         };
     }
 
@@ -116,7 +119,7 @@ public static class DtoBuilders
         var bookingTotalPrice = totalPrice ?? 1000m;
         var bookingAmountPaid = amountPaid ?? 0m;
 
-        return WithBookedServicesFact(new GetBookingDto
+        return WithBookingFacts(new GetBookingDto
         {
             Id = id ?? Guid.NewGuid(),
             TourId = tourId ?? Guid.NewGuid(),
