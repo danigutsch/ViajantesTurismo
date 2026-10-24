@@ -67,6 +67,29 @@ public sealed class BrandingPostgreSqlMigrationTests(BrandingPostgreSqlMigration
     }
 
     [Fact]
+    public async Task A_revision_key_collision_is_reported_as_a_conflict_without_a_partial_write()
+    {
+        // Arrange
+        var ct = TestContext.Current.CancellationToken;
+        await scenario.ResetSchemas(ct);
+        await scenario.ApplyMigrations(ct);
+        await using (var bootstrap = scenario.CreateStore())
+        {
+            await bootstrap.Store.Bootstrap(ct);
+        }
+        await scenario.InsertCompetingRevision(revision: 2, ct);
+        await using var writer = scenario.CreateStore();
+
+        // Act
+        var save = () => writer.Store.SaveSettings(BrandingPostgreSqlTestData.CreateSettings("Collides"), ct);
+
+        // Assert
+        await save.ShouldThrow<Microsoft.EntityFrameworkCore.DbUpdateConcurrencyException>();
+        var counts = await scenario.ReadRevisionCounts(ct);
+        counts.ShouldBe((1L, 2L, 1L));
+    }
+
+    [Fact]
     public async Task Branding_migrations_own_the_outbox_without_claiming_transport_tables()
     {
         // Arrange

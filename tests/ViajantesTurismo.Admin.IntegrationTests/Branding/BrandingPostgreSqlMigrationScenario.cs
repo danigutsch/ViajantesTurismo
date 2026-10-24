@@ -94,6 +94,24 @@ public sealed class BrandingPostgreSqlMigrationScenario(ApiFixture fixture) : IA
         return (reader.GetInt64(0), reader.GetInt64(1), reader.GetInt64(2));
     }
 
+    /// <summary>Inserts a history row that another writer would have committed for the current epoch.</summary>
+    public async Task InsertCompetingRevision(long revision, CancellationToken ct)
+    {
+        var dataSource = _dataSource ?? throw new InvalidOperationException("The Branding PostgreSQL migration scenario has not started.");
+        await using var connection = await dataSource.OpenConnectionAsync(ct);
+        await using var command = connection.CreateCommand();
+        command.CommandText = """
+                              INSERT INTO branding."BrandingSettingsRevisions"
+                                  ("Id", "SourceEpoch", "SourceRevision", "BrandName", "PrimaryColor", "AccentColor",
+                                   "BackgroundColor", "TextColor", "HeadingFontFamily", "BodyFontFamily", "LogoUri", "CommittedAt")
+                              SELECT gen_random_uuid(), "SourceEpoch", @revision, "BrandName", "PrimaryColor", "AccentColor",
+                                     "BackgroundColor", "TextColor", "HeadingFontFamily", "BodyFontFamily", "LogoUri", now()
+                              FROM branding."BrandingSettings";
+                              """;
+        command.Parameters.AddWithValue("revision", revision);
+        await command.ExecuteNonQueryAsync(ct);
+    }
+
     public async Task ApplyMigrations(CancellationToken ct)
     {
         await using var dbContext = CreateDbContext();

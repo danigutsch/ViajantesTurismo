@@ -1,5 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
+using Npgsql;
 using PandaBear.Branding;
 using PandaBear.Messaging.IntegrationEvents;
 using ViajantesTurismo.Branding.Contracts.IntegrationEvents.Branding;
@@ -115,10 +116,11 @@ internal sealed class EfBrandingSettingsStore(
         {
             await dbContext.SaveChangesAsync(ct).ConfigureAwait(false);
         }
-        catch (DbUpdateException exception) when (exception is not DbUpdateConcurrencyException)
+        catch (DbUpdateException exception) when (exception is not DbUpdateConcurrencyException
+                                                  && exception.InnerException is PostgresException { SqlState: PostgresErrorCodes.UniqueViolation })
         {
             // Two writers creating the first row, or the same revision, collide on a key: same outcome as a
-            // stale revision.
+            // stale revision. Every other persistence failure propagates unchanged.
             throw new DbUpdateConcurrencyException("Branding settings changed by another writer.", exception);
         }
     }

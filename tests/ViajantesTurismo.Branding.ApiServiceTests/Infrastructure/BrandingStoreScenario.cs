@@ -97,8 +97,3 @@ internal sealed class BrandingStoreScenario : IDisposable
         provider.Dispose();
     }
 }
-
-internal sealed record BrandingStoreSnapshot(
-    BrandingSettingsRecord? Current,
-    IReadOnlyList<BrandingSettingsRevisionRecord> Revisions,
-    IReadOnlyList<EventEnvelope> Outbox);
