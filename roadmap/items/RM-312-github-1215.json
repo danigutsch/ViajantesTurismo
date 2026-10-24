@@ -1,0 +1,38 @@
+{
+  "$schema": "../schema/roadmap-item.schema.json",
+  "id": "RM-312",
+  "title": "Move media processing status transitions into the media aggregate (audit C3)",
+  "type": "enabler",
+  "status": "proposed",
+  "order": 441,
+  "theme": "repo-operations",
+  "outcome": "GitHub issue #1215 is canonically represented from the reconciliation manifest.",
+  "scoring": {
+    "reach": 1,
+    "impact": 1,
+    "confidence": 0.1,
+    "effort": 3
+  },
+  "blockedBy": [],
+  "blocks": [],
+  "dependencies": [],
+  "tags": [],
+  "labels": [
+    "architecture",
+    "catalog",
+    "media",
+    "type: enabler"
+  ],
+  "sources": [
+    {
+      "kind": "github-issue",
+      "reference": "#1215"
+    }
+  ],
+  "integrations": {
+    "github": {
+      "issue": 1215,
+      "nodeId": "I_kwDOQAEVW88AAAABZkyS6w"
+    }
+  }
+}

@@ -4,7 +4,7 @@
   "title": "Define document storage retention audit and regeneration rules",
   "type": "enabler",
   "status": "proposed",
-  "order": 373,
+  "order": 372,
   "theme": "repo-operations",
   "outcome": "GitHub issue #727 is canonically represented from the reconciliation manifest.",
   "scoring": {

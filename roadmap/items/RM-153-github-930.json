@@ -4,7 +4,7 @@
   "title": "refactor(architecture): extract domain validation constants from contracts",
   "type": "issue",
   "status": "proposed",
-  "order": 357,
+  "order": 356,
   "theme": "repo-operations",
   "outcome": "GitHub issue #930 is canonically represented from the reconciliation manifest.",
   "scoring": {

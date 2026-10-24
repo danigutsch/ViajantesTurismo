@@ -65,9 +65,10 @@ No enum analyzer is planned: risky usage is concentrated in a few handlers and i
 
 ## Follow-up work
 
-Track each remaining follow-up (A5, A6, A7, A10, A11, C1, C2, C3) as its own roadmap item before implementation, and
-prove each production gap with a failing test first. C1 and C2 move Catalog presentation rules and publication
-outcomes into `CatalogTour` as `Result` values, which also changes the Catalog service and API error mapping.
+Remaining follow-ups are tracked as roadmap items: A5 is RM-308, A6 and A7 are RM-309, A10 and A11 are
+RM-310, C1 and C2 are RM-311, and C3 is RM-312. Prove each production gap with a failing test first. C1 and C2
+move Catalog presentation rules and publication outcomes into `CatalogTour` as `Result` values, which also
+changes the Catalog service and API error mapping.
 
 ## Related Documentation
 
