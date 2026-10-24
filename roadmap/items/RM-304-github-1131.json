@@ -4,7 +4,7 @@
   "title": "Standardize deterministic time and temporal semantics",
   "type": "epic",
   "status": "proposed",
-  "order": 501,
+  "order": 498,
   "theme": "repo-operations",
   "outcome": "GitHub issue #1131 is canonically represented from the reconciliation manifest.",
   "scoring": {

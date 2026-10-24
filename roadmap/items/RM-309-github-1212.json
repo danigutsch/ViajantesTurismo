@@ -3,16 +3,10 @@
   "id": "RM-309",
   "title": "Give Customer a Result factory and an atomic revision method (audit A6, A7)",
   "type": "enabler",
-  "status": "proposed",
-  "order": 436,
+  "status": "done",
+  "triage": "untriaged",
   "theme": "repo-operations",
   "outcome": "GitHub issue #1212 is canonically represented from the reconciliation manifest.",
-  "scoring": {
-    "reach": 1,
-    "impact": 1,
-    "confidence": 0.1,
-    "effort": 3
-  },
   "blockedBy": [],
   "blocks": [],
   "dependencies": [],
