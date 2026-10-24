@@ -59,7 +59,6 @@ internal static class CiTestProjectSelector
         "scripts/collect-ci-build-test-diagnostics.sh",
         "scripts/collect-test-coverage.sh",
         "scripts/install-playwright.sh",
-        "scripts/refresh-dependency-lockfiles.sh",
         "scripts/run-ci-test-slice.sh",
         "scripts/run-tests-with-coverage.sh",
         "scripts/write-ci-artifact-summary.sh"
@@ -67,13 +66,11 @@ internal static class CiTestProjectSelector
 
     private static readonly HashSet<string> LowRiskFiles = new(StringComparer.Ordinal)
     {
-        "scripts/commitlint.sh",
         "scripts/format-powershell-file.ps1",
         "scripts/lint-all.sh",
         "scripts/lint-gherkin.sh",
         "scripts/lint-gherkin.py",
         "scripts/lint-markdown.sh",
-        "scripts/validate-commit-message.sh",
         "setup-dev.ps1",
         "setup-dev.sh"
     };

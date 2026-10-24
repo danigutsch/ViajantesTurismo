@@ -159,7 +159,7 @@ dispatch.
 **Dry-run steps:**
 
 1. Checkout full history so version calculation can inspect tags and commits.
-2. Bootstrap the pinned SharedKernel candidate and restore application dependencies and local tools
+2. Stage the pinned SharedKernel candidate and restore application dependencies and local tools
    through the shared CI prerequisite action.
 3. Run the pinned `sharedkernel-version calculate-release` tool to calculate the application version.
 4. Run the pinned `aspire do publish-manifest` command with the computed version and source revision

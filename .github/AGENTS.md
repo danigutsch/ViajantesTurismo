@@ -13,7 +13,18 @@ Instructions for files under `.github/`.
 - Use least-privilege job permissions.
 - Prefer explicit concurrency settings for branch/PR workflows.
 - Keep secrets in `${{ secrets.* }}` and non-sensitive config in `${{ vars.* }}`.
-- Keep workflow `run` sections concise and delegate complex logic to scripts.
+- Keep workflow `run` sections concise and delegate complex logic to SharedKernel tool commands.
+- Run SharedKernel tools with `dotnet tool run <command> --` after `setup-ci-prerequisites` stages the pinned
+  candidate. Jobs that run before staging use `./.github/actions/build-sharedkernel-tool` and
+  `dotnet run --project "$SHAREDKERNEL_SOURCE/tools/<tool>" -c Release --no-build -- <command>`.
+- Set `persist-credentials: false` on every checkout. Pass values to commands through `env:`, pass pull request text
+  only through `--event "$GITHUB_EVENT_PATH"`, and set `GH_TOKEN` only on steps that call the GitHub API.
+- Pin `danigutsch/PandaBear.SharedKernel` action references to the `libraryRevision` in
+  `.config/sharedkernel-candidate.json`.
+- Keep each required check's job `name:` expression and `ci:rerun` ignored-label `if:` pattern; see
+  `docs/ci/governance.md`.
+- `SharedKernelToolCallerTests` parses every SharedKernel tool command line; keep new command lines parseable without
+  shell logic beyond the variables and arrays it maps.
 
 ## Hooks conventions
 

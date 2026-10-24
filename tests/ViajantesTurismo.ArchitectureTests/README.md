@@ -23,6 +23,13 @@ For Admin test taxonomy and seam guidance, treat `tests/README.md` as the canoni
 - `ErrorClassTests` — Ensures domain `*Errors` helper classes follow the required static-class convention.
 - `AdminTestArchitectureGuardTests` — Guards the canonical Admin test-architecture documentation owner plus the
   approved hosted fixture/base-class seams for integration and system tests.
+- `SharedKernelToolCallerTests` — Parses every SharedKernel tool command line in workflows, composite actions,
+  setup and repository scripts, Dev Container scripts, `opencode.json`, and workspace tasks with the pinned local tool and its
+  `[diagram]` directive, which parses without running the command.
+- `SharedKernelConsumerWorkflowTests` — Keeps `danigutsch/PandaBear.SharedKernel` action references at the pinned
+  `libraryRevision`.
+- `RequiredCheckContractTests` — Matches every required check in `docs/ci/governance.md` to a workflow job that keeps
+  the `ci:rerun` ignored-label pattern.
 
 ## Running the tests
 
@@ -31,8 +38,8 @@ For Admin test taxonomy and seam guidance, treat `tests/README.md` as the canoni
 dotnet test --project tests/ViajantesTurismo.ArchitectureTests
 ```
 
-> These tests execute quickly (pure reflection / IL inspection) and can run on every build or CI pipeline without
-> additional infrastructure.
+> These tests execute quickly (reflection, IL inspection, and file reads) and can run on every build or CI pipeline.
+> `SharedKernelToolCallerTests` needs the local tools restored with `dotnet tool restore`.
 
 ## Maintenance tips
 

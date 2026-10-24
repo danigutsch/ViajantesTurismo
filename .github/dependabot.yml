@@ -1,12 +1,17 @@
 version: 2
 updates:
   - package-ecosystem: github-actions
-    directory: /
+    directories:
+      - "/"
+      - "/.github/actions/*"
     schedule:
       interval: monthly
       time: "05:00"
       timezone: "UTC"
     open-pull-requests-limit: 1
+    ignore:
+      # SharedKernel action refs must equal libraryRevision in .config/sharedkernel-candidate.json; pin bumps move them.
+      - dependency-name: danigutsch/PandaBear.SharedKernel
     groups:
       github-actions-minor-patch:
         applies-to: version-updates
@@ -32,19 +37,9 @@ updates:
       interval: monthly
       time: "05:00"
       timezone: "UTC"
-    open-pull-requests-limit: 1
-    cooldown:
-      semver-major-days: 90
-      semver-minor-days: 30
-      semver-patch-days: 14
-    groups:
-      dotnet-sdk-minor-patch:
-        applies-to: version-updates
-        patterns:
-          - "*"
-        update-types:
-          - minor
-          - patch
+    ignore:
+      # global.json must match the pinned SharedKernel global.json; the SDK moves with SharedKernel pin bumps.
+      - dependency-name: "*"
     commit-message:
       prefix: deps
       include: scope

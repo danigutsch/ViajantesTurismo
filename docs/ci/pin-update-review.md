@@ -9,6 +9,7 @@ write-capable service. Update this inventory when a new pin location is introduc
 - [Coverage inventory](#coverage-inventory)
 - [Action update evidence](#action-update-evidence)
 - [Image update evidence](#image-update-evidence)
+- [SharedKernel pin bump](#sharedkernel-pin-bump)
 - [Validation and recovery](#validation-and-recovery)
 - [Research sources](#research-sources)
 
@@ -21,12 +22,13 @@ configuration, and the AppHost/resource extensions.
 | Location | Existing update coverage | Manual review gap and owner |
 | --- | --- | --- |
 | `.github/workflows/*.yml` external `uses:` | Dependabot `github-actions`, monthly grouped minor/patch proposals and security updates; full SHA plus release comment is current policy | CI maintainers verify upstream SHA, release diff, permissions, and transitive action behavior; major updates need explicit migration review |
-| `.github/actions/setup-ci-prerequisites/action.yml` | Repository-local composite action is reviewed as source; current composite has no external `uses:` action dependency | CI maintainers review shell/download/tool changes; inventory any future nested external reference and verify actual bot coverage |
+| `.github/actions/*/action.yml` external `uses:` | `setup-ci-prerequisites` uses `actions/setup-dotnet` and `build-sharedkernel-tool` uses `actions/checkout`, both SHA-pinned. The Dependabot `github-actions` entry scans `/` and `/.github/actions/*`, so these refs get the same grouped proposals as the workflows | Review composite shell and tool changes as source, and move a composite SHA with the matching workflow SHA |
+| `.config/sharedkernel-candidate.json` and `danigutsch/PandaBear.SharedKernel` action refs | Dependabot ignores SharedKernel actions and `dotnet-sdk`; `SharedKernelConsumerWorkflowTests` requires every SharedKernel action ref to equal `libraryRevision` | Maintainers follow the [SharedKernel pin bump](#sharedkernel-pin-bump) steps |
 | `.devcontainer/devcontainer.json` base image | Tag-plus-digest pin; no Docker ecosystem entry is configured | Development-environment maintainers resolve and verify the base-image digest manually; do not assume feature-update coverage includes the base image |
 | `.devcontainer/devcontainer.json` Features | Dependabot `devcontainers` entry, quarterly; current feature references use digest-only keys | Development-environment maintainers verify whether each digest-only key is actually recognized and updated; treat coverage as unverified until a concrete proposal proves it |
 | `src/ViajantesTurismo.AppHost/AppHostResourceExtensions.cs` | Explicit PostgreSQL, PgWeb, Redis, RedisInsight, and Keycloak tag/digest constants | AppHost maintainers update manually; Dependabot does not parse these C# resource declarations |
 | Consumed ClamAV, SeaweedFS, and Grafana hosting resource extensions | Image pins currently live in the existing SharedKernel hosting packages; AppHost README inventories the observability/security pins | Package owners review upstream package/image updates; ViajantesTurismo maintainers verify compatibility and runtime behavior when consuming them. No library changes are authorized by this documentation workflow |
-| `scripts/lint-all.sh`, `lint-markdown.sh`, `lint-{json,links,gherkin}.sh` | Docker fallback tools currently use version tags, including markdownlint, Python, ShellCheck, and shfmt; no configured updater covers shell image strings | CI maintainers own this immutable-pin gap; inventory and review digests in a separate hardening change. Do not describe tag-only references as already immutable |
+| `scripts/lint-all.sh`, `lint-markdown.sh`, `lint-{links,gherkin}.sh` | Docker fallback tools currently use version tags, including markdownlint, Python, ShellCheck, and shfmt; no configured updater covers shell image strings | CI maintainers own this immutable-pin gap; inventory and review digests in a separate hardening change. Do not describe tag-only references as already immutable |
 | `src/ViajantesTurismo.AppHost/DevelopmentProjectResourceExtensions.cs` | Application publish tags/registry come from deployment configuration rather than third-party dependency pins | Release maintainers review build provenance and deployed digest; do not confuse generated application tags with dependency image updates |
 
 No Dockerfile, Compose, or Kubernetes image update target is configured. Observability configuration
@@ -77,6 +79,37 @@ prefix, as described in the [AppHost guide](../../src/ViajantesTurismo.AppHost/R
 Validate affected resources with the repository-pinned Aspire CLI after reading their current
 state. Check health/logs and representative database, auth, storage, scanner, or telemetry paths
 for the resource changed. Dev Container image/Feature changes require its smoke validation.
+
+## SharedKernel pin bump
+
+`.config/sharedkernel-candidate.json` is the one SharedKernel pin. A bump changes these together:
+
+1. Copy the new release `candidate.json` into the pin, then update the `PandaBear.*` versions in
+   `Directory.Packages.props` and the SharedKernel tool versions in `.config/dotnet-tools.json`.
+2. Keep the SDK in lockstep: `global.json` must match the SharedKernel `global.json` at the new
+   `libraryRevision` in `sdk.version` and `sdk.rollForward`; only this repository's `errorMessage`
+   differs. The SharedKernel tool build and `stage-candidate` fail otherwise. Dependabot does not
+   propose SDK updates.
+3. Set every `danigutsch/PandaBear.SharedKernel/...@<sha>` action reference, such as
+   `setup-security-scanner` in `secret-scan.yml`, to the new `libraryRevision`.
+4. Stage and refresh locks: `bash setup-dev.sh`, then
+   `dotnet restore ViajantesTurismo.slnx --force-evaluate` and
+   `dotnet restore ViajantesTurismo.slnx --locked-mode`.
+5. Refresh the roadmap schema: run `dotnet tool run sharedkernel-repo -- init --root <empty directory>`,
+   copy any changed `roadmap/schema/*.json` into this repository with a final newline, then run
+   `dotnet tool run sharedkernel-repo -- verify`. `RepoConfigContractTests` compares the committed
+   schema with the pinned tool's output.
+6. Respond to NuGet audit failures: restore audits every package (`NuGetAuditMode` `all`, level `high`,
+   warnings as errors), and the SharedKernel tool build audits its own lock file. Adopt a SharedKernel
+   candidate or package version that fixes the advisory. Do not add `NuGetAuditSuppress`, lower the
+   audit level, or disable audit to finish a bump; without a fixed version, stop and record the
+   advisory for a maintainer decision.
+7. Renew the preview license approval in `.config/sharedkernel-repo.json` as described in
+   [dependency license evidence](dependency-license-evidence.md).
+8. Build, run the full test suite (including `SharedKernelToolCallerTests`), Actionlint, and
+   `bash scripts/lint-all.sh`.
+9. Run `pwsh ./setup-dev.ps1` by hand on Windows. No CI job runs the PowerShell setup script; the
+   `OpenAPI Tool Windows` job covers only the composite actions on Windows.
 
 ## Validation and recovery
 

@@ -1,3 +1,4 @@
+using System.Text.Json;
 using PandaBear.Testing;
 using static ViajantesTurismo.ArchitectureTests.Conventions.AppHostOrchestrationTestsHelpers;
 
@@ -38,5 +39,29 @@ public sealed class SharedKernelConsumerWorkflowTests
         // Assert
         workflow.ShouldNotContain("check-public-api-baselines", StringComparison.Ordinal);
         workflow.ShouldNotContain("  api-compatibility:", StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public void SharedKernel_actions_are_pinned_to_the_candidate_library_revision()
+    {
+        // Arrange
+        var root = GetRepositoryRoot();
+        using var pin = JsonDocument.Parse(File.ReadAllText(Path.Combine(root, ".config", "sharedkernel-candidate.json")));
+        var revision = pin.RootElement.GetProperty("libraryRevision").GetString();
+        var files = Directory.EnumerateFiles(Path.Combine(root, ".github", "workflows"), "*.yml")
+            .Concat(Directory.EnumerateFiles(Path.Combine(root, ".github", "actions"), "action.yml", SearchOption.AllDirectories));
+
+        // Act
+        var references = files
+            .SelectMany(File.ReadLines)
+            .Select(static line => line.Trim())
+            .Where(static line => line.StartsWith("uses: danigutsch/PandaBear.SharedKernel/", StringComparison.OrdinalIgnoreCase)
+                || line.StartsWith("- uses: danigutsch/PandaBear.SharedKernel/", StringComparison.OrdinalIgnoreCase))
+            .Select(static line => line.Split('@')[1].Split(' ')[0])
+            .ToArray();
+
+        // Assert
+        references.ShouldNotBeEmpty();
+        references.Where(reference => reference != revision).ShouldBeEmpty($"SharedKernel actions must use libraryRevision {revision}.");
     }
 }

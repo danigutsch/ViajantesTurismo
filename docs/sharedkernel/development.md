@@ -4,7 +4,7 @@ SharedKernel implementations, reusable test helpers, analyzers, generators, samp
 and library tooling belong to the separate SharedKernel repository. ViajantesTurismo consumes
 `PandaBear.SharedKernel.*` packages. C# namespaces use `PandaBear.*`; assembly and project names remain `SharedKernel.*`.
 Generic documentation and repository-configuration tooling belongs to SharedKernel. Application
-documentation configuration, CI and coverage policy, bootstrap, and compatibility orchestration stay here.
+documentation configuration, CI and coverage policy, setup scripts, and compatibility orchestration stay here.
 
 The published candidate is `0.1.0-alpha.144.1` at clean library revision
 [`ee4126348011b2ddf60d3e580428867689c412dd`](https://github.com/danigutsch/PandaBear.SharedKernel/commit/ee4126348011b2ddf60d3e580428867689c412dd).
@@ -43,37 +43,55 @@ import interfaces, accepted headers, normalization, business errors, and lock id
 The CSV parser preserves the existing simple comma-splitting behavior; quoted commas, escaping, and
 multiline fields remain unsupported.
 
-## Bootstrap a checkout
+## Stage the candidate
 
-Install the SDK pinned by `global.json`. Clone the public
-[PandaBear.SharedKernel source](https://github.com/danigutsch/PandaBear.SharedKernel), check out the
-exact `libraryRevision` in `.config/sharedkernel-candidate.json`, and keep that checkout clean.
-The committed candidate manifest pins the library revision, package version, and SHA-256 hashes.
-
-Use only the committed manifest's exact `.nupkg` files and `candidate.json` from the approved
-`v<packageVersion>` release. The published files are unchanged from the validated fresh CI candidate. Supply a clean checkout of the exact library
-revision and unchanged artifacts through explicit library/feed paths. Do not substitute another
-preview's package files or use cached retired artifacts to bypass missing releases.
-
-From the application root, stage the exact candidate with the dependency-independent C# tool:
+Install the SDK pinned by `global.json`; this repository's and SharedKernel's `global.json` files
+must agree on `sdk.version` and `sdk.rollForward`. The committed `.config/sharedkernel-candidate.json` pins the
+library revision, package version, and SHA-256 hashes. `setup-dev.sh` and `setup-dev.ps1` stage it
+before they restore dependencies and local tools:
 
 ```sh
-dotnet run --project tools/ViajantesTurismo.RepoConfig.Tool -c Release -- \
-  bootstrap-sharedkernel --library-root /path/to/SharedKernel --feed /path/to/candidate-packages
+bash setup-dev.sh [--install-sdk] [--library-root <path>] [--feed <dir>]
+pwsh ./setup-dev.ps1 [-InstallSdk] [-LibraryRoot <path>] [-Feed <dir>]
+```
+
+Without a library root, setup clones the public
+[PandaBear.SharedKernel source](https://github.com/danigutsch/PandaBear.SharedKernel) into the ignored
+`.local/sharedkernel-source/SharedKernel.CI.Tool` as a blobless, cone sparse checkout of
+`tools/SharedKernel.CI.Tool` and `tools/Shared`, fetches the pinned `libraryRevision`, and checks it out
+detached. It reuses that directory only when it is this sparse clone; otherwise it stops and leaves
+the directory in place. `--library-root` names a clean checkout of the exact revision instead.
+
+Setup builds the CI tool inside the checkout with a locked restore, then runs:
+
+```sh
+dotnet run --project <checkout>/tools/SharedKernel.CI.Tool -c Release --no-build -- \
+  stage-candidate --pin .config/sharedkernel-candidate.json --library-root <checkout> \
+  --output .local/sharedkernel-feed --repository danigutsch/PandaBear.SharedKernel
+dotnet restore --locked-mode
 dotnet tool restore
-dotnet restore ViajantesTurismo.slnx --locked-mode
+```
+
+`--feed <dir>` replaces `--repository` with a directory holding the unchanged pinned packages. With
+`--repository`, `stage-candidate` downloads the release `candidate.json` from GitHub prerelease
+`v<packageVersion>` and requires its identity to equal the pin, then downloads only missing packages
+without a token. Both sources verify the clean library revision and every package hash before
+packages enter the ignored `.local/sharedkernel-feed`; different existing packages are refused, and
+the pin is written there as `candidate.json` last. Repeating setup with an identical candidate
+changes nothing. Package source mapping sends `PandaBear.SharedKernel.*` exclusively to that local
+feed, preventing public-feed fallback. Third-party packages and vulnerability auditing continue to
+use nuget.org. The devcontainer runs `setup-dev.sh` from `.devcontainer/on-create.sh`.
+
+Then validate the application:
+
+```sh
 dotnet build ViajantesTurismo.slnx -c Release --no-restore
 dotnet run --project tools/ViajantesTurismo.OpenApi.Tool -c Release --no-build --no-restore -- generate all
 dotnet test --solution ViajantesTurismo.slnx -c Release --no-build --no-restore
 ```
 
-Omit `--feed` when the artifacts are in the library checkout's standard candidate output directory.
-Both paths are explicit runtime inputs; no committed project reference crosses repository boundaries.
-Bootstrap checks the clean library revision and every package hash, then stages into the ignored
-`.local/sharedkernel-feed`. It refuses different existing artifacts and removes incomplete temporary
-copies on cancellation. Repeating it with identical packages is safe. Package source mapping sends
-`PandaBear.SharedKernel.*` exclusively to that local feed, preventing public-feed fallback. Third-party
-packages and vulnerability auditing continue to use nuget.org.
+Do not substitute another preview's package files or use cached retired artifacts to bypass missing
+releases.
 
 ## Adopt a library change
 
@@ -82,7 +100,7 @@ unique prerelease candidate. Never overwrite an existing candidate version. Run 
 suite, API checks, package-consumption checks, and promised NativeAOT checks before adoption.
 
 Update the committed candidate manifest, central package versions, local tool versions, and lock files
-in an application worktree. Bootstrap the exact artifacts, run the application checks above, commit
+in an application worktree. Stage the exact artifacts, run the application checks above, commit
 those changes, and record compatibility using:
 
 ```sh
@@ -95,7 +113,7 @@ temporary local clone of the recorded application commit with an isolated packag
 both. The working checkout's restore assets and binaries remain unchanged. A renamed package
 identity does not establish compatibility with previously published `SharedKernel.*` packages.
 Rollback may use only an approved, non-retired compatible candidate after validation. Update the
-application dependency configuration, candidate manifest, and lock files together, then bootstrap
+application dependency configuration, candidate manifest, and lock files together, then stage
 that candidate's exact artifacts. Retired releases must remain deleted and must not be consumed again.
 
 Generic outbox and idempotency implementation tests live in the library persistence test project.
@@ -105,23 +123,21 @@ through public package interfaces. This test-only commit does not change the pin
 
 ## CI and platform evidence
 
-Hosted Linux and Windows jobs read the committed candidate manifest, check out the public library at
-its exact `libraryRevision`, and download unchanged packages and `candidate.json` from GitHub
-prerelease `v<packageVersion>`. The published `0.1.0-alpha.144.1` assets match the committed candidate
-hashes. Missing retired releases must not be recreated to unblock checks. The secret-scan
-workflow also pins the shared scanner action to an immutable library revision. Hosted checks verify
-the same immutable package bytes as local validation.
+Hosted Linux and Windows jobs stage the candidate through `.github/actions/setup-ci-prerequisites`.
+It runs `.github/actions/build-sharedkernel-tool`, which reads the pinned `libraryRevision`, checks out
+`danigutsch/PandaBear.SharedKernel` at that revision into `.local/sharedkernel-source/<tool>` as a cone
+sparse checkout of `tools/<tool>` and `tools/Shared` without persisted credentials, builds the tool
+there with a locked restore, and exports `SHAREDKERNEL_SOURCE`. The setup action then runs
+`stage-candidate --repository danigutsch/PandaBear.SharedKernel`, which downloads the pinned assets
+from GitHub prerelease `v<packageVersion>` without a token. Missing assets, revision mismatches, and
+hash mismatches fail visibly; missing retired releases must not be recreated to unblock checks. The
+secret-scan workflow also pins the shared scanner action to an immutable library revision.
 
-Checkout credentials are not persisted. CI downloads the manifest and exact pinned filenames through
-public release URLs without a token. Download failures are retried three times; bootstrap still verifies
-the revision and every package hash before restore. Source and downloads stay in ignored
-`.local/sharedkernel-library` and `.local/sharedkernel-download` directories. Missing assets, revision
-mismatches, and hash mismatches fail visibly.
-
-Optional repository variables `SHAREDKERNEL_LIBRARY_ROOT` and `SHAREDKERNEL_CANDIDATE_FEED` retain the
-explicit local/private flow. A library-root override skips hosted checkout and downloads, using that
-checkout's standard candidate output directory unless a feed override is also provided. A feed-only
-override uses the automatically checked-out pinned library with the specified artifacts.
+Optional repository variables `SHAREDKERNEL_LIBRARY_ROOT` and `SHAREDKERNEL_CANDIDATE_FEED` reach the
+setup action as explicit inputs. A library-root override skips the hosted checkout, requires a clean
+Git top level at the pinned revision, builds the tool there, and stages from
+`<library-root>/artifacts/api-compat/packages/<packageVersion>` unless a feed override is also
+provided. A feed-only override stages from that feed with the automatically checked-out tool source.
 
 Linux and Windows must consume the same hashed packages. Record platform tests and NativeAOT results
 separately; an unavailable platform remains pending. Registry publication remains deferred: this

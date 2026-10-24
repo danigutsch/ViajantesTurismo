@@ -27,8 +27,7 @@ the underlying .NET tool directly when they want the exact stale file list:
 dotnet tool run sharedkernel-docs -- verify --config docs/architecture/generated-diagrams.json
 ```
 
-Refresh with `dotnet tool run sharedkernel-docs -- generate --config docs/architecture/generated-diagrams.json`,
-or run the existing wrapper: `bash scripts/update-architecture-diagrams.sh`.
+Refresh with `dotnet tool run sharedkernel-docs -- generate --config docs/architecture/generated-diagrams.json`.
 
 ## Deferred mediator diagram research
 

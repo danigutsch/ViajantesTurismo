@@ -79,9 +79,9 @@ for the best development experience.
 
 ### Quick Setup
 
-Bootstrap the pinned SharedKernel candidate using the
-[application consumption guide](docs/sharedkernel/development.md#bootstrap-a-checkout) before setup
-restores dependencies. Library sources, samples, and benchmarks live in the
+The setup scripts stage the pinned SharedKernel candidate before they restore dependencies; the
+[application consumption guide](docs/sharedkernel/development.md#stage-the-candidate) describes the
+`--library-root` and `--feed` options. Library sources, samples, and benchmarks live in the
 [standalone library repository](https://github.com/danigutsch/PandaBear.SharedKernel).
 
 Run the automated setup script to verify required dependencies and point you to optional tools:
@@ -100,8 +100,11 @@ This script will:
 
 - ✅ Verify the exact .NET SDK version pinned in `global.json`
 - ✅ Install a missing exact SDK side-by-side only when explicitly requested
+- ✅ Build `sharedkernel-ci` from the pinned SharedKernel source and stage the pinned candidate
 - ✅ Restore .NET dependencies (`dotnet restore --locked-mode`)
-- ✅ Restore .NET local tools (`dotnet tool restore` - includes dotnet-ef, reportgenerator, Aspire CLI)
+- ✅ Restore .NET local tools (`dotnet tool restore` - includes dotnet-ef, reportgenerator, Aspire CLI, and the
+  SharedKernel tools `sharedkernel-ci`, `sharedkernel-repo`, `sharedkernel-version`, `sharedkernel-docs`,
+  `sharedkernel-playwright-mcp`, and `sharedkernel-codefix`)
 - ✅ Verify PowerShell availability for Playwright browser installation
 - ✅ Explain the Playwright browser install step (`bash scripts/install-playwright.sh` after build)
 - ✅ Detect optional PSScriptAnalyzer for PowerShell linting (PowerShell only)
@@ -124,7 +127,7 @@ Optional local tools by task:
 
 CI-only tools by default:
 
-- Markdown/Gherkin/JSON/link lint containers and wrappers used by `bash scripts/lint-all.sh`
+- Markdown/Gherkin/link lint containers and wrappers used by `bash scripts/lint-all.sh`
 - dependency-review, secret-scanning, and workflow-governance tooling owned by GitHub Actions
 
 Devcontainer-provided tools:
@@ -167,7 +170,8 @@ bash scripts/ensure-dotnet-sdk.sh --install
 git clone https://github.com/danigutsch/ViajantesTurismo.git
 cd ViajantesTurismo
 
-# 3. Restore .NET dependencies and tools
+# 3. Stage the pinned SharedKernel candidate (manual steps: docs/sharedkernel/development.md#stage-the-candidate),
+#    then restore .NET dependencies and tools
 dotnet restore --locked-mode
 dotnet tool restore
 
@@ -187,7 +191,7 @@ Install-Module -Name PSScriptAnalyzer -Scope CurrentUser
 
 # 8. Optional local commit validation
 printf "%s\n" "feat: example message" > /tmp/commit-msg.txt
-bash scripts/validate-commit-message.sh /tmp/commit-msg.txt
+dotnet tool run sharedkernel-ci -- verify-commit-message --file /tmp/commit-msg.txt
 ```
 
 On Linux, `pwsh` is required for the generated Playwright installer, and Aspire HTTPS
@@ -242,11 +246,10 @@ defaults, and output details.
 ### Optional: Dev Containers
 
 If you prefer a containerized development environment, the repository includes a
-VS Code Dev Container configuration. Bootstrap the pinned SharedKernel candidate on the host before
-creating the container. The workspace mount carries the staged `.local/sharedkernel-feed`; the
-container does not need a separate library checkout or feed mount. For prerequisites, lifecycle
-behavior, the shared local smoke command, and the minimum validation checklist, see
-[docs/DEVCONTAINERS.md](docs/DEVCONTAINERS.md).
+VS Code Dev Container configuration. `.devcontainer/on-create.sh` runs `setup-dev.sh`, which stages
+the pinned SharedKernel candidate inside the container; it needs no library checkout or feed mount.
+For prerequisites, lifecycle behavior, the shared local smoke command, and the minimum validation
+checklist, see [docs/DEVCONTAINERS.md](docs/DEVCONTAINERS.md).
 
 ### Running the Application
 
@@ -322,12 +325,14 @@ This repository commits `packages.lock.json` for reproducible NuGet restores. Af
 NuGet, SDK, local-tool, or project-reference graph change—or a related rebase conflict—run:
 
 ```bash
-bash scripts/refresh-dependency-lockfiles.sh
+dotnet tool restore
+dotnet restore ViajantesTurismo.slnx --force-evaluate
+dotnet restore ViajantesTurismo.slnx --locked-mode
 ```
 
-The helper restores pinned local tools, regenerates NuGet locks, and verifies locked restore. Review
+These commands restore pinned local tools, regenerate NuGet locks, and verify locked restore. Review
 the resulting lock-file diff, including resolved-version changes, before committing it with its
-dependency inputs. It does not edit declared dependency versions, GitHub Actions, or container image
+dependency inputs. They do not edit declared dependency versions, GitHub Actions, or container image
 pins. See
 [CONTRIBUTING.md](CONTRIBUTING.md#dependency-graph-and-lock-file-maintenance) for the canonical
 workflow and rebase recovery steps.

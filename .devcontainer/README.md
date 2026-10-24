@@ -160,7 +160,9 @@ On first container creation, the `post-create.sh` script automatically:
 
 Before that happens, `.devcontainer/on-create.sh` verifies the exact SDK pinned in `global.json`.
 When the base image does not already provide it, the script installs that SDK under
-`/home/vscode/.dotnet` and the companion lifecycle scripts source that fallback environment.
+`/home/vscode/.dotnet` and the companion lifecycle scripts source that fallback environment. It then
+runs `setup-dev.sh`, which stages the pinned SharedKernel candidate and restores dependencies and
+local tools.
 
 ## Troubleshooting
 

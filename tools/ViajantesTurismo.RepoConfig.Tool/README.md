@@ -1,19 +1,15 @@
 # ViajantesTurismo repository automation
 
-This dependency-independent application tool owns `bootstrap-sharedkernel`,
-`verify-sharedkernel-candidate`, `select-ci-test-projects`, `verify-coverage`, and `lint-json`.
+This dependency-independent application tool owns
+`verify-sharedkernel-candidate`, `select-ci-test-projects`, and `verify-coverage`.
 Run it with `dotnet run --project tools/ViajantesTurismo.RepoConfig.Tool -- <command>`.
 
-`lint-json` validates the working-tree contents of Git-indexed `*.json` files with comments and
-trailing commas allowed. It requires UTF-8, accepts a UTF-8 BOM, and reports every invalid file.
-Untracked caches, downloaded packages, and nested library checkouts are outside this policy.
-
-Generic configuration, roadmap, GitHub projection, encoding, and Podman diagnostics live in
+Generic configuration, roadmap, GitHub projection, encoding, JSON, and Podman diagnostics live in
 `PandaBear.SharedKernel.RepoConfig.Tool`, restored through the local tool manifest and invoked
 with `dotnet tool run sharedkernel-repo -- <command>`.
 Documentation automation similarly uses `dotnet tool run sharedkernel-docs -- <command>`.
 
-See [SharedKernel consumption](../../docs/sharedkernel/development.md) for bootstrap and validation.
+See [SharedKernel consumption](../../docs/sharedkernel/development.md) for candidate staging and validation.
 
 ## CI commands
 
@@ -31,10 +27,8 @@ revisions and records its decision in `TestResults/dependency-review-plan.json`.
 Markdown/images under `docs`, root `README.md`, and root `AGENTS.md` can skip dependency review.
 Source changes, package READMEs, pins, unknown paths, and unavailable comparisons retain full review.
 
-`verify-pr-title --event <path>` reads GitHub event JSON directly and validates a single Conventional
-Commit header of at most 100 characters. Passing the event file avoids shell interpolation of PR text.
-
 `restore-ci-projects --projects-file <manifest>` or `--targets <newline-separated paths>` restores
 project roots as one temporary MSBuild solution graph. Solution targets retain their normal restore
 behavior. Paths and symbolic links cannot escape the checkout; an empty target list fails. The
-setup action calls this command after bootstrap has built the dependency-independent repository tool.
+setup action runs this command after staging the candidate, which builds the dependency-independent
+repository tool for later `--no-build` steps.

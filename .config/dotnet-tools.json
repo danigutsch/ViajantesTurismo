@@ -23,6 +23,13 @@
       ],
       "rollForward": false
     },
+    "pandabear.sharedkernel.ci.tool": {
+      "version": "0.1.0-alpha.144.1",
+      "commands": [
+        "sharedkernel-ci"
+      ],
+      "rollForward": false
+    },
     "pandabear.sharedkernel.playwrightmcp.tool": {
       "version": "0.1.0-alpha.144.1",
       "commands": [

@@ -2,7 +2,8 @@
 
 This page links the current implementation shape to the longer-lived ADR and domain docs. Diagrams
 show current repository structure unless a section is explicitly marked as planned. Generated
-diagram sections are refreshed with `bash scripts/update-architecture-diagrams.sh`.
+diagram sections are refreshed with
+`dotnet tool run sharedkernel-docs -- generate --config docs/architecture/generated-diagrams.json`.
 
 ## System map
 

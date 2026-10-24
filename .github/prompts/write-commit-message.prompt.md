@@ -20,7 +20,7 @@ Requirements:
 
 Useful references:
 
-- [`scripts/commitlint.sh`](../../scripts/commitlint.sh)
+- `dotnet tool run sharedkernel-ci -- verify-commit-message --file <path>`
 - [`CONTRIBUTING.md`](../../CONTRIBUTING.md)
 
 Return:

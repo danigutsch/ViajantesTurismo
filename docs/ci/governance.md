@@ -20,11 +20,9 @@ Branch protection and the active `main` ruleset require these status checks:
 - `Quality Gate` (from `.github/workflows/ci.yml`)
 - `PR Metadata` (from `.github/workflows/pr-metadata.yml`)
 
-The required status changed from `SonarCloud` to `Quality Gate` after the replacement check
-passed. Updating both protections then allowed the replacement workflow to merge. The settings
-were verified on October 20, 2026 in branch protection and ruleset `14460324`. Strict up-to-date
-checks, GitHub Actions check attribution (app `15368`), the other required checks, signed commits,
-additional review requirements, and the no-bypass policy were preserved.
+Branch protection and ruleset `14460324` require these checks with strict up-to-date checks,
+GitHub Actions check attribution (app `15368`), signed commits, additional review requirements,
+and no bypass.
 See [quality gates](quality-gates.md#branch-protection) for the maintenance runbook.
 
 `Build and Test` aggregates the test matrix and `OpenAPI Tool Windows`. `Quality Gate`
@@ -127,8 +125,9 @@ Use the [pin update review workflow](pin-update-review.md) for coverage gaps, re
 evidence, compatibility checks, and stateful recovery.
 
 - GitHub Dependabot automates version update PRs via `.github/dependabot.yml`. The
-  configuration covers `github-actions`, `dotnet-sdk`, `nuget`, and `devcontainers`
-  ecosystems with deliberately cautious schedules for routine version updates.
+  configuration covers `github-actions`, `nuget`, and `devcontainers` ecosystems with
+  deliberately cautious schedules for routine version updates. SDK and SharedKernel action
+  updates arrive only with a SharedKernel pin bump.
 - When Dependabot proposes an action update, review both the release notes and the
   resolved SHA, then verify the affected workflows still pass before merging.
 - When upgrading across major action versions, review the migration guidance before
@@ -137,9 +136,10 @@ evidence, compatibility checks, and stateful recovery.
 ## Workflow ownership
 
 The `CODEOWNERS` file at the repository root requires review for all changes to workflow
-files.
+files, composite actions, and repository configuration.
 
-Any pull request that modifies `.github/workflows/**` will request review from the
+Any pull request that modifies `.github/workflows/**`, `.github/actions/**`, or `.config/**`
+(the SharedKernel pin, local tool manifest, and license exceptions) will request review from the
 designated code owners. See `CODEOWNERS` for the current ownership mapping.
 
 ## Dependabot configuration
@@ -148,12 +148,23 @@ designated code owners. See `CODEOWNERS` for the current ownership mapping.
 
 | Ecosystem | Scope | Schedule | PR limit | Update shaping |
 | --- | --- | --- | --- | --- |
-| `github-actions` | Workflow action references | Monthly at 05:00 UTC | 1 | All action updates grouped into one PR |
-| `dotnet-sdk` | Repository SDK pin | Monthly at 05:00 UTC | 1 | Minor and patch updates grouped, longer cooldown enabled |
+| `github-actions` | Workflow action references | Monthly at 05:00 UTC | 1 | All action updates grouped into one PR; `danigutsch/PandaBear.SharedKernel` ignored |
+| `dotnet-sdk` | Repository SDK pin | Monthly at 05:00 UTC | Not applicable | All updates ignored |
 | `nuget` | .NET package dependencies | Monthly at 05:00 UTC | 1 | Minor and patch updates grouped, security updates grouped, longer cooldown enabled |
 | `devcontainers` | Dev Container Features in valid `devcontainer.json` locations | Quarterly at 05:00 UTC | 1 | All feature updates grouped into one PR |
 
 Dependabot PRs use conventional commit prefixes (`ci` for actions, `deps` for packages).
+
+Two update streams move only with a SharedKernel pin bump, so Dependabot ignores them:
+
+- `global.json` must match the SharedKernel `global.json` at the pinned `libraryRevision` (same
+  `sdk.version` and `rollForward`). The SharedKernel tool build and `stage-candidate` fail when
+  they differ.
+- `danigutsch/PandaBear.SharedKernel` action references, such as `setup-security-scanner` in
+  `secret-scan.yml`, must equal the pinned `libraryRevision`. `SharedKernelConsumerWorkflowTests`
+  enforces this.
+
+See the [pin update review workflow](pin-update-review.md) for the pin bump steps.
 
 The repository uses explicit custom labels for ecosystems where it wants a different triage
 taxonomy than the default ecosystem label. The `devcontainers` entry also relies on defaults

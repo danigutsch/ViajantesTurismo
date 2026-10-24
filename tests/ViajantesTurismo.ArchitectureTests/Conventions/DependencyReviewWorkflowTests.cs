@@ -25,7 +25,7 @@ public sealed class DependencyReviewWorkflowTests
         workflow.ShouldContain("github.event.pull_request.head.sha", StringComparison.Ordinal);
         workflow.ShouldContain("--correlator viajantes-solution-nuget", StringComparison.Ordinal);
         workflow.ShouldContain("dependency snapshot", StringComparison.Ordinal);
-        workflow.ShouldContain("dependency-graph/snapshots", StringComparison.Ordinal);
+        workflow.ShouldContain("dependency submit --snapshot dependency-input/TestResults/dependency-snapshot.json", StringComparison.Ordinal);
         workflow.ShouldNotContain("component-detection-dependency-submission-action", StringComparison.Ordinal);
         workflow.ShouldContain("needs: [plan, dependency-snapshots]", StringComparison.Ordinal);
         workflow.ShouldContain("test \"$PLAN_RESULT\" = success", StringComparison.Ordinal);
@@ -54,7 +54,7 @@ public sealed class DependencyReviewWorkflowTests
     }
 
     [Fact]
-    public void Dependency_snapshots_build_the_generator_from_an_independent_reviewed_source_pin()
+    public void Dependency_snapshots_build_the_generator_from_the_pinned_sharedkernel_source()
     {
         // Arrange
         var path = Path.Combine(GetRepositoryRoot(), ".github", "workflows", "dependency-review.yml");
@@ -63,21 +63,19 @@ public sealed class DependencyReviewWorkflowTests
         // Act
         var snapshotJob = workflow.Split("  dependency-snapshots:", StringSplitOptions.None)[1]
             .Split("\n  dependency-review:", StringSplitOptions.None)[0];
-        var generatorBuild = snapshotJob.IndexOf("dotnet build tools/SharedKernel.RepoConfig.Tool", StringComparison.Ordinal);
+        var rootCheckout = snapshotJob.IndexOf("ref: ${{ github.event.pull_request.head.sha || github.sha }}", StringComparison.Ordinal);
+        var inputCheckout = snapshotJob.IndexOf("path: dependency-input", StringComparison.Ordinal);
+        var generatorBuild = snapshotJob.IndexOf("uses: ./.github/actions/build-sharedkernel-tool", StringComparison.Ordinal);
         var generation = snapshotJob.IndexOf("dependency snapshot", StringComparison.Ordinal);
 
         // Assert
-        generatorBuild.ShouldBeGreaterThanOrEqualTo(0);
+        rootCheckout.ShouldBeGreaterThanOrEqualTo(0);
+        inputCheckout.ShouldBeGreaterThan(rootCheckout);
+        generatorBuild.ShouldBeGreaterThan(inputCheckout);
         generation.ShouldBeGreaterThan(generatorBuild);
-        snapshotJob.ShouldContain("SNAPSHOT_GENERATOR_REVISION: 8895a57934be23177f9979a23620774e5085eb3d", StringComparison.Ordinal);
-        snapshotJob.ShouldContain("repository: danigutsch/PandaBear.SharedKernel", StringComparison.Ordinal);
-        snapshotJob.ShouldContain("ref: ${{ env.SNAPSHOT_GENERATOR_REVISION }}", StringComparison.Ordinal);
-        snapshotJob.ShouldContain("GENERATOR_REVISION: ${{ env.SNAPSHOT_GENERATOR_REVISION }}", StringComparison.Ordinal);
+        snapshotJob.ShouldContain("tool: SharedKernel.RepoConfig.Tool", StringComparison.Ordinal);
+        snapshotJob.ShouldContain("global-json-file: global.json", StringComparison.Ordinal);
         snapshotJob.ShouldNotContain(".local/dependency-review-head", StringComparison.Ordinal);
-        snapshotJob.ShouldNotContain(".config/sharedkernel-candidate.json", StringComparison.Ordinal);
-        snapshotJob.ShouldContain("$revision -cne $env:GENERATOR_REVISION -or $dirty", StringComparison.Ordinal);
-        snapshotJob.ShouldContain("global-json-file: .local/dependency-library/global.json", StringComparison.Ordinal);
-        snapshotJob.ShouldContain("working-directory: .local/dependency-library", StringComparison.Ordinal);
         snapshotJob.ShouldNotContain("setup-ci-prerequisites", StringComparison.Ordinal);
         snapshotJob.ShouldNotContain("releases/download", StringComparison.Ordinal);
         snapshotJob.ShouldNotContain("sharedkernel-candidate-feed", StringComparison.Ordinal);
@@ -96,19 +94,21 @@ public sealed class DependencyReviewWorkflowTests
 
         // Assert
         snapshotJob.ShouldContain("path: dependency-input", StringComparison.Ordinal);
-        snapshotJob.ShouldContain("--root $root --sha $env:SNAPSHOT_SHA --ref $env:SNAPSHOT_REF", StringComparison.Ordinal);
-        snapshotJob.ShouldContain("--job $env:SNAPSHOT_JOB_ID --correlator viajantes-solution-nuget --output $snapshot", StringComparison.Ordinal);
-        snapshotJob.ShouldContain("Invoke-RestMethod -Method Post", StringComparison.Ordinal);
-        snapshotJob.ShouldContain("https://api.github.com/repos/$env:GITHUB_REPOSITORY/dependency-graph/snapshots", StringComparison.Ordinal);
-        snapshotJob.ShouldContain("-InFile $snapshot", StringComparison.Ordinal);
-        snapshotJob.ShouldContain("$ErrorActionPreference = 'Stop'", StringComparison.Ordinal);
+        snapshotJob.ShouldContain(
+            "dependency snapshot --root dependency-input --sha \"$SNAPSHOT_SHA\" --ref \"$SNAPSHOT_REF\"", StringComparison.Ordinal);
+        snapshotJob.ShouldContain(
+            "--job \"$SNAPSHOT_JOB_ID\" --correlator viajantes-solution-nuget --output TestResults/dependency-snapshot.json",
+            StringComparison.Ordinal);
+        snapshotJob.ShouldContain("--repository \"$GITHUB_REPOSITORY\" --force", StringComparison.Ordinal);
         snapshotJob.ShouldNotContain("gh api", StringComparison.Ordinal);
-        snapshotJob.ShouldContain("if ($LASTEXITCODE -ne 0)", StringComparison.Ordinal);
-        snapshotJob.ShouldContain("GH_TOKEN: ${{ github.token }}", StringComparison.Ordinal);
+        snapshotJob.ShouldNotContain("Invoke-RestMethod", StringComparison.Ordinal);
+        snapshotJob.Split("GH_TOKEN: ${{ github.token }}", StringSplitOptions.None).Length.ShouldBe(2);
+        snapshotJob.Split("GH_TOKEN: ${{ github.token }}", StringSplitOptions.None)[1]
+            .Split("      - name:", StringSplitOptions.None)[0]
+            .ShouldContain("dependency submit", StringComparison.Ordinal);
         snapshotJob.ShouldNotContain("hashFiles('.config/sharedkernel-candidate.json')", StringComparison.Ordinal);
         snapshotJob.ShouldNotContain("dotnet restore ViajantesTurismo.slnx", StringComparison.Ordinal);
         snapshotJob.ShouldNotContain("component-detection", StringComparison.Ordinal);
-        snapshotJob.ShouldNotContain("bootstrap-sharedkernel", StringComparison.Ordinal);
         snapshotJob.ShouldNotContain("gh release download", StringComparison.Ordinal);
     }
 
@@ -119,23 +119,30 @@ public sealed class DependencyReviewWorkflowTests
         var root = GetRepositoryRoot();
         var path = Path.Combine(root, ".github", "workflows", "dependency-review.yml");
         using var candidate = JsonDocument.Parse(File.ReadAllText(Path.Combine(root, ".config", "sharedkernel-candidate.json")));
-        var version = candidate.RootElement.GetProperty("packageVersion").GetString();
-        var revision = candidate.RootElement.GetProperty("libraryRevision").GetString();
+        using var configuration = JsonDocument.Parse(File.ReadAllText(Path.Combine(root, ".config", "sharedkernel-repo.json")));
+        var approval = configuration.RootElement.GetProperty("licenseExceptions").GetProperty("approval");
 
         // Act
         var workflow = File.ReadAllText(path);
+        var reviewJob = workflow.Split("\n  dependency-review:", StringSplitOptions.None)[1];
+        var build = reviewJob.IndexOf("uses: ./.github/actions/build-sharedkernel-tool", StringComparison.Ordinal);
+        var verify = reviewJob.IndexOf("dependency verify-license-exceptions --github-output \"$GITHUB_OUTPUT\"", StringComparison.Ordinal);
+        var review = reviewJob.IndexOf("uses: actions/dependency-review-action@", StringComparison.Ordinal);
 
         // Assert
-        workflow.ShouldContain("id: preview-license", StringComparison.Ordinal);
-        workflow.ShouldContain("allow-dependencies-licenses: ${{ steps.preview-license.outputs.packages }}", StringComparison.Ordinal);
-        version.ShouldNotBeNull();
-        revision.ShouldNotBeNull();
-        workflow.ShouldContain($"$pin.packageVersion -cne '{version}'", StringComparison.Ordinal);
-        workflow.ShouldContain($"$pin.libraryRevision -cne '{revision}'", StringComparison.Ordinal);
-        workflow.ShouldContain("'StreamJsonRpc' = '2.25.29'", StringComparison.Ordinal);
-        workflow.ShouldContain("'Magick.NET-Q8-AnyCPU' = '15.0.0'", StringComparison.Ordinal);
-        workflow.ShouldContain("$entry.Value.resolved -cne $approved[$entry.Key]", StringComparison.Ordinal);
-        workflow.ShouldContain("git ls-files -- '**/packages.lock.json'", StringComparison.Ordinal);
+        build.ShouldBeGreaterThan(-1);
+        verify.ShouldBeGreaterThan(build);
+        review.ShouldBeGreaterThan(verify);
+        reviewJob.ShouldContain("timeout-minutes:", StringComparison.Ordinal);
+        reviewJob.ShouldContain("id: preview-license", StringComparison.Ordinal);
+        reviewJob.ShouldContain("allow-dependencies-licenses: ${{ steps.preview-license.outputs.packages }}", StringComparison.Ordinal);
+        reviewJob.ShouldNotContain("GH_TOKEN", StringComparison.Ordinal);
+        approval.GetProperty("file").GetString().ShouldBe(".config/sharedkernel-candidate.json");
+        foreach (var value in approval.GetProperty("values").EnumerateObject())
+        {
+            candidate.RootElement.GetProperty(value.Name).GetRawText().ShouldBe(value.Value.GetRawText());
+        }
+
         workflow.ShouldContain("fail-on-severity: moderate", StringComparison.Ordinal);
         workflow.ShouldContain("license-check: true", StringComparison.Ordinal);
         workflow.ShouldContain("vulnerability-check: true", StringComparison.Ordinal);

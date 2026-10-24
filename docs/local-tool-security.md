@@ -19,14 +19,19 @@ existing `.NET`, Python, shell, or Docker path already covers the same need.
 ## Current approved paths
 
 - `.NET` local tools: restored from `.config/dotnet-tools.json` with `dotnet tool restore`.
-- SharedKernel `.NET` tools: restored from validated pinned artifacts in the local feed, following
+- SharedKernel `.NET` tools (`sharedkernel-ci`, `sharedkernel-repo`, `sharedkernel-version`,
+  `sharedkernel-docs`, `sharedkernel-playwright-mcp`, `sharedkernel-codefix`): restored from the pinned
+  candidate that `setup-dev.sh` or `setup-dev.ps1` stages in `.local/sharedkernel-feed`. Staging runs
+  `sharedkernel-ci stage-candidate` built from a sparse SharedKernel checkout at the pinned
+  `libraryRevision`, which verifies each package hash before restore; see
   [SharedKernel consumption](SHAREDKERNEL_CONSUMPTION.md).
 - Markdown lint: `davidanson/markdownlint-cli2` Docker image via `scripts/lint-all.sh` or
   `scripts/lint-markdown.sh`.
 - Shell lint and formatting: local `shellcheck` and `shfmt` when present, otherwise Docker
   fallbacks in `scripts/lint-all.sh`.
-- Gherkin and JSON lint: repository-owned Python wrappers, with Docker fallback where the
-  wrapper already provides it.
+- Gherkin lint: repository-owned Python wrapper, with Docker fallback.
+- JSON and text-encoding checks: `dotnet tool run sharedkernel-repo -- verify-json` and
+  `verify-text-encoding`.
 - Link validation: repository-owned Python wrapper (`scripts/lint-links.sh`), with Docker
   fallback. It validates local Markdown links and enforces durable documentation link rules;
   it does not probe external URLs in PR gating.
@@ -63,8 +68,9 @@ Enabled MCP servers start during OpenCode initialization, before per-tool approv
 shared by the OpenCode instance, and permission prompts gate tool calls rather than server startup.
 MCP permissions are not a general command-execution boundary: the normal build agent retains shell
 access and can launch the same executables outside the MCP tool surface. Use the constrained agents
-for MCP output, review shell commands separately, and review `opencode.json`, the launcher source,
-and its build output before starting OpenCode from an untrusted branch.
+for MCP output, review shell commands separately, and review `opencode.json` and the pinned
+`sharedkernel-playwright-mcp` version in `.config/dotnet-tools.json` before starting OpenCode from an
+untrusted branch.
 
 ### Aspire MCP
 
@@ -82,9 +88,8 @@ and its build output before starting OpenCode from an untrusted branch.
   manifest digest. The current pin is `v0.0.78` at
   `sha256:3d871c22ea2d4cca0966e2cfb1860e1cb03eb7353725a3d6cffd133296fb04eb`, reviewed on
   2026-07-18.
-- Use the repository-owned `SharedKernel.PlaywrightMcp.Tool` executable. Build the solution with
-  `dotnet build ViajantesTurismo.slnx --configuration Release` before starting OpenCode; MCP startup
-  uses `dotnet run --configuration Release --no-build --no-restore`. Do not use host `npm`, `npx`, shell
+- Use the pinned `sharedkernel-playwright-mcp` local tool. Run `dotnet tool restore` before starting
+  OpenCode; MCP startup uses `dotnet tool run sharedkernel-playwright-mcp -- serve`. Do not use host `npm`, `npx`, shell
   launchers, persistent browser profiles, storage-state files, secret files, browser extensions, remote
   CDP endpoints, or unrestricted file access.
 - Pre-pull the exact image digest. Runtime startup uses `--pull=never`; it never fetches or updates
@@ -120,17 +125,17 @@ and its build output before starting OpenCode from an untrusted branch.
 - `prepare` retains the pinned image in the selected local engine's cache. Remove that exact image with
   the tool's `clean` command when it is no longer needed.
 
-Pre-pull through the repository-owned tool. It selects the sole installed engine; set
+Pre-pull through the pinned tool. It selects the sole installed engine; set
 `PLAYWRIGHT_MCP_ENGINE` when both are installed:
 
 ```bash
-dotnet run --project tools/SharedKernel.PlaywrightMcp.Tool --configuration Release -- prepare
+dotnet tool run sharedkernel-playwright-mcp -- prepare
 ```
 
 Remove the pinned image from the selected local engine cache:
 
 ```bash
-dotnet run --project tools/SharedKernel.PlaywrightMcp.Tool --configuration Release -- clean
+dotnet tool run sharedkernel-playwright-mcp -- clean
 ```
 
 When updating Playwright MCP:
@@ -138,8 +143,9 @@ When updating Playwright MCP:
 1. Review the upstream release and Dockerfile.
 2. Resolve the tag's current manifest with
    `docker buildx imagetools inspect mcr.microsoft.com/playwright/mcp:<tag>`.
-3. Update the tag and digest together; never copy an unverified digest.
-4. Run the Playwright MCP tool tests and build the solution.
+3. Update the tag and digest together in SharedKernel's `SharedKernel.PlaywrightMcp.Tool`; never copy an
+   unverified digest.
+4. Bump the SharedKernel pin to a candidate that ships the update and run `dotnet tool restore`.
 5. Pre-pull with each supported engine, then confirm `opencode mcp list`, default network denial,
    one approved local navigation, browser close, and repository lint checks.
 

@@ -29,8 +29,9 @@ Set that variable to the current repository CI baseline runner. `OpenAPI Tool Wi
 | Job name | `Calculate Version` |
 | Runner | Repository CI baseline |
 
-For build-relevant changes, this job waits for selection, checks out full history, restores only `SharedKernel.Versioning.Tool`, and runs
-`SharedKernel.Versioning.Tool calculate-release`. The tool finds the latest `v*` SemVer tag when one exists;
+For build-relevant changes, this job waits for selection, checks out full history, stages the pinned SharedKernel
+candidate through `setup-ci-prerequisites`, restores the local tools, and runs
+`dotnet tool run sharedkernel-version -- calculate-release` with its values passed through `env:`. The tool finds the latest `v*` SemVer tag when one exists;
 otherwise it uses `0.1.0` as the base while the repository has no versioned release tags. It feeds
 commit messages into `sharedkernel-version compute` and exposes the calculated SemVer, release impact,
 package version, assembly version, file version, informational version, base version, source tag, and
@@ -114,8 +115,7 @@ Test-slice project membership is now centralized under `scripts/ci-test-slices/*
 restore, build, test, and coverage inputs for each slice stay aligned instead of
 duplicating project lists in multiple workflow locations.
 
-Keep all six canonical slice files when extracting SharedKernel into its own repository. A slice
-may become empty after its last test project leaves the application solution; selection emits
+Keep all five canonical slice files. A slice may become empty after its last test project leaves the application solution; selection emits
 `<slice>_required=false`, and the existing matrix skip step reports success without restoring or
 running that slice. Every xUnit project still in the application solution must remain assigned
 exactly once. Emptying a manifest while leaving its projects in the solution fails membership
@@ -156,7 +156,8 @@ split only after CI timing data shows duplicated setup is cheaper than serial ex
 
 Dependency-graph changes—including NuGet, SDK, local-tool, project-reference, or dependency-related
 rebase changes—must refresh committed `packages.lock.json` files with
-`bash scripts/refresh-dependency-lockfiles.sh`. CI uses locked restore to reject drift; contributors
+`dotnet restore ViajantesTurismo.slnx --force-evaluate`, then
+`dotnet restore ViajantesTurismo.slnx --locked-mode`. CI uses locked restore to reject drift; contributors
 must review regenerated locks and follow the canonical
 [dependency graph and lock-file maintenance workflow](../../CONTRIBUTING.md#dependency-graph-and-lock-file-maintenance).
 
@@ -222,7 +223,7 @@ For missing PR-context checks, see [Governance](governance.md#recovery-for-missi
 `Solution Build` runs after change detection alongside test slices. It validates the complete
 solution, including projects outside test dependency graphs, and uploads revision-bound Release
 symbols as `solution-build-evidence`. `Quality Gate` checks the solution-build result, downloads and
-verifies those symbols, and restores only the reporting/repository tools. It no longer builds the
+verifies those symbols, and restores only the reporting/repository tools; it does not rebuild the
 full solution after tests. Portable-PDB document checks retain their existing coverage semantics.
 
 The `run-ci-test-slice` application command owns graph creation, OpenAPI preparation, Playwright

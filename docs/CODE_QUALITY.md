@@ -10,7 +10,7 @@ This project uses automated tools to enforce consistent formatting and style acr
 - **[shfmt](https://github.com/mvdan/sh)** - Bash/shell script formatting (direct CLI or Docker fallback)
 - **Repository Gherkin linter** (`scripts/lint-gherkin.py`) - BDD/Gherkin feature-file linting
   (runs via local Python or Docker fallback)
-- **Repository JSON validator** (`ViajantesTurismo.RepoConfig.Tool lint-json`) - Git-indexed JSON
+- **Repository JSON validator** (`sharedkernel-repo verify-json`) - Git-indexed JSON
   validation using the .NET SDK, with comments and trailing commas allowed
 - **Repository link validator** (`scripts/lint-links.py`) - Local Markdown/text link, anchor, and
   durable docs-link validation (runs via local Python or Docker fallback)
@@ -152,7 +152,7 @@ See `tests/BDD_GUIDE.md` for comprehensive Gherkin linting documentation.
 
 ### Configuration
 
-JSON validation is performed by `ViajantesTurismo.RepoConfig.Tool lint-json`, which accepts
+JSON validation is performed by `sharedkernel-repo verify-json`, which accepts
 JSONC-style comments and trailing commas in tracked `*.json` files.
 
 **Key Rules:**
@@ -164,7 +164,7 @@ Untracked package caches, generated artifacts, and nested library checkouts are 
 ### Tool
 
 - **Repository JSON validator** - Run
-  `dotnet run --project tools/ViajantesTurismo.RepoConfig.Tool -c Release -- lint-json`.
+  `dotnet tool run sharedkernel-repo -- verify-json --root .`.
   The command validates all indexed JSON files and accepts no directory arguments. Roadmap
   validation uses this same repository-wide policy.
 
@@ -261,7 +261,7 @@ defaults that may drift between releases.
   `Directory.Packages.props` near the parent package. Each pin must name the parent package, the
   vulnerable transitive package/version, the advisory, and the removal condition.
 - Local restores stay unlocked by default to keep everyday dependency maintenance practical.
-- CI restores run in locked mode and now also set `ContinuousIntegrationBuild=true` explicitly so
+- CI restores run in locked mode and set `ContinuousIntegrationBuild=true` explicitly so
   deterministic build behavior is owned by repository policy rather than ambient environment luck.
 
 ### Production Code Timing Policy
@@ -372,7 +372,7 @@ bash scripts/lint-gherkin.sh tests/**/*.feature     # Repository Gherkin lint wr
 **JSON Files:**
 
 ```powershell
-dotnet run --project tools/ViajantesTurismo.RepoConfig.Tool -c Release -- lint-json
+dotnet tool run sharedkernel-repo -- verify-json --root .
 ```
 
 **Links:**
@@ -398,7 +398,7 @@ dotnet tool restore      # Install all pinned .NET tools
 
 ## Local Validation
 
-The repository no longer installs git hooks by default.
+The repository installs no Git hooks.
 
 - Lint is CI-owned and runs through `bash scripts/lint-all.sh` and `DavidAnson/markdownlint-cli2-action` in workflows.
 - `bash scripts/lint-all.sh --fix` is available locally to apply supported autofixes before strict checks.
@@ -412,11 +412,8 @@ The repository no longer installs git hooks by default.
   Python-based linters.
 - If Docker is unavailable, wrappers use local tools when present and fail with an explicit message
   when neither local tool nor Docker is available.
-- Commit message validation remains available locally through
-  `bash scripts/validate-commit-message.sh <path-to-commit-message-file>`.
-- If you previously installed repository hooks from an older revision, remove or replace the copied
-  files under `git rev-parse --git-path hooks` so commits do not keep calling deleted npm-based
-  hook scripts.
+- Validate a commit message locally with
+  `dotnet tool run sharedkernel-ci -- verify-commit-message --file <path-to-commit-message-file>`.
 - For the repository's explicit local helper-tool acquisition rules, see
   [Local tool security model](local-tool-security.md).
 
@@ -513,7 +510,7 @@ Recommended fast local path by change type:
 
 | Change type | Fast local path | Full confidence before PR when risk is real |
 | --- | --- | --- |
-| Dependency-graph change | `bash scripts/refresh-dependency-lockfiles.sh` | `dotnet build ViajantesTurismo.slnx --no-restore` plus impacted test slice |
+| Dependency-graph change | `dotnet restore ViajantesTurismo.slnx --force-evaluate`, then `--locked-mode` | `dotnet build ViajantesTurismo.slnx --no-restore` plus impacted test slice |
 | AppHost-only change | `dotnet build src/ViajantesTurismo.AppHost/ViajantesTurismo.AppHost.csproj --no-restore` | `dotnet tool run aspire run` and `bash scripts/benchmark-local-validation.sh --skip-restore --skip-build --slice admin-system` |
 | Test-only change | `dotnet test --project <changed-test-project>.csproj` | Matching CI slice through `bash scripts/benchmark-local-validation.sh --skip-restore --skip-build --slice <name>` |
 
@@ -537,7 +534,7 @@ Use [CONTRIBUTING.md](../CONTRIBUTING.md#commit-messages) as the canonical commi
 This quality guide only owns the validation command reference:
 
 ```powershell
-bash scripts/validate-commit-message.sh <path-to-commit-message-file>
+dotnet tool run sharedkernel-ci -- verify-commit-message --file <path-to-commit-message-file>
 ```
 
 ### VS Code Integration
