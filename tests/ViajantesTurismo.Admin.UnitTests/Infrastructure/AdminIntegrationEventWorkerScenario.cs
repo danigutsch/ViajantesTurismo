@@ -1,3 +1,6 @@
+extern alias AdminWorker;
+
+using System.Text.Json;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Storage;
 using Microsoft.Extensions.Configuration;
@@ -5,7 +8,10 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using ViajantesTurismo.Admin.Application.Branding;
 using ViajantesTurismo.Admin.Infrastructure;
+using PandaBear.Messaging;
 using ViajantesTurismo.Admin.Infrastructure.Branding;
+using ViajantesTurismo.Branding.Contracts.IntegrationEvents;
+using ViajantesTurismo.Branding.Contracts.IntegrationEvents.Branding;
 using ViajantesTurismo.Resources;
 
 namespace ViajantesTurismo.Admin.UnitTests.Infrastructure;
@@ -47,6 +53,7 @@ internal sealed class AdminIntegrationEventWorkerScenario : IDisposable
             .EnableServiceProviderCaching(false));
         services.AddScoped<IBrandingProjectionStore, EfBrandingProjectionStore>();
         services.AddAdminBrandingProjection();
+        AdminWorker::ViajantesTurismo.Admin.IntegrationEventWorker.AdminWorkerIntegrationEvents.AddAdminWorkerIntegrationEventDelivery(services);
 
         return new AdminIntegrationEventWorkerScenario(services.BuildServiceProvider());
     }
@@ -70,10 +77,32 @@ internal sealed class AdminIntegrationEventWorkerScenario : IDisposable
     }
 
     /// <summary>Applies one event in its own unit of work, like one transport delivery.</summary>
-    public async Task Apply(ViajantesTurismo.Branding.Contracts.IntegrationEvents.Branding.BrandingSettingsChangedIntegrationEvent integrationEvent, CancellationToken ct)
+    public async Task Apply(BrandingSettingsChangedIntegrationEvent integrationEvent, CancellationToken ct)
     {
         await using var scope = provider.CreateAsyncScope();
         await scope.ServiceProvider.GetRequiredService<BrandingProjectionApplier>().Apply(integrationEvent, ct);
+    }
+
+    /// <summary>Delivers one event as a transport envelope through the worker's generated publisher.</summary>
+    public async Task Deliver(BrandingSettingsChangedIntegrationEvent integrationEvent, CancellationToken ct)
+    {
+        var envelope = new EventEnvelope(
+            "cloudevents",
+            "1.0",
+            integrationEvent.EventId.ToString("N"),
+            new Uri("urn:viajantes:branding"),
+            BrandingSettingsChangedIntegrationEvent.EventType,
+            BrandingSettingsChangedIntegrationEvent.EventVersion,
+            integrationEvent.OccurredAt,
+            subject: null,
+            "application/json",
+            dataSchema: null,
+            JsonSerializer.Serialize(
+                integrationEvent,
+                BrandingIntegrationEventJsonContext.Default.BrandingSettingsChangedIntegrationEvent),
+            EventPayloadEncoding.Json,
+            extensionAttributesJson: null);
+        await provider.GetRequiredService<IEventEnvelopePublisher>().Publish(envelope, ct);
     }
 
     public async Task<(BrandingProjectionState? Current, int InboxCount)> ReadProjection(CancellationToken ct)

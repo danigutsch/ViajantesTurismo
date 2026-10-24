@@ -1,6 +1,10 @@
 <Project Sdk="Microsoft.NET.Sdk.Worker">
 
     <ItemGroup>
+        <InternalsVisibleTo Include="ViajantesTurismo.Admin.UnitTests" />
+    </ItemGroup>
+
+    <ItemGroup>
         <ProjectReference Include="..\ViajantesTurismo.Admin.Infrastructure\ViajantesTurismo.Admin.Infrastructure.csproj" />
         <ProjectReference Include="..\ViajantesTurismo.Branding.Contracts.IntegrationEvents\ViajantesTurismo.Branding.Contracts.IntegrationEvents.csproj" />
         <ProjectReference Include="..\ViajantesTurismo.ServiceDefaults\ViajantesTurismo.ServiceDefaults.csproj" />

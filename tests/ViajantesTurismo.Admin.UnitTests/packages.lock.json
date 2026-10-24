@@ -937,6 +937,15 @@
           "ViajantesTurismo.Resources": "[0.1.0-alpha.0, )"
         }
       },
+      "viajantesturismo.admin.integrationeventworker": {
+        "type": "Project",
+        "dependencies": {
+          "PandaBear.SharedKernel.Messaging.IntegrationEvents": "[0.1.0-alpha.144.1, )",
+          "ViajantesTurismo.Admin.Infrastructure": "[0.1.0-alpha.0, )",
+          "ViajantesTurismo.Branding.Contracts.IntegrationEvents": "[0.1.0-alpha.0, )",
+          "ViajantesTurismo.ServiceDefaults": "[0.1.0-alpha.0, )"
+        }
+      },
       "viajantesturismo.admin.testing": {
         "type": "Project",
         "dependencies": {

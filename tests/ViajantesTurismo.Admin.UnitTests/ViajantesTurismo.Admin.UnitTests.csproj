@@ -22,6 +22,7 @@
         <ProjectReference Include="..\..\src\ViajantesTurismo.Admin.ApiService\ViajantesTurismo.Admin.ApiService.csproj"/>
         <ProjectReference Include="..\..\src\ViajantesTurismo.Admin.Application\ViajantesTurismo.Admin.Application.csproj"/>
         <ProjectReference Include="..\..\src\ViajantesTurismo.Admin.Infrastructure\ViajantesTurismo.Admin.Infrastructure.csproj"/>
+        <ProjectReference Include="..\..\src\ViajantesTurismo.Admin.IntegrationEventWorker\ViajantesTurismo.Admin.IntegrationEventWorker.csproj" Aliases="AdminWorker"/>
         <ProjectReference Include="..\..\src\ViajantesTurismo.Admin.Contracts.Http\ViajantesTurismo.Admin.Contracts.Http.csproj"/>
         <ProjectReference Include="..\..\src\ViajantesTurismo.Admin.Contracts.IntegrationEvents\ViajantesTurismo.Admin.Contracts.IntegrationEvents.csproj"/>
         <PackageReference Include="PandaBear.SharedKernel.Branding" />

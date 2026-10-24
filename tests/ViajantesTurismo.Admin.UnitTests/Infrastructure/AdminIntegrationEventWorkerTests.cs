@@ -63,4 +63,22 @@ public sealed class AdminIntegrationEventWorkerTests
         current.LogoUri.ShouldBe(new Uri("/logo.svg", UriKind.Relative));
         inboxCount.ShouldBe(2);
     }
+
+    [Fact]
+    public async Task A_transport_envelope_reaches_the_projection_through_the_worker_handler()
+    {
+        // Arrange
+        var ct = TestContext.Current.CancellationToken;
+        using var scenario = AdminIntegrationEventWorkerScenario.InMemoryProjection();
+        var incoming = BrandingProjectionTestData.CreateEvent(revision: 4, brandName: "Delivered");
+
+        // Act
+        await scenario.Deliver(incoming, ct);
+
+        // Assert
+        var (current, inboxCount) = await scenario.ReadProjection(ct);
+        current.ShouldNotBeNull().SourceRevision.ShouldBe(4);
+        current.BrandName.ShouldBe("Delivered");
+        inboxCount.ShouldBe(1);
+    }
 }
