@@ -315,7 +315,7 @@ Runtime shape:
   and claim fields; do not duplicate their volatile column inventory here.
 - Admin runtime registers the PostgreSQL transport producer and outbox relay. Relayed Admin events enter
   Admin-database `messaging.transport_messages` with `ConsumerName = 'catalog'`, claimed by
-  `IntegrationEventWorker`.
+  `Catalog.IntegrationEventWorker`.
 - Catalog API runs its own outbox relay for Catalog-originated media processing events and dispatches
   them to registered in-process handlers.
 - Target Branding uses Catalog-database `messaging.transport_messages` with

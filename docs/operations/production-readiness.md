@@ -142,8 +142,8 @@ The selected platform must provide least-privilege capabilities equivalent to:
 | Branding runtime writer | Branding current state, full-state revisions, and Branding outbox DML | Admin data, Catalog domain tables, schema DDL |
 | Branding migration identity | Approved `branding` schema, migration history, and sole Catalog-database `messaging.transport_messages` migration DDL/DML during deployment | Runtime use, Admin data, Catalog domain tables |
 | Branding outbox relay | Claim/update `branding.outbox_messages`; insert `ConsumerName = 'admin'` into Catalog-database `messaging.transport_messages` | Branding settings mutation, Catalog domain tables, Admin data |
-| Integration Event Worker transport | `SELECT`/`UPDATE` Catalog-database `messaging.transport_messages` claims, retry, poison, and `ProcessedAt` | Branding current/history/outbox, Catalog domain tables, schema DDL |
-| Integration Event Worker Admin projection | Branding inbox, projection, epoch/revision watermark, recovery, and replay-audit DML | Unrelated Admin writes, source database reads, schema DDL |
+| Admin integration event worker transport | `SELECT`/`UPDATE` Catalog-database `messaging.transport_messages` claims, retry, poison, and `ProcessedAt` | Branding current/history/outbox, Catalog domain tables, schema DDL |
+| Admin integration event worker projection | Branding inbox, projection, epoch/revision watermark, recovery, and replay-audit DML | Unrelated Admin writes, source database reads, schema DDL |
 | Admin API | Read the local Admin Branding projection | Catalog/Branding HTTP credentials and source database credentials |
 | Recovery operator | Audited poison replay, reseed authorization, and source-epoch rotation | Ordinary application runtime access, untracked payload editing |
 

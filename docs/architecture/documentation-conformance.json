@@ -75,7 +75,7 @@
           "parameterCount": 2
         },
         {
-          "sourcePath": "src/ViajantesTurismo.IntegrationEventWorker/Program.cs"
+          "sourcePath": "src/ViajantesTurismo.Catalog.IntegrationEventWorker/Program.cs"
         },
         {
           "sourcePath": "src/ViajantesTurismo.Catalog.Infrastructure/InfrastructureDependencyInjection.cs",
@@ -120,7 +120,7 @@
           "expectedCount": 1
         },
         {
-          "sourcePath": "src/ViajantesTurismo.IntegrationEventWorker/Program.cs",
+          "sourcePath": "src/ViajantesTurismo.Catalog.IntegrationEventWorker/Program.cs",
           "invokedMethodName": "AddCatalogIntegrationEventWorkerInfrastructure",
           "expectedCount": 1
         },

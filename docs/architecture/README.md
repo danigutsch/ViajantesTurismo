@@ -41,7 +41,7 @@ sequenceDiagram
     participant Outbox as Admin outbox
     participant Relay as Admin relay
     participant Queue as Admin PostgreSQL transport
-    participant Worker as IntegrationEventWorker
+    participant Worker as Catalog.IntegrationEventWorker
     participant Inbox as Catalog idempotency
     participant Store as PostgreSQL event store
     participant Projection as Catalog projection
