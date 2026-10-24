@@ -1,12 +1,16 @@
 using PandaBear.Branding;
 using ViajantesTurismo.Resources;
 
-namespace ViajantesTurismo.Branding.ApiService;
+namespace ViajantesTurismo.Branding.Infrastructure;
 
-internal static class BrandingDefaults
+/// <summary>Provides the Branding settings used before staff save their own.</summary>
+public static class BrandingDefaults
 {
+    /// <summary>Gets the font families Branding settings may use.</summary>
     public static readonly IReadOnlyCollection<string> AllowedFonts = BrandingFontFamilies.All;
 
+    /// <summary>Creates the validated default Branding settings.</summary>
+    /// <returns>The default settings.</returns>
     public static BrandingSettings CreateSettings()
     {
         var result = BrandingSettings.Create(CreateDto(), AllowedFonts);
@@ -25,6 +29,8 @@ internal static class BrandingDefaults
         throw new InvalidOperationException($"Default branding settings are invalid: {validationMessage}");
     }
 
+    /// <summary>Creates the default Branding settings document.</summary>
+    /// <returns>The default settings document.</returns>
     public static BrandingSettingsDto CreateDto()
     {
         return new BrandingSettingsDto

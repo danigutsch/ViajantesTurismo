@@ -414,7 +414,8 @@
           "PandaBear.SharedKernel.Tabular": "[0.1.0-alpha.161.1, )",
           "ViajantesTurismo.Admin.Contracts.Application": "[0.1.0-alpha.0, )",
           "ViajantesTurismo.Admin.Contracts.IntegrationEvents": "[0.1.0-alpha.0, )",
-          "ViajantesTurismo.Admin.Domain": "[0.1.0-alpha.0, )"
+          "ViajantesTurismo.Admin.Domain": "[0.1.0-alpha.0, )",
+          "ViajantesTurismo.Branding.Contracts.IntegrationEvents": "[0.1.0-alpha.0, )"
         }
       },
       "viajantesturismo.admin.contracts.application": {
@@ -475,6 +476,12 @@
           "ViajantesTurismo.Admin.Contracts.Http": "[0.1.0-alpha.0, )",
           "ViajantesTurismo.Admin.Contracts.IntegrationEvents": "[0.1.0-alpha.0, )",
           "ViajantesTurismo.Admin.Domain": "[0.1.0-alpha.0, )"
+        }
+      },
+      "viajantesturismo.branding.contracts.integrationevents": {
+        "type": "Project",
+        "dependencies": {
+          "PandaBear.SharedKernel.Messaging.IntegrationEvents": "[0.1.0-alpha.161.1, )"
         }
       },
       "viajantesturismo.catalog.contracts.application": {

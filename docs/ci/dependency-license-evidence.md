@@ -236,21 +236,20 @@ threshold or native distribution gate was relaxed. On October 24, 2026, the owne
 prerelease distribution and renewed these unchanged exact-package exceptions for this candidate.
 Registry publication and the native distribution obligations remain outside this approval.
 
-## CI engine candidate
+## Explicit messaging default candidate
 
 Candidate `0.1.0-alpha.159.1` uses clean library revision
-`afaaa2994edd43e82cb4b3ff622cd7ef17fa0f4d`. It moves test selection, slice runs, OpenAPI generation
-and the coverage gate into `sharedkernel-ci`, adds `PandaBear.SharedKernel.Npgsql.Testing`, and
-requires an explicit default when several contexts register an outbox or inbox store. Linux/Windows
-package consumption and NativeAOT passed in the exact-source CI run `40114059506`. All 78 archive
-hashes were verified.
+`afaaa2994edd43e82cb4b3ff622cd7ef17fa0f4d`. It requires an explicit default for co-hosted outboxes and
+inbox stores, adds the `PandaBear.SharedKernel.Npgsql.Testing` package, and includes the other library
+changes merged since `0.1.0-alpha.144.1`. Linux/Windows package consumption and NativeAOT passed in the
+exact-source CI run. All 78 archive hashes were verified against the CI artifacts and the GitHub
+prerelease manifest.
 
-Comparison of the complete external package version/content-hash sets across all lock files against
-application main found no additions. The 57 lock files hold 282 entries; the only removal is
-`Microsoft.Extensions.TimeProvider.Testing` `10.11.0`, whose sole user was the deleted local
-repository tool's test project. The workflow still permits only the same exact StreamJsonRpc
+Comparison of the complete external package version/content-hash sets across all 61 lock files
+against application main `e2f3c6e1` (candidate `0.1.0-alpha.144.1`) found no additions or removals;
+both sets hold the same 283 entries. The workflow still permits only the same exact StreamJsonRpc
 `2.25.29` and Magick.NET-Q8-AnyCPU `15.0.0` metadata exceptions; no license category, vulnerability
-threshold or native distribution gate was relaxed. On October 24, 2026, the owner renewed these
+threshold or native distribution gate was relaxed. On October 24, 2026, the owner approved these
 unchanged exact-package exceptions for this candidate. Registry publication and the native
 distribution obligations remain outside this approval.
 
@@ -260,9 +259,10 @@ Candidate `0.1.0-alpha.161.1` uses clean library revision
 `b40822b58c9f6c1797dbea6de1e2a12319906b5b`. It differs from `0.1.0-alpha.159.1` only in restoring and
 building the projects of a slice's OpenAPI targets during `sharedkernel-ci run`. Linux/Windows package
 consumption and NativeAOT passed in the exact-source CI run `40123246622`. All 78 archive hashes were
-verified. The external package version/content-hash set across all 57 lock files is identical to the
-`0.1.0-alpha.159.1` set (282 entries). The workflow still permits only the same exact StreamJsonRpc
-`2.25.29` and Magick.NET-Q8-AnyCPU `15.0.0` metadata exceptions; no license category, vulnerability
+verified. Against application main, the external package version/content-hash set adds nothing; the 57
+lock files hold 282 entries, and the only removal is `Microsoft.Extensions.TimeProvider.Testing` `10.11.0`,
+whose sole user was the deleted local repository tool's test project. The workflow still permits only
+the same exact StreamJsonRpc `2.25.29` and Magick.NET-Q8-AnyCPU `15.0.0` metadata exceptions; no license category, vulnerability
 threshold or native distribution gate was relaxed. On October 24, 2026, the owner renewed these
 unchanged exact-package exceptions for this candidate. Registry publication and the native
 distribution obligations remain outside this approval.

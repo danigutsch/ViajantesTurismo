@@ -386,6 +386,12 @@
           "PandaBear.SharedKernel.Results": "[0.1.0-alpha.161.1, )"
         }
       },
+      "viajantesturismo.branding.contracts.integrationevents": {
+        "type": "Project",
+        "dependencies": {
+          "PandaBear.SharedKernel.Messaging.IntegrationEvents": "[0.1.0-alpha.161.1, )"
+        }
+      },
       "JetBrains.Annotations": {
         "type": "CentralTransitive",
         "requested": "[2026.2.0, )",

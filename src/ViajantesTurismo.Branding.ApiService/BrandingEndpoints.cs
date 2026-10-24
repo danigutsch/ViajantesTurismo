@@ -1,10 +1,12 @@
 using Microsoft.AspNetCore.OutputCaching;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.Http.HttpResults;
 using PandaBear.ApiVersioning.AspNetCore;
 using PandaBear.Branding;
 using PandaBear.BuildingBlocks;
 using PandaBear.HttpCaching.AspNetCore;
 using PandaBear.Results;
+using ViajantesTurismo.Branding.Infrastructure;
 
 namespace ViajantesTurismo.Branding.ApiService;
 
@@ -28,6 +30,7 @@ internal static class BrandingEndpoints
             .RequireAuthorization(BrandingAuthorization.BrandingRead);
         managementBranding.MapPut("/", SaveSettings)
             .Produces(StatusCodes.Status200OK)
+            .ProducesProblem(StatusCodes.Status409Conflict)
             .RequireRateLimiting(BrandingSecurityBaseline.MutationRateLimitPolicy)
             .RequireAuthorization(BrandingAuthorization.BrandingWrite);
 
@@ -65,7 +68,17 @@ internal static class BrandingEndpoints
             return ToValidationProblem(settings.ErrorDetails);
         }
 
-        await store.SaveSettings(settings.Value, ct).ConfigureAwait(false);
+        try
+        {
+            await store.SaveSettings(settings.Value, ct).ConfigureAwait(false);
+        }
+        catch (DbUpdateConcurrencyException)
+        {
+            return TypedResults.Problem(
+                "Branding settings changed by another request. Reload them and try again.",
+                statusCode: StatusCodes.Status409Conflict);
+        }
+
         await InvalidatePublicBrandingCache(outputCacheStore, logger).ConfigureAwait(false);
         return TypedResults.Ok(ToDto(settings.Value));
     }

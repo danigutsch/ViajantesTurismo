@@ -73,7 +73,28 @@ internal sealed class BrandingSettingsRecord
         get; private set;
     }
 
-    public static BrandingSettingsRecord FromSettings(BrandingSettings settings)
+    /// <summary>Gets the authoritative source lineage; empty until revisions start.</summary>
+    public Guid SourceEpoch
+    {
+        get; private set;
+    }
+
+    /// <summary>Gets the monotonic revision within the source epoch; zero until revisions start.</summary>
+    public long SourceRevision
+    {
+        get; private set;
+    }
+
+    public bool IsRevisioned => SourceRevision > 0;
+
+    public static BrandingSettingsRecord StartLineage(BrandingSettings settings, Guid sourceEpoch)
+    {
+        var record = FromUnrevisionedSettings(settings);
+        record.StartRevisions(sourceEpoch);
+        return record;
+    }
+
+    public static BrandingSettingsRecord FromUnrevisionedSettings(BrandingSettings settings)
     {
         ArgumentNullException.ThrowIfNull(settings);
 
@@ -95,7 +116,43 @@ internal sealed class BrandingSettingsRecord
         return result.IsSuccess ? result.Value : null;
     }
 
-    public void ReplaceWith(BrandingSettings settings)
+    public void StartRevisions(Guid sourceEpoch)
+    {
+        if (IsRevisioned)
+        {
+            throw new InvalidOperationException("Branding settings revisions have already started.");
+        }
+
+        SourceEpoch = sourceEpoch;
+        SourceRevision = 1;
+    }
+
+    public bool HasSameValues(BrandingSettings settings)
+    {
+        ArgumentNullException.ThrowIfNull(settings);
+
+        return BrandName == settings.BrandName
+            && PrimaryColor == settings.PrimaryColor
+            && AccentColor == settings.AccentColor
+            && BackgroundColor == settings.BackgroundColor
+            && TextColor == settings.TextColor
+            && HeadingFontFamily == settings.HeadingFontFamily
+            && BodyFontFamily == settings.BodyFontFamily
+            && LogoUri == settings.LogoUri;
+    }
+
+    public void ApplyRevision(BrandingSettings settings)
+    {
+        if (!IsRevisioned)
+        {
+            throw new InvalidOperationException("Branding settings revisions have not started; run the Branding bootstrap first.");
+        }
+
+        ReplaceWith(settings);
+        SourceRevision++;
+    }
+
+    private void ReplaceWith(BrandingSettings settings)
     {
         ArgumentNullException.ThrowIfNull(settings);
 

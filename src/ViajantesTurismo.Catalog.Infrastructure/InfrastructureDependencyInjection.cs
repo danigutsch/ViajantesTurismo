@@ -193,6 +193,7 @@ public static class InfrastructureDependencyInjection
         where TApplicationBuilder : IHostApplicationBuilder
     {
         builder.Services.AddIntegrationEventOutbox<CatalogDbContext>();
+        builder.Services.UseDefaultIntegrationEventOutbox<CatalogDbContext>();
         builder.Services.AddIntegrationEventInbox<CatalogDbContext>();
         builder.Services.AddIntegrationEventTransportStorage<CatalogDbContext>();
         if (addOutboxRelay)

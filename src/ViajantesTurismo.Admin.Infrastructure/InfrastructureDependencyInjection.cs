@@ -17,10 +17,12 @@ using PandaBear.OpenApi;
 using ViajantesTurismo.Admin.Contracts.IntegrationEvents;
 using ViajantesTurismo.Admin.Contracts.IntegrationEvents.Tours;
 using ViajantesTurismo.Admin.Application;
+using ViajantesTurismo.Admin.Application.Branding;
 using ViajantesTurismo.Admin.Application.Documents;
 using ViajantesTurismo.Admin.Application.Tours;
 using ViajantesTurismo.Admin.Domain.Customers;
 using ViajantesTurismo.Admin.Domain.Documents;
+using ViajantesTurismo.Admin.Infrastructure.Branding;
 using ViajantesTurismo.Admin.Infrastructure.Documents;
 using ViajantesTurismo.Resources;
 using ViajantesTurismo.Admin.Domain.Tours;
@@ -159,6 +161,47 @@ public static class InfrastructureDependencyInjection
                 sp.GetRequiredService<AdminWriteDbContext>(),
                 sp.GetRequiredService<TimeProvider>()));
         }
+
+        return builder;
+    }
+
+    /// <summary>
+    /// Adds the Admin-owned integration-event worker composition: the Branding projection consumer that claims
+    /// Catalog-database transport rows for consumer <c>admin</c> and writes only the Branding projection and inbox.
+    /// </summary>
+    /// <param name="builder">The application builder to configure.</param>
+    /// <typeparam name="TApplicationBuilder">The application builder type.</typeparam>
+    /// <returns>The updated application builder.</returns>
+    public static TApplicationBuilder AddAdminIntegrationEventWorkerInfrastructure<TApplicationBuilder>(this TApplicationBuilder builder)
+        where TApplicationBuilder : IHostApplicationBuilder
+    {
+        ArgumentNullException.ThrowIfNull(builder);
+
+        if (builder.Environment.IsDevelopment())
+        {
+            builder.Services.AddDbContextDevelopmentDiagnostics<AdminWriteDbContext>();
+        }
+
+        builder.AddAdminWriteDbContext();
+        JsonTypeInfo<AdminTourCreatedIntegrationEvent> adminTourCreatedJsonTypeInfo =
+            AdminIntegrationEventJsonContext.Default.AdminTourCreatedIntegrationEvent;
+        builder.Services.AddIntegrationEventContract(
+            AdminTourCreatedIntegrationEvent.EventType,
+            adminTourCreatedJsonTypeInfo);
+        builder.Services.AddDomainEventProcessing();
+        builder.Services.AddIntegrationEventOutbox<AdminWriteDbContext>();
+        builder.Services.AddScoped<IBrandingProjectionStore, EfBrandingProjectionStore>();
+        builder.Services.AddAdminBrandingProjection();
+
+        builder.AddNpgsqlDbContext<AdminBrandingTransportDbContext>(
+            ResourceNames.CatalogDatabase,
+            configureDbContextOptions: options =>
+            {
+                ConfigureNpgsqlTracing(options);
+                builder.Services.ApplyDbContextOptionConfigurations<AdminBrandingTransportDbContext>(options);
+            });
+        builder.Services.AddPostgreSqlIntegrationEventTransportConsumer<AdminBrandingTransportDbContext>(
+            IntegrationEventConsumerNames.Admin);
 
         return builder;
     }
