@@ -12,25 +12,25 @@ public sealed class AccommodationPreferencesValidationSteps(CustomerContext cont
         context.AccommodationPreferences = AccommodationPreferences.Create(
             RoomType.DoubleOccupancy,
             BedType.DoubleBed,
-            CreateDeterministicCompanionId(companionId));
+            CreateDeterministicCompanionId(companionId)).Value;
     }
 
     [When("I create accommodation preferences with single room, single bed, and no companion")]
     public void WhenICreateAccommodationPreferencesWithSingleRoomSingleBedAndNoCompanion()
     {
-        context.AccommodationPreferences = AccommodationPreferences.Create(RoomType.SingleOccupancy, BedType.SingleBed, null);
+        context.AccommodationPreferences = AccommodationPreferences.Create(RoomType.SingleOccupancy, BedType.SingleBed, null).Value;
     }
 
     [When("I create accommodation preferences with single room, double bed, and no companion")]
     public void WhenICreateAccommodationPreferencesWithSingleRoomDoubleBedAndNoCompanion()
     {
-        context.AccommodationPreferences = AccommodationPreferences.Create(RoomType.SingleOccupancy, BedType.DoubleBed, null);
+        context.AccommodationPreferences = AccommodationPreferences.Create(RoomType.SingleOccupancy, BedType.DoubleBed, null).Value;
     }
 
     [When("I create accommodation preferences with double room, double bed, and no companion")]
     public void WhenICreateAccommodationPreferencesWithDoubleRoomDoubleBedAndNoCompanion()
     {
-        context.AccommodationPreferences = AccommodationPreferences.Create(RoomType.DoubleOccupancy, BedType.DoubleBed, null);
+        context.AccommodationPreferences = AccommodationPreferences.Create(RoomType.DoubleOccupancy, BedType.DoubleBed, null).Value;
     }
 
     [When(@"I create accommodation preferences with single room, single bed, and companion ID (\d+)")]
@@ -39,7 +39,7 @@ public sealed class AccommodationPreferencesValidationSteps(CustomerContext cont
         context.AccommodationPreferences = AccommodationPreferences.Create(
             RoomType.SingleOccupancy,
             BedType.SingleBed,
-            CreateDeterministicCompanionId(companionId));
+            CreateDeterministicCompanionId(companionId)).Value;
     }
 
     [Then("the accommodation preferences should be created successfully")]

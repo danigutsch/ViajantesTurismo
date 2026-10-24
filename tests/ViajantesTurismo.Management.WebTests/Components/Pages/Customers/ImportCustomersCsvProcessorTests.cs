@@ -3,6 +3,8 @@ using ViajantesTurismo.Management.Web.Components.Pages.Customers;
 
 namespace ViajantesTurismo.Management.WebTests.Components.Pages.Customers;
 
+[Trait(PandaBear.Testing.TestTraitNames.CategoryName, TestTraits.ComponentCategory)]
+[Trait(PandaBear.Testing.TestTraitNames.ScopeName, TestTraits.UnitScope)]
 public sealed class ImportCustomersCsvProcessorTests
 {
     [Fact]
@@ -50,6 +52,56 @@ public sealed class ImportCustomersCsvProcessorTests
         csvPayload.ShouldContain("\"First,Name\"", StringComparison.Ordinal);
         csvPayload.ShouldContain("\"Value \"\"quoted\"\"", StringComparison.Ordinal);
         csvPayload.ShouldContain("bad@example.com", StringComparison.Ordinal);
+    }
+
+    [Theory]
+    [InlineData("=1+1")]
+    [InlineData("+1+1")]
+    [InlineData("-1+1")]
+    [InlineData("@SUM(1)")]
+    [InlineData("＝1+1")]
+    [InlineData("＋1+1")]
+    [InlineData("－1+1")]
+    [InlineData("＠SUM(1)")]
+    [InlineData(" \t=1+1")]
+    [InlineData("\t=1+1")]
+    [InlineData("\r=1+1")]
+    [InlineData("\n=1+1")]
+    [InlineData("=HYPERLINK(\"https://example.test\",\"click\")")]
+    public void Error_reports_render_untrusted_cells_as_spreadsheet_text(string value)
+    {
+        // Arrange
+        ArgumentNullException.ThrowIfNull(value);
+        ImportErrorRowDto[] errors = [new(4, value, value, value)];
+        var escaped = "\"'" + value.Replace("\"", "\"\"", StringComparison.Ordinal) + "\"";
+
+        // Act
+        var dataUri = ImportCustomersCsvProcessor.BuildErrorReportDataUri(errors);
+
+        // Assert
+        dataUri.ShouldNotBeNull();
+        var payload = Uri.UnescapeDataString(dataUri.Split(',', 2)[1]);
+        payload.ShouldContain($"4,{escaped},{escaped},{escaped}", StringComparison.Ordinal);
+    }
+
+    [Theory]
+    [InlineData("Email", "Email")]
+    [InlineData("a+b@example.com", "a+b@example.com")]
+    [InlineData("A, B", "\"A, B\"")]
+    [InlineData("Text \"quoted\"", "\"Text \"\"quoted\"\"\"")]
+    [InlineData("", "")]
+    public void Error_reports_preserve_ordinary_diagnostic_values(string value, string expectedCell)
+    {
+        // Arrange
+        ImportErrorRowDto[] errors = [new(4, value, value, value)];
+
+        // Act
+        var dataUri = ImportCustomersCsvProcessor.BuildErrorReportDataUri(errors);
+
+        // Assert
+        dataUri.ShouldNotBeNull();
+        var payload = Uri.UnescapeDataString(dataUri.Split(',', 2)[1]);
+        payload.ShouldContain($"4,{expectedCell},{expectedCell},{expectedCell}", StringComparison.Ordinal);
     }
 
     [Fact]

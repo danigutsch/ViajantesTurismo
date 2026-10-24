@@ -4,16 +4,10 @@
   "parent": "RM-303",
   "title": "Evaluate exposed enums in domain models",
   "type": "enabler",
-  "status": "proposed",
-  "order": 402,
+  "status": "done",
+  "triage": "untriaged",
   "theme": "repo-operations",
   "outcome": "GitHub issue #914 is canonically represented from the reconciliation manifest.",
-  "scoring": {
-    "reach": 1,
-    "impact": 1,
-    "confidence": 0.1,
-    "effort": 3
-  },
   "blockedBy": [],
   "blocks": [],
   "dependencies": [],

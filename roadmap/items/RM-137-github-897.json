@@ -5,7 +5,7 @@
   "title": "Add YARP reverse proxy edge gateway",
   "type": "enabler",
   "status": "proposed",
-  "order": 395,
+  "order": 389,
   "theme": "repo-operations",
   "outcome": "GitHub issue #897 is canonically represented from the reconciliation manifest.",
   "scoring": {

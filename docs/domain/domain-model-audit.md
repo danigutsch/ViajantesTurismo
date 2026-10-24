@@ -44,6 +44,7 @@ Management Web code that calls them. This is a dated evidence record for the rul
 | A10 | `src/ViajantesTurismo.Management.Web/Components/Pages/Tours/Index.razor:51,66` | Recomputes `IsFullyBooked` and available spots because the read DTO does not carry the domain facts | DDD005 | Follow-up |
 | A11 | `src/ViajantesTurismo.Management.Web/Components/Pages/Bookings/Edit.razor:350` | Decides booking editability from the raw status DTO | DDD007 | Follow-up |
 | A12 | `src/ViajantesTurismo.Admin.Application/Documents/*CommandHandler.cs` and `GetFinalizedDocumentArtifactHandler.cs:22` | Seven document handlers repeat `document.Type == DocumentType.PaymentInstructions` to route payment-instruction documents to their own workflow | DDD005, DDD007 | Fixed: `RequiresPaymentInstructionWorkflow` on the draft and lineage |
+| A13 | `src/ViajantesTurismo.Admin.Domain/Customers/PhysicalInfo.cs` and `AccommodationPreferences.cs` | Customer preference factories must validate defined enum selections | Always-valid value objects | Fixed: factories return validation failures; domain and import regressions cover invalid selections and valid controls |
 | C1 | `src/ViajantesTurismo.Catalog.Application/Tours/CatalogTourPresentationUpdate.cs` | Holds title, slug, and length rules that `CatalogTour.ChangePresentation` does not enforce | Rules in the domain | Follow-up |
 | C2 | `src/ViajantesTurismo.Catalog.Domain/Tours/CatalogTour.cs:115,166,179,218` | Throws exceptions for expected business outcomes | ADR-002 | Follow-up |
 | C3 | `src/ViajantesTurismo.Catalog.Application/Media/MediaImageOriginalStoredIntegrationHandler.cs:45-66` | Chooses the next media processing status in the handler | Behavior over state | Follow-up |
@@ -65,9 +66,10 @@ No enum analyzer is planned: risky usage is concentrated in a few handlers and i
 
 ## Follow-up work
 
-Track each remaining follow-up (A5, A6, A7, A10, A11, C1, C2, C3) as its own roadmap item before implementation, and
-prove each production gap with a failing test first. C1 and C2 move Catalog presentation rules and publication
-outcomes into `CatalogTour` as `Result` values, which also changes the Catalog service and API error mapping.
+Remaining follow-ups are tracked as roadmap items: A5 is RM-308, A6 and A7 are RM-309, A10 and A11 are
+RM-310, C1 and C2 are RM-311, and C3 is RM-312. Prove each production gap with a failing test first. C1 and C2
+move Catalog presentation rules and publication outcomes into `CatalogTour` as `Result` values, which also
+changes the Catalog service and API error mapping.
 
 ## Related Documentation
 

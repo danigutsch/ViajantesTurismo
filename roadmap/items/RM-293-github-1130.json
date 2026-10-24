@@ -4,7 +4,7 @@
   "title": "test(analyzers): require ActivityListener source identity filtering",
   "type": "enabler",
   "status": "proposed",
-  "order": 442,
+  "order": 432,
   "theme": "repo-operations",
   "outcome": "GitHub issue #1130 is canonically represented from the reconciliation manifest.",
   "scoring": {

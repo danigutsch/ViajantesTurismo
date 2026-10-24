@@ -4,7 +4,7 @@
   "title": "Investigate intermittent customer-import upload readiness",
   "type": "issue",
   "status": "proposed",
-  "order": 444,
+  "order": 434,
   "theme": "repo-operations",
   "outcome": "GitHub issue #1201 is canonically represented from the reconciliation manifest.",
   "scoring": {

@@ -164,6 +164,9 @@ public static class InfrastructureDependencyInjection
         builder.Services.AddSingleton<ICatalogTourSlugLock>(serviceProvider =>
             new PostgreSqlCatalogTourSlugLock(
                 serviceProvider.GetRequiredKeyedService<NpgsqlDataSource>(ResourceNames.CatalogDatabase)));
+        builder.Services.AddSingleton<ICatalogTourMutationLock>(serviceProvider =>
+            new PostgreSqlCatalogTourMutationLock(
+                serviceProvider.GetRequiredKeyedService<NpgsqlDataSource>(ResourceNames.CatalogDatabase)));
         builder.Services.AddDbContextPool<CatalogDbContext>((serviceProvider, options) =>
         {
             options.UseNpgsql(serviceProvider.GetRequiredService<NpgsqlDataSource>());

@@ -1,0 +1,38 @@
+{
+  "$schema": "../schema/roadmap-item.schema.json",
+  "id": "RM-314",
+  "parent": "RM-183",
+  "title": "Establish a privacy-safe PostgreSQL server metrics baseline",
+  "type": "issue",
+  "status": "proposed",
+  "order": 441,
+  "theme": "repo-operations",
+  "outcome": "GitHub issue #1219 is canonically represented from the reconciliation manifest.",
+  "scoring": {
+    "reach": 1,
+    "impact": 1,
+    "confidence": 0.1,
+    "effort": 3
+  },
+  "blockedBy": [],
+  "blocks": [],
+  "dependencies": [],
+  "tags": [],
+  "labels": [
+    "infrastructure",
+    "observability",
+    "testing"
+  ],
+  "sources": [
+    {
+      "kind": "github-issue",
+      "reference": "#1219"
+    }
+  ],
+  "integrations": {
+    "github": {
+      "issue": 1219,
+      "nodeId": "I_kwDOQAEVW88AAAABZk_MlA"
+    }
+  }
+}

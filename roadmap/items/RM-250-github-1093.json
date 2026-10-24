@@ -5,7 +5,7 @@
   "title": "Add secure Catalog media multipart upload endpoint",
   "type": "enabler",
   "status": "proposed",
-  "order": 440,
+  "order": 430,
   "theme": "repo-operations",
   "outcome": "GitHub issue #1093 is canonically represented from the reconciliation manifest.",
   "scoring": {

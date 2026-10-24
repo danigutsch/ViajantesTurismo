@@ -3,6 +3,8 @@ using ViajantesTurismo.Admin.Testing.Fakes;
 
 namespace ViajantesTurismo.Admin.UnitTests.Application.Customers.Import;
 
+[Trait(PandaBear.Testing.TestTraitNames.CategoryName, PandaBear.Testing.TestTraitValues.SecurityCategory)]
+[Trait(PandaBear.Testing.TestTraitNames.ScopeName, "unit")]
 public sealed class CustomerImportCommandHandlerTests
 {
     private readonly FakeUnitOfWork _uow;
@@ -14,6 +16,26 @@ public sealed class CustomerImportCommandHandlerTests
         _uow = new FakeUnitOfWork();
         _fakeCustomerStore = new FakeCustomerStore();
         _sut = new CustomerImportCommandHandler(_fakeCustomerStore, _uow, TimeProvider.System);
+    }
+
+    [Theory]
+    [InlineData("Regular", "999")]
+    [InlineData("DoubleOccupancy", "-1")]
+    [InlineData("SingleBed", "2147483647")]
+    public async Task Handle_does_not_persist_a_row_with_an_undefined_preference(string validSelection, string undefinedSelection)
+    {
+        // Arrange
+        var csv = CsvRows.Build().Replace(validSelection, undefinedSelection, StringComparison.Ordinal);
+        var command = new CustomerImportCommand(csv, DryRun: false);
+
+        // Act
+        var result = await _sut.Handle(command, TestContext.Current.CancellationToken);
+
+        // Assert
+        result.SuccessCount.ShouldBe(0);
+        result.ErrorCount.ShouldBe(1);
+        _fakeCustomerStore.AllCustomers.ShouldBeEmpty();
+        _uow.SaveEntitiesCallCount.ShouldBe(0);
     }
 
     [Fact]

@@ -3,16 +3,10 @@
   "id": "RM-102",
   "title": "Epic: establish threat model and security baseline",
   "type": "epic",
-  "status": "proposed",
-  "order": 490,
+  "status": "done",
+  "triage": "untriaged",
   "theme": "repo-operations",
   "outcome": "GitHub issue #813 is canonically represented from the reconciliation manifest.",
-  "scoring": {
-    "reach": 1,
-    "impact": 1,
-    "confidence": 0.1,
-    "effort": 8
-  },
   "blockedBy": [],
   "blocks": [],
   "dependencies": [],

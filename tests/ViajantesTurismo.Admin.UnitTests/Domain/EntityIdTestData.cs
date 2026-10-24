@@ -43,7 +43,7 @@ internal static class EntityIdTestData
         var accommodation = AccommodationPreferences.Create(
             roomType: RoomType.DoubleOccupancy,
             bedType: BedType.SingleBed,
-            companionId: null);
+            companionId: null).Value;
 
         var emergency = EmergencyContact.Create(
             name: "Emergency Contact",

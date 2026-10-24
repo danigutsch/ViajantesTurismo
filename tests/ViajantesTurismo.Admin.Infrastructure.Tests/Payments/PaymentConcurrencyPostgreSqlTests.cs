@@ -11,6 +11,45 @@ namespace ViajantesTurismo.Admin.Infrastructure.Tests.Payments;
 public sealed class PaymentConcurrencyPostgreSqlTests(PostgreSqlTestServerFixture fixture)
 {
     [Fact]
+    public async Task Concurrent_receipts_from_the_same_financial_revision_commit_only_one_mutation()
+    {
+        // Arrange
+        var ct = TestContext.Current.CancellationToken;
+        await using var scenario = await PostgreSqlPaymentScenario.Create(fixture, ct);
+        var source = await scenario.SeedCustomerCredit(ct);
+        await using var first = scenario.Open();
+        await using var second = scenario.Open();
+        var history = await first.Financials.GetByBookingId(source.BookingId, ct);
+        history.ShouldNotBeNull();
+        var input = new CreateBookingReceiptDto
+        {
+            ExpectedVersion = history.Version,
+            SettlementCurrency = CurrencyDto.Euro,
+            Gross = 100m,
+            Fees = 0m,
+            PaymentDate = new DateOnly(2030, 1, 5),
+            SettledAt = scenario.Clock.GetUtcNow(),
+            Method = PaymentMethodDto.BankTransfer,
+            Reference = "receipt-race",
+            ProposedAllocations = [new InstallmentAllocationDto { TargetId = source.InstallmentId, EuroAmount = 100m }]
+        };
+        var one = new RecordBookingReceiptCommand(source.BookingId, input, "first", "record-first");
+        var two = new RecordBookingReceiptCommand(source.BookingId, input, "second", "record-second");
+
+        // Act
+        var results = await Task.WhenAll(first.RecordBookingReceipt.Handle(one, ct), second.RecordBookingReceipt.Handle(two, ct));
+
+        // Assert
+        results.Count(result => result.IsSuccess).ShouldBe(1);
+        results.Count(result => result.IsFailure).ShouldBe(1);
+        var current = await first.Financials.GetByBookingId(source.BookingId, ct);
+        current.ShouldNotBeNull();
+        current.Version.ShouldBe(history.Version + 1);
+        current.Receipts.Count.ShouldBe(history.Receipts.Count + 1);
+        current.OutstandingEuro.ShouldBe(history.OutstandingEuro);
+    }
+
+    [Fact]
     public async Task Concurrent_duplicate_commands_commit_one_encrypted_account_and_one_audit()
     {
         // Arrange

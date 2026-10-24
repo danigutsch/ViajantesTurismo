@@ -66,6 +66,14 @@ internal static class CatalogApiTestHost
         return Create(null, null, null, mediaStore, objectStore, imageTextGenerator);
     }
 
+    public static WebApplicationFactory<CatalogApiHostEntryPoint> Create(
+        TestCatalogTourReadModelStore tourStore,
+        TestPublicMediaImageStore mediaStore,
+        TestEventStore eventStore)
+    {
+        return Create(null, tourStore, null, mediaStore, null, null, eventStore: eventStore);
+    }
+
     public static WebApplicationFactory<CatalogApiHostEntryPoint> CreateAnonymous()
     {
         return Create(null, null, null, null, null, null, authenticateClient: false);
@@ -178,6 +186,7 @@ internal static class CatalogApiTestHost
                 services.Replace(ServiceDescriptor.Singleton<ICatalogTourReadModelStore>(configuredTourStore));
                 services.Replace(ServiceDescriptor.Singleton<IEventStore>(configuredEventStore));
                 services.Replace(ServiceDescriptor.Singleton<ICatalogTourSlugLock>(new TestCatalogTourSlugLock()));
+                services.Replace(ServiceDescriptor.Singleton<ICatalogTourMutationLock>(new TestCatalogTourMutationLock()));
                 services.Replace(ServiceDescriptor.Singleton<IPublicMediaImageStore>(mediaStore ?? new TestPublicMediaImageStore()));
                 services.Replace(ServiceDescriptor.Singleton<IMediaObjectStore>(objectStore ?? new TestMediaObjectStore()));
                 services.Replace(ServiceDescriptor.Singleton<IIntegrationEventOutbox, TestIntegrationEventOutbox>());

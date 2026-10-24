@@ -1,0 +1,38 @@
+{
+  "$schema": "../schema/roadmap-item.schema.json",
+  "id": "RM-318",
+  "parent": "RM-044",
+  "title": "Migrate Public Web into feature-owned slices",
+  "type": "issue",
+  "status": "proposed",
+  "order": 445,
+  "theme": "repo-operations",
+  "outcome": "GitHub issue #1223 is canonically represented from the reconciliation manifest.",
+  "scoring": {
+    "reach": 1,
+    "impact": 1,
+    "confidence": 0.1,
+    "effort": 3
+  },
+  "blockedBy": [],
+  "blocks": [],
+  "dependencies": [],
+  "tags": [],
+  "labels": [
+    "architecture",
+    "public-web",
+    "testing"
+  ],
+  "sources": [
+    {
+      "kind": "github-issue",
+      "reference": "#1223"
+    }
+  ],
+  "integrations": {
+    "github": {
+      "issue": 1223,
+      "nodeId": "I_kwDOQAEVW88AAAABZk_QVg"
+    }
+  }
+}
