@@ -121,6 +121,12 @@ public sealed record GetBookingDto
         get; init;
     }
 
+    /// <summary>Whether the booking can be removed from its tour, as decided by the booking.</summary>
+    public bool CanBeRemoved
+    {
+        get; init;
+    }
+
     /// <summary>The payment status.</summary>
     public required PaymentStatusDto PaymentStatus
     {

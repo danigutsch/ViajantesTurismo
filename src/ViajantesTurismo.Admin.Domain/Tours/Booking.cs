@@ -229,6 +229,12 @@ public sealed partial class Booking : IEntity<Guid>
     /// <summary>Gets whether cancelling the booking would change its status; pending and confirmed bookings qualify.</summary>
     public bool CanBeCancelled => Status is BookingStatus.Pending or BookingStatus.Confirmed;
 
+    /// <summary>
+    /// Gets whether the booking can be removed from its tour; only a pending booking without financial
+    /// history qualifies.
+    /// </summary>
+    public bool CanBeRemoved => IsPending && !HasFinancialHistory;
+
     private static decimal CalculateSubtotal(
         decimal basePrice,
         decimal roomAdditionalCost,

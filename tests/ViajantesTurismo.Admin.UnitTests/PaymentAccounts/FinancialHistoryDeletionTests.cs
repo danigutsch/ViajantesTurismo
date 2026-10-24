@@ -26,6 +26,22 @@ public sealed class FinancialHistoryDeletionTests
     }
 
     [Fact]
+    public void Pending_booking_with_receipts_reports_that_it_cannot_be_removed()
+    {
+        // Arrange
+        var scenario = new PaymentScenario();
+        var installment = scenario.ApproveSchedule();
+        scenario.RecordReceipt(1m, 0m, installment);
+
+        // Act
+        var canBeRemoved = scenario.Booking.CanBeRemoved;
+
+        // Assert
+        scenario.Booking.IsPending.ShouldBeTrue();
+        canBeRemoved.ShouldBeFalse();
+    }
+
+    [Fact]
     public void Parent_tour_with_a_cancelled_booking_receipt_cannot_be_deleted()
     {
         // Arrange

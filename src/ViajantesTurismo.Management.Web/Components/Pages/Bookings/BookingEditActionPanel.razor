@@ -34,9 +34,12 @@
                 </button>
             }
 
-            <button type="button" class="btn btn-danger" @onclick="OnDelete" disabled="@IsSubmitting">
-                <i class="bi bi-trash"></i> Delete Booking
-            </button>
+            @if (Booking.CanBeRemoved)
+            {
+                <button type="button" class="btn btn-danger" @onclick="OnDelete" disabled="@IsSubmitting">
+                    <i class="bi bi-trash"></i> Delete Booking
+                </button>
+            }
         </div>
         <div class="form-text mt-2">These actions will take effect immediately.</div>
     </div>

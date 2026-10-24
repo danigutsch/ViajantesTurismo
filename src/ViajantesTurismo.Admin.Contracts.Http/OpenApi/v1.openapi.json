@@ -6028,6 +6028,9 @@
           "canBeCancelled": {
             "type": "boolean"
           },
+          "canBeRemoved": {
+            "type": "boolean"
+          },
           "paymentStatus": {
             "$ref": "#/components/schemas/PaymentStatusDto"
           },
