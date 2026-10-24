@@ -115,6 +115,7 @@ public static class InfrastructureDependencyInjection
         builder.Services.AddScoped<ICustomerStore, CustomerStore>();
         builder.Services.AddScoped<IDocumentStore, DocumentStore>();
         builder.Services.AddScoped<IDocumentAuditStore, DocumentAuditStore>();
+        builder.Services.AddScoped<IBrandingProjectionStore, EfBrandingProjectionStore>();
         JsonTypeInfo<AdminTourCreatedIntegrationEvent> adminTourCreatedJsonTypeInfo =
             AdminIntegrationEventJsonContext.Default.AdminTourCreatedIntegrationEvent;
         builder.Services.AddIntegrationEventContract(

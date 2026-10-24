@@ -47,7 +47,10 @@ internal static class ContractDocumentDraftFactory
             branding.TextColor,
             branding.HeadingFontFamily,
             branding.BodyFontFamily,
-            branding.FooterText));
+            branding.FooterText)
+        {
+            BrandingSourceRevision = branding.SourceRevision
+        });
     }
 
     private static Result<IReadOnlyList<DocumentField>> CreateFields(GetBookingDto booking, GetTourDto tour)

@@ -29,6 +29,7 @@ internal static class DocumentEndpoints
             .ProducesValidationProblem(StatusCodes.Status400BadRequest)
             .Produces<ProblemDetails>(StatusCodes.Status404NotFound)
             .Produces<ProblemDetails>(StatusCodes.Status409Conflict)
+            .ProducesProblem(StatusCodes.Status503ServiceUnavailable)
             .WithAdminMetadata("GenerateDocumentContractDraft", "Generates the server-selected contract draft for an eligible booking.", "Generates a contract draft.");
 
         documentsGroup.MapGet("/{id:guid}", GetDocumentById)
@@ -85,6 +86,7 @@ internal static class DocumentEndpoints
             .ProducesValidationProblem(StatusCodes.Status400BadRequest)
             .Produces<ProblemDetails>(StatusCodes.Status404NotFound)
             .Produces<ProblemDetails>(StatusCodes.Status409Conflict)
+            .ProducesProblem(StatusCodes.Status503ServiceUnavailable)
             .WithAdminMetadata("RegenerateDocument", "Creates a replacement document revision from current source data.", "Regenerates a document.");
 
         documentsGroup.MapPost("/{id:guid}/void", Void)
@@ -514,6 +516,7 @@ internal static class DocumentEndpoints
         ResultStatus.NotFound => DocumentAuditReasonCode.DocumentNotFound,
         ResultStatus.Conflict => DocumentAuditReasonCode.ArtifactUnavailable,
         ResultStatus.Invalid => DocumentAuditReasonCode.ValidationRejected,
+        ResultStatus.Unavailable => DocumentAuditReasonCode.BrandingUnavailable,
         _ => DocumentAuditReasonCode.None
     };
 
@@ -522,6 +525,7 @@ internal static class DocumentEndpoints
         ResultStatus.NotFound => result.ToNotFound(),
         ResultStatus.Conflict => result.ToConflict(),
         ResultStatus.Invalid => result.ToValidationProblem(),
+        ResultStatus.Unavailable => TypedResults.Problem(result.ErrorDetails?.Detail, statusCode: StatusCodes.Status503ServiceUnavailable),
         _ => TypedResults.Problem("The document operation could not be completed.", statusCode: StatusCodes.Status500InternalServerError)
     };
 }

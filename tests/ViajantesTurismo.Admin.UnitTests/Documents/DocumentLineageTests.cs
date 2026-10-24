@@ -76,6 +76,97 @@ public sealed class DocumentLineageTests
     }
 
     [Fact]
+    public void Create_records_the_captured_branding_source_revision()
+    {
+        // Arrange
+        var content = DocumentLineageTestData.CreateContent() with
+        {
+            BrandingSourceRevision = 42
+        };
+
+        // Act
+        var result = DocumentLineage.Create(
+            Guid.CreateVersion7(),
+            DocumentType.BookingConfirmationContract,
+            DocumentAudience.Customer,
+            content,
+            new DateTime(2026, 7, 20, 0, 0, 0, DateTimeKind.Utc),
+            DocumentAuditTestData.CreateContext());
+
+        // Assert
+        result.IsSuccess.ShouldBeTrue();
+        result.Value.Revisions.ShouldHaveSingleItem().BrandingSourceRevision.ShouldBe(42);
+    }
+
+    [Fact]
+    public void Create_keeps_an_unknown_branding_source_revision_null()
+    {
+        // Arrange
+        var content = DocumentLineageTestData.CreateContent();
+
+        // Act
+        var result = DocumentLineage.Create(
+            Guid.CreateVersion7(),
+            DocumentType.BookingConfirmationContract,
+            DocumentAudience.Customer,
+            content,
+            new DateTime(2026, 7, 20, 0, 0, 0, DateTimeKind.Utc),
+            DocumentAuditTestData.CreateContext());
+
+        // Assert
+        result.IsSuccess.ShouldBeTrue();
+        result.Value.Revisions.ShouldHaveSingleItem().BrandingSourceRevision.ShouldBeNull();
+    }
+
+    [Theory]
+    [InlineData(0L)]
+    [InlineData(-1L)]
+    public void Create_rejects_a_non_positive_branding_source_revision(long revision)
+    {
+        // Arrange
+        var content = DocumentLineageTestData.CreateContent() with
+        {
+            BrandingSourceRevision = revision
+        };
+
+        // Act
+        var result = DocumentLineage.Create(
+            Guid.CreateVersion7(),
+            DocumentType.BookingConfirmationContract,
+            DocumentAudience.Customer,
+            content,
+            new DateTime(2026, 7, 20, 0, 0, 0, DateTimeKind.Utc),
+            DocumentAuditTestData.CreateContext());
+
+        // Assert
+        result.Status.ShouldBe(ResultStatus.Invalid);
+    }
+
+    [Fact]
+    public void CreateRevision_records_the_branding_source_revision_of_the_new_capture()
+    {
+        // Arrange
+        var now = new DateTime(2026, 7, 20, 0, 0, 0, DateTimeKind.Utc);
+        var lineage = DocumentLineageTestData.Create(now: now);
+        var previous = lineage.Revisions.ShouldHaveSingleItem();
+
+        // Act
+        var result = lineage.CreateRevision(
+            previous.Id,
+            DocumentLineageTestData.CreateContent("2") with
+            {
+                BrandingSourceRevision = 7
+            },
+            now.AddMinutes(1),
+            DocumentAuditTestData.CreateContext());
+
+        // Assert
+        result.IsSuccess.ShouldBeTrue();
+        result.Value.BrandingSourceRevision.ShouldBe(7);
+        previous.BrandingSourceRevision.ShouldBeNull();
+    }
+
+    [Fact]
     public void CreateRevision_emits_regenerate_event_and_increments_version_once()
     {
         // Arrange

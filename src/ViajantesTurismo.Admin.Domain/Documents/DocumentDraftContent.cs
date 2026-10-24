@@ -29,4 +29,14 @@ public sealed record DocumentDraftContent(
     string BrandingTextColor,
     string BrandingHeadingFontFamily,
     string BrandingBodyFontFamily,
-    string BrandingFooterText);
+    string BrandingFooterText)
+{
+    /// <summary>
+    /// Gets the Branding source revision the snapshot was captured from, or <see langword="null" /> when the
+    /// capture path could not attribute it to a revision.
+    /// </summary>
+    public long? BrandingSourceRevision
+    {
+        get; init;
+    }
+}

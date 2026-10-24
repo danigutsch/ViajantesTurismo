@@ -121,6 +121,15 @@ public sealed class DocumentDraft : IEntity<Guid>
     /// <summary>Gets the immutable captured branding version.</summary>
     public string BrandingVersion { get; private init; } = default!;
 
+    /// <summary>
+    /// Gets the Branding source revision of the captured snapshot; <see langword="null" /> for documents captured
+    /// before revision provenance existed or when the capture could not be attributed to a revision.
+    /// </summary>
+    public long? BrandingSourceRevision
+    {
+        get; private set;
+    }
+
     /// <summary>Gets the immutable captured branding display name.</summary>
     public string BrandingName { get; private init; } = default!;
 
@@ -439,6 +448,12 @@ public sealed class DocumentDraft : IEntity<Guid>
         DateTime createdAt)
     {
         ArgumentNullException.ThrowIfNull(content);
+        var revisionValidation = ValidateBrandingSourceRevision(content.BrandingSourceRevision);
+        if (revisionValidation.IsFailure)
+        {
+            return revisionValidation.ConvertError<DocumentDraft>();
+        }
+
         var result = Create(
             bookingId,
             type,
@@ -461,6 +476,7 @@ public sealed class DocumentDraft : IEntity<Guid>
         if (result.IsSuccess)
         {
             result.Value.DocumentLineageId = documentLineageId;
+            result.Value.BrandingSourceRevision = content.BrandingSourceRevision;
         }
 
         return result;
@@ -496,6 +512,12 @@ public sealed class DocumentDraft : IEntity<Guid>
             return validation.ConvertError<DocumentDraft>();
         }
 
+        var revisionValidation = ValidateBrandingSourceRevision(content.BrandingSourceRevision);
+        if (revisionValidation.IsFailure)
+        {
+            return revisionValidation.ConvertError<DocumentDraft>();
+        }
+
         var ownedFields = fieldList
             .Select((field, index) => field.CopyForOwnership(
                 index,
@@ -522,7 +544,10 @@ public sealed class DocumentDraft : IEntity<Guid>
             content.BrandingFooterText,
             createdAt,
             Id,
-            DocumentLineageId));
+            DocumentLineageId)
+        {
+            BrandingSourceRevision = content.BrandingSourceRevision
+        });
     }
 
     /// <summary>Starts or restarts staff review.</summary>
@@ -655,6 +680,11 @@ public sealed class DocumentDraft : IEntity<Guid>
         FinalizedAt is null
         && RetentionExpiresAt is { } retentionExpiresAt
         && retentionExpiresAt <= now;
+
+    private static Result ValidateBrandingSourceRevision(long? brandingSourceRevision) =>
+        brandingSourceRevision is <= 0
+            ? DocumentErrors.InvalidValue("brandingSourceRevision")
+            : Result.Ok();
 
     private static Result Validate(
         Guid bookingId,

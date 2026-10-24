@@ -13,4 +13,5 @@ internal sealed record DocumentBrandingSnapshotValues(
     string TextColor,
     string HeadingFontFamily,
     string BodyFontFamily,
-    string FooterText);
+    string FooterText,
+    long? SourceRevision);

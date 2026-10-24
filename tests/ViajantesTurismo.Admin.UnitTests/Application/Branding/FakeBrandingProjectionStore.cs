@@ -9,7 +9,7 @@ internal sealed class FakeBrandingProjectionStore : IBrandingProjectionStore
 
     public BrandingProjectionState? Current
     {
-        get; private set;
+        get; set;
     }
 
     public List<BrandingInboxEntry> Inbox { get; } = [];
