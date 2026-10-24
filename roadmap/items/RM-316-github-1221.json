@@ -1,0 +1,37 @@
+{
+  "$schema": "../schema/roadmap-item.schema.json",
+  "id": "RM-316",
+  "parent": "RM-162",
+  "title": "Implement deterministic authenticated API/UI reproduction fixtures",
+  "type": "issue",
+  "status": "proposed",
+  "order": 443,
+  "theme": "repo-operations",
+  "outcome": "GitHub issue #1221 is canonically represented from the reconciliation manifest.",
+  "scoring": {
+    "reach": 1,
+    "impact": 1,
+    "confidence": 0.1,
+    "effort": 3
+  },
+  "blockedBy": [],
+  "blocks": [],
+  "dependencies": [],
+  "tags": [],
+  "labels": [
+    "security",
+    "testing"
+  ],
+  "sources": [
+    {
+      "kind": "github-issue",
+      "reference": "#1221"
+    }
+  ],
+  "integrations": {
+    "github": {
+      "issue": 1221,
+      "nodeId": "I_kwDOQAEVW88AAAABZk_Okw"
+    }
+  }
+}

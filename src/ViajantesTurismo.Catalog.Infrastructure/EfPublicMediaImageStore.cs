@@ -64,6 +64,7 @@ internal sealed class EfPublicMediaImageStore(CatalogDbContext dbContext) : IPub
     public async ValueTask<PublicMediaImage?> GetImage(Guid imageId, CancellationToken ct)
     {
         var image = await dbContext.PublicMediaImages
+            .AsNoTracking()
             .Include(current => current.ResponsiveVariants)
             .Include(current => current.TourLinks)
             .Include(current => current.AccessibilityTexts)

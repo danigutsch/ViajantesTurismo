@@ -5,7 +5,7 @@
   "title": "Implement cloud object media storage adapter",
   "type": "issue",
   "status": "proposed",
-  "order": 365,
+  "order": 364,
   "theme": "repo-operations",
   "outcome": "GitHub issue #524 is canonically represented from the reconciliation manifest.",
   "scoring": {

@@ -3,8 +3,32 @@ using ViajantesTurismo.Admin.Domain.Shared;
 
 namespace ViajantesTurismo.Admin.UnitTests.Application.Customers.Import;
 
+[Trait(PandaBear.Testing.TestTraitNames.CategoryName, PandaBear.Testing.TestTraitValues.SecurityCategory)]
+[Trait(PandaBear.Testing.TestTraitNames.ScopeName, "unit")]
 public class RowToCustomerMapperTests
 {
+    [Theory]
+    [InlineData("BikeType", "999")]
+    [InlineData("BikeType", "-1")]
+    [InlineData("RoomType", "999")]
+    [InlineData("RoomType", "-1")]
+    [InlineData("BedType", "999")]
+    [InlineData("BedType", "-1")]
+    public void MapCustomer_rejects_undefined_numeric_enum_values(string field, string value)
+    {
+        // Arrange
+        var (document, row) = MappingInputs.Create(overrides: new Dictionary<string, string> { [field] = value });
+
+        // Act
+        var result = RowToCustomerMapper.MapCustomer(document, row, new DateOnly(2030, 1, 1));
+
+        // Assert
+        result.IsFailure.ShouldBeTrue();
+        result.ErrorDetails.ShouldNotBeNull();
+        result.ErrorDetails.ValidationErrors.ShouldNotBeNull();
+        result.ErrorDetails.ValidationErrors.ContainsKey(field).ShouldBeTrue();
+    }
+
     private const string MultipleValidationErrorsDetailMessage = "Multiple validation errors occurred.";
     [Fact]
     public void MapCustomer_when_row_contains_all_supported_columns_returns_customer()

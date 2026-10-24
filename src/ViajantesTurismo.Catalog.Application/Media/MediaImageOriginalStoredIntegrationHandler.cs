@@ -4,6 +4,7 @@ using PandaBear.ImageProcessing;
 using PandaBear.Messaging.IntegrationEvents;
 using ViajantesTurismo.Catalog.Contracts.IntegrationEvents.Media;
 using ViajantesTurismo.Catalog.Domain.Media;
+using ViajantesTurismo.Catalog.Application.Tours;
 
 namespace ViajantesTurismo.Catalog.Application.Media;
 
@@ -12,7 +13,8 @@ namespace ViajantesTurismo.Catalog.Application.Media;
 /// </summary>
 public sealed class MediaImageOriginalStoredIntegrationHandler(
     IMediaObjectStore objectStore,
-    IPublicMediaImageStore imageStore) : IIntegrationEventHandler<MediaImageOriginalStoredIntegrationEvent>
+    IPublicMediaImageStore imageStore,
+    ICatalogTourMutationLock mutationLock) : IIntegrationEventHandler<MediaImageOriginalStoredIntegrationEvent>
 {
     private static readonly ImageProcessingLimits Limits = ImageProcessingLimits.WebDefault;
 
@@ -23,6 +25,10 @@ public sealed class MediaImageOriginalStoredIntegrationHandler(
         ArgumentException.ThrowIfNullOrWhiteSpace(notification.SourceObjectKey);
 
         var image = await imageStore.GetImage(notification.MediaImageId, ct).ConfigureAwait(false)
+            ?? throw new InvalidOperationException("Media image metadata must exist before processing starts.");
+
+        await using var mutationLease = await mutationLock.Acquire(image.TourLinks.Select(link => link.CatalogTourId).ToArray(), ct).ConfigureAwait(false);
+        image = await imageStore.GetImage(notification.MediaImageId, ct).ConfigureAwait(false)
             ?? throw new InvalidOperationException("Media image metadata must exist before processing starts.");
 
         if (!image.ShouldProcessOriginal(notification.ProcessingVersion))

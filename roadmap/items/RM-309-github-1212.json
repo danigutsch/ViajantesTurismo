@@ -4,7 +4,7 @@
   "title": "Give Customer a Result factory and an atomic revision method (audit A6, A7)",
   "type": "enabler",
   "status": "proposed",
-  "order": 438,
+  "order": 436,
   "theme": "repo-operations",
   "outcome": "GitHub issue #1212 is canonically represented from the reconciliation manifest.",
   "scoring": {

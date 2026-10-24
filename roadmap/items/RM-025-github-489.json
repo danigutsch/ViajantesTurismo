@@ -5,7 +5,7 @@
   "title": "Migrate retained frontend HTTP clients to explicit outcomes",
   "type": "feature",
   "status": "proposed",
-  "order": 442,
+  "order": 449,
   "theme": "repo-operations",
   "outcome": "GitHub issue #489 is canonically represented from the reconciliation manifest.",
   "scoring": {

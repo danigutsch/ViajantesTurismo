@@ -4,7 +4,7 @@
   "title": "Move contract draft eligibility into the domain (audit A5)",
   "type": "enabler",
   "status": "proposed",
-  "order": 437,
+  "order": 435,
   "theme": "repo-operations",
   "outcome": "GitHub issue #1211 is canonically represented from the reconciliation manifest.",
   "scoring": {

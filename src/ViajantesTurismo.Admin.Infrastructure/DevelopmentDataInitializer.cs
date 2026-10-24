@@ -69,7 +69,7 @@ public sealed class DevelopmentDataInitializer
             ContactInfo.Create("alice@example.com", "+5511999999999", "@alice", "alice.fb").Value,
             Address.Create("Rua A, 123", "Apt 1", "Centro", "01234-567", "São Paulo", "SP", "Brazil").Value,
             PhysicalInfo.Create(60, 165, BikeType.Regular).Value,
-            AccommodationPreferences.Create(RoomType.DoubleOccupancy, BedType.SingleBed, null),
+            AccommodationPreferences.Create(RoomType.DoubleOccupancy, BedType.SingleBed, null).Value,
             EmergencyContact.Create("Bob Smith", "+5511988888888").Value,
             MedicalInfo.Create("Peanuts", null).Value
         ),
@@ -79,7 +79,7 @@ public sealed class DevelopmentDataInitializer
             ContactInfo.Create("bob@example.com", "+15551234567", null, "bob.johnson").Value,
             Address.Create("456 Elm St", null, "Manhattan", "10001", "New York", "NY", "USA").Value,
             PhysicalInfo.Create(75, 180, BikeType.EBike).Value,
-            AccommodationPreferences.Create(RoomType.SingleOccupancy, BedType.DoubleBed, null),
+            AccommodationPreferences.Create(RoomType.SingleOccupancy, BedType.DoubleBed, null).Value,
             EmergencyContact.Create("Jane Johnson", "+15559876543").Value,
             MedicalInfo.Create(null, null).Value
         ),
@@ -89,7 +89,7 @@ public sealed class DevelopmentDataInitializer
             ContactInfo.Create("carla@example.com", "+351912345678", "@carla_santos", null).Value,
             Address.Create("Rua B, 456", null, "Alfama", "1100-001", "Lisbon", "Lisbon", "Portugal").Value,
             PhysicalInfo.Create(55, 160, BikeType.Regular).Value,
-            AccommodationPreferences.Create(RoomType.DoubleOccupancy, BedType.SingleBed, null),
+            AccommodationPreferences.Create(RoomType.DoubleOccupancy, BedType.SingleBed, null).Value,
             EmergencyContact.Create("Pedro Santos", "+351987654321").Value,
             MedicalInfo.Create("Shellfish", null).Value
         ),
@@ -99,7 +99,7 @@ public sealed class DevelopmentDataInitializer
             ContactInfo.Create("david@example.com", "+821012345678", null, "david.lee").Value,
             Address.Create("Gangnam-daero 789", null, "Gangnam-gu", "06234", "Seoul", "Seoul", "South Korea").Value,
             PhysicalInfo.Create(70, 175, BikeType.EBike).Value,
-            AccommodationPreferences.Create(RoomType.SingleOccupancy, BedType.DoubleBed, null),
+            AccommodationPreferences.Create(RoomType.SingleOccupancy, BedType.DoubleBed, null).Value,
             EmergencyContact.Create("Sarah Lee", "+821098765432").Value,
             MedicalInfo.Create("Dairy", null).Value
         ),
@@ -109,7 +109,7 @@ public sealed class DevelopmentDataInitializer
             ContactInfo.Create("elena@example.com", "+34612345678", "@elena_art", null).Value,
             Address.Create("Calle C, 789", "Piso 2", "Centro", "28001", "Madrid", "Madrid", "Spain").Value,
             PhysicalInfo.Create(58, 168, BikeType.EBike).Value,
-            AccommodationPreferences.Create(RoomType.DoubleOccupancy, BedType.SingleBed, null),
+            AccommodationPreferences.Create(RoomType.DoubleOccupancy, BedType.SingleBed, null).Value,
             EmergencyContact.Create("Miguel Rodriguez", "+34698765432").Value,
             MedicalInfo.Create("Pollen", null).Value
         ),
@@ -119,7 +119,7 @@ public sealed class DevelopmentDataInitializer
             ContactInfo.Create("frank@example.com", "+491512345678", null, "frank.muller").Value,
             Address.Create("Hauptstr. 101", null, "Mitte", "10117", "Berlin", "Berlin", "Germany").Value,
             PhysicalInfo.Create(80, 185, BikeType.Regular).Value,
-            AccommodationPreferences.Create(RoomType.SingleOccupancy, BedType.DoubleBed, null),
+            AccommodationPreferences.Create(RoomType.SingleOccupancy, BedType.DoubleBed, null).Value,
             EmergencyContact.Create("Anna Muller", "+491598765432").Value,
             MedicalInfo.Create(null, null).Value
         ),
@@ -129,7 +129,7 @@ public sealed class DevelopmentDataInitializer
             ContactInfo.Create("gina@example.com", "+919876543210", "@gina_patel", null).Value,
             Address.Create("MG Road, 202", null, "Bandra", "400050", "Mumbai", "Maharashtra", "India").Value,
             PhysicalInfo.Create(62, 162, BikeType.Regular).Value,
-            AccommodationPreferences.Create(RoomType.DoubleOccupancy, BedType.SingleBed, null),
+            AccommodationPreferences.Create(RoomType.DoubleOccupancy, BedType.SingleBed, null).Value,
             EmergencyContact.Create("Raj Patel", "+919876543211").Value,
             MedicalInfo.Create("Nuts", null).Value
         ),
@@ -139,7 +139,7 @@ public sealed class DevelopmentDataInitializer
             ContactInfo.Create("hans@example.com", "+4520123456", null, "hans.nielsen").Value,
             Address.Create("Vesterbrogade 303", null, "Vesterbro", "1620", "Copenhagen", "Capital Region", "Denmark").Value,
             PhysicalInfo.Create(68, 178, BikeType.EBike).Value,
-            AccommodationPreferences.Create(RoomType.SingleOccupancy, BedType.DoubleBed, null),
+            AccommodationPreferences.Create(RoomType.SingleOccupancy, BedType.DoubleBed, null).Value,
             EmergencyContact.Create("Lise Nielsen", "+4520987654").Value,
             MedicalInfo.Create("Gluten", null).Value
         ),
@@ -149,7 +149,7 @@ public sealed class DevelopmentDataInitializer
             ContactInfo.Create("irina@example.com", "+79123456789", "@irina_petrov", null).Value,
             Address.Create("Tverskaya Ulitsa, 404", null, "Tverskoy", "125009", "Moscow", "Moscow", "Russia").Value,
             PhysicalInfo.Create(56, 170, BikeType.Regular).Value,
-            AccommodationPreferences.Create(RoomType.DoubleOccupancy, BedType.SingleBed, null),
+            AccommodationPreferences.Create(RoomType.DoubleOccupancy, BedType.SingleBed, null).Value,
             EmergencyContact.Create("Alex Petrov", "+79234567890").Value,
             MedicalInfo.Create(null, null).Value
         ),
@@ -159,7 +159,7 @@ public sealed class DevelopmentDataInitializer
             ContactInfo.Create("jack@example.com", "+61412345678", null, "jack.brown").Value,
             Address.Create("Collins Street, 505", null, "CBD", "3000", "Melbourne", "Victoria", "Australia").Value,
             PhysicalInfo.Create(72, 182, BikeType.Regular).Value,
-            AccommodationPreferences.Create(RoomType.SingleOccupancy, BedType.DoubleBed, null),
+            AccommodationPreferences.Create(RoomType.SingleOccupancy, BedType.DoubleBed, null).Value,
             EmergencyContact.Create("Emma Brown", "+61498765432").Value,
             MedicalInfo.Create("Seafood", null).Value
         ),
@@ -169,7 +169,7 @@ public sealed class DevelopmentDataInitializer
             ContactInfo.Create("karen@example.com", "+81901234567", "@karen_tanaka", null).Value,
             Address.Create("Shibuya 1-2-3", null, "Shibuya-ku", "150-0002", "Tokyo", "Tokyo", "Japan").Value,
             PhysicalInfo.Create(52, 158, BikeType.Regular).Value,
-            AccommodationPreferences.Create(RoomType.DoubleOccupancy, BedType.SingleBed, null),
+            AccommodationPreferences.Create(RoomType.DoubleOccupancy, BedType.SingleBed, null).Value,
             EmergencyContact.Create("Yuki Tanaka", "+81909876543").Value,
             MedicalInfo.Create(null, null).Value
         ),
@@ -179,7 +179,7 @@ public sealed class DevelopmentDataInitializer
             ContactInfo.Create("leo@example.com", "+5521999887766", null, "leo.costa").Value,
             Address.Create("Av. Paulista, 1000", "Sala 10", "Bela Vista", "01310-100", "São Paulo", "SP", "Brazil").Value,
             PhysicalInfo.Create(78, 176, BikeType.EBike).Value,
-            AccommodationPreferences.Create(RoomType.SingleOccupancy, BedType.DoubleBed, null),
+            AccommodationPreferences.Create(RoomType.SingleOccupancy, BedType.DoubleBed, null).Value,
             EmergencyContact.Create("Ana Costa", "+5521988776655").Value,
             MedicalInfo.Create("Latex", null).Value
         ),
@@ -189,7 +189,7 @@ public sealed class DevelopmentDataInitializer
             ContactInfo.Create("maria@example.com", "+521234567890", "@maria_g", null).Value,
             Address.Create("Reforma 222", null, "Juárez", "06600", "Mexico City", "CDMX", "Mexico").Value,
             PhysicalInfo.Create(60, 163, BikeType.Regular).Value,
-            AccommodationPreferences.Create(RoomType.DoubleOccupancy, BedType.SingleBed, null),
+            AccommodationPreferences.Create(RoomType.DoubleOccupancy, BedType.SingleBed, null).Value,
             EmergencyContact.Create("Carlos Gonzalez", "+521987654321").Value,
             MedicalInfo.Create("Penicillin", null).Value
         ),
@@ -199,7 +199,7 @@ public sealed class DevelopmentDataInitializer
             ContactInfo.Create("nora@example.com", "+46701234567", null, "nora.eriksson").Value,
             Address.Create("Kungsgatan 44", null, "Norrmalm", "111 35", "Stockholm", "Stockholm", "Sweden").Value,
             PhysicalInfo.Create(64, 172, BikeType.EBike).Value,
-            AccommodationPreferences.Create(RoomType.SingleOccupancy, BedType.DoubleBed, null),
+            AccommodationPreferences.Create(RoomType.SingleOccupancy, BedType.DoubleBed, null).Value,
             EmergencyContact.Create("Erik Eriksson", "+46709876543").Value,
             MedicalInfo.Create(null, null).Value
         ),
@@ -209,7 +209,7 @@ public sealed class DevelopmentDataInitializer
             ContactInfo.Create("oscar@example.com", "+43664123456", "@oscar_music", null).Value,
             Address.Create("Mariahilfer Straße, 88", null, "Mariahilf", "1060", "Vienna", "Vienna", "Austria").Value,
             PhysicalInfo.Create(74, 179, BikeType.Regular).Value,
-            AccommodationPreferences.Create(RoomType.DoubleOccupancy, BedType.SingleBed, null),
+            AccommodationPreferences.Create(RoomType.DoubleOccupancy, BedType.SingleBed, null).Value,
             EmergencyContact.Create("Sabine Fischer", "+43664987654").Value,
             MedicalInfo.Create("Aspirin", null).Value
         )

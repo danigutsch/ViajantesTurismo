@@ -1,3 +1,4 @@
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Http.Resilience;
 using PandaBear.Branding;
 using PandaBear.Testing.AspNetCore;
@@ -13,15 +14,25 @@ internal sealed class PublicCatalogProxyTestScope : IAsyncDisposable
     private readonly TestCatalogTourReadModelStore tours = new();
     private readonly TestPublicMediaImageStore media = new();
     private readonly TestMediaObjectStore objects = new();
+    private readonly WebApplicationFactory<CatalogApiHostEntryPoint> catalogRoot;
     private readonly WebApplicationFactory<CatalogApiHostEntryPoint> catalog;
     private readonly List<WebApplicationFactory<App>> frontends = [];
     private readonly bool sensitiveCircuitBreaker;
+    private readonly IReadOnlyDictionary<string, string?>? frontendConfiguration;
     private int catalogRequestCount;
 
-    public PublicCatalogProxyTestScope(bool sensitiveCircuitBreaker = false)
+    public PublicCatalogProxyTestScope(
+        bool sensitiveCircuitBreaker = false,
+        IReadOnlyDictionary<string, string?>? frontendConfiguration = null,
+        IReadOnlyDictionary<string, string?>? catalogConfiguration = null)
     {
         this.sensitiveCircuitBreaker = sensitiveCircuitBreaker;
-        catalog = CatalogApiTestHost.Create(tours, media, objects);
+        this.frontendConfiguration = frontendConfiguration;
+        catalogRoot = CatalogApiTestHost.Create(tours, media, objects);
+        catalog = catalogConfiguration is null
+            ? catalogRoot
+            : catalogRoot.WithWebHostBuilder(builder => builder.ConfigureAppConfiguration(
+                (_, configuration) => configuration.AddInMemoryCollection(catalogConfiguration)));
     }
 
     public int CatalogRequestCount => Volatile.Read(ref catalogRequestCount);
@@ -83,11 +94,14 @@ internal sealed class PublicCatalogProxyTestScope : IAsyncDisposable
             await frontend.DisposeAsync();
         }
 
-        await catalog.DisposeAsync();
+        await catalogRoot.DisposeAsync();
     }
 
     private WebApplicationFactory<App> CreateFrontend()
     {
+        var configuration = frontendConfiguration?.ToDictionary(static pair => pair.Key, static pair => pair.Value) ?? [];
+        configuration["PublicWeb:Sitemap:CanonicalOrigin"] = "https://public.test";
+
         return WebApplicationTestHost.Create<App>(
             "Development",
             services =>
@@ -109,10 +123,7 @@ internal sealed class PublicCatalogProxyTestScope : IAsyncDisposable
                     }
                 });
             },
-            configuration: new Dictionary<string, string?>
-            {
-                ["PublicWeb:Sitemap:CanonicalOrigin"] = "https://public.test"
-            });
+            configuration: configuration);
     }
 
     private HttpMessageHandler CreateCatalogHandler(IPAddress peerAddress)

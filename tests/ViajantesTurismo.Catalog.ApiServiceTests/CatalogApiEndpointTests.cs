@@ -44,9 +44,9 @@ public sealed class CatalogApiEndpointTests
     [InlineData("UpsertTourPresentation", typeof(Task<Results<Ok<CatalogTourDto>, Accepted, BadRequest, ValidationProblem, NotFound, ProblemHttpResult>>))]
     [InlineData("PublishTour", typeof(Task<Results<NoContent, Accepted, BadRequest, ValidationProblem, NotFound, ProblemHttpResult>>))]
     [InlineData("UnpublishTour", typeof(Task<Results<NoContent, Accepted, BadRequest, ValidationProblem, NotFound, ProblemHttpResult>>))]
-    [InlineData("UploadTourImage", typeof(Task<Results<Created<CatalogMediaImageDto>, BadRequest, NotFound, ValidationProblem, ProblemHttpResult>>))]
-    [InlineData("GenerateMediaImageAccessibilityDraft", typeof(Task<Results<Ok<CatalogMediaImageDto>, BadRequest, ValidationProblem, NotFound, ProblemHttpResult>>))]
-    [InlineData("ReviewMediaImageAccessibility", typeof(Task<Results<Ok<CatalogMediaImageDto>, BadRequest, NotFound, ValidationProblem>>))]
+    [InlineData("UploadTourImage", typeof(Task<Results<Created<CatalogMediaImageDto>, BadRequest, NotFound, ValidationProblem, ProblemHttpResult, ForbidHttpResult>>))]
+    [InlineData("GenerateMediaImageAccessibilityDraft", typeof(Task<Results<Ok<CatalogMediaImageDto>, BadRequest, ValidationProblem, NotFound, ProblemHttpResult, ForbidHttpResult>>))]
+    [InlineData("ReviewMediaImageAccessibility", typeof(Task<Results<Ok<CatalogMediaImageDto>, BadRequest, NotFound, ValidationProblem, ForbidHttpResult>>))]
     public void Catalog_mutation_handlers_expose_explicit_typed_result_unions(string methodName, Type expectedReturnType)
     {
         // Arrange

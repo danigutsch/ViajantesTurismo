@@ -1,0 +1,38 @@
+{
+  "$schema": "../schema/roadmap-item.schema.json",
+  "id": "RM-317",
+  "parent": "RM-162",
+  "title": "Implement background/integration reproduction fixtures and safe correlation",
+  "type": "issue",
+  "status": "proposed",
+  "order": 444,
+  "theme": "repo-operations",
+  "outcome": "GitHub issue #1222 is canonically represented from the reconciliation manifest.",
+  "scoring": {
+    "reach": 1,
+    "impact": 1,
+    "confidence": 0.1,
+    "effort": 3
+  },
+  "blockedBy": [],
+  "blocks": [],
+  "dependencies": [],
+  "tags": [],
+  "labels": [
+    "observability",
+    "security",
+    "testing"
+  ],
+  "sources": [
+    {
+      "kind": "github-issue",
+      "reference": "#1222"
+    }
+  ],
+  "integrations": {
+    "github": {
+      "issue": 1222,
+      "nodeId": "I_kwDOQAEVW88AAAABZk_PeA"
+    }
+  }
+}

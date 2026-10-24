@@ -76,6 +76,7 @@ public sealed class UpdateCustomerCommandHandler(
         var physicalInfoResult = CustomerMapper.MapToPhysicalInfo(command.PhysicalInfo);
         var emergencyContactResult = CustomerMapper.MapToEmergencyContact(command.EmergencyContact);
         var medicalInfoResult = CustomerMapper.MapToMedicalInfo(command.MedicalInfo);
+        var accommodationPreferencesResult = CustomerMapper.MapToAccommodationPreferences(command.AccommodationPreferences);
 
         if (!addressResult.IsSuccess)
         {
@@ -97,6 +98,11 @@ public sealed class UpdateCustomerCommandHandler(
             errors.Add(medicalInfoResult);
         }
 
+        if (accommodationPreferencesResult.IsFailure)
+        {
+            errors.Add(accommodationPreferencesResult);
+        }
+
         if (errors.HasErrors)
         {
             return errors.ToResult();
@@ -104,7 +110,7 @@ public sealed class UpdateCustomerCommandHandler(
 
         var address = addressResult.Value;
         var physicalInfo = physicalInfoResult.Value;
-        var accommodationPreferences = CustomerMapper.MapToAccommodationPreferences(command.AccommodationPreferences);
+        var accommodationPreferences = accommodationPreferencesResult.Value;
         var emergencyContact = emergencyContactResult.Value;
         var medicalInfo = medicalInfoResult.Value;
 

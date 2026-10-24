@@ -1,0 +1,38 @@
+{
+  "$schema": "../schema/roadmap-item.schema.json",
+  "id": "RM-315",
+  "parent": "RM-162",
+  "title": "Inventory reproduction seams and define privacy-safe artifacts",
+  "type": "issue",
+  "status": "proposed",
+  "order": 442,
+  "theme": "repo-operations",
+  "outcome": "GitHub issue #1220 is canonically represented from the reconciliation manifest.",
+  "scoring": {
+    "reach": 1,
+    "impact": 1,
+    "confidence": 0.1,
+    "effort": 3
+  },
+  "blockedBy": [],
+  "blocks": [],
+  "dependencies": [],
+  "tags": [],
+  "labels": [
+    "architecture",
+    "security",
+    "testing"
+  ],
+  "sources": [
+    {
+      "kind": "github-issue",
+      "reference": "#1220"
+    }
+  ],
+  "integrations": {
+    "github": {
+      "issue": 1220,
+      "nodeId": "I_kwDOQAEVW88AAAABZk_Nsw"
+    }
+  }
+}

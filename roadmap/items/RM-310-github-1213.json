@@ -4,7 +4,7 @@
   "title": "Carry tour capacity and booking editability facts on read DTOs (audit A10, A11)",
   "type": "enabler",
   "status": "proposed",
-  "order": 439,
+  "order": 437,
   "theme": "repo-operations",
   "outcome": "GitHub issue #1213 is canonically represented from the reconciliation manifest.",
   "scoring": {

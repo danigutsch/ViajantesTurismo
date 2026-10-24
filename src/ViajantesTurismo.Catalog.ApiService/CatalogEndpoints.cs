@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.OutputCaching;
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Http.Metadata;
@@ -575,12 +576,15 @@ internal static class CatalogEndpoints
         return Results.Ok(images.Select(MapManagementMediaImage).ToArray());
     }
 
-    private static async Task<Results<Created<CatalogMediaImageDto>, BadRequest, NotFound, ValidationProblem, ProblemHttpResult>> UploadTourImage(
+    private static async Task<Results<Created<CatalogMediaImageDto>, BadRequest, NotFound, ValidationProblem, ProblemHttpResult, ForbidHttpResult>> UploadTourImage(
         Guid id,
         [AsParameters] MediaImageUploadFormDto form,
         ICatalogTourReadModelStore store,
         IPublicMediaImageStore imageStore,
         MediaImageUploadIntake intake,
+        CatalogGalleryMutationGuard galleryGuard,
+        IAuthorizationService authorization,
+        HttpContext context,
         CancellationToken ct)
     {
         var altText = form.AltText;
@@ -594,6 +598,14 @@ internal static class CatalogEndpoints
             return TypedResults.NotFound();
         }
 
+        var canPublish = (await authorization.AuthorizeAsync(context.User, CatalogAuthorization.CatalogPublish).ConfigureAwait(false)).Succeeded;
+        var permission = await galleryGuard.Acquire([id], canPublish, ct).ConfigureAwait(false);
+        if (permission.IsFailure)
+        {
+            return TypedResults.Forbid();
+        }
+
+        await using var mutationLease = permission.Value;
         var existingImages = await imageStore.ListByTour(id, ct).ConfigureAwait(false);
 
         await using var content = form.File.OpenReadStream();
@@ -621,10 +633,14 @@ internal static class CatalogEndpoints
         };
     }
 
-    private static async Task<Results<Ok<CatalogMediaImageDto>, BadRequest, ValidationProblem, NotFound, ProblemHttpResult>> GenerateMediaImageAccessibilityDraft(
+    private static async Task<Results<Ok<CatalogMediaImageDto>, BadRequest, ValidationProblem, NotFound, ProblemHttpResult, ForbidHttpResult>> GenerateMediaImageAccessibilityDraft(
         Guid id,
         PublicMediaImageAccessibilityDraftRequest request,
         MediaImageAccessibilityDraftService service,
+        IPublicMediaImageStore imageStore,
+        CatalogGalleryMutationGuard galleryGuard,
+        IAuthorizationService authorization,
+        HttpContext context,
         IOutputCacheStore outputCacheStore,
         ILogger<CatalogApiHostEntryPoint> logger,
         CancellationToken ct)
@@ -640,6 +656,20 @@ internal static class CatalogEndpoints
             return TypedResults.ValidationProblem(errors);
         }
 
+        var image = await imageStore.GetImage(id, ct).ConfigureAwait(false);
+        if (image is null)
+        {
+            return TypedResults.NotFound();
+        }
+
+        var canPublish = (await authorization.AuthorizeAsync(context.User, CatalogAuthorization.CatalogPublish).ConfigureAwait(false)).Succeeded;
+        var permission = await galleryGuard.Acquire(image.TourLinks.Select(link => link.CatalogTourId).ToArray(), canPublish, ct).ConfigureAwait(false);
+        if (permission.IsFailure)
+        {
+            return TypedResults.Forbid();
+        }
+
+        await using var mutationLease = permission.Value;
         var result = await service.GenerateDraft(
             id,
             new MediaImageAccessibilityDraftInput
@@ -666,10 +696,13 @@ internal static class CatalogEndpoints
         };
     }
 
-    private static async Task<Results<Ok<CatalogMediaImageDto>, BadRequest, NotFound, ValidationProblem>> ReviewMediaImageAccessibility(
+    private static async Task<Results<Ok<CatalogMediaImageDto>, BadRequest, NotFound, ValidationProblem, ForbidHttpResult>> ReviewMediaImageAccessibility(
         Guid id,
         PublicMediaImageAccessibilityReviewRequest request,
         IPublicMediaImageStore imageStore,
+        CatalogGalleryMutationGuard galleryGuard,
+        IAuthorizationService authorization,
+        HttpContext context,
         IOutputCacheStore outputCacheStore,
         ILogger<CatalogApiHostEntryPoint> logger,
         TimeProvider timeProvider,
@@ -684,6 +717,20 @@ internal static class CatalogEndpoints
         try
         {
             var image = await imageStore.GetImage(id, ct).ConfigureAwait(false);
+            if (image is null)
+            {
+                return TypedResults.NotFound();
+            }
+
+            var canPublish = (await authorization.AuthorizeAsync(context.User, CatalogAuthorization.CatalogPublish).ConfigureAwait(false)).Succeeded;
+            var permission = await galleryGuard.Acquire(image.TourLinks.Select(link => link.CatalogTourId).ToArray(), canPublish, ct).ConfigureAwait(false);
+            if (permission.IsFailure)
+            {
+                return TypedResults.Forbid();
+            }
+
+            await using var mutationLease = permission.Value;
+            image = await imageStore.GetImage(id, ct).ConfigureAwait(false);
             if (image is null)
             {
                 return TypedResults.NotFound();

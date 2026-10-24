@@ -4,7 +4,7 @@
   "title": "Move media processing status transitions into the media aggregate (audit C3)",
   "type": "enabler",
   "status": "proposed",
-  "order": 441,
+  "order": 439,
   "theme": "repo-operations",
   "outcome": "GitHub issue #1215 is canonically represented from the reconciliation manifest.",
   "scoring": {

@@ -181,6 +181,31 @@ public sealed class ManagementWebEndpointTests
         redirectUri.ShouldBe("/");
     }
 
+    [Theory]
+    [InlineData("/%09/attacker.example", "/")]
+    [InlineData("/%0A/attacker.example", "/")]
+    [InlineData("/%0D/attacker.example", "/")]
+    [InlineData("/%09%5Cattacker.example", "/")]
+    [InlineData("/catalog/%00tours", "/")]
+    [InlineData("//attacker.example", "/")]
+    [InlineData("https://attacker.example", "/")]
+    [InlineData("/catalog/tours?search=cycling%26page=2", "/catalog/tours?search=cycling&page=2")]
+    public async Task Login_only_preserves_local_return_urls_without_control_characters(string input, string expectedRedirect)
+    {
+        // Arrange
+        using var host = await ManagementWebEndpointTestHost.StartWithRecordingAuthentication(Xunit.TestContext.Current.CancellationToken);
+        using var client = host.GetTestClient();
+
+        // Act
+        using var response = await client.GetAsync(
+            new Uri($"/login?returnUrl={input}", UriKind.Relative),
+            Xunit.TestContext.Current.CancellationToken);
+        var redirectUri = response.Headers.GetValues(RecordingAuthenticationHandler.ChallengeRedirectHeaderName).ShouldHaveSingleItem();
+
+        // Assert
+        redirectUri.ShouldBe(expectedRedirect);
+    }
+
     [Fact]
     public async Task Logout_clears_the_local_session_before_signing_out_of_oidc()
     {

@@ -4,7 +4,7 @@
   "title": "Enforce Catalog presentation rules in CatalogTour and return Results (audit C1, C2)",
   "type": "enabler",
   "status": "proposed",
-  "order": 440,
+  "order": 438,
   "theme": "repo-operations",
   "outcome": "GitHub issue #1214 is canonically represented from the reconciliation manifest.",
   "scoring": {

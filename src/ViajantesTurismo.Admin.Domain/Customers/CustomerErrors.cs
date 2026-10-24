@@ -9,6 +9,27 @@ public static class CustomerErrors
 {
     private const string Mobile = "Mobile";
 
+    /// <summary>Indicates that the bicycle selection is undefined.</summary>
+    /// <returns>A validation failure for the bicycle selection.</returns>
+    public static Result InvalidBikeType() => Result.Invalid(
+        detail: "BikeType must be a defined selection.",
+        field: "BikeType",
+        message: "BikeType must be a defined selection.");
+
+    /// <summary>Indicates that the room selection is undefined.</summary>
+    /// <returns>A validation failure for the room selection.</returns>
+    public static Result InvalidRoomType() => Result.Invalid(
+        detail: "RoomType must be a defined selection.",
+        field: "RoomType",
+        message: "RoomType must be a defined selection.");
+
+    /// <summary>Indicates that the bed selection is undefined.</summary>
+    /// <returns>A validation failure for the bed selection.</returns>
+    public static Result InvalidBedType() => Result.Invalid(
+        detail: "BedType must be a defined selection.",
+        field: "BedType",
+        message: "BedType must be a defined selection.");
+
     /// <summary>
     /// Indicates that the first name is empty.
     /// </summary>
