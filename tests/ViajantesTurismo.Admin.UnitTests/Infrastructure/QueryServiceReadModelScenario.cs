@@ -23,11 +23,15 @@ internal sealed class QueryServiceReadModelScenario : IAsyncDisposable
     {
         var root = new InMemoryDatabaseRoot();
         var databaseName = Guid.CreateVersion7().ToString("N");
+        // The write context has no outbox configuration here, so keep its model out of EF Core's shared
+        // in-memory model cache; otherwise later in-memory tests reuse a model without the outbox.
         writeContext = new AdminWriteDbContext(new DbContextOptionsBuilder<AdminWriteDbContext>()
             .UseInMemoryDatabase(databaseName, root)
+            .EnableServiceProviderCaching(false)
             .Options);
         readContext = new AdminReadDbContext(new DbContextOptionsBuilder<AdminReadDbContext>()
             .UseInMemoryDatabase(databaseName, root)
+            .EnableServiceProviderCaching(false)
             .Options);
         protection = new PaymentProtection(new ConfigurationBuilder().Build());
         QueryService = new QueryService(readContext, new PaymentHistoryStore(writeContext, protection));
