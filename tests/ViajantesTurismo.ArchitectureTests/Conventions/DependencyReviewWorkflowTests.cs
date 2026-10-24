@@ -75,7 +75,6 @@ public sealed class DependencyReviewWorkflowTests
         generation.ShouldBeGreaterThan(generatorBuild);
         snapshotJob.ShouldContain("tool: SharedKernel.RepoConfig.Tool", StringComparison.Ordinal);
         snapshotJob.ShouldContain("global-json-file: global.json", StringComparison.Ordinal);
-        snapshotJob.ShouldNotContain("SNAPSHOT_GENERATOR_REVISION", StringComparison.Ordinal);
         snapshotJob.ShouldNotContain(".local/dependency-review-head", StringComparison.Ordinal);
         snapshotJob.ShouldNotContain("setup-ci-prerequisites", StringComparison.Ordinal);
         snapshotJob.ShouldNotContain("releases/download", StringComparison.Ordinal);

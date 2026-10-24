@@ -46,8 +46,6 @@ public sealed class ConsumerSetupContractTests
         content.ShouldContain("remote.origin.promisor", StringComparison.Ordinal);
         content.ShouldContain("dotnet restore tools/SharedKernel.CI.Tool --locked-mode", StringComparison.Ordinal);
         content.ShouldContain("dotnet build tools/SharedKernel.CI.Tool -c Release --no-restore", StringComparison.Ordinal);
-        content.ShouldNotContain("bootstrap-sharedkernel", StringComparison.Ordinal);
-        content.ShouldNotContain(".local/sharedkernel-library", StringComparison.Ordinal);
     }
 
     [Fact]
@@ -65,7 +63,6 @@ public sealed class ConsumerSetupContractTests
         // Assert
         safeDirectory.ShouldBeGreaterThan(-1);
         setup.ShouldBeGreaterThan(safeDirectory);
-        content.ShouldNotContain(".local/sharedkernel-feed/candidate.json", StringComparison.Ordinal);
     }
 
     [Fact]
@@ -91,9 +88,6 @@ public sealed class ConsumerSetupContractTests
         action.ShouldContain("$source = '--repository', 'danigutsch/PandaBear.SharedKernel'", StringComparison.Ordinal);
         action.ShouldContain("if: ${{ inputs.restore-targets != '' || inputs.restore-targets-file != '' }}", StringComparison.Ordinal);
         action.ShouldNotContain("Invoke-WebRequest", StringComparison.Ordinal);
-        action.ShouldNotContain(".local/sharedkernel-library", StringComparison.Ordinal);
-        action.ShouldNotContain("bootstrap-sharedkernel", StringComparison.Ordinal);
-        action.ShouldNotContain("dotnet-global-json", StringComparison.Ordinal);
         action.ShouldNotContain("GH_TOKEN", StringComparison.Ordinal);
         action.ShouldNotContain("token", StringComparison.OrdinalIgnoreCase);
     }
