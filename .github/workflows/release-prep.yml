@@ -15,6 +15,8 @@ name: Release Prep
       - ViajantesTurismo.slnx
       - global.json
       - NuGet.Config
+      - .config/**
+      - .github/actions/**
   workflow_dispatch:
     inputs:
       prepare_stable:
@@ -64,12 +66,14 @@ jobs:
         shell: bash
         env:
           RELEASE_VERSION_KIND: ${{ github.event_name == 'workflow_dispatch' && inputs.prepare_stable && 'stable' || 'prerelease' }}
+          RUN_NUMBER: ${{ github.run_number }}
+          SOURCE_SHA: ${{ github.sha }}
         run: |
-          dotnet tool run sharedkernel-version \
+          dotnet tool run sharedkernel-version -- \
             calculate-release \
             --version-kind "${RELEASE_VERSION_KIND}" \
-            --run-number "${{ github.run_number }}" \
-            --sha "${{ github.sha }}" \
+            --run-number "${RUN_NUMBER}" \
+            --sha "${SOURCE_SHA}" \
             --github-output "${GITHUB_OUTPUT}" \
             --github-summary "${GITHUB_STEP_SUMMARY}"
 

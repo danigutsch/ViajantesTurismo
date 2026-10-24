@@ -114,11 +114,14 @@ jobs:
       - name: Calculate release version
         id: version
         shell: bash
+        env:
+          RUN_NUMBER: ${{ github.run_number }}
+          SOURCE_SHA: ${{ github.sha }}
         run: |
-          dotnet tool run sharedkernel-version \
+          dotnet tool run sharedkernel-version -- \
             calculate-release \
-            --run-number "${{ github.run_number }}" \
-            --sha "${{ github.sha }}" \
+            --run-number "${RUN_NUMBER}" \
+            --sha "${SOURCE_SHA}" \
             --github-output "${GITHUB_OUTPUT}" \
             --github-summary "${GITHUB_STEP_SUMMARY}"
 
