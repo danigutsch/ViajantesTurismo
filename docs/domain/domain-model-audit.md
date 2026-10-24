@@ -12,7 +12,6 @@ Management Web code that calls them. This is a dated evidence record for the rul
 - [Summary](#summary)
 - [Findings](#findings)
 - [Domain enum inventory](#domain-enum-inventory)
-- [Follow-up work](#follow-up-work)
 - [Related Documentation](#related-documentation)
 
 ## Summary
@@ -25,8 +24,8 @@ Management Web code that calls them. This is a dated evidence record for the rul
 - **Aggregate boundary**: one leak, fixed in this change. `Booking` exposed `Create` and eight mutators publicly, and
   `Booking.Confirm` skipped the capacity check that `Tour.ConfirmBooking` applies.
 - **Behavior placement**: the document decisions repeated across handlers, the non-atomic tour update, the identifier
-  limit mismatch, and the unchecked customer mapping are fixed. The remaining handler, Razor, and Catalog findings are
-  listed below as follow-ups.
+  limit mismatch, and the unchecked customer mapping are fixed. The handler, Razor, and Catalog follow-ups (RM-308
+  to RM-312) are fixed too; every finding below is closed.
 
 ## Findings
 
@@ -36,18 +35,18 @@ Management Web code that calls them. This is a dated evidence record for the rul
 | A2 | `src/ViajantesTurismo.Admin.Infrastructure/ModelConfigurations/TourConfiguration.cs:18` | The database caps `Tour.Identifier` at 64 characters while `Tour.cs:143` accepts up to 128, so 65 to 128 character identifiers fail at save time | Domain and persistence limits agree | Fixed: identifiers are limited to 64 characters; behavior specifications guard it |
 | A3 | `src/ViajantesTurismo.Admin.Application/Mappings/CustomerMapper.cs:53,66,91,103` | Reads `.Value` from unchecked `Result` objects, which throws on invalid input instead of returning a validation result | Result pattern | Fixed: the mappers return `Result<T>` and the handlers collect the errors |
 | A4 | `src/ViajantesTurismo.Admin.Application/Mappings/DocumentMapper.cs:36` and `src/ViajantesTurismo.Admin.Application/Documents/GetFinalizedDocumentArtifactHandler.cs:28` | Both decide "finalized artifact available" from the document status and artifact fields | DDD005 | Fixed: `DocumentDraft.HasAvailableFinalizedArtifact` |
-| A5 | `src/ViajantesTurismo.Admin.Application/Documents/GenerateContractDraftCommandHandler.cs:47` | Decides contract eligibility from a read DTO's booking status | DDD005 | Follow-up |
-| A6 | `src/ViajantesTurismo.Admin.Application/Customers/UpdateCustomer/UpdateCustomerCommandHandler.cs:86-93` | Drives `Customer` through eight setter-style `Update*` calls that return no `Result` | Behavior over state | Follow-up |
-| A7 | `src/ViajantesTurismo.Admin.Domain/Customers/Customer.cs:23,58` | `Customer` has public constructors instead of a `Result` factory | ADR-001 | Follow-up |
+| A5 | `src/ViajantesTurismo.Admin.Application/Documents/GenerateContractDraftCommandHandler.cs:47` | Decides contract eligibility from a read DTO's booking status | DDD005 | Fixed: `Tour.CanReceiveCustomerDocuments`; generation and regeneration ask the aggregate |
+| A6 | `src/ViajantesTurismo.Admin.Application/Customers/UpdateCustomer/UpdateCustomerCommandHandler.cs:86-93` | Drives `Customer` through eight setter-style `Update*` calls that return no `Result` | Behavior over state | Fixed: `Customer.Revise` validates every value before applying any change |
+| A7 | `src/ViajantesTurismo.Admin.Domain/Customers/Customer.cs:23,58` | `Customer` has public constructors instead of a `Result` factory | ADR-001 | Fixed: `Customer.Create` returns `Result<Customer>`; `DddConventionsTests` rejects public entity constructors |
 | A8 | `src/ViajantesTurismo.Admin.Application/Tours/UpdateTour/UpdateTourCommandHandler.cs:36-70` | Six sequential mutator calls stop at the first failure and can leave the in-memory aggregate partly changed | Aggregate consistency | Fixed: `Tour.Revise` validates every value before applying any change |
 | A9 | `src/ViajantesTurismo.Admin.Domain/Tours/TourCapacity.cs:43,48` | Hard-codes capacity bounds 1 and 20 instead of using the domain limit constants | Magic numbers | Fixed: uses `AdminDomainLimits.MinTourCustomers` and `MaxTourCustomers` |
-| A10 | `src/ViajantesTurismo.Management.Web/Components/Pages/Tours/Index.razor:51,66` | Recomputes `IsFullyBooked` and available spots because the read DTO does not carry the domain facts | DDD005 | Follow-up |
-| A11 | `src/ViajantesTurismo.Management.Web/Components/Pages/Bookings/Edit.razor:350` | Decides booking editability from the raw status DTO | DDD007 | Follow-up |
+| A10 | `src/ViajantesTurismo.Management.Web/Components/Pages/Tours/Index.razor:51,66` | Recomputes `IsFullyBooked` and available spots because the read DTO does not carry the domain facts | DDD005 | Fixed: `GetTourDto` carries `AvailableSpots`, `IsFullyBooked`, and `IsAtMinimumCapacity` from `Tour` |
+| A11 | `src/ViajantesTurismo.Management.Web/Components/Pages/Bookings/Edit.razor:350` | Decides booking editability from the raw status DTO | DDD007 | Fixed: `GetBookingDto.CanModifyBookedServices` comes from `Booking` |
 | A12 | `src/ViajantesTurismo.Admin.Application/Documents/*CommandHandler.cs` and `GetFinalizedDocumentArtifactHandler.cs:22` | Seven document handlers repeat `document.Type == DocumentType.PaymentInstructions` to route payment-instruction documents to their own workflow | DDD005, DDD007 | Fixed: `RequiresPaymentInstructionWorkflow` on the draft and lineage |
 | A13 | `src/ViajantesTurismo.Admin.Domain/Customers/PhysicalInfo.cs` and `AccommodationPreferences.cs` | Customer preference factories must validate defined enum selections | Always-valid value objects | Fixed: factories return validation failures; domain and import regressions cover invalid selections and valid controls |
-| C1 | `src/ViajantesTurismo.Catalog.Application/Tours/CatalogTourPresentationUpdate.cs` | Holds title, slug, and length rules that `CatalogTour.ChangePresentation` does not enforce | Rules in the domain | Follow-up |
-| C2 | `src/ViajantesTurismo.Catalog.Domain/Tours/CatalogTour.cs:115,166,179,218` | Throws exceptions for expected business outcomes | ADR-002 | Follow-up |
-| C3 | `src/ViajantesTurismo.Catalog.Application/Media/MediaImageOriginalStoredIntegrationHandler.cs:45-66` | Chooses the next media processing status in the handler | Behavior over state | Follow-up |
+| C1 | `src/ViajantesTurismo.Catalog.Application/Tours/CatalogTourPresentationUpdate.cs` | Holds title, slug, and length rules that `CatalogTour.ChangePresentation` does not enforce | Rules in the domain | Fixed: the `CatalogTourPresentation` value object enforces them in `ChangePresentation` |
+| C2 | `src/ViajantesTurismo.Catalog.Domain/Tours/CatalogTour.cs:115,166,179,218` | Throws exceptions for expected business outcomes | ADR-002 | Fixed: `ChangePresentation` and `Publish` return `Result` values from `CatalogTourErrors` |
+| C3 | `src/ViajantesTurismo.Catalog.Application/Media/MediaImageOriginalStoredIntegrationHandler.cs:45-66` | Chooses the next media processing status in the handler | Behavior over state | Fixed: `PublicMediaImage.CompleteProcessing` and `FailProcessing` |
 
 ## Domain enum inventory
 
@@ -63,13 +62,6 @@ the document-status checks in `src/ViajantesTurismo.Admin.Application/Payments/P
 
 No enum analyzer is planned: risky usage is concentrated in a few handlers and is covered by review and the audit
 (catalog rule DDD007).
-
-## Follow-up work
-
-Remaining follow-ups are tracked as roadmap items: A5 is RM-308, A6 and A7 are RM-309, A10 and A11 are
-RM-310, C1 and C2 are RM-311, and C3 is RM-312. Prove each production gap with a failing test first. C1 and C2
-move Catalog presentation rules and publication outcomes into `CatalogTour` as `Result` values, which also
-changes the Catalog service and API error mapping.
 
 ## Related Documentation
 
