@@ -19,10 +19,11 @@ internal static class DocumentDraftTestData
     public static DocumentDraft Create(
         DateTime createdAt,
         Uri? brandingLogoUri = null,
-        DocumentType type = DocumentType.BookingConfirmationContract)
+        DocumentType type = DocumentType.BookingConfirmationContract,
+        Guid? bookingId = null)
     {
         var result = DocumentDraft.Create(
-            Guid.CreateVersion7(),
+            bookingId ?? Guid.CreateVersion7(),
             type,
             DocumentAudience.Customer,
             "tour-service-contract",

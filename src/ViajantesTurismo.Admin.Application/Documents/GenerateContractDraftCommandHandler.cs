@@ -1,6 +1,5 @@
 using PandaBear.Branding;
 using PandaBear.Results;
-using ViajantesTurismo.Admin.Application.Mappings;
 using ViajantesTurismo.Admin.Domain.Documents;
 using ViajantesTurismo.Admin.Domain.Tours;
 
@@ -11,6 +10,7 @@ namespace ViajantesTurismo.Admin.Application.Documents;
 /// </summary>
 public sealed class GenerateContractDraftCommandHandler(
     IQueryService queryService,
+    ITourStore tourStore,
     IDocumentStore documentStore,
     IBrandingApiClient brandingApiClient,
     TimeProvider timeProvider,
@@ -44,10 +44,24 @@ public sealed class GenerateContractDraftCommandHandler(
                 ct);
         }
 
-        if (!BookingMapper.MapToBookingStatus(booking.Status).IsAccepted())
+        var tourAggregate = await tourStore.GetByBookingId(booking.Id, ct);
+        if (tourAggregate is null)
         {
             return await RecordAndReturn(
-                DocumentErrors.BookingIsNotAccepted().ConvertError<Guid>(),
+                BookingErrors.BookingNotFound(booking.Id).ConvertError<Guid>(),
+                command.AuditContext,
+                null,
+                booking.Id,
+                null,
+                DocumentAuditReasonCode.BookingNotFound,
+                ct);
+        }
+
+        var eligibility = tourAggregate.CanReceiveCustomerDocuments(booking.Id);
+        if (eligibility.IsFailure)
+        {
+            return await RecordAndReturn(
+                eligibility.ConvertError<Guid>(),
                 command.AuditContext,
                 null,
                 booking.Id,
