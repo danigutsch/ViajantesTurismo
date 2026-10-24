@@ -136,10 +136,10 @@ outcome, and the same decision appears in two or more places. Scope is the whole
 projections, DTO copies, and display formatting. Suggest a name only when an existing domain term fits; otherwise give a
 manual refactoring hint.
 
-- Positive: `DocumentMapper.cs:36` and `GetFinalizedDocumentArtifactHandler.cs:28` both decide "finalized artifact
-  available" from a document's status and artifact fields.
-- Positive: seven document command handlers repeat `document.Type == DocumentType.PaymentInstructions` to route
-  payment-instruction documents to their own workflow.
+- Positive (fixed): `DocumentMapper` and `GetFinalizedDocumentArtifactHandler` both decided "finalized artifact
+  available" from a document's status and artifact fields; both now use `DocumentDraft.HasAvailableFinalizedArtifact`.
+- Positive (fixed): seven document handlers repeated `document.Type == DocumentType.PaymentInstructions` to route
+  payment-instruction documents to their own workflow; they now use `RequiresPaymentInstructionWorkflow`.
 - Negative: `QueryService.cs:160` orders bookings by status in a query projection.
 - Negative: `MediaImageAccessibilityDraftService.cs:35` rejects an unset language as input validation.
 - Negative: `DevelopmentDataInitializer.cs:364` filters seed data.
