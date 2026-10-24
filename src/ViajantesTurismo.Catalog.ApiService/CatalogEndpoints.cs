@@ -15,7 +15,6 @@ using ViajantesTurismo.Catalog.Application.Tours;
 using ViajantesTurismo.Catalog.Contracts.Application;
 using ViajantesTurismo.Catalog.Domain.Media;
 using ViajantesTurismo.Catalog.Domain.PublicContent;
-using ViajantesTurismo.Catalog.Domain.Tours;
 
 namespace ViajantesTurismo.Catalog.ApiService;
 
@@ -432,7 +431,7 @@ internal static class CatalogEndpoints
         }
 
         var images = await imageStore.ListByTour(id, ct);
-        CatalogTourDraftReadModel? updated;
+        Result<CatalogTourDraftReadModel> updated;
         try
         {
             updated = await presentationService.UpdatePresentation(
@@ -445,12 +444,6 @@ internal static class CatalogEndpoints
         {
             return TypedResults.Problem("The public tour slug is already in use.", statusCode: StatusCodes.Status409Conflict);
         }
-        catch (CatalogTourPublishedPresentationChangeException)
-        {
-            return TypedResults.Problem(
-                "Published tours must be unpublished before their presentation can change.",
-                statusCode: StatusCodes.Status409Conflict);
-        }
         catch (ExpectedStreamRevisionConflictException)
         {
             return TypedResults.Problem("The tour changed while this edit was in progress. Reload it and try again.", statusCode: StatusCodes.Status409Conflict);
@@ -461,13 +454,22 @@ internal static class CatalogEndpoints
             return await AcceptPendingProjection(id, outputCacheStore, logger);
         }
 
-        if (updated is null)
+        switch (updated.Status)
         {
-            return TypedResults.NotFound();
+            case ResultStatus.NotFound:
+                return TypedResults.NotFound();
+            case ResultStatus.Conflict:
+                return TypedResults.Problem(updated.ErrorDetails?.Detail, statusCode: StatusCodes.Status409Conflict);
+            case ResultStatus.Invalid:
+                return ToValidationProblem(updated.ErrorDetails ?? throw new InvalidOperationException("Invalid presentation results must include validation details."));
+            case ResultStatus.Ok:
+                break;
+            default:
+                throw new InvalidOperationException($"Unexpected Catalog tour presentation result status '{updated.Status}'.");
         }
 
         await InvalidatePublicCatalogCache(outputCacheStore, logger);
-        return TypedResults.Ok(MapManagementTour(updated, (IReadOnlyList<PublicMediaImage>?)images));
+        return TypedResults.Ok(MapManagementTour(updated.Value, (IReadOnlyList<PublicMediaImage>?)images));
     }
 
     private static async Task<Results<NoContent, Accepted, BadRequest, ValidationProblem, NotFound, ProblemHttpResult>> PublishTour(
@@ -490,17 +492,18 @@ internal static class CatalogEndpoints
 
         try
         {
-            if (await presentationService.Publish(id, request.ExpectedVersion, ct).ConfigureAwait(false) is null)
+            var published = await presentationService.Publish(id, request.ExpectedVersion, ct).ConfigureAwait(false);
+            switch (published.Status)
             {
-                return TypedResults.NotFound();
+                case ResultStatus.NotFound:
+                    return TypedResults.NotFound();
+                case ResultStatus.Invalid:
+                    return TypedResults.ValidationProblem(ToValidationProblemDictionary(published.ErrorDetails?.ValidationErrors));
+                case ResultStatus.Ok:
+                    break;
+                default:
+                    throw new InvalidOperationException($"Unexpected Catalog tour publication result status '{published.Status}'.");
             }
-        }
-        catch (CatalogTourPublicationNotReadyException)
-        {
-            return TypedResults.ValidationProblem(new Dictionary<string, string[]>
-            {
-                [nameof(CatalogTourDto.Summary)] = ["Catalog tours require a title, summary, and slug before publication."]
-            });
         }
         catch (ExpectedStreamRevisionConflictException)
         {
@@ -536,7 +539,8 @@ internal static class CatalogEndpoints
 
         try
         {
-            if (await presentationService.Unpublish(id, request.ExpectedVersion, ct).ConfigureAwait(false) is null)
+            var unpublished = await presentationService.Unpublish(id, request.ExpectedVersion, ct).ConfigureAwait(false);
+            if (unpublished.Status == ResultStatus.NotFound)
             {
                 return TypedResults.NotFound();
             }

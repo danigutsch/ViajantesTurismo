@@ -1,7 +1,7 @@
 using System.Net.Http.Json;
 using TestTraits = ViajantesTurismo.Catalog.ApiServiceTests.Infrastructure.TestTraits;
 using ViajantesTurismo.Catalog.Contracts.Application;
-using ViajantesTurismo.Catalog.Domain.Tours;
+using ViajantesTurismo.Catalog.Application.Tours;
 
 namespace ViajantesTurismo.Catalog.ApiServiceTests;
 
@@ -10,20 +10,16 @@ namespace ViajantesTurismo.Catalog.ApiServiceTests;
 public sealed class CatalogApiPrivacyTests
 {
     [Fact]
-    public async Task Presentation_conflict_does_not_expose_exception_message()
+    public async Task Presentation_conflict_does_not_expose_stored_tour_content()
     {
         // Arrange
         const string sensitiveMessage = "traveler@example.com cannot edit customer-123";
         var tourId = Guid.CreateVersion7();
         var tourStore = new TestCatalogTourReadModelStore();
         await tourStore.UpsertDraft(
-            CatalogApiCachingTestData.CreatePublishedTour(tourId, "Privacy Tour", "privacy-tour"),
+            CatalogApiCachingTestData.CreatePublishedTour(tourId, sensitiveMessage, "privacy-tour"),
             TestContext.Current.CancellationToken);
-        var eventStore = new TestEventStore
-        {
-            LoadException = new CatalogTourPublishedPresentationChangeException(sensitiveMessage)
-        };
-        await using var factory = CatalogApiTestHost.Create(tourStore, new TestPublicContentStore(), eventStore);
+        await using var factory = CatalogApiTestHost.Create(tourStore, new TestPublicContentStore());
         using var client = factory.CreateClient();
 
         // Act
@@ -34,7 +30,7 @@ public sealed class CatalogApiPrivacyTests
                 Title = "Privacy Tour",
                 Slug = "privacy-tour",
                 Summary = "Safe summary.",
-                ExpectedVersion = 1
+                ExpectedVersion = 3
             },
             TestContext.Current.CancellationToken);
         var body = await response.Content.ReadAsStringAsync(TestContext.Current.CancellationToken);
@@ -45,20 +41,24 @@ public sealed class CatalogApiPrivacyTests
     }
 
     [Fact]
-    public async Task Publication_validation_does_not_expose_exception_message()
+    public async Task Publication_validation_does_not_expose_stored_tour_content()
     {
         // Arrange
         const string sensitiveMessage = "traveler@example.com is linked to booking-123";
         var tourId = Guid.CreateVersion7();
         var tourStore = new TestCatalogTourReadModelStore();
         await tourStore.UpsertDraft(
-            CatalogApiCachingTestData.CreatePublishedTour(tourId, "Privacy Tour", "privacy-tour"),
+            new CatalogTourDraftReadModel(
+                tourId,
+                Guid.CreateVersion7(),
+                "PRIVACY-TOUR",
+                sensitiveMessage,
+                "privacy-tour",
+                false,
+                1,
+                TimeProvider.System.GetUtcNow()),
             TestContext.Current.CancellationToken);
-        var eventStore = new TestEventStore
-        {
-            LoadException = new CatalogTourPublicationNotReadyException(sensitiveMessage)
-        };
-        await using var factory = CatalogApiTestHost.Create(tourStore, new TestPublicContentStore(), eventStore);
+        await using var factory = CatalogApiTestHost.Create(tourStore, new TestPublicContentStore());
         using var client = factory.CreateClient();
 
         // Act
