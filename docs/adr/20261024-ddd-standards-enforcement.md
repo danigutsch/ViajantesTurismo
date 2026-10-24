@@ -24,7 +24,7 @@ Split enforcement by what each mechanism sees best:
   (non-private, non-`init` setters) and `SKDOM002` (mutable collections visible outside the assembly).
   `PandaBear.SharedKernel.Domain.CodeFixes` makes a setter private when nothing outside the declaring type writes it.
 - **The package reference is the activation boundary.** Every `src/*.Domain` project references both packages and no
-  other project does, so DTO, read-model, persistence, and API projects never run the rules. An architecture test
+  other source project does, so DTO, read-model, persistence, and API projects never run the rules. An architecture test
   checks this. Both rules stay at Warning, which the build treats as an error; the domain projects build clean.
 - **Type-level rules are architecture tests.** `DddConventionsTests` checks that child entities change only through
   their aggregate root; `LayerDependencyTests` keeps framework adapters out of domain assemblies.

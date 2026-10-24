@@ -176,7 +176,7 @@ jobs:
           persist-credentials: false
 
       # The pinned Action ignores purl versions. Fail before emitting its exception if approval expires.
-      # Maintainer renewed this exact preview on 2026-10-23; evidence: docs/ci/dependency-license-evidence.md.
+      # Maintainer renewed this exact preview on 2026-10-24; evidence: docs/ci/dependency-license-evidence.md.
       - name: Validate exact preview license approval
         if: needs.plan.outputs.review_required == 'true'
         id: preview-license
@@ -184,8 +184,8 @@ jobs:
         run: |
           $ErrorActionPreference = 'Stop'
           $pin = Get-Content '.config/sharedkernel-candidate.json' -Raw | ConvertFrom-Json
-          if ($pin.packageVersion -cne '0.1.0-alpha.94.1' -or
-              $pin.libraryRevision -cne 'd08008cd3e8901c304377edcc4683de7c3a85ecb' -or
+          if ($pin.packageVersion -cne '0.1.0-alpha.133.1' -or
+              $pin.libraryRevision -cne '078adf2b2b158f38a211f48274af548d12a85752' -or
               $pin.libraryDirty -ne $false) {
             throw 'Preview license approval expired: re-review this candidate before granting an exception.'
           }
