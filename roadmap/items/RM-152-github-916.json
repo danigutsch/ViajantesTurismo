@@ -4,16 +4,10 @@
   "parent": "RM-303",
   "title": "Implement first DDD analyzer with code fix",
   "type": "feature",
-  "status": "proposed",
-  "order": 401,
+  "status": "done",
+  "triage": "untriaged",
   "theme": "repo-operations",
   "outcome": "GitHub issue #916 is canonically represented from the reconciliation manifest.",
-  "scoring": {
-    "reach": 1,
-    "impact": 2,
-    "confidence": 0.1,
-    "effort": 5
-  },
   "blockedBy": [
     "RM-148"
   ],
