@@ -236,6 +236,23 @@ threshold or native distribution gate was relaxed. On October 24, 2026, the owne
 prerelease distribution and renewed these unchanged exact-package exceptions for this candidate.
 Registry publication and the native distribution obligations remain outside this approval.
 
+## Explicit messaging default candidate
+
+Candidate `0.1.0-alpha.159.1` uses clean library revision
+`afaaa2994edd43e82cb4b3ff622cd7ef17fa0f4d`. It requires an explicit default for co-hosted outboxes and
+inbox stores, adds the `PandaBear.SharedKernel.Npgsql.Testing` package, and includes the other library
+changes merged since `0.1.0-alpha.144.1`. Linux/Windows package consumption and NativeAOT passed in the
+exact-source CI run. All 78 archive hashes were verified against the CI artifacts and the GitHub
+prerelease manifest.
+
+Comparison of the complete external package version/content-hash sets across all 61 lock files
+against application main `e2f3c6e1` (candidate `0.1.0-alpha.144.1`) found no additions or removals;
+both sets hold the same 283 entries. The workflow still permits only the same exact StreamJsonRpc
+`2.25.29` and Magick.NET-Q8-AnyCPU `15.0.0` metadata exceptions; no license category, vulnerability
+threshold or native distribution gate was relaxed. On October 24, 2026, the owner approved these
+unchanged exact-package exceptions for this candidate. Registry publication and the native
+distribution obligations remain outside this approval.
+
 ## Remaining decision
 
 Keep current versions and library behavior unchanged while resolving distribution obligations.
