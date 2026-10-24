@@ -10,7 +10,7 @@ This project uses automated tools to enforce consistent formatting and style acr
 - **[shfmt](https://github.com/mvdan/sh)** - Bash/shell script formatting (direct CLI or Docker fallback)
 - **Repository Gherkin linter** (`scripts/lint-gherkin.py`) - BDD/Gherkin feature-file linting
   (runs via local Python or Docker fallback)
-- **Repository JSON validator** (`ViajantesTurismo.RepoConfig.Tool lint-json`) - Git-indexed JSON
+- **Repository JSON validator** (`sharedkernel-repo verify-json`) - Git-indexed JSON
   validation using the .NET SDK, with comments and trailing commas allowed
 - **Repository link validator** (`scripts/lint-links.py`) - Local Markdown/text link, anchor, and
   durable docs-link validation (runs via local Python or Docker fallback)
@@ -152,7 +152,7 @@ See `tests/BDD_GUIDE.md` for comprehensive Gherkin linting documentation.
 
 ### Configuration
 
-JSON validation is performed by `ViajantesTurismo.RepoConfig.Tool lint-json`, which accepts
+JSON validation is performed by `sharedkernel-repo verify-json`, which accepts
 JSONC-style comments and trailing commas in tracked `*.json` files.
 
 **Key Rules:**
@@ -164,7 +164,7 @@ Untracked package caches, generated artifacts, and nested library checkouts are 
 ### Tool
 
 - **Repository JSON validator** - Run
-  `dotnet run --project tools/ViajantesTurismo.RepoConfig.Tool -c Release -- lint-json`.
+  `dotnet tool run sharedkernel-repo -- verify-json --root .`.
   The command validates all indexed JSON files and accepts no directory arguments. Roadmap
   validation uses this same repository-wide policy.
 
@@ -372,7 +372,7 @@ bash scripts/lint-gherkin.sh tests/**/*.feature     # Repository Gherkin lint wr
 **JSON Files:**
 
 ```powershell
-dotnet run --project tools/ViajantesTurismo.RepoConfig.Tool -c Release -- lint-json
+dotnet tool run sharedkernel-repo -- verify-json --root .
 ```
 
 **Links:**

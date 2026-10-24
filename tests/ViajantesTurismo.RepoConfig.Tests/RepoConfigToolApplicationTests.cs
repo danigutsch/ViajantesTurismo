@@ -7,7 +7,7 @@ public sealed class RepoConfigToolApplicationTests
     [InlineData(null)]
     [InlineData("--help")]
     [InlineData("-h")]
-    public async Task Help_lists_candidate_and_json_validation_commands(string? help)
+    public async Task Help_lists_candidate_validation_commands(string? help)
     {
         // Arrange
         using var output = new StringWriter();
@@ -21,7 +21,6 @@ public sealed class RepoConfigToolApplicationTests
         // Assert
         exitCode.ShouldBe(0);
         output.ToString().ShouldContain("verify-sharedkernel-candidate", StringComparison.Ordinal);
-        output.ToString().ShouldContain("lint-json", StringComparison.Ordinal);
         error.ToString().ShouldBe(string.Empty);
     }
 

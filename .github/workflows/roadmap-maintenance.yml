@@ -150,7 +150,7 @@ jobs:
             --root .
           dotnet tool run sharedkernel-repo -- diff \
             --root .
-          dotnet run --project tools/ViajantesTurismo.RepoConfig.Tool -c Release -- lint-json
+          dotnet tool run sharedkernel-repo -- verify-json --root .
           bash scripts/lint-markdown.sh roadmap/README.md
           bash scripts/lint-links.sh roadmap/README.md
 

@@ -6,7 +6,7 @@ namespace ViajantesTurismo.RepoConfig.Tool;
 
 internal static class RepoConfigToolApplication
 {
-    private const string CommandHelp = "Commands: verify-sharedkernel-candidate, select-ci-test-projects, restore-ci-projects, run-ci-test-slice, verify-coverage, write-build-evidence, verify-build-evidence, plan-dependency-review, lint-json.";
+    private const string CommandHelp = "Commands: verify-sharedkernel-candidate, select-ci-test-projects, restore-ci-projects, run-ci-test-slice, verify-coverage, write-build-evidence, verify-build-evidence, plan-dependency-review.";
 
     public static async Task<int> Run(string[] args, TextWriter output, TextWriter error, string workingDirectory, CancellationToken cancellationToken)
     {
@@ -33,7 +33,6 @@ internal static class RepoConfigToolApplication
                 "verify-sharedkernel-candidate" => await CandidateCompatibilityCommand.Run(args[1..], output, error, workingDirectory, cancellationToken).ConfigureAwait(false),
                 "select-ci-test-projects" => await CiTestProjectSelectionCommand.Run(args[1..], output, error, workingDirectory, cancellationToken).ConfigureAwait(false),
                 "verify-coverage" => await CoverageGateCommand.Run(args[1..], output, error, workingDirectory, cancellationToken).ConfigureAwait(false),
-                "lint-json" => await JsonLintCommand.Run(args[1..], error, workingDirectory, cancellationToken).ConfigureAwait(false),
                 _ => throw new ArgumentException(CommandHelp + " Use sharedkernel-repo for reusable repository commands."),
             };
         }
