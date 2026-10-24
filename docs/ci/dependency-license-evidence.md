@@ -48,11 +48,10 @@ or submission job fails the required review rather than allowing a successful ag
 Dependabot PRs retain the read-only review against available GitHub graph data; this does not claim
 complete dynamic snapshot coverage for them. Merge-group events retain their existing review path.
 
-This source-built engine replaces the component-detection submission Action. The previously pinned
-Action downloaded the latest detector binary, and that detector required restore assets/binlogs
-rather than accepting `packages.lock.json` directly. Merely removing restore from that path would
-lose graph coverage. The replacement introduces no new external package or scanner dependency and
-never downloads retired candidate artifacts. GitHub manual submissions take precedence over
+The snapshot comes from this source-built engine rather than a component-detection Action, which
+downloads the latest detector binary and needs restore assets/binlogs instead of reading
+`packages.lock.json`. The engine adds no external package or scanner dependency and never downloads
+retired candidate artifacts. GitHub manual submissions take precedence over
 automatic submissions per [its documented deduplication](https://docs.github.com/en/rest/dependency-graph/dependency-submission).
 The same repository-owned submission runs on `main` pushes and manual dispatches. GitHub's managed
 NuGet auto-submission still cannot stage the pinned local candidate feed; rerunning it does not fix

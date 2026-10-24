@@ -20,11 +20,9 @@ Branch protection and the active `main` ruleset require these status checks:
 - `Quality Gate` (from `.github/workflows/ci.yml`)
 - `PR Metadata` (from `.github/workflows/pr-metadata.yml`)
 
-The required status changed from `SonarCloud` to `Quality Gate` after the replacement check
-passed. Updating both protections then allowed the replacement workflow to merge. The settings
-were verified on October 20, 2026 in branch protection and ruleset `14460324`. Strict up-to-date
-checks, GitHub Actions check attribution (app `15368`), the other required checks, signed commits,
-additional review requirements, and the no-bypass policy were preserved.
+Branch protection and ruleset `14460324` require these checks with strict up-to-date checks,
+GitHub Actions check attribution (app `15368`), signed commits, additional review requirements,
+and no bypass.
 See [quality gates](quality-gates.md#branch-protection) for the maintenance runbook.
 
 `Build and Test` aggregates the test matrix and `OpenAPI Tool Windows`. `Quality Gate`

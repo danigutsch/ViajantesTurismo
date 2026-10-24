@@ -223,7 +223,7 @@ For missing PR-context checks, see [Governance](governance.md#recovery-for-missi
 `Solution Build` runs after change detection alongside test slices. It validates the complete
 solution, including projects outside test dependency graphs, and uploads revision-bound Release
 symbols as `solution-build-evidence`. `Quality Gate` checks the solution-build result, downloads and
-verifies those symbols, and restores only the reporting/repository tools. It no longer builds the
+verifies those symbols, and restores only the reporting/repository tools; it does not rebuild the
 full solution after tests. Portable-PDB document checks retain their existing coverage semantics.
 
 The `run-ci-test-slice` application command owns graph creation, OpenAPI preparation, Playwright

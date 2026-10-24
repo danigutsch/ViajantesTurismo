@@ -261,7 +261,7 @@ defaults that may drift between releases.
   `Directory.Packages.props` near the parent package. Each pin must name the parent package, the
   vulnerable transitive package/version, the advisory, and the removal condition.
 - Local restores stay unlocked by default to keep everyday dependency maintenance practical.
-- CI restores run in locked mode and now also set `ContinuousIntegrationBuild=true` explicitly so
+- CI restores run in locked mode and set `ContinuousIntegrationBuild=true` explicitly so
   deterministic build behavior is owned by repository policy rather than ambient environment luck.
 
 ### Production Code Timing Policy
