@@ -22,6 +22,7 @@ namespace ViajantesTurismo.Catalog.ApiServiceTests;
 
 [Trait(PandaBear.Testing.TestTraitNames.CategoryName, TestTraits.EndpointCategory)]
 [Trait(PandaBear.Testing.TestTraitNames.HostName, TestTraits.TestServerHost)]
+[Collection(CatalogTelemetryGroup.Name)]
 public sealed class CatalogApiEndpointTests
 {
     [Fact]
