@@ -2,9 +2,9 @@ namespace ViajantesTurismo.Branding.ApiServiceTests.Infrastructure;
 
 internal static class BrandingSettingsTestData
 {
-    public static BrandingSettingsDto CreateDto() => new()
+    public static BrandingSettingsDto CreateDto(string brandName = "Viajantes") => new()
     {
-        BrandName = "Viajantes",
+        BrandName = brandName,
         PrimaryColor = "#112233",
         AccentColor = "#445566",
         BackgroundColor = "#FFFFFF",
@@ -13,4 +13,7 @@ internal static class BrandingSettingsTestData
         BodyFontFamily = "Verdana",
         LogoUri = "https://cdn.example.test/logo.svg"
     };
+
+    public static BrandingSettings CreateSettings(string brandName = "Viajantes") =>
+        BrandingSettings.Create(CreateDto(brandName), ViajantesTurismo.Branding.Infrastructure.BrandingDefaults.AllowedFonts).Value;
 }

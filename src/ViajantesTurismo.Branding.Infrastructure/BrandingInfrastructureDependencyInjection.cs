@@ -48,7 +48,8 @@ public static class BrandingInfrastructureDependencyInjection
             ResourceNames.CatalogDatabase,
             configureDbContextOptions: options => ConfigureBrandingDatabaseOptions<BrandingDbContext, TBuilder>(builder, options));
 
-        builder.Services.AddScoped<IBrandingSettingsStore, EfBrandingSettingsStore>();
+        builder.Services.AddScoped<EfBrandingSettingsStore>();
+        builder.Services.AddScoped<IBrandingSettingsStore>(services => services.GetRequiredService<EfBrandingSettingsStore>());
         builder.Services.AddKeyedSingleton<IIntegrationEventSerializer, BrandingIntegrationEventSerializer>(typeof(BrandingDbContext));
         builder.Services.ConfigureIntegrationEventStorage<BrandingDbContext>(ConfigureBrandingIntegrationEventStorage);
         builder.Services.AddIntegrationEventOutbox<BrandingDbContext>();
@@ -60,6 +61,20 @@ public static class BrandingInfrastructureDependencyInjection
         }
 
         return builder;
+    }
+
+    /// <summary>
+    /// Starts Branding settings revisions once after migrations: an existing valid row becomes revision 1, a
+    /// missing row becomes the defaults at revision 1, and invalid persisted settings fail the call.
+    /// </summary>
+    /// <param name="services">A scoped service provider with Branding infrastructure registered.</param>
+    /// <param name="ct">The cancellation token.</param>
+    /// <returns>A task that completes when revisions have started.</returns>
+    public static Task BootstrapBrandingRevisions(this IServiceProvider services, CancellationToken ct)
+    {
+        ArgumentNullException.ThrowIfNull(services);
+
+        return services.GetRequiredService<EfBrandingSettingsStore>().Bootstrap(ct);
     }
 
     internal static void ConfigureBrandingIntegrationEventStorage(IntegrationEventStorageOptions options)

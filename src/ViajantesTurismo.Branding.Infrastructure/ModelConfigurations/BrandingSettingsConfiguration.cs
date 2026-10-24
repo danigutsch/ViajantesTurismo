@@ -20,5 +20,8 @@ internal sealed class BrandingSettingsConfiguration : IEntityTypeConfiguration<B
         entity.Property(settings => settings.HeadingFontFamily).HasMaxLength(BrandingContractConstants.MaxFontFamilyLength).IsRequired();
         entity.Property(settings => settings.BodyFontFamily).HasMaxLength(BrandingContractConstants.MaxFontFamilyLength).IsRequired();
         entity.Property(settings => settings.LogoUri).HasMaxLength(BrandingContractConstants.MaxLogoUriLength);
+        entity.Property(settings => settings.SourceEpoch).IsRequired();
+        entity.Property(settings => settings.SourceRevision).IsRequired().IsConcurrencyToken();
+        entity.Ignore(settings => settings.IsRevisioned);
     }
 }

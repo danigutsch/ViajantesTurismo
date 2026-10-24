@@ -199,6 +199,32 @@ public sealed class BrandingApiEndpointTests
     }
 
     [Fact]
+    public async Task Branding_management_endpoint_returns_conflict_when_another_writer_saved_first()
+    {
+        // Arrange
+        var store = new TestBrandingSettingsStore
+        {
+            SaveException = new Microsoft.EntityFrameworkCore.DbUpdateConcurrencyException("synthetic stale revision")
+        };
+        var outputCacheStore = new RecordingOutputCacheStore();
+        await using var factory = BrandingApiTestHost.Create(store, outputCacheStore);
+        using var client = factory.CreateClient();
+
+        // Act
+        using var response = await client.PutAsJsonAsync(
+            new Uri(ManagementSettingsPath, UriKind.Relative),
+            BrandingSettingsTestData.CreateDto(),
+            TestContext.Current.CancellationToken);
+        var body = await response.Content.ReadAsStringAsync(TestContext.Current.CancellationToken);
+
+        // Assert
+        response.StatusCode.ShouldBe(HttpStatusCode.Conflict);
+        body.ShouldContain("Branding settings changed by another request.", StringComparison.Ordinal);
+        body.ShouldNotContain("synthetic stale revision", StringComparison.Ordinal);
+        outputCacheStore.EvictionObserved.ShouldBeFalse();
+    }
+
+    [Fact]
     public async Task Branding_management_endpoint_rejects_unsafe_values()
     {
         // Arrange

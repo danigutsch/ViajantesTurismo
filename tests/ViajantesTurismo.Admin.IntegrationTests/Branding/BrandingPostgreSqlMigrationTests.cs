@@ -1,7 +1,6 @@
 using PandaBear.Testing;
 using PandaBear.Branding;
 using ViajantesTurismo.Resources;
-using ViajantesTurismo.Branding.Infrastructure;
 
 namespace ViajantesTurismo.Admin.IntegrationTests.Branding;
 
@@ -25,8 +24,8 @@ public sealed class BrandingPostgreSqlMigrationTests(BrandingPostgreSqlMigration
             HeadingFontFamily = "Georgia",
             BodyFontFamily = "system-ui",
         }, BrandingFontFamilies.All).Value;
-        await using var dbContext = scenario.CreateDbContext();
-        var store = new EfBrandingSettingsStore(dbContext);
+        await using var lease = scenario.CreateStore();
+        var store = lease.Store;
 
         // Act
         await store.SaveSettings(settings, TestContext.Current.CancellationToken);
@@ -39,6 +38,32 @@ public sealed class BrandingPostgreSqlMigrationTests(BrandingPostgreSqlMigration
         publicTableExists.ShouldBeFalse();
         saved.ShouldNotBeNull();
         saved.BrandName.ShouldBe("Viajantes Turismo");
+    }
+
+    [Fact]
+    public async Task A_stale_branding_writer_conflicts_without_writing_history_or_events()
+    {
+        // Arrange
+        var ct = TestContext.Current.CancellationToken;
+        await scenario.ResetSchemas(ct);
+        await scenario.ApplyMigrations(ct);
+        await using (var bootstrap = scenario.CreateStore())
+        {
+            await bootstrap.Store.Bootstrap(ct);
+        }
+        await using var writerA = scenario.CreateStore();
+        await using var writerB = scenario.CreateStore();
+        _ = await writerA.Store.GetSettings(ct);
+        _ = await writerB.Store.GetSettings(ct);
+        await writerA.Store.SaveSettings(BrandingPostgreSqlTestData.CreateSettings("From A"), ct);
+
+        // Act
+        var save = () => writerB.Store.SaveSettings(BrandingPostgreSqlTestData.CreateSettings("From B"), ct);
+
+        // Assert
+        await save.ShouldThrow<Microsoft.EntityFrameworkCore.DbUpdateConcurrencyException>();
+        var counts = await scenario.ReadRevisionCounts(ct);
+        counts.ShouldBe((2L, 2L, 2L));
     }
 
     [Fact]
@@ -73,10 +98,9 @@ public sealed class BrandingPostgreSqlMigrationTests(BrandingPostgreSqlMigration
             HeadingFontFamily = "Georgia",
             BodyFontFamily = "system-ui",
         }, BrandingFontFamilies.All).Value;
-        await using (var setupContext = scenario.CreateDbContext())
+        await using (var setupLease = scenario.CreateStore())
         {
-            var setupStore = new EfBrandingSettingsStore(setupContext);
-            await setupStore.SaveSettings(settings, TestContext.Current.CancellationToken);
+            await setupLease.Store.SaveSettings(settings, TestContext.Current.CancellationToken);
         }
         var migrationHistoryBeforeReset = await scenario.GetMigrationHistory(TestContext.Current.CancellationToken);
 
@@ -84,9 +108,8 @@ public sealed class BrandingPostgreSqlMigrationTests(BrandingPostgreSqlMigration
         await scenario.ResetSchemas(TestContext.Current.CancellationToken);
         var migrationHistoryAfterReset = await scenario.GetMigrationHistory(TestContext.Current.CancellationToken);
         await scenario.ApplyMigrations(TestContext.Current.CancellationToken);
-        await using var verificationContext = scenario.CreateDbContext();
-        var verificationStore = new EfBrandingSettingsStore(verificationContext);
-        var saved = await verificationStore.GetSettings(TestContext.Current.CancellationToken);
+        await using var verificationLease = scenario.CreateStore();
+        var saved = await verificationLease.Store.GetSettings(TestContext.Current.CancellationToken);
 
         // Assert
         saved.ShouldBeNull();

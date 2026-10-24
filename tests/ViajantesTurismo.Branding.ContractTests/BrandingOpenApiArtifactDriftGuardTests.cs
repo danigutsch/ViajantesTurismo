@@ -39,7 +39,7 @@ public sealed class BrandingOpenApiArtifactDriftGuardTests
         var responseStatuses = responses.Select(response => response.Key).Order(StringComparer.Ordinal).ToArray();
 
         // Assert
-        responseStatuses.ShouldBe(["200", "401", "403"]);
+        responseStatuses.ShouldBe(["200", "401", "403", "409"]);
         responses["200"].ShouldNotBeNull().AsObject().ContainsKey("content").ShouldBeFalse();
     }
 }
