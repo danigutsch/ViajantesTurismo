@@ -2,17 +2,17 @@
   "$schema": "../schema/roadmap-item.schema.json",
   "id": "RM-212",
   "parent": "RM-215",
-  "title": "Generate reviewed PostgreSQL migration scripts for deployment",
-  "type": "enabler",
+  "title": "Epic: establish a governed database migration lifecycle",
+  "type": "epic",
   "status": "proposed",
-  "order": 239,
+  "order": 498,
   "theme": "repo-operations",
   "outcome": "Production schema changes use reviewed immutable PostgreSQL artifacts with a least-privileged, auditable deployment stage.",
   "scoring": {
     "reach": 1,
     "impact": 1,
     "confidence": 0.1,
-    "effort": 3
+    "effort": 8
   },
   "blockedBy": [],
   "blocks": [],
@@ -25,11 +25,14 @@
   ],
   "labels": [
     "architecture",
+    "area: release",
     "area: tooling",
+    "aspire",
     "infrastructure",
+    "risk: breaking-change",
     "security",
     "testing",
-    "type: enabler"
+    "type: epic"
   ],
   "sources": [
     {
@@ -39,7 +42,8 @@
   ],
   "integrations": {
     "github": {
-      "issue": 1032
+      "issue": 1032,
+      "nodeId": "I_kwDOQAEVW88AAAABIqtzVg"
     }
   }
 }

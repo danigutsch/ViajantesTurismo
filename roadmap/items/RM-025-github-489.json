@@ -1,17 +1,18 @@
 {
   "$schema": "../schema/roadmap-item.schema.json",
   "id": "RM-025",
-  "title": "Migrate typed API clients to result-based outcomes",
-  "type": "issue",
+  "parent": "RM-021",
+  "title": "Migrate retained frontend HTTP clients to explicit outcomes",
+  "type": "feature",
   "status": "proposed",
-  "order": 125,
+  "order": 445,
   "theme": "repo-operations",
   "outcome": "GitHub issue #489 is canonically represented from the reconciliation manifest.",
   "scoring": {
     "reach": 1,
     "impact": 1,
     "confidence": 0.1,
-    "effort": 3
+    "effort": 5
   },
   "blockedBy": [],
   "blocks": [],
@@ -20,8 +21,11 @@
   "labels": [
     ".net",
     "architecture",
-    "enhancement",
-    "sharedkernel"
+    "frontend",
+    "management-web",
+    "public-web",
+    "testing",
+    "type: feature"
   ],
   "sources": [
     {
@@ -31,7 +35,8 @@
   ],
   "integrations": {
     "github": {
-      "issue": 489
+      "issue": 489,
+      "nodeId": "I_kwDOQAEVW88AAAABHLc5Nw"
     }
   }
 }

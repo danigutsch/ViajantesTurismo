@@ -4,7 +4,7 @@
   "title": "Enforce clean terminology before publication",
   "type": "issue",
   "status": "proposed",
-  "order": 117,
+  "order": 360,
   "theme": "repo-operations",
   "outcome": "GitHub issue #1090 is canonically represented from the reconciliation manifest.",
   "scoring": {
@@ -31,7 +31,8 @@
   ],
   "integrations": {
     "github": {
-      "issue": 1090
+      "issue": 1090,
+      "nodeId": "I_kwDOQAEVW88AAAABJHUN7g"
     }
   }
 }

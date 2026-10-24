@@ -4,16 +4,10 @@
   "parent": "RM-044",
   "title": "Identify endpoint redesign candidates for slice migration",
   "type": "enabler",
-  "status": "proposed",
-  "order": 148,
+  "status": "done",
+  "triage": "untriaged",
   "theme": "repo-operations",
   "outcome": "GitHub issue #713 is canonically represented from the reconciliation manifest.",
-  "scoring": {
-    "reach": 1,
-    "impact": 1,
-    "confidence": 0.1,
-    "effort": 3
-  },
   "blockedBy": [],
   "blocks": [],
   "dependencies": [],
@@ -31,7 +25,8 @@
   ],
   "integrations": {
     "github": {
-      "issue": 713
+      "issue": 713,
+      "nodeId": "I_kwDOQAEVW88AAAABHtYKEg"
     }
   }
 }

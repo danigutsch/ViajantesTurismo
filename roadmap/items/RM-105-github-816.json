@@ -5,7 +5,7 @@
   "title": "Add rate limiting for public and sensitive endpoints",
   "type": "feature",
   "status": "proposed",
-  "order": 297,
+  "order": 458,
   "theme": "repo-operations",
   "outcome": "GitHub issue #816 is canonically represented from the reconciliation manifest.",
   "scoring": {
@@ -33,7 +33,8 @@
   ],
   "integrations": {
     "github": {
-      "issue": 816
+      "issue": 816,
+      "nodeId": "I_kwDOQAEVW88AAAABH_qPDA"
     }
   }
 }

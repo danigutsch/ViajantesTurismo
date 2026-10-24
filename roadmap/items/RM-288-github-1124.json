@@ -4,16 +4,10 @@
   "parent": "RM-285",
   "title": "[Issue]: Decouple integration events from SharedKernel mediator",
   "type": "enabler",
-  "status": "proposed",
-  "order": 273,
+  "status": "done",
+  "triage": "untriaged",
   "theme": "repo-operations",
   "outcome": "GitHub issue #1124 is canonically represented from the reconciliation manifest.",
-  "scoring": {
-    "reach": 1,
-    "impact": 1,
-    "confidence": 0.1,
-    "effort": 3
-  },
   "blockedBy": [],
   "blocks": [],
   "dependencies": [],
@@ -35,7 +29,8 @@
   ],
   "integrations": {
     "github": {
-      "issue": 1124
+      "issue": 1124,
+      "nodeId": "I_kwDOQAEVW88AAAABJSG6og"
     }
   }
 }

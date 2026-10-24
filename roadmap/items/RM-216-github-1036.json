@@ -5,7 +5,7 @@
   "title": "feat(aspire): expose MCP tools for custom resources",
   "type": "feature",
   "status": "proposed",
-  "order": 316,
+  "order": 476,
   "theme": "repo-operations",
   "outcome": "GitHub issue #1036 is canonically represented from the reconciliation manifest.",
   "scoring": {
@@ -35,7 +35,8 @@
   ],
   "integrations": {
     "github": {
-      "issue": 1036
+      "issue": 1036,
+      "nodeId": "I_kwDOQAEVW88AAAABIrAOMQ"
     }
   }
 }

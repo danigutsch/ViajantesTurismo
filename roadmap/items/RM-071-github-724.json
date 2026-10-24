@@ -3,16 +3,10 @@
   "id": "RM-071",
   "title": "Choose editable intermediate document format",
   "type": "enabler",
-  "status": "proposed",
-  "order": 154,
+  "status": "done",
+  "triage": "untriaged",
   "theme": "repo-operations",
   "outcome": "GitHub issue #724 is canonically represented from the reconciliation manifest.",
-  "scoring": {
-    "reach": 1,
-    "impact": 1,
-    "confidence": 0.1,
-    "effort": 3
-  },
   "blockedBy": [],
   "blocks": [],
   "dependencies": [],
@@ -29,7 +23,8 @@
   ],
   "integrations": {
     "github": {
-      "issue": 724
+      "issue": 724,
+      "nodeId": "I_kwDOQAEVW88AAAABHtafaQ"
     }
   }
 }

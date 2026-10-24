@@ -143,9 +143,98 @@
                   "const": "create"
                 }
               ]
+            },
+            "repository": {
+              "type": "string",
+              "pattern": "^(?![^/]*--)[A-Za-z0-9](?:[A-Za-z0-9-]{0,37}[A-Za-z0-9])?/(?!\\.{1,2}$)[A-Za-z0-9_.-]{1,100}$"
+            },
+            "nodeId": {
+              "type": "string",
+              "minLength": 1,
+              "pattern": "\\S"
+            },
+            "previousLocations": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "required": [
+                  "repository",
+                  "issue"
+                ],
+                "properties": {
+                  "repository": {
+                    "type": "string",
+                    "pattern": "^(?![^/]*--)[A-Za-z0-9](?:[A-Za-z0-9-]{0,37}[A-Za-z0-9])?/(?!\\.{1,2}$)[A-Za-z0-9_.-]{1,100}$"
+                  },
+                  "issue": {
+                    "type": "integer",
+                    "minimum": 1
+                  }
+                },
+                "additionalProperties": false
+              },
+              "uniqueItems": true
+            },
+            "previousNodeIds": {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "minLength": 1,
+                "pattern": "\\S"
+              },
+              "uniqueItems": true
             }
           },
-          "additionalProperties": false
+          "additionalProperties": false,
+          "allOf": [
+            {
+              "if": {
+                "required": [
+                  "issue"
+                ],
+                "properties": {
+                  "issue": {
+                    "const": "create"
+                  }
+                }
+              },
+              "then": {
+                "not": {
+                  "anyOf": [
+                    {
+                      "required": [
+                        "nodeId"
+                      ]
+                    },
+                    {
+                      "required": [
+                        "previousLocations"
+                      ]
+                    },
+                    {
+                      "required": [
+                        "previousNodeIds"
+                      ]
+                    }
+                  ]
+                }
+              }
+            }
+          ],
+          "dependentRequired": {
+            "repository": [
+              "issue"
+            ],
+            "nodeId": [
+              "issue"
+            ],
+            "previousLocations": [
+              "issue"
+            ],
+            "previousNodeIds": [
+              "issue"
+            ]
+          }
         }
       }
     }

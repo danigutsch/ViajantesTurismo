@@ -5,7 +5,7 @@
   "title": "Evaluate safe Npgsql OpenTelemetry tracing",
   "type": "enabler",
   "status": "proposed",
-  "order": 244,
+  "order": 429,
   "theme": "repo-operations",
   "outcome": "GitHub issue #1051 is canonically represented from the reconciliation manifest.",
   "scoring": {
@@ -33,7 +33,8 @@
   ],
   "integrations": {
     "github": {
-      "issue": 1051
+      "issue": 1051,
+      "nodeId": "I_kwDOQAEVW88AAAABIvCkKg"
     }
   }
 }

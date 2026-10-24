@@ -5,7 +5,7 @@
   "title": "Add regression coverage for slow and non-seekable streams",
   "type": "feature",
   "status": "proposed",
-  "order": 283,
+  "order": 449,
   "theme": "repo-operations",
   "outcome": "GitHub issue #706 is canonically represented from the reconciliation manifest.",
   "scoring": {
@@ -31,7 +31,8 @@
   ],
   "integrations": {
     "github": {
-      "issue": 706
+      "issue": 706,
+      "nodeId": "I_kwDOQAEVW88AAAABHtV51w"
     }
   }
 }

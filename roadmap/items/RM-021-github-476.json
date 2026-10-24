@@ -4,7 +4,7 @@
   "title": "Epic: Standardize contract-owned API clients and response outcomes",
   "type": "epic",
   "status": "proposed",
-  "order": 325,
+  "order": 484,
   "theme": "repo-operations",
   "outcome": "GitHub issue #476 is canonically represented from the reconciliation manifest.",
   "scoring": {
@@ -18,8 +18,9 @@
   "dependencies": [],
   "tags": [],
   "labels": [
+    ".net",
     "architecture",
-    "enhancement",
+    "area: api",
     "testing",
     "type: epic"
   ],
@@ -31,7 +32,8 @@
   ],
   "integrations": {
     "github": {
-      "issue": 476
+      "issue": 476,
+      "nodeId": "I_kwDOQAEVW88AAAABHK8w0A"
     }
   }
 }

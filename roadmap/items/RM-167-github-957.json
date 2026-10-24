@@ -4,16 +4,10 @@
   "parent": "RM-166",
   "title": "Manage verified travel payment accounts",
   "type": "issue",
-  "status": "proposed",
-  "order": 210,
+  "status": "done",
+  "triage": "untriaged",
   "theme": "repo-operations",
   "outcome": "GitHub issue #957 is canonically represented from the reconciliation manifest.",
-  "scoring": {
-    "reach": 1,
-    "impact": 1,
-    "confidence": 0.1,
-    "effort": 3
-  },
   "blockedBy": [],
   "blocks": [],
   "dependencies": [],
@@ -29,7 +23,8 @@
   ],
   "integrations": {
     "github": {
-      "issue": 957
+      "issue": 957,
+      "nodeId": "I_kwDOQAEVW88AAAABIcucAw"
     }
   }
 }

@@ -4,7 +4,7 @@
   "title": "Plan vertical feature-slice migration across the repository",
   "type": "epic",
   "status": "proposed",
-  "order": 329,
+  "order": 487,
   "theme": "repo-operations",
   "outcome": "GitHub issue #682 is canonically represented from the reconciliation manifest.",
   "scoring": {
@@ -29,7 +29,8 @@
   ],
   "integrations": {
     "github": {
-      "issue": 682
+      "issue": 682,
+      "nodeId": "I_kwDOQAEVW88AAAABHrGDhw"
     }
   }
 }

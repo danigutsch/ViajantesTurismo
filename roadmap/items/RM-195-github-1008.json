@@ -1,10 +1,11 @@
 {
   "$schema": "../schema/roadmap-item.schema.json",
   "id": "RM-195",
-  "title": "Design branding caching strategy",
-  "type": "issue",
+  "parent": "RM-196",
+  "title": "Verify bounded Branding cache freshness",
+  "type": "enabler",
   "status": "proposed",
-  "order": 226,
+  "order": 417,
   "theme": "repo-operations",
   "outcome": "GitHub issue #1008 is canonically represented from the reconciliation manifest.",
   "scoring": {
@@ -18,9 +19,13 @@
   "dependencies": [],
   "tags": [],
   "labels": [
+    "architecture",
+    "area: api",
     "caching",
-    "documentation",
-    "enhancement"
+    "catalog",
+    "observability",
+    "testing",
+    "type: enabler"
   ],
   "sources": [
     {
@@ -30,7 +35,8 @@
   ],
   "integrations": {
     "github": {
-      "issue": 1008
+      "issue": 1008,
+      "nodeId": "I_kwDOQAEVW88AAAABIitb2A"
     }
   }
 }

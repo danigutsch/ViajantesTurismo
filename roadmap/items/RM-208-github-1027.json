@@ -5,7 +5,7 @@
   "title": "Define System test AppHost ownership",
   "type": "enabler",
   "status": "proposed",
-  "order": 235,
+  "order": 422,
   "theme": "repo-operations",
   "outcome": "GitHub issue #1027 is canonically represented from the reconciliation manifest.",
   "scoring": {
@@ -33,7 +33,8 @@
   ],
   "integrations": {
     "github": {
-      "issue": 1027
+      "issue": 1027,
+      "nodeId": "I_kwDOQAEVW88AAAABIptAlA"
     }
   }
 }

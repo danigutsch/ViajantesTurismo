@@ -1,0 +1,42 @@
+{
+  "$schema": "../schema/roadmap-item.schema.json",
+  "id": "RM-299",
+  "parent": "RM-196",
+  "title": "Replicate Branding revisions into Admin asynchronously",
+  "type": "feature",
+  "status": "proposed",
+  "triage": "untriaged",
+  "theme": "repo-operations",
+  "outcome": "Replicate Branding revisions into Admin asynchronously.",
+  "blockedBy": [
+    "RM-301"
+  ],
+  "blocks": [
+    "RM-298"
+  ],
+  "dependencies": [],
+  "tags": [],
+  "labels": [
+    ".net",
+    "architecture",
+    "catalog",
+    "testing",
+    "security",
+    "infrastructure",
+    "type: feature",
+    "area: api",
+    "risk: breaking-change"
+  ],
+  "sources": [
+    {
+      "kind": "github-issue",
+      "reference": "https://github.com/danigutsch/ViajantesTurismo/issues/1155"
+    }
+  ],
+  "integrations": {
+    "github": {
+      "issue": 1155,
+      "nodeId": "I_kwDOQAEVW88AAAABKATaiQ"
+    }
+  }
+}

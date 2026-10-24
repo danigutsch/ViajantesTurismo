@@ -2,10 +2,10 @@
   "$schema": "../schema/roadmap-item.schema.json",
   "id": "RM-131",
   "parent": "RM-141",
-  "title": "Standardize API boundary validation patterns",
+  "title": "Standardize typed results for remaining API mutations",
   "type": "enabler",
   "status": "proposed",
-  "order": 189,
+  "order": 389,
   "theme": "repo-operations",
   "outcome": "GitHub issue #888 is canonically represented from the reconciliation manifest.",
   "scoring": {
@@ -32,7 +32,8 @@
   ],
   "integrations": {
     "github": {
-      "issue": 888
+      "issue": 888,
+      "nodeId": "I_kwDOQAEVW88AAAABIQ9Wew"
     }
   }
 }

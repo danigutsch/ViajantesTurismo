@@ -1,0 +1,39 @@
+{
+  "$schema": "../schema/roadmap-item.schema.json",
+  "id": "RM-301",
+  "parent": "RM-196",
+  "title": "Support context-qualified EF integration event storage",
+  "type": "enabler",
+  "status": "proposed",
+  "triage": "untriaged",
+  "theme": "repo-operations",
+  "outcome": "Support context-qualified EF integration event storage.",
+  "blockedBy": [],
+  "blocks": [
+    "RM-299",
+    "RM-302"
+  ],
+  "dependencies": [],
+  "tags": [],
+  "labels": [
+    ".net",
+    "architecture",
+    "testing",
+    "sharedkernel",
+    "infrastructure",
+    "type: enabler",
+    "risk: breaking-change"
+  ],
+  "sources": [
+    {
+      "kind": "github-issue",
+      "reference": "https://github.com/danigutsch/ViajantesTurismo/issues/1161"
+    }
+  ],
+  "integrations": {
+    "github": {
+      "issue": 1161,
+      "nodeId": "I_kwDOQAEVW88AAAABKBxFqw"
+    }
+  }
+}

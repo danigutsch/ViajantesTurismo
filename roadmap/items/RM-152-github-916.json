@@ -1,10 +1,11 @@
 {
   "$schema": "../schema/roadmap-item.schema.json",
   "id": "RM-152",
+  "parent": "RM-303",
   "title": "Implement first DDD analyzer with code fix",
   "type": "feature",
   "status": "proposed",
-  "order": 202,
+  "order": 401,
   "theme": "repo-operations",
   "outcome": "GitHub issue #916 is canonically represented from the reconciliation manifest.",
   "scoring": {
@@ -34,7 +35,8 @@
   ],
   "integrations": {
     "github": {
-      "issue": 916
+      "issue": 916,
+      "nodeId": "I_kwDOQAEVW88AAAABIRof6g"
     }
   }
 }

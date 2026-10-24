@@ -4,16 +4,10 @@
   "parent": "RM-242",
   "title": "Define review paths for Actions and container image pins",
   "type": "enabler",
-  "status": "proposed",
-  "order": 259,
+  "status": "done",
+  "triage": "untriaged",
   "theme": "repo-operations",
   "outcome": "GitHub issue #1089 is canonically represented from the reconciliation manifest.",
-  "scoring": {
-    "reach": 1,
-    "impact": 1,
-    "confidence": 0.1,
-    "effort": 3
-  },
   "blockedBy": [],
   "blocks": [],
   "dependencies": [],
@@ -33,7 +27,8 @@
   ],
   "integrations": {
     "github": {
-      "issue": 1089
+      "issue": 1089,
+      "nodeId": "I_kwDOQAEVW88AAAABJFssCg"
     }
   }
 }

@@ -4,7 +4,7 @@
   "title": "chore: migrate repository scripts to .NET tooling",
   "type": "issue",
   "status": "proposed",
-  "order": 106,
+  "order": 353,
   "theme": "repo-operations",
   "outcome": "GitHub issue #775 is canonically represented from the reconciliation manifest.",
   "scoring": {
@@ -30,7 +30,8 @@
   ],
   "integrations": {
     "github": {
-      "issue": 775
+      "issue": 775,
+      "nodeId": "I_kwDOQAEVW88AAAABH4gk2w"
     }
   }
 }

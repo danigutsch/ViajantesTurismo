@@ -1,0 +1,37 @@
+{
+  "$schema": "../schema/roadmap-item.schema.json",
+  "id": "RM-297",
+  "parent": "RM-212",
+  "title": "Rehearse forward and recovery database migrations in CI",
+  "type": "enabler",
+  "status": "proposed",
+  "triage": "untriaged",
+  "theme": "repo-operations",
+  "outcome": "Rehearse forward and recovery database migrations in CI.",
+  "blockedBy": [],
+  "blocks": [],
+  "dependencies": [],
+  "tags": [],
+  "labels": [
+    "ci",
+    "testing",
+    "security",
+    "infrastructure",
+    "type: enabler",
+    "area: release",
+    "area: tooling",
+    "risk: breaking-change"
+  ],
+  "sources": [
+    {
+      "kind": "github-issue",
+      "reference": "https://github.com/danigutsch/ViajantesTurismo/issues/1145"
+    }
+  ],
+  "integrations": {
+    "github": {
+      "issue": 1145,
+      "nodeId": "I_kwDOQAEVW88AAAABJeAN-w"
+    }
+  }
+}

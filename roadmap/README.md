@@ -28,12 +28,14 @@ Exactly one [`reconciliation/open-issues-*.json`](reconciliation/) manifest defi
 snapshot, issue dispositions, exact blocker edges, closed endpoint states, and approved mechanical
 priority policy. Intake requires `snapshotDigest` and rejects a missing or mismatched digest or
 pull-request endpoint before writing any local roadmap file. Only exact
-`integrations.github.issue` mappings affect canonical roadmap identity, dependencies, or priority.
+GitHub mappings affect reconciliation; the roadmap item's `id` remains its canonical identity.
 
 Run `github reconcile` before intake. The .NET tool preserves the reviewed policy, canonical
 primary mappings, and explicit closure approvals, then derives every snapshot-owned disposition, exact
 blocker edge, endpoint state, and integrity count from field-selected GitHub GraphQL data.
-`github reconcile --force` updates only this manifest. If a mapped active item closes without approval,
+`github reconcile --force` updates this manifest and resolved GitHub locations and aliases together.
+It preserves roadmap IDs, priority, status, and relationships during a transfer.
+If a mapped active item closes without approval,
 the error names the exact `closedItemTransitions` entry and manifest path to edit.
 
 For a previously imported open item whose issue is now closed, the manifest must explicitly declare
@@ -48,6 +50,45 @@ the identity-preserving transition:
 Intake then changes the existing item to closed support (`"status": "done"`,
 `"triage": "untriaged"`), removes `order` and `scoring`, and removes it from `order.json`. Without
 that exact declaration, intake rejects the transition rather than closing a reviewed item implicitly.
+
+## GitHub transfers and external references
+
+Keep an existing `RM-*` ID, filename, status, order, scoring, and local relationships when its GitHub
+issue transfers to another repository. Transfer changes the issue's location, not the roadmap item's
+identity or application priority. Do not remove a mapping, mark an item done, or remove its priority
+merely because GitHub no longer resolves the original repository and issue number.
+
+An item mapping can record the current repository and opaque GitHub node ID, together with previous
+locations and node IDs:
+
+```json
+"integrations": {
+  "github": {
+    "repository": "owner/shared-library",
+    "issue": 18,
+    "nodeId": "opaque-current-node-id",
+    "previousLocations": [
+      { "repository": "owner/application", "issue": 457 }
+    ],
+    "previousNodeIds": ["opaque-previous-node-id"]
+  }
+}
+```
+
+The values above illustrate the schema; use identities resolved from GitHub, not invented values.
+Omitting `repository` retains the existing behavior of using `roadmap/config.json`'s configured
+repository. Node IDs are opaque references: never decode them or assume their text format is
+permanent. Previous locations and IDs retain history and prevent duplicate intake after a transfer
+or node ID migration. Issue numbers are unique only within a repository.
+
+External mappings are read-only references. Reconciliation may refresh their resolved identity, but
+application sync must not modify their issues or project fields. Local `parent`, `blocks`, and
+`blockedBy` links continue to use roadmap IDs across repository ownership boundaries. Missing or
+inaccessible external metadata is not evidence that a relationship was removed or an issue closed;
+retain the last accepted local data and review the diagnostic before affected changes proceed.
+
+Preview and review reconciliation before applying resolved locations and aliases. Creation intent
+(`"issue": "create"`) must not carry node IDs or historical aliases; those identify existing issues.
 
 ## Workflow
 
@@ -129,7 +170,7 @@ pull request that changes canonical roadmap data.
   GitHub.
 - Sync automation must be driven by the .NET repo config tool, not shell or
   Python helper scripts.
-- Intake retains only issue number, title, state, labels, and parent linkage; it
+- Intake retains issue identity, title, state, labels, and relationship metadata; it
   does not import issue bodies or comments.
 - Intake writes only manifest-declared blocker edges, creates closed support items or performs declared
   imported-item transitions when required, and is idempotent when the roadmap matches the manifest.

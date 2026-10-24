@@ -1,0 +1,42 @@
+{
+  "$schema": "../schema/roadmap-item.schema.json",
+  "id": "RM-302",
+  "parent": "RM-196",
+  "title": "Host Branding in Catalog and retire the standalone API",
+  "type": "feature",
+  "status": "proposed",
+  "triage": "untriaged",
+  "theme": "repo-operations",
+  "outcome": "Host Branding in Catalog and retire the standalone API.",
+  "blockedBy": [
+    "RM-301"
+  ],
+  "blocks": [
+    "RM-298"
+  ],
+  "dependencies": [],
+  "tags": [],
+  "labels": [
+    ".net",
+    "architecture",
+    "catalog",
+    "testing",
+    "security",
+    "infrastructure",
+    "type: feature",
+    "area: api",
+    "risk: breaking-change"
+  ],
+  "sources": [
+    {
+      "kind": "github-issue",
+      "reference": "https://github.com/danigutsch/ViajantesTurismo/issues/1162"
+    }
+  ],
+  "integrations": {
+    "github": {
+      "issue": 1162,
+      "nodeId": "I_kwDOQAEVW88AAAABKBxFrg"
+    }
+  }
+}

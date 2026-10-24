@@ -5,7 +5,7 @@
   "title": "Guard duplicate and redirected governed constants",
   "type": "enabler",
   "status": "proposed",
-  "order": 250,
+  "order": 435,
   "theme": "repo-operations",
   "outcome": "GitHub issue #1072 is canonically represented from the reconciliation manifest.",
   "scoring": {
@@ -34,7 +34,8 @@
   ],
   "integrations": {
     "github": {
-      "issue": 1072
+      "issue": 1072,
+      "nodeId": "I_kwDOQAEVW88AAAABI7YQ4w"
     }
   }
 }

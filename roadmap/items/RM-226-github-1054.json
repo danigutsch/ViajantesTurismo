@@ -4,7 +4,7 @@
   "title": "Enforce case-insensitive JSON source-generation contexts",
   "type": "enabler",
   "status": "proposed",
-  "order": 246,
+  "order": 431,
   "theme": "repo-operations",
   "outcome": "GitHub issue #1054 is canonically represented from the reconciliation manifest.",
   "scoring": {
@@ -32,7 +32,8 @@
   ],
   "integrations": {
     "github": {
-      "issue": 1054
+      "issue": 1054,
+      "nodeId": "I_kwDOQAEVW88AAAABIv7FUg"
     }
   }
 }

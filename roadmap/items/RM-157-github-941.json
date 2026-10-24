@@ -4,7 +4,7 @@
   "title": "Add versioned travel document templates",
   "type": "feature",
   "status": "proposed",
-  "order": 305,
+  "order": 466,
   "theme": "repo-operations",
   "outcome": "GitHub issue #941 is canonically represented from the reconciliation manifest.",
   "scoring": {
@@ -30,7 +30,8 @@
   ],
   "integrations": {
     "github": {
-      "issue": 941
+      "issue": 941,
+      "nodeId": "I_kwDOQAEVW88AAAABIb2eUQ"
     }
   }
 }

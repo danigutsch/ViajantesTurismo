@@ -119,7 +119,7 @@ through public package interfaces. This test-only commit does not change the pin
 
 Hosted Linux and Windows jobs read the committed candidate manifest, check out the public library at
 its exact `libraryRevision`, and download unchanged packages and `candidate.json` from GitHub
-prerelease `v<packageVersion>`. The published `0.1.0-alpha.94.1` assets match the committed candidate
+prerelease `v<packageVersion>`. The published `0.1.0-alpha.112.1` assets match the committed candidate
 hashes. Missing retired releases must not be recreated to unblock checks. The secret-scan
 workflow also pins the shared scanner action to an immutable library revision. Hosted checks verify
 the same immutable package bytes as local validation.

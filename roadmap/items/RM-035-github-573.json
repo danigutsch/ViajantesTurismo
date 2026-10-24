@@ -4,7 +4,7 @@
   "title": "Audit project test-layer coverage",
   "type": "issue",
   "status": "proposed",
-  "order": 133,
+  "order": 368,
   "theme": "repo-operations",
   "outcome": "GitHub issue #573 is canonically represented from the reconciliation manifest.",
   "scoring": {
@@ -29,7 +29,8 @@
   ],
   "integrations": {
     "github": {
-      "issue": 573
+      "issue": 573,
+      "nodeId": "I_kwDOQAEVW88AAAABHn2e-A"
     }
   }
 }

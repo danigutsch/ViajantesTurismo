@@ -4,7 +4,7 @@
   "title": "Epic: make REST endpoints HATEOAS-compliant",
   "type": "epic",
   "status": "proposed",
-  "order": 333,
+  "order": 489,
   "theme": "repo-operations",
   "outcome": "GitHub issue #789 is canonically represented from the reconciliation manifest.",
   "scoring": {
@@ -33,7 +33,8 @@
   ],
   "integrations": {
     "github": {
-      "issue": 789
+      "issue": 789,
+      "nodeId": "I_kwDOQAEVW88AAAABH_lk3A"
     }
   }
 }

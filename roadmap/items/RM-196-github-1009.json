@@ -1,10 +1,11 @@
 {
   "$schema": "../schema/roadmap-item.schema.json",
   "id": "RM-196",
-  "title": "Verticalize Branding into composable feature modules",
+  "parent": "RM-215",
+  "title": "Consolidate Branding into Catalog as an independent module",
   "type": "epic",
   "status": "proposed",
-  "order": 340,
+  "order": 495,
   "theme": "repo-operations",
   "outcome": "GitHub issue #1009 is canonically represented from the reconciliation manifest.",
   "scoring": {
@@ -19,8 +20,12 @@
   "tags": [],
   "labels": [
     "architecture",
-    "documentation",
-    "enhancement",
+    "area: api",
+    "catalog",
+    "infrastructure",
+    "risk: breaking-change",
+    "security",
+    "sharedkernel",
     "type: epic"
   ],
   "sources": [
@@ -31,7 +36,8 @@
   ],
   "integrations": {
     "github": {
-      "issue": 1009
+      "issue": 1009,
+      "nodeId": "I_kwDOQAEVW88AAAABIiyjSQ"
     }
   }
 }

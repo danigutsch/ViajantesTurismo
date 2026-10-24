@@ -4,7 +4,7 @@
   "title": "Expose data-store ownership metadata for diagrams",
   "type": "enabler",
   "status": "proposed",
-  "order": 185,
+  "order": 387,
   "theme": "repo-operations",
   "outcome": "GitHub issue #874 is canonically represented from the reconciliation manifest.",
   "scoring": {
@@ -32,7 +32,8 @@
   ],
   "integrations": {
     "github": {
-      "issue": 874
+      "issue": 874,
+      "nodeId": "I_kwDOQAEVW88AAAABINOHmw"
     }
   }
 }
