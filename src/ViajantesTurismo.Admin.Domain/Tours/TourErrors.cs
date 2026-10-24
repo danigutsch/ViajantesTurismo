@@ -119,9 +119,9 @@ public static class TourErrors
     /// <param name="value">The invalid value provided.</param>
     /// <returns>A Result representing the error.</returns>
     public static Result InvalidMinCustomers(int value) => Result.Invalid(
-        detail: $"Minimum customers must be between 1 and 20. Received: {value}.",
+        detail: $"Minimum customers must be between {AdminDomainLimits.MinTourCustomers} and {AdminDomainLimits.MaxTourCustomers}. Received: {value}.",
         field: "minCustomers",
-        message: "Minimum customers must be between 1 and 20.");
+        message: $"Minimum customers must be between {AdminDomainLimits.MinTourCustomers} and {AdminDomainLimits.MaxTourCustomers}.");
 
     /// <summary>
     /// Indicates that MaxCustomers must be a positive integer.
@@ -129,9 +129,9 @@ public static class TourErrors
     /// <param name="value">The invalid value provided.</param>
     /// <returns>A Result representing the error.</returns>
     public static Result InvalidMaxCustomers(int value) => Result.Invalid(
-        detail: $"Maximum customers must be between 1 and 20. Received: {value}.",
+        detail: $"Maximum customers must be between {AdminDomainLimits.MinTourCustomers} and {AdminDomainLimits.MaxTourCustomers}. Received: {value}.",
         field: "maxCustomers",
-        message: "Maximum customers must be between 1 and 20.");
+        message: $"Maximum customers must be between {AdminDomainLimits.MinTourCustomers} and {AdminDomainLimits.MaxTourCustomers}.");
 
     /// <summary>
     /// Indicates that MaxCustomers must be greater than or equal to MinCustomers.
