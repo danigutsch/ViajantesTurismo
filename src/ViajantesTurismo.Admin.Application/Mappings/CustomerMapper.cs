@@ -1,6 +1,7 @@
 using ViajantesTurismo.Admin.Contracts.Application;
 using ViajantesTurismo.Admin.Domain.Customers;
 using ViajantesTurismo.Admin.Domain.Shared;
+using PandaBear.Results;
 
 namespace ViajantesTurismo.Admin.Application.Mappings;
 
@@ -39,7 +40,7 @@ public static class CustomerMapper
     /// <summary>
     /// Maps an <see cref="AddressDto"/> to an <see cref="Address"/> domain object.
     /// </summary>
-    public static Address MapToAddress(AddressDto dto)
+    public static Result<Address> MapToAddress(AddressDto dto)
     {
         ArgumentNullException.ThrowIfNull(dto);
 
@@ -50,20 +51,20 @@ public static class CustomerMapper
             dto.PostalCode,
             dto.City,
             dto.State,
-            dto.Country).Value;
+            dto.Country);
     }
 
     /// <summary>
     /// Maps a <see cref="PhysicalInfoDto"/> to a <see cref="PhysicalInfo"/> domain object.
     /// </summary>
-    public static PhysicalInfo MapToPhysicalInfo(PhysicalInfoDto dto)
+    public static Result<PhysicalInfo> MapToPhysicalInfo(PhysicalInfoDto dto)
     {
         ArgumentNullException.ThrowIfNull(dto);
 
         return PhysicalInfo.Create(
             dto.WeightKg,
             dto.HeightCentimeters,
-            BookingMapper.MapToBikeType(dto.BikeType)).Value;
+            BookingMapper.MapToBikeType(dto.BikeType));
     }
 
     /// <summary>
@@ -82,24 +83,24 @@ public static class CustomerMapper
     /// <summary>
     /// Maps an <see cref="EmergencyContactDto"/> to an <see cref="EmergencyContact"/> domain object.
     /// </summary>
-    public static EmergencyContact MapToEmergencyContact(EmergencyContactDto dto)
+    public static Result<EmergencyContact> MapToEmergencyContact(EmergencyContactDto dto)
     {
         ArgumentNullException.ThrowIfNull(dto);
 
         return EmergencyContact.Create(
             dto.Name,
-            dto.Mobile).Value;
+            dto.Mobile);
     }
 
     /// <summary>
     /// Maps a <see cref="MedicalInfoDto"/> to a <see cref="MedicalInfo"/> domain object.
     /// </summary>
-    public static MedicalInfo MapToMedicalInfo(MedicalInfoDto dto)
+    public static Result<MedicalInfo> MapToMedicalInfo(MedicalInfoDto dto)
     {
         ArgumentNullException.ThrowIfNull(dto);
 
         return MedicalInfo.Create(
             dto.Allergies,
-            dto.AdditionalInfo).Value;
+            dto.AdditionalInfo);
     }
 }
