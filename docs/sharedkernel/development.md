@@ -6,18 +6,20 @@ and library tooling belong to the separate SharedKernel repository. ViajantesTur
 Generic documentation and repository-configuration tooling belongs to SharedKernel. Application
 documentation configuration, CI and coverage policy, setup scripts, and compatibility orchestration stay here.
 
-The published candidate is `0.1.0-alpha.159.1` at clean library revision
-[`afaaa2994edd43e82cb4b3ff622cd7ef17fa0f4d`](https://github.com/danigutsch/PandaBear.SharedKernel/commit/afaaa2994edd43e82cb4b3ff622cd7ef17fa0f4d).
+The published candidate is `0.1.0-alpha.161.1` at clean library revision
+[`b40822b58c9f6c1797dbea6de1e2a12319906b5b`](https://github.com/danigutsch/PandaBear.SharedKernel/commit/b40822b58c9f6c1797dbea6de1e2a12319906b5b).
 It adds the `sharedkernel-ci` `select`, `run`, `openapi`, `install-playwright`, and `coverage` commands that
 `.config/sharedkernel-ci.json` configures, `sharedkernel-version verify-consumer`, and
 `PandaBear.SharedKernel.Npgsql.Testing`; with more than one integration-event outbox or idempotency store,
-the unkeyed service binds only to an explicit default. All 78 package hashes match the unchanged
-artifacts from [CI run 40114059506](https://github.com/danigutsch/PandaBear.SharedKernel/actions/runs/40114059506);
+the unkeyed service binds only to an explicit default. `run` restores and builds the projects of a slice's
+OpenAPI targets with its selected tests. All 78 package hashes match the unchanged
+artifacts from [CI run 40123246622](https://github.com/danigutsch/PandaBear.SharedKernel/actions/runs/40123246622);
 Linux/Windows package consumption and NativeAOT passed. The unchanged 78 packages, 54 symbol archives
 and manifest are published in GitHub prerelease
-[`v0.1.0-alpha.159.1`](https://github.com/danigutsch/PandaBear.SharedKernel/releases/tag/v0.1.0-alpha.159.1).
+[`v0.1.0-alpha.161.1`](https://github.com/danigutsch/PandaBear.SharedKernel/releases/tag/v0.1.0-alpha.161.1).
 
-The previous previews `0.1.0-alpha.144.1` at revision `ee4126348011b2ddf60d3e580428867689c412dd`,
+The previous previews `0.1.0-alpha.159.1` at revision `afaaa2994edd43e82cb4b3ff622cd7ef17fa0f4d`,
+`0.1.0-alpha.144.1` at revision `ee4126348011b2ddf60d3e580428867689c412dd`,
 `0.1.0-alpha.133.1` at revision `078adf2b2b158f38a211f48274af548d12a85752`,
 `0.1.0-alpha.112.1` at revision `e4d13f63ff872a86478a16e5a3c3ce1ecba0fcb1` and `0.1.0-alpha.94.1` at
 revision `d08008cd3e8901c304377edcc4683de7c3a85ecb` remain published. Their application validation is
