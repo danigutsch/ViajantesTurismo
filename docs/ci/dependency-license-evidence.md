@@ -12,6 +12,7 @@ or by January 20, 2027, whichever comes first. This record does not grant genera
 - [Payments rebase candidate](#payments-rebase-candidate)
 - [Rate-limit and reconciliation candidate renewal](#rate-limit-and-reconciliation-candidate-renewal)
 - [DDD standards candidate](#ddd-standards-candidate)
+- [ShouldThrow message candidate](#shouldthrow-message-candidate)
 - [Remaining decision](#remaining-decision)
 
 ## Snapshot failure and correction
@@ -219,6 +220,22 @@ native distribution gate was relaxed. On October 24, 2026, the owner authorized 
 distribution and renewed these unchanged exact-package exceptions for this candidate. Publication
 remains conditional on successful application validation; registry publication and the native
 distribution obligations remain outside this approval.
+
+## ShouldThrow message candidate
+
+Candidate `0.1.0-alpha.144.1` uses clean library revision
+`ee4126348011b2ddf60d3e580428867689c412dd`. It gives `ShouldThrow<T>` a `userMessage` overload,
+removes its `paramName` overloads, moves candidate staging to `sharedkernel-ci stage-candidate`, and
+includes the other library changes merged since `0.1.0-alpha.133.1`. Linux/Windows package
+consumption and NativeAOT passed in the exact-source CI run. All 77 archive hashes were verified.
+
+Comparison of the complete external package version/content-hash sets across all 61 lock files
+against application main `c93781a4` (candidate `0.1.0-alpha.133.1`) found no additions or removals;
+both sets hold the same 283 entries. The workflow still permits only the same exact StreamJsonRpc
+`2.25.29` and Magick.NET-Q8-AnyCPU `15.0.0` metadata exceptions; no license category, vulnerability
+threshold or native distribution gate was relaxed. On October 24, 2026, the owner authorized GitHub
+prerelease distribution and renewed these unchanged exact-package exceptions for this candidate.
+Registry publication and the native distribution obligations remain outside this approval.
 
 ## Remaining decision
 
