@@ -4,7 +4,7 @@
   "title": "Epic: validate deployment controls and complete security follow-up review",
   "type": "epic",
   "status": "proposed",
-  "order": 502,
+  "order": 499,
   "theme": "repo-operations",
   "outcome": "GitHub issue #1225 is canonically represented from the reconciliation manifest.",
   "scoring": {

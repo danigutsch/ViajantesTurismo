@@ -258,7 +258,9 @@ public static class AdminDomainLimits
 ```
 
 `ContractConstants` in `.Contracts.Application` describes external DTO/request limits only. Domain
-projects must not reference `ViajantesTurismo.*.Contracts.*` projects.
+projects must not reference `ViajantesTurismo.*.Contracts.*` projects. A contract constant that mirrors
+a domain limit keeps the same name, and `ValidationLimitSynchronizationTests` fails when the two values
+drift apart.
 
 **Reference:**
 See [ADR-003: Validation Constants in Contracts Project](adr/20251108-validation-constants-contracts-project.md), now superseded for domain dependencies.

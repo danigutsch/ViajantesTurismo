@@ -25,7 +25,8 @@ Management Web code that calls them. This is a dated evidence record for the rul
   `Booking.Confirm` skipped the capacity check that `Tour.ConfirmBooking` applies.
 - **Behavior placement**: the document decisions repeated across handlers, the non-atomic tour update, the identifier
   limit mismatch, and the unchecked customer mapping are fixed. The handler, Razor, and Catalog follow-ups (RM-308
-  to RM-312) are fixed too; every finding below is closed.
+  to RM-312) are fixed too. A second pass on `main` after those fixes found A14 to A16; they are fixed as well,
+  and every finding below is closed.
 
 ## Findings
 
@@ -44,6 +45,9 @@ Management Web code that calls them. This is a dated evidence record for the rul
 | A11 | `src/ViajantesTurismo.Management.Web/Components/Pages/Bookings/Edit.razor:350` | Decides booking editability from the raw status DTO | DDD007 | Fixed: `GetBookingDto.CanModifyBookedServices` comes from `Booking` |
 | A12 | `src/ViajantesTurismo.Admin.Application/Documents/*CommandHandler.cs` and `GetFinalizedDocumentArtifactHandler.cs:22` | Seven document handlers repeat `document.Type == DocumentType.PaymentInstructions` to route payment-instruction documents to their own workflow | DDD005, DDD007 | Fixed: `RequiresPaymentInstructionWorkflow` on the draft and lineage |
 | A13 | `src/ViajantesTurismo.Admin.Domain/Customers/PhysicalInfo.cs` and `AccommodationPreferences.cs` | Customer preference factories must validate defined enum selections | Always-valid value objects | Fixed: factories return validation failures; domain and import regressions cover invalid selections and valid controls |
+| A14 | `src/ViajantesTurismo.Admin.Application/Payments/GeneratePaymentInstructionsCommandHandler.cs:63` | Repeats `lineage.Type != DocumentType.PaymentInstructions`, a call site that finding A12 missed | DDD005, DDD007 | Fixed: uses `DocumentLineage.RequiresPaymentInstructionWorkflow` |
+| A15 | `src/ViajantesTurismo.Admin.Application/Payments/PaymentInstructionWorkflow.cs:64,94,173,237` | Decides from the raw `DocumentStatus` whether approval begins review, whether withdrawing approval voids or requests changes, whether a revision is finalized for download, and whether it is retired | DDD005, DDD007 | Fixed: `DocumentDraft.CanBeginReview`, `IsFinalized`, `IsRetired`, and `DocumentLineage.WithdrawApproval` |
+| A16 | `src/ViajantesTurismo.Management.Web/Components/Pages/Bookings/BookingEditActionPanel.razor` | Always shows Delete Booking, although `Tour.RemoveBooking` removes only pending bookings without financial history | DDD005 | Fixed: `Booking.CanBeRemoved` on `GetBookingDto` drives the button |
 | C1 | `src/ViajantesTurismo.Catalog.Application/Tours/CatalogTourPresentationUpdate.cs` | Holds title, slug, and length rules that `CatalogTour.ChangePresentation` does not enforce | Rules in the domain | Fixed: the `CatalogTourPresentation` value object enforces them in `ChangePresentation` |
 | C2 | `src/ViajantesTurismo.Catalog.Domain/Tours/CatalogTour.cs:115,166,179,218` | Throws exceptions for expected business outcomes | ADR-002 | Fixed: `ChangePresentation` and `Publish` return `Result` values from `CatalogTourErrors` |
 | C3 | `src/ViajantesTurismo.Catalog.Application/Media/MediaImageOriginalStoredIntegrationHandler.cs:45-66` | Chooses the next media processing status in the handler | Behavior over state | Fixed: `PublicMediaImage.CompleteProcessing` and `FailProcessing` |
@@ -51,8 +55,8 @@ Management Web code that calls them. This is a dated evidence record for the rul
 ## Domain enum inventory
 
 Twenty-five public enums live in the domain projects. Thirty branch sites exist outside the domain. Most are seed data,
-query ordering, input guards, store filters, or rendering switches; the business decisions were findings A4 and A12, now fixed, and
-the document-status checks in `src/ViajantesTurismo.Admin.Application/Payments/PaymentInstructionWorkflow.cs`.
+query ordering, input guards, store filters, or rendering switches; the business decisions were findings A4, A12, A14,
+and A15, all fixed.
 
 | Category | Enums | Decision |
 | --- | --- | --- |

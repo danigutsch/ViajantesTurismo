@@ -100,6 +100,7 @@ public sealed class QueryServiceReadModelFactsTests
             dto.CanBeConfirmed.ShouldBe(booking.CanBeConfirmed);
             dto.CanBeCompleted.ShouldBe(booking.CanBeCompleted);
             dto.CanBeCancelled.ShouldBe(booking.CanBeCancelled);
+            dto.CanBeRemoved.ShouldBe(booking.CanBeRemoved);
         }
     }
 

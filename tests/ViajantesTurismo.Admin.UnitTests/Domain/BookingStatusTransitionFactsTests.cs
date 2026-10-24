@@ -5,7 +5,7 @@ namespace ViajantesTurismo.Admin.UnitTests.Domain;
 public sealed class BookingStatusTransitionFactsTests
 {
     [Fact]
-    public void Pending_booking_can_be_confirmed_or_cancelled_but_not_completed()
+    public void Pending_booking_can_be_confirmed_cancelled_or_removed_but_not_completed()
     {
         // Arrange
         var booking = BookingDomainTestDataFactory.CreateSingleBooking();
@@ -14,11 +14,13 @@ public sealed class BookingStatusTransitionFactsTests
         var canBeConfirmed = booking.CanBeConfirmed;
         var canBeCompleted = booking.CanBeCompleted;
         var canBeCancelled = booking.CanBeCancelled;
+        var canBeRemoved = booking.CanBeRemoved;
 
         // Assert
         canBeConfirmed.ShouldBeTrue();
         canBeCompleted.ShouldBeFalse();
         canBeCancelled.ShouldBeTrue();
+        canBeRemoved.ShouldBeTrue();
     }
 
     [Fact]
@@ -32,11 +34,13 @@ public sealed class BookingStatusTransitionFactsTests
         var canBeConfirmed = booking.CanBeConfirmed;
         var canBeCompleted = booking.CanBeCompleted;
         var canBeCancelled = booking.CanBeCancelled;
+        var canBeRemoved = booking.CanBeRemoved;
 
         // Assert
         canBeConfirmed.ShouldBeFalse();
         canBeCompleted.ShouldBeTrue();
         canBeCancelled.ShouldBeTrue();
+        canBeRemoved.ShouldBeFalse();
     }
 
     [Fact]
@@ -50,11 +54,13 @@ public sealed class BookingStatusTransitionFactsTests
         var canBeConfirmed = booking.CanBeConfirmed;
         var canBeCompleted = booking.CanBeCompleted;
         var canBeCancelled = booking.CanBeCancelled;
+        var canBeRemoved = booking.CanBeRemoved;
 
         // Assert
         canBeConfirmed.ShouldBeFalse();
         canBeCompleted.ShouldBeFalse();
         canBeCancelled.ShouldBeFalse();
+        canBeRemoved.ShouldBeFalse();
     }
 
     [Fact]
@@ -69,10 +75,12 @@ public sealed class BookingStatusTransitionFactsTests
         var canBeConfirmed = booking.CanBeConfirmed;
         var canBeCompleted = booking.CanBeCompleted;
         var canBeCancelled = booking.CanBeCancelled;
+        var canBeRemoved = booking.CanBeRemoved;
 
         // Assert
         canBeConfirmed.ShouldBeFalse();
         canBeCompleted.ShouldBeFalse();
         canBeCancelled.ShouldBeFalse();
+        canBeRemoved.ShouldBeFalse();
     }
 }

@@ -1026,7 +1026,8 @@ public sealed class EditPageTests : BunitContext
         {
             CanBeConfirmed = false,
             CanBeCompleted = true,
-            CanBeCancelled = false
+            CanBeCancelled = false,
+            CanBeRemoved = false
         };
 
         // Act
@@ -1042,7 +1043,7 @@ public sealed class EditPageTests : BunitContext
         buttonTexts.ShouldNotContain(text => text.Contains("Confirm Booking", StringComparison.Ordinal));
         buttonTexts.ShouldContain(text => text.Contains("Complete Booking", StringComparison.Ordinal));
         buttonTexts.ShouldNotContain(text => text.Contains(CancelBookingText, StringComparison.Ordinal));
-        buttonTexts.ShouldContain(text => text.Contains(DeleteBookingText, StringComparison.Ordinal));
+        buttonTexts.ShouldNotContain(text => text.Contains(DeleteBookingText, StringComparison.Ordinal));
     }
 
     [Fact]
@@ -1141,7 +1142,7 @@ public sealed class EditPageTests : BunitContext
             principalBikeType.HasAttribute(DisabledAttributeName).ShouldBeTrue();
 
             cut.FindAll(ButtonSelector).ShouldNotContain(button => button.TextContent.Contains(CancelBookingText, StringComparison.Ordinal));
-            cut.FindAll(ButtonSelector).ShouldContain(button => button.TextContent.Contains(DeleteBookingText, StringComparison.Ordinal));
+            cut.FindAll(ButtonSelector).ShouldNotContain(button => button.TextContent.Contains(DeleteBookingText, StringComparison.Ordinal));
         });
     }
 

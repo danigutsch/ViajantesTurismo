@@ -60,7 +60,7 @@ public sealed class GeneratePaymentInstructionsCommandHandler(PaymentCommandExec
             if (command.ReplacesDocumentId is { } previousId)
             {
                 var lineage = await documents.GetByDocumentId(previousId, ct);
-                if (lineage is null || lineage.BookingId != command.BookingId || lineage.Type != DocumentType.PaymentInstructions)
+                if (lineage is null || lineage.BookingId != command.BookingId || !lineage.RequiresPaymentInstructionWorkflow)
                 {
                     return Result.NotFound(detail: "Payment instruction lineage not found.").ConvertError<Guid>();
                 }

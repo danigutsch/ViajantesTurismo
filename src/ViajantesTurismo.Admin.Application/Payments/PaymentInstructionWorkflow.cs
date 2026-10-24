@@ -61,7 +61,7 @@ public sealed class PaymentInstructionWorkflow(PaymentCommandExecutor commands, 
             switch (operation)
             {
                 case PaymentInstructionAuditOperation.Approved:
-                    if (current.Document.Status is DocumentStatus.DraftGenerated or DocumentStatus.ChangesRequested)
+                    if (current.Document.CanBeginReview)
                     {
                         result = current.Lineage.BeginReview(documentId, now.UtcDateTime, audit.Value);
                         if (result.IsFailure)
@@ -91,9 +91,7 @@ public sealed class PaymentInstructionWorkflow(PaymentCommandExecutor commands, 
                     finally { CryptographicOperations.ZeroMemory(plaintext); }
                     break;
                 case PaymentInstructionAuditOperation.ApprovalWithdrawn:
-                    result = current.Document.Status == DocumentStatus.Finalized
-                        ? current.Lineage.Void(documentId, "approval-withdrawn", now.UtcDateTime, audit.Value)
-                        : current.Lineage.RequestChanges(documentId, now.UtcDateTime, audit.Value);
+                    result = current.Lineage.WithdrawApproval(documentId, now.UtcDateTime, audit.Value);
                     break;
                 case PaymentInstructionAuditOperation.Voided:
                     result = current.Lineage.Void(documentId, "administrative-void", now.UtcDateTime, audit.Value);
@@ -170,7 +168,7 @@ public sealed class PaymentInstructionWorkflow(PaymentCommandExecutor commands, 
                 return loaded.ConvertError<PaymentInstructionSources, Guid>();
             }
             var current = loaded.Value;
-            if (current.Document.Status != DocumentStatus.Finalized || !await Eligible(current, ct))
+            if (!current.Document.IsFinalized || !await Eligible(current, ct))
             {
                 return FinancialErrors.Changed().ConvertError<Guid>();
             }
@@ -236,7 +234,7 @@ public sealed class PaymentInstructionWorkflow(PaymentCommandExecutor commands, 
             AccountId = current.Snapshot.Terms.AccountId,
             AccountRevisionId = current.Snapshot.Terms.AccountRevisionId,
             MaskedRecipient = current.Snapshot.Recipient.MaskedIdentifier,
-            Eligible = current.Document.Status is not (DocumentStatus.Voided or DocumentStatus.Superseded) && await Eligible(current, ct),
+            Eligible = !current.Document.IsRetired && await Eligible(current, ct),
             EuroAmount = current.Snapshot.Terms.EuroAmount,
             SettlementAmount = current.Snapshot.Terms.SettlementAmount,
             SettlementCurrency = TourMapper.MapToCurrencyDto(current.Snapshot.Terms.Currency),

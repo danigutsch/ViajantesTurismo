@@ -1,7 +1,7 @@
 {
   "repository": "danigutsch/ViajantesTurismo",
   "retrievedOn": "2026-10-24",
-  "repositoryCommit": "3eb3732d68b2736775d16f2fb146e40993d6d00e",
+  "repositoryCommit": "c3b0945f44c0b7813632e23838fd147d8f8f68e8",
   "source": "GitHub GraphQL repository.issues snapshot with parent, subissue, label, and blocker metadata.",
   "ruleVersion": "structural-parent-subissue-blocker-v1",
   "mechanicalPriorityOverride": {
@@ -31,7 +31,7 @@
     "Only exact GitHub blocker relationships may become canonical blockedBy and blocks links.",
     "Only an explicit closedItemTransitions entry can move an imported open item to closed support."
   ],
-  "snapshotDigest": "cafe62cb89d1692ed8163f0e5a8ae6bfdff33d88c839593fa7129c511d737c34",
+  "snapshotDigest": "8b51efa81a8e52883eecd2754eafc176bf3199bcc9922ad5581a2f2f0b747cac",
   "blockerEdges": [
     {
       "blocker": 484,
@@ -520,6 +520,26 @@
     {
       "issue": 1128,
       "roadmapItem": "RM-292"
+    },
+    {
+      "issue": 1211,
+      "roadmapItem": "RM-308"
+    },
+    {
+      "issue": 1212,
+      "roadmapItem": "RM-309"
+    },
+    {
+      "issue": 1213,
+      "roadmapItem": "RM-310"
+    },
+    {
+      "issue": 1214,
+      "roadmapItem": "RM-311"
+    },
+    {
+      "issue": 1215,
+      "roadmapItem": "RM-312"
     }
   ],
   "directCanonicalPrimaries": [
@@ -696,11 +716,6 @@
     1148,
     1154,
     1201,
-    1211,
-    1212,
-    1213,
-    1214,
-    1215,
     1218,
     1219,
     1220,
@@ -709,14 +724,16 @@
     1223,
     1224,
     1226,
-    1227
+    1227,
+    1232,
+    1233
   ],
   "integrity": {
-    "expectedIssueCount": 166,
+    "expectedIssueCount": 163,
     "expectedDirectCanonicalPrimaryCount": 5,
     "expectedChildrenOfCanonicalPrimaryCount": 15,
     "expectedUnmappedStructuralRootCount": 16,
-    "expectedNeedsHumanCount": 130,
+    "expectedNeedsHumanCount": 127,
     "expectedBlockerEdgeCount": 24,
     "expectedExternalBlockerEdgeCount": 2,
     "dispositionsAreDisjoint": true,

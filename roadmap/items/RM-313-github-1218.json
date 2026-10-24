@@ -5,7 +5,7 @@
   "title": "Make signed media upload-ticket expiry deterministic",
   "type": "issue",
   "status": "proposed",
-  "order": 440,
+  "order": 435,
   "theme": "repo-operations",
   "outcome": "GitHub issue #1218 is canonically represented from the reconciliation manifest.",
   "scoring": {

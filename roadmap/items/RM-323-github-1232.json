@@ -1,0 +1,36 @@
+{
+  "$schema": "../schema/roadmap-item.schema.json",
+  "id": "RM-323",
+  "title": "Name the payment instruction document decisions in the domain (audit A14, A15)",
+  "type": "enabler",
+  "status": "proposed",
+  "order": 444,
+  "theme": "repo-operations",
+  "outcome": "GitHub issue #1232 is canonically represented from the reconciliation manifest.",
+  "scoring": {
+    "reach": 1,
+    "impact": 1,
+    "confidence": 0.1,
+    "effort": 3
+  },
+  "blockedBy": [],
+  "blocks": [],
+  "dependencies": [],
+  "tags": [],
+  "labels": [
+    "architecture",
+    "type: enabler"
+  ],
+  "sources": [
+    {
+      "kind": "github-issue",
+      "reference": "#1232"
+    }
+  ],
+  "integrations": {
+    "github": {
+      "issue": 1232,
+      "nodeId": "I_kwDOQAEVW88AAAABZmtKcg"
+    }
+  }
+}

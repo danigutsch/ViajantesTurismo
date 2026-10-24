@@ -20,11 +20,11 @@ public class BookingEditStateTests(AspireSystemTestFixture fixture) : AspireSyst
         await Expect(Page.GetButton("Confirm Booking")).Not.ToBeVisibleAsync();
         await Expect(Page.GetButton("Complete Booking")).Not.ToBeVisibleAsync();
         await Expect(Page.GetButton("Cancel Booking")).Not.ToBeVisibleAsync();
-        await Expect(Page.GetButton("Delete Booking")).ToBeEnabledAsync();
+        await Expect(Page.GetButton("Delete Booking")).Not.ToBeVisibleAsync();
     }
 
     [Fact]
-    public async Task Confirmed_booking_edit_shows_action_buttons_and_payment_section()
+    public async Task Confirmed_booking_edit_shows_status_actions_without_delete_and_payment_section()
     {
         // Arrange
         var tour = await ApiClient.CreateTour(new CreateTourOptions { MinCustomers = 1, MaxCustomers = 20 });
@@ -41,7 +41,7 @@ public class BookingEditStateTests(AspireSystemTestFixture fixture) : AspireSyst
         await Expect(Page.GetButton("Update Booking")).ToBeEnabledAsync();
         await Expect(Page.GetButton("Complete Booking")).ToBeVisibleAsync();
         await Expect(Page.GetButton("Cancel Booking")).ToBeVisibleAsync();
-        await Expect(Page.GetButton("Delete Booking")).ToBeVisibleAsync();
+        await Expect(Page.GetButton("Delete Booking")).Not.ToBeVisibleAsync();
         await Expect(Page.GetButton("Confirm Booking")).Not.ToBeVisibleAsync();
         await BookingEditStateTestHelpers.ExpectPaymentsSummaryVisible(Page);
     }

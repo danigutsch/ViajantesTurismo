@@ -85,7 +85,8 @@ public static class DtoBuilders
             CanModifyBookedServices = booking.Status is not (BookingStatusDto.Cancelled or BookingStatusDto.Completed),
             CanBeConfirmed = booking.Status is BookingStatusDto.Pending,
             CanBeCompleted = booking.Status is BookingStatusDto.Confirmed,
-            CanBeCancelled = booking.Status is BookingStatusDto.Pending or BookingStatusDto.Confirmed
+            CanBeCancelled = booking.Status is BookingStatusDto.Pending or BookingStatusDto.Confirmed,
+            CanBeRemoved = booking.Status is BookingStatusDto.Pending
         };
     }
 

@@ -21,6 +21,6 @@ public static class ConditionalStateTestHelpers
         await Expect(page.Locator("#notes")).ToBeEnabledAsync();
         await Expect(page.Locator("#discountType")).ToBeDisabledAsync();
         await Expect(page.GetButton("Update Booking")).ToBeEnabledAsync();
-        await Expect(page.GetButton("Delete Booking")).ToBeEnabledAsync();
+        await Expect(page.GetButton("Delete Booking")).Not.ToBeVisibleAsync();
     }
 }
